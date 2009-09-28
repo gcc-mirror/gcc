@@ -1,0 +1,62 @@
+# Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib g++-dg.exp
+
+# Skip these tests for targets that don't support this extension.
+if { ![check_effective_target_dfp] } {
+    return;
+}
+
+# If the decimal float is supported in the compiler but not yet in the
+# runtime, treat all tests as compile-only.
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+if { ![check_effective_target_dfprt] } {
+    verbose "dfp.exp: runtime support for decimal float does not exist" 2
+    set dg-do-what-default compile
+} else {
+    verbose "dfp.exp: runtime support for decimal float exists, use it" 2
+    set dg-do-what-default run
+}
+verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
+
+global DEFAULT_CXXFLAGS
+if [info exists DEFAULT_CXXFLAGS] then {
+  set save_default_cxxflags DEFAULT_CXXFLAGS
+}
+
+# If a testcase doesn't have special options, use these.
+set DEFAULT_CXXFLAGS ""
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[C]] \
+        "" $DEFAULT_CXXFLAGS
+
+# All done.
+dg-finish
+
+set dg-do-what-default ${save-dg-do-what-default}
+verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
+if [info exists save_default_cxxflags] {
+  set DEFAULT_CXXFLAGS $save_default_cxxflags
+}
