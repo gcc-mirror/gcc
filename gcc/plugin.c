@@ -78,20 +78,6 @@ struct callback_info
 /* An array of lists of 'callback_info' objects indexed by the event id.  */
 static struct callback_info *plugin_callbacks[PLUGIN_EVENT_LAST] = { NULL };
 
-/* List node for an inserted pass instance. We need to keep track of all
-   the newly-added pass instances (with 'added_pass_nodes' defined below)
-   so that we can register their dump files after pass-positioning is finished.
-   Registering dumping files needs to be post-processed or the
-   static_pass_number of the opt_pass object would be modified and mess up
-   the dump file names of future pass instances to be added.  */
-struct pass_list_node
-{
-  struct opt_pass *pass;
-  struct pass_list_node *next;
-};
-
-static struct pass_list_node *added_pass_nodes = NULL;
-static struct pass_list_node *prev_added_pass_node;
 
 #ifdef ENABLE_PLUGIN
 /* Each plugin should define an initialization function with exactly
@@ -287,179 +273,6 @@ parse_plugin_arg_opt (const char *arg)
   XDELETEVEC (name);
 }
 
-
-/* Insert the plugin pass at the proper position. Return true if the pass 
-   is successfully added.
-
-   PLUGIN_PASS_INFO - new pass to be inserted
-   PASS_LIST        - root of the pass list to insert the new pass to  */
-
-static bool
-position_pass (struct plugin_pass *plugin_pass_info,
-               struct opt_pass **pass_list)
-{
-  struct opt_pass *pass = *pass_list, *prev_pass = NULL;
-  bool success = false;
-
-  for ( ; pass; prev_pass = pass, pass = pass->next)
-    {
-      /* Check if the current pass is of the same type as the new pass and
-         matches the name and the instance number of the reference pass.  */
-      if (pass->type == plugin_pass_info->pass->type
-          && pass->name
-          && !strcmp (pass->name, plugin_pass_info->reference_pass_name)
-          && ((plugin_pass_info->ref_pass_instance_number == 0)
-              || (plugin_pass_info->ref_pass_instance_number ==
-                  pass->static_pass_number)
-              || (plugin_pass_info->ref_pass_instance_number == 1
-                  && pass->todo_flags_start & TODO_mark_first_instance)))
-        {
-          struct opt_pass *new_pass = plugin_pass_info->pass;
-          struct pass_list_node *new_pass_node;
-
-          /* The following code (if-statement) is adopted from next_pass_1.  */
-          if (new_pass->static_pass_number)
-            {
-              new_pass = XNEW (struct opt_pass);
-              memcpy (new_pass, plugin_pass_info->pass, sizeof (*new_pass));
-              new_pass->next = NULL;
-
-              new_pass->todo_flags_start &= ~TODO_mark_first_instance;
-
-              plugin_pass_info->pass->static_pass_number -= 1;
-              new_pass->static_pass_number =
-                  -plugin_pass_info->pass->static_pass_number;
-            }
-          else
-            {
-              new_pass->todo_flags_start |= TODO_mark_first_instance;
-              new_pass->static_pass_number = -1;
-            }
-
-          /* Insert the new pass instance based on the positioning op.  */
-          switch (plugin_pass_info->pos_op)
-            {
-              case PASS_POS_INSERT_AFTER:
-                new_pass->next = pass->next;
-                pass->next = new_pass;
-
-		/* Skip newly inserted pass to avoid repeated
-		   insertions in the case where the new pass and the
-		   existing one have the same name.  */
-                pass = new_pass; 
-                break;
-              case PASS_POS_INSERT_BEFORE:
-                new_pass->next = pass;
-                if (prev_pass)
-                  prev_pass->next = new_pass;
-                else
-                  *pass_list = new_pass;
-                break;
-              case PASS_POS_REPLACE:
-                new_pass->next = pass->next;
-                if (prev_pass)
-                  prev_pass->next = new_pass;
-                else
-                  *pass_list = new_pass;
-                new_pass->sub = pass->sub;
-                new_pass->tv_id = pass->tv_id;
-                pass = new_pass;
-                break;
-              default:
-                error ("Invalid pass positioning operation");
-                return false;
-            }
-
-          /* Save the newly added pass (instance) in the added_pass_nodes
-             list so that we can register its dump file later. Note that
-             we cannot register the dump file now because doing so will modify
-             the static_pass_number of the opt_pass object and therefore
-             mess up the dump file name of future instances.  */
-          new_pass_node = XCNEW (struct pass_list_node);
-          new_pass_node->pass = new_pass;
-          if (!added_pass_nodes)
-            added_pass_nodes = new_pass_node;
-          else
-            prev_added_pass_node->next = new_pass_node;
-          prev_added_pass_node = new_pass_node;
-
-          success = true;
-        }
-
-      if (pass->sub && position_pass (plugin_pass_info, &pass->sub))
-        success = true;
-    }
-
-  return success;
-}
-
-
-/* Hook into the pass lists (trees) a new pass registered by a plugin.
-
-   PLUGIN_NAME - display name for the plugin
-   PASS_INFO   - plugin pass information that specifies the opt_pass object,
-                 reference pass, instance number, and how to position
-                 the pass  */
-
-static void
-register_pass (const char *plugin_name, struct plugin_pass *pass_info)
-{
-  if (!pass_info->pass)
-    {
-      error ("No pass specified when registering a new pass in plugin %s",
-             plugin_name);
-      return;
-    }
-
-  if (!pass_info->reference_pass_name)
-    {
-      error ("No reference pass specified for positioning the pass "
-             " from plugin %s", plugin_name);
-      return;
-    }
-
-  /* Try to insert the new pass to the pass lists. We need to check all
-     three lists as the reference pass could be in one (or all) of them.  */
-  if (!position_pass (pass_info, &all_lowering_passes)
-      && !position_pass (pass_info, &all_ipa_passes)
-      && !position_pass (pass_info, &all_passes))
-    error ("Failed to position pass %s registered by plugin %s. "
-           "Cannot find the (specified instance of) reference pass %s",
-           pass_info->pass->name, plugin_name, pass_info->reference_pass_name);
-  else
-    {
-      /* OK, we have successfully inserted the new pass. We need to register
-         the dump files for the newly added pass and its duplicates (if any).
-         Because the registration of plugin passes happens after the
-         command-line options are parsed, the options that specify single
-         pass dumping (e.g. -fdump-tree-PASSNAME) cannot be used for new
-         plugin passes. Therefore we currently can only enable dumping of
-         new plugin passes when the 'dump-all' flags (e.g. -fdump-tree-all)
-         are specified. While doing so, we also delete the pass_list_node
-         objects created during pass positioning.  */
-      while (added_pass_nodes)
-        {
-          struct pass_list_node *next_node = added_pass_nodes->next;
-          enum tree_dump_index tdi;
-          register_one_dump_file (added_pass_nodes->pass);
-          if (added_pass_nodes->pass->type == SIMPLE_IPA_PASS
-              || added_pass_nodes->pass->type == IPA_PASS)
-            tdi = TDI_ipa_all;
-          else if (added_pass_nodes->pass->type == GIMPLE_PASS)
-            tdi = TDI_tree_all;
-          else
-            tdi = TDI_rtl_all;
-          /* Check if dump-all flag is specified.  */
-          if (get_dump_file_info (tdi)->state)
-            get_dump_file_info (added_pass_nodes->pass->static_pass_number)
-                ->state = get_dump_file_info (tdi)->state;
-          XDELETE (added_pass_nodes);
-          added_pass_nodes = next_node;
-        }
-    }
-}
-
-
 /* Register additional plugin information. NAME is the name passed to
    plugin_init. INFO is the information that should be registered. */
 
@@ -490,7 +303,7 @@ register_callback (const char *plugin_name,
     {
       case PLUGIN_PASS_MANAGER_SETUP:
 	gcc_assert (!callback);
-        register_pass (plugin_name, (struct plugin_pass *) user_data);
+        register_pass ((struct register_pass_info *) user_data);
         break;
       case PLUGIN_INFO:
 	gcc_assert (!callback);
