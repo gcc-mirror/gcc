@@ -1,3 +1,23 @@
+2009-09-28  Sriraman Tallam  <tmsriram@google.com>
+
+	* tree-pass.h (register_pass_info): New structure.	
+	(pass_positioning_ops): Move enum from gcc-plugin.h.
+	(register_pass): New function.
+	* gcc-plugin.h (plugin_pass): Delete structure.
+	(pass_positioning_ops): Delete enum.
+	* plugin.c (regsiter_pass): Delete function.
+	(position_pass): Delete function.
+	(added_pass_nodes): Delete variable.
+	(prev_added_pass_nodes): Delete variable.
+	(pass_list_node): Delete structure.
+	* passes.c (make_pass_instance): New function.
+	(next_pass_1): Change to call make_pass_instance.
+	(pass_list_node): Move structure from gcc-plugin.h.
+	(added_pass_nodes): Move variable from plugin.c.
+	(prev_added_pass_nodes): Move variable from plugin.c.
+	(position_pass): New function.
+	(register_pass): New function.
+
 2009-09-28  Easwaran Raman  <eraman@google.com>
 
 	* ifcvt.c (noce_try_abs): Recognize pattern and call

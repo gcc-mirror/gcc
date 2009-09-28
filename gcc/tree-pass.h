@@ -308,6 +308,27 @@ struct dump_file_info
 #define TODO_verify_all \
   (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts)
 
+
+/* Register pass info. */
+
+enum pass_positioning_ops
+{
+  PASS_POS_INSERT_AFTER,  /* Insert after the reference pass.  */
+  PASS_POS_INSERT_BEFORE, /* Insert before the reference pass.  */
+  PASS_POS_REPLACE        /* Replace the reference pass.  */
+};
+
+struct register_pass_info
+{
+  struct opt_pass *pass;            /* New pass to register.  */
+  const char *reference_pass_name;  /* Name of the reference pass for hooking
+                                       up the new pass.  */
+  int ref_pass_instance_number;     /* Insert the pass at the specified
+                                       instance number of the reference pass.
+                                       Do it for every instance if it is 0.  */
+  enum pass_positioning_ops pos_op; /* how to insert the new pass.  */
+};
+
 extern void tree_lowering_passes (tree decl);
 
 extern struct gimple_opt_pass pass_mudflap_1;
@@ -545,6 +566,7 @@ extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void register_one_dump_file (struct opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
+extern void register_pass (struct register_pass_info *);
 
 /* Set to true if the pass is called the first time during compilation of the
    current function.  Note that using this information in the optimization

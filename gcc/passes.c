@@ -437,11 +437,11 @@ register_dump_files (struct opt_pass *pass,int properties)
   register_dump_files_1 (pass, properties);
 }
 
-/* Add a pass to the pass list. Duplicate the pass if it's already
-   in the list.  */
+/* Look at the static_pass_number and duplicate the pass
+   if it is already added to a list. */
 
-static struct opt_pass **
-next_pass_1 (struct opt_pass **list, struct opt_pass *pass)
+static struct opt_pass *
+make_pass_instance (struct opt_pass *pass, bool track_duplicates)
 {
   /* A nonzero static_pass_number indicates that the
      pass is already in the list.  */
@@ -459,25 +459,193 @@ next_pass_1 (struct opt_pass **list, struct opt_pass *pass)
          and so it should rename the dump file.  The first instance will
          be -1, and be number of duplicates = -static_pass_number - 1.
          Subsequent instances will be > 0 and just the duplicate number.  */
-      if (pass->name)
+      if (pass->name || track_duplicates)
         {
           pass->static_pass_number -= 1;
           new_pass->static_pass_number = -pass->static_pass_number;
 	}
-      
-      *list = new_pass;
+      return new_pass;
     }
   else
     {
       pass->todo_flags_start |= TODO_mark_first_instance;
       pass->static_pass_number = -1;
-      *list = pass;
-    }  
-  
-  return &(*list)->next;
-          
+    } 
+  return pass; 
 }
 
+/* Add a pass to the pass list. Duplicate the pass if it's already
+   in the list.  */
+
+static struct opt_pass **
+next_pass_1 (struct opt_pass **list, struct opt_pass *pass)
+{
+  *list = make_pass_instance (pass, false);
+  
+  return &(*list)->next;
+}
+
+/* List node for an inserted pass instance. We need to keep track of all
+   the newly-added pass instances (with 'added_pass_nodes' defined below)
+   so that we can register their dump files after pass-positioning is finished.
+   Registering dumping files needs to be post-processed or the
+   static_pass_number of the opt_pass object would be modified and mess up
+   the dump file names of future pass instances to be added.  */
+
+struct pass_list_node
+{
+  struct opt_pass *pass;
+  struct pass_list_node *next;
+};
+
+static struct pass_list_node *added_pass_nodes = NULL;
+static struct pass_list_node *prev_added_pass_node;
+
+/* Insert the pass at the proper position. Return true if the pass 
+   is successfully added.
+
+   NEW_PASS_INFO - new pass to be inserted
+   PASS_LIST - root of the pass list to insert the new pass to  */
+
+static bool
+position_pass (struct register_pass_info *new_pass_info,
+               struct opt_pass **pass_list)
+{
+  struct opt_pass *pass = *pass_list, *prev_pass = NULL;
+  bool success = false;
+
+  for ( ; pass; prev_pass = pass, pass = pass->next)
+    {
+      /* Check if the current pass is of the same type as the new pass and
+         matches the name and the instance number of the reference pass.  */
+      if (pass->type == new_pass_info->pass->type
+          && pass->name
+          && !strcmp (pass->name, new_pass_info->reference_pass_name)
+          && ((new_pass_info->ref_pass_instance_number == 0)
+              || (new_pass_info->ref_pass_instance_number ==
+                  pass->static_pass_number)
+              || (new_pass_info->ref_pass_instance_number == 1
+                  && pass->todo_flags_start & TODO_mark_first_instance)))
+        {
+          struct opt_pass *new_pass;
+          struct pass_list_node *new_pass_node;
+
+	  new_pass = make_pass_instance (new_pass_info->pass, true);
+  
+          /* Insert the new pass instance based on the positioning op.  */
+          switch (new_pass_info->pos_op)
+            {
+              case PASS_POS_INSERT_AFTER:
+                new_pass->next = pass->next;
+                pass->next = new_pass;
+
+		/* Skip newly inserted pass to avoid repeated
+		   insertions in the case where the new pass and the
+		   existing one have the same name.  */
+                pass = new_pass; 
+                break;
+              case PASS_POS_INSERT_BEFORE:
+                new_pass->next = pass;
+                if (prev_pass)
+                  prev_pass->next = new_pass;
+                else
+                  *pass_list = new_pass;
+                break;
+              case PASS_POS_REPLACE:
+                new_pass->next = pass->next;
+                if (prev_pass)
+                  prev_pass->next = new_pass;
+                else
+                  *pass_list = new_pass;
+                new_pass->sub = pass->sub;
+                new_pass->tv_id = pass->tv_id;
+                pass = new_pass;
+                break;
+              default:
+                error ("Invalid pass positioning operation");
+                return false;
+            }
+
+          /* Save the newly added pass (instance) in the added_pass_nodes
+             list so that we can register its dump file later. Note that
+             we cannot register the dump file now because doing so will modify
+             the static_pass_number of the opt_pass object and therefore
+             mess up the dump file name of future instances.  */
+          new_pass_node = XCNEW (struct pass_list_node);
+          new_pass_node->pass = new_pass;
+          if (!added_pass_nodes)
+            added_pass_nodes = new_pass_node;
+          else
+            prev_added_pass_node->next = new_pass_node;
+          prev_added_pass_node = new_pass_node;
+
+          success = true;
+        }
+
+      if (pass->sub && position_pass (new_pass_info, &pass->sub))
+        success = true;
+    }
+
+  return success;
+}
+
+/* Hooks a new pass into the pass lists.
+
+   PASS_INFO   - pass information that specifies the opt_pass object,
+                 reference pass, instance number, and how to position
+                 the pass  */
+
+void
+register_pass (struct register_pass_info *pass_info)
+{
+  if (!pass_info->pass)
+    {
+      gcc_unreachable ();
+    } 
+
+  if (!pass_info->reference_pass_name)
+    {
+      gcc_unreachable ();
+    }
+
+  /* Try to insert the new pass to the pass lists. We need to check all
+     three lists as the reference pass could be in one (or all) of them.  */
+  if (!position_pass (pass_info, &all_lowering_passes)
+      && !position_pass (pass_info, &all_ipa_passes)
+      && !position_pass (pass_info, &all_passes))
+    gcc_unreachable ();
+  else
+    {
+      /* OK, we have successfully inserted the new pass. We need to register
+         the dump files for the newly added pass and its duplicates (if any).
+         Because the registration of plugin/backend passes happens after the
+         command-line options are parsed, the options that specify single
+         pass dumping (e.g. -fdump-tree-PASSNAME) cannot be used for new
+         passes. Therefore we currently can only enable dumping of
+         new passes when the 'dump-all' flags (e.g. -fdump-tree-all)
+         are specified. While doing so, we also delete the pass_list_node
+         objects created during pass positioning.  */
+      while (added_pass_nodes)
+        {
+          struct pass_list_node *next_node = added_pass_nodes->next;
+          enum tree_dump_index tdi;
+          register_one_dump_file (added_pass_nodes->pass);
+          if (added_pass_nodes->pass->type == SIMPLE_IPA_PASS
+              || added_pass_nodes->pass->type == IPA_PASS)
+            tdi = TDI_ipa_all;
+          else if (added_pass_nodes->pass->type == GIMPLE_PASS)
+            tdi = TDI_tree_all;
+          else
+            tdi = TDI_rtl_all;
+          /* Check if dump-all flag is specified.  */
+          if (get_dump_file_info (tdi)->state)
+            get_dump_file_info (added_pass_nodes->pass->static_pass_number)
+                ->state = get_dump_file_info (tdi)->state;
+          XDELETE (added_pass_nodes);
+          added_pass_nodes = next_node;
+        }
+    }
+}
 
 /* Construct the pass tree.  The sequencing of passes is driven by
    the cgraph routines:
