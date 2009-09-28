@@ -1304,7 +1304,7 @@ proc check_effective_target_dfp_nocache { } {
 proc check_effective_target_dfprt_nocache { } {
     return [check_runtime_nocache dfprt {
 	typedef float d64 __attribute__((mode(DD)));
-	d64 x = 1.2df; y = 2.3dd; z;
+	d64 x = 1.2df, y = 2.3dd, z;
 	int main () { z = x + y; return 0; }
     }]
 }
