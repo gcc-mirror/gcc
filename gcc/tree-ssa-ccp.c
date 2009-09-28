@@ -1424,8 +1424,8 @@ evaluate_stmt (gimple stmt)
       else if (code == GIMPLE_SWITCH)
         simplified = gimple_switch_index (stmt);
       else
-        /* These cannot satisfy is_gimple_min_invariant without folding.  */
-        gcc_assert (code == GIMPLE_CALL || code == GIMPLE_COND);
+	/* These cannot satisfy is_gimple_min_invariant without folding.  */
+	gcc_assert (code == GIMPLE_CALL || code == GIMPLE_COND);
     }
 
   is_constant = simplified && is_gimple_min_invariant (simplified);
@@ -2895,6 +2895,7 @@ fold_gimple_cond (gimple stmt)
   return false;
 }
 
+static void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
 
 /* Attempt to fold a call statement referenced by the statement iterator GSI.
    The statement may be replaced by another statement, e.g., if the call
@@ -2915,7 +2916,11 @@ fold_gimple_call (gimple_stmt_iterator *gsi)
       tree result = ccp_fold_builtin (stmt);
 
       if (result)
-        return update_call_from_tree (gsi, result);
+	{
+          if (!update_call_from_tree (gsi, result))
+	    gimplify_and_update_call_from_tree (gsi, result);
+	  return true;
+	}
     }
   else
     {

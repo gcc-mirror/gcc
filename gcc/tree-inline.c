@@ -3873,7 +3873,48 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 	      gimple old_stmt = gsi_stmt (gsi);
 	      tree old_decl = is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
 
-	      if (fold_stmt (&gsi))
+	      if (old_decl && DECL_BUILT_IN (old_decl))
+		{
+		  /* Folding builtins can create multiple instructions,
+		     we need to look at all of them.  */
+		  gimple_stmt_iterator i2 = gsi;
+		  gsi_prev (&i2);
+		  if (fold_stmt (&gsi))
+		    {
+		      gimple new_stmt;
+		      if (gsi_end_p (i2))
+			i2 = gsi_start_bb (BASIC_BLOCK (first));
+		      else
+			gsi_next (&i2);
+		      while (1)
+			{
+			  new_stmt = gsi_stmt (i2);
+			  update_stmt (new_stmt);
+			  cgraph_update_edges_for_call_stmt (old_stmt, old_decl,
+							     new_stmt);
+
+			  if (new_stmt == gsi_stmt (gsi))
+			    {
+			      /* It is okay to check only for the very last
+				 of these statements.  If it is a throwing
+				 statement nothing will change.  If it isn't
+				 this can remove EH edges.  If that weren't
+				 correct then because some intermediate stmts
+				 throw, but not the last one.  That would mean
+				 we'd have to split the block, which we can't
+				 here and we'd loose anyway.  And as builtins
+				 probably never throw, this all
+				 is mood anyway.  */
+			      if (maybe_clean_or_replace_eh_stmt (old_stmt,
+								  new_stmt))
+				gimple_purge_dead_eh_edges (BASIC_BLOCK (first));
+			      break;
+			    }
+			  gsi_next (&i2);
+			}
+		    }
+		}
+	      else if (fold_stmt (&gsi))
 		{
 		  /* Re-read the statement from GSI as fold_stmt() may
 		     have changed it.  */
@@ -3882,7 +3923,8 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 
 		  if (is_gimple_call (old_stmt)
 		      || is_gimple_call (new_stmt))
-		    cgraph_update_edges_for_call_stmt (old_stmt, old_decl, new_stmt);
+		    cgraph_update_edges_for_call_stmt (old_stmt, old_decl,
+						       new_stmt);
 
 		  if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
 		    gimple_purge_dead_eh_edges (BASIC_BLOCK (first));

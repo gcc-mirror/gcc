@@ -12614,6 +12614,11 @@ fold_binary_loc (location_t loc,
         return fold_build1_loc (loc, TRUTH_NOT_EXPR, type,
 			    fold_convert_loc (loc, type, arg0));
 
+      /* !exp != 0 becomes !exp */
+      if (TREE_CODE (arg0) == TRUTH_NOT_EXPR && integer_zerop (arg1)
+	  && code == NE_EXPR)
+        return non_lvalue_loc (loc, fold_convert_loc (loc, type, arg0));
+
       /* If this is an equality comparison of the address of two non-weak,
 	 unaliased symbols neither of which are extern (since we do not
 	 have access to attributes for externs), then we know the result.  */

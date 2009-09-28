@@ -31,17 +31,13 @@ main ()
   if (__builtin_isinfl (pinfl) != 1)
     link_error ();
 
-  if (__builtin_isinf (-pinf) != -1)
+  if (__builtin_isinf_sign (-pinf) != -1)
     link_error ();
 #ifndef __SPU__
-  if (__builtin_isinf (-pinff) != -1)
-    link_error ();
-  if (__builtin_isinff (-pinff) != -1)
+  if (__builtin_isinf_sign (-pinff) != -1)
     link_error ();
 #endif
-  if (__builtin_isinf (-pinfl) != -1)
-    link_error ();
-  if (__builtin_isinfl (-pinfl) != -1)
+  if (__builtin_isinf_sign (-pinfl) != -1)
     link_error ();
 
   if (__builtin_isinf (4.0))
