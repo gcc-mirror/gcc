@@ -164,6 +164,9 @@ struct GTY(()) language_function {
 #undef LANG_HOOKS_EH_PERSONALITY
 #define LANG_HOOKS_EH_PERSONALITY java_eh_personality
 
+#undef LANG_HOOKS_EH_USE_CXA_END_CLEANUP
+#define LANG_HOOKS_EH_USE_CXA_END_CLEANUP  true
+
 /* Each front end provides its own.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

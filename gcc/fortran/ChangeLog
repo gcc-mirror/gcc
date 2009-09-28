@@ -1,3 +1,8 @@
+2009-09-28  Richard Henderson  <rth@redhat.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Update call to
+	build_common_builtin_nodes.
+
 2009-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* simplify.c (gfc_simplify_acos, gfc_simplify_acosh,

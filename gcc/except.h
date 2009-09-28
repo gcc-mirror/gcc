@@ -171,6 +171,10 @@ struct GTY(()) eh_region_d
      Each region gets its own psuedos so that if there are nested exceptions
      we do not overwrite the values of the first exception.  */
   rtx exc_ptr_reg, filter_reg;
+
+  /* True if this region should use __cxa_end_cleanup instead
+     of _Unwind_Resume.  */
+  bool use_cxa_end_cleanup;
 };
 
 typedef struct eh_landing_pad_d *eh_landing_pad;

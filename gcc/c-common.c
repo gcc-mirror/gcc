@@ -4574,7 +4574,7 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
 
   targetm.init_builtins ();
 
-  build_common_builtin_nodes (c_dialect_cxx ());
+  build_common_builtin_nodes ();
 
   if (flag_mudflap)
     mudflap_init ();

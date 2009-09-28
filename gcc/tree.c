@@ -8890,13 +8890,10 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
 
 /* Call this function after instantiating all builtins that the language
    front end cares about.  This will build the rest of the builtins that
-   are relied upon by the tree optimizers and the middle-end.
-
-   ENABLE_CXA_END_CLEANUP should be true for C++ and Java, where the ARM
-   EABI requires a slightly different implementation of _Unwind_Resume.  */
+   are relied upon by the tree optimizers and the middle-end.  */
 
 void
-build_common_builtin_nodes (bool enable_cxa_end_cleanup)
+build_common_builtin_nodes (void)
 {
   tree tmp, tmp2, ftype;
 
@@ -9003,23 +9000,23 @@ build_common_builtin_nodes (bool enable_cxa_end_cleanup)
   local_define_builtin ("__builtin_profile_func_exit", ftype,
 			BUILT_IN_PROFILE_FUNC_EXIT, "profile_func_exit", 0);
 
-  if (enable_cxa_end_cleanup && targetm.arm_eabi_unwinder)
+  /* If there's a possibility that we might use the ARM EABI, build the
+    alternate __cxa_end_cleanup node used to resume from C++ and Java.  */
+  if (targetm.arm_eabi_unwinder)
     {
       ftype = build_function_type (void_type_node, void_list_node);
-      local_define_builtin ("__builtin_unwind_resume", ftype,
-			    BUILT_IN_UNWIND_RESUME,
+      local_define_builtin ("__builtin_cxa_end_cleanup", ftype,
+			    BUILT_IN_CXA_END_CLEANUP,
 			    "__cxa_end_cleanup", ECF_NORETURN);
     }
-  else
-    {
-      tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
-      ftype = build_function_type (void_type_node, tmp);
-      local_define_builtin ("__builtin_unwind_resume", ftype,
-			    BUILT_IN_UNWIND_RESUME,
-			    (USING_SJLJ_EXCEPTIONS
-			     ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
-			    ECF_NORETURN);
-    }
+
+  tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);
+  ftype = build_function_type (void_type_node, tmp);
+  local_define_builtin ("__builtin_unwind_resume", ftype,
+			BUILT_IN_UNWIND_RESUME,
+			(USING_SJLJ_EXCEPTIONS
+			 ? "_Unwind_SjLj_Resume" : "_Unwind_Resume"),
+			ECF_NORETURN);
 
   /* The exception object and filter values from the runtime.  The argument
      must be zero before exception lowering, i.e. from the front end.  After
