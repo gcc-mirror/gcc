@@ -2133,6 +2133,20 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
     {
       eliminate_redundant_computations (&si);
       stmt = gsi_stmt (si);
+      if (gimple_code (stmt) == GIMPLE_CALL)
+	{
+	  /* Resolve __builtin_constant_p.  If it hasn't been
+	     folded to integer_one_node by now, it's fairly
+	     certain that the value simply isn't constant.  */
+	  tree callee = gimple_call_fndecl (stmt);
+	  if (callee
+	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_CONSTANT_P)
+	    {
+	      propagate_tree_value_into_stmt (&si, integer_zero_node);
+	      stmt = gsi_stmt (si);
+	    }
+	}
     }
 
   /* Record any additional equivalences created by this statement.  */

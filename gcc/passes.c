@@ -626,6 +626,11 @@ init_optimization_passes (void)
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_sra);
       NEXT_PASS (pass_rename_ssa_copies);
+      /* The dom pass will also resolve all __builtin_constant_p calls
+         that are still there to 0.  This has to be done after some
+	 propagations have already run, but before some more dead code
+	 is removed, and this place fits nicely.  Remember this when
+	 trying to move or duplicate pass_dominator somewhere earlier.  */
       NEXT_PASS (pass_dominator);
       /* The only const/copy propagation opportunities left after
 	 DOM should be due to degenerate PHI nodes.  So rather than
@@ -641,7 +646,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_object_sizes);
       NEXT_PASS (pass_ccp);
       NEXT_PASS (pass_copy_prop);
-      NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_cse_sincos);
       NEXT_PASS (pass_optimize_bswap);
       NEXT_PASS (pass_split_crit_edges);
@@ -709,6 +713,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
+      NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_tail_calls);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_uncprop);

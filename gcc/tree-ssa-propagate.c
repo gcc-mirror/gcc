@@ -1001,6 +1001,10 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
 	  gimple stmt = gsi_stmt (i);
 	  gimple old_stmt;
 	  enum gimple_code code = gimple_code (stmt);
+	  gimple_stmt_iterator oldi;
+
+	  oldi = i;
+	  gsi_prev (&i);
 
 	  /* Ignore ASSERT_EXPRs.  They are used by VRP to generate
 	     range information for names and they are discarded
@@ -1008,10 +1012,7 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
 
 	  if (code == GIMPLE_ASSIGN
 	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
-	    {
-	      gsi_prev (&i);
-	      continue;
-	    }
+	    continue;
 
 	  /* No point propagating into a stmt whose result is not used,
 	     but instead we might be able to remove a trivially dead stmt.  */
@@ -1030,7 +1031,6 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
 		  fprintf (dump_file, "\n");
 		}
 	      prop_stats.num_dce++;
-	      gsi_prev (&i);
 	      i2 = gsi_for_stmt (stmt);
 	      gsi_remove (&i2, true);
 	      release_defs (stmt);
@@ -1052,7 +1052,7 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
 	     specific information.  Do this before propagating
 	     into the stmt to not disturb pass specific information.  */
 	  if (fold_fn
-	      && (*fold_fn)(&i))
+	      && (*fold_fn)(&oldi))
 	    {
 	      did_replace = true;
 	      prop_stats.num_stmts_folded++;
@@ -1066,12 +1066,12 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
 
 	  /* If we made a replacement, fold the statement.  */
 	  if (did_replace)
-	    fold_stmt (&i);
+	    fold_stmt (&oldi);
 
 	  /* Now cleanup.  */
 	  if (did_replace)
 	    {
-	      stmt = gsi_stmt (i);
+	      stmt = gsi_stmt (oldi);
 
               /* If we cleaned up EH information from the statement,
                  remove EH edges.  */
@@ -1105,8 +1105,6 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
 	      else
 		fprintf (dump_file, "Not folded\n");
 	    }
-
-	  gsi_prev (&i);
 	}
     }
 

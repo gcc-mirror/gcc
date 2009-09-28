@@ -1,3 +1,8 @@
+2009-09-28  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/builtins-44.c: Use __builtin_isinf_sign when checking
+	for sign of -Inf.
+
 2009-09-27  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/compile/pr41469.c: Add -fexceptions.
