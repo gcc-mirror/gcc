@@ -1,3 +1,9 @@
+2009-09-28  Olivier Hainque  <hainque@adacore.com>
+
+	PR ada/41100
+	* gcc-interface/targtyps.c (get_target_default_allocator_alignment):
+	Account for observable alignments out of default allocators.
+
 2009-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Size>: Strip
