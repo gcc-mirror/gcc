@@ -1,4 +1,4 @@
-2009-09-27  Duncan Sands  <baldrick@free.fr>
+2009-09-28  Duncan Sands  <baldrick@free.fr>
 
 	* gcc-plugin.h (PLUGIN_REGISTER_GGC_CACHES): New event.
 	* plugin.c (plugin_event_name): Add PLUGIN_REGISTER_GGC_CACHES.
