@@ -369,6 +369,10 @@ gen_eh_region (enum eh_region_type type, eh_region outer)
   new_eh->index = VEC_length (eh_region, cfun->eh->region_array);
   VEC_safe_push (eh_region, gc, cfun->eh->region_array, new_eh);
 
+  /* Copy the language's notion of whether to use __cxa_end_cleanup.  */
+  if (targetm.arm_eabi_unwinder && lang_hooks.eh_use_cxa_end_cleanup)
+    new_eh->use_cxa_end_cleanup = true;
+
   return new_eh;
 }
 
@@ -572,6 +576,9 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
 	= data->label_map (old_lp->post_landing_pad, data->label_map_data);
       EH_LANDING_PAD_NR (new_lp->post_landing_pad) = new_lp->index;
     }
+
+  /* Make sure to preserve the original use of __cxa_end_cleanup.  */
+  new_r->use_cxa_end_cleanup = old_r->use_cxa_end_cleanup;
 
   for (old_r = old_r->inner; old_r ; old_r = old_r->next_peer)
     duplicate_eh_regions_1 (data, old_r, new_r);

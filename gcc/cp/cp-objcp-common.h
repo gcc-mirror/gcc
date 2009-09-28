@@ -142,4 +142,7 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE cxx_omp_privatize_by_reference
 
+#undef LANG_HOOKS_EH_USE_CXA_END_CLEANUP
+#define LANG_HOOKS_EH_USE_CXA_END_CLEANUP true
+
 #endif /* GCC_CP_OBJCP_COMMON */

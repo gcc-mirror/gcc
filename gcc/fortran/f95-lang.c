@@ -1131,7 +1131,7 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_EMUTLS_REGISTER_COMMON,
 		      "__emutls_register_common", false);
 
-  build_common_builtin_nodes (false);
+  build_common_builtin_nodes ();
   targetm.init_builtins ();
 }
 

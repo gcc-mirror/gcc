@@ -430,6 +430,10 @@ struct lang_hooks
   /* Map a type to a runtime object to match type.  */
   tree (*eh_runtime_type) (tree);
 
+  /* True if this language uses __cxa_end_cleanup when the ARM EABI
+     is enabled.  */
+  bool eh_use_cxa_end_cleanup;
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

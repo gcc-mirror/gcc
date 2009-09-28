@@ -5662,7 +5662,7 @@ gnat_install_builtins (void)
      know about internal specificities and control attributes accordingly, for
      instance __builtin_alloca vs no-throw and -fstack-check.  We will ignore
      the generic definition from builtins.def.  */
-  build_common_builtin_nodes (false);
+  build_common_builtin_nodes ();
 
   /* Now, install the target specific builtins, such as the AltiVec family on
      ppc, and the common set as exposed by builtins.def.  */

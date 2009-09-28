@@ -2949,21 +2949,16 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	 up the call chain.  We resolve this by generating a call to the
 	 _Unwind_Resume library function.  */
 
-      /* ??? The ARM EABI redefines _Unwind_Resume as __cxa_end_cleanup
+      /* The ARM EABI redefines _Unwind_Resume as __cxa_end_cleanup
 	 with no arguments for C++ and Java.  Check for that.  */
-      switch (targetm.arm_eabi_unwinder)
+      if (src_r->use_cxa_end_cleanup)
 	{
-	default:
-	  fn = implicit_built_in_decls[BUILT_IN_UNWIND_RESUME];
-	  if (TYPE_ARG_TYPES (TREE_TYPE (fn)) == void_list_node)
-	    {
-	      x = gimple_build_call (fn, 0);
-	      gsi_insert_before (&gsi, x, GSI_SAME_STMT);
-	      break;
-	    }
-	  /* FALLTHRU */
-
-	case 0:
+	  fn = implicit_built_in_decls[BUILT_IN_CXA_END_CLEANUP];
+	  x = gimple_build_call (fn, 0);
+	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
+	}
+      else
+	{
 	  fn = implicit_built_in_decls[BUILT_IN_EH_POINTER];
 	  src_nr = build_int_cst (NULL, src_r->index);
 	  x = gimple_build_call (fn, 1, src_nr);
@@ -2975,7 +2970,6 @@ lower_resx (basic_block bb, gimple stmt, struct pointer_map_t *mnt_map)
 	  fn = implicit_built_in_decls[BUILT_IN_UNWIND_RESUME];
 	  x = gimple_build_call (fn, 1, var);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
-	  break;
 	}
 
       gcc_assert (EDGE_COUNT (bb->succs) == 0);

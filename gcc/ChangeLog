@@ -1,3 +1,20 @@
+2009-09-28  Richard Henderson  <rth@redhat.com>
+
+	* except.h (struct eh_region_d): Add use_cxa_end_cleanup.
+	* except.c (gen_eh_region): Set it.
+	(duplicate_eh_regions_1): Copy it.
+	* tree-eh.c (lower_resx): Use it to determine which function
+	to call to resume.
+
+	* langhooks.h (struct lang_hooks): Add eh_use_cxa_end_cleanup.
+	* langhooks-def.h (LANG_HOOKS_EH_USE_CXA_END_CLEANUP): New.
+	* builtins.def (BUILT_IN_CXA_END_CLEANUP): New.
+	* tree.c (build_common_builtin_nodes): Remove parameter.  Build
+	BUILT_IN_CXA_END_CLEANUP if necessary.
+
+	* c-common.c (c_define_builtins): Update call to
+	build_common_builtin_nodes.
+
 2009-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* spu.c (get_branch_target): Return NULL for ASM_OPERANDS patterns.
