@@ -130,9 +130,10 @@ static tree elaborate_expression (Node_Id, Entity_Id, tree, bool, bool, bool);
 static bool is_variable_size (tree);
 static tree elaborate_expression_1 (tree, Entity_Id, tree, bool, bool);
 static tree make_packable_type (tree, bool);
-static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
+static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 			       bool *);
+static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (Entity_Id, tree);
 static bool compile_time_known_address_p (Node_Id);
@@ -1799,8 +1800,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree gnu_fat_type = make_node (RECORD_TYPE);
 	tree *gnu_index_types = (tree *) alloca (ndim * sizeof (tree));
 	tree *gnu_temp_fields = (tree *) alloca (ndim * sizeof (tree));
-	tree gnu_max_size = size_one_node, gnu_max_size_unit;
-	tree gnu_comp_size, tem;
+	tree gnu_max_size = size_one_node, gnu_max_size_unit, tem;
 	int index;
 
 	TYPE_NAME (gnu_template_type)
@@ -1946,73 +1946,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Now make the array of arrays and update the pointer to the array
 	   in the fat pointer.  Note that it is the first field.  */
-	tem = gnat_to_gnu_type (Component_Type (gnat_entity));
-
-	/* Try to get a smaller form of the component if needed.  */
-	if ((Is_Packed (gnat_entity)
-	     || Has_Component_Size_Clause (gnat_entity))
-	    && !Is_Bit_Packed_Array (gnat_entity)
-	    && !Has_Aliased_Components (gnat_entity)
-	    && !Strict_Alignment (Component_Type (gnat_entity))
-	    && TREE_CODE (tem) == RECORD_TYPE
-	    && !TYPE_IS_FAT_POINTER_P (tem)
-	    && host_integerp (TYPE_SIZE (tem), 1))
-	  tem = make_packable_type (tem, false);
-
-	if (Has_Atomic_Components (gnat_entity))
-	  check_ok_for_atomic (tem, gnat_entity, true);
-
-	/* Get and validate any specified Component_Size, but if Packed,
-	   ignore it since the front end will have taken care of it.  */
-	gnu_comp_size
-	  = validate_size (Component_Size (gnat_entity), tem,
-			   gnat_entity,
-			   (Is_Bit_Packed_Array (gnat_entity)
-			    ? TYPE_DECL : VAR_DECL),
-			   true, Has_Component_Size_Clause (gnat_entity));
-
-	/* If the component type is a RECORD_TYPE that has a self-referential
-	   size, use the maximum size.  */
-	if (!gnu_comp_size
-	    && TREE_CODE (tem) == RECORD_TYPE
-	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (tem)))
-	  gnu_comp_size = max_size (TYPE_SIZE (tem), true);
-
-	if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_entity))
-	  {
-	    tree orig_tem = tem;
-	    unsigned int max_align;
-
-	    /* If an alignment is specified, use it as a cap on the component
-	       type so that it can be honored for the whole type.  But ignore
-	       it for the original type of packed array types.  */
-	    if (No (Packed_Array_Type (gnat_entity))
-		&& Known_Alignment (gnat_entity))
-	      max_align = validate_alignment (Alignment (gnat_entity),
-					      gnat_entity, 0);
-	    else
-	      max_align = 0;
-
-	    tem = make_type_from_size (tem, gnu_comp_size, false);
-	    if (max_align > 0 && TYPE_ALIGN (tem) > max_align)
-	      tem = orig_tem;
-	    else
-	      orig_tem = tem;
-
-	    tem = maybe_pad_type (tem, gnu_comp_size, 0, gnat_entity,
-				  "C_PAD", false, definition, true);
-
-	    /* If a padding record was made, declare it now since it will
-	       never be declared otherwise.  This is necessary to ensure
-	       that its subtrees are properly marked.  */
-	    if (tem != orig_tem && !DECL_P (TYPE_NAME (tem)))
-	      create_type_decl (TYPE_NAME (tem), tem, NULL, true,
-				debug_info_p, gnat_entity);
-	  }
-
-	if (Has_Volatile_Components (gnat_entity))
-	  tem = build_qualified_type (tem,
-				      TYPE_QUALS (tem) | TYPE_QUAL_VOLATILE);
+        tem = gnat_to_gnu_component_type (gnat_entity, definition,
+					  debug_info_p);
 
 	/* If Component_Size is not already specified, annotate it with the
 	   size of the component.  */
@@ -2356,9 +2291,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 	  else
 	    {
-	      tree gnu_comp_size;
-
-	      gnu_type = gnat_to_gnu_type (Component_Type (gnat_entity));
+	      gnu_type = gnat_to_gnu_component_type (gnat_entity, definition,
+						     debug_info_p);
 
 	      /* One of the above calls might have caused us to be elaborated,
 		 so don't blow up if so.  */
@@ -2367,73 +2301,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  maybe_present = true;
 		  break;
 		}
-
-	      /* Try to get a smaller form of the component if needed.  */
-	      if ((Is_Packed (gnat_entity)
-		   || Has_Component_Size_Clause (gnat_entity))
-		  && !Is_Bit_Packed_Array (gnat_entity)
-		  && !Has_Aliased_Components (gnat_entity)
-		  && !Strict_Alignment (Component_Type (gnat_entity))
-		  && TREE_CODE (gnu_type) == RECORD_TYPE
-		  && !TYPE_IS_FAT_POINTER_P (gnu_type)
-		  && host_integerp (TYPE_SIZE (gnu_type), 1))
-		gnu_type = make_packable_type (gnu_type, false);
-
-	      /* Get and validate any specified Component_Size, but if Packed,
-		 ignore it since the front end will have taken care of it.  */
-	      gnu_comp_size
-		= validate_size (Component_Size (gnat_entity), gnu_type,
-				 gnat_entity,
-				 (Is_Bit_Packed_Array (gnat_entity)
-				  ? TYPE_DECL : VAR_DECL), true,
-				 Has_Component_Size_Clause (gnat_entity));
-
-	      /* If the component type is a RECORD_TYPE that has a
-		 self-referential size, use the maximum size.  */
-	      if (!gnu_comp_size
-		  && TREE_CODE (gnu_type) == RECORD_TYPE
-		  && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
-		gnu_comp_size = max_size (TYPE_SIZE (gnu_type), true);
-
-	      if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_entity))
-		{
-		  tree orig_type = gnu_type;
-		  unsigned int max_align;
-
-		  /* If an alignment is specified, use it as a cap on the
-		     component type so that it can be honored for the whole
-		     type.  But ignore it for the original type of packed
-		     array types.  */
-		  if (No (Packed_Array_Type (gnat_entity))
-		      && Known_Alignment (gnat_entity))
-		    max_align = validate_alignment (Alignment (gnat_entity),
-						    gnat_entity, 0);
-		  else
-		    max_align = 0;
-
-		  gnu_type
-		    = make_type_from_size (gnu_type, gnu_comp_size, false);
-		  if (max_align > 0 && TYPE_ALIGN (gnu_type) > max_align)
-		    gnu_type = orig_type;
-		  else
-		    orig_type = gnu_type;
-
-		  gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0,
-					     gnat_entity, "C_PAD", false,
-					     definition, true);
-
-		  /* If a padding record was made, declare it now since it
-		     will never be declared otherwise.  This is necessary
-		     to ensure that its subtrees are properly marked.  */
-		  if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
-		    create_type_decl (TYPE_NAME (gnu_type), gnu_type, NULL,
-				      true, debug_info_p, gnat_entity);
-		}
-
-	      if (Has_Volatile_Components (Base_Type (gnat_entity)))
-		gnu_type = build_qualified_type (gnu_type,
-						 (TYPE_QUALS (gnu_type)
-						  | TYPE_QUAL_VOLATILE));
 	    }
 
 	  /* Compute the maximum size of the array in units and bits.  */
@@ -5091,6 +4958,84 @@ Gigi_Equivalent_Type (Entity_Id gnat_entity)
   return gnat_equiv;
 }
 
+/* Return a GCC tree for a type corresponding to the component type of the
+   array type or subtype GNAT_ARRAY.  DEFINITION is true if this component
+   is for an array being defined.  DEBUG_INFO_P is true if we need to write
+   debug information for other types that we may create in the process.  */
+
+static tree
+gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
+			    bool debug_info_p)
+{
+  tree gnu_type = gnat_to_gnu_type (Component_Type (gnat_array));
+  tree gnu_comp_size;
+
+  /* Try to get a smaller form of the component if needed.  */
+  if ((Is_Packed (gnat_array)
+       || Has_Component_Size_Clause (gnat_array))
+      && !Is_Bit_Packed_Array (gnat_array)
+      && !Has_Aliased_Components (gnat_array)
+      && !Strict_Alignment (Component_Type (gnat_array))
+      && TREE_CODE (gnu_type) == RECORD_TYPE
+      && !TYPE_IS_FAT_POINTER_P (gnu_type)
+      && host_integerp (TYPE_SIZE (gnu_type), 1))
+    gnu_type = make_packable_type (gnu_type, false);
+
+  if (Has_Atomic_Components (gnat_array))
+    check_ok_for_atomic (gnu_type, gnat_array, true);
+
+  /* Get and validate any specified Component_Size.  */
+  gnu_comp_size
+    = validate_size (Component_Size (gnat_array), gnu_type, gnat_array,
+		     Is_Bit_Packed_Array (gnat_array) ? TYPE_DECL : VAR_DECL,
+		     true, Has_Component_Size_Clause (gnat_array));
+
+  /* If the component type is a RECORD_TYPE that has a self-referential size,
+     then use the maximum size for the component size.  */
+  if (!gnu_comp_size
+      && TREE_CODE (gnu_type) == RECORD_TYPE
+      && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type)))
+    gnu_comp_size = max_size (TYPE_SIZE (gnu_type), true);
+
+  /* Honor the component size.  This is not needed for bit-packed arrays.  */
+  if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_array))
+    {
+      tree orig_type = gnu_type;
+      unsigned int max_align;
+
+      /* If an alignment is specified, use it as a cap on the component type
+	 so that it can be honored for the whole type.  But ignore it for the
+	 original type of packed array types.  */
+      if (No (Packed_Array_Type (gnat_array)) && Known_Alignment (gnat_array))
+	max_align = validate_alignment (Alignment (gnat_array), gnat_array, 0);
+      else
+	max_align = 0;
+
+      gnu_type = make_type_from_size (gnu_type, gnu_comp_size, false);
+      if (max_align > 0 && TYPE_ALIGN (gnu_type) > max_align)
+	gnu_type = orig_type;
+      else
+	orig_type = gnu_type;
+
+      gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
+				 "C_PAD", false, definition, true);
+
+      /* If a padding record was made, declare it now since it will never be
+	 declared otherwise.  This is necessary to ensure that its subtrees
+	 are properly marked.  */
+      if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
+	create_type_decl (TYPE_NAME (gnu_type), gnu_type, NULL, true,
+			  debug_info_p, gnat_array);
+    }
+
+  if (Has_Volatile_Components (Base_Type (gnat_array)))
+    gnu_type
+      = build_qualified_type (gnu_type,
+			      TYPE_QUALS (gnu_type) | TYPE_QUAL_VOLATILE);
+
+  return gnu_type;
+}
+
 /* Return a GCC tree for a parameter corresponding to GNAT_PARAM and
    using MECH as its passing mechanism, to be placed in the parameter
    list built for GNAT_SUBPROG.  Assume a foreign convention for the
@@ -6263,7 +6208,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (align)
     orig_size = round_up (orig_size, align);
 
-  if (size && Present (gnat_entity)
+  if (Present (gnat_entity)
+      && size
       && !operand_equal_p (size, orig_size, 0)
       && !(TREE_CODE (size) == INTEGER_CST
 	   && TREE_CODE (orig_size) == INTEGER_CST
@@ -6284,15 +6230,17 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       /* Generate message only for entities that come from source, since
 	 if we have an entity created by expansion, the message will be
 	 generated for some other corresponding source entity.  */
-      if (Comes_From_Source (gnat_entity) && Present (gnat_error_node))
-	post_error_ne_tree ("{^ }bits of & unused?", gnat_error_node,
-			    gnat_entity,
-			    size_diffop (size, orig_size));
-
-      else if (*name_trailer == 'C' && !Is_Internal (gnat_entity))
-	post_error_ne_tree ("component of& padded{ by ^ bits}?",
-			    gnat_entity, gnat_entity,
-			    size_diffop (size, orig_size));
+      if (Comes_From_Source (gnat_entity))
+	{
+	  if (Present (gnat_error_node))
+	    post_error_ne_tree ("{^ }bits of & unused?",
+				gnat_error_node, gnat_entity,
+				size_diffop (size, orig_size));
+	  else if (name_trailer[0] == 'C')
+	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
+				gnat_entity, gnat_entity,
+				size_diffop (size, orig_size));
+	}
     }
 
   return record;
