@@ -1,3 +1,8 @@
+2009-09-29  Richard Henderson  <rth@redhat.com>
+
+	* tree-eh.c (unsplit_eh): Do not unsplit if there's already
+	an edge to the new destination block.
+
 2009-09-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/41393
