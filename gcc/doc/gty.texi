@@ -451,11 +451,10 @@ somewhere.  It will be called @file{gtype-@var{lang}.h}, where
 @var{lang} is the name of the subdirectory the language is contained in.
 
 Plugins can add additional root tables.  Run the @code{gengtype}
-utility in plugin mode as @code{gengtype -p @var{source-dir}
+utility in plugin mode as @code{gengtype -P pluginout.h @var{source-dir}
 @var{file-list} @var{plugin*.c}} with your plugin files
-@var{plugin*.c} using @code{GTY} to generate the corresponding
-@var{gt-plugin*.h} files.  The GCC build tree is needed to be present in
-that mode.
+@var{plugin*.c} using @code{GTY} to generate the @var{pluginout.h} file.
+The GCC build tree is needed to be present in that mode.
 
 
 @node Invoking the garbage collector

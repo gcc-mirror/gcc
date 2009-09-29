@@ -1,3 +1,11 @@
+2009-09-29  Basile Starynkevitch  <basile@starynkevitch.net>
+            Rafael Avila de Espindola  <espindola@google.com>
+
+	* gengtype.c (plugin_output): New.
+	(get_output_file_with_visibility): Return plugin_output for plugins.
+	(main): Parse and use the -P option.
+	* gty.texi: Update the command line format.
+
 2009-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41438
