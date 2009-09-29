@@ -1,3 +1,15 @@
+2009-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41438
+	* dwarf2out.c (const_ok_for_output_1, const_ok_for_output): New
+	functions.
+	(mem_loc_descriptor, loc_descriptor, add_const_value_attribute): Bail
+	out if !const_ok_for_output.
+
+	PR debug/41474
+	* dwarf2out.c (mem_loc_descriptor) <case CONCAT, case CONCATN,
+	case VAR_LOCATION>: Remove gcc_unreachable ().
+
 2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config.gcc (i[34567]86-*-*): Remove mmintrin-common.h.

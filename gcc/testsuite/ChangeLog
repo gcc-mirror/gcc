@@ -1,3 +1,10 @@
+2009-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41438
+	* gcc.dg/debug/dwarf2/const-1.c: Add dg-require-visibility, make x
+	hidden.
+	* g++.dg/debug/dwarf2/const-1.C: Likewise.
+
 2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* gcc.target/i386/i386.exp: Remove check_effective_target_sse5.
