@@ -206,15 +206,17 @@ arith;
 /* Statements.  */
 typedef enum
 {
-  ST_ARITHMETIC_IF, ST_ALLOCATE, ST_ATTR_DECL, ST_BACKSPACE, ST_BLOCK_DATA,
+  ST_ARITHMETIC_IF, ST_ALLOCATE, ST_ATTR_DECL, ST_BACKSPACE,
+  ST_BLOCK, ST_BLOCK_DATA,
   ST_CALL, ST_CASE, ST_CLOSE, ST_COMMON, ST_CONTINUE, ST_CONTAINS, ST_CYCLE,
   ST_DATA, ST_DATA_DECL, ST_DEALLOCATE, ST_DO, ST_ELSE, ST_ELSEIF,
-  ST_ELSEWHERE, ST_END_BLOCK_DATA, ST_ENDDO, ST_IMPLIED_ENDDO,
+  ST_ELSEWHERE, ST_END_BLOCK, ST_END_BLOCK_DATA, ST_ENDDO, ST_IMPLIED_ENDDO,
   ST_END_FILE, ST_FINAL, ST_FLUSH, ST_END_FORALL, ST_END_FUNCTION, ST_ENDIF,
   ST_END_INTERFACE, ST_END_MODULE, ST_END_PROGRAM, ST_END_SELECT,
   ST_END_SUBROUTINE, ST_END_WHERE, ST_END_TYPE, ST_ENTRY, ST_EQUIVALENCE,
   ST_EXIT, ST_FORALL, ST_FORALL_BLOCK, ST_FORMAT, ST_FUNCTION, ST_GOTO,
-  ST_IF_BLOCK, ST_IMPLICIT, ST_IMPLICIT_NONE, ST_IMPORT, ST_INQUIRE, ST_INTERFACE,
+  ST_IF_BLOCK, ST_IMPLICIT, ST_IMPLICIT_NONE, ST_IMPORT,
+  ST_INQUIRE, ST_INTERFACE,
   ST_PARAMETER, ST_MODULE, ST_MODULE_PROC, ST_NAMELIST, ST_NULLIFY, ST_OPEN,
   ST_PAUSE, ST_PRIVATE, ST_PROGRAM, ST_PUBLIC, ST_READ, ST_RETURN, ST_REWIND,
   ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT, 
@@ -1278,8 +1280,8 @@ gfc_dt_list;
   /* A list of all derived types.  */
   extern gfc_dt_list *gfc_derived_types;
 
-/* A namespace describes the contents of procedure, module or
-   interface block.  */
+/* A namespace describes the contents of procedure, module, interface block
+   or BLOCK construct.  */
 /* ??? Anything else use these?  */
 
 typedef struct gfc_namespace
@@ -1357,16 +1359,20 @@ typedef struct gfc_namespace
   gfc_use_list *use_stmts;
 
   /* Set to 1 if namespace is a BLOCK DATA program unit.  */
-  int is_block_data;
+  unsigned is_block_data:1;
 
   /* Set to 1 if namespace is an interface body with "IMPORT" used.  */
-  int has_import_set;
+  unsigned has_import_set:1;
 
   /* Set to 1 if resolved has been called for this namespace.  */
-  int resolved;
+  unsigned resolved:1;
 
   /* Set to 1 if code has been generated for this namespace.  */
-  int translated;
+  unsigned translated:1;
+
+  /* Set to 1 if symbols in this namespace should be 'construct entities',
+     i.e. for BLOCK local variables.  */
+  unsigned construct_entities:1;
 }
 gfc_namespace;
 
@@ -1964,7 +1970,7 @@ typedef enum
   EXEC_POINTER_ASSIGN,
   EXEC_GOTO, EXEC_CALL, EXEC_COMPCALL, EXEC_ASSIGN_CALL, EXEC_RETURN,
   EXEC_ENTRY, EXEC_PAUSE, EXEC_STOP, EXEC_CONTINUE, EXEC_INIT_ASSIGN,
-  EXEC_IF, EXEC_ARITHMETIC_IF, EXEC_DO, EXEC_DO_WHILE, EXEC_SELECT,
+  EXEC_IF, EXEC_ARITHMETIC_IF, EXEC_DO, EXEC_DO_WHILE, EXEC_SELECT, EXEC_BLOCK,
   EXEC_FORALL, EXEC_WHERE, EXEC_CYCLE, EXEC_EXIT, EXEC_CALL_PPC,
   EXEC_ALLOCATE, EXEC_DEALLOCATE, EXEC_END_PROCEDURE,
   EXEC_OPEN, EXEC_CLOSE, EXEC_WAIT,
@@ -2015,6 +2021,7 @@ typedef struct gfc_code
     const char *omp_name;
     gfc_namelist *omp_namelist;
     bool omp_bool;
+    gfc_namespace *ns;
   }
   ext;		/* Points to additional structures required by statement */
 

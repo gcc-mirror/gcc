@@ -69,6 +69,7 @@ match gfc_match_assignment (void);
 match gfc_match_if (gfc_statement *);
 match gfc_match_else (void);
 match gfc_match_elseif (void);
+match gfc_match_block (void);
 match gfc_match_do (void);
 match gfc_match_cycle (void);
 match gfc_match_exit (void);

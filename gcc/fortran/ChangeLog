@@ -1,3 +1,41 @@
+2009-09-29  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/39626
+	* gfortran.h (enum gfc_statement): Add ST_BLOCK and ST_END_BLOCK.
+	(struct gfc_namespace): Convert flags to bit-fields and add flag
+	`construct_entities' for use with BLOCK constructs.
+	(enum gfc_exec_code): Add EXEC_BLOCK.
+	(struct gfc_code): Add namespace field to union for EXEC_BLOCK.
+	* match.h (gfc_match_block): New prototype.
+	* parse.h (enum gfc_compile_state): Add COMP_BLOCK.
+	* trans.h (gfc_process_block_locals): New prototype.
+	(gfc_trans_deferred_vars): Made public, new prototype.
+	* trans-stmt.h (gfc_trans_block_construct): New prototype.
+	* decl.c (gfc_match_end): Handle END BLOCK correctly.
+	(gfc_match_intent): Error if inside of BLOCK.
+	(gfc_match_optional), (gfc_match_value): Ditto.
+	* match.c (gfc_match_block): New routine.
+	* parse.c (decode_statement): Handle BLOCK statement.
+	(case_exec_markers): Add ST_BLOCK.
+	(case_end): Add ST_END_BLOCK.
+	(gfc_ascii_statement): Handle ST_BLOCK and ST_END_BLOCK.
+	(parse_spec): Check for statements not allowed inside of BLOCK.
+	(parse_block_construct): New routine.
+	(parse_executable): Parse BLOCKs.
+	(parse_progunit): Disallow CONTAINS in BLOCK constructs.
+	* resolve.c (is_illegal_recursion): Find real container procedure and
+	don't get confused by BLOCK constructs.
+	(resolve_block_construct): New routine.
+	(gfc_resolve_blocks), (resolve_code): Handle EXEC_BLOCK.
+	* st.c (gfc_free_statement): Handle EXEC_BLOCK statements.
+	* trans-decl.c (saved_local_decls): New static variable.
+	(add_decl_as_local): New routine.
+	(gfc_finish_var_decl): Add variable as local if inside BLOCK.
+	(gfc_trans_deferred_vars): Make public.
+	(gfc_process_block_locals): New routine.
+	* trans-stmt.c (gfc_trans_block_construct): New routine.
+	* trans.c (gfc_trans_code): Handle EXEC_BLOCK statements.
+
 2009-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/35862

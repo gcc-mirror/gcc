@@ -1705,6 +1705,30 @@ gfc_free_iterator (gfc_iterator *iter, int flag)
 }
 
 
+/* Match a BLOCK statement.  */
+
+match
+gfc_match_block (void)
+{
+  match m;
+
+  if (gfc_match_label () == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  if (gfc_match (" block") != MATCH_YES)
+    return MATCH_NO;
+
+  /* For this to be a correct BLOCK statement, the line must end now.  */
+  m = gfc_match_eos ();
+  if (m == MATCH_ERROR)
+    return MATCH_ERROR;
+  if (m == MATCH_NO)
+    return MATCH_NO;
+
+  return MATCH_YES;
+}
+
+
 /* Match a DO statement.  */
 
 match
