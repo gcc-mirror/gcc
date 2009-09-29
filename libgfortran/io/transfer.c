@@ -101,6 +101,16 @@ static const st_option decimal_opt[] = {
   {NULL, 0}
 };
 
+static const st_option round_opt[] = {
+  {"up", ROUND_UP},
+  {"down", ROUND_DOWN},
+  {"zero", ROUND_ZERO},
+  {"nearest", ROUND_NEAREST},
+  {"compatible", ROUND_COMPATIBLE},
+  {"processor_defined", ROUND_PROCDEFINED},
+  {NULL, 0}
+};
+
 
 static const st_option sign_opt[] = {
   {"plus", SIGN_SP},
@@ -1202,6 +1212,36 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  consume_data_flag = 0;
 	  dtp->u.p.current_unit->decimal_status = DECIMAL_POINT;
 	  break;
+	
+	case FMT_RC:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_COMPATIBLE;
+	  break;
+
+	case FMT_RD:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_DOWN;
+	  break;
+
+	case FMT_RN:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_NEAREST;
+	  break;
+
+	case FMT_RP:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_PROCDEFINED;
+	  break;
+
+	case FMT_RU:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_UP;
+	  break;
+
+	case FMT_RZ:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_ZERO;
+	  break;
 
 	case FMT_P:
 	  consume_data_flag = 0;
@@ -1564,6 +1604,36 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	case FMT_DP:
 	  consume_data_flag = 0;
 	  dtp->u.p.current_unit->decimal_status = DECIMAL_POINT;
+	  break;
+
+	case FMT_RC:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_COMPATIBLE;
+	  break;
+
+	case FMT_RD:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_DOWN;
+	  break;
+
+	case FMT_RN:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_NEAREST;
+	  break;
+
+	case FMT_RP:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_PROCDEFINED;
+	  break;
+
+	case FMT_RU:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_UP;
+	  break;
+
+	case FMT_RZ:
+	  consume_data_flag = 0;
+	  dtp->u.p.current_unit->round_status = ROUND_ZERO;
 	  break;
 
 	case FMT_P:
@@ -2251,6 +2321,16 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   if (dtp->u.p.current_unit->decimal_status == DECIMAL_UNSPECIFIED)
 	dtp->u.p.current_unit->decimal_status = dtp->u.p.current_unit->flags.decimal;
+
+  /* Check the round mode.  */
+  dtp->u.p.current_unit->round_status
+	= !(cf & IOPARM_DT_HAS_ROUND) ? ROUND_UNSPECIFIED :
+	  find_option (&dtp->common, dtp->round, dtp->round_len,
+			round_opt, "Bad ROUND parameter in data transfer "
+			"statement");
+
+  if (dtp->u.p.current_unit->round_status == ROUND_UNSPECIFIED)
+	dtp->u.p.current_unit->round_status = dtp->u.p.current_unit->flags.round;
 
   /* Check the sign mode. */
   dtp->u.p.sign_status
