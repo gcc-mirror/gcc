@@ -1,3 +1,8 @@
+2009-09-29  Nick Clifton  <nickc@redhat.com>
+
+	* function.c (current_function_name): If there is no current
+	function just return "<none>".
+
 2009-09-28  Sriraman Tallam  <tmsriram@google.com>
 
 	* tree-pass.h (register_pass_info): New structure.	
