@@ -145,6 +145,8 @@ static outf_p output_files;
    directory.  */
 static char** plugin_files;
 static size_t nb_plugin_files;
+/* the generated plugin output name & file */
+static outf_p plugin_output;
 
 /* The output header file that is included into pretty much every
    source file.  */
@@ -1714,15 +1716,14 @@ get_output_file_with_visibility (const char *input_file)
 
   /* In plugin mode, return NULL unless the input_file is one of the
      plugin_files.  */
-  if (plugin_files && nb_plugin_files > 0) 
-    { 
-      int ix= -1;
+  if (plugin_files)
+    {
       size_t i;
-      for (i = 0; i < nb_plugin_files && ix < 0; i++)
-      if (strcmp (input_file, plugin_files[i]) == 0) 
-	ix = i;
-      if (ix < 0) 
-	return NULL;
+      for (i = 0; i < nb_plugin_files; i++)
+	if (strcmp (input_file, plugin_files[i]) == 0)
+	  return plugin_output;
+
+      return NULL;
     }
 
   /* Determine the output file name.  */
@@ -3667,20 +3668,24 @@ main (int argc, char **argv)
   size_t i;
   static struct fileloc pos = { this_file, 0 };
   char* inputlist = 0;
+  outf_p output_header;
+  char* plugin_output_filename = NULL;
   /* fatal uses this */
   progname = "gengtype";
 
-  if (argc >= 5 && !strcmp (argv[1], "-p")) 
+  if (argc >= 6 && !strcmp (argv[1], "-P"))
     {
-      srcdir = argv[2];
-      inputlist = argv[3];
-      nb_plugin_files = argc-4;
+      plugin_output_filename = argv[2];
+      plugin_output = create_file ("GCC", plugin_output_filename);
+      srcdir = argv[3];
+      inputlist = argv[4];
+      nb_plugin_files = argc - 5;
       plugin_files = XCNEWVEC (char *, nb_plugin_files);
       for (i = 0; i < nb_plugin_files; i++)
       {
         /* Place an all zero lang_bitmap before the plugin file
 	   name.  */
-        char *name = argv[i + 4];
+        char *name = argv[i + 5];
         int len = strlen(name) + 1 + sizeof (lang_bitmap);
         plugin_files[i] = XCNEWVEC (char, len) + sizeof (lang_bitmap);
         strcpy (plugin_files[i], name);
@@ -3692,7 +3697,8 @@ main (int argc, char **argv)
       inputlist = argv[2];
     } 
   else
-    fatal ("usage: gengtype [-p] srcdir input-list [file1 file2 ... fileN]");
+    fatal ("usage: gengtype [-P pluginout.h] srcdir input-list "
+           "[file1 file2 ... fileN]");
 
   srcdir_len = strlen (srcdir);
 
@@ -3728,7 +3734,8 @@ main (int argc, char **argv)
 
   open_base_files ();
   write_enum_defn (structures, param_structs);
-  write_types (header_file, structures, param_structs, &ggc_wtd);
+  output_header = plugin_output ? plugin_output : header_file;
+  write_types (output_header, structures, param_structs, &ggc_wtd);
   if (plugin_files == NULL)
     {
       write_types (header_file, structures, param_structs, &pch_wtd);
