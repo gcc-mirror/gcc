@@ -1,3 +1,9 @@
+2009-09-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/41393
+	* pa.c (hppa_profile_hook): Use
+	make_reg_eh_region_note_nothrow_nononlocal to add REG_EH_REGION note.
+
 2009-09-29  Steve Ellcey  <sje@cup.hp.com>
 	    Alexander Monakov  <amonakov@ispras.ru>
 
