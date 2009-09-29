@@ -5344,8 +5344,8 @@ set_enum_kind(void)
 
 
 /* Match any of the various end-block statements.  Returns the type of
-   END to the caller.  The END INTERFACE, END IF, END DO and END
-   SELECT statements cannot be replaced by a single END statement.  */
+   END to the caller.  The END INTERFACE, END IF, END DO, END SELECT
+   and END BLOCK statements cannot be replaced by a single END statement.  */
 
 match
 gfc_match_end (gfc_statement *st)
@@ -5365,6 +5365,9 @@ gfc_match_end (gfc_statement *st)
   state = gfc_current_state ();
   block_name = gfc_current_block () == NULL
 	     ? NULL : gfc_current_block ()->name;
+
+  if (state == COMP_BLOCK && !strcmp (block_name, "block@"))
+    block_name = NULL;
 
   if (state == COMP_CONTAINS || state == COMP_DERIVED_CONTAINS)
     {
@@ -5416,6 +5419,12 @@ gfc_match_end (gfc_statement *st)
     case COMP_DERIVED_CONTAINS:
       *st = ST_END_TYPE;
       target = " type";
+      eos_ok = 0;
+      break;
+
+    case COMP_BLOCK:
+      *st = ST_END_BLOCK;
+      target = " block";
       eos_ok = 0;
       break;
 
@@ -5488,10 +5497,10 @@ gfc_match_end (gfc_statement *st)
     {
 
       if (*st != ST_ENDDO && *st != ST_ENDIF && *st != ST_END_SELECT
-	  && *st != ST_END_FORALL && *st != ST_END_WHERE)
+	  && *st != ST_END_FORALL && *st != ST_END_WHERE && *st != ST_END_BLOCK)
 	return MATCH_YES;
 
-      if (gfc_current_block () == NULL)
+      if (!block_name)
 	return MATCH_YES;
 
       gfc_error ("Expected block name of '%s' in %s statement at %C",
@@ -5854,6 +5863,13 @@ gfc_match_intent (void)
 {
   sym_intent intent;
 
+  /* This is not allowed within a BLOCK construct!  */
+  if (gfc_current_state () == COMP_BLOCK)
+    {
+      gfc_error ("INTENT is not allowed inside of BLOCK at %C");
+      return MATCH_ERROR;
+    }
+
   intent = match_intent_spec ();
   if (intent == INTENT_UNKNOWN)
     return MATCH_ERROR;
@@ -5879,6 +5895,12 @@ gfc_match_intrinsic (void)
 match
 gfc_match_optional (void)
 {
+  /* This is not allowed within a BLOCK construct!  */
+  if (gfc_current_state () == COMP_BLOCK)
+    {
+      gfc_error ("OPTIONAL is not allowed inside of BLOCK at %C");
+      return MATCH_ERROR;
+    }
 
   gfc_clear_attr (&current_attr);
   current_attr.optional = 1;
@@ -6361,6 +6383,13 @@ gfc_match_value (void)
 {
   gfc_symbol *sym;
   match m;
+
+  /* This is not allowed within a BLOCK construct!  */
+  if (gfc_current_state () == COMP_BLOCK)
+    {
+      gfc_error ("VALUE is not allowed inside of BLOCK at %C");
+      return MATCH_ERROR;
+    }
 
   if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: VALUE statement at %C")
       == FAILURE)

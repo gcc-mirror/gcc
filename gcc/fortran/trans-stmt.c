@@ -756,6 +756,36 @@ gfc_trans_arithmetic_if (gfc_code * code)
 }
 
 
+/* Translate a BLOCK construct.  This is basically what we would do for a
+   procedure body.  */
+
+tree
+gfc_trans_block_construct (gfc_code* code)
+{
+  gfc_namespace* ns;
+  gfc_symbol* sym;
+  stmtblock_t body;
+  tree tmp;
+
+  ns = code->ext.ns;
+  gcc_assert (ns);
+  sym = ns->proc_name;
+  gcc_assert (sym);
+
+  gcc_assert (!sym->tlink);
+  sym->tlink = sym;
+
+  gfc_start_block (&body);
+  gfc_process_block_locals (ns);
+
+  tmp = gfc_trans_code (ns->code);
+  tmp = gfc_trans_deferred_vars (sym, tmp);
+
+  gfc_add_expr_to_block (&body, tmp);
+  return gfc_finish_block (&body);
+}
+
+
 /* Translate the simple DO construct.  This is where the loop variable has
    integer type and step +-1.  We can't use this in the general case
    because integer overflow and floating point errors could give incorrect

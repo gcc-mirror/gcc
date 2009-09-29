@@ -43,6 +43,7 @@ tree gfc_trans_call (gfc_code *, bool, tree, tree, bool);
 tree gfc_trans_return (gfc_code *);
 tree gfc_trans_if (gfc_code *);
 tree gfc_trans_arithmetic_if (gfc_code *);
+tree gfc_trans_block_construct (gfc_code *);
 tree gfc_trans_do (gfc_code *);
 tree gfc_trans_do_while (gfc_code *);
 tree gfc_trans_select (gfc_code *);

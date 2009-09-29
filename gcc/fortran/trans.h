@@ -498,6 +498,12 @@ void gfc_build_io_library_fndecls (void);
 /* Build a function decl for a library function.  */
 tree gfc_build_library_function_decl (tree, tree, int, ...);
 
+/* Process the local variable decls of a block construct.  */
+void gfc_process_block_locals (gfc_namespace*);
+
+/* Output initialization/clean-up code that was deferred.  */
+tree gfc_trans_deferred_vars (gfc_symbol*, tree);
+
 /* somewhere! */
 tree pushdecl (tree);
 tree pushdecl_top_level (tree);

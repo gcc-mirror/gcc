@@ -110,6 +110,10 @@ gfc_free_statement (gfc_code *p)
     case EXEC_ARITHMETIC_IF:
       break;
 
+    case EXEC_BLOCK:
+      gfc_free_namespace (p->ext.ns);
+      break;
+
     case EXEC_COMPCALL:
     case EXEC_CALL_PPC:
     case EXEC_CALL:

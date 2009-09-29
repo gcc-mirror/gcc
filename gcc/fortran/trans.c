@@ -1157,6 +1157,10 @@ gfc_trans_code (gfc_code * code)
 	  res = gfc_trans_arithmetic_if (code);
 	  break;
 
+	case EXEC_BLOCK:
+	  res = gfc_trans_block_construct (code);
+	  break;
+
 	case EXEC_DO:
 	  res = gfc_trans_do (code);
 	  break;
