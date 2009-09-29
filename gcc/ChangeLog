@@ -1,3 +1,8 @@
+2009-09-29  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (ao_ref_from_mem): Properly deal with off decl accesses
+	resulting from stack temporaries on STRICT_ALIGNMENT targets.
+
 2009-09-29  Nick Clifton  <nickc@redhat.com>
 
 	* function.c (current_function_name): If there is no current

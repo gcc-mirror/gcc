@@ -265,6 +265,11 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (!expr)
     return false;
 
+  /* If MEM_OFFSET or MEM_SIZE are NULL punt.  */
+  if (!MEM_OFFSET (mem)
+      || !MEM_SIZE (mem))
+    return false;
+
   ao_ref_init (ref, expr);
 
   /* Get the base of the reference and see if we have to reject or
@@ -302,45 +307,32 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
 
-  /* For NULL MEM_OFFSET the MEM_EXPR may have been stripped arbitrarily
-     without recording offset or extent adjustments properly.  */
-  if (MEM_OFFSET (mem) == NULL_RTX)
-    {
-      ref->offset = 0;
-      ref->max_size = -1;
-    }
-  else if (INTVAL (MEM_OFFSET (mem)) < 0
-	   && MEM_EXPR (mem) != get_spill_slot_decl (false))
-    {
-      /* Negative MEM_OFFSET happens for promoted subregs on bigendian
-         targets.  We need to compensate both the size and the offset here,
-	 which get_ref_base_and_extent will have done based on the MEM_EXPR
-	 already.  */
-      gcc_assert (((INTVAL (MEM_SIZE (mem)) + INTVAL (MEM_OFFSET (mem)))
-		   * BITS_PER_UNIT)
-		  == ref->size);
-      return true;
-    }
-  else
-    {
-      ref->offset += INTVAL (MEM_OFFSET (mem)) * BITS_PER_UNIT;
-    }
+  /* If the base decl is a parameter we can have negative MEM_OFFSET in
+     case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
+     here.  */
+  if (INTVAL (MEM_OFFSET (mem)) < 0
+      && ((INTVAL (MEM_SIZE (mem)) + INTVAL (MEM_OFFSET (mem)))
+	  * BITS_PER_UNIT) == ref->size)
+    return true;
 
-  /* NULL MEM_SIZE should not really happen with a non-NULL MEM_EXPR,
-     but just play safe here.  The size may have been adjusted together
-     with the offset, so we need to take it if it is set and not rely
-     on MEM_EXPR here (which has the size determining parts potentially
-     stripped anyway).  We lose precision for max_size which is only
-     available from the remaining MEM_EXPR.  */
-  if (MEM_SIZE (mem) == NULL_RTX)
-    {
-      ref->size = -1;
-      ref->max_size = -1;
-    }
-  else
-    {
-      ref->size = INTVAL (MEM_SIZE (mem)) * BITS_PER_UNIT;
-    }
+  ref->offset += INTVAL (MEM_OFFSET (mem)) * BITS_PER_UNIT;
+  ref->size = INTVAL (MEM_SIZE (mem)) * BITS_PER_UNIT;
+
+  /* The MEM may extend into adjacent fields, so adjust max_size if
+     necessary.  */
+  if (ref->max_size != -1
+      && ref->size > ref->max_size)
+    ref->max_size = ref->size;
+
+  /* If MEM_OFFSET and MEM_SIZE get us outside of the base object of
+     the MEM_EXPR punt.  This happens for STRICT_ALIGNMENT targets a lot.  */
+  if (MEM_EXPR (mem) != get_spill_slot_decl (false)
+      && (ref->offset < 0
+	  || (DECL_P (ref->base)
+	      && (!host_integerp (DECL_SIZE (ref->base), 1)
+		  || (TREE_INT_CST_LOW (DECL_SIZE ((ref->base)))
+		      < (unsigned HOST_WIDE_INT)(ref->offset + ref->size))))))
+    return false;
 
   return true;
 }
