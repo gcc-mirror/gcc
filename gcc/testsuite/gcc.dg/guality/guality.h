@@ -134,7 +134,7 @@ static const char *guality_gdb_command;
 #elif defined (_WIN32) || defined (MSDOS)
 # define GUALITY_GDB_REDIRECT " > nul"
 #else
-# define GUALITY_GDB_REDRECT ""
+# define GUALITY_GDB_REDIRECT ""
 #endif
 #define GUALITY_GDB_ARGS " -nx -nw --quiet" GUALITY_GDB_REDIRECT
 
