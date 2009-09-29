@@ -11,7 +11,7 @@ a = 43.21
 WRITE(99,'(10f8.3)',decimal="comma") a
 rewind(99)
 read(99,'(dc,10f8.3)',blank=msg) b
-write(99,'(dp,10f8.3)',round="up") ! { dg-error "not implemented" }
+write(99,'(dp,10f8.3)',round="up")
 rewind(99)
 read(99,'(10f8.3)',pad="yes")
 msg="suppress"
