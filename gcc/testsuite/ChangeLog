@@ -3,6 +3,10 @@
 	* gcc.dg/guality/guality.exp (gdb-test): New proc for use in dg-final.
 	* gcc.dg/guality/pr41353-1.c: New test.
 
+	PR testsuite/41444
+	* gcc.dg/guality/guality.h (GUALITY_GDB_REDIRECT): Fix a typo
+	in macro name definition for non-unix/win32/msdos.
+
 2009-09-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/39626
