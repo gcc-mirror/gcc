@@ -5415,6 +5415,8 @@ reposition_prologue_and_epilogue_notes (void)
 const char *
 current_function_name (void)
 {
+  if (cfun == NULL)
+    return "<none>";
   return lang_hooks.decl_printable_name (cfun->decl, 2);
 }
 
