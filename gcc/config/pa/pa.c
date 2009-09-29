@@ -4361,7 +4361,7 @@ hppa_profile_hook (int label_no)
 
   /* Indicate the _mcount call cannot throw, nor will it execute a
      non-local goto.  */
-  add_reg_note (call_insn, REG_EH_REGION, constm1_rtx);
+  make_reg_eh_region_note_nothrow_nononlocal (call_insn);
 }
 
 /* Fetch the return address for the frame COUNT steps up from
