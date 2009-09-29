@@ -1,7 +1,15 @@
 2009-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Rewrite the handling
-	of constrained discriminated record subtypes.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Factor out
+	common code processing the component type into...
+	<E_Array_Subtype>: Likewise.
+	(gnat_to_gnu_component_type): ...this new static function.
+	(maybe_pad_type): Minor cleanup.
+
+2009-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Rewrite
+	the handling of constrained discriminated record subtypes.
 	(components_to_record): Declare the type of the variants and of the
 	qualified union.
 	(build_subst_list): Move around.
