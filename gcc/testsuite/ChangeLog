@@ -75,7 +75,7 @@
 
 	* g++.dg/dfp: New directory.
 	* g++.dg/dg.exp: Prune tests in dfp directory.
-	* g++.dg/dfp/dfp/exp: New.
+	* g++.dg/dfp/dfp.exp: New.
 	* g++.dg/dfp/mangle-mode.C: New test.
 
 2009-09-28  Michael Matz  <matz@suse.de>
