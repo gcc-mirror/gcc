@@ -47,11 +47,11 @@ operator new (std::size_t sz, const std::nothrow_t&) throw()
       new_handler handler = __new_handler;
       if (! handler)
 	return 0;
-      try
+      __try
 	{
 	  handler ();
 	}
-      catch (bad_alloc &)
+      __catch(const bad_alloc&)
 	{
 	  return 0;
 	}

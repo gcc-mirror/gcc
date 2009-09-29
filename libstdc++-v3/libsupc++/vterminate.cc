@@ -75,9 +75,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 	// If the exception is derived from std::exception, we can
 	// give more information.
-	try { __throw_exception_again; }
+	__try { __throw_exception_again; }
 #ifdef __EXCEPTIONS
-	catch (exception &exc)
+	__catch(const exception& exc)
 	  {
 	    char const *w = exc.what();
 	    fputs("  what():  ", stderr);
@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    fputs("\n", stderr);
           }
 #endif
-	catch (...) { }
+	__catch(...) { }
       }
     else
       fputs("terminate called without an active exception\n", stderr);
