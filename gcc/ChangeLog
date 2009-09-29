@@ -1,3 +1,9 @@
+2009-09-29  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_issue_rate): Don't artificially
+	restrict issue_rate in first pass when scheduling for register
+	pressure.
+
 2009-09-29  Basile Starynkevitch  <basile@starynkevitch.net>
             Rafael Avila de Espindola  <espindola@google.com>
 

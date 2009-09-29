@@ -21760,8 +21760,9 @@ is_nonpipeline_insn (rtx insn)
 static int
 rs6000_issue_rate (void)
 {
-  /* Use issue rate of 1 for first scheduling pass to decrease degradation.  */
-  if (!reload_completed)
+  /* Unless scheduling for register pressure, use issue rate of 1 for
+     first scheduling pass to decrease degradation.  */
+  if (!reload_completed && !flag_sched_pressure)
     return 1;
 
   switch (rs6000_cpu_attr) {
