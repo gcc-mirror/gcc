@@ -1,3 +1,15 @@
+2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	* gcc.target/i386/i386.exp: Remove check_effective_target_sse5.
+	* gcc.target/i386/isa-1.c
+	* gcc.target/i386/isa-5.c
+	* gcc.target/i386/isa-6.c: Remove SSE5.
+	* gcc.target/i386/funcspec-4.c: Remove error conditions related to SSE5.
+	* gcc.target/i386/avx-1.c
+	* gcc.target/i386/avx-2.c
+	* gcc.target/i386/sse-23.c: Remove comments to mmintrin-common.h.
+	* gcc.target/i386/funcspec-9.c: Delete.
+	
 2009-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/guality.exp (gdb-test): New proc for use in dg-final.

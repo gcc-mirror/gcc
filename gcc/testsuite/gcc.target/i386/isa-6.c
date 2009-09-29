@@ -28,8 +28,5 @@ main ()
 #if !defined __SSE4A__
   abort ();
 #endif
-#if defined __SSE5__
-  abort ();
-#endif
   return 0;
 }

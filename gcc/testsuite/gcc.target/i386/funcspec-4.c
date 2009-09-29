@@ -1,9 +1,6 @@
 /* Test some error conditions with function specific options.  */
 /* { dg-do compile } */
 
-/* no sse500 switch */
-extern void error1 (void) __attribute__((__target__("sse500"))); /* { dg-error "unknown" } */
-
 /* Multiple arch switches */
 extern void error2 (void) __attribute__((__target__("arch=core2,arch=k8"))); /* { dg-error "already specified" } */
 

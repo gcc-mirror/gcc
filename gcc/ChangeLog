@@ -1,3 +1,15 @@
+2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	* config.gcc (i[34567]86-*-*): Remove mmintrin-common.h.
+	(x86_64-*-*): Ditto.	
+	* config/i386/smmintrin.h: Move instructions in mmintrin-common.h
+	back to smmintrin.h.
+	* config/i386/cpuid.h: (bit_SSE5): Remove SSE5 bit.
+	* config/i386/x86intrin.h: Remove SSE5.
+	* config/i386/mmintrin-common.h: Delete file.	
+	* doc/extend.texi (x86 intrinsics): Remove SSE5 flags
+	and builtins.
+
 2009-09-29  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (ao_ref_from_mem): Properly deal with off decl accesses
