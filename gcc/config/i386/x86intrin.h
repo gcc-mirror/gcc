@@ -54,10 +54,6 @@
 #include <smmintrin.h>
 #endif
 
-#ifdef __SSE5__
-#include <bmmintrin.h>
-#endif
-
 #if defined (__AES__) || defined (__PCLMUL__)
 #include <wmmintrin.h>
 #endif

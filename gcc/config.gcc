@@ -286,9 +286,8 @@ i[34567]86-*-*)
 	cxx_target_objs="i386-c.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
-		       nmmintrin.h bmmintrin.h mmintrin-common.h
-		       wmmintrin.h immintrin.h x86intrin.h avxintrin.h 
-		       ia32intrin.h cross-stdarg.h"
+		       nmmintrin.h bmmintrin.h wmmintrin.h immintrin.h
+		       x86intrin.h avxintrin.h ia32intrin.h cross-stdarg.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -296,9 +295,8 @@ x86_64-*-*)
 	cxx_target_objs="i386-c.o"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
-		       nmmintrin.h bmmintrin.h mmintrin-common.h
-		       wmmintrin.h immintrin.h x86intrin.h avxintrin.h 
-		       ia32intrin.h cross-stdarg.h"
+		       nmmintrin.h bmmintrin.h wmmintrin.h immintrin.h
+		       x86intrin.h avxintrin.h ia32intrin.h cross-stdarg.h"
 	need_64bit_hwint=yes
 	;;
 ia64-*-*)
