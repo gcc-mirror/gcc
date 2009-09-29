@@ -1,3 +1,20 @@
+2009-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Rewrite the handling
+	of constrained discriminated record subtypes.
+	(components_to_record): Declare the type of the variants and of the
+	qualified union.
+	(build_subst_list): Move around.
+	(compute_field_positions): Rename into...
+	(build_position_list): ...this.  Return a TREE_VEC.
+	(annotate_rep): Adjust for above renaming.
+	(build_variant_list): New static function.
+	(create_field_decl_from): Likewise.
+	(get_rep_part): Likewise.
+	(get_variant_part): Likewise.
+	(create_variant_part_from): Likewise.
+	(copy_and_substitute_in_size): Likewise.
+
 2009-09-28  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/41100
