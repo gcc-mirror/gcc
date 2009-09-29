@@ -3369,6 +3369,12 @@ unsplit_eh (eh_landing_pad lp)
 	return false;
     }
 
+  /* The new destination block must not already be a destination of
+     the source block, lest we merge fallthru and eh edges and get
+     all sorts of confused.  */
+  if (find_edge (e_in->src, e_out->dest))
+    return false;
+
   /* ??? I can't imagine there would be PHI nodes, since by nature
      of critical edge splitting this block should never have been
      a dominance frontier.  If cfg cleanups somehow confuse this,
