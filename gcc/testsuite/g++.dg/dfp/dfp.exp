@@ -62,4 +62,6 @@ set dg-do-what-default ${save-dg-do-what-default}
 verbose "dfp.exp: dg-do-what-default is ${dg-do-what-default}" 2
 if [info exists save_default_cxxflags] {
   set DEFAULT_CXXFLAGS $save_default_cxxflags
+} else {
+  unset DEFAULT_CXXFLAGS
 }

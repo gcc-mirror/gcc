@@ -1,3 +1,9 @@
+2009-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/41496
+	* g++.dg/dfp/dfp.exp: Unset DEFAULT_CXXFLAGS if it didn't exist
+	before.
+
 2009-09-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.test-framework/dg-bogus-exp-XF.c: Move dg-bogus directive.
