@@ -1,3 +1,13 @@
+2009-09-29  Steve Ellcey  <sje@cup.hp.com>
+	    Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/41365 
+	* config/ia64/predicates.md (not_postinc_destination_operand): New.
+	(not_postinc_memory_operand): New.
+	(not_postinc_move_operand): New.
+	* config/ia64/ia64.md (*cmovdi_internal): Disallow autoincrement.
+	(*cmovsi_internal): Ditto.
+
 2009-09-29  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_issue_rate): Don't artificially

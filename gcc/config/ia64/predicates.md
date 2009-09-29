@@ -281,6 +281,12 @@
 		    || GET_CODE (XEXP (op, 0)) != POST_MODIFY
 		    || GET_CODE (XEXP (XEXP (XEXP (op, 0), 1), 1)) != REG")))
 
+;; Like destination_operand, but don't allow any post-increments.
+(define_predicate "not_postinc_destination_operand"
+  (and (match_operand 0 "nonimmediate_operand")
+       (match_test "GET_CODE (op) != MEM
+        || GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC")))
+
 ;; Like memory_operand, but don't allow post-increments.
 (define_predicate "not_postinc_memory_operand"
   (and (match_operand 0 "memory_operand")
@@ -331,6 +337,12 @@
       return true;
     }
 })
+
+;; Like move_operand but don't allow post-increments.
+(define_predicate "not_postinc_move_operand"
+  (and (match_operand 0 "move_operand")
+       (match_test "GET_CODE (op) != MEM
+        || GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != RTX_AUTOINC")))
 
 ;; True if OP is a register operand that is (or could be) a GR reg.
 (define_predicate "gr_register_operand"
