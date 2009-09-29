@@ -602,6 +602,7 @@ typedef struct gfc_unit
   unit_pad pad_status;
   unit_decimal decimal_status;
   unit_delim delim_status;
+  unit_round round_status;
 
   /* recl                 -- Record length of the file.
      last_record          -- Last record number read or written
@@ -654,7 +655,7 @@ typedef enum
   FMT_LPAREN, FMT_RPAREN, FMT_X, FMT_S, FMT_SS, FMT_SP, FMT_STRING,
   FMT_BADSTRING, FMT_P, FMT_I, FMT_B, FMT_BN, FMT_BZ, FMT_O, FMT_Z, FMT_F,
   FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_DC,
-  FMT_DP, FMT_STAR
+  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ
 }
 format_token;
 

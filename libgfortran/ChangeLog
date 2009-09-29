@@ -1,3 +1,18 @@
+2009-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/35862
+	* io.h (gfc_unit): Add round_status.
+	(format_token): Add enumerators for rounding format specifiers.
+	* transfer.c (round_opt): New options table.
+	(formatted_transfer_scalar_read): Add set round_status for each rounding
+	format token. (formatted_transfer_scalar_write): Likewise.
+	* format.c (format_lex): Tokenize the rounding format specifiers.
+	(parse_format_list): Parse the rounding format specifiers.
+	* write_float.def (outout_float): Modify rounding code to use new
+	variable rchar to set the appropriate rounding. Fix some whitespace.
+	* unit.c (get_internal_unit): Initialize rounding mode for internal
+	units. (init_units): Likewise.
+
 2009-09-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	* configure.ac: Check for GFORTRAN_C99_1.1 funcs in OS libm.

@@ -564,6 +564,34 @@ format_lex (format_data *fmt)
 	}
       break;
 
+    case 'R':
+      switch (next_char (fmt, 0))
+	{
+	case 'C':
+	  token = FMT_RC;
+	  break;
+	case 'D':
+	  token = FMT_RD;
+	  break;
+	case 'N':
+	  token = FMT_RN;
+	  break;
+	case 'P':
+	  token = FMT_RP;
+	  break;
+	case 'U':
+	  token = FMT_RU;
+	  break;
+	case 'Z':
+	  token = FMT_RZ;
+	  break;
+	default:
+	  unget_char (fmt);
+	  token = FMT_UNKNOWN;
+	  break;
+	}
+      break;
+
     case -1:
       token = FMT_END;
       break;
@@ -713,6 +741,18 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
       tail->u.string.length = fmt->value;
       tail->repeat = 1;
       goto optional_comma;
+      
+    case FMT_RC:
+    case FMT_RD:
+    case FMT_RN:
+    case FMT_RP:
+    case FMT_RU:
+    case FMT_RZ:
+      notify_std (&dtp->common, GFC_STD_F2003, "Fortran 2003: Round "
+		  "descriptor not allowed");
+      get_fnode (fmt, &head, &tail, t);
+      tail->repeat = 1;
+      goto between_desc;
 
     case FMT_DC:
     case FMT_DP:

@@ -68,7 +68,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   char *out;
   char *digits;
   int e;
-  char expchar;
+  char expchar, rchar;
   format_token ft;
   int w;
   int d;
@@ -89,6 +89,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   w = f->u.real.w;
   d = f->u.real.d;
 
+  rchar = '5';
   nzero_real = -1;
 
   /* We should always know the field width and precision.  */
@@ -235,24 +236,75 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       internal_error (&dtp->common, "Unexpected format token");
     }
 
-  /* Round the value.  */
+  /* Round the value.  The value being rounded is an unsigned magnitude.
+     The ROUND_COMPATIBLE is rounding away from zero when there is a tie.  */
+  switch (dtp->u.p.current_unit->round_status)
+    {
+      case ROUND_ZERO: /* Do nothing and truncation occurs.  */
+	goto skip;
+      case ROUND_UP:
+	if (sign_bit)
+	  goto skip;
+	rchar = '0';
+	break;
+      case ROUND_DOWN:
+	if (!sign_bit)
+	  goto skip;
+	rchar = '0';
+	break;
+      case ROUND_NEAREST:
+	/* Round compatible unless there is a tie. A tie is a 5 with
+	   all trailing zero's.  */
+	i = nafter + 1;
+	if (digits[i] == '5')
+	  {
+	    for(i++ ; i < ndigits; i++)
+	      {
+		if (digits[i] != '0')
+		  goto do_rnd;
+	      }
+	    /* It is a  tie so round to even.  */
+	    switch (digits[nafter])
+	      {
+		case '1':
+		case '3':
+		case '5':
+		case '7':
+		case '9':
+		  /* If odd, round away from zero to even.  */
+		  break;
+		default:
+		  /* If even, skip rounding, truncate to even.  */
+		  goto skip;
+	      }
+	  }
+	 /* Fall through.  */ 
+      case ROUND_PROCDEFINED:
+      case ROUND_UNSPECIFIED:
+      case ROUND_COMPATIBLE:
+	rchar = '5';
+	/* Just fall through and do the actual rounding.  */
+    }
+    
+  do_rnd:
+ 
   if (nbefore + nafter == 0)
     {
       ndigits = 0;
-      if (nzero_real == d && digits[0] >= '5')
-        {
-          /* We rounded to zero but shouldn't have */
-          nzero--;
-          nafter = 1;
-          digits[0] = '1';
-          ndigits = 1;
-        }
+      if (nzero_real == d && digits[0] >= rchar)
+	{
+	  /* We rounded to zero but shouldn't have */
+	  nzero--;
+	  nafter = 1;
+	  digits[0] = '1';
+	  ndigits = 1;
+	}
     }
   else if (nbefore + nafter < ndigits)
     {
       ndigits = nbefore + nafter;
       i = ndigits;
-      if (digits[i] >= '5')
+      if (digits[i] >= rchar)
 	{
 	  /* Propagate the carry.  */
 	  for (i--; i >= 0; i--)
@@ -267,9 +319,10 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
 	  if (i < 0)
 	    {
-	      /* The carry overflowed.  Fortunately we have some spare space
-		 at the start of the buffer.  We may discard some digits, but
-		 this is ok because we already know they are zero.  */
+	      /* The carry overflowed.  Fortunately we have some spare
+	         space at the start of the buffer.  We may discard some
+	         digits, but this is ok because we already know they are
+	         zero.  */
 	      digits--;
 	      digits[0] = '1';
 	      if (ft == FMT_F)
@@ -296,6 +349,8 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	    }
 	}
     }
+
+  skip:
 
   /* Calculate the format of the exponent field.  */
   if (expchar)
