@@ -111,7 +111,8 @@ typedef enum
   FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_LPAREN,
   FMT_RPAREN, FMT_X, FMT_SIGN, FMT_BLANK, FMT_CHAR, FMT_P, FMT_IBOZ, FMT_F,
   FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END,
-  FMT_ERROR, FMT_DC, FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR
+  FMT_ERROR, FMT_DC, FMT_DP, FMT_T, FMT_TR, FMT_TL, FMT_STAR, FMT_RC,
+  FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ
 }
 format_token;
 
@@ -467,6 +468,35 @@ format_lex (void)
 	}
       break;
 
+    case 'R':
+      c = next_char_not_space (&error);
+      switch (c)
+	{
+	case 'C':
+	  token = FMT_RC;
+	  break;
+	case 'D':
+	  token = FMT_RD;
+	  break;
+	case 'N':
+	  token = FMT_RN;
+	  break;
+	case 'P':
+	  token = FMT_RP;
+	  break;
+	case 'U':
+	  token = FMT_RU;
+	  break;
+	case 'Z':
+	  token = FMT_RZ;
+	  break;
+	default:
+	  token = FMT_UNKNOWN;
+	  unget_char ();
+	  break;
+	}
+      break;
+
     case '\0':
       token = FMT_END;
       break;
@@ -623,6 +653,12 @@ format_item_1:
     case FMT_BLANK:
     case FMT_DP:
     case FMT_DC:
+    case FMT_RC:
+    case FMT_RD:
+    case FMT_RN:
+    case FMT_RP:
+    case FMT_RU:
+    case FMT_RZ:
       goto between_desc;
 
     case FMT_CHAR:
@@ -1924,8 +1960,8 @@ gfc_match_open (void)
   /* Checks on the ROUND specifier.  */
   if (open->round)
     {
-      /* When implemented, change the following to use gfc_notify_std F2003.  */
-      gfc_error ("Fortran F2003: ROUND= specifier at %C not implemented");
+      if (gfc_notify_std (GFC_STD_F2003, "Fortran F2003: ROUND= at %C "
+	  "not allowed in Fortran 95") == FAILURE)
       goto cleanup;
 
       if (open->round->expr_type == EXPR_CONSTANT)
@@ -3275,12 +3311,9 @@ if (condition) \
 
   if (dt->round)
     {
-      /* When implemented, change the following to use gfc_notify_std F2003.
       if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ROUND= at %C "
 	  "not allowed in Fortran 95") == FAILURE)
-	return MATCH_ERROR;  */
-      gfc_error ("F2003 Feature: ROUND= specifier at %C not implemented");
-      return MATCH_ERROR;
+	return MATCH_ERROR;
 
       if (dt->round->expr_type == EXPR_CONSTANT)
 	{

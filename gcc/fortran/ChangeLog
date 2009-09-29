@@ -1,3 +1,10 @@
+2009-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/35862
+	* io.c (format_token): Add enumerators for rounding format specifiers.
+	(format_lex): Tokenize the rounding format specifiers.
+	(gfc_match_open): Enable rounding modes in OPEN statement.
+
 2009-09-28  Richard Henderson  <rth@redhat.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Update call to
