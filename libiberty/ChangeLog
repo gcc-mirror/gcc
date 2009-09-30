@@ -1,3 +1,14 @@
+2009-09-29  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in: Enable demangle target.
+	* cp-demangle.c (d_lambda, d_unnamed_type, d_make_default_arg): New.
+	(d_name, d_prefix, d_unqualified_name, d_local_name): Handle lambdas.
+	(d_parmlist): Factor out from d_bare_function_type.
+	(d_compact_number): Factor out from d_template_param and d_expression.
+	(d_append_num): Factor out from d_print_comp.
+	(d_print_comp, d_print_mod_list): Handle lambdas.
+	* testsuite/demangle-expected: Add lambda tests.
+
 2009-09-23  Matthew Gingell  <gingell@adacore.com>
 
 	* cplus-dem.c (ada_demangle): Ensure demangled is freed.

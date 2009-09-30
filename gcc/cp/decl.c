@@ -4921,7 +4921,8 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
 	 looking through the outermost braces; A a2 = { a1 }; is not a
 	 valid aggregate initialization.  */
       && !first_initializer_p
-      && can_convert_arg (type, TREE_TYPE (init), init, LOOKUP_NORMAL))
+      && (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (init))
+	  || can_convert_arg (type, TREE_TYPE (init), init, LOOKUP_NORMAL)))
     {
       d->cur++;
       return init;
@@ -6622,6 +6623,7 @@ grokfndecl (tree ctype,
     {
     case sfk_constructor:
     case sfk_copy_constructor:
+    case sfk_move_constructor:
       DECL_CONSTRUCTOR_P (decl) = 1;
       break;
     case sfk_destructor:
@@ -12687,6 +12689,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case STATIC_ASSERT:		return TS_CP_STATIC_ASSERT;
     case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
     case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
+    case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
     default:			return TS_CP_GENERIC;
     }
 }

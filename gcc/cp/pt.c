@@ -300,7 +300,7 @@ get_template_info (const_tree t)
   if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
     tinfo = DECL_TEMPLATE_INFO (t);
 
-  if (!tinfo && TREE_CODE (t) == TYPE_DECL)
+  if (!tinfo && DECL_IMPLICIT_TYPEDEF_P (t))
     t = TREE_TYPE (t);
 
   if (TAGGED_TYPE_P (t))
@@ -6230,6 +6230,7 @@ lookup_template_class (tree d1,
 
       if (!is_partial_instantiation
 	  && !PRIMARY_TEMPLATE_P (gen_tmpl)
+	  && !LAMBDA_TYPE_P (TREE_TYPE (gen_tmpl))
 	  && TREE_CODE (CP_DECL_CONTEXT (gen_tmpl)) == NAMESPACE_DECL)
 	{
 	  found = xref_tag_from_type (TREE_TYPE (gen_tmpl),
@@ -9162,6 +9163,22 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_TEMPLATE_INFO (r) = tree_cons (tmpl, argvec, NULL_TREE);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	  }
+	else if (cp_unevaluated_operand)
+	  {
+	    /* We're substituting this var in a decltype outside of its
+	       scope, such as for a lambda return type.  Don't add it to
+	       local_specializations, do perform auto deduction.  */
+	    tree auto_node = type_uses_auto (type);
+	    tree init
+	      = tsubst_expr (DECL_INITIAL (t), args, complain, in_decl,
+			     /*constant_expression_p=*/false);
+
+	    if (auto_node && init && describable_type (init))
+	      {
+		type = do_auto_deduction (type, init, auto_node);
+		TREE_TYPE (r) = type;
+	      }
+	  }
 	else
 	  register_local_specialization (r, t);
 
@@ -10153,9 +10170,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	--cp_unevaluated_operand;
 	--c_inhibit_evaluation_warnings;
 
-	type =
-          finish_decltype_type (type,
-                                DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t));
+	if (DECLTYPE_FOR_LAMBDA_CAPTURE (t))
+	  type = lambda_capture_field_type (type);
+	else if (DECLTYPE_FOR_LAMBDA_RETURN (t))
+	  type = lambda_return_type (type);
+	else
+	  type = finish_decltype_type
+	    (type, DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t));
 	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
 					     | cp_type_quals (type),
@@ -12358,6 +12379,39 @@ tsubst_copy_and_build (tree t,
 	  return DECL_INITIAL (t);
 	}
       return t;
+
+    case LAMBDA_EXPR:
+      {
+	tree r = build_lambda_expr ();
+
+	tree type = tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
+	TREE_TYPE (r) = type;
+	CLASSTYPE_LAMBDA_EXPR (type) = r;
+
+	LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (r)
+	  = LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (t);
+	LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
+	LAMBDA_EXPR_DISCRIMINATOR (r)
+	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
+	LAMBDA_EXPR_CAPTURE_LIST (r)
+	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
+	LAMBDA_EXPR_THIS_CAPTURE (r)
+	  = RECUR (LAMBDA_EXPR_THIS_CAPTURE (t));
+	LAMBDA_EXPR_EXTRA_SCOPE (r)
+	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
+
+	/* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
+	determine_visibility (TYPE_NAME (type));
+	/* Now that we know visibility, instantiate the type so we have a
+	   declaration of the op() for later calls to lambda_function.  */
+	complete_type (type);
+
+	type = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
+	if (type)
+	  apply_lambda_return_type (r, type);
+
+	return build_lambda_object (r);
+      }
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
@@ -15959,10 +16013,11 @@ instantiate_decl (tree d, int defer_ok,
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
 
-  if (!defer_ok)
+  /* Recheck the substitutions to obtain any warning messages
+     about ignoring cv qualifiers.  Don't do this for artificial decls,
+     as it breaks the context-sensitive substitution for lambda op(). */
+  if (!defer_ok && !DECL_ARTIFICIAL (d))
     {
-      /* Recheck the substitutions to obtain any warning messages
-	 about ignoring cv qualifiers.  */
       tree gen = DECL_TEMPLATE_RESULT (gen_tmpl);
       tree type = TREE_TYPE (gen);
 

@@ -456,6 +456,22 @@ build_cplus_new (tree type, tree init)
   return rval;
 }
 
+/* Return a TARGET_EXPR which expresses the direct-initialization of one
+   array from another.  */
+
+tree
+build_array_copy (tree init)
+{
+  tree type = TREE_TYPE (init);
+  tree slot = build_local_temp (type);
+  init = build2 (VEC_INIT_EXPR, type, slot, init);
+  SET_EXPR_LOCATION (init, input_location);
+  init = build_target_expr (slot, init);
+  TARGET_EXPR_IMPLICIT_P (init) = 1;
+
+  return init;
+}
+
 /* Build a TARGET_EXPR using INIT to initialize a new temporary of the
    indicated TYPE.  */
 
@@ -724,6 +740,17 @@ cp_build_reference_type (tree to_type, bool rval)
 
   return t;
 
+}
+
+/* Returns EXPR cast to rvalue reference type, like std::move.  */
+
+tree
+move (tree expr)
+{
+  tree type = TREE_TYPE (expr);
+  gcc_assert (TREE_CODE (type) != REFERENCE_TYPE);
+  type = cp_build_reference_type (type, /*rval*/true);
+  return build_static_cast (type, expr, tf_warning_or_error);
 }
 
 /* Used by the C++ front end to build qualified array types.  However,
@@ -1557,6 +1584,8 @@ no_linkage_check (tree t, bool relaxed_p)
       /* Only treat anonymous types as having no linkage if they're at
 	 namespace scope.  This doesn't have a core issue number yet.  */
       if (TYPE_ANONYMOUS_P (t) && TYPE_NAMESPACE_SCOPE_P (t))
+	return t;
+      if (no_linkage_lambda_type_p (t))
 	return t;
 
       r = CP_TYPE_CONTEXT (t);
@@ -2759,6 +2788,8 @@ special_function_p (const_tree decl)
      DECL_LANG_SPECIFIC.  */
   if (DECL_COPY_CONSTRUCTOR_P (decl))
     return sfk_copy_constructor;
+  if (DECL_MOVE_CONSTRUCTOR_P (decl))
+    return sfk_move_constructor;
   if (DECL_CONSTRUCTOR_P (decl))
     return sfk_constructor;
   if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)

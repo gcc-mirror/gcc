@@ -77,6 +77,8 @@ framework extensions, you must include this file before toplev.h, not after.
       TYPE_REF_IS_RVALUE (in REFERENCE_TYPE)
       ATTR_IS_DEPENDENT (in the TREE_LIST for an attribute)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
+      LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
+      DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -87,11 +89,14 @@ framework extensions, you must include this file before toplev.h, not after.
       TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
       STMT_IS_FULL_EXPR_P (in _STMT)
       TARGET_EXPR_LIST_INIT_P (in TARGET_EXPR)
+      LAMBDA_EXPR_MUTABLE_P (in LAMBDA_EXPR)
+      DECLTYPE_FOR_LAMBDA_RETURN (in DECLTYPE_TYPE)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
       STATEMENT_LIST_TRY_BLOCK (in STATEMENT_LIST)
       TYPENAME_IS_RESOLVING_P (in TYPE_NAME_TYPE)
+      LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P (in LAMBDA_EXPR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -517,6 +522,81 @@ struct GTY (()) tree_trait_expr {
   enum cp_trait_kind kind;
 };
 
+/* Based off of TYPE_ANONYMOUS_P.  */
+#define LAMBDA_TYPE_P(NODE) \
+  (CLASS_TYPE_P (NODE) && LAMBDANAME_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+
+/* Test if FUNCTION_DECL is a lambda function.  */
+#define LAMBDA_FUNCTION_P(FNDECL) \
+  (DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR \
+   && LAMBDA_TYPE_P (CP_DECL_CONTEXT (FNDECL)))
+
+enum cp_lambda_default_capture_mode_type {
+  CPLD_NONE,
+  CPLD_COPY,
+  CPLD_REFERENCE
+};
+
+/* The method of default capture, if any.  */
+#define LAMBDA_EXPR_DEFAULT_CAPTURE_MODE(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->default_capture_mode)
+
+/* The capture-list, including `this'.  Each capture is stored as a FIELD_DECL
+ * so that the name, type, and field are all together, whether or not it has
+ * been added to the lambda's class type.
+   TREE_LIST:
+     TREE_PURPOSE: The FIELD_DECL for this capture.
+     TREE_VALUE: The initializer. This is part of a GNU extension.  */
+#define LAMBDA_EXPR_CAPTURE_LIST(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->capture_list)
+
+/* The node in the capture-list that holds the 'this' capture.  */
+#define LAMBDA_EXPR_THIS_CAPTURE(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->this_capture)
+
+/* Predicate tracking whether `this' is in the effective capture set.  */
+#define LAMBDA_EXPR_CAPTURES_THIS_P(NODE) \
+  LAMBDA_EXPR_THIS_CAPTURE(NODE)
+
+/* Predicate tracking whether the lambda was declared 'mutable'.  */
+#define LAMBDA_EXPR_MUTABLE_P(NODE) \
+  TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True iff we should try to deduce the lambda return type from any return
+   statement.  */
+#define LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P(NODE) \
+  TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
+
+/* The return type in the expression.
+ * NULL_TREE indicates that none was specified.  */
+#define LAMBDA_EXPR_RETURN_TYPE(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->return_type)
+
+/* The source location of the lambda.  */
+#define LAMBDA_EXPR_LOCATION(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
+
+/* The mangling scope for the lambda: FUNCTION_DECL, PARM_DECL, VAR_DECL,
+   FIELD_DECL or NULL_TREE.  If this is NULL_TREE, we have no linkage.  */
+#define LAMBDA_EXPR_EXTRA_SCOPE(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->extra_scope)
+
+/* If EXTRA_SCOPE, this is the number of the lambda within that scope.  */
+#define LAMBDA_EXPR_DISCRIMINATOR(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->discriminator)
+
+struct GTY (()) tree_lambda_expr
+{
+  struct tree_common common;
+  location_t locus;
+  enum cp_lambda_default_capture_mode_type default_capture_mode;
+  tree capture_list;
+  tree this_capture;
+  tree return_type;
+  tree extra_scope;
+  int discriminator;
+};
+
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
@@ -530,6 +610,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_STATIC_ASSERT,
   TS_CP_ARGUMENT_PACK_SELECT,
   TS_CP_TRAIT_EXPR,
+  TS_CP_LAMBDA_EXPR,
   LAST_TS_CP_ENUM
 };
 
@@ -550,6 +631,8 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
     argument_pack_select;
   struct tree_trait_expr GTY ((tag ("TS_CP_TRAIT_EXPR")))
     trait_expression;
+  struct tree_lambda_expr GTY ((tag ("TS_CP_LAMBDA_EXPR")))
+    lambda_expression;
 };
 
 
@@ -1127,6 +1210,7 @@ struct GTY(()) lang_type_class {
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
+  unsigned lazy_move_ctor : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1135,7 +1219,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 9;
+  unsigned dummy : 8;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -1159,6 +1243,8 @@ struct GTY(()) lang_type_class {
      to resort it if pointers get rearranged.  */
   struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields")))
     sorted_fields;
+  /* FIXME reuse another field?  */
+  tree lambda_expr;
 };
 
 struct GTY(()) lang_type_ptrmem {
@@ -1220,6 +1306,11 @@ struct GTY(()) lang_type {
    but that it has not yet been declared.  */
 #define CLASSTYPE_LAZY_COPY_CTOR(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->lazy_copy_ctor)
+
+/* Nonzero means that NODE (a class type) has a move constructor --
+   but that it has not yet been declared.  */
+#define CLASSTYPE_LAZY_MOVE_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_move_ctor)
 
 /* Nonzero means that NODE (a class type) has an assignment operator
    -- but that it has not yet been declared.  */
@@ -1425,6 +1516,13 @@ struct GTY(()) lang_type {
 /* A list of the classes which grant friendship to this class.  */
 #define CLASSTYPE_BEFRIENDING_CLASSES(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->befriending_classes)
+
+/* The associated LAMBDA_EXPR that made this class.  */
+#define CLASSTYPE_LAMBDA_EXPR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lambda_expr)
+/* The extra mangling scope for this closure type.  */
+#define LAMBDA_TYPE_EXTRA_SCOPE(NODE) \
+  (LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR (NODE)))
 
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) \
@@ -2625,6 +2723,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   for ((arg) = first_aggr_init_expr_arg ((call), &(iter)); (arg);	\
        (arg) = next_aggr_init_expr_arg (&(iter)))
 
+/* VEC_INIT_EXPR accessors.  */
+#define VEC_INIT_EXPR_SLOT(NODE) TREE_OPERAND (NODE, 0)
+#define VEC_INIT_EXPR_INIT(NODE) TREE_OPERAND (NODE, 1)
+
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
    type is really a template type, as opposed to an instantiation or
@@ -3057,6 +3159,14 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    parsed as a full expression.  */
 #define DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P(NODE) \
   (DECLTYPE_TYPE_CHECK (NODE))->type.string_flag
+
+/* These flags indicate that we want different semantics from normal
+   decltype: lambda capture just drops references, lambda return also does
+   type decay.  */
+#define DECLTYPE_FOR_LAMBDA_CAPTURE(NODE) \
+  TREE_LANG_FLAG_0 (DECLTYPE_TYPE_CHECK (NODE))
+#define DECLTYPE_FOR_LAMBDA_RETURN(NODE) \
+  TREE_LANG_FLAG_1 (DECLTYPE_TYPE_CHECK (NODE))
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  This can also be set for an
@@ -3570,6 +3680,7 @@ typedef enum special_function_kind {
 			      special_function_p.  */
   sfk_constructor,	   /* A constructor.  */
   sfk_copy_constructor,    /* A copy constructor.  */
+  sfk_move_constructor,    /* A move constructor.  */
   sfk_assignment_operator, /* An assignment operator.  */
   sfk_destructor,	   /* A destructor.  */
   sfk_complete_destructor, /* A destructor for complete objects.  */
@@ -3777,6 +3888,13 @@ extern GTY(()) VEC(tree,gc) *local_classes;
 #define VTBL_PTR_TYPE		"__vtbl_ptr_type"
 #define VTABLE_DELTA_NAME	"__delta"
 #define VTABLE_PFN_NAME		"__pfn"
+
+#define LAMBDANAME_PREFIX "__lambda"
+#define LAMBDANAME_FORMAT LAMBDANAME_PREFIX "%d"
+#define LAMBDANAME_P(ID_NODE) \
+  (!strncmp (IDENTIFIER_POINTER (ID_NODE), \
+             LAMBDANAME_PREFIX, \
+	     sizeof (LAMBDANAME_PREFIX) - 1))
 
 #if !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL)
 
@@ -4377,6 +4495,7 @@ enum cp_tree_node_structure_enum cp_tree_node_structure
 extern void finish_scope			(void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
+extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
@@ -4897,6 +5016,16 @@ extern void finish_static_assert                (tree, tree, location_t,
 extern tree describable_type			(tree);
 extern tree finish_decltype_type                (tree, bool);
 extern tree finish_trait_expr			(enum cp_trait_kind, tree, tree);
+extern tree build_lambda_expr                   (void);
+extern tree build_lambda_object			(tree);
+extern tree begin_lambda_type                   (tree);
+extern tree lambda_capture_field_type		(tree);
+extern tree lambda_return_type			(tree);
+extern tree lambda_function			(tree);
+extern void apply_lambda_return_type            (tree, tree);
+extern tree add_capture                         (tree, tree, tree, bool);
+extern tree add_default_capture                 (tree, tree, tree);
+extern tree lambda_expr_this_capture            (tree);
 
 /* in tree.c */
 void cp_free_lang_data 				(tree t);
@@ -4934,6 +5063,7 @@ extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree build_cplus_array_type		(tree, tree);
 extern tree build_array_of_n_type		(tree, int);
+extern tree build_array_copy			(tree);
 extern tree hash_tree_cons			(tree, tree, tree);
 extern tree hash_tree_chain			(tree, tree);
 extern tree build_qualified_name		(tree, tree, tree, bool);
@@ -4965,6 +5095,7 @@ extern const struct attribute_spec cxx_attribute_table[];
 extern tree make_ptrmem_cst			(tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_reference_type		(tree, bool);
+extern tree move				(tree);
 extern tree cp_build_qualified_type_real	(tree, int, tsubst_flags_t);
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
@@ -5156,6 +5287,9 @@ extern tree cxx_omp_clause_assign_op		(tree, tree, tree);
 extern tree cxx_omp_clause_dtor			(tree, tree);
 extern void cxx_omp_finish_clause		(tree);
 extern bool cxx_omp_privatize_by_reference	(const_tree);
+
+/* in parser.c */
+extern bool no_linkage_lambda_type_p		(tree);
 
 /* -- end of C++ */
 

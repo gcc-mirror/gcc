@@ -3885,11 +3885,11 @@ java resource java/util/iso4217.properties
 # decltype/param placeholder test
 --format=gnu-v3
 _Z3addIidEDTplfp_fp0_ET_T0_
-decltype (parm#1+parm#2) add<int, double>(int, double)
+decltype ({parm#1}+{parm#2}) add<int, double>(int, double)
 # decltype/fn call test
 --format=gnu-v3
 _Z4add3IidEDTclL_Z1gEfp_fp0_EET_T0_
-decltype (g(parm#1, parm#2)) add3<int, double>(int, double)
+decltype (g({parm#1}, {parm#2})) add3<int, double>(int, double)
 # new (2008) built in types test
 --format=gnu-v3
 _Z1fDfDdDeDhDsDi
@@ -3901,12 +3901,28 @@ void f<int*, float*, double*>(int*, float*, double*)
 # '.' test
 --format=gnu-v3
 _Z1hI1AIiEdEDTcldtfp_1gIT0_EEET_S2_
-decltype ((parm#1.(g<double>))()) h<A<int>, double>(A<int>, double)
+decltype (({parm#1}.(g<double>))()) h<A<int>, double>(A<int>, double)
 # test for typed function in decltype
 --format=gnu-v3
 _ZN1AIiE1jIiEEDTplfp_clL_Z1xvEEET_
-decltype (parm#1+((x())())) A<int>::j<int>(int)
+decltype ({parm#1}+((x())())) A<int>::j<int>(int)
 # test for expansion of function parameter pack
 --format=gnu-v3
 _Z1gIIidEEDTclL_Z1fEspplfp_Li1EEEDpT_
-decltype (f((parm#1+(1))...)) g<int, double>(int, double)
+decltype (f(({parm#1}+(1))...)) g<int, double>(int, double)
+# lambda tests
+--format=gnu-v3
+_ZZ1giENKUlvE_clEv
+g(int)::{lambda()#1}::operator()() const
+--format=gnu-v3
+_Z4algoIZ1giEUlvE0_EiT_
+int algo<g(int)::{lambda()#2}>(g(int)::{lambda()#2})
+--format=gnu-v3
+_ZZN1S1fEiiEd0_NKUlvE0_clEv
+S::f(int, int)::{default arg#2}::{lambda()#2}::operator()() const
+--format=gnu-v3
+_ZNK1SIiE1xMUlvE1_clEv
+S<int>::x::{lambda()#3}::operator()() const
+--format=gnu-v3
+_Z1fN1SUt_E
+f(S::{unnamed type#1})

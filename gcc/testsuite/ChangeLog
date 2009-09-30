@@ -1,3 +1,46 @@
+2009-09-29  John Freeman  <jfreeman08@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-array.C: New.
+	* g++.dg/cpp0x/lambda/lambda-capture-const-ref.C: New.
+	* g++.dg/cpp0x/lambda/lambda-capture-const-ref-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-const.C: New.
+	* g++.dg/cpp0x/lambda/lambda-copy-default-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-copy-default.C: New.
+	* g++.dg/cpp0x/lambda/lambda-copy-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-copy.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ctor-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ctors.C: New.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext-neg2.C: New.
+	* g++.dg/cpp0x/lambda/lambda-deduce-ext.C: New.
+	* g++.dg/cpp0x/lambda/lambda-deduce-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-deduce.C: New.
+	* g++.dg/cpp0x/lambda/lambda-defarg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-eh.C: New.
+	* g++.dg/cpp0x/lambda/lambda-errloc.C: New.
+	* g++.dg/cpp0x/lambda/lambda-field-names.C: New.
+	* g++.dg/cpp0x/lambda/lambda-in-class-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-in-class.C: New.
+	* g++.dg/cpp0x/lambda/lambda-lookup-neg.C: New.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: New.
+	* g++.dg/cpp0x/lambda/lambda-mixed.C: New.
+	* g++.dg/cpp0x/lambda/lambda-mutable.C: New.
+	* g++.dg/cpp0x/lambda/lambda-nested.C: New.
+	* g++.dg/cpp0x/lambda/lambda-non-const.C: New.
+	* g++.dg/cpp0x/lambda/lambda-nop.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ns-scope.C: New.
+	* g++.dg/cpp0x/lambda/lambda-pass.C: New.
+	* g++.dg/cpp0x/lambda/lambda-recursive.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ref-default.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ref.C: New.
+	* g++.dg/cpp0x/lambda/lambda-std-function.C: New.
+	* g++.dg/cpp0x/lambda/lambda-template.C: New.
+	* g++.dg/cpp0x/lambda/lambda-this.C: New.
+	* g++.dg/cpp0x/lambda/lambda-type.C: New.
+	* g++.dg/cpp0x/lambda/lambda-use.C: New.
+	* lib/prune.exp: Accept "In lambda function".
+
 2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* gcc.target/i386/fma4-check.h

@@ -81,6 +81,11 @@ DEFTREECODE (TYPE_EXPR, "type_expr", tcc_expression, 1)
    the remaining operands are the arguments to the initialization function.  */
 DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", tcc_vl_exp, 3)
 
+/* Initialization of an array from another array, expressed at a high level
+   so that it works with TARGET_EXPR.  Operand 0 is the target, operand 1
+   is the initializer.  */
+DEFTREECODE (VEC_INIT_EXPR, "vec_init_expr", tcc_expression, 2)
+
 /* A throw expression.  operand 0 is the expression, if there was one,
    else it is NULL_TREE.  */
 DEFTREECODE (THROW_EXPR, "throw_expr", tcc_expression, 1)
@@ -416,11 +421,22 @@ DEFTREECODE (ARGUMENT_PACK_SELECT, "argument_pack_select", tcc_exceptional, 0)
 /* Represents a trait expression during template expansion.  */
 DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
 
+/* A lambda expression.  This is a C++0x extension.
+   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE is an enum for the default, which may be
+   none.
+   LAMBDA_EXPR_CAPTURE_LIST holds the capture-list, including `this'.
+   LAMBDA_EXPR_THIS_CAPTURE goes straight to the capture of `this', if it exists.
+   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.
+   LAMBDA_EXPR_RETURN_TYPE holds the return type, if it was specified.  */
+DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
+
 /* The declared type of an expression.  This is a C++0x extension.
    DECLTYPE_TYPE_EXPR is the expression whose type we are computing.
    DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P states whether the
    expression was parsed as an id-expression or a member access
-   expression. When false, it was parsed as a full expression.  */
+   expression. When false, it was parsed as a full expression.
+   DECLTYPE_FOR_LAMBDA_CAPTURE is set if we want lambda capture semantics.
+   DECLTYPE_FOR_LAMBDA_RETURN is set if we want lambda return deduction.  */
 DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
 
 /*

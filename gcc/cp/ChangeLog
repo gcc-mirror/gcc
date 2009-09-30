@@ -1,3 +1,94 @@
+2009-09-29  John Freeman  <jfreeman08@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	Add support for lambda-expressions as per N2927.
+	* cp-tree.def (VEC_INIT_EXPR, LAMBDA_EXPR): New.
+	* cp-tree.h (LAMBDA_TYPE_P, LAMBDA_FUNCTION_P): New.
+	(LAMBDA_EXPR_DEFAULT_CAPTURE_MODE): New.
+	(LAMBDA_EXPR_DEFAULT_CAPTURE_LIST): New.
+	(LAMBDA_EXPR_THIS_CAPTURE, LAMBDA_EXPR_CAPTURES_THIS_P): New.
+	(LAMBDA_EXPR_MUTABLE_P, LAMBDA_EXPR_DEDUCE_RETURN_TYPE_P): New.
+	(LAMBDA_EXPR_RETURN_TYPE, LAMBDA_EXPR_LOCATION): New.
+	(LAMBDA_EXPR_EXTRA_SCOPE, LAMBDA_EXPR_DISCRIMINATOR): New.
+	(struct tree_lambda_expr): New.
+	(union lang_tree_node): Add lambda_expression.
+	(struct lang_type_class): Add lazy_move_ctor flag, lambda_expr field.
+	(CLASSTYPE_LAZY_MOVE_CTOR, CLASSTYPE_LAMBDA_EXPR): New.
+	(LAMBDA_TYPE_EXTRA_SCOPE, VEC_INIT_EXPR_SLOT): New.
+	(VEC_INIT_EXPR_INIT, DECLTYPE_FOR_LAMBDA_CAPTURE): New.
+	(DECLTYPE_FOR_LAMBDA_RETURN): New.
+	(enum special_function_kind): Add sfk_move_constructor.
+	(LAMBDANAME_PREFIX, LAMBDANAME_FORMAT, LAMBDANAME_P): New.
+	* parser.c (cp_parser_lambda_expression, cp_parser_lambda_introducer)
+	(cp_parser_lambda_declarator_opt, cp_parser_lambda_body): New.
+	(start_lambda_scope, record_lambda_scope, finish_lambda_scope): New.
+	(no_linkage_lambda_type_p): New.
+	(cp_parser_primary_expression): Recognize lambda expression.
+	(cp_parser_init_declarator): Note lambda scope.
+	(cp_parser_function_definition_after_declarator): Likewise.
+	(cp_parser_late_parsing_default_args): Likewise.
+	(cp_parser_skip_to_closing_parenthesis): Skip to end of lambda capture
+	lists, too.
+	(cp_parser_parameter_declaration): Don't defer lambda default args.
+	* semantics.c (finish_non_static_data_member, finish_id_expression):
+	Handle default capture for lambda expressions.
+	(finish_this_expr): Handle 'this' keyword inside of lambda expressions.
+	(outer_automatic_var_p): New.
+	(finish_decltype_type): Handle decltypes within lambda expressions.
+	(classtype_has_nothrow_assign_or_copy_p): Synthesized move constructor.
+	(build_lambda_expr, build_lambda_object, begin_lambda_type)
+	(lambda_return_type, lambda_capture_field_type, apply_lambda_return_type)
+	(capture_decltype, add_capture, add_default_capture)
+	(lambda_expr_this_capture): New.
+	* mangle.c (write_unnamed_type_name): New. Incomplete.
+	(write_closure_type_name): New.
+	(write_unqualified_name): Recognize unnamed, closure types.
+	(write_type): Do not write decltypes from lambda expressions.
+	(decl_mangling_context): New.
+	(write_name): Use it.  Handle PARM_DECL scope.
+	(write_prefix): Likewise.  Handle VAR_DECL/FIELD_DECL scope.
+	(write_compact_number): Factor out from...
+	(write_expression, write_template_param): ...here.
+	(discriminator_for_local_entity): Recognize lambdas.
+	(write_local_name): Handle PARM_DECL scope.
+	* typeck.c (structural_comptypes): Compare decltypes from lambda
+	expressions.
+	(check_return_expr): Deduce lambda return type from multiple return
+	statements.
+	* class.c (add_implicitly_declared_members): Add lazy move constructor
+	for lambda types.
+	(check_bases_and_members): Delete default constructor and assignment
+	operator for lambda types.
+	(maybe_note_name_used_in_class): Do not confuse lambda expression with
+	defining a class.
+	* decl.c (reshape_init_r): Array copy.
+	(grokfndecl): Synthesized move constructor.
+	(cp_tree_node_structure): Lambda expression.
+	* method.c (use_thunk): Synthesized move constructor.
+	(do_build_copy_constructor): Likewise.
+	(locate_copy): Likewise.
+	(implicitly_declare_fn): Likewise.
+	* cp-objcp-common.c (cp_tree_size): Handle LAMBDA_EXPR.
+	* error.c (dump_aggr_type): Recognize lambda type.
+	(dump_function_decl): Recognize lambda function.
+	(function_category): Likewise.
+	(dump_function_name): Hide lambda name.
+	* tree.c (build_array_copy, move): New.
+	(special_function_p): Synthesized move constructor.
+	(no_linkage_check): Handle lambdas.
+	* search.c (lookup_fnfields_1): Synthesized move constructor.
+	* cp-gimplify.c (cp_gimplify_init_expr, cp_gimplify_expr):
+	Handle VEC_INIT_EXPR.
+	* typeck2.c (digest_init_r): Array copy.
+	* pt.c (get_template_info): Don't touch typedefs.
+	(instantiate_decl): Don't resubstitute artificial decls.
+	(tsubst_decl, tsubst, tsubst_copy_and_build): Handle lambdas.
+	(lookup_template_class): Don't fall back on name lookup.
+	* name-lookup.c (make_lambda_name): New.
+	(pushdecl_class_level): Handle default capture for lambda expressions.
+	(qualify_lookup): Handle decltypes within lambda expressions.
+	(pushtag): Handle ts_within_enclosing_non_class in function scope.
+
 2009-09-28  Janis Johnson  <janis187@us.ibm.com>
 
 	* mangle.c (write_builtin_type): Support decimal float types.
