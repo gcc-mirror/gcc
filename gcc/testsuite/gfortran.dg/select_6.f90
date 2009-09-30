@@ -5,6 +5,6 @@
         integer(kind=1) :: i
         real :: r(3)
         select case (i)
-        case (129) r(4) = 0 { dg-error "Expected the name" }
+        case (129) r(4) = 0  ! { dg-error "Syntax error in CASE specification" }
         end select
         end

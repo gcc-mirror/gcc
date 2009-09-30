@@ -5873,7 +5873,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 
-	  if (c->attr.allocatable)
+	  if (c->attr.allocatable && c->attr.dimension)
 	    {
 	      comp = fold_build3 (COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
@@ -5885,7 +5885,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	case NULLIFY_ALLOC_COMP:
 	  if (c->attr.pointer)
 	    continue;
-	  else if (c->attr.allocatable)
+	  else if (c->attr.allocatable && c->attr.dimension)
 	    {
 	      comp = fold_build3 (COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
@@ -6072,7 +6072,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       gfc_add_expr_to_block (&fnblock, tmp);
     }
 
-  if (sym->attr.allocatable && !sym->attr.save && !sym->attr.result)
+  if (sym->attr.allocatable && sym->attr.dimension
+      && !sym->attr.save && !sym->attr.result)
     {
       tmp = gfc_trans_dealloc_allocated (sym->backend_decl);
       gfc_add_expr_to_block (&fnblock, tmp);

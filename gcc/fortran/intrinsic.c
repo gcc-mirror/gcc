@@ -1599,6 +1599,12 @@ add_functions (void)
 
   make_generic ("exponent", GFC_ISYM_EXPONENT, GFC_STD_F95);
 
+  add_sym_2 ("extends_type_of", GFC_ISYM_EXTENDS_TYPE_OF, CLASS_INQUIRY,
+	     ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,
+	     gfc_check_same_type_as, NULL, NULL,
+	     a, BT_UNKNOWN, 0, REQUIRED,
+	     mo, BT_UNKNOWN, 0, REQUIRED);
+
   add_sym_0 ("fdate",  GFC_ISYM_FDATE, NO_CLASS, ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_GNU,
 	     NULL, NULL, gfc_resolve_fdate);
 
@@ -2306,6 +2312,12 @@ add_functions (void)
 	     x, BT_REAL, dr, REQUIRED);
 
   make_generic ("rrspacing", GFC_ISYM_RRSPACING, GFC_STD_F95);
+
+  add_sym_2 ("same_type_as", GFC_ISYM_SAME_TYPE_AS, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2003,
+	     gfc_check_same_type_as, NULL, NULL,
+	     a, BT_UNKNOWN, 0, REQUIRED,
+	     b, BT_UNKNOWN, 0, REQUIRED);
 
   add_sym_2 ("scale", GFC_ISYM_SCALE, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_scale, gfc_simplify_scale, gfc_resolve_scale,

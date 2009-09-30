@@ -1,3 +1,188 @@
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* check.c (gfc_check_same_type_as): New function for checking
+	SAME_TYPE_AS and EXTENDS_TYPE_OF.
+	* decl.c (encapsulate_class_symbol): Set ABSTRACT attribute for class
+	container, if the contained type has it. Add an initializer for the
+	class container.
+	(add_init_expr_to_sym): Handle BT_CLASS.
+	(vindex_counter): New counter for setting vindices.
+	(gfc_match_derived_decl): Set vindex for all derived types, not only
+	those which are being extended.
+	* expr.c (gfc_check_assign_symbol): Handle NULL initialization of class
+	pointers.
+	* gfortran.h (gfc_isym_id): New values GFC_ISYM_SAME_TYPE_AS and
+	GFC_ISYM_EXTENDS_TYPE_OF.
+	(gfc_type_is_extensible): New prototype.
+	* intrinsic.h (gfc_check_same_type_as): New prototype.
+	* intrinsic.c (add_functions): Add SAME_TYPE_AS and EXTENDS_TYPE_OF.
+	* primary.c (gfc_expr_attr): Handle CLASS-valued functions.
+	* resolve.c (resolve_structure_cons): Handle BT_CLASS.
+	(type_is_extensible): Make non-static and rename to
+	'gfc_type_is_extensible.
+	(resolve_select_type): Renamed type_is_extensible.
+	(resolve_class_assign): Handle NULL pointers.
+	(resolve_fl_variable_derived): Renamed type_is_extensible.
+	(resolve_fl_derived): Ditto.
+	* trans-expr.c (gfc_trans_subcomponent_assign): Handle NULL
+	initialization of class pointer components.
+	(gfc_conv_structure): Handle BT_CLASS.
+	* trans-intrinsic.c (gfc_conv_same_type_as,gfc_conv_extends_type_of):
+	New functions.
+	(gfc_conv_intrinsic_function): Handle SAME_TYPE_AS and EXTENDS_TYPE_OF.
+
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (type_selector, select_type_tmp): New global variables.
+	* match.c (type_selector, select_type_tmp): New global variables,
+	used for SELECT TYPE statements.
+	(gfc_match_select_type): Better error handling. Remember selector.
+	(gfc_match_type_is): Create temporary variable.
+	* module.c (ab_attribute): New value 'AB_IS_CLASS'.
+	(attr_bits): New string.
+	(mio_symbol_attribute): Handle 'is_class'.
+	* resolve.c (resolve_select_type): Insert pointer assignment statement,
+	to assign temporary to selector.
+	* symbol.c (gfc_get_ha_sym_tree): Replace selector by a temporary
+	in SELECT TYPE statements.
+
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_code_node): Renamed 'alloc_list'.
+	* gfortran.h (gfc_code): Rename 'alloc_list'. Add member 'ts'.
+	(gfc_expr_to_initialize): New prototype.
+	* match.c (alloc_opt_list): Correctly check type compatibility.
+	Renamed 'alloc_list'.
+	(dealloc_opt_list): Renamed 'alloc_list'.
+	* resolve.c (expr_to_initialize): Rename to 'gfc_expr_to_initialize'
+	and make it non-static.
+	(resolve_allocate_expr): Set vindex for CLASS variables correctly.
+	Move initialization code to gfc_trans_allocate. Renamed 'alloc_list'.
+	(resolve_allocate_deallocate): Renamed 'alloc_list'.
+	(check_class_pointer_assign): Rename to 'resolve_class_assign'. Change
+	argument type. Adjust to work with ordinary assignments.
+	(resolve_code): Call 'resolve_class_assign' for ordinary assignments.
+	Renamed 'check_class_pointer_assign'.
+	* st.c (gfc_free_statement): Renamed 'alloc_list'.
+	* trans-stmt.c (gfc_trans_allocate): Renamed 'alloc_list'. Handle
+	size determination and initialization of CLASS variables. Bugfix for
+	ALLOCATE statements with default initialization and SOURCE block.
+	(gfc_trans_deallocate): Renamed 'alloc_list'.
+
+2009-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_procedure_call): Convert a derived
+	type actual to a class object if the formal argument is a
+	class.
+
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40996
+	* decl.c (build_struct): Handle allocatable scalar components.
+	* expr.c (gfc_add_component_ref): Correctly set typespec of expression,
+	after inserting component reference.
+	* match.c (gfc_match_type_is,gfc_match_class_is): Make sure that no
+	variables are being used uninitialized.
+	* primary.c (gfc_match_varspec): Handle CLASS array components.
+	* resolve.c (resolve_select_type): Transform EXEC_SELECT_TYPE to
+	EXEC_SELECT.
+	* trans-array.c (structure_alloc_comps,gfc_trans_deferred_array):
+	Handle allocatable scalar components.
+	* trans-expr.c (gfc_conv_component_ref): Ditto.
+	* trans-types.c (gfc_get_derived_type): Ditto.
+
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* decl.c (encapsulate_class_symbol): Modify names of class container
+	components by prefixing with '$'.
+	(gfc_match_end): Handle COMP_SELECT_TYPE.
+	* expr.c (gfc_add_component_ref): Modify names of class container
+	components by prefixing with '$'.
+	* gfortran.h (gfc_statement): Add ST_SELECT_TYPE, ST_TYPE_IS and
+	ST_CLASS_IS.
+	(gfc_case): New field 'ts'.
+	(gfc_exec_op): Add EXEC_SELECT_TYPE.
+	(gfc_type_is_extension_of): New prototype.
+	* match.h (gfc_match_select_type,gfc_match_type_is,gfc_match_class_is):
+	New prototypes.
+	* match.c (match_derived_type_spec): New function.
+	(match_type_spec): Use 'match_derived_type_spec'.
+	(match_case_eos): Modify error message.
+	(gfc_match_select_type): New function.
+	(gfc_match_case): Modify error message.
+	(gfc_match_type_is): New function.
+	(gfc_match_class_is): Ditto.
+	* parse.h (gfc_compile_state): Add COMP_SELECT_TYPE.
+	* parse.c (decode_statement): Handle SELECT TYPE, TYPE IS and CLASS IS
+	statements.
+	(next_statement): Handle ST_SELECT_TYPE.
+	(gfc_ascii_statement): Handle ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS.
+	(parse_select_type_block): New function.
+	(parse_executable): Handle ST_SELECT_TYPE.
+	* resolve.c (resolve_deallocate_expr): Handle BT_CLASS. Modify names of
+	class container components by prefixing with '$'.
+	(resolve_allocate_expr): Ditto.
+	(resolve_select_type): New function.
+	(gfc_resolve_blocks): Handle EXEC_SELECT_TYPE.
+	(check_class_pointer_assign): Modify names of class container
+	components by prefixing with '$'.
+	(resolve_code): Ditto.
+	* st.c (gfc_free_statement): Ditto.
+	* symbol.c (gfc_type_is_extension_of): New function.
+	(gfc_type_compatible): Use 'gfc_type_is_extension_of', plus a bugfix.
+	* trans.c (gfc_trans_code): Handel EXEC_SELECT_TYPE.
+
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas <pault@gcc.gnu.org> 
+
+	* check.c (gfc_check_move_alloc): Arguments don't have to be arrays.
+	The second argument needs to be type-compatible with the first (not the
+	other way around, which makes a difference for CLASS entities).
+	* decl.c (encapsulate_class_symbol): New function.
+	(build_sym,build_struct): Handle BT_CLASS, call
+	'encapsulate_class_symbol'.
+	(gfc_match_decl_type_spec): Remove warning, use BT_CLASS.
+	(gfc_match_derived_decl): Set vindex;
+	* expr.c (gfc_add_component_ref): New function.
+	(gfc_copy_expr,gfc_check_pointer_assign,gfc_check_assign_symbol):
+	Handle BT_CLASS.
+	* dump-parse-tree.c (show_symbol): Print vindex.
+	* gfortran.h (bt): New basic type BT_CLASS.
+	(symbol_attribute): New field 'is_class'.
+	(gfc_typespec): Remove field 'is_class'.
+	(gfc_symbol): New field 'vindex'.
+	(gfc_get_ultimate_derived_super_type): New prototype.
+	(gfc_add_component_ref): Ditto.
+	* interface.c (gfc_compare_derived_types): Pointer equality check
+	moved here from gfc_compare_types.
+	(gfc_compare_types): Handle BT_CLASS and use
+	gfc_type_compatible.
+	* match.c (gfc_match_allocate,gfc_match_deallocate,gfc_match_call):
+	Handle BT_CLASS.
+	* misc.c (gfc_clear_ts): Removed is_class.
+	(gfc_basic_typename,gfc_typename): Handle BT_CLASS.
+	* module.c (bt_types,mio_typespec): Handle BT_CLASS.
+	(mio_symbol): Handle vindex.
+	* primary.c (gfc_match_varspec,gfc_variable_attr): Handle BT_CLASS.
+	* resolve.c (find_array_spec,check_typebound_baseobject):
+	Handle BT_CLASS.
+	(resolve_ppc_call,resolve_expr_ppc): Don't call 'gfc_is_proc_ptr_comp'
+	inside 'gcc_assert'.
+	(resolve_deallocate_expr,resolve_allocate_expr): Handle BT_CLASS.
+	(check_class_pointer_assign): New function.
+	(resolve_code): Handle BT_CLASS, call check_class_pointer_assign.
+	(resolve_fl_var_and_proc,type_is_extensible,resolve_fl_variable_derived,
+	resolve_fl_variable): Handle BT_CLASS.
+	(check_generic_tbp_ambiguity): Add special case.
+	(resolve_typebound_procedure,resolve_fl_derived): Handle BT_CLASS.
+	* symbol.c (gfc_get_ultimate_derived_super_type): New function.
+	(gfc_type_compatible): Handle BT_CLASS.
+	* trans-expr.c (conv_parent_component_references): Handle CLASS
+	containers.
+	(gfc_conv_initializer): Handle BT_CLASS.
+	* trans-types.c (gfc_typenode_for_spec,gfc_get_derived_type):
+	Handle BT_CLASS.
+
 2009-09-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/39626

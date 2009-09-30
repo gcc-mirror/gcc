@@ -1,8 +1,5 @@
 ! { dg-do compile }
 
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-
 ! Type-bound procedures
 ! Test that the basic syntax for specific bindings is parsed and resolved.
 

@@ -1,8 +1,5 @@
 ! { dg-do compile }
 
-! FIXME: Remove once polymorphic PASS is resolved
-! { dg-options "-w" }
-
 ! PR fortran/37638
 ! If a PASS(arg) is invalid, a call to this routine later would ICE in
 ! resolving.  Check that this also works for GENERIC, in addition to the

@@ -119,6 +119,7 @@ gfc_try gfc_check_real (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_rename (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_repeat (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+gfc_try gfc_check_same_type_as (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_scale (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_scan (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_try gfc_check_second_sub (gfc_expr *);

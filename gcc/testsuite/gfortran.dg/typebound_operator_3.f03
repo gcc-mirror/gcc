@@ -1,6 +1,4 @@
 ! { dg-do run }
-! { dg-options "-w" }
-! FIXME: Remove -w when CLASS is fully implemented.
 
 ! Type-bound procedures
 ! Check they can actually be called and run correctly.

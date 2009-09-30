@@ -3992,7 +3992,7 @@ tree
 gfc_trans_allocate (gfc_code * code)
 {
   gfc_alloc *al;
-  gfc_expr *expr;
+  gfc_expr *expr, *init_e, *rhs;
   gfc_se se;
   tree tmp;
   tree parm;
@@ -4001,7 +4001,7 @@ gfc_trans_allocate (gfc_code * code)
   tree error_label;
   stmtblock_t block;
 
-  if (!code->ext.alloc_list)
+  if (!code->ext.alloc.list)
     return NULL_TREE;
 
   pstat = stat = error_label = tmp = NULL_TREE;
@@ -4020,7 +4020,7 @@ gfc_trans_allocate (gfc_code * code)
       TREE_USED (error_label) = 1;
     }
 
-  for (al = code->ext.alloc_list; al != NULL; al = al->next)
+  for (al = code->ext.alloc.list; al != NULL; al = al->next)
     {
       expr = al->expr;
 
@@ -4034,7 +4034,24 @@ gfc_trans_allocate (gfc_code * code)
       if (!gfc_array_allocate (&se, expr, pstat))
 	{
 	  /* A scalar or derived type.  */
-	  tmp = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
+
+	  /* Determine allocate size.  */
+	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
+	    {
+	      gfc_typespec *ts;
+	      /* TODO: Size must be determined at run time, since it must equal
+		 the size of the dynamic type of SOURCE, not the declared type.  */
+	      gfc_warning ("Dynamic size allocation at %L not supported yet, "
+			   "using size of declared type", &code->loc);
+	      ts = &code->expr3->ts.u.derived->components->ts;
+	      tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (ts));
+	    }
+	  else if (code->expr3 && code->expr3->ts.type != BT_CLASS)
+	    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr3->ts));
+	  else if (code->ext.alloc.ts.type != BT_UNKNOWN)
+	    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
+	  else
+	    tmp = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
 	  if (expr->ts.type == BT_CHARACTER && tmp == NULL_TREE)
 	    tmp = se.string_length;
@@ -4065,6 +4082,23 @@ gfc_trans_allocate (gfc_code * code)
 
       tmp = gfc_finish_block (&se.pre);
       gfc_add_expr_to_block (&block, tmp);
+
+      /* Initialization via SOURCE block.  */
+      if (code->expr3)
+	{
+	  rhs = gfc_copy_expr (code->expr3);
+	  if (rhs->ts.type == BT_CLASS)
+	    gfc_add_component_ref (rhs, "$data");
+	  tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr), rhs, false);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      /* Add default initializer for those derived types that need them.  */
+      else if (expr->ts.type == BT_DERIVED && (init_e = gfc_default_initializer (&expr->ts)))
+	{
+	  tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr), init_e, true);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+
     }
 
   /* STAT block.  */
@@ -4111,44 +4145,6 @@ gfc_trans_allocate (gfc_code * code)
       gfc_add_expr_to_block (&block, tmp);
     }
 
-  /* SOURCE block.  Note, by C631, we know that code->ext.alloc_list
-     has a single entity.  */
-  if (code->expr3)
-    {
-      gfc_ref *ref;
-      gfc_array_ref *ar;
-      int n;
-
-      /* If there is a terminating array reference, this is converted
-	 to a full array, so that gfc_trans_assignment can scalarize the
-	 expression for the source.  */
-      for (ref = code->ext.alloc_list->expr->ref; ref; ref = ref->next)
-	{
-	  if (ref->next == NULL)
-	    {
-	      if (ref->type != REF_ARRAY)
-		break;
-
-	      ref->u.ar.type = AR_FULL;
-	      ar = &ref->u.ar;
-	      ar->dimen = ar->as->rank;
-	      for (n = 0; n < ar->dimen; n++)
-		{
-		  ar->dimen_type[n] = DIMEN_RANGE;
-		  gfc_free_expr (ar->start[n]);
-		  gfc_free_expr (ar->end[n]);
-		  gfc_free_expr (ar->stride[n]);
-		  ar->start[n] = NULL;
-		  ar->end[n] = NULL;
-		  ar->stride[n] = NULL;
-		}
-	    }
-	}
-
-      tmp = gfc_trans_assignment (code->ext.alloc_list->expr, code->expr3, false);
-      gfc_add_expr_to_block (&block, tmp);
-    }
-
   return gfc_finish_block (&block);
 }
 
@@ -4186,7 +4182,7 @@ gfc_trans_deallocate (gfc_code *code)
       gfc_add_modify (&block, astat, build_int_cst (TREE_TYPE (astat), 0));
     }
 
-  for (al = code->ext.alloc_list; al != NULL; al = al->next)
+  for (al = code->ext.alloc.list; al != NULL; al = al->next)
     {
       expr = al->expr;
       gcc_assert (expr->expr_type == EXPR_VARIABLE);

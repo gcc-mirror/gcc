@@ -4700,6 +4700,56 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 }
 
 
+/* Generate code for the SAME_TYPE_AS intrinsic.
+   Generate inline code that directly checks the vindices.  */
+
+static void
+gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
+{
+  gfc_expr *a, *b;
+  gfc_se se1, se2;
+  tree tmp;
+
+  gfc_init_se (&se1, NULL);
+  gfc_init_se (&se2, NULL);
+
+  a = expr->value.function.actual->expr;
+  b = expr->value.function.actual->next->expr;
+
+  if (a->ts.type == BT_CLASS)
+    gfc_add_component_ref (a, "$vindex");
+  else if (a->ts.type == BT_DERIVED)
+    a = gfc_int_expr (a->ts.u.derived->vindex);
+
+  if (b->ts.type == BT_CLASS)
+    gfc_add_component_ref (b, "$vindex");
+  else if (b->ts.type == BT_DERIVED)
+    b = gfc_int_expr (b->ts.u.derived->vindex);
+
+  gfc_conv_expr (&se1, a);
+  gfc_conv_expr (&se2, b);
+
+  tmp = fold_build2 (EQ_EXPR, boolean_type_node,
+		     se1.expr, fold_convert (TREE_TYPE (se1.expr), se2.expr));
+  se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
+}
+
+
+/* Generate code for the EXTENDS_TYPE_OF intrinsic.  */
+
+static void
+gfc_conv_extends_type_of (gfc_se *se, gfc_expr *expr)
+{
+  gfc_expr *e;
+  /* TODO: Implement EXTENDS_TYPE_OF.  */
+  gfc_error ("Intrinsic EXTENDS_TYPE_OF at %L not yet implemented",
+	     &expr->where);
+  /* Just return 'false' for now.  */
+  e = gfc_logical_expr (false, &expr->where);
+  gfc_conv_expr (se, e);
+}
+
+
 /* Generate code for SELECTED_CHAR_KIND (NAME) intrinsic function.  */
 
 static void
@@ -5106,6 +5156,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_ASSOCIATED:
       gfc_conv_associated(se, expr);
+      break;
+
+    case GFC_ISYM_SAME_TYPE_AS:
+      gfc_conv_same_type_as (se, expr);
+      break;
+
+    case GFC_ISYM_EXTENDS_TYPE_OF:
+      gfc_conv_extends_type_of (se, expr);
       break;
 
     case GFC_ISYM_ABS:

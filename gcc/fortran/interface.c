@@ -360,6 +360,9 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 {
   gfc_component *dt1, *dt2;
 
+  if (derived1 == derived2)
+    return 1;
+
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
      nonnull, then they are equal.  */
@@ -448,13 +451,15 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
   if (ts1->type == BT_VOID || ts2->type == BT_VOID)
     return 1;
    
-  if (ts1->type != ts2->type)
+  if (ts1->type != ts2->type
+      && ((ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
+	  || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
     return 0;
-  if (ts1->type != BT_DERIVED)
+  if (ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
     return (ts1->kind == ts2->kind);
 
   /* Compare derived types.  */
-  if (ts1->u.derived == ts2->u.derived)
+  if (gfc_type_compatible (ts1, ts2))
     return 1;
 
   return gfc_compare_derived_types (ts1->u.derived ,ts2->u.derived);

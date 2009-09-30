@@ -1672,7 +1672,7 @@ typedef enum
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
-  AB_EXTENSION, AB_PROCEDURE, AB_PROC_POINTER
+  AB_EXTENSION, AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER
 }
 ab_attribute;
 
@@ -1713,6 +1713,7 @@ static const mstring attr_bits[] =
     minit ("PROTECTED", AB_PROTECTED),
     minit ("ABSTRACT", AB_ABSTRACT),
     minit ("EXTENSION", AB_EXTENSION),
+    minit ("IS_CLASS", AB_IS_CLASS),
     minit ("PROCEDURE", AB_PROCEDURE),
     minit ("PROC_POINTER", AB_PROC_POINTER),
     minit (NULL, -1)
@@ -1860,6 +1861,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_ZERO_COMP, attr_bits);
       if (attr->extension)
 	MIO_NAME (ab_attribute) (AB_EXTENSION, attr_bits);
+      if (attr->is_class)
+	MIO_NAME (ab_attribute) (AB_IS_CLASS, attr_bits);
       if (attr->procedure)
 	MIO_NAME (ab_attribute) (AB_PROCEDURE, attr_bits);
       if (attr->proc_pointer)
@@ -1985,6 +1988,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_EXTENSION:
 	      attr->extension = 1;
 	      break;
+	    case AB_IS_CLASS:
+	      attr->is_class = 1;
+	      break;
 	    case AB_PROCEDURE:
 	      attr->procedure = 1;
 	      break;
@@ -2004,6 +2010,7 @@ static const mstring bt_types[] = {
     minit ("LOGICAL", BT_LOGICAL),
     minit ("CHARACTER", BT_CHARACTER),
     minit ("DERIVED", BT_DERIVED),
+    minit ("CLASS", BT_CLASS),
     minit ("PROCEDURE", BT_PROCEDURE),
     minit ("UNKNOWN", BT_UNKNOWN),
     minit ("VOID", BT_VOID),
@@ -2054,7 +2061,7 @@ mio_typespec (gfc_typespec *ts)
 
   ts->type = MIO_NAME (bt) (ts->type, bt_types);
 
-  if (ts->type != BT_DERIVED)
+  if (ts->type != BT_DERIVED && ts->type != BT_CLASS)
     mio_integer (&ts->kind);
   else
     mio_symbol_ref (&ts->u.derived);
@@ -3566,7 +3573,10 @@ mio_symbol (gfc_symbol *sym)
     }
   
   mio_integer (&(sym->intmod_sym_id));
-  
+
+  if (sym->attr.flavor == FL_DERIVED)
+    mio_integer (&(sym->vindex));
+
   mio_rparen ();
 }
 

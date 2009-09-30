@@ -1,8 +1,5 @@
 ! { dg-do run }
 !
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-!
 ! PR 40940: CLASS statement
 !
 ! Contributed by Janus Weil <janus@gcc.gnu.org>

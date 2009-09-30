@@ -1,8 +1,5 @@
 ! { dg-do run }
 !
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-!
 ! PR 39630: [F03] Procedure Pointer Components with PASS
 !
 ! found at http://groups.google.com/group/comp.lang.fortran/browse_thread/thread/4a827e8ced6efb0f/884b9eca6d7e6742

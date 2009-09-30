@@ -1,8 +1,5 @@
 ! { dg-do run }
 !
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-!
 ! PR 39630: [F03] Procedure Pointer Components with PASS
 !
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>
