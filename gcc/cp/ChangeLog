@@ -1,5 +1,9 @@
 2009-09-30  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_lambda_expression): Don't add __ to __this.
+
+2009-09-30  Jason Merrill  <jason@redhat.com>
+
 	* cp-tree.h (LANG_DECL_U2_CHECK): Check LANG_DECL_HAS_MIN.
 
 2009-09-29  John Freeman  <jfreeman08@gmail.com>
