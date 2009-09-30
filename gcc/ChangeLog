@@ -1,3 +1,8 @@
+2009-09-30  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/fixdfdi.h: Add Runtime Library Exception wording to
+	the License text.
+	
 2009-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-transform.c (vectorizable_call): Call
