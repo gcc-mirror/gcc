@@ -1,3 +1,11 @@
+2009-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/install.texi: Linguistic and markup fixes.
+	(Configuration) <--disable-cpp>: Remove description.
+	<--enable-maintainer-mode>: Autotools files are affected, too.
+	<--with-sysroot>: Improve description.
+	(Building): Bump required GNU make version.
+
 2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	* config.gcc (i[34567]86-*-*): Include fma4intrin.h.

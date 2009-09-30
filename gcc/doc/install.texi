@@ -571,8 +571,8 @@ We use @var{srcdir} to refer to the toplevel source directory for
 GCC; we use @var{objdir} to refer to the toplevel build/object directory.
 
 If you obtained the sources via SVN, @var{srcdir} must refer to the top
-@file{gcc} directory, the one where the @file{MAINTAINERS} can be found,
-and not its @file{gcc} subdirectory, otherwise the build will fail.
+@file{gcc} directory, the one where the @file{MAINTAINERS} file can be
+found, and not its @file{gcc} subdirectory, otherwise the build will fail.
 
 If either @var{srcdir} or @var{objdir} is located on an automounted NFS
 file system, the shell's built-in @command{pwd} command will return
@@ -583,7 +583,7 @@ variable to an automounter-aware @command{pwd} command, e.g.,
 phases.
 
 First, we @strong{highly} recommend that GCC be built into a
-separate directory than the sources which does @strong{not} reside
+separate directory from the sources which does @strong{not} reside
 within the source tree.  This is how we generally build GCC; building
 where @var{srcdir} == @var{objdir} should still work, but doesn't
 get extensive testing; building where @var{objdir} is a subdirectory
@@ -652,8 +652,8 @@ The default value refers to the FSF's GCC bug tracker.
 @itemize @bullet
 @item
 GCC has code to correctly determine the correct value for @var{target}
-for nearly all native systems.  Therefore, we highly recommend you not
-provide a configure target when configuring a native compiler.
+for nearly all native systems.  Therefore, we highly recommend you do
+not provide a configure target when configuring a native compiler.
 
 @item
 @var{target} must be specified as @option{--target=@var{target}}
@@ -1213,9 +1213,6 @@ Specify that target
 libraries should be optimized for code space instead of code speed.
 This is the default for the m32r platform.
 
-@item --disable-cpp
-Specify that a user visible @command{cpp} program should not be installed.
-
 @item --with-cpp-install-dir=@var{dirname}
 Specify that the user visible @command{cpp} program should be installed
 in @file{@var{prefix}/@var{dirname}/cpp}, in addition to @var{bindir}.
@@ -1233,8 +1230,8 @@ Build GCC using a C++ compiler rather than a C compiler.  This is an
 experimental option which may become the default in a later release.
 
 @item --enable-maintainer-mode
-The build rules that
-regenerate the GCC master message catalog @file{gcc.pot} are normally
+The build rules that regenerate the Autoconf and Automake output files as
+well as the GCC master message catalog @file{gcc.pot} are normally
 disabled.  This is because it can only be rebuilt if the complete source
 tree is present.  If you have changed the sources and want to rebuild the
 catalog, configuring with @option{--enable-maintainer-mode} will enable
@@ -1250,7 +1247,7 @@ this process, you can configure with @option{--disable-bootstrap}.
 @item --enable-bootstrap
 In special cases, you may want to perform a 3-stage build
 even if the target and host triplets are different.
-This could happen when the host can run code compiled for
+This is possible when the host can run code compiled for
 the target (e.g.@: host is i686-linux, target is i486-linux).
 Starting from GCC 4.2, to do this you have to configure explicitly
 with @option{--enable-bootstrap}.
@@ -1622,19 +1619,27 @@ GLIBC 2.11 or above, otherwise disabled.
 
 @subheading Cross-Compiler-Specific Options
 The following options only apply to building cross compilers.
+
 @table @code
 @item --with-sysroot
 @itemx --with-sysroot=@var{dir}
 Tells GCC to consider @var{dir} as the root of a tree that contains a
 (subset of) the root filesystem of the target operating system.
 Target system headers, libraries and run-time object files will be
-searched in there.  The specified directory is not copied into the
+searched in there.  More specifically, this acts as if
+@option{--sysroot=@var{dir}} was added to the default options of the built
+compiler.  The specified directory is not copied into the
 install tree, unlike the options @option{--with-headers} and
 @option{--with-libs} that this option obsoletes.  The default value,
 in case @option{--with-sysroot} is not given an argument, is
 @option{$@{gcc_tooldir@}/sys-root}.  If the specified directory is a
 subdirectory of @option{$@{exec_prefix@}}, then it will be found relative to
 the GCC binaries if the installation tree is moved.
+
+This option affects the system root for the compiler used to build
+target libraries (which runs on the build system) and the compiler newly
+installed with @code{make install}; it does not affect the compiler which is
+used to build GCC itself.
 
 @item --with-build-sysroot
 @itemx --with-build-sysroot=@var{dir}
@@ -1668,7 +1673,7 @@ compiler.  When crossing to GNU/Linux, you need the headers so GCC
 can build the exception handling for libgcc.
 
 @item --with-libs
-@itemx --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
+@itemx --with-libs="@var{dir1} @var{dir2} @dots{} @var{dirN}"
 Deprecated in favor of @option{--with-sysroot}.
 Specifies a list of directories which contain the target runtime
 libraries.  These libraries will be copied into the @file{gcc} install
@@ -2157,7 +2162,7 @@ When building a cross compiler, it is not generally possible to do a
 3-stage bootstrap of the compiler.  This makes for an interesting problem
 as parts of GCC can only be built with GCC@.
 
-To build a cross compiler, we first recommend building and installing a
+To build a cross compiler, we recommend first building and installing a
 native compiler.  You can then use the native GCC compiler to build the
 cross compiler.  The installed native compiler needs to be GCC version
 2.95 or later.
@@ -2237,7 +2242,7 @@ compilation options.  Check your target's definition of
 
 @section Building in parallel
 
-GNU Make 3.79 and above, which is necessary to build GCC, support
+GNU Make 3.80 and above, which is necessary to build GCC, support
 building in parallel.  To activate this, you can use @samp{make -j 2}
 instead of @samp{make}.  You can also specify a bigger number, and 
 in most cases using a value greater than the number of processors in
@@ -3779,6 +3784,7 @@ This problem can be avoided by running the commands:
    % export CONFIG_SHELL
 @end smallexample
 
+@noindent
 before starting the build.
 
 @html
@@ -3795,18 +3801,21 @@ resulting object file.  The output should look like:
 test.o: ELF N32 MSB @dots{}
 @end smallexample
 
+@noindent
 If you see:
 
 @smallexample
 test.o: ELF 32-bit MSB @dots{}
 @end smallexample
 
+@noindent
 or
 
 @smallexample
 test.o: ELF 64-bit MSB @dots{}
 @end smallexample
 
+@noindent
 then your version of @command{cc} uses the O32 or N64 ABI by default.  You
 should set the environment variable @env{CC} to @samp{cc -n32}
 before configuring GCC@.
@@ -3823,12 +3832,14 @@ all on @samp{mips3}-only systems.  For the test program above, you should see:
 test.o: ELF N32 MSB mips-3 @dots{}
 @end smallexample
 
+@noindent
 If you get:
 
 @smallexample
 test.o: ELF N32 MSB mips-4 @dots{}
 @end smallexample
 
+@noindent
 instead, you should set the environment variable @env{CC} to @samp{cc
 -n32 -mips3} or @samp{gcc -mips3} respectively before configuring GCC@.
 
