@@ -1,3 +1,7 @@
+2009-09-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gfortran.dg/proc_ptr_comp_21.f90: Removed.
+
 2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/22093
