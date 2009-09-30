@@ -1,3 +1,56 @@
+2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	* gcc.target/i386/fma4-check.h
+	* gcc.target/i386/fma4-fma.c
+	* gcc.target/i386/fma4-maccXX.c
+	* gcc.target/i386/fma4-msubXX.c
+	* gcc.target/i386/fma4-nmaccXX.c
+	* gcc.target/i386/fma4-nmsubXX.c
+	* gcc.target/i386/fma4-vector.c
+	* gcc.target/i386/fma4-256-maccXX.c
+	* gcc.target/i386/fma4-256-msubXX.c
+	* gcc.target/i386/fma4-256-nmaccXX.c
+	* gcc.target/i386/fma4-256-nmsubXX.c
+	* gcc.target/i386/fma4-256-vector.c
+	* gcc.target/i386/funcspec-2.c: New file.
+
+	* gcc.target/i386/funcspec-4.c: Test error conditions
+	related to FMA4.
+
+	* gcc.target/i386/funcspec-5.c
+	* gcc.target/i386/funcspec-6.c
+	* gcc.target/i386/funcspec-8.c: Add FMA4.
+
+	* gcc.target/i386/funcspec-9.c: New file.
+
+	* gcc.target/i386/i386.exp: Add check_effective_target_fma4.
+
+	* gcc.target/i386/isa-10.c
+	* gcc.target/i386/isa-11.c
+	* gcc.target/i386/isa-12.c
+	* gcc.target/i386/isa-13.c
+	* gcc.target/i386/isa-2.c
+	* gcc.target/i386/isa-3.c
+	* gcc.target/i386/isa-4.c
+	* gcc.target/i386/isa-7.c
+	* gcc.target/i386/isa-8.c
+	* gcc.target/i386/isa-9.c: New file.
+
+	* gcc.target/i386/isa-14.c
+	* gcc.target/i386/isa-1.c
+	* gcc.target/i386/isa-5.c
+	* gcc.target/i386/isa-6.c: Add FMA4.
+
+	* gcc.target/i386/sse-12.c
+	* gcc.target/i386/sse-13.c
+	* gcc.target/i386/sse-14.c
+	* gcc.target/i386/sse-22.c: New file.
+
+	* g++.dg/other/i386-2.C
+	* g++.dg/other/i386-3.C
+	* g++.dg/other/i386-5.C
+	* g++.dg/other/i386-6.C: Add -mfma4 in dg-options.
+
 2009-09-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/41496

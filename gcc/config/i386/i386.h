@@ -54,6 +54,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_AVX	OPTION_ISA_AVX
 #define TARGET_FMA	OPTION_ISA_FMA
 #define TARGET_SSE4A	OPTION_ISA_SSE4A
+#define TARGET_FMA4	OPTION_ISA_FMA4
 #define TARGET_ROUND	OPTION_ISA_ROUND
 #define TARGET_ABM	OPTION_ISA_ABM
 #define TARGET_POPCNT	OPTION_ISA_POPCNT
@@ -65,8 +66,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_CMPXCHG16B OPTION_ISA_CX16
 
 
-/* SSE4.1 define round instructions */
-#define	OPTION_MASK_ISA_ROUND	(OPTION_MASK_ISA_SSE4_1)
+/* SSE4.1 defines round instructions */
+#define	OPTION_MASK_ISA_ROUND	OPTION_MASK_ISA_SSE4_1
 #define	OPTION_ISA_ROUND	((ix86_isa_flags & OPTION_MASK_ISA_ROUND) != 0)
 
 #include "config/vxworks-dummy.h"
@@ -1349,6 +1350,10 @@ enum reg_class
 
 #define AVX_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_AVX && ((MODE) == V4SFmode || (MODE) == V2DFmode \
+		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
+
+#define FMA4_VEC_FLOAT_MODE_P(MODE) \
+  (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
 #define MMX_REG_P(XOP) (REG_P (XOP) && MMX_REGNO_P (REGNO (XOP)))

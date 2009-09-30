@@ -120,6 +120,20 @@ proc check_effective_target_sse4a { } {
     } "-O2 -msse4a" ]
 }
 
+# Return 1 if fma4 instructions can be compiled.
+proc check_effective_target_fma4 { } {
+    return [check_no_compiler_messages fma4 object {
+        typedef float __m128 __attribute__ ((__vector_size__ (16)));
+	typedef float __v4sf __attribute__ ((__vector_size__ (16)));
+	__m128 _mm_macc_ps(__m128 __A, __m128 __B, __m128 __C)
+	{
+	    return (__m128) __builtin_ia32_vfmaddps ((__v4sf)__A,
+						     (__v4sf)__B,
+						     (__v4sf)__C);
+	}
+    } "-O2 -mfma4" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

@@ -3168,6 +3168,11 @@ Enable/disable the generation of the sse4.2 instructions.
 @cindex @code{target("sse4a")} attribute
 Enable/disable the generation of the SSE4A instructions.
 
+@item fma4
+@itemx no-fma4
+@cindex @code{target("fma4")} attribute
+Enable/disable the generation of the FMA4 instructions.
+
 @item ssse3
 @itemx no-ssse3
 @cindex @code{target("ssse3")} attribute
@@ -8886,6 +8891,46 @@ v2di __builtin_ia32_extrq  (v2di, v16qi)
 v2di __builtin_ia32_extrqi (v2di, const unsigned int, const unsigned int)
 v2di __builtin_ia32_insertq (v2di, v2di)
 v2di __builtin_ia32_insertqi (v2di, v2di, const unsigned int, const unsigned int)
+@end smallexample
+
+The following built-in functions are available when @option{-mfma4} is used.
+All of them generate the machine instruction that is part of the name
+with MMX registers.
+
+@smallexample
+v2df __builtin_ia32_fmaddpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fmaddps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fmaddsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fmaddss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fmsubpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fmsubps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fmsubsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fmsubss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fnmaddpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fnmaddps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fnmaddsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fnmaddss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fnmsubpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fnmsubps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fnmsubsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_fnmsubss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fmaddsubpd  (v2df, v2df, v2df)
+v4sf __builtin_ia32_fmaddsubps  (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_fmsubaddpd  (v2df, v2df, v2df)
+v4sf __builtin_ia32_fmsubaddps  (v4sf, v4sf, v4sf)
+v4df __builtin_ia32_fmaddpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_fmaddps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_fmsubpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_fmsubps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_fnmaddpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_fnmaddps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_fnmsubpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_fnmsubps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_fmaddsubpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_fmaddsubps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_fmsubaddpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_fmsubaddps256 (v8sf, v8sf, v8sf)
+
 @end smallexample
 
 The following built-in functions are available when @option{-m3dnow} is used.
