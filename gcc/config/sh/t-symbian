@@ -21,6 +21,28 @@ sh-c.o: $(srcdir)/config/sh/sh-c.c \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/sh/sh-c.c
 
+symbian-cxx.o: \
+  $(srcdir)/config/sh/symbian-cxx.c \
+  $(srcdir)/config/sh/sh-symbian.h \
+  $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TREE_H) $(RTL_H) \
+  toplev.h output.h coretypes.h flags.h expr.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+symbian-c.o: \
+  $(srcdir)/config/sh/symbian-c.c \
+  $(srcdir)/config/sh/sh-symbian.h \
+  $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TREE_H) $(RTL_H) \
+  toplev.h output.h coretypes.h flags.h expr.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+symbian-base.o: \
+  $(srcdir)/config/sh/symbian-base.c \
+  $(srcdir)/config/sh/sh-symbian.h \
+  $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(TREE_H) $(RTL_H) \
+  toplev.h output.h coretypes.h flags.h expr.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+
 LIB1ASMSRC = sh/lib1funcs.asm
 LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movstr \
   _movstr_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \

@@ -2184,7 +2184,8 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	*-*-symbianelf*)
 		tmake_file="sh/t-symbian"
 		tm_file="sh/symbian-pre.h sh/little.h ${tm_file} sh/symbian-post.h"
-		extra_objs="symbian.o"
+		c_target_objs="symbian-base.o symbian-c.o"
+		cxx_target_objs="symbian-base.o symbian-cxx.o"
 		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		;;
 	*-*-elf*)
