@@ -7077,21 +7077,26 @@ cp_parser_lambda_expression (cp_parser* parser)
       for (elt = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr);
 	   elt; elt = next)
 	{
-	  /* Also add __ to the beginning of the field name so that code
-	     outside the lambda body can't see the captured name.  We could
-	     just remove the name entirely, but this is more useful for
-	     debugging.  */
 	  tree field = TREE_PURPOSE (elt);
-	  char *buf
-	    = (char *) alloca (IDENTIFIER_LENGTH (DECL_NAME (field)) + 3);
-	  buf[1] = buf[0] = '_';
-	  memcpy (buf + 2, IDENTIFIER_POINTER (DECL_NAME (field)),
-		  IDENTIFIER_LENGTH (DECL_NAME (field)) + 1);
-	  DECL_NAME (field) = get_identifier (buf);
+	  char *buf;
 
 	  next = TREE_CHAIN (elt);
 	  TREE_CHAIN (elt) = newlist;
 	  newlist = elt;
+
+	  /* Also add __ to the beginning of the field name so that code
+	     outside the lambda body can't see the captured name.  We could
+	     just remove the name entirely, but this is more useful for
+	     debugging.  */
+	  if (field == LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
+	    /* The 'this' capture already starts with __.  */
+	    continue;
+
+	  buf = (char *) alloca (IDENTIFIER_LENGTH (DECL_NAME (field)) + 3);
+	  buf[1] = buf[0] = '_';
+	  memcpy (buf + 2, IDENTIFIER_POINTER (DECL_NAME (field)),
+		  IDENTIFIER_LENGTH (DECL_NAME (field)) + 1);
+	  DECL_NAME (field) = get_identifier (buf);
 	}
       LAMBDA_EXPR_CAPTURE_LIST (lambda_expr) = newlist;
     }
