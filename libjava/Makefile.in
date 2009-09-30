@@ -727,6 +727,7 @@ LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
 LIBGCJ_LD_SYMBOLIC = @LIBGCJ_LD_SYMBOLIC@
 LIBGCJ_LD_SYMBOLIC_FUNCTIONS = @LIBGCJ_LD_SYMBOLIC_FUNCTIONS@
 LIBGCJ_SPEC = @LIBGCJ_SPEC@
+LIBGCJ_SUBLIB_LTFLAGS = @LIBGCJ_SUBLIB_LTFLAGS@
 LIBICONV = @LIBICONV@
 LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
@@ -1046,8 +1047,8 @@ CORE_PACKAGE_SOURCE_FILES_LO = $(filter-out $(LOWER_PACKAGE_FILES_LO),$(ALL_PACK
 # and it cannot be usefully built shared on PE platforms.
 @BUILD_SUBLIBS_FALSE@libgcj_la_LIBADD_SUBOBJECTS = $(ALL_PACKAGE_SOURCE_FILES_LO)
 @BUILD_SUBLIBS_TRUE@libgcj_la_LIBADD_SUBOBJECTS = $(CORE_PACKAGE_SOURCE_FILES_LO)
-@BUILD_SUBLIBS_FALSE@libgcj_la_LDFLAGS_NOUNDEF = 
-@BUILD_SUBLIBS_TRUE@libgcj_la_LDFLAGS_NOUNDEF = -no-undefined -bindir $(bindir)
+@BUILD_SUBLIBS_FALSE@LIBJAVA_LDFLAGS_NOUNDEF = 
+@BUILD_SUBLIBS_TRUE@LIBJAVA_LDFLAGS_NOUNDEF = $(LIBGCJ_SUBLIB_LTFLAGS)
 dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(libdir)/pkgconfig
 jardir = $(datadir)/java
@@ -1127,7 +1128,7 @@ BOOTCLASSPATH = $(srcdir)/classpath/lib
 libgij_la_SOURCES = gij.cc
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_11)
 libgij_la_LIBADD = -L$(here)/.libs libgcj.la
-libgij_la_LDFLAGS = -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
+libgij_la_LDFLAGS = -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
@@ -1144,7 +1145,7 @@ xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(extra_ldflags) $(THREADLIBS) \
-	$(LIBLTDL) $(SYS_ZLIBS) $(libgcj_la_LDFLAGS_NOUNDEF) \
+	$(LIBLTDL) $(SYS_ZLIBS) $(LIBJAVA_LDFLAGS_NOUNDEF) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 
@@ -1185,7 +1186,7 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
 
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
- $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 
 libgcj_tools_la_LIBADD = libgcj.la -lm
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_22)
@@ -1194,7 +1195,7 @@ libjvm_la_SOURCES = jni-libjvm.cc
 libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_23)
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
 libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC) \
- -no-undefined -bindir $(bindir)
+ $(LIBJAVA_LDFLAGS_NOUNDEF)
 
 libjvm_la_LINK = $(CXXLINK) $(libjvm_la_LDFLAGS)
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
@@ -1209,13 +1210,13 @@ lib_gnu_awt_xlib_la_CPPFLAGS = \
 
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
+        -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
-	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)

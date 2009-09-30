@@ -206,11 +206,14 @@ AC_EXEEXT
 #	libgcj_cflags    - host specific C compiler flags
 #	libgcj_cxxflags  - host specific C++ compiler flags
 #	libgcj_javaflags - host specific Java compiler flags
+#	libgcj_sublib_ltflags - host specific Libtool flags 
+#                          (only used when building sublibs)
 # and a number of others; see the list at the start of the file.
 
 libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
+libgcj_sublib_ltflags=
 
 . ${srcdir}/configure.host
 
@@ -223,11 +226,13 @@ fi
 LIBGCJ_CFLAGS="${libgcj_cflags}"
 LIBGCJ_CXXFLAGS="${libgcj_cxxflags}"
 LIBGCJ_JAVAFLAGS="${libgcj_javaflags}"
+LIBGCJ_SUBLIB_LTFLAGS="${libgcj_sublib_ltflags}"
 LIBGCJ_LD_SYMBOLIC="${libgcj_ld_symbolic}"
 LIBGCJ_LD_SYMBOLIC_FUNCTIONS="${libgcj_ld_symbolic_functions}"
 AC_SUBST(LIBGCJ_CFLAGS)
 AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
+AC_SUBST(LIBGCJ_SUBLIB_LTFLAGS)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 

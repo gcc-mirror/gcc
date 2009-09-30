@@ -201,12 +201,12 @@ if BUILD_SUBLIBS
 toolexeclib_LTLIBRARIES += libgcj-noncore.la
 libgcj_noncore_la_LIBADD_SUBOBJECTS = $(NONCORE_PACKAGE_SOURCE_FILES_LO)
 libgcj_la_LIBADD_SUBOBJECTS = $(CORE_PACKAGE_SOURCE_FILES_LO)
-libgcj_la_LDFLAGS_NOUNDEF = -no-undefined -bindir $(bindir)
+LIBJAVA_LDFLAGS_NOUNDEF = $(LIBGCJ_SUBLIB_LTFLAGS)
 else
 # If not building sublibraries, everything goes in libgcj,
 # and it cannot be usefully built shared on PE platforms.
 libgcj_la_LIBADD_SUBOBJECTS = $(ALL_PACKAGE_SOURCE_FILES_LO)
-libgcj_la_LDFLAGS_NOUNDEF = 
+LIBJAVA_LDFLAGS_NOUNDEF = 
 endif
 
 if USE_LIBGCJ_BC
@@ -388,7 +388,7 @@ endif
 ## See jv_convert_LDADD.
 libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
-libgij_la_LDFLAGS = -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
+libgij_la_LDFLAGS = -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
 
@@ -445,7 +445,7 @@ xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 # certain linuxthread functions get linked:
 ## The mysterious backslash in the grep pattern is consumed by make.
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(extra_ldflags) $(THREADLIBS) \
-	$(LIBLTDL) $(SYS_ZLIBS) $(libgcj_la_LDFLAGS_NOUNDEF) \
+	$(LIBLTDL) $(SYS_ZLIBS) $(LIBJAVA_LDFLAGS_NOUNDEF) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 libgcj_la_LIBADD = \
@@ -495,7 +495,7 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
  -fsource-filename=$(here)/classpath/tools/all-classes.lst
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
- $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 libgcj_tools_la_LIBADD = libgcj.la -lm
 libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
 if BUILD_SUBLIBS
@@ -512,7 +512,7 @@ endif
 ## See jv_convert_LDADD.
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
 libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC) \
- -no-undefined -bindir $(bindir)
+ $(LIBJAVA_LDFLAGS_NOUNDEF)
 libjvm_la_LINK = $(CXXLINK) $(libjvm_la_LDFLAGS)
 
 ## The .db file.  This rule is only used for native builds, so it is
@@ -542,7 +542,7 @@ lib_gnu_awt_xlib_la_CPPFLAGS = \
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -rpath $(toolexeclibdir) -no-undefined -bindir $(bindir) \
+        -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 
@@ -552,7 +552,7 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
 ## This library is not linked against libgcj.
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
-	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) -no-undefined -bindir $(bindir)
+	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 libgcj_bc_la_DEPENDENCIES = libgcj.la
 libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)
 ## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.

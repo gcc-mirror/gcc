@@ -1,3 +1,23 @@
+2009-09-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.host (libgcj_sublib_ltflags): New variable.
+	* configure.ac (LIBGCJ_SUBLIB_LTFLAGS): AC_SUBST variable for
+	the above in makefiles.
+	* configure: Regenerate.
+
+	* Makefile.am (libgcj_la_LDFLAGS_NOUNDEF): Rename from this ...
+	(LIBJAVA_LDFLAGS_NOUNDEF): ... to this, initialise from
+	LIBGCJ_SUBLIB_LTFLAGS (only when building sublibs), and ...
+	(libgij_la_LDFLAGS, libgcj_tools_la_LDFLAGS, libjvm_la_LDFLAGS,
+	lib_gnu_awt_xlib_la_LDFLAGS, libgcj_bc_la_LDFLAGS): ... use it in
+	all these places to replace hard-coded -no-undefined and -bindir
+	flags, as well as ...
+	(libgcj_la_LDFLAGS): ... updating existing reference here.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* gcj/Makefile.in: Likewise.
+
 2009-09-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libgcj/38298
