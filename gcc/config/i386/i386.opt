@@ -310,6 +310,10 @@ msse4a
 Target Report Mask(ISA_SSE4A) Var(ix86_isa_flags) VarExists Save
 Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation
 
+mfma4
+Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) VarExists Save
+Support FMA4 built-in functions and code generation 
+
 mabm
 Target Report Mask(ISA_ABM) Var(ix86_isa_flags) VarExists Save
 Support code generation of Advanced Bit Manipulation (ABM) instructions.

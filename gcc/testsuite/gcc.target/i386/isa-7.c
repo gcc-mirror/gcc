@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-march=core2 -msse4a -mno-sse4" } */
+/* { dg-options "-march=amdfam10 -mfma4 -mno-sse4" } */
 
 extern void abort (void);
 

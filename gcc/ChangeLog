@@ -1,3 +1,125 @@
+2009-09-29  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	* config.gcc (i[34567]86-*-*): Include fma4intrin.h.
+	(x86_64-*-*): Ditto.
+	
+	* config/i386/fma4intrin.h: New file, provide common x86 compiler
+	intrinisics for FMA4.
+	* config/i386/cpuid.h (bit_FMA4): Define FMA4 bit.
+	* config/i386/x86intrin.h: Fix typo to SSE4A instead of SSE4a.
+	Add FMA4 check and fma4intrin.h.
+	* config/i386/i386-c.c(ix86_target_macros_internal): Check
+	ISA_FLAG for FMA4. 
+	* config/i386/i386.h(TARGET_FMA4): New macro for FMA4.
+	* config/i386/i386.md (UNSPEC_FMA4_INTRINSIC): Add new UNSPEC
+	constant for FMA4 support.
+	(UNSPEC_FMA4_FMADDSUB): Ditto.
+	(UNSPEC_FMA4_FMSUBADD): Ditto.
+	* config/i386/i386.opt (-mfma4): New switch for FMA4 support.
+	* config/i386/i386-protos.h (ix86_fma4_valid_op_p): Add
+	declaration.
+	(ix86_expand_fma4_multiple_memory): Ditto.
+	* config/i386/i386.c (OPTION_MASK_ISA_FMA4_SET): New.
+	(OPTION_MASK_ISA_FMA4_UNSET): New.	
+	(OPTION_MASK_ISA_SSE4A_UNSET): Change definition to
+	depend on FMA4.
+	(OPTION_MASK_ISA_AVX_UNSET): Change definition to
+	depend on FMA4.
+	(ix86_handle_option): Handle -mfma4.
+	(isa_opts): Handle -mfma4.
+	(enum pta_flags): Add PTA_FMA4.
+	(override_options): Add FMA4 support.	
+	(IX86_BUILTIN_VFMADDSS): New for FMA4 intrinsic.
+	(IX86_BUILTIN_VFMADDSD): Ditto.
+	(IX86_BUILTIN_VFMADDPS): Ditto.
+	(IX86_BUILTIN_VFMADDPD): Ditto.
+	(IX86_BUILTIN_VFMSUBSS): Ditto.
+	(IX86_BUILTIN_VFMSUBSD): Ditto.
+	(IX86_BUILTIN_VFMSUBPS): Ditto.
+	(IX86_BUILTIN_VFMSUBPD): Ditto.
+	(IX86_BUILTIN_VFMADDSUBPS): Ditto.
+	(IX86_BUILTIN_VFMADDSUBPD): Ditto.
+	(IX86_BUILTIN_VFMSUBADDPS): Ditto.
+	(IX86_BUILTIN_VFMSUBADDPD): Ditto.
+	(IX86_BUILTIN_VFNMADDSS): Ditto.
+	(IX86_BUILTIN_VFNMADDSD): Ditto.
+	(IX86_BUILTIN_VFNMADDPS): Ditto.
+	(IX86_BUILTIN_VFNMADDPD): Ditto.
+	(IX86_BUILTIN_VFNMSUBSS): Ditto.
+	(IX86_BUILTIN_VFNMSUBSD): Ditto.
+	(IX86_BUILTIN_VFNMSUBPS): Ditto.
+	(IX86_BUILTIN_VFNMSUBPD): Ditto.
+	(IX86_BUILTIN_VFMADDPS256): Ditto.
+	(IX86_BUILTIN_VFMADDPD256): Ditto.
+	(IX86_BUILTIN_VFMSUBPS256): Ditto.
+	(IX86_BUILTIN_VFMSUBPD256): Ditto.
+	(IX86_BUILTIN_VFMADDSUBPS256): Ditto.
+	(IX86_BUILTIN_VFMADDSUBPD256): Ditto.
+	(IX86_BUILTIN_VFMSUBADDPS256): Ditto.
+	(IX86_BUILTIN_VFMSUBADDPD256): Ditto.
+	(IX86_BUILTIN_VFNMADDPS256): Ditto.
+	(IX86_BUILTIN_VFNMADDPD256): Ditto.
+	(IX86_BUILTIN_VFNMSUBPS256): Ditto.
+	(IX86_BUILTIN_VFNMSUBPD256): Ditto.
+	(enum multi_arg_type): New enum for describing the various FMA4
+	intrinsic argument types.
+	(bdesc_multi_arg): New table for FMA4 intrinsics.
+	(ix86_init_mmx_sse_builtins): Add FMA4 intrinsic support.
+	(ix86_expand_multi_arg_builtin): New function for creating FMA4
+	intrinsics.
+	(ix86_expand_builtin): Add FMA4 intrinsic support.
+	(ix86_fma4_valid_op_p): New function to validate FMA4 3 and 4
+	operand instructions.
+	(ix86_expand_fma4_multiple_memory): New function to split the
+	second memory reference from FMA4 instructions.
+	* config/i386/sse.md (ssemodesuffixf4): New mode attribute for FMA4.
+	(ssemodesuffixf2s): Ditto.
+	(fma4_fmadd<mode>4): Add FMA4 floating point multiply/add
+	instructions.
+	(fma4_fmsub<mode>4): Ditto.
+	(fma4_fnmadd<mode>4): Ditto.
+	(fma4_fnmsub<mode>4): Ditto.
+	(fma4_vmfmadd<mode>4): Ditto.
+	(fma4_vmfmsub<mode>4): Ditto.
+	(fma4_vmfnmadd<mode>4): Ditto.
+	(fma4_vmfnmsub<mode>4): Ditto.
+	(fma4_fmadd<mode>4256): Ditto.
+	(fma4_fmsub<mode>4256): Ditto.
+	(fma4_fnmadd<mode>4256): Ditto.
+	(fma4_fnmsub<mode>4256): Ditto.
+	(fma4_fmaddsubv8sf4): Ditto.
+	(fma4_fmaddsubv4sf4): Ditto.
+	(fma4_fmaddsubv4df4): Ditto.
+	(fma4_fmaddsubv2df4): Ditto.
+	(fma4_fmsubaddv8sf4): Ditto.
+	(fma4_fmsubaddv4sf4): Ditto.
+	(fma4_fmsubaddv4df4): Ditto.
+	(fma4_fmsubaddv2df4): Ditto.
+	(fma4i_fmadd<mode>4): Add FMA4 floating point multiply/add
+	instructions for intrinsics.
+	(fma4i_fmsub<mode>4): Ditto.
+	(fma4i_fnmadd<mode>4): Ditto.
+	(fma4i_fnmsub<mode>4): Ditto.
+	(fma4i_vmfmadd<mode>4): Ditto.
+	(fma4i_vmfmsub<mode>4): Ditto.
+	(fma4i_vmfnmadd<mode>4): Ditto.
+	(fma4i_vmfnmsub<mode>4): Ditto.
+	(fma4i_fmadd<mode>4256): Ditto.
+	(fma4i_fmsub<mode>4256): Ditto.
+	(fma4i_fnmadd<mode>4256): Ditto.
+	(fma4i_fnmsub<mode>4256): Ditto.
+	(fma4i_fmaddsubv8sf4): Ditto.
+	(fma4i_fmaddsubv4sf4): Ditto.
+	(fma4i_fmaddsubv4df4): Ditto.
+	(fma4i_fmaddsubv2df4): Ditto.
+	(fma4i_fmsubaddv8sf4): Ditto.
+	(fma4i_fmsubaddv4sf4): Ditto.
+	(fma4i_fmsubaddv4df4): Ditto.
+	(fma4i_fmsubaddv2df4): Ditto.
+
+	* doc/invoke.texi (-mfma4): Add documentation.
+	* doc/extend.texi (x86 intrinsics): Add FMA4 intrinsics.
+
 2009-09-29  Richard Henderson  <rth@redhat.com>
 
 	* tree-eh.c (unsplit_eh): Do not unsplit if there's already

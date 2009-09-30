@@ -104,6 +104,25 @@ generic_insertq (__m128i a, __m128i b)
   return __builtin_ia32_insertq (a, b);			/* { dg-error "needs isa option" } */
 }
 
+#ifdef __FMA4__
+#error "-mfma4 should not be set for this test"
+#endif
+
+__m128d fma4_fmaddpd (__m128d a, __m128d b, __m128d c) __attribute__((__target__("fma4")));
+__m128d generic_fmaddpd (__m128d a, __m128d b, __m128d c);
+
+__m128d
+fma4_fmaddpd  (__m128d a, __m128d b, __m128d c)
+{
+  return __builtin_ia32_vfmaddpd (a, b, c);
+}
+
+__m128d
+generic_fmaddpd  (__m128d a, __m128d b, __m128d c)
+{
+  return __builtin_ia32_vfmaddpd (a, b, c);		/* { dg-error "needs isa option" } */
+}
+
 #ifdef __AES__
 #error "-maes should not be set for this test"
 #endif

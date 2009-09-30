@@ -46,12 +46,16 @@
 #include <tmmintrin.h>
 #endif
 
-#ifdef __SSE4a__
+#ifdef __SSE4A__
 #include <ammintrin.h>
 #endif
 
 #if defined (__SSE4_2__) || defined (__SSE4_1__)
 #include <smmintrin.h>
+#endif
+
+#ifdef __FMA4__
+#include <fma4intrin.h>
 #endif
 
 #if defined (__AES__) || defined (__PCLMUL__)

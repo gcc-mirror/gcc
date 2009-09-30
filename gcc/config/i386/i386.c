@@ -1955,6 +1955,9 @@ static int ix86_isa_flags_explicit;
 
 #define OPTION_MASK_ISA_SSE4A_SET \
   (OPTION_MASK_ISA_SSE4A | OPTION_MASK_ISA_SSE3_SET)
+#define OPTION_MASK_ISA_FMA4_SET \
+  (OPTION_MASK_ISA_FMA4 | OPTION_MASK_ISA_SSE4A_SET \
+   | OPTION_MASK_ISA_AVX_SET)
 
 /* AES and PCLMUL need SSE2 because they use xmm registers */
 #define OPTION_MASK_ISA_AES_SET \
@@ -1995,7 +1998,8 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_SSE4_2_UNSET \
   (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_AVX_UNSET )
 #define OPTION_MASK_ISA_AVX_UNSET \
-  (OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_FMA_UNSET)
+  (OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_FMA_UNSET \
+   | OPTION_MASK_ISA_FMA4_UNSET)
 #define OPTION_MASK_ISA_FMA_UNSET OPTION_MASK_ISA_FMA
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
@@ -2003,7 +2007,10 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_SSE4_UNSET OPTION_MASK_ISA_SSE4_1_UNSET
 
 #define OPTION_MASK_ISA_SSE4A_UNSET \
-  (OPTION_MASK_ISA_SSE4A)
+  (OPTION_MASK_ISA_SSE4A | OPTION_MASK_ISA_FMA4_UNSET)
+
+#define OPTION_MASK_ISA_FMA4_UNSET OPTION_MASK_ISA_FMA4
+
 #define OPTION_MASK_ISA_AES_UNSET OPTION_MASK_ISA_AES
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
@@ -2237,6 +2244,19 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	}
       return true;
 
+    case OPT_mfma4:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_FMA4_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_FMA4_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_FMA4_UNSET;
+	}
+      return true;
+
     case OPT_mabm:
       if (value)
 	{
@@ -2364,6 +2384,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
   static struct ix86_target_opts isa_opts[] =
   {
     { "-m64",		OPTION_MASK_ISA_64BIT },
+    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
     { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
@@ -2593,7 +2614,8 @@ override_options (bool main_args_p)
       PTA_PCLMUL = 1 << 17,
       PTA_AVX = 1 << 18,
       PTA_FMA = 1 << 19,
-      PTA_MOVBE = 1 << 20
+      PTA_MOVBE = 1 << 20,
+      PTA_FMA4 = 1 << 21
     };
 
   static struct pta
@@ -2936,6 +2958,9 @@ override_options (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_SSE4A
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SSE4A))
 	  ix86_isa_flags |= OPTION_MASK_ISA_SSE4A;
+	if (processor_alias_table[i].flags & PTA_FMA4
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_FMA4))
+	  ix86_isa_flags |= OPTION_MASK_ISA_FMA4;
 	if (processor_alias_table[i].flags & PTA_ABM
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_ABM))
 	  ix86_isa_flags |= OPTION_MASK_ISA_ABM;
@@ -3619,6 +3644,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
     IX86_ATTR_ISA ("sse4.2",	OPT_msse4_2),
     IX86_ATTR_ISA ("sse4a",	OPT_msse4a),
     IX86_ATTR_ISA ("ssse3",	OPT_mssse3),
+    IX86_ATTR_ISA ("fma4",	OPT_mfma4),
 
     /* string options */
     IX86_ATTR_STR ("arch=",	IX86_FUNCTION_SPECIFIC_ARCH),
@@ -20686,6 +20712,39 @@ enum ix86_builtins
 
   IX86_BUILTIN_CVTUDQ2PS,
 
+  /* FMA4 instructions.  */
+  IX86_BUILTIN_VFMADDSS,
+  IX86_BUILTIN_VFMADDSD,
+  IX86_BUILTIN_VFMADDPS,
+  IX86_BUILTIN_VFMADDPD,
+  IX86_BUILTIN_VFMSUBSS,
+  IX86_BUILTIN_VFMSUBSD,
+  IX86_BUILTIN_VFMSUBPS,
+  IX86_BUILTIN_VFMSUBPD,
+  IX86_BUILTIN_VFMADDSUBPS,
+  IX86_BUILTIN_VFMADDSUBPD,
+  IX86_BUILTIN_VFMSUBADDPS,
+  IX86_BUILTIN_VFMSUBADDPD,
+  IX86_BUILTIN_VFNMADDSS,
+  IX86_BUILTIN_VFNMADDSD,
+  IX86_BUILTIN_VFNMADDPS,
+  IX86_BUILTIN_VFNMADDPD,
+  IX86_BUILTIN_VFNMSUBSS,
+  IX86_BUILTIN_VFNMSUBSD,
+  IX86_BUILTIN_VFNMSUBPS,
+  IX86_BUILTIN_VFNMSUBPD,
+  IX86_BUILTIN_VFMADDPS256,
+  IX86_BUILTIN_VFMADDPD256,
+  IX86_BUILTIN_VFMSUBPS256,
+  IX86_BUILTIN_VFMSUBPD256,
+  IX86_BUILTIN_VFMADDSUBPS256,
+  IX86_BUILTIN_VFMADDSUBPD256,
+  IX86_BUILTIN_VFMSUBADDPS256,
+  IX86_BUILTIN_VFMSUBADDPD256,
+  IX86_BUILTIN_VFNMADDPS256,
+  IX86_BUILTIN_VFNMADDPD256,
+  IX86_BUILTIN_VFNMSUBPS256,
+  IX86_BUILTIN_VFNMSUBPD256,
   IX86_BUILTIN_MAX
 };
 
@@ -21759,6 +21818,56 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movmskps256, "__builtin_ia32_movmskps256", IX86_BUILTIN_MOVMSKPS256, UNKNOWN, (int) INT_FTYPE_V8SF },
 };
 
+/* FMA4.  */
+enum multi_arg_type {
+  MULTI_ARG_UNKNOWN,
+  MULTI_ARG_3_SF,
+  MULTI_ARG_3_DF,
+  MULTI_ARG_3_SF2,
+  MULTI_ARG_3_DF2
+};
+
+static const struct builtin_description bdesc_multi_arg[] =
+{
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfmaddv4sf4,     "__builtin_ia32_vfmaddss",    IX86_BUILTIN_VFMADDSS,    UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfmaddv2df4,     "__builtin_ia32_vfmaddsd",    IX86_BUILTIN_VFMADDSD,    UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddv4sf4,       "__builtin_ia32_vfmaddps",    IX86_BUILTIN_VFMADDPS,    UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddv2df4,       "__builtin_ia32_vfmaddpd",    IX86_BUILTIN_VFMADDPD,    UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfmsubv4sf4,     "__builtin_ia32_vfmsubss",    IX86_BUILTIN_VFMSUBSS,    UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfmsubv2df4,     "__builtin_ia32_vfmsubsd",    IX86_BUILTIN_VFMSUBSD,    UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubv4sf4,       "__builtin_ia32_vfmsubps",    IX86_BUILTIN_VFMSUBPS,    UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubv2df4,       "__builtin_ia32_vfmsubpd",    IX86_BUILTIN_VFMSUBPD,    UNKNOWN,      (int)MULTI_ARG_3_DF },
+    
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfnmaddv4sf4,    "__builtin_ia32_vfnmaddss",   IX86_BUILTIN_VFNMADDSS,   UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfnmaddv2df4,    "__builtin_ia32_vfnmaddsd",   IX86_BUILTIN_VFNMADDSD,   UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmaddv4sf4,      "__builtin_ia32_vfnmaddps",   IX86_BUILTIN_VFNMADDPS,   UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmaddv2df4,      "__builtin_ia32_vfnmaddpd",   IX86_BUILTIN_VFNMADDPD,   UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfnmsubv4sf4,    "__builtin_ia32_vfnmsubss",   IX86_BUILTIN_VFNMSUBSS,   UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_vmfnmsubv2df4,    "__builtin_ia32_vfnmsubsd",   IX86_BUILTIN_VFNMSUBSD,   UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmsubv4sf4,      "__builtin_ia32_vfnmsubps",   IX86_BUILTIN_VFNMSUBPS,   UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmsubv2df4,      "__builtin_ia32_vfnmsubpd",   IX86_BUILTIN_VFNMSUBPD,   UNKNOWN,      (int)MULTI_ARG_3_DF },
+
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddsubv4sf4,	   "__builtin_ia32_vfmaddsubps", IX86_BUILTIN_VFMADDSUBPS,    UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddsubv2df4,	   "__builtin_ia32_vfmaddsubpd", IX86_BUILTIN_VFMADDSUBPD,    UNKNOWN,      (int)MULTI_ARG_3_DF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubaddv4sf4,	   "__builtin_ia32_vfmsubaddps", IX86_BUILTIN_VFMSUBADDPS,    UNKNOWN,      (int)MULTI_ARG_3_SF },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubaddv2df4,	   "__builtin_ia32_vfmsubaddpd", IX86_BUILTIN_VFMSUBADDPD,    UNKNOWN,      (int)MULTI_ARG_3_DF },
+
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddv8sf4256,       "__builtin_ia32_vfmaddps256",    IX86_BUILTIN_VFMADDPS256,    UNKNOWN,      (int)MULTI_ARG_3_SF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddv4df4256,       "__builtin_ia32_vfmaddpd256",    IX86_BUILTIN_VFMADDPD256,    UNKNOWN,      (int)MULTI_ARG_3_DF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubv8sf4256,       "__builtin_ia32_vfmsubps256",    IX86_BUILTIN_VFMSUBPS256,    UNKNOWN,      (int)MULTI_ARG_3_SF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubv4df4256,       "__builtin_ia32_vfmsubpd256",    IX86_BUILTIN_VFMSUBPD256,    UNKNOWN,      (int)MULTI_ARG_3_DF2 },
+  
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmaddv8sf4256,      "__builtin_ia32_vfnmaddps256",   IX86_BUILTIN_VFNMADDPS256,   UNKNOWN,      (int)MULTI_ARG_3_SF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmaddv4df4256,      "__builtin_ia32_vfnmaddpd256",   IX86_BUILTIN_VFNMADDPD256,   UNKNOWN,      (int)MULTI_ARG_3_DF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmsubv8sf4256,      "__builtin_ia32_vfnmsubps256",   IX86_BUILTIN_VFNMSUBPS256,   UNKNOWN,      (int)MULTI_ARG_3_SF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fnmsubv4df4256,      "__builtin_ia32_vfnmsubpd256",   IX86_BUILTIN_VFNMSUBPD256,   UNKNOWN,      (int)MULTI_ARG_3_DF2 },
+
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddsubv8sf4,	   "__builtin_ia32_vfmaddsubps256", IX86_BUILTIN_VFMADDSUBPS256,    UNKNOWN,      (int)MULTI_ARG_3_SF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmaddsubv4df4,	   "__builtin_ia32_vfmaddsubpd256", IX86_BUILTIN_VFMADDSUBPD256,    UNKNOWN,      (int)MULTI_ARG_3_DF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubaddv8sf4,	   "__builtin_ia32_vfmsubaddps256", IX86_BUILTIN_VFMSUBADDPS256,    UNKNOWN,      (int)MULTI_ARG_3_SF2 },
+  { OPTION_MASK_ISA_FMA4, CODE_FOR_fma4i_fmsubaddv4df4,	   "__builtin_ia32_vfmsubaddpd256", IX86_BUILTIN_VFMSUBADDPD256,    UNKNOWN,      (int)MULTI_ARG_3_DF2 }
+
+};
 
 /* Set up all the MMX/SSE builtins, even builtins for instructions that are not
    in the current target ISA to allow the user to compile particular modules
@@ -23192,6 +23301,29 @@ ix86_init_mmx_sse_builtins (void)
 				    intQI_type_node,
 				    integer_type_node, NULL_TREE);
   def_builtin_const (OPTION_MASK_ISA_SSE4_1, "__builtin_ia32_vec_set_v16qi", ftype, IX86_BUILTIN_VEC_SET_V16QI);
+  /* Add FMA4 multi-arg argument instructions */
+  for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
+    {
+      tree mtype = NULL_TREE;
+
+      if (d->name == 0)
+	continue;
+
+      switch ((enum multi_arg_type)d->flag)
+	{
+	case MULTI_ARG_3_SF:     mtype = v4sf_ftype_v4sf_v4sf_v4sf; 	break;
+	case MULTI_ARG_3_DF:     mtype = v2df_ftype_v2df_v2df_v2df; 	break;
+	case MULTI_ARG_3_SF2:    mtype = v8sf_ftype_v8sf_v8sf_v8sf; 	break;
+	case MULTI_ARG_3_DF2:    mtype = v4df_ftype_v4df_v4df_v4df; 	break;
+
+	case MULTI_ARG_UNKNOWN:
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (mtype)
+	def_builtin_const (d->mask, d->name, mtype, d->code);
+    }
 }
 
 /* Internal method for ix86_init_builtins.  */
@@ -23361,6 +23493,122 @@ ix86_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 
   emit_insn (pat);
 
+  return target;
+}
+
+/* Subroutine of ix86_expand_builtin to take care of 2-4 argument insns.  */
+
+static rtx
+ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
+			       enum multi_arg_type m_type,
+			       enum rtx_code sub_code)
+{
+  rtx pat;
+  int i;
+  int nargs;
+  bool comparison_p = false;
+  bool tf_p = false;
+  bool last_arg_constant = false;
+  int num_memory = 0;
+  struct {
+    rtx op;
+    enum machine_mode mode;
+  } args[4];
+
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+
+  switch (m_type)
+    {
+    case MULTI_ARG_3_SF:
+    case MULTI_ARG_3_DF:
+    case MULTI_ARG_3_SF2:
+    case MULTI_ARG_3_DF2:
+      nargs = 3;
+      break;
+
+    case MULTI_ARG_UNKNOWN:
+    default:
+      gcc_unreachable ();
+    }
+
+  if (optimize || !target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  gcc_assert (nargs <= 4);
+
+  for (i = 0; i < nargs; i++)
+    {
+      tree arg = CALL_EXPR_ARG (exp, i);
+      rtx op = expand_normal (arg);
+      int adjust = (comparison_p) ? 1 : 0;
+      enum machine_mode mode = insn_data[icode].operand[i+adjust+1].mode;
+
+      if (last_arg_constant && i == nargs-1)
+	{
+	  if (!CONST_INT_P (op))
+	    {
+	      error ("last argument must be an immediate");
+	      return gen_reg_rtx (tmode);
+	    }
+	}
+      else
+	{
+	  if (VECTOR_MODE_P (mode))
+	    op = safe_vector_operand (op, mode);
+
+	  /* If we aren't optimizing, only allow one memory operand to be
+	     generated.  */
+	  if (memory_operand (op, mode))
+	    num_memory++;
+
+	  gcc_assert (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode);
+
+	  if (optimize
+	      || ! (*insn_data[icode].operand[i+adjust+1].predicate) (op, mode)
+	      || num_memory > 1)
+	    op = force_reg (mode, op);
+	}
+
+      args[i].op = op;
+      args[i].mode = mode;
+    }
+
+  switch (nargs)
+    {
+    case 1:
+      pat = GEN_FCN (icode) (target, args[0].op);
+      break;
+
+    case 2:
+      if (tf_p)
+	pat = GEN_FCN (icode) (target, args[0].op, args[1].op,
+			       GEN_INT ((int)sub_code));
+      else if (! comparison_p)
+	pat = GEN_FCN (icode) (target, args[0].op, args[1].op);
+      else
+	{
+	  rtx cmp_op = gen_rtx_fmt_ee (sub_code, GET_MODE (target),
+				       args[0].op,
+				       args[1].op);
+
+	  pat = GEN_FCN (icode) (target, cmp_op, args[0].op, args[1].op);
+	}
+      break;
+
+    case 3:
+      pat = GEN_FCN (icode) (target, args[0].op, args[1].op, args[2].op);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (! pat)
+    return 0;
+
+  emit_insn (pat);
   return target;
 }
 
@@ -24632,6 +24880,12 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
        i++, d++)
     if (d->code == fcode)
       return ix86_expand_sse_pcmpistr (d, exp, target);
+
+  for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
+    if (d->code == fcode)
+      return ix86_expand_multi_arg_builtin (d->icode, exp, target,
+					    (enum multi_arg_type)d->flag,
+					    d->comparison);
 
   gcc_unreachable ();
 }
@@ -29015,6 +29269,200 @@ ix86_expand_round (rtx operand0, rtx operand1)
   emit_move_insn (operand0, res);
 }
 
+/* Validate whether a FMA4 instruction is valid or not.
+   OPERANDS is the array of operands.
+   NUM is the number of operands.
+   USES_OC0 is true if the instruction uses OC0 and provides 4 variants.
+   NUM_MEMORY is the maximum number of memory operands to accept.
+   NUM_MEMORY less than zero is a special case to allow an operand
+   of an instruction to be memory operation.
+   when COMMUTATIVE is set, operand 1 and 2 can be swapped.  */
+
+bool
+ix86_fma4_valid_op_p (rtx operands[], rtx insn ATTRIBUTE_UNUSED, int num,
+		      bool uses_oc0, int num_memory, bool commutative)
+{
+  int mem_mask;
+  int mem_count;
+  int i;
+
+  /* Count the number of memory arguments */
+  mem_mask = 0;
+  mem_count = 0;
+  for (i = 0; i < num; i++)
+    {
+      enum machine_mode mode = GET_MODE (operands[i]);
+      if (register_operand (operands[i], mode))
+	;
+
+      else if (memory_operand (operands[i], mode))
+	{
+	  mem_mask |= (1 << i);
+	  mem_count++;
+	}
+
+      else
+	{
+	  rtx pattern = PATTERN (insn);
+
+	  /* allow 0 for pcmov */
+	  if (GET_CODE (pattern) != SET
+	      || GET_CODE (SET_SRC (pattern)) != IF_THEN_ELSE
+	      || i < 2
+	      || operands[i] != CONST0_RTX (mode))
+	    return false;
+	}
+    }
+
+  /* Special case pmacsdq{l,h} where we allow the 3rd argument to be
+     a memory operation.  */
+  if (num_memory < 0)
+    {
+      num_memory = -num_memory;
+      if ((mem_mask & (1 << (num-1))) != 0)
+	{
+	  mem_mask &= ~(1 << (num-1));
+	  mem_count--;
+	}
+    }
+
+  /* If there were no memory operations, allow the insn */
+  if (mem_mask == 0)
+    return true;
+
+  /* Do not allow the destination register to be a memory operand.  */
+  else if (mem_mask & (1 << 0))
+    return false;
+
+  /* If there are too many memory operations, disallow the instruction.  While
+     the hardware only allows 1 memory reference, before register allocation
+     for some insns, we allow two memory operations sometimes in order to allow
+     code like the following to be optimized:
+
+	float fmadd (float *a, float *b, float *c) { return (*a * *b) + *c; }
+
+    or similar cases that are vectorized into using the vfmaddss
+    instruction.  */
+  else if (mem_count > num_memory)
+    return false;
+
+  /* Don't allow more than one memory operation if not optimizing.  */
+  else if (mem_count > 1 && !optimize)
+    return false;
+
+  else if (num == 4 && mem_count == 1)
+    {
+      /* formats (destination is the first argument), example vfmaddss:
+	 xmm1, xmm1, xmm2, xmm3/mem
+	 xmm1, xmm1, xmm2/mem, xmm3
+	 xmm1, xmm2, xmm3/mem, xmm1
+	 xmm1, xmm2/mem, xmm3, xmm1 */
+      if (uses_oc0)
+	return ((mem_mask == (1 << 1))
+		|| (mem_mask == (1 << 2))
+		|| (mem_mask == (1 << 3)));
+
+      /* format, example vpmacsdd:
+	 xmm1, xmm2, xmm3/mem, xmm1 */
+      if (commutative)
+	return (mem_mask == (1 << 2) || mem_mask == (1 << 1));
+      else
+	return (mem_mask == (1 << 2));
+    }
+
+  else if (num == 4 && num_memory == 2)
+    {
+      /* If there are two memory operations, we can load one of the memory ops
+	 into the destination register.  This is for optimizing the
+	 multiply/add ops, which the combiner has optimized both the multiply
+	 and the add insns to have a memory operation.  We have to be careful
+	 that the destination doesn't overlap with the inputs.  */
+      rtx op0 = operands[0];
+
+      if (reg_mentioned_p (op0, operands[1])
+	  || reg_mentioned_p (op0, operands[2])
+	  || reg_mentioned_p (op0, operands[3]))
+	return false;
+
+      /* formats (destination is the first argument), example vfmaddss:
+	 xmm1, xmm1, xmm2, xmm3/mem
+	 xmm1, xmm1, xmm2/mem, xmm3
+	 xmm1, xmm2, xmm3/mem, xmm1
+	 xmm1, xmm2/mem, xmm3, xmm1
+
+         For the oc0 case, we will load either operands[1] or operands[3] into
+         operands[0], so any combination of 2 memory operands is ok.  */
+      if (uses_oc0)
+	return true;
+
+      /* format, example vpmacsdd:
+	 xmm1, xmm2, xmm3/mem, xmm1
+
+         For the integer multiply/add instructions be more restrictive and
+         require operands[2] and operands[3] to be the memory operands.  */
+      if (commutative)
+	return (mem_mask == ((1 << 1) | (1 << 3)) || ((1 << 2) | (1 << 3)));
+      else
+	return (mem_mask == ((1 << 2) | (1 << 3)));
+    }
+
+  else if (num == 3 && num_memory == 1)
+    {
+      /* formats, example vprotb:
+	 xmm1, xmm2, xmm3/mem
+	 xmm1, xmm2/mem, xmm3 */
+      if (uses_oc0)
+	return ((mem_mask == (1 << 1)) || (mem_mask == (1 << 2)));
+
+      /* format, example vpcomeq:
+	 xmm1, xmm2, xmm3/mem */
+      else
+	return (mem_mask == (1 << 2));
+    }
+
+  else
+    gcc_unreachable ();
+
+  return false;
+}
+
+
+/* Fixup an FMA4 instruction that has 2 memory input references into a form the
+   hardware will allow by using the destination register to load one of the
+   memory operations.  Presently this is used by the multiply/add routines to
+   allow 2 memory references.  */
+
+void
+ix86_expand_fma4_multiple_memory (rtx operands[],
+				  int num,
+				  enum machine_mode mode)
+{
+  rtx op0 = operands[0];
+  if (num != 4
+      || memory_operand (op0, mode)
+      || reg_mentioned_p (op0, operands[1])
+      || reg_mentioned_p (op0, operands[2])
+      || reg_mentioned_p (op0, operands[3]))
+    gcc_unreachable ();
+
+  /* For 2 memory operands, pick either operands[1] or operands[3] to move into
+     the destination register.  */
+  if (memory_operand (operands[1], mode))
+    {
+      emit_move_insn (op0, operands[1]);
+      operands[1] = op0;
+    }
+  else if (memory_operand (operands[3], mode))
+    {
+      emit_move_insn (op0, operands[3]);
+      operands[3] = op0;
+    }
+  else
+    gcc_unreachable ();
+
+  return;
+}
+
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ix86_attribute_table[] =
 {
