@@ -1029,6 +1029,7 @@ gfc_typenode_for_spec (gfc_typespec * spec)
       break;
 
     case BT_DERIVED:
+    case BT_CLASS:
       basetype = gfc_get_derived_type (spec->u.derived);
 
       /* If we're dealing with either C_PTR or C_FUNPTR, we modified the
@@ -2063,7 +2064,7 @@ gfc_get_derived_type (gfc_symbol * derived)
      will be built and so we can return the type.  */
   for (c = derived->components; c; c = c->next)
     {
-      if (c->ts.type != BT_DERIVED)
+      if (c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
 	continue;
 
       if ((!c->attr.pointer && !c->attr.proc_pointer)
@@ -2098,7 +2099,7 @@ gfc_get_derived_type (gfc_symbol * derived)
     {
       if (c->attr.proc_pointer)
 	field_type = gfc_get_ppc_type (c);
-      else if (c->ts.type == BT_DERIVED)
+      else if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
         field_type = c->ts.u.derived->backend_decl;
       else
 	{
@@ -2134,7 +2135,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 						    PACKED_STATIC,
 						    !c->attr.target);
 	}
-      else if (c->attr.pointer && !c->attr.proc_pointer)
+      else if ((c->attr.pointer || c->attr.allocatable)
+	       && !c->attr.proc_pointer)
 	field_type = build_pointer_type (field_type);
 
       field = gfc_add_field_to_struct (&fieldlist, typenode,

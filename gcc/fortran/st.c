@@ -122,6 +122,7 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_SELECT:
+    case EXEC_SELECT_TYPE:
       if (p->ext.case_list)
 	gfc_free_case_list (p->ext.case_list);
       break;
@@ -132,7 +133,7 @@ gfc_free_statement (gfc_code *p)
 
     case EXEC_ALLOCATE:
     case EXEC_DEALLOCATE:
-      gfc_free_alloc_list (p->ext.alloc_list);
+      gfc_free_alloc_list (p->ext.alloc.list);
       break;
 
     case EXEC_OPEN:

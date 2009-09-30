@@ -1,6 +1,4 @@
 ! { dg-do compile }
-! { dg-options "-w" }
-! FIXME: Remove -w when CLASS is fully implemented.
 
 ! Type-bound procedures
 ! Check for errors with operator calls.

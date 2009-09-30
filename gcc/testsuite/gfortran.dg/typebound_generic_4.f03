@@ -1,8 +1,5 @@
 ! { dg-do run }
 
-! FIXME: Remove -w once the TYPE/CLASS issue is resolved
-! { dg-options "-w" }
-
 ! PR fortran/37588
 ! This test used to not resolve the GENERIC binding.
 

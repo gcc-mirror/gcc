@@ -1,8 +1,5 @@
 ! { dg-do run }
 
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-
 ! Type-bound procedures
 ! Check that calls work across module-boundaries.
 

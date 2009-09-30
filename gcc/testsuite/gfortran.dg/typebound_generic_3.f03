@@ -1,8 +1,5 @@
 ! { dg-do run }
 
-! FIXME: Remove -w once switched to polymorphic passed-object dummy arguments.
-! { dg-options "-w" }
-
 ! Type-bound procedures
 ! Check calls with GENERIC bindings.
 

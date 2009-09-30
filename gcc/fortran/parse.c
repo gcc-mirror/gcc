@@ -312,6 +312,7 @@ decode_statement (void)
   match (NULL, gfc_match_block, ST_BLOCK);
   match (NULL, gfc_match_do, ST_DO);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
+  match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
 
   /* General statement matching: Instead of testing every possible
      statement, we eliminate most possibilities by peeking at the
@@ -343,6 +344,7 @@ decode_statement (void)
       match ("case", gfc_match_case, ST_CASE);
       match ("common", gfc_match_common, ST_COMMON);
       match ("contains", gfc_match_eos, ST_CONTAINS);
+      match ("class", gfc_match_class_is, ST_CLASS_IS);
       break;
 
     case 'd':
@@ -432,6 +434,7 @@ decode_statement (void)
     case 't':
       match ("target", gfc_match_target, ST_ATTR_DECL);
       match ("type", gfc_match_derived_decl, ST_DERIVED_DECL);
+      match ("type is", gfc_match_type_is, ST_TYPE_IS);
       break;
 
     case 'u':
@@ -936,7 +939,8 @@ next_statement (void)
 
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: \
   case ST_IF_BLOCK: case ST_BLOCK: \
-  case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_OMP_PARALLEL: \
+  case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_SELECT_TYPE: \
+  case ST_OMP_PARALLEL: \
   case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
   case ST_OMP_CRITICAL: case ST_OMP_MASTER: case ST_OMP_SINGLE: \
   case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
@@ -1359,6 +1363,15 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_SELECT_CASE:
       p = "SELECT CASE";
+      break;
+    case ST_SELECT_TYPE:
+      p = "SELECT TYPE";
+      break;
+    case ST_TYPE_IS:
+      p = "TYPE IS";
+      break;
+    case ST_CLASS_IS:
+      p = "CLASS IS";
       break;
     case ST_SEQUENCE:
       p = "SEQUENCE";
@@ -2874,6 +2887,83 @@ parse_select_block (void)
 }
 
 
+/* Parse a SELECT TYPE construct (F03:R821).  */
+
+static void
+parse_select_type_block (void)
+{
+  gfc_statement st;
+  gfc_code *cp;
+  gfc_state_data s;
+
+  accept_statement (ST_SELECT_TYPE);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_SELECT_TYPE, gfc_new_block);
+
+  /* Make sure that the next statement is a TYPE IS, CLASS IS, CLASS DEFAULT
+     or END SELECT.  */
+  for (;;)
+    {
+      st = next_statement ();
+      if (st == ST_NONE)
+	unexpected_eof ();
+      if (st == ST_END_SELECT)
+	{
+	  /* Empty SELECT CASE is OK.  */
+	  accept_statement (st);
+	  pop_state ();
+	  return;
+	}
+      if (st == ST_TYPE_IS || st == ST_CLASS_IS)
+	break;
+
+      gfc_error ("Expected TYPE IS, CLASS IS or END SELECT statement "
+		 "following SELECT TYPE at %C");
+
+      reject_statement ();
+    }
+
+  /* At this point, we're got a nonempty select block.  */
+  cp = new_level (cp);
+  *cp = new_st;
+
+  accept_statement (st);
+
+  do
+    {
+      st = parse_executable (ST_NONE);
+      switch (st)
+	{
+	case ST_NONE:
+	  unexpected_eof ();
+
+	case ST_TYPE_IS:
+	case ST_CLASS_IS:
+	  cp = new_level (gfc_state_stack->head);
+	  *cp = new_st;
+	  gfc_clear_new_st ();
+
+	  accept_statement (st);
+	  /* Fall through */
+
+	case ST_END_SELECT:
+	  break;
+
+	/* Can't have an executable statement because of
+	   parse_executable().  */
+	default:
+	  unexpected_statement (st);
+	  break;
+	}
+    }
+  while (st != ST_END_SELECT);
+
+  pop_state ();
+  accept_statement (st);
+}
+
+
 /* Given a symbol, make sure it is not an iteration variable for a DO
    statement.  This subroutine is called when the symbol is seen in a
    context that causes it to become redefined.  If the symbol is an
@@ -3393,6 +3483,10 @@ parse_executable (gfc_statement st)
 
 	case ST_SELECT_CASE:
 	  parse_select_block ();
+	  break;
+
+	case ST_SELECT_TYPE:
+	  parse_select_type_block();
 	  break;
 
 	case ST_DO:

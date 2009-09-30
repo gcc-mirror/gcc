@@ -43,8 +43,8 @@ program blocks
   end if
 
   select case (i)
-  case (1) s2  ! { dg-error "Expected the name of the SELECT CASE construct" }
-  case default s2 ! { dg-error "Expected the name of the SELECT CASE construct" }
+  case (1) s2  ! { dg-error "Syntax error in CASE specification" }
+  case default s2 ! { dg-error "Syntax error in CASE specification" }
   end select s2 ! { dg-error "Syntax error in END SELECT statement" }
   end select
 

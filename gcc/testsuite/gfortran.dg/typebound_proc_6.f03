@@ -1,8 +1,5 @@
 ! { dg-do compile }
 
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-
 ! Type-bound procedures
 ! Test for the check if overriding methods "match" the overridden ones by their
 ! characteristics.

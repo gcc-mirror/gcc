@@ -482,7 +482,8 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       se->string_length = tmp;
     }
 
-  if ((c->attr.pointer && c->attr.dimension == 0 && c->ts.type != BT_CHARACTER)
+  if (((c->attr.pointer || c->attr.allocatable) && c->attr.dimension == 0
+       && c->ts.type != BT_CHARACTER)
       || c->attr.proc_pointer)
     se->expr = build_fold_indirect_ref_loc (input_location,
 					se->expr);
@@ -510,8 +511,12 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
 
   if (dt->attr.extension && dt->components)
     {
+      if (dt->attr.is_class)
+	cmp = dt->components;
+      else
+	cmp = dt->components->next;
       /* Return if the component is not in the parent type.  */
-      for (cmp = dt->components->next; cmp; cmp = cmp->next)
+      for (; cmp; cmp = cmp->next)
 	if (strcmp (c->name, cmp->name) == 0)
 	  return;
 	
@@ -2641,6 +2646,49 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	    }
 	}
+      else if (fsym && fsym->ts.type == BT_CLASS
+		 && e->ts.type == BT_DERIVED)
+	{
+	  tree data;
+	  tree vindex;
+
+	  /* The derived type needs to be converted to a temporary
+	     CLASS object.  */
+	  gfc_init_se (&parmse, se);
+	  type = gfc_typenode_for_spec (&fsym->ts);
+	  var = gfc_create_var (type, "class");
+
+	  /* Get the components.  */
+	  tmp = fsym->ts.u.derived->components->backend_decl;
+	  data = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+			      var, tmp, NULL_TREE);
+	  tmp = fsym->ts.u.derived->components->next->backend_decl;
+	  vindex = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+			      var, tmp, NULL_TREE);
+
+	  /* Set the vindex.  */
+	  tmp = build_int_cst (TREE_TYPE (vindex),
+			       e->ts.u.derived->vindex);
+	  gfc_add_modify (&parmse.pre, vindex, tmp);
+
+	  /* Now set the data field.  */
+	  argss = gfc_walk_expr (e);
+	  if (argss == gfc_ss_terminator)
+            {
+	      gfc_conv_expr_reference (&parmse, e);
+	      tmp = fold_convert (TREE_TYPE (data),
+				  parmse.expr);
+	      gfc_add_modify (&parmse.pre, data, tmp);
+	    }
+	  else
+	    {
+	      gfc_conv_expr (&parmse, e);
+	      gfc_add_modify (&parmse.pre, data, parmse.expr);
+	    }
+
+	  /* Pass the address of the class object.  */
+	  parmse.expr = gfc_build_addr_expr (NULL_TREE, var);
+	}
       else if (se->ss && se->ss->useflags)
 	{
 	  /* An elemental function inside a scalarized loop.  */
@@ -3607,6 +3655,7 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
       switch (ts->type)
 	{
 	case BT_DERIVED:
+	case BT_CLASS:
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_structure (&se, expr, 1);
 	  return se.expr;
@@ -3770,6 +3819,13 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 			       fold_convert (TREE_TYPE (dest), se.expr));
 	  gfc_add_block_to_block (&block, &se.post);
 	}
+    }
+  else if (cm->ts.type == BT_CLASS && expr->expr_type == EXPR_NULL)
+    {
+      /* NULL initialization for CLASS components.  */
+      tmp = gfc_trans_structure_assign (dest,
+					gfc_default_initializer (&cm->ts));
+      gfc_add_expr_to_block (&block, tmp);
     }
   else if (cm->attr.dimension)
     {
@@ -3966,12 +4022,26 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       if (!c->expr || cm->attr.allocatable)
         continue;
 
-      val = gfc_conv_initializer (c->expr, &cm->ts,
-	  TREE_TYPE (cm->backend_decl), cm->attr.dimension,
-	  cm->attr.pointer || cm->attr.proc_pointer);
+      if (cm->ts.type == BT_CLASS)
+	{
+	  val = gfc_conv_initializer (c->expr, &cm->ts,
+	      TREE_TYPE (cm->ts.u.derived->components->backend_decl),
+	      cm->ts.u.derived->components->attr.dimension,
+	      cm->ts.u.derived->components->attr.pointer);
 
-      /* Append it to the constructor list.  */
-      CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
+	  /* Append it to the constructor list.  */
+	  CONSTRUCTOR_APPEND_ELT (v, cm->ts.u.derived->components->backend_decl,
+				  val);
+	}
+      else
+	{
+	  val = gfc_conv_initializer (c->expr, &cm->ts,
+	      TREE_TYPE (cm->backend_decl), cm->attr.dimension,
+	      cm->attr.pointer || cm->attr.proc_pointer);
+
+	  /* Append it to the constructor list.  */
+	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
+	}
     }
   se->expr = build_constructor (type, v);
   if (init) 

@@ -1,8 +1,5 @@
 ! { dg-do compile }
 !
-! FIXME: Remove -w after polymorphic entities are supported.
-! { dg-options "-w" }
-!
 ! ALLOCATE statements with derived type specification
 !
 ! Contributed by Janus Weil <janus@gcc.gnu.org>
