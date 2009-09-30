@@ -4851,7 +4851,8 @@ check_typebound_baseobject (gfc_expr* e)
     return FAILURE;
 
   gcc_assert (base->ts.type == BT_DERIVED || base->ts.type == BT_CLASS);
-  if (base->ts.u.derived->attr.abstract)
+
+  if (base->ts.type == BT_DERIVED && base->ts.u.derived->attr.abstract)
     {
       gfc_error ("Base object for type-bound procedure call at %L is of"
 		 " ABSTRACT type '%s'", &e->where, base->ts.u.derived->name);
@@ -7298,30 +7299,34 @@ resolve_class_assign (gfc_code *code)
 {
   gfc_code *assign_code = gfc_get_code ();
 
-  /* Insert an additional assignment which sets the vindex.  */
-  assign_code->next = code->next;
-  code->next = assign_code;
-  assign_code->op = EXEC_ASSIGN;
-  assign_code->expr1 = gfc_copy_expr (code->expr1);
-  gfc_add_component_ref (assign_code->expr1, "$vindex");
-  if (code->expr2->ts.type == BT_DERIVED)
-    /* vindex is constant, determined at compile time.  */
-    assign_code->expr2 = gfc_int_expr (code->expr2->ts.u.derived->vindex);
-  else if (code->expr2->ts.type == BT_CLASS)
+  if (code->expr2->ts.type != BT_CLASS)
     {
-      /* vindex must be determined at run time.  */
-      assign_code->expr2 = gfc_copy_expr (code->expr2);
-      gfc_add_component_ref (assign_code->expr2, "$vindex");
+      /* Insert an additional assignment which sets the vindex.  */
+      assign_code->next = code->next;
+      code->next = assign_code;
+      assign_code->op = EXEC_ASSIGN;
+      assign_code->expr1 = gfc_copy_expr (code->expr1);
+      gfc_add_component_ref (assign_code->expr1, "$vindex");
+      if (code->expr2->ts.type == BT_DERIVED)
+	/* vindex is constant, determined at compile time.  */
+	assign_code->expr2 = gfc_int_expr (code->expr2->ts.u.derived->vindex);
+      else if (code->expr2->ts.type == BT_CLASS)
+	{
+	  /* vindex must be determined at run time.  */
+	  assign_code->expr2 = gfc_copy_expr (code->expr2);
+	  gfc_add_component_ref (assign_code->expr2, "$vindex");
+	}
+      else if (code->expr2->expr_type == EXPR_NULL)
+	assign_code->expr2 = gfc_int_expr (0);
+      else
+	gcc_unreachable ();
     }
-  else if (code->expr2->expr_type == EXPR_NULL)
-    assign_code->expr2 = gfc_int_expr (0);
-  else
-    gcc_unreachable ();
 
   /* Modify the actual pointer assignment.  */
-  gfc_add_component_ref (code->expr1, "$data");
   if (code->expr2->ts.type == BT_CLASS)
-    gfc_add_component_ref (code->expr2, "$data");
+    code->op = EXEC_ASSIGN;
+  else
+    gfc_add_component_ref (code->expr1, "$data");
 }
 
 

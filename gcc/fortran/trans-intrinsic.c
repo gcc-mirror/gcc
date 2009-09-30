@@ -4608,6 +4608,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   gfc_init_se (&arg1se, NULL);
   gfc_init_se (&arg2se, NULL);
   arg1 = expr->value.function.actual;
+  if (arg1->expr->ts.type == BT_CLASS)
+    gfc_add_component_ref (arg1->expr, "$data");
   arg2 = arg1->next;
   ss1 = gfc_walk_expr (arg1->expr);
 
