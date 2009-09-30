@@ -1,3 +1,8 @@
+2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22093
+	* gcc.target/alpha/pr22093.c: New test.
+
 2009-09-29  John Freeman  <jfreeman08@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

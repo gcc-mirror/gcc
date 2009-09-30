@@ -1,3 +1,9 @@
+2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22093
+	* config/alpha/alpha.md (unaligned_storehi_be): Force operand
+	of plus RTX into register.
+
 2009-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/install.texi: Linguistic and markup fixes.
