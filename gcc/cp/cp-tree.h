@@ -1838,7 +1838,7 @@ struct GTY(()) lang_decl {
 
 #define LANG_DECL_U2_CHECK(NODE, TF) __extension__		\
 ({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
-    if (lt->u.base.u2sel != TF)					\
+    if (!LANG_DECL_HAS_MIN (NODE) || lt->u.base.u2sel != TF)	\
       lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
     &lt->u.min.u2; })
 
