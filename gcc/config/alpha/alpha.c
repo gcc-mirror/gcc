@@ -6339,7 +6339,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
     }
 
   addend = offset;
-  ptr_type = build_pointer_type (type);
+  ptr_type = build_pointer_type_for_mode (type, ptr_mode, true);
 
   if (TREE_CODE (type) == COMPLEX_TYPE)
     {
@@ -6420,7 +6420,7 @@ alpha_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
   if (indirect)
-    type = build_pointer_type (type);
+    type = build_pointer_type_for_mode (type, ptr_mode, true);
 
   /* Find the value.  Note that this will be a stable indirection, or
      a composite of stable indirections in the case of complex.  */
