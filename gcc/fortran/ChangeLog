@@ -1,5 +1,13 @@
 2009-09-30  Janus Weil  <janus@gcc.gnu.org>
 
+	* resolve.c (check_typebound_baseobject): Don't check for
+	abstract types for CLASS.
+	(resolve_class_assign): Adapt for RHS being a CLASS.
+	* trans-intrinsic.c (gfc_conv_associated): Add component ref
+	if expr is a CLASS.
+
+2009-09-30  Janus Weil  <janus@gcc.gnu.org>
+
 	* check.c (gfc_check_same_type_as): New function for checking
 	SAME_TYPE_AS and EXTENDS_TYPE_OF.
 	* decl.c (encapsulate_class_symbol): Set ABSTRACT attribute for class
