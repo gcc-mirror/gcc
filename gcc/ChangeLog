@@ -1,3 +1,10 @@
+2009-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41279
+	* cfgloopanal.c (num_loop_insns): Don't increment ninsns for each bb
+	before insn counting loop now that BB_END (bb) is counted.  Ensure
+	the return value isn't zero.
+
 2009-09-30  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (sh-symbianelf): Replace definition of extra_objs
