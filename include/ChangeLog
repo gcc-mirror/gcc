@@ -1,3 +1,10 @@
+2009-09-29  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_LAMBDA, DEMANGLE_COMPONENT_DEFAULT_ARG,
+	DEMANGLE_COMPONENT_UNNAMED_TYPE.
+	(struct demangle_component): Add s_unary_num.
+
 2009-09-25  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2.h (enum dwarf_tag): Rename DW_TAG_template_parameter_pack and
