@@ -3,6 +3,16 @@
 
 #include <cassert>
 
+struct A {
+  int i;
+  A(): i(42) { }
+  int f() {
+    return [this]{
+      return [=]{ return i; }();
+    }();
+  }
+};
+
 int main() {
   int i = 1;
 
@@ -47,6 +57,7 @@ int main() {
 
   assert(i == 4);
 
+  assert (A().f() == 42);
+
   return 0;
 }
-

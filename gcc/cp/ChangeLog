@@ -1,5 +1,10 @@
 2009-09-30  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (lambda_expr_this_capture): Fix default capture
+	of explicit capture of 'this'.
+
+2009-09-30  Jason Merrill  <jason@redhat.com>
+
 	* parser.c (cp_parser_lambda_expression): Don't add __ to __this.
 
 2009-09-30  Jason Merrill  <jason@redhat.com>
