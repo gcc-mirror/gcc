@@ -31,8 +31,8 @@
 #define SYMBIAN_EXPORT_NAME(NAME,FILE,DECL)			\
   do								\
     {								\
-      if ((DECL && sh_symbian_dllexport_p (DECL))		\
-         || sh_symbian_dllexport_name_p (NAME))			\
+      if ((DECL && sh_symbian_is_dllexported (DECL))		\
+         || sh_symbian_is_dllexported_name (NAME))		\
         {							\
           fprintf ((FILE), "\t.pushsection .directive\n");	\
           fprintf ((FILE), "\t.asciz \"EXPORT %s\\n\"\n",	\

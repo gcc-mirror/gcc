@@ -503,7 +503,7 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING	sh_symbian_strip_name_encoding
 #undef  TARGET_CXX_IMPORT_EXPORT_CLASS
-#define TARGET_CXX_IMPORT_EXPORT_CLASS  symbian_import_export_class
+#define TARGET_CXX_IMPORT_EXPORT_CLASS  sh_symbian_import_export_class
 
 #endif /* SYMBIAN */
 

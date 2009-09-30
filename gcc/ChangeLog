@@ -1,3 +1,17 @@
+2009-09-30  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (sh-symbianelf): Replace definition of extra_objs
+	with separate definitions of c_target_objs and cxx_target_objs.
+	* config/sh/t-sh: Add rules to build symbian-cxx.o, symbian-c.o
+	and symbian-base.o.
+	* config/sh/sh.c (TARGET_CXX_INPUT_EXPORT_CLASS): Use
+	sh_symbian_import_export_class.
+	* config/sh/sh-protos.h: Fix names of exported symbian functions.
+	* config/sh/symbian.c: Delete, moving code into...
+	* config/sh/symbian-base.c: ... here
+	* config/sh/symbian-c.c: ... and here
+	* config/sh/symbian-cxx.c: ... and here.
+
 2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/22093
