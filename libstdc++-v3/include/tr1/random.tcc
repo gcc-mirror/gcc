@@ -89,6 +89,19 @@ namespace tr1
       };
   } // namespace __detail
 
+
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    const _UIntType
+    linear_congruential<_UIntType, __a, __c, __m>::multiplier;
+
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    const _UIntType
+    linear_congruential<_UIntType, __a, __c, __m>::increment;
+
+  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
+    const _UIntType
+    linear_congruential<_UIntType, __a, __c, __m>::modulus;
+
   /**
    * Seeds the LCR with integral value @p __x0, adjusted so that the 
    * ring identity is never a member of the convergence set.
@@ -173,6 +186,83 @@ namespace tr1
       return __is;
     } 
 
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::word_size;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::state_size;
+    
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::shift_size;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::mask_bits;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const _UIntType
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::parameter_a;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::output_u;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::output_s;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const _UIntType
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::output_b;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::output_t;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const _UIntType
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::output_c;
+
+  template<class _UIntType, int __w, int __n, int __m, int __r,
+	   _UIntType __a, int __u, int __s,
+	   _UIntType __b, int __t, _UIntType __c, int __l>
+    const int
+    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
+		     __b, __t, __c, __l>::output_l;
 
   template<class _UIntType, int __w, int __n, int __m, int __r,
 	   _UIntType __a, int __u, int __s,
@@ -312,6 +402,18 @@ namespace tr1
 
 
   template<typename _IntType, _IntType __m, int __s, int __r>
+    const _IntType
+    subtract_with_carry<_IntType, __m, __s, __r>::modulus;
+
+  template<typename _IntType, _IntType __m, int __s, int __r>
+    const int
+    subtract_with_carry<_IntType, __m, __s, __r>::long_lag;
+
+  template<typename _IntType, _IntType __m, int __s, int __r>
+    const int
+    subtract_with_carry<_IntType, __m, __s, __r>::short_lag;
+
+  template<typename _IntType, _IntType __m, int __s, int __r>
     void
     subtract_with_carry<_IntType, __m, __s, __r>::
     seed(unsigned long __value)
@@ -430,6 +532,18 @@ namespace tr1
       return __is;
     }
 
+
+  template<typename _RealType, int __w, int __s, int __r>
+    const int
+    subtract_with_carry_01<_RealType, __w, __s, __r>::word_size;
+
+  template<typename _RealType, int __w, int __s, int __r>
+    const int
+    subtract_with_carry_01<_RealType, __w, __s, __r>::long_lag;
+
+  template<typename _RealType, int __w, int __s, int __r>
+    const int
+    subtract_with_carry_01<_RealType, __w, __s, __r>::short_lag;
 
   template<typename _RealType, int __w, int __s, int __r>
     void
@@ -576,6 +690,13 @@ namespace tr1
       return __is;
     }
 
+  template<class _UniformRandomNumberGenerator, int __p, int __r>
+    const int
+    discard_block<_UniformRandomNumberGenerator, __p, __r>::block_size;
+
+  template<class _UniformRandomNumberGenerator, int __p, int __r>
+    const int
+    discard_block<_UniformRandomNumberGenerator, __p, __r>::used_block;
 
   template<class _UniformRandomNumberGenerator, int __p, int __r>
     typename discard_block<_UniformRandomNumberGenerator,
@@ -638,6 +759,18 @@ namespace tr1
       return __is;
     }
 
+
+  template<class _UniformRandomNumberGenerator1, int __s1,
+	   class _UniformRandomNumberGenerator2, int __s2>
+    const int
+    xor_combine<_UniformRandomNumberGenerator1, __s1,
+		_UniformRandomNumberGenerator2, __s2>::shift1;
+     
+  template<class _UniformRandomNumberGenerator1, int __s1,
+	   class _UniformRandomNumberGenerator2, int __s2>
+    const int
+    xor_combine<_UniformRandomNumberGenerator1, __s1,
+		_UniformRandomNumberGenerator2, __s2>::shift2;
 
   template<class _UniformRandomNumberGenerator1, int __s1,
 	   class _UniformRandomNumberGenerator2, int __s2>

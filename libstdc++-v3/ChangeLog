@@ -1,4 +1,29 @@
-2009-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+2009-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.tcc: Define static const data members.
+	* include/tr1/random.tcc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constants.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/requirements/
+	constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/
+	requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/
+	requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/
+	requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/mersenne_twister/
+	requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	requirements/constants.cc: Likewise.
+
+2009-09-29  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libstdc++/38923
 	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Avoid 'head',
@@ -8,10 +33,10 @@
 
 2009-09-28  Benjamin Kosnik  <bkoz@redhat.com>
 
-	*  libsupc++/eh_terminate.cc: Fixes for -fno-exceptions.
-	*  libsupc++/vec.cc: Same.
-	*  libsupc++/vterminate.cc: Same.
-	*  libsupc++/new_opnt.cc: Same.
+	* libsupc++/eh_terminate.cc: Fixes for -fno-exceptions.
+	* libsupc++/vec.cc: Same.
+	* libsupc++/vterminate.cc: Same.
+	* libsupc++/new_opnt.cc: Same.
 
 2009-09-28  Johannes Singler  <singler@ira.uka.de>
 
