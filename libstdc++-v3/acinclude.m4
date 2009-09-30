@@ -209,8 +209,8 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
     if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
       glibcxx_ld_is_gold=yes
     fi
-    ldver=`$LD --version 2>/dev/null | head -1 | \
-           sed -e 's/GNU \(go\)\{0,1\}ld \(version \)\{0,1\}\(([^)]*) \)\{0,1\}\([0-9.][0-9.]*\).*/\4/'`
+    ldver=`$LD --version 2>/dev/null |
+	   sed -e 's/GNU g*o*ld v*e*r*s*i*o*n* *\(([^)]*)* *\) \([0-9.][0-9.]*\).*/\2/; q'`
     changequote([,])
     glibcxx_gnu_ld_version=`echo $ldver | \
            $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`

@@ -1,3 +1,11 @@
+2009-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libstdc++/38923
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Avoid 'head',
+	use sed script portable to Solaris /bin/sed for extracting ld
+	version.
+	* configure: Regenerate.
+
 2009-09-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	*  libsupc++/eh_terminate.cc: Fixes for -fno-exceptions.

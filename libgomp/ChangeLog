@@ -1,3 +1,10 @@
+2009-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Avoid 'head',
+	use sed script portable to Solaris /bin/sed for extracting ld
+	version.
+	* configure: Regenerate.
+
 2009-09-17  Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/libgomp.graphite/bounds.c: New test.
