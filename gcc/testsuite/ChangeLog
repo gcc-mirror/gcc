@@ -1,3 +1,7 @@
+2009-09-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/eh/init-temp1.C: Improve test.
+
 2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/22093

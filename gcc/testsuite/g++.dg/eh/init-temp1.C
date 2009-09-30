@@ -1,19 +1,24 @@
 // PR c++/15764
+// { dg-do run }
 
 extern "C" void abort (); 
  
-int counter = 0; 
 int thrown; 
-struct a { 
-  ~a () { if (thrown++ == 0) throw 42; } 
+
+int as;
+struct a {
+  a () { ++as; }
+  ~a () { --as; if (thrown++ == 0) throw 42; }
 }; 
  
 int f (a const&) { return 1; } 
 int f (a const&, a const&) { return 1; } 
- 
+
+int bs;
+int as_sav;
 struct b { 
-  b (...) { ++counter; } 
-  ~b ()   { --counter; } 
+  b (...) { ++bs; }
+  ~b ()   { --bs; as_sav = as; }
 }; 
 
 bool p;
@@ -29,7 +34,12 @@ int main () {
 
     g();
   }  
-  catch (...) {} 
+  catch (...) {}
+
+  // We throw when the first a is destroyed, which should destroy b before
+  // the other a.
+  if (as_sav != 1)
+    abort ();
 
   thrown = 0;
   try {
@@ -39,6 +49,6 @@ int main () {
   }  
   catch (...) {} 
  
-  if (counter != 0) 
+  if (bs != 0)
     abort (); 
 } 
