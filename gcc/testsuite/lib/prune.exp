@@ -20,7 +20,7 @@
 proc prune_gcc_output { text } {
     #send_user "Before:$text\n"
 
-    regsub -all "(^|\n)(\[^\n\]*: )?In ((static member )?function|member|method|(copy )?constructor|destructor|instantiation|program|subroutine|block-data) \[^\n\]*" $text "" text
+    regsub -all "(^|\n)(\[^\n\]*: )?In ((static member |lambda )?function|member|method|(copy )?constructor|destructor|instantiation|program|subroutine|block-data)\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*(: )?At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   instantiated from \[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text

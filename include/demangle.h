@@ -381,6 +381,12 @@ enum demangle_component_type
   DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS,
   /* Global destructors keyed to name.  */
   DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS,
+  /* A lambda closure type.  */
+  DEMANGLE_COMPONENT_LAMBDA,
+  /* A default argument scope.  */
+  DEMANGLE_COMPONENT_DEFAULT_ARG,
+  /* An unnamed type.  */
+  DEMANGLE_COMPONENT_UNNAMED_TYPE,
   /* A pack expansion.  */
   DEMANGLE_COMPONENT_PACK_EXPANSION
 };
@@ -493,6 +499,14 @@ struct demangle_component
       /* Right subtree.  */
       struct demangle_component *right;
     } s_binary;
+
+    struct
+    {
+      /* subtree, same place as d_left.  */
+      struct demangle_component *sub;
+      /* integer.  */
+      int num;
+    } s_unary_num;
 
   } u;
 };

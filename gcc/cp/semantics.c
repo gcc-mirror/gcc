@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static tree maybe_convert_cond (tree);
 static tree finalize_nrv_r (tree *, int *, void *);
+static tree capture_decltype (tree);
 
 
 /* Deferred Access Checking Overview
@@ -1445,6 +1446,21 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
       return error_mark_node;
     }
+
+  /* If decl is a field, object has a lambda type, and decl is not a member
+     of that type, then we have a reference to a member of 'this' from a
+     lambda inside a non-static member function, and we must get to decl
+     through the 'this' capture.  If decl is not a member of that object,
+     either, then its access will still fail later.  */
+  if (LAMBDA_TYPE_P (TREE_TYPE (object))
+      && !same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (decl),
+                                                     TREE_TYPE (object)))
+    object = cp_build_indirect_ref (lambda_expr_this_capture
+				    (CLASSTYPE_LAMBDA_EXPR
+				     (TREE_TYPE (object))),
+                                    /*errorstring=*/"",
+                                    /*complain=*/tf_warning_or_error);
+
   if (current_class_ptr)
     TREE_USED (current_class_ptr) = 1;
   if (processing_template_decl && !qualifying_scope)
@@ -2049,7 +2065,14 @@ finish_this_expr (void)
 
   if (current_class_ptr)
     {
-      result = current_class_ptr;
+      tree type = TREE_TYPE (current_class_ref);
+
+      /* In a lambda expression, 'this' refers to the captured 'this'.  */
+      if (LAMBDA_TYPE_P (type))
+        result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type));
+      else
+        result = current_class_ptr;
+
     }
   else if (current_function_decl
 	   && DECL_STATIC_FUNCTION_P (current_function_decl))
@@ -2613,6 +2636,18 @@ baselink_for_fns (tree fns)
   return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
 }
 
+/* Returns true iff DECL is an automatic variable from a function outside
+   the current one.  */
+
+static bool
+outer_automatic_var_p (tree decl)
+{
+  return ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+	  && DECL_FUNCTION_SCOPE_P (decl)
+	  && !TREE_STATIC (decl)
+	  && DECL_CONTEXT (decl) != current_function_decl);
+}
+
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
    id-expression.  (See cp_parser_id_expression for details.)  SCOPE,
    if non-NULL, is the type or namespace used to explicitly qualify
@@ -2714,12 +2749,61 @@ finish_id_expression (tree id_expression,
       if (!scope && decl != error_mark_node)
 	maybe_note_name_used_in_class (id_expression, decl);
 
-      /* Disallow uses of local variables from containing functions.  */
-      if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+      /* Disallow uses of local variables from containing functions, except
+	 within lambda-expressions.  */
+      if (outer_automatic_var_p (decl)
+	  /* It's not a use (3.2) if we're in an unevaluated context.  */
+	  && !cp_unevaluated_operand)
 	{
-	  tree context = decl_function_context (decl);
-	  if (context != NULL_TREE && context != current_function_decl
-	      && ! TREE_STATIC (decl))
+	  tree context = DECL_CONTEXT (decl);
+	  tree containing_function = current_function_decl;
+	  tree lambda_stack = NULL_TREE;
+	  tree lambda_expr = NULL_TREE;
+
+	  /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
+	     support for an approach in which a reference to a local
+	     [constant] automatic variable in a nested class or lambda body
+	     would enter the expression as an rvalue, which would reduce
+	     the complexity of the problem"
+
+	     FIXME update for final resolution of core issue 696.  */
+	  if (DECL_INTEGRAL_CONSTANT_VAR_P (decl))
+	    return integral_constant_value (decl);
+
+	  /* If we are in a lambda function, we can move out until we hit
+	     1. the context,
+	     2. a non-lambda function, or
+	     3. a non-default capturing lambda function.  */
+	  while (context != containing_function
+		 && LAMBDA_FUNCTION_P (containing_function))
+	    {
+	      lambda_expr = CLASSTYPE_LAMBDA_EXPR
+		(DECL_CONTEXT (containing_function));
+
+	      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
+		  == CPLD_NONE)
+		break;
+
+	      lambda_stack = tree_cons (NULL_TREE,
+					lambda_expr,
+					lambda_stack);
+
+	      containing_function
+		= decl_function_context (containing_function);
+	    }
+
+	  if (context == containing_function)
+	    {
+	      decl = add_default_capture (lambda_stack,
+					  /*id=*/DECL_NAME (decl),
+					  /*initializer=*/decl);
+	    }
+	  else if (lambda_expr)
+	    {
+	      error ("%qD is not captured", decl);
+	      return error_mark_node;
+	    }
+	  else
 	    {
 	      error (TREE_CODE (decl) == VAR_DECL
 		     ? "use of %<auto%> variable from containing function"
@@ -4788,6 +4872,18 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
               if (real_lvalue_p (expr))
                 type = build_reference_type (type);
             }
+	  /* Within a lambda-expression:
+
+	     Every occurrence of decltype((x)) where x is a possibly
+	     parenthesized id-expression that names an entity of
+	     automatic storage duration is treated as if x were
+	     transformed into an access to a corresponding data member
+	     of the closure type that would have been declared if x
+	     were a use of the denoted entity.  */
+	  else if (outer_automatic_var_p (expr)
+		   && current_function_decl
+		   && LAMBDA_FUNCTION_P (current_function_decl))
+	    type = capture_decltype (expr);
           else
             {
               /* Otherwise, where T is the type of e, if e is an lvalue,
@@ -4842,6 +4938,8 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 	 it now.  */
       if (CLASSTYPE_LAZY_COPY_CTOR (type))
 	lazily_declare_fn (sfk_copy_constructor, type);
+      if (CLASSTYPE_LAZY_MOVE_CTOR (type))
+	lazily_declare_fn (sfk_move_constructor, type);
       fns = CLASSTYPE_CONSTRUCTORS (type);
     }
   else
@@ -5103,6 +5201,418 @@ bool
 float_const_decimal64_p (void)
 {
   return 0;
+}
+
+/* Constructor for a lambda expression.  */
+
+tree
+build_lambda_expr (void)
+{
+  tree lambda = make_node (LAMBDA_EXPR);
+  LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) = CPLD_NONE;
+  LAMBDA_EXPR_CAPTURE_LIST         (lambda) = NULL_TREE;
+  LAMBDA_EXPR_THIS_CAPTURE         (lambda) = NULL_TREE;
+  LAMBDA_EXPR_RETURN_TYPE          (lambda) = NULL_TREE;
+  LAMBDA_EXPR_MUTABLE_P            (lambda) = false;
+  return lambda;
+}
+
+/* Create the closure object for a LAMBDA_EXPR.  */
+
+tree
+build_lambda_object (tree lambda_expr)
+{
+  /* Build aggregate constructor call.
+     - cp_parser_braced_list
+     - cp_parser_functional_cast  */
+  VEC(constructor_elt,gc) *elts = NULL;
+  tree node, expr, type;
+  location_t saved_loc;
+
+  if (processing_template_decl)
+    return lambda_expr;
+
+  /* Make sure any error messages refer to the lambda-introducer.  */
+  saved_loc = input_location;
+  input_location = LAMBDA_EXPR_LOCATION (lambda_expr);
+
+  for (node = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr);
+       node;
+       node = TREE_CHAIN (node))
+    {
+      tree field = TREE_PURPOSE (node);
+      tree val = TREE_VALUE (node);
+
+      /* Mere mortals can't copy arrays with aggregate initialization, so
+	 do some magic to make it work here.  */
+      if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+	val = build_array_copy (val);
+
+      CONSTRUCTOR_APPEND_ELT (elts, DECL_NAME (field), val);
+    }
+
+  expr = build_constructor (init_list_type_node, elts);
+  CONSTRUCTOR_IS_DIRECT_INIT (expr) = 1;
+
+  /* N2927: "[The closure] class type is not an aggregate."
+     But we briefly treat it as an aggregate to make this simpler.  */
+  type = TREE_TYPE (lambda_expr);
+  CLASSTYPE_NON_AGGREGATE (type) = 0;
+  expr = finish_compound_literal (type, expr);
+  CLASSTYPE_NON_AGGREGATE (type) = 1;
+
+  input_location = saved_loc;
+  return expr;
+}
+
+/* Return an initialized RECORD_TYPE for LAMBDA.
+   LAMBDA must have its explicit captures already.  */
+
+tree
+begin_lambda_type (tree lambda)
+{
+  tree type;
+
+  {
+    /* Unique name.  This is just like an unnamed class, but we cannot use
+       make_anon_name because of certain checks against TYPE_ANONYMOUS_P.  */
+    tree name;
+    name = make_lambda_name ();
+
+    /* Create the new RECORD_TYPE for this lambda.  */
+    type = xref_tag (/*tag_code=*/record_type,
+                     name,
+                     /*scope=*/ts_within_enclosing_non_class,
+                     /*template_header_p=*/false);
+  }
+
+  /* Designate it as a struct so that we can use aggregate initialization.  */
+  CLASSTYPE_DECLARED_CLASS (type) = false;
+
+  /* Clear base types.  */
+  xref_basetypes (type, /*bases=*/NULL_TREE);
+
+  /* Start the class.  */
+  type = begin_class_definition (type, /*attributes=*/NULL_TREE);
+
+  /* Cross-reference the expression and the type.  */
+  TREE_TYPE (lambda) = type;
+  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
+
+  return type;
+}
+
+/* Returns the type to use for the return type of the operator() of a
+   closure class.  */
+
+tree
+lambda_return_type (tree expr)
+{
+  tree type;
+  if (type_dependent_expression_p (expr))
+    {
+      type = cxx_make_type (DECLTYPE_TYPE);
+      DECLTYPE_TYPE_EXPR (type) = expr;
+      DECLTYPE_FOR_LAMBDA_RETURN (type) = true;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
+    }
+  else
+    type = type_decays_to (unlowered_expr_type (expr));
+  return type;
+}
+
+/* Given a LAMBDA_EXPR or closure type LAMBDA, return the op() of the
+   closure type.  */
+
+tree
+lambda_function (tree lambda)
+{
+  tree type;
+  if (TREE_CODE (lambda) == LAMBDA_EXPR)
+    type = TREE_TYPE (lambda);
+  else
+    type = lambda;
+  gcc_assert (LAMBDA_TYPE_P (type));
+  /* Don't let debug_tree cause instantiation.  */
+  if (CLASSTYPE_TEMPLATE_INSTANTIATION (type) && !COMPLETE_TYPE_P (type))
+    return NULL_TREE;
+  lambda = lookup_member (type, ansi_opname (CALL_EXPR),
+			  /*protect=*/0, /*want_type=*/false);
+  if (lambda)
+    lambda = BASELINK_FUNCTIONS (lambda);
+  return lambda;
+}
+
+/* Returns the type to use for the FIELD_DECL corresponding to the
+   capture of EXPR.
+   The caller should add REFERENCE_TYPE for capture by reference.  */
+
+tree
+lambda_capture_field_type (tree expr)
+{
+  tree type;
+  if (type_dependent_expression_p (expr))
+    {
+      type = cxx_make_type (DECLTYPE_TYPE);
+      DECLTYPE_TYPE_EXPR (type) = expr;
+      DECLTYPE_FOR_LAMBDA_CAPTURE (type) = true;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
+    }
+  else
+    type = non_reference (unlowered_expr_type (expr));
+  return type;
+}
+
+/* Recompute the return type for LAMBDA with body of the form:
+     { return EXPR ; }  */
+
+void
+apply_lambda_return_type (tree lambda, tree return_type)
+{
+  tree fco = lambda_function (lambda);
+  tree result;
+
+  LAMBDA_EXPR_RETURN_TYPE (lambda) = return_type;
+
+  /* If we got a DECLTYPE_TYPE, don't stick it in the function yet,
+     it would interfere with instantiating the closure type.  */
+  if (dependent_type_p (return_type))
+    return;
+  if (return_type == error_mark_node)
+    return;
+
+  /* TREE_TYPE (FUNCTION_DECL) == METHOD_TYPE
+     TREE_TYPE (METHOD_TYPE)   == return-type  */
+  TREE_TYPE (TREE_TYPE (fco)) = return_type;
+
+  result = DECL_RESULT (fco);
+  if (result == NULL_TREE)
+    return;
+
+  /* We already have a DECL_RESULT from start_preparsed_function.
+     Now we need to redo the work it and allocate_struct_function
+     did to reflect the new type.  */
+  result = build_decl (input_location, RESULT_DECL, NULL_TREE,
+		       TYPE_MAIN_VARIANT (return_type));
+  DECL_ARTIFICIAL (result) = 1;
+  DECL_IGNORED_P (result) = 1;
+  cp_apply_type_quals_to_decl (cp_type_quals (return_type),
+                               result);
+
+  DECL_RESULT (fco) = result;
+
+  if (!processing_template_decl && aggregate_value_p (result, fco))
+    {
+#ifdef PCC_STATIC_STRUCT_RETURN
+      cfun->returns_pcc_struct = 1;
+#endif
+      cfun->returns_struct = 1;
+    }
+
+}
+
+/* DECL is a local variable or parameter from the surrounding scope of a
+   lambda-expression.  Returns the decltype for a use of the capture field
+   for DECL even if it hasn't been captured yet.  */
+
+static tree
+capture_decltype (tree decl)
+{
+  tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
+  /* FIXME do lookup instead of list walk? */
+  tree cap = value_member (decl, LAMBDA_EXPR_CAPTURE_LIST (lam));
+  tree type;
+
+  if (cap)
+    type = TREE_TYPE (TREE_PURPOSE (cap));
+  else
+    switch (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam))
+      {
+      case CPLD_NONE:
+	error ("%qD is not captured", decl);
+	return error_mark_node;
+
+      case CPLD_COPY:
+	type = TREE_TYPE (decl);
+	if (TREE_CODE (type) == REFERENCE_TYPE
+	    && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
+	  type = TREE_TYPE (type);
+	break;
+
+      case CPLD_REFERENCE:
+	type = TREE_TYPE (decl);
+	if (TREE_CODE (type) != REFERENCE_TYPE)
+	  type = build_reference_type (TREE_TYPE (decl));
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+  if (TREE_CODE (type) != REFERENCE_TYPE)
+    {
+      if (!LAMBDA_EXPR_MUTABLE_P (lam))
+	type = cp_build_qualified_type (type, (TYPE_QUALS (type)
+					       |TYPE_QUAL_CONST));
+      type = build_reference_type (type);
+    }
+  return type;
+}
+
+/* From an ID and INITIALIZER, create a capture (by reference if
+   BY_REFERENCE_P is true), add it to the capture-list for LAMBDA,
+   and return it.  */
+
+tree
+add_capture (tree lambda, tree id, tree initializer, bool by_reference_p)
+{
+  tree type;
+  tree member;
+
+  type = lambda_capture_field_type (initializer);
+  if (by_reference_p)
+    {
+      type = build_reference_type (type);
+      if (!real_lvalue_p (initializer))
+	error ("cannot capture %qE by reference", initializer);
+    }
+
+  /* Make member variable.  */
+  member = build_lang_decl (FIELD_DECL, id, type);
+
+  /* Add it to the appropriate closure class.  */
+  finish_member_declaration (member);
+
+  LAMBDA_EXPR_CAPTURE_LIST (lambda)
+    = tree_cons (member, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
+
+  if (id == get_identifier ("__this"))
+    {
+      if (LAMBDA_EXPR_CAPTURES_THIS_P (lambda))
+        error ("already captured %<this%> in lambda expression");
+      LAMBDA_EXPR_THIS_CAPTURE (lambda) = member;
+    }
+
+  return member;
+}
+
+/* Similar to add_capture, except this works on a stack of nested lambdas.
+   BY_REFERENCE_P in this case is derived from the default capture mode.
+   Returns the capture for the lambda at the bottom of the stack.  */
+
+tree
+add_default_capture (tree lambda_stack, tree id, tree initializer)
+{
+  bool this_capture_p = (id == get_identifier ("__this"));
+
+  tree member = NULL_TREE;
+
+  tree saved_class_type = current_class_type;
+
+  tree node;
+
+  for (node = lambda_stack;
+       node;
+       node = TREE_CHAIN (node))
+    {
+      tree lambda = TREE_VALUE (node);
+
+      current_class_type = TREE_TYPE (lambda);
+      member = add_capture (lambda,
+                            id,
+                            initializer,
+                            /*by_reference_p=*/
+			    (!this_capture_p
+			     && (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda)
+				 == CPLD_REFERENCE)));
+
+      {
+        /* Have to get the old value of current_class_ref.  */
+        tree object = cp_build_indirect_ref (DECL_ARGUMENTS
+                                               (lambda_function (lambda)),
+                                             /*errorstring=*/"",
+                                             /*complain=*/tf_warning_or_error);
+        initializer = finish_non_static_data_member
+                        (member, object, /*qualifying_scope=*/NULL_TREE);
+      }
+    }
+
+  current_class_type = saved_class_type;
+
+  return member;
+
+}
+
+/* Return the capture pertaining to a use of 'this' in LAMBDA, in the form of an
+   INDIRECT_REF, possibly adding it through default capturing.  */
+
+tree
+lambda_expr_this_capture (tree lambda)
+{
+  tree result;
+
+  tree this_capture = LAMBDA_EXPR_THIS_CAPTURE (lambda);
+
+  /* Try to default capture 'this' if we can.  */
+  if (!this_capture
+      && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) != CPLD_NONE)
+    {
+      tree containing_function = TYPE_CONTEXT (TREE_TYPE (lambda));
+      tree lambda_stack = tree_cons (NULL_TREE, lambda, NULL_TREE);
+
+      /* If we are in a lambda function, we can move out until we hit:
+           1. a non-lambda function,
+           2. a lambda function capturing 'this', or
+           3. a non-default capturing lambda function.  */
+      while (LAMBDA_FUNCTION_P (containing_function))
+        {
+          tree lambda
+            = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (containing_function));
+
+          if (LAMBDA_EXPR_THIS_CAPTURE (lambda)
+              || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_NONE)
+            break;
+
+          lambda_stack = tree_cons (NULL_TREE,
+                                    lambda,
+                                    lambda_stack);
+
+          containing_function = decl_function_context (containing_function);
+        }
+
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (containing_function))
+        {
+          this_capture = add_default_capture (lambda_stack,
+                                              /*id=*/get_identifier ("__this"),
+                                              /* First parameter is 'this'.  */
+                                              /*initializer=*/DECL_ARGUMENTS
+                                                (containing_function));
+        }
+
+    }
+
+  if (!this_capture)
+    {
+      error ("%<this%> was not captured for this lambda function");
+      result = error_mark_node;
+    }
+  else
+    {
+      /* To make sure that current_class_ref is for the lambda.  */
+      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref)) == TREE_TYPE (lambda));
+
+      result = finish_non_static_data_member (this_capture,
+                                              current_class_ref,
+                                              /*qualifying_scope=*/NULL_TREE);
+
+      /* If 'this' is captured, each use of 'this' is transformed into an
+	 access to the corresponding unnamed data member of the closure
+	 type cast (_expr.cast_ 5.4) to the type of 'this'. [ The cast
+	 ensures that the transformed expression is an rvalue. ] */
+      result = rvalue (result);
+    }
+
+  return result;
 }
 
 #include "gt-cp-semantics.h"

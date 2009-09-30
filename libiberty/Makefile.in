@@ -371,10 +371,12 @@ TAGS: $(CFILES)
 	etags `for i in $(CFILES); do echo $(srcdir)/$$i ; done`
 
 # The standalone demangler (c++filt) has been moved to binutils.
-demangle:
+# But make this target work anyway for demangler hacking.
+demangle: $(ALL) $(srcdir)/cp-demangle.c
 	@echo "The standalone demangler, now named c++filt, is now"
 	@echo "a part of binutils."
-	@false
+	$(CC) @DEFS@ $(CFLAGS) $(CPPFLAGS) -I. -I$(INCDIR) $(HDEFINES) \
+	  $(srcdir)/cp-demangle.c -DSTANDALONE_DEMANGLER $(TARGETLIB) -o $@
 
 ls:
 	@echo Makefile $(CFILES)

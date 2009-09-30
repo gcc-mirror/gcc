@@ -452,10 +452,14 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
 	 Should we add a target parm to gimplify_expr instead?  No, as in this
 	 case we want to replace the INIT_EXPR.  */
-      if (TREE_CODE (sub) == AGGR_INIT_EXPR)
+      if (TREE_CODE (sub) == AGGR_INIT_EXPR
+	  || TREE_CODE (sub) == VEC_INIT_EXPR)
 	{
 	  gimplify_expr (&to, pre_p, post_p, is_gimple_lvalue, fb_lvalue);
-	  AGGR_INIT_EXPR_SLOT (sub) = to;
+	  if (TREE_CODE (sub) == AGGR_INIT_EXPR)
+	    AGGR_INIT_EXPR_SLOT (sub) = to;
+	  else
+	    VEC_INIT_EXPR_SLOT (sub) = to;
 	  *expr_p = from;
 
 	  /* The initialization is now a side-effect, so the container can
@@ -521,6 +525,19 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case AGGR_INIT_EXPR:
       simplify_aggr_init_expr (expr_p);
       ret = GS_OK;
+      break;
+
+    case VEC_INIT_EXPR:
+      {
+	location_t loc = input_location;
+	gcc_assert (EXPR_HAS_LOCATION (*expr_p));
+	input_location = EXPR_LOCATION (*expr_p);
+	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p), NULL_TREE,
+				  VEC_INIT_EXPR_INIT (*expr_p), false, 1,
+				  tf_warning_or_error);
+	ret = GS_OK;
+	input_location = loc;
+      }
       break;
 
     case THROW_EXPR:

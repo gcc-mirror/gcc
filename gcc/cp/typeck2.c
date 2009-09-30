@@ -838,6 +838,12 @@ digest_init_r (tree type, tree init, bool nested, int flags)
       if (TREE_CODE (type) == ARRAY_TYPE
 	  && TREE_CODE (init) != CONSTRUCTOR)
 	{
+	  /* Allow the result of build_array_copy.  */
+	  if (TREE_CODE (init) == TARGET_EXPR
+	      && (same_type_ignoring_top_level_qualifiers_p
+		  (type, TREE_TYPE (init))))
+	    return init;
+
 	  error ("array must be initialized with a brace-enclosed"
 		 " initializer");
 	  return error_mark_node;

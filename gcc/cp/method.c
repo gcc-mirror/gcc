@@ -530,12 +530,13 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
 /* Code for synthesizing methods which have default semantics defined.  */
 
-/* Generate code for default X(X&) constructor.  */
+/* Generate code for default X(X&) or X(X&&) constructor.  */
 
 static void
 do_build_copy_constructor (tree fndecl)
 {
   tree parm = FUNCTION_FIRST_USER_PARM (fndecl);
+  bool move_p = DECL_MOVE_CONSTRUCTOR_P (fndecl);
 
   parm = convert_from_reference (parm);
 
@@ -555,6 +556,7 @@ do_build_copy_constructor (tree fndecl)
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
       tree binfo, base_binfo;
+      tree init;
       VEC(tree,gc) *vbases;
 
       /* Initialize all the base-classes with the parameter converted
@@ -565,11 +567,12 @@ do_build_copy_constructor (tree fndecl)
       for (vbases = CLASSTYPE_VBASECLASSES (current_class_type), i = 0;
 	   VEC_iterate (tree, vbases, i, binfo); i++)
 	{
+	  init = build_base_path (PLUS_EXPR, parm, binfo, 1);
+	  if (move_p)
+	    init = move (init);
 	  member_init_list
 	    = tree_cons (binfo,
-			 build_tree_list (NULL_TREE,
-					  build_base_path (PLUS_EXPR, parm,
-							   binfo, 1)),
+			 build_tree_list (NULL_TREE, init),
 			 member_init_list);
 	}
 
@@ -579,17 +582,17 @@ do_build_copy_constructor (tree fndecl)
 	  if (BINFO_VIRTUAL_P (base_binfo))
 	    continue;
 
+	  init = build_base_path (PLUS_EXPR, parm, base_binfo, 1);
+	  if (move_p)
+	    init = move (init);
 	  member_init_list
 	    = tree_cons (base_binfo,
-			 build_tree_list (NULL_TREE,
-					  build_base_path (PLUS_EXPR, parm,
-							   base_binfo, 1)),
+			 build_tree_list (NULL_TREE, init),
 			 member_init_list);
 	}
 
       for (; fields; fields = TREE_CHAIN (fields))
 	{
-	  tree init = parm;
 	  tree field = fields;
 	  tree expr_type;
 
@@ -622,7 +625,9 @@ do_build_copy_constructor (tree fndecl)
 	      expr_type = cp_build_qualified_type (expr_type, quals);
 	    }
 
-	  init = build3 (COMPONENT_REF, expr_type, init, field, NULL_TREE);
+	  init = build3 (COMPONENT_REF, expr_type, parm, field, NULL_TREE);
+	  if (move_p && TREE_CODE (expr_type) != REFERENCE_TYPE)
+	    init = move (init);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  member_init_list = tree_cons (field, init, member_init_list);
@@ -936,6 +941,8 @@ locate_copy (tree type, void *client_)
 	 it now.  */
       if (CLASSTYPE_LAZY_COPY_CTOR (type))
 	lazily_declare_fn (sfk_copy_constructor, type);
+      if (CLASSTYPE_LAZY_MOVE_CTOR (type))
+	lazily_declare_fn (sfk_move_constructor, type);
       fns = CLASSTYPE_CONSTRUCTORS (type);
     }
   else
@@ -1036,6 +1043,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 
     case sfk_copy_constructor:
     case sfk_assignment_operator:
+    case sfk_move_constructor:
     {
       struct copy_data data;
 
@@ -1057,7 +1065,9 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 	}
       else
 	rhs_parm_type = type;
-      rhs_parm_type = build_reference_type (rhs_parm_type);
+      rhs_parm_type
+	= cp_build_reference_type (rhs_parm_type,
+				   kind == sfk_move_constructor);
       parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);
       raises = synthesize_exception_spec (type, &locate_copy, &data);
       break;
@@ -1072,7 +1082,8 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
     fn_type = build_exception_variant (fn_type, raises);
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
-  if (kind == sfk_constructor || kind == sfk_copy_constructor)
+  if (kind == sfk_constructor || kind == sfk_copy_constructor
+      || kind == sfk_move_constructor)
     DECL_CONSTRUCTOR_P (fn) = 1;
   else if (kind == sfk_destructor)
     DECL_DESTRUCTOR_P (fn) = 1;
@@ -1175,6 +1186,8 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 	CLASSTYPE_LAZY_DEFAULT_CTOR (type) = 0;
       else if (sfk == sfk_copy_constructor)
 	CLASSTYPE_LAZY_COPY_CTOR (type) = 0;
+      else if (sfk == sfk_move_constructor)
+	CLASSTYPE_LAZY_MOVE_CTOR (type) = 0;
       else if (sfk == sfk_destructor)
 	CLASSTYPE_LAZY_DESTRUCTOR (type) = 0;
       /* Create appropriate clones.  */
