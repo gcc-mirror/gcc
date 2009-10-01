@@ -1,3 +1,8 @@
+2009-10-01  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* decl.c (record_builtin_java_type): Undo unintended change.
+	(cxx_init_decl_processing): Likewise.
+
 2009-10-01  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (register_specialization): Push DECL_SOURCE_LOCATION to the
@@ -12,8 +17,6 @@
 
 	* decl.c (check_for_uninitialized_const_var): Check constexpr
 	variables too.
-	(build_ptrmemfunc_type): Make the result a literal type.
-	(build_ptrmem_type): Likewise.
 	(grokdeclarator): Handle `constexpr'.
 	(check_tag_decl): Reject `constexpr'.
 	(check_function_type): Check constexpr functions.
