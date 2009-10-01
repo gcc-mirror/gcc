@@ -5891,6 +5891,7 @@ do_parm (void)
   gfc_symbol *sym;
   gfc_expr *init;
   match m;
+  gfc_try t;
 
   m = gfc_match_symbol (&sym, 0);
   if (m == MATCH_NO)
@@ -5932,35 +5933,8 @@ do_parm (void)
       goto cleanup;
     }
 
-  if (sym->ts.type == BT_CHARACTER
-      && sym->ts.cl != NULL
-      && sym->ts.cl->length != NULL
-      && sym->ts.cl->length->expr_type == EXPR_CONSTANT
-      && init->expr_type == EXPR_CONSTANT
-      && init->ts.type == BT_CHARACTER)
-    gfc_set_constant_character_len (
-      mpz_get_si (sym->ts.cl->length->value.integer), init, -1);
-  else if (sym->ts.type == BT_CHARACTER && sym->ts.cl != NULL
-	   && sym->ts.cl->length == NULL)
-	{
-	  int clen;
-	  if (init->expr_type == EXPR_CONSTANT)
-	    {
-	      clen = init->value.character.length;
-	      sym->ts.cl->length = gfc_int_expr (clen);
-	    }
-	  else if (init->expr_type == EXPR_ARRAY)
-	    {
-	      gfc_expr *p = init->value.constructor->expr;
-	      clen = p->value.character.length;
-	      sym->ts.cl->length = gfc_int_expr (clen);
-	    }
-	  else if (init->ts.cl && init->ts.cl->length)
-	    sym->ts.cl->length = gfc_copy_expr (sym->value->ts.cl->length);
-	}
-
-  sym->value = init;
-  return MATCH_YES;
+  t = add_init_expr_to_sym (sym->name, &init, &gfc_current_locus);
+  return (t == SUCCESS) ? MATCH_YES : MATCH_ERROR;
 
 cleanup:
   gfc_free_expr (init);
