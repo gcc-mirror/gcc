@@ -11455,7 +11455,22 @@ mips_process_sync_loop (rtx insn, rtx *operands)
 
   /* Output the release side of the memory barrier.  */
   if (get_attr_sync_release_barrier (insn) == SYNC_RELEASE_BARRIER_YES)
-    mips_multi_add_insn ("sync", NULL);
+    {
+      if (required_oldval == 0 && TARGET_OCTEON)
+	{
+	  /* Octeon doesn't reorder reads, so a full barrier can be
+	     created by using SYNCW to order writes combined with the
+	     write from the following SC.  When the SC successfully
+	     completes, we know that all preceding writes are also
+	     committed to the coherent memory system.  It is possible
+	     for a single SYNCW to fail, but a pair of them will never
+	     fail, so we use two.  */
+	  mips_multi_add_insn ("syncw", NULL);
+	  mips_multi_add_insn ("syncw", NULL);
+	}
+      else
+	mips_multi_add_insn ("sync", NULL);
+    }
 
   /* Output the branch-back label.  */
   mips_multi_add_label ("1:");

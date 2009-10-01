@@ -1,3 +1,8 @@
+2009-10-01  David Daney  <ddaney@caviumnetworks.com>
+
+	* gcc/config/mips/mips.c (mips_process_sync_loop) Emit syncw
+	instructions for TARGET_OCTEON.
+
 2009-10-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (arm_override_options): Turn off
