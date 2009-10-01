@@ -1,5 +1,13 @@
 2009-10-01  Martin Jambor  <mjambor@suse.cz>
 
+	PR bootstrap/41395
+	* tree-sra.c (is_va_list_type): New function.
+	(find_var_candidates): Call is_va_list_type.
+	(find_param_candidates): Check that the type or the type pointed
+	to are not va_list types.
+
+2009-10-01  Martin Jambor  <mjambor@suse.cz>
+
 	PR c++/41503
 	* cp/pt.c (function_parameter_expanded_from_pack_p): Return false if
 	DECL_ARTIFICIAL (param_decl) is true.
