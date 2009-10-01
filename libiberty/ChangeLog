@@ -1,3 +1,8 @@
+2009-09-30  Martin Thuresson  <martint@google.com>
+
+	* regex.c (byte_re_match_2_internal): Split declaration and
+	assignment to avoid -Wc++-compat warning due to goto.
+
 2009-09-29  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in: Enable demangle target.
