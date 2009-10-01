@@ -1,3 +1,14 @@
+2009-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_clone_node): Add redirect_callers parameter.
+	(cgraph_create_virtual_clone): Just pass redirect_callers
+	around.
+	* cgraph.h (cgraph_clone_node): Update prototype.
+	* ipa-pure-const.c (self_recursive_p): New function.
+	(propagate): Use it.
+	* ipa-inline.c (cgraph_clone_inlined_nodes,
+	cgraph_decide_recursive_inlining): Update.
+
 2009-10-01  David Daney  <ddaney@caviumnetworks.com>
 
 	* gcc/config/mips/mips.c (mips_process_sync_loop) Emit syncw

@@ -1,3 +1,7 @@
+2009-10-01  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/ipa-cp-1.c: New testcase.
+
 2009-10-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* gcc.dg/20021014-1.c (*-*-freebsd*): Use dg-message.
