@@ -3231,7 +3231,7 @@ record_builtin_java_type (const char* name, int size)
     }
   else
     { /* "__java_float" or ""__java_double".  */
-      type = cxx_make_type (REAL_TYPE);
+      type = make_node (REAL_TYPE);
       TYPE_PRECISION (type) = - size;
       layout_type (type);
     }
@@ -3397,7 +3397,7 @@ cxx_init_decl_processing (void)
 
   /* C++ extensions */
 
-  unknown_type_node = cxx_make_type (UNKNOWN_TYPE);
+  unknown_type_node = make_node (UNKNOWN_TYPE);
   record_unknown_type (unknown_type_node, "unknown type");
 
   /* Indirecting an UNKNOWN_TYPE node yields an UNKNOWN_TYPE node.  */
@@ -3408,13 +3408,13 @@ cxx_init_decl_processing (void)
   TYPE_POINTER_TO (unknown_type_node) = unknown_type_node;
   TYPE_REFERENCE_TO (unknown_type_node) = unknown_type_node;
 
-  init_list_type_node = cxx_make_type (UNKNOWN_TYPE);
+  init_list_type_node = make_node (UNKNOWN_TYPE);
   record_unknown_type (init_list_type_node, "init list");
 
   {
     /* Make sure we get a unique function type, so we can give
        its pointer type a name.  (This wins for gdb.) */
-    tree vfunc_type = cxx_make_type (FUNCTION_TYPE);
+    tree vfunc_type = make_node (FUNCTION_TYPE);
     TREE_TYPE (vfunc_type) = integer_type_node;
     TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
     layout_type (vfunc_type);
@@ -3436,7 +3436,7 @@ cxx_init_decl_processing (void)
   abi_node = current_namespace;
   pop_namespace ();
 
-  global_type_node = cxx_make_type (LANG_TYPE);
+  global_type_node = make_node (LANG_TYPE);
   record_unknown_type (global_type_node, "global type");
 
   /* Now, C++.  */
