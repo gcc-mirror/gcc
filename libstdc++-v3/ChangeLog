@@ -1,3 +1,17 @@
+2009-10-01  Phil Muldoon <pmuldoon@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdListPrinter):
+	Add -D_GLIBCXX_DEBUG implementation changes. Receive typename from
+	printer registration.
+	(StdListIteratorPrinter): Likewise.
+	(StdDebugIteratorPrinter): New printer.
+	(build_libstdcxx_dictionary): Add -D_GLIBCXX_DEBUG registration
+	entries.  Always pass a typename where the type can change.
+	(StdSlistPrinter) Receive typename from printer registration.  Use
+	in printer output.
+	(StdBitsetPrinter): Likewise.
+	(StdDequePrinter): Likewise.
+
 2009-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc: Define static const data members.
