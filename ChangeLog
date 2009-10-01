@@ -1,3 +1,10 @@
+2009-10-01  Loren J. Rittle <ljrittle@acm.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Use $$s rather than
+	$(srcdir).
+	* Makefile.in: Rebuilt.
+
 2009-09-26  Gary Funck <gary@intrepid.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
