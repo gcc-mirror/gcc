@@ -3646,6 +3646,7 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   tree old_cur_fndecl = current_function_decl;
   struct cgraph_edge *cs;
   basic_block this_block;
+  bitmap recomputed_callers = BITMAP_ALLOC (NULL);
 
   for (cs = node->callers; cs; cs = cs->next_caller)
     {
@@ -3653,15 +3654,24 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
       push_cfun (DECL_STRUCT_FUNCTION (cs->caller->decl));
 
       if (dump_file)
-	fprintf (dump_file, "Adjusting call %s -> %s\n",
+	fprintf (dump_file, "Adjusting call (%i -> %i) %s -> %s\n",
+		 cs->caller->uid, cs->callee->uid,
 		 cgraph_node_name (cs->caller),
 		 cgraph_node_name (cs->callee));
 
       ipa_modify_call_arguments (cs, cs->call_stmt, adjustments);
-      compute_inline_parameters (cs->caller);
 
       pop_cfun ();
     }
+
+  for (cs = node->callers; cs; cs = cs->next_caller)
+    if (!bitmap_bit_p (recomputed_callers, cs->caller->uid))
+      {
+	compute_inline_parameters (cs->caller);
+	bitmap_set_bit (recomputed_callers, cs->caller->uid);
+      }
+  BITMAP_FREE (recomputed_callers);
+
   current_function_decl = old_cur_fndecl;
   FOR_EACH_BB (this_block)
     {
