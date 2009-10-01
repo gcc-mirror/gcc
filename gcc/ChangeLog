@@ -1,3 +1,9 @@
+2009-10-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/12392
+	* tree-sra.c (convert_callers): Do not call
+	compute_inline_parameters on one caller more than once.
+
 2009-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/vax/netbsd-elf.h (NETBSD_CC1_AND_CC1PLUS_SPEC): Define as
