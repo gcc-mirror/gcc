@@ -1,3 +1,8 @@
+2009-10-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/vax/netbsd-elf.h (NETBSD_CC1_AND_CC1PLUS_SPEC): Define as
+	an empty string if not already defined.
+
 2009-10-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR bootstrap/41395

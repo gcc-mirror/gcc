@@ -30,6 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC NETBSD_CPP_SPEC
 
+#ifndef NETBSD_CC1_AND_CC1PLUS_SPEC
+#define NETBSD_CC1_AND_CC1PLUS_SPEC ""
+#endif
+
 #undef CC1_SPEC
 #define CC1_SPEC NETBSD_CC1_AND_CC1PLUS_SPEC VAX_CC1_AND_CC1PLUS_SPEC
 
