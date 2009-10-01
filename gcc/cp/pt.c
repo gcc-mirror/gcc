@@ -2669,7 +2669,8 @@ get_function_template_decl (const_tree primary_func_tmpl_inst)
 bool
 function_parameter_expanded_from_pack_p (tree param_decl, tree pack)
 {
-    if (! function_parameter_pack_p (pack))
+    if (DECL_ARTIFICIAL (param_decl)
+	|| !function_parameter_pack_p (pack))
       return false;
 
     gcc_assert (DECL_NAME (param_decl) && DECL_NAME (pack));
