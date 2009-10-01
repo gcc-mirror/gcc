@@ -112,11 +112,13 @@ framework extensions, you must include this file before toplev.h, not after.
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       DECL_CONSTRUCTION_VTABLE_P (in VAR_DECL)
       TYPE_MARKED_P (in _TYPE)
+   7: DECL_DEAD_FOR_LOCAL (in VAR_DECL)
+   8: DECL_DECLARED_CONSTEXPR_P (in VAR_DECL, FUNCTION_DECL)
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
    1: TYPE_HAS_USER_CONSTRUCTOR.
-   2: Unused
+   2: unused
    3: TYPE_FOR_JAVA.
    4: TYPE_HAS_NONTRIVIAL_DESTRUCTOR
    5: CLASS_TYPE_P (in RECORD_TYPE and UNION_TYPE)
@@ -1211,6 +1213,7 @@ struct GTY(()) lang_type_class {
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
   unsigned lazy_move_ctor : 1;
+  unsigned is_literal : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1219,7 +1222,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 8;
+  unsigned dummy : 7;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -2189,6 +2192,10 @@ struct GTY(()) lang_decl {
 #define DECL_REPO_AVAILABLE_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->u.base.repo_available_p)
 
+/* True if DECL is declared 'constexpr'.  */
+#define DECL_DECLARED_CONSTEXPR_P(DECL) \
+  DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (DECL))
+
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
@@ -2845,6 +2852,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Returns true if TYPE is an integral or unscoped enumeration type.  */
 #define INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P(TYPE) \
    (UNSCOPED_ENUM_P (TYPE) || CP_INTEGRAL_TYPE_P (TYPE))
+
+/* True if the class type TYPE is a literal type.  */
+#define CLASSTYPE_LITERAL_P(TYPE)              \
+   (LANG_TYPE_CLASS_CHECK (TYPE)->is_literal)
 
 /* [basic.fundamental]
 
@@ -4190,6 +4201,7 @@ typedef enum cp_decl_spec {
   ds_explicit,
   ds_friend,
   ds_typedef,
+  ds_constexpr,
   ds_complex,
   ds_thread,
   ds_last
@@ -4937,6 +4949,9 @@ extern tree begin_handler			(void);
 extern void finish_handler_parms		(tree, tree);
 extern void finish_handler			(tree);
 extern void finish_cleanup			(tree, tree);
+extern bool literal_type_p (tree);
+extern tree validate_constexpr_fundecl (tree);
+extern tree ensure_literal_type_for_constexpr_object (tree);
 
 enum {
   BCS_NO_SCOPE = 1,

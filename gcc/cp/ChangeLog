@@ -1,3 +1,22 @@
+2009-09-30  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* decl.c (check_for_uninitialized_const_var): Check constexpr
+	variables too.
+	(build_ptrmemfunc_type): Make the result a literal type.
+	(build_ptrmem_type): Likewise.
+	(grokdeclarator): Handle `constexpr'.
+	(check_tag_decl): Reject `constexpr'.
+	(check_function_type): Check constexpr functions.
+	* cp-tree.h (ds_constexpr): New cp_decl_spec enumerator.
+	(CLASSTYPE_LITERAL_P): New.
+	(lang_type_class::is_literal): New.
+	(lang_type_class::dummy): Adjust width.
+	(literal_type_p): Declare.
+	* parser.c (cp_parser_check_decl_spec): Print it.
+	(cp_parser_decl_specifier_seq): Accept "constexpr".
+	* semantics.c (validate_constexpr_fundecl): Define.
+	(literal_type_p): Define.
+
 2009-09-30  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (lambda_expr_this_capture): Fix default capture

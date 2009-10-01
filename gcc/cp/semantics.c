@@ -5203,6 +5203,87 @@ float_const_decimal64_p (void)
   return 0;
 }
 
+/* Return true if T is a literal type.   */
+
+bool
+literal_type_p (tree t)
+{
+  if (SCALAR_TYPE_P (t))
+    return true;
+  if (CLASS_TYPE_P (t))
+    return CLASSTYPE_LITERAL_P (t);
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return literal_type_p (strip_array_types (t));
+  return false;
+}
+
+
+/* If DECL is a variable declared `constexpr', require its type
+   be literal.  Return the DECL if OK, otherwise NULL.  */
+
+tree
+ensure_literal_type_for_constexpr_object (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (decl) == VAR_DECL && DECL_DECLARED_CONSTEXPR_P (decl)
+      && !processing_template_decl && !literal_type_p (type))
+    {
+      error ("the type %qT of constexpr variable %qD is not literal",
+             type, decl);
+      return NULL;
+    }
+  return decl;
+}
+
+/* Return non-null if FUN certainly designates a valid constexpr function
+   declaration.  Otherwise return NULL.  Issue appropriate diagnostics
+   if necessary.  Note that we only check the declaration, not the body
+   of the function.  */
+
+tree
+validate_constexpr_fundecl (tree fun)
+{
+  tree rettype = NULL;
+  tree parm = NULL;
+
+  /* Don't bother if FUN is not marked constexpr.  */
+  if (!DECL_DECLARED_CONSTEXPR_P (fun))
+    return NULL;
+
+  /* For a function template, we have absolutely no guarantee that all
+     instantiations will be constexpr.  */
+  if (TREE_CODE (fun) == TEMPLATE_DECL)
+    return NULL;
+  
+  parm = FUNCTION_FIRST_USER_PARM (fun);
+  for (; parm != NULL; parm = TREE_CHAIN (parm))
+    {
+      tree type = TREE_TYPE (parm);
+      if (dependent_type_p (type))
+        return NULL;
+      if (!literal_type_p (type))
+        {
+           error ("parameter %q#D is not of literal type", parm);
+          return NULL;
+        }
+    }
+
+  if (DECL_CONSTRUCTOR_P (fun))
+    return fun;
+
+  rettype = TREE_TYPE (TREE_TYPE (fun));
+  if (dependent_type_p (rettype))
+    return NULL;
+  if (!literal_type_p (rettype))
+    {
+      error ("return type %qT of function %qD is not a literal type",
+             TREE_TYPE (TREE_TYPE (fun)), fun);
+      return NULL;
+    }
+  return fun;
+}
+
+
 /* Constructor for a lambda expression.  */
 
 tree
