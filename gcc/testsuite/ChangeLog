@@ -6,6 +6,8 @@
 
 	* gcc.dg/20021014-1.c (*-*-freebsd*): Use dg-message.
 
+	* gcc.target/i386/ifcvt-onecmpl-abs-1.c: Specify -mtune=i586.
+
 2009-10-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41515
