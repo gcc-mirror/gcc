@@ -1,3 +1,9 @@
+2009-09-30  Dennis Wassel  <dennis.wassel@gmail.com>
+
+	* gcc/fortran/trans-array.c (gfc_trans_array_bound_check): Improved
+	bounds checking error messages. (gfc_conv_array_ref): Likewise.
+	(gfc_conv_ss_startstride): Likewise.
+
 2009-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	* resolve.c (check_typebound_baseobject): Don't check for
