@@ -688,6 +688,18 @@ ignore_edge (struct cgraph_edge *e)
   return (!e->can_throw_external);
 }
 
+/* Return true if NODE is self recursive function.  */
+
+static bool
+self_recursive_p (struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+  for (e = node->callees; e; e = e->next_callee)
+    if (e->callee == node)
+      return true;
+  return false;
+}
+
 /* Produce the global information by preforming a transitive closure
    on the local information that was produced by generate_summary.
    Note that there is no function_transform pass since this only
@@ -776,6 +788,8 @@ propagate (void)
 	  if (w_l->state_previously_known != IPA_NEITHER
 	      && this_state > w_l->state_previously_known)
             this_state = w_l->state_previously_known;
+	  if (!this_looping && self_recursive_p (w))
+	    this_looping = true;
 	  if (!w_l->looping_previously_known)
 	    this_looping = false;
 

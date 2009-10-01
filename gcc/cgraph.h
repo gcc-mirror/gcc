@@ -409,7 +409,7 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *,
 					gimple, gcov_type, int, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type, int,
-					int, bool);
+					int, bool, VEC(cgraph_edge_p,heap) *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 
