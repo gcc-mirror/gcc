@@ -1,3 +1,9 @@
+2009-09-30  Dennis Wassel  <dennis.wassel@gmail.com>
+
+	* gcc/testsuite/gfortran.dg/bounds_check_7.f90: Adapted error message.
+	* gcc/testsuite/gfortran.dg/bounds_check_11.f90: Likewise.
+	* gcc/testsuite/gfortran.dg/bounds_check_fail_1.f90: Likewise.
+
 2009-09-30  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/select_type_4.f90: New test.

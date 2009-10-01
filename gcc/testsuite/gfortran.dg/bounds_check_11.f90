@@ -21,5 +21,5 @@ contains
 end program test
 
 ! { dg-output "At line 18 of file .*" }
-! { dg-output "Array reference out of bounds, lower bound of dimension 2 of array 'jp' exceeded .0 < 1." }
+! { dg-output "Index '0' of dimension 2 of array 'jp' below lower bound of 1" }
 
