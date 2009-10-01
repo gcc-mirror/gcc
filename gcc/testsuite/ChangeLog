@@ -1,3 +1,7 @@
+2009-10-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/defaulted13.C: New.
+
 2009-09-30  Dennis Wassel  <dennis.wassel@gmail.com>
 
 	* gcc/testsuite/gfortran.dg/bounds_check_7.f90: Adapted error message.

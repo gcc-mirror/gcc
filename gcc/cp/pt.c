@@ -1348,8 +1348,12 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		to the primary function; now copy the inline bits to
 		the various clones.  */
 	      FOR_EACH_CLONE (clone, fn)
-		DECL_DECLARED_INLINE_P (clone)
-		  = DECL_DECLARED_INLINE_P (fn);
+		{
+		  DECL_DECLARED_INLINE_P (clone)
+		    = DECL_DECLARED_INLINE_P (fn);
+		  DECL_SOURCE_LOCATION (clone)
+		    = DECL_SOURCE_LOCATION (fn);
+		}
 	      check_specialization_namespace (fn);
 
 	      return fn;
