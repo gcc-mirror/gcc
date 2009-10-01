@@ -1298,6 +1298,13 @@ arm_override_options (void)
   enum processor_type target_arch_cpu = arm_none;
   enum processor_type selected_cpu = arm_none;
 
+  /* Ideally we would want to use CFI directives to generate
+     debug info.  However this also creates the .eh_frame
+     section, so disable them until GAS can handle
+     this properly.  See PR40521. */
+  if (TARGET_AAPCS_BASED)
+    flag_dwarf2_cfi_asm = 0;
+
   /* Set up the flags based on the cpu/architecture selected by the user.  */
   for (i = ARRAY_SIZE (arm_select); i--;)
     {
