@@ -1323,6 +1323,14 @@ build_ref_for_offset (tree *expr, tree type, HOST_WIDE_INT offset,
   return build_ref_for_offset_1 (expr, type, offset, exp_type);
 }
 
+/* Return true iff TYPE is stdarg va_list type.  */
+
+static inline bool
+is_va_list_type (tree type)
+{
+  return TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (va_list_type_node);
+}
+
 /* The very first phase of intraprocedural SRA.  It marks in candidate_bitmap
    those with type which is suitable for scalarization.  */
 
@@ -1350,8 +1358,7 @@ find_var_candidates (void)
 	      we also want to schedule it rather late.  Thus we ignore it in
 	      the early pass. */
 	  || (sra_mode == SRA_MODE_EARLY_INTRA
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (var))
-		  == TYPE_MAIN_VARIANT (va_list_type_node))))
+	      && is_va_list_type (type)))
 	continue;
 
       bitmap_set_bit (candidate_bitmap, DECL_UID (var));
@@ -2731,11 +2738,13 @@ find_param_candidates (void)
        parm;
        parm = TREE_CHAIN (parm))
     {
-      tree type;
+      tree type = TREE_TYPE (parm);
 
       count++;
+
       if (TREE_THIS_VOLATILE (parm)
-	  || TREE_ADDRESSABLE (parm))
+	  || TREE_ADDRESSABLE (parm)
+	  || is_va_list_type (type))
 	continue;
 
       if (is_unused_scalar_param (parm))
@@ -2744,7 +2753,6 @@ find_param_candidates (void)
 	  continue;
 	}
 
-      type = TREE_TYPE (parm);
       if (POINTER_TYPE_P (type))
 	{
 	  type = TREE_TYPE (type);
@@ -2752,6 +2760,7 @@ find_param_candidates (void)
 	  if (TREE_CODE (type) == FUNCTION_TYPE
 	      || TYPE_VOLATILE (type)
 	      || !is_gimple_reg (parm)
+	      || is_va_list_type (type)
 	      || ptr_parm_has_direct_uses (parm))
 	    continue;
 	}
