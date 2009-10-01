@@ -1,3 +1,8 @@
+2009-10-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41515
+	* decl.c (do_parm): Call add_init_expr_to_sym.
+
 2009-09-30  Dennis Wassel  <dennis.wassel@gmail.com>
 
 	* gcc/fortran/trans-array.c (gfc_trans_array_bound_check): Improved
