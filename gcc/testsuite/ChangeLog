@@ -1,3 +1,7 @@
+2009-10-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* gcc.dg/20021014-1.c (*-*-freebsd*): Use dg-message.
+
 2009-10-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41515
