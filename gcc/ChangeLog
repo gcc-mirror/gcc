@@ -1,3 +1,10 @@
+2009-09-30  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* tree.h (tree_decl_common::lang_flag_8): New.
+	* c-common.c (c_common_reswords): Include "constexpr" as C++0x
+	keyword. 
+	* c-common.h (RID_CONSTEXPR): New.
+
 2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg_1):

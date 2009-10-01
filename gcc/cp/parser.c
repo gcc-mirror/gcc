@@ -2195,6 +2195,7 @@ cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs,
 	    "explicit",
 	    "friend",
 	    "typedef",
+            "constexpr",
 	    "__complex",
 	    "__thread"
 	  };
@@ -9030,7 +9031,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       switch (token->keyword)
 	{
 	  /* decl-specifier:
-	       friend  */
+	       friend
+               constexpr */
 	case RID_FRIEND:
 	  if (!at_class_scope_p ())
 	    {
@@ -9044,6 +9046,11 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	      cp_lexer_consume_token (parser->lexer);
 	    }
 	  break;
+
+        case RID_CONSTEXPR:
+          ++decl_specs->specs[(int) ds_constexpr];
+          cp_lexer_consume_token (parser->lexer);
+          break;
 
 	  /* function-specifier:
 	       inline

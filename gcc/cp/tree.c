@@ -639,7 +639,7 @@ build_cplus_array_type_1 (tree elt_type, tree index_type)
       else
 	{
 	  /* Build a new array type.  */
-	  t = make_node (ARRAY_TYPE);
+	  t = cxx_make_type (ARRAY_TYPE);
 	  TREE_TYPE (t) = elt_type;
 	  TYPE_DOMAIN (t) = index_type;
 
@@ -942,7 +942,6 @@ cp_build_qualified_type_real (tree type,
       && (TYPE_LANG_SPECIFIC (TYPE_CANONICAL (result)) 
           == TYPE_LANG_SPECIFIC (TYPE_CANONICAL (type))))
     TYPE_LANG_SPECIFIC (TYPE_CANONICAL (result)) = NULL;
-      
 
   return result;
 }
