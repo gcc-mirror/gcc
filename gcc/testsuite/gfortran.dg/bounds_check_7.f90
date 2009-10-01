@@ -12,4 +12,4 @@ program test
   integer x(42)
   call foo(x)
 end program test
-! { dg-output "Array reference out of bounds .* lower bound of dimension 1 exceeded" }
+! { dg-output "Index '0' of dimension 1 of array 'a' below lower bound of 1" }
