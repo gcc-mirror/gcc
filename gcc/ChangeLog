@@ -1,3 +1,88 @@
+2009-10-02  Cary Coutant  <ccoutant@google.com>
+
+	Add support for comdat type sections for DWARF v4.  Merge from dwarf4
+	branch.
+	* dwarf2out.c (DWARF_TYPE_SIGNATURE_SIZE): New constant.
+	(dw_die_ref): Define vector type.
+	(enum dw_val_class): Add dw_val_class_data8.
+	(struct dw_val_struct): Add v.val_data8.
+	(comdat_type_node_ref): New type.
+	(struct die_struct): Move die_symbol into a union; add new field
+	die_type_node.  Change all uses.
+	(comdat_type_node): New type.
+	(skeleton_chain_node): New type.
+	(DWARF_COMDAT_TYPE_UNIT_HEADER_SIZE): New constant.
+	(comdat_type_list): New variable.
+	(dwarf_tag_name): Add DW_TAG_type_unit.
+	(dwarf_attr_name): Add DW_AT_signature.
+	(add_AT_data8): New function.
+	(replace_child): New function.
+	(move_all_children): New function.
+	(print_signature): New function.
+	(print_die): Print signature information; add dw_val_class_data8.
+	(attr_checksum): Support dw_val_class_data8.
+	(CHECKSUM_STRING): Redefine for DWARF-4 to include
+	trailing NULL byte.
+	(CHECKSUM_SLEB128, CHECKSUM_ULEB128): New macros.
+	(checksum_sleb128, checksum_uleb128): New functions.
+	(checksum_die_context): New function.
+	(loc_checksum_ordered): New function.
+	(attr_checksum_ordered): New function.
+	(struct checksum_attributes): New structure.
+	(collect_checksum_attributes): New function.
+	(die_checksum_ordered): New function.
+	(generate_type_signature): New function.
+	(same_dw_val_p): Add dw_val_class_data8.
+	(is_symbol_die): Use new is_declaration_die function.
+	(is_declaration_die): New function.
+	(should_move_die_to_comdat): New function.
+	(clone_die): New function.
+	(clone_tree): New function.
+	(clone_as_declaration): New function.
+	(copy_declaration_context): New function.
+	(generate_skeleton_ancestor_tree): New function.
+	(generate_skeleton_bottom_up): New function.
+	(generate_skeleton): New function.
+	(remove_child_or_replace_with_skeleton): New function.
+	(break_out_comdat_types): New function.
+	(struct decl_table_entry): New type.
+	(htab_decl_hash): New function.
+	(htab_decl_eq): New function.
+	(htab_decl_del): New function.
+	(copy_ancestor_tree): New function.
+	(copy_decls_walk): New function.
+	(copy_decls_for_unworthy_types): New function.
+	(build_abbrev_table): Don't assert on missing die_symbol when doing
+	comdat type sections.
+	(size_of_die): Use DW_FORM_sig8 for external references; Add
+	dw_val_class_data8.
+	(unmark_dies): Don't assert for unmarked dies when doing comdat
+	type sections.
+	(value_format): Support DW_FORM_sig8 and dw_val_class_data8.
+	(output_signature): New function.
+	(output_die): Likewise.
+	(output_compilation_unit_header): Mark output as DWARF version 3
+	even if generating DWARF 4.
+	(output_comdat_type_unit): New function.
+	(output_line_info): Mark output as DWARF version 3 even if generating
+	DWARF 4.
+	(dwarf2out_start_source_file): Don't do eliminate_dwarf2_dups with
+	DWARF-4.
+	(dwarf2out_end_source_file): Likewise.
+	(prune_unused_types_walk_attribs): Don't follow references into
+	comdat type sections.
+	(prune_unused_types_mark): When generating type units, do not mark
+	children of non-defining declarations of types; do mark children of
+	type entries.
+	(prune_unused_types): Process comdat type sections.
+	(htab_ct_hash): New function.
+	(htab_ct_eq): New function.
+	(dwarf2out_finish): Move types to comdat sections when using DWARF-4.
+	Add a pointer to the line table from type unit entries so
+	DW_AT_decl_file has meaning.
+	* varasm.c (default_elf_asm_named_section): Use identifier name as
+	comdat key instead of lang hook.
+
 2009-10-02  Neil Vachharajani  <nvachhar@google.com>
 
 	* gcov-io.c (gcov_open): Open files read-only when MODE < 0
