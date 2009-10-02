@@ -1,3 +1,8 @@
+2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (layout_type) <ARRAY_TYPE>: Make sure that an array
+	of zero-sized element is zero-sized regardless of its extent.
+
 2009-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/40521

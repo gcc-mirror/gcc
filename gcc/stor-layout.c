@@ -1959,14 +1959,21 @@ layout_type (tree type)
 	    tree element_size = TYPE_SIZE (element);
 	    tree length;
 
+	    /* Make sure that an array of zero-sized element is zero-sized
+	       regardless of its extent.  */
+	    if (integer_zerop (element_size))
+	      length = size_zero_node;
+
 	    /* The initial subtraction should happen in the original type so
 	       that (possible) negative values are handled appropriately.  */
-	    length = size_binop (PLUS_EXPR, size_one_node,
-				 fold_convert (sizetype,
-					       fold_build2_loc (input_location,
-							    MINUS_EXPR,
-							    TREE_TYPE (lb),
-							    ub, lb)));
+	    else
+	      length
+		= size_binop (PLUS_EXPR, size_one_node,
+			      fold_convert (sizetype,
+					    fold_build2_loc (input_location,
+							     MINUS_EXPR,
+							     TREE_TYPE (lb),
+							     ub, lb)));
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
 					   fold_convert (bitsizetype,
