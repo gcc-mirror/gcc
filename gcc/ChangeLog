@@ -1,5 +1,15 @@
 2009-10-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/40521
+	* configure.ac (HAVE_GAS_CFI_SECTIONS_DIRECTIVE): New test.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* dwarf2out.c (dwarf2out_do_cfi_asm): Return false if
+	!HAVE_GAS_CFI_SECTIONS_DIRECTIVE and not emitting .eh_frame.
+	(dwarf2out_init): If HAVE_GAS_CFI_SECTIONS_DIRECTIVE and
+	not emitting .eh_frame, emit .cfi_sections .debug_frame
+	directive.
+
 	PR debug/41404
 	PR debug/41353
 	* cfgexpand.c (expand_debug_expr) <case STRING_CST>: Don't create
