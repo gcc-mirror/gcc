@@ -9299,10 +9299,10 @@ grokdeclarator (const cp_declarator *declarator,
 		      return error_mark_node;
 		  }
 
+                DECL_DECLARED_CONSTEXPR_P (decl) = constexpr_p;
 		decl = do_friend (ctype, unqualified_id, decl,
 				  *attrlist, flags,
 				  funcdef_flag);
-                DECL_DECLARED_CONSTEXPR_P (decl) = constexpr_p;
 		return decl;
 	      }
 	    else

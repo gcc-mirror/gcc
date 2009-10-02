@@ -1,3 +1,9 @@
+2009-10-01  Gabriel Dos Reis  <gdr@cse.tamu.edu>
+	    Jason Merrill <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Set constexprness before announcing
+	friendship.
+
 2009-10-01  Gabriel Dos Reis  <gdr@cs.tamu.edu>
 
 	* decl.c (record_builtin_java_type): Undo unintended change.
