@@ -1,3 +1,24 @@
+2009-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41404
+	PR debug/41353
+	* cfgexpand.c (expand_debug_expr) <case STRING_CST>: Don't create
+	CONST_STRING if STRING_CST contains embedded '\0's or doesn't end with
+	'\0'.
+	(expand_debug_expr) <case VAR_DECL>: For TREE_STATIC !DECL_EXTERNAL
+	vars use DECL_RTL with resetting it back to NULL afterwards.
+	* dwarf2out.c (same_dw_val_p): For dw_val_class_addr compare with
+	rtx_equal_p instead of asserting it is a SYMBOL_REF.
+	(value_format): For dw_val_class_addr only use DW_FORM_addr if
+	the attribute type allows it, otherwise use DW_FORM_dataN.
+	(mem_loc_descriptor): Handle CONST_STRING.
+	(add_const_value_attribute): Handle CONST_STRING using add_AT_addr.
+	Handle MEM with CONST_STRING address using add_AT_string.
+	(rtl_for_decl_init): Return MEM with CONST_STRING address instead of
+	CONST_STRING for const arrays initialized with a string literal.
+	(resolve_one_addr, resolve_addr_in_expr, resolve_addr): New functions.
+	(dwarf2out_finish): Call resolve_addr.
+
 2009-10-02  Andreas Schwab  <schwab@linux-m68k.org>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
  
