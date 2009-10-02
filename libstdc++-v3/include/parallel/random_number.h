@@ -34,6 +34,7 @@
 
 #include <parallel/types.h>
 #include <tr1/random>
+#include <limits>
 
 namespace __gnu_parallel
 {
@@ -42,29 +43,29 @@ namespace __gnu_parallel
   {
   private:
     std::tr1::mt19937   _M_mt;
-    uint64              _M_supremum;
-    uint64              _M_rand_sup;
+    uint64_t            _M_supremum;
+    uint64_t            _M_rand_sup;
     double              _M_supremum_reciprocal;
     double              _M_rand_sup_reciprocal;
 
     // Assumed to be twice as long as the usual random number.
-    uint64              __cache;  
+    uint64_t              __cache;
 
     // Bit results.
     int __bits_left;
     
-    static uint32
-    __scale_down(uint64 __x,
+    static uint32_t
+    __scale_down(uint64_t __x,
 #if _GLIBCXX_SCALE_DOWN_FPU
-               uint64 /*_M_supremum*/, double _M_supremum_reciprocal)
+               uint64_t /*_M_supremum*/, double _M_supremum_reciprocal)
 #else
-               uint64 _M_supremum, double /*_M_supremum_reciprocal*/)
+               uint64_t _M_supremum, double /*_M_supremum_reciprocal*/)
 #endif
         {
 #if _GLIBCXX_SCALE_DOWN_FPU
-          return uint32(__x * _M_supremum_reciprocal);
+          return uint32_t(__x * _M_supremum_reciprocal);
 #else
-          return static_cast<uint32>(__x % _M_supremum);
+          return static_cast<uint32_t>(__x % _M_supremum);
 #endif
         }
 
@@ -72,7 +73,7 @@ namespace __gnu_parallel
     /** @brief Default constructor. Seed with 0. */
     _RandomNumber()
     : _M_mt(0), _M_supremum(0x100000000ULL),
-      _M_rand_sup(1ULL << (sizeof(uint32) * 8)),
+      _M_rand_sup(1ULL << std::numeric_limits<uint32_t>::digits),
       _M_supremum_reciprocal(double(_M_supremum) / double(_M_rand_sup)),
       _M_rand_sup_reciprocal(1.0 / double(_M_rand_sup)),
       __cache(0), __bits_left(0) { }
@@ -81,22 +82,22 @@ namespace __gnu_parallel
      *  @param __seed Random __seed.
      *  @param _M_supremum Generate integer random numbers in the
      *                  interval @__c [0,_M_supremum). */
-    _RandomNumber(uint32 __seed, uint64 _M_supremum = 0x100000000ULL)
+    _RandomNumber(uint32_t __seed, uint64_t _M_supremum = 0x100000000ULL)
     : _M_mt(__seed), _M_supremum(_M_supremum),
-      _M_rand_sup(1ULL << (sizeof(uint32) * 8)),
+      _M_rand_sup(1ULL << std::numeric_limits<uint32_t>::digits),
       _M_supremum_reciprocal(double(_M_supremum) / double(_M_rand_sup)),
       _M_rand_sup_reciprocal(1.0 / double(_M_rand_sup)),
       __cache(0), __bits_left(0) { }
 
     /** @brief Generate unsigned random 32-bit integer. */
-    uint32
+    uint32_t
     operator()()
     { return __scale_down(_M_mt(), _M_supremum, _M_supremum_reciprocal); }
 
     /** @brief Generate unsigned random 32-bit integer in the
         interval @__c [0,local_supremum). */
-    uint32
-    operator()(uint64 local_supremum)
+    uint32_t
+    operator()(uint64_t local_supremum)
     {
       return __scale_down(_M_mt(), local_supremum,
                         double(local_supremum * _M_rand_sup_reciprocal));
@@ -112,7 +113,7 @@ namespace __gnu_parallel
       __bits_left -= __bits;
       if (__bits_left < 32)
         {
-          __cache |= ((uint64(_M_mt())) << __bits_left);
+          __cache |= ((uint64_t(_M_mt())) << __bits_left);
           __bits_left += 32;
         }
       return __res;

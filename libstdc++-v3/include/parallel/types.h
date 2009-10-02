@@ -33,6 +33,8 @@
 #define _GLIBCXX_PARALLEL_TYPES_H 1
 
 #include <cstdlib>
+#include <limits>
+#include <tr1/cstdint>
 
 namespace __gnu_parallel
 {
@@ -108,45 +110,24 @@ namespace __gnu_parallel
       EQUAL_SPLIT 
     };
 
-  /// _Integer Types.
-  // XXX need to use <cstdint>
-  /** @brief 16-bit signed integer. */
-  typedef short int16;
-
-  /** @brief 16-bit unsigned integer. */
-  typedef unsigned short uint16;
-
-  /** @brief 32-bit signed integer. */
-  typedef int int32;
-
-  /** @brief 32-bit unsigned integer. */
-  typedef unsigned int uint32;
-
-  /** @brief 64-bit signed integer. */
-  typedef long long int64;
-
-  /** @brief 64-bit unsigned integer. */
-  typedef unsigned long long uint64;
-
   /**
    * @brief Unsigned integer to index __elements.
    * The total number of elements for each algorithm must fit into this type.
    */
-  typedef uint64 _SequenceIndex;
+  typedef uint64_t _SequenceIndex;
 
   /**
    * @brief Unsigned integer to index a thread number.
    * The maximum thread number (for each processor) must fit into this type.
    */
-  typedef uint16 _ThreadIndex;
+  typedef uint16_t _ThreadIndex;
 
   // XXX atomics interface?
   /// Longest compare-and-swappable integer type on this platform.
-  typedef int64 _CASable;
+  typedef int64_t _CASable;
 
-  // XXX numeric_limits::digits?
-  /// Number of bits of ::_CASable.
-  static const int _CASable_bits = sizeof(_CASable) * 8;
+  /// Number of bits of _CASable.
+  static const int _CASable_bits = std::numeric_limits<_CASable>::digits;
 
   /// ::_CASable with the right half of bits set to 1.
   static const _CASable _CASable_mask =

@@ -100,7 +100,7 @@ template<typename _RAIter, typename _RandomNumberGenerator>
     _BinIndex __bins_end;
 
     /** @brief Random _M_seed for this thread. */
-    uint32 _M_seed;
+    uint32_t _M_seed;
 
     /** @brief Pointer to global data. */
     _DRandomShufflingGlobalData<_RAIter>* _M_sd;
@@ -372,7 +372,8 @@ template<typename _RAIter, typename _RandomNumberGenerator>
                 for (; __j < bin_cursor; ++__j)
                   _M_sd._M_bin_proc[__j] = __i;
                 __pus[__i]._M_num_threads = __num_threads;
-                __pus[__i]._M_seed = __rng(std::numeric_limits<uint32>::max());
+                __pus[__i]._M_seed =
+                        __rng(std::numeric_limits<uint32_t>::max());
                 __pus[__i]._M_sd = &_M_sd;
               }
             _M_starts[__num_threads] = __start;

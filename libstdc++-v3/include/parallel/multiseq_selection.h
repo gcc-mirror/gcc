@@ -273,7 +273,7 @@ namespace __gnu_parallel
             }
           
           _DifferenceType __skew = static_cast<_DifferenceType>
-            (static_cast<uint64>(__total) * __rank / __N - __leftsize);
+            (static_cast<uint64_t>(__total) * __rank / __N - __leftsize);
 
           if (__skew > 0)
             {

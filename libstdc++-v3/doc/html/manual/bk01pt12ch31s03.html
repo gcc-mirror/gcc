@@ -17,7 +17,11 @@ In addition, hardware that supports atomic operations and a compiler
   as <code class="literal">-march=i686</code>,
   <code class="literal">-march=native</code> or <code class="literal">-mcpu=v9</code>. See
   the GCC manual for more information.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.using.parallel_mode"></a>Using Parallel Mode</h3></div></div></div><p>
+</p>
+<p>
+  Also, the parallel mode requires platform support for stdint.h.
+</p>
+</div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.using.parallel_mode"></a>Using Parallel Mode</h3></div></div></div><p>
   To use the libstdc++ parallel mode, compile your application with
   the prerequisite flags as detailed above, and in addition
   add <code class="constant">-D_GLIBCXX_PARALLEL</code>. This will convert all
