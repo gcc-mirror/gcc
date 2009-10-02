@@ -1,3 +1,11 @@
+2009-10-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41479
+	* trans-decl.c (gfc_init_default_dt): Check for presence of
+	the argument only if it is optional or in entry master.
+	(init_intent_out_dt): Ditto; call gfc_init_default_dt
+	for all derived types with initializers.
+
 2009-10-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR fortran/33197
