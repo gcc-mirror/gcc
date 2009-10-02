@@ -1,4 +1,3 @@
-/* { dg-xfail-run-if "32-bit vararg broken" { c++ } { "*" } { "" } } */
 /* Simple test of vararg passing for problematic types with and without
    double values passed between them.  */
 
