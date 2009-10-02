@@ -46,11 +46,13 @@ static inline gcov_unsigned_t from_file (gcov_unsigned_t value)
 
 /* Open a gcov file. NAME is the name of the file to open and MODE
    indicates whether a new file should be created, or an existing file
-   opened for modification. If MODE is >= 0 an existing file will be
-   opened, if possible, and if MODE is <= 0, a new file will be
-   created. Use MODE=0 to attempt to reopen an existing file and then
-   fall back on creating a new one.  Return zero on failure, >0 on
-   opening an existing file and <0 on creating a new one.  */
+   opened. If MODE is >= 0 an existing file will be opened, if
+   possible, and if MODE is <= 0, a new file will be created. Use
+   MODE=0 to attempt to reopen an existing file and then fall back on
+   creating a new one.  If MODE < 0, the file will be opened in
+   read-only mode.  Otherwise it will be opened for modification.
+   Return zero on failure, >0 on opening an existing file and <0 on
+   creating a new one.  */
 
 GCOV_LINKAGE int
 #if IN_LIBGCOV
@@ -66,7 +68,6 @@ gcov_open (const char *name, int mode)
   struct flock s_flock;
   int fd;
 
-  s_flock.l_type = F_WRLCK;
   s_flock.l_whence = SEEK_SET;
   s_flock.l_start = 0;
   s_flock.l_len = 0; /* Until EOF.  */
@@ -83,16 +84,25 @@ gcov_open (const char *name, int mode)
 #endif
 #if GCOV_LOCKED
   if (mode > 0)
-    fd = open (name, O_RDWR);
+    {
+      /* Read-only mode - acquire a read-lock.  */
+      s_flock.l_type = F_RDLCK;
+      fd = open (name, O_RDONLY);
+    }
   else
-    fd = open (name, O_RDWR | O_CREAT, 0666);
+    {
+      /* Write mode - acquire a write-lock.  */
+      s_flock.l_type = F_WRLCK;
+      fd = open (name, O_RDWR | O_CREAT, 0666);
+    }
   if (fd < 0)
     return 0;
 
   while (fcntl (fd, F_SETLKW, &s_flock) && errno == EINTR)
     continue;
 
-  gcov_var.file = fdopen (fd, "r+b");
+  gcov_var.file = fdopen (fd, (mode > 0) ? "rb" : "r+b");
+
   if (!gcov_var.file)
     {
       close (fd);
@@ -120,7 +130,8 @@ gcov_open (const char *name, int mode)
     gcov_var.mode = mode * 2 + 1;
 #else
   if (mode >= 0)
-    gcov_var.file = fopen (name, "r+b");
+    gcov_var.file = fopen (name, (mode > 0) ? "rb" : "r+b");
+
   if (gcov_var.file)
     gcov_var.mode = 1;
   else if (mode <= 0)
