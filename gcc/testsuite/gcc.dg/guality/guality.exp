@@ -2,6 +2,11 @@
 
 load_lib gcc-dg.exp
 
+# Disable on darwin until radr://7264615 is resolved.
+if { [istarget *-*-darwin*] } {
+  return
+}
+
 proc check_guality {args} {
     set result [eval check_compile guality_check executable $args "-g -O0"]
     set lines [lindex $result 0]
