@@ -2991,7 +2991,8 @@ gfc_init_default_dt (gfc_symbol * sym, tree body)
   gfc_set_sym_referenced (sym);
   e = gfc_lval_expr_from_sym (sym);
   tmp = gfc_trans_assignment (e, sym->value, false);
-  if (sym->attr.dummy)
+  if (sym->attr.dummy && (sym->attr.optional
+			  || sym->ns->proc_name->attr.entry_master))
     {
       present = gfc_conv_expr_present (sym);
       tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
@@ -3023,21 +3024,23 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 	&& !f->sym->attr.pointer
 	&& f->sym->ts.type == BT_DERIVED)
       {
-	if (f->sym->ts.u.derived->attr.alloc_comp)
+	if (f->sym->ts.u.derived->attr.alloc_comp && !f->sym->value)
 	  {
 	    tmp = gfc_deallocate_alloc_comp (f->sym->ts.u.derived,
 					     f->sym->backend_decl,
 					     f->sym->as ? f->sym->as->rank : 0);
 
-	    present = gfc_conv_expr_present (f->sym);
-	    tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
-			  tmp, build_empty_stmt (input_location));
+	    if (f->sym->attr.optional
+		|| f->sym->ns->proc_name->attr.entry_master)
+	      {
+		present = gfc_conv_expr_present (f->sym);
+		tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
+			      tmp, build_empty_stmt (input_location));
+	      }
 
 	    gfc_add_expr_to_block (&fnblock, tmp);
 	  }
-
-	if (!f->sym->ts.u.derived->attr.alloc_comp
-	      && f->sym->value)
+       else if (f->sym->value)
 	  body = gfc_init_default_dt (f->sym, body);
       }
 
