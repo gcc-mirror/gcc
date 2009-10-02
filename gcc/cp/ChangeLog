@@ -1,3 +1,8 @@
+2009-10-02  Janis Johnson  <janis187@us.ibm.com>
+
+	* call.c (convert_arg_to_ellipsis): Avoid promoting decimal32
+	to double.
+
 2009-10-01  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_lambda_expression): Compute visibility.
