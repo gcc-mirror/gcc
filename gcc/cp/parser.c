@@ -7005,31 +7005,6 @@ finish_lambda_scope (void)
   VEC_pop (tree_int, lambda_scope_stack);
 }
 
-/* We want to determine the linkage of a lambda type at pushtag time,
-   before CLASSTYPE_LAMBDA_EXPR has been set.  So this callback allows us
-   to find out whether the current lambda mangling scope will give us
-   linkage or not.  */
-
-bool
-no_linkage_lambda_type_p (tree type)
-{
-  tree lambda, scope;
-  if (!LAMBDA_TYPE_P (type))
-    return false;
-
-  lambda = CLASSTYPE_LAMBDA_EXPR (type);
-  if (lambda)
-    scope = LAMBDA_EXPR_EXTRA_SCOPE (lambda);
-  else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-    /* We can't use lambda_scope, and CLASSTYPE_TEMPLATE_INFO won't be set
-       yet either, so guess it's public for now.  */
-    return false;
-  else
-    scope = lambda_scope;
-
-  return (scope == NULL_TREE);
-}
-
 /* Parse a lambda expression.
 
    lambda-expression:
@@ -7053,6 +7028,9 @@ cp_parser_lambda_expression (cp_parser* parser)
   type = begin_lambda_type (lambda_expr);
 
   record_lambda_scope (lambda_expr);
+
+  /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
+  determine_visibility (TYPE_NAME (type));
 
   {
     /* Inside the class, surrounding template-parameter-lists do not apply.  */

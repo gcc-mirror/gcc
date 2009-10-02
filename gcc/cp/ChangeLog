@@ -1,3 +1,11 @@
+2009-10-01  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_lambda_expression): Compute visibility.
+	(no_linkage_lambda_type_p): Remove.
+	* cp-tree.h: Remove declaration.
+	* tree.c (no_linkage_check): Don't call it.  Don't check template
+	args.  Don't check TREE_PUBLIC Types.
+
 2009-10-01  Gabriel Dos Reis  <gdr@cse.tamu.edu>
 	    Jason Merrill <jason@redhat.com>
 
