@@ -5948,6 +5948,7 @@ static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx,
 static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT,
 					 enum var_init_status);
 static int is_based_loc (const_rtx);
+static int resolve_one_addr (rtx *, void *);
 static dw_loc_descr_ref mem_loc_descriptor (rtx, enum machine_mode mode,
 					    enum var_init_status);
 static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx,
@@ -7905,8 +7906,7 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
       r2 = v2->v.val_addr;
       if (GET_CODE (r1) != GET_CODE (r2))
 	return 0;
-      gcc_assert (GET_CODE (r1) == SYMBOL_REF);
-      return !strcmp (XSTR (r1, 0), XSTR (r2, 0));
+      return !rtx_equal_p (r1, r2);
 
     case dw_val_class_offset:
       return v1->v.val_offset == v2->v.val_offset;
@@ -8662,7 +8662,30 @@ value_format (dw_attr_ref a)
   switch (a->dw_attr_val.val_class)
     {
     case dw_val_class_addr:
-      return DW_FORM_addr;
+      /* Only very few attributes allow DW_FORM_addr.  */
+      switch (a->dw_attr)
+	{
+	case DW_AT_low_pc:
+	case DW_AT_high_pc:
+	case DW_AT_entry_pc:
+	case DW_AT_trampoline:
+	  return DW_FORM_addr;
+	default:
+	  break;
+	}
+      switch (DWARF2_ADDR_SIZE)
+	{
+	case 1:
+	  return DW_FORM_data1;
+	case 2:
+	  return DW_FORM_data2;
+	case 4:
+	  return DW_FORM_data4;
+	case 8:
+	  return DW_FORM_data8;
+	default:
+	  gcc_unreachable ();
+	}
     case dw_val_class_range_list:
     case dw_val_class_offset:
     case dw_val_class_loc_list:
@@ -11345,6 +11368,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       if (!const_ok_for_output (rtl))
 	break;
 
+    symref:
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
       mem_loc_result->dw_loc_oprnd1.v.val_addr = rtl;
@@ -11759,8 +11783,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       break;
 
     case CONST_STRING:
-      /* These can't easily be tracked, see PR41404.  */
-      break;
+      resolve_one_addr (&rtl, NULL);
+      goto symref;
 
     default:
 #ifdef ENABLE_CHECKING
@@ -13525,7 +13549,9 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       return true;
 
     case CONST_STRING:
-      add_AT_string (die, DW_AT_const_value, XSTR (rtl, 0));
+      resolve_one_addr (&rtl, NULL);
+      add_AT_addr (die, DW_AT_const_value, rtl);
+      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
       return true;
 
     case CONST:
@@ -13556,6 +13582,16 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case HIGH:
     case CONST_FIXED:
+      return false;
+
+    case MEM:
+      if (GET_CODE (XEXP (rtl, 0)) == CONST_STRING
+	  && MEM_READONLY_P (rtl)
+	  && GET_MODE (rtl) == BLKmode)
+	{
+	  add_AT_string (die, DW_AT_const_value, XSTR (XEXP (rtl, 0), 0));
+	  return true;
+	}
       return false;
 
     default:
@@ -13629,8 +13665,12 @@ rtl_for_decl_init (tree init, tree type)
 			       TREE_STRING_LENGTH (init) - 1) == 0
 	  && ((size_t) TREE_STRING_LENGTH (init)
 	      == strlen (TREE_STRING_POINTER (init)) + 1))
-	rtl = gen_rtx_CONST_STRING (VOIDmode,
-				    ggc_strdup (TREE_STRING_POINTER (init)));
+	{
+	  rtl = gen_rtx_CONST_STRING (VOIDmode,
+				      ggc_strdup (TREE_STRING_POINTER (init)));
+	  rtl = gen_rtx_MEM (BLKmode, rtl);
+	  MEM_READONLY_P (rtl) = 1;
+	}
     }
   /* Other aggregates, and complex values, could be represented using
      CONCAT: FIXME!  */
@@ -18982,6 +19022,104 @@ move_linkage_attr (dw_die_ref die)
     }
 }
 
+/* Helper function for resolve_addr, attempt to resolve
+   one CONST_STRING, return non-zero if not successful.  Similarly verify that
+   SYMBOL_REFs refer to variables emitted in the current CU.  */
+
+static int
+resolve_one_addr (rtx *addr, void *data ATTRIBUTE_UNUSED)
+{
+  rtx rtl = *addr;
+
+  if (GET_CODE (rtl) == CONST_STRING)
+    {
+      size_t len = strlen (XSTR (rtl, 0)) + 1;
+      tree t = build_string (len, XSTR (rtl, 0));
+      tree tlen = build_int_cst (NULL_TREE, len - 1);
+      TREE_TYPE (t)
+	= build_array_type (char_type_node, build_index_type (tlen));
+      rtl = lookup_constant_def (t);
+      if (!rtl || !MEM_P (rtl))
+	return 1;
+      rtl = XEXP (rtl, 0);
+      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
+      *addr = rtl;
+      return 0;
+    }
+
+  if (GET_CODE (rtl) == SYMBOL_REF
+      && SYMBOL_REF_DECL (rtl)
+      && TREE_CODE (SYMBOL_REF_DECL (rtl)) == VAR_DECL
+      && !TREE_ASM_WRITTEN (SYMBOL_REF_DECL (rtl)))
+    return 1;
+
+  if (GET_CODE (rtl) == CONST
+      && for_each_rtx (&XEXP (rtl, 0), resolve_one_addr, NULL))
+    return 1;
+
+  return 0;
+}
+
+/* Helper function for resolve_addr, handle one location
+   expression, return false if at least one CONST_STRING or SYMBOL_REF in
+   the location list couldn't be resolved.  */
+
+static bool
+resolve_addr_in_expr (dw_loc_descr_ref loc)
+{
+  for (; loc; loc = loc->dw_loc_next)
+    if ((loc->dw_loc_opc == DW_OP_addr
+	 && resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr, NULL))
+	|| (loc->dw_loc_opc == DW_OP_implicit_value
+	    && loc->dw_loc_oprnd2.val_class == dw_val_class_addr
+	    && resolve_one_addr (&loc->dw_loc_oprnd2.v.val_addr, NULL)))
+      return false;
+  return true;
+}
+
+/* Resolve DW_OP_addr and DW_AT_const_value CONST_STRING arguments to
+   an address in .rodata section if the string literal is emitted there,
+   or remove the containing location list or replace DW_AT_const_value
+   with DW_AT_location and empty location expression, if it isn't found
+   in .rodata.  Similarly for SYMBOL_REFs, keep only those that refer
+   to something that has been emitted in the current CU.  */
+
+static void
+resolve_addr (dw_die_ref die)
+{
+  dw_die_ref c;
+  dw_attr_ref a;
+  dw_loc_list_ref curr;
+  unsigned ix;
+
+  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+    switch (AT_class (a))
+      {
+      case dw_val_class_loc_list:
+	for (curr = AT_loc_list (a); curr != NULL; curr = curr->dw_loc_next)
+	  if (!resolve_addr_in_expr (curr->expr))
+	    curr->expr = NULL;
+	break;
+      case dw_val_class_loc:
+	if (!resolve_addr_in_expr (AT_loc (a)))
+	  a->dw_attr_val.v.val_loc = NULL;
+	break;
+      case dw_val_class_addr:
+	if (a->dw_attr == DW_AT_const_value
+	    && resolve_one_addr (&a->dw_attr_val.v.val_addr, NULL))
+	  {
+	    a->dw_attr = DW_AT_location;
+	    a->dw_attr_val.val_class = dw_val_class_loc;
+	    a->dw_attr_val.v.val_loc = NULL;
+	  }
+	break;
+      default:
+	break;
+      }
+
+  FOR_EACH_CHILD (die, c, resolve_addr (c));
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -19071,6 +19209,8 @@ dwarf2out_finish (const char *filename)
     }
 
   limbo_die_list = NULL;
+
+  resolve_addr (comp_unit_die);
 
   for (node = deferred_asm_name; node; node = node->next)
     {
