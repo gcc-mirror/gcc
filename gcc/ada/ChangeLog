@@ -1,5 +1,12 @@
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>:
+	Generate an XVZ variable alongside the XVS type if the size is
+	not constant.
+	(maybe_pad_type): Minor tweak.
+
+2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (check_ok_for_atomic): Do nothing if the type
 	doesn't come from source.
 
