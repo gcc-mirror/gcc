@@ -1,3 +1,14 @@
+2009-10-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR fortran/33197
+	* gfortran.h (HAVE_mpc_arc): Define.
+	* simplify.c (gfc_simplify_acos): Handle complex acos.
+	(gfc_simplify_acosh): Likewise for acosh.
+	(gfc_simplify_asin): Likewise for asin.
+	(gfc_simplify_asinh): Likewise for asinh.
+	(gfc_simplify_atan): Likewise for atan.
+	(gfc_simplify_atanh): Likewise for atanh.
+
 2009-10-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41515

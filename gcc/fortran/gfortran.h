@@ -1616,6 +1616,9 @@ gfc_intrinsic_sym;
 # if MPC_VERSION >= MPC_VERSION_NUM(0,6,1)
 #  define HAVE_mpc_pow
 # endif
+# if MPC_VERSION >= MPC_VERSION_NUM(0,7,1)
+#  define HAVE_mpc_arc
+# endif
 #else
 #define mpc_realref(X) ((X).r)
 #define mpc_imagref(X) ((X).i)
