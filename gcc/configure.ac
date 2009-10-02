@@ -2301,6 +2301,17 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE,
     then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports .cfi_personality.])
 
+gcc_GAS_CHECK_FEATURE([cfi sections directive],
+  gcc_cv_as_cfi_sections_directive, ,,
+[	.text
+	.cfi_sections .debug_frame, .eh_frame
+	.cfi_startproc
+	.cfi_endproc])
+AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_SECTIONS_DIRECTIVE,
+  [`if test $gcc_cv_as_cfi_sections_directive = yes;
+    then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports .cfi_sections.])
+
 # GAS versions up to and including 2.11.0 may mis-optimize
 # .eh_frame data.
 gcc_GAS_CHECK_FEATURE(eh_frame optimization, gcc_cv_as_eh_frame,

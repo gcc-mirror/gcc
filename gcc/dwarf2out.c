@@ -179,6 +179,16 @@ dwarf2out_do_cfi_asm (void)
   if ((enc & 0x70) != 0 && (enc & 0x70) != DW_EH_PE_pcrel)
     return false;
 
+  if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE)
+    {
+#ifdef TARGET_UNWIND_INFO
+      return false;
+#else
+      if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
+	return false;
+#endif
+    }
+
   saved_do_cfi_asm = true;
   return true;
 }
@@ -18628,6 +18638,16 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
       switch_to_section (cold_text_section);
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
     }
+
+#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE
+  if (dwarf2out_do_cfi_asm ())
+    {
+#ifndef TARGET_UNWIND_INFO
+      if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
+#endif
+	fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
+    }
+#endif
 }
 
 /* A helper function for dwarf2out_finish called through

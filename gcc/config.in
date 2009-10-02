@@ -887,6 +887,12 @@
 #endif
 
 
+/* Define 0/1 if your assembler supports .cfi_sections. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_CFI_SECTIONS_DIRECTIVE
+#endif
+
+
 /* Define if your assembler supports the .loc discriminator sub-directive. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_DISCRIMINATOR

@@ -21542,6 +21542,42 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for cfi sections directive" >&5
+$as_echo_n "checking assembler for cfi sections directive... " >&6; }
+if test "${gcc_cv_as_cfi_sections_directive+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_cfi_sections_directive=no
+  if test x$gcc_cv_as != x; then
+    echo '	.text
+	.cfi_sections .debug_frame, .eh_frame
+	.cfi_startproc
+	.cfi_endproc' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_cfi_sections_directive=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_cfi_sections_directive" >&5
+$as_echo "$gcc_cv_as_cfi_sections_directive" >&6; }
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_CFI_SECTIONS_DIRECTIVE `if test $gcc_cv_as_cfi_sections_directive = yes;
+    then echo 1; else echo 0; fi`
+_ACEOF
+
+
 # GAS versions up to and including 2.11.0 may mis-optimize
 # .eh_frame data.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for eh_frame optimization" >&5
