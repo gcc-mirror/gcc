@@ -30,7 +30,7 @@
 
 	PR testsuite/41546
 	* gcc.target/i386/ifcvt-onecmpl-abs-1.c: Change -mtune=i586
-	to -mtune=generic. 
+	to -mtune=generic.
 
 2009-10-01  Jan Hubicka  <jh@suse.cz>
 
@@ -245,7 +245,7 @@
 	* gcc.target/i386/avx-2.c
 	* gcc.target/i386/sse-23.c: Remove comments to mmintrin-common.h.
 	* gcc.target/i386/funcspec-9.c: Delete.
-	
+
 2009-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/guality.exp (gdb-test): New proc for use in dg-final.
@@ -294,7 +294,7 @@
 2009-09-28  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg (tagged_alloc_free.adb): New testcase.
-	
+
 2009-09-28  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/dfp: New directory.
@@ -871,8 +871,7 @@
 	* gcc.dg/dfp/compare-special.h: Ditto.
 	* gcc.dg/dfp/convert.h: Ditto.
 	* gcc.dg/dfp/fe-check.h: Ditto.
-	* gcc.dg/dfp/call-by-value.c: Use default options and
-	  debug macros.
+	* gcc.dg/dfp/call-by-value.c: Use default options and debug macros.
 	* gcc.dg/dfp/cast.c: Ditto.
 	* gcc.dg/dfp/compare-eq-const.c: Ditto.
 	* gcc.dg/dfp/compare-eq-d32.c: Ditto.
