@@ -1,3 +1,8 @@
+2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array10.adb: New test.
+	* gnat.dg/object_overflow.adb: Tweak.
+
 2009-10-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
         * gcc.dg/guality/guality.exp: Disable on darwin.
