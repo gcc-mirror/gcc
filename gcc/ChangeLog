@@ -1,3 +1,7 @@
+2009-10-02  Neil Vachharajani  <nvachhar@google.com>
+
+	* gcov-io.c (gcov_open): Open files read-only when MODE < 0
+
 2009-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (divmod<mode>4) Macroize expander from
