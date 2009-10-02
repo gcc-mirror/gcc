@@ -1,3 +1,7 @@
+2009-10-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+        * gcc.dg/guality/guality.exp: Disable on darwin.
+
 2009-10-02  Janis Johnson  <janis187@us.ibm.com>
 
 	* c-c++-common/dfp/func-vararg-alternate-d32.c: Remove XFAIL.
