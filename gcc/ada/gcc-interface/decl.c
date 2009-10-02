@@ -4990,6 +4990,17 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 		     Is_Bit_Packed_Array (gnat_array) ? TYPE_DECL : VAR_DECL,
 		     true, Has_Component_Size_Clause (gnat_array));
 
+  /* If the array has aliased components and the component size can be zero,
+     force at least unit size to ensure that the components have distinct
+     addresses.  */
+  if (!gnu_comp_size
+      && Has_Aliased_Components (gnat_array)
+      && (integer_zerop (TYPE_SIZE (gnu_type))
+	  || (TREE_CODE (gnu_type) == ARRAY_TYPE
+	      && !TREE_CONSTANT (TYPE_SIZE (gnu_type)))))
+    gnu_comp_size
+      = size_binop (MAX_EXPR, TYPE_SIZE (gnu_type), bitsize_unit_node);
+
   /* If the component type is a RECORD_TYPE that has a self-referential size,
      then use the maximum size for the component size.  */
   if (!gnu_comp_size
@@ -6210,6 +6221,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
   if (Present (gnat_entity)
       && size
+      && TREE_CODE (size) != MAX_EXPR
       && !operand_equal_p (size, orig_size, 0)
       && !(TREE_CODE (size) == INTEGER_CST
 	   && TREE_CODE (orig_size) == INTEGER_CST
