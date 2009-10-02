@@ -1,3 +1,8 @@
+2009-10-02  Andreas Schwab  <schwab@linux-m68k.org>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+ 
+	* config/m68k/lb1sf68.asm (PICCALL): Use variable sized branch.
+
 2009-10-02  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (USER_LABEL_PREFIX): Define.
