@@ -1,5 +1,10 @@
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/array11.adb: New test.
+	* gnat.dg/array12.adb: Likewise.
+
+2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array10.adb: New test.
 	* gnat.dg/object_overflow.adb: Tweak.
 
