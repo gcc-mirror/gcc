@@ -1,3 +1,23 @@
+2009-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (divmod<mode>4) Macroize expander from
+	divmoddi4, divmodsi4 and divmodhi4 patterns using SWI248 macro.
+	(*divmod<mode>4): Macroize insn_and_split pattern from
+	*divmoddi4_cltd_rex64, *divmodsi4_cltd and divmodhi4 insn patterns
+	and their corresponding splitters usign SWI248 macro.  Split SImode
+	insn to generate cltd and DImode insn to generate cqto instead of
+	move+shift when optimizing for size or TARGET_USE_CLTD is in effect.
+	(*divmoddi4_nocltd_rex64, *divmodsi4_nocltd): Remove insn patterns.
+	(*divmod<mode>4_noext): Macroize insn from *divmoddi_noext_rex64 and
+	*divmodsi_noext patterns using SWI248 macro.
+	(udivmod<mode>4): Macroize expander from udivmoddi4, udivmodsi4 and
+	udivmodhi4 patterns using SWI248 macro.
+	(*udivmod<mode>4): Macroize insn_and_split pattern from
+	*udivmoddi4, udivmodsi4 and udivmodhi4 patterns and their
+	corresponding splitters using SWI248 macro.
+	(*udivmod<mode>4_noext): Macroize insn from *udivmoddi4_noext,
+	*udivmodsi4_noext and *udivmodhi_noext patterns using SWI248 macro.
+
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (layout_type) <ARRAY_TYPE>: Make sure that an array
@@ -36,7 +56,7 @@
 
 2009-10-02  Andreas Schwab  <schwab@linux-m68k.org>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
- 
+
 	* config/m68k/lb1sf68.asm (PICCALL): Use variable sized branch.
 
 2009-10-02  Nick Clifton  <nickc@redhat.com>
@@ -89,12 +109,12 @@
 	PR c++/41503
 	* cp/pt.c (function_parameter_expanded_from_pack_p): Return false if
 	DECL_ARTIFICIAL (param_decl) is true.
-	
+
 2009-09-30  Gabriel Dos Reis  <gdr@cs.tamu.edu>
 
 	* tree.h (tree_decl_common::lang_flag_8): New.
 	* c-common.c (c_common_reswords): Include "constexpr" as C++0x
-	keyword. 
+	keyword.
 	* c-common.h (RID_CONSTEXPR): New.
 
 2009-09-30  Uros Bizjak  <ubizjak@gmail.com>
