@@ -1,3 +1,8 @@
+2009-10-02  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (USER_LABEL_PREFIX): Define.
+	(ASM_OUTPUT_LABELREF): Use asm_fprintf and %U.
+
 2009-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_clone_node): Add redirect_callers parameter.
