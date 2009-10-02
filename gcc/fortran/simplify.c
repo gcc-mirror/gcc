@@ -745,16 +745,21 @@ gfc_simplify_acos (gfc_expr *x)
 		       &x->where);
 	    return &gfc_bad_expr;
 	  }
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpfr_acos (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
+#ifdef HAVE_mpc_arc
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpc_acos (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+	break;
+#else
 	return NULL;
+#endif
       default:
 	gfc_internal_error ("in gfc_simplify_acos(): Bad type");
     }
 
-  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
-
-  mpfr_acos (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "ACOS");
 }
@@ -781,7 +786,13 @@ gfc_simplify_acosh (gfc_expr *x)
 	mpfr_acosh (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
+#ifdef HAVE_mpc_arc
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpc_acosh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+	break;
+#else
 	return NULL;
+#endif
       default:
 	gfc_internal_error ("in gfc_simplify_acosh(): Bad type");
     }
@@ -1043,7 +1054,13 @@ gfc_simplify_asin (gfc_expr *x)
 	mpfr_asin (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
+#ifdef HAVE_mpc_arc
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpc_asin (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+	break;
+#else
 	return NULL;
+#endif
       default:
 	gfc_internal_error ("in gfc_simplify_asin(): Bad type");
     }
@@ -1067,7 +1084,13 @@ gfc_simplify_asinh (gfc_expr *x)
 	mpfr_asinh (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
+#ifdef HAVE_mpc_arc
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpc_asinh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+	break;
+#else
 	return NULL;
+#endif
       default:
 	gfc_internal_error ("in gfc_simplify_asinh(): Bad type");
     }
@@ -1091,7 +1114,13 @@ gfc_simplify_atan (gfc_expr *x)
 	mpfr_atan (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
+#ifdef HAVE_mpc_arc
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpc_atan (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+	break;
+#else
 	return NULL;
+#endif
       default:
 	gfc_internal_error ("in gfc_simplify_atan(): Bad type");
     }
@@ -1123,7 +1152,13 @@ gfc_simplify_atanh (gfc_expr *x)
 	mpfr_atanh (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
+#ifdef HAVE_mpc_arc
+	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+	mpc_atanh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
+	break;
+#else
 	return NULL;
+#endif
       default:
 	gfc_internal_error ("in gfc_simplify_atanh(): Bad type");
     }
