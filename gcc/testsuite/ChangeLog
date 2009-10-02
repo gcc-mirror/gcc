@@ -1,5 +1,9 @@
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/atomic2.adb: New test.
+
+2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/array11.adb: New test.
 	* gnat.dg/array12.adb: Likewise.
 

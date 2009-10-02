@@ -1,5 +1,10 @@
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (check_ok_for_atomic): Do nothing if the type
+	doesn't come from source.
+
+2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_component_type): Force at least
 	unit size for the component size of an array with aliased components.
 	(maybe_pad_type): Do not warn for MAX_EXPR.

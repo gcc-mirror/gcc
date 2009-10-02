@@ -7868,6 +7868,11 @@ check_ok_for_atomic (tree object, Entity_Id gnat_entity, bool comp_p)
      OBJECT is either a type or a decl.  */
   if (TYPE_P (object))
     {
+      /* If this is an anonymous base type, nothing to check.  Error will be
+	 reported on the source type.  */
+      if (!Comes_From_Source (gnat_entity))
+	return;
+
       mode = TYPE_MODE (object);
       align = TYPE_ALIGN (object);
       size = TYPE_SIZE (object);
