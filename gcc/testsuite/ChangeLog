@@ -1,3 +1,10 @@
+2009-10-02  Janis Johnson  <janis187@us.ibm.com>
+
+	* c-c++-common/dfp/func-vararg-alternate-d32.c: Remove XFAIL.
+	* c-c++-common/dfp/func-vararg-dfp.c: Ditto.
+	* c-c++-common/dfp/func-vararg-mixed.c: Ditto.
+	* c-c++-common/dfp/func-vararg-mixed-2.c: Ditto.
+
 2009-10-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41479

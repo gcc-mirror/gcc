@@ -5104,7 +5104,8 @@ convert_arg_to_ellipsis (tree arg)
      promoted type before the call.  */
   if (TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
       && (TYPE_PRECISION (TREE_TYPE (arg))
-	  < TYPE_PRECISION (double_type_node)))
+	  < TYPE_PRECISION (double_type_node))
+      && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (arg))))
     arg = convert_to_real (double_type_node, arg);
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
     arg = perform_integral_promotions (arg);
