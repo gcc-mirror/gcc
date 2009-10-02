@@ -3212,13 +3212,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* Fill in locations of fields.  */
 	      annotate_rep (gnat_entity, gnu_type);
 
-	      /* We've built a new type, make an XVS type to show what this
-		 is a subtype of.  Some debuggers require the XVS type to be
-		 output first, so do it in that order.  */
+	      /* If debugging information is being written for the type, write
+		 a record that shows what we are a subtype of and also make a
+		 variable that indicates our size, if still variable.  */
 	      if (debug_info_p)
 		{
 		  tree gnu_subtype_marker = make_node (RECORD_TYPE);
 		  tree gnu_unpad_base_name = TYPE_NAME (gnu_unpad_base_type);
+		  tree gnu_size_unit = TYPE_SIZE_UNIT (gnu_type);
 
 		  if (TREE_CODE (gnu_unpad_base_name) == TYPE_DECL)
 		    gnu_unpad_base_name = DECL_NAME (gnu_unpad_base_name);
@@ -3236,6 +3237,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		  add_parallel_type (TYPE_STUB_DECL (gnu_type),
 				     gnu_subtype_marker);
+
+		  if (definition
+		      && TREE_CODE (gnu_size_unit) != INTEGER_CST
+		      && !CONTAINS_PLACEHOLDER_P (gnu_size_unit))
+		    create_var_decl (create_concat_name (gnat_entity, "XVZ"),
+				     NULL_TREE, sizetype, gnu_size_unit, false,
+				     false, false, false, NULL, gnat_entity);
 		}
 
 	      /* Now we can finalize it.  */
@@ -6201,7 +6209,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
       add_parallel_type (TYPE_STUB_DECL (record), marker);
 
-      if (size && TREE_CODE (size) != INTEGER_CST && definition)
+      if (definition && size && TREE_CODE (size) != INTEGER_CST)
 	create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
 			 TYPE_SIZE_UNIT (record), false, false, false,
 			 false, NULL, gnat_entity);
