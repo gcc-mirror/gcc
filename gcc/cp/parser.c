@@ -7176,7 +7176,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 						 /*recovering=*/true,
 						 /*or_comma=*/true,
 						 /*consume_paren=*/true);
-	  continue;
+	  break;
 	}
 
       /* Find the initializer for this capture.  */
