@@ -1,3 +1,8 @@
+2009-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/41542
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Remove mis-merged garbage.
+
 2009-10-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle32.C: New.
