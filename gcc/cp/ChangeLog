@@ -1,3 +1,9 @@
+2009-10-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41553
+	* parser.c (cp_parser_lambda_introducer): Avoid infinite loop on
+	parse error.
+
 2009-10-02  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (write_unnamed_type_name): Implement.
