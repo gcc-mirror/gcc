@@ -1,3 +1,7 @@
+2009-10-03  Richard Guenther  <rguenther@suse.de>
+
+	* options.c (gfc_post_options): Handle -flto and -fwhopr.
+
 2009-10-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41479

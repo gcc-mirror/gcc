@@ -87,7 +87,7 @@ static bool
 gate_all_early_local_passes (void)
 {
 	  /* Don't bother doing anything if the program has errors.  */
-  return (!errorcount && !sorrycount);
+  return (!errorcount && !sorrycount && !in_lto_p);
 }
 
 struct simple_ipa_opt_pass pass_early_local_passes =
@@ -385,6 +385,9 @@ tree_rest_of_compilation (tree fndecl)
   gimple_register_cfg_hooks ();
 
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
+
+  execute_all_ipa_transforms ();
+
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);
   

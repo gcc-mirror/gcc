@@ -1,6 +1,7 @@
 extern void abort (void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 char *
 strchr (const char *s, int c)
 {
@@ -19,6 +20,7 @@ strchr (const char *s, int c)
     }
 }
 
+__attribute__ ((__noinline__))
 char *
 index (const char *s, int c)
 {

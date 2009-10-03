@@ -1150,6 +1150,10 @@ bool
 ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 				   VEC (cgraph_edge_p, heap) **new_edges)
 {
+  /* FIXME lto: We do not stream out indirect call information.  */
+  if (flag_wpa)
+    return false;
+
   /* Do nothing if the preparation phase has not been carried out yet
      (i.e. during early inlining).  */
   if (!ipa_node_params_vector)

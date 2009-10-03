@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "plugin.h"
 #include "except.h"
+#include "lto-streamer.h"
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 unsigned HOST_WIDE_INT g_switch_value;
@@ -432,6 +433,17 @@ complain_wrong_lang (const char *text, const struct cl_option *option,
 {
   char *ok_langs, *bad_lang;
 
+  /* The LTO front end inherits all the options from the first front
+     end that was used.  However, not all the original front end
+     options make sense in LTO.
+     
+     A real solution would be to filter this in collect2, but collect2
+     does not have access to all the option attributes to know what to
+     filter.  So, in lto1 we silently accept inherited flags and do
+     nothing about it.  */
+  if (lang_mask & CL_LTO)
+    return;
+
   ok_langs = write_langs (option->flags);
   bad_lang = write_langs (lang_mask);
 
@@ -626,16 +638,28 @@ handle_option (const char **argv, unsigned int lang_mask)
       }
 
   if (option->flags & lang_mask)
-    if (lang_hooks.handle_option (opt_index, arg, value) == 0)
-      result = 0;
+    {
+      if (lang_hooks.handle_option (opt_index, arg, value) == 0)
+	result = 0;
+      else
+	lto_register_user_option (opt_index, arg, value, lang_mask);
+    }
 
   if (result && (option->flags & CL_COMMON))
-    if (common_handle_option (opt_index, arg, value, lang_mask) == 0)
-      result = 0;
+    {
+      if (common_handle_option (opt_index, arg, value, lang_mask) == 0)
+	result = 0;
+      else
+	lto_register_user_option (opt_index, arg, value, CL_COMMON);
+    }
 
   if (result && (option->flags & CL_TARGET))
-    if (!targetm.handle_option (opt_index, arg, value))
-      result = 0;
+    {
+      if (!targetm.handle_option (opt_index, arg, value))
+	result = 0;
+      else
+	lto_register_user_option (opt_index, arg, value, CL_TARGET);
+    }
 
  done:
   if (dup)
@@ -957,6 +981,9 @@ decode_options (unsigned int argc, const char **argv)
       /* Some targets have ABI-specified unwind tables.  */
       flag_unwind_tables = targetm.unwind_tables_default;
     }
+
+  /* Clear any options currently held for LTO.  */
+  lto_clear_user_options ();
 
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */

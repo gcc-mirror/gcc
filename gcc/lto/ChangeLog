@@ -1,0 +1,2543 @@
+2009-10-02  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Make-lang.in (lto/lto-lang.o): Don't depend on lto/common.h.
+	(lto-lang.c): Don't include lto/common.h.
+
+2009-10-02  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Make-lang.in (LTO_OBJS): Remove lto/common.o.
+	(lto/common.o): Remove.
+	* common.c: Remove.
+	* common.h (lto_kind_str): Remove.
+	(lto_visibility_str): Remove.
+	(lto_resolution_str): Make it static.
+
+2009-10-01  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_read_decls): Add comment.
+	Call internal_error instead of gcc_assert.
+	(lto_resolution_read): Likewise.
+	(lto_add_all_inlinees): Tidy.
+	* Make-lang.in: Fix copyright boilerplate.
+	(lto.pdf): New.
+	(lto.install-pdf): New.
+	* lto-tree.h: Fix copyright boilerplate.
+	* lang-specs.h: Likewise.
+	Remove ".lto" entry from compilers fragment.
+	* lto-elf.c: Move inclusion of gelf.h after config.h.
+	Tidy formatting everywhere.
+	* lto.h: Fix copyright boilerplate.
+	Tidy formatting everywhere.
+	* common.c: Likewise.
+	* config-lang.in: Likewise.
+	* common.h: Likewise.
+	* lto-lang.c: Likewise.
+
+2009-10-01  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_read_section_data): Use plain lseek/read.
+
+2009-10-01  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (LTO_MMAP_IO): Define if we can mmap files and
+	use sysconf to query the system page size.
+	(lto_file_read): Implement fallback using stdio.
+	(free_section_data): Likewise.
+
+2009-09-29  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_init): Really fix call to
+	build_common_builtin_nodes.
+
+2009-09-29  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_init): Fix call to
+	build_common_builtin_nodes.
+
+2009-09-29  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/40754
+	* lto-elf.c (init_shdr##BITS): Properly specify alignment
+	in bytes.
+	(first_data_block): New static variable.
+	(lto_elf_append_data): Align the first data block in each
+	section.
+
+2009-09-28  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c: Tidy.  Remove stale FIXME lto markers.
+	* lto.c (strip_extension): New.
+	(get_filename_for_set): Call it.  Do not call make_cwd_temp_file.
+	(lto_execute_ltrans): Tidy.
+	Do not pass -fwpa nor -fltrans-* to LTRANS.
+	* opts.c: Tidy formatting and remove stale FIXME lto markers.
+	* tree.c (need_assembler_name_p): Call
+	lang_hooks.decls.may_need_assembler_name_p if set.
+	* varasm.c (default_binds_local_p_1): Remove check for
+	flag_ltrans.
+	* varpool.c (decide_is_variable_needed): Do not test for
+	in_lto_p.
+
+2009-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/39276
+	* lto.c (lto_execute_ltrans): Perform ltrans phase manually.
+	* Make-lang.in: Remove ltrans-driver stuff.
+	* config-lang.in: Likewise.
+	* lang.opt (fltrans-driver): Remove.
+	* lto-lang.c (lto_init_options): Remove code initializing
+	ltrans_driver.
+	* ltrans-driver: Remove.
+
+2009-09-21  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_define_builtins): Remove superfluous
+	calls to targetm.init_builtins and build_common_builtin_nodes.
+	(lto_init): Add targetm.arm_eabi_unwinder as parameter to
+	build_common_builtin_nodes.
+	* lto.c (lto_materialize_function): Do nothing if NODE is a
+	clone.
+
+2009-09-03  Diego Novillo  <dnovillo@google.com>
+
+	* lto-elf.c (validate_file): Replace call to
+	elf_getshstrndx with call to elf_getshdrstrndx.
+
+2009-08-19  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_init): Merge char_type_node with the
+	appropriately signed variant.
+
+2009-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41071
+	* lto.c (lto_fixup_common): Re-build the pointer-to chain part one.
+	(lto_fixup_type): Re-build the pointer-to chain part two.
+
+2009-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41071
+	* lto.c (lto_fixup_type): Re-build the type variant chain.
+
+2009-08-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41071
+	* lto.c (lto_fixup_constructor): New function.
+	(lto_fixup_tree): Replace all types.  Properly fixup
+	constructors and constants.
+
+2009-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (read_cgraph_and_symbols): Exchange TREE_CHAIN use
+	for DECL_LANG_SPECIFIC.
+
+2009-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41032
+	* lto-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Define to NULL.
+
+2009-07-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/40903
+	* lto.c (read_cgraph_and_symbols): After fixing up decls choose
+	the largest decl for output and free TREE_CHAIN for further
+	use.
+
+2009-07-24  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in: Add empty lto.install-plugin target.
+
+2009-07-13  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_fixup_tree): Handle IMPORTED_DECL.
+
+2009-07-11  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_write_globals): Wrapup global decls.
+
+2009-07-10  Richard Guenther  <rguenther@suse.de>
+
+	* lto-lang.c (lto_init): Allocate one more location to make
+	BUILTINS_LOCATION correct.
+
+2009-07-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* lto.c (free_section_data): Cast computed_offset to caddr_t.
+
+2009-07-06  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_fixup_type): Fixup TYPE_SIZE and
+	TYPE_SIZE_UNIT.
+
+2009-07-06  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (preload_common_nodes): Remove.
+	(lto_read_in_decl_state): Call lto_streamer_cache_get.
+	(lto_read_decls): Call lto_data_in_create and
+	lto_data_in_delete.
+	(free_decl): Do not call ggc_free.
+	(lto_main): Call lto_init_reader.
+	* lto-lang.c (lto_type_for_size): Handle intTI_type_node.
+	(lto_init): Initialize main_identifier_node if needed.
+	Make ptrdiff_type_node be integer_type_node.
+
+2009-06-19  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c: Remove code guarded by #ifdef LTO_STREAM_DEBUGGING.
+	Remove code guarded by #ifdef GLOBAL_STREAMER_TRACE.
+	Remove code guarded by #ifdef LOCAL_TRACE.
+
+2009-06-18  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c: Update license to GPLv3.
+	* lto-elf.c: Likewise.
+	* common.c: Likewise.
+	* lto-lang.c: Likewise.
+	* lto.h: Remove superfluous include files.  Update all
+	users.
+
+2009-06-17  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (read_cgraph_and_symbols): Call input_cgraph.
+
+2009-06-02  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_1_to_1_map): Ignore nodes that have not been
+	read in.
+	(materialize_cgraph): Only materialize nodes that have a
+	representation on file.
+
+2009-06-01  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_handle_option): Hanlde OPT_Wabi.
+
+2009-05-31  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_type_for_mode): Handle all the modes
+	handled in c_common_type_for_mode.
+
+2009-05-21  Diego Novillo  <dnovillo@google.com>
+
+	* lto-elf.c: Always include <gelf.h>.
+	* config-lang.in (target_libs): Remove.
+	(build_by_default): Set to no.
+
+2009-05-15  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_materialize_function): Assert that DECL is
+	not a builtin.
+	(materialize_cgraph): Don't try to materialize builtin
+	functions.
+	* lto-section-out.c (write_symbol_vec): Do not write
+	builtin functions.
+
+2009-05-13  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (LANG_HOOKS_GET_ALIAS_SET): Define.
+
+2009-05-07  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_resolution_read): Add type casts for C++ warnings.
+	(LTO_REGISTER_TYPE_AND_FIXUP_SUBTREE): Define.
+	(lto_fixup_type): Call it for TYPE_POINTER_TO,
+	TYPE_REFERENCE_TO, TYPE_CONTEXT and TYPE_CANONICAL.
+	(lto_fixup_tree): Call gimple_register_type when *TP is a
+	type.
+	(lto_main): Call bitmap_obstack_initialize.
+
+2009-04-22  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (free_section_data): Tidy.
+	(lto_1_to_1_map): Tidy.
+	(lto_add_all_inlinees): Tidy.
+	(prefix_name_with_star): New.
+	(get_filename_for_set): New.
+	(lto_wpa_write_files): Call cgraph_node_set_needs_ltrans_p
+	to determine what cgraph node sets to write.
+	Call get_filename_for_set to compute temporary file
+	names.
+	(lto_execute_ltrans): Do not execute LTRANS on files with
+	names that start with '*'.
+	Move logic to execute LTRANS together so that LTRANS is
+	invoked only if there are any files to compile.
+	(do_whole_program_analysis): Only remove output files
+	that do not start with '*'.
+
+2009-04-06  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_post_options): Set flag_excess_precision_cmdline.
+	* lto.c (read_cgraph_and_symbols): Set cgraph_function_flags_ready.
+	(lto_add_all_inlinees): Tidy.
+
+2009-03-26  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c: Include gimple.h.
+	(lto_read_in_decl_state): Call gimple_register_type for
+	every type in every stream.
+	(lto_fixup_common): Call gimple_register_type if T has a
+	type.
+	(do_whole_program_analysis): Call print_lto_report.
+	(lto_main): Call print_lto_report after cgraph_optimize.
+	* Make-lang.in (lto.o): Add dependency on GIMPLE_H.
+
+2009-03-24  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (lto-lang.o): Add dependency on TARGET_H and EXPR_H.
+	(lto.o): Add dependency on GIMPLE_H.
+
+2009-03-10  Simon Baldwin  <simonb@google.com>
+
+	* lto.c (lto_read_all_file_options): Close any open file descriptor
+	contained in file_data before freeing.
+
+2009-02-24  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto.c (lto_add_inline_clones): Don't add the master clone. Check
+	for a decl in the original bitmap, not a node.
+	(lto_add_all_inlinees): Remove original nodes that are not needed.
+	(lto_scan_statics_in_cgraph_node): Don't care if the node is the master.
+
+2009-02-24  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_materialize_function): Update
+	lto_stats.num_function_bodies.
+	(get_section_data): Initialize *LEN to 0.
+	(lto_1_to_1_map): Update lto_stats.num_cgraph_partitions.
+	(lto_wpa_write_files): Update lto_stats.num_cgraph_nodes.
+	Update lto_stats.num_output_files.
+	(read_cgraph_and_symbols): Update lto_stats.num_input_files.
+	(materialize_cgraph): Update lto_stats.num_input_cgraph_nodes.
+	(lto_main): Initialize lto_stats.
+	If flag_lto_report is set, call print_lto_report.
+
+2009-02-19  Diego Novillo  <dnovillo@google.com>
+
+	Revert
+
+	2009-02-19  Rafael Avila de Espindola  <espindola@google.com>
+
+		* lto.c (lto_add_inline_clones): Don't add the
+		master clone. Check for a decl in the original
+		bitmap, not a node.
+		(lto_add_all_inlinees): Remove original nodes
+		that are not needed.
+		(lto_scan_statics_in_cgraph_node): Don't care if
+		the node is the master.
+		(lto_promote_cross_file_statics): Use a new
+		context.seen_node_decls for each set
+
+2009-02-19  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto.c (lto_add_inline_clones): Don't add the master clone. Check
+	for a decl in the original bitmap, not a node.
+	(lto_add_all_inlinees): Remove original nodes that are not needed.
+	(lto_scan_statics_in_cgraph_node): Don't care if the node is the master.
+	(lto_promote_cross_file_statics): Use a new context.seen_node_decls
+	for each set
+
+2009-02-18  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_wpa_write_files): Use timers TV_WHOPR_WPA
+	and TV_WHOPR_WPA_IO.
+	(lto_execute_ltrans): Use timer TV_WHOPR_WPA_LTRANS_EXEC.
+	(read_cgraph_and_symbols): Use timer TV_IPA_LTO_DECL_IO.
+	(materialize_cgraph): Use timer TV_IPA_LTO_GIMPLE_IO.
+	Use timer TV_WHOPR_WPA or TV_WHOPR_LTRANS or TV_LTO
+	depending on command line flags.
+	(do_whole_program_analysis): Use timer TV_WHOPR_WPA.
+	(lto_main): Remove timer uses.
+
+2009-02-18  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto.c (lto_materialize_function): Don't set DECL_EXTERN to 0.
+	(lto_wpa_write_files): Update calls to renamed functions.
+
+2009-02-17  Diego Novillo  <dnovillo@google.com>
+
+	PR 39203
+	* lto-lang.c (lto_post_options): Disable -fwhole-program
+	when running LTRANS.
+
+2009-02-10  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (read_cgraph_and_symbols): Fix comment.
+
+2009-02-10  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (read_cgraph_and_symbols): Read options from all
+	IL files.
+
+2009-02-10  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (read_cgraph_and_symbols): Factor out of lto_main.
+	(materialize_cgraph): Likewise.
+	(do_whole_program_analysis): Likewise.
+	(lto_main): Call read_cgraph_and_symbols,
+	materialize_cgraph and do_whole_program_analysis.
+
+2009-02-10  Simon Baldwin  <simonb@google.com>
+
+	* lto.c: Include lto-opts.h.
+	* (lto_main): Clear file options at loop start, read any saved
+	options from the first file handled, and re-issue options.
+	* Makefile.in (lto.o): Add dependency on lto-opts.h.
+
+2009-02-02  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_main): Stop LTO_TIMER and use
+	TV_WHOPR_WPA_LTRANS_EXEC when launching LTRANS.
+
+2009-01-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/38995
+	* lto-elf.c (init_shdr##BITS): Set the sh_addralign field
+	to POINTER_SIZE.
+
+2009-01-29  Ramana Radhakrishnan  <ramana.r@gmail.com>
+
+	* Make-lang.in (LTO_EXE): Link with all 
+	BACKENDLIBS and not only GMPLIBS
+
+2009-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/38992
+	* lto-elf.c: Include gelf.h instead of libelf.h.
+	(lto_elf_file_close): Replace elfx_update_shstrndx with
+	gelf_getehdr, elf_getscn, gelf_getshdr, gelf_update_shdr and
+	gelf_update_ehdr.
+
+2009-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/38996
+	* lto-elf.c (DEFINE_INIT_EHDR): Initialize e_version.
+
+2009-01-26  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Update.
+
+2009-01-26  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_types_compatible_p): Move to gimple.c
+	and rename into gimple_types_compatible_p.
+
+2009-01-12  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-lang.c (lang_hooks): Remove the const qualifier.
+
+2009-01-06  Diego Novillo  <dnovillo@google.com>
+
+	* ltrans-driver: Mark 'all' target as phony.
+
+2008-12-31  Diego Novillo  <dnovillo@google.com>
+
+	* ltrans-driver: Execute a NOP action for target 'all'.
+
+2008-12-19  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_1_to_1_map): Tidy.
+
+2008-12-19  Diego Novillo  <dnovillo@google.com>
+
+	* lto-elf.c (lto_elf_file_open): When FILENAME cannot
+	be opened, show its name.
+	* ltrans-driver: If $verbose is set, do not use parallelism.
+
+2008-12-17  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto.c (lto_fixup_function): New.
+	(lto_fixup_tree): Call lto_fixup_function.
+
+2008-12-14  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_1_to_1_map): Create a cgraph node set for any global
+	variables if there is no function.
+
+2008-12-10  Simon Baldwin  <simonb@google.com>
+
+	* ltrans-driver: Always run make in silent mode, to avoid make's
+	trace on stdout interfering with lto-wrapper output.
+
+2008-12-10  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c	(lto_add_inline_clones): Do not force master clones of
+	inlined functions already in SET to be static inline.
+
+2008-12-04  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (globalize_context_t): New type to store states in
+	globalization of cross-file statics.
+	(globalize_cross_file_statics): New.
+	(lto_scan_statics_in_ref_table): Walk tree to look for reachable
+	static decls that need to be fixed up.
+	(lto_scan_statics_in_cgraph_node): Change call interface to use
+	a globalize_context_t CONTEXT for all states used.
+	(lto_scan_statics_in_remaining_global_vars): New.
+	(lto_promote_cross_file_statics): Use new call interface of
+	LTO_SCAN_STATICS_IN_CGRAPH_NODE.  Handle remaining externally
+	visible vars in the last set.
+
+2008-12-03  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_fixup_tree): Do not emit an error when
+	PREVAILING throw but T doesn't.
+
+2008-12-02  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_scan_statics_in_ref_table): New function factored out
+	from code in ...
+	(lto_scan_statics_in_cgraph_node): Handle both file-scope static
+	variables and functions.
+	(lto_promote_cross_file_statics): Rename bitmaps to SEEN_DECLS
+	and GLOBAL_DECLS from SEEN_VARS and GLOBAL_VARS.
+
+2008-11-29  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c: Include timevar.h.
+	(lto_materialize_function): Tidy.  Add comments.
+	(lto_wpa_write_files): Tidy.
+	(lto_execute_ltrans): Tidy.
+	(lto_main): Add local variable LTO_TIMER.  Initialize it
+	to one of TV_WHOPR_WPA, TV_WHOPR_LTRANS or TV_LTO.
+	Start and stop the timer.
+	Tidy comments.
+	* Make-lang.in (lto.o): Add dependency on timevar.h.
+	* ltrans-driver: React to -v and -save-temps.
+	Use simple heuristic to determine how much parallelism to
+	use when executing make.
+
+2008-11-12  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_bitmap_obstack): Remove var.
+	(lto_materialize_function): Do nothing instead of marking function
+	body in file if flag_wpa is true.
+	(lto_add_all_inlinees): Use bitmap functions in lto-utils.c.
+	(lto_scan_statics_in_cgraph_node): New function.
+	(lto_promote_cross_file_statics): Same.
+	(lto_wpa_write_files): Call lto_promote_cross_file_statics.
+	Use bitmap functions in lto-utils.c.  Remove unsued label OUT.
+	* Make-lang.in (lto/lto.o): Add lto-utils.h to dependency list.
+
+2008-11-09  Diego Novillo  <dnovillo@google.com>
+
+	* lto/lto.c (lto_fixup_tree): Change error message locus
+	information to include location of mismatching
+	declaration.
+	Use TREE_NO_WARNING to avoid repeated messages.
+	(lto_main): If lto_fixup_decls emitted any errors, exit.
+	* lto/lto-lang.c: Don't include libfuncs.h and except.h
+	(lto_init_options): Don't enable exceptions by default.
+	(lto_eh_runtime_type): Move to lto-function-in.c
+	(lto_init_eh): Likewise.
+	(lto_init): Don't call lto_init_eh.
+	* lto/Make-lang.in (lto-lang.o): Remove dependency on
+	libfuncs.h and except.h.
+
+2008-10-30  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_read_decls): Declare debug_main only if
+	LTO_STREAM_DEBUGGING is enabled.
+
+2008-10-30  Simon Baldwin  <simonb@google.com>
+
+	* lto.c (lto_wpa_write_files): Create intermediate files with
+	make_cwd_temp_file().
+	(lto_maybe_unlink): New.  Delete intermediate WPA files unless
+	WPA_SAVE_LTRANS is set.
+	(lto_main): Call lto_maybe_unlink() for intermediate WPA files.
+	* ltrans-driver: Do not strip directory from output files.
+
+2008-10-29  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (free_decl): Call lto_symtab_clear_resolution when freeing
+	DECL.
+	* Make-lang.in (LTO_OBJS): Remove lto/lto-symtab.o
+	(lto/lto-symtab.o): Remove rule.
+	* lto-tree.h (struct lang_identifier): Remove LTO specific fields.
+	(struct lang_decl): Remove RESOLUTION and add DUMMY in struct.
+	(LANG_IDENTIFIER_CAST, LTO_IDENTIFIER_DECL, LTO_DECL_RESOLUTION):
+	Remove macros.
+	lto-symtab.c (File): Move up one level.
+	lto-lang.c (cgraph.h): Remove include.
+	(input_overwrite_node, input_node, input_edge, input_cgraph_1,
+	input_cgraph): Move to lto-cgraph.c in gcc directory above.
+	(LANG_HOOKS_INPUT_CGRAPH): Remove use of macro.
+
+2008-10-24 Rafael Espindola  <espindola@google.com>
+
+	* lto-function-in.c (get_resolution): Return LDPR_PREEMPTED_IR for
+	non prevailing weak symbols.
+
+2008-10-24 Rafael Espindola  <espindola@google.com>
+
+	* lto-lang.c (input_cgraph_1): Iterate over nodes, not cgraph_nodes.
+
+2008-10-24 Rafael Espindola  <espindola@google.com>
+
+	* lto-lang.c (input_node): Avoid casts from pointers to ints of
+	different types.
+
+2008-10-23  Simon Baldwin  <simonb@google.com>
+
+	* lto-lang.c (input_node): Save the node reference, rather than the
+	node pointer, in node->inlined_to.
+	(input_cgraph_1): Convert node references into node pointers.
+
+2008-10-22  Diego Novillo  <dnovillo@google.com>
+	    Rafael Espindola  <espindola@google.com>
+
+	* lto.c (lto_resolution_read): Tidy.
+	* lto-symtab.c (lto_symtab_prevailing_decl): Do not
+	abort if RET is NULL.
+
+2008-10-22  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_fixup_tree): Check for NOTHROW conflict only if
+	exceptions flag is given.
+	* lto-lang.c: (lto_init_options) Set default exceptions flag.
+	(lto_init_eh): Remove exceptions flag initialization.
+	(lto_init): Only call lto_init_eh if exceptions flag is set. 
+
+2008-10-21  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c: Tidy some formatting.
+	* lto.h: Likewise.
+
+2008-10-21  Simon Baldwin  <simonb@google.com>
+
+	* lto-symtab.c: (lto_same_type_p): Types cannot be equal if one of
+	them is NULL (but not the other).
+
+2008-10-17  Diego Novillo  <dnovillo@google.com>
+
+	* ltrans-driver: Divert output from make to a temporary file.
+	Show it if the call to make failed.
+
+2008-10-15  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_wpa_write_files): Reformat do-while loop.
+	Do not print TEMP_FILENAME
+	* ltrans-driver: Call make with -s.
+
+2008-10-15  Diego Novillo  <dnovillo@google.com>
+
+	* lto-symtab.c (lto_symtab_merge_decl): Do not force
+	TREE_STATIC on global symbols.
+
+2008-10-14  Ollie Wild  <aaw@google.com>
+
+	* Make-lang.in (LTRANS_DRIVER_INSTALL_NAME): Remove.
+	(LTRANS_DRIVER_EXE): Add.
+	(lto.all.cross): Add LTRANS_DRIVER_EXE.
+	(lto.all.encap): Add LTRANS_DRIVER_EXE.
+	(lto.install.common): Remove ltrans-driver.
+	(lto.mostlyclean): Add LTRANS_DRIVER_EXE.
+	(LTRANS_DRIVER_EXE): New build rule.
+	* config-lang.in (compilers): Add ltrans-driver.
+
+2008-10-14  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (LTRANS_DRIVER_INSTALL_NAME): Disable transformation
+	of program name.
+
+2008-10-13  Ollie Wild  <aaw@google.com>
+
+	* lang-spec.h (@lto): Replace lto1_options with cc1_options.
+	* lto.c (lto_execute_ltrans): Add "-fno-wpa -fltrans -xlto" to CFLAGS.
+	* ltrans-driver (LTRANS_FLAGS): Remove.
+
+2008-10-08  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_fixup_tree): Remove ATTRIBUTE_UNUSED from DATA.
+	Handle new tree codes RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE
+	and TREE_BINFO.  Also move code handling FUNCTION_DECL and VAR_DECL
+	from lto_fixup_state to here.
+	(lto_fixup_state): Take an lto_fixup_data_t object DATA instead of
+	just a free-list.  Fix up types also.  Move decl merging code to
+	lto_fixup_tree.
+	(lto_fixup_state_aux): Change AUX to point to an lto_fixup_data_t
+	object.
+	(lto_fixup_decls): Use another pointer set to avoid multiple
+	walking of nodes except for DECLs to be replaced.  Pass an
+	lto_fixup_data_t object to tree-walker.
+
+2008-10-08 Rafael Espindola  <espindola@google.com>
+
+	* lto-symtab.c (lto_symtab_set_resolution): New.
+	(lto_symtab_merge_decl): Use lto_symtab_set_resolution and
+	lto_symtab_get_resolution.
+	(lto_symtab_prevailing_decl): Return decl for non public decls.
+	(lto_symtab_get_resolution): New.
+	* lto.c (lto_fixup_tree, lto_fixup_state): Remove unecessary checks.
+
+2008-10-06 Rafael Espindola  <espindola@google.com>
+
+	* lto-lang.c: Include cgraph.h.
+	(input_overwrite_node, input_node, input_edge, input_cgraph_1,
+	input_cgraph): Moved from lto-cgraph.c.
+	(LANG_HOOKS_INPUT_CGRAPH): New.
+
+2008-10-03 Rafael Espindola  <espindola@google.com>
+
+	* lto.c (lto_fixup_tree, lto_fixup_state): Fix the FIXME.
+
+2008-10-03 Rafael Espindola  <espindola@google.com>
+
+	* lto-symtab.c (lto_symtab_overwrite_decl): Remove. Remove all calls.
+	(lto_symtab_merge_decl): Update  LTO_IDENTIFIER_DECL the reflect the
+	prevailing definition. Don't mark TREE_NOTHROW differences.
+	* lto.c (lto_fixup_tree): New.
+	(lto_fixup_state): New.
+	(lto_fixup_state_aux): New.
+	(free_decl): New.
+	(lto_fixup_decls): New.
+	(lto_main): Call lto_fixup_decls.
+
+2008-10-02  Ollie Wild  <aaw@google.com>
+
+	* lang.opt (fltrans): Moved from common.opt.  Remove RejectNegative
+	and Init.
+	(fwpa): Moved from common.opt.  Remove RejectNegative and Init.
+	* lto-lang.c (lto_post_options): Add validation and fixups for
+	-fltrans and -fwpa.
+
+2008-10-02 Rafael Espindola  <espindola@google.com>
+
+	* lto-symtab.c (lto_symtab_merge_var, lto_symtab_merge_fn,
+	lto_symtab_merge_decl): Return void.
+	(lto_symtab_prevailing_decl): New.
+
+2008-09-30 Rafael Espindola  <espindola@google.com>
+
+	* lto-symtab.c (lto_symtab_compatible): Remove the check for already
+	defined symbols.
+	(lto_symtab_overwrite_decl): Copy LTO_DECL_RESOLUTION.
+	(lto_symtab_merge_decl): Store symbol resolution in LTO_DECL_RESOLUTION.
+	Check for already defined symbols.
+	* lto-tree.h (lang_decl): Remove dummy and add resolution fields.
+	(LTO_IDENTIFIER_RESOLUTION): Remove.
+	(LTO_DECL_RESOLUTION): New.
+
+2008-09-30 Rafael Espindola  <espindola@google.com>
+
+	* lto.c (lto_read_decls): Use new input_tree signature.
+
+2008-09-26  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_main): Call lto_fixup_nothrow_decls to fix up function
+	bodies affected by exception attribute merging of DECLs.
+	* lto-symtab.c (lto_symtab_merge_decl): Handle exception attribute
+	merging. 
+
+2008-09-25  Rafael Espindola  <espindola@google.com>
+
+	* Make-lang.in (PLUGIN_API_H, LTO_TREE_H): New.
+	(lto/lto-lang.o, lto/lto.o, lto/lto-symtab.o) Use LTO_TREE_H.
+	* lto-symtab.c (lto_symtab_compatible): New.
+	(lto_symtab_overwrite_decl): New.
+	(lto_symtab_merge_decl): Refactor to use the above functions
+	and the resolution from lang_identifier.
+	* lto-tree.h: Include plugin-api.h.
+	(lang_identifier): Add resolution.
+	(LTO_IDENTIFIER_RESOLUTION): New.
+
+2008-09-25  Ollie Wild  <aaw@google.com>
+
+	* lang.opt (fltrans-output-list=): New option.
+	* lto.c (lto_execute_ltrans): Output file names to ltrans_output_list.
+
+2008-09-25 Rafael Espindola  <espindola@google.com>
+
+	* lto.c (lto_resolution_read): Initialize ret;
+
+2008-09-24  Ollie Wild  <aaw@google.com>
+
+	* lto.c (sys/mman.h): Move include.
+	(lto_wpa_write_files): Return a list of written files.
+	(lto_execute_ltrans): New function.
+	(lto_main): Call lto_execute_ltrans.
+	(ltrans-driver): New file.
+	* lto-lang.c (DEFAULT_LTRANS_DRIVER): New macro.
+	(DEAULT_LTRANS_DRIVER_LEN): New macro.
+	(lto_init_options): Initialize ltrans_driver.
+	(lto_handle_option): Fix incorrect default output value.
+	* lang.opt (fltrans-driver=): New option.
+	* Make-lang.in (LTRANS_DRIVER_INSTALL_NAME): New variable.
+	(lto.install-common): Add lto/ltrans-driver.
+
+2008-09-24 Rafael Espindola  <espindola@google.com>
+
+	* Make-lang.in (LTO_OBJS): Add lto/common.o.
+	(lto/lto.o): Depend on lto/common.h.
+	(lto/common.o): New.
+	* lang.opt (resolution): New.
+	* lto-lang.c (resolution_file_name): New.
+	(lto_handle_option): Handle OPT_resolution.
+	* lto-symtab.c (lto_symtab_merge_decl): Add a resolution argument.
+	(lto_symtab_merge_var,lto_symtab_merge_fn): Add a resolution argument.
+	pass it to lto_symtab_merge_decl.
+	* lto.c: Include common.h.
+	(lto_read_decls): Add resolutions and resolutions_size arguments.
+	Initialize data_in.globals_resolution and
+	data_in.globals_resolution_size.
+	(index_and_symbol_resolution): New.
+	(lto_resolution_read): New.
+	(lto_file_read): Add argument resolution_file.
+	Read resolution.
+	* lto.h (resolution_file_name): New.
+
+2008-09-23 Rafael Espindola  <espindola@google.com>
+
+	* common.c: Update description.
+	* common.h: Update description.
+
+2008-09-23 Rafael Espindola  <espindola@google.com>
+
+	* common.c: Moved from lto-plugin.
+	* common.h: Moved from lto-plugin.
+
+2008-09-22  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c	(VEC(bitmap,heap)): Declare.
+	(lto_materialize_function): Handle WAP mode specially.
+	(lto_add_inline_clones): New.
+	(lto_add_all_inlinees): Changle algorithm and to use bitmaps.  Also
+	return a bitmap of inlined decls.
+	(lto_wpa_write_files): Handle all DECLs brought in by inlining.
+	(lto_main): Call reset_inline_failed to reset inlining states.
+    	Check call-graph after WPA inlining.
+	* lto-lang.c (lto_init): Do not clear flag_generate_lto
+	unconditionally.
+
+2008-09-19  Doug Kwan  <dougkwan@google.com>
+
+	lto.c (lto_main): Remove unsued wrapper code.
+	lang-specs.h (@lto): Use lto1_options instead of cc1_options.
+
+2008-09-19  Rafael Espindola  <espindola@google.com>
+
+	* lto-symtab.c: Include lto-tree-in.h.
+	* lto-tree.h (lto_symtab_merge_var, lto_symtab_merge_fn): Remove.
+	* lto.h (lto_symtab_merge_var, lto_symtab_merge_fn): Remove
+	* Make-lang.in (lto/lto-symtab.o): Add lto-tree-in.h.
+
+2008-09-17  Paolo Bonzini  <bonzini@gnu.org>
+	    Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-lang.c (COMPOUND_LITERAL_EXPR_DECL_STMT,
+	COMPOUND_LITERAL_EXPR_DECL): Remove.
+	(emit_local_var): Remove.
+	(lto_expand_expr): Remove.
+	(lto_staticp): Remove.
+	(LANG_HOOKS_EXPAND_EXPR): Remove.
+	(LANG_HOOKS_STATICP): Remove.
+
+2008-09-11  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c: Include except.h and libfuncs.h.
+	(lto_init_eh): New.
+	(lto_init): Call it.
+	Set flag_generate_lto to 0.
+	* Make-lang.in (lto-lang.o): Add dependency on except.h
+	and libfuncs.h.
+
+2008-09-09  Bill Maddox  <maddox@google.com>
+
+	* lto-lang.c: Include header file expr.h.
+	(COMPOUND_LITERAL_EXPR_DECL_STMT,
+	COMPOUND_LITERAL_EXPR_DECL): Copied from c-common.h.
+	(emit_local_var):  Copied from c-semantics.c.
+	(lto_expand_expr, lto_staticp): Copied from c_expand_expr
+	and c_staticp in c-common.c.
+	(LANG_HOOKS_EXPAND_EXPR,LANG_HOOKS_STATICP):  Redefined.
+
+2008-09-08  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (lto_global_bindings_p): Return 1 during
+	IPA passes.
+
+2008-09-07  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c: Tidy formatting.
+
+2008-08-04  Bill Maddox  <maddox@google.com>
+
+	* lto-symtab.c (lto_symtab_merge_decl): Add comment.
+	
+2008-09-03  Doug Kwan  <dougkwan@google.com>
+
+	lto.c (lto_add_all_inlinees): Reset FAILED_REASON of edges to
+	CIF_OK instead of NULL.
+
+2008-09-02  Diego Novillo  <dnovillo@google.com>
+	    Simon Baldwin  <simonb@google.com>
+
+	* lto-lang.c (lto_type_for_size): Rewrite.  Adapt from
+	c_common_type_for_size.
+	(lto_type_for_mode): Remove ATTRIBUTE_UNUSED markers.
+	(lto_init): Call linemap_add.
+	(signed_and_unsigned_types): Remove.
+
+2008-08-29  Diego Novillo  <dnovillo@google.com>
+
+	* lto-lang.c (handle_noreturn_attribute): New local function.
+	(handle_const_attribute): New local function.
+	(handle_malloc_attribute): New local function.
+	(handle_pure_attribute): New local function.
+	(handle_novops_attribute): New local function.
+	(handle_nonnull_attribute): New local function.
+	(handle_nothrow_attribute): New local function.
+	(handle_sentinel_attribute): New local function.
+	(handle_type_generic_attribute): New local function.
+	(handle_format_attribute): New local function.
+	(handle_format_arg_attribute): New local function.
+	(lto_attribute_table): Declare.
+	(lto_format_attribute_table): Declare.
+	(lto_init_attributes): New local function.
+	(lto_define_builtins): Call it.
+	Call targetm.init_builtins and build_common_builtin_nodes.
+	(LANG_HOOKS_COMMON_ATTRIBUTE_TABLE): Define.
+	(LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Define.
+
+2008-08-28  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (lto-lang.o): Replace tree-gimple.h with
+	$(GIMPLE_H).
+	(lto-symtab.o): Add dependency on $(GIMPLE_H).
+	* lto-lang.c: Include gimple.h instead of tree-gimple.h.
+	* lto-symtab.c: Include gimple.h.
+	* lto-tree.h (chain_next): Replace GENERIC_NEXT with
+	TREE_CHAIN.
+
+2008-08-27  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (vec.h, bitmap.h, pointer-set.h, ipa-prop.h, ggc.h,
+	gt-lto-lto.h): New includes.
+	(lto_materialize_function): Do not read in function body in WPA mode.
+	Format a line to fit in 80 columns.
+	(lto_cgraph_node_sets): New garbage collected variable.
+	(lto_1_to_1_map, lto_add_all_inlinees, lto_wpa_write_files):
+	New functions.
+	(lto_main): Initialize bitmap obstack.  Add code to handle WPA mode.
+	* Make-lang.in (LTO_H): Replace filename lto-section-in.h with 
+	variable LTO_SECTION_IN_H.
+	(lto/lto.o): Include gt-lto-lto-c.h ggc.h ,VEC_H, BITMAP_H,
+	pointer-set.h and IPA_PROP_H. Also replace filename lto-section-in.h
+	with variable LTO_SECTION_IN_H.
+	* config-lang.in (gtfiles): Add lto/lto.c.
+	* lto-symtab.c (lto_symtab_merge_decl): Set DECL_CONTEXT of
+	merged DECL_RESULT correctly.
+
+2008-08-26  Bill Maddox  <maddox@google.com>
+
+	* lto-lang.c  Include tree-gimple.h.
+	(lto_mark_addressable): Call mark_addressable rather than
+	asserting.
+	(lto_post_options): Suppress debug info generation.
+	* Make-lang.in: Add dependency of lto-lang.o on tree-gimple.h.
+	
+2008-08-25  Bill Maddox <maddox@google.com>
+
+	* lto-symtab.c (lto_symtab_merge_decl): Remove a suspect
+	assertion and leave an explanatory comment in its place.
+	
+2008-08-21  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (preload_common_nodes): Call lto_get_common_nodes to get a list
+	of common nodes instead of computing locallly.
+	(lto_read_in_decl_state): New.
+	(lto_read_decls): Change code for udpate in struct lto_decl_header.
+	Read global and per-function in-decl states.
+	* Make-lang.in (LTO_H): Update dependency.
+	(lto/lto.o): Same.
+	(lto-symtab.c): Merge	(revision 139039)
+	* lto-symtab.c (lto_symtab_merge_decl): Merge DECL_RESULT.
+
+2008-08-21  Rafael Espindola  <espindola@google.com>
+
+	* config-lang.in (target_libs): New.
+
+2008-08-20  Bill Maddox  <maddox@google.com>
+
+	* lto.c (current_lto_file): Remove GTY marker from static
+	variable.  Remove include of file gt-lto-lto.h.
+	* Make-lang.in: Remove dependency of lto/lto.o on
+	gt-lto-lto.h.
+	* lto-elf.c (lto_file_close): Removed.
+	(lto_elf_file_open): Use XCNEW instead of GGC_CNEW to
+	allocate lto_elf_file object.
+	(lto_elf_file_close): Free lto_elf_file object after close.
+	* lto.h (struct lto_file_struct): Remove GTY marker.
+	* config-lang.in: Remove lto/lto.h and lto/lto.c from
+	gtfiles.
+	
+2008-08-20  Bill Maddox  <maddox@google.com>
+
+	* lto.c (lto_read_decls): Provide dummy argument to input_tree
+	to conform to its new signature.
+	* lto-symtab.c (lto_symtab_merge_decl): Do not invoke ggc_free
+	on discarded node here, now called in global_vector_fixup.
+	
+2008-08-09  Bill Maddox  <maddox@google.com>
+
+	* lto.c (preload_common_nodes): Verify that fileptr_type_node
+	has not been set to a front-end-specific value.
+	
+2008-08-05  Doug Kwan  <dougkwan@google.com>
+	
+	* Make-lang.in (lto-symtab.o): Add missing dependencies to fix
+	build breakage.
+
+2008-07-30  Bill Maddox  <maddox@google.com>
+
+	* lto.c (lto_materialize_function): Call lto_original_decl_name.
+	Remove obsolete comments.
+	(lto_read_decls): Remove initialization of deleted field data_in.global.
+	Tidy up comments.
+	(lto_main): Remove redundant initialization of section_hash_table.
+	* lto-elf.c: Removed obsolete comments.
+	* lto.h: Tidy up comments.
+	* lto-symtab.c (lto_least_common_multiple): New function.
+	(lto_symtab_merge_decl): Merge variable alignments in some cases.
+	Tidy up comments.
+
+2008-07-25  Diego Novillo  <dnovillo@google.com>
+	    Bill Maddox  <maddox@google.com>
+
+	* lto.c: Re-order include files.
+	Include lto-section-out.h.
+	(preload_common_nodes): Add debugging output.
+	Add new local INDEX_TABLE.
+	Call preload_common_node.
+	* Make-lang.in (lto.o): Add dependency on lto-section-out.h
+
+2008-07-13  Bill Maddox  <maddox@google.com>
+
+	* lto.c (lto_read_decls): Cast pointer to const char * to avoid
+	unwanted scaling during pointer addition.
+
+2008-07-11  Bill Maddox  <maddox@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_read_decls): Fix C++ compatibility warnings.
+	Make code const-correct.
+	(lto_file_read): Fix C++ compatibility warnings.
+	(lto_read_section_data):  Fix C++ compatibility warnings.
+	(lto_get_section_data): Use CONST_CAST to avoid warning when
+	const pointer passed to free.
+	* lto-elf.c (lto_elf_build_section_table): Fix C++
+	compatibility warnings.
+	(lto_elf_append_data):  Fix C++ compatibility warnings.  Use CONST_CAST
+	to avoid warning assigning const pointer to d_buf field of Elf_Data.
+	(lto_get_current_out_file):  Fix C++ compatibility warnings.
+
+2008-07-11  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (lto-warn): Define.
+
+2008-07-03  Simon Baldwin  <simonb@google.com>
+
+	* lto.c (lto_read_decls): Wrapped debug-only data items within #ifdef
+	LTO_STREAM_DEBUGGING.
+
+2008-06-27  Ollie Wild  <aaw@google.com>
+
+	* lto-elf.c (lto-section-out.h): New include.
+	(struct lto_elf_file): Remove bits member.  Add scn, shstrtab_stream,
+	and data members.
+	(cached_file_attrs): New static variable.
+	(lto_elf_get_shdr, lto_elf_free_shdr): Remove elf_file parameter.
+	Use cached_file_attrs for checking bits.
+	(lto_elf_build_section_table): Remove elf_file argument from
+	lto_elf_get_shdr and lto_elf_free_shdr calls.
+	(DEFINE_INIT_SHDR): New macro.
+	(init_shdr32, init_shdr64): New functions defined via the
+	DEFINE_INIT_SHDR macro.
+	(lto_elf_begin_section_with_type): New function.
+	(lto_elf_begin_section): New function.
+	(lto_elf_append_data): New function.
+	(lto_elf_end_section): New function.
+	(DEFINE_VALIDATE_EHDR): New macro.
+	(validate_ehdr32, validate_ehdr64): New functions defined via the
+	DEFINE_VALIDATE_EHDR macro.
+	(validate_file): New function.
+	(DEFINE_INIT_EHDR): New macro.
+	(init_ehdr32, init_ehdr64): New functions defined via the
+	DEFINE_INIT_EHDR macro.
+	(init_ehdr): New function.
+	(lto_elf_file_open): Add support for writable files.  Move some
+	validation logic to validate_file.
+	(lto_elf_file_close): Add support for writable files.  Write file data
+	and free data blocks.
+	(current_out_file): New static variable.
+	(lto_set_current_out_file): New function.
+	(lto_get_current_out_file): New function.
+	* lto.c (lto_main): Add writable argument to lto_elf_file_open calls.
+	Add temporary initialization for testing ELF serialization.
+	* lto.h (lto-section-out.h): New include.
+	(struct lto_file_struct): Slight modification to comment.
+	(lto_elf_file_open): Add writable parameter.
+	(lto_elf_begin_section): New function declaration.
+	(lto_elf_append_data): New function declaration.
+	(lto_elf_end_section): New function declaration.
+	(lto_set_current_out_file, lto_get_current_out_file): New function
+	declarations.
+	* lto-lang.c (LANG_HOOKS_BEGIN_SECTION): Set as lto_elf_begin_section.
+	(LANG_HOOKS_APPEND_DATA): Set as lto_elf_append_data.
+	(LANG_HOOKS_END_SECTION): Set as lto_elf_end_section.
+	* Make-lang.in (LTO_H): Add lto-section-out.h.
+
+2008-06-12  Ollie Wild  <aaw@google.com>
+
+	* lto.h (struct lto_file_vtable_struct): Remove.
+	(struct lto_file_struct): Remove vtable member.
+	* lto-elf.c (lto_file_init): Remove vtable argument.
+	(lto_elf_map_optional_lto_section): Remove.
+	(lto_elf_unmap_section): Remove.
+	(lto_elf_file_vtable): Remove.
+	(lto_elf_file_open): Remove lto_elf_file_vtable argument from
+	lto_file_init call.
+	(lto_elf_find_section_data): Remove.
+
+2008-06-11  Ollie Wild  <aaw@google.com>
+
+	* lto.c (lto_file_read): Add const qualifier to data variable.
+
+2008-06-11  Diego Novillo  <dnovillo@google.com>
+
+	Merge from lto-streamber sub-branch.
+
+	2008-06-04  Ollie Wild  <aaw@google.com>
+
+		* lto.c: Remove inclusion of dwarf2.h and dwarf2out.h.
+		* Make-lang.in (lto.o): Remove dependency on dwarf2.h.
+
+	2008-05-28  Bill Maddox  <maddox@google.com>
+
+		Replace the DWARF reader in the LTO front-end.
+
+		* lto.c: Include lto-tree-in.h, lto-tags.h.
+		(enum DWARF2_class, DW_cl_constant, struct
+		DWARF2_form_data, struct lto_context,
+		lto_fd_init, lto_info_fd_init,
+		lto_abbrev_fd_init, lto_info_fd_close,
+		lto_file_init, lto_file_close,
+		lto_file_corrupt_error, lto_abi_mismatch_error,
+		LTO_CHECK_INT_VAL, LTO_READ_TYPE,
+		lto_read_uleb128, lto_read_sleb128,
+		lto_read_initial_length, lto_abbrev_read_attrs,
+		lto_abbrev_read, lto_abbrev_read_lookup,
+		lto_read_section_offset,
+		lto_read_comp_unit_header, find_cu_for_offset,
+		lto_get_file_name,
+		lto_resolve_reference,lto_read_form,
+		attribute_value_as_int,
+		make_signed_host_wide_int,
+		attribute_value_as_constant, lto_cache_hash,
+		lto_cache_eq, lto_cache_store_DIE,
+		lto_cache_lookup_DIE, lto_find_integral_type,
+		lto_find_integral_type_1,
+		LTO_BEGIN_READ_ATTRS_UNCHECKED,
+		LTO_BEGIN_READ_ATTRS, LTO_END_READ_ATTRS,
+		lto_unsupported_attr_error, lto_get_identifier,
+		lto_read_referenced_type_DIE,
+		lto_read_compile_unit_DIE,
+		lto_read_array_type_DIE,
+		lto_read_structure_union_class_type_DIE,
+		lto_read_enumerator_DIE,
+		lto_read_enumeration_type_DIE,
+		lto_read_only_for_child_DIEs,
+		lto_read_only_for_child_DIEs,
+		lto_read_member_DIE, lto_read_abbrev,
+		lto_read_variable_formal_parameter_constant_DIE,
+		lto_get_body): Removed.
+		(preload_common_nodes): New function.
+		(lto_read_decls): Convert for new global streamer.
+		(lto_materialze_file_data,
+		lto_read_subroutine_type_subprogram_die,
+		lto_read_unspecified_parameters_DIE,
+		lto_read_typedef_DIE,
+		lto_read_pointer_reference_type_DIE,
+		lto_read_subrange_type_DIE,
+		lto_read_base_type_DIE,
+		lto_read_const_volatile_restrict_type_DIE,
+		lto_read_namespace_DIE,
+		lto_read_unspecified_type_DIE, lto_read_DIE,
+		lto_read_child_DIEs, lto_collect_child_DIEs):
+		Removed.
+		(lto_info_read, lto_set_cu_context): Removed.
+		(lto_file_read): Convert for new global streamer.
+		(lto_resolve_type_ref, lto_read_DIE_at_ptr,
+		lto_resolve_var_ref, lto_resolve_fn_ref,
+		lto_resolve_field_ref, lto_resolve_typedecl_ref,
+		lto_resolve_namespacedecl_ref): Removed.
+		(lto_file_init, lto_file_close): Moved to lto-elf.c.
+		* lto-tree.h (lto_symtab_merge_var,
+		lto_symtab_mergee_fun): Declare here.
+		* lto-elf.c (lto_file_init, lto_file_close): Moved from lto.c.
+		(lto_elf_file_open): Removed code to read DWARF debug sections.
+		* lto.h (lto_context, DWARF2_attr, DWARF2_abbrev,
+		DWARF2_CompUnit, lto_die_ptr,
+		lto_die_cache_entry, lto_fd, lto_info_fd,
+		lto_abbrev_fd): Removed.
+		(lto_file): Removed debug_info and debug_abbrev fields.
+		(lto_ref): Removed.
+		(lto_file_init, lto_file_close,
+		lto_resolve_type_ref, lto_resolve_var_ref,
+		lto_resolve_fn_ref, lto_resolve_field_ref,
+		lto_resolve_typedecl_ref,
+		lto_resolve_namespacedecl_ref,
+		lto_get_file_name): Removed declarations.
+		(lto_symtab_merge_var, lto_symtab_merge_fn):
+		Declarations moved to lto-tree.h.
+		* lto-symtab.c (lto_compatible_attributes_p):
+		Lobotomize this, as it barfs on "Hello, world!".
+		* lto-section-out.c: Include lto-tree-out.h.
+		(lto_hash_global_slot_node,
+		lto_eq_global_slot_node, preload_common_nodes,
+		write_global_stream, write_global_references):
+		New functions.
+		(produce_asm_for_decls): Convert for new global streamer.
+		* lto-section-out.h (lto_hash_global_slot_node,
+		lto_eq_global_slot_node): Declare.
+
+2008-06-07  Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Jan Hubicka  <jh@suse.cz>
+	
+	* lto.c (sys/mman.h, tree-pass.h): New includes.
+	(lto_materialize_constructors_and_inits,
+	lto_materialize_function): Keeps length of section.
+	(lto_materialize_cgraph): Removed.
+	(lto_read_decls): Initialize fd field.
+	(lto_file_read): Different return type and removed much code to
+	lto_main.
+	(page_mask): New variable.
+	(lto_read_section_data, get_section_data, free_section_data): New
+	functions.
+	(lto_main): Now calls pass manager, sets the hooks so that the ipa
+	passes can get the section data. 
+	
+2008-05-27  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto.h (lto_read_decls): Made local.
+	(lto_input_function_body, lto_input_constructors_and_inits, 
+	lto_input_cgraph): Declarations moved to lto-section-in.h.
+	* lto-section-in.c: Moved to .. .
+	* lto-cgraph-in.c: Ditto.
+	* lto-section-in.h: Ditto.
+	* lto-function-in.c: Ditto.
+	* lto-lang.c (lto_handle_option): Added ATTRIBUTE_UNUSED to parms.
+	(lto_insert_block): Removed.
+	(LANG_HOOKS_INSERT_BLOCK): Removed.
+	* Make-lang.in (lto-cgraph-in.o, lto-function-in.o,
+	lto-section-in.o): Rules moved to lto/Makefile.in.
+	
+
+2008-05-16  Ollie Wild  <aaw@google.com>
+
+	* lto-lang.c (tree-inline.h): Include.
+	(lto_post_options): New function.
+	(LANG_HOOKS_POST_OPTIONS): Define.
+	* lto-cgraph-in.c (overwrite_node): Set node->global.insns.
+	* lto-function-in.c (input_bb): Set TREE_BLOCK (stmt).
+
+2008-05-13  Diego Novillo  <dnovillo@google.com>
+
+	* lto-function-in.c (input_ssa_names): Call
+	make_ssa_name_fn instead of make_ssa_name.
+
+2008-05-12  Diego Novillo  <dnovillo@google.com>
+
+	* lto-cgraph-in.c (overwrite_node): Update references to
+	inline summary fields.
+	* lto-function-in.c (input_expr_operand): Do not handle
+	STRUCT_FIELD_TAG.
+
+2008-05-09  Ollie Wild  <aaw@google.com>
+
+	* lang.opt: New file.
+	* lto-lang.c (lto_init_options): New function.
+	(lto_handle_option): New function.
+	(lto_init): Move initialization of flag_unit_at_a_time to
+	lto_init_options.
+	(LANG_HOOKS_INIT_OPTIONS): Define.
+	(LANG_HOOKS_HANDLE_OPTION): Define.
+
+2008-04-29  Ollie Wild  <aaw@google.com>
+
+	* lto.c (lto_read_namespace_DIE): New function.
+	(lto_read_DIE): Add lto_read_namespace_DIE callback.  Cache
+	NAMESPACE_DECL DIE's.
+	(lto_resolve_namespacedecl_ref): New function.
+	* lto.h (lto_resolve_namespacedecl_ref): New function.
+	* lto-section-in.c (lto_read_decls): Read namespace declarations.
+	* lto-section-in.h (struct lto_file_decl_data): Add namespace_decls
+	and num_namespace_decls.
+	* lto-function-in.c (input_expr_operand): Add NAMESPACE_DECL case.
+	* lto-lang.c (lto_init_ts): New function.
+	(LANG_HOOKS_INIT_TS): Set as lto_init_ts.
+
+2008-04-16  Ollie Wild  <aaw@google.com>
+
+	* lto-function-in.c (input_type_ref): Updated function description.
+
+2008-04-16  Ollie Wild  <aaw@google.com>
+
+	* lto-function-in.c (input_type_ref_1): New function.
+	(input_type_ref): Split into two functions.
+	(input_function): Add support for type contexts.
+
+2008-04-16  Ollie Wild  <aaw@google.com>
+
+	* lto.c (lto_materialize_function): Use DECL_ASSEMBLER_NAME to compute
+	section name
+
+2008-04-16  Ollie Wild  <aaw@google.com>
+
+	* lto.c (lto_read_compile_unit_DIE): Add DW_LANG_C_plus_plus to the
+	list of supported languages.
+
+2008-03-25  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	Merge with mainline @133491.
+
+2008-03-05  Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_info_fd_init, lto_info_fd_close): Get rid of
+	fd->unmaterialized_fndecls.
+	(lto_get_file_name, lto_materialize_cgraph): New function.
+	(lto_materialize_constructors_and_inits,
+	lto_materialize_function): Read info directly from elf file.
+	(lto_file_read): Made local and initialize dictionary so that
+	other lto sections can be read without reprocessing the elf file.
+	(lto_main): Read all functions after all files have been processed
+	for their types, globals and cgraph.  
+	* Make-lang.in (lto.o, lto-cgraph-in.c, lto-section-in): Changed
+	dependencies.
+	* lto-elf.c (lto_elf_file): Removed strtab, symtab fields.
+	(hash_name, eq_name, lto_elf_build_section_table): New functions.
+	(lto_elf_read_symtab): Removed function.
+	(lto_elf_file_open): Removed call to lto_elf_read_symtab.
+	* lto.h (lto_info_fd_struct): Removed unmaterialized_fndecls.
+	(lto_file_read): Made local.
+	(lto_get_file_name, lto_elf_build_section_table,
+	lto_input_cgraph): 
+	New function.
+	* lto-section-in.c (lto_read_section_data, lto_get_section_data):
+	New functions.
+	(lto_read_decls): Get the file name.
+	* lto-cgraph-in.c: New file.
+	* lto-function-in.c (tag_to_expr): Stops at LTO_tree_last_tag.
+	(input_expr_operand, lto_read_body): Set lto_debug_context.tag_names.
+	(input_labels): Fixed latent sizeof issue.
+	(input_function): Build stmt array to set call sites into cgraph
+	edges.
+	(lto_read_body): Reset cfun->curr_properties.
+	* lto_section_in.h (lto_section_slot): New structure.
+	(section_hash_table.lto_file_decl_data): New field.
+
+	
+2008-02-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto.c (lto_read_variable_formal_parameter_const): Remove code to
+	reconstruct static initializers.
+	(lto_get_body, lto_materialize_function): Add lto_section_type as
+	a parameter.
+	(lto_materialize_constructors_and_inits,
+	lto_materialize_file_data): New function.
+	(lto_materialize_function,
+	lto_read_subroutine_type_subprogram_DIE): Renamed unmap_fn_body to
+	unmap_section and map_fn_body to map_section.
+	(lto_set_cu_context): Process functions and static inits
+	differently.
+	* Make-lang.in (LTO_H, lto/lto-function-in.o,
+	lto/lto-section-in.o): Update dependencies.
+	* lto/lto-elf.c (lto_elf_map_optional_lto_section): Add
+	lto_section_type parameter.
+	(lto_elf_unmap_fn_body): Renamed to lto_elf_unmap_section.
+	* lto.h (lto_file_vtable_struct): Removed two of the fields and 
+	renamed the other two so that there is only one map function and
+	one unmap function and each takes a section type parameter.
+	(lto_read_function_body): Renamed to lto_input_function_body and
+	added file_data parameter.
+	(lto_read_var_init): Removed.
+	(lto_input_constructors_and_inits): New function.
+	* lto-section-in.c (lto_read_decls): New function.
+	* lto-function-in.c (data_in): Moved fields field_decls, fn_decls,
+	var_decls, type_decls, types to lto_file_decl_data.
+	(input_type_ref, input_expr_operand, lto_read_body): Get
+	field_decls, fn_decls, var_decls, type_decls, types from different
+	structure.
+	(input_globals, input_constructor, lto_read_var_init): Removed.
+	(input_constructors_or_inits): New function.
+	(lto_read_function_body, lto_input_constructors_and_inits):
+	Renamed to lto_input_function_body and takes file_data parameter.
+	* lto-section-in.h (lto_file_decl_data): New structure.
+	
+2008-01-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-function-in.c (input_globals.c): Changed input type to
+	lto_function_header.
+	(input_bb): Removed code to deserialize the stmt number.
+	(input_function): Renumber all stmts after they are input.
+	(lto_read_body, lto_read_function_body, lto_read_var_init):
+	Changed to used new header format and enum section_type.
+	*lto-lang.c (success): Removed. 
+	
+2008-01-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-elf.c (lto_elf_lookup_sym): Remove unused function.
+	(lto_elf_free_sym): Likewise.
+
+	* lto-elf.c (lto_elf_read_var_init): Remove unused function.
+	(lto_elf_build_init): Likewise.
+
+2008-01-14  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c: Renamed to lto-function-in.c.
+	(input_1_unsigned): Moved to lto-section-in.c and renamed
+	lto_input_1_unsigned.
+	(input_uleb128): Moved to lto-section-in.c and renamed
+	lto_input_uleb128.
+	(input_widest_uint_uleb128): Moved to lto-section-in.c and renamed
+	lto_input_widest_uint_uleb128.
+	(input_sleb128): Moved to lto-section-in.c and renamed
+	lto_input_sleb128.
+	(input_integer): Moved to lto-section-in.c and renamed
+	lto_input_integer.
+	(debug_in_fun): Moved to lto-section-in.c and renamed
+	lto_debug_in_fun.
+	(input_block): Moved to lto-section-in.h and renamed
+	lto_input_block.
+	(input_expr_operand): Fixed to allow lists with more than one
+	element.
+	* lto-section-in.h: New file.
+	* lto-section-in.c: New file with changes from above.
+	* Make-lang.in (lto-read.o): Renamed lto-function-in.c.
+	(lto-section-in.o): New rule.
+	
+2007-12-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_expr_operand): Mark static and external
+	VAR_DECLs as needed.
+
+2007-12-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_integer): Use the correct shift amount.
+
+2007-12-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (lto_pushdecl): Do nothing instead of aborting.
+	(LANG_HOOKS_NAME): Define.
+
+2007-12-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_find_integral_type): Define as a macro.  Rename the
+	original function to...
+	(lto_find_integral_type_1): ...this.  Consult UNSIGNEDP if we
+	don't have a base type.
+	(lto_read_enumeration_type_DIE): Examine the values of the
+	enumeration to determine whether we can use an unsigned type for
+	the base type of the enumeration.
+
+2007-12-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_structure_union_class_type_DIE): Set TYPE_MODE
+	and TYPE_ALIGN on UNION_TYPEs as soon as possible.
+
+2007-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (lto_types_compatible_p): New function.
+	(LANG_HOOKS_TYPES_COMPATIBLE_P): Define.
+
+2007-12-22  Nathan Froyd  <froydnj@codesourcery.com>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Fixed uninitialize var warning.
+	(input_local_vars): Read in DECL_INITIAL and context for local
+	statics that need to be put in unexpanded_vars_list.
+
+2007-12-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_real): Use a separate null-terminated buffer
+	for calling real_from_string.
+	(input_expr_operand): If we take the address of a FUNCTION_DECL,
+	tell cgraph that it's needed.
+
+2007-12-19  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_read_base_type_DIE): Handle complex integer types.
+
+2007-12-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_DIE): Call lto_read_only_for_child_DIEs instead.
+	(lto_file_read): Reset the members of 'context' every time we read
+	a toplevel DIE, with special attention to last_param_type.
+
+2007-12-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_subroutine_type_subprogram_DIE): Initialize
+	'declaration'.  Set the assembler name for non-public functions.
+
+2007-12-17  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto_read.c (data_in.unexpanded_indexes): New array.
+	(input_local_var): Added code to read in unexpanded_var_list
+	indexes for variables.  Only read in DECL_CHAIN field for
+	parameters.
+	(input_local_vars): Added code to rebuild unexpanded_var_list in
+	order using unexpanded_indexes.
+	(input_function): Added code to set DECL_CONTEXT for functions.
+
+2007-12-13  Doug Kwan  <dougkwan@google.com>
+
+	* lto.c (lto_read_pointer_reference_type_DIE): Handle optional name
+	in pointer and reference types.
+
+2007-12-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_expr_operand): Use DECL_RESULT when reading a
+	RESULT_DECL.
+
+2007-12-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_array_type_DIE): Return the cached DIE if we've
+	already read the DIE.
+	(lto_get_body): New function, split out from...
+	(lto_materialize_function): ...here.  Call it.
+	(lto_read_subroutine_type_subprogram_DIE): Call lto_get_body to
+	determine DECL_EXTERNAL.
+	* lto-symtab.c (lto_symtab_merge_decl): Merge the DECL_RESULTs of
+	FUNCTION_DECLs when necessary.  Use the type of the actual
+	function definition if we are unable to easily merge types.  Ignore
+	spurious DECL_MODE mismatches on VAR_DECLs.  Merge DECL_MODEs when
+	necessary.
+
+2007-12-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (LANG_HOOKS_REDUCE_BIT_FIELD_OPERATIONS): Define.
+
+2007-12-12  Bill Maddox  <maddox@google.com>
+
+	Revert
+	2007-12-07  Bill Maddox  <maddox@google.com>
+
+	* lto.c (lto_str_fd_init): New function.
+	(lto_str_fd_close): New function.
+	(lto_file_init): Call lto_str_fd_init.
+	(lto_file_close): Call lto_str_fd_close.
+	(lto_str_read): New function. Read debug string table.
+	(lto_str_lookup): New function. Get string for debug
+	string table offset.
+	(lto_read_form): Recognize DW_FORM_strp.
+	(lto_file_read): Invoke lto_str_read.
+
+	* lto-elf.c (lto_elf_file_open): Read raw section data
+	for the .debug_str section, if present.
+
+	* lto.h (struct lto_str_fd_struct): New struct.
+	(struct lto_file_struct): Added new field DEBUG_STR
+	to hold the file descriptor for the debug string table.
+	
+2007-12-07  Bill Maddox  <maddox@google.com>
+
+	* lto.c (lto_str_fd_init): New function.
+	(lto_str_fd_close): New function.
+	(lto_file_init): Call lto_str_fd_init.
+	(lto_file_close): Call lto_str_fd_close.
+	(lto_str_read): New function. Read debug string table.
+	(lto_str_lookup): New function. Get string for debug
+	string table offset.
+	(lto_read_form): Recognize DW_FORM_strp.
+	(lto_file_read): Invoke lto_str_read.
+
+	* lto-elf.c (lto_elf_file_open): Read raw section data
+	for the .debug_str section, if present.
+
+	* lto.h (struct lto_str_fd_struct): New struct.
+	(struct lto_file_struct): Added new field DEBUG_STR
+	to hold the file descriptor for the debug string table.
+
+2007-12-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_cfg): Call init_empty_tree_cfg_for_function.
+	Grow the basic_block_info and label_to_block_map vectors if
+	necessary.  Read in the block chain.
+
+2007-12-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_DIE): Set TYPE_ALIAS_SET where necessary.
+
+2007-12-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_form): Add DW_cl_address for DW_AT_const_value.
+
+2007-12-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_expr_operand): Don't check for MTAGs.
+	(lto_read_body): Don't declare PROP_alias.
+
+2007-12-06  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-symtab.c (lto_symtab_merge_decl): Handle FUNCTION_DECLs without
+	argument type information.
+
+2007-12-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Set
+	TREE_THIS_VOLATILE if the associated type is a volatile type.
+	(lto_materialize_function): Remove call to init_ssa_operands.
+	* lto-read.c (input_expr_operand): Add SSA_NAME_VAR as a referenced
+	variable when reading an SSA_NAME.  Do the same when reading a
+	RESULT_DECL, a RETURN_EXPR, or an MTAG.
+	(input_cfg): Call init_ssa_operands.
+	(input_ssa_names): Set the default def of an SSA_NAME if necessary.
+	Move call to init_tree_ssa...
+	(lto_read_body): ...here.  Use push_cfun and pop_cfun.  Call
+	add_referenced_var on any variables referenced from the body of the
+	function.  Inform the rest of the compiler we are in SSA form and
+	inform later passes about the current properties.
+
+2007-11-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_materialize_function): Add FIXME.
+
+2007-11-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (enum built_in_attribute): New enum.
+	(flag_no_builtin, flag_no_nonansi_builtin, flag_isoc94, flag_isoc99,
+	built_in_attributes): New variables.
+	(def_builtin_1): New function.
+	(lto_define_builtins): #define DEF_BUILTIN and include builtins.def.
+
+2007-11-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Set
+	DECL_SOURCE_LOCATION for debugging purposes.
+	(lto_read_member_DIE): Set DECL_SOURCE_LOCATION.  If we have read a
+	bitfield, use the type specified by the DIE for TREE_TYPE and defer
+	laying out the decl until later.
+	(lto_read_subroutine_type_subprogram_DIE): Compare the function's
+	name with DECL_ASSEMBLER_NAME.  Set DECL_SOURCE_LOCATION and
+	TREE_ADDRESSABLE.
+	* lto-read.c (input_expr_operand): Set TREE_ADDRESSABLE on the
+	operand of an ADDR_EXPR.
+	* lto-lang.c (enum lto_builtin_type): New enum.
+	(builtin_type): New typedef.
+	(builtin_types, string_type_node, const_string_type_node,
+	wint_type_node, intmax_type_node, uintmax_type_node,
+	signed_size_type_node): New variables.
+	(def_fn_type, builtin_type_for_size, lto_define_builtins,
+	lto_build_c_type_nodes): New functions.
+	(lto_init): Initialize builtin types.
+	(lto_set_decl_assembler_name): Let the target machine mangle the
+	name if the decl is TREE_PUBLIC, otherwise uniquify it.
+
+2007-11-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Don't
+	set TREE_ADDRESSABLE.  Do set DECL_COMDAT.  Set TREE_READONLY if
+	the type is a constant type.  Set the assembler name and inform
+	the rest of the compiler about the new decl if the decl is not
+	public.
+	(lto_read_subroutine_type_subprogram_DIE): Don't check for equivalency
+	of DECL_ASSEMBLER_NAME when determining if we have a builtin.  Don't
+	try to read in function bodies for functions that already have bodies.
+	* lto-symtab.c (lto_same_type_p): Check for unbounded array
+	equivalency.
+	(lto_symtab_merge_decl): Don't merge decls that aren't TREE_PUBLIC.
+	Check for whether we matched a builtin function type before calling
+	lto_same_type_p on the generated type.  Permit cases where the
+	declaration of an array is unbounded, but the definition is bounded.
+	Don't combine TREE_PUBLIC flags.  Copy over DECL_SIZE and
+	DECL_SIZE_UNIT if necessary.
+
+2007-11-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Get types right 
+	for COMPLEX_CST.
+
+2007-11-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (make_new_block, input_cfg): Properly set
+	n_basic_blocks.
+	
+2007-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_array_type_DIE): Handle DIEs with DW_AT_GNU_vector
+	set properly by building a VECTOR_TYPE instead of an ARRAY_TYPE.
+
+2007-11-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_base_type_DIE): Use make_bitfield_integer_type to
+	construct the integer type for bitfields.
+
+2007-11-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (data_in.current_node_has_loc): Removed.
+	(input_line_info): Returns true if node needs line set.
+	(set_line_info): Always sets line if called.
+	(clear_line_info): Removed reference to current_node_needs_loc.
+	(input_expr_operand): Keeps track locally if current node needs a loc.
+	(input_local_var): Added code to handle DECL_INITIAL for
+	static local vars. Only set loc if necessary.
+	
+2007-11-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_subroutine_type_subprogram_DIE): Fix thinko'd
+	DECL_CONTEXT.
+
+2007-11-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c: Include langhooks.h.
+	(lto_find_integral_type): Rework logic to handle the case where
+	got_byte_size is true, but the bitsize requested and that of the
+	base_type doesn't match.
+	(lto_read_variable_formal_parameter_constant_DIE): Only check for
+	asm_name if we are creating a VAR_DECL.
+	(lto_materialize_function): Set DECL_EXTERNAL if we can't find a
+	definition.
+	(lto_read_subroutine_type_subprogram_DIE): Check for a builtin
+	function reference and use the builtin's decl if so.  Set the
+	DECL_CONTEXT of the RESULT_DECL for the function.
+	* lto-lang.c (registered_builtin_fndecls): New variable.
+	(lto_getdecls): Return it.
+	(lto_builtin_function): Chain the new decl onto
+	registered_builtin_fndecls.
+
+2007-11-15  Kenneth Zadeck <zadeck@naturalbridge.com>
+	    
+	* lto-read.c (process_tree_flags, lto_static_init_local):
+	Renamed to ADD_CLASS_EXPR_FLAG. ADD_CLASS_DECL_FLAG New Macro.
+	(input_line_info, clear_line_info): Fixed new line number code.
+	(input_expr_operand): Added type to SWITCH_EXPR.
+	(lto_read_body): Properly initialized data_in.
+	Clear line info when leaving.
+	
+2007-11-13  Diego Novillo  <dnovillo@google.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE):
+	Initialize ARTIFICIAL.
+	(lto_read_subroutine_type_subprogram_DIE): Initialize
+	SAVED_SCOPE.
+	* lto-read.c (set_line_info): Remove ; from calls to
+	LINEMAP_POSITION_FOR_COLUMN.
+
+2007-11-13  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_type_ref): Renamed from get_type_ref.
+	(input_expr_operand, input_local_var): Renamed get_type_ref to 
+	input_type_ref.
+	(input_expr_operand): Get the types correct for 
+	vector-cst.  Get SSA_NAME_DEF_STMT correct for return_exprs.
+	
+2007-11-13  Doug Kwan  <dougkwan@google.com>
+
+	* lto-read.c (input_widest_uint_uleb128): New function.
+	(input_tree_flags, process_tree_flags, input_line_info,
+	input_expr_operand, input_local_var, input_phi, input_ssa_names):
+	Change to use lto_flags_type and BITS_PER_LTO_FLAGS_TYPES instead of
+	unsigned HOST_WIDE_INT and HOST_BITS_PER_WIDE_INT.
+	(lto_static_init_local): Add code to assert that lto_flags_type is
+	wide enough.
+
+2007-11-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_array_type_DIE): Handle DW_AT_GNU_vector.
+	(lto_read_subroutine_type_subprogram_DIE): Handle
+	DW_AT_static_link and DW_AT_specification.  Return the
+	specification if present.
+	(lto_read_base_type_DIE): Handle DW_ATE_complex_float.
+	
+2007-11-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c: Include target.h.
+	(registered_builtin_types): New variable.
+	(lto_type_for_mode): Increase number of modes handled.
+	(lto_builtin_function): Fix argument list and return the decl.
+	(lto_register_builtin_type): New function.
+	(lto_init): Initialize target builtins and language-independent
+	nodes.
+	(LANG_HOOKS_REGISTER_BUILTIN_TYPE): Define.
+
+2007-11-13  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Added code to properly handle
+	index filed. Added new RANGE_EXPR case.
+	
+2007-11-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (ADD_FUNC_FLAG): Deleted macro.
+	(data_in): Added current_node_has_loc field.
+	(input_line_info, set_line_info, clear_line_info): Added a support
+	for USE_MAPPED_LOCATION and not adding line numbers to nodes that
+	did not have on on the source side.
+	(input_expr_operand): Make sure that GIMPLE_MODIFY_STMTS get line
+	numbers too.
+
+2007-11-09  Doug Kwan  <dougkwan@google.com>
+
+	* lto-read.c (input_expr_operand): Change type of operand 2 of
+	BIT_FIELD_REF expression to be bitsizetype instead of sizetype.
+
+2007-11-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c: Include lto-tree.h.  Effect small spaces->tabs cleanup.
+	(lto_read_variable_formal_parameter_constant_DIE): Transfer bits
+	from a DW_AT_specification or DW_AT_abstract_origin attribute to
+	the new decl we are creating.  Move informing the middle end about
+	the new decl to...
+	(lto_main): ...here.  Inform the middle end about global variables
+	after we have read in all the input files.
+	* lto-symtab.c (lto_symtab_merge_decl): We really do need to merge
+	variables with internal linkage, so delete the check for internal
+	linkage.  Combine TREE_PUBLIC flags.
+
+2007-11-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_subroutine_type_subprogram_DIE): Handle
+	DW_AT_decl_line.
+	* lto-symtab.c (lto_symtab_merge_decl): Handle redefinition of a
+	builtin specially.  Move check for attribute compatibility
+	earlier.
+
+2007-11-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* Make-lang.in (lto/lto.o): Depend on gt-lto-lto.h.
+	* config-lang.in (gtfiles): Add lto.h and lto.c.
+	* lto-elf.c: Include ggc.h.
+	(lto_elf_file_open): Allocate elf_file from GC memory.
+	* lto.c: Include tree-ssa-operands.h and gt-lto-lto.h
+	(lto_info_fd_init): Allocate the die_cache and unmaterialized_fndecls
+	in GC memory.
+	(lto_info_fd_close): Free unmaterialized_fndecls from GC memory.
+	(lto_file_close): Free file from GC memory.
+	(lto_cache_store_DIE): Allocate the new entry in GC memory.
+	(lto_read_member_DIE): Fix declaration.
+	(lto_read_subroutine_type_subprogram_DIE): unmaterialized_fndecls lives
+	in GC memory.
+	(current_lto_file): New variable.
+	(lto_main): Use it.
+	(DWARF2_attr, DWARF2_abbrev, lto_die_ptr, DWARF2_CompUnit,
+	lto_die_cache_entry): Move to...
+	* lto.h: ...here and add GTY markers as appropriate.  Delete forward
+	declarations accordingly.
+	(struct lto_file_struct): Declare.
+	(lto_file_vtable): Use it instead of lto_file.
+
+2007-11-06 Alon Dayan  <alond@il.ibm.com>
+	   Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	 * lto-read.c (process_flags, lto_static_init_local):
+	 read flags of VAR_DECL and FUNCTION_DECL of size>1.
+	 change global array num_flags_for_code to flags_length_for_code.
+	 (set_line_info): Make decls work in USE_MAPPED_LOCATION mode.
+	
+2007-11-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_structure_union_class_type_DIE): Use proper record
+	layout functions to compute information about the newly constructed
+	type.
+
+2007-11-02  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_expr_operand): Change the LTO_return_expr1
+	case to use DECL_RESULT if necessary.
+
+2007-11-01  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_tree_list): Removed.
+	(input_tree_flags): Added parameter to force flags no matter what
+	tree code.
+	(input_expr_operand): Added parameter to input_tree_flags.
+	Added case for IDENTIFIER_NODE and TREE_LIST.  Changed ASM to call
+	input_expr_operand rather than input_tree_lists.
+	(input_local_var): Use input_expr_operand to read attributes
+	rather then input_tree_list.
+	(input_phi, input_ssa_names): Added parameter to input_tree_flags.
+
+2007-10-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_typedef_DIE): Fix comment typo.
+	(lto_resolve_typedecl_ref): Fetch the referred-to type and build a fake
+	TYPE_DECL for it.
+	* lto-read.c (lto_read_body): Use correct sizes for calculating
+	type_decls_offset and types_offset.
+
+2007-10-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-tree.h (union lang_tree_node): Change GTY description to chain
+	with GENERIC_NEXT.
+	* config-lang.in (gtfiles): Add lto-lang.c.
+	* lto-lang.c: Include gt-lto-lto-lang.h.
+	* Make-lang.in (lto/lto-lang.o): Add dependency on gt-lto-lto-lang.h
+	(lto/lto-symtab.o): Depend on LTO_H instead of TREE_H.
+	(lto/lto-read.o): Likewise.
+
+2007-10-29  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (data_in): Added type_decls and current_col fields.
+	(string_slot): New type to hold canonized file name.
+	(hash_string_slot_node, eq_string_slot_node, canon_file_name, 
+	input_line_info, set_line_info, clear_line_info): New functions.
+	(file_name_hash_table): New hash table.
+	(input_local_var, input_labels, input_local_vars_index, 
+	input_local_var, input_local_vars, input_ssa_names): Reorganized parameters.
+	(input_uleb128): Changed type of byte var.
+	(input_expr_operand): Large number of changes to get line numbers
+	correct.  Added TYPE_DECL case.
+	(input_globals): Added code to get TYPE_DECLs processed.
+	(input_local_var): Added code to process line numbers and
+	TREE_CHAIN and DECL_CONTEXT.
+	(input_function, input_constructor): Added call to
+	clear_line_number.
+	(lto_static_init_local): Added code to get line numbers correct.
+	(lto_read_body): Added code to get TYPE_DECLS read and to change
+	parameters to the calls above that had their parms reorganized.
+
+	
+2007-10-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.h (lto_resolve_typedecl_ref): Declare.
+	* lto.c (lto_resolve_typedecl_ref): New function.
+
+2007-10-29  Mark Mitchell  <mark@codesourcery.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_subroutine_type_subprogram_DIE): Read the child
+	DIEs even if we find an abstract origin for this DIE.
+
+2007-10-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_subroutine_type_subprogram_DIE): Build the
+	RESULT_DECL slightly earlier.  Only remember the decl for later
+	if we successfully merge declarations.
+
+2007-10-24  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Give label_values the proper
+	context and provide switch statements with a default type.
+	
+2007-10-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (lto_read_body): Move call to init_ssa_operands...
+	* lto.c (lto_materialize_function): ...to here.
+
+2007-10-22  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.h (struct lto_info_fd): Add field unmaterialized_fndecls.
+	* lto.c (lto_info_fd_init): Initialize it.
+	(lto_info_fd_close): Free it.
+	(lto_materialize_function): New function.
+	(lto_read_subroutine_type_subprogram_DIE): Save the result decl on
+	unmaterialized_fndecls.
+	(lto_file_read): Read in all the function bodies after we have read
+	all of the DWARF info.
+	* lto-read.c (lto_read_body): Call init_ssa_operands if we are
+	reading a function body.
+
+2007-10-20  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_tree_flags): Renamed from input_flags to be
+	semetric with output_tree_flags.  Added call to log flags.
+	(process_tree_flags): Renamed from process_flags.  Fixed a lot of
+	type issues to make everything consistent with flags being
+	unsigned HOST_WIDE_INTS.
+	(input_expr_operand): Added call to
+	recompute_tree_invariant_for_addr_expr.
+	(input_local_var): Added debugging for tree_chains.  Now calls
+	input_tree_flags.
+	(input_phi): Made flags unsigned HOST_WIDE_INT.
+	(input_ssa_names): Now calls input_tree_flags.
+	(lto_read_body): Now sets cfun.
+	(lto_read_function_body): Now sets current_function_pointer.
+	
+2007-10-19  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Check
+	definitively whether SPECIFICATION or ABSTRACT_ORIGIN exist before
+	inspecting fields within.
+	(lto_read_DIE_at_ptr): Delete check for null result; let callers
+	handle this appropriately.
+
+2007-10-19  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Handle
+	DW_AT_abstract_origin properly.  Ensure that we're not dealing with
+	both DW_AT_abstract_origin and DW_AT_specification.
+	(lto_read_subroutine_type_subprogram_DIE): Handle
+	DW_AT_abstract_origin.
+	(lto_read_DIE): Use lto_read_only_for_child_DIEs for labels.
+	(lto_read_DIE_at_ptr): Define as static to match declaration.
+	Lookup the PTR in the cache before reading it from the file.
+	(lto_resolve_var_ref): Adjust accordingly.
+	(lto_resolve_fn_ref): Adjust accordingly.  Tweak comment.
+	(lto_resolve_field_ref): Adjust accordingly.  Tweak comment.
+
+2007-10-19  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_DIE_at_ptr): New function.
+	(lto_resolve_var_ref): Use it.
+	(lto_resolve_fn_ref): Use it.
+	(lto_resolve_field_ref): Use it.
+	(lto_read_variable_formal_parameter_constant_DIE): Follow
+	DW_AT_specification and return the associated decl when appropriate.
+
+2007-10-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (lto_type_for_mode): Move after lto_type_for_size.
+	Implement for scalar integer modes.
+	(lto_init): Initialize size_type_node.
+
+2007-10-18  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Remove ssa name asserts.
+	(input_local_var): Add chaining for params.
+	(input_ssa_names): Add cfun parameter.
+	(input_function): Remove unnecessary else.
+
+2007-10-17  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_only_for_child_DIEs): Mark die parameter as unused.
+	(lto_resolve_var_ref): Use proper types.
+	(lto_resolve_fn_ref): Likewise.
+	(lto_resolve_field_ref): Likewise.
+
+2007-10-17  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (input_expr_operand): Remove case.
+
+2007-10-17  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_only_for_child_DIEs): New function.
+	(lto_read_DIE): Use it for lexical_block and inlined_subroutine DIEs.
+	* lto-elf.c (lto_elf_map_lto_section): Remove.
+	(lto_elf_file_vtable): Use lto_elf_map_optional_lto_section instead.
+	* lto-read.c (input_expr_operand): Assert that we never read a NULL
+	SSA_NAME.  Add missing case for mechanical codes.
+	(input_cfg): Use basic_block_info_for_function instead of
+	basic_block_info.
+
+2007-10-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_sleb128, input_integer): Use proper casts.
+	(input_list): Renamed input_tree_list and modified to follow same
+	protocol as lto-function-out.c:output_tree_list.
+	(input_expr_operand): Make asm operands use input_tree_list.
+	(input_local_var): Now uses input_tree_list.
+	(lto_read_body): Change placement for setting context of debug_labels.
+	
+	
+2007-10-16  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_real): Output debugging in proper order.
+	(input_integer): Compute bit lengths properly.
+	(input_list): Clean up declaration.
+	(input_expr_operand): Change calls to input_real to match fix.
+	Make reading of LTO_bit_field_ref1 match output.
+	(input_local_var): Make reading of attributes match what is being
+	written.
+	(dump_debug_stream): Also print char in hex.
+	(debug_out_fun): Fix signed unsigned mismatch.
+	
+2007-10-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c (lto_read_form): Handle DW_AT_MIPS_linkage_name and
+	DW_AT_GNU_vector specially, as they are not contiguous with the
+	specified set of attribute names.  Use class_mask to check for
+	errors at the end of the function
+	(lto_resolve_var_ref): Read the DIE if it is not cached.
+	(lto_resolve_fn_ref): Likewise.
+	(lto_resolve_field_ref): Likewise.
+
+2007-10-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c: Include dwarf2out.h.
+	(lto_cache_store_DIE): Assert that we never change the value.
+	(LTO_BEGIN_READ_ATTRS): Print an informative error message.
+	(lto_read_compile_unit_DIE): Handle DW_AT_entry_pc.
+	(lto_read_array_type_DIE): Don't error on ndims == 0; build a
+	sensible type instead.
+	(lto_read_structure_union_class_type_DIE): Store the newly
+	created type prior to reading the members of the structure to
+	avoid infinite recursion.  Avoid computing types and alignments
+	for structures whose sizes are unknown.
+	(lto_read_variable_formal_parameter_const): Handle DW_AT_artificial
+	and set DECL_ARTIFICIAL accordingly.  Ignore DW_AT_abstract_origin,
+	DW_AT_const_value, and DW_AT_specification.
+	(lto_read_subroutine_type_subprogram_DIE): Handle DW_AT_declaration.
+	Return early if we have already constructed the function type.
+	(lto_read_typedef_DIE): Check to see if the type has been cached
+	already.  Cache the type before reading any children.
+	(lto_read_const_volatile_restrict_type_DIE): Handle DW_AT_name.
+	(lto_read_DIE): Unset context->skip_non_parameters around reading
+	the DIE.
+	(lto_resolve_fn_ref): Delete trailing whitespace.
+
+2007-09-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Added type for STRING_CST.
+	
+2007-09-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-read.c (lto_read): Set the type of the newly created CALL_EXPR.
+
+2007-09-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto-lang.c (signed_and_unsigned_types): New variable.
+	(lto_type_for_size): Consult signed_and_unsigned_types to find
+	an approprite type, creating it if necessary.
+	(lto_set_decl_assembler_name): Add actual method body.
+
+2007-09-06  Jim Blandy  <jimb@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): If we
+	can't find a var init for this variable, leave its DECL_INITIAL.
+	* lto-elf.c (lto_elf_map_optional_lto_section): Renamed from
+	lto_elf_map_fn_body.
+	(lto_map_lto_section): New function.
+	(lto_elf_file_vtable): Use lto_elf_map_lto_section for function
+	bodies, and lto_elf_map_optional_lto_section for variable
+	initializers.
+	(lto_elf_find_section_data): Quietly return NULL if the section is
+	missing.
+	(lto_elf_file_open): Check for a NULL from lto_elf_find_section_data.
+
+	* lto-elf.c (lto_elf_find_section_data): Remove dead code.
+
+	* lto-read.c (lto_read_body): Doc fix.
+
+2007-08-29  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (fun_in): Renamed to data_in.
+	(input_expr_operand, input_local_var, input_string_internal,
+	input_string, input_real, input_list, get_label_decl, 
+	get_type_ref, input_expr_operand, input_globals, input_labels,
+	input_local_vars_index, input_local_var, input_local_vars, 
+	input_cfg, input_phi, input_ssa_names, input_bb, ): Renamed fun_in to data_in.
+	(input_constructor): New function.
+	(lto_read_function_body): Renamed to lto_read_body and generalized
+	to handle both functions and constructors.
+	(lto_read_function_body, lto_read_var_init): New function.
+	
+	
+2007-08-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Assert that there really is a
+	FUNCTION_DECL.
+	(input_globals): Removed checks on 0 section.
+	
+2007-08-28  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (fun_in): Added local_decls_index and
+	local_decls_index_d.  
+	(input_expr_operand): Changed inputting of PARM_DECLs and VAR_DECLs.
+	(input_globals): Enabled code to handle FIELD_DECLs.
+	(input_local_vars_index, input_local_vars): New function.
+	(input_local_var): Changed to allow locals to be input randomly.
+	(lto_read_function_body): Added code to input the
+	local_decls_index and to free various structures.
+	
+2007-08-17  Jim Blandy  <jimb@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Remove
+	ATTRIBUTE_UNUSED from 'die' formal.
+
+	Use enum LTO_tags where appropriate, instead of 'unsigned int'.
+	* lto-read.c (input_record_start): Fix return type, type of 'tag'.
+	(input_list): Fix type of 'tag'.
+	(input_expr_operand): Fix type of 'tag' argument.  Update
+	declaration.  Fix type of 'ctag'.  Add default case to switch,
+	since the type of the switched value is now an enum.
+	(input_local_vars): Fix type of 'tag'.
+	(input_bb): Fix type of 'tag' argument.
+	(input_function): Fix type of 'tag' argument.
+
+2007-08-16  Jim Blandy  <jimb@codesourcery.com>
+
+	* lto.c (lto_read_member_DIE): Record the tree we create in
+	fd->die_cache.  (Our 'die' argument is no longer unused.)
+	(lto_resolve_field_ref): New function.
+	* lto.h (lto_resolve_field_ref): New declaration.
+
+2007-08-15  Jim Blandy  <jimb@codesourcery.com>
+
+	* lto-read.c (lto_read_var_init): Mark arguments as unused.
+
+2007-08-07  Jim Blandy  <jimb@codesourcery.com>
+
+	* lto.c (lto_read_form): Complete attr_classes table.
+	(DWARF2_form_data): Doc fix.
+	
+2007-08-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.h (lto_file_vtable): Remove read_var_init.  Add map_var_init
+	and unmap_var_init.
+	(lto_read_var_init): Declare.
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Use new
+	interface for reading variable initializers.
+	* lto-elf.c (lto_elf_read_var_init): Remove.
+	(lto_elf_file_vtable): Update initializer.
+	(lto_elf_read_var_init): Add comment about unused-ness.
+	* lto-read.c (lto_read_var_init): New.
+
+	* lto.c (lto_read_form): Add entry for DW_AT_inline.
+
+2007-08-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (lto_read_function_body): Moved declaration of fn
+	outside of ifdef.
+	
+2007-08-01  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_uleb128, input_string_internal, input_real,
+	input_integer, input_record_start, input_list, get_type_ref,
+	input_flags, input_expr_operand, input_expr_operand,
+	input_expr_operand, input_local_vars, input_cfg, input_phi,
+	input_ssa_names, input_bb, input_function): Added semicolons.
+
+	
+2007-07-31  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_globals): Remove debugging.
+	(input_function): Set DECL_ARGUMENTS.
+
+	
+2007-07-31  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_expr_operand): Fixed code for COND_EXEC,
+	RETURN_EXPR, MODIFY_EXPR and processing of flags.
+	(input_phi): Made work with operands other than SSA_NAMES and
+	fixed processing of flags.
+	(input_ssa_names): Initialize SSA_NAME_DEF_STMT to empty stmt.
+	(input_flags): New function.
+	* lto-lang.c (lto_init): Changed state of in_lto_p.
+	
+	
+2007-07-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto-tree.h (lto_varargs_cookie): Remove.
+	* lto.c (lto_context): Add last_parm_type, varargs_p, skip_all,
+	skip_non_parameters, skip_parameters.
+	(lto_varargs_cookie): Remove.
+	(lto_read_variable_formal_parameter_constant_DIE): Keep track of
+	parameter types.
+	(lto_read_abbrev): New function.
+	(lto_read_subroutine_type_subprogram_DIE): Make two passes over
+	child DIEs.
+	(lto_read_unspecified_parameters_DIE): Set context->varargs_p.
+	(lto_read_DIE): Use lto_read_abbrev.  Honor skip_* flags.
+	(lto_file_read): Initialize new context fields.
+	* lto-lang.c (lto_type_for_mode): Return NULL_TREE.
+	(lto_unsigned_type): Remove.
+	(lto_signed_type): Likewise.
+	(lto_signed_or_unsigned_type): Likewise.
+	(lto_init): Do not create lto_varargs_cookie.
+	(LANG_HOOKS_UNSIGNED_TYPE): Do not define.
+	(LANG_HOOKS_SIGNED_TYPE): Likewise.
+	(LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Likewise.
+
+2007-07-19  Jan Hubicka  <jh@suse.cz>
+
+	* lto-read.c (lto_read_function_body): Produce empty scope block
+	to avoid crash.
+
+2007-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Do not
+	process local variables.
+	(lto_read_subroutine_type_subprogram_DIE): Read child DIEs.
+
+2007-07-13  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read.c (input_list, input_expr_operand): Added struct
+	function parameter.
+	(init_cfg, finalize_cfg): Removed function.
+	(input_expr_operand): Added SSA_NAME and GIMPLE_MODIFY_STMT cases.
+	(input_labels, input_local_vars): Now takes input_block parameter rather than
+	synthsyzing it.
+	(input_cfg, input_phi, input_ssa_names): New functions.
+	(input_bb): Now passes in input_blocks.  Does not construct cfg
+	and processes the list of phi functions.
+	(input_function): Now builds both the cfg and ssa_names table.
+	(lto_read_function_body): Processes new header fields to construct
+	streams for the ssa_names and cfg and their debugging.
+	* lto/lto-lang.c (lto_init): Set in_lto_p.
+	
+	
+2007-06-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.h (lto_file_vtable): Add read_var_init.
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE): Read
+	initializers.
+	(lto_main): Remove bogus asserts.
+	* lto-elf.c (tm.h): Include it.
+	(libiberty.y): Likewise.
+	(lto_elf_file): Add strtab and symtab.  Rename
+	string_table_section_index to sec_strtab.
+	(lto_elf_file_vtable): Add lto_elf_read_var_init.
+	(lto_elf_get_shdr): New function.
+	(lto_elf_free_shdr): Likewise.
+	(lto_elf_find_section_data): Use them.
+	(lto_elf_read_symtab): New function.
+	(lto_elf_lookup_sym): Likewise.
+	(lto_elf_free_sym): Likewise.
+	(lto_elf_file_open): Tidy.  Call lto_elf_read_symtab.
+	(lto_elf_built_init): New function.
+	(lto_elf_read_var_init): Likewise.
+	* Make-lang.in (lto/lto-elf.o): Depend on $(TM_H).
+
+2007-06-26  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-read (make_new_block): Initialize the stmt_list.
+	(lto_static_init_local): Add debugging for missing codes.
+	
+2007-06-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (lto_read_subroutine_type_subprogram_DIE): Handle
+	unprototyped functions. 
+
+2007-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (lto_read_variable_formal_parameter_constant_DIE):
+	Handle DW_AT_MIPS_linkage_name.
+	(lto_read_subroutine_type_subprogram): Likewise.  Correct
+	compilation errors.
+	(lto_main): Remove incorrect assertions.
+	* lto-symbtab.c: Build function types out of TREE_LISTs.
+
+	* lto-elf.c (<libelf>): Check for HAVE_LIBELF_H.
+	
+	* Make-lang.in (LTO_OBJS): Depend on attribs.o.
+	
+2007-06-21  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto/lto-tree.h (lang_decl, lang_type, language_function): Added
+	dummy since ggc does not like empty structs.
+	* lto/lto-elf.c (libelf.h): Changed to libelf/libelf.h.
+	* lto/lto-read.c (ADD_CLASS_FLAG, ADD_EXPR_FLAG): Changed
+	expr->common to expr->base.
+	(make_new_block): Moved stmt_list to proper place.
+
+
+2007-03-14 Robert Kennedy  <jimbob@google.com>
+
+	Eliminate use of lang_hooks.set_decl_assembler_name from LTO
+	* lto.c (lto_read_subroutine_type_subprogram_DIE) Get DECL
+	assembler name from DWARF.
+	* lto-lang.c (lto_set_decl_assembler_name) New function.
+
+2006-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.h (lto_file_vtable): New structure.
+	(lto_file): Add vtable pointer.
+	(lto_file_init): Add vtable paramter.
+	(lto_read_function_body): New function.
+	(lto_symtab_merge_fn): New function.
+	* lto.c (lto_file_init): Add vtable parameter.
+	(lto_read_form): Fill in entries for DW_AT_prototyped,
+	DW_AT_frame_base.
+	(lto_read_subroutine_type_subprogram_DIE): New function.
+	(lto_read_DIE): Fill in entries for DW_TAG_subroutine_type and
+	DW_TAG_subprogram.
+	* lto-elf.c (lto_elf_vile_vtable): New variable.
+	(lto_elf_file_open): Pass it to lto_file_init.
+	(lto_elf_map_fn_body): New function.
+	(lto_elf_unmap_fn_body): Likewise.
+	* lto-read.c: New file.
+	* lto-symtab.c (lto_symtab_merge_fn): New function.
+	* lto-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Define to
+	tree_rest_of_compilation.
+	* Make-lang.in (LTO_OBJS): Add lto-read.o
+	(lto-read.o): New target.
+
+2006-09-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (<inttypes.h>): Don't include it.
+	(lto_context): Don't typedef it.
+	(lto_resolve_reference): New function.
+	(lto_read_form): Use it.
+	(lto_resolve_type_ref): New function.
+	(lto_resolve_var_ref): Likewise.
+	(lto_resolve_fn_ref): Likewise.
+	* lto.h (<inttypes.h>): Include it.
+	(lto_context): New type.
+	(lto_ref): New structure.
+	(lto_resolve_type_ref): Declare.
+	(lto_resolve_var_ref): Likewise.
+	(lto_resolve_fn_ref): Likewise.
+
+2006-08-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* lang-specs.h: New file.
+
+2006-08-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (lto_info_fd_init): Allocate the DIE cache.
+	(lto_info_fd_close): Deallocate it.
+	(lto_die_cache_entry): New structure.
+	(lto_cache_hash): New function.
+	(lto_cache_eq): Likewise.
+	(lto_cache_store_DIE): Likewise.
+	(lto_cache_lookup_DIE): Likewise.
+	(lto_read_referenced_type_DIE): Use the cache.
+	(lto_read_pointer_type_DIE): Robustify.
+	(lto_read_DIE): Use the cache.
+	* lto.h (hashtab.h): Include.
+	(lto_info_fd): Add DIE cache.
+	* Make-lang.in (LTO_H): New variable.
+	(lto/lto-lang.o): Use LTO_H.
+	(lto/lto-elf.o): Likewise.
+	(lto/lto-symtab.o): Likewise.
+
+2006-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (lto_abi_mismatch_error): New function.
+	(lto_abbrev_read): Initialize num_abbrevs.
+	(lto_read_form): Specify allowed form classes for
+	DW_AT_declaration.  Adjust for change to lto_set_cu_context.
+	(lto_read_variable_formal_parameter_constant_DIE): Handle
+	DW_AT_declaration.  Call lto_symtab_merge_var.
+	(lto_read_pointer_type_DIE): New function.
+	(lto_read_base_type_DIE): Use build_nonstandard_integer_type.  Do
+	not creat TYPE_DECLs for types that already have them.
+	(lto_read_DIE): Add lto_read_pointer_type_DIE.
+	(lto_set_cu_context): Make cu_start point to the header, not the
+	first DIE.
+	(lto_file_read): Adjust for change to lto_set_cu_context.
+	* Make-lang.in (LTO_OBJS): Add lto-symtab.o.
+	(lto/lto-symtab.o): New rule.
+	* lto-tree.h (lang_identifier): Add decl field.
+	(LANG_IDENTIFIER_CAST): New macro.
+	(LTO_IDENTIFIER_DECL): Likewise.
+	(lto_symtab_merge_var): Declare.
+	* lto-symtab.c: New file.
+
+2006-07-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	* lto.c (lto_context): Add current_cu and info_fd members.
+	(DWARF2_CompUnit): New structure.
+	(lto_read_DIE): Take lto_info_fd *.
+	(lto_read_child_DIEs): Ditto.
+	(lto_file_corrupt_error): Constify argument.
+	(lto_set_cu_context): New function
+	(lto_info_fd_init): Ditto.
+	(lto_info_fd_close): Ditto.
+	(lto_file_init): Use lto_info_fd_init.
+	(lto_file_close): Use lto_info_fd_close.
+	(lto_read_initial_length): Pass in pointer to header size.
+	(lto_read_comp_unit_header): Correct cu_length to
+	real length from beginning of header.  Take lto_info_fd * as
+	argument.
+	(find_cu_for_offset): New function.
+	(lto_read_form): Change first argument to lto_info_fd *.
+	Add FORM_CONTEXT argument.
+	Handle DW_FORM_ref_addr.
+	(lto_read_tag_DIE): Change first argument to lto_info_fd *.	
+	(LTO_BEGIN_READ_ATTRS_UNCHECKED): Save old context.
+	Swap contexts if necessary for form.
+	(LTO_BEGIN_READ_ATTRS): Cast fd to right type for
+	lto_file_corrupt_error.
+	(LTO_END_READ_ATTRS): Swap contexts back if it had changed.
+	(lto_read_referenced_type_DIE): Change first argument to
+	lto_info_fd *.  Access lto_fd fields through base pointer.
+	(lto_read_compile_unit_DIE): Change first argument to an
+	lto_info_fd *.
+	(lto_read_variable_formal_parameter_constant_DIE): Ditto.
+	(lto_read_base_type_DIE): Ditto.
+	(lto_read_child_DIEs): Ditto.
+	(lto_read_DIE): Ditto.  Change type of function pointer.
+	(lto_info_read): New function.
+	(lto_set_cu_context): Ditto.
+	(lto_file_read): Use lto_info_read, walk resulting CU's
+	(lto_main): Update for lto_info_fd change.
+	* lto-elf.c (lto_elf_file_open): Cast lto_info_fd to lto_fd where
+	necessary.
+	* lto.h (DWARF2_CompUnit): New structure.
+	(lto_info_fd): Ditto.
+	(lto_file): Change debug_info to be an lto_info_fd.
+	
+2006-06-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.c (toplev.h): Include it.
+	(dwarf2.h): Likewise.
+	(tree.h): Likewise.
+	(tm.h): Likewise.
+	(cgraph.h): Likewise.
+	(ggc.h): Likewise.
+	(inttypes.h): Likewise.
+	(DWARF2_attr): New type.
+	(DWARF2_abbrev): Likewise.
+	(DWARF2_class): Likewise.
+	(DWARF2_form_data): Likewise.
+	(lto_context): Likewise.
+	(lto_fd_init): New function.
+	(lto_abbrev_fd_init): Likewise.
+	(lto_abbrev_fd_close): Likewise.
+	(lto_file_init): Use them.
+	(lto_file_close): New function.
+	(lto_file_corrupt_error): Likewise.
+	(LTO_CHECK_INT_VAL): New macro.
+	(lto_check_size_t_val): New function.
+	(lto_check_int_val): Likewise.
+	(LTO_READ_TYPE): New macro.
+	(lto_read_ubyte): New function.
+	(lto_read_uhalf): Likewise.
+	(lto_read_uword): Likewise.
+	(lto_read_uleb128): Likewise.
+	(lto_read_initial_length): Likewise.
+	(lto_abbrev_read_attrs): Likewise.
+	(lto_abbrev_read): Likewise.
+	(lto_abbrev_lookup): Likewise.
+	(lto_read_section_offset): Likewise.
+	(lto_read_comp_unit_header): Likewise.
+	(lto_read_form): Likewise.
+	(LTO_BEGIN_READ_ATTRS_UNCHECKED): New macro.
+	(LTO_BEGIN_READ_ATTRS): Likewise.
+	(LTO_END_READ_ATTRS): Likewise.
+	(lto_unsupported_attr_error): New function.
+	(lto_get_identifier): Likewise.
+	(lto_read_referenced_type_DIE): Likewise.
+	(lto_read_compile_unit_DIE): Likewise.
+	(lto_read_variable_formal_parameter_constant_DIE): Likewise.
+	(lto_read_base_type_DIE): Likewise.
+	(lto_read_DIE): Likewise.
+	(lto_read_child_DIEs): Likewise.
+	(lto_file_read): Read DIEs.
+	(lto_main): Ask middle end to emit entities.
+	* lto-tree.h (lang_identifier): Inherit from tree_identifier.
+	* lto-elf.c (lto_elf_file_open): Adjust for interface changes.
+	(lto_elf_file_close): Likewise.
+	* lto.h (lto_file): Declare.
+	(DWARF2_abbrev): Likewise.
+	(lto_fd): New type.
+	(lto_abbrev_fd): Likewise.
+	(lto_file): Use new types.
+	(lto_file_close): Declare.
+	* lto-lang.c (lto_init): Always use unit-at-a-time mode.
+	
+2006-06-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* lto.h: New file.
+	* lto.c: New file.
+	* lto-elf.c: New file.
+	* lto-lang.c (flags.h): Include it.
+	(lto.h): Likewise.
+	(lto_init): New function.
+	(lto_write_globals): Remove.
+	(LANG_HOOKS_WRITE_GLOBALS): Define to lhd_do_nothing. 
+	(LANG_HOOKS_INIT): Define.
+	(LANG_HOOKS_PARSE_FILE): Likewise.
+	* Make-lang.in (LTO_OBJS): Add lto.o and lto-elf.o.
+	(LTO_EXE): Link with libelf.
+	(lto/lto-lang.o): Update dependencies.
+	(lto/lto.o): New target.
+	(lto/lto-elf.o): Likewise.
+
+2006-06-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* config-lang.in: New file.
+	* Make-lang.in: Likewise.
+	* lto-tree.h: Likewise.
+	* lto-lang.c: Likewise.
+

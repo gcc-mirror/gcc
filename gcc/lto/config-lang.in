@@ -1,0 +1,32 @@
+# Top level configure fragment for LTO
+#   Copyright (C) 2009
+#   Free Software Foundation, Inc.
+
+#This file is part of GCC.
+
+#GCC is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 3, or (at your option)
+#any later version.
+
+#GCC is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+language="lto"
+compilers="lto1\$(exeext)"
+stagestuff="lto1\$(exeext)"
+
+gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.c \$(srcdir)/lto/lto.c"
+
+# LTO is a special front end.  From a user's perspective it is not
+# really a language, but a middle end feature.  However, the GIMPLE
+# reading module is implemented as a front end, so enabling LTO means
+# enabling this "language". To enable LTO functionality, use
+# --enable-lto when configuring the compiler.
+build_by_default=no

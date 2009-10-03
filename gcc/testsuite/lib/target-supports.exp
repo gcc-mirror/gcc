@@ -3093,6 +3093,14 @@ proc check_effective_target_correct_iso_cpp_string_wchar_protos { } {
     }]
 }
 
+# Return 1 if the compiler has been configure with link-time optimization
+# (LTO) support.
+
+proc check_effective_target_lto { } {
+    global ENABLE_LTO
+    return [info exists ENABLE_LTO]
+}
+
 # Return 1 if the MPC library is integrated with GCC, 0 otherwise.
 
 proc check_effective_target_mpc { } {

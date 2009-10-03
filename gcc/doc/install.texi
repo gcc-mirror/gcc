@@ -356,6 +356,15 @@ Alternatively, if an MPC source distribution is found in a
 subdirectory of your GCC sources named @file{mpc}, it will be built
 together with GCC@.
 
+@item libelf version 0.8.12 (or later)
+
+Necessary to build link-time optimization (LTO) support.  It can be
+downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
+though it is commonly available in several systems.
+
+The @option{--with-libelf} configure option should be used if libelf is
+not installed in your default library search patch.
+
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -1893,6 +1902,30 @@ Use the @code{WCHAR} and Win32 W functions natively.  Does @emph{not}
 add @code{-lunicows} to @file{libgcj.spec}.  The built executables will
 only run on Microsoft Windows NT and above.
 @end table
+
+@item --enable-lto
+Enable support for link-time optimization (LTO).  This is enabled by
+default if a working libelf implementation is found (see
+@option{--with-libelf}).
+
+@item --with-libelf=@var{pathname}
+@itemx --with-libelf-include=@var{pathname}
+@itemx --with-libelf-lib=@var{pathname}
+If you do not have libelf installed in a standard location and you
+want to enable support for link-time optimization (LTO), you can
+explicitly specify the directory where libelf is installed
+(@samp{--with-libelf=@var{libelfinstalldir}}).  The
+@option{--with-libelf=@var{libelfinstalldir}} option is shorthand for
+@option{--with-libelf-include=@var{libelfinstalldir}/include}
+@option{--with-libelf-lib=@var{libelfinstalldir}/lib}.
+
+@item --enable-gold
+Enable support for using @command{gold} as the linker.  If gold support is
+enabled together with @option{--enable-lto}, an additional directory
+@file{lto-plugin} will be built.  The code in this directory is a
+plugin for gold that allows the link-time optimizer to extract object
+files with LTO information out of library archives.  See
+@option{-flto} and @option{-fwhopr} for details.
 @end table
 
 @subsubheading AWT-Specific Options

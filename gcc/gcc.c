@@ -764,10 +764,23 @@ proper position among the other output files.  */
 /* We want %{T*} after %{L*} and %D so that it can be used to specify linker
    scripts which exist in user specified directories, or in standard
    directories.  */
+/* We pass any -flto and -fwhopr flags on to the linker, which is expected
+   to understand them.  In practice, this means it had better be collect2.  */
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) %l " LINK_PIE_SPEC "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
+    %(linker) \
+    %{use-linker-plugin: \
+    -plugin %(linker_plugin_file) \
+    -plugin-opt=%(lto_wrapper) \
+    -plugin-opt=%(lto_gcc) \
+    %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
+    %{O*:-plugin-opt=-O%*} \
+    %{w:-plugin-opt=-w} \
+    %{f*:-plugin-opt=-f%*} \
+    } \
+    %{flto} %{fwhopr} %l " LINK_PIE_SPEC \
+   "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)} %(mflib)\
@@ -815,6 +828,10 @@ static const char *endfile_spec = ENDFILE_SPEC;
 static const char *startfile_spec = STARTFILE_SPEC;
 static const char *switches_need_spaces = SWITCHES_NEED_SPACES;
 static const char *linker_name_spec = LINKER_NAME;
+static const char *linker_plugin_file_spec = "";
+static const char *lto_wrapper_spec = "";
+static const char *lto_gcc_spec = "";
+static const char *lto_libgcc_spec = "";
 static const char *link_command_spec = LINK_COMMAND_SPEC;
 static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
 static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
@@ -891,11 +908,15 @@ static const char *asm_options =
 
 static const char *invoke_as =
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
-"%{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
- %{!S:-o %|.s |\n as %(asm_options) %|.s %A }";
+"%{!fwpa:\
+   %{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
+   %{!S:-o %|.s |\n as %(asm_options) %|.s %A }\
+  }";
 #else
-"%{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
- %{!S:-o %|.s |\n as %(asm_options) %m.s %A }";
+"%{!fwpa:\
+   %{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
+   %{!S:-o %|.s |\n as %(asm_options) %m.s %A }\
+  }";
 #endif
 
 /* Some compilers have limits on line lengths, and the multilib_select
@@ -1653,6 +1674,10 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("multilib_exclusions",	&multilib_exclusions),
   INIT_STATIC_SPEC ("multilib_options",		&multilib_options),
   INIT_STATIC_SPEC ("linker",			&linker_name_spec),
+  INIT_STATIC_SPEC ("linker_plugin_file",	&linker_plugin_file_spec),
+  INIT_STATIC_SPEC ("lto_wrapper",		&lto_wrapper_spec),
+  INIT_STATIC_SPEC ("lto_gcc",			&lto_gcc_spec),
+  INIT_STATIC_SPEC ("lto_libgcc",		&lto_libgcc_spec),
   INIT_STATIC_SPEC ("link_libgcc",		&link_libgcc_spec),
   INIT_STATIC_SPEC ("md_exec_prefix",		&md_exec_prefix),
   INIT_STATIC_SPEC ("md_startfile_prefix",	&md_startfile_prefix),
@@ -6834,14 +6859,6 @@ main (int argc, char **argv)
     multilib_defaults = XOBFINISH (&multilib_obstack, const char *);
   }
 
-  /* Set up to remember the pathname of gcc and any options
-     needed for collect.  We use argv[0] instead of programname because
-     we need the complete pathname.  */
-  obstack_init (&collect_obstack);
-  obstack_grow (&collect_obstack, "COLLECT_GCC=", sizeof ("COLLECT_GCC=") - 1);
-  obstack_grow (&collect_obstack, argv[0], strlen (argv[0]) + 1);
-  xputenv (XOBFINISH (&collect_obstack, char *));
-
 #ifdef INIT_ENVIRONMENT
   /* Set up any other necessary machine specific environment variables.  */
   xputenv (INIT_ENVIRONMENT);
@@ -7054,6 +7071,27 @@ main (int argc, char **argv)
   /* Now that we have the switches and the specs, set
      the subdirectory based on the options.  */
   set_multilib_dir ();
+
+  /* Set up to remember the pathname of gcc and any options
+     needed for collect.  We use argv[0] instead of programname because
+     we need the complete pathname.  */
+  obstack_init (&collect_obstack);
+  obstack_grow (&collect_obstack, "COLLECT_GCC=", sizeof ("COLLECT_GCC=") - 1);
+  obstack_grow (&collect_obstack, argv[0], strlen (argv[0]) + 1);
+  xputenv (XOBFINISH (&collect_obstack, char *));
+
+  /* Set up to remember the pathname of the lto wrapper. */
+
+  lto_wrapper_spec = find_a_file (&exec_prefixes, "lto-wrapper", X_OK, false);
+  if (lto_wrapper_spec)
+    {
+      obstack_init (&collect_obstack);
+      obstack_grow (&collect_obstack, "COLLECT_LTO_WRAPPER=",
+		    sizeof ("COLLECT_LTO_WRAPPER=") - 1);
+      obstack_grow (&collect_obstack, lto_wrapper_spec,
+		    strlen (lto_wrapper_spec) + 1);
+      xputenv (XOBFINISH (&collect_obstack, char *));
+    }
 
   /* Warn about any switches that no pass was interested in.  */
 
@@ -7475,6 +7513,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   if (num_linker_inputs > 0 && error_count == 0 && print_subprocess_help < 2)
     {
       int tmp = execution_count;
+      const char *use_linker_plugin = "use-linker-plugin";
 
       /* We'll use ld if we can't find collect2.  */
       if (! strcmp (linker_name_spec, "collect2"))
@@ -7483,6 +7522,23 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  if (s == NULL)
 	    linker_name_spec = "ld";
 	}
+
+      if (switch_matches (use_linker_plugin,
+			  use_linker_plugin + strlen (use_linker_plugin), 0))
+	{
+	  linker_plugin_file_spec = find_a_file (&exec_prefixes,
+						 "liblto_plugin.so", X_OK,
+						 false);
+	  if (!linker_plugin_file_spec)
+	    fatal ("-use-linker-plugin, but liblto_plugin.so not found.");
+
+	  lto_libgcc_spec = find_a_file (&startfile_prefixes, "libgcc.a",
+					 R_OK, true);
+	  if (!lto_libgcc_spec)
+	    fatal ("could not find libgcc.a.");
+	}
+      lto_gcc_spec = argv[0];
+
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
 	 for collect.  */
       putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH", false);

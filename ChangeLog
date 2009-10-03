@@ -1,3 +1,32 @@
+2009-10-03  2009-02-05  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.def: all-lto-plugin depends on all-libiberty.
+	set bootstrap=true for lto-plugin.
+	Add lto-plugin.
+	* Makefile.in: Regenerate.
+	* configure.ac (host_libs): Add lto-plugin.
+	* configure: Regenerate.
+
+
+2009-10-03  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.tpl (HOST_EXPORTS): Add LIBELFLIBS and LIBELFINC.
+	(HOST_LIBELFLIBS): Define.
+	(HOST_LIBELFINC): Define.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add --enable-lto.
+	Add --with-libelf, --with-libelf-include and --with-libelf-lib.
+	If --enable-lto is used, add 'lto' to new_enable_languages.
+	If --enable-lto is used and gold is enabled, add
+	lto-plugin to configdirs.
+	* configure: Regenerate.
+
+2009-10-03  Simon Baldwin  <simonb@google.com>
+
+	* configure.ac: If --with-system-zlib, suppress local zlib and
+	pass --with-system-zlib to subdir configure scripts.
+	* configure: Regenerate.
+
 2009-10-01  Loren J. Rittle <ljrittle@acm.org>
 	    Paolo Bonzini  <bonzini@gnu.org>
 

@@ -1,6 +1,7 @@
 extern void abort (void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 char *
 stpcpy (char *dst, const char *src)
 {

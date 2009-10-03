@@ -749,6 +749,19 @@ floop-optimize
 Common
 Does nothing.  Preserved for backward compatibility.
 
+flto
+Common Var(flag_lto)
+Enable link-time optimization.
+
+; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
+flto-compression-level=
+Common Joined UInteger Var(flag_lto_compression_level) Init(-1)
+-flto-compression-level=<number> Use zlib compression level <number> for IL
+
+flto-report
+Common Report Var(flag_lto_report) Init(0) Optimization
+Report various link-time optimization statistics
+
 fmath-errno
 Common Report Var(flag_errno_math) Init(1) Optimization
 Set errno after built-in math functions
@@ -1431,6 +1444,10 @@ Use expression value profiles in optimizations
 fweb
 Common Report Var(flag_web) Init(2) Optimization
 Construct webs and split unrelated uses of single variable
+
+fwhopr
+Common Var(flag_whopr)
+Enable partitioned link-time optimization.
 
 ftree-builtin-call-dce
 Common Report Var(flag_tree_builtin_call_dce) Init(0) Optimization

@@ -1,3 +1,7 @@
+2009-10-03  Simon Baldwin  <simonb@google.com>
+
+	* config-lang.in (lang_dirs): Remove zlib.
+
 2009-09-28  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (initialize_builtins): Update call to

@@ -1,0 +1,58 @@
+# Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+# Contributed by Diego Novillo <dnovillo@google.com>
+
+
+# Test link-time optimization across multiple files.
+#
+# Programs are broken into multiple files.  Each one is compiled
+# separately with LTO information.  The final executable is generated
+# by collecting all the generated object files using regular LTO or WHOPR.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# Load procedures from common libraries. 
+load_lib standard.exp
+load_lib g++.exp
+load_lib target-libpath.exp
+
+# Load the language-independent compabibility support procedures.
+load_lib lto.exp
+
+g++_init
+lto_init
+
+# Define an identifier for use with this suite to avoid name conflicts
+# with other lto tests running at the same time.
+set sid "cp_lto"
+
+# If LTO has not been enabled, bail.
+if { ![check_effective_target_lto] } {
+    return
+}
+
+# Main loop.
+foreach src [lsort [find $srcdir/$subdir *_0.C]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+	continue
+    }
+
+    lto-execute $src $sid
+}

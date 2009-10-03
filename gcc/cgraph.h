@@ -46,6 +46,10 @@ enum availability
   AVAIL_LOCAL
 };
 
+/* This is the information that is put into the cgraph local structure
+   to recover a function.  */
+struct lto_file_decl_data;
+
 extern const char * const cgraph_availability_names[];
 
 /* Function inlining information.  */
@@ -69,6 +73,9 @@ struct GTY(()) inline_summary
    Available after function is analyzed.  */
 
 struct GTY(()) cgraph_local_info {
+  /* File stream where this node is being written to.  */
+  struct lto_file_decl_data * GTY ((skip)) lto_file_data;
+
   struct inline_summary inline_summary;
 
   /* Set when function function is visible in current compilation unit only
@@ -277,6 +284,9 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   struct cgraph_edge *prev_callee;
   struct cgraph_edge *next_callee;
   gimple call_stmt;
+  /* The stmt_uid of this call stmt.  This is used by LTO to recover
+     the call_stmt when the function is serialized in.  */
+  unsigned int lto_stmt_uid;
   PTR GTY ((skip (""))) aux;
   /* When equal to CIF_OK, inline this call.  Otherwise, points to the
      explanation why function was not inlined.  */
@@ -291,6 +301,8 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   unsigned int loop_nest : 30;
   /* Whether this edge describes a call that was originally indirect.  */
   unsigned int indirect_call : 1;
+  /* True if the corresponding CALL stmt cannot be inlined.  */
+  unsigned int call_stmt_cannot_inline_p : 1;
   /* Can this call throw externally?  */
   unsigned int can_throw_external : 1;
   /* Unique id of the edge.  */
@@ -406,8 +418,8 @@ struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);
 const char * cgraph_node_name (struct cgraph_node *);
 struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
-					struct cgraph_node *,
-					gimple, gcov_type, int, int, bool);
+					struct cgraph_node *, gimple,
+					unsigned, gcov_type, int, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type, int,
 					int, bool, VEC(cgraph_edge_p,heap) *);
 
@@ -430,6 +442,7 @@ struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 void cgraph_finalize_function (tree, bool);
 void cgraph_mark_if_needed (tree);
 void cgraph_finalize_compilation_unit (void);
+void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
@@ -448,6 +461,8 @@ void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bi
 struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 void record_references_in_initializer (tree);
 bool cgraph_process_new_functions (void);
+
+bool cgraph_decide_is_function_needed (struct cgraph_node *, tree);
 
 typedef void (*cgraph_edge_hook)(struct cgraph_edge *, void *);
 typedef void (*cgraph_node_hook)(struct cgraph_node *, void *);
@@ -476,6 +491,7 @@ void cgraph_materialize_all_clones (void);
 
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
+void reset_inline_failed (struct cgraph_node *);
 int compute_call_stmt_bb_frequency (tree, basic_block bb);
 
 /* In ipa.c  */
@@ -559,6 +575,22 @@ unsigned int compute_inline_parameters (struct cgraph_node *);
 
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);
+
+/* lto-cgraph.c */
+
+enum LTO_cgraph_tags
+{
+  /* Must leave 0 for the stopper.  */
+  LTO_cgraph_avail_node = 1,
+  LTO_cgraph_overwritable_node,
+  LTO_cgraph_unavail_node,
+  LTO_cgraph_edge,
+  LTO_cgraph_last_tag
+};
+
+extern const char * LTO_cgraph_tag_names[LTO_cgraph_last_tag];
+
+#define LCC_NOT_FOUND	(-1)
 
 
 /* Return true if iterator CSI points to nothing.  */

@@ -283,7 +283,7 @@ tlink_execute (const char *prog, char **argv, const char *outname,
 {
   struct pex_obj *pex;
 
-  pex = collect_execute (prog, argv, outname, errname);
+  pex = collect_execute (prog, argv, outname, errname, PEX_LAST | PEX_SEARCH);
   return collect_wait (prog, pex);
 }
 

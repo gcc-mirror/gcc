@@ -52,7 +52,7 @@ load_lib gcc-dg.exp
 load_lib torture-options.exp
 
 torture-init
-set-torture-options $MATH_TORTURE_OPTIONS
+set-torture-options $MATH_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 dg-init
 gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""

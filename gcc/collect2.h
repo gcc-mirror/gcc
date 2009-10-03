@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 extern void do_tlink (char **, char **);
 
 extern struct pex_obj *collect_execute (const char *, char **, const char *,
-					const char *);
+					const char *, int flags);
 
 extern void collect_exit (int) ATTRIBUTE_NORETURN;
 

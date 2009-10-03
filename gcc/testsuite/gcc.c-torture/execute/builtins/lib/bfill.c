@@ -1,5 +1,6 @@
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 void
 bfill (void *s, __SIZE_TYPE__ n, int ch)
 {

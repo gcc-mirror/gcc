@@ -1,0 +1,35 @@
+This directory contains tests for link-time optimization (LTO).
+Tests in this directory may span multiple files, so the naming of
+the files is significant.
+
+The name of every file must end with '_N' where N is an integer.
+All the files with the same name base and different _N suffixes
+will be compiled separately and linked together to form the final
+executable.
+
+By default, each set of files will be compiled with list of
+options listed in LTO_OPTIONS (../../lib/lto.exp), which can be
+overwritten in the shell environment or using the 'dg-lto-options'
+command in the main file of the set (i.e., the file with _0
+suffix).
+
+For example, given the files a_0.C a_1.C a_2.C, they will be
+compiled as:
+
+$ g++ -c <flags> a_0.C
+$ g++ -c <flags> a_1.C
+$ g++ -c <flags> a_2.C
+$ g++ -o <executable> a_0.o a_1.o a_2.o
+
+Tests that do not need more than one file are a special case
+where there is a single file named 'foo_0.C'.
+
+The only supported dg-lto-do option are 'assemble', 'run' and 'link'.
+Additionally, these can only be used in the main file.  If
+'assemble' is used, only the individual object files are
+generated.  If 'link' is used, the final executable is generated
+but not executed (in this case, function main() needs to exist
+but it does not need to do anything).  If 'run' is used, the
+final executable is generated and the resulting binary executed.
+
+The default value for dg-lto-do is 'run'.

@@ -32,7 +32,7 @@ load_lib torture-options.exp
 load_lib c-torture.exp
 
 torture-init
-set-torture-options $C_TORTURE_OPTIONS
+set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 #
 # main test loop

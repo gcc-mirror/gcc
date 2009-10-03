@@ -1,0 +1,89 @@
+# Top level -*- makefile -*- fragment for LTO
+#   Copyright (C) 2009
+#   Free Software Foundation, Inc.
+
+#This file is part of GCC.
+
+#GCC is free software; you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation; either version 3, or (at your option)
+#any later version.
+
+#GCC is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Variables
+
+# The name of the LTO compiler.
+LTO_EXE = lto1$(exeext)
+# The LTO-specific object files inclued in $(LTO_EXE).
+LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-elf.o attribs.o
+LTO_H = lto/lto.h $(HASHTAB_H)
+LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
+LTO_TREE_H = lto/lto-tree.h $(LINKER_PLUGIN_API_H)
+
+
+# Rules
+
+# These hooks are used by the main GCC Makefile.  Consult that
+# Makefile for documentation.
+lto.all.cross: $(LTO_EXE)
+lto.start.encap: $(LTO_EXE)
+lto.rest.encap:
+lto.tags:
+lto.install-common:
+lto.install-man:
+lto.install-info:
+lto.dvi:
+lto.pdf:
+lto.install-pdf:
+lto.html:
+lto.uninstall:
+lto.info:
+lto.man:
+lto.srcextra:
+lto.srcman:
+lto.srcinfo:
+lto.install-plugin:
+
+lto.mostlyclean:
+	rm -f $(LTO_OBJS) $(LTO_EXE)
+
+lto.clean:
+lto.distclean:
+lto.maintainer-clean:
+lto.stage1:
+lto.stage2:
+lto.stage3:
+lto.stage4:
+lto.stageprofile:
+lto.stagefeedback:
+
+# LTO rules.
+
+# Use strict warnings for this front end.
+lto-warn = $(STRICT_WARN)
+
+$(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS) -lelf
+
+# Dependencies
+lto/lto-lang.o: lto/lto-lang.c $(CONFIG_H) coretypes.h debug.h \
+	flags.h $(GGC_H) langhooks.h $(LANGHOOKS_DEF_H) $(SYSTEM_H) \
+	$(TARGET_H) $(LTO_H) $(GIMPLE_H) gtype-lto.h gt-lto-lto-lang.h \
+	$(EXPR_H)
+lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h opts.h \
+	toplev.h $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) $(LIBIBERTY_H) \
+	$(CGRAPH_H) $(GGC_H) tree-ssa-operands.h $(TREE_PASS_H) \
+	langhooks.h vec.h $(BITMAP_H) pointer-set.h $(IPA_PROP_H) \
+	$(COMMON_H) $(TIMEVAR_H) $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
+	$(LTO_TAGS_H) $(LTO_STREAMER_H)
+lto/lto-elf.o: lto/lto-elf.c $(CONFIG_H) coretypes.h $(SYSTEM_H) \
+	toplev.h $(LTO_H) $(TM_H) $(LIBIBERTY_H) $(GGC_H) $(LTO_STREAMER_H)

@@ -1,6 +1,7 @@
 extern void abort (void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 void *
 memmove (void *dst, const void *src, __SIZE_TYPE__ n)
 {

@@ -140,7 +140,6 @@ static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static void cgraph_output_pending_asms (void);
-static void cgraph_optimize (void);
 static void cgraph_analyze_function (struct cgraph_node *);
 
 static FILE *cgraph_dump_file;
@@ -314,8 +313,8 @@ cgraph_build_cdtor_fns (void)
    either outside this translation unit, something magic in the system
    configury.  */
 
-static bool
-decide_is_function_needed (struct cgraph_node *node, tree decl)
+bool
+cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
 {
   if (MAIN_NAME_P (DECL_NAME (decl))
       && TREE_PUBLIC (decl))
@@ -522,7 +521,7 @@ cgraph_finalize_function (tree decl, bool nested)
   node->finalized_by_frontend = true;
   record_cdtor_fn (node->decl);
 
-  if (decide_is_function_needed (node, decl))
+  if (cgraph_decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
 
   /* Since we reclaim unreachable nodes at the end of every language
@@ -551,7 +550,7 @@ void
 cgraph_mark_if_needed (tree decl)
 {
   struct cgraph_node *node = cgraph_node (decl);
-  if (node->local.finalized && decide_is_function_needed (node, decl))
+  if (node->local.finalized && cgraph_decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
 }
 
@@ -692,7 +691,8 @@ verify_cgraph_node (struct cgraph_node *node)
 
   if (node->analyzed && gimple_has_body_p (node->decl)
       && !TREE_ASM_WRITTEN (node->decl)
-      && (!DECL_EXTERNAL (node->decl) || node->global.inlined_to))
+      && (!DECL_EXTERNAL (node->decl) || node->global.inlined_to)
+      && !flag_wpa)
     {
       if (this_cfun->cfg)
 	{
@@ -949,8 +949,8 @@ cgraph_analyze_functions (void)
 	  continue;
 	}
 
-      gcc_assert (!node->analyzed && node->reachable);
-      cgraph_analyze_function (node);
+      if (!node->analyzed)
+	cgraph_analyze_function (node);
 
       for (edge = node->callees; edge; edge = edge->next_callee)
 	if (!edge->callee->reachable)
@@ -1355,15 +1355,31 @@ ipa_passes (void)
   current_function_decl = NULL;
   gimple_register_cfg_hooks ();
   bitmap_obstack_initialize (NULL);
-  execute_ipa_pass_list (all_ipa_passes);
+  execute_ipa_pass_list (all_small_ipa_passes);
 
-  /* Generate coverage variables and constructors.  */
-  coverage_finish ();
+  /* If pass_all_early_optimizations was not scheduled, the state of
+     the cgraph will not be properly updated.  Update it now.  */
+  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
+    cgraph_state = CGRAPH_STATE_IPA_SSA;
 
-  /* Process new functions added.  */
-  set_cfun (NULL);
-  current_function_decl = NULL;
-  cgraph_process_new_functions ();
+  if (!in_lto_p)
+    {
+      /* Generate coverage variables and constructors.  */
+      coverage_finish ();
+
+      /* Process new functions added.  */
+      set_cfun (NULL);
+      current_function_decl = NULL;
+      cgraph_process_new_functions ();
+    }
+
+  execute_ipa_summary_passes ((struct ipa_opt_pass_d *) all_regular_ipa_passes);
+  execute_ipa_summary_passes ((struct ipa_opt_pass_d *) all_lto_gen_passes);
+
+  if (!in_lto_p)
+    ipa_write_summaries ();
+
+  execute_ipa_pass_list (all_regular_ipa_passes);
 
   bitmap_obstack_release (NULL);
 }
@@ -1371,7 +1387,7 @@ ipa_passes (void)
 
 /* Perform simple optimizations based on callgraph.  */
 
-static void
+void
 cgraph_optimize (void)
 {
   if (errorcount || sorrycount)
@@ -1598,7 +1614,8 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
       also cloned.  */
    for (e = old_version->callees;e; e=e->next_callee)
      {
-       new_e = cgraph_clone_edge (e, new_version, e->call_stmt, 0, e->frequency,
+       new_e = cgraph_clone_edge (e, new_version, e->call_stmt,
+				  e->lto_stmt_uid, 0, e->frequency,
 				  e->loop_nest, true);
        new_e->count = e->count;
      }

@@ -547,7 +547,7 @@ SOURCE_DIRECTORY=""
 ADA_DIRS="gcc/ada libada gnattools"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN95_DIRS="gcc/fortran libgfortran"
-JAVA_DIRS="gcc/java libjava libffi zlib boehm-gc"
+JAVA_DIRS="gcc/java libjava libffi boehm-gc"
 OBJECTIVEC_DIRS="gcc/objc gcc/objcp libobjc"
 TESTSUITE_DIRS="gcc/testsuite"
 

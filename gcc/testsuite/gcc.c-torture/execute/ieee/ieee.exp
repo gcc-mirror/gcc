@@ -35,7 +35,7 @@ if $tracelevel then {
 }
 
 torture-init
-set-torture-options $C_TORTURE_OPTIONS
+set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 set additional_flags "-fno-inline"
 

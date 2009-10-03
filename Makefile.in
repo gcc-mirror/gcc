@@ -219,6 +219,8 @@ HOST_EXPORTS = \
 	PPLINC="$(HOST_PPLINC)"; export PPLINC; \
 	CLOOGLIBS="$(HOST_CLOOGLIBS)"; export CLOOGLIBS; \
 	CLOOGINC="$(HOST_CLOOGINC)"; export CLOOGINC; \
+	LIBELFLIBS="$(HOST_LIBELFLIBS)" ; export LIBELFLIBS; \
+	LIBELFINC="$(HOST_LIBELFINC)" ; export LIBELFINC; \
 @if gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
 @endif gcc-bootstrap
@@ -292,6 +294,10 @@ HOST_PPLINC = @pplinc@
 # Where to find CLOOG
 HOST_CLOOGLIBS = @clooglibs@
 HOST_CLOOGINC = @clooginc@
+
+# Where to find libelf
+HOST_LIBELFLIBS = @libelflibs@
+HOST_LIBELFINC = @libelfinc@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -854,7 +860,8 @@ configure-host:  \
     maybe-configure-tk \
     maybe-configure-libtermcap \
     maybe-configure-utils \
-    maybe-configure-gnattools
+    maybe-configure-gnattools \
+    maybe-configure-lto-plugin
 .PHONY: configure-target
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
@@ -1026,6 +1033,9 @@ all-host: maybe-all-tk
 all-host: maybe-all-libtermcap
 all-host: maybe-all-utils
 all-host: maybe-all-gnattools
+@if lto-plugin-no-bootstrap
+all-host: maybe-all-lto-plugin
+@endif lto-plugin-no-bootstrap
 
 .PHONY: all-target
 
@@ -1147,6 +1157,7 @@ info-host: maybe-info-tk
 info-host: maybe-info-libtermcap
 info-host: maybe-info-utils
 info-host: maybe-info-gnattools
+info-host: maybe-info-lto-plugin
 
 .PHONY: info-target
 
@@ -1259,6 +1270,7 @@ dvi-host: maybe-dvi-tk
 dvi-host: maybe-dvi-libtermcap
 dvi-host: maybe-dvi-utils
 dvi-host: maybe-dvi-gnattools
+dvi-host: maybe-dvi-lto-plugin
 
 .PHONY: dvi-target
 
@@ -1371,6 +1383,7 @@ pdf-host: maybe-pdf-tk
 pdf-host: maybe-pdf-libtermcap
 pdf-host: maybe-pdf-utils
 pdf-host: maybe-pdf-gnattools
+pdf-host: maybe-pdf-lto-plugin
 
 .PHONY: pdf-target
 
@@ -1483,6 +1496,7 @@ html-host: maybe-html-tk
 html-host: maybe-html-libtermcap
 html-host: maybe-html-utils
 html-host: maybe-html-gnattools
+html-host: maybe-html-lto-plugin
 
 .PHONY: html-target
 
@@ -1595,6 +1609,7 @@ TAGS-host: maybe-TAGS-tk
 TAGS-host: maybe-TAGS-libtermcap
 TAGS-host: maybe-TAGS-utils
 TAGS-host: maybe-TAGS-gnattools
+TAGS-host: maybe-TAGS-lto-plugin
 
 .PHONY: TAGS-target
 
@@ -1707,6 +1722,7 @@ install-info-host: maybe-install-info-tk
 install-info-host: maybe-install-info-libtermcap
 install-info-host: maybe-install-info-utils
 install-info-host: maybe-install-info-gnattools
+install-info-host: maybe-install-info-lto-plugin
 
 .PHONY: install-info-target
 
@@ -1819,6 +1835,7 @@ install-pdf-host: maybe-install-pdf-tk
 install-pdf-host: maybe-install-pdf-libtermcap
 install-pdf-host: maybe-install-pdf-utils
 install-pdf-host: maybe-install-pdf-gnattools
+install-pdf-host: maybe-install-pdf-lto-plugin
 
 .PHONY: install-pdf-target
 
@@ -1931,6 +1948,7 @@ install-html-host: maybe-install-html-tk
 install-html-host: maybe-install-html-libtermcap
 install-html-host: maybe-install-html-utils
 install-html-host: maybe-install-html-gnattools
+install-html-host: maybe-install-html-lto-plugin
 
 .PHONY: install-html-target
 
@@ -2043,6 +2061,7 @@ installcheck-host: maybe-installcheck-tk
 installcheck-host: maybe-installcheck-libtermcap
 installcheck-host: maybe-installcheck-utils
 installcheck-host: maybe-installcheck-gnattools
+installcheck-host: maybe-installcheck-lto-plugin
 
 .PHONY: installcheck-target
 
@@ -2155,6 +2174,7 @@ mostlyclean-host: maybe-mostlyclean-tk
 mostlyclean-host: maybe-mostlyclean-libtermcap
 mostlyclean-host: maybe-mostlyclean-utils
 mostlyclean-host: maybe-mostlyclean-gnattools
+mostlyclean-host: maybe-mostlyclean-lto-plugin
 
 .PHONY: mostlyclean-target
 
@@ -2267,6 +2287,7 @@ clean-host: maybe-clean-tk
 clean-host: maybe-clean-libtermcap
 clean-host: maybe-clean-utils
 clean-host: maybe-clean-gnattools
+clean-host: maybe-clean-lto-plugin
 
 .PHONY: clean-target
 
@@ -2379,6 +2400,7 @@ distclean-host: maybe-distclean-tk
 distclean-host: maybe-distclean-libtermcap
 distclean-host: maybe-distclean-utils
 distclean-host: maybe-distclean-gnattools
+distclean-host: maybe-distclean-lto-plugin
 
 .PHONY: distclean-target
 
@@ -2491,6 +2513,7 @@ maintainer-clean-host: maybe-maintainer-clean-tk
 maintainer-clean-host: maybe-maintainer-clean-libtermcap
 maintainer-clean-host: maybe-maintainer-clean-utils
 maintainer-clean-host: maybe-maintainer-clean-gnattools
+maintainer-clean-host: maybe-maintainer-clean-lto-plugin
 
 .PHONY: maintainer-clean-target
 
@@ -2656,7 +2679,8 @@ check-host:  \
     maybe-check-tk \
     maybe-check-libtermcap \
     maybe-check-utils \
-    maybe-check-gnattools
+    maybe-check-gnattools \
+    maybe-check-lto-plugin
 
 .PHONY: check-target
 check-target:  \
@@ -2794,7 +2818,8 @@ install-host-nogcc:  \
     maybe-install-tk \
     maybe-install-libtermcap \
     maybe-install-utils \
-    maybe-install-gnattools
+    maybe-install-gnattools \
+    maybe-install-lto-plugin
 
 .PHONY: install-host
 install-host:  \
@@ -2873,7 +2898,8 @@ install-host:  \
     maybe-install-tk \
     maybe-install-libtermcap \
     maybe-install-utils \
-    maybe-install-gnattools
+    maybe-install-gnattools \
+    maybe-install-lto-plugin
 
 .PHONY: install-target
 install-target:  \
@@ -28249,7 +28275,7 @@ configure-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  --target=${target_alias} $${srcdiroption} @extra_host_libiberty_configure_flags@ \
 	  || exit 1
 @endif libiberty
 
@@ -28283,7 +28309,8 @@ configure-stage1-libiberty:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
-	  $(STAGE1_CONFIGURE_FLAGS)
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
 
 .PHONY: configure-stage2-libiberty maybe-configure-stage2-libiberty
@@ -28316,7 +28343,8 @@ configure-stage2-libiberty:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS)
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
 
 .PHONY: configure-stage3-libiberty maybe-configure-stage3-libiberty
@@ -28349,7 +28377,8 @@ configure-stage3-libiberty:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS)
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
 
 .PHONY: configure-stage4-libiberty maybe-configure-stage4-libiberty
@@ -28382,7 +28411,8 @@ configure-stage4-libiberty:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS)
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
 
 .PHONY: configure-stageprofile-libiberty maybe-configure-stageprofile-libiberty
@@ -28415,7 +28445,8 @@ configure-stageprofile-libiberty:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS)
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
 
 .PHONY: configure-stagefeedback-libiberty maybe-configure-stagefeedback-libiberty
@@ -28448,7 +28479,8 @@ configure-stagefeedback-libiberty:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS)
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  @extra_host_libiberty_configure_flags@
 @endif libiberty-bootstrap
 
 
@@ -42970,6 +43002,872 @@ maintainer-clean-gnattools:
 
 
 
+.PHONY: configure-lto-plugin maybe-configure-lto-plugin
+maybe-configure-lto-plugin:
+@if gcc-bootstrap
+configure-lto-plugin: stage_current
+@endif gcc-bootstrap
+@if lto-plugin
+maybe-configure-lto-plugin: configure-lto-plugin
+configure-lto-plugin: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/lto-plugin; \
+	cd "$(HOST_SUBDIR)/lto-plugin" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif lto-plugin
+
+
+
+.PHONY: configure-stage1-lto-plugin maybe-configure-stage1-lto-plugin
+maybe-configure-stage1-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-configure-stage1-lto-plugin: configure-stage1-lto-plugin
+configure-stage1-lto-plugin:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/lto-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	cd $(HOST_SUBDIR)/lto-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif lto-plugin-bootstrap
+
+.PHONY: configure-stage2-lto-plugin maybe-configure-stage2-lto-plugin
+maybe-configure-stage2-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-configure-stage2-lto-plugin: configure-stage2-lto-plugin
+configure-stage2-lto-plugin:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/lto-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	cd $(HOST_SUBDIR)/lto-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif lto-plugin-bootstrap
+
+.PHONY: configure-stage3-lto-plugin maybe-configure-stage3-lto-plugin
+maybe-configure-stage3-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-configure-stage3-lto-plugin: configure-stage3-lto-plugin
+configure-stage3-lto-plugin:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/lto-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	cd $(HOST_SUBDIR)/lto-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif lto-plugin-bootstrap
+
+.PHONY: configure-stage4-lto-plugin maybe-configure-stage4-lto-plugin
+maybe-configure-stage4-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-configure-stage4-lto-plugin: configure-stage4-lto-plugin
+configure-stage4-lto-plugin:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/lto-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	cd $(HOST_SUBDIR)/lto-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif lto-plugin-bootstrap
+
+.PHONY: configure-stageprofile-lto-plugin maybe-configure-stageprofile-lto-plugin
+maybe-configure-stageprofile-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-configure-stageprofile-lto-plugin: configure-stageprofile-lto-plugin
+configure-stageprofile-lto-plugin:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; \
+	echo Configuring stage profile in $(HOST_SUBDIR)/lto-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	cd $(HOST_SUBDIR)/lto-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif lto-plugin-bootstrap
+
+.PHONY: configure-stagefeedback-lto-plugin maybe-configure-stagefeedback-lto-plugin
+maybe-configure-stagefeedback-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-configure-stagefeedback-lto-plugin: configure-stagefeedback-lto-plugin
+configure-stagefeedback-lto-plugin:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/lto-plugin/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/lto-plugin ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/lto-plugin ; \
+	cd $(HOST_SUBDIR)/lto-plugin || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/lto-plugin/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
+	libsrcdir="$$s/lto-plugin"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif lto-plugin-bootstrap
+
+
+
+
+
+.PHONY: all-lto-plugin maybe-all-lto-plugin
+maybe-all-lto-plugin:
+@if gcc-bootstrap
+all-lto-plugin: stage_current
+@endif gcc-bootstrap
+@if lto-plugin
+TARGET-lto-plugin=all
+maybe-all-lto-plugin: all-lto-plugin
+all-lto-plugin: configure-lto-plugin
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+		$(TARGET-lto-plugin))
+@endif lto-plugin
+
+
+
+.PHONY: all-stage1-lto-plugin maybe-all-stage1-lto-plugin
+.PHONY: clean-stage1-lto-plugin maybe-clean-stage1-lto-plugin
+maybe-all-stage1-lto-plugin:
+maybe-clean-stage1-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-all-stage1-lto-plugin: all-stage1-lto-plugin
+all-stage1: all-stage1-lto-plugin
+TARGET-stage1-lto-plugin = $(TARGET-lto-plugin)
+all-stage1-lto-plugin: configure-stage1-lto-plugin
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)   \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-lto-plugin)
+
+maybe-clean-stage1-lto-plugin: clean-stage1-lto-plugin
+clean-stage1: clean-stage1-lto-plugin
+clean-stage1-lto-plugin:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/lto-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-lto-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		 clean
+@endif lto-plugin-bootstrap
+
+
+.PHONY: all-stage2-lto-plugin maybe-all-stage2-lto-plugin
+.PHONY: clean-stage2-lto-plugin maybe-clean-stage2-lto-plugin
+maybe-all-stage2-lto-plugin:
+maybe-clean-stage2-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-all-stage2-lto-plugin: all-stage2-lto-plugin
+all-stage2: all-stage2-lto-plugin
+TARGET-stage2-lto-plugin = $(TARGET-lto-plugin)
+all-stage2-lto-plugin: configure-stage2-lto-plugin
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-lto-plugin)
+
+maybe-clean-stage2-lto-plugin: clean-stage2-lto-plugin
+clean-stage2: clean-stage2-lto-plugin
+clean-stage2-lto-plugin:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/lto-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-lto-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif lto-plugin-bootstrap
+
+
+.PHONY: all-stage3-lto-plugin maybe-all-stage3-lto-plugin
+.PHONY: clean-stage3-lto-plugin maybe-clean-stage3-lto-plugin
+maybe-all-stage3-lto-plugin:
+maybe-clean-stage3-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-all-stage3-lto-plugin: all-stage3-lto-plugin
+all-stage3: all-stage3-lto-plugin
+TARGET-stage3-lto-plugin = $(TARGET-lto-plugin)
+all-stage3-lto-plugin: configure-stage3-lto-plugin
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-lto-plugin)
+
+maybe-clean-stage3-lto-plugin: clean-stage3-lto-plugin
+clean-stage3: clean-stage3-lto-plugin
+clean-stage3-lto-plugin:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/lto-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-lto-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif lto-plugin-bootstrap
+
+
+.PHONY: all-stage4-lto-plugin maybe-all-stage4-lto-plugin
+.PHONY: clean-stage4-lto-plugin maybe-clean-stage4-lto-plugin
+maybe-all-stage4-lto-plugin:
+maybe-clean-stage4-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-all-stage4-lto-plugin: all-stage4-lto-plugin
+all-stage4: all-stage4-lto-plugin
+TARGET-stage4-lto-plugin = $(TARGET-lto-plugin)
+all-stage4-lto-plugin: configure-stage4-lto-plugin
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-lto-plugin)
+
+maybe-clean-stage4-lto-plugin: clean-stage4-lto-plugin
+clean-stage4: clean-stage4-lto-plugin
+clean-stage4-lto-plugin:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/lto-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-lto-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif lto-plugin-bootstrap
+
+
+.PHONY: all-stageprofile-lto-plugin maybe-all-stageprofile-lto-plugin
+.PHONY: clean-stageprofile-lto-plugin maybe-clean-stageprofile-lto-plugin
+maybe-all-stageprofile-lto-plugin:
+maybe-clean-stageprofile-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-all-stageprofile-lto-plugin: all-stageprofile-lto-plugin
+all-stageprofile: all-stageprofile-lto-plugin
+TARGET-stageprofile-lto-plugin = $(TARGET-lto-plugin)
+all-stageprofile-lto-plugin: configure-stageprofile-lto-plugin
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-lto-plugin)
+
+maybe-clean-stageprofile-lto-plugin: clean-stageprofile-lto-plugin
+clean-stageprofile: clean-stageprofile-lto-plugin
+clean-stageprofile-lto-plugin:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/lto-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-lto-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif lto-plugin-bootstrap
+
+
+.PHONY: all-stagefeedback-lto-plugin maybe-all-stagefeedback-lto-plugin
+.PHONY: clean-stagefeedback-lto-plugin maybe-clean-stagefeedback-lto-plugin
+maybe-all-stagefeedback-lto-plugin:
+maybe-clean-stagefeedback-lto-plugin:
+@if lto-plugin-bootstrap
+maybe-all-stagefeedback-lto-plugin: all-stagefeedback-lto-plugin
+all-stagefeedback: all-stagefeedback-lto-plugin
+TARGET-stagefeedback-lto-plugin = $(TARGET-lto-plugin)
+all-stagefeedback-lto-plugin: configure-stagefeedback-lto-plugin
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-lto-plugin)
+
+maybe-clean-stagefeedback-lto-plugin: clean-stagefeedback-lto-plugin
+clean-stagefeedback: clean-stagefeedback-lto-plugin
+clean-stagefeedback-lto-plugin:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/lto-plugin/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-lto-plugin/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/lto-plugin && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif lto-plugin-bootstrap
+
+
+
+
+
+.PHONY: check-lto-plugin maybe-check-lto-plugin
+maybe-check-lto-plugin:
+@if lto-plugin
+maybe-check-lto-plugin: check-lto-plugin
+
+check-lto-plugin:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif lto-plugin
+
+.PHONY: install-lto-plugin maybe-install-lto-plugin
+maybe-install-lto-plugin:
+@if lto-plugin
+maybe-install-lto-plugin: install-lto-plugin
+
+install-lto-plugin: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif lto-plugin
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-lto-plugin info-lto-plugin
+maybe-info-lto-plugin:
+@if lto-plugin
+maybe-info-lto-plugin: info-lto-plugin
+
+info-lto-plugin: \
+    configure-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-dvi-lto-plugin dvi-lto-plugin
+maybe-dvi-lto-plugin:
+@if lto-plugin
+maybe-dvi-lto-plugin: dvi-lto-plugin
+
+dvi-lto-plugin: \
+    configure-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-pdf-lto-plugin pdf-lto-plugin
+maybe-pdf-lto-plugin:
+@if lto-plugin
+maybe-pdf-lto-plugin: pdf-lto-plugin
+
+pdf-lto-plugin: \
+    configure-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-html-lto-plugin html-lto-plugin
+maybe-html-lto-plugin:
+@if lto-plugin
+maybe-html-lto-plugin: html-lto-plugin
+
+html-lto-plugin: \
+    configure-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-TAGS-lto-plugin TAGS-lto-plugin
+maybe-TAGS-lto-plugin:
+@if lto-plugin
+maybe-TAGS-lto-plugin: TAGS-lto-plugin
+
+TAGS-lto-plugin: \
+    configure-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-install-info-lto-plugin install-info-lto-plugin
+maybe-install-info-lto-plugin:
+@if lto-plugin
+maybe-install-info-lto-plugin: install-info-lto-plugin
+
+install-info-lto-plugin: \
+    configure-lto-plugin \
+    info-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-install-pdf-lto-plugin install-pdf-lto-plugin
+maybe-install-pdf-lto-plugin:
+@if lto-plugin
+maybe-install-pdf-lto-plugin: install-pdf-lto-plugin
+
+install-pdf-lto-plugin: \
+    configure-lto-plugin \
+    pdf-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-install-html-lto-plugin install-html-lto-plugin
+maybe-install-html-lto-plugin:
+@if lto-plugin
+maybe-install-html-lto-plugin: install-html-lto-plugin
+
+install-html-lto-plugin: \
+    configure-lto-plugin \
+    html-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-installcheck-lto-plugin installcheck-lto-plugin
+maybe-installcheck-lto-plugin:
+@if lto-plugin
+maybe-installcheck-lto-plugin: installcheck-lto-plugin
+
+installcheck-lto-plugin: \
+    configure-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-mostlyclean-lto-plugin mostlyclean-lto-plugin
+maybe-mostlyclean-lto-plugin:
+@if lto-plugin
+maybe-mostlyclean-lto-plugin: mostlyclean-lto-plugin
+
+mostlyclean-lto-plugin: 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-clean-lto-plugin clean-lto-plugin
+maybe-clean-lto-plugin:
+@if lto-plugin
+maybe-clean-lto-plugin: clean-lto-plugin
+
+clean-lto-plugin: 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-distclean-lto-plugin distclean-lto-plugin
+maybe-distclean-lto-plugin:
+@if lto-plugin
+maybe-distclean-lto-plugin: distclean-lto-plugin
+
+distclean-lto-plugin: 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif lto-plugin
+
+.PHONY: maybe-maintainer-clean-lto-plugin maintainer-clean-lto-plugin
+maybe-maintainer-clean-lto-plugin:
+@if lto-plugin
+maybe-maintainer-clean-lto-plugin: maintainer-clean-lto-plugin
+
+maintainer-clean-lto-plugin: 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in lto-plugin" ; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif lto-plugin
+
+
+
 # ---------------------------------------
 # Modules which run on the target machine
 # ---------------------------------------
@@ -53466,6 +54364,11 @@ stage1-start::
 	  mkdir stage1-zlib; \
 	mv stage1-zlib zlib 
 @endif zlib
+@if lto-plugin
+	@cd $(HOST_SUBDIR); [ -d stage1-lto-plugin ] || \
+	  mkdir stage1-lto-plugin; \
+	mv stage1-lto-plugin lto-plugin 
+@endif lto-plugin
 	@[ -d stage1-$(TARGET_SUBDIR) ] || \
 	  mkdir stage1-$(TARGET_SUBDIR); \
 	mv stage1-$(TARGET_SUBDIR) $(TARGET_SUBDIR) 
@@ -53556,6 +54459,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv zlib stage1-zlib  ; \
 	fi
 @endif zlib
+@if lto-plugin
+	@if test -d $(HOST_SUBDIR)/lto-plugin ; then \
+	  cd $(HOST_SUBDIR); mv lto-plugin stage1-lto-plugin  ; \
+	fi
+@endif lto-plugin
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR)  ; \
 	fi
@@ -53706,6 +54614,12 @@ stage2-start::
 	mv stage2-zlib zlib  ; \
 	mv stage1-zlib prev-zlib || test -f stage1-lean 
 @endif zlib
+@if lto-plugin
+	@cd $(HOST_SUBDIR); [ -d stage2-lto-plugin ] || \
+	  mkdir stage2-lto-plugin; \
+	mv stage2-lto-plugin lto-plugin  ; \
+	mv stage1-lto-plugin prev-lto-plugin || test -f stage1-lean 
+@endif lto-plugin
 	@[ -d stage2-$(TARGET_SUBDIR) ] || \
 	  mkdir stage2-$(TARGET_SUBDIR); \
 	mv stage2-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -53814,6 +54728,12 @@ stage2-end::
 	  mv prev-zlib stage1-zlib ; :  ; \
 	fi
 @endif zlib
+@if lto-plugin
+	@if test -d $(HOST_SUBDIR)/lto-plugin ; then \
+	  cd $(HOST_SUBDIR); mv lto-plugin stage2-lto-plugin ; \
+	  mv prev-lto-plugin stage1-lto-plugin ; :  ; \
+	fi
+@endif lto-plugin
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
@@ -53988,6 +54908,12 @@ stage3-start::
 	mv stage3-zlib zlib  ; \
 	mv stage2-zlib prev-zlib || test -f stage2-lean 
 @endif zlib
+@if lto-plugin
+	@cd $(HOST_SUBDIR); [ -d stage3-lto-plugin ] || \
+	  mkdir stage3-lto-plugin; \
+	mv stage3-lto-plugin lto-plugin  ; \
+	mv stage2-lto-plugin prev-lto-plugin || test -f stage2-lean 
+@endif lto-plugin
 	@[ -d stage3-$(TARGET_SUBDIR) ] || \
 	  mkdir stage3-$(TARGET_SUBDIR); \
 	mv stage3-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -54096,6 +55022,12 @@ stage3-end::
 	  mv prev-zlib stage2-zlib ; :  ; \
 	fi
 @endif zlib
+@if lto-plugin
+	@if test -d $(HOST_SUBDIR)/lto-plugin ; then \
+	  cd $(HOST_SUBDIR); mv lto-plugin stage3-lto-plugin ; \
+	  mv prev-lto-plugin stage2-lto-plugin ; :  ; \
+	fi
+@endif lto-plugin
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR) ; :  ; \
@@ -54326,6 +55258,12 @@ stage4-start::
 	mv stage4-zlib zlib  ; \
 	mv stage3-zlib prev-zlib || test -f stage3-lean 
 @endif zlib
+@if lto-plugin
+	@cd $(HOST_SUBDIR); [ -d stage4-lto-plugin ] || \
+	  mkdir stage4-lto-plugin; \
+	mv stage4-lto-plugin lto-plugin  ; \
+	mv stage3-lto-plugin prev-lto-plugin || test -f stage3-lean 
+@endif lto-plugin
 	@[ -d stage4-$(TARGET_SUBDIR) ] || \
 	  mkdir stage4-$(TARGET_SUBDIR); \
 	mv stage4-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -54434,6 +55372,12 @@ stage4-end::
 	  mv prev-zlib stage3-zlib ; :  ; \
 	fi
 @endif zlib
+@if lto-plugin
+	@if test -d $(HOST_SUBDIR)/lto-plugin ; then \
+	  cd $(HOST_SUBDIR); mv lto-plugin stage4-lto-plugin ; \
+	  mv prev-lto-plugin stage3-lto-plugin ; :  ; \
+	fi
+@endif lto-plugin
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stage4-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR) ; :  ; \
@@ -54652,6 +55596,12 @@ stageprofile-start::
 	mv stageprofile-zlib zlib  ; \
 	mv stage1-zlib prev-zlib || test -f stage1-lean 
 @endif zlib
+@if lto-plugin
+	@cd $(HOST_SUBDIR); [ -d stageprofile-lto-plugin ] || \
+	  mkdir stageprofile-lto-plugin; \
+	mv stageprofile-lto-plugin lto-plugin  ; \
+	mv stage1-lto-plugin prev-lto-plugin || test -f stage1-lean 
+@endif lto-plugin
 	@[ -d stageprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageprofile-$(TARGET_SUBDIR); \
 	mv stageprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -54760,6 +55710,12 @@ stageprofile-end::
 	  mv prev-zlib stage1-zlib ; :  ; \
 	fi
 @endif zlib
+@if lto-plugin
+	@if test -d $(HOST_SUBDIR)/lto-plugin ; then \
+	  cd $(HOST_SUBDIR); mv lto-plugin stageprofile-lto-plugin ; \
+	  mv prev-lto-plugin stage1-lto-plugin ; :  ; \
+	fi
+@endif lto-plugin
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
@@ -54911,6 +55867,12 @@ stagefeedback-start::
 	mv stagefeedback-zlib zlib  ; \
 	mv stageprofile-zlib prev-zlib || test -f stageprofile-lean 
 @endif zlib
+@if lto-plugin
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-lto-plugin ] || \
+	  mkdir stagefeedback-lto-plugin; \
+	mv stagefeedback-lto-plugin lto-plugin  ; \
+	mv stageprofile-lto-plugin prev-lto-plugin || test -f stageprofile-lean 
+@endif lto-plugin
 	@[ -d stagefeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stagefeedback-$(TARGET_SUBDIR); \
 	mv stagefeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
@@ -55019,6 +55981,12 @@ stagefeedback-end::
 	  mv prev-zlib stageprofile-zlib ; :  ; \
 	fi
 @endif zlib
+@if lto-plugin
+	@if test -d $(HOST_SUBDIR)/lto-plugin ; then \
+	  cd $(HOST_SUBDIR); mv lto-plugin stagefeedback-lto-plugin ; \
+	  mv prev-lto-plugin stageprofile-lto-plugin ; :  ; \
+	fi
+@endif lto-plugin
 	@if test -d $(TARGET_SUBDIR) ; then \
 	  mv $(TARGET_SUBDIR) stagefeedback-$(TARGET_SUBDIR)  ; \
 	  mv prev-$(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR) ; :  ; \
@@ -55422,6 +56390,14 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
+all-lto-plugin: maybe-all-libiberty
+
+all-stage1-lto-plugin: maybe-all-stage1-libiberty
+all-stage2-lto-plugin: maybe-all-stage2-libiberty
+all-stage3-lto-plugin: maybe-all-stage3-libiberty
+all-stage4-lto-plugin: maybe-all-stage4-libiberty
+all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty
+all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty
 configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp

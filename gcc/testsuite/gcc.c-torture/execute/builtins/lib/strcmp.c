@@ -1,6 +1,7 @@
 extern void abort (void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 int
 strcmp (const char *s1, const char *s2)
 {
