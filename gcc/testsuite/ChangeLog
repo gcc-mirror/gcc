@@ -1,3 +1,7 @@
+2009-10-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle32.C: New.
+
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic2.adb: New test.

@@ -217,6 +217,7 @@ static void write_discriminator (const int);
 static void write_local_name (tree, const tree, const tree);
 static void dump_substitution_candidates (void);
 static tree mangle_decl_string (const tree);
+static int local_class_index (tree);
 
 /* Control functions.  */
 
@@ -1204,8 +1205,7 @@ write_unqualified_name (const tree decl)
       tree type = TREE_TYPE (decl);
 
       if (TREE_CODE (decl) == TYPE_DECL
-          && TYPE_ANONYMOUS_P (type)
-          && !ANON_UNION_TYPE_P (type))
+          && TYPE_ANONYMOUS_P (type))
         write_unnamed_type_name (type);
       else if (TREE_CODE (decl) == TYPE_DECL
                && LAMBDA_TYPE_P (type))
@@ -1252,14 +1252,48 @@ write_compact_number (int num)
   write_char ('_');
 }
 
+/* Return how many unnamed types precede TYPE in its enclosing class.  */
+
+static int
+nested_anon_class_index (tree type)
+{
+  int index = 0;
+  tree member = TYPE_FIELDS (TYPE_CONTEXT (type));
+  for (; member; member = TREE_CHAIN (member))
+    if (DECL_IMPLICIT_TYPEDEF_P (member))
+      {
+	tree memtype = TREE_TYPE (member);
+	if (memtype == type)
+	  return index;
+	else if (TYPE_ANONYMOUS_P (memtype))
+	  ++index;
+      }
+
+  gcc_unreachable ();
+}
+
+/* <unnamed-type-name> ::= Ut [ <nonnegative number> ] _ */
+
 static void
 write_unnamed_type_name (const tree type __attribute__ ((__unused__)))
 {
+  int discriminator;
   MANGLE_TRACE_TREE ("unnamed-type-name", type);
 
+  if (TYPE_FUNCTION_SCOPE_P (type))
+    discriminator = local_class_index (type);
+  else if (TYPE_CLASS_SCOPE_P (type))
+    discriminator = nested_anon_class_index (type);
+  else
+    {
+      gcc_assert (no_linkage_check (type, /*relaxed_p=*/true));
+      /* Just use the old mangling at namespace scope.  */
+      write_source_name (TYPE_IDENTIFIER (type));
+      return;
+    }
+
   write_string ("Ut");
-  /* TODO: Implement discriminators for unnamed-types.  */
-  write_char ('_');
+  write_compact_number (discriminator);
 }
 
 /* <closure-type-name> ::= Ul <lambda-sig> E [ <nonnegative number> ] _
@@ -1539,6 +1573,29 @@ write_special_name_destructor (const tree dtor)
     }
 }
 
+/* Scan the vector of local classes and return how many others with the
+   same name (or same no name) and context precede ENTITY.  */
+
+static int
+local_class_index (tree entity)
+{
+  int ix, discriminator = 0;
+  tree name = (TYPE_ANONYMOUS_P (entity) ? NULL_TREE
+	       : TYPE_IDENTIFIER (entity));
+  tree ctx = TYPE_CONTEXT (entity);
+  for (ix = 0; ; ix++)
+    {
+      tree type = VEC_index (tree, local_classes, ix);
+      if (type == entity)
+	return discriminator;
+      if (TYPE_CONTEXT (type) == ctx
+	  && (name ? TYPE_IDENTIFIER (type) == name
+	      : TYPE_ANONYMOUS_P (type)))
+	++discriminator;
+    }
+  gcc_unreachable ();
+}
+
 /* Return the discriminator for ENTITY appearing inside
    FUNCTION.  The discriminator is the lexical ordinal of VAR among
    entities with the same name in the same FUNCTION.  */
@@ -1546,15 +1603,17 @@ write_special_name_destructor (const tree dtor)
 static int
 discriminator_for_local_entity (tree entity)
 {
-  /* Assume this is the only local entity with this name.  */
-  int discriminator = 0;
-
-  if (DECL_DISCRIMINATOR_P (entity) && DECL_LANG_SPECIFIC (entity))
-    discriminator = DECL_DISCRIMINATOR (entity);
+  if (DECL_DISCRIMINATOR_P (entity))
+    {
+      if (DECL_LANG_SPECIFIC (entity))
+	return DECL_DISCRIMINATOR (entity);
+      else
+	/* The first entity with a particular name doesn't get
+	   DECL_LANG_SPECIFIC/DECL_DISCRIMINATOR.  */
+	return 0;
+    }
   else if (TREE_CODE (entity) == TYPE_DECL)
     {
-      int ix;
-
       /* Scan the list of local classes.  */
       entity = TREE_TYPE (entity);
 
@@ -1562,18 +1621,10 @@ discriminator_for_local_entity (tree entity)
       if (LAMBDA_TYPE_P (entity) || TYPE_ANONYMOUS_P (entity))
 	return 0;
 
-      for (ix = 0; ; ix++)
-	{
-	  tree type = VEC_index (tree, local_classes, ix);
-	  if (type == entity)
-	    break;
-	  if (TYPE_IDENTIFIER (type) == TYPE_IDENTIFIER (entity)
-	      && TYPE_CONTEXT (type) == TYPE_CONTEXT (entity))
-	    ++discriminator;
-	}
+      return local_class_index (entity);
     }
-
-  return discriminator;
+  else
+    gcc_unreachable ();
 }
 
 /* Return the discriminator for STRING, a string literal used inside

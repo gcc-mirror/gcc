@@ -1,3 +1,11 @@
+2009-10-02  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_unnamed_type_name): Implement.
+	(local_class_index): Split out from...
+	(discriminator_for_local_entity): ...here.
+	(nested_anon_class_index): New.
+	* cp-tree.h (TYPE_FUNCTION_SCOPE_P): New.
+
 2009-10-02  Janis Johnson  <janis187@us.ibm.com>
 
 	* call.c (convert_arg_to_ellipsis): Avoid promoting decimal32
