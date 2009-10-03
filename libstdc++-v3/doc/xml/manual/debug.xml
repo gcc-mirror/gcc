@@ -243,4 +243,12 @@
   </para>
 </sect2>
 
+<sect2 id="debug.profile_mode" xreflabel="debug.profile_mode">
+<title>Profile-based Performance Analysis</title>
+  <para> The <link linkend="manual.ext.profile_mode">Profile-based 
+  Performance Analysis</link> Extension has performance checks for many 
+  algorithms.
+  </para>
+</sect2>
+
 </sect1>

@@ -1393,4 +1393,8 @@ _GLIBCXX_END_NESTED_NAMESPACE
 # include <debug/bitset>
 #endif
 
+#ifdef _GLIBCXX_PROFILE
+# include <profile/bitset>
+#endif
+
 #endif /* _GLIBCXX_BITSET */

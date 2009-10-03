@@ -34,7 +34,7 @@
  * that both that copyright notice and this permission notice appear
  * in supporting documentation.  Hewlett-Packard Company makes no
  * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
+ ded "as is" without express or implied warranty.
  *
  *
  * Copyright (c) 1996
@@ -71,6 +71,10 @@
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/vector>
+#endif
+
+#ifdef _GLIBCXX_PROFILE
+# include <profile/vector>
 #endif
 
 #endif /* _GLIBCXX_VECTOR */

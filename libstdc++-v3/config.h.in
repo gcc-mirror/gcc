@@ -262,6 +262,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the <execinfo.h> header file. */
+#undef HAVE_EXECINFO_H
+
 /* Define to 1 if you have the `modf' function. */
 #undef HAVE_MODF
 

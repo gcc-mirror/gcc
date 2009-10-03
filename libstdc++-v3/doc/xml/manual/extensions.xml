@@ -113,7 +113,13 @@ extensions, be aware of two things:
 	    parse="xml" href="parallel_mode.xml">
 </xi:include>
 
-<!-- Chapter 04 : Allocators -->
+<!-- Chapter 04 : Profile Mode -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="profile_mode.xml">
+</xi:include>
+
+
+<!-- Chapter 05 : Allocators -->
 <chapter id="manual.ext.allocator" xreflabel="Allocators">
 <?dbhtml filename="ext_allocators.html"?>
   <title>Allocators</title>
@@ -130,7 +136,7 @@ extensions, be aware of two things:
 
 </chapter>
 
-<!-- Chapter 05 : Containers -->
+<!-- Chapter 06 : Containers -->
 <chapter id="manual.ext.containers" xreflabel="Containers">
 <?dbhtml filename="ext_containers.html"?>
   <title>Containers</title>
@@ -266,7 +272,7 @@ extensions, be aware of two things:
   </sect1>  
 </chapter>
 
-<!-- Chapter 06 : Utilities -->
+<!-- Chapter 07 : Utilities -->
 <chapter id="manual.ext.util" xreflabel="Utilities">
 <?dbhtml filename="ext_utilities.html"?>
   <title>Utilities</title>
@@ -336,7 +342,7 @@ get_temporary_buffer(5, (int*)0);
 
 </chapter>
 
-<!-- Chapter 07 : Algorithms -->
+<!-- Chapter 08 : Algorithms -->
 <chapter id="manual.ext.algorithms" xreflabel="Algorithms">
 <?dbhtml filename="ext_algorithms.html"?>
   <title>Algorithms</title>
@@ -374,7 +380,7 @@ get_temporary_buffer(5, (int*)0);
 
 </chapter>
 
-<!-- Chapter 08 : Numerics -->
+<!-- Chapter 09 : Numerics -->
 <chapter id="manual.ext.numerics" xreflabel="Numerics">
 <?dbhtml filename="ext_numerics.html"?>
   <title>Numerics</title>
@@ -399,7 +405,7 @@ get_temporary_buffer(5, (int*)0);
    void iota(_ForwardIter first, _ForwardIter last, _Tp value);</programlisting>
 </chapter>
 
-<!-- Chapter 09 : Iterators -->
+<!-- Chapter 10 : Iterators -->
 <chapter id="manual.ext.iterators" xreflabel="Iterators">
 <?dbhtml filename="ext_iterators.html"?>
   <title>Iterators</title>
@@ -423,7 +429,7 @@ get_temporary_buffer(5, (int*)0);
 
 </chapter>
 
-<!-- Chapter 08 : IO -->
+<!-- Chapter 11 : IO -->
 <chapter id="manual.ext.io" xreflabel="IO">
 <?dbhtml filename="ext_io.html"?>
   <title>Input and Output</title>
@@ -493,7 +499,7 @@ get_temporary_buffer(5, (int*)0);
   </sect1>
 </chapter>
 
-<!-- Chapter 09 : Demangling -->
+<!-- Chapter 12 : Demangling -->
 <chapter id="manual.ext.demangle" xreflabel="Demangling">
 <?dbhtml filename="ext_demangling.html"?>
   <title>Demangling</title>
@@ -579,7 +585,7 @@ int main()
    </para>
 </chapter>
 
-<!-- Chapter 10 : Concurrency -->
+<!-- Chapter 13 : Concurrency -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 	    parse="xml" href="concurrency.xml">
 </xi:include>

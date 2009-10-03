@@ -1,0 +1,1718 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+[ ]>
+
+<chapter id="manual.ext.profile_mode" xreflabel="Profile Mode">
+<?dbhtml filename="profile_mode.html"?>
+ 
+<chapterinfo>
+  <keywordset>
+    <keyword>
+      C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+    <keyword>
+      profile
+    </keyword>
+  </keywordset>
+</chapterinfo>
+
+<title>Profile Mode</title>
+
+
+<sect1 id="manual.ext.profile_mode.intro" xreflabel="Intro">
+  <title>Intro</title>
+  <para>
+  <emphasis>Goal: </emphasis>Give performance improvement advice based on
+  recognition of suboptimal usage patterns of the standard library.
+  </para>
+
+  <para>
+  <emphasis>Method: </emphasis>Wrap the standard library code.  Insert
+  calls to an instrumentation library to record the internal state of
+  various components at interesting entry/exit points to/from the standard
+  library.  Process trace, recognize suboptimal patterns, give advice.
+  For details, see 
+  <ulink url="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
+   CGO 2009</ulink>.
+  </para>
+  <para>
+  <emphasis>Strengths: </emphasis>
+<itemizedlist>
+  <listitem><para>
+  Unintrusive solution.  The application code does not require any 
+  modification.
+  </para></listitem>
+  <listitem><para> The advice is call context sensitive, thus capable of
+  identifying precisely interesting dynamic performance behavior.
+  </para></listitem>
+  <listitem><para>
+  The overhead model is pay-per-view.  When you turn off a diagnostic class
+  at compile time, its overhead disappears.
+  </para></listitem>
+</itemizedlist>
+  </para>
+  <para>
+  <emphasis>Drawbacks: </emphasis>
+<itemizedlist>
+  <listitem><para>
+  You must recompile the application code with custom options.
+  </para></listitem>
+  <listitem><para>You must run the application on representative input.
+  The advice is input dependent.
+  </para></listitem>
+  <listitem><para>
+  The execution time will increase, in some cases by factors.
+  </para></listitem>
+</itemizedlist>
+  </para>
+
+
+<sect2 id="manual.ext.profile_mode.using" xreflabel="Using">
+  <title>Using the Profile Mode</title>
+
+  <para>
+  This is the anticipated common workflow for program <code>foo.cc</code>:
+<programlisting>
+$ cat foo.cc
+#include &lt;vector&gt;
+int main() {
+  vector&lt;int&gt; v;
+  for (int k = 0; k &lt; 1024; ++k) v.insert(v.begin(), k);
+}
+
+$ g++ -D_GLIBCXX_PROFILE foo.cc
+$ ./a.out
+$ cat libstdcxx-profile.txt
+vector-to-list: improvement = 5: call stack = 0x804842c ...
+    : advice = change std::vector to std::list
+vector-size: improvement = 3: call stack = 0x804842c ...
+    : advice = change initial container size from 0 to 1024
+</programlisting>
+  </para>
+
+  <para>
+  Anatomy of a warning:
+  <itemizedlist>
+  <listitem>
+  <para>
+  Warning id.  This is a short descriptive string for the class
+  that this warning belongs to.  E.g., "vector-to-list".
+  </para>
+  </listitem>
+  <listitem>
+  <para>
+  Estimated improvement.  This is an approximation of the benefit expected
+  from implementing the change suggested by the warning.  It is given on
+  a log10 scale.  Negative values mean that the alternative would actually
+  do worse than the current choice.
+  In the example above, 5 comes from the fact that the overhead of
+  inserting at the beginning of a vector vs. a list is around 1024 * 1024 / 2,
+  which is around 10e5.  The improvement from setting the initial size to
+  1024 is in the range of 10e3, since the overhead of dynamic resizing is
+  linear in this case.
+  </para>
+  </listitem>
+  <listitem>
+  <para>
+  Call stack.  Currently, the addresses are printed without
+  symbol name or code location attribution.
+  Users are expected to postprocess the output using, for instance, addr2line.
+  </para>
+  </listitem>
+  <listitem>
+  <para>
+  The warning message.  For some warnings, this is static text, e.g.,
+  "change vector to list".  For other warnings, such as the one above,
+  the message contains numeric advice, e.g., the suggested initial size
+  of the hashtable.
+  </para>
+  </listitem>
+  </itemizedlist>
+  </para>
+
+  <para>Two files are generated.  <code>libstdcxx-profile.txt</code>
+   contains human readable advice.  <code>libstdcxx-profile.raw</code>
+   contains implementation specific data about each diagnostic.
+   Their format is not documented.  They are sufficient to generate
+   all the advice given in <code>libstdcxx-profile.txt</code>.  The advantage
+   of keeping this raw format is that traces from multiple executions can
+   be aggregated simply by concatenating the raw traces.  We intend to
+   offer an external utility program that can issue advice from a trace.
+  </para>
+
+  <para>Advice is given regardless whether the transformation is valid.
+  For instance, we advise changing a map to an unordered_map even if the
+  application semantics require that data be ordered.
+  We believe such warnings can help users understand the performance
+  behavior of their application better, which can lead to changes
+  at a higher abstraction level.
+  </para>
+
+</sect2>
+
+<sect2 id="manual.ext.profile_mode.tuning" xreflabel="Tuning">
+  <title>Tuning the Profile Mode</title>
+
+  <para>Compile time switches and environment variables (see also file
+   profiler.h).  Unless specified otherwise, they can be set at compile time
+   using -D_&lt;name&gt; or by setting variable &lt;name&gt;
+   in the environment where the program is run, before starting execution.
+  <itemizedlist>
+  <listitem><para>
+   <code>[NO]_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>:
+   enable/disable specific diagnostics.
+   See section Diagnostics for possible values.
+   (Environment variables not supported.)
+   </para></listitem>
+  <listitem><para>
+   <code>GLIBCXX_PROFILE_TRACE_PATH_ROOT</code>: set an alternative root
+   path for the output files.
+   </para></listitem>
+  <listitem><para>GLIBCXX_PROFILE_MAX_WARN_COUNT: set it to the maximum
+   number of warnings desired.  The default value is 10.</para></listitem>
+  <listitem><para>
+   <code>GLIBCXX_PROFILE_MAX_STACK_DEPTH</code>: if set to 0, 
+   the advice will
+   be collected and reported for the program as a whole, and not for each
+   call context.
+   This could also be used in continuous regression tests, where you
+   just need to know whether there is a regression or not.
+   The default value is 32.
+   </para></listitem>
+  <listitem><para>
+   <code>GLIBCXX_PROFILE_MEM_PER_DIAGNOSTIC</code>:
+   set a limit on how much memory to use for the accounting tables for each
+   diagnostic type.  When this limit is reached, new events are ignored
+   until the memory usage decreases under the limit.  Generally, this means
+   that newly created containers will not be instrumented until some
+   live containers are deleted.  The default is 128 MB.
+   </para></listitem>
+  <listitem><para>
+   <code>GLIBCXX_PROFILE_NOTHREADS</code>:
+   Make the library not use threads.  Otherwise, pthread mutexes are used
+   to protect access to internal data structures.  This should be useful
+   only if the program is single threaded and you want to avoid the overhead
+   of aquiring/releasing locks unnecessarily.
+   (Environment variable not supported.)
+   </para></listitem>
+  <listitem><para>
+   <code>HAVE_EXECINFO_H</code>:
+   This name should be defined at library configuration time.
+   If your library was configured without <code>execinfo.h</code>, but
+   you have it in your include path, you can define it explicitly.  Without
+   it, advice is collected for the program as a whole, and not for each
+   call context.
+   (Environment variable not supported.)
+   </para></listitem>
+  </itemizedlist>
+  </para>
+
+</sect2>
+
+</sect1>
+
+
+<sect1 id="manual.ext.profile_mode.design" xreflabel="Design">
+  <title>Design</title>
+
+<para>
+</para>
+<table frame='all'>
+<title>Code Location</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+
+<thead>
+  <row>
+    <entry>Code Location</entry>
+    <entry>Use</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><code>libstdc++-v3/include/std/*</code></entry>
+    <entry>Preprocessor code to redirect to profile extension headers.</entry>
+  </row>
+  <row>
+    <entry><code>libstdc++-v3/include/profile/*</code></entry>
+    <entry>Profile extension public headers (map, vector, ...).</entry>
+  </row>
+  <row>
+    <entry><code>libstdc++-v3/include/profile/impl/*</code></entry>
+    <entry>Profile extension internals.  Implementation files are
+     only included from <code>impl/profiler.h</code>, which is the only
+     file included from the public headers.</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<para>
+</para>
+
+<sect2 id="manual.ext.profile_mode.design.wrapper" 
+ xreflabel="Wrapper">
+<title>Wrapper Model</title>
+  <para>
+  In order to get our instrumented library version included instead of the
+  release one,
+  we use the same wrapper model as the debug mode.
+  We subclass entities from the release version.  Wherever
+  <code>_GLIBCXX_PROFILE</code> is defined, the release namespace is
+  <code>std::__norm</code>, whereas the profile namespace is 
+  <code>std::__profile</code>.  Using plain <code>std</code> translates
+  into <code>std::__profile</code>.
+  </para>
+  <para>
+  Whenever possible, we try to wrap at the public interface level, e.g.,
+  in <code>unordered_set</code> rather than in <code>hashtable</code>, 
+  in order not to depend on implementation.
+  </para>
+  <para>
+  Mixing object files built with and without the profile mode must
+  not affect the program execution.  However, there are no guarantees to
+  the accuracy of diagnostics when using even a single object not built with
+  <code>-D_GLIBCXX_PROFILE</code>.
+  Currently, mixing the profile mode with debug and parallel extensions is
+  not allowed.  Mixing them at compile time will result in preprocessor errors.
+  Mixing them at link time is undefined.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.design.instrumentation" 
+ xreflabel="Instrumentation">
+<title>Instrumentation</title>
+  <para>
+  Instead of instrumenting every public entry and exit point,
+  we chose to add instrumentation on demand, as needed
+  by individual diagnostics.
+  The main reason is that some diagnostics require us to extract bits of 
+  internal state that are particular only to that diagnostic.
+  We plan to formalize this later, after we learn more about the requirements
+  of several diagnostics.
+  </para>
+  <para>
+  All the instrumentation points can be switched on and off using 
+  <code>-D[_NO]_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code> options.
+  With all the instrumentation calls off, there should be negligible
+  overhead over the release version.  This property is needed to support
+  diagnostics based on timing of internal operations.  For such diagnostics,
+  we anticipate turning most of the instrumentation off in order to prevent
+  profiling overhead from polluting time measurements, and thus diagnostics.
+  </para>
+  <para>
+  All the instrumentation on/off compile time switches live in 
+  <code>include/profile/profiler.h</code>.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.design.rtlib" 
+ xreflabel="Run Time Behavior">
+<title>Run Time Behavior</title>
+  <para>
+  For practical reasons, the instrumentation library processes the trace
+  partially
+  rather than dumping it to disk in raw form.  Each event is processed when
+  it occurs.  It is usually attached a cost and it is aggregated into
+  the database of a specific diagnostic class.  The cost model
+  is based largely on the standard performance guarantees, but in some
+  cases we use knowledge about GCC's standard library implementation.
+  </para>
+  <para>
+  Information is indexed by (1) call stack and (2) instance id or address
+  to be able to understand and summarize precise creation-use-destruction
+  dynamic chains.  Although the analysis is sensitive to dynamic instances,
+  the reports are only sensitive to call context.  Whenever a dynamic instance
+  is destroyed, we accumulate its effect to the corresponding entry for the
+  call stack of its constructor location.
+  </para>
+
+  <para>
+  For details, see 
+   <ulink url="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
+   CGO 2009</ulink>.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.design.analysis"
+ xreflabel="Analysis and Diagnostics">
+<title>Analysis and Diagnostics</title>
+  <para>
+  Final analysis takes place offline, and it is based entirely on the
+  generated trace and debugging info in the application binary.
+  See section Diagnostics for a list of analysis types that we plan to support.
+  </para>
+  <para>
+  The input to the analysis is a table indexed by profile type and call stack.
+  The data type for each entry depends on the profile type.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.design.cost-model"
+ xreflabel="Cost Model">
+<title>Cost Model</title>
+  <para>
+  While it is likely that cost models become complex as we get into 
+  more sophisticated analysis, we will try to follow a simple set of rules
+  at the beginning.
+  </para>
+<itemizedlist>
+  <listitem><para><emphasis>Relative benefit estimation:</emphasis>
+  The idea is to estimate or measure the cost of all operations
+  in the original scenario versus the scenario we advise to switch to.
+  For instance, when advising to change a vector to a list, an occurrence
+  of the <code>insert</code> method will generally count as a benefit.
+  Its magnitude depends on (1) the number of elements that get shifted
+  and (2) whether it triggers a reallocation.
+  </para></listitem>
+  <listitem><para><emphasis>Synthetic measurements:</emphasis>
+  We will measure the relative difference between similar operations on
+  different containers.  We plan to write a battery of small tests that
+  compare the times of the executions of similar methods on different
+  containers.  The idea is to run these tests on the target machine.
+  If this training phase is very quick, we may decide to perform it at
+  library initialization time.  The results can be cached on disk and reused
+  across runs.
+  </para></listitem>
+  <listitem><para><emphasis>Timers:</emphasis>
+  We plan to use timers for operations of larger granularity, such as sort.
+  For instance, we can switch between different sort methods on the fly
+  and report the one that performs best for each call context.
+  </para></listitem>
+  <listitem><para><emphasis>Show stoppers:</emphasis>
+  We may decide that the presence of an operation nullifies the advice.
+  For instance, when considering switching from <code>set</code> to 
+  <code>unordered_set</code>, if we detect use of operator <code>++</code>,
+  we will simply not issue the advice, since this could signal that the use
+  care require a sorted container.</para></listitem>
+</itemizedlist>
+
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.design.reports"
+ xreflabel="Reports">
+<title>Reports</title>
+  <para>
+There are two types of reports.  First, if we recognize a pattern for which
+we have a substitute that is likely to give better performance, we print
+the advice and estimated performance gain.  The advice is usually associated
+to a code position and possibly a call stack.
+  </para>
+  <para>
+Second, we report performance characteristics for which we do not have
+a clear solution for improvement.  For instance, we can point to the user
+the top 10 <code>multimap</code> locations
+which have the worst data locality in actual traversals.
+Although this does not offer a solution,
+it helps the user focus on the key problems and ignore the uninteresting ones.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.design.testing"
+ xreflabel="Testing">
+<title>Testing</title>
+  <para>
+  First, we want to make sure we preserve the behavior of the release mode.
+  You can just type <code>"make check-profile"</code>, which
+  builds and runs the whole test suite in profile mode.
+  </para>
+  <para>
+  Second, we want to test the correctness of each diagnostic.
+  We created a <code>profile</code> directory in the test suite.
+  Each diagnostic must come with at least two tests, one for false positives
+  and one for false negatives.
+  </para>
+</sect2>
+
+</sect1>
+
+<sect1 id="manual.ext.profile_mode.api"
+ xreflabel="API">
+<title>Extensions for Custom Containers</title>
+
+  <para>
+  Many large projects use their own data structures instead of the ones in the
+  standard library.  If these data structures are similar in functionality
+  to the standard library, they can be instrumented with the same hooks
+  that are used to instrument the standard library.
+  The instrumentation API is exposed in file
+  <code>profiler.h</code> (look for "Instrumentation hooks").
+  </para>
+
+</sect1>
+
+
+<sect1 id="manual.ext.profile_mode.cost_model"
+ xreflabel="Cost Model">
+<title>Empirical Cost Model</title>
+
+  <para>
+  Currently, the cost model uses formulas with predefined relative weights
+  for alternative containers or container implementations.  For instance,
+  iterating through a vector is X times faster than iterating through a list.
+  </para>
+  <para>
+  (Under development.)
+  We are working on customizing this to a particular machine by providing
+  an automated way to compute the actual relative weights for operations
+  on the given machine.
+  </para>
+  <para>
+  (Under development.)
+  We plan to provide a performance parameter database format that can be
+  filled in either by hand or by an automated training mechanism.
+  The analysis module will then use this database instead of the built in.
+  generic parameters.
+  </para>
+
+</sect1>
+
+
+<sect1 id="manual.ext.profile_mode.implementation"
+ xreflabel="Implementation">
+<title>Implementation Issues</title>
+
+
+<sect2 id="manual.ext.profile_mode.implementation.stack"
+ xreflabel="Stack Traces">
+<title>Stack Traces</title>
+  <para>
+  Accurate stack traces are needed during profiling since we group events by
+  call context and dynamic instance.  Without accurate traces, diagnostics
+  may be hard to interpret.  For instance, when giving advice to the user
+  it is imperative to reference application code, not library code.
+  </para>
+  <para>
+  Currently we are using the libc <code>backtrace</code> routine to get
+  stack traces.
+  <code>_GLIBCXX_PROFILE_STACK_DEPTH</code> can be set
+  to 0 if you are willing to give up call context information, or to a small
+  positive value to reduce run time overhead.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.implementation.symbols"
+ xreflabel="Symbolization">
+<title>Symbolization of Instruction Addresses</title>
+  <para>
+  The profiling and analysis phases use only instruction addresses.
+  An external utility such as addr2line is needed to postprocess the result.
+  We do not plan to add symbolization support in the profile extension.
+  This would require access to symbol tables, debug information tables,
+  external programs or libraries and other system dependent information.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.implementation.concurrency"
+ xreflabel="Concurrency">
+<title>Concurrency</title>
+  <para>
+  Our current model is simplistic, but precise.
+  We cannot afford to approximate because some of our diagnostics require
+  precise matching of operations to container instance and call context.
+  During profiling, we keep a single information table per diagnostic.
+  There is a single lock per information table.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.implementation.stdlib-in-proflib"
+ xreflabel="Using the Standard Library in the Runtime Library">
+<title>Using the Standard Library in the Instrumentation Implementation</title>
+  <para>
+  As much as we would like to avoid uses of stdlibc++ within our 
+  instrumentation library, containers such as unordered_map are very 
+  appealing.  We plan to use them as long as they are named properly 
+  to avoid ambiguity.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.implementation.malloc-hooks"
+ xreflabel="Malloc Hooks">
+<title>Malloc Hooks</title>
+  <para>
+  User applications/libraries can provide malloc hooks.
+  When the implementation of the malloc hooks uses stdlibc++, there can
+  be an infinite cycle between the profile mode instrumentation and the
+  the malloc hook code.
+  </para>
+  <para>
+  We protect against reentrance to the profile mode instrumentation code,
+  which should avoid this problem in most cases.
+  The protection mechanism is thread safe and exception safe.
+  This mechanism does not prevent reentrance to the malloc hook itself,
+  which could still result in deadlock, if, for instance, the malloc hook
+  uses non-recursive locks.
+  XXX: A definitive solution to this problem would be for the profile extension
+  to use a custom allocator internally, and perhaps not to use libstdc++.
+  </para>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.implementation.construction-destruction"
+ xreflabel="Construction and Destruction of Global Objects">
+<title>Construction and Destruction of Global Objects</title>
+  <para>
+  The profiling library state is initialized at the first call to a profiling
+  method.  This allows us to record the construction of all global objects.
+  However, we cannot do the same at destruction time.  The trace is written
+  by a function registered by <code>atexit</code>, thus invoked by 
+  <code>exit</code>.
+  </para>
+</sect2>
+
+</sect1>
+
+
+<sect1 id="manual.ext.profile_mode.developer"
+ xreflabel="Developer Information">
+<title>Developer Information</title>
+
+<sect2 id="manual.ext.profile_mode.developer.bigpic"
+ xreflabel="Big Picture">
+<title>Big Picture</title>
+
+  <para>The profile mode headers are included with
+   <code>-D_GLIBCXX_PROFILE</code> through preprocessor directives in 
+   <code>include/std/*</code>.
+  </para>
+
+  <para>Instrumented implementations are provided in 
+   <code>include/profile/*</code>.  All instrumentation hooks are macros
+   defined in <code>include/profile/profiler.h</code>.
+  </para>
+
+  <para>All the implementation of the instrumentation hooks is in 
+   <code>include/profile/impl/*</code>.  Although all the code gets included,
+   thus is publicly visible, only a small number of functions are called from
+   outside this directory.  All calls to hook implementations must be
+   done through macros defined in <code>profiler.h</code>.  The macro
+   must ensure (1) that the call is guarded against reentrance and 
+   (2) that the call can be turned off at compile time using a
+   <code>-D_GLIBCXX_PROFILE_...</code> compiler option.
+  </para>
+
+</sect2>
+
+<sect2 id="manual.ext.profile_mode.developer.howto"
+ xreflabel="How To Add A Diagnostic">
+<title>How To Add A Diagnostic</title>
+
+  <para>Let's say the diagnostic name is "magic".
+  </para>
+
+  <para>If you need to instrument a header not already under 
+   <code>include/profile/*</code>, first edit the corresponding header
+   under <code>include/std/</code> and add a preprocessor directive such
+   as the one in <code>include/std/vector</code>:
+<programlisting>
+#ifdef _GLIBCXX_PROFILE
+# include &lt;profile/vector&gt;
+#endif
+</programlisting>
+  </para>
+
+  <para>If the file you need to instrument is not yet under
+   <code>include/profile/</code>, make a copy of the one in
+   <code>include/debug</code>, or the main implementation.
+   You'll need to include the main implementation and inherit the classes
+   you want to instrument.  Then define the methods you want to instrument,
+   define the instrumentation hooks and add calls to them.
+   Look at <code>include/profile/vector</code> for an example.
+  </para>
+
+  <para>Add macros for the instrumentation hooks in
+   <code>include/profile/impl/profiler.h</code>.
+   Hook names must start with <code>__profcxx_</code>.
+   Make sure they transform
+   in no code with <code>-D_NO_GLBICXX_PROFILE_MAGIC</code>.
+   Make sure all calls to any method in namespace <code>__cxxprof_impl</code>
+   is protected against reentrance using macro
+   <code>_GLIBCXX_PROFILE_IMPL_REENTRANCE_GUARD</code>.
+   All names of methods in namespace <code>__cxxprof_impl</code> called from
+   <code>profiler.h</code> must start with <code>__trace_magic_</code>.
+  </para>
+
+  <para>Add the implementation of the diagnostic.
+   <itemizedlist>
+     <listitem><para>
+      Create new file <code>include/profile/impl/profiler_magic.h</code>.
+     </para></listitem>
+     <listitem><para>
+      Define class <code>__magic_info: public __object_info_base</code>.
+      This is the representation of a line in the object table.
+      The <code>__merge</code> method is used to aggregate information
+      across all dynamic instances created at the same call context.
+      The <code>__magnitude</code> must return the estimation of the benefit
+      as a number of small operations, e.g., number of words copied.
+      The <code>__write</code> method is used to produce the raw trace.
+      The <code>__advice</code> method is used to produce the advice string.
+     </para></listitem>
+     <listitem><para>
+      Define class <code>__magic_stack_info: public __magic_info</code>.
+      This defines the content of a line in the stack table.
+     </para></listitem>
+     <listitem><para>
+      Define class <code>__trace_magic: public __trace_base&lt;__magic_info, 
+      __magic_stack_info&gt;</code>.
+      It defines the content of the trace associated with this diagnostic.
+     </para></listitem>
+    </itemizedlist>
+  </para>
+
+  <para>Add initialization and reporting calls in
+   <code>include/profile/impl/profiler_trace.h</code>.  Use
+   <code>__trace_vector_to_list</code> as an example.
+  </para>
+
+  <para>Add documentation in file <code>doc/xml/manual/profile_mode.xml</code>.
+  </para>
+</sect2>
+</sect1>
+
+<sect1 id="manual.ext.profile_mode.diagnostics">
+<title>Diagnostics</title>
+
+  <para>
+  The table below presents all the diagnostics we intend to implement.
+  Each diagnostic has a corresponding compile time switch
+  <code>-D_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
+  Groups of related diagnostics can be turned on with a single switch.
+  For instance, <code>-D_GLIBCXX_PROFILE_LOCALITY</code> is equivalent to
+  <code>-D_GLIBCXX_PROFILE_SOFTWARE_PREFETCH 
+  -D_GLIBCXX_PROFILE_RBTREE_LOCALITY</code>.
+  </para>
+
+  <para>
+  The benefit, cost, expected frequency and accuracy of each diagnostic
+  was given a grade from 1 to 10, where 10 is highest.
+  A high benefit means that, if the diagnostic is accurate, the expected
+  performance improvement is high.
+  A high cost means that turning this diagnostic on leads to high slowdown.
+  A high frequency means that we expect this to occur relatively often.
+  A high accuracy means that the diagnostic is unlikely to be wrong.
+  These grades are not perfect.  They are just meant to guide users with
+  specific needs or time budgets.
+  </para>
+
+<table frame='all'>
+<title>Diagnostics</title>
+<tgroup cols='6' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<colspec colname='c5'></colspec>
+<colspec colname='c6'></colspec>
+<colspec colname='c7'></colspec>
+
+<thead>
+  <row>
+    <entry>Group</entry>
+    <entry>Flag</entry>
+    <entry>Benefit</entry>
+    <entry>Cost</entry>
+    <entry>Freq.</entry>
+    <entry>Implemented</entry>
+  </row>
+</thead>
+<tbody>
+  <row>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.containers">
+    CONTAINERS</ulink></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.hashtable_too_small">
+    HASHTABLE_TOO_SMALL</ulink></entry>
+    <entry>10</entry>
+    <entry>1</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>yes</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.hashtable_too_large">
+    HASHTABLE_TOO_LARGE</ulink></entry>
+    <entry>5</entry>
+    <entry>1</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>yes</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.inefficient_hash">
+    INEFFICIENT_HASH</ulink></entry>
+    <entry>7</entry>
+    <entry>3</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>yes</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_too_small">
+    VECTOR_TOO_SMALL</ulink></entry>
+    <entry>8</entry>
+    <entry>1</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>yes</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_too_large">
+    VECTOR_TOO_LARGE</ulink></entry>
+    <entry>5</entry>
+    <entry>1</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>yes</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_to_hashtable">
+    VECTOR_TO_HASHTABLE</ulink></entry>
+    <entry>7</entry>
+    <entry>7</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>no</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.hashtable_to_vector">
+    HASHTABLE_TO_VECTOR</ulink></entry>
+    <entry>7</entry>
+    <entry>7</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>no</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_to_list">
+    VECTOR_TO_LIST</ulink></entry>
+    <entry>8</entry>
+    <entry>5</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>yes</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.list_to_vector">
+    LIST_TO_VECTOR</ulink></entry>
+    <entry>10</entry>
+    <entry>5</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>no</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.assoc_ord_to_unord">
+    ORDERED_TO_UNORDERED</ulink></entry>
+    <entry>10</entry>
+    <entry>5</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>only map/unordered_map</entry>
+  </row>
+  <row>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.algorithms">
+    ALGORITHMS</ulink></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.algorithms.sort">
+    SORT</ulink></entry>
+    <entry>7</entry>
+    <entry>8</entry>
+    <entry></entry>
+    <entry>7</entry>
+    <entry>no</entry>
+  </row>
+  <row>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.locality">
+    LOCALITY</ulink></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.locality.sw_prefetch">
+    SOFTWARE_PREFETCH</ulink></entry>
+    <entry>8</entry>
+    <entry>8</entry>
+    <entry></entry>
+    <entry>5</entry>
+    <entry>no</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.locality.linked">
+    RBTREE_LOCALITY</ulink></entry>
+    <entry>4</entry>
+    <entry>8</entry>
+    <entry></entry>
+    <entry>5</entry>
+    <entry>no</entry>
+  </row>
+  <row>
+    <entry></entry>
+    <entry><ulink url="#manual.ext.profile_mode.analysis.mthread.false_share">
+    FALSE_SHARING</ulink></entry>
+    <entry>8</entry>
+    <entry>10</entry>
+    <entry></entry>
+    <entry>10</entry>
+    <entry>no</entry>
+  </row>
+</tbody>
+</tgroup>
+</table>
+
+<sect2 id="manual.ext.profile_mode.analysis.template" 
+ xreflabel="Template">
+<title>Diagnostic Template</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis>  What problem will it diagnose?
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>.
+  What is the fundamental reason why this is a problem</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>
+  Percentage reduction in execution time.  When reduction is more than
+  a constant factor, describe the reduction rate formula.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>
+  What would the advise look like?</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis>
+  What stdlibc++ components need to be instrumented?</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  How do we decide when to issue the advice?</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  How do we measure benefits?  Math goes here.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+program code
+...
+advice sample
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.analysis.containers" 
+ xreflabel="Containers">
+<title>Containers</title>
+
+<para>
+<emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_CONTAINERS</code>.
+</para>
+
+<sect3 id="manual.ext.profile_mode.analysis.hashtable_too_small" 
+ xreflabel="Hashtable Too Small">
+<title>Hashtable Too Small</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_HASHTABLE_TOO_SMALL</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect hashtables with many 
+  rehash operations, small construction size and large destruction size.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis> Rehash is very expensive.
+  Read content, follow chains within bucket, evaluate hash function, place at
+  new location in different order.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis> 36%.
+  Code similar to example below.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> 
+  Set initial size to N at construction site S.
+  </para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> 
+  <code>unordered_set, unordered_map</code> constructor, destructor, rehash.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>unordered_[multi]set|map</code>,
+  record initial size and call context of the constructor.
+  Record size increase, if any, after each relevant operation such as insert.
+  Record the estimated rehash cost.</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Number of individual rehash operations * cost per rehash.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1 unordered_set&lt;int&gt; us;
+2 for (int k = 0; k &lt; 1000000; ++k) {
+3   us.insert(k);
+4 }
+
+foo.cc:1: advice: Changing initial unordered_set size from 10 to 1000000 saves 1025530 rehash operations.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+
+<sect3 id="manual.ext.profile_mode.analysis.hashtable_too_large" 
+ xreflabel="Hashtable Too Large">
+<title>Hashtable Too Large</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_HASHTABLE_TOO_LARGE</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect hashtables which are
+  never filled up because fewer elements than reserved are ever
+  inserted.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis> Save memory, which
+  is good in itself and may also improve memory reference performance through
+  fewer cache and TLB misses.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis> unknown.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> 
+  Set initial size to N at construction site S.
+  </para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> 
+  <code>unordered_set, unordered_map</code> constructor, destructor, rehash.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>unordered_[multi]set|map</code>,
+  record initial size and call context of the constructor, and correlate it
+  with its size at destruction time.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Number of iteration operations + memory saved.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1 vector&lt;unordered_set&lt;int&gt;&gt; v(100000, unordered_set&lt;int&gt;(100)) ;
+2 for (int k = 0; k &lt; 100000; ++k) {
+3   for (int j = 0; j &lt; 10; ++j) {
+4     v[k].insert(k + j);
+5  }
+6 }
+
+foo.cc:1: advice: Changing initial unordered_set size from 100 to 10 saves N
+bytes of memory and M iteration steps.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.inefficient_hash"
+ xreflabel="Inefficient Hash">
+<title>Inefficient Hash</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_INEFFICIENT_HASH</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect hashtables with polarized
+  distribution.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis> A non-uniform 
+  distribution may lead to long chains, thus possibly increasing complexity
+  by a factor up to the number of elements.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis> factor up
+   to container size.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> Change hash function
+  for container built at site S.  Distribution score = N.  Access score = S.
+  Longest chain = C, in bucket B.
+  </para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis>
+  <code>unordered_set, unordered_map</code> constructor, destructor, [],
+  insert, iterator.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  Count the exact number of link traversals.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Total number of links traversed.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+class dumb_hash {
+ public:
+  size_t operator() (int i) const { return 0; }
+};
+...
+  unordered_set&lt;int, dumb_hash&gt; hs;
+  ...
+  for (int i = 0; i &lt; COUNT; ++i) {
+    hs.find(i);
+  }
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.vector_too_small" 
+ xreflabel="Vector Too Small">
+<title>Vector Too Small</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_VECTOR_TOO_SMALL</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis>Detect vectors with many 
+  resize operations, small construction size and large destruction size..
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>Resizing can be expensive.
+  Copying large amounts of data takes time.  Resizing many small vectors may
+  have allocation overhead and affect locality.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>
+  Set initial size to N at construction site S.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>vector</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>vector</code>,
+  record initial size and call context of the constructor.
+  Record size increase, if any, after each relevant operation such as 
+  <code>push_back</code>.  Record the estimated resize cost.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Total number of words copied * time to copy a word.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1 vector&lt;int&gt; v;
+2 for (int k = 0; k &lt; 1000000; ++k) {
+3   v.push_back(k);
+4 }
+
+foo.cc:1: advice: Changing initial vector size from 10 to 1000000 saves 
+copying 4000000 bytes and 20 memory allocations and deallocations.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.vector_too_large" 
+ xreflabel="Vector Too Large">
+<title>Vector Too Large</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_VECTOR_TOO_LARGE</code>
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis>Detect vectors which are
+  never filled up because fewer elements than reserved are ever
+  inserted.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>Save memory, which
+  is good in itself and may also improve memory reference performance through
+  fewer cache and TLB misses.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>
+  Set initial size to N at construction site S.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>vector</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>vector</code>,
+  record initial size and call context of the constructor, and correlate it
+  with its size at destruction time.</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Total amount of memory saved.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1 vector&lt;vector&lt;int&gt;&gt; v(100000, vector&lt;int&gt;(100)) ;
+2 for (int k = 0; k &lt; 100000; ++k) {
+3   for (int j = 0; j &lt; 10; ++j) {
+4     v[k].insert(k + j);
+5  }
+6 }
+
+foo.cc:1: advice: Changing initial vector size from 100 to 10 saves N
+bytes of memory and may reduce the number of cache and TLB misses.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.vector_to_hashtable" 
+ xreflabel="Vector to Hashtable">
+<title>Vector to Hashtable</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_VECTOR_TO_HASHTABLE</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect uses of 
+  <code>vector</code> that can be substituted with <code>unordered_set</code>
+  to reduce execution time.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Linear search in a vector is very expensive, whereas searching in a hashtable
+  is very quick.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>factor up
+   to container size.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>Replace 
+  <code>vector</code> with <code>unordered_set</code> at site S.
+  </para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>vector</code>
+  operations and access methods.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>vector</code>,
+  record call context of the constructor.  Issue the advice only if the
+  only methods called on this <code>vector</code> are <code>push_back</code>, 
+  <code>insert</code> and <code>find</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Cost(vector::push_back) + cost(vector::insert) + cost(find, vector) -
+  cost(unordered_set::insert) + cost(unordered_set::find).
+  </para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+1  vector&lt;int&gt; v;
+...
+2  for (int i = 0; i &lt; 1000; ++i) {
+3    find(v.begin(), v.end(), i);
+4  }
+
+foo.cc:1: advice: Changing "vector" to "unordered_set" will save about 500,000
+comparisons.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.hashtable_to_vector" 
+ xreflabel="Hashtable to Vector">
+<title>Hashtable to Vector</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_HASHTABLE_TO_VECTOR</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect uses of 
+  <code>unordered_set</code> that can be substituted with <code>vector</code>
+  to reduce execution time.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Hashtable iterator is slower than vector iterator.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>95%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>Replace 
+  <code>unordered_set</code> with <code>vector</code> at site S.
+  </para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>unordered_set</code>
+  operations and access methods.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>unordered_set</code>,
+  record call context of the constructor.  Issue the advice only if the
+  number of <code>find</code>, <code>insert</code> and <code>[]</code> 
+  operations on this <code>unordered_set</code> are small relative to the
+  number of elements, and methods <code>begin</code> or <code>end</code>
+  are invoked (suggesting iteration).</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Number of .</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+1  unordered_set&lt;int&gt; us;
+...
+2  int s = 0;
+3  for (unordered_set&lt;int&gt;::iterator it = us.begin(); it != us.end(); ++it) {
+4    s += *it;
+5  }
+
+foo.cc:1: advice: Changing "unordered_set" to "vector" will save about N
+indirections and may achieve better data locality.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.vector_to_list"
+ xreflabel="Vector to List">
+<title>Vector to List</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_VECTOR_TO_LIST</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect cases where 
+  <code>vector</code> could be substituted with <code>list</code> for
+  better performance.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Inserting in the middle of a vector is expensive compared to inserting in a 
+  list.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>factor up to
+   container size.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>Replace vector with list
+  at site S.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>vector</code>
+  operations and access methods.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  For each dynamic instance of <code>vector</code>,
+  record the call context of the constructor.  Record the overhead of each
+  <code>insert</code> operation based on current size and insert position.
+  Report instance with high insertion overhead.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  (Sum(cost(vector::method)) - Sum(cost(list::method)), for
+  method in [push_back, insert, erase])
+  + (Cost(iterate vector) - Cost(iterate list))</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1  vector&lt;int&gt; v;
+2  for (int i = 0; i &lt; 10000; ++i) {
+3    v.insert(v.begin(), i);
+4  }
+
+foo.cc:1: advice: Changing "vector" to "list" will save about 5,000,000 
+operations.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.list_to_vector"
+ xreflabel="List to Vector">
+<title>List to Vector</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_LIST_TO_VECTOR</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect cases where 
+  <code>list</code> could be substituted with <code>vector</code> for
+  better performance.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Iterating through a vector is faster than through a list.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>64%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>Replace list with vector
+  at site S.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>vector</code>
+  operations and access methods.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  Issue the advice if there are no <code>insert</code> operations.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+    (Sum(cost(vector::method)) - Sum(cost(list::method)), for
+  method in [push_back, insert, erase])
+  + (Cost(iterate vector) - Cost(iterate list))</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1  list&lt;int&gt; l;
+...
+2  int sum = 0;
+3  for (list&lt;int&gt;::iterator it = l.begin(); it != l.end(); ++it) {
+4    sum += *it;
+5  }
+
+foo.cc:1: advice: Changing "list" to "vector" will save about 1000000 indirect
+memory references.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"
+ xreflabel="Ordered to Unordered Associative Container">
+<title>Ordered to Unordered Associative Container</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_ORDERED_TO_UNORDERED</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis>  Detect cases where ordered
+  associative containers can be replaced with unordered ones.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Insert and search are quicker in a hashtable than in 
+  a red-black tree.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>52%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>
+  Replace set with unordered_set at site S.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis>
+  <code>set</code>, <code>multiset</code>, <code>map</code>,
+  <code>multimap</code> methods.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  Issue the advice only if we are not using operator <code>++</code> on any
+  iterator on a particular <code>[multi]set|map</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  (Sum(cost(hashtable::method)) - Sum(cost(rbtree::method)), for
+  method in [insert, erase, find])
+  + (Cost(iterate hashtable) - Cost(iterate rbtree))</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+1  set&lt;int&gt; s;
+2  for (int i = 0; i &lt; 100000; ++i) {
+3    s.insert(i);
+4  }
+5  int sum = 0;
+6  for (int i = 0; i &lt; 100000; ++i) {
+7    sum += *s.find(i);
+8  }
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+</sect2>
+
+
+
+<sect2 id="manual.ext.profile_mode.analysis.algorithms"
+ xreflabel="Algorithms">
+<title>Algorithms</title>
+
+  <para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_ALGORITHMS</code>.
+  </para>
+
+<sect3 id="manual.ext.profile_mode.analysis.algorithms.sort"
+ xreflabel="Sorting">
+<title>Sort Algorithm Performance</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_SORT</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Give measure of sort algorithm
+  performance based on actual input.  For instance, advise Radix Sort over
+  Quick Sort for a particular call context.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  See papers: 
+  <ulink url="http://portal.acm.org/citation.cfm?doid=1065944.1065981">
+  A framework for adaptive algorithm selection in STAPL</ulink> and 
+  <ulink url="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
+  Optimizing Sorting with Machine Learning Algorithms</ulink>.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>60%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> Change sort algorithm
+  at site S from X Sort to Y Sort.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> <code>sort</code>
+  algorithm.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  Issue the advice if the cost model tells us that another sort algorithm
+  would do better on this input.  Requires us to know what algorithm we 
+  are using in our sort implementation in release mode.</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Runtime(algo) for algo in [radix, quick, merge, ...]</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.analysis.locality"
+ xreflabel="Data Locality">
+<title>Data Locality</title>
+
+  <para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_LOCALITY</code>.
+  </para>
+
+<sect3 id="manual.ext.profile_mode.analysis.locality.sw_prefetch"
+ xreflabel="Need Software Prefetch">
+<title>Need Software Prefetch</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_SOFTWARE_PREFETCH</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Discover sequences of indirect
+  memory accesses that are not regular, thus cannot be predicted by
+  hardware prefetchers.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Indirect references are hard to predict and are very expensive when they
+  miss in caches.</para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>25%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> Insert prefetch 
+  instruction.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> Vector iterator and
+  access operator [].
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  First, get cache line size and page size from system.
+  Then record iterator dereference sequences for which the value is a pointer.
+  For each sequence within a container, issue a warning if successive pointer 
+  addresses are not within cache lines and do not form a linear pattern
+  (otherwise they may be prefetched by hardware).
+  If they also step across page boundaries, make the warning stronger.
+  </para>
+  <para>The same analysis applies to containers other than vector.
+  However, we cannot give the same advice for linked structures, such as list,
+  as there is no random access to the n-th element.  The user may still be
+  able to benefit from this information, for instance by employing frays (user
+  level light weight threads) to hide the latency of chasing pointers.
+  </para>
+  <para>
+  This analysis is a little oversimplified.  A better cost model could be
+  created by understanding the capability of the hardware prefetcher.
+  This model could be trained automatically by running a set of synthetic 
+  cases.
+  </para>
+  </listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Total distance between pointer values of successive elements in vectors
+  of pointers.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1 int zero = 0;
+2 vector&lt;int*&gt; v(10000000, &amp;zero);
+3 for (int k = 0; k &lt; 10000000; ++k) {
+4   v[random() % 10000000] = new int(k);
+5 }
+6 for (int j = 0; j &lt; 10000000; ++j) {
+7   count += (*v[j] == 0 ? 0 : 1);
+8 }
+
+foo.cc:7: advice: Insert prefetch instruction.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.locality.linked"
+ xreflabel="Linked Structure Locality">
+<title>Linked Structure Locality</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_RBTREE_LOCALITY</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Give measure of locality of
+  objects stored in linked structures (lists, red-black trees and hashtables)
+  with respect to their actual traversal patterns.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>Allocation can be tuned
+  to a specific traversal pattern, to result in better data locality.
+  See paper: 
+  <ulink url="http://www.springerlink.com/content/8085744l00x72662/">
+  Custom Memory Allocation for Free</ulink>.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>30%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>
+  High scatter score N for container built at site S.
+  Consider changing allocation sequence or choosing a structure conscious
+  allocator.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> Methods of all 
+  containers using linked structures.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  First, get cache line size and page size from system.
+  Then record the number of successive elements that are on different line
+  or page, for each traversal method such as <code>find</code>.  Give advice
+  only if the ratio between this number and the number of total node hops
+  is above a threshold.</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Sum(same_cache_line(this,previous))</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+ 1  set&lt;int&gt; s;
+ 2  for (int i = 0; i &lt; 10000000; ++i) {
+ 3    s.insert(i);
+ 4  }
+ 5  set&lt;int&gt; s1, s2;
+ 6  for (int i = 0; i &lt; 10000000; ++i) {
+ 7    s1.insert(i);
+ 8    s2.insert(i);
+ 9  }
+...
+      // Fast, better locality.
+10    for (set&lt;int&gt;::iterator it = s.begin(); it != s.end(); ++it) {
+11      sum += *it;
+12    }
+      // Slow, elements are further apart.
+13    for (set&lt;int&gt;::iterator it = s1.begin(); it != s1.end(); ++it) {
+14      sum += *it;
+15    }
+
+foo.cc:5: advice: High scatter score NNN for set built here.  Consider changing
+the allocation sequence or switching to a structure conscious allocator.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.analysis.mthread"
+ xreflabel="Multithreaded Data Access">
+<title>Multithreaded Data Access</title>
+
+  <para>
+  The diagnostics in this group are not meant to be implemented short term.
+  They require compiler support to know when container elements are written
+  to.  Instrumentation can only tell us when elements are referenced.
+  </para>
+
+  <para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_MULTITHREADED</code>.
+  </para>
+
+<sect3 id="manual.ext.profile_mode.analysis.mthread.ddtest"
+ xreflabel="Dependence Violations at Container Level">
+<title>Data Dependence Violations at Container Level</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_DDTEST</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect container elements
+  that are referenced from multiple threads in the parallel region or
+  across parallel regions.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  Sharing data between threads requires communication and perhaps locking,
+  which may be expensive.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>?%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> Change data
+  distribution or parallel algorithm.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> Container access methods
+  and iterators.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  Keep a shadow for each container.  Record iterator dereferences and
+  container member accesses.  Issue advice for elements referenced by
+  multiple threads.
+  See paper: <ulink url="http://portal.acm.org/citation.cfm?id=207110.207148">
+  The LRPD test: speculative run-time parallelization of loops with 
+  privatization and reduction parallelization</ulink>.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Number of accesses to elements referenced from multiple threads
+  </para></listitem>
+  <listitem><para><emphasis>Example:</emphasis>
+<programlisting>
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.mthread.false_share"
+ xreflabel="False Sharing">
+<title>False Sharing</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_FALSE_SHARING</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect elements in the
+  same container which share a cache line, are written by at least one 
+  thread, and accessed by different threads.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis> Under these assumptions,
+  cache protocols require
+  communication to invalidate lines, which may be expensive.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>68%.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis> Reorganize container
+  or use padding to avoid false sharing.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis> Container access methods
+  and iterators.
+  </para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  First, get the cache line size.
+  For each shared container, record all the associated iterator dereferences 
+  and member access methods with the thread id.  Compare the address lists
+  across threads to detect references in two different threads to the same 
+  cache line.  Issue a warning only if the ratio to total references is 
+  significant.  Do the same for iterator dereference values if they are 
+  pointers.</para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Number of accesses to same cache line from different threads.
+  </para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1     vector&lt;int&gt; v(2, 0);
+2 #pragma omp parallel for shared(v, SIZE) schedule(static, 1)
+3     for (i = 0; i &lt; SIZE; ++i) {
+4       v[i % 2] += i;
+5     }
+
+OMP_NUM_THREADS=2 ./a.out
+foo.cc:1: advice: Change container structure or padding to avoid false 
+sharing in multithreaded access at foo.cc:4.  Detected N shared cache lines.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+</sect2>
+
+
+<sect2 id="manual.ext.profile_mode.analysis.statistics" 
+ xreflabel="Statistics">
+<title>Statistics</title>
+
+<para>
+<emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_STATISTICS</code>.
+</para>
+
+<para>
+  In some cases the cost model may not tell us anything because the costs
+  appear to offset the benefits.  Consider the choice between a vector and
+  a list.  When there are both inserts and iteration, an automatic advice
+  may not be issued.  However, the programmer may still be able to make use
+  of this information in a different way.
+</para>
+<para>
+  This diagnostic will not issue any advice, but it will print statistics for
+  each container construction site.  The statistics will contain the cost
+  of each operation actually performed on the container.
+</para>
+
+</sect2>
+
+
+</sect1>
+
+
+<bibliography id="profile_mode.biblio">
+<title>Bibliography</title>
+
+  <biblioentry>
+    <title>
+      Perflint: A Context Sensitive Performance Advisor for C++ Programs
+    </title>
+
+    <author>
+      <firstname>Lixia</firstname>
+      <surname>Liu</surname>
+    </author>
+    <author>
+      <firstname>Silvius</firstname>
+      <surname>Rus</surname>
+    </author>
+
+    <copyright>
+      <year>2009</year>
+      <holder></holder>
+    </copyright>
+
+    <publisher>
+      <publishername>
+	Proceedings of the 2009 International Symposium on Code Generation
+        and Optimization
+      </publishername>
+    </publisher>
+  </biblioentry> 
+</bibliography>
+
+
+</chapter>
