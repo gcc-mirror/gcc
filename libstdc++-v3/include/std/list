@@ -70,5 +70,9 @@
 # include <debug/list>
 #endif
 
+#ifdef _GLIBCXX_PROFILE
+# include <profile/list>
+#endif
+
 #endif /* _GLIBCXX_LIST */
 

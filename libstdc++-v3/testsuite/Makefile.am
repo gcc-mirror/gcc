@@ -196,6 +196,9 @@ libgomp_flags=-B${glibcxx_builddir}/../libgomp \
 atomic_flags=$(ATOMIC_FLAGS)
 parallel_flags="unix/-D_GLIBCXX_PARALLEL/-fopenmp"
 
+# Runs the testsuite in profile mode.
+profile_flags = "unix/-D_GLIBCXX_PROFILE"
+
 check-parallel: site.exp
 	-@(if test ! -d $${libgomp_dir}; then \
 	  echo "Testing parallel mode failed as libgomp not present."; \
@@ -214,8 +217,17 @@ check-performance-parallel: testsuite_files_performance ${performance_script}
 	CXXFLAGS="-D_GLIBCXX_PARALLEL -fopenmp $(atomic_flags) $(libgomp_flags)"; export CXXFLAGS; \
 	${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
+check-profile: site.exp
+	-@(outputdir=profile; export outputdir; \
+	if test ! -d $${outputdir}; then \
+	  mkdir $${outputdir}; \
+	fi; \
+	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
+	EXPECT=$(EXPECT); export EXPECT; \
+	$(MAKE) CXXFLAGS="$(atomic_flags) " RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(profile_flags)" check-DEJAGNU; )
+
 .PHONY: baseline_symbols new-abi-baseline \
-	check-abi check-compile check-performance check-parallel
+	check-abi check-compile check-performance check-parallel check-profile
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
@@ -224,4 +236,4 @@ CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 
 # To remove directories.
 clean-local:
-	rm -rf parallel
+	rm -rf parallel profile

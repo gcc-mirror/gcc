@@ -100,6 +100,7 @@ xml_sources = \
 	${xml_srcdir}/manual/numerics.xml \
 	${xml_srcdir}/manual/parallel_mode.xml \
 	${xml_srcdir}/manual/prerequisites.xml \
+	${xml_srcdir}/manual/profile_mode.xml \
 	${xml_srcdir}/manual/internals.xml \
 	${xml_srcdir}/manual/shared_ptr.xml \
 	${xml_srcdir}/manual/spine.xml \

@@ -65,4 +65,8 @@
 # include <debug/map>
 #endif
 
+#ifdef _GLIBCXX_PROFILE
+# include <profile/map>
+#endif
+
 #endif /* _GLIBCXX_MAP */

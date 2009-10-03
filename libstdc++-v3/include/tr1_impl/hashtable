@@ -409,6 +409,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _M_erase_node(_Node*, _Node**);
 
     public:				
+      // Expose insert_return_type for profiling mode.
+      typedef _Insert_Return_Type insert_return_type;
+
       // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v) 

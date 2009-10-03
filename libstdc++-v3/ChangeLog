@@ -1,3 +1,64 @@
+2009-10-02  Silvius Rus  <silvius.rus@gmail.com>
+	* configure: Add check for execinfo.h.
+	* config.h.in: Add undef for HAVE_EXECINFO_H.
+	* include/Makefile.am: Add build support for profile mode.
+	* include/Makefile.in: Same.
+	* include/profile/base.h: New file.
+	* include/profile/bitset: Same.
+	* include/profile/deque: Same.
+	* include/profile/hashtable.h: Same.
+	* include/profile/list: Same.
+	* include/profile/map: Same.
+	* include/profile/map.h: Same.
+	* include/profile/multimap.h: Same.
+	* include/profile/multiset.h: Same.
+	* include/profile/set: Same.
+	* include/profile/set.h: Same.
+	* include/profile/unordered_map: Same.
+	* include/profile/unordered_set: Same.
+	* include/profile/vector: Same.
+	* include/profile/impl/profiler.h: Same.
+	* include/profile/impl/profiler_container_size.h: Same.
+	* include/profile/impl/profiler_hash_func.h: Same.
+	* include/profile/impl/profiler_hashtable_size.h: Same.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Same.
+	* include/profile/impl/profiler_node.h: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/profile/impl/profiler_trace.h: Same.
+	* include/profile/impl/profiler_vector_size.h: Same.
+	* include/profile/impl/profiler_vector_to_list.h: Same.
+	* include/std/vector: Include corresponding profile header guarded by 
+	_GLIBCXX_PROFILE.
+	* include/std/deque: Same.
+	* include/std/list: Same.
+	* include/std/map: Same.
+	* include/std/unordered_map: Same.
+	* include/std/bitset: Same.
+	* include/std/set: Same.
+	* include/std/unordered_set: Same.
+	* include/backward/hash_map: Same.
+	* include/backward/hash_set: Same.
+	* include/tr1_impl/hashtable (_Hashtable): Expose insert_return_type.
+	* include/bits/c++config: Define profile namespace.
+	* testsuite/Makefile.in: Add check-profile.
+	* testsuite/Makefile.am: Same.
+	* testsuite/ext/profile/all.cc: New file.
+	* testsuite/ext/profile/mh.cc: Same.
+	* testsuite/ext/profile/mutex_extensions.cc: Same.
+	* testsuite/23_containers/unordered_map/profile/hash_map.cc: Same.
+	* testsuite/23_containers/unordered_map/profile/unordered.cc: Same.
+	* testsuite/23_containers/vector/profile/vector.cc: Same.
+	* testsuite/23_containers/vector/resize/moveable.cc: Make it pass
+	in profile mode.
+	* testsuite/23_containers/deque/capacity/moveable.cc: Same.
+	* testsuite/23_containers/list/capacity/29134.cc: Same.
+	* doc/Makefile.in: Add reference to profile_mode.xml.
+	* doc/Makefile.am: Same.
+	* doc/xml/manual/profile_mode.xml: New file.
+	* doc/xml/manual/debug.xml: Add link to profile mode section.
+	* doc/xml/manual/extensions.xml: Add profile mode.  Update numbering.
+	* doc/doxygen/user.cfg.in: Add profile mode files.
+
 2009-10-02  Johannes Singler  <singler@ira.uka.de>
 
         * include/parallel/base.h: Take integer types from <tr1/cstdint>.

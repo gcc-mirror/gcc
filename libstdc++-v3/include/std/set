@@ -65,4 +65,8 @@
 # include <debug/set>
 #endif
 
+#ifdef _GLIBCXX_PROFILE
+# include <profile/set>
+#endif
+
 #endif /* _GLIBCXX_SET */

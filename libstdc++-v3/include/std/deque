@@ -72,4 +72,8 @@
 # include <debug/deque>
 #endif
 
+#ifdef _GLIBCXX_PROFILE
+# include <profile/deque>
+#endif
+
 #endif /* _GLIBCXX_DEQUE */

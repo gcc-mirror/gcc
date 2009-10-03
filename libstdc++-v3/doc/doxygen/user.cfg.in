@@ -661,6 +661,25 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/debug/unordered_map \
                          include/debug/unordered_set \
                          include/debug/vector \
+                         include/profile/bitset \
+                         include/profile/deque \
+                         include/profile/list \
+                         include/profile/map \
+                         include/profile/set \
+                         include/profile/unordered_map \
+                         include/profile/unordered_set \
+                         include/profile/vector \
+                         include/profile/base.h \
+                         include/profile/impl/profiler.h \
+                         include/profile/impl/profiler_container_size.h \
+                         include/profile/impl/profiler_hash_func.h \
+                         include/profile/impl/profiler_hashtable_size.h \
+                         include/profile/impl/profiler_map_to_unordered_map.h \
+                         include/profile/impl/profiler_node.h \
+                         include/profile/impl/profiler_state.h \
+                         include/profile/impl/profiler_trace.h \
+                         include/profile/impl/profiler_vector_size.h \
+                         include/profile/impl/profiler_vector_to_list.h \
                          include/ext/algorithm \
                          include/ext/functional \
                          include/ext/iterator \
@@ -715,6 +734,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/bits/shared_ptr.h \
                          include/debug \
                          include/parallel \
+                         include/profile \
                          include/ext \
                          include/ext/pb_ds \
                          include/ext/pb_ds/detail 

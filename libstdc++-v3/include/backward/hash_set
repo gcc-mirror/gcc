@@ -58,7 +58,11 @@
 
 #include "backward_warning.h"
 #include <bits/c++config.h>
+#ifdef _GLIBCXX_PROFILE
+#include <profile/hashtable.h>
+#else
 #include <backward/hashtable.h>
+#endif
 #include <bits/concept_check.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
