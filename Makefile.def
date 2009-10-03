@@ -97,7 +97,8 @@ host_modules= { module= ld; bootstrap=true; };
 host_modules= { module= libcpp; bootstrap=true; };
 host_modules= { module= libdecnumber; bootstrap=true; };
 host_modules= { module= libgui; };
-host_modules= { module= libiberty; bootstrap=true; };
+host_modules= { module= libiberty; bootstrap=true;
+	        extra_configure_flags='@extra_host_libiberty_configure_flags@';};
 // We abuse missing to avoid installing anything for libiconv.
 host_modules= { module= libiconv;
 		extra_configure_flags='--disable-shared';
@@ -141,6 +142,7 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
 host_modules= { module= gnattools; };
+host_modules= { module= lto-plugin; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -345,6 +347,8 @@ dependencies = { module=all-libcpp; on=all-intl; };
 dependencies = { module=all-fixincludes; on=all-libiberty; };
 
 dependencies = { module=all-gnattools; on=all-target-libada; };
+
+dependencies = { module=all-lto-plugin; on=all-libiberty; };
 
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };

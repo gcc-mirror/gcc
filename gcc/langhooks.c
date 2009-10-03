@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "diagnostic.h"
 #include "cgraph.h"
+#include "output.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -583,4 +584,55 @@ lhd_builtin_function (tree decl)
 {
   lang_hooks.decls.pushdecl (decl);
   return decl;
+}
+
+/* LTO hooks.  */
+
+/* Used to save and restore any previously active section.  */
+static section *saved_section;
+
+
+/* Begin a new LTO output section named NAME.  This default implementation
+   saves the old section and emits assembly code to switch to the new
+   section.  */
+
+void
+lhd_begin_section (const char *name)
+{
+  section *section;
+
+  /* Save the old section so we can restore it in lto_end_asm_section.  */
+  gcc_assert (!saved_section);
+  saved_section = in_section;
+
+  /* Create a new section and switch to it.  */
+  section = get_section (name, SECTION_DEBUG, NULL);
+  switch_to_section (section);
+}
+
+
+/* Write DATA of length LEN to the current LTO output section.  This default
+   implementation just calls assemble_string and frees BLOCK.  */
+
+void
+lhd_append_data (const void *data, size_t len, void *block)
+{
+  if (data)
+    assemble_string ((const char *)data, len);
+  free (block);
+}
+
+
+/* Finish the current LTO output section.  This default implementation emits
+   assembly code to switch to any section previously saved by
+   lhd_begin_section.  */
+
+void
+lhd_end_section (void)
+{
+  if (saved_section)
+    {
+      switch_to_section (saved_section);
+      saved_section = NULL;
+    }
 }

@@ -1,3 +1,454 @@
+2009-10-03  Simon Baldwin  <simonb@google.com>
+	    Cary Coutant  <ccoutant@google.com>
+	    Rafael Espindola  <espindola@google.com>
+	    Richard Guenther  <rguenther@suse.de>
+	    Jan Hubicka  <jh@suse.cz>
+	    Doug Kwan <dougkwan@google.com>
+	    H.J. Lu  <hongjiu.lu@intel.com> 
+	    Bill Maddox  <maddox@google.com>
+	    Ryan Mansfield  <rmansfield@qnx.com>
+	    Diego Novillo  <dnovillo@google.com>
+	    Ollie Wild  <aaw@google.com>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* lto-cgraph.c: New file.
+	* lto-compress.c: New file.
+	* lto-compress.h: New file.
+	* lto-opts.c: New file.
+	* lto-section-in.c: New file.
+	* lto-section-out.c: New file.
+	* lto-streamer-in.c: New file.
+	* lto-streamer-out.c: New file.
+	* lto-streamer.c: New file.
+	* lto-streamer.h: New file.
+	* lto-symtab.c: New file.
+	* lto-wpa-fixup.c: New file.
+	* lto-wrapper.c: New file.
+
+2009-10-03  Simon Baldwin  <baldwin@google.com>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Rafael Espindola  <espindola@google.com>
+	    Nathan Froyd  <froydnj@codesourcery.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    Doug Kwan  <dougkwan@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+	    Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* Makefile.in (enable_lto): New.
+	(site.exp): If @enable_lto@ is set to 'yes' define
+	ENABLE_LTO.
+	(LINKER_PLUGIN_API_H): Define.
+	(LTO_SYMTAB_H): Define.
+	(LTO_STREAMER_H): Define.
+	(TREE_VECTORIZER_H): Define.
+	(INCLUDES): Add LIBELFINC.
+	(OBJS-common): Add lto-cgraph.o, lto-streamer-in.o,
+	lto-streamer-out.o, lto-section-in.o, lto-section-out.o,
+	lto-symtab.o, lto-opts.o, lto-streamer.o, lto-wpa-fixup.o,
+	lto-compress.o.
+	(MOSTLYCLEANFILES): Add lto-wrapper$(exeext)
+	(native): Add lto-wrapper$(exeext)
+	(lto-compress.o, lto-cgraph.o, lto-streamer-in.o,
+	lto-streamer-out.o, lto-section-in.o, lto-section-out.o,
+	lto-symtab.o, lto-opts.o, lto-streamer.o,
+	lto-wpa-fixup.o): New rules.
+	(gimple.o): Add dependency on LTO_HEADER_H and
+	LTO_SECTION_OUT_H.
+	(varasm.o): Add dependency on tree-iterator.h.
+	(cgraph.o): Add dependency on cif-code.def.
+	(ipa-reference.o): Add dependency on LTO_STREAMER_H.
+	(ipa-pure-const.o): Likewise.
+	(GTFILES): Add lto-symtab.c.
+	(install-lto-wrapper): New.
+	* configure.ac: If 'lto' is in enable_languages, define
+	ENABLE_LTO and enable_lto.
+	If LIBELFLIBS is set, define HAVE_libelf.
+	* config.in: Regenerate.
+
+2009-10-03  Rafael Espindola  <espindola@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* cgraphunit.c (ipa_passes): Prevent lto1 from calling
+	ipa_write_summaries.
+	Call execute_ipa_summary_passes for all_regular_ipa_passes and
+	all_lto_gen_passes.
+	(cgraph_optimize): Make extern.
+
+2009-10-03  Nathan Froyd  <froydnj@codesourcery.com>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* toplev.c (in_lto_p): Declare.
+	* collect2.c (scan_prog_file): Read all the output when reading
+	information for LTO.
+	(enum lto_mode_d): Declare.
+
+2009-10-03  Richard Guenther  <rguenther@suse.de>
+	    Diego Novillo  <dnovillo@google.com>
+
+	* gimple.c: Include target.h and alias.h.
+	(gimple_types): Declare.
+	(type_hash_cache): Declare.
+	(gimple_alloc_stat): Make extern.
+	(gimple_build_eh_must_not_throw): Call
+	gimple_eh_must_not_throw_set_fndecl.
+	(struct type_pair_d): Declare.
+	(type_pair_t): Declare.
+	(type_pair_hash): New.
+	(type_pair_eq): New.
+	(lookup_type_pair): New.
+	(gimple_force_type_merge): New.
+	(compare_type_names_p): New.
+	(compare_field_offset): New.
+	(gimple_types_compatible_p): New.
+	(struct sccs): Declare.
+	(next_dfs_num): Declare.
+	(iterative_hash_gimple_type): New.
+	(visit): New.
+	(iterative_hash_type_name): New.
+	(iterative_hash_gimple_type): New.
+	(gimple_type_hash): New.
+	(gimple_type_eq): New.
+	(gimple_register_type): New.
+	(print_gimple_types_stats): New.
+	(gimple_signed_or_unsigned_type): New.
+	(gimple_unsigned_type): New.
+	(gimple_signed_type): New.
+	(gimple_get_alias_set): New.
+	(gimple_decl_printable_name): Do not use DMGL_TYPES.
+	* gimple.h (gimple_alloc, gimple_alloc_stat): Declare.
+	(gimple_force_type_merge): Declare.
+	(gimple_types_compatible_p): Declare.
+	(gimple_register_type): Declare.
+	(print_gimple_types_stats): Declare.
+	(gimple_unsigned_type): Declare.
+	(gimple_signed_type): Declare.
+	(gimple_get_alias_set): Declare.
+	(gimple_eh_must_not_throw_set_fndecl): New.
+
+2009-10-03  Jan Hubicka  <jh@suse.cz>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* ipa-pure-const.c: Include lto-streamer.h.
+	(register_hooks): Factor out of ...
+	(generate_summary): ... here.
+	(pure_const_write_summary): New.
+	(pure_const_read_summary): New.
+	(pass_ipa_pure_const): Add pure_const_write_summary and
+	pure_const_read_summary.
+	* ipa-reference.c: Include lto-streamer.h.
+	(add_new_function): New.
+	(remove_node_data): New.
+	(duplicate_node_data): New.
+	(ipa_init): Guard against multiple calls.
+	Move hook setup from analyze_function.
+	(write_node_summary_p): New.
+	(ipa_reference_write_summary): New.
+	(ipa_reference_read_summary): New.
+	(pass_ipa_reference): Add ipa_reference_write_summary and
+	ipa_reference_read_summary.
+	* cgraph.h (cgraph_local_info): Add field lto_file_data.
+	(struct cgraph_edge): Add fields lto_stmt_uid and
+	call_stmt_cannot_inline_p.
+	(cgraph_optimize): Declare.
+	(cgraph_decide_is_function_needed): Declare.
+	(reset_inline_failed): Declare.
+	(enum LTO_cgraph_tags): Declare.
+	(LTO_cgraph_tag_names): Declare.
+	(LCC_NOT_FOUND): Define.
+
+2009-10-03  Doug Kwan  <dougkwan@google.com>
+	    Rafael Espindola  <espindola@google.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    Diego Novillo  <dnovillo@google.com>
+	    Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* passes.c (all_regular_ipa_passes): New.
+	(all_ipa_passes): Rename to all_small_ipa_passes.
+	(init_optimization_passes): Init all_regular_ipa_passes.
+	* tree-pass.h (all_regular_ipa_passes): New.
+	(all_ipa_passes): Rename to all_small_ipa_passes.
+	* passes.c (all_lto_gen_passes): New.
+	(init_optimization_passes): Initialize all_lto_gen_passes.
+	(execute_ipa_summary_passes): Make non-static.
+	(ipa_write_summaries_1): New.
+	(ipa_write_summaries_2): New.
+	(ipa_write_summaries): New.
+	(ipa_write_summaries_of_cgraph_node_set): New.
+	(ipa_read_summaries_1): New.
+	(ipa_read_summaries): New.
+	(execute_ipa_pass_list): Call cgraph_process_new_functions.
+	(execute_regular_ipa_pass_list): Remove.
+	(init_optimization_passes): Schedule
+	pass_rebuild_cgraph_edges and pass_early_inline outside
+	of pass_all_early_optimizations.  Document reason.
+	(pass_ipa_lto_gimple_out, pass_ipa_lto_wpa_fixup,
+	pass_ipa_lto_finish_out): New pass.
+	(pass_ipa_summary_passes): Start and stop timers if the pass
+	has them.
+	(execute_all_ipa_transforms): New.
+	(execute_one_pass): Don't call execute_one_ipa_transform_pass.
+	(dump_properties, debug_properties): New.
+	* tree-optimize.c (gate_all_early_local_passes): Return
+	false if we are in lto1.
+	(tree_rest_of_compilation): Call execute_all_ipa_transforms.
+	* tree-pass.h (execute_all_ipa_transforms): Declare.
+	(pass_ipa_function_and_variable_visibility): Declare.
+	(pass_ipa_early_inline): Declare.
+	(pass_ipa_lto_gimple_out): Declare.
+	(pass_ipa_lto_wpa_fixup): Declare.
+	(pass_ipa_lto_finish_out): Declare.
+	(all_small_ipa_passes, all_regular_ipa_passes,
+	all_lto_gen_passes): Declare.
+	(execute_ipa_summary_passes): Declare.
+	(execute_all_ipa_transforms): Declare.
+	(ipa_write_summaries): Declare
+	(ipa_write_summaries_of_cgraph_node_set): Declare.
+	(ipa_read_summaries): Declare.
+
+2009-10-03  Doug Kwan  <dougkwan@google.com>
+	    Ollie Wild  <aaw@google.com>
+
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): Do
+	nothing in WPA.
+
+	* collect2.c (LTO_MODE_NONE, LTO_MODE_LTO, LTO_MODE_WPA): New enums.
+	(lto_mode): New variable.
+	(maybe_run_lto_and_relink): Handle the -fwpa option.
+	(main): Handle the -fwpa option.
+	(maybe_unlink_list): New function.
+	* gcc.c (link_lto_options): Replace -flto with -fwpa.
+	* common.opt (flto): New flag.
+	* toplev.c (flag_generate_lto): Declare.
+
+2009-10-03  Simon Baldwin  <simonb@google.com>
+
+	* common.opt (flto-compression-level): New flag.
+
+	* opts.c: Include lto-opts.h.
+	(handle_option): Call lto_register_user_option for each
+	valid option handled.
+	* (decode_options): Clear registered options before the options
+	handling loop.
+
+2009-10-03  Cary Coutant  <ccoutant@google.com>
+
+	* collect2.c (is_elf): New function.
+	(scan_prog_file): Require LTO object to be in ELF format.
+
+2009-10-03  Rafael Espindola  <espindola@google.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Use the -pass-through option to pass
+	libgcc to the linker.
+
+	* ipa-cp.c (cgraph_gate_cp): Return false if LTRANS is
+	running.
+
+	* collect2.c (maybe_run_lto_and_relink): Execute lto-wrapper.
+	(collect_execute): Add flags argument. Pass flags to pex_run. Update
+	all callers.
+	* collect2.h (collect_execute): Add flags argument.
+	* tlink.c (tlink_execute): Update call to collect_execute.
+	* gcc.c (main): Set the COLLECT_LTO_WRAPPER environment variable.
+	(use_linker_plugin): New.
+	(use_linker_plugin_spec_function): New.
+	(LINK_COMMAND_SPEC): Pass plugin options to the linker.
+	(linker_plugin_file_spec): New.
+	(lto_wrapper_spec): New.
+	(lto_gcc_spec): New.
+	(static_specs): Add linker_plugin_file, lto_wrapper and lto_gcc.
+	(static_spec_functions): Add use-linker-plugin.
+	(process_command): Handle -use-linker-plugin.
+	(main): Use lto_wrapper_spec instead of lto_wrapper. Set
+	linker_plugin_file_spec and lto_gcc_spec.
+	(use_linker_plugin_spec_function): New.
+
+2009-10-03  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41547
+	PR lto/41548
+	* tree.h (is_lang_specific): Include LANG_TYPE.
+	* tree.c (find_decls_types_r): Manually add interesting parts
+	of TYPE_FIELDS.  Walk BINFO_VIRTUALS.  Do not walk TYPE_METHODS.
+
+	* gimple.c (type_pair_hash): Make symmetric.
+	(type_pair_eq): Likewise.
+	(lookup_type_pair): Increase initial hashtable size.
+	(gimple_force_type_merge): Rely on type-pair symmetry.
+	(visit): Remove excessive checking code.
+	(iterative_hash_type_name): Do not hash TYPE_NAME of
+	anonymous unions.
+	(gimple_register_type): Remove getenv calls, shrink initial
+	hashtable size.
+
+	PR middle-end/41502
+	* cgraphunit.c (ipa_passes): Do not remove bodies of extern
+	inline functions if not generating lto output.
+
+	PR lto/41379
+	* toplev.c (finalize): In WPA mode remove the asm file.
+
+2009-10-03  Doug Kwan  <dougkwan@google.com>
+
+	* ipa-inline.c (cgraph_mark_inline): Check
+	edge->call_stmt_cannot_inline_p instead of calling
+	gimple_call_cannot_inline_p.
+	(cgraph_decide_inlining): Do nothing in WPA and LTRANS.
+	(cgraph_gate_ipa_early_inlining): Return false if
+	in_lto_p is set.
+	(inline_generate_summary): Do nothing in LTRANS.
+	* cgraph.c (initialize_inline_failed): Make sure
+	e->call_stmt exists before calling
+	gimple_call_cannot_inline_p.
+	(cgraph_create_edge): Set edge->call_stmt_cannot_inline_p.
+	(cgraph_clone_edge): Add argument STMT_UID.  Modify all
+	callers.
+	Update new_edge->lto_stmt_uid.
+	* cgraphbuild.c (reset_inline_failed): New.
+
+	* common.opt (fwpa): New flag.
+	(fltrans): New option.
+	* gcc.c (gcc_lto_option_t): New type.
+	(current_lto_option): New variable.
+	(lto_single_spec_function): Remove and is replaced by ..
+	(lto_option_spec_function): New function.
+	(LINK_COMMAND_SPEC): Use link_lto_option spec instead of just
+	passing the -flto flag.
+	(cc1_options): Separate non-LTO related parts into ..
+	(cc1_non_lto_options): Non-LTO related options shared by all FEs.
+	(lto1_options): New spec for lto FE.
+	(link_lto_options): New spec for handling LTO flags in linker.
+	(invoke_lto_single): Re-format to fit in 80 column.  Replace
+	lto-single with lto-option.
+	(static_specs): Add cc1_non_lto_options, lto1_options and
+	link_lto_options.
+	(static_spec_function): Replace lto-single with lto-option.
+	(process_command): Handle -flto, -fwpa and -fltran
+	by setting current_lto_option and not passing it to subprocess
+	unconditionally.
+
+2009-10-03  Bill Maddox  <maddox@google.com>
+
+	Add `gcc' driver support for link-time code generation (LTO).
+
+	* collect2.c (enum pass): Add new literal PASS_LTOINFO.
+	(lto_flag, lto_objects, lto_o_file): New variables.
+	(struct lto_object, struct lto_object_list): New structures.
+	(collect_exit, handler): Remove LTO temporary output file on exit.
+	(add_lto_object): New function.
+	(maybe_run_lto_and_relink): New function. Perform link time code
+	generation and relinking for object files containing LTO information.
+	(main): Invoke maybe_run_lto_and_relink().
+	(dump_argv): New function.  For debugging, currently disabled.
+	(scan_prog_file): Add LTO information pass.
+	* gcc.c (LINK_COMMAND_SPEC): Pass `-flto' switch to linker, i.e.,
+	collect2.
+	* toplev.c (compile_file): Emit assembler directive to create
+	the `gnu_lto_v1' marker symbol when compiling with `-flto'.
+
+2009-10-03  Diego Novillo  <dnovillo@google.com>
+
+	* c.opt: Add LTO to warn_abi and warn_psabi.
+
+	* tree.c (fld_worklist_push): Rename from PUSH.
+	Convert to static inline function.
+	Ignore language-specific nodes.
+	Update all users.
+	(find_decls_types_r): Do not traverse the subtrees of
+	language-specific nodes.
+	Do not traverse DECL_INITIAL for TYPE_DECLs.
+	* tree.h (is_lang_specific): New.
+	* langhooks.h (struct lang_hooks_for_decls): Remove
+	may_need_assembler_name_p.  Update all users.
+
+	* c-common.c (set_builtin_user_assembler_name): Move ...
+	* builtins.c (set_builtin_user_assembler_name): ... here.
+	(is_builtin_name): Add comment
+	(is_builtin_fn): New.
+	* except.c (output_ttype): Only call
+	lookup_type_for_runtime if TYPE is not a runtime type.
+
+	* passes.c (register_pass): Call position_pass on
+	all_small_ipa_passes, all_regular_ipa_passes and
+	all_lto_gen_passes.
+	* timevar.def (TV_IPA_LTO_GIMPLE_IO): Define.
+	(TV_IPA_LTO_DECL_IO): Define.
+	(TV_IPA_LTO_CGRAPH_IO): Define.
+	(TV_LTO): Define.
+	(TV_WHOPR_WPA): Define.
+	(TV_WHOPR_WPA_IO): Define.
+	(TV_WHOPR_LTRANS): Define.
+	(TV_WHOPR_WPA_FIXUP): Define.
+	(TV_WHOPR_WPA_LTRANS_EXEC): Define.
+	* tree-cfg.c (tree_node_can_be_shared): Make extern.
+	* tree-flow.h (tree_node_can_be_shared): Declare.
+	* tree-inline.c (tree_can_inline_p): Check that E has a
+	statement associated with it.
+	* tree.c (free_lang_data_in_binf): Factor out of ...
+	(free_lang_data_in_type): ... here.
+	Call RECORD_OR_UNION_TYPE_P.
+	(need_assembler_name_p): Ignore DECL if it does not have
+	TREE_PUBLIC set.
+	Call lang_hooks.decls.may_need_assembler_name_p if set.
+	(free_lang_data_in_decl): Do not clear DECL_CONTEXT for
+	CONST_DECLs.
+	(free_lang_data): Set debug_info_level to
+	DINFO_LEVEL_NONE.
+	Set write_symbols to NO_DEBUG.
+	Set debug_hooks to do_nothing_debug_hooks.
+	(gate_free_lang_data): Return true if flag_generate_lto
+	is set.
+	(walk_tree_1): Call RECORD_OR_UNION_TYPE_P.
+	* c-common.h (set_builtin_user_assembler_name): Move ...
+	* tree.h (set_builtin_user_assembler_name): ... here.
+
+	* common.opt (flto-report): New flag.
+	* opts.c (complain_wrong_lang): Do not complain if
+	running lto1.
+	* collect2.c (scan_prog_file): Send the error output of
+	'nm' to HOST_BIT_BUCKET.
+
+2009-10-03  Ollie Wild  <aaw@google.com>
+
+	* langhooks-def.h (lhd_begin_section): New function declaration.
+	(lhd_write_section): New function declaration.
+	(lhd_end_section): New function declaration.
+	(LANG_HOOKS_BEGIN_SECTION): New macro.
+	(LANG_HOOKS_WRITE_SECTION_DATA): New macro.
+	(LANG_HOOKS_END_SECTION): New macro.
+	(LANG_HOOKS_LTO): New macro.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_LTO.
+	* langhooks.c (output.h): Add include.
+	(saved_section): New static variable.
+	(lhd_begin_section): New function.
+	(lhd_write_section_data): New function.
+	(lhd_end_section): New function.
+	* langhooks.h (struct lang_hooks_for_lto): New structure.
+	(struct lang_hooks): Add member lto.
+	* Makefile.in (langhooks.o): Add dependency on output.h.
+
+	* c-opts.c (c_common_post_options): Handle -flto and -fwhopr.
+
+2009-10-03  Richard Guenther  <rguenther@suse.de>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Handle LTO.
+
+2009-10-03  Simon Baldwin  <simonb@google.com>
+	    Richard Guenther  <rguenther@suse.de>
+	    Janis Johnson  <janis187@us.ibm.com>
+	    Doug Kwan  <dougkwan@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+	    Ramana Radhakrishnan  <ramana.r@gmail.com>
+	    Ollie Wild  <aaw@google.com>
+
+	* doc/install.texi: Add documentation for libelf and --enable-lto.
+	* doc/invoke.texi: Document -fwpa, -flto, -fwhopr,
+	-fltrans, -flto-report, -flto-compression-level and
+	-use-linker-plugin.
+	* doc/sourcebuild.texi: Document use of zlib.
+	Document lto-plugin.
+	Add section for LTO Testing.
+
 2009-10-02  Cary Coutant  <ccoutant@google.com>
 
 	Add support for comdat type sections for DWARF v4.  Merge from dwarf4

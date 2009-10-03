@@ -432,20 +432,24 @@ extern struct gimple_opt_pass pass_tracer;
 extern struct gimple_opt_pass pass_warn_unused_result;
 
 /* IPA Passes */
+extern struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility;
+extern struct simple_ipa_opt_pass pass_ipa_early_inline;
+
+extern struct simple_ipa_opt_pass pass_early_local_passes;
+
+extern struct ipa_opt_pass_d pass_ipa_lto_gimple_out;
+extern struct simple_ipa_opt_pass pass_ipa_increase_alignment;
+extern struct simple_ipa_opt_pass pass_ipa_matrix_reorg;
 extern struct ipa_opt_pass_d pass_ipa_inline;
 extern struct simple_ipa_opt_pass pass_ipa_free_lang_data;
 extern struct ipa_opt_pass_d pass_ipa_cp;
 extern struct ipa_opt_pass_d pass_ipa_reference;
 extern struct ipa_opt_pass_d pass_ipa_pure_const;
-
-extern struct simple_ipa_opt_pass pass_ipa_matrix_reorg;
-extern struct simple_ipa_opt_pass pass_ipa_early_inline;
 extern struct simple_ipa_opt_pass pass_ipa_type_escape;
 extern struct simple_ipa_opt_pass pass_ipa_pta;
 extern struct simple_ipa_opt_pass pass_ipa_struct_reorg;
-extern struct simple_ipa_opt_pass pass_early_local_passes;
-extern struct simple_ipa_opt_pass pass_ipa_increase_alignment;
-extern struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility;
+extern struct ipa_opt_pass_d pass_ipa_lto_wpa_fixup;
+extern struct ipa_opt_pass_d pass_ipa_lto_finish_out;
 
 extern struct gimple_opt_pass pass_all_optimizations;
 extern struct gimple_opt_pass pass_cleanup_cfg_post_optimizing;
@@ -554,7 +558,8 @@ extern struct gimple_opt_pass pass_update_address_taken;
 extern struct gimple_opt_pass pass_convert_switch;
 
 /* The root of the compilation pass tree, once constructed.  */
-extern struct opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
+extern struct opt_pass *all_passes, *all_small_ipa_passes, *all_lowering_passes,
+                       *all_regular_ipa_passes, *all_lto_gen_passes;
 
 /* Current optimization pass.  */
 extern struct opt_pass *current_pass;
@@ -562,8 +567,15 @@ extern struct opt_pass *current_pass;
 extern struct opt_pass * get_pass_for_id (int);
 extern void execute_pass_list (struct opt_pass *);
 extern void execute_ipa_pass_list (struct opt_pass *);
+extern void execute_ipa_summary_passes (struct ipa_opt_pass_d *);
+extern void execute_all_ipa_transforms (void);
+
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
+extern void ipa_write_summaries (void);
+extern void ipa_write_summaries_of_cgraph_node_set (
+	      struct cgraph_node_set_def *);
+extern void ipa_read_summaries (void);
 extern void register_one_dump_file (struct opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
 extern void register_pass (struct register_pass_info *);

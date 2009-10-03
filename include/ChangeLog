@@ -1,3 +1,8 @@
+2008-10-03  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h: New.
+	* lto-symtab.h: New.
+
 2009-09-29  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

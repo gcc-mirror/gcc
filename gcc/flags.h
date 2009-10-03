@@ -111,6 +111,17 @@ extern int optimize;
 
 extern int optimize_size;
 
+/* True if this is the LTO front end (lto1).  This is used to disable
+   gimple generation and lowering passes that are normally run on the
+   output of a front end.  These passes must be bypassed for lto since
+   they have already been done before the gimple was written.  */ 
+
+extern bool in_lto_p;
+
+/* Nonzero if we should write GIMPLE bytecode for link-time optimization.  */
+
+extern int flag_generate_lto;
+
 /* Used to set the level of -Wstrict-aliasing, when no level is specified.  
    The external way to set the default level is to use
    -Wstrict-aliasing=level.  

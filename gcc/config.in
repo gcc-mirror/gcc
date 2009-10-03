@@ -113,6 +113,12 @@
 #endif
 
 
+/* Define to enable LTO support. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_LTO
+#endif
+
+
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
 #ifndef USED_FOR_TARGET
@@ -1450,6 +1456,12 @@
 /* Define if cloog is in use. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_cloog
+#endif
+
+
+/* Define if libelf is in use. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_libelf
 #endif
 
 

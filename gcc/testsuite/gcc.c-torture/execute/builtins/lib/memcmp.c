@@ -1,6 +1,7 @@
 extern void abort(void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 int
 memcmp (const void *s1, const void *s2, __SIZE_TYPE__ len)
 {

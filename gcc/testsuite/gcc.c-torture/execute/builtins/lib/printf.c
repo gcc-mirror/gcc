@@ -3,6 +3,7 @@
 extern void abort (void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 int
 printf (const char *string, ...)
 {
@@ -20,6 +21,7 @@ printf (const char *string, ...)
 
 
 /* Locking stdio doesn't matter for the purposes of this test.  */
+__attribute__ ((__noinline__))
 int
 printf_unlocked (const char *string, ...)
 {

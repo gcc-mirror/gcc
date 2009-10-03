@@ -184,6 +184,15 @@ static int aix64_flag;			/* true if -b64 */
 static int aixrtl_flag;			/* true if -brtl */
 #endif
 
+enum lto_mode_d {
+  LTO_MODE_NONE,			/* Not doing LTO.  */
+  LTO_MODE_LTO,				/* Normal LTO.  */
+  LTO_MODE_WHOPR			/* WHOPR.  */
+};
+
+/* Current LTO mode.  */
+static enum lto_mode_d lto_mode = LTO_MODE_NONE;
+
 int debug;				/* true if -debug */
 
 static int shared_obj;			/* true if -shared */
@@ -193,6 +202,7 @@ static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
 static const char *export_file;		/* <xxx>.x for AIX export list.  */
 #endif
+static char **lto_o_files;		/* Output files for LTO.  */
 const char *ldout;			/* File for ld stdout.  */
 const char *lderrout;			/* File for ld stderr.  */
 static const char *output_file;		/* Output file for ld.  */
@@ -250,6 +260,25 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 					  &libpath_lib_dirs, NULL};
 #endif
 
+/* List of names of object files containing LTO information.
+   These are a subset of the object file names appearing on the
+   command line, and must be identical, in the sense of pointer
+   equality, with the names passed to maybe_run_lto_and_relink().  */
+
+struct lto_object
+{
+  const char *name;		/* Name of object file.  */
+  struct lto_object *next;	/* Next in linked list.  */
+};
+
+struct lto_object_list
+{
+  struct lto_object *first;	/* First list element.  */
+  struct lto_object *last;	/* Last list element.  */
+};
+
+static struct lto_object_list lto_objects;
+
 /* Special kinds of symbols that a name may denote.  */
 
 typedef enum {
@@ -272,6 +301,7 @@ static void prefix_from_string (const char *, struct path_prefix *);
 static void do_wait (const char *, struct pex_obj *);
 static void fork_execute (const char *, char **);
 static void maybe_unlink (const char *);
+static void maybe_unlink_list (char **);
 static void add_to_list (struct head *, const char *);
 static int extract_init_priority (const char *);
 static void sort_ids (struct head *);
@@ -310,7 +340,8 @@ typedef enum {
   PASS_FIRST,				/* without constructors */
   PASS_OBJ,				/* individual objects */
   PASS_LIB,				/* looking for shared libraries */
-  PASS_SECOND				/* with constructors linked in */
+  PASS_SECOND,				/* with constructors linked in */
+  PASS_LTOINFO				/* looking for objects with LTO info */
 } scanpass;
 
 /* ... and which kinds of symbols are to be considered.  */
@@ -362,6 +393,9 @@ collect_exit (int status)
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
 #endif
+
+  if (lto_o_files)
+    maybe_unlink_list (lto_o_files);
 
   if (ldout != 0 && ldout[0])
     {
@@ -471,6 +505,9 @@ handler (int signo)
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
 #endif
+
+  if (lto_o_files)
+    maybe_unlink_list (lto_o_files);
 
   if (response_file)
     maybe_unlink (response_file);
@@ -815,6 +852,244 @@ prefix_from_string (const char *p, struct path_prefix *pprefix)
     }
   free (nstore);
 }
+
+/* Add an entry for the object file NAME to object file list LIST.
+   New entries are added at the end of the list. The original pointer
+   value of NAME is preserved, i.e., no string copy is performed.  */
+
+static void
+add_lto_object (struct lto_object_list *list, const char *name)
+{
+  struct lto_object *n = XNEW (struct lto_object);
+  n->name = name;
+  n->next = NULL;
+
+  if (list->last)
+    list->last->next = n;
+  else
+    list->first = n;
+
+  list->last = n;
+}
+
+
+/* Perform a link-time recompilation and relink if any of the object
+   files contain LTO info.  The linker command line LTO_LD_ARGV
+   represents the linker command that would produce a final executable
+   without the use of LTO. OBJECT_LST is a vector of object file names
+   appearing in LTO_LD_ARGV that are to be considerd for link-time
+   recompilation, where OBJECT is a pointer to the last valid element.
+   (This awkward convention avoids an impedance mismatch with the
+   usage of similarly-named variables in main().)  The elements of
+   OBJECT_LST must be identical, i.e., pointer equal, to the
+   corresponding arguments in LTO_LD_ARGV.
+
+   Upon entry, at least one linker run has been performed without the
+   use of any LTO info that might be present.  Any recompilations
+   necessary for template instantiations have been performed, and
+   initializer/finalizer tables have been created if needed and
+   included in the linker command line LTO_LD_ARGV. If any of the
+   object files contain LTO info, we run the LTO back end on all such
+   files, and perform the final link with the LTO back end output
+   substituted for the LTO-optimized files.  In some cases, a final
+   link with all link-time generated code has already been performed,
+   so there is no need to relink if no LTO info is found.  In other
+   cases, our caller has not produced the final executable, and is
+   relying on us to perform the required link whether LTO info is
+   present or not.  In that case, the FORCE argument should be true.
+   Note that the linker command line argument LTO_LD_ARGV passed into
+   this function may be modified in place.  */
+
+static void
+maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
+			  const char **object, bool force)
+{
+  const char **object_file = CONST_CAST2 (const char **, char **, object_lst);
+
+  int num_lto_c_args = 1;    /* Allow space for the terminating NULL.  */
+
+  while (object_file < object)
+  {
+    /* If file contains LTO info, add it to the list of LTO objects.  */
+    scan_prog_file (*object_file++, PASS_LTOINFO, SCAN_ALL);
+
+    /* Increment the argument count by the number of object file arguments
+       we will add.  An upper bound suffices, so just count all of the
+       object files regardless of whether they contain LTO info.  */
+    num_lto_c_args++;
+  }
+
+  if (lto_objects.first)
+    {
+      const char *opts;
+      char **lto_c_argv;
+      const char **lto_c_ptr;
+      const char *cp;
+      const char **p, **q, **r;
+      const char **lto_o_ptr;
+      struct lto_object *list;
+      char *lto_wrapper = getenv ("COLLECT_LTO_WRAPPER");
+      struct pex_obj *pex;
+      const char *prog = "lto-wrapper";
+
+      if (!lto_wrapper)
+	fatal ("COLLECT_LTO_WRAPPER must be set.");
+
+      /* There is at least one object file containing LTO info,
+         so we need to run the LTO back end and relink.  */
+
+      /* Get compiler options passed down from the parent `gcc' command.
+         These must be passed to the LTO back end.  */
+      opts = getenv ("COLLECT_GCC_OPTIONS");
+
+      /* Increment the argument count by the number of inherited options.
+         Some arguments may be filtered out later.  Again, an upper bound
+         suffices.  */
+
+      cp = opts;
+
+      while (cp && *cp)
+        {
+          extract_string (&cp);
+          num_lto_c_args++;
+        }
+      obstack_free (&temporary_obstack, temporary_firstobj);
+
+      if (debug)
+	num_lto_c_args++;
+
+      /* Increment the argument count by the number of initial
+	 arguments added below.  */
+      num_lto_c_args += 9;
+
+      lto_c_argv = (char **) xcalloc (sizeof (char *), num_lto_c_args);
+      lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
+
+      *lto_c_ptr++ = lto_wrapper;
+      *lto_c_ptr++ = c_file_name;
+
+      cp = opts;
+
+      while (cp && *cp)
+        {
+          const char *s = extract_string (&cp);
+
+	  /* Pass the option or argument to the wrapper.  */
+	  *lto_c_ptr++ = xstrdup (s);
+        }
+      obstack_free (&temporary_obstack, temporary_firstobj);
+
+      if (debug)
+	*lto_c_ptr++ = xstrdup ("-debug");
+
+      /* Add LTO objects to the wrapper command line.  */
+      for (list = lto_objects.first; list; list = list->next)
+	*lto_c_ptr++ = list->name;
+
+      *lto_c_ptr = NULL;
+
+      /* Save intermediate WPA files in lto1 if debug.  */
+      if (debug)
+	putenv (xstrdup ("WPA_SAVE_LTRANS=1"));
+
+      /* Run the LTO back end.  */
+      pex = collect_execute (prog, lto_c_argv, NULL, NULL, PEX_SEARCH);
+      {
+	int c;
+	FILE *stream;
+	size_t i, num_files;
+	char *start, *end;
+
+	stream = pex_read_output (pex, 0);
+	gcc_assert (stream);
+
+	num_files = 0;
+	while ((c = getc (stream)) != EOF)
+	  {
+	    obstack_1grow (&temporary_obstack, c);
+	    if (c == '\n')
+	      ++num_files;
+	  }
+
+	lto_o_files = XNEWVEC (char *, num_files + 1);
+	lto_o_files[num_files] = NULL;
+	start = XOBFINISH (&temporary_obstack, char *);
+	for (i = 0; i < num_files; ++i)
+	  {
+	    end = start;
+	    while (*end != '\n')
+	      ++end;
+	    *end = '\0';
+
+	    lto_o_files[i] = xstrdup (start);
+
+	    start = end + 1;
+	  }
+
+	obstack_free (&temporary_obstack, temporary_firstobj);
+      }
+      do_wait (prog, pex);
+      pex = NULL;
+
+      /* After running the LTO back end, we will relink, substituting
+	 the LTO output for the object files that we submitted to the
+	 LTO. Here, we modify the linker command line for the relink.  */
+      p = CONST_CAST2 (const char **, char **, lto_ld_argv);
+      lto_o_ptr = CONST_CAST2 (const char **, char **, lto_o_files);
+
+      while (*p != NULL)
+        {
+          for (list = lto_objects.first; list; list = list->next)
+            {
+              if (*p == list->name) /* Note test for pointer equality!  */
+                {
+                  /* Excise argument from linker command line.  */
+                  if (*lto_o_ptr)
+                    {
+                      /* Replace first argument with LTO output file.  */
+                      *p++ = *lto_o_ptr++;
+                    }
+                  else
+                    {
+                      /* Move following arguments one position earlier,
+                         overwriting the current argument.  */
+                      q = p;
+                      r = p + 1;
+                      while (*r != NULL)
+                        *q++ = *r++;
+                      *q = NULL;
+                    }
+
+                  /* No need to continue searching the LTO object list.  */
+                  break;
+                }
+            }
+
+          /* If we didn't find a match, move on to the next argument.
+             Otherwise, P has been set to the correct argument position
+             at which to continue.  */
+          if (!list) ++p;
+        }
+
+      /* The code above assumes we will never have more lto output files than
+	 input files.  Otherwise, we need to resize lto_ld_argv.  Check this
+	 assumption.  */
+      if (*lto_o_ptr)
+	fatal ("too many lto output files");
+
+      /* Run the linker again, this time replacing the object files
+         optimized by the LTO with the temporary file generated by the LTO.  */
+      fork_execute ("ld", lto_ld_argv);
+
+      maybe_unlink_list (lto_o_files);
+    }
+  else if (force)
+    {
+      /* Our caller is relying on us to do the link
+         even though there is no LTO back end work to be done.  */
+      fork_execute  ("ld", lto_ld_argv);
+    }
+}
 
 /* Main program.  */
 
@@ -935,14 +1210,25 @@ main (int argc, char **argv)
 
   /* Parse command line early for instances of -debug.  This allows
      the debug flag to be set before functions like find_a_file()
-     are called.  */
+     are called.  We also look for the -flto or -fwhopr flag to know
+     what LTO mode we are in.  */
   {
     int i;
+    bool use_plugin = false;
 
     for (i = 1; argv[i] != NULL; i ++)
       {
 	if (! strcmp (argv[i], "-debug"))
 	  debug = 1;
+        else if (! strcmp (argv[i], "-flto") && ! use_plugin)
+          lto_mode = LTO_MODE_LTO;
+        else if (! strcmp (argv[i], "-fwhopr") && ! use_plugin)
+          lto_mode = LTO_MODE_WHOPR;
+        else if (! strcmp (argv[i], "-plugin"))
+	  {
+	    use_plugin = true;
+	    lto_mode = LTO_MODE_NONE;
+	  }
 #ifdef COLLECT_EXPORT_LIST
 	/* since -brtl, -bexport, -b64 are not position dependent
 	   also check for them here */
@@ -1193,6 +1479,20 @@ main (int argc, char **argv)
 		  *ld1++ = *ld2++ = *argv;
 		}
 	      break;
+
+            case 'f':
+	      if (strcmp (arg, "-flto") == 0 || strcmp (arg, "-fwhopr") == 0)
+		{
+#ifdef ENABLE_LTO
+		  /* Do not pass LTO flag to the linker. */
+		  ld1--;
+		  ld2--;
+#else
+		  error ("LTO support has not been enabled in this "
+			 "configuration");
+#endif
+		}
+              break;
 
 	    case 'l':
 	      if (first_file)
@@ -1456,6 +1756,9 @@ main (int argc, char **argv)
 	if (export_file != 0 && export_file[0])
 	  maybe_unlink (export_file);
 #endif
+	if (lto_mode)
+	  maybe_run_lto_and_relink (ld1_argv, object_lst, object, false);
+
 	maybe_unlink (c_file);
 	maybe_unlink (o_file);
 	return 0;
@@ -1497,6 +1800,9 @@ main (int argc, char **argv)
 	 do it earlier for scanning purposes.  */
       if (ld1_filter == SCAN_NOTHING)
 	do_tlink (ld1_argv, object_lst);
+
+      if (lto_mode)
+        maybe_run_lto_and_relink (ld1_argv, object_lst, object, false);
 
       /* Strip now if it was requested on the command line.  */
       if (strip_flag)
@@ -1591,9 +1897,15 @@ main (int argc, char **argv)
 #ifdef COLLECT_EXPORT_LIST
   /* On AIX we must call tlink because of possible templates resolution.  */
   do_tlink (ld2_argv, object_lst);
+
+  if (lto_mode)
+    maybe_run_lto_and_relink (ld2_argv, object_lst, object, false);
 #else
   /* Otherwise, simply call ld because tlink is already done.  */
-  fork_execute ("ld", ld2_argv);
+  if (lto_mode)
+    maybe_run_lto_and_relink (ld2_argv, object_lst, object, true);
+  else
+    fork_execute ("ld", ld2_argv);
 
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
@@ -1661,7 +1973,7 @@ do_wait (const char *prog, struct pex_obj *pex)
 
 struct pex_obj *
 collect_execute (const char *prog, char **argv, const char *outname,
-		 const char *errname)
+		 const char *errname, int flags)
 {
   struct pex_obj *pex;
   const char *errmsg;
@@ -1737,7 +2049,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
   if (pex == NULL)
     fatal_perror ("pex_init failed");
 
-  errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0], argv, outname,
+  errmsg = pex_run (pex, flags, argv[0], argv, outname,
 		    errname, &err);
   if (errmsg != NULL)
     {
@@ -1761,7 +2073,7 @@ fork_execute (const char *prog, char **argv)
 {
   struct pex_obj *pex;
 
-  pex = collect_execute (prog, argv, NULL, NULL);
+  pex = collect_execute (prog, argv, NULL, NULL, PEX_LAST | PEX_SEARCH);
   do_wait (prog, pex);
 }
 
@@ -1774,6 +2086,17 @@ maybe_unlink (const char *file)
     unlink_if_ordinary (file);
   else
     notice ("[Leaving %s]\n", file);
+}
+
+/* Call maybe_unlink on the NULL-terminated list, FILE_LIST.  */
+
+static void
+maybe_unlink_list (char **file_list)
+{
+  char **tmp = file_list;
+
+  while (*tmp)
+    maybe_unlink (*(tmp++));
 }
 
 
@@ -2170,6 +2493,25 @@ write_aix_file (FILE *stream, struct id *list)
 
 #ifdef OBJECT_FORMAT_NONE
 
+/* Check to make sure the file is an ELF file.  LTO objects must
+   be in ELF format.  */
+
+static bool
+is_elf (const char *prog_name)
+{
+  FILE *f;
+  char buf[4];
+  static char magic[4] = { 0x7f, 'E', 'L', 'F' };
+
+  f = fopen (prog_name, "r");
+  if (f == NULL)
+    return false;
+  if (fread (buf, sizeof (buf), 1, f) != 1)
+    buf[0] = 0;
+  fclose (f);
+  return memcmp (buf, magic, sizeof (magic)) == 0;
+}
+
 /* Generic version to scan the name list of the loaded program for
    the symbols g++ uses for static constructors and destructors.  */
 
@@ -2189,8 +2531,15 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   int err;
   char *p, buf[1024];
   FILE *inf;
+  int found_lto = 0;
 
   if (which_pass == PASS_SECOND)
+    return;
+
+  /* LTO objects must be in ELF format.  This check prevents
+     us from accepting an archive containing LTO objects, which
+     gcc cannnot currently handle.  */
+  if (which_pass == PASS_LTOINFO && !is_elf (prog_name))
     return;
 
   /* If we do not have an `nm', complain.  */
@@ -2223,7 +2572,8 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   if (pex == NULL)
     fatal_perror ("pex_init failed");
 
-  errmsg = pex_run (pex, 0, nm_file_name, real_nm_argv, NULL, NULL, &err);
+  errmsg = pex_run (pex, 0, nm_file_name, real_nm_argv, NULL, HOST_BIT_BUCKET,
+		    &err);
   if (errmsg != NULL)
     {
       if (err != 0)
@@ -2245,13 +2595,45 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
     fatal_perror ("can't open nm output");
 
   if (debug)
-    fprintf (stderr, "\nnm output with constructors/destructors.\n");
+    {
+      if (which_pass == PASS_LTOINFO)
+        fprintf (stderr, "\nnm output with LTO info marker symbol.\n");
+      else
+        fprintf (stderr, "\nnm output with constructors/destructors.\n");
+    }
 
   /* Read each line of nm output.  */
   while (fgets (buf, sizeof buf, inf) != (char *) 0)
     {
       int ch, ch2;
       char *name, *end;
+
+      if (debug)
+        fprintf (stderr, "\t%s\n", buf);
+
+      if (which_pass == PASS_LTOINFO)
+        {
+          if (found_lto)
+            continue;
+
+          /* Look for the LTO info marker symbol, and add filename to
+             the LTO objects list if found.  */
+          for (p = buf; (ch = *p) != '\0' && ch != '\n'; p++)
+            if (ch == ' '
+		&& (strncmp (p +1 , "gnu_lto_v1", 10) == 0)
+		&& ISSPACE( p[11]))
+              {
+                add_lto_object (&lto_objects, prog_name);
+
+                /* We need to read all the input, so we can't just
+                   return here.  But we can avoid useless work.  */
+                found_lto = 1;
+
+                break;
+              }
+
+	  continue;
+        }
 
       /* If it contains a constructor or destructor name, add the name
 	 to the appropriate list unless this is a kind of symbol we're
@@ -2319,9 +2701,6 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 	default:		/* not a constructor or destructor */
 	  continue;
 	}
-
-      if (debug)
-	fprintf (stderr, "\t%s\n", buf);
     }
 
   if (debug)

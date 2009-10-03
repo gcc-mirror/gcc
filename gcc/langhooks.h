@@ -231,6 +231,23 @@ struct lang_hooks_for_decls
   void (*omp_finish_clause) (tree clause);
 };
 
+/* Language hooks related to LTO serialization.  */
+
+struct lang_hooks_for_lto
+{
+  /* Begin a new LTO section named NAME.  */
+  void (*begin_section) (const char *name);
+
+  /* Write DATA of length LEN to the currently open LTO section.  BLOCK is a
+     pointer to the dynamically allocated memory containing DATA.  The
+     append_data function is responsible for freeing it when it is no longer
+     needed.  */
+  void (*append_data) (const void *data, size_t len, void *block);
+
+  /* End the previously begun LTO section.  */
+  void (*end_section) (void);
+};
+
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */
 
 struct lang_hooks
@@ -385,6 +402,8 @@ struct lang_hooks
   struct lang_hooks_for_decls decls;
 
   struct lang_hooks_for_types types;
+
+  struct lang_hooks_for_lto lto;
 
   /* Returns the generic parameters of an instantiation of
      a generic type or decl, e.g. C++ template instantiation.  */

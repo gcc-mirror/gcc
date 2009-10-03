@@ -3,6 +3,7 @@ extern int inside_main;
 
 typedef __SIZE_TYPE__ size_t;
 
+__attribute__ ((__noinline__))
 int
 strncmp(const char *s1, const char *s2, size_t n)
 {

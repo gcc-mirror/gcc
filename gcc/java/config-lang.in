@@ -35,6 +35,6 @@ compilers="jc1\$(exeext) jvgenmain\$(exeext)"
 gtfiles="\$(srcdir)/java/java-tree.h \$(srcdir)/java/jcf.h \$(srcdir)/java/parse.h \$(srcdir)/java/builtins.c \$(srcdir)/java/class.c \$(srcdir)/java/constants.c \$(srcdir)/java/decl.c \$(srcdir)/java/expr.c \$(srcdir)/java/jcf-parse.c \$(srcdir)/java/lang.c \$(srcdir)/java/mangle.c \$(srcdir)/java/resource.c"
 
 target_libs=${libgcj_saved}
-lang_dirs="zlib fastjar"
+lang_dirs="fastjar"
 #build_by_default=no
 lang_requires=c++

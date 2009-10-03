@@ -68,6 +68,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "diagnostic.h"
 #include "langhooks.h"
+#include "lto-streamer.h"
+
+static void add_new_function (struct cgraph_node *node,
+			      void *data ATTRIBUTE_UNUSED);
+static void remove_node_data (struct cgraph_node *node,
+			      void *data ATTRIBUTE_UNUSED);
+static void duplicate_node_data (struct cgraph_node *src,
+				 struct cgraph_node *dst,
+				 void *data ATTRIBUTE_UNUSED);
 
 /* The static variables defined within the compilation unit that are
    loaded or stored directly by function that owns this structure.  */ 
@@ -578,6 +587,13 @@ propagate_bits (ipa_reference_global_vars_info_t x_global, struct cgraph_node *x
 static void 
 ipa_init (void) 
 {
+  static bool init_p = false;
+
+  if (init_p)
+    return;
+
+  init_p = true;
+
   memory_identifier_string = build_string(7, "memory");
 
   reference_vars_to_consider =
@@ -594,6 +610,13 @@ ipa_init (void)
      since all we would be interested in are the addressof
      operations.  */
   visited_nodes = pointer_set_create ();
+
+  function_insertion_hook_holder =
+      cgraph_add_function_insertion_hook (&add_new_function, NULL);
+  node_removal_hook_holder =
+      cgraph_add_node_removal_hook (&remove_node_data, NULL);
+  node_duplication_hook_holder =
+      cgraph_add_node_duplication_hook (&duplicate_node_data, NULL);
 }
 
 /* Check out the rhs of a static or global initialization VNODE to see
@@ -613,6 +636,7 @@ analyze_variable (struct varpool_node *vnode)
   walk_tree (&DECL_INITIAL (global), scan_initializer_for_static_refs,
              &wi, wi.pset);
 }
+
 
 /* Set up the persistent info for FN.  */
 
@@ -634,9 +658,10 @@ init_function_info (struct cgraph_node *fn)
   return l;
 }
 
+
 /* This is the main routine for finding the reference patterns for
    global variables within a function FN.  */
-  
+
 static void
 analyze_function (struct cgraph_node *fn)
 {
@@ -845,12 +870,6 @@ generate_summary (void)
   bitmap module_statics_readonly;
   bitmap bm_temp;
   
-  function_insertion_hook_holder =
-      cgraph_add_function_insertion_hook (&add_new_function, NULL);
-  node_removal_hook_holder =
-      cgraph_add_node_removal_hook (&remove_node_data, NULL);
-  node_duplication_hook_holder =
-      cgraph_add_node_duplication_hook (&duplicate_node_data, NULL);
   ipa_init ();
   module_statics_readonly = BITMAP_ALLOC (&local_info_obstack);
   bm_temp = BITMAP_ALLOC (&local_info_obstack);
@@ -986,6 +1005,141 @@ generate_summary (void)
 	     fprintf (dump_file, "\n  calls read all: ");
 	}
 }
+
+
+/* Return true if we need to write summary of NODE. */
+
+static bool
+write_node_summary_p (struct cgraph_node *node)
+{
+  return (node->analyzed 
+	  && node->global.inlined_to == NULL
+	  && cgraph_function_body_availability (node) == AVAIL_OVERWRITABLE
+	  && get_reference_vars_info (node) != NULL);
+}
+
+/* Serialize the ipa info for lto.  */
+
+static void 
+ipa_reference_write_summary (cgraph_node_set set)
+{
+  struct cgraph_node *node;
+  struct lto_simple_output_block *ob
+    = lto_create_simple_output_block (LTO_section_ipa_reference);
+  unsigned int count = 0;
+  cgraph_node_set_iterator csi;
+
+  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+    if (write_node_summary_p (csi_node (csi)))
+	count++;
+  
+  lto_output_uleb128_stream (ob->main_stream, count);
+  
+  /* Process all of the functions.  */
+  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+    {
+      node = csi_node (csi);
+      if (write_node_summary_p (node))
+	{
+	  ipa_reference_local_vars_info_t l
+	    = get_reference_vars_info (node)->local;
+	  unsigned int index;
+	  bitmap_iterator bi;
+	  lto_cgraph_encoder_t encoder;
+	  int node_ref;
+
+	  encoder = ob->decl_state->cgraph_node_encoder;
+	  node_ref = lto_cgraph_encoder_encode (encoder, node);
+	  lto_output_uleb128_stream (ob->main_stream, node_ref);
+
+	  /* Stream out the statics read.  */
+	  lto_output_uleb128_stream (ob->main_stream,
+				     bitmap_count_bits (l->statics_read));
+	  EXECUTE_IF_SET_IN_BITMAP (l->statics_read, 0, index, bi)
+	    lto_output_var_decl_index(ob->decl_state, ob->main_stream,
+				      get_static_decl (index));
+
+	  /* Stream out the statics written.  */
+	  lto_output_uleb128_stream (ob->main_stream,
+				     bitmap_count_bits (l->statics_written));
+	  EXECUTE_IF_SET_IN_BITMAP (l->statics_written, 0, index, bi)
+	    lto_output_var_decl_index(ob->decl_state, ob->main_stream,
+				      get_static_decl (index));
+	}
+    }
+  lto_destroy_simple_output_block (ob);
+}
+
+
+/* Deserialize the ipa info for lto.  */
+
+static void 
+ipa_reference_read_summary (void)
+{
+  struct lto_file_decl_data ** file_data_vec 
+    = lto_get_file_decl_data ();
+  struct lto_file_decl_data * file_data;
+  unsigned int j = 0;
+
+  ipa_init ();
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      const char *data;
+      size_t len;
+      struct lto_input_block *ib
+	= lto_create_simple_input_block (file_data, 
+					 LTO_section_ipa_reference, 
+					 &data, &len);
+      if (ib)
+	{ 
+	  unsigned int i;
+	  unsigned int f_count = lto_input_uleb128 (ib);
+
+	  for (i = 0; i < f_count; i++)
+	    {
+	      unsigned int j, index;
+	      struct cgraph_node *node;
+	      ipa_reference_local_vars_info_t l;
+	      unsigned int v_count;
+	      lto_cgraph_encoder_t encoder;
+
+	      index = lto_input_uleb128 (ib);
+	      encoder = file_data->cgraph_node_encoder;
+	      node = lto_cgraph_encoder_deref (encoder, index);
+	      l = init_function_info (node);
+
+	      /* Set the statics read.  */
+	      v_count = lto_input_uleb128 (ib);
+	      for (j = 0; j < v_count; j++)
+		{
+		  unsigned int var_index = lto_input_uleb128 (ib);
+		  tree v_decl = lto_file_decl_data_get_var_decl (file_data,
+								 var_index);
+		  add_static_var (v_decl);
+		  bitmap_set_bit (l->statics_read, DECL_UID (v_decl));
+		} 
+
+	      /* Set the statics written.  */
+	      v_count = lto_input_uleb128 (ib);
+	      for (j = 0; j < v_count; j++)
+		{
+		  unsigned int var_index = lto_input_uleb128 (ib);
+		  tree v_decl = lto_file_decl_data_get_var_decl (file_data,
+								 var_index);
+		  add_static_var (v_decl);
+		  bitmap_set_bit (l->statics_written, DECL_UID (v_decl));
+		} 
+	    }
+
+	  lto_destroy_simple_input_block (file_data, 
+					  LTO_section_ipa_reference, 
+					  ib, data, len);
+	}
+    }
+}
+
+
 
 /* Produce the global information by preforming a transitive closure
    on the local information that was produced by ipa_analyze_function
@@ -1271,8 +1425,8 @@ struct ipa_opt_pass_d pass_ipa_reference =
   0                                     /* todo_flags_finish */
  },
  generate_summary,		        /* generate_summary */
- NULL,					/* write_summary */
- NULL,					/* read_summary */
+ ipa_reference_write_summary,		/* write_summary */
+ ipa_reference_read_summary,		/* read_summary */
  NULL,					/* function_read_summary */
  0,					/* TODOs */
  NULL,			                /* function_transform */

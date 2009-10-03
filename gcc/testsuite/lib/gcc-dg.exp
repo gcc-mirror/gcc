@@ -60,6 +60,15 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 	[concat $DG_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
+set LTO_TORTURE_OPTIONS ""
+if [check_effective_target_lto] {
+    set LTO_TORTURE_OPTIONS [list \
+	{ -O2 -flto } \
+	{ -O2 -fwhopr }
+    ]
+}
+
+
 global GCC_UNDER_TEST
 if ![info exists GCC_UNDER_TEST] {
     set GCC_UNDER_TEST "[find_gcc]"
@@ -241,9 +250,9 @@ proc gcc-dg-runtest { testcases default-extra-flags } {
     # Some callers set torture options themselves; don't override those.
     set existing_torture_options [torture-options-exist]
     if { $existing_torture_options == 0 } {
-	global DG_TORTURE_OPTIONS
+	global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
 	torture-init
-	set-torture-options $DG_TORTURE_OPTIONS
+	set-torture-options $DG_TORTURE_OPTIONS [list {}] $LTO_TORTURE_OPTIONS
     }
     dump-torture-options
 

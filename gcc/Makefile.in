@@ -309,6 +309,13 @@ PPLINC = @PPLINC@
 CLOOGLIBS = @CLOOGLIBS@
 CLOOGINC = @CLOOGINC@
 
+# How to find libelf
+LIBELFLIBS = @LIBELFLIBS@
+LIBELFINC = @LIBELFINC@
+
+# Set to 'yes' if the LTO front end is enabled.
+enable_lto = @enable_lto@
+
 # Libs and linker option needed for plugin support
 PLUGINLIBS = @pluginlibs@
 
@@ -406,6 +413,10 @@ FIBHEAP_H   = $(srcdir)/../include/fibheap.h
 PARTITION_H = $(srcdir)/../include/partition.h
 MD5_H	    = $(srcdir)/../include/md5.h
 DWARF2_H    = $(srcdir)/../include/dwarf2.h
+
+# Linker plugin API headers
+LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
+LTO_SYMTAB_H = $(srcdir)/../include/lto-symtab.h
 
 # Default native SYSTEM_HEADER_DIR, to be overridden by targets.
 NATIVE_SYSTEM_HEADER_DIR = /usr/include
@@ -917,6 +928,9 @@ REAL_H = real.h $(MACHMODE_H)
 IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
 EBITMAP_H = ebitmap.h sbitmap.h
+LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
+		$(CGRAPH_H) vec.h vecprim.h $(TREE_H) $(GIMPLE_H)
+TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) vec.h $(CGRAPH_H)
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
@@ -976,7 +990,8 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 # and the system's installed libraries.
 LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER) \
 	$(HOST_LIBS)
-BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS)
+BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
+	$(ZLIB) $(LIBELFLIBS)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 
@@ -1005,7 +1020,7 @@ BUILD_ERRORS = build/errors.o
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
 	   $(CPPINC) $(GMPINC) $(DECNUMINC) \
-	   $(PPLINC) $(CLOOGINC)
+	   $(PPLINC) $(CLOOGINC) $(LIBELFINC)
 
 .c.o:
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
@@ -1215,6 +1230,16 @@ OBJS-common = \
 	loop-unroll.o \
 	loop-unswitch.o \
 	lower-subreg.o \
+	lto-cgraph.o \
+	lto-streamer-in.o \
+	lto-streamer-out.o \
+	lto-section-in.o \
+	lto-section-out.o \
+	lto-symtab.o \
+	lto-opts.o \
+	lto-streamer.o \
+	lto-wpa-fixup.o \
+	lto-compress.o \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
@@ -1411,7 +1436,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) cc1*-dummy$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
- $(SPECS) collect2$(exeext) \
+ $(SPECS) collect2$(exeext) lto-wrapper$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libgcc.mk
 
@@ -1692,7 +1717,7 @@ rest.encap: lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
-	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2)
+	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(COLLECT2) lto-wrapper$(exeext)
 
 # Define the names for selecting languages in LANGUAGES.
 c: cc1$(exeext)
@@ -1987,6 +2012,12 @@ collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(OBSTACK_H) collect2.h intl.h
 
+lto-wrapper$(exeext): lto-wrapper.o intl.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o T$@ lto-wrapper.o intl.o $(LIBS)
+	mv -f T$@ $@
+
+lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h
+
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -2158,10 +2189,54 @@ convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H)
 
+# lto-compress.o needs $(ZLIBINC) added to the include flags.
+lto-compress.o: lto-compress.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(TREE_H) langhooks.h $(LTO_HEADER_H) $(LTO_SECTION_H) \
+	lto-compress.h $(DIAGNOSTIC_H) errors.h
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(ZLIBINC) $< $(OUTPUT_OPTION)
+
+lto-cgraph.o: lto-cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
+   $(TM_H) $(TOPLEV_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
+   $(VARRAY_H) $(HASHTAB_H) langhooks.h $(BASIC_BLOCK_H) \
+   $(TREE_FLOW_H) $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) $(DIAGNOSTIC_H) \
+   except.h $(TIMEVAR_H) output.h pointer-set.h $(LTO_STREAMER_H)
+lto-streamer-in.o: lto-streamer-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(TOPLEV_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h $(VARRAY_H) \
+   $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TREE_PASS_H) $(CGRAPH_H) \
+   $(FUNCTION_H) $(GGC_H) $(DIAGNOSTIC_H) libfuncs.h $(EXCEPT_H) debug.h \
+   $(TIMEVAR_H) output.h $(IPA_UTILS_H) $(LTO_STREAMER_H)
+lto-streamer-out.o : lto-streamer-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(TOPLEV_H) $(TREE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h \
+   $(VARRAY_H) $(HASHTAB_H) $(BASIC_BLOCK_H) tree-iterator.h \
+   $(TREE_FLOW_H) $(TREE_PASS_H) $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) \
+   $(DIAGNOSTIC_H) except.h $(LTO_STREAMER_H) errors.h
+lto-section-in.o: lto-section-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TOPLEV_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) input.h $(VARRAY_H) \
+   $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(CGRAPH_H) $(FUNCTION_H) \
+   $(GGC_H) $(DIAGNOSTIC_H) except.h $(TIMEVAR_H) output.h \
+   $(LTO_STREAMER_H) lto-compress.h
+lto-section-out.o : lto-section-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(TOPLEV_H) $(TREE_H) $(EXPR_H) $(PARAMS_H) input.h \
+   $(VARRAY_H) $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TREE_PASS_H) \
+   $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) except.h pointer-set.h \
+   $(BITMAP_H) langhooks.h $(LTO_STREAMER_H) lto-compress.h
+lto-symtab.o: lto-symtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   toplev.h $(TREE_H) $(GIMPLE_H) $(GGC_H) $(LAMBDA_H) $(HASHTAB_H) \
+   $(LTO_STREAMER_H) $(LINKER_PLUGIN_API_H) gt-lto-symtab.h
+lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
+   $(HASHTAB_H) $(GGC_H) $(BITMAP_H) $(FLAGS_H) opts.h options.h \
+   $(TARGET_H) $(TOPLEV_H) $(LTO_STREAMER_H)
+lto-streamer.o: lto-streamer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
+   $(TM_H) $(TREE_H) $(GIMPLE_H) $(BITMAP_H) $(LTO_STREAMER_H) $(FLAGS_H) \
+   $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(LTO_SYMTAB_H) $(TOPLEV_H)
+lto-wpa-fixup.o: lto-wpa-fixup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
+   $(TM_H) $(TOPLEV_H) $(TREE_H) $(EXPR_H) $(FLAGS_H) $(CGRAPH_H) \
+   $(FUNCTION_H) $(DIAGNOSTIC_H) $(BITMAP_H) $(TIMEVAR_H) \
+   $(TREE_FLOW_H) $(TREE_PASS_H) $(LTO_STREAMER_H)
 langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(TOPLEV_H) $(TREE_INLINE_H) $(RTL_H) insn-config.h $(INTEGRATE_H) \
    langhooks.h $(TARGET_H) $(LANGHOOKS_DEF_H) $(FLAGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
-   intl.h $(GIMPLE_H) $(CGRAPH_H)
+   intl.h $(GIMPLE_H) $(CGRAPH_H) output.h
 tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    all-tree.def $(FLAGS_H) $(FUNCTION_H) $(PARAMS_H) \
    $(TOPLEV_H) $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H) \
@@ -2572,7 +2647,8 @@ tree-object-size.o: tree-object-size.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_PASS_H) tree-ssa-propagate.h
 gimple.o : gimple.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(GGC_H) $(GIMPLE_H) $(TOPLEV_H) $(DIAGNOSTIC_H) gt-gimple.h \
-   $(TREE_FLOW_H) value-prof.h $(FLAGS_H) $(DEMANGLE_H)
+   $(TREE_FLOW_H) value-prof.h $(FLAGS_H) $(DEMANGLE_H) \
+   $(TARGET_H) $(ALIAS_H)
 gimple-pretty-print.o : gimple-pretty-print.c $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(REAL_H) $(HASHTAB_H) $(TREE_FLOW_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(GIMPLE_H) value-prof.h
@@ -2640,7 +2716,7 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h insn-flags.h $(CFGLAYOUT_H) $(REAL_H) $(CFGLOOP_H) \
    hosthooks.h $(CGRAPH_H) $(COVERAGE_H) $(TREE_PASS_H) $(TREE_DUMP_H) \
    $(GGC_H) $(INTEGRATE_H) $(CPPLIB_H) opts.h $(TREE_FLOW_H) $(TREE_INLINE_H) \
-   gt-passes.h $(DF_H) $(PREDICT_H)
+   gt-passes.h $(DF_H) $(PREDICT_H) $(LTO_HEADER_H) $(LTO_SECTION_OUT_H)
 
 plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TOPLEV_H) $(TREE_H) $(TREE_PASS_H) intl.h $(PLUGIN_VERSION_H) $(GGC_H)
@@ -2669,7 +2745,8 @@ varasm.o : varasm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) hard-reg-set.h $(REGS_H) \
    output.h $(TOPLEV_H) xcoffout.h debug.h $(GGC_H) $(TM_P_H) \
    $(HASHTAB_H) $(TARGET_H) langhooks.h gt-varasm.h $(BASIC_BLOCK_H) \
-   $(CFGLAYOUT_H) $(CGRAPH_H) targhooks.h tree-mudflap.h $(REAL_H) tree-iterator.h
+   $(CFGLAYOUT_H) $(CGRAPH_H) targhooks.h tree-mudflap.h $(REAL_H) \
+   tree-iterator.h
 function.o : function.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(CFGLAYOUT_H) $(GIMPLE_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) \
    $(OPTABS_H) libfuncs.h $(REGS_H) hard-reg-set.h insn-config.h $(RECOG_H) \
@@ -2771,7 +2848,8 @@ simplify-rtx.o : simplify-rtx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h $(TOPLEV_H) $(FLAGS_H) $(GGC_H) $(TARGET_H) $(CGRAPH_H) \
    gt-cgraph.h output.h intl.h $(BASIC_BLOCK_H) debug.h $(HASHTAB_H) \
-   $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) value-prof.h $(EXCEPT_H)
+   $(TREE_INLINE_H) $(TREE_DUMP_H) $(TREE_FLOW_H) cif-code.def \
+   value-prof.h $(EXCEPT_H)
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(TOPLEV_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
@@ -2813,12 +2891,13 @@ ipa-reference.o : ipa-reference.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(IPA_REFERENCE_H) $(IPA_UTILS_H) $(SPLAY_TREE_H) \
    $(GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) $(TREE_PASS_H) \
-   $(TIMEVAR_H) $(DIAGNOSTIC_H) $(FUNCTION_H) gt-ipa-reference.h
+   $(TIMEVAR_H) $(DIAGNOSTIC_H) $(FUNCTION_H) gt-ipa-reference.h \
+   $(LTO_STREAMER_H)
 ipa-pure-const.o : ipa-pure-const.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(IPA_UTILS_H) $(TARGET_H) \
    $(GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) $(TREE_PASS_H) $(TIMEVAR_H) \
-   $(DIAGNOSTIC_H) $(CFGLOOP_H) $(SCEV_H)
+   $(DIAGNOSTIC_H) $(CFGLOOP_H) $(SCEV_H) $(LTO_STREAMER_H)
 ipa-type-escape.o : ipa-type-escape.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(IPA_TYPE_ESCAPE_H) $(IPA_UTILS_H) $(SPLAY_TREE_H) \
@@ -3504,6 +3583,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-phinodes.c \
   $(srcdir)/ipa-reference.c \
   $(srcdir)/tree-ssa-structalias.c \
+  $(srcdir)/lto-symtab.c \
   $(srcdir)/tree-ssa-alias.h \
   @all_gtfiles@
 
@@ -4145,7 +4225,7 @@ maintainer-clean:
 # broken is small.
 install: install-common $(INSTALL_HEADERS) \
     install-cpp install-man install-info install-@POSUB@ \
-    install-driver
+    install-driver install-lto-wrapper
 
 ifeq ($(enable_plugin),yes)
 install: install-plugin
@@ -4440,6 +4520,10 @@ install-collect2: collect2 installdirs
 # Install the driver program as $(libsubdir)/gcc for collect2.
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(libexecsubdir)/gcc$(exeext)
 
+# Install lto-wrapper.
+install-lto-wrapper: lto-wrapper$(exeext)
+	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
+	
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
 	-rm -rf $(DESTDIR)$(libsubdir)
@@ -4490,6 +4574,9 @@ site.exp: ./config.status Makefile
 	@if test "@enable_plugin@" = "yes" ; then \
 	  echo "set ENABLE_PLUGIN 1" >> ./tmp0; \
 	  echo "set GMPINC \"$(GMPINC)\"" >> ./tmp0; \
+	fi
+	@if test "@enable_lto@" = "yes" ; then \
+	  echo "set ENABLE_LTO 1" >> ./tmp0; \
 	fi
 # If newlib has been configured, we need to pass -B to gcc so it can find
 # newlib's crt0.o if it exists.  This will cause a "path prefix not used"

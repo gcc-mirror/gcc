@@ -230,6 +230,8 @@ static tree do_mpfr_bessel_n (tree, tree, tree,
 static tree do_mpfr_remquo (tree, tree, tree);
 static tree do_mpfr_lgamma_r (tree, tree, tree);
 
+/* Return true if NAME starts with __builtin_ or __sync_.  */
+
 bool
 is_builtin_name (const char *name)
 {
@@ -239,6 +241,16 @@ is_builtin_name (const char *name)
     return true;
   return false;
 }
+
+
+/* Return true if DECL is a function symbol representing a built-in.  */
+
+bool
+is_builtin_fn (tree decl)
+{
+  return TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl);
+}
+
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -13855,4 +13867,42 @@ fold_call_stmt (gimple stmt, bool ignore)
 	}
     }
   return NULL_TREE;
+}
+
+/* Look up the function in built_in_decls that corresponds to DECL
+   and set ASMSPEC as its user assembler name.  DECL must be a
+   function decl that declares a builtin.  */
+
+void
+set_builtin_user_assembler_name (tree decl, const char *asmspec)
+{
+  tree builtin;
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+	      && asmspec != 0);
+
+  builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
+  set_user_assembler_name (builtin, asmspec);
+  switch (DECL_FUNCTION_CODE (decl))
+    {
+    case BUILT_IN_MEMCPY:
+      init_block_move_fn (asmspec);
+      memcpy_libfunc = set_user_assembler_libfunc ("memcpy", asmspec);
+      break;
+    case BUILT_IN_MEMSET:
+      init_block_clear_fn (asmspec);
+      memset_libfunc = set_user_assembler_libfunc ("memset", asmspec);
+      break;
+    case BUILT_IN_MEMMOVE:
+      memmove_libfunc = set_user_assembler_libfunc ("memmove", asmspec);
+      break;
+    case BUILT_IN_MEMCMP:
+      memcmp_libfunc = set_user_assembler_libfunc ("memcmp", asmspec);
+      break;
+    case BUILT_IN_ABORT:
+      abort_libfunc = set_user_assembler_libfunc ("abort", asmspec);
+      break;
+    default:
+      break;
+    }
 }

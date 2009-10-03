@@ -48,12 +48,14 @@ proc contains-loop-option-p { arg } {
 #
 # Argument 0 is the list to use as torture options
 # Argument 1 is the list to combine with the torture options.
+# Argument 2 is the list to be appended to the torture options after
+# combining argument 0 and 1.
 proc set-torture-options { args } {
     global torture_with_loops torture_without_loops
 
     set torture_list [lindex $args 0]
 
-    if { [llength $args] != 1 } {
+    if { [llength $args] > 1 } {
 	set other_list [lindex $args 1]
     } else {
 	set other_list [list {}]
@@ -70,6 +72,12 @@ proc set-torture-options { args } {
 	    }
 	    lappend torture_with_loops "$torture_opts $other_opts"
 	}
+    }
+
+    if { [llength $args] > 2 } {
+	set append_list [lindex $args 2]
+	append torture_with_loops " $append_list"
+	append torture_without_loops " $append_list"
     }
 }
 

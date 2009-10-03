@@ -1,3 +1,9 @@
+2009-10-03  H.J. Lu  <hongjiu.lu@intel.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR lto/39216
+	* gcc_update: Adjust file timestamps for lto-plugin.
+
 2009-09-10  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR bootstrap/41245

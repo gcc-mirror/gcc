@@ -84,6 +84,9 @@ gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
 # Similarly, without this, you will see:
 # direct2s.c:35: warning: current file is older than direct2.c
 gcc/testsuite/gcc.dg/cpp/direct2s.c: gcc/testsuite/gcc.dg/cpp/direct2.c
+# lto-plugin
+lto-plugin/configure: lto-plugin/configure.ac lto-plugin/aclocal.m4
+lto-plugin/Makefile.in: lto-plugin/Makefile.am lto-plugin/aclocal.m4
 # And libraries, at last
 libbanshee/configure: libbanshee/configure.ac
 libmudflap/configure: libmudflap/configure.ac

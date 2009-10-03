@@ -1,0 +1,501 @@
+# Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Contributed by Diego Novillo <dnovillo@google.com>
+
+
+# lto_init -- called at the start of eac subdir of tests
+
+proc lto_init { args } {
+    global LTO_OPTIONS
+
+    # Each test is run with the compiler options from this list.
+    # The default option lists can be overridden by LTO_OPTIONS="[list
+    # {opts_1} {opts_2}... {opts_n}]" where opts_i are lists of options.
+    # You can put this in the environment before site.exp is written or
+    # add it to site.exp directly.
+    if ![info exists LTO_OPTIONS] {
+	set LTO_OPTIONS [list	\
+	    {-O0 -fwhopr}	\
+	    {-O2 -fwhopr}	\
+	    {-O0 -flto}		\
+	    {-O2 -flto}		\
+	]
+    }
+}
+
+
+# Subsets of tests can be selectively disabled by members of this list:
+#  - ATTRIBUTE: disable all tests using the __attribute__ extension,
+#  - COMPLEX: disable all tests using the complex types feature,
+#  - COMPLEX_INT: disable all tests using the complex integral types extension,
+#  - VA: disable all tests using the variable number of arguments feature,
+#  - VLA_IN_STRUCT: disable all tests using the variable-length arrays as
+#    structure members extension,
+#  - ZERO_ARRAY: disable all tests using the zero-sized arrays extension.
+# The default skip lists can be overriden by
+# LTO_SKIPS="[list {skip_1}...{skip_n}]"
+# where skip_i are skip identifiers.  You can put this in the environment
+# before site.exp is written or add it to site.exp directly.
+if ![info exists LTO_SKIPS] {
+    set LTO_SKIPS [list {}]
+}
+
+global lto_skip_list
+set lto_skip_list $LTO_SKIPS
+
+load_lib dg.exp
+load_lib gcc-dg.exp
+
+# lto-obj -- compile to an object file
+#
+# SOURCE is the source file
+# DEST is the object file
+# OPTALL is the list of compiler options to use with all tests
+# OPTFILE is the list of compiler options to use with this file
+# OPTSTR is the options to print with test messages
+# XFAILDATA is the xfail data to be passed to the compiler
+proc lto-obj { source dest optall optfile optstr xfaildata } {
+    global testcase
+    global tool
+    global compiler_conditional_xfail_data
+    global lto_skip_list
+
+    # Add the skip specifiers.
+    foreach skip $lto_skip_list {
+	if { ![string match $skip ""] } {
+	    lappend optall "-DSKIP_$skip"
+	}
+    }
+
+    # Set up the options for compiling this file.
+    set options ""
+    lappend options "additional_flags=$optall $optfile"
+
+    set compiler_conditional_xfail_data $xfaildata
+    set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+    ${tool}_check_compile "$testcase $dest assemble" $optstr $dest $comp_output
+}
+
+# lto-link-and-maybe-run -- link the object files and run the executable
+# if compile_type is set to "run"
+#
+# TESTNAME is the mixture of object files to link
+# OBJLIST is the list of object files to link
+# DEST is the name of the executable
+# OPTALL is a list of compiler and linker options to use for all tests
+# OPTFILE is a list of compiler and linker options to use for this test
+# OPTSTR is the list of options to list in messages
+proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
+    global testcase
+    global tool
+    global compile_type
+
+    # Check that all of the objects were built successfully.
+    foreach obj [split $objlist] {
+	if ![file_on_host exists $obj] then {
+	    unresolved "$testcase $testname link $optstr"
+	    unresolved "$testcase $testname execute $optstr"
+	    return
+	}
+    }
+
+    # Set up the options for linking this test.
+    set options ""
+    lappend options "additional_flags=$optall $optfile"
+
+    # Link the objects into an executable.
+    set comp_output [${tool}_target_compile "$objlist" $dest executable \
+		     "$options"]
+    if ![${tool}_check_compile "$testcase $testname link" "" \
+	 $dest $comp_output] then {
+	unresolved "$testcase $testname execute $optstr"
+	return
+    }
+
+    # Return if we only needed to link.
+    if { ![string compare "link" $compile_type] } {
+	return
+    }
+
+    # Run the self-checking executable.
+    if ![string match "*/*" $dest] then {
+	set dest "./$dest"
+    }
+    set result [${tool}_load $dest "" ""]
+    set status [lindex $result 0]
+    if { $status == "pass" } then {
+	file_on_host delete $dest
+    }
+    $status "$testcase $testname execute $optstr"
+}
+
+# lto-get-options-main -- get target requirements for a test and
+# options for the primary source file and the test as a whole
+#
+# SRC is the full pathname of the primary source file.
+proc lto-get-options-main { src } {
+    global compile_type
+    global dg-extra-ld-options
+    global dg-suppress-ld-options
+
+    set dg-extra-ld-options ""
+    set dg-suppress-ld-options ""
+
+    # dg-options sets a variable called dg-extra-tool-flags.
+    set dg-extra-tool-flags ""
+
+    # dg-options sets a variable called tool_flags.
+    set tool_flags ""
+
+    # dg-require-* sets dg-do-what.
+    upvar dg-do-what dg-do-what 
+    upvar dg-final-code dg-final-code
+    set dg-final-code ""
+
+    set tmp [dg-get-options $src]
+    verbose "getting options for $src: $tmp"
+    foreach op $tmp {
+	set cmd [lindex $op 0]
+	verbose "cmd is $cmd"
+	if { [string match "dg-skip-if" $cmd] \
+	     || [string match "dg-require-*" $cmd] } {
+	    set status [catch "$op" errmsg]
+	    if { $status != 0 } {
+		perror "src: $errmsg for \"$op\"\n"
+		unresolved "$src: $errmsg for \"$op\""
+		return
+	    }
+	} elseif { [string match "dg-lto-options" $cmd] } {
+	    set op [lreplace $op 0 0 "dg-options"]
+	    set status [catch "$op" errmsg]
+	    if { $status != 0 } {
+		perror "src: $errmsg for \"$op\"\n"
+		unresolved "$src: $errmsg for \"$op\""
+		return
+	    }
+	} elseif { ![string compare "dg-xfail-if" $cmd] \
+		   || ![string compare "dg-options" $cmd] } {
+	    warning "lto.exp does not support $cmd in primary source file"
+	} elseif { ![string compare "dg-lto-do" $cmd] } {
+	    set dgdo [lindex $op 2]
+	    verbose "dg-lto-do command for \"$op\" is $dgdo"
+	    if { ![string compare "assemble" $dgdo] } {
+		set compile_type "assemble"
+	    } elseif { ![string compare "run" $dgdo] } {
+		set compile_type "run"
+	    } elseif { ![string compare "link" $dgdo] } {
+		set compile_type "link"
+	    } else {
+		warning "lto.exp does not support dg-lto-do $dgdo"
+	    }
+	} elseif { ![string compare "dg-extra-ld-options" $cmd] } {
+	    set dg-extra-ld-options [lindex $op 2]
+	    verbose "dg-extra-ld-options for main is ${dg-extra-ld-options}"
+	} elseif { ![string compare "dg-suppress-ld-options" $cmd] } {
+	    set dg-suppress-ld-options [lindex $op 2]
+	    verbose \
+	      "dg-suppress-ld-options for main is ${dg-suppress-ld-options}"
+	} elseif { ![string compare "dg-final" $cmd] } {
+	    if { [llength $op] > 3 } {
+		error "[lindex $op 0]: too many arguments"
+	    } else {
+		append dg-final-code "[lindex $op 2]\n"
+	    }
+	} else {
+	    # Ignore unrecognized dg- commands, but warn about them.
+	    warning "lto.exp does not support $cmd"
+	}
+    }
+
+    # Return flags to use for compiling the primary source file and for
+    # linking.
+    verbose "dg-extra-tool-flags for main is ${dg-extra-tool-flags}"
+    return ${dg-extra-tool-flags}
+}
+
+
+# lto-get-options -- get special tool flags to use for a secondary
+# source file
+#
+# SRC is the full pathname of the source file.
+# The result is a list of options to use.
+#
+# This code is copied from proc dg-test in dg.exp from DejaGNU.
+proc lto-get-options { src } {
+    # dg-options sets a variable called dg-extra-tool-flags.
+    set dg-extra-tool-flags ""
+
+    # dg-xfail-if sets compiler_conditional_xfail_data.
+    global compiler_conditional_xfail_data
+    set compiler_conditional_xfail_data ""
+
+    # dg-xfail-if needs access to dg-do-what.
+    upvar dg-do-what dg-do-what 
+
+    set tmp [dg-get-options $src]
+    foreach op $tmp {
+	set cmd [lindex $op 0]
+	if { ![string compare "dg-options" $cmd] \
+	     || ![string compare "dg-xfail-if" $cmd] } {
+	    set status [catch "$op" errmsg]
+	    if { $status != 0 } {
+		perror "src: $errmsg for \"$op\"\n"
+		unresolved "$src: $errmsg for \"$op\""
+		return
+	    }
+	} elseif { [string match "dg-require-*" $cmd] } {
+	    warning "lto.exp does not support $cmd in secondary source files"
+	} else {
+	    # Ignore unrecognized dg- commands, but warn about them.
+	    warning "lto.exp does not support $cmd in secondary source files"
+	}
+    }
+
+    return ${dg-extra-tool-flags}
+}
+
+# lto-execute -- compile multi-file tests
+#
+# SRC1 is the full pathname of the main file of the testcase.
+# SID identifies a test suite in the names of temporary files.
+proc lto-execute { src1 sid } {
+    global srcdir tmpdir
+    global option_list
+    global tool
+    global verbose
+    global testcase
+    global gluefile
+    global compiler_conditional_xfail_data
+    global dg-do-what-default
+    global compile_type
+    global dg-extra-ld-options
+    global dg-suppress-ld-options
+    global LTO_OPTIONS
+    global dg-final-code
+
+    # Get extra flags for this test from the primary source file, and
+    # process other dg-* options that this suite supports.  Warn about
+    # unsupported flags.
+    verbose "lto-execute: $src1" 1
+    set compile_type "run"
+    set dg-do-what [list ${dg-do-what-default} "" P]
+    set extra_flags(0) [lto-get-options-main $src1]
+    set compile_xfail(0) "" 
+
+    # If the main file defines dg-options, those flags are used to
+    # overwrite the default option_list taken from LTO_OPTIONS.
+    if { [string length $extra_flags(0)] > 0 } {
+	set option_list $extra_flags(0)
+	set extra_flags(0) ""
+    } else {
+	set option_list $LTO_OPTIONS
+    }
+
+    # Check whether this test is supported for this target.
+    if { [lindex ${dg-do-what} 1 ] == "N" } {
+	unsupported "$src1"
+	verbose "$src1 not supported on this target, skipping it" 3
+	return
+    }
+
+    # Set up the names of the other source files.
+    set dir [file dirname $src1]
+    set base [file rootname $src1]
+    set base [string range $base [string length $dir] end]
+    regsub "_0" $base "" base
+    regsub "/" $base "" base
+    set src_list $src1
+    set i 1
+    set done 0
+    while { !$done } {
+	set names [glob -nocomplain -types f -- "${dir}/${base}_${i}.*"]
+	if { [llength ${names}] > 1 } {
+	    warning "lto-execute: more than one file matched ${dir}/${base}_${i}.*"
+	}
+	if { [llength ${names}] == 1 } {
+	    lappend src_list [lindex ${names} 0]
+	    incr i
+	} else {
+	    set num_srcs ${i}
+	    set done 1
+	}
+    }
+
+    # Use the dg-options mechanism to specify extra flags for each
+    # of the secondary files.
+    # The extra flags in each file are used to compile that file, and the
+    # extra flags in *_0.* are also used for linking.
+    verbose "\tsrc_list is: $src_list"
+    for {set i 1} {$i < $num_srcs} {incr i} {
+	set extra_flags($i) [lto-get-options [lindex $src_list $i]]
+	set compile_xfail($i) $compiler_conditional_xfail_data
+    }
+
+    # Define the names of the object files.
+    set obj_list ""
+    for {set i 0} {$i < $num_srcs} {incr i} {
+	lappend obj_list "${sid}_${base}_${i}.o"
+    }
+
+    # Get the base name of this test, for use in messages.
+    set testcase [lindex ${src_list} 0]
+
+    # Remove the $srcdir and $tmpdir prefixes from $src1.  (It would
+    # be possible to use "regsub" here, if we were careful to escape
+    # all regular expression characters in $srcdir and $tmpdir, but
+    # that would be more complicated that this approach.) 
+    if {[string first "$srcdir/" "${testcase}"] == 0} {
+	set testcase [string range "${testcase}" [string length "$srcdir/"] end]
+    }
+    if {[string first "$tmpdir/" "$testcase"] == 0} {
+	set testcase [string range "$testcase" [string length "$tmpdir/"] end]
+	set testcase "tmpdir-$testcase"
+    }
+    regsub "_0.*" $testcase "" testcase
+
+    # Set up the base name of executable files so they'll be unique.
+    regsub -all "\[./\]" $testcase "-" execbase
+
+    # If we couldn't rip $srcdir out of `src1' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] then {
+        set testcase "[file tail [file dirname $src1]]/[file tail $src1]"
+    }
+
+    # Loop through all of the option lists used for this test.
+    set count 0
+    foreach option $option_list {
+	verbose "Testing $testcase, $option"
+
+	# There's a unique name for each executable we generate.
+	set execname "${execbase}-${count}1"
+	incr count
+
+	file_on_host delete $execname
+
+	# Compile pieces with the compiler under test.
+	set i 0
+	foreach src $src_list obj $obj_list {
+	    lto-obj $src $obj $option $extra_flags($i) $option \
+		    $compile_xfail($i)
+	    incr i
+	}
+
+	# Link (using the compiler under test), run, and clean up tests.
+	if { ![string compare "run" $compile_type] \
+	     || ![string compare "link" $compile_type] } {
+
+	    # Filter out any link options we were asked to suppress.
+	    set reduced {}
+	    foreach x [split $option] {
+	      if {[lsearch ${dg-suppress-ld-options} $x] == -1} {
+		lappend reduced $x
+	      }
+	    }
+	    set filtered [join $reduced " "]
+
+	    lto-link-and-maybe-run \
+		    "[lindex $obj_list 0]-[lindex $obj_list end]" \
+		    $obj_list $execname $filtered ${dg-extra-ld-options} \
+		    $filtered
+	}
+
+
+	# Are there any further tests to perform?
+	# Note that if the program has special run-time requirements, running
+	# of the program can be delayed until here.  Ditto for other situations.
+	# It would be a bit cumbersome though.
+
+	if ![string match ${dg-final-code} ""] {
+	    regsub -all "\\\\(\[{}\])" ${dg-final-code} "\\1" dg-final-code
+	    # Note that the use of `args' here makes this a varargs proc.
+	    proc dg-final-proc { args } ${dg-final-code}
+	    verbose "Running dg-final tests." 3
+	    verbose "dg-final-proc:\n[info body dg-final-proc]" 4
+	    if [catch "dg-final-proc $src1" errmsg] {
+		perror "$name: error executing dg-final: $errmsg"
+		# ??? The call to unresolved here is necessary to clear
+		# `errcnt'.  What we really need is a proc like perror that
+		# doesn't set errcnt.  It should also set exit_status to 1.
+		unresolved "$name: error executing dg-final: $errmsg"
+	    }
+	}
+
+	# Clean up object files.
+	set files [glob -nocomplain ${sid}_*.o]
+	if { $files != "" } {
+	    foreach objfile $files {
+		if { ![info exists gluefile] || $objfile != $gluefile } {
+		    eval "file_on_host delete $objfile"
+		}
+	    }
+	}
+
+	if { ![string compare "run" $compile_type] \
+	     || ![string compare "link" $compile_type] } {
+	    file_on_host delete $execname
+	}
+    }
+}
+
+# Utility for scanning a symbol in the final executable, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the regexp to match.
+# Argument 1 handles expected failures and the like
+proc scan-symbol { args } {
+    global nm
+    global base_dir
+    upvar 2 execname execname
+
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find nm like we find g++ in g++.exp.
+    if ![info exists nm]  {
+	set nm [findfile $base_dir/../../../binutils/nm \
+		$base_dir/../../../binutils/nm \
+	        [findfile $base_dir/../../nm $base_dir/../../nm \
+		      [findfile $base_dir/nm $base_dir/nm \
+		       [transform nm]]]]
+	verbose -log "nm is $nm"
+    }
+
+    set output_file $execname
+    if { $output_file == "" } {
+	fail "scan-symbol $args: dump file does not exist"
+	return
+    }
+
+    set fd [open "| $nm $output_file" r]
+    set text [read $fd]
+    close $fd
+
+    if [regexp -- [lindex $args 0] $text] {
+	pass "scan-symbol $args"
+    } else {
+	fail "scan-symbol $args"
+    }
+}

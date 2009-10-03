@@ -8,6 +8,7 @@ extern void abort (void);
 
 typedef __INTMAX_TYPE__ intmax_t;
 
+__attribute__ ((__noinline__))
 int
 abs (int x)
 {
@@ -15,6 +16,7 @@ abs (int x)
   return x < 0 ? -x : x;
 }
 
+__attribute__ ((__noinline__))
 long
 labs (long x)
 {
@@ -22,6 +24,7 @@ labs (long x)
   return x < 0 ? -x : x;
 }
 
+__attribute__ ((__noinline__))
 long long
 llabs (long long x)
 {
@@ -29,6 +32,7 @@ llabs (long long x)
   return x < 0 ? -x : x;
 }
 
+__attribute__ ((__noinline__))
 intmax_t
 imaxabs (intmax_t x)
 {

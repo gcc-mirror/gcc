@@ -4526,7 +4526,7 @@ verify_stmt (gimple_stmt_iterator *gsi)
 
 /* Return true when the T can be shared.  */
 
-static bool
+bool
 tree_node_can_be_shared (tree t)
 {
   if (IS_TYPE_OR_DECL_P (t)

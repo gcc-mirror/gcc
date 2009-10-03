@@ -78,6 +78,29 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   return NULL_TREE;
 }
 
+/* Reset inlining information of all incoming call edges of NODE.  */
+
+void
+reset_inline_failed (struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      e->callee->global.inlined_to = NULL;
+      if (!node->analyzed)
+	e->inline_failed = CIF_BODY_NOT_AVAILABLE;
+      else if (node->local.redefined_extern_inline)
+	e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
+      else if (!node->local.inlinable)
+	e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
+      else if (e->call_stmt_cannot_inline_p)
+	e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+      else
+	e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
+    }
+}
+
 /* Computes the frequency of the call statement so that it can be stored in
    cgraph_edge.  BB is the basic block of the call statement.  */
 int

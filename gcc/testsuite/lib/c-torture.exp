@@ -17,6 +17,7 @@
 
 # This file was written by Rob Savoye. (rob@cygnus.com)
 
+load_lib target-supports.exp
 load_lib file-format.exp
 load_lib target-libpath.exp
 
@@ -47,6 +48,14 @@ if [info exists TORTURE_OPTIONS] {
 if [info exists ADDITIONAL_TORTURE_OPTIONS] {
     set C_TORTURE_OPTIONS \
 	[concat $C_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
+}
+
+set LTO_TORTURE_OPTIONS ""
+if [check_effective_target_lto] {
+    set LTO_TORTURE_OPTIONS [list \
+	{ -O2 -flto } \
+	{ -O2 -fwhopr }
+    ]
 }
 
 global GCC_UNDER_TEST

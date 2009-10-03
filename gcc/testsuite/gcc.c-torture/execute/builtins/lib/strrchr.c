@@ -1,6 +1,7 @@
 extern void abort (void);
 extern int inside_main;
 
+__attribute__ ((__noinline__))
 char *
 strrchr (const char *s, int c)
 {
@@ -23,6 +24,7 @@ strrchr (const char *s, int c)
   return 0;
 }
 
+__attribute__ ((__noinline__))
 char *
 rindex (const char *s, int c)
 {

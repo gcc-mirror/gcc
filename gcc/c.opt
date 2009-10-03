@@ -113,11 +113,11 @@ C ObjC C++ ObjC++ Joined Separate
 -U<macro>	Undefine <macro>
 
 Wabi
-C ObjC C++ ObjC++ Var(warn_abi) Warning
+C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
 Warn about things that will change when compiling with an ABI-compliant compiler
 
 Wpsabi
-C ObjC C++ ObjC++ Var(warn_psabi) Init(1) Undocumented
+C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented
 
 Waddress
 C ObjC C++ ObjC++ Var(warn_address) Warning
