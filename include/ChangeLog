@@ -1,3 +1,7 @@
+2009-10-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* plugin-api.h: Fix compile.
+
 2008-10-03  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h: New.
