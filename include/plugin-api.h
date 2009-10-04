@@ -257,7 +257,7 @@ enum ld_plugin_status
 (*ld_plugin_onload) (struct ld_plugin_tv *tv);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif /* !defined(PLUGIN_API_H) */
