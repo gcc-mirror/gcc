@@ -159,31 +159,15 @@ gfc_trans_goto (gfc_code * code)
 
   assigned_goto = GFC_DECL_ASSIGN_ADDR (se.expr);
 
-  code = code->block;
-  if (code == NULL)
-    {
-      target = fold_build1 (GOTO_EXPR, void_type_node, assigned_goto);
-      gfc_add_expr_to_block (&se.pre, target);
-      return gfc_finish_block (&se.pre);
-    }
+  /* We're going to ignore a label list.  It does not really change the
+     statement's semantics (because it is just a further restriction on
+     what's legal code); before, we were comparing label addresses here, but
+     that's a very fragile business and may break with optimization.  So
+     just ignore it.  */
 
-  /* Check the label list.  */
-  do
-    {
-      target = gfc_get_label_decl (code->label1);
-      tmp = gfc_build_addr_expr (pvoid_type_node, target);
-      tmp = fold_build2 (EQ_EXPR, boolean_type_node, tmp, assigned_goto);
-      tmp = build3_v (COND_EXPR, tmp,
-		      fold_build1 (GOTO_EXPR, void_type_node, target),
-		      build_empty_stmt (input_location));
-      gfc_add_expr_to_block (&se.pre, tmp);
-      code = code->block;
-    }
-  while (code != NULL);
-  gfc_trans_runtime_check (true, false, boolean_true_node, &se.pre, &loc,
-			   "Assigned label is not in the list");
-
-  return gfc_finish_block (&se.pre); 
+  target = fold_build1 (GOTO_EXPR, void_type_node, assigned_goto);
+  gfc_add_expr_to_block (&se.pre, target);
+  return gfc_finish_block (&se.pre);
 }
 
 

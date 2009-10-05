@@ -1,3 +1,9 @@
+2009-10-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/41403
+	* gfortran.dg/goto_6.f: New test.
+	* gfortran.dg/goto_7.f: New test.
+
 2009-10-03  Ben Elliston  <bje@au.ibm.com>
 	    Bill Maddox  <maddox@google.com>
 	    Cary Coutant  <ccoutant@google.com>
