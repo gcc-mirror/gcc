@@ -4315,7 +4315,7 @@ minimum maximum, so we do not diagnose overlength strings in C++@.
 This option is implied by @option{-pedantic}, and can be disabled with
 @option{-Wno-overlength-strings}.
 
-@item -Wunsuffixed-float-constants
+@item -Wunsuffixed-float-constants @r{(C and Objective-C only)}
 @opindex Wunsuffixed-float-constants
 
 GCC will issue a warning for any floating constant that does not have

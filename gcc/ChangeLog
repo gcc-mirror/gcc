@@ -1,3 +1,9 @@
+2009-10-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* c.opt (Wjump-misses-init): Fix typo to enable for ObjC.
+	* doc/invoke.texi (Warning Options): Annotate allowed languages
+	for -Wunsuffixed-float-constants.
+
 2009-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (modified_type_die): Don't add DW_AT_name to
