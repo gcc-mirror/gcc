@@ -1,3 +1,7 @@
+2009-10-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/html/*: Regenerate.
+
 2009-10-05  John Bytheway  <jbytheway@gmail.com>
 
 	PR libstdc++/41530
