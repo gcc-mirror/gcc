@@ -1,3 +1,6 @@
+2009-10-05  Sriraman Tallam  <tmsriram@google.com>
+
+	* doc/plugins.texi: Change plugin_pass to register_pass_info.
 
 2009-10-05  Basile Starynkevitch  <basile@starynkevitch.net>
 	    Rafael Espindola  <espindola@google.com>

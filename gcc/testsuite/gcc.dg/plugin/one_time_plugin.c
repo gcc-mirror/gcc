@@ -50,7 +50,7 @@ struct gimple_opt_pass one_pass =
 int plugin_init (struct plugin_name_args *plugin_info,
                  struct plugin_gcc_version *version)
 {
-  struct plugin_pass p;
+  struct register_pass_info p;
 
   p.pass = &one_pass.pass;
   p.reference_pass_name = "useless";

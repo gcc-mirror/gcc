@@ -1,3 +1,14 @@
+2009-10-05  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.dg/plugin/selfassign.c (plugin_init): Change plugin_pass to
+	register_pass_info.
+	* gcc.dg/plugin/one_time_plugin.c (plugin_init): Change
+	plugin_pass to register_pass_info.
+	* g++.dg/plugin/selfassign.c (plugin_init): Change plugin_pass to
+	register_pass_info.
+	* g++.dg/plugin/dumb_plugin.c (plugin_init): Change plugin_pass to
+	register_pass_info.
+
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41281

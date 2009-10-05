@@ -298,7 +298,7 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
              struct plugin_gcc_version *version)
 {
-  struct plugin_pass pass_info;
+  struct register_pass_info pass_info;
   const char *plugin_name = plugin_info->base_name;
   int argc = plugin_info->argc;
   struct plugin_argument *argv = plugin_info->argv;

@@ -165,7 +165,7 @@ such as CFG or an IPA pass) and optimization plugins.
 Basic support for inserting new passes or replacing existing passes is
 provided. A plugin registers a new pass with GCC by calling
 @code{register_callback} with the @code{PLUGIN_PASS_MANAGER_SETUP}
-event and a pointer to a @code{struct plugin_pass} object defined as follows
+event and a pointer to a @code{struct register_pass_info} object defined as follows
 
 @smallexample
 enum pass_positioning_ops
@@ -175,7 +175,7 @@ enum pass_positioning_ops
   PASS_POS_REPLACE        // Replace the reference pass.
 @};
 
-struct plugin_pass
+struct register_pass_info
 @{
   struct opt_pass *pass;            /* New pass provided by the plugin.  */
   const char *reference_pass_name;  /* Name of the reference pass for hooking
@@ -192,7 +192,7 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
              struct plugin_gcc_version *version)
 @{
-  struct plugin_pass pass_info;
+  struct register_pass_info pass_info;
 
   ...
 
