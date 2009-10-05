@@ -6955,8 +6955,8 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 /* Lambdas that appear in variable initializer or default argument scope
    get that in their mangling, so we need to record it.  We might as well
    use the count for function and namespace scopes as well.  */
-static tree lambda_scope;
-static int lambda_count;
+static GTY(()) tree lambda_scope;
+static GTY(()) int lambda_count;
 typedef struct GTY(()) tree_int
 {
   tree t;

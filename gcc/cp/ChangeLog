@@ -1,3 +1,7 @@
+2009-10-05  Jason Merrill  <jason@redhat.com>
+
+	* parser.c: Mark lambda_scope and lambda_count for PCH.
+
 2009-10-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41553
