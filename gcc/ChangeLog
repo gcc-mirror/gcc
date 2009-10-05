@@ -1,5 +1,9 @@
 2009-10-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (modified_type_die): Don't add DW_AT_name to
+	DW_TAG_{const,volatile}_type if its DW_AT_type already has the
+	same name and isn't the main variant.
+
 	PR debug/41558
 	* dwarf2out.c (loc_by_reference): Removed.
 	(dw_loc_list_1): New function.

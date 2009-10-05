@@ -11971,10 +11971,16 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 
   /* Builtin types don't have a DECL_ORIGINAL_TYPE.  For those,
      don't output a DW_TAG_typedef, since there isn't one in the
-     user's program; just attach a DW_AT_name to the type.  */
+     user's program; just attach a DW_AT_name to the type.
+     Don't attach a DW_AT_name to DW_TAG_const_type or DW_TAG_volatile_type
+     if the base type already has the same name.  */
   if (name
-      && (TREE_CODE (name) != TYPE_DECL
-	  || (TREE_TYPE (name) == qualified_type && DECL_NAME (name))))
+      && ((TREE_CODE (name) != TYPE_DECL
+	   && (qualified_type == TYPE_MAIN_VARIANT (type)
+	       || (!is_const_type && !is_volatile_type)))
+	  || (TREE_CODE (name) == TYPE_DECL
+	      && TREE_TYPE (name) == qualified_type
+	      && DECL_NAME (name))))
     {
       if (TREE_CODE (name) == TYPE_DECL)
 	/* Could just call add_name_and_src_coords_attributes here,
