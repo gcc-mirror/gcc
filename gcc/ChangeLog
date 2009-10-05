@@ -1,3 +1,41 @@
+2009-10-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h (DWARF_FRAME_RETURN_COLUMN): Replace
+	GP_REG_FIRST + 31 with RETURN_ADDR_REGNUM.
+	(INCOMING_RETURN_ADDR_RTX): Likewise.
+	(FUNCTION_PROFILER): Likewise.  Replace GP_REG_FIRST + 1
+	with AT_REGNUM.
+	* config/mips/sdemtk.h (FUNCTION_PROFILER): Replace GP_REG_FIRST + 31
+	with RETURN_ADDR_REGNUM.
+	(MIPS_SAVE_REG_FOR_PROFILING_P): Likewise.
+	* config/mips/mips.c (mips16_build_call_stub): Replace
+	GP_REG_FIRST + 31 with RETURN_ADDR_REGNUM, GP_REG_FIRST + 1
+	with AT_REGNUM and 31 with RETURN_ADDR_REGNUM.
+	(mips_print_operand_punctuation): Likewise.
+	(mips_frame_set): Likewise.
+	(mips16e_output_save_restore): Likewise.
+	(mips_cfun_might_clobber_call_saved_reg_p): Likewise.
+	(mips_save_reg_p): Likewise.
+	(mips_return_addr): Likewise.
+	(mips_set_return_address): Likewise.
+	(mips_direct_save_slot_move_p): Likewise.
+	(mips_output_function_prologue): Likewise.
+	(mips_restore_reg): Likewise.
+	(mips_expand_epilogue): Likewise.
+	(mips_epilogue_uses): Likewise.
+	* config/mips/mips.md (RETURN_ADD_REGNUM): Define.
+	(*mov<mode>_ra): Use it instead of a hard-coded 31.
+	(clear_hazard_<mode>): Likewise.
+	(call_internal): Likewise.
+	(call_internal_direct): Likewise.
+	(call_direct_split): Likewise.
+	(call_value_internal): Likewise.
+	(call_value_split): Likewise.
+	(call_value_internal_direct): Likewise.
+	(call_value_direct_split): Likewise.
+	(call_value_multiple_internal): Likewise.
+	(call_value_multiple_split): Likewise.
+
 2009-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

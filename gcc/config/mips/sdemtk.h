@@ -101,7 +101,7 @@ extern void mips_sync_icache (void *beg, unsigned long len);
     /* MIPS16 code passes saved $ra in $v1 instead of $at.  */		\
     fprintf (FILE, "\tmove\t%s,%s\n",					\
 	     reg_names[GP_REG_FIRST + (TARGET_MIPS16 ? 3 : 1)],		\
-	     reg_names[GP_REG_FIRST + 31]);				\
+	     reg_names[RETURN_ADDR_REGNUM]);				\
     fprintf (FILE, "\tjal\t_mcount\n");					\
     mips_pop_asm_switch (&mips_noat);					\
     /* _mcount treats $2 as the static chain register.  */		\
@@ -112,4 +112,4 @@ extern void mips_sync_icache (void *beg, unsigned long len);
 
 /* ...nor does the call sequence preserve $31.  */
 #undef MIPS_SAVE_REG_FOR_PROFILING_P
-#define MIPS_SAVE_REG_FOR_PROFILING_P(REGNO) ((REGNO) == GP_REG_FIRST + 31)
+#define MIPS_SAVE_REG_FOR_PROFILING_P(REGNO) ((REGNO) == RETURN_ADDR_REGNUM)
