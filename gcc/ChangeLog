@@ -1,3 +1,14 @@
+2009-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/41511
+	* combine.c (record_value_for_reg): Pass explicit values as argument
+	to get_last_value_validate.
+	(get_last_value_validate): Document INSN parameter.
+	For non-readonly MEMs, assume they might have been modified if INSN
+	was in another basic block.
+	(get_last_value): Minor reformatting.
+
 2009-10-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/40992
