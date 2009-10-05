@@ -1,3 +1,9 @@
+2009-10-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+        * config/arm/arm.c (arm_override_options): Really initialize
+        flag_dwarf2_cfi_asm to 0.
+
 2009-10-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.	
