@@ -109,35 +109,6 @@ lto_symtab_maybe_init_hash_table (void)
 		     lto_symtab_entry_eq, NULL);
 }
 
-/* Returns true iff the union of ATTRIBUTES_1 and ATTRIBUTES_2 can be
-   applied to DECL.  */
-static bool
-lto_compatible_attributes_p (tree decl ATTRIBUTE_UNUSED, 
-			     tree attributes_1, 
-			     tree attributes_2)
-{
-#if 0
-  /* ??? For now, assume two attribute sets are compatible only if they
-     are both empty.  */
-  return !attributes_1 && !attributes_2;
-#else
-  /* FIXME.  For the moment, live dangerously, and assume the user knows
-     what he's doing. I don't think the linker would distinguish these cases.  */
-  return true || (!attributes_1 && !attributes_2);
-#endif
-}
-
-/* Helper for lto_symtab_compatible. Return TRUE if DECL is an external
-   variable declaration of an aggregate type. */
-
-static bool
-external_aggregate_decl_p (tree decl)
-{
-  return (TREE_CODE (decl) == VAR_DECL
-	  && DECL_EXTERNAL (decl)
-	  && AGGREGATE_TYPE_P (TREE_TYPE (decl)));
-}
-
 static bool maybe_merge_incomplete_and_complete_type (tree, tree);
 
 /* Try to merge an incomplete type INCOMPLETE with a complete type
@@ -194,7 +165,7 @@ maybe_merge_incomplete_and_complete_type (tree type1, tree type2)
 static bool
 lto_symtab_compatible (tree old_decl, tree new_decl)
 {
-  tree merged_type = NULL_TREE;
+  tree old_type, new_type;
 
   if (TREE_CODE (old_decl) != TREE_CODE (new_decl))
     {
@@ -221,213 +192,114 @@ lto_symtab_compatible (tree old_decl, tree new_decl)
 	}
     }
 
+  if (TREE_CODE (new_decl) == FUNCTION_DECL)
+    {
+      if (!gimple_types_compatible_p (TREE_TYPE (old_decl),
+				      TREE_TYPE (new_decl)))
+	/* If we don't have a merged type yet...sigh.  The linker
+	   wouldn't complain if the types were mismatched, so we
+	   probably shouldn't either.  Just use the type from
+	   whichever decl appears to be associated with the
+	   definition.  If for some odd reason neither decl is, the
+	   older one wins.  */
+	(void) 0;
+
+      return true;
+    }
+
+  /* Now we exclusively deal with VAR_DECLs.  */
+
   /* Handle external declarations with incomplete type or pointed-to
      incomplete types by forcefully merging the types.
      ???  In principle all types involved in the two decls should
      be merged forcefully, for example without considering type or
      field names.  */
-  if (TREE_CODE (old_decl) == VAR_DECL)
+  old_type = TREE_TYPE (old_decl);
+  new_type = TREE_TYPE (new_decl);
+
+  if (DECL_EXTERNAL (old_decl) || DECL_EXTERNAL (new_decl))
+    maybe_merge_incomplete_and_complete_type (old_type, new_type);
+  else if (POINTER_TYPE_P (old_type)
+	   && POINTER_TYPE_P (new_type))
+    maybe_merge_incomplete_and_complete_type (TREE_TYPE (old_type),
+					      TREE_TYPE (new_type));
+
+  /* For array types we have to accept external declarations with
+     different sizes than the actual definition (164.gzip).
+     ???  We could emit a warning here.  */
+  if (TREE_CODE (old_type) == TREE_CODE (new_type)
+      && TREE_CODE (old_type) == ARRAY_TYPE
+      && COMPLETE_TYPE_P (old_type)
+      && COMPLETE_TYPE_P (new_type)
+      && tree_int_cst_compare (TYPE_SIZE (old_type),
+			       TYPE_SIZE (new_type)) != 0
+      && gimple_types_compatible_p (TREE_TYPE (old_type),
+				    TREE_TYPE (new_type)))
     {
-      tree old_type = TREE_TYPE (old_decl);
-      tree new_type = TREE_TYPE (new_decl);
-
-      if (DECL_EXTERNAL (old_decl) || DECL_EXTERNAL (new_decl))
-	maybe_merge_incomplete_and_complete_type (old_type, new_type);
-      else if (POINTER_TYPE_P (old_type)
-	       && POINTER_TYPE_P (new_type))
-	maybe_merge_incomplete_and_complete_type (TREE_TYPE (old_type),
-						  TREE_TYPE (new_type));
-
-      /* For array types we have to accept external declarations with
-	 different sizes than the actual definition (164.gzip).
-	 ???  We could emit a warning here.  */
-      if (TREE_CODE (old_type) == TREE_CODE (new_type)
-	  && TREE_CODE (old_type) == ARRAY_TYPE
-	  && COMPLETE_TYPE_P (old_type)
-	  && COMPLETE_TYPE_P (new_type)
-	  && tree_int_cst_compare (TYPE_SIZE (old_type),
-				   TYPE_SIZE (new_type)) != 0
-	  && gimple_types_compatible_p (TREE_TYPE (old_type),
-					TREE_TYPE (new_type)))
+      /* If only one is external use the type of the non-external decl.
+	 Else use the larger one and also adjust the decl size.
+	 ???  Directional merging would allow us to simply pick the
+	 larger one instead of rewriting it.  */
+      if (DECL_EXTERNAL (old_decl) ^ DECL_EXTERNAL (new_decl))
 	{
-	  /* If only one is external use the type of the non-external decl.
-	     Else use the larger one and also adjust the decl size.
-	     ???  Directional merging would allow us to simply pick the
-	     larger one instead of rewriting it.  */
-	  if (DECL_EXTERNAL (old_decl) ^ DECL_EXTERNAL (new_decl))
+	  if (DECL_EXTERNAL (old_decl))
+	    TREE_TYPE (old_decl) = new_type;
+	  else if (DECL_EXTERNAL (new_decl))
+	    TREE_TYPE (new_decl) = old_type;
+	}
+      else
+	{
+	  if (tree_int_cst_compare (TYPE_SIZE (old_type),
+				    TYPE_SIZE (new_type)) < 0)
 	    {
-	      if (DECL_EXTERNAL (old_decl))
-		TREE_TYPE (old_decl) = new_type;
-	      else if (DECL_EXTERNAL (new_decl))
-		TREE_TYPE (new_decl) = old_type;
+	      TREE_TYPE (old_decl) = new_type;
+	      DECL_SIZE (old_decl) = DECL_SIZE (new_decl);
+	      DECL_SIZE_UNIT (old_decl) = DECL_SIZE_UNIT (new_decl);
 	    }
 	  else
 	    {
-	      if (tree_int_cst_compare (TYPE_SIZE (old_type),
-					TYPE_SIZE (new_type)) < 0)
-		{
-		  TREE_TYPE (old_decl) = new_type;
-		  DECL_SIZE (old_decl) = DECL_SIZE (new_decl);
-		  DECL_SIZE_UNIT (old_decl) = DECL_SIZE_UNIT (new_decl);
-		}
-	      else
-		{
-		  TREE_TYPE (new_decl) = old_type;
-		  DECL_SIZE (new_decl) = DECL_SIZE (old_decl);
-		  DECL_SIZE_UNIT (new_decl) = DECL_SIZE_UNIT (old_decl);
-		}
+	      TREE_TYPE (new_decl) = old_type;
+	      DECL_SIZE (new_decl) = DECL_SIZE (old_decl);
+	      DECL_SIZE_UNIT (new_decl) = DECL_SIZE_UNIT (old_decl);
 	    }
 	}
     }
 
-  if (!gimple_types_compatible_p (TREE_TYPE (old_decl), TREE_TYPE (new_decl)))
+  /* We can tolerate differences in type qualification, the
+     qualification of the prevailing definition will prevail.  */
+  old_type = TYPE_MAIN_VARIANT (TREE_TYPE (old_decl));
+  new_type = TYPE_MAIN_VARIANT (TREE_TYPE (new_decl));
+  if (!gimple_types_compatible_p (old_type, new_type))
     {
-      if (TREE_CODE (new_decl) == FUNCTION_DECL)
-	{
-	  if (!merged_type
-	      /* We want either of the types to have argument types,
-		 but not both.  */
-	      && ((TYPE_ARG_TYPES (TREE_TYPE (old_decl)) != NULL)
-		  ^ (TYPE_ARG_TYPES (TREE_TYPE (new_decl)) != NULL)))
-	    {
-	      /* The situation here is that (in C) somebody was smart
-		 enough to use proper declarations in a header file, but
-		 the actual definition of the function uses
-		 non-ANSI-style argument lists.  Or we have a situation
-		 where declarations weren't used anywhere and we're
-		 merging the actual definition with a use.  One of the
-		 decls will then have a complete function type, whereas
-		 the other will only have a result type.  Assume that
-		 the more complete type is the right one and don't
-		 complain.  */
-	      if (TYPE_ARG_TYPES (TREE_TYPE (old_decl)))
-		{
-		  merged_type = TREE_TYPE (old_decl);
-		}
-	      else
-		{
-		  merged_type = TREE_TYPE (new_decl);
-		}
-	    }
-
-	  /* If we don't have a merged type yet...sigh.  The linker
-	     wouldn't complain if the types were mismatched, so we
-	     probably shouldn't either.  Just use the type from
-	     whichever decl appears to be associated with the
-	     definition.  If for some odd reason neither decl is, the
-	     older one wins.  */
-	  if (!merged_type)
-	    {
-	      if (!DECL_EXTERNAL (new_decl))
-		{
-		  merged_type = TREE_TYPE (new_decl);
-		}
-	      else
-		{
-		  merged_type = TREE_TYPE (old_decl);
-		}
-	    }
-	}
-
-      if (!merged_type)
-	{
-	  if (warning_at (DECL_SOURCE_LOCATION (new_decl), 0,
-			  "type of %qD does not match original declaration",
-			  new_decl))
-	    inform (DECL_SOURCE_LOCATION (old_decl),
-		    "previously declared here");
-	  return false;
-	}
-    }
-
-  if (DECL_UNSIGNED (old_decl) != DECL_UNSIGNED (new_decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (new_decl),
-		"signedness of %qD does not match original declaration",
-		new_decl);
-      inform (DECL_SOURCE_LOCATION (old_decl), "previously declared here");
+      if (warning_at (DECL_SOURCE_LOCATION (new_decl), 0,
+		      "type of %qD does not match original declaration",
+		      new_decl))
+	inform (DECL_SOURCE_LOCATION (old_decl),
+		"previously declared here");
       return false;
     }
 
-  if (!tree_int_cst_equal (DECL_SIZE (old_decl),
-			   DECL_SIZE (new_decl))
-      || !tree_int_cst_equal (DECL_SIZE_UNIT (old_decl),
-			      DECL_SIZE_UNIT (new_decl)))
-    {
-      /* Permit cases where we are declaring aggregates and at least one
-	 of the decls is external and one of the decls has a size whereas
-	 the other one does not.  This is perfectly legal in C:
+  /* ???  We might want to emit a warning here if type qualification
+     differences were spotted.  Do not do this unconditionally though.  */
 
-         struct s;
-	 extern struct s x;
+  /* There is no point in comparing too many details of the decls here.
+     The type compatibility checks or the completing of types has properly
+     dealt with most issues.  */
 
-	 void*
-	 f (void)
-	 {
-	   return &x;
-	 }
+  /* The following should all not invoke fatal errors as in non-LTO
+     mode the linker wouldn't complain either.  Just emit warnings.  */
 
-	 There is no way a compiler can tell the size of x.  So we cannot
-	 assume that external aggreates have complete types.  */
-
-      if (!((TREE_CODE (TREE_TYPE (old_decl))
-	     == TREE_CODE (TREE_TYPE (new_decl)))
-	    && ((external_aggregate_decl_p (old_decl)
-		 && DECL_SIZE (old_decl) == NULL_TREE)
-		|| (external_aggregate_decl_p (new_decl)
-		    && DECL_SIZE (new_decl) == NULL_TREE))))
-	{
-	  error_at (DECL_SOURCE_LOCATION (new_decl),
-		    "size of %qD does not match original declaration",
-		    new_decl);
-	  inform (DECL_SOURCE_LOCATION (old_decl),
-		  "previously declared here");
-	  return false;
-	}
-    }
-
-  /* Report an error if user-specified alignments do not match.  */
+  /* Report a warning if user-specified alignments do not match.  */
   if ((DECL_USER_ALIGN (old_decl) && DECL_USER_ALIGN (new_decl))
       && DECL_ALIGN (old_decl) != DECL_ALIGN (new_decl))
     {
-      error_at (DECL_SOURCE_LOCATION (new_decl),
-		"alignment of %qD does not match original declaration",
-		new_decl);
+      warning_at (DECL_SOURCE_LOCATION (new_decl), 0,
+		  "alignment of %qD does not match original declaration",
+		  new_decl);
       inform (DECL_SOURCE_LOCATION (old_decl), "previously declared here");
       return false;
     }
 
-  /* Do not compare the modes of the decls.  The type compatibility
-     checks or the completing of types has properly dealt with all issues.  */
-
-  if (!lto_compatible_attributes_p (old_decl,
-				    DECL_ATTRIBUTES (old_decl),
-				    DECL_ATTRIBUTES (new_decl)))
-    {
-      error_at (DECL_SOURCE_LOCATION (new_decl),
-		"attributes applied to %qD are incompatible with original "
-		"declaration", new_decl);
-      inform (DECL_SOURCE_LOCATION (old_decl), "previously declared here");
-      return false;
-    }
-
-  /* We do not require matches for:
-
-     - DECL_NAME
-
-       Only the name used in object files matters.
-
-     - DECL_CONTEXT  
-
-       An entity might be declared in a C++ namespace in one file and
-       with a C identifier in another file.  
-
-     - TREE_PRIVATE, TREE_PROTECTED
-
-       Access control is the problem of the front end that created the
-       object file.  
-       
-     Therefore, at this point we have decided to merge the declarations.  */
   return true;
 }
 

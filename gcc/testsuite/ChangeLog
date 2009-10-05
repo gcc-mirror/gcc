@@ -1,5 +1,11 @@
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/40902
+	* gcc.dg/lto/20091005-1_0.c: New testcase.
+	* gcc.dg/lto/20091005-1_1.c: Likewise.
+
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41552
 	PR lto/41487
 	* g++.dg/lto/20091002-1_0.C: Adjust flags.

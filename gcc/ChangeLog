@@ -1,5 +1,14 @@
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/40902
+	* lto-symtab.c (lto_compatible_attributes_p): Remove.
+	(external_aggregate_decl_p): Likewise.
+	(lto_symtab_compatible): Re-structure.  Remove dead code.
+	For variables ignore toplevel qualifiers when comparing types.
+	Issue warnings, not errors for mismatched user-alignment.
+
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41552
 	PR lto/41487
 	* lto-symtab.c (struct lto_symtab_base_def): Remove.
