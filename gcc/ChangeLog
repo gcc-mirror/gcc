@@ -1,5 +1,11 @@
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41281
+	* lto-cgraph.c (output_cgraph): Output toplevel asms.
+	(input_cgraph_1): Input toplevel asms.
+
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/40902
 	* lto-symtab.c (lto_compatible_attributes_p): Remove.
 	(external_aggregate_decl_p): Likewise.

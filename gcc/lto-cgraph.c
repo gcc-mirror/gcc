@@ -318,6 +318,7 @@ output_cgraph (cgraph_node_set set)
   int i, n_nodes;
   bitmap written_decls;
   lto_cgraph_encoder_t encoder;
+  struct cgraph_asm_node *can;
 
   ob = lto_create_simple_output_block (LTO_section_cgraph);
 
@@ -371,6 +372,18 @@ output_cgraph (cgraph_node_set set)
       node = csi_node (csi);
       for (edge = node->callees; edge; edge = edge->next_callee)
 	lto_output_edge (ob, edge, encoder);
+    }
+
+  lto_output_uleb128_stream (ob->main_stream, 0);
+
+  /* Emit toplevel asms.  */
+  for (can = cgraph_asm_nodes; can; can = can->next)
+    {
+      int len = TREE_STRING_LENGTH (can->asm_str);
+      lto_output_uleb128_stream (ob->main_stream, len);
+      for (i = 0; i < len; ++i)
+	lto_output_1_stream (ob->main_stream,
+			     TREE_STRING_POINTER (can->asm_str)[i]);
     }
 
   lto_output_uleb128_stream (ob->main_stream, 0);
@@ -573,6 +586,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   VEC(cgraph_node_ptr, heap) *nodes = NULL;
   struct cgraph_node *node;
   unsigned i;
+  unsigned HOST_WIDE_INT len;
 
   tag = (enum LTO_cgraph_tags) lto_input_uleb128 (ib);
   while (tag)
@@ -589,6 +603,19 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 	}
 
       tag = (enum LTO_cgraph_tags) lto_input_uleb128 (ib);
+    }
+
+  /* Input toplevel asms.  */
+  len = lto_input_uleb128 (ib);
+  while (len)
+    {
+      char *str = (char *)xmalloc (len + 1);
+      for (i = 0; i < len; ++i)
+	str[i] = lto_input_1_unsigned (ib);
+      cgraph_add_asm_node (build_string (len, str));
+      free (str);
+
+      len = lto_input_uleb128 (ib);
     }
 
   for (i = 0; VEC_iterate (cgraph_node_ptr, nodes, i, node); i++)
