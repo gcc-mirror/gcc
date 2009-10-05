@@ -360,7 +360,7 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 </para>
 
 <table frame='all'>
-<title>C++ TR1 Library Headers</title>
+<title>C++ TR 1 Library Headers</title>
 <tgroup cols='5' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
@@ -395,7 +395,7 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 
 
 <table frame='all'>
-<title>C++ TR1 Library Headers for C Library Facilities</title>
+<title>C++ TR 1 Library Headers for C Library Facilities</title>
 <tgroup cols='5' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
@@ -426,6 +426,24 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <entry><filename class="headerfile">tr1/cwctype</filename></entry>
 </row>
 
+</tbody>
+</tgroup>
+</table>
+
+
+<para>Decimal floating-point arithmetic is available if the C++
+compiler supports scalar decimal floating-point types defined via
+<code>__attribute__((mode(SD|DD|LD)))</code>.
+</para>
+
+<table frame='all'>
+<title>C++ TR 24733 Decimal Floating-Point Header</title>
+<tgroup cols='1' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<tbody>
+<row>
+<entry><filename class="headerfile">decimal/decimal</filename></entry>
+</row>
 </tbody>
 </tgroup>
 </table>

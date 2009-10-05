@@ -7926,7 +7926,7 @@ fi
 
 # On IRIX 5.3, sys/types and inttypes.h are conflicting.
 for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
-		  inttypes.h stdint.h unistd.h execinfo.h
+		  inttypes.h stdint.h unistd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default
@@ -15356,6 +15356,40 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
       fi
   fi
 
+
+
+
+  # Fake what AC_TRY_COMPILE does, without linking as this is
+  # unnecessary for this test.
+
+    cat > conftest.$ac_ext << EOF
+#line 15366 "configure"
+int main()
+{
+  _Decimal32 d1;
+  _Decimal64 d2;
+  _Decimal128 d3;
+  return 0;
+}
+EOF
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO/IEC TR 24733 " >&5
+$as_echo_n "checking for ISO/IEC TR 24733 ... " >&6; }
+    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+$as_echo "#define _GLIBCXX_USE_DECIMAL_FLOAT 1" >>confdefs.h
+
+      enable_dfp=yes
+    else
+      enable_dfp=no
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_dfp" >&5
+$as_echo "$enable_dfp" >&6; }
+    rm -f conftest*
 
 
 # Checks for compiler support that doesn't require linking.

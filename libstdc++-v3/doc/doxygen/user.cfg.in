@@ -727,6 +727,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/tr1_impl/unordered_set \
                          include/tr1_impl/utility \
                          include/tr1_impl \
+                         include/decimal/decimal \
                          include/ \
                          include/@host_alias@/bits \
                          include/backward \

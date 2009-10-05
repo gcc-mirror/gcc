@@ -2222,6 +2222,44 @@ AC_DEFUN([GLIBCXX_ENABLE_LONG_LONG], [
 
 
 dnl
+dnl Check for decimal floating point.
+dnl See:
+dnl http://gcc.gnu.org/onlinedocs/gcc/Decimal-Float.html#Decimal-Float
+dnl
+dnl This checks to see if the host supports decimal floating point types.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_DECIMAL_FLOAT
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_DECIMAL_FLOAT], [
+
+  # Fake what AC_TRY_COMPILE does, without linking as this is
+  # unnecessary for this test.
+
+    cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+int main()
+{
+  _Decimal32 d1;
+  _Decimal64 d2;
+  _Decimal128 d3;
+  return 0;
+}
+EOF
+
+    AC_MSG_CHECKING([for ISO/IEC TR 24733 ])
+    if AC_TRY_EVAL(ac_compile); then
+      AC_DEFINE(_GLIBCXX_USE_DECIMAL_FLOAT, 1,
+      [Define if ISO/IEC TR 24733 decimal floating point types are supported on this host.])
+      enable_dfp=yes
+    else
+      enable_dfp=no
+    fi
+    AC_MSG_RESULT($enable_dfp)
+    rm -f conftest*
+])
+
+dnl
 dnl Check for template specializations for the 'wchar_t' type.
 dnl
 dnl --enable-wchar_t defines _GLIBCXX_USE_WCHAR_T
