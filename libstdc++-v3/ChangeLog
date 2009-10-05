@@ -1,3 +1,65 @@
+2009-10-05  Benjamin Kosnik  <bkoz@redhat.com>
+	    Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/decimal/decimal: Warn if decimal floating point types
+	are not available.
+	* acinclude.m4 (GLIBCXX_ENABLE_DECIMAL_FLOAT): New.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2009-10-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am: Remove stray line break.
+
+	* include/decimal/decimal: Brief class doxygen markup.
+	* libsupc++/exception: Whitespace cleanup.
+
+	* testsuite/libstdc++-dg/conformance.exp: Add testsuite directory
+	decimal.
+	* scripts/create_testsuite_files (dlist): Same.
+
+	* doc/xml/manual/using.xml: One column in table. Move after TR1.
+
+	* testsuite/decimal/bad-cast.cc: Move to...
+	* testsuite/decimal/cast_neg.cc: ...here.
+	* testsuite/decimal/bad-mixed-mode.cc: Move to...
+	* testsuite/decimal/mixed-mode_neg.cc: ...here.
+	* testsuite/decimal/bad-operator.cc: Move to...
+	* testsuite/decimal/operator_neg.cc: ...here.
+
+	* doc/doxygen/user.cfg.in (INPUT): Add decimal/decimal.
+
+2009-10-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/Makefile.am: Process new file.
+	* doc/xml/manual/intro.xml: Ditto.
+	* doc/xml/manual/using.xml: Document new header.
+	* doc/xml/manual/status_cxxdecimal.xml: New file.
+	* include/Makefile.am: Process new headers.
+	* include/decimal/decimal: New file.
+	* include/decimal/decimal.h: New file.
+
+2009-10-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/decimal: New directory.
+	* testsuite/decimal/bad-cast.cc: New test.
+	* testsuite/decimal/bad-mixed-mode.cc: New test.
+	* testsuite/decimal/bad-operator.cc: New test.
+	* testsuite/decimal/binary-arith.cc: New test.
+	* testsuite/decimal/comparison.cc: New test.
+	* testsuite/decimal/compound-assignment.cc: New test.
+	* testsuite/decimal/compound-assignment-memfunc.cc: New test.
+	* testsuite/decimal/conversion-from-float.cc: New test.
+	* testsuite/decimal/conversion-from-integral.cc: New test.
+	* testsuite/decimal/conversion-to-generic-float.cc: New test.
+	* testsuite/decimal/conversion-to-integral.cc: New test.
+	* testsuite/decimal/ctor.cc: New test.
+	* testsuite/decimal/incdec.cc: New test.
+	* testsuite/decimal/incdec-memfunc.cc: New test.
+	* testsuite/decimal/make-decimal.cc: New test.
+	* testsuite/decimal/unary-arith.cc: New test.
+
 2009-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_rvalref): Remove.

@@ -10,12 +10,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 3, or (at your option)
 // any later version.
-// 
+//
 // GCC is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // Under Section 7 of GPL version 3, you are granted additional
 // permissions described in the GCC Runtime Library Exception, version
 // 3.1, as published by the Free Software Foundation.
@@ -38,7 +38,7 @@
 
 extern "C++" {
 
-namespace std 
+namespace std
 {
   /**
    * @defgroup exceptions Exceptions
@@ -56,7 +56,7 @@ namespace std
    *  your own %exception classes, or use a different hierarchy, or to
    *  throw non-class data (e.g., fundamental types).
    */
-  class exception 
+  class exception
   {
   public:
     exception() throw() { }
@@ -69,7 +69,7 @@ namespace std
 
   /** If an %exception is thrown which is not listed in a function's
    *  %exception specification, one of these may be thrown.  */
-  class bad_exception : public exception 
+  class bad_exception : public exception
   {
   public:
     bad_exception() throw() { }
@@ -119,10 +119,10 @@ namespace std
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  /** 
+  /**
    *  @brief A replacement for the standard terminate_handler which
    *  prints more information about the terminating exception (if any)
-   *  on stderr.  
+   *  on stderr.
    *
    *  @ingroup exceptions
    *
@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   void __verbose_terminate_handler();
 
 _GLIBCXX_END_NAMESPACE
-  
+
 } // extern "C++"
 
 #pragma GCC visibility pop
