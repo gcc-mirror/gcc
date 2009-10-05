@@ -1,5 +1,25 @@
 2009-10-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips-protos.h (mips_trampoline_code_size): Declare.
+	* config/mips/mips.h (TRAMPOLINE_SIZE): Redefine as the size of
+	a code block followed by two pointers.
+	(TRAMPOLINE_ALIGNMENT): Define to 64 for 32-bit targets too.
+	* config/mips/mips.c (MIPS_LOAD_PTR): New macro.
+	(MIPS_MOVE): Likewise.
+	(MIPS_LUI): Likewise.
+	(MIPS_JR): Likewise.
+	(MIPS_BAL): Likewise.
+	(MIPS_NOP): Likewise.
+	(mips_asm_trampoline_template): Delete.
+	(mips_trampoline_code_size): New function.
+	(mips_trampoline_init): Add shorter sequences for all cases
+	except Pmode == DImoe && !TARGET_USE_PIC_FN_ADDR_REG.
+	Calculate the opcodes directly, rather than copying from a template.
+	Only flush the code part of the trampoline.
+	(TARGET_ASM_TRAMPOLINE_TEMPLATE): Delete.
+
+2009-10-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.h (DWARF_FRAME_RETURN_COLUMN): Replace
 	GP_REG_FIRST + 31 with RETURN_ADDR_REGNUM.
 	(INCOMING_RETURN_ADDR_RTX): Likewise.
