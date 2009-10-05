@@ -1998,6 +1998,12 @@ cprop_operand (gimple stmt, use_operand_p op_p)
       if (loop_depth_of_name (val) > loop_depth_of_name (op))
 	return;
 
+      /* Do not propagate copies into simple IV increment statements.
+         See PR23821 for how this can disturb IV analysis.  */
+      if (TREE_CODE (val) != INTEGER_CST
+	  && simple_iv_increment_p (stmt))
+	return;
+
       /* Dump details.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
