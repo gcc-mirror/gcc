@@ -1,3 +1,7 @@
+2009-10-05  Phil Muldoon  <pmuldoon@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2009-10-03  2009-02-05  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.def: all-lto-plugin depends on all-libiberty.
