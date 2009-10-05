@@ -1,3 +1,10 @@
+2009-10-05  John Bytheway  <jbytheway@gmail.com>
+
+	PR libstdc++/41530
+	* include/std/tuple (_Tuple_impl<>::_Tuple_impl(_Tuple_impl<>&&)):
+	Fix to just move.
+	* testsuite/20_util/tuple/cons/41530.cc: New.
+
 2009-10-05  Phil Muldoon  <pmuldoon@redhat.com>
 
 	* doc/xml/manual/debug.xml: Add narrative for GDB Python pretty
