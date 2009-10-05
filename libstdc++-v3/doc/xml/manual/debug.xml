@@ -217,6 +217,20 @@
    set print demangle on
    set demangle-style gnu-v3
 </programlisting>
+
+<para>
+  GDB 7.0 will include support for writing pretty-printers in Python.
+ A library of printers for STL classes already exists within the
+ libstdc++ svn repository. For information on enabling these printers,
+ and for other GDB STL support options: please see
+ <ulink url="http://sourceware.org/gdb/wiki/STLSupport"> "GDB Support
+ for STL" </ulink> in the GDB wiki. Additionally, in-depth
+ documentation and discussion of this feature can be found in the GDB
+ manual. Please see:
+ <ulink url="http://sourceware.org/gdb/current/onlinedocs//gdb_24.html#SEC260">
+ "23.2.2.6 Pretty Printing" </ulink>
+</para>
+
 </sect2>
 
 <sect2 id="debug.exceptions">
