@@ -1,3 +1,6 @@
+// { dg-options "-D_GLIBCXX_PROFILE" }
+// { dg-do compile { target *-*-linux* } }
+
 // -*- C++ -*-
 
 // Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
@@ -16,9 +19,6 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-
-// { dg-options "-D_GLIBCXX_PROFILE" }
-// { dg-do compile }
 
 #include <stdio.h>
 #include <malloc.h>
@@ -58,7 +58,8 @@ my_malloc_hook (size_t size, const void *caller)
 }
      
 
-int main() {
+int main() 
+{
   int* test = (int*) malloc(sizeof(int));
   *test = 1;
   return *test;

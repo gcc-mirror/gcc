@@ -543,6 +543,35 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <para></para>
 
 <table frame='all'>
+<title>Extension Profile Headers</title>
+<tgroup cols='4' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+<colspec colname='c3'></colspec>
+<colspec colname='c4'></colspec>
+<tbody>
+
+<row>
+<entry><filename class="headerfile">profile/bitset</filename></entry>
+<entry><filename class="headerfile">profile/deque</filename></entry>
+<entry><filename class="headerfile">profile/list</filename></entry>
+<entry><filename class="headerfile">profile/map</filename></entry>
+</row>
+
+<row>
+<entry><filename class="headerfile">profile/set</filename></entry>
+<entry><filename class="headerfile">profile/unordered_map</filename></entry>
+<entry><filename class="headerfile">profile/unordered_set</filename></entry>
+<entry><filename class="headerfile">profile/vector</filename></entry>
+</row>
+
+</tbody>
+</tgroup>
+</table>
+
+<para></para>
+
+<table frame='all'>
 <title>Extension Parallel Headers</title>
 <tgroup cols='2' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>

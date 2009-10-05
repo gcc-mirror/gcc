@@ -1,4 +1,10 @@
+2009-10-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/using.xml: Add profile headers.
+	* testsuite/ext/profile/mh.cc: Restrict to linux.
+
 2009-10-02  Silvius Rus  <silvius.rus@gmail.com>
+
 	* configure: Add check for execinfo.h.
 	* config.h.in: Add undef for HAVE_EXECINFO_H.
 	* include/Makefile.am: Add build support for profile mode.
@@ -27,7 +33,7 @@
 	* include/profile/impl/profiler_trace.h: Same.
 	* include/profile/impl/profiler_vector_size.h: Same.
 	* include/profile/impl/profiler_vector_to_list.h: Same.
-	* include/std/vector: Include corresponding profile header guarded by 
+	* include/std/vector: Include corresponding profile header guarded by
 	_GLIBCXX_PROFILE.
 	* include/std/deque: Same.
 	* include/std/list: Same.
@@ -61,15 +67,15 @@
 
 2009-10-02  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/base.h: Take integer types from <tr1/cstdint>.
-        * include/parallel/compatibility.h: Likewise.
-        * include/parallel/multiseq_selection.h: Likewise.
-        * include/parallel/random_shuffle.h: Likewise.
-        * include/parallel/random_number.h: Likewise;
-        use numeric_limits<>::digit instead of sizeof()*8.
-        * include/parallel/types.h: Likewise.
-        * doc/html/manual/bk01pt12ch31s03.html:
-        Document dependency on stdint.h.
+	* include/parallel/base.h: Take integer types from <tr1/cstdint>.
+	* include/parallel/compatibility.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/random_number.h: Likewise;
+	use numeric_limits<>::digit instead of sizeof()*8.
+	* include/parallel/types.h: Likewise.
+	* doc/html/manual/bk01pt12ch31s03.html:
+	Document dependency on stdint.h.
 
 2009-10-01  Phil Muldoon <pmuldoon@redhat.com>
 
