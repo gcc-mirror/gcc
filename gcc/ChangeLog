@@ -1,3 +1,9 @@
+2009-10-05  Doug Kwan  <dougkwan@google.com>
+
+	PR rtl-optimization/41574
+	Index: combine.c (distribute_and_simplify_rtx): Quit if RTX mode is
+	floating point and we are not doing unsafe math optimizations.
+
 2009-10-03  Simon Baldwin  <simonb@google.com>
 	    Cary Coutant  <ccoutant@google.com>
 	    Rafael Espindola  <espindola@google.com>
