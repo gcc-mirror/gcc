@@ -1,3 +1,7 @@
+2009-10-05   Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h: Sync with src.
+
 2009-10-04  Jerry Quinn  <jlquinn@optonline.net>
 
 	* plugin-api.h: Fix compile.
