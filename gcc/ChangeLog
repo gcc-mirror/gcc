@@ -1,3 +1,14 @@
+2009-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41558
+	* dwarf2out.c (loc_by_reference): Removed.
+	(dw_loc_list_1): New function.
+	(dw_loc_list): Remove toplev argument, add want_address argument.
+	Don't look at decl_by_reference_p at all.  Use dw_loc_list_1.
+	(loc_list_from_tree) <case VAR_DECL>: Pass want_address rather than
+	want_address == 2 to dw_loc_list.  For successful dw_loc_list
+	set have_address to 1 only if want_address is not 0.
+
 2009-10-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips-protos.h (mips_trampoline_code_size): Declare.

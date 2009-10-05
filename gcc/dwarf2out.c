@@ -13596,58 +13596,6 @@ decl_by_reference_p (tree decl)
 	  && DECL_BY_REFERENCE (decl));
 }
 
-
-/* Dereference a location expression LOC if DECL is passed by invisible
-   reference.  */
-
-static dw_loc_descr_ref
-loc_by_reference (dw_loc_descr_ref loc, tree decl)
-{
-  HOST_WIDE_INT size;
-  enum dwarf_location_atom op;
-
-  if (loc == NULL)
-    return NULL;
-
-  if (!decl_by_reference_p (decl))
-    return loc;
-
-  /* If loc is DW_OP_reg{0...31,x}, don't add DW_OP_deref, instead
-     change it into corresponding DW_OP_breg{0...31,x} 0.  Then the
-     location expression is considered to be address of a memory location,
-     rather than the register itself.  */
-  if (((loc->dw_loc_opc >= DW_OP_reg0 && loc->dw_loc_opc <= DW_OP_reg31)
-       || loc->dw_loc_opc == DW_OP_regx)
-      && (loc->dw_loc_next == NULL
-	  || (loc->dw_loc_next->dw_loc_opc == DW_OP_GNU_uninit
-	      && loc->dw_loc_next->dw_loc_next == NULL)))
-    {
-      if (loc->dw_loc_opc == DW_OP_regx)
-	{
-	  loc->dw_loc_opc = DW_OP_bregx;
-	  loc->dw_loc_oprnd2.v.val_int = 0;
-	}
-      else
-	{
-	  loc->dw_loc_opc
-	    = (enum dwarf_location_atom)
-	      (loc->dw_loc_opc + (DW_OP_breg0 - DW_OP_reg0));
-	  loc->dw_loc_oprnd1.v.val_int = 0;
-	}
-      return loc;
-    }
-
-  size = int_size_in_bytes (TREE_TYPE (decl));
-  if (size > DWARF2_ADDR_SIZE || size == -1)
-    return 0;
-  else if (size == DWARF2_ADDR_SIZE)
-    op = DW_OP_deref;
-  else
-    op = DW_OP_deref_size;
-  add_loc_descr (&loc, new_loc_descr (op, size, 0));
-  return loc;
-}
-
 /* Return single element location list containing loc descr REF.  */
 
 static dw_loc_list_ref
@@ -13656,11 +13604,93 @@ single_element_loc_list (dw_loc_descr_ref ref)
   return new_loc_list (ref, NULL, NULL, NULL, 0);
 }
 
+/* Helper function for dw_loc_list.  Compute proper Dwarf location descriptor
+   for VARLOC.  */
+
+static dw_loc_descr_ref
+dw_loc_list_1 (tree loc, rtx varloc, int want_address,
+	       enum var_init_status initialized)
+{
+  int have_address = 0;
+  dw_loc_descr_ref descr;
+  enum machine_mode mode;
+
+  if (want_address != 2)
+    {
+      gcc_assert (GET_CODE (varloc) == VAR_LOCATION);
+      /* Single part.  */
+      if (GET_CODE (XEXP (varloc, 1)) != PARALLEL)
+	{
+	  varloc = XEXP (XEXP (varloc, 1), 0);
+	  mode = GET_MODE (varloc);
+	  if (MEM_P (varloc))
+	    {
+	      varloc = XEXP (varloc, 0);
+	      have_address = 1;
+	    }
+	  descr = mem_loc_descriptor (varloc, mode, initialized);
+	}
+      else
+	return 0;
+    }
+  else
+    {
+      descr = loc_descriptor (varloc, DECL_MODE (loc), initialized);
+      have_address = 1;
+    }
+
+  if (!descr)
+    return 0;
+
+  if (want_address == 2 && !have_address
+      && (dwarf_version >= 4 || !dwarf_strict))
+    {
+      if (int_size_in_bytes (TREE_TYPE (loc)) > DWARF2_ADDR_SIZE)
+	{
+	  expansion_failed (loc, NULL_RTX,
+			    "DWARF address size mismatch");
+	  return 0;
+	}
+      add_loc_descr (&descr, new_loc_descr (DW_OP_stack_value, 0, 0));
+      have_address = 1;
+    }
+  /* Show if we can't fill the request for an address.  */
+  if (want_address && !have_address)
+    {
+      expansion_failed (loc, NULL_RTX,
+			"Want address and only have value");
+      return 0;
+    }
+
+  /* If we've got an address and don't want one, dereference.  */
+  if (!want_address && have_address)
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (loc));
+      enum dwarf_location_atom op;
+
+      if (size > DWARF2_ADDR_SIZE || size == -1)
+	{
+	  expansion_failed (loc, NULL_RTX,
+			    "DWARF address size mismatch");
+	  return 0;
+	}
+      else if (size == DWARF2_ADDR_SIZE)
+	op = DW_OP_deref;
+      else
+	op = DW_OP_deref_size;
+
+      add_loc_descr (&descr, new_loc_descr (op, size, 0));
+    }
+
+  return descr;
+}
+
 /* Return dwarf representation of location list representing for
-   LOC_LIST of DECL.  */
+   LOC_LIST of DECL.  WANT_ADDRESS has the same meaning as in
+   loc_list_from_tree function.  */
 
 static dw_loc_list_ref
-dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
+dw_loc_list (var_loc_list * loc_list, tree decl, int want_address)
 {
   const char *endname, *secname;
   dw_loc_list_ref list;
@@ -13669,8 +13699,6 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
   struct var_loc_node *node;
   dw_loc_descr_ref descr;
   char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
-
-  bool by_reference = decl_by_reference_p (decl);
 
   /* Now that we know what section we are using for a base,
      actually construct the list of locations.
@@ -13684,28 +13712,14 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
      a range of [last location start, end of function label].  */
 
   node = loc_list->first;
-  varloc = NOTE_VAR_LOCATION (node->var_loc_note);
   secname = secname_for_decl (decl);
 
   if (NOTE_VAR_LOCATION_LOC (node->var_loc_note))
     initialized = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
   else
     initialized = VAR_INIT_STATUS_INITIALIZED;
-
-  if (!toplevel || by_reference)
-    {
-      gcc_assert (GET_CODE (varloc) == VAR_LOCATION);
-      /* Single part.  */
-      if (GET_CODE (XEXP (varloc, 1)) != PARALLEL)
-	descr = loc_by_reference (mem_loc_descriptor (XEXP (XEXP (varloc, 1), 0),
-						      TYPE_MODE (TREE_TYPE (decl)),
-						      initialized),
-				  decl);
-      else
-	descr = NULL;
-    }
-  else
-    descr = loc_descriptor (varloc, DECL_MODE (decl), initialized);
+  varloc = NOTE_VAR_LOCATION (node->var_loc_note);
+  descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
 
   if (loc_list && loc_list->first != loc_list->last)
     list = new_loc_list (descr, node->label, node->next->label, secname, 1);
@@ -13721,22 +13735,9 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
       {
 	/* The variable has a location between NODE->LABEL and
 	   NODE->NEXT->LABEL.  */
-	enum var_init_status initialized =
-	  NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
+	initialized = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
 	varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-	if (!toplevel || by_reference)
-	  {
-	    gcc_assert (GET_CODE (varloc) == VAR_LOCATION);
-	    /* Single part.  */
-	    if (GET_CODE (XEXP (varloc, 1)) != PARALLEL)
-	      descr = mem_loc_descriptor (XEXP (XEXP (varloc, 1), 0),
-	      				  TYPE_MODE (TREE_TYPE (decl)), initialized);
-	    else
-	      descr = NULL;
-	    descr = loc_by_reference (descr, decl);
-	  }
-	else
-	  descr = loc_descriptor (varloc, DECL_MODE (decl), initialized);
+	descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
 	add_loc_descr_to_loc_list (&list, descr,
 				   node->label, node->next->label, secname);
       }
@@ -13745,9 +13746,6 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
      it keeps its location until the end of function.  */
   if (NOTE_VAR_LOCATION_LOC (node->var_loc_note) != NULL_RTX)
     {
-      enum var_init_status initialized =
-	NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
-
       if (!current_function_decl)
 	endname = text_end_label;
       else
@@ -13757,20 +13755,9 @@ dw_loc_list (var_loc_list * loc_list, tree decl, bool toplevel)
 	  endname = ggc_strdup (label_id);
 	}
 
+      initialized = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
       varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-      if (!toplevel || by_reference)
-	{
-	  gcc_assert (GET_CODE (varloc) == VAR_LOCATION);
-	  /* Single part.  */
-	  if (GET_CODE (XEXP (varloc, 1)) != PARALLEL)
-	    descr = mem_loc_descriptor (XEXP (XEXP (varloc, 1), 0),
-	    				TYPE_MODE (TREE_TYPE (decl)), initialized);
-	  else
-	    descr = NULL;
-	  descr = loc_by_reference (descr, decl);
-	}
-      else
-	descr = loc_descriptor (varloc, DECL_MODE (decl), initialized);
+      descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
       add_loc_descr_to_loc_list (&list, descr, node->label, endname, secname);
     }
   return list;
@@ -13948,11 +13935,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
    If WANT_ADDRESS is 1, expression computing address of LOC will be returned
    if WANT_ADDRESS is 2, expression computing address useable in location
      will be returned (i.e. DW_OP_reg can be used
-     to refer to register values) 
-   TODO: Dwarf4 adds types to the stack machine that ought to be used here
-   DW_OP_stack_value will help in cases where we fail to find address of the
-   expression.
- */
+     to refer to register values).  */
 
 static dw_loc_list_ref
 loc_list_from_tree (tree loc, int want_address)
@@ -14087,8 +14070,8 @@ loc_list_from_tree (tree loc, int want_address)
 	var_loc_list *loc_list = lookup_decl_loc (loc);
 
 	if (loc_list && loc_list->first
-	    && (list_ret = dw_loc_list (loc_list, loc, want_address == 2)))
-	  have_address = 1;
+	    && (list_ret = dw_loc_list (loc_list, loc, want_address)))
+	  have_address = want_address != 0;
 	else if (rtl == NULL_RTX)
 	  {
 	    expansion_failed (loc, NULL_RTX, "DECL has no RTL");
