@@ -1,7 +1,12 @@
+2009-10-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/arm.c (arm_override_options): Really initialize
+        flag_dwarf2_cfi_asm to 0.
+
 2009-10-05  Doug Kwan  <dougkwan@google.com>
 
 	PR rtl-optimization/41574
-	Index: combine.c (distribute_and_simplify_rtx): Quit if RTX mode is
+	* combine.c (distribute_and_simplify_rtx): Quit if RTX mode is
 	floating point and we are not doing unsafe math optimizations.
 
 2009-10-03  Simon Baldwin  <simonb@google.com>
