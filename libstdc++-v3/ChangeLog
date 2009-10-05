@@ -1,3 +1,19 @@
+2009-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_rvalref): Remove.
+	* testsuite/lib/dg-options.exp (dg-require-rvalref): Likewise.
+
+2009-10-05  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algo.h (__stable_partition_adaptive,
+	__rotate_adaptive, __merge_adaptive, __merge_sort_loop):
+	Extend to work with rvalue references in C++0x mode.
+	* testsuite/25_algorithms/inplace_merge/moveable2.cc: New.
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/stable_sort/moveable.cc: Likewise.
+
 2009-10-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/manual/using.xml: Add profile headers.

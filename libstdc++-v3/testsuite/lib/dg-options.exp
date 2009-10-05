@@ -80,15 +80,6 @@ proc dg-require-time { args } {
     return
 }
 
-proc dg-require-rvalref { args } {
-    if { ![ check_v3_target_rvalref ] } {
-	upvar dg-do-what dg-do-what
-	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
-	return
-    }
-    return
-}
-
 proc dg-require-cstdint { args } {
     if { ![ check_v3_target_cstdint ] } {
 	upvar dg-do-what dg-do-what
