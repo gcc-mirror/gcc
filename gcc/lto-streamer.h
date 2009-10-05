@@ -823,7 +823,6 @@ extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    const char *, unsigned,
 				    VEC(ld_plugin_symbol_resolution_t,heap) *);
 extern void lto_data_in_delete (struct data_in *);
-extern void lto_register_deferred_decls_in_symtab (struct data_in *);
 
 
 /* In lto-streamer-out.c  */
@@ -845,12 +844,11 @@ void input_cgraph (void);
 
 
 /* In lto-symtab.c.  */
-extern void lto_symtab_merge_var (tree, enum ld_plugin_symbol_resolution);
-extern void lto_symtab_merge_fn (tree, enum ld_plugin_symbol_resolution,
-                                 struct lto_file_decl_data *);
+extern void lto_symtab_register_decl (tree, ld_plugin_symbol_resolution_t,
+				      struct lto_file_decl_data *);
+extern void lto_symtab_merge_decls (void);
 extern tree lto_symtab_prevailing_decl (tree decl);
 extern enum ld_plugin_symbol_resolution lto_symtab_get_resolution (tree decl);
-struct lto_file_decl_data *lto_symtab_get_file_data (tree decl);
 extern void lto_symtab_clear_resolution (tree decl);
 
 

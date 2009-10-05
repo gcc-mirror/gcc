@@ -244,10 +244,6 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   /* Set the current decl state to be the global state. */
   decl_data->current_decl_state = decl_data->global_decl_state;
 
-  /* After each CU is read register and possibly merge global
-     symbols and their types.  */
-  lto_register_deferred_decls_in_symtab (data_in);
-
   lto_data_in_delete (data_in);
 }
 
@@ -1763,6 +1759,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   unsigned int i, last_file_ix;
   struct lto_file_decl_data **all_file_decl_data;
   FILE *resolution;
+  struct cgraph_node *node;
 
   lto_stats.num_input_files = nfiles;
 
@@ -1821,60 +1818,22 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Read the callgraph.  */
   input_cgraph ();
 
+  /* Read the IPA summary data.  */
   ipa_read_summaries ();
+
+  /* Merge global decls.  */
+  lto_symtab_merge_decls ();
+
+  /* Mark cgraph nodes needed in the merged cgraph.
+     ???  Is this really necessary?  */
+  for (node = cgraph_nodes; node; node = node->next)
+    if (cgraph_decide_is_function_needed (node, node->decl))
+      cgraph_mark_needed_node (node);
 
   timevar_push (TV_IPA_LTO_DECL_IO);
 
+  /* Fixup all decls and types.  */
   lto_fixup_decls (all_file_decl_data);
-
-  /* See if we have multiple decls for a symbol and choose the largest
-     one to generate the common.  */
-  for (i = 0; i < VEC_length (tree, lto_global_var_decls); ++i)
-    {
-      tree decl = VEC_index (tree, lto_global_var_decls, i);
-      tree prev_decl = NULL_TREE;
-      tree size;
-
-      if (TREE_CODE (decl) != VAR_DECL
-	  || !DECL_LANG_SPECIFIC (decl))
-	continue;
-
-      /* Find the preceeding decl of the largest one.  */
-      size = DECL_SIZE (decl);
-      do
-	{
-	  tree next = (tree) DECL_LANG_SPECIFIC (decl);
-	  if (tree_int_cst_lt (size, DECL_SIZE (next)))
-	    {
-	      size = DECL_SIZE (next);
-	      prev_decl = decl;
-	    }
-	  decl = next;
-	}
-      while (DECL_LANG_SPECIFIC (decl));
-
-      /* If necessary move the largest decl to the front of the
-	 chain.  */
-      if (prev_decl != NULL_TREE)
-	{
-	  decl = (tree) DECL_LANG_SPECIFIC (prev_decl);
-	  DECL_LANG_SPECIFIC (prev_decl) = DECL_LANG_SPECIFIC (decl);
-	  DECL_LANG_SPECIFIC (decl)
-	    = (struct lang_decl *) VEC_index (tree, lto_global_var_decls, i);
-	  VEC_replace (tree, lto_global_var_decls, i, decl);
-	}
-
-      /* Mark everything apart from the first var as written out and
-         unlink the chain.  */
-      decl = VEC_index (tree, lto_global_var_decls, i);
-      while (DECL_LANG_SPECIFIC (decl))
-	{
-	  tree next = (tree) DECL_LANG_SPECIFIC (decl);
-	  DECL_LANG_SPECIFIC (decl) = NULL;
-	  decl = next;
-	  TREE_ASM_WRITTEN (decl) = true;
-	}
-    }
 
   /* FIXME lto. This loop needs to be changed to use the pass manager to
      call the ipa passes directly.  */

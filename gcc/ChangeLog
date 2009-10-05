@@ -1,5 +1,65 @@
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41552
+	PR lto/41487
+	* lto-symtab.c (struct lto_symtab_base_def): Remove.
+	(struct lto_symtab_identifier_def): Likewise.
+	(struct lto_symtab_decl_def): Likewise.
+	(struct lto_symtab_entry_def): New.
+	(lto_symtab_identifier_t): Rename to ...
+	(lto_symtab_entry_t): ... this.
+	(lto_symtab_decls): Remove.
+	(lto_symtab_base_hash): Rename to ...
+	(lto_symtab_entry_hash): ... this.
+	(lto_symtab_base_eq): Rename to ...
+	(lto_symtab_entry_eq): ... this.
+	(lto_symtab_base_marked_p): Rename to ...
+	(lto_symtab_entry_marked_p): ... this.
+	(lto_symtab_identifier_marked_p): Remove.
+	(lto_symtab_decl_marked_p): Likewise.
+	(lto_symtab_maybe_init_hash_tables): Rename to ...
+	(lto_symtab_maybe_init_hash_table): ... this.
+	(lto_symtab_set_resolution_and_file_data): Remove.
+	(lto_symtab_register_decl): New function.
+	(lto_symtab_get_identifier): Remove.
+	(lto_symtab_get): New function.
+	(lto_symtab_get_resolution): Adjust.
+	(lto_symtab_get_identifier_decl): Remove.
+	(lto_symtab_set_identifier_decl): Likewise.
+	(lto_symtab_merge_decl): Rename to ...
+	(lto_symtab_merge): ... this.  Rewrite.
+	(lto_symtab_merge_var): Remove.
+	(lto_symtab_merge_fn): Likewise.
+	(lto_symtab_prevailing_decl): Adjust.
+	(lto_cgraph_replace_node): New function.
+	(lto_symtab_merge_decls_2): Likewise.
+	(lto_symtab_merge_decls_1): Likewise.
+	(lto_symtab_fixup_var_decls): Likewise.
+	(lto_symtab_resolve_symbols): Likewise.
+	(lto_symtab_merge_decls): Likewise.
+	(lto_symtab_prevailing_decl): Adjust.
+	(lto_symtab_get_symtab_def): Remove.
+	(lto_symtab_get_file_data): Likewise.
+	(lto_symtab_clear_resolution): Adjust.
+	(lto_symtab_clear_resolution): Likewise.
+	* lto-cgraph.c (input_edge): Do not merge cgraph nodes here.
+	(input_cgraph_1): Likewise.
+	* lto-streamer-in.c (get_resolution): Do not provide fake
+	symbol resolutions here.
+	(deferred_global_decls): Remove.
+	(lto_register_deferred_decls_in_symtab): Likewise.
+	(lto_register_var_decl_in_symtab): Change signature, register
+	variable via lto_symtab_register_decl.
+	(lto_register_function_decl_in_symtab): Likewise.
+	(lto_read_tree): Adjust.
+	* lto-streamer.h (lto_register_deferred_decls_in_symtab): Remove.
+	(lto_symtab_merge_var): Likewise.
+	(lto_symtab_merge_fn): Likewise.
+	(lto_symtab_register_decl): Declare.
+	(lto_symtab_merge_decls): Likewise.
+
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/23821
 	* tree-vrp.c (vrp_finalize): Do not perform copy propagation.
 	* tree-ssa-dom.c (cprop_operand): Do not propagate copies into

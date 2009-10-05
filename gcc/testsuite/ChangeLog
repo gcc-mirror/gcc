@@ -1,5 +1,17 @@
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41552
+	PR lto/41487
+	* g++.dg/lto/20091002-1_0.C: Adjust flags.
+	* g++.dg/lto/20091004-1_0.C: New testcase.
+	* g++.dg/lto/20091004-1_1.C: Likewise.
+	* g++.dg/lto/20091004-2_0.C: Likewise.
+	* g++.dg/lto/20091004-2_1.C: Likewise.
+	* g++.dg/lto/20091004-3_0.C: Likewise.
+	* g++.dg/lto/20091004-3_1.C: Likewise.
+
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/23821
 	* gcc.dg/torture/pr23821.c: New testcase.
 
