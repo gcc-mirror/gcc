@@ -1594,6 +1594,17 @@ typedef struct gfc_intrinsic_sym
 gfc_intrinsic_sym;
 
 
+typedef struct gfc_class_esym_list
+{
+  gfc_symbol *derived;
+  gfc_symbol *esym;
+  gfc_symbol *class_object;
+  struct gfc_class_esym_list *next;
+}
+gfc_class_esym_list;
+
+#define gfc_get_class_esym_list() XCNEW (gfc_class_esym_list)
+
 /* Expression nodes.  The expression node types deserve explanations,
    since the last couple can be easily misconstrued:
 
@@ -1705,6 +1716,7 @@ typedef struct gfc_expr
       const char *name;	/* Points to the ultimate name of the function */
       gfc_intrinsic_sym *isym;
       gfc_symbol *esym;
+      gfc_class_esym_list *class_esym;
     }
     function;
 

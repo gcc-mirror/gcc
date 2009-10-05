@@ -4579,9 +4579,12 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   if ((ts1->type == BT_DERIVED || ts1->type == BT_CLASS)
       && (ts2->type == BT_DERIVED || ts2->type == BT_CLASS))
     {
-      if (ts1->type == BT_CLASS)
+      if (ts1->type == BT_CLASS && ts2->type == BT_DERIVED)
 	return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
 					 ts2->u.derived);
+      else if (ts1->type == BT_CLASS && ts2->type == BT_CLASS)
+	return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
+					 ts2->u.derived->components->ts.u.derived);
       else if (ts2->type != BT_CLASS)
 	return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
       else

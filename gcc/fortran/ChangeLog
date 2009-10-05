@@ -1,3 +1,27 @@
+2009-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (select_class_proc): New function.
+	(conv_function_val): Deal with class methods and call above.
+	* symbol.c (gfc_type_compatible): Treat case where both ts1 and
+	ts2 are BT_CLASS.
+	gfortran.h : Add structure gfc_class_esym_list and include in
+	the structure gfc_expr.
+	* module.c (load_derived_extensions): New function.
+	(read_module): Call above.
+	(write_dt_extensions): New function.
+	(write_derived_extensions): New function.
+	(write_module): Use the above.
+	* resolve.c (resolve_typebound_call): Add a function expression
+	for class methods.  This carries the chain of symbols for the
+	dynamic dispatch in select_class_proc.
+	(resolve_compcall): Add second, boolean argument to indicate if
+	a function is being handled.
+	(check_members): New function.
+	(check_class_members): New function.
+	(resolve_class_compcall): New function.
+	(resolve_class_typebound_call): New function.
+	(gfc_resolve_expr): Call above for component calls.. 
+
 2009-10-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/41403

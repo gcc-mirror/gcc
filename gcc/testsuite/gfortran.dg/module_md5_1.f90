@@ -10,5 +10,5 @@ program test
   use foo
   print *, pi
 end program test
-! { dg-final { scan-module "foo" "MD5:dc2fd1358dcaddc25e3c89dae859ef32" } }
+! { dg-final { scan-module "foo" "MD5:9c43cf4d713824ec6894b83250720e68" } }
 ! { dg-final { cleanup-modules "foo" } }
