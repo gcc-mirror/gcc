@@ -174,8 +174,7 @@ namespace std
       template<typename... _UElements>
         _Tuple_impl(_Tuple_impl<_Idx, _UElements...>&& __in)
 	: _Inherited(std::move(__in._M_tail())),
-	  _Base(std::forward<typename _Tuple_impl<_Idx, _UElements...>::
-		_Base>(__in._M_head())) { }
+	  _Base(std::move(__in._M_head())) { }
 
       _Tuple_impl&
       operator=(const _Tuple_impl& __in)
