@@ -1,3 +1,11 @@
+2009-10-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/40992
+	* final.c (asm_str_count): Split out from asm_insn_count.
+	* rtl.h (asm_str_count): New prototype.
+	* tree-inline (estimate_num_insns) <case GIMPLE_ASM>: Call
+	asm_str_count.
+
 2009-10-05  Sriraman Tallam  <tmsriram@google.com>
 
 	* doc/plugins.texi: Change plugin_pass to register_pass_info.

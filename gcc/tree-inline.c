@@ -3346,7 +3346,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
       return 0;
 
     case GIMPLE_ASM:
-      return 1;
+      return asm_str_count (gimple_asm_string (stmt));
 
     case GIMPLE_RESX:
       /* This is either going to be an external function call with one

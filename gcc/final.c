@@ -1399,13 +1399,23 @@ static int
 asm_insn_count (rtx body)
 {
   const char *templ;
-  int count = 1;
 
   if (GET_CODE (body) == ASM_INPUT)
     templ = XSTR (body, 0);
   else
     templ = decode_asm_operands (body, NULL, NULL, NULL, NULL, NULL);
 
+  return asm_str_count (templ);
+}
+#endif
+
+/* Return the number of machine instructions likely to be generated for the
+   inline-asm template. */
+int
+asm_str_count (const char *templ)
+{
+  int count = 1;
+  
   if (!*templ)
     return 0;
 
@@ -1416,7 +1426,6 @@ asm_insn_count (rtx body)
 
   return count;
 }
-#endif
 
 /* ??? This is probably the wrong place for these.  */
 /* Structure recording the mapping from source file and directory
