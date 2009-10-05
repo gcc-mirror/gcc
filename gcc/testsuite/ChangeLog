@@ -1,3 +1,8 @@
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/23821
+	* gcc.dg/torture/pr23821.c: New testcase.
+
 2009-10-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/41403

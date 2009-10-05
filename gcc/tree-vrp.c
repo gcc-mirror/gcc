@@ -7237,7 +7237,7 @@ vrp_finalize (void)
     }
 
   /* We may have ended with ranges that have exactly one value.  Those
-     values can be substituted as any other copy/const propagated
+     values can be substituted as any other const propagated
      value using substitute_and_fold.  */
   single_val_range = XCNEWVEC (prop_value_t, num_ssa_names);
 
@@ -7245,7 +7245,8 @@ vrp_finalize (void)
   for (i = 0; i < num_ssa_names; i++)
     if (vr_value[i]
 	&& vr_value[i]->type == VR_RANGE
-	&& vr_value[i]->min == vr_value[i]->max)
+	&& vr_value[i]->min == vr_value[i]->max
+	&& is_gimple_min_invariant (vr_value[i]->min))
       {
 	single_val_range[i].value = vr_value[i]->min;
 	do_value_subst_p = true;
