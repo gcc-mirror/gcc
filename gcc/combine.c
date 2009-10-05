@@ -11758,12 +11758,10 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
      case, we must replace it with (clobber (const_int 0)) to prevent
      infinite loops.  */
   rsp = VEC_index (reg_stat_type, reg_stat, regno);
-  if (value && ! get_last_value_validate (&value, insn,
-					  rsp->last_set_label, 0))
+  if (value && !get_last_value_validate (&value, insn, label_tick, 0))
     {
       value = copy_rtx (value);
-      if (! get_last_value_validate (&value, insn,
-				     rsp->last_set_label, 1))
+      if (!get_last_value_validate (&value, insn, label_tick, 1))
 	value = 0;
     }
 
@@ -12055,15 +12053,14 @@ check_promoted_subreg (rtx insn, rtx x)
     }
 }
 
-/* Utility routine for the following function.  Verify that all the registers
-   mentioned in *LOC are valid when *LOC was part of a value set when
-   label_tick == TICK.  Return 0 if some are not.
-
-   If REPLACE is nonzero, replace the invalid reference with
-   (clobber (const_int 0)) and return 1.  This replacement is useful because
-   we often can get useful information about the form of a value (e.g., if
-   it was produced by a shift that always produces -1 or 0) even though
-   we don't know exactly what registers it was produced from.  */
+/* Verify that all the registers and memory references mentioned in *LOC are
+   still valid.  *LOC was part of a value set in INSN when label_tick was
+   equal to TICK.  Return 0 if some are not.  If REPLACE is nonzero, replace
+   the invalid references with (clobber (const_int 0)) and return 1.  This
+   replacement is useful because we often can get useful information about
+   the form of a value (e.g., if it was produced by a shift that always
+   produces -1 or 0) even though we don't know exactly what registers it
+   was produced from.  */
 
 static int
 get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
@@ -12099,11 +12096,12 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 
       return 1;
     }
-  /* If this is a memory reference, make sure that there were
-     no stores after it that might have clobbered the value.  We don't
-     have alias info, so we assume any store invalidates it.  */
+  /* If this is a memory reference, make sure that there were no stores after
+     it that might have clobbered the value.  We don't have alias info, so we
+     assume any store invalidates it.  Moreover, we only have local UIDs, so
+     we also assume that there were stores in the intervening basic blocks.  */
   else if (MEM_P (x) && !MEM_READONLY_P (x)
-	   && DF_INSN_LUID (insn) <= mem_last_set)
+	   && (tick != label_tick || DF_INSN_LUID (insn) <= mem_last_set))
     {
       if (replace)
 	*loc = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
@@ -12213,16 +12211,14 @@ get_last_value (const_rtx x)
     return 0;
 
   /* If the value has all its registers valid, return it.  */
-  if (get_last_value_validate (&value, rsp->last_set,
-			       rsp->last_set_label, 0))
+  if (get_last_value_validate (&value, rsp->last_set, rsp->last_set_label, 0))
     return value;
 
   /* Otherwise, make a copy and replace any invalid register with
      (clobber (const_int 0)).  If that fails for some reason, return 0.  */
 
   value = copy_rtx (value);
-  if (get_last_value_validate (&value, rsp->last_set,
-			       rsp->last_set_label, 1))
+  if (get_last_value_validate (&value, rsp->last_set, rsp->last_set_label, 1))
     return value;
 
   return 0;
