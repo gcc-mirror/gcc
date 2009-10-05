@@ -6243,7 +6243,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	     The stub's caller knows that $18 might be clobbered, even though
 	     $18 is usually a call-saved register.  */
 	  fprintf (asm_out_file, "\tmove\t%s,%s\n",
-		   reg_names[GP_REG_FIRST + 18], reg_names[GP_REG_FIRST + 31]);
+		   reg_names[GP_REG_FIRST + 18], reg_names[RETURN_ADDR_REGNUM]);
 	  output_asm_insn (MIPS_CALL ("jal", &fn, 0, -1), &fn);
 
 	  /* Move the result from floating-point registers to
@@ -7276,7 +7276,7 @@ mips_print_operand_punctuation (FILE *file, int ch)
       break;
 
     case '@':
-      fputs (reg_names[GP_REG_FIRST + 1], file);
+      fputs (reg_names[AT_REGNUM], file);
       break;
 
     case '^':
@@ -8144,8 +8144,8 @@ mips_frame_set (rtx mem, rtx reg)
   /* If we're saving the return address register and the DWARF return
      address column differs from the hard register number, adjust the
      note reg to refer to the former.  */
-  if (REGNO (reg) == GP_REG_FIRST + 31
-      && DWARF_FRAME_RETURN_COLUMN != GP_REG_FIRST + 31)
+  if (REGNO (reg) == RETURN_ADDR_REGNUM
+      && DWARF_FRAME_RETURN_COLUMN != RETURN_ADDR_REGNUM)
     reg = gen_rtx_REG (GET_MODE (reg), DWARF_FRAME_RETURN_COLUMN);
 
   set = gen_rtx_SET (VOIDmode, mem, reg);
@@ -8595,8 +8595,8 @@ mips16e_output_save_restore (rtx pattern, HOST_WIDE_INT adjust)
 				    mips16e_a0_a3_regs[end - 1]);
 
   /* Save or restore $31.  */
-  if (BITSET_P (info.mask, 31))
-    s += sprintf (s, ",%s", reg_names[GP_REG_FIRST + 31]);
+  if (BITSET_P (info.mask, RETURN_ADDR_REGNUM))
+    s += sprintf (s, ",%s", reg_names[RETURN_ADDR_REGNUM]);
 
   return buffer;
 }
@@ -8764,7 +8764,7 @@ mips_global_pointer (void)
   return GLOBAL_POINTER_REGNUM;
 }
 
-/* Return true if current function's prologue must load the global
+/* Return true if the current function's prologue must load the global
    pointer value into pic_offset_table_rtx and store the same value in
    the function's cprestore slot (if any).
 
@@ -8969,7 +8969,7 @@ mips_cfun_might_clobber_call_saved_reg_p (unsigned int regno)
   /* If a MIPS16 function returns a value in FPRs, its epilogue
      will need to call an external libgcc routine.  This yet-to-be
      generated call_insn will clobber $31.  */
-  if (regno == GP_REG_FIRST + 31 && mips16_cfun_returns_in_fpr_p ())
+  if (regno == RETURN_ADDR_REGNUM && mips16_cfun_returns_in_fpr_p ())
     return true;
 
   /* If REGNO is ordinarily call-clobbered, we must assume that any
@@ -9003,7 +9003,7 @@ mips_save_reg_p (unsigned int regno)
 
   /* We need to save the incoming return address if __builtin_eh_return
      is being used to set a different return address.  */
-  if (regno == GP_REG_FIRST + 31 && crtl->calls_eh_return)
+  if (regno == RETURN_ADDR_REGNUM && crtl->calls_eh_return)
     return true;
 
   return false;
@@ -9378,7 +9378,7 @@ mips_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
   if (count != 0)
     return const0_rtx;
 
-  return get_hard_reg_initial_val (Pmode, GP_REG_FIRST + 31);
+  return get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);
 }
 
 /* Emit code to change the current function's return address to
@@ -9390,7 +9390,7 @@ mips_set_return_address (rtx address, rtx scratch)
 {
   rtx slot_address;
 
-  gcc_assert (BITSET_P (cfun->machine->frame.mask, 31));
+  gcc_assert (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM));
   slot_address = mips_add_offset (scratch, stack_pointer_rtx,
 				  cfun->machine->frame.gp_sp_offset);
   mips_emit_move (gen_frame_mem (GET_MODE (address), slot_address), address);
@@ -9604,7 +9604,7 @@ static bool
 mips_direct_save_slot_move_p (unsigned int regno, rtx mem, bool load_p)
 {
   /* There is a specific MIPS16 instruction for saving $31 to the stack.  */
-  if (TARGET_MIPS16 && !load_p && regno == GP_REG_FIRST + 31)
+  if (TARGET_MIPS16 && !load_p && regno == RETURN_ADDR_REGNUM)
     return false;
 
   return mips_secondary_reload_class (REGNO_REG_CLASS (regno),
@@ -9741,7 +9741,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	       (frame_pointer_needed
 		? frame->total_size - frame->hard_frame_pointer_offset
 		: frame->total_size),
-	       reg_names[GP_REG_FIRST + 31],
+	       reg_names[RETURN_ADDR_REGNUM],
 	       frame->var_size,
 	       frame->num_gp, frame->num_fp,
 	       frame->args_size,
@@ -10184,7 +10184,7 @@ mips_restore_reg (rtx reg, rtx mem)
 {
   /* There's no MIPS16 instruction to load $31 directly.  Load into
      $7 instead and adjust the return insn appropriately.  */
-  if (TARGET_MIPS16 && REGNO (reg) == GP_REG_FIRST + 31)
+  if (TARGET_MIPS16 && REGNO (reg) == RETURN_ADDR_REGNUM)
     reg = gen_rtx_REG (GET_MODE (reg), GP_REG_FIRST + 7);
 
   mips_emit_save_slot_move (reg, mem, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
@@ -10399,10 +10399,10 @@ mips_expand_epilogue (bool sibcall_p)
 	     address into $7 rather than $31.  */
 	  if (TARGET_MIPS16
 	      && !GENERATE_MIPS16E_SAVE_RESTORE
-	      && BITSET_P (frame->mask, 31))
+	      && BITSET_P (frame->mask, RETURN_ADDR_REGNUM))
 	    regno = GP_REG_FIRST + 7;
 	  else
-	    regno = GP_REG_FIRST + 31;
+	    regno = RETURN_ADDR_REGNUM;
 	  emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode, regno)));
 	}
     }
@@ -15830,7 +15830,7 @@ mips_epilogue_uses (unsigned int regno)
   /* Say that the epilogue uses the return address register.  Note that
      in the case of sibcalls, the values "used by the epilogue" are
      considered live at the start of the called function.  */
-  if (regno == 31)
+  if (regno == RETURN_ADDR_REGNUM)
     return true;
 
   /* If using a GOT, say that the epilogue also uses GOT_VERSION_REGNUM.

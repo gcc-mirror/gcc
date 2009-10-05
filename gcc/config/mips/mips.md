@@ -82,6 +82,7 @@
    (UNSPEC_ADDRESS_FIRST	100)
 
    (TLS_GET_TP_REGNUM		3)
+   (RETURN_ADDR_REGNUM		31)
    (CPRESTORE_SLOT_REGNUM	76)
    (GOT_VERSION_REGNUM		79)
 
@@ -4011,7 +4012,7 @@
 
 (define_insn "*mov<mode>_ra"
   [(set (match_operand:GPR 0 "stack_operand" "=m")
-	(reg:GPR 31))]
+	(reg:GPR RETURN_ADDR_REGNUM))]
   "TARGET_MIPS16"
   "<store>\t$31,%0"
   [(set_attr "move_type" "store")
@@ -4938,7 +4939,7 @@
 
 (define_insn "clear_hazard_<mode>"
   [(unspec_volatile [(const_int 0)] UNSPEC_CLEAR_HAZARD)
-   (clobber (reg:P 31))]
+   (clobber (reg:P RETURN_ADDR_REGNUM))]
   "ISA_HAS_SYNCI"
 {
   return "%(%<bal\t1f\n"
@@ -6123,7 +6124,7 @@
 (define_insn_and_split "call_internal"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "c,S"))
 	 (match_operand 1 "" ""))
-   (clobber (reg:SI 31))]
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0, 1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
@@ -6137,7 +6138,7 @@
 (define_insn "call_split"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "cS"))
 	 (match_operand 1 "" ""))
-   (clobber (reg:SI 31))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 0, 1); }
@@ -6151,7 +6152,7 @@
   [(call (mem:SI (match_operand 0 "const_call_insn_operand"))
 	 (match_operand 1))
    (const_int 1)
-   (clobber (reg:SI 31))]
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 0, -1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[2] = insn)"
@@ -6167,7 +6168,7 @@
   [(call (mem:SI (match_operand 0 "const_call_insn_operand"))
 	 (match_operand 1))
    (const_int 1)
-   (clobber (reg:SI 31))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 0, -1); }
@@ -6190,7 +6191,7 @@
   [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "c,S"))
               (match_operand 2 "" "")))
-   (clobber (reg:SI 31))]
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, 2); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
@@ -6207,7 +6208,7 @@
   [(set (match_operand 0 "register_operand" "")
         (call (mem:SI (match_operand 1 "call_insn_operand" "cS"))
               (match_operand 2 "" "")))
-   (clobber (reg:SI 31))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1, 2); }
@@ -6219,7 +6220,7 @@
         (call (mem:SI (match_operand 1 "const_call_insn_operand"))
               (match_operand 2)))
    (const_int 1)
-   (clobber (reg:SI 31))]
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, -1); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[3] = insn)"
@@ -6237,7 +6238,7 @@
         (call (mem:SI (match_operand 1 "const_call_insn_operand"))
               (match_operand 2)))
    (const_int 1)
-   (clobber (reg:SI 31))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1, -1); }
@@ -6251,7 +6252,7 @@
    (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))
-   (clobber (reg:SI 31))]
+   (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
   { return TARGET_SPLIT_CALLS ? "#" : MIPS_CALL ("jal", operands, 1, 2); }
   "reload_completed && TARGET_SPLIT_CALLS && (operands[4] = insn)"
@@ -6271,7 +6272,7 @@
    (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))
-   (clobber (reg:SI 31))
+   (clobber (reg:SI RETURN_ADDR_REGNUM))
    (clobber (reg:SI 28))]
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1, 2); }
