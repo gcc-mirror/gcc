@@ -2433,14 +2433,15 @@ typedef struct mips_args {
 #define EXIT_IGNORE_STACK 1
 
 
-/* A C expression for the size in bytes of the trampoline, as an
-   integer.  */
+/* Trampolines are a block of code followed by two pointers.  */
 
-#define TRAMPOLINE_SIZE (ptr_mode == DImode ? 48 : 36)
+#define TRAMPOLINE_SIZE \
+  (mips_trampoline_code_size () + GET_MODE_SIZE (ptr_mode) * 2)
 
-/* Alignment required for trampolines, in bits.  */
+/* Forcing a 64-bit alignment for 32-bit targets allows us to load two
+   pointers from a single LUI base.  */
 
-#define TRAMPOLINE_ALIGNMENT GET_MODE_BITSIZE (ptr_mode)
+#define TRAMPOLINE_ALIGNMENT 64
 
 /* mips_trampoline_init calls this library function to flush
    program and data caches.  */

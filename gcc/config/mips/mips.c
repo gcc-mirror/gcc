@@ -126,6 +126,40 @@ along with GCC; see the file COPYING3.  If not see
 /* True if bit BIT is set in VALUE.  */
 #define BITSET_P(VALUE, BIT) (((VALUE) & (1 << (BIT))) != 0)
 
+/* Return the opcode for a ptr_mode load of the form:
+
+       l[wd]    DEST, OFFSET(BASE).  */
+#define MIPS_LOAD_PTR(DEST, OFFSET, BASE)	\
+  (((ptr_mode == DImode ? 0x37 : 0x23) << 26)	\
+   | ((BASE) << 21)				\
+   | ((DEST) << 16)				\
+   | (OFFSET))
+
+/* Return the opcode to move register SRC into register DEST.  */
+#define MIPS_MOVE(DEST, SRC)		\
+  ((TARGET_64BIT ? 0x2d : 0x21)		\
+   | ((DEST) << 11)			\
+   | ((SRC) << 21))
+
+/* Return the opcode for:
+
+       lui      DEST, VALUE.  */
+#define MIPS_LUI(DEST, VALUE) \
+  ((0xf << 26) | ((DEST) << 16) | (VALUE))
+
+/* Return the opcode to jump to register DEST.  */
+#define MIPS_JR(DEST) \
+  (((DEST) << 21) | 0x8)
+
+/* Return the opcode for:
+
+       bal     . + (1 + OFFSET) * 4.  */
+#define MIPS_BAL(OFFSET) \
+  ((0x1 << 26) | (0x11 << 16) | (OFFSET))
+
+/* Return the usual opcode for a nop.  */
+#define MIPS_NOP 0
+
 /* Classifies an address.
 
    ADDRESS_REG
@@ -15889,41 +15923,21 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
     mips_pop_asm_switch (&mips_noat);
 }
 
-/* Implement TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
+/* Return the size in bytes of the trampoline code, padded to
+   TRAMPOLINE_ALIGNMENT bits.  The static chain pointer and target
+   function address immediately follow.  */
 
-static void
-mips_asm_trampoline_template (FILE *f)
+int
+mips_trampoline_code_size (void)
 {
-  if (ptr_mode == DImode)
-    fprintf (f, "\t.word\t0x03e0082d\t\t# dmove   $1,$31\n");
+  if (TARGET_USE_PIC_FN_ADDR_REG)
+    return 4 * 4;
+  else if (ptr_mode == DImode)
+    return 8 * 4;
+  else if (ISA_HAS_LOAD_DELAY)
+    return 6 * 4;
   else
-    fprintf (f, "\t.word\t0x03e00821\t\t# move   $1,$31\n");
-  fprintf (f, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");
-  fprintf (f, "\t.word\t0x00000000\t\t# nop\n");
-  if (ptr_mode == DImode)
-    {
-      fprintf (f, "\t.word\t0xdff90014\t\t# ld     $25,20($31)\n");
-      fprintf (f, "\t.word\t0xdfef001c\t\t# ld     $15,28($31)\n");
-    }
-  else
-    {
-      fprintf (f, "\t.word\t0x8ff90010\t\t# lw     $25,16($31)\n");
-      fprintf (f, "\t.word\t0x8fef0014\t\t# lw     $15,20($31)\n");
-    }
-  fprintf (f, "\t.word\t0x03200008\t\t# jr     $25\n");
-  if (ptr_mode == DImode)
-    {
-      fprintf (f, "\t.word\t0x0020f82d\t\t# dmove   $31,$1\n");
-      fprintf (f, "\t.word\t0x00000000\t\t# <padding>\n");
-      fprintf (f, "\t.dword\t0x00000000\t\t# <function address>\n");
-      fprintf (f, "\t.dword\t0x00000000\t\t# <static chain value>\n");
-    }
-  else
-    {
-      fprintf (f, "\t.word\t0x0020f821\t\t# move   $31,$1\n");
-      fprintf (f, "\t.word\t0x00000000\t\t# <function address>\n");
-      fprintf (f, "\t.word\t0x00000000\t\t# <static chain value>\n");
-    }
+    return 4 * 4;
 }
 
 /* Implement TARGET_TRAMPOLINE_INIT.  */
@@ -15931,23 +15945,145 @@ mips_asm_trampoline_template (FILE *f)
 static void
 mips_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
-  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
-  rtx mem, addr, end_addr;
+  rtx addr, end_addr, high, low, opcode, mem;
+  rtx trampoline[8];
+  unsigned int i, j;
+  HOST_WIDE_INT end_addr_offset, static_chain_offset, target_function_offset;
 
-  emit_block_move (m_tramp, assemble_trampoline_template (),
-		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+  /* Work out the offsets of the pointers from the start of the
+     trampoline code.  */
+  end_addr_offset = mips_trampoline_code_size ();
+  static_chain_offset = end_addr_offset;
+  target_function_offset = static_chain_offset + GET_MODE_SIZE (ptr_mode);
 
-  mem = adjust_address (m_tramp, ptr_mode, ptr_mode == DImode ? 32 : 28);
-  mips_emit_move (mem, force_reg (ptr_mode, fnaddr));
-  mem = adjust_address (mem, ptr_mode, GET_MODE_SIZE (ptr_mode));
-  mips_emit_move (mem, force_reg (ptr_mode, chain_value));
+  /* Get pointers to the beginning and end of the code block.  */
+  addr = force_reg (Pmode, XEXP (m_tramp, 0));
+  end_addr = mips_force_binary (Pmode, PLUS, addr, GEN_INT (end_addr_offset));
 
-  addr = force_reg (ptr_mode, XEXP (m_tramp, 0));
-  end_addr = gen_reg_rtx (ptr_mode);
+#define OP(X) gen_int_mode (X, SImode)
+
+  /* Build up the code in TRAMPOLINE.  */
+  i = 0;
+  if (TARGET_USE_PIC_FN_ADDR_REG)
+    {
+      /* $25 contains the address of the trampoline.  Emit code of the form:
+
+	     l[wd]    $1, target_function_offset($25)
+	     l[wd]    $static_chain, static_chain_offset($25)
+	     jr       $1
+	     move     $25,$1.  */
+      trampoline[i++] = OP (MIPS_LOAD_PTR (AT_REGNUM,
+					   target_function_offset,
+					   PIC_FUNCTION_ADDR_REGNUM));
+      trampoline[i++] = OP (MIPS_LOAD_PTR (STATIC_CHAIN_REGNUM,
+					   static_chain_offset,
+					   PIC_FUNCTION_ADDR_REGNUM));
+      trampoline[i++] = OP (MIPS_JR (AT_REGNUM));
+      trampoline[i++] = OP (MIPS_MOVE (PIC_FUNCTION_ADDR_REGNUM, AT_REGNUM));
+    }
+  else if (ptr_mode == DImode)
+    {
+      /* It's too cumbersome to create the full 64-bit address, so let's
+	 instead use:
+
+	     move    $1, $31
+	     bal     1f
+	     nop
+	 1:  l[wd]   $25, target_function_offset - 12($31)
+	     l[wd]   $static_chain, static_chain_offset - 12($31)
+	     jr      $25
+	     move    $31, $1
+
+	where 12 is the offset of "1:" from the start of the code block.  */
+      trampoline[i++] = OP (MIPS_MOVE (AT_REGNUM, RETURN_ADDR_REGNUM));
+      trampoline[i++] = OP (MIPS_BAL (1));
+      trampoline[i++] = OP (MIPS_NOP);
+      trampoline[i++] = OP (MIPS_LOAD_PTR (PIC_FUNCTION_ADDR_REGNUM,
+					   target_function_offset - 12,
+					   RETURN_ADDR_REGNUM));
+      trampoline[i++] = OP (MIPS_LOAD_PTR (STATIC_CHAIN_REGNUM,
+					   static_chain_offset - 12,
+					   RETURN_ADDR_REGNUM));
+      trampoline[i++] = OP (MIPS_JR (PIC_FUNCTION_ADDR_REGNUM));
+      trampoline[i++] = OP (MIPS_MOVE (RETURN_ADDR_REGNUM, AT_REGNUM));
+    }
+  else
+    {
+      /* If the target has load delays, emit:
+
+	     lui     $1, %hi(end_addr)
+	     lw      $25, %lo(end_addr + ...)($1)
+	     lw      $static_chain, %lo(end_addr + ...)($1)
+	     jr      $25
+	     nop
+
+	 Otherwise emit:
+
+	     lui     $1, %hi(end_addr)
+	     lw      $25, %lo(end_addr + ...)($1)
+	     jr      $25
+	     lw      $static_chain, %lo(end_addr + ...)($1).  */
+
+      /* Split END_ADDR into %hi and %lo values.  Trampolines are aligned
+	 to 64 bits, so the %lo value will have the bottom 3 bits clear.  */
+      high = expand_simple_binop (SImode, PLUS, end_addr, GEN_INT (0x8000),
+				  NULL, false, OPTAB_WIDEN);
+      high = expand_simple_binop (SImode, LSHIFTRT, high, GEN_INT (16),
+				  NULL, false, OPTAB_WIDEN);
+      low = convert_to_mode (SImode, gen_lowpart (HImode, end_addr), true);
+
+      /* Emit the LUI.  */
+      opcode = OP (MIPS_LUI (AT_REGNUM, 0));
+      trampoline[i++] = expand_simple_binop (SImode, IOR, opcode, high,
+					     NULL, false, OPTAB_WIDEN);
+
+      /* Emit the load of the target function.  */
+      opcode = OP (MIPS_LOAD_PTR (PIC_FUNCTION_ADDR_REGNUM,
+				  target_function_offset - end_addr_offset,
+				  AT_REGNUM));
+      trampoline[i++] = expand_simple_binop (SImode, IOR, opcode, low,
+					     NULL, false, OPTAB_WIDEN);
+
+      /* Emit the JR here, if we can.  */
+      if (!ISA_HAS_LOAD_DELAY)
+	trampoline[i++] = OP (MIPS_JR (PIC_FUNCTION_ADDR_REGNUM));
+
+      /* Emit the load of the static chain register.  */
+      opcode = OP (MIPS_LOAD_PTR (STATIC_CHAIN_REGNUM,
+				  static_chain_offset - end_addr_offset,
+				  AT_REGNUM));
+      trampoline[i++] = expand_simple_binop (SImode, IOR, opcode, low,
+					     NULL, false, OPTAB_WIDEN);
+
+      /* Emit the JR, if we couldn't above.  */
+      if (ISA_HAS_LOAD_DELAY)
+	{
+	  trampoline[i++] = OP (MIPS_JR (PIC_FUNCTION_ADDR_REGNUM));
+	  trampoline[i++] = OP (MIPS_NOP);
+	}
+    }
+
+#undef OP
+
+  /* Copy the trampoline code.  Leave any padding uninitialized.  */
+  for (j = 0; j < i; j++)
+    {
+      mem = adjust_address (m_tramp, SImode, j * GET_MODE_SIZE (SImode));
+      mips_emit_move (mem, trampoline[j]);
+    }
+
+  /* Set up the static chain pointer field.  */
+  mem = adjust_address (m_tramp, ptr_mode, static_chain_offset);
+  mips_emit_move (mem, chain_value);
+
+  /* Set up the target function field.  */
+  mem = adjust_address (m_tramp, ptr_mode, target_function_offset);
+  mips_emit_move (mem, XEXP (DECL_RTL (fndecl), 0));
+
+  /* Flush the code part of the trampoline.  */
   emit_insn (gen_add3_insn (end_addr, addr, GEN_INT (TRAMPOLINE_SIZE)));
   emit_insn (gen_clear_cache (addr, end_addr));
 }
-
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -16129,8 +16265,6 @@ mips_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE mips_can_eliminate
 
-#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
-#define TARGET_ASM_TRAMPOLINE_TEMPLATE mips_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT mips_trampoline_init
 
