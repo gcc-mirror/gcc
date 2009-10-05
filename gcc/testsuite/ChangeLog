@@ -1,3 +1,12 @@
+2009-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41558
+	* gcc.dg/guality/guality.exp: Move gdb-test proc into...
+	* lib/gcc-gdb-test.exp: ... here.  New file.
+	* gfortran.dg/guality/guality.exp: New file.
+	* gfortran.dg/guality/pr41558.f90: New test.
+	* gfortran.dg/guality/arg1.f90: New test.
+
 2009-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	* gfortran.dg/dynamic_dispatch_1.f90: New test.

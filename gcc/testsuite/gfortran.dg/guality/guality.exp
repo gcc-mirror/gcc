@@ -1,0 +1,29 @@
+# This harness is for tests that should be run at all optimisation levels.
+
+load_lib gfortran-dg.exp
+load_lib gcc-gdb-test.exp
+
+# Disable on darwin until radr://7264615 is resolved.
+if { [istarget *-*-darwin*] } {
+  return
+}
+
+dg-init
+
+global GDB
+if ![info exists ::env(GUALITY_GDB_NAME)] {
+    if [info exists GDB] {
+	set guality_gdb_name "$GDB"
+    } else {
+	set guality_gdb_name "[transform gdb]"
+    }
+    setenv GUALITY_GDB_NAME "$guality_gdb_name"
+}
+
+gfortran-dg-runtest [lsort [glob $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] ""
+
+if [info exists guality_gdb_name] {
+    unsetenv GUALITY_GDB_NAME
+}
+
+dg-finish
