@@ -1,3 +1,10 @@
+
+2009-10-05  Basile Starynkevitch  <basile@starynkevitch.net>
+	    Rafael Espindola  <espindola@google.com>
+
+	* gengtype.c (write_types): Moved call to write_func_for_structure
+	into seperate loops.
+
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41281
