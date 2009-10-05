@@ -805,61 +805,6 @@ proc check_v3_target_time { } {
     return $et_time_saved
 }
 
-proc check_v3_target_rvalref { } {
-    global et_rvalref_saved
-    global et_rvalref_target_name
-    global tool	
-
-    if { ![info exists et_rvalref_target_name] } {
-	set et_rvalref_target_name ""
-    }
-
-    # If the target has changed since we set the cached value, clear it.
-    set current_target [current_target_name]
-    if { $current_target != $et_rvalref_target_name } {
-	verbose "check_v3_target_rvalref: `$et_rvalref_target_name'" 2
-	set et_rvalref_target_name $current_target
-	if [info exists et_rvalref_saved] {
-	    verbose "check_v3_target_rvalref: removing cached result" 2
-	    unset et_rvalref_saved
-	}
-    }
-
-    if [info exists et_rvalref_saved] {
-	verbose "check_v3_target_rvalref: using cached result" 2
-    } else {
-	set et_rvalref_saved 0
-
-	# Set up and compile a C++ test program that tries to use
-	# the library components of rval references
-	set src rvalref[pid].cc
-	set exe rvalref[pid].x
-
-	set f [open $src "w"]
-	puts $f "#include <iterator>"
-	puts $f "#include <utility>"
-	puts $f "using std::move;"
-	puts $f "using std::identity;"
-	puts $f "using std::forward;"
-	puts $f "using std::move_iterator;"
-	puts $f "using std::make_move_iterator;"
-	close $f
-
-	set lines [v3_target_compile $src $exe executable ""]
-	file delete $src
-
-	if [string match "" $lines] {
-	    # No error message, compilation succeeded.
-	    verbose "check_v3_target_rvalref: compilation succeeded" 2
-	    remote_file build delete $exe
-	    set et_rvalref_saved 1
-	} else {
-	    verbose "check_v3_target_rvalref: compilation failed" 2
-	}
-    }
-    return $et_rvalref_saved
-}
-
 proc check_v3_target_namedlocale { } {
     global et_namedlocale_saved
     global et_namedlocale_target_name
