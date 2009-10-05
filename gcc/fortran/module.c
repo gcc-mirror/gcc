@@ -3972,6 +3972,61 @@ load_equiv (void)
 }
 
 
+/* This function loads the sym_root of f2k_derived with the extensions to
+   the derived type.  */
+static void
+load_derived_extensions (void)
+{
+  int symbol, nuse, j;
+  gfc_symbol *derived;
+  gfc_symbol *dt;
+  gfc_symtree *st;
+  pointer_info *info;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  char module[GFC_MAX_SYMBOL_LEN + 1];
+  const char *p;
+
+  mio_lparen ();
+  while (peek_atom () != ATOM_RPAREN)
+    {
+      mio_lparen ();
+      mio_integer (&symbol);
+      info = get_integer (symbol);
+      derived = info->u.rsym.sym;
+
+      gcc_assert (derived->attr.flavor == FL_DERIVED);
+      if (derived->f2k_derived == NULL)
+	derived->f2k_derived = gfc_get_namespace (NULL, 0);
+
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  mio_lparen ();
+	  mio_internal_string (name);
+	  mio_internal_string (module);
+
+          /* Only use one use name to find the symbol.  */
+	  nuse = number_use_names (name, false);
+	  j = 1;
+	  p = find_use_name_n (name, &j, false);
+	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
+	  dt = st->n.sym;
+	  st = gfc_find_symtree (derived->f2k_derived->sym_root, name);
+	  if (st == NULL)
+	    {
+	      /* Only use the real name in f2k_derived to ensure a single
+		 symtree.  */
+	      st = gfc_new_symtree (&derived->f2k_derived->sym_root, name);
+	      st->n.sym = dt;
+	      st->n.sym->refs++;
+	    }
+	  mio_rparen ();
+	}
+      mio_rparen ();
+    }
+  mio_rparen ();
+}
+
+
 /* Recursive function to traverse the pointer_info tree and load a
    needed symbol.  We return nonzero if we load a symbol and stop the
    traversal, because the act of loading can alter the tree.  */
@@ -4113,7 +4168,7 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
 static void
 read_module (void)
 {
-  module_locus operator_interfaces, user_operators;
+  module_locus operator_interfaces, user_operators, extensions;
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   int i;
@@ -4130,8 +4185,11 @@ read_module (void)
   skip_list ();
   skip_list ();
 
-  /* Skip commons and equivalences for now.  */
+  /* Skip commons, equivalences and derived type extensions for now.  */
   skip_list ();
+  skip_list ();
+
+  get_module_locus (&extensions);
   skip_list ();
 
   mio_lparen ();
@@ -4386,6 +4444,11 @@ read_module (void)
 
   gfc_check_interfaces (gfc_current_ns);
 
+  /* Now we should be in a position to fill f2k_derived with derived type
+     extensions, since everything has been loaded.  */
+  set_module_locus (&extensions);
+  load_derived_extensions ();
+
   /* Clean up symbol nodes that were never loaded, create references
      to hidden symbols.  */
 
@@ -4591,6 +4654,36 @@ write_equiv (void)
       num++;
       mio_rparen ();
     }
+}
+
+
+/* Write derived type extensions to the module.  */
+
+static void
+write_dt_extensions (gfc_symtree *st)
+{
+  mio_lparen ();
+  mio_pool_string (&st->n.sym->name);
+  if (st->n.sym->module != NULL)
+    mio_pool_string (&st->n.sym->module);
+  else
+    mio_internal_string (module_name);
+  mio_rparen ();
+}
+
+static void
+write_derived_extensions (gfc_symtree *st)
+{
+  if (!((st->n.sym->attr.flavor == FL_DERIVED)
+	  && (st->n.sym->f2k_derived != NULL)
+	  && (st->n.sym->f2k_derived->sym_root != NULL)))
+    return;
+
+  mio_lparen ();
+  mio_symbol_ref (&(st->n.sym));
+  gfc_traverse_symtree (st->n.sym->f2k_derived->sym_root,
+			write_dt_extensions);
+  mio_rparen ();
 }
 
 
@@ -4816,6 +4909,13 @@ write_module (void)
 
   mio_lparen ();
   write_equiv ();
+  mio_rparen ();
+  write_char ('\n');
+  write_char ('\n');
+
+  mio_lparen ();
+  gfc_traverse_symtree (gfc_current_ns->sym_root,
+			write_derived_extensions);
   mio_rparen ();
   write_char ('\n');
   write_char ('\n');

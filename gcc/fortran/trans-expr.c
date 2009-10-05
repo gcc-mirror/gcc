@@ -1523,10 +1523,134 @@ get_proc_ptr_comp (gfc_expr *e)
 }
 
 
+/* Select a class typebound procedure at runtime.  */
+static void
+select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
+		   tree declared, locus *where)
+{
+  tree end_label;
+  tree label;
+  tree tmp;
+  tree vindex;
+  stmtblock_t body;
+  gfc_class_esym_list *next_elist, *tmp_elist;
+
+  /* Calculate the switch expression: class_object.vindex.  */
+  gcc_assert (elist->class_object->ts.type == BT_CLASS);
+  tmp = elist->class_object->ts.u.derived->components->next->backend_decl;
+  vindex = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+			elist->class_object->backend_decl,
+			tmp, NULL_TREE);
+  vindex = gfc_evaluate_now (vindex, &se->pre);
+
+  /* Fix the function type to be that of the declared type.  */
+  declared = gfc_create_var (TREE_TYPE (declared), "method");
+
+  end_label = gfc_build_label_decl (NULL_TREE);
+
+  gfc_init_block (&body);
+
+  /* Go through the list of extensions.  */
+  for (; elist; elist = next_elist)
+    {
+      /* This case has already been added.  */
+      if (elist->derived == NULL)
+	goto free_elist;
+
+      /* Run through the chain picking up all the cases that call the
+	 same procedure.  */
+      tmp_elist = elist;
+      for (; elist; elist = elist->next)
+	{
+	  tree cval;
+
+	  if (elist->esym != tmp_elist->esym)
+	    continue;
+
+	  cval = build_int_cst (TREE_TYPE (vindex),
+				elist->derived->vindex);
+	  /* Build a label for the vindex value.  */
+	  label = gfc_build_label_decl (NULL_TREE);
+	  tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
+			     cval, NULL_TREE, label);
+	  gfc_add_expr_to_block (&body, tmp);
+
+	  /* Null the reference the derived type so that this case is
+	     not used again.  */
+	  elist->derived = NULL;
+	}
+
+      elist = tmp_elist;
+
+      /* Get a pointer to the procedure,  */
+      tmp = gfc_get_symbol_decl (elist->esym);
+      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	}
+
+      /* Assign the pointer to the appropriate procedure.  */
+      gfc_add_modify (&body, declared,
+		      fold_convert (TREE_TYPE (declared), tmp));
+
+      /* Break to the end of the construct.  */
+      tmp = build1_v (GOTO_EXPR, end_label);
+      gfc_add_expr_to_block (&body, tmp);
+
+      /* Free the elists as we go; freeing them in gfc_free_expr causes
+	 segfaults because it occurs too early and too often.  */
+    free_elist:
+      next_elist = elist->next;
+      gfc_free (elist);
+      elist = NULL;
+    }
+
+  /* Default is an error.  */
+  label = gfc_build_label_decl (NULL_TREE);
+  tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
+		     NULL_TREE, NULL_TREE, label);
+  gfc_add_expr_to_block (&body, tmp);
+  tmp = gfc_trans_runtime_error (true, where,
+		"internal error: bad vindex in dynamic dispatch");
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Write the switch expression.  */
+  tmp = gfc_finish_block (&body);
+  tmp = build3_v (SWITCH_EXPR, vindex, tmp, NULL_TREE);
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  tmp = build1_v (LABEL_EXPR, end_label);
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  se->expr = declared;
+  return;
+}
+
+
 static void
 conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
 {
   tree tmp;
+
+  if (expr && expr->symtree
+	&& expr->value.function.class_esym)
+    {
+      if (!sym->backend_decl)
+	sym->backend_decl = gfc_get_extern_function_decl (sym);
+
+      tmp = sym->backend_decl;
+
+      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	}
+
+      select_class_proc (se, expr->value.function.class_esym,
+			 tmp, &expr->where);
+      return;
+    }
 
   if (gfc_is_proc_ptr_comp (expr, NULL))
     tmp = get_proc_ptr_comp (expr);

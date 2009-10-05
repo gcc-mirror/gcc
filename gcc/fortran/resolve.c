@@ -4997,25 +4997,39 @@ resolve_typebound_call (gfc_code* c)
   c->op = (c->expr1->value.compcall.assign ? EXEC_ASSIGN_CALL : EXEC_CALL);
 
   gcc_assert (!c->expr1->ref && !c->expr1->value.compcall.actual);
+
   gfc_free_expr (c->expr1);
-  c->expr1 = NULL;
+  c->expr1 = gfc_get_expr ();
+  c->expr1->expr_type = EXPR_FUNCTION;
+  c->expr1->symtree = target;
+  c->expr1->where = c->loc;
 
   return resolve_call (c);
 }
 
 
-/* Resolve a component-call expression.  */
-
+/* Resolve a component-call expression.  This originally was intended
+   only to see functions.  However, it is convenient to use it in 
+   resolving subroutine class methods, since we do not have to add a
+   gfc_code each time. */
 static gfc_try
-resolve_compcall (gfc_expr* e)
+resolve_compcall (gfc_expr* e, bool fcn)
 {
   gfc_actual_arglist* newactual;
   gfc_symtree* target;
 
   /* Check that's really a FUNCTION.  */
-  if (!e->value.compcall.tbp->function)
+  if (fcn && !e->value.compcall.tbp->function)
     {
       gfc_error ("'%s' at %L should be a FUNCTION",
+		 e->value.compcall.name, &e->where);
+      return FAILURE;
+    }
+  else if (!fcn && !e->value.compcall.tbp->subroutine)
+    {
+      /* To resolve class member calls, we borrow this bit
+         of code to select the specific procedures.  */
+      gfc_error ("'%s' at %L should be a SUBROUTINE",
 		 e->value.compcall.name, &e->where);
       return FAILURE;
     }
@@ -5043,12 +5057,207 @@ resolve_compcall (gfc_expr* e)
   e->value.function.actual = newactual;
   e->value.function.name = e->value.compcall.name;
   e->value.function.esym = target->n.sym;
+  e->value.function.class_esym = NULL;
   e->value.function.isym = NULL;
   e->symtree = target;
   e->ts = target->n.sym->ts;
   e->expr_type = EXPR_FUNCTION;
 
-  return gfc_resolve_expr (e);
+  /* Resolution is not necessary if this is a class subroutine; this
+     function only has to identify the specific proc. Resolution of
+     the call will be done next in resolve_typebound_call.  */
+  return fcn ? gfc_resolve_expr (e) : SUCCESS;
+}
+
+
+/* Resolve a typebound call for the members in a class.  This group of
+   functions implements dynamic dispatch in the provisional version
+   of f03 OOP.  As soon as vtables are in place and contain pointers
+   to methods, this will no longer be necessary.  */
+static gfc_expr *list_e;
+static void check_class_members (gfc_symbol *);
+static gfc_try class_try;
+static bool fcn_flag;
+static gfc_symbol *class_object;
+
+
+static void
+check_members (gfc_symbol *derived)
+{
+  if (derived->attr.flavor == FL_DERIVED)
+    check_class_members (derived);
+}
+
+
+static void 
+check_class_members (gfc_symbol *derived)
+{
+  gfc_symbol* tbp_sym;
+  gfc_expr *e;
+  gfc_symtree *tbp;
+  gfc_class_esym_list *etmp;
+
+  e = gfc_copy_expr (list_e);
+
+  tbp = gfc_find_typebound_proc (derived, &class_try,
+				 e->value.compcall.name,
+				 false, &e->where);
+
+  if (tbp == NULL)
+    {
+      gfc_error ("no typebound available procedure named '%s' at %L",
+		 e->value.compcall.name, &e->where);
+      return;
+    }
+
+  if (tbp->n.tb->is_generic)
+    {
+      tbp_sym = NULL;
+
+      /* If we have to match a passed class member, force the actual
+	 expression to have the correct type.  */
+      if (!tbp->n.tb->nopass)
+	{
+	  if (e->value.compcall.base_object == NULL)
+	    e->value.compcall.base_object =
+			extract_compcall_passed_object (e);
+
+          e->value.compcall.base_object->ts.type = BT_DERIVED;
+          e->value.compcall.base_object->ts.u.derived = derived;
+	}
+    }
+  else
+    tbp_sym = tbp->n.tb->u.specific->n.sym;
+
+  e->value.compcall.tbp = tbp->n.tb;
+  e->value.compcall.name = tbp->name;
+
+  /* Do the renaming, PASSing, generic => specific and other
+     good things for each class member.  */
+  class_try = (resolve_compcall (e, fcn_flag) == SUCCESS)
+				? class_try : FAILURE;
+
+  /* Now transfer the found symbol to the esym list.  */
+  if (class_try == SUCCESS)
+    {
+      etmp = list_e->value.function.class_esym;
+      list_e->value.function.class_esym
+		= gfc_get_class_esym_list();
+      list_e->value.function.class_esym->next = etmp;
+      list_e->value.function.class_esym->derived = derived;
+      list_e->value.function.class_esym->class_object
+		= class_object;
+      list_e->value.function.class_esym->esym
+		= e->value.function.esym;
+    }
+
+  gfc_free_expr (e);
+  
+  /* Burrow down into grandchildren types.  */
+  if (derived->f2k_derived)
+    gfc_traverse_ns (derived->f2k_derived, check_members);
+}
+
+
+/* Eliminate esym_lists where all the members point to the
+   typebound procedure of the declared type; ie. one where
+   type selection has no effect..  */
+static void
+resolve_class_esym (gfc_expr *e)
+{
+  gfc_class_esym_list *p, *q;
+  bool empty = true;
+
+  gcc_assert (e && e->expr_type == EXPR_FUNCTION);
+
+  p = e->value.function.class_esym;
+  if (p == NULL)
+    return;
+
+  for (; p; p = p->next)
+    empty = empty && (e->value.function.esym == p->esym);
+
+  if (empty)
+    {
+      p = e->value.function.class_esym;
+      for (; p; p = q)
+	{
+	  q = p->next;
+	  gfc_free (p);
+	}
+      e->value.function.class_esym = NULL;
+   }
+}
+
+
+/* Resolve a CLASS typebound function, or 'method'.  */
+static gfc_try
+resolve_class_compcall (gfc_expr* e)
+{
+  gfc_symbol *derived;
+
+  class_object = e->symtree->n.sym;
+
+  /* Get the CLASS type.  */
+  derived = e->symtree->n.sym->ts.u.derived;
+
+  /* Get the data component, which is of the declared type.  */
+  derived = derived->components->ts.u.derived;
+
+  /* Resolve the function call for each member of the class.  */
+  class_try = SUCCESS;
+  fcn_flag = true;
+  list_e = gfc_copy_expr (e);
+  check_class_members (derived);
+
+  class_try = (resolve_compcall (e, true) == SUCCESS)
+		 ? class_try : FAILURE;
+
+  /* Transfer the class list to the original expression.  Note that
+     the class_esym list is cleaned up in trans-expr.c, as the calls
+     are translated.  */
+  e->value.function.class_esym = list_e->value.function.class_esym;
+  list_e->value.function.class_esym = NULL;
+  gfc_free_expr (list_e);
+
+  resolve_class_esym (e);
+
+  return class_try;
+}
+
+/* Resolve a CLASS typebound subroutine, or 'method'.  */
+static gfc_try
+resolve_class_typebound_call (gfc_code *code)
+{
+  gfc_symbol *derived;
+
+  class_object = code->expr1->symtree->n.sym;
+
+  /* Get the CLASS type.  */
+  derived = code->expr1->symtree->n.sym->ts.u.derived;
+
+  /* Get the data component, which is of the declared type.  */
+  derived = derived->components->ts.u.derived;
+
+  class_try = SUCCESS;
+  fcn_flag = false;
+  list_e = gfc_copy_expr (code->expr1);
+  check_class_members (derived);
+
+  class_try = (resolve_typebound_call (code) == SUCCESS)
+		 ? class_try : FAILURE;
+
+  /* Transfer the class list to the original expression.  Note that
+     the class_esym list is cleaned up in trans-expr.c, as the calls
+     are translated.  */
+  code->expr1->value.function.class_esym
+			= list_e->value.function.class_esym;
+  list_e->value.function.class_esym = NULL;
+  gfc_free_expr (list_e);
+
+  resolve_class_esym (code->expr1);
+
+  return class_try;
 }
 
 
@@ -5162,7 +5371,10 @@ gfc_resolve_expr (gfc_expr *e)
       break;
 
     case EXPR_COMPCALL:
-      t = resolve_compcall (e);
+      if (e->symtree && e->symtree->n.sym->ts.type == BT_CLASS)
+	t = resolve_class_compcall (e);
+      else
+	t = resolve_compcall (e, true);
       break;
 
     case EXPR_SUBSTRING:
@@ -7517,7 +7729,11 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	case EXEC_COMPCALL:
 	compcall:
-	  resolve_typebound_call (code);
+	  if (code->expr1->symtree
+		&& code->expr1->symtree->n.sym->ts.type == BT_CLASS)
+	    resolve_class_typebound_call (code);
+	  else
+	    resolve_typebound_call (code);
 	  break;
 
 	case EXEC_CALL_PPC:
