@@ -8811,6 +8811,12 @@ distribute_and_simplify_rtx (rtx x, int n)
   enum rtx_code outer_code, inner_code;
   rtx decomposed, distributed, inner_op0, inner_op1, new_op0, new_op1, tmp;
 
+  /* Distributivity is not true for floating point as it can change the
+     value.  So we don't do it unless -funsafe-math-optimizations.  */
+  if (FLOAT_MODE_P (GET_MODE (x))
+      && ! flag_unsafe_math_optimizations)
+    return NULL_RTX;
+
   decomposed = XEXP (x, n);
   if (!ARITHMETIC_P (decomposed))
     return NULL_RTX;
