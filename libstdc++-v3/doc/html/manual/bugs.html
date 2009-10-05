@@ -123,6 +123,9 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#129" target="_top">129</a>:
         <span class="emphasis"><em>Need error indication from seekp() and seekg()</em></span>
     </span></dt><dd><p>These functions set <code class="code">failbit</code> on error now.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#130" target="_top">130</a>:
+        <span class="emphasis"><em>Return type of container::erase(iterator) differs for associative containers</em></span>
+    </span></dt><dd><p>Make member <code class="code">erase</code> return iterator for <code class="code">set</code>, <code class="code">multiset</code>, <code class="code">map</code>, <code class="code">multimap</code>. 
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#136" target="_top">136</a>:
         <span class="emphasis"><em>seekp, seekg setting wrong streams?</em></span>
     </span></dt><dd><p><code class="code">seekp</code> should only set the output stream, and
@@ -335,7 +338,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#844" target="_top">844</a>:
         <span class="emphasis"><em>complex pow return type is ambiguous</em></span>
     </span></dt><dd><p>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#853" target="_top">853</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#853" target="_top">853</a>:
         <span class="emphasis"><em>to_string needs updating with zero and one</em></span>
     </span></dt><dd><p>Update / add the signatures.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>
