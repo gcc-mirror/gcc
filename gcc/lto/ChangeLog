@@ -1,3 +1,11 @@
+2009-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41552
+	PR lto/41487
+	* lto.c (lto_read_decls): Do not register deferred decls.
+	(read_cgraph_and_symbols): Delay symbol and cgraph merging
+	until after reading the IPA summaries.
+
 2009-10-02  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Make-lang.in (lto/lto-lang.o): Don't depend on lto/common.h.

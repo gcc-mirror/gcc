@@ -1,5 +1,5 @@
 // { dg-lto-do link }
-// { dg-lto-options {{-fPIC}} }
+// { dg-lto-options {{-fPIC -flto}} }
 // { dg-extra-ld-options "-fPIC -shared" }
 
 namespace std __attribute__ ((__visibility__ ("default")))

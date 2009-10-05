@@ -527,8 +527,6 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes)
   unsigned int nest;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d *bp;
-  tree prevailing_callee;
-  tree prevailing_caller;
   enum ld_plugin_symbol_resolution caller_resolution;
 
   caller = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
@@ -539,8 +537,6 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes)
   if (callee == NULL || callee->decl == NULL_TREE)
     internal_error ("bytecode stream: no callee found while reading edge");
 
-  caller_resolution = lto_symtab_get_resolution (caller->decl);
-
   count = (gcov_type) lto_input_sleb128 (ib);
 
   bp = lto_input_bitpack (ib);
@@ -550,36 +546,12 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes)
   freq = (int) bp_unpack_value (bp, HOST_BITS_PER_INT);
   nest = (unsigned) bp_unpack_value (bp, 30);
 
-  /* If the caller was preempted, don't create the edge.  */
+  /* If the caller was preempted, don't create the edge.
+     ???  Should we ever have edges from a preempted caller?  */
+  caller_resolution = lto_symtab_get_resolution (caller->decl);
   if (caller_resolution == LDPR_PREEMPTED_REG
       || caller_resolution == LDPR_PREEMPTED_IR)
     return;
-
-  prevailing_callee = lto_symtab_prevailing_decl (callee->decl);
-
-  /* Make sure the caller is the prevailing decl.  */
-  prevailing_caller = lto_symtab_prevailing_decl (caller->decl);
-
-  if (prevailing_callee != callee->decl)
-    {
-      struct lto_file_decl_data *file_data;
-
-      /* We cannot replace a clone!  */
-      gcc_assert (callee == cgraph_node (callee->decl));
-
-      callee = cgraph_node (prevailing_callee);
-      gcc_assert (callee);
-
-      /* If LGEN (cc1 or cc1plus) had nothing to do with the node, it
-	 might not have created it. In this case, we just created a
-	 new node in the above call to cgraph_node. Mark the file it
-	 came from. */
-      file_data = lto_symtab_get_file_data (prevailing_callee);
-      if (callee->local.lto_file_data)
-	gcc_assert (callee->local.lto_file_data == file_data);
-      else
-	callee->local.lto_file_data = file_data;
-    }
 
   edge = cgraph_create_edge (caller, callee, NULL, count, freq, nest);
   edge->lto_stmt_uid = stmt_id;
@@ -629,21 +601,6 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       else
 	node->global.inlined_to = NULL;
     }
-
-  for (i = 0; VEC_iterate (cgraph_node_ptr, nodes, i, node); i++)
-    {
-      tree prevailing = lto_symtab_prevailing_decl (node->decl);
-
-      if (prevailing != node->decl)
-	{
-	  cgraph_remove_node (node);
-	  VEC_replace (cgraph_node_ptr, nodes, i, NULL);
-	}
-    }
-
-  for (i = 0; VEC_iterate (cgraph_node_ptr, nodes, i, node); i++)
-    if (node && cgraph_decide_is_function_needed (node, node->decl))
-      cgraph_mark_needed_node (node);
 
   VEC_free (cgraph_node_ptr, heap, nodes);
 }

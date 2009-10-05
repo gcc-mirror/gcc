@@ -1347,44 +1347,8 @@ get_resolution (struct data_in *data_in, unsigned index)
       return ret;
     }
   else
-    {
-      /* Fake symbol resolution if no resolution file was provided.  */
-      tree t = lto_streamer_cache_get (data_in->reader_cache, index);
-
-      gcc_assert (TREE_PUBLIC (t));
-
-      /* There should be no DECL_ABSTRACT in the middle end.  */
-      gcc_assert (!DECL_ABSTRACT (t));
-
-      /* If T is a weak definition, we select the first one we see to
-	 be the prevailing definition.  */
-      if (DECL_WEAK (t))
-	{
-	  tree prevailing_decl;
-	  if (DECL_EXTERNAL (t))
-	    return LDPR_RESOLVED_IR;
-
-	  /* If this is the first time we see T, it won't have a
-	     prevailing definition yet.  */
-	  prevailing_decl = lto_symtab_prevailing_decl (t);
-	  if (prevailing_decl == t
-	      || prevailing_decl == NULL_TREE
-	      || DECL_EXTERNAL (prevailing_decl))
-	    return LDPR_PREVAILING_DEF;
-	  else
-	    return LDPR_PREEMPTED_IR;
-	}
-      else
-	{
-	  /* For non-weak definitions, extern declarations are assumed
-	     to be resolved elsewhere (LDPR_RESOLVED_IR), otherwise T
-	     is a prevailing definition.  */
-	  if (DECL_EXTERNAL (t))
-	    return LDPR_RESOLVED_IR;
-	  else
-	    return LDPR_PREVAILING_DEF;
-	}
-    }
+    /* Delay resolution finding until decl merging.  */
+    return LDPR_UNKNOWN;
 }
 
 
@@ -2243,55 +2207,13 @@ lto_input_tree_pointers (struct lto_input_block *ib, struct data_in *data_in,
     }
 }
 
-static VEC(tree, heap) *deferred_global_decls;
-
-/* Register the queued global decls with the symtab.  DATA_IN contains
-   tables and descriptors for the file being read.*/
-
-void
-lto_register_deferred_decls_in_symtab (struct data_in *data_in)
-{
-  unsigned i;
-  tree decl;
-
-  for (i = 0; VEC_iterate (tree, deferred_global_decls, i, decl); ++i)
-    {
-      enum ld_plugin_symbol_resolution resolution;
-      int ix;
-
-      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
-	gcc_unreachable ();
-
-      /* Register and adjust the decls type.  */
-      TREE_TYPE (decl) = gimple_register_type (TREE_TYPE (decl));
-
-      if (TREE_CODE (decl) == VAR_DECL)
-	{
-	  gcc_assert (TREE_PUBLIC (decl));
-	  resolution = get_resolution (data_in, ix);
-	  lto_symtab_merge_var (decl, resolution);
-	}
-      else if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  gcc_assert (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl));
-	  resolution = get_resolution (data_in, ix);
-	  lto_symtab_merge_fn (decl, resolution, data_in->file_data);
-	}
-      else
-	gcc_unreachable ();
-    }
-
-  VEC_free (tree, heap, deferred_global_decls);
-  deferred_global_decls = NULL;
-}
-
 
 /* Register DECL with the global symbol table and change its
    name if necessary to avoid name clashes for static globals across
    different files.  */
 
 static void
-lto_register_var_decl_in_symtab (tree decl)
+lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
 {
   /* Register symbols with file or global scope to mark what input
      file has their definition.  */
@@ -2319,7 +2241,13 @@ lto_register_var_decl_in_symtab (tree decl)
   /* If this variable has already been declared, queue the
      declaration for merging.  */
   if (TREE_PUBLIC (decl))
-    VEC_safe_push (tree, heap, deferred_global_decls, decl);
+    {
+      int ix;
+      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
+	gcc_unreachable ();
+      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
+				data_in->file_data);
+    }
 }
 
 
@@ -2380,7 +2308,13 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
   /* If this variable has already been declared, queue the
      declaration for merging.  */
   if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
-    VEC_safe_push (tree, heap, deferred_global_decls, decl);
+    {
+      int ix;
+      if (!lto_streamer_cache_lookup (data_in->reader_cache, decl, &ix))
+	gcc_unreachable ();
+      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
+				data_in->file_data);
+    }
 }
 
 
@@ -2481,7 +2415,7 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
     gcc_assert (!lto_stream_as_builtin_p (result));
 
   if (TREE_CODE (result) == VAR_DECL)
-    lto_register_var_decl_in_symtab (result);
+    lto_register_var_decl_in_symtab (data_in, result);
   else if (TREE_CODE (result) == FUNCTION_DECL && !DECL_BUILT_IN (result))
     lto_register_function_decl_in_symtab (data_in, result);
 
