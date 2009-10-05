@@ -1,3 +1,9 @@
+2009-10-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41479
+	* trans-decl.c (init_intent_out_dt): Call gfc_init_default_dt
+	for all derived types with initializers.
+
 2009-10-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41515

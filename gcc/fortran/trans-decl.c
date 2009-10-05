@@ -2607,7 +2607,7 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 	&& !f->sym->attr.pointer
 	&& f->sym->ts.type == BT_DERIVED)
       {
-	if (f->sym->ts.derived->attr.alloc_comp)
+	if (f->sym->ts.derived->attr.alloc_comp && !f->sym->value)
 	  {
 	    tmp = gfc_deallocate_alloc_comp (f->sym->ts.derived,
 					     f->sym->backend_decl,
@@ -2619,9 +2619,7 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 
 	    gfc_add_expr_to_block (&fnblock, tmp);
 	  }
-
-	if (!f->sym->ts.derived->attr.alloc_comp
-	      && f->sym->value)
+	else if (f->sym->value)
 	  body = gfc_init_default_dt (f->sym, body);
       }
 
