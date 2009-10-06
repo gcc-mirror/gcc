@@ -3459,6 +3459,15 @@ package body Sem_Prag is
                else
                   Set_Imported (Def_Id);
 
+                  if Is_Subprogram (Def_Id)
+                    and then Is_Abstract_Subprogram (Def_Id)
+                  then
+                     Error_Msg_Sloc := Sloc (Def_Id);
+                     Error_Msg_NE
+                       ("cannot import abstract subprogram& declared#",
+                        Arg2, Def_Id);
+                  end if;
+
                   --  Special processing for Convention_Intrinsic
 
                   if C = Convention_Intrinsic then
