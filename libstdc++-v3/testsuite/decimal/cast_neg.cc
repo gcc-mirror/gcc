@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-require-effective-target-dfp }
+// { dg-require-effective-target dfp }
 
 // ISO/IEC TR 24733 doesn't say explicitly that the conversion from a
 // decimal floating-point type to a generic float type is prohibited but

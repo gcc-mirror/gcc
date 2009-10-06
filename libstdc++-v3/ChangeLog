@@ -1,3 +1,22 @@
+2009-10-06  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/decimal/binary-arith.cc: Fix directive to skip test.
+	* testsuite/decimal/cast_neg.cc: Ditto.
+	* testsuite/decimal/comparison.cc: Ditto.
+	* testsuite/decimal/compound-assignment.cc: Ditto.
+	* testsuite/decimal/compound-assignment-memfunc.cc: Ditto.
+	* testsuite/decimal/conversion-from-float.cc: Ditto.
+	* testsuite/decimal/conversion-from-integral.cc: Ditto.
+	* testsuite/decimal/conversion-to-generic-float.cc: Ditto.
+	* testsuite/decimal/conversion-to-integral.cc: Ditto.
+	* testsuite/decimal/ctor.cc: Ditto.
+	* testsuite/decimal/incdec.cc: Ditto.
+	* testsuite/decimal/incdec-memfunc.cc: Ditto.
+	* testsuite/decimal/make-decimal.cc: Ditto.
+	* testsuite/decimal/mixed-mode_neg.cc: Ditto.
+	* testsuite/decimal/operator_neg.cc: Ditto.
+	* testsuite/decimal/unary-arith.cc: Ditto.
+
 2009-10-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/html/*: Regenerate.

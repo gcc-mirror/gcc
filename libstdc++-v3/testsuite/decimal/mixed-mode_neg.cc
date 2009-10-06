@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-require-effective-target-dfp }
+// { dg-require-effective-target dfp }
 
 // Test that binary operators do not accept mixed decimal and generic
 // floating-point operands.  This isn't explicity prohibited in
