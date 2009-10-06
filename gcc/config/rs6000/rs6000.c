@@ -797,6 +797,25 @@ struct processor_costs power7_cost = {
   12,			/* prefetch streams */
 };
 
+/* Instruction costs on POWER A2 processors.  */
+static const
+struct processor_costs ppca2_cost = {
+  COSTS_N_INSNS (16),    /* mulsi */
+  COSTS_N_INSNS (16),    /* mulsi_const */
+  COSTS_N_INSNS (16),    /* mulsi_const9 */
+  COSTS_N_INSNS (16),   /* muldi */
+  COSTS_N_INSNS (22),   /* divsi */
+  COSTS_N_INSNS (28),   /* divdi */
+  COSTS_N_INSNS (3),    /* fp */
+  COSTS_N_INSNS (3),    /* dmul */
+  COSTS_N_INSNS (59),   /* sdiv */
+  COSTS_N_INSNS (72),   /* ddiv */
+  64,
+  16,			/* l1 cache */
+  2048,			/* l2 cache */
+  16,			/* prefetch streams */
+};
+
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
 static const char *rs6000_invalid_within_doloop (const_rtx);
@@ -2149,6 +2168,9 @@ rs6000_override_options (const char *default_cpu)
 	 /* 8548 has a dummy entry for now.  */
 	 {"8548", PROCESSOR_PPC8540, POWERPC_BASE_MASK | MASK_STRICT_ALIGN
 	  | MASK_ISEL},
+ 	 {"a2", PROCESSOR_PPCA2,
+ 	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_POPCNTB
+ 	  | MASK_CMPB | MASK_NO_UPDATE },
 	 {"e300c2", PROCESSOR_PPCE300C2, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
 	 {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT
@@ -2216,7 +2238,7 @@ rs6000_override_options (const char *default_cpu)
 		     | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
 		     | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_MULHW
 		     | MASK_DLMZB | MASK_CMPB | MASK_MFPGPR | MASK_DFP
-		     | MASK_POPCNTD | MASK_VSX | MASK_ISEL)
+		     | MASK_POPCNTD | MASK_VSX | MASK_ISEL | MASK_NO_UPDATE)
   };
 
   /* Set the pointer size.  */
@@ -2495,6 +2517,7 @@ rs6000_override_options (const char *default_cpu)
 			&& rs6000_cpu != PROCESSOR_POWER5
 			&& rs6000_cpu != PROCESSOR_POWER6
 			&& rs6000_cpu != PROCESSOR_POWER7
+			&& rs6000_cpu != PROCESSOR_PPCA2
 			&& rs6000_cpu != PROCESSOR_CELL);
   rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
 			 || rs6000_cpu == PROCESSOR_POWER5
@@ -2711,6 +2734,10 @@ rs6000_override_options (const char *default_cpu)
 
       case PROCESSOR_POWER7:
 	rs6000_cost = &power7_cost;
+	break;
+
+      case PROCESSOR_PPCA2:
+	rs6000_cost = &ppca2_cost;
 	break;
 
       default:

@@ -1,3 +1,19 @@
+2009-10-07  Ben Elliston  <bje@au.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Handle a2.
+	* config/rs6000/rs6000.md (cpu): Add ppca2.  Include "a2.md".
+	* config/rs6000/a2.md: New file.
+	* config/rs6000/rs6000.opt (mno-update): New.
+	(mupdate): Return to using a mask, not a var.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add support for a2.
+	(enum processor_type): Add PROCESSOR_PPCA2.
+	* config/rs6000/rs6000.c (ppca2_cost): New costs.
+	(rs6000_override_options): Add "a2" to processor_target_table.
+	Update rs6000_always_hint logic.  Correctly set rs6000_cost for
+	a2.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mcpu=a2.
+
 2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (float<SSEMODEI24:mode><X87MODEF:mode>2):
