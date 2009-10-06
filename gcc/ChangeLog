@@ -1,3 +1,8 @@
+2009-10-06  Ryan Mansfield  <rmansfield@qnx.com>
+
+	PR driver/41217
+	* gcc.c (process_command): Check that -o argument was specified.
+
 2009-10-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* gimple.c (gimple_type_hash): Use CONST_CAST_TREE to fix

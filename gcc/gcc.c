@@ -4187,7 +4187,10 @@ process_command (int argc, const char **argv)
 		argv[i] = convert_filename (argv[i], ! have_c, 0);
 #endif
 	      /* Save the output name in case -save-temps=obj was used.  */
-	      save_temps_prefix = xstrdup ((p[1] == 0) ? argv[i + 1] : argv[i] + 1);
+	      if ((p[1] == 0) && argv[i + 1])
+		save_temps_prefix = xstrdup(argv[i + 1]);
+	      else
+		save_temps_prefix = xstrdup(argv[i] + 1);
 	      goto normal_switch;
 
 	    default:
