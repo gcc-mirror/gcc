@@ -155,8 +155,12 @@ mvectorize-builtins
 Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1)
 ; Explicitly control whether we vectorize the builtins or not.
 
+mno-update
+Target Report RejectNegative Mask(NO_UPDATE)
+Do not generate load/store with update instructions
+
 mupdate
-Target Report Var(TARGET_UPDATE) Init(1)
+Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE)
 Generate load/store with update instructions
 
 mavoid-indexed-addresses
