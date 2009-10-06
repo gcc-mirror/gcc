@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-require-effective-target-dfp }
+// { dg-require-effective-target dfp }
 
 // Test that C++ binary operators that are restricted to integer operands
 // do not accept decimal float operands.
