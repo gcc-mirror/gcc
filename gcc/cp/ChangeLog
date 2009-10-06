@@ -1,3 +1,22 @@
+2009-10-06  Jason Merrill  <jason@redhat.com>
+
+	Fix lookup of initialized captures in unevaluated context.
+	* cp-tree.h (DECL_NORMAL_CAPTURE_P): New.
+	* name-lookup.c (qualify_lookup): Check it.
+	* parser.c (cp_parser_lambda_introducer): Pass explicit_init_p
+	to add_capture.
+	* semantics.c (add_capture): Set DECL_NORMAL_CAPTURE_P
+	on captures without explicit init.
+	(add_default_capture): Pass explicit_init_p.
+
+	Fix capture by copy of types with explicit copy constructor.
+	* cp-tree.h (TARGET_EXPR_DIRECT_INIT_P): New.
+	(DIRECT_INIT_EXPR_P): New.
+	* typeck.c (convert_for_initialization): Just return if
+	DIRECT_INIT_EXPR_P.
+	* semantics.c (build_lambda_object): Use
+	TARGET_EXPR_DIRECT_INIT_P for normal captures.
+
 2009-10-05  Jason Merrill  <jason@redhat.com>
 
 	* parser.c: Mark lambda_scope and lambda_count for PCH.

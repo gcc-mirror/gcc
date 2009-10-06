@@ -1,3 +1,8 @@
+2009-10-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-init.C: New.
+	* g++.dg/cpp0x/lambda/lambda-direct-init.C: New.
+
 2009-10-06  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41502

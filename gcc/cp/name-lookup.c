@@ -3757,10 +3757,9 @@ qualify_lookup (tree val, int flags)
     return true;
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return false;
-  /* In unevaluated context, look past capture fields.  */
-  /* FIXME this will cause trouble with the initializer extension.  */
+  /* In unevaluated context, look past normal capture fields.  */
   if (cp_unevaluated_operand && TREE_CODE (val) == FIELD_DECL
-      && LAMBDA_TYPE_P (DECL_CONTEXT (val)))
+      && DECL_NORMAL_CAPTURE_P (val))
     return false;
   return true;
 }
