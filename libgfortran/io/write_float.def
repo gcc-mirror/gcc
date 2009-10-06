@@ -141,6 +141,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   switch (ft)
     {
     case FMT_F:
+      if (d == 0 && e <= 0 && dtp->u.p.scale_factor == 0)
+	{
+	  memmove (digits + 1, digits, ndigits - 1);
+	  digits[0] = '0';
+	  e++;
+	}
+
       nbefore = e + dtp->u.p.scale_factor;
       if (nbefore < 0)
 	{
@@ -255,7 +262,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       case ROUND_NEAREST:
 	/* Round compatible unless there is a tie. A tie is a 5 with
 	   all trailing zero's.  */
-	i = nafter + 1;
+	i = nafter + nbefore;
 	if (digits[i] == '5')
 	  {
 	    for(i++ ; i < ndigits; i++)
@@ -264,7 +271,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 		  goto do_rnd;
 	      }
 	    /* It is a  tie so round to even.  */
-	    switch (digits[nafter])
+	    switch (digits[nafter + nbefore - 1])
 	      {
 		case '1':
 		case '3':
@@ -818,14 +825,6 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 	    return;\
 	  }\
 	tmp = sign_bit ? -tmp : tmp;\
-	if (f->u.real.d == 0 && f->format == FMT_F\
-	    && dtp->u.p.scale_factor == 0)\
-	  {\
-	    if (tmp < 0.5)\
-	      tmp = 0.0;\
-	    else if (tmp < 1.0)\
-	      tmp = 1.0;\
-	  }\
 	zero_flag = (tmp == 0.0);\
 \
 	DTOA ## y\
