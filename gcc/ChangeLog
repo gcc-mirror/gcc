@@ -1,3 +1,9 @@
+2009-10-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR lto/41591
+	* doc/invoke.texi (-flto,-fwhole-program): Make clear that the
+	-flto and -fwhole-program flags can be combined.
+
 2009-10-06  Ryan Mansfield  <rmansfield@qnx.com>
 
 	PR driver/41217

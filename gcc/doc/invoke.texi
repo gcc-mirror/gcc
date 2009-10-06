@@ -7105,9 +7105,10 @@ and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers.
 While this option is equivalent to proper use of the @code{static} keyword for
 programs consisting of a single file, in combination with option
-@option{--combine} this flag can be used to compile many smaller scale C
-programs since the functions and variables become local for the whole combined
-compilation unit, not for the single source file itself.
+@option{-combine}, @option{-flto} or @option{-fwhopr} this flag can be used to
+compile many smaller scale programs since the functions and variables become
+local for the whole combined compilation unit, not for the single source file
+itself.
 
 This option implies @option{-fwhole-file} for Fortran programs.
 
@@ -7244,6 +7245,13 @@ If you are not using @command{gold} and/or do not specify
 @option{-use-linker-plugin} then the objects inside @file{libfoo.a}
 will be extracted and linked as usual, but they will not participate
 in the LTO optimization process.
+
+Link time optimizations do not require the presence of the whole
+program to operate.  If the program does not require any symbols to
+be exported, it is possible to combine @option{-flto} and
+@option{-fwhopr} with @option{-fwhole-program} to allow the
+interprocedural optimizers to use more aggressive assumptions which
+may lead to improved optimization opportunities.
 
 Regarding portability: the current implementation of LTO makes no
 attempt at generating bytecode that can be ported between different
