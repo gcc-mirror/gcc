@@ -1,5 +1,10 @@
 2009-10-06  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/41383
+	* a-rttiev.adb (Time_Of_Event): Return Time_First for unset event.
+
+2009-10-06  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/38333
 	* sem_prag.adb (Process_Import_Or_Interface): Forbid an abstract
 	subprogram to be completed with a "pragma Import".

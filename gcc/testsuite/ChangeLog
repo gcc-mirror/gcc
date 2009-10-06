@@ -1,5 +1,10 @@
 2009-10-06  Samuel Tardieu  <sam@rfc1149.net>
 
+	PR ada/41383
+	* gnat.dg/timer_cancel.adb: New test.
+
+2009-10-06  Samuel Tardieu  <sam@rfc1149.net>
+
 	PR ada/38333
 	* gnat.dg/specs/import_abstract.ads: New.
 
