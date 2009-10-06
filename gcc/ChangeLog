@@ -1,3 +1,41 @@
+2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI48, SDWI, DWI): New mode iterators.
+	(DWIH, g, di, doubleint_general_operand): New mode attributes.
+	(general_operand): Handle TI mode.
+	(add<mode>3): Macroize expander from add{qi,hi,si,di,ti}3 patterns
+	using SDWI mode iterator.
+	(*add<mode>3_doubleword): New insn_and_split pattern.  Macroize
+	pattern from *add{di,ti}3_1 patterns and corresponding splitters
+	using SDWI mode iterator.
+	(add<mode>3_carry): Macroize insn from add{qi,hi,si,di}3_carry
+	patterns using SWI mode iterator.
+	(*add<mode>3_cc): Macroize insn from add{si,di}3_cc patterns
+	using SWI48 mode iterator.
+	(*add<mode>_1): Ditto from add{si,di}_1 patterns.
+	(*add<mode>_2): Ditto from add{si,di}_2 patterns.
+	(*add<mode>_3): Ditto from add{si,di}_3 patterns.
+	(*add<mode>_5): Ditto from add{si,di}_5 patterns.
+	(sub<mode>3): Macroize expander from sub{qi,hi,si,di,ti}3 patterns
+	using SDWI mode iterator.
+	(*sub<mode>3_doubleword): New insn_and_split pattern.  Macroize
+	pattern from *sub{di,ti}3_1 patterns and corresponding splitters
+	using SDWI mode iterator.
+	(sub<mode>3_carry): Macroize insn from sub{qi,hi,si,di}3_carry
+	patterns using SWI mode iterator.
+	(*sub<mode>_1): Ditto from from sub{qi,hi,si,di}_1 patterns.
+	(*sub<mode>_2): Ditto from sub{qi,hi,si,di}_2 patterns.
+	(*sub<mode>_3): Ditto from sub{qi,hi,si,di}_3 patterns.
+	(<plusminus_insn>xf3): Macroize expander from addxf3 and subxf3
+	patterns using plusminus code iterator.
+	(<plusminus_insn><mode>3): Macroize expander from add<mode>3 and
+	sub<mode>3 patterns using plusminus code iterator.
+	* config/i386/i386.c (override_options): Update call to
+	gen_subdi_carry_rex64 for renamed function.
+	(ix86_expand_int_addcc): Update calls to gen_subdi3_carry_rex64
+	and gen_adddi3_carry_rex64 for renamed functions.  Use indirect
+	calls to instruction expanders.
+
 2009-10-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR bootstrap/41395
@@ -215,8 +253,8 @@
 
 2009-10-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/arm.c (arm_override_options): Really initialize
-        flag_dwarf2_cfi_asm to 0.
+	* config/arm/arm.c (arm_override_options): Really initialize
+	flag_dwarf2_cfi_asm to 0.
 
 2009-10-05  Doug Kwan  <dougkwan@google.com>
 

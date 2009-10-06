@@ -3394,7 +3394,7 @@ override_options (bool main_args_p)
       ix86_gen_pop1 = gen_popdi1;
       ix86_gen_add3 = gen_adddi3;
       ix86_gen_sub3 = gen_subdi3;
-      ix86_gen_sub3_carry = gen_subdi3_carry_rex64;
+      ix86_gen_sub3_carry = gen_subdi3_carry;
       ix86_gen_one_cmpl2 = gen_one_cmpldi2;
       ix86_gen_monitor = gen_sse3_monitor64;
       ix86_gen_andsp = gen_anddi3;
@@ -16171,6 +16171,7 @@ int
 ix86_expand_int_addcc (rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[1]);
+  rtx (*insn)(rtx, rtx, rtx, rtx);
   rtx compare_op;
   rtx val = const0_rtx;
   bool fpcmp = false;
@@ -16211,16 +16212,16 @@ ix86_expand_int_addcc (rtx operands[])
       switch (GET_MODE (operands[0]))
 	{
 	  case QImode:
-            emit_insn (gen_subqi3_carry (operands[0], operands[2], val, compare_op));
+	    insn = gen_subqi3_carry;
 	    break;
 	  case HImode:
-            emit_insn (gen_subhi3_carry (operands[0], operands[2], val, compare_op));
+	    insn = gen_subhi3_carry;
 	    break;
 	  case SImode:
-            emit_insn (gen_subsi3_carry (operands[0], operands[2], val, compare_op));
+	    insn = gen_subsi3_carry;
 	    break;
 	  case DImode:
-            emit_insn (gen_subdi3_carry_rex64 (operands[0], operands[2], val, compare_op));
+	    insn = gen_subdi3_carry;
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -16231,21 +16232,23 @@ ix86_expand_int_addcc (rtx operands[])
       switch (GET_MODE (operands[0]))
 	{
 	  case QImode:
-            emit_insn (gen_addqi3_carry (operands[0], operands[2], val, compare_op));
+	    insn = gen_addqi3_carry;
 	    break;
 	  case HImode:
-            emit_insn (gen_addhi3_carry (operands[0], operands[2], val, compare_op));
+	    insn = gen_addhi3_carry;
 	    break;
 	  case SImode:
-            emit_insn (gen_addsi3_carry (operands[0], operands[2], val, compare_op));
+	    insn = gen_addsi3_carry;
 	    break;
 	  case DImode:
-            emit_insn (gen_adddi3_carry_rex64 (operands[0], operands[2], val, compare_op));
+	    insn = gen_adddi3_carry;
 	    break;
 	  default:
 	    gcc_unreachable ();
 	}
     }
+  emit_insn (insn (operands[0], operands[2], val, compare_op));
+
   return 1; /* DONE */
 }
 
