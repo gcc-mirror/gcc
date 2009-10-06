@@ -3767,6 +3767,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 static hashval_t
 gimple_type_hash (const void *p)
 {
+  const_tree t = (const_tree) p;
   VEC(tree, heap) *sccstack = NULL;
   struct pointer_map_t *sccstate;
   struct obstack sccstate_obstack;
@@ -3783,7 +3784,7 @@ gimple_type_hash (const void *p)
   next_dfs_num = 1;
   sccstate = pointer_map_create ();
   gcc_obstack_init (&sccstate_obstack);
-  val = iterative_hash_gimple_type (CONST_CAST2 (tree, const void *, p), 0,
+  val = iterative_hash_gimple_type (CONST_CAST_TREE (t), 0,
 				    &sccstack, sccstate, &sccstate_obstack);
   VEC_free (tree, heap, sccstack);
   pointer_map_destroy (sccstate);
