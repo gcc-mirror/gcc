@@ -66,7 +66,7 @@ lto_symtab_entry_hash (const void *p)
 {
   const struct lto_symtab_entry_def *base =
     (const struct lto_symtab_entry_def *) p;
-  return htab_hash_pointer (base->id);
+  return htab_hash_string (IDENTIFIER_POINTER (base->id));
 }
 
 /* Return non-zero if P1 and P2 points to lto_symtab_entry_def structs

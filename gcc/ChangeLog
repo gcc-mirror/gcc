@@ -1,3 +1,7 @@
+2009-10-06  Richard Guenther  <rguenther@suse.de>
+
+	* lto-symtab.c (lto_symtab_entry_hash): Hash strings, not pointers.
+
 2009-10-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR lto/41591
