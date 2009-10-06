@@ -1,13 +1,19 @@
 2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (SWI48, SDWI, DWI): New mode iterators.
+	* config/i386/i386.md (float<SSEMODEI24:mode><X87MODEF:mode>2):
+	Use explicit gen_truncxfsf2 and gen_truncxfdf2 references to avoid
+	reference to nonexistent gen_truncxfxf2 function.
+
+2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI48, SDWIM, DWI): New mode iterators.
 	(DWIH, g, di, doubleint_general_operand): New mode attributes.
 	(general_operand): Handle TI mode.
 	(add<mode>3): Macroize expander from add{qi,hi,si,di,ti}3 patterns
-	using SDWI mode iterator.
+	using SDWIM mode iterator.
 	(*add<mode>3_doubleword): New insn_and_split pattern.  Macroize
 	pattern from *add{di,ti}3_1 patterns and corresponding splitters
-	using SDWI mode iterator.
+	using DWI mode iterator.
 	(add<mode>3_carry): Macroize insn from add{qi,hi,si,di}3_carry
 	patterns using SWI mode iterator.
 	(*add<mode>3_cc): Macroize insn from add{si,di}3_cc patterns
@@ -17,10 +23,10 @@
 	(*add<mode>_3): Ditto from add{si,di}_3 patterns.
 	(*add<mode>_5): Ditto from add{si,di}_5 patterns.
 	(sub<mode>3): Macroize expander from sub{qi,hi,si,di,ti}3 patterns
-	using SDWI mode iterator.
+	using SDWIM mode iterator.
 	(*sub<mode>3_doubleword): New insn_and_split pattern.  Macroize
 	pattern from *sub{di,ti}3_1 patterns and corresponding splitters
-	using SDWI mode iterator.
+	using DWI mode iterator.
 	(sub<mode>3_carry): Macroize insn from sub{qi,hi,si,di}3_carry
 	patterns using SWI mode iterator.
 	(*sub<mode>_1): Ditto from from sub{qi,hi,si,di}_1 patterns.
@@ -268,7 +274,7 @@
 	    Richard Guenther  <rguenther@suse.de>
 	    Jan Hubicka  <jh@suse.cz>
 	    Doug Kwan <dougkwan@google.com>
-	    H.J. Lu  <hongjiu.lu@intel.com> 
+	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Bill Maddox  <maddox@google.com>
 	    Ryan Mansfield  <rmansfield@qnx.com>
 	    Diego Novillo  <dnovillo@google.com>
@@ -804,23 +810,24 @@
 
 2009-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (divmod<mode>4) Macroize expander from
-	divmoddi4, divmodsi4 and divmodhi4 patterns using SWI248 macro.
+	* config/i386/i386.md (SWIM248): New mode iterator.
+	(divmod<mode>4) Macroize expander from divmoddi4, divmodsi4 and
+	divmodhi4 patterns using SWIM248 macro.
 	(*divmod<mode>4): Macroize insn_and_split pattern from
 	*divmoddi4_cltd_rex64, *divmodsi4_cltd and divmodhi4 insn patterns
-	and their corresponding splitters usign SWI248 macro.  Split SImode
+	and their corresponding splitters usign SWIM248 macro.  Split SImode
 	insn to generate cltd and DImode insn to generate cqto instead of
 	move+shift when optimizing for size or TARGET_USE_CLTD is in effect.
 	(*divmoddi4_nocltd_rex64, *divmodsi4_nocltd): Remove insn patterns.
 	(*divmod<mode>4_noext): Macroize insn from *divmoddi_noext_rex64 and
-	*divmodsi_noext patterns using SWI248 macro.
+	*divmodsi_noext patterns using SWIM248 macro.
 	(udivmod<mode>4): Macroize expander from udivmoddi4, udivmodsi4 and
-	udivmodhi4 patterns using SWI248 macro.
+	udivmodhi4 patterns using SWIM248 macro.
 	(*udivmod<mode>4): Macroize insn_and_split pattern from
 	*udivmoddi4, udivmodsi4 and udivmodhi4 patterns and their
-	corresponding splitters using SWI248 macro.
+	corresponding splitters using SWIM248 macro.
 	(*udivmod<mode>4_noext): Macroize insn from *udivmoddi4_noext,
-	*udivmodsi4_noext and *udivmodhi_noext patterns using SWI248 macro.
+	*udivmodsi4_noext and *udivmodhi_noext patterns using SWIM248 macro.
 
 2009-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
