@@ -1,5 +1,9 @@
 2009-10-07  Ben Elliston  <bje@au.ibm.com>
 
+	* config/rs6000/a2.md: Remove duplicated lines.
+
+2009-10-07  Ben Elliston  <bje@au.ibm.com>
+
 	* config.gcc (powerpc*-*-*): Handle a2.
 	* config/rs6000/rs6000.md (cpu): Add ppca2.  Include "a2.md".
 	* config/rs6000/a2.md: New file.
