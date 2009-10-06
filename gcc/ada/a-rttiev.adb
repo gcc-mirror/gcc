@@ -332,7 +332,13 @@ package body Ada.Real_Time.Timing_Events is
 
    function Time_Of_Event (Event : Timing_Event) return Time is
    begin
-      return Event.Timeout;
+      --  RM D.15(18/2): Time_First must be returned if the event is not set
+
+      if Event.Handler = null then
+         return Time_First;
+      else
+         return Event.Timeout;
+      end if;
    end Time_Of_Event;
 
    --------------
