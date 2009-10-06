@@ -6893,6 +6893,11 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 
   type = complete_type (type);
 
+  if (DIRECT_INIT_EXPR_P (type, rhs))
+    /* Don't try to do copy-initialization if we already have
+       direct-initialization.  */
+    return rhs;
+
   if (MAYBE_CLASS_TYPE_P (type))
     return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 

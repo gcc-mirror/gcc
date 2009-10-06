@@ -7125,6 +7125,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       tree capture_id;
       tree capture_init_expr;
       cp_id_kind idk = CP_ID_KIND_NONE;
+      bool explicit_init_p = false;
 
       enum capture_kind_type
       {
@@ -7151,7 +7152,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  add_capture (lambda_expr,
 		       /*id=*/get_identifier ("__this"),
 		       /*initializer=*/finish_this_expr(),
-		       /*by_reference_p=*/false);
+		       /*by_reference_p=*/false,
+		       explicit_init_p);
 	  continue;
 	}
 
@@ -7190,6 +7192,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  capture_init_expr = cp_parser_assignment_expression (parser,
 							       /*cast_p=*/true,
 							       &idk);
+	  explicit_init_p = true;
 	}
       else
 	{
@@ -7231,7 +7234,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       add_capture (lambda_expr,
 		   capture_id,
 		   capture_init_expr,
-		   /*by_reference_p=*/capture_kind == BY_REFERENCE);
+		   /*by_reference_p=*/capture_kind == BY_REFERENCE,
+		   explicit_init_p);
     }
 
   cp_parser_require (parser, CPP_CLOSE_SQUARE, "%<]%>");
