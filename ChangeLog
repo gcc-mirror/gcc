@@ -9,9 +9,9 @@
 	(LTO plugin): List Rafael Avila de Espindola and Cary Coutant
 	as reviewers.
 
-2009-10-07  Hariharan Sandanagobalane <hariharan@picochip.com>
+2009-10-07  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
-	* config.sub : Update from upstream sources.
+	* config.sub: Update from upstream sources.
 
 2009-10-06  Ian Lance Taylor  <iant@google.com>
 
