@@ -1,3 +1,7 @@
+2009-10-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto.c: Only include <sys/mman.h> if HAVE_MMAP_FILE.
+
 2009-10-07  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Mark functions neccesary only at

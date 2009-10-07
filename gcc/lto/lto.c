@@ -46,7 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 /* This needs to be included after config.h.  Otherwise, _GNU_SOURCE will not
    be defined in time to set __USE_GNU in the system headers, and strsignal
    will not be declared.  */
+#if HAVE_MMAP_FILE
 #include <sys/mman.h>
+#endif
 
 DEF_VEC_P(bitmap);
 DEF_VEC_ALLOC_P(bitmap,heap);
