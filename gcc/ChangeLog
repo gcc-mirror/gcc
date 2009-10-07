@@ -1,3 +1,8 @@
+2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*lea_1_rex64, *lea_1, *lea_1_zext,
+	*lea_2_rex64): Move before *add<mode>_1 pattern.
+
 2009-10-07  Jan Hubicka  <jh@suse.cz>
 
 	* collect2.c (main): Add -fno-whole-program.
@@ -87,7 +92,7 @@
 	(maybe_add_dllexport) New function.
 	(i386_pe_adjust_class_at_definition): Use it to propagate dllexport
 	to class members.
-	
+
 2009-10-07  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/a2.md: Remove duplicated lines.
