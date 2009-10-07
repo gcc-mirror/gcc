@@ -500,7 +500,7 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
   for (use = 0; use < recog_data.n_operands; use++)
     {
       if (use == def || recog_data.operand_type[use] == OP_OUT)
-	return;
+	continue;
       
       if (recog_op_alt[use][alt].anything_ok)
 	use_cl = ALL_REGS;
@@ -513,7 +513,7 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
       if ((use_match = recog_op_alt[use][alt].matches) >= 0)
 	{
 	  if (use_match == def)
-	    return;
+	    continue;
 	  
 	  if (recog_op_alt[use_match][alt].anything_ok)
 	    use_cl = ALL_REGS;
