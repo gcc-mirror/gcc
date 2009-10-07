@@ -223,7 +223,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       /* We may eliminate the need for out-of-line copy to be output.
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
-	  && !e->callee->needed
+	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
 	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
@@ -233,6 +233,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	      nfunctions_inlined++;
 	    }
 	  duplicate = false;
+	  e->callee->local.externally_visible = false;
 	}
       else
 	{
@@ -286,7 +287,7 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
   e->callee->global.inlined = true;
 
   if (e->callee->callers->next_caller
-      || e->callee->needed)
+      || !cgraph_can_remove_if_no_direct_calls_p (e->callee))
     duplicate = true;
   cgraph_clone_inlined_nodes (e, true, update_original);
 
@@ -368,7 +369,8 @@ cgraph_estimate_growth (struct cgraph_node *node)
      we decide to not inline for different reasons, but it is not big deal
      as in that case we will keep the body around, but we will also avoid
      some inlining.  */
-  if (!node->needed && !DECL_EXTERNAL (node->decl) && !self_recursive)
+  if (cgraph_only_called_directly_p (node)
+      && !DECL_EXTERNAL (node->decl) && !self_recursive)
     growth -= node->global.size;
 
   node->global.estimated_growth = growth;
@@ -1226,7 +1228,7 @@ cgraph_decide_inlining (void)
 
 	  if (node->callers
 	      && !node->callers->next_caller
-	      && !node->needed
+	      && cgraph_only_called_directly_p (node)
 	      && node->local.inlinable
 	      && node->callers->inline_failed
 	      && node->callers->caller != node
