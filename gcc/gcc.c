@@ -4636,11 +4636,6 @@ set_collect_gcc_options (void)
       if ((switches[i].live_cond & SWITCH_IGNORE) != 0)
 	continue;
 
-      /* Don't use -fwhole-program when compiling the init and fini routines,
-	 since we'd wrongly assume that the routines aren't needed.  */
-      if (strcmp (switches[i].part1, "fwhole-program") == 0)
-	continue;
-
       obstack_grow (&collect_obstack, "'-", 2);
       q = switches[i].part1;
       while ((p = strchr (q, '\'')))
