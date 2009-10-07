@@ -1,5 +1,9 @@
 2009-10-07  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/variadic95.C: New.
+
+2009-10-07  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/template/scope3.C: New.
 
 2009-10-07  Jakub Jelinek  <jakub@redhat.com>

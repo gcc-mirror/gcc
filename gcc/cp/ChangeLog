@@ -1,5 +1,9 @@
 2009-10-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39863
+	* pt.c (tsubst_pack_expansion): Don't do anything now if we
+	have incomplete packs of different lengths.
+
 	PR c++/41038
 	* tree.c (build_qualified_name): Call convert_from_reference.
 
