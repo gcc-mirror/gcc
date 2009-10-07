@@ -6661,8 +6661,15 @@ resolve_select_type (gfc_code *code)
   gfc_case *c, *default_case;
   gfc_symtree *st;
   char name[GFC_MAX_SYMBOL_LEN];
+  gfc_namespace *ns;
 
-  selector_type = code->expr1->ts.u.derived->components->ts.u.derived;
+  ns = code->ext.ns;
+  gfc_resolve (ns);
+
+  if (code->expr2)
+    selector_type = code->expr2->ts.u.derived->components->ts.u.derived;
+  else
+    selector_type = code->expr1->ts.u.derived->components->ts.u.derived;
 
   /* Assume there is no DEFAULT case.  */
   default_case = NULL;
@@ -6704,6 +6711,32 @@ resolve_select_type (gfc_code *code)
 	}
     }
 
+  if (code->expr2)
+    {
+      /* Insert assignment for selector variable.  */
+      new_st = gfc_get_code ();
+      new_st->op = EXEC_ASSIGN;
+      new_st->expr1 = gfc_copy_expr (code->expr1);
+      new_st->expr2 = gfc_copy_expr (code->expr2);
+      ns->code = new_st;
+    }
+
+  /* Put SELECT TYPE statement inside a BLOCK.  */
+  new_st = gfc_get_code ();
+  new_st->op = code->op;
+  new_st->expr1 = code->expr1;
+  new_st->expr2 = code->expr2;
+  new_st->block = code->block;
+  if (!ns->code)
+    ns->code = new_st;
+  else
+    ns->code->next = new_st;
+  code->op = EXEC_BLOCK;
+  code->expr1 = code->expr2 =  NULL;
+  code->block = NULL;
+
+  code = new_st;
+
   /* Transform to EXEC_SELECT.  */
   code->op = EXEC_SELECT;
   gfc_add_component_ref (code->expr1, "$vindex");
@@ -6723,7 +6756,7 @@ resolve_select_type (gfc_code *code)
 	continue;
       /* Assign temporary to selector.  */
       sprintf (name, "tmp$%s", c->ts.u.derived->name);
-      st = gfc_find_symtree (code->expr1->symtree->n.sym->ns->sym_root, name);
+      st = gfc_find_symtree (ns->sym_root, name);
       new_st = gfc_get_code ();
       new_st->op = EXEC_POINTER_ASSIGN;
       new_st->expr1 = gfc_get_variable_expr (st);
@@ -7669,9 +7702,6 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (t == FAILURE)
 	    break;
 
-	  if (code->expr1->ts.type == BT_CLASS)
-	    resolve_class_assign (code);
-
 	  if (resolve_ordinary_assign (code, ns))
 	    {
 	      if (code->op == EXEC_COMPCALL)
@@ -7679,6 +7709,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	      else
 		goto call;
 	    }
+
+	  if (code->expr1->ts.type == BT_CLASS)
+	    resolve_class_assign (code);
 
 	  break;
 
@@ -7700,10 +7733,10 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (t == FAILURE)
 	    break;
 
+	  gfc_check_pointer_assign (code->expr1, code->expr2);
+
 	  if (code->expr1->ts.type == BT_CLASS)
 	    resolve_class_assign (code);
-
-	  gfc_check_pointer_assign (code->expr1, code->expr2);
 
 	  break;
 

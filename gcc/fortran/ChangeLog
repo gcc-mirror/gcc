@@ -1,3 +1,23 @@
+2009-10-07  Janus Weil  <janus@gcc.gnu.org>
+
+	* expr.c (gfc_check_pointer_assign): Do the correct type checking when
+	CLASS variables are involved.
+	* match.c (gfc_match_select_type): Parse associate-name in SELECT TYPE
+	statements, and set up a local namespace for the SELECT TYPE block.
+	* parse.h (gfc_build_block_ns): New prototype.
+	* parse.c (parse_select_type_block): Return from local namespace to its
+	parent after SELECT TYPE block.
+	(gfc_build_block_ns): New function for setting up the local namespace
+	for a BLOCK construct.
+	(parse_block_construct): Use gfc_build_block_ns.
+	* resolve.c (resolve_select_type): Insert assignment for the selector
+	variable, in case an associate-name is given, and put the SELECT TYPE
+	statement inside a BLOCK.
+	(resolve_code): Call resolve_class_assign after checking the assignment.
+	* symbol.c (gfc_find_sym_tree): Moved some code here from
+	gfc_get_ha_sym_tree.
+	(gfc_get_ha_sym_tree): Moved some code to gfc_find_sym_tree.
+
 2009-10-07  Paul Thomas <pault@gcc.gnu.org>
 
         PR fortran/41613

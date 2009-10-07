@@ -30,8 +30,8 @@
 
   type is (t1)  ! { dg-error "Unexpected TYPE IS statement" }
 
-  select type (3.5)  ! { dg-error "Selector must be a named variable" }
-  select type (a%cp) ! { dg-error "Selector must be a named variable" }
+  select type (3.5)  ! { dg-error "is not a named variable" }
+  select type (a%cp) ! { dg-error "is not a named variable" }
   select type (b)    ! { dg-error "Selector shall be polymorphic" }
 
   select type (a)

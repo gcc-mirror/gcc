@@ -4026,41 +4026,51 @@ gfc_match_select (void)
 match
 gfc_match_select_type (void)
 {
-  gfc_expr *expr;
+  gfc_expr *expr1, *expr2 = NULL;
   match m;
+  char name[GFC_MAX_SYMBOL_LEN];
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
     return m;
 
-  m = gfc_match (" select type ( %e ", &expr);
+  m = gfc_match (" select type ( ");
   if (m != MATCH_YES)
     return m;
 
-  /* TODO: Implement ASSOCIATE.  */
-  m = gfc_match (" => ");
+  gfc_current_ns = gfc_build_block_ns (gfc_current_ns);
+
+  m = gfc_match (" %n => %e", name, &expr2);
   if (m == MATCH_YES)
     {
-      gfc_error ("Associate-name in SELECT TYPE statement at %C "
-		 "is not yet supported");
-      return MATCH_ERROR;
+      expr1 = gfc_get_expr();
+      expr1->expr_type = EXPR_VARIABLE;
+      if (gfc_get_sym_tree (name, NULL, &expr1->symtree, false))
+	return MATCH_ERROR;
+      expr1->symtree->n.sym->ts = expr2->ts;
+      expr1->symtree->n.sym->attr.referenced = 1;
+    }
+  else
+    {
+      m = gfc_match (" %e ", &expr1);
+      if (m != MATCH_YES)
+	return m;
     }
 
   m = gfc_match (" )%t");
   if (m != MATCH_YES)
     return m;
 
-  /* Check for F03:C811.
-     TODO: Change error message once ASSOCIATE is implemented.  */
-  if (expr->expr_type != EXPR_VARIABLE || expr->ref != NULL)
+  /* Check for F03:C811.  */
+  if (!expr2 && (expr1->expr_type != EXPR_VARIABLE || expr1->ref != NULL))
     {
-      gfc_error ("Selector must be a named variable in SELECT TYPE statement "
-		 "at %C");
+      gfc_error ("Selector in SELECT TYPE at %C is not a named variable; "
+		 "use associate-name=>");
       return MATCH_ERROR;
     }
 
   /* Check for F03:C813.  */
-  if (expr->ts.type != BT_CLASS)
+  if (expr1->ts.type != BT_CLASS && !(expr2 && expr2->ts.type == BT_CLASS))
     {
       gfc_error ("Selector shall be polymorphic in SELECT TYPE statement "
 		 "at %C");
@@ -4068,9 +4078,11 @@ gfc_match_select_type (void)
     }
 
   new_st.op = EXEC_SELECT_TYPE;
-  new_st.expr1 = expr;
+  new_st.expr1 = expr1;
+  new_st.expr2 = expr2;
+  new_st.ext.ns = gfc_current_ns;
 
-  type_selector = expr->symtree->n.sym;
+  type_selector = expr1->symtree->n.sym;
 
   return MATCH_YES;
 }
