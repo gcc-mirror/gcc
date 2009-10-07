@@ -1,3 +1,7 @@
+2009-10-06  Jerry Quinn  <jlquinn@optonline.net>
+
+	* Makefile.in (lto-wrapper): Use COMPILER and ALL_COMPILERFLAGS.
+	(lto-compress.o): Likewise.
 
 2009-10-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
