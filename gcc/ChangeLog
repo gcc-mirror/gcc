@@ -1,3 +1,8 @@
+2009-10-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/22072
+	* ira-lives.c (check_and_make_def_conflict): Process all operands.
+
 2009-10-06  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_node_can_be_local): Handle externally visible nodes
