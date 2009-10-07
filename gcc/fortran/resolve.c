@@ -367,15 +367,26 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
   /* Fortran 95 Draft Standard, page 51, Section 5.1.1.5, on the Character 
      type, lists the only ways a character length value of * can be used:
      dummy arguments of procedures, named constants, and function results
-     in external functions.  Internal function results are not on that list;
-     ergo, not permitted.  */
+     in external functions.  Internal function results and results of module
+     procedures are not on this list, ergo, not permitted.  */
 
   if (sym->result->ts.type == BT_CHARACTER)
     {
       gfc_charlen *cl = sym->result->ts.u.cl;
       if (!cl || !cl->length)
-	gfc_error ("Character-valued internal function '%s' at %L must "
-		   "not be assumed length", sym->name, &sym->declared_at);
+	{
+	  /* See if this is a module-procedure and adapt error message
+	     accordingly.  */
+	  bool module_proc;
+	  gcc_assert (ns->parent && ns->parent->proc_name);
+	  module_proc = (ns->parent->proc_name->attr.flavor == FL_MODULE);
+
+	  gfc_error ("Character-valued %s '%s' at %L must not be"
+		     " assumed length",
+		     module_proc ? _("module procedure")
+				 : _("internal function"),
+		     sym->name, &sym->declared_at);
+	}
     }
 }
 
