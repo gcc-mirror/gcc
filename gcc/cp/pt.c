@@ -1293,8 +1293,12 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
 		to the primary function; now copy the inline bits to
 		the various clones.  */
 	      FOR_EACH_CLONE (clone, fn)
-		DECL_DECLARED_INLINE_P (clone)
-		  = DECL_DECLARED_INLINE_P (fn);
+		{
+		  DECL_DECLARED_INLINE_P (clone)
+		    = DECL_DECLARED_INLINE_P (fn);
+		  DECL_SOURCE_LOCATION (clone)
+		    = DECL_SOURCE_LOCATION (fn);
+		}
 	      check_specialization_namespace (fn);
 
 	      return fn;
@@ -7571,6 +7575,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
             }
           else if (len != my_len)
             {
+	      if (incomplete)
+		/* We got explicit args for some packs but not others;
+		   do nothing now and try again after deduction.  */
+		return t;
               if (TREE_CODE (t) == TYPE_PACK_EXPANSION)
                 error ("mismatched argument pack lengths while expanding "
                        "%<%T%>",
