@@ -1,3 +1,10 @@
+2009-10-07  Richard Guenther  <rguenther@suse.de>
+
+	* MAINTAINERS (LTO): List Diego Novillo, Rafael Avila de Espindola,
+	and Richard Guenther as reviewers.
+	(LTO plugin): List Rafael Avila de Espindola and Cary Coutant
+	as reviewers.
+
 2009-10-07  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config.sub : Update from upstream sources.
