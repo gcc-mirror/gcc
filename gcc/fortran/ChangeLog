@@ -1,3 +1,8 @@
+2009-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* arith.c (arith_power): Use mpc_pow_z.
+	* gfortran.h (HAVE_mpc_pow_z): Define.
+
 2009-10-07  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/41615

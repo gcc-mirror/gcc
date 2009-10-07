@@ -1111,7 +1111,10 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
 	    case BT_COMPLEX:
 	      {
-#ifdef HAVE_mpc_pow
+#ifdef HAVE_mpc_pow_z
+		mpc_pow_z (result->value.complex, op1->value.complex,
+			   op2->value.integer, GFC_MPC_RND_MODE);
+#elif defined(HAVE_mpc_pow)
 		mpc_t apower;
 		gfc_set_model (mpc_realref (op1->value.complex));
 		mpc_init2 (apower, mpfr_get_default_prec());
