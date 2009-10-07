@@ -1,3 +1,8 @@
+2009-10-06  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.def: check-gold depends upon all-gas.
+	* Makefile.in: Rebuild.
+
 2009-10-05  Phil Muldoon  <pmuldoon@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -10,7 +15,6 @@
 	* Makefile.in: Regenerate.
 	* configure.ac (host_libs): Add lto-plugin.
 	* configure: Regenerate.
-
 
 2009-10-03  Diego Novillo  <dnovillo@google.com>
 

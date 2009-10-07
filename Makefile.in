@@ -56734,6 +56734,14 @@ check-stage3-gold: maybe-all-stage3-binutils
 check-stage4-gold: maybe-all-stage4-binutils
 check-stageprofile-gold: maybe-all-stageprofile-binutils
 check-stagefeedback-gold: maybe-all-stagefeedback-binutils
+check-gold: maybe-all-gas
+
+check-stage1-gold: maybe-all-stage1-gas
+check-stage2-gold: maybe-all-stage2-gas
+check-stage3-gold: maybe-all-stage3-gas
+check-stage4-gold: maybe-all-stage4-gas
+check-stageprofile-gold: maybe-all-stageprofile-gas
+check-stagefeedback-gold: maybe-all-stagefeedback-gas
 configure-opcodes: maybe-configure-intl
 
 configure-stage1-opcodes: maybe-configure-stage1-intl
