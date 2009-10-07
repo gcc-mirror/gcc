@@ -1,7 +1,6 @@
 /* Target support for C++ classes on Windows.
    Contributed by Danny Smith (dannysmith@users.sourceforge.net)
-   Copyright (C) 2005, 2007
-   Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "output.h"
 #include "tree.h"
-#include "cp/cp-tree.h" /* this is why we're a separate module */
+#include "cp/cp-tree.h" /* This is why we're a separate module.  */
 #include "flags.h"
 #include "tm_p.h"
 #include "toplev.h"
@@ -52,49 +51,44 @@ i386_pe_type_dllimport_p (tree decl)
 	  || DECL_TEMPLATE_INSTANTIATION (decl)
 	  || DECL_ARTIFICIAL (decl)))
     return false;
-
-
-  /* Don't mark defined functions as dllimport.  This code will only be
-     reached if we see a non-inline function defined out-of-class.  */
-  else if (TREE_CODE (decl) ==  FUNCTION_DECL
-	   && (DECL_INITIAL (decl)))
-    return false;
-
-  /*  Don't allow definitions of static data members in dllimport class,
-      If vtable data is marked as DECL_EXTERNAL, import it; otherwise just
-      ignore the class attribute.  */
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && TREE_STATIC (decl) && TREE_PUBLIC (decl)
-	   && !DECL_EXTERNAL (decl))
-    {
-      if (!DECL_VIRTUAL_P (decl))
-	  error ("definition of static data member %q+D of "
-	         "dllimport'd class", decl);
-      return false;
-    }
-
+  
+  /* Overrides of the class dllimport decls by out-of-class definitions are 
+     handled by tree.c:merge_dllimport_decl_attributes.   */
   return true;
 }
-
 
 bool
 i386_pe_type_dllexport_p (tree decl)
 {
-   gcc_assert (TREE_CODE (decl) == VAR_DECL 
-               || TREE_CODE (decl) == FUNCTION_DECL);
-   /* Avoid exporting compiler-generated default dtors and copy ctors.
-      The only artificial methods that need to be exported are virtual
-      and non-virtual thunks.  */
-   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
-       && DECL_ARTIFICIAL (decl) && !DECL_THUNK_P (decl))
-     return false;
-   return true;
+  gcc_assert (TREE_CODE (decl) == VAR_DECL 
+              || TREE_CODE (decl) == FUNCTION_DECL);
+
+  /* Avoid exporting compiler-generated default dtors and copy ctors.
+     The only artificial methods that need to be exported are virtual
+     and non-virtual thunks.  */
+  if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
+      && DECL_ARTIFICIAL (decl) && !DECL_THUNK_P (decl))
+    return false;
+  return true;
 }
 
 static inline void maybe_add_dllimport (tree decl) 
 {
   if (i386_pe_type_dllimport_p (decl))
-    DECL_DLLIMPORT_P (decl) = 1;   
+    DECL_DLLIMPORT_P (decl) = 1;
+}
+
+static inline void maybe_add_dllexport (tree decl) 
+{
+  if (i386_pe_type_dllexport_p (decl))
+    {   
+      tree decl_attrs = DECL_ATTRIBUTES (decl);
+      if (lookup_attribute ("dllexport", decl_attrs) != NULL_TREE)
+	/* Already done.  */
+	return;
+      DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("dllexport"),
+					  NULL_TREE, decl_attrs);
+    }
 }
 
 void
@@ -103,41 +97,69 @@ i386_pe_adjust_class_at_definition (tree t)
   tree member;
 
   gcc_assert (CLASS_TYPE_P (t));
-
- /* We only look at dllimport.  The only thing that dllexport does is
-    add stuff to a '.drectiv' section at end-of-file, so no need to do
-    anything for dllexport'd classes until we generate RTL. */  
-  if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (t)) == NULL_TREE)
-    return;
-
-  /* We don't actually add the attribute to the decl, just set the flag
-     that signals that the address of this symbol is not a compile-time
-     constant.   Any subsequent out-of-class declaration of members wil
-     cause the DECL_DLLIMPORT_P flag to be unset.
-     (See  tree.c: merge_dllimport_decl_attributes).
-     That is just right since out-of class declarations can only be a
-     definition.  We recheck the class members  at RTL generation to
-     emit warnings if this has happened.  Definition of static data member
-     of dllimport'd class always causes an error (as per MS compiler).
-  */
-
-  /* Check static VAR_DECL's.  */
-  for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
-    if (TREE_CODE (member) == VAR_DECL)     
-      maybe_add_dllimport (member);
-    
-  /* Check FUNCTION_DECL's.  */
-  for (member = TYPE_METHODS (t); member;  member = TREE_CHAIN (member))
-    if (TREE_CODE (member) == FUNCTION_DECL)
-      maybe_add_dllimport (member);
  
-  /* Check vtables  */
-  for (member = CLASSTYPE_VTABLES (t); member;  member = TREE_CHAIN (member))
-    if (TREE_CODE (member) == VAR_DECL) 
-      maybe_add_dllimport (member);
+ 
+  if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (t)) != NULL_TREE)
+    {
+      /* Check static VAR_DECL's.  */
+      for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
+	if (TREE_CODE (member) == VAR_DECL)     
+	  maybe_add_dllexport (member);
+    
+      /* Check FUNCTION_DECL's.  */
+      for (member = TYPE_METHODS (t); member;  member = TREE_CHAIN (member))
+	if (TREE_CODE (member) == FUNCTION_DECL)
+	  {
+	    tree thunk;
+	    maybe_add_dllexport (member);
+	  
+	    /* Also add the attribute to its thunks.  */
+	    for (thunk = DECL_THUNKS (member); thunk;
+		 thunk = TREE_CHAIN (thunk))
+	      maybe_add_dllexport (thunk);
+	}
+      /* Check vtables  */
+      for (member = CLASSTYPE_VTABLES (t); member;  member = TREE_CHAIN (member))
+	if (TREE_CODE (member) == VAR_DECL) 
+	  maybe_add_dllexport (member);
+    }
 
-/* We leave typeinfo tables alone.  We can't mark TI objects as
-     dllimport, since the address of a secondary VTT may be needed
-     for static initialization of a primary VTT.  VTT's  of
-     dllimport'd classes should always be link-once COMDAT.  */ 
+  else if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (t)) != NULL_TREE)
+    {
+      /* We don't actually add the attribute to the decl, just set the flag
+	 that signals that the address of this symbol is not a compile-time
+	 constant.   Any subsequent out-of-class declaration of members wil
+	 cause the DECL_DLLIMPORT_P flag to be unset.
+	 (See  tree.c: merge_dllimport_decl_attributes).
+	 That is just right since out-of class declarations can only be a
+	 definition.   */
+
+      /* Check static VAR_DECL's.  */
+      for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
+	if (TREE_CODE (member) == VAR_DECL)     
+	  maybe_add_dllimport (member);
+    
+      /* Check FUNCTION_DECL's.  */
+      for (member = TYPE_METHODS (t); member;  member = TREE_CHAIN (member))
+	if (TREE_CODE (member) == FUNCTION_DECL)
+	  {
+	    tree thunk;
+	    maybe_add_dllimport (member);
+	  
+	    /* Also add the attribute to its thunks.  */
+	    for (thunk = DECL_THUNKS (member); thunk;
+		 thunk = TREE_CHAIN (thunk))
+	      maybe_add_dllimport (thunk);
+	 }
+ 
+      /* Check vtables  */
+      for (member = CLASSTYPE_VTABLES (t); member;  member = TREE_CHAIN (member))
+	if (TREE_CODE (member) == VAR_DECL) 
+	  maybe_add_dllimport (member);
+
+      /* We leave typeinfo tables alone.  We can't mark TI objects as
+	dllimport, since the address of a secondary VTT may be needed
+	for static initialization of a primary VTT.  VTT's  of
+	dllimport'd classes should always be link-once COMDAT.  */ 
+    }
 }
