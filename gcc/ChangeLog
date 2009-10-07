@@ -1,3 +1,8 @@
+2009-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_node_can_be_local): Handle externally visible nodes
+	correctly.
+
 2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*lea_1_rex64, *lea_1, *lea_1_zext,

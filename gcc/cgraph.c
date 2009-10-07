@@ -1983,7 +1983,8 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 bool
 cgraph_node_can_be_local_p (struct cgraph_node *node)
 {
-  return !node->needed;
+  return (!node->needed
+  	  && (DECL_COMDAT (node->decl) || !node->local.externally_visible));
 }
 
 /* Bring NODE local.  */
