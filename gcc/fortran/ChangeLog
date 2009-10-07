@@ -1,3 +1,9 @@
+2009-10-07  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/41615
+	* resolve.c (resolve_contained_fntype): Clarify error message for
+	invalid assumed-length character result on module procedures.
+
 2009-10-07  Janus Weil  <janus@gcc.gnu.org>
 
 	* expr.c (gfc_check_pointer_assign): Do the correct type checking when
