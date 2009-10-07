@@ -1,3 +1,7 @@
+2009-10-07  Chris Jefferson  <chris@bubblescope.net>
+
+	* testsuite/25_algorithms/rotate/moveable2.cc: New.
+
 2009-10-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/decimal/binary-arith.cc: Fix directive to skip test.
