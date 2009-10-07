@@ -1,3 +1,7 @@
+2009-10-08  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/a2.md: Add FSF comment header.
+
 2009-10-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (any_extend): New code iterator.
