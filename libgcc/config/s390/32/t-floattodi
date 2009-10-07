@@ -1,0 +1,5 @@
+floattodi-functions = _fixsfdi _fixdfdi _fixtfdi _fixunssfdi _fixunsdfdi _fixunstfdi
+LIB2FUNCS_EXCLUDE += $(floattodi-functions)
+
+floattodi-src = $(addsuffix .c, $(floattodi-functions))
+LIB2ADD = $(addprefix $(srcdir)/config/s390/32/, $(floattodi-src))

@@ -1,3 +1,15 @@
+2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.gcc: Don't include the makefile fragments intended for
+	libgcc.
+	* config/s390/fixdfdi.h: File removed.
+	* config/s390/libgcc-glibc.ver: File removed.
+	* config/s390/s390.h: Remove the fixdfdi.h hack.
+	* config/s390/t-crtstuff: File moved to libgcc dir.
+	* config/s390/t-linux: Likewise.
+	* config/s390/t-tpf: libgcc specific parts removed.
+	* config/s390/t-linux64: Likewise.
+
 2009-10-06  Jerry Quinn  <jlquinn@optonline.net>
 
 	* Makefile.in (lto-wrapper): Use COMPILER and ALL_COMPILERFLAGS.

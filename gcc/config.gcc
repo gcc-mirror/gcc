@@ -2079,7 +2079,6 @@ rs6000-ibm-aix[6789].* | powerpc-ibm-aix[6789].*)
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h s390/linux.h"
-	tmake_file="${tmake_file} t-dfprules s390/t-crtstuff s390/t-linux"
 	;;
 s390x-*-linux*)
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h glibc-stdint.h s390/linux.h"
@@ -2087,7 +2086,7 @@ s390x-*-linux*)
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
-	tmake_file="${tmake_file} t-dfprules s390/t-crtstuff s390/t-linux s390/t-linux64"
+	tmake_file="${tmake_file} s390/t-linux64"
 	;;
 s390x-ibm-tpf*)
         tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h s390/tpf.h"
@@ -2096,7 +2095,6 @@ s390x-ibm-tpf*)
         extra_modes=s390/s390-modes.def
         out_file=s390/s390.c
         extra_parts="crtbeginS.o crtendS.o"
-        tmake_file="s390/t-crtstuff s390/t-tpf"
         thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
 	;;

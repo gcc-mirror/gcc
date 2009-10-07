@@ -483,10 +483,13 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	;;
 s390-*-linux*)
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
 	;;
 s390x-*-linux*)
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux"
 	;;
 s390x-ibm-tpf*)
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-tpf"
 	;;
 score-*-elf)
         ;;
