@@ -1,5 +1,10 @@
 2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/tpf.h (TARGET_DEFAULT): Remove MASK_HARD_FLOAT and
+	add MASK_HARD_DFP.
+
+2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config.gcc: Don't include the makefile fragments intended for
 	libgcc.
 	* config/s390/fixdfdi.h: File removed.

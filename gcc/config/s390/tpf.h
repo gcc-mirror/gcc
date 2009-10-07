@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
    enable TPF profiling support and the standard backchain by default.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_TPF_PROFILING | MASK_64BIT | MASK_ZARCH \
-			| MASK_HARD_FLOAT | MASK_BACKCHAIN)
+			| MASK_HARD_DFP | MASK_BACKCHAIN)
 
 /* Exception handling.  */
 
