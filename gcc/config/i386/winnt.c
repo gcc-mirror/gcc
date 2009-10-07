@@ -102,8 +102,6 @@ associated_type (tree decl)
 static bool
 i386_pe_determine_dllexport_p (tree decl)
 {
-  tree assoc;
-
   if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
     return false;
 
@@ -113,11 +111,6 @@ i386_pe_determine_dllexport_p (tree decl)
 
   if (lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
-
-  /* Also mark class members of exported classes with dllexport.  */
-  assoc = associated_type (decl);
-  if (assoc && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (assoc)))
-    return i386_pe_type_dllexport_p (decl);
 
   return false;
 }
@@ -132,18 +125,23 @@ i386_pe_determine_dllimport_p (tree decl)
   if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
     return false;
 
-  /* Lookup the attribute in addition to checking the DECL_DLLIMPORT_P flag.
-     We may need to override an earlier decision.  */
   if (DECL_DLLIMPORT_P (decl))
     return true;
 
   /* The DECL_DLLIMPORT_P flag was set for decls in the class definition
      by  targetm.cxx.adjust_class_at_definition.  Check again to emit
-     warnings if the class attribute has been overridden by an
-     out-of-class definition.  */
+     error message if the class attribute has been overridden by an
+     out-of-class definition of static data.  */
   assoc = associated_type (decl);
-  if (assoc && lookup_attribute ("dllimport", TYPE_ATTRIBUTES (assoc)))
-    return i386_pe_type_dllimport_p (decl);
+  if (assoc && lookup_attribute ("dllimport", TYPE_ATTRIBUTES (assoc))
+      && TREE_CODE (decl) == VAR_DECL
+      && TREE_STATIC (decl) && TREE_PUBLIC (decl)
+      && !DECL_EXTERNAL (decl)
+      /* vtable's are linkonce constants, so defining a vtable is not
+	 an error as long as we don't try to import it too.  */
+      && !DECL_VIRTUAL_P (decl))
+	error ("definition of static data member %q+D of "
+	       "dllimport'd class", decl);
 
   return false;
 }
@@ -308,17 +306,8 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
   if (i386_pe_determine_dllexport_p (decl))
     flags |= SYMBOL_FLAG_DLLEXPORT;
   else if (i386_pe_determine_dllimport_p (decl))
-    {
-      flags |= SYMBOL_FLAG_DLLIMPORT;
-      /* If we went through the associated_type path, this won't already
-	 be set.  Though, frankly, this seems wrong, and should be fixed
-	 elsewhere.  */
-      if (!DECL_DLLIMPORT_P (decl))
-	{
-	  DECL_DLLIMPORT_P (decl) = 1;
-	  flags &= ~SYMBOL_FLAG_LOCAL;
-	}
-    }
+    flags |= SYMBOL_FLAG_DLLIMPORT;
+ 
   SYMBOL_REF_FLAGS (symbol) = flags;
 }
 

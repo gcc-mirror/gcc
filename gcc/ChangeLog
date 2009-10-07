@@ -1,4 +1,20 @@
-2009-10-07  Ben Elliston  <bje@au.ibm.com>
+
+2009-10-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/41512
+	* config/i386/winnt.c (i386_pe_determine_dllexport_p): Don't propagate
+	dllexport to class members here.
+	(i386_pe_determine_dllimport_p): Only check static class data for
+	definition.
+	(i386_pe_encode_section_info): Don't recheck DECL_DLLIMPORT_P.
+	* config/i386/winnt-cxx.c (i386_pe_type_dllimport_p): Only check
+	functions for vague linkage.
+	(i386_pe_type_dllexport_p): Fix formatting.
+	(maybe_add_dllexport) New function.
+	(i386_pe_adjust_class_at_definition): Use it to propagate dllexport
+	to class members.
+	
+	2009-10-07  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/a2.md: Remove duplicated lines.
 
