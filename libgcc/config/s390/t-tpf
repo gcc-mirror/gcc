@@ -1,0 +1,8 @@
+# Compile libgcc2.a with pic.
+HOST_LIBGCC2_CFLAGS += -fPIC
+
+# Use unwind-dw2-fde-glibc.
+LIB2ADDEH = $(gcc_srcdir)/unwind-dw2.c $(gcc_srcdir)/unwind-dw2-fde-glibc.c \
+  $(gcc_srcdir)/unwind-sjlj.c $(gcc_srcdir)/gthr-gnat.c $(gcc_srcdir)/unwind-c.c \
+  $(gcc_srcdir)/emutls.c
+LIB2ADDEHDEP = unwind.inc unwind-dw2-fde.h

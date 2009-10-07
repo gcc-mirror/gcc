@@ -1,3 +1,18 @@
+2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.host: Include the s390 makefile fragments.
+	* config/s390/32/_fixdfdi.c: New file.
+	* config/s390/32/_fixsfdi.c: New file.
+	* config/s390/32/_fixtfdi.c: New file.
+	* config/s390/32/_fixunsdfdi.c: New file.
+	* config/s390/32/_fixunssfdi.c: New file.
+	* config/s390/32/_fixunstfdi.c: New file.
+	* config/s390/32/t-floattodi: New file.
+	* config/s390/libgcc-glibc.ver: New file.
+	* config/s390/t-crtstuff: New file.
+	* config/s390/t-linux: New file.
+	* config/s390/t-tpf: New file.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.

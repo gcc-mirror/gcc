@@ -1,0 +1,7 @@
+DFP_ENABLE = true
+
+# Override t-slibgcc-elf-ver to export some libgcc symbols with
+# the symbol versions that glibc used.
+SHLIB_MAPFILES = $(gcc_srcdir)/libgcc-std.ver $(srcdir)/config/s390/libgcc-glibc.ver
+
+HOST_LIBGCC2_CFLAGS += -mlong-double-128
