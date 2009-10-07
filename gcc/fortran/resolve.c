@@ -5132,6 +5132,11 @@ check_class_members (gfc_symbol *derived)
   e->value.compcall.tbp = tbp->n.tb;
   e->value.compcall.name = tbp->name;
 
+  /* Let the original expresssion catch the assertion in
+     resolve_compcall, since this flag does not appear to be reset or
+     copied in some systems.  */
+  e->value.compcall.assign = 0;
+
   /* Do the renaming, PASSing, generic => specific and other
      good things for each class member.  */
   class_try = (resolve_compcall (e, fcn_flag) == SUCCESS)
