@@ -1,3 +1,7 @@
+2009-10-07 Rafael Avila de Espindola  <espindola@google.com>
+
+	* MAINTAINERS: Change my email address. Change plugi-in to plugin.
+	
 2009-10-07  Richard Guenther  <rguenther@suse.de>
 
 	* MAINTAINERS (LTO): List Diego Novillo, Rafael Avila de Espindola,
