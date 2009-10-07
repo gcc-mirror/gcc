@@ -1,3 +1,8 @@
+2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/tpf.h (TARGET_DEFAULT): Remove MASK_HARD_FLOAT and
+	add MASK_HARD_DFP.
+
 2009-10-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.
