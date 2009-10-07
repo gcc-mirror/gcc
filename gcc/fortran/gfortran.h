@@ -1629,6 +1629,7 @@ gfc_class_esym_list;
 # endif
 # if MPC_VERSION >= MPC_VERSION_NUM(0,7,1)
 #  define HAVE_mpc_arc
+#  define HAVE_mpc_pow_z
 # endif
 #else
 #define mpc_realref(X) ((X).r)
