@@ -1271,8 +1271,8 @@ main (int argc, char **argv)
   obstack_free (&temporary_obstack, temporary_firstobj);
 
   /* -fno-profile-arcs -fno-test-coverage -fno-branch-probabilities
-     -fno-exceptions -w */
-  num_c_args += 5;
+     -fno-exceptions -w -fno-whole-program */
+  num_c_args += 6;
 
   c_argv = XCNEWVEC (char *, num_c_args);
   c_ptr = CONST_CAST2 (const char **, char **, c_argv);
@@ -1440,6 +1440,7 @@ main (int argc, char **argv)
   *c_ptr++ = "-fno-branch-probabilities";
   *c_ptr++ = "-fno-exceptions";
   *c_ptr++ = "-w";
+  *c_ptr++ = "-fno-whole-program";
 
   /* !!! When GCC calls collect2,
      it does not know whether it is calling collect2 or ld.

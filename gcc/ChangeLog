@@ -1,5 +1,10 @@
 2009-10-07  Jan Hubicka  <jh@suse.cz>
 
+	* collect2.c (main): Add -fno-whole-program.
+	* gcc.c (set_collect_gcc_options): Do not remove whole program here.
+
+2009-10-07  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_cgraph_replace_node): Assert that inline clones has
 	no address taken.
 	* cgraph.c (cgraph_mark_needed_node): Assert that inline clones are
