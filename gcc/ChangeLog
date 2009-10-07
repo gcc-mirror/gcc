@@ -88,7 +88,7 @@
 	(i386_pe_adjust_class_at_definition): Use it to propagate dllexport
 	to class members.
 	
-	2009-10-07  Ben Elliston  <bje@au.ibm.com>
+2009-10-07  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/a2.md: Remove duplicated lines.
 
