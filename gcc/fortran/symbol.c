@@ -2479,6 +2479,12 @@ gfc_find_sym_tree (const char *name, gfc_namespace *ns, int parent_flag,
       st = gfc_find_symtree (ns->sym_root, name);
       if (st != NULL)
 	{
+	  /* Special case: If we're in a SELECT TYPE block,
+	    replace the selector variable by a temporary.  */
+	  if (gfc_current_state () == COMP_SELECT_TYPE
+	      && st && st->n.sym == type_selector)
+	    st = select_type_tmp;
+
 	  *result = st;
 	  /* Ambiguous generic interfaces are permitted, as long
 	     as the specific interfaces are different.  */
@@ -2644,12 +2650,6 @@ gfc_get_ha_sym_tree (const char *name, gfc_symtree **result)
   int i;
 
   i = gfc_find_sym_tree (name, gfc_current_ns, 0, &st);
-
-  /* Special case: If we're in a SELECT TYPE block,
-     replace the selector variable by a temporary.  */
-  if (gfc_current_state () == COMP_SELECT_TYPE
-      && st && st->n.sym == type_selector)
-    st = select_type_tmp;
 
   if (st != NULL)
     {

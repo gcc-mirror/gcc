@@ -1,3 +1,9 @@
+2009-10-07  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.dg/same_type_as_2.f03: Modified (was illegal).
+	* gfortran.dg/select_type_1.f03: Modified error message.
+	* gfortran.dg/select_type_5.f03: New test.
+
 2009-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41612

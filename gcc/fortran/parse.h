@@ -70,4 +70,5 @@ match gfc_match_enumerator_def (void);
 void gfc_free_enum_history (void);
 extern bool gfc_matching_function;
 match gfc_match_prefix (gfc_typespec *);
+gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 #endif  /* GFC_PARSE_H  */

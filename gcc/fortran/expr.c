@@ -3277,8 +3277,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return SUCCESS;
     }
 
-  if (lvalue->ts.type != BT_CLASS && lvalue->symtree->n.sym->ts.type != BT_CLASS
-	&& !gfc_compare_types (&lvalue->ts, &rvalue->ts))
+  if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
     {
       gfc_error ("Different types in pointer assignment at %L; attempted "
 		 "assignment of %s to %s", &lvalue->where, 

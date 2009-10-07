@@ -8,12 +8,11 @@
   integer :: i
  end type 
 
- type :: t2
+ type, extends(t1) :: t2
   integer :: j
  end type
 
- CLASS(t1), pointer :: c1
- CLASS(t2), pointer :: c2
+ CLASS(t1), pointer :: c1,c2
  TYPE(t1), target :: x1
  TYPE(t2) ,target :: x2
 
