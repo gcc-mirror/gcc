@@ -57,7 +57,7 @@
 
    Both of these requirements are easily satisfied.  The largest target
    significand is 113 bits; we store at least 160.  The smallest
-   denormal number fits in 17 exponent bits; we store 27.
+   denormal number fits in 17 exponent bits; we store 26.
 
    Note that the decimal string conversion routines are sensitive to
    rounding errors.  Since the raw arithmetic routines do not themselves

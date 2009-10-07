@@ -1,3 +1,7 @@
+2009-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* real.c: Fix comment to reflect actual exponent size.
+
 2009-10-08  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/a2.md: Add FSF comment header.
