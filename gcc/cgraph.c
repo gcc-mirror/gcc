@@ -1359,6 +1359,7 @@ void
 cgraph_mark_needed_node (struct cgraph_node *node)
 {
   node->needed = 1;
+  gcc_assert (!node->global.inlined_to);
   cgraph_mark_reachable_node (node);
 }
 
@@ -1682,6 +1683,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
     }
   new_node->analyzed = n->analyzed;
   new_node->local = n->local;
+  new_node->local.externally_visible = false;
   new_node->global = n->global;
   new_node->rtl = n->rtl;
   new_node->count = count;

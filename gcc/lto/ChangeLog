@@ -1,3 +1,8 @@
+2009-10-07  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Mark functions neccesary only at
+	ltrans stage; explain why this is needed and should not.
+
 2009-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41552

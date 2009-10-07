@@ -316,13 +316,6 @@ cgraph_build_cdtor_fns (void)
 bool
 cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
 {
-  if (MAIN_NAME_P (DECL_NAME (decl))
-      && TREE_PUBLIC (decl))
-    {
-      node->local.externally_visible = true;
-      return true;
-    }
-
   /* If the user told us it is used, then it must be so.  */
   if (node->local.externally_visible)
     return true;
@@ -360,7 +353,9 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
 	|| (!optimize && !node->local.disregard_inline_limits
 	    && !DECL_DECLARED_INLINE_P (decl)
 	    && !node->origin))
-      && !flag_whole_program)
+       && !flag_whole_program
+       && !flag_lto
+       && !flag_whopr)
       && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 
@@ -591,6 +586,21 @@ verify_cgraph_node (struct cgraph_node *node)
   if (node->count < 0)
     {
       error ("Execution count is negative");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->local.externally_visible)
+    {
+      error ("Externally visible inline clone");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->address_taken)
+    {
+      error ("Inline clone with address taken");
+      error_found = true;
+    }
+  if (node->global.inlined_to && node->needed)
+    {
+      error ("Inline clone is needed");
       error_found = true;
     }
   for (e = node->callers; e; e = e->next_caller)
@@ -864,12 +874,8 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
 			"%<externally_visible%>"
 			" attribute have effect only on public objects");
-	  else
-	    {
-	      if (node->local.finalized)
-		cgraph_mark_needed_node (node);
-	      node->local.externally_visible = true;
-	    }
+	  else if (node->local.finalized)
+	     cgraph_mark_needed_node (node);
 	}
     }
   for (vnode = varpool_nodes; vnode != first_var; vnode = vnode->next)
@@ -887,12 +893,8 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	    warning_at (DECL_SOURCE_LOCATION (vnode->decl), OPT_Wattributes,
 			"%<externally_visible%>"
 			" attribute have effect only on public objects");
-	  else
-	    {
-	      if (vnode->finalized)
-		varpool_mark_needed_node (vnode);
-	      vnode->externally_visible = true;
-	    }
+	  else if (vnode->finalized)
+	    varpool_mark_needed_node (vnode);
 	}
     }
 }
@@ -1355,7 +1357,9 @@ ipa_passes (void)
   current_function_decl = NULL;
   gimple_register_cfg_hooks ();
   bitmap_obstack_initialize (NULL);
-  execute_ipa_pass_list (all_small_ipa_passes);
+
+  if (!in_lto_p)
+    execute_ipa_pass_list (all_small_ipa_passes);
 
   /* If pass_all_early_optimizations was not scheduled, the state of
      the cgraph will not be properly updated.  Update it now.  */

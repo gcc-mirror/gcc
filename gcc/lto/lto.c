@@ -1824,11 +1824,18 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Merge global decls.  */
   lto_symtab_merge_decls ();
 
-  /* Mark cgraph nodes needed in the merged cgraph.
-     ???  Is this really necessary?  */
-  for (node = cgraph_nodes; node; node = node->next)
-    if (cgraph_decide_is_function_needed (node, node->decl))
-      cgraph_mark_needed_node (node);
+  /* Mark cgraph nodes needed in the merged cgraph
+     This normally happens in whole-program pass, but for
+     ltrans the pass was already run at WPA phase.
+     
+     FIXME:  This is not valid way to do so; nodes can be needed
+     for non-obvious reasons.  We should stream the flags from WPA
+     phase. */
+  if (flag_ltrans)
+    for (node = cgraph_nodes; node; node = node->next)
+      if (!node->global.inlined_to
+	  && cgraph_decide_is_function_needed (node, node->decl))
+        cgraph_mark_needed_node (node);
 
   timevar_push (TV_IPA_LTO_DECL_IO);
 

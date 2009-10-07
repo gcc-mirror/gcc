@@ -388,7 +388,10 @@ lto_cgraph_replace_node (struct cgraph_node *old_node,
   if (old_node->reachable)
     cgraph_mark_reachable_node (new_node);
   if (old_node->address_taken)
-    cgraph_mark_address_taken_node (new_node);
+    {
+      gcc_assert (!new_node->global.inlined_to);
+      cgraph_mark_address_taken_node (new_node);
+    }
 
   /* Redirect all incoming edges.  */
   for (e = old_node->callers; e; e = next)

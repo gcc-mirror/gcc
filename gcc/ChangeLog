@@ -1,3 +1,51 @@
+2009-10-07  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Assert that inline clones has
+	no address taken.
+	* cgraph.c (cgraph_mark_needed_node): Assert that inline clones are
+	never needed.
+	(cgraph_clone_node): Clear externally_visible flag for clones.
+	* cgraph.h (cgraph_only_called_directly_p,
+	cgraph_can_remove_if_no_direct_calls_p): New predicates.
+	* tree-pass.h (pass_ipa_whole_program_visibility): Declare.
+	* ipa-cp.c (ipcp_cloning_candidate_p): Use new predicate.
+	(ipcp_initialize_node_lattices, ipcp_estimate_growth,
+	ipcp_insert_stage): Likwise.
+	* cgraphunit.c (cgraph_decide_is_function_needed): Do not compute
+	externally_visible flag.
+	(verify_cgraph_node): Verify that inline clones look right.
+	(process_function_and_variable_attributes): Do not set
+	externally_visible flags.
+	(ipa_passes): Avoid executing small_ipa_passes at LTO stage; they've
+	been already run.
+	* lto-cgraph.c (lto_output_node): Assert that inline clones are not
+	boundaries.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Use new predicates;
+	clear externally_visible when turning into inline clones
+	(cgraph_mark_inline_edge): Use new predicates.
+	(cgraph_estimate_growth): Likewise.
+	(cgraph_decide_inlining): Likewise.
+	* ipa.c (cgraph_postorder): Likewise.
+	(cgraph_remove_unreachable_nodes): Likewise; sanity check
+	that inline clones are not needed.
+	(cgraph_externally_visible_p): New predicate.
+	(function_and_variable_visibility): Add whole_program parameter;
+	always set externally_visible flag; handle COMDAT function
+	privatization.
+	(local_function_and_variable_visibility): New function.
+	(gate_whole_program_function_and_variable_visibility): New function.
+	(whole_program_function_and_variable_visibility): New function.
+	(pass_ipa_whole_program_visibility): New function.
+	* passes.c  (init_optimization_passes): Add whole program visibility
+	pass.
+	(do_per_function_toporder, function_called_by_processed_nodes_p): Do
+	not care about needed/reachable flags.
+	* varpool.c: Include flags.h
+	(decide_is_variable_needed): When doing LTO assume whole-program mode.
+	(varpool_finalize_decl): When we are in LTO read-back, all variables
+	are analyzed.
+	(varpool_analyze_pending_decls): Skip analyzis of analyzed vars.
+
 2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/tpf.h (TARGET_DEFAULT): Remove MASK_HARD_FLOAT and

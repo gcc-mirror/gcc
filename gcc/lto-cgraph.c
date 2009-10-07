@@ -227,6 +227,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
      local static nodes to prevent clashes with other local statics.  */
   if (boundary_p)
     {
+      /* Inline clones can not be part of boundary.  */
+      gcc_assert (!node->global.inlined_to);
       local = 0;
       externally_visible = 1;
       inlinable = 0;
