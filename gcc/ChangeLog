@@ -1,3 +1,9 @@
+2009-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (tree_add_const_value_attribute_for_decl): Don't add
+	DW_AT_const_value if VAR_DIE already has DW_AT_abstract_origin
+	refering to a DIE with DW_AT_const_value.
+
 2009-10-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/22072

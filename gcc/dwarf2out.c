@@ -15701,6 +15701,10 @@ tree_add_const_value_attribute_for_decl (dw_die_ref var_die, tree decl)
     else
       return false;
 
+  /* Don't add DW_AT_const_value if abstract origin already has one.  */
+  if (get_AT (var_die, DW_AT_const_value))
+    return false;
+
   return tree_add_const_value_attribute (var_die, DECL_INITIAL (decl));
 }
 
