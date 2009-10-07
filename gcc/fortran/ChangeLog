@@ -1,3 +1,8 @@
+2009-10-07  Paul Thomas <pault@gcc.gnu.org>
+
+        PR fortran/41613
+        * resolve.c (check_class_members): Reset compcall.assign.
+
 2009-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-expr.c (select_class_proc): New function.
