@@ -1,3 +1,42 @@
+2009-10-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_extend): New code iterator.
+	(u, s): New code attributes.
+	(sgnprefix): Ditto.
+	(DWIH): Rewrite as code iterator for SI and DI modes.
+	(DWI): Rewrite as mode attribute.
+	(dwi): New mode attribute.
+	(di): Depend on SI mode and DI mode.
+	(doubleint_general_operand): Remove mode attribute.
+
+	(*lea_1): Macroize insn from *lea_1_rex64 and *lea_1 patterns using
+	DWIH mode iterator.
+
+	(*add<mode>3_doubleword): Use DWIH as the base mode iterator.
+	(*sub<mode>3_doubleword): Ditto.
+
+	(mul<mode>3): Macroize expander from mul{hi,si,di}3 patterns
+	using SWIM248 mode iterator.
+	(*mul<mode>3_1): Macroize insn from mul{si,di}3_1 patterns
+	using SWI48 mode iterator.
+	(<u>mul<mode><dwi>3): Macroize expander from {,u}mul{sidi,diti}3
+	patterns using DWIH mode iterator and any_extend code iterator.
+	(<u>mulqihi3): Macroize expander from {,u}mulqihi3 patterns
+	using any_extend code iterator.
+	(*<u>mul<mode><dwi>3_1): Macroize insn from {,u}mul{sidi,diti}3_1
+	patterns using DWIH mode iterator and any_extend code iterator.
+	(*<u>mulqihi3_1): Macroize insn from {,u}mulqihi3_1 patterns
+	using any_extend code iterator.
+	(<s>mul<mode>3_highpart): Macroize expander from
+	{s,u}mul{si,di}3_highpart patterns using DWIH mode iterator
+	and any_extend code iterator.
+	(*<s>muldi3_highpart_1): Macroize insn from
+	*{s,u}muldi3_highpart_rex64 patterns using any_extend code iterator.
+	(*<s>mulsi3_highpart_1): Macroize insn from *{s,u}mulsi3_highpart_1
+	patterns using any_extend code iterator.
+	(*<s>mulsi3_highpart_zext): Macroize insn from
+	*{s,u}mulsi3_highpart_zext patterns using any_extend code iterator.
+
 2009-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (tree_add_const_value_attribute_for_decl): Don't add
@@ -124,10 +163,8 @@
 	(enum processor_type): Add PROCESSOR_PPCA2.
 	* config/rs6000/rs6000.c (ppca2_cost): New costs.
 	(rs6000_override_options): Add "a2" to processor_target_table.
-	Update rs6000_always_hint logic.  Correctly set rs6000_cost for
-	a2.
-	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
-	-mcpu=a2.
+	Update rs6000_always_hint logic.  Correctly set rs6000_cost for a2.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mcpu=a2.
 
 2009-10-06  Uros Bizjak  <ubizjak@gmail.com>
 
