@@ -1,3 +1,7 @@
+2009-10-07  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* cp-tree.h: Fix location of documentation for DECL_LANG_FLAG_7.
+
 2009-10-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39863
