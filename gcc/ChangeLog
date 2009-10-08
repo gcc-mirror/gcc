@@ -1,3 +1,8 @@
+2009-10-08  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Pass libc with -pass-through if it is
+	being statically linked.
+
 2009-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* collect2.c (add_lto_object): Only define if OBJECT_FORMAT_NONE.

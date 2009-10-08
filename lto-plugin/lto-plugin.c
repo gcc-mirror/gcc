@@ -81,6 +81,7 @@ static ld_plugin_register_all_symbols_read register_all_symbols_read;
 static ld_plugin_get_symbols get_symbols;
 static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
+static ld_plugin_add_input_library add_input_library;
 
 static struct plugin_file_info *claimed_files = NULL;
 static unsigned int num_claimed_files = 0;
@@ -467,7 +468,10 @@ all_symbols_read_handler (void)
       unsigned int i;
       for (i = 0; i < num_pass_through_items; i++)
         {
-          add_input_file (pass_through_items[i]);
+          if (strncmp (pass_through_items[i], "-l", 2) == 0)
+            add_input_library (pass_through_items[i] + 2);
+          else
+            add_input_file (pass_through_items[i]);
           free (pass_through_items[i]);
           pass_through_items[i] = NULL;
         }
@@ -607,8 +611,10 @@ process_option (const char *option)
   else if (!strncmp (option, "-pass-through=", strlen("-pass-through=")))
     {
       num_pass_through_items++;
-      pass_through_items = realloc (pass_through_items, num_pass_through_items * sizeof (char *));
-      pass_through_items[num_pass_through_items - 1] = strdup (option + strlen ("-pass-through="));
+      pass_through_items = realloc (pass_through_items,
+                                    num_pass_through_items * sizeof (char *));
+      pass_through_items[num_pass_through_items - 1] =
+          strdup (option + strlen ("-pass-through="));
     }
   else
     {
@@ -654,6 +660,9 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_ADD_INPUT_FILE:
 	  add_input_file = p->tv_u.tv_add_input_file;
+	  break;
+	case LDPT_ADD_INPUT_LIBRARY:
+	  add_input_library = p->tv_u.tv_add_input_library;
 	  break;
 	case LDPT_OPTION:
 	  process_option (p->tv_u.tv_string);

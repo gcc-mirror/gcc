@@ -775,6 +775,7 @@ proper position among the other output files.  */
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=%(lto_gcc) \
     %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
+    %{static:-plugin-opt=-pass-through=-lc}	\
     %{O*:-plugin-opt=-O%*} \
     %{w:-plugin-opt=-w} \
     %{f*:-plugin-opt=-f%*} \
