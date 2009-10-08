@@ -79,11 +79,14 @@ GLIBCXX_3.4 {
       std::gslice*;
       std::h[^a]*;
       std::i[a-n]*;
-      std::ios_base::[A-Ha-z]*;
+#     std::ios_base::[A-Ha-z]*;
+      std::ios_base::[A-Ha-f]*;
+      std::ios_base::goodbit;
+      std::ios_base::[h-z]*;
       std::ios_base::_M_grow_words*;
       std::ios_base::_M_init*;
       std::ios_base::Init::[A-Za-z]*;
-      std::ios_base::[J-Za-z]*;
+#     std::ios_base::[J-Za-z]*;
       std::i[p-r]*;
 #     std::istream
 #     std::istreambuf_iterator
@@ -121,7 +124,7 @@ GLIBCXX_3.4 {
       std::ostrstream*;
       std::out_of_range*;
       std::overflow_error*;
-      std::[p-q]*;
+#     std::[p-q]*;
       std::r[^e]*;
       std::re[^t]*;
 #     std::rethrow_exception
@@ -167,7 +170,12 @@ GLIBCXX_3.4 {
     _ZNSsC[12][EI][PRjmvN]*;
     _ZNSsD*;
     _ZNSs[0-58-9][a-z]*;
-    _ZNSs[67][a-z]*E[PRcjmv]*;
+#   _ZNSs[67][a-z]*E[PRcjmv]*;
+    _ZNSs6appendE[PRcjmv]*;
+    _ZNSs6assignE[PRcjmv]*;
+    _ZNSs6insertE[PRcjmv]*;
+    _ZNSs6insertEN9__gnu_cxx17__normal_iteratorIPcSsEE[PRcjmv]*;
+    _ZNSs[67][j-z]*E[PRcjmv]*;
     _ZNSs7[a-z]*EES2_[NPRjm]*;
     _ZNSs7[a-z]*EES2_S[12]*;
     _ZNSs12_Alloc_hiderC*;
@@ -217,8 +225,12 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEEC[12][EI][PRjmvN]*;
     _ZNSbIwSt11char_traitsIwESaIwEED*;
     _ZNSbIwSt11char_traitsIwESaIwEE[0-58-9][a-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[67][a-b]*E[PRwjmv]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[67][d-z]*E[PRwjmv]*;
+#   _ZNSbIwSt11char_traitsIwESaIwEE[67][a-b]*E[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6appendE[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6assignE[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6insertE[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE6insertEN9__gnu_cxx17__normal_iteratorIPwS2_EE[PRwjmv]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[67][j-z]*E[PRwjmv]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_[NPRjm]*;
     _ZNSbIwSt11char_traitsIwESaIwEE7[a-z]*EES6_S[56]*;
     _ZNSbIwSt11char_traitsIwESaIwEE12_Alloc_hiderC*;
@@ -283,7 +295,6 @@ GLIBCXX_3.4 {
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][t-z]*;
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]_M_[a-z]*;
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][0-9]_M_[a-z]*;
-
 
     # std::basic_iostream constructors, destructors
     _ZNSdC*;
