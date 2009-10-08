@@ -235,7 +235,7 @@ init_shdr##BITS (Elf_Scn *scn, size_t sh_name, size_t sh_type)	      \
 								      \
   shdr = elf##BITS##_getshdr (scn);				      \
   if (!shdr)							      \
-    fatal_error ("elf"#BITS"_getshdr() failed: %s.", elf_errmsg (-1));\
+    fatal_error ("elf"#BITS"_getshdr() failed: %s", elf_errmsg (-1));\
 								      \
   shdr->sh_name = sh_name;					      \
   shdr->sh_type = sh_type;					      \
@@ -268,7 +268,7 @@ lto_elf_begin_section_with_type (const char *name, size_t type)
   /* Create a new section.  */
   scn = elf_newscn (file->elf);
   if (!scn)
-    fatal_error ("could not create a new ELF section: %s.", elf_errmsg (-1));
+    fatal_error ("could not create a new ELF section: %s", elf_errmsg (-1));
   file->scn = scn;
 
   /* Add a string table entry and record the offset.  */
@@ -486,7 +486,7 @@ init_ehdr##BITS (lto_elf_file *elf_file)			      \
 								      \
   ehdr = elf##BITS##_newehdr (elf_file->elf);			      \
   if (!ehdr)							      \
-    fatal_error ("elf"#BITS"_newehdr() failed: %s.", elf_errmsg (-1));\
+    fatal_error ("elf"#BITS"_newehdr() failed: %s", elf_errmsg (-1));\
 								      \
   memcpy (ehdr->e_ident, cached_file_attrs.elf_ident,		      \
 	  sizeof cached_file_attrs.elf_ident);			      \
@@ -601,7 +601,7 @@ lto_elf_file_close (lto_file *file)
       lto_elf_begin_section_with_type (".shstrtab", SHT_STRTAB);
       ehdr_p = gelf_getehdr (elf_file->elf, &ehdr_buf);
       if (ehdr_p == NULL)
-	fatal_error ("gelf_getehdr() failed: %s.", elf_errmsg (-1));
+	fatal_error ("gelf_getehdr() failed: %s", elf_errmsg (-1));
       strtab = elf_ndxscn (elf_file->scn);
       if (strtab < SHN_LORESERVE)
 	ehdr_p->e_shstrndx = strtab;
@@ -610,17 +610,17 @@ lto_elf_file_close (lto_file *file)
 	  GElf_Shdr *shdr_p, shdr_buf;
 	  Elf_Scn *scn_p = elf_getscn (elf_file->elf, 0);
 	  if (scn_p == NULL)
-	    fatal_error ("elf_getscn() failed: %s.", elf_errmsg (-1));
+	    fatal_error ("elf_getscn() failed: %s", elf_errmsg (-1));
 	  shdr_p = gelf_getshdr (scn_p, &shdr_buf);
 	  if (shdr_p == NULL)
-	    fatal_error ("gelf_getshdr() failed: %s.", elf_errmsg (-1));
+	    fatal_error ("gelf_getshdr() failed: %s", elf_errmsg (-1));
 	  shdr_p->sh_link = strtab;
 	  if (gelf_update_shdr (scn_p, shdr_p) == 0)
-	    fatal_error ("gelf_update_shdr() failed: %s.", elf_errmsg (-1));
+	    fatal_error ("gelf_update_shdr() failed: %s", elf_errmsg (-1));
 	  ehdr_p->e_shstrndx = SHN_XINDEX;
 	}
       if (gelf_update_ehdr (elf_file->elf, ehdr_p) == 0)
-	fatal_error ("gelf_update_ehdr() failed: %s.", elf_errmsg (-1));
+	fatal_error ("gelf_update_ehdr() failed: %s", elf_errmsg (-1));
       lto_write_stream (elf_file->shstrtab_stream);
       lto_elf_end_section ();
 
@@ -628,7 +628,7 @@ lto_elf_file_close (lto_file *file)
       free (elf_file->shstrtab_stream);
 
       if (elf_update (elf_file->elf, ELF_C_WRITE) < 0)
-	fatal_error ("elf_update() failed: %s.", elf_errmsg (-1));
+	fatal_error ("elf_update() failed: %s", elf_errmsg (-1));
     }
 
   if (elf_file->elf)
