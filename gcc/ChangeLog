@@ -1,3 +1,8 @@
+2009-10-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (CONSTANT_ADDRESS_P): Do not allow
+	CONST_DOUBLEs.
+
 2009-10-08  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR bootstrap/37739
