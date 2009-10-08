@@ -1,3 +1,26 @@
+2009-10-08  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41573
+	* builtins.c (fold_builtin_isascii): Use fold_build2.
+	(fold_builtin_isdigit): Ditto.
+	* except.c (duplicate_eh_regions_1): Tolerate NULL labels.
+	* tree-cfg.c (struct rus_data, remove_useless_stmts_warn_notreached,
+	remove_useless_stmts_cond, remove_useless_stmts_tf,
+	remove_useless_stmts_tc, remove_useless_stmts_bind,
+	remove_useless_stmts_goto, remove_useless_stmts_label,
+	remove_useless_stmts_1, remove_useless_stmts,
+	pass_remove_useless_stmts): Remove.
+	* tree-pass.h (pass_remove_useless_stmts): Don't declare.
+	* passes.c (init_optimization_passes): Don't add
+	pass_remove_useless_stmts.
+	* tree-eh.c (lower_eh_constructs_2): Handle empty cleanups.
+	* tree.c (free_lang_data_in_decl): Don't clear DECL_INITIAL of
+	static constants.
+	* lto-symtab.c (lto_symtab_register_decl): Accepts DECL_INITIAL
+	for static constants.
+	* lto-streamer-out.c (output_gimple_stmt): Handle GIMPLE_NOP.
+	* lto-streamer-in.c (input_gimple_stmt): Handle GIMPLE_NOP.
+
 2009-10-08  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (free_gimple_type_tables): New function.

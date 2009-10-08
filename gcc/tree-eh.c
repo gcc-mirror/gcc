@@ -1919,21 +1919,27 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
       else
 	{
 	  x = gimple_seq_first_stmt (gimple_try_cleanup (stmt));
-	  switch (gimple_code (x))
+	  if (!x)
 	    {
-	    case GIMPLE_CATCH:
-	      replace = lower_catch (state, stmt);
-	      break;
-	    case GIMPLE_EH_FILTER:
-	      replace = lower_eh_filter (state, stmt);
-	      break;
-	    case GIMPLE_EH_MUST_NOT_THROW:
-	      replace = lower_eh_must_not_throw (state, stmt);
-	      break;
-	    default:
-	      replace = lower_cleanup (state, stmt);
-	      break;
+	      replace = gimple_try_eval (stmt);
+	      lower_eh_constructs_1 (state, replace);
 	    }
+	  else
+	    switch (gimple_code (x))
+	      {
+		case GIMPLE_CATCH:
+		    replace = lower_catch (state, stmt);
+		    break;
+		case GIMPLE_EH_FILTER:
+		    replace = lower_eh_filter (state, stmt);
+		    break;
+		case GIMPLE_EH_MUST_NOT_THROW:
+		    replace = lower_eh_must_not_throw (state, stmt);
+		    break;
+		default:
+		    replace = lower_cleanup (state, stmt);
+		    break;
+	      }
 	}
 
       /* Remove the old stmt and insert the transformed sequence
