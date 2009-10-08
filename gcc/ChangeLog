@@ -1,3 +1,8 @@
+2009-10-08  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR bootstrap/37739
+	* config.host: Use config/x-cflags-O1 for powerpc FreeBSD.
+
 2009-10-07  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/41182
