@@ -8,7 +8,7 @@ template<int M, int N> struct pair
 
 template<int... M> struct S
 {
-  template<int... N> static int foo() throw (pair <M, N>...) // { dg-error "mismatched|no matching" }
+  template<int... N> static int foo() throw (pair <M, N>...) // { dg-error "mismatched" }
   {
     return 1;
   }
@@ -21,5 +21,5 @@ int bar ()
 
 int wibble()
 {
-  return S<0, 1, 2>::foo<0, 1> ();
+  return S<0, 1, 2>::foo<0, 1> (); // { dg-error "no matching" }
 }

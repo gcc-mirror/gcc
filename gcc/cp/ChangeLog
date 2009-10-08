@@ -1,3 +1,13 @@
+2009-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37177
+	* pt.c (resolve_nondeduced_context): New.
+	* cvt.c (convert_to_void): Call it.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (decay_conversion): Here too.
+	* pt.c (tsubst_decl): Don't clobber input_location.
+	Don't register a bad specialization.
+
 2009-10-07  Gabriel Dos Reis  <gdr@cs.tamu.edu>
 
 	* cp-tree.h: Fix location of documentation for DECL_LANG_FLAG_7.

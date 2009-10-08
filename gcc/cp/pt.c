@@ -8461,6 +8461,7 @@ tsubst_default_arguments (tree fn)
 static tree
 tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 {
+#define RETURN(EXP) do { r = (EXP); goto out; } while(0)
   location_t saved_loc;
   tree r = NULL_TREE;
   tree in_decl = t;
@@ -8486,7 +8487,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    /* Template template parameter is treated here.  */
 	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (new_type == error_mark_node)
-	      return error_mark_node;
+	      RETURN (error_mark_node);
 
 	    r = copy_decl (t);
 	    TREE_CHAIN (r) = NULL_TREE;
@@ -8517,12 +8518,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 					  complain, in_decl);
 	--processing_template_decl;
 	if (full_args == error_mark_node)
-	  return error_mark_node;
+	  RETURN (error_mark_node);
 
 	/* If this is a default template template argument,
 	   tsubst might not have changed anything.  */
 	if (full_args == tmpl_args)
-	  return t;
+	  RETURN (t);
 
 	hash = hash_tmpl_and_args (t, full_args);
 	spec = retrieve_specialization (t, full_args, hash);
@@ -8550,7 +8551,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    --processing_template_decl;
 	    if (new_type == error_mark_node)
-	      return error_mark_node;
+	      RETURN (error_mark_node);
 
 	    TREE_TYPE (r) = new_type;
 	    CLASSTYPE_TI_TEMPLATE (new_type) = r;
@@ -8565,7 +8566,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    new_decl = tsubst (decl, args, complain, in_decl);
 	    --processing_template_decl;
 	    if (new_decl == error_mark_node)
-	      return error_mark_node;
+	      RETURN (error_mark_node);
 
 	    DECL_TEMPLATE_RESULT (r) = new_decl;
 	    DECL_TI_TEMPLATE (new_decl) = r;
@@ -8623,7 +8624,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    dependent_p = value_dependent_expression_p (t);
 	    --processing_template_decl;
 	    if (!dependent_p)
-	      return t;
+	      RETURN (t);
 
 	    /* Calculate the most general template of which R is a
 	       specialization, and the complete set of arguments used to
@@ -8714,7 +8715,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	if (type == error_mark_node)
-	  return error_mark_node;
+	  RETURN (error_mark_node);
 
 	/* We do NOT check for matching decls pushed separately at this
 	   point, as they may not represent instantiations of this
@@ -8756,6 +8757,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	TREE_USED (r) = 0;
 	/* We'll re-clone as appropriate in instantiate_template.  */
 	DECL_CLONED_FUNCTION (r) = NULL_TREE;
+
+	/* If we aren't complaining now, return on error before we register
+	   the specialization so that we'll complain eventually.  */
+	if ((complain & tf_error) == 0
+	    && IDENTIFIER_OPNAME_P (DECL_NAME (r))
+	    && !grok_op_properties (r, /*complain=*/false))
+	  RETURN (error_mark_node);
 
 	/* Set up the DECL_TEMPLATE_INFO for R.  There's no need to do
 	   this in the special friend case mentioned above where
@@ -8808,9 +8816,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    if (PRIMARY_TEMPLATE_P (gen_tmpl))
 	      clone_function_decl (r, /*update_method_vec_p=*/0);
 	  }
-	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r))
-		 && !grok_op_properties (r, (complain & tf_error) != 0))
-	  return error_mark_node;
+	else if ((complain & tf_error) != 0
+		 && IDENTIFIER_OPNAME_P (DECL_NAME (r))
+		 && !grok_op_properties (r, /*complain=*/true))
+	  RETURN (error_mark_node);
 
 	if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
 	  SET_DECL_FRIEND_CONTEXT (r,
@@ -8851,7 +8860,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
             if (spec 
                 && TREE_CODE (spec) == PARM_DECL
                 && TREE_CODE (TREE_TYPE (spec)) != TYPE_PACK_EXPANSION)
-              return spec;
+              RETURN (spec);
 
             /* Expand the TYPE_PACK_EXPANSION that provides the types for
                the parameters in this function parameter pack.  */
@@ -8864,8 +8873,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
                 /* Zero-length parameter packs are boring. Just substitute
                    into the chain.  */
                 if (len == 0)
-                  return tsubst (TREE_CHAIN (t), args, complain, 
-                                 TREE_CHAIN (t));
+                  RETURN (tsubst (TREE_CHAIN (t), args, complain,
+				  TREE_CHAIN (t)));
               }
             else
               {
@@ -8955,7 +8964,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	r = copy_decl (t);
 	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	if (type == error_mark_node)
-	  return error_mark_node;
+	  RETURN (error_mark_node);
 	TREE_TYPE (r) = type;
 	cp_apply_type_quals_to_decl (cp_type_quals (type), r);
 
@@ -9018,7 +9027,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       we've copied the type for a typedef.  */
 	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (type == error_mark_node)
-	      return error_mark_node;
+	      RETURN (error_mark_node);
 	    r = TYPE_NAME (type);
 	    break;
 	  }
@@ -9091,7 +9100,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_INITIALIZED_P (r) = 0;
 	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
 	    if (type == error_mark_node)
-	      return error_mark_node;
+	      RETURN (error_mark_node);
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
 	      {
 		/* It may seem that this case cannot occur, since:
@@ -9111,7 +9120,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		       /* R is not yet sufficiently initialized, so we
 			  just use its name.  */
 		       DECL_NAME (r));
-		return error_mark_node;
+		RETURN (error_mark_node);
 	      }
 	    type = complete_type (type);
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
@@ -9207,7 +9216,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
     default:
       gcc_unreachable ();
     }
+#undef RETURN
 
+ out:
   /* Restore the file and line information.  */
   input_location = saved_loc;
 
@@ -13305,6 +13316,105 @@ resolve_overloaded_unification (tree tparms,
     return true;
 
   return false;
+}
+
+/* Core DR 115: In contexts where deduction is done and fails, or in
+   contexts where deduction is not done, if a template argument list is
+   specified and it, along with any default template arguments, identifies
+   a single function template specialization, then the template-id is an
+   lvalue for the function template specialization.  */
+
+tree
+resolve_nondeduced_context (tree orig_expr)
+{
+  tree expr, offset, baselink;
+  bool addr;
+
+  if (!type_unknown_p (orig_expr))
+    return orig_expr;
+
+  expr = orig_expr;
+  addr = false;
+  offset = NULL_TREE;
+  baselink = NULL_TREE;
+
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      expr = TREE_OPERAND (expr, 0);
+      addr = true;
+    }
+  if (TREE_CODE (expr) == OFFSET_REF)
+    {
+      offset = expr;
+      expr = TREE_OPERAND (expr, 1);
+    }
+  if (TREE_CODE (expr) == BASELINK)
+    {
+      baselink = expr;
+      expr = BASELINK_FUNCTIONS (expr);
+    }
+
+  if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
+    {
+      int good = 0;
+      tree goodfn = NULL_TREE;
+
+      /* If we got some explicit template args, we need to plug them into
+	 the affected templates before we try to unify, in case the
+	 explicit args will completely resolve the templates in question.  */
+
+      tree expl_subargs = TREE_OPERAND (expr, 1);
+      tree arg = TREE_OPERAND (expr, 0);
+      tree badfn = NULL_TREE;
+      tree badargs = NULL_TREE;
+
+      for (; arg; arg = OVL_NEXT (arg))
+	{
+	  tree fn = OVL_CURRENT (arg);
+	  tree subargs, elem;
+
+	  if (TREE_CODE (fn) != TEMPLATE_DECL)
+	    continue;
+
+	  ++processing_template_decl;
+	  subargs = get_bindings (fn, DECL_TEMPLATE_RESULT (fn),
+				  expl_subargs, /*check_ret=*/false);
+	  if (subargs && !any_dependent_template_arguments_p (subargs))
+	    {
+	      elem = instantiate_template (fn, subargs, tf_none);
+	      if (elem == error_mark_node)
+		{
+		  badfn = fn;
+		  badargs = subargs;
+		}
+	      else if (elem && (!goodfn || !decls_match (goodfn, elem)))
+		{
+		  goodfn = elem;
+		  ++good;
+		}
+	    }
+	  --processing_template_decl;
+	}
+      if (good == 1)
+	{
+	  expr = goodfn;
+	  if (baselink)
+	    expr = build_baselink (BASELINK_BINFO (baselink),
+				   BASELINK_ACCESS_BINFO (baselink),
+				   expr, BASELINK_OPTYPE (baselink));
+	  if (offset)
+	    expr = build2 (OFFSET_REF, TREE_TYPE (expr),
+			   TREE_OPERAND (offset, 0), expr);
+	  if (addr)
+	    expr = build_address (expr);
+	  return expr;
+	}
+      else if (good == 0 && badargs)
+	/* There were no good options and at least one bad one, so let the
+	   user know what the problem is.  */
+	instantiate_template (badfn, badargs, tf_warning_or_error);
+    }
+  return orig_expr;
 }
 
 /* Subroutine of resolve_overloaded_unification; does deduction for a single

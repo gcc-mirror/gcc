@@ -1,3 +1,11 @@
+2009-10-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37177
+	* g++.dg/cpp0x/variadic-throw.C: Adjust errors.
+	* g++.dg/template/explicit-args2.C: New.
+	* g++.dg/template/explicit-args3.C: New.
+	* g++.old-deja/g++.pt/crash58.C: Remove some errors.
+
 2009-10-08  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41573

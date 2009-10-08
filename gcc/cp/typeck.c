@@ -1613,6 +1613,7 @@ decay_conversion (tree exp)
   if (type == error_mark_node)
     return error_mark_node;
 
+  exp = resolve_nondeduced_context (exp);
   if (type_unknown_p (exp))
     {
       cxx_incomplete_type_error (exp, TREE_TYPE (exp));

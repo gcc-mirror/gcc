@@ -15,16 +15,16 @@ struct MatrixC
 {
   void foo () {
     EManip::do_assign<T> (0);
-    &EManip::do_assign<T>;	// { dg-error "" } unresolved
-    &do_assign<T>;		// { dg-error "" } unresolved
-    EManip::do_assign<T>;       // { dg-error "" } unresolved
-    do_assign<T>;               // { dg-error "" } unresolved
+    &EManip::do_assign<T>;	// { dg-bogus "" } unresolved
+    &do_assign<T>;		// { dg-bogus "" } unresolved
+    EManip::do_assign<T>;       // { dg-bogus "" } unresolved
+    do_assign<T>;               // { dg-bogus "" } unresolved
   }
 };
 void foo(MatrixC <double> *ptr)
 {
-  EManip::do_assign<double>;    // { dg-error "" } unresolved
-  &EManip::do_assign<double>;	// { dg-error "" } unresolved
+  EManip::do_assign<double>;    // { dg-bogus "" } unresolved
+  &EManip::do_assign<double>;	// { dg-bogus "" } unresolved
   ptr->foo ();
   void (*p1) (int *) = &do_assign<double>;       // { dg-error "" } cannot convert
   void (*p2) (int *) = &EManip::do_assign<double>; // { dg-error "" } cannot convert
