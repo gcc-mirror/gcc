@@ -1,3 +1,11 @@
+2009-10-08  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/41620
+	* ipa.c (cgraph_externally_visible_p,
+	function_and_variable_visibility,
+	whole_program_function_and_variable_visibility): Skip non-finalized
+	nodes.
+
 2009-10-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (CONSTANT_ADDRESS_P): Do not allow
