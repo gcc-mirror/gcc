@@ -1,5 +1,9 @@
 2009-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/ext/bitmap_allocator.h: Minor clean-ups.
+
+2009-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* config/abi/pre/gnu.ver: Adjust exports.
 
 2009-10-07  Phil Muldoon <pmuldoon@redhat.com>
