@@ -130,7 +130,7 @@ case ${host} in
         ;;
     esac
     case ${host} in
-      *-*-linux* )
+      *-*-linux* | *-*-freebsd*)
 	if test "${GCC}:${ac_cv_sizeof_long}" = yes:4; then
 	  # On powerpc*-*-linux* use -Wl,--relax to link cc1,
 	  # if ld is new enough, otherwise force -O1 in CFLAGS.
