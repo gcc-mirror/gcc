@@ -254,6 +254,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 static bool
 cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
 {
+  if (!node->local.finalized)
+    return false;
   if (!DECL_COMDAT (node->decl)
       && (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl)))
     return false;
@@ -312,6 +314,8 @@ function_and_variable_visibility (bool whole_program)
     }
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
+      if (!vnode->finalized)
+        continue;
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
 	  && (!whole_program
@@ -392,7 +396,7 @@ whole_program_function_and_variable_visibility (void)
   function_and_variable_visibility (flag_whole_program);
 
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->local.externally_visible)
+    if (node->local.externally_visible && node->local.finalized)
       cgraph_mark_needed_node (node);
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     if (vnode->externally_visible)
