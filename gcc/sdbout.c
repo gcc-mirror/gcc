@@ -337,6 +337,9 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   debug_nothing_int,		         /* handle_pch */
   debug_nothing_rtx,		         /* var_location */
   debug_nothing_void,                    /* switch_text_section */
+  debug_nothing_tree,		         /* direct_call */
+  debug_nothing_tree_int,		 /* virtual_call_token */
+  debug_nothing_uid,		         /* virtual_call */
   debug_nothing_tree_tree,		 /* set_name */
   0                                      /* start_end_main_source_file */
 };
@@ -1725,6 +1728,9 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   0,		/* handle_pch */
   0,		/* var_location */
   0,		/* switch_text_section */
+  0,		/* direct_call */
+  0,		/* virtual_call_token */
+  0,		/* virtual_call */
   0,		/* set_name */
   0		/* start_end_main_source_file */
 };

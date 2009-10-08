@@ -126,6 +126,25 @@ struct gcc_debug_hooks
      text sections.  */
   void (* switch_text_section) (void);
 
+  /* Records a direct call to the function DECL, noting the point of call
+     and the debug info for the function.  Called from final_scan_insn
+     when ICF debugging is enabled.  */
+  void (* direct_call) (tree decl);
+
+  /* Records the OBJ_TYPE_REF_TOKEN for a virtual call through ADDR, which
+     for C++ is the vtable slot index, noting the INSN_UID for the call
+     instruction.  Called from calls.c:emit_call_1 when ICF debugging is
+     enabled.  It's necessary to do this during lowering because the
+     call instruction and the OBJ_TYPE_REF become separated after that
+     point.  */
+  void (* virtual_call_token) (tree addr, int insn_uid);
+
+  /* Records a virtual call given INSN_UID, which is the UID of the call
+     instruction.  The UID is then mapped to the vtable slot index noted
+     during the lowering phase.  Called from final_scan_insn when ICF
+     debugging is enabled.  */
+  void (* virtual_call) (int insn_uid);
+
   /* Called from grokdeclarator.  Replaces the anonymous name with the
      type name.  */
   void (* set_name) (tree, tree);
@@ -151,6 +170,7 @@ extern void debug_nothing_tree_int (tree, int);
 extern void debug_nothing_tree_tree_tree_bool (tree, tree, tree, bool);
 extern bool debug_true_const_tree (const_tree);
 extern void debug_nothing_rtx (rtx);
+extern void debug_nothing_uid (int);
 
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;

@@ -2684,6 +2684,26 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	/* Output assembler code from the template.  */
 	output_asm_insn (templ, recog_data.operand);
 
+	/* Record point-of-call information for ICF debugging.  */
+	if (flag_enable_icf_debug && CALL_P (insn))
+	  {
+	    rtx x = call_from_call_insn (insn);
+	    x = XEXP (x, 0);
+	    if (x && MEM_P (x))
+	      {
+	        if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
+	          {
+		    tree t;
+		    x = XEXP (x, 0);
+		    t = SYMBOL_REF_DECL (x);
+		    if (t)
+		      (*debug_hooks->direct_call) (t);
+	          }
+	        else
+	          (*debug_hooks->virtual_call) (INSN_UID (insn));
+	      }
+	  }
+
 	/* Some target machines need to postscan each insn after
 	   it is output.  */
 	if (targetm.asm_out.final_postscan_insn)

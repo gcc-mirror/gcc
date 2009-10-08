@@ -224,6 +224,8 @@ static GTY(()) section *debug_line_section;
 static GTY(()) section *debug_loc_section;
 static GTY(()) section *debug_pubnames_section;
 static GTY(()) section *debug_pubtypes_section;
+static GTY(()) section *debug_dcall_section;
+static GTY(()) section *debug_vcall_section;
 static GTY(()) section *debug_str_section;
 static GTY(()) section *debug_ranges_section;
 static GTY(()) section *debug_frame_section;
@@ -5413,6 +5415,9 @@ static void dwarf2out_imported_module_or_decl_1 (tree, tree, tree,
 						 dw_die_ref);
 static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx);
+static void dwarf2out_direct_call (tree);
+static void dwarf2out_virtual_call_token (tree, int);
+static void dwarf2out_virtual_call (int);
 static void dwarf2out_begin_function (tree);
 static void dwarf2out_set_name (tree, tree);
 
@@ -5448,6 +5453,9 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_int,		/* handle_pch */
   dwarf2out_var_location,
   dwarf2out_switch_text_section,
+  dwarf2out_direct_call,
+  dwarf2out_virtual_call_token,
+  dwarf2out_virtual_call,
   dwarf2out_set_name,
   1                             /* start_end_main_source_file */
 };
@@ -5828,6 +5836,45 @@ static GTY(()) bool have_location_lists;
 /* Unique label counter.  */
 static GTY(()) unsigned int loclabel_num;
 
+/* Unique label counter for point-of-call tables.  */
+static GTY(()) unsigned int poc_label_num;
+
+/* The direct call table structure.  */
+
+typedef struct GTY(()) dcall_struct {
+  unsigned int poc_label_num;
+  tree poc_decl;
+  dw_die_ref targ_die;
+}
+dcall_entry;
+
+DEF_VEC_O(dcall_entry);
+DEF_VEC_ALLOC_O(dcall_entry, gc);
+
+/* The virtual call table structure.  */
+
+typedef struct GTY(()) vcall_struct {
+  unsigned int poc_label_num;
+  unsigned int vtable_slot;
+}
+vcall_entry;
+
+DEF_VEC_O(vcall_entry);
+DEF_VEC_ALLOC_O(vcall_entry, gc);
+
+/* Pointers to the direct and virtual call tables.  */
+static GTY (()) VEC (dcall_entry, gc) * dcall_table = NULL;
+static GTY (()) VEC (vcall_entry, gc) * vcall_table = NULL;
+
+/* A hash table to map INSN_UIDs to vtable slot indexes.  */
+
+struct GTY (()) vcall_insn {
+  int insn_uid;
+  unsigned int vtable_slot;
+};
+
+static GTY ((param_is (struct vcall_insn))) htab_t vcall_insn_table;
+
 #ifdef DWARF2_DEBUGGING_INFO
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
@@ -6164,6 +6211,12 @@ static void gen_remaining_tmpl_value_param_die_attribute (void);
 #endif
 #ifndef DEBUG_PUBTYPES_SECTION
 #define DEBUG_PUBTYPES_SECTION	".debug_pubtypes"
+#endif
+#ifndef DEBUG_DCALL_SECTION
+#define DEBUG_DCALL_SECTION	".debug_dcall"
+#endif
+#ifndef DEBUG_VCALL_SECTION
+#define DEBUG_VCALL_SECTION	".debug_vcall"
 #endif
 #ifndef DEBUG_STR_SECTION
 #define DEBUG_STR_SECTION	".debug_str"
@@ -11683,6 +11736,129 @@ output_line_info (void)
 
   /* Output the marker for the end of the line number info.  */
   ASM_OUTPUT_LABEL (asm_out_file, l2);
+}
+
+/* Return the size of the .debug_dcall table for the compilation unit.  */
+
+static unsigned long
+size_of_dcall_table (void)
+{
+  unsigned long size;
+  unsigned int i;
+  dcall_entry *p;
+  tree last_poc_decl = NULL;
+
+  /* Header:  version + debug info section pointer + pointer size.  */
+  size = 2 + DWARF_OFFSET_SIZE + 1;
+
+  /* Each entry:  code label + DIE offset.  */
+  for (i = 0; VEC_iterate (dcall_entry, dcall_table, i, p); i++)
+    {
+      gcc_assert (p->targ_die != NULL);
+      /* Insert a "from" entry when the point-of-call DIE offset changes.  */
+      if (p->poc_decl != last_poc_decl)
+        {
+          dw_die_ref poc_die = lookup_decl_die (p->poc_decl);
+          gcc_assert (poc_die);
+          last_poc_decl = p->poc_decl;
+          if (poc_die)
+            size += (DWARF_OFFSET_SIZE
+                     + size_of_uleb128 (poc_die->die_offset));
+        }
+      size += DWARF_OFFSET_SIZE + size_of_uleb128 (p->targ_die->die_offset);
+    }
+
+  return size;
+}
+
+/* Output the direct call table used to disambiguate PC values when
+   identical function have been merged.  */
+
+static void
+output_dcall_table (void)
+{
+  unsigned i;
+  unsigned long dcall_length = size_of_dcall_table ();
+  dcall_entry *p;
+  char poc_label[MAX_ARTIFICIAL_LABEL_BYTES];
+  tree last_poc_decl = NULL;
+
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
+  dw2_asm_output_data (DWARF_OFFSET_SIZE, dcall_length,
+		       "Length of Direct Call Table");
+  dw2_asm_output_data (2, 4, "Version number");
+  dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_info_section_label,
+			 debug_info_section,
+			 "Offset of Compilation Unit Info");
+  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+
+  for (i = 0; VEC_iterate (dcall_entry, dcall_table, i, p); i++)
+    {
+      /* Insert a "from" entry when the point-of-call DIE offset changes.  */
+      if (p->poc_decl != last_poc_decl)
+        {
+          dw_die_ref poc_die = lookup_decl_die (p->poc_decl);
+          last_poc_decl = p->poc_decl;
+          if (poc_die)
+            {
+              dw2_asm_output_data (DWARF_OFFSET_SIZE, 0, "New caller");
+              dw2_asm_output_data_uleb128 (poc_die->die_offset,
+                                           "Caller DIE offset");
+            }
+        }
+      ASM_GENERATE_INTERNAL_LABEL (poc_label, "LPOC", p->poc_label_num);
+      dw2_asm_output_addr (DWARF_OFFSET_SIZE, poc_label, "Point of call");
+      dw2_asm_output_data_uleb128 (p->targ_die->die_offset,
+                                   "Callee DIE offset");
+    }
+}
+
+/* Return the size of the .debug_vcall table for the compilation unit.  */
+
+static unsigned long
+size_of_vcall_table (void)
+{
+  unsigned long size;
+  unsigned int i;
+  vcall_entry *p;
+
+  /* Header:  version + pointer size.  */
+  size = 2 + 1;
+
+  /* Each entry:  code label + vtable slot index.  */
+  for (i = 0; VEC_iterate (vcall_entry, vcall_table, i, p); i++)
+    size += DWARF_OFFSET_SIZE + size_of_uleb128 (p->vtable_slot);
+
+  return size;
+}
+
+/* Output the virtual call table used to disambiguate PC values when
+   identical function have been merged.  */
+
+static void
+output_vcall_table (void)
+{
+  unsigned i;
+  unsigned long vcall_length = size_of_vcall_table ();
+  vcall_entry *p;
+  char poc_label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
+    dw2_asm_output_data (4, 0xffffffff,
+      "Initial length escape value indicating 64-bit DWARF extension");
+  dw2_asm_output_data (DWARF_OFFSET_SIZE, vcall_length,
+		       "Length of Virtual Call Table");
+  dw2_asm_output_data (2, 4, "Version number");
+  dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
+
+  for (i = 0; VEC_iterate (vcall_entry, vcall_table, i, p); i++)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (poc_label, "LPOC", p->poc_label_num);
+      dw2_asm_output_addr (DWARF_OFFSET_SIZE, poc_label, "Point of call");
+      dw2_asm_output_data_uleb128 (p->vtable_slot, "Vtable slot");
+    }
 }
 
 /* Given a pointer to a tree node for some base type, return a pointer to
@@ -19709,6 +19885,103 @@ dwarf2out_set_name (tree decl, tree name)
     add_name_attribute (die, dwarf2_name (name, 0));
 }
 
+/* Called by the final INSN scan whenever we see a direct function call.
+   Make an entry into the direct call table, recording the point of call
+   and a reference to the target function's debug entry.  */
+
+static void
+dwarf2out_direct_call (tree targ)
+{
+  dcall_entry e;
+  tree origin = decl_ultimate_origin (targ);
+
+  /* If this is a clone, use the abstract origin as the target.  */
+  if (origin)
+    targ = origin;
+
+  e.poc_label_num = poc_label_num++;
+  e.poc_decl = current_function_decl;
+  e.targ_die = force_decl_die (targ);
+  VEC_safe_push (dcall_entry, gc, dcall_table, &e);
+
+  /* Drop a label at the return point to mark the point of call.  */
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LPOC", e.poc_label_num);
+}
+
+/* Returns a hash value for X (which really is a struct vcall_insn).  */
+
+static hashval_t
+vcall_insn_table_hash (const void *x)
+{
+  return (hashval_t) ((const struct vcall_insn *) x)->insn_uid;
+}
+
+/* Return nonzero if insn_uid of struct vcall_insn *X is the same as
+   insnd_uid of *Y.  */
+
+static int
+vcall_insn_table_eq (const void *x, const void *y)
+{
+  return (((const struct vcall_insn *) x)->insn_uid
+          == ((const struct vcall_insn *) y)->insn_uid);
+}
+
+/* Called when lowering indirect calls to RTL.  We make a note of INSN_UID
+   and the OBJ_TYPE_REF_TOKEN from ADDR.  For C++ virtual calls, the token
+   is the vtable slot index that we will need to put in the virtual call
+   table later.  */
+
+static void
+dwarf2out_virtual_call_token (tree addr, int insn_uid)
+{
+  if (is_cxx() && TREE_CODE (addr) == OBJ_TYPE_REF)
+    {
+      tree token = OBJ_TYPE_REF_TOKEN (addr);
+      if (TREE_CODE (token) == INTEGER_CST)
+        {
+          struct vcall_insn *item = GGC_NEW (struct vcall_insn);
+          struct vcall_insn **slot;
+
+          gcc_assert (item);
+          item->insn_uid = insn_uid;
+          item->vtable_slot = TREE_INT_CST_LOW (token);
+          slot = (struct vcall_insn **)
+              htab_find_slot_with_hash (vcall_insn_table, &item,
+                                        (hashval_t) insn_uid, INSERT);
+          *slot = item;
+        }
+    }
+}
+
+/* Called by the final INSN scan whenever we see a virtual function call.
+   Make an entry into the virtual call table, recording the point of call
+   and the slot index of the vtable entry used to call the virtual member
+   function.  The slot index was associated with the INSN_UID during the
+   lowering to RTL.  */
+
+static void
+dwarf2out_virtual_call (int insn_uid)
+{
+  vcall_entry e;
+  struct vcall_insn item;
+  struct vcall_insn *p;
+
+  item.insn_uid = insn_uid;
+  item.vtable_slot = 0;
+  p = (struct vcall_insn *) htab_find_with_hash (vcall_insn_table,
+                                                 (void *) &item,
+                                                 (hashval_t) insn_uid);
+  if (p == NULL)
+    return;
+
+  e.poc_label_num = poc_label_num++;
+  e.vtable_slot = p->vtable_slot;
+  VEC_safe_push (vcall_entry, gc, vcall_table, &e);
+
+  /* Drop a label at the return point to mark the point of call.  */
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LPOC", e.poc_label_num);
+}
+
 /* Called by the final INSN scan whenever we see a var location.  We
    use it to drop labels in the right places, and throw the location in
    our lookup table.  */
@@ -19997,6 +20270,10 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   pubname_table = VEC_alloc (pubname_entry, gc, 32);
   pubtype_table = VEC_alloc (pubname_entry, gc, 32);
 
+  /* Allocate the table that maps insn UIDs to vtable slot indexes.  */
+  vcall_insn_table = htab_create_ggc (10, vcall_insn_table_hash,
+                                      vcall_insn_table_eq, NULL);
+
   /* Generate the initial DIE for the .debug section.  Note that the (string)
      value given in the DW_AT_name attribute of the DW_TAG_compile_unit DIE
      will (typically) be a relative pathname and that this pathname should be
@@ -20025,6 +20302,10 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 					SECTION_DEBUG, NULL);
   debug_pubtypes_section = get_section (DEBUG_PUBTYPES_SECTION,
 					SECTION_DEBUG, NULL);
+  debug_dcall_section = get_section (DEBUG_DCALL_SECTION,
+			             SECTION_DEBUG, NULL);
+  debug_vcall_section = get_section (DEBUG_VCALL_SECTION,
+				     SECTION_DEBUG, NULL);
   debug_str_section = get_section (DEBUG_STR_SECTION,
 				   DEBUG_STR_SECTION_FLAGS, NULL);
   debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
@@ -20399,6 +20680,7 @@ prune_unused_types (void)
   limbo_die_node *node;
   comdat_type_node *ctnode;
   pubname_ref pub;
+  dcall_entry *dcall;
 
 #if ENABLE_ASSERT_CHECKING
   /* All the marks should already be clear.  */
@@ -20428,6 +20710,10 @@ prune_unused_types (void)
     prune_unused_types_mark (pub->die, 1);
   for (i = 0; i < arange_table_in_use; i++)
     prune_unused_types_mark (arange_table[i], 1);
+
+  /* Mark nodes referenced from the direct call table.  */
+  for (i = 0; VEC_iterate (dcall_entry, dcall_table, i, dcall); i++)
+    prune_unused_types_mark (dcall->targ_die, 1);
 
   /* Get rid of nodes that aren't marked; and update the string counts.  */
   if (debug_str_hash && debug_str_hash_forced)
@@ -20890,6 +21176,18 @@ dwarf2out_finish (const char *filename)
       output_pubnames (pubtype_table);
     }
 
+  /* Output direct and virtual call tables if necessary.  */
+  if (!VEC_empty (dcall_entry, dcall_table))
+    {
+      switch_to_section (debug_dcall_section);
+      output_dcall_table ();
+    }
+  if (!VEC_empty (vcall_entry, vcall_table))
+    {
+      switch_to_section (debug_vcall_section);
+      output_vcall_table ();
+    }
+
   /* Output the address range information.  We only put functions in the arange
      table, so don't write it out if we don't have any.  */
   if (fde_table_in_use)
@@ -20960,6 +21258,9 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   0,		/* handle_pch */
   0,		/* var_location */
   0,		/* switch_text_section */
+  0,		/* direct_call */
+  0,		/* virtual_call_token */
+  0,		/* virtual_call */
   0,		/* set_name */
   0		/* start_end_main_source_file */
 };
