@@ -1,3 +1,11 @@
+2009-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-elf.c (init_shdr##BITS, lto_elf_begin_section_with_type,
+	init_ehdr##BITS, lto_elf_file_close): Remove trailing "." from
+	diagnostics.
+	* lto-lang.c (lto_post_options): Remove trailing "." from
+	diagnostics.
+
 2009-10-08  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (read_cgraph_and_symbols): Free the gimple type merging

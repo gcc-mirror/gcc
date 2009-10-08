@@ -657,7 +657,7 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 
   /* -fltrans and -fwpa are mutually exclusive.  Check for that here.  */
   if (flag_wpa && flag_ltrans)
-    error ("-fwpa and -fltrans are mutually exclusive.");
+    error ("-fwpa and -fltrans are mutually exclusive");
 
   if (flag_ltrans)
     {
