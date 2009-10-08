@@ -321,7 +321,7 @@ static rtx *uid_log_links;
 
 static int label_tick;
 
-/* Reset to label_tick for each label.  */
+/* Reset to label_tick for each extended basic block in scanning order.  */
 
 static int label_tick_ebb_start;
 
@@ -1010,9 +1010,6 @@ clear_log_links (void)
     if (INSN_P (insn))
       free_INSN_LIST_list (&LOG_LINKS (insn));
 }
-
-
-
 
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.
@@ -1028,6 +1025,7 @@ combine_instructions (rtx f, unsigned int nregs)
 #endif
   rtx links, nextlinks;
   rtx first;
+  basic_block last_bb;
 
   int new_direct_jump_p = 0;
 
@@ -1058,6 +1056,7 @@ combine_instructions (rtx f, unsigned int nregs)
      problems when, for example, we have j <<= 1 in a loop.  */
 
   nonzero_sign_valid = 0;
+  label_tick = label_tick_ebb_start = 1;
 
   /* Scan all SETs and see if we can deduce anything about what
      bits are known to be zero for some registers and how many copies
@@ -1067,18 +1066,23 @@ combine_instructions (rtx f, unsigned int nregs)
      for what bits are known to be set.  */
 
   setup_incoming_promotions (first);
+  /* Allow the entry block and the first block to fall into the same EBB.
+     Conceptually the incoming promotions are assigned to the entry block.  */
+  last_bb = ENTRY_BLOCK_PTR;
 
   create_log_links ();
-  label_tick_ebb_start = ENTRY_BLOCK_PTR->index;
   FOR_EACH_BB (this_basic_block)
     {
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
-      label_tick = this_basic_block->index;
+
+      label_tick++;
       if (!single_pred_p (this_basic_block)
-	  || single_pred (this_basic_block)->index != label_tick - 1)
+	  || single_pred (this_basic_block) != last_bb)
 	label_tick_ebb_start = label_tick;
+      last_bb = this_basic_block;
+
       FOR_BB_INSNS (this_basic_block, insn)
         if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
 	  {
@@ -1109,20 +1113,23 @@ combine_instructions (rtx f, unsigned int nregs)
   nonzero_sign_valid = 1;
 
   /* Now scan all the insns in forward order.  */
-
-  label_tick_ebb_start = ENTRY_BLOCK_PTR->index;
+  label_tick = label_tick_ebb_start = 1;
   init_reg_last ();
   setup_incoming_promotions (first);
+  last_bb = ENTRY_BLOCK_PTR;
 
   FOR_EACH_BB (this_basic_block)
     {
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
-      label_tick = this_basic_block->index;
+
+      label_tick++;
       if (!single_pred_p (this_basic_block)
-	  || single_pred (this_basic_block)->index != label_tick - 1)
+	  || single_pred (this_basic_block) != last_bb)
 	label_tick_ebb_start = label_tick;
+      last_bb = this_basic_block;
+
       rtl_profile_for_bb (this_basic_block);
       for (insn = BB_HEAD (this_basic_block);
 	   insn != NEXT_INSN (BB_END (this_basic_block));
