@@ -1,3 +1,9 @@
+2009-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41353
+	* regmove.c (regmove_backward_pass): Replace src with dst in the
+	debug insn, and check for dst before rather than after.
+
 2009-10-08  Janis Johnson <janis187@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Remove.
