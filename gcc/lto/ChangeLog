@@ -1,3 +1,8 @@
+2009-10-08  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (read_cgraph_and_symbols): Free the gimple type merging
+	hash tables.
+
 2009-10-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto.c: Only include <sys/mman.h> if HAVE_MMAP_FILE.

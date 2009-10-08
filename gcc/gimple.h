@@ -919,6 +919,7 @@ extern void gimple_force_type_merge (tree, tree);
 extern int gimple_types_compatible_p (tree, tree);
 extern tree gimple_register_type (tree);
 extern void print_gimple_types_stats (void);
+extern void free_gimple_type_tables (void);
 extern tree gimple_unsigned_type (tree);
 extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);

@@ -3899,8 +3899,8 @@ print_gimple_types_stats (void)
   else
     fprintf (stderr, "GIMPLE type table is empty\n");
   if (gtc_visited)
-    fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld elements, "
-	     "%ld searches, %ld collisions (ratio: %f)\n",
+    fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
+	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
 	     (long) htab_size (gtc_visited),
 	     (long) htab_elements (gtc_visited),
 	     (long) gtc_visited->searches,
@@ -3908,6 +3908,32 @@ print_gimple_types_stats (void)
 	     htab_collisions (gtc_visited));
   else
     fprintf (stderr, "GIMPLE type comparison table is empty\n");
+}
+
+/* Free the gimple type hashtables used for LTO type merging.  */
+
+void
+free_gimple_type_tables (void)
+{
+  /* Last chance to print stats for the tables.  */
+  if (flag_lto_report)
+    print_gimple_types_stats ();
+
+  if (gimple_types)
+    {
+      htab_delete (gimple_types);
+      gimple_types = NULL;
+    }
+  if (type_hash_cache)
+    {
+      pointer_map_destroy (type_hash_cache);
+      type_hash_cache = NULL;
+    }
+  if (gtc_visited)
+    {
+      htab_delete (gtc_visited);
+      gtc_visited = NULL;
+    }
 }
 
 
