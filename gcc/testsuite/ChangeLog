@@ -1,5 +1,7 @@
 2009-10-08  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/rv-deduce.C: New.
+
 	PR c++/37177
 	* g++.dg/cpp0x/variadic-throw.C: Adjust errors.
 	* g++.dg/template/explicit-args2.C: New.

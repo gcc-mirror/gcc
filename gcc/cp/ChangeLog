@@ -1,5 +1,9 @@
 2009-10-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36816
+	* pt.c (maybe_adjust_types_for_deduction): Do rvalue ref adjustment
+	even when DEDUCE_EXACT.
+
 	PR c++/37177
 	* pt.c (resolve_nondeduced_context): New.
 	* cvt.c (convert_to_void): Call it.
