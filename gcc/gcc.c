@@ -7529,12 +7529,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 						 "liblto_plugin.so", X_OK,
 						 false);
 	  if (!linker_plugin_file_spec)
-	    fatal ("-use-linker-plugin, but liblto_plugin.so not found.");
+	    fatal ("-use-linker-plugin, but liblto_plugin.so not found");
 
 	  lto_libgcc_spec = find_a_file (&startfile_prefixes, "libgcc.a",
 					 R_OK, true);
 	  if (!lto_libgcc_spec)
-	    fatal ("could not find libgcc.a.");
+	    fatal ("could not find libgcc.a");
 	}
       lto_gcc_spec = argv[0];
 

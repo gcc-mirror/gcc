@@ -1,3 +1,7 @@
+2009-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (main): Remove trailing "." from diagnostics.
+
 2009-10-08  Cary Coutant  <ccoutant@google.com>
 
 	Add support for debugging with ICF (Identical Code Folding).
