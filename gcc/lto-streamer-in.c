@@ -942,6 +942,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	}
       break;
 
+    case GIMPLE_NOP:
     case GIMPLE_PREDICT:
       break;
 

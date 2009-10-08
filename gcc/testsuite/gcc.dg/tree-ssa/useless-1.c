@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-useless" } */
+/* { dg-options "-O1 -fdump-tree-gimple" } */
 
 void
 foo (void)
@@ -13,5 +13,5 @@ foo (void)
    in the loop exit condition, it would be re-introduced during
    GIMPLE lowering, at the cost of an extra statement, label,
    and basic block.  */
-/* { dg-final { scan-tree-dump-times "goto" 3 "useless"} } */ 
-/* { dg-final { cleanup-tree-dump "useless" } } */
+/* { dg-final { scan-tree-dump-times "goto" 3 "gimple"} } */ 
+/* { dg-final { cleanup-tree-dump "gimple" } } */

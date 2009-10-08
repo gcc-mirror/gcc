@@ -1,3 +1,10 @@
+2009-10-08  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41573
+	* gcc.dg/tree-ssa/foldstring-1.c: Use fre dump.
+	* gcc.dg/tree-ssa/useless-1.c: Use gimple dump.
+	* gcc.dg/pr41573.c: New test.
+
 2009-10-07  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/41182

@@ -9238,9 +9238,9 @@ fold_builtin_isascii (location_t loc, tree arg)
   else
     {
       /* Transform isascii(c) -> ((c & ~0x7f) == 0).  */
-      arg = build2 (BIT_AND_EXPR, integer_type_node, arg,
-		    build_int_cst (NULL_TREE,
-				   ~ (unsigned HOST_WIDE_INT) 0x7f));
+      arg = fold_build2 (BIT_AND_EXPR, integer_type_node, arg,
+			 build_int_cst (NULL_TREE,
+					~ (unsigned HOST_WIDE_INT) 0x7f));
       return fold_build2_loc (loc, EQ_EXPR, integer_type_node,
 			  arg, integer_zero_node);
     }
@@ -9278,8 +9278,8 @@ fold_builtin_isdigit (location_t loc, tree arg)
 	return NULL_TREE;
 
       arg = fold_convert_loc (loc, unsigned_type_node, arg);
-      arg = build2 (MINUS_EXPR, unsigned_type_node, arg,
-		    build_int_cst (unsigned_type_node, target_digit0));
+      arg = fold_build2 (MINUS_EXPR, unsigned_type_node, arg,
+			 build_int_cst (unsigned_type_node, target_digit0));
       return fold_build2_loc (loc, LE_EXPR, integer_type_node, arg,
 			  build_int_cst (unsigned_type_node, 9));
     }

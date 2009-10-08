@@ -552,8 +552,11 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
 
     case ERT_ALLOWED_EXCEPTIONS:
       new_r->u.allowed.type_list = old_r->u.allowed.type_list;
-      new_r->u.allowed.label
-	= data->label_map (old_r->u.allowed.label, data->label_map_data);
+      if (old_r->u.allowed.label)
+	new_r->u.allowed.label
+	    = data->label_map (old_r->u.allowed.label, data->label_map_data);
+      else
+	new_r->u.allowed.label = NULL_TREE;
       break;
 
     case ERT_MUST_NOT_THROW:

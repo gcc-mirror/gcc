@@ -1692,6 +1692,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	}
       break;
 
+    case GIMPLE_NOP:
     case GIMPLE_PREDICT:
       break;
 
