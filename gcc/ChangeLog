@@ -1,3 +1,14 @@
+2009-10-07  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/41182
+	* c-common.c (c_fully_fold_internal): Strip nops from the result
+	of recursive calls to c_fully_fold_internal.
+	(c_wrap_maybe_const): New.
+	(c_save_expr): Use c_wrap_maybe_const.
+	* c-common.h (c_wrap_maybe_const): Declare.
+	* c-typeck.c (build_conditional_expr, c_finish_stmt_expr,
+	build_binary_op): Use c_wrap_maybe_const.
+
 2009-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* real.c: Fix comment to reflect actual exponent size.

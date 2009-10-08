@@ -1,3 +1,8 @@
+2009-10-07  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/41182
+	* gcc.c-torture/compile/pr41182-1.c: New.
+
 2009-10-07  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/variadic95.C: New.
