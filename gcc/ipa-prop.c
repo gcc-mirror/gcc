@@ -1398,7 +1398,9 @@ ipa_print_node_params (FILE * f, struct cgraph_node *node)
       temp = ipa_get_param (info, i);
       if (TREE_CODE (temp) == PARM_DECL)
 	fprintf (f, "    param %d : %s", i,
-		 (*lang_hooks.decl_printable_name) (temp, 2));
+                 (DECL_NAME (temp)
+                  ? (*lang_hooks.decl_printable_name) (temp, 2)
+                  : "(unnamed)"));
       if (ipa_is_param_modified (info, i))
 	fprintf (f, " modified");
       if (ipa_is_param_called (info, i))
