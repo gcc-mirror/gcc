@@ -1,3 +1,11 @@
+2009-10-08  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (add_input_library): New.
+	(all_symbols_read_handler): Use add_input_library for items that
+	start with -l.
+	(process_option): Fit in 80 columns.
+	(onload): Handle LDPT_ADD_INPUT_LIBRARY.
+
 2009-10-02  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.am (AM_CPPFLAGS): Remove -D_LARGEFILE_SOURCE
