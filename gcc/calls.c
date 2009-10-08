@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "langhooks.h"
 #include "target.h"
+#include "debug.h"
 #include "cgraph.h"
 #include "except.h"
 #include "dbgcnt.h"
@@ -393,6 +394,11 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
     }
 
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
+
+  /* Record debug information for virtual calls.  */
+  if (flag_enable_icf_debug && fndecl == NULL)
+    (*debug_hooks->virtual_call_token) (CALL_EXPR_FN (fntree),
+                                        INSN_UID (call_insn));
 
   /* Restore this now, so that we do defer pops for this call's args
      if the context of the call as a whole permits.  */

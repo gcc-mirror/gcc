@@ -1,3 +1,41 @@
+2009-10-08  Cary Coutant  <ccoutant@google.com>
+
+	Add support for debugging with ICF (Identical Code Folding).
+	* calls.c (debug.h): New #include.
+	(emit_call_1): Call virtual_call_token debug hook.
+	* common.opt (-fenable-icf-debug): New option.
+	* dwarf2out.c (dwarf2_debug_hooks): Add entries for new hooks (two
+	locations in the source).
+	(poc_label_num): New variable.
+	(dcall_entry, vcall_entry): New typedefs.
+	(dcall_table, vcall_table): New variables.
+	(struct vcall_insn): New type.
+	(vcall_insn_table): New variable.
+	(DEBUG_DCALL_SECTION, DEBUG_VCALL_SECTION): New macros.
+	(size_of_dcall_table): New function.
+	(output_dcall_table): New function.
+	(size_of_vcall_table): New function.
+	(output_vcall_table): New function.
+	(dwarf2out_direct_call): New function.
+	(vcall_insn_table_hash): New function.
+	(vcall_insn_table_eq): New function.
+	(dwarf2out_virtual_call_token): New function.
+	(dwarf2out_virtual_call): New function.
+	(dwarf2out_init): Allocate new tables and sections.
+	(prune_unused_types): Mark DIEs referenced from direct call table.
+	(dwarf2out_finish): Output direct and virtual call tables.
+	* final.c (final_scan_insn): Call direct_call and virtual_call
+	debug hooks.
+	* debug.h (struct gcc_debug_hooks): Add direct_call,
+	virtual_call_token, virtual_call hooks.
+	(debug_nothing_uid): New function.
+	* debug.c (do_nothing_debug_hooks): Add dummy entries for new hooks.
+	(debug_nothing_uid): New function.
+	* dbxout.c (dbx_debug_hooks): Add dummy entries for new hooks.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* doc/invoke.texi (-fenable-icf-debug): New option.
+
 2009-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41353

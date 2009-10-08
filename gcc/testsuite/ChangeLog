@@ -1,3 +1,8 @@
+2009-10-08  Cary Coutant  <ccoutant@google.com>
+
+	Add support for debugging with ICF (Identical Code Folding).
+	* g++.dg/debug/dwarf2/icf.C: New test.
+
 2009-10-08  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/truncate-6.c: New test.
