@@ -956,6 +956,7 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 
     default:;
     }
+  expr = resolve_nondeduced_context (expr);
   {
     tree probe = expr;
 

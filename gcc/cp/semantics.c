@@ -4741,6 +4741,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
 
   /* The type denoted by decltype(e) is defined as follows:  */
 
+  expr = resolve_nondeduced_context (expr);
   if (id_expression_or_member_access_p)
     {
       /* If e is an id-expression or a class member access (5.2.5
@@ -4766,9 +4767,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
         /* See through BASELINK nodes to the underlying functions.  */
         expr = BASELINK_FUNCTIONS (expr);
 
+      if (TREE_CODE (expr) == TEMPLATE_ID_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+
       if (TREE_CODE (expr) == OVERLOAD)
         {
-          if (OVL_CHAIN (expr))
+          if (OVL_CHAIN (expr)
+	      || TREE_CODE (OVL_FUNCTION (expr)) == TEMPLATE_DECL)
             {
               error ("%qE refers to a set of overloaded functions", orig_expr);
               return error_mark_node;

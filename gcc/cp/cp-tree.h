@@ -4845,7 +4845,9 @@ bool template_template_parameter_p		(const_tree);
 extern tree get_primary_template_innermost_parameters	(const_tree);
 extern tree get_template_innermost_arguments	(const_tree);
 extern tree get_template_argument_pack_elems	(const_tree);
-extern tree get_function_template_decl (const_tree);
+extern tree get_function_template_decl		(const_tree);
+extern tree resolve_nondeduced_context		(tree);
+
 /* in repo.c */
 extern void init_repo				(void);
 extern int repo_emit_p				(tree);
