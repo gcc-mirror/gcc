@@ -2082,7 +2082,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 	     Without this, if the variable is placed in a
 	     section-anchored block, the template will only be marked
 	     when it's too late.  */
-	  record_references_in_initializer (to);
+	  record_references_in_initializer (to, false);
 	}
 
       decl = to;

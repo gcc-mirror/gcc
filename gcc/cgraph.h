@@ -459,7 +459,7 @@ struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						bitmap);
 void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*, bool, bitmap);
 struct cgraph_node *save_inline_function_body (struct cgraph_node *);
-void record_references_in_initializer (tree);
+void record_references_in_initializer (tree, bool);
 bool cgraph_process_new_functions (void);
 
 bool cgraph_decide_is_function_needed (struct cgraph_node *, tree);
