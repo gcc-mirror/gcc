@@ -104,20 +104,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	// insert(iterator, const_reference), erase(iterator),
 	// begin(), end(), back(), operator[].
 
-	__mini_vector() : _M_start(0), _M_finish(0), 
-			  _M_end_of_storage(0)
-	{ }
-
-#if 0
-	~__mini_vector()
-	{
-	  if (this->_M_start)
-	    {
-	      this->deallocate(this->_M_start, this->_M_end_of_storage 
-			       - this->_M_start);
-	    }
-	}
-#endif
+	__mini_vector()
+        : _M_start(0), _M_finish(0), _M_end_of_storage(0) { }
 
 	size_type
 	size() const throw()
@@ -276,15 +264,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return __first;
       }
 
-    template<typename _InputIterator, typename _Predicate>
-      inline _InputIterator
-      __find_if(_InputIterator __first, _InputIterator __last, _Predicate __p)
-      {
-	while (__first != __last && !__p(*__first))
-	  ++__first;
-	return __first;
-      }
-
     /** @brief The number of Blocks pointed to by the address pair
      *  passed to the function.
      */
@@ -380,12 +359,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  // is equal to the number of Objects that the current Block can
 	  // store, then there is definitely no space for another single
 	  // object, so just return false.
-	  _Counter_type __diff = 
-	    __gnu_cxx::__detail::__num_bitmaps(__bp);
+	  _Counter_type __diff = __detail::__num_bitmaps(__bp);
 
 	  if (*(reinterpret_cast<size_t*>
-		(__bp.first) - (__diff + 1))
-	      == __gnu_cxx::__detail::__num_blocks(__bp))
+		(__bp.first) - (__diff + 1)) == __detail::__num_blocks(__bp))
 	    return false;
 
 	  size_t* __rover = reinterpret_cast<size_t*>(__bp.first) - 1;
@@ -402,7 +379,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    }
 	  return false;
 	}
-
     
 	size_t*
 	_M_get() const throw()
@@ -412,7 +388,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	_M_offset() const throw()
 	{ return _M_data_offset * size_t(bits_per_block); }
       };
-
 
     /** @class  _Bitmap_counter bitmap_allocator.h bitmap_allocator.h
      *
@@ -424,11 +399,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     template<typename _Tp>
       class _Bitmap_counter
       {
-	typedef typename __detail::__mini_vector<typename std::pair<_Tp, _Tp> >
-	_BPVector;
+	typedef typename
+	__detail::__mini_vector<typename std::pair<_Tp, _Tp> > _BPVector;
 	typedef typename _BPVector::size_type _Index_type;
 	typedef _Tp pointer;
-    
+
 	_BPVector& _M_vbp;
 	size_t* _M_curr_bmap;
 	size_t* _M_last_bmap_in_block;
@@ -613,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	}
 	  
       // Just add the block to the list of free lists unconditionally.
-      iterator __temp = __gnu_cxx::__detail::__lower_bound
+      iterator __temp = __detail::__lower_bound
 	(__free_list.begin(), __free_list.end(), 
 	 *__addr, _LT_pointer_compare());
 
@@ -656,7 +631,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     _M_insert(size_t* __addr) throw()
     {
 #if defined __GTHREADS
-      __gnu_cxx::__scoped_lock __bfl_lock(_M_get_mutex());
+      __scoped_lock __bfl_lock(_M_get_mutex());
 #endif
       // Call _M_validate to decide what should be done with
       // this particular free list.
@@ -747,8 +722,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       typedef typename std::pair<_Alloc_block*, _Alloc_block*> _Block_pair;
 
-      typedef typename 
-      __detail::__mini_vector<_Block_pair> _BPVector;
+      typedef typename __detail::__mini_vector<_Block_pair> _BPVector;
+      typedef typename _BPVector::iterator _BPiter;
+
+      template<typename _Predicate>
+        static _BPiter
+        _S_find(_Predicate __p)
+        {
+	  _BPiter __first = _S_mem_blocks.begin();
+	  while (__first != _S_mem_blocks.end() && !__p(*__first))
+	    ++__first;
+	  return __first;
+	}
 
 #if defined _GLIBCXX_DEBUG
       // Complexity: O(lg(N)). Where, N is the number of block of size
@@ -756,14 +741,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       void 
       _S_check_for_free_blocks() throw()
       {
-	typedef typename 
-	  __gnu_cxx::__detail::_Ffit_finder<_Alloc_block*> _FFF;
-	_FFF __fff;
-	typedef typename _BPVector::iterator _BPiter;
-	_BPiter __bpi = 
-	  __gnu_cxx::__detail::__find_if
-	  (_S_mem_blocks.begin(), _S_mem_blocks.end(), 
-	   __gnu_cxx::__detail::_Functor_Ref<_FFF>(__fff));
+	typedef typename __detail::_Ffit_finder<_Alloc_block*> _FFF;
+	_BPiter __bpi = _S_find(_FFF());
 
 	_GLIBCXX_DEBUG_ASSERT(__bpi == _S_mem_blocks.end());
       }
@@ -793,9 +772,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  + _S_block_size * sizeof(_Alloc_block) 
 	  + __num_bitmaps * sizeof(size_t);
 
-	size_t* __temp = 
-	  reinterpret_cast<size_t*>
-	  (this->_M_get(__size_to_allocate));
+	size_t* __temp =
+	  reinterpret_cast<size_t*>(this->_M_get(__size_to_allocate));
 	*__temp = 0;
 	++__temp;
 
@@ -810,20 +788,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	// Fill the Vector with this information.
 	_S_mem_blocks.push_back(__bp);
 
-	size_t __bit_mask = 0; // 0 Indicates all Allocated.
-	__bit_mask = ~__bit_mask; // 1 Indicates all Free.
-
 	for (size_t __i = 0; __i < __num_bitmaps; ++__i)
-	  __temp[__i] = __bit_mask;
+	  __temp[__i] = ~static_cast<size_t>(0); // 1 Indicates all Free.
 
 	_S_block_size *= 2;
       }
 
-
       static _BPVector _S_mem_blocks;
       static size_t _S_block_size;
-      static __gnu_cxx::__detail::
-      _Bitmap_counter<_Alloc_block*> _S_last_request;
+      static __detail::_Bitmap_counter<_Alloc_block*> _S_last_request;
       static typename _BPVector::size_type _S_last_dealloc_index;
 #if defined __GTHREADS
       static __mutex_type _S_mut;
@@ -848,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_allocate_single_object() throw(std::bad_alloc)
       {
 #if defined __GTHREADS
-	__gnu_cxx::__scoped_lock __bit_lock(_S_mut);
+	__scoped_lock __bit_lock(_S_mut);
 #endif
 
 	// The algorithm is something like this: The last_request
@@ -866,21 +839,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	// dereference if tinkered with.
 	while (_S_last_request._M_finished() == false
 	       && (*(_S_last_request._M_get()) == 0))
-	  {
-	    _S_last_request.operator++();
-	  }
+	  _S_last_request.operator++();
 
 	if (__builtin_expect(_S_last_request._M_finished() == true, false))
 	  {
 	    // Fall Back to First Fit algorithm.
-	    typedef typename 
-	      __gnu_cxx::__detail::_Ffit_finder<_Alloc_block*> _FFF;
+	    typedef typename __detail::_Ffit_finder<_Alloc_block*> _FFF;
 	    _FFF __fff;
-	    typedef typename _BPVector::iterator _BPiter;
-	    _BPiter __bpi = 
-	      __gnu_cxx::__detail::__find_if
-	      (_S_mem_blocks.begin(), _S_mem_blocks.end(), 
-	       __gnu_cxx::__detail::_Functor_Ref<_FFF>(__fff));
+	    _BPiter __bpi = _S_find(__detail::_Functor_Ref<_FFF>(__fff));
 
 	    if (__bpi != _S_mem_blocks.end())
 	      {
@@ -897,8 +863,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		  (__bpi->first + __fff._M_offset() + __nz_bit);
 		size_t* __puse_count = 
 		  reinterpret_cast<size_t*>
-		  (__bpi->first) 
-		  - (__gnu_cxx::__detail::__num_bitmaps(*__bpi) + 1);
+		  (__bpi->first) - (__detail::__num_bitmaps(*__bpi) + 1);
 		
 		++(*__puse_count);
 		return __ret;
@@ -927,7 +892,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 	size_t* __puse_count = reinterpret_cast<size_t*>
 	  (_S_mem_blocks[_S_last_request._M_where()].first)
-	  - (__gnu_cxx::__detail::
+	  - (__detail::
 	     __num_bitmaps(_S_mem_blocks[_S_last_request._M_where()]) + 1);
 
 	++(*__puse_count);
@@ -946,7 +911,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_deallocate_single_object(pointer __p) throw()
       {
 #if defined __GTHREADS
-	__gnu_cxx::__scoped_lock __bit_lock(_S_mut);
+	__scoped_lock __bit_lock(_S_mut);
 #endif
 	_Alloc_block* __real_p = reinterpret_cast<_Alloc_block*>(__p);
 
@@ -958,9 +923,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 	_GLIBCXX_DEBUG_ASSERT(_S_last_dealloc_index >= 0);
 
-	
-	if (__gnu_cxx::__detail::_Inclusive_between<_Alloc_block*>
-	    (__real_p) (_S_mem_blocks[_S_last_dealloc_index]))
+	__detail::_Inclusive_between<_Alloc_block*> __ibt(__real_p);
+	if (__ibt(_S_mem_blocks[_S_last_dealloc_index]))
 	  {
 	    _GLIBCXX_DEBUG_ASSERT(_S_last_dealloc_index
 				  <= _S_mem_blocks.size() - 1);
@@ -971,11 +935,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  }
 	else
 	  {
-	    _Iterator _iter = __gnu_cxx::__detail::
-	      __find_if(_S_mem_blocks.begin(), 
-			_S_mem_blocks.end(), 
-			__gnu_cxx::__detail::
-			_Inclusive_between<_Alloc_block*>(__real_p));
+	    _Iterator _iter = _S_find(__ibt);
 
 	    _GLIBCXX_DEBUG_ASSERT(_iter != _S_mem_blocks.end());
 
@@ -995,7 +955,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	__detail::__bit_free(__bitmapC, __rotate);
 	size_t* __puse_count = reinterpret_cast<size_t*>
 	  (_S_mem_blocks[__diff].first)
-	  - (__gnu_cxx::__detail::__num_bitmaps(_S_mem_blocks[__diff]) + 1);
+	  - (__detail::__num_bitmaps(_S_mem_blocks[__diff]) + 1);
 	
 	_GLIBCXX_DEBUG_ASSERT(*__puse_count != 0);
 
@@ -1127,12 +1087,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     2 * size_t(__detail::bits_per_block);
 
   template<typename _Tp>
-    typename __gnu_cxx::bitmap_allocator<_Tp>::_BPVector::size_type 
+    typename bitmap_allocator<_Tp>::_BPVector::size_type 
     bitmap_allocator<_Tp>::_S_last_dealloc_index = 0;
 
   template<typename _Tp>
-    __gnu_cxx::__detail::_Bitmap_counter 
-  <typename bitmap_allocator<_Tp>::_Alloc_block*>
+    __detail::_Bitmap_counter
+      <typename bitmap_allocator<_Tp>::_Alloc_block*>
     bitmap_allocator<_Tp>::_S_last_request(_S_mem_blocks);
 
 #if defined __GTHREADS
