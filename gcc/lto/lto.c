@@ -1844,6 +1844,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   /* Fixup all decls and types.  */
   lto_fixup_decls (all_file_decl_data);
 
+  /* Free the type hash tables.  */
+  free_gimple_type_tables ();
+
   /* FIXME lto. This loop needs to be changed to use the pass manager to
      call the ipa passes directly.  */
   if (!errorcount)
