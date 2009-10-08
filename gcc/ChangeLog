@@ -1,3 +1,12 @@
+2009-10-08  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (last_insn_address) Remove variable.
+	(expand_prologue): Don't initialise last_insn_address variable.
+	(final_prescan_insn): Don't output insn size.
+	* config/avr/avr.opt (msize): Remove switch.
+	* doc/invoke.texi (AVR Options): Remove documentation of -msize
+	switch.
+
 2009-10-08  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* combine.c (label_tick_ebb_start): Fix comment.

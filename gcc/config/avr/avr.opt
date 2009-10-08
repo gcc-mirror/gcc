@@ -47,10 +47,6 @@ mshort-calls
 Target Report Mask(SHORT_CALLS)
 Use rjmp/rcall (limited range) on >8K devices
 
-msize
-Target Report Mask(INSN_SIZE_DUMP)
-Output instruction sizes to the asm file
-
 mtiny-stack
 Target Report Mask(TINY_STACK)
 Change only the low 8 bits of the stack pointer
