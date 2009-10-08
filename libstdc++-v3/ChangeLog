@@ -1,3 +1,8 @@
+2009-10-07  Phil Muldoon <pmuldoon@redhat.com>
+
+	* doc/xml/manual/debug.xml: Rewrite and expand GDB Python
+	pretty-printer section.
+
 2009-10-07  Chris Jefferson  <chris@bubblescope.net>
 
 	* testsuite/25_algorithms/rotate/moveable2.cc: New.
