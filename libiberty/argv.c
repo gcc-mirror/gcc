@@ -119,6 +119,24 @@ void freeargv (char **vector)
     }
 }
 
+static void
+consume_whitespace (const char **input)
+{
+  while (ISSPACE (**input))
+    {
+      (*input)++;
+    }
+}
+
+static int
+only_whitespace (const char* input)
+{
+  while (*input != EOS && ISSPACE (*input))
+    input++;
+
+  return (*input == EOS);
+}
+
 /*
 
 @deftypefn Extension char** buildargv (char *@var{sp})
@@ -179,10 +197,8 @@ char **buildargv (const char *input)
       do
 	{
 	  /* Pick off argv[argc] */
-	  while (ISBLANK (*input))
-	    {
-	      input++;
-	    }
+	  consume_whitespace (&input);
+
 	  if ((maxargc == 0) || (argc >= (maxargc - 1)))
 	    {
 	      /* argv needs initialization, or expansion */
@@ -278,10 +294,7 @@ char **buildargv (const char *input)
 	  argc++;
 	  argv[argc] = NULL;
 
-	  while (ISSPACE (*input))
-	    {
-	      input++;
-	    }
+	  consume_whitespace (&input);
 	}
       while (*input != EOS);
     }
@@ -420,8 +433,17 @@ expandargv (int *argcp, char ***argvp)
 	goto error;
       /* Add a NUL terminator.  */
       buffer[len] = '\0';
-      /* Parse the string.  */
-      file_argv = buildargv (buffer);
+      /* If the file is empty or contains only whitespace, buildargv would
+	 return a single empty argument.  In this context we want no arguments,
+	 instead.  */
+      if (only_whitespace (buffer))
+	{
+	  file_argv = (char **) xmalloc (sizeof (char *));
+	  file_argv[0] = NULL;
+	}
+      else
+	/* Parse the string.  */
+	file_argv = buildargv (buffer);
       /* If *ARGVP is not already dynamically allocated, copy it.  */
       if (!argv_dynamic)
 	{
@@ -434,7 +456,7 @@ expandargv (int *argcp, char ***argvp)
 	}
       /* Count the number of arguments.  */
       file_argc = 0;
-      while (file_argv[file_argc] && *file_argv[file_argc])
+      while (file_argv[file_argc])
 	++file_argc;
       /* Now, insert FILE_ARGV into ARGV.  The "+1" below handles the
 	 NULL terminator at the end of ARGV.  */ 

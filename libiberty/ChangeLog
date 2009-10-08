@@ -1,3 +1,17 @@
+2009-10-08  Daniel Gutson  <dgutson@codesourcery.com>
+	Daniel Jacobowitz  <dan@codesourcery.com>
+	Pedro Alves  <pedro@codesourcery.com>
+
+	libiberty/
+	* argv.c (consume_whitespace): New function.
+	(only_whitespace): New function.
+	(buildargv): Always use ISSPACE by calling consume_whitespace.
+	(expandargv): Skip empty files.  Do not stop at the first empty
+	argument (calling only_whitespace)..
+	* testsuite/test-expandargv.c: (test_data): Test empty lines
+	and empty arguments.
+	(run_tests): Fix false positives due to shorter arguments.
+
 2009-09-30  Martin Thuresson  <martint@google.com>
 
 	* regex.c (byte_re_match_2_internal): Split declaration and
