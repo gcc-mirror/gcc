@@ -12906,7 +12906,17 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
       }
 
     case DEDUCE_EXACT:
-      /* There is nothing to do in this case.  */
+      /* Core issue #873: Do the DR606 thing (see below) for these cases,
+	 too, but here handle it by stripping the reference from PARM
+	 rather than by adding it to ARG.  */
+      if (TREE_CODE (*parm) == REFERENCE_TYPE
+	  && TYPE_REF_IS_RVALUE (*parm)
+	  && TREE_CODE (TREE_TYPE (*parm)) == TEMPLATE_TYPE_PARM
+	  && cp_type_quals (TREE_TYPE (*parm)) == TYPE_UNQUALIFIED
+	  && TREE_CODE (*arg) == REFERENCE_TYPE
+	  && !TYPE_REF_IS_RVALUE (*arg))
+	*parm = TREE_TYPE (*parm);
+      /* Nothing else to do in this case.  */
       return 0;
 
     default:
