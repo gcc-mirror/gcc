@@ -1,3 +1,8 @@
+2009-10-08  Janis Johnson <janis187@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Remove.
+	(TARGET_DELEGITIMIZE_ADDRESS): Likewise.
+
 2009-10-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/41626
