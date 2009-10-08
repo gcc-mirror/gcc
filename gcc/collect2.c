@@ -853,6 +853,8 @@ prefix_from_string (const char *p, struct path_prefix *pprefix)
   free (nstore);
 }
 
+#ifdef OBJECT_FORMAT_NONE
+
 /* Add an entry for the object file NAME to object file list LIST.
    New entries are added at the end of the list. The original pointer
    value of NAME is preserved, i.e., no string copy is performed.  */
@@ -871,6 +873,7 @@ add_lto_object (struct lto_object_list *list, const char *name)
 
   list->last = n;
 }
+#endif /* OBJECT_FORMAT_NONE */
 
 
 /* Perform a link-time recompilation and relink if any of the object
