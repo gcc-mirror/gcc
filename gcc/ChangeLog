@@ -1,3 +1,12 @@
+2009-10-08  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* combine.c (label_tick_ebb_start): Fix comment.
+	(combine_instructions): Set label_tick and label_tick_ebb_start before
+	calling setup_incoming_promotions.  Start them from 1.  Increment
+	label_tick instead of deriving it from the BB index.  Rather than
+	comparing ticks use the block from the previous iteration to decide
+	whether to start a new EBB.  Remove empty lines before function.
+
 2009-10-08  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41573
