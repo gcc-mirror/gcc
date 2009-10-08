@@ -1,3 +1,7 @@
+2009-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* collect2.c (add_lto_object): Only define if OBJECT_FORMAT_NONE.
+
 2009-10-08  Jan Hubicka  <jh@suse.cz>
 
 	PR bootstrap/41620
