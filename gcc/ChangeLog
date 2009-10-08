@@ -1,3 +1,14 @@
+2009-10-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/41626
+	* cgraphbuild.c (record_reference): When parameter DATA is NULL,
+	do not mark cgraph nodes as needed.
+	(record_references_in_initializer): Add new only_vars parameter.
+	* cgraph.h (record_references_in_initializer): New parameter.
+	* varasm.c (assemble_variable): Update call.
+	* varpool.c (varpool_analyze_pending_decls): Always look for
+	referenced vars.
+
 2009-10-08  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (last_insn_address) Remove variable.

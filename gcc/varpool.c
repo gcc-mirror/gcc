@@ -364,10 +364,9 @@ varpool_analyze_pending_decls (void)
           /* Compute the alignment early so function body expanders are
 	     already informed about increased alignment.  */
           align_variable (decl, 0);
-
-          if (DECL_INITIAL (decl))
-	    record_references_in_initializer (decl);
 	}
+      if (DECL_INITIAL (decl))
+	record_references_in_initializer (decl, analyzed);
       changed = true;
     }
   timevar_pop (TV_CGRAPH);
