@@ -104,9 +104,6 @@ static GTY(()) rtx zero_reg_rtx;
 /* AVR register names {"r0", "r1", ..., "r31"} */
 static const char *const avr_regnames[] = REGISTER_NAMES;
 
-/* This holds the last insn address.  */
-static int last_insn_address = 0;
-
 /* Preprocessor macros to define depending on MCU type.  */
 static const char *avr_extra_arch_macro;
 
@@ -556,8 +553,6 @@ expand_prologue (void)
   rtx pushword = gen_rtx_MEM (HImode,
                   gen_rtx_POST_DEC (HImode, stack_pointer_rtx));
   rtx insn;
-
-  last_insn_address = 0;
   
   /* Init cfun->machine.  */
   cfun->machine->is_naked = avr_naked_function_p (current_function_decl);
@@ -1459,25 +1454,17 @@ byte_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
           && INTVAL (op) <= 0xff && INTVAL (op) >= 0);
 }
 
-/* Output all insn addresses and their sizes into the assembly language
-   output file.  This is helpful for debugging whether the length attributes
-   in the md file are correct.
-   Output insn cost for next insn.  */
+/* Output insn cost for next insn.  */
 
 void
 final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
 		    int num_operands ATTRIBUTE_UNUSED)
 {
-  int uid = INSN_UID (insn);
-
-  if (TARGET_INSN_SIZE_DUMP || TARGET_ALL_DEBUG)
+  if (TARGET_ALL_DEBUG)
     {
-      fprintf (asm_out_file, "/*DEBUG: 0x%x\t\t%d\t%d */\n",
-	       INSN_ADDRESSES (uid),
-               INSN_ADDRESSES (uid) - last_insn_address,
+      fprintf (asm_out_file, "/* DEBUG: cost = %d.  */\n",
 	       rtx_cost (PATTERN (insn), INSN, !optimize_size));
     }
-  last_insn_address = INSN_ADDRESSES (uid);
 }
 
 /* Return 0 if undefined, 1 if always true or always false.  */
