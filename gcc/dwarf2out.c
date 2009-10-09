@@ -20351,15 +20351,13 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
     }
 
-#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE
-  if (dwarf2out_do_cfi_asm ())
+  if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE && dwarf2out_do_cfi_asm ())
     {
 #ifndef TARGET_UNWIND_INFO
       if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
 #endif
 	fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
     }
-#endif
 }
 
 /* A helper function for dwarf2out_finish called through
