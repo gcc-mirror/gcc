@@ -1,3 +1,12 @@
+2009-10-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41582
+	* decl.c (encapsulate_class_symbol): Save attr.abstract.
+	* resolve.c (resolve_allocate_expr): Reject class allocate
+	without typespec or source=.
+	* trans-stmt.c (gfc_trans_allocate): Change gfc_warning
+	into gfc_error for "not yet implemented".
+
 2009-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41579
@@ -49,8 +58,8 @@
 
 2009-10-07  Paul Thomas <pault@gcc.gnu.org>
 
-        PR fortran/41613
-        * resolve.c (check_class_members): Reset compcall.assign.
+	PR fortran/41613
+	* resolve.c (check_class_members): Reset compcall.assign.
 
 2009-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -373,7 +382,6 @@
 	* parse.c (next_free): Improve error locus printing.
 	(next_fixed): Change gfc_warn to gfc_warning_now, and improve
 	locus reporting.
- 
 
 2009-09-16  Michael Matz  <matz@suse.de>
 

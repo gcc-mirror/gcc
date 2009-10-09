@@ -1077,6 +1077,7 @@ encapsulate_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       c->attr.pointer = attr->pointer || attr->dummy;
       c->attr.allocatable = attr->allocatable;
       c->attr.dimension = attr->dimension;
+      c->attr.abstract = ts->u.derived->attr.abstract;
       c->as = (*as);
       c->initializer = gfc_get_expr ();
       c->initializer->expr_type = EXPR_NULL;
