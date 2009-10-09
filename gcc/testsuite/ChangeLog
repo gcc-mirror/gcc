@@ -1,3 +1,8 @@
+2009-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt3.adb: New test.
+	* gnat.dg/opt3_pkg.ads: New helper.
+
 2009-10-08  Doug Kwan  <dougkwan@google.com>
 
 	PR rtl-optimization/41574

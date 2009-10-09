@@ -1,3 +1,10 @@
+2009-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/40071
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Build a ref-all
+	pointer if the original data reference doesn't conflict with the
+	created vector data reference.  Fix long line.
+
 2009-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (any_div): New code iterator.
