@@ -1464,9 +1464,9 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 {
   gfc_component *c;
 
-  /* If the current symbol is of the same derived type that we're
+  /* F03:C438/C439. If the current symbol is of the same derived type that we're
      constructing, it must have the pointer attribute.  */
-  if (current_ts.type == BT_DERIVED
+  if ((current_ts.type == BT_DERIVED || current_ts.type == BT_CLASS)
       && current_ts.u.derived == gfc_current_block ()
       && current_attr.pointer == 0)
     {

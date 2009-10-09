@@ -34,6 +34,11 @@ abstract interface
   end subroutine
 end interface
 
+type t6
+  integer :: i
+  class(t6), allocatable :: foo  ! { dg-error "must have the POINTER attribute" }
+end type t6
+
 
 class(t1) :: o1  ! { dg-error "must be dummy, allocatable or pointer" }
 
