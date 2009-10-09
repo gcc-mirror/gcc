@@ -1,3 +1,11 @@
+2009-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41634
+	* tree-ssa-dom.c (remove_local_expressions_from_table): Assert
+	we remove the correct elements.
+	(optimize_stmt): Make sure to update stmt operands before
+	optimizing redundancies.
+
 2009-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md ("prefetch"): Remove stcmh for prefetching.
