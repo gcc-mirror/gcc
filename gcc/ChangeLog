@@ -76,6 +76,7 @@
 	* debug.c (do_nothing_debug_hooks): Add dummy entries for new hooks.
 	(debug_nothing_uid): New function.
 	* dbxout.c (dbx_debug_hooks): Add dummy entries for new hooks.
+	(xcoff_debug_hooks): Likewise.
 	* sdbout.c (sdb_debug_hooks): Likewise.
 	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
 	* doc/invoke.texi (-fenable-icf-debug): New option.
