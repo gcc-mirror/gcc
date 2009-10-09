@@ -10,7 +10,7 @@
 	* config/i386/i386.md (any_div): New code iterator.
 	(u): Handle div and udiv.
 	(sgnprefix): Ditto.
-	(<u>divqi3): Macroize insn from divqi3 and udivqi using and_div
+	(<u>divqi3): Macroize insn from {,u}divqi3  using any_div
 	code iterator.
 	(lfloor<MODEF:mode><SWI48:mode>2): Macroize insn from
 	lfloor<mode>{si,di}2 patterns using SWI48 mode iterator.
