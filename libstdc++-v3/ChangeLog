@@ -1,3 +1,9 @@
+2009-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/numeric (__adjacent_difference_switch): Fix typo.
+	* include/parallel/for_each_selectors.h
+	(__adjacent_difference_selector): Likewise.
+
 2009-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/bitmap_allocator.h: Minor clean-ups.

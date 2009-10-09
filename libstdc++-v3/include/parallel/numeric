@@ -435,7 +435,7 @@ __gnu_parallel::sequential_tag()); }
             __for_each_template_random_access_ed(
                 __begin_pair, __end_pair, __bin_op, __functionality,
                 __gnu_parallel::_DummyReduct(), __dummy, __dummy, -1);
-          return __functionality.finish_iterator;
+          return __functionality._M_finish_iterator;
         }
       else
         return adjacent_difference(__begin, __end, __result, __bin_op, 
