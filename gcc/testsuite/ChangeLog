@@ -1,3 +1,7 @@
+2009-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/block_2.f08: Cleanup "original" tree dump.
+
 2009-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt3.adb: New test.
