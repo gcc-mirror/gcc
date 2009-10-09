@@ -5840,7 +5840,7 @@ gfc_expr_to_initialize (gfc_expr *e)
 static gfc_try
 resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 {
-  int i, pointer, allocatable, dimension, check_intent_in;
+  int i, pointer, allocatable, dimension, check_intent_in, is_abstract;
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
   gfc_array_ref *ar;
@@ -5862,6 +5862,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   if (e->symtree)
     sym = e->symtree->n.sym;
 
+  /* Check whether ultimate component is abstract and CLASS.  */
+  is_abstract = 0;
+
   if (e->expr_type != EXPR_VARIABLE)
     {
       allocatable = 0;
@@ -5876,6 +5879,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	  allocatable = sym->ts.u.derived->components->attr.allocatable;
 	  pointer = sym->ts.u.derived->components->attr.pointer;
 	  dimension = sym->ts.u.derived->components->attr.dimension;
+	  is_abstract = sym->ts.u.derived->components->attr.abstract;
 	}
       else
 	{
@@ -5903,12 +5907,14 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		    allocatable = c->ts.u.derived->components->attr.allocatable;
 		    pointer = c->ts.u.derived->components->attr.pointer;
 		    dimension = c->ts.u.derived->components->attr.dimension;
+		    is_abstract = c->ts.u.derived->components->attr.abstract;
 		  }
 		else
 		  {
 		    allocatable = c->attr.allocatable;
 		    pointer = c->attr.pointer;
 		    dimension = c->attr.dimension;
+		    is_abstract = c->attr.abstract;
 		  }
 		break;
 
@@ -5924,6 +5930,14 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     {
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
 		 &e->where);
+      return FAILURE;
+    }
+
+  if (is_abstract && !code->expr3 && code->ext.alloc.ts.type == BT_UNKNOWN)
+    {
+      gcc_assert (e->ts.type == BT_CLASS);
+      gfc_error ("Allocating %s of ABSTRACT base type at %L requires a "
+		 "type-spec or SOURCE=", sym->name, &e->where);
       return FAILURE;
     }
 

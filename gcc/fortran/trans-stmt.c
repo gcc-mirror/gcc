@@ -4025,8 +4025,8 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_typespec *ts;
 	      /* TODO: Size must be determined at run time, since it must equal
 		 the size of the dynamic type of SOURCE, not the declared type.  */
-	      gfc_warning ("Dynamic size allocation at %L not supported yet, "
-			   "using size of declared type", &code->loc);
+	      gfc_error ("Using SOURCE= with a class variable at %L not "
+			 "supported yet", &code->loc);
 	      ts = &code->expr3->ts.u.derived->components->ts;
 	      tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (ts));
 	    }
