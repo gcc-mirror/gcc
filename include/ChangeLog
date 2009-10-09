@@ -1,4 +1,9 @@
-2009-10-05   Rafael Espindola  <espindola@google.com>
+2009-10-09  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h (ld_plugin_add_input_library): Change argument name to
+	libname.
+
+2009-10-05  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_status): Add LDPS_BAD_HANDLE.
 	(ld_plugin_get_input_file): New.
