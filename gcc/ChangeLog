@@ -1,5 +1,10 @@
 2009-10-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/40521
+	* dwarf2out.c (dwarf2out_init): Test whether
+	HAVE_GAS_CFI_SECTIONS_DIRECTIVE is non-zero instead of checking
+	it is defined.
+
 	PR rtl-optimization/41646
 	* calls.c (expand_call): For BLKmode types returned in registers
 	avoid likely spilled hard regs in copy_blkmode_from_reg generated
