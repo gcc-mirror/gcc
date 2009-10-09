@@ -1,3 +1,8 @@
+2009-10-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41585
+	* gfortran.dg/class_2.f03: Extended test case.
+
 2009-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41582
