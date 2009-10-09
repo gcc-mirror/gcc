@@ -277,7 +277,7 @@ namespace __gnu_parallel
         {
           typename _It::first_type __go_back_one = __i.first;
           --__go_back_one;
-          *__i.__second = __o(*__i.__first, *__go_back_one);
+          *__i.second = __o(*__i.first, *__go_back_one);
           return true;
         }
     };
