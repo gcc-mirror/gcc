@@ -1,3 +1,21 @@
+2009-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41638
+	* target-def.h (TARGET_BUILTIN_DECL): Define.
+	(TARGET_INITIALIZER): Add TARGET_BUILTIN_DECL.
+	* target.h (struct gcc_target): Add builtin_decl target hook.
+	* doc/tm.texi (TARGET_BUILTIN_DECL): Document.
+	* lto-streamer-in.c (lto_get_builtin_tree): Fix handling of
+	target builtins.
+	* lto-streamer-out.c (lto_output_tree_pointers): Use sorry,
+	not gcc_unreachable.
+	(lto_output_builtin_tree): Sorry if the target does not support
+	streaming target builtins.
+	* config/rs6000/rs6000.c (TARGET_BUILTIN_DECL): Define.
+	(rs6000_builtin_decl): New function.
+	* config/i386/i386.c (TARGET_BUILTIN_DECL): Define.
+	(ix86_builtin_decl): New function.
+
 2009-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/41445

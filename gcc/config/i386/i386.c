@@ -23443,6 +23443,17 @@ ix86_init_builtins (void)
     ix86_init_builtins_va_builtins_abi ();
 }
 
+/* Return the ix86 builtin for CODE.  */
+
+static tree
+ix86_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (code >= IX86_BUILTIN_MAX)
+    return error_mark_node;
+
+  return ix86_builtins[code];
+}
+
 /* Errors in the source file can cause expand_expr to return const0_rtx
    where we expect a vector.  To avoid crashing, use one of the vector
    clear instructions.  */
@@ -29666,6 +29677,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS ix86_init_builtins
+#undef TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL ix86_builtin_decl
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ix86_expand_builtin
 
