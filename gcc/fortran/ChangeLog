@@ -1,3 +1,21 @@
+2009-10-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41579
+	* gfortran.h (gfc_select_type_stack): New struct, to be used as a stack
+	for SELECT TYPE statements.
+	(select_type_stack): New global variable.
+	(type_selector,select_type_tmp): Removed.
+	* match.c (type_selector,type_selector): Removed.
+	(select_type_stack): New variable, serving as a stack for
+	SELECT TYPE statements.
+	(select_type_push,select_type_set_tmp): New functions.
+	(gfc_match_select_type): Call select_type_push.
+	(gfc_match_type_is): Call select_type_set_tmp.
+	* parse.c (select_type_pop): New function.
+	(parse_select_type_block): Call select_type_pop.
+	* symbol.c (select_type_insert_tmp): New function.
+	(gfc_find_sym_tree): Call select_type_insert_tmp.
+
 2009-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arith.c (arith_power): Use mpc_pow_z.

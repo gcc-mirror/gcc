@@ -2208,6 +2208,18 @@ iterator_stack;
 extern iterator_stack *iter_stack;
 
 
+/* Used for (possibly nested) SELECT TYPE statements.  */
+typedef struct gfc_select_type_stack
+{
+  gfc_symbol *selector;			/* Current selector variable.  */
+  gfc_symtree *tmp;			/* Current temporary variable.  */
+  struct gfc_select_type_stack *prev;	/* Previous element on stack.  */
+}
+gfc_select_type_stack;
+extern gfc_select_type_stack *select_type_stack;
+#define gfc_get_select_type_stack() XCNEW (gfc_select_type_stack)
+
+
 /* Node in the linked list used for storing finalizer procedures.  */
 
 typedef struct gfc_finalizer
@@ -2565,10 +2577,6 @@ void gfc_free_namelist (gfc_namelist *);
 void gfc_free_equiv (gfc_equiv *);
 void gfc_free_data (gfc_data *);
 void gfc_free_case_list (gfc_case *);
-
-/* Used for SELECT TYPE statements.  */
-extern gfc_symbol *type_selector;
-extern gfc_symtree *select_type_tmp;
 
 /* matchexp.c -- FIXME too?  */
 gfc_expr *gfc_get_parentheses (gfc_expr *);
