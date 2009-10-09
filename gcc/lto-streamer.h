@@ -806,10 +806,6 @@ extern void lto_check_version (int, int);
 
 
 /* In lto-streamer-in.c */
-extern void lto_input_function_body (struct lto_file_decl_data *, tree,
-				     const char *);
-extern void lto_input_constructors_and_inits (struct lto_file_decl_data *,
-					      const char *);
 extern void lto_input_cgraph (struct lto_file_decl_data *, const char *);
 extern void lto_init_reader (void);
 extern tree lto_input_tree (struct lto_input_block *, struct data_in *);

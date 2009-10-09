@@ -1,3 +1,12 @@
+2009-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41635
+	PR lto/41636
+	* lto.c (read_cgraph_and_symbols): Do not assert we can open
+	a file.
+	* lto-elf.c (init_shdr##BITS): Fix i18n problems.
+	(init_ehdr##BITS): Likewise.
+
 2009-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* lto-elf.c (init_shdr##BITS, lto_elf_begin_section_with_type,
