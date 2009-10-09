@@ -235,7 +235,12 @@ init_shdr##BITS (Elf_Scn *scn, size_t sh_name, size_t sh_type)	      \
 								      \
   shdr = elf##BITS##_getshdr (scn);				      \
   if (!shdr)							      \
-    fatal_error ("elf"#BITS"_getshdr() failed: %s", elf_errmsg (-1));\
+    {								      \
+      if (BITS == 32)						      \
+	fatal_error ("elf32_getshdr() failed: %s", elf_errmsg (-1));  \
+      else							      \
+	fatal_error ("elf64_getshdr() failed: %s", elf_errmsg (-1));  \
+    }								      \
 								      \
   shdr->sh_name = sh_name;					      \
   shdr->sh_type = sh_type;					      \
@@ -486,7 +491,12 @@ init_ehdr##BITS (lto_elf_file *elf_file)			      \
 								      \
   ehdr = elf##BITS##_newehdr (elf_file->elf);			      \
   if (!ehdr)							      \
-    fatal_error ("elf"#BITS"_newehdr() failed: %s", elf_errmsg (-1));\
+    {								      \
+      if (BITS == 32)						      \
+	fatal_error ("elf32_newehdr() failed: %s", elf_errmsg (-1));  \
+      else							      \
+	fatal_error ("elf64_newehdr() failed: %s", elf_errmsg (-1));  \
+    }								      \
 								      \
   memcpy (ehdr->e_ident, cached_file_attrs.elf_ident,		      \
 	  sizeof cached_file_attrs.elf_ident);			      \

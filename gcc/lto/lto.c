@@ -1779,7 +1779,10 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       unsigned num_objects;
 
       resolution = fopen (resolution_file_name, "r");
-      gcc_assert (resolution != NULL);
+      if (resolution == NULL)
+	fatal_error ("could not open symbol resolution file: %s",
+		     xstrerror (errno));
+
       t = fscanf (resolution, "%u", &num_objects);
       gcc_assert (t == 1);
 

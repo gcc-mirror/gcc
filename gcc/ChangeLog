@@ -1,5 +1,17 @@
 2009-10-09  Richard Guenther  <rguenther@suse.de>
 
+	PR driver/41637
+	* lto-wrapper.c (ltrans_output_file, flto_out, args_name): New
+	globals.
+	(lto_wrapper_exit): New function.
+	(fatal): Use it.
+	(fatal_perror): Likewise.
+	(fork_execute): Use global args_name, do not free it.
+	(run_gcc): Use global ltrans_output_file, flto_out, do not free them.
+	* lto-streamer.h: Remove duplicate prototypes.
+
+2009-10-09  Richard Guenther  <rguenther@suse.de>
+
 	* cgraph.c (cgraph_create_edge): Check for NULL call_stmt
 	before calling stmt_can_throw_external.
 

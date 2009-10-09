@@ -55,6 +55,26 @@ enum lto_mode_d {
 /* Current LTO mode.  */
 static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 
+static char *ltrans_output_file;
+static char *flto_out;
+static char *args_name;
+
+static void maybe_unlink_file (const char *);
+
+/* Delete tempfiles and exit function.  */
+
+static void
+lto_wrapper_exit (int status)
+{
+  if (ltrans_output_file)
+    maybe_unlink_file (ltrans_output_file);
+  if (flto_out)
+    maybe_unlink_file (flto_out);
+  if (args_name)
+    maybe_unlink_file (args_name);
+  exit (status);
+}
+
 /* Just die. CMSGID is the error message. */
 
 static void __attribute__ ((format (printf, 1, 2)))
@@ -68,7 +88,7 @@ fatal (const char * cmsgid, ...)
   fprintf (stderr, "\n");
   va_end (ap);
 
-  exit (FATAL_EXIT_CODE);
+  lto_wrapper_exit (FATAL_EXIT_CODE);
 }
 
 
@@ -86,7 +106,7 @@ fatal_perror (const char *cmsgid, ...)
   fprintf (stderr, ": %s\n", xstrerror (e));
   va_end (ap);
 
-  exit (FATAL_EXIT_CODE);
+  lto_wrapper_exit (FATAL_EXIT_CODE);
 }
 
 
@@ -190,11 +210,13 @@ fork_execute (char **argv)
 {
   struct pex_obj *pex;
   char *new_argv[3];
-  char *args_name = make_temp_file (".args");
-  char *at_args = concat ("@", args_name, NULL);
-  FILE *args = fopen (args_name, "w");
+  char *at_args;
+  FILE *args;
   int status;
 
+  args_name = make_temp_file (".args");
+  at_args = concat ("@", args_name, NULL);
+  args = fopen (args_name, "w");
   if (args == NULL)
     fatal ("failed to open %s", args_name);
 
@@ -213,7 +235,6 @@ fork_execute (char **argv)
   collect_wait (new_argv[0], pex);
 
   maybe_unlink_file (args_name);
-  free (args_name);
   free (at_args);
 }
 
@@ -227,8 +248,6 @@ run_gcc (unsigned argc, char *argv[])
   unsigned new_argc = argc;
   const char **new_argv;
   const char **argv_ptr;
-  char *ltrans_output_file = NULL;
-  char *flto_out = NULL;
   char *list_option_full = NULL;
 
   new_argc += 8;
@@ -320,7 +339,6 @@ run_gcc (unsigned argc, char *argv[])
 	putc (c, stdout);
       fclose (stream);
       maybe_unlink_file (ltrans_output_file);
-      free (ltrans_output_file);
       free (list_option_full);
     }
   else
