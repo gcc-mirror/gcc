@@ -29,9 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 int gfc_matching_procptr_assignment = 0;
 bool gfc_matching_prefix = false;
 
-/* Used for SELECT TYPE statements.  */
-gfc_symbol *type_selector;
-gfc_symtree *select_type_tmp;
+/* Stack of SELECT TYPE statements.  */
+gfc_select_type_stack *select_type_stack = NULL;
 
 /* For debugging and diagnostic purposes.  Return the textual representation
    of the intrinsic operator OP.  */
@@ -4021,6 +4020,38 @@ gfc_match_select (void)
 }
 
 
+/* Push the current selector onto the SELECT TYPE stack.  */
+
+static void
+select_type_push (gfc_symbol *sel)
+{
+  gfc_select_type_stack *top = gfc_get_select_type_stack ();
+  top->selector = sel;
+  top->tmp = NULL;
+  top->prev = select_type_stack;
+
+  select_type_stack = top;
+}
+
+
+/* Set the temporary for the current SELECT TYPE selector.  */
+
+static void
+select_type_set_tmp (gfc_typespec *ts)
+{
+  char name[GFC_MAX_SYMBOL_LEN];
+  gfc_symtree *tmp;
+
+  sprintf (name, "tmp$%s", ts->u.derived->name);
+  gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
+  tmp->n.sym->ts = *ts;
+  tmp->n.sym->attr.referenced = 1;
+  tmp->n.sym->attr.pointer = 1;
+
+  select_type_stack->tmp = tmp;
+}
+
+
 /* Match a SELECT TYPE statement.  */
 
 match
@@ -4082,7 +4113,7 @@ gfc_match_select_type (void)
   new_st.expr2 = expr2;
   new_st.ext.ns = gfc_current_ns;
 
-  type_selector = expr1->symtree->n.sym;
+  select_type_push (expr1->symtree->n.sym);
 
   return MATCH_YES;
 }
@@ -4167,7 +4198,6 @@ gfc_match_type_is (void)
 {
   gfc_case *c = NULL;
   match m;
-  char name[GFC_MAX_SYMBOL_LEN];
 
   if (gfc_current_state () != COMP_SELECT_TYPE)
     {
@@ -4199,11 +4229,7 @@ gfc_match_type_is (void)
   new_st.ext.case_list = c;
 
   /* Create temporary variable.  */
-  sprintf (name, "tmp$%s", c->ts.u.derived->name);
-  gfc_get_sym_tree (name, gfc_current_ns, &select_type_tmp, false);
-  select_type_tmp->n.sym->ts = c->ts;
-  select_type_tmp->n.sym->attr.referenced = 1;
-  select_type_tmp->n.sym->attr.pointer = 1;
+  select_type_set_tmp (&c->ts);
 
   return MATCH_YES;
 

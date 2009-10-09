@@ -2887,6 +2887,17 @@ parse_select_block (void)
 }
 
 
+/* Pop the current selector from the SELECT TYPE stack.  */
+
+static void
+select_type_pop (void)
+{
+  gfc_select_type_stack *old = select_type_stack;
+  select_type_stack = old->prev;
+  gfc_free (old);
+}
+
+
 /* Parse a SELECT TYPE construct (F03:R821).  */
 
 static void
@@ -2959,6 +2970,7 @@ done:
   pop_state ();
   accept_statement (st);
   gfc_current_ns = gfc_current_ns->parent;
+  select_type_pop ();
 }
 
 

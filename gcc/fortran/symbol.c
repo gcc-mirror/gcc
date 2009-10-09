@@ -2461,6 +2461,19 @@ ambiguous_symbol (const char *name, gfc_symtree *st)
 }
 
 
+/* If we're in a SELECT TYPE block, check if the variable 'st' matches any
+   selector on the stack. If yes, replace it by the corresponding temporary.  */
+
+static void
+select_type_insert_tmp (gfc_symtree **st)
+{
+  gfc_select_type_stack *stack = select_type_stack;
+  for (; stack; stack = stack->prev)
+    if ((*st)->n.sym == stack->selector)
+      *st = stack->tmp;
+}
+
+
 /* Search for a symtree starting in the current namespace, resorting to
    any parent namespaces if requested by a nonzero parent_flag.
    Returns nonzero if the name is ambiguous.  */
@@ -2479,11 +2492,7 @@ gfc_find_sym_tree (const char *name, gfc_namespace *ns, int parent_flag,
       st = gfc_find_symtree (ns->sym_root, name);
       if (st != NULL)
 	{
-	  /* Special case: If we're in a SELECT TYPE block,
-	    replace the selector variable by a temporary.  */
-	  if (gfc_current_state () == COMP_SELECT_TYPE
-	      && st && st->n.sym == type_selector)
-	    st = select_type_tmp;
+	  select_type_insert_tmp (&st);
 
 	  *result = st;
 	  /* Ambiguous generic interfaces are permitted, as long
