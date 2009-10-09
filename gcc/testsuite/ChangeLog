@@ -1,3 +1,8 @@
+2009-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41634
+	* gcc.c-torture/compile/pr41634.c: New testcase.
+
 2009-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/block_2.f08: Cleanup "original" tree dump.
