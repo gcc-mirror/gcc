@@ -3020,7 +3020,10 @@ expand_call (tree exp, rtx target, int ignore)
 	}
       else if (TYPE_MODE (rettype) == BLKmode)
 	{
-	  target = copy_blkmode_from_reg (target, valreg, rettype);
+	  rtx val = valreg;
+	  if (GET_MODE (val) != BLKmode)
+	    val = avoid_likely_spilled_reg (val);
+	  target = copy_blkmode_from_reg (target, val, rettype);
 
 	  /* We can not support sibling calls for this case.  */
 	  sibcall_failure = 1;
