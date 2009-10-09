@@ -1,3 +1,7 @@
+2009-10-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("prefetch"): Remove stcmh for prefetching.
+
 2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/tpf.h (TARGET_DEFAULT): Remove MASK_HARD_FLOAT and
