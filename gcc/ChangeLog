@@ -1,5 +1,12 @@
 2009-10-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/41445
+	* c-ppoutput.c (do_line_change): New function.
+	(cb_line_change): Use it.
+	(scan_translation_unit): Call do_line_change if
+	avoid_paste or PREV_WHITE and token location is on a different line
+	than print.src_line.
+
 	PR debug/40521
 	* dwarf2out.c (dwarf2out_init): Test whether
 	HAVE_GAS_CFI_SECTIONS_DIRECTIVE is non-zero instead of checking

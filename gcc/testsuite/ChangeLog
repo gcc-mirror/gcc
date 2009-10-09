@@ -1,5 +1,15 @@
 2009-10-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/41445
+	* gcc.dg/cpp/separate-1.c: Adjust.
+	* gcc.dg/cpp/spacing1.c: Add -P to dg-options.
+	* gcc.dg/debug/dwarf2/pr41445-1.c: New test.
+	* gcc.dg/debug/dwarf2/pr41445-2.c: New test.
+	* gcc.dg/debug/dwarf2/pr41445-3.c: New test.
+	* gcc.dg/debug/dwarf2/pr41445-4.c: New test.
+	* gcc.dg/debug/dwarf2/pr41445-5.c: New test.
+	* gcc.dg/debug/dwarf2/pr41445-6.c: New test.
+
 	PR rtl-optimization/41646
 	* gcc.c-torture/compile/pr41646.c: New test.
 

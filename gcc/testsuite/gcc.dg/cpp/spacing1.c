@@ -1,6 +1,7 @@
 /* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
+/* { dg-options "-P" } */
 
 /* This tests correct spacing of macro expansion output, as well as
    the line it falls on.  This is quite subtle; it involves newlines
