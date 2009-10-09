@@ -8,8 +8,8 @@
 
 #define FOO()
 
-int FOO( /* { dg-error "parse error|syntax error|expected" "error on this line" } */
-	), bar;
+int FOO( 
+	), bar; /* { dg-error "parse error|syntax error|expected" "error on this line" } */
 
 int baz FOO /* { dg-error "parse error|syntax error|expected" "error on this line" } */
 ;
