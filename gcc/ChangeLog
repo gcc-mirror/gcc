@@ -1,3 +1,15 @@
+2009-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_div): New code iterator.
+	(u): Handle div and udiv.
+	(sgnprefix): Ditto.
+	(<u>divqi3): Macroize insn from divqi3 and udivqi using and_div
+	code iterator.
+	(lfloor<MODEF:mode><SWI48:mode>2): Macroize insn from
+	lfloor<mode>{si,di}2 patterns using SWI48 mode iterator.
+	(lceil<MODEF:mode><SWI48:mode>2): Macroize insn from
+	lceil<mode>{si,di}2 patterns using SWI48 mode iterator.
+
 2009-10-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (main): Remove trailing "." from diagnostics.
@@ -226,8 +238,8 @@
 
 2009-10-07  Jan Hubicka  <jh@suse.cz>
 
-	* lto-symtab.c (lto_cgraph_replace_node): Assert that inline clones has
-	no address taken.
+	* lto-symtab.c (lto_cgraph_replace_node): Assert that inline clones
+	has no address taken.
 	* cgraph.c (cgraph_mark_needed_node): Assert that inline clones are
 	never needed.
 	(cgraph_clone_node): Clear externally_visible flag for clones.
@@ -393,8 +405,7 @@
 
 2009-10-06  Jerry Quinn  <jlquinn@optonline.net>
 
-	* gimple.c (gimple_type_hash): Use CONST_CAST_TREE to fix
-	compilation.
+	* gimple.c (gimple_type_hash): Use CONST_CAST_TREE to fix compilation.
 
 2009-10-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -634,34 +645,29 @@
 	    Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* Makefile.in (enable_lto): New.
-	(site.exp): If @enable_lto@ is set to 'yes' define
-	ENABLE_LTO.
+	(site.exp): If @enable_lto@ is set to 'yes' define ENABLE_LTO.
 	(LINKER_PLUGIN_API_H): Define.
 	(LTO_SYMTAB_H): Define.
 	(LTO_STREAMER_H): Define.
 	(TREE_VECTORIZER_H): Define.
 	(INCLUDES): Add LIBELFINC.
 	(OBJS-common): Add lto-cgraph.o, lto-streamer-in.o,
-	lto-streamer-out.o, lto-section-in.o, lto-section-out.o,
-	lto-symtab.o, lto-opts.o, lto-streamer.o, lto-wpa-fixup.o,
-	lto-compress.o.
+	lto-streamer-out.o, lto-section-in.o, lto-section-out.o, lto-symtab.o,
+	lto-opts.o, lto-streamer.o, lto-wpa-fixup.o, lto-compress.o.
 	(MOSTLYCLEANFILES): Add lto-wrapper$(exeext)
 	(native): Add lto-wrapper$(exeext)
 	(lto-compress.o, lto-cgraph.o, lto-streamer-in.o,
 	lto-streamer-out.o, lto-section-in.o, lto-section-out.o,
-	lto-symtab.o, lto-opts.o, lto-streamer.o,
-	lto-wpa-fixup.o): New rules.
-	(gimple.o): Add dependency on LTO_HEADER_H and
-	LTO_SECTION_OUT_H.
+	lto-symtab.o, lto-opts.o, lto-streamer.o, lto-wpa-fixup.o): New rules.
+	(gimple.o): Add dependency on LTO_HEADER_H and LTO_SECTION_OUT_H.
 	(varasm.o): Add dependency on tree-iterator.h.
 	(cgraph.o): Add dependency on cif-code.def.
 	(ipa-reference.o): Add dependency on LTO_STREAMER_H.
 	(ipa-pure-const.o): Likewise.
 	(GTFILES): Add lto-symtab.c.
 	(install-lto-wrapper): New.
-	* configure.ac: If 'lto' is in enable_languages, define
-	ENABLE_LTO and enable_lto.
-	If LIBELFLIBS is set, define HAVE_libelf.
+	* configure.ac: If 'lto' is in enable_languages, define ENABLE_LTO
+	and enable_lto.  If LIBELFLIBS is set, define HAVE_libelf.
 	* config.in: Regenerate.
 
 2009-10-03  Rafael Espindola  <espindola@google.com>
@@ -782,8 +788,7 @@
 	of pass_all_early_optimizations.  Document reason.
 	(pass_ipa_lto_gimple_out, pass_ipa_lto_wpa_fixup,
 	pass_ipa_lto_finish_out): New pass.
-	(pass_ipa_summary_passes): Start and stop timers if the pass
-	has them.
+	(pass_ipa_summary_passes): Start and stop timers if the pass has them.
 	(execute_all_ipa_transforms): New.
 	(execute_one_pass): Don't call execute_one_ipa_transform_pass.
 	(dump_properties, debug_properties): New.
@@ -807,8 +812,7 @@
 2009-10-03  Doug Kwan  <dougkwan@google.com>
 	    Ollie Wild  <aaw@google.com>
 
-	* ipa-prop.c (ipa_propagate_indirect_call_infos): Do
-	nothing in WPA.
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): Do nothing in WPA.
 
 	* collect2.c (LTO_MODE_NONE, LTO_MODE_LTO, LTO_MODE_WPA): New enums.
 	(lto_mode): New variable.
@@ -826,7 +830,7 @@
 	* opts.c: Include lto-opts.h.
 	(handle_option): Call lto_register_user_option for each
 	valid option handled.
-	* (decode_options): Clear registered options before the options
+	(decode_options): Clear registered options before the options
 	handling loop.
 
 2009-10-03  Cary Coutant  <ccoutant@google.com>
@@ -839,8 +843,7 @@
 	* gcc.c (LINK_COMMAND_SPEC): Use the -pass-through option to pass
 	libgcc to the linker.
 
-	* ipa-cp.c (cgraph_gate_cp): Return false if LTRANS is
-	running.
+	* ipa-cp.c (cgraph_gate_cp): Return false if LTRANS is running.
 
 	* collect2.c (maybe_run_lto_and_relink): Execute lto-wrapper.
 	(collect_execute): Add flags argument. Pass flags to pex_run. Update
@@ -874,8 +877,7 @@
 	(lookup_type_pair): Increase initial hashtable size.
 	(gimple_force_type_merge): Rely on type-pair symmetry.
 	(visit): Remove excessive checking code.
-	(iterative_hash_type_name): Do not hash TYPE_NAME of
-	anonymous unions.
+	(iterative_hash_type_name): Do not hash TYPE_NAME of anonymous unions.
 	(gimple_register_type): Remove getenv calls, shrink initial
 	hashtable size.
 
@@ -892,15 +894,12 @@
 	edge->call_stmt_cannot_inline_p instead of calling
 	gimple_call_cannot_inline_p.
 	(cgraph_decide_inlining): Do nothing in WPA and LTRANS.
-	(cgraph_gate_ipa_early_inlining): Return false if
-	in_lto_p is set.
+	(cgraph_gate_ipa_early_inlining): Return false if in_lto_p is set.
 	(inline_generate_summary): Do nothing in LTRANS.
-	* cgraph.c (initialize_inline_failed): Make sure
-	e->call_stmt exists before calling
-	gimple_call_cannot_inline_p.
+	* cgraph.c (initialize_inline_failed): Make sure e->call_stmt
+	exists before calling gimple_call_cannot_inline_p.
 	(cgraph_create_edge): Set edge->call_stmt_cannot_inline_p.
-	(cgraph_clone_edge): Add argument STMT_UID.  Modify all
-	callers.
+	(cgraph_clone_edge): Add argument STMT_UID.  Modify all callers.
 	Update new_edge->lto_stmt_uid.
 	* cgraphbuild.c (reset_inline_failed): New.
 
@@ -921,9 +920,8 @@
 	(static_specs): Add cc1_non_lto_options, lto1_options and
 	link_lto_options.
 	(static_spec_function): Replace lto-single with lto-option.
-	(process_command): Handle -flto, -fwpa and -fltran
-	by setting current_lto_option and not passing it to subprocess
-	unconditionally.
+	(process_command): Handle -flto, -fwpa and -fltran by setting
+	current_lto_option and not passing it to subprocess unconditionally.
 
 2009-10-03  Bill Maddox  <maddox@google.com>
 
@@ -948,13 +946,10 @@
 
 	* c.opt: Add LTO to warn_abi and warn_psabi.
 
-	* tree.c (fld_worklist_push): Rename from PUSH.
-	Convert to static inline function.
-	Ignore language-specific nodes.
-	Update all users.
+	* tree.c (fld_worklist_push): Rename from PUSH.  Convert to static
+	inline function.  Ignore language-specific nodes.  Update all users.
 	(find_decls_types_r): Do not traverse the subtrees of
-	language-specific nodes.
-	Do not traverse DECL_INITIAL for TYPE_DECLs.
+	language-specific nodes.  Do not traverse DECL_INITIAL for TYPE_DECLs.
 	* tree.h (is_lang_specific): New.
 	* langhooks.h (struct lang_hooks_for_decls): Remove
 	may_need_assembler_name_p.  Update all users.
@@ -967,8 +962,7 @@
 	lookup_type_for_runtime if TYPE is not a runtime type.
 
 	* passes.c (register_pass): Call position_pass on
-	all_small_ipa_passes, all_regular_ipa_passes and
-	all_lto_gen_passes.
+	all_small_ipa_passes, all_regular_ipa_passes and all_lto_gen_passes.
 	* timevar.def (TV_IPA_LTO_GIMPLE_IO): Define.
 	(TV_IPA_LTO_DECL_IO): Define.
 	(TV_IPA_LTO_CGRAPH_IO): Define.
@@ -985,24 +979,18 @@
 	* tree.c (free_lang_data_in_binf): Factor out of ...
 	(free_lang_data_in_type): ... here.
 	Call RECORD_OR_UNION_TYPE_P.
-	(need_assembler_name_p): Ignore DECL if it does not have
-	TREE_PUBLIC set.
-	Call lang_hooks.decls.may_need_assembler_name_p if set.
-	(free_lang_data_in_decl): Do not clear DECL_CONTEXT for
-	CONST_DECLs.
-	(free_lang_data): Set debug_info_level to
-	DINFO_LEVEL_NONE.
-	Set write_symbols to NO_DEBUG.
-	Set debug_hooks to do_nothing_debug_hooks.
-	(gate_free_lang_data): Return true if flag_generate_lto
-	is set.
+	(need_assembler_name_p): Ignore DECL if it does not have TREE_PUBLIC
+	set.  Call lang_hooks.decls.may_need_assembler_name_p if set.
+	(free_lang_data_in_decl): Do not clear DECL_CONTEXT for CONST_DECLs.
+	(free_lang_data): Set debug_info_level to DINFO_LEVEL_NONE.  Set
+	write_symbols to NO_DEBUG.  Set debug_hooks to do_nothing_debug_hooks.
+	(gate_free_lang_data): Return true if flag_generate_lto is set.
 	(walk_tree_1): Call RECORD_OR_UNION_TYPE_P.
 	* c-common.h (set_builtin_user_assembler_name): Move ...
 	* tree.h (set_builtin_user_assembler_name): ... here.
 
 	* common.opt (flto-report): New flag.
-	* opts.c (complain_wrong_lang): Do not complain if
-	running lto1.
+	* opts.c (complain_wrong_lang): Do not complain if running lto1.
 	* collect2.c (scan_prog_file): Send the error output of
 	'nm' to HOST_BIT_BUCKET.
 
@@ -1041,17 +1029,16 @@
 	    Ollie Wild  <aaw@google.com>
 
 	* doc/install.texi: Add documentation for libelf and --enable-lto.
-	* doc/invoke.texi: Document -fwpa, -flto, -fwhopr,
-	-fltrans, -flto-report, -flto-compression-level and
-	-use-linker-plugin.
-	* doc/sourcebuild.texi: Document use of zlib.
-	Document lto-plugin.
+	* doc/invoke.texi: Document -fwpa, -flto, -fwhopr, -fltrans,
+	-flto-report, -flto-compression-level and -use-linker-plugin.
+	* doc/sourcebuild.texi: Document use of zlib.  Document lto-plugin.
 	Add section for LTO Testing.
 
 2009-10-02  Cary Coutant  <ccoutant@google.com>
 
-	Add support for comdat type sections for DWARF v4.  Merge from dwarf4
-	branch.
+	Add support for comdat type sections for DWARF v4.
+	Merge from dwarf4 branch.
+
 	* dwarf2out.c (DWARF_TYPE_SIGNATURE_SIZE): New constant.
 	(dw_die_ref): Define vector type.
 	(enum dw_val_class): Add dw_val_class_data8.
@@ -1071,8 +1058,7 @@
 	(print_signature): New function.
 	(print_die): Print signature information; add dw_val_class_data8.
 	(attr_checksum): Support dw_val_class_data8.
-	(CHECKSUM_STRING): Redefine for DWARF-4 to include
-	trailing NULL byte.
+	(CHECKSUM_STRING): Redefine for DWARF-4 to include trailing NULL byte.
 	(CHECKSUM_SLEB128, CHECKSUM_ULEB128): New macros.
 	(checksum_sleb128, checksum_uleb128): New functions.
 	(checksum_die_context): New function.
@@ -1104,7 +1090,7 @@
 	(copy_decls_for_unworthy_types): New function.
 	(build_abbrev_table): Don't assert on missing die_symbol when doing
 	comdat type sections.
-	(size_of_die): Use DW_FORM_sig8 for external references; Add
+	(size_of_die): Use DW_FORM_sig8 for external references.  Add
 	dw_val_class_data8.
 	(unmark_dies): Don't assert for unmarked dies when doing comdat
 	type sections.
@@ -1135,7 +1121,7 @@
 
 2009-10-02  Neil Vachharajani  <nvachhar@google.com>
 
-	* gcov-io.c (gcov_open): Open files read-only when MODE < 0
+	* gcov-io.c (gcov_open): Open files read-only when MODE < 0.
 
 2009-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -1178,8 +1164,8 @@
 	PR debug/41404
 	PR debug/41353
 	* cfgexpand.c (expand_debug_expr) <case STRING_CST>: Don't create
-	CONST_STRING if STRING_CST contains embedded '\0's or doesn't end with
-	'\0'.
+	CONST_STRING if STRING_CST contains embedded '\0's or doesn't end
+	with '\0'.
 	(expand_debug_expr) <case VAR_DECL>: For TREE_STATIC !DECL_EXTERNAL
 	vars use DECL_RTL with resetting it back to NULL afterwards.
 	* dwarf2out.c (same_dw_val_p): For dw_val_class_addr compare with
@@ -1599,8 +1585,7 @@
 
 2009-09-28  Nick Clifton  <nickc@redhat.com>
 
-	* config/m32r/m32r.c (m32r_is_insn): Return false for debugging
-	insns.
+	* config/m32r/m32r.c (m32r_is_insn): Return false for debugging insns.
 
 2009-09-28  Duncan Sands  <baldrick@free.fr>
 
@@ -1669,7 +1654,7 @@
 
 2009-09-27  Peter O'Gorman  <pogma@thewrittenword.com>
 
-	collect2.c (main): Look for -brtl before adding libraries.
+	* collect2.c (main): Look for -brtl before adding libraries.
 
 2009-09-27  Jonathan Gray  <jsg@openbsd.org>
 
@@ -1749,9 +1734,10 @@
 
 	* dwarf2out.c (dwarf_tag_name, gen_generic_params_dies,
 	generic_parameter_die, template_parameter_pack_die,
-	gen_formal_parameter_die, gen_subprogram_die): Adjust after renaming
-	DW_TAG_formal_parameter_pack and DW_TAG_template_parameter_pack into
-	DW_TAG_GNU_formal_parameter_pack and DW_TAG_GNU_template_parameter_pack.
+	gen_formal_parameter_die, gen_subprogram_die): Adjust after
+	renaming DW_TAG_formal_parameter_pack and
+	DW_TAG_template_parameter_pack into DW_TAG_GNU_formal_parameter_pack
+	and DW_TAG_GNU_template_parameter_pack.
 
 2009-09-25  Anatoly Sokolov  <aesok@post.ru>
 
@@ -1799,9 +1785,7 @@
 	(reg_class): Likewise.
 	(REG_CLASS_NAMES): Likewise.
 	* config/m32c/m32c.c (m32c_reg_class_from_constraint): Likewise.
-
-	* config/m32c/m32c.c (m32c_override_options): Disable -fivopts for
-	M32C.
+	(m32c_override_options): Disable -fivopts for M32C.
 
 2009-09-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -1922,7 +1906,8 @@
 
 	* config/xtensa/xtensa.c (TARGET_STATIC_CHAIN): New.
 	(xtensa_static_chain): New.
-	* config/xtensa/xtensa.h (STATIC_CHAIN, STATIC_CHAIN_INCOMING): Remove.
+	* config/xtensa/xtensa.h (STATIC_CHAIN): Remove.
+	(STATIC_CHAIN_INCOMING): Remove.
 
 2009-09-23  Anatoly Sokolov  <aesok@post.ru>
 
