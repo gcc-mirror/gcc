@@ -947,6 +947,8 @@ static bool rs6000_builtin_support_vector_misalignment (enum
 static void def_builtin (int, const char *, tree, int);
 static bool rs6000_vector_alignment_reachable (const_tree, bool);
 static void rs6000_init_builtins (void);
+static tree rs6000_builtin_decl (unsigned, bool);
+
 static rtx rs6000_expand_unop_builtin (enum insn_code, tree, rtx);
 static rtx rs6000_expand_binop_builtin (enum insn_code, tree, rtx);
 static rtx rs6000_expand_ternop_builtin (enum insn_code, tree, rtx);
@@ -1332,6 +1334,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
+#undef TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL rs6000_builtin_decl
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN rs6000_expand_builtin
@@ -11142,6 +11146,17 @@ rs6000_init_builtins (void)
 #ifdef SUBTARGET_INIT_BUILTINS
   SUBTARGET_INIT_BUILTINS;
 #endif
+}
+
+/* Returns the rs6000 builtin decl for CODE.  */
+
+static tree
+rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (code >= RS6000_BUILTIN_COUNT)
+    return error_mark_node;
+
+  return rs6000_builtin_decls[code];
 }
 
 /* Search through a set of builtins and enable the mask bits.

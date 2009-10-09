@@ -1165,16 +1165,10 @@ lto_output_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    {
-      /* FIXME lto.  Not handled yet.  */
-      gcc_unreachable ();
-    }
+    sorry ("gimple bytecode streams do not support the optimization attribute");
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    {
-      /* FIXME lto.  Not handled yet.  */
-      gcc_unreachable ();
-    }
+    sorry ("gimple bytecode streams do not support the target attribute");
 }
 
 
@@ -1233,6 +1227,11 @@ static void
 lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
 {
   gcc_assert (lto_stream_as_builtin_p (expr));
+
+  if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD
+      && !targetm.builtin_decl)
+    sorry ("gimple bytecode streams do not support machine specific builtin "
+	   "functions on this target");
 
   output_record_start (ob, LTO_builtin_decl);
   output_uleb128 (ob, DECL_BUILT_IN_CLASS (expr));

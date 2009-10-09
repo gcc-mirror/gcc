@@ -2377,13 +2377,22 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   gcc_assert (fclass == BUILT_IN_NORMAL || fclass == BUILT_IN_MD);
 
   fcode = (enum built_in_function) lto_input_uleb128 (ib);
-  gcc_assert (fcode < END_BUILTINS);
 
   ix = lto_input_sleb128 (ib);
   gcc_assert (ix == (int) ix);
 
-  result = built_in_decls[fcode];
-  gcc_assert (result);
+  if (fclass == BUILT_IN_NORMAL)
+    {
+      gcc_assert (fcode < END_BUILTINS);
+      result = built_in_decls[fcode];
+      gcc_assert (result);
+    }
+  else if (fclass == BUILT_IN_MD)
+    {
+      result = targetm.builtin_decl (fcode, true);
+      if (!result || result == error_mark_node)
+	fatal_error ("target specific builtin not available");
+    }
 
   asmname = input_string (data_in, ib);
   if (asmname)

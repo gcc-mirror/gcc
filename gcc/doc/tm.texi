@@ -10532,6 +10532,16 @@ only language front ends that use those two functions will call
 @samp{TARGET_INIT_BUILTINS}.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_BUILTIN_FUNCTION (unsigned @var{code}, bool @var{initialize_p})
+Define this hook if you have any machine-specific built-in functions
+that need to be defined.  It should be a function that returns the
+builtin function declaration for the builtin function code @var{code}.
+If there is no such builtin and it cannot be initialized at this time
+if @var{initialize_p} is true the function should return @code{NULL_TREE}.
+If @var{code} is out of range the function should return
+@code{error_mark_node}.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_EXPAND_BUILTIN (tree @var{exp}, rtx @var{target}, rtx @var{subtarget}, enum machine_mode @var{mode}, int @var{ignore})
 
 Expand a call to a machine specific built-in function that was set up by
