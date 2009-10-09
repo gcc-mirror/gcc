@@ -1,3 +1,10 @@
+2009-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/41646
+	* calls.c (expand_call): For BLKmode types returned in registers
+	avoid likely spilled hard regs in copy_blkmode_from_reg generated
+	insns.
+
 2009-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41634
