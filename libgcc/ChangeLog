@@ -1,3 +1,8 @@
+2009-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/32/sfp-machine.h (__FP_FRAC_SUB_4): Change operand
+	constraint of y0 to "g".
+
 2009-10-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config.host: Include the s390 makefile fragments.
@@ -47,7 +52,7 @@
 2009-06-22  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.host: Add i386/${host_address}/t-fprules-softfp and
-	t-softfp to tmake_file for i[34567]86-*-mingw*, x86_64-*-mingw*.	
+	t-softfp to tmake_file for i[34567]86-*-mingw*, x86_64-*-mingw*.
 
 	* config/i386/64/_divtc3.c: Disable usage of .symver assembly symbol
 	for mingw targets.
@@ -74,7 +79,7 @@
 2009-05-29  David Billinghurst <billingd@gcc.gnu.org>
 
 	* config.host: Add i386/${host_address}/t-fprules-softfp and
-	t-softfp to tmake_file for i[34567]86-*-cygwin*.	
+	t-softfp to tmake_file for i[34567]86-*-cygwin*.
 
 2009-04-17  Aurelien Jarno  <aurelien@aurel32.net>
 
@@ -409,7 +414,7 @@
 
 	* config.host: Add i386/${host_address}/t-fprules-softfp to
 	tmake_file for i[34567]86-*-darwin*, x86_64-*-darwin*,
-	i[34567]86-*-linux*, x86_64-*-linux*. 
+	i[34567]86-*-linux*, x86_64-*-linux*.
 
 	* configure.ac: Set host_address to 64 or 32 for x86.
 	* configure: Regenerated.
@@ -505,7 +510,7 @@
 	* Makefile.in: Use @shlib_slibdir@ substitution to get
 	correct install name on darwin.
 	* config/t-slibgcc-darwin: Use @shlib_slibdir@ for -install_name.
-				
+
 2007-12-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config.host (crisv32-*-elf, crisv32-*-none): New, same as
@@ -565,7 +570,7 @@
 
 	* config/t-tls: New file.
 
-	* Makefile.in (INTERNAL_CFLAGS): Add @set_have_cc_tls@. 
+	* Makefile.in (INTERNAL_CFLAGS): Add @set_have_cc_tls@.
 
 	* configure.ac: Include ../config/enable.m4 and
 	../config/tls.m4.  Use GCC_CHECK_CC_TLS to check if assembler
@@ -579,7 +584,7 @@
 2007-06-14  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config.host(*-cygwin* |*-mingw* ): Add crtbegin.o, crtend.o to
-	extra_parts. Add config/i386/t-cygming to tmake_file. 
+	extra_parts. Add config/i386/t-cygming to tmake_file.
 	* config/i386/t-cygming: New file with rules for crtbegin.o, crtend.o.
 
 2007-05-29  Zuxy Meng  <zuxy.meng@gmail.com>
@@ -704,7 +709,7 @@
 	* configure.ac: Add GCC_TOPLEV_SUBDIRS.
 	* configure: Regenerate.
 	* Makefile.in (host_subdir): Substitute it.
-	(gcc_objdir): Use it. 
+	(gcc_objdir): Use it.
 
 2007-01-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
