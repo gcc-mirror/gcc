@@ -822,9 +822,9 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   if (call_stmt)
     {
 #ifdef ENABLE_CHECKING
-  /* This is rather pricely check possibly trigerring construction of call stmt
-     hashtable.  */
-  gcc_assert (!cgraph_edge (caller, call_stmt));
+      /* This is rather pricely check possibly trigerring construction of
+	 call stmt hashtable.  */
+      gcc_assert (!cgraph_edge (caller, call_stmt));
 #endif
 
       gcc_assert (is_gimple_call (call_stmt));
@@ -847,7 +847,8 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   edge->callee = callee;
   edge->call_stmt = call_stmt;
   push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
-  edge->can_throw_external = stmt_can_throw_external (call_stmt);
+  edge->can_throw_external
+    = call_stmt ? stmt_can_throw_external (call_stmt) : false;
   pop_cfun ();
   edge->prev_caller = NULL;
   edge->next_caller = callee->callers;
