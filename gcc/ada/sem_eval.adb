@@ -5018,7 +5018,7 @@ package body Sem_Eval is
 
             if Attribute_Name (N) = Name_Size then
                Error_Msg_N
-                 ("size attribute is only static for scalar type " &
+                 ("size attribute is only static for static scalar type " &
                   "(RM 4.9(7,8))", N);
 
             --  Flag array cases
