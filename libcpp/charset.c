@@ -948,10 +948,16 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
    ISO/IEC 10646 is NNNNNNNN; the character designated by the
    universal character name \uNNNN is that character whose character
    short name in ISO/IEC 10646 is 0000NNNN.  If the hexadecimal value
-   for a universal character name is less than 0x20 or in the range
-   0x7F-0x9F (inclusive), or if the universal character name
-   designates a character in the basic source character set, then the
-   program is ill-formed.
+   for a universal character name corresponds to a surrogate code point
+   (in the range 0xD800-0xDFFF, inclusive), the program is ill-formed.
+   Additionally, if the hexadecimal value for a universal-character-name
+   outside a character or string literal corresponds to a control character
+   (in either of the ranges 0x00-0x1F or 0x7F-0x9F, both inclusive) or to a
+   character in the basic source character set, the program is ill-formed.
+
+   C99 6.4.3: A universal character name shall not specify a character
+   whose short identifier is less than 00A0 other than 0024 ($), 0040 (@),
+   or 0060 (`), nor one in the range D800 through DFFF inclusive.
 
    *PSTR must be preceded by "\u" or "\U"; it is assumed that the
    buffer end is delimited by a non-hex digit.  Returns zero if the
@@ -1018,9 +1024,12 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		 (int) (str - base), base);
       result = 1;
     }
-  /* The standard permits $, @ and ` to be specified as UCNs.  We use
-     hex escapes so that this also works with EBCDIC hosts.  */
+  /* The C99 standard permits $, @ and ` to be specified as UCNs.  We use
+     hex escapes so that this also works with EBCDIC hosts.
+     C++0x permits everything below 0xa0 within literals;
+     ucn_valid_in_identifier will complain about identifiers.  */
   else if ((result < 0xa0
+	    && !CPP_OPTION (pfile, cplusplus)
 	    && (result != 0x24 && result != 0x40 && result != 0x60))
 	   || (result & 0x80000000)
 	   || (result >= 0xD800 && result <= 0xDFFF))

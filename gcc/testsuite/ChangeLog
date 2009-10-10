@@ -1,3 +1,9 @@
+2009-10-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp/ucn-1.C: New.
+
+2009-10-08  Jason Merrill  <jason@redhat.com>
+
 2009-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41585
@@ -60,6 +66,7 @@
 
 2009-10-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36816
 	* g++.dg/cpp0x/rv-deduce.C: New.
 
 	PR c++/37177

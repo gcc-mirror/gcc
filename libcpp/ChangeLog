@@ -1,3 +1,7 @@
+2009-10-09  Jason Merrill  <jason@redhat.com>
+
+	* charset.c (_cpp_valid_ucn): Update C++0x restrictions.
+
 2009-10-09  Neil Vachharajani <nvachhar@google.com>
 
 	* directives.c (DIRECTIVE_TABLE): Remove DEPRECATED from ident and
