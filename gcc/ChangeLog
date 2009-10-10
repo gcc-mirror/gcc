@@ -1,3 +1,8 @@
+2009-10-09  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Use AC_SEARCH_LIBS to find dlopen.
+	* configure: Rebuild.
+
 2009-10-09  Neil Vachharajani <nvachhar@google.com>
 
 	* doc/cpp.texi (Other Directives): Do not list #ident and #sccs as

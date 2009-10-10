@@ -25013,30 +25013,63 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
 
   # Check -ldl
-  LIBS="$LIBS -ldl"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -ldl" >&5
-$as_echo_n "checking for -ldl... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dlopen" >&5
+$as_echo_n "checking for library containing dlopen... " >&6; }
+if test "${ac_cv_search_dlopen+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <dlfcn.h>
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char dlopen ();
 int
 main ()
 {
-volatile int f = 0; if (f) dlopen ("dummy", 0);
+return dlopen ();
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }; have_dl=yes
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+for ac_lib in '' dl; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_search_dlopen=$ac_res
 fi
 rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-  if test x"$have_dl" = x"yes"; then
+    conftest$ac_exeext
+  if test "${ac_cv_search_dlopen+set}" = set; then :
+  break
+fi
+done
+if test "${ac_cv_search_dlopen+set}" = set; then :
+
+else
+  ac_cv_search_dlopen=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_dlopen" >&5
+$as_echo "$ac_cv_search_dlopen" >&6; }
+ac_res=$ac_cv_search_dlopen
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+  if test x"$ac_cv_search_dlopen" = x"-ldl"; then
     pluginlibs="$pluginlibs -ldl"
   fi
 
@@ -25064,7 +25097,7 @@ $as_echo "no" >&6; }; have_pic_shared=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  if test x"$have_pic_shared" != x"yes"; then
+  if test x"$have_pic_shared" != x"yes" -o x"$ac_cv_search_dlopen" = x"no"; then
     pluginlibs=
     enable_plugin=no
   fi

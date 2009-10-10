@@ -4253,14 +4253,8 @@ if test x"$enable_plugin" = x"yes"; then
   fi
 
   # Check -ldl
-  LIBS="$LIBS -ldl"
-  AC_MSG_CHECKING([for -ldl])
-  AC_TRY_LINK(
-    [#include <dlfcn.h>],
-    [volatile int f = 0; if (f) dlopen ("dummy", 0);],
-    [AC_MSG_RESULT([yes]); have_dl=yes],
-    [AC_MSG_RESULT([no])])
-  if test x"$have_dl" = x"yes"; then
+  AC_SEARCH_LIBS([dlopen], [dl])
+  if test x"$ac_cv_search_dlopen" = x"-ldl"; then
     pluginlibs="$pluginlibs -ldl"
   fi
 
@@ -4271,7 +4265,7 @@ if test x"$enable_plugin" = x"yes"; then
     [extern int X;],[return X == 0;],
     [AC_MSG_RESULT([yes]); have_pic_shared=yes],
     [AC_MSG_RESULT([no]); have_pic_shared=no])
-  if test x"$have_pic_shared" != x"yes"; then
+  if test x"$have_pic_shared" != x"yes" -o x"$ac_cv_search_dlopen" = x"no"; then
     pluginlibs=
     enable_plugin=no
   fi
