@@ -1,3 +1,10 @@
+2009-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41654
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Properly canonicalize
+	a cond expr before calling gimple_cond_set_condition_from_tree.
+	(ifcombine_iforif): Likewise.
+
 2009-10-09  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Use AC_SEARCH_LIBS to find dlopen.
