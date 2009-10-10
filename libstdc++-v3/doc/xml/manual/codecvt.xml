@@ -600,7 +600,7 @@ codecvt usage.
 
   <biblioentry>
     <title>
-      System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
+      The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
     </title>
 
     <copyright>
@@ -610,7 +610,7 @@ codecvt usage.
     </copyright>
 
     <biblioid>
-      <ulink url="http://www.opennc.org/austin/docreg.html">
+      <ulink url="http://www.unix.org/version3/ieee_std.html">
       </ulink>
     </biblioid>
 
