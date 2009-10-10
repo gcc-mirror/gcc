@@ -1,8 +1,8 @@
 ! { dg-do run }
 ! PR35962 Implement F2003 rounding modes.
 ! Test case prepared by Jerry Delisle  <jvdelisle@gcc.gnu.org>
-integer,parameter :: j = selected_real_kind (max(4,precision (0.0_4) + 1))
-integer,parameter :: k = selected_real_kind (max(4,precision (0.0_8) + 1))
+integer,parameter :: j = max(4, selected_real_kind (precision (0.0_4) + 1))
+integer,parameter :: k = max(4, selected_real_kind (precision (0.0_8) + 1))
 character(64) :: line
   write(line, '(RN, 4F10.3)') 0.0625_j, 0.1875_j
   if (line.ne."     0.062     0.188") call abort
