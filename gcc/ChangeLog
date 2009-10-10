@@ -1,3 +1,8 @@
+2009-10-09  Neil Vachharajani <nvachhar@google.com>
+
+	* doc/cpp.texi (Other Directives): Do not list #ident and #sccs as
+	deprecated.
+
 2009-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41638

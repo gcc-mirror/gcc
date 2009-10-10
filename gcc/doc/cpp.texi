@@ -3609,8 +3609,6 @@ These directives are not part of the C standard, but they are not
 official GNU extensions either.  What historical information we have
 been able to find, suggests they originated with System V@.
 
-Both @samp{#ident} and @samp{#sccs} are deprecated extensions.
-
 @cindex null directive
 The @dfn{null directive} consists of a @samp{#} followed by a newline,
 with only whitespace (including comments) in between.  A null directive

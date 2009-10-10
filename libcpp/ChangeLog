@@ -1,3 +1,8 @@
+2009-10-09  Neil Vachharajani <nvachhar@google.com>
+
+	* directives.c (DIRECTIVE_TABLE): Remove DEPRECATED from ident and
+	sccs.
+
 2009-09-23  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.ac (AC_CHECK_HEADERS after AC_LANG(C++)): Add sys/stat.h.
