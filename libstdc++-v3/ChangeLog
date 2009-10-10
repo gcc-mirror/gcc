@@ -1,5 +1,9 @@
 2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/messages.xml: Update GNU gettext reference.
+
+2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/xml/manual/codecvt.xml: Refer to The Open Group Base
 	Specifications, Issue 6 (IEEE Std. 1003.1-2004).
 	Update link to bogus site with reference to unix.org.
