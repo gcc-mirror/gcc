@@ -83,6 +83,12 @@
 #define ASM_CPU_POWER7_SPEC "-mpower4 -maltivec"
 #endif
 
+#ifdef HAVE_AS_DCI
+#define ASM_CPU_476_SPEC "-m476"
+#else
+#define ASM_CPU_476_SPEC "-mpower4"
+#endif
+
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
    provide the default assembler options if the user uses -mcpu=native, so if
@@ -123,6 +129,8 @@
 %{mcpu=440fp: -m440} \
 %{mcpu=464: -m440} \
 %{mcpu=464fp: -m440} \
+%{mcpu=476: %(asm_cpu_476)} \
+%{mcpu=476fp: %(asm_cpu_476)} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
@@ -178,6 +186,7 @@
   { "asm_cpu_power5",		ASM_CPU_POWER5_SPEC },			\
   { "asm_cpu_power6",		ASM_CPU_POWER6_SPEC },			\
   { "asm_cpu_power7",		ASM_CPU_POWER7_SPEC },			\
+  { "asm_cpu_476",		ASM_CPU_476_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
 /* -mcpu=native handling only makes sense with compiler running on
@@ -318,6 +327,7 @@ enum processor_type
    PROCESSOR_PPC403,
    PROCESSOR_PPC405,
    PROCESSOR_PPC440,
+   PROCESSOR_PPC476,
    PROCESSOR_PPC601,
    PROCESSOR_PPC603,
    PROCESSOR_PPC604,

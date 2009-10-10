@@ -1,6 +1,6 @@
 ;; Scheduling description for PowerPC 604, PowerPC 604e, PowerPC 620,
 ;; and PowerPC 630 processors.
-;;   Copyright (C) 2003, 2004, 2007 Free Software Foundation, Inc.
+;;   Copyright (C) 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 
@@ -74,7 +74,7 @@
   
 (define_insn_reservation "ppc604-integer" 1
   (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
-                        var_shift_rotate,cntlz,exts")
+                        var_shift_rotate,cntlz,exts,isel")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "iu1_6xx|iu2_6xx")
 

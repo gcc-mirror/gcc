@@ -3249,6 +3249,21 @@ LCF0:
       [AC_DEFINE(HAVE_AS_LWSYNC, 1,
 	  [Define if your assembler supports LWSYNC instructions.])])
 
+    case $target in
+      *-*-aix*) conftest_s='	.machine "476"
+	.csect .text[[PR]]
+	dci 0';;
+      *) conftest_s='	.machine "476"
+	.text
+	dci 0';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([data cache invalidate support],
+      gcc_cv_as_powerpc_dci, [9,99,0], -a32,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_DCI, 1,
+	  [Define if your assembler supports the DCI/ICI instructions.])])
+
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
       gcc_cv_as_powerpc_gnu_attribute, [2,18,0],,
       [.gnu_attribute 4,1],,

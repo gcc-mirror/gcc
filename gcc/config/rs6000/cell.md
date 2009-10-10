@@ -1,5 +1,5 @@
 ;; Scheduling description for cell processor.
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
 ;; Free Software Foundation, Inc.
 ;; Contributed by Sony Computer Entertainment, Inc.,
 
@@ -157,7 +157,7 @@
 ;; Integer latency is 2 cycles
 (define_insn_reservation "cell-integer" 2
   (and (eq_attr "type" "integer,insert_dword,shift,trap,\
-			var_shift_rotate,cntlz,exts")
+			var_shift_rotate,cntlz,exts,isel")
        (eq_attr "cpu" "cell"))
   "slot01,fxu_cell")
 
