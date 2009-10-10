@@ -1,3 +1,49 @@
+2009-10-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* configure.ac: Add test for dci instruction.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config.gcc: Handle --with-cpu=476 and --with-cpu=476fp.
+	* doc/invoke.texi: Add cpu_type 476 and 476fp.
+	(-mmulhw): Add 476 to description.
+	(-mdlmzb): Likewise.
+	* config/rs6000/t-fprules (MULTILIB_MATCHES_FLOAT): Include -mcpu=476.
+	* config/rs6000/rs6000.c (processor_costs): Add ppc476_cost.
+	(processor_target_table): Add 476 and 476fp entries.
+	(rs6000_override_options): Use ppc476_cost for PROCESSOR_PPC476.
+	(rs6000_issue_rate): Add CPU_PPC476.
+	* config/rs6000/rs6000.h (ASM_CPU_476_SPEC): Define.
+	(ASM_CPU_SPEC): Pass %(asm_cpu_476) for -mcpu=476 and -mcpu=476fp.
+	(processor_type): Add PROCESSOR_PPC476.
+	(EXTRA_SPECS): Add asm_cpu_476 string.
+	* config/rs6000/rs6000.md: (define_attr "type"): Add isel attribute.
+	(define_attr "cpu"): Add ppc476.
+	Include 476.md.
+	Update comments for 476.
+	(isel_signed, isel_unsigned): Change to use "isel" type attribute.
+	* config/rs6000/vxworks.h (CPP_SPEC): Handle 464 and 476.
+	Update copyright year.
+	* config/rs6000/476.md: New file.
+	* config/rs6000/40x.md: Add description for "isel" attribute.
+	Update copyright year.
+	* config/rs6000/440.md: Likewise.
+	* config/rs6000/603.md: Likewise.
+	* config/rs6000/6xx.md: Likewise.
+	* config/rs6000/7450.md: Likewise.
+	* config/rs6000/7xx.md: Likewise.
+	* config/rs6000/8540.md: Likewise.
+	* config/rs6000/cell.md: Likewise.
+	* config/rs6000/e300c2c3.md: Likewise.
+	* config/rs6000/e500mc.md: Likewise.
+	* config/rs6000/mpc.md: Likewise.
+	* config/rs6000/power4.md: Likewise.
+	* config/rs6000/power5.md: Likewise.
+	* config/rs6000/power6.md: Likewise.
+	* config/rs6000/power7.md: Likewise.
+	* config/rs6000/rios1.md: Likewise.
+	* config/rs6000/rios2.md: Likewise.
+	* config/rs6000/rs64.md: Likewise.
+
 2009-10-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41654

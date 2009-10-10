@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996, 2000, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 1996, 2000, 2002, 2003, 2004, 2005, 2007, 2009
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
    %{mcpu=403 : -DCPU=PPC403  ; \
      mcpu=405 : -DCPU=PPC405  ; \
      mcpu=440 : -DCPU=PPC440  ; \
+     mcpu=464 : -DCPU=PPC464  ; \
+     mcpu=476 : -DCPU=PPC476  ; \
      mcpu=603 : -DCPU=PPC603  ; \
      mcpu=604 : -DCPU=PPC604  ; \
      mcpu=860 : -DCPU=PPC860  ; \

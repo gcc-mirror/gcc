@@ -23515,6 +23515,50 @@ $as_echo "#define HAVE_AS_LWSYNC 1" >>confdefs.h
 
 fi
 
+    case $target in
+      *-*-aix*) conftest_s='	.machine "476"
+	.csect .text[PR]
+	dci 0';;
+      *) conftest_s='	.machine "476"
+	.text
+	dci 0';;
+    esac
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for data cache invalidate support" >&5
+$as_echo_n "checking assembler for data cache invalidate support... " >&6; }
+if test "${gcc_cv_as_powerpc_dci+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_powerpc_dci=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_dci=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as -a32 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_powerpc_dci=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_dci" >&5
+$as_echo "$gcc_cv_as_powerpc_dci" >&6; }
+if test $gcc_cv_as_powerpc_dci = yes; then
+
+$as_echo "#define HAVE_AS_DCI 1" >>confdefs.h
+
+fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
 $as_echo_n "checking assembler for .gnu_attribute support... " >&6; }
 if test "${gcc_cv_as_powerpc_gnu_attribute+set}" = set; then :

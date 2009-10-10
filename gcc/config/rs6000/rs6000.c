@@ -511,6 +511,25 @@ struct processor_costs ppc440_cost = {
   1,			/* streams */
 };
 
+/* Instruction costs on PPC476 processors.  */
+static const
+struct processor_costs ppc476_cost = {
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (11),   /* divsi */
+  COSTS_N_INSNS (11),   /* divdi */
+  COSTS_N_INSNS (6),    /* fp */
+  COSTS_N_INSNS (6),    /* dmul */
+  COSTS_N_INSNS (19),   /* sdiv */
+  COSTS_N_INSNS (33),   /* ddiv */
+  32,			/* l1 cache line size */
+  32,			/* l1 cache */
+  512,			/* l2 cache */
+  1,			/* streams */
+};
+
 /* Instruction costs on PPC601 processors.  */
 static const
 struct processor_costs ppc601_cost = {
@@ -2144,6 +2163,12 @@ rs6000_override_options (const char *default_cpu)
 	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_MULHW | MASK_DLMZB},
 	 {"464fp", PROCESSOR_PPC440,
 	  POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
+ 	 {"476", PROCESSOR_PPC476,
+	  POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_PPC_GFXOPT | MASK_MFCRF
+	  | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
+ 	 {"476fp", PROCESSOR_PPC476,
+	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_MFCRF | MASK_POPCNTB
+	  | MASK_FPRND | MASK_CMPB | MASK_MULHW | MASK_DLMZB},
 	 {"505", PROCESSOR_MPCCORE, POWERPC_BASE_MASK},
 	 {"601", PROCESSOR_PPC601,
 	  MASK_POWER | POWERPC_BASE_MASK | MASK_MULTIPLE | MASK_STRING},
@@ -2671,6 +2696,10 @@ rs6000_override_options (const char *default_cpu)
 
       case PROCESSOR_PPC440:
 	rs6000_cost = &ppc440_cost;
+	break;
+
+      case PROCESSOR_PPC476:
+	rs6000_cost = &ppc476_cost;
 	break;
 
       case PROCESSOR_PPC601:
@@ -21795,6 +21824,7 @@ rs6000_issue_rate (void)
   case CPU_PPCE500MC:
     return 2;
   case CPU_RIOS2:
+  case CPU_PPC476:
   case CPU_PPC604:
   case CPU_PPC604E:
   case CPU_PPC620:
