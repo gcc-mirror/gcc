@@ -594,7 +594,7 @@ java.util.Locale, java.util.ResourceBundle</pagenums>
 Library and Tools.
     </title>
     <biblioid>
-      <ulink url="http://sources.redhat.com/gettext">
+      <ulink url="http://www.gnu.org/software/gettext/">
       </ulink>
     </biblioid>
   </biblioentry> 
