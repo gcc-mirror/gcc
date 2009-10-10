@@ -1,3 +1,8 @@
+2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Final install): Refer to
+	http://gcc.gnu.org/bugs/ for bug reporting.
+
 2009-10-10  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* configure.ac: Add test for dci instruction.
