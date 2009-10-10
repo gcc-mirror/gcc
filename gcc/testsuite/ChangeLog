@@ -18,8 +18,6 @@
 
 	* g++.dg/cpp/ucn-1.C: New.
 
-2009-10-08  Jason Merrill  <jason@redhat.com>
-
 2009-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41585
