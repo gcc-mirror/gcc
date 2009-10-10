@@ -340,6 +340,9 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
 				     true, GSI_SAME_STMT);
       t = fold_build2 (EQ_EXPR, boolean_type_node, t2, t);
+      t = canonicalize_cond_expr_cond (t);
+      if (!t)
+	return false;
       gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
@@ -488,6 +491,9 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
 				    true, GSI_SAME_STMT);
       t = fold_build2 (NE_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
+      t = canonicalize_cond_expr_cond (t);
+      if (!t)
+	return false;
       gimple_cond_set_condition_from_tree (inner_cond, t);
       update_stmt (inner_cond);
 
