@@ -1,3 +1,9 @@
+2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* README: Refer to the various COPYING* files instead of just
+	COPYING.
+	Refer to http://gcc.gnu.org/bugs/ for bug reporting instructions.
+
 2009-10-07 Rafael Avila de Espindola  <espindola@google.com>
 
 	* MAINTAINERS: Change my email address. Change plugi-in to plugin.
