@@ -1,3 +1,7 @@
+2009-10-10  Samuel Tardieu  <sam@rfc1149.net>
+
+	* sem_eval.adb: Give a more precise error message.
+
 2009-10-06  Samuel Tardieu  <sam@rfc1149.net>
 
 	PR ada/41383
