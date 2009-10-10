@@ -1,3 +1,7 @@
+2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn: Update BUGURL to http://gcc.gnu.org/bugs/.
+
 2009-10-03  Diego Novillo  <dnovillo@google.com>
 
 	* gcc_release (JAVA_DIRS): Remove zlib.
