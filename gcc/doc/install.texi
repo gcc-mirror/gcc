@@ -2689,7 +2689,7 @@ incomplete or out of date.  Send a note to
 @email{gcc@@gcc.gnu.org} detailing how the information should be changed.
 
 If you find a bug, please report it following the
-@uref{../bugs.html,,bug reporting guidelines}.
+@uref{../bugs/,,bug reporting guidelines}.
 
 If you want to print the GCC manuals, do @samp{cd @var{objdir}; make
 dvi}.  You will need to have @command{texi2dvi} (version at least 4.7)
