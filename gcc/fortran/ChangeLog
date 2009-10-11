@@ -1,3 +1,8 @@
+2009-10-11 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/38439
+	* io.c (check_format): Fix locus for error messages and fix a comment.
+
 2009-10-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41583
