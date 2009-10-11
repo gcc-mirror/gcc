@@ -365,8 +365,8 @@ simplify_replace_rtx (rtx x, const_rtx old_rtx, rtx new_rtx)
      to build a new expression substituting recursively.  If we can't do
      anything, return our input.  */
 
-  if (x == old_rtx)
-    return new_rtx;
+  if (rtx_equal_p (x, old_rtx))
+    return copy_rtx (new_rtx);
 
   switch (GET_RTX_CLASS (code))
     {
@@ -444,11 +444,6 @@ simplify_replace_rtx (rtx x, const_rtx old_rtx, rtx new_rtx)
 	  if (op0 == XEXP (x, 0) && op1 == XEXP (x, 1))
 	    return x;
 	  return gen_rtx_LO_SUM (mode, op0, op1);
-	}
-      else if (code == REG)
-	{
-	  if (rtx_equal_p (x, old_rtx))
-	    return new_rtx;
 	}
       break;
 
