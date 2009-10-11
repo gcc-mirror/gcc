@@ -1,3 +1,9 @@
+2009-10-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/41665
+	* config/i386/i386.md (addsi_1_zext): Get the proper second
+	operand for lea.
+
 2009-10-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* simplify-rtx.c (simplify_replace_rtx): Use rtx_equal_p for
