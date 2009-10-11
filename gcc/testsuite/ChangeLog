@@ -1,6 +1,6 @@
 2009-10-11  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/40440
+	PR fortran/41583
 	* gfortran.dg/class_4a.f03: New test with class_4b,c and d.f03.
 	* gfortran.dg/class_4b.f03: As above.
 	* gfortran.dg/class_4c.f03: As above.
