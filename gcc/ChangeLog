@@ -1,3 +1,8 @@
+2009-10-11  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (iterative_hash_type_name): Do not handle special
+	anonymous names.
+
 2009-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*setcc_di_1): New insn_and_split pattern.
