@@ -1,3 +1,9 @@
+2009-10-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40440
+	* decl.c (hash_value): New function.
+	(gfc_match_derived_decl): Call it.
+
 2009-10-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41585
