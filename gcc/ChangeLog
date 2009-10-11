@@ -1,10 +1,24 @@
+2009-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*setcc_di_1): New insn_and_split pattern.
+	(*setcc_si_1_and): Ditto.
+	(*setcc_si_1_movzbl): Ditto.
+	(*setcc_<mode>_2): Ditto.
+	(*setcc_qi): Rename from *setcc_1.
+	(*setcc_qi_slp): Rename from *setcc_2.
+
+	(*zero_extendqihi2_movzbw_and splitter): Use ix86_expand_clear.
+	(*zero_extendqisi2_movzbw_and splitter): Ditto.
+
+	* config/i386/i386.c (ix86_expand_clear): Remove reload_completed from
+	"if" condition, there is already assert with reload_completed present.
+
 2009-10-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* plugin.c (try_init_one_plugin): Improve constness of variable
-	err.
+	* plugin.c (try_init_one_plugin): Improve constness of variable err.
 
 2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/install.texi (Final install): Refer to
 	http://gcc.gnu.org/bugs/ for bug reporting.
 
