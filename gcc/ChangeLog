@@ -1,3 +1,18 @@
+2009-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWIM): New mode iterator.
+	(mov<mode>cc): Macroize expander from mov{qi,hi,si,di}cc patterns
+	using SWIM mode iterator.
+	(x86_mov<mode>cc_0_m1): Macroize insn from x86_mov{si,di}cc_0_m1
+	patterns using SWI48 mode iterator.
+	(*x86_mov<mode>cc_0_m1_se):  Macroize insn from
+	*x86_mov{si,di}cc_0_m1_se patterns using SWI48 mode iterator.
+	(*x86_mov<mode>cc_0_m1_neg): New insn pattern.
+	(*mov<mode>cc_noc): Macroize insn from *mov{hi,si,di}cc_noc
+	patterns using SWI248 mode iterator.
+	* config/i386/i386.c (ix86_expand_int_movcc): Update the call to
+	gen_x86_movdicc_0_m1_rex64 for renamed function
+
 2009-10-11  Jose Ruiz  <ruiz@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -569,7 +584,7 @@
 	patterns using plusminus code iterator.
 	(<plusminus_insn><mode>3): Macroize expander from add<mode>3 and
 	sub<mode>3 patterns using plusminus code iterator.
-	* config/i386/i386.c (override_options): Update call to
+	* config/i386/i386.c (override_options): Update the call to
 	gen_subdi_carry_rex64 for renamed function.
 	(ix86_expand_int_addcc): Update calls to gen_subdi3_carry_rex64
 	and gen_adddi3_carry_rex64 for renamed functions.  Use indirect

@@ -15247,9 +15247,10 @@ ix86_expand_int_movcc (rtx operands[])
 		tmp = gen_reg_rtx (mode);
 
 	      if (mode == DImode)
-		emit_insn (gen_x86_movdicc_0_m1_rex64 (tmp, compare_op));
+		emit_insn (gen_x86_movdicc_0_m1 (tmp, compare_op));
 	      else
-		emit_insn (gen_x86_movsicc_0_m1 (gen_lowpart (SImode, tmp), compare_op));
+		emit_insn (gen_x86_movsicc_0_m1 (gen_lowpart (SImode, tmp),
+						 compare_op));
 	    }
 	  else
 	    {
