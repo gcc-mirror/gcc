@@ -408,7 +408,7 @@ try_init_one_plugin (struct plugin_name_args *plugin)
 {
   void *dl_handle;
   plugin_init_func plugin_init;
-  char *err;
+  const char *err;
   PTR_UNION_TYPE (plugin_init_func) plugin_init_union;
 
   /* We use RTLD_NOW to accelerate binding and detect any mismatch
