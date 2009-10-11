@@ -1,3 +1,8 @@
+2009-10-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu.c (TARGET_BUILTIN_DECL): Define.
+	(spu_builtin_decl): New function.
+
 2009-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (SWIM): New mode iterator.
