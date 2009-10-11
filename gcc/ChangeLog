@@ -1,3 +1,10 @@
+2009-10-11  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/33743
+	* config/i386/sol2.h (MD_UNWIND_SUPPORT): Define.
+	* config/i386/sol2-unwind.h: New file.
+
 2009-10-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/41665
