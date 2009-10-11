@@ -1,3 +1,7 @@
+2009-10-11  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (cp_free_lang_data): Drop anonymous aggregate names.
+
 2009-10-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36816
