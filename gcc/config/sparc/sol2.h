@@ -194,3 +194,5 @@ along with GCC; see the file COPYING3.  If not see
 	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
     }									\
   while (0)
+
+#define MD_UNWIND_SUPPORT "config/sparc/sol2-unwind.h"
