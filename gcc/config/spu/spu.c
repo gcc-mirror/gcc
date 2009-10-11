@@ -150,6 +150,7 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
 static void spu_init_builtins (void);
+static tree spu_builtin_decl (unsigned, bool);
 static unsigned char spu_scalar_mode_supported_p (enum machine_mode mode);
 static unsigned char spu_vector_mode_supported_p (enum machine_mode mode);
 static bool spu_legitimate_address_p (enum machine_mode, rtx, bool);
@@ -283,6 +284,8 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS spu_init_builtins
+#undef TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL spu_builtin_decl
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN spu_expand_builtin
@@ -5284,6 +5287,18 @@ struct spu_builtin_description spu_builtins[] = {
 #include "spu-builtins.def"
 #undef DEF_BUILTIN
 };
+
+/* Returns the rs6000 builtin decl for CODE.  */
+
+static tree
+spu_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{           
+  if (code >= NUM_SPU_BUILTINS)
+    return error_mark_node;
+          
+  return spu_builtins[code].fndecl;
+}
+
 
 static void
 spu_init_builtins (void)
