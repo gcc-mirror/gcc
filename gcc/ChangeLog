@@ -1,5 +1,10 @@
-2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
+2009-10-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* plugin.c (try_init_one_plugin): Improve constness of variable
+	err.
+
+2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/install.texi (Final install): Refer to
 	http://gcc.gnu.org/bugs/ for bug reporting.
 
