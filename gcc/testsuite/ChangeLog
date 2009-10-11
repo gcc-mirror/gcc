@@ -1,3 +1,11 @@
+2009-10-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40440
+	* gfortran.dg/class_4a.f03: New test with class_4b,c and d.f03.
+	* gfortran.dg/class_4b.f03: As above.
+	* gfortran.dg/class_4c.f03: As above.
+	* gfortran.dg/class_4d.f03: As above.
+
 2009-10-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41555
