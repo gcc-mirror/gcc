@@ -1,3 +1,10 @@
+2009-10-11  Jose Ruiz  <ruiz@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/33743
+	* config/sparc/sol2.h (MD_UNWIND_SUPPORT): Define.
+	* config/sparc/sol2-unwind.h: New file.
+
 2009-10-11  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
