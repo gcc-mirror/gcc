@@ -706,6 +706,12 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	  goto data_desc;
 	}
 
+      if (t != FMT_COMMA && t != FMT_RPAREN && t != FMT_SLASH)
+	{
+	  fmt->error = "Comma required after P descriptor";
+	  goto finished;
+	}
+
       fmt->saved_token = t;
       goto optional_comma;
 
@@ -734,7 +740,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
       goto between_desc;
 
     case FMT_STRING:
-      /* TODO: Find out why is is necessary to turn off format caching.  */
+      /* TODO: Find out why it is necessary to turn off format caching.  */
       saveit = false;
       get_fnode (fmt, &head, &tail, FMT_STRING);
       tail->u.string.p = fmt->string;
@@ -851,19 +857,6 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
  data_desc:
   switch (t)
     {
-    case FMT_P:
-      t = format_lex (fmt);
-      if (t == FMT_POSINT)
-	{
-	  fmt->error = "Repeat count cannot follow P descriptor";
-	  goto finished;
-	}
-
-      fmt->saved_token = t;
-      get_fnode (fmt, &head, &tail, FMT_P);
-
-      goto optional_comma;
-
     case FMT_L:
       t = format_lex (fmt);
       if (t != FMT_POSINT)
@@ -971,6 +964,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	    }
 	  fmt->saved_token = t;
 	  tail->u.real.d = 0;
+	  tail->u.real.e = -1;
 	  break;
 	}
 
@@ -982,11 +976,11 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	}
 
       tail->u.real.d = fmt->value;
+      tail->u.real.e = -1;
 
-      if (t == FMT_D || t == FMT_F)
+      if (t2 == FMT_D || t2 == FMT_F)
 	break;
 
-      tail->u.real.e = -1;
 
       /* Look for optional exponent */
       t = format_lex (fmt);
