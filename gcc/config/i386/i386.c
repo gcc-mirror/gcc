@@ -12637,7 +12637,7 @@ ix86_expand_clear (rtx dest)
   tmp = gen_rtx_SET (VOIDmode, dest, const0_rtx);
 
   /* This predicate should match that for movsi_xor and movdi_xor_rex64.  */
-  if (reload_completed && (!TARGET_USE_MOV0 || optimize_insn_for_speed_p ()))
+  if (!TARGET_USE_MOV0 || optimize_insn_for_speed_p ())
     {
       rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
       tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
