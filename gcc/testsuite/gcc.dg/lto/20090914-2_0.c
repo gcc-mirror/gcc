@@ -1,5 +1,5 @@
-/* { dg-lto-do run */
-/* { dg-skip-if "x86 only" { ! { x86_64-*-* i?86-*-* } } { "*" } { "" } }
+/* { dg-lto-do run } */
+/* { dg-skip-if "x86 only" { ! { x86_64-*-* i?86-*-* } } { "*" } { "" } } */
 
 /* Doesn't work without this dummy function with -fwhopr.  */
 int foo(void) { }

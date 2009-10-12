@@ -1,3 +1,7 @@
+2009-10-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/lto/20090914-2.c: Fix typos in test directives.
+
 2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41343
