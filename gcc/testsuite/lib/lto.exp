@@ -191,6 +191,16 @@ proc lto-get-options-main { src } {
 		   || ![string compare "dg-options" $cmd] } {
 	    warning "lto.exp does not support $cmd in primary source file"
 	} elseif { ![string compare "dg-lto-do" $cmd] } {
+	    if { [llength $op] > 3 } {
+		set kw [lindex [lindex $op 3] 0]
+		if [string match "target" $kw] {
+		    perror "$src: dg-lto-do does not support \"target\""
+		} elseif [string match "xfail" $kw] {
+		    perror "$src: dg-lto-do does not support \"xfail\""
+		} else {
+		    perror "$src: dg-lto-do takes a single argument"
+		}
+	    }
 	    set dgdo [lindex $op 2]
 	    verbose "dg-lto-do command for \"$op\" is $dgdo"
 	    if { ![string compare "assemble" $dgdo] } {
