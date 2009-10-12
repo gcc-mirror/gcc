@@ -1,5 +1,8 @@
 2009-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/41680
+	* g++.dg/torture/pr41680.C: New test.
+
 	PR rtl-optimization/41646
 	* gcc.c-torture/compile/pr41646.c: New test.
 

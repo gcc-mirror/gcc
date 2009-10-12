@@ -1,5 +1,10 @@
 2009-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/41680
+	* config/i386/i386.md (split after *testqi_ext_3_rex64): Only narrow
+	paradoxical subregs to prevent partial register stalls if the inner
+	mode is integer mode.
+
 	PR rtl-optimization/41646
 	* calls.c (expand_call): For BLKmode types returned in registers
 	avoid likely spilled hard regs in copy_blkmode_from_reg generated
