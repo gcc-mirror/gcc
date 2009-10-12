@@ -1121,9 +1121,12 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
       else
 	{
 	  tree tracked_var;
+
 	  gcc_assert (DECL_P (var));
 	  phi = create_phi_node (var, bb);
-	  if (!update_p && (tracked_var = target_for_debug_bind (var)))
+
+	  tracked_var = target_for_debug_bind (var);
+	  if (tracked_var)
 	    {
 	      gimple note = gimple_build_debug_bind (tracked_var,
 						     PHI_RESULT (phi),
@@ -1818,7 +1821,8 @@ maybe_replace_use_in_debug_stmt (use_operand_p use_p)
    DEF_P.  */
 
 static inline void
-maybe_register_def (def_operand_p def_p, gimple stmt)
+maybe_register_def (def_operand_p def_p, gimple stmt,
+		    gimple_stmt_iterator gsi)
 {
   tree def = DEF_FROM_PTR (def_p);
   tree sym = DECL_P (def) ? def : SSA_NAME_VAR (def);
@@ -1829,8 +1833,17 @@ maybe_register_def (def_operand_p def_p, gimple stmt)
     {
       if (DECL_P (def))
 	{
+	  tree tracked_var;
+
 	  def = make_ssa_name (def, stmt);
 	  SET_DEF (def_p, def);
+
+	  tracked_var = target_for_debug_bind (sym);
+	  if (tracked_var)
+	    {
+	      gimple note = gimple_build_debug_bind (tracked_var, def, stmt);
+	      gsi_insert_after (&gsi, note, GSI_SAME_STMT);
+	    }
 	}
 
       register_new_update_single (def, sym);
@@ -1858,7 +1871,7 @@ maybe_register_def (def_operand_p def_p, gimple stmt)
    in OLD_SSA_NAMES.  */
 
 static void
-rewrite_update_stmt (gimple stmt)
+rewrite_update_stmt (gimple stmt, gimple_stmt_iterator gsi)
 {
   use_operand_p use_p;
   def_operand_p def_p;
@@ -1920,7 +1933,7 @@ rewrite_update_stmt (gimple stmt)
      marked for renaming.  */
   if (register_defs_p (stmt))
     FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
-      maybe_register_def (def_p, stmt);
+      maybe_register_def (def_p, stmt, gsi);
 }
 
 
@@ -2079,11 +2092,11 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   /* Step 2.  Rewrite every variable used in each statement in the block.  */
   if (TEST_BIT (interesting_blocks, bb->index))
-   {
-     gcc_assert (bitmap_bit_p (blocks_to_update, bb->index));
+    {
+      gcc_assert (bitmap_bit_p (blocks_to_update, bb->index));
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-        rewrite_update_stmt (gsi_stmt (gsi));
-   }
+        rewrite_update_stmt (gsi_stmt (gsi), gsi);
+    }
 
   /* Step 3.  Update PHI nodes.  */
   rewrite_update_phi_arguments (bb);

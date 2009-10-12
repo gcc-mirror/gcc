@@ -1,3 +1,12 @@
+2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41616
+	* tree-into-ssa.c (insert_phi_nodes_for): Build debug bind stmts
+	on updates too.
+	(maybe_register_def): Likewise.  Take stmt iterator.
+	(rewrite_update_stmt): Take stmt iterator and pass it on.
+	(rewrite_update_enter_block): Pass stmt iterator.
+
 2009-10-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu.c (TARGET_BUILTIN_DECL): Define.
