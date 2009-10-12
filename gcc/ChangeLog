@@ -1,3 +1,9 @@
+2009-10-12  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41570
+	* gcc/dwarf2out.c (template_parameter_pack_die,
+	gen_formal_parameter_pack_die): Use add_name_and_src_coords_attributes.
+
 2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41616

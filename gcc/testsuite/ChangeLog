@@ -1,3 +1,8 @@
+2009-10-12  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41570
+	* gcc/testsuite/g++.dg/debug/dwarf2/template-params-7.C: New test.
+
 2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41616

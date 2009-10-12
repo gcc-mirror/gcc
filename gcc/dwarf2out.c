@@ -12353,13 +12353,10 @@ template_parameter_pack_die (tree parm_pack,
   dw_die_ref die;
   int j;
 
-  gcc_assert (parent_die
-	      && parm_pack
-	      && DECL_NAME (parm_pack));
+  gcc_assert (parent_die && parm_pack);
 
   die = new_die (DW_TAG_GNU_template_parameter_pack, parent_die, parm_pack);
-  add_AT_string (die, DW_AT_name, IDENTIFIER_POINTER (DECL_NAME (parm_pack)));
-
+  add_name_and_src_coords_attributes (die, parm_pack);
   for (j = 0; j < TREE_VEC_LENGTH (parm_pack_args); j++)
     generic_parameter_die (parm_pack,
 			   TREE_VEC_ELT (parm_pack_args, j),
@@ -17207,12 +17204,10 @@ gen_formal_parameter_pack_die  (tree parm_pack,
 
   gcc_assert (parm_pack
 	      && lang_hooks.function_parameter_pack_p (parm_pack)
-	      && DECL_NAME (parm_pack)
 	      && subr_die);
 
   parm_pack_die = new_die (DW_TAG_GNU_formal_parameter_pack, subr_die, parm_pack);
-  add_AT_string (parm_pack_die, DW_AT_name,
-		 IDENTIFIER_POINTER (DECL_NAME (parm_pack)));
+  add_src_coords_attributes (parm_pack_die, parm_pack);
 
   for (arg = pack_arg; arg; arg = TREE_CHAIN (arg))
     {
