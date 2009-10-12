@@ -1,3 +1,10 @@
+2009-10-12  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/41659
+	* gcc.dg/lto/20090914-2.c: Use dg-skip-if to skip test.
+	* lib/lto.exp (lto-get-options-main): Report error for using "target"
+	or "xfail" with dg-lto-dg.
+
 2009-10-12  Stefan Dösinger  <stefan@codeweavers.com>
 
 	* gcc.target/i386/ms_hook_prologue.c: New testcase.
