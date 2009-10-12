@@ -19,7 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-options "-std=c++0x -D_GLIBCXX_CONCEPT_CHECKS" }
+// { dg-options "-std=c++0x" }
 // { dg-require-cstdint "" }
 // { dg-error "not a valid type" "" { target *-*-* } 32 }
 // { dg-error "invalid type"     "" { target *-*-* } 32 }

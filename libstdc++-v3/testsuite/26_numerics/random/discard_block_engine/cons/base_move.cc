@@ -31,7 +31,7 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  typedef std::subtract_with_carry_engine<long, 24, 10, 24>
+  typedef std::subtract_with_carry_engine<unsigned long, 24, 10, 24>
     base_engine;
 
   std::discard_block_engine<base_engine, 389, 24>
