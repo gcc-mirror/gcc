@@ -59,7 +59,7 @@
 	general registers.  Fix typo in head comment.
 
 2009-10-12  Stefan Dösinger  <stefan@codeweavers.com>
-        
+
 	* config/i386/i386.md (vswapmov): New.
 	* config/i386/i386.c (ix86_handle_fndecl_attribute): New.
 	(ix86_function_ms_hook_prologue): New.
@@ -76,8 +76,7 @@
 
 2009-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (*setcc_<mode>_2): Do not use ix86_expand_clear
-	to zero operand 0.
+	* config/i386/i386.md (*setcc_<mode>_2): Remove insn pattern.
 
 2009-10-12  Dodji Seketeli  <dodji@redhat.com>
 
