@@ -1,3 +1,8 @@
+2009-10-12  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/plugin/one_time_plugin.c: Update test to use the cfg
+	pass.
+
 2009-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/41680
