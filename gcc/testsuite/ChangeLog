@@ -1,3 +1,8 @@
+2009-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37204
+	* g++.dg/cpp0x/rv-reinterpret.C: New.
+
 2009-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/38439
