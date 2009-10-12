@@ -1,6 +1,12 @@
 2009-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/38439
+	* io/format.c (parse_format_list): Correct logic for FMT_F reading vs
+	writing. Code clean-up.
+
+2009-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/38439
 	* io/format.c (parse_format_list): Add check for tokens not allowed
 	after P specifier. Fix comments.  Remove un-needed code. Fix the
 	default exponent list. Correct pointer assignment error.
