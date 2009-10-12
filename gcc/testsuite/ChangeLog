@@ -1,3 +1,8 @@
+2009-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41680
+	* g++.dg/torture/pr41680.C: New test.
+
 2009-10-12  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41570

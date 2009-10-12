@@ -1,3 +1,10 @@
+2009-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41680
+	* config/i386/i386.md (split after *testqi_ext_3_rex64): Only narrow
+	paradoxical subregs to prevent partial register stalls if the inner
+	mode is integer mode.
+
 2009-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*setcc_<mode>_2): Do not use ix86_expand_clear
