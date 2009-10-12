@@ -1,5 +1,8 @@
 2009-10-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37875
+	* g++.dg/cpp0x/decltype18.C: New.
+
 	PR c++/37766
 	* g++.dg/cpp0x/fntmpdefarg1.C: New.
 

@@ -1,5 +1,8 @@
 2009-10-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37875
+	* parser.c (cp_parser_decltype): Set greater_than_is_operator_p.
+
 	PR c++/37766
 	* pt.c (type_unification_real): Call convert_template_argument
 	for function default template arguments.

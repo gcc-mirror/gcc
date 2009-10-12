@@ -9541,12 +9541,25 @@ cp_parser_decltype (cp_parser *parser)
     cp_parser_parse_definitely (parser);
   else
     {
+      bool saved_greater_than_is_operator_p;
+
       /* Abort our attempt to parse an id-expression or member access
          expression.  */
       cp_parser_abort_tentative_parse (parser);
 
+      /* Within a parenthesized expression, a `>' token is always
+	 the greater-than operator.  */
+      saved_greater_than_is_operator_p
+	= parser->greater_than_is_operator_p;
+      parser->greater_than_is_operator_p = true;
+
       /* Parse a full expression.  */
       expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+
+      /* The `>' token might be the end of a template-id or
+	 template-parameter-list now.  */
+      parser->greater_than_is_operator_p
+	= saved_greater_than_is_operator_p;
     }
 
   /* Go back to evaluating expressions.  */
