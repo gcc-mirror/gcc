@@ -1,3 +1,57 @@
+2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41343
+	PR debug/41447
+	PR debug/41264
+	PR debug/41338
+	* tree.def (DEBUG_EXPR_DECL): New.
+	* rtl.def (DEBUG_EXPR): New.
+	* gengtype.c (adjust_field_rtx_def): Handle it.
+	* tree-ssa.c (propagate_var_def_into_debug_stmts): Rename to...
+	(insert_debug_temp_for_var_def): ... this.  Drop support for
+	moving.  Take iterator for def stmt; insert debug stmt before it.
+	Scan early for use count and kind in debug stmts.
+	(propagate_defs_into_debug_stmts): Rename to...
+	(insert_debug_temps_for_defs): ... this.  Likewise.
+	* tree.h (DEBUG_TEMP_UID): New.
+	* tree.c (next_debug_decl_uid): New.
+	(make_node_stat): Count debug decls separately.
+	(copy_node_stat): Likewise.
+	* cfgexpand.c (expand_debug_expr): Handle DEBUG_EXPR_DECL.
+	* var-tracking.c (dv_is_decl_p): Recognize it.
+	(VALUE_RECURSED_INTO): Apply to DEBUG_EXPRs too.
+	(track_expr_p): Track expanded DEBUG_EXPR_DECLs.
+	(vt_expand_loc_callback): Expand DEBUG_EXPRs.
+	(emit_note_insn_var_location): Don't emit notes for DEBUG_EXPR_DECLs.
+	* cselib.c (rtx_equal_for_cselib_p): Handle DEBUG_EXPR.
+	(cselib_hash_rtx): Likewise.
+	(cselib_expand_value_rtx_1): Use callback for DEBUG_EXPR.
+	* tree-ssa-operands.c (get_expr_operands): Skip DEBUG_EXPR_DECLs in
+	debug bind stmts.
+	* emit-rtl.c (verify_rtx_sharing): Handle DEBUG_EXPR and VALUE.
+	(copy_rtx_if_shared_1, reset_used_flags, set_used_flags): Likewise.
+	* rtl.c (copy_rtx): Likewise.
+	(rtx_equal_p_cb, rtx_equal_p): Handle DEBUG_EXPR.
+	* print-rtl.c (print_rtx): Likewise.
+	* sched-vis.c (print_value): Likewise.
+	(print_insn): Handle DEBUG_EXPR_DECL.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-pretty-print.c (dump_decl_name, dump_generic_node): Likewise.
+	* gimple-iterator (gsi_replace): Check for same lhs.
+	(gsi_remove): Insert debug temps.
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Replace with same lhs.
+	(move_computations_stmt): Drop explicit propagation into debug stmts.
+	(rewrite_bittest): Likewise.  Use gsi_remove for propagation.
+	* tree-ssa-reassoc.c (rewrite_expr_tree, linearize_expr): Likewise.
+	* tree-ssa-sink.c (statement_sink_location): Likewise.
+	* tree-ssa-forwprop (forward_propagate_addr_expr): Likewise.
+	* tree-ssanames.c (release_ssa_name): Adjust for rename.
+	* tree-flow.h: Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Don't mark
+	debug temps without values.
+	(eliminate_unnecessary_stmts): Don't discard just-inserted
+	debug stmts.
+
 2009-10-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/26515

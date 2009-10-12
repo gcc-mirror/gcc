@@ -894,6 +894,10 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
       add_stmt_operand (expr_p, stmt, flags);
       return;
 
+    case DEBUG_EXPR_DECL:
+      gcc_assert (gimple_debug_bind_p (stmt));
+      return;
+
     case MISALIGNED_INDIRECT_REF:
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
       /* fall through */

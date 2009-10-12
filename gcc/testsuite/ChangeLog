@@ -1,3 +1,13 @@
+2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41343
+	PR debug/41447
+	PR debug/41264
+	PR debug/41338
+	* gcc.dg/guality/pr41447-1.c: New.
+	* gcc.dg/debug/pr41264-1.c: New.
+	* gcc.dg/debug/pr41343-1.c: New.
+
 2009-10-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/26515

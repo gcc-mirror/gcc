@@ -521,6 +521,10 @@ print_value (char *buf, const_rtx x, int verbose)
       cur = safe_concat (buf, cur, t);
       cur = safe_concat (buf, cur, "]");
       break;
+    case DEBUG_EXPR:
+      sprintf (t, "D#%i", DEBUG_TEMP_UID (XTREE (x, 0)));
+      cur = safe_concat (buf, cur, t);
+      break;
     default:
       print_exp (t, x, verbose);
       cur = safe_concat (buf, cur, t);
@@ -670,11 +674,18 @@ print_insn (char *buf, const_rtx x, int verbose)
 	if (DECL_P (INSN_VAR_LOCATION_DECL (insn)))
 	  {
 	    tree id = DECL_NAME (INSN_VAR_LOCATION_DECL (insn));
+	    char idbuf[32];
 	    if (id)
 	      name = IDENTIFIER_POINTER (id);
+	    else if (TREE_CODE (INSN_VAR_LOCATION_DECL (insn))
+		     == DEBUG_EXPR_DECL)
+	      {
+		sprintf (idbuf, "D#%i",
+			 DEBUG_TEMP_UID (INSN_VAR_LOCATION_DECL (insn)));
+		name = idbuf;
+	      }
 	    else
 	      {
-		char idbuf[32];
 		sprintf (idbuf, "D.%i",
 			 DECL_UID (INSN_VAR_LOCATION_DECL (insn)));
 		name = idbuf;

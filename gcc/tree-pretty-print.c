@@ -183,6 +183,8 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
     {
       if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
         pp_printf (buffer, "L.%d", (int) LABEL_DECL_UID (node));
+      else if (TREE_CODE (node) == DEBUG_EXPR_DECL)
+	pp_printf (buffer, "D#%i", DEBUG_TEMP_UID (node));
       else
 	{
 	  char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
@@ -1051,6 +1053,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:
+    case DEBUG_EXPR_DECL:
     case NAMESPACE_DECL:
       dump_decl_name (buffer, node, flags);
       break;

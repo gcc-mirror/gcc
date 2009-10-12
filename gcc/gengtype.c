@@ -1117,6 +1117,8 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == VALUE && aindex == 0)
 		t = scalar_tp, subname = "rt_int";
+	      else if (i == DEBUG_EXPR && aindex == 0)
+		t = tree_tp, subname = "rt_tree";
 	      else if (i == REG && aindex == 1)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == REG && aindex == 2)
