@@ -3,7 +3,7 @@
 	PR testsuite/41659
 	* gcc.dg/lto/20090914-2.c: Use dg-skip-if to skip test.
 	* lib/lto.exp (lto-get-options-main): Report error for using "target"
-	or "xfail" with dg-lto-dg.
+	or "xfail" with dg-lto-do.
 
 2009-10-12  Stefan Dösinger  <stefan@codeweavers.com>
 
