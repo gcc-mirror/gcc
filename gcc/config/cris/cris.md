@@ -4936,7 +4936,7 @@
 ;; It should be:
 ;;   movu.b some_byte,reg_32
 ;;   and.b const,reg_32
-;; but is turns into:
+;; but it turns into:
 ;;   move.b some_byte,reg_32
 ;;   and.d const,reg_32
 ;; Fix it here.
@@ -4953,7 +4953,9 @@
   "REGNO (operands[2]) == REGNO (operands[0])
    && INTVAL (operands[3]) <= 65535 && INTVAL (operands[3]) >= 0
    && !CRIS_CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'I')
-   && !side_effects_p (operands[1])"
+   && !side_effects_p (operands[1])
+   && (!REG_P (operands[1])
+       || REGNO (operands[1]) <= CRIS_LAST_GENERAL_REGISTER)"
   ;; FIXME: CC0 valid except for M (i.e. CC_NOT_NEGATIVE).
   [(set (match_dup 0) (match_dup 4))
    (set (match_dup 5) (match_dup 6))]
