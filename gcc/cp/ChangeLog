@@ -1,3 +1,11 @@
+2009-10-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37766
+	* pt.c (type_unification_real): Call convert_template_argument
+	for function default template arguments.
+	(check_default_tmpl_args): Suggest -std=c++0x when function default
+	template args seen in C++98 mode.
+
 2009-10-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37204
