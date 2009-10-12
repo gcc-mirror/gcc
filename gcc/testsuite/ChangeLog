@@ -1,3 +1,8 @@
+2009-10-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/26515
+	* gcc.dg/torture/pr26515.c: New test.
+
 2009-10-12  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/41659
