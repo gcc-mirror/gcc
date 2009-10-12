@@ -1,3 +1,12 @@
+2009-10-12  Stefan Dösinger  <stefan@codeweavers.com>
+        
+	* config/i386/i386.md (vswapmov): New.
+	* config/i386/i386.c (ix86_handle_fndecl_attribute): New.
+	(ix86_function_ms_hook_prologue): New.
+	(ix86_expand_prologue): Handle ms_hook_prologue attribute.
+	* configure.ac: Test for swap suffix support in as.
+	* configure: Rebuild.
+
 2009-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/41680
