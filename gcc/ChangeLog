@@ -1,3 +1,8 @@
+2009-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*setcc_<mode>_2): Do not use ix86_expand_clear
+	to zero operand 0.
+
 2009-10-12  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41570
@@ -34,14 +39,14 @@
 	gen_x86_movdicc_0_m1_rex64 for renamed function
 
 2009-10-11  Jose Ruiz  <ruiz@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/33743
 	* config/sparc/sol2.h (MD_UNWIND_SUPPORT): Define.
 	* config/sparc/sol2-unwind.h: New file.
 
 2009-10-11  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/33743
 	* config/i386/sol2.h (MD_UNWIND_SUPPORT): Define.
@@ -1658,7 +1663,7 @@
 	pressure.
 
 2009-09-29  Basile Starynkevitch  <basile@starynkevitch.net>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* gengtype.c (plugin_output): New.
 	(get_output_file_with_visibility): Return plugin_output for plugins.
