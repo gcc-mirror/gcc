@@ -32,7 +32,6 @@
 
 namespace std
 {
-
   // [26.4] Random number generation
 
   /**
@@ -154,10 +153,10 @@ namespace std
   template<typename _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
     class linear_congruential_engine
     {
-      __glibcxx_class_requires(_UIntType, _UnsignedIntegerConcept)
-      static_assert(__m == 0 || (__a < __m && __c < __m),
-		    "template arguments out of bounds"
-		    " in linear_congruential_engine");
+      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
+		    "_UIntType not an unsigned integral type");
+      static_assert(__m == 0u || (__a < __m && __c < __m),
+		    "template argument __m out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -341,35 +340,27 @@ namespace std
 	   _UIntType __c, size_t __l, _UIntType __f>
     class mersenne_twister_engine
     {
-      __glibcxx_class_requires(_UIntType, _UnsignedIntegerConcept)
-
-      static_assert(__m >= 1U, 
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__n >= __m,
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__w >= __r,
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__w >= __u,
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__w >= __s,
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__w >= __t,
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__w >= __l,
-		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__w <=
-		    static_cast<size_t>(std::numeric_limits<_UIntType>::digits),
-		    "mersenne_twister_engine template arguments out of bounds");
+      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
+		    "_UIntType not an unsigned integral type");
+      static_assert(1u <= __m && __m <= __n,
+		    "template argument __m out of bounds");
+      static_assert(__r <= __w, "template argument __r out of bound");
+      static_assert(__u <= __w, "template argument __u out of bound");
+      static_assert(__s <= __w, "template argument __s out of bound");
+      static_assert(__t <= __w, "template argument __t out of bound");
+      static_assert(__l <= __w, "template argument __l out of bound");
+      static_assert(__w <= std::numeric_limits<_UIntType>::digits,
+		    "template argument __w out of bound");
       static_assert(__a <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "mersenne_twister_engine template arguments out of bounds");
+		    "template argument __a out of bound");
       static_assert(__b <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "mersenne_twister_engine template arguments out of bounds");
+		    "template argument __b out of bound");
       static_assert(__c <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "mersenne_twister_engine template arguments out of bounds");
+		    "template argument __c out of bound");
       static_assert(__d <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "mersenne_twister_engine template arguments out of bounds");
+		    "template argument __d out of bound");
       static_assert(__f <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "mersenne_twister_engine template arguments out of bounds");
+		    "template argument __f out of bound");
 
     public:
       /** The type of the generated random value. */
@@ -538,13 +529,12 @@ namespace std
   template<typename _UIntType, size_t __w, size_t __s, size_t __r>
     class subtract_with_carry_engine
     {
-      __glibcxx_class_requires(_UIntType, _UnsignedIntegerConcept)
-      static_assert(__s > 0U && __r > __s
-		    && __w > 0U
-		    && __w <= static_cast<size_t>
-		    (std::numeric_limits<_UIntType>::digits),
-		    "template arguments out of bounds"
-		    " in subtract_with_carry_engine");
+      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
+		    "_UIntType not an unsigned integral type");
+      static_assert(0u < __s && __s < __r,
+		    "template argument __s out of bounds");
+      static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
+		    "template argument __w out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -702,9 +692,8 @@ namespace std
   template<typename _RandomNumberEngine, size_t __p, size_t __r>
     class discard_block_engine
     {
-      static_assert(__r >= 1U && __p >= __r,
-		    "template arguments out of bounds"
-		    " in discard_block_engine");
+      static_assert(1 <= __r && __r <= __p,
+		    "template argument __r out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -903,12 +892,10 @@ namespace std
   template<typename _RandomNumberEngine, size_t __w, typename _UIntType>
     class independent_bits_engine
     {
-      static_assert(__w > 0U
-		    && __w <=
-		    static_cast<size_t>
-		    (std::numeric_limits<_UIntType>::digits),
-		    "template arguments out of bounds "
-		    "in independent_bits_engine");
+      static_assert(std::is_unsigned<_UIntType>::value, "template argument "
+		    "_UIntType not an unsigned integral type");
+      static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
+		    "template argument __w out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -1102,9 +1089,7 @@ namespace std
   template<typename _RandomNumberEngine, size_t __k>
     class shuffle_order_engine
     {
-      static_assert(__k >= 1U,
-		    "template arguments out of bounds"
-		    " in shuffle_order_engine");
+      static_assert(1u <= __k, "template argument __k out of bound");
 
     public:
       /** The type of the generated random value. */
@@ -1480,7 +1465,8 @@ namespace std
   template<typename _IntType = int>
     class uniform_int_distribution
     {
-      __glibcxx_class_requires(_IntType, _IntegerConcept)
+      static_assert(std::is_integral<_IntType>::value,
+		    "template argument not an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -1633,6 +1619,9 @@ namespace std
   template<typename _RealType = double>
     class uniform_real_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -1791,6 +1780,9 @@ namespace std
   template<typename _RealType = double>
     class normal_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -1943,6 +1935,9 @@ namespace std
   template<typename _RealType = double>
     class lognormal_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -2086,6 +2081,9 @@ namespace std
   template<typename _RealType = double>
     class gamma_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -2243,6 +2241,9 @@ namespace std
   template<typename _RealType = double>
     class chi_squared_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -2378,6 +2379,9 @@ namespace std
   template<typename _RealType = double>
     class cauchy_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -2519,6 +2523,9 @@ namespace std
   template<typename _RealType = double>
     class fisher_f_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -2670,6 +2677,9 @@ namespace std
   template<typename _RealType = double>
     class student_t_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -2972,7 +2982,8 @@ namespace std
   template<typename _IntType = int>
     class binomial_distribution
     {
-      __glibcxx_class_requires(_IntType, _IntegerConcept)
+      static_assert(std::is_integral<_IntType>::value,
+		    "template argument not an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3142,7 +3153,8 @@ namespace std
   template<typename _IntType = int>
     class geometric_distribution
     {
-      __glibcxx_class_requires(_IntType, _IntegerConcept)
+      static_assert(std::is_integral<_IntType>::value,
+		    "template argument not an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3287,7 +3299,8 @@ namespace std
   template<typename _IntType = int>
     class negative_binomial_distribution
     {
-      __glibcxx_class_requires(_IntType, _IntegerConcept)
+      static_assert(std::is_integral<_IntType>::value,
+		    "template argument not an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3439,7 +3452,8 @@ namespace std
   template<typename _IntType = int>
     class poisson_distribution
     {
-      __glibcxx_class_requires(_IntType, _IntegerConcept)
+      static_assert(std::is_integral<_IntType>::value,
+		    "template argument not an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -3594,6 +3608,9 @@ namespace std
   template<typename _RealType = double>
     class exponential_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -3736,6 +3753,9 @@ namespace std
   template<typename _RealType = double>
     class weibull_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -3879,6 +3899,9 @@ namespace std
   template<typename _RealType = double>
     class extreme_value_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -4021,7 +4044,8 @@ namespace std
   template<typename _IntType = int>
     class discrete_distribution
     {
-      __glibcxx_class_requires(_IntType, _IntegerConcept)
+      static_assert(std::is_integral<_IntType>::value,
+		    "template argument not an integral type");
 
     public:
       /** The type of the range of the distribution. */
@@ -4185,6 +4209,9 @@ namespace std
   template<typename _RealType = double>
     class piecewise_constant_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;
@@ -4363,6 +4390,9 @@ namespace std
   template<typename _RealType = double>
     class piecewise_linear_distribution
     {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
     public:
       /** The type of the range of the distribution. */
       typedef _RealType result_type;

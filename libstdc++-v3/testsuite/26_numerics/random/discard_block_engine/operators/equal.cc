@@ -33,7 +33,7 @@ test01()
 
   std::discard_block_engine
     <
-    std::subtract_with_carry_engine<long, 24, 10, 24>,
+    std::subtract_with_carry_engine<unsigned long, 24, 10, 24>,
     389, 24
     > u, v;
 

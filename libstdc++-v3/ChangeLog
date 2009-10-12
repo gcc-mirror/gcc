@@ -1,3 +1,43 @@
+2009-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (class linear_congruential_engine,
+	class mersenne_twister_engine, class subtract_with_carry_engine,
+	class discard_block_engine, class independent_bits_engine,
+	class shuffle_order_engine, class uniform_int_distribution,
+	class binomial_distribution, class geometric_distribution,
+	class negative_binomial_distribution, class poisson_distribution,
+	class discrete_distribution): Do not use simulated concept checks,
+	tidy startic_asserts on argument types and ranges.
+	(class uniform_real_distribution, class normal_distribution,
+	class lognormal_distribution, class gamma_distribution,
+	class chi_squared_distribution, class cauchy_distribution,
+	class fisher_f_distribution, class student_t_distribution,
+	class exponential_distribution, class weibull_distribution,
+	class extreme_value_distribution, class piecewise_linear_distribution,
+	class piecewise_constant_distribution): Add static_assert on
+	template argument type.
+	* include/std/random: Do not include <bits/concept_check.h>.
+	* testsuite/26_numerics/random/discard_block_engine/cons/base_move.cc:
+	Fix.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed1.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/base_copy.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed_seq.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/non_uint_neg.cc: Tweak.
+
 2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/messages.xml: Update GNU gettext reference.
