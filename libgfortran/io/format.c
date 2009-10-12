@@ -933,7 +933,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	  tail->u.real.d = fmt->value;
 	  break;
 	}
-      if (t == FMT_F || dtp->u.p.mode == WRITING)
+      if (t == FMT_F && dtp->u.p.mode == WRITING)
 	{
 	  if (u != FMT_POSINT && u != FMT_ZERO)
 	    {
@@ -941,13 +941,10 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	      goto finished;
 	    }
 	}
-      else
+      else if (u != FMT_POSINT)
 	{
-	  if (u != FMT_POSINT)
-	    {
-	      fmt->error = posint_required;
-	      goto finished;
-	    }
+	  fmt->error = posint_required;
+	  goto finished;
 	}
 
       tail->u.real.w = fmt->value;
