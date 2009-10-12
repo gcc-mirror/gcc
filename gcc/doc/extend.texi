@@ -2679,6 +2679,14 @@ when targeting Windows.  On all other systems, the default is the AMD ABI.
 
 Note, This feature is currently sorried out for Windows targets trying to
 
+@item ms_hook_prologue
+@cindex @code{ms_hook_prologue} attribute
+
+On 32 bit i[34567]86-*-* targets, you can use this function attribute to make
+gcc generate the "hot-patching" function prologue used in Win32 API
+functions in Microsoft Windows XP Service Pack 2 and newer. This requires
+support for the swap suffix in the assembler. (GNU Binutils 2.19.51 or later)
+
 @item naked
 @cindex function without a prologue/epilogue code
 Use this attribute on the ARM, AVR, IP2K and SPU ports to indicate that

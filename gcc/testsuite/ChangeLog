@@ -1,3 +1,7 @@
+2009-10-12  Stefan Dösinger  <stefan@codeweavers.com>
+
+	* gcc.target/i386/ms_hook_prologue.c: New testcase.
+
 2009-10-12  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/plugin/one_time_plugin.c: Update test to use the cfg
