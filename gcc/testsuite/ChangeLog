@@ -1,3 +1,8 @@
+2009-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/41646
+	* gcc.c-torture/compile/pr41646.c: New test.
+
 2009-10-07  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/variadic95.C: New.
