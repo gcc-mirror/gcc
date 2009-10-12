@@ -318,6 +318,12 @@ print_rtx (const_rtx in_rtx)
 	    dump_addr (outfile, "/", (void*)val);
 #endif
 	  }
+	else if (i == 0 && GET_CODE (in_rtx) == DEBUG_EXPR)
+	  {
+#ifndef GENERATOR_FILE
+	    fprintf (outfile, " D#%i", DEBUG_TEMP_UID (XTREE (in_rtx, 0)));
+#endif
+	  }
 	break;
 
       case 'e':

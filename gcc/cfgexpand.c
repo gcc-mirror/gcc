@@ -2361,6 +2361,18 @@ expand_debug_expr (tree exp)
       op1 = wrap_constant (GET_MODE_INNER (mode), op1);
       return gen_rtx_CONCAT (mode, op0, op1);
 
+    case DEBUG_EXPR_DECL:
+      op0 = DECL_RTL_IF_SET (exp);
+
+      if (op0)
+	return op0;
+
+      op0 = gen_rtx_DEBUG_EXPR (mode);
+      XTREE (op0, 0) = exp;
+      SET_DECL_RTL (exp, op0);
+
+      return op0;
+
     case VAR_DECL:
     case PARM_DECL:
     case FUNCTION_DECL:

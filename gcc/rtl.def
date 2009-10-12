@@ -88,6 +88,10 @@ DEF_RTL_EXPR(UNKNOWN, "UnKnown", "*", RTX_EXTRA)
    DECL codes in trees.  */
 DEF_RTL_EXPR(VALUE, "value", "0", RTX_OBJ)
 
+/* The RTL generated for a DEBUG_EXPR_DECL.  It links back to the
+   DEBUG_EXPR_DECL in the first operand.  */
+DEF_RTL_EXPR(DEBUG_EXPR, "debug_expr", "0", RTX_OBJ)
+
 /* ---------------------------------------------------------------------
    Expressions used in constructing lists.
    --------------------------------------------------------------------- */

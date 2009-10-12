@@ -939,7 +939,6 @@ forward_propagate_addr_expr (tree name, tree rhs)
   gimple use_stmt;
   bool all = true;
   bool single_use_p = has_single_use (name);
-  bool debug = false;
 
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, name)
     {
@@ -950,9 +949,7 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	 there is nothing we can do.  */
       if (gimple_code (use_stmt) != GIMPLE_ASSIGN)
 	{
-	  if (is_gimple_debug (use_stmt))
-	    debug = true;
-	  else
+	  if (!is_gimple_debug (use_stmt))
 	    all = false;
 	  continue;
 	}
@@ -994,9 +991,6 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	  gsi_remove (&gsi, true);
 	}
     }
-
-  if (all && debug)
-    propagate_var_def_into_debug_stmts (name, NULL, NULL);
 
   return all;
 }

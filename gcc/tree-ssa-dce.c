@@ -325,7 +325,13 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
       break;
 
     case GIMPLE_DEBUG:
-      mark_stmt_necessary (stmt, false);
+      /* Debug temps without a value are not useful.  ??? If we could
+	 easily locate the debug temp bind stmt for a use thereof,
+	 would could refrain from marking all debug temps here, and
+	 mark them only if they're used.  */
+      if (gimple_debug_bind_has_value_p (stmt)
+	  || TREE_CODE (gimple_debug_bind_get_var (stmt)) != DEBUG_EXPR_DECL)
+	mark_stmt_necessary (stmt, false);
       return;
 
     case GIMPLE_GOTO:
@@ -1071,7 +1077,7 @@ eliminate_unnecessary_stmts (void)
 {
   bool something_changed = false;
   basic_block bb;
-  gimple_stmt_iterator gsi;
+  gimple_stmt_iterator gsi, psi;
   gimple stmt;
   tree call;
   VEC (basic_block, heap) *h;
@@ -1111,9 +1117,12 @@ eliminate_unnecessary_stmts (void)
       bb = VEC_pop (basic_block, h);
 
       /* Remove dead statements.  */
-      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi = psi)
 	{
 	  stmt = gsi_stmt (gsi);
+
+	  psi = gsi;
+	  gsi_prev (&psi);
 
 	  stats.total++;
 
@@ -1122,14 +1131,6 @@ eliminate_unnecessary_stmts (void)
 	    {
 	      remove_dead_stmt (&gsi, bb);
 	      something_changed = true;
-
-	      /* If stmt was the last stmt in the block, we want to
-		 move gsi to the stmt that became the last stmt, but
-		 gsi_prev would crash.  */
-	      if (gsi_end_p (gsi))
-		gsi = gsi_last_bb (bb);
-	      else
-		gsi_prev (&gsi);
 	    }
 	  else if (is_gimple_call (stmt))
 	    {
@@ -1159,10 +1160,7 @@ eliminate_unnecessary_stmts (void)
 		    }
 		  notice_special_calls (stmt);
 		}
-	      gsi_prev (&gsi);
 	    }
-	  else
-	    gsi_prev (&gsi);
 	}
     }
 
