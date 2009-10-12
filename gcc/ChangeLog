@@ -1,3 +1,9 @@
+2009-10-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/26515
+	* config/cris/cris.md (andu): Check that operand 1 is one of the
+	general registers.  Fix typo in head comment.
+
 2009-10-12  Stefan Dösinger  <stefan@codeweavers.com>
         
 	* config/i386/i386.md (vswapmov): New.
