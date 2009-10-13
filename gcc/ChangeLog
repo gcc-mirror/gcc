@@ -1,3 +1,12 @@
+2009-10-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/41661
+	* ipa-prop.c (compute_complex_pass_through): Allow only operations
+	that are tcc_comparisons or do not change the type in any
+	un-usleless way.
+	* ipa-cp.c (ipcp_lattice_from_jfunc): Request boolean type when
+	folding tcc_comparison operations.
+
 2009-10-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_encode_section_info): Handle BLKmode

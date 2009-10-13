@@ -357,6 +357,9 @@ compute_complex_pass_through (struct ipa_node_params *info,
     {
       if (TREE_CODE (op1) != SSA_NAME
 	  || !SSA_NAME_IS_DEFAULT_DEF (op1)
+	  || (TREE_CODE_CLASS (gimple_expr_code (stmt)) != tcc_comparison
+	      && !useless_type_conversion_p (TREE_TYPE (name),
+					     TREE_TYPE (op1)))
 	  || !is_gimple_ip_invariant (op2))
 	return;
 

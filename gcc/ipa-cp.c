@@ -299,9 +299,16 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
       cst = caller_lat->constant;
 
       if (jfunc->value.pass_through.operation != NOP_EXPR)
-	cst = fold_binary (jfunc->value.pass_through.operation,
-			   TREE_TYPE (cst), cst,
-			   jfunc->value.pass_through.operand);
+	{
+	  tree restype;
+	  if (TREE_CODE_CLASS (jfunc->value.pass_through.operation)
+	      == tcc_comparison)
+	    restype = boolean_type_node;
+	  else
+	    restype = TREE_TYPE (cst);
+	  cst = fold_binary (jfunc->value.pass_through.operation,
+			     restype, cst, jfunc->value.pass_through.operand);
+	}
       if (!cst || !is_gimple_ip_invariant (cst))
 	lat->type = IPA_BOTTOM;
       lat->constant = cst;
