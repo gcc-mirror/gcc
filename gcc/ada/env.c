@@ -29,8 +29,11 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Tru64 UNIX <stdlib.h> declares unsetenv() only if _BSD.  */
+/* Tru64 UNIX V4.0F <stdlib.h> declares unsetenv() only if AES_SOURCE (which
+   is plain broken, this should be _AES_SOURCE instead as everywhere else;
+   Tru64 UNIX V5.1B declares it only if _BSD.  */
 #if defined (__alpha__) && defined (__osf__)
+#define AES_SOURCE
 #define _BSD
 #endif
 

@@ -1,3 +1,7 @@
+2009-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* env.c [__alpha__ && __osf__] (AES_SOURCE): Define.
+
 2009-10-10  Samuel Tardieu  <sam@rfc1149.net>
 
 	* sem_eval.adb: Give a more precise error message.
