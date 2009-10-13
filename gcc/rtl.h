@@ -930,6 +930,9 @@ extern const char * const reg_note_name[];
 #define NOTE_DURING_CALL_P(RTX)				\
   (RTL_FLAG_CHECK1("NOTE_VAR_LOCATION_DURING_CALL_P", (RTX), NOTE)->call)
 
+/* DEBUG_EXPR_DECL corresponding to a DEBUG_EXPR RTX.  */
+#define DEBUG_EXPR_TREE_DECL(RTX) XCTREE (RTX, 0, DEBUG_EXPR)
+
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF
    debug information, along with the variable's location.  */
