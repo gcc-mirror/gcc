@@ -13381,6 +13381,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case ORDERED:
     case UNEQ:
     case UNGE:
+    case UNGT:
     case UNLE:
     case UNLT:
     case LTGT:
