@@ -1,3 +1,4 @@
+! { dg-timeout-factor 4.0 }
 program mymatmul
   implicit none
   integer, parameter :: kp = 4

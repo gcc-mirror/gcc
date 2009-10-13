@@ -1,3 +1,7 @@
+2009-10-13  Steve Ellcey  <sje@cup.hp.com>
+
+	* gfortran.dg/vect/fast-math-pr38968.f90: Add timeout.
+
 2009-10-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41581
