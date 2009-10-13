@@ -9003,6 +9003,7 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
       && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF
       && TREE_CONSTANT_POOL_ADDRESS_P (XEXP (rtl, 0))
       && (MEM_ALIGN (rtl) == 0
+	  || GET_MODE_BITSIZE (GET_MODE (rtl)) == 0
 	  || MEM_ALIGN (rtl) < GET_MODE_BITSIZE (GET_MODE (rtl))))
     SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
 }
