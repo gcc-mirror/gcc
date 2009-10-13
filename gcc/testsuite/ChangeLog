@@ -1,3 +1,13 @@
+2009-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41668
+	* gcc.dg/lto/20091006-2_0.c: New testcase.
+	* gcc.dg/lto/20091006-2_1.c: Likewise.
+	* gcc.dg/lto/20091006-2_2.c: Likewise.
+	* gcc.dg/lto/20091013-1_0.c: Likewise.
+	* gcc.dg/lto/20091013-1_1.c: Likewise.
+	* gcc.dg/lto/20091013-1_2.c: Likewise.
+
 2009-10-13  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.c-torture/compile/pr41661.c: New test.
