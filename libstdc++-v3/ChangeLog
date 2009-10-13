@@ -1,6 +1,12 @@
+2009-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/for_each_selectors.h: Minor uglification and
+	stylistic fixes.
+
 2009-10-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-	* include/precompiled/stdc++.h: Include <initializer_list> for completeness.
+	* include/precompiled/stdc++.h: Include <initializer_list>
+	for completeness.
 
 2009-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
