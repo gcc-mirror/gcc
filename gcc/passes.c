@@ -600,24 +600,31 @@ position_pass (struct register_pass_info *new_pass_info,
 void
 register_pass (struct register_pass_info *pass_info)
 {
+  /* The checks below could fail in buggy plugins.  Existing GCC
+     passes should never fail these checks, so we mention plugin in
+     the messages.  */
   if (!pass_info->pass)
-    {
-      gcc_unreachable ();
-    } 
+      fatal_error ("plugin cannot register a missing pass");
+
+  if (!pass_info->pass->name)
+      fatal_error ("plugin cannot register an unnamed pass");
 
   if (!pass_info->reference_pass_name)
-    {
-      gcc_unreachable ();
-    }
+      fatal_error
+	("plugin cannot register pass %qs without reference pass name",
+	 pass_info->pass->name);
 
-  /* Try to insert the new pass to the pass lists. We need to check all
-     three lists as the reference pass could be in one (or all) of them.  */
+  /* Try to insert the new pass to the pass lists.  We need to check
+     all three lists as the reference pass could be in one (or all) of
+     them.  */
   if (!position_pass (pass_info, &all_lowering_passes)
       && !position_pass (pass_info, &all_small_ipa_passes)
       && !position_pass (pass_info, &all_regular_ipa_passes)
       && !position_pass (pass_info, &all_lto_gen_passes)
       && !position_pass (pass_info, &all_passes))
-    gcc_unreachable ();
+    fatal_error
+      ("pass %qs not found but is referenced by new pass %qs",
+       pass_info->reference_pass_name, pass_info->pass->name);
   else
     {
       /* OK, we have successfully inserted the new pass. We need to register
