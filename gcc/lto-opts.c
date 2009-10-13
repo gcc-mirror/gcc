@@ -208,10 +208,19 @@ input_string_block (struct lto_input_block *ib)
 static bool
 register_user_option_p (size_t code, int type)
 {
-  return type == CL_TARGET
-         || (type == CL_COMMON
-	     && (code == OPT_fPIC
-		 || code == OPT_fcommon));
+  if (type == CL_TARGET)
+    return true;
+  else if (type == CL_COMMON)
+    {
+      return (code == OPT_fPIC
+	      || code == OPT_fpic
+	      || code == OPT_fPIE
+	      || code == OPT_fpie
+	      || code == OPT_fcommon
+	      || code == OPT_fexceptions);
+    }
+
+  return false;
 }
 
 /* Note command line option with the given TYPE and CODE, ARG, and VALUE.
@@ -358,32 +367,6 @@ lto_read_file_options (struct lto_file_decl_data *file_data)
   lto_free_section_data (file_data, LTO_section_opts, 0, data, len);
 }
 
-/* Re-handle option with type TYPE and CODE, ARG, and VALUE.  Logic extracted
-   from common_handle_option() in opts.c.
-
-   FIXME lto. This section is not complete.  If extended to handle
-   optimization options, note that changing these after opts.c prescan may
-   involve also adjusting other options that were defaulted from initial
-   optimization option values.  */
-
-static void
-handle_common_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
-{
-  switch (code)
-    {
-    case OPT_fPIC:
-      flag_pic = !!value;
-      break;
-
-    case OPT_fcommon:
-      flag_no_common = !value;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* Concatenate the user options and any file options read from an LTO IL
    file, and reissue them as if all had just been read in from the command
    line.  As with serialization, file options precede user options.  */
@@ -397,10 +380,15 @@ lto_reissue_options (void)
 
   for (i = 0; VEC_iterate (opt_t, opts, i, o); i++)
     {
+      const struct cl_option *option = &cl_options[o->code];
+
+      if (option->flag_var)
+	set_option (option, o->value, o->arg);
+
       if (o->type == CL_TARGET)
 	targetm.handle_option (o->code, o->arg, o->value);
       else if (o->type == CL_COMMON)
-	handle_common_option (o->code, o->arg, o->value);
+	gcc_assert (option->flag_var);
       else
 	gcc_unreachable ();
     }

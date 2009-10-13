@@ -1,3 +1,15 @@
+2009-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41565
+	* opts.c (handle_option): Split out code to handle setting
+	the options flag var ...
+	(set_option): ... here.
+	* opts.h (set_option): Declare.
+	* lto-opts.c (register_user_option_p): Include -fexceptions
+	and all position independent code variants.
+	(handle_common_option): Remove.
+	(lto_reissue_options): Use set_option.
+
 2009-10-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/41661
