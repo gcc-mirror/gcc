@@ -1,3 +1,7 @@
+2009-10-13  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.c-torture/compile/pr41661.c: New test.
+
 2009-10-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41683
