@@ -1,3 +1,7 @@
+2009-10-13  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/precompiled/stdc++.h: Include <initializer_list> for completeness.
+
 2009-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.h (class linear_congruential_engine,
