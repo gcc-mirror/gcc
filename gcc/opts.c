@@ -610,32 +610,7 @@ handle_option (const char **argv, unsigned int lang_mask)
     }
 
   if (option->flag_var)
-    switch (option->var_type)
-      {
-      case CLVC_BOOLEAN:
-	*(int *) option->flag_var = value;
-	break;
-
-      case CLVC_EQUAL:
-	*(int *) option->flag_var = (value
-				     ? option->var_value
-				     : !option->var_value);
-	break;
-
-      case CLVC_BIT_CLEAR:
-      case CLVC_BIT_SET:
-	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
-	  *(int *) option->flag_var |= option->var_value;
-	else
-	  *(int *) option->flag_var &= ~option->var_value;
-	if (option->flag_var == &target_flags)
-	  target_flags_explicit |= option->var_value;
-	break;
-
-      case CLVC_STRING:
-	*(const char **) option->flag_var = arg;
-	break;
-      }
+    set_option (option, value, arg);
 
   if (option->flags & lang_mask)
     {
@@ -2347,6 +2322,42 @@ get_option_state (int option, struct cl_option_state *state)
       break;
     }
   return true;
+}
+
+/* Set *OPTION according to VALUE and ARG.  */
+
+void
+set_option (const struct cl_option *option, int value, const char *arg)
+{
+  if (!option->flag_var)
+    return;
+
+  switch (option->var_type)
+    {
+    case CLVC_BOOLEAN:
+	*(int *) option->flag_var = value;
+	break;
+
+    case CLVC_EQUAL:
+	*(int *) option->flag_var = (value
+				     ? option->var_value
+				     : !option->var_value);
+	break;
+
+    case CLVC_BIT_CLEAR:
+    case CLVC_BIT_SET:
+	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
+	  *(int *) option->flag_var |= option->var_value;
+	else
+	  *(int *) option->flag_var &= ~option->var_value;
+	if (option->flag_var == &target_flags)
+	  target_flags_explicit |= option->var_value;
+	break;
+
+    case CLVC_STRING:
+	*(const char **) option->flag_var = arg;
+	break;
+    }
 }
 
 /* Enable a warning option as an error.  This is used by -Werror= and
