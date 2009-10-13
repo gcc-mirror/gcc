@@ -3381,12 +3381,31 @@ unsplit_eh (eh_landing_pad lp)
   if (find_edge (e_in->src, e_out->dest))
     return false;
 
-  /* ??? I can't imagine there would be PHI nodes, since by nature
-     of critical edge splitting this block should never have been
-     a dominance frontier.  If cfg cleanups somehow confuse this,
-     due to single edges in and out we ought to have degenerate PHIs
-     and can easily propagate the PHI arguments.  */
-  gcc_assert (gimple_seq_empty_p (phi_nodes (bb)));
+  /* ??? We can get degenerate phis due to cfg cleanups.  I would have
+     thought this should have been cleaned up by a phicprop pass, but
+     that doesn't appear to handle virtuals.  Propagate by hand.  */
+  if (!gimple_seq_empty_p (phi_nodes (bb)))
+    {
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
+	{
+	  gimple use_stmt, phi = gsi_stmt (gsi);
+	  tree lhs = gimple_phi_result (phi);
+	  tree rhs = gimple_phi_arg_def (phi, 0);
+	  use_operand_p use_p;
+	  imm_use_iterator iter;
+
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, rhs);
+	    }
+
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs) = 1;
+
+	  remove_phi_node (&gsi, true);
+	}
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Unsplit EH landing pad %d to block %i.\n",
@@ -3431,7 +3450,7 @@ unsplit_all_eh (void)
 
 static bool
 cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
-			     edge old_bb_out)
+			     edge old_bb_out, bool change_region)
 {
   gimple_stmt_iterator ngsi, ogsi;
   edge_iterator ei;
@@ -3531,7 +3550,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
   for (ei = ei_start (old_bb->preds); (e = ei_safe_edge (ei)); )
     if (e->flags & EDGE_EH)
       {
-	redirect_eh_edge_1 (e, new_bb, true);
+	redirect_eh_edge_1 (e, new_bb, change_region);
 	redirect_edge_succ (e, new_bb);
 	flush_pending_stmts (e);
       }
@@ -3583,10 +3602,9 @@ cleanup_empty_eh_move_lp (basic_block bb, edge e_out,
    multiple incoming edges and phis are involved.  */
 
 static bool
-cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad olp)
+cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad lp)
 {
   gimple_stmt_iterator gsi;
-  eh_landing_pad nlp;
   tree lab;
 
   /* We really ought not have totally lost everything following
@@ -3594,35 +3612,30 @@ cleanup_empty_eh_unsplit (basic_block bb, edge e_out, eh_landing_pad olp)
      be a successor.  */
   gcc_assert (e_out != NULL);
 
-  /* Look for an EH label in the successor block.  */
+  /* The destination block must not already have a landing pad
+     for a different region.  */
   lab = NULL;
   for (gsi = gsi_start_bb (e_out->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
+      int lp_nr;
+
       if (gimple_code (stmt) != GIMPLE_LABEL)
 	break;
       lab = gimple_label_label (stmt);
-      if (EH_LANDING_PAD_NR (lab))
-	goto found;
+      lp_nr = EH_LANDING_PAD_NR (lab);
+      if (lp_nr && get_eh_region_from_lp_number (lp_nr) != lp->region)
+	return false;
     }
-  return false;
- found:
-
-  /* The other label had better be part of the same EH region.  Given that
-     we've not lowered RESX, there should be no way to have a totally empty
-     landing pad that crosses to another EH region.  */
-  nlp = get_eh_landing_pad_from_number (EH_LANDING_PAD_NR (lab));
-  gcc_assert (nlp->region == olp->region);
 
   /* Attempt to move the PHIs into the successor block.  */
-  if (cleanup_empty_eh_merge_phis (e_out->dest, bb, e_out))
+  if (cleanup_empty_eh_merge_phis (e_out->dest, bb, e_out, false))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "Unsplit EH landing pad %d to block %d via lp %d.\n",
-		 olp->index, e_out->dest->index, nlp->index);
-
-      remove_eh_landing_pad (olp);
+		 "Unsplit EH landing pad %d to block %i "
+		 "(via cleanup_empty_eh).\n",
+		 lp->index, e_out->dest->index);
       return true;
     }
 
@@ -3725,7 +3738,7 @@ cleanup_empty_eh (eh_landing_pad lp)
      landing pad block.  If the merge succeeds, we'll already have redirected
      all the EH edges.  The handler itself will go unreachable if there were
      no normal edges.  */
-  if (cleanup_empty_eh_merge_phis (e_out->dest, bb, e_out))
+  if (cleanup_empty_eh_merge_phis (e_out->dest, bb, e_out, true))
     goto succeed;
 
   /* Finally, if all input edges are EH edges, then we can (potentially)
