@@ -1,3 +1,8 @@
+
+2009-10-13  Basile Starynkevitch  <basile@starynkevitch.net>
+    * passes.c (register_pass): Replaced gcc_unreachable by
+    fatal_error on failure. Mentions plugins in comments & messages.
+
 2009-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/41693
