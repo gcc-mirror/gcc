@@ -7,7 +7,7 @@ type :: t
 end type t
 class(t), allocatable :: c,d
 allocate(t :: d)
-allocate(c,source=d) ! { dg-error "not supported yet" }
+allocate(c,source=d)
 end
 
 type, abstract :: t

@@ -1,3 +1,21 @@
+2009-10-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41581
+	* decl.c (encapsulate_class_symbol): Add new component '$size'.
+	* resolve.c (resolve_allocate_expr): Move CLASS handling to
+	gfc_trans_allocate.
+	(resolve_class_assign): Replaced by gfc_trans_class_assign.
+	(resolve_code): Remove calls to resolve_class_assign.
+	* trans.c (gfc_trans_code): Use new function gfc_trans_class_assign.
+	* trans-expr.c (get_proc_ptr_comp): Fix a memory leak.
+	(gfc_conv_procedure_call): For CLASS dummies, set the
+	$size component.
+	(gfc_trans_class_assign): New function, replacing resolve_class_assign.
+	* trans-stmt.h (gfc_trans_class_assign): New prototype.
+	* trans-stmt.c (gfc_trans_allocate): Use correct size when allocating
+	CLASS variables. Do proper initialization. Move some code here from
+	resolve_allocate_expr.
+
 2009-10-11 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/38439
