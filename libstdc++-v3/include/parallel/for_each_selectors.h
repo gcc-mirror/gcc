@@ -37,17 +37,15 @@
 
 namespace __gnu_parallel
 {
-
   /** @brief Generic __selector for embarrassingly parallel functions. */
   template<typename _It>
-  struct __generic_for_each_selector
-  {
-    /** @brief _Iterator on last element processed; needed for some
-     *  algorithms (e. g. std::transform()).
-     */
-    _It _M_finish_iterator;
-  };
-
+    struct __generic_for_each_selector
+    {
+      /** @brief _Iterator on last element processed; needed for some
+       *  algorithms (e. g. std::transform()).
+       */
+      _It _M_finish_iterator;
+    };
 
   /** @brief std::for_each() selector. */
   template<typename _It>
@@ -220,21 +218,21 @@ namespace __gnu_parallel
     };
 
   /** @brief std::inner_product() selector. */
-  template<typename _It, typename It2, typename _Tp>
+  template<typename _It, typename _It2, typename _Tp>
     struct __inner_product_selector : public __generic_for_each_selector<_It>
     {
       /** @brief Begin iterator of first sequence. */
-      _It __begin1_iterator;
+      _It  __begin1_iterator;
 
       /** @brief Begin iterator of second sequence. */
-      It2 begin2_iterator;
+      _It2 __begin2_iterator;
 
       /** @brief Constructor.
        *  @param b1 Begin iterator of first sequence.
        *  @param b2 Begin iterator of second sequence. */
       explicit
-      __inner_product_selector(_It b1, It2 b2)
-      : __begin1_iterator(b1), begin2_iterator(b2) { }
+      __inner_product_selector(_It __b1, _It2 __b2)
+      : __begin1_iterator(__b1), __begin2_iterator(__b2) { }
 
       /** @brief Functor execution.
        *  @param __mult Multiplication functor.
@@ -246,7 +244,7 @@ namespace __gnu_parallel
         {
           typename std::iterator_traits<_It>::difference_type __position
             = __current - __begin1_iterator;
-          return __mult(*__current, *(begin2_iterator + __position));
+          return __mult(*__current, *(__begin2_iterator + __position));
         }
     };
 
@@ -268,8 +266,8 @@ namespace __gnu_parallel
    *  __elements.
    */
   template<typename _It>
-    struct __adjacent_difference_selector :
-           public __generic_for_each_selector<_It>
+    struct __adjacent_difference_selector
+    : public __generic_for_each_selector<_It>
     {
       template<typename _Op>
         bool
@@ -293,14 +291,14 @@ namespace __gnu_parallel
      *  @param __i iterator referencing object. */
     template<typename _It>
       void
-      operator()(_It __i) { }
+      operator()(_It) { }
   };
 
   /** @brief Reduction function doing nothing. */
   struct _DummyReduct
   {
     bool
-    operator()(bool /*__x*/, bool /*__y*/) const
+    operator()(bool, bool) const
     { return true; }
   };
 
@@ -315,12 +313,7 @@ namespace __gnu_parallel
 
       _It
       operator()(_It __x, _It __y)
-      {
-        if (__comp(*__x, *__y))
-          return __x;
-        else
-          return __y;
-      }
+      { return (__comp(*__x, *__y)) ? __x : __y; }
     };
 
   /** @brief Reduction for finding the maximum element, using a comparator. */
@@ -334,12 +327,7 @@ namespace __gnu_parallel
 
       _It
       operator()(_It __x, _It __y)
-      {
-        if (__comp(*__x, *__y))
-          return __y;
-        else
-          return __x;
-      }
+      { return (__comp(*__x, *__y)) ? __y : __x; }
     };
 
   /** @brief General reduction, using a binary operator. */
