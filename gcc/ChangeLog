@@ -1,3 +1,8 @@
+2009-10-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_encode_section_info): Handle BLKmode
+	properly.
+
 2009-10-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41343
