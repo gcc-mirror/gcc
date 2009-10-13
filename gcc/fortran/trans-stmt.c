@@ -3976,7 +3976,7 @@ tree
 gfc_trans_allocate (gfc_code * code)
 {
   gfc_alloc *al;
-  gfc_expr *expr, *init_e, *rhs;
+  gfc_expr *expr, *init_e;
   gfc_se se;
   tree tmp;
   tree parm;
@@ -4006,7 +4006,10 @@ gfc_trans_allocate (gfc_code * code)
 
   for (al = code->ext.alloc.list; al != NULL; al = al->next)
     {
-      expr = al->expr;
+      expr = gfc_copy_expr (al->expr);
+
+      if (expr->ts.type == BT_CLASS)
+	gfc_add_component_ref (expr, "$data");
 
       gfc_init_se (&se, NULL);
       gfc_start_block (&se.pre);
@@ -4022,13 +4025,14 @@ gfc_trans_allocate (gfc_code * code)
 	  /* Determine allocate size.  */
 	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
 	    {
-	      gfc_typespec *ts;
-	      /* TODO: Size must be determined at run time, since it must equal
-		 the size of the dynamic type of SOURCE, not the declared type.  */
-	      gfc_error ("Using SOURCE= with a class variable at %L not "
-			 "supported yet", &code->loc);
-	      ts = &code->expr3->ts.u.derived->components->ts;
-	      tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (ts));
+	      gfc_expr *sz;
+	      gfc_se se_sz;
+	      sz = gfc_copy_expr (code->expr3);
+	      gfc_add_component_ref (sz, "$size");
+	      gfc_init_se (&se_sz, NULL);
+	      gfc_conv_expr (&se_sz, sz);
+	      gfc_free_expr (sz);
+	      tmp = se_sz.expr;
 	    }
 	  else if (code->expr3 && code->expr3->ts.type != BT_CLASS)
 	    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr3->ts));
@@ -4070,17 +4074,120 @@ gfc_trans_allocate (gfc_code * code)
       /* Initialization via SOURCE block.  */
       if (code->expr3)
 	{
-	  rhs = gfc_copy_expr (code->expr3);
+	  gfc_expr *rhs = gfc_copy_expr (code->expr3);
 	  if (rhs->ts.type == BT_CLASS)
-	    gfc_add_component_ref (rhs, "$data");
-	  tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr), rhs, false);
+	    {
+	      gfc_se dst,src,len;
+	      gfc_expr *sz;
+	      gfc_add_component_ref (rhs, "$data");
+	      sz = gfc_copy_expr (code->expr3);
+	      gfc_add_component_ref (sz, "$size");
+	      gfc_init_se (&dst, NULL);
+	      gfc_init_se (&src, NULL);
+	      gfc_init_se (&len, NULL);
+	      gfc_conv_expr (&dst, expr);
+	      gfc_conv_expr (&src, rhs);
+	      gfc_conv_expr (&len, sz);
+	      gfc_free_expr (sz);
+	      tmp = gfc_build_memcpy_call (dst.expr, src.expr, len.expr);
+	    }
+	  else
+	    tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
+					rhs, false);
+	  gfc_free_expr (rhs);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      /* Default initializer for CLASS variables.  */
+      else if (al->expr->ts.type == BT_CLASS
+	       && code->ext.alloc.ts.type == BT_DERIVED
+	       && (init_e = gfc_default_initializer (&code->ext.alloc.ts)))
+	{
+	  gfc_se dst,src;
+	  gfc_init_se (&dst, NULL);
+	  gfc_init_se (&src, NULL);
+	  gfc_conv_expr (&dst, expr);
+	  gfc_conv_expr (&src, init_e);
+	  gfc_add_block_to_block (&block, &src.pre);
+	  tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
+	  tmp = gfc_build_memcpy_call (dst.expr, src.expr, tmp);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
       /* Add default initializer for those derived types that need them.  */
-      else if (expr->ts.type == BT_DERIVED && (init_e = gfc_default_initializer (&expr->ts)))
+      else if (expr->ts.type == BT_DERIVED
+	       && (init_e = gfc_default_initializer (&expr->ts)))
 	{
-	  tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr), init_e, true);
+	  tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
+				      init_e, true);
 	  gfc_add_expr_to_block (&block, tmp);
+	}
+
+      /* Allocation of CLASS entities.  */
+      gfc_free_expr (expr);
+      expr = al->expr;
+      if (expr->ts.type == BT_CLASS)
+	{
+	  gfc_expr *lhs,*rhs;
+	  /* Initialize VINDEX for CLASS objects.  */
+	  lhs = gfc_expr_to_initialize (expr);
+	  gfc_add_component_ref (lhs, "$vindex");
+	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
+	    {
+	      /* vindex must be determined at run time.  */
+	      rhs = gfc_copy_expr (code->expr3);
+	      gfc_add_component_ref (rhs, "$vindex");
+	    }
+	  else
+	    {
+	      /* vindex is fixed at compile time.  */
+	      int vindex;
+	      if (code->expr3)
+		vindex = code->expr3->ts.u.derived->vindex;
+	      else if (code->ext.alloc.ts.type == BT_DERIVED)
+		vindex = code->ext.alloc.ts.u.derived->vindex;
+	      else if (expr->ts.type == BT_CLASS)
+		vindex = expr->ts.u.derived->components->ts.u.derived->vindex;
+	      else
+		vindex = expr->ts.u.derived->vindex;
+	      rhs = gfc_int_expr (vindex);
+	    }
+	  tmp = gfc_trans_assignment (lhs, rhs, false);
+	  gfc_free_expr (lhs);
+	  gfc_free_expr (rhs);
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  /* Initialize SIZE for CLASS objects.  */
+	  lhs = gfc_expr_to_initialize (expr);
+	  gfc_add_component_ref (lhs, "$size");
+	  rhs = NULL;
+	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
+	    {
+	      /* Size must be determined at run time.  */
+	      rhs = gfc_copy_expr (code->expr3);
+	      gfc_add_component_ref (rhs, "$size");
+	      tmp = gfc_trans_assignment (lhs, rhs, false);
+	      gfc_add_expr_to_block (&block, tmp);
+	    }
+	  else
+	    {
+	      /* Size is fixed at compile time.  */
+	      gfc_typespec *ts;
+	      gfc_se lse;
+	      gfc_init_se (&lse, NULL);
+	      gfc_conv_expr (&lse, lhs);
+	      if (code->expr3)
+		ts = &code->expr3->ts;
+	      else if (code->ext.alloc.ts.type == BT_DERIVED)
+		ts = &code->ext.alloc.ts;
+	      else if (expr->ts.type == BT_CLASS)
+		ts = &expr->ts.u.derived->components->ts;
+	      else
+		ts = &expr->ts;
+	      tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (ts));
+	      gfc_add_modify (&block, lse.expr,
+			      fold_convert (TREE_TYPE (lse.expr), tmp));
+	    }
+	  gfc_free_expr (lhs);
+	  gfc_free_expr (rhs);
 	}
 
     }

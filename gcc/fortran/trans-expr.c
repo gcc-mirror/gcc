@@ -1519,6 +1519,7 @@ get_proc_ptr_comp (gfc_expr *e)
   e2 = gfc_copy_expr (e);
   e2->expr_type = EXPR_VARIABLE;
   gfc_conv_expr (&comp_se, e2);
+  gfc_free_expr (e2);
   return build_fold_addr_expr_loc (input_location, comp_se.expr);
 }
 
@@ -2775,6 +2776,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	{
 	  tree data;
 	  tree vindex;
+	  tree size;
 
 	  /* The derived type needs to be converted to a temporary
 	     CLASS object.  */
@@ -2788,12 +2790,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			      var, tmp, NULL_TREE);
 	  tmp = fsym->ts.u.derived->components->next->backend_decl;
 	  vindex = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+				var, tmp, NULL_TREE);
+	  tmp = fsym->ts.u.derived->components->next->next->backend_decl;
+	  size = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
 			      var, tmp, NULL_TREE);
 
 	  /* Set the vindex.  */
-	  tmp = build_int_cst (TREE_TYPE (vindex),
-			       e->ts.u.derived->vindex);
+	  tmp = build_int_cst (TREE_TYPE (vindex), e->ts.u.derived->vindex);
 	  gfc_add_modify (&parmse.pre, vindex, tmp);
+
+	  /* Set the size.  */
+	  tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&e->ts));
+	  gfc_add_modify (&parmse.pre, size,
+			  fold_convert (TREE_TYPE (size), tmp));
 
 	  /* Now set the data field.  */
 	  argss = gfc_walk_expr (e);
@@ -5260,4 +5269,76 @@ tree
 gfc_trans_assign (gfc_code * code)
 {
   return gfc_trans_assignment (code->expr1, code->expr2, false);
+}
+
+
+/* Translate an assignment to a CLASS object
+   (pointer or ordinary assignment).  */
+
+tree
+gfc_trans_class_assign (gfc_code *code)
+{
+  stmtblock_t block;
+  tree tmp;
+
+  gfc_start_block (&block);
+
+  if (code->expr2->ts.type != BT_CLASS)
+    {
+      /* Insert an additional assignment which sets the '$vindex' field.  */
+      gfc_expr *lhs,*rhs;
+      lhs = gfc_copy_expr (code->expr1);
+      gfc_add_component_ref (lhs, "$vindex");
+      if (code->expr2->ts.type == BT_DERIVED)
+	/* vindex is constant, determined at compile time.  */
+	rhs = gfc_int_expr (code->expr2->ts.u.derived->vindex);
+      else if (code->expr2->expr_type == EXPR_NULL)
+	rhs = gfc_int_expr (0);
+      else
+	gcc_unreachable ();
+      tmp = gfc_trans_assignment (lhs, rhs, false);
+      gfc_add_expr_to_block (&block, tmp);
+
+      /* Insert another assignment which sets the '$size' field.  */
+      lhs = gfc_copy_expr (code->expr1);
+      gfc_add_component_ref (lhs, "$size");
+      if (code->expr2->ts.type == BT_DERIVED)
+	{
+	  /* Size is fixed at compile time.  */
+	  gfc_se lse;
+	  gfc_init_se (&lse, NULL);
+	  gfc_conv_expr (&lse, lhs);
+	  tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr2->ts));
+	  gfc_add_modify (&block, lse.expr,
+			  fold_convert (TREE_TYPE (lse.expr), tmp));
+	}
+      else if (code->expr2->expr_type == EXPR_NULL)
+	{
+	  rhs = gfc_int_expr (0);
+	  tmp = gfc_trans_assignment (lhs, rhs, false);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else
+	gcc_unreachable ();
+
+      gfc_free_expr (lhs);
+      gfc_free_expr (rhs);
+    }
+
+  /* Do the actual CLASS assignment.  */
+  if (code->expr2->ts.type == BT_CLASS)
+    code->op = EXEC_ASSIGN;
+  else
+    gfc_add_component_ref (code->expr1, "$data");
+
+  if (code->op == EXEC_ASSIGN)
+    tmp = gfc_trans_assign (code);
+  else if (code->op == EXEC_POINTER_ASSIGN)
+    tmp = gfc_trans_pointer_assign (code);
+  else
+    gcc_unreachable();
+
+  gfc_add_expr_to_block (&block, tmp);
+
+  return gfc_finish_block (&block);
 }

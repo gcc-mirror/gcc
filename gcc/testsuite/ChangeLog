@@ -1,3 +1,9 @@
+2009-10-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41581
+	* gfortran.dg/class_allocate_2.f03: Modified.
+	* gfortran.dg/class_allocate_3.f03: New test case.
+
 2009-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41668

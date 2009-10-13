@@ -1028,7 +1028,8 @@ verify_c_interop_param (gfc_symbol *sym)
 /* Build a polymorphic CLASS entity, using the symbol that comes from build_sym.
    A CLASS entity is represented by an encapsulating type, which contains the
    declared type as '$data' component, plus an integer component '$vindex'
-   which determines the dynamic type.  */
+   which determines the dynamic type, and another integer '$size', which
+   contains the size of the dynamic type structure.  */
 
 static gfc_try
 encapsulate_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
@@ -1084,6 +1085,14 @@ encapsulate_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
       /* Add component '$vindex'.  */
       if (gfc_add_component (fclass, "$vindex", &c) == FAILURE)
+   	return FAILURE;
+      c->ts.type = BT_INTEGER;
+      c->ts.kind = 4;
+      c->attr.access = ACCESS_PRIVATE;
+      c->initializer = gfc_int_expr (0);
+
+      /* Add component '$size'.  */
+      if (gfc_add_component (fclass, "$size", &c) == FAILURE)
    	return FAILURE;
       c->ts.type = BT_INTEGER;
       c->ts.kind = 4;
