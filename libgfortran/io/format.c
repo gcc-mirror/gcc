@@ -706,7 +706,8 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	  goto data_desc;
 	}
 
-      if (t != FMT_COMMA && t != FMT_RPAREN && t != FMT_SLASH)
+      if (t != FMT_COMMA && t != FMT_RPAREN && t != FMT_SLASH
+	  && t != FMT_POSINT)
 	{
 	  fmt->error = "Comma required after P descriptor";
 	  goto finished;
