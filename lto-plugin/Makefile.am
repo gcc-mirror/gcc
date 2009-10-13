@@ -16,4 +16,4 @@ AM_CFLAGS = -Wall -Werror
 libexecsub_LTLIBRARIES = liblto_plugin.la
 
 liblto_plugin_la_SOURCES = lto-plugin.c
-liblto_plugin_la_LIBADD = $(LIBELFLIBS) -L../libiberty/pic -liberty
+liblto_plugin_la_LIBADD = $(LIBELFLIBS) ../libiberty/pic/libiberty.a
