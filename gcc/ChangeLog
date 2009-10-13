@@ -1,7 +1,16 @@
+2009-10-13  Richard Henderson  <rth@redhat.com>
+
+	PR tree-optimization/41377
+	* tree-eh.c (unsplit_eh): Propagate degenerate PHIs.
+	(cleanup_empty_eh_merge_phis): New change_region parameter;
+	pass it on to redirect_eh_edge_1.  Update callers.
+	(cleanup_empty_eh_unsplit): Don't require an existing EH label
+	at the destination block.
 
 2009-10-13  Basile Starynkevitch  <basile@starynkevitch.net>
-    * passes.c (register_pass): Replaced gcc_unreachable by
-    fatal_error on failure. Mentions plugins in comments & messages.
+
+	* passes.c (register_pass): Replaced gcc_unreachable by
+	fatal_error on failure. Mentions plugins in comments & messages.
 
 2009-10-13  Jakub Jelinek  <jakub@redhat.com>
 
