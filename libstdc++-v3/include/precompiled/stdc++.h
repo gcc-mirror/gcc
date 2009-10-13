@@ -101,6 +101,7 @@
 #include <condition_variable>
 #include <forward_list>
 #include <future>
+#include <initializer_list>
 #include <mutex>
 #include <random>
 #include <ratio>
