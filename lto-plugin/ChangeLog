@@ -1,3 +1,9 @@
+2009-10-13  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.am (liblto_plugin_la_LIBADD): Link against the
+	correct libiberty.
+	* Makefile.in: Regenerated.
+
 2009-10-08  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (add_input_library): New.
