@@ -6304,7 +6304,7 @@ vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
       return result;
 
     case DEBUG_EXPR:
-      dv = dv_from_decl (XTREE (x, 0));
+      dv = dv_from_decl (DEBUG_EXPR_TREE_DECL (x));
       xret = NULL;
       break;
 

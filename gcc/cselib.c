@@ -705,7 +705,8 @@ cselib_hash_rtx (rtx x, int create)
       return e->value;
 
     case DEBUG_EXPR:
-      hash += ((unsigned) DEBUG_EXPR << 7) + DEBUG_TEMP_UID (XTREE (x, 0));
+      hash += ((unsigned) DEBUG_EXPR << 7)
+	      + DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (x));
       return hash ? hash : (unsigned int) DEBUG_EXPR;
 
     case CONST_INT:

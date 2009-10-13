@@ -2368,7 +2368,7 @@ expand_debug_expr (tree exp)
 	return op0;
 
       op0 = gen_rtx_DEBUG_EXPR (mode);
-      XTREE (op0, 0) = exp;
+      DEBUG_EXPR_TREE_DECL (op0) = exp;
       SET_DECL_RTL (exp, op0);
 
       return op0;

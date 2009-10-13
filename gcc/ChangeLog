@@ -1,3 +1,13 @@
+2009-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41693
+	* rtl.h (DEBUG_EXPR_TREE_DECL): Define.
+	* sched-vis.c (print_value): Use it.
+	* cselib.c (cselib_hash_rtx): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* cfgexpand.c (expand_debug_rtx): Likewise.
+	* var-tracking.c (vt_expand_loc_callback): Likewise.
+
 2009-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41565

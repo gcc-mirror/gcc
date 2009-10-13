@@ -522,7 +522,7 @@ print_value (char *buf, const_rtx x, int verbose)
       cur = safe_concat (buf, cur, "]");
       break;
     case DEBUG_EXPR:
-      sprintf (t, "D#%i", DEBUG_TEMP_UID (XTREE (x, 0)));
+      sprintf (t, "D#%i", DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (x)));
       cur = safe_concat (buf, cur, t);
       break;
     default:
