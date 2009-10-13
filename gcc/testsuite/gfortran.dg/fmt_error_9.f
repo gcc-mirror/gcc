@@ -22,4 +22,8 @@
       write (line,'(1pd24.15e11.3)') 1.0d0, 1.234
       if (line.ne."   1.000000000000000D+00  1.234E+00") call abort
       
+      str = '(1p2d24.15)'
+      msg = "   1.000000000000000D+00   1.233999967575073D+00That's it!"
+      write (line,'(1p2d24.15a)') 1.0d0, 1.234, "That's it!"
+      if (line.ne.msg) print *, msg
       end
