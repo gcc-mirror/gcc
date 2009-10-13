@@ -1811,7 +1811,10 @@ if test -d ${srcdir}/gcc; then
   # If LTO is enabled, add the LTO front end.
   extra_host_libiberty_configure_flags=
   if test "$enable_lto" = "yes" ; then
-    new_enable_languages="${new_enable_languages}lto,"
+    case ,${enable_languages}, in
+      *,lto,*) ;;
+      *) enable_languages="${enable_languages},lto" ;;
+    esac
     if test "${ENABLE_GOLD}" = "yes" ; then
       configdirs="$configdirs lto-plugin"
       extra_host_libiberty_configure_flags=--enable-shared
