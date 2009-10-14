@@ -1,3 +1,8 @@
+2009-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41173
+	* gcc.dg/lto/20091014-1_0.c: New testcase.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/41707
