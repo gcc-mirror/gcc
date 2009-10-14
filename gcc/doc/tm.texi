@@ -2349,6 +2349,11 @@ with it, as well as defining these macros.
 Define this if the machine has any stack-like registers.
 @end defmac
 
+@defmac STACK_REG_COVER_CLASS
+This is a cover class containing the stack registers.  Define this if
+the machine has any stack-like registers.
+@end defmac
+
 @defmac FIRST_STACK_REG
 The number of the first stack-like register.  This one is the top
 of the stack.

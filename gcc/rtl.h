@@ -1930,6 +1930,8 @@ extern void init_move_cost (enum machine_mode);
 extern bool resize_reg_info (void);
 /* Free up register info memory.  */
 extern void free_reg_info (void);
+extern void init_subregs_of_mode (void);
+extern void finish_subregs_of_mode (void);
 
 /* recog.c */
 extern rtx extract_asm_operands (rtx);

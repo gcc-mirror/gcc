@@ -497,8 +497,6 @@ extern struct rtl_opt_pass pass_cse2;
 extern struct rtl_opt_pass pass_df_initialize_opt;
 extern struct rtl_opt_pass pass_df_initialize_no_opt;
 extern struct rtl_opt_pass pass_reginfo_init;
-extern struct rtl_opt_pass pass_subregs_of_mode_init;
-extern struct rtl_opt_pass pass_subregs_of_mode_finish;
 extern struct rtl_opt_pass pass_inc_dec;
 extern struct rtl_opt_pass pass_stack_ptr_mod;
 extern struct rtl_opt_pass pass_initialize_regs;

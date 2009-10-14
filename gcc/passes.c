@@ -943,6 +943,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rtl_store_motion);
       NEXT_PASS (pass_cse_after_global_opts);
       NEXT_PASS (pass_rtl_ifcvt);
+      NEXT_PASS (pass_reginfo_init);
       /* Perform loop optimizations.  It might be better to do them a bit
 	 sooner, but we want the profile feedback to work more
 	 efficiently.  */
@@ -962,7 +963,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_cse2);
       NEXT_PASS (pass_rtl_dse1);
       NEXT_PASS (pass_rtl_fwprop_addr);
-      NEXT_PASS (pass_reginfo_init);
       NEXT_PASS (pass_inc_dec);
       NEXT_PASS (pass_initialize_regs);
       NEXT_PASS (pass_ud_rtl_dce);
@@ -978,10 +978,8 @@ init_optimization_passes (void)
       NEXT_PASS (pass_mode_switching);
       NEXT_PASS (pass_match_asm_constraints);
       NEXT_PASS (pass_sms);
-      NEXT_PASS (pass_subregs_of_mode_init);
       NEXT_PASS (pass_sched);
       NEXT_PASS (pass_ira);
-      NEXT_PASS (pass_subregs_of_mode_finish);
       NEXT_PASS (pass_postreload);
 	{
 	  struct opt_pass **p = &pass_postreload.pass.sub;

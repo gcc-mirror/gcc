@@ -142,6 +142,7 @@ extern int flag_unroll_all_loops;
 extern int flag_unswitch_loops;
 extern int flag_cprop_registers;
 extern int time_report;
+extern int flag_ira_loop_pressure;
 extern int flag_ira_coalesce;
 extern int flag_ira_move_spills;
 extern int flag_ira_share_save_slots;

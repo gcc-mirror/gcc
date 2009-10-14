@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "ira.h"
 
 static int optimize_reg_copy_1 (rtx, rtx, rtx);
 static void optimize_reg_copy_2 (rtx, rtx, rtx);
@@ -1226,6 +1227,9 @@ regmove_optimize (void)
   df_note_add_problem ();
   df_analyze ();
 
+  if (flag_ira_loop_pressure)
+    ira_set_pseudo_classes (dump_file);
+
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
 
@@ -1248,6 +1252,8 @@ regmove_optimize (void)
     }
   regstat_free_n_sets_and_refs ();
   regstat_free_ri ();
+  if (flag_ira_loop_pressure)
+    free_reg_info ();
   return 0;
 }
 

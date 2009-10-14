@@ -3132,6 +3132,9 @@ ira (FILE *f)
      epilogue thus changing register elimination offsets.  */
   current_function_is_leaf = leaf_function_p ();
 
+  if (resize_reg_info () && flag_ira_loop_pressure)
+    ira_set_pseudo_classes (ira_dump_file);
+
   rebuild_p = update_equiv_regs ();
 
 #ifndef IRA_NO_OBSTACK
@@ -3158,7 +3161,6 @@ ira (FILE *f)
     }
 
   max_regno_before_ira = allocated_reg_info_size = max_reg_num ();
-  resize_reg_info ();
   ira_setup_eliminable_regset ();
       
   ira_overall_cost = ira_reg_cost = ira_mem_cost = 0;
@@ -3271,6 +3273,8 @@ ira (FILE *f)
   build_insn_chain ();
 
   reload_completed = !reload (get_insns (), ira_conflicts_p);
+
+  finish_subregs_of_mode ();
 
   timevar_pop (TV_RELOAD);
 

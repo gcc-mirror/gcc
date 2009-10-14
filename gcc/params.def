@@ -719,6 +719,11 @@ DEFPARAM (PARAM_IRA_MAX_CONFLICT_TABLE_SIZE,
 	  "max size of conflict table in MB",
 	  1000, 0, 0)
 
+DEFPARAM (PARAM_IRA_LOOP_RESERVED_REGS,
+	  "ira-loop-reserved-regs",
+	  "The number of registers in each class kept unused by loop invariant motion",
+	  2, 0, 0)
+
 /* Switch initialization conversion will refuse to create arrays that are
    bigger than this parameter times the number of switch branches.  */
 

@@ -917,6 +917,7 @@ decode_options (unsigned int argc, const char **argv)
   flag_ipa_cp_clone = opt3;
   if (flag_ipa_cp_clone)
     flag_ipa_cp = 1;
+  flag_ira_loop_pressure = opt3;
 
   /* Just -O1/-O0 optimizations.  */
   opt1_max = (optimize <= 1);
