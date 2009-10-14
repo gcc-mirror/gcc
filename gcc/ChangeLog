@@ -1,3 +1,10 @@
+2009-10-14  Pascal Obry  <obry@adacore.com>
+
+	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION): Add -E.
+	(process_command): Handle -E as done with -c and -S.  Do not add
+	the target executable suffix to the output file when -E is used.
+	(main): Adjust error message accordingly.
+
 2009-10-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41343
