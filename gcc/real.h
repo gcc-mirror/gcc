@@ -32,6 +32,9 @@ extern tree do_mpc_arg2 (tree, tree, tree, int, int (*)(mpc_ptr, mpc_srcptr, mpc
 # if MPC_VERSION >= MPC_VERSION_NUM(0,6,1)
 #  define HAVE_mpc_pow
 # endif
+# if MPC_VERSION >= MPC_VERSION_NUM(0,7,1)
+#  define HAVE_mpc_arc
+# endif
 #endif
 #endif
 #include "machmode.h"

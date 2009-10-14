@@ -3127,6 +3127,29 @@ proc check_effective_target_mpc_pow { } {
     }]
 }
 
+# Return 1 if the MPC library with "arc" functions is integrated with GCC, 0 otherwise.
+
+proc check_effective_target_mpc_arc { } {
+    return [check_no_compiler_messages mpc_arc executable {
+	extern void link_error(void);
+	int main ()
+	{
+	  if (__builtin_cacos(1) != 0)
+	    link_error();
+	  if (__builtin_casin(0) != 0)
+	    link_error();
+	  if (__builtin_catan(0) != 0)
+	    link_error();
+	  if (__builtin_cacosh(1) != 0)
+	    link_error();
+	  if (__builtin_casinh(0) != 0)
+	    link_error();
+	  if (__builtin_catanh(0) != 0)
+	    link_error();
+	}
+    }]
+}
+
 # Return 1 if the language for the compiler under test is C.
 
 proc check_effective_target_c { } {

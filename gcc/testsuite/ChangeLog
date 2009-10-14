@@ -1,3 +1,8 @@
+2009-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-6.c: Test complex "arc" functions.
+	* lib/target-supports.exp (check_effective_target_mpc_arc): New.
+
 2009-10-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38948

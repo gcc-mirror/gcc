@@ -6,7 +6,7 @@
    Origin: Kaveh R. Ghazi,  January 28, 2009.  */
 
 /* { dg-do link } */
-/* { dg-require-effective-target mpc_pow } */
+/* { dg-require-effective-target mpc_arc } */
 
 /* All references to link_error should go away at compile-time.  The
    first number is the line number and the second is the value number
@@ -180,9 +180,48 @@ extern void link_error(int, int);
 
 int main (void)
 {
+  TESTIT_COMPLEX (1, cacos, 1, CONJ(0));
+  TESTIT_COMPLEX_R (1, cacos, -1, CONJ(3.141593F));
+  TESTIT_COMPLEX (1, cacos, CONJ(1), 0);
+  TESTIT_COMPLEX_R (1, cacos, CONJ(-1), 3.141593F);
+  TESTIT_COMPLEX_R_ALLNEG (cacos, 3.45678F + 2.34567FI,
+			   0.60971F - 2.11780FI, 2.531875F - 2.117800FI,
+			   0.60971F + 2.11780FI, 2.531875F + 2.117800FI);
+
+  TESTIT_COMPLEX_ALLNEG (casin, 0,
+			 0, -CONJ(0), CONJ(0), CONJ(-0.F));
+  TESTIT_COMPLEX_R_ALLNEG (casin, 3.45678F + 2.34567FI,
+			   0.96107F + 2.11780FI, -0.96107F + 2.11780FI,
+			   0.96107F - 2.11780FI, -0.96107F - 2.11780FI);
+
+  TESTIT_COMPLEX_ALLNEG (catan, 0,
+			 0, -CONJ(0), CONJ(0), CONJ(-0.F));
+  TESTIT_COMPLEX_R_ALLNEG (catan, 3.45678F + 2.34567FI,
+			   1.37188F + 0.12997FI, -1.37188F + 0.12997FI,
+			   1.37188F - 0.12997FI, -1.37188F - 0.12997FI);
+
+  TESTIT_COMPLEX (1, cacosh, 1, 0);
+  TESTIT_COMPLEX_R (1, cacosh, -1, 3.141593FI);
+  TESTIT_COMPLEX (1, cacosh, CONJ(1), CONJ(0));
+  TESTIT_COMPLEX_R (1, cacosh, CONJ(-1), CONJ(3.141593FI));
+  TESTIT_COMPLEX_R_ALLNEG (cacosh, 3.45678F + 2.34567FI,
+			   2.11780F + 0.60971FI, 2.11780F + 2.531875FI,
+			   2.11780F - 0.60971FI, 2.11780F - 2.531875FI);
+
+  TESTIT_COMPLEX_ALLNEG (casinh, 0,
+			 0, -CONJ(0), CONJ(0), CONJ(-0.F));
+  TESTIT_COMPLEX_R_ALLNEG (casinh, 3.45678F + 2.34567FI,
+			   2.12836F + 0.58310FI, -2.12836F + 0.58310FI,
+			   2.12836F - 0.58310FI, -2.12836F - 0.58310FI);
+
+  TESTIT_COMPLEX_ALLNEG (catanh, 0,
+			 0, -CONJ(0), CONJ(0), CONJ(-0.F));
+  TESTIT_COMPLEX_R_ALLNEG (catanh, 3.45678F + 2.34567FI,
+			   0.19693F + 1.43190FI, -0.19693F + 1.43190FI,
+			   0.19693F - 1.43190FI, -0.19693F - 1.43190FI);
+
   TESTIT_COMPLEX_ALLNEG (csin, 0,
-			 0, -0.F,
-			 CONJ(0), CONJ(-0.F));
+			 0, -0.F, CONJ(0), CONJ(-0.F));
   TESTIT_COMPLEX_R_ALLNEG (csin, 3.45678F + 2.34567FI,
 			   -1.633059F - 4.917448FI, 1.633059F - 4.917448FI,
 			   -1.633059F + 4.917448FI, 1.633059F + 4.917448FI);
@@ -219,8 +258,8 @@ int main (void)
 
   TESTIT_COMPLEX (1, clog, 1, 0);
   TESTIT_COMPLEX_R (1, clog, -1, 3.141593FI);
-  TESTIT_COMPLEX (1, clog, CONJ(1), CONJ(0)); /* Fails with mpc-0.6.  */
-  TESTIT_COMPLEX_R (1, clog, CONJ(-1), CONJ(3.141593FI)); /* Fails with mpc-0.6.  */
+  TESTIT_COMPLEX (1, clog, CONJ(1), CONJ(0));
+  TESTIT_COMPLEX_R (1, clog, CONJ(-1), CONJ(3.141593FI));
   TESTIT_COMPLEX_R_ALLNEG (clog, 3.45678F + 2.34567FI,
 			   1.429713F + 0.596199FI, 1.429713F + 2.545394FI,
 			   1.429713F - 0.596199FI, 1.429713F - 2.545394FI);
