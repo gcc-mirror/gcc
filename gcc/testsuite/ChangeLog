@@ -1,3 +1,10 @@
+2009-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* obj-c++.dg/layout-1.mm: Don't xfail dg-bogus on lp64, change
+	line from 1 to 0.
+	* obj-c++.dg/bitfield-1.mm: Likewise.
+	* obj-c++.dg/bitfield-4.mm: Likewise.
+
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41173

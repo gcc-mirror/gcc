@@ -115,7 +115,7 @@ int main(void)
 }
 
 /* { dg-prune-output "In file included from" }  Ignore this message.  */
-/* { dg-bogus "padding struct to align" "PR23610" { xfail lp64 } 1 } */
+/* { dg-bogus "padding struct to align" "PR23610" { target *-*-* } 0 } */
 /* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 42 } */
 /* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 45 } */
 /* { dg-bogus "padding struct size" "PR23610" { xfail lp64 } 59 } */

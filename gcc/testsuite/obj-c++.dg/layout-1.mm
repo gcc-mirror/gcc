@@ -14,4 +14,4 @@
 @end
 
 /* { dg-prune-output "In output included from" }   Ignore this message.  */
-/* { dg-bogus "padding struct to align" "PR23610" { xfail lp64 } 1 } */
+/* { dg-bogus "padding struct to align" "PR23610" { target *-*-* } 0 } */
