@@ -984,7 +984,7 @@ static struct user_specs *user_specs_head, *user_specs_tail;
 #ifdef HAVE_TARGET_EXECUTABLE_SUFFIX
 /* This defines which switches stop a full compilation.  */
 #define DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR) \
-  ((CHAR) == 'c' || (CHAR) == 'S')
+  ((CHAR) == 'c' || (CHAR) == 'S' || (CHAR) == 'E')
 
 #ifndef SWITCH_CURTAILS_COMPILATION
 #define SWITCH_CURTAILS_COMPILATION(CHAR) \
@@ -2000,7 +2000,7 @@ static int argbuf_index;
 
 static int have_o_argbuf_index = 0;
 
-/* Were the options -c or -S passed.  */
+/* Were the options -c, -S or -E passed.  */
 static int have_c = 0;
 
 /* Was the option -o passed.  */
@@ -4142,6 +4142,7 @@ process_command (int argc, const char **argv)
 
 	    case 'S':
 	    case 'c':
+	    case 'E':
 	      if (p[1] == 0)
 		{
 		  have_c = 1;
@@ -4157,7 +4158,7 @@ process_command (int argc, const char **argv)
 		{
 		  int skip;
 
-		  /* Forward scan, just in case -S or -c is specified
+		  /* Forward scan, just in case -S, -E or -c is specified
 		     after -o.  */
 		  int j = i + 1;
 		  if (p[1] == 0)
@@ -7304,7 +7305,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     }
 
   if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
-   fatal ("cannot specify -o with -c or -S with multiple files");
+   fatal ("cannot specify -o with -c, -S or -E with multiple files");
 
   if (combine_flag && save_temps_flag)
     {
