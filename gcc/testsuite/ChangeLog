@@ -1,3 +1,8 @@
+2009-10-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/38948
+	* gcc.dg/torture/pr38948.c: New test.
+
 2009-10-13  Steve Ellcey  <sje@cup.hp.com>
 
 	* gfortran.dg/vect/fast-math-pr38968.f90: Add timeout.
