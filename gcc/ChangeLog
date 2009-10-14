@@ -1,5 +1,12 @@
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/41543
+	* input.h (BUILTINS_LOCATION): Change to 1 from 2.
+	Assert BUILTINS_LOCATION < RESERVED_LOCATION_COUNT.
+	* tree.c: Include intl.h.
+	(expand_location): Handle BUILTINS_LOCATION.
+	* Makefile.in (tree.o): Depend on intl.h.
+
 	PR debug/41695
 	* dwarf2out.c (dwarf2out_var_location): Always clear
 	last_postcall_label when changing last_label.

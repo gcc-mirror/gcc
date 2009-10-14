@@ -143,6 +143,11 @@ extern const struct line_map *linemap_add
 extern const struct line_map *linemap_lookup
   (struct line_maps *, source_location);
 
+/* source_location values from 0 to RESERVED_LOCATION_COUNT-1 will
+   be reserved for libcpp user as special values, no token from libcpp
+   will contain any of those locations.  */
+#define RESERVED_LOCATION_COUNT	2
+
 /* Converts a map and a source_location to source line.  */
 #define SOURCE_LINE(MAP, LOC) \
   ((((LOC) - (MAP)->start_location) >> (MAP)->column_bits) + (MAP)->to_line)

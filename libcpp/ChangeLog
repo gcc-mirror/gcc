@@ -1,3 +1,10 @@
+2009-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/41543
+	* include/line-map.h (RESERVED_LOCATION_COUNT): Define.
+	* line-map.c (linemap_init): Initialize highest_location and
+	highest_line to RESERVED_LOCATION_COUNT-1 instead of 0.
+
 2009-10-09  Jason Merrill  <jason@redhat.com>
 
 	* charset.c (_cpp_valid_ucn): Update C++0x restrictions.

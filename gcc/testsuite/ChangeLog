@@ -1,5 +1,8 @@
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/41543
+	* gcc.dg/debug/dwarf2/pr41543.c: New test.
+
 	PR debug/41695
 	* gcc.dg/debug/dwarf2/pr41695.c: New test.
 

@@ -1,6 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-   Copyright (C) 1993, 1997, 1998, 2000, 2003, 2004, 2007, 2008
+   Copyright (C) 1993, 1997, 1998, 2000, 2003, 2004, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -30,7 +30,12 @@ extern GTY(()) struct line_maps *line_table;
 #define UNKNOWN_LOCATION ((source_location) 0)
 
 /* The location for declarations in "<built-in>" */
-#define BUILTINS_LOCATION ((source_location) 2)
+#define BUILTINS_LOCATION ((source_location) 1)
+
+/* line-map.c reserves RESERVED_LOCATION_COUNT to the user.  Ensure
+   both UNKNOWN_LOCATION and BUILTINS_LOCATION fit into that.  */
+extern char builtins_location_check[(BUILTINS_LOCATION
+				     < RESERVED_LOCATION_COUNT) ? 1 : -1];
 
 typedef struct GTY (())
 {
