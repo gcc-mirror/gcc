@@ -1,3 +1,7 @@
+2009-10-14  Larry Evans  <cppljevans@suddenlink.net>
+
+	* g++.dg/cpp0x/vt-40092.C: New.
+
 2009-10-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/guality/pr41616-1.c: Drop -O2.
