@@ -2081,6 +2081,8 @@ cp_tree_equal (tree t1, tree t2)
     case TEMPLATE_PARM_INDEX:
       return (TEMPLATE_PARM_IDX (t1) == TEMPLATE_PARM_IDX (t2)
 	      && TEMPLATE_PARM_LEVEL (t1) == TEMPLATE_PARM_LEVEL (t2)
+	      && (TEMPLATE_PARM_PARAMETER_PACK (t1)
+		  == TEMPLATE_PARM_PARAMETER_PACK (t2))
 	      && same_type_p (TREE_TYPE (TEMPLATE_PARM_DECL (t1)),
 			      TREE_TYPE (TEMPLATE_PARM_DECL (t2))));
 

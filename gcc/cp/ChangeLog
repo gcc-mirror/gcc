@@ -1,3 +1,9 @@
+2009-10-14  Larry Evans  <cppljevans@suddenlink.net>
+
+	PR c++/40092
+	* tree.c (cp_tree_equal): Add test for TEMPLATE_PARM_PARAMETER_PACK
+	equality.
+
 2009-10-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37875
