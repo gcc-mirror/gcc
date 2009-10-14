@@ -38,8 +38,8 @@ linemap_init (struct line_maps *set)
   set->trace_includes = false;
   set->depth = 0;
   set->cache = 0;
-  set->highest_location = 0;
-  set->highest_line = 0;
+  set->highest_location = RESERVED_LOCATION_COUNT - 1;
+  set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->max_column_hint = 0;
   set->reallocator = 0;
 }

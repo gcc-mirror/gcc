@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "except.h"
 #include "debug.h"
+#include "intl.h"
 
 /* Tree code classes.  */
 
@@ -3952,9 +3953,9 @@ expanded_location
 expand_location (source_location loc)
 {
   expanded_location xloc;
-  if (loc == 0)
+  if (loc <= BUILTINS_LOCATION)
     {
-      xloc.file = NULL;
+      xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
       xloc.line = 0;
       xloc.column = 0;
       xloc.sysp = 0;
