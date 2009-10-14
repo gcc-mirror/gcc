@@ -1,3 +1,9 @@
+2009-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/41707
+	* g++.dg/plugin/attribute_plugin-test-1.C: Expect the first
+	warning on line 0 instead of 1.
+
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41521
