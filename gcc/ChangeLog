@@ -1,3 +1,9 @@
+2009-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41521
+	* lto-streamer-in.c (input_bb): Replace debug stmts with
+	nops instead of dropping them.
+
 2009-10-14  Nick Clifton  <nickc@redhat.com>
 
 	* gcc/doc/extended.texi: Replace the dash character with

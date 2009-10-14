@@ -1,3 +1,9 @@
+2009-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41521
+	* gfortran.dg/lto/pr41521_0.f90: New testcase.
+	* gfortran.dg/lto/pr41521_1.f90: Likewise.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/41543
