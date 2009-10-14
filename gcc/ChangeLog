@@ -1,3 +1,14 @@
+2009-10-14  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gtc_ob): New global.
+	(struct type_pair_d): Replace pointers with type UIDs.
+	(type_pair_hash): Adjust.
+	(type_pair_eq): Likewise.
+	(lookup_type_pair): Likewise.  Allocate from an obstack.
+	(gimple_force_type_merge): Adjust.
+	(gimple_types_compatible_p): Likewise.
+	(free_gimple_type_tables): Free the obstack.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-parloops.c (separate_decls_in_region_debug_bind): Drop debug

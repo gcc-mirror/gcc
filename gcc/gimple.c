@@ -46,6 +46,7 @@ static struct pointer_map_t *type_hash_cache;
 
 /* Global type comparison cache.  */
 static htab_t gtc_visited;
+static struct obstack gtc_ob;
 
 /* All the tuples have their operand vector (if present) at the very bottom
    of the structure.  Therefore, the offset required to find the
@@ -3025,8 +3026,8 @@ static hashval_t gimple_type_hash (const void *);
    infinite recursion due to self-referential types.  */
 struct type_pair_d
 {
-  tree t1;
-  tree t2;
+  unsigned int uid1;
+  unsigned int uid2;
   int same_p;
 };
 typedef struct type_pair_d *type_pair_t;
@@ -3037,8 +3038,8 @@ static hashval_t
 type_pair_hash (const void *p)
 {
   const struct type_pair_d *pair = (const struct type_pair_d *) p;
-  hashval_t val1 = iterative_hash_hashval_t (htab_hash_pointer (pair->t1), 0);
-  hashval_t val2 = iterative_hash_hashval_t (htab_hash_pointer (pair->t2), 0);
+  hashval_t val1 = pair->uid1;
+  hashval_t val2 = pair->uid2;
   return (iterative_hash_hashval_t (val2, val1)
 	  ^ iterative_hash_hashval_t (val1, val2));
 }
@@ -3050,34 +3051,37 @@ type_pair_eq (const void *p1, const void *p2)
 {
   const struct type_pair_d *pair1 = (const struct type_pair_d *) p1;
   const struct type_pair_d *pair2 = (const struct type_pair_d *) p2;
-  return ((pair1->t1 == pair2->t1 && pair1->t2 == pair2->t2)
-	  || (pair1->t1 == pair2->t2 && pair1->t2 == pair2->t1));
+  return ((pair1->uid1 == pair2->uid1 && pair1->uid2 == pair2->uid2)
+	  || (pair1->uid1 == pair2->uid2 && pair1->uid2 == pair2->uid1));
 }
 
 /* Lookup the pair of types T1 and T2 in *VISITED_P.  Insert a new
    entry if none existed.  */
 
 static type_pair_t
-lookup_type_pair (tree t1, tree t2, htab_t *visited_p)
+lookup_type_pair (tree t1, tree t2, htab_t *visited_p, struct obstack *ob_p)
 {
   struct type_pair_d pair;
   type_pair_t p;
   void **slot;
 
   if (*visited_p == NULL)
-    *visited_p = htab_create (251, type_pair_hash, type_pair_eq, free);
+    {
+      *visited_p = htab_create (251, type_pair_hash, type_pair_eq, NULL);
+      gcc_obstack_init (ob_p);
+    }
 
-  pair.t1 = t1;
-  pair.t2 = t2;
+  pair.uid1 = TYPE_UID (t1);
+  pair.uid2 = TYPE_UID (t2);
   slot = htab_find_slot (*visited_p, &pair, INSERT);
 
   if (*slot)
     p = *((type_pair_t *) slot);
   else
     {
-      p = XNEW (struct type_pair_d);
-      p->t1 = t1;
-      p->t2 = t2;
+      p = XOBNEW (ob_p, struct type_pair_d);
+      p->uid1 = TYPE_UID (t1);
+      p->uid2 = TYPE_UID (t2);
       p->same_p = -2;
       *slot = (void *) p;
     }
@@ -3110,7 +3114,7 @@ gimple_force_type_merge (tree t1, tree t2)
 
   /* Adjust cached comparison results for T1 and T2 to make sure
      they now compare compatible.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited);
+  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
   p->same_p = 1;
 }
 
@@ -3220,7 +3224,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 
   /* If we've visited this type pair before (in the case of aggregates
      with self-referential types), and we made a decision, return it.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited);
+  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
   if (p->same_p == 0 || p->same_p == 1)
     {
       /* We have already decided whether T1 and T2 are the
@@ -3917,6 +3921,7 @@ free_gimple_type_tables (void)
   if (gtc_visited)
     {
       htab_delete (gtc_visited);
+      obstack_free (&gtc_ob, NULL);
       gtc_visited = NULL;
     }
 }
