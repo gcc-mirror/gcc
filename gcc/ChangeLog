@@ -1,3 +1,9 @@
+2009-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41695
+	* dwarf2out.c (dwarf2out_var_location): Always clear
+	last_postcall_label when changing last_label.
+
 2009-10-14  Pascal Obry  <obry@adacore.com>
 
 	* gcc.c (DEFAULT_SWITCH_CURTAILS_COMPILATION): Add -E.

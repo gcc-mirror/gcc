@@ -20013,8 +20013,7 @@ dwarf2out_var_location (rtx loc_note)
       ASM_OUTPUT_DEBUG_LABEL (asm_out_file, "LVL", loclabel_num);
       loclabel_num++;
       last_label = ggc_strdup (loclabel);
-      if (!NOTE_DURING_CALL_P (loc_note))
-	last_postcall_label = NULL;
+      last_postcall_label = NULL;
     }
   newloc->var_loc_note = loc_note;
   newloc->next = NULL;
