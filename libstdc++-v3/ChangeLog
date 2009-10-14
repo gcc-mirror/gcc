@@ -1,6 +1,12 @@
+2009-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/c++config: Do not disable extern templates for string
+	in plain parallel-mode and in profile-mode; add comment explaining
+	_GLIBCXX_EXTERN_TEMPLATE == -1.
+
 2009-10-14  Jason Merrill  <jason@redhat.com>
 
-	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust expecteds.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust expected.
 
 2009-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
 

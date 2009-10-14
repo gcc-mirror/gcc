@@ -147,7 +147,6 @@
 #  define _GLIBCXX_STD __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE -1
 # endif
 
 // debug + parallel
@@ -172,7 +171,6 @@
 #  define _GLIBCXX_STD __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE -1
 # endif
 
 # if __NO_INLINE__ && !__GXX_WEAK__
@@ -287,6 +285,10 @@ namespace std
 // library to avoid multiple weak definitions for required types that
 // are already explicitly instantiated in the library binary. This
 // substantially reduces the binary size of resulting executables.
+
+// Special case: _GLIBCXX_EXTERN_TEMPLATE == -1 disallows extern
+// templates only in basic_string, thus activating its debug-mode
+// checks even at -O0.
 #ifndef _GLIBCXX_EXTERN_TEMPLATE
 # define _GLIBCXX_EXTERN_TEMPLATE 1
 #endif
