@@ -1,3 +1,8 @@
+2009-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_1): Support complex "arc" functions.
+	* real.h (HAVE_mpc_arc): Define.
+
 2009-10-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (TARGET_BUILTIN_DECL): Define.
