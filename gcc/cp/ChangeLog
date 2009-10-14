@@ -1,3 +1,9 @@
+2009-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39866
+	* call.c (print_z_candidates): Don't print deleted candidates.
+	(print_z_candidate): Note deleted candidates.
+
 2009-10-14  Larry Evans  <cppljevans@suddenlink.net>
 
 	PR c++/40092
