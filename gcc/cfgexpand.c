@@ -2524,6 +2524,9 @@ expand_debug_expr (tree exp)
 					&mode1, &unsignedp, &volatilep, false);
 	rtx orig_op0;
 
+	if (bitsize == 0)
+	  return NULL;
+
 	orig_op0 = op0 = expand_debug_expr (tem);
 
 	if (!op0)
@@ -2561,6 +2564,9 @@ expand_debug_expr (tree exp)
 
 	if (MEM_P (op0))
 	  {
+	    if (mode1 == VOIDmode)
+	      /* Bitfield.  */
+	      mode1 = smallest_mode_for_size (bitsize, MODE_INT);
 	    if (bitpos >= BITS_PER_UNIT)
 	      {
 		op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);
@@ -2568,7 +2574,8 @@ expand_debug_expr (tree exp)
 	      }
 	    else if (bitpos < 0)
 	      {
-		int units = (-bitpos + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+		HOST_WIDE_INT units
+		  = (-bitpos + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
 		op0 = adjust_address_nv (op0, mode1, units);
 		bitpos += units * BITS_PER_UNIT;
 	      }
