@@ -1530,10 +1530,18 @@ lto_fixup_tree (tree *tp, int *walk_subtrees, void *data)
 
 	  pointer_set_insert (fixup_data->free_list, t);
 
+	  /* Replace the decl.  If it is a not compatible VAR_DECL wrap
+	     it inside a VIEW_CONVERT_EXPR.  */
+	  if (TREE_CODE (*tp) == VAR_DECL
+	      && !useless_type_conversion_p (TREE_TYPE (*tp),
+					     TREE_TYPE (prevailing)))
+	    *tp = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (*tp), prevailing);
+	  else
+	    *tp = prevailing;
+
 	   /* Also replace t with prevailing defintion.  We don't want to
 	      insert the other defintion in the seen set as we want to
 	      replace all instances of it.  */
-	  *tp = prevailing;
 	  t = prevailing;
 	}
     }

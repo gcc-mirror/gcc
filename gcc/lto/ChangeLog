@@ -1,3 +1,9 @@
+2009-10-14  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_tree): In case the prevailing decl is not
+	compatible with the one we replace wrap it around a
+	VIEW_CONVERT_EXPR.
+
 2009-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41635
