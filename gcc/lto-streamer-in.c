@@ -353,7 +353,16 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
       ix_u = lto_input_uleb128 (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
       if (tag == LTO_global_decl_ref)
-	varpool_mark_needed_node (varpool_node (result));
+	{
+	  if (TREE_CODE (result) == VIEW_CONVERT_EXPR)
+	    {
+	      tree decl = TREE_OPERAND (result, 0);
+	      varpool_mark_needed_node (varpool_node (decl));
+	      result = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), decl);
+	    }
+	  else
+	    varpool_mark_needed_node (varpool_node (result));
+	}
       break;
 
     default:

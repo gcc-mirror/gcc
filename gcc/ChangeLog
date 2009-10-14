@@ -1,5 +1,26 @@
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
+	* lto-symtab.c (lto_symtab_compatible): Fold in ...
+	(lto_symtab_merge): ... here.  Rewrite both to take the
+	prevailing and a to-be-merged entry and to queue diagnostics
+	properly.
+	(lto_symtab_resolve_replaceable_p): New predicate for
+	symbol resolution.
+	(lto_symtab_resolve_can_prevail_p): Likewise.
+	(lto_symtab_resolve_symbols): Rewrite.  Fold in code that
+	handles merging commons by choosing the largest decl.  Fold
+	in code that gives ODR errors.
+	(lto_symtab_merge_decls_2): Simplify a lot.  Emit queued
+	diagnostics here.
+	(lto_symtab_merge_decls_1): Re-structure.  Deal with the
+	case of no prevailing decl here.  Diagnose mismatches
+	in object types here.  Drop all but the prevailing decls.
+	(lto_symtab_prevailing_decl): Return the single prevailing decl.
+	* lto-streamer-in.c (lto_input_tree_ref): Deal with
+	VIEW_CONVERT_EXPRs in decl slots.  Unshare the tree in this case.
+
+2009-10-14  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41521
 	* lto-streamer-in.c (input_bb): Replace debug stmts with
 	nops instead of dropping them.

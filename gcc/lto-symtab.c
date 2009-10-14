@@ -109,6 +109,79 @@ lto_symtab_maybe_init_hash_table (void)
 		     lto_symtab_entry_eq, NULL);
 }
 
+/* Registers DECL with the LTO symbol table as having resolution RESOLUTION
+   and read from FILE_DATA. */
+
+void
+lto_symtab_register_decl (tree decl,
+			  ld_plugin_symbol_resolution_t resolution,
+			  struct lto_file_decl_data *file_data)
+{
+  lto_symtab_entry_t new_entry;
+  void **slot;
+
+  /* Check that declarations reaching this function do not have
+     properties inconsistent with having external linkage.  If any of
+     these asertions fail, then the object file reader has failed to
+     detect these cases and issue appropriate error messages.  */
+  gcc_assert (decl
+	      && TREE_PUBLIC (decl)
+	      && (TREE_CODE (decl) == VAR_DECL
+		  || TREE_CODE (decl) == FUNCTION_DECL)
+	      && DECL_ASSEMBLER_NAME_SET_P (decl));
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_INITIAL (decl))
+    gcc_assert (!DECL_EXTERNAL (decl)
+		|| (TREE_STATIC (decl) && TREE_READONLY (decl)));
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    gcc_assert (!DECL_ABSTRACT (decl));
+
+  new_entry = GGC_CNEW (struct lto_symtab_entry_def);
+  new_entry->id = DECL_ASSEMBLER_NAME (decl);
+  new_entry->decl = decl;
+  new_entry->resolution = resolution;
+  new_entry->file_data = file_data;
+
+  lto_symtab_maybe_init_hash_table ();
+  slot = htab_find_slot (lto_symtab_identifiers, new_entry, INSERT);
+  new_entry->next = (lto_symtab_entry_t) *slot;
+  *slot = new_entry;
+}
+
+/* Get the lto_symtab_entry_def struct associated with ID
+   if there is one.  */
+
+static lto_symtab_entry_t
+lto_symtab_get (tree id)
+{
+  struct lto_symtab_entry_def temp;
+  void **slot;
+
+  lto_symtab_maybe_init_hash_table ();
+  temp.id = id;
+  slot = htab_find_slot (lto_symtab_identifiers, &temp, NO_INSERT);
+  return slot ? (lto_symtab_entry_t) *slot : NULL;
+}
+
+/* Get the linker resolution for DECL.  */
+
+enum ld_plugin_symbol_resolution
+lto_symtab_get_resolution (tree decl)
+{
+  lto_symtab_entry_t e;
+
+  gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
+
+  e = lto_symtab_get (DECL_ASSEMBLER_NAME (decl));
+  while (e && e->decl != decl)
+    e = e->next;
+  if (!e)
+    return LDPR_UNKNOWN;
+
+  return e->resolution;
+}
+
+
 static bool maybe_merge_incomplete_and_complete_type (tree, tree);
 
 /* Try to merge an incomplete type INCOMPLETE with a complete type
@@ -160,42 +233,75 @@ maybe_merge_incomplete_and_complete_type (tree type1, tree type2)
   return res;
 }
 
-/* Check if OLD_DECL and NEW_DECL are compatible. */
+/* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
+   all edges and removing the old node.  */
 
-static bool
-lto_symtab_compatible (tree old_decl, tree new_decl)
+static void
+lto_cgraph_replace_node (struct cgraph_node *node,
+			 struct cgraph_node *prevailing_node)
 {
-  tree old_type, new_type;
+  struct cgraph_edge *e, *next;
 
-  if (TREE_CODE (old_decl) != TREE_CODE (new_decl))
+  /* Merge node flags.  */
+  if (node->needed)
+    cgraph_mark_needed_node (prevailing_node);
+  if (node->reachable)
+    cgraph_mark_reachable_node (prevailing_node);
+  if (node->address_taken)
     {
-      switch (TREE_CODE (new_decl))
-	{
-	case VAR_DECL:
-	  gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL);
-	  error_at (DECL_SOURCE_LOCATION (new_decl),
-		    "function %qD redeclared as variable", new_decl);
-	  inform (DECL_SOURCE_LOCATION (old_decl),
-		  "previously declared here");
-	  return false;
-
-	case FUNCTION_DECL:
-	  gcc_assert (TREE_CODE (old_decl) == VAR_DECL);
-	  error_at (DECL_SOURCE_LOCATION (new_decl),
-		    "variable %qD redeclared as function", new_decl);
-	  inform (DECL_SOURCE_LOCATION (old_decl),
-		  "previously declared here");
-	  return false;
-
-	default:
-	  gcc_unreachable ();
-	}
+      gcc_assert (!prevailing_node->global.inlined_to);
+      cgraph_mark_address_taken_node (prevailing_node);
     }
 
-  if (TREE_CODE (new_decl) == FUNCTION_DECL)
+  /* Redirect all incoming edges.  */
+  for (e = node->callers; e; e = next)
     {
-      if (!gimple_types_compatible_p (TREE_TYPE (old_decl),
-				      TREE_TYPE (new_decl)))
+      next = e->next_caller;
+      cgraph_redirect_edge_callee (e, prevailing_node);
+    }
+
+  /* There are not supposed to be any outgoing edges from a node we
+     replace.  Still this can happen for multiple instances of weak
+     functions.  */
+  for (e = node->callees; e; e = next)
+    {
+      next = e->next_callee;
+      cgraph_remove_edge (e);
+    }
+
+  /* Finally remove the replaced node.  */
+  cgraph_remove_node (node);
+}
+
+/* Merge two variable or function symbol table entries PREVAILING and ENTRY.
+   Return false if the symbols are not fully compatible and a diagnostic
+   should be emitted.  */
+
+static bool
+lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
+{
+  tree prevailing_decl = prevailing->decl;
+  tree decl = entry->decl;
+  tree prevailing_type, type;
+  struct cgraph_node *node;
+
+  /* Merge decl state in both directions, we may still end up using
+     the new decl.  */
+  TREE_ADDRESSABLE (prevailing_decl) |= TREE_ADDRESSABLE (decl);
+  TREE_ADDRESSABLE (decl) |= TREE_ADDRESSABLE (prevailing_decl);
+
+  /* Replace a cgraph node of entry with the prevailing one.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && (node = cgraph_get_node (decl)) != NULL)
+    lto_cgraph_replace_node (node, cgraph_get_node (prevailing_decl));
+
+  /* The linker may ask us to combine two incompatible symbols.
+     Detect this case and notify the caller of required diagnostics.  */
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      if (!gimple_types_compatible_p (TREE_TYPE (prevailing_decl),
+				      TREE_TYPE (decl)))
 	/* If we don't have a merged type yet...sigh.  The linker
 	   wouldn't complain if the types were mismatched, so we
 	   probably shouldn't either.  Just use the type from
@@ -214,70 +320,27 @@ lto_symtab_compatible (tree old_decl, tree new_decl)
      ???  In principle all types involved in the two decls should
      be merged forcefully, for example without considering type or
      field names.  */
-  old_type = TREE_TYPE (old_decl);
-  new_type = TREE_TYPE (new_decl);
+  prevailing_type = TREE_TYPE (prevailing_decl);
+  type = TREE_TYPE (decl);
 
-  if (DECL_EXTERNAL (old_decl) || DECL_EXTERNAL (new_decl))
-    maybe_merge_incomplete_and_complete_type (old_type, new_type);
-  else if (POINTER_TYPE_P (old_type)
-	   && POINTER_TYPE_P (new_type))
-    maybe_merge_incomplete_and_complete_type (TREE_TYPE (old_type),
-					      TREE_TYPE (new_type));
-
-  /* For array types we have to accept external declarations with
-     different sizes than the actual definition (164.gzip).
-     ???  We could emit a warning here.  */
-  if (TREE_CODE (old_type) == TREE_CODE (new_type)
-      && TREE_CODE (old_type) == ARRAY_TYPE
-      && COMPLETE_TYPE_P (old_type)
-      && COMPLETE_TYPE_P (new_type)
-      && tree_int_cst_compare (TYPE_SIZE (old_type),
-			       TYPE_SIZE (new_type)) != 0
-      && gimple_types_compatible_p (TREE_TYPE (old_type),
-				    TREE_TYPE (new_type)))
-    {
-      /* If only one is external use the type of the non-external decl.
-	 Else use the larger one and also adjust the decl size.
-	 ???  Directional merging would allow us to simply pick the
-	 larger one instead of rewriting it.  */
-      if (DECL_EXTERNAL (old_decl) ^ DECL_EXTERNAL (new_decl))
-	{
-	  if (DECL_EXTERNAL (old_decl))
-	    TREE_TYPE (old_decl) = new_type;
-	  else if (DECL_EXTERNAL (new_decl))
-	    TREE_TYPE (new_decl) = old_type;
-	}
-      else
-	{
-	  if (tree_int_cst_compare (TYPE_SIZE (old_type),
-				    TYPE_SIZE (new_type)) < 0)
-	    {
-	      TREE_TYPE (old_decl) = new_type;
-	      DECL_SIZE (old_decl) = DECL_SIZE (new_decl);
-	      DECL_SIZE_UNIT (old_decl) = DECL_SIZE_UNIT (new_decl);
-	    }
-	  else
-	    {
-	      TREE_TYPE (new_decl) = old_type;
-	      DECL_SIZE (new_decl) = DECL_SIZE (old_decl);
-	      DECL_SIZE_UNIT (new_decl) = DECL_SIZE_UNIT (old_decl);
-	    }
-	}
-    }
+  /* If the types are structurally equivalent we can use the knowledge
+     that both bind to the same symbol to complete incomplete types
+     of external declarations or of pointer targets.
+     ???  We should apply this recursively to aggregate members here
+     and get rid of the completion in gimple_types_compatible_p.  */
+  if (DECL_EXTERNAL (prevailing_decl) || DECL_EXTERNAL (decl))
+    maybe_merge_incomplete_and_complete_type (prevailing_type, type);
+  else if (POINTER_TYPE_P (prevailing_type)
+	   && POINTER_TYPE_P (type))
+    maybe_merge_incomplete_and_complete_type (TREE_TYPE (prevailing_type),
+					      TREE_TYPE (type));
 
   /* We can tolerate differences in type qualification, the
      qualification of the prevailing definition will prevail.  */
-  old_type = TYPE_MAIN_VARIANT (TREE_TYPE (old_decl));
-  new_type = TYPE_MAIN_VARIANT (TREE_TYPE (new_decl));
-  if (!gimple_types_compatible_p (old_type, new_type))
-    {
-      if (warning_at (DECL_SOURCE_LOCATION (new_decl), 0,
-		      "type of %qD does not match original declaration",
-		      new_decl))
-	inform (DECL_SOURCE_LOCATION (old_decl),
-		"previously declared here");
-      return false;
-    }
+  prevailing_type = TYPE_MAIN_VARIANT (TREE_TYPE (prevailing_decl));
+  type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
+  if (!gimple_types_compatible_p (prevailing_type, type))
+    return false;
 
   /* ???  We might want to emit a warning here if type qualification
      differences were spotted.  Do not do this unconditionally though.  */
@@ -290,213 +353,55 @@ lto_symtab_compatible (tree old_decl, tree new_decl)
      mode the linker wouldn't complain either.  Just emit warnings.  */
 
   /* Report a warning if user-specified alignments do not match.  */
-  if ((DECL_USER_ALIGN (old_decl) && DECL_USER_ALIGN (new_decl))
-      && DECL_ALIGN (old_decl) != DECL_ALIGN (new_decl))
-    {
-      warning_at (DECL_SOURCE_LOCATION (new_decl), 0,
-		  "alignment of %qD does not match original declaration",
-		  new_decl);
-      inform (DECL_SOURCE_LOCATION (old_decl), "previously declared here");
-      return false;
-    }
+  if ((DECL_USER_ALIGN (prevailing_decl) && DECL_USER_ALIGN (decl))
+      && DECL_ALIGN (prevailing_decl) < DECL_ALIGN (decl))
+    return false;
 
   return true;
 }
 
-/* Registers DECL with the LTO symbol table as having resolution RESOLUTION
-   and read from FILE_DATA. */
+/* Return true if the symtab entry E can be replaced by another symtab
+   entry.  */
 
-void
-lto_symtab_register_decl (tree decl,
-			  ld_plugin_symbol_resolution_t resolution,
-			  struct lto_file_decl_data *file_data)
+static bool
+lto_symtab_resolve_replaceable_p (lto_symtab_entry_t e)
 {
-  lto_symtab_entry_t new_entry;
-  void **slot;
+  if (DECL_EXTERNAL (e->decl)
+      || DECL_COMDAT (e->decl)
+      || DECL_WEAK (e->decl))
+    return true;
 
-  /* Check that declarations reaching this function do not have
-     properties inconsistent with having external linkage.  If any of
-     these asertions fail, then the object file reader has failed to
-     detect these cases and issue appropriate error messages.  */
-  gcc_assert (decl
-	      && TREE_PUBLIC (decl)
-	      && (TREE_CODE (decl) == VAR_DECL
-		  || TREE_CODE (decl) == FUNCTION_DECL)
-	      && DECL_ASSEMBLER_NAME_SET_P (decl));
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_INITIAL (decl))
-    gcc_assert (!DECL_EXTERNAL (decl)
-		|| (TREE_STATIC (decl) && TREE_READONLY (decl)));
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    gcc_assert (!DECL_ABSTRACT (decl));
+  if (TREE_CODE (e->decl) == VAR_DECL)
+    return (DECL_COMMON (e->decl)
+	    || (!flag_no_common && !DECL_INITIAL (e->decl)));
 
-  new_entry = GGC_CNEW (struct lto_symtab_entry_def);
-  new_entry->id = DECL_ASSEMBLER_NAME (decl);
-  new_entry->decl = decl;
-  new_entry->resolution = resolution;
-  new_entry->file_data = file_data;
-  
-  lto_symtab_maybe_init_hash_table ();
-  slot = htab_find_slot (lto_symtab_identifiers, new_entry, INSERT);
-  new_entry->next = (lto_symtab_entry_t) *slot;
-  *slot = new_entry;
+  return false;
 }
 
-/* Get the lto_symtab_entry_def struct associated with ID
-   if there is one.  */
+/* Return true if the symtab entry E can be the prevailing one.  */
 
-static lto_symtab_entry_t
-lto_symtab_get (tree id)
+static bool
+lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 {
-  struct lto_symtab_entry_def temp;
-  void **slot;
+  struct cgraph_node *node;
 
-  lto_symtab_maybe_init_hash_table ();
-  temp.id = id;
-  slot = htab_find_slot (lto_symtab_identifiers, &temp, NO_INSERT);
-  return slot ? (lto_symtab_entry_t) *slot : NULL;
-}
+  if (!TREE_STATIC (e->decl))
+    return false;
 
-/* Get the linker resolution for DECL.  */
+  /* For functions we need a non-discarded body.  */
+  if (TREE_CODE (e->decl) == FUNCTION_DECL)
+    return ((node = cgraph_get_node (e->decl))
+	    && node->analyzed);
 
-enum ld_plugin_symbol_resolution
-lto_symtab_get_resolution (tree decl)
-{
-  lto_symtab_entry_t e;
+  /* A variable should have a size.  */
+  else if (TREE_CODE (e->decl) == VAR_DECL)
+    return (DECL_SIZE (e->decl) != NULL_TREE
+	    /* The C++ frontend retains TREE_STATIC on the declaration
+	       of foo_ in struct Foo { static Foo *foo_; }; but it is
+	       not a definition.  g++.dg/lto/20090315_0.C.  */
+	    && !DECL_EXTERNAL (e->decl));
 
-  gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-
-  e = lto_symtab_get (DECL_ASSEMBLER_NAME (decl));
-  while (e && e->decl != decl)
-    e = e->next;
-  if (!e)
-    return LDPR_UNKNOWN;
-
-  return e->resolution;
-}
-
-/* Replace the cgraph node OLD_NODE with NEW_NODE in the cgraph, merging
-   all edges and removing the old node.  */
-
-static void
-lto_cgraph_replace_node (struct cgraph_node *old_node,
-			 struct cgraph_node *new_node)
-{
-  struct cgraph_edge *e, *next;
-
-  /* Merge node flags.  */
-  if (old_node->needed)
-    cgraph_mark_needed_node (new_node);
-  if (old_node->reachable)
-    cgraph_mark_reachable_node (new_node);
-  if (old_node->address_taken)
-    {
-      gcc_assert (!new_node->global.inlined_to);
-      cgraph_mark_address_taken_node (new_node);
-    }
-
-  /* Redirect all incoming edges.  */
-  for (e = old_node->callers; e; e = next)
-    {
-      next = e->next_caller;
-      cgraph_redirect_edge_callee (e, new_node);
-    }
-
-  /* There are not supposed to be any outgoing edges from a node we
-     replace.  Still this can happen for multiple instances of weak
-     functions.
-     ???  For now do what the old code did.  Do not create edges for them.  */
-  for (e = old_node->callees; e; e = next)
-    {
-      next = e->next_callee;
-      cgraph_remove_edge (e);
-    }
-
-  /* Finally remove the replaced node.  */
-  cgraph_remove_node (old_node);
-}
-
-/* Merge two variable or function symbol table entries ENTRY1 and ENTRY2.
-   Return the prevailing one or NULL if a merge is not possible.  */
-
-static lto_symtab_entry_t
-lto_symtab_merge (lto_symtab_entry_t entry1, lto_symtab_entry_t entry2)
-{
-  tree old_decl = entry1->decl;
-  tree new_decl = entry2->decl;
-  ld_plugin_symbol_resolution_t old_resolution = entry1->resolution;
-  ld_plugin_symbol_resolution_t new_resolution = entry2->resolution;
-  struct cgraph_node *old_node = NULL;
-  struct cgraph_node *new_node = NULL;
-
-  /* Give ODR violation errors.  */
-  if (new_resolution == LDPR_PREVAILING_DEF
-      || new_resolution == LDPR_PREVAILING_DEF_IRONLY)
-    {
-      if ((old_resolution == LDPR_PREVAILING_DEF
-	   || old_resolution == LDPR_PREVAILING_DEF_IRONLY)
-	  && (old_resolution != new_resolution || flag_no_common))
-	{
-	  error_at (DECL_SOURCE_LOCATION (new_decl),
-		    "%qD has already been defined", new_decl);
-	  inform (DECL_SOURCE_LOCATION (old_decl),
-		  "previously defined here");
-	  return NULL;
-	}
-    }
-
-  /* The linker may ask us to combine two incompatible symbols.  */
-  if (!lto_symtab_compatible (old_decl, new_decl))
-    return NULL;
-
-  if (TREE_CODE (old_decl) == FUNCTION_DECL)
-    old_node = cgraph_get_node (old_decl);
-  if (TREE_CODE (new_decl) == FUNCTION_DECL)
-    new_node = cgraph_get_node (new_decl);
-
-  /* Merge decl state in both directions, we may still end up using
-     the new decl.  */
-  TREE_ADDRESSABLE (old_decl) |= TREE_ADDRESSABLE (new_decl);
-  TREE_ADDRESSABLE (new_decl) |= TREE_ADDRESSABLE (old_decl);
-
-  gcc_assert (new_resolution != LDPR_UNKNOWN
-	      && new_resolution != LDPR_UNDEF
-	      && old_resolution != LDPR_UNKNOWN
-	      && old_resolution != LDPR_UNDEF);
-
-  if (new_resolution == LDPR_PREVAILING_DEF
-      || new_resolution == LDPR_PREVAILING_DEF_IRONLY
-      || (!old_node && new_node))
-    {
-      gcc_assert ((!old_node && new_node)
-		  || old_resolution == LDPR_PREEMPTED_IR
-		  || old_resolution ==  LDPR_RESOLVED_IR
-		  || (old_resolution == new_resolution && !flag_no_common));
-      if (old_node)
-	lto_cgraph_replace_node (old_node, new_node);
-      /* Choose new_decl, entry2.  */
-      return entry2;
-    }
-
-  if (new_resolution == LDPR_PREEMPTED_REG
-      || new_resolution == LDPR_RESOLVED_EXEC
-      || new_resolution == LDPR_RESOLVED_DYN)
-    gcc_assert (old_resolution == LDPR_PREEMPTED_REG
-		|| old_resolution == LDPR_RESOLVED_EXEC
-		|| old_resolution == LDPR_RESOLVED_DYN);
-
-  if (new_resolution == LDPR_PREEMPTED_IR
-      || new_resolution == LDPR_RESOLVED_IR)
-    gcc_assert (old_resolution == LDPR_PREVAILING_DEF
-		|| old_resolution == LDPR_PREVAILING_DEF_IRONLY
-		|| old_resolution == LDPR_PREEMPTED_IR
-		|| old_resolution == LDPR_RESOLVED_IR);
-
-  if (new_node)
-    lto_cgraph_replace_node (new_node, old_node);
-
-  /* Choose old_decl, entry1.  */
-  return entry1;
+  gcc_unreachable ();
 }
 
 /* Resolve the symbol with the candidates in the chain *SLOT and store
@@ -506,114 +411,119 @@ static void
 lto_symtab_resolve_symbols (void **slot)
 {
   lto_symtab_entry_t e = (lto_symtab_entry_t) *slot;
+  lto_symtab_entry_t prevailing = NULL;
 
   /* If the chain is already resolved there is nothing to do.  */
   if (e->resolution != LDPR_UNKNOWN)
     return;
 
-  /* This is a poor mans resolver.  */
+  /* Find the single non-replaceable prevailing symbol and
+     diagnose ODR violations.  */
   for (; e; e = e->next)
     {
-      gcc_assert (e->resolution == LDPR_UNKNOWN);
-      if (DECL_EXTERNAL (e->decl)
-	  || (TREE_CODE (e->decl) == FUNCTION_DECL
-	      && !cgraph_get_node (e->decl)))
-	e->resolution = LDPR_RESOLVED_IR;
-      else
+      if (!lto_symtab_resolve_can_prevail_p (e))
 	{
-	  if (TREE_READONLY (e->decl))
-	    e->resolution = LDPR_PREVAILING_DEF_IRONLY;
-	  else
-	    e->resolution = LDPR_PREVAILING_DEF;
+	  e->resolution = LDPR_RESOLVED_IR;
+	  continue;
+	}
+
+      /* Set a default resolution - the final prevailing one will get
+         adjusted later.  */
+      e->resolution = LDPR_PREEMPTED_IR;
+      if (!lto_symtab_resolve_replaceable_p (e))
+	{
+	  if (prevailing)
+	    {
+	      error_at (DECL_SOURCE_LOCATION (e->decl),
+			"%qD has already been defined", e->decl);
+	      inform (DECL_SOURCE_LOCATION (prevailing->decl),
+		      "previously defined here");
+	    }
+	  prevailing = e;
 	}
     }
+  if (prevailing)
+    goto found;
+
+  /* Do a second round choosing one from the replaceable prevailing decls.  */
+  for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
+    {
+      if (e->resolution != LDPR_PREEMPTED_IR)
+	continue;
+
+      /* Choose the first function that can prevail as prevailing.  */
+      if (TREE_CODE (e->decl) == FUNCTION_DECL)
+	{
+	  prevailing = e;
+	  break;
+	}
+
+      /* From variables that can prevail choose the largest one.  */
+      if (!prevailing
+	  || tree_int_cst_lt (DECL_SIZE (prevailing->decl),
+			      DECL_SIZE (e->decl)))
+	prevailing = e;
+    }
+
+  if (!prevailing)
+    return;
+
+found:
+  if (TREE_CODE (prevailing->decl) == VAR_DECL
+      && TREE_READONLY (prevailing->decl))
+    prevailing->resolution = LDPR_PREVAILING_DEF_IRONLY;
+  else
+    prevailing->resolution = LDPR_PREVAILING_DEF;
 }
 
-/* Merge one symbol table chain to a (set of) prevailing decls.  */
+/* Merge all decls in the symbol table chain to the prevailing decl and
+   issue diagnostics about type mismatches.  */
 
 static void
 lto_symtab_merge_decls_2 (void **slot)
 {
-  lto_symtab_entry_t e2, e1;
+  lto_symtab_entry_t prevailing, e;
+  VEC(tree, heap) *mismatches = NULL;
+  unsigned i;
+  tree decl;
+  bool diagnosed_p = false;
 
   /* Nothing to do for a single entry.  */
-  e1 = (lto_symtab_entry_t) *slot;
-  if (!e1->next)
+  prevailing = (lto_symtab_entry_t) *slot;
+  if (!prevailing->next)
     return;
 
-  /* Try to merge each entry with each other entry.  In case of a
-     single prevailing decl this is linear.  */
-restart:
-  for (; e1; e1 = e1->next)
-    for (e2 = e1->next; e2; e2 = e2->next)
-      {
-	lto_symtab_entry_t prevailing = lto_symtab_merge (e1, e2);
-	if (prevailing == e1)
-	  {
-	    lto_symtab_entry_t tmp = prevailing;
-	    while (tmp->next != e2)
-	      tmp = tmp->next;
-	    tmp->next = e2->next;
-	    e2->next = NULL;
-	    e2 = tmp;
-	  }
-	else if (prevailing == e2)
-	  {
-	    lto_symtab_entry_t tmp = (lto_symtab_entry_t) *slot;
-	    if (tmp == e1)
-	      {
-		*slot = e1->next;
-		tmp = e1->next;
-	      }
-	    else
-	      {
-		while (tmp->next != e1)
-		  tmp = tmp->next;
-		tmp->next = e1->next;
-	      }
-	    e1->next = NULL;
-	    e1 = tmp;
-	    goto restart;
-	  }
-      }
-}
-
-/* Fixup the chain of prevailing variable decls *SLOT that are commonized
-   during link-time.  */
-
-static void
-lto_symtab_fixup_var_decls (void **slot)
-{
-  lto_symtab_entry_t e = (lto_symtab_entry_t) *slot;
-  tree size = bitsize_zero_node;
-
-  /* Find the largest prevailing decl and move it to the front of the chain.
-     This is the decl we will output as representative for the common
-     section.  */
-  size = bitsize_zero_node;
-  if (e->resolution == LDPR_PREVAILING_DEF_IRONLY
-      || e->resolution == LDPR_PREVAILING_DEF)
-    size = DECL_SIZE (e->decl);
-  for (; e->next;)
+  /* Try to merge each entry with the prevailing one.  */
+  for (e = prevailing->next; e; e = e->next)
     {
-      lto_symtab_entry_t next = e->next;
-      if ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
-	   || next->resolution == LDPR_PREVAILING_DEF)
-	  && tree_int_cst_lt (size, DECL_SIZE (next->decl)))
-	{
-	  size = DECL_SIZE (next->decl);
-	  e->next = next->next;
-	  next->next = (lto_symtab_entry_t) *slot;
-	  *slot = next;
-	}
-      else
-	e = next;
+      if (!lto_symtab_merge (prevailing, e))
+	VEC_safe_push (tree, heap, mismatches, e->decl);
     }
+  if (VEC_empty (tree, mismatches))
+    return;
 
-  /* Mark everything apart from the first var as written out.  */
-  e = (lto_symtab_entry_t) *slot;
-  for (e = e->next; e; e = e->next)
-    TREE_ASM_WRITTEN (e->decl) = true;
+  /* Diagnose all mismatched re-declarations.  */
+  for (i = 0; VEC_iterate (tree, mismatches, i, decl); ++i)
+    {
+      if (!gimple_types_compatible_p (TREE_TYPE (prevailing->decl),
+				      TREE_TYPE (decl)))
+	diagnosed_p |= warning_at (DECL_SOURCE_LOCATION (decl), 0,
+				   "type of %qD does not match original "
+				   "declaration", decl);
+
+      else if ((DECL_USER_ALIGN (prevailing->decl) && DECL_USER_ALIGN (decl))
+	       && DECL_ALIGN (prevailing->decl) < DECL_ALIGN (decl))
+	{
+	  diagnosed_p |= warning_at (DECL_SOURCE_LOCATION (decl), 0,
+				     "alignment of %qD is bigger than "
+				     "original declaration", decl);
+	}
+    }
+  if (diagnosed_p)
+    inform (DECL_SOURCE_LOCATION (prevailing->decl),
+	    "previously declared here");
+
+  VEC_free (tree, heap, mismatches);
 }
 
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
@@ -621,33 +531,105 @@ lto_symtab_fixup_var_decls (void **slot)
 static int
 lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 {
-  lto_symtab_entry_t e;
+  lto_symtab_entry_t e, prevailing;
+  bool diagnosed_p = false;
 
-  /* Compute the symbol resolutions.  */
+  /* Compute the symbol resolutions.  This is a no-op when using the
+     linker plugin.  */
   lto_symtab_resolve_symbols (slot);
+
+  /* Find the prevailing decl.  */
+  for (prevailing = (lto_symtab_entry_t) *slot;
+       prevailing
+       && prevailing->resolution != LDPR_PREVAILING_DEF_IRONLY
+       && prevailing->resolution != LDPR_PREVAILING_DEF;
+       prevailing = prevailing->next)
+    ;
+
+  /* Assert it's the only one.  */
+  if (prevailing)
+    for (e = prevailing->next; e; e = e->next)
+      gcc_assert (e->resolution != LDPR_PREVAILING_DEF_IRONLY
+		  && e->resolution != LDPR_PREVAILING_DEF);
+
+  /* If there's not a prevailing symbol yet it's an external reference.
+     Happens a lot during ltrans.  Choose the first symbol with a
+     cgraph or a varpool node.  */
+  if (!prevailing)
+    {
+      prevailing = (lto_symtab_entry_t) *slot;
+      /* For functions choose one with a cgraph node.  */
+      if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
+	while (!cgraph_get_node (prevailing->decl)
+	       && prevailing->next)
+	  prevailing = prevailing->next;
+      /* We do not stream varpool nodes, so the first decl has to
+	 be good enough for now.
+	 ???  For QOI choose a variable with readonly initializer
+	 if there is one.  This matches C++
+	 struct Foo { static const int i = 1; }; without a real
+	 definition.  */
+      if (TREE_CODE (prevailing->decl) == VAR_DECL)
+	while (!(TREE_READONLY (prevailing->decl)
+		 && DECL_INITIAL (prevailing->decl))
+	       && prevailing->next)
+	  prevailing = prevailing->next;
+    }
+
+  /* Move it first in the list.  */
+  if ((lto_symtab_entry_t) *slot != prevailing)
+    {
+      for (e = (lto_symtab_entry_t) *slot; e->next != prevailing; e = e->next)
+	;
+      e->next = prevailing->next;
+      prevailing->next = (lto_symtab_entry_t) *slot;
+      *slot = (void *) prevailing;
+    }
+
+  /* Record the prevailing variable.  */
+  if (TREE_CODE (prevailing->decl) == VAR_DECL)
+    VEC_safe_push (tree, gc, lto_global_var_decls, prevailing->decl);
+
+  /* Diagnose mismatched objects.  */
+  for (e = prevailing->next; e; e = e->next)
+    {
+      if (TREE_CODE (prevailing->decl) == TREE_CODE (e->decl))
+	continue;
+
+      switch (TREE_CODE (prevailing->decl))
+	{
+	case VAR_DECL:
+	  gcc_assert (TREE_CODE (e->decl) == FUNCTION_DECL);
+	  error_at (DECL_SOURCE_LOCATION (e->decl),
+		    "variable %qD redeclared as function", prevailing->decl);
+	  break;
+
+	case FUNCTION_DECL:
+	  gcc_assert (TREE_CODE (e->decl) == VAR_DECL);
+	  error_at (DECL_SOURCE_LOCATION (e->decl),
+		    "function %qD redeclared as variable", prevailing->decl);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      diagnosed_p = true;
+    }
+  if (diagnosed_p)
+      inform (DECL_SOURCE_LOCATION (prevailing->decl),
+	      "previously declared here");
 
   /* Register and adjust types of the entries.  */
   for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
     TREE_TYPE (e->decl) = gimple_register_type (TREE_TYPE (e->decl));
 
-  /* Merge the chain to a (hopefully) single prevailing decl.  */
+  /* Merge the chain to the single prevailing decl and diagnose
+     mismatches.  */
   lto_symtab_merge_decls_2 (slot);
 
-  /* ???  Ideally we should delay all diagnostics until this point to
-     avoid duplicates.  */
-
-  /* All done for FUNCTION_DECLs.  */
-  e = (lto_symtab_entry_t) *slot;
-  if (TREE_CODE (e->decl) == FUNCTION_DECL)
-    return 1;
-
-  /* Fixup variables in case there are multiple prevailing ones.  */
-  if (e->next)
-    lto_symtab_fixup_var_decls (slot);
-
-  /* Insert all variable decls into the global variable decl vector.  */
-  for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
-    VEC_safe_push (tree, gc, lto_global_var_decls, e->decl);
+  /* Drop all but the prevailing decl from the symtab.  */
+  prevailing->next = NULL;
 
   return 1;
 }
@@ -685,21 +667,7 @@ lto_symtab_prevailing_decl (tree decl)
   if (!ret)
     return NULL_TREE;
 
-  /* If there is only one candidate return it.  */
-  if (ret->next == NULL)
-    return ret->decl;
-
-  /* If there are multiple decls to choose from find the one we merged
-     with and return that.  */
-  while (ret)
-    {
-      if (gimple_types_compatible_p (TREE_TYPE (decl), TREE_TYPE (ret->decl)))
-	return ret->decl;
-
-      ret = ret->next;
-    }
-
-  gcc_unreachable ();
+  return ret->decl;
 }
 
 /* Remove any storage used to store resolution of DECL.  */
