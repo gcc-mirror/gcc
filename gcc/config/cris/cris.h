@@ -630,12 +630,17 @@ enum reg_class
   ? GENERAL_REGS : (CLASS))
 
 /* We can't move special registers to and from memory in smaller than
-   word_mode.  */
-#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)		\
-  (((CLASS) != SPECIAL_REGS && (CLASS) != MOF_REGS)	\
-   || GET_MODE_SIZE (MODE) == 4				\
-   || !MEM_P (X)					\
-   ? NO_REGS : GENERAL_REGS)
+   word_mode.  We also can't move between special registers.  Luckily,
+   -1, as returned by true_regnum for non-sub/registers, is valid as a
+   parameter to our REGNO_REG_CLASS, returning GENERAL_REGS, so we get
+   the effect that any X that isn't a special-register is treated as
+   a non-empty intersection with GENERAL_REGS.  */
+#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)				\
+ ((((CLASS) == SPECIAL_REGS || (CLASS) == MOF_REGS)			\
+   && ((GET_MODE_SIZE (MODE) < 4 && MEM_P (X))				\
+       || !reg_classes_intersect_p (REGNO_REG_CLASS (true_regnum (X)),	\
+				    GENERAL_REGS)))			\
+   ? GENERAL_REGS : NO_REGS)
 
 /* FIXME: Fix regrename.c; it should check validity of replacements,
    not just with a silly pass-specific macro.  We may miss some
