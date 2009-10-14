@@ -1,3 +1,7 @@
+2009-10-14  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust expecteds.
+
 2009-10-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/for_each_selectors.h: Minor uglification and

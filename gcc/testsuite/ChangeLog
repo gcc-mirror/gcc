@@ -1,3 +1,8 @@
+2009-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39866
+	* g++.dg/cpp0x/defaulted14.C: New.
+
 2009-10-14  Larry Evans  <cppljevans@suddenlink.net>
 
 	* g++.dg/cpp0x/vt-40092.C: New.
