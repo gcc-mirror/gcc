@@ -1756,7 +1756,7 @@ Constant integer 1
 A floating point constant 0.0
 
 @item R
-Integer constant in the range -6 @dots{} 5.
+Integer constant in the range @minus{}6 @dots{} 5.
 
 @item Q
 A memory address based on Y or Z pointer with displacement.
@@ -1787,7 +1787,7 @@ Constant that fits in 4 bits
 Constant that fits in 5 bits
 
 @item L
-Constant that is one of -1, 4, -4, 7, 8, 12, 16, 20, 32, 48
+Constant that is one of @minus{}1, 4, @minus{}4, 7, 8, 12, 16, 20, 32, 48
 
 @item G
 Floating point constant that is legal for store immediate
@@ -2381,13 +2381,13 @@ RETN, RETI, RETX, RETE, ASTAT, SEQSTAT and USP.
 Any register except accumulators or CC.
 
 @item Ksh
-Signed 16 bit integer (in the range -32768 to 32767)
+Signed 16 bit integer (in the range @minus{}32768 to 32767)
 
 @item Kuh
 Unsigned 16 bit integer (in the range 0 to 65535)
 
 @item Ks7
-Signed 7 bit integer (in the range -64 to 63)
+Signed 7 bit integer (in the range @minus{}64 to 63)
 
 @item Ku7
 Unsigned 7 bit integer (in the range 0 to 127)
@@ -2396,10 +2396,10 @@ Unsigned 7 bit integer (in the range 0 to 127)
 Unsigned 5 bit integer (in the range 0 to 31)
 
 @item Ks4
-Signed 4 bit integer (in the range -8 to 7)
+Signed 4 bit integer (in the range @minus{}8 to 7)
 
 @item Ks3
-Signed 3 bit integer (in the range -3 to 4)
+Signed 3 bit integer (in the range @minus{}3 to 4)
 
 @item Ku3
 Unsigned 3 bit integer (in the range 0 to 7)
@@ -2511,28 +2511,28 @@ Matches multiple registers in a PARALLEL to form a larger register.
 Used to match function return values.
 
 @item Is3
--8 @dots{} 7
+@minus{}8 @dots{} 7
 
 @item IS1
--128 @dots{} 127
+@minus{}128 @dots{} 127
 
 @item IS2
--32768 @dots{} 32767
+@minus{}32768 @dots{} 32767
 
 @item IU2
 0 @dots{} 65535
 
 @item In4
--8 @dots{} -1 or 1 @dots{} 8
+@minus{}8 @dots{} @minus{}1 or 1 @dots{} 8
 
 @item In5
--16 @dots{} -1 or 1 @dots{} 16
+@minus{}16 @dots{} @minus{}1 or 1 @dots{} 16
 
 @item In6
--32 @dots{} -1 or 1 @dots{} 32
+@minus{}32 @dots{} @minus{}1 or 1 @dots{} 32
 
 @item IM2
--65536 @dots{} -1
+@minus{}65536 @dots{} @minus{}1
 
 @item Ilb
 An 8 bit value with exactly one bit set.
@@ -2717,7 +2717,7 @@ A constant that cannot be loaded using @code{lui}, @code{addiu}
 or @code{ori}.
 
 @item N
-A constant in the range -65535 to -1 (inclusive).
+A constant in the range @minus{}65535 to @minus{}1 (inclusive).
 
 @item O
 A signed 15-bit constant.
@@ -2893,7 +2893,7 @@ A register indirect memory operand
 A constant in the range of 0 to 255.
 
 @item N
-A constant in the range of 0 to -255.
+A constant in the range of 0 to @minus{}255.
 
 @end table
 
@@ -3012,7 +3012,7 @@ An immediate for and/xor/or instructions.  const_int is treated as a 32 bit valu
 An immediate for the @code{iohl} instruction.  const_int is treated as a 32 bit value.  
 
 @item I
-A constant in the range [-64, 63] for shift/rotate instructions.  
+A constant in the range [@minus{}64, 63] for shift/rotate instructions.  
 
 @item J
 An unsigned 7-bit constant for conversion/nop/channel instructions.  
@@ -3083,7 +3083,7 @@ Value appropriate as displacement.
 @table @code
 @item (0..4095)
 for short displacement
-@item (-524288..524287)
+@item (@minus{}524288..524287)
 for long displacement
 @end table
 

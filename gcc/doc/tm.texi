@@ -5628,7 +5628,7 @@ should comply with the semantics expected by @code{REALIGN_LOAD}
 described above.
 If this hook is not defined, then @var{addr} will be used as
 the argument @var{OFF} to @code{REALIGN_LOAD}, in which case the low
-log2(@var{VS})-1 bits of @var{addr} will be considered.
+log2(@var{VS}) @minus{} 1 bits of @var{addr} will be considered.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN (tree @var{x})
@@ -6610,7 +6610,7 @@ speculative dependencies and therefore can be scheduled speculatively.
 The hook is used to check if the pattern of @var{insn} has a speculative
 version and, in case of successful check, to generate that speculative
 pattern.  The hook should return 1, if the instruction has a speculative form,
-or -1, if it doesn't.  @var{request} describes the type of requested
+or @minus{}1, if it doesn't.  @var{request} describes the type of requested
 speculation.  If the return value equals 1 then @var{new_pat} is assigned
 the generated speculative pattern.
 @end deftypefn
