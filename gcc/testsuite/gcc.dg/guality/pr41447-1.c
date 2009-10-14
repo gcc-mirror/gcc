@@ -1,11 +1,12 @@
 /* { dg-do run { xfail *-*-* } } */
-/* { dg-options "-g -O2" } */
+/* { dg-options "-g" } */
 
 #include "guality.h"
 
 int a;
 
-int foo()
+int
+main (int argc, char *argv[])
 {
   int tmp = a;
   int tmp2 = a;
