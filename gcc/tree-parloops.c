@@ -715,6 +715,8 @@ separate_decls_in_region_debug_bind (gimple stmt,
   void **slot, **dslot;
 
   var = gimple_debug_bind_get_var (stmt);
+  if (TREE_CODE (var) == DEBUG_EXPR_DECL)
+    return true;
   gcc_assert (DECL_P (var) && SSA_VAR_P (var));
   ielt.uid = DECL_UID (var);
   dslot = htab_find_slot_with_hash (decl_copies, &ielt, ielt.uid, NO_INSERT);

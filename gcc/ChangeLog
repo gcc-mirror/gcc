@@ -1,3 +1,11 @@
+2009-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-parloops.c (separate_decls_in_region_debug_bind): Drop debug
+	stmts setting DEBUG_EXPR_DECLs.
+
+	* cfgexpand.c (expand_debug_expr): Ignore zero-length bitfields.
+	Don't crash if mode1 is VOIDmode.
+
 2009-09-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* params.def (PARAM_IRA_LOOP_RESERVED_REGS): New.
