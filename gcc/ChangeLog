@@ -1,3 +1,13 @@
+2009-10-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (TARGET_BUILTIN_DECL): Define.
+	(struct builtin_description): Add fndecl field.
+	(bdesc): Remove const qualifier.  Update initializer.
+	(sh_media_init_builtins): Remove const qualifier for d.  Record
+	the result of add_builtin_function to the fndecl field.
+	(sh_builtin_decl): New.
+	(sh_media_builtin_decl): New.
+
 2009-10-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38948
