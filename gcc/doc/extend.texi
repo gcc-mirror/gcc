@@ -9740,7 +9740,7 @@ storing the value 32767 if the result overflows.
 
 @item int __builtin_subs (int @var{x}, int @var{y})
 Saturating subtraction.  Return the result of subtracting @var{y} from
-@var{x}, storing the value -32768 if the result overflows.
+@var{x}, storing the value @minus{}32768 if the result overflows.
 
 @item void __builtin_halt (void)
 Halt.  The processor will stop execution.  This built-in is useful for

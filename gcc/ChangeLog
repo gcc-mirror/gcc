@@ -1,3 +1,11 @@
+2009-10-14  Nick Clifton  <nickc@redhat.com>
+
+	* gcc/doc/extended.texi: Replace the dash character with
+	@minus{} in situations where it is being used as a minus
+	symbol.
+	* gcc/doc/tm.texi: Likewise.
+	* gcc/doc/md.texi: Likewise.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/41543
