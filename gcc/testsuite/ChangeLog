@@ -1,3 +1,10 @@
+2009-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_ms_hook_prologue):
+	New procedure.
+	* gcc.target/i386/ms_hook_prologue.c: Check for  ms_hook_prologue
+	effective target.
+
 2009-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39866
