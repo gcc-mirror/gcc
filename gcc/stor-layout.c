@@ -1118,7 +1118,8 @@ place_field (record_layout_info rli, tree field)
       /* No, we need to skip space before this field.
 	 Bump the cumulative size to multiple of field alignment.  */
 
-      warning (OPT_Wpadded, "padding struct to align %q+D", field);
+      if (DECL_SOURCE_LOCATION (field) != BUILTINS_LOCATION)
+	warning (OPT_Wpadded, "padding struct to align %q+D", field);
 
       /* If the alignment is still within offset_align, just align
 	 the bit position.  */
@@ -1483,7 +1484,8 @@ finalize_record_size (record_layout_info rli)
     = round_up_loc (input_location, unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
 
   if (TREE_CONSTANT (unpadded_size)
-      && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0)
+      && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0
+      && input_location != BUILTINS_LOCATION)
     warning (OPT_Wpadded, "padding struct size to alignment boundary");
 
   if (warn_packed && TREE_CODE (rli->t) == RECORD_TYPE

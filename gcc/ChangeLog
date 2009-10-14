@@ -1,3 +1,9 @@
+2009-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* stor-layout.c (place_field): Don't emit -Wpadded warnings for
+	fields in builtin structs.
+	(finalize_record_size): Likewise.
+
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gtc_ob): New global.
