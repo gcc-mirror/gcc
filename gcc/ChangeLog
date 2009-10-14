@@ -1,3 +1,13 @@
+2009-10-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41343
+	PR debug/41447
+	PR debug/41264
+	PR debug/41338
+	* tree.c (tree_node_structure_for_code): DEBUG_EXPR_DECL uses
+	decl with rtl.
+	(tree_code_size): Likewise.
+
 2009-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_1): Support complex "arc" functions.

@@ -287,6 +287,8 @@ tree_node_structure_for_code (enum tree_code code)
 	    return TS_LABEL_DECL;
 	  case RESULT_DECL:
 	    return TS_RESULT_DECL;
+	  case DEBUG_EXPR_DECL:
+	    return TS_DECL_WRTL;
 	  case CONST_DECL:
 	    return TS_CONST_DECL;
 	  case TYPE_DECL:
@@ -670,6 +672,8 @@ tree_code_size (enum tree_code code)
 	    return sizeof (struct tree_type_decl);
 	  case FUNCTION_DECL:
 	    return sizeof (struct tree_function_decl);
+	  case DEBUG_EXPR_DECL:
+	    return sizeof (struct tree_decl_with_rtl);
 	  default:
 	    return sizeof (struct tree_decl_non_common);
 	  }
