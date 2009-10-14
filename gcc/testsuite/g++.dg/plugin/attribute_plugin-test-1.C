@@ -1,4 +1,4 @@
-// { dg-warning "Callback to register attributes" }
+// { dg-warning "Callback to register attributes" "" { target *-*-* } 0 }
 
 void normal_func (char c, char c2);
 void normal_func (char __attribute__((user("param"))) c, char);
