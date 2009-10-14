@@ -904,6 +904,9 @@ struct reg_pref
    run.  */
 static struct reg_pref *reg_pref;
 
+/* Current size of reg_info.  */
+static int reg_info_size;
+
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.
    When that happens, just return GENERAL_REGS, which is innocuous.  */
@@ -936,9 +939,6 @@ reg_cover_class (int regno)
 }
 
 
-
-/* Current size of reg_info.  */
-static int reg_info_size;
 
 /* Allocate space for reg info.  */
 static void
@@ -1040,6 +1040,7 @@ setup_reg_classes (int regno,
 {
   if (reg_pref == NULL)
     return;
+  gcc_assert (reg_info_size == max_reg_num ());
   reg_pref[regno].prefclass = prefclass;
   reg_pref[regno].altclass = altclass;
   reg_pref[regno].coverclass = coverclass;
@@ -1321,7 +1322,7 @@ find_subregs_of_mode (rtx x)
     }
 }
 
-static unsigned int
+void
 init_subregs_of_mode (void)
 {
   basic_block bb;
@@ -1336,8 +1337,6 @@ init_subregs_of_mode (void)
     FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       find_subregs_of_mode (PATTERN (insn));
-
-  return 0;
 }
 
 /* Return 1 if REGNO has had an invalid mode change in CLASS from FROM
@@ -1367,74 +1366,22 @@ invalid_mode_change_p (unsigned int regno,
   return false;
 }
 
-static unsigned int
+void
 finish_subregs_of_mode (void)
 {
   htab_delete (subregs_of_mode);
   subregs_of_mode = 0;
-  return 0;
 }
 #else
-static unsigned int
+void
 init_subregs_of_mode (void)
 {
-  return 0;
 }
-static unsigned int
+void
 finish_subregs_of_mode (void)
 {
-  return 0;
 }
 
 #endif /* CANNOT_CHANGE_MODE_CLASS */
-
-static bool
-gate_subregs_of_mode_init (void)
-{
-#ifdef CANNOT_CHANGE_MODE_CLASS
-  return true;
-#else
-  return false;
-#endif
-}
-
-struct rtl_opt_pass pass_subregs_of_mode_init =
-{
- {
-  RTL_PASS,
-  "subregs_of_mode_init",               /* name */
-  gate_subregs_of_mode_init,            /* gate */
-  init_subregs_of_mode,                 /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
-
-struct rtl_opt_pass pass_subregs_of_mode_finish =
-{
- {
-  RTL_PASS,
-  "subregs_of_mode_finish",               /* name */
-  gate_subregs_of_mode_init,            /* gate */
-  finish_subregs_of_mode,               /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
-
 
 #include "gt-reginfo.h"

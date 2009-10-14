@@ -1665,6 +1665,7 @@ ira_finish_costs_once (void)
 static void
 init_costs (void)
 {
+  init_subregs_of_mode ();
   costs = (struct costs *) ira_allocate (max_struct_costs_size
 					 * cost_elements_num);
   pref_buffer

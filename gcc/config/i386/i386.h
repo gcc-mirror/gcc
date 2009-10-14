@@ -873,6 +873,9 @@ enum target_cpu_default
    || ((MODE) == DFmode && (!TARGET_SSE2 || !TARGET_SSE_MATH))  \
    || (MODE) == XFmode)
 
+/* Cover class containing the stack registers.  */
+#define STACK_REG_COVER_CLASS FLOAT_REGS
+
 /* Number of actual hardware registers.
    The hardware registers are assigned numbers for the compiler
    from 0 to just below FIRST_PSEUDO_REGISTER.

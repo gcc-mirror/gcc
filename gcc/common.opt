@@ -717,6 +717,11 @@ fira-coalesce
 Common Report Var(flag_ira_coalesce) Init(0)
 Do optimistic coalescing.
 
+fira-loop-pressure
+Common Report Var(flag_ira_loop_pressure)
+Use IRA based register pressure calculation
+in RTL loop optimizations.
+
 fira-share-save-slots
 Common Report Var(flag_ira_share_save_slots) Init(1)
 Share slots for saving different hard registers.

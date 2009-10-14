@@ -1,3 +1,60 @@
+2009-09-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* params.def (PARAM_IRA_LOOP_RESERVED_REGS): New.
+	* params.h (IRA_LOOP_RESERVED_REGS): New
+	* tree-pass.h (pass_subregs_of_mode_init,
+	pass_subregs_of_mode_finish): Remove.
+	* passes.c (pass_subregs_of_mode_init,
+	pass_subregs_of_mode_finish): Remove.
+	(pass_reginfo_init): Move before loop optimizations.
+	* config/i386/i386.h (STACK_REG_COVER_CLASS): Define.
+	* common.opt (fira-loop-pressure): New.
+	* toplev.h (flag_ira_loop_pressure): New.
+	* rtl.h (init_subregs_of_mode, finish_subregs_of_mode): New
+	externals.
+	* reginfo.c (init_subregs_of_mode, finish_subregs_of_mode):
+	Make external and void type functions.
+	(gate_subregs_of_mode_init, pass_subregs_of_mode_init,
+	pass_subregs_of_mode_finish): Remove.
+	* ira-costs.c (init_costs): Call init_subregs_of_mode.
+	* regmove.c: Include ira.h.
+	(regmove_optimize): Call ira_set_pseudo_classes after IRA based
+	register pressure calculation in loops.
+	* loop-invariant.c: Include REGS_H and ira.h.
+	(struct loop_data): New members max_reg_pressure, regs_ref, and
+	regs_live.
+	(struct invariant): New member orig_regno.
+	(curr_loop): New variable.
+	(find_exits): Initialize regs_ref and regs_live.
+	(create_new_invariant): Initialize orig_regno.
+	(get_cover_class_and_nregs): New.
+	(get_inv_cost): Make aregs_needed an array.  Use regs_needed as an
+	array.  Add code for flag_ira_loop_pressure.
+	(gain_for_invariant): Make new_regs an array.  Add code for
+	flag_ira_loop_pressure.
+	(best_gain_for_invariant): Ditto.
+	(set_move_mark): New parameter gain.  Use it for debugging output.
+	(find_invariants_to_move): Make regs_needed and new_regs an array.
+	Add code for flag_ira_loop_pressure.
+	(move_invariant_reg): Set up orig_regno.
+	(move_invariants): Set up reg classes for pseudos for
+	flag_ira_loop_pressure.
+	(free_loop_data): Clear regs_ref and regs_live.
+	(curr_regs_live, curr_reg_pressure, regs_set, n_regs_set,
+	get_regno_cover_class, change_pressure, mark_regno_live,
+	mark_regno_death, mark_reg_store, mark_reg_clobber,
+	mark_reg_death, mark_ref_regs, calculate_loop_reg_pressure): New.
+	(move_loop_invariants): Calculate pressure.  Initialize curr_loop.
+	* ira.c (ira): Call ira_set_pseudo_classes after IRA based
+	register pressure calculation in loops if new regs were added.
+	Call finish_subregs_of_mode.
+	* opts.c (decode_options): Set up flag_ira_loop_pressure.
+	* Makefile.in (loop-invariant.o): Add ira.h.
+	(regmove.o): Ditto.
+	* doc/invoke.texi (-fira-loop-pressure, ira-loop-reserved-regs):
+	Describe.
+	* doc/tm.texi (STACK_REG_COVER_CLASS): Describe.
+	
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
 	* lto-symtab.c (lto_symtab_compatible): Fold in ...
