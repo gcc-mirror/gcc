@@ -1,3 +1,10 @@
+2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/41702
+	* pa.md (casesi): Use sign extended index in call to
+	gen_casesi64p.
+	(casesi64p): Update pattern to reflect above.
+
 2009-10-15  Steve Ellcey  <sje@cup.hp.com>
 
 	PR rtl-optimization/41697
