@@ -1,3 +1,7 @@
+2009-10-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/linux.h (ASM_SPEC): Add --32.
+
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dwarf_tag_name): Handle DW_TAG_rvalue_reference_type
