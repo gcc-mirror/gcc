@@ -1,5 +1,16 @@
 2009-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/basic_string.h (operator+=(initializer_list<>),
+	append(initializer_list<>)): Forward to the append overload taking
+	a const CharT* pointer and a size, thus avoiding instantiating
+	unnecessarily in the built library the overload taking a pair of
+	iterators.
+	(operator=(initializer_list<>), assign(initializer_list<>)): Likewise
+	for assign.
+	(insert(iterator, initializer_list<>): Likewise for insert.
+
+2009-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/c++config: Do not disable extern templates for string
 	in plain parallel-mode and in profile-mode; add comment explaining
 	_GLIBCXX_EXTERN_TEMPLATE == -1.

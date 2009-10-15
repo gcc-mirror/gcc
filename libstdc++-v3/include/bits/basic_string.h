@@ -540,7 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       basic_string&
       operator=(initializer_list<_CharT> __l)
       {
-	this->assign (__l.begin(), __l.end());
+	this->assign(__l.begin(), __l.size());
 	return *this;
       }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
@@ -860,7 +860,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       basic_string&
       operator+=(initializer_list<_CharT> __l)
-      { return this->append(__l.begin(), __l.end()); }
+      { return this->append(__l.begin(), __l.size()); }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
@@ -926,7 +926,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       basic_string&
       append(initializer_list<_CharT> __l)
-      { return this->append(__l.begin(), __l.end()); }
+      { return this->append(__l.begin(), __l.size()); }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
@@ -1045,7 +1045,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       basic_string&
       assign(initializer_list<_CharT> __l)
-      { return this->assign(__l.begin(), __l.end()); }
+      { return this->assign(__l.begin(), __l.size()); }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
@@ -1089,7 +1089,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       insert(iterator __p, initializer_list<_CharT> __l)
-      { this->insert(__p, __l.begin(), __l.end()); }
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(__p >= _M_ibegin() && __p <= _M_iend());
+	this->insert(__p - _M_ibegin(), __l.begin(), __l.size());
+      }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
