@@ -2984,6 +2984,28 @@ proc add_options_for_ieee { flags } {
     return $flags
 }
 
+# Add to FLAGS the flags needed to enable functions to bind locally
+# when using pic/PIC passes in the testsuite.
+
+proc add_options_for_bind_pic_locally { flags } {
+    if {[check_no_compiler_messages using_pic2 assembly {
+        #if __PIC__ != 2
+        #error FOO
+        #endif
+    }]} {
+	return "$flags -fPIE"
+    }
+    if {[check_no_compiler_messages using_pic1 assembly {
+        #if __PIC__ != 1
+        #error FOO
+        #endif
+    }]} {
+	return "$flags -fpie"
+    }
+
+    return $flags
+}
+
 # Return 1 if the target provides a full C99 runtime.
 
 proc check_effective_target_c99_runtime { } {

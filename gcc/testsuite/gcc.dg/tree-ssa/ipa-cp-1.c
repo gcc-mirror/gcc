@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized -fno-inline" } */
+/* { dg-add-options bind_pic_locally } */
+
 int
 very_long_function(int a)
 {
