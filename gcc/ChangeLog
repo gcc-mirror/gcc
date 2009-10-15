@@ -1,3 +1,11 @@
+2009-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-10-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/22072
+	* ira-lives.c (check_and_make_def_conflict): Process all operands.
+
 2009-10-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
@@ -57,8 +65,8 @@
 2009-10-05  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.
-        * config/arm/arm.c (arm_override_options): Really initialize
-        flag_dwarf2_cfi_asm to 0.
+	* config/arm/arm.c (arm_override_options): Really initialize
+	flag_dwarf2_cfi_asm to 0.
 
 2009-10-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -127,7 +135,7 @@
 	premark_types_used_by_global_vars): New functions.
 	(prune_unused_types): Do not prune types used by global variables.
 
-2009-09-23 Uros Bizjak <ubizjak@gmail.com>
+2009-09-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/39779
 	* c-typeck.c (build_binary_op) <short_shift>: Check that integer
