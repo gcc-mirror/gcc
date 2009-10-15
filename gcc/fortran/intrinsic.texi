@@ -2744,7 +2744,7 @@ Inverse function: @ref{ACOSH}
 @code{COUNT(MASK [, DIM [, KIND]])} counts the number of @code{.TRUE.}
 elements of @var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is
 omitted it is taken to be @code{1}.  @var{DIM} is a scalar of type
-@code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n}
+@code{INTEGER} in the range of @math{1 \leq DIM \leq n)} where @math{n}
 is the rank of @var{MASK}.
 
 @item @emph{Standard}:
@@ -2864,7 +2864,7 @@ end program test_cpu_time
 @code{CSHIFT(ARRAY, SHIFT [, DIM])} performs a circular shift on elements of
 @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
 taken to be @code{1}.  @var{DIM} is a scalar of type @code{INTEGER} in the
-range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{ARRAY}.
+range of @math{1 \leq DIM \leq n)} where @math{n} is the rank of @var{ARRAY}.
 If the rank of @var{ARRAY} is one, then all elements of @var{ARRAY} are shifted
 by @var{SHIFT} places.  If rank is greater than one, then all complete rank one
 sections of @var{ARRAY} along the given dimension are shifted.  Elements
@@ -3458,8 +3458,8 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{VALUES}@tab The type shall be @code{REAL, DIMENSION(2)}.
-@item @var{TIME}@tab The type shall be @code{REAL}.
+@item @var{VALUES}@tab The type shall be @code{REAL(4), DIMENSION(2)}.
+@item @var{TIME}@tab The type shall be @code{REAL(4)}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3503,7 +3503,7 @@ end program test_dtime
 @code{EOSHIFT(ARRAY, SHIFT[, BOUNDARY, DIM])} performs an end-off shift on
 elements of @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is
 omitted it is taken to be @code{1}.  @var{DIM} is a scalar of type
-@code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n} is the
+@code{INTEGER} in the range of @math{1 \leq DIM \leq n)} where @math{n} is the
 rank of @var{ARRAY}.  If the rank of @var{ARRAY} is one, then all elements of
 @var{ARRAY} are shifted by @var{SHIFT} places.  If rank is greater than one,
 then all complete rank one sections of @var{ARRAY} along the given dimension are
@@ -3767,8 +3767,8 @@ Subroutine, function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{VALUES}@tab The type shall be @code{REAL, DIMENSION(2)}.
-@item @var{TIME}@tab The type shall be @code{REAL}.
+@item @var{VALUES}@tab The type shall be @code{REAL(4), DIMENSION(2)}.
+@item @var{TIME}@tab The type shall be @code{REAL(4)}.
 @end multitable
 
 @item @emph{Return value}:

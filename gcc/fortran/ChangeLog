@@ -1,3 +1,9 @@
+2009-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* intrinsic.texi: Explicitly state that ETIME and DTIME take
+	REAL(4) arguments.  Fix nearby typographically errors where 
+	/leq was used instead of \leq.
+
 2009-10-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41581
