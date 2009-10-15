@@ -1,3 +1,7 @@
+2009-10-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/torture/pr41555.c: Add -std=c99 option.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* obj-c++.dg/layout-1.mm: Don't xfail dg-bogus on lp64, change
