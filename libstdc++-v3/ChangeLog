@@ -1,5 +1,9 @@
 2009-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* config/abi/pre/gnu.ver: Export the _S_construct<> helpers.
+
+2009-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/basic_string.h (operator+=(initializer_list<>),
 	append(initializer_list<>)): Forward to the append overload taking
 	a const CharT* pointer and a size, thus avoiding instantiating
