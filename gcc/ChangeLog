@@ -86,6 +86,14 @@
 	add --with-tune{,-32,-64} configured default for -mtune if explicit
 	-mcpu is used.
 
+2009-10-14  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/neon.md (neon_vshll_n<mode>): Checking Bounds
+	fixed.
+
+	testsuite/
+	* gcc.target/arm/neon/vfp-shift-a2t2.c: New test case.
+
 2009-10-14  DJ Delorie  <dj@redhat.com>
 	
 	* config/h8300/h8300.c (F): New.
