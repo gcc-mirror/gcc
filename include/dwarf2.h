@@ -858,6 +858,7 @@ enum dwarf_source_language
     DW_LANG_ObjC_plus_plus = 0x0011,
     DW_LANG_UPC = 0x0012,
     DW_LANG_D = 0x0013,
+    /* DWARF 4.  */
     DW_LANG_Python = 0x0014,
 
     DW_LANG_lo_user = 0x8000,	/* Implementation-defined range start.  */

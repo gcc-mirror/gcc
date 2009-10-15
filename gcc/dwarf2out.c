@@ -6478,6 +6478,10 @@ dwarf_tag_name (unsigned int tag)
       return "DW_TAG_shared_type";
     case DW_TAG_type_unit:
       return "DW_TAG_type_unit";
+    case DW_TAG_rvalue_reference_type:
+      return "DW_TAG_rvalue_reference_type";
+    case DW_TAG_template_alias:
+      return "DW_TAG_template_alias";
     case DW_TAG_GNU_template_parameter_pack:
       return "DW_TAG_GNU_template_parameter_pack";
     case DW_TAG_GNU_formal_parameter_pack:
@@ -6662,6 +6666,16 @@ dwarf_attr_name (unsigned int attr)
 
     case DW_AT_signature:
       return "DW_AT_signature";
+    case DW_AT_main_subprogram:
+      return "DW_AT_main_subprogram";
+    case DW_AT_data_bit_offset:
+      return "DW_AT_data_bit_offset";
+    case DW_AT_const_expr:
+      return "DW_AT_const_expr";
+    case DW_AT_enum_class:
+      return "DW_AT_enum_class";
+    case DW_AT_linkage_name:
+      return "DW_AT_linkage_name";
 
     case DW_AT_MIPS_fde:
       return "DW_AT_MIPS_fde";
@@ -6700,6 +6714,22 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_body_end";
     case DW_AT_GNU_vector:
       return "DW_AT_GNU_vector";
+    case DW_AT_GNU_guarded_by:
+      return "DW_AT_GNU_guarded_by";
+    case DW_AT_GNU_pt_guarded_by:
+      return "DW_AT_GNU_pt_guarded_by";
+    case DW_AT_GNU_guarded:
+      return "DW_AT_GNU_guarded";
+    case DW_AT_GNU_pt_guarded:
+      return "DW_AT_GNU_pt_guarded";
+    case DW_AT_GNU_locks_excluded:
+      return "DW_AT_GNU_locks_excluded";
+    case DW_AT_GNU_exclusive_locks_required:
+      return "DW_AT_GNU_exclusive_locks_required";
+    case DW_AT_GNU_shared_locks_required:
+      return "DW_AT_GNU_shared_locks_required";
+    case DW_AT_GNU_odr_signature:
+      return "DW_AT_GNU_odr_signature";
     case DW_AT_GNU_template_name:
       return "DW_AT_GNU_template_name";
 
@@ -6760,6 +6790,14 @@ dwarf_form_name (unsigned int form)
       return "DW_FORM_ref_udata";
     case DW_FORM_indirect:
       return "DW_FORM_indirect";
+    case DW_FORM_sec_offset:
+      return "DW_FORM_sec_offset";
+    case DW_FORM_exprloc:
+      return "DW_FORM_exprloc";
+    case DW_FORM_flag_present:
+      return "DW_FORM_flag_present";
+    case DW_FORM_ref_sig8:
+      return "DW_FORM_ref_sig8";
     default:
       return "DW_FORM_<unknown>";
     }
@@ -10352,7 +10390,7 @@ output_signature (const char *sig, const char *name)
   int i;
 
   for (i = 0; i < DWARF_TYPE_SIGNATURE_SIZE; i++)
-    dw2_asm_output_data (1, sig[i], "%s", name);
+    dw2_asm_output_data (1, sig[i], i == 0 ? "%s" : NULL, name);
 }
 
 /* Output the DIE and its attributes.  Called recursively to generate
@@ -10573,7 +10611,7 @@ output_die (dw_die_ref die)
 
 	    for (i = 0; i < 8; i++)
 	      dw2_asm_output_data (1, a->dw_attr_val.v.val_data8[i],
-	                           "%s", name);
+				   i == 0 ? "%s" : NULL, name);
 	    break;
 	  }
 
