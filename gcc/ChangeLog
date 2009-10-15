@@ -1,3 +1,12 @@
+2009-10-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-10-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/41665
+	* config/i386/i386.md (addsi_1_zext): Get the proper second
+	operand for lea.
+
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.4.3.
