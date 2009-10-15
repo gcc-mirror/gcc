@@ -97,6 +97,7 @@ static unsigned int num_pass_through_items;
 
 static bool debug;
 static bool nop;
+static char *resolution_file = NULL;
 
 /* Parse an entry of the IL symbol table. The data to be parsed is pointed
    by P and the result is written in ENTRY. The slot number is stored in SLOT.
@@ -228,7 +229,8 @@ translate (Elf_Data *symtab, struct plugin_symtab *out)
   out->slots = slots;
 }
 
-/* Free all memory that is no longer needed at the beginning of all_symbols_read. */
+/* Free all memory that is no longer needed after writing the symbol
+   resolution. */
 
 static void
 free_1 (void)
@@ -275,6 +277,12 @@ free_2 (void)
 
   free (temp_obj_dir_name);
   temp_obj_dir_name = NULL;
+
+  if (resolution_file)
+    {
+      free (resolution_file);
+      resolution_file = NULL;
+    }
 }
 
 /*  Writes the relocations to disk. */
@@ -284,12 +292,12 @@ write_resolution (void)
 {
   unsigned int i;
   FILE *f;
-  /* FIXME: Disabled for now since we are not using the resolution file. */
-  return;
 
+  if (!resolution_file)
+    return;
 
-  /* FIXME: This should be a temporary file. */
-  f = fopen ("resolution", "w");
+  f = fopen (resolution_file, "w");
+  assert (f);
 
   fprintf (f, "%d\n", num_claimed_files);
 
@@ -297,8 +305,7 @@ write_resolution (void)
     {
       struct plugin_file_info *info = &claimed_files[i];
       struct plugin_symtab *symtab = &info->symtab;
-      struct ld_plugin_symbol *syms = calloc (symtab->nsyms,
-					      sizeof (struct ld_plugin_symbol));
+      struct ld_plugin_symbol *syms = symtab->syms;
       unsigned j;
 
       assert (syms);
@@ -312,7 +319,6 @@ write_resolution (void)
 	  unsigned int resolution = syms[j].resolution;
 	  fprintf (f, "%d %s\n", slot, lto_resolution_str[resolution]);
 	}
-      free (syms);
     }
   fclose (f);
 }
@@ -434,8 +440,6 @@ all_symbols_read_handler (void)
   if (num_claimed_files == 0)
     return LDPS_OK;
 
-  free_1 ();
-
   if (nop)
     {
       use_original_files ();
@@ -447,6 +451,8 @@ all_symbols_read_handler (void)
   assert (lto_wrapper_argv);
 
   write_resolution ();
+
+  free_1 ();
 
   for (i = 0; i < lto_wrapper_num_args; i++)
     *lto_arg_ptr++ = lto_wrapper_argv[i];
@@ -608,6 +614,10 @@ process_option (const char *option)
     debug = 1;
   else if (strcmp (option, "-nop") == 0)
     nop = 1;
+  else if (!strncmp (option, "-resolution=", strlen("-resolution=")))
+    {
+      resolution_file = strdup (option + strlen("-resolution="));
+    }
   else if (!strncmp (option, "-pass-through=", strlen("-pass-through=")))
     {
       num_pass_through_items++;

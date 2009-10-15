@@ -1,3 +1,14 @@
+2009-10-15  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (resolution_file): New.
+	(free_1): Update comment.
+	(free_2): Free resolution_file.
+	(write_resolution): Write resolution to specified file. Use the
+	syms array from the symbol table.
+	(all_symbols_read_handler): Delay call to free_1 past call to
+	write_resolution.
+	(process_option): Add a -resolution option.
+
 2009-10-13  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.am (liblto_plugin_la_LIBADD): Link against the
