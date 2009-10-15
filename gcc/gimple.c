@@ -4111,6 +4111,7 @@ gimple_signed_type (tree type)
 alias_set_type
 gimple_get_alias_set (tree t)
 {
+  static bool recursing_p;
   tree u;
 
   /* Permit type-punning when accessing a union, provided the access
@@ -4152,6 +4153,12 @@ gimple_get_alias_set (tree t)
     {
       tree t1;
 
+      /* ???  We can end up creating cycles with TYPE_MAIN_VARIANT
+	 and TYPE_CANONICAL.  Avoid recursing endlessly between
+	 this langhook and get_alias_set.  */
+      if (recursing_p)
+	return -1;
+
       /* Unfortunately, there is no canonical form of a pointer type.
 	 In particular, if we have `typedef int I', then `int *', and
 	 `I *' are different types.  So, we have to pick a canonical
@@ -4176,7 +4183,13 @@ gimple_get_alias_set (tree t)
 	 C++ committee.  */
       t1 = build_type_no_quals (t);
       if (t1 != t)
-	return get_alias_set (t1);
+	{
+	  alias_set_type set;
+	  recursing_p = true;
+	  set = get_alias_set (t1);
+	  recursing_p = false;
+	  return set;
+	}
     }
 
   return -1;

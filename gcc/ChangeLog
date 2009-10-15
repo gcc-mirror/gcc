@@ -1,3 +1,9 @@
+2009-10-15  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41669
+	* gimple.c (gimple_get_alias_set): Avoid recursing on
+	invalid type topology.
+
 2009-10-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu.c (get_branch_target): Use extract_asm_operands.
