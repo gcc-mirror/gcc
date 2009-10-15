@@ -1,3 +1,10 @@
+2009-10-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/23983
+	* gcc.target/powerpc/altivec-4.c (b): Make sure altivec builtin
+	result used.
+	* g++.dg/ext/altivec-2.C (main): Ditto.
+
 2009-10-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lib/target-supports.exp (add_options_for_bind_pic_locally): New.

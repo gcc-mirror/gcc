@@ -4,7 +4,7 @@
 
 #define vector __attribute__((vector_size(16)))
 
-static int vector x, y;
+static int vector x, y, z;
 
 static vector signed int i,j;
 static vector signed short s,t;
@@ -20,7 +20,7 @@ static int int1, int2;
 void
 b()
 {
-  __builtin_altivec_vadduwm (x, y);
+  z = __builtin_altivec_vadduwm (x, y);
 
   /* Make sure the predicates accept correct argument types.  */
   

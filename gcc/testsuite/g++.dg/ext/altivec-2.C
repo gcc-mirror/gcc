@@ -7,6 +7,8 @@
 
 #include <altivec.h>
 
+vector unsigned char use_lvsl;
+
 int main (int argc, const char * argv[])
 {
   int i = 0;
@@ -17,7 +19,7 @@ int main (int argc, const char * argv[])
   vec_dst(&cv, i, 0);
   v = vec_ld(0, &cv);	
   v = vec_lde(0, &cf);
-  vec_lvsl(0, &cf);
+  use_lvsl = vec_lvsl(0, &cf);
   
   return 0;
 }

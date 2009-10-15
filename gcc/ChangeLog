@@ -1,3 +1,31 @@
+2009-10-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/23983
+	* config/rs6000/predicates.md: Update copyright year.
+	* config/rs6000/altivec.md: Ditto.
+	
+	* config/rs6000/t-rs6000 (TM_H): Add rs6000-builtin.def.
+	(MD_INCLUDES): Add a2.md.
+	
+	* config/rs6000/rs6000.c (rs6000_builtin_decls): Change
+	RS6000_BUILTIN_COUNT to MAX_RS6000_BUILTINS.
+	(builtin_classify): New static vector to classify various builtins
+	to get the tree attributes correct.
+	(def_builtin): Set the attributes of builtins based on what the
+	builtin does (i.e. memory operation, floating point, saturation
+	need special attributes, others are pure functions).
+
+	* config/rs6000/rs6000.h (enum rs6000_btc): New enum to classify
+	the builtins.
+	(enum rs6000_builtins): Include rs6000-builtin.def to define the
+	builtins.  Change the end marker to MAX_RS6000_BUILTINS from
+	RS6000_BUILTIN_COUNT.
+	(rs6000_builtin_decls): Change RS6000_BUILTIN_COUNT to
+	MAX_RS6000_BUILTINS.
+
+	* config/rs6000/rs6000-builtin.def: New file that combines the
+	builtin enumeration name and attributes.
+
 2009-10-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux.h (ASM_SPEC): Add --32.
