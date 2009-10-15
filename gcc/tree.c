@@ -4402,6 +4402,10 @@ free_lang_data_in_decl (tree decl)
 	  && DECL_FIELD_OFFSET (decl)
 	  && TREE_CODE (DECL_FIELD_OFFSET (decl)) != INTEGER_CST)
 	DECL_FIELD_OFFSET (decl) = NULL_TREE;
+
+      /* DECL_FCONTEXT is only used for debug info generation.  */
+      if (TREE_CODE (decl) == FIELD_DECL)
+	DECL_FCONTEXT (decl) = NULL_TREE;
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {

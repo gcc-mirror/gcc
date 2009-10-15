@@ -1,3 +1,7 @@
+2009-10-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (free_lang_data_in_decl): Free DECL_FCONTEXT.
+
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/option-defaults.h (OPTION_DEFAULT_SPECS): Don't
