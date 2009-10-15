@@ -1,3 +1,7 @@
+2009-10-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu.c (get_branch_target): Use extract_asm_operands.
+
 2009-10-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (free_lang_data_in_decl): Free DECL_FCONTEXT.
