@@ -1,3 +1,8 @@
+2009-10-15  Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/invoke.texi: Clarify that most optimizations are not enabled
+	without -O.
+
 2009-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41668
