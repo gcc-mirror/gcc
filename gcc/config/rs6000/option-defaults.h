@@ -50,15 +50,15 @@
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-cpu is ignored if -mcpu is specified; likewise --with-cpu-32
      and --with-cpu-64.
-   --with-tune is ignored if -mtune is specified; likewise --with-tune-32
-     and --with-tune-64.
+   --with-tune is ignored if -mtune or -mcpu is specified; likewise
+     --with-tune-32 and --with-tune-64.
    --with-float is ignored if -mhard-float or -msoft-float are
-    specified.  */
+     specified.  */
 #define OPTION_DEFAULT_SPECS \
+  {"tune", "%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}" }, \
+  {"tune_32", "%{" OPT_ARCH32 ":%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}}" }, \
+  {"tune_64", "%{" OPT_ARCH64 ":%{!mtune=*:%{!mcpu=*:-mtune=%(VALUE)}}}" }, \
   {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
   {"cpu_32", "%{" OPT_ARCH32 ":%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"cpu_64", "%{" OPT_ARCH64 ":%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
-  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"tune_32", "%{" OPT_ARCH32 ":%{!mtune=*:-mtune=%(VALUE)}}" }, \
-  {"tune_64", "%{" OPT_ARCH64 ":%{!mtune=*:-mtune=%(VALUE)}}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }
