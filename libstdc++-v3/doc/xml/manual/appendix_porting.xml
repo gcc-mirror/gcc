@@ -35,6 +35,11 @@
 	      parse="xml" href="internals.xml">
   </xi:include>
 
+  <!-- Test -->
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	      parse="xml" href="test.xml">
+  </xi:include>
+
   <!-- ABI Policy and Guidelines -->
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 	      parse="xml" href="abi.xml">

@@ -74,7 +74,7 @@
 	Allocators, ABI, API evolution and deprecation history,
 	Backwards Compatibility, Thread, Debug Support, Locales,
 	Facets, Parallel Mode, Headers, Namespaces, Construction and
-	Structure, DocBook conversion and layout.
+	Structure, Using Exceptions, DocBook conversion and layout.
       </para>
     </authorblurb>
   </author>
@@ -143,6 +143,17 @@
     <authorblurb>
       <para>
 	mt_allocator
+      </para>
+    </authorblurb>
+  </author>
+
+  <author>
+    <firstname>Silvius</firstname>
+    <surname>Rus</surname>
+
+    <authorblurb>
+      <para>
+	Profile mode
       </para>
     </authorblurb>
   </author>

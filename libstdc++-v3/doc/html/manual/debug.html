@@ -138,16 +138,42 @@
    set print demangle on
    set demangle-style gnu-v3
 </pre><p>
-  GDB 7.0 will include support for writing pretty-printers in Python.
- A library of printers for STL classes already exists within the
- libstdc++ svn repository. For information on enabling these printers,
- and for other GDB STL support options: please see
- <a class="ulink" href="http://sourceware.org/gdb/wiki/STLSupport" target="_top"> "GDB Support
- for STL" </a> in the GDB wiki. Additionally, in-depth
- documentation and discussion of this feature can be found in the GDB
- manual. Please see:
- <a class="ulink" href="http://sourceware.org/gdb/current/onlinedocs//gdb_24.html#SEC260" target="_top">
- "23.2.2.6 Pretty Printing" </a>
+  Starting with version 7.0, GDB includes support for writing
+  pretty-printers in Python.  Pretty printers for STL classes are
+  distributed with GCC from version 4.5.0.  The most recent version of
+  these printers are always found in libstdc++ svn repository.
+  To enable these printers, check-out the latest printers to a local
+  directory:
+</p><pre class="programlisting">
+  svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python 
+</pre><p>
+  Next, add the following section to your ~/.gdbinit  The path must
+  match the location where the Python module above was checked-out.
+  So if checked out to: /home/maude/gdb_printers/, the path would be as
+  written in the example below.
+</p><pre class="programlisting">
+  python
+  import sys
+  sys.path.insert(0, '/home/maude/gdb_printers/python')
+  from libstdcxx.v6.printers import register_libstdcxx_printers
+  register_libstdcxx_printers (None)
+  end
+</pre><p>
+  The path should be the only element that needs to be adjusted in the
+  example.  Once loaded, STL classes that the printers support
+  should print in a more human-readable format.  To print the classes
+  in the old style, use the /r (raw) switch in the print command
+  (i.e., print /r foo).  This will print the classes as if the Python
+  pretty-printers were not loaded.
+</p><p>
+  For additional information on STL support and GDB please visit:
+  <a class="ulink" href="http://sourceware.org/gdb/wiki/STLSupport" target="_top"> "GDB Support
+  for STL" </a> in the GDB wiki.  Additionally, in-depth
+  documentation and discussion of the pretty printing feature can be
+  found in "Pretty Printing" node in the GDB manual.  You can find
+  on-line versions of the GDB user manual in GDB's homepage, at
+  <a class="ulink" href="http://sourceware.org/gdb/" target="_top"> "GDB: The GNU Project
+  Debugger" </a>.
 </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
   The <a class="link" href="verbose_termination.html" title="Verbose Terminate Handler">verbose
   termination handler</a> gives information about uncaught

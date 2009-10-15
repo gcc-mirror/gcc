@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems" /><link rel="next" href="api.html" title="API Evolution and Deprecation History" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="test.html" title="Test" /><link rel="next" href="api.html" title="API Evolution and Deprecation History" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
 </th><td width="20%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.abi"></a>ABI Policy and Guidelines</h2></div></div></div><p>
@@ -464,60 +464,60 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <a class="ulink" href="http://gcc.gnu.org/PR24660" target="_top">24660: versioning weak symbols in libstdc++</a>
 </p><p>
 <a class="ulink" href="http://gcc.gnu.org/PR19664" target="_top">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
-</p></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id390229"></a><p><span class="title"><i>
+</p></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id658186"></a><p><span class="title"><i>
       ABIcheck, a vague idea of checking ABI compatibility
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://abicheck.sourceforge.net/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id390246"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id658203"></a><p><span class="title"><i>
       C++ ABI Reference
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.codesourcery.com/public/cxx-abi/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id390263"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id658220"></a><p><span class="title"><i>
       Intel® Compilers for Linux* -Compatibility with the GNU Compilers
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497386"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id658238"></a><p><span class="title"><i>
       Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/app/docs/doc/817-1984" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497402"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id658254"></a><p><span class="title"><i>
       Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/app/docs/doc/819-5266" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497420"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id658272"></a><p><span class="title"><i>
       How to Write Shared Libraries
     </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="biblioid">
       <a class="ulink" href="http://people.redhat.com/drepper/dsohowto.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497448"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id675905"></a><p><span class="title"><i>
       C++ ABI for the ARM Architecture
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.arm.com/miscPDFs/8033.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497465"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id675922"></a><p><span class="title"><i>
       Dynamic Shared Objects: Survey and Issues
     </i>. </span><span class="subtitle">
       ISO C++ J16/06-0046
     . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497497"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id675954"></a><p><span class="title"><i>
       Versioning With Namespaces
     </i>. </span><span class="subtitle">
       ISO C++ J16/06-0083
     . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id497530"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id675987"></a><p><span class="title"><i>
       Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems
     </i>. </span><span class="subtitle">
 SYRCoSE 2009
     . </span><span class="author"><span class="firstname">Pavel</span> <span class="surname">Shved</span>. </span><span class="author"><span class="firstname">Denis</span> <span class="surname">Silakov</span>. </span><span class="biblioid">
       <a class="ulink" href="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf" target="_top">
       </a>
-    . </span></p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Porting to New Hardware or Operating Systems </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> API Evolution and Deprecation History</td></tr></table></div></body></html>
+    . </span></p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Test </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> API Evolution and Deprecation History</td></tr></table></div></body></html>

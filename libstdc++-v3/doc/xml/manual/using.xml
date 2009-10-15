@@ -1290,32 +1290,12 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
    </para> 
 
     </sect2>
-  </sect1>
+</sect1>
 
-  <sect1 id="manual.intro.using.exception" xreflabel="Exceptions">
-    <?dbhtml filename="using_exceptions.html"?>
-    <title>Exceptions</title>
-
-  <sect2 id="intro.using.exception.propagating" xreflabel="Propagating Exceptions">
-
-    <title>Propagating Exceptions aka Exception Neutrality</title>
-  <para> 
-  </para>
-  </sect2>
-
-  <sect2 id="intro.using.exception.safety" xreflabel="Exception Safety">
-    <title>Exception Safety</title>
-  <para> 
-  </para>
-  </sect2>
-
-  <sect2 id="intro.using.exception.no" xreflabel="-fno-exceptions">
-    <title>Support for <literal>-fno-exceptions</literal></title>
-  <para> 
-  </para>
-  </sect2>
-
-  </sect1>  
+<!-- Section 0x : Exception policies, expectations, topics -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+	    parse="xml" href="using_exceptions.xml">
+</xi:include>
 
 <!-- Section 0x : Debug -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 

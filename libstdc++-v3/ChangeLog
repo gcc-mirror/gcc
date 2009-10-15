@@ -1,3 +1,13 @@
+2009-10-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/authors.xml: Update.
+	* doc/xml/manual/intro.xml: Move test section...
+	* doc/xml/manual/appendix_porting.xml: ...here.
+	* doc/xml/manual/diagnostics.xml: Edit.
+	* doc/xml/manual/using.xml: Break out exception section.
+	* doc/xml/manual/using_exceptions.xml: New.
+	* doc/html: Regenerate.
+
 2009-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* config/abi/pre/gnu.ver: Export the _S_construct<> helpers.
