@@ -1,5 +1,16 @@
 2009-10-15  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41668
+	* gimple.c (compare_type_names_p): Handle anonymous names
+	differently based on new mode argument.
+	(gimple_types_compatible_p): For structs also compare the tags.
+	(iterative_hash_type_name): Rename to ...
+	(iterative_hash_name): ... this.  Hash all names.
+	(iterative_hash_gimple_type): Fix hashing the struct tag of
+	pointer targets.  Hash field decl names.
+
+2009-10-15  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41669
 	* gimple.c (gimple_get_alias_set): Avoid recursing on
 	invalid type topology.

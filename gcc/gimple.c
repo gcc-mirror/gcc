@@ -3119,33 +3119,38 @@ gimple_force_type_merge (tree t1, tree t2)
 }
 
 
-/* Return true if both types have the same name.  */
+/* Return true if T1 and T2 have the same name.  If FOR_COMPLETION_P is
+   true then if any type has no name return false, otherwise return
+   true if both types have no names.  */
 
 static bool
-compare_type_names_p (tree t1, tree t2)
+compare_type_names_p (tree t1, tree t2, bool for_completion_p)
 {
   tree name1 = TYPE_NAME (t1);
   tree name2 = TYPE_NAME (t2);
 
-  /* Consider anonymous types all unique.  */
-  if (!name1 || !name2)
+  /* Consider anonymous types all unique for completion.  */
+  if (for_completion_p
+      && (!name1 || !name2))
     return false;
 
-  if (TREE_CODE (name1) == TYPE_DECL)
+  if (name1 && TREE_CODE (name1) == TYPE_DECL)
     {
       name1 = DECL_NAME (name1);
-      if (!name1)
+      if (for_completion_p
+	  && !name1)
 	return false;
     }
-  gcc_assert (TREE_CODE (name1) == IDENTIFIER_NODE);
+  gcc_assert (!name1 || TREE_CODE (name1) == IDENTIFIER_NODE);
 
-  if (TREE_CODE (name2) == TYPE_DECL)
+  if (name2 && TREE_CODE (name2) == TYPE_DECL)
     {
       name2 = DECL_NAME (name2);
-      if (!name2)
+      if (for_completion_p
+	  && !name2)
 	return false;
     }
-  gcc_assert (TREE_CODE (name2) == IDENTIFIER_NODE);
+  gcc_assert (!name2 || TREE_CODE (name2) == IDENTIFIER_NODE);
 
   /* Identifiers can be compared with pointer equality rather
      than a string comparison.  */
@@ -3410,7 +3415,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 	  if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
 	      && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
 		  || !COMPLETE_TYPE_P (TREE_TYPE (t2)))
-	      && compare_type_names_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	      && compare_type_names_p (TREE_TYPE (t1), TREE_TYPE (t2), true))
 	    {
 	      /* If t2 is complete we want to choose it instead of t1.  */
 	      if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
@@ -3463,10 +3468,14 @@ gimple_types_compatible_p (tree t1, tree t2)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
 	{
-	  /* For aggregate types, all the fields must be the same.  */
 	  tree f1, f2;
 
-	  /* Compare every field.  */
+	  /* The struct tags shall compare equal.  */
+	  if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
+				     TYPE_MAIN_VARIANT (t2), false))
+	    goto different_types;
+
+	  /* For aggregate types, all the fields must be the same.  */
 	  for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
 	       f1 && f2;
 	       f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
@@ -3582,12 +3591,11 @@ visit (tree t, struct sccs *state, hashval_t v,
   return v;
 }
 
-/* Hash the name of TYPE with the previous hash value V and return it.  */
+/* Hash NAME with the previous hash value V and return it.  */
 
 static hashval_t
-iterative_hash_type_name (tree type, hashval_t v)
+iterative_hash_name (tree name, hashval_t v)
 {
-  tree name = TYPE_NAME (TYPE_MAIN_VARIANT (type));
   if (!name)
     return v;
   if (TREE_CODE (name) == TYPE_DECL)
@@ -3662,7 +3670,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       if (AGGREGATE_TYPE_P (TREE_TYPE (type)))
 	{
 	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
-	  v = iterative_hash_type_name (type, v);
+	  v = iterative_hash_name
+	      (TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (type))), v);
 	}
       else
 	v = visit (TREE_TYPE (type), state, v,
@@ -3707,10 +3716,11 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       unsigned nf;
       tree f;
 
-      v = iterative_hash_type_name (type, v);
+      v = iterative_hash_name (TYPE_NAME (TYPE_MAIN_VARIANT (type)), v);
 
       for (f = TYPE_FIELDS (type), nf = 0; f; f = TREE_CHAIN (f))
 	{
+	  v = iterative_hash_name (DECL_NAME (f), v);
 	  v = visit (TREE_TYPE (f), state, v,
 		     sccstack, sccstate, sccstate_obstack);
 	  nf++;
