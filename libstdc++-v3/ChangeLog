@@ -3,6 +3,7 @@
 	* include/bits/c++config: Do not disable extern templates for string
 	in plain parallel-mode and in profile-mode; add comment explaining
 	_GLIBCXX_EXTERN_TEMPLATE == -1.
+	* testsuite/ext/profile/mutex_extensions.cc: Adjust dg-error line.
 
 2009-10-14  Jason Merrill  <jason@redhat.com>
 
