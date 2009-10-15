@@ -1,3 +1,9 @@
+2009-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/option-defaults.h (OPTION_DEFAULT_SPECS): Don't
+	add --with-tune{,-32,-64} configured default for -mtune if explicit
+	-mcpu is used.
+
 2009-10-14  DJ Delorie  <dj@redhat.com>
 	
 	* config/h8300/h8300.c (F): New.
