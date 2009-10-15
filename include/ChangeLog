@@ -1,3 +1,8 @@
+2009-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/dwarf2.h (DW_LANG_Python): Add comment that it is
+	a DWARF 4 addition.
+
 2009-10-09  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_add_input_library): Change argument name to
