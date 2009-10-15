@@ -147,6 +147,17 @@ extern const char * const *h8_reg_names;
 /* Show we can debug even without a frame pointer.  */
 /* #define CAN_DEBUG_WITHOUT_FP */
 
+/* We want dwarf2 info available to gdb...  */
+#define DWARF2_DEBUGGING_INFO        1
+/* ... but we don't actually support full dwarf2 EH.  */
+#define MUST_USE_SJLJ_EXCEPTIONS 1
+
+/* The return address is pushed on the stack.  */
+#define INCOMING_RETURN_ADDR_RTX   gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
+#define INCOMING_FRAME_SP_OFFSET   (POINTER_SIZE / 8)
+
+#define DWARF_CIE_DATA_ALIGNMENT	2
+
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive

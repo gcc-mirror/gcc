@@ -1,3 +1,17 @@
+2009-10-14  DJ Delorie  <dj@redhat.com>
+	
+	* config/h8300/h8300.c (F): New.
+	(Fpa): New.
+	(h8300_emit_stack_adjustment): Call them.
+	(push): Likewise.
+	(h8300_push_pop): Likewise.
+	(h8300_expand_prologue): Likewise.
+	* config/h8300/h8300.h (DWARF2_DEBUGGING_INFO): Define.
+	(MUST_USE_SJLJ_EXCEPTIONS): Define.
+	(INCOMING_RETURN_ADDR_RTX): Define.
+	(INCOMING_FRAME_SP_OFFSET): Define.
+	(DWARF_CIE_DATA_ALIGNMENT): Define.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* stor-layout.c (place_field): Don't emit -Wpadded warnings for

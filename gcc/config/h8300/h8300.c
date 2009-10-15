@@ -507,6 +507,32 @@ byte_reg (rtx x, int b)
 	   && call_used_regs[regno]					\
 	   && !current_function_is_leaf)))
 
+/* We use this to wrap all emitted insns in the prologue.  */
+static rtx
+F (rtx x)
+{
+  RTX_FRAME_RELATED_P (x) = 1;
+  return x;
+}
+
+/* Mark all the subexpressions of the PARALLEL rtx PAR as
+   frame-related.  Return PAR.
+
+   dwarf2out.c:dwarf2out_frame_debug_expr ignores sub-expressions of a
+   PARALLEL rtx other than the first if they do not have the
+   FRAME_RELATED flag set on them.  */
+static rtx
+Fpa (rtx par)
+{
+  int len = XVECLEN (par, 0);
+  int i;
+
+  for (i = 0; i < len; i++)
+    F (XVECEXP (par, 0, i));
+
+  return par;
+}
+
 /* Output assembly language to FILE for the operation OP with operand size
    SIZE to adjust the stack pointer.  */
 
@@ -526,22 +552,27 @@ h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size)
       && !(cfun->static_chain_decl != NULL && sign < 0))
     {
       rtx r3 = gen_rtx_REG (Pmode, 3);
-      emit_insn (gen_movhi (r3, GEN_INT (sign * size)));
-      emit_insn (gen_addhi3 (stack_pointer_rtx,
-			     stack_pointer_rtx, r3));
+      F (emit_insn (gen_movhi (r3, GEN_INT (sign * size))));
+      F (emit_insn (gen_addhi3 (stack_pointer_rtx,
+				stack_pointer_rtx, r3)));
     }
   else
     {
       /* The stack adjustment made here is further optimized by the
 	 splitter.  In case of H8/300, the splitter always splits the
-	 addition emitted here to make the adjustment
-	 interrupt-safe.  */
+	 addition emitted here to make the adjustment interrupt-safe.
+	 FIXME: We don't always tag those, because we don't know what
+	 the splitter will do.  */
       if (Pmode == HImode)
-	emit_insn (gen_addhi3 (stack_pointer_rtx,
-			       stack_pointer_rtx, GEN_INT (sign * size)));
+	{
+	  rtx x = emit_insn (gen_addhi3 (stack_pointer_rtx,
+					 stack_pointer_rtx, GEN_INT (sign * size)));
+	  if (size < 4)
+	    F (x);
+	}
       else
-	emit_insn (gen_addsi3 (stack_pointer_rtx,
-			       stack_pointer_rtx, GEN_INT (sign * size)));
+	F (emit_insn (gen_addsi3 (stack_pointer_rtx,
+				  stack_pointer_rtx, GEN_INT (sign * size))));
     }
 }
 
@@ -591,7 +622,7 @@ push (int rn)
     x = gen_push_h8300hs_advanced (reg);
   else
     x = gen_push_h8300hs_normal (reg);
-  x = emit_insn (x);
+  x = F (emit_insn (x));
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, 0);
 }
 
@@ -634,7 +665,7 @@ h8300_push_pop (int regno, int nregs, int pop_p, int return_p)
 {
   int i, j;
   rtvec vec;
-  rtx sp, offset;
+  rtx sp, offset, x;
 
   /* See whether we can use a simple push or pop.  */
   if (!return_p && nregs == 1)
@@ -685,7 +716,10 @@ h8300_push_pop (int regno, int nregs, int pop_p, int return_p)
   RTVEC_ELT (vec, i + j) = gen_rtx_SET (VOIDmode, sp,
 					gen_rtx_PLUS (Pmode, sp, offset));
 
-  emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
+  x = gen_rtx_PARALLEL (VOIDmode, vec);
+  if (!pop_p)
+    x = Fpa (x);
+  emit_insn (x);
 }
 
 /* Return true if X has the value sp + OFFSET.  */
@@ -820,7 +854,7 @@ h8300_expand_prologue (void)
     {
       /* Push fp.  */
       push (HARD_FRAME_POINTER_REGNUM);
-      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+      F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
     }
 
   /* Push the rest of the registers in ascending order.  */
