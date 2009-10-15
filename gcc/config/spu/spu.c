@@ -2368,7 +2368,7 @@ get_branch_target (rtx branch)
 	return 0;
 
      /* ASM GOTOs. */
-     if (GET_CODE (PATTERN (branch)) == ASM_OPERANDS)
+     if (extract_asm_operands (PATTERN (branch)) != NULL)
 	return NULL;
 
       set = single_set (branch);
