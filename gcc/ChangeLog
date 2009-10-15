@@ -1,3 +1,8 @@
+2009-10-15  Steve Ellcey  <sje@cup.hp.com>
+
+	PR rtl-optimization/41697
+	* sel-sched-ir.h (_eligible_successor_edge_p): Check successor count.
+
 2009-10-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/23983
