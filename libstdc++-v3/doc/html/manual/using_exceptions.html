@@ -1,6 +1,319 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Exceptions</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_concurrency.html" title="Concurrency" /><link rel="next" href="debug.html" title="Debugging Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Exceptions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.exception"></a>Exceptions</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.propagating"></a>Propagating Exceptions aka Exception Neutrality</h3></div></div></div><p> 
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.safety"></a>Exception Safety</h3></div></div></div><p> 
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.no"></a>Support for <code class="literal">-fno-exceptions</code></h3></div></div></div><p> 
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Concurrency </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Debugging Support</td></tr></table></div></body></html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Exceptions</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      exception&#10;    , &#10;      error&#10;    , &#10;      exception neutrality&#10;    , &#10;      exception safety&#10;    , &#10;      exception propagation&#10;    , &#10;      -fno-exceptions&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_concurrency.html" title="Concurrency" /><link rel="next" href="debug.html" title="Debugging Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Exceptions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.exceptions"></a>Exceptions</h2></div></div></div><p>
+The C++ language provides language support for stack unwinding
+with <code class="literal">try</code> and <code class="literal">catch</code> blocks and
+the <code class="literal">throw</code> keyword.
+</p><p>
+These are very powerful constructs, and require some thought when
+applied to the standard library in order to yield components that work
+efficiently while cleaning up resources when unexpectedly killed via
+exceptional circumstances. 
+</p><p>
+Two general topics of discussion follow:
+exception neutrality and exception safety.
+</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.safety"></a>Exception Safety</h3></div></div></div><p> 
+    What is exception-safe code? 
+  </p><p>
+    Will define this as reasonable and well-defined behavior by classes
+    and functions from the standard library when used by user-defined
+    classes and functions that are themselves exception safe.
+  </p><p>
+    Please note that using exceptions in combination with templates
+    imposes an additional requirement for exception
+    safety. Instantiating types are required to have destructors that
+    do no throw.
+  </p><p>
+    Using the layered approach from Abrahams, can classify library
+    components as providing set levels of safety. These will be called
+    exception guarantees, and can be divided into three categories.
+  </p><div class="itemizedlist"><ul type="disc"><li><p>
+    One. Don't throw.
+  </p><p>
+    As specified in 23.2.1 general container requirements. Applicable
+    to container and string classes.
+  </p><p>
+    Member
+    functions <code class="function">erase</code>, <code class="function">pop_back</code>, <code class="function">pop_front</code>, <code class="function">swap</code>, <code class="function">clear</code>. And <span class="type">iterator</span>
+    copy constructor and assignment operator.
+  </p></li><li><p>
+    Two. Don't leak resources when exceptions are thrown. This is
+    also referred to as the “<span class="quote">basic</span>” exception safety guarantee.
+  </p><p>
+    This applicable throughout the standard library.
+  </p></li><li><p>
+    Three. Commit-or-rollback semantics.  This is
+    referred to as “<span class="quote">strong</span>” exception safety guarantee.
+  </p><p>
+    As specified in 23.2.1 general container requirements. Applicable
+    to container and string classes.
+  </p><p>
+    Member functions <code class="function">insert</code> of a single
+    element, <code class="function">push_back</code>, <code class="function">push_front</code>,
+    and <code class="function">rehash</code>.
+  </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.propagating"></a>Exception Neutrality</h3></div></div></div><p>
+    Simply put, once thrown an exception object should continue in
+    flight unless handled explicitly. In practice, this means
+    propagating exceptions should not be swallowed in
+    gratuitous <code class="literal">catch(...)</code> blocks. Instead,
+    matching <code class="literal">try</code> and <code class="literal">catch</code>
+    blocks should have specific catch handlers and allow un-handed
+    exception objects to propagate. If a
+    terminating <code class="literal">catch(...)</code> blocks exist then it
+    should end with a <code class="literal">throw</code> to re-throw the current
+    exception.
+  </p><p>
+    Why do this?
+  </p><p>
+    By allowing exception objects to propagate, a more flexible
+    approach to error handling is made possible (although not
+    required.) Instead of dealing with an error immediately, one can
+    allow the exception to propagate up until sufficient context is
+    available and the choice of exiting or retrying can be made in an
+    informed manner.
+  </p><p>
+    Unfortunately, this tends to be more of a guideline than a strict
+    rule as applied to the standard library. As such, the following is
+    a list of known problem areas where exceptions are not propagated.
+  </p><div class="itemizedlist"><ul type="disc"><li><p>
+      Input/Output
+    </p><p>
+    The destructor <code class="function">ios_base::Init::~Init()</code>
+    swallows all exceptions from <code class="function">flush</code> called on
+    all open streams at termination.
+  </p><p>
+    All formatted input in <code class="classname">basic_istream</code> or
+    formatted output in <code class="classname">basic_ostream</code> can be
+    configured to swallow exceptions
+    when <code class="function">exceptions</code> is set to
+    ignore <span class="type">ios_base::badbit</span>.
+  </p><p>
+    Functions that have been registered
+    with <code class="function">ios_base::register_callback</code> swallow all
+    exceptions when called as part of a callback event.
+  </p><p>
+    When closing the underlying
+    file, <code class="function">basic_filebuf::close</code> will swallow
+    (non-cancellation) exceptions thrown and return <code class="literal">NULL</code>.
+  </p></li><li><p>
+      Thread
+    </p><p>
+      The constructors of <code class="classname">thread</code> that take a
+      callable function argument swallow all exceptions resulting from
+      executing the function argument.
+    </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.no"></a>Doing without</h3></div></div></div><p>
+    C++ is a language that strives to be as efficient as is possible
+    in delivering features. As such, considerable care is used by both
+    language implementer and designers to make sure unused features
+    not impose hidden or unexpected costs. The GNU system tries to be
+    as flexible and as configurable as possible. So, it should come as
+    no surprise that GNU C++ provides an optional language extension,
+    spelled <code class="literal">-fno-exceptions</code>, as a way to excise the
+    implicitly generated magic necessary to
+    support <code class="literal">try</code> and <code class="literal">catch</code> blocks
+    and thrown objects. (Language support
+    for <code class="literal">-fno-exceptions</code> is documented in the GNU
+    GCC <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options" target="_top">manual</a>.)
+  </p><p>Before detailing the library support
+    for <code class="literal">-fno-exceptions</code>, first a passing note on
+    the things lost when this flag is used: it will break exceptions
+    trying to pass through code compiled
+    with <code class="literal">-fno-exceptions</code> whether or not that code
+    has any <code class="literal">try</code> or <code class="literal">catch</code>
+    constructs. If you might have some code that throws, you shouldn't
+    use <code class="literal">-fno-exceptions</code>. If you have some code that
+    uses <code class="literal">try</code> or <code class="literal">catch</code>, you
+    shouldn't use <code class="literal">-fno-exceptions</code>.
+  </p><p> 
+    And what it to be gained, tinkering in the back alleys with a
+    language like this? Exception handling overhead can be measured
+    in the size of the executable binary, and varies with the
+    capabilities of the underlying operating system and specific
+    configuration of the C++ compiler. On recent hardware with GNU
+    system software of the same age, the combined code and data size
+    overhead for enabling exception handling is around 7%. Of course,
+    if code size is of singular concern than using the appropriate
+    optimizer setting with exception handling enabled
+    (ie, <code class="literal">-Os -fexceptions</code>) may save up to twice
+    that, and preserve error checking.
+  </p><p>
+    So. Hell bent, we race down the slippery track, knowing the brakes
+    are a little soft and that the right front wheel has a tendency to
+    wobble at speed. Go on: detail the standard library support
+    for <code class="literal">-fno-exceptions</code>.
+  </p><p>
+    In sum, valid C++ code with exception handling is transformed into
+    a dialect without exception handling. In detailed steps: all use
+    of the C++
+    keywords <code class="literal">try</code>, <code class="literal">catch</code>,
+    and <code class="literal">throw</code> in the standard library have been
+    permanently replaced with the pre-processor controlled equivalents
+    spelled <code class="literal">__try</code>, <code class="literal">__catch</code>,
+    and <code class="literal">__throw_exception_again</code>. They are defined
+    as follows.
+  </p><pre class="programlisting">
+#ifdef __EXCEPTIONS
+# define __try      try
+# define __catch(X) catch(X)
+# define __throw_exception_again throw
+#else
+# define __try      if (true)
+# define __catch(X) if (false)
+# define __throw_exception_again
+#endif
+</pre><p>
+  In addition, for every object derived from
+  class <code class="classname">exception</code>, there exists a corresponding
+  function with C language linkage. An example:
+</p><pre class="programlisting">
+#ifdef __EXCEPTIONS
+  void __throw_bad_exception(void)
+  { throw bad_exception(); }
+#else
+  void __throw_bad_exception(void)
+  { abort(); }
+#endif
+</pre><p>
+  The last language feature needing to be transformed
+  by <code class="literal">-fno-exceptions</code> is treatment of exception
+  specifications on member functions. Fortunately, the compiler deals
+  with this by ignoring exception specifications and so no alternate
+  source markup is needed.
+</p><p>
+  By using this combination of language re-specification by the
+  compiler, and the pre-processor tricks and the functional
+  indirection layer for thrown exception objects by the library,
+  libstdc++ files can be compiled
+  with <code class="literal">-fno-exceptions</code>.
+</p><p>
+ User code that uses C++ keywords
+ like <code class="literal">throw</code>, <code class="literal">try</code>,
+ and <code class="literal">catch</code> will produce errors even if the user
+ code has included libstdc++ headers and is using constructs
+ like <code class="classname">basic_iostream</code>. Even though the standard
+ library has been transformed, user code may need modification. User
+  code that attempts or expects to do error checking on standard
+  library components compiled with exception handling disabled should
+  be evaluated and potentially made conditional. 
+</p><p>
+  Some issues remain with this approach (see bugzilla entry
+  25191). Code paths are not equivalent, in
+  particular <code class="literal">catch</code> blocks are not evaluated. Also
+  problematic are <code class="literal">throw</code> expressions expecting a
+  user-defined throw handler. Known problem areas in the standard
+  library include using an instance
+  of <code class="classname">basic_istream</code>
+  with <code class="function">exceptions</code> set to specific
+  <span class="type">ios_base::iostate</span> conditions, or
+  cascading <code class="literal">catch</code> blocks that dispatch error
+  handling or recovery efforts based on the type of exception object
+  thrown.
+</p><p>
+  Oh, and by the way: none of this hackery is at all
+  special. (Although perhaps well-deserving of a raised eyebrow.)
+  Support continues to evolve and may change in the future. Similar
+  and even additional techniques are used in other C++ libraries and
+  compilers.
+</p><p>
+ C++ hackers with a bent for language and control-flow purity have
+  been successfully consoled by grizzled C veterans lamenting the
+  substitution of the C language keyword
+  <code class="literal">const</code> with the uglified
+  doppelganger <code class="literal">__const</code>.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.compat"></a>Compatibility</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="using.exception.compat.c"></a>With <code class="literal">C</code></h4></div></div></div><p> 
+  C language code that is expecting to interoperate with C++ should be
+  compiled with <code class="literal">-fexceptions</code>. This will make
+  debugging a C language function called as part of C++-induced stack
+  unwinding possible.
+</p><p>
+  In particular, unwinding into a frame with no exception handling
+data will cause a runtime abort. If the unwinder runs out of unwind
+info before it finds a handler, <code class="function">std::terminate()</code>
+is called.
+</p><p>
+  Please note that most development environments should take care of
+  getting these details right. For GNU systems, all appropriate parts
+  of the GNU C library are already compiled
+  with <code class="literal">-fexceptions</code>.
+</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="using.exception.compat.posix"></a>With <code class="literal">POSIX</code> thread cancellation</h4></div></div></div><p> 
+  GNU systems re-use some of the exception handling mechanisms to
+  track control flow for <code class="literal">POSIX</code> thread cancellation.
+</p><p>
+  Cancellation points are functions defined by POSIX as worthy of
+  special treatment. The standard library may use some of these
+  functions to implement parts of the ISO C++ standard or depend on
+  them for extensions.
+</p><p>
+  Of note:
+</p><p>
+  <code class="function">nanosleep</code>,
+  <code class="function">read</code>, <code class="function">write</code>, <code class="function">open</code>, <code class="function">close</code>,
+  and <code class="function">wait</code>.
+</p><p>
+  The parts of libstdc++ that use C library functions marked as
+  cancellation points should take pains to be exception neutral.
+  Failing this, <code class="literal">catch</code> blocks have been augmented to
+  show that the POSIX cancellation object is in flight.
+</p><p>
+  This augmentation adds a <code class="literal">catch</code> block
+  for <code class="classname">__cxxabiv1::__forced_unwind</code>, which is the
+  object representing the POSIX cancellation object. Like so:
+</p><pre class="programlisting">
+  catch(const __cxxabiv1::__forced_unwind&amp;)
+  {
+    this-&gt;_M_setstate(ios_base::badbit);
+    throw;
+  }
+  catch(...)
+  { this-&gt;_M_setstate(ios_base::badbit); }
+</pre></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="using.exceptions.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id618326"></a><p><span class="title"><i>
+      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+    </i>. </span><span class="pagenums">
+      2.9.5 Thread Cancellation
+    . </span><span class="copyright">Copyright © 2008 
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span><span class="biblioid">
+      <a class="ulink" href="http://www.opengroup.org/austin/" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id627763"></a><p><span class="title"><i>
+      Error and Exception Handling
+    </i>. </span><span class="author"><span class="firstname">David</span> <span class="surname">Abrahams </span>. </span><span class="publisher"><span class="publishername">
+	Boost
+      . </span></span><span class="biblioid">
+      <a class="ulink" href="http://www.boost.org/community/error_handling.html" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id633982"></a><p><span class="title"><i>
+      Exception-Safety in Generic Components
+    </i>. </span><span class="author"><span class="firstname">David</span> <span class="surname">Abrahams</span>. </span><span class="publisher"><span class="publishername">
+	Boost
+      . </span></span><span class="biblioid">
+      <a class="ulink" href="http://www.boost.org/community/exception_safety.html" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id634268"></a><p><span class="title"><i>
+      Standard Library Exception Policy
+    </i>. </span><span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
+	WG21 N1077
+      . </span></span><span class="biblioid">
+      <a class="ulink" href="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id642510"></a><p><span class="title"><i>
+      ia64 c++ abi exception handling
+    </i>. </span><span class="author"><span class="firstname">Richard</span> <span class="surname">Henderson</span>. </span><span class="publisher"><span class="publishername">
+	GNU
+      . </span></span><span class="biblioid">
+      <a class="ulink" href="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id636666"></a><p><span class="title"><i>
+      Appendix E: Standard-Library Exception Safety
+    </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="biblioid">
+      <a class="ulink" href="http://www.research.att.com/~bs/3rd_safe.pdf" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id707620"></a><p><span class="title"><i>
+      Exceptional C++
+    </i>. </span><span class="pagenums">
+      Exception-Safety Issues and Techniques
+    . </span><span class="author"><span class="firstname">Herb</span> <span class="surname">Sutter</span>. </span></p></div><div class="biblioentry"><a id="id652939"></a><p><span class="title"><i>
+      exception_defines.h #defines try/catch
+    </i>. </span><span class="subtitle">
+      GCC Bug <a class="ulink" href="http://gcc.gnu.org/PR25191" target="_top">25191</a>
+    . </span><span class="biblioid">
+    . </span></p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Concurrency </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Debugging Support</td></tr></table></div></body></html>

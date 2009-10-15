@@ -1,0 +1,579 @@
+<sect1 id="manual.intro.using.exceptions" xreflabel="Using Exceptions">
+<?dbhtml filename="using_exceptions.html"?>
+
+<sect1info>
+  <keywordset>
+    <keyword>
+      C++
+    </keyword>
+    <keyword>
+      exception
+    </keyword>
+    <keyword>
+      error
+    </keyword>
+    <keyword>
+      exception neutrality
+    </keyword>
+    <keyword>
+      exception safety
+    </keyword>
+    <keyword>
+      exception propagation
+    </keyword>
+    <keyword>
+      -fno-exceptions
+    </keyword>
+  </keywordset>
+</sect1info>
+
+<title>Exceptions</title>
+
+<para>
+The C++ language provides language support for stack unwinding
+with <literal>try</literal> and <literal>catch</literal> blocks and
+the <literal>throw</literal> keyword.
+</para>
+
+<para>
+These are very powerful constructs, and require some thought when
+applied to the standard library in order to yield components that work
+efficiently while cleaning up resources when unexpectedly killed via
+exceptional circumstances. 
+</para>
+
+<para>
+Two general topics of discussion follow:
+exception neutrality and exception safety.
+</para>
+
+
+<sect2 id="intro.using.exception.safety" xreflabel="Exception Safety">
+<title>Exception Safety</title>
+
+  <para> 
+    What is exception-safe code? 
+  </para>
+
+  <para>
+    Will define this as reasonable and well-defined behavior by classes
+    and functions from the standard library when used by user-defined
+    classes and functions that are themselves exception safe.
+  </para>
+
+  <para>
+    Please note that using exceptions in combination with templates
+    imposes an additional requirement for exception
+    safety. Instantiating types are required to have destructors that
+    do no throw.
+  </para>
+
+  <para>
+    Using the layered approach from Abrahams, can classify library
+    components as providing set levels of safety. These will be called
+    exception guarantees, and can be divided into three categories.
+  </para>
+
+<itemizedlist>
+
+  <listitem>
+  <para>
+    One. Don't throw.
+  </para>
+  <para>
+    As specified in 23.2.1 general container requirements. Applicable
+    to container and string classes.
+  </para>
+  <para>
+    Member
+    functions <function>erase</function>, <function>pop_back</function>, <function>pop_front</function>, <function>swap</function>, <function>clear</function>. And <type>iterator</type>
+    copy constructor and assignment operator.
+  </para>
+  </listitem>
+
+  <listitem>
+  <para>
+    Two. Don't leak resources when exceptions are thrown. This is
+    also referred to as the <quote>basic</quote> exception safety guarantee.
+  </para>
+
+  <para>
+    This applicable throughout the standard library.
+  </para>
+  </listitem>
+
+  <listitem>
+  <para>
+    Three. Commit-or-rollback semantics.  This is
+    referred to as <quote>strong</quote> exception safety guarantee.
+  </para>
+
+  <para>
+    As specified in 23.2.1 general container requirements. Applicable
+    to container and string classes.
+  </para>
+  <para>
+    Member functions <function>insert</function> of a single
+    element, <function>push_back</function>, <function>push_front</function>,
+    and <function>rehash</function>.
+  </para>
+
+  </listitem>
+</itemizedlist>
+
+</sect2>
+
+
+<sect2 id="intro.using.exception.propagating" xreflabel="Exceptions Neutrality">
+<title>Exception Neutrality</title>
+  <para>
+    Simply put, once thrown an exception object should continue in
+    flight unless handled explicitly. In practice, this means
+    propagating exceptions should not be swallowed in
+    gratuitous <literal>catch(...)</literal> blocks. Instead,
+    matching <literal>try</literal> and <literal>catch</literal>
+    blocks should have specific catch handlers and allow un-handed
+    exception objects to propagate. If a
+    terminating <literal>catch(...)</literal> blocks exist then it
+    should end with a <literal>throw</literal> to re-throw the current
+    exception.
+  </para>
+
+  <para>
+    Why do this?
+  </para>
+
+  <para>
+    By allowing exception objects to propagate, a more flexible
+    approach to error handling is made possible (although not
+    required.) Instead of dealing with an error immediately, one can
+    allow the exception to propagate up until sufficient context is
+    available and the choice of exiting or retrying can be made in an
+    informed manner.
+  </para>
+
+  <para>
+    Unfortunately, this tends to be more of a guideline than a strict
+    rule as applied to the standard library. As such, the following is
+    a list of known problem areas where exceptions are not propagated.
+  </para>
+
+<itemizedlist>
+  <listitem>
+    <para>
+      Input/Output
+    </para>
+  <para>
+    The destructor <function>ios_base::Init::~Init()</function>
+    swallows all exceptions from <function>flush</function> called on
+    all open streams at termination.
+  </para>
+
+  <para>
+    All formatted input in <classname>basic_istream</classname> or
+    formatted output in <classname>basic_ostream</classname> can be
+    configured to swallow exceptions
+    when <function>exceptions</function> is set to
+    ignore <type>ios_base::badbit</type>.
+  </para>
+
+  <para>
+    Functions that have been registered
+    with <function>ios_base::register_callback</function> swallow all
+    exceptions when called as part of a callback event.
+  </para>
+
+  <para>
+    When closing the underlying
+    file, <function>basic_filebuf::close</function> will swallow
+    (non-cancellation) exceptions thrown and return <literal>NULL</literal>.
+  </para>
+  </listitem>
+  <listitem>
+    <para>
+      Thread
+    </para>
+    <para>
+      The constructors of <classname>thread</classname> that take a
+      callable function argument swallow all exceptions resulting from
+      executing the function argument.
+    </para>
+  </listitem>
+</itemizedlist>
+
+</sect2>
+
+<sect2 id="intro.using.exception.no" xreflabel="-fno-exceptions">
+<title>Doing without</title>
+  <para>
+    C++ is a language that strives to be as efficient as is possible
+    in delivering features. As such, considerable care is used by both
+    language implementer and designers to make sure unused features
+    not impose hidden or unexpected costs. The GNU system tries to be
+    as flexible and as configurable as possible. So, it should come as
+    no surprise that GNU C++ provides an optional language extension,
+    spelled <literal>-fno-exceptions</literal>, as a way to excise the
+    implicitly generated magic necessary to
+    support <literal>try</literal> and <literal>catch</literal> blocks
+    and thrown objects. (Language support
+    for <literal>-fno-exceptions</literal> is documented in the GNU
+    GCC <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">manual</ulink>.)
+  </para>
+
+  <para>Before detailing the library support
+    for <literal>-fno-exceptions</literal>, first a passing note on
+    the things lost when this flag is used: it will break exceptions
+    trying to pass through code compiled
+    with <literal>-fno-exceptions</literal> whether or not that code
+    has any <literal>try</literal> or <literal>catch</literal>
+    constructs. If you might have some code that throws, you shouldn't
+    use <literal>-fno-exceptions</literal>. If you have some code that
+    uses <literal>try</literal> or <literal>catch</literal>, you
+    shouldn't use <literal>-fno-exceptions</literal>.
+  </para> 
+
+  <para> 
+    And what it to be gained, tinkering in the back alleys with a
+    language like this? Exception handling overhead can be measured
+    in the size of the executable binary, and varies with the
+    capabilities of the underlying operating system and specific
+    configuration of the C++ compiler. On recent hardware with GNU
+    system software of the same age, the combined code and data size
+    overhead for enabling exception handling is around 7%. Of course,
+    if code size is of singular concern than using the appropriate
+    optimizer setting with exception handling enabled
+    (ie, <literal>-Os -fexceptions</literal>) may save up to twice
+    that, and preserve error checking.
+  </para>
+
+  <para>
+    So. Hell bent, we race down the slippery track, knowing the brakes
+    are a little soft and that the right front wheel has a tendency to
+    wobble at speed. Go on: detail the standard library support
+    for <literal>-fno-exceptions</literal>.
+  </para>
+
+  <para>
+    In sum, valid C++ code with exception handling is transformed into
+    a dialect without exception handling. In detailed steps: all use
+    of the C++
+    keywords <literal>try</literal>, <literal>catch</literal>,
+    and <literal>throw</literal> in the standard library have been
+    permanently replaced with the pre-processor controlled equivalents
+    spelled <literal>__try</literal>, <literal>__catch</literal>,
+    and <literal>__throw_exception_again</literal>. They are defined
+    as follows.
+  </para>
+
+<programlisting>
+#ifdef __EXCEPTIONS
+# define __try      try
+# define __catch(X) catch(X)
+# define __throw_exception_again throw
+#else
+# define __try      if (true)
+# define __catch(X) if (false)
+# define __throw_exception_again
+#endif
+</programlisting>
+
+<para>
+  In addition, for every object derived from
+  class <classname>exception</classname>, there exists a corresponding
+  function with C language linkage. An example:
+</para>
+
+<programlisting>
+#ifdef __EXCEPTIONS
+  void __throw_bad_exception(void)
+  { throw bad_exception(); }
+#else
+  void __throw_bad_exception(void)
+  { abort(); }
+#endif
+</programlisting>
+
+<para>
+  The last language feature needing to be transformed
+  by <literal>-fno-exceptions</literal> is treatment of exception
+  specifications on member functions. Fortunately, the compiler deals
+  with this by ignoring exception specifications and so no alternate
+  source markup is needed.
+</para>
+
+<para>
+  By using this combination of language re-specification by the
+  compiler, and the pre-processor tricks and the functional
+  indirection layer for thrown exception objects by the library,
+  libstdc++ files can be compiled
+  with <literal>-fno-exceptions</literal>.
+</para>
+
+<para>
+ User code that uses C++ keywords
+ like <literal>throw</literal>, <literal>try</literal>,
+ and <literal>catch</literal> will produce errors even if the user
+ code has included libstdc++ headers and is using constructs
+ like <classname>basic_iostream</classname>. Even though the standard
+ library has been transformed, user code may need modification. User
+  code that attempts or expects to do error checking on standard
+  library components compiled with exception handling disabled should
+  be evaluated and potentially made conditional. 
+</para>
+
+<para>
+  Some issues remain with this approach (see bugzilla entry
+  25191). Code paths are not equivalent, in
+  particular <literal>catch</literal> blocks are not evaluated. Also
+  problematic are <literal>throw</literal> expressions expecting a
+  user-defined throw handler. Known problem areas in the standard
+  library include using an instance
+  of <classname>basic_istream</classname>
+  with <function>exceptions</function> set to specific
+  <type>ios_base::iostate</type> conditions, or
+  cascading <literal>catch</literal> blocks that dispatch error
+  handling or recovery efforts based on the type of exception object
+  thrown.
+</para>
+
+<para>
+  Oh, and by the way: none of this hackery is at all
+  special. (Although perhaps well-deserving of a raised eyebrow.)
+  Support continues to evolve and may change in the future. Similar
+  and even additional techniques are used in other C++ libraries and
+  compilers.
+</para>
+
+<para>
+ C++ hackers with a bent for language and control-flow purity have
+  been successfully consoled by grizzled C veterans lamenting the
+  substitution of the C language keyword
+  <literal>const</literal> with the uglified
+  doppelganger <literal>__const</literal>.
+</para>
+
+
+</sect2>
+
+<sect2 id="intro.using.exception.compat">
+<title>Compatibility</title>
+
+<sect3 id="using.exception.compat.c">
+<title>With <literal>C</literal></title>
+<para> 
+  C language code that is expecting to interoperate with C++ should be
+  compiled with <literal>-fexceptions</literal>. This will make
+  debugging a C language function called as part of C++-induced stack
+  unwinding possible.
+</para>
+
+<para>
+  In particular, unwinding into a frame with no exception handling
+data will cause a runtime abort. If the unwinder runs out of unwind
+info before it finds a handler, <function>std::terminate()</function>
+is called.
+</para>
+
+<para>
+  Please note that most development environments should take care of
+  getting these details right. For GNU systems, all appropriate parts
+  of the GNU C library are already compiled
+  with <literal>-fexceptions</literal>.
+</para>
+
+</sect3>
+
+<sect3 id="using.exception.compat.posix">
+<title>With <literal>POSIX</literal> thread cancellation</title>
+
+<para> 
+  GNU systems re-use some of the exception handling mechanisms to
+  track control flow for <literal>POSIX</literal> thread cancellation.
+</para>
+
+<para>
+  Cancellation points are functions defined by POSIX as worthy of
+  special treatment. The standard library may use some of these
+  functions to implement parts of the ISO C++ standard or depend on
+  them for extensions.
+</para>
+
+<para>
+  Of note:
+</para>
+
+<para>
+  <function>nanosleep</function>,
+  <function>read</function>, <function>write</function>, <function>open</function>, <function>close</function>,
+  and <function>wait</function>.
+</para>
+
+<para>
+  The parts of libstdc++ that use C library functions marked as
+  cancellation points should take pains to be exception neutral.
+  Failing this, <literal>catch</literal> blocks have been augmented to
+  show that the POSIX cancellation object is in flight.
+</para>
+
+<para>
+  This augmentation adds a <literal>catch</literal> block
+  for <classname>__cxxabiv1::__forced_unwind</classname>, which is the
+  object representing the POSIX cancellation object. Like so:
+</para>
+
+<programlisting>
+  catch(const __cxxabiv1::__forced_unwind&amp;)
+  {
+    this->_M_setstate(ios_base::badbit);
+    throw;
+  }
+  catch(...)
+  { this->_M_setstate(ios_base::badbit); }
+</programlisting>
+
+
+</sect3>
+</sect2>
+
+<bibliography id="using.exceptions.biblio">
+<title>Bibliography</title>
+
+  <biblioentry>
+    <title>
+      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+    </title>
+    <pagenums>
+      2.9.5 Thread Cancellation
+    </pagenums>
+
+    <copyright>
+      <year>2008</year>
+      <holder>
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
+    </copyright>
+
+    <biblioid>
+      <ulink url="http://www.opengroup.org/austin/">
+      </ulink>
+    </biblioid>
+
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Error and Exception Handling
+    </title>
+    <author>
+      <firstname>David</firstname>
+      <surname>Abrahams </surname>
+    </author>
+    <publisher>
+      <publishername>
+	Boost
+      </publishername>
+    </publisher>
+    <biblioid>
+      <ulink url="http://www.boost.org/community/error_handling.html">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+
+  <biblioentry>
+    <title>
+      Exception-Safety in Generic Components
+    </title>
+    <author>
+      <firstname>David</firstname>
+      <surname>Abrahams</surname>
+    </author>
+    <publisher>
+      <publishername>
+	Boost
+      </publishername>
+    </publisher>
+    <biblioid>
+      <ulink url="http://www.boost.org/community/exception_safety.html">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Standard Library Exception Policy
+    </title>
+    <author>
+      <firstname>Matt</firstname>
+      <surname>Austern</surname>
+    </author>
+    <publisher>
+      <publishername>
+	WG21 N1077
+      </publishername>
+    </publisher>
+    <biblioid>
+      <ulink url="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      ia64 c++ abi exception handling
+    </title>
+    <author>
+      <firstname>Richard</firstname>
+      <surname>Henderson</surname>
+    </author>
+    <publisher>
+      <publishername>
+	GNU
+      </publishername>
+    </publisher>
+    <biblioid>
+      <ulink url="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Appendix E: Standard-Library Exception Safety
+    </title>
+    <author>
+      <firstname>Bjarne</firstname>
+      <surname>Stroustrup</surname>
+    </author>
+    <biblioid>
+      <ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">
+      </ulink>
+    </biblioid>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      Exceptional C++
+    </title>
+    <pagenums>
+      Exception-Safety Issues and Techniques
+    </pagenums>
+    <author>
+      <firstname>Herb</firstname>
+      <surname>Sutter</surname>
+    </author>
+  </biblioentry> 
+
+  <biblioentry>
+    <title>
+      exception_defines.h #defines try/catch
+    </title>
+    <subtitle>
+      GCC Bug <ulink url="http://gcc.gnu.org/PR25191">25191</ulink>
+    </subtitle>
+    <biblioid>
+    </biblioid>
+  </biblioentry> 
+
+</bibliography>
+
+</sect1>

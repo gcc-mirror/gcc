@@ -870,12 +870,7 @@ started to build.
 
 </sect1>
 
-  <!-- Section 04 : Test -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
-	      parse="xml" href="test.xml">
-  </xi:include>
 </chapter>
-
 
 <!-- Chapter 03 : Using -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"

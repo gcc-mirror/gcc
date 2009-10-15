@@ -71,11 +71,6 @@
    </programlisting>
 
   </sect1>  
-  <sect1 id="manual.diagnostics.exceptions.cancellation" xreflabel="Cancellation">
-    <title>Cancellation</title>
-    <para>
-    </para>
-  </sect1>  
 </chapter>
 
 <chapter id="manual.diagnostics.concept_checking" xreflabel="Concept Checking">
