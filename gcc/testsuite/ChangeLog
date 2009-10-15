@@ -1,3 +1,8 @@
+2009-10-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lib/target-supports.exp (add_options_for_bind_pic_locally): New.
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Bind pic locally.
+
 2009-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41669
