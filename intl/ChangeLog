@@ -1,3 +1,9 @@
+2009-10-15  Jim Blandy  <jimb@red-bean.com>
+
+	* libgnuintl.h (_INTL_MAY_RETURN_STRING_ARG, gettext, dgettext)
+	(dcgettext, ngettext, dngettext, dcngettext): Backport changes
+	from current gettext to provide GCC format_arg attributes.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.
