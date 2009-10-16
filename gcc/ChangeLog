@@ -1,3 +1,7 @@
+2009-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (build_ref_for_offset_1): Update comment.
+
 2009-10-16  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.md (atype): Added missing values.
