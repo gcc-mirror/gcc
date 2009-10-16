@@ -65,11 +65,11 @@ do {							    \
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is a
    record being used as a fat pointer (only true for RECORD_TYPE).  */
-#define TYPE_IS_FAT_POINTER_P(NODE) \
+#define TYPE_FAT_POINTER_P(NODE) \
   TYPE_LANG_FLAG_0 (RECORD_OR_UNION_CHECK (NODE))
 
-#define TYPE_FAT_POINTER_P(NODE) \
-  (TREE_CODE (NODE) == RECORD_TYPE && TYPE_IS_FAT_POINTER_P (NODE))
+#define TYPE_IS_FAT_POINTER_P(NODE) \
+  (TREE_CODE (NODE) == RECORD_TYPE && TYPE_FAT_POINTER_P (NODE))
 
 /* For integral types and array types, nonzero if this is a packed array type
    used for bit-packed types.  Such types should not be extended to a larger
@@ -117,15 +117,15 @@ do {							    \
   TYPE_LANG_FLAG_3 (INTEGER_TYPE_CHECK (NODE))
 
 /* True if NODE is a thin pointer.  */
-#define TYPE_THIN_POINTER_P(NODE)			\
+#define TYPE_IS_THIN_POINTER_P(NODE)			\
   (POINTER_TYPE_P (NODE)				\
    && TREE_CODE (TREE_TYPE (NODE)) == RECORD_TYPE	\
    && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (NODE)))
 
 /* True if TYPE is either a fat or thin pointer to an unconstrained
    array.  */
-#define TYPE_FAT_OR_THIN_POINTER_P(NODE) \
-  (TYPE_FAT_POINTER_P (NODE) || TYPE_THIN_POINTER_P (NODE))
+#define TYPE_IS_FAT_OR_THIN_POINTER_P(NODE) \
+  (TYPE_IS_FAT_POINTER_P (NODE) || TYPE_IS_THIN_POINTER_P (NODE))
 
 /* For INTEGER_TYPEs, nonzero if the type has a biased representation.  */
 #define TYPE_BIASED_REPRESENTATION_P(NODE) \
@@ -143,7 +143,6 @@ do {							    \
    is a dummy type, made to correspond to a private or incomplete type.  */
 #define TYPE_DUMMY_P(NODE) TYPE_LANG_FLAG_4 (NODE)
 
-/* True if TYPE is such a dummy type.  */
 #define TYPE_IS_DUMMY_P(NODE) \
   ((TREE_CODE (NODE) == VOID_TYPE || TREE_CODE (NODE) == RECORD_TYPE	\
     || TREE_CODE (NODE) == UNION_TYPE || TREE_CODE (NODE) == ENUMERAL_TYPE) \
@@ -160,7 +159,10 @@ do {							    \
 
 /* For a RECORD_TYPE, nonzero if this was made just to supply needed
    padding or alignment.  */
-#define TYPE_IS_PADDING_P(NODE) TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE))
+#define TYPE_PADDING_P(NODE) TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE))
+
+#define TYPE_IS_PADDING_P(NODE) \
+  (TREE_CODE (NODE) == RECORD_TYPE && TYPE_PADDING_P (NODE))
 
 /* True if TYPE can alias any other types.  */
 #define TYPE_UNIVERSAL_ALIASING_P(NODE) TYPE_LANG_FLAG_6 (NODE)

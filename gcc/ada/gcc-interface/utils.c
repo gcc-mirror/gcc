@@ -490,7 +490,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 
       if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	;
-      else if (TYPE_FAT_POINTER_P (t))
+      else if (TYPE_IS_FAT_POINTER_P (t))
 	{
 	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
@@ -643,7 +643,7 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
       if ((TREE_CODE (type) == RECORD_TYPE
 	   || TREE_CODE (type) == UNION_TYPE
 	   || TREE_CODE (type) == QUAL_UNION_TYPE)
-	  && !TYPE_IS_FAT_POINTER_P (type)
+	  && !TYPE_FAT_POINTER_P (type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (type)
 	  && TYPE_ADA_SIZE (type))
 	this_ada_size = TYPE_ADA_SIZE (type);
@@ -743,12 +743,11 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
     {
       /* If this is a padding record, we never want to make the size smaller
 	 than what was specified in it, if any.  */
-      if (TREE_CODE (record_type) == RECORD_TYPE
-	  && TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
+      if (TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
 	size = TYPE_SIZE (record_type);
 
       /* Now set any of the values we've just computed that apply.  */
-      if (!TYPE_IS_FAT_POINTER_P (record_type)
+      if (!TYPE_FAT_POINTER_P (record_type)
 	  && !TYPE_CONTAINS_TEMPLATE_P (record_type))
 	SET_TYPE_ADA_SIZE (record_type, ada_size);
 
@@ -810,9 +809,7 @@ rest_of_record_type_compilation (tree record_type)
      that tells the debugger how the record is laid out.  See
      exp_dbug.ads.  But don't do this for records that are padding
      since they confuse GDB.  */
-  if (var_size
-      && !(TREE_CODE (record_type) == RECORD_TYPE
-	   && TYPE_IS_PADDING_P (record_type)))
+  if (var_size && !TYPE_IS_PADDING_P (record_type))
     {
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
@@ -1301,7 +1298,7 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
   if (code == UNCONSTRAINED_ARRAY_TYPE || !debug_info_p)
     DECL_IGNORED_P (type_decl) = 1;
   else if (code != ENUMERAL_TYPE
-	   && (code != RECORD_TYPE || TYPE_IS_FAT_POINTER_P (type))
+	   && (code != RECORD_TYPE || TYPE_FAT_POINTER_P (type))
 	   && !((code == POINTER_TYPE || code == REFERENCE_TYPE)
 		&& TYPE_IS_DUMMY_P (TREE_TYPE (type)))
 	   && !(code == RECORD_TYPE
@@ -2286,7 +2283,7 @@ gnat_types_compatible_p (tree t1, tree t2)
   /* Padding record types are also compatible if they pad the same
      type and have the same constant size.  */
   if (code == RECORD_TYPE
-      && TYPE_IS_PADDING_P (t1) && TYPE_IS_PADDING_P (t2)
+      && TYPE_PADDING_P (t1) && TYPE_PADDING_P (t2)
       && TREE_TYPE (TYPE_FIELDS (t1)) == TREE_TYPE (TYPE_FIELDS (t2))
       && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
     return 1;
@@ -2436,7 +2433,7 @@ build_template (tree template_type, tree array_type, tree expr)
   tree field;
 
   while (TREE_CODE (array_type) == RECORD_TYPE
-	 && (TYPE_IS_PADDING_P (array_type)
+	 && (TYPE_PADDING_P (array_type)
 	     || TYPE_JUSTIFIED_MODULAR_P (array_type)))
     array_type = TREE_TYPE (TYPE_FIELDS (array_type));
 
@@ -3150,7 +3147,7 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
   if (POINTER_TYPE_P (gnu_type))
     return convert (gnu_type, gnu_expr64);
 
-  else if (TYPE_FAT_POINTER_P (gnu_type))
+  else if (TYPE_IS_FAT_POINTER_P (gnu_type))
     {
       tree p_array_type = TREE_TYPE (TYPE_FIELDS (gnu_type));
       tree p_bounds_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type)));
@@ -3299,7 +3296,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
   if (POINTER_TYPE_P (gnu_type))
     return convert (gnu_type, gnu_expr32);
 
-  else if (TYPE_FAT_POINTER_P (gnu_type))
+  else if (TYPE_IS_FAT_POINTER_P (gnu_type))
     {
       tree p_array_type = TREE_TYPE (TYPE_FIELDS (gnu_type));
       tree p_bounds_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type)));
@@ -3537,10 +3534,10 @@ build_unc_object_type_from_ptr (tree thin_fat_ptr_type, tree object_type,
 {
   tree template_type;
 
-  gcc_assert (TYPE_FAT_OR_THIN_POINTER_P (thin_fat_ptr_type));
+  gcc_assert (TYPE_IS_FAT_OR_THIN_POINTER_P (thin_fat_ptr_type));
 
   template_type
-    = (TYPE_FAT_POINTER_P (thin_fat_ptr_type)
+    = (TYPE_IS_FAT_POINTER_P (thin_fat_ptr_type)
        ? TREE_TYPE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (thin_fat_ptr_type))))
        : TREE_TYPE (TYPE_FIELDS (TREE_TYPE (thin_fat_ptr_type))));
   return build_unc_object_type (template_type, object_type, name);
@@ -3636,7 +3633,7 @@ update_pointer_to (tree old_type, tree new_type)
   /* Now deal with the unconstrained array case.  In this case the "pointer"
      is actually a RECORD_TYPE where both fields are pointers to dummy nodes.
      Turn them into pointers to the correct types using update_pointer_to.  */
-  else if (!TYPE_FAT_POINTER_P (ptr))
+  else if (!TYPE_IS_FAT_POINTER_P (ptr))
     gcc_unreachable ();
 
   else
@@ -3737,7 +3734,7 @@ convert_to_fat_pointer (tree type, tree expr)
 			       NULL_TREE)));
 
   /* If EXPR is a thin pointer, make template and data from the record..  */
-  else if (TYPE_THIN_POINTER_P (etype))
+  else if (TYPE_IS_THIN_POINTER_P (etype))
     {
       tree fields = TYPE_FIELDS (TREE_TYPE (etype));
 
@@ -3787,7 +3784,7 @@ convert_to_fat_pointer (tree type, tree expr)
 static tree
 convert_to_thin_pointer (tree type, tree expr)
 {
-  if (!TYPE_FAT_POINTER_P (TREE_TYPE (expr)))
+  if (!TYPE_IS_FAT_POINTER_P (TREE_TYPE (expr)))
     expr
       = convert_to_fat_pointer
 	(TREE_TYPE (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type))), expr);
@@ -3822,7 +3819,7 @@ convert (tree type, tree expr)
      as an unchecked conversion.  Likewise if one is a mere variant of the
      other, so we avoid a pointless unpad/repad sequence.  */
   else if (code == RECORD_TYPE && ecode == RECORD_TYPE
-	   && TYPE_IS_PADDING_P (type) && TYPE_IS_PADDING_P (etype)
+	   && TYPE_PADDING_P (type) && TYPE_PADDING_P (etype)
 	   && (!TREE_CONSTANT (TYPE_SIZE (type))
 	       || !TREE_CONSTANT (TYPE_SIZE (etype))
 	       || gnat_types_compatible_p (type, etype)
@@ -3832,7 +3829,7 @@ convert (tree type, tree expr)
 
   /* If the output type has padding, convert to the inner type and make a
      constructor to build the record, unless a variable size is involved.  */
-  else if (code == RECORD_TYPE && TYPE_IS_PADDING_P (type))
+  else if (code == RECORD_TYPE && TYPE_PADDING_P (type))
     {
       /* If we previously converted from another type and our type is
 	 of variable size, remove the conversion to avoid the need for
@@ -3850,7 +3847,6 @@ convert (tree type, tree expr)
 	 variable-sized temporaries.  Likewise if the padding is a variant
 	 of the other, so we avoid a pointless unpad/repad sequence.  */
       if (TREE_CODE (expr) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE
 	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
 	  && (!TREE_CONSTANT (TYPE_SIZE (type))
 	      || gnat_types_compatible_p (type,
@@ -3893,7 +3889,7 @@ convert (tree type, tree expr)
      The conditions ordering is arranged to ensure that the output type is not
      a padding type here, as it is not clear whether the conversion would
      always be correct if this was to happen.  */
-  else if (ecode == RECORD_TYPE && TYPE_IS_PADDING_P (etype))
+  else if (ecode == RECORD_TYPE && TYPE_PADDING_P (etype))
     {
       tree unpadded;
 
@@ -4142,7 +4138,8 @@ convert (tree type, tree expr)
 	    /* Otherwise, we may just bypass the input view conversion unless
 	       one of the types is a fat pointer,  which is handled by
 	       specialized code below which relies on exact type matching.  */
-	    else if (!TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype))
+	    else if (!TYPE_IS_FAT_POINTER_P (type)
+		     && !TYPE_IS_FAT_POINTER_P (etype))
 	      return convert (type, op0);
 	  }
       }
@@ -4161,7 +4158,7 @@ convert (tree type, tree expr)
 	      || TREE_CODE (type) == UNION_TYPE)
 	  && (TREE_CODE (etype) == RECORD_TYPE
 	      || TREE_CODE (etype) == UNION_TYPE)
-	  && !TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype))
+	  && !TYPE_IS_FAT_POINTER_P (type) && !TYPE_IS_FAT_POINTER_P (etype))
 	return build_unary_op (INDIRECT_REF, NULL_TREE,
 			       convert (build_pointer_type (type),
 					TREE_OPERAND (expr, 0)));
@@ -4172,7 +4169,7 @@ convert (tree type, tree expr)
     }
 
   /* Check for converting to a pointer to an unconstrained array.  */
-  if (TYPE_FAT_POINTER_P (type) && !TYPE_FAT_POINTER_P (etype))
+  if (TYPE_IS_FAT_POINTER_P (type) && !TYPE_IS_FAT_POINTER_P (etype))
     return convert_to_fat_pointer (type, expr);
 
   /* If we are converting between two aggregate or vector types that are mere
@@ -4244,7 +4241,7 @@ convert (tree type, tree expr)
       /* If converting between two pointers to records denoting
 	 both a template and type, adjust if needed to account
 	 for any differing offsets, since one might be negative.  */
-      if (TYPE_THIN_POINTER_P (etype) && TYPE_THIN_POINTER_P (type))
+      if (TYPE_IS_THIN_POINTER_P (etype) && TYPE_IS_THIN_POINTER_P (type))
 	{
 	  tree bit_diff
 	    = size_diffop (bit_position (TYPE_FIELDS (TREE_TYPE (etype))),
@@ -4262,13 +4259,13 @@ convert (tree type, tree expr)
 	}
 
       /* If converting to a thin pointer, handle specially.  */
-      if (TYPE_THIN_POINTER_P (type)
+      if (TYPE_IS_THIN_POINTER_P (type)
 	  && TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (type)))
 	return convert_to_thin_pointer (type, expr);
 
       /* If converting fat pointer to normal pointer, get the pointer to the
 	 array and then convert it.  */
-      else if (TYPE_FAT_POINTER_P (etype))
+      else if (TYPE_IS_FAT_POINTER_P (etype))
 	expr = build_component_ref (expr, get_identifier ("P_ARRAY"),
 				    NULL_TREE, false);
 
@@ -4365,8 +4362,7 @@ remove_conversions (tree exp, bool true_address)
       break;
 
     case COMPONENT_REF:
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == RECORD_TYPE
-	  && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
+      if (TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	return remove_conversions (TREE_OPERAND (exp, 0), true_address);
       break;
 
@@ -4415,7 +4411,7 @@ maybe_unconstrained_array (tree exp)
     case RECORD_TYPE:
       /* If this is a padded type, convert to the unpadded type and see if
 	 it contains a template.  */
-      if (TYPE_IS_PADDING_P (TREE_TYPE (exp)))
+      if (TYPE_PADDING_P (TREE_TYPE (exp)))
 	{
 	  new_exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
 	  if (TREE_CODE (TREE_TYPE (new_exp)) == RECORD_TYPE
@@ -4518,13 +4514,13 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   if ((((INTEGRAL_TYPE_P (type)
 	 && !(TREE_CODE (type) == INTEGER_TYPE
 	      && TYPE_VAX_FLOATING_POINT_P (type)))
-	|| (POINTER_TYPE_P (type) && ! TYPE_THIN_POINTER_P (type))
+	|| (POINTER_TYPE_P (type) && ! TYPE_IS_THIN_POINTER_P (type))
 	|| (TREE_CODE (type) == RECORD_TYPE
 	    && TYPE_JUSTIFIED_MODULAR_P (type)))
        && ((INTEGRAL_TYPE_P (etype)
 	    && !(TREE_CODE (etype) == INTEGER_TYPE
 		 && TYPE_VAX_FLOATING_POINT_P (etype)))
-	   || (POINTER_TYPE_P (etype) && !TYPE_THIN_POINTER_P (etype))
+	   || (POINTER_TYPE_P (etype) && !TYPE_IS_THIN_POINTER_P (etype))
 	   || (TREE_CODE (etype) == RECORD_TYPE
 	       && TYPE_JUSTIFIED_MODULAR_P (etype))))
       || TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE)
@@ -5504,7 +5500,7 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* Get the representative array type, possibly nested within a
      padding record e.g. for alignment purposes.  */
 
-  if (TREE_CODE (rep_type) == RECORD_TYPE && TYPE_IS_PADDING_P (rep_type))
+  if (TYPE_IS_PADDING_P (rep_type))
     rep_type = TREE_TYPE (TYPE_FIELDS (rep_type));
 
   if (TREE_CODE (rep_type) != ARRAY_TYPE)
