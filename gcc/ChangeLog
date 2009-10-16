@@ -1,5 +1,11 @@
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (iterative_hash_gimple_type): For integer types
+	also hash their minimum and maximum values and the string flag.
+	For array types hash their domain and the string flag.
+
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (gimple_types_compatible_p): Restrict completing
 	types to record or unions.  Simplify completion.
 	Do not merge records or unions with different
