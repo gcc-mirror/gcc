@@ -23,6 +23,10 @@
 
 	* gcc.dg/torture/pr41555.c: Add -std=c99 option.
 
+2009-10-14  Daniel Gutson  <dgutson@codesourcery.com>
+
+        * gcc.target/arm/neon/vfp-shift-a2t2.c: New test case.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* obj-c++.dg/layout-1.mm: Don't xfail dg-bogus on lp64, change
