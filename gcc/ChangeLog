@@ -1,3 +1,11 @@
+2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline
+	2009-09-17  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	PR target/40913
+	* config/pa/t-hpux-shlib: Set soname in libgcc_s.sl.
+
 2009-10-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/38948
