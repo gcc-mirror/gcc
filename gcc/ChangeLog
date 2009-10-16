@@ -1,3 +1,15 @@
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
+	* lto-symtab.c (merge_incomplete_and_complete_type): Remove.
+	(maybe_merge_incomplete_and_complete_type): Likewise.
+	(lto_symtab_merge): Do not call them.  Do not warn for
+	complete vs. incomplete compatible types.
+	(lto_symtab_merge_decls_2): Simplify.
+	* gimple.c (gimple_force_type_merge): Remove.
+	(gimple_types_compatible_p): Make it static.
+	* gimple.h (gimple_force_type_merge): Remove.
+	(gimple_types_compatible_p): Likewise.
+
 2009-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTRACT>: Cast
