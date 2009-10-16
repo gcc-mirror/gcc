@@ -1,3 +1,8 @@
+2009-10-16  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* s-osinte-rtems.ads: Add mutex type to pthread_mutexattr_t
+	* s-stchop-rtems.adb: Correct binding to rtems_stack_checker_is_blown.
+
 2009-10-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* env.c [__alpha__ && __osf__] (AES_SOURCE): Define.
