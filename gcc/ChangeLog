@@ -1,3 +1,12 @@
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p): Restrict completing
+	types to record or unions.  Simplify completion.
+	Do not merge records or unions with different
+	TYPE_STRUCTURAL_EQUALITY_P tag.
+	(iterative_hash_gimple_type): Restrict non-recursing into
+	pointer targets for records and unions.
+
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41717

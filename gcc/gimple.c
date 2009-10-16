@@ -3413,13 +3413,17 @@ gimple_types_compatible_p (tree t1, tree t2)
 	  /* If one pointer points to an incomplete type variant of
 	     the other pointed-to type they are the same.  */
 	  if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
+	      && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t1))
 	      && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
 		  || !COMPLETE_TYPE_P (TREE_TYPE (t2)))
 	      && compare_type_names_p (TREE_TYPE (t1), TREE_TYPE (t2), true))
 	    {
-	      /* If t2 is complete we want to choose it instead of t1.  */
+	      /* Replace the pointed-to incomplete type with the
+		 complete one.  */
 	      if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
-		gimple_force_type_merge (TREE_TYPE (t1), TREE_TYPE (t2));
+		TREE_TYPE (t1) = TREE_TYPE (t2);
+	      else
+		TREE_TYPE (t2) = TREE_TYPE (t1);
 	      goto same_types;
 	    }
 
@@ -3469,6 +3473,12 @@ gimple_types_compatible_p (tree t1, tree t2)
     case QUAL_UNION_TYPE:
 	{
 	  tree f1, f2;
+
+	  /* If one type requires structural equality checks and the
+	     other doesn't, do not merge the types.  */
+	  if (TYPE_STRUCTURAL_EQUALITY_P (t1)
+	      != TYPE_STRUCTURAL_EQUALITY_P (t2))
+	    goto different_types;
 
 	  /* The struct tags shall compare equal.  */
 	  if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
@@ -3667,7 +3677,7 @@ iterative_hash_gimple_type (tree type, hashval_t val,
      avoid hash differences for complete vs. incomplete types.  */
   if (POINTER_TYPE_P (type))
     {
-      if (AGGREGATE_TYPE_P (TREE_TYPE (type)))
+      if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
 	{
 	  v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
 	  v = iterative_hash_name
