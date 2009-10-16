@@ -3688,7 +3688,24 @@ iterative_hash_gimple_type (tree type, hashval_t val,
 		   sccstack, sccstate, sccstate_obstack);
     }
 
-  /* Recurse for aggregates with a single element.  */
+  /* For integer types hash the types min/max values and the string flag.  */
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    {
+      v = iterative_hash_expr (TYPE_MIN_VALUE (type), v);
+      v = iterative_hash_expr (TYPE_MAX_VALUE (type), v);
+      v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+    }
+
+  /* For array types hash their domain and the string flag.  */
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_DOMAIN (type))
+    {
+      v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
+      v = visit (TYPE_DOMAIN (type), state, v,
+		 sccstack, sccstate, sccstate_obstack);
+    }
+
+  /* Recurse for aggregates with a single element type.  */
   if (TREE_CODE (type) == ARRAY_TYPE
       || TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == VECTOR_TYPE)
