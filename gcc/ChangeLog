@@ -1,3 +1,12 @@
+2009-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41717
+	* cfgexpand.c (expand_debug_expr): Handle CONJ_EXPR.
+	* dwarf2out.c (mem_loc_descriptor): Don't handle
+	POST_INT/POST_DEC/POST_MODIFY like SUBREG.  For SUBREG
+	punt if it is not lowpart subreg or if inner mode isn't
+	MODE_INT.
+
 2009-10-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_z10_optimize_cmp): Skip notes when
