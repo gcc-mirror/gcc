@@ -82,14 +82,15 @@ namespace __atomic0
     __r; })
 
   /// atomic_flag
-  struct atomic_flag : private __atomic_flag_base
+  struct atomic_flag : public __atomic_flag_base
   {
     atomic_flag() = default;
     ~atomic_flag() = default;
     atomic_flag(const atomic_flag&) = delete;
     atomic_flag& operator=(const atomic_flag&) = delete;
 
-    atomic_flag(bool __i) { _M_i = __i; } // XXX deleted copy ctor != agg
+    // Conversion to ATOMIC_FLAG_INIT.
+    atomic_flag(bool __i): __atomic_flag_base({ __i }) { }
 
     bool
     test_and_set(memory_order __m = memory_order_seq_cst) volatile;
