@@ -1,5 +1,10 @@
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/41728
+	* gcc.c-torture/compile/pr41728.c: New testcase.
+
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41598
 	* gcc.dg/lto/20091016-1_0.c: New testcase.
 	* gcc.dg/lto/20091016-1_1.c: Likewise.

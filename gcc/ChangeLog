@@ -1,5 +1,11 @@
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/41728
+	* tree-ssa-dom.c (optimize_stmt): Mark the stmt modified
+	if fold_stmt did anything.
+
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41715
 	* lto-streamer-in.c (lto_input_tree_ref): Revert last change.
 	(maybe_fixup_handled_component): New function.
