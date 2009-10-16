@@ -2099,6 +2099,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
       if (fold_stmt (&si))
 	{
 	  stmt = gsi_stmt (si);
+	  gimple_set_modified (stmt, true);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
