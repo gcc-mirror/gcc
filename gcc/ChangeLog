@@ -1,3 +1,8 @@
+2009-10-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_z10_optimize_cmp): Skip notes when
+	investigating previous or next insns.
+
 2009-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (build_ref_for_offset_1): Update comment.
