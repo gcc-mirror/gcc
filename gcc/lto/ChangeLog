@@ -1,3 +1,8 @@
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41715
+	* lto.c (lto_fixup_tree): Revert last change.
+
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (lto_fixup_tree): In case the prevailing decl is not

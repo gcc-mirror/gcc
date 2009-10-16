@@ -353,16 +353,7 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
       ix_u = lto_input_uleb128 (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
       if (tag == LTO_global_decl_ref)
-	{
-	  if (TREE_CODE (result) == VIEW_CONVERT_EXPR)
-	    {
-	      tree decl = TREE_OPERAND (result, 0);
-	      varpool_mark_needed_node (varpool_node (decl));
-	      result = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), decl);
-	    }
-	  else
-	    varpool_mark_needed_node (varpool_node (result));
-	}
+	varpool_mark_needed_node (varpool_node (result));
       break;
 
     default:
@@ -877,6 +868,128 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
 }
 
 
+/* Fixup the reference tree OP for replaced VAR_DECLs with mismatched
+   types.  */
+
+static void
+maybe_fixup_handled_component (tree op)
+{
+  tree decl_type;
+  tree wanted_type;
+
+  while (handled_component_p (TREE_OPERAND (op, 0)))
+    op = TREE_OPERAND (op, 0);
+  if (TREE_CODE (TREE_OPERAND (op, 0)) != VAR_DECL)
+    return;
+
+  decl_type = TREE_TYPE (TREE_OPERAND (op, 0));
+
+  switch (TREE_CODE (op))
+    {
+    case COMPONENT_REF:
+      /* The DECL_CONTEXT of the field-decl is the record type we look for.  */
+      wanted_type = DECL_CONTEXT (TREE_OPERAND (op, 1));
+      break;
+
+    case ARRAY_REF:
+      if (TREE_CODE (decl_type) == ARRAY_TYPE
+	  && (TREE_TYPE (decl_type) == TREE_TYPE (op)
+	      || useless_type_conversion_p (TREE_TYPE (op),
+					    TREE_TYPE (decl_type))))
+	return;
+      /* An unknown size array type should be ok.  But we do not
+         lower the lower bound in all cases - ugh.  */
+      wanted_type = build_array_type (TREE_TYPE (op), NULL_TREE);
+      break;
+
+    case ARRAY_RANGE_REF:
+      if (TREE_CODE (decl_type) == ARRAY_TYPE
+	  && (TREE_TYPE (decl_type) == TREE_TYPE (TREE_TYPE (op))
+	      || useless_type_conversion_p (TREE_TYPE (TREE_TYPE (op)),
+					    TREE_TYPE (decl_type))))
+	return;
+      /* An unknown size array type should be ok.  But we do not
+         lower the lower bound in all cases - ugh.  */
+      wanted_type = build_array_type (TREE_TYPE (TREE_TYPE (op)), NULL_TREE);
+      break;
+
+    case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
+      /* Very nice - nothing to do.  */
+      return;
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      if (TREE_CODE (decl_type) == COMPLEX_TYPE
+	  && (TREE_TYPE (decl_type) == TREE_TYPE (op)
+	      || useless_type_conversion_p (TREE_TYPE (op),
+					    TREE_TYPE (decl_type))))
+	return;
+      wanted_type = build_complex_type (TREE_TYPE (op));
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!useless_type_conversion_p (wanted_type, decl_type))
+    TREE_OPERAND (op, 0) = build1 (VIEW_CONVERT_EXPR, wanted_type,
+				   TREE_OPERAND (op, 0));
+}
+
+/* Fixup reference tree operands for substituted prevailing decls
+   with mismatched types in STMT.  */
+
+static void
+maybe_fixup_decls (gimple stmt)
+{
+  /* We have to fixup replaced decls here in case there were
+     inter-TU type mismatches.  Catch the most common cases
+     for now - this way we'll get testcases for the rest as
+     the type verifier will complain.  */
+  if (gimple_assign_single_p (stmt))
+    {
+      tree lhs = gimple_assign_lhs (stmt);
+      tree rhs = gimple_assign_rhs1 (stmt);
+
+      /* First catch loads and aggregate copies by adjusting the rhs.  */
+      if (TREE_CODE (rhs) == VAR_DECL)
+	{
+	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
+	    gimple_assign_set_rhs1 (stmt, build1 (VIEW_CONVERT_EXPR,
+						  TREE_TYPE (lhs), rhs));
+	}
+      else if (handled_component_p (rhs))
+	maybe_fixup_handled_component (rhs);
+      /* Then catch scalar stores.  */
+      else if (TREE_CODE (lhs) == VAR_DECL)
+	{
+	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
+	    gimple_assign_set_lhs (stmt, build1 (VIEW_CONVERT_EXPR,
+						 TREE_TYPE (rhs), lhs));
+	}
+      else if (handled_component_p (lhs))
+	maybe_fixup_handled_component (lhs);
+    }
+  else if (is_gimple_call (stmt))
+    {
+      tree lhs = gimple_call_lhs (stmt);
+
+      if (lhs && TREE_CODE (lhs) == VAR_DECL)
+	{
+	  if (!useless_type_conversion_p (TREE_TYPE (lhs),
+					  gimple_call_return_type (stmt)))
+	    gimple_call_set_lhs (stmt, build1 (VIEW_CONVERT_EXPR,
+					       gimple_call_return_type (stmt),
+					       lhs));
+	}
+      else if (lhs && handled_component_p (lhs))
+	maybe_fixup_handled_component (lhs);
+
+      /* Arguments, especially for varargs functions will be funny...  */
+    }
+}
+
 /* Read a statement with tag TAG in function FN from block IB using
    descriptors in DATA_IN.  */
 
@@ -982,6 +1095,10 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	    SSA_NAME_DEF_STMT (op) = stmt;
 	}
     }
+
+  /* Fixup reference tree operands for substituted prevailing decls
+     with mismatched types.  */
+  maybe_fixup_decls (stmt);
 
   /* Mark the statement modified so its operand vectors can be filled in.  */
   gimple_set_modified (stmt, true);
