@@ -1,3 +1,8 @@
+2009-10-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/debug/dwarf2/template-params-7.C: Removed.
+	* gfortran.dg/fmt_error_9.f: Likewise.
+
 2009-10-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
