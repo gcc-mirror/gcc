@@ -12894,10 +12894,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case POST_INC:
     case POST_DEC:
     case POST_MODIFY:
-      /* POST_INC and POST_DEC can be handled just like a SUBREG.  So we
-	 just fall into the SUBREG code.  */
-
-      /* ... fall through ...  */
+      return mem_loc_descriptor (XEXP (rtl, 0), mode, initialized);
 
     case SUBREG:
       /* The case of a subreg may arise when we have a local (register)
@@ -12905,8 +12902,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	 up an entire register.  For now, just assume that it is
 	 legitimate to make the Dwarf info refer to the whole register which
 	 contains the given subreg.  */
-      rtl = XEXP (rtl, 0);
+      if (!subreg_lowpart_p (rtl))
+	break;
+      rtl = SUBREG_REG (rtl);
       if (GET_MODE_SIZE (GET_MODE (rtl)) > DWARF2_ADDR_SIZE)
+	break;
+      if (GET_MODE_CLASS (GET_MODE (rtl)) != MODE_INT)
 	break;
       mem_loc_result = mem_loc_descriptor (rtl, mode, initialized);
       break;
@@ -13392,12 +13393,19 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  if (BITS_BIG_ENDIAN)
 	    shift = GET_MODE_BITSIZE (GET_MODE (XEXP (rtl, 0)))
 		    - shift - size;
-	  add_loc_descr (&mem_loc_result,
-			 int_loc_descriptor (DWARF2_ADDR_SIZE - shift - size));
-	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_shl, 0, 0));
-	  add_loc_descr (&mem_loc_result,
-			 int_loc_descriptor (DWARF2_ADDR_SIZE - size));
-	  add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
+	  if (shift + size != DWARF2_ADDR_SIZE)
+	    {
+	      add_loc_descr (&mem_loc_result,
+			     int_loc_descriptor (DWARF2_ADDR_SIZE
+						 - shift - size));
+	      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_shl, 0, 0));
+	    }
+	  if (size != DWARF2_ADDR_SIZE)
+	    {
+	      add_loc_descr (&mem_loc_result,
+			     int_loc_descriptor (DWARF2_ADDR_SIZE - size));
+	      add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
+	    }
 	}
       break;
 
