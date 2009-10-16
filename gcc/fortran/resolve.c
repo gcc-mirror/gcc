@@ -5161,8 +5161,6 @@ check_class_members (gfc_symbol *derived)
 		= gfc_get_class_esym_list();
       list_e->value.function.class_esym->next = etmp;
       list_e->value.function.class_esym->derived = derived;
-      list_e->value.function.class_esym->class_object
-		= class_object;
       list_e->value.function.class_esym->esym
 		= e->value.function.esym;
     }
@@ -5206,19 +5204,101 @@ resolve_class_esym (gfc_expr *e)
 }
 
 
+/* Generate an expression for the vindex, given the reference to
+   the class of the final expression (class_ref), the base of the
+   full reference list (new_ref), the declared type and the class
+   object (st).  */
+static gfc_expr*
+vindex_expr (gfc_ref *class_ref, gfc_ref *new_ref,
+	     gfc_symbol *declared, gfc_symtree *st)
+{
+  gfc_expr *vindex;
+  gfc_ref *ref;
+
+  /* Build an expression for the correct vindex; ie. that of the last
+     CLASS reference.  */
+  ref = gfc_get_ref();
+  ref->type = REF_COMPONENT;
+  ref->u.c.component = declared->components->next;
+  ref->u.c.sym = declared;
+  ref->next = NULL;
+  if (class_ref)
+    {
+      class_ref->next = ref;
+    }
+  else
+    {
+      gfc_free_ref_list (new_ref);
+      new_ref = ref;
+    }
+  vindex = gfc_get_expr ();
+  vindex->expr_type = EXPR_VARIABLE;
+  vindex->symtree = st;
+  vindex->symtree->n.sym->refs++;
+  vindex->ts = ref->u.c.component->ts;
+  vindex->ref = new_ref;
+
+  return vindex;
+}
+
+
+/* Get the ultimate declared type from an expression.  In addition,
+   return the last class/derived type reference and the copy of the
+   reference list.  */
+static gfc_symbol*
+get_declared_from_expr (gfc_ref **class_ref, gfc_ref **new_ref,
+			gfc_expr *e)
+{
+  gfc_symbol *declared;
+  gfc_ref *ref;
+
+  declared = NULL;
+  *class_ref = NULL;
+  *new_ref = gfc_copy_ref (e->ref);
+  for (ref = *new_ref; ref; ref = ref->next)
+    {
+      if (ref->type != REF_COMPONENT)
+	continue;
+
+      if (ref->u.c.component->ts.type == BT_CLASS
+	    || ref->u.c.component->ts.type == BT_DERIVED)
+	{
+	  declared = ref->u.c.component->ts.u.derived;
+	  *class_ref = ref;
+	}
+    }
+
+  if (declared == NULL)
+    declared = e->symtree->n.sym->ts.u.derived;
+
+  return declared;
+}
+
+
 /* Resolve a CLASS typebound function, or 'method'.  */
 static gfc_try
 resolve_class_compcall (gfc_expr* e)
 {
-  gfc_symbol *derived;
+  gfc_symbol *derived, *declared;
+  gfc_ref *new_ref;
+  gfc_ref *class_ref;
+  gfc_symtree *st;
 
-  class_object = e->symtree->n.sym;
+  st = e->symtree;
+  class_object = st->n.sym;
 
-  /* Get the CLASS type.  */
-  derived = e->symtree->n.sym->ts.u.derived;
+  /* Get the CLASS declared type.  */
+  declared = get_declared_from_expr (&class_ref, &new_ref, e);
+
+  /* Weed out cases of the ultimate component being a derived type.  */
+  if (class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)
+    {
+      gfc_free_ref_list (new_ref);
+      return resolve_compcall (e, true);
+    } 
 
   /* Get the data component, which is of the declared type.  */
-  derived = derived->components->ts.u.derived;
+  derived = declared->components->ts.u.derived;
 
   /* Resolve the function call for each member of the class.  */
   class_try = SUCCESS;
@@ -5238,6 +5318,12 @@ resolve_class_compcall (gfc_expr* e)
 
   resolve_class_esym (e);
 
+  /* More than one typebound procedure so transmit an expression for
+     the vindex as the selector.  */
+  if (e->value.function.class_esym != NULL)
+    e->value.function.class_esym->vindex
+		= vindex_expr (class_ref, new_ref, declared, st);
+
   return class_try;
 }
 
@@ -5245,15 +5331,26 @@ resolve_class_compcall (gfc_expr* e)
 static gfc_try
 resolve_class_typebound_call (gfc_code *code)
 {
-  gfc_symbol *derived;
+  gfc_symbol *derived, *declared;
+  gfc_ref *new_ref;
+  gfc_ref *class_ref;
+  gfc_symtree *st;
 
-  class_object = code->expr1->symtree->n.sym;
+  st = code->expr1->symtree;
+  class_object = st->n.sym;
 
-  /* Get the CLASS type.  */
-  derived = code->expr1->symtree->n.sym->ts.u.derived;
+  /* Get the CLASS declared type.  */
+  declared = get_declared_from_expr (&class_ref, &new_ref, code->expr1);
+
+  /* Weed out cases of the ultimate component being a derived type.  */
+  if (class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)
+    {
+      gfc_free_ref_list (new_ref);
+      return resolve_typebound_call (code);
+    } 
 
   /* Get the data component, which is of the declared type.  */
-  derived = derived->components->ts.u.derived;
+  derived = declared->components->ts.u.derived;
 
   class_try = SUCCESS;
   fcn_flag = false;
@@ -5272,6 +5369,12 @@ resolve_class_typebound_call (gfc_code *code)
   gfc_free_expr (list_e);
 
   resolve_class_esym (code->expr1);
+
+  /* More than one typebound procedure so transmit an expression for
+     the vindex as the selector.  */
+  if (code->expr1->value.function.class_esym != NULL)
+    code->expr1->value.function.class_esym->vindex
+		= vindex_expr (class_ref, new_ref, declared, st);
 
   return class_try;
 }

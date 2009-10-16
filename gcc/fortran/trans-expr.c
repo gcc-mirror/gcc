@@ -1527,7 +1527,7 @@ get_proc_ptr_comp (gfc_expr *e)
 /* Select a class typebound procedure at runtime.  */
 static void
 select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
-		   tree declared, locus *where)
+		   tree declared, gfc_expr *expr)
 {
   tree end_label;
   tree label;
@@ -1535,16 +1535,16 @@ select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
   tree vindex;
   stmtblock_t body;
   gfc_class_esym_list *next_elist, *tmp_elist;
+  gfc_se tmpse;
 
-  /* Calculate the switch expression: class_object.vindex.  */
-  gcc_assert (elist->class_object->ts.type == BT_CLASS);
-  tmp = elist->class_object->ts.u.derived->components->next->backend_decl;
-  vindex = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
-			elist->class_object->backend_decl,
-			tmp, NULL_TREE);
-  vindex = gfc_evaluate_now (vindex, &se->pre);
+  /* Convert the vindex expression.  */
+  gfc_init_se (&tmpse, NULL);
+  gfc_conv_expr (&tmpse, elist->vindex);
+  gfc_add_block_to_block (&se->pre, &tmpse.pre);
+  vindex = gfc_evaluate_now (tmpse.expr, &se->pre);
+  gfc_add_block_to_block (&se->post, &tmpse.post);
 
-  /* Fix the function type to be that of the declared type.  */
+  /* Fix the function type to be that of the declared type method.  */
   declared = gfc_create_var (TREE_TYPE (declared), "method");
 
   end_label = gfc_build_label_decl (NULL_TREE);
@@ -1603,6 +1603,8 @@ select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
 	 segfaults because it occurs too early and too often.  */
     free_elist:
       next_elist = elist->next;
+      if (elist->vindex)
+	gfc_free_expr (elist->vindex);
       gfc_free (elist);
       elist = NULL;
     }
@@ -1612,7 +1614,7 @@ select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
   tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
 		     NULL_TREE, NULL_TREE, label);
   gfc_add_expr_to_block (&body, tmp);
-  tmp = gfc_trans_runtime_error (true, where,
+  tmp = gfc_trans_runtime_error (true, &expr->where,
 		"internal error: bad vindex in dynamic dispatch");
   gfc_add_expr_to_block (&body, tmp);
 
@@ -1649,7 +1651,7 @@ conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
 	}
 
       select_class_proc (se, expr->value.function.class_esym,
-			 tmp, &expr->where);
+			 tmp, expr);
       return;
     }
 

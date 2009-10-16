@@ -1,3 +1,21 @@
+2009-10-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41648
+	PR fortran/41656
+	* trans-expr.c (select_class_proc): Convert the expression for the
+	vindex, carried on the first member of the esym list.
+	* gfortran.h : Add the vindex field to the esym_list structure.
+	and eliminate the class_object field.
+	* resolve.c (check_class_members): Remove the setting of the
+	class_object field.
+	(vindex_expr): New function.
+	(get_class_from_expr): New function.
+	(resolve_class_compcall): Call the above to find the ultimate
+	class or derived component.  If derived, do not generate the
+	esym list.  Add and expression for the vindex to the esym list
+	by calling the above.
+	(resolve_class_typebound_call): The same.
+
 2009-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41712
