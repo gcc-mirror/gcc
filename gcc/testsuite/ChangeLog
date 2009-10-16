@@ -1,3 +1,23 @@
+2009-10-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/ipa/iinline-1.C: Use dg-add-options bind_pic_locally.
+	* g++.dg/other/first-global.C: Likewise.
+	* g++.dg/parse/attr-externally-visible-1.C: Likewise.
+	* g++.dg/torture/pr40323.C: Likewise.
+	* g++.dg/tree-ssa/nothrow-1.C: Likewise.
+	* gcc.dg/inline-33.c: Likewise.
+	* gcc.dg/ipa/ipa-1.c: Likewise.
+	* gcc.dg/ipa/ipa-2.c: Likewise.
+	* gcc.dg/ipa/ipa-3.c: Likewise.
+	* gcc.dg/ipa/ipa-4.c: Likewise.
+	* gcc.dg/ipa/ipa-5.c: Likewise.
+	* gcc.dg/ipa/ipa-7.c: Likewise.
+	* gcc.dg/ipa/ipacost-2.c: Likewise.
+	* gcc.dg/tree-ssa/inline-3.c: Likewise.
+	* gcc.dg/tree-ssa/local-pure-const.c: Likewise.
+	* gfortran.dg/whole_file_5.f90: Likewise.
+	* gfortran.dg/whole_file_6.f90: Likewise.
+
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41728

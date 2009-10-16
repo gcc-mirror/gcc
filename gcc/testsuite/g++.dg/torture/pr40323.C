@@ -1,7 +1,7 @@
 /* Testcase for PR 40323.  */
 /* { dg-do compile } */
 /* { dg-options "-fno-early-inlining"  } */
-/* { dg-options "-fno-early-inlining -fpie" { target { ! nonpic } } } */
+/* { dg-add-options bind_pic_locally } */
 
 extern void do_something (const char *, int);
 
