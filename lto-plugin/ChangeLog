@@ -1,3 +1,13 @@
+2009-10-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (message): New variable.
+	(check): New function.
+	(parse_table_entry, translate, write_resolution,add_output_files,
+	exec_lto_wrapper,claim_file_handler, onload): Use check instead of
+	assert.
+	(cleanup_handler): Use check instead of assert. Remove the arguments
+	file if it exists.
+
 2009-10-15  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (resolution_file): New.
