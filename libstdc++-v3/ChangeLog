@@ -1,3 +1,8 @@
+2009-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_compatibility/stdatomic.h: Include cstdatomic if
+	__cplusplus.
+
 2009-10-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/40654
