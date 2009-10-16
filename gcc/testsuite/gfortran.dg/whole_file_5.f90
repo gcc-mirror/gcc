@@ -1,6 +1,6 @@
 ! { dg-do "compile" }
 ! { dg-options "-O3 -fwhole-file -fdump-tree-optimized" }
-! { dg-options "-O3 -fwhole-file -fdump-tree-optimized -fpie" { target { ! nonpic } } }
+! { dg-add-options bind_pic_locally }
 !
 ! Check that inlining of functions declared BEFORE usage works.
 ! If yes, then the dump does not contain a call to F().
