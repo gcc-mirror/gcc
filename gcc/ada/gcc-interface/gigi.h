@@ -124,21 +124,16 @@ extern tree make_aligning_type (tree type, unsigned int align, tree size,
 
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
    if needed.  We have already verified that SIZE and TYPE are large enough.
-
-   GNAT_ENTITY and NAME_TRAILER are used to name the resulting record and
-   to issue a warning.
-
-   IS_USER_TYPE is true if we must be sure we complete the original type.
-
-   DEFINITION is true if this type is being defined.
-
-   SAME_RM_SIZE is true if the RM_Size of the resulting type is to be
-   set to its TYPE_SIZE; otherwise, it's set to the RM_Size of the original
-   type.  */
+   GNAT_ENTITY is used to name the resulting record and to issue a warning.
+   IS_COMPONENT_TYPE is true if this is being done for the component type
+   of an array.  IS_USER_TYPE is true if we must complete the original type.
+   DEFINITION is true if this type is being defined.  SAME_RM_SIZE is true
+   if the RM size of the resulting type is to be set to SIZE too; otherwise,
+   it's set to the RM size of the original type.  */
 extern tree maybe_pad_type (tree type, tree size, unsigned int align,
-                            Entity_Id gnat_entity, const char *name_trailer,
+			    Entity_Id gnat_entity, bool is_component_type,
 			    bool is_user_type, bool definition,
-                            bool same_rm_size);
+			    bool same_rm_size);
 
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */

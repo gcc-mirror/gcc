@@ -2423,22 +2423,27 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       }
     }
 
-  /* If we are calling by supplying a pointer to a target, set up that
-     pointer as the first argument.  Use GNU_TARGET if one was passed;
-     otherwise, make a target by building a variable of the maximum size
-     of the type.  */
+  /* If we are calling by supplying a pointer to a target, set up that pointer
+     as the first argument.  Use GNU_TARGET if one was passed; otherwise, make
+     a target by building a variable and use the maximum size of the type if
+     it has self-referential size.  */
   if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type))
     {
-      tree gnu_real_ret_type
+      tree gnu_ret_type
 	= TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (gnu_subprog_type)));
 
       if (!gnu_target)
 	{
-	  tree gnu_obj_type
-	    = maybe_pad_type (gnu_real_ret_type,
-			      max_size (TYPE_SIZE (gnu_real_ret_type), true),
-			      0, Etype (Name (gnat_node)), "PAD", false,
-			      false, false);
+	  tree gnu_obj_type;
+
+	  if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_ret_type)))
+	    gnu_obj_type
+	      = maybe_pad_type (gnu_ret_type,
+				max_size (TYPE_SIZE (gnu_ret_type), true),
+				0, Etype (Name (gnat_node)), false, false,
+				false, true);
+	  else
+	    gnu_obj_type = gnu_ret_type;
 
 	  /* ??? We may be about to create a static temporary if we happen to
 	     be at the global binding level.  That's a regression from what
@@ -2454,7 +2459,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
       gnu_actual_list
 	= tree_cons (NULL_TREE,
 		     build_unary_op (ADDR_EXPR, NULL_TREE,
-				     unchecked_convert (gnu_real_ret_type,
+				     unchecked_convert (gnu_ret_type,
 							gnu_target,
 							false)),
 		     NULL_TREE);
