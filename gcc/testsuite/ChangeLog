@@ -1,5 +1,12 @@
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41598
+	* gcc.dg/lto/20091016-1_0.c: New testcase.
+	* gcc.dg/lto/20091016-1_1.c: Likewise.
+	* gcc.dg/lto/20091016-1_a.h: Likewise.
+
+2009-10-16  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41715
 	* gfortran.dg/lto/20091015-1_0.f: New testcase.
 	* gfortran.dg/lto/20091015-1_1.f: Likewise.
