@@ -1,5 +1,62 @@
 2009-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.h (TYPE_FAT_POINTER_P): Swap with...
+	(TYPE_IS_FAT_POINTER_P): ...this.
+	(TYPE_THIN_POINTER_P): Rename into...
+	(TYPE_IS_THIN_POINTER_P): ...this.
+	(TYPE_FAT_OR_THIN_POINTER_P): Rename into...
+	(TYPE_IS_FAT_OR_THIN_POINTER_P): ...this.
+	(TYPE_IS_PADDING_P): Change definition, move old one to...
+	(TYPE_PADDING_P): ...this.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust for above changes.
+	(get_unpadded_type): Likewise.
+	(gnat_to_gnu_component_type): Likewise.
+	(gnat_to_gnu_param): Likewise.
+	(relate_alias_sets): Likewise.
+	(make_packable_type): Likewise.
+	(maybe_pad_type): Likewise.
+	(gnat_to_gnu_field): Likewise.
+	(is_variable_size): Likewise.
+	(annotate_object): Likewise.
+	(validate_size): Likewise.
+	(set_rm_size): Likewise.
+	(make_type_from_size): Likewise.
+	(rm_size): Likewise.
+	* gcc-interface/misc.c (gnat_print_type): Likewise.
+	(gnat_get_alias_set): Likewise.
+	* gcc-interface/trans.c (Identifier_to_gnu): Likewise.
+	(Attribute_to_gnu): Likewise.
+	(call_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	(add_decl_expr): Likewise.
+	(convert_with_check): Likewise.
+	(addressable_p): Likewise.
+	(maybe_implicit_deref): Likewise.
+	(protect_multiple_eval): Likewise.
+	(gnat_stabilize_reference_1): Likewise.
+	* gcc-interface/utils.c (gnat_pushdecl): Likewise.
+	(finish_record_type): Likewise.
+	(rest_of_record_type_compilation): Likewise.
+	(create_type_decl): Likewise.
+	(gnat_types_compatible_p): Likewise.
+	(build_template): Likewise.
+	(convert_vms_descriptor64): Likewise.
+	(convert_vms_descriptor32): Likewise.
+	(build_unc_object_type_from_ptr): Likewise.
+	(update_pointer_to): Likewise.
+	(convert_to_fat_pointer): Likewise.
+	(convert_to_fat_pointer): Likewise.
+	(convert): Likewise.
+	(remove_conversions): Likewise.
+	(maybe_unconstrained_array): Likewise.
+	(unchecked_convert): Likewise.
+	(handle_vector_type_attribute): Likewise.
+	* gcc-interface/utils2.c (build_binary_op): Likewise.
+	(build_unary_op): Likewise.
+	(build_allocator): Likewise.
+
+2009-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_dbug.ads: Adjust type names in comments.
 	* gcc-interface/decl.c (maybe_pad_type): Remove NAME_TRAILER parameter,
 	add new IS_COMPONENT_TYPE parameter.  Adjust.  Remove dead code.
