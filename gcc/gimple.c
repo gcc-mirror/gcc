@@ -3090,35 +3090,6 @@ lookup_type_pair (tree t1, tree t2, htab_t *visited_p, struct obstack *ob_p)
 }
 
 
-/* Force merging the type T2 into the type T1.  */
-
-void
-gimple_force_type_merge (tree t1, tree t2)
-{
-  void **slot;
-  type_pair_t p;
-
-  /* There's no other way than copying t2 to t1 in this case.
-     Yuck.  We'll just call this "completing" t1.  */
-  memcpy (t1, t2, tree_size (t1));
-
-  /* Adjust the hash value of T1 if it was computed already.  Otherwise
-     we would be forced to not hash fields of structs to match the
-     hash value of an incomplete struct.  */
-  if (type_hash_cache
-      && (slot = pointer_map_contains (type_hash_cache, t1)) != NULL)
-    {
-      gimple_type_hash (t2);
-      *slot = *pointer_map_contains (type_hash_cache, t2);
-    }
-
-  /* Adjust cached comparison results for T1 and T2 to make sure
-     they now compare compatible.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
-  p->same_p = 1;
-}
-
-
 /* Return true if T1 and T2 have the same name.  If FOR_COMPLETION_P is
    true then if any type has no name return false, otherwise return
    true if both types have no names.  */
@@ -3196,7 +3167,7 @@ compare_field_offset (tree f1, tree f2)
 /* Return 1 iff T1 and T2 are structurally identical.
    Otherwise, return 0.  */
 
-int
+static int
 gimple_types_compatible_p (tree t1, tree t2)
 {
   type_pair_t p = NULL;
@@ -3404,107 +3375,107 @@ gimple_types_compatible_p (tree t1, tree t2)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-	{
-	  /* If the two pointers have different ref-all attributes,
-	     they can't be the same type.  */
-	  if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
-	    goto different_types;
-
-	  /* If one pointer points to an incomplete type variant of
-	     the other pointed-to type they are the same.  */
-	  if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
-	      && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t1))
-	      && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
-		  || !COMPLETE_TYPE_P (TREE_TYPE (t2)))
-	      && compare_type_names_p (TREE_TYPE (t1), TREE_TYPE (t2), true))
-	    {
-	      /* Replace the pointed-to incomplete type with the
-		 complete one.  */
-	      if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
-		TREE_TYPE (t1) = TREE_TYPE (t2);
-	      else
-		TREE_TYPE (t2) = TREE_TYPE (t1);
-	      goto same_types;
-	    }
-
-	  /* Otherwise, pointer and reference types are the same if the
-	     pointed-to types are the same.  */
-	  if (gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
-	    goto same_types;
-	  
+      {
+	/* If the two pointers have different ref-all attributes,
+	   they can't be the same type.  */
+	if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
 	  goto different_types;
-	}
+
+	/* If one pointer points to an incomplete type variant of
+	   the other pointed-to type they are the same.  */
+	if (TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
+	    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t1))
+	    && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
+		|| !COMPLETE_TYPE_P (TREE_TYPE (t2)))
+	    && compare_type_names_p (TREE_TYPE (t1), TREE_TYPE (t2), true))
+	  {
+	    /* Replace the pointed-to incomplete type with the
+	       complete one.  */
+	    if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
+	      TREE_TYPE (t1) = TREE_TYPE (t2);
+	    else
+	      TREE_TYPE (t2) = TREE_TYPE (t1);
+	    goto same_types;
+	  }
+
+	/* Otherwise, pointer and reference types are the same if the
+	   pointed-to types are the same.  */
+	if (gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	  goto same_types;
+
+	goto different_types;
+      }
 
     case ENUMERAL_TYPE:
-	{
-	  /* For enumeral types, all the values must be the same.  */
-	  tree v1, v2;
+      {
+	/* For enumeral types, all the values must be the same.  */
+	tree v1, v2;
 
-	  if (TYPE_VALUES (t1) == TYPE_VALUES (t2))
-	    goto same_types;
-
-	  for (v1 = TYPE_VALUES (t1), v2 = TYPE_VALUES (t2);
-	       v1 && v2;
-	       v1 = TREE_CHAIN (v1), v2 = TREE_CHAIN (v2))
-	    {
-	      tree c1 = TREE_VALUE (v1);
-	      tree c2 = TREE_VALUE (v2);
-
-	      if (TREE_CODE (c1) == CONST_DECL)
-		c1 = DECL_INITIAL (c1);
-
-	      if (TREE_CODE (c2) == CONST_DECL)
-		c2 = DECL_INITIAL (c2);
-
-	      if (tree_int_cst_equal (c1, c2) != 1)
-		goto different_types;
-	    }
-
-	  /* If one enumeration has more values than the other, they
-	     are not the same.  */
-	  if (v1 || v2)
-	    goto different_types;
-
+	if (TYPE_VALUES (t1) == TYPE_VALUES (t2))
 	  goto same_types;
-	}
+
+	for (v1 = TYPE_VALUES (t1), v2 = TYPE_VALUES (t2);
+	     v1 && v2;
+	     v1 = TREE_CHAIN (v1), v2 = TREE_CHAIN (v2))
+	  {
+	    tree c1 = TREE_VALUE (v1);
+	    tree c2 = TREE_VALUE (v2);
+
+	    if (TREE_CODE (c1) == CONST_DECL)
+	      c1 = DECL_INITIAL (c1);
+
+	    if (TREE_CODE (c2) == CONST_DECL)
+	      c2 = DECL_INITIAL (c2);
+
+	    if (tree_int_cst_equal (c1, c2) != 1)
+	      goto different_types;
+	  }
+
+	/* If one enumeration has more values than the other, they
+	   are not the same.  */
+	if (v1 || v2)
+	  goto different_types;
+
+	goto same_types;
+      }
 
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-	{
-	  tree f1, f2;
+      {
+	tree f1, f2;
 
-	  /* If one type requires structural equality checks and the
-	     other doesn't, do not merge the types.  */
-	  if (TYPE_STRUCTURAL_EQUALITY_P (t1)
-	      != TYPE_STRUCTURAL_EQUALITY_P (t2))
-	    goto different_types;
+	/* If one type requires structural equality checks and the
+	   other doesn't, do not merge the types.  */
+	if (TYPE_STRUCTURAL_EQUALITY_P (t1)
+	    != TYPE_STRUCTURAL_EQUALITY_P (t2))
+	  goto different_types;
 
-	  /* The struct tags shall compare equal.  */
-	  if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
-				     TYPE_MAIN_VARIANT (t2), false))
-	    goto different_types;
+	/* The struct tags shall compare equal.  */
+	if (!compare_type_names_p (TYPE_MAIN_VARIANT (t1),
+				   TYPE_MAIN_VARIANT (t2), false))
+	  goto different_types;
 
-	  /* For aggregate types, all the fields must be the same.  */
-	  for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
-	       f1 && f2;
-	       f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
-	    {
-	      /* The fields must have the same name, offset and type.  */
-	      if (DECL_NAME (f1) != DECL_NAME (f2)
-		  || !compare_field_offset (f1, f2)
-		  || !gimple_types_compatible_p (TREE_TYPE (f1),
-					    TREE_TYPE (f2)))
-		goto different_types;
-	    }
+	/* For aggregate types, all the fields must be the same.  */
+	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
+	     f1 && f2;
+	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
+	  {
+	    /* The fields must have the same name, offset and type.  */
+	    if (DECL_NAME (f1) != DECL_NAME (f2)
+		|| !compare_field_offset (f1, f2)
+		|| !gimple_types_compatible_p (TREE_TYPE (f1),
+					       TREE_TYPE (f2)))
+	      goto different_types;
+	  }
 
-	  /* If one aggregate has more fields than the other, they
-	     are not the same.  */
-	  if (f1 || f2)
-	    goto different_types;
+	/* If one aggregate has more fields than the other, they
+	   are not the same.  */
+	if (f1 || f2)
+	  goto different_types;
 
-	  goto same_types;
-	}
+	goto same_types;
+      }
 
     case VECTOR_TYPE:
       if (TYPE_VECTOR_SUBPARTS (t1) != TYPE_VECTOR_SUBPARTS (t2))

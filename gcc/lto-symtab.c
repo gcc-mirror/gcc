@@ -182,57 +182,6 @@ lto_symtab_get_resolution (tree decl)
 }
 
 
-static bool maybe_merge_incomplete_and_complete_type (tree, tree);
-
-/* Try to merge an incomplete type INCOMPLETE with a complete type
-   COMPLETE of same kinds.
-   Return true if they were merged, false otherwise.  */
-
-static bool
-merge_incomplete_and_complete_type (tree incomplete, tree complete)
-{
-  /* For merging array types do some extra sanity checking.  */
-  if (TREE_CODE (incomplete) == ARRAY_TYPE
-      && !maybe_merge_incomplete_and_complete_type (TREE_TYPE (incomplete),
-						    TREE_TYPE (complete))
-      && !gimple_types_compatible_p (TREE_TYPE (incomplete),
-				     TREE_TYPE (complete)))
-    return false;
-
-  /* ??? Ideally we would do this by means of a common canonical type, but
-     that's difficult as we do not have links from the canonical type
-     back to all its children.  */
-  gimple_force_type_merge (incomplete, complete);
-
-  return true;
-}
-
-/* Try to merge a maybe complete / incomplete type pair TYPE1 and TYPE2.
-   Return true if they were merged, false otherwise.  */
-
-static bool
-maybe_merge_incomplete_and_complete_type (tree type1, tree type2)
-{
-  bool res = false;
-
-  if (TREE_CODE (type1) != TREE_CODE (type2))
-    return false;
-
-  if (!COMPLETE_TYPE_P (type1) && COMPLETE_TYPE_P (type2))
-    res = merge_incomplete_and_complete_type (type1, type2);
-  else if (COMPLETE_TYPE_P (type1) && !COMPLETE_TYPE_P (type2))
-    res = merge_incomplete_and_complete_type (type2, type1);
-
-  /* Recurse on pointer targets.  */
-  if (!res
-      && POINTER_TYPE_P (type1)
-      && POINTER_TYPE_P (type2))
-    res = maybe_merge_incomplete_and_complete_type (TREE_TYPE (type1),
-						    TREE_TYPE (type2));
-
-  return res;
-}
-
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
 
@@ -300,8 +249,7 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (!gimple_types_compatible_p (TREE_TYPE (prevailing_decl),
-				      TREE_TYPE (decl)))
+      if (TREE_TYPE (prevailing_decl) != TREE_TYPE (decl))
 	/* If we don't have a merged type yet...sigh.  The linker
 	   wouldn't complain if the types were mismatched, so we
 	   probably shouldn't either.  Just use the type from
@@ -315,32 +263,56 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
 
   /* Now we exclusively deal with VAR_DECLs.  */
 
-  /* Handle external declarations with incomplete type or pointed-to
-     incomplete types by forcefully merging the types.
-     ???  In principle all types involved in the two decls should
-     be merged forcefully, for example without considering type or
-     field names.  */
-  prevailing_type = TREE_TYPE (prevailing_decl);
-  type = TREE_TYPE (decl);
-
-  /* If the types are structurally equivalent we can use the knowledge
-     that both bind to the same symbol to complete incomplete types
-     of external declarations or of pointer targets.
-     ???  We should apply this recursively to aggregate members here
-     and get rid of the completion in gimple_types_compatible_p.  */
-  if (DECL_EXTERNAL (prevailing_decl) || DECL_EXTERNAL (decl))
-    maybe_merge_incomplete_and_complete_type (prevailing_type, type);
-  else if (POINTER_TYPE_P (prevailing_type)
-	   && POINTER_TYPE_P (type))
-    maybe_merge_incomplete_and_complete_type (TREE_TYPE (prevailing_type),
-					      TREE_TYPE (type));
+  /* Sharing a global symbol is a strong hint that two types are
+     compatible.  We could use this information to complete
+     incomplete pointed-to types more aggressively here, ignoring
+     mismatches in both field and tag names.  It's difficult though
+     to guarantee that this does not have side-effects on merging
+     more compatible types from other translation units though.  */
 
   /* We can tolerate differences in type qualification, the
-     qualification of the prevailing definition will prevail.  */
+     qualification of the prevailing definition will prevail.
+     ???  In principle we might want to only warn for structurally
+     incompatible types here, but unless we have protective measures
+     for TBAA in place that would hide useful information.  */
   prevailing_type = TYPE_MAIN_VARIANT (TREE_TYPE (prevailing_decl));
   type = TYPE_MAIN_VARIANT (TREE_TYPE (decl));
-  if (!gimple_types_compatible_p (prevailing_type, type))
-    return false;
+
+  /* We have to register and fetch canonical types here as the global
+     fixup process didn't yet run.  */
+  prevailing_type = gimple_register_type (prevailing_type);
+  type = gimple_register_type (type);
+  if (prevailing_type != type)
+    {
+      if (COMPLETE_TYPE_P (type))
+	return false;
+
+      /* If type is incomplete then avoid warnings in the cases
+	 that TBAA handles just fine.  */
+
+      if (TREE_CODE (prevailing_type) != TREE_CODE (type))
+	return false;
+
+      if (TREE_CODE (prevailing_type) == ARRAY_TYPE)
+	{
+	  tree tem1 = TREE_TYPE (prevailing_type);
+	  tree tem2 = TREE_TYPE (type);
+	  while (TREE_CODE (tem1) == ARRAY_TYPE
+		 && TREE_CODE (tem2) == ARRAY_TYPE)
+	    {
+	      tem1 = TREE_TYPE (tem1);
+	      tem2 = TREE_TYPE (tem2);
+	    }
+
+	  if (TREE_CODE (tem1) != TREE_CODE (tem2))
+	    return false;
+
+	  if (gimple_register_type (tem1) != gimple_register_type (tem2))
+	    return false;
+	}
+
+      /* Fallthru.  Compatible enough.  */
+    }
 
   /* ???  We might want to emit a warning here if type qualification
      differences were spotted.  Do not do this unconditionally though.  */
@@ -505,8 +477,7 @@ lto_symtab_merge_decls_2 (void **slot)
   /* Diagnose all mismatched re-declarations.  */
   for (i = 0; VEC_iterate (tree, mismatches, i, decl); ++i)
     {
-      if (!gimple_types_compatible_p (TREE_TYPE (prevailing->decl),
-				      TREE_TYPE (decl)))
+      if (TREE_TYPE (prevailing->decl) != TREE_TYPE (decl))
 	diagnosed_p |= warning_at (DECL_SOURCE_LOCATION (decl), 0,
 				   "type of %qD does not match original "
 				   "declaration", decl);
