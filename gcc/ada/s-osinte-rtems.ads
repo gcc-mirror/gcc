@@ -625,6 +625,7 @@ private
       process_shared  : int;
       prio_ceiling    : int;
       protocol        : int;
+      mutex_type      : int;
       recursive       : int;
    end record;
    pragma Convention (C, pthread_mutexattr_t);

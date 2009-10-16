@@ -80,8 +80,9 @@ package body System.Stack_Checking.Operations is
    is
       pragma Unreferenced (Stack_Address);
 
-      --  RTEMS has a routine to check this.  So use it.
-      function rtems_stack_checker_is_blown return Interfaces.C.int;
+      --  RTEMS has a routine to check if the stack is blown.
+      --  It returns a C99 bool.
+      function rtems_stack_checker_is_blown return Interfaces.C.unsigned_char;
       pragma Import (C,
          rtems_stack_checker_is_blown, "rtems_stack_checker_is_blown");
 
