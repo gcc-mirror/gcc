@@ -13393,14 +13393,14 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  if (BITS_BIG_ENDIAN)
 	    shift = GET_MODE_BITSIZE (GET_MODE (XEXP (rtl, 0)))
 		    - shift - size;
-	  if (shift + size != DWARF2_ADDR_SIZE)
+	  if (shift + size != (int) DWARF2_ADDR_SIZE)
 	    {
 	      add_loc_descr (&mem_loc_result,
 			     int_loc_descriptor (DWARF2_ADDR_SIZE
 						 - shift - size));
 	      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_shl, 0, 0));
 	    }
-	  if (size != DWARF2_ADDR_SIZE)
+	  if (size != (int) DWARF2_ADDR_SIZE)
 	    {
 	      add_loc_descr (&mem_loc_result,
 			     int_loc_descriptor (DWARF2_ADDR_SIZE - size));
