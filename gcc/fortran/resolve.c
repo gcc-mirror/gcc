@@ -7629,6 +7629,14 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	}
     }
 
+  /* F03:7.4.1.2.  */
+  if (lhs->ts.type == BT_CLASS)
+    {
+      gfc_error ("Variable must not be polymorphic in assignment at %L",
+		 &lhs->where);
+      return false;
+    }
+
   gfc_check_assign (lhs, rhs, 1);
   return false;
 }

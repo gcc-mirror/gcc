@@ -1,3 +1,10 @@
+2009-10-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41719
+	* gfortran.dg/class_5.f03: New test case.
+	* gfortran.dg/typebound_operator_2.f03: Fixing invalid test case.
+	* gfortran.dg/typebound_operator_4.f03: Ditto.
+
 2009-10-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/ipa/iinline-1.C: Use dg-add-options bind_pic_locally.

@@ -50,7 +50,6 @@ CONTAINS
   LOGICAL FUNCTION func (me, b) ! { dg-error "must be a SUBROUTINE" }
     CLASS(t), INTENT(OUT) :: me
     CLASS(t), INTENT(IN) :: b
-    me = t ()
     func = .TRUE.
   END FUNCTION func
 
