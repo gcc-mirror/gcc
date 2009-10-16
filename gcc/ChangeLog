@@ -1,6 +1,12 @@
 2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline
+	2009-09-17  Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+
+	PR target/40913
+	* config/pa/t-hpux-shlib: Set soname in libgcc_s.sl.
+
+	Backport from mainline
 	2009-05-05  Ben Elliston  <bje@au.ibm.com>
 
 	* config/pa/linux-atomic.c: Eliminate conditional include of
