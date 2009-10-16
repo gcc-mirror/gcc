@@ -1,3 +1,7 @@
+2009-10-16  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.md (atype): Added missing values.
+
 2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/41702
