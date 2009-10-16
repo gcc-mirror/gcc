@@ -1,3 +1,16 @@
+2009-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.ads: Adjust type names in comments.
+	* gcc-interface/decl.c (maybe_pad_type): Remove NAME_TRAILER parameter,
+	add new IS_COMPONENT_TYPE parameter.  Adjust.  Remove dead code.
+	(gnat_to_gnu_entity): Adjust for above change.
+	(gnat_to_gnu_component_type): Likewise.
+	(gnat_to_gnu_field): Likewise.
+	* gcc-interface/trans.c (call_to_gnu): Likewise.  Do not unnecessarily
+	call max_size.
+	* gcc-interface/utils.c (finish_record_type): Remove obsolete code.
+	* gcc-interface/gigi.h (maybe_pad_type): Adjust prototype.
+
 2009-10-16  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* s-osinte-rtems.ads: Add mutex type to pthread_mutexattr_t

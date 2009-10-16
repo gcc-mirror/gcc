@@ -633,7 +633,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    else
 	      gnu_type
 		= maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
-				  "PAD", false, definition, true);
+				  false, false, definition, true);
 	  }
 
 	/* If we are defining the object, see if it has a Size value and
@@ -838,7 +838,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_object_size = gnu_size ? gnu_size : TYPE_SIZE (gnu_type);
 	if (gnu_size || align > 0)
 	  gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
-				     "PAD", false, definition,
+				     false, false, definition,
 				     gnu_size ? true : false);
 
 	/* If this is a renaming, avoid as much as possible to create a new
@@ -1017,8 +1017,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && !gnu_expr
 	    && TREE_CODE (gnu_type) == RECORD_TYPE
 	    && (TYPE_CONTAINS_TEMPLATE_P (gnu_type)
-	        /* Beware that padding might have been introduced
-		   via maybe_pad_type above.  */
+	        /* Beware that padding might have been introduced above.  */
 		|| (TYPE_IS_PADDING_P (gnu_type)
 		    && TREE_CODE (TREE_TYPE (TYPE_FIELDS (gnu_type)))
 		       == RECORD_TYPE
@@ -4446,7 +4445,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 us when we make the new TYPE_DECL below.  */
       if (gnu_size || align > 0)
 	gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
-				   "PAD", true, definition, false);
+				   false, true, definition, false);
 
       if (TREE_CODE (gnu_type) == RECORD_TYPE
 	  && TYPE_IS_PADDING_P (gnu_type))
@@ -5037,7 +5036,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	orig_type = gnu_type;
 
       gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0, gnat_array,
-				 "C_PAD", false, definition, true);
+				 true, false, definition, true);
 
       /* If a padding record was made, declare it now since it will never be
 	 declared otherwise.  This is necessary to ensure that its subtrees
@@ -6046,25 +6045,20 @@ make_packable_type (tree type, bool in_record)
 
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
    if needed.  We have already verified that SIZE and TYPE are large enough.
-
-   GNAT_ENTITY and NAME_TRAILER are used to name the resulting record and
-   to issue a warning.
-
-   IS_USER_TYPE is true if we must complete the original type.
-
-   DEFINITION is true if this type is being defined.
-
-   SAME_RM_SIZE is true if the RM size of the resulting type is to be set
-   to SIZE too; otherwise, it's set to the RM size of the original type.  */
+   GNAT_ENTITY is used to name the resulting record and to issue a warning.
+   IS_COMPONENT_TYPE is true if this is being done for the component type
+   of an array.  IS_USER_TYPE is true if we must complete the original type.
+   DEFINITION is true if this type is being defined.  SAME_RM_SIZE is true
+   if the RM size of the resulting type is to be set to SIZE too; otherwise,
+   it's set to the RM size of the original type.  */
 
 tree
 maybe_pad_type (tree type, tree size, unsigned int align,
-		Entity_Id gnat_entity, const char *name_trailer,
+		Entity_Id gnat_entity, bool is_component_type,
 		bool is_user_type, bool definition, bool same_rm_size)
 {
   tree orig_rm_size = same_rm_size ? NULL_TREE : rm_size (type);
   tree orig_size = TYPE_SIZE (type);
-  unsigned int orig_align = align;
   tree record, field;
 
   /* If TYPE is a padded type, see if it agrees with any size and alignment
@@ -6124,15 +6118,12 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   TYPE_IS_PADDING_P (record) = 1;
 
   if (Present (gnat_entity))
-    TYPE_NAME (record) = create_concat_name (gnat_entity, name_trailer);
+    TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
 
   TYPE_VOLATILE (record)
     = Present (gnat_entity) && Treat_As_Volatile (gnat_entity);
 
   TYPE_ALIGN (record) = align;
-  if (orig_align)
-    TYPE_USER_ALIGN (record) = align;
-
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
     = convert (sizetype,
@@ -6256,7 +6247,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	    post_error_ne_tree ("{^ }bits of & unused?",
 				gnat_error_node, gnat_entity,
 				size_diffop (size, orig_size));
-	  else if (name_trailer[0] == 'C')
+	  else if (is_component_type)
 	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
 				gnat_entity, gnat_entity,
 				size_diffop (size, orig_size));
@@ -6634,7 +6625,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
       orig_field_type = gnu_field_type;
       gnu_field_type = maybe_pad_type (gnu_field_type, gnu_size, 0, gnat_field,
-				       "PAD", false, definition, true);
+				       false, false, definition, true);
 
       /* If a padding record was made, declare it now since it will never be
 	 declared otherwise.  This is necessary to ensure that its subtrees

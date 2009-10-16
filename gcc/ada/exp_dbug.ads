@@ -873,12 +873,12 @@ package Exp_Dbug is
       --  the element type for AT1 might have a type defined as if it had
       --  been written:
       --
-      --     type at1___C_PAD is record null; end record;
-      --     for at1___C_PAD'Size use 16 * 8;
+      --     type at1___PAD is record null; end record;
+      --     for at1___PAD'Size use 16 * 8;
       --
       --  and there would also be
       --
-      --     type at1___C_PAD___XVS is record t1: Integer; end record;
+      --     type at1___PAD___XVS is record t1: Integer; end record;
       --     type t1 is ...
       --
       --  Had the subtype Int been dynamic:
@@ -888,7 +888,7 @@ package Exp_Dbug is
       --  Then the compiler would also generate a declaration whose effect
       --  would be
       --
-      --     at1___C_PAD___XVZ: constant Integer := 32 + M * 8 + padding term;
+      --     at1___PAD___XVZ: constant Integer := 32 + M * 8 + padding term;
       --
       --  Not all unconstrained types are so encoded; the XVS convention may be
       --  unnecessary for unconstrained types of fixed size. However, this
