@@ -150,7 +150,7 @@ namespace std
     typedef _Future_ptr<_Future_result_base>::type _Future_ptr_type;
 
   public:
-    _Future_state() : _M_result(), _M_retrieved(false) { }
+    _Future_state() : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT) { }
 
     _Future_state(const _Future_state&) = delete;
     _Future_state& operator=(const _Future_state&) = delete;

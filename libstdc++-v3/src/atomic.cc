@@ -80,16 +80,16 @@ namespace std
     atomic_flag_test_and_set_explicit(volatile __atomic_flag_base* __a,
 				      memory_order __m) throw ()
     {
-      volatile atomic_flag d(__a->_M_i);
-      return d.test_and_set(__m);
+      volatile atomic_flag* d = static_cast<volatile atomic_flag*>(__a);
+      return d->test_and_set(__m);
     }
 
     void
     atomic_flag_clear_explicit(volatile __atomic_flag_base* __a,
 			       memory_order __m) throw ()
     {
-      volatile atomic_flag d(__a->_M_i);
-      return d.clear(__m);
+      volatile atomic_flag* d = static_cast<volatile atomic_flag*>(__a);
+      return d->clear(__m);
     }
 
     void

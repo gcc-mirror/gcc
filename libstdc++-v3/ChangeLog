@@ -1,3 +1,16 @@
+2009-10-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/40654
+	PR libstdc++/40826
+	* src/atomic.cc (atomic_flag_test_and_set_explicit): Add
+	static_cast from base to derived.
+	(atomic_flag_clear_explicit): Same.
+	* include/bits/atomic_2.h (__atomic2::atomic_flag): Public derivation.
+	Remove value type constructor.
+	* include/bits/atomic_0.h (__atomic0::atomic_flag): Same.
+	* include/std/future (_Future_state): Use ATOMIC_FLAG_INIT to
+	initialized the atomic_flag member.
+
 2009-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/authors.xml: Update.
