@@ -1,3 +1,8 @@
+2009-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor) <case ZERO_EXTRACT>: Cast
+	DWARF2_ADDR_SIZE to int to avoid signed vs. unsigned warnings.
+
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41728
