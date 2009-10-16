@@ -1598,7 +1598,7 @@ typedef struct gfc_class_esym_list
 {
   gfc_symbol *derived;
   gfc_symbol *esym;
-  gfc_symbol *class_object;
+  struct gfc_expr *vindex;
   struct gfc_class_esym_list *next;
 }
 gfc_class_esym_list;
