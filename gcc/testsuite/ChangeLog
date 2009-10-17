@@ -1,5 +1,9 @@
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/unchecked_convert4.adb: Add missing rep clause.
+
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/aggr11.adb: New test.
 	* gnat.dg/aggr11_pkg.ads: New helper.
 
