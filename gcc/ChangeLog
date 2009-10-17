@@ -1,3 +1,10 @@
+2009-10-17  Andy Hutchinson <hutchinsonandy@gcc.gnu.org>
+
+	PR middle-end/41738
+	* optabs.c (expand_binop): Make mode of shift count expression mode
+	of shift count not target.
+	Remove indent nit.
+
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (convert_nonlocal_reference_stmt) <GIMPLE_COND>: New

@@ -1595,11 +1595,11 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       unsigned int bits = GET_MODE_BITSIZE (mode);
 
       if (CONST_INT_P (op1))
-	newop1 = GEN_INT (bits - INTVAL (op1));
+        newop1 = GEN_INT (bits - INTVAL (op1));
       else if (targetm.shift_truncation_mask (mode) == bits - 1)
-	newop1 = negate_rtx (mode, op1);
+        newop1 = negate_rtx (GET_MODE (op1), op1);
       else
-	newop1 = expand_binop (mode, sub_optab,
+        newop1 = expand_binop (GET_MODE (op1), sub_optab,
 			       GEN_INT (bits), op1,
 			       NULL_RTX, unsignedp, OPTAB_DIRECT);
 				   
