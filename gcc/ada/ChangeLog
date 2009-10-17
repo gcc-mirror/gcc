@@ -6,7 +6,7 @@
 
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/utils2.c (build_binary_op) <ARRAY_RANGE_REF>: Mak
+	* gcc-interface/utils2.c (build_binary_op) <ARRAY_RANGE_REF>: Make
 	sure the element type is consistent.
 
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
