@@ -1,5 +1,10 @@
 2009-10-17  Alexandre Oliva  <aoliva@redhat.com>
 
+	* print-rtl.c (print_rtx): Print locators in asm_operands
+	and asm_input.
+
+2009-10-17  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/41535
 	* sched-deps.c (depl_on_debug_p): New.
 	(attach_dep_link): Reject debug deps before nondebug deps.
