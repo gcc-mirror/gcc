@@ -1,3 +1,8 @@
+2009-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38798
+	* g++.dg/cpp0x/trailing5.C: New.
+
 2009-10-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41719
