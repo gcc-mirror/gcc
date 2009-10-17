@@ -541,7 +541,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	       && DECL_STRUCT_FUNCTION (node) != 0)
 	{
 	  indent_to (file, indent + 4);
-	  dump_addr (file, "saved-insns ", DECL_STRUCT_FUNCTION (node));
+	  dump_addr (file, "struct-function ", DECL_STRUCT_FUNCTION (node));
 	}
 
       if ((code == VAR_DECL || code == PARM_DECL)
