@@ -1307,6 +1307,12 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       *handled_ops_p = false;
       return NULL_TREE;
 
+    case GIMPLE_COND:
+      wi->val_only = true;
+      wi->is_lhs = false;
+      *handled_ops_p = false;
+      return NULL_TREE;
+
     default:
       /* For every other statement that we are not interested in
 	 handling here, let the walker traverse the operands.  */
@@ -1706,6 +1712,12 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       walk_body (convert_local_reference_stmt, convert_local_reference_op,
 		 info, gimple_omp_body (stmt));
       break;
+
+    case GIMPLE_COND:
+      wi->val_only = true;
+      wi->is_lhs = false;
+      *handled_ops_p = false;
+      return NULL_TREE;
 
     default:
       /* For every other statement that we are not interested in

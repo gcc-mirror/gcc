@@ -1,5 +1,11 @@
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-nested.c (convert_nonlocal_reference_stmt) <GIMPLE_COND>: New
+	case.  Force using values to replace references within the statement.
+	(convert_local_reference_stmt): Likewise.
+
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gimple-low.c (lower_stmt) <GIMPLE_CALL>: If the call is noreturn,
 	remove a subsequent GOTO or RETURN statement.
 
