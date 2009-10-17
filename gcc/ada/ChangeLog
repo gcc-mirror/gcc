@@ -1,5 +1,11 @@
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (convert): When converting to a padded type
+	with an inner type of self-referential size, pad the expression before
+	doing the unchecked conversion.
+
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_binary_op) <ARRAY_RANGE_REF>: Mak
 	sure the element type is consistent.
 

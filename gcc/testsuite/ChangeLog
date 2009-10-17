@@ -1,5 +1,10 @@
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/aggr11.adb: New test.
+	* gnat.dg/aggr11_pkg.ads: New helper.
+
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/slice8.adb: New test.
 	* gnat.dg/slice8_pkg1.ads: New helper.
 	* gnat.dg/slice8_pkg2.ads: Likewise.

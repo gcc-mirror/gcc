@@ -3856,12 +3856,17 @@ convert (tree type, tree expr)
 		     == TYPE_NAME (TREE_TYPE (TYPE_FIELDS (type))))))
 	return convert (type, TREE_OPERAND (expr, 0));
 
-      /* If the result type is a padded type with a self-referentially-sized
-	 field and the expression type is a record, do this as an unchecked
-	 conversion.  */
+      /* If the inner type is of self-referential size and the expression type
+	 is a record, do this as an unchecked conversion.  But first pad the
+	 expression if possible to have the same size on both sides.  */
       if (TREE_CODE (etype) == RECORD_TYPE
 	  && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type))))
-	return unchecked_convert (type, expr, false);
+	{
+	  if (TREE_CONSTANT (TYPE_SIZE (etype)))
+	    expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
+			    false, false, false, true), expr);
+	  return unchecked_convert (type, expr, false);
+	}
 
       /* If we are converting between array types with variable size, do the
 	 final conversion as an unchecked conversion, again to avoid the need
