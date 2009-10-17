@@ -1061,6 +1061,36 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 	{
 	  tree op = lto_input_tree (ib, data_in);
 	  gimple_set_op (stmt, i, op);
+
+	  /* Fixup FIELD_DECLs.  */
+	  while (op && handled_component_p (op))
+	    {
+	      if (TREE_CODE (op) == COMPONENT_REF)
+		{
+		  tree field, type, tem;
+		  field = TREE_OPERAND (op, 1);
+		  type = DECL_CONTEXT (field);
+		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
+		    {
+		      if (tem == field
+			  || (TREE_TYPE (tem) == TREE_TYPE (field)
+			      && (DECL_FIELD_OFFSET (tem)
+				  == DECL_FIELD_OFFSET (field))
+			      && (DECL_FIELD_BIT_OFFSET (tem)
+				  == DECL_FIELD_BIT_OFFSET (field))
+			      && (DECL_OFFSET_ALIGN (tem)
+				  == DECL_OFFSET_ALIGN (field))))
+			break;
+		    }
+		  /* In case of type mismatches across units we can fail
+		     to unify some types and thus not find a proper
+		     field-decl here.  Just do nothing in this case.  */
+		  if (tem != NULL_TREE)
+		    TREE_OPERAND (op, 1) = tem;
+		}
+
+	      op = TREE_OPERAND (op, 0);
+	    }
 	}
       break;
 
