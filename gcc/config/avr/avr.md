@@ -235,7 +235,7 @@
 
 (define_insn "*movqi"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,d,Qm,r,q,r,*r")
-	(match_operand:QI 1 "general_operand"       "r,i,rL,Qm,r,q,i"))]
+	(match_operand:QI 1 "general_operand"       "rL,i,rL,Qm,r,q,i"))]
   "(register_operand (operands[0],QImode)
     || register_operand (operands[1], QImode) || const0_rtx == operands[1])"
   "* return output_movqi (insn, operands, NULL);"
@@ -336,7 +336,7 @@
 
 (define_insn "*movhi"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,d,*r,q,r")
-        (match_operand:HI 1 "general_operand"       "r,m,rL,i,i,r,q"))]
+        (match_operand:HI 1 "general_operand"       "rL,m,rL,i,i,r,q"))]
   "(register_operand (operands[0],HImode)
     || register_operand (operands[1],HImode) || const0_rtx == operands[1])"
   "* return output_movhi (insn, operands, NULL);"
