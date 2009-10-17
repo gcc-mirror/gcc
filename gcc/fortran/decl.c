@@ -1181,7 +1181,12 @@ build_sym (const char *name, gfc_charlen *cl,
   sym->attr.implied_index = 0;
 
   if (sym->ts.type == BT_CLASS)
-    encapsulate_class_symbol (&sym->ts, &sym->attr, &sym->as);
+    {
+      sym->attr.class_ok = (sym->attr.dummy
+			      || sym->attr.pointer
+			      || sym->attr.allocatable) ? 1 : 0;
+      encapsulate_class_symbol (&sym->ts, &sym->attr, &sym->as);
+    }
 
   return SUCCESS;
 }
@@ -1472,6 +1477,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	      gfc_array_spec **as)
 {
   gfc_component *c;
+  gfc_try t = SUCCESS;
 
   /* F03:C438/C439. If the current symbol is of the same derived type that we're
      constructing, it must have the pointer attribute.  */
@@ -1554,12 +1560,9 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	}
     }
 
-  if (c->ts.type == BT_CLASS)
-    encapsulate_class_symbol (&c->ts, &c->attr, &c->as);
-
   /* Check array components.  */
   if (!c->attr.dimension)
-    return SUCCESS;
+    goto scalar;
 
   if (c->attr.pointer)
     {
@@ -1567,7 +1570,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	{
 	  gfc_error ("Pointer array component of structure at %C must have a "
 		     "deferred shape");
-	  return FAILURE;
+	  t = FAILURE;
 	}
     }
   else if (c->attr.allocatable)
@@ -1576,7 +1579,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	{
 	  gfc_error ("Allocatable component of structure at %C must have a "
 		     "deferred shape");
-	  return FAILURE;
+	  t = FAILURE;
 	}
     }
   else
@@ -1585,11 +1588,15 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 	{
 	  gfc_error ("Array component of structure at %C must have an "
 		     "explicit shape");
-	  return FAILURE;
+	  t = FAILURE;
 	}
     }
 
-  return SUCCESS;
+scalar:
+  if (c->ts.type == BT_CLASS)
+    encapsulate_class_symbol (&c->ts, &c->attr, &c->as);
+
+  return t;
 }
 
 
@@ -3761,7 +3768,8 @@ gfc_match_data_decl (void)
   if (m != MATCH_YES)
     return m;
 
-  if (current_ts.type == BT_DERIVED && gfc_current_state () != COMP_DERIVED)
+  if ((current_ts.type == BT_DERIVED || current_ts.type == BT_CLASS)
+	&& gfc_current_state () != COMP_DERIVED)
     {
       sym = gfc_use_derived (current_ts.u.derived);
 
@@ -3781,7 +3789,8 @@ gfc_match_data_decl (void)
       goto cleanup;
     }
 
-  if (current_ts.type == BT_DERIVED && current_ts.u.derived->components == NULL
+  if ((current_ts.type == BT_DERIVED || current_ts.type == BT_CLASS)
+      && current_ts.u.derived->components == NULL
       && !current_ts.u.derived->attr.zero_comp)
     {
 
@@ -5694,13 +5703,31 @@ attr_decl1 (void)
 	}
     }
 
-  /* Update symbol table.  DIMENSION attribute is set
-     in gfc_set_array_spec().  */
-  if (current_attr.dimension == 0
-      && gfc_copy_attr (&sym->attr, &current_attr, &var_locus) == FAILURE)
+  /* Update symbol table.  DIMENSION attribute is set in
+     gfc_set_array_spec().  For CLASS variables, this must be applied
+     to the first component, or '$data' field.  */
+  if (sym->ts.type == BT_CLASS && sym->ts.u.derived)
     {
-      m = MATCH_ERROR;
-      goto cleanup;
+      gfc_component *comp;
+      comp = gfc_find_component (sym->ts.u.derived, "$data", true, true);
+      if (comp == NULL || gfc_copy_attr (&comp->attr, &current_attr,
+					 &var_locus) == FAILURE)
+	{
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      sym->attr.class_ok = (sym->attr.class_ok
+			      || current_attr.allocatable
+			      || current_attr.pointer);
+    }
+  else
+    {
+      if (current_attr.dimension == 0
+	    && gfc_copy_attr (&sym->attr, &current_attr, &var_locus) == FAILURE)
+	{
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
     }
 
   if (gfc_set_array_spec (sym, as, &var_locus) == FAILURE)

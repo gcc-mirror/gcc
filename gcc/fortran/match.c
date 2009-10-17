@@ -4080,6 +4080,7 @@ gfc_match_select_type (void)
 	return MATCH_ERROR;
       expr1->symtree->n.sym->ts = expr2->ts;
       expr1->symtree->n.sym->attr.referenced = 1;
+      expr1->symtree->n.sym->attr.class_ok = 1;
     }
   else
     {
