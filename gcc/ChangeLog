@@ -1,5 +1,10 @@
 2009-10-17  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer-in.c (lto_input_location): Try to reuse
+	previous maps.
+
+2009-10-17  Richard Guenther  <rguenther@suse.de>
+
 	* lto-streamer-in.c (input_gimple_stmt): Fixup FIELD_DECL
 	operands in COMPONENT_REFs.
 
