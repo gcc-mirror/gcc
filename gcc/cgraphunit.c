@@ -1441,6 +1441,7 @@ cgraph_optimize (void)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
+  (*debug_hooks->assembly_start) ();
   if (!quiet_flag)
     fprintf (stderr, "Assembling functions:\n");
 #ifdef ENABLE_CHECKING
