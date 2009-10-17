@@ -1,5 +1,12 @@
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/slice8.adb: New test.
+	* gnat.dg/slice8_pkg1.ads: New helper.
+	* gnat.dg/slice8_pkg2.ads: Likewise.
+	* gnat.dg/slice8_pkg3.ad[sb]: Likewise.
+
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/unchecked_convert4.adb: New test.
 
 2009-10-15  Jason Merrill  <jason@redhat.com>

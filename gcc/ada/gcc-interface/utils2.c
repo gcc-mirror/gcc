@@ -755,6 +755,12 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  left_type = TREE_TYPE (left_operand);
 	}
 
+      /* For a range, make sure the element type is consistent.  */
+      if (op_code == ARRAY_RANGE_REF
+	  && TREE_TYPE (operation_type) != TREE_TYPE (left_type))
+	operation_type = build_array_type (TREE_TYPE (left_type),
+					   TYPE_DOMAIN (operation_type));
+
       /* Then convert the right operand to its base type.  This will prevent
 	 unneeded sign conversions when sizetype is wider than integer.  */
       right_operand = convert (right_base_type, right_operand);
