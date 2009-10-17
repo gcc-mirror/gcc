@@ -6949,6 +6949,10 @@ addressable_p (tree gnu_expr, tree gnu_type)
     case CALL_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_NOT_EXPR:
       /* All rvalues are deemed addressable since taking their address will
 	 force a temporary to be created by the middle-end.  */
       return true;

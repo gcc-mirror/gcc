@@ -1,3 +1,7 @@
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (addressable_p): Handle bitwise operations.
+
 2009-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (TYPE_FAT_POINTER_P): Swap with...
