@@ -2,7 +2,7 @@
 -- Test that a static link is correctly passed to a subprogram which is
 -- indirectly called through an aggregate.
 
-procedure Nested_Proc is
+procedure Nested_Proc1 is
 
   I : Integer := 0;
 

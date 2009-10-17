@@ -1,5 +1,11 @@
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/nested_proc.adb: Rename into...
+	* gnat.dg/nested_proc1.adb: ...this.
+	* gnat.dg/nested_proc2.adb: New test.
+
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/noreturn1.ad[sb]: New test.
 
 2009-10-17  Janus Weil  <janus@gcc.gnu.org>
