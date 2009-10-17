@@ -1,5 +1,9 @@
 2009-10-17  Alexandre Oliva  <aoliva@redhat.com>
 
+	* rtl.h (RTL_LOCATION): Fix typo.
+
+2009-10-17  Alexandre Oliva  <aoliva@redhat.com>
+
 	* print-rtl.c (print_rtx): Print locators in asm_operands
 	and asm_input.
 

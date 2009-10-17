@@ -762,7 +762,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define INSN_LOCATOR(INSN) XINT (INSN, 4)
 /* LOCATION of an RTX if relevant.  */
 #define RTL_LOCATION(X) (INSN_P (X) ? \
-			 locator_location (INSN_LOCATOR (x)) \
+			 locator_location (INSN_LOCATOR (X)) \
 			 : UNKNOWN_LOCATION)
 /* LOCATION of current INSN.  */
 #define CURR_INSN_LOCATION (locator_location (curr_insn_locator ()))
