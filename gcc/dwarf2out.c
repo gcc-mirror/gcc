@@ -5401,6 +5401,7 @@ static int output_indirect_string (void **, void *);
 
 static void dwarf2out_init (const char *);
 static void dwarf2out_finish (const char *);
+static void dwarf2out_assembly_start (void);
 static void dwarf2out_define (unsigned int, const char *);
 static void dwarf2out_undef (unsigned int, const char *);
 static void dwarf2out_start_source_file (unsigned, const char *);
@@ -5427,6 +5428,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
 {
   dwarf2out_init,
   dwarf2out_finish,
+  dwarf2out_assembly_start,
   dwarf2out_define,
   dwarf2out_undef,
   dwarf2out_start_source_file,
@@ -20392,6 +20394,14 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
     }
 
+}
+
+/* Called before cgraph_optimize starts outputtting functions, variables
+   and toplevel asms into assembly.  */
+
+static void
+dwarf2out_assembly_start (void)
+{
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE && dwarf2out_do_cfi_asm ())
     {
 #ifndef TARGET_UNWIND_INFO
@@ -21274,6 +21284,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
 {
   0,		/* init */
   0,		/* finish */
+  0,		/* assembly_start */
   0,		/* define */
   0,		/* undef */
   0,		/* start_source_file */

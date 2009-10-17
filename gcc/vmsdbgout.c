@@ -168,6 +168,7 @@ static int write_srccorrs (int);
 
 static void vmsdbgout_init (const char *);
 static void vmsdbgout_finish (const char *);
+static void vmsdbgout_assembly_start (void);
 static void vmsdbgout_define (unsigned int, const char *);
 static void vmsdbgout_undef (unsigned int, const char *);
 static void vmsdbgout_start_source_file (unsigned int, const char *);
@@ -190,6 +191,7 @@ static void vmsdbgout_abstract_function (tree);
 const struct gcc_debug_hooks vmsdbg_debug_hooks
 = {vmsdbgout_init,
    vmsdbgout_finish,
+   vmsdbgout_assembly_start,
    vmsdbgout_define,
    vmsdbgout_undef,
    vmsdbgout_start_source_file,
@@ -1613,6 +1615,15 @@ vmsdbgout_init (const char *main_input_filename)
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
 
+}
+
+/* Not implemented in VMS Debug.  */
+
+static void
+vmsdbgout_assembly_start (void)
+{
+  if (write_symbols == VMS_AND_DWARF2_DEBUG)
+    (*dwarf2_debug_hooks.assembly_start) ();
 }
 
 /* Not implemented in VMS Debug.  */

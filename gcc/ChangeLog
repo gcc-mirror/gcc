@@ -1,3 +1,18 @@
+2009-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/40521
+	* debug.h (struct gcc_debug_hooks): Add assembly_start hook.
+	* cgraphunit.c (cgraph_optimize): Call it.
+	* dwarf2out.c (dwarf2out_init): Move .cfi_sections printing into...
+	(dwarf2out_assembly_start): ... here.  New hook.
+	(dwarf2out_debug_hooks): Add dwarf2out_assembly_start.
+	* debug.c (do_nothing_debug_hooks): Do nothing for assembly_start
+	hook.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Add vmsdbgout_assembly_start.
+	(vmsdbgout_assembly_start): New hook.
+
 2009-10-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* rtl.h (RTL_LOCATION): Fix typo.

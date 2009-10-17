@@ -307,6 +307,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
 {
   sdbout_init,			         /* init */
   sdbout_finish,		         /* finish */
+  debug_nothing_void,			 /* assembly_start */
   debug_nothing_int_charstar,	         /* define */
   debug_nothing_int_charstar,	         /* undef */
   sdbout_start_source_file,	         /* start_source_file */
@@ -1705,6 +1706,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
 {
   0,		/* init */
   0,		/* finish */
+  0,		/* assembly_start */
   0,		/* define */
   0,		/* undef */
   0,		/* start_source_file */
