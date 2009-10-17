@@ -1,3 +1,7 @@
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* print-tree.c (print_node): Fix string for DECL_STRUCT_FUNCTION.
+
 2009-10-17  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (lto_input_location): Try to reuse
