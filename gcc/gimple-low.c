@@ -387,6 +387,19 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	    lower_builtin_setjmp (gsi);
 	    return;
 	  }
+
+	/* After a noreturn call, remove a subsequent GOTO or RETURN that might
+	   have been mechanically added; this will prevent the EH lowering pass
+	   from adding useless edges and thus complicating the initial CFG.  */
+	if (decl && (flags_from_decl_or_type (decl) & ECF_NORETURN))
+	  {
+	    gsi_next (gsi);
+	    if (!gsi_end_p (*gsi)
+		&& (gimple_code (gsi_stmt (*gsi)) == GIMPLE_GOTO
+		    || gimple_code (gsi_stmt (*gsi)) == GIMPLE_RETURN))
+	      gsi_remove (gsi, false);
+	    return;
+	  }
       }
       break;
 

@@ -1,10 +1,15 @@
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-low.c (lower_stmt) <GIMPLE_CALL>: If the call is noreturn,
+	remove a subsequent GOTO or RETURN statement.
+
 2009-10-17  Andy Hutchinson  <hutchinsonandy@aim.com>
 
 	* config/avr.md (*movqi): Add zero as equally preferable constraint
 	as general register.
-	(*movhi): Ditto. 
+	(*movhi): Ditto.
 
-	2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* print-tree.c (print_node): Fix string for DECL_STRUCT_FUNCTION.
 
