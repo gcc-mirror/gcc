@@ -133,7 +133,7 @@ static enum machine_mode arm_promote_function_mode (const_tree,
 						    const_tree, int);
 static bool arm_return_in_memory (const_tree, const_tree);
 static rtx arm_function_value (const_tree, const_tree, bool);
-static rtx arm_libcall_value (enum machine_mode, rtx);
+static rtx arm_libcall_value (enum machine_mode, const_rtx);
 
 static void arm_internal_label (FILE *, const char *, unsigned long);
 static void arm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
@@ -3264,7 +3264,7 @@ add_libcall (htab_t htab, rtx libcall)
 }
 
 static bool
-arm_libcall_uses_aapcs_base (rtx libcall)
+arm_libcall_uses_aapcs_base (const_rtx libcall)
 {
   static bool init_done = false;
   static htab_t libcall_htab;
@@ -3311,7 +3311,7 @@ arm_libcall_uses_aapcs_base (rtx libcall)
 }
 
 rtx
-arm_libcall_value (enum machine_mode mode, rtx libcall)
+arm_libcall_value (enum machine_mode mode, const_rtx libcall)
 {
   if (TARGET_AAPCS_BASED && arm_pcs_default != ARM_PCS_AAPCS
       && GET_MODE_CLASS (mode) == MODE_FLOAT)

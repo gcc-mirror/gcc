@@ -1,3 +1,17 @@
+2009-10-17  Anatoly Sokolov  <aesok@post.ru>
+
+	* targhooks.c (default_libcall_value): Don't use LIBCALL_VALUE macro
+	if not defined. Change type of second argument to const_rtx.
+	(default_function_value): Call gcc_unreachable if FUNCTION_VALUE
+	macro not defined.
+	* targhooks.h (default_libcall_value): Update prototype.
+	* target.h (struct gcc_target): Change type of second argument of
+	libcall_value to const_rtx.
+	* config/arm/arm.c (arm_libcall_value): Change type of second argument
+	to const_rtx.
+	(arm_libcall_uses_aapcs_base): Change type of argument to const_rtx.
+	* doc/tm.texi (TARGET_LIBCALL_VALUE):  Revise documentation.
+
 2009-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/40521

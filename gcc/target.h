@@ -908,7 +908,7 @@ struct gcc_target
 
     /* Return the rtx for the result of a libcall of mode MODE,
        calling the function FN_NAME.  */
-    rtx (*libcall_value) (enum machine_mode, rtx);
+    rtx (*libcall_value) (enum machine_mode, const_rtx);
 
     /* Return an rtx for the argument pointer incoming to the
        current function.  */

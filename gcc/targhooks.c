@@ -603,14 +603,19 @@ default_function_value (const_tree ret_type ATTRIBUTE_UNUSED,
 #ifdef FUNCTION_VALUE
   return FUNCTION_VALUE (ret_type, fn_decl_or_type);
 #else
-  return NULL_RTX;
+  gcc_unreachable ();
 #endif
 }
 
 rtx
-default_libcall_value (enum machine_mode mode, rtx fun ATTRIBUTE_UNUSED)
+default_libcall_value (enum machine_mode mode ATTRIBUTE_UNUSED,
+		       const_rtx fun ATTRIBUTE_UNUSED)
 {
+#ifdef LIBCALL_VALUE
   return LIBCALL_VALUE (mode);
+#else
+  gcc_unreachable ();
+#endif
 }
 
 rtx
