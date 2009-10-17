@@ -311,7 +311,13 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 	  pp_equal (cxx_pp);
 	  pp_cxx_whitespace (cxx_pp);
 	  if (arg)
-	    dump_template_argument (arg, TFF_PLAIN_IDENTIFIER);
+	    {
+	      if (ARGUMENT_PACK_P (arg))
+		pp_cxx_left_brace (cxx_pp);
+	      dump_template_argument (arg, TFF_PLAIN_IDENTIFIER);
+	      if (ARGUMENT_PACK_P (arg))
+		pp_cxx_right_brace (cxx_pp);
+	    }
 	  else
 	    pp_string (cxx_pp, M_("<missing>"));
 
