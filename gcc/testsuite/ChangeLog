@@ -1,3 +1,7 @@
+2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/noreturn1.ad[sb]: New test.
+
 2009-10-17  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
