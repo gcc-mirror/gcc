@@ -1,3 +1,21 @@
+2009-10-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41535
+	* sched-deps.c (depl_on_debug_p): New.
+	(attach_dep_link): Reject debug deps before nondebug deps.
+	(add_to_deps_list): Insert debug deps after nondebug deps.
+	(sd_lists_empty_p): Stop at first nonempty list.  Disregard debug
+	deps.
+	(sd_add_dep): Do not reject debug deps.
+	(add_insn_mem_dependence): Don't count debug deps.
+	(remove_from_deps): Likewise.
+	(sched_analyze_2): Set up mem deps on debug insns.
+	(sched_analyze_insn): Record reg uses for deps on debug insns.
+	* haifa-sched.c (schedule_insn): Reset deferred debug insn.  Don't
+	try_ready nondebug insn after debug insn.
+	* ddg.c (create_ddg_dep_from_intra_loop_link,
+	create_ddg_dep_no_link): Don't reject debug deps.
+
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
 	* lto-symtab.c (merge_incomplete_and_complete_type): Remove.

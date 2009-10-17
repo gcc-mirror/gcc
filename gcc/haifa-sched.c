@@ -989,7 +989,7 @@ dep_list_size (rtx insn)
     {
       if (DEBUG_INSN_P (DEP_CON (dep)))
 	dbgcount++;
-      else
+      else if (!DEBUG_INSN_P (DEP_PRO (dep)))
 	nodbgcount++;
     }
 
@@ -1688,6 +1688,39 @@ schedule_insn (rtx insn)
      should have been removed from the ready list.  */
   gcc_assert (sd_lists_empty_p (insn, SD_LIST_BACK));
 
+  /* Reset debug insns invalidated by moving this insn.  */
+  if (MAY_HAVE_DEBUG_INSNS && !DEBUG_INSN_P (insn))
+    for (sd_it = sd_iterator_start (insn, SD_LIST_BACK);
+	 sd_iterator_cond (&sd_it, &dep);)
+      {
+	rtx dbg = DEP_PRO (dep);
+
+	gcc_assert (DEBUG_INSN_P (dbg));
+
+	if (sched_verbose >= 6)
+	  fprintf (sched_dump, ";;\t\tresetting: debug insn %d\n",
+		   INSN_UID (dbg));
+
+	/* ??? Rather than resetting the debug insn, we might be able
+	   to emit a debug temp before the just-scheduled insn, but
+	   this would involve checking that the expression at the
+	   point of the debug insn is equivalent to the expression
+	   before the just-scheduled insn.  They might not be: the
+	   expression in the debug insn may depend on other insns not
+	   yet scheduled that set MEMs, REGs or even other debug
+	   insns.  It's not clear that attempting to preserve debug
+	   information in these cases is worth the effort, given how
+	   uncommon these resets are and the likelihood that the debug
+	   temps introduced won't survive the schedule change.  */
+	INSN_VAR_LOCATION_LOC (dbg) = gen_rtx_UNKNOWN_VAR_LOC ();
+	df_insn_rescan (dbg);
+
+	/* We delete rather than resolve these deps, otherwise we
+	   crash in sched_free_deps(), because forward deps are
+	   expected to be released before backward deps.  */
+	sd_delete_dep (sd_it);
+      }
+
   gcc_assert (QUEUE_INDEX (insn) == QUEUE_NOWHERE);
   QUEUE_INDEX (insn) = QUEUE_SCHEDULED;
 
@@ -1711,6 +1744,12 @@ schedule_insn (rtx insn)
 	 sd_resolve_dep () moves current dep to another list thus
 	 advancing the iterator.  */
       sd_resolve_dep (sd_it);
+
+      /* Don't bother trying to mark next as ready if insn is a debug
+	 insn.  If insn is the last hard dependency, it will have
+	 already been discounted.  */
+      if (DEBUG_INSN_P (insn) && !DEBUG_INSN_P (next))
+	continue;
 
       if (!IS_SPECULATION_BRANCHY_CHECK_P (insn))
 	{

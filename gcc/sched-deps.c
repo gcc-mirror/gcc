@@ -211,6 +211,16 @@ sd_debug_dep (dep_t dep)
   fprintf (stderr, "\n");
 }
 
+/* Determine whether DEP is a dependency link of a non-debug insn on a
+   debug insn.  */
+
+static inline bool
+depl_on_debug_p (dep_link_t dep)
+{
+  return (DEBUG_INSN_P (DEP_LINK_PRO (dep))
+	  && !DEBUG_INSN_P (DEP_LINK_CON (dep)));
+}
+
 /* Functions to operate with a single link from the dependencies lists -
    dep_link_t.  */
 
@@ -246,7 +256,9 @@ add_to_deps_list (dep_link_t link, deps_list_t l)
 {
   attach_dep_link (link, &DEPS_LIST_FIRST (l));
 
-  ++DEPS_LIST_N_LINKS (l);
+  /* Don't count debug deps.  */
+  if (!depl_on_debug_p (link))
+    ++DEPS_LIST_N_LINKS (l);
 }
 
 /* Detach dep_link L from the list.  */
@@ -271,7 +283,9 @@ remove_from_deps_list (dep_link_t link, deps_list_t list)
 {
   detach_dep_link (link);
 
-  --DEPS_LIST_N_LINKS (list);
+  /* Don't count debug deps.  */
+  if (!depl_on_debug_p (link))
+    --DEPS_LIST_N_LINKS (list);
 }
 
 /* Move link LINK from list FROM to list TO.  */
@@ -668,10 +682,21 @@ sd_lists_size (const_rtx insn, sd_list_types_def list_types)
 }
 
 /* Return true if INSN's lists defined by LIST_TYPES are all empty.  */
+
 bool
 sd_lists_empty_p (const_rtx insn, sd_list_types_def list_types)
 {
-  return sd_lists_size (insn, list_types) == 0;
+  while (list_types != SD_LIST_NONE)
+    {
+      deps_list_t list;
+      bool resolved_p;
+
+      sd_next_list (insn, &list_types, &list, &resolved_p);
+      if (!deps_list_empty_p (list))
+	return false;
+    }
+
+  return true;
 }
 
 /* Initialize data for INSN.  */
@@ -1201,7 +1226,6 @@ sd_add_dep (dep_t dep, bool resolved_p)
   rtx insn = DEP_CON (dep);
 
   gcc_assert (INSN_P (insn) && INSN_P (elem) && insn != elem);
-  gcc_assert (!DEBUG_INSN_P (elem) || DEBUG_INSN_P (insn));
 
   if ((current_sched_info->flags & DO_SPECULATION)
       && !sched_insn_is_legitimate_for_speculation_p (insn, DEP_STATUS (dep)))
@@ -1528,7 +1552,8 @@ add_insn_mem_dependence (struct deps *deps, bool read_p,
     {
       insn_list = &deps->pending_read_insns;
       mem_list = &deps->pending_read_mems;
-      deps->pending_read_list_length++;
+      if (!DEBUG_INSN_P (insn))
+	deps->pending_read_list_length++;
     }
   else
     {
@@ -2408,63 +2433,63 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	rtx pending, pending_mem;
 	rtx t = x;
 
-	if (DEBUG_INSN_P (insn))
-	  {
-	    sched_analyze_2 (deps, XEXP (x, 0), insn);
-	    return;
-	  }
-
 	if (sched_deps_info->use_cselib)
 	  {
 	    t = shallow_copy_rtx (t);
 	    cselib_lookup (XEXP (t, 0), Pmode, 1);
 	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	  }
-	t = canon_rtx (t);
-	pending = deps->pending_read_insns;
-	pending_mem = deps->pending_read_mems;
-	while (pending)
+
+	if (!DEBUG_INSN_P (insn))
 	  {
-	    if (read_dependence (XEXP (pending_mem, 0), t)
-		&& ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-	      note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
-			    DEP_ANTI);
-
-	    pending = XEXP (pending, 1);
-	    pending_mem = XEXP (pending_mem, 1);
-	  }
-
-	pending = deps->pending_write_insns;
-	pending_mem = deps->pending_write_mems;
-	while (pending)
-	  {
-	    if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
-				 t, rtx_varies_p)
-		&& ! sched_insns_conditions_mutex_p (insn, XEXP (pending, 0)))
-	      note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
-			    sched_deps_info->generate_spec_deps
-			    ? BEGIN_DATA | DEP_TRUE : DEP_TRUE);
-
-	    pending = XEXP (pending, 1);
-	    pending_mem = XEXP (pending_mem, 1);
-	  }
-
-	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	  {
-	    if (! JUMP_P (XEXP (u, 0)))
-	      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	    else if (deps_may_trap_p (x))
+	    t = canon_rtx (t);
+	    pending = deps->pending_read_insns;
+	    pending_mem = deps->pending_read_mems;
+	    while (pending)
 	      {
-		if ((sched_deps_info->generate_spec_deps)
-		    && sel_sched_p () && (spec_info->mask & BEGIN_CONTROL))
-		  {
-		    ds_t ds = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
-					    MAX_DEP_WEAK);
+		if (read_dependence (XEXP (pending_mem, 0), t)
+		    && ! sched_insns_conditions_mutex_p (insn,
+							 XEXP (pending, 0)))
+		  note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
+				DEP_ANTI);
 
-		    note_dep (XEXP (u, 0), ds);
-		  }
-		else
+		pending = XEXP (pending, 1);
+		pending_mem = XEXP (pending_mem, 1);
+	      }
+
+	    pending = deps->pending_write_insns;
+	    pending_mem = deps->pending_write_mems;
+	    while (pending)
+	      {
+		if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
+				     t, rtx_varies_p)
+		    && ! sched_insns_conditions_mutex_p (insn,
+							 XEXP (pending, 0)))
+		  note_mem_dep (t, XEXP (pending_mem, 0), XEXP (pending, 0),
+				sched_deps_info->generate_spec_deps
+				? BEGIN_DATA | DEP_TRUE : DEP_TRUE);
+
+		pending = XEXP (pending, 1);
+		pending_mem = XEXP (pending_mem, 1);
+	      }
+
+	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
+	      {
+		if (! JUMP_P (XEXP (u, 0)))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		else if (deps_may_trap_p (x))
+		  {
+		    if ((sched_deps_info->generate_spec_deps)
+			&& sel_sched_p () && (spec_info->mask & BEGIN_CONTROL))
+		      {
+			ds_t ds = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
+						MAX_DEP_WEAK);
+
+			note_dep (XEXP (u, 0), ds);
+		      }
+		    else
+		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		  }
 	      }
 	  }
 
@@ -2473,7 +2498,6 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
         if (!deps->readonly)
           add_insn_mem_dependence (deps, true, insn, x);
 
-	/* Take advantage of tail recursion here.  */
 	sched_analyze_2 (deps, XEXP (x, 0), insn);
 
 	if (cslr_p && sched_deps_info->finish_rhs)
@@ -2773,6 +2797,9 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
 	  struct deps_reg *reg_last = &deps->reg_last[i];
 	  add_dependence_list (insn, reg_last->sets, 1, REG_DEP_ANTI);
 	  add_dependence_list (insn, reg_last->clobbers, 1, REG_DEP_ANTI);
+
+	  if (!deps->readonly)
+	    reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
 	}
       CLEAR_REG_SET (reg_pending_uses);
 
@@ -3505,7 +3532,8 @@ remove_from_deps (struct deps *deps, rtx insn)
   
   removed = remove_from_both_dependence_lists (insn, &deps->pending_read_insns,
                                                &deps->pending_read_mems);
-  deps->pending_read_list_length -= removed;
+  if (!DEBUG_INSN_P (insn))
+    deps->pending_read_list_length -= removed;
   removed = remove_from_both_dependence_lists (insn, &deps->pending_write_insns,
                                                &deps->pending_write_mems);
   deps->pending_write_list_length -= removed;
