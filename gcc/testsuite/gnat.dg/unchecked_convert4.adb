@@ -9,6 +9,7 @@ procedure Unchecked_Convert4 is
   type Rec is record
     I : Uint32;
   end record;
+  for Rec'Size use 32;
   pragma Atomic (Rec);
 
   function Conv is new Unchecked_Conversion (Uint32, Rec);
