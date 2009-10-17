@@ -142,7 +142,12 @@ AM_MAINTAINER_MODE
 # We need gfortran to compile parts of the library
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
-FC="$GFORTRAN"
+case `echo $GFORTRAN` in
+  -* | no* )
+    FC=no ;;
+  *)
+    FC="$GFORTRAN" ;;
+esac
 AC_PROG_FC(gfortran)
 FCFLAGS="$FCFLAGS -Wall"
 

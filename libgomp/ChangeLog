@@ -1,3 +1,10 @@
+2009-10-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libgomp/41418
+	* configure.ac: Set FC to "no" if $GFORTRAN starts with "no"
+	or a hyphen (happens with fortran language disabled).
+	* configure: Regenerate.
+
 2009-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Avoid 'head',
