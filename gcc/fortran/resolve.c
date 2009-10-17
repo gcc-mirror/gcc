@@ -8641,9 +8641,8 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 	}
 
       /* C509.  */
-      if (!(sym->attr.dummy || sym->attr.allocatable || sym->attr.pointer
-	      || sym->ts.u.derived->components->attr.allocatable
-	      || sym->ts.u.derived->components->attr.pointer))
+      /* Assume that use associated symbols were checked in the module ns.  */ 
+      if (!sym->attr.class_ok && !sym->attr.use_assoc)
 	{
 	  gfc_error ("CLASS variable '%s' at %L must be dummy, allocatable "
 		     "or pointer", sym->name, &sym->declared_at);

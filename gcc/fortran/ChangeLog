@@ -1,3 +1,28 @@
+2009-10-17  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41608
+	* decl.c (gfc_match_data_decl): Add BT_CLASS for undefined type
+	and empty type errors.
+	* parse.c (gfc_build_block_ns): Only set recursive if parent ns
+	has a proc_name.
+
+	PR fortran/41629
+	PR fortran/41618
+	PR fortran/41587
+	* gfortran.h : Add class_ok bitfield to symbol_attr.
+	* decl.c (build_sym): Set attr.class_ok if dummy, pointer or
+	allocatable.
+	(build_struct): Use gfc_try 't' to carry errors past the call
+	to encapsulate_class_symbol.
+	(attr_decl1): For a CLASS object, apply the new attribute to
+	the data component.
+	* match.c (gfc_match_select_type): Set attr.class_ok for an
+	assigned selector.
+	* resolve.c (resolve_fl_variable_derived): Check a CLASS object
+	is dummy, pointer or allocatable by testing the class_ok and
+	the use_assoc attribute.
+
 2009-10-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41719
