@@ -186,8 +186,11 @@ _GLIBCXX_BEGIN_EXTERN_C
 _GLIBCXX_END_EXTERN_C
 _GLIBCXX_END_NAMESPACE
 
-// Inject into global namespace. XXX
-#if defined(__cplusplus) && !defined(_GLIBCXX_STDATOMIC)
+// Inject into global namespace.
+#ifdef __cplusplus
+
+#include <cstdatomic>
+
 using std::memory_order;
 using std::memory_order_relaxed;
 using std::memory_order_consume;
