@@ -1,3 +1,37 @@
+2009-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38798
+	* parser.c (CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS): New.
+	(cp_parser_type_specifier): Don't try to parse a class-specifier
+	or enum-specifier in that case.
+	(cp_parser_trailing_type_id): New.
+	(cp_parser_late_return_type_opt): Call it.
+	(cp_parser_type_id_1): Add is_trailing_return parm.
+	(cp_parser_type_specifier_seq): Likewise.
+
+2009-10-14  Larry Evans  <cppljevans@suddenlink.net>
+
+	PR c++/40092
+	* tree.c (cp_tree_equal): Add test for TEMPLATE_PARM_PARAMETER_PACK
+	equality.
+
+2009-10-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37875
+	* parser.c (cp_parser_decltype): Set greater_than_is_operator_p.
+
+	PR c++/37766
+	* pt.c (type_unification_real): Call convert_template_argument
+	for function default template arguments.
+	(check_default_tmpl_args): Suggest -std=c++0x when function default
+	template args seen in C++98 mode.
+
+2009-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37204
+	* typeck.c (build_reinterpret_cast_1): Handle rvalue refs
+	properly.
+
 2009-10-15  Release Manager
 
 	* GCC 4.4.2 released.

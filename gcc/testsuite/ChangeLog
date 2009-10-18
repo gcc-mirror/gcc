@@ -1,3 +1,25 @@
+2009-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38798
+	* g++.dg/cpp0x/trailing5.C: New.
+
+2009-10-14  Larry Evans  <cppljevans@suddenlink.net>
+
+	* g++.dg/cpp0x/vt-40092.C: New.
+
+2009-10-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37875
+	* g++.dg/cpp0x/decltype18.C: New.
+
+	PR c++/37766
+	* g++.dg/cpp0x/fntmpdefarg1.C: New.
+
+2009-10-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/37204
+	* g++.dg/cpp0x/rv-reinterpret.C: New.
+
 2009-10-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/debug/dwarf2/template-params-7.C: Removed.

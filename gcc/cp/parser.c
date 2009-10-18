@@ -1198,8 +1198,12 @@ typedef enum cp_parser_flags
   /* The construct is optional.  If it is not present, then no error
      should be issued.  */
   CP_PARSER_FLAGS_OPTIONAL = 0x1,
-  /* When parsing a type-specifier, do not allow user-defined types.  */
-  CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES = 0x2
+  /* When parsing a type-specifier, treat user-defined type-names
+     as non-type identifiers.  */
+  CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES = 0x2,
+  /* When parsing a type-specifier, do not try to parse a class-specifier
+     or enum-specifier.  */
+  CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS = 0x4
 } cp_parser_flags;
 
 /* The different kinds of declarators we want to parse.  */
@@ -1735,10 +1739,11 @@ static tree cp_parser_type_id
   (cp_parser *);
 static tree cp_parser_template_type_arg
   (cp_parser *);
+static tree cp_parser_trailing_type_id (cp_parser *);
 static tree cp_parser_type_id_1
-  (cp_parser *, bool);
+  (cp_parser *, bool, bool);
 static void cp_parser_type_specifier_seq
-  (cp_parser *, bool, cp_decl_specifier_seq *);
+  (cp_parser *, bool, bool, cp_decl_specifier_seq *);
 static tree cp_parser_parameter_declaration_clause
   (cp_parser *);
 static tree cp_parser_parameter_declaration_list
@@ -5740,6 +5745,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
     = "types may not be defined in a new-type-id";
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				/*is_trailing_return=*/false,
 				&type_specifier_seq);
   /* Restore the old message.  */
   parser->type_definition_forbidden_message = saved_message;
@@ -7414,6 +7420,7 @@ cp_parser_condition (cp_parser* parser)
     = "types may not be defined in conditions";
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_condition==*/true,
+				/*is_trailing_return=*/false,
 				&type_specifiers);
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
@@ -8918,12 +8925,25 @@ cp_parser_decltype (cp_parser *parser)
     cp_parser_parse_definitely (parser);
   else
     {
+      bool saved_greater_than_is_operator_p;
+
       /* Abort our attempt to parse an id-expression or member access
          expression.  */
       cp_parser_abort_tentative_parse (parser);
 
+      /* Within a parenthesized expression, a `>' token is always
+	 the greater-than operator.  */
+      saved_greater_than_is_operator_p
+	= parser->greater_than_is_operator_p;
+      parser->greater_than_is_operator_p = true;
+
       /* Parse a full expression.  */
       expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+
+      /* The `>' token might be the end of a template-id or
+	 template-parameter-list now.  */
+      parser->greater_than_is_operator_p
+	= saved_greater_than_is_operator_p;
     }
 
   /* Go back to evaluating expressions.  */
@@ -9032,6 +9052,7 @@ cp_parser_conversion_type_id (cp_parser* parser)
   attributes = cp_parser_attributes_opt (parser);
   /* Parse the type-specifiers.  */
   cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				/*is_trailing_return=*/false,
 				&type_specifiers);
   /* If that didn't work, stop.  */
   if (type_specifiers.type == error_mark_node)
@@ -10994,6 +11015,9 @@ cp_parser_type_specifier (cp_parser* parser,
   switch (keyword)
     {
     case RID_ENUM:
+      if ((flags & CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS))
+	goto elaborated_type_specifier;
+
       /* Look for the enum-specifier.  */
       type_spec = cp_parser_enum_specifier (parser);
       /* If that worked, we're done.  */
@@ -11016,6 +11040,9 @@ cp_parser_type_specifier (cp_parser* parser,
     case RID_CLASS:
     case RID_STRUCT:
     case RID_UNION:
+      if ((flags & CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS))
+	goto elaborated_type_specifier;
+
       /* Parse tentatively so that we can back up if we don't find a
 	 class-specifier.  */
       cp_parser_parse_tentatively (parser);
@@ -11882,6 +11909,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 
       /* Parse the type-specifier-seq.  */
       cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				    /*is_trailing_return=*/false,
                                     &type_specifiers);
 
       /* At this point this is surely not elaborated type specifier.  */
@@ -13713,7 +13741,7 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
 /* Parse a late-specified return type, if any.  This is not a separate
    non-terminal, but part of a function declarator, which looks like
 
-   -> type-id
+   -> trailing-type-specifier-seq abstract-declarator(opt)
 
    Returns the type indicated by the type-id.  */
 
@@ -13731,7 +13759,7 @@ cp_parser_late_return_type_opt (cp_parser* parser)
   /* Consume the ->.  */
   cp_lexer_consume_token (parser->lexer);
 
-  return cp_parser_type_id (parser);
+  return cp_parser_trailing_type_id (parser);
 }
 
 /* Parse a declarator-id.
@@ -13784,13 +13812,15 @@ cp_parser_declarator_id (cp_parser* parser, bool optional_p)
    Returns the TYPE specified.  */
 
 static tree
-cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg)
+cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
+		     bool is_trailing_return)
 {
   cp_decl_specifier_seq type_specifier_seq;
   cp_declarator *abstract_declarator;
 
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				is_trailing_return,
 				&type_specifier_seq);
   if (type_specifier_seq.type == error_mark_node)
     return error_mark_node;
@@ -13828,12 +13858,17 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg)
 
 static tree cp_parser_type_id (cp_parser *parser)
 {
-  return cp_parser_type_id_1 (parser, false);
+  return cp_parser_type_id_1 (parser, false, false);
 }
 
 static tree cp_parser_template_type_arg (cp_parser *parser)
 {
-  return cp_parser_type_id_1 (parser, true);
+  return cp_parser_type_id_1 (parser, true, false);
+}
+
+static tree cp_parser_trailing_type_id (cp_parser *parser)
+{
+  return cp_parser_type_id_1 (parser, false, true);
 }
 
 /* Parse a type-specifier-seq.
@@ -13849,11 +13884,15 @@ static tree cp_parser_template_type_arg (cp_parser *parser)
    If IS_CONDITION is true, we are at the start of a "condition",
    e.g., we've just seen "if (".
 
+   If IS_TRAILING_RETURN is true, we are in a trailing-return-type,
+   i.e. we've just seen "->".
+
    Sets *TYPE_SPECIFIER_SEQ to represent the sequence.  */
 
 static void
 cp_parser_type_specifier_seq (cp_parser* parser,
 			      bool is_condition,
+			      bool is_trailing_return,
 			      cp_decl_specifier_seq *type_specifier_seq)
 {
   bool seen_type_specifier = false;
@@ -13862,6 +13901,12 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 
   /* Clear the TYPE_SPECIFIER_SEQ.  */
   clear_decl_specs (type_specifier_seq);
+
+  /* In the context of a trailing return type, enum E { } is an
+     elaborated-type-specifier followed by a function-body, not an
+     enum-specifier.  */
+  if (is_trailing_return)
+    flags |= CP_PARSER_FLAGS_NO_TYPE_DEFINITIONS;
 
   /* Parse the type-specifiers and attributes.  */
   while (true)
@@ -16566,6 +16611,7 @@ cp_parser_exception_declaration (cp_parser* parser)
 
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+				/*is_trailing_return=*/false,
 				&type_specifiers);
   /* If it's a `)', then there is no declarator.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
@@ -21250,6 +21296,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 
 	  cp_parser_parse_tentatively (parser);
 	  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+					/*is_trailing_return=*/false,
 					&type_specifiers);
 	  if (cp_parser_parse_definitely (parser))
 	    {
