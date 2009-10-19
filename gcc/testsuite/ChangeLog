@@ -1,4 +1,4 @@
-2009-10-13  Jakub Jelinek  <jakub@redhat.com>
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cleanup-13.c: New test.
 
@@ -7,7 +7,7 @@
 	PR fortran/41586
 	* gfortran.dg/auto_dealloc_1.f90: New test case.
 
-2009-10-18  Jakub Jelinek  <jakub@redhat.com>
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Port from redhat/gcc-4_4-branch:
 	2009-10-08  Jakub Jelinek  <jakub@redhat.com>
