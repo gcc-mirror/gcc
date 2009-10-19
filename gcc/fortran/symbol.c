@@ -2741,7 +2741,7 @@ gfc_undo_symbols (void)
       if (p->gfc_new)
 	{
 	  /* Symbol was new.  */
-	  if (p->attr.in_common && p->common_block->head)
+	  if (p->attr.in_common && p->common_block && p->common_block->head)
 	    {
 	      /* If the symbol was added to any common block, it
 		 needs to be removed to stop the resolver looking

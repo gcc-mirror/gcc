@@ -1,3 +1,11 @@
+2009-10-19  Tobias Burnus  <burnus@net-b.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/41755
+	* symbol.c (gfc_undo_symbols): Add NULL check.
+	* match.c (gfc_match_equivalence): Add check for
+	missing comma.
+
 2009-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/41494

@@ -3750,7 +3750,10 @@ gfc_match_equivalence (void)
       if (gfc_match_eos () == MATCH_YES)
 	break;
       if (gfc_match_char (',') != MATCH_YES)
-	goto syntax;
+	{
+	  gfc_error ("Expecting a comma in EQUIVALENCE at %C");
+	  goto cleanup;
+	}
     }
 
   return MATCH_YES;

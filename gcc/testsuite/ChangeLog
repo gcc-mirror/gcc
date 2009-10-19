@@ -1,3 +1,9 @@
+2009-10-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41755
+	* gfortran.dg/equiv_8.f90: New test.
+	* gfortran.dg/class_allocate_1.f03: Remove obsolete FIXME.
+
 2009-10-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/arm/neon-thumb2-move.c: New test.
