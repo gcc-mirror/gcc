@@ -1,3 +1,8 @@
+2009-10-19  Matthias Klose  <doko@ubuntu.com>
+
+	PR target/40134
+	* config.gcc (arm*-*-linux-*eabi): Use config/t-slibgcc-libgcc.
+
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Fail if bitpos < 0 for non-MEM
