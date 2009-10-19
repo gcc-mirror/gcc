@@ -1,3 +1,9 @@
+2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
+    
+        PR40790
+        * configure: Regenerate.
+        * configure.ac: Add AC_TYPE_UINT64_T.
+
 2009-10-16  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (message): New variable.

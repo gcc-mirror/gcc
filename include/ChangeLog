@@ -1,3 +1,8 @@
+2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
+
+	PR40790
+        * plugin-api.h: Don't include stdint.h unconditionally.
+
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/dwarf2.h (DW_LANG_Python): Add comment that it is
