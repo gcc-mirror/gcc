@@ -9866,7 +9866,7 @@ s390_z10_optimize_cmp (rtx insn)
 
   /* Swap the COMPARE arguments and its mask if there is a
      conflicting access in the previous insn.  */
-  prev_insn = prev_nonnote_insn (insn);
+  prev_insn = prev_active_insn (insn);
   if (prev_insn != NULL_RTX && INSN_P (prev_insn)
       && reg_referenced_p (*op1, PATTERN (prev_insn)))
     s390_swap_cmp (cond, op0, op1, insn);
@@ -9877,7 +9877,7 @@ s390_z10_optimize_cmp (rtx insn)
      the operands, or if swapping them would cause a conflict
      with the previous insn, issue a NOP after the COMPARE in
      order to separate the two instuctions.  */
-  next_insn = next_nonnote_insn (insn);
+  next_insn = next_active_insn (insn);
   if (next_insn != NULL_RTX && INSN_P (next_insn)
       && s390_non_addr_reg_read_p (*op1, next_insn))
     {
