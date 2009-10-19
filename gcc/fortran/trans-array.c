@@ -5906,6 +5906,36 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      tmp = gfc_trans_dealloc_allocated (comp);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
+	  else if (c->attr.allocatable)
+	    {
+	      /* Allocatable scalar components.  */
+	      comp = fold_build3 (COMPONENT_REF, ctype, decl, cdecl, NULL_TREE);
+
+	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, true, NULL);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+
+	      tmp = fold_build2 (MODIFY_EXPR, void_type_node, comp,
+				 build_int_cst (TREE_TYPE (comp), 0));
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+	  else if (c->ts.type == BT_CLASS
+		   && c->ts.u.derived->components->attr.allocatable)
+	    {
+	      /* Allocatable scalar CLASS components.  */
+	      comp = fold_build3 (COMPONENT_REF, ctype, decl, cdecl, NULL_TREE);
+	      
+	      /* Add reference to '$data' component.  */
+	      tmp = c->ts.u.derived->components->backend_decl;
+	      comp = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+				  comp, tmp, NULL_TREE);
+
+	      tmp = gfc_deallocate_with_status (comp, NULL_TREE, true, NULL);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+
+	      tmp = fold_build2 (MODIFY_EXPR, void_type_node, comp,
+				 build_int_cst (TREE_TYPE (comp), 0));
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
 	  break;
 
 	case NULLIFY_ALLOC_COMP:
@@ -5916,6 +5946,27 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      comp = fold_build3 (COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
 	      gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
+	    }
+	  else if (c->attr.allocatable)
+	    {
+	      /* Allocatable scalar components.  */
+	      comp = fold_build3 (COMPONENT_REF, ctype, decl, cdecl, NULL_TREE);
+	      tmp = fold_build2 (MODIFY_EXPR, void_type_node, comp,
+				 build_int_cst (TREE_TYPE (comp), 0));
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+	  else if (c->ts.type == BT_CLASS
+		   && c->ts.u.derived->components->attr.allocatable)
+	    {
+	      /* Allocatable scalar CLASS components.  */
+	      comp = fold_build3 (COMPONENT_REF, ctype, decl, cdecl, NULL_TREE);
+	      /* Add reference to '$data' component.  */
+	      tmp = c->ts.u.derived->components->backend_decl;
+	      comp = fold_build3 (COMPONENT_REF, TREE_TYPE (tmp),
+				  comp, tmp, NULL_TREE);
+	      tmp = fold_build2 (MODIFY_EXPR, void_type_node, comp,
+				 build_int_cst (TREE_TYPE (comp), 0));
+	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
           else if (cmp_has_alloc_comps)
 	    {
