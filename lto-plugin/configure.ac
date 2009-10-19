@@ -7,6 +7,7 @@ AC_ARG_VAR(LIBELFLIBS,[How to link libelf])
 AC_ARG_VAR(LIBELFINC,[How to find libelf include files])
 AM_PROG_LIBTOOL
 AC_SUBST(target_noncanonical)
+AC_TYPE_UINT64_T
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
 AC_SYS_LARGEFILE
