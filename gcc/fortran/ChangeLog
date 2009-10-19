@@ -1,3 +1,14 @@
+2009-10-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41586
+	* parse.c (parse_derived): Correctly set 'alloc_comp' and 'pointer_comp'
+	for CLASS variables.
+	* trans-array.c (structure_alloc_comps): Handle deallocation and
+	nullification of allocatable scalar components.
+	* trans-decl.c (gfc_get_symbol_decl): Remember allocatable scalars for
+	automatic deallocation.
+	(gfc_trans_deferred_vars): Automatically deallocate allocatable scalars.
+
 2009-10-19  Tobias Burnus  <burnus@net-b.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -1187,22 +1187,23 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       /* Create variables to hold the non-constant bits of array info.  */
       gfc_build_qualified_array (decl, sym);
 
-      /* Remember this variable for allocation/cleanup.  */
-      gfc_defer_symbol_init (sym);
-
       if ((sym->attr.allocatable || !sym->attr.dummy) && !sym->attr.pointer)
 	GFC_DECL_PACKED_ARRAY (decl) = 1;
     }
 
-  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.alloc_comp)
-    gfc_defer_symbol_init (sym);
-  /* This applies a derived type default initializer.  */
-  else if (sym->ts.type == BT_DERIVED
-	     && sym->attr.save == SAVE_NONE
-	     && !sym->attr.data
-	     && !sym->attr.allocatable
-	     && (sym->value && !sym->ns->proc_name->attr.is_main_program)
-	     && !sym->attr.use_assoc)
+  /* Remember this variable for allocation/cleanup.  */
+  if (sym->attr.dimension || sym->attr.allocatable
+      || (sym->ts.type == BT_CLASS &&
+	  (sym->ts.u.derived->components->attr.dimension
+	   || sym->ts.u.derived->components->attr.allocatable))
+      || (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.alloc_comp)
+      /* This applies a derived type default initializer.  */
+      || (sym->ts.type == BT_DERIVED
+	  && sym->attr.save == SAVE_NONE
+	  && !sym->attr.data
+	  && !sym->attr.allocatable
+	  && (sym->value && !sym->ns->proc_name->attr.is_main_program)
+	  && !sym->attr.use_assoc))
     gfc_defer_symbol_init (sym);
 
   gfc_finish_var_decl (decl, sym);
@@ -3054,7 +3055,8 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
     Allocation and initialization of array variables.
     Allocation of character string variables.
     Initialization and possibly repacking of dummy arrays.
-    Initialization of ASSIGN statement auxiliary variable.  */
+    Initialization of ASSIGN statement auxiliary variable.
+    Automatic deallocation.  */
 
 tree
 gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
@@ -3182,6 +3184,37 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	}
       else if (sym_has_alloc_comp)
 	fnbody = gfc_trans_deferred_array (sym, fnbody);
+      else if (sym->attr.allocatable
+	       || (sym->ts.type == BT_CLASS
+		   && sym->ts.u.derived->components->attr.allocatable))
+	{
+	  /* Automatic deallocatation of allocatable scalars.  */
+	  tree tmp;
+	  gfc_expr *e;
+	  gfc_se se;
+	  stmtblock_t block;
+	  
+	  e = gfc_lval_expr_from_sym (sym);
+	  if (sym->ts.type == BT_CLASS)
+	    gfc_add_component_ref (e, "$data");
+
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, e);
+	  gfc_free_expr (e);
+
+	  gfc_start_block (&block);
+	  gfc_add_expr_to_block (&block, fnbody);
+
+	  tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true, NULL);
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  tmp = fold_build2 (MODIFY_EXPR, void_type_node,
+			     se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  fnbody = gfc_finish_block (&block);
+	}
       else if (sym->ts.type == BT_CHARACTER)
 	{
 	  gfc_get_backend_locus (&loc);
