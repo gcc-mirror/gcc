@@ -697,7 +697,8 @@ parse_include (cpp_reader *pfile, int *pangle_brackets,
   /* Allow macro expansion.  */
   header = get_token_no_padding (pfile);
   *location = header->src_loc;
-  if (header->type == CPP_STRING || header->type == CPP_HEADER_NAME)
+  if ((header->type == CPP_STRING && header->val.str.text[0] != 'R')
+      || header->type == CPP_HEADER_NAME)
     {
       fname = XNEWVEC (char, header->val.str.len - 1);
       memcpy (fname, header->val.str.text + 1, header->val.str.len - 2);
@@ -1537,7 +1538,8 @@ get__Pragma_string (cpp_reader *pfile)
   if (string->type == CPP_EOF)
     _cpp_backup_tokens (pfile, 1);
   if (string->type != CPP_STRING && string->type != CPP_WSTRING
-      && string->type != CPP_STRING32 && string->type != CPP_STRING16)
+      && string->type != CPP_STRING32 && string->type != CPP_STRING16
+      && string->type != CPP_UTF8STRING)
     return NULL;
 
   paren = get_token_no_padding (pfile);

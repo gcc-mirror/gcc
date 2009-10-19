@@ -5349,6 +5349,7 @@ c_parser_postfix_expression (c_parser *parser)
     case CPP_STRING16:
     case CPP_STRING32:
     case CPP_WSTRING:
+    case CPP_UTF8STRING:
       expr.value = c_parser_peek_token (parser)->value;
       expr.original_code = STRING_CST;
       c_parser_consume_token (parser);

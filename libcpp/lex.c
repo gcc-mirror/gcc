@@ -617,12 +617,192 @@ create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
   token->val.str.text = dest;
 }
 
+/* Lexes a raw string.  The stored string contains the spelling, including
+   double quotes, delimiter string, '[' and ']', any leading
+   'L', 'u', 'U' or 'u8' and 'R' modifier.  It returns the type of the
+   literal, or CPP_OTHER if it was not properly terminated.
+
+   The spelling is NUL-terminated, but it is not guaranteed that this
+   is the first NUL since embedded NULs are preserved.  */
+
+static void
+lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
+		const uchar *cur)
+{
+  source_location saw_NUL = 0;
+  const uchar *raw_prefix;
+  unsigned int raw_prefix_len = 0;
+  enum cpp_ttype type;
+  size_t total_len = 0;
+  _cpp_buff *first_buff = NULL, *last_buff = NULL;
+
+  type = (*base == 'L' ? CPP_WSTRING :
+	  *base == 'U' ? CPP_STRING32 :
+	  *base == 'u' ? (base[1] == '8' ? CPP_UTF8STRING : CPP_STRING16)
+	  : CPP_STRING);
+
+  raw_prefix = cur + 1;
+  while (raw_prefix_len < 16)
+    {
+      switch (raw_prefix[raw_prefix_len])
+	{
+	case ' ': case '[': case ']': case '\t':
+	case '\v': case '\f': case '\n': default:
+	  break;
+	/* Basic source charset except the above chars.  */
+	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+	case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+	case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+	case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+	case '0': case '1': case '2': case '3': case '4': case '5':
+	case '6': case '7': case '8': case '9':
+	case '_': case '{': case '}': case '#': case '(': case ')':
+	case '<': case '>': case '%': case ':': case ';': case '.':
+	case '?': case '*': case '+': case '-': case '/': case '^':
+	case '&': case '|': case '~': case '!': case '=': case ',':
+	case '\\': case '"': case '\'':
+	  raw_prefix_len++;
+	  continue;
+	}
+      break;
+    }
+
+  if (raw_prefix[raw_prefix_len] != '[')
+    {
+      int col = CPP_BUF_COLUMN (pfile->buffer, raw_prefix + raw_prefix_len)
+		+ 1;
+      if (raw_prefix_len == 16)
+	cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, col,
+			     "raw string delimiter longer than 16 characters");
+      else
+	cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, col,
+			     "invalid character '%c' in raw string delimiter",
+			     (int) raw_prefix[raw_prefix_len]);
+      pfile->buffer->cur = raw_prefix - 1;
+      create_literal (pfile, token, base, raw_prefix - 1 - base, CPP_OTHER);
+      return;
+    }
+
+  cur = raw_prefix + raw_prefix_len + 1;
+  for (;;)
+    {
+      cppchar_t c = *cur++;
+
+      if (c == ']'
+	  && strncmp ((const char *) cur, (const char *) raw_prefix,
+		      raw_prefix_len) == 0
+	  && cur[raw_prefix_len] == '"')
+	{
+	  cur += raw_prefix_len + 1;
+	  break;
+	}
+      else if (c == '\n')
+	{
+	  if (pfile->state.in_directive
+	      || pfile->state.parsing_args
+	      || pfile->state.in_deferred_pragma)
+	    {
+	      cur--;
+	      type = CPP_OTHER;
+	      cpp_error_with_line (pfile, CPP_DL_ERROR, token->src_loc, 0,
+				   "unterminated raw string");
+	      break;
+	    }
+
+	  /* raw strings allow embedded non-escaped newlines, which
+	     complicates this routine a lot.  */
+	  if (first_buff == NULL)
+	    {
+	      total_len = cur - base;
+	      first_buff = last_buff = _cpp_get_buff (pfile, total_len);
+	      memcpy (BUFF_FRONT (last_buff), base, total_len);
+	      raw_prefix = BUFF_FRONT (last_buff) + (raw_prefix - base);
+	      BUFF_FRONT (last_buff) += total_len;
+	    }
+	  else
+	    {
+	      size_t len = cur - base;
+	      size_t cur_len = len > BUFF_ROOM (last_buff)
+			       ? BUFF_ROOM (last_buff) : len;
+
+	      total_len += len;
+	      memcpy (BUFF_FRONT (last_buff), base, cur_len);
+	      BUFF_FRONT (last_buff) += cur_len;
+	      if (len > cur_len)
+		{
+		  last_buff = _cpp_append_extend_buff (pfile, last_buff,
+						       len - cur_len);
+		  memcpy (BUFF_FRONT (last_buff), base + cur_len,
+			  len - cur_len);
+		  BUFF_FRONT (last_buff) += len - cur_len;
+		}
+	    }
+
+	  if (pfile->buffer->cur < pfile->buffer->rlimit)
+	    CPP_INCREMENT_LINE (pfile, 0);
+	  pfile->buffer->need_line = true;
+
+	  if (!_cpp_get_fresh_line (pfile))
+	    {
+	      source_location src_loc = token->src_loc;
+	      token->type = CPP_EOF;
+	      /* Tell the compiler the line number of the EOF token.  */
+	      token->src_loc = pfile->line_table->highest_line;
+	      token->flags = BOL;
+	      if (first_buff != NULL)
+		_cpp_release_buff (pfile, first_buff);
+	      cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
+				   "unterminated raw string");
+	      return;
+	    }
+
+	  cur = base = pfile->buffer->cur;
+	}
+      else if (c == '\0' && !saw_NUL)
+	LINEMAP_POSITION_FOR_COLUMN (saw_NUL, pfile->line_table,
+				     CPP_BUF_COLUMN (pfile->buffer, cur));
+    }
+
+  if (saw_NUL && !pfile->state.skipping)
+    cpp_error_with_line (pfile, CPP_DL_WARNING, saw_NUL, 0,
+	       "null character(s) preserved in literal");
+
+  pfile->buffer->cur = cur;
+  if (first_buff == NULL)
+    create_literal (pfile, token, base, cur - base, type);
+  else
+    {
+      uchar *dest = _cpp_unaligned_alloc (pfile, total_len + (cur - base) + 1);
+
+      token->type = type;
+      token->val.str.len = total_len + (cur - base);
+      token->val.str.text = dest;
+      last_buff = first_buff;
+      while (last_buff != NULL)
+	{
+	  memcpy (dest, last_buff->base,
+		  BUFF_FRONT (last_buff) - last_buff->base);
+	  dest += BUFF_FRONT (last_buff) - last_buff->base;
+	  last_buff = last_buff->next;
+	}
+      _cpp_release_buff (pfile, first_buff);
+      memcpy (dest, base, cur - base);
+      dest[cur - base] = '\0';
+    }
+}
+
 /* Lexes a string, character constant, or angle-bracketed header file
    name.  The stored string contains the spelling, including opening
-   quote and leading any leading 'L', 'u' or 'U'.  It returns the type
-   of the literal, or CPP_OTHER if it was not properly terminated, or
-   CPP_LESS for an unterminated header name which must be relexed as
-   normal tokens.
+   quote and any leading 'L', 'u', 'U' or 'u8' and optional
+   'R' modifier.  It returns the type of the literal, or CPP_OTHER
+   if it was not properly terminated, or CPP_LESS for an unterminated
+   header name which must be relexed as normal tokens.
 
    The spelling is NUL-terminated, but it is not guaranteed that this
    is the first NUL since embedded NULs are preserved.  */
@@ -636,12 +816,24 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 
   cur = base;
   terminator = *cur++;
-  if (terminator == 'L' || terminator == 'u' || terminator == 'U')
+  if (terminator == 'L' || terminator == 'U')
     terminator = *cur++;
-  if (terminator == '\"')
+  else if (terminator == 'u')
+    {
+      terminator = *cur++;
+      if (terminator == '8')
+	terminator = *cur++;
+    }
+  if (terminator == 'R')
+    {
+      lex_raw_string (pfile, token, base, cur);
+      return;
+    }
+  if (terminator == '"')
     type = (*base == 'L' ? CPP_WSTRING :
 	    *base == 'U' ? CPP_STRING32 :
-	    *base == 'u' ? CPP_STRING16 : CPP_STRING);
+	    *base == 'u' ? (base[1] == '8' ? CPP_UTF8STRING : CPP_STRING16)
+			 : CPP_STRING);
   else if (terminator == '\'')
     type = (*base == 'L' ? CPP_WCHAR :
 	    *base == 'U' ? CPP_CHAR32 :
@@ -1101,10 +1293,21 @@ _cpp_lex_direct (cpp_reader *pfile)
     case 'L':
     case 'u':
     case 'U':
-      /* 'L', 'u' or 'U' may introduce wide characters or strings.  */
+    case 'R':
+      /* 'L', 'u', 'U', 'u8' or 'R' may introduce wide characters,
+	 wide strings or raw strings.  */
       if (c == 'L' || CPP_OPTION (pfile, uliterals))
 	{
-	  if (*buffer->cur == '\'' || *buffer->cur == '"')
+	  if ((*buffer->cur == '\'' && c != 'R')
+	      || *buffer->cur == '"'
+	      || (*buffer->cur == 'R'
+		  && c != 'R'
+		  && buffer->cur[1] == '"'
+		  && CPP_OPTION (pfile, uliterals))
+	      || (*buffer->cur == '8'
+		  && c == 'u'
+		  && (buffer->cur[1] == '"'
+		      || (buffer->cur[1] == 'R' && buffer->cur[2] == '"'))))
 	    {
 	      lex_string (pfile, result, buffer->cur - 1);
 	      break;
@@ -1120,7 +1323,7 @@ _cpp_lex_direct (cpp_reader *pfile)
     case 'y': case 'z':
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
     case 'G': case 'H': case 'I': case 'J': case 'K':
-    case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+    case 'M': case 'N': case 'O': case 'P': case 'Q':
     case 'S': case 'T':           case 'V': case 'W': case 'X':
     case 'Y': case 'Z':
       result->type = CPP_NAME;

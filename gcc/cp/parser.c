@@ -402,7 +402,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
    /* Get a new token from the preprocessor.  */
   token->type
     = c_lex_with_flags (&token->u.value, &token->location, &token->flags,
-			lexer == NULL ? 0 : C_LEX_RAW_STRINGS);
+			lexer == NULL ? 0 : C_LEX_STRING_NO_JOIN);
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
 
@@ -792,6 +792,7 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
     case CPP_STRING16:
     case CPP_STRING32:
     case CPP_WSTRING:
+    case CPP_UTF8STRING:
       fprintf (stream, " \"%s\"", TREE_STRING_POINTER (token->u.value));
       break;
 
@@ -2065,7 +2066,8 @@ cp_parser_is_string_literal (cp_token* token)
   return (token->type == CPP_STRING ||
 	  token->type == CPP_STRING16 ||
 	  token->type == CPP_STRING32 ||
-	  token->type == CPP_WSTRING);
+	  token->type == CPP_WSTRING ||
+	  token->type == CPP_UTF8STRING);
 }
 
 /* Returns nonzero if TOKEN is the indicated KEYWORD.  */
@@ -3004,6 +3006,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	{
 	default:
 	case CPP_STRING:
+	case CPP_UTF8STRING:
 	  TREE_TYPE (value) = char_array_type_node;
 	  break;
 	case CPP_STRING16:
@@ -3233,6 +3236,7 @@ cp_parser_primary_expression (cp_parser *parser,
     case CPP_STRING16:
     case CPP_STRING32:
     case CPP_WSTRING:
+    case CPP_UTF8STRING:
       /* ??? Should wide strings be allowed when parser->translate_strings_p
 	 is false (i.e. in attributes)?  If not, we can kill the third
 	 argument to cp_parser_string_literal.  */

@@ -1,3 +1,21 @@
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* charset.c (cpp_init_iconv): Initialize utf8_cset_desc.
+	(_cpp_destroy_iconv): Destroy utf8_cset_desc, char16_cset_desc
+	and char32_cset_desc.
+	(converter_for_type): Handle CPP_UTF8STRING.
+	(cpp_interpret_string): Handle CPP_UTF8STRING and raw-strings.
+	* directives.c (get__Pragma_string): Handle CPP_UTF8STRING.
+	(parse_include): Reject raw strings.
+	* include/cpplib.h (CPP_UTF8STRING): New token type.
+	* internal.h (struct cpp_reader): Add utf8_cset_desc field.
+	* lex.c (lex_raw_string): New function.
+	(lex_string): Handle u8 string literals, call lex_raw_string
+	for raw string literals.
+	(_cpp_lex_direct): Call lex_string even for u8" and {,u,U,L,u8}R"
+	sequences.
+	* macro.c (stringify_arg): Handle CPP_UTF8STRING.
+
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/41543

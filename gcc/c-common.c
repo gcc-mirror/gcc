@@ -8181,7 +8181,8 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
   else if (token_type == CPP_STRING 
 	   || token_type == CPP_WSTRING 
 	   || token_type == CPP_STRING16
-	   || token_type == CPP_STRING32)
+	   || token_type == CPP_STRING32
+	   || token_type == CPP_UTF8STRING)
     message = catenate_messages (gmsgid, " before string constant");
   else if (token_type == CPP_NUMBER)
     message = catenate_messages (gmsgid, " before numeric constant");

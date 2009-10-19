@@ -397,6 +397,10 @@ struct cpp_reader
   struct cset_converter narrow_cset_desc;
 
   /* Descriptor for converting from the source character set to the
+     UTF-8 execution character set.  */
+  struct cset_converter utf8_cset_desc;
+
+  /* Descriptor for converting from the source character set to the
      UTF-16 execution character set.  */
   struct cset_converter char16_cset_desc;
 

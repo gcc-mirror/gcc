@@ -1,5 +1,29 @@
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/raw-string-1.c: New test.
+	* gcc.dg/raw-string-2.c: New test.
+	* gcc.dg/raw-string-3.c: New test.
+	* gcc.dg/raw-string-4.c: New test.
+	* gcc.dg/raw-string-5.c: New test.
+	* gcc.dg/raw-string-6.c: New test.
+	* gcc.dg/raw-string-7.c: New test.
+	* gcc.dg/utf8-1.c: New test.
+	* gcc.dg/utf8-2.c: New test.
+	* gcc.dg/utf-badconcat2.c: New test.
+	* gcc.dg/utf-dflt2.c: New test.
+	* gcc.dg/cpp/include6.c: New test.
+	* g++.dg/ext/raw-string-1.C: New test.
+	* g++.dg/ext/raw-string-2.C: New test.
+	* g++.dg/ext/raw-string-3.C: New test.
+	* g++.dg/ext/raw-string-4.C: New test.
+	* g++.dg/ext/raw-string-5.C: New test.
+	* g++.dg/ext/raw-string-6.C: New test.
+	* g++.dg/ext/raw-string-7.C: New test.
+	* g++.dg/ext/utf8-1.C: New test.
+	* g++.dg/ext/utf8-2.C: New test.
+	* g++.dg/ext/utf-badconcat2.C: New test.
+	* g++.dg/ext/utf-dflt2.C: New test.
+
 	* gcc.dg/cleanup-13.c: New test.
 
 2009-10-19  Janus Weil  <janus@gcc.gnu.org>
