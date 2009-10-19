@@ -1,3 +1,12 @@
+2009-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Port from redhat/gcc-4_4-branch:
+	2009-10-08  Jakub Jelinek  <jakub@redhat.com>
+	* gcc.dg/debug/vta-2.c: New test.
+
+	2009-09-30  Alexandre Oliva  <aoliva@redhat.com>
+	* gcc.dg/debug/vta-1.c: New.
+
 2009-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/noreturn2.ad[sb]: New test.
