@@ -1,3 +1,8 @@
+2009-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.c (output_move_neon): Use DImode in call to
+	adjust_address.
+
 2009-10-19  Matthias Klose  <doko@ubuntu.com>
 
 	PR target/40134
