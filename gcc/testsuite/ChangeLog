@@ -1,3 +1,7 @@
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/vta-3.c: New test.
+
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/nested_proc.adb: Rename into...
