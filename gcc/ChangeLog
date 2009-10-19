@@ -1,3 +1,20 @@
+2009-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-low.c (struct lower_data): Add cannot_fallthru field.
+	(lower_stmt) <GIMPLE_BIND>: Add comment.
+	<GIMPLE_COND, GIMPLE_GOTO, GIMPLE_SWITCH>: Set cannot_fallthru to true
+	and return.
+	<GIMPLE_RETURN>: Remove the statement if cannot_fallthru is set.
+	Otherwise lower it and set cannot_fallthru to true.
+	<GIMPLE_TRY>: Update cannot_fallthru for GIMPLE_TRY_FINALLY and return.
+	<GIMPLE_CATCH, GIMPLE_EH_FILTER>; Set cannot_fallthru to false.
+	<GIMPLE_CALL>: Set cannot_fallthru to false for BUILT_IN_SETJMP and
+	to true for a noreturn call.  Do not remove statements.
+	<GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TASK>: Set cannot_fallthru to false.
+	Set cannot_fallthru to false on function exit.
+	(gimple_stmt_may_fallthru) <GIMPLE_SWITCH>: Really return false.
+	<GIMPLE_ASSIGN>: Remove.
+
 2009-10-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_z10_optimize_cmp): Don't touch FP compares.
