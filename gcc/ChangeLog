@@ -1,3 +1,8 @@
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.c (execute_stack_op): Fix operand order for
+	DW_OP_le, DW_OP_ge, DW_OP_lt and DW_OP_gt.
+
 2009-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-low.c (struct lower_data): Add cannot_fallthru field.
