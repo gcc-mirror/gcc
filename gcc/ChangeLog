@@ -1,5 +1,9 @@
 2009-10-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (s390_z10_optimize_cmp): Don't touch FP compares.
+
+2009-10-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.c (s390_z10_optimize_cmp): Use
 	next/prev_active_insn to skip DEBUG_INSNs as well.
 

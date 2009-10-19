@@ -9864,6 +9864,9 @@ s390_z10_optimize_cmp (rtx insn)
   if (!REG_P (*op0) || !REG_P (*op1))
     return false;
 
+  if (GET_MODE_CLASS (GET_MODE (*op0)) != MODE_INT)
+    return false;
+
   /* Swap the COMPARE arguments and its mask if there is a
      conflicting access in the previous insn.  */
   prev_insn = prev_active_insn (insn);
