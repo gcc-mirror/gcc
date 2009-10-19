@@ -1,3 +1,40 @@
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2009-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/40521
+	* debug.h (struct gcc_debug_hooks): Add assembly_start hook.
+	* cgraphunit.c (cgraph_optimize): Call it.
+	* dwarf2out.c (dwarf2out_init): Move .cfi_sections printing into...
+	(dwarf2out_assembly_start): ... here.  New hook.
+	(dwarf2out_debug_hooks): Add dwarf2out_assembly_start.
+	* debug.c (do_nothing_debug_hooks): Do nothing for assembly_start
+	hook.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Add vmsdbgout_assembly_start.
+	(vmsdbgout_assembly_start): New hook.
+
+	2009-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/40521
+	* dwarf2out.c (dwarf2out_init): Test whether
+	HAVE_GAS_CFI_SECTIONS_DIRECTIVE is non-zero instead of checking
+	it is defined.
+
+	2009-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/40521
+	* configure.ac (HAVE_GAS_CFI_SECTIONS_DIRECTIVE): New test.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* dwarf2out.c (dwarf2out_do_cfi_asm): Return false if
+	!HAVE_GAS_CFI_SECTIONS_DIRECTIVE and not emitting .eh_frame.
+	(dwarf2out_init): If HAVE_GAS_CFI_SECTIONS_DIRECTIVE and
+	not emitting .eh_frame, emit .cfi_sections .debug_frame
+	directive.
+
 2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline

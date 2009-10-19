@@ -31,6 +31,10 @@ struct gcc_debug_hooks
   /* Output debug symbols.  */
   void (* finish) (const char *main_filename);
 
+  /* Called from cgraph_optimize before starting to assemble
+     functions/variables/toplevel asms.  */
+  void (* assembly_start) (void);
+
   /* Macro defined on line LINE with name and expansion TEXT.  */
   void (* define) (unsigned int line, const char *text);
 

@@ -145,7 +145,18 @@ dwarf2out_do_cfi_asm (void)
 #endif
   if (!flag_dwarf2_cfi_asm || !dwarf2out_do_frame ())
     return false;
-  if (saved_do_cfi_asm || !eh_personality_libfunc)
+  if (saved_do_cfi_asm)
+    return true;
+  if (!HAVE_GAS_CFI_SECTIONS_DIRECTIVE)
+    {
+#ifdef TARGET_UNWIND_INFO
+      return false;
+#else
+      if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
+	return false;
+#endif
+    }
+  if (!eh_personality_libfunc)
     return true;
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     return false;
@@ -4583,6 +4594,7 @@ static int output_indirect_string (void **, void *);
 
 static void dwarf2out_init (const char *);
 static void dwarf2out_finish (const char *);
+static void dwarf2out_assembly_start (void);
 static void dwarf2out_define (unsigned int, const char *);
 static void dwarf2out_undef (unsigned int, const char *);
 static void dwarf2out_start_source_file (unsigned, const char *);
@@ -4605,6 +4617,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
 {
   dwarf2out_init,
   dwarf2out_finish,
+  dwarf2out_assembly_start,
   dwarf2out_define,
   dwarf2out_undef,
   dwarf2out_start_source_file,
@@ -16186,6 +16199,22 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
       cold_text_section = unlikely_text_section ();
       switch_to_section (cold_text_section);
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
+    }
+
+}
+
+/* Called before cgraph_optimize starts outputtting functions, variables
+   and toplevel asms into assembly.  */
+
+static void
+dwarf2out_assembly_start (void)
+{
+  if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE && dwarf2out_do_cfi_asm ())
+    {
+#ifndef TARGET_UNWIND_INFO
+      if (USING_SJLJ_EXCEPTIONS || (!flag_unwind_tables && !flag_exceptions))
+#endif
+	fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
     }
 }
 
