@@ -1,3 +1,13 @@
+2009-10-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/cris/cris.c (cris_function_value, cris_libcall_value,
+	cris_function_value_regno_p): New functions.
+	(cris_promote_function_mode): Update comment.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
+	* config/cris/cris.h: (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
+	(FUNCTION_VALUE_REGNO_P): Redefine, use cris_function_value_regno_p.
+	* config/cris/cris-protos.h (cris_function_value_regno_p): Declare.
+
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2.c (execute_stack_op): Fix operand order for
