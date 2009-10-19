@@ -76,6 +76,9 @@ struct lower_data
      of the function.  */
   VEC(return_statements_t,heap) *return_statements;
 
+  /* True if the current statement cannot fall through.  */
+  bool cannot_fallthru;
+
   /* True if the function calls __builtin_setjmp.  */
   bool calls_builtin_setjmp;
 };
@@ -317,7 +320,12 @@ lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
 }
 
 
-/* Lower statement GSI.  DATA is passed through the recursion.  */
+/* Lower statement GSI.  DATA is passed through the recursion.  We try to
+   track the fallthruness of statements and get rid of unreachable return
+   statements in order to prevent the EH lowering pass from adding useless
+   edges that can cause bogus warnings to be issued later; this guess need
+   not be 100% accurate, simply be conservative and reset cannot_fallthru
+   to false if we don't know.  */
 
 static void
 lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
@@ -330,36 +338,61 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     {
     case GIMPLE_BIND:
       lower_gimple_bind (gsi, data);
+      /* Propagate fallthruness.  */
       return;
 
     case GIMPLE_COND:
-      /* The gimplifier has already lowered this into gotos.  */
-      break;
+    case GIMPLE_GOTO:
+    case GIMPLE_SWITCH:
+      data->cannot_fallthru = true;
+      gsi_next (gsi);
+      return;
 
     case GIMPLE_RETURN:
-      lower_gimple_return (gsi, data);
+      if (data->cannot_fallthru)
+	{
+	  gsi_remove (gsi, false);
+	  /* Propagate fallthruness.  */
+	}
+      else
+	{
+	  lower_gimple_return (gsi, data);
+	  data->cannot_fallthru = true;
+	}
       return;
 
     case GIMPLE_TRY:
-      lower_sequence (gimple_try_eval (stmt), data);
-      lower_sequence (gimple_try_cleanup (stmt), data);
+      {
+	bool try_cannot_fallthru;
+	lower_sequence (gimple_try_eval (stmt), data);
+	try_cannot_fallthru = data->cannot_fallthru;
+	data->cannot_fallthru = false;
+	lower_sequence (gimple_try_cleanup (stmt), data);
+	/* See gimple_stmt_may_fallthru for the rationale.  */
+	if (gimple_try_kind (stmt) == GIMPLE_TRY_FINALLY)
+	  {
+	    data->cannot_fallthru |= try_cannot_fallthru;
+	    gsi_next (gsi);
+	    return;
+	  }
+      }
       break;
 
     case GIMPLE_CATCH:
+      data->cannot_fallthru = false;
       lower_sequence (gimple_catch_handler (stmt), data);
       break;
 
     case GIMPLE_EH_FILTER:
+      data->cannot_fallthru = false;
       lower_sequence (gimple_eh_filter_failure (stmt), data);
       break;
 
     case GIMPLE_NOP:
     case GIMPLE_ASM:
     case GIMPLE_ASSIGN:
-    case GIMPLE_GOTO:
     case GIMPLE_PREDICT:
     case GIMPLE_LABEL:
-    case GIMPLE_SWITCH:
     case GIMPLE_EH_MUST_NOT_THROW:
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SECTIONS:
@@ -383,21 +416,16 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
 	    && DECL_FUNCTION_CODE (decl) == BUILT_IN_SETJMP)
 	  {
-	    data->calls_builtin_setjmp = true;
 	    lower_builtin_setjmp (gsi);
+	    data->cannot_fallthru = false;
+	    data->calls_builtin_setjmp = true;
 	    return;
 	  }
 
-	/* After a noreturn call, remove a subsequent GOTO or RETURN that might
-	   have been mechanically added; this will prevent the EH lowering pass
-	   from adding useless edges and thus complicating the initial CFG.  */
 	if (decl && (flags_from_decl_or_type (decl) & ECF_NORETURN))
 	  {
+	    data->cannot_fallthru = true;
 	    gsi_next (gsi);
-	    if (!gsi_end_p (*gsi)
-		&& (gimple_code (gsi_stmt (*gsi)) == GIMPLE_GOTO
-		    || gimple_code (gsi_stmt (*gsi)) == GIMPLE_RETURN))
-	      gsi_remove (gsi, false);
 	    return;
 	  }
       }
@@ -405,13 +433,16 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+      data->cannot_fallthru = false;
       lower_omp_directive (gsi, data);
+      data->cannot_fallthru = false;
       return;
 
     default:
       gcc_unreachable ();
     }
 
+  data->cannot_fallthru = false;
   gsi_next (gsi);
 }
 
@@ -660,9 +691,9 @@ gimple_stmt_may_fallthru (gimple stmt)
       return false;
 
     case GIMPLE_SWITCH:
-      /* Switch has already been lowered and represents a
-	 branch to a selected label and hence can not fall through.  */
-      return true;
+      /* Switch has already been lowered and represents a branch
+	 to a selected label and hence can't fall through.  */
+      return false;
 
     case GIMPLE_COND:
       /* GIMPLE_COND's are already lowered into a two-way branch.  They
@@ -688,13 +719,10 @@ gimple_stmt_may_fallthru (gimple stmt)
       return (gimple_seq_may_fallthru (gimple_try_eval (stmt))
 	      && gimple_seq_may_fallthru (gimple_try_cleanup (stmt)));
 
-    case GIMPLE_ASSIGN:
-      return true;
-
     case GIMPLE_CALL:
       /* Functions that do not return do not fall through.  */
       return (gimple_call_flags (stmt) & ECF_NORETURN) == 0;
-    
+
     default:
       return true;
     }
@@ -744,7 +772,7 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
   gsi_remove (gsi, false);
 }
 
-/* Lower a __builtin_setjmp TSI.
+/* Lower a __builtin_setjmp GSI.
 
    __builtin_setjmp is passed a pointer to an array of five words (not
    all will be used on all machines).  It operates similarly to the C
