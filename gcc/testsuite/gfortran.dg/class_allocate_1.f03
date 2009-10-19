@@ -68,8 +68,7 @@
 
  i = 0
  allocate(t2 :: cp2)
-! FIXME: Not yet supported: source=<class>
-! allocate(cp, source = cp2)
+ allocate(cp, source = cp2)
  allocate(t2 :: cp3)
  allocate(cp, source=cp3)
  select type (cp)
