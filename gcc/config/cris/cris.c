@@ -130,6 +130,9 @@ static bool cris_frame_pointer_required (void);
 static void cris_asm_trampoline_template (FILE *);
 static void cris_trampoline_init (rtx, tree, rtx);
 
+static rtx cris_function_value(const_tree, const_tree, bool);
+static rtx cris_libcall_value (enum machine_mode, const_rtx);
+
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
 int cris_max_stackframe = 0;
@@ -196,6 +199,11 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE cris_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT cris_trampoline_init
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE cris_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE cris_libcall_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3777,13 +3785,42 @@ cris_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
                             int for_return)
 {
   /* Defining PROMOTE_FUNCTION_RETURN in gcc-2.7.2 uncovered bug 981110 (even
-     when modifying FUNCTION_VALUE to return the promoted mode).  Maybe
-     pointless as of now, but let's keep the old behavior.  */
+     when modifying TARGET_FUNCTION_VALUE to return the promoted mode).
+     Maybe pointless as of now, but let's keep the old behavior.  */
   if (for_return == 1)
     return mode;
   return CRIS_PROMOTED_MODE (mode, *punsignedp, type);
 } 
 
+/* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
+   time being.  */
+
+static rtx
+cris_function_value(const_tree type,
+		    const_tree func ATTRIBUTE_UNUSED,
+		    bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (type), CRIS_FIRST_ARG_REG);
+}
+
+/* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
+   time being.  */
+
+static rtx
+cris_libcall_value (enum machine_mode mode,
+		    const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, CRIS_FIRST_ARG_REG);
+}
+
+/* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
+   time being.  */
+
+bool
+cris_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == CRIS_FIRST_ARG_REG);
+}
 
 static int
 cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,

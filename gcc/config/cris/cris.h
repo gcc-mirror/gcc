@@ -906,14 +906,8 @@ struct cum_args {int regs;};
 
 /* Node: Scalar Return */
 
-/* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
-   time being.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
- gen_rtx_REG (TYPE_MODE (VALTYPE), CRIS_FIRST_ARG_REG)
+#define FUNCTION_VALUE_REGNO_P(N) cris_function_value_regno_p (N)
 
-#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, CRIS_FIRST_ARG_REG)
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == CRIS_FIRST_ARG_REG)
 
 
 /* Node: Aggregate Return */
