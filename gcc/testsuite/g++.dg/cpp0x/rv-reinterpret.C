@@ -1,5 +1,5 @@
 // { dg-options -std=c++0x }
-// { dg-do run }
+// { dg-do compile }
 
 void f(int &);
 void f(int &&ir) { ir = 42; }
