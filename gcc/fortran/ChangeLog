@@ -1,3 +1,9 @@
+2009-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/41494
+	* trans-expr.c (gfc_trans_scalar_assign): Do not call
+	gfc_evaluate_now.
+
 2009-10-17  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
