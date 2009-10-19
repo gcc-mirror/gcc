@@ -2593,6 +2593,9 @@ expand_debug_expr (tree exp)
 	if (bitpos == 0 && mode == GET_MODE (op0))
 	  return op0;
 
+        if (bitpos < 0)
+          return NULL;
+
 	if ((bitpos % BITS_PER_UNIT) == 0
 	    && bitsize == GET_MODE_BITSIZE (mode1))
 	  {

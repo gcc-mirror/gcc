@@ -1,4 +1,9 @@
-2009-10-17  Andy Hutchinson <hutchinsonandy@gcc.gnu.org>
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (expand_debug_expr): Fail if bitpos < 0 for non-MEM
+	op0.
+
+2009-10-17  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR middle-end/41738
 	* optabs.c (expand_binop): Make mode of shift count expression mode
