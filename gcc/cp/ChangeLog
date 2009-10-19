@@ -1,3 +1,10 @@
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_lexer_print_token, cp_parser_is_string_literal,
+	cp_parser_string_literal, cp_parser_primary_expression): Likewise.
+	(cp_lexer_get_preprocessor_token): Use C_LEX_STRING_JOIN instead
+	of C_LEX_RAW_STRINGS.
+
 2009-10-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38888

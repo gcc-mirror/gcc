@@ -721,6 +721,8 @@ cpp_init_iconv (cpp_reader *pfile)
 
   pfile->narrow_cset_desc = init_iconv_desc (pfile, ncset, SOURCE_CHARSET);
   pfile->narrow_cset_desc.width = CPP_OPTION (pfile, char_precision);
+  pfile->utf8_cset_desc = init_iconv_desc (pfile, "UTF-8", SOURCE_CHARSET);
+  pfile->utf8_cset_desc.width = CPP_OPTION (pfile, char_precision);
   pfile->char16_cset_desc = init_iconv_desc (pfile,
 					     be ? "UTF-16BE" : "UTF-16LE",
 					     SOURCE_CHARSET);
@@ -741,6 +743,12 @@ _cpp_destroy_iconv (cpp_reader *pfile)
     {
       if (pfile->narrow_cset_desc.func == convert_using_iconv)
 	iconv_close (pfile->narrow_cset_desc.cd);
+      if (pfile->utf8_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->utf8_cset_desc.cd);
+      if (pfile->char16_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->char16_cset_desc.cd);
+      if (pfile->char32_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->char32_cset_desc.cd);
       if (pfile->wide_cset_desc.func == convert_using_iconv)
 	iconv_close (pfile->wide_cset_desc.cd);
     }
@@ -1339,6 +1347,8 @@ converter_for_type (cpp_reader *pfile, enum cpp_ttype type)
     {
     default:
 	return pfile->narrow_cset_desc;
+    case CPP_UTF8STRING:
+	return pfile->utf8_cset_desc;
     case CPP_CHAR16:
     case CPP_STRING16:
 	return pfile->char16_cset_desc;
@@ -1373,7 +1383,47 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   for (i = 0; i < count; i++)
     {
       p = from[i].text;
-      if (*p == 'L' || *p == 'u' || *p == 'U') p++;
+      if (*p == 'u')
+	{
+	  if (*++p == '8')
+	    p++;
+	}
+      else if (*p == 'L' || *p == 'U') p++;
+      if (*p == 'R')
+	{
+	  const uchar *prefix;
+
+	  /* Skip over 'R"'.  */
+	  p += 2;
+	  prefix = p;
+	  while (*p != '[')
+	    p++;
+	  p++;
+	  limit = from[i].text + from[i].len;
+	  if (limit >= p + (p - prefix) + 1)
+	    limit -= (p - prefix) + 1;
+
+	  for (;;)
+	    {
+	      base = p;
+	      while (p < limit && (*p != '\\' || (p[1] != 'u' && p[1] != 'U')))
+		p++;
+	      if (p > base)
+		{
+		  /* We have a run of normal characters; these can be fed
+		     directly to convert_cset.  */
+		  if (!APPLY_CONVERSION (cvt, base, p - base, &tbuf))
+		    goto fail;
+		}
+	      if (p == limit)
+		break;
+
+	      p = convert_ucn (pfile, p + 1, limit, &tbuf, cvt);
+	    }
+
+	  continue;
+	}
+
       p++; /* Skip leading quote.  */
       limit = from[i].text + from[i].len - 1; /* Skip trailing quote.  */
 

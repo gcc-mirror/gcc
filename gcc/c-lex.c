@@ -365,6 +365,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	    case CPP_WSTRING:
 	    case CPP_STRING16:
 	    case CPP_STRING32:
+	    case CPP_UTF8STRING:
 	      type = lex_string (tok, value, true, true);
 	      break;
 
@@ -423,7 +424,8 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
     case CPP_WSTRING:
     case CPP_STRING16:
     case CPP_STRING32:
-      if ((lex_flags & C_LEX_RAW_STRINGS) == 0)
+    case CPP_UTF8STRING:
+      if ((lex_flags & C_LEX_STRING_NO_JOIN) == 0)
 	{
 	  type = lex_string (tok, value, false,
 			     (lex_flags & C_LEX_STRING_NO_TRANSLATE) == 0);
@@ -871,12 +873,13 @@ interpret_fixed (const cpp_token *token, unsigned int flags)
   return value;
 }
 
-/* Convert a series of STRING, WSTRING, STRING16 and/or STRING32 tokens
-   into a tree, performing string constant concatenation.  TOK is the
-   first of these.  VALP is the location to write the string into.
-   OBJC_STRING indicates whether an '@' token preceded the incoming token.
+/* Convert a series of STRING, WSTRING, STRING16, STRING32 and/or
+   UTF8STRING tokens into a tree, performing string constant
+   concatenation.  TOK is the first of these.  VALP is the location
+   to write the string into. OBJC_STRING indicates whether an '@' token
+   preceded the incoming token.
    Returns the CPP token type of the result (CPP_STRING, CPP_WSTRING,
-   CPP_STRING32, CPP_STRING16, or CPP_OBJC_STRING).
+   CPP_STRING32, CPP_STRING16, CPP_UTF8STRING, or CPP_OBJC_STRING).
 
    This is unfortunately more work than it should be.  If any of the
    strings in the series has an L prefix, the result is a wide string
@@ -921,6 +924,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
     case CPP_WSTRING:
     case CPP_STRING16:
     case CPP_STRING32:
+    case CPP_UTF8STRING:
       if (type != tok->type)
 	{
 	  if (type == CPP_STRING)
@@ -966,6 +970,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 	{
 	default:
 	case CPP_STRING:
+	case CPP_UTF8STRING:
 	  value = build_string (1, "");
 	  break;
 	case CPP_STRING16:
@@ -991,6 +996,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
     {
     default:
     case CPP_STRING:
+    case CPP_UTF8STRING:
       TREE_TYPE (value) = char_array_type_node;
       break;
     case CPP_STRING16:

@@ -1,3 +1,13 @@
+2009-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_parse_error): Handle CPP_UTF8STRING.
+	* c-lex.c (c_lex_with_flags): Likewise.  Test C_LEX_STRING_NO_JOIN
+	instead of C_LEX_RAW_STRINGS.
+	(lex_string): Handle CPP_UTF8STRING.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+	* c-pragma.h (C_LEX_RAW_STRINGS): Rename to ...
+	(C_LEX_STRING_NO_JOIN): ... this.
+
 2009-10-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/cris/cris.c (cris_function_value, cris_libcall_value,

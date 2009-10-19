@@ -127,6 +127,7 @@ struct _cpp_file;
   TK(WSTRING,		LITERAL) /* L"string" */			\
   TK(STRING16,		LITERAL) /* u"string" */			\
   TK(STRING32,		LITERAL) /* U"string" */			\
+  TK(UTF8STRING,	LITERAL) /* u8"string" */			\
   TK(OBJC_STRING,	LITERAL) /* @"string" - Objective-C */		\
   TK(HEADER_NAME,	LITERAL) /* <stdio.h> in #include */		\
 									\
@@ -728,10 +729,10 @@ extern const unsigned char *cpp_macro_definition (cpp_reader *,
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
-/* Evaluate a CPP_CHAR or CPP_WCHAR token.  */
+/* Evaluate a CPP_*CHAR* token.  */
 extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,
 					  unsigned int *, int *);
-/* Evaluate a vector of CPP_STRING or CPP_WSTRING tokens.  */
+/* Evaluate a vector of CPP_*STRING* tokens.  */
 extern bool cpp_interpret_string (cpp_reader *,
 				  const cpp_string *, size_t,
 				  cpp_string *, enum cpp_ttype);
