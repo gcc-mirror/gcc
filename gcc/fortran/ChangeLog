@@ -1,7 +1,10 @@
 2009-10-19  Tobias Burnus  <burnus@net-b.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/41755
-	* gfortran.dg/equiv_8.f90: New test.
+	* symbol.c (gfc_undo_symbols): Add NULL check.
+	* match.c (gfc_match_equivalence): Add check for
+	missing comma.
 
 2009-10-15  Release Manager
 
