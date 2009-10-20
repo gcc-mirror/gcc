@@ -1785,7 +1785,7 @@ calculate_loop_reg_pressure (void)
 
       FOR_BB_INSNS (bb, insn)
 	{
-	  if (! INSN_P (insn))
+	  if (! NONDEBUG_INSN_P (insn))
 	    continue;
 
 	  mark_ref_regs (PATTERN (insn));
