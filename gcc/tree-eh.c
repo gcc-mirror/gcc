@@ -1192,12 +1192,11 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
 
   if (tf->may_throw)
     {
-      emit_post_landing_pad (&eh_seq, tf->region);
-
       seq = lower_try_finally_dup_block (finally, state);
       lower_eh_constructs_1 (state, seq);
-      gimple_seq_add_seq (&eh_seq, seq);
 
+      emit_post_landing_pad (&eh_seq, tf->region);
+      gimple_seq_add_seq (&eh_seq, seq);
       emit_resx (&eh_seq, tf->region);
     }
 
