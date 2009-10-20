@@ -266,7 +266,10 @@ append_unicode_mangled_name (const char *name, int len)
       int ch = UTF8_GET(ptr, limit);
 
       if ((ISALNUM (ch) && ch != 'U') || ch == '$')
-	obstack_1grow (mangle_obstack, ch);
+        {
+	  obstack_1grow (mangle_obstack, ch);
+          uuU = 0;
+        }
       /* Everything else needs encoding */
       else
 	{
@@ -321,7 +324,10 @@ unicode_mangling_length (const char *name, int len)
       if (ch < 0)
 	error ("internal error - invalid Utf8 name");
       if ((ISALNUM (ch) && ch != 'U') || ch == '$')
-	num_chars++;
+	{
+	  num_chars++;
+	  uuU = 0;
+	}
       /* Everything else needs encoding */
       else
 	{
