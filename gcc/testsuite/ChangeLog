@@ -207,7 +207,7 @@
 
 2009-10-14  Daniel Gutson  <dgutson@codesourcery.com>
 
-        * gcc.target/arm/neon/vfp-shift-a2t2.c: New test case.
+	* gcc.target/arm/neon/vfp-shift-a2t2.c: New test case.
 
 2009-10-14  Jakub Jelinek  <jakub@redhat.com>
 
