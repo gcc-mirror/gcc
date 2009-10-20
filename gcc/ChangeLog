@@ -1,3 +1,8 @@
+2009-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (build_ref_for_offset_1) <RECORD_TYPE>: Skip fields
+	without size or with size that can't be represented as a host integer.
+
 2009-10-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Don't regard
