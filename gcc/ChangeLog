@@ -1,3 +1,10 @@
+2009-10-20  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.md: Added agen condition to operand
+	forwarding bypasses. 
+	Added bypass for early address generation use of int results.
+	Updated comments.
+
 2009-10-20  Stefan Dösinger  <stefan@codeweavers.com>
 
 	* config/i386/i386.c: Remove signal.h #include.
