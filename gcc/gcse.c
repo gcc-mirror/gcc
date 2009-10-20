@@ -2276,8 +2276,7 @@ try_replace_reg (rtx from, rtx to, rtx insn)
      with our replacement.  */
   if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
     set_unique_reg_note (insn, REG_EQUAL,
-			 simplify_replace_rtx (XEXP (note, 0), from,
-			 copy_rtx (to)));
+			 simplify_replace_rtx (XEXP (note, 0), from, to));
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {
       /* If above failed and this is a single set, try to simplify the source of
@@ -3038,12 +3037,12 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  src = SET_SRC (pc_set (jump));
 
 	  if (setcc != NULL)
-	      src = simplify_replace_rtx (src,
-					  SET_DEST (PATTERN (setcc)),
-					  SET_SRC (PATTERN (setcc)));
+	    src = simplify_replace_rtx (src,
+					SET_DEST (PATTERN (setcc)),
+					SET_SRC (PATTERN (setcc)));
 
 	  new_rtx = simplify_replace_rtx (src, reg_used->reg_rtx,
-				      SET_SRC (set->expr));
+					  SET_SRC (set->expr));
 
 	  /* Jump bypassing may have already placed instructions on
 	     edges of the CFG.  We can't bypass an outgoing edge that

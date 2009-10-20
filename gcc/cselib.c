@@ -662,6 +662,19 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
   return 1;
 }
 
+/* We need to pass down the mode of constants through the hash table
+   functions.  For that purpose, wrap them in a CONST of the appropriate
+   mode.  */
+static rtx
+wrap_constant (enum machine_mode mode, rtx x)
+{
+  if (!CONST_INT_P (x) && GET_CODE (x) != CONST_FIXED
+      && (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != VOIDmode))
+    return x;
+  gcc_assert (mode != VOIDmode);
+  return gen_rtx_CONST (mode, x);
+}
+
 /* Hash an rtx.  Return 0 if we couldn't hash the rtx.
    For registers and memory locations, we look up their cselib_val structure
    and return its VALUE element.
@@ -1340,21 +1353,9 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
     default:
       break;
     }
-  if (scopy == NULL_RTX)
-    {
-      XEXP (copy, 0)
-	= gen_rtx_CONST (GET_MODE (XEXP (orig, 0)), XEXP (copy, 0));
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  wrapping const_int result in const to preserve mode %s\n",
-		 GET_MODE_NAME (GET_MODE (XEXP (copy, 0))));
-    }
   scopy = simplify_rtx (copy);
   if (scopy)
-    {
-      if (GET_MODE (copy) != GET_MODE (scopy))
-	scopy = wrap_constant (GET_MODE (copy), scopy);
-      return scopy;
-    }
+    return scopy;
   return copy;
 }
 
