@@ -7497,17 +7497,6 @@
       operands[0] = index;
     }
 
-  /* In 64bit mode we must make sure to wipe the upper bits of the register
-     just in case the addition overflowed or we had random bits in the
-     high part of the register.  */
-  if (TARGET_64BIT)
-    {
-      rtx index = gen_reg_rtx (DImode);
-
-      emit_insn (gen_extendsidi2 (index, operands[0]));
-      operands[0] = gen_rtx_SUBREG (SImode, index, 4);
-    }
-
   if (!INT_5_BITS (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
 
@@ -7523,6 +7512,17 @@
      the effort.  */
   emit_insn (gen_cmpsi (operands[0], operands[2]));
   emit_jump_insn (gen_bgtu (operands[4]));
+
+  /* In 64bit mode we must make sure to wipe the upper bits of the register
+     just in case the addition overflowed or we had random bits in the
+     high part of the register.  */
+  if (TARGET_64BIT)
+    {
+      rtx index = gen_reg_rtx (DImode);
+
+      emit_insn (gen_extendsidi2 (index, operands[0]));
+      operands[0] = index;
+    }
 
   if (TARGET_BIG_SWITCH)
     {
@@ -7584,8 +7584,7 @@
 ;;; 64-bit code, 32-bit relative branch table.
 (define_insn "casesi64p"
   [(set (pc) (mem:DI (plus:DI
-		       (mult:DI (sign_extend:DI
-				  (match_operand:SI 0 "register_operand" "r"))
+		       (mult:DI (match_operand:DI 0 "register_operand" "r")
 				(const_int 8))
 		       (label_ref (match_operand 1 "" "")))))
    (clobber (match_scratch:DI 2 "=&r"))
