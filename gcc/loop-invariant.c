@@ -705,8 +705,17 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
   if (def)
     {
       inv->cost = rtx_cost (set, SET, speed);
+      /* ??? Try to determine cheapness of address computation.  Unfortunately
+         the address cost is only a relative measure, we can't really compare
+	 it with any absolute number, but only with other address costs.
+	 But here we don't have any other addresses, so compare with a magic
+	 number anyway.  It has to be large enough to not regress PR33928
+	 (by avoiding to move reg+8,reg+16,reg+24 invariants), but small
+	 enough to not regress 410.bwaves either (by still moving reg+reg
+	 invariants).
+	 See http://gcc.gnu.org/ml/gcc-patches/2009-10/msg01210.html .  */
       inv->cheap_address = address_cost (SET_SRC (set), word_mode,
-					 speed) < COSTS_N_INSNS (1);
+					 speed) < 3;
     }
   else
     {
