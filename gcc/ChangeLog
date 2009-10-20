@@ -1,3 +1,13 @@
+2009-10-20  Richard Guenther  <rguenther@suse.de>
+
+	* ggc-page.c: Include cfgloop.h.
+	(struct max_alignment): Drop long double, add void *.
+	(extra_order_size_table): Add low non-power-of-two multiples
+	of MAX_ALIGNMENT.  Drop small type-based entries, add
+	tree_type, cgraph_node and loop.
+	* alloc-pool.c (struct allocation_object_def): Drop long double
+	aligning element.
+
 2009-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41340

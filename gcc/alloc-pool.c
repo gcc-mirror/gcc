@@ -41,10 +41,10 @@ typedef struct allocation_object_def
 
       /* Because we want any type of data to be well aligned after the ID,
 	 the following elements are here.  They are never accessed so
-	 the allocated object may be even smaller than this structure.  */
+	 the allocated object may be even smaller than this structure.
+	 We do not care about alignment for floating-point types.  */
       char *align_p;
       HOST_WIDEST_INT align_i;
-      long double align_ld;
     } u;
 } allocation_object;
 
