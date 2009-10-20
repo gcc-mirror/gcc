@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "params.h"
 #include "tree-flow.h"
+#include "cfgloop.h"
 #include "plugin.h"
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
@@ -157,6 +158,24 @@ along with GCC; see the file COPYING3.  If not see
 #define OFFSET_TO_BIT(OFFSET, ORDER) \
   (((OFFSET) * DIV_MULT (ORDER)) >> DIV_SHIFT (ORDER))
 
+/* We use this structure to determine the alignment required for
+   allocations.  For power-of-two sized allocations, that's not a
+   problem, but it does matter for odd-sized allocations.
+   We do not care about alignment for floating-point types.  */
+
+struct max_alignment {
+  char c;
+  union {
+    HOST_WIDEST_INT i;
+    void *p;
+  } u;
+};
+
+/* The biggest alignment required.  */
+
+#define MAX_ALIGNMENT (offsetof (struct max_alignment, u))
+
+
 /* The number of extra orders, not corresponding to power-of-two sized
    objects.  */
 
@@ -173,41 +192,34 @@ along with GCC; see the file COPYING3.  If not see
    thing you need to do to add a new special allocation size.  */
 
 static const size_t extra_order_size_table[] = {
-  sizeof (struct var_ann_d),
+  /* Extra orders for small non-power-of-two multiples of MAX_ALIGNMENT.
+     There are a lot of structures with these sizes and explicitly
+     listing them risks orders being dropped because they changed size.  */
+  MAX_ALIGNMENT * 3,
+  MAX_ALIGNMENT * 5,
+  MAX_ALIGNMENT * 6,
+  MAX_ALIGNMENT * 7,
+  MAX_ALIGNMENT * 9,
+  MAX_ALIGNMENT * 10,
+  MAX_ALIGNMENT * 11,
+  MAX_ALIGNMENT * 12,
+  MAX_ALIGNMENT * 13,
+  MAX_ALIGNMENT * 14,
+  MAX_ALIGNMENT * 15,
   sizeof (struct tree_decl_non_common),
   sizeof (struct tree_field_decl),
   sizeof (struct tree_parm_decl),
   sizeof (struct tree_var_decl),
-  sizeof (struct tree_list),
-  sizeof (struct tree_ssa_name),
+  sizeof (struct tree_type),
   sizeof (struct function),
   sizeof (struct basic_block_def),
-  sizeof (bitmap_element),
-  sizeof (bitmap_head),
-  TREE_EXP_SIZE (2),
-  RTL_SIZE (2),			/* MEM, PLUS, etc.  */
-  RTL_SIZE (9),			/* INSN */
+  sizeof (struct cgraph_node),
+  sizeof (struct loop),
 };
 
 /* The total number of orders.  */
 
 #define NUM_ORDERS (HOST_BITS_PER_PTR + NUM_EXTRA_ORDERS)
-
-/* We use this structure to determine the alignment required for
-   allocations.  For power-of-two sized allocations, that's not a
-   problem, but it does matter for odd-sized allocations.  */
-
-struct max_alignment {
-  char c;
-  union {
-    HOST_WIDEST_INT i;
-    long double d;
-  } u;
-};
-
-/* The biggest alignment required.  */
-
-#define MAX_ALIGNMENT (offsetof (struct max_alignment, u))
 
 /* Compute the smallest nonnegative number which when added to X gives
    a multiple of F.  */
