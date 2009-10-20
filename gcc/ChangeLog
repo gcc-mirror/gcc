@@ -1,7 +1,10 @@
+2009-10-20  Stefan Dösinger  <stefan@codeweavers.com>
+
+	* config/i386/i386.c: Remove signal.h #include.
+
 2009-10-20  Jie Zhang  <jie.zhang@analog.com>
 
-	* simplify-rtx.c (simplify_const_unary_operation): Handle
-	SS_ABS.
+	* simplify-rtx.c (simplify_const_unary_operation): Handle SS_ABS.
 	* doc/rtl.texi: Document ss_abs.
 
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
@@ -20,7 +23,7 @@
 	cris_function_value_regno_p): New functions.
 	(cris_promote_function_mode): Update comment.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
-	* config/cris/cris.h: (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
+	* config/cris/cris.h (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
 	(FUNCTION_VALUE_REGNO_P): Redefine, use cris_function_value_regno_p.
 	* config/cris/cris-protos.h (cris_function_value_regno_p): Declare.
 
@@ -38,7 +41,7 @@
 	<GIMPLE_RETURN>: Remove the statement if cannot_fallthru is set.
 	Otherwise lower it and set cannot_fallthru to true.
 	<GIMPLE_TRY>: Update cannot_fallthru for GIMPLE_TRY_FINALLY and return.
-	<GIMPLE_CATCH, GIMPLE_EH_FILTER>; Set cannot_fallthru to false.
+	<GIMPLE_CATCH, GIMPLE_EH_FILTER>: Set cannot_fallthru to false.
 	<GIMPLE_CALL>: Set cannot_fallthru to false for BUILT_IN_SETJMP and
 	to true for a noreturn call.  Do not remove statements.
 	<GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TASK>: Set cannot_fallthru to false.
@@ -67,8 +70,7 @@
 
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
-	* cfgexpand.c (expand_debug_expr): Fail if bitpos < 0 for non-MEM
-	op0.
+	* cfgexpand.c (expand_debug_expr): Fail if bitpos < 0 for non-MEM op0.
 
 2009-10-17  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
@@ -100,8 +102,7 @@
 
 2009-10-17  Richard Guenther  <rguenther@suse.de>
 
-	* lto-streamer-in.c (lto_input_location): Try to reuse
-	previous maps.
+	* lto-streamer-in.c (lto_input_location): Try to reuse previous maps.
 
 2009-10-17  Richard Guenther  <rguenther@suse.de>
 
@@ -240,8 +241,7 @@
 2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/41702
-	* pa.md (casesi): Use sign extended index in call to
-	gen_casesi64p.
+	* pa.md (casesi): Use sign extended index in call to gen_casesi64p.
 	(casesi64p): Update pattern to reflect above.
 
 2009-10-15  Steve Ellcey  <sje@cup.hp.com>
@@ -334,8 +334,7 @@
 
 2009-10-14  Daniel Gutson  <dgutson@codesourcery.com>
 
-	* config/arm/neon.md (neon_vshll_n<mode>): Checking Bounds
-	fixed.
+	* config/arm/neon.md (neon_vshll_n<mode>): Checking Bounds fixed.
 
 2009-10-14  DJ Delorie  <dj@redhat.com>
 	
@@ -379,7 +378,7 @@
 2009-09-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* params.def (PARAM_IRA_LOOP_RESERVED_REGS): New.
-	* params.h (IRA_LOOP_RESERVED_REGS): New
+	* params.h (IRA_LOOP_RESERVED_REGS): New.
 	* tree-pass.h (pass_subregs_of_mode_init,
 	pass_subregs_of_mode_finish): Remove.
 	* passes.c (pass_subregs_of_mode_init,
@@ -388,8 +387,7 @@
 	* config/i386/i386.h (STACK_REG_COVER_CLASS): Define.
 	* common.opt (fira-loop-pressure): New.
 	* toplev.h (flag_ira_loop_pressure): New.
-	* rtl.h (init_subregs_of_mode, finish_subregs_of_mode): New
-	externals.
+	* rtl.h (init_subregs_of_mode, finish_subregs_of_mode): New externals.
 	* reginfo.c (init_subregs_of_mode, finish_subregs_of_mode):
 	Make external and void type functions.
 	(gate_subregs_of_mode_init, pass_subregs_of_mode_init,
@@ -437,8 +435,7 @@
 
 	* lto-symtab.c (lto_symtab_compatible): Fold in ...
 	(lto_symtab_merge): ... here.  Rewrite both to take the
-	prevailing and a to-be-merged entry and to queue diagnostics
-	properly.
+	prevailing and a to-be-merged entry and to queue diagnostics properly.
 	(lto_symtab_resolve_replaceable_p): New predicate for
 	symbol resolution.
 	(lto_symtab_resolve_can_prevail_p): Likewise.
@@ -462,9 +459,8 @@
 
 2009-10-14  Nick Clifton  <nickc@redhat.com>
 
-	* gcc/doc/extended.texi: Replace the dash character with
-	@minus{} in situations where it is being used as a minus
-	symbol.
+	* gcc/doc/extended.texi: Replace the dash character with @minus{}
+	in situations where it is being used as a minus symbol.
 	* gcc/doc/tm.texi: Likewise.
 	* gcc/doc/md.texi: Likewise.
 
@@ -761,7 +757,7 @@
 	(ASM_CPU_SPEC): Pass %(asm_cpu_476) for -mcpu=476 and -mcpu=476fp.
 	(processor_type): Add PROCESSOR_PPC476.
 	(EXTRA_SPECS): Add asm_cpu_476 string.
-	* config/rs6000/rs6000.md: (define_attr "type"): Add isel attribute.
+	* config/rs6000/rs6000.md (define_attr "type"): Add isel attribute.
 	(define_attr "cpu"): Add ppc476.
 	Include 476.md.
 	Update comments for 476.
@@ -2338,7 +2334,7 @@
 	(x86_64-*-*): Ditto.
 	* config/i386/smmintrin.h: Move instructions in mmintrin-common.h
 	back to smmintrin.h.
-	* config/i386/cpuid.h: (bit_SSE5): Remove SSE5 bit.
+	* config/i386/cpuid.h (bit_SSE5): Remove SSE5 bit.
 	* config/i386/x86intrin.h: Remove SSE5.
 	* config/i386/mmintrin-common.h: Delete file.
 	* doc/extend.texi (x86 intrinsics): Remove SSE5 flags and builtins.
@@ -8406,7 +8402,7 @@
 	(function_value): Adjust for above modification.
 	(alpha_va_start) <TARGET_ABI_OPEN_VMS>: Use
 	virtual_incoming_args_rtx as base object, not next_arg.
-	* config/alpha/vms.h: (DEFAULT_PCC_STRUCT_RETURN): Define as 0.
+	* config/alpha/vms.h (DEFAULT_PCC_STRUCT_RETURN): Define as 0.
 
 2009-08-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -8499,7 +8495,7 @@
 	* config/alpha/vms.h (ASM_OUTPUT_EXTERNAL): Define.
 	(DO_CRTL_NAMES): Define.
 	(LIB_SPEC): Remove.
-	* config/alpha/vms64.h: (POINTERS_EXTEND_UNSIGNED): Remove undef.
+	* config/alpha/vms64.h (POINTERS_EXTEND_UNSIGNED): Remove undef.
 	(LONG_TYPE_SIZE): Define.
 	(TARGET_OS_CPP_BUILTINS): Define with __LONG_POINTERS=1
 	(SUBTARGET_SWITCHES): Define malloc64 switch.
@@ -10391,7 +10387,7 @@
 	combined_args_to_skip and args_to_skip.
 	* tree-inline.c (update_clone_info): New function.
 	(tree_function_versioning): Call update_clone_info.
-	* cgraphunit.c: (cgraph_materialize_clone): Dump materialized
+	* cgraphunit.c (cgraph_materialize_clone): Dump materialized
 	functions.
 	(cgraph_materialize_all_clones): More extensive dumping, working
 	with combined_args_to_skip rather than args_to_skip.
@@ -10721,7 +10717,7 @@
 	* doc/sourcebuild.texi: Document install-plugin target.
 	* configure.ac: Added install-plugin target to language makefiles.
 	* configure: Regenerate.
-	* Makefile.in: (install-plugin): Install more headers,
+	* Makefile.in (install-plugin): Install more headers,
 	depend on lang.install-plugin.
 
 2009-07-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
@@ -11050,7 +11046,7 @@
 
 2009-07-08  DJ Delorie  <dj@redhat.com>
 
-	* config/mep/mep.c: (mep_option_can_inline_p): New.
+	* config/mep/mep.c (mep_option_can_inline_p): New.
 	(TARGET_OPTION_CAN_INLINE_P): Define.
 
 2009-07-08  Mark Wielaard  <mjw@redhat.com>
@@ -13274,10 +13270,10 @@
 	(LARGEST_EXPONENT_IS_NORMAL): Define.
 	* config/arm/arm-protos.h (arm_emit_fp16_const): Declare.
 	* config/arm/arm-modes.def (HFmode): Define.
-	* config/arm/vfp.md: (*movhf_vfp): New.
+	* config/arm/vfp.md (*movhf_vfp): New.
 	(extendhfsf2): New.
 	(truncsfhf2): New.
-	* config/arm/arm.md: (fpu): Add neon_fp16.
+	* config/arm/arm.md (fpu): Add neon_fp16.
 	(floatsihf2, floatdihf2): New.
 	(fix_trunchfsi2, fix_trunchfdi2): New.
 	(truncdfhf2): New.
@@ -13991,7 +13987,7 @@
 	(c_parser_expr_list): Same.
 	(c_parser_omp_atomic): Same.
 	(c_parser_omp_for_loop): Same.
-	* c-tree.h: (struct c_declarator): Add comment to id_loc.
+	* c-tree.h (struct c_declarator): Add comment to id_loc.
 	(build_array_declarator): New argument.
 	* c-decl.c (build_array_declarator): Add location argument.
 	(grokdeclarator): Set id_loc for cdk_array.
@@ -16707,7 +16703,7 @@
 	* hooks.h (hook_tree_const_tree_null): Declare.
 	* target.h (struct gcc_target):  Add invalid_parameter_type,
 	invalid_return_type, promoted_type, and convert_to_type fields.
-	* target-def.h: (TARGET_INVALID_PARAMETER_TYPE): Define.
+	* target-def.h (TARGET_INVALID_PARAMETER_TYPE): Define.
 	(TARGET_INVALID_RETURN_TYPE): Define.
 	(TARGET_PROMOTED_TYPE): Define.
 	(TARGET_CONVERT_TO_TYPE): Define.
@@ -19124,7 +19120,7 @@
 
 2009-05-04  Michael Eager <eager@eagercon.com>
 
-	* gcc/config.gcc: (powerpc-xilinx-eabi*): Add tm t-xilinx
+	* gcc/config.gcc (powerpc-xilinx-eabi*): Add tm t-xilinx
 	* config/rs6000/t-xilinx: New
 
 2009-05-04  Paolo Bonzini  <bonzini@gnu.org>
@@ -20152,7 +20148,7 @@
 
 	* ssaexpand.h (struct ssaexpand): Member 'values' is a bitmap.
 	(get_gimple_for_ssa_name): Adjust, lookup using SSA_NAME_DEF_STMT.
-	* tree-ssa-live.h: (find_replaceable_exprs): Return a bitmap.
+	* tree-ssa-live.h (find_replaceable_exprs): Return a bitmap.
 	(dump_replaceable_exprs): Take a bitmap.
 	* cfgexpand.c (gimple_cond_pred_to_tree): Handle bitmap instead of
 	array.
@@ -21156,7 +21152,7 @@
 
 	* cfghooks.c (tidy_fallthru_edges): Remove find_basic_blocks
 	references from comments.
-	* cfgbuild.c: (count_basic_blocks): Delete.
+	* cfgbuild.c (count_basic_blocks): Delete.
 	(find_basic_blocks_1): Delete.
 	(find_basic_blocks): Delete.
 	* except.c (finish_eh_generation): Make static.  Move comment from
@@ -24395,7 +24391,7 @@
 	* config/vax/builtins.md (jbbssiqi, jbbssihi, jbbssisi, jbbcciqi,
 	jbbccihi, jbbccisi): Remova trailing whitespace.
 	* config/vax/constraints.md: Likewise.
-	* config/vax/elf.h: (ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
+	* config/vax/elf.h (ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
 	* config/vax/openbsd1.h (OBSD_OLD_GAS): Likewise.
 	* config/vax/predicates.md: Likewise.
 	* config/vax/vax.c (print_operand_address, vax_output_int_move,
