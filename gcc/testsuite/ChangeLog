@@ -1,3 +1,7 @@
+2009-10-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/arm/neon-thumb2-move.c: New test.
+
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cleanup-13.c: New test.
