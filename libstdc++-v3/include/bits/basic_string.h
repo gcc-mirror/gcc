@@ -419,13 +419,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Default constructor creates an empty string.
        */
-      basic_string()
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
-      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc())
-#else
-      : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc())
-#endif
-      { }
+      inline
+      basic_string();
 
       /**
        *  @brief  Construct an empty string using allocator @a a.
@@ -1551,8 +1546,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  max_size(), length_error is thrown.  The value of the string doesn't
        *  change if an error is thrown.
       */
-      basic_string&
-      replace(iterator __i1, iterator __i2, initializer_list<_CharT> __l)
+      basic_string& replace(iterator __i1, iterator __i2,
+			    initializer_list<_CharT> __l)
       { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
@@ -1603,35 +1598,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return _S_construct_aux(__beg, __end, __a, _Integral());
         }
 
-      static _CharT*
-      _S_construct(_CharT* __beg, _CharT* __end, const _Alloc& __a)
-      {
-	__glibcxx_requires_valid_range(__beg, __end);
-	return _S_construct(__beg, __end - __beg, __a);
-      }
-
-      static _CharT*
-      _S_construct(const _CharT* __beg, const _CharT* __end, const _Alloc& __a)
-      {
-	__glibcxx_requires_valid_range(__beg, __end);
-	return _S_construct(__beg, __end - __beg, __a);
-      }
-
-      static _CharT*
-      _S_construct(iterator __beg, iterator __end, const _Alloc& __a)
-      {
-	__glibcxx_requires_valid_range(__beg, __end);
-	return _S_construct(__beg.base(), __end - __beg, __a);
-      }
-
-      static _CharT*
-      _S_construct(const_iterator __beg, const_iterator __end,
-		   const _Alloc& __a)
-      {
-	__glibcxx_requires_valid_range(__beg, __end);
-	return _S_construct(__beg.base(), __end - __beg, __a);
-      }
-
       // For Input Iterators, used in istreambuf_iterators, etc.
       template<class _InIterator>
         static _CharT*
@@ -1647,9 +1613,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       static _CharT*
       _S_construct(size_type __req, _CharT __c, const _Alloc& __a);
-
-      static _CharT*
-      _S_construct(const _CharT* __s, size_type __n, const _Alloc& __a);
 
     public:
 
@@ -2215,6 +2178,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
   };
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>::
+    basic_string()
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+    : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
+#else
+    : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()) { }
+#endif
 
   // operator+
   /**
