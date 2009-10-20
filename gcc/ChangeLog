@@ -1,3 +1,8 @@
+2009-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (def_builtin): Set TREE_READONLY instead
+	of TREE_CONSTANT.
+
 2009-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtl.h (simplify_replace_fn_rtx): Declare.
