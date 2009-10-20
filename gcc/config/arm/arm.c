@@ -1864,6 +1864,16 @@ arm_override_options (void)
         max_insns_skipped = 3;
     }
 
+  /* Hot/Cold partitioning is not currently supported, since we can't
+     handle literal pool placement in that case.  */
+  if (flag_reorder_blocks_and_partition)
+    {
+      inform (input_location,
+	      "-freorder-blocks-and-partition not supported on this architecture");
+      flag_reorder_blocks_and_partition = 0;
+      flag_reorder_blocks = 1;
+    }
+
   /* Ideally we would want to use CFI directives to generate
      debug info.  However this also creates the .eh_frame
      section, so disable them until GAS can handle

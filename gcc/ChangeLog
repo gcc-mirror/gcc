@@ -1,3 +1,9 @@
+2009-10-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/39247
+	* arm.c (arm_override_options): Forcibly disable hot/cold block
+	partitioning.
+
 2009-10-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41739
