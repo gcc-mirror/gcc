@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- internal _Array helper class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009
+// 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Please note that this isn't exception safe.  But
       // valarrays aren't required to be exception safe.
       inline static void
-      _S_do_it(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
+      _S_do_it(_Tp* __b, _Tp* __e)
       {
 	while (__b != __e)
 	  new(__b++) _Tp();
@@ -85,13 +85,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       // For fundamental types, it suffices to say 'memset()'
       inline static void
-      _S_do_it(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
+      _S_do_it(_Tp* __b, _Tp* __e)
       { __builtin_memset(__b, 0, (__e - __b) * sizeof(_Tp)); }
     };
 
   template<typename _Tp>
     inline void
-    __valarray_default_construct(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
+    __valarray_default_construct(_Tp* __b, _Tp* __e)
     {
       _Array_default_ctor<_Tp, __is_scalar<_Tp>::__value>::_S_do_it(__b, __e);
     }
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Please note that this isn't exception safe.  But
       // valarrays aren't required to be exception safe.
       inline static void
-      _S_do_it(_Tp* __restrict__ __b, _Tp* __restrict__ __e, const _Tp __t)
+      _S_do_it(_Tp* __b, _Tp* __e, const _Tp __t)
       {
 	while (__b != __e)
 	  new(__b++) _Tp(__t);
@@ -116,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct _Array_init_ctor<_Tp, true>
     {
       inline static void
-      _S_do_it(_Tp* __restrict__ __b, _Tp* __restrict__ __e,  const _Tp __t)
+      _S_do_it(_Tp* __b, _Tp* __e, const _Tp __t)
       {
 	while (__b != __e)
 	  *__b++ = __t;
@@ -125,8 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp>
     inline void
-    __valarray_fill_construct(_Tp* __restrict__ __b, _Tp* __restrict__ __e,
-			      const _Tp __t)
+    __valarray_fill_construct(_Tp* __b, _Tp* __e, const _Tp __t)
     {
       _Array_init_ctor<_Tp, __is_pod(_Tp)>::_S_do_it(__b, __e, __t);
     }
@@ -141,8 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Please note that this isn't exception safe.  But
       // valarrays aren't required to be exception safe.
       inline static void
-      _S_do_it(const _Tp* __restrict__ __b, const _Tp* __restrict__ __e,
-	       _Tp* __restrict__ __o)
+      _S_do_it(const _Tp* __b, const _Tp* __e, _Tp* __restrict__ __o)
       {
 	while (__b != __e)
 	  new(__o++) _Tp(*__b++);
@@ -153,15 +151,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct _Array_copy_ctor<_Tp, true>
     {
       inline static void
-      _S_do_it(const _Tp* __restrict__ __b, const _Tp* __restrict__ __e,
-	       _Tp* __restrict__ __o)
+      _S_do_it(const _Tp* __b, const _Tp* __e, _Tp* __restrict__ __o)
       { __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp)); }
     };
 
   template<typename _Tp>
     inline void
-    __valarray_copy_construct(const _Tp* __restrict__ __b,
-			      const _Tp* __restrict__ __e,
+    __valarray_copy_construct(const _Tp* __b, const _Tp* __e,
 			      _Tp* __restrict__ __o)
     {
       _Array_copy_ctor<_Tp, __is_pod(_Tp)>::_S_do_it(__b, __e, __o);
@@ -205,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Do the necessary cleanup when we're done with arrays.
   template<typename _Tp>
     inline void
-    __valarray_destroy_elements(_Tp* __restrict__ __b, _Tp* __restrict__ __e)
+    __valarray_destroy_elements(_Tp* __b, _Tp* __e)
     {
       if (!__is_pod(_Tp))
 	while (__b != __e)
@@ -347,7 +343,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //
   template<typename _Tp>
     inline _Tp
-    __valarray_sum(const _Tp* __restrict__ __f, const _Tp* __restrict__ __l)
+    __valarray_sum(const _Tp* __f, const _Tp* __l)
     {
       _Tp __r = _Tp();
       while (__f != __l)
@@ -358,8 +354,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Compute the product of all elements in range [__f, __l)
   template<typename _Tp>
     inline _Tp
-    __valarray_product(const _Tp* __restrict__ __f,
-		       const _Tp* __restrict__ __l)
+    __valarray_product(const _Tp* __f, const _Tp* __l)
     {
       _Tp __r = _Tp(1);
       while (__f != __l)
