@@ -1,3 +1,13 @@
+2009-10-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+        Backport from mainline:
+	2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/41702
+	* pa.md (casesi): Use sign extended index in call to
+	gen_casesi64p.
+	(casesi64p): Update pattern to reflect above.
+
 2009-10-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/arm.c (output_move_neon): Use DImode in call to
