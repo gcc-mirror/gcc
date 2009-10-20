@@ -118,10 +118,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template <typename _InIterator>
+    template <typename _FwdIterator>
       _CharT*
       basic_string<_CharT, _Traits, _Alloc>::
-      _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
+      _S_construct(_FwdIterator __beg, _FwdIterator __end, const _Alloc& __a,
 		   forward_iterator_tag)
       {
 #ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
@@ -166,6 +166,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
+    _CharT*
+    basic_string<_CharT, _Traits, _Alloc>::
+    _S_construct(const _CharT* __s, size_type __n, const _Alloc& __a)
+    {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+      if (__n == 0 && __a == _Alloc())
+	return _S_empty_rep()._M_refdata();
+#endif
+      // NB: Not required, but considered best practice.
+      if (__gnu_cxx::__is_null_pointer(__s) && __n)
+	__throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
+
+      // Check for out_of_range and length_error exceptions.
+      _Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
+      if (__n)
+	_M_copy(__r->_M_refdata(), __s, __n);
+
+      __r->_M_set_length_and_sharable(__n);
+      return __r->_M_refdata();
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const basic_string& __str)
     : _M_dataplus(__str._M_rep()->_M_grab(_Alloc(__str.get_allocator()),
@@ -185,8 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
 						"basic_string::basic_string"),
-			       __str._M_data() + __str._M_limit(__pos, __n)
-			       + __pos, _Alloc()), _Alloc())
+			       __str._M_limit(__pos, __n), _Alloc()), _Alloc())
     { }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -196,23 +217,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : _M_dataplus(_S_construct(__str._M_data()
 			       + __str._M_check(__pos,
 						"basic_string::basic_string"),
-			       __str._M_data() + __str._M_limit(__pos, __n)
-			       + __pos, __a), __a)
+			       __str._M_limit(__pos, __n), __a), __a)
     { }
 
   // TBD: DPG annotate
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, size_type __n, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__s, __s + __n, __a), __a)
+    : _M_dataplus(_S_construct(__s, __n, __a), __a)
     { }
 
   // TBD: DPG annotate
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__s, __s ? __s + traits_type::length(__s) :
-			       __s + npos, __a), __a)
+    : _M_dataplus(_S_construct(__s, __s ? traits_type::length(__s) : npos,
+			       __a), __a)
     { }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -224,16 +244,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // TBD: DPG annotate
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
-    basic_string<_CharT, _Traits, _Alloc>::
-    basic_string(_InputIterator __beg, _InputIterator __end, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__beg, __end, __a), __a)
-    { }
+      basic_string<_CharT, _Traits, _Alloc>::
+      basic_string(_InputIterator __beg, _InputIterator __end,
+		   const _Alloc& __a)
+      : _M_dataplus(_S_construct(__beg, __end, __a), __a)
+      { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(initializer_list<_CharT> __l, const _Alloc& __a)
-    : _M_dataplus(_S_construct(__l.begin(), __l.end(), __a), __a)
+    : _M_dataplus(_S_construct(__l.begin(), __l.size(), __a), __a)
     { }
 #endif
 

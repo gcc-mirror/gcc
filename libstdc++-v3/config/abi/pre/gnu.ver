@@ -1039,10 +1039,6 @@ GLIBCXX_3.4.14 {
     _ZNKSbIwSt11char_traitsIwESaIwEE7crbeginEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE5crendEv;
 
-    # string|wstring ::_S_construct<> helpers
-    _ZNSs12_S_constructI*;
-    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructI*;
-
 } GLIBCXX_3.4.13;
 
 # Symbols in the support library (libsupc++) have their own tag.
