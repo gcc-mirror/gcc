@@ -1,3 +1,9 @@
+2009-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41340
+	* loop-invariant.c (calculate_loop_reg_pressure): Don't count regs
+	referenced just in DEBUG_INSNs.
+
 2009-10-20  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types_compatible_p): Simplify.  Move

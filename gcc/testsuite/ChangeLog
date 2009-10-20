@@ -1,3 +1,8 @@
+2009-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41340
+	* gcc.dg/pr41340.c: New test.
+
 2009-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr21.ad[sb]: New test.
