@@ -1,3 +1,7 @@
+2009-10-20  Michael Matz  <matz@suse.de>
+
+	* loop-invariant.c (create_new_invariant): Use different magic number.
+
 2009-10-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/39247
