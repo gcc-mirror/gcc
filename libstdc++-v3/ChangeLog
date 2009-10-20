@@ -1,3 +1,26 @@
+009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        PR libstdc++/41773
+        Revert:
+        2009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        * include/bits/basic_string.h (_S_construct(const _CharT*, size_type,
+        const _Alloc&)): New, declare.
+        (_S_construct(_CharT*, _CharT*, const _Alloc&),
+        _S_construct(const _CharT*, const _CharT*, const _Alloc&),
+        _S_construct(iterator, iterator, const _Alloc&),
+        _S_construct(const_iterator, const_iterator, const _Alloc&)): New,
+        forward to the latter.
+        * include/bits/basic_string.tcc (_S_construct(const _CharT*,
+        size_type, const _Alloc&)): Define.
+        (basic_string(const basic_string&, size_type, size_type),
+        basic_string(const basic_string&, size_type, size_type,
+        const _Alloc&), basic_string(const _CharT*, size_type,
+        const _Alloc&), basic_string(const _CharT*, const _Alloc&),
+        basic_string(initializer_list<>, const _Alloc&)): Call the latter.
+        * config/abi/pre/gnu.ver: Remove recently added exports.
+        * src/string-inst.cc: Remove instantiations.
+
 2009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/41763
