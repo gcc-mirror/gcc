@@ -1,3 +1,10 @@
+2009-10-20  Joel Dice <dicej@mailsnare.net>
+
+	PR java/28474
+	* mangle_name.c (append_unicode_mangled_name): Fix mangling
+	of names with multiple underscores and "U".
+	(unicode_mangling_length): Likewise.
+
 2009-10-03  Simon Baldwin  <simonb@google.com>
 
 	* config-lang.in (lang_dirs): Remove zlib.
