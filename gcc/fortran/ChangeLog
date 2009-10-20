@@ -1,3 +1,10 @@
+2009-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41706
+	* resolve.c (resolve_arg_exprs): New function.
+	(resolve_class_compcall): Call the above.
+	(resolve_class_typebound_call): The same.
+
 2009-10-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41586
