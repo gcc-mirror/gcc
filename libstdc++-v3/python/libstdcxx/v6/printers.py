@@ -197,6 +197,64 @@ class StdVectorIteratorPrinter:
     def to_string(self):
         return self.val['_M_current'].dereference()
 
+class StdTuplePrinter:
+    "Print a std::tuple"
+
+    class _iterator:
+        def __init__ (self, head):
+            self.head = head
+
+            # Set the base class as the initial head of the
+            # tuple.
+            nodes = self.head.type.fields ()
+            if len (nodes) != 1:
+                raise "Top of tuple tree does not consist of a single node."
+
+            # Set the actual head to the first pair.
+            self.head  = self.head.cast (nodes[0].type)
+            self.count = 0
+
+        def __iter__ (self):
+            return self
+
+        def next (self):
+            nodes = self.head.type.fields ()
+            # Check for further recursions in the inheritance tree.
+            if len (nodes) == 0:
+                raise StopIteration
+            # Check that this iteration has an expected structure.
+            if len (nodes) != 2:
+                raise "Cannot parse more than 2 nodes in a tuple tree."
+
+            # - Left node is the next recursion parent.
+            # - Right node is the actual class contained in the tuple.
+
+            # Process right node.
+            impl = self.head.cast (nodes[1].type)
+
+            # Process left node and set it as head.
+            self.head  = self.head.cast (nodes[0].type)
+            self.count = self.count + 1
+
+            # Finally, check the implementation.  If it is
+            # wrapped in _M_head_impl return that, otherwise return
+            # the value "as is".
+            fields = impl.type.fields ()
+            if len (fields) < 1 or fields[0].name != "_M_head_impl":
+                return ('[%d]' % self.count, impl)
+            else:
+                return ('[%d]' % self.count, impl['_M_head_impl'])
+
+    def __init__ (self, typename, val):
+        self.typename = typename
+        self.val = val;
+
+    def children (self):
+        return self._iterator (self.val)
+
+    def to_string (self):
+        return '%s containing' % (self.typename)
+
 class StdStackOrQueuePrinter:
     "Print a std::stack or std::queue"
 
@@ -641,6 +699,7 @@ def build_libstdcxx_dictionary ():
     pretty_printers_dict[re.compile('^std::multiset<.*>$')] = lambda val: StdSetPrinter("std::multiset", val)
     pretty_printers_dict[re.compile('^std::priority_queue<.*>$')] = lambda val: StdStackOrQueuePrinter("std::priority_queue", val)
     pretty_printers_dict[re.compile('^std::queue<.*>$')] = lambda val: StdStackOrQueuePrinter("std::queue", val)
+    pretty_printers_dict[re.compile('^std::tuple<.*>$')] = lambda val: StdTuplePrinter("std::tuple", val)
     pretty_printers_dict[re.compile('^std::set<.*>$')] = lambda val: StdSetPrinter("std::set", val)
     pretty_printers_dict[re.compile('^std::stack<.*>$')] = lambda val: StdStackOrQueuePrinter("std::stack", val)
     pretty_printers_dict[re.compile('^std::unique_ptr<.*>$')] = UniquePointerPrinter

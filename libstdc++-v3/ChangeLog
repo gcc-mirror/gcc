@@ -1,3 +1,8 @@
+2009-10-15  Phil Muldoon <pmuldoon@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdTuplePrinter): New printer.
+	(build_libstdcxx_dictionary): Add StdTuplePrinter registration.
+
 2009-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_compatibility/stdatomic.h: Include cstdatomic if
