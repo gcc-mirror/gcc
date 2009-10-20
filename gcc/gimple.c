@@ -3809,6 +3809,12 @@ gimple_register_type (tree t)
 
   gcc_assert (TYPE_P (t));
 
+  /* Always register the main variant first.  This is important so we
+     pick up the non-typedef variants as canonical, otherwise we'll end
+     up taking typedef ids for structure tags during comparison.  */
+  if (TYPE_MAIN_VARIANT (t) != t)
+    gimple_register_type (TYPE_MAIN_VARIANT (t));
+
   if (gimple_types == NULL)
     gimple_types = htab_create (16381, gimple_type_hash, gimple_type_eq, 0);
 
