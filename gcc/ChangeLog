@@ -1,3 +1,8 @@
+2009-10-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Don't regard
+	the removal of a debug stmt as a significant change.
+
 2009-10-20  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.md: Added agen condition to operand

@@ -1129,8 +1129,9 @@ eliminate_unnecessary_stmts (void)
 	  /* If GSI is not necessary then remove it.  */
 	  if (!gimple_plf (stmt, STMT_NECESSARY))
 	    {
+	      if (!is_gimple_debug (stmt))
+		something_changed = true;
 	      remove_dead_stmt (&gsi, bb);
-	      something_changed = true;
 	    }
 	  else if (is_gimple_call (stmt))
 	    {
