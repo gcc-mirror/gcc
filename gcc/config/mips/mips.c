@@ -3387,10 +3387,11 @@ mips_immediate_operand_p (int code, HOST_WIDE_INT x)
 
 /* Return the cost of binary operation X, given that the instruction
    sequence for a word-sized or smaller operation has cost SINGLE_COST
-   and that the sequence of a double-word operation has cost DOUBLE_COST.  */
+   and that the sequence of a double-word operation has cost DOUBLE_COST.
+   If SPEED is true, optimize for speed otherwise optimize for size.  */
 
 static int
-mips_binary_cost (rtx x, int single_cost, int double_cost)
+mips_binary_cost (rtx x, int single_cost, int double_cost, bool speed)
 {
   int cost;
 
@@ -3399,8 +3400,8 @@ mips_binary_cost (rtx x, int single_cost, int double_cost)
   else
     cost = single_cost;
   return (cost
-	  + rtx_cost (XEXP (x, 0), SET, !optimize_size)
-	  + rtx_cost (XEXP (x, 1), GET_CODE (x), !optimize_size));
+	  + rtx_cost (XEXP (x, 0), SET, speed)
+	  + rtx_cost (XEXP (x, 1), GET_CODE (x), speed));
 }
 
 /* Return the cost of floating-point multiplications of mode MODE.  */
@@ -3470,8 +3471,7 @@ mips_zero_extend_cost (enum machine_mode mode, rtx op)
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
-mips_rtx_costs (rtx x, int code, int outer_code, int *total,
-		bool speed)
+mips_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
@@ -3527,8 +3527,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
 	     operand needs to be forced into a register, we will often be
 	     able to hoist the constant load out of the loop, so the load
 	     should not contribute to the cost.  */
-	  if (!optimize_size
-	      || mips_immediate_operand_p (outer_code, INTVAL (x)))
+	  if (speed || mips_immediate_operand_p (outer_code, INTVAL (x)))
 	    {
 	      *total = 0;
 	      return true;
@@ -3626,7 +3625,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
     case IOR:
     case XOR:
       /* Double-word operations use two single-word operations.  */
-      *total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2));
+      *total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2),
+				 speed);
       return true;
 
     case ASHIFT:
@@ -3635,9 +3635,11 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
     case ROTATE:
     case ROTATERT:
       if (CONSTANT_P (XEXP (x, 1)))
-	*total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4));
+	*total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4),
+				   speed);
       else
-	*total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (12));
+	*total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (12),
+				   speed);
       return true;
 
     case ABS:
@@ -3673,7 +3675,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
 	  *total = mips_cost->fp_add;
 	  return false;
 	}
-      *total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4));
+      *total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4),
+				 speed);
       return true;
 
     case MINUS:
@@ -3724,7 +3727,8 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
 	 an SLTU.  The MIPS16 version then needs to move the result of
 	 the SLTU from $24 to a MIPS16 register.  */
       *total = mips_binary_cost (x, COSTS_N_INSNS (1),
-				 COSTS_N_INSNS (TARGET_MIPS16 ? 5 : 4));
+				 COSTS_N_INSNS (TARGET_MIPS16 ? 5 : 4),
+				 speed);
       return true;
 
     case NEG:
@@ -3760,10 +3764,10 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
       else if (mode == DImode && !TARGET_64BIT)
 	/* Synthesized from 2 mulsi3s, 1 mulsidi3 and two additions,
 	   where the mulsidi3 always includes an MFHI and an MFLO.  */
-	*total = (optimize_size
-		  ? COSTS_N_INSNS (ISA_HAS_MUL3 ? 7 : 9)
-		  : mips_cost->int_mult_si * 3 + 6);
-      else if (optimize_size)
+	*total = (speed
+		  ? mips_cost->int_mult_si * 3 + 6
+		  : COSTS_N_INSNS (ISA_HAS_MUL3 ? 7 : 9));
+      else if (!speed)
 	*total = (ISA_HAS_MUL3 ? 1 : 2);
       else if (mode == DImode)
 	*total = mips_cost->int_mult_di;
@@ -3800,7 +3804,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total,
 
     case UDIV:
     case UMOD:
-      if (optimize_size)
+      if (!speed)
 	{
 	  /* It is our responsibility to make division by a power of 2
 	     as cheap as 2 register additions if we want the division
