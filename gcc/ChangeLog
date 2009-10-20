@@ -1,3 +1,31 @@
+2009-10-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* rtl.h (simplify_replace_fn_rtx): Declare.
+	(wrap_constant, unwrap_constant): Delete.
+	* cfgexpand.c (unwrap_constant, wrap_constant): Delete.
+	(expand_debug_expr): Don't call wrap_constant.
+	* combine.c (rtx_subst_pair): Only define for AUTO_INC_DEC.
+	(auto_adjust_pair): Fold into...
+	(propagate_for_debug_subst): ...here.  Only define for AUTO_INC_DEC.
+	Just return a new value.
+	(propagate_for_debug): Use simplify_replace_fn_rtx for AUTO_INC_DEC,
+	otherwise use simplify_replace_rtx.
+	* cselib.c (wrap_constant): Reinstate old definition.
+	(cselib_expand_value_rtx_1): Don't wrap constants.
+	* gcse.c (try_replace_reg): Don't use copy_rtx in the call to
+	simplify_replace_rtx.
+	(bypass_block): Fix formatting in calls to simplify_replace_rtx.
+	* reload1.c (reload): Skip all uses for an insn before adjusting it.
+	Use simplify_replace_rtx.
+	* simplify-rtx.c (simplify_replace_fn_rtx): New function,
+	adapted from...
+	(simplify_replace_rtx): ...here.  Turn into a wrapper for
+	simplify_replace_fn_rtx.
+	(simplify_unary_operation): Don't unwrap CONSTs.
+	* var-tracking.c (check_wrap_constant): Delete.
+	(vt_expand_loc_callback): Don't call it.
+	(vt_expand_loc): Likewise.
+
 2009-10-20  Pascal Obry  <obry@adacore.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

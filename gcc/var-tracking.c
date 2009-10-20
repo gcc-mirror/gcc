@@ -6246,24 +6246,6 @@ delete_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
   slot = delete_slot_part (set, loc, slot, offset);
 }
 
-/* Wrap result in CONST:MODE if needed to preserve the mode.  */
-
-static rtx
-check_wrap_constant (enum machine_mode mode, rtx result)
-{
-  if (!result || GET_MODE (result) == mode)
-    return result;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  wrapping result in const to preserve mode %s\n",
-	     GET_MODE_NAME (mode));
-
-  result = wrap_constant (mode, result);
-  gcc_assert (GET_MODE (result) == mode);
-
-  return result;
-}
-
 /* Callback for cselib_expand_value, that looks for expressions
    holding the value in the var-tracking hash tables.  Return X for
    standard processing, anything else is to be used as-is.  */
@@ -6337,7 +6319,6 @@ vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
     {
       result = cselib_expand_value_rtx_cb (loc->loc, regs, max_depth,
 					   vt_expand_loc_callback, vars);
-      result = check_wrap_constant (GET_MODE (loc->loc), result);
       if (result)
 	break;
     }
@@ -6355,14 +6336,11 @@ vt_expand_loc_callback (rtx x, bitmap regs, int max_depth, void *data)
 static rtx
 vt_expand_loc (rtx loc, htab_t vars)
 {
-  rtx newloc;
-
   if (!MAY_HAVE_DEBUG_INSNS)
     return loc;
 
-  newloc = cselib_expand_value_rtx_cb (loc, scratch_regs, 5,
-				       vt_expand_loc_callback, vars);
-  loc = check_wrap_constant (GET_MODE (loc), newloc);
+  loc = cselib_expand_value_rtx_cb (loc, scratch_regs, 5,
+				    vt_expand_loc_callback, vars);
 
   if (loc && MEM_P (loc))
     loc = targetm.delegitimize_address (loc);
