@@ -3754,6 +3754,10 @@ try_ready (rtx next)
 	    {
 	      ds_t ds = DEP_STATUS (dep) & SPECULATIVE;
 
+	      if (DEBUG_INSN_P (DEP_PRO (dep))
+		  && !DEBUG_INSN_P (next))
+		continue;
+
 	      if (first_p)
 		{
 		  first_p = false;
