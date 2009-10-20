@@ -6,6 +6,12 @@
 
 2009-10-20  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41761
+	* gimple.c (gimple_register_type): Make sure we register
+	the types main variant first.
+
+2009-10-20  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.c (gimple_types_compatible_p): Simplify.  Move
 	cheap checks before hashtable queries.  Add checks for
 	TYPE_NONALIASED_COMPONENT and DECL_NONADDRESSABLE_P.
