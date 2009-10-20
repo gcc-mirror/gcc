@@ -5275,6 +5275,22 @@ get_declared_from_expr (gfc_ref **class_ref, gfc_ref **new_ref,
 }
 
 
+/* Resolve the argument expressions so that any arguments expressions
+   that include class methods are resolved before the current call.
+   This is necessary because of the static variables used in CLASS
+   method resolution.  */
+static void
+resolve_arg_exprs (gfc_actual_arglist *arg)
+{ 
+  /* Resolve the actual arglist expressions.  */
+  for (; arg; arg = arg->next)
+    {
+      if (arg->expr)
+	gfc_resolve_expr (arg->expr);
+    }
+}
+
+
 /* Resolve a CLASS typebound function, or 'method'.  */
 static gfc_try
 resolve_class_compcall (gfc_expr* e)
@@ -5295,7 +5311,10 @@ resolve_class_compcall (gfc_expr* e)
     {
       gfc_free_ref_list (new_ref);
       return resolve_compcall (e, true);
-    } 
+    }
+
+  /* Resolve the argument expressions,  */
+  resolve_arg_exprs (e->value.function.actual); 
 
   /* Get the data component, which is of the declared type.  */
   derived = declared->components->ts.u.derived;
@@ -5348,6 +5367,9 @@ resolve_class_typebound_call (gfc_code *code)
       gfc_free_ref_list (new_ref);
       return resolve_typebound_call (code);
     } 
+
+  /* Resolve the argument expressions,  */
+  resolve_arg_exprs (code->ext.actual); 
 
   /* Get the data component, which is of the declared type.  */
   derived = declared->components->ts.u.derived;
