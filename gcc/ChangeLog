@@ -1,3 +1,9 @@
+2009-10-20  Jie Zhang  <jie.zhang@analog.com>
+
+	* simplify-rtx.c (simplify_const_unary_operation): Handle
+	SS_ABS.
+	* doc/rtl.texi: Document ss_abs.
+
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_parse_error): Handle CPP_UTF8STRING.

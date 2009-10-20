@@ -1245,6 +1245,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case US_TRUNCATE:
 	case SS_NEG:
 	case US_NEG:
+	case SS_ABS:
 	  return 0;
 
 	default:

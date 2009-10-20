@@ -2364,9 +2364,14 @@ Similar but represent left and right rotate.  If @var{c} is a constant,
 use @code{rotate}.
 
 @findex abs
+@findex ss_abs
 @cindex absolute value
 @item (abs:@var{m} @var{x})
+@item (ss_abs:@var{m} @var{x})
 Represents the absolute value of @var{x}, computed in mode @var{m}.
+@code{ss_abs} ensures that an out-of-bounds result saturates to the
+maximum signed value.
+
 
 @findex sqrt
 @cindex square root
