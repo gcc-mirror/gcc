@@ -1,3 +1,9 @@
+2009-10-20  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p): Simplify.  Move
+	cheap checks before hashtable queries.  Add checks for
+	TYPE_NONALIASED_COMPONENT and DECL_NONADDRESSABLE_P.
+
 2009-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (build_ref_for_offset_1) <RECORD_TYPE>: Skip fields
