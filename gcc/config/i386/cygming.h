@@ -49,8 +49,9 @@ along with GCC; see the file COPYING3.  If not see
    target, always use the svr4_dbx_register_map for DWARF .eh_frame
    even if we don't use DWARF .debug_frame. */
 #undef DWARF_FRAME_REGNUM
-#define DWARF_FRAME_REGNUM(n) TARGET_64BIT \
-	? dbx64_register_map[(n)] : svr4_dbx_register_map[(n)] 
+#define DWARF_FRAME_REGNUM(n)				\
+	(TARGET_64BIT ? dbx64_register_map[(n)]		\
+		      : svr4_dbx_register_map[(n)])
 
 #ifdef HAVE_GAS_PE_SECREL32_RELOC
 /* Use section relative relocations for debugging offsets.  Unlike

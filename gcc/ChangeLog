@@ -1,3 +1,8 @@
+2009-10-20  Pascal Obry  <obry@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/cygming.h (DWARF_FRAME_REGNUM): Add enclosing parens.
+
 2009-10-20  Michael Matz  <matz@suse.de>
 
 	* loop-invariant.c (create_new_invariant): Use different magic number.
