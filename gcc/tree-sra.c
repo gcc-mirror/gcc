@@ -1243,7 +1243,10 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
 
 	      pos = int_bit_position (fld);
 	      gcc_assert (TREE_CODE (type) == RECORD_TYPE || pos == 0);
-	      size = tree_low_cst (DECL_SIZE (fld), 1);
+	      tr_size = DECL_SIZE (fld);
+	      if (!tr_size || !host_integerp (tr_size, 1))
+		continue;
+	      size = tree_low_cst (tr_size, 1);
 	      if (pos > offset || (pos + size) <= offset)
 		continue;
 

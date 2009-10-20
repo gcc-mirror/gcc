@@ -1,3 +1,8 @@
+2009-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr21.ad[sb]: New test.
+	* gnat.dg/discr21_pkg.ads: New helper.
+
 2009-10-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41706
