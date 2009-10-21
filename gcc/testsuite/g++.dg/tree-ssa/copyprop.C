@@ -7,8 +7,8 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <cstdlib>
 using namespace std;
-extern void free (void *);
 template<typename _FIter, typename _Tp> _FIter lower_bound(_FIter, _FIter, _Tp&);
 template<class _Key> struct hash { };
 template<class _Val> struct _Hashtable_node {

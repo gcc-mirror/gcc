@@ -1,3 +1,7 @@
+2009-10-21  Steve Ellcey  <sje@cup.hp.com>
+
+	* g++.dg/tree-ssa/copyprop.C: Use include to define free().
+
 2009-10-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/tls/pie-1.c: New test.
