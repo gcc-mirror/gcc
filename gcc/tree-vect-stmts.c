@@ -172,13 +172,13 @@ exist_non_indexing_operands_for_use_p (tree use, gimple stmt)
 {
   tree operand;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
- 
+
   /* USE corresponds to some operand in STMT. If there is no data
      reference in STMT, then any operand that corresponds to USE
      is not indexing an array.  */
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return true;
- 
+
   /* STMT has a data_ref. FORNOW this means that its of one of
      the following forms:
      -1- ARRAY_REF = var
@@ -191,14 +191,12 @@ exist_non_indexing_operands_for_use_p (tree use, gimple stmt)
 
      Therefore, all we need to check is if STMT falls into the
      first case, and whether var corresponds to USE.  */
- 
-  if (TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
-    return false;
 
   if (!gimple_assign_copy_p (stmt))
     return false;
+  if (TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
+    return false;
   operand = gimple_assign_rhs1 (stmt);
-
   if (TREE_CODE (operand) != SSA_NAME)
     return false;
 
