@@ -1,5 +1,11 @@
 2009-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interfaces/decl.c (gnat_to_gnu_entity): Do not create a new
+	TYPE_DECL when a type is padded if there is already one and reset
+	TYPE_STUB_DECL in this case.
+
+2009-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interfaces/utils.c (create_subprog_decl): Do not redefine
 	main_identifier_node.
 
