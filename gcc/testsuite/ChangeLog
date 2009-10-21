@@ -1,3 +1,15 @@
+2009-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	2009-10-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41728
+	* gcc.c-torture/compile/pr41728.c: New testcase.
+
+	2009-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41717
+	* gcc.dg/debug/pr41717.c: New test.
+
 2009-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/abi/mangle33.C: New test.
