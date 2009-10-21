@@ -1,3 +1,8 @@
+2009-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.c (finish_mangling_get_identifier): Use
+	obstack_base (mangle_obstack) instead of name_base.
+
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_lexer_print_token, cp_parser_is_string_literal,
