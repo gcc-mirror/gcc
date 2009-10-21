@@ -1,3 +1,7 @@
+2009-10-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sh/sh.c (nonpic_symbol_mentioned_p): Allow UNSPEC_TPOFF.
+
 2009-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/25507
