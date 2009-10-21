@@ -5750,7 +5750,7 @@ pplinc=
 if test "${with_ppl+set}" = set; then :
   withval=$with_ppl;
 else
-  with_ppl=no
+  with_ppl=yes
 fi
 
 
@@ -5769,6 +5769,9 @@ fi
 case $with_ppl in
   no)
     ppllibs=
+    ;;
+  yes)
+    LIBS="$ppllibs $LIBS"
     ;;
   *)
     ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
@@ -5797,7 +5800,7 @@ else
 fi
 
 
-if test "${ENABLE_PPL_CHECK}" = "yes"; then
+if test "x$with_ppl" != "xno" -a "${ENABLE_PPL_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $pplinc $gmpinc"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version $ppl_major_version.$ppl_minor_version of PPL" >&5
@@ -5842,7 +5845,7 @@ clooginc=" -DCLOOG_PPL_BACKEND "
 if test "${with_cloog+set}" = set; then :
   withval=$with_cloog;
 else
-  with_cloog=no
+  with_cloog=yes
 fi
 
 
@@ -5858,10 +5861,17 @@ if test "${with_cloog_lib+set}" = set; then :
 fi
 
 
+if test "x$with_ppl" == "xno"; then
+  with_cloog=no
+fi
+
 case $with_cloog in
   no)
     clooglibs=
     clooginc=
+    ;;
+  yes)
+    LIBS="$clooglibs $LIBS"
     ;;
   *)
     clooglibs="-L$with_cloog/lib -lcloog"
@@ -5890,7 +5900,7 @@ else
 fi
 
 
-if test "${ENABLE_CLOOG_CHECK}" = "yes"; then
+if test "x$with_cloog" != "xno" -a "${ENABLE_CLOOG_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for correct version of CLooG" >&5

@@ -1514,13 +1514,16 @@ pplinc=
 
 AC_ARG_WITH(ppl, [  --with-ppl=PATH         Specify prefix directory for the installed PPL package
                           Equivalent to --with-ppl-include=PATH/include
-                          plus --with-ppl-lib=PATH/lib],, with_ppl=no)
+                          plus --with-ppl-lib=PATH/lib],, with_ppl=yes)
 AC_ARG_WITH(ppl_include, [  --with-ppl-include=PATH Specify directory for installed PPL include files])
 AC_ARG_WITH(ppl_lib, [  --with-ppl-lib=PATH     Specify the directory for the installed PPL library])
 
 case $with_ppl in 
   no)
     ppllibs=
+    ;;
+  yes)
+    LIBS="$ppllibs $LIBS"
     ;;
   *)
     ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
@@ -1546,7 +1549,7 @@ AC_ARG_ENABLE(ppl-version-check,
 ENABLE_PPL_CHECK=$enableval,
 ENABLE_PPL_CHECK=yes)
 
-if test "${ENABLE_PPL_CHECK}" = "yes"; then
+if test "x$with_ppl" != "xno" -a "${ENABLE_PPL_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $pplinc $gmpinc"
   AC_MSG_CHECKING([for version $ppl_major_version.$ppl_minor_version of PPL])
@@ -1569,14 +1572,21 @@ clooginc=" -DCLOOG_PPL_BACKEND "
 
 AC_ARG_WITH(cloog, [  --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL package
                           Equivalent to --with-cloog-include=PATH/include
-                          plus --with-cloog-lib=PATH/lib],, with_cloog=no)
+                          plus --with-cloog-lib=PATH/lib],, with_cloog=yes)
 AC_ARG_WITH(cloog_include, [  --with-cloog-include=PATH Specify directory for installed CLooG include files])
 AC_ARG_WITH(cloog_lib, [  --with-cloog-lib=PATH   Specify the directory for the installed CLooG library])
+
+if test "x$with_ppl" == "xno"; then
+  with_cloog=no
+fi
 
 case $with_cloog in 
   no)
     clooglibs=
     clooginc=
+    ;;
+  yes)
+    LIBS="$clooglibs $LIBS"
     ;;
   *)
     clooglibs="-L$with_cloog/lib -lcloog"
@@ -1602,7 +1612,7 @@ AC_ARG_ENABLE(cloog-version-check,
 ENABLE_CLOOG_CHECK=$enableval,
 ENABLE_CLOOG_CHECK=yes)
 
-if test "${ENABLE_CLOOG_CHECK}" = "yes"; then
+if test "x$with_cloog" != "xno" -a "${ENABLE_CLOOG_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
   AC_MSG_CHECKING([for correct version of CLooG])
