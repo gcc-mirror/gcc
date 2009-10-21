@@ -321,7 +321,7 @@ Objective-C and Objective-C++ Dialects}.
 -femit-struct-debug-baseonly -femit-struct-debug-reduced @gol
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
--print-multi-directory  -print-multi-lib @gol
+-print-multi-directory  -print-multi-lib  -print-multi-os-directory @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
 -print-sysroot -print-sysroot-headers-suffix @gol
 -save-temps -save-temps=cwd -save-temps=obj -time@r{[}=@var{file}@r{]}}
@@ -5530,6 +5530,16 @@ that enable them.  The directory name is separated from the switches by
 @samp{;}, and each switch starts with an @samp{@@} instead of the
 @samp{-}, without spaces between multiple switches.  This is supposed to
 ease shell-processing.
+
+@item -print-multi-os-directory
+@opindex print-multi-os-directory
+Print the path to OS libraries for the selected
+multilib, relative to some @file{lib} subdirectory.  If OS libraries are
+present in the @file{lib} subdirectory and no multilibs are used, this is
+usually just @file{.}, if OS libraries are present in @file{lib@var{suffix}}
+sibling directories this prints e.g.@: @file{../lib64}, @file{../lib} or
+@file{../lib32}, or if OS libraries are present in @file{lib/@var{subdir}}
+subdirectories it prints e.g.@: @file{amd64}, @file{sparcv9} or @file{ev6}.
 
 @item -print-prog-name=@var{program}
 @opindex print-prog-name
