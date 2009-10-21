@@ -146,16 +146,9 @@
 
 
 #if defined( HPUX_STDINT_LEAST_FAST_CHECK )
-#ifdef __LP64__
-#  define	UINT_FAST64_MAX	ULONG_MAX
-#else
-#  define       UINT_FAST64_MAX        ULLONG_MAX
-#endif
-#ifdef __LP64__
-#  define	UINT_LEAST64_MAX	ULONG_MAX
-#else
-#  define       UINT_LEAST64_MAX        ULLONG_MAX
-#endif
+#  define	UINT_FAST64_MAX	__UINT64_MAX__
+#  define	UINT_LEAST64_MAX	__UINT64_MAX__
+
 #endif  /* HPUX_STDINT_LEAST_FAST_CHECK */
 
 

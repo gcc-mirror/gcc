@@ -1,3 +1,9 @@
+2009-10-21  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux_stdint_least_fast): Simplify.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: Update.
+
 2009-09-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* inclhack.def (isc_fmod, isc_omits_with_stdc)
