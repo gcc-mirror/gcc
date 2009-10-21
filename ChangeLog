@@ -1,3 +1,10 @@
+2009-10-21  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Adjust the ppl and cloog configure to work as
+	documented.  Disable cloog if ppl was disabled.  Omit the version
+	checks if they were disabled.
+	* configure: Re-generate.
+
 2009-10-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Add 'lto' to enable_languages, not
