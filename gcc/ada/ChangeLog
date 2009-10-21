@@ -1,3 +1,8 @@
+2009-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interfaces/utils.c (create_subprog_decl): Do not redefine
+	main_identifier_node.
+
 2009-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (convert): When converting to a padded type

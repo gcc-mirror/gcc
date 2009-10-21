@@ -1866,9 +1866,9 @@ create_subprog_decl (tree subprog_name, tree asm_name,
 	 to be declared as the "main" function literally by default.  Ada
 	 program entry points are typically declared with a different name
 	 within the binder generated file, exported as 'main' to satisfy the
-	 system expectations.  Redirect main_identifier_node in this case.  */
+	 system expectations.  Force main_identifier_node in this case.  */
       if (asm_name == main_identifier_node)
-	main_identifier_node = DECL_NAME (subprog_decl);
+	DECL_NAME (subprog_decl) = main_identifier_node;
     }
 
   process_attributes (subprog_decl, attr_list);
