@@ -2958,7 +2958,7 @@ finish_mangling_get_identifier (const bool warn)
   finish_mangling_internal (warn);
   /* Don't obstack_finish here, and the next start_mangling will
      remove the identifier.  */
-  return get_identifier ((const char *) name_base);
+  return get_identifier ((const char *) obstack_base (mangle_obstack));
 }
 
 /* Initialize data structures for mangling.  */
