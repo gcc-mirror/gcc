@@ -1,3 +1,11 @@
+2009-10-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41706
+	PR fortran/41766
+	* match.c (select_type_set_tmp): Set flavor for temporary.
+	* resolve.c (resolve_class_typebound_call): Correctly resolve actual
+	arguments.
+
 2009-10-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41706

@@ -5369,7 +5369,7 @@ resolve_class_typebound_call (gfc_code *code)
     } 
 
   /* Resolve the argument expressions,  */
-  resolve_arg_exprs (code->ext.actual); 
+  resolve_arg_exprs (code->expr1->value.compcall.actual); 
 
   /* Get the data component, which is of the declared type.  */
   derived = declared->components->ts.u.derived;

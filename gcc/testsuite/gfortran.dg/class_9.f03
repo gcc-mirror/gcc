@@ -11,6 +11,7 @@ contains
   procedure, nopass :: a
   procedure, nopass :: b
   procedure, pass :: c
+  procedure, nopass :: d
 end type
 
 contains
@@ -30,6 +31,11 @@ contains
     c = 4.*x%v
   end function
 
+  subroutine d (x)
+    real :: x
+    if (abs(x-3.0)>1E-3) call abort()
+  end subroutine
+
   subroutine s (x)
     class(t) :: x
     real :: r
@@ -47,6 +53,8 @@ contains
 
     r = x%a(x%c ())   ! failed
     if (r .ne. a(c (x))) call abort
+
+    call x%d (x%a(1.5))  ! failed
 
   end subroutine
 
