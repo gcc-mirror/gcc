@@ -1,3 +1,12 @@
+2009-10-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/41497
+	* tree-scalar-evolution.c (analyze_evolution_in_loop): Return
+	chrec_dont_know if the evolution function returned by follow_ssa_edge
+	is constant in the analyzed loop and is not compatible with the
+	initial value before the loop.
+	* tree-chrec.h (no_evolution_in_loop_p): Call STRIP_NOPS.
+
 2009-10-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sh/sh.c (nonpic_symbol_mentioned_p): Allow UNSPEC_TPOFF.

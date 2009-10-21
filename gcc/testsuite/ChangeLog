@@ -1,3 +1,8 @@
+2009-10-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/41497
+	* gcc.dg/tree-ssa/pr41497.c: New.
+
 2009-10-21  Steve Ellcey  <sje@cup.hp.com>
 
 	* g++.dg/tree-ssa/copyprop.C: Use include to define free().

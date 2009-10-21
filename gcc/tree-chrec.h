@@ -115,6 +115,7 @@ no_evolution_in_loop_p (tree chrec, unsigned loop_num, bool *res)
       || chrec_contains_symbols_defined_in_loop (chrec, loop_num))
     return false;
 
+  STRIP_NOPS (chrec);
   scev = hide_evolution_in_other_loops_than_loop (chrec, loop_num);
   *res = !tree_is_chrec (scev);
   return true;

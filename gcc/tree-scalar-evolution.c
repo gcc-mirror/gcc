@@ -1492,18 +1492,29 @@ analyze_evolution_in_loop (gimple loop_phi_node,
       bb = gimple_phi_arg_edge (loop_phi_node, i)->src;
       if (!flow_bb_inside_loop_p (loop, bb))
 	continue;
-      
+
       if (TREE_CODE (arg) == SSA_NAME)
 	{
+	  bool val = false;
+
 	  ssa_chain = SSA_NAME_DEF_STMT (arg);
 
 	  /* Pass in the initial condition to the follow edge function.  */
 	  ev_fn = init_cond;
 	  res = follow_ssa_edge (loop, ssa_chain, loop_phi_node, &ev_fn, 0);
+
+	  /* If ev_fn has no evolution in the inner loop, and the
+	     init_cond is not equal to ev_fn, then we have an
+	     ambiguity between two possible values, as we cannot know
+	     the number of iterations at this point.  */
+	  if (TREE_CODE (ev_fn) != POLYNOMIAL_CHREC
+	      && no_evolution_in_loop_p (ev_fn, loop->num, &val) && val
+	      && !operand_equal_p (init_cond, ev_fn, 0))
+	    ev_fn = chrec_dont_know;
 	}
       else
 	res = t_false;
-	      
+
       /* When it is impossible to go back on the same
 	 loop_phi_node by following the ssa edges, the
 	 evolution is represented by a peeled chrec, i.e. the
