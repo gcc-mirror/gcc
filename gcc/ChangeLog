@@ -1,3 +1,10 @@
+2009-10-21  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR c++/41313
+	* gcc/config/darwin10.h: Use default_emit_unwind_label.
+	* gcc/config/darwin.c: Disable -freorder-blocks-and-partition
+	when darwin_emit_unwind_label is used.
+
 2009-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-vect-stmts.c (exist_non_indexing_operands_for_use_p): Tweak
