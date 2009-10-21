@@ -1,5 +1,9 @@
 2009-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr22.adb: New test.
+
+2009-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/loop_optimization7.ad[sb]: New test.
 	* gnat.dg/loop_optimization7_pkg.ads: New helper.
 

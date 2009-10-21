@@ -7374,12 +7374,16 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
        gnat_value = Next_Elmt (gnat_value))
     /* Ignore access discriminants.  */
     if (!Is_Access_Type (Etype (Node (gnat_value))))
-      gnu_list = tree_cons (gnat_to_gnu_field_decl (gnat_discrim),
-			    elaborate_expression
-			    (Node (gnat_value), gnat_subtype,
-			     get_entity_name (gnat_discrim), definition,
-			     true, false),
-			    gnu_list);
+      {
+	tree gnu_field = gnat_to_gnu_field_decl (gnat_discrim);
+	gnu_list = tree_cons (gnu_field,
+			      convert (TREE_TYPE (gnu_field),
+				       elaborate_expression
+				       (Node (gnat_value), gnat_subtype,
+					get_entity_name (gnat_discrim),
+					definition, true, false)),
+			      gnu_list);
+      }
 
   return gnu_list;
 }
