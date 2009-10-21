@@ -2213,16 +2213,9 @@ fix = {
     select    =
         "^[ \t]*#[ \t]*define[ \t]+UINT_(LEAST|FAST)64_MAX[ \t]+ULLONG_MAX";
     c_fix     = format;
-    c-fix-arg = <<- _EOFix_
-	#ifdef __LP64__
-	#  define	UINT_%164_MAX	ULONG_MAX
-	#else
-	%0
-	#endif
-	_EOFix_;
-    test-text = <<- _EOFix_
-	#  define       UINT_FAST64_MAX        ULLONG_MAX
-	#  define       UINT_LEAST64_MAX        ULLONG_MAX
+    c-fix-arg = "#  define	UINT_%164_MAX	__UINT64_MAX__";
+    test-text = "#  define       UINT_FAST64_MAX        ULLONG_MAX\n"
+		"#  define       UINT_LEAST64_MAX        ULLONG_MAX\n";
 	_EOFix_;
 };
 
