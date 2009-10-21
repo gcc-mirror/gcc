@@ -1,3 +1,11 @@
+2009-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2009-06-13  Joerg Sonnenberger  <joerg@britannica.bec.de>
+
+	* doc/invoke.texi: Add missing option -Wp,OPTION in list,
+	fix index entry for -Xpreprocessor.
+
 2009-10-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
         Backport from mainline:
