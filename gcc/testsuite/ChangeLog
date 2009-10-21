@@ -1,3 +1,10 @@
+2009-10-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41706
+	PR fortran/41766
+	* gfortran.dg/class_9.f03: Extended test case.
+	* gfortran.dg/select_type_7.f03: New test case.
+
 2009-10-20  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/lto/20091020-3_0.c: New testcase.
