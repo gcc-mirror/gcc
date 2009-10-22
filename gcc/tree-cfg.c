@@ -5254,7 +5254,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
  
  /* If the block consisting of the exit condition has the latch as 
     successor, then the body of the loop is executed before 
-    the exit consition is tested.  In such case, moving the 
+    the exit condition is tested.  In such case, moving the 
     condition to the entry, causes that the loop will iterate  
     one less iteration (which is the wanted outcome, since we 
     peel out the last iteration).  If the body is executed after 
@@ -5272,7 +5272,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
       {
 	iters_bb = gimple_bb (SSA_NAME_DEF_STMT (gimple_cond_rhs (cond_stmt)));
 	for (gsi1 = gsi_start_bb (iters_bb); !gsi_end_p (gsi1); gsi_next (&gsi1))
-	  if (gsi_stmt (gsi1)==SSA_NAME_DEF_STMT (gimple_cond_rhs (cond_stmt)))
+	  if (gsi_stmt (gsi1) == SSA_NAME_DEF_STMT (gimple_cond_rhs (cond_stmt)))
 	    break;
 		 
 	new_rhs = force_gimple_operand_gsi (&gsi1, new_rhs, true,
@@ -5302,7 +5302,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
  
   /* If the block consisting of the exit condition has the latch as 
      successor, then the body of the loop is executed before 
-     the exit consition is tested.  
+     the exit condition is tested.  
      
      { body  }
      { cond  } (exit[0])  -> { latch }
@@ -5340,7 +5340,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
     region_copy[i]->flags |= BB_DUPLICATED;
   
   /* Iterate all incoming edges to latch.  All those coming from 
-     copied bbs will be redicrecred to exit_bb.  */
+     copied bbs will be redirected to exit_bb.  */
   FOR_EACH_EDGE (e, ei, orig_loop->latch->preds)
     {
       if (e->src->flags & BB_DUPLICATED)
@@ -5360,19 +5360,18 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
     }
   
   VEC_free (edge, heap, redirect_edges);
-  
-  
+
   /* Anything that is outside of the region, but was dominated by something
      inside needs to update dominance info.  */
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
   VEC_free (basic_block, heap, doms);
-  
+
   /* Update the SSA web.  */
   update_ssa (TODO_update_ssa);
-  
+
   if (free_region_copy)
     free (region_copy);
-  
+
   free_original_copy_tables ();
   return true;
 }

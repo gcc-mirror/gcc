@@ -1,3 +1,10 @@
+2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
+	
+	* testsuite/gcc.dg/autopar/outer-4.c: Adjust scan.
+	* testsuite/gcc.dg/autopar/outer-5.c: Adjust scan.
+	* testsuite/gcc.dg/autopar/outer-5.c: Add scan optimized.
+	* tree-cfg.c(gimple_duplicate_sese_tail): Fix typos/indentation/white space.
+
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_symtab_merge_cgraph_nodes): Declare.
