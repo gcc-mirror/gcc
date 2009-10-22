@@ -5771,12 +5771,10 @@ case $with_ppl in
     ppllibs=
     ;;
   yes)
-    LIBS="$ppllibs $LIBS"
     ;;
   *)
     ppllibs="-L$with_ppl/lib -lppl_c -lppl -lgmpxx"
     pplinc="-I$with_ppl/include $pplinc"
-    LIBS="$ppllibs $LIBS"
     ;;
 esac
 if test "x$with_ppl_include" != x; then
@@ -5784,12 +5782,10 @@ if test "x$with_ppl_include" != x; then
 fi
 if test "x$with_ppl_lib" != x; then
   ppllibs="-L$with_ppl_lib -lppl_c -lppl -lgmpxx"
-  LIBS="$ppllibs $LIBS"
 fi
 if test "x$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
   ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/.libs -L$$r/$(HOST_SUBDIR)/ppl/_libs -lppl_c -lppl -lgmpxx '
   pplinc='-I$$r/$(HOST_SUBDIR)/ppl/include -I$$s/ppl/include '
-  LIBS="$ppllibs $LIBS"
 fi
 
 # Check whether --enable-ppl-version-check was given.
@@ -5825,7 +5821,7 @@ if ac_fn_c_try_compile "$LINENO"; then :
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; ppllibs= ; pplinc=
+$as_echo "no" >&6; }; ppllibs= ; pplinc= ; with_ppl=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$saved_CFLAGS"
@@ -5871,12 +5867,10 @@ case $with_cloog in
     clooginc=
     ;;
   yes)
-    LIBS="$clooglibs $LIBS"
     ;;
   *)
     clooglibs="-L$with_cloog/lib -lcloog"
     clooginc="-I$with_cloog/include -DCLOOG_PPL_BACKEND "
-    LIBS="$clooglibs $LIBS"
     ;;
 esac
 if test "x$with_cloog_include" != x; then
@@ -5884,12 +5878,10 @@ if test "x$with_cloog_include" != x; then
 fi
 if test "x$with_cloog_lib" != x; then
   clooglibs="-L$with_cloog_lib -lcloog"
-  LIBS="$clooglibs $LIBS"
 fi
 if test "x$with_cloog$with_cloog_include$with_cloog_lib" = x && test -d ${srcdir}/cloog; then
   clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/.libs -L$$r/$(HOST_SUBDIR)/cloog/_libs -lcloog '
   clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -DCLOOG_PPL_BACKEND '
-  LIBS="$clooglibs $LIBS"
 fi
 
 # Check whether --enable-cloog-version-check was given.
@@ -5967,6 +5959,10 @@ if test "${with_libelf_lib+set}" = set; then :
 fi
 
 
+  saved_CFLAGS="$CFLAGS"
+  saved_CPPFLAGS="$CPPFLAGS"
+  saved_LIBS="$LIBS"
+
   case $with_libelf in
     "")
       libelflibs="-lelf"
@@ -5994,10 +5990,6 @@ fi
     libelfinc='-I$$r/$(HOST_SUBDIR)/libelf/include -I$$s/libelf/include'
     LIBS="$libelflibs $LIBS"
   fi
-
-  saved_CFLAGS="$CFLAGS"
-  saved_CPPFLAGS="$CPPFLAGS"
-  saved_LIBS="$LIBS"
 
   CFLAGS="$CFLAGS $libelfinc"
   CPPFLAGS="$CPPFLAGS $libelfinc"

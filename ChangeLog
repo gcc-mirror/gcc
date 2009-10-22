@@ -1,3 +1,10 @@
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Do not set LIBS for ppl/cloog checks.  Disable
+	cloog if the ppl version check failed.  Move flags saving
+	before setting in libelf check.
+	* configure: Regenerate.
+
 2009-10-21  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Adjust the ppl and cloog configure to work as
