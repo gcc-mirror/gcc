@@ -5733,8 +5733,7 @@ invoking @option{-O2} on programs that use computed gotos.
 Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload}, @option{-ftree-vectorize} and
-@option{-fira-loop-pressure} options.
+@option{-fgcse-after-reload} and @option{-ftree-vectorize} options.
 
 @item -O0
 @opindex O0
@@ -6235,9 +6234,10 @@ architectures with big regular register files.
 @opindex fira-loop-pressure
 Use IRA to evaluate register pressure in loops for decision to move
 loop invariants.  Usage of this option usually results in generation
-of faster and smaller code but can slow compiler down.
+of faster and smaller code on machines with big register files (>= 32
+registers) but it can slow compiler down.
 
-This option is enabled at level @option{-O3}.
+This option is enabled at level @option{-O3} for some targets.
 
 @item -fno-ira-share-save-slots
 @opindex fno-ira-share-save-slots

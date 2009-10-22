@@ -2281,6 +2281,13 @@ rs6000_override_options (const char *default_cpu)
 		     | MASK_POPCNTD | MASK_VSX | MASK_ISEL | MASK_NO_UPDATE)
   };
 
+  /* Numerous experiment shows that IRA based loop pressure
+     calculation works better for RTL loop invariant motion on targets
+     with enough (>= 32) registers.  It is an expensive optimization.
+     So it is on only for peak performance.  */
+  if (optimize >= 3)
+    flag_ira_loop_pressure = 1;
+
   /* Set the pointer size.  */
   if (TARGET_64BIT)
     {
