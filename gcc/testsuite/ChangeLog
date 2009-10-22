@@ -1,3 +1,7 @@
+2009-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/pr40556.c: New testcase.
+
 2009-10-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41781

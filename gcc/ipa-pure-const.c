@@ -330,12 +330,11 @@ check_call (funct_state local, gimple call, bool ipa)
   /* When not in IPA mode, we can still handle self recursion.  */
   if (!ipa && callee_t == current_function_decl)
     local->looping = true;
-  /* The callee is either unknown (indirect call) or there is just no
-     scannable code for it (external call) .  We look to see if there
-     are any bits available for the callee (such as by declaration or
-     because it is builtin) and process solely on the basis of those
-     bits. */
-  else if (avail <= AVAIL_OVERWRITABLE || !ipa)
+  /* Either calle is unknown or we are doing local analysis.
+     Look to see if there are any bits available for the callee (such as by
+     declaration or because it is builtin) and process solely on the basis of
+     those bits. */
+  else if (!ipa || !callee_t)
     {
       if (possibly_throws && flag_non_call_exceptions)
         {
@@ -492,13 +491,6 @@ analyze_function (struct cgraph_node *fn, bool ipa)
   funct_state l;
   basic_block this_block;
 
-  if (cgraph_function_body_availability (fn) <= AVAIL_OVERWRITABLE)
-    {
-      if (dump_file)
-        fprintf (dump_file, "Function is not available or overwrittable; not analyzing.\n");
-      return NULL;
-    }
-
   l = XCNEW (struct funct_state_d);
   l->pure_const_state = IPA_CONST;
   l->state_previously_known = IPA_NEITHER;
@@ -609,7 +601,7 @@ end:
 static void
 add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
- if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
+ if (cgraph_function_body_availability (node) < AVAIL_OVERWRITABLE)
    return;
   /* There are some shared nodes, in particular the initializers on
      static declarations.  We do not need to scan them more than once
@@ -686,12 +678,12 @@ generate_summary (void)
 
   /* Process all of the functions. 
 
-     We do NOT process any AVAIL_OVERWRITABLE functions, we cannot
-     guarantee that what we learn about the one we see will be true
-     for the one that overrides it.
-  */
+     We process AVAIL_OVERWRITABLE functions.  We can not use the results
+     by default, but the info can be used at LTO with -fwhole-program or
+     when function got clonned and the clone is AVAILABLE.  */
+
   for (node = cgraph_nodes; node; node = node->next)
-    if (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE)
+    if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
       set_function_state (node, analyze_function (node, true));
 
   pointer_set_destroy (visited_nodes);
@@ -878,6 +870,12 @@ propagate (void)
 
 	  if (w_l->looping)
 	    looping = true;
+	  if (cgraph_function_body_availability (w) == AVAIL_OVERWRITABLE)
+	    {
+	      looping |= w_l->looping_previously_known;
+	      if (pure_const_state < w_l->state_previously_known)
+	        pure_const_state = w_l->state_previously_known;
+	    }
 
 	  if (pure_const_state == IPA_NEITHER)
 	    break;
@@ -900,6 +898,20 @@ propagate (void)
 		    break;
 		  if (y_l->looping)
 		    looping = true;
+		}
+	      else
+	        {
+		  int flags = flags_from_decl_or_type (y->decl);
+
+		  if (flags & ECF_LOOPING_CONST_OR_PURE)
+		    looping = true;
+		  if (flags & ECF_CONST)
+		    ;
+		  else if ((flags & ECF_PURE) && pure_const_state == IPA_CONST)
+		    pure_const_state = IPA_PURE;
+		  else
+		    pure_const_state = IPA_NEITHER, looping = true;
+
 		}
 	    }
 	  w_info = (struct ipa_dfs_info *) w->aux;
@@ -988,7 +1000,8 @@ propagate (void)
 	  struct cgraph_edge *e;
 	  funct_state w_l = get_function_state (w);
 
-	  if (w_l->can_throw)
+	  if (w_l->can_throw
+	      || cgraph_function_body_availability (w) == AVAIL_OVERWRITABLE)
 	    can_throw = true;
 
 	  if (can_throw)
@@ -1008,6 +1021,8 @@ propagate (void)
 		      && e->can_throw_external)
 		    can_throw = true;
 		}
+	      else if (e->can_throw_external && !TREE_NOTHROW (y->decl))
+	        can_throw = true;
 	    }
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
@@ -1046,7 +1061,7 @@ propagate (void)
 	  free (node->aux);
 	  node->aux = NULL;
 	}
-      if (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE)
+      if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
 	free (get_function_state (node));
     }
   
@@ -1109,14 +1124,15 @@ local_pure_const (void)
         fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
       return 0;
     }
-
-  l = analyze_function (cgraph_node (current_function_decl), false);
-  if (!l)
+  if (cgraph_function_body_availability (cgraph_node (current_function_decl))
+      <= AVAIL_OVERWRITABLE)
     {
       if (dump_file)
         fprintf (dump_file, "Function has wrong visibility; ignoring\n");
       return 0;
     }
+
+  l = analyze_function (cgraph_node (current_function_decl), false);
 
   switch (l->pure_const_state)
     {
