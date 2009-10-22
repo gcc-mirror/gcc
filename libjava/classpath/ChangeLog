@@ -1,3 +1,10 @@
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
+	PR cp-tools/39177
+	* tools/gnu/classpath/tools/jar/Creator.java (writeCommandLineEntries):
+	Do not use uninitialized manifest.
+	* tools/classes/gnu/classpath/tools/jar/Creator.class: Re-generated.
+
 2009-08-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* ltmain.sh (removedotparts): Don't use comma as 's' separator.
