@@ -283,13 +283,14 @@ lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
   xloc.file = canon_file_name (xloc.file);
   xloc.line = lto_input_sleb128 (ib);
   xloc.column = lto_input_sleb128 (ib);
+  xloc.sysp = lto_input_sleb128 (ib);
 
   if (data_in->current_file != xloc.file)
     {
       if (data_in->current_file)
 	linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 
-      linemap_add (line_table, LC_ENTER, false, xloc.file, xloc.line);
+      linemap_add (line_table, LC_ENTER, xloc.sysp, xloc.file, xloc.line);
     }
   else if (data_in->current_line != xloc.line)
     linemap_line_start (line_table, xloc.line, xloc.column);
