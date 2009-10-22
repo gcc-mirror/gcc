@@ -12053,7 +12053,11 @@ resolve_codes (gfc_namespace *ns)
     resolve_codes (n);
 
   gfc_current_ns = ns;
-  cs_base = NULL;
+
+  /* Don't clear 'cs_base' if this is the namespace of a BLOCK construct.  */
+  if (!(ns->proc_name && ns->proc_name->attr.flavor == FL_LABEL))
+    cs_base = NULL;
+
   /* Set to an out of range value.  */
   current_entry_id = -1;
 

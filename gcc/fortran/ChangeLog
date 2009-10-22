@@ -1,3 +1,11 @@
+2009-10-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41781
+	* resolve.c (resolve_codes): Don't clear 'cs_base' for BLOCK constructs,
+	to make sure labels are treated correctly.
+	* symbol.c (gfc_get_st_label): Create labels in the right namespace.
+	For BLOCK constructs go into the parent namespace.
+
 2009-10-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41706
