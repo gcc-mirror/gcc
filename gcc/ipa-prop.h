@@ -72,7 +72,7 @@ enum ipa_lattice_type
 
 /* Structure holding data required to describe a pass-through jump function.  */
 
-struct ipa_pass_through_data
+struct GTY(()) ipa_pass_through_data
 {
   /* If an operation is to be performed on the original parameter, this is the
      second (constant) operand.  */
@@ -89,7 +89,7 @@ struct ipa_pass_through_data
 /* Structure holding data required to describe and ancestor pass throu
    funkci.  */
 
-struct ipa_ancestor_jf_data
+struct GTY(()) ipa_ancestor_jf_data
 {
   /* Offset of the field representing the ancestor.  */
   HOST_WIDE_INT offset;
@@ -101,30 +101,28 @@ struct ipa_ancestor_jf_data
 
 /* Structure holding a C++ member pointer constant.  Holds a pointer to the
    method and delta offset.  */
-struct ipa_member_ptr_cst
+struct GTY(()) ipa_member_ptr_cst
 {
   tree pfn;
   tree delta;
 };
 
-/* Represents a value of a jump function.  pass_through is used only in jump
-   function context.  constant represents the actual constant in constant jump
-   functions and member_cst holds constant c++ member functions.  */
-union jump_func_value
-{
-  tree constant;
-  struct ipa_pass_through_data pass_through;
-  struct ipa_ancestor_jf_data ancestor;
-  struct ipa_member_ptr_cst member_cst;
-};
-
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite. See enum jump_func_type for the various
    types of jump functions supported.  */
-struct ipa_jump_func
+struct GTY (()) ipa_jump_func
 {
   enum jump_func_type type;
-  union jump_func_value value;
+  /* Represents a value of a jump function.  pass_through is used only in jump
+     function context.  constant represents the actual constant in constant jump
+     functions and member_cst holds constant c++ member functions.  */
+  union jump_func_value
+  {
+    tree GTY ((tag ("IPA_JF_CONST"))) constant;
+    struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
+    struct ipa_ancestor_jf_data GTY ((tag ("IPA_JF_ANCESTOR"))) ancestor;
+    struct ipa_member_ptr_cst GTY ((tag ("IPA_JF_CONST_MEMBER_PTR"))) member_cst;
+  } GTY ((desc ("%1.type"))) value;
 };
 
 /* All formal parameters in the program have a cval computed by
@@ -280,15 +278,15 @@ ipa_is_called_with_var_arguments (struct ipa_node_params *info)
 /* ipa_edge_args stores information related to a callsite and particularly
    its arguments. It is pointed to by a field in the
    callsite's corresponding cgraph_edge.  */
-struct ipa_edge_args
+typedef struct GTY(()) ipa_edge_args
 {
   /* Number of actual arguments in this callsite.  When set to 0,
      this callsite's parameters would not be analyzed by the different
      stages of IPA CP.  */
   int argument_count;
   /* Array of the callsite's jump function of each parameter.  */
-  struct ipa_jump_func *jump_functions;
-};
+  struct ipa_jump_func GTY ((length ("%h.argument_count"))) *jump_functions;
+} ipa_edge_args_t;
 
 /* ipa_edge_args access functions.  Please use these to access fields that
    are or will be shared among various passes.  */
@@ -321,18 +319,17 @@ ipa_get_ith_jump_func (struct ipa_edge_args *args, int i)
 
 /* Vectors need to have typedefs of structures.  */
 typedef struct ipa_node_params ipa_node_params_t;
-typedef struct ipa_edge_args ipa_edge_args_t;
 
 /* Types of vectors holding the infos.  */
 DEF_VEC_O (ipa_node_params_t);
 DEF_VEC_ALLOC_O (ipa_node_params_t, heap);
 DEF_VEC_O (ipa_edge_args_t);
-DEF_VEC_ALLOC_O (ipa_edge_args_t, heap);
+DEF_VEC_ALLOC_O (ipa_edge_args_t, gc);
 
 /* Vector where the parameter infos are actually stored. */
 extern VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
 /* Vector where the parameter infos are actually stored. */
-extern VEC (ipa_edge_args_t, heap) *ipa_edge_args_vector;
+extern GTY(()) VEC (ipa_edge_args_t, gc) *ipa_edge_args_vector;
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
@@ -378,12 +375,12 @@ static inline void
 ipa_check_create_edge_args (void)
 {
   if (!ipa_edge_args_vector)
-    ipa_edge_args_vector = VEC_alloc (ipa_edge_args_t, heap,
+    ipa_edge_args_vector = VEC_alloc (ipa_edge_args_t, gc,
 				      cgraph_edge_max_uid);
 
   if (VEC_length (ipa_edge_args_t, ipa_edge_args_vector)
       <=  (unsigned) cgraph_edge_max_uid)
-    VEC_safe_grow_cleared (ipa_edge_args_t, heap, ipa_edge_args_vector,
+    VEC_safe_grow_cleared (ipa_edge_args_t, gc, ipa_edge_args_vector,
 			   cgraph_edge_max_uid + 1);
 }
 
@@ -507,6 +504,10 @@ void ipa_modify_call_arguments (struct cgraph_edge *, gimple,
 ipa_parm_adjustment_vec ipa_combine_adjustments (ipa_parm_adjustment_vec,
 						 ipa_parm_adjustment_vec);
 void ipa_dump_param_adjustments (FILE *, ipa_parm_adjustment_vec, tree);
+
+void ipa_prop_write_jump_functions (cgraph_node_set set);
+void ipa_prop_read_jump_functions (void);
+void ipa_update_after_lto_read (void);
 
 /* From tree-sra.c:  */
 bool build_ref_for_offset (tree *, tree, HOST_WIDE_INT, tree, bool);

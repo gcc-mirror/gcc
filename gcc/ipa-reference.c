@@ -1014,7 +1014,7 @@ write_node_summary_p (struct cgraph_node *node)
 {
   return (node->analyzed 
 	  && node->global.inlined_to == NULL
-	  && cgraph_function_body_availability (node) == AVAIL_OVERWRITABLE
+	  && cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE
 	  && get_reference_vars_info (node) != NULL);
 }
 

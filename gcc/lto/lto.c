@@ -1652,6 +1652,53 @@ free_decl (const void *p, void *data ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* Fixup pointers in jump functions.
+   TODO: We need some generic solution that will allow tree pointers in
+   function summaries.  */
+static void
+lto_fixup_jump_functions (lto_fixup_data_t * data)
+{
+  struct cgraph_node *node;
+  struct cgraph_edge *cs;
+
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      if (!node->analyzed)
+	continue;
+      for (cs = node->callees; cs; cs = cs->next_callee)
+	{
+	  int i;
+	  struct ipa_edge_args *args = IPA_EDGE_REF (cs);
+	  for (i = 0; i < ipa_get_cs_argument_count (args); i++)
+	    {
+	      struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
+	      switch (jf->type)
+		{
+		case IPA_JF_UNKNOWN:
+		  break;
+		case IPA_JF_CONST:
+		  walk_tree (&jf->value.constant, lto_fixup_tree, data, NULL);
+		  break;
+		case IPA_JF_PASS_THROUGH:
+		  walk_tree (&jf->value.pass_through.operand, lto_fixup_tree,
+			     data, NULL);
+		  break;
+		case IPA_JF_ANCESTOR:
+		  walk_tree (&jf->value.ancestor.type, lto_fixup_tree, data,
+			     NULL);
+		  break;
+		case IPA_JF_CONST_MEMBER_PTR:
+		  walk_tree (&jf->value.member_cst.pfn, lto_fixup_tree, data,
+			     NULL);
+		  walk_tree (&jf->value.member_cst.delta, lto_fixup_tree,
+			     data, NULL);
+		  break;
+		}
+	    }
+	}
+    }
+}
+
 /* Fix the decls from all FILES. Replaces each decl with the corresponding
    prevailing one.  */
 
@@ -1682,6 +1729,8 @@ lto_fixup_decls (struct lto_file_decl_data **files)
       if (decl != saved_decl)
 	VEC_replace (tree, lto_global_var_decls, i, decl);
     }
+  if (ipa_edge_args_vector)
+    lto_fixup_jump_functions (&data);
 
   pointer_set_traverse (free_list, free_decl, NULL);
   pointer_set_destroy (free_list);

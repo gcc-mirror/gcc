@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "ipa-utils.h"
 #include "lto-streamer.h"
+#include "tree-pass.h"
 
 /* Data structure used to hash file names in the source_location field.  */
 struct string_slot
@@ -1341,6 +1342,8 @@ input_function (tree fn_decl, struct data_in *data_in,
   fixup_call_stmt_edges (cgraph_node (fn_decl), stmts);
 
   update_ssa (TODO_update_ssa_only_virtuals); 
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
   free (stmts);
 }
 
@@ -1455,6 +1458,15 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
       /* Restore decl state */
       file_data->current_decl_state = file_data->global_decl_state;
 
+      /* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
+         summaries computed and needs to apply changes.  At the moment WHOPR only
+         supports inlining, so we can push it here by hand.  In future we need to stream
+         this field into ltrans compilation.  This will also need to move the field
+	 from struct function into cgraph node where it belongs.  */
+      if (flag_ltrans && !cgraph_node (fn_decl)->global.inlined_to)
+	 VEC_safe_push (ipa_opt_pass, heap,
+			cfun->ipa_transforms_to_apply,
+			(ipa_opt_pass)&pass_ipa_inline);
       pop_cfun ();
     }
   else 

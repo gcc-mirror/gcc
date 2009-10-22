@@ -1618,7 +1618,8 @@ ipa_write_summaries_1 (cgraph_node_set set)
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
   lto_push_out_decl_state (state);
 
-  ipa_write_summaries_2 (all_regular_ipa_passes, set, state);
+  if (!flag_wpa)
+    ipa_write_summaries_2 (all_regular_ipa_passes, set, state);
   ipa_write_summaries_2 (all_lto_gen_passes, set, state);
 
   gcc_assert (lto_get_out_decl_state () == state);
@@ -1712,7 +1713,8 @@ ipa_read_summaries_1 (struct opt_pass *pass)
 void
 ipa_read_summaries (void)
 {
-  ipa_read_summaries_1 (all_regular_ipa_passes);
+  if (!flag_ltrans)
+    ipa_read_summaries_1 (all_regular_ipa_passes);
   ipa_read_summaries_1 (all_lto_gen_passes);
 }
 

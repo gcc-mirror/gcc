@@ -1,3 +1,8 @@
+2009-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_fixup_jump_functions): New function.
+	(lto_fixup_decls): Use it.
+
 2009-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41715

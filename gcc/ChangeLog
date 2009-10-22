@@ -1,3 +1,50 @@
+2009-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipcp_write_summary, ipcp_read_summary): New functions.
+	(pass_ipa_cp): Register them.
+	(ipcp_init_stage): Analyze all functions for whopr/lto.
+	(ipcp_propagate_stage): Skip external calls.
+	(ipcp_iterate_stage): Call ipa_update_after_lto_read if needed.
+	* ipa-reference.c (write_node_summary_p): Fix thinko about availability.
+	* cgraphunit.c (ipa_passes): When in lto, ne er produce new summaries;
+	when in ltrans, skip executing of ipa passes since everything should've
+	been done.
+	* ipa-inline.c (cgraph_decide_inlining): Remove FIXMEs.
+	(inline_generate_summary): Likewise.
+	(inline_read_summary): New function.
+	(inline_write_summary): New function.
+	(pass_ipa_inline): Register new hooks.
+	* ipa-prop.c: Inlcude lto-streamer.h
+	(ipa_edge_args_vector): Update declaration.
+	(ipa_count_arguments, ipa_compute_jump_functions,
+	ipa_free_edge_args_substructures): Move ipa_edge_args_vector into ggc.
+	(ipa_write_jump_function, ipa_read_jump_function, ipa_write_node_info,
+	ipa_read_node_info): New static functions.
+	(ipa_prop_write_jump_functions, ipa_prop_read_jump_functions): Update.
+	(duplicate_array): Use xmalloc.
+	(duplicate_ggc_array): New.
+	(ipa_edge_duplication_hook): Use it.
+	(ipa_update_after_lto_read): New function.
+	* ipa-prop.h (ipa_prop_write_jump_functions,
+	ipa_prop_read_jump_functions): Declare.
+	(ipa_pass_through_data, ipa_ancestor_jf_data, ipa_member_ptr_cst,
+	jump_func_value, ipa_member_ptr_cst, ipa_edge_args): Add GTY markers.
+	(ipa_edge_args_vector): Move into GGC.
+	(ipa_check_create_edge_args): Update.
+	(ipa_update_after_lto_read): New.
+	* passes.c (ipa_write_summaries_1): When in wpa, do not write summaries.
+	(ipa_read_summaries): When in ltrans, so not read summaries.
+	* lto-streamer.c (lto_get_section_name): Add LTO_section_jump_functions.
+	* lto-streamer.h (LTO_section_jump_functions): New section.
+	(produce_asm): Declare.
+	* lto-cgraph.c (output_cgraph): Output edges in reverse order.
+	* lto-streamer-out.c (produce_asm): Export.
+	* lto-streamer-in.c: Include tree-pass.h
+	(input_function): Free dominance info when done.
+	(lto_read_body): Push ipa_inline in ltrans stage.
+	* gengtype.c (open_base_files): Add ipa-prop.h into includes.
+	* Makefile.in (GTFILES): Add ipa-prop.h
+
 2009-10-22  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/install.texi: Document --enable-browser-plugin.
