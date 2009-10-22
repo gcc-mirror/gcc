@@ -847,7 +847,6 @@ extern void lto_symtab_register_decl (tree, ld_plugin_symbol_resolution_t,
 extern void lto_symtab_merge_decls (void);
 extern tree lto_symtab_prevailing_decl (tree decl);
 extern enum ld_plugin_symbol_resolution lto_symtab_get_resolution (tree decl);
-extern void lto_symtab_clear_resolution (tree decl);
 
 
 /* In lto-opts.c.  */

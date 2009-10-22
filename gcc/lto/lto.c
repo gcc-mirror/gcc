@@ -1193,7 +1193,6 @@ lto_execute_ltrans (char *const *files)
 
 
 typedef struct {
-  struct pointer_set_t *free_list;
   struct pointer_set_t *seen;
 } lto_fixup_data_t;
 
@@ -1528,8 +1527,6 @@ lto_fixup_tree (tree *tp, int *walk_subtrees, void *data)
 		lto_mark_nothrow_fndecl (prevailing);
 	    }
 
-	  pointer_set_insert (fixup_data->free_list, t);
-
 	   /* Also replace t with prevailing defintion.  We don't want to
 	      insert the other defintion in the seen set as we want to
 	      replace all instances of it.  */
@@ -1638,20 +1635,6 @@ lto_fixup_state_aux (void **slot, void *aux)
   return 1;
 }
 
-/* A callback to pointer_set_traverse. Frees the tree pointed by p. Removes
-   from it from the UID -> DECL mapping. */
-
-static bool
-free_decl (const void *p, void *data ATTRIBUTE_UNUSED)
-{
-  const_tree ct = (const_tree) p;
-  tree t = CONST_CAST_TREE (ct);
-
-  lto_symtab_clear_resolution (t);
-
-  return true;
-}
-
 /* Fixup pointers in jump functions.
    TODO: We need some generic solution that will allow tree pointers in
    function summaries.  */
@@ -1707,11 +1690,9 @@ lto_fixup_decls (struct lto_file_decl_data **files)
 {
   unsigned int i;
   tree decl;
-  struct pointer_set_t *free_list = pointer_set_create ();
   struct pointer_set_t *seen = pointer_set_create ();
   lto_fixup_data_t data;
 
-  data.free_list = free_list;
   data.seen = seen;
   for (i = 0; files[i]; i++)
     {
@@ -1732,8 +1713,6 @@ lto_fixup_decls (struct lto_file_decl_data **files)
   if (ipa_edge_args_vector)
     lto_fixup_jump_functions (&data);
 
-  pointer_set_traverse (free_list, free_decl, NULL);
-  pointer_set_destroy (free_list);
   pointer_set_destroy (seen);
 }
 
