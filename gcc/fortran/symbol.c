@@ -2030,9 +2030,16 @@ gfc_st_label *
 gfc_get_st_label (int labelno)
 {
   gfc_st_label *lp;
+  gfc_namespace *ns;
+
+  /* Find the namespace of the scoping unit:
+     If we're in a BLOCK construct, jump to the parent namespace.  */
+  ns = gfc_current_ns;
+  while (ns->proc_name && ns->proc_name->attr.flavor == FL_LABEL)
+    ns = ns->parent;
 
   /* First see if the label is already in this namespace.  */
-  lp = gfc_current_ns->st_labels;
+  lp = ns->st_labels;
   while (lp)
     {
       if (lp->value == labelno)
@@ -2050,7 +2057,7 @@ gfc_get_st_label (int labelno)
   lp->defined = ST_LABEL_UNKNOWN;
   lp->referenced = ST_LABEL_UNKNOWN;
 
-  gfc_insert_bbt (&gfc_current_ns->st_labels, lp, compare_st_labels);
+  gfc_insert_bbt (&ns->st_labels, lp, compare_st_labels);
 
   return lp;
 }
