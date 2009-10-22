@@ -845,6 +845,7 @@ void input_cgraph (void);
 extern void lto_symtab_register_decl (tree, ld_plugin_symbol_resolution_t,
 				      struct lto_file_decl_data *);
 extern void lto_symtab_merge_decls (void);
+extern void lto_symtab_merge_cgraph_nodes (void);
 extern tree lto_symtab_prevailing_decl (tree decl);
 extern enum ld_plugin_symbol_resolution lto_symtab_get_resolution (tree decl);
 

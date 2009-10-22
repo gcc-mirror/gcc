@@ -1,5 +1,13 @@
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
+	* lto.c (lto_fixup_jump_functions): Remove.
+	(lto_fixup_decls): Do not fixup jump functions.
+	(read_cgraph_and_symbols): Schedule cgraph merging after
+	summary reading.  Schedule type and decl fixup before
+	summary reading.
+
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
 	* lto.c (lto_fixup_data_t): Remove free_list member.
 	(lto_fixup_tree): Do not insert into free_list.
 	(free_decl): Remove.

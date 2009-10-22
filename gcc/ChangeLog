@@ -1,5 +1,17 @@
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer.h (lto_symtab_merge_cgraph_nodes): Declare.
+	* lto-symtab.c (struct lto_symtab_entry_def): Add node member.
+	(lto_symtab_merge): Do not merge cgraph nodes here.
+	(lto_symtab_resolve_can_prevail_p): Simplify.
+	(lto_symtab_resolve_symbols): Store cgraph node.
+	(lto_symtab_merge_decls_1): Simplify.  Do not drop non-prevailing
+	functions from the symtab.
+	(lto_symtab_merge_cgraph_nodes_1): New function.
+	(lto_symtab_merge_cgraph_nodes): Likewise.
+
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41791
 	* lto-streamer-out.c (lto_output_location): Stream the
 	system header flag.
