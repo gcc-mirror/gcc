@@ -1,3 +1,8 @@
+2009-10-22  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add output.h and
+	IPA_UTILS_H.
+
 2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
 	
 	* testsuite/gcc.dg/autopar/outer-4.c: Adjust scan.
