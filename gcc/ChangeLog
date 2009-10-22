@@ -1,3 +1,12 @@
+2009-10-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/invoke.texi (fira-loop-pressure): Update default value.
+	* opts.c (decode_options): Remove default value setting for
+	flag_ira_loop_pressure.
+	* config/ia64/ia64.c (ia64_override_options): Set
+	flag_ira_loop_pressure up for -O3.
+	* config/rs6000/rs6000.c (rs6000_override_options): Ditto.
+	
 2009-10-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/41497
