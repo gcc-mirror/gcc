@@ -363,7 +363,10 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
   enum machine_mode op_mode;
-  rtx op0, op1, op2;
+  const char *fmt;
+  rtx op0, op1, op2, newx, op;
+  rtvec vec, newvec;
+  int i, j;
 
   /* If X is OLD_RTX, return FN (X, DATA), with a null FN.  Otherwise,
      if this is an expression, try to build a new expression, substituting
@@ -420,7 +423,6 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
       return simplify_gen_ternary (code, mode, op_mode, op0, op1, op2);
 
     case RTX_EXTRA:
-      /* The only case we try to handle is a SUBREG.  */
       if (code == SUBREG)
 	{
 	  op0 = simplify_replace_fn_rtx (SUBREG_REG (x), old_rtx, fn, data);
@@ -459,7 +461,44 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
     default:
       break;
     }
-  return x;
+
+  newx = x;
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; fmt[i]; i++)
+    switch (fmt[i])
+      {
+      case 'E':
+	vec = XVEC (x, i);
+	newvec = XVEC (newx, i);
+	for (j = 0; j < GET_NUM_ELEM (vec); j++)
+	  {
+	    op = simplify_replace_fn_rtx (RTVEC_ELT (vec, j),
+					  old_rtx, fn, data);
+	    if (op != RTVEC_ELT (vec, j))
+	      {
+		if (newvec == vec)
+		  {
+		    newvec = shallow_copy_rtvec (vec);
+		    if (x == newx)
+		      newx = shallow_copy_rtx (x);
+		    XVEC (newx, i) = newvec;
+		  }
+		RTVEC_ELT (newvec, j) = op;
+	      }
+	  }
+	break;
+
+      case 'e':
+	op = simplify_replace_fn_rtx (XEXP (x, i), old_rtx, fn, data);
+	if (op != XEXP (x, i))
+	  {
+	    if (x == newx)
+	      newx = shallow_copy_rtx (x);
+	    XEXP (newx, i) = op;
+	  }
+	break;
+      }
+  return newx;
 }
 
 /* Replace all occurrences of OLD_RTX in X with NEW_RTX and try to simplify the
