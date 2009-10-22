@@ -1302,13 +1302,7 @@ ipcp_read_summary (void)
 static bool
 cgraph_gate_cp (void)
 {
-  /* FIXME lto.  IPA-CP does not tolerate running when the inlining decisions
-     have not been applied.  This happens when WPA modifies the callgraph.
-     Since those decisions are not applied until after all the IPA passes
-     have been run in LTRANS, this means that IPA passes may see partially
-     modified callgraphs.  The solution to this is to apply WPA decisions
-     early during LTRANS.  */
-  return flag_ipa_cp && !flag_ltrans;
+  return flag_ipa_cp;
 }
 
 struct ipa_opt_pass_d pass_ipa_cp =

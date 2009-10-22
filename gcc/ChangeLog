@@ -1,3 +1,15 @@
+2009-10-22  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipcp_read_summary): Remove now invalid FIXME and
+	flag_ltrans check.
+	* ipa-inline.c (cgraph_mark_inline_edge,
+	cgraph_decide_inlining_of_small_function,
+	cgraph_decide_inlining, inline_read_summary): Disable indirect inlining
+	for WPA for time being.
+
+	PR tree-optimize/40556                                                                                                                                         
+	* ipa-inline.c (cgraph_early_inlining): Fix iterations condition.
+
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_symtab_clear_resolution): Remove.
@@ -5,7 +17,7 @@
 
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimize/40556
+	PR lto/41730
 	* ipa-reference.c (has_proper_scope_for_analysis): Add fixme about
 	global vars.
 	(check_call): Handle only indirect calls.
