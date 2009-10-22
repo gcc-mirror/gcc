@@ -1,3 +1,9 @@
+2009-10-22  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Rename --enable-plugin to --enable-browser-plugin,
+	pass --{en,dis}able-plugin to the classpath configure.
+	* configure: Regenerate.
+
 2009-09-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.host (libgcj_sublib_ltflags): New variable.

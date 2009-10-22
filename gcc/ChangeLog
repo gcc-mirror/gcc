@@ -1,3 +1,7 @@
+2009-10-22  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Document --enable-browser-plugin.
+
 2009-10-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/invoke.texi (fira-loop-pressure): Update default value.

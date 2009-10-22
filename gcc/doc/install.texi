@@ -1346,8 +1346,10 @@ powerpc-linux for powerpc64-linux, only generates 32-bit code.  This
 option enables the 32-bit target to be a bi-arch compiler, which is
 useful when you want a bi-arch compiler that defaults to 32-bit, and
 you are building a bi-arch or multi-arch binutils in a combined tree.
-Currently, this option only affects sparc-linux, powerpc-linux and
-x86-linux.
+On mips-linux, this will build a tri-arch compiler (ABI o32/n32/64),
+defaulted to o32.
+Currently, this option only affects sparc-linux, powerpc-linux, x86-linux
+and mips-linux.
 
 @item --enable-secureplt
 This option enables @option{-msecure-plt} by default for powerpc-linux.
@@ -1881,6 +1883,9 @@ not specified, then the Python modules are installed in $(prefix)/share/python.
 
 @item --enable-aot-compile-rpm
 Adds aot-compile-rpm to the list of installed scripts.
+
+@item --enable-browser-plugin
+Build the gcjwebplugin web browser plugin.
 
 @table @code
 @item ansi
