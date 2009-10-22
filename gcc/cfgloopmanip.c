@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tree-flow.h"
 
-static void duplicate_subloops (struct loop *, struct loop *);
 static void copy_loops_to (struct loop **, int,
 			   struct loop *);
 static void loop_redirect_edge (edge, basic_block);
@@ -886,7 +885,7 @@ duplicate_loop (struct loop *loop, struct loop *target)
 
 /* Copies structure of subloops of LOOP into TARGET loop, placing
    newly created loops into loop tree.  */
-static void
+void
 duplicate_subloops (struct loop *loop, struct loop *target)
 {
   struct loop *aloop, *cloop;
