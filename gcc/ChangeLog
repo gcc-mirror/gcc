@@ -1,3 +1,29 @@
+2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
+	
+	* cfgloopmanip.c  (duplicate_subloops): Export. 
+	* tree-parloops.c (loop_parallel_p): Dump if loop is innermost.
+	(transform_to_exit_first_loop): Duplicate bbs starting from 
+	header up to loop->latch instead of exit->src.
+	Initialize control variable to the correct number of iterations.
+	(gather_scalar_reductions): Do not register double reductions.
+	(parallelize_loops): Dump which loop is tested. 
+	Indicate whether the parallelized loop is inner or not. 
+	Remove the innermost-loop requirement.
+	* cfgloop.h (duplicate_subloops): Export. 
+	* tree-cfg.c (add_phi_args_after_redirect): New function.
+	(gimple_duplicate_sese_tail): Remove the no-subloops constraint.
+	Call duplicate_subloops.
+	Update number of iterations at the exit condition.
+	Don't redirect nexits always to the loop exit.
+	Redirect copied edges from latch to the loop exit.
+	* testsuite/libgomp.graphite/force-parallel-2.c: Adjust scan.
+	* testsuite/gcc.dg/autopar/outer-1.c: New testcase.
+	* testsuite/gcc.dg/autopar/outer-2.c: New testcase.
+	* testsuite/gcc.dg/autopar/outer-3.c: New testcase.
+	* testsuite/gcc.dg/autopar/outer-4.c: New testcase.
+	* testsuite/gcc.dg/autopar/outer-5.c: New testcase.
+	* testsuite/gcc.dg/autopar/outer-6.c: New testcase.
+
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_read_summary): Remove now invalid FIXME and

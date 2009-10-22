@@ -255,7 +255,13 @@ loop_parallel_p (struct loop *loop)
   bool ret = false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nConsidering loop %d\n", loop->num);
+  {
+    fprintf (dump_file, "Considering loop %d\n", loop->num);
+    if (!loop->inner)
+      fprintf (dump_file, "loop is innermost\n");
+    else 
+      fprintf (dump_file, "loop NOT innermost\n");
+   }
 
   /* Check for problems with dependences.  If the loop can be reversed,
      the iterations are independent.  */
@@ -1289,8 +1295,9 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
   bool ok;
   edge exit = single_dom_exit (loop), hpred;
   tree control, control_name, res, t;
-  gimple phi, nphi, cond_stmt, stmt;
+  gimple phi, nphi, cond_stmt, stmt, cond_nit;
   gimple_stmt_iterator gsi;
+  tree nit_1;
 
   split_block_after_labels (loop->header);
   orig_header = single_succ (loop->header);
@@ -1308,7 +1315,6 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
       res = PHI_RESULT (phi);
       t = make_ssa_name (SSA_NAME_VAR (res), phi);
       SET_PHI_RESULT (phi, t);
-
       nphi = create_phi_node (res, orig_header);
       SSA_NAME_DEF_STMT (res) = nphi;
       add_phi_arg (nphi, t, hpred, UNKNOWN_LOCATION);
@@ -1320,10 +1326,11 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 	  control = t;
 	}
     }
-
   bbs = get_loop_body_in_dom_order (loop);
-  for (n = 0; bbs[n] != exit->src; n++)
+
+  for (n = 0; bbs[n] != loop->latch; n++)
     continue;
+  n--;
   nbbs = XNEWVEC (basic_block, n);
   ok = gimple_duplicate_sese_tail (single_succ_edge (loop->header), exit,
 				   bbs + 1, n, nbbs);
@@ -1358,7 +1365,6 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 	  struct reduction_info *red;
 
 	  tree val = PHI_ARG_DEF_FROM_EDGE (phi, exit);
-
 	  red = reduction_phi (reduction_list, SSA_NAME_DEF_STMT (val));
 	  if (red)
 	    {
@@ -1374,12 +1380,15 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
     }
   gcc_assert (control_name != NULL_TREE);
 
-  /* Initialize the control variable to NIT.  */
+  /* Initialize the control variable to number of iterations 
+     according to the rhs of the exit condition.  */
   gsi = gsi_after_labels (ex_bb);
-  nit = force_gimple_operand_gsi (&gsi,
-				  fold_convert (TREE_TYPE (control_name), nit),
+  cond_nit = last_stmt (exit->src); 
+  nit_1 =  gimple_cond_rhs (cond_nit);
+  nit_1 = force_gimple_operand_gsi (&gsi,
+				  fold_convert (TREE_TYPE (control_name), nit_1),
 				  false, NULL_TREE, false, GSI_SAME_STMT);
-  stmt = gimple_build_assign (control_name, nit);
+  stmt = gimple_build_assign (control_name, nit_1);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
   SSA_NAME_DEF_STMT (control_name) = stmt;
 }
@@ -1740,7 +1749,7 @@ gather_scalar_reductions (loop_p loop, htab_t reduction_list)
 	&& simple_loop_info)
 	{
            gimple reduc_stmt = vect_is_simple_reduction (simple_loop_info, phi, true, &double_reduc);
-	   if (reduc_stmt)
+	   if (reduc_stmt && !double_reduc)
               build_new_reduction (reduction_list, reduc_stmt, phi);
         }
     }
@@ -1890,15 +1899,32 @@ parallelize_loops (void)
   FOR_EACH_LOOP (li, loop, 0)
     {
       htab_empty (reduction_list);
-
-      /* If we use autopar in graphite pass, we use it's marked dependency
+      if (dump_file && (dump_flags & TDF_DETAILS))
+      {
+        fprintf (dump_file, "Trying loop %d as candidate\n",loop->num);
+	if (loop->inner)
+	  fprintf (dump_file, "loop %d is not innermost\n",loop->num);
+	else
+	  fprintf (dump_file, "loop %d is innermost\n",loop->num);
+      }
+      
+      /* If we use autopar in graphite pass, we use its marked dependency
       checking results.  */
       if (flag_loop_parallelize_all && !loop->can_be_parallel)
+      {
+        if (dump_file && (dump_flags & TDF_DETAILS))
+	   fprintf (dump_file, "loop is not parallel according to graphite\n");
 	continue;
+      }
 
-      /* FIXME: Only consider innermost loops with just one exit.  */
-      if (loop->inner || !single_dom_exit (loop))
+      if (!single_dom_exit (loop))
+      {
+       
+        if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file, "loop is !single_dom_exit\n");
+		
 	continue;
+      }
 
       if (/* And of course, the loop must be parallelizable.  */
 	  !can_duplicate_loop_p (loop)
@@ -1915,7 +1941,7 @@ parallelize_loops (void)
 	      /* Do not bother with loops in cold areas.  */
 	      || optimize_loop_nest_for_size_p (loop)))
 	continue;
-
+ 
       if (!try_get_loop_niter (loop, &niter_desc))
 	continue;
 
@@ -1926,6 +1952,14 @@ parallelize_loops (void)
 	continue;
 
       changed = true;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+      {
+        fprintf (dump_file, "parallelizing ");
+	if (loop->inner)
+	  fprintf (dump_file, "outer loop\n");
+	else
+	  fprintf (dump_file, "inner loop\n");
+      } 
       gen_parallel_loop (loop, reduction_list, 
 			 n_threads, &niter_desc);
       verify_flow_info ();

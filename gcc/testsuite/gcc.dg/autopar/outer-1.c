@@ -1,3 +1,6 @@
+/* { dg-do compile } */
+/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details -fdump-tree-optimized" } */
+
 void abort (void);
 
 void parloop (int N)
@@ -22,9 +25,9 @@ int main(void)
   return 0;
 }
 
-/* Check that parallel code generation part make the right answer.  */
-/* { dg-final { scan-tree-dump-times "2 loops carried no dependency" 2 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */
+
+/* Check that outer loop is parallelized.  */
+/* { dg-final { scan-tree-dump-times "parallelizing outer loop" 1 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "loopfn" 5 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "parloops" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
