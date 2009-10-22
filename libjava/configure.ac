@@ -55,15 +55,15 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
     [version_specific_libs=no]
 )
 
-AC_ARG_ENABLE(plugin,
-  AS_HELP_STRING([--enable-plugin],
+AC_ARG_ENABLE(browser-plugin,
+  AS_HELP_STRING([--enable-browser-plugin],
                  [build gcjwebplugin web browser plugin]),
     [case "$enableval" in
-      yes) plugin_enabled=yes ;;
-      no)  plugin_enabled=no ;;
-      *)   AC_MSG_ERROR([Unknown argument to enable/disable plugin]);;
+      yes) browser_plugin_enabled=yes ;;
+      no)  browser_plugin_enabled=no ;;
+      *)   AC_MSG_ERROR([Unknown argument to enable/disable browser plugin]);;
      esac],
-    [plugin_enabled=no]
+    [browser_plugin_enabled=no]
 )
 
 AC_ARG_ENABLE(gconf-peer,
@@ -491,8 +491,10 @@ ac_configure_args="$ac_configure_args --disable-core-jni"
 dnl FIXME?
 ac_configure_args="$ac_configure_args --disable-examples"
 ac_configure_args="$ac_configure_args --with-glibj=build"
-if test "$plugin_enabled" != yes; then
+if test "$browser_plugin_enabled" != yes; then
   ac_configure_args="$ac_configure_args --disable-plugin"
+else
+  ac_configure_args="$ac_configure_args --enable-plugin"
 fi
 if test "$gconf_enabled" != yes; then
   ac_configure_args="$ac_configure_args --disable-gconf-peer"
