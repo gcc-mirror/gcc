@@ -164,6 +164,20 @@ rtvec_alloc (int n)
   return rt;
 }
 
+/* Create a bitwise copy of VEC.  */
+
+rtvec
+shallow_copy_rtvec (rtvec vec)
+{
+  rtvec newvec;
+  int n;
+
+  n = GET_NUM_ELEM (vec);
+  newvec = rtvec_alloc (n);
+  memcpy (&newvec->elem[0], &vec->elem[0], sizeof (rtx) * n);
+  return newvec;
+}
+
 /* Return the number of bytes occupied by rtx value X.  */
 
 unsigned int

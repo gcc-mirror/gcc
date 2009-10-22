@@ -1422,30 +1422,31 @@ cselib_subst_to_values (rtx x)
 	{
 	  rtx t = cselib_subst_to_values (XEXP (x, i));
 
-	  if (t != XEXP (x, i) && x == copy)
-	    copy = shallow_copy_rtx (x);
-
-	  XEXP (copy, i) = t;
+	  if (t != XEXP (x, i))
+	    {
+	      if (x == copy)
+		copy = shallow_copy_rtx (x);
+	      XEXP (copy, i) = t;
+	    }
 	}
       else if (fmt[i] == 'E')
 	{
-	  int j, k;
+	  int j;
 
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
 	      rtx t = cselib_subst_to_values (XVECEXP (x, i, j));
 
-	      if (t != XVECEXP (x, i, j) && XVEC (x, i) == XVEC (copy, i))
+	      if (t != XVECEXP (x, i, j))
 		{
-		  if (x == copy)
-		    copy = shallow_copy_rtx (x);
-
-		  XVEC (copy, i) = rtvec_alloc (XVECLEN (x, i));
-		  for (k = 0; k < j; k++)
-		    XVECEXP (copy, i, k) = XVECEXP (x, i, k);
+		  if (XVEC (x, i) == XVEC (copy, i))
+		    {
+		      if (x == copy)
+			copy = shallow_copy_rtx (x);
+		      XVEC (copy, i) = shallow_copy_rtvec (XVEC (x, i));
+		    }
+		  XVECEXP (copy, i, j) = t;
 		}
-
-	      XVECEXP (copy, i, j) = t;
 	    }
 	}
     }
