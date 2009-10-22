@@ -1,3 +1,10 @@
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41791
+	* lto-streamer-out.c (lto_output_location): Stream the
+	system header flag.
+	* lto-streamer-in.c (lto_input_location): Likewise.
+
 2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
 	
 	* cfgloopmanip.c  (duplicate_subloops): Export. 

@@ -618,6 +618,7 @@ lto_output_location (struct output_block *ob, location_t loc)
   output_string (ob, ob->main_stream, xloc.file);
   output_sleb128 (ob, xloc.line);
   output_sleb128 (ob, xloc.column);
+  output_sleb128 (ob, xloc.sysp);
 
   ob->current_file = xloc.file;
   ob->current_line = xloc.line;
