@@ -533,10 +533,7 @@ typedef struct m32c_cumulative_args
 
 /* How Scalar Function Values Are Returned */
 
-#define FUNCTION_VALUE(VT,F) m32c_function_value (VT, F)
-#define LIBCALL_VALUE(MODE) m32c_libcall_value (MODE)
-
-#define FUNCTION_VALUE_REGNO_P(r) ((r) == R0_REGNO || (r) == MEM0_REGNO)
+#define FUNCTION_VALUE_REGNO_P(r) m32c_function_value_regno_p (r)
 
 /* How Large Values Are Returned */
 

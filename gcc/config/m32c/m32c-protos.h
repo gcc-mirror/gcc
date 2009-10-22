@@ -49,7 +49,6 @@ int  m32c_trampoline_size (void);
 #if defined(RTX_CODE) && defined(TREE_CODE)
 
 rtx  m32c_function_arg (CUMULATIVE_ARGS *, MM, tree, int);
-rtx  m32c_function_value (const_tree, const_tree);
 
 #endif
 
@@ -75,7 +74,7 @@ bool m32c_immd_dbl_mov (rtx *, MM);
 rtx  m32c_incoming_return_addr_rtx (void);
 int  m32c_legitimate_constant_p (rtx);
 int  m32c_legitimize_reload_address (rtx *, MM, int, int, int);
-rtx  m32c_libcall_value (MM);
+bool m32c_function_value_regno_p (const unsigned int);
 int  m32c_limit_reload_class (MM, int);
 int  m32c_memory_move_cost (MM, int, int);
 int  m32c_modes_tieable_p (MM, MM);
