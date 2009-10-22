@@ -41,6 +41,9 @@ struct GTY(()) lto_symtab_entry_def
   tree id;
   /* The symbol table entry, a DECL.  */
   tree decl;
+  /* The cgraph node if decl is a function decl.  Filled in during the
+     merging process.  */
+  struct cgraph_node *node;
   /* LTO file-data and symbol resolution for this decl.  */
   struct lto_file_decl_data * GTY((skip (""))) file_data;
   enum ld_plugin_symbol_resolution resolution;
@@ -232,17 +235,11 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
   tree prevailing_decl = prevailing->decl;
   tree decl = entry->decl;
   tree prevailing_type, type;
-  struct cgraph_node *node;
 
   /* Merge decl state in both directions, we may still end up using
      the new decl.  */
   TREE_ADDRESSABLE (prevailing_decl) |= TREE_ADDRESSABLE (decl);
   TREE_ADDRESSABLE (decl) |= TREE_ADDRESSABLE (prevailing_decl);
-
-  /* Replace a cgraph node of entry with the prevailing one.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && (node = cgraph_get_node (decl)) != NULL)
-    lto_cgraph_replace_node (node, cgraph_get_node (prevailing_decl));
 
   /* The linker may ask us to combine two incompatible symbols.
      Detect this case and notify the caller of required diagnostics.  */
@@ -355,15 +352,12 @@ lto_symtab_resolve_replaceable_p (lto_symtab_entry_t e)
 static bool
 lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 {
-  struct cgraph_node *node;
-
   if (!TREE_STATIC (e->decl))
     return false;
 
   /* For functions we need a non-discarded body.  */
   if (TREE_CODE (e->decl) == FUNCTION_DECL)
-    return ((node = cgraph_get_node (e->decl))
-	    && node->analyzed);
+    return (e->node && e->node->analyzed);
 
   /* A variable should have a size.  */
   else if (TREE_CODE (e->decl) == VAR_DECL)
@@ -393,6 +387,9 @@ lto_symtab_resolve_symbols (void **slot)
      diagnose ODR violations.  */
   for (; e; e = e->next)
     {
+      if (TREE_CODE (e->decl) == FUNCTION_DECL)
+	e->node = cgraph_get_node (e->decl);
+
       if (!lto_symtab_resolve_can_prevail_p (e))
 	{
 	  e->resolution = LDPR_RESOLVED_IR;
@@ -531,7 +528,7 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
       prevailing = (lto_symtab_entry_t) *slot;
       /* For functions choose one with a cgraph node.  */
       if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
-	while (!cgraph_get_node (prevailing->decl)
+	while (!prevailing->node
 	       && prevailing->next)
 	  prevailing = prevailing->next;
       /* We do not stream varpool nodes, so the first decl has to
@@ -600,7 +597,8 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   lto_symtab_merge_decls_2 (slot);
 
   /* Drop all but the prevailing decl from the symtab.  */
-  prevailing->next = NULL;
+  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL)
+    prevailing->next = NULL;
 
   return 1;
 }
@@ -614,6 +612,40 @@ lto_symtab_merge_decls (void)
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_decls_1, NULL);
 }
 
+/* Helper to process the decl chain for the symbol table entry *SLOT.  */
+
+static int
+lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  lto_symtab_entry_t e, prevailing = (lto_symtab_entry_t) *slot;
+
+  if (!prevailing->next)
+    return 1;
+
+  gcc_assert (TREE_CODE (prevailing->decl) == FUNCTION_DECL);
+
+  /* Replace the cgraph node of each entry with the prevailing one.  */
+  for (e = prevailing->next; e; e = e->next)
+    {
+      if (e->node != NULL)
+	lto_cgraph_replace_node (e->node, prevailing->node);
+    }
+
+  /* Drop all but the prevailing decl from the symtab.  */
+  prevailing->next = NULL;
+
+  return 1;
+}
+
+/* Merge cgraph nodes according to the symbol merging done by
+   lto_symtab_merge_decls.  */
+
+void
+lto_symtab_merge_cgraph_nodes (void)
+{
+  lto_symtab_maybe_init_hash_table ();
+  htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
+}
 
 /* Given the decl DECL, return the prevailing decl with the same name. */
 
