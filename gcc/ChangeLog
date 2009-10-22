@@ -1,3 +1,14 @@
+2009-10-22  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.c (m32c_function_value_regno_p): New function.
+	(m32c_function_value): Make static, add new 'outgoing' argument.
+	(m32c_libcall_value): Make static, add new 'fun' argument.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
+	* config/m32c/m32c.h: (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
+	(FUNCTION_VALUE_REGNO_P): Redefine, use m32c_function_value_regno_p.
+	* config/m32c/m32c-protos.h (m32c_function_value_regno_p): Declare.
+	(m32c_function_value, m32c_libcall_value): Delete declaration.
+
 2009-10-22  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (PLUGIN_HEADERS): Add output.h and
