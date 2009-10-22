@@ -1,3 +1,10 @@
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_data_t): Remove free_list member.
+	(lto_fixup_tree): Do not insert into free_list.
+	(free_decl): Remove.
+	(lto_fixup_decls): Remove free-list handling.
+
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_fixup_jump_functions): New function.

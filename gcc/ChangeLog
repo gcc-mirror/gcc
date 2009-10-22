@@ -1,21 +1,27 @@
+2009-10-22  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_symtab_clear_resolution): Remove.
+	* lto-symtab.c (lto_symtab_clear_resolution): Likewise.
+
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimize/40556                                                                                                                                         
-	* ipa-reference.c (has_proper_scope_for_analysis): Add fixme about global vars.                                                                                
-	(check_call): Handle only indirect calls.                                                                                                                      
-	(propagate_bits): Update comment.                                                                                                                              
-	(write_node_summary_p): Turn bogus check to assert.                                                                                                            
-	(ipa_reference_write_summary): Stream calls_read_all properly.                                                                                                 
-	(ipa_reference_read_summary): Stream in calls_read_all properly.                                                                                               
-	(read_write_all_from_decl): New function.                                                                                                                      
-	(propagate): Handle OVERWRITABLE nodes and external calls here.                                                                                                
-	* ipa-pre-const.c (check_call): In IPA mode handle indirect calls                                                                                              
-	only.                                                                                                                                                          
-	(analyze_function): Do not check visibility here.                                                                                                              
-	(add_new_function): We summary OVERWRITABLE too.                                                                                                               
-	(generate_summary): Stream OVERWRITABLE nodes too.                                                                                                             
-	(propagate): Handle external calls and OVERWRITABLE nodes here.                                                                                                
-	(local_pure_const): Check visibility here.                                                                                                                     
+	PR tree-optimize/40556
+	* ipa-reference.c (has_proper_scope_for_analysis): Add fixme about
+	global vars.
+	(check_call): Handle only indirect calls.
+	(propagate_bits): Update comment.
+	(write_node_summary_p): Turn bogus check to assert.
+	(ipa_reference_write_summary): Stream calls_read_all properly.
+	(ipa_reference_read_summary): Stream in calls_read_all properly.
+	(read_write_all_from_decl): New function.
+	(propagate): Handle OVERWRITABLE nodes and external calls here.
+	* ipa-pre-const.c (check_call): In IPA mode handle indirect calls
+	only.
+	(analyze_function): Do not check visibility here.
+	(add_new_function): We summary OVERWRITABLE too.
+	(generate_summary): Stream OVERWRITABLE nodes too.
+	(propagate): Handle external calls and OVERWRITABLE nodes here.
+	(local_pure_const): Check visibility here.
 
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
