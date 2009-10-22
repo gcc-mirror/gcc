@@ -256,6 +256,7 @@ enum lto_section_type
   LTO_section_function_body,
   LTO_section_static_initializer,
   LTO_section_cgraph,
+  LTO_section_jump_functions,
   LTO_section_ipa_pure_const,
   LTO_section_ipa_reference,
   LTO_section_symtab,
@@ -827,6 +828,7 @@ extern struct output_block *create_output_block (enum lto_section_type);
 extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool);
 extern void lto_output_bitpack (struct lto_output_stream *, struct bitpack_d *);
+extern void produce_asm (struct output_block *ob, tree fn);
 
 
 /* In lto-cgraph.c  */

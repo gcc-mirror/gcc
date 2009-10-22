@@ -372,8 +372,16 @@ output_cgraph (cgraph_node_set set)
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
       node = csi_node (csi);
-      for (edge = node->callees; edge; edge = edge->next_callee)
-	lto_output_edge (ob, edge, encoder);
+      if (node->callees)
+        {
+	  /* Output edges in backward direction, so the reconstructed callgraph
+	     match and it is easy to associate call sites in the IPA pass summaries.  */
+	  edge = node->callees;
+	  while (edge->next_callee)
+	    edge = edge->next_callee;
+	  for (; edge; edge = edge->prev_callee)
+	    lto_output_edge (ob, edge, encoder);
+	}
     }
 
   lto_output_uleb128_stream (ob->main_stream, 0);

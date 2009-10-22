@@ -1113,13 +1113,9 @@ cgraph_decide_inlining (void)
   bool redo_always_inline = true;
   int initial_size = 0;
 
-  /* FIXME lto.  We need to rethink how to coordinate different passes. */
-  if (flag_ltrans)
-    return 0;
-
-  /* FIXME lto.  We need to re-think about how the passes get invoked. */
-  if (!flag_wpa)
-    cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
+  if (in_lto_p && flag_indirect_inlining)
+    ipa_update_after_lto_read ();
 
   max_count = 0;
   max_benefit = 0;
@@ -1928,10 +1924,6 @@ inline_generate_summary (void)
 {
   struct cgraph_node *node;
 
-  /* FIXME lto.  We should not run any IPA-summary pass in LTRANS mode.  */
-  if (flag_ltrans)
-    return;
-
   function_insertion_hook_holder =
       cgraph_add_function_insertion_hook (&add_new_function, NULL);
 
@@ -1976,6 +1968,34 @@ inline_transform (struct cgraph_node *node)
   return todo | execute_fixup_cfg ();
 }
 
+/* Read inline summary.  Jump functions are shared among ipa-cp
+   and inliner, so when ipa-cp is active, we don't need to write them
+   twice.  */
+
+static void 
+inline_read_summary (void)
+{
+  if (flag_indirect_inlining)
+    {
+      ipa_register_cgraph_hooks ();
+      if (!flag_ipa_cp)
+        ipa_prop_read_jump_functions ();
+    }
+  function_insertion_hook_holder =
+      cgraph_add_function_insertion_hook (&add_new_function, NULL);
+}
+
+/* Write inline summary for node in SET.
+   Jump functions are shared among ipa-cp and inliner, so when ipa-cp is
+   active, we don't need to write them twice.  */
+
+static void 
+inline_write_summary (cgraph_node_set set)
+{
+  if (flag_indirect_inlining && !flag_ipa_cp)
+    ipa_prop_write_jump_functions (set);
+}
+
 struct ipa_opt_pass_d pass_ipa_inline =
 {
  {
@@ -1995,8 +2015,8 @@ struct ipa_opt_pass_d pass_ipa_inline =
   | TODO_remove_functions		/* todo_flags_finish */
  },
  inline_generate_summary,		/* generate_summary */
- NULL,					/* write_summary */
- NULL,					/* read_summary */
+ inline_write_summary,			/* write_summary */
+ inline_read_summary,			/* read_summary */
  NULL,					/* function_read_summary */
  0,					/* TODOs */
  inline_transform,			/* function_transform */

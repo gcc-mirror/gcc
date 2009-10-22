@@ -1762,7 +1762,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 /* Create the header in the file using OB.  If the section type is for
    a function, set FN to the decl for that function.  */
 
-static void
+void
 produce_asm (struct output_block *ob, tree fn)
 {
   enum lto_section_type section_type = ob->section_type;
