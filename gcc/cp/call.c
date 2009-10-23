@@ -1631,7 +1631,8 @@ add_function_candidate (struct z_candidate **candidates,
 	      parmtype = build_pointer_type (parmtype);
 	    }
 
-	  if (ctype && i == 0 && DECL_COPY_CONSTRUCTOR_P (fn))
+	  if (ctype && i == 0 && DECL_COPY_CONSTRUCTOR_P (fn)
+	      && (len-skip == 1))
 	    {
 	      /* Hack: Direct-initialize copy parm (i.e. suppress
 		 LOOKUP_ONLYCONVERTING) to make explicit conversion ops

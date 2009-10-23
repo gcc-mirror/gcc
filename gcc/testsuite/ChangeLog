@@ -1,3 +1,8 @@
+2009-10-23  Jason Merrill  <jason@redhat.com>
+
+	Core issue 899
+	* g++.dg/cpp0x/explicit4.C: New.
+
 2009-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/abi/rtti3.C, g++.dg/abi/thunk4.C: Skip for *-*-mingw* and
