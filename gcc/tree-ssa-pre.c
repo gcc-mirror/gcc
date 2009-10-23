@@ -3405,6 +3405,7 @@ do_regular_insertion (basic_block block, basic_block dom)
 	  pre_expr eprime = NULL;
 	  edge_iterator ei;
 	  pre_expr edoubleprime = NULL;
+	  bool do_insertion = false;
 
 	  val = get_expr_value_id (expr);
 	  if (bitmap_set_contains_value (PHI_GEN (block), val))
@@ -3456,6 +3457,10 @@ do_regular_insertion (basic_block block, basic_block dom)
 		{
 		  avail[bprime->index] = edoubleprime;
 		  by_some = true;
+		  /* We want to perform insertions to remove a redundancy on
+		     a path in the CFG we want to optimize for speed.  */
+		  if (optimize_edge_for_speed_p (pred))
+		    do_insertion = true;
 		  if (first_s == NULL)
 		    first_s = edoubleprime;
 		  else if (!pre_expr_eq (first_s, edoubleprime))
@@ -3466,7 +3471,8 @@ do_regular_insertion (basic_block block, basic_block dom)
 	     already existing along every predecessor, and
 	     it's defined by some predecessor, it is
 	     partially redundant.  */
-	  if (!cant_insert && !all_same && by_some && dbg_cnt (treepre_insert))
+	  if (!cant_insert && !all_same && by_some && do_insertion
+	      && dbg_cnt (treepre_insert))
 	    {
 	      if (insert_into_preds_of_block (block, get_expression_id (expr),
 					      avail))
@@ -4526,11 +4532,11 @@ fini_pre (bool do_fre)
    only wants to do full redundancy elimination.  */
 
 static unsigned int
-execute_pre (bool do_fre ATTRIBUTE_UNUSED)
+execute_pre (bool do_fre)
 {
   unsigned int todo = 0;
 
-  do_partial_partial = optimize > 2;
+  do_partial_partial = optimize > 2 && optimize_function_for_speed_p (cfun);
 
   /* This has to happen before SCCVN runs because
      loop_optimizer_init may create new phis, etc.  */
@@ -4615,8 +4621,7 @@ do_pre (void)
 static bool
 gate_pre (void)
 {
-  /* PRE tends to generate bigger code.  */
-  return flag_tree_pre != 0 && optimize_function_for_speed_p (cfun);
+  return flag_tree_pre != 0;
 }
 
 struct gimple_opt_pass pass_pre =

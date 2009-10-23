@@ -1,3 +1,14 @@
+2009-10-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41778
+	* tree-ssa-pre.c (do_regular_insertion): Only insert if a
+	redundancy along a path in the CFG we want to optimize for speed
+	is going to be removed.
+	(execute_pre): Do partial-PRE only if the function is to be
+	optimized for speed.
+	(gate_pre): Do not turn off all of PRE when not optimizing a
+	function for speed.
+
 2009-10-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_cabs): Use validate_arg().
