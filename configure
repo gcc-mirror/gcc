@@ -5857,7 +5857,7 @@ if test "${with_cloog_lib+set}" = set; then :
 fi
 
 
-if test "x$with_ppl" == "xno"; then
+if test "x$with_ppl" = "xno"; then
   with_cloog=no
 fi
 

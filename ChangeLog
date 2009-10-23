@@ -1,3 +1,8 @@
+2009-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (CLooG test): Use = with test.
+	* configure: Regenerate.
+
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Do not set LIBS for ppl/cloog checks.  Disable
