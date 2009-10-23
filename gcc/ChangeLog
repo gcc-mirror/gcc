@@ -1,3 +1,9 @@
+2009-10-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_cabs): Use validate_arg().
+	(fold_builtin_cexp): Fix if-logic.
+	(fold_builtin_1): Check subtype for BUILT_IN_CIMAG.
+
 2009-10-22  Jeff Law  <law@redhat.com>
 
 	* ira-lives.c (process_single_reg_class_operands): Update the 

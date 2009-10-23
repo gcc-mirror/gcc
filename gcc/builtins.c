@@ -7194,7 +7194,7 @@ fold_builtin_cabs (location_t loc, tree arg, tree type, tree fndecl)
 {
   tree res;
 
-  if (TREE_CODE (TREE_TYPE (arg)) != COMPLEX_TYPE
+  if (!validate_arg (arg, COMPLEX_TYPE)
       || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
     return NULL_TREE;
 
@@ -7583,7 +7583,7 @@ fold_builtin_cexp (location_t loc, tree arg0, tree type)
 #endif
 
   if (!validate_arg (arg0, COMPLEX_TYPE)
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) != REAL_TYPE)
     return NULL_TREE;
 
 #ifdef HAVE_mpc
@@ -10017,7 +10017,8 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
     break;
 
     CASE_FLT_FN (BUILT_IN_CIMAG):
-      if (validate_arg (arg0, COMPLEX_TYPE))
+      if (validate_arg (arg0, COMPLEX_TYPE)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
 	return non_lvalue_loc (loc, fold_build1_loc (loc, IMAGPART_EXPR, type, arg0));
     break;
 
