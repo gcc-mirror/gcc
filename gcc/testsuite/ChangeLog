@@ -223,6 +223,11 @@
 	PR c++/38798
 	* g++.dg/cpp0x/trailing5.C: New.
 
+	* g++.dg/cpp0x/auto6.C: Rename to trailing1.C.
+	* g++.dg/cpp0x/auto8.C: Rename to trailing2.C.
+	* g++.dg/cpp0x/auto12.C: Rename to trailing3.C.
+	* g++.dg/cpp0x/auto13.C: Rename to trailing4.C.
+
 2009-10-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41719
