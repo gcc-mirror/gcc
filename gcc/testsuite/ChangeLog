@@ -1,3 +1,8 @@
+2009-10-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40808
+	* g++.dg/abi/mangle34.C: New test
+
 2009-10-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-nested2.C: New.

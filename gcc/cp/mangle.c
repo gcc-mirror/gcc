@@ -2284,21 +2284,22 @@ write_class_enum_type (const tree type)
 /* Non-terminal <template-args>.  ARGS is a TREE_VEC of template
    arguments.
 
-     <template-args> ::= I <template-arg>+ E  */
+     <template-args> ::= I <template-arg>* E  */
 
 static void
 write_template_args (tree args)
 {
   int i;
-  int length = TREE_VEC_LENGTH (args);
+  int length = 0;
 
   MANGLE_TRACE_TREE ("template-args", args);
 
   write_char ('I');
 
-  gcc_assert (length > 0);
+  if (args)
+    length = TREE_VEC_LENGTH (args);
 
-  if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+  if (args && TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
     {
       /* We have nested template args.  We want the innermost template
 	 argument list.  */

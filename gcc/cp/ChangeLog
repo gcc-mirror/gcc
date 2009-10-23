@@ -1,3 +1,9 @@
+2009-10-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40808
+	* mangle.c (write_template_args): Allow mangling of empty template
+	argument list. Updated function comments.
+
 2009-10-23  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (lambda_expr_this_capture): Use thisify_lambda_field.
