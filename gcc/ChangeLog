@@ -1,5 +1,11 @@
 2009-10-23  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41805
+	* cfgexpand.c (expand_call_stmt): Use gimple_has_side_effects and
+	gimple_call_nothrow_p.
+
+2009-10-23  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/41778
 	* tree-ssa-pre.c (do_regular_insertion): Only insert if a
 	redundancy along a path in the CFG we want to optimize for speed
