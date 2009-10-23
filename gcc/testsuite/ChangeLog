@@ -1,3 +1,8 @@
+2009-10-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/41787
+	* gcc.target/powerpc/vsx-vrsave.c: New file.
+
 2009-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/41673
