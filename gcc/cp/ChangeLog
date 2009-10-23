@@ -1,3 +1,7 @@
+2009-10-23  Jason Merrill  <jason@redhat.com>
+
+	* call.c (initialize_reference): Tweak error message.
+
 2009-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.c (finish_mangling_get_identifier): Use

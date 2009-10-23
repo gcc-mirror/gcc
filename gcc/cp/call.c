@@ -7619,7 +7619,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	  && !TYPE_REF_IS_RVALUE (type)
 	  && !real_lvalue_p (expr))
 	error ("invalid initialization of non-const reference of "
-	       "type %qT from a temporary of type %qT",
+	       "type %qT from an rvalue of type %qT",
 	       type, TREE_TYPE (expr));
       else
 	error ("invalid initialization of reference of type "
