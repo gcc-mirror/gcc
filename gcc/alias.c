@@ -691,7 +691,14 @@ get_alias_set (tree t)
      requires structural comparisons to identify compatible types
      use alias set zero.  */
   if (TYPE_STRUCTURAL_EQUALITY_P (t))
-    return 0;
+    {
+      /* Allow the language to specify another alias set for this
+	 type.  */
+      set = lang_hooks.get_alias_set (t);
+      if (set != -1)
+	return set;
+      return 0;
+    }
   t = TYPE_CANONICAL (t);
   /* Canonical types shouldn't form a tree nor should the canonical
      type require structural equality checks.  */

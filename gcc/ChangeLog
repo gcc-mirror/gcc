@@ -1,3 +1,11 @@
+2009-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/41673
+	* alias.c (get_alias_set): Call langhook before returning 0 for
+	types with structural equality.
+	* c-common.c (c_common_get_alias_set): Use alias set of element
+	type for arrays with structural comparison.
+
 2009-10-23  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41805
