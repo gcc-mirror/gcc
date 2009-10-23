@@ -1,3 +1,9 @@
+2009-10-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* splay-tree.h (libi_uhostptr_t): Add gcc specific
+	__extension__ for long long type case to silent cX9.
+	(libi_shostptr_t): Likewise.
+
 2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR40790
