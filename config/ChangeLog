@@ -1,3 +1,7 @@
+2009-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acx.m4 (ACX_CHECK_CYGWIN_CAT_WORKS): Use = with test.
+
 2009-09-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* stdint.m4 (GCC_HEADER_STDINT): Revert changes to this macro in
