@@ -1,3 +1,9 @@
+2009-10-22  Jeff Law  <law@redhat.com>
+
+	* ira-lives.c (process_single_reg_class_operands): Update the 
+	hard reg costs for all the hard registers desired by the
+	single reg class operand.
+
 2009-10-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* simplify-rtx.c (simplify_replace_fn_rtx): Add a fallback case
