@@ -4660,7 +4660,7 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }
-  else if (ts.type == BT_DERIVED)
+  else if (ts.type == BT_DERIVED || ts.type == BT_CLASS)
     {
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);

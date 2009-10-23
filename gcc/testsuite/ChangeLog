@@ -1,3 +1,8 @@
+2009-10-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41800
+	* gfortran.dg/class_10.f03: New test.
+
 2009-10-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/41787
