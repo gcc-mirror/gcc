@@ -1,5 +1,10 @@
 2009-10-23  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/41800
+	* trans-expr.c (gfc_trans_scalar_assign): Handle CLASS variables.
+
+2009-10-23  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/41758
 	* match.c (conformable_arrays): Move to resolve.c.
 	(gfc_match_allocate): Don't resolve SOURCE expr yet, and move some
