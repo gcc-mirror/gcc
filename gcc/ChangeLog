@@ -1,3 +1,23 @@
+2009-10-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/41787
+	* config/rs6000/rs6000.c (struct machine_function): Add
+	vsx_or_altivec_used_p to record if vector types are used.
+	(rs6000_expand_to_rtl_hook): Rename from
+	rs6000_alloc_sdmode_stack_slot.  If VSX, check to see if there are
+	any vector operations, so if there are, we can set VRSAVE to
+	non-zero when only floating point vector registers are used.
+	(TARGET_EXPAND_TO_RTL_HOOK): Use rs6000_expand_to_rtl_hook.
+	(rs6000_check_vector_mode): Inner function to check if vector
+	types are used in the code.
+	(compute_vrsave_mask): If VSX, make sure VRSAVE is non-zero if
+	vector instructions are used.
+
+	* config/rs6000/rs6000.h (HARD_REGNO_CALL_PART_CLOBBERED):
+	Indicate that VSX registers which overlap floating point
+	registers, can't be used across a call, since the ABI only states
+	the scalar part of the register will be saved and restored.
+
 2009-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/41673

@@ -1033,10 +1033,12 @@ extern unsigned rs6000_pointer_size;
 
 #define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)	\
-  ((TARGET_32BIT && TARGET_POWERPC64			\
-    && (GET_MODE_SIZE (MODE) > 4)  \
-    && INT_REGNO_P (REGNO)) ? 1 : 0)
+#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
+  (((TARGET_32BIT && TARGET_POWERPC64					\
+     && (GET_MODE_SIZE (MODE) > 4)					\
+     && INT_REGNO_P (REGNO)) ? 1 : 0)					\
+   || (TARGET_VSX && FP_REGNO_P (REGNO)					\
+       && GET_MODE_SIZE (MODE) > 8))
 
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
