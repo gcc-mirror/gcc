@@ -1768,10 +1768,10 @@ expand_call_stmt (gimple stmt)
   for (i = 0; i < gimple_call_num_args (stmt); i++)
     CALL_EXPR_ARG (exp, i) = gimple_call_arg (stmt, i);
 
-  if (!(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
+  if (gimple_has_side_effects (stmt))
     TREE_SIDE_EFFECTS (exp) = 1;
 
-  if (gimple_call_flags (stmt) & ECF_NOTHROW)
+  if (gimple_call_nothrow_p (stmt))
     TREE_NOTHROW (exp) = 1;
 
   CALL_EXPR_TAILCALL (exp) = gimple_call_tail_p (stmt);
