@@ -6,7 +6,7 @@
 
 2009-10-22  Jeff Law  <law@redhat.com>
 
-	* ira-lives.c (process_single_reg_class_operands): Update the 
+	* ira-lives.c (process_single_reg_class_operands): Update the
 	hard reg costs for all the hard registers desired by the
 	single reg class operand.
 
@@ -35,15 +35,15 @@
 
 2009-10-22  Diego Novillo  <dnovillo@google.com>
 
-	* Makefile.in (PLUGIN_HEADERS): Add output.h and
-	IPA_UTILS_H.
+	* Makefile.in (PLUGIN_HEADERS): Add output.h and IPA_UTILS_H.
 
 2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
 	
 	* testsuite/gcc.dg/autopar/outer-4.c: Adjust scan.
 	* testsuite/gcc.dg/autopar/outer-5.c: Adjust scan.
 	* testsuite/gcc.dg/autopar/outer-5.c: Add scan optimized.
-	* tree-cfg.c(gimple_duplicate_sese_tail): Fix typos/indentation/white space.
+	* tree-cfg.c (gimple_duplicate_sese_tail): Fix typos/indentation/white
+	space.
 
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
