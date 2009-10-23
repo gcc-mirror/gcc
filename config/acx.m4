@@ -605,7 +605,7 @@ dnl # See binutils PR 4334 for more details.
 AC_DEFUN([ACX_CHECK_CYGWIN_CAT_WORKS],[
 AC_MSG_CHECKING([to see if cat works as expected])
 echo a >cygwin-cat-check
-if test `cat cygwin-cat-check` == a ; then
+if test `cat cygwin-cat-check` = a ; then
   rm cygwin-cat-check
   AC_MSG_RESULT(yes)
 else

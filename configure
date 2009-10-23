@@ -3855,7 +3855,7 @@ case "${host}" in
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking to see if cat works as expected" >&5
 $as_echo_n "checking to see if cat works as expected... " >&6; }
 echo a >cygwin-cat-check
-if test `cat cygwin-cat-check` == a ; then
+if test `cat cygwin-cat-check` = a ; then
   rm cygwin-cat-check
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
