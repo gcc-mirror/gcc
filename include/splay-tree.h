@@ -41,7 +41,13 @@ extern "C" {
   typedef unsigned long int libi_uhostptr_t;
   typedef long int libi_shostptr_t;
 #else
+#ifdef __GNUC__
+  __extension__
+#endif
   typedef unsigned long long libi_uhostptr_t;
+#ifdef __GNUC__
+  __extension__
+#endif
   typedef long long libi_shostptr_t;
 #endif
 
