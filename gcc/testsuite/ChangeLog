@@ -1,3 +1,16 @@
+2009-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/abi/rtti3.C, g++.dg/abi/thunk4.C: Skip for *-*-mingw* and
+	*-*-cygwin.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Disable weak symbols tests
+	for *-*-mingw* and *-*-cygwin.
+	* g++.dg/opt/vt1.C: Skip for *-*-mingw* and *-*_cygwin.
+	* g++.dg/template/spec35.C: Disable weak symbol test for
+	*-*-mingw* and *-*-cygwin.
+
+	PR testsuite/31342
+	* gcc.target/i386/pic-1.c: Skip for *-*-mingw* and *-*-cygwin.
+
 2009-10-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41800

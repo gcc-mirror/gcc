@@ -24,6 +24,6 @@ void instantiator ()
   // { dg-final { scan-assembler-not ".glob(a|)l\[\t \]*_?_Z2f1IiEvT_" } }
   f1(0);  // Expected to have static linkage
 
-  // { dg-final { scan-assembler ".weak(_definition)?\[\t \]*_?_Z2f2IiEvT_" } }
+  // { dg-final { scan-assembler ".weak(_definition)?\[\t \]*_?_Z2f2IiEvT_" { target { ! { *-*-mingw* *-*-cygwin } } } } }
   f2(0);  // Expected to have weak global linkage
 }
