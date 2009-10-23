@@ -1,3 +1,13 @@
+2009-10-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41758
+	* match.c (conformable_arrays): Move to resolve.c.
+	(gfc_match_allocate): Don't resolve SOURCE expr yet, and move some
+	checks to resolve_allocate_expr.
+	* resolve.c (conformable_arrays): Moved here from match.c.
+	(resolve_allocate_expr): Moved some checks here from gfc_match_allocate.
+	(resolve_code): Resolve SOURCE tag for ALLOCATE expressions.
+
 2009-10-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41781
