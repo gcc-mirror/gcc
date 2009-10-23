@@ -1572,7 +1572,7 @@ AC_ARG_WITH(cloog, [  --with-cloog=PATH       Specify prefix directory for the i
 AC_ARG_WITH(cloog_include, [  --with-cloog-include=PATH Specify directory for installed CLooG include files])
 AC_ARG_WITH(cloog_lib, [  --with-cloog-lib=PATH   Specify the directory for the installed CLooG library])
 
-if test "x$with_ppl" == "xno"; then
+if test "x$with_ppl" = "xno"; then
   with_cloog=no
 fi
 
