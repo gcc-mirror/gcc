@@ -1,5 +1,10 @@
 2009-10-23  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (outer_lambda_capture_p): New fn.
+	(thisify_lambda_field): Factor out...
+	(add_default_capture): ...from here.
+	(finish_id_expression): Use them.
+
 	Core issue 899
 	* call.c (add_function_candidate): Only permit explicit conversion
 	ops if copy ctor was called with a single argument.

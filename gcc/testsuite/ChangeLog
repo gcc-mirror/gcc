@@ -1,5 +1,7 @@
 2009-10-23  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/lambda/lambda-nested2.C: New.
+
 	Core issue 899
 	* g++.dg/cpp0x/explicit4.C: New.
 
