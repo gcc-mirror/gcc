@@ -5709,10 +5709,7 @@ lambda_expr_this_capture (tree lambda)
 	    {
 	      /* An outer lambda has already captured 'this'.  */
 	      tree cap = LAMBDA_EXPR_THIS_CAPTURE (lambda);
-	      tree lthis
-		= cp_build_indirect_ref (DECL_ARGUMENTS (containing_function),
-					 "", tf_warning_or_error);
-	      init = finish_non_static_data_member (cap, lthis, NULL_TREE);
+	      init = thisify_lambda_field (cap);
 	      break;
 	    }
 
