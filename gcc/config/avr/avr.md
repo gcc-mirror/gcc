@@ -118,6 +118,7 @@
 
 ;; Define mode iterator
 (define_mode_iterator QISI [(QI "") (HI "") (SI "")])
+(define_mode_iterator QIDI [(QI "") (HI "") (SI "") (DI "")])
 
 ;;========================================================================
 ;; The following is used by nonlocal_goto and setjmp.
@@ -2448,12 +2449,15 @@
 
 
 ;; Test a single bit in a QI/HI/SImode register.
-(define_insn "*sbrx_branch"
+;; Combine will create zero extract patterns for single bit tests.
+;; permit any mode in source pattern by using VOIDmode.
+
+(define_insn "*sbrx_branch<mode>"
   [(set (pc)
         (if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(zero_extract:HI
-			   (match_operand:QI 1 "register_operand" "r")
+			 [(zero_extract:QIDI
+			   (match_operand:VOID 1 "register_operand" "r")
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
 			  (const_int 0)])
@@ -2470,39 +2474,27 @@
 				    (const_int 4))))
    (set_attr "cc" "clobber")])
 
-(define_insn "*sbrx_and_branchhi"
-  [(set (pc)
-        (if_then_else
-	 (match_operator 0 "eqne_operator"
-			 [(and:HI
-			   (match_operand:HI 1 "register_operand" "r")
-			   (match_operand:HI 2 "single_one_operand" "n"))
-			  (const_int 0)])
-	 (label_ref (match_operand 3 "" ""))
-	 (pc)))]
-  ""
-  "* return avr_out_sbxx_branch (insn, operands);"
-  [(set (attr "length")
-	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
-			   (le (minus (pc) (match_dup 3)) (const_int 2046)))
-		      (const_int 2)
-		      (if_then_else (eq_attr "mcu_mega" "no")
-				    (const_int 2)
-				    (const_int 4))))
-   (set_attr "cc" "clobber")])
+;; Same test based on Bitwise AND RTL. Keep this incase gcc changes patterns.
+;; or for old peepholes.
+;; Fixme - bitwise Mask will not work for DImode
 
-(define_insn "*sbrx_and_branchsi"
+(define_insn "*sbrx_and_branch<mode>"
   [(set (pc)
         (if_then_else
 	 (match_operator 0 "eqne_operator"
-			 [(and:SI
-			   (match_operand:SI 1 "register_operand" "r")
-			   (match_operand:SI 2 "single_one_operand" "n"))
+			 [(and:QISI
+			   (match_operand:QISI 1 "register_operand" "r")
+			   (match_operand:QISI 2 "single_one_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 3 "" ""))
 	 (pc)))]
   ""
-  "* return avr_out_sbxx_branch (insn, operands);"
+{
+    HOST_WIDE_INT bitnumber;
+    bitnumber = exact_log2 (GET_MODE_MASK (<MODE>mode) & INTVAL (operands[2]));
+    operands[2] = GEN_INT (bitnumber);
+    return avr_out_sbxx_branch (insn, operands);
+}
   [(set (attr "length")
 	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
 			   (le (minus (pc) (match_dup 3)) (const_int 2046)))
