@@ -2729,15 +2729,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   Present (gnat_field);
 		   gnat_field = Next_Stored_Discriminant (gnat_field))
 		if (Present (Corresponding_Discriminant (gnat_field)))
-		  save_gnu_tree
-		    (gnat_field,
-		     build3 (COMPONENT_REF,
-			     get_unpadded_type (Etype (gnat_field)),
-			     gnu_get_parent,
-			     gnat_to_gnu_field_decl (Corresponding_Discriminant
-						     (gnat_field)),
-			     NULL_TREE),
-		     true);
+		  {
+		    tree gnu_field
+		      = gnat_to_gnu_field_decl (Corresponding_Discriminant
+						(gnat_field));
+		    save_gnu_tree
+		      (gnat_field,
+		       build3 (COMPONENT_REF, TREE_TYPE (gnu_field),
+			       gnu_get_parent, gnu_field, NULL_TREE),
+		       true);
+		  }
 
 	    /* Then we build the parent subtype.  If it has discriminants but
 	       the type itself has unknown discriminants, this means that it

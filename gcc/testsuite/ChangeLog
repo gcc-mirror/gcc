@@ -1,5 +1,9 @@
 2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/pack4.ads: New test.
+
+2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/null_pointer_deref1.adb: New test.
 	* gnat.dg/null_pointer_deref2.adb: Likewise.
 
