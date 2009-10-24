@@ -553,10 +553,10 @@ same_type_for_tbaa (tree type1, tree type2)
    on an indirect reference may alias.  */
 
 static bool
-nonaliasing_component_refs_p (tree ref1, tree type1,
-			      HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
-			      tree ref2, tree type2,
-			      HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2)
+aliasing_component_refs_p (tree ref1, tree type1,
+			   HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
+			   tree ref2, tree type2,
+			   HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2)
 {
   /* If one reference is a component references through pointers try to find a
      common base and apply offset based disambiguation.  This handles
@@ -600,9 +600,19 @@ nonaliasing_component_refs_p (tree ref1, tree type1,
       offset1 -= offadj;
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
-  /* If we have two type access paths B1.path1 and B2.path2 they may
-     only alias if either B1 is in B2.path2 or B2 is in B1.path1.  */
-  return false;
+
+  /* We haven't found any common base to apply offset-based disambiguation.
+     There are two cases:
+       1. The base access types have the same alias set.  This can happen
+	  in Ada when a function with an unconstrained parameter passed by
+	  reference is called on a constrained object and inlined: the types
+	  have the same alias set but aren't equivalent.  The references may
+	  alias in this case.
+       2. The base access types don't have the same alias set, i.e. one set
+	  is a subset of the other.  We have proved that B1 is not in the
+	  access path B2.path and that B2 is not in the access path B1.path
+	  so the references may not alias.  */
+  return get_alias_set (type1) == get_alias_set (type2);
 }
 
 /* Return true if two memory references based on the variables BASE1
@@ -681,10 +691,10 @@ indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
   if (ref1 && ref2
       && handled_component_p (ref1)
       && handled_component_p (ref2))
-    return nonaliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
-					 offset1, max_size1,
-					 ref2, TREE_TYPE (base2),
-					 offset2, max_size2);
+    return aliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
+				      offset1, max_size1,
+				      ref2, TREE_TYPE (base2),
+				      offset2, max_size2);
 
   return true;
 }
@@ -742,10 +752,10 @@ indirect_refs_may_alias_p (tree ref1, tree ptr1,
   if (ref1 && ref2
       && handled_component_p (ref1)
       && handled_component_p (ref2))
-    return nonaliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
-					 offset1, max_size1,
-					 ref2, TREE_TYPE (TREE_TYPE (ptr2)),
-					 offset2, max_size2);
+    return aliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
+				      offset1, max_size1,
+				      ref2, TREE_TYPE (TREE_TYPE (ptr2)),
+				      offset2, max_size2);
 
   return true;
 }
