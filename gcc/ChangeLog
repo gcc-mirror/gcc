@@ -1,3 +1,11 @@
+2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-alias.c (nonaliasing_component_refs_p): Rename into...
+	(aliasing_component_refs_p): ...this.  Return true if there is no
+	common base and the base access types have the same alias set.
+	(indirect_ref_may_alias_decl_p): Adjust for above renaming.
+	(indirect_refs_may_alias_p): Likewise.
+
 2009-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/40033
