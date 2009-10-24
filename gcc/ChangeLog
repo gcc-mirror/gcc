@@ -1,3 +1,13 @@
+	2009-09-27  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR middle-end/19154
+	* avr.md (QIDI): Add new mode iterator.
+	(sbrx_branch<mode>): Create new zero extract bit, test and jump
+	patterns for all QI thru DI modes combinations.
+	(sbrx_and_branch<mode>): Create new and based bit test and jump
+	patterns for QI thru SI modes.
+	avr.c (avr_out_sbxx_branch): Use only bit number.
+
 2009-10-24  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-reference.c (check_call): Noreturn notrhow calls do not write
