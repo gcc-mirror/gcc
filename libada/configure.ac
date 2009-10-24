@@ -18,6 +18,7 @@
 sinclude(../config/acx.m4)
 sinclude(../config/multi.m4)
 sinclude(../config/override.m4)
+sinclude(../config/unwind_ipinfo.m4)
 
 AC_INIT
 AC_PREREQ([2.64])
@@ -130,6 +131,14 @@ else
   default_gnatlib_target="gnatlib-plain"
 fi
 AC_SUBST([default_gnatlib_target])
+
+# Check for _Unwind_GetIPInfo
+GCC_CHECK_UNWIND_GETIPINFO
+have_getipinfo=
+if test x$have_unwind_getipinfo = xyes; then
+  have_getipinfo=-DHAVE_GETIPINFO
+fi
+AC_SUBST(have_getipinfo)
 
 warn_cflags=
 if test "x$GCC" = "xyes"; then

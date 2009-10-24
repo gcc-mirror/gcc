@@ -2301,8 +2301,10 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 {
   /* We used to compensate here for the raised from call vs raised from signal
      exception discrepancy with the GCC ZCX scheme, but this now can be dealt
-     with generically in the unwinder (see GCC PR other/26208).  Only the VMS
-     ports still do the compensation described in the few lines below.
+     with generically in the unwinder (see GCC PR other/26208).  This however
+     requires the use of the _Unwind_GetIPInfo routine in raise-gcc.c, which
+     is predicated on the definition of HAVE_GETIPINFO at compile time.  Only
+     the VMS ports still do the compensation described in the few lines below.
 
      *** Call vs signal exception discrepancy with GCC ZCX scheme ***
 
