@@ -8653,11 +8653,13 @@ c_finish_stmt_expr (location_t loc, tree body)
       goto continue_searching;
     }
 
+  if (last == error_mark_node)
+    return last;
+
   /* In the case that the BIND_EXPR is not necessary, return the
      expression out from inside it.  */
-  if (last == error_mark_node
-      || (last == BIND_EXPR_BODY (body)
-	  && BIND_EXPR_VARS (body) == NULL))
+  if (last == BIND_EXPR_BODY (body)
+      && BIND_EXPR_VARS (body) == NULL)
     {
       /* Even if this looks constant, do not allow it in a constant
 	 expression.  */
