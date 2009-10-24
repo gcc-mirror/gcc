@@ -1,3 +1,13 @@
+2009-10-24  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-reference.c (check_call): Noreturn notrhow calls do not write
+	to memory.
+	(analyze_function): When analyzing noreturn nothrow call, do not compute
+	written stats; free bitmaps of vars early if possible.
+	(generate_summary): Only update bitmaps if computed.
+	(propagate): Only dump bitmaps if computed.
+	(ipa_reference_read_summary): Fix pasto.
+
 2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-alias.c (nonaliasing_component_refs_p): Rename into...
