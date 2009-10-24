@@ -4490,6 +4490,8 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 scalar_transfer:
   extent = fold_build2 (MIN_EXPR, gfc_array_index_type,
 			dest_word_len, source_bytes);
+  extent = fold_build2 (MAX_EXPR, gfc_array_index_type,
+			extent, gfc_index_zero_node);
 
   if (expr->ts.type == BT_CHARACTER)
     {

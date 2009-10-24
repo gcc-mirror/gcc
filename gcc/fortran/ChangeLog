@@ -1,3 +1,9 @@
+2009-10-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41772
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Stop'extent'
+	from going negative.
+
 2009-10-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41800
