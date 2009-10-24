@@ -5877,12 +5877,12 @@ avr_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
   return 1;
 }
 
-/* Output a branch that tests a single bit of a register (QI, HI or SImode)
+/* Output a branch that tests a single bit of a register (QI, HI, SI or DImode)
    or memory location in the I/O space (QImode only).
 
    Operand 0: comparison operator (must be EQ or NE, compare bit to zero).
    Operand 1: register operand to test, or CONST_INT memory address.
-   Operand 2: bit number (for QImode operand) or mask (HImode, SImode).
+   Operand 2: bit number.
    Operand 3: label to jump to if the test is true.  */
 
 const char *
@@ -5930,9 +5930,7 @@ avr_out_sbxx_branch (rtx insn, rtx operands[])
       else  /* HImode or SImode */
 	{
 	  static char buf[] = "sbrc %A1,0";
-	  int bit_nr = exact_log2 (INTVAL (operands[2])
-				   & GET_MODE_MASK (GET_MODE (operands[1])));
-
+	  int bit_nr = INTVAL (operands[2]);
 	  buf[3] = (comp == EQ) ? 's' : 'c';
 	  buf[6] = 'A' + (bit_nr >> 3);
 	  buf[9] = '0' + (bit_nr & 7);
