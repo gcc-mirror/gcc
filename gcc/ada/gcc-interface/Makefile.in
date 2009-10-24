@@ -106,8 +106,11 @@ SOME_ADAFLAGS =-gnata
 FORCE_DEBUG_ADAFLAGS = -g
 GNATLIBFLAGS = -gnatpg -nostdinc
 GNATLIBCFLAGS = -g -O2
+# Pretend that _Unwind_GetIPInfo is available for the target by default.  This
+# should be autodetected during the configuration of libada and passed down to
+# here, but we need something for --disable-libada and hope for the best.
 GNATLIBCFLAGS_FOR_C = $(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -fexceptions \
-	-DIN_RTS
+	-DIN_RTS -DHAVE_GETIPINFO
 ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
 MOST_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(SOME_ADAFLAGS)
 THREAD_KIND = native
@@ -2074,6 +2077,7 @@ gnatlib-shared-default:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
@@ -2099,6 +2103,7 @@ gnatlib-shared-dual:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib-shared-default
@@ -2107,6 +2112,7 @@ gnatlib-shared-dual:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
@@ -2116,6 +2122,7 @@ gnatlib-shared-dual-win32:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib-shared-win32
@@ -2124,6 +2131,7 @@ gnatlib-shared-dual-win32:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
@@ -2137,6 +2145,7 @@ gnatlib-shared-win32:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
@@ -2156,6 +2165,7 @@ gnatlib-shared-darwin:
 	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) \
 	                    -fno-common" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C) -fno-common" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     gnatlib
@@ -2179,6 +2189,7 @@ gnatlib-shared-vms:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
              gnatlib
@@ -2207,6 +2218,7 @@ gnatlib-shared:
 	$(MAKE) $(FLAGS_TO_PASS) \
              GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
@@ -2220,6 +2232,7 @@ gnatlib-sjlj:
 	     EH_MECHANISM="" \
 	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" gnatlib
@@ -2232,6 +2245,7 @@ gnatlib-zcx:
 	     EH_MECHANISM="-gcc" \
 	     GNATLIBFLAGS="$(GNATLIBFLAGS)" \
 	     GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	     GNATLIBCFLAGS_FOR_C="$(GNATLIBCFLAGS_FOR_C)" \
 	     MULTISUBDIR="$(MULTISUBDIR)" \
 	     THREAD_KIND="$(THREAD_KIND)" \
 	     TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" gnatlib
