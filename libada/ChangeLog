@@ -1,3 +1,11 @@
+2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (GNATLIBCFLAGS_FOR_C): New variable.
+	(LIBADA_FLAGS_TO_PASS): Add GNATLIBCFLAGS_FOR_C.
+	* configure.ac: Include config/unwind_ipinfo.m4.
+	Check for _Unwind_GetIPInfo.
+	* configure: Regenerate.
+
 2009-08-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR ada/41122
