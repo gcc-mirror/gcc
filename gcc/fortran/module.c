@@ -3994,6 +3994,14 @@ load_derived_extensions (void)
       info = get_integer (symbol);
       derived = info->u.rsym.sym;
 
+      /* This one is not being loaded.  */
+      if (!info || !derived)
+	{
+	  while (peek_atom () != ATOM_RPAREN)
+	    skip_list ();
+	  continue;
+	}
+
       gcc_assert (derived->attr.flavor == FL_DERIVED);
       if (derived->f2k_derived == NULL)
 	derived->f2k_derived = gfc_get_namespace (NULL, 0);
@@ -4008,16 +4016,19 @@ load_derived_extensions (void)
 	  nuse = number_use_names (name, false);
 	  j = 1;
 	  p = find_use_name_n (name, &j, false);
-	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
-	  dt = st->n.sym;
-	  st = gfc_find_symtree (derived->f2k_derived->sym_root, name);
-	  if (st == NULL)
+	  if (p)
 	    {
-	      /* Only use the real name in f2k_derived to ensure a single
-		 symtree.  */
-	      st = gfc_new_symtree (&derived->f2k_derived->sym_root, name);
-	      st->n.sym = dt;
-	      st->n.sym->refs++;
+	      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
+	      dt = st->n.sym;
+	      st = gfc_find_symtree (derived->f2k_derived->sym_root, name);
+	      if (st == NULL)
+		{
+		  /* Only use the real name in f2k_derived to ensure a single
+		    symtree.  */
+		  st = gfc_new_symtree (&derived->f2k_derived->sym_root, name);
+		  st->n.sym = dt;
+		  st->n.sym->refs++;
+		}
 	    }
 	  mio_rparen ();
 	}
