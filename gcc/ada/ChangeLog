@@ -1,3 +1,8 @@
+2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_adjust_context_for_raise): Mention _Unwind_GetIPInfo.
+	* gcc-interface/Makefile.in (GNATLIBCFLAGS_FOR_C): Add HAVE_GETIPINFO.
+	Pass GNATLIBCFLAGS_FOR_C to recursive invocations.
 
 	Backport from mainline:
 	2009-04-10  Eric Botcazou  <ebotcazou@adacore.com>
