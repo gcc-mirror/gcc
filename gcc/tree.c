@@ -4648,11 +4648,15 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 				   i, tem); ++i)
 	    fld_worklist_push (TREE_TYPE (tem), fld);
 	  tem = BINFO_VIRTUALS (TYPE_BINFO (t));
-	  while (tem)
-	    {
-	      fld_worklist_push (TREE_VALUE (tem), fld);
-	      tem = TREE_CHAIN (tem);
-	    }
+	  if (tem
+	      /* The Java FE overloads BINFO_VIRTUALS for its own purpose.  */
+	      && TREE_CODE (tem) == TREE_LIST)
+	    do
+	      {
+		fld_worklist_push (TREE_VALUE (tem), fld);
+		tem = TREE_CHAIN (tem);
+	      }
+	    while (tem);
 	}
       if (RECORD_OR_UNION_TYPE_P (t))
 	{
