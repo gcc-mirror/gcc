@@ -1,3 +1,8 @@
+2009-10-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/41813
+	* config/sh/sh.md (stuff_delay_slot): Don't set T_REG in pattern.
+
 2009-10-25  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (unpack_ts_decl_common_value_fields):

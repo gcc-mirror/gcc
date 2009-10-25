@@ -6825,7 +6825,7 @@ label:
 (define_insn "stuff_delay_slot"
   [(set (pc)
 	(unspec [(match_operand:SI 0 "const_int_operand" "") (pc)] UNSPEC_BBR))
-   (set (reg:SI T_REG) (match_operand:SI 1 "const_int_operand" ""))]
+   (match_operand:SI 1 "const_int_operand" "")]
   "TARGET_SH1"
   ""
   [(set_attr "length" "0")
