@@ -119,6 +119,10 @@
   (and (match_code "reg")
        (match_test "REGNO (op) == LO_REGNUM")))
 
+(define_predicate "hilo_operand"
+  (and (match_code "reg")
+       (match_test "MD_REG_P (REGNO (op))")))
+
 (define_predicate "fcc_reload_operand"
   (and (match_code "reg,subreg")
        (match_test "ST_REG_P (true_regnum (op))")))

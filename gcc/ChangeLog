@@ -1,4 +1,14 @@
-	2009-09-27  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+2009-10-24  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/predicates.md (hilo_operand): New predicate.
+	* config/mips/mips.md (<u>mulsidi3_64bit): Change it to a
+	define_insn.  Correct !ISA_HAS_EXT_INS length from 24 to 28.  Move
+	splitter part from here ...:
+	(<u>mulsidi3_64bit splitter for !ISA_HAS_EXT_INS): ... to here.  Swap
+	op0 and op4 to match the DINS case.
+	(<u>mulsidi3_64bit splitter for ISA_HAS_EXT_INS): New splitter.
+
+2009-10-24  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR middle-end/19154
 	* avr.md (QIDI): Add new mode iterator.
