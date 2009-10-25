@@ -1879,7 +1879,7 @@
    (set_attr "mode" "SI")
    (set_attr "length" "12")])
 
-(define_insn_and_split "<u>mulsidi3_64bit"
+(define_insn "<u>mulsidi3_64bit"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (any_extend:DI (match_operand:SI 2 "register_operand" "d"))))
@@ -1887,37 +1887,67 @@
    (clobber (match_scratch:DI 4 "=d"))]
   "TARGET_64BIT && !TARGET_FIX_R4000"
   "#"
-  "&& reload_completed"
+  [(set_attr "type" "imul")
+   (set_attr "mode" "SI")
+   (set (attr "length")
+	(if_then_else (ne (symbol_ref "ISA_HAS_EXT_INS") (const_int 0))
+		      (const_int 16)
+		      (const_int 28)))])
+
+(define_split
+  [(set (match_operand:DI 0 "d_operand")
+	(mult:DI (any_extend:DI (match_operand:SI 1 "d_operand"))
+		 (any_extend:DI (match_operand:SI 2 "d_operand"))))
+   (clobber (match_operand:TI 3 "hilo_operand"))
+   (clobber (match_operand:DI 4 "d_operand"))]
+  "TARGET_64BIT && !TARGET_FIX_R4000 && ISA_HAS_EXT_INS && reload_completed"
   [(set (match_dup 3)
 	(unspec:TI [(mult:DI (any_extend:DI (match_dup 1))
 			     (any_extend:DI (match_dup 2)))]
 		   UNSPEC_SET_HILO))
 
-   ;; OP4 <- LO, OP0 <- HI
-   (set (match_dup 4) (match_dup 5))
-   (set (match_dup 0) (unspec:DI [(match_dup 3)] UNSPEC_MFHI))
+   ;; OP0 <- LO, OP4 <- HI
+   (set (match_dup 0) (match_dup 5))
+   (set (match_dup 4) (unspec:DI [(match_dup 3)] UNSPEC_MFHI))
+
+   (set (zero_extract:DI (match_dup 0) (const_int 32) (const_int 32))
+	(match_dup 4))]
+  { operands[5] = gen_rtx_REG (DImode, LO_REGNUM); })
+
+(define_split
+  [(set (match_operand:DI 0 "d_operand")
+	(mult:DI (any_extend:DI (match_operand:SI 1 "d_operand"))
+		 (any_extend:DI (match_operand:SI 2 "d_operand"))))
+   (clobber (match_operand:TI 3 "hilo_operand"))
+   (clobber (match_operand:DI 4 "d_operand"))]
+  "TARGET_64BIT && !TARGET_FIX_R4000 && !ISA_HAS_EXT_INS && reload_completed"
+  [(set (match_dup 3)
+	(unspec:TI [(mult:DI (any_extend:DI (match_dup 1))
+			     (any_extend:DI (match_dup 2)))]
+		   UNSPEC_SET_HILO))
+
+   ;; OP0 <- LO, OP4 <- HI
+   (set (match_dup 0) (match_dup 5))
+   (set (match_dup 4) (unspec:DI [(match_dup 3)] UNSPEC_MFHI))
 
    ;; Zero-extend OP4.
-   (set (match_dup 4)
-	(ashift:DI (match_dup 4)
+   (set (match_dup 0)
+	(ashift:DI (match_dup 0)
 		   (const_int 32)))
-   (set (match_dup 4)
-	(lshiftrt:DI (match_dup 4)
+   (set (match_dup 0)
+	(lshiftrt:DI (match_dup 0)
 		     (const_int 32)))
 
    ;; Shift OP0 into place.
-   (set (match_dup 0)
-	(ashift:DI (match_dup 0)
+   (set (match_dup 4)
+	(ashift:DI (match_dup 4)
 		   (const_int 32)))
 
    ;; OR the two halves together
    (set (match_dup 0)
 	(ior:DI (match_dup 0)
 		(match_dup 4)))]
-  { operands[5] = gen_rtx_REG (DImode, LO_REGNUM); }
-  [(set_attr "type" "imul")
-   (set_attr "mode" "SI")
-   (set_attr "length" "24")])
+  { operands[5] = gen_rtx_REG (DImode, LO_REGNUM); })
 
 (define_insn "<u>mulsidi3_64bit_hilo"
   [(set (match_operand:TI 0 "register_operand" "=x")
