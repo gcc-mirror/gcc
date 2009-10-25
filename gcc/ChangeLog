@@ -1,3 +1,9 @@
+2009-10-25  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer-in.c (unpack_ts_decl_common_value_fields):
+	Stream DECL_RESTRICTED_P.
+	* lto-streamer-out.c (pack_ts_decl_common_value_fields): Likewise.
+
 2009-10-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_restore_gp_from_cprestore_slot): Emit
