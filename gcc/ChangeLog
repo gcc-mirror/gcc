@@ -1,3 +1,9 @@
+2009-10-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41814
+	* tree.c (find_decls_types_r): Deal with Java overloading
+	BINFO_VIRTUALS for its own purpose.
+
 2009-10-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/predicates.md (hilo_operand): New predicate.
