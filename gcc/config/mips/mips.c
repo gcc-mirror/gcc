@@ -9537,7 +9537,10 @@ mips_restore_gp_from_cprestore_slot (rtx temp)
   gcc_assert (TARGET_ABICALLS && TARGET_OLDABI && epilogue_completed);
 
   if (!cfun->machine->must_restore_gp_when_clobbered_p)
-    return;
+    {
+      emit_note (NOTE_INSN_DELETED);
+      return;
+    }
 
   if (TARGET_MIPS16)
     {

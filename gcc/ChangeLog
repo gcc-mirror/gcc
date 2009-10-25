@@ -1,3 +1,8 @@
+2009-10-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_restore_gp_from_cprestore_slot): Emit
+	a note when expanding to nothing.
+
 2009-10-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41814
