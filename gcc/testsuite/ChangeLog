@@ -1,3 +1,24 @@
+2009-10-26  Ben Elliston  <bje@au.ibm.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.target/spu/ea/ea.exp: New file.
+	* gcc.target/spu/ea/cache1.c: Likewise.
+	* gcc.target/spu/ea/cast1.c: Likewise.
+	* gcc.target/spu/ea/cast2.c: Likewise.
+	* gcc.target/spu/ea/compile1.c: Likewise.
+	* gcc.target/spu/ea/compile2.c: Likewise.
+	* gcc.target/spu/ea/cppdefine.c: Likewise.
+	* gcc.target/spu/ea/errors1.c: Likewise.
+	* gcc.target/spu/ea/errors2.c: Likewise.
+	* gcc.target/spu/ea/execute1.c: Likewise.
+	* gcc.target/spu/ea/execute2.c: Likewise.
+	* gcc.target/spu/ea/execute3.c: Likewise.
+	* gcc.target/spu/ea/ops1.c: Likewise.
+	* gcc.target/spu/ea/ops2.c: Likewise.
+	* gcc.target/spu/ea/options1.c: Likewise.
+	* gcc.target/spu/ea/test-sizes.c: Likewise.
+
 2009-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/41345

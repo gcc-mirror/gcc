@@ -1,0 +1,54 @@
+#   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't a SPU target.
+if { ![istarget spu-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+# Return 1 if target __ea library functions are available
+proc check_effective_target_ealib { } {
+    return [check_no_compiler_messages ealib executable {
+	#include <ea.h>
+	int main (void)
+	{
+	    __ea void *ptr = malloc_ea (1024);
+	    return 0;
+	}
+    }]
+}
+
+# If a testcase doesn't have special options, use these.
+# We do not use the global DEFAULT_CFLAGS as all test cases
+# in this directory use the __ea address space qualifier
+# extension and thus will not compile with -ansi.
+set DEFAULT_EA_CFLAGS "-std=gnu99 -pedantic-errors -O2"
+
+# Initialize `dg'.
+dg-init
+
+# Run all tests in both -mea32 and -mea64 mode.
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]]
+dg-runtest $tests "-mea32" $DEFAULT_EA_CFLAGS
+dg-runtest $tests "-mea64" $DEFAULT_EA_CFLAGS
+
+# All done.
+dg-finish
