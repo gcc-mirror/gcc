@@ -153,7 +153,7 @@ AC_DEFUN([LIBGOMP_CHECK_LINKER_FEATURES], [
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
-         sed -e 's/GNU g*o*ld v*e*r*s*i*o*n* *\(([^)]*)* *\) \([0-9.][0-9.]*\).*/\2/; q'`
+         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
   changequote([,])
   libgomp_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
