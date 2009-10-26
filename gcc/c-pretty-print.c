@@ -225,7 +225,11 @@ pp_c_space_for_pointer_operator (c_pretty_printer *pp, tree t)
        const
        restrict                              -- C99
        __restrict__                          -- GNU C
-       volatile    */
+       address-space-qualifier		     -- GNU C
+       volatile
+
+   address-space-qualifier:
+       identifier			     -- GNU C  */
 
 void
 pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
@@ -245,6 +249,12 @@ pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
     pp_c_cv_qualifier (pp, "volatile");
   if (qualifiers & TYPE_QUAL_RESTRICT)
     pp_c_cv_qualifier (pp, flag_isoc99 ? "restrict" : "__restrict__");
+
+  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (t)))
+    {
+      const char *as = c_addr_space_name (TYPE_ADDR_SPACE (t));
+      pp_c_identifier (pp, as);
+    }
 }
 
 /* pointer:

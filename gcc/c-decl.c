@@ -1746,8 +1746,35 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	}
       else
 	{
-	  if (TYPE_QUALS (newtype) != TYPE_QUALS (oldtype))
-	    error ("conflicting type qualifiers for %q+D", newdecl);
+	  int new_quals = TYPE_QUALS (newtype);
+	  int old_quals = TYPE_QUALS (oldtype);
+
+	  if (new_quals != old_quals)
+	    {
+	      addr_space_t new_addr = DECODE_QUAL_ADDR_SPACE (new_quals);
+	      addr_space_t old_addr = DECODE_QUAL_ADDR_SPACE (old_quals);
+	      if (new_addr != old_addr)
+		{
+		  if (ADDR_SPACE_GENERIC_P (new_addr))
+		    error ("conflicting named address spaces (generic vs %s) "
+			   "for %q+D",
+			   c_addr_space_name (old_addr), newdecl);
+		  else if (ADDR_SPACE_GENERIC_P (old_addr))
+		    error ("conflicting named address spaces (%s vs generic) "
+			   "for %q+D",
+			   c_addr_space_name (new_addr), newdecl);
+		  else
+		    error ("conflicting named address spaces (%s vs %s) "
+			   "for %q+D",
+			   c_addr_space_name (new_addr),
+			   c_addr_space_name (old_addr),
+			   newdecl);
+		}
+
+	      if (CLEAR_QUAL_ADDR_SPACE (new_quals)
+		  != CLEAR_QUAL_ADDR_SPACE (old_quals))
+		error ("conflicting type qualifiers for %q+D", newdecl);
+	    }
 	  else
 	    error ("conflicting types for %q+D", newdecl);
 	  diagnose_arglist_conflict (newdecl, olddecl, newtype, oldtype);
@@ -3605,7 +3632,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	  else if (!declspecs->tag_defined_p
 		   && (declspecs->const_p
 		       || declspecs->volatile_p
-		       || declspecs->restrict_p))
+		       || declspecs->restrict_p
+		       || declspecs->address_space))
 	    {
 	      if (warned != 1)
 		pedwarn (input_location, 0,
@@ -3676,7 +3704,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 
   if (!warned && !in_system_header && (declspecs->const_p
 				       || declspecs->volatile_p
-				       || declspecs->restrict_p))
+				       || declspecs->restrict_p
+				       || declspecs->address_space))
     {
       warning (0, "useless type qualifier in empty declaration");
       warned = 2;
@@ -3699,7 +3728,8 @@ quals_from_declspecs (const struct c_declspecs *specs)
 {
   int quals = ((specs->const_p ? TYPE_QUAL_CONST : 0)
 	       | (specs->volatile_p ? TYPE_QUAL_VOLATILE : 0)
-	       | (specs->restrict_p ? TYPE_QUAL_RESTRICT : 0));
+	       | (specs->restrict_p ? TYPE_QUAL_RESTRICT : 0)
+	       | (ENCODE_QUAL_ADDR_SPACE (specs->address_space)));
   gcc_assert (!specs->type
 	      && !specs->decl_attr
 	      && specs->typespec_word == cts_none
@@ -4750,6 +4780,7 @@ grokdeclarator (const struct c_declarator *declarator,
   bool bitfield = width != NULL;
   tree element_type;
   struct c_arg_info *arg_info = 0;
+  addr_space_t as1, as2, address_space;
   location_t loc = UNKNOWN_LOCATION;
   const char *errmsg;
   tree expr_dummy;
@@ -4880,6 +4911,10 @@ grokdeclarator (const struct c_declarator *declarator,
   constp = declspecs->const_p + TYPE_READONLY (element_type);
   restrictp = declspecs->restrict_p + TYPE_RESTRICT (element_type);
   volatilep = declspecs->volatile_p + TYPE_VOLATILE (element_type);
+  as1 = declspecs->address_space;
+  as2 = TYPE_ADDR_SPACE (element_type);
+  address_space = ADDR_SPACE_GENERIC_P (as1)? as2 : as1;
+
   if (pedantic && !flag_isoc99)
     {
       if (constp > 1)
@@ -4889,11 +4924,17 @@ grokdeclarator (const struct c_declarator *declarator,
       if (volatilep > 1)
 	pedwarn (loc, OPT_pedantic, "duplicate %<volatile%>");
     }
+
+  if (!ADDR_SPACE_GENERIC_P (as1) && !ADDR_SPACE_GENERIC_P (as2) && as1 != as2)
+    error_at (loc, "conflicting named address spaces (%s vs %s)",
+	      c_addr_space_name (as1), c_addr_space_name (as2));
+
   if (!flag_gen_aux_info && (TYPE_QUALS (element_type)))
     type = TYPE_MAIN_VARIANT (type);
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
-		| (volatilep ? TYPE_QUAL_VOLATILE : 0));
+		| (volatilep ? TYPE_QUAL_VOLATILE : 0)
+		| ENCODE_QUAL_ADDR_SPACE (address_space));
 
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
@@ -5309,7 +5350,14 @@ grokdeclarator (const struct c_declarator *declarator,
 	       it, but here we want to make sure we don't ever
 	       modify the shared type, so we gcc_assert (itype)
 	       below.  */
-	      type = build_array_type (type, itype);
+	      {
+		addr_space_t as = DECODE_QUAL_ADDR_SPACE (type_quals);
+		if (!ADDR_SPACE_GENERIC_P (as) && as != TYPE_ADDR_SPACE (type))
+		  type = build_qualified_type (type,
+					       ENCODE_QUAL_ADDR_SPACE (as));
+
+		type = build_array_type (type, itype);
+	      }
 
 	    if (type != error_mark_node)
 	      {
@@ -5514,6 +5562,59 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* Now TYPE has the actual type, apart from any qualifiers in
      TYPE_QUALS.  */
+
+  /* Warn about address space used for things other than static memory or
+     pointers.  */
+  address_space = DECODE_QUAL_ADDR_SPACE (type_quals);
+  if (!ADDR_SPACE_GENERIC_P (address_space))
+    {
+      if (decl_context == NORMAL)
+	{
+	  switch (storage_class)
+	    {
+	    case csc_auto:
+	      error ("%qs combined with %<auto%> qualifier for %qE",
+		     c_addr_space_name (address_space), name);
+	      break;
+	    case csc_register:
+	      error ("%qs combined with %<register%> qualifier for %qE",
+		     c_addr_space_name (address_space), name);
+	      break;
+	    case csc_none:
+	      if (current_function_scope)
+		{
+		  error ("%qs specified for auto variable %qE",
+			 c_addr_space_name (address_space), name);
+		  break;
+		}
+	      break;
+	    case csc_static:
+	    case csc_extern:
+	    case csc_typedef:
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else if (decl_context == PARM && TREE_CODE (type) != ARRAY_TYPE)
+	{
+	  if (name)
+	    error ("%qs specified for parameter %qE",
+		   c_addr_space_name (address_space), name);
+	  else
+	    error ("%qs specified for unnamed parameter",
+		   c_addr_space_name (address_space));
+	}
+      else if (decl_context == FIELD)
+	{
+	  if (name)
+	    error ("%qs specified for structure field %qE",
+		   c_addr_space_name (address_space), name);
+	  else
+	    error ("%qs specified for structure field",
+		   c_addr_space_name (address_space));
+	}
+    }
 
   /* Check the type and width of a bit-field.  */
   if (bitfield)
@@ -8297,7 +8398,27 @@ build_null_declspecs (void)
   ret->volatile_p = false;
   ret->restrict_p = false;
   ret->saturating_p = false;
+  ret->address_space = ADDR_SPACE_GENERIC;
   return ret;
+}
+
+/* Add the address space ADDRSPACE to the declaration specifiers
+   SPECS, returning SPECS.  */
+
+struct c_declspecs *
+declspecs_add_addrspace (struct c_declspecs *specs, addr_space_t as)
+{
+  specs->non_sc_seen_p = true;
+  specs->declspecs_seen_p = true;
+
+  if (!ADDR_SPACE_GENERIC_P (specs->address_space)
+      && specs->address_space != as)
+    error ("incompatible address space qualifiers %qs and %qs",
+	   c_addr_space_name (as),
+	   c_addr_space_name (specs->address_space));
+  else
+    specs->address_space = as;
+  return specs;
 }
 
 /* Add the type qualifier QUAL to the declaration specifiers SPECS,

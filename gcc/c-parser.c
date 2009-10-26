@@ -72,6 +72,10 @@ c_parse_init (void)
   tree id;
   int mask = 0;
 
+  /* Make sure RID_MAX hasn't grown past the 8 bits used to hold the keyword in
+     the c_token structure.  */
+  gcc_assert (RID_MAX <= 255);
+
   mask |= D_CXXONLY;
   if (!flag_isoc99)
     mask |= D_C99;
@@ -132,6 +136,8 @@ typedef enum c_id_kind {
   C_ID_TYPENAME,
   /* An identifier declared as an Objective-C class name.  */
   C_ID_CLASSNAME,
+  /* An address space identifier.  */
+  C_ID_ADDRSPACE,
   /* Not an identifier.  */
   C_ID_NONE
 } c_id_kind;
@@ -225,6 +231,13 @@ c_lex_one_token (c_parser *parser, c_token *token)
 			    OPT_Wc___compat,
 			    "identifier %qE conflicts with C++ keyword",
 			    token->value);
+	      }
+	    else if (rid_code >= RID_FIRST_ADDR_SPACE
+		     && rid_code <= RID_LAST_ADDR_SPACE)
+	      {
+		token->id_kind = C_ID_ADDRSPACE;
+		token->keyword = rid_code;
+		break;
 	      }
 	    else if (c_dialect_objc ())
 	      {
@@ -352,6 +365,8 @@ c_token_starts_typename (c_token *token)
 	{
 	case C_ID_ID:
 	  return false;
+	case C_ID_ADDRSPACE:
+	  return true;
 	case C_ID_TYPENAME:
 	  return true;
 	case C_ID_CLASSNAME:
@@ -422,6 +437,8 @@ c_token_starts_declspecs (c_token *token)
 	{
 	case C_ID_ID:
 	  return false;
+	case C_ID_ADDRSPACE:
+	  return true;
 	case C_ID_TYPENAME:
 	  return true;
 	case C_ID_CLASSNAME:
@@ -1411,6 +1428,7 @@ c_parser_asm_definition (c_parser *parser)
      const
      restrict
      volatile
+     address-space-qualifier
 
    (restrict is new in C99.)
 
@@ -1418,6 +1436,12 @@ c_parser_asm_definition (c_parser *parser)
 
    declaration-specifiers:
      attributes declaration-specifiers[opt]
+
+   type-qualifier:
+     address-space
+
+   address-space:
+     identifier recognized by the target
 
    storage-class-specifier:
      __thread
@@ -1459,6 +1483,17 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	{
 	  tree value = c_parser_peek_token (parser)->value;
 	  c_id_kind kind = c_parser_peek_token (parser)->id_kind;
+
+	  if (kind == C_ID_ADDRSPACE)
+	    {
+	      addr_space_t as
+		= c_parser_peek_token (parser)->keyword - RID_FIRST_ADDR_SPACE;
+	      declspecs_add_addrspace (specs, as);
+	      c_parser_consume_token (parser);
+	      attrs_ok = true;
+	      continue;
+	    }
+
 	  /* This finishes the specifiers unless a type name is OK, it
 	     is declared as a type name and a type name hasn't yet
 	     been seen.  */
@@ -5774,6 +5809,14 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   init = c_parser_braced_init (parser, type, false);
   finish_init ();
   maybe_warn_string_init (type, init);
+
+  if (type != error_mark_node
+      && !ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (type))
+      && current_function_decl)
+    {
+      error ("compound literal qualified by address-space qualifier");
+      type = error_mark_node;
+    }
 
   if (!flag_isoc99)
     pedwarn (start_loc, OPT_pedantic, "ISO C90 forbids compound literals");
