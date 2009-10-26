@@ -1,5 +1,11 @@
 2009-10-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/41826
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Avoid
+	access to re-allocated vector fields.
+
+2009-10-26  Richard Guenther  <rguenther@suse.de>
+
 	* graphite-sese-to-poly.c (check_poly_representation): Fix
 	compile without checking.
 
