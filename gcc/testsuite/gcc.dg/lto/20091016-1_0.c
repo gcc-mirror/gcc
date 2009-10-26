@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-fPIC -shared -O2 -flto}} } */
+/* { dg-lto-options {{-fPIC -r -nostdlib -O2 -flto}} } */
 
 typedef struct VEC_constructor_elt_gc { } VEC_constructor_elt_gc;
 #include "20091016-1_a.h"

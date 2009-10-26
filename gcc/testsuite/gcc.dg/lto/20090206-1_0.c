@@ -1,6 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-skip-if "" { ! { i?86-*-linux* x86_64-*-linux* } } { "*" } { "" } } */
-/* { dg-lto-options {{-fPIC -shared -fwhopr -msse2}} } */
+/* { dg-lto-options {{-fPIC -r -nostdlib -fwhopr -msse2}} } */
 /* { dg-suppress-ld-options {-fPIC -msse2} } */
 
 typedef short v8hi __attribute__((__vector_size__(16)));

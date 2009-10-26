@@ -1,6 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{-O1 -fwhopr -fPIC}} } */
-/* { dg-extra-ld-options {-shared -O0} } */
+/* { dg-extra-ld-options {-r -nostdlib -O0} } */
 
 int foo(void) {
  int ret, i;
