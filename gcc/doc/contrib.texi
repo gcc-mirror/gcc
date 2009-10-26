@@ -173,8 +173,8 @@ The @uref{http://www.gnu.org/software/classpath/,,GNU Classpath project}
 for all of their merged runtime code.
 
 @item
-Nick Clifton for arm, mcore, fr30, v850, m32r work, @option{--help}, and
-other random hacking.
+Nick Clifton for arm, mcore, fr30, v850, m32r, rx work,
+@option{--help}, and other random hacking.
 
 @item
 Michael Cook for libstdc++ cleanup patches to reduce warnings.

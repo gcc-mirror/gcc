@@ -783,6 +783,16 @@ See RS/6000 and PowerPC Options.
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
 -msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread}
 
+@emph{RX Options}
+@gccoptlist{-m64bit-doubles  -m32bit-doubles  -mieee  -mno-ieee@gol
+-mbig-endian-data -mlittle-endian-data @gol
+-msmall-data @gol
+-msim  -mno-sim@gol
+-mas100-syntax -mno-as100-syntax@gol
+-mrelax@gol
+-mmax-constant-size=@gol
+-mint-register=}
+
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
 -mhard-float  -msoft-float  -mhard-dfp -mno-hard-dfp @gol
@@ -9530,6 +9540,7 @@ platform.
 * picoChip Options::
 * PowerPC Options::
 * RS/6000 and PowerPC Options::
+* RX Options::
 * S/390 and zSeries Options::
 * Score Options::
 * SH Options::
@@ -10943,7 +10954,7 @@ These @samp{-m} options are defined for the DEC Alpha/VMS implementations:
 @table @gcctabopt
 @item -mvms-return-codes
 @opindex mvms-return-codes
-Return VMS condition codes from main. The default is to return POSIX
+Return VMS condition codes from main.  The default is to return POSIX
 style condition (e.g.@: error) codes.
 
 @item -mdebug-main=@var{prefix}
@@ -15361,6 +15372,112 @@ Adds support for multithreading with the @dfn{pthreads} library.
 This option sets flags for both the preprocessor and linker.
 
 @end table
+
+@node RX Options
+@subsection RX Options
+@cindex RX Options
+
+These @option{-m} options are defined for RX implementations:
+
+@table @gcctabopt
+@item -m64bit-doubles
+@itemx -m32bit-doubles
+@opindex m64bit-doubles
+@opindex m32bit-doubles
+Make the @code{double} data type be 64-bits (@option{-m64bit-doubles})
+or 32-bits (@option{-m32bit-doubles}) in size.  The default is
+@option{-m32bit-doubles}.  @emph{Note} the RX's hardware floating
+point instructions are only used for 32-bit floating point values, and
+then only if @option{-ffast-math} has been specified on the command
+line.  This is because the RX FPU instructions do not properly support
+denormal (or sub-normal) values.
+
+@item -mbig-endian-data
+@itemx -mlittle-endian-data
+@opindex mbig-endian-data
+@opindex mlittle-endian-data
+Store data (but not code) in the big-endian format.  The default is
+@option{-mlittle-endian-data}, ie to store data in the little endian
+format.
+
+@item -msmall-data-limit=@var{N}
+@opindex msmall-data-limit
+Specifies the maximum size in bytes of global and static variables
+which can be placed into the small data area.  Using the small data
+area can lead to smaller and faster code, but the size of area is
+limited and it is up to the programmer to ensure that the area does
+not overflow.  Also when the small data area is used one of the RX's
+registers (@code{r13}) is reserved for use pointing to this area, so
+it is no longer available for use by the compiler.  This could result
+in slower and/or larger code if variables which once could have been
+held in @code{r13} are now pushed onto the stack.
+
+Note, common variables (variables which have not been initialised) and
+constants are not placed into the small data area as they are assigned
+to other sections in the output executeable.
+
+The default value is zero, which disables this feature.  Note, this
+feature is not enabled by default with higher optimization levels
+(@option{-O2} etc) because of the potentially deterimental effects of
+reserving register @code{r13}.  It is up to the programmer to
+experiment and discover whether this feature is of benefit to their
+program.
+
+@item -msim
+@item -mno-sim
+@opindex msim
+@opindex mno-sim
+Use the simulator runtime.  The default is to use the libgloss board
+specific runtime.
+
+@item -mas100-syntax
+@item -mno-as100-syntax
+@opindex mas100-syntax
+@opindex mno-as100-syntax
+When generating assembler output use a syntax that is compatible with
+Renesas's AS100 assembler.  This syntax can also be handled by the GAS
+assembler but it has some restrictions so generating it is not the
+default option.
+
+@item -mmax-constant-size=@var{N}
+@opindex mmax-constant-size
+Specifies the maxium size, in bytes, of a constant that can be used as
+an operand in a RX instruction.  Although the RX instruction set does
+allow consants of up to 4 bytes in length to be used in instructions,
+a longer value equates to a longer instruction.  Thus in some
+circumstances it can be beneficial to restrict the size of constants
+that are used in instructions.  Constants that are too big are instead
+placed into a constant pool and referenced via register indirection.
+
+The value @var{N} can be between 0 and 3.  A value of 0, the default,
+means that constants of any size are allowed.
+
+@item -mrelax
+@opindex mrelax
+Enable linker relaxation.  Linker relaxation is a process whereby the
+linker will attempt to reduce the size of a program by finding shorter
+versions of various instructions.  Disabled by default.
+
+@item -mint-register=@var{N}
+@opindex mint-register
+Specify the number of registers to reserve for fast interrupt handler
+functions.  The value @var{N} can be between 0 and 4.  A value of 1
+means that register @code{r13} will be reserved for ther exclusive use
+of fast interrupt handlers.  A value of 2 reserves @code{r13} and
+@code{r12}.  A value of 3 reserves @code{r13}, @code{r12} and
+@code{r11}, and a value of 4 reserves @code{r13} through @code{r10}.
+A value of 0, the default, does not reserve any registers.
+@end table
+
+@emph{Note:} The generic GCC command line @option{-ffixed-@var{reg}}
+has special significance to the RX port when used with the
+@code{interrupt} function attribute.  This attribute indicates a
+function intended to process fast interrupts.  GCC will will ensure
+that it only uses the registers @code{r10}, @code{r11}, @code{r12}
+and/or @code{r13} and only provided that the normal use of the
+corresponding registers have been restricted via the
+@option{-ffixed-@var{reg}} or @option{-mint-register} command line
+options.
 
 @node S/390 and zSeries Options
 @subsection S/390 and zSeries Options

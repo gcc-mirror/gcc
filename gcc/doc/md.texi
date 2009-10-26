@@ -2897,6 +2897,32 @@ A constant in the range of 0 to @minus{}255.
 
 @end table
 
+@item RX---@file{config/rx/constraints.md}
+@table @code
+@item Q
+An address which does not involve register indirect addressing or
+pre/post increment/decrement addressing.
+
+@item Symbol
+A symbol reference.
+
+@item Int08
+A constant in the range @minus{}256 to 255, inclusive.
+
+@item Sint08
+A constant in the range @minus{}128 to 127, inclusive.
+
+@item Sint16
+A constant in the range @minus{}32768 to 32767, inclusive.
+
+@item Sint24
+A constant in the range @minus{}8388608 to 8388607, inclusive.
+
+@item Uint04
+A constant in the range 0 to 15, inclusive.
+
+@end table
+
 @need 1000
 @item SPARC---@file{config/sparc/sparc.h}
 @table @code

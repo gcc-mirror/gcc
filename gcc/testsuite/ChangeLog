@@ -1,3 +1,18 @@
+2009-10-26  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp (check_profiling_available):
+	Profiling is not, currently, available for the RX port.
+	(check_effective_target_hard_float): Add support for RX
+	target.
+	* gcc.target/rx: New directory.
+	* gcc.target/rx/builtins.c: New test file.
+	* gcc.target/rx/interrupts.c: New test file.
+	* gcc.target/rx/rx-abi-function-tests.c: New test file.
+	* gcc.target/rx/zero-width-bitfield.c: New test file.
+	* gcc.target/rx/i272091.c: New test file.
+	* gcc.target/rx/packed-struct.c: New test file.
+	* gcc.target/rx/rx.exp: New file: Drives RX tests.
+	
 2009-10-26  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	* gcc.dg/lto/20091014-1_0.c: Replace -shared with -r -nostlib.

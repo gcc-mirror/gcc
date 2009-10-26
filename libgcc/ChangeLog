@@ -1,3 +1,14 @@
+2009-10-26  Nick Clifton  <nickc@redhat.com>
+
+	* config.host: Add support for RX target.
+	* config/rx: New directory.
+	* config/rx/rx-abi-functions.c: New file. Supplementary
+	functions for libgcc to support the RX ABI.
+	* config/rx/rx-abi.h: New file.  Supplementary header file for
+	libgcc RX ABI functions.
+	* config/rx/t-rx: New file: Makefile fragment for building
+	libgcc for the RX.
+
 2009-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/32/sfp-machine.h (__FP_FRAC_SUB_4): Change operand

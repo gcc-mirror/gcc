@@ -1,3 +1,7 @@
+2009-10-16  Nick Clifton  <nickc@redhat.com>
+
+	* MAINTAINERS: Add myself as a maintainer for the RX port.
+
 2009-10-26  Johannes Singler <singler@kit.edu>
 
         * MAINTAINERS (Write After Approval): Update my e-mail address.
