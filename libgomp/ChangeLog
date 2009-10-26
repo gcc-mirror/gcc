@@ -1,3 +1,9 @@
+2009-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Avoid using too many
+	*s.  Accept ld version without text in ()s.
+	* configure: Regenerated.
+
 2009-10-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libgomp/41418

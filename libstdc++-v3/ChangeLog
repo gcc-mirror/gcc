@@ -1,3 +1,10 @@
+2009-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/38923
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Avoid using too many
+	*s.  Accept ld version without text in ()s.
+	* configure: Regenerated.
+
 2009-10-26  Jason Merrill  <jason@redhat.com>
 
 	Core issue 906
