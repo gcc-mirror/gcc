@@ -3987,12 +3987,15 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		 && MEM_P (recog_data.operand[i]))
 	  {
 	    /* If the address to be reloaded is a VOIDmode constant,
-	       use Pmode as mode of the reload register, as would have
-	       been done by find_reloads_address.  */
+	       use the default address mode as mode of the reload register,
+	       as would have been done by find_reloads_address.  */
 	    enum machine_mode address_mode;
 	    address_mode = GET_MODE (XEXP (recog_data.operand[i], 0));
 	    if (address_mode == VOIDmode)
-	      address_mode = Pmode;
+	      {
+		addr_space_t as = MEM_ADDR_SPACE (recog_data.operand[i]);
+		address_mode = targetm.addr_space.address_mode (as);
+	      }
 
 	    operand_reloadnum[i]
 	      = push_reload (XEXP (recog_data.operand[i], 0), NULL_RTX,
@@ -5113,7 +5116,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	     That will at least work.  */
 	  find_reloads_address_part (ad, loc,
 				     base_reg_class (mode, MEM, SCRATCH),
-				     Pmode, opnum, type, ind_levels);
+				     GET_MODE (ad), opnum, type, ind_levels);
 	}
       return ! removed_and;
     }
@@ -5235,6 +5238,10 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
      into a register.  */
   if (CONSTANT_P (ad) && ! strict_memory_address_addr_space_p (mode, ad, as))
     {
+      enum machine_mode address_mode = GET_MODE (ad);
+      if (ad == VOIDmode)
+	address_mode = targetm.addr_space.address_mode (as);
+
       /* If AD is an address in the constant pool, the MEM rtx may be shared.
 	 Unshare it so we can safely alter it.  */
       if (memrefloc && GET_CODE (ad) == SYMBOL_REF
@@ -5247,7 +5254,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	}
 
       find_reloads_address_part (ad, loc, base_reg_class (mode, MEM, SCRATCH),
-				 Pmode, opnum, type, ind_levels);
+				 address_mode, opnum, type, ind_levels);
       return ! removed_and;
     }
 
@@ -5334,16 +5341,12 @@ subst_reg_equivs (rtx ad, rtx insn)
    This routine assumes both inputs are already in canonical form.  */
 
 rtx
-form_sum (rtx x, rtx y)
+form_sum (enum machine_mode mode, rtx x, rtx y)
 {
   rtx tem;
-  enum machine_mode mode = GET_MODE (x);
 
-  if (mode == VOIDmode)
-    mode = GET_MODE (y);
-
-  if (mode == VOIDmode)
-    mode = Pmode;
+  gcc_assert (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode);
+  gcc_assert (GET_MODE (y) == mode || GET_MODE (y) == VOIDmode);
 
   if (CONST_INT_P (x))
     return plus_constant (y, INTVAL (x));
@@ -5353,12 +5356,12 @@ form_sum (rtx x, rtx y)
     tem = x, x = y, y = tem;
 
   if (GET_CODE (x) == PLUS && CONSTANT_P (XEXP (x, 1)))
-    return form_sum (XEXP (x, 0), form_sum (XEXP (x, 1), y));
+    return form_sum (mode, XEXP (x, 0), form_sum (mode, XEXP (x, 1), y));
 
   /* Note that if the operands of Y are specified in the opposite
      order in the recursive calls below, infinite recursion will occur.  */
   if (GET_CODE (y) == PLUS && CONSTANT_P (XEXP (y, 1)))
-    return form_sum (form_sum (x, XEXP (y, 0)), XEXP (y, 1));
+    return form_sum (mode, form_sum (mode, x, XEXP (y, 0)), XEXP (y, 1));
 
   /* If both constant, encapsulate sum.  Otherwise, just form sum.  A
      constant will have been placed second.  */
@@ -5425,9 +5428,9 @@ subst_indexed_address (rtx addr)
 
       /* Compute the sum.  */
       if (op2 != 0)
-	op1 = form_sum (op1, op2);
+	op1 = form_sum (GET_MODE (addr), op1, op2);
       if (op1 != 0)
-	op0 = form_sum (op0, op1);
+	op0 = form_sum (GET_MODE (addr), op0, op1);
 
       return op0;
     }
@@ -5827,7 +5830,8 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	      rtx equiv = (MEM_P (XEXP (x, 0))
 			   ? XEXP (x, 0)
 			   : reg_equiv_mem[regno]);
-	      int icode = (int) optab_handler (add_optab, Pmode)->insn_code;
+	      int icode
+		= (int) optab_handler (add_optab, GET_MODE (x))->insn_code;
 	      if (insn && NONJUMP_INSN_P (insn) && equiv
 		  && memory_operand (equiv, GET_MODE (equiv))
 #ifdef HAVE_cc0
@@ -5835,9 +5839,9 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 #endif
 		  && ! (icode != CODE_FOR_nothing
 			&& ((*insn_data[icode].operand[0].predicate)
-			    (equiv, Pmode))
+			    (equiv, GET_MODE (x)))
 			&& ((*insn_data[icode].operand[1].predicate)
-			    (equiv, Pmode))))
+			    (equiv, GET_MODE (x)))))
 		{
 		  /* We use the original pseudo for loc, so that
 		     emit_reload_insns() knows which pseudo this

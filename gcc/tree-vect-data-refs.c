@@ -2376,7 +2376,9 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   if (!alias_sets_conflict_p (get_deref_alias_set (vect_ptr),
 			      get_alias_set (DR_REF (dr))))
     {
-      vect_ptr_type = build_pointer_type_for_mode (vectype, ptr_mode, true);
+      vect_ptr_type
+	= build_pointer_type_for_mode (vectype,
+				       TYPE_MODE (vect_ptr_type), true);
       vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
 					get_name (base_name));
     }
@@ -2392,7 +2394,8 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 				      get_alias_set (lhs)))
 	    {
 	      vect_ptr_type
-		= build_pointer_type_for_mode (vectype, ptr_mode, true);
+		= build_pointer_type_for_mode (vectype,
+					       TYPE_MODE (vect_ptr_type), true);
 	      vect_ptr
 		= vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
 					 get_name (base_name));

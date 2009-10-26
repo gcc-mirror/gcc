@@ -52,9 +52,9 @@ unsigned int maximum_field_alignment = TARGET_DEFAULT_PACK_STRUCT * BITS_PER_UNI
 /* ... and its original value in bytes, specified via -fpack-struct=<value>.  */
 unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT;
 
-/* Nonzero if all REFERENCE_TYPEs are internal and hence should be
-   allocated in Pmode, not ptr_mode.   Set only by internal_reference_types
-   called only by a front end.  */
+/* Nonzero if all REFERENCE_TYPEs are internal and hence should be allocated
+   in the address spaces' address_mode, not pointer_mode.   Set only by
+   internal_reference_types called only by a front end.  */
 static int reference_types_internal = 0;
 
 static tree self_referential_size (tree);
@@ -71,8 +71,8 @@ extern void debug_rli (record_layout_info);
 
 static GTY(()) tree pending_sizes;
 
-/* Show that REFERENCE_TYPES are internal and should be Pmode.  Called only
-   by front end.  */
+/* Show that REFERENCE_TYPES are internal and should use address_mode.
+   Called only by front end.  */
 
 void
 internal_reference_types (void)
@@ -1917,6 +1917,7 @@ layout_type (tree type)
       /* A pointer might be MODE_PARTIAL_INT,
 	 but ptrdiff_t must be integral.  */
       SET_TYPE_MODE (type, mode_for_size (POINTER_SIZE, MODE_INT, 0));
+      TYPE_PRECISION (type) = POINTER_SIZE;
       break;
 
     case FUNCTION_TYPE:
@@ -1932,16 +1933,17 @@ layout_type (tree type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	enum machine_mode mode = ((TREE_CODE (type) == REFERENCE_TYPE
-				   && reference_types_internal)
-				  ? Pmode : TYPE_MODE (type));
+	enum machine_mode mode = TYPE_MODE (type);
+	if (TREE_CODE (type) == REFERENCE_TYPE && reference_types_internal)
+	  {
+	    addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
+	    mode = targetm.addr_space.address_mode (as);
+	  }
 
-	int nbits = GET_MODE_BITSIZE (mode);
-
-	TYPE_SIZE (type) = bitsize_int (nbits);
+	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
 	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
 	TYPE_UNSIGNED (type) = 1;
-	TYPE_PRECISION (type) = nbits;
+	TYPE_PRECISION (type) = GET_MODE_BITSIZE (mode);
       }
       break;
 

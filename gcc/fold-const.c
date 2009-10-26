@@ -206,14 +206,8 @@ fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 {
   unsigned HOST_WIDE_INT low0 = l1;
   HOST_WIDE_INT high0 = h1;
-  unsigned int prec;
+  unsigned int prec = int_or_pointer_precision (type);
   int sign_extended_type;
-
-  if (POINTER_TYPE_P (type)
-      || TREE_CODE (type) == OFFSET_TYPE)
-    prec = POINTER_SIZE;
-  else
-    prec = TYPE_PRECISION (type);
 
   /* Size types *are* sign extended.  */
   sign_extended_type = (!TYPE_UNSIGNED (type)

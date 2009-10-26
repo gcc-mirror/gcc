@@ -68,6 +68,12 @@ typedef int (* print_switch_fn_type) (print_switch_type, const char *);
 /* An example implementation for ELF targets.  Defined in varasm.c  */
 extern int elf_record_gcc_switches (print_switch_type type, const char *);
 
+/* Some places still assume that all pointer or address modes are the
+   standard Pmode and ptr_mode.  These optimizations become invalid if
+   the target actually supports multiple different modes.  For now,
+   we disable such optimizations on such targets, using this function.  */
+extern bool target_default_pointer_address_modes_p (void);
+
 struct stdarg_info;
 struct spec_info_def;
 
@@ -696,6 +702,16 @@ struct gcc_target
 
   /* Support for named address spaces.  */
   struct addr_space {
+    /* MODE to use for a pointer into another address space.  */
+    enum machine_mode (* pointer_mode) (addr_space_t);
+
+    /* MODE to use for an address in another address space.  */
+    enum machine_mode (* address_mode) (addr_space_t);
+
+    /* True if MODE is valid for a pointer in __attribute__((mode("MODE")))
+       in another address space.  */
+    bool (* valid_pointer_mode) (enum machine_mode, addr_space_t);
+
     /* True if an address is a valid memory address to a given named address
        space for a given mode.  */
     bool (* legitimate_address_p) (enum machine_mode, rtx, bool, addr_space_t);

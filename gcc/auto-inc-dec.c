@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "dbgcnt.h"
+#include "target.h"
 
 /* This pass was originally removed from flow.c. However there is
    almost nothing that remains of that code.
@@ -613,6 +614,7 @@ try_merge (void)
   /* The width of the mem being accessed.  */
   int size = GET_MODE_SIZE (GET_MODE (mem));
   rtx last_insn = NULL;
+  enum machine_mode reg_mode = GET_MODE (inc_reg);
 
   switch (inc_insn.form)
     {
@@ -667,33 +669,33 @@ try_merge (void)
     case SIMPLE_PRE_INC:     /* ++size  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_PRE_INC\n");
-      return attempt_change (gen_rtx_PRE_INC (Pmode, inc_reg), inc_reg);
+      return attempt_change (gen_rtx_PRE_INC (reg_mode, inc_reg), inc_reg);
       break;
       
     case SIMPLE_POST_INC:    /* size++  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_POST_INC\n");
-      return attempt_change (gen_rtx_POST_INC (Pmode, inc_reg), inc_reg);
+      return attempt_change (gen_rtx_POST_INC (reg_mode, inc_reg), inc_reg);
       break;
       
     case SIMPLE_PRE_DEC:     /* --size  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_PRE_DEC\n");
-      return attempt_change (gen_rtx_PRE_DEC (Pmode, inc_reg), inc_reg);
+      return attempt_change (gen_rtx_PRE_DEC (reg_mode, inc_reg), inc_reg);
       break;
       
     case SIMPLE_POST_DEC:    /* size--  */
       if (dump_file)
 	fprintf (dump_file, "trying SIMPLE_POST_DEC\n");
-      return attempt_change (gen_rtx_POST_DEC (Pmode, inc_reg), inc_reg);
+      return attempt_change (gen_rtx_POST_DEC (reg_mode, inc_reg), inc_reg);
       break;
       
     case DISP_PRE:           /* ++con   */
       if (dump_file)
 	fprintf (dump_file, "trying DISP_PRE\n");
-      return attempt_change (gen_rtx_PRE_MODIFY (Pmode, 
+      return attempt_change (gen_rtx_PRE_MODIFY (reg_mode,
 						 inc_reg,
-						 gen_rtx_PLUS (Pmode,
+						 gen_rtx_PLUS (reg_mode,
 							       inc_reg,
 							       inc_insn.reg1)),
 			     inc_reg);
@@ -702,9 +704,9 @@ try_merge (void)
     case DISP_POST:          /* con++   */
       if (dump_file)
 	fprintf (dump_file, "trying POST_DISP\n");
-      return attempt_change (gen_rtx_POST_MODIFY (Pmode,
+      return attempt_change (gen_rtx_POST_MODIFY (reg_mode,
 						  inc_reg,
-						  gen_rtx_PLUS (Pmode,
+						  gen_rtx_PLUS (reg_mode,
 								inc_reg,
 								inc_insn.reg1)),
 			     inc_reg);
@@ -713,9 +715,9 @@ try_merge (void)
     case REG_PRE:            /* ++reg   */
       if (dump_file)
 	fprintf (dump_file, "trying PRE_REG\n");
-      return attempt_change (gen_rtx_PRE_MODIFY (Pmode, 
+      return attempt_change (gen_rtx_PRE_MODIFY (reg_mode,
 						 inc_reg,
-						 gen_rtx_PLUS (Pmode,
+						 gen_rtx_PLUS (reg_mode,
 							       inc_reg,
 							       inc_insn.reg1)),
 			     inc_reg);
@@ -724,9 +726,9 @@ try_merge (void)
     case REG_POST:            /* reg++   */
       if (dump_file)
 	fprintf (dump_file, "trying POST_REG\n");
-      return attempt_change (gen_rtx_POST_MODIFY (Pmode, 
+      return attempt_change (gen_rtx_POST_MODIFY (reg_mode,
 						  inc_reg,
-						  gen_rtx_PLUS (Pmode,
+						  gen_rtx_PLUS (reg_mode,
 								inc_reg,
 								inc_insn.reg1)),
 			     inc_reg);
@@ -1089,7 +1091,9 @@ find_inc (bool first_try)
 		     we are going to increment the result of the add insn.
 		     For this trick to be correct, the result reg of
 		     the inc must be a valid addressing reg.  */
-		  if (GET_MODE (inc_insn.reg_res) != Pmode)
+		  addr_space_t as = MEM_ADDR_SPACE (*mem_insn.mem_loc);
+		  if (GET_MODE (inc_insn.reg_res)
+		      != targetm.addr_space.address_mode (as))
 		    {
 		      if (dump_file)
 			fprintf (dump_file, "base reg mode failure.\n");
@@ -1138,7 +1142,9 @@ find_inc (bool first_try)
 	{
 	  /* For this trick to be correct, the result reg of the inc
 	     must be a valid addressing reg.  */
-	  if (GET_MODE (inc_insn.reg_res) != Pmode)
+	  addr_space_t as = MEM_ADDR_SPACE (*mem_insn.mem_loc);
+	  if (GET_MODE (inc_insn.reg_res)
+	      != targetm.addr_space.address_mode (as))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "base reg mode failure.\n");

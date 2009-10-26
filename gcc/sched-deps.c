@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "cselib.h"
 #include "ira.h"
+#include "target.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -2281,8 +2282,11 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 
       if (sched_deps_info->use_cselib)
 	{
+	  enum machine_mode address_mode
+	    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (dest));
+
 	  t = shallow_copy_rtx (dest);
-	  cselib_lookup (XEXP (t, 0), Pmode, 1);
+	  cselib_lookup (XEXP (t, 0), address_mode, 1);
 	  XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	}
       t = canon_rtx (t);
@@ -2435,8 +2439,11 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 
 	if (sched_deps_info->use_cselib)
 	  {
+	    enum machine_mode address_mode
+	      = targetm.addr_space.address_mode (MEM_ADDR_SPACE (t));
+
 	    t = shallow_copy_rtx (t);
-	    cselib_lookup (XEXP (t, 0), Pmode, 1);
+	    cselib_lookup (XEXP (t, 0), address_mode, 1);
 	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 	  }
 

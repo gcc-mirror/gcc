@@ -1447,7 +1447,15 @@ make_decl_rtl (tree decl)
   if (use_object_blocks_p () && use_blocks_for_decl_p (decl))
     x = create_block_symbol (name, get_block_for_decl (decl), -1);
   else
-    x = gen_rtx_SYMBOL_REF (Pmode, name);
+    {
+      enum machine_mode address_mode = Pmode;
+      if (TREE_TYPE (decl) != error_mark_node)
+	{
+	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
+	  address_mode = targetm.addr_space.address_mode (as);
+	}
+      x = gen_rtx_SYMBOL_REF (address_mode, name);
+    }
   SYMBOL_REF_WEAK (x) = DECL_WEAK (decl);
   SET_SYMBOL_REF_DECL (x, decl);
 
@@ -4315,7 +4323,8 @@ initializer_constant_valid_p (tree value, tree endtype)
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (! INTEGRAL_TYPE_P (endtype)
-	  || TYPE_PRECISION (endtype) >= POINTER_SIZE)
+	  || TYPE_PRECISION (endtype)
+	     >= int_or_pointer_precision (TREE_TYPE (value)))
 	{
 	  tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
 						      endtype);
@@ -4337,7 +4346,8 @@ initializer_constant_valid_p (tree value, tree endtype)
 
     case MINUS_EXPR:
       if (! INTEGRAL_TYPE_P (endtype)
-	  || TYPE_PRECISION (endtype) >= POINTER_SIZE)
+	  || TYPE_PRECISION (endtype)
+	     >= int_or_pointer_precision (TREE_TYPE (value)))
 	{
 	  tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
 						      endtype);
@@ -4458,7 +4468,9 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
      resolving it.  */
   if (TREE_CODE (exp) == NOP_EXPR
       && POINTER_TYPE_P (TREE_TYPE (exp))
-      && targetm.valid_pointer_mode (TYPE_MODE (TREE_TYPE (exp))))
+      && targetm.addr_space.valid_pointer_mode
+	   (TYPE_MODE (TREE_TYPE (exp)),
+	    TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)))))
     {
       tree saved_type = TREE_TYPE (exp);
 
@@ -4466,7 +4478,9 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	 pointer modes.  */
       while (TREE_CODE (exp) == NOP_EXPR
 	     && POINTER_TYPE_P (TREE_TYPE (exp))
-	     && targetm.valid_pointer_mode (TYPE_MODE (TREE_TYPE (exp))))
+	     && targetm.addr_space.valid_pointer_mode
+		  (TYPE_MODE (TREE_TYPE (exp)),
+		   TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)))))
 	exp = TREE_OPERAND (exp, 0);
 
       /* If what we're left with is the address of something, we can
@@ -6560,14 +6574,6 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     local_p = true;
 
   return local_p;
-}
-
-/* Determine whether or not a pointer mode is valid. Assume defaults
-   of ptr_mode or Pmode - can be overridden.  */
-bool
-default_valid_pointer_mode (enum machine_mode mode)
-{
-  return (mode == ptr_mode || mode == Pmode);
 }
 
 /* Default function to output code that will globalize a label.  A

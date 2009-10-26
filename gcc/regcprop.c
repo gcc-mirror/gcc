@@ -247,7 +247,7 @@ kill_autoinc_value (rtx *px, void *data)
     {
       x = XEXP (x, 0);
       kill_value (x, vd);
-      set_value_regno (REGNO (x), Pmode, vd);
+      set_value_regno (REGNO (x), GET_MODE (x), vd);
       return -1;
     }
 

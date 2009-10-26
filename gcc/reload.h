@@ -289,7 +289,7 @@ extern int find_reloads (rtx, int, int, int, short *);
    address, namely: sum constant integers, surround the sum of two
    constants with a CONST, put the constant as the second operand, and
    group the constant on the outermost sum.  */
-extern rtx form_sum (rtx, rtx);
+extern rtx form_sum (enum machine_mode, rtx, rtx);
 
 /* Substitute into the current INSN the registers into which we have reloaded
    the things that need reloading.  */
