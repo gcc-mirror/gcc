@@ -1,5 +1,12 @@
 2009-10-26  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/41785
+	* pt.c (template_args_equal): Handle comparison of
+	an ARGUMENT_PACK_SELECT node with the arguments node it selects into.
+	* cp-tree.def: Fix a typo in the description of TYPE_PACK_EXPANSION.
+
+2009-10-26  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/41020
 	* decl.c (decls_match): Use DECL_IS_BUILTIN instead of
 	DECL_BUILT_IN.
