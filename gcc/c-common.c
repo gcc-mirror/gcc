@@ -710,6 +710,11 @@ const struct c_common_resword c_common_reswords[] =
   { "inout",		RID_INOUT,		D_OBJC },
   { "oneway",		RID_ONEWAY,		D_OBJC },
   { "out",		RID_OUT,		D_OBJC },
+
+#ifdef TARGET_ADDR_SPACE_KEYWORDS
+  /* Any address space keywords recognized by the target.  */
+  TARGET_ADDR_SPACE_KEYWORDS,
+#endif
 };
 
 const unsigned int num_c_common_reswords =
@@ -839,6 +844,19 @@ const struct attribute_spec c_common_format_attribute_table[] =
 			      handle_format_arg_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
+
+/* Return identifier for address space AS.  */
+const char *
+c_addr_space_name (addr_space_t as)
+{
+  unsigned int i;
+
+  for (i = 0; i < num_c_common_reswords; i++)
+    if (c_common_reswords[i].rid == RID_FIRST_ADDR_SPACE + as)
+      return c_common_reswords[i].word;
+
+  gcc_unreachable ();
+}
 
 /* Push current bindings for the function name VAR_DECLS.  */
 
@@ -6459,9 +6477,10 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       if (POINTER_TYPE_P (type))
 	{
+	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
 	  tree (*fn)(tree, enum machine_mode, bool);
 
-	  if (!targetm.valid_pointer_mode (mode))
+	  if (!targetm.addr_space.valid_pointer_mode (mode, as))
 	    {
 	      error ("invalid pointer mode %qs", p);
 	      return NULL_TREE;
@@ -8511,7 +8530,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   if (quals == 0)
     unqual_elt = elt;
   else
-    unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
+    unqual_elt = c_build_qualified_type (elt, KEEP_QUAL_ADDR_SPACE (quals));
 
   /* Using build_distinct_type_copy and modifying things afterward instead
      of using build_array_type to create a new type preserves all of the

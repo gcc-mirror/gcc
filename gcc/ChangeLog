@@ -2,6 +2,59 @@
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* doc/tm.texi (TARGET_ADDR_SPACE_KEYWORDS): Document.
+
+	* c-common.c (c_common_reswords): If TARGET_ADDR_SPACE_KEYWORDS is
+	defined, add the named address space keywords.
+	(c_addr_space_name): New function.
+	(complete_array_type): Preserve named address space.
+	(handle_mode_attribute): Use targetm.addr_space.valid_pointer_mode
+	instead of targetm.valid_pointer_mode.
+
+	* c-common.h (enum rid): Add RID_ADDR_SPACE_0 .. RID_ADDR_SPACE_15,
+	RID_FIRST_ADDR_SPACE and RID_LAST_ADDR_SPACE.
+	(ADDR_SPACE_KEYWORD): New macro.
+	(c_addr_space_name): Add prototype.
+
+	* c-tree.h (struct c_declspecs): Add address_space member.
+	(declspecs_add_addrspace): Add prototype.
+
+	* c-pretty-print.c (pp_c_type_qualifier_list): Handle address spaces.
+
+	* c-parser.c (c_parse_init): Add assertion.
+	(typedef enum c_id_kind): Add C_ID_ADDRSPACE.
+	(c_lex_one_token): Handle address space keywords.
+	(c_token_starts_typename): Likewise.
+	(c_token_starts_declspecs): Likewise.
+	(c_parser_declspecs): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Diagnose compound
+	literal within function qualified with named address space.
+
+	* c-decl.c (diagnose_mismatched_decls): Diagnose conflicting named
+	address space qualifiers.
+	(shadow_tag_warned): Warn about useless address space qualifiers.
+	(quals_from_declspecs): Handle address space qualifiers.
+	(grokdeclarator): Likewise.
+	(build_null_declspecs): Likewise.
+	(declspecs_add_addrspace): New function.
+
+	* c-typeck.c (addr_space_superset): New function.
+	(qualify_type): Handle named address spaces.
+	(composite_type): Likewise.
+	(common_pointer_type): Likewise.
+	(comp_target_types): Likewise.
+	(build_conditional_expr): Likewise.
+	(handle_warn_cast_qual): Likewise.
+	(build_c_cast): Likewise.
+	(convert_for_assignment): Likewise.
+	(build_binary_op): Likewise.
+	(pointer_diff): Handle named address spaces.  Use intermediate
+	integer type of sufficient size if required.
+
+2009-10-26  Ben Elliston  <bje@au.ibm.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* doc/tm.texi (TARGET_ADDR_SPACE_POINTER_MODE): Document.
 	(TARGET_ADDR_SPACE_ADDRESS_MODE): Likewise.
 	(TARGET_ADDR_SPACE_VALID_POINTER_MODE): Likewise.

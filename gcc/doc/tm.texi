@@ -9855,6 +9855,18 @@ Internally, address spaces are represented as a small integer in the
 range 0 to 15 with address space 0 being reserved for the generic
 address space.
 
+@defmac TARGET_ADDR_SPACE_KEYWORDS
+A list of @code{ADDR_SPACE_KEYWORD} macros to define each named
+address keyword.  The @code{ADDR_SPACE_KEYWORD} macro takes two
+arguments, the keyword string and the number of the named address
+space.  For example, the SPU port uses the following to declare
+@code{__ea} as the keyword for named address space #1:
+@smallexample
+#define ADDR_SPACE_EA 1
+#define TARGET_ADDR_SPACE_KEYWORDS ADDR_SPACE_KEYWORD ("__ea", ADDR_SPACE_EA)
+@end smallexample
+@end defmac
+
 @deftypefn {Target Hook} {enum machine_mode} TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
