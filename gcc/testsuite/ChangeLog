@@ -1,3 +1,9 @@
+2009-10-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38796
+	* g++.dg/cpp0x/defaulted15.C: New.
+	* g++.dg/cpp0x/defaulted16.C: New.
+
 2009-10-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41785

@@ -2815,9 +2815,17 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define DECL_DELETED_FN(DECL) \
   (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (DECL))->u.base.threadprivate_or_deleted_p)
 
-/* Nonzero if DECL was declared with '= default'.  */
+/* Nonzero if DECL was declared with '= default' (maybe implicitly).  */
 #define DECL_DEFAULTED_FN(DECL) \
   (LANG_DECL_FN_CHECK (DECL)->defaulted_p)
+
+/* Nonzero if DECL is explicitly defaulted in the class body.  */
+#define DECL_DEFAULTED_IN_CLASS_P(DECL)					\
+  (DECL_DEFAULTED_FN (DECL) && DECL_INITIALIZED_IN_CLASS_P (DECL))
+/* Nonzero if DECL was defaulted outside the class body.  */
+#define DECL_DEFAULTED_OUTSIDE_CLASS_P(DECL)				\
+  (DECL_DEFAULTED_FN (DECL)						\
+   && !(DECL_ARTIFICIAL (DECL) || DECL_INITIALIZED_IN_CLASS_P (DECL)))
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
@@ -4483,9 +4491,11 @@ extern void check_for_override			(tree, tree);
 extern void push_class_stack			(void);
 extern void pop_class_stack			(void);
 extern bool type_has_user_nondefault_constructor (tree);
+extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_user_provided_default_constructor (tree);
-extern bool defaultable_fn_p			(tree);
+extern void defaulted_late_check		(tree);
+extern bool defaultable_fn_check		(tree);
 extern void fixup_type_variants			(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, int);

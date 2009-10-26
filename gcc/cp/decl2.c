@@ -862,9 +862,7 @@ grokfield (const cp_declarator *declarator,
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
-	      if (!defaultable_fn_p (value))
-		error ("%qD cannot be defaulted", value);
-	      else
+	      if (defaultable_fn_check (value))
 		{
 		  DECL_DEFAULTED_FN (value) = 1;
 		  DECL_INITIALIZED_IN_CLASS_P (value) = 1;

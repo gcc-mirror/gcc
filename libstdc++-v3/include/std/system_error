@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   class error_category
   {
   protected:
-    error_category() = default;
+    error_category();
 
   public:
     virtual ~error_category() { }
@@ -99,6 +99,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator!=(const error_category& __other) const
     { return this != &__other; }
   };
+
+  inline error_category::error_category() = default;
 
   // DR 890.
   _GLIBCXX_CONST const error_category& system_category() throw ();

@@ -5603,17 +5603,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
       else if (init == ridpointers[(int)RID_DEFAULT])
 	{
-	  if (!defaultable_fn_p (decl))
-	    {
-	      error ("%qD cannot be defaulted", decl);
-	      DECL_INITIAL (decl) = NULL_TREE;
-	    }
+	  if (defaultable_fn_check (decl))
+	    DECL_DEFAULTED_FN (decl) = 1;
 	  else
-	    {
-	      DECL_DEFAULTED_FN (decl) = 1;
-	      FOR_EACH_CLONE (clone, decl)
-		DECL_DEFAULTED_FN (clone) = 1;
-	    }
+	    DECL_INITIAL (decl) = NULL_TREE;
 	}
     }
     
@@ -9866,9 +9859,9 @@ grokparms (tree parmlist, tree *parms)
    0  if D is not a copy constructor or copy assignment
       operator.
    1  if D is a copy constructor or copy assignment operator whose
-      first parameter is a reference to const qualified T.
-   2  if D is a copy constructor or copy assignment operator whose
       first parameter is a reference to non-const qualified T.
+   2  if D is a copy constructor or copy assignment operator whose
+      first parameter is a reference to const qualified T.
 
    This function can be used as a predicate. Positive values indicate
    a copy constructor and nonzero values indicate a copy assignment
@@ -9977,10 +9970,6 @@ move_fn_p (const_tree d)
 
 /* Remember any special properties of member function DECL.  */
 
-#define DECL_DEFAULTED_IN_CLASS_P(DECL)					\
- (DECL_DEFAULTED_FN (DECL)						\
-  && (DECL_ARTIFICIAL (DECL) || DECL_INITIALIZED_IN_CLASS_P (DECL)))
-
 void
 grok_special_member_properties (tree decl)
 {
@@ -10007,7 +9996,7 @@ grok_special_member_properties (tree decl)
 	     are no other parameters or else all other parameters have
 	     default arguments.  */
 	  TYPE_HAS_INIT_REF (class_type) = 1;
-	  if (!DECL_DEFAULTED_IN_CLASS_P (decl))
+	  if (user_provided_p (decl))
 	    TYPE_HAS_COMPLEX_INIT_REF (class_type) = 1;
 	  if (ctor > 1)
 	    TYPE_HAS_CONST_INIT_REF (class_type) = 1;
@@ -10015,8 +10004,7 @@ grok_special_member_properties (tree decl)
       else if (sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (decl)))
 	{
 	  TYPE_HAS_DEFAULT_CONSTRUCTOR (class_type) = 1;
-	  if (TREE_CODE (decl) == TEMPLATE_DECL
-	      || !DECL_DEFAULTED_IN_CLASS_P (decl))
+	  if (user_provided_p (decl))
 	    TYPE_HAS_COMPLEX_DFLT (class_type) = 1;
 	}
       else if (is_list_ctor (decl))
@@ -10035,7 +10023,7 @@ grok_special_member_properties (tree decl)
       if (assop)
 	{
 	  TYPE_HAS_ASSIGN_REF (class_type) = 1;
-	  if (!DECL_DEFAULTED_IN_CLASS_P (decl))
+	  if (user_provided_p (decl))
 	    TYPE_HAS_COMPLEX_ASSIGN_REF (class_type) = 1;
 	  if (assop != 1)
 	    TYPE_HAS_CONST_ASSIGN_REF (class_type) = 1;

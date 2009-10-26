@@ -130,8 +130,10 @@ namespace std
     };
 
   protected:
-    ~_Future_result_base() = default;
+    ~_Future_result_base();
   };
+
+  inline _Future_result_base::~_Future_result_base() = default;
 
   // TODO: use template alias when available
   /*

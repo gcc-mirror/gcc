@@ -8848,6 +8848,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
 	  }
 	determine_visibility (r);
+	if (DECL_DEFAULTED_OUTSIDE_CLASS_P (r)
+	    && !processing_template_decl)
+	  defaulted_late_check (r);
 
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
 					args, complain, in_decl);

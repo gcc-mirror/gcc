@@ -57,9 +57,9 @@ namespace std
   public:
     nested_exception() throw() : _M_ptr(current_exception()) { }
 
-    nested_exception(const nested_exception&) throw() = default;
+    nested_exception(const nested_exception&) = default;
 
-    nested_exception& operator=(const nested_exception&) throw() = default;
+    nested_exception& operator=(const nested_exception&) = default;
 
     virtual ~nested_exception() = default;
 

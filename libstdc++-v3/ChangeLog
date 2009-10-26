@@ -1,3 +1,12 @@
+2009-10-26  Jason Merrill  <jason@redhat.com>
+
+	Core issue 906
+	* include/std/future (~Future_result_base): Default outside class
+	body.
+	* include/std/system_error (error_category()): Likewise.
+	* libsupc++/nested_exception.h (nested_exception): Remove
+	exception specifications from defaulted methods.
+
 009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
         PR libstdc++/41773
