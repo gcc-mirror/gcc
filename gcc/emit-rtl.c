@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "params.h"
+#include "target.h"
 
 /* Commonly used modes.  */
 
@@ -1975,6 +1976,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
   rtx size = 0;
   unsigned int memalign = MEM_ALIGN (memref);
   addr_space_t as = MEM_ADDR_SPACE (memref);
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
   int pbits;
 
   /* If there are no changes, just return the original memory reference.  */
@@ -1989,7 +1991,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 
   /* Convert a possibly large offset to a signed value within the
      range of the target address space.  */
-  pbits = GET_MODE_BITSIZE (Pmode);
+  pbits = GET_MODE_BITSIZE (address_mode);
   if (HOST_BITS_PER_WIDE_INT > pbits)
     {
       int shift = HOST_BITS_PER_WIDE_INT - pbits;
@@ -2005,7 +2007,7 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 	  && offset >= 0
 	  && (unsigned HOST_WIDE_INT) offset
 	      < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
-	addr = gen_rtx_LO_SUM (Pmode, XEXP (addr, 0),
+	addr = gen_rtx_LO_SUM (address_mode, XEXP (addr, 0),
 			       plus_constant (XEXP (addr, 1), offset));
       else
 	addr = plus_constant (addr, offset);
@@ -2068,8 +2070,9 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 {
   rtx new_rtx, addr = XEXP (memref, 0);
   addr_space_t as = MEM_ADDR_SPACE (memref);
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
 
-  new_rtx = simplify_gen_binary (PLUS, Pmode, addr, offset);
+  new_rtx = simplify_gen_binary (PLUS, address_mode, addr, offset);
 
   /* At this point we don't know _why_ the address is invalid.  It
      could have secondary memory references, multiplies or anything.
@@ -2083,7 +2086,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
       && XEXP (addr, 0) == pic_offset_table_rtx)
     {
       addr = force_reg (GET_MODE (addr), addr);
-      new_rtx = simplify_gen_binary (PLUS, Pmode, addr, offset);
+      new_rtx = simplify_gen_binary (PLUS, address_mode, addr, offset);
     }
 
   update_temp_slot_address (XEXP (memref, 0), new_rtx);

@@ -5089,10 +5089,11 @@ make_tree (tree type, rtx x)
     default:
       t = build_decl (RTL_LOCATION (x), VAR_DECL, NULL_TREE, type);
 
-      /* If TYPE is a POINTER_TYPE, X might be Pmode with TYPE_MODE being
-	 ptr_mode.  So convert.  */
+      /* If TYPE is a POINTER_TYPE, we might need to convert X from
+	 address mode to pointer mode.  */
       if (POINTER_TYPE_P (type))
-	x = convert_memory_address (TYPE_MODE (type), x);
+	x = convert_memory_address_addr_space
+	      (TYPE_MODE (type), x, TYPE_ADDR_SPACE (TREE_TYPE (type)));
 
       /* Note that we do *not* use SET_DECL_RTL here, because we do not
 	 want set_decl_rtl to go adjusting REG_ATTRS for this temporary.  */

@@ -1613,7 +1613,10 @@ extern unsigned int subreg_highpart_offset (enum machine_mode,
 					    enum machine_mode);
 extern int byte_lowpart_offset (enum machine_mode, enum machine_mode);
 extern rtx make_safe_from (rtx, rtx);
-extern rtx convert_memory_address (enum machine_mode, rtx);
+extern rtx convert_memory_address_addr_space (enum machine_mode, rtx,
+					      addr_space_t);
+#define convert_memory_address(to_mode,x) \
+	convert_memory_address_addr_space ((to_mode), (x), ADDR_SPACE_GENERIC)
 extern rtx get_insns (void);
 extern const char *get_insn_name (int);
 extern rtx get_last_insn (void);

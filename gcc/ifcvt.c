@@ -1332,9 +1332,12 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       && MEM_ADDR_SPACE (a) == MEM_ADDR_SPACE (b)
       && if_info->branch_cost >= 5)
     {
+      enum machine_mode address_mode
+	= targetm.addr_space.address_mode (MEM_ADDR_SPACE (a));
+
       a = XEXP (a, 0);
       b = XEXP (b, 0);
-      x = gen_reg_rtx (Pmode);
+      x = gen_reg_rtx (address_mode);
       is_mem = 1;
     }
 

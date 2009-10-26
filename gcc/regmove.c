@@ -185,7 +185,9 @@ try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
 		   &SET_SRC (inc_insn_set),
 		   XEXP (SET_SRC (inc_insn_set), 0), 1);
 	      validate_change (insn, &XEXP (use, 0),
-			       gen_rtx_fmt_e (inc_code, Pmode, reg), 1);
+			       gen_rtx_fmt_e (inc_code,
+					      GET_MODE (XEXP (use, 0)), reg),
+			       1);
 	      if (apply_change_group ())
 		{
 		  /* If there is a REG_DEAD note on this insn, we must

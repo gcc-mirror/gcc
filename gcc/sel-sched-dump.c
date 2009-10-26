@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "basic-block.h"
 #include "cselib.h"
+#include "target.h"
 
 #ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"
@@ -931,10 +932,13 @@ rtx
 debug_mem_addr_value (rtx x)
 {
   rtx t, addr;
+  enum machine_mode address_mode;
 
   gcc_assert (MEM_P (x));
+  address_mode = targetm.addr_space.address_mode (MEM_ADDR_SPACE (x));
+
   t = shallow_copy_rtx (x);
-  if (cselib_lookup (XEXP (t, 0), Pmode, 0))
+  if (cselib_lookup (XEXP (t, 0), address_mode, 0))
     XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
 
   t = canon_rtx (t);

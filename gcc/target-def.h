@@ -471,6 +471,19 @@
 #define TARGET_VALID_POINTER_MODE default_valid_pointer_mode
 #endif
 
+#ifndef TARGET_ADDR_SPACE_POINTER_MODE
+#define TARGET_ADDR_SPACE_POINTER_MODE default_addr_space_pointer_mode
+#endif
+
+#ifndef TARGET_ADDR_SPACE_ADDRESS_MODE
+#define TARGET_ADDR_SPACE_ADDRESS_MODE default_addr_space_address_mode
+#endif
+
+#ifndef TARGET_ADDR_SPACE_VALID_POINTER_MODE
+#define TARGET_ADDR_SPACE_VALID_POINTER_MODE \
+	default_addr_space_valid_pointer_mode
+#endif
+
 #ifndef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
   default_addr_space_legitimate_address_p
@@ -491,6 +504,9 @@
 
 #define TARGET_ADDR_SPACE_HOOKS			\
   {						\
+    TARGET_ADDR_SPACE_POINTER_MODE,		\
+    TARGET_ADDR_SPACE_ADDRESS_MODE,		\
+    TARGET_ADDR_SPACE_VALID_POINTER_MODE,	\
     TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P,	\
     TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS,	\
     TARGET_ADDR_SPACE_SUBSET_P,			\

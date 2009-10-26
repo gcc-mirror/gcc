@@ -826,9 +826,9 @@ replace_inc_dec (rtx *r, void *d)
     case POST_INC:
       {
 	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (data->size, Pmode);
-	emit_insn_before (gen_rtx_SET (Pmode, r1, 
-				       gen_rtx_PLUS (Pmode, r1, c)),
+	rtx c = gen_int_mode (data->size, GET_MODE (r1));
+	emit_insn_before (gen_rtx_SET (VOIDmode, r1,
+				       gen_rtx_PLUS (GET_MODE (r1), r1, c)),
 			  data->insn);
 	return -1;
       }
@@ -837,9 +837,9 @@ replace_inc_dec (rtx *r, void *d)
     case POST_DEC:
       {
 	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (-data->size, Pmode);
-	emit_insn_before (gen_rtx_SET (Pmode, r1, 
-				       gen_rtx_PLUS (Pmode, r1, c)),
+	rtx c = gen_int_mode (-data->size, GET_MODE (r1));
+	emit_insn_before (gen_rtx_SET (VOIDmode, r1,
+				       gen_rtx_PLUS (GET_MODE (r1), r1, c)),
 			  data->insn);
 	return -1;
       }
@@ -851,7 +851,7 @@ replace_inc_dec (rtx *r, void *d)
 	   insn that contained it.  */
 	rtx add = XEXP (x, 0);
 	rtx r1 = XEXP (add, 0);
-	emit_insn_before (gen_rtx_SET (Pmode, r1, add), data->insn);
+	emit_insn_before (gen_rtx_SET (VOIDmode, r1, add), data->insn);
 	return -1;
       }
 
@@ -1068,6 +1068,8 @@ canon_address (rtx mem,
 	       HOST_WIDE_INT *offset, 
 	       cselib_val **base)
 {
+  enum machine_mode address_mode
+    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
   rtx mem_address = XEXP (mem, 0);
   rtx expanded_address, address;
   int expanded;
@@ -1107,7 +1109,7 @@ canon_address (rtx mem,
 
   *alias_set_out = 0;
 
-  cselib_lookup (mem_address, Pmode, 1);
+  cselib_lookup (mem_address, address_mode, 1);
 
   if (dump_file)
     {
@@ -1187,7 +1189,7 @@ canon_address (rtx mem,
 	}
     }
 
-  *base = cselib_lookup (address, Pmode, true);
+  *base = cselib_lookup (address, address_mode, true);
   *group_id = -1;
 
   if (*base == NULL)

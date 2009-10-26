@@ -2643,13 +2643,14 @@ static rtx
 produce_memory_decl_rtl (tree obj, int *regno)
 {
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
   rtx x;
   
   gcc_assert (obj);
   if (TREE_STATIC (obj) || DECL_EXTERNAL (obj))
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (obj));
-      x = gen_rtx_SYMBOL_REF (Pmode, name);
+      x = gen_rtx_SYMBOL_REF (address_mode, name);
       SET_SYMBOL_REF_DECL (x, obj);
       x = gen_rtx_MEM (DECL_MODE (obj), x);
       set_mem_addr_space (x, as);
@@ -2657,7 +2658,7 @@ produce_memory_decl_rtl (tree obj, int *regno)
     }
   else
     {
-      x = gen_raw_REG (Pmode, (*regno)++);
+      x = gen_raw_REG (address_mode, (*regno)++);
       x = gen_rtx_MEM (DECL_MODE (obj), x);
       set_mem_addr_space (x, as);
     }
@@ -3045,16 +3046,17 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
   valid_mult = VEC_index (sbitmap, valid_mult_list, data_index);
   if (!valid_mult)
     {
-      rtx reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
+      enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+      rtx reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
       rtx addr;
       HOST_WIDE_INT i;
 
       valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
       sbitmap_zero (valid_mult);
-      addr = gen_rtx_fmt_ee (MULT, Pmode, reg1, NULL_RTX);
+      addr = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
       for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
 	{
-	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
+	  XEXP (addr, 1) = gen_int_mode (i, address_mode);
 	  if (memory_address_addr_space_p (mode, addr, as))
 	    SET_BIT (valid_mult, i + MAX_RATIO);
 	}
@@ -3108,6 +3110,7 @@ get_address_cost (bool symbol_present, bool var_present,
 		  addr_space_t as, bool speed,
 		  bool stmt_after_inc, bool *may_autoinc)
 {
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
   static VEC(address_cost_data, heap) *address_cost_data_list;
   unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mem_mode;
   address_cost_data data;
@@ -3136,12 +3139,12 @@ get_address_cost (bool symbol_present, bool var_present,
 
       data = (address_cost_data) xcalloc (1, sizeof (*data));
 
-      reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
+      reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
 
-      addr = gen_rtx_fmt_ee (PLUS, Pmode, reg1, NULL_RTX);
+      addr = gen_rtx_fmt_ee (PLUS, address_mode, reg1, NULL_RTX);
       for (i = start; i <= 1 << 20; i <<= 1)
 	{
-	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
+	  XEXP (addr, 1) = gen_int_mode (i, address_mode);
 	  if (!memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
 	}
@@ -3150,7 +3153,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = start; i <= 1 << 20; i <<= 1)
 	{
-	  XEXP (addr, 1) = gen_int_mode (-i, Pmode);
+	  XEXP (addr, 1) = gen_int_mode (-i, address_mode);
 	  if (!memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
 	}
@@ -3177,30 +3180,30 @@ get_address_cost (bool symbol_present, bool var_present,
 
       /* Compute the cost of various addressing modes.  */
       acost = 0;
-      reg0 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
-      reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 2);
+      reg0 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 1);
+      reg1 = gen_raw_REG (address_mode, LAST_VIRTUAL_REGISTER + 2);
 
       if (HAVE_PRE_DECREMENT)
 	{
-	  addr = gen_rtx_PRE_DEC (Pmode, reg0);
+	  addr = gen_rtx_PRE_DEC (address_mode, reg0);
 	  has_predec[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       if (HAVE_POST_DECREMENT)
 	{
-	  addr = gen_rtx_POST_DEC (Pmode, reg0);
+	  addr = gen_rtx_POST_DEC (address_mode, reg0);
 	  has_postdec[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       if (HAVE_PRE_INCREMENT)
 	{
-	  addr = gen_rtx_PRE_INC (Pmode, reg0);
+	  addr = gen_rtx_PRE_INC (address_mode, reg0);
 	  has_preinc[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       if (HAVE_POST_INCREMENT)
 	{
-	  addr = gen_rtx_POST_INC (Pmode, reg0);
+	  addr = gen_rtx_POST_INC (address_mode, reg0);
 	  has_postinc[mem_mode]
 	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
@@ -3213,15 +3216,15 @@ get_address_cost (bool symbol_present, bool var_present,
 
 	  addr = reg0;
 	  if (rat_p)
-	    addr = gen_rtx_fmt_ee (MULT, Pmode, addr,
-				   gen_int_mode (rat, Pmode));
+	    addr = gen_rtx_fmt_ee (MULT, address_mode, addr,
+				   gen_int_mode (rat, address_mode));
 
 	  if (var_p)
-	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
+	    addr = gen_rtx_fmt_ee (PLUS, address_mode, addr, reg1);
 
 	  if (sym_p)
 	    {
-	      base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (""));
+	      base = gen_rtx_SYMBOL_REF (address_mode, ggc_strdup (""));
 	      /* ??? We can run into trouble with some backends by presenting
 		 it with symbols which haven't been properly passed through
 		 targetm.encode_section_info.  By setting the local bit, we
@@ -3229,18 +3232,18 @@ get_address_cost (bool symbol_present, bool var_present,
 	      SYMBOL_REF_FLAGS (base) = SYMBOL_FLAG_LOCAL;
 
 	      if (off_p)
-		base = gen_rtx_fmt_e (CONST, Pmode,
+		base = gen_rtx_fmt_e (CONST, address_mode,
 				      gen_rtx_fmt_ee
-					(PLUS, Pmode, base,
-					 gen_int_mode (off, Pmode)));
+					(PLUS, address_mode, base,
+					 gen_int_mode (off, address_mode)));
 	    }
 	  else if (off_p)
-	    base = gen_int_mode (off, Pmode);
+	    base = gen_int_mode (off, address_mode);
 	  else
 	    base = NULL_RTX;
     
 	  if (base)
-	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, base);
+	    addr = gen_rtx_fmt_ee (PLUS, address_mode, addr, base);
 
 	  start_sequence ();
 	  /* To avoid splitting addressing modes, pretend that no cse will
@@ -3272,7 +3275,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	 If VAR_PRESENT is true, try whether the mode with
 	 SYMBOL_PRESENT = false is cheaper even with cost of addition, and
 	 if this is the case, use it.  */
-      add_c = add_cost (Pmode, speed);
+      add_c = add_cost (address_mode, speed);
       for (i = 0; i < 8; i++)
 	{
 	  var_p = i & 1;
@@ -3321,7 +3324,7 @@ get_address_cost (bool symbol_present, bool var_present,
 		   data_index, data);
     }
 
-  bits = GET_MODE_BITSIZE (Pmode);
+  bits = GET_MODE_BITSIZE (address_mode);
   mask = ~(~(unsigned HOST_WIDE_INT) 0 << (bits - 1) << 1);
   offset &= mask;
   if ((offset >> (bits - 1) & 1))
@@ -3353,10 +3356,10 @@ get_address_cost (bool symbol_present, bool var_present,
 	     && multiplier_allowed_in_address_p (ratio, mem_mode, as));
 
   if (ratio != 1 && !ratio_p)
-    cost += multiply_by_cost (ratio, Pmode, speed);
+    cost += multiply_by_cost (ratio, address_mode, speed);
 
   if (s_offset && !offset_p && !symbol_present)
-    cost += add_cost (Pmode, speed);
+    cost += add_cost (address_mode, speed);
 
   if (may_autoinc)
     *may_autoinc = autoinc;

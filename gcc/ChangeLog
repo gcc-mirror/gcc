@@ -2,6 +2,143 @@
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* doc/tm.texi (TARGET_ADDR_SPACE_POINTER_MODE): Document.
+	(TARGET_ADDR_SPACE_ADDRESS_MODE): Likewise.
+	(TARGET_ADDR_SPACE_VALID_POINTER_MODE): Likewise.
+
+	* target.h (struct target_def): Add pointer_mode, address_mode,
+	and valid_pointer_mode to addr_space substructure.
+	* target-def.h (TARGET_ADDR_SPACE_POINTER_MODE): Define.
+	(TARGET_ADDR_SPACE_ADDRESS_MODE): Likewise.
+	(TARGET_ADDR_SPACE_VALID_POINTER_MODE): Likewise.
+	(TARGET_ADDR_SPACE_HOOKS): Add them.
+	* targhooks.c (target_default_pointer_address_modes_p): New function.
+	* target.h (target_default_pointer_address_modes_p): Add prototype.
+	* targhooks.c (default_addr_space_pointer_mode): New function.
+	(default_addr_space_address_mode): Likewise.
+	(default_addr_space_valid_pointer_mode): Likewise.
+	* targhooks.h (default_addr_space_pointer_mode): Add prototype.
+	(default_addr_space_address_mode): Likewise.
+	(default_addr_space_valid_pointer_mode): Likewise.
+	* output.h (default_valid_pointer_mode): Move to ...
+	* targhooks.h (default_valid_pointer_mode): ... here.
+	* varasm.c (default_valid_pointer_mode): Move to ...
+	* targhooks.c (default_valid_pointer_mode): ... here.
+
+	* varasm.c (output_constant): Use targetm.addr_space.valid_pointer_mode
+	instead of targetm.valid_pointer_mode.
+
+	* fold-const.c (fit_double_type): Use int_or_pointer_precision.
+	* tree.c (integer_pow2p): Likewise.
+	(tree_log2): Likewise.
+	(tree_floor_log2): Likewise.
+	(signed_or_unsigned_type_for): Support pointer type of different size.
+	(int_or_pointer_precision): New function.
+	* tree.h (int_or_pointer_precision): Add prototype.
+	* stor-layout.c (layout_type): Set TYPE_PRECISION for offset types.
+	* varasm.c (initializer_constant_valid_p): Use TYPE_PRECISION of
+	incoming pointer type instead of POINTER_SIZE.
+
+	* tree.c (build_pointer_type): Use appropriate pointer mode
+	instead of ptr_mode.
+	(build_reference_type): Likewise.
+	* expr.c (store_expr): Likewise.
+	(expand_expr_addr_expr): Likewise.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	
+	* auto-inc-dec.c: Include "target.h".
+	(try_merge): Use appropriate address mode instead of Pmode.
+	(find_inc): Likewise.
+	* combine.c (find_split_point): Likewise.
+	* cselib.c (cselib_record_sets): Likewise.
+	* dse.c (replace_inc_dec): Likewise.
+	(canon_address): Likewise.
+	* var-tracking.c (replace_expr_with_values): Likewise.
+	(count_uses): Likewise.
+	(add_uses): Likewise.
+	(add_stores): Likewise.
+	* emit-rtl.c: Include "target.h".
+	(adjust_address_1): Use appropriate address mode instead of Pmode.
+	(offset_address): Likewise.
+	* explow.c (break_out_memory_refs): Likewise.
+	(memory_address_addr_space): Likewise.
+	(promote_mode): Likewise.
+	* expr.c (move_by_pieces): Likewise.
+	(emit_block_move_via_loop): Likewise.
+	(store_by_pieces): Likewise.
+	(store_by_pieces_1): Likewise.
+	(expand_assignment): Likewise.
+	(store_constructor): Likewise.
+	(expand_expr_addr_expr): Likewise.
+	(expand_expr_real_1): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* ifcvt.c (noce_try_cmove_arith): Likewise.
+	* regcprop.c (kill_autoinc_value): Likewise.
+	* regmove.c (try_auto_increment): Likewise.
+	* reload.c (find_reloads): Likewise.
+	(find_reloads_address): Likewise.
+	(find_reloads_address_1): Likewise.
+	* sched-deps.c: Include "target.h".
+	(sched_analyze_1): Use appropriate address mode instead of Pmode.
+	(sched_analyze_2): Likewise.
+	* sel-sched-dump.c: Include "target.h".
+	(debug_mem_addr_value): Use appropriate address mode instead of Pmode.
+	* stor-layout.c (layout_type): Likewise.
+	* tree-ssa-loop-ivopts.c (produce_memory_decl_rtl): Likewise.
+	(multiplier_allowed_in_address_p): Likewise.
+	(get_address_cost): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	
+	* expr.c (expand_assignment): Always convert offsets to appropriate
+	address mode.
+	(store_expr): Likewise.
+	(store_constructor): Likewise.
+	(expand_expr_real_1): Likewise.
+
+	* reload.h (form_sum): Add MODE argument.
+	* reload.c (form_sum): Add MODE argument, use it instead of Pmode.
+	Update recursive calls.
+	(subst_indexed_address): Update calls to form_sum.
+	
+	* tree-flow.h (addr_for_mem_ref): Add ADDRSPACE argument.
+	* tree-ssa-address.c: Include "target.h".
+	(templates): Replace by ...
+	(mem_addr_template_list): ... this new vector.
+	(TEMPL_IDX): Handle address space numbers.
+	(gen_addr_rtx): Add address mode argument, use it instead of Pmode.
+	(addr_for_mem_ref): Add ADDRSPACE argument.  Use per-address-space
+	instead of global cache.  Update call to gen_addr_rtx.
+	(valid_mem_ref_p): Update call to addr_for_mem_ref.
+	* expr.c (expand_expr_real_1): Update call to addr_for_mem_ref.
+	
+	* rtl.h (convert_memory_address_addr_space): Add prototype.
+	(convert_memory_address): Define as macro.
+	* explow.c (convert_memory_address): Rename to ...
+	(convert_memory_address_addr_space): ... this.  Add ADDRSPACE argument.
+	Use appropriate pointer and address modes instead of ptr_mode / Pmode.
+	Update recursive calls.
+	(memory_address_addr_space): Call convert_memory_address_addr_space.
+	* expmed.c (make_tree): Likewise.
+	* expr.c (expand_assignment): Likewise.
+	(expand_expr_addr_expr_1): Likewise.  Also, add ADDRSPACE argument.
+	(expand_expr_addr_expr): Likewise.  Also, update call.
+
+	* alias.c (find_base_value): Guard pointer size optimizations.
+	(find_base_term): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	(num_sign_bit_copies1): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
+	* Makefile.in (tree-ssa-address.o): Add $(TARGET_H) dependency.
+	(emit-rtl.o): Likewise.
+	(auto-inc-dec.o): Likewise.
+	(sched-deps.o): Likewise.
+
+2009-10-26  Ben Elliston  <bje@au.ibm.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* doc/extend.texi (Named Address Spaces): New section.
 	* coretypes.h (addr_space_t): New type.
 	(ADDR_SPACE_GENERIC): New define.

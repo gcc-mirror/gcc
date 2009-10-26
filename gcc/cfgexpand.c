@@ -2236,6 +2236,8 @@ expand_debug_expr (tree exp)
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
+  enum machine_mode address_mode;
+  enum machine_mode pointer_mode;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -2434,15 +2436,18 @@ expand_debug_expr (tree exp)
       else
 	as = ADDR_SPACE_GENERIC;
 
-      gcc_assert (GET_MODE (op0) == Pmode
-		  || GET_MODE (op0) == ptr_mode
+      address_mode = targetm.addr_space.address_mode (as);
+      pointer_mode = targetm.addr_space.pointer_mode (as);
+
+      gcc_assert (GET_MODE (op0) == address_mode
+		  || GET_MODE (op0) == pointer_mode
 		  || GET_CODE (op0) == CONST_INT
 		  || GET_CODE (op0) == CONST_DOUBLE);
 
       if (TREE_CODE (exp) == ALIGN_INDIRECT_REF)
 	{
 	  int align = TYPE_ALIGN_UNIT (TREE_TYPE (exp));
-	  op0 = gen_rtx_AND (Pmode, op0, GEN_INT (-align));
+	  op0 = gen_rtx_AND (address_mode, op0, GEN_INT (-align));
 	}
 
       op0 = gen_rtx_MEM (mode, op0);
@@ -2463,9 +2468,11 @@ expand_debug_expr (tree exp)
 	return NULL;
 
       as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+      address_mode = targetm.addr_space.address_mode (as);
+      pointer_mode = targetm.addr_space.pointer_mode (as);
 
-      gcc_assert (GET_MODE (op0) == Pmode
-		  || GET_MODE (op0) == ptr_mode
+      gcc_assert (GET_MODE (op0) == address_mode
+		  || GET_MODE (op0) == pointer_mode
 		  || GET_CODE (op0) == CONST_INT
 		  || GET_CODE (op0) == CONST_DOUBLE);
 

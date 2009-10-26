@@ -4359,7 +4359,9 @@ replace_expr_with_values (rtx loc)
     return NULL;
   else if (MEM_P (loc))
     {
-      cselib_val *addr = cselib_lookup (XEXP (loc, 0), Pmode, 0);
+      enum machine_mode address_mode
+	= targetm.addr_space.address_mode (MEM_ADDR_SPACE (loc));
+      cselib_val *addr = cselib_lookup (XEXP (loc, 0), address_mode, 0);
       if (addr)
 	return replace_equiv_address_nv (loc, addr->val_rtx);
       else
@@ -4493,7 +4495,9 @@ count_uses (rtx *loc, void *cuip)
 	  if (MEM_P (*loc)
 	      && !REG_P (XEXP (*loc, 0)) && !MEM_P (XEXP (*loc, 0)))
 	    {
-	      val = cselib_lookup (XEXP (*loc, 0), Pmode, false);
+	      enum machine_mode address_mode
+		= targetm.addr_space.address_mode (MEM_ADDR_SPACE (*loc));
+	      val = cselib_lookup (XEXP (*loc, 0), address_mode, false);
 
 	      if (val && !cselib_preserved_value_p (val))
 		{
@@ -4613,7 +4617,10 @@ add_uses (rtx *loc, void *data)
 	      && !REG_P (XEXP (vloc, 0)) && !MEM_P (XEXP (vloc, 0)))
 	    {
 	      rtx mloc = vloc;
-	      cselib_val *val = cselib_lookup (XEXP (mloc, 0), Pmode, 0);
+	      enum machine_mode address_mode
+		= targetm.addr_space.address_mode (MEM_ADDR_SPACE (mloc));
+	      cselib_val *val
+		= cselib_lookup (XEXP (mloc, 0), address_mode, 0);
 
 	      if (val && !cselib_preserved_value_p (val))
 		{
@@ -4624,7 +4631,8 @@ add_uses (rtx *loc, void *data)
 		  cselib_preserve_value (val);
 		  mo->type = MO_VAL_USE;
 		  mloc = cselib_subst_to_values (XEXP (mloc, 0));
-		  mo->u.loc = gen_rtx_CONCAT (Pmode, val->val_rtx, mloc);
+		  mo->u.loc = gen_rtx_CONCAT (address_mode,
+					      val->val_rtx, mloc);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    log_op_type (mo->u.loc, cui->bb, cui->insn,
 				 mo->type, dump_file);
@@ -4680,7 +4688,10 @@ add_uses (rtx *loc, void *data)
 	      && !REG_P (XEXP (oloc, 0)) && !MEM_P (XEXP (oloc, 0)))
 	    {
 	      rtx mloc = oloc;
-	      cselib_val *val = cselib_lookup (XEXP (mloc, 0), Pmode, 0);
+	      enum machine_mode address_mode
+		= targetm.addr_space.address_mode (MEM_ADDR_SPACE (mloc));
+	      cselib_val *val
+		= cselib_lookup (XEXP (mloc, 0), address_mode, 0);
 
 	      if (val && !cselib_preserved_value_p (val))
 		{
@@ -4691,7 +4702,8 @@ add_uses (rtx *loc, void *data)
 		  cselib_preserve_value (val);
 		  mo->type = MO_VAL_USE;
 		  mloc = cselib_subst_to_values (XEXP (mloc, 0));
-		  mo->u.loc = gen_rtx_CONCAT (Pmode, val->val_rtx, mloc);
+		  mo->u.loc = gen_rtx_CONCAT (address_mode,
+					      val->val_rtx, mloc);
 		  mo->insn = cui->insn;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    log_op_type (mo->u.loc, cui->bb, cui->insn,
@@ -4824,14 +4836,16 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	  && !REG_P (XEXP (loc, 0)) && !MEM_P (XEXP (loc, 0)))
 	{
 	  rtx mloc = loc;
-	  cselib_val *val = cselib_lookup (XEXP (mloc, 0), Pmode, 0);
+	  enum machine_mode address_mode
+	    = targetm.addr_space.address_mode (MEM_ADDR_SPACE (mloc));
+	  cselib_val *val = cselib_lookup (XEXP (mloc, 0), address_mode, 0);
 
 	  if (val && !cselib_preserved_value_p (val))
 	    {
 	      cselib_preserve_value (val);
 	      mo->type = MO_VAL_USE;
 	      mloc = cselib_subst_to_values (XEXP (mloc, 0));
-	      mo->u.loc = gen_rtx_CONCAT (Pmode, val->val_rtx, mloc);
+	      mo->u.loc = gen_rtx_CONCAT (address_mode, val->val_rtx, mloc);
 	      mo->insn = cui->insn;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		log_op_type (mo->u.loc, cui->bb, cui->insn,

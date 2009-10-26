@@ -2658,7 +2658,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 		     && reg_equiv_constant[REGNO (new0)] != 0)
 	      new0 = reg_equiv_constant[REGNO (new0)];
 
-	    new_rtx = form_sum (new0, new1);
+	    new_rtx = form_sum (GET_MODE (x), new0, new1);
 
 	    /* As above, if we are not inside a MEM we do not want to
 	       turn a PLUS into something else.  We might try to do so here
