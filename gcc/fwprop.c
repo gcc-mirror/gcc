@@ -375,11 +375,12 @@ canonicalize_address (rtx x)
 
 static bool
 should_replace_address (rtx old_rtx, rtx new_rtx, enum machine_mode mode,
-			bool speed)
+			addr_space_t as, bool speed)
 {
   int gain;
 
-  if (rtx_equal_p (old_rtx, new_rtx) || !memory_address_p (mode, new_rtx))
+  if (rtx_equal_p (old_rtx, new_rtx)
+      || !memory_address_addr_space_p (mode, new_rtx, as))
     return false;
 
   /* Copy propagation is always ok.  */
@@ -387,7 +388,8 @@ should_replace_address (rtx old_rtx, rtx new_rtx, enum machine_mode mode,
     return true;
 
   /* Prefer the new address if it is less expensive.  */
-  gain = address_cost (old_rtx, mode, speed) - address_cost (new_rtx, mode, speed);
+  gain = (address_cost (old_rtx, mode, as, speed)
+	  - address_cost (new_rtx, mode, as, speed));
 
   /* If the addresses have equivalent cost, prefer the new address
      if it has the highest `rtx_cost'.  That has the potential of
@@ -555,6 +557,7 @@ propagate_rtx_1 (rtx *px, rtx old_rtx, rtx new_rtx, int flags)
 	  /* Copy propagations are always ok.  Otherwise check the costs.  */
 	  if (!(REG_P (old_rtx) && REG_P (new_rtx))
 	      && !should_replace_address (op0, new_op0, GET_MODE (x),
+					  MEM_ADDR_SPACE (x),
 	      			 	  flags & PR_OPTIMIZE_FOR_SPEED))
 	    return true;
 

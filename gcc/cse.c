@@ -2623,6 +2623,10 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
+  /* MEMs refering to different address space are not equivalent.  */
+  if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
+    return 0;
+
   switch (code)
     {
     case PC:

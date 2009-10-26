@@ -305,7 +305,8 @@ tree_mem_ref_addr (tree type, tree mem_ref)
    ADDR is valid on the current target.  */
 
 static bool
-valid_mem_ref_p (enum machine_mode mode, struct mem_address *addr)
+valid_mem_ref_p (enum machine_mode mode, addr_space_t as,
+		 struct mem_address *addr)
 {
   rtx address;
 
@@ -313,7 +314,7 @@ valid_mem_ref_p (enum machine_mode mode, struct mem_address *addr)
   if (!address)
     return false;
 
-  return memory_address_p (mode, address);
+  return memory_address_addr_space_p (mode, address, as);
 }
 
 /* Checks whether a TARGET_MEM_REF with type TYPE and parameters given by ADDR
@@ -323,7 +324,7 @@ valid_mem_ref_p (enum machine_mode mode, struct mem_address *addr)
 static tree
 create_mem_ref_raw (tree type, struct mem_address *addr)
 {
-  if (!valid_mem_ref_p (TYPE_MODE (type), addr))
+  if (!valid_mem_ref_p (TYPE_MODE (type), TYPE_ADDR_SPACE (type), addr))
     return NULL_TREE;
 
   if (addr->step && integer_onep (addr->step))
@@ -456,7 +457,8 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr,
 
       coef = double_int_to_shwi (addr->elts[i].coef);
       if (coef == 1
-	  || !multiplier_allowed_in_address_p (coef, Pmode))
+	  || !multiplier_allowed_in_address_p (coef, Pmode,
+					       ADDR_SPACE_GENERIC))
 	continue;
 
       acost = multiply_by_cost (coef, Pmode, speed);

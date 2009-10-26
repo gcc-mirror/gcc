@@ -84,8 +84,13 @@ extern int num_validated_changes (void);
 extern void cancel_changes (int);
 extern int constrain_operands (int);
 extern int constrain_operands_cached (int);
-extern int memory_address_p (enum machine_mode, rtx);
-extern int strict_memory_address_p (enum machine_mode, rtx);
+extern int memory_address_addr_space_p (enum machine_mode, rtx, addr_space_t);
+#define memory_address_p(mode,addr) \
+	memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
+extern int strict_memory_address_addr_space_p (enum machine_mode, rtx,
+					       addr_space_t);
+#define strict_memory_address_p(mode,addr) \
+	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
 extern int validate_replace_rtx_subexp (rtx, rtx, rtx, rtx *);
 extern int validate_replace_rtx (rtx, rtx, rtx);
 extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx);
@@ -101,7 +106,11 @@ extern int reg_fits_class_p (rtx, enum reg_class, int, enum machine_mode);
 
 extern int offsettable_memref_p (rtx);
 extern int offsettable_nonstrict_memref_p (rtx);
-extern int offsettable_address_p (int, enum machine_mode, rtx);
+extern int offsettable_address_addr_space_p (int, enum machine_mode, rtx,
+					     addr_space_t);
+#define offsettable_address_p(strict,mode,addr) \
+	offsettable_address_addr_space_p ((strict), (mode), (addr), \
+					  ADDR_SPACE_GENERIC)
 extern int mode_dependent_address_p (rtx);
 
 extern int recog (rtx, rtx, int *);

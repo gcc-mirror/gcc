@@ -752,6 +752,10 @@ DEFTREECODE (PAREN_EXPR, "paren_expr", tcc_unary, 1)
    represented by CONVERT_EXPR or NOP_EXPR nodes.  */
 DEFTREECODE (CONVERT_EXPR, "convert_expr", tcc_unary, 1)
 
+/* Conversion of a pointer value to a pointer to a different
+   address space.  */
+DEFTREECODE (ADDR_SPACE_CONVERT_EXPR, "addr_space_convert_expr", tcc_unary, 1)
+
 /* Conversion of a fixed-point value to an integer, a real, or a fixed-point
    value.  Or conversion of a fixed-point value from an integer, a real, or
    a fixed-point value.  */

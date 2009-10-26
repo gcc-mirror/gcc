@@ -153,7 +153,8 @@ gen_lowpart_if_possible (enum machine_mode mode, rtx x)
 		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (x))));
 
       new_rtx = adjust_address_nv (x, mode, offset);
-      if (! memory_address_p (mode, XEXP (new_rtx, 0)))
+      if (! memory_address_addr_space_p (mode, XEXP (new_rtx, 0),
+					 MEM_ADDR_SPACE (x)))
 	return 0;
 
       return new_rtx;

@@ -471,6 +471,32 @@
 #define TARGET_VALID_POINTER_MODE default_valid_pointer_mode
 #endif
 
+#ifndef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
+  default_addr_space_legitimate_address_p
+#endif
+
+#ifndef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
+#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS \
+  default_addr_space_legitimize_address
+#endif
+
+#ifndef TARGET_ADDR_SPACE_SUBSET_P
+#define TARGET_ADDR_SPACE_SUBSET_P default_addr_space_subset_p
+#endif
+
+#ifndef TARGET_ADDR_SPACE_CONVERT
+#define TARGET_ADDR_SPACE_CONVERT default_addr_space_convert
+#endif
+
+#define TARGET_ADDR_SPACE_HOOKS			\
+  {						\
+    TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P,	\
+    TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS,	\
+    TARGET_ADDR_SPACE_SUBSET_P,			\
+    TARGET_ADDR_SPACE_CONVERT,			\
+  }
+
 #ifndef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P default_scalar_mode_supported_p
 #endif
@@ -913,6 +939,7 @@
   TARGET_MIN_DIVISIONS_FOR_RECIP_MUL,		\
   TARGET_MODE_REP_EXTENDED,			\
   TARGET_VALID_POINTER_MODE,                    \
+  TARGET_ADDR_SPACE_HOOKS,			\
   TARGET_SCALAR_MODE_SUPPORTED_P,		\
   TARGET_VECTOR_MODE_SUPPORTED_P,               \
   TARGET_RTX_COSTS,				\

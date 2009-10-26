@@ -694,6 +694,26 @@ struct gcc_target
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) (enum machine_mode mode);
 
+  /* Support for named address spaces.  */
+  struct addr_space {
+    /* True if an address is a valid memory address to a given named address
+       space for a given mode.  */
+    bool (* legitimate_address_p) (enum machine_mode, rtx, bool, addr_space_t);
+
+    /* Return an updated address to convert an invalid pointer to a named
+       address space to a valid one.  If NULL_RTX is returned use machine
+       independent methods to make the address valid.  */
+    rtx (* legitimize_address) (rtx, rtx, enum machine_mode, addr_space_t);
+
+    /* True if one named address space is a subset of another named address. */
+    bool (* subset_p) (addr_space_t, addr_space_t);
+
+    /* Function to convert an rtl expression from one address space to
+       another.  */
+    rtx (* convert) (rtx, tree, tree);
+
+  } addr_space;
+
   /* True if MODE is valid for the target.  By "valid", we mean able to
      be manipulated in non-trivial ways.  In particular, this means all
      the arithmetic is supported.  */

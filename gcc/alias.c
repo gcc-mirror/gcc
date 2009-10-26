@@ -2188,6 +2188,13 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
       && ! rtx_equal_p (rtlx, rtly))
     return 1;
 
+  /* If we have MEMs refering to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_P (rtlx) && MEM_P (rtly)
+      && MEM_ADDR_SPACE (rtlx) != MEM_ADDR_SPACE (rtly))
+    return 0;
+
   /* Get the base and offsets of both decls.  If either is a register, we
      know both are and are the same, so use that as the base.  The only
      we can avoid overlap is if we can deduce that they are nonoverlapping
@@ -2279,6 +2286,12 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
   if (nonoverlapping_memrefs_p (mem, x))
     return 0;
 
+  /* If we have MEMs refering to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
+
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
@@ -2356,6 +2369,12 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
   if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
+  /* If we have MEMs refering to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
+
   if (! x_addr)
     x_addr = get_addr (XEXP (x, 0));
 
@@ -2415,6 +2434,12 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
 
   if (nonoverlapping_memrefs_p (x, mem))
     return 0;
+
+  /* If we have MEMs refering to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
 
   x_addr = get_addr (XEXP (x, 0));
   mem_addr = get_addr (XEXP (mem, 0));

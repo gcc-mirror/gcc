@@ -4174,7 +4174,8 @@ find_split_point (rtx *loc, rtx insn)
 	 it will not remain in the result.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
-	  && ! memory_address_p (GET_MODE (x), XEXP (x, 0)))
+	  && ! memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					    MEM_ADDR_SPACE (x)))
 	{
 	  rtx reg = regno_reg_rtx[FIRST_PSEUDO_REGISTER];
 	  rtx seq = combine_split_insns (gen_rtx_SET (VOIDmode, reg,
@@ -4197,8 +4198,9 @@ find_split_point (rtx *loc, rtx insn)
 	      && NONJUMP_INSN_P (NEXT_INSN (seq))
 	      && GET_CODE (PATTERN (NEXT_INSN (seq))) == SET
 	      && SET_DEST (PATTERN (NEXT_INSN (seq))) == reg
-	      && memory_address_p (GET_MODE (x),
-				   SET_SRC (PATTERN (NEXT_INSN (seq)))))
+	      && memory_address_addr_space_p
+		   (GET_MODE (x), SET_SRC (PATTERN (NEXT_INSN (seq))),
+		    MEM_ADDR_SPACE (x)))
 	    {
 	      rtx src1 = SET_SRC (PATTERN (seq));
 	      rtx src2 = SET_SRC (PATTERN (NEXT_INSN (seq)));
@@ -4237,7 +4239,8 @@ find_split_point (rtx *loc, rtx insn)
       /* If we have a PLUS whose first operand is complex, try computing it
          separately by making a split there.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
-          && ! memory_address_p (GET_MODE (x), XEXP (x, 0))
+          && ! memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					    MEM_ADDR_SPACE (x))
           && ! OBJECT_P (XEXP (XEXP (x, 0), 0))
           && ! (GET_CODE (XEXP (XEXP (x, 0), 0)) == SUBREG
                 && OBJECT_P (SUBREG_REG (XEXP (XEXP (x, 0), 0)))))

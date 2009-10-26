@@ -5424,6 +5424,7 @@ set_type_quals (tree type, int type_quals)
   TYPE_READONLY (type) = (type_quals & TYPE_QUAL_CONST) != 0;
   TYPE_VOLATILE (type) = (type_quals & TYPE_QUAL_VOLATILE) != 0;
   TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
+  TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (type_quals);
 }
 
 /* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
@@ -7003,6 +7004,7 @@ build_array_type (tree elt_type, tree index_type)
   t = make_node (ARRAY_TYPE);
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
+  TYPE_ADDR_SPACE (t) = TYPE_ADDR_SPACE (elt_type);
   layout_type (t);
 
   /* If the element type is incomplete at this point we get marked for

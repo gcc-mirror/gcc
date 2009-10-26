@@ -55,6 +55,7 @@ through the macros defined in the @file{.h} file.
 * MIPS Coprocessors::   MIPS coprocessor support and how to customize it.
 * PCH Target::          Validity checking for precompiled headers.
 * C++ ABI::             Controlling C++ ABI changes.
+* Named Address Spaces:: Adding support for named address spaces
 * Misc::                Everything else.
 @end menu
 
@@ -9823,6 +9824,69 @@ unloaded. The default is to return false.
 @var{type} is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that has just been
 defined.  Use this hook to make adjustments to the class (eg, tweak
 visibility or perform any other required target modifications).
+@end deftypefn
+
+@node Named Address Spaces
+@section Adding support for named address spaces
+@cindex named address spaces
+
+The draft technical report of the ISO/IEC JTC1 S22 WG14 N1275
+standards committee, @cite{Programming Languages - C - Extensions to
+support embedded processors}, specifies a syntax for embedded
+processors to specify alternate address spaces.  You can configure a
+GCC port to support section 5.1 of the draft report to add support for
+address spaces other than the default address space.  These address
+spaces are new keywords that are similar to the @code{volatile} and
+@code{const} type attributes.
+
+Pointers to named address spaces can a a different size than
+pointers to the generic address space.
+
+For example, the SPU port uses the @code{__ea} address space to refer
+to memory in the host processor, rather than memory local to the SPU
+processor.  Access to memory in the @code{__ea} address space involves
+issuing DMA operations to move data between the host processor and the
+local processor memory address space.  Pointers in the @code{__ea}
+address space are either 32 bits or 64 bits based on the
+@option{-mea32} or @option{-mea64} switches (native SPU pointers are
+always 32 bits).
+
+Internally, address spaces are represented as a small integer in the
+range 0 to 15 with address space 0 being reserved for the generic
+address space.
+
+@deftypefn {Target Hook} {bool} TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (enum machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as})
+Define this to return true if @var{exp} is a valid address for mode
+@var{mode} in the named address space @var{as}.  The @var{strict}
+parameter says whether strict addressing is in effect after reload has
+finished.  This target hook is the same as the
+@code{TARGET_LEGITIMATE_ADDRESS_P} target hook, except that it includes
+explicit named address space support.
+@end deftypefn
+
+@deftypefn {Target Hook} {rtx} TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS (rtx @var{x}, rtx @var{oldx}, enum machine_mode @var{mode}, addr_space_t @var{as})
+Define this to modify an invalid address @var{x} to be a valid address
+with mode @var{mode} in the named address space @var{as}.  This target
+hook is the same as the @code{TARGET_LEGITIMIZE_ADDRESS} target hook,
+except that it includes explicit named address space support.
+@end deftypefn
+
+@deftypefn {Target Hook} {bool} TARGET_ADDR_SPACE_SUBSET_P (addr_space_t @var{superset}, addr_space_t @var{subset})
+Define this to return whether the @var{subset} named address space is
+contained within the @var{superset} named address space.  Pointers to
+a named address space that is a subset of another named address space
+will be converted automatically without a cast if used together in
+arithmetic operations.  Pointers to a superset address space can be
+converted to pointers to a subset address space via explict casts.
+@end deftypefn
+
+@deftypefn {Target Hook} {rtx} TARGET_ADDR_SPACE_CONVERT (rtx @var{op}, tree @var{from_type}, tree @var{to_type})
+Define this to convert the pointer expression represented by the RTL
+@var{op} with type @var{from_type} that points to a named address
+space to a new pointer expression with type @var{to_type} that points
+to a different named address space.  When this hook it called, it is
+guaranteed that one of the two address spaces is a subset of the other,
+as determined by the @code{TARGET_ADDR_SPACE_SUBSET_P} target hook.
 @end deftypefn
 
 @node Misc

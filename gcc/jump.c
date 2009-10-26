@@ -1695,6 +1695,10 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
+  /* MEMs refering to different address space are not equivalent.  */
+  if (code == MEM && MEM_ADDR_SPACE (x) != MEM_ADDR_SPACE (y))
+    return 0;
+
   /* For commutative operations, the RTX match if the operand match in any
      order.  Also handle the simple binary and unary cases without a loop.  */
   if (targetm.commutative_p (x, UNKNOWN))

@@ -146,6 +146,7 @@ typedef struct GTY(()) mem_attrs
   rtx size;			/* Size in bytes, as a CONST_INT.  */
   alias_set_type alias;		/* Memory alias set.  */
   unsigned int align;		/* Alignment of MEM in bits.  */
+  unsigned char addrspace;	/* Address space (0 for generic).  */
 } mem_attrs;
 
 /* Structure used to describe the attributes of a REG in similar way as
@@ -1122,7 +1123,7 @@ rhs_regno (const_rtx x)
 
 extern void init_rtlanal (void);
 extern int rtx_cost (rtx, enum rtx_code, bool);
-extern int address_cost (rtx, enum machine_mode, bool);
+extern int address_cost (rtx, enum machine_mode, addr_space_t, bool);
 extern unsigned int subreg_lsb (const_rtx);
 extern unsigned int subreg_lsb_1 (enum machine_mode, enum machine_mode,
 				  unsigned int);
@@ -1268,6 +1269,10 @@ do {						\
 /* For a MEM rtx, the offset from the start of MEM_EXPR, if known, as a
    RTX that is always a CONST_INT.  */
 #define MEM_OFFSET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->offset)
+
+/* For a MEM rtx, the address space.  */
+#define MEM_ADDR_SPACE(RTX) (MEM_ATTRS (RTX) == 0 ? ADDR_SPACE_GENERIC \
+						  : MEM_ATTRS (RTX)->addrspace)
 
 /* For a MEM rtx, the size in bytes of the MEM, if known, as an RTX that
    is always a CONST_INT.  */

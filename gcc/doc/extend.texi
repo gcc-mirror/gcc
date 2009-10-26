@@ -39,6 +39,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Decimal Float::       Decimal Floating Types. 
 * Hex Floats::          Hexadecimal floating-point constants.
 * Fixed-Point::         Fixed-Point Types.
+* Named Address Spaces::Named address spaces.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
 * Empty Structures::    Structures with no members.
@@ -1196,6 +1197,31 @@ Pragmas to control overflow and rounding behaviors are not implemented.
 @end itemize
 
 Fixed-point types are supported by the DWARF2 debug information format.
+
+@node Named Address Spaces
+@section Named address spaces
+@cindex named address spaces
+
+As an extension, the GNU C compiler supports named address spaces as
+defined in the N1275 draft of ISO/IEC DTR 18037.  Support for named
+address spaces in GCC will evolve as the draft technical report changes.
+Calling conventions for any target might also change.  At present, only
+the SPU target supports other address spaces.  On the SPU target, for
+example, variables may be declared as belonging to another address space
+by qualifying the type with the @code{__ea} address space identifier:
+
+@smallexample
+extern int __ea i;
+@end smallexample
+
+When the variable @code{i} is accessed, the compiler will generate
+special code to access this variable.  It may use runtime library
+support, or generate special machine instructions to access that address
+space.
+
+The @code{__ea} identifier may be used exactly like any other C type
+qualifier (e.g., @code{const} or @code{volatile}).  See the N1275
+document for more details.
 
 @node Zero Length
 @section Arrays of Length Zero

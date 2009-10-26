@@ -1329,6 +1329,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   /* ??? FIXME: Magic number 5.  */
   if (cse_not_expected
       && MEM_P (a) && MEM_P (b)
+      && MEM_ADDR_SPACE (a) == MEM_ADDR_SPACE (b)
       && if_info->branch_cost >= 5)
     {
       a = XEXP (a, 0);
@@ -1481,6 +1482,9 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	set_mem_alias_set (tmp, MEM_ALIAS_SET (if_info->a));
       set_mem_align (tmp,
 		     MIN (MEM_ALIGN (if_info->a), MEM_ALIGN (if_info->b)));
+
+      gcc_assert (MEM_ADDR_SPACE (if_info->a) == MEM_ADDR_SPACE (if_info->b));
+      set_mem_addr_space (tmp, MEM_ADDR_SPACE (if_info->a));
 
       noce_emit_move_insn (if_info->x, tmp);
     }
