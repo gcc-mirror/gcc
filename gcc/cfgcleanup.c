@@ -958,7 +958,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
   if (NOTE_INSN_BASIC_BLOCK_P (i1) && NOTE_INSN_BASIC_BLOCK_P (i2))
     return true;
 
-   p1 = PATTERN (i1);
+  p1 = PATTERN (i1);
   p2 = PATTERN (i2);
 
   if (GET_CODE (p1) != GET_CODE (p2))
@@ -1814,6 +1814,24 @@ try_crossjump_bb (int mode, basic_block bb)
   return changed;
 }
 
+/* Return true if BB contains just bb note, or bb note followed
+   by only DEBUG_INSNs.  */
+
+static bool
+trivially_empty_bb_p (basic_block bb)
+{
+  rtx insn = BB_END (bb);
+
+  while (1)
+    {
+      if (insn == BB_HEAD (bb))
+	return true;
+      if (!DEBUG_INSN_P (insn))
+	return false;
+      insn = PREV_INSN (insn);
+    }
+}
+
 /* Do simple CFG optimizations - basic block merging, simplifying of jump
    instructions etc.  Return nonzero if changes were made.  */
 
@@ -1865,14 +1883,10 @@ try_optimize_cfg (int mode)
 		 __builtin_unreachable ().  */
 	      if (EDGE_COUNT (b->preds) == 0
 		  || (EDGE_COUNT (b->succs) == 0
-		      && BB_HEAD (b) == BB_END (b)
+		      && trivially_empty_bb_p (b)
 		      && single_succ_edge (ENTRY_BLOCK_PTR)->dest != b))
 		{
 		  c = b->prev_bb;
-		  if (dump_file)
-		    fprintf (dump_file, "Deleting block %i.\n",
-			     b->index);
-
 		  delete_basic_block (b);
 		  if (!(mode & CLEANUP_CFGLAYOUT))
 		    changed = true;

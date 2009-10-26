@@ -1,5 +1,9 @@
 2009-10-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/41345
+	* cfgcleanup.c (trivially_empty_bb_p): New function.
+	(try_optimize_bb): Use it instead of checking BB_HEAD == BB_END.
+
 	PR debug/41828
 	* dwarf2out.c (add_pubname, add_pubtype, generic_parameter_die,
 	add_name_and_src_coords_attributes, gen_namespace_die,
