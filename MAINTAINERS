@@ -82,6 +82,7 @@ picochip port		Daniel Towner		dant@picochip.com
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		edelsohn@gnu.org
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com
+rx port	      		Nick Clifton		nickc@redhat.com
 s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
 s390 port		Andreas Krebbel		Andreas.Krebbel@de.ibm.com

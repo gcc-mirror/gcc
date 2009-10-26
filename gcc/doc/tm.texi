@@ -3529,7 +3529,7 @@ dynamically if their size exceeds @code{STACK_CHECK_MAX_VAR_SIZE} bytes.
 @defmac STACK_CHECK_BUILTIN
 A nonzero value if stack checking is done by the configuration files in a
 machine-dependent manner.  You should define this macro if stack checking
-is require by the ABI of your machine or if you would like to do stack
+is required by the ABI of your machine or if you would like to do stack
 checking in some more efficient way than the generic approach.  The default
 value of this macro is zero.
 @end defmac
@@ -3788,7 +3788,7 @@ registers @code{regs_ever_live} and @code{call_used_regs}.
 
 If @code{ELIMINABLE_REGS} is defined, this macro will be not be used and
 need not be defined.  Otherwise, it must be defined even if
-@code{TARGET_FRAME_POINTER_REQUIRED} is always return true; in that
+@code{TARGET_FRAME_POINTER_REQUIRED} always returns true; in that
 case, you may set @var{depth-var} to anything.
 @end defmac
 
@@ -4204,7 +4204,6 @@ This macro need not do anything if the argument in question was passed
 on the stack.  The compiler knows how to track the amount of stack space
 used for arguments without any special help.
 @end defmac
-
 
 @defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
 If defined, a C expression that is the number of bytes to add to the
@@ -5370,9 +5369,10 @@ post-address side-effect generation involving a register displacement.
 
 @defmac CONSTANT_ADDRESS_P (@var{x})
 A C expression that is 1 if the RTX @var{x} is a constant which
-is a valid address.  On most machines, this can be defined as
-@code{CONSTANT_P (@var{x})}, but a few machines are more restrictive
-in which constant addresses are supported.
+is a valid address.  On most machines the default definition of
+@code{(CONSTANT_P (@var{x}) && GET_CODE (@var{x}) != CONST_DOUBLE)}
+is acceptable, but a few machines are more restrictive as to which
+constant addresses are supported. 
 @end defmac
 
 @defmac CONSTANT_P (@var{x})
@@ -6127,7 +6127,7 @@ this macro is defined, it should produce a nonzero value when
 @code{STRICT_ALIGNMENT} is nonzero.
 @end defmac
 
-@defmac MOVE_RATIO
+@defmac MOVE_RATIO (@var{speed})
 The threshold of number of scalar memory-to-memory move insns, @emph{below}
 which a sequence of insns should be generated instead of a
 string move insn or a library call.  Increasing the value will always
@@ -6136,6 +6136,9 @@ make code faster, but eventually incurs high cost in increased code size.
 Note that on machines where the corresponding move insn is a
 @code{define_expand} that emits a sequence of insns, this macro counts
 the number of such sequences.
+
+The parameter @var{speed} is true if the code is currently being
+optimized for speed rather than size.
 
 If you don't define this, a reasonable default is used.
 @end defmac
@@ -6152,11 +6155,14 @@ A C expression used by @code{move_by_pieces} to determine the largest unit
 a load or store used to copy memory is.  Defaults to @code{MOVE_MAX}.
 @end defmac
 
-@defmac CLEAR_RATIO
+@defmac CLEAR_RATIO (@var{speed})
 The threshold of number of scalar move insns, @emph{below} which a sequence
 of insns should be generated to clear memory instead of a string clear insn
 or a library call.  Increasing the value will always make code faster, but
 eventually incurs high cost in increased code size.
+
+The parameter @var{speed} is true if the code is currently being
+optimized for speed rather than size.
 
 If you don't define this, a reasonable default is used.
 @end defmac
@@ -6168,12 +6174,15 @@ will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{CLEAR_RATIO}.
 @end defmac
 
-@defmac SET_RATIO
+@defmac SET_RATIO (@var{speed})
 The threshold of number of scalar move insns, @emph{below} which a sequence
 of insns should be generated to set memory to a constant value, instead of
 a block set insn or a library call.  
 Increasing the value will always make code faster, but
 eventually incurs high cost in increased code size.
+
+The parameter @var{speed} is true if the code is currently being
+optimized for speed rather than size.
 
 If you don't define this, it defaults to the value of @code{MOVE_RATIO}.
 @end defmac
@@ -6189,7 +6198,7 @@ than @code{SET_RATIO}.
 
 @defmac STORE_BY_PIECES_P (@var{size}, @var{alignment})
 A C expression used to determine whether @code{store_by_pieces} will be
-used to set a chunk of memory to a constant string value, or whether some 
+used to set a chunk of memory to a constant string value, or whether some
 other mechanism will be used.  Used by @code{__builtin_strcpy} when
 called with a constant source string.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
@@ -6255,7 +6264,7 @@ Define this macro if a non-short-circuit operation produced by
 @code{BRANCH_COST} is greater than or equal to the value 2.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, int @var{code}, int @var{outer_code}, int *@var{total})
+@deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, int @var{code}, int @var{outer_code}, int *@var{total}, bool @var{speed})
 This target hook describes the relative costs of RTL expressions.
 
 The cost may depend on the precise form of the expression, which is
@@ -6274,15 +6283,15 @@ necessary.  Traditionally, the default costs are @code{COSTS_N_INSNS (5)}
 for multiplications, @code{COSTS_N_INSNS (7)} for division and modulus
 operations, and @code{COSTS_N_INSNS (1)} for all other operations.
 
-When optimizing for code size, i.e.@: when @code{optimize_size} is
-nonzero, this target hook should be used to estimate the relative
+When optimizing for code size, i.e.@: when @code{speed} is
+false, this target hook should be used to estimate the relative
 size cost of an expression, again relative to @code{COSTS_N_INSNS}.
 
 The hook returns true when all subexpressions of @var{x} have been
 processed, and false when @code{rtx_cost} should recurse.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address})
+@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, bool @var{speed})
 This hook computes the cost of an addressing mode that contains
 @var{address}.  If not defined, the cost is computed from
 the @var{address} expression and the @code{TARGET_RTX_COST} hook.
@@ -6384,7 +6393,7 @@ debug output to.  @var{verbose} is the verbose level provided by
 list of instructions that are ready to be scheduled.  @var{n_readyp} is
 a pointer to the number of elements in the ready list.  The scheduler
 reads the ready list in reverse order, starting with
-@var{ready}[@var{*n_readyp}-1] and going to @var{ready}[0].  @var{clock}
+@var{ready}[@var{*n_readyp} @minus{} 1] and going to @var{ready}[0].  @var{clock}
 is the timer tick of the scheduler.  You may modify the ready list and
 the number of ready insns.  The return value is the number of insns that
 can issue this cycle; normally this is just @code{issue_rate}.  See also
@@ -9516,7 +9525,7 @@ attributes, or a copy of the list may be made if further changes are
 needed.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (tree @var{fndecl})
+@deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (const_tree @var{fndecl})
 @cindex inlining
 This target hook returns @code{true} if it is ok to inline @var{fndecl}
 into the current function, despite its having target-specific
@@ -10909,7 +10918,6 @@ cannot safely move arguments from the registers in which they are passed
 to the stack.  Therefore, this hook should return true in general, but
 false for naked functions.  The default implementation always returns true.
 @end deftypefn
-
 
 @deftypevr {Target Hook} {unsigned HOST_WIDE_INT} TARGET_CONST_ANCHOR
 On some architectures it can take multiple instructions to synthesize

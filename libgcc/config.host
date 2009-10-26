@@ -482,6 +482,10 @@ rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	;;
+rx-*-elf)
+	extra_parts="crtbegin.o crtend.o"
+	tmake_file="rx/t-rx"
+	;;
 s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
 	;;
