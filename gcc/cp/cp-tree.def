@@ -393,7 +393,7 @@ DEFTREECODE (NONTYPE_ARGUMENT_PACK, "nontype_argument_pack", tcc_expression, 1)
      };
 
    The derivation from tuple contains a TYPE_PACK_EXPANSION for the
-   template arguments. Its EXPR_PACK_EXPANSION is "Values&" and its
+   template arguments. Its PACK_EXPANSION_PATTERN is "Values&" and its
    PACK_EXPANSION_PARAMETER_PACKS will contain "Values".  */
 DEFTREECODE (TYPE_PACK_EXPANSION, "type_pack_expansion", tcc_type, 0)
 
