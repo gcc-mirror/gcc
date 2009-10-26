@@ -1,3 +1,186 @@
+2009-10-26  Ben Elliston  <bje@au.ibm.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* doc/extend.texi (Named Address Spaces): New section.
+	* coretypes.h (addr_space_t): New type.
+	(ADDR_SPACE_GENERIC): New define.
+	(ADDR_SPACE_GENERIC_P): New macro.
+
+	* doc/tm.texi (Named Address Spaces): New section.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Document.
+	(TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS): Document.
+	(TARGET_ADDR_SPACE_SUBSET_P): Document.
+	(TARGET_ADDR_SPACE_CONVERT): Document.
+	* target.h (struct gcc_target): Add addr_space substructure.
+	* target-def.h (TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Define.
+	(TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS): Likewise.
+	(TARGET_ADDR_SPACE_SUBSET_P): Likewise.
+	(TARGET_ADDR_SPACE_CONVERT): Likewise.
+	(TARGET_ADDR_SPACE_HOOKS): Likewise.
+	(TARGET_INITIALIZER): Initialize addr_space hooks.
+	* targhooks.c (default_addr_space_legitimate_address_p): New function.
+	(default_addr_space_legitimize_address): Likewise.
+	(default_addr_space_subset_p): Likewise.
+	(default_addr_space_convert): Likewise.
+	* targhooks.h (default_addr_space_legitimate_address_p): Add prototype.
+	(default_addr_space_legitimize_address): Likewise.
+	(default_addr_space_subset_p): Likewise.
+	(default_addr_space_convert): Likewise.
+
+	* doc/rtl.texi (MEM_ADDR_SPACE): Document.
+	* rtl.h (mem_attrs): Add ADDRSPACE memory attribute.
+	(MEM_ADDR_SPACE): New macro.
+	* emit-rtl.c (get_mem_attrs): Add ADDRSPACE argument and set
+	address space memory attribute.
+	(mem_attrs_htab_hash): Handle address space memory attribute.
+	(mem_attrs_htab_eq): Likewise.
+	(set_mem_attributes_minus_bitpos): Likewise.
+	(set_mem_alias_set): Likewise.
+	(set_mem_align): Likewise.
+	(set_mem_expr): Likewise.
+	(set_mem_offset): Likewise.
+	(set_mem_size): Likewise.
+	(adjust_address_1): Likewise.
+	(offset_address): Likewise.
+	(widen_memoy_address): Likewise.
+	(get_spill_slot_decl): Likewise.
+	(set_mem_attrs_for_spill): Likewise.
+	(set_mem_addr_space): New function.
+	* emit-rtl.h (set_mem_addr_space): Add prototype.
+	* print-rtl.c (print_rtx): Print address space memory attribute.
+	* expr.c (expand_assignment): Set address space memory attribute
+	of generated MEM RTXes as appropriate.
+	(expand_expr_real_1): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* tree-ssa-loop-ivopts.c (produce_memory_decl_rtl): Likewise.
+
+	* tree.h (struct tree_base): Add address_space bitfield.  Reduce
+	size of "spare" bitfield.
+	(TYPE_ADDR_SPACE): New macro.
+	(ENCODE_QUAL_ADDR_SPACE): Likewise.
+	(DECODE_QUAL_ADDR_SPACE): Likewise.
+	(CLEAR_QUAL_ADDR_SPACE): Likewise.
+	(KEEP_QUAL_ADDR_SPACE): Likewise.
+	(TYPE_QUALS): Encode type address space.
+	(TYPE_QUALS_NO_ADDR_SPACE): New macro.
+	* tree.c (set_type_quals): Set type address space.
+	(build_array_type): Inherit array address space from element type.
+	* print-tree.c (print_node_brief): Print type address space.
+	(print_node): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+
+	* explow.c (memory_address): Rename to ...
+	(memory_address_addr_space): ... this.  Add ADDRSPACE argument.
+	Use address-space aware variants of memory address routines.
+	* recog.c (memory_address_p): Rename to ...
+	(memory_address_addr_space_p): ... this.  Add ADDSPACE argument.
+	Use address-space aware variants of memory address routines.
+	(offsettable_address_p): Rename to ...
+	(offsettable_address_addr_space_p): ... this.  Add ADDRSPACE argument.
+	Use address-space aware variants of memory address routines.
+	* reload.c (strict_memory_address_p): Rename to ...
+	(strict_memory_address_addr_space_p): ... this.  Add ADDSPACE argument.
+	Use address-space aware variants of memory address routines.
+	(maybe_memory_address_p): Rename to ...
+	(maybe_memory_address_addr_space_p): ... this.  Add ADDSPACE argument.
+	Use address-space aware variants of memory address routines.
+	* expr.h (memory_address_addr_space): Add prototype.
+	(memory_address): Define as macro.
+	* recog.h (memory_address_addr_space_p): Add prototype.
+	(memory_address_p): Define as macro.
+	(offsettable_address_addr_space_p): Add prototype.
+	(offsettable_address_p): Define as macro.
+	(strict_memory_address_addr_space_p): Add prototype.
+	(strict_memory_address_p): Define as macro.
+
+	* combine.c (find_split_point): Use address-space aware variants
+	of memory address routines.
+	* emit-rtl.c (operand_subword): Likewise.
+	(change_address_1): Likewise.
+	(adjust_address_1): Likewise.
+	(offset_address): Likewise.
+	* expr.c (emit_move_insn): Likewise.
+	(expand_assignment): Likewise.
+	(expand_expr_real_1): Likewise.
+	* recog.c (verify_changes): Likewise.
+	(general_operand): Likewise.
+	(offsettable_memref_p): Likewise.
+	(offsettable_nonstrict_memref_p): Likewise.
+	(constrain_operands): Likewise.
+	* reload.c (get_secondary_mem): Likewise.
+	(find_reloads_toplev): Likewise.
+	(find_reloads_address): Likewise.
+	(find_reloads_subreg_address): Likewise.
+	* reload1.c (reload): Likewise.
+	* rtlhooks.c (gen_lowpart_if_possible): Likewise.
+	* rtl.h (address_cost): Add ADDRSPACE argument.
+	* rtlanal.c (address_cost): Add ADDRSPACE argument.  Use address-space
+	aware variant of memory address routines.
+	* loop-invariant.c (create_new_invariant): Update address_cost call.
+	* tree-ssa-loop-ivopts.c (computation_cost): Likewise.
+	* fwprop.c (should_replace_address): Add ADDRSPACE argument.
+	Use address-space aware variant of memory address routines.
+	(propagate_rtx_1): Update call to should_replace_address.
+	* tree-flow.h (multiplier_allowed_in_address_p): Add ADDRSPACE
+	argument.
+	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p): Add
+	ADDRSPACE argument.  Use per-address-space instead of global cache.
+	Use address-space aware variant of memory address routines.
+	(get_address_cost): Likewise.
+	(get_computation_cost_at): Update calls.
+	* tree-ssa-address.c (valid_mem_ref_p): Add ADDRSPACE argument.
+	Use address-space aware variant of memory address routines.
+	(create_mem_ref_raw): Update call to valid_mem_ref_p.
+	(most_expensive_mult_to_index): Update call to
+	multiplier_allowed_in_address_p.
+
+	* dwarf2out.c (modified_type_die): Output DW_AT_address_class
+	attribute to indicate named address spaces.
+
+	* varasm.c (get_variable_section): DECLs in named address spaces
+	cannot be "common".
+
+	* reload.c (find_reloads_address): Do not use LEGITIMIZE_RELOAD_ADDRESS
+	for addresses in a non-generic address space.
+
+	* expr.c (emit_block_move_hints): Do not use libcalls for
+	memory in non-generic address spaces.
+	(clear_storage_hints): Likewise.
+	(expand_assignment): Likewise.
+
+	* fold-const.c (operand_equal_p): Expressions refering to different
+	address spaces are not equivalent.
+
+	* rtl.c (rtx_equal_p_cb): MEMs refering to different address
+	spaces are not equivalent.
+	(rtx_equal_p): Likewise.
+	* cse.c (exp_equiv_p): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.
+	* reload.c (operands_match_p): Likewise.
+
+	* alias.c (nonoverlapping_memrefs_p): MEMs refering to different
+	address spaces may alias.
+	(true_dependence): Likewise.
+	(canon_true_dependence): Likewise.
+	(write_dependence_p): Likewise.
+
+	* dse.c (canon_address): Handle named address spaces.
+	* ifcvt.c (noce_try_cmove_arith): Likewise.
+
+	* tree.def (ADDR_SPACE_CONVERT_EXPR): New tree code.
+	* expr.c (expand_expr_real_2): Expand ADDR_SPACE_CONVERT_EXPR.
+	* convert.c (convert_to_pointer): Generate ADDR_SPACE_CONVERT_EXPR
+	to handle conversions between different address spaces.
+	* fold-const.c (fold_convert_loc): Likewise.
+	(fold_unary_loc): Handle ADDR_SPACE_CONVERT_EXPR.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* gimple-pretty-print.c (dump_unary_rhs): Likewise.
+	* tree-cfg.c (verify_gimple_assign_unary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-ssa.c (useless_type_conversion_p): Conversions between pointers
+	to different address spaces are not useless.
+
 2009-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/41345

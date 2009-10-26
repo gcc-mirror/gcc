@@ -715,7 +715,7 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
 	 invariants).
 	 See http://gcc.gnu.org/ml/gcc-patches/2009-10/msg01210.html .  */
       inv->cheap_address = address_cost (SET_SRC (set), word_mode,
-					 speed) < 3;
+					 ADDR_SPACE_GENERIC, speed) < 3;
     }
   else
     {

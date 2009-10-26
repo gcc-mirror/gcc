@@ -69,6 +69,13 @@ struct gimple_seq_node_d;
 typedef struct gimple_seq_node_d *gimple_seq_node;
 typedef const struct gimple_seq_node_d *const_gimple_seq_node;
 
+/* Address space number for named address space support.  */
+typedef unsigned char addr_space_t;
+
+/* The value of addr_space_t that represents the generic address space.  */
+#define ADDR_SPACE_GENERIC 0
+#define ADDR_SPACE_GENERIC_P(AS) ((AS) == ADDR_SPACE_GENERIC)
+
 /* The major intermediate representations of GCC.  */
 enum ir_type {
   IR_GIMPLE,

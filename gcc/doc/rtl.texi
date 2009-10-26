@@ -420,6 +420,11 @@ the size is implied by the mode.
 @findex MEM_ALIGN
 @item MEM_ALIGN (@var{x})
 The known alignment in bits of the memory reference.
+
+@findex MEM_ADDR_SPACE
+@item MEM_ADDR_SPACE (@var{x})
+The address space of the memory reference.  This will commonly be zero
+for the generic address space.
 @end table
 
 @item REG

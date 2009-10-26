@@ -3107,6 +3107,21 @@ verify_gimple_assign_unary (gimple stmt)
 	return false;
       }
 
+    case ADDR_SPACE_CONVERT_EXPR:
+      {
+	if (!POINTER_TYPE_P (rhs1_type) || !POINTER_TYPE_P (lhs_type)
+	    || (TYPE_ADDR_SPACE (TREE_TYPE (rhs1_type))
+		== TYPE_ADDR_SPACE (TREE_TYPE (lhs_type))))
+	  {
+	    error ("invalid types in address space conversion");
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    return true;
+	  }
+
+	return false;
+      }
+
     case FIXED_CONVERT_EXPR:
       {
 	if (!valid_fixed_convert_types_p (lhs_type, rhs1_type)

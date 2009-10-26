@@ -2642,6 +2642,7 @@ seq_cost (rtx seq, bool speed)
 static rtx
 produce_memory_decl_rtl (tree obj, int *regno)
 {
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
   rtx x;
   
   gcc_assert (obj);
@@ -2651,12 +2652,14 @@ produce_memory_decl_rtl (tree obj, int *regno)
       x = gen_rtx_SYMBOL_REF (Pmode, name);
       SET_SYMBOL_REF_DECL (x, obj);
       x = gen_rtx_MEM (DECL_MODE (obj), x);
+      set_mem_addr_space (x, as);
       targetm.encode_section_info (obj, x, true);
     }
   else
     {
       x = gen_raw_REG (Pmode, (*regno)++);
       x = gen_rtx_MEM (DECL_MODE (obj), x);
+      set_mem_addr_space (x, as);
     }
 
   return x;
@@ -2744,7 +2747,8 @@ computation_cost (tree expr, bool speed)
 
   cost = seq_cost (seq, speed);
   if (MEM_P (rslt))
-    cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type), speed);
+    cost += address_cost (XEXP (rslt, 0), TYPE_MODE (type),
+			  TYPE_ADDR_SPACE (type), speed);
 
   return cost;
 }
@@ -3020,51 +3024,64 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode, bool speed)
 }
 
 /* Returns true if multiplying by RATIO is allowed in an address.  Test the
-   validity for a memory reference accessing memory of mode MODE.  */
+   validity for a memory reference accessing memory of mode MODE in
+   address space AS.  */
+
+DEF_VEC_P (sbitmap);
+DEF_VEC_ALLOC_P (sbitmap, heap);
 
 bool
-multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
+multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
+				 addr_space_t as)
 {
 #define MAX_RATIO 128
-  static sbitmap valid_mult[MAX_MACHINE_MODE];
-  
-  if (!valid_mult[mode])
+  unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mode;
+  static VEC (sbitmap, heap) *valid_mult_list;
+  sbitmap valid_mult;
+
+  if (data_index >= VEC_length (sbitmap, valid_mult_list))
+    VEC_safe_grow_cleared (sbitmap, heap, valid_mult_list, data_index + 1);
+
+  valid_mult = VEC_index (sbitmap, valid_mult_list, data_index);
+  if (!valid_mult)
     {
       rtx reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
       rtx addr;
       HOST_WIDE_INT i;
 
-      valid_mult[mode] = sbitmap_alloc (2 * MAX_RATIO + 1);
-      sbitmap_zero (valid_mult[mode]);
+      valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
+      sbitmap_zero (valid_mult);
       addr = gen_rtx_fmt_ee (MULT, Pmode, reg1, NULL_RTX);
       for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
 	{
 	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
-	  if (memory_address_p (mode, addr))
-	    SET_BIT (valid_mult[mode], i + MAX_RATIO);
+	  if (memory_address_addr_space_p (mode, addr, as))
+	    SET_BIT (valid_mult, i + MAX_RATIO);
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "  allowed multipliers:");
 	  for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
-	    if (TEST_BIT (valid_mult[mode], i + MAX_RATIO))
+	    if (TEST_BIT (valid_mult, i + MAX_RATIO))
 	      fprintf (dump_file, " %d", (int) i);
 	  fprintf (dump_file, "\n");
 	  fprintf (dump_file, "\n");
 	}
+
+      VEC_replace (sbitmap, valid_mult_list, data_index, valid_mult);
     }
 
   if (ratio > MAX_RATIO || ratio < -MAX_RATIO)
     return false;
 
-  return TEST_BIT (valid_mult[mode], ratio + MAX_RATIO);
+  return TEST_BIT (valid_mult, ratio + MAX_RATIO);
 }
 
 /* Returns cost of address in shape symbol + var + OFFSET + RATIO * index.
    If SYMBOL_PRESENT is false, symbol is omitted.  If VAR_PRESENT is false,
    variable is omitted.  Compute the cost for a memory reference that accesses
-   a memory location of mode MEM_MODE.
+   a memory location of mode MEM_MODE in address space AS.
 
    MAY_AUTOINC is set to true if the autoincrement (increasing index by
    size of MEM_MODE / RATIO) is available.  To make this determination, we
@@ -3075,16 +3092,25 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
 
    TODO -- there must be some better way.  This all is quite crude.  */
 
+typedef struct
+{
+  HOST_WIDE_INT min_offset, max_offset;
+  unsigned costs[2][2][2][2];
+} *address_cost_data;
+
+DEF_VEC_P (address_cost_data);
+DEF_VEC_ALLOC_P (address_cost_data, heap);
+
 static comp_cost
 get_address_cost (bool symbol_present, bool var_present,
 		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio,
-		  HOST_WIDE_INT cstep, enum machine_mode mem_mode, bool speed,
+		  HOST_WIDE_INT cstep, enum machine_mode mem_mode,
+		  addr_space_t as, bool speed,
 		  bool stmt_after_inc, bool *may_autoinc)
 {
-  static bool initialized[MAX_MACHINE_MODE];
-  static HOST_WIDE_INT rat[MAX_MACHINE_MODE], off[MAX_MACHINE_MODE];
-  static HOST_WIDE_INT min_offset[MAX_MACHINE_MODE], max_offset[MAX_MACHINE_MODE];
-  static unsigned costs[MAX_MACHINE_MODE][2][2][2][2];
+  static VEC(address_cost_data, heap) *address_cost_data_list;
+  unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mem_mode;
+  address_cost_data data;
   static bool has_preinc[MAX_MACHINE_MODE], has_postinc[MAX_MACHINE_MODE];
   static bool has_predec[MAX_MACHINE_MODE], has_postdec[MAX_MACHINE_MODE];
   unsigned cost, acost, complexity;
@@ -3093,16 +3119,22 @@ get_address_cost (bool symbol_present, bool var_present,
   unsigned HOST_WIDE_INT mask;
   unsigned bits;
 
-  if (!initialized[mem_mode])
+  if (data_index >= VEC_length (address_cost_data, address_cost_data_list))
+    VEC_safe_grow_cleared (address_cost_data, heap, address_cost_data_list,
+			   data_index + 1);
+
+  data = VEC_index (address_cost_data, address_cost_data_list, data_index);
+  if (!data)
     {
       HOST_WIDE_INT i;
       HOST_WIDE_INT start = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+      HOST_WIDE_INT rat, off;
       int old_cse_not_expected;
       unsigned sym_p, var_p, off_p, rat_p, add_c;
       rtx seq, addr, base;
       rtx reg0, reg1;
 
-      initialized[mem_mode] = true;
+      data = (address_cost_data) xcalloc (1, sizeof (*data));
 
       reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
 
@@ -3110,36 +3142,36 @@ get_address_cost (bool symbol_present, bool var_present,
       for (i = start; i <= 1 << 20; i <<= 1)
 	{
 	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
-	  if (!memory_address_p (mem_mode, addr))
+	  if (!memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
 	}
-      max_offset[mem_mode] = i == start ? 0 : i >> 1;
-      off[mem_mode] = max_offset[mem_mode];
+      data->max_offset = i == start ? 0 : i >> 1;
+      off = data->max_offset;
 
       for (i = start; i <= 1 << 20; i <<= 1)
 	{
 	  XEXP (addr, 1) = gen_int_mode (-i, Pmode);
-	  if (!memory_address_p (mem_mode, addr))
+	  if (!memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
 	}
-      min_offset[mem_mode] = i == start ? 0 : -(i >> 1);
+      data->min_offset = i == start ? 0 : -(i >> 1);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "get_address_cost:\n");
 	  fprintf (dump_file, "  min offset %s %d\n",
 		   GET_MODE_NAME (mem_mode),
-		   (int) min_offset[mem_mode]);
+		   (int) data->min_offset);
 	  fprintf (dump_file, "  max offset %s %d\n",
 		   GET_MODE_NAME (mem_mode),
-		   (int) max_offset[mem_mode]);
+		   (int) data->max_offset);
 	}
 
-      rat[mem_mode] = 1;
+      rat = 1;
       for (i = 2; i <= MAX_RATIO; i++)
-	if (multiplier_allowed_in_address_p (i, mem_mode))
+	if (multiplier_allowed_in_address_p (i, mem_mode, as))
 	  {
-	    rat[mem_mode] = i;
+	    rat = i;
 	    break;
 	  }
 
@@ -3151,22 +3183,26 @@ get_address_cost (bool symbol_present, bool var_present,
       if (HAVE_PRE_DECREMENT)
 	{
 	  addr = gen_rtx_PRE_DEC (Pmode, reg0);
-	  has_predec[mem_mode] = memory_address_p (mem_mode, addr);
+	  has_predec[mem_mode]
+	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       if (HAVE_POST_DECREMENT)
 	{
 	  addr = gen_rtx_POST_DEC (Pmode, reg0);
-	  has_postdec[mem_mode] = memory_address_p (mem_mode, addr);
+	  has_postdec[mem_mode]
+	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       if (HAVE_PRE_INCREMENT)
 	{
 	  addr = gen_rtx_PRE_INC (Pmode, reg0);
-	  has_preinc[mem_mode] = memory_address_p (mem_mode, addr);
+	  has_preinc[mem_mode]
+	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       if (HAVE_POST_INCREMENT)
 	{
 	  addr = gen_rtx_POST_INC (Pmode, reg0);
-	  has_postinc[mem_mode] = memory_address_p (mem_mode, addr);
+	  has_postinc[mem_mode]
+	    = memory_address_addr_space_p (mem_mode, addr, as);
 	}
       for (i = 0; i < 16; i++)
 	{
@@ -3178,7 +3214,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	  addr = reg0;
 	  if (rat_p)
 	    addr = gen_rtx_fmt_ee (MULT, Pmode, addr,
-				   gen_int_mode (rat[mem_mode], Pmode));
+				   gen_int_mode (rat, Pmode));
 
 	  if (var_p)
 	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
@@ -3194,13 +3230,12 @@ get_address_cost (bool symbol_present, bool var_present,
 
 	      if (off_p)
 		base = gen_rtx_fmt_e (CONST, Pmode,
-				      gen_rtx_fmt_ee (PLUS, Pmode,
-						      base,
-						      gen_int_mode (off[mem_mode],
-								    Pmode)));
+				      gen_rtx_fmt_ee
+					(PLUS, Pmode, base,
+					 gen_int_mode (off, Pmode)));
 	    }
 	  else if (off_p)
-	    base = gen_int_mode (off[mem_mode], Pmode);
+	    base = gen_int_mode (off, Pmode);
 	  else
 	    base = NULL_RTX;
     
@@ -3212,17 +3247,17 @@ get_address_cost (bool symbol_present, bool var_present,
 	     follow.  */
 	  old_cse_not_expected = cse_not_expected;
 	  cse_not_expected = true;
-	  addr = memory_address (mem_mode, addr);
+	  addr = memory_address_addr_space (mem_mode, addr, as);
 	  cse_not_expected = old_cse_not_expected;
 	  seq = get_insns ();
 	  end_sequence ();
 
 	  acost = seq_cost (seq, speed);
-	  acost += address_cost (addr, mem_mode, speed);
+	  acost += address_cost (addr, mem_mode, as, speed);
 
 	  if (!acost)
 	    acost = 1;
-	  costs[mem_mode][sym_p][var_p][off_p][rat_p] = acost;
+	  data->costs[sym_p][var_p][off_p][rat_p] = acost;
 	}
 
       /* On some targets, it is quite expensive to load symbol to a register,
@@ -3244,12 +3279,12 @@ get_address_cost (bool symbol_present, bool var_present,
 	  off_p = (i >> 1) & 1;
 	  rat_p = (i >> 2) & 1;
 
-	  acost = costs[mem_mode][0][1][off_p][rat_p] + 1;
+	  acost = data->costs[0][1][off_p][rat_p] + 1;
 	  if (var_p)
 	    acost += add_c;
 
-	  if (acost < costs[mem_mode][1][var_p][off_p][rat_p])
-	    costs[mem_mode][1][var_p][off_p][rat_p] = acost;
+	  if (acost < data->costs[1][var_p][off_p][rat_p])
+	    data->costs[1][var_p][off_p][rat_p] = acost;
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3273,7 +3308,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	      if (rat_p)
 		fprintf (dump_file, "rat * ");
 
-	      acost = costs[mem_mode][sym_p][var_p][off_p][rat_p];
+	      acost = data->costs[sym_p][var_p][off_p][rat_p];
 	      fprintf (dump_file, "index costs %d\n", acost);
 	    }
 	  if (has_predec[mem_mode] || has_postdec[mem_mode]
@@ -3281,6 +3316,9 @@ get_address_cost (bool symbol_present, bool var_present,
 	    fprintf (dump_file, "  May include autoinc/dec\n");
 	  fprintf (dump_file, "\n");
 	}
+
+      VEC_replace (address_cost_data, address_cost_data_list,
+		   data_index, data);
     }
 
   bits = GET_MODE_BITSIZE (Pmode);
@@ -3309,10 +3347,10 @@ get_address_cost (bool symbol_present, bool var_present,
 
   cost = 0;
   offset_p = (s_offset != 0
-	      && min_offset[mem_mode] <= s_offset
-	      && s_offset <= max_offset[mem_mode]);
+	      && data->min_offset <= s_offset
+	      && s_offset <= data->max_offset);
   ratio_p = (ratio != 1
-	     && multiplier_allowed_in_address_p (ratio, mem_mode));
+	     && multiplier_allowed_in_address_p (ratio, mem_mode, as));
 
   if (ratio != 1 && !ratio_p)
     cost += multiply_by_cost (ratio, Pmode, speed);
@@ -3322,7 +3360,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
   if (may_autoinc)
     *may_autoinc = autoinc;
-  acost = costs[mem_mode][symbol_present][var_present][offset_p][ratio_p];
+  acost = data->costs[symbol_present][var_present][offset_p][ratio_p];
   complexity = (symbol_present != 0) + (var_present != 0) + offset_p + ratio_p;
   return new_cost (cost + acost, complexity);
 }
@@ -3742,8 +3780,9 @@ get_computation_cost_at (struct ivopts_data *data,
     }
   else if (address_p
 	   && !POINTER_TYPE_P (ctype)
-	   && multiplier_allowed_in_address_p (ratio,
-					       TYPE_MODE (TREE_TYPE (utype))))
+	   && multiplier_allowed_in_address_p
+		(ratio, TYPE_MODE (TREE_TYPE (utype)),
+			TYPE_ADDR_SPACE (TREE_TYPE (utype))))
     {
       cbase
 	= fold_build2 (MULT_EXPR, ctype, cbase, build_int_cst (ctype, ratio));
@@ -3777,6 +3816,7 @@ get_computation_cost_at (struct ivopts_data *data,
 		      get_address_cost (symbol_present, var_present,
 					offset, ratio, cstepi,
 					TYPE_MODE (TREE_TYPE (utype)),
+					TYPE_ADDR_SPACE (TREE_TYPE (utype)),
 					speed, stmt_is_after_inc,
 					can_autoinc));
 

@@ -119,4 +119,10 @@ extern bool default_hard_regno_scratch_ok (unsigned int);
 extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);
+extern bool default_addr_space_legitimate_address_p (enum machine_mode, rtx,
+						     bool, addr_space_t);
+extern rtx default_addr_space_legitimize_address (rtx, rtx, enum machine_mode,
+						  addr_space_t);
+extern bool default_addr_space_subset_p (addr_space_t, addr_space_t);
+extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);

@@ -831,6 +831,51 @@ default_builtin_support_vector_misalignment (enum machine_mode mode,
   return false;
 }
 
+/* Named address space version of legitimate_address_p.  */
+
+bool
+default_addr_space_legitimate_address_p (enum machine_mode mode, rtx mem,
+					 bool strict, addr_space_t as)
+{
+  if (!ADDR_SPACE_GENERIC_P (as))
+    gcc_unreachable ();
+
+  return targetm.legitimate_address_p (mode, mem, strict);
+}
+
+/* Named address space version of LEGITIMIZE_ADDRESS.  */
+
+rtx
+default_addr_space_legitimize_address (rtx x, rtx oldx,
+				       enum machine_mode mode, addr_space_t as)
+{
+  if (!ADDR_SPACE_GENERIC_P (as))
+    return x;
+
+  return targetm.legitimize_address (x, oldx, mode);
+}
+
+/* The default hook for determining if one named address space is a subset of
+   another and to return which address space to use as the common address
+   space.  */
+
+bool
+default_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
+{
+  return (subset == superset);
+}
+
+/* The default hook for TARGET_ADDR_SPACE_CONVERT. This hook should never be
+   called for targets with only a generic address space.  */
+
+rtx
+default_addr_space_convert (rtx op ATTRIBUTE_UNUSED,
+			    tree from_type ATTRIBUTE_UNUSED,
+			    tree to_type ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 bool
 default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 {

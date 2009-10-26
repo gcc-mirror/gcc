@@ -2235,6 +2235,7 @@ expand_debug_expr (tree exp)
   rtx op0 = NULL_RTX, op1 = NULL_RTX, op2 = NULL_RTX;
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
+  addr_space_t as;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -2428,6 +2429,11 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL;
 
+      if (POINTER_TYPE_P (TREE_TYPE (exp)))
+	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
+      else
+	as = ADDR_SPACE_GENERIC;
+
       gcc_assert (GET_MODE (op0) == Pmode
 		  || GET_MODE (op0) == ptr_mode
 		  || GET_CODE (op0) == CONST_INT
@@ -2442,6 +2448,7 @@ expand_debug_expr (tree exp)
       op0 = gen_rtx_MEM (mode, op0);
 
       set_mem_attributes (op0, exp, 0);
+      set_mem_addr_space (op0, as);
 
       return op0;
 
@@ -2455,6 +2462,8 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL;
 
+      as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+
       gcc_assert (GET_MODE (op0) == Pmode
 		  || GET_MODE (op0) == ptr_mode
 		  || GET_CODE (op0) == CONST_INT
@@ -2463,6 +2472,7 @@ expand_debug_expr (tree exp)
       op0 = gen_rtx_MEM (mode, op0);
 
       set_mem_attributes (op0, exp, 0);
+      set_mem_addr_space (op0, as);
 
       return op0;
 

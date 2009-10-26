@@ -1215,7 +1215,9 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
   else if (emit_block_move_via_movmem (x, y, size, align,
 				       expected_align, expected_size))
     ;
-  else if (may_use_call)
+  else if (may_use_call
+	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
+	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
     retval = emit_block_move_via_libcall (x, y, size,
 					  method == BLOCK_OP_TAILCALL);
   else
@@ -2641,9 +2643,11 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
   else if (set_storage_via_setmem (object, size, const0_rtx, align,
 				   expected_align, expected_size))
     ;
-  else
+  else if (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (object)))
     return set_storage_via_libcall (object, size, const0_rtx,
 				    method == BLOCK_OP_TAILCALL);
+  else
+    gcc_unreachable ();
 
   return NULL;
 }
@@ -3432,12 +3436,14 @@ emit_move_insn (rtx x, rtx y)
   /* If X or Y are memory references, verify that their addresses are valid
      for the machine.  */
   if (MEM_P (x)
-      && (! memory_address_p (GET_MODE (x), XEXP (x, 0))
+      && (! memory_address_addr_space_p (GET_MODE (x), XEXP (x, 0),
+					 MEM_ADDR_SPACE (x))
 	  && ! push_operand (x, GET_MODE (x))))
     x = validize_mem (x);
 
   if (MEM_P (y)
-      && ! memory_address_p (GET_MODE (y), XEXP (y, 0)))
+      && ! memory_address_addr_space_p (GET_MODE (y), XEXP (y, 0),
+					MEM_ADDR_SPACE (y)))
     y = validize_mem (y);
 
   gcc_assert (mode != BLKmode);
@@ -4298,9 +4304,13 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
    else if (TREE_CODE (to) == MISALIGNED_INDIRECT_REF)
      {
+       addr_space_t as = ADDR_SPACE_GENERIC;
        enum machine_mode mode, op_mode1;
        enum insn_code icode;
        rtx reg, addr, mem, insn;
+
+       if (POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (to, 0))))
+	 as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (to, 0))));
 
        reg = expand_expr (from, NULL_RTX, VOIDmode, EXPAND_NORMAL);
        reg = force_not_mem (reg);
@@ -4308,10 +4318,11 @@ expand_assignment (tree to, tree from, bool nontemporal)
        mode = TYPE_MODE (TREE_TYPE (to));
        addr = expand_expr (TREE_OPERAND (to, 0), NULL_RTX, VOIDmode,
                          EXPAND_SUM);
-       addr = memory_address (mode, addr);
+       addr = memory_address_addr_space (mode, addr, as);
        mem = gen_rtx_MEM (mode, addr);
 
        set_mem_attributes (mem, to, 0);
+       set_mem_addr_space (mem, as);
 
        icode = movmisalign_optab->handlers[mode].insn_code;
        gcc_assert (icode != CODE_FOR_nothing);
@@ -4400,6 +4411,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
      the place the value is being stored, use a safe function when copying
      a value through a pointer into a structure value return block.  */
   if (TREE_CODE (to) == RESULT_DECL && TREE_CODE (from) == INDIRECT_REF
+      && ADDR_SPACE_GENERIC_P
+	  (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (from, 0)))))
       && cfun->returns_struct
       && !cfun->returns_pcc_struct)
     {
@@ -7343,6 +7356,39 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
       return REDUCE_BIT_FIELD (op0);
 
+    case ADDR_SPACE_CONVERT_EXPR:
+      {
+	tree treeop0_type = TREE_TYPE (treeop0);
+	addr_space_t as_to;
+	addr_space_t as_from;
+
+	gcc_assert (POINTER_TYPE_P (type));
+	gcc_assert (POINTER_TYPE_P (treeop0_type));
+
+	as_to = TYPE_ADDR_SPACE (TREE_TYPE (type));
+	as_from = TYPE_ADDR_SPACE (TREE_TYPE (treeop0_type));
+
+        /* Conversions between pointers to the same address space should
+	   have been implemented via CONVERT_EXPR / NOP_EXPR.  */
+	gcc_assert (as_to != as_from);
+
+        /* Ask target code to handle conversion between pointers
+	   to overlapping address spaces.  */
+	if (targetm.addr_space.subset_p (as_to, as_from)
+	    || targetm.addr_space.subset_p (as_from, as_to))
+	  {
+	    op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
+	    op0 = targetm.addr_space.convert (op0, treeop0_type, type);
+	    gcc_assert (op0);
+	    return op0;
+	  }
+
+	/* For disjoint address spaces, converting anything but
+	   a null pointer invokes undefined behaviour.  We simply
+	   always return a null pointer here.  */
+	return CONST0_RTX (mode);
+      }
+
     case POINTER_PLUS_EXPR: 
       /* Even though the sizetype mode and the pointer's mode can be different
          expand is able to handle this correctly and get the correct result out 
@@ -8431,7 +8477,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  decl_rtl = use_anchored_address (decl_rtl);
 	  if (modifier != EXPAND_CONST_ADDRESS
 	      && modifier != EXPAND_SUM
-	      && !memory_address_p (DECL_MODE (exp), XEXP (decl_rtl, 0)))
+	      && !memory_address_addr_space_p (DECL_MODE (exp),
+					       XEXP (decl_rtl, 0),
+					       MEM_ADDR_SPACE (decl_rtl)))
 	    temp = replace_equiv_address (decl_rtl,
 					  copy_rtx (XEXP (decl_rtl, 0)));
 	}
@@ -8551,7 +8599,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (modifier != EXPAND_CONST_ADDRESS
 	  && modifier != EXPAND_INITIALIZER
 	  && modifier != EXPAND_SUM
-	  && ! memory_address_p (mode, XEXP (temp, 0)))
+	  && ! memory_address_addr_space_p (mode, XEXP (temp, 0),
+					    MEM_ADDR_SPACE (temp)))
 	return replace_equiv_address (temp,
 				      copy_rtx (XEXP (temp, 0)));
       return temp;
@@ -8607,6 +8656,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case INDIRECT_REF:
       {
 	tree exp1 = treeop0;
+	addr_space_t as = ADDR_SPACE_GENERIC;
 
 	if (modifier != EXPAND_WRITE)
 	  {
@@ -8617,19 +8667,23 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      return expand_expr (t, target, tmode, modifier);
 	  }
 
+	if (POINTER_TYPE_P (TREE_TYPE (exp1)))
+	  as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp1)));
+
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
-	op0 = memory_address (mode, op0);
+	op0 = memory_address_addr_space (mode, op0, as);
 
 	if (code == ALIGN_INDIRECT_REF)
 	  {
 	    int align = TYPE_ALIGN_UNIT (type);
 	    op0 = gen_rtx_AND (Pmode, op0, GEN_INT (-align));
-	    op0 = memory_address (mode, op0);
+	    op0 = memory_address_addr_space (mode, op0, as);
 	  }
 
 	temp = gen_rtx_MEM (mode, op0);
 
 	set_mem_attributes (temp, exp, 0);
+	set_mem_addr_space (temp, as);
 
 	/* Resolve the misalignment now, so that we don't have to remember
 	   to resolve it later.  Of course, this only works for reads.  */
@@ -8661,13 +8715,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case TARGET_MEM_REF:
       {
+	addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
 	struct mem_address addr;
 
 	get_address_description (exp, &addr);
 	op0 = addr_for_mem_ref (&addr, true);
-	op0 = memory_address (mode, op0);
+	op0 = memory_address_addr_space (mode, op0, as);
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, TMR_ORIGINAL (exp), 0);
+	set_mem_addr_space (temp, as);
       }
       return temp;
 

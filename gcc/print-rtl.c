@@ -562,6 +562,9 @@ print_rtx (const_rtx in_rtx)
       if (MEM_ALIGN (in_rtx) != 1)
 	fprintf (outfile, " A%u", MEM_ALIGN (in_rtx));
 
+      if (!ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (in_rtx)))
+	fprintf (outfile, " AS%u", MEM_ADDR_SPACE (in_rtx));
+
       fputc (']', outfile);
       break;
 

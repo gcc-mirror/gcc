@@ -254,6 +254,7 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       break;
 
     case FIXED_CONVERT_EXPR:
+    case ADDR_SPACE_CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
     CASE_CONVERT:
