@@ -1,3 +1,7 @@
+2009-10-26  Johannes Singler <singler@kit.edu>
+
+        * MAINTAINERS (Write After Approval): Update my e-mail address.
+
 2009-10-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (CLooG test): Use = with test.
