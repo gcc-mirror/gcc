@@ -2449,7 +2449,7 @@ sparc64-*-netbsd*)
 spu-*-elf*)
 	tm_file="dbxelf.h elfos.h spu/spu-elf.h spu/spu.h newlib-stdint.h"
 	tmake_file="spu/t-spu-elf"
-	extra_headers="spu_intrinsics.h spu_internals.h vmx2spu.h spu_mfcio.h vec_types.h"
+	extra_headers="spu_intrinsics.h spu_internals.h vmx2spu.h spu_mfcio.h vec_types.h spu_cache.h"
 	extra_modes=spu/spu-modes.def
 	c_target_objs="${c_target_objs} spu-c.o"
 	cxx_target_objs="${cxx_target_objs} spu-c.o"

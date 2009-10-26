@@ -51,7 +51,7 @@ extern GTY(()) int spu_tune;
 /* Default target_flags if no switches specified.  */
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ERROR_RELOC | MASK_SAFE_DMA | MASK_BRANCH_HINTS \
-			| MASK_SAFE_HINTS)
+			| MASK_SAFE_HINTS | MASK_ADDRESS_SPACE_CONVERSION)
 #endif
 
 
@@ -469,6 +469,17 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
   asm_fprintf (FILE, "%U%s", default_strip_name_encoding (NAME))
 
+#define ASM_OUTPUT_SYMBOL_REF(FILE, X) \
+  do							\
+    {							\
+      tree decl;					\
+      assemble_name (FILE, XSTR ((X), 0));		\
+      if ((decl = SYMBOL_REF_DECL ((X))) != 0		\
+	  && TREE_CODE (decl) == VAR_DECL		\
+	  && TYPE_ADDR_SPACE (TREE_TYPE (decl)))	\
+	fputs ("@ppu", FILE);				\
+    } while (0)
+
 
 /* Instruction Output */
 #define REGISTER_NAMES \
@@ -588,6 +599,13 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
         (CODE) = swap_condition (CODE);                                   \
       }                                                                   \
   } while (0)
+
+
+/* Address spaces.  */
+#define ADDR_SPACE_EA	1
+
+/* Named address space keywords.  */
+#define TARGET_ADDR_SPACE_KEYWORDS ADDR_SPACE_KEYWORD ("__ea", ADDR_SPACE_EA)
 
 
 /* Builtins.  */

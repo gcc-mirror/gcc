@@ -68,8 +68,14 @@
 
 #define LINK_SPEC "%{mlarge-mem: --defsym __stack=0xfffffff0 }"
 
-#define LIB_SPEC \
-	"-( %{!shared:%{g*:-lg}} -lc -lgloss -)"
+#define LIB_SPEC "-( %{!shared:%{g*:-lg}} -lc -lgloss -) \
+    %{mno-atomic-updates:-lgcc_cachemgr_nonatomic; :-lgcc_cachemgr} \
+    %{mcache-size=128:-lgcc_cache128k; \
+      mcache-size=64 :-lgcc_cache64k; \
+      mcache-size=32 :-lgcc_cache32k; \
+      mcache-size=16 :-lgcc_cache16k; \
+      mcache-size=8  :-lgcc_cache8k; \
+                     :-lgcc_cache64k}"
 
 /* Turn off warnings in the assembler too. */
 #undef ASM_SPEC

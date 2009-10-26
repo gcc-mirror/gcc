@@ -201,6 +201,17 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (spu_arch == PROCESSOR_CELLEDP)
     builtin_define_std ("__SPU_EDP__");
   builtin_define_std ("__vector=__attribute__((__spu_vector__))");
+  switch (spu_ea_model)
+    {
+    case 32:
+      builtin_define_std ("__EA32__");
+      break;
+    case 64:
+      builtin_define_std ("__EA64__");
+      break;
+    default:
+       gcc_unreachable ();
+    }
 
   if (!flag_iso)
     {

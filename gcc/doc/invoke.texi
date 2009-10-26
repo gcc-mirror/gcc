@@ -846,7 +846,11 @@ See RS/6000 and PowerPC Options.
 -msafe-dma -munsafe-dma @gol
 -mbranch-hints @gol
 -msmall-mem -mlarge-mem -mstdmain @gol
--mfixed-range=@var{register-range}}
+-mfixed-range=@var{register-range} @gol
+-mea32 -mea64 @gol
+-maddress-space-conversion -mno-address-space-conversion @gol
+-mcache-size=@var{cache-size} @gol
+-matomic-updates -mno-atomic-updates}
 
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
@@ -16357,6 +16361,46 @@ A fixed register is one that the register allocator can not use.  This is
 useful when compiling kernel code.  A register range is specified as
 two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
+
+@item -mea32
+@itemx -mea64
+@opindex mea32
+@opindex mea64
+Compile code assuming that pointers to the PPU address space accessed
+via the @code{__ea} named address space qualifier are either 32 or 64
+bits wide.  The default is 32 bits.  As this is an ABI changing option,
+all object code in an executable must be compiled with the same setting.
+
+@item -maddress-space-conversion
+@itemx -mno-address-space-conversion
+@opindex maddress-space-conversion
+@opindex mno-address-space-conversion
+Allow/disallow treating the @code{__ea} address space as superset
+of the generic address space.  This enables explicit type casts
+between @code{__ea} and generic pointer as well as implicit
+conversions of generic pointers to @code{__ea} pointers.  The
+default is to allow address space pointer conversions.
+
+@item -mcache-size=@var{cache-size}
+@opindex mcache-size
+This option controls the version of libgcc that the compiler links to an
+executable and selects a software-managed cache for accessing variables
+in the @code{__ea} address space with a particular cache size.  Possible
+options for @var{cache-size} are @samp{8}, @samp{16}, @samp{32}, @samp{64}
+and @samp{128}.  The default cache size is 64KB.
+
+@item -matomic-updates
+@itemx -mno-atomic-updates
+@opindex matomic-updates
+@opindex mno-atomic-updates
+This option controls the version of libgcc that the compiler links to an
+executable and selects whether atomic updates to the software-managed
+cache of PPU-side variables are used.  If you use atomic updates, changes
+to a PPU variable from SPU code using the @code{__ea} named address space
+qualifier will not interfere with changes to other PPU variables residing
+in the same cache line from PPU code.  If you do not use atomic updates,
+such interference may occur; however, writing back cache lines will be
+more efficient.  The default behavior is to use atomic updates.
 
 @item -mdual-nops
 @itemx -mdual-nops=@var{n}
