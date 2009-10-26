@@ -1,3 +1,8 @@
+2009-10-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41714
+	* gfortran.dg/class_allocate_4.f03: New test.
+
 2009-10-24  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/mult-1.c: New test.

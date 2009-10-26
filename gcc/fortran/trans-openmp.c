@@ -1641,11 +1641,6 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 
       if (res != NULL_TREE && ! IS_EMPTY_STMT (res))
 	{
-	  if (TREE_CODE (res) == STATEMENT_LIST)
-	    tree_annotate_all_with_location (&res, input_location);
-	  else
-	    SET_EXPR_LOCATION (res, input_location);
-
 	  if (prev_singleunit)
 	    {
 	      if (ompws_flags & OMPWS_CURR_SINGLEUNIT)
