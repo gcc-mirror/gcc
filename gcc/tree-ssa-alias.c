@@ -1313,8 +1313,6 @@ stmt_may_clobber_ref_p (gimple stmt, tree ref)
 }
 
 
-static tree get_continuation_for_phi (gimple, ao_ref *, bitmap *);
-
 /* Walk the virtual use-def chain of VUSE until hitting the virtual operand
    TARGET or a statement clobbering the memory reference REF in which
    case false is returned.  The walk starts with VUSE, one argument of PHI.  */
@@ -1358,7 +1356,7 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
    clobber REF.  Returns NULL_TREE if no suitable virtual operand can
    be found.  */
 
-static tree
+tree
 get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
 {
   unsigned nargs = gimple_phi_num_args (phi);
@@ -1375,6 +1373,7 @@ get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
       tree arg1 = PHI_ARG_DEF (phi, 1);
       gimple def0 = SSA_NAME_DEF_STMT (arg0);
       gimple def1 = SSA_NAME_DEF_STMT (arg1);
+      tree common_vuse;
 
       if (arg0 == arg1)
 	return arg0;
@@ -1392,6 +1391,26 @@ get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
 	{
 	  if (maybe_skip_until (phi, arg1, ref, arg0, visited))
 	    return arg1;
+	}
+      /* Special case of a diamond:
+	   MEM_1 = ...
+	   goto (cond) ? L1 : L2
+	   L1: store1 = ...    #MEM_2 = vuse(MEM_1)
+	       goto L3
+	   L2: store2 = ...    #MEM_3 = vuse(MEM_1)
+	   L3: MEM_4 = PHI<MEM_2, MEM_3>
+	 We were called with the PHI at L3, MEM_2 and MEM_3 don't
+	 dominate each other, but still we can easily skip this PHI node
+	 if we recognize that the vuse MEM operand is the same for both,
+	 and that we can skip both statements (they don't clobber us).
+	 This is still linear.  Don't use maybe_skip_until, that might
+	 potentially be slow.  */
+      else if ((common_vuse = gimple_vuse (def0))
+	       && common_vuse == gimple_vuse (def1))
+	{
+	  if (!stmt_may_clobber_ref_p_1 (def0, ref)
+	      && !stmt_may_clobber_ref_p_1 (def1, ref))
+	    return common_vuse;
 	}
     }
 

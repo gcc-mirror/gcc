@@ -9,5 +9,5 @@ void foo(int n)
     global.y += global.x*global.x;
 }
 
-/* { dg-final { scan-tree-dump "Eliminated: 2" "pre" } } */
+/* { dg-final { scan-tree-dump "Eliminated: 3" "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

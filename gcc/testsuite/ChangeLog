@@ -1,3 +1,11 @@
+2009-10-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41783
+	* gcc.dg/pr41783.c: New test.
+	* gcc.dg/tree-ssa/ssa-pre-23.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-pre-24.c: Don't xfail anymore.
+	* gcc.dg/tree-ssa/ssa-pre-27.c: New test.
+
 2009-10-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41714
