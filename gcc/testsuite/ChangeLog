@@ -1,5 +1,8 @@
 2009-10-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/41345
+	* gcc.dg/pr41345.c: New test.
+
 	PR debug/41828
 	* g++.dg/debug/dwarf2/anonname1.C: New test.
 
