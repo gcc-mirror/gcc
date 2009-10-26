@@ -1,3 +1,19 @@
+2009-10-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38796, Core issue 906
+	* cp-tree.h (DECL_DEFAULTED_OUTSIDE_CLASS_P): New.
+	(DECL_DEFAULTED_IN_CLASS_P): New.
+	* class.c (user_provided_p): Non-static.
+	(check_methods): Use it.
+	(check_bases_and_members): Check defaulted fns.
+	(defaultable_fn_p): Move and rename to...
+	* method.c (defaultable_fn_check): ...this.
+	(defaulted_late_check): New.
+	* pt.c (tsubst_decl): Call it.
+	* decl2.c (grokfield): Adjust.
+	* decl.c (cp_finish_decl): Adjust.
+	(grok_special_member_properties): Use user_provided_p.
+
 2009-10-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41785

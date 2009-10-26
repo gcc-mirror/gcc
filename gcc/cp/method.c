@@ -1130,6 +1130,88 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   return fn;
 }
 
+/* Gives any errors about defaulted functions which need to be deferred
+   until the containing class is complete.  */
+
+void
+defaulted_late_check (tree fn)
+{
+  /* Complain about invalid signature for defaulted fn.  */
+  tree ctx = DECL_CONTEXT (fn);
+  special_function_kind kind = special_function_p (fn);
+  bool fn_const_p = (copy_fn_p (fn) == 2);
+  tree implicit_fn = implicitly_declare_fn (kind, ctx, fn_const_p);
+
+  if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
+		    TREE_TYPE (TREE_TYPE (implicit_fn)))
+      || !compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
+		     TYPE_ARG_TYPES (TREE_TYPE (implicit_fn))))
+    {
+      error ("defaulted declaration %q+D", fn);
+      error_at (DECL_SOURCE_LOCATION (fn),
+		"does not match expected signature %qD", implicit_fn);
+    }
+}
+
+/* Returns true iff FN can be explicitly defaulted, and gives any
+   errors if defaulting FN is ill-formed.  */
+
+bool
+defaultable_fn_check (tree fn)
+{
+  special_function_kind kind = sfk_none;
+
+  if (DECL_CONSTRUCTOR_P (fn))
+    {
+      if (FUNCTION_FIRST_USER_PARMTYPE (fn) == void_list_node)
+	kind = sfk_constructor;
+      else if (copy_fn_p (fn) > 0
+	       && (TREE_CHAIN (FUNCTION_FIRST_USER_PARMTYPE (fn))
+		   == void_list_node))
+	kind = sfk_copy_constructor;
+      else if (move_fn_p (fn))
+	kind = sfk_move_constructor;
+    }
+  else if (DECL_DESTRUCTOR_P (fn))
+    kind = sfk_destructor;
+  else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
+	   && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
+	   && copy_fn_p (fn))
+    kind = sfk_assignment_operator;
+
+  if (kind == sfk_none)
+    {
+      error ("%qD cannot be defaulted", fn);
+      return false;
+    }
+  else
+    {
+      tree t = FUNCTION_FIRST_USER_PARMTYPE (fn);
+      for (; t && t != void_list_node; t = TREE_CHAIN (t))
+	if (TREE_PURPOSE (t))
+	  {
+	    error ("defaulted function %q+D with default argument", fn);
+	    break;
+	  }
+      if (TYPE_BEING_DEFINED (DECL_CONTEXT (fn)))
+	{
+	  if (DECL_NONCONVERTING_P (fn))
+	    error ("%qD declared explicit cannot be defaulted in the class "
+		   "body", fn);
+	  if (current_access_specifier != access_public_node)
+	    error ("%qD declared with non-public access cannot be defaulted "
+		   "in the class body", fn);
+	  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
+	    error ("function %q+D defaulted on its first declaration "
+		   "must not have an exception-specification", fn);
+	}
+      else if (!processing_template_decl)
+	defaulted_late_check (fn);
+
+      return true;
+    }
+}
+
 /* Add an implicit declaration to TYPE for the kind of function
    indicated by SFK.  Return the FUNCTION_DECL for the new implicit
    declaration.  */
