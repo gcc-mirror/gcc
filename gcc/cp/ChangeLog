@@ -1,3 +1,9 @@
+2009-10-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41020
+	* decl.c (decls_match): Use DECL_IS_BUILTIN instead of
+	DECL_BUILT_IN.
+
 2009-10-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/40808
