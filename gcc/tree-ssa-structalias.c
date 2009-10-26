@@ -2825,7 +2825,7 @@ static void
 get_constraint_for_ptr_offset (tree ptr, tree offset,
 			       VEC (ce_s, heap) **results)
 {
-  struct constraint_expr *c;
+  struct constraint_expr c;
   unsigned int j, n;
   HOST_WIDE_INT rhsunitoffset, rhsoffset;
 
@@ -2863,14 +2863,14 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   for (j = 0; j < n; j++)
     {
       varinfo_t curr;
-      c = VEC_index (ce_s, *results, j);
-      curr = get_varinfo (c->var);
+      c = *VEC_index (ce_s, *results, j);
+      curr = get_varinfo (c.var);
 
-      if (c->type == ADDRESSOF
+      if (c.type == ADDRESSOF
 	  /* If this varinfo represents a full variable just use it.  */
 	  && curr->is_full_var)
-	c->offset = 0;
-      else if (c->type == ADDRESSOF
+	c.offset = 0;
+      else if (c.type == ADDRESSOF
 	       /* If we do not know the offset add all subfields.  */
 	       && rhsoffset == UNKNOWN_OFFSET)
 	{
@@ -2881,13 +2881,13 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	      c2.var = temp->id;
 	      c2.type = ADDRESSOF;
 	      c2.offset = 0;
-	      if (c2.var != c->var)
+	      if (c2.var != c.var)
 		VEC_safe_push (ce_s, heap, *results, &c2);
 	      temp = temp->next;
 	    }
 	  while (temp);
 	}
-      else if (c->type == ADDRESSOF)
+      else if (c.type == ADDRESSOF)
 	{
 	  varinfo_t temp;
 	  unsigned HOST_WIDE_INT offset = curr->offset + rhsoffset;
@@ -2919,11 +2919,13 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	      c2.offset = 0;
 	      VEC_safe_push (ce_s, heap, *results, &c2);
 	    }
-	  c->var = temp->id;
-	  c->offset = 0;
+	  c.var = temp->id;
+	  c.offset = 0;
 	}
       else
-	c->offset = rhsoffset;
+	c.offset = rhsoffset;
+
+      VEC_replace (ce_s, *results, j, &c);
     }
 }
 
