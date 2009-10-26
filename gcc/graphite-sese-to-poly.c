@@ -2084,7 +2084,7 @@ build_poly_scop (scop_p scop)
 /* Always return false.  Exercise the scop_to_clast function.  */
 
 void
-check_poly_representation (scop_p scop)
+check_poly_representation (scop_p scop ATTRIBUTE_UNUSED)
 {
 #ifdef ENABLE_CHECKING
   cloog_prog_clast pc = scop_to_clast (scop);
