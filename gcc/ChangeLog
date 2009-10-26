@@ -2,6 +2,72 @@
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config.gcc (spu-*-elf*): Add spu_cache.h to extra_headers.
+	* config/spu/spu_cache.h: New file.
+
+	* config/spu/cachemgr.c: New file.
+	* config/spu/cache.S: New file.
+
+	* config/spu/spu.h (ASM_OUTPUT_SYMBOL_REF): Define.
+	(ADDR_SPACE_EA): Define.
+	(TARGET_ADDR_SPACE_KEYWORDS): Define.
+	* config/spu/spu.c (EAmode): New macro.
+	(TARGET_ADDR_SPACE_POINTER_MODE): Define.
+	(TARGET_ADDR_SPACE_ADDRESS_MODE): Likewise.
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Likewise.
+	(TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS): Likewise.
+	(TARGET_ADDR_SPACE_SUBSET_P): Likewise.
+	(TARGET_ADDR_SPACE_CONVERT): Likewise.
+	(TARGET_ASM_SELECT_SECTION): Likewise.
+	(TARGET_ASM_UNIQUE_SECTION): Likewise.
+	(TARGET_ASM_UNALIGNED_SI_OP): Likewise.
+	(TARGET_ASM_ALIGNED_DI_OP): Likewise.
+	(ea_symbol_ref): New function.
+	(spu_legitimate_constant_p): Handle __ea qualified addresses.
+	(spu_addr_space_legitimate_address_p): New function.
+	(spu_addr_space_legitimize_address): Likewise.
+	(cache_fetch): New global.
+	(cache_fetch_dirty): Likewise.
+	(ea_alias_set): Likewise.
+	(ea_load_store): New function.
+	(ea_load_store_inline): Likewise.
+	(expand_ea_mem): Likewise.
+	(spu_expand_mov): Handle __ea qualified memory references.
+	(spu_addr_space_pointer_mode): New function.
+	(spu_addr_space_address_mode): Likewise.
+	(spu_addr_space_subset_p): Likewise.
+	(spu_addr_space_convert): Likewise.
+	(spu_section_type_flags): Handle "._ea" section.
+	(spu_select_section): New function.
+	(spu_unique_section): Likewise.
+	* config/spu/spu-c.c (spu_cpu_cpp_builtins): Support __EA32__
+	and __EA64__ predefined macros.
+	* config/spu/spu-elf.h (LIB_SPEC): Handle -mcache-size= and
+	-matomic-updates switches.
+
+	* config/spu/t-spu-elf (MULTILIB_OPTIONS): Define.
+	(EXTRA_MULTILIB_PARTS): Add libgcc_cachemgr.a,
+	libgcc_cachemgr_nonatomic.a, libgcc_cache8k.a, libgcc_cache16k.a,
+	libgcc_cache32k.a, libgcc_cache64k.a, libgcc_cache128k.a.
+	($(T)cachemgr.o, $(T)cachemgr_nonatomic.o): New target.
+	($(T)cache8k.o, $(T)cache16k.o, $(T)cache32k.o, $(T)cache64k.o,
+	$(T)cache128k.o): Likewise.
+	($(T)libgcc_%.a): Likewise.
+
+	* config/spu/spu.h (TARGET_DEFAULT): Add MASK_ADDRESS_SPACE_CONVERSION.
+	* config/spu/spu.opt (-mea32/-mea64): Add switches.
+	(-maddress-space-conversion): Likewise.
+	(-mcache-size=): Likewise.
+	(-matomic-updates): Likewise.
+	* doc/invoke.texi (-mea32/-mea64): Document.
+	(-maddress-space-conversion): Likewise.
+	(-mcache-size=): Likewise.
+	(-matomic-updates): Likewise.
+
+2009-10-26  Ben Elliston  <bje@au.ibm.com>
+	    Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* doc/tm.texi (TARGET_ADDR_SPACE_KEYWORDS): Document.
 
 	* c-common.c (c_common_reswords): If TARGET_ADDR_SPACE_KEYWORDS is

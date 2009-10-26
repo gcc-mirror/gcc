@@ -82,3 +82,24 @@ Generate code for given CPU
 mtune=
 Target RejectNegative Joined Var(spu_tune_string)
 Schedule code for given CPU
+
+mea32
+Target Report RejectNegative Var(spu_ea_model,32) Init(32)
+Access variables in 32-bit PPU objects (default)
+
+mea64
+Target Report RejectNegative Var(spu_ea_model,64) VarExists
+Access variables in 64-bit PPU objects
+
+maddress-space-conversion
+Target Report Mask(ADDRESS_SPACE_CONVERSION)
+Allow conversions between __ea and generic pointers (default)
+
+mcache-size=
+Target Report RejectNegative Joined UInteger
+Size (in KB) of software data cache
+
+matomic-updates
+Target Report
+Atomically write back software data cache lines (default)
+
