@@ -1,3 +1,11 @@
+2009-10-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41714
+	* gimple.h (tree_annotate_all_with_location): Remove prototype.
+	* gimplify.c (tree_should_carry_location_p,
+	tree_annotate_one_with_location,tree_annotate_all_with_location):
+	Remove obsolete functions.
+
 2009-10-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/41813

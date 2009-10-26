@@ -1281,9 +1281,7 @@ gfc_trans_code (gfc_code * code)
 
       if (res != NULL_TREE && ! IS_EMPTY_STMT (res))
 	{
-	  if (TREE_CODE (res) == STATEMENT_LIST)
-	    tree_annotate_all_with_location (&res, input_location);
-	  else
+	  if (TREE_CODE (res) != STATEMENT_LIST)
 	    SET_EXPR_LOCATION (res, input_location);
 	    
 	  /* Add the new statement to the block.  */

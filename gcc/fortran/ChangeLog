@@ -1,3 +1,12 @@
+2009-10-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41714
+	* trans.c (gfc_trans_code): Remove call to
+	'tree_annotate_all_with_location'. Location should already be set.
+	* trans-openmp.c (gfc_trans_omp_workshare): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Do correct data initialization for
+	CLASS variables with SOURCE tag, plus some cleanup.
+
 2009-10-24  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

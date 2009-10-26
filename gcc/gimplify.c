@@ -777,23 +777,6 @@ should_carry_location_p (gimple gs)
   return true;
 }
 
-/* Same, but for a tree.  */
-
-static bool
-tree_should_carry_location_p (const_tree stmt)
-{
-  /* Don't emit a line note for a label.  We particularly don't want to
-     emit one for the break label, since it doesn't actually correspond
-     to the beginning of the loop/switch.  */
-  if (TREE_CODE (stmt) == LABEL_EXPR)
-    return false;
-
-  /* Do not annotate empty statements, since it confuses gcov.  */
-  if (!TREE_SIDE_EFFECTS (stmt))
-    return false;
-
-  return true;
-}
 
 /* Return true if a location should not be emitted for this statement
    by annotate_one_with_location.  */
@@ -824,16 +807,6 @@ annotate_one_with_location (gimple gs, location_t location)
       && !gimple_do_not_emit_location_p (gs)
       && should_carry_location_p (gs))
     gimple_set_location (gs, location);
-}
-
-/* Same, but for tree T.  */
-
-static void
-tree_annotate_one_with_location (tree t, location_t location)
-{
-  if (CAN_HAVE_LOCATION_P (t)
-      && ! EXPR_HAS_LOCATION (t) && tree_should_carry_location_p (t))
-    SET_EXPR_LOCATION (t, location);
 }
 
 
@@ -869,29 +842,6 @@ annotate_all_with_location (gimple_seq stmt_p, location_t location)
     {
       gimple gs = gsi_stmt (i);
       annotate_one_with_location (gs, location);
-    }
-}
-
-/* Same, but for statement or statement list in *STMT_P.  */
-
-void
-tree_annotate_all_with_location (tree *stmt_p, location_t location)
-{
-  tree_stmt_iterator i;
-
-  if (!*stmt_p)
-    return;
-
-  for (i = tsi_start (*stmt_p); !tsi_end_p (i); tsi_next (&i))
-    {
-      tree t = tsi_stmt (i);
-
-      /* Assuming we've already been gimplified, we shouldn't
-	  see nested chaining constructs anymore.  */
-      gcc_assert (TREE_CODE (t) != STATEMENT_LIST
-		  && TREE_CODE (t) != COMPOUND_EXPR);
-
-      tree_annotate_one_with_location (t, location);
     }
 }
 

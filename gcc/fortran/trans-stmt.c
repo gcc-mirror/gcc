@@ -3983,12 +3983,13 @@ gfc_trans_allocate (gfc_code * code)
   tree stat;
   tree pstat;
   tree error_label;
+  tree memsz;
   stmtblock_t block;
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
 
-  pstat = stat = error_label = tmp = NULL_TREE;
+  pstat = stat = error_label = tmp = memsz = NULL_TREE;
 
   gfc_start_block (&block);
 
@@ -4032,19 +4033,19 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_init_se (&se_sz, NULL);
 	      gfc_conv_expr (&se_sz, sz);
 	      gfc_free_expr (sz);
-	      tmp = se_sz.expr;
+	      memsz = se_sz.expr;
 	    }
 	  else if (code->expr3 && code->expr3->ts.type != BT_CLASS)
-	    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr3->ts));
+	    memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr3->ts));
 	  else if (code->ext.alloc.ts.type != BT_UNKNOWN)
-	    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
+	    memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
 	  else
-	    tmp = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
+	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
-	  if (expr->ts.type == BT_CHARACTER && tmp == NULL_TREE)
-	    tmp = se.string_length;
+	  if (expr->ts.type == BT_CHARACTER && memsz == NULL_TREE)
+	    memsz = se.string_length;
 
-	  tmp = gfc_allocate_with_status (&se.pre, tmp, pstat);
+	  tmp = gfc_allocate_with_status (&se.pre, memsz, pstat);
 	  tmp = fold_build2 (MODIFY_EXPR, void_type_node, se.expr,
 			     fold_convert (TREE_TYPE (se.expr), tmp));
 	  gfc_add_expr_to_block (&se.pre, tmp);
@@ -4075,21 +4076,17 @@ gfc_trans_allocate (gfc_code * code)
       if (code->expr3)
 	{
 	  gfc_expr *rhs = gfc_copy_expr (code->expr3);
-	  if (rhs->ts.type == BT_CLASS)
+	  if (al->expr->ts.type == BT_CLASS)
 	    {
-	      gfc_se dst,src,len;
-	      gfc_expr *sz;
-	      gfc_add_component_ref (rhs, "$data");
-	      sz = gfc_copy_expr (code->expr3);
-	      gfc_add_component_ref (sz, "$size");
+	      gfc_se dst,src;
+	      if (rhs->ts.type == BT_CLASS)
+		gfc_add_component_ref (rhs, "$data");
 	      gfc_init_se (&dst, NULL);
 	      gfc_init_se (&src, NULL);
-	      gfc_init_se (&len, NULL);
 	      gfc_conv_expr (&dst, expr);
 	      gfc_conv_expr (&src, rhs);
-	      gfc_conv_expr (&len, sz);
-	      gfc_free_expr (sz);
-	      tmp = gfc_build_memcpy_call (dst.expr, src.expr, len.expr);
+	      gfc_add_block_to_block (&block, &src.pre);
+	      tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
 	    }
 	  else
 	    tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
@@ -4108,8 +4105,7 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_conv_expr (&dst, expr);
 	  gfc_conv_expr (&src, init_e);
 	  gfc_add_block_to_block (&block, &src.pre);
-	  tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
-	  tmp = gfc_build_memcpy_call (dst.expr, src.expr, tmp);
+	  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
       /* Add default initializer for those derived types that need them.  */
@@ -4127,6 +4123,7 @@ gfc_trans_allocate (gfc_code * code)
       if (expr->ts.type == BT_CLASS)
 	{
 	  gfc_expr *lhs,*rhs;
+	  gfc_se lse;
 	  /* Initialize VINDEX for CLASS objects.  */
 	  lhs = gfc_expr_to_initialize (expr);
 	  gfc_add_component_ref (lhs, "$vindex");
@@ -4158,36 +4155,11 @@ gfc_trans_allocate (gfc_code * code)
 	  /* Initialize SIZE for CLASS objects.  */
 	  lhs = gfc_expr_to_initialize (expr);
 	  gfc_add_component_ref (lhs, "$size");
-	  rhs = NULL;
-	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
-	    {
-	      /* Size must be determined at run time.  */
-	      rhs = gfc_copy_expr (code->expr3);
-	      gfc_add_component_ref (rhs, "$size");
-	      tmp = gfc_trans_assignment (lhs, rhs, false);
-	      gfc_add_expr_to_block (&block, tmp);
-	    }
-	  else
-	    {
-	      /* Size is fixed at compile time.  */
-	      gfc_typespec *ts;
-	      gfc_se lse;
-	      gfc_init_se (&lse, NULL);
-	      gfc_conv_expr (&lse, lhs);
-	      if (code->expr3)
-		ts = &code->expr3->ts;
-	      else if (code->ext.alloc.ts.type == BT_DERIVED)
-		ts = &code->ext.alloc.ts;
-	      else if (expr->ts.type == BT_CLASS)
-		ts = &expr->ts.u.derived->components->ts;
-	      else
-		ts = &expr->ts;
-	      tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (ts));
-	      gfc_add_modify (&block, lse.expr,
-			      fold_convert (TREE_TYPE (lse.expr), tmp));
-	    }
+	  gfc_init_se (&lse, NULL);
+	  gfc_conv_expr (&lse, lhs);
+	  gfc_add_modify (&block, lse.expr,
+			  fold_convert (TREE_TYPE (lse.expr), memsz));
 	  gfc_free_expr (lhs);
-	  gfc_free_expr (rhs);
 	}
 
     }
