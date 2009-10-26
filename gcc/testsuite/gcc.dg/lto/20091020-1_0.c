@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-fPIC -shared -flto}} } */
+/* { dg-lto-options {{-fPIC -r -nostdlib -flto}} } */
 
 typedef struct {
     int NumPackStreams;

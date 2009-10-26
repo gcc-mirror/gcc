@@ -1,3 +1,24 @@
+2009-10-26  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	* gcc.dg/lto/20091014-1_0.c: Replace -shared with -r -nostlib.
+	* gcc.dg/lto/20091016-1_0.c: Likewise.
+	* gcc.dg/lto/20090206-1_0.c: Likewise.
+	* gcc.dg/lto/20081120-1_0.c: Likewise.
+	* gcc.dg/lto/20081120-2_0.c: Likewise.
+	* gcc.dg/lto/20090116_0.c: Likewise.
+	* gcc.dg/lto/20081126_0.c: Likewise.
+	* gcc.dg/lto/20091013-1_0.c: Likewise.
+	* gcc.dg/lto/20081212-1_0.c: Likewise.
+	* gcc.dg/lto/20091015-1_0.c: Likewise.
+	* gcc.dg/lto/20090126-1_0.c: Likewise.
+	* gcc.dg/lto/20090126-2_0.c: Likewise.
+	* gcc.dg/lto/20091020-1_0.c: Likewise.
+	* gcc.dg/lto/20091020-2_0.c: Likewise.
+	* gcc.dg/lto/20081204-1_0.c: Likewise.
+	* gcc.dg/lto/20081204-2_0.c: Likewise.
+	* gcc.dg/lto/20081224_0.c: Likewise.
+	* gcc.dg/lto/20090219_0.c: Likewise.
+
 2009-10-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41020

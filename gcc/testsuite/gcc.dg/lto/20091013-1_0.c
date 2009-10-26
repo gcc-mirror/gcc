@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-fPIC -shared -flto} {-fPIC -shared -O2 -flto}} } */
+/* { dg-lto-options {{-fPIC -r -nostdlib -flto} {-fPIC -r -nostdlib -O2 -flto}} } */
 
 void * HeapAlloc(void*,unsigned int,unsigned long);
 
