@@ -1,3 +1,15 @@
+2009-10-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41783
+	* tree-ssa-alias.c (get_continuation_for_phi): Export, add a special
+	case for simple diamonds.
+	* tree-ssa-alias.h (get_continuation_for_phi): Declare.
+	* tree-ssa-pre.c (translate_vuse_through_block): Add same_valid
+	argument, use alias oracle to skip some vdefs.
+	(phi_translate_1): Change call to above, don't allocate new
+	value ids if they can stay the same.
+	(compute_avail): Allow vuse walking when looking up references.
+
 2009-10-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41826
