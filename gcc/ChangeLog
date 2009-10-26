@@ -1,3 +1,10 @@
+2009-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41828
+	* dwarf2out.c (add_pubname, add_pubtype, generic_parameter_die,
+	add_name_and_src_coords_attributes, gen_namespace_die,
+	dwarf2out_set_name): Handle dwarf2_name returning NULL.
+
 2009-10-26  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Add support for RX target.

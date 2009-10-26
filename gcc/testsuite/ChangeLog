@@ -1,3 +1,8 @@
+2009-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41828
+	* g++.dg/debug/dwarf2/anonname1.C: New test.
+
 2009-10-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38796

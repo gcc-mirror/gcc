@@ -1,3 +1,9 @@
+2009-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41828
+	* cp-lang.c (cxx_dwarf_name): Return NULL instead of
+	<anonymous ...> for anonymous aggregate names.
+
 2009-10-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38796, Core issue 906

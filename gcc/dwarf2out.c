@@ -10781,7 +10781,11 @@ static void
 add_pubname (tree decl, dw_die_ref die)
 {
   if (TREE_PUBLIC (decl))
-    add_pubname_string (dwarf2_name (decl, 1), die);
+    {
+      const char *name = dwarf2_name (decl, 1);
+      if (name)
+	add_pubname_string (name, die);
+    }
 }
 
 /* Add a new entry to .debug_pubtypes if appropriate.  */
@@ -10811,7 +10815,11 @@ add_pubtype (tree decl, dw_die_ref die)
 	    }
 	}
       else
-	e.name = xstrdup (dwarf2_name (decl, 1));
+	{
+	  e.name = dwarf2_name (decl, 1);
+	  if (e.name)
+	    e.name = xstrdup (e.name);
+	}
 
       /* If we don't have a name for the type, there's no point in adding
 	 it to the table.  */
@@ -12359,7 +12367,8 @@ generic_parameter_die (tree parm, tree arg,
 	  /* The DW_AT_GNU_template_name attribute of the DIE must be set
 	     to the name of the argument.  */
 	  name = dwarf2_name (TYPE_P (arg) ? TYPE_NAME (arg) : arg, 1);
-	  add_AT_string (tmpl_die, DW_AT_GNU_template_name, name);
+	  if (name)
+	    add_AT_string (tmpl_die, DW_AT_GNU_template_name, name);
 	}
 
       if (TREE_CODE (parm) == PARM_DECL)
@@ -16464,7 +16473,9 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
   decl_name = DECL_NAME (decl);
   if (decl_name != NULL && IDENTIFIER_POINTER (decl_name) != NULL)
     {
-      add_name_attribute (die, dwarf2_name (decl, 0));
+      const char *name = dwarf2_name (decl, 0);
+      if (name)
+	add_name_attribute (die, name);
       if (! DECL_ARTIFICIAL (decl))
 	add_src_coords_attributes (die, decl);
 
@@ -19222,7 +19233,11 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
 			       context_die, decl);
       /* For Fortran modules defined in different CU don't add src coords.  */
       if (namespace_die->die_tag == DW_TAG_module && DECL_EXTERNAL (decl))
-	add_name_attribute (namespace_die, dwarf2_name (decl, 0));
+	{
+	  const char *name = dwarf2_name (decl, 0);
+	  if (name)
+	    add_name_attribute (namespace_die, name);
+	}
       else
 	add_name_and_src_coords_attributes (namespace_die, decl);
       if (DECL_EXTERNAL (decl))
@@ -19910,9 +19925,14 @@ dwarf2out_set_name (tree decl, tree name)
 {
   dw_die_ref die;
   dw_attr_ref attr;
+  const char *dname;
 
   die = TYPE_SYMTAB_DIE (decl);
   if (!die)
+    return;
+
+  dname = dwarf2_name (name, 0);
+  if (!dname)
     return;
 
   attr = get_AT (die, DW_AT_name);
@@ -19920,13 +19940,13 @@ dwarf2out_set_name (tree decl, tree name)
     {
       struct indirect_string_node *node;
 
-      node = find_AT_string (dwarf2_name (name, 0));
+      node = find_AT_string (dname);
       /* replace the string.  */
       attr->dw_attr_val.v.val_str = node;
     }
 
   else
-    add_name_attribute (die, dwarf2_name (name, 0));
+    add_name_attribute (die, dname);
 }
 
 /* Called by the final INSN scan whenever we see a direct function call.
