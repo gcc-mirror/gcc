@@ -1,3 +1,11 @@
+2009-10-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41020
+	* g++.dg/lookup/extern-c-redecl2.C: New test.
+	* g++.dg/lookup/extern-c-redecl3.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl4.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl5.C: Likewise.
+
 2009-10-26  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/41783
