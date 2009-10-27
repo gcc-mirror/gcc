@@ -1,3 +1,9 @@
+2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc (db_region_for): Use _Unwind_GetIPInfo instead of
+	_Unwind_GetIP if HAVE_GETIPINFO is defined.
+	(db_action_for): Likewise.
+
 2009-10-27  Robert Dewar  <dewar@adacore.com>
 
 	* s-fileio.adb, s-fileio.ads, sem_util.adb, sem_warn.adb,

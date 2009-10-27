@@ -56,6 +56,14 @@ typedef char bool;
 #include "adaint.h"
 #include "raise.h"
 
+#ifdef __APPLE__
+/* On MacOS X, versions older than 10.5 don't export _Unwind_GetIPInfo.  */
+#undef HAVE_GETIPINFO
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
+#define HAVE_GETIPINFO 1
+#endif
+#endif
+
 /* The names of a couple of "standard" routines for unwinding/propagation
    actually vary depending on the underlying GCC scheme for exception handling
    (SJLJ or DWARF). We need a consistently named interface to import from
@@ -501,7 +509,14 @@ typedef struct
 static void
 db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
 {
-  _Unwind_Ptr ip = _Unwind_GetIP (uw_context) - 1;
+  int ip_before_insn = 0;
+#ifdef HAVE_GETIPINFO
+  _Unwind_Ptr ip = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
+#else
+  _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
+#endif
+  if (!ip_before_insn)
+    ip--;
 
   if (! (db_accepted_codes () & DB_REGIONS))
     return;
@@ -631,7 +646,14 @@ typedef struct
 static void
 db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
 {
-  _Unwind_Ptr ip = _Unwind_GetIP (uw_context) - 1;
+  int ip_before_insn = 0;
+#ifdef HAVE_GETIPINFO
+  _Unwind_Ptr ip = _Unwind_GetIPInfo (uw_context, &ip_before_insn);
+#else
+  _Unwind_Ptr ip = _Unwind_GetIP (uw_context);
+#endif
+  if (!ip_before_insn)
+    ip--;
 
   db (DB_ACTIONS, "For ip @ 0x%08x => ", ip);
 
@@ -669,14 +691,6 @@ db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
 
    There are two variants of this routine, depending on the underlying
    mechanism (DWARF/SJLJ), which account for differences in the tables.  */
-
-#ifdef __APPLE__
-/* On MacOS X, versions older than 10.5 don't export _Unwind_GetIPInfo.  */
-#undef HAVE_GETIPINFO
-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1050
-#define HAVE_GETIPINFO 1
-#endif
-#endif
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
 
