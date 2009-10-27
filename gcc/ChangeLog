@@ -1,3 +1,9 @@
+2009-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/41842
+	* c-typeck.c (convert_arguments): Return -1 if any of the arguments is
+	error_mark_node.
+
 2009-10-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-complex.c (expand_complex_div_wide): Check for

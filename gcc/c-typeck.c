@@ -2739,6 +2739,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 {
   tree typetail, val;
   unsigned int parmnum;
+  bool error_args = false;
   const bool type_generic = fundecl
     && lookup_attribute ("type generic", TYPE_ATTRIBUTES(TREE_TYPE (fundecl)));
   bool type_generic_remove_excess_precision = false;
@@ -3008,6 +3009,8 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 	parmval = default_conversion (val);
 
       VEC_replace (tree, values, parmnum, parmval);
+      if (parmval == error_mark_node)
+	error_args = true;
 
       if (typetail)
 	typetail = TREE_CHAIN (typetail);
@@ -3021,7 +3024,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
       return -1;
     }
 
-  return parmnum;
+  return error_args ? -1 : (int) parmnum;
 }
 
 /* This is the entry point used by the parser to build unary operators
