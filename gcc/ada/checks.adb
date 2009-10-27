@@ -848,7 +848,7 @@ package body Checks is
          --  is not set anyway, or we are not doing code expansion, or the
          --  parent node is a type conversion whose operand is an arithmetic
          --  operation on signed integers on which the expander can promote
-         --  later the operands to type integer (see Expand_N_Type_Conversion).
+         --  later the operands to type Integer (see Expand_N_Type_Conversion).
 
          --  Special case CLI target, where arithmetic overflow checks can be
          --  performed for integer and long_integer

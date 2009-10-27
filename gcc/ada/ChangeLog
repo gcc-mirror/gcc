@@ -1,3 +1,19 @@
+2009-10-27  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb (Install_Formal_Packages): Do not omit installation of
+	visible entities when the formal package doesn't have a box.
+
+	* checks.adb: Minor reformatting.
+
+2009-10-27  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse): Catch exception Types.Unrecoverable_Error and
+	set Project to Empty_Node.
+
+2009-10-27  Robert Dewar  <dewar@adacore.com>
+
+	* gnatbind.adb: Minor reformatting
+
 2009-10-27  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_aggr.adb: Fix comment.
