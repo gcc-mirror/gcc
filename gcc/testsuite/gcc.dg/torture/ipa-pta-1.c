@@ -4,31 +4,37 @@
 
 struct X { char x; char y; };
 
-void bar (char *p);
+char *q;
 
-void test1 (char a, char b, char c, char d, char e, char f, char g, char h)
+static void __attribute__((noinline))
+bar (char *p)
 {
-  char *p = &a;
+  q = p;
+}
+
+void test1 (char a1, char b, char c, char d, char e, char f, char g, char h)
+{
+  char *p = &a1;
   p++;
   bar (p);
 }
 
-void test2 (struct X a, char b, char c, char d, char e, char f, char g, char h)
+void test2 (struct X a2, char b, char c, char d, char e, char f, char g, char h)
 {
-  char *p = &a.x;
+  char *p = &a2.x;
   p++;
   bar (p);
 }
 
-void test3 (struct X a, char b, char c, char d, char e, char f, char g, char h)
+void test3 (struct X a3, char b, char c, char d, char e, char f, char g, char h)
 {
-  char *p = &a.y;
+  char *p = &a3.y;
   bar (p);
 }
 
-void test4 (int a, char b, char c, char d, char e, char f, char g, char h)
+void test4 (int a4, char b, char c, char d, char e, char f, char g, char h)
 {
-  char *p = (char *)&a;
+  char *p = (char *)&a4;
   p++;
   p++;
   p++;
@@ -36,5 +42,5 @@ void test4 (int a, char b, char c, char d, char e, char f, char g, char h)
   bar (p);
 }
 
-/* { dg-final { scan-ipa-dump "bar.arg0 = { test4.arg0 test3.arg0 test2.arg0 test1.arg0 }" "pta" } } */
+/* { dg-final { scan-ipa-dump "bar.arg0 = { a4 a3 a2 a1 }" "pta" } } */
 /* { dg-final { cleanup-ipa-dump "pta" } } */

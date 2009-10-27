@@ -1,3 +1,7 @@
+2009-10-27  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/ipa-pta-1.c: Adjust testcase.
+
 2009-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/41842
