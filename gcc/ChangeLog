@@ -1,3 +1,8 @@
+2009-10-27  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41821
+	* gimple.c (gimple_types_compatible_p): Handle OFFSET_TYPE.
+
 2009-10-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR bootstrap/41451
