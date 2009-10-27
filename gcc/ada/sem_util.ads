@@ -251,6 +251,12 @@ package Sem_Util is
    --  components of protected types, and constraint checks on entry
    --  families constrained by discriminants.
 
+   function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean;
+   function Denotes_Same_Prefix (A1, A2 : Node_Id) return Boolean;
+   --  Functions to detect suspicious overlapping between actuals in a call,
+   --  when one of them is writable. The predicates are those  proposed in
+   --  AI05-0144, to detect dangerous order dependence in complex calls.
+
    function Denotes_Variable (N : Node_Id) return Boolean;
    --  Returns True if node N denotes a single variable without parentheses
 

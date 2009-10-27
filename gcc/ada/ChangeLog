@@ -1,3 +1,20 @@
+2009-10-27  Robert Dewar  <dewar@adacore.com>
+
+	* s-os_lib.ads, s-os_lib.adb, prj-err.adb, makeutl.adb: Minor
+	reformatting.
+
+2009-10-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.util.ads, sem_util.adb (Denotes_Same_Object,
+	Denotes_Same_Prefix): New functions to detect overlap between actuals
+	that are not by-copy in a call, when one of them is in-out.
+	* sem_warn.ads, sem_warn.adb (Warn_On_Overlapping_Actuals): New
+	procedure,  called on a subprogram call to warn when an in-out actual
+	that is not by-copy overlaps with another actual, thus leadind to
+	potentially dangerous aliasing in the body of the called subprogram.
+	Currently the warning is under control of the -gnatX switch.
+	* sem_res.adb (resolve_call): call Warn_On_Overlapping_Actuals.
+
 2009-10-27  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch12.adb (Install_Formal_Packages): Do not omit installation of

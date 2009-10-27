@@ -77,13 +77,13 @@ package body System.OS_Lib is
    -----------------------
 
    function Args_Length (Args : Argument_List) return Natural;
-   --  Returns total number of characters needed to create a string
-   --  of all Args terminated by ASCII.NUL characters
+   --  Returns total number of characters needed to create a string of all Args
+   --  terminated by ASCII.NUL characters.
 
    procedure Create_Temp_File_Internal
-     (FD        : out File_Descriptor;
-      Name      : out String_Access;
-      Stdout    : Boolean);
+     (FD     : out File_Descriptor;
+      Name   : out String_Access;
+      Stdout : Boolean);
    --  Internal routine to implement two Create_Temp_File routines. If Stdout
    --  is set to True the created descriptor is stdout-compatible, otherwise
    --  it might not be depending on the OS (VMS is one example). The first two

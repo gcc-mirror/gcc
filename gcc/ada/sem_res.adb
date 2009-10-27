@@ -2935,10 +2935,8 @@ package body Sem_Res is
                --  anomalies: the subtype was first built in the subprogram
                --  declaration, and the current call may be nested.
 
-               if Nkind (Actval) = N_Aggregate
-                 and then Has_Discriminants (Etype (Actval))
-               then
-                  Analyze_And_Resolve (Actval, Base_Type (Etype (Actval)));
+               if Nkind (Actval) = N_Aggregate then
+                  Analyze_And_Resolve (Actval, Etype (F));
                else
                   Analyze_And_Resolve (Actval, Etype (Actval));
                end if;
@@ -5390,6 +5388,7 @@ package body Sem_Res is
 
       Eval_Call (N);
       Check_Elab_Call (N);
+      Warn_On_Overlapping_Actuals (Nam, N);
    end Resolve_Call;
 
    -------------------------------
