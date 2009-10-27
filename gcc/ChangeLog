@@ -1,3 +1,9 @@
+2009-10-27  Revital Eres  <eres@il.ibm.com>
+
+	PR tree-optimization/40648
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Change decision of when to peel for alignment.
+
 2009-10-27  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41821
