@@ -1,3 +1,11 @@
+2009-10-27  Kai Tietz  <kai.tietz@onevision.com>
+
+	Backport from mainline:
+	2009-10-20  Pascal Obry  <obry@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+        * config/i386/cygming.h (DWARF_FRAME_REGNUM): Add enclosing parens.
+
 2009-10-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
