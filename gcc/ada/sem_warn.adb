@@ -3554,17 +3554,15 @@ package body Sem_Warn is
 
       --  Exclude calls rewritten as enumeration literals
 
-      if not Nkind_In
-               (N, N_Function_Call, N_Procedure_Call_Statement)
-      then
+      if not Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement) then
          return;
       end if;
 
-      --  Exclude calls to library subprograms. Container operations
-      --  specify safe behavior when source and target coincide.
+      --  Exclude calls to library subprograms. Container operations specify
+      --  safe behavior when source and target coincide.
 
-      if Is_Predefined_File_Name (
-         Unit_File_Name (Get_Source_Unit (Sloc (Subp))))
+      if Is_Predefined_File_Name
+           (Unit_File_Name (Get_Source_Unit (Sloc (Subp))))
       then
          return;
       end if;
@@ -3596,7 +3594,8 @@ package body Sem_Warn is
                      null;
 
                   elsif Is_Generic_Type (Etype (Act1))
-                    or else Is_Generic_Type (Etype (Act2))
+                          or else
+                        Is_Generic_Type (Etype (Act2))
                   then
                      null;
 
@@ -3634,9 +3633,8 @@ package body Sem_Warn is
 
                         if Is_Entity_Name (First_Actual (N))
                           and then Nkind (Original_Node (N)) = Nkind (N)
-                          and then
-                            Nkind (Name (Original_Node (N))) =
-                              N_Selected_Component
+                          and then Nkind (Name (Original_Node (N))) =
+                                                         N_Selected_Component
                           and then
                             Is_Entity_Name (Prefix (Name (Original_Node (N))))
                           and then
@@ -3645,7 +3643,7 @@ package body Sem_Warn is
                         then
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
-                                ("in-out prefix overlaps with actual for&?",
+                                ("`IN OUT` prefix overlaps with actual for&?",
                                  Act1, Form);
                            else
                               Error_Msg_FE
