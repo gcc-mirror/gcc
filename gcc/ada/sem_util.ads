@@ -254,8 +254,11 @@ package Sem_Util is
    function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean;
    function Denotes_Same_Prefix (A1, A2 : Node_Id) return Boolean;
    --  Functions to detect suspicious overlapping between actuals in a call,
-   --  when one of them is writable. The predicates are those  proposed in
+   --  when one of them is writable. The predicates are those proposed in
    --  AI05-0144, to detect dangerous order dependence in complex calls.
+   --  I would add a parameter Warn which enables more extensive testing of
+   --  cases as we find appropriate when we are only warning ??? Or perhaps
+   --  return an indication of (Error, Warn, OK) ???
 
    function Denotes_Variable (N : Node_Id) return Boolean;
    --  Returns True if node N denotes a single variable without parentheses

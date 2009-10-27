@@ -1,5 +1,10 @@
 2009-10-27  Robert Dewar  <dewar@adacore.com>
 
+	* sem_warn.adb, sem_util.adb, sem_util.ads: Minor reformatting. Add
+	comments.
+
+2009-10-27  Robert Dewar  <dewar@adacore.com>
+
 	* s-os_lib.ads, s-os_lib.adb, prj-err.adb, makeutl.adb: Minor
 	reformatting.
 
