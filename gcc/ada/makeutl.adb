@@ -220,9 +220,9 @@ package body Makeutl is
                --  (and then will be for the same unit).
 
                if Find_Source
-                 (In_Tree   => Project_Tree,
-                  Project   => No_Project,
-                  Base_Name => SD.Sfile) = No_Source
+                    (In_Tree   => Project_Tree,
+                     Project   => No_Project,
+                     Base_Name => SD.Sfile) = No_Source
                then
                   --  If this is not a runtime file or if, when gnatmake switch
                   --  -a is used, we are not able to find this subunit in the
@@ -230,8 +230,8 @@ package body Makeutl is
 
                   if not Fname.Is_Internal_File_Name (SD.Sfile)
                     or else
-                      (Check_Readonly_Files and then
-                       Find_File (SD.Sfile, Osint.Source) = No_File)
+                      (Check_Readonly_Files
+                        and then Find_File (SD.Sfile, Osint.Source) = No_File)
                   then
                      if Verbose_Mode then
                         Write_Line
@@ -242,6 +242,7 @@ package body Makeutl is
                            & " but this does not match what was found while"
                            & " parsing the project. Will recompile");
                      end if;
+
                      return False;
                   end if;
                end if;

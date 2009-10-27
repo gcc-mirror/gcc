@@ -210,6 +210,11 @@ package Sem_Warn is
    --  as an out parameter. True if either Warn_On_Modified_Unread is set for
    --  an only OUT parameter, or if Warn_On_All_Unread_Out_Parameters is set.
 
+   procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id);
+   --  Called on a subprogram call. Checks whether an in-out actual that is
+   --  not by-copy may overlap with another actual, thus leadind to aliasing
+   --  in the body of the called subprogram.
+
    procedure Warn_On_Suspicious_Index (Name : Entity_Id; X : Node_Id);
    --  This is called after resolving an indexed component or a slice. Name
    --  is the entity for the name of the indexed array, and X is the subscript

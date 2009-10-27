@@ -257,15 +257,14 @@ package System.OS_Lib is
    --  temp files at the same time in the same directory.
 
    procedure Create_Temp_Output_File
-     (FD        : out File_Descriptor;
-      Name      : out String_Access);
+     (FD   : out File_Descriptor;
+      Name : out String_Access);
    --  Create and open for writing a temporary file in the current working
-   --  directory suitable to redirect standard output. The name of the file
-   --  and the File Descriptor are returned.
-   --  It is the responsibility of the caller to deallocate the access value
-   --  returned in Name.
+   --  directory suitable to redirect standard output. The name of the file and
+   --  the File Descriptor are returned. It is the responsibility of the caller
+   --  to deallocate the access value returned in Name.
    --
-   --  The file is opened in text mode.
+   --  The file is opened in text mode
    --
    --  This procedure will always succeed if the current working directory is
    --  writable. If the current working directory is not writable, then
