@@ -6,7 +6,7 @@
 class frok
 {
   int this_errno;
-  friend int fork (void); // { dg-error "previous declaration .*?C++. linkage" }
+  friend int fork (void); // { dg-error "previous declaration .*?C\\+\\+. linkage" }
 };
 
 extern "C" int
