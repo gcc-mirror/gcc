@@ -1,3 +1,8 @@
+2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/null_pointer_deref1.adb: Accept Constraint_Error.
+	* gnat.dg/null_pointer_deref2.adb: Likewise.
+
 2009-10-27  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/ipa-pta-1.c: Adjust testcase.

@@ -20,7 +20,7 @@ procedure Null_Pointer_Deref2 is
    begin
       Data.all := 1;
    exception
-      when Storage_Error => null;
+      when Constraint_Error | Storage_Error => null;
    end T;
 
 begin
