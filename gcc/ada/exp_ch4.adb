@@ -8042,88 +8042,54 @@ package body Exp_Ch4 is
       --  have to be sure not to generate junk overflow checks in the first
       --  place, since it would be trick to remove them here!
 
-      declare
-         Root_Operand_Type : constant Entity_Id := Root_Type (Operand_Type);
+      if Integer_Promotion_Possible (N) then
 
-      begin
-         --  Enable transformation if all conditions are met
+         --  All conditions met, go ahead with transformation
 
-         if
-           --  We only do this transformation for source constructs. We assume
-           --  that the expander knows what it is doing when it generates code.
+         declare
+            Opnd : Node_Id;
+            L, R : Node_Id;
 
-           Comes_From_Source (N)
+         begin
+            R :=
+              Make_Type_Conversion (Loc,
+                Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
+                Expression   => Relocate_Node (Right_Opnd (Operand)));
 
-           --  If the operand type is Short_Integer or Short_Short_Integer,
-           --  then we will promote to Integer, which is available on all
-           --  targets, and is sufficient to ensure no intermediate overflow.
-           --  Furthermore it is likely to be as efficient or more efficient
-           --  than using the smaller type for the computation so we do this
-           --  unconditionally.
+            if Nkind (Operand) = N_Op_Minus then
+               Opnd := Make_Op_Minus (Loc, Right_Opnd => R);
 
-           and then
-             (Root_Operand_Type = Base_Type (Standard_Short_Integer)
-               or else
-              Root_Operand_Type = Base_Type (Standard_Short_Short_Integer))
-
-           --  Test for interesting operation, which includes addition,
-           --  division, exponentiation, multiplication, subtraction, and
-           --  unary negation.
-
-           and then Nkind_In (Operand, N_Op_Add,
-                                       N_Op_Divide,
-                                       N_Op_Expon,
-                                       N_Op_Minus,
-                                       N_Op_Multiply,
-                                       N_Op_Subtract)
-         then
-            --  All conditions met, go ahead with transformation
-
-            declare
-               Opnd : Node_Id;
-               L, R : Node_Id;
-
-            begin
-               R :=
+            else
+               L :=
                  Make_Type_Conversion (Loc,
                    Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
-                   Expression   => Relocate_Node (Right_Opnd (Operand)));
+                   Expression   => Relocate_Node (Left_Opnd (Operand)));
 
-               if Nkind (Operand) = N_Op_Minus then
-                  Opnd := Make_Op_Minus (Loc, Right_Opnd => R);
+               case Nkind (Operand) is
+                  when N_Op_Add =>
+                     Opnd := Make_Op_Add (Loc, L, R);
+                  when N_Op_Divide =>
+                     Opnd := Make_Op_Divide (Loc, L, R);
+                  when N_Op_Expon =>
+                     Opnd := Make_Op_Expon (Loc, L, R);
+                  when N_Op_Multiply =>
+                     Opnd := Make_Op_Multiply (Loc, L, R);
+                  when N_Op_Subtract =>
+                     Opnd := Make_Op_Subtract (Loc, L, R);
+                  when others =>
+                     raise Program_Error;
+               end case;
 
-               else
-                  L :=
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
-                      Expression   => Relocate_Node (Left_Opnd (Operand)));
+               Rewrite (N,
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => Relocate_Node (Subtype_Mark (N)),
+                   Expression   => Opnd));
 
-                  case Nkind (Operand) is
-                     when N_Op_Add =>
-                        Opnd := Make_Op_Add (Loc, L, R);
-                     when N_Op_Divide =>
-                        Opnd := Make_Op_Divide (Loc, L, R);
-                     when N_Op_Expon =>
-                        Opnd := Make_Op_Expon (Loc, L, R);
-                     when N_Op_Multiply =>
-                        Opnd := Make_Op_Multiply (Loc, L, R);
-                     when N_Op_Subtract =>
-                        Opnd := Make_Op_Subtract (Loc, L, R);
-                     when others =>
-                        raise Program_Error;
-                  end case;
-
-                  Rewrite (N,
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark => Relocate_Node (Subtype_Mark (N)),
-                      Expression   => Opnd));
-
-                     Analyze_And_Resolve (N, Target_Type);
-                     return;
-               end if;
-            end;
-         end if;
-      end;
+               Analyze_And_Resolve (N, Target_Type);
+               return;
+            end if;
+         end;
+      end if;
 
       --  Do validity check if validity checking operands
 
@@ -9186,6 +9152,49 @@ package body Exp_Ch4 is
       when RE_Not_Available =>
          return;
    end Insert_Dereference_Action;
+
+   --------------------------------
+   -- Integer_Promotion_Possible --
+   --------------------------------
+
+   function Integer_Promotion_Possible (N : Node_Id) return Boolean is
+      Operand           : constant Node_Id   := Expression (N);
+      Operand_Type      : constant Entity_Id := Etype (Operand);
+      Root_Operand_Type : constant Entity_Id := Root_Type (Operand_Type);
+
+   begin
+      pragma Assert (Nkind (N) = N_Type_Conversion);
+
+      return
+
+           --  We only do the transformation for source constructs. We assume
+           --  that the expander knows what it is doing when it generates code.
+
+           Comes_From_Source (N)
+
+           --  If the operand type is Short_Integer or Short_Short_Integer,
+           --  then we will promote to Integer, which is available on all
+           --  targets, and is sufficient to ensure no intermediate overflow.
+           --  Furthermore it is likely to be as efficient or more efficient
+           --  than using the smaller type for the computation so we do this
+           --  unconditionally.
+
+           and then
+             (Root_Operand_Type = Base_Type (Standard_Short_Integer)
+               or else
+              Root_Operand_Type = Base_Type (Standard_Short_Short_Integer))
+
+           --  Test for interesting operation, which includes addition,
+           --  division, exponentiation, multiplication, subtraction, and
+           --  unary negation.
+
+           and then Nkind_In (Operand, N_Op_Add,
+                                       N_Op_Divide,
+                                       N_Op_Expon,
+                                       N_Op_Minus,
+                                       N_Op_Multiply,
+                                       N_Op_Subtract);
+   end Integer_Promotion_Possible;
 
    ------------------------------
    -- Make_Array_Comparison_Op --

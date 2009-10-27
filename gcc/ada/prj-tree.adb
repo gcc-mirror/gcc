@@ -1000,6 +1000,7 @@ package body Prj.Tree is
       if Proj /= null then
          Project_Node_Table.Free (Proj.Project_Nodes);
          Projects_Htable.Reset (Proj.Projects_HT);
+         Free (Proj.Project_Path);
          Unchecked_Free (Proj);
       end if;
    end Free;

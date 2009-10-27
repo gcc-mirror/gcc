@@ -25,6 +25,7 @@
 
 with ALI;      use ALI;
 with Debug;
+with Fname;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;      use Opt;
@@ -213,28 +214,31 @@ package body Makeutl is
             if Unit_Name /= No_Name then
 
                --  For separates, the file is no longer associated with the
-               --  unit ("proc-sep.adb" is not associated with unit "proc.sep".
-               --  So we need to check whether the source file still exists in
+               --  unit ("proc-sep.adb" is not associated with unit "proc.sep")
+               --  so we need to check whether the source file still exists in
                --  the source tree: it will if it matches the naming scheme
                --  (and then will be for the same unit).
 
                if Find_Source
-                 (In_Tree => Project_Tree,
-                  Project => No_Project,
+                 (In_Tree   => Project_Tree,
+                  Project   => No_Project,
                   Base_Name => SD.Sfile) = No_Source
                then
-                  --  If this is not a runtime file (when using -a) ? Otherwise
-                  --  we get complaints about a-except.adb, which uses
-                  --  separates.
+                  --  If this is not a runtime file or if, when gnatmake switch
+                  --  -a is used, we are not able to find this subunit in the
+                  --  source directories, then recompilation is needed.
 
-                  if not Check_Readonly_Files
-                    or else Find_File (SD.Sfile, Osint.Source) = No_File
+                  if not Fname.Is_Internal_File_Name (SD.Sfile)
+                    or else
+                      (Check_Readonly_Files and then
+                       Find_File (SD.Sfile, Osint.Source) = No_File)
                   then
                      if Verbose_Mode then
                         Write_Line
-                          ("While parsing ALI file: Sdep associates "
+                          ("While parsing ALI file, file "
                            & Get_Name_String (SD.Sfile)
-                           & " with unit " & Get_Name_String (Unit_Name)
+                           & " is indicated as containing subunit "
+                           & Get_Name_String (Unit_Name)
                            & " but this does not match what was found while"
                            & " parsing the project. Will recompile");
                      end if;

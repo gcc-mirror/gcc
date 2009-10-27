@@ -923,6 +923,28 @@ __gnat_create_output_file (char *path)
 }
 
 int
+__gnat_create_output_file_new (char *path)
+{
+  int fd;
+#if defined (VMS)
+  fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT | O_EXCL, PERM,
+             "rfm=stmlf", "ctx=rec", "rat=none", "rop=nlk",
+             "shr=del,get,put,upd");
+#elif defined (__MINGW32__)
+  {
+    TCHAR wpath[GNAT_MAX_PATH_LEN];
+
+    S2WSC (wpath, path, GNAT_MAX_PATH_LEN);
+    fd = _topen (wpath, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT | O_EXCL, PERM);
+  }
+#else
+  fd = open (path, O_WRONLY | O_CREAT | O_TRUNC | O_TEXT | O_EXCL, PERM);
+#endif
+
+  return fd < 0 ? -1 : fd;
+}
+
+int
 __gnat_open_append (char *path, int fmode)
 {
   int fd;

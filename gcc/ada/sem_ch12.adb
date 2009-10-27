@@ -1701,18 +1701,18 @@ package body Sem_Ch12 is
       Lo :=
         Make_Attribute_Reference (Loc,
           Attribute_Name => Name_First,
-          Prefix => New_Reference_To (T, Loc));
+          Prefix         => New_Reference_To (T, Loc));
       Set_Etype (Lo, T);
 
       Hi :=
         Make_Attribute_Reference (Loc,
           Attribute_Name => Name_Last,
-          Prefix => New_Reference_To (T, Loc));
+          Prefix         => New_Reference_To (T, Loc));
       Set_Etype (Hi, T);
 
       Set_Scalar_Range (T,
         Make_Range (Loc,
-          Low_Bound => Lo,
+          Low_Bound  => Lo,
           High_Bound => Hi));
 
       Set_Ekind           (Base, E_Enumeration_Type);
