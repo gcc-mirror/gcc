@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -834,6 +834,27 @@ begin
                      Write_Str
                        (Get_Name_String
                           (Units.Table (Elab_Order.Table (J)).Sfile));
+                     Write_Eol;
+                  end if;
+               end loop;
+
+               --  Subunits do not appear in the elaboration table because
+               --  they are subsumed by their parent units, but we need to
+               --  list them for other tools. For now they are listed after
+               --  other files, rather than following immediately their parent,
+               --  because there is no cheap link between the elaboration table
+               --  and the ALIs table.
+
+               for J in Sdep.First .. Sdep.Last loop
+                  if Sdep.Table (J).Subunit_Name /= No_Name
+                    and then not Is_Internal_File_Name (Sdep.Table (J).Sfile)
+                  then
+                     if not Zero_Formatting then
+                        Write_Str ("   ");
+                     end if;
+
+                     Write_Str
+                       (Get_Name_String (Sdep.Table (J).Sfile));
                      Write_Eol;
                   end if;
                end loop;

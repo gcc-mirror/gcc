@@ -783,6 +783,32 @@ package body System.OS_Lib is
       Attempts : Natural := 0;
       Current  : String (Current_Temp_File_Name'Range);
 
+      ---------------------------------
+      -- Create_New_Output_Text_File --
+      ---------------------------------
+
+      function Create_New_Output_Text_File
+        (Name : String) return File_Descriptor;
+      --  Similar to Create_Output_Text_File, except it fails if the file
+      --  already exists. We need this behavior to ensure we don't accidentally
+      --  open a temp file that has just been created by a concurrently running
+      --  process. There is no point exposing this function, as it's generally
+      --  not particularly useful.
+
+      function Create_New_Output_Text_File
+        (Name : String) return File_Descriptor is
+         function C_Create_File
+           (Name : C_File_Name) return File_Descriptor;
+         pragma Import (C, C_Create_File, "__gnat_create_output_file_new");
+
+         C_Name : String (1 .. Name'Length + 1);
+
+      begin
+         C_Name (1 .. Name'Length) := Name;
+         C_Name (C_Name'Last)      := ASCII.NUL;
+         return C_Create_File (C_Name (C_Name'First)'Address);
+      end Create_New_Output_Text_File;
+
    begin
       --  Loop until a new temp file can be created
 
@@ -845,9 +871,9 @@ package body System.OS_Lib is
          --  Attempt to create the file
 
          if Stdout then
-            FD := Create_Output_Text_File (Current);
+            FD := Create_New_Output_Text_File (Current);
          else
-            FD := Create_File (Current, Binary);
+            FD := Create_New_File (Current, Binary);
          end if;
 
          if FD /= Invalid_FD then

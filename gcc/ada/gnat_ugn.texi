@@ -20659,7 +20659,7 @@ Invoking @command{gnatcheck} on the command line has the form:
 @smallexample
 $ gnatcheck @ovar{switches}  @{@var{filename}@}
       @r{[}^-files^/FILES^=@{@var{arg_list_filename}@}@r{]}
-      @r{[}-cargs @var{gcc_switches}@r{]} @r{[}-rules @var{rule_options}@r{]}
+      @r{[}-cargs @var{gcc_switches}@r{]} -rules @var{rule_options}
 @end smallexample
 
 @noindent

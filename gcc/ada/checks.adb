@@ -28,6 +28,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Ch2;  use Exp_Ch2;
+with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
@@ -844,7 +845,10 @@ package body Checks is
 
       begin
          --  Skip check if back end does overflow checks, or the overflow flag
-         --  is not set anyway, or we are not doing code expansion.
+         --  is not set anyway, or we are not doing code expansion, or the
+         --  parent node is a type conversion whose operand is an arithmetic
+         --  operation on signed integers on which the expander can promote
+         --  later the operands to type integer (see Expand_N_Type_Conversion).
 
          --  Special case CLI target, where arithmetic overflow checks can be
          --  performed for integer and long_integer
@@ -852,6 +856,9 @@ package body Checks is
          if Backend_Overflow_Checks_On_Target
            or else not Do_Overflow_Check (N)
            or else not Expander_Active
+           or else (Present (Parent (N))
+                     and then Nkind (Parent (N)) = N_Type_Conversion
+                     and then Integer_Promotion_Possible (Parent (N)))
            or else
              (VM_Target = CLI_Target and then Siz >= Standard_Integer_Size)
          then

@@ -265,7 +265,7 @@ package System.OS_Lib is
    --  It is the responsibility of the caller to deallocate the access value
    --  returned in Name.
    --
-   --  The file is opened in the mode specified by the With_Mode parameter.
+   --  The file is opened in text mode.
    --
    --  This procedure will always succeed if the current working directory is
    --  writable. If the current working directory is not writable, then
