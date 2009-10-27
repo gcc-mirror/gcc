@@ -225,7 +225,8 @@ namespace std
           : __r(duration_cast<duration>(__d).count())
           {
             static_assert(treat_as_floating_point<rep>::value == true 
-              || ratio_divide<_Period2, period>::type::den == 1, 
+			  || (ratio_divide<_Period2, period>::type::den == 1
+			      && !treat_as_floating_point<_Rep2>::value), 
               "the resulting duration is not exactly representable");
           }
 

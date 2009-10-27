@@ -1,3 +1,9 @@
+2009-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/chrono (duration<>::duration(const duration<>&)): Fix
+	per the straightforward resolution of DR 974.
+	* testsuite/20_util/duration/cons/dr974.cc: Add.
+
 2009-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/38923
