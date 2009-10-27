@@ -1138,8 +1138,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* While cost model enhancements are expected in the future, the high level
      view of the code at this time is as follows:
 
-     A) If there is an unsupported misaligned access then see if peeling
-        to align this access can make all data references satisfy
+     A) If there is a misaligned access then see if peeling to align
+        this access can make all data references satisfy
         vect_supportable_dr_alignment.  If so, update data structures
         as needed and return true.
 
@@ -1184,7 +1184,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           && DR_GROUP_FIRST_DR (stmt_info) != stmt)
         continue;
 
-      if (!supportable_dr_alignment)
+      if (!aligned_access_p (dr))
         {
 	  do_peeling = vector_alignment_reachable_p (dr);
 	  if (do_peeling)
