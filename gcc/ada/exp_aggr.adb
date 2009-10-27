@@ -509,7 +509,7 @@ package body Exp_Aggr is
 
    --   10. No controlled actions need to be generated for components
 
-   --   11. The backend is a No_VM backend and the array has aliased components
+   --   11. For a VM back end, the array should have no aliased components
 
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
