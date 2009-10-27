@@ -1,5 +1,10 @@
 2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (purpose_member_field): New static function.
+	(annotate_rep): Use it instead of purpose_member.
+
+2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* raise-gcc (db_region_for): Use _Unwind_GetIPInfo instead of
 	_Unwind_GetIP if HAVE_GETIPINFO is defined.
 	(db_action_for): Likewise.
