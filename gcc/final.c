@@ -204,10 +204,8 @@ rtx final_sequence;
 static int dialect_number;
 #endif
 
-#ifdef HAVE_conditional_execution
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 rtx current_insn_predicate;
-#endif
 
 #ifdef HAVE_ATTR_length
 static int asm_insn_count (rtx);
@@ -2102,10 +2100,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	const char *templ;
 	bool is_stmt;
 
-#ifdef HAVE_conditional_execution
 	/* Reset this early so it is correct for ASM statements.  */
 	current_insn_predicate = NULL_RTX;
-#endif
+
 	/* An INSN, JUMP_INSN or CALL_INSN.
 	   First check for special kinds that recog doesn't recognize.  */
 
@@ -2590,10 +2587,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	FINAL_PRESCAN_INSN (insn, recog_data.operand, recog_data.n_operands);
 #endif
 
-#ifdef HAVE_conditional_execution
-	if (GET_CODE (PATTERN (insn)) == COND_EXEC)
+	if (targetm.have_conditional_execution ()
+	    && GET_CODE (PATTERN (insn)) == COND_EXEC)
 	  current_insn_predicate = COND_EXEC_TEST (PATTERN (insn));
-#endif
 
 #ifdef HAVE_cc0
 	cc_prev_status = cc_status;

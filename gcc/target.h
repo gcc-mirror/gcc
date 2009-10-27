@@ -621,6 +621,9 @@ struct gcc_target
      already been generated.  */
   bool (* branch_target_register_callee_saved) (bool after_pe_gen);
 
+  /* Return true if the target supports conditional execution.  */
+  bool (* have_conditional_execution) (void);
+
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) (rtx);
 
