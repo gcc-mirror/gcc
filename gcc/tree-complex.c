@@ -1114,12 +1114,12 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
   t1 = gimplify_build1 (gsi, ABS_EXPR, inner_type, br);
   t2 = gimplify_build1 (gsi, ABS_EXPR, inner_type, bi);
   compare = fold_build2_loc (gimple_location (gsi_stmt (*gsi)),
-			 LT_EXPR, boolean_type_node, t1, t2);
+			     LT_EXPR, boolean_type_node, t1, t2);
   STRIP_NOPS (compare);
 
   bb_cond = bb_true = bb_false = bb_join = NULL;
   rr = ri = tr = ti = NULL;
-  if (!TREE_CONSTANT (compare))
+  if (TREE_CODE (compare) != INTEGER_CST)
     {
       edge e;
       gimple stmt;
