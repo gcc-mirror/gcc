@@ -561,8 +561,8 @@
 
 	* ipa-reference.c (check_call): Noreturn notrhow calls do not write
 	to memory.
-	(analyze_function): When analyzing noreturn nothrow call, do not compute
-	written stats; free bitmaps of vars early if possible.
+	(analyze_function): When analyzing noreturn nothrow call, do not
+	compute written stats; free bitmaps of vars early if possible.
 	(generate_summary): Only update bitmaps if computed.
 	(propagate): Only dump bitmaps if computed.
 	(ipa_reference_read_summary): Fix pasto.
@@ -666,10 +666,7 @@
 	* Makefile.in (PLUGIN_HEADERS): Add output.h and IPA_UTILS_H.
 
 2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
-	
-	* testsuite/gcc.dg/autopar/outer-4.c: Adjust scan.
-	* testsuite/gcc.dg/autopar/outer-5.c: Adjust scan.
-	* testsuite/gcc.dg/autopar/outer-5.c: Add scan optimized.
+
 	* tree-cfg.c (gimple_duplicate_sese_tail): Fix typos/indentation/white
 	space.
 
@@ -710,13 +707,6 @@
 	Update number of iterations at the exit condition.
 	Don't redirect nexits always to the loop exit.
 	Redirect copied edges from latch to the loop exit.
-	* testsuite/libgomp.graphite/force-parallel-2.c: Adjust scan.
-	* testsuite/gcc.dg/autopar/outer-1.c: New testcase.
-	* testsuite/gcc.dg/autopar/outer-2.c: New testcase.
-	* testsuite/gcc.dg/autopar/outer-3.c: New testcase.
-	* testsuite/gcc.dg/autopar/outer-4.c: New testcase.
-	* testsuite/gcc.dg/autopar/outer-5.c: New testcase.
-	* testsuite/gcc.dg/autopar/outer-6.c: New testcase.
 
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
@@ -727,7 +717,7 @@
 	cgraph_decide_inlining, inline_read_summary): Disable indirect inlining
 	for WPA for time being.
 
-	PR tree-optimize/40556                                                                                                                                         
+	PR tree-optimize/40556
 	* ipa-inline.c (cgraph_early_inlining): Fix iterations condition.
 
 2009-10-22  Richard Guenther  <rguenther@suse.de>
@@ -9846,11 +9836,6 @@
 	* calls.c (emit_library_call_value_1): Update call to
 	hard_libcall_value.
 	* explow.c (hard_libcall_value): Use new target hook.
-	* testsuite/lib/target-supports.exp
-	(check_effective_target_arm_hard_vfp_ok): New hook.
-	(check_effective_target_arm_neon_ok): Improve test for neon
-	availability.
-	* testsuite/gcc.target/arm/eabi1.c: Only run test in base variant.
 	* config/arm/arm.c: Include cgraph.h
 	(TARGET_FUNCTION_VALUE): Override default hook.
 	(arm_pcs_default): New variable.
@@ -14956,7 +14941,6 @@
 	(OMP_CLAUSE_LOCATION): New macro.
 	(struct tree_omp_clause): Add location field.
 	(build_omp_clause): Add argument.
-	* testsuite/gcc.dg/gomp/for-1.c: Fix column.
 	* cp/pt.c (tsubst_omp_for_iterator): Pass location to
 	build_omp_clause.
 	* cp/parser.c (cp_parser_omp_var_list_no_open): Same.

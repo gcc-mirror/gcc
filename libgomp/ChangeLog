@@ -4,6 +4,10 @@
 	*s.  Accept ld version without text in ()s.
 	* configure: Regenerated.
 
+2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
+
+	* testsuite/libgomp.graphite/force-parallel-2.c: Adjust scan.
+
 2009-10-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libgomp/41418
