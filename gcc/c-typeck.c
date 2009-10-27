@@ -2527,6 +2527,7 @@ convert_arguments (int nargs, tree *argarray,
 {
   tree typetail, valtail;
   int parmnum;
+  bool error_args = false;
   const bool type_generic = fundecl
     && lookup_attribute ("type generic", TYPE_ATTRIBUTES(TREE_TYPE (fundecl)));
   tree selector;
@@ -2737,6 +2738,9 @@ convert_arguments (int nargs, tree *argarray,
 	/* Convert `short' and `char' to full-size `int'.  */
 	argarray[parmnum] = default_conversion (val);
 
+      if (argarray[parmnum] == error_mark_node)
+	error_args = true;
+
       if (typetail)
 	typetail = TREE_CHAIN (typetail);
     }
@@ -2749,7 +2753,7 @@ convert_arguments (int nargs, tree *argarray,
       return -1;
     }
 
-  return parmnum;
+  return error_args ? -1 : parmnum;
 }
 
 /* This is the entry point used by the parser to build unary operators
