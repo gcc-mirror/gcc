@@ -202,6 +202,8 @@ __enable_execute_stack (void *addr)					\
 
 #undef ENABLE_EXECUTE_STACK
 #define ENABLE_EXECUTE_STACK MINGW_ENABLE_EXECUTE_STACK
+#undef  CHECK_EXECUTE_STACK_ENABLED
+#define CHECK_EXECUTE_STACK_ENABLED flag_setstackexecutable
 
 #ifdef IN_LIBGCC2
 #include <windows.h>

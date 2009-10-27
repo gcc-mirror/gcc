@@ -1,3 +1,13 @@
+2009-10-27  Kai Tietz <kai.tietz@onevision.com>
+
+	PR/41799
+	* config/i386/mingw32.h (CHECK_EXECUTE_STACK_ENABLED): New macro.
+	* config/i386/mingw.opt: Add fset-stack-executable.
+	* config/i386/i386.c (ix86_trampoline_init): Make call to
+	emit_library_call conditional, if CHECK_EXECUTE_STACK_ENABLED is
+	defined and its value is not zero.
+	* doc/invoke.texi
+
 2009-10-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases): In IPA mode
