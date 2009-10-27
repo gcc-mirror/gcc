@@ -125,8 +125,8 @@ package System.File_IO is
    --  if used with temporary files or standard files.
 
    function Form (File : FCB.AFCB_Ptr) return String;
-   --  Returns the form as supplied by create, open or reset
-   --  The string is normalized to all lower case letters.
+   --  Returns the form as supplied by create, open or reset The string is
+   --  normalized to all lower case letters.
 
    function Is_Open (File : FCB.AFCB_Ptr) return Boolean;
    --  Determines if file is open or not
@@ -145,25 +145,25 @@ package System.File_IO is
    --  not opened in the normal manner. Note that the caller is responsible
    --  for task lock out to protect the global data structures if this is
    --  necessary (it is needed for the calls from within this unit itself,
-   --  but not required for the calls from Text_IO and Wide_Text_IO that
-   --  are made during elaboration of the environment task).
+   --  but not required for the calls from Text_IO and [Wide_]Wide_Text_IO
+   --  that are made during elaboration of the environment task).
 
    procedure Check_File_Open (File : FCB.AFCB_Ptr);
-   --  If the current file is not open, then Status_Error is raised.
-   --  Otherwise control returns normally (with File pointing to the
-   --  control block for the open file.
+   --  If the current file is not open, then Status_Error is raised. Otherwise
+   --  control returns normally (with File pointing to the control block for
+   --  the open file.
 
    procedure Check_Read_Status (File : FCB.AFCB_Ptr);
-   --  If the current file is not open, then Status_Error is raised. If
-   --  the file is open, then the mode is checked to ensure that reading
-   --  is permitted, and if not Mode_Error is raised, otherwise control
-   --  returns normally.
+   --  If the current file is not open, then Status_Error is raised. If the
+   --  file is open, then the mode is checked to make sure that reading is
+   --  permitted, and if not Mode_Error is raised, otherwise control returns
+   --  normally.
 
    procedure Check_Write_Status (File : FCB.AFCB_Ptr);
-   --  If the current file is not open, then Status_Error is raised. If
-   --  the file is open, then the mode is checked to ensure that writing
-   --  is permitted, and if not Mode_Error is raised, otherwise control
-   --  returns normally.
+   --  If the current file is not open, then Status_Error is raised. If the
+   --  file is open, then the mode is checked to ensure that writing is
+   --  permitted, and if not Mode_Error is raised, otherwise control returns
+   --  normally.
 
    function End_Of_File (File : FCB.AFCB_Ptr) return Boolean;
    --  File must be opened in read mode. True is returned if the stream is
@@ -171,30 +171,28 @@ package System.File_IO is
    --  The position of the stream is not affected.
 
    procedure Flush (File : FCB.AFCB_Ptr);
-   --  Flushes the stream associated with the given file. The file must be
-   --  open and in write mode (if not, an appropriate exception is raised)
+   --  Flushes the stream associated with the given file. The file must be open
+   --  and in write mode (if not, an appropriate exception is raised)
 
    function Form_Boolean
      (Form    : String;
       Keyword : String;
-      Default : Boolean)
-      return    Boolean;
-   --  Searches form string for an entry of the form Keyword=xx where xx is
-   --  either Yes/No or y/n. Returns True if Yes or Y is found, False if No
-   --  or N is found. If the keyword parameter is not found, returns the
-   --  value given as Default. May raise Use_Error if a form string syntax
-   --  error is detected. Keyword and Form must be in lower case.
+      Default : Boolean) return Boolean;
+   --  Searches form string for an entry of the form keyword=xx where xx is
+   --  either yes/no or y/n. Returns True if yes or y is found, False if no or
+   --  n is found. If the keyword parameter is not found, returns the value
+   --  given as Default. May raise Use_Error if a form string syntax error is
+   --  detected. Keyword and Form must be in lower case.
 
    function Form_Integer
      (Form    : String;
       Keyword : String;
-      Default : Integer)
-      return    Integer;
-   --  Searches form string for an entry of the form Keyword=xx where xx is
-   --  an unsigned decimal integer in the range 0 to 999_999. Returns this
-   --  integer value if it is found. If the keyword parameter is not found,
-   --  returns the value given as Default. Raise Use_Error if a form string
-   --  syntax error is detected. Keyword and Form must be in lower case.
+      Default : Integer) return Integer;
+   --  Searches form string for an entry of the form Keyword=xx where xx is an
+   --  unsigned decimal integer in the range 0 to 999_999. Returns this integer
+   --  value if it is found. If the keyword parameter is not found, returns the
+   --  value given as Default. Raise Use_Error if a form string syntax error is
+   --  detected. Keyword and Form must be in lower case.
 
    procedure Form_Parameter
      (Form    : String;
@@ -221,22 +219,22 @@ package System.File_IO is
       Buf   : Address;
       Siz   : Interfaces.C_Streams.size_t;
       Count : out Interfaces.C_Streams.size_t);
-   --  Reads Siz bytes from File.Stream into Buf. The caller has checked
-   --  that the file is open in read mode. Device Error is raised if an error
+   --  Reads Siz bytes from File.Stream into Buf. The caller has checked that
+   --  the file is open in read mode. Device Error is raised if an error
    --  occurs. Count is the actual number of bytes read, which may be less
    --  than Siz if the end of file is encountered.
 
    procedure Append_Set (File : FCB.AFCB_Ptr);
-   --  If the mode of the file is Append_File, then the file is positioned
-   --  at the end of file using fseek, otherwise this call has no effect.
+   --  If the mode of the file is Append_File, then the file is positioned at
+   --  the end of file using fseek, otherwise this call has no effect.
 
    procedure Write_Buf
      (File : FCB.AFCB_Ptr;
       Buf  : Address;
       Siz  : Interfaces.C_Streams.size_t);
-   --  Writes size_t bytes to File.Stream from Buf. The caller has checked
-   --  that the file is open in write mode. Raises Device_Error if the
-   --  complete buffer cannot be written.
+   --  Writes size_t bytes to File.Stream from Buf. The caller has checked that
+   --  the file is open in write mode. Raises Device_Error if the complete
+   --  buffer cannot be written.
 
    procedure Make_Unbuffered (File : FCB.AFCB_Ptr);
 

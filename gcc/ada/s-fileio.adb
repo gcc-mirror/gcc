@@ -523,8 +523,7 @@ package body System.File_IO is
    function Form_Boolean
      (Form    : String;
       Keyword : String;
-      Default : Boolean)
-      return    Boolean
+      Default : Boolean) return Boolean
    is
       V1, V2 : Natural;
       pragma Unreferenced (V2);
@@ -553,8 +552,7 @@ package body System.File_IO is
    function Form_Integer
      (Form    : String;
       Keyword : String;
-      Default : Integer)
-      return    Integer
+      Default : Integer) return Integer
    is
       V1, V2 : Natural;
       V      : Integer;

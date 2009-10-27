@@ -1,5 +1,10 @@
 2009-10-27  Robert Dewar  <dewar@adacore.com>
 
+	* s-fileio.adb, s-fileio.ads, sem_util.adb, sem_warn.adb,
+	sem_warn.ads: Minor reformatting
+
+2009-10-27  Robert Dewar  <dewar@adacore.com>
+
 	* sem_warn.adb, sem_util.adb, sem_util.ads: Minor reformatting. Add
 	comments.
 

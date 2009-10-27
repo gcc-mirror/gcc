@@ -2146,7 +2146,7 @@ package body Sem_Util is
       --  If we have entity names, then must be same entity
 
       if Is_Entity_Name (A1) then
-         if Is_Entity_Name (A2)then
+         if Is_Entity_Name (A2) then
             return Entity (A1) = Entity (A2);
          else
             return False;
@@ -2249,8 +2249,8 @@ package body Sem_Util is
          return Denotes_Same_Prefix (A2, A1);
 
       elsif Nkind_In (A1, N_Selected_Component, N_Indexed_Component, N_Slice)
-        and then
-          Nkind_In (A2, N_Selected_Component, N_Indexed_Component, N_Slice)
+              and then
+            Nkind_In (A2, N_Selected_Component, N_Indexed_Component, N_Slice)
       then
          declare
             Root1, Root2 : Node_Id;
