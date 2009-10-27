@@ -1,3 +1,9 @@
+2009-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR bootstrap/41451
+	* fold-const.c (fold_binary_loc): Do not call
+	protected_set_expr_location.
+
 2009-10-27  Wei Guozhi  <carrot@google.com>
 
 	PR target/41705

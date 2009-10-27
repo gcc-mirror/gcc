@@ -10147,7 +10147,6 @@ fold_binary_loc (location_t loc,
 	  tem = fold_build2_loc (loc, code, type,
 			     fold_convert_loc (loc, TREE_TYPE (op0),
 					       TREE_OPERAND (arg0, 1)), op1);
-	  protected_set_expr_location (tem, loc);
 	  tem = build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0), tem);
 	  goto fold_binary_exit;
 	}
@@ -10157,7 +10156,6 @@ fold_binary_loc (location_t loc,
 	  tem = fold_build2_loc (loc, code, type, op0,
 			     fold_convert_loc (loc, TREE_TYPE (op1),
 					       TREE_OPERAND (arg1, 1)));
-	  protected_set_expr_location (tem, loc);
 	  tem = build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0), tem);
 	  goto fold_binary_exit;
 	}
