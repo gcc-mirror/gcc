@@ -1,3 +1,9 @@
+2009-10-27  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR lto/41652
+	* configure.ac: Call AC_SYS_LARGEFILE before AC_OUTPUT.
+	* configure: Regenerate.
+
 2009-10-26  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Use AM_MAINTAINER_MODE.
