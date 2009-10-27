@@ -1422,7 +1422,10 @@ cgraph_optimize (void)
 
   /* Do nothing else if any IPA pass found errors.  */
   if (errorcount || sorrycount)
-    return;
+    {
+      timevar_pop (TV_CGRAPHOPT);
+      return;
+    }
 
   /* This pass remove bodies of extern inline functions we never inlined.
      Do this later so other IPA passes see what is really going on.  */

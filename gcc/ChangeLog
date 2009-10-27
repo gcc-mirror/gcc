@@ -1,5 +1,9 @@
 2009-10-27  Richard Henderson  <rth@redhat.com>
 
+	* cgraphunit.c (cgraph_optimize): Maintain timevar stack properly.
+
+2009-10-27  Richard Henderson  <rth@redhat.com>
+
 	PR c++/41819
 	* tree-eh.c (eh_region_may_contain_throw_map): Rename from
 	eh_region_may_contain_throw; update users.
