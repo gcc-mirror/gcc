@@ -182,6 +182,20 @@
 	PR lto/41730
 	* g++.dg/lto/20091022-1_0.C: New testcase.
 
+2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
+
+	* gcc.dg/autopar/outer-4.c: Adjust scan.
+	* gcc.dg/autopar/outer-5.c: Adjust scan.
+	* gcc.dg/autopar/outer-5.c: Add scan optimized.
+
+	* libgomp.graphite/force-parallel-2.c: Adjust scan.
+	* gcc.dg/autopar/outer-1.c: New testcase.
+	* gcc.dg/autopar/outer-2.c: New testcase.
+	* gcc.dg/autopar/outer-3.c: New testcase.
+	* gcc.dg/autopar/outer-4.c: New testcase.
+	* gcc.dg/autopar/outer-5.c: New testcase.
+	* gcc.dg/autopar/outer-6.c: New testcase.
+
 2009-10-22  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/pr40556.c: New testcase.
@@ -3169,6 +3183,11 @@
 
 2009-08-06  Richard Earnshaw  <rearnsha@arm.com>
 
+	* lib/target-supports.exp (check_effective_target_arm_hard_vfp_ok): New
+	hook.
+	(check_effective_target_arm_neon_ok): Improve test for neon
+	availability.
+	* gcc.target/arm/eabi1.c: Only run test in base variant.
 	* gcc.target/arm/abitest.h: Allow the test function to have a PCS
 	attribute.
 	* gcc.target/arm/vfp1[567].c: New tests.
