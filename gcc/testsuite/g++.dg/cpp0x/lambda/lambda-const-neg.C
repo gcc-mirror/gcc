@@ -3,11 +3,11 @@
 #include <cassert>
 
 template<typename F>
-void call(const F& f) { f(); }	// { dg-error "discards qualifiers" }
+void call(const F& f) { f(); }
 
 int main() {
   call([] () -> void {});
-  call([] () mutable -> void {}); // { dg-message "" "`f' does not have const `operator()'" }
+  call([] () mutable -> void {}); // { dg-message "" "declared mutable" }
 
   int i = -1;
   call([&i] () -> void { i = 0; });

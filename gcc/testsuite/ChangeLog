@@ -1,3 +1,10 @@
+2009-10-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-conv.C: New.
+	* g++.dg/cpp0x/lambda/lambda-const-neg.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-non-const.C: Adjust.
+
 2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/null_pointer_deref1.adb: Accept Constraint_Error.

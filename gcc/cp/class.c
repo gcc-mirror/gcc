@@ -2677,7 +2677,8 @@ add_implicitly_declared_members (tree t,
       CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
     }
 
-  /* Currently only lambdas get a lazy move ctor.  */
+  /* Currently only lambdas get a lazy move ctor, but N2987 adds them for
+     other classes.  */
   if (LAMBDA_TYPE_P (t))
     CLASSTYPE_LAZY_MOVE_CTOR (t) = 1;
 

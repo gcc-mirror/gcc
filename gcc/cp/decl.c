@@ -10209,8 +10209,13 @@ grok_op_properties (tree decl, bool complain)
 	      || operator_code == ARRAY_REF
 	      || operator_code == NOP_EXPR)
 	    {
-	      error ("%qD must be a nonstatic member function", decl);
-	      return false;
+	      if (class_type && LAMBDA_TYPE_P (class_type))
+		/* Lambdas can have static op() and conv ops.  */;
+	      else
+		{
+		  error ("%qD must be a nonstatic member function", decl);
+		  return false;
+		}
 	    }
 	  else
 	    {
