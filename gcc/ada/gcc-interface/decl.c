@@ -7231,6 +7231,23 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 		   UI_From_Int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
 }
 
+/* Return first element of field list whose TREE_PURPOSE is ELEM or whose
+   DECL_ORIGINAL_FIELD of TREE_PURPOSE is ELEM.  Return NULL_TREE if there
+   is no such element in the list.  */
+
+static tree
+purpose_member_field (const_tree elem, tree list)
+{
+  while (list)
+    {
+      tree field = TREE_PURPOSE (list);
+      if (elem == field || elem == DECL_ORIGINAL_FIELD (field))
+	return list;
+      list = TREE_CHAIN (list);
+    }
+  return NULL_TREE;
+}
+
 /* Given GNAT_ENTITY, a record type, and GNU_TYPE, its corresponding GCC type,
    set Component_Bit_Offset and Esize of the components to the position and
    size used by Gigi.  */
@@ -7254,11 +7271,12 @@ annotate_rep (Entity_Id gnat_entity, tree gnu_type)
 	|| (Ekind (gnat_field) == E_Discriminant
 	    && !Is_Unchecked_Union (Scope (gnat_field))))
       {
-	tree parent_offset, t;
-
-	t = purpose_member (gnat_to_gnu_field_decl (gnat_field), gnu_list);
+	tree t = purpose_member_field (gnat_to_gnu_field_decl (gnat_field),
+				       gnu_list);
 	if (t)
 	  {
+	    tree parent_offset;
+
 	    if (type_annotate_only && Is_Tagged_Type (gnat_entity))
 	      {
 		/* In this mode the tag and parent components are not
