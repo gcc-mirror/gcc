@@ -41,7 +41,8 @@
 2009-10-27  Wei Guozhi  <carrot@google.com>
 
 	PR target/41705
-	* target.h (have_conditional_execution): Add a new target hook function.
+	* target.h (have_conditional_execution): Add a new target hook
+	function.
 	* target-def.h (TARGET_HAVE_CONDITIONAL_EXECUTION): Likewise.
 	* targhooks.h (default_have_conditional_execution): Likewise.
 	* targhooks.c (default_have_conditional_execution): Likewise.
@@ -49,8 +50,8 @@
 	* config/arm/arm.c (TARGET_HAVE_CONDITIONAL_EXECUTION): Define it.
 	(arm_have_conditional_execution): New function.
 	* ifcvt.c (noce_process_if_block, find_if_header,
-	cond_exec_find_if_block, dead_or_predicable): Change the usage of macro
-	HAVE_conditional_execution to a target hook call.
+	cond_exec_find_if_block, dead_or_predicable): Change the usage of
+	macro HAVE_conditional_execution to a target hook call.
 	* recog.c (peephole2_optimize): Likewise.
 	* sched-rgn.c (add_branch_dependences): Likewise.
 	* final.c (asm_insn_count, final_scan_insn): Likewise.
@@ -223,7 +224,7 @@
 	(expand_expr_addr_expr): Likewise.
 	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Likewise.
 	* cfgexpand.c (expand_debug_expr): Likewise.
-	
+
 	* auto-inc-dec.c: Include "target.h".
 	(try_merge): Use appropriate address mode instead of Pmode.
 	(find_inc): Likewise.
@@ -266,7 +267,7 @@
 	(multiplier_allowed_in_address_p): Likewise.
 	(get_address_cost): Likewise.
 	* varasm.c (make_decl_rtl): Likewise.
-	
+
 	* expr.c (expand_assignment): Always convert offsets to appropriate
 	address mode.
 	(store_expr): Likewise.
@@ -277,7 +278,7 @@
 	* reload.c (form_sum): Add MODE argument, use it instead of Pmode.
 	Update recursive calls.
 	(subst_indexed_address): Update calls to form_sum.
-	
+
 	* tree-flow.h (addr_for_mem_ref): Add ADDRSPACE argument.
 	* tree-ssa-address.c: Include "target.h".
 	(templates): Replace by ...
@@ -288,7 +289,7 @@
 	instead of global cache.  Update call to gen_addr_rtx.
 	(valid_mem_ref_p): Update call to addr_for_mem_ref.
 	* expr.c (expand_expr_real_1): Update call to addr_for_mem_ref.
-	
+
 	* rtl.h (convert_memory_address_addr_space): Add prototype.
 	(convert_memory_address): Define as macro.
 	* explow.c (convert_memory_address): Rename to ...
@@ -696,7 +697,7 @@
 	(m32c_function_value): Make static, add new 'outgoing' argument.
 	(m32c_libcall_value): Make static, add new 'fun' argument.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
-	* config/m32c/m32c.h: (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
+	* config/m32c/m32c.h (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
 	(FUNCTION_VALUE_REGNO_P): Redefine, use m32c_function_value_regno_p.
 	* config/m32c/m32c-protos.h (m32c_function_value_regno_p): Declare.
 	(m32c_function_value, m32c_libcall_value): Delete declaration.
@@ -730,17 +731,17 @@
 	* lto-streamer-in.c (lto_input_location): Likewise.
 
 2009-10-22  Razya Ladelsky  <razya@il.ibm.com>
-	
-	* cfgloopmanip.c  (duplicate_subloops): Export. 
+
+	* cfgloopmanip.c (duplicate_subloops): Export.
 	* tree-parloops.c (loop_parallel_p): Dump if loop is innermost.
-	(transform_to_exit_first_loop): Duplicate bbs starting from 
+	(transform_to_exit_first_loop): Duplicate bbs starting from
 	header up to loop->latch instead of exit->src.
 	Initialize control variable to the correct number of iterations.
 	(gather_scalar_reductions): Do not register double reductions.
-	(parallelize_loops): Dump which loop is tested. 
-	Indicate whether the parallelized loop is inner or not. 
+	(parallelize_loops): Dump which loop is tested.
+	Indicate whether the parallelized loop is inner or not.
 	Remove the innermost-loop requirement.
-	* cfgloop.h (duplicate_subloops): Export. 
+	* cfgloop.h (duplicate_subloops): Export.
 	* tree-cfg.c (add_phi_args_after_redirect): New function.
 	(gimple_duplicate_sese_tail): Remove the no-subloops constraint.
 	Call duplicate_subloops.
@@ -754,8 +755,8 @@
 	flag_ltrans check.
 	* ipa-inline.c (cgraph_mark_inline_edge,
 	cgraph_decide_inlining_of_small_function,
-	cgraph_decide_inlining, inline_read_summary): Disable indirect inlining
-	for WPA for time being.
+	cgraph_decide_inlining, inline_read_summary): Disable indirect
+	inlining for WPA for time being.
 
 	PR tree-optimize/40556
 	* ipa-inline.c (cgraph_early_inlining): Fix iterations condition.
@@ -777,8 +778,8 @@
 	(ipa_reference_read_summary): Stream in calls_read_all properly.
 	(read_write_all_from_decl): New function.
 	(propagate): Handle OVERWRITABLE nodes and external calls here.
-	* ipa-pre-const.c (check_call): In IPA mode handle indirect calls
-	only.
+	* ipa-pre-const.c (check_call): In IPA mode handle indirect
+	calls only.
 	(analyze_function): Do not check visibility here.
 	(add_new_function): We summary OVERWRITABLE too.
 	(generate_summary): Stream OVERWRITABLE nodes too.
@@ -792,10 +793,11 @@
 	(ipcp_init_stage): Analyze all functions for whopr/lto.
 	(ipcp_propagate_stage): Skip external calls.
 	(ipcp_iterate_stage): Call ipa_update_after_lto_read if needed.
-	* ipa-reference.c (write_node_summary_p): Fix thinko about availability.
+	* ipa-reference.c (write_node_summary_p): Fix thinko about
+	availability.
 	* cgraphunit.c (ipa_passes): When in lto, ne er produce new summaries;
-	when in ltrans, skip executing of ipa passes since everything should've
-	been done.
+	when in ltrans, skip executing of ipa passes since everything
+	should've been done.
 	* ipa-inline.c (cgraph_decide_inlining): Remove FIXMEs.
 	(inline_generate_summary): Likewise.
 	(inline_read_summary): New function.
@@ -819,9 +821,11 @@
 	(ipa_edge_args_vector): Move into GGC.
 	(ipa_check_create_edge_args): Update.
 	(ipa_update_after_lto_read): New.
-	* passes.c (ipa_write_summaries_1): When in wpa, do not write summaries.
+	* passes.c (ipa_write_summaries_1): When in wpa, do not write
+	summaries.
 	(ipa_read_summaries): When in ltrans, so not read summaries.
-	* lto-streamer.c (lto_get_section_name): Add LTO_section_jump_functions.
+	* lto-streamer.c (lto_get_section_name): Add
+	LTO_section_jump_functions.
 	* lto-streamer.h (LTO_section_jump_functions): New section.
 	(produce_asm): Declare.
 	* lto-cgraph.c (output_cgraph): Output edges in reverse order.
@@ -844,7 +848,7 @@
 	* config/ia64/ia64.c (ia64_override_options): Set
 	flag_ira_loop_pressure up for -O3.
 	* config/rs6000/rs6000.c (rs6000_override_options): Ditto.
-	
+
 2009-10-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/41497
@@ -982,9 +986,8 @@
 2009-10-20  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.md: Added agen condition to operand
-	forwarding bypasses. 
-	Added bypass for early address generation use of int results.
-	Updated comments.
+	forwarding bypasses.  Added bypass for early address generation
+	use of int results.  Updated comments.
 
 2009-10-20  Stefan Dösinger  <stefan@codeweavers.com>
 
@@ -1242,10 +1245,10 @@
 	PR target/23983
 	* config/rs6000/predicates.md: Update copyright year.
 	* config/rs6000/altivec.md: Ditto.
-	
+
 	* config/rs6000/t-rs6000 (TM_H): Add rs6000-builtin.def.
 	(MD_INCLUDES): Add a2.md.
-	
+
 	* config/rs6000/rs6000.c (rs6000_builtin_decls): Change
 	RS6000_BUILTIN_COUNT to MAX_RS6000_BUILTINS.
 	(builtin_classify): New static vector to classify various builtins
@@ -1325,7 +1328,7 @@
 	* config/arm/neon.md (neon_vshll_n<mode>): Checking Bounds fixed.
 
 2009-10-14  DJ Delorie  <dj@redhat.com>
-	
+
 	* config/h8300/h8300.c (F): New.
 	(Fpa): New.
 	(h8300_emit_stack_adjustment): Call them.
@@ -1418,7 +1421,7 @@
 	* doc/invoke.texi (-fira-loop-pressure, ira-loop-reserved-regs):
 	Describe.
 	* doc/tm.texi (STACK_REG_COVER_CLASS): Describe.
-	
+
 2009-10-14  Richard Guenther  <rguenther@suse.de>
 
 	* lto-symtab.c (lto_symtab_compatible): Fold in ...
