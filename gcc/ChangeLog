@@ -1,3 +1,8 @@
+2009-10-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-complex.c (expand_complex_div_wide): Check for
+	INTEGER_CST, not TREE_CONSTANT on comparison folding result.
+
 2009-10-27  Revital Eres  <eres@il.ibm.com>
 
 	PR tree-optimization/40648
