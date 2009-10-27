@@ -1,3 +1,13 @@
+2009-10-27  Richard Henderson  <rth@redhat.com>
+
+	PR c++/41819
+	* tree-eh.c (eh_region_may_contain_throw_map): Rename from
+	eh_region_may_contain_throw; update users.
+	(eh_region_may_contain_throw): New function.
+	(lower_catch): Check flag_exceptions before creating exception region.
+	(lower_eh_filter, lower_eh_must_not_throw): Likewise.
+	(lower_cleanup): Tidy existing flag_exceptions check to match.
+
 2009-10-27  Kai Tietz <kai.tietz@onevision.com>
 
 	PR/41799

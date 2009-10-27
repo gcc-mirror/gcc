@@ -340,7 +340,7 @@ static gimple_seq eh_seq;
 
 /* Record whether an EH region contains something that can throw,
    indexed by EH region number.  */
-static bitmap eh_region_may_contain_throw;
+static bitmap eh_region_may_contain_throw_map;
 
 /* The GOTO_QUEUE is is an array of GIMPLE_GOTO and GIMPLE_RETURN
    statements that are seen to escape this GIMPLE_TRY_FINALLY node.
@@ -863,13 +863,22 @@ emit_eh_dispatch (gimple_seq *seq, eh_region region)
 static void
 note_eh_region_may_contain_throw (eh_region region)
 {
-  while (!bitmap_bit_p (eh_region_may_contain_throw, region->index))
+  while (!bitmap_bit_p (eh_region_may_contain_throw_map, region->index))
     {
-      bitmap_set_bit (eh_region_may_contain_throw, region->index);
+      bitmap_set_bit (eh_region_may_contain_throw_map, region->index);
       region = region->outer;
       if (region == NULL)
 	break;
     }
+}
+
+/* Check if REGION has been marked as containing a throw.  If REGION is
+   NULL, this predicate is false.  */
+
+static inline bool
+eh_region_may_contain_throw (eh_region r)
+{
+  return r && bitmap_bit_p (eh_region_may_contain_throw_map, r->index);
 }
 
 /* We want to transform
@@ -1559,8 +1568,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
 
   /* Determine if any exceptions are possible within the try block.  */
   if (using_eh_for_cleanups_p)
-    this_tf.may_throw = bitmap_bit_p (eh_region_may_contain_throw,
-				      this_tf.region->index);
+    this_tf.may_throw = eh_region_may_contain_throw (this_tf.region);
   if (this_tf.may_throw)
     honor_protect_cleanup_actions (state, &this_state, &this_tf);
 
@@ -1618,22 +1626,23 @@ lower_try_finally (struct leh_state *state, gimple tp)
 static gimple_seq
 lower_catch (struct leh_state *state, gimple tp)
 {
-  eh_region try_region;
-  struct leh_state this_state;
+  eh_region try_region = NULL;
+  struct leh_state this_state = *state;
   gimple_stmt_iterator gsi;
   tree out_label;
   gimple_seq new_seq;
   gimple x;
   location_t try_catch_loc = gimple_location (tp);
 
-  try_region = gen_eh_region_try (state->cur_region);
-
-  this_state = *state;
-  this_state.cur_region = try_region;
+  if (flag_exceptions)
+    {
+      try_region = gen_eh_region_try (state->cur_region);
+      this_state.cur_region = try_region;
+    }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
 
-  if (!bitmap_bit_p (eh_region_may_contain_throw, try_region->index))
+  if (!eh_region_may_contain_throw (try_region))
     return gimple_try_eval (tp);
 
   new_seq = NULL;
@@ -1686,21 +1695,23 @@ lower_catch (struct leh_state *state, gimple tp)
 static gimple_seq
 lower_eh_filter (struct leh_state *state, gimple tp)
 {
-  struct leh_state this_state;
-  eh_region this_region;
+  struct leh_state this_state = *state;
+  eh_region this_region = NULL;
   gimple inner, x;
   gimple_seq new_seq;
 
   inner = gimple_seq_first_stmt (gimple_try_cleanup (tp));
 
-  this_region = gen_eh_region_allowed (state->cur_region,
-				       gimple_eh_filter_types (inner));
-  this_state = *state;
-  this_state.cur_region = this_region;
+  if (flag_exceptions)
+    {
+      this_region = gen_eh_region_allowed (state->cur_region,
+				           gimple_eh_filter_types (inner));
+      this_state.cur_region = this_region;
+    }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
 
-  if (!bitmap_bit_p (eh_region_may_contain_throw, this_region->index))
+  if (!eh_region_may_contain_throw (this_region))
     return gimple_try_eval (tp);
 
   new_seq = NULL;
@@ -1729,24 +1740,25 @@ lower_eh_filter (struct leh_state *state, gimple tp)
 static gimple_seq
 lower_eh_must_not_throw (struct leh_state *state, gimple tp)
 {
-  struct leh_state this_state;
-  eh_region this_region;
-  gimple inner;
+  struct leh_state this_state = *state;
 
-  inner = gimple_seq_first_stmt (gimple_try_cleanup (tp));
+  if (flag_exceptions)
+    {
+      gimple inner = gimple_seq_first_stmt (gimple_try_cleanup (tp));
+      eh_region this_region;
 
-  this_region = gen_eh_region_must_not_throw (state->cur_region);
-  this_region->u.must_not_throw.failure_decl
-    = gimple_eh_must_not_throw_fndecl (inner);
-  this_region->u.must_not_throw.failure_loc = gimple_location (tp);
+      this_region = gen_eh_region_must_not_throw (state->cur_region);
+      this_region->u.must_not_throw.failure_decl
+	= gimple_eh_must_not_throw_fndecl (inner);
+      this_region->u.must_not_throw.failure_loc = gimple_location (tp);
 
-  /* In order to get mangling applied to this decl, we must mark it
-     used now.  Otherwise, pass_ipa_free_lang_data won't think it
-     needs to happen.  */
-  TREE_USED (this_region->u.must_not_throw.failure_decl) = 1;
+      /* In order to get mangling applied to this decl, we must mark it
+	 used now.  Otherwise, pass_ipa_free_lang_data won't think it
+	 needs to happen.  */
+      TREE_USED (this_region->u.must_not_throw.failure_decl) = 1;
 
-  this_state = *state;
-  this_state.cur_region = this_region;
+      this_state.cur_region = this_region;
+    }
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
 
@@ -1759,26 +1771,20 @@ lower_eh_must_not_throw (struct leh_state *state, gimple tp)
 static gimple_seq
 lower_cleanup (struct leh_state *state, gimple tp)
 {
-  struct leh_state this_state;
-  eh_region this_region;
+  struct leh_state this_state = *state;
+  eh_region this_region = NULL;
   struct leh_tf_state fake_tf;
   gimple_seq result;
 
-  /* If not using eh, then exception-only cleanups are no-ops.  */
-  if (!flag_exceptions)
+  if (flag_exceptions)
     {
-      result = gimple_try_eval (tp);
-      lower_eh_constructs_1 (state, result);
-      return result;
+      this_region = gen_eh_region_cleanup (state->cur_region);
+      this_state.cur_region = this_region;
     }
-
-  this_region = gen_eh_region_cleanup (state->cur_region);
-  this_state = *state;
-  this_state.cur_region = this_region;
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
 
-  if (!bitmap_bit_p (eh_region_may_contain_throw, this_region->index))
+  if (!eh_region_may_contain_throw (this_region))
     return gimple_try_eval (tp);
 
   /* Build enough of a try-finally state so that we can reuse
@@ -1979,7 +1985,7 @@ lower_eh_constructs (void)
     return 0;
 
   finally_tree = htab_create (31, struct_ptr_hash, struct_ptr_eq, free);
-  eh_region_may_contain_throw = BITMAP_ALLOC (NULL);
+  eh_region_may_contain_throw_map = BITMAP_ALLOC (NULL);
   memset (&null_state, 0, sizeof (null_state));
 
   collect_finally_tree_1 (bodyp, NULL);
@@ -1996,7 +2002,7 @@ lower_eh_constructs (void)
   gcc_assert (bodyp == gimple_body (current_function_decl));
 
   htab_delete (finally_tree);
-  BITMAP_FREE (eh_region_may_contain_throw);
+  BITMAP_FREE (eh_region_may_contain_throw_map);
   eh_seq = NULL;
 
   /* If this function needs a language specific EH personality routine
