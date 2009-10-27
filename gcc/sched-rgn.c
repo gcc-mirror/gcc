@@ -2508,7 +2508,9 @@ add_branch_dependences (rtx head, rtx tail)
 	  add_dependence (last, insn, REG_DEP_ANTI);
       }
 
-#ifdef HAVE_conditional_execution
+  if (!targetm.have_conditional_execution ())
+    return;
+
   /* Finally, if the block ends in a jump, and we are doing intra-block
      scheduling, make sure that the branch depends on any COND_EXEC insns
      inside the block to avoid moving the COND_EXECs past the branch insn.
@@ -2557,7 +2559,6 @@ add_branch_dependences (rtx head, rtx tail)
       if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == COND_EXEC)
 	add_dependence (tail, insn, REG_DEP_ANTI);
     }
-#endif
 }
 
 /* Data structures for the computation of data dependences in a regions.  We
@@ -3588,4 +3589,3 @@ struct rtl_opt_pass pass_sched2 =
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };
-

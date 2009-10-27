@@ -86,10 +86,6 @@
 #include "tree-pass.h"
 #include "df.h"
 
-#ifndef HAVE_conditional_execution
-#define HAVE_conditional_execution 0
-#endif
-
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
    the .o file there will be an extra round.*/
@@ -2297,5 +2293,3 @@ struct rtl_opt_pass pass_partition_blocks =
   TODO_dump_func | TODO_verify_rtl_sharing/* todo_flags_finish */
  }
 };
-
-

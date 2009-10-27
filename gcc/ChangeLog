@@ -1,3 +1,21 @@
+2009-10-27  Wei Guozhi  <carrot@google.com>
+
+	PR target/41705
+	* target.h (have_conditional_execution): Add a new target hook function.
+	* target-def.h (TARGET_HAVE_CONDITIONAL_EXECUTION): Likewise.
+	* targhooks.h (default_have_conditional_execution): Likewise.
+	* targhooks.c (default_have_conditional_execution): Likewise.
+	* doc/tm.texi (TARGET_HAVE_CONDITIONAL_EXECUTION): Document it.
+	* config/arm/arm.c (TARGET_HAVE_CONDITIONAL_EXECUTION): Define it.
+	(arm_have_conditional_execution): New function.
+	* ifcvt.c (noce_process_if_block, find_if_header,
+	cond_exec_find_if_block, dead_or_predicable): Change the usage of macro
+	HAVE_conditional_execution to a target hook call.
+	* recog.c (peephole2_optimize): Likewise.
+	* sched-rgn.c (add_branch_dependences): Likewise.
+	* final.c (asm_insn_count, final_scan_insn): Likewise.
+	* bb-reorder.c (HAVE_conditional_execution): Remove it.
+
 2009-10-26  Ben Elliston  <bje@au.ibm.com>
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>

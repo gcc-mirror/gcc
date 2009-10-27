@@ -10842,6 +10842,12 @@ to have to make special provisions in @code{INITIAL_ELIMINATION_OFFSET}
 to reserve space for caller-saved target registers.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_HAVE_CONDITIONAL_EXECUTION (void)
+This target hook returns true if the target supports conditional execution.
+This target hook is required only when the target has several different
+modes and they have different conditional execution capability, such as ARM.
+@end deftypefn
+
 @defmac POWI_MAX_MULTS
 If defined, this macro is interpreted as a signed integer C expression
 that specifies the maximum number of floating point multiplications

@@ -998,4 +998,14 @@ unsigned int default_case_values_threshold (void)
   return (HAVE_casesi ? 4 : 5);
 }
 
+bool
+default_have_conditional_execution (void)
+{
+#ifdef HAVE_conditional_execution
+  return HAVE_conditional_execution;
+#else
+  return false;
+#endif
+}
+
 #include "gt-targhooks.h"

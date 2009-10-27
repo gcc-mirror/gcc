@@ -3279,40 +3279,44 @@ peephole2_optimize (void)
 		      do_cleanup_cfg |= purge_dead_edges (bb);
 		    }
 
-#ifdef HAVE_conditional_execution
-		  for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
-		    peep2_insn_data[i].insn = NULL_RTX;
-		  peep2_insn_data[peep2_current].insn = PEEP2_EOB;
-		  peep2_current_count = 0;
-#else
-		  /* Back up lifetime information past the end of the
-		     newly created sequence.  */
-		  if (++i >= MAX_INSNS_PER_PEEP2 + 1)
-		    i = 0;
-		  bitmap_copy (live, peep2_insn_data[i].live_before);
-
-		  /* Update life information for the new sequence.  */
-		  x = attempt;
-		  do
+		  if (targetm.have_conditional_execution ())
 		    {
-		      if (INSN_P (x))
-			{
-			  if (--i < 0)
-			    i = MAX_INSNS_PER_PEEP2;
-			  if (peep2_current_count < MAX_INSNS_PER_PEEP2
-			      && peep2_insn_data[i].insn == NULL_RTX)
-			    peep2_current_count++;
-			  peep2_insn_data[i].insn = x;
-			  df_insn_rescan (x);
-			  df_simulate_one_insn_backwards (bb, x, live);
-			  bitmap_copy (peep2_insn_data[i].live_before, live);
-			}
-		      x = PREV_INSN (x);
+		      for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
+			peep2_insn_data[i].insn = NULL_RTX;
+		      peep2_insn_data[peep2_current].insn = PEEP2_EOB;
+		      peep2_current_count = 0;
 		    }
-		  while (x != prev);
+		  else
+		    {
+		      /* Back up lifetime information past the end of the
+			 newly created sequence.  */
+		      if (++i >= MAX_INSNS_PER_PEEP2 + 1)
+			i = 0;
+		      bitmap_copy (live, peep2_insn_data[i].live_before);
 
-		  peep2_current = i;
-#endif
+		      /* Update life information for the new sequence.  */
+		      x = attempt;
+		      do
+			{
+			  if (INSN_P (x))
+			    {
+			      if (--i < 0)
+				i = MAX_INSNS_PER_PEEP2;
+			      if (peep2_current_count < MAX_INSNS_PER_PEEP2
+				  && peep2_insn_data[i].insn == NULL_RTX)
+				peep2_current_count++;
+			      peep2_insn_data[i].insn = x;
+			      df_insn_rescan (x);
+			      df_simulate_one_insn_backwards (bb, x, live);
+			      bitmap_copy (peep2_insn_data[i].live_before,
+					   live);
+			    }
+			  x = PREV_INSN (x);
+			}
+		      while (x != prev);
+
+		      peep2_current = i;
+		    }
 
 		  /* If we generated a jump instruction, it won't have
 		     JUMP_LABEL set.  Recompute after we're done.  */
