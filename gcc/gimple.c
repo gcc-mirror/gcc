@@ -3198,7 +3198,8 @@ gimple_types_compatible_p (tree t1, tree t2)
       || SCALAR_FLOAT_TYPE_P (t1)
       || FIXED_POINT_TYPE_P (t1)
       || TREE_CODE (t1) == VECTOR_TYPE
-      || TREE_CODE (t1) == COMPLEX_TYPE)
+      || TREE_CODE (t1) == COMPLEX_TYPE
+      || TREE_CODE (t1) == OFFSET_TYPE)
     {
       /* Can't be the same type if they have different alignment,
 	 sign, precision or mode.  */
@@ -3342,6 +3343,16 @@ gimple_types_compatible_p (tree t1, tree t2)
 	      goto same_types;
 	    }
 	}
+
+    case OFFSET_TYPE:
+      {
+	if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	    || !gimple_types_compatible_p (TYPE_OFFSET_BASETYPE (t1),
+					   TYPE_OFFSET_BASETYPE (t2)))
+	  goto different_types;
+
+	goto same_types;
+      }
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
