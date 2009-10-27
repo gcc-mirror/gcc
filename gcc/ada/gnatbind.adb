@@ -838,12 +838,14 @@ begin
                   end if;
                end loop;
 
-               --  Subunits do not appear in the elaboration table because
-               --  they are subsumed by their parent units, but we need to
-               --  list them for other tools. For now they are listed after
-               --  other files, rather than following immediately their parent,
-               --  because there is no cheap link between the elaboration table
-               --  and the ALIs table.
+               --  Subunits do not appear in the elaboration table because they
+               --  are subsumed by their parent units, but we need to list them
+               --  for other tools. For now they are listed after other files,
+               --  rather than right after their parent, since there is no easy
+               --  link between the elaboration table and the ALIs table ???
+               --  Note also that subunits may appear repeatedly in the list,
+               --  if the parent unit appears in the context of several units
+               --  in the closure.
 
                for J in Sdep.First .. Sdep.Last loop
                   if Sdep.Table (J).Subunit_Name /= No_Name
@@ -853,8 +855,7 @@ begin
                         Write_Str ("   ");
                      end if;
 
-                     Write_Str
-                       (Get_Name_String (Sdep.Table (J).Sfile));
+                     Write_Str (Get_Name_String (Sdep.Table (J).Sfile));
                      Write_Eol;
                   end if;
                end loop;

@@ -540,12 +540,9 @@ package body Sem_Ch12 is
    --  initialized before call to Check_Generic_Child_Unit.
 
    procedure Install_Formal_Packages (Par : Entity_Id);
-   --  If any of the formals of the parent are formal packages with box,
-   --  their formal parts are visible in the parent and thus in the child
-   --  unit as well. Analogous to what is done in Check_Generic_Actuals
-   --  for the unit itself. This procedure is also used in an instance, to
-   --  make visible the proper entities of the actual for a formal package
-   --  declared with a box.
+   --  Install the visible part of any formal of the parent that is a formal
+   --  package. Note that for the case of a formal package with a box, this
+   --  includes the formal part of the formal package (12.7(10/2)).
 
    procedure Install_Parent (P : Entity_Id; In_Body : Boolean := False);
    --  When compiling an instance of a child unit the parent (which is
@@ -5217,11 +5214,10 @@ package body Sem_Ch12 is
 
                elsif In_Open_Scopes (Inst_Par) then
 
-                  --  If the parent is already installed verify that the
-                  --  actuals for its formal packages declared with a box
-                  --  are already installed. This is necessary when the
-                  --  child instance is a child of the parent instance.
-                  --  In this case the parent is placed on the scope stack
+                  --  If the parent is already installed, install the actuals
+                  --  for its formal packages. This is necessary when the
+                  --  child instance is a child of the parent instance:
+                  --  in this case, the parent is placed on the scope stack
                   --  but the formal packages are not made visible.
 
                   Install_Formal_Packages (Inst_Par);
@@ -7191,24 +7187,20 @@ package body Sem_Ch12 is
             if Renamed_Object (E) = Par then
                exit;
 
-            --  The visibility of a formal of an enclosing generic is
-            --  already correct.
+            --  The visibility of a formal of an enclosing generic is already
+            --  correct.
 
             elsif Denotes_Formal_Package (E) then
                null;
 
-            elsif Present (Associated_Formal_Package (E))
-              and then Box_Present (Parent (Associated_Formal_Package (E)))
-            then
+            elsif Present (Associated_Formal_Package (E)) then
                Check_Generic_Actuals (Renamed_Object (E), True);
                Set_Is_Hidden (E, False);
 
                --  Find formal package in generic unit that corresponds to
                --  (instance of) formal package in instance.
 
-               while Present (Gen_E)
-                 and then  Chars (Gen_E) /= Chars (E)
-               loop
+               while Present (Gen_E) and then Chars (Gen_E) /= Chars (E) loop
                   Next_Entity (Gen_E);
                end loop;
 
@@ -8365,7 +8357,7 @@ package body Sem_Ch12 is
                "with volatile actual", Actual);
          end if;
 
-      --  formal in-parameter
+      --  Formal in-parameter
 
       else
          --  The instantiation of a generic formal in-parameter is constant

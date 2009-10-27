@@ -485,19 +485,27 @@ package body Prj.Part is
             return;
          end if;
 
-         Parse_Single_Project
-           (In_Tree           => In_Tree,
-            Project           => Project,
-            Extends_All       => Dummy,
-            Path_Name         => Path_Name,
-            Extended          => False,
-            From_Extended     => None,
-            In_Limited        => False,
-            Packages_To_Check => Packages_To_Check,
-            Depth             => 0,
-            Current_Dir       => Current_Directory,
-            Is_Config_File    => Is_Config_File,
-            Flags             => Flags);
+         begin
+            Parse_Single_Project
+              (In_Tree           => In_Tree,
+               Project           => Project,
+               Extends_All       => Dummy,
+               Path_Name         => Path_Name,
+               Extended          => False,
+               From_Extended     => None,
+               In_Limited        => False,
+               Packages_To_Check => Packages_To_Check,
+               Depth             => 0,
+               Current_Dir       => Current_Directory,
+               Is_Config_File    => Is_Config_File,
+               Flags             => Flags);
+
+         exception
+            when Types.Unrecoverable_Error =>
+               --  Unrecoverable_Error is raised when a line is too long.
+               --  A meaningful error message will be displayed later.
+               Project := Empty_Node;
+         end;
 
          --  If Project is an extending-all project, create the eventual
          --  virtual extending projects and check that there are no illegally
