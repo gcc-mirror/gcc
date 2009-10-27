@@ -1,3 +1,15 @@
+2009-10-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (find_func_aliases): In IPA mode
+	handle calls to externally visible functions like in regular mode.
+	(create_variable_info_for): Do not create function infos here.
+	(have_alias_info): Remove write-only variable.
+	(solve_constraints): New function split out from common code
+	in compute_points_to_sets and ipa_pta_execute.
+	(compute_points_to_sets): Adjust.
+	(ipa_pta_execute): Likewise.  Handle clones and externally visible
+	functions like in non-IPA mode.
+
 2009-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/41842

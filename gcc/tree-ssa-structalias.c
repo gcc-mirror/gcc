@@ -3663,8 +3663,8 @@ find_func_aliases (gimple origt)
      pointer passed by address.  */
   else if (is_gimple_call (t))
     {
-      tree fndecl;
-      if ((fndecl = gimple_call_fndecl (t)) != NULL_TREE
+      tree fndecl = gimple_call_fndecl (t);
+      if (fndecl != NULL_TREE
 	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
 	/* ???  All builtins that are handled here need to be handled
 	   in the alias-oracle query functions explicitly!  */
@@ -3774,7 +3774,9 @@ find_func_aliases (gimple origt)
 	  default:
 	    /* Fallthru to general call handling.  */;
 	  }
-      if (!in_ipa_mode)
+      if (!in_ipa_mode
+	  || (fndecl
+	      && !lookup_vi_for_tree (fndecl)))
 	{
 	  VEC(ce_s, heap) *rhsc = NULL;
 	  int flags = gimple_call_flags (t);
@@ -4425,9 +4427,6 @@ create_variable_info_for (tree decl, const char *name)
   tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decl_type);
   VEC (fieldoff_s,heap) *fieldstack = NULL;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && in_ipa_mode)
-    return create_function_info_for (decl, name);
-
   if (var_can_have_subvars (decl) && use_field_sensitive)
     push_fields_onto_fieldstack (decl_type, &fieldstack, 0);
 
@@ -4772,8 +4771,6 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
     }
 }
 
-
-static bool have_alias_info = false;
 
 /* Compute the points-to solution *PT for the variable VI.  */
 
@@ -5399,44 +5396,12 @@ delete_alias_heapvars (void)
   heapvar_for_stmt = NULL;
 }
 
-/* Create points-to sets for the current function.  See the comments
-   at the start of the file for an algorithmic overview.  */
+/* Solve the constraint set.  */
 
 static void
-compute_points_to_sets (void)
+solve_constraints (void)
 {
   struct scc_info *si;
-  basic_block bb;
-  unsigned i;
-  varinfo_t vi;
-
-  timevar_push (TV_TREE_PTA);
-
-  init_alias_vars ();
-  init_alias_heapvars ();
-
-  intra_create_variable_infos ();
-
-  /* Now walk all statements and derive aliases.  */
-  FOR_EACH_BB (bb)
-    {
-      gimple_stmt_iterator gsi;
-
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple phi = gsi_stmt (gsi);
-
-	  if (is_gimple_reg (gimple_phi_result (phi)))
-	    find_func_aliases (phi);
-	}
-
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple stmt = gsi_stmt (gsi);
-
-	  find_func_aliases (stmt);
-	}
-    }
 
   if (dump_file)
     {
@@ -5493,6 +5458,48 @@ compute_points_to_sets (void)
 
   if (dump_file)
     dump_sa_points_to_info (dump_file);
+}
+
+/* Create points-to sets for the current function.  See the comments
+   at the start of the file for an algorithmic overview.  */
+
+static void
+compute_points_to_sets (void)
+{
+  basic_block bb;
+  unsigned i;
+  varinfo_t vi;
+
+  timevar_push (TV_TREE_PTA);
+
+  init_alias_vars ();
+  init_alias_heapvars ();
+
+  intra_create_variable_infos ();
+
+  /* Now walk all statements and derive aliases.  */
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+
+	  if (is_gimple_reg (gimple_phi_result (phi)))
+	    find_func_aliases (phi);
+	}
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+
+	  find_func_aliases (stmt);
+	}
+    }
+
+  /* From the constraints compute the points-to sets.  */
+  solve_constraints ();
 
   /* Compute the points-to sets for ESCAPED and CALLUSED used for
      call-clobber analysis.  */
@@ -5524,8 +5531,6 @@ compute_points_to_sets (void)
     }
 
   timevar_pop (TV_TREE_PTA);
-
-  have_alias_info = true;
 }
 
 
@@ -5559,7 +5564,6 @@ delete_points_to_sets (void)
   VEC_free (varinfo_t, heap, varmap);
   free_alloc_pool (variable_info_pool);
   free_alloc_pool (constraint_pool);
-  have_alias_info = false;
 }
 
 
@@ -5658,101 +5662,94 @@ static unsigned int
 ipa_pta_execute (void)
 {
   struct cgraph_node *node;
-  struct scc_info *si;
 
   in_ipa_mode = 1;
+
   init_alias_heapvars ();
   init_alias_vars ();
 
+  /* Build the constraints.  */
   for (node = cgraph_nodes; node; node = node->next)
     {
       unsigned int varid;
 
+      /* Nodes without a body are not interesting.  Especially do not
+         visit clones at this point for now - we get duplicate decls
+	 there for inline clones at least.  */
+      if (!gimple_has_body_p (node->decl)
+	  || node->clone_of)
+	continue;
+
+      /* It does not make sense to have graph edges into or out of
+         externally visible functions.  There is no extra information
+	 we can gather from them.  */
+      if (node->local.externally_visible)
+	continue;
+
       varid = create_function_info_for (node->decl,
 					cgraph_node_name (node));
-      if (node->local.externally_visible)
-	{
-	  varinfo_t fi = get_varinfo (varid);
-	  for (; fi; fi = fi->next)
-	    make_constraint_from (fi, anything_id);
-	}
     }
+
   for (node = cgraph_nodes; node; node = node->next)
     {
-      if (node->analyzed)
-	{
-	  struct function *func = DECL_STRUCT_FUNCTION (node->decl);
-	  basic_block bb;
-	  tree old_func_decl = current_function_decl;
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Generating constraints for %s\n",
-		     cgraph_node_name (node));
-	  push_cfun (func);
-	  current_function_decl = node->decl;
+      struct function *func;
+      basic_block bb;
+      tree old_func_decl;
 
-	  FOR_EACH_BB_FN (bb, func)
+      /* Nodes without a body are not interesting.  */
+      if (!gimple_has_body_p (node->decl)
+	  || node->clone_of)
+	continue;
+
+      if (dump_file)
+	fprintf (dump_file,
+		 "Generating constraints for %s\n",
+		 cgraph_node_name (node));
+
+      func = DECL_STRUCT_FUNCTION (node->decl);
+      old_func_decl = current_function_decl;
+      push_cfun (func);
+      current_function_decl = node->decl;
+
+      /* For externally visible functions use local constraints for
+	 their arguments.  For local functions we see all callers
+	 and thus do not need initial constraints for parameters.  */
+      if (node->local.externally_visible)
+	intra_create_variable_infos ();
+
+      /* Build constriants for the function body.  */
+      FOR_EACH_BB_FN (bb, func)
+	{
+	  gimple_stmt_iterator gsi;
+
+	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
-	      gimple_stmt_iterator gsi;
+	      gimple phi = gsi_stmt (gsi);
 
-	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-		   gsi_next (&gsi))
-		{
-		  gimple phi = gsi_stmt (gsi);
-
-		  if (is_gimple_reg (gimple_phi_result (phi)))
-		    find_func_aliases (phi);
-		}
-
-	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		find_func_aliases (gsi_stmt (gsi));
+	      if (is_gimple_reg (gimple_phi_result (phi)))
+		find_func_aliases (phi);
 	    }
-	  current_function_decl = old_func_decl;
-	  pop_cfun ();
+
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple stmt = gsi_stmt (gsi);
+
+	      find_func_aliases (stmt);
+	    }
 	}
-      else
-	{
-	  /* Make point to anything.  */
-	}
+
+      current_function_decl = old_func_decl;
+      pop_cfun ();
     }
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "Points-to analysis\n\nConstraints:\n\n");
-      dump_constraints (dump_file);
-    }
+  /* From the constraints compute the points-to sets.  */
+  solve_constraints ();
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "\nCollapsing static cycles and doing variable "
-	     "substitution:\n");
-
-  init_graph (VEC_length (varinfo_t, varmap) * 2);
-  build_pred_graph ();
-  si = perform_var_substitution (graph);
-  rewrite_constraints (graph, si);
-
-  build_succ_graph ();
-  free_var_substitution_info (si);
-  move_complex_constraints (graph);
-  unite_pointer_equivalences (graph);
-  find_indirect_cycles (graph);
-
-  /* Implicit nodes and predecessors are no longer necessary at this
-     point. */
-  remove_preds_and_fake_succs (graph);
-
-  if (dump_file)
-    fprintf (dump_file, "\nSolving graph\n");
-
-  solve_graph (graph);
-
-  if (dump_file)
-    dump_sa_points_to_info (dump_file);
+  delete_points_to_sets ();
 
   in_ipa_mode = 0;
-  delete_alias_heapvars ();
-  delete_points_to_sets ();
+
   return 0;
 }
 
