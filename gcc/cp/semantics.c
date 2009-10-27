@@ -2063,17 +2063,13 @@ finish_this_expr (void)
 {
   tree result;
 
-  if (current_class_ptr)
-    {
-      tree type = TREE_TYPE (current_class_ref);
-
-      /* In a lambda expression, 'this' refers to the captured 'this'.  */
-      if (LAMBDA_TYPE_P (type))
-        result = lambda_expr_this_capture (CLASSTYPE_LAMBDA_EXPR (type));
-      else
-        result = current_class_ptr;
-
-    }
+  /* In a lambda expression, 'this' refers to the captured 'this'.  */
+  if (current_function_decl
+      && LAMBDA_FUNCTION_P (current_function_decl))
+    result = (lambda_expr_this_capture
+	      (CLASSTYPE_LAMBDA_EXPR (current_class_type)));
+  else if (current_class_ptr)
+    result = current_class_ptr;
   else if (current_function_decl
 	   && DECL_STATIC_FUNCTION_P (current_function_decl))
     {
@@ -5759,4 +5755,55 @@ lambda_expr_this_capture (tree lambda)
   return result;
 }
 
+/* If the closure TYPE has a static op(), also add a conversion to function
+   pointer.  */
+
+void
+maybe_add_lambda_conv_op (tree type)
+{
+  bool nested = (current_function_decl != NULL_TREE);
+  tree callop = lambda_function (type);
+  tree rettype, name, fntype, fn, body, compound_stmt;
+
+  if (!DECL_STATIC_FUNCTION_P (callop))
+    return;
+
+  rettype = build_pointer_type (TREE_TYPE (callop));
+  name = mangle_conv_op_name_for_type (rettype);
+  fntype = build_function_type (rettype, void_list_node);
+  fn = build_lang_decl (FUNCTION_DECL, name, fntype);
+  DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
+
+  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
+      && DECL_ALIGN (fn) < 2 * BITS_PER_UNIT)
+    DECL_ALIGN (fn) = 2 * BITS_PER_UNIT;
+
+  SET_OVERLOADED_OPERATOR_CODE (fn, TYPE_EXPR);
+  grokclassfn (type, fn, NO_SPECIAL);
+  set_linkage_according_to_type (type, fn);
+  rest_of_decl_compilation (fn, toplevel_bindings_p (), at_eof);
+  DECL_IN_AGGR_P (fn) = 1;
+  DECL_ARTIFICIAL (fn) = 1;
+  DECL_NOT_REALLY_EXTERN (fn) = 1;
+  DECL_DECLARED_INLINE_P (fn) = 1;
+  DECL_STATIC_FUNCTION_P (fn) = 1;
+
+  add_method (type, fn, NULL_TREE);
+
+  if (nested)
+    push_function_context ();
+  start_preparsed_function (fn, NULL_TREE,
+			    SF_PRE_PARSED | SF_INCLASS_INLINE);
+  body = begin_function_body ();
+  compound_stmt = begin_compound_stmt (0);
+
+  finish_return_stmt (decay_conversion (callop));
+
+  finish_compound_stmt (compound_stmt);
+  finish_function_body (body);
+
+  expand_or_defer_fn (finish_function (2));
+  if (nested)
+    pop_function_context ();
+}
 #include "gt-cp-semantics.h"

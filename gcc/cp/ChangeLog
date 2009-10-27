@@ -1,3 +1,16 @@
+2009-10-27  Jason Merrill  <jason@redhat.com>
+
+	Allow no-capture lambdas to convert to function pointer.
+	* semantics.c (maybe_add_lambda_conv_op): New.
+	* parser.c (cp_parser_lambda_expression): Call it.
+	(cp_parser_lambda_declarator_opt): Make op() static if
+	no captures.
+	* mangle.c (write_closure_type_name): Adjust.
+	* semantics.c (finish_this_expr): Adjust.
+	* decl.c (grok_op_properties): Allow it.
+	* call.c (build_user_type_conversion_1): Handle static conversion op.
+	(build_op_call): And op().
+
 2009-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41828
