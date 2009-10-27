@@ -7372,7 +7372,7 @@ package body Make is
 
       Multilib_Gcc_Path := GNAT.OS_Lib.Locate_Exec_On_Path (Multilib_Gcc.all);
 
-      Create_Temp_File (Output_FD, Output_Name);
+      Create_Temp_Output_File (Output_FD, Output_Name);
 
       if Output_FD = Invalid_FD then
          return;

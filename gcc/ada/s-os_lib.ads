@@ -245,9 +245,27 @@ package System.OS_Lib is
       Name : out String_Access);
    --  Create and open for writing a temporary file in the current working
    --  directory. The name of the file and the File Descriptor are returned.
-   --  No mode parameter is provided. Since this is a temporary file, there is
-   --  no point in doing text translation on it. It is the responsibility of
-   --  the caller to deallocate the access value returned in Name.
+   --  It is the responsibility of the caller to deallocate the access value
+   --  returned in Name.
+   --
+   --  The file is opened in binary mode (no text translation).
+   --
+   --  This procedure will always succeed if the current working directory is
+   --  writable. If the current working directory is not writable, then
+   --  Invalid_FD is returned for the file descriptor and null for the Name.
+   --  There is no race condition problem between processes trying to create
+   --  temp files at the same time in the same directory.
+
+   procedure Create_Temp_Output_File
+     (FD        : out File_Descriptor;
+      Name      : out String_Access);
+   --  Create and open for writing a temporary file in the current working
+   --  directory suitable to redirect standard output. The name of the file
+   --  and the File Descriptor are returned.
+   --  It is the responsibility of the caller to deallocate the access value
+   --  returned in Name.
+   --
+   --  The file is opened in the mode specified by the With_Mode parameter.
    --
    --  This procedure will always succeed if the current working directory is
    --  writable. If the current working directory is not writable, then

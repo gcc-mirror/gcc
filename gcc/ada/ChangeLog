@@ -1,3 +1,18 @@
+2009-10-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb: Fix comment.
+
+2009-10-27  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-err.adb (Error_Msg): take into account continuation lines when
+	computing whether we have a warning.
+
+2009-10-27  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* make.adb, s-os_lib.adb, s-os_lib.ads (Create_Temp_Output_File): New
+	routine that is designed to create temp file descriptor specifically
+	for redirecting an output stream.
+
 2009-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: When
