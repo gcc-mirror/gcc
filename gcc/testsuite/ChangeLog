@@ -123,7 +123,7 @@
 	* gcc.target/rx/i272091.c: New test file.
 	* gcc.target/rx/packed-struct.c: New test file.
 	* gcc.target/rx/rx.exp: New file: Drives RX tests.
-	
+
 2009-10-26  Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	* gcc.dg/lto/20091014-1_0.c: Replace -shared with -r -nostlib.
@@ -711,7 +711,7 @@
 	PR libgfortran/38439
 	* gfortran.dg/fmt_error_9.f: New test.
 	* gfortran.dg/fmt_error_10.f: New test.
-	
+
 2009-10-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41583
