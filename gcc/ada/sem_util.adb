@@ -2142,25 +2142,34 @@ package body Sem_Util is
    -------------------------
 
    function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean is
-
    begin
+      --  If we have entity names, then must be same entity
+
       if Is_Entity_Name (A1) then
          if Is_Entity_Name (A2)then
-            return  Entity (A1) = Entity (A2);
+            return Entity (A1) = Entity (A2);
          else
             return False;
          end if;
 
+      --  No match if not same node kind
+
       elsif Nkind (A1) /= Nkind (A2) then
          return False;
+
+      --  For selected components, must have same prefix and selector
 
       elsif Nkind (A1) = N_Selected_Component then
          return Denotes_Same_Object (Prefix (A1), Prefix (A2))
            and then
          Entity (Selector_Name (A1)) = Entity (Selector_Name (A2));
 
+      --  For explicit dereferences, prefixes must be same
+
       elsif Nkind (A1) = N_Explicit_Dereference then
          return Denotes_Same_Object (Prefix (A1), Prefix (A2));
+
+      --  For indexed components, prefixes and all subscripts must be the same
 
       elsif Nkind (A1) = N_Indexed_Component then
          if Denotes_Same_Object (Prefix (A1), Prefix (A2)) then
@@ -2172,6 +2181,9 @@ package body Sem_Util is
                Indx1 := First (Expressions (A1));
                Indx2 := First (Expressions (A2));
                while Present (Indx1) loop
+
+                  --  Shouldn't we be checking that values are the same???
+
                   if not Denotes_Same_Object (Indx1, Indx2) then
                      return False;
                   end if;
@@ -2186,6 +2198,8 @@ package body Sem_Util is
             return False;
          end if;
 
+      --  For slices, prefixes must match and bounds must match
+
       elsif Nkind (A1) = N_Slice
         and then Denotes_Same_Object (Prefix (A1), Prefix (A2))
       then
@@ -2196,14 +2210,17 @@ package body Sem_Util is
             Get_Index_Bounds (Etype (A1), Lo1, Hi1);
             Get_Index_Bounds (Etype (A2), Lo2, Hi2);
 
-            --  Check whether bounds are statically identical
-            --  No attempt to detect partial overlap of slices.
+            --  Check whether bounds are statically identical. There is no
+            --  attempt to detect partial overlap of slices.
+
+            --  What about an array and a slice of an array???
 
             return Denotes_Same_Object (Lo1, Lo2)
               and then Denotes_Same_Object (Hi1, Hi2);
          end;
 
-         --  Literals will appear as indices.
+         --  Literals will appear as indices. Isn't this where we should check
+         --  Known_At_Compile_Time at least if we are generating warnings ???
 
       elsif Nkind (A1) = N_Integer_Literal then
          return Intval (A1) = Intval (A2);

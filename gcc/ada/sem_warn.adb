@@ -3544,8 +3544,9 @@ package body Sem_Warn is
       Form1, Form2 : Entity_Id;
 
    begin
-
-      --  For now, treat this warning as an extension.
+      --  For now, treat this warning as an extension
+      --  Why not just define a new warning switch, you really don't want to
+      --  force this warning when using conditional expressions for example???
 
       if not Extensions_Allowed then
          return;
@@ -3554,7 +3555,7 @@ package body Sem_Warn is
       --  Exclude calls rewritten as enumeration literals
 
       if not Nkind_In
-        (N, N_Function_Call, N_Procedure_Call_Statement)
+               (N, N_Function_Call, N_Procedure_Call_Statement)
       then
          return;
       end if;
@@ -3570,22 +3571,23 @@ package body Sem_Warn is
 
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
-
       while Present (Form1) and then Present (Act1) loop
          if Ekind (Form1) = E_In_Out_Parameter then
             Form2 := First_Formal (Subp);
             Act2  := First_Actual (N);
-
             while Present (Form2) and then Present (Act2) loop
                if Form1 /= Form2
                  and then Ekind (Form2) /= E_Out_Parameter
                  and then
                    (Denotes_Same_Object (Act1, Act2)
-                    or else Denotes_Same_Prefix (Act1, Act2))
+                      or else
+                    Denotes_Same_Prefix (Act1, Act2))
                then
-
                   --  Exclude generic types and guard against previous errors.
-                  --  If either type is elementary the aliasing is harmless
+                  --  If either type is elementary the aliasing is harmless.
+
+                  --  I can't relate the comment about elementary to the
+                  --  actual code below, which seems to be testing generic???
 
                   if Error_Posted (N)
                     or else No (Etype (Act1))
@@ -3605,15 +3607,19 @@ package body Sem_Warn is
                      null;
 
                   elsif Is_Elementary_Type (Underlying_Type (Etype (Form1)))
-                    or else
-                      Is_Elementary_Type (Underlying_Type (Etype (Form2)))
+                          or else
+                        Is_Elementary_Type (Underlying_Type (Etype (Form2)))
                   then
                      null;
+
                   else
                      declare
                         Act  : Node_Id;
                         Form : Entity_Id;
+
                      begin
+                        --  Find matching actual
+
                         Act  := First_Actual (N);
                         Form := First_Formal (Subp);
                         while Act /= Act2 loop
@@ -3623,6 +3629,8 @@ package body Sem_Warn is
 
                         --  If the call was written in prefix notation, count
                         --  only the visible actuals in the call.
+
+                        --  Why original_node calls below ???
 
                         if Is_Entity_Name (First_Actual (N))
                           and then Nkind (Original_Node (N)) = Nkind (N)
@@ -3641,8 +3649,8 @@ package body Sem_Warn is
                                  Act1, Form);
                            else
                               Error_Msg_FE
-                             ("writable actual overlaps with actual for&?",
-                              Act1, Form);
+                                ("writable actual overlaps with actual for&?",
+                                 Act1, Form);
                            end if;
 
                         else
@@ -3652,6 +3660,7 @@ package body Sem_Warn is
                         end if;
                      end;
                   end if;
+
                   return;
                end if;
 
