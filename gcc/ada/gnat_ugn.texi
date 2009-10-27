@@ -20785,18 +20785,9 @@ Quiet mode. All the diagnostics about rule violations are placed in the
 Short format of the report file (no version information, no list of applied
 rules, no list of checked sources is included)
 
-@cindex @option{^-s1^/COMPILER_STYLE^} (@command{gnatcheck})
-@item ^-s1^/COMPILER_STYLE^
-Include the compiler-style section in the report file
-
-@cindex @option{^-s2^/BY_RULES^} (@command{gnatcheck})
-@item ^-s2^/BY_RULES^
-Include the section containing diagnostics ordered by rules in the report file
-
-@cindex @option{^-s3^/BY_FILES_BY_RULES^} (@command{gnatcheck})
-@item ^-s3^/BY_FILES_BY_RULES^
-Include the section containing diagnostics ordered by files and then by rules
-in the report file
+@cindex @option{^--include-file=@var{file}^/INCLUDE_FILE=@var{file}^} (@command{gnatcheck})
+@item ^--include-file^/INCLUDE_FILE^
+Append the content of the specified text file to the report file
 
 @cindex @option{^-t^/TIME^} (@command{gnatcheck})
 @item ^-t^/TIME^
@@ -21226,7 +21217,9 @@ This rule has no parameters.
 @cindex @code{Anonymous_Subtypes} rule (for @command{gnatcheck})
 
 @noindent
-Flag all uses of anonymous subtypes. A use of an anonymous subtype is
+Flag all uses of anonymous subtypes (except cases when subtype indication
+is a part of a record component definition, and this subtype indication
+depends on a discriminant). A use of an anonymous subtype is
 any instance of a subtype indication with a constraint, other than one
 that occurs immediately within a subtype declaration. Any use of a range
 other than as a constraint used immediately within a subtype declaration
