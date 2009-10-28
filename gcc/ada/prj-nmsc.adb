@@ -4712,7 +4712,7 @@ package body Prj.Nmsc is
            (Path_Id         : Name_Id;
             Display_Path_Id : Name_Id);
          --  Add the directory Path_Id to the list of source_dirs if not
-         --  already in the list
+         --  already in the list.
 
          procedure Recursive_Find_Dirs (Path : Name_Id);
          --  Find all the subdirectories (recursively) of Path and add them
@@ -4731,12 +4731,12 @@ package body Prj.Nmsc is
             Rank_List  : Number_List_Index;
             Prev_Rank  : Number_List_Index;
             Element    : String_Element;
+
          begin
             Prev      := Nil_String;
             Prev_Rank := No_Number_List;
             List      := Project.Source_Dirs;
             Rank_List := Project.Source_Dir_Ranks;
-
             while List /= Nil_String loop
                Element := Data.Tree.String_Elements.Table (List);
                exit when Element.Value = Path_Id;
@@ -4782,7 +4782,6 @@ package body Prj.Nmsc is
                     String_Element_Table.Last (Data.Tree.String_Elements);
                   Data.Tree.Number_Lists.Table (Last_Src_Dir_Rank).Next :=
                     Number_List_Table.Last (Data.Tree.Number_Lists);
-
                end if;
 
                --  And register this source directory as the new last
@@ -4796,6 +4795,7 @@ package body Prj.Nmsc is
                  (Number => Rank, Next => No_Number_List);
 
             elsif List /= Nil_String then
+
                --  Remove source dir, if present
 
                if Prev = Nil_String then
@@ -4818,9 +4818,10 @@ package body Prj.Nmsc is
          -------------------------
 
          procedure Recursive_Find_Dirs (Path : Name_Id) is
-            Dir     : Dir_Type;
-            Name    : String (1 .. 250);
-            Last    : Natural;
+            Dir  : Dir_Type;
+            Name : String (1 .. 250);
+            Last : Natural;
+
             Non_Canonical_Path : Name_Id := No_Name;
             Canonical_Path     : Name_Id := No_Name;
 
@@ -4860,9 +4861,9 @@ package body Prj.Nmsc is
               (Path_Id         => Canonical_Path,
                Display_Path_Id => Non_Canonical_Path);
 
-            --  Now look for subdirectories. We do that even when this
-            --  directory is already in the list, because some of its
-            --  subdirectories may not be in the list yet.
+            --  Now look for subdirectories. Do that even when this directory
+            --  is already in the list, because some of its subdirectories may
+            --  not be in the list yet.
 
             Open (Dir, The_Path (The_Path'First .. The_Path_Last));
 
@@ -4882,12 +4883,14 @@ package body Prj.Nmsc is
 
                   declare
                      Path_Name : constant String :=
-                       Normalize_Pathname
-                         (Name      => Name (1 .. Last),
-                          Directory =>
-                            The_Path (The_Path'First .. The_Path_Last),
-                          Resolve_Links  => Opt.Follow_Links_For_Dirs,
-                          Case_Sensitive => True);
+                                   Normalize_Pathname
+                                     (Name           => Name (1 .. Last),
+                                      Directory      =>
+                                        The_Path
+                                          (The_Path'First .. The_Path_Last),
+                                      Resolve_Links  =>
+                                        Opt.Follow_Links_For_Dirs,
+                                      Case_Sensitive => True);
 
                   begin
                      if Is_Directory (Path_Name) then
@@ -5028,13 +5031,14 @@ package body Prj.Nmsc is
 
                else
                   declare
-                     Path              : constant String :=
-                        Normalize_Pathname
-                         (Name           => Get_Name_String (Path_Name.Name),
-                          Directory      =>
-                            Get_Name_String (Project.Directory.Name),
-                          Resolve_Links  => Opt.Follow_Links_For_Dirs,
-                          Case_Sensitive => True);
+                     Path : constant String :=
+                              Normalize_Pathname
+                                (Name           =>
+                                   Get_Name_String (Path_Name.Name),
+                                 Directory      =>
+                                   Get_Name_String (Project.Directory.Name),
+                                 Resolve_Links  => Opt.Follow_Links_For_Dirs,
+                                 Case_Sensitive => True);
 
                      Last_Path         : constant Natural :=
                                            Compute_Directory_Last (Path);

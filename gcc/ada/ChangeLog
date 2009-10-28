@@ -1,3 +1,12 @@
+2009-10-28  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, exp_ch9.adb, prj-nmsc.adb, tbuild.adb, ali.adb,
+	types.ads: Minor reformatting
+
+2009-10-28  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Fix __gnat_error_handler for Darwin10 (Snow Leopard)
+
 2009-10-28  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Type_Conversion): Perform Integer promotion for
