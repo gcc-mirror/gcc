@@ -1,3 +1,10 @@
+2009-10-28  Johannes Singler  <singler@kit.edu>
+
+	PR libstdc++/40852
+	* include/parallel/multiseq_selection.h 
+	(multiseq_partition, multiseq_selection):  Avoid intermediate 
+	values exceeding the integer type range for very large inputs.
+
 2009-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/chrono (duration<>::duration(const duration<>&)): Fix

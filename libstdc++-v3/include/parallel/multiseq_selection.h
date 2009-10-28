@@ -187,9 +187,6 @@ namespace __gnu_parallel
       // equality iff __nmax = 2^__k - 1.
       __l = (1ULL << __r) - 1;
 
-      // From now on, including padding.
-      __N = __l * __m;
-
       for (int __i = 0; __i < __m; __i++)
         {
           __a[__i] = 0;
@@ -215,7 +212,7 @@ namespace __gnu_parallel
           __sample.push_back(
             std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
-      _DifferenceType __localrank = __rank * __m / __N ;
+      _DifferenceType __localrank = __rank / __l;
 
       int __j;
       for (__j = 0;
@@ -265,15 +262,11 @@ namespace __gnu_parallel
                 __b[__i] -= __n + 1;
             }
 
-          _DifferenceType __leftsize = 0, __total = 0;
+          _DifferenceType __leftsize = 0;
           for (int __i = 0; __i < __m; __i++)
-            {
               __leftsize += __a[__i] / (__n + 1);
-              __total += __l / (__n + 1);
-            }
-          
-          _DifferenceType __skew = static_cast<_DifferenceType>
-            (static_cast<uint64_t>(__total) * __rank / __N - __leftsize);
+
+          _DifferenceType __skew = __rank / (__n + 1) - __leftsize;
 
           if (__skew > 0)
             {
@@ -442,9 +435,6 @@ namespace __gnu_parallel
       // equality iff __nmax = 2^__k - 1
       __l = pow2(__r) - 1;
 
-      // From now on, including padding.
-      __N = __l * __m;
-
       for (int __i = 0; __i < __m; ++__i)
         {
           __a[__i] = 0;
@@ -472,7 +462,7 @@ namespace __gnu_parallel
           __sample.push_back(
             std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
-      _DifferenceType __localrank = __rank * __m / __N ;
+      _DifferenceType __localrank = __rank / __l;
 
       int __j;
       for (__j = 0;
@@ -513,15 +503,11 @@ namespace __gnu_parallel
                 __b[__i] -= __n + 1;
             }
 
-          _DifferenceType __leftsize = 0, __total = 0;
+          _DifferenceType __leftsize = 0;
           for (int __i = 0; __i < __m; ++__i)
-            {
               __leftsize += __a[__i] / (__n + 1);
-              __total += __l / (__n + 1);
-            }
 
-          _DifferenceType __skew = ((unsigned long long)__total * __rank / __N
-                                  - __leftsize);
+          _DifferenceType __skew = __rank / (__n + 1) - __leftsize;
 
           if (__skew > 0)
             {
