@@ -3512,7 +3512,7 @@ cp_fname_init (const char* name, tree *type_p)
     {
       length = strlen (name);
       domain = build_index_type (size_int (length));
-      init = build_string (length + 1, name);
+      init = build_string (length, name);
     }
 
   type = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
