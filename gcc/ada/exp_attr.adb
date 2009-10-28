@@ -661,12 +661,10 @@ package body Exp_Attr is
 
       if Is_Protected_Self_Reference (Pref)
            and then not
-             (Nkind_In (Parent (N),
-                N_Index_Or_Discriminant_Constraint,
-                N_Discriminant_Association)
-                and then
-              Nkind (Parent (Parent (Parent (Parent (N)))))
-                = N_Component_Definition)
+             (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
+                                    N_Discriminant_Association)
+                and then Nkind (Parent (Parent (Parent (Parent (N))))) =
+                                                      N_Component_Definition)
       then
          Rewrite (Pref, Concurrent_Ref (Pref));
          Analyze (Pref);
@@ -690,9 +688,9 @@ package body Exp_Attr is
 
             function Enclosing_Object (N : Node_Id) return Node_Id;
             --  If N denotes a compound name (selected component, indexed
-            --  component, or slice), returns the name of the outermost
-            --  such enclosing object. Otherwise returns N. If the object
-            --  is a renaming, then the renamed object is returned.
+            --  component, or slice), returns the name of the outermost such
+            --  enclosing object. Otherwise returns N. If the object is a
+            --  renaming, then the renamed object is returned.
 
             ----------------------
             -- Enclosing_Object --

@@ -7824,8 +7824,8 @@ package body Exp_Ch9 is
                   Oent     : constant Entity_Id := Defining_Identifier (Priv);
                   New_Comp : Node_Id;
                   Nent     : constant Entity_Id :=
-                               Make_Defining_Identifier
-                                 (Sloc (Oent), Chars (Oent));
+                               Make_Defining_Identifier (Sloc (Oent),
+                                 Chars => Chars (Oent));
 
                begin
                   if Present (Subtype_Indication (Old_Comp)) then
@@ -7846,9 +7846,9 @@ package body Exp_Ch9 is
 
                   New_Priv :=
                     Make_Component_Declaration (Loc,
-                      Defining_Identifier => Nent,
+                      Defining_Identifier  => Nent,
                       Component_Definition => New_Comp,
-                      Expression => Expression (Priv));
+                      Expression           => Expression (Priv));
 
                   Set_Has_Per_Object_Constraint (Nent,
                     Has_Per_Object_Constraint (Oent));

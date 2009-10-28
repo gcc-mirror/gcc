@@ -668,10 +668,12 @@ package body Tbuild is
          N_Op_Shift_Right_Arithmetic => Name_Shift_Right_Arithmetic);
 
       Nod : constant Node_Id := New_Node (New_Node_Kind, New_Sloc);
+
    begin
       if New_Node_Kind in Name_Of'Range then
          Set_Chars (Nod, Name_Of (New_Node_Kind));
       end if;
+
       return Nod;
    end New_Op_Node;
 

@@ -190,7 +190,7 @@ package body ALI is
 
       function Get_Name
         (Ignore_Spaces  : Boolean := False;
-         Ignore_Special : Boolean := False)return Name_Id;
+         Ignore_Special : Boolean := False) return Name_Id;
       --  Skip blanks, then scan out a name (name is left in Name_Buffer with
       --  length in Name_Len, as well as being returned in Name_Id form).
       --  If Lower is set to True then the Name_Buffer will be converted to
