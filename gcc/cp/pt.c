@@ -1640,13 +1640,20 @@ void
 print_candidates (tree fns)
 {
   tree fn;
+  tree f;
 
   const char *str = "candidates are:";
 
-  for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
+  if (is_overloaded_fn (fns))
     {
-      tree f;
-
+      for (f = fns; f; f = OVL_NEXT (f))
+	{
+	  error ("%s %+#D", str, OVL_CURRENT (f));
+	  str = "               ";
+	}
+    }
+  else for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
+    {
       for (f = TREE_VALUE (fn); f; f = OVL_NEXT (f))
 	error ("%s %+#D", str, OVL_CURRENT (f));
       str = "               ";

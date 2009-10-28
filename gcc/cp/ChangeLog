@@ -1,5 +1,13 @@
 2009-10-28  Jason Merrill  <jason@redhat.com>
 
+	Core issue 812, 861
+	* name-lookup.c (set_decl_namespace): Deal properly with inline
+	namespaces.
+	(qualified_lookup_using_namespace): Overhaul.
+	* pt.c (print_candidates): Handle getting an OVERLOAD.
+
+2009-10-28  Jason Merrill  <jason@redhat.com>
+
 	* decl.c (cp_fname_init): Correct build_string argument.
 
 2009-10-27  Jason Merrill  <jason@redhat.com>
