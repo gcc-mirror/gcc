@@ -1,3 +1,31 @@
+2009-10-28  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Perform Integer promotion for
+	the operand of the unary minus and ABS operators.
+
+	* sem_type.adb (Covers): A concurrent type and its corresponding record
+	type are compatible.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Do not rewrite a 'Access
+	attribute reference for the current instance of a protected type while
+	analyzing an access discriminant constraint in a component definition.
+	Such a reference is handled in the corresponding record's init proc,
+	while initializing the constrained component.
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): When creating the
+	corresponding record type, propagate components'
+	Has_Per_Object_Constraint flag.
+	* exp_ch3.adb (Build_Init_Procedure.Build_Init_Statements):
+	For a concurrent type, set up concurrent aspects before initializing
+	components with a per object constrain, because they may be controlled,
+	and their initialization may call entries or protected subprograms of
+	the enclosing concurrent object.
+
+2009-10-28  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Add_If_Not_In_List): New subprogram, for better sharing
+	of code.
+	(Find_Source_Dirs): resolve links if Opt.Follow_Links_For_Dirs when
+	processing the directories specified explicitly in the project file.
+
 2009-10-28  Robert Dewar  <dewar@adacore.com>
 
 	* a-ztexio.adb, a-ztexio.ads, a-witeio.ads, a-witeio.adb,

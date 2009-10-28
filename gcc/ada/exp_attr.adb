@@ -654,10 +654,20 @@ package body Exp_Attr is
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
       end if;
 
-      --  If prefix is a protected type name, this is a reference to
-      --  the current instance of the type.
+      --  If prefix is a protected type name, this is a reference to the
+      --  current instance of the type. For a component definition, nothing
+      --  to do (expansion will occur in the init proc). In other contexts,
+      --  rewrite into reference to current instance.
 
-      if Is_Protected_Self_Reference (Pref) then
+      if Is_Protected_Self_Reference (Pref)
+           and then not
+             (Nkind_In (Parent (N),
+                N_Index_Or_Discriminant_Constraint,
+                N_Discriminant_Association)
+                and then
+              Nkind (Parent (Parent (Parent (Parent (N)))))
+                = N_Component_Definition)
+      then
          Rewrite (Pref, Concurrent_Ref (Pref));
          Analyze (Pref);
       end if;

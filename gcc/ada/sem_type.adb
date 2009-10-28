@@ -791,7 +791,7 @@ package body Sem_Type is
                      or else Scope (T1) /= Scope (T2));
          end if;
 
-      --  Literals are compatible with types in  a given "class"
+      --  Literals are compatible with types in a given "class"
 
       elsif     (T2 = Universal_Integer and then Is_Integer_Type (T1))
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
@@ -969,6 +969,12 @@ package body Sem_Type is
         and then Present (Corresponding_Remote_Type (T2))
       then
          return Covers (Corresponding_Remote_Type (T2), T1);
+
+      elsif Is_Record_Type (T1) and then Is_Concurrent_Type (T2) then
+         return Covers (T1, Corresponding_Record_Type (T2));
+
+      elsif Is_Concurrent_Type (T1) and then Is_Record_Type (T2) then
+         return Covers (Corresponding_Record_Type (T1), T2);
 
       elsif Ekind (T2) = E_Access_Attribute_Type
         and then (Ekind (BT1) = E_General_Access_Type
