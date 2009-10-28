@@ -173,10 +173,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _InputIterator>
-    inline _InputIterator 
-    next(_InputIterator __x, typename
-	 iterator_traits<_InputIterator>::difference_type __n = 1)
+  template<typename _ForwardIterator>
+    inline _ForwardIterator
+    next(_ForwardIterator __x, typename
+	 iterator_traits<_ForwardIterator>::difference_type __n = 1)
     {
       std::advance(__x, __n);
       return __x;
