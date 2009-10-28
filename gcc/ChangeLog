@@ -1,3 +1,9 @@
+2009-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (emit_note_insn_var_location): Don't call the second
+	vt_expand_loc unnecessarily when location is not a register nor
+	memory.
+
 2009-10-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* var-tracking.c (emit_note_insn_var_location): Get the mode of
