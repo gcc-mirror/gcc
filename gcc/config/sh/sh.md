@@ -6889,8 +6889,6 @@ label:
   "TARGET_SHMEDIA"
   "
 {
-  /* hack to generate same code.  */
-  rtx tmp_di = GET_CODE (operands[0]) == UNORDERED ? NULL : gen_reg_rtx (DImode);
   rtx tmp = gen_reg_rtx (SImode);
   rtx cmp;
   if (GET_CODE (operands[0]) == NE)
@@ -6900,13 +6898,12 @@ label:
 			  operands[1], operands[2]);
 
   emit_insn (gen_cstore4_media (tmp, cmp, operands[1], operands[2]));
-  if (tmp_di) emit_insn (gen_extendsidi2 (tmp_di, tmp)); else tmp_di = tmp;
 
   if (GET_CODE (cmp) == GET_CODE (operands[0]))
-    operands[0] = gen_rtx_NE (VOIDmode, tmp_di, const0_rtx);
+    operands[0] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
   else
-    operands[0] = gen_rtx_EQ (VOIDmode, tmp_di, const0_rtx);
-  operands[1] = tmp_di;
+    operands[0] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
+  operands[1] = tmp;
   operands[2] = const0_rtx;
   operands[3] = gen_rtx_LABEL_REF (Pmode, operands[3]);
 }")
