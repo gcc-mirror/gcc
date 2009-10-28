@@ -437,6 +437,15 @@ package body Ada.Text_IO is
       return End_Of_Page (Current_In);
    end End_Of_Page;
 
+   --------------
+   -- EOF_Char --
+   --------------
+
+   function EOF_Char return Integer is
+   begin
+      return EOF;
+   end EOF_Char;
+
    -----------
    -- Flush --
    -----------

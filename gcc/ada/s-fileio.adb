@@ -223,15 +223,13 @@ package body System.File_IO is
 
       --  Sever the association between the given file and its associated
       --  external file. The given file is left closed. Do not perform system
-      --  closes on the standard input, output and error files and also do
-      --  not attempt to close a stream that does not exist (signalled by a
-      --  null stream value -- happens in some error situations).
+      --  closes on the standard input, output and error files and also do not
+      --  attempt to close a stream that does not exist (signalled by a null
+      --  stream value -- happens in some error situations).
 
-      if not File.Is_System_File
-        and then File.Stream /= NULL_Stream
-      then
-         --  Do not do an fclose if this is a shared file and there is
-         --  at least one other instance of the stream that is open.
+      if not File.Is_System_File and then File.Stream /= NULL_Stream then
+         --  Do not do an fclose if this is a shared file and there is at least
+         --  one other instance of the stream that is open.
 
          if File.Shared_Status = Yes then
             declare
@@ -240,9 +238,7 @@ package body System.File_IO is
             begin
                P := Open_Files;
                while P /= null loop
-                  if P /= File
-                    and then File.Stream = P.Stream
-                  then
+                  if P /= File and then File.Stream = P.Stream then
                      Dup_Strm := True;
                      exit;
                   end if;
@@ -314,9 +310,9 @@ package body System.File_IO is
       begin
          Close (File_Ptr);
 
-         --  Now unlink the external file. Note that we use the full name
-         --  in this unlink, because the working directory may have changed
-         --  since we did the open, and we want to unlink the right file!
+         --  Now unlink the external file. Note that we use the full name in
+         --  this unlink, because the working directory may have changed since
+         --  we did the open, and we want to unlink the right file!
 
          if unlink (Filename'Address) = -1 then
             raise Use_Error;
@@ -369,8 +365,8 @@ package body System.File_IO is
 
       SSL.Lock_Task.all;
 
-      --  First close all open files (the slightly complex form of this loop
-      --  is required because Close as a side effect nulls out its argument)
+      --  First close all open files (the slightly complex form of this loop is
+      --  required because Close as a side effect nulls out its argument).
 
       Fptr1 := Open_Files;
       while Fptr1 /= null loop
@@ -379,9 +375,9 @@ package body System.File_IO is
          Fptr1 := Fptr2;
       end loop;
 
-      --  Now unlink all temporary files. We do not bother to free the
-      --  blocks because we are just about to terminate the program. We
-      --  also ignore any errors while attempting these unlink operations.
+      --  Now unlink all temporary files. We do not bother to free the blocks
+      --  because we are just about to terminate the program. We also ignore
+      --  any errors while attempting these unlink operations.
 
       while Temp_Files /= null loop
          Discard := unlink (Temp_Files.Name'Address);
@@ -429,20 +425,20 @@ package body System.File_IO is
    --  you can reset to earlier points in the file. The caller must use the
    --  Append_Set routine to deal with the necessary positioning.
 
-   --  Note: in several cases, the fopen mode used allows reading and
-   --  writing, but the setting of the Ada mode is more restrictive. For
-   --  instance, Create in In_File mode uses "w+" which allows writing,
-   --  but the Ada mode In_File will cause any write operations to be
-   --  rejected with Mode_Error in any case.
+   --  Note: in several cases, the fopen mode used allows reading and writing,
+   --  but the setting of the Ada mode is more restrictive. For instance,
+   --  Create in In_File mode uses "w+" which allows writing, but the Ada mode
+   --  In_File will cause any write operations to be rejected with Mode_Error
+   --  in any case.
 
-   --  Note: for the Out_File/Open cases for other than the Direct_IO case,
-   --  an initial call will be made by the caller to first open the file in
-   --  "r" mode to be sure that it exists. The real open, in "w" mode, will
-   --  then destroy this file. This is peculiar, but that's what Ada semantics
-   --  require and the ACVT tests insist on!
+   --  Note: for the Out_File/Open cases for other than the Direct_IO case, an
+   --  initial call will be made by the caller to first open the file in "r"
+   --  mode to be sure that it exists. The real open, in "w" mode, will then
+   --  destroy this file. This is peculiar, but that's what Ada semantics
+   --  require and the ACATS tests insist on!
 
-   --  If text file translation is required, then either b or t is
-   --  added to the mode, depending on the setting of Text.
+   --  If text file translation is required, then either "b" or "t" is appended
+   --  to the mode, depending on the setting of Text.
 
    procedure Fopen_Mode
      (Mode    : File_Mode;
@@ -591,10 +587,8 @@ package body System.File_IO is
       Keyword : String;
       Start   : out Natural;
       Stop    : out Natural)
-  is
+   is
       Klen : constant Integer := Keyword'Length;
-
-   --  Start of processing for Form_Parameter
 
    begin
       for J in Form'First + Klen .. Form'Last - 1 loop
@@ -661,6 +655,7 @@ package body System.File_IO is
 
    begin
       status := setvbuf (File.Stream, Null_Address, IOLBF, Line_Siz);
+      --  No error checking???
    end Make_Line_Buffered;
 
    ---------------------
@@ -673,6 +668,7 @@ package body System.File_IO is
 
    begin
       status := setvbuf (File.Stream, Null_Address, IONBF, 0);
+      --  No error checking???
    end Make_Unbuffered;
 
    ----------
@@ -722,7 +718,7 @@ package body System.File_IO is
 
       procedure Tmp_Name (Buffer : Address);
       pragma Import (C, Tmp_Name, "__gnat_tmp_name");
-      --  set buffer (a String address) with a temporary filename
+      --  Set buffer (a String address) with a temporary filename
 
       Stream : FILEs := C_Stream;
       --  Stream which we open in response to this request
@@ -742,9 +738,9 @@ package body System.File_IO is
       --  Indicates temporary file case
 
       Namelen : constant Integer := max_path_len;
-      --  Length required for file name, not including final ASCII.NUL
-      --  Note that we used to reference L_tmpnam here, which is not
-      --  reliable since __gnat_tmp_name does not always use tmpnam.
+      --  Length required for file name, not including final ASCII.NUL.
+      --  Note that we used to reference L_tmpnam here, which is not reliable
+      --  since __gnat_tmp_name does not always use tmpnam.
 
       Namestr : aliased String (1 .. Namelen + 1);
       --  Name as given or temporary file name with ASCII.NUL appended
@@ -900,7 +896,7 @@ package body System.File_IO is
 
          --  Fullname is generated by calling system's full_name. The problem
          --  is, full_name does nothing about the casing, so a file name
-         --  comparison may generally speaking not be valid on non-case
+         --  comparison may generally speaking not be valid on non-case-
          --  sensitive systems, and in particular we get unexpected failures
          --  on Windows/Vista because of this. So we use s-casuti to force
          --  the name to lower case.
@@ -909,8 +905,8 @@ package body System.File_IO is
             To_Lower (Fullname (1 .. Full_Name_Len));
          end if;
 
-         --  If Shared=None or Shared=Yes, then check for the existence
-         --  of another file with exactly the same full name.
+         --  If Shared=None or Shared=Yes, then check for the existence of
+         --  another file with exactly the same full name.
 
          if Shared /= No then
             declare
@@ -1030,8 +1026,8 @@ package body System.File_IO is
       end if;
 
       --  Stream has been successfully located or opened, so now we are
-      --  committed to completing the opening of the file. Allocate block
-      --  on heap and fill in its fields.
+      --  committed to completing the opening of the file. Allocate block on
+      --  heap and fill in its fields.
 
       File_Ptr := AFCB_Allocate (Dummy_FCB);
 
@@ -1103,9 +1099,9 @@ package body System.File_IO is
       Reset (File_Ptr, File.Mode);
    end Reset;
 
-   --  The reset with a change in mode is done using freopen, and is
-   --  not permitted except for regular files (since otherwise there
-   --  is no name for the freopen, and in any case it seems meaningless)
+   --  The reset with a change in mode is done using freopen, and is not
+   --  permitted except for regular files (since otherwise there is no name for
+   --  the freopen, and in any case it seems meaningless).
 
    procedure Reset (File_Ptr : access AFCB_Ptr; Mode : File_Mode) is
       File   : AFCB_Ptr renames File_Ptr.all;
@@ -1126,17 +1122,17 @@ package body System.File_IO is
       then
          raise Use_Error;
 
-      --  For In_File or Inout_File for a regular file, we can just do a
-      --  rewind if the mode is unchanged, which is more efficient than
-      --  doing a full reopen.
+      --  For In_File or Inout_File for a regular file, we can just do a rewind
+      --  if the mode is unchanged, which is more efficient than doing a full
+      --  reopen.
 
       elsif Mode = File.Mode
         and then Mode <= Inout_File
       then
          rewind (File.Stream);
 
-      --  Here the change of mode is permitted, we do it by reopening the
-      --  file in the new mode and replacing the stream with a new stream.
+      --  Here the change of mode is permitted, we do it by reopening the file
+      --  in the new mode and replacing the stream with a new stream.
 
       else
          Fopen_Mode
@@ -1162,10 +1158,10 @@ package body System.File_IO is
 
    procedure Write_Buf (File : AFCB_Ptr; Buf : Address; Siz : size_t) is
    begin
-      --  Note: for most purposes, the Siz and 1 parameters in the fwrite
-      --  call could be reversed, but on VMS, this is a better choice, since
-      --  for some file formats, reversing the parameters results in records
-      --  of one byte each.
+      --  Note: for most purposes, the Siz and 1 parameters in the fwrite call
+      --  could be reversed, but on VMS, this is a better choice, since for
+      --  some file formats, reversing the parameters results in records of one
+      --  byte each.
 
       SSL.Abort_Defer.all;
 

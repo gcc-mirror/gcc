@@ -4708,21 +4708,22 @@ package body Prj.Nmsc is
       is
          Directory : constant String := Get_Name_String (From);
 
-         procedure Add_If_Not_In_List
+         procedure Add_To_Or_Remove_From_List
            (Path_Id         : Name_Id;
             Display_Path_Id : Name_Id);
-         --  Add the directory Path_Id to the list of source_dirs if not
-         --  already in the list.
+         --  When Removed = False, the directory Path_Id to the list of
+         --  source_dirs if not already in the list. When Removed = True,
+         --  removed directory Path_Id if in the list.
 
          procedure Recursive_Find_Dirs (Path : Name_Id);
          --  Find all the subdirectories (recursively) of Path and add them
          --  to the list of source directories of the project.
 
-         ------------------------
-         -- Add_If_Not_In_List --
-         ------------------------
+         --------------------------------
+         -- Add_To_Or_Remove_From_List --
+         --------------------------------
 
-         procedure Add_If_Not_In_List
+         procedure Add_To_Or_Remove_From_List
            (Path_Id         : Name_Id;
             Display_Path_Id : Name_Id)
          is
@@ -4794,7 +4795,7 @@ package body Prj.Nmsc is
                Data.Tree.Number_Lists.Table (Last_Src_Dir_Rank) :=
                  (Number => Rank, Next => No_Number_List);
 
-            elsif List /= Nil_String then
+            elsif Removed and then List /= Nil_String then
 
                --  Remove source dir, if present
 
@@ -4811,7 +4812,7 @@ package body Prj.Nmsc is
                     Data.Tree.Number_Lists.Table (Rank_List).Next;
                end if;
             end if;
-         end Add_If_Not_In_List;
+         end Add_To_Or_Remove_From_List;
 
          -------------------------
          -- Recursive_Find_Dirs --
@@ -4857,7 +4858,7 @@ package body Prj.Nmsc is
                end if;
             end if;
 
-            Add_If_Not_In_List
+            Add_To_Or_Remove_From_List
               (Path_Id         => Canonical_Path,
                Display_Path_Id => Non_Canonical_Path);
 
@@ -5038,7 +5039,8 @@ package body Prj.Nmsc is
                                  Directory      =>
                                    Get_Name_String (Project.Directory.Name),
                                  Resolve_Links  => Opt.Follow_Links_For_Dirs,
-                                 Case_Sensitive => True);
+                                 Case_Sensitive => True) &
+                              Directory_Separator;
 
                      Last_Path         : constant Natural :=
                                            Compute_Directory_Last (Path);
@@ -5062,7 +5064,7 @@ package body Prj.Nmsc is
                           (Display_Path'First .. Last_Display_Path));
                      Display_Path_Id := Name_Find;
 
-                     Add_If_Not_In_List
+                     Add_To_Or_Remove_From_List
                        (Path_Id         => Path_Id,
                         Display_Path_Id => Display_Path_Id);
                   end;

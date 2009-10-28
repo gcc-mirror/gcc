@@ -23,9 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Deallocation;
 with Osint;   use Osint;
 with Prj.Err;
+
+with Ada.Unchecked_Deallocation;
 
 package body Prj.Tree is
 
@@ -1000,6 +1001,7 @@ package body Prj.Tree is
       if Proj /= null then
          Project_Node_Table.Free (Proj.Project_Nodes);
          Projects_Htable.Reset (Proj.Projects_HT);
+         Name_To_Name_HTable.Reset (Proj.External_References);
          Free (Proj.Project_Path);
          Unchecked_Free (Proj);
       end if;
