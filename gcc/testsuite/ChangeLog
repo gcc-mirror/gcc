@@ -1,3 +1,8 @@
+2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/39715
+	* gcc.target/arm/thumb-ltu.c: New.
+
 2009-10-28  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41808
