@@ -202,4 +202,7 @@ package System.CRTL is
    function write (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, write, "write");
 
+   function strerror (errno : int) return chars;
+   pragma Import (C, strerror, "strerror");
+
 end System.CRTL;

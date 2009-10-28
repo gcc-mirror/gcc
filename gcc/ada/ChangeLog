@@ -1,3 +1,11 @@
+2009-10-28  Thomas Quinot  <quinot@adacore.com>
+
+	* s-crtl.ads (System.CRTL.strerror): New function.
+
+2009-10-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb: Add guard to recover some type errors.
+
 2009-10-28  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb (Add_To_Or_Remove_From_List): New name of procedure

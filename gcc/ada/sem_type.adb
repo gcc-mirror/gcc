@@ -970,10 +970,16 @@ package body Sem_Type is
       then
          return Covers (Corresponding_Remote_Type (T2), T1);
 
-      elsif Is_Record_Type (T1) and then Is_Concurrent_Type (T2) then
+      elsif Is_Record_Type (T1)
+        and then Is_Concurrent_Type (T2)
+        and then Present (Corresponding_Record_Type (T2))
+      then
          return Covers (T1, Corresponding_Record_Type (T2));
 
-      elsif Is_Concurrent_Type (T1) and then Is_Record_Type (T2) then
+      elsif Is_Concurrent_Type (T1)
+        and then Present (Corresponding_Record_Type (T1))
+        and then Is_Record_Type (T2)
+      then
          return Covers (Corresponding_Record_Type (T1), T2);
 
       elsif Ekind (T2) = E_Access_Attribute_Type
