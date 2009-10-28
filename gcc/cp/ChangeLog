@@ -1,3 +1,7 @@
+2009-10-28  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_fname_init): Correct build_string argument.
+
 2009-10-27  Jason Merrill  <jason@redhat.com>
 
 	Allow no-capture lambdas to convert to function pointer.
