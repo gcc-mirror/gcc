@@ -8056,27 +8056,25 @@ package body Exp_Ch4 is
                 Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
                 Expression   => Relocate_Node (Right_Opnd (Operand)));
 
-            if Nkind (Operand) = N_Op_Minus then
-               Opnd := Make_Op_Minus (Loc, Right_Opnd => R);
+            Opnd := New_Op_Node (Nkind (Operand), Loc);
+            Set_Right_Opnd (Opnd, R);
 
-            else
+            if Nkind (Operand) in N_Binary_Op then
                L :=
                  Make_Type_Conversion (Loc,
                    Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
                    Expression   => Relocate_Node (Left_Opnd (Operand)));
 
-               Opnd := New_Op_Node (Nkind (Operand), Loc);
-               Set_Left_Opnd (Opnd, L);
-               Set_Right_Opnd (Opnd, R);
-
-               Rewrite (N,
-                 Make_Type_Conversion (Loc,
-                   Subtype_Mark => Relocate_Node (Subtype_Mark (N)),
-                   Expression   => Opnd));
-
-               Analyze_And_Resolve (N, Target_Type);
-               return;
+               Set_Left_Opnd  (Opnd, L);
             end if;
+
+            Rewrite (N,
+              Make_Type_Conversion (Loc,
+                Subtype_Mark => Relocate_Node (Subtype_Mark (N)),
+                Expression   => Opnd));
+
+            Analyze_And_Resolve (N, Target_Type);
+            return;
          end;
       end if;
 
@@ -9174,10 +9172,12 @@ package body Exp_Ch4 is
               Root_Operand_Type = Base_Type (Standard_Short_Short_Integer))
 
            --  Test for interesting operation, which includes addition,
-           --  division, exponentiation, multiplication, subtraction, and
-           --  unary negation.
+           --  division, exponentiation, multiplication, subtraction, absolute
+           --  value and unary negation. Unary "+" is omitted since it is a
+           --  no-op and thus can't overflow.
 
-           and then Nkind_In (Operand, N_Op_Add,
+           and then Nkind_In (Operand, N_Op_Abs,
+                                       N_Op_Add,
                                        N_Op_Divide,
                                        N_Op_Expon,
                                        N_Op_Minus,

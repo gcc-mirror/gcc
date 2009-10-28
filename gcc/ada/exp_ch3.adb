@@ -2733,70 +2733,11 @@ package body Exp_Ch3 is
             Next_Non_Pragma (Decl);
          end loop;
 
-         if Per_Object_Constraint_Components then
-
-            --  Second pass: components with per-object constraints
-
-            Decl := First_Non_Pragma (Component_Items (Comp_List));
-            while Present (Decl) loop
-               Loc := Sloc (Decl);
-               Id := Defining_Identifier (Decl);
-               Typ := Etype (Id);
-
-               if Has_Access_Constraint (Id)
-                 and then No (Expression (Decl))
-               then
-                  if Has_Non_Null_Base_Init_Proc (Typ) then
-                     Append_List_To (Statement_List,
-                       Build_Initialization_Call (Loc,
-                         Make_Selected_Component (Loc,
-                           Prefix        => Make_Identifier (Loc, Name_uInit),
-                           Selector_Name => New_Occurrence_Of (Id, Loc)),
-                         Typ,
-                         In_Init_Proc => True,
-                         Enclos_Type  => Rec_Type,
-                         Discr_Map    => Discr_Map));
-
-                     Clean_Task_Names (Typ, Proc_Id);
-
-                  elsif Component_Needs_Simple_Initialization (Typ) then
-                     Append_List_To (Statement_List,
-                       Build_Assignment
-                         (Id, Get_Simple_Init_Val (Typ, N, Esize (Id))));
-                  end if;
-               end if;
-
-               Next_Non_Pragma (Decl);
-            end loop;
-         end if;
-
-         --  Process the variant part
-
-         if Present (Variant_Part (Comp_List)) then
-            Alt_List := New_List;
-            Variant := First_Non_Pragma (Variants (Variant_Part (Comp_List)));
-            while Present (Variant) loop
-               Loc := Sloc (Variant);
-               Append_To (Alt_List,
-                 Make_Case_Statement_Alternative (Loc,
-                   Discrete_Choices =>
-                     New_Copy_List (Discrete_Choices (Variant)),
-                   Statements =>
-                     Build_Init_Statements (Component_List (Variant))));
-               Next_Non_Pragma (Variant);
-            end loop;
-
-            --  The expression of the case statement which is a reference
-            --  to one of the discriminants is replaced by the appropriate
-            --  formal parameter of the initialization procedure.
-
-            Append_To (Statement_List,
-              Make_Case_Statement (Loc,
-                Expression =>
-                  New_Reference_To (Discriminal (
-                    Entity (Name (Variant_Part (Comp_List)))), Loc),
-                Alternatives => Alt_List));
-         end if;
+         --  Set up tasks and protected object support. This needs to be done
+         --  before any component with a per-object access discriminant
+         --  constraint, or any variant part (which may contain such
+         --  components) is initialized, because the initialization of these
+         --  components may reference the enclosing concurrent object.
 
          --  For a task record type, add the task create call and calls
          --  to bind any interrupt (signal) entries.
@@ -2896,6 +2837,71 @@ package body Exp_Ch3 is
                   Append_To (Statement_List, Names);
                end if;
             end if;
+         end if;
+
+         if Per_Object_Constraint_Components then
+
+            --  Second pass: components with per-object constraints
+
+            Decl := First_Non_Pragma (Component_Items (Comp_List));
+            while Present (Decl) loop
+               Loc := Sloc (Decl);
+               Id := Defining_Identifier (Decl);
+               Typ := Etype (Id);
+
+               if Has_Access_Constraint (Id)
+                 and then No (Expression (Decl))
+               then
+                  if Has_Non_Null_Base_Init_Proc (Typ) then
+                     Append_List_To (Statement_List,
+                       Build_Initialization_Call (Loc,
+                         Make_Selected_Component (Loc,
+                           Prefix        => Make_Identifier (Loc, Name_uInit),
+                           Selector_Name => New_Occurrence_Of (Id, Loc)),
+                         Typ,
+                         In_Init_Proc => True,
+                         Enclos_Type  => Rec_Type,
+                         Discr_Map    => Discr_Map));
+
+                     Clean_Task_Names (Typ, Proc_Id);
+
+                  elsif Component_Needs_Simple_Initialization (Typ) then
+                     Append_List_To (Statement_List,
+                       Build_Assignment
+                         (Id, Get_Simple_Init_Val (Typ, N, Esize (Id))));
+                  end if;
+               end if;
+
+               Next_Non_Pragma (Decl);
+            end loop;
+         end if;
+
+         --  Process the variant part
+
+         if Present (Variant_Part (Comp_List)) then
+            Alt_List := New_List;
+            Variant := First_Non_Pragma (Variants (Variant_Part (Comp_List)));
+            while Present (Variant) loop
+               Loc := Sloc (Variant);
+               Append_To (Alt_List,
+                 Make_Case_Statement_Alternative (Loc,
+                   Discrete_Choices =>
+                     New_Copy_List (Discrete_Choices (Variant)),
+                   Statements =>
+                     Build_Init_Statements (Component_List (Variant))));
+               Next_Non_Pragma (Variant);
+            end loop;
+
+            --  The expression of the case statement which is a reference
+            --  to one of the discriminants is replaced by the appropriate
+            --  formal parameter of the initialization procedure.
+
+            Append_To (Statement_List,
+              Make_Case_Statement (Loc,
+                Expression =>
+                  New_Reference_To (Discriminal (
+                    Entity (Name (Variant_Part (Comp_List)))), Loc),
+                Alternatives => Alt_List));
          end if;
 
          --  If no initializations when generated for component declarations

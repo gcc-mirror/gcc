@@ -7821,20 +7821,23 @@ package body Exp_Ch9 is
 
                declare
                   Old_Comp : constant Node_Id   := Component_Definition (Priv);
-                  Pent     : constant Entity_Id := Defining_Identifier (Priv);
+                  Oent     : constant Entity_Id := Defining_Identifier (Priv);
                   New_Comp : Node_Id;
+                  Nent     : constant Entity_Id :=
+                               Make_Defining_Identifier
+                                 (Sloc (Oent), Chars (Oent));
 
                begin
                   if Present (Subtype_Indication (Old_Comp)) then
                      New_Comp :=
-                       Make_Component_Definition (Sloc (Pent),
+                       Make_Component_Definition (Sloc (Oent),
                          Aliased_Present    => False,
                          Subtype_Indication =>
                            New_Copy_Tree (Subtype_Indication (Old_Comp),
                                            Discr_Map));
                   else
                      New_Comp :=
-                       Make_Component_Definition (Sloc (Pent),
+                       Make_Component_Definition (Sloc (Oent),
                          Aliased_Present    => False,
                          Access_Definition  =>
                            New_Copy_Tree (Access_Definition (Old_Comp),
@@ -7843,10 +7846,12 @@ package body Exp_Ch9 is
 
                   New_Priv :=
                     Make_Component_Declaration (Loc,
-                      Defining_Identifier =>
-                        Make_Defining_Identifier (Sloc (Pent), Chars (Pent)),
+                      Defining_Identifier => Nent,
                       Component_Definition => New_Comp,
                       Expression => Expression (Priv));
+
+                  Set_Has_Per_Object_Constraint (Nent,
+                    Has_Per_Object_Constraint (Oent));
 
                   Append_To (Cdecls, New_Priv);
                end;
