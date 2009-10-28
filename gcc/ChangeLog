@@ -1,5 +1,18 @@
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR rtl-optimization/41812
+
+	Revert:
+	2009-06-27  Paolo Bonzini  <bonzini@gnu.org>
+
+	* df-problems.c (df_md_scratch): New.
+	(df_md_alloc, df_md_free): Allocate/free it.
+	(df_md_local_compute): Only include live registers in init.
+	(df_md_transfer_function): Prune the in-set computed by
+	the confluence function, and the gen-set too.
+
+2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR rtl-optimization/39715
 	* combine.c (simplify_comparison): Use extensions to
 	widen comparisons.  Try an ANDing first.
