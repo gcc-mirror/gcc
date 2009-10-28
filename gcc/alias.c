@@ -2200,6 +2200,13 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   if (! DECL_P (exprx) || ! DECL_P (expry))
     return 0;
 
+  /* With invalid code we can end up storing into the constant pool.
+     Bail out to avoid ICEing when creating RTL for this.
+     See gfortran.dg/lto/20091028-2_0.f90.  */
+  if (TREE_CODE (exprx) == CONST_DECL
+      || TREE_CODE (expry) == CONST_DECL)
+    return 1;
+
   rtlx = DECL_RTL (exprx);
   rtly = DECL_RTL (expry);
 

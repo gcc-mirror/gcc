@@ -1,3 +1,11 @@
+2009-10-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41855
+	* gfortran.dg/lto/20091028-1_0.f90: New testcase.
+	* gfortran.dg/lto/20091028-1_1.c: Likewise.
+	* gfortran.dg/lto/20091028-2_0.f90: Likewise.
+	* gfortran.dg/lto/20091028-2_1.c: Likewise.
+
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/39715
