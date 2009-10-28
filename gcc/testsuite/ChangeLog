@@ -1,3 +1,8 @@
+2009-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41762
+	* gcc.dg/pr41762.c: New test.
+
 2009-10-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/41855

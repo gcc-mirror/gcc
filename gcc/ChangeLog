@@ -4,6 +4,10 @@
 	vt_expand_loc unnecessarily when location is not a register nor
 	memory.
 
+	PR target/41762
+	* config/i386/i386.c (ix86_pic_register_p): Don't call
+	rtx_equal_for_cselib_p for VALUEs discarded as useless.
+
 2009-10-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* var-tracking.c (emit_note_insn_var_location): Get the mode of
