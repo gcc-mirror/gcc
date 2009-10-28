@@ -4209,7 +4209,7 @@ gimple_get_alias_set (tree t)
 
 	 With LTO the convenient situation of using `void *' to
 	 access and store any pointer type will also become
-	 more appearant (and `void *' is just another pointer-to
+	 more apparent (and `void *' is just another pointer-to
 	 incomplete type).  Assigning alias-set zero to `void *'
 	 and all pointer-to incomplete types is a not appealing
 	 solution.  Assigning an effective alias-set zero only

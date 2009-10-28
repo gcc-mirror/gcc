@@ -1,5 +1,9 @@
 2009-10-28  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (gimple_get_alias_set): Fix comment typo.
+
+2009-10-28  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (free_lang_data_in_type): Do not call get_alias_set.
 	(free_lang_data): Unconditionally compute alias sets for all
 	standard integer types.  Bail out if gate bailed out previously.
