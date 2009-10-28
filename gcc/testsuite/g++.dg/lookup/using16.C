@@ -3,7 +3,7 @@
 // { dg-do compile }
 
 namespace M {
-  struct S {}; // { dg-error "candidates are: struct M::S" "candidate 1" }
+  struct S {}; // { dg-error "struct M::S" "candidate 1" }
 }
 
 namespace N {

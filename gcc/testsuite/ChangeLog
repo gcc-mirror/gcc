@@ -1,3 +1,9 @@
+2009-10-28  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/inline-ns1.C: New.
+	* g++.dg/cpp0x/inline-ns2.C: New.
+	* g++.dg/cpp0x/inline-ns3.C: New.
+
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/39715
