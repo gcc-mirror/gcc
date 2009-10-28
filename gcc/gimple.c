@@ -4131,7 +4131,6 @@ gimple_signed_type (tree type)
 alias_set_type
 gimple_get_alias_set (tree t)
 {
-  static bool recursing_p;
   tree u;
 
   /* Permit type-punning when accessing a union, provided the access
@@ -4171,15 +4170,9 @@ gimple_get_alias_set (tree t)
     }
   else if (POINTER_TYPE_P (t))
     {
-      tree t1;
+      /* From the common C and C++ langhook implementation:
 
-      /* ???  We can end up creating cycles with TYPE_MAIN_VARIANT
-	 and TYPE_CANONICAL.  Avoid recursing endlessly between
-	 this langhook and get_alias_set.  */
-      if (recursing_p)
-	return -1;
-
-      /* Unfortunately, there is no canonical form of a pointer type.
+	 Unfortunately, there is no canonical form of a pointer type.
 	 In particular, if we have `typedef int I', then `int *', and
 	 `I *' are different types.  So, we have to pick a canonical
 	 representative.  We do this below.
@@ -4201,15 +4194,36 @@ gimple_get_alias_set (tree t)
 	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
 	 the pointed-to types.  This issue has been reported to the
 	 C++ committee.  */
-      t1 = build_type_no_quals (t);
-      if (t1 != t)
-	{
-	  alias_set_type set;
-	  recursing_p = true;
-	  set = get_alias_set (t1);
-	  recursing_p = false;
-	  return set;
-	}
+
+      /* In addition to the above canonicalization issue with LTO
+         we should also canonicalize `T (*)[]' to `T *' avoiding
+	 alias issues with pointer-to element types and pointer-to
+	 array types.
+
+	 Likewise we need to deal with the situation of incomplete
+	 pointed-to types and make `*(struct X **)&a' and
+	 `*(struct X {} **)&a' alias.  Otherwise we will have to
+	 guarantee that all pointer-to incomplete type variants
+	 will be replaced by pointer-to complete type variants if
+	 they are available.
+
+	 With LTO the convenient situation of using `void *' to
+	 access and store any pointer type will also become
+	 more appearant (and `void *' is just another pointer-to
+	 incomplete type).  Assigning alias-set zero to `void *'
+	 and all pointer-to incomplete types is a not appealing
+	 solution.  Assigning an effective alias-set zero only
+	 affecting pointers might be - by recording proper subset
+	 relationships of all pointer alias-sets.
+
+	 Pointer-to function types are another grey area which
+	 needs caution.  Globbing them all into one alias-set
+	 or the above effective zero set would work.  */
+
+      /* For now just assign the same alias-set to all pointers.
+         That's simple and avoids all the above problems.  */
+      if (t != ptr_type_node)
+	return get_alias_set (ptr_type_node);
     }
 
   return -1;
