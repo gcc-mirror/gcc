@@ -3368,7 +3368,8 @@ gimple_types_compatible_p (tree t1, tree t2)
 	    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t1))
 	    && (!COMPLETE_TYPE_P (TREE_TYPE (t1))
 		|| !COMPLETE_TYPE_P (TREE_TYPE (t2)))
-	    && compare_type_names_p (TREE_TYPE (t1), TREE_TYPE (t2), true))
+	    && compare_type_names_p (TYPE_MAIN_VARIANT (TREE_TYPE (t1)),
+				     TYPE_MAIN_VARIANT (TREE_TYPE (t2)), true))
 	  {
 	    /* Replace the pointed-to incomplete type with the
 	       complete one.  */
