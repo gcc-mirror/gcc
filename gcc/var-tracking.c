@@ -6428,6 +6428,7 @@ emit_note_insn_var_location (void **varp, void *data)
       if (j < var->n_var_parts
 	  && wider_mode != VOIDmode
 	  && mode == GET_MODE (var->var_part[j].loc_chain->loc)
+	  && (REG_P (loc[n_var_parts]) || MEM_P (loc[n_var_parts]))
 	  && (loc2 = vt_expand_loc (var->var_part[j].loc_chain->loc, vars))
 	  && GET_CODE (loc[n_var_parts]) == GET_CODE (loc2)
 	  && last_limit == var->var_part[j].offset)
