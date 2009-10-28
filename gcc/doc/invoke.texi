@@ -391,7 +391,7 @@ Objective-C and Objective-C++ Dialects}.
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
--fwhole-program -fwhopr -fwpa -use-linker-plugin @gol
+-fwhole-program -fwhopr -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -7274,11 +7274,11 @@ If object files containing GIMPLE bytecode are stored in a library
 archive, say @file{libfoo.a}, it is possible to extract and use them
 in an LTO link if you are using @command{gold} as the linker (which,
 in turn requires GCC to be configured with @option{--enable-gold}).
-To enable this feature, use the flag @option{-use-linker-plugin} at
+To enable this feature, use the flag @option{-fuse-linker-plugin} at
 link-time:
 
 @smallexample
-gcc -o myprog -O2 -flto -use-linker-plugin a.o b.o -lfoo
+gcc -o myprog -O2 -flto -fuse-linker-plugin a.o b.o -lfoo
 @end smallexample
 
 With the linker plugin enabled, @command{gold} will extract the needed
@@ -7286,7 +7286,7 @@ GIMPLE files from @file{libfoo.a} and pass them on to the running GCC
 to make them part of the aggregated GIMPLE image to be optimized.
 
 If you are not using @command{gold} and/or do not specify
-@option{-use-linker-plugin} then the objects inside @file{libfoo.a}
+@option{-fuse-linker-plugin} then the objects inside @file{libfoo.a}
 will be extracted and linked as usual, but they will not participate
 in the LTO optimization process.
 
@@ -7371,7 +7371,7 @@ files in LTO mode (via @option{-fwhopr} or @option{-flto}).
 
 Disabled by default.
 
-@item -use-linker-plugin
+@item -fuse-linker-plugin
 Enables the extraction of objects with GIMPLE bytecode information
 from library archives.  This option relies on features available only
 in @command{gold}, so to use this you must configure GCC with
