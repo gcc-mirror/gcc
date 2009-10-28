@@ -1,3 +1,8 @@
+2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/sh/sh.md (cbranchfp4_media): Remove hack extending
+	cstore result to DImode.
+
 2009-10-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (stuff_delay_slot): Move const_int pattern
