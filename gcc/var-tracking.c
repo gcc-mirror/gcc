@@ -6416,7 +6416,7 @@ emit_note_insn_var_location (void **varp, void *data)
 	  continue;
 	}
       loc[n_var_parts] = loc2;
-      mode = GET_MODE (loc[n_var_parts]);
+      mode = GET_MODE (var->var_part[i].loc_chain->loc);
       initialized = var->var_part[i].loc_chain->init;
       last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
 
@@ -6427,9 +6427,9 @@ emit_note_insn_var_location (void **varp, void *data)
 	  break;
       if (j < var->n_var_parts
 	  && wider_mode != VOIDmode
+	  && mode == GET_MODE (var->var_part[j].loc_chain->loc)
 	  && (loc2 = vt_expand_loc (var->var_part[j].loc_chain->loc, vars))
 	  && GET_CODE (loc[n_var_parts]) == GET_CODE (loc2)
-	  && mode == GET_MODE (loc2)
 	  && last_limit == var->var_part[j].offset)
 	{
 	  rtx new_loc = NULL;
