@@ -27,6 +27,7 @@
 --  building specific types of tree nodes.
 
 with Namet; use Namet;
+with Sinfo; use Sinfo;
 with Types; use Types;
 
 package Tbuild is
@@ -195,6 +196,12 @@ package Tbuild is
    --  This function builds a tree corresponding to the Ada statement
    --  "raise Constraint_Error" and returns the root of this tree,
    --  the N_Raise_Statement node.
+
+   function New_Op_Node
+     (New_Node_Kind : Node_Kind;
+      New_Sloc      : Source_Ptr) return Node_Id;
+   --  Create node using New_Node and, if its kind is in N_Op, set its Chars
+   --  field accordingly.
 
    function New_External_Name
      (Related_Id   : Name_Id;

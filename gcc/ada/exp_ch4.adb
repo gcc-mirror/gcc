@@ -8065,20 +8065,9 @@ package body Exp_Ch4 is
                    Subtype_Mark => New_Reference_To (Standard_Integer, Loc),
                    Expression   => Relocate_Node (Left_Opnd (Operand)));
 
-               case Nkind (Operand) is
-                  when N_Op_Add =>
-                     Opnd := Make_Op_Add (Loc, L, R);
-                  when N_Op_Divide =>
-                     Opnd := Make_Op_Divide (Loc, L, R);
-                  when N_Op_Expon =>
-                     Opnd := Make_Op_Expon (Loc, L, R);
-                  when N_Op_Multiply =>
-                     Opnd := Make_Op_Multiply (Loc, L, R);
-                  when N_Op_Subtract =>
-                     Opnd := Make_Op_Subtract (Loc, L, R);
-                  when others =>
-                     raise Program_Error;
-               end case;
+               Opnd := New_Op_Node (Nkind (Operand), Loc);
+               Set_Left_Opnd (Opnd, L);
+               Set_Right_Opnd (Opnd, R);
 
                Rewrite (N,
                  Make_Type_Conversion (Loc,

@@ -1,3 +1,27 @@
+2009-10-28  Robert Dewar  <dewar@adacore.com>
+
+	* a-ztexio.adb, a-ztexio.ads, a-witeio.ads, a-witeio.adb,
+	a-textio.ads, a-textio.adb: Reorganize (moving specs from private part
+	to body).
+	(Initialize_Standard_Files): New procedure.
+	* a-tienau.adb: Minor change to make EOF directly visible
+	* a-tirsfi.ads, a-wrstfi.adb, a-wrstfi.ads, a-zrstfi.adb,
+	a-zrstfi.ads, a-tirsfi.adb: New unit, initial version.
+	* gnat_rm.texi: Add documentation for
+	Ada.[Wide_[Wide_]]Text_IO.Reset_Standard_Files.
+	* Makefile.rtl: Add entries for
+	Ada.[Wide_[Wide_]]Text_IO.Reset_Standard_Files
+
+2009-10-28  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.ads: Minor reformatting
+	* sem_ch3.adb: Minor reformatting
+	* sem_aggr.adb: Minor reformatting.
+	* sem_attr.adb: Minor reformatting
+	* tbuild.adb, tbuild.ads, par-ch4.adb, exp_ch4.adb (Tbuild.New_Op_Node):
+	New subprogram.
+	Minor code reorganization/factoring.
+
 2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (purpose_member_field): New static function.

@@ -307,10 +307,13 @@ The GNAT Library
 * Ada.Strings.Wide_Unbounded.Wide_Text_IO (a-swuwti.ads)::
 * Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO (a-szuzti.ads)::
 * Ada.Text_IO.C_Streams (a-tiocst.ads)::
+* Ada.Text_IO.Reset_Standard_Files (a-tirsfi.ads)::
 * Ada.Wide_Characters.Unicode (a-wichun.ads)::
 * Ada.Wide_Text_IO.C_Streams (a-wtcstr.ads)::
+* Ada.Wide_Text_IO.Reset_Standard_Files (a-wrstfi.ads)::
 * Ada.Wide_Wide_Characters.Unicode (a-zchuni.ads)::
 * Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)::
+* Ada.Wide_Wide_Text_IO.Reset_Standard_Files (a-zrstfi.ads)::
 * GNAT.Altivec (g-altive.ads)::
 * GNAT.Altivec.Conversions (g-altcon.ads)::
 * GNAT.Altivec.Vector_Operations (g-alveop.ads)::
@@ -13496,10 +13499,13 @@ of GNAT, and will generate a warning message.
 * Ada.Strings.Wide_Unbounded.Wide_Text_IO (a-swuwti.ads)::
 * Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO (a-szuzti.ads)::
 * Ada.Text_IO.C_Streams (a-tiocst.ads)::
+* Ada.Text_IO.Reset_Standard_Files (a-tirsfi.ads)::
 * Ada.Wide_Characters.Unicode (a-wichun.ads)::
 * Ada.Wide_Text_IO.C_Streams (a-wtcstr.ads)::
+* Ada.Wide_Text_IO.Reset_Standard_Files (a-wrstfi.ads)::
 * Ada.Wide_Wide_Characters.Unicode (a-zchuni.ads)::
 * Ada.Wide_Wide_Text_IO.C_Streams (a-ztcstr.ads)::
+* Ada.Wide_Wide_Text_IO.Reset_Standard_Files (a-zrstfi.ads)::
 * GNAT.Altivec (g-altive.ads)::
 * GNAT.Altivec.Conversions (g-altcon.ads)::
 * GNAT.Altivec.Vector_Operations (g-alveop.ads)::
@@ -13819,6 +13825,18 @@ C streams and @code{Text_IO}.  The stream identifier can be
 extracted from a file opened on the Ada side, and an Ada file
 can be constructed from a stream opened on the C side.
 
+@node Ada.Text_IO.Reset_Standard_Files (a-tirsfi.ads)
+@section @code{Ada.Text_IO.Reset_Standard_Files} (@file{a-tirsfi.ads})
+@cindex @code{Ada.Text_IO.Reset_Standard_Files} (@file{a-tirsfi.ads})
+@cindex @code{Text_IO} resetting standard files
+
+@noindent
+This procedure is used to reset the status of the standard files used
+by Ada.Text_IO.  This is useful in a situation (such as a restart in an
+embedded application) where the status of the files may change during
+execution (for example a standard input file may be redefined to be
+interactive).
+
 @node Ada.Wide_Characters.Unicode (a-wichun.ads)
 @section @code{Ada.Wide_Characters.Unicode} (@file{a-wichun.ads})
 @cindex @code{Ada.Wide_Characters.Unicode} (@file{a-wichun.ads})
@@ -13839,6 +13857,18 @@ C streams and @code{Wide_Text_IO}.  The stream identifier can be
 extracted from a file opened on the Ada side, and an Ada file
 can be constructed from a stream opened on the C side.
 
+@node Ada.Wide_Text_IO.Reset_Standard_Files (a-wrstfi.ads)
+@section @code{Ada.Wide_Text_IO.Reset_Standard_Files} (@file{a-wrstfi.ads})
+@cindex @code{Ada.Wide_Text_IO.Reset_Standard_Files} (@file{a-wrstfi.ads})
+@cindex @code{Wide_Text_IO} resetting standard files
+
+@noindent
+This procedure is used to reset the status of the standard files used
+by Ada.Wide_Text_IO.  This is useful in a situation (such as a restart in an
+embedded application) where the status of the files may change during
+execution (for example a standard input file may be redefined to be
+interactive).
+
 @node Ada.Wide_Wide_Characters.Unicode (a-zchuni.ads)
 @section @code{Ada.Wide_Wide_Characters.Unicode} (@file{a-zchuni.ads})
 @cindex @code{Ada.Wide_Wide_Characters.Unicode} (@file{a-zchuni.ads})
@@ -13858,6 +13888,18 @@ This package provides subprograms that allow interfacing between
 C streams and @code{Wide_Wide_Text_IO}.  The stream identifier can be
 extracted from a file opened on the Ada side, and an Ada file
 can be constructed from a stream opened on the C side.
+
+@node Ada.Wide_Wide_Text_IO.Reset_Standard_Files (a-zrstfi.ads)
+@section @code{Ada.Wide_Wide_Text_IO.Reset_Standard_Files} (@file{a-zrstfi.ads})
+@cindex @code{Ada.Wide_Wide_Text_IO.Reset_Standard_Files} (@file{a-zrstfi.ads})
+@cindex @code{Wide_Wide_Text_IO} resetting standard files
+
+@noindent
+This procedure is used to reset the status of the standard files used
+by Ada.Wide_Wide_Text_IO. This is useful in a situation (such as a
+restart in an embedded application) where the status of the files may
+change during execution (for example a standard input file may be
+redefined to be interactive).
 
 @node GNAT.Altivec (g-altive.ads)
 @section @code{GNAT.Altivec} (@file{g-altive.ads})
