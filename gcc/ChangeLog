@@ -1,3 +1,9 @@
+2009-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41762
+	* config/i386/i386.c (ix86_pic_register_p): Don't call
+	rtx_equal_for_cselib_p for VALUEs discarded as useless.
+
 2009-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/41842
