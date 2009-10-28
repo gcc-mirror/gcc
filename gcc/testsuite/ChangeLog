@@ -1,3 +1,13 @@
+2009-10-28  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41808
+	PR lto/41839
+	* gcc.dg/lto/20091027-1_0.c: New testcase.
+	* gcc.dg/lto/20091027-1_1.c: Likewise.
+	* g++.dg/lto/20091026-1_0.C: Likewise.
+	* g++.dg/lto/20091026-1_1.C: Likewise.
+	* g++.dg/lto/20091026-1_a.h: Likewise.
+
 2009-10-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/41837
