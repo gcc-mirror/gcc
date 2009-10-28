@@ -1,3 +1,8 @@
+2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (all_symbols_read_handler): Use LDPL_FATAL instead of
+	LDPL_ERROR
+
 2009-10-27  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR lto/41652
