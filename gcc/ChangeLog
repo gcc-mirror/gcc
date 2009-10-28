@@ -1,3 +1,12 @@
+2009-10-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41855
+	* tree-ssa-alias.c (refs_may_alias_p_1): Deal with CONST_DECLs
+	(ref_maybe_used_by_call_p_1): Fix bcopy handling.
+	(call_may_clobber_ref_p_1): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases): Likewise.
+	* alias.c (nonoverlapping_memrefs_p): Deal with CONST_DECLs.
+
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/41812

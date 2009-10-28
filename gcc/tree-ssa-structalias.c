@@ -3687,8 +3687,10 @@ find_func_aliases (gimple origt)
 	  case BUILT_IN_STRNCAT:
 	    {
 	      tree res = gimple_call_lhs (t);
-	      tree dest = gimple_call_arg (t, 0);
-	      tree src = gimple_call_arg (t, 1);
+	      tree dest = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
+					       == BUILT_IN_BCOPY ? 1 : 0));
+	      tree src = gimple_call_arg (t, (DECL_FUNCTION_CODE (fndecl)
+					      == BUILT_IN_BCOPY ? 0 : 1));
 	      if (res != NULL_TREE)
 		{
 		  get_constraint_for (res, &lhsc);

@@ -776,12 +776,14 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 	       || SSA_VAR_P (ref1->ref)
 	       || handled_component_p (ref1->ref)
 	       || INDIRECT_REF_P (ref1->ref)
-	       || TREE_CODE (ref1->ref) == TARGET_MEM_REF)
+	       || TREE_CODE (ref1->ref) == TARGET_MEM_REF
+	       || TREE_CODE (ref1->ref) == CONST_DECL)
 	      && (!ref2->ref
 		  || SSA_VAR_P (ref2->ref)
 		  || handled_component_p (ref2->ref)
 		  || INDIRECT_REF_P (ref2->ref)
-		  || TREE_CODE (ref2->ref) == TARGET_MEM_REF));
+		  || TREE_CODE (ref2->ref) == TARGET_MEM_REF
+		  || TREE_CODE (ref2->ref) == CONST_DECL));
 
   /* Decompose the references into their base objects and the access.  */
   base1 = ao_ref_base (ref1);
@@ -798,6 +800,8 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
      which is seen as a struct copy.  */
   if (TREE_CODE (base1) == SSA_NAME
       || TREE_CODE (base2) == SSA_NAME
+      || TREE_CODE (base1) == CONST_DECL
+      || TREE_CODE (base2) == CONST_DECL
       || is_gimple_min_invariant (base1)
       || is_gimple_min_invariant (base2))
     return false;
@@ -934,7 +938,6 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	   their first argument.  */
 	case BUILT_IN_STRCPY:
 	case BUILT_IN_STRNCPY:
-	case BUILT_IN_BCOPY:
 	case BUILT_IN_MEMCPY:
 	case BUILT_IN_MEMMOVE:
 	case BUILT_IN_MEMPCPY:
@@ -949,6 +952,15 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	      size = gimple_call_arg (call, 2);
 	    ao_ref_init_from_ptr_and_size (&dref,
 					   gimple_call_arg (call, 1),
+					   size);
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
+	case BUILT_IN_BCOPY:
+	  {
+	    ao_ref dref;
+	    tree size = gimple_call_arg (call, 2);
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 0),
 					   size);
 	    return refs_may_alias_p_1 (&dref, ref, false);
 	  }
@@ -1151,7 +1163,6 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	   their first argument.  */
 	case BUILT_IN_STRCPY:
 	case BUILT_IN_STRNCPY:
-	case BUILT_IN_BCOPY:
 	case BUILT_IN_MEMCPY:
 	case BUILT_IN_MEMMOVE:
 	case BUILT_IN_MEMPCPY:
@@ -1167,6 +1178,15 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	      size = gimple_call_arg (call, 2);
 	    ao_ref_init_from_ptr_and_size (&dref,
 					   gimple_call_arg (call, 0),
+					   size);
+	    return refs_may_alias_p_1 (&dref, ref, false);
+	  }
+	case BUILT_IN_BCOPY:
+	  {
+	    ao_ref dref;
+	    tree size = gimple_call_arg (call, 2);
+	    ao_ref_init_from_ptr_and_size (&dref,
+					   gimple_call_arg (call, 1),
 					   size);
 	    return refs_may_alias_p_1 (&dref, ref, false);
 	  }
