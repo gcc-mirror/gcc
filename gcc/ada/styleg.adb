@@ -813,12 +813,17 @@ package body Styleg is
    -- Check_Right_Paren --
    -----------------------
 
-   --  In check tokens mode (-gnatyt), right paren must never be preceded by
+   --  In check tokens mode (-gnatyt), right paren must not be immediately
+   --  followed by an identifier character, and must never be preceded by
    --  a space unless it is the initial non-blank character on the line.
 
    procedure Check_Right_Paren is
    begin
       if Style_Check_Tokens then
+         if Identifier_Char (Source (Token_Ptr + 1)) then
+            Error_Space_Required (Token_Ptr + 1);
+         end if;
+
          Check_No_Space_Before;
       end if;
    end Check_Right_Paren;

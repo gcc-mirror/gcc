@@ -31,7 +31,10 @@
 
 with Ada.Finalization;            use Ada.Finalization;
 with Ada.IO_Exceptions;           use Ada.IO_Exceptions;
+with Ada.Unchecked_Conversion;
+
 with Interfaces.C;
+with Interfaces.C.Strings;        use Interfaces.C.Strings;
 with Interfaces.C_Streams;        use Interfaces.C_Streams;
 
 with System.CRTL;
@@ -48,7 +51,7 @@ package body System.File_IO is
    package SSL renames System.Soft_Links;
 
    use type Interfaces.C.int;
-   use type System.CRTL.size_t;
+   use type CRTL.size_t;
 
    ----------------------
    -- Global Variables --
@@ -126,6 +129,23 @@ package body System.File_IO is
    --  call to fopen or freopen. Amethod is the character designating
    --  the access method from the Access_Method field of the FCB.
 
+   function Errno_Message
+     (Errno : Integer := OS_Lib.Errno) return String;
+   function Errno_Message
+     (Name : String;
+      Errno : Integer := OS_Lib.Errno) return String;
+   --  Return a message suitable for "raise ... with Errno_Message (...)".
+   --  Errno defaults to the current errno, but should be passed explicitly if
+   --  there is significant code in between the call that sets errno and the
+   --  call to Errno_Message, in case that code also sets errno. The version
+   --  with Name includes that file name in the message.
+
+   procedure Raise_Device_Error
+     (File : AFCB_Ptr; Errno : Integer := OS_Lib.Errno);
+   pragma No_Return (Raise_Device_Error);
+   --  Clear error indication on File and raise Device_Error with an exception
+   --  message providing errno information.
+
    ----------------
    -- Append_Set --
    ----------------
@@ -134,7 +154,7 @@ package body System.File_IO is
    begin
       if File.Mode = Append_File then
          if fseek (File.Stream, 0, SEEK_END) /= 0 then
-            raise Device_Error;
+            Raise_Device_Error (File);
          end if;
       end if;
    end Append_Set;
@@ -174,7 +194,7 @@ package body System.File_IO is
    procedure Check_File_Open (File : AFCB_Ptr) is
    begin
       if File = null then
-         raise Status_Error;
+         raise Status_Error with "file not open";
       end if;
    end Check_File_Open;
 
@@ -185,9 +205,9 @@ package body System.File_IO is
    procedure Check_Read_Status (File : AFCB_Ptr) is
    begin
       if File = null then
-         raise Status_Error;
+         raise Status_Error with "file not open";
       elsif File.Mode > Inout_File then
-         raise Mode_Error;
+         raise Mode_Error with "file not readable";
       end if;
    end Check_Read_Status;
 
@@ -198,9 +218,9 @@ package body System.File_IO is
    procedure Check_Write_Status (File : AFCB_Ptr) is
    begin
       if File = null then
-         raise Status_Error;
+         raise Status_Error with "file not open";
       elsif File.Mode = In_File then
-         raise Mode_Error;
+         raise Mode_Error with "file not writable";
       end if;
    end Check_Write_Status;
 
@@ -212,6 +232,7 @@ package body System.File_IO is
       Close_Status : int := 0;
       Dup_Strm     : Boolean := False;
       File         : AFCB_Ptr renames File_Ptr.all;
+      Errno        : Integer;
 
    begin
       --  Take a task lock, to protect the global data value Open_Files
@@ -228,6 +249,7 @@ package body System.File_IO is
       --  stream value -- happens in some error situations).
 
       if not File.Is_System_File and then File.Stream /= NULL_Stream then
+
          --  Do not do an fclose if this is a shared file and there is at least
          --  one other instance of the stream that is open.
 
@@ -252,6 +274,10 @@ package body System.File_IO is
 
          if not Dup_Strm then
             Close_Status := fclose (File.Stream);
+
+            if Close_Status /= 0 then
+               Errno := OS_Lib.Errno;
+            end if;
          end if;
       end if;
 
@@ -280,7 +306,7 @@ package body System.File_IO is
       File := null;
 
       if Close_Status /= 0 then
-         raise Device_Error;
+         Raise_Device_Error (null, Errno);
       end if;
 
       SSL.Unlock_Task.all;
@@ -297,11 +323,12 @@ package body System.File_IO is
 
    procedure Delete (File_Ptr : access AFCB_Ptr) is
       File : AFCB_Ptr renames File_Ptr.all;
+
    begin
       Check_File_Open (File);
 
       if not File.Is_Regular_File then
-         raise Use_Error;
+         raise Use_Error with "cannot delete non-regular file";
       end if;
 
       declare
@@ -315,7 +342,7 @@ package body System.File_IO is
          --  we did the open, and we want to unlink the right file!
 
          if unlink (Filename'Address) = -1 then
-            raise Use_Error;
+            raise Use_Error with Errno_Message;
          end if;
       end;
    end Delete;
@@ -343,13 +370,40 @@ package body System.File_IO is
       end if;
    end End_Of_File;
 
+   -------------------
+   -- Errno_Message --
+   -------------------
+
+   function Errno_Message (Errno : Integer := OS_Lib.Errno) return String is
+      function To_Chars_Ptr is
+        new Ada.Unchecked_Conversion (System.Address, chars_ptr);
+
+      Message : constant chars_ptr :=
+                  To_Chars_Ptr (CRTL.strerror (Errno));
+
+   begin
+      if Message = Null_Ptr then
+         return "errno =" & Errno'Img;
+      else
+         return Value (Message);
+      end if;
+   end Errno_Message;
+
+   function Errno_Message
+     (Name : String;
+      Errno : Integer := OS_Lib.Errno) return String
+   is
+   begin
+      return Name & ": " & String'(Errno_Message (Errno));
+   end Errno_Message;
+
    --------------
    -- Finalize --
    --------------
 
-   --  Note: we do not need to worry about locking against multiple task
-   --  access in this routine, since it is called only from the environment
-   --  task just before terminating execution.
+   --  Note: we do not need to worry about locking against multiple task access
+   --  in this routine, since it is called only from the environment task just
+   --  before terminating execution.
 
    procedure Finalize (V : in out File_IO_Clean_Up_Type) is
       pragma Warnings (Off, V);
@@ -400,10 +454,8 @@ package body System.File_IO is
    begin
       Check_Write_Status (File);
 
-      if fflush (File.Stream) = 0 then
-         return;
-      else
-         raise Device_Error;
+      if fflush (File.Stream) /= 0 then
+         Raise_Device_Error (File);
       end if;
    end Flush;
 
@@ -506,7 +558,7 @@ package body System.File_IO is
    function Form (File : AFCB_Ptr) return String is
    begin
       if File = null then
-         raise Status_Error;
+         raise Status_Error with "Form: file not open";
       else
          return File.Form.all (1 .. File.Form'Length - 1);
       end if;
@@ -537,7 +589,7 @@ package body System.File_IO is
          return False;
 
       else
-         raise Use_Error;
+         raise Use_Error with "invalid Form";
       end if;
    end Form_Boolean;
 
@@ -564,13 +616,13 @@ package body System.File_IO is
 
          for J in V1 .. V2 loop
             if Form (J) not in '0' .. '9' then
-               raise Use_Error;
+               raise Use_Error with "invalid Form";
             else
                V := V * 10 + Character'Pos (Form (J)) - Character'Pos ('0');
             end if;
 
             if V > 999_999 then
-               raise Use_Error;
+               raise Use_Error with "invalid Form";
             end if;
          end loop;
 
@@ -678,7 +730,7 @@ package body System.File_IO is
    function Mode (File : AFCB_Ptr) return File_Mode is
    begin
       if File = null then
-         raise Status_Error;
+         raise Status_Error with "Mode: file not open";
       else
          return File.Mode;
       end if;
@@ -691,7 +743,7 @@ package body System.File_IO is
    function Name (File : AFCB_Ptr) return String is
    begin
       if File = null then
-         raise Status_Error;
+         raise Status_Error with "Name: file not open";
       else
          return File.Name.all (1 .. File.Name'Length - 1);
       end if;
@@ -752,12 +804,12 @@ package body System.File_IO is
       Full_Name_Len : Integer;
       --  Length of name actually stored in Fullname
 
-      Encoding : System.CRTL.Filename_Encoding;
+      Encoding : CRTL.Filename_Encoding;
       --  Filename encoding specified into the form parameter
 
    begin
       if File_Ptr /= null then
-         raise Status_Error;
+         raise Status_Error with "file already open";
       end if;
 
       --  Acquire form string, setting required NUL terminator
@@ -791,7 +843,7 @@ package body System.File_IO is
             Shared := No;
 
          else
-            raise Use_Error;
+            raise Use_Error with "invalid Form";
          end if;
       end;
 
@@ -804,16 +856,16 @@ package body System.File_IO is
          Form_Parameter (Formstr, "encoding", V1, V2);
 
          if V1 = 0 then
-            Encoding := System.CRTL.Unspecified;
+            Encoding := CRTL.Unspecified;
 
          elsif Formstr (V1 .. V2) = "utf8" then
-            Encoding := System.CRTL.UTF8;
+            Encoding := CRTL.UTF8;
 
          elsif Formstr (V1 .. V2) = "8bits" then
-            Encoding := System.CRTL.ASCII_8bits;
+            Encoding := CRTL.ASCII_8bits;
 
          else
-            raise Use_Error;
+            raise Use_Error with "invalid Form";
          end if;
       end;
 
@@ -845,13 +897,13 @@ package body System.File_IO is
 
          if Tempfile then
             if not Creat then
-               raise Name_Error;
+               raise Name_Error with "opening temp file without creating it";
             end if;
 
             Tmp_Name (Namestr'Address);
 
             if Namestr (1) = ASCII.NUL then
-               raise Use_Error;
+               raise Use_Error with "invalid temp file name";
             end if;
 
             --  Chain to temp file list, ensuring thread safety with a lock
@@ -872,7 +924,7 @@ package body System.File_IO is
 
          else
             if Name'Length > Namelen then
-               raise Name_Error;
+               raise Name_Error with "file name too long";
             end if;
 
             Namestr (1 .. Name'Length) := Name;
@@ -884,7 +936,7 @@ package body System.File_IO is
          full_name (Namestr'Address, Fullname'Address);
 
          if Fullname (1) = ASCII.NUL then
-            raise Use_Error;
+            raise Use_Error with Errno_Message (Name);
          end if;
 
          Full_Name_Len := 1;
@@ -931,7 +983,7 @@ package body System.File_IO is
                      if Shared = None
                        or else P.Shared_Status = None
                      then
-                        raise Use_Error;
+                        raise Use_Error with "reopening shared file";
 
                      --  If both files have Shared=Yes, then we acquire the
                      --  stream from the located file to use as our stream.
@@ -977,7 +1029,7 @@ package body System.File_IO is
 
             if not Creat and then Fopstr (1) /= 'r' then
                if file_exists (Namestr'Address) = 0 then
-                  raise Name_Error;
+                  raise Name_Error with Errno_Message (Name);
                end if;
             end if;
 
@@ -1001,10 +1053,8 @@ package body System.File_IO is
                --  Should we raise Device_Error for ENOSPC???
 
                declare
-                  subtype Cint is Interfaces.C.int;
-
                   function Is_File_Not_Found_Error
-                    (Errno_Value : Cint) return Cint;
+                    (Errno_Value : Integer) return Integer;
                   --  Non-zero when the given errno value indicates a non-
                   --  existing file.
 
@@ -1012,13 +1062,13 @@ package body System.File_IO is
                     (C, Is_File_Not_Found_Error,
                      "__gnat_is_file_not_found_error");
 
+                  Errno : constant Integer := OS_Lib.Errno;
+                  Message : constant String := Errno_Message (Name, Errno);
                begin
-                  if
-                    Is_File_Not_Found_Error (Cint (System.OS_Lib.Errno)) /= 0
-                  then
-                     raise Name_Error;
+                  if Is_File_Not_Found_Error (Errno) /= 0 then
+                     raise Name_Error with Message;
                   else
-                     raise Use_Error;
+                     raise Use_Error with Message;
                   end if;
                end;
             end if;
@@ -1047,6 +1097,23 @@ package body System.File_IO is
       Append_Set (File_Ptr);
    end Open;
 
+   ------------------------
+   -- Raise_Device_Error --
+   ------------------------
+
+   procedure Raise_Device_Error
+     (File : AFCB_Ptr; Errno : Integer := OS_Lib.Errno)
+   is
+   begin
+      --  Clear error status so that the same error is not reported twice
+
+      if File /= null then
+         clearerr (File.Stream);
+      end if;
+
+      raise Device_Error with Errno_Message (Errno);
+   end Raise_Device_Error;
+
    --------------
    -- Read_Buf --
    --------------
@@ -1061,13 +1128,13 @@ package body System.File_IO is
          return;
 
       elsif ferror (File.Stream) /= 0 then
-         raise Device_Error;
+         Raise_Device_Error (File);
 
       elsif Nread = 0 then
          raise End_Error;
 
       else -- 0 < Nread < Siz
-         raise Data_Error;
+         raise Data_Error with "not enough data read";
       end if;
 
    end Read_Buf;
@@ -1082,7 +1149,7 @@ package body System.File_IO is
       Count := fread (Buf, 1, Siz, File.Stream);
 
       if Count = 0 and then ferror (File.Stream) /= 0 then
-         raise Device_Error;
+         Raise_Device_Error (File);
       end if;
    end Read_Buf;
 
@@ -1114,19 +1181,23 @@ package body System.File_IO is
       --  file that is not a regular file, or for a system file. Note that we
       --  allow the "change" of mode if it is not in fact doing a change.
 
-      if Mode /= File.Mode
-        and then (File.Shared_Status = Yes
-                   or else File.Name'Length <= 1
-                   or else File.Is_System_File
-                   or else not File.Is_Regular_File)
-      then
-         raise Use_Error;
+      if Mode /= File.Mode then
+         if File.Shared_Status = Yes then
+            raise Use_Error with "cannot change mode of shared file";
+         elsif File.Name'Length <= 1 then
+            raise Use_Error with "cannot change mode of temp file";
+         elsif File.Is_System_File then
+            raise Use_Error with "cannot change mode of system file";
+         elsif not File.Is_Regular_File then
+            raise Use_Error with "cannot change mode of non-regular file";
+         end if;
+      end if;
 
       --  For In_File or Inout_File for a regular file, we can just do a rewind
       --  if the mode is unchanged, which is more efficient than doing a full
       --  reopen.
 
-      elsif Mode = File.Mode
+      if Mode = File.Mode
         and then Mode <= Inout_File
       then
          rewind (File.Stream);
@@ -1168,7 +1239,7 @@ package body System.File_IO is
       if fwrite (Buf, Siz, 1, File.Stream) /= 1 then
          if Siz /= 0 then
             SSL.Abort_Undefer.all;
-            raise Device_Error;
+            Raise_Device_Error (File);
          end if;
       end if;
 
