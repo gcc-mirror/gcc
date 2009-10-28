@@ -1,5 +1,10 @@
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
+	* expmed.c (emit_store_flag): Check costs before
+	transforming to the opposite representation.
+
+2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
 	* config/sh/sh.md (cbranchfp4_media): Remove hack extending
 	cstore result to DImode.
 

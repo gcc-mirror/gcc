@@ -5498,9 +5498,13 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	      || (! HONOR_NANS (mode) && (code == LTGT || code == UNEQ))
 	      || (! HONOR_SNANS (mode) && (code == EQ || code == NE))))
 	{
+          int want_add = ((STORE_FLAG_VALUE == 1 && normalizep == -1)
+		          || (STORE_FLAG_VALUE == -1 && normalizep == 1));
+
 	  /* For the reverse comparison, use either an addition or a XOR.  */
-	  if ((STORE_FLAG_VALUE == 1 && normalizep == -1)
-	      || (STORE_FLAG_VALUE == -1 && normalizep == 1))
+          if (want_add
+	      && rtx_cost (GEN_INT (normalizep), PLUS,
+			   optimize_insn_for_speed_p ()) == 0)
 	    {
 	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
 				       STORE_FLAG_VALUE, target_mode);
@@ -5509,7 +5513,9 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 				     GEN_INT (normalizep),
 				     target, 0, OPTAB_WIDEN);
 	    }
-	  else
+          else if (!want_add
+	           && rtx_cost (trueval, XOR,
+			        optimize_insn_for_speed_p ()) == 0)
 	    {
 	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
 				       normalizep, target_mode);
@@ -5596,9 +5602,13 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	    && GET_MODE_SIZE (mode) < UNITS_PER_WORD
 	    && op1 == const0_rtx))
     {
+      int want_add = ((STORE_FLAG_VALUE == 1 && normalizep == -1)
+		      || (STORE_FLAG_VALUE == -1 && normalizep == 1));
+
       /* Again, for the reverse comparison, use either an addition or a XOR.  */
-      if ((STORE_FLAG_VALUE == 1 && normalizep == -1)
-	  || (STORE_FLAG_VALUE == -1 && normalizep == 1))
+      if (want_add
+	  && rtx_cost (GEN_INT (normalizep), PLUS,
+		       optimize_insn_for_speed_p ()) == 0)
 	{
 	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
 				   STORE_FLAG_VALUE, target_mode);
@@ -5606,7 +5616,9 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
             tem = expand_binop (target_mode, add_optab, tem,
 				GEN_INT (normalizep), target, 0, OPTAB_WIDEN);
 	}
-      else
+      else if (!want_add
+	       && rtx_cost (trueval, XOR,
+			    optimize_insn_for_speed_p ()) == 0)
 	{
 	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
 				   normalizep, target_mode);
