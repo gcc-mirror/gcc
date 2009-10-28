@@ -10794,7 +10794,7 @@ i386_output_dwarf_dtprel (FILE *file, int size, rtx x)
 static bool
 ix86_pic_register_p (rtx x)
 {
-  if (GET_CODE (x) == VALUE)
+  if (GET_CODE (x) == VALUE && CSELIB_VAL_PTR (x))
     return (pic_offset_table_rtx
 	    && rtx_equal_for_cselib_p (x, pic_offset_table_rtx));
   else
