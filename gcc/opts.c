@@ -2102,6 +2102,10 @@ common_handle_option (size_t scode, const char *arg, int value,
       /* These are no-ops, preserved for backward compatibility.  */
       break;
 
+    case OPT_fuse_linker_plugin:
+      /* No-op. Used by the driver and passed to us because it starts with f.*/
+      break;
+
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */
