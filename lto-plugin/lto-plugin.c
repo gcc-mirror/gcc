@@ -512,8 +512,6 @@ all_symbols_read_handler (void)
 static enum ld_plugin_status
 cleanup_handler (void)
 {
-  /* Note: we cannot use LDPL_FATAL in here as that would produce
-     an infinite loop. */
   int t;
   unsigned i;
   char *arguments;
@@ -525,23 +523,23 @@ cleanup_handler (void)
       if (info->temp)
 	{
 	  t = unlink (info->name);
-	  check (t == 0, LDPL_ERROR, "could not unlink temporary file");
+	  check (t == 0, LDPL_FATAL, "could not unlink temporary file");
 	}
     }
 
   /* If we are being called from an error handler, it is possible
      that the arguments file is still exists. */
   t = asprintf (&arguments, "%s/arguments", temp_obj_dir_name);
-  check (t >= 0, LDPL_ERROR, "asprintf failed");
+  check (t >= 0, LDPL_FATAL, "asprintf failed");
   if (stat(arguments, &buf) == 0)
     {
       t = unlink (arguments);
-      check (t == 0, LDPL_ERROR, "could not unlink arguments file");
+      check (t == 0, LDPL_FATAL, "could not unlink arguments file");
     }
   free (arguments);
 
   t = rmdir (temp_obj_dir_name);
-  check (t == 0, LDPL_ERROR, "could not remove temporary directory");
+  check (t == 0, LDPL_FATAL, "could not remove temporary directory");
 
   free_2 ();
   return LDPS_OK;
