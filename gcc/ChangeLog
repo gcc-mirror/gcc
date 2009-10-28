@@ -1,3 +1,10 @@
+2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
+
+	* common.opt (fuse-linker-plugin): New option.
+	* gcc.c (LINK_COMMAND_SPEC, main): Rename use-linker-plugin to
+	fuse-linker-plugin.
+	* opts.c (common_handle_option): Ignore OPT_fuse_linker_plugin.
+
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/39715
