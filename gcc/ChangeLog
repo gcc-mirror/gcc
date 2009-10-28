@@ -1,3 +1,8 @@
+2009-10-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (stuff_delay_slot): Move const_int pattern
+	inside the unspec vector.
+
 2009-10-27  Richard Henderson  <rth@redhat.com>
 
 	* cgraphunit.c (cgraph_optimize): Maintain timevar stack properly.

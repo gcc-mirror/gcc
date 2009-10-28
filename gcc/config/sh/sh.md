@@ -6824,8 +6824,8 @@ label:
 ;; jump around the unconditional jump because it was out of range.
 (define_insn "stuff_delay_slot"
   [(set (pc)
-	(unspec [(match_operand:SI 0 "const_int_operand" "") (pc)] UNSPEC_BBR))
-   (match_operand:SI 1 "const_int_operand" "")]
+	(unspec [(match_operand:SI 0 "const_int_operand" "") (pc)
+		 (match_operand:SI 1 "const_int_operand" "")] UNSPEC_BBR))]
   "TARGET_SH1"
   ""
   [(set_attr "length" "0")
