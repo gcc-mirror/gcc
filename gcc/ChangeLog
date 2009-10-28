@@ -4,6 +4,10 @@
 	vt_expand_loc unnecessarily when location is not a register nor
 	memory.
 
+	PR middle-end/41837
+	* ipa-struct-reorg.c (find_field_in_struct_1): Return NULL if
+	fields don't have DECL_NAME.
+
 	PR debug/41801
 	* builtins.c (get_builtin_sync_mem): Expand loc in ptr_mode,
 	call convert_memory_address on addr.

@@ -258,15 +258,21 @@ find_field_in_struct_1 (tree str_type, tree field)
 {
   tree str_field;
 
+  if (!DECL_NAME (field))
+    return NULL;
+
   for (str_field = TYPE_FIELDS (str_type); str_field; 
        str_field = TREE_CHAIN (str_field))
     {
-      const char * str_field_name;
-      const char * field_name;
+      const char *str_field_name;
+      const char *field_name;
+
+      if (!DECL_NAME (str_field))
+	continue;
 
       str_field_name = IDENTIFIER_POINTER (DECL_NAME (str_field));
       field_name = IDENTIFIER_POINTER (DECL_NAME (field));
-      
+
       gcc_assert (str_field_name);
       gcc_assert (field_name);
 
@@ -274,7 +280,7 @@ find_field_in_struct_1 (tree str_type, tree field)
 	{
 	  /* Check field types.  */	  
 	  if (is_equal_types (TREE_TYPE (str_field), TREE_TYPE (field)))
-	      return str_field;
+	    return str_field;
 	}
     }
 
