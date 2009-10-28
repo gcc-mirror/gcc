@@ -5656,7 +5656,8 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
 {
   rtx addr, mem;
 
-  addr = expand_expr (loc, NULL_RTX, Pmode, EXPAND_SUM);
+  addr = expand_expr (loc, NULL_RTX, ptr_mode, EXPAND_SUM);
+  addr = convert_memory_address (Pmode, addr);
 
   /* Note that we explicitly do not want any alias information for this
      memory, so that we kill all other live memories.  Otherwise we don't

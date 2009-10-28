@@ -1,5 +1,8 @@
 2009-10-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/41801
+	* g++.dg/ext/sync-3.C: New test.
+
 	PR target/41762
 	* gcc.dg/pr41762.c: New test.
 
