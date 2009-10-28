@@ -183,9 +183,6 @@ namespace __gnu_parallel
       // equality iff nmax = 2^k - 1.
       l = (1ULL << r) - 1;
 
-      // From now on, including padding.
-      N = l * m;
-
       for (int i = 0; i < m; i++)
 	{
 	  a[i] = 0;
@@ -210,7 +207,7 @@ namespace __gnu_parallel
 	if (n >= ns[i])	//sequence too short, conceptual infinity
 	  sample.push_back(std::make_pair(S(i)[0] /*dummy element*/, i));
 
-      difference_type localrank = rank * m / N ;
+      difference_type localrank = rank / l;
 
       int j;
       for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); ++j)
@@ -258,15 +255,11 @@ namespace __gnu_parallel
 		b[i] -= n + 1;
 	    }
 
-	  difference_type leftsize = 0, total = 0;
+	  difference_type leftsize = 0;
 	  for (int i = 0; i < m; i++)
-	    {
 	      leftsize += a[i] / (n + 1);
-	      total += l / (n + 1);
-	    }
 	  
-	  difference_type skew = static_cast<difference_type>
-	    (static_cast<uint64>(total) * rank / N - leftsize);
+	  difference_type skew = rank / (n + 1) - leftsize;
 
 	  if (skew > 0)
 	    {
@@ -429,9 +422,6 @@ namespace __gnu_parallel
       // equality iff nmax = 2^k - 1
       l = pow2(r) - 1;
 
-      // From now on, including padding.
-      N = l * m;
-
       for (int i = 0; i < m; ++i)
 	{
 	  a[i] = 0;
@@ -458,7 +448,7 @@ namespace __gnu_parallel
 	if (n >= ns[i])
 	  sample.push_back(std::make_pair(S(i)[0] /*dummy element*/, i));
 
-      difference_type localrank = rank * m / N ;
+      difference_type localrank = rank / l;
 
       int j;
       for (j = 0; j < localrank && ((n + 1) <= ns[sample[j].second]); ++j)
@@ -496,15 +486,11 @@ namespace __gnu_parallel
 		b[i] -= n + 1;
 	    }
 
-	  difference_type leftsize = 0, total = 0;
+	  difference_type leftsize = 0;
 	  for (int i = 0; i < m; ++i)
-	    {
 	      leftsize += a[i] / (n + 1);
-	      total += l / (n + 1);
-	    }
 
-	  difference_type skew = ((unsigned long long)total * rank / N
-				  - leftsize);
+	  difference_type skew = rank / (n + 1) - leftsize;
 
 	  if (skew > 0)
 	    {
