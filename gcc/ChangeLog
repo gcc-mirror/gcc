@@ -1,5 +1,10 @@
 2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
 
+	* dbxout.c (dbxout_common_check): Accept non public trees.
+	* dwarf2out.c (fortran_common): Accept non public trees.
+
+2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
+
 	* common.opt (fuse-linker-plugin): New option.
 	* gcc.c (LINK_COMMAND_SPEC, main): Rename use-linker-plugin to
 	fuse-linker-plugin.
