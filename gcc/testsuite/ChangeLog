@@ -1,3 +1,8 @@
+2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/40741
+	* gcc.target/arm/thumb-branch1.c: New.
+
 2009-10-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-conv.C: New.

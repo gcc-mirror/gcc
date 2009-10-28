@@ -1,5 +1,15 @@
 2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR rtl-optimization/40741
+	* config/arm/arm.c (thumb1_rtx_costs): IOR or XOR with
+	a small constant is cheap.
+	* config/arm/arm.md (andsi3, iorsi3): Try to place the result of
+	force_reg on the LHS.
+	(xorsi3): Likewise, and split the XOR if the constant is complex
+	and not in Thumb mode.
+
+2009-10-28  Paolo Bonzini  <bonzini@gnu.org>
+
 	* expmed.c (emit_store_flag): Check costs before
 	transforming to the opposite representation.
 

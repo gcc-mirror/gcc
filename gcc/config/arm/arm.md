@@ -1914,7 +1914,16 @@
   else /* TARGET_THUMB1 */
     {
       if (GET_CODE (operands[2]) != CONST_INT)
-        operands[2] = force_reg (SImode, operands[2]);
+        {
+          rtx tmp = force_reg (SImode, operands[2]);
+	  if (rtx_equal_p (operands[0], operands[1]))
+	    operands[2] = tmp;
+	  else
+	    {
+              operands[2] = operands[1];
+              operands[1] = tmp;
+	    }
+        }
       else
         {
           int i;
@@ -2623,7 +2632,16 @@
           DONE;
 	}
       else /* TARGET_THUMB1 */
-	operands [2] = force_reg (SImode, operands [2]);
+        {
+          rtx tmp = force_reg (SImode, operands[2]);
+	  if (rtx_equal_p (operands[0], operands[1]))
+	    operands[2] = tmp;
+	  else
+	    {
+              operands[2] = operands[1];
+              operands[1] = tmp;
+	    }
+        }
     }
   "
 )
@@ -2731,12 +2749,29 @@
 (define_expand "xorsi3"
   [(set (match_operand:SI         0 "s_register_operand" "")
 	(xor:SI (match_operand:SI 1 "s_register_operand" "")
-		(match_operand:SI 2 "arm_rhs_operand"  "")))]
+		(match_operand:SI 2 "reg_or_int_operand" "")))]
   "TARGET_EITHER"
-  "if (TARGET_THUMB1)
-     if (GET_CODE (operands[2]) == CONST_INT)
-       operands[2] = force_reg (SImode, operands[2]);
-  "
+  "if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (TARGET_32BIT)
+        {
+          arm_split_constant (XOR, SImode, NULL_RTX,
+	                      INTVAL (operands[2]), operands[0], operands[1],
+			      optimize && can_create_pseudo_p ());
+          DONE;
+	}
+      else /* TARGET_THUMB1 */
+        {
+          rtx tmp = force_reg (SImode, operands[2]);
+	  if (rtx_equal_p (operands[0], operands[1]))
+	    operands[2] = tmp;
+	  else
+	    {
+              operands[2] = operands[1];
+              operands[1] = tmp;
+	    }
+        }
+    }"
 )
 
 (define_insn "*arm_xorsi3"
