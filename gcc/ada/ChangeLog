@@ -1,3 +1,14 @@
+2009-10-28  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb: Give more information in exception messages.
+
+2009-10-28  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document new -gnatyt requirement for space after right
+	paren if next token starts with digit or letter.
+	* styleg.adb (Check_Right_Paren): New rule for space after if next
+	character is a letter or digit.
+
 2009-10-28  Thomas Quinot  <quinot@adacore.com>
 
 	* s-crtl.ads (System.CRTL.strerror): New function.

@@ -6434,6 +6434,10 @@ If the token preceding a left parenthesis ends with a letter or digit, then
 a space must separate the two tokens.
 
 @item
+if the token following a right parenthesis starts with a letter or digit, then
+a space must separate the two tokens.
+
+@item
 A right parenthesis must either be the first non-blank character on
 a line, or it must be preceded by a non-blank character.
 
@@ -6523,8 +6527,6 @@ built-in standard style check options are enabled.
 the exception of ORDERED_SUBPROGRAMS, UNNECESSARY_BLANK_LINES,
 XTRA_PARENS, and DOS_LINE_ENDINGS. In addition
 @end ifset
-
-
 
 The switch
 @ifclear vms
