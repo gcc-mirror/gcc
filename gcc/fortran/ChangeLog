@@ -1,3 +1,9 @@
+2009-10-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/41860
+	* resolve.c (apply_default_init_local): Treat -fno-automatic as if
+	var was saved.
+
 2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
 
 	* trans-common.c (create_common): Set TREE_PUBLIC to false on
