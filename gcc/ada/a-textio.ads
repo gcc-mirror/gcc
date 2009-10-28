@@ -41,6 +41,7 @@
 
 with Ada.IO_Exceptions;
 with Ada.Streams;
+
 with System;
 with System.File_Control_Block;
 with System.WCh_Con;
@@ -443,9 +444,6 @@ private
    -- The Standard Files --
    ------------------------
 
-   Null_Str : aliased constant String := "";
-   --  Used as name and form of standard files
-
    Standard_In_AFCB  : aliased Text_AFCB;
    Standard_Out_AFCB : aliased Text_AFCB;
    Standard_Err_AFCB : aliased Text_AFCB;
@@ -460,47 +458,9 @@ private
    Current_Err  : aliased File_Type := Standard_Err;
    --  Current files
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   --  These subprograms are in the private part of the spec so that they can
-   --  be shared by the routines in the body of Ada.Text_IO.Wide_Text_IO.
-
-   --  Note: we use Integer in these declarations instead of the more accurate
-   --  Interfaces.C_Streams.int, because we do not want to drag in the spec of
-   --  this interfaces package with the spec of Ada.Text_IO, and we know that
-   --  in fact these types are identical
-
-   function EOF_Char return Integer;
-   --  Returns the system-specific character indicating the end of a text file.
-   --  This is exported for use by child packages such as Enumeration_Aux to
-   --  eliminate their needing to depend directly on Interfaces.C_Streams.
-
-   function Getc (File : File_Type) return Integer;
-   --  Gets next character from file, which has already been checked for
-   --  being in read status, and returns the character read if no error
-   --  occurs. The result is EOF if the end of file was read.
-
-   function Nextc (File : File_Type) return Integer;
-   --  Returns next character from file without skipping past it (i.e. it
-   --  is a combination of Getc followed by an Ungetc).
-
-   procedure Putc (ch : Integer; File : File_Type);
-   --  Outputs the given character to the file, which has already been
-   --  checked for being in output status. Device_Error is raised if the
-   --  character cannot be written.
-
-   procedure Terminate_Line (File : File_Type);
-   --  If the file is in Write_File or Append_File mode, and the current
-   --  line is not terminated, then a line terminator is written using
-   --  New_Line. Note that there is no Terminate_Page routine, because
-   --  the page mark at the end of the file is implied if necessary.
-
-   procedure Ungetc (ch : Integer; File : File_Type);
-   --  Pushes back character into stream, using ungetc. The caller has
-   --  checked that the file is in read status. Device_Error is raised
-   --  if the character cannot be pushed back. An attempt to push back
-   --  and end of file character (EOF) is ignored.
+   procedure Initialize_Standard_Files;
+   --  Initializes the file control blocks for the standard files. Called from
+   --  the elaboration routine for this package, and from Reset_Standard_Files
+   --  in package Ada.Text_IO.Reset_Standard_Files.
 
 end Ada.Text_IO;

@@ -32,6 +32,8 @@
 with Ada.Text_IO.Generic_Aux; use Ada.Text_IO.Generic_Aux;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
+with Interfaces.C_Streams;    use Interfaces.C_Streams;
+
 --  Note: this package does not yet deal properly with wide characters ???
 
 package body Ada.Text_IO.Enumeration_Aux is
@@ -98,7 +100,7 @@ package body Ada.Text_IO.Enumeration_Aux is
             Store_Char (File, Character'Pos (To_Upper (C)), Buf, Buflen);
 
             ch := Getc (File);
-            exit when ch = EOF_Char;
+            exit when ch = EOF;
             C := Character'Val (ch);
 
             exit when not Is_Letter (C)

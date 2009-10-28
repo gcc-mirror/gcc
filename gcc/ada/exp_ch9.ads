@@ -173,8 +173,8 @@ package Exp_Ch9 is
    --  meaning is to get the Task_Id for the currently executing task.
 
    function Convert_Concurrent
-     (N    : Node_Id;
-      Typ  : Entity_Id) return Node_Id;
+     (N   : Node_Id;
+      Typ : Entity_Id) return Node_Id;
    --  N is an expression of type Typ. If the type is not a concurrent type
    --  then it is returned unchanged. If it is a task or protected reference,
    --  Convert_Concurrent creates an unchecked conversion node from this

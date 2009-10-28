@@ -42,6 +42,9 @@
 
 with Ada.IO_Exceptions;
 with Ada.Streams;
+
+with Interfaces.C_Streams;
+
 with System;
 with System.File_Control_Block;
 with System.WCh_Con;
@@ -357,13 +360,13 @@ private
    PM : constant := Character'Pos (ASCII.FF);
    --  Used as page mark, except at end of file where it is implied
 
-   -------------------------------------
+   ------------------------------------------
    -- Wide_Wide_Text_IO File Control Block --
-   -------------------------------------
+   ------------------------------------------
 
    Default_WCEM : WCh_Con.WC_Encoding_Method := WCh_Con.WCEM_UTF8;
-   --  This gets modified during initialization (see body) using
-   --  the default value established in the call to Set_Globals.
+   --  This gets modified during initialization (see body) using the default
+   --  value established in the call to Set_Globals.
 
    package FCB renames System.File_Control_Block;
 
@@ -443,9 +446,6 @@ private
    -- The Standard Files --
    ------------------------
 
-   Null_Str : aliased constant String := "";
-   --  Used as name and form of standard files
-
    Standard_Err_AFCB : aliased Wide_Wide_Text_AFCB;
    Standard_In_AFCB  : aliased Wide_Wide_Text_AFCB;
    Standard_Out_AFCB : aliased Wide_Wide_Text_AFCB;
@@ -460,31 +460,28 @@ private
    Current_Err  : aliased File_Type := Standard_Err;
    --  Current files
 
+   procedure Initialize_Standard_Files;
+   --  Initializes the file control blocks for the standard files. Called from
+   --  the elaboration routine for this package, and from Reset_Standard_Files
+   --  in package Ada.Wide_Wide_Text_IO.Reset_Standard_Files.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    --  These subprograms are in the private part of the spec so that they can
-   --  be shared by the routines in the body of Ada.Text_IO.Wide_Wide_Text_IO.
+   --  be shared by the children of Ada.Text_IO.Wide_Wide_Text_IO.
 
-   --  Note: we use Integer in these declarations instead of the more accurate
-   --  Interfaces.C_Streams.int, because we do not want to drag in the spec of
-   --  this interfaces package with the spec of Ada.Text_IO, and we know that
-   --  in fact these types are identical
+   function Getc (File : File_Type) return Interfaces.C_Streams.int;
+   --  Gets next character from file, which has already been checked for being
+   --  in read status, and returns the character read if no error occurs. The
+   --  result is EOF if the end of file was read.
 
-   function Getc (File : File_Type) return Integer;
-   --  Gets next character from file, which has already been checked for
-   --  being in read status, and returns the character read if no error
-   --  occurs. The result is EOF if the end of file was read.
-
-   procedure Get_Character
-     (File : File_Type;
-      Item : out Character);
-   --  This is essentially a copy of the normal Get routine from Text_IO. It
+   procedure Get_Character (File : File_Type; Item : out Character);
+   --  This is essentially copy of Wide_Wide_Text_IO.Get. It obtains a single
    --  obtains a single character from the input file File, and places it in
-   --  Item. This character may be the leading character of a
-   --  Wide_Wide_Character sequence, but that is up to the caller to deal
-   --  with.
+   --  Item. This result may be the leading character of a Wide_Wide_Character
+   --  sequence, but that is up to the caller to deal with.
 
    function Get_Wide_Wide_Char
      (C    : Character;
@@ -494,25 +491,8 @@ private
    --  read and is passed in C. The wide character value is returned as the
    --  result, and the file pointer is bumped past the character.
 
-   function Nextc (File : File_Type) return Integer;
-   --  Returns next character from file without skipping past it (i.e. it
-   --  is a combination of Getc followed by an Ungetc).
-
-   procedure Putc (ch : Integer; File : File_Type);
-   --  Outputs the given character to the file, which has already been
-   --  checked for being in output status. Device_Error is raised if the
-   --  character cannot be written.
-
-   procedure Terminate_Line (File : File_Type);
-   --  If the file is in Write_File or Append_File mode, and the current
-   --  line is not terminated, then a line terminator is written using
-   --  New_Line. Note that there is no Terminate_Page routine, because
-   --  the page mark at the end of the file is implied if necessary.
-
-   procedure Ungetc (ch : Integer; File : File_Type);
-   --  Pushes back character into stream, using ungetc. The caller has
-   --  checked that the file is in read status. Device_Error is raised
-   --  if the character cannot be pushed back. An attempt to push back
-   --  and end of file character (EOF) is ignored.
+   function Nextc (File : File_Type) return Interfaces.C_Streams.int;
+   --  Returns next character from file without skipping past it (i.e. it is a
+   --  combination of Getc followed by an Ungetc).
 
 end Ada.Wide_Wide_Text_IO;

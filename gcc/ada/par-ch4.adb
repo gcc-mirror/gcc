@@ -89,9 +89,6 @@ package body Ch4 is
    --  prefix. The current token is known to be an apostrophe and the
    --  following token is known to be RANGE.
 
-   procedure Set_Op_Name (Node : Node_Id);
-   --  Procedure to set name field (Chars) in operator node
-
    -------------------------
    -- Bad_Range_Attribute --
    -------------------------
@@ -101,51 +98,6 @@ package body Ch4 is
       Error_Msg ("range attribute cannot be used in expression!", Loc);
       Resync_Expression;
    end Bad_Range_Attribute;
-
-   ------------------
-   -- Set_Op_Name --
-   ------------------
-
-   procedure Set_Op_Name (Node : Node_Id) is
-      type Name_Of_Type is array (N_Op) of Name_Id;
-      Name_Of : constant Name_Of_Type := Name_Of_Type'(
-         N_Op_And                    => Name_Op_And,
-         N_Op_Or                     => Name_Op_Or,
-         N_Op_Xor                    => Name_Op_Xor,
-         N_Op_Eq                     => Name_Op_Eq,
-         N_Op_Ne                     => Name_Op_Ne,
-         N_Op_Lt                     => Name_Op_Lt,
-         N_Op_Le                     => Name_Op_Le,
-         N_Op_Gt                     => Name_Op_Gt,
-         N_Op_Ge                     => Name_Op_Ge,
-         N_Op_Add                    => Name_Op_Add,
-         N_Op_Subtract               => Name_Op_Subtract,
-         N_Op_Concat                 => Name_Op_Concat,
-         N_Op_Multiply               => Name_Op_Multiply,
-         N_Op_Divide                 => Name_Op_Divide,
-         N_Op_Mod                    => Name_Op_Mod,
-         N_Op_Rem                    => Name_Op_Rem,
-         N_Op_Expon                  => Name_Op_Expon,
-         N_Op_Plus                   => Name_Op_Add,
-         N_Op_Minus                  => Name_Op_Subtract,
-         N_Op_Abs                    => Name_Op_Abs,
-         N_Op_Not                    => Name_Op_Not,
-
-         --  We don't really need these shift operators, since they never
-         --  appear as operators in the source, but the path of least
-         --  resistance is to put them in (the aggregate must be complete)
-
-         N_Op_Rotate_Left            => Name_Rotate_Left,
-         N_Op_Rotate_Right           => Name_Rotate_Right,
-         N_Op_Shift_Left             => Name_Shift_Left,
-         N_Op_Shift_Right            => Name_Shift_Right,
-         N_Op_Shift_Right_Arithmetic => Name_Shift_Right_Arithmetic);
-
-   begin
-      if Nkind (Node) in N_Op then
-         Set_Chars (Node, Name_Of (Nkind (Node)));
-      end if;
-   end Set_Op_Name;
 
    --------------------------
    -- 4.1  Name (also 6.4) --
@@ -1600,10 +1552,9 @@ package body Ch4 is
             end if;
 
             Node2 := Node1;
-            Node1 := New_Node (Logical_Op, Op_Location);
+            Node1 := New_Op_Node (Logical_Op, Op_Location);
             Set_Left_Opnd (Node1, Node2);
             Set_Right_Opnd (Node1, P_Relation);
-            Set_Op_Name (Node1);
             exit when Token not in Token_Class_Logop;
          end loop;
 
@@ -1704,10 +1655,9 @@ package body Ch4 is
             end if;
 
             Node2 := Node1;
-            Node1 := New_Node (Logical_Op, Op_Location);
+            Node1 := New_Op_Node (Logical_Op, Op_Location);
             Set_Left_Opnd (Node1, Node2);
             Set_Right_Opnd (Node1, P_Relation);
-            Set_Op_Name (Node1);
             exit when Token not in Token_Class_Logop;
          end loop;
 
@@ -1768,9 +1718,8 @@ package body Ch4 is
          --  P_Relational_Operator also parses the IN and NOT IN operations.
 
          Optok := Token_Ptr;
-         Node2 := New_Node (P_Relational_Operator, Optok);
+         Node2 := New_Op_Node (P_Relational_Operator, Optok);
          Set_Left_Opnd (Node2, Node1);
-         Set_Op_Name (Node2);
 
          --  Case of IN or NOT IN
 
@@ -1881,18 +1830,17 @@ package body Ch4 is
                   Style.Check_Exponentiation_Operator;
                end if;
 
-               Node2 := New_Node (N_Op_Expon, Token_Ptr);
+               Node2 := New_Op_Node (N_Op_Expon, Token_Ptr);
                Scan; -- past **
                Set_Left_Opnd (Node2, Node1);
                Set_Right_Opnd (Node2, P_Primary);
-               Set_Op_Name (Node2);
                Node1 := Node2;
             end if;
 
             loop
                exit when Token not in Token_Class_Mulop;
                Tokptr := Token_Ptr;
-               Node2 := New_Node (P_Multiplying_Operator, Tokptr);
+               Node2 := New_Op_Node (P_Multiplying_Operator, Tokptr);
 
                if Style_Check then
                   Style.Check_Binary_Operator;
@@ -1901,14 +1849,13 @@ package body Ch4 is
                Scan; -- past operator
                Set_Left_Opnd (Node2, Node1);
                Set_Right_Opnd (Node2, P_Factor);
-               Set_Op_Name (Node2);
                Node1 := Node2;
             end loop;
 
             loop
                exit when Token not in Token_Class_Binary_Addop;
                Tokptr := Token_Ptr;
-               Node2 := New_Node (P_Binary_Adding_Operator, Tokptr);
+               Node2 := New_Op_Node (P_Binary_Adding_Operator, Tokptr);
 
                if Style_Check then
                   Style.Check_Binary_Operator;
@@ -1917,7 +1864,6 @@ package body Ch4 is
                Scan; -- past operator
                Set_Left_Opnd (Node2, Node1);
                Set_Right_Opnd (Node2, P_Term);
-               Set_Op_Name (Node2);
                Node1 := Node2;
             end loop;
 
@@ -1931,7 +1877,7 @@ package body Ch4 is
 
          if Token in Token_Class_Unary_Addop then
             Tokptr := Token_Ptr;
-            Node1 := New_Node (P_Unary_Adding_Operator, Tokptr);
+            Node1 := New_Op_Node (P_Unary_Adding_Operator, Tokptr);
 
             if Style_Check then
                Style.Check_Unary_Plus_Or_Minus;
@@ -1939,7 +1885,6 @@ package body Ch4 is
 
             Scan; -- past operator
             Set_Right_Opnd (Node1, P_Term);
-            Set_Op_Name (Node1);
          else
             Node1 := P_Term;
          end if;
@@ -1981,12 +1926,11 @@ package body Ch4 is
             loop
                exit when Token not in Token_Class_Binary_Addop;
                Tokptr := Token_Ptr;
-               Node2 := New_Node (P_Binary_Adding_Operator, Tokptr);
+               Node2 := New_Op_Node (P_Binary_Adding_Operator, Tokptr);
                Scan; -- past operator
                Set_Left_Opnd (Node2, Node1);
                Node1 := P_Term;
                Set_Right_Opnd (Node2, Node1);
-               Set_Op_Name (Node2);
 
                --  Check if we're still concatenating string literals
 
@@ -2214,11 +2158,10 @@ package body Ch4 is
       loop
          exit when Token not in Token_Class_Mulop;
          Tokptr := Token_Ptr;
-         Node2 := New_Node (P_Multiplying_Operator, Tokptr);
+         Node2 := New_Op_Node (P_Multiplying_Operator, Tokptr);
          Scan; -- past operator
          Set_Left_Opnd (Node2, Node1);
          Set_Right_Opnd (Node2, P_Factor);
-         Set_Op_Name (Node2);
          Node1 := Node2;
       end loop;
 
@@ -2239,7 +2182,7 @@ package body Ch4 is
 
    begin
       if Token = Tok_Abs then
-         Node1 := New_Node (N_Op_Abs, Token_Ptr);
+         Node1 := New_Op_Node (N_Op_Abs, Token_Ptr);
 
          if Style_Check then
             Style.Check_Abs_Not;
@@ -2247,11 +2190,10 @@ package body Ch4 is
 
          Scan; -- past ABS
          Set_Right_Opnd (Node1, P_Primary);
-         Set_Op_Name (Node1);
          return Node1;
 
       elsif Token = Tok_Not then
-         Node1 := New_Node (N_Op_Not, Token_Ptr);
+         Node1 := New_Op_Node (N_Op_Not, Token_Ptr);
 
          if Style_Check then
             Style.Check_Abs_Not;
@@ -2259,18 +2201,16 @@ package body Ch4 is
 
          Scan; -- past NOT
          Set_Right_Opnd (Node1, P_Primary);
-         Set_Op_Name (Node1);
          return Node1;
 
       else
          Node1 := P_Primary;
 
          if Token = Tok_Double_Asterisk then
-            Node2 := New_Node (N_Op_Expon, Token_Ptr);
+            Node2 := New_Op_Node (N_Op_Expon, Token_Ptr);
             Scan; -- past **
             Set_Left_Opnd (Node2, Node1);
             Set_Right_Opnd (Node2, P_Primary);
-            Set_Op_Name (Node2);
             return Node2;
          else
             return Node1;

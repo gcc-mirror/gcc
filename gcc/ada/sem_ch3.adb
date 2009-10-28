@@ -784,7 +784,7 @@ package body Sem_Ch3 is
 
       Anon_Type :=
         Create_Itype
-         (E_Anonymous_Access_Type, Related_Nod, Scope_Id =>  Anon_Scope);
+         (E_Anonymous_Access_Type, Related_Nod, Scope_Id => Anon_Scope);
 
       if All_Present (N)
         and then Ada_Version >= Ada_05
@@ -825,8 +825,7 @@ package body Sem_Ch3 is
       Find_Type (Subtype_Mark (N));
       Desig_Type := Entity (Subtype_Mark (N));
 
-      Set_Directly_Designated_Type
-                (Anon_Type, Desig_Type);
+      Set_Directly_Designated_Type (Anon_Type, Desig_Type);
       Set_Etype (Anon_Type, Anon_Type);
 
       --  Make sure the anonymous access type has size and alignment fields
@@ -2883,12 +2882,11 @@ package body Sem_Ch3 is
             Apply_Length_Check (E, T);
          end if;
 
-      --  If the type is limited unconstrained with defaulted discriminants
-      --  and there is no expression, then the object is constrained by the
+      --  If the type is limited unconstrained with defaulted discriminants and
+      --  there is no expression, then the object is constrained by the
       --  defaults, so it is worthwhile building the corresponding subtype.
 
-      elsif (Is_Limited_Record (T)
-               or else Is_Concurrent_Type (T))
+      elsif (Is_Limited_Record (T) or else Is_Concurrent_Type (T))
         and then not Is_Constrained (T)
         and then Has_Discriminants (T)
       then

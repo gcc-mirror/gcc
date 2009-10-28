@@ -667,8 +667,8 @@ package body Sem_Attr is
                      end loop;
 
                      if Present (Q) then
-                        Set_Has_Per_Object_Constraint (
-                          Defining_Identifier (Q), True);
+                        Set_Has_Per_Object_Constraint
+                          (Defining_Identifier (Q), True);
                      end if;
                   end;
 
@@ -1991,9 +1991,10 @@ package body Sem_Attr is
          --  entry wrappers, the attributes Count, Caller and AST_Entry require
          --  a context check
 
-         if Aname = Name_Count
-           or else Aname = Name_Caller
-           or else Aname = Name_AST_Entry
+         if Ada_Version >= Ada_05
+           and then (Aname = Name_Count
+                      or else Aname = Name_Caller
+                      or else Aname = Name_AST_Entry)
          then
             declare
                Count : Natural := 0;
