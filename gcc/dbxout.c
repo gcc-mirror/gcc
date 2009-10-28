@@ -3189,7 +3189,7 @@ dbxout_common_check (tree decl, int *value)
   rtx sym_addr;
   const char *name = NULL;
   
-  /* If the decl isn't a VAR_DECL, or if it isn't public or static, or if
+  /* If the decl isn't a VAR_DECL, or if it isn't static, or if
      it does not have a value (the offset into the common area), or if it
      is thread local (as opposed to global) then it isn't common, and shouldn't
      be handled as such.
@@ -3198,7 +3198,6 @@ dbxout_common_check (tree decl, int *value)
      for thread-local symbols.  Can be handled via same mechanism as used
      in dwarf2out.c.  */
   if (TREE_CODE (decl) != VAR_DECL
-      || !TREE_PUBLIC(decl)
       || !TREE_STATIC(decl)
       || !DECL_HAS_VALUE_EXPR_P(decl)
       || DECL_THREAD_LOCAL_P (decl)

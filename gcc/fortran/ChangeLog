@@ -1,3 +1,8 @@
+2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
+
+	* trans-common.c (create_common): Set TREE_PUBLIC to false on
+	fake variables.
+
 2009-10-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41714

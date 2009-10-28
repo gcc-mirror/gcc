@@ -680,7 +680,6 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
       var_decl = build_decl (s->sym->declared_at.lb->location,
 			     VAR_DECL, DECL_NAME (s->field),
 			     TREE_TYPE (s->field));
-      TREE_PUBLIC (var_decl) = TREE_PUBLIC (decl);
       TREE_STATIC (var_decl) = TREE_STATIC (decl);
       TREE_USED (var_decl) = TREE_USED (decl);
       if (s->sym->attr.use_assoc)
@@ -689,7 +688,9 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	TREE_ADDRESSABLE (var_decl) = 1;
       /* This is a fake variable just for debugging purposes.  */
       TREE_ASM_WRITTEN (var_decl) = 1;
-      
+      /* Fake variables are not visible from other translation units. */
+      TREE_PUBLIC (var_decl) = 0;
+
       /* To preserve identifier names in COMMON, chain to procedure
          scope unless at top level in a module definition.  */
       if (com
