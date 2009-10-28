@@ -1,5 +1,16 @@
 2009-10-28  Richard Guenther  <rguenther@suse.de>
 
+	* tree.c (free_lang_data_in_type): Do not call get_alias_set.
+	(free_lang_data): Unconditionally compute alias sets for all
+	standard integer types.  Bail out if gate bailed out previously.
+	Do not reset the types_compatible_p langhook.
+	(gate_free_lang_data): Remove.
+	(struct pass_ipa_free_lang_data): Enable unconditionally.
+	* gimple.c (gimple_get_alias_set): Use the same alias-set for
+	all pointer types.
+
+2009-10-28  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/41855
 	* tree-ssa-alias.c (refs_may_alias_p_1): Deal with CONST_DECLs
 	(ref_maybe_used_by_call_p_1): Fix bcopy handling.
