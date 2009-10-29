@@ -1,4 +1,4 @@
--- { dg- do compile }
+-- { dg-do compile }
 
 procedure Pack14 is
 
@@ -10,6 +10,7 @@ procedure Pack14 is
    pragma Pack (Rec);
 
    A : Rec := (F => False);
+
 begin
    null;
 end;
