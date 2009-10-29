@@ -1,3 +1,10 @@
+2009-10-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41777
+	* trans-expr.c (gfc_conv_procedure_call,gfc_conv_expr_reference):
+	Use for generic EXPR_FUNCTION the attributes of the specific
+	function.
+
 2009-10-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/41860
