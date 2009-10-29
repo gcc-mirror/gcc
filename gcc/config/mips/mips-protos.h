@@ -344,5 +344,6 @@ extern bool mips_eh_uses (unsigned int);
 extern bool mips_epilogue_uses (unsigned int);
 extern void mips_final_prescan_insn (rtx, rtx *, int);
 extern int mips_trampoline_code_size (void);
+extern void mips_function_profiler (FILE *);
 
 #endif /* ! GCC_MIPS_PROTOS_H */

@@ -1,3 +1,11 @@
+2009-10-29  David Daney  <ddaney@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp (mips_option_groups): Add
+	mcount-ra-address.
+	* gcc.target/mips/mmcount-ra-address-1.c: New test.
+	* gcc.target/mips/mmcount-ra-address-2.c: New test.
+	* gcc.target/mips/mmcount-ra-address-3.c: New test.
+
 2009-10-29  Michael Matz  <matz@suse.de>
 
 	* gcc.target/i386/sse-recip.c: Use fabsf instead of != .

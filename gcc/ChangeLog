@@ -1,3 +1,18 @@
+2009-10-29  David Daney  <ddaney@caviumnetworks.com>
+
+	* doc/invoke.texi (mmcount-ra-address): Document new command line
+	option.
+	* config/mips/mips.opt (mmcount-ra-address): New option.
+	* config/mips/mips-protos.h (mips_function_profiler): Declare new
+	function.
+	* config/mips/mips.c (struct mips_frame_info): Add ra_fp_offset
+	member.
+	(mips_for_each_saved_gpr_and_fpr): Set ra_fp_offset.
+	(mips_function_profiler): Moved from FUNCTION_PROFILER, and
+	rewritten.
+	* config/mips/mips.h (FUNCTION_PROFILER): Body of macro moved to
+	mips_function_profiler.
+
 2009-10-29  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/37565

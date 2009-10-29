@@ -709,7 +709,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
 -mfp-exceptions -mno-fp-exceptions @gol
 -mvr4130-align -mno-vr4130-align -msynci -mno-synci @gol
--mrelax-pic-calls -mno-relax-pic-calls}
+-mrelax-pic-calls -mno-relax-pic-calls -mmcount-ra-address}
 
 @emph{MMIX Options}
 @gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu @gol
@@ -14208,6 +14208,27 @@ an assembler and a linker that supports the @code{.reloc} assembly
 directive and @code{-mexplicit-relocs} is in effect.  With
 @code{-mno-explicit-relocs}, this optimization can be performed by the
 assembler and the linker alone without help from the compiler.
+
+@item -mmcount-ra-address
+@itemx -mno-mcount-ra-address
+@opindex mmcount-ra-address
+@opindex mno-mcount-ra-address
+Emit (do not emit) code that allows @code{_mcount} to modify the
+colling function's return address.  When enabled, this option extends
+the usual @code{_mcount} interface with a new @var{ra-address}
+parameter, which has type @code{intptr_t *} and is passed in register
+@code{$12}.  @code{_mcount} can then modify the return address by
+doing both of the following:
+@itemize
+@item
+Returning the new address in register @code{$31}.
+@item
+Storing the new address in @code{*@var{ra-address}},
+if @var{ra-address} is nonnull.
+@end itemize
+
+The default is @option{-mno-mcount-ra-address}.
+
 @end table
 
 @node MMIX Options

@@ -263,6 +263,7 @@ foreach option {
     sym32
     synci
     relax-pic-calls
+    mcount-ra-address
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
