@@ -1,3 +1,14 @@
+2009-10-29  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-math-opts.c (execute_convert_to_rsqrt): Remove.
+	(gate_convert_to_rsqrt): Ditto.
+	(pass_convert_to_rsqrt): Ditto.
+	* tree-pass.h (pass_convert_to_rsqrt): Don't declare.
+	* passes.c (init_optimization_passes): Don't add pass_convert_to_rsqrt
+	to pass list.
+
+	* config/i386/i386.c (ix86_emit_swdivsf): Change evaluation order.
+
 2009-10-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (find_best_start): Fix type of remainder to be
