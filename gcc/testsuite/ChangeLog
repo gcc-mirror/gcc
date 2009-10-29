@@ -1,3 +1,7 @@
+2009-10-29  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gfortran.dg/lto/pr41764_0.f: New.
+
 2009-10-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/41775
