@@ -1,5 +1,13 @@
 2009-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (array_type_has_nonaliased_component): Swap
+	parameters and rewrite comments.  For a derived type, return the
+	setting of its parent type.
+	(gnat_to_gnu_entity): Do an alias set copy for derived types if they
+	are composite.  Adjust calls to above function.
+
+2009-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Object_Size>: Do not
 	return the RM size for padded types.
 
