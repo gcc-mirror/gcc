@@ -1,3 +1,10 @@
+2009-10-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (count_insns_for_constant): Rework to support counting for
+	thumb2 immediates as well.
+	(find_best_start): Split out from arm_gen_constant.
+	(arm_gen_constant): Rework to support XOR with immediate.
+
 2009-10-29  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips.c (mips_emit_unary, mips_force_unary): New

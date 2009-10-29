@@ -2407,20 +2407,24 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
 			   1);
 }
 
-/* Return the number of ARM instructions required to synthesize the given
-   constant.  */
+/* Return the number of instructions required to synthesize the given
+   constant, if we start emitting them from bit-position I.  */
 static int
 count_insns_for_constant (HOST_WIDE_INT remainder, int i)
 {
   HOST_WIDE_INT temp1;
+  int step_size = TARGET_ARM ? 2 : 1;
   int num_insns = 0;
+
+  gcc_assert (TARGET_ARM || i == 0);
+
   do
     {
       int end;
 
       if (i <= 0)
 	i += 32;
-      if (remainder & (3 << (i - 2)))
+      if (remainder & (((1 << step_size) - 1) << (i - step_size)))
 	{
 	  end = i - 8;
 	  if (end < 0)
@@ -2429,11 +2433,75 @@ count_insns_for_constant (HOST_WIDE_INT remainder, int i)
 				    | ((i < end) ? (0xff >> (32 - end)) : 0));
 	  remainder &= ~temp1;
 	  num_insns++;
-	  i -= 6;
+	  i -= 8 - step_size;
 	}
-      i -= 2;
+      i -= step_size;
     } while (remainder);
   return num_insns;
+}
+
+static int
+find_best_start (HOST_WIDE_INT remainder)
+{
+  int best_consecutive_zeros = 0;
+  int i;
+  int best_start = 0;
+
+  /* If we aren't targetting ARM, the best place to start is always at
+     the bottom.  */
+  if (! TARGET_ARM)
+    return 0;
+
+  for (i = 0; i < 32; i += 2)
+    {
+      int consecutive_zeros = 0;
+
+      if (!(remainder & (3 << i)))
+	{
+	  while ((i < 32) && !(remainder & (3 << i)))
+	    {
+	      consecutive_zeros += 2;
+	      i += 2;
+	    }
+	  if (consecutive_zeros > best_consecutive_zeros)
+	    {
+	      best_consecutive_zeros = consecutive_zeros;
+	      best_start = i - consecutive_zeros;
+	    }
+	  i -= 2;
+	}
+    }
+
+  /* So long as it won't require any more insns to do so, it's
+     desirable to emit a small constant (in bits 0...9) in the last
+     insn.  This way there is more chance that it can be combined with
+     a later addressing insn to form a pre-indexed load or store
+     operation.  Consider:
+
+	   *((volatile int *)0xe0000100) = 1;
+	   *((volatile int *)0xe0000110) = 2;
+
+     We want this to wind up as:
+
+	    mov rA, #0xe0000000
+	    mov rB, #1
+	    str rB, [rA, #0x100]
+	    mov rB, #2
+	    str rB, [rA, #0x110]
+
+     rather than having to synthesize both large constants from scratch.
+
+     Therefore, we calculate how many insns would be required to emit
+     the constant starting from `best_start', and also starting from
+     zero (i.e. with bit 31 first to be output).  If `best_start' doesn't
+     yield a shorter sequence, we may as well use zero.  */
+  if (best_start != 0
+      && ((((unsigned HOST_WIDE_INT) 1) << best_start) < remainder)
+      && (count_insns_for_constant (remainder, 0) <=
+	  count_insns_for_constant (remainder, best_start)))
+    best_start = 0;
+
+  return best_start;
 }
 
 /* Emit an instruction with the indicated PATTERN.  If COND is
@@ -2459,6 +2527,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 {
   int can_invert = 0;
   int can_negate = 0;
+  int final_invert = 0;
   int can_negate_initial = 0;
   int can_shift = 0;
   int i;
@@ -2470,6 +2539,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   int insns = 0;
   unsigned HOST_WIDE_INT temp1, temp2;
   unsigned HOST_WIDE_INT remainder = val & 0xffffffff;
+  int step_size = TARGET_ARM ? 2 : 1;
 
   /* Find out which operations are safe for a given CODE.  Also do a quick
      check for degenerate cases; these can occur when DImode operations
@@ -2543,14 +2613,15 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	  return 1;
 	}
 
-      /* We don't know how to handle other cases yet.  */
-      gcc_assert (remainder == 0xffffffff);
-
-      if (generate)
-	emit_constant_insn (cond,
-			    gen_rtx_SET (VOIDmode, target,
-					 gen_rtx_NOT (mode, source)));
-      return 1;
+      if (remainder == 0xffffffff)
+	{
+	  if (generate)
+	    emit_constant_insn (cond,
+				gen_rtx_SET (VOIDmode, target,
+					     gen_rtx_NOT (mode, source)));
+	  return 1;
+	}
+      break;
 
     case MINUS:
       /* We treat MINUS as (val - source), since (source - val) is always
@@ -3001,9 +3072,25 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 
   if ((code == AND)
       || (code != IOR && can_invert && num_bits_set > 16))
-    remainder = (~remainder) & 0xffffffff;
+    remainder ^= 0xffffffff;
   else if (code == PLUS && num_bits_set > 16)
     remainder = (-remainder) & 0xffffffff;
+
+  /* For XOR, if more than half the bits are set and there's a sequence
+     of more than 8 consecutive ones in the pattern then we can XOR by the
+     inverted constant and then invert the final result; this may save an
+     instruction and might also lead to the final mvn being merged with
+     some other operation.  */
+  else if (code == XOR && num_bits_set > 16
+	   && (count_insns_for_constant (remainder ^ 0xffffffff,
+					 find_best_start
+					 (remainder ^ 0xffffffff))
+	       < count_insns_for_constant (remainder,
+					   find_best_start (remainder))))
+    {
+      remainder ^= 0xffffffff;
+      final_invert = 1;
+    }
   else
     {
       can_invert = 0;
@@ -3022,63 +3109,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   /* ??? Use thumb2 replicated constants when the high and low halfwords are
      the same.  */
   {
-    int best_start = 0;
-    if (!TARGET_THUMB2)
-      {
-	int best_consecutive_zeros = 0;
-
-	for (i = 0; i < 32; i += 2)
-	  {
-	    int consecutive_zeros = 0;
-
-	    if (!(remainder & (3 << i)))
-	      {
-		while ((i < 32) && !(remainder & (3 << i)))
-		  {
-		    consecutive_zeros += 2;
-		    i += 2;
-		  }
-		if (consecutive_zeros > best_consecutive_zeros)
-		  {
-		    best_consecutive_zeros = consecutive_zeros;
-		    best_start = i - consecutive_zeros;
-		  }
-		i -= 2;
-	      }
-	  }
-
-	/* So long as it won't require any more insns to do so, it's
-	   desirable to emit a small constant (in bits 0...9) in the last
-	   insn.  This way there is more chance that it can be combined with
-	   a later addressing insn to form a pre-indexed load or store
-	   operation.  Consider:
-
-		   *((volatile int *)0xe0000100) = 1;
-		   *((volatile int *)0xe0000110) = 2;
-
-	   We want this to wind up as:
-
-		    mov rA, #0xe0000000
-		    mov rB, #1
-		    str rB, [rA, #0x100]
-		    mov rB, #2
-		    str rB, [rA, #0x110]
-
-	   rather than having to synthesize both large constants from scratch.
-
-	   Therefore, we calculate how many insns would be required to emit
-	   the constant starting from `best_start', and also starting from
-	   zero (i.e. with bit 31 first to be output).  If `best_start' doesn't
-	   yield a shorter sequence, we may as well use zero.  */
-	if (best_start != 0
-	    && ((((unsigned HOST_WIDE_INT) 1) << best_start) < remainder)
-	    && (count_insns_for_constant (remainder, 0) <=
-		count_insns_for_constant (remainder, best_start)))
-	  best_start = 0;
-      }
-
     /* Now start emitting the insns.  */
-    i = best_start;
+    i = find_best_start (remainder);
     do
       {
 	int end;
@@ -3106,7 +3138,7 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 		  }
 		else
 		  {
-		    if (remainder && subtargets)
+		    if ((final_invert || remainder) && subtargets)
 		      new_src = gen_reg_rtx (mode);
 		    else
 		      new_src = target;
@@ -3141,20 +3173,22 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	      code = PLUS;
 
 	    insns++;
-	    if (TARGET_ARM)
-	      i -= 6;
-	    else
-	      i -= 7;
+	    i -= 8 - step_size;
 	  }
 	/* Arm allows rotates by a multiple of two. Thumb-2 allows arbitrary
 	   shifts.  */
-	if (TARGET_ARM)
-	  i -= 2;
-	else
-	  i--;
+	i -= step_size;
       }
     while (remainder);
   }
+
+  if (final_invert)
+    {
+      if (generate)
+	emit_constant_insn (cond, gen_rtx_SET (VOIDmode, target,
+					       gen_rtx_NOT (mode, source)));
+      insns++;
+    }
 
   return insns;
 }
