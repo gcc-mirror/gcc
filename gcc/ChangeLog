@@ -1,3 +1,22 @@
+2009-10-29  Cary Coutant  <ccoutant@google.com>
+
+	PR debug/41700
+	* dwarf2out.c (dwarf2_debug_hooks): Add entries for new hook (two
+	locations in the source).
+        (store_vcall_insn): New function.
+        (lookup_vcall_insn): New function.
+        (dwarf2out_virtual_call_token): Use store_vcall_insn.
+	(dwarf2out_copy_call_info): New function.
+	(dwarf2out_virtual_call): Use lookup_vcall_insn.
+	* emit-rtl.c (try_split): Call copy_call_info debug hook.
+	* debug.h (struct gcc_debug_hooks): Add copy_call_info hook.
+	* debug.c (do_nothing_debug_hooks): Add dummy entry for new hook.
+	(debug_nothing_rtx_rtx): New dummy hook.
+	* dbxout.c (dbx_debug_hooks): Add dummy entry for new hook.
+	(xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+
 2009-10-29  David Daney  <ddaney@caviumnetworks.com>
 
 	* doc/invoke.texi (mmcount-ra-address): Document new command line

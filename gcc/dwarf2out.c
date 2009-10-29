@@ -5418,6 +5418,7 @@ static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx);
 static void dwarf2out_direct_call (tree);
 static void dwarf2out_virtual_call_token (tree, int);
+static void dwarf2out_copy_call_info (rtx, rtx);
 static void dwarf2out_virtual_call (int);
 static void dwarf2out_begin_function (tree);
 static void dwarf2out_set_name (tree, tree);
@@ -5457,6 +5458,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_switch_text_section,
   dwarf2out_direct_call,
   dwarf2out_virtual_call_token,
+  dwarf2out_copy_call_info,
   dwarf2out_virtual_call,
   dwarf2out_set_name,
   1                             /* start_end_main_source_file */
@@ -19995,6 +19997,42 @@ vcall_insn_table_eq (const void *x, const void *y)
           == ((const struct vcall_insn *) y)->insn_uid);
 }
 
+/* Associate VTABLE_SLOT with INSN_UID in the VCALL_INSN_TABLE.  */
+
+static void
+store_vcall_insn (unsigned int vtable_slot, int insn_uid)
+{
+  struct vcall_insn *item = GGC_NEW (struct vcall_insn);
+  struct vcall_insn **slot;
+
+  gcc_assert (item);
+  item->insn_uid = insn_uid;
+  item->vtable_slot = vtable_slot;
+  slot = (struct vcall_insn **)
+      htab_find_slot_with_hash (vcall_insn_table, &item,
+				(hashval_t) insn_uid, INSERT);
+  *slot = item;
+}
+
+/* Return the VTABLE_SLOT associated with INSN_UID.  */
+
+static unsigned int
+lookup_vcall_insn (unsigned int insn_uid)
+{
+  struct vcall_insn item;
+  struct vcall_insn *p;
+
+  item.insn_uid = insn_uid;
+  item.vtable_slot = 0;
+  p = (struct vcall_insn *) htab_find_with_hash (vcall_insn_table,
+                                                 (void *) &item,
+                                                 (hashval_t) insn_uid);
+  if (p == NULL)
+    return (unsigned int) -1;
+  return p->vtable_slot;
+}
+
+
 /* Called when lowering indirect calls to RTL.  We make a note of INSN_UID
    and the OBJ_TYPE_REF_TOKEN from ADDR.  For C++ virtual calls, the token
    is the vtable slot index that we will need to put in the virtual call
@@ -20007,19 +20045,21 @@ dwarf2out_virtual_call_token (tree addr, int insn_uid)
     {
       tree token = OBJ_TYPE_REF_TOKEN (addr);
       if (TREE_CODE (token) == INTEGER_CST)
-        {
-          struct vcall_insn *item = GGC_NEW (struct vcall_insn);
-          struct vcall_insn **slot;
-
-          gcc_assert (item);
-          item->insn_uid = insn_uid;
-          item->vtable_slot = TREE_INT_CST_LOW (token);
-          slot = (struct vcall_insn **)
-              htab_find_slot_with_hash (vcall_insn_table, &item,
-                                        (hashval_t) insn_uid, INSERT);
-          *slot = item;
-        }
+        store_vcall_insn (TREE_INT_CST_LOW (token), insn_uid);
     }
+}
+
+/* Called when scheduling RTL, when a CALL_INSN is split.  Copies the
+   OBJ_TYPE_REF_TOKEN previously associated with OLD_INSN and associates it
+   with NEW_INSN.  */
+
+static void
+dwarf2out_copy_call_info (rtx old_insn, rtx new_insn)
+{
+  unsigned int vtable_slot = lookup_vcall_insn (INSN_UID (old_insn));
+
+  if (vtable_slot != (unsigned int) -1)
+    store_vcall_insn (vtable_slot, INSN_UID (new_insn));
 }
 
 /* Called by the final INSN scan whenever we see a virtual function call.
@@ -20031,20 +20071,14 @@ dwarf2out_virtual_call_token (tree addr, int insn_uid)
 static void
 dwarf2out_virtual_call (int insn_uid)
 {
+  unsigned int vtable_slot = lookup_vcall_insn (insn_uid);
   vcall_entry e;
-  struct vcall_insn item;
-  struct vcall_insn *p;
 
-  item.insn_uid = insn_uid;
-  item.vtable_slot = 0;
-  p = (struct vcall_insn *) htab_find_with_hash (vcall_insn_table,
-                                                 (void *) &item,
-                                                 (hashval_t) insn_uid);
-  if (p == NULL)
+  if (vtable_slot == (unsigned int) -1)
     return;
 
   e.poc_label_num = poc_label_num++;
-  e.vtable_slot = p->vtable_slot;
+  e.vtable_slot = vtable_slot;
   VEC_safe_push (vcall_entry, gc, vcall_table, &e);
 
   /* Drop a label at the return point to mark the point of call.  */
@@ -21335,6 +21369,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   0,		/* switch_text_section */
   0,		/* direct_call */
   0,		/* virtual_call_token */
+  0,		/* copy_call_info */
   0,		/* virtual_call */
   0,		/* set_name */
   0		/* start_end_main_source_file */
