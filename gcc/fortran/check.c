@@ -599,10 +599,8 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 
   where = &pointer->where;
 
-  if (pointer->expr_type == EXPR_VARIABLE)
-    attr1 = gfc_variable_attr (pointer, NULL);
-  else if (pointer->expr_type == EXPR_FUNCTION)
-    attr1 = pointer->symtree->n.sym->attr;
+  if (pointer->expr_type == EXPR_VARIABLE || pointer->expr_type == EXPR_FUNCTION)
+    attr1 = gfc_expr_attr (pointer);
   else if (pointer->expr_type == EXPR_NULL)
     goto null_arg;
   else
@@ -624,10 +622,8 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
   if (target->expr_type == EXPR_NULL)
     goto null_arg;
 
-  if (target->expr_type == EXPR_VARIABLE)
-    attr2 = gfc_variable_attr (target, NULL);
-  else if (target->expr_type == EXPR_FUNCTION)
-    attr2 = target->symtree->n.sym->attr;
+  if (target->expr_type == EXPR_VARIABLE || target->expr_type == EXPR_FUNCTION)
+    attr2 = gfc_expr_attr (target);
   else
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be a pointer "
