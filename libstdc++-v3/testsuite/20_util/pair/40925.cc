@@ -18,10 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// NOTE: This makes use of the fact that we know how moveable
-// is implemented on pair, and also vector. If the implementation
-// changes this test may begin to fail.
-
 #include <utility>
 
 struct X
