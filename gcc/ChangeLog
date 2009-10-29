@@ -1,3 +1,13 @@
+2009-10-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/41775
+	* tree-sra.c (build_ref_for_offset): Unshare *expr if not NULL.
+	(generate_subtree_copies): Do not unshare agg.
+	(load_assign_lhs_subreplacements): Do not unshare rhs.
+	(sra_modify_assign): Do not unshare exprs.
+	(propagate_subacesses_accross_link): Renamed to
+	propagate_subaccesses_across_link.
+
 2009-10-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (count_insns_for_constant): Rework to support counting for
