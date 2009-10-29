@@ -253,39 +253,23 @@ namespace std
       static const bool __value = sizeof(__test(__makeFrom())) == 1;
     };
 
-  template<typename _Tp>
-    struct __is_int_or_cref
-    {
-      typedef typename remove_reference<_Tp>::type __rr_Tp;
-      static const bool __value = (is_integral<_Tp>::value
-				   || (is_integral<__rr_Tp>::value
-				       && is_const<__rr_Tp>::value
-				       && !is_volatile<__rr_Tp>::value));
-    };
-
   template<typename _From, typename _To,
 	   bool = (is_void<_From>::value || is_void<_To>::value
-		   || is_function<_To>::value || is_array<_To>::value
-		   // This special case is here only to avoid warnings.
-		   || (is_floating_point<typename
-		       remove_reference<_From>::type>::value
-		       && __is_int_or_cref<_To>::__value))>
+		   || is_function<_To>::value || is_array<_To>::value)>
     struct __is_convertible_helper
     {
-      // "An imaginary lvalue of type From...".
       static const bool __value = (__is_convertible_simple<typename
-				   add_lvalue_reference<_From>::type,
+				   add_rvalue_reference<_From>::type,
 				   _To>::__value);
     };
 
   template<typename _From, typename _To>
     struct __is_convertible_helper<_From, _To, true>
-    { static const bool __value = (is_void<_To>::value
-				   || (__is_int_or_cref<_To>::__value
-				       && !is_void<_From>::value)); };
+    { static const bool __value = (is_void<_From>::value
+				   && is_void<_To>::value); };
 
   // XXX FIXME
-  // The C++0x specifications are different, see N2255.
+  // The C++0x specifications require front-end support, see N2255.
   /// is_convertible
   template<typename _From, typename _To>
     struct is_convertible
