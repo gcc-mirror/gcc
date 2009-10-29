@@ -1317,28 +1317,28 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	}
 
       /* If we're looking for the size of a field, return the field size.
-	 Otherwise, if the prefix is an object, or if 'Object_Size or
-	 'Max_Size_In_Storage_Elements has been specified, the result is the
-	 GCC size of the type.  Otherwise, the result is the RM size of the
-	 type.  */
+	 Otherwise, if the prefix is an object, or if we're looking for
+	 'Object_Size or 'Max_Size_In_Storage_Elements, the result is the
+	 GCC size of the type.  Otherwise, it is the RM size of the type.  */
       if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
 	gnu_result = DECL_SIZE (TREE_OPERAND (gnu_prefix, 1));
       else if (TREE_CODE (gnu_prefix) != TYPE_DECL
 	       || attribute == Attr_Object_Size
 	       || attribute == Attr_Max_Size_In_Storage_Elements)
 	{
-	  /* If this is a padded type, the GCC size isn't relevant to the
-	     programmer.  Normally, what we want is the RM size, which was set
-	     from the specified size, but if it was not set, we want the size
-	     of the relevant field.  Using the MAX of those two produces the
-	     right result in all case.  Don't use the size of the field if it's
-	     a self-referential type, since that's never what's wanted.  */
-	  if (TYPE_IS_PADDING_P (gnu_type)
+	  /* If the prefix is an object of a padded type, the GCC size isn't
+	     relevant to the programmer.  Normally what we want is the RM size,
+	     which was set from the specified size, but if it was not set, we
+	     want the size of the field.  Using the MAX of those two produces
+	     the right result in all cases.  Don't use the size of the field
+	     if it's self-referential, since that's never what's wanted.  */
+	  if (TREE_CODE (gnu_prefix) != TYPE_DECL
+	      && TYPE_IS_PADDING_P (gnu_type)
 	      && TREE_CODE (gnu_expr) == COMPONENT_REF)
 	    {
 	      gnu_result = rm_size (gnu_type);
-	      if (!(CONTAINS_PLACEHOLDER_P
-		    (DECL_SIZE (TREE_OPERAND (gnu_expr, 1)))))
+	      if (!CONTAINS_PLACEHOLDER_P
+		   (DECL_SIZE (TREE_OPERAND (gnu_expr, 1))))
 		gnu_result
 		  = size_binop (MAX_EXPR, gnu_result,
 				DECL_SIZE (TREE_OPERAND (gnu_expr, 1)));
