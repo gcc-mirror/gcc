@@ -206,8 +206,7 @@ namespace decimal
     return __coeff * __decexp;
   }
 
-  static decimal128
-  make_decimal128(unsigned long long __coeff, int __exponent)
+  static decimal128 make_decimal128(unsigned long long __coeff, int __exponent)
   {
     decimal128 __decexp = 1, __multiplier;
 
