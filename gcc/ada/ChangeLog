@@ -1,3 +1,18 @@
+2009-10-28  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.adb: Minor reformatting
+
+2009-10-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch9.adb (Build_Task_Proc_Specification): Generate a different
+	suffix for task type bodies.
+
+2009-10-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Convert_Aggr_In_Allocator): Do not look for a
+	finalization list if the designated type requires no control actions,
+	to prevent a useless semantic dependence on ada.tags.
+
 2009-10-28  Bob Duff  <duff@adacore.com>
 
 	* s-fileio.adb: Give more information in exception messages.

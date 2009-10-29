@@ -3983,9 +3983,18 @@ package body Exp_Ch9 is
       Spec_Id : Entity_Id;
 
    begin
-      Spec_Id :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_External_Name (Chars (T), 'B'));
+      if Comes_From_Source (T) then
+         --  This is an explicit task type
+         Spec_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (T), "TB"));
+      else
+         --  This is an anonymous task type
+         Spec_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (T), 'B'));
+      end if;
+
       Set_Is_Internal (Spec_Id);
 
       --  Associate the procedure with the task, if this is the declaration

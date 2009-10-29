@@ -732,7 +732,7 @@ package body Sem_Type is
    begin
       --  If either operand missing, then this is an error, but ignore it (and
       --  pretend we have a cover) if errors already detected, since this may
-      --  simply mean we have malformed trees.
+      --  simply mean we have malformed trees or a semantic error upstream.
 
       if No (T1) or else No (T2) then
          if Total_Errors_Detected /= 0 then
@@ -803,7 +803,8 @@ package body Sem_Type is
       then
          return True;
 
-      --  The context may be class wide
+      --  The context may be class wide, and a class-wide type is
+      --  compatible with any member of the class.
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Ancestor (Root_Type (T1), T2)
@@ -816,8 +817,8 @@ package body Sem_Type is
       then
          return True;
 
-      --  Ada 2005 (AI-345): A class-wide abstract interface type T1 covers a
-      --  task_type or protected_type implementing T1
+      --  Ada 2005 (AI-345): A class-wide abstract interface type covers a
+      --  task_type or protected_type that implements the interface.
 
       elsif Ada_Version >= Ada_05
         and then Is_Class_Wide_Type (T1)
@@ -884,7 +885,10 @@ package body Sem_Type is
       then
          return True;
 
-      --  Some contexts require a class of types rather than a specific type
+      --  Some contexts require a class of types rather than a specific type.
+      --  For example, conditions require any boolean type, fixed point
+      --  attributes require some real type, etc. The built-in types Any_XXX
+      --  represent these classes.
 
       elsif (T1 = Any_Integer and then Is_Integer_Type (T2))
         or else (T1 = Any_Boolean and then Is_Boolean_Type (T2))
@@ -963,12 +967,18 @@ package body Sem_Type is
       then
          return Covers (Corresponding_Remote_Type (T1), T2);
 
+      --  and conversely.
+
       elsif Is_Record_Type (T2)
         and then (Is_Remote_Call_Interface (T2)
                    or else Is_Remote_Types (T2))
         and then Present (Corresponding_Remote_Type (T2))
       then
          return Covers (Corresponding_Remote_Type (T2), T1);
+
+      --  Synchronized types are represented at run time by their corresponding
+      --  record type. During expansion one is replaced with the other, but
+      --  they are compatible views of the same type.
 
       elsif Is_Record_Type (T1)
         and then Is_Concurrent_Type (T2)
@@ -982,9 +992,14 @@ package body Sem_Type is
       then
          return Covers (Corresponding_Record_Type (T1), T2);
 
+      --  During analysis, an attribute reference 'Access has a special type
+      --  kind: Access_Attribute_Type, to be replaced eventually with the type
+      --  imposed by context.
+
       elsif Ekind (T2) = E_Access_Attribute_Type
         and then (Ekind (BT1) = E_General_Access_Type
-                    or else Ekind (BT1) = E_Access_Type)
+                    or else
+                  Ekind (BT1) = E_Access_Type)
         and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
          --  If the target type is a RACW type while the source is an access
@@ -995,6 +1010,8 @@ package body Sem_Type is
          end if;
 
          return True;
+
+      --  Ditto for allocators, which eventually resolve to the context type
 
       elsif Ekind (T2) = E_Allocator_Type
         and then Is_Access_Type (T1)
@@ -1020,7 +1037,7 @@ package body Sem_Type is
       --  A packed array type covers its corresponding non-packed type. This is
       --  not legitimate Ada, but allows the omission of a number of otherwise
       --  useless unchecked conversions, and since this can only arise in
-      --  (known correct) expanded code, no harm is done
+      --  (known correct) expanded code, no harm is done.
 
       elsif Is_Array_Type (T2)
         and then Is_Packed (T2)
@@ -1077,7 +1094,7 @@ package body Sem_Type is
          return True;
 
       --  Ada 2005 (AI-50217): Additional branches to make the shadow entity
-      --  compatible with its real entity.
+      --  obtained through a limited_with compatible with its real entity.
 
       elsif From_With_Type (T1) then
 
@@ -1099,7 +1116,7 @@ package body Sem_Type is
 
          --  If units in the context have Limited_With clauses on each other,
          --  either type might have a limited view. Checks performed elsewhere
-         --  verify that the context type is the non-limited view.
+         --  verify that the context type is the nonlimited view.
 
          if Is_Incomplete_Type (T2) then
             return Covers (T1, Get_Full_View (Non_Limited_View (T2)));
@@ -1123,7 +1140,7 @@ package body Sem_Type is
 
       --  Ada 2005 (AI-423): Coverage of formal anonymous access types
       --  and actual anonymous access types in the context of generic
-      --  instantiation. We have the following situation:
+      --  instantiations. We have the following situation:
 
       --     generic
       --        type Formal is private;
@@ -1145,7 +1162,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  Otherwise it doesn't cover!
+      --  Otherwise, types are not compatible!
 
       else
          return False;
