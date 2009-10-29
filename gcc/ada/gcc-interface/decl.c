@@ -7737,6 +7737,10 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       biased_p = (TREE_CODE (type) == INTEGER_TYPE
 		  && TYPE_BIASED_REPRESENTATION_P (type));
 
+      /* Integer types with precision 0 are forbidden.  */
+      if (size == 0)
+	size = 1;
+
       /* Only do something if the type is not a packed array type and
 	 doesn't already have the proper size.  */
       if (TYPE_PACKED_ARRAY_TYPE_P (type)

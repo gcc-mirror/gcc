@@ -1,5 +1,10 @@
 2009-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (make_type_from_size) <INTEGER_TYPE>: Do not
+	create integer types with precision 0.
+
+2009-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (array_type_has_nonaliased_component): Swap
 	parameters and rewrite comments.  For a derived type, return the
 	setting of its parent type.
