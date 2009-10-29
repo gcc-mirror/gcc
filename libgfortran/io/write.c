@@ -446,9 +446,10 @@ extract_uint (const void *p, int len)
       }
       break;
 #ifdef HAVE_GFC_INTEGER_16
+    case 10:
     case 16:
       {
-	GFC_INTEGER_16 tmp;
+	GFC_INTEGER_16 tmp = 0;
 	memcpy ((void *) &tmp, p, len);
 	i = (GFC_UINTEGER_16) tmp;
       }
@@ -482,19 +483,13 @@ write_l (st_parameter_dt *dtp, const fnode *f, char *source, int len)
 
 
 static void
-write_int (st_parameter_dt *dtp, const fnode *f, const char *source, int len,
-           const char *(*conv) (GFC_UINTEGER_LARGEST, char *, size_t))
+write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n)
 {
-  GFC_UINTEGER_LARGEST n = 0;
   int w, m, digits, nzero, nblank;
   char *p;
-  const char *q;
-  char itoa_buf[GFC_BTOA_BUF_SIZE];
 
   w = f->u.integer.w;
   m = f->u.integer.m;
-
-  n = extract_uint (source, len);
 
   /* Special case:  */
 
@@ -511,7 +506,6 @@ write_int (st_parameter_dt *dtp, const fnode *f, const char *source, int len,
       goto done;
     }
 
-  q = conv (n, itoa_buf, sizeof (itoa_buf));
   digits = strlen (q);
 
   /* Select a width if none was specified.  The idea here is to always
@@ -537,7 +531,6 @@ write_int (st_parameter_dt *dtp, const fnode *f, const char *source, int len,
       star_fill (p, w);
       goto done;
     }
-
 
   if (!dtp->u.p.no_leading_blank)
     {
@@ -706,6 +699,202 @@ btoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
   return p;
 }
 
+/* The following three functions, btoa_big, otoa_big, and ztoa_big, are needed
+   to convert large reals with kind sizes that exceed the largest integer type
+   available on certain platforms.  In these cases, byte by byte conversion is
+   performed. Endianess is taken into account.  */
+
+/* Conversion to binary.  */
+
+static const char *
+btoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
+{
+  char *q;
+  int i, j;
+  
+  q = buffer;
+  if (big_endian)
+    {
+      const char *p = s;
+      for (i = 0; i < len; i++)
+	{
+	  char c = *p;
+
+	  /* Test for zero. Needed by write_boz later.  */
+	  if (*p != 0)
+	    *n = 1;
+
+	  for (j = 0; j < 8; j++)
+	    {
+	      *q++ = (c & 128) ? '1' : '0';
+	      c <<= 1;
+	    }
+	  p++;
+	}
+    }
+  else
+    {
+      const char *p = s + len - 1;
+      for (i = 0; i < len; i++)
+	{
+	  char c = *p;
+
+	  /* Test for zero. Needed by write_boz later.  */
+	  if (*p != 0)
+	    *n = 1;
+
+	  for (j = 0; j < 8; j++)
+	    {
+	      *q++ = (c & 128) ? '1' : '0';
+	      c <<= 1;
+	    }
+	  p--;
+	}
+    }
+
+  *q = '\0';
+
+  if (*n == 0)
+    return "0";
+
+  /* Move past any leading zeros.  */  
+  while (*buffer == '0')
+    buffer++;
+
+  return buffer;
+
+}
+
+/* Conversion to octal.  */
+
+static const char *
+otoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
+{
+  char *q;
+  int i, j, k;
+  uint8_t octet;
+
+  q = buffer + GFC_OTOA_BUF_SIZE - 1;
+  *q = '\0';
+  i = k = octet = 0;
+
+  if (big_endian)
+    {
+      const char *p = s + len - 1;
+      char c = *p;
+      while (i < len)
+	{
+	  /* Test for zero. Needed by write_boz later.  */
+	  if (*p != 0)
+	    *n = 1;
+
+	  for (j = 0; j < 3 && i < len; j++)
+	    {
+	      octet |= (c & 1) << j;
+	      c >>= 1;
+	      if (++k > 7)
+	        {
+		  i++;
+		  k = 0;
+		  c = *--p;
+		}
+	    }
+	  *--q = '0' + octet;
+	  octet = 0;
+	}
+    }
+  else
+    {
+      const char *p = s;
+      char c = *p;
+      while (i < len)
+	{
+	  /* Test for zero. Needed by write_boz later.  */
+	  if (*p != 0)
+	    *n = 1;
+
+	  for (j = 0; j < 3 && i < len; j++)
+	    {
+	      octet |= (c & 1) << j;
+	      c >>= 1;
+	      if (++k > 7)
+	        {
+		  i++;
+		  k = 0;
+		  c = *++p;
+		}
+	    }
+	  *--q = '0' + octet;
+	  octet = 0;
+	}
+    }
+
+  if (*n == 0)
+    return "0";
+
+  /* Move past any leading zeros.  */  
+  while (*q == '0')
+    q++;
+
+  return q;
+}
+
+/* Conversion to hexidecimal.  */
+
+static const char *
+ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
+{
+  static char a[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+  char *q;
+  uint8_t h, l;
+  int i;
+  
+  q = buffer;
+  
+  if (big_endian)
+    {
+      const char *p = s;
+      for (i = 0; i < len; i++)
+	{
+	  /* Test for zero. Needed by write_boz later.  */
+	  if (*p != 0)
+	    *n = 1;
+
+	  h = (*p >> 4) & 0x0F;
+	  l = *p++ & 0x0F;
+	  *q++ = a[h];
+	  *q++ = a[l];
+	}
+    }
+  else
+    {
+      const char *p = s + len - 1;
+      for (i = 0; i < len; i++)
+	{
+	  /* Test for zero. Needed by write_boz later.  */
+	  if (*p != 0)
+	    *n = 1;
+
+	  h = (*p >> 4) & 0x0F;
+	  l = *p-- & 0x0F;
+	  *q++ = a[h];
+	  *q++ = a[l];
+	}
+    }
+
+  *q = '\0';
+  
+  if (*n == 0)
+    return "0";
+    
+  /* Move past any leading zeros.  */  
+  while (*buffer == '0')
+    buffer++;
+
+  return buffer;
+}
 
 /* gfc_itoa()-- Integer to decimal conversion.
    The itoa function is a widespread non-standard extension to standard
@@ -757,22 +946,64 @@ write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 
 
 void
-write_b (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+write_b (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
-  write_int (dtp, f, p, len, btoa);
+  const char *p;
+  char itoa_buf[GFC_BTOA_BUF_SIZE];
+  GFC_UINTEGER_LARGEST n = 0;
+
+  if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
+    {
+      p = btoa_big (source, itoa_buf, len, &n);
+      write_boz (dtp, f, p, n);
+    }
+  else
+    {
+      n = extract_uint (source, len);
+      p = btoa (n, itoa_buf, sizeof (itoa_buf));
+      write_boz (dtp, f, p, n);
+    }
 }
 
 
 void
-write_o (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+write_o (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
-  write_int (dtp, f, p, len, otoa);
+  const char *p;
+  char itoa_buf[GFC_OTOA_BUF_SIZE];
+  GFC_UINTEGER_LARGEST n = 0;
+  
+  if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
+    {
+      p = otoa_big (source, itoa_buf, len, &n);
+      write_boz (dtp, f, p, n);
+    }
+  else
+    {
+      n = extract_uint (source, len);
+      p = otoa (n, itoa_buf, sizeof (itoa_buf));
+      write_boz (dtp, f, p, n);
+    }
 }
 
 void
-write_z (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+write_z (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
-  write_int (dtp, f, p, len, gfc_xtoa);
+  const char *p;
+  char itoa_buf[GFC_XTOA_BUF_SIZE];
+  GFC_UINTEGER_LARGEST n = 0;
+
+  if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
+    {
+      p = ztoa_big (source, itoa_buf, len, &n);
+      write_boz (dtp, f, p, n);
+    }
+  else
+    {
+      n = extract_uint (source, len);
+      p = gfc_xtoa (n, itoa_buf, sizeof (itoa_buf));
+      write_boz (dtp, f, p, n);
+    }
 }
 
 
