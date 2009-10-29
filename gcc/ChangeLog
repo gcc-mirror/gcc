@@ -1,3 +1,19 @@
+2009-10-29  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/37565
+	PR target/38018
+	* doc/tm.texi (OVERRIDE_OPTIONS): Update.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): New.
+	* optc-gen.awk (cl_target_option_restore): Include call to 
+	targetm.override_options_after_change.
+	* target-def.h (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): New.
+	* target.h (override_options_after_change): New.
+	* c-common.c (parse_optimize_options): Call
+	targetm.override_options_after_change.
+	* config/ia64/ia64.c (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): New.
+	(ia64_override_options_after_change): New.
+	(ia64_override_options) Add call to above.
+
 2009-10-29  Michael Matz  <matz@suse.de>
 
 	* tree-ssa-math-opts.c (execute_convert_to_rsqrt): Remove.

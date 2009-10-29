@@ -303,6 +303,7 @@ static enum machine_mode ia64_promote_function_mode (const_tree,
 						     const_tree,
 						     int);
 static void ia64_trampoline_init (rtx, tree, rtx);
+static void ia64_override_options_after_change (void);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -535,6 +536,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT ia64_trampoline_init
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE ia64_override_options_after_change
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5504,6 +5508,25 @@ ia64_override_options (void)
     flag_ira_loop_pressure = 1;
 
 
+  ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
+
+  init_machine_status = ia64_init_machine_status;
+
+  if (align_functions <= 0)
+    align_functions = 64;
+  if (align_loops <= 0)
+    align_loops = 32;
+  if (TARGET_ABI_OPEN_VMS)
+    flag_no_common = 1;
+
+  ia64_override_options_after_change();
+}
+
+/* Implement targetm.override_options_after_change.  */
+
+static void
+ia64_override_options_after_change (void)
+{
   ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
   flag_schedule_insns_after_reload = 0;
 
@@ -5525,18 +5548,6 @@ ia64_override_options (void)
          a transformation.  */
       flag_auto_inc_dec = 0;
     }
-
-  ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
-
-  init_machine_status = ia64_init_machine_status;
-
-  if (align_functions <= 0)
-    align_functions = 64;
-  if (align_loops <= 0)
-    align_loops = 32;
-
-  if (TARGET_ABI_OPEN_VMS)
-    flag_no_common = 1;
 }
 
 /* Initialize the record of emitted frame related registers.  */
