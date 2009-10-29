@@ -3516,6 +3516,10 @@ try_split (rtx pat, rtx trial, int last)
 	      p = &XEXP (*p, 1);
 	    *p = CALL_INSN_FUNCTION_USAGE (trial);
 	    SIBLING_CALL_P (insn) = SIBLING_CALL_P (trial);
+
+	    /* Update the debug information for the CALL_INSN.  */
+	    if (flag_enable_icf_debug)
+	      (*debug_hooks->copy_call_info) (trial, insn);
 	  }
     }
 

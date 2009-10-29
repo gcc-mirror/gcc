@@ -217,6 +217,7 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    debug_nothing_void,            /* switch_text_section */
    debug_nothing_tree,		  /* direct_call */
    debug_nothing_tree_int,	  /* virtual_call_token */
+   debug_nothing_rtx_rtx,	  /* copy_call_info */
    debug_nothing_uid,		  /* virtual_call */
    debug_nothing_tree_tree,	  /* set_name */
    0                              /* start_end_main_source_file */
