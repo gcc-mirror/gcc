@@ -814,7 +814,21 @@ parsed.
 
 Don't use this macro to turn on various extra optimizations for
 @option{-O}.  That is what @code{OPTIMIZATION_OPTIONS} is for.
+
+If you need to do something whenever the optimization level is
+changed via the optimize attribute or pragma, see
+@code{TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE}
 @end defmac
+
+@deftypefn {Target Hook} void TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE (void)
+This target function is similar to the macro @code{OVERRIDE_OPTIONS}
+but is called when the optimize level is changed via an attribute or
+pragma or when it is reset at the end of the code affected by the
+attribute or pragma.  It is not called at the beginning of compilation
+when @code{OVERRIDE_OPTIONS} is called so if you want to perform these
+actions then, you should have @code{OVERRIDE_OPTIONS} call
+@code{TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE}.
+@end deftypefn
 
 @defmac C_COMMON_OVERRIDE_OPTIONS
 This is similar to @code{OVERRIDE_OPTIONS} but is only used in the C

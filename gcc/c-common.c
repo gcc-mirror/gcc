@@ -7825,6 +7825,8 @@ parse_optimize_options (tree args, bool attr_p)
   /* Now parse the options.  */
   decode_options (opt_argc, opt_argv);
 
+  targetm.override_options_after_change();
+
   /* Don't allow changing -fstrict-aliasing.  */
   flag_strict_aliasing = saved_flag_strict_aliasing;
 

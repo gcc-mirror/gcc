@@ -500,6 +500,11 @@ struct gcc_target
   /* The initial value of target_flags.  */
   int default_target_flags;
 
+  /* Allow target specific overriding of option settings after options have
+     been changed by an attribute or pragma or when it is reset at the
+     end of the code affected by an attribute or pragma.  */
+  void (* override_options_after_change) (void);
+
   /* Handle target switch CODE (an OPT_* value).  ARG is the argument
      passed to the switch; it is NULL if no argument was.  VALUE is the
      value of ARG if CODE specifies a UInteger option, otherwise it is

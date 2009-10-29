@@ -327,6 +327,7 @@ for (i = 0; i < n_opt_char; i++) {
 	print "  " var_opt_char[i] " = ptr->" var_opt_char[i] ";";
 }
 
+print "  targetm.override_options_after_change ();";
 print "}";
 
 print "";
