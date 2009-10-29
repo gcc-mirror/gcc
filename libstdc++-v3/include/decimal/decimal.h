@@ -41,39 +41,39 @@ namespace decimal
 {
   // ISO/IEC TR 24733  3.2.[234].1  Construct/copy/destroy.
 
-  inline decimal32::decimal32(decimal64 r)	: __val(r.__getval()) {}
-  inline decimal32::decimal32(decimal128 r)	: __val(r.__getval()) {}
-  inline decimal64::decimal64(decimal32 r)	: __val(r.__getval()) {}
-  inline decimal64::decimal64(decimal128 r)	: __val(r.__getval()) {}
-  inline decimal128::decimal128(decimal32 r)	: __val(r.__getval()) {}
-  inline decimal128::decimal128(decimal64 r)	: __val(r.__getval()) {}
+  inline decimal32::decimal32(decimal64 __r)	: __val(__r.__getval()) {}
+  inline decimal32::decimal32(decimal128 __r)	: __val(__r.__getval()) {}
+  inline decimal64::decimal64(decimal32 __r)	: __val(__r.__getval()) {}
+  inline decimal64::decimal64(decimal128 __r)	: __val(__r.__getval()) {}
+  inline decimal128::decimal128(decimal32 __r)	: __val(__r.__getval()) {}
+  inline decimal128::decimal128(decimal64 __r)	: __val(__r.__getval()) {}
 
   // ISO/IEC TR 24733  3.2.[234].6  Compound assignment.
 
-#define _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_Op1, _Op2, _T1, _T2)	\
-  inline _T1& _T1::operator _Op1(_T2 __rhs)				\
-  {									\
-    __setval(__getval() _Op2 __rhs.__getval());				\
-    return *this;							\
+#define _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_Op1, _Op2, _T1, _T2)	 \
+  inline _T1& _T1::operator _Op1(_T2 __rhs)				 \
+  {									 \
+    __setval(__getval() _Op2 __rhs.__getval());				 \
+    return *this;							 \
   }
 
-#define _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, _T2)	\
-  inline _T1& _T1::operator _Op1(_T2 __rhs)				\
-  {									\
-    __setval(__getval() _Op2 __rhs);					\
-    return *this;							\
+#define _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, _T2)	 \
+  inline _T1& _T1::operator _Op1(_T2 __rhs)				 \
+  {									 \
+    __setval(__getval() _Op2 __rhs);					 \
+    return *this;							 \
   }
 
-#define _DEFINE_DECIMAL_COMPOUND_ASSIGNMENTS(_O1, _O2, _T1)		\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_O1,_O2,_T1, decimal32)	\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_O1,_O2,_T1, decimal64)	\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_O1,_O2,_T1, decimal128)	\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_O1,_O2,_T1, int)		\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_O1,_O2,_T1, unsigned int)	\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_O1,_O2,_T1, long)		\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_O1,_O2,_T1, unsigned long)	\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_O1,_O2,_T1, long long)	\
-  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_O1,_O2,_T1, unsigned long long)
+#define _DEFINE_DECIMAL_COMPOUND_ASSIGNMENTS(_Op1, _Op2, _T1)		 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_Op1, _Op2, _T1, decimal32)	 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_Op1, _Op2, _T1, decimal64)	 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_DEC(_Op1, _Op2, _T1, decimal128)	 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, int)		 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, unsigned int) \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, long)	 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, unsigned long)\
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, long long)	 \
+  _DEFINE_DECIMAL_COMPOUND_ASSIGNMENT_INT(_Op1, _Op2, _T1, unsigned long long)
 
   _DEFINE_DECIMAL_COMPOUND_ASSIGNMENTS(+=, +, decimal32)
   _DEFINE_DECIMAL_COMPOUND_ASSIGNMENTS(-=, -, decimal32)
@@ -97,34 +97,22 @@ namespace decimal
   // Extension: Conversion to integral type.
 
   inline long long decimal32_to_long_long(decimal32 __d)
-  {
-    return (long long)__d.__getval();
-  }
+  { return (long long)__d.__getval(); }
 
   inline long long decimal64_to_long_long(decimal64 __d)
-  {
-    return (long long)__d.__getval();
-  }
+  { return (long long)__d.__getval(); }
 
   inline long long decimal128_to_long_long(decimal128 __d)
-  {
-    return (long long)__d.__getval();
-  }
+  { return (long long)__d.__getval(); }
 
   inline long long decimal_to_long_long(decimal32 __d)
-  {
-    return (long long)__d.__getval();
-  }
+  { return (long long)__d.__getval(); }
 
   inline long long decimal_to_long_long(decimal64 __d)
-  {
-    return (long long)__d.__getval();
-  }
+  { return (long long)__d.__getval(); }
 
   inline long long decimal_to_long_long(decimal128 __d)
-  {
-    return (long long)__d.__getval();
-  }
+  { return (long long)__d.__getval(); }
 
   // ISO/IEC TR 24733  3.2.5  Initialization from coefficient and exponent.
 
@@ -140,7 +128,7 @@ namespace decimal
     else
       __multiplier = 1.E1DF;
 
-    for (int i = 0; i < __exponent; i++)
+    for (int __i = 0; __i < __exponent; ++__i)
       __decexp *= __multiplier;
 
     return __coeff * __decexp;
@@ -158,7 +146,7 @@ namespace decimal
     else
       __multiplier = 1.E1DF;
 
-    for (int i = 0; i < __exponent; i++)
+    for (int __i = 0; __i < __exponent; ++__i)
       __decexp *= __multiplier;
 
     return __coeff * __decexp;
@@ -176,7 +164,7 @@ namespace decimal
     else
       __multiplier = 1.E1DD;
 
-    for (int i = 0; i < __exponent; i++)
+    for (int __i = 0; __i < __exponent; ++__i)
       __decexp *= __multiplier;
 
     return __coeff * __decexp;
@@ -194,7 +182,7 @@ namespace decimal
     else
       __multiplier = 1.E1DD;
 
-    for (int i = 0; i < __exponent; i++)
+    for (int __i = 0; __i < __exponent; ++__i)
       __decexp *= __multiplier;
 
     return __coeff * __decexp;
@@ -212,13 +200,14 @@ namespace decimal
     else
       __multiplier = 1.E1DL;
 
-    for (int i = 0; i < __exponent; i++)
+    for (int __i = 0; __i < __exponent; ++__i)
       __decexp *= __multiplier;
 
     return __coeff * __decexp;
   }
 
-  static decimal128 make_decimal128(unsigned long long __coeff, int __exponent)
+  static decimal128
+  make_decimal128(unsigned long long __coeff, int __exponent)
   {
     decimal128 __decexp = 1, __multiplier;
 
@@ -230,7 +219,7 @@ namespace decimal
     else
       __multiplier = 1.E1DL;
 
-    for (int i = 0; i < __exponent; i++)
+    for (int __i = 0; __i < __exponent; ++__i)
       __decexp *= __multiplier;
 
     return __coeff * __decexp;
@@ -239,101 +228,65 @@ namespace decimal
   // ISO/IEC TR 24733  3.2.6  Conversion to generic floating-point type.
 
   inline float decimal32_to_float(decimal32 __d)
-  {
-    return (float)__d.__getval();
-  }
+  { return (float)__d.__getval(); }
 
   inline float decimal64_to_float(decimal64 __d)
-  {
-    return (float)__d.__getval();
-  }
+  { return (float)__d.__getval(); }
 
   inline float decimal128_to_float(decimal128 __d)
-  {
-    return (float)__d.__getval();
-  }
+  { return (float)__d.__getval(); }
 
   inline float decimal_to_float(decimal32 __d)
-  {
-    return (float)__d.__getval();
-  }
+  { return (float)__d.__getval(); }
 
   inline float decimal_to_float(decimal64 __d)
-  {
-    return (float)__d.__getval();
-  }
+  { return (float)__d.__getval(); }
 
   inline float decimal_to_float(decimal128 __d)
-  {
-    return (float)__d.__getval();
-  }
+  { return (float)__d.__getval(); }
 
   inline double decimal32_to_double(decimal32 __d)
-  {
-    return (double)__d.__getval();
-  }
+  { return (double)__d.__getval(); }
 
   inline double decimal64_to_double(decimal64 __d)
-  {
-    return (double)__d.__getval();
-  }
+  { return (double)__d.__getval(); }
 
   inline double decimal128_to_double(decimal128 __d)
-  {
-    return (double)__d.__getval();
-  }
+  { return (double)__d.__getval(); }
 
   inline double decimal_to_double(decimal32 __d)
-  {
-    return (double)__d.__getval();
-  }
+  { return (double)__d.__getval(); }
 
   inline double decimal_to_double(decimal64 __d)
-  {
-    return (double)__d.__getval();
-  }
+  { return (double)__d.__getval(); }
 
   inline double decimal_to_double(decimal128 __d)
-  {
-    return (double)__d.__getval();
-  }
+  { return (double)__d.__getval(); }
 
   inline long double decimal32_to_long_double(decimal32 __d)
-  {
-    return (long double)__d.__getval();
-  }
+  { return (long double)__d.__getval(); }
 
   inline long double decimal64_to_long_double(decimal64 __d)
-  {
-    return (long double)__d.__getval();
-  }
+  { return (long double)__d.__getval(); }
 
   inline long double decimal128_to_long_double(decimal128 __d)
-  {
-    return (long double)__d.__getval();
-  }
+  { return (long double)__d.__getval(); }
 
   inline long double decimal_to_long_double(decimal32 __d)
-  {
-    return (long double)__d.__getval();
-  }
+  { return (long double)__d.__getval(); }
 
   inline long double decimal_to_long_double(decimal64 __d)
-  {
-    return (long double)__d.__getval();
-  }
+  { return (long double)__d.__getval(); }
 
   inline long double decimal_to_long_double(decimal128 __d)
-  {
-    return (long double)__d.__getval();
-  }
+  { return (long double)__d.__getval(); }
 
   // ISO/IEC TR 24733  3.2.7  Unary arithmetic operators.
 
-#define _DEFINE_DECIMAL_UNARY_OP(_Op, _T)	\
-  inline _T operator _Op(_T __rhs)		\
+#define _DEFINE_DECIMAL_UNARY_OP(_Op, _Tp)	\
+  inline _Tp operator _Op(_Tp __rhs)		\
   {						\
-    _T __tmp;					\
+    _Tp __tmp;					\
     __tmp.__setval(0 _Op __rhs.__getval());	\
     return __tmp;				\
   }
@@ -350,50 +303,50 @@ namespace decimal
   // ISO/IEC TR 24733  3.2.8  Binary arithmetic operators.
 
 #define _DEFINE_DECIMAL_BINARY_OP_WITH_DEC(_Op, _T1, _T2, _T3)	\
-  inline _T1 operator _Op(_T2 lhs, _T3 __rhs)			\
+  inline _T1 operator _Op(_T2 __lhs, _T3 __rhs)			\
   {								\
-    _T1 retval;							\
-    retval.__setval(lhs.__getval() _Op __rhs.__getval());	\
-    return retval;						\
+    _T1 __retval;						\
+    __retval.__setval(__lhs.__getval() _Op __rhs.__getval());	\
+    return __retval;						\
   }
 
 #define _DEFINE_DECIMAL_BINARY_OP_BOTH(_Op, _T1, _T2, _T3)	\
-  inline _T1 operator _Op(_T2 lhs, _T3 __rhs)			\
+  inline _T1 operator _Op(_T2 __lhs, _T3 __rhs)			\
   {								\
-    _T1 retval;							\
-    retval.__setval(lhs.__getval() _Op __rhs.__getval());	\
-    return retval;						\
+    _T1 __retval;						\
+    __retval.__setval(__lhs.__getval() _Op __rhs.__getval());	\
+    return __retval;						\
   }
 
 #define _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, _T2)		\
-  inline _T1 operator _Op(_T1 lhs, _T2 __rhs)			\
+  inline _T1 operator _Op(_T1 __lhs, _T2 __rhs)			\
   {								\
-    _T1 retval;							\
-    retval.__setval(lhs.__getval() _Op __rhs);			\
-    return retval;						\
+    _T1 __retval;						\
+    __retval.__setval(__lhs.__getval() _Op __rhs);		\
+    return __retval;						\
   }
 
 #define _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, _T2)		\
-  inline _T1 operator _Op(_T2 lhs, _T1 __rhs)			\
+  inline _T1 operator _Op(_T2 __lhs, _T1 __rhs)			\
   {								\
-    _T1 retval;							\
-    retval.__setval(lhs _Op __rhs.__getval());			\
-    return retval;						\
+    _T1 __retval;						\
+    __retval.__setval(__lhs _Op __rhs.__getval());		\
+    return __retval;						\
   }
 
-#define _DEFINE_DECIMAL_BINARY_OP_WITH_INT(_Op,_Tp)		\
-  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op,_Tp, int);			\
-  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op,_Tp, unsigned int);		\
-  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op,_Tp, long);			\
-  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op,_Tp, unsigned long);	\
-  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op,_Tp, long long);		\
-  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op,_Tp, unsigned long long);	\
-  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op,_Tp, int);			\
-  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op,_Tp, unsigned int);		\
-  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op,_Tp, long);			\
-  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op,_Tp, unsigned long);	\
-  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op,_Tp, long long);		\
-  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op,_Tp, unsigned long long);	\
+#define _DEFINE_DECIMAL_BINARY_OP_WITH_INT(_Op, _T1)		\
+  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, int);			\
+  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, unsigned int);	\
+  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, long);		\
+  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, unsigned long);	\
+  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, long long);		\
+  _DEFINE_DECIMAL_BINARY_OP_LHS(_Op, _T1, unsigned long long);	\
+  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, int);			\
+  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, unsigned int);	\
+  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, long);		\
+  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, unsigned long);	\
+  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, long long);		\
+  _DEFINE_DECIMAL_BINARY_OP_RHS(_Op, _T1, unsigned long long);	\
 
   _DEFINE_DECIMAL_BINARY_OP_WITH_DEC(+, decimal32, decimal32, decimal32)
   _DEFINE_DECIMAL_BINARY_OP_WITH_INT(+, decimal32)
@@ -456,21 +409,16 @@ namespace decimal
   // ISO/IEC TR 24733  3.2.9  Comparison operators.
 
 #define _DEFINE_DECIMAL_COMPARISON_BOTH(_Op, _T1, _T2)	\
-  inline bool operator _Op(_T1 lhs, _T2 __rhs)		\
-  {							\
-    return lhs.__getval() _Op __rhs.__getval();		\
-  }
+  inline bool operator _Op(_T1 __lhs, _T2 __rhs)	\
+  { return __lhs.__getval() _Op __rhs.__getval(); }
 
 #define _DEFINE_DECIMAL_COMPARISON_LHS(_Op, _T1, _T2)	\
-  inline bool operator _Op(_T1 lhs, _T2 __rhs)		\
-  {							\
-    return lhs.__getval() _Op __rhs;			\
-  }
+  inline bool operator _Op(_T1 __lhs, _T2 __rhs)	\
+  { return __lhs.__getval() _Op __rhs; }
+
 #define _DEFINE_DECIMAL_COMPARISON_RHS(_Op, _T1, _T2)	\
-  inline bool operator _Op(_T1 lhs, _T2 __rhs)		\
-  {							\
-    return lhs _Op __rhs.__getval();			\
-  }
+  inline bool operator _Op(_T1 __lhs, _T2 __rhs)	\
+  { return __lhs _Op __rhs.__getval(); }
 
 #define _DEFINE_DECIMAL_COMPARISONS(_Op, _Tp)			\
   _DEFINE_DECIMAL_COMPARISON_BOTH(_Op, _Tp, decimal32)		\
