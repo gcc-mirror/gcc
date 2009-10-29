@@ -1,3 +1,17 @@
+2009-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/41711
+	* libgfortran.h: Define larger sizes for BOZ conversion	buffers.
+	* io/write.c (extract_uint): Include case where size is 10 if integer
+	is large enough. (write_int): Rename to	write_boz. (write_boz): Factor
+	out extract_uint and delete the	conversion function.
+	(btoa_big): New binary conversion function.
+	(otoa_big): New octal conversion function.
+	(ztoa_big): New	hexidecimal conversion function.
+	(write_b): Modify to use new function.
+	(write_o): Likewise.
+	(write_z): Likewise.
+
 2009-10-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41683
