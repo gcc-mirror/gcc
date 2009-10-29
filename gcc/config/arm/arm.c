@@ -2441,7 +2441,7 @@ count_insns_for_constant (HOST_WIDE_INT remainder, int i)
 }
 
 static int
-find_best_start (HOST_WIDE_INT remainder)
+find_best_start (unsigned HOST_WIDE_INT remainder)
 {
   int best_consecutive_zeros = 0;
   int i;
