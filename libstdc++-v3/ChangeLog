@@ -1,5 +1,9 @@
 2009-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/20_util/pair/40925.cc: Minor comment fix.
+
+2009-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/40925
 	* include/bits/stl_pair.h (pair<_T1, _T2>::pair(_U1&&, _U2&&)):
 	Use enable_if to remove it from the overload set when either _U1
