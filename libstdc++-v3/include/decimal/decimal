@@ -107,20 +107,20 @@ namespace decimal
 
   // 3.2.8  Binary arithmetic operators.
 #define _DECLARE_DECIMAL_BINARY_OP_WITH_DEC(_Op, _T1, _T2, _T3)	\
-  _T1 operator _Op(_T2 lhs, _T3 __rhs);
+  _T1 operator _Op(_T2 __lhs, _T3 __rhs);
 #define _DECLARE_DECIMAL_BINARY_OP_WITH_INT(_Op, _Tp)		\
-  _Tp operator _Op(_Tp lhs, int __rhs);				\
-  _Tp operator _Op(_Tp lhs, unsigned int __rhs);		\
-  _Tp operator _Op(_Tp lhs, long __rhs);			\
-  _Tp operator _Op(_Tp lhs, unsigned long __rhs);		\
-  _Tp operator _Op(_Tp lhs, long long __rhs);			\
-  _Tp operator _Op(_Tp lhs, unsigned long long __rhs);		\
-  _Tp operator _Op(int lhs, _Tp __rhs);				\
-  _Tp operator _Op(unsigned int lhs, _Tp __rhs);		\
-  _Tp operator _Op(long lhs, _Tp __rhs);			\
-  _Tp operator _Op(unsigned long lhs, _Tp __rhs);		\
-  _Tp operator _Op(long long lhs, _Tp __rhs);			\
-  _Tp operator _Op(unsigned long long lhs, _Tp __rhs);
+  _Tp operator _Op(_Tp __lhs, int __rhs);			\
+  _Tp operator _Op(_Tp __lhs, unsigned int __rhs);		\
+  _Tp operator _Op(_Tp __lhs, long __rhs);			\
+  _Tp operator _Op(_Tp __lhs, unsigned long __rhs);		\
+  _Tp operator _Op(_Tp __lhs, long long __rhs);			\
+  _Tp operator _Op(_Tp __lhs, unsigned long long __rhs);	\
+  _Tp operator _Op(int __lhs, _Tp __rhs);			\
+  _Tp operator _Op(unsigned int __lhs, _Tp __rhs);		\
+  _Tp operator _Op(long __lhs, _Tp __rhs);			\
+  _Tp operator _Op(unsigned long __lhs, _Tp __rhs);		\
+  _Tp operator _Op(long long __lhs, _Tp __rhs);			\
+  _Tp operator _Op(unsigned long long __lhs, _Tp __rhs);
 
   _DECLARE_DECIMAL_BINARY_OP_WITH_DEC(+, decimal32, decimal32, decimal32)
   _DECLARE_DECIMAL_BINARY_OP_WITH_INT(+, decimal32)
@@ -178,22 +178,22 @@ namespace decimal
 #undef _DECLARE_DECIMAL_BINARY_OP_WITH_INT
 
   // 3.2.9  Comparison operators.
-#define _DECLARE_DECIMAL_COMPARISON(_Op, _T)				\
-  bool operator _Op(_T lhs, decimal32  _rhs);				\
-  bool operator _Op(_T lhs, decimal64  _rhs);				\
-  bool operator _Op(_T lhs, decimal128  _rhs);				\
-  bool operator _Op(_T lhs, int  _rhs);					\
-  bool operator _Op(_T lhs, unsigned int  _rhs);			\
-  bool operator _Op(_T lhs, long  _rhs);				\
-  bool operator _Op(_T lhs, unsigned long  _rhs);			\
-  bool operator _Op(_T lhs, long long  _rhs);				\
-  bool operator _Op(_T lhs, unsigned long long  _rhs);			\
-  bool operator _Op(int lhs, _T  _rhs);					\
-  bool operator _Op(unsigned int lhs, _T  _rhs);			\
-  bool operator _Op(long lhs, _T  _rhs);				\
-  bool operator _Op(unsigned long lhs, _T  _rhs);			\
-  bool operator _Op(long long lhs, _T  _rhs);				\
-  bool operator _Op(unsigned long long lhs, _T  _rhs);
+#define _DECLARE_DECIMAL_COMPARISON(_Op, _Tp)				\
+  bool operator _Op(_Tp __lhs, decimal32 __rhs);			\
+  bool operator _Op(_Tp __lhs, decimal64 __rhs);			\
+  bool operator _Op(_Tp __lhs, decimal128 __rhs);			\
+  bool operator _Op(_Tp __lhs, int __rhs);				\
+  bool operator _Op(_Tp __lhs, unsigned int __rhs);			\
+  bool operator _Op(_Tp __lhs, long __rhs);				\
+  bool operator _Op(_Tp __lhs, unsigned long __rhs);			\
+  bool operator _Op(_Tp __lhs, long long __rhs);			\
+  bool operator _Op(_Tp __lhs, unsigned long long __rhs);		\
+  bool operator _Op(int __lhs, _Tp __rhs);				\
+  bool operator _Op(unsigned int __lhs, _Tp __rhs);			\
+  bool operator _Op(long __lhs, _Tp __rhs);				\
+  bool operator _Op(unsigned long __lhs, _Tp __rhs);			\
+  bool operator _Op(long long __lhs, _Tp __rhs);			\
+  bool operator _Op(unsigned long long __lhs, _Tp __rhs);
 
   _DECLARE_DECIMAL_COMPARISON(==, decimal32)
   _DECLARE_DECIMAL_COMPARISON(==, decimal64)
