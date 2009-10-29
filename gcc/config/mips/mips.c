@@ -2444,6 +2444,28 @@ mips_emit_move (rtx dest, rtx src)
 	  : emit_move_insn_1 (dest, src));
 }
 
+/* Emit an instruction of the form (set TARGET (CODE OP0)).  */
+
+static void
+mips_emit_unary (enum rtx_code code, rtx target, rtx op0)
+{
+  emit_insn (gen_rtx_SET (VOIDmode, target,
+			  gen_rtx_fmt_e (code, GET_MODE (op0), op0)));
+}
+
+/* Compute (CODE OP0) and store the result in a new register of mode MODE.
+   Return that new register.  */
+
+static rtx
+mips_force_unary (enum machine_mode mode, enum rtx_code code, rtx op0)
+{
+  rtx reg;
+
+  reg = gen_reg_rtx (mode);
+  mips_emit_unary (code, reg, op0);
+  return reg;
+}
+
 /* Emit an instruction of the form (set TARGET (CODE OP0 OP1)).  */
 
 static void
@@ -6689,7 +6711,14 @@ mips_expand_block_move (rtx dest, rtx src, rtx length)
 void
 mips_expand_synci_loop (rtx begin, rtx end)
 {
-  rtx inc, label, cmp, cmp_result;
+  rtx inc, label, end_label, cmp_result, mask, length;
+
+  /* Create end_label.  */
+  end_label = gen_label_rtx ();
+
+  /* Check if begin equals end.  */
+  cmp_result = gen_rtx_EQ (VOIDmode, begin, end);
+  emit_jump_insn (gen_condjump (cmp_result, end_label));
 
   /* Load INC with the cache line size (rdhwr INC,$1).  */
   inc = gen_reg_rtx (Pmode);
@@ -6697,18 +6726,36 @@ mips_expand_synci_loop (rtx begin, rtx end)
 	     ? gen_rdhwr_synci_step_si (inc)
 	     : gen_rdhwr_synci_step_di (inc));
 
+  /* Check if inc is 0.  */
+  cmp_result = gen_rtx_EQ (VOIDmode, inc, const0_rtx);
+  emit_jump_insn (gen_condjump (cmp_result, end_label));
+
+  /* Calculate mask.  */
+  mask = mips_force_unary (Pmode, NEG, inc);
+
+  /* Mask out begin by mask.  */
+  begin = mips_force_binary (Pmode, AND, begin, mask);
+
+  /* Calculate length.  */
+  length = mips_force_binary (Pmode, MINUS, end, begin);
+
   /* Loop back to here.  */
   label = gen_label_rtx ();
   emit_label (label);
 
   emit_insn (gen_synci (begin));
 
-  cmp = mips_force_binary (Pmode, GTU, begin, end);
+  /* Update length.  */
+  mips_emit_binary (MINUS, length, length, inc);
 
+  /* Update begin.  */
   mips_emit_binary (PLUS, begin, begin, inc);
 
-  cmp_result = gen_rtx_EQ (VOIDmode, cmp, const0_rtx);
+  /* Check if length is greater than 0.  */
+  cmp_result = gen_rtx_GT (VOIDmode, length, const0_rtx);
   emit_jump_insn (gen_condjump (cmp_result, label));
+
+  emit_label (end_label);
 }
 
 /* Expand a QI or HI mode atomic memory operation.
