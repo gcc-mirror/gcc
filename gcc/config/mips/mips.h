@@ -2372,44 +2372,7 @@ typedef struct mips_args {
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)				\
-{									\
-  if (TARGET_MIPS16)							\
-    sorry ("mips16 function profiling");				\
-  if (TARGET_LONG_CALLS)						\
-    {									\
-      /*  For TARGET_LONG_CALLS use $3 for the address of _mcount.  */	\
-      if (Pmode == DImode)						\
-	fprintf (FILE, "\tdla\t%s,_mcount\n", reg_names[GP_REG_FIRST + 3]); \
-      else								\
-	fprintf (FILE, "\tla\t%s,_mcount\n", reg_names[GP_REG_FIRST + 3]); \
-    }									\
-  mips_push_asm_switch (&mips_noat);					\
-  fprintf (FILE, "\tmove\t%s,%s\t\t# save current return address\n",	\
-	   reg_names[AT_REGNUM], reg_names[RETURN_ADDR_REGNUM]);	\
-  /* _mcount treats $2 as the static chain register.  */		\
-  if (cfun->static_chain_decl != NULL)					\
-    fprintf (FILE, "\tmove\t%s,%s\n", reg_names[2],			\
-	     reg_names[STATIC_CHAIN_REGNUM]);				\
-  if (!TARGET_NEWABI)							\
-    {									\
-      fprintf (FILE,							\
-	       "\t%s\t%s,%s,%d\t\t# _mcount pops 2 words from  stack\n", \
-	       TARGET_64BIT ? "dsubu" : "subu",				\
-	       reg_names[STACK_POINTER_REGNUM],				\
-	       reg_names[STACK_POINTER_REGNUM],				\
-	       Pmode == DImode ? 16 : 8);				\
-    }									\
-  if (TARGET_LONG_CALLS)						\
-    fprintf (FILE, "\tjalr\t%s\n", reg_names[GP_REG_FIRST + 3]);	\
-  else									\
-    fprintf (FILE, "\tjal\t_mcount\n");					\
-  mips_pop_asm_switch (&mips_noat);					\
-  /* _mcount treats $2 as the static chain register.  */		\
-  if (cfun->static_chain_decl != NULL)					\
-    fprintf (FILE, "\tmove\t%s,%s\n", reg_names[STATIC_CHAIN_REGNUM],	\
-	     reg_names[2]);						\
-}
+#define FUNCTION_PROFILER(FILE, LABELNO) mips_function_profiler ((FILE))
 
 /* The profiler preserves all interesting registers, including $31.  */
 #define MIPS_SAVE_REG_FOR_PROFILING_P(REGNO) false
