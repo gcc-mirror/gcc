@@ -66,7 +66,7 @@
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
 #undef  LINK_SPEC
-#define LINK_SPEC LINUX_TARGET_LINK_SPEC
+#define LINK_SPEC LINUX_TARGET_LINK_SPEC BE8_LINK_SPEC
 
 /* Use the default LIBGCC_SPEC, not the version in linux-elf.h, as we
    do not use -lfloat.  */
