@@ -1,3 +1,9 @@
+2009-10-30  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41863
+	* pt.c (iterative_hash_template_arg): articifial parms
+	don't have DECL_PARM_INDEX set. Do not hash it.
+
 2009-10-28  Jerry Quinn  <jlquinn@optonline.net>
 
 	* mangle.c (mangle_type_string_for_rtti): Revert r149964.
