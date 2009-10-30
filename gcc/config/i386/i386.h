@@ -706,9 +706,7 @@ enum target_cpu_default
    generate an alternate prologue and epilogue that realigns the
    runtime stack if nessary.  This supports mixing codes that keep a
    4-byte aligned stack, as specified by i386 psABI, with codes that
-   need a 16-byte aligned stack, as required by SSE instructions.  If
-   STACK_REALIGN_DEFAULT is 1 and PREFERRED_STACK_BOUNDARY_DEFAULT is
-   128, stacks for all functions may be realigned.  */
+   need a 16-byte aligned stack, as required by SSE instructions.  */
 #define STACK_REALIGN_DEFAULT 0
 
 /* Boundary (in *bits*) on which the incoming stack is aligned.  */
