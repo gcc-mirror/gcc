@@ -154,9 +154,9 @@ namespace std
     class linear_congruential_engine
     {
       static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "_UIntType not an unsigned integral type");
+		    "substituting _UIntType not an unsigned integral type");
       static_assert(__m == 0u || (__a < __m && __c < __m),
-		    "template argument __m out of bounds");
+		    "template argument substituting __m out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -341,26 +341,31 @@ namespace std
     class mersenne_twister_engine
     {
       static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "_UIntType not an unsigned integral type");
+		    "substituting _UIntType not an unsigned integral type");
       static_assert(1u <= __m && __m <= __n,
-		    "template argument __m out of bounds");
-      static_assert(__r <= __w, "template argument __r out of bound");
-      static_assert(__u <= __w, "template argument __u out of bound");
-      static_assert(__s <= __w, "template argument __s out of bound");
-      static_assert(__t <= __w, "template argument __t out of bound");
-      static_assert(__l <= __w, "template argument __l out of bound");
+		    "template argument substituting __m out of bounds");
+      static_assert(__r <= __w, "template argument substituting "
+		    "__r out of bound");
+      static_assert(__u <= __w, "template argument substituting "
+		    "__u out of bound");
+      static_assert(__s <= __w, "template argument substituting "
+		    "__s out of bound");
+      static_assert(__t <= __w, "template argument substituting "
+		    "__t out of bound");
+      static_assert(__l <= __w, "template argument substituting "
+		    "__l out of bound");
       static_assert(__w <= std::numeric_limits<_UIntType>::digits,
-		    "template argument __w out of bound");
+		    "template argument substituting __w out of bound");
       static_assert(__a <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "template argument __a out of bound");
+		    "template argument substituting __a out of bound");
       static_assert(__b <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "template argument __b out of bound");
+		    "template argument substituting __b out of bound");
       static_assert(__c <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "template argument __c out of bound");
+		    "template argument substituting __c out of bound");
       static_assert(__d <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "template argument __d out of bound");
+		    "template argument substituting __d out of bound");
       static_assert(__f <= (__detail::_Shift<_UIntType, __w>::__value - 1),
-		    "template argument __f out of bound");
+		    "template argument substituting __f out of bound");
 
     public:
       /** The type of the generated random value. */
@@ -530,11 +535,11 @@ namespace std
     class subtract_with_carry_engine
     {
       static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "_UIntType not an unsigned integral type");
+		    "substituting _UIntType not an unsigned integral type");
       static_assert(0u < __s && __s < __r,
-		    "template argument __s out of bounds");
+		    "template argument substituting __s out of bounds");
       static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
-		    "template argument __w out of bounds");
+		    "template argument substituting __w out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -693,7 +698,7 @@ namespace std
     class discard_block_engine
     {
       static_assert(1 <= __r && __r <= __p,
-		    "template argument __r out of bounds");
+		    "template argument substituting __r out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -893,9 +898,9 @@ namespace std
     class independent_bits_engine
     {
       static_assert(std::is_unsigned<_UIntType>::value, "template argument "
-		    "_UIntType not an unsigned integral type");
+		    "substituting _UIntType not an unsigned integral type");
       static_assert(0u < __w && __w <= std::numeric_limits<_UIntType>::digits,
-		    "template argument __w out of bounds");
+		    "template argument substituting __w out of bounds");
 
     public:
       /** The type of the generated random value. */
@@ -1089,7 +1094,8 @@ namespace std
   template<typename _RandomNumberEngine, size_t __k>
     class shuffle_order_engine
     {
-      static_assert(1u <= __k, "template argument __k out of bound");
+      static_assert(1u <= __k, "template argument substituing "
+		    "__k out of bound");
 
     public:
       /** The type of the generated random value. */
