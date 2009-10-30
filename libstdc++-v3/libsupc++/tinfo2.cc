@@ -37,7 +37,8 @@ type_info::before (const type_info &arg) const
 #if __GXX_MERGED_TYPEINFO_NAMES
   return name () < arg.name ();
 #else
-  return __builtin_strcmp (name (), arg.name ()) < 0;
+  return (name ()[0] == '*') ? name () < arg.name ()
+    :  __builtin_strcmp (name (), arg.name ()) < 0;
 #endif
 }
 
