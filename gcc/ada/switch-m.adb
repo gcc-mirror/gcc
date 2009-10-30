@@ -656,6 +656,7 @@ package body Switch.M is
 
                   else
                      Follow_Links_For_Files := True;
+                     Follow_Links_For_Dirs  := True;
                   end if;
 
                --  Processing for eS switch

@@ -1,5 +1,28 @@
 2009-10-30  Robert Dewar  <dewar@adacore.com>
 
+	* a-tideio.adb: Minor reformatting
+	* a-wtdeio.adb, a-ztdeio.adb: Update comments, code clean up.
+
+	* a-reatim.adb, a-tideau.adb, a-ngelfu.adb, a-ztdeau.adb, a-ngrear.adb,
+	a-wtedit.adb, a-ststio.adb, a-ztedit.adb: Minor code reorganization
+	(use conditional expressions).
+
+2009-10-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_ugn.texi: Additional info on gnatw.i and gnatw.I
+
+	* sem_case.adb: Improved error message.
+
+2009-10-30  Emmanuel Briot  <briot@adacore.com>
+
+	* a-direct.adb, gnatcmd.adb, gnatname.adb, makeutl.adb, opt.ads,
+	osint.adb, prj-ext.adb, switch-m.adb (Follow_Links_For_Dirs): Now
+	defaults to False, and controlled by -eL.
+	* a-direct.adb: Add comments.
+	* osint.adb (File_Stamp): Avoid unneeded duplicate system call
+
+2009-10-30  Robert Dewar  <dewar@adacore.com>
+
 	* sem_res.adb (Resolve_Type_Conversion): Avoid false positive when
 	converting non-static subtype to "identical" static subtype.
 

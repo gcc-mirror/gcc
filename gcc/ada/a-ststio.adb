@@ -241,11 +241,7 @@ package body Ada.Streams.Stream_IO is
       --  (and furthermore there are situations (such as the case of writing
       --  a sequential Posix FIFO file) where the lseek would cause problems.
 
-      if Mode = Out_File then
-         File.Last_Op := Op_Write;
-      else
-         File.Last_Op := Op_Read;
-      end if;
+      File.Last_Op := (if Mode = Out_File then Op_Write else Op_Read);
    end Open;
 
    ----------

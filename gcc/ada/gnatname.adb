@@ -385,6 +385,7 @@ procedure Gnatname is
 
                elsif Arg = "-eL" then
                   Opt.Follow_Links_For_Files := True;
+                  Opt.Follow_Links_For_Dirs  := True;
 
                --  -f
 

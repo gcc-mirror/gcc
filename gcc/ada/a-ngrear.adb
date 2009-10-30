@@ -433,11 +433,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       end if;
 
       for J in 1 .. N loop
-         if Piv (J) /= J then
-            Det := -Det * LU (J, J);
-         else
-            Det := Det * LU (J, J);
-         end if;
+         Det := (if Piv (J) /= J then -Det * LU (J, J) else Det * LU (J, J));
       end loop;
 
       return Det;

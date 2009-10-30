@@ -26,6 +26,7 @@
 with System.OS_Lib; use System.OS_Lib;
 with Hostparm;
 with Makeutl;       use Makeutl;
+with Opt;
 with Osint;         use Osint;
 with Prj.Tree;      use Prj.Tree;
 with Sdefault;
@@ -212,7 +213,9 @@ package body Prj.Ext is
 
             declare
                New_Dir : constant String :=
-                           Normalize_Pathname (Name_Buffer (First .. Last));
+                 Normalize_Pathname
+                   (Name_Buffer (First .. Last),
+                    Resolve_Links => Opt.Follow_Links_For_Dirs);
 
             begin
                --  If the absolute path was resolved and is different from
