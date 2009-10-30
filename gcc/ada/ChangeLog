@@ -1,5 +1,27 @@
 2009-10-30  Emmanuel Briot  <briot@adacore.com>
 
+	* make.adb (Start_Compile_If_Possible): Compute location of resulting
+	ALI file in this procedure instead of after the compilation itself,
+	since the current directory might have changed in between when using
+	-j<n>.
+
+	* osint.ads: Addded missing alignment clause.
+
+	* adaint.c, adaint.h, osint.adb (__gnat_reset_attributes,
+	__gnat_size_of_file_attributes): Rename reset_attributes and
+	size_of_file_attributes.
+
+2009-10-30  Javier Miranda  <miranda@adacore.com>
+
+	* sem_scil.adb (Adjust_SCIL_Node): Add missing management of sequences
+	of statements when searching for SCIL nodes.
+
+2009-10-30  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatlink.adb, link.c: By default use shared libgcc on darwin.
+
+2009-10-30  Emmanuel Briot  <briot@adacore.com>
+
 	* make.adb, osint.adb (Add_Lib_Search_Dir): Do not add if dir is
 	already in the list.
 	This saves system calls when looking for ALI files

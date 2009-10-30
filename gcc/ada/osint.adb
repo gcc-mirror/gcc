@@ -3197,7 +3197,7 @@ package body Osint is
 ----------------------------
 
    procedure Reset_File_Attributes (Attr : System.Address);
-   pragma Import (C, Reset_File_Attributes, "reset_attributes");
+   pragma Import (C, Reset_File_Attributes, "__gnat_reset_attributes");
 
 begin
    Initialization : declare
@@ -3216,7 +3216,7 @@ begin
 
       Sizeof_File_Attributes : Integer;
       pragma Import (C, Sizeof_File_Attributes,
-                     "size_of_file_attributes");
+                     "__gnat_size_of_file_attributes");
 
    begin
       pragma Assert (Sizeof_File_Attributes <= File_Attributes_Size);

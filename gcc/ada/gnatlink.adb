@@ -189,6 +189,13 @@ procedure Gnatlink is
    Object_List_File_Required : Boolean := False;
    --  Set to True to force generation of a response file
 
+   Shared_Libgcc_Default : Character;
+   for Shared_Libgcc_Default'Size use Character'Size;
+   pragma Import
+     (C, Shared_Libgcc_Default, "__gnat_shared_libgcc_default");
+   --  Indicates wether libgcc should be statically linked (use 'T') or
+   --  dynamically linked (use 'H') by default.
+
    function Base_Name (File_Name : String) return String;
    --  Return just the file name part without the extension (if present)
 
@@ -2141,11 +2148,15 @@ begin
 
             if Linker_Path = Gcc_Path and then VM_Target = No_VM then
 
-               --  If gcc is not called with -shared-libgcc, call it with
-               --  -static-libgcc, as there are some platforms where one of
-               --  these two switches is compulsory to link.
+               --  For systems where the default is to link statically
+               --  with libgcc, if gcc is not called with
+               --  -shared-libgcc, call it with -static-libgcc, as
+               --  there are some platforms where one of these two
+               --  switches is compulsory to link.
 
-               if not Shared_Libgcc_Seen then
+               if Shared_Libgcc_Default = 'T'
+                 and then not Shared_Libgcc_Seen
+               then
                   Linker_Options.Increment_Last;
                   Linker_Options.Table (Linker_Options.Last) := Static_Libgcc;
                   Num_Args := Num_Args + 1;

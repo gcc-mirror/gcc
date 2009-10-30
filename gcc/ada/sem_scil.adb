@@ -285,6 +285,14 @@ package body Sem_SCIL is
                   return Found_Node;
                end if;
 
+            --  Actions in handled sequence of statements
+
+            when
+               N_Handled_Sequence_Of_Statements =>
+                  if Find_SCIL_Node (Statements (P)) then
+                     return Found_Node;
+                  end if;
+
             --  Conditions of while expression or elsif.
 
             when N_Iteration_Scheme |
@@ -505,7 +513,6 @@ package body Sem_SCIL is
                N_Function_Call                          |
                N_Function_Specification                 |
                N_Generic_Association                    |
-               N_Handled_Sequence_Of_Statements         |
                N_Identifier                             |
                N_In                                     |
                N_Index_Or_Discriminant_Constraint       |

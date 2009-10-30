@@ -62,6 +62,9 @@
 /*  shared_libgnat_default gives the system dependent link method that      */
 /*  be used by default for linking libgnat (shared or static)               */
 
+/*  shared_libgcc_default gives the system dependent link method that       */
+/*  be used by default for linking libgcc (shared or statis)                */
+
 /*  using_gnu_linker is set to 1 when the GNU linker is used under this     */
 /*  target.                                                                 */
 
@@ -89,6 +92,7 @@ const char *__gnat_run_path_option = "-Wl,-rpath,";
 int __gnat_link_max = 10000;
 unsigned char __gnat_objlist_file_supported = 1;
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
@@ -99,6 +103,7 @@ const char *__gnat_run_path_option = "-Wl,-rpath,";
 int __gnat_link_max = 5000;
 unsigned char __gnat_objlist_file_supported = 1;
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
@@ -109,6 +114,7 @@ const char *__gnat_run_path_option = "";
 int __gnat_link_max = 30000;
 unsigned char __gnat_objlist_file_supported = 1;
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
@@ -119,6 +125,7 @@ const char *__gnat_run_path_option = "-Wl,+b,";
 int __gnat_link_max = 5000;
 unsigned char __gnat_objlist_file_supported = 1;
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
@@ -129,6 +136,7 @@ const char *__gnat_run_path_option = "";
 int __gnat_link_max = 15000;
 const unsigned char __gnat_objlist_file_supported = 1;
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
@@ -137,6 +145,7 @@ unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 2147483647;
 unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
@@ -147,6 +156,7 @@ unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-R";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 2147483647;
 unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
@@ -157,6 +167,7 @@ unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 8192;
 unsigned char __gnat_objlist_file_supported = 1;
 unsigned char __gnat_using_gnu_linker = 1;
@@ -167,6 +178,7 @@ unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_object_file_option = "-Wl,-filelist,";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = SHARED;
 int __gnat_link_max = 262144;
 unsigned char __gnat_objlist_file_supported = 1;
 unsigned char __gnat_using_gnu_linker = 0;
@@ -177,6 +189,7 @@ unsigned char __gnat_separate_run_path_options = 1;
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 8192;
 unsigned char __gnat_objlist_file_supported = 1;
 unsigned char __gnat_using_gnu_linker = 1;
@@ -187,6 +200,7 @@ unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 2147483647;
 unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
@@ -200,6 +214,7 @@ unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_run_path_option = "";
 const char *__gnat_object_file_option = "";
 char __gnat_shared_libgnat_default = STATIC;
+char __gnat_shared_libgcc_default = STATIC;
 int __gnat_link_max = 2147483647;
 unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
