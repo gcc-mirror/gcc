@@ -1231,8 +1231,6 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
 	case UNION_TYPE:
 	case QUAL_UNION_TYPE:
 	case RECORD_TYPE:
-	  /* ??? Some records used to be half-unions in Ada so the code treats
-	     the 3 container types the same.  This has been fixed in Ada.  */
 	  for (fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
 	    {
 	      HOST_WIDE_INT pos, size;
