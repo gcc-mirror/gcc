@@ -84,7 +84,7 @@
 #define TARGET_ASM_INTERNAL_LABEL default_internal_label
 #endif
 
-#ifndef TARGET_ARM_TTYPE
+#ifndef TARGET_ASM_TTYPE
 #define TARGET_ASM_TTYPE hook_bool_rtx_false
 #endif
 

@@ -1,3 +1,9 @@
+2009-10-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* target-def.h (TARGET_ASM_TTYPE): Correct typo of TARGET_ARM_TTYPE.
+	* config/arm/unwind-arm.c (__gnu_Unwind_Backtrace): Remove unused
+	label.
+
 2009-10-30  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (build_ref_for_offset_1): Remove a comment.

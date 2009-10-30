@@ -1000,7 +1000,6 @@ __gnu_Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument,
   while (code != _URC_END_OF_STACK
 	 && code != _URC_FAILURE);
 
- finish:
   restore_non_core_regs (&saved_vrs);
   return code;
 }
