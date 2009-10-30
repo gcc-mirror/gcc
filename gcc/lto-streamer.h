@@ -555,10 +555,6 @@ struct lto_file_decl_data
   /* Nonzero if this file should be recompiled with LTRANS.  */
   unsigned needs_ltrans_p : 1;
 
-  /* If the file is open, this is the fd of the mapped section.  This
-     is -1 if the file has not yet been opened.  */
-  int fd;
-
   /* Hash table maps lto-related section names to location in file.  */
   htab_t section_hash_table;
 
