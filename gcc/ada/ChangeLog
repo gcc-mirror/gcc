@@ -1,3 +1,10 @@
+2009-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (MAX_FIXED_MODE_SIZE): Delete.
+	(create_field_decl): Update description.  In a packed record, round
+	the size up to a byte boundary only if the field's type has BLKmode.
+	* gcc-interface/gigi.h (create_field_decl): Update description.
+
 2009-10-30  Emmanuel Briot  <briot@adacore.com>
 
 	* make.adb (Start_Compile_If_Possible): Compute location of resulting
