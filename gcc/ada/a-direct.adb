@@ -211,7 +211,8 @@ package body Ada.Directories is
       else
          declare
             --  We need to resolve links because of A.16(47), since we must not
-            --  return alternative names for files
+            --  return alternative names for files.
+
             Norm    : constant String := Normalize_Pathname (Name);
             Last_DS : constant Natural :=
                         Strings.Fixed.Index

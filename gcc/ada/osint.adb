@@ -582,9 +582,25 @@ package body Osint is
          Fail ("missing library directory name");
       end if;
 
-      Lib_Search_Directories.Increment_Last;
-      Lib_Search_Directories.Table (Lib_Search_Directories.Last) :=
-        Normalize_Directory_Name (Dir);
+      declare
+         Norm : String_Ptr := Normalize_Directory_Name (Dir);
+      begin
+
+         --  Do nothing if the directory is already in the list. This saves
+         --  system calls and avoid unneeded work
+
+         for D in Lib_Search_Directories.First ..
+           Lib_Search_Directories.Last
+         loop
+            if Lib_Search_Directories.Table (D).all = Norm.all then
+               Free (Norm);
+               return;
+            end if;
+         end loop;
+
+         Lib_Search_Directories.Increment_Last;
+         Lib_Search_Directories.Table (Lib_Search_Directories.Last) := Norm;
+      end;
    end Add_Lib_Search_Dir;
 
    ---------------------
@@ -1021,9 +1037,9 @@ package body Osint is
       Get_Name_String (Name);
 
       --  File_Time_Stamp will always return Invalid_Time if the file does not
-      --  exist, and that OS_Time_To_GNAT_Time will convert that to
+      --  exist, and OS_Time_To_GNAT_Time will convert this value to
       --  Empty_Time_Stamp. Therefore we do not need to first test whether the
-      --  file actually exists, which saves a system call
+      --  file actually exists, which saves a system call.
 
       return OS_Time_To_GNAT_Time
         (File_Time_Stamp (Name_Buffer (1 .. Name_Len)));
@@ -1732,7 +1748,8 @@ package body Osint is
       elsif T = Library then
          Dir_Name := Lib_Search_Directories.Table (Dir);
 
-      else pragma Assert (T /= Config);
+      else
+         pragma Assert (T /= Config);
          Dir_Name := Src_Search_Directories.Table (Dir);
       end if;
 

@@ -1,5 +1,18 @@
 2009-10-30  Emmanuel Briot  <briot@adacore.com>
 
+	* make.adb, osint.adb (Add_Lib_Search_Dir): Do not add if dir is
+	already in the list.
+	This saves system calls when looking for ALI files
+	(Scan_Make_Args): The parameter to gnatmake's -D is now converted to an
+	absolute PATH (so that the above improvement properly occurs if both
+	-D<dir> and -aO<dir> are specified).
+
+2009-10-30  Thomas Quinot  <quinot@adacore.com>
+
+	* a-direct.adb: Minor reformatting
+
+2009-10-30  Emmanuel Briot  <briot@adacore.com>
+
 	* make.adb, adaint.c, adaint.h, osint.adb, osint.ads, bcheck.adb
 	(*_attr): new subprograms.
 	(File_Length, File_Time_Stamp, Is_Writable_File): new subprograms
