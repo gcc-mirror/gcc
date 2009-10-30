@@ -375,8 +375,13 @@ package body System.File_IO is
    -------------------
 
    function Errno_Message (Errno : Integer := OS_Lib.Errno) return String is
+      pragma Warnings (Off);
       function To_Chars_Ptr is
         new Ada.Unchecked_Conversion (System.Address, chars_ptr);
+      --  On VMS, the compiler warns because System.Address is 64 bits, but
+      --  chars_ptr is 32 bits. It should be safe, though, because strerror
+      --  will return a 32-bit pointer.
+      pragma Warnings (On);
 
       Message : constant chars_ptr :=
                   To_Chars_Ptr (CRTL.strerror (Errno));

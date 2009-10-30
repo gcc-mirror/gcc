@@ -5268,6 +5268,13 @@ This warning can also be turned on using @option{-gnatwa}.
 This switch disables warnings for a @code{with} of an internal GNAT
 implementation unit.
 
+@item -gnatw.i
+@emph{Activate warnings on overlapping actuals.}
+@cindex @option{-gnatw.i} (@command{gcc})
+This switch enables a warning on statically detectable overlapping actuals
+in a subprogram call, when one of the actuals is an in-out parameter, and
+the types of the actuals are not by-copy types.
+
 @item -gnatwj
 @emph{Activate warnings on obsolescent features (Annex J).}
 @cindex @option{-gnatwj} (@command{gcc})
