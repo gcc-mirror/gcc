@@ -1,3 +1,13 @@
+2009-10-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (QHSI): New mode iterator.
+	(movqi): If generating for thumb, then truncate any immediate to
+	8 bits.
+	* thumb2.md (thumb2_movsi_shortim and peephole2 generator): Replace
+	with...
+	(thumb2_mov<mode>_shortim and peephole2 generator): ... iterator based
+	version.
+
 2009-10-29  Cary Coutant  <ccoutant@google.com>
 
 	PR debug/41700
