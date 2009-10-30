@@ -94,16 +94,39 @@ package body Osint is
    --  Update the specified path to replace the prefix with the location
    --  where GNAT is installed. See the file prefix.c in GCC for details.
 
-   function Locate_File
-     (N    : File_Name_Type;
-      T    : File_Type;
-      Dir  : Natural;
-      Name : String) return File_Name_Type;
+   procedure Locate_File
+     (N     : File_Name_Type;
+      T     : File_Type;
+      Dir   : Natural;
+      Name  : String;
+      Found : out File_Name_Type;
+      Attr  : access File_Attributes);
    --  See if the file N whose name is Name exists in directory Dir. Dir is an
    --  index into the Lib_Search_Directories table if T = Library. Otherwise
    --  if T = Source, Dir is an index into the Src_Search_Directories table.
    --  Returns the File_Name_Type of the full file name if file found, or
    --  No_File if not found.
+   --  On exit, Found is set to the file that was found, and Attr to a cache of
+   --  its attributes (at least those that have been computed so far). Reusing
+   --  the cache will save some system calls.
+   --  Attr is always reset in this call to Unknown_Attributes, even in case of
+   --  failure
+
+   procedure Find_File
+     (N     : File_Name_Type;
+      T     : File_Type;
+      Found : out File_Name_Type;
+      Attr  : access File_Attributes);
+   --  A version of Find_File that also returns a cache of the file attributes
+   --  for later reuse
+
+   procedure Smart_Find_File
+     (N     : File_Name_Type;
+      T     : File_Type;
+      Found : out File_Name_Type;
+      Attr  : out File_Attributes);
+   --  A version of Smart_Find_File that also returns a cache of the file
+   --  attributes for later reuse
 
    function C_String_Length (S : Address) return Integer;
    --  Returns length of a C string (zero for a null address)
@@ -212,18 +235,17 @@ package body Osint is
    function File_Hash (F : File_Name_Type) return File_Hash_Num;
    --  Compute hash index for use by Simple_HTable
 
+   type File_Info_Cache is record
+      File : File_Name_Type;
+      Attr : aliased File_Attributes;
+   end record;
+   No_File_Info_Cache : constant File_Info_Cache :=
+     (No_File, Unknown_Attributes);
+
    package File_Name_Hash_Table is new GNAT.HTable.Simple_HTable (
      Header_Num => File_Hash_Num,
-     Element    => File_Name_Type,
-     No_Element => No_File,
-     Key        => File_Name_Type,
-     Hash       => File_Hash,
-     Equal      => "=");
-
-   package File_Stamp_Hash_Table is new GNAT.HTable.Simple_HTable (
-     Header_Num => File_Hash_Num,
-     Element    => Time_Stamp_Type,
-     No_Element => Empty_Time_Stamp,
+     Element    => File_Info_Cache,
+     No_Element => No_File_Info_Cache,
      Key        => File_Name_Type,
      Hash       => File_Hash,
      Equal      => "=");
@@ -959,6 +981,33 @@ package body Osint is
       return File_Hash_Num (Int (F) rem File_Hash_Num'Range_Length);
    end File_Hash;
 
+   -----------------
+   -- File_Length --
+   -----------------
+
+   function File_Length
+     (Name : C_File_Name; Attr : access File_Attributes) return Long_Integer
+   is
+      function Internal
+        (F : Integer; N : C_File_Name; A : System.Address) return Long_Integer;
+      pragma Import (C, Internal, "__gnat_file_length_attr");
+   begin
+      return Internal (-1, Name, Attr.all'Address);
+   end File_Length;
+
+   ---------------------
+   -- File_Time_Stamp --
+   ---------------------
+
+   function File_Time_Stamp
+     (Name : C_File_Name; Attr : access File_Attributes) return OS_Time
+   is
+      function Internal (N : C_File_Name; A : System.Address) return OS_Time;
+      pragma Import (C, Internal, "__gnat_file_time_name_attr");
+   begin
+      return Internal (Name, Attr.all'Address);
+   end File_Time_Stamp;
+
    ----------------
    -- File_Stamp --
    ----------------
@@ -993,6 +1042,22 @@ package body Osint is
      (N : File_Name_Type;
       T : File_Type) return File_Name_Type
    is
+      Attr  : aliased File_Attributes;
+      Found : File_Name_Type;
+   begin
+      Find_File (N, T, Found, Attr'Access);
+      return Found;
+   end Find_File;
+
+   ---------------
+   -- Find_File --
+   ---------------
+
+   procedure Find_File
+     (N     : File_Name_Type;
+      T     : File_Type;
+      Found : out File_Name_Type;
+      Attr  : access File_Attributes) is
    begin
       Get_Name_String (N);
 
@@ -1016,7 +1081,9 @@ package body Osint is
                        (Hostparm.OpenVMS and then
                         Name_Buffer (Name_Len - 2 .. Name_Len) = "_dg")))
          then
-            return N;
+            Found := N;
+            Attr.all  := Unknown_Attributes;
+            return;
 
          --  If we are trying to find the current main file just look in the
          --  directory where the user said it was.
@@ -1024,7 +1091,8 @@ package body Osint is
          elsif Look_In_Primary_Directory_For_Current_Main
            and then Current_Main = N
          then
-            return Locate_File (N, T, Primary_Directory, File_Name);
+            Locate_File (N, T, Primary_Directory, File_Name, Found, Attr);
+            return;
 
          --  Otherwise do standard search for source file
 
@@ -1042,21 +1110,23 @@ package body Osint is
                --  return No_File, indicating the file is not a source.
 
                if File = Error_File_Name then
-                  return No_File;
-
+                  Found := No_File;
                else
-                  return File;
+                  Found := File;
                end if;
+
+               Attr.all := Unknown_Attributes;
+               return;
             end if;
 
             --  First place to look is in the primary directory (i.e. the same
             --  directory as the source) unless this has been disabled with -I-
 
             if Opt.Look_In_Primary_Dir then
-               File := Locate_File (N, T, Primary_Directory, File_Name);
+               Locate_File (N, T, Primary_Directory, File_Name, Found, Attr);
 
-               if File /= No_File then
-                  return File;
+               if Found /= No_File then
+                  return;
                end if;
             end if;
 
@@ -1069,14 +1139,15 @@ package body Osint is
             end if;
 
             for D in Primary_Directory + 1 .. Last_Dir loop
-               File := Locate_File (N, T, D, File_Name);
+               Locate_File (N, T, D, File_Name, Found, Attr);
 
-               if File /= No_File then
-                  return File;
+               if Found /= No_File then
+                  return;
                end if;
             end loop;
 
-            return No_File;
+            Attr.all := Unknown_Attributes;
+            Found := No_File;
          end if;
       end;
    end Find_File;
@@ -1148,9 +1219,28 @@ package body Osint is
    -- Full_Lib_File_Name --
    ------------------------
 
-   function Full_Lib_File_Name (N : File_Name_Type) return File_Name_Type is
+   procedure Full_Lib_File_Name
+     (N        : File_Name_Type;
+      Lib_File : out File_Name_Type;
+      Attr     : out File_Attributes)
+   is
+      A : aliased File_Attributes;
    begin
-      return Find_File (N, Library);
+      --  ??? seems we could use Smart_Find_File here
+      Find_File (N, Library, Lib_File, A'Access);
+      Attr := A;
+   end Full_Lib_File_Name;
+
+   ------------------------
+   -- Full_Lib_File_Name --
+   ------------------------
+
+   function Full_Lib_File_Name (N : File_Name_Type) return File_Name_Type is
+      Attr : File_Attributes;
+      File : File_Name_Type;
+   begin
+      Full_Lib_File_Name (N, File, Attr);
+      return File;
    end Full_Lib_File_Name;
 
    ----------------------------
@@ -1187,6 +1277,18 @@ package body Osint is
    function Full_Source_Name (N : File_Name_Type) return File_Name_Type is
    begin
       return Smart_Find_File (N, Source);
+   end Full_Source_Name;
+
+   ----------------------
+   -- Full_Source_Name --
+   ----------------------
+
+   procedure Full_Source_Name
+     (N         : File_Name_Type;
+      Full_File : out File_Name_Type;
+      Attr      : access File_Attributes) is
+   begin
+      Smart_Find_File (N, Source, Full_File, Attr.all);
    end Full_Source_Name;
 
    -------------------
@@ -1470,6 +1572,19 @@ package body Osint is
       Lib_Search_Directories.Table (Primary_Directory) := new String'("");
    end Initialize;
 
+   ------------------
+   -- Is_Directory --
+   ------------------
+
+   function Is_Directory
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean
+   is
+      function Internal (N : C_File_Name; A : System.Address) return Integer;
+      pragma Import (C, Internal, "__gnat_is_directory_attr");
+   begin
+      return Internal (Name, Attr.all'Address) /= 0;
+   end Is_Directory;
+
    ----------------------------
    -- Is_Directory_Separator --
    ----------------------------
@@ -1500,6 +1615,71 @@ package body Osint is
 
       return not Is_Writable_File (Name_Buffer (1 .. Name_Len));
    end Is_Readonly_Library;
+
+   ------------------------
+   -- Is_Executable_File --
+   ------------------------
+
+   function Is_Executable_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean
+   is
+      function Internal (N : C_File_Name; A : System.Address) return Integer;
+      pragma Import (C, Internal, "__gnat_is_executable_file_attr");
+   begin
+      return Internal (Name, Attr.all'Address) /= 0;
+   end Is_Executable_File;
+
+   ----------------------
+   -- Is_Readable_File --
+   ----------------------
+
+   function Is_Readable_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean
+   is
+      function Internal (N : C_File_Name; A : System.Address) return Integer;
+      pragma Import (C, Internal, "__gnat_is_readable_file_attr");
+   begin
+      return Internal (Name, Attr.all'Address) /= 0;
+   end Is_Readable_File;
+
+   ---------------------
+   -- Is_Regular_File --
+   ---------------------
+
+   function Is_Regular_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean
+   is
+      function Internal (N : C_File_Name; A : System.Address) return Integer;
+      pragma Import (C, Internal, "__gnat_is_regular_file_attr");
+   begin
+      return Internal (Name, Attr.all'Address) /= 0;
+   end Is_Regular_File;
+
+   ----------------------
+   -- Is_Symbolic_Link --
+   ----------------------
+
+   function Is_Symbolic_Link
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean
+   is
+      function Internal (N : C_File_Name; A : System.Address) return Integer;
+      pragma Import (C, Internal, "__gnat_is_symbolic_link_attr");
+   begin
+      return Internal (Name, Attr.all'Address) /= 0;
+   end Is_Symbolic_Link;
+
+   ----------------------
+   -- Is_Writable_File --
+   ----------------------
+
+   function Is_Writable_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean
+   is
+      function Internal (N : C_File_Name; A : System.Address) return Integer;
+      pragma Import (C, Internal, "__gnat_is_writable_file_attr");
+   begin
+      return Internal (Name, Attr.all'Address) /= 0;
+   end Is_Writable_File;
 
    -------------------
    -- Lib_File_Name --
@@ -1533,11 +1713,13 @@ package body Osint is
    -- Locate_File --
    -----------------
 
-   function Locate_File
-     (N    : File_Name_Type;
-      T    : File_Type;
-      Dir  : Natural;
-      Name : String) return File_Name_Type
+   procedure Locate_File
+     (N     : File_Name_Type;
+      T     : File_Type;
+      Dir   : Natural;
+      Name  : String;
+      Found : out File_Name_Type;
+      Attr  : access File_Attributes)
    is
       Dir_Name : String_Ptr;
 
@@ -1555,24 +1737,28 @@ package body Osint is
       end if;
 
       declare
-         Full_Name : String (1 .. Dir_Name'Length + Name'Length);
+         Full_Name : String (1 .. Dir_Name'Length + Name'Length + 1);
 
       begin
          Full_Name (1 .. Dir_Name'Length) := Dir_Name.all;
-         Full_Name (Dir_Name'Length + 1 .. Full_Name'Length) := Name;
+         Full_Name (Dir_Name'Length + 1 .. Full_Name'Last - 1) := Name;
+         Full_Name (Full_Name'Last) := ASCII.NUL;
 
-         if not Is_Regular_File (Full_Name) then
-            return No_File;
+         Attr.all := Unknown_Attributes;
+
+         if not Is_Regular_File (Full_Name'Address, Attr) then
+            Found := No_File;
 
          else
             --  If the file is in the current directory then return N itself
 
             if Dir_Name'Length = 0 then
-               return N;
+               Found := N;
             else
-               Name_Len := Full_Name'Length;
-               Name_Buffer (1 .. Name_Len) := Full_Name;
-               return Name_Enter;
+               Name_Len := Full_Name'Length - 1;
+               Name_Buffer (1 .. Name_Len) :=
+                 Full_Name (1 .. Full_Name'Last - 1);
+               Found := Name_Find;  --  ??? Was Name_Enter, no obvious reason
             end if;
          end if;
       end;
@@ -1592,11 +1778,13 @@ package body Osint is
       declare
          File_Name : constant String := Name_Buffer (1 .. Name_Len);
          File      : File_Name_Type := No_File;
+         Attr      : aliased File_Attributes;
          Last_Dir  : Natural;
 
       begin
          if Opt.Look_In_Primary_Dir then
-            File := Locate_File (N, Source, Primary_Directory, File_Name);
+            Locate_File
+              (N, Source, Primary_Directory, File_Name, File, Attr'Access);
 
             if File /= No_File and then T = File_Stamp (N) then
                return File;
@@ -1606,7 +1794,7 @@ package body Osint is
          Last_Dir := Src_Search_Directories.Last;
 
          for D in Primary_Directory + 1 .. Last_Dir loop
-            File := Locate_File (N, Source, D, File_Name);
+            Locate_File (N, Source, D, File_Name, File, Attr'Access);
 
             if File /= No_File and then T = File_Stamp (File) then
                return File;
@@ -2110,10 +2298,15 @@ package body Osint is
 
    function Read_Library_Info
      (Lib_File  : File_Name_Type;
-      Fatal_Err : Boolean := False) return Text_Buffer_Ptr is
+      Fatal_Err : Boolean := False) return Text_Buffer_Ptr
+   is
+      File : File_Name_Type;
+      Attr : aliased File_Attributes;
    begin
+      Find_File (Lib_File, Library, File, Attr'Access);
       return Read_Library_Info_From_Full
-        (Full_Lib_File => Find_File (Lib_File, Library),
+        (Full_Lib_File => File,
+         Lib_File_Attr => Attr'Access,
          Fatal_Err     => Fatal_Err);
    end Read_Library_Info;
 
@@ -2123,11 +2316,16 @@ package body Osint is
 
    function Read_Library_Info_From_Full
      (Full_Lib_File : File_Name_Type;
+      Lib_File_Attr : access File_Attributes;
       Fatal_Err     : Boolean := False) return Text_Buffer_Ptr
    is
       Lib_FD : File_Descriptor;
       --  The file descriptor for the current library file. A negative value
       --  indicates failure to open the specified source file.
+
+      Len : Integer;
+      --  Length of source file text (ALI). If it doesn't fit in an integer
+      --  we're probably stuck anyway (>2 gigs of source seems a lot!)
 
       Text : Text_Buffer_Ptr;
       --  Allocated text buffer
@@ -2168,17 +2366,32 @@ package body Osint is
          end if;
       end if;
 
+      --  Compute the length of the file (potentially also preparing other data
+      --  like the timestamp and whether the file is read-only, for future use)
+
+      Len := Integer (File_Length (Name_Buffer'Address, Lib_File_Attr));
+
       --  Check for object file consistency if requested
 
       if Opt.Check_Object_Consistency then
-         Current_Full_Lib_Stamp := File_Stamp (Current_Full_Lib_Name);
+         --  On most systems, this does not result in an extra system call
+         Current_Full_Lib_Stamp := OS_Time_To_GNAT_Time
+           (File_Time_Stamp (Name_Buffer'Address, Lib_File_Attr));
+
+         --  ??? One system call here
          Current_Full_Obj_Stamp := File_Stamp (Current_Full_Obj_Name);
 
          if Current_Full_Obj_Stamp (1) = ' ' then
 
             --  When the library is readonly always assume object is consistent
+            --  The call to Is_Writable_File only results in a system call on
+            --  some systems, but in most cases it has already been computed as
+            --  part of the call to File_Length above.
 
-            if Is_Readonly_Library (Current_Full_Lib_Name) then
+            Get_Name_String (Current_Full_Lib_Name);
+            Name_Buffer (Name_Len + 1) := ASCII.NUL;
+
+            if not Is_Writable_File (Name_Buffer'Address, Lib_File_Attr) then
                Current_Full_Obj_Stamp := Current_Full_Lib_Stamp;
 
             elsif Fatal_Err then
@@ -2203,10 +2416,6 @@ package body Osint is
       --  Read data from the file
 
       declare
-         Len : constant Integer := Integer (File_Length (Lib_FD));
-         --  Length of source file text. If it doesn't fit in an integer
-         --  we're probably stuck anyway (>2 gigs of source seems a lot!)
-
          Actual_Len : Integer := 0;
 
          Lo : constant Text_Ptr := 0;
@@ -2482,21 +2691,23 @@ package body Osint is
      (N : File_Name_Type;
       T : File_Type) return Time_Stamp_Type
    is
-      Time_Stamp : Time_Stamp_Type;
-
+      File : File_Name_Type;
+      Attr : aliased File_Attributes;
    begin
       if not File_Cache_Enabled then
-         return File_Stamp (Find_File (N, T));
+         Find_File (N, T, File, Attr'Access);
+      else
+         Smart_Find_File (N, T, File, Attr);
       end if;
 
-      Time_Stamp := File_Stamp_Hash_Table.Get (N);
-
-      if Time_Stamp (1) = ' ' then
-         Time_Stamp := File_Stamp (Smart_Find_File (N, T));
-         File_Stamp_Hash_Table.Set (N, Time_Stamp);
+      if File = No_File then
+         return Empty_Time_Stamp;
+      else
+         Get_Name_String (File);
+         Name_Buffer (Name_Len + 1) := ASCII.NUL;
+         return OS_Time_To_GNAT_Time
+           (File_Time_Stamp (Name_Buffer'Address, Attr'Access));
       end if;
-
-      return Time_Stamp;
    end Smart_File_Stamp;
 
    ---------------------
@@ -2507,21 +2718,38 @@ package body Osint is
      (N : File_Name_Type;
       T : File_Type) return File_Name_Type
    is
-      Full_File_Name : File_Name_Type;
+      File : File_Name_Type;
+      Attr : File_Attributes;
+   begin
+      Smart_Find_File (N, T, File, Attr);
+      return File;
+   end Smart_Find_File;
+
+   ---------------------
+   -- Smart_Find_File --
+   ---------------------
+
+   procedure Smart_Find_File
+     (N     : File_Name_Type;
+      T     : File_Type;
+      Found : out File_Name_Type;
+      Attr  : out File_Attributes)
+   is
+      Info : File_Info_Cache;
 
    begin
       if not File_Cache_Enabled then
-         return Find_File (N, T);
+         Find_File (N, T, Info.File, Info.Attr'Access);
+      else
+         Info := File_Name_Hash_Table.Get (N);
+         if Info.File = No_File then
+            Find_File (N, T, Info.File, Info.Attr'Access);
+            File_Name_Hash_Table.Set (N, Info);
+         end if;
       end if;
 
-      Full_File_Name := File_Name_Hash_Table.Get (N);
-
-      if Full_File_Name = No_File then
-         Full_File_Name := Find_File (N, T);
-         File_Name_Hash_Table.Set (N, Full_File_Name);
-      end if;
-
-      return Full_File_Name;
+      Found := Info.File;
+      Attr  := Info.Attr;
    end Smart_Find_File;
 
    ----------------------
@@ -2951,6 +3179,9 @@ package body Osint is
 -- Package Initialization --
 ----------------------------
 
+   procedure Reset_File_Attributes (Attr : System.Address);
+   pragma Import (C, Reset_File_Attributes, "reset_attributes");
+
 begin
    Initialization : declare
 
@@ -2966,7 +3197,15 @@ begin
                     "__gnat_get_maximum_file_name_length");
       --  Function to get maximum file name length for system
 
+      Sizeof_File_Attributes : Integer;
+      pragma Import (C, Sizeof_File_Attributes,
+                     "size_of_file_attributes");
+
    begin
+      pragma Assert (Sizeof_File_Attributes <= File_Attributes_Size);
+
+      Reset_File_Attributes (Unknown_Attributes'Address);
+
       Identifier_Character_Set := Get_Default_Identifier_Character_Set;
       Maximum_File_Name_Length := Get_Maximum_File_Name_Length;
 

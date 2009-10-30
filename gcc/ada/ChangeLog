@@ -1,5 +1,19 @@
 2009-10-30  Emmanuel Briot  <briot@adacore.com>
 
+	* make.adb, adaint.c, adaint.h, osint.adb, osint.ads, bcheck.adb
+	(*_attr): new subprograms.
+	(File_Length, File_Time_Stamp, Is_Writable_File): new subprograms
+	(Read_Library_Info_From_Full, Full_Library_Info_Name,
+	Full_Source_Name): Now benefit from a previous cache of the file
+	attributes, to further save on system calls.
+	(Smart_Find_File): now also cache the file attributes. This makes the
+	package File_Stamp_Hash_Table useless, and it was removed.
+	(Compile_Sources): create subprograms for the various steps of the main
+	loop, for readibility and to avoid sharing variables between the
+	various steps.
+
+2009-10-30  Emmanuel Briot  <briot@adacore.com>
+
 	* make.adb, osint.adb, osint.ads (Library_File_Stamp): Removed, since
 	unused.
 	(Read_Library_Info_From_Full): New subprogram.

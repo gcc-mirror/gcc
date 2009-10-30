@@ -68,6 +68,30 @@ typedef long long OS_Time;
 typedef long OS_Time;
 #endif
 
+/* A lazy cache for the attributes of a file. On some systems, a single call to
+   stat() will give all this information, so it is better than doing a system
+   call every time. On other systems this require several system calls.
+*/
+
+struct file_attributes {
+  short exists;
+
+  short writable;
+  short readable;
+  short executable;
+
+  short symbolic_link;
+  short regular;
+  short directory;
+
+  OS_Time timestamp;
+  long file_length;
+};
+/* WARNING: changing the size here might require changing the constant
+ * File_Attributes_Size in osint.ads (which should be big enough to
+ * fit the above struct on any system)
+ */
+
 extern int    __gnat_max_path_len;
 extern OS_Time __gnat_current_time		   (void);
 extern void   __gnat_current_time_string           (char *);
@@ -121,15 +145,28 @@ extern OS_Time __gnat_file_time_fd                  (int);
 
 extern void   __gnat_set_file_time_name		   (char *, time_t);
 
-extern int    __gnat_dup			   (int);
-extern int    __gnat_dup2			   (int, int);
-extern int    __gnat_file_exists		   (char *);
-extern int    __gnat_is_regular_file               (char *);
-extern int    __gnat_is_absolute_path              (char *,int);
-extern int    __gnat_is_directory		   (char *);
+extern int    __gnat_dup			            (int);
+extern int    __gnat_dup2			            (int, int);
+extern int    __gnat_file_exists		         (char *);
+extern int    __gnat_is_regular_file         (char *);
+extern int    __gnat_is_absolute_path        (char *,int);
+extern int    __gnat_is_directory		      (char *);
 extern int    __gnat_is_writable_file		   (char *);
 extern int    __gnat_is_readable_file		   (char *name);
-extern int    __gnat_is_executable_file            (char *name);
+extern int    __gnat_is_executable_file      (char *name);
+
+extern void reset_attributes (struct file_attributes* attr);
+extern long   __gnat_file_length_attr        (int, char *, struct file_attributes *);
+extern OS_Time __gnat_file_time_name_attr    (char *, struct file_attributes *);
+extern OS_Time __gnat_file_time_fd_attr      (int,    struct file_attributes *);
+extern int    __gnat_file_exists_attr        (char *, struct file_attributes *);
+extern int    __gnat_is_regular_file_attr    (char *, struct file_attributes *);
+extern int    __gnat_is_directory_attr       (char *, struct file_attributes *);
+extern int    __gnat_is_readable_file_attr   (char *, struct file_attributes *);
+extern int    __gnat_is_writable_file_attr   (char *, struct file_attributes *);
+extern int    __gnat_is_executable_file_attr (char *, struct file_attributes *);
+extern int    __gnat_is_symbolic_link_attr   (char *, struct file_attributes *);
+
 extern void   __gnat_set_non_writable              (char *name);
 extern void   __gnat_set_writable                  (char *name);
 extern void   __gnat_set_executable                (char *name);

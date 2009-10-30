@@ -106,12 +106,16 @@ package body Make is
       Full_Source_File : File_Name_Type;
       Lib_File         : File_Name_Type;
       Source_Unit      : Unit_Name_Type;
+      Full_Lib_File    : File_Name_Type;
+      Lib_File_Attr    : aliased File_Attributes;
       Mapping_File     : Natural := No_Mapping_File;
       Project          : Project_Id := No_Project;
-      Syntax_Only      : Boolean := False;
-      Output_Is_Object : Boolean := True;
    end record;
    --  Data recorded for each compilation process spawned
+
+   No_Compilation_Data : constant Compilation_Data :=
+     (Invalid_Pid, No_File, No_File, No_Unit_Name, No_File, Unknown_Attributes,
+      No_Mapping_File, No_Project);
 
    type Comp_Data_Arr is array (Positive range <>) of Compilation_Data;
    type Comp_Data_Ptr is access Comp_Data_Arr;
@@ -741,6 +745,7 @@ package body Make is
       The_Args       : Argument_List;
       Lib_File       : File_Name_Type;
       Full_Lib_File  : File_Name_Type;
+      Lib_File_Attr  : access File_Attributes;
       Read_Only      : Boolean;
       ALI            : out ALI_Id;
       O_File         : out File_Name_Type;
@@ -752,7 +757,9 @@ package body Make is
    --  up-to-date, then the corresponding source file needs to be recompiled.
    --  In this case ALI = No_ALI_Id.
    --  Full_Lib_File must be the result of calling Osint.Full_Lib_File_Name on
-   --  Lib_File. Precomputing it saves system calls.
+   --  Lib_File. Precomputing it saves system calls. Lib_File_Attr is the
+   --  initialized attributes of that file, which is also used to save on
+   --  system calls (it can safely be initialized to Unknown_Attributes).
 
    procedure Check_Linker_Options
      (E_Stamp : Time_Stamp_Type;
@@ -1418,6 +1425,7 @@ package body Make is
       The_Args       : Argument_List;
       Lib_File       : File_Name_Type;
       Full_Lib_File  : File_Name_Type;
+      Lib_File_Attr  : access File_Attributes;
       Read_Only      : Boolean;
       ALI            : out ALI_Id;
       O_File         : out File_Name_Type;
@@ -1577,12 +1585,12 @@ package body Make is
                                                Check_Object_Consistency;
          begin
             Check_Object_Consistency := False;
-            Text := Read_Library_Info_From_Full (Full_Lib_File);
+            Text := Read_Library_Info_From_Full (Full_Lib_File, Lib_File_Attr);
             Check_Object_Consistency := Saved_Check_Object_Consistency;
          end;
 
       else
-         Text := Read_Library_Info_From_Full (Full_Lib_File);
+         Text := Read_Library_Info_From_Full (Full_Lib_File, Lib_File_Attr);
       end if;
 
       Full_Obj_File := Full_Object_File_Name;
@@ -2418,62 +2426,22 @@ package body Make is
       Initialize_ALI_Data   : Boolean  := True;
       Max_Process           : Positive := 1)
    is
-      Source_Unit : Unit_Name_Type;
-      --  Current source unit
-
-      Source_File : File_Name_Type;
-      --  Current source file
-
-      Full_Source_File : File_Name_Type;
-      --  Full name of the current source file
-
-      Lib_File : File_Name_Type;
-      --  Current library file
-
-      Full_Lib_File : File_Name_Type;
-      --  Full name of the current library file
-
-      Obj_File : File_Name_Type;
-      --  Full name of the object file corresponding to Lib_File
-
-      Obj_Stamp : Time_Stamp_Type;
-      --  Time stamp of the current object file
-
-      Sfile : File_Name_Type;
-      --  Contains the source file of the units withed by Source_File
-
-      Uname : Unit_Name_Type;
-      --  Contains the unit name of the units withed by Source_File
-
-      ALI : ALI_Id;
-      --  ALI Id of the current ALI file
-
-      --  Comment following declarations ???
-
-      Read_Only : Boolean := False;
-
-      Compilation_OK  : Boolean;
-      Need_To_Compile : Boolean;
-
-      Pid  : Process_Id;
-      Text : Text_Buffer_Ptr;
-
-      Mfile : Natural := No_Mapping_File;
+      Mfile            : Natural := No_Mapping_File;
+      Mapping_File_Arg : String_Access;
+      --  Info on the mapping file
 
       Need_To_Check_Standard_Library : Boolean :=
                                          Check_Readonly_Files
                                            and not Unique_Compile;
 
-      Mapping_File_Arg : String_Access;
-
-      Process_Created : Boolean := False;
-
       procedure Add_Process
-        (Pid   : Process_Id;
-         Sfile : File_Name_Type;
-         Afile : File_Name_Type;
-         Uname : Unit_Name_Type;
-         Mfile : Natural := No_Mapping_File);
+        (Pid           : Process_Id;
+         Sfile         : File_Name_Type;
+         Afile         : File_Name_Type;
+         Uname         : Unit_Name_Type;
+         Full_Lib_File : File_Name_Type;
+         Lib_File_Attr : File_Attributes;
+         Mfile         : Natural := No_Mapping_File);
       --  Adds process Pid to the current list of outstanding compilation
       --  processes and record the full name of the source file Sfile that
       --  we are compiling, the name of its library file Afile and the
@@ -2482,18 +2450,16 @@ package body Make is
       --  array The_Mapping_File_Names.
 
       procedure Await_Compile
-        (Sfile : out File_Name_Type;
-         Afile : out File_Name_Type;
-         Uname : out Unit_Name_Type;
+        (Data  : out Compilation_Data;
          OK    : out Boolean);
       --  Awaits that an outstanding compilation process terminates. When
-      --  it does set Sfile to the name of the source file that was compiled
-      --  Afile to the name of its library file and Uname to the name of its
-      --  unit. Note that this time stamp can be used to check whether the
+      --  it does set Data to the information registered for the corresponding
+      --  call to Add_Process.
+      --  Note that this time stamp can be used to check whether the
       --  compilation did generate an object file. OK is set to True if the
-      --  compilation succeeded. Note that Sfile, Afile and Uname could be
-      --  resp. No_File, No_File and No_Name  if there were no compilations
-      --  to wait for.
+      --  compilation succeeded.
+      --  Data could be No_Compilation_Data if there was no compilation to wait
+      --  for.
 
       function Bad_Compilation_Count return Natural;
       --  Returns the number of compilation failures
@@ -2501,8 +2467,15 @@ package body Make is
       procedure Check_Standard_Library;
       --  Check if s-stalib.adb needs to be compiled
 
-      procedure Collect_Arguments_And_Compile (Source_Index : Int);
-      --  Collect arguments from project file (if any) and compile
+      procedure Collect_Arguments_And_Compile
+        (Full_Source_File : File_Name_Type;
+         Lib_File         : File_Name_Type;
+         Source_Index     : Int;
+         Pid              : out Process_Id;
+         Process_Created  : out Boolean);
+      --  Collect arguments from project file (if any) and compile.
+      --  If no compilation was attempted, Processed_Created is set to False,
+      --  and the value of Pid is unknown.
 
       function Compile
         (Project      : Project_Id;
@@ -2545,16 +2518,41 @@ package body Make is
       procedure Record_Good_ALI (A : ALI_Id);
       --  Records in the previous set the Id of an ALI file
 
+      function Must_Exit_Because_Of_Error return Boolean;
+      --  Return True if there were errors and the user decided to exit in such
+      --  a case. This waits for any outstanding compilation.
+
+      function Start_Compile_If_Possible (Args : Argument_List) return Boolean;
+      --  Check if there is more work that we can do (i.e. the Queue is non
+      --  empty). If there is, do it only if we have not yet used up all the
+      --  available processes.
+      --  Returns True if we should exit the main loop
+
+      procedure Wait_For_Available_Slot;
+      --  Check if we should wait for a compilation to finish. This is the case
+      --  if all the available processes are busy compiling sources or there is
+      --  nothing else to do (that is the Q is empty and there are no good ALIs
+      --  to process).
+
+      procedure Fill_Queue_From_ALI_Files;
+      --  Check if we recorded good ALI files. If yes process them now in the
+      --  order in which they have been recorded. There are two occasions in
+      --  which we record good ali files. The first is in phase 1 when, after
+      --  scanning an existing ALI file we realize it is up-to-date, the second
+      --  instance is after a successful compilation.
+
       -----------------
       -- Add_Process --
       -----------------
 
       procedure Add_Process
-        (Pid   : Process_Id;
-         Sfile : File_Name_Type;
-         Afile : File_Name_Type;
-         Uname : Unit_Name_Type;
-         Mfile : Natural := No_Mapping_File)
+        (Pid           : Process_Id;
+         Sfile         : File_Name_Type;
+         Afile         : File_Name_Type;
+         Uname         : Unit_Name_Type;
+         Full_Lib_File : File_Name_Type;
+         Lib_File_Attr : File_Attributes;
+         Mfile         : Natural := No_Mapping_File)
       is
          OC1 : constant Positive := Outstanding_Compiles + 1;
 
@@ -2562,14 +2560,15 @@ package body Make is
          pragma Assert (OC1 <= Max_Process);
          pragma Assert (Pid /= Invalid_Pid);
 
-         Running_Compile (OC1).Pid              := Pid;
-         Running_Compile (OC1).Full_Source_File := Sfile;
-         Running_Compile (OC1).Lib_File         := Afile;
-         Running_Compile (OC1).Source_Unit      := Uname;
-         Running_Compile (OC1).Mapping_File     := Mfile;
-         Running_Compile (OC1).Project          := Arguments_Project;
-         Running_Compile (OC1).Syntax_Only      := Syntax_Only;
-         Running_Compile (OC1).Output_Is_Object := Output_Is_Object;
+         Running_Compile (OC1) :=
+           (Pid => Pid,
+            Full_Source_File => Sfile,
+            Lib_File         => Afile,
+            Full_Lib_File    => Full_Lib_File,
+            Lib_File_Attr    => Lib_File_Attr,
+            Source_Unit      => Uname,
+            Mapping_File     => Mfile,
+            Project          => Arguments_Project);
 
          Outstanding_Compiles := OC1;
       end Add_Process;
@@ -2579,21 +2578,17 @@ package body Make is
       -------------------
 
       procedure Await_Compile
-        (Sfile  : out File_Name_Type;
-         Afile  : out File_Name_Type;
-         Uname  : out Unit_Name_Type;
-         OK     : out Boolean)
+        (Data  : out Compilation_Data;
+         OK    : out Boolean)
       is
          Pid     : Process_Id;
          Project : Project_Id;
-         Data    : Project_Compilation_Access;
+         Comp_Data : Project_Compilation_Access;
 
       begin
          pragma Assert (Outstanding_Compiles > 0);
 
-         Sfile := No_File;
-         Afile := No_File;
-         Uname := No_Unit_Name;
+         Data  := No_Compilation_Data;
          OK    := False;
 
          --  The loop here is a work-around for a problem on VMS; in some
@@ -2611,21 +2606,19 @@ package body Make is
 
             for J in Running_Compile'First .. Outstanding_Compiles loop
                if Pid = Running_Compile (J).Pid then
-                  Sfile := Running_Compile (J).Full_Source_File;
-                  Afile := Running_Compile (J).Lib_File;
-                  Uname := Running_Compile (J).Source_Unit;
-                  Syntax_Only := Running_Compile (J).Syntax_Only;
-                  Output_Is_Object := Running_Compile (J).Output_Is_Object;
+                  Data  := Running_Compile (J);
                   Project := Running_Compile (J).Project;
 
                   --  If a mapping file was used by this compilation,
                   --  get its file name for reuse by a subsequent compilation
 
                   if Running_Compile (J).Mapping_File /= No_Mapping_File then
-                     Data := Project_Compilation_Htable.Get
+                     Comp_Data := Project_Compilation_Htable.Get
                        (Project_Compilation, Project);
-                     Data.Last_Free_Indices := Data.Last_Free_Indices + 1;
-                     Data.Free_Mapping_File_Indices (Data.Last_Free_Indices) :=
+                     Comp_Data.Last_Free_Indices :=
+                       Comp_Data.Last_Free_Indices + 1;
+                     Comp_Data.Free_Mapping_File_Indices
+                       (Comp_Data.Last_Free_Indices) :=
                        Running_Compile (J).Mapping_File;
                   end if;
 
@@ -2707,11 +2700,13 @@ package body Make is
       -- Collect_Arguments_And_Compile --
       -----------------------------------
 
-      procedure Collect_Arguments_And_Compile (Source_Index : Int) is
+      procedure Collect_Arguments_And_Compile
+        (Full_Source_File : File_Name_Type;
+         Lib_File         : File_Name_Type;
+         Source_Index     : Int;
+         Pid              : out Process_Id;
+         Process_Created  : out Boolean) is
       begin
-         --  Process_Created will be set True if an attempt is made to compile
-         --  the source, that is if it is not in an externally built project.
-
          Process_Created := False;
 
          --  If we use mapping file (-P or -C switches), then get one
@@ -2759,11 +2754,11 @@ package body Make is
 
                Pid :=
                  Compile
-                   (Arguments_Project,
-                    File_Name_Type (Arguments_Path_Name),
-                    Lib_File,
-                    Source_Index,
-                    Arguments (1 .. Last_Argument));
+                   (Project       => Arguments_Project,
+                    S             => File_Name_Type (Arguments_Path_Name),
+                    L             => Lib_File,
+                    Source_Index  => Source_Index,
+                    Args          => Arguments (1 .. Last_Argument));
                Process_Created := True;
             end if;
 
@@ -2773,11 +2768,11 @@ package body Make is
 
             Pid :=
               Compile
-                (Main_Project,
-                 Full_Source_File,
-                 Lib_File,
-                 Source_Index,
-                 Arguments (1 .. Last_Argument));
+                (Project        => Main_Project,
+                 S              => Full_Source_File,
+                 L              => Lib_File,
+                 Source_Index   => Source_Index,
+                 Args           => Arguments (1 .. Last_Argument));
             Process_Created := True;
          end if;
       end Collect_Arguments_And_Compile;
@@ -2994,6 +2989,119 @@ package body Make is
              (Gcc_Path.all, Comp_Args (Args'First .. Comp_Last));
       end Compile;
 
+      -------------------------------
+      -- Fill_Queue_From_ALI_Files --
+      -------------------------------
+
+      procedure Fill_Queue_From_ALI_Files is
+         ALI          : ALI_Id;
+         Source_Index : Int;
+         Sfile        : File_Name_Type;
+         Uname        : Unit_Name_Type;
+         Unit_Name    : Name_Id;
+         Uid          : Prj.Unit_Index;
+      begin
+         while Good_ALI_Present loop
+            ALI          := Get_Next_Good_ALI;
+            Source_Index := Unit_Index_Of (ALIs.Table (ALI).Afile);
+
+            --  If we are processing the library file corresponding to the
+            --  main source file check if this source can be a main unit.
+
+            if ALIs.Table (ALI).Sfile = Main_Source
+              and then Source_Index = Main_Index
+            then
+               Main_Unit := ALIs.Table (ALI).Main_Program /= None;
+            end if;
+
+            --  The following adds the standard library (s-stalib) to the
+            --  list of files to be handled by gnatmake: this file and any
+            --  files it depends on are always included in every bind,
+            --  even if they are not in the explicit dependency list.
+            --  Of course, it is not added if Suppress_Standard_Library
+            --  is True.
+
+            --  However, to avoid annoying output about s-stalib.ali being
+            --  read only, when "-v" is used, we add the standard library
+            --  only when "-a" is used.
+
+            if Need_To_Check_Standard_Library then
+               Check_Standard_Library;
+            end if;
+
+            --  Now insert in the Q the unmarked source files (i.e. those
+            --  which have never been inserted in the Q and hence never
+            --  considered). Only do that if Unique_Compile is False.
+
+            if not Unique_Compile then
+               for J in
+                 ALIs.Table (ALI).First_Unit .. ALIs.Table (ALI).Last_Unit
+               loop
+                  for K in
+                    Units.Table (J).First_With .. Units.Table (J).Last_With
+                  loop
+                     Sfile := Withs.Table (K).Sfile;
+                     Uname := Withs.Table (K).Uname;
+
+                     --  If project files are used, find the proper source
+                     --  to compile, in case Sfile is the spec, but there
+                     --  is a body.
+
+                     if Main_Project /= No_Project then
+                        Get_Name_String (Uname);
+                        Name_Len  := Name_Len - 2;
+                        Unit_Name := Name_Find;
+                        Uid :=
+                          Units_Htable.Get (Project_Tree.Units_HT, Unit_Name);
+
+                        if Uid /= Prj.No_Unit_Index then
+                           if Uid.File_Names (Impl) /= null
+                             and then not Uid.File_Names (Impl).Locally_Removed
+                           then
+                              Sfile        := Uid.File_Names (Impl).File;
+                              Source_Index := Uid.File_Names (Impl).Index;
+
+                           elsif Uid.File_Names (Spec) /= null
+                             and then not Uid.File_Names (Spec).Locally_Removed
+                           then
+                              Sfile        := Uid.File_Names (Spec).File;
+                              Source_Index := Uid.File_Names (Spec).Index;
+                           end if;
+                        end if;
+                     end if;
+
+                     Dependencies.Append ((ALIs.Table (ALI).Sfile, Sfile));
+
+                     if Is_In_Obsoleted (Sfile) then
+                        Executable_Obsolete := True;
+                     end if;
+
+                     if Sfile = No_File then
+                        Debug_Msg ("Skipping generic:", Withs.Table (K).Uname);
+
+                     else
+                        Source_Index := Unit_Index_Of (Withs.Table (K).Afile);
+
+                        if Is_Marked (Sfile, Source_Index) then
+                           Debug_Msg ("Skipping marked file:", Sfile);
+
+                        elsif not Check_Readonly_Files
+                          and then Is_Internal_File_Name (Sfile, False)
+                        then
+                           Debug_Msg ("Skipping internal file:", Sfile);
+
+                        else
+                           Insert_Q
+                             (Sfile, Withs.Table (K).Uname, Source_Index);
+                           Mark (Sfile, Source_Index);
+                        end if;
+                     end if;
+                  end loop;
+               end loop;
+            end if;
+         end loop;
+      end Fill_Queue_From_ALI_Files;
+
       ----------------------
       -- Get_Mapping_File --
       ----------------------
@@ -3049,6 +3157,29 @@ package body Make is
          return Good_ALI.First <= Good_ALI.Last;
       end Good_ALI_Present;
 
+      --------------------------------
+      -- Must_Exit_Because_Of_Error --
+      --------------------------------
+
+      function Must_Exit_Because_Of_Error return Boolean is
+         Data        : Compilation_Data;
+         Success     : Boolean;
+      begin
+         if Bad_Compilation_Count > 0 and then not Keep_Going then
+            while Outstanding_Compiles > 0 loop
+               Await_Compile (Data, Success);
+
+               if not Success then
+                  Record_Failure (Data.Full_Source_File, Data.Source_Unit);
+               end if;
+            end loop;
+
+            return True;
+         end if;
+
+         return False;
+      end Must_Exit_Because_Of_Error;
+
       --------------------
       -- Record_Failure --
       --------------------
@@ -3072,6 +3203,386 @@ package body Make is
          Good_ALI.Increment_Last;
          Good_ALI.Table (Good_ALI.Last) := A;
       end Record_Good_ALI;
+
+      -------------------------------
+      -- Start_Compile_If_Possible --
+      -------------------------------
+
+      function Start_Compile_If_Possible
+        (Args : Argument_List) return Boolean
+      is
+         In_Lib_Dir       : Boolean;
+         Need_To_Compile  : Boolean;
+         Pid              : Process_Id;
+         Process_Created  : Boolean;
+
+         Source_File      : File_Name_Type;
+         Full_Source_File : File_Name_Type;
+         Source_File_Attr : aliased File_Attributes;
+         --  The full name of the source file, and its attributes (size,...)
+
+         Source_Unit      : Unit_Name_Type;
+         Source_Index     : Int;
+         --  Index of the current unit in the current source file
+
+         Lib_File         : File_Name_Type;
+         Full_Lib_File    : File_Name_Type;
+         Lib_File_Attr    : aliased File_Attributes;
+         Read_Only        : Boolean := False;
+         ALI              : ALI_Id;
+         --  The ALI file and its attributes (size, stamp,...)
+
+         Obj_File         : File_Name_Type;
+         Obj_Stamp        : Time_Stamp_Type;
+         --  The object file
+
+      begin
+         if not Empty_Q and then Outstanding_Compiles < Max_Process then
+            Extract_From_Q (Source_File, Source_Unit, Source_Index);
+
+            Osint.Full_Source_Name
+              (Source_File,
+               Full_File => Full_Source_File,
+               Attr      => Source_File_Attr'Access);
+
+            Lib_File := Osint.Lib_File_Name (Source_File, Source_Index);
+            Osint.Full_Lib_File_Name
+              (Lib_File,
+               Lib_File => Full_Lib_File,
+               Attr     => Lib_File_Attr);
+
+            --  If this source has already been compiled, the executable is
+            --  obsolete.
+
+            if Is_In_Obsoleted (Source_File) then
+               Executable_Obsolete := True;
+            end if;
+
+            In_Lib_Dir := Full_Lib_File /= No_File
+              and then In_Ada_Lib_Dir (Full_Lib_File);
+
+            --  Since the following requires a system call, we precompute it
+            --  when needed
+
+            if not In_Lib_Dir then
+               if Full_Lib_File /= No_File
+                 and then not Check_Readonly_Files
+               then
+                  Get_Name_String (Full_Lib_File);
+                  Name_Buffer (Name_Len + 1) := ASCII.NUL;
+                  Read_Only := not Is_Writable_File
+                    (Name_Buffer'Address, Lib_File_Attr'Access);
+               else
+                  Read_Only := False;
+               end if;
+            end if;
+
+            --  If the library file is an Ada library skip it
+
+            if In_Lib_Dir then
+               Verbose_Msg
+                 (Lib_File,
+                  "is in an Ada library",
+                  Prefix => "  ",
+                  Minimum_Verbosity => Opt.High);
+
+               --  If the library file is a read-only library skip it, but
+               --  only if, when using project files, this library file is
+               --  in the right object directory (a read-only ALI file
+               --  in the object directory of a project being extended
+               --  should not be skipped).
+
+            elsif Read_Only
+              and then Is_In_Object_Directory (Source_File, Full_Lib_File)
+            then
+               Verbose_Msg
+                 (Lib_File,
+                  "is a read-only library",
+                  Prefix => "  ",
+                  Minimum_Verbosity => Opt.High);
+
+               --  The source file that we are checking cannot be located
+
+            elsif Full_Source_File = No_File then
+               Record_Failure (Source_File, Source_Unit, False);
+
+               --  Source and library files can be located but are internal
+               --  files
+
+            elsif not Check_Readonly_Files
+              and then Full_Lib_File /= No_File
+              and then Is_Internal_File_Name (Source_File, False)
+            then
+               if Force_Compilations then
+                  Fail
+                    ("not allowed to compile """ &
+                     Get_Name_String (Source_File) &
+                     """; use -a switch, or compile file with " &
+                     """-gnatg"" switch");
+               end if;
+
+               Verbose_Msg
+                 (Lib_File,
+                  "is an internal library",
+                  Prefix => "  ",
+                  Minimum_Verbosity => Opt.High);
+
+               --  The source file that we are checking can be located
+
+            else
+               Collect_Arguments (Source_File, Source_Index,
+                                  Source_File = Main_Source, Args);
+
+               --  Do nothing if project of source is externally built
+
+               if Arguments_Project = No_Project
+                 or else not Arguments_Project.Externally_Built
+               then
+                  --  Don't waste any time if we have to recompile anyway
+
+                  Obj_Stamp       := Empty_Time_Stamp;
+                  Need_To_Compile := Force_Compilations;
+
+                  if not Force_Compilations then
+                     Check (Source_File    => Source_File,
+                            Source_Index   => Source_Index,
+                            Is_Main_Source => Source_File = Main_Source,
+                            The_Args       => Args,
+                            Lib_File       => Lib_File,
+                            Full_Lib_File  => Full_Lib_File,
+                            Lib_File_Attr  => Lib_File_Attr'Access,
+                            Read_Only      => Read_Only,
+                            ALI            => ALI,
+                            O_File         => Obj_File,
+                            O_Stamp        => Obj_Stamp);
+                     Need_To_Compile := (ALI = No_ALI_Id);
+                  end if;
+
+                  if not Need_To_Compile then
+                     --  The ALI file is up-to-date. Record its Id
+
+                     Record_Good_ALI (ALI);
+
+                     --  Record the time stamp of the most recent object
+                     --  file as long as no (re)compilations are needed.
+
+                     if First_Compiled_File = No_File
+                       and then (Most_Recent_Obj_File = No_File
+                                 or else Obj_Stamp > Most_Recent_Obj_Stamp)
+                     then
+                        Most_Recent_Obj_File  := Obj_File;
+                        Most_Recent_Obj_Stamp := Obj_Stamp;
+                     end if;
+
+                  else
+                     --  Check that switch -x has been used if a source
+                     --  outside of project files need to be compiled.
+
+                     if Main_Project /= No_Project
+                       and then Arguments_Project = No_Project
+                       and then not External_Unit_Compilation_Allowed
+                     then
+                        Make_Failed ("external source ("
+                                     & Get_Name_String (Source_File)
+                                     & ") is not part of any project;"
+                                     & " cannot be compiled without"
+                                     & " gnatmake switch -x");
+                     end if;
+
+                     --  Is this the first file we have to compile?
+
+                     if First_Compiled_File = No_File then
+                        First_Compiled_File  := Full_Source_File;
+                        Most_Recent_Obj_File := No_File;
+
+                        if Do_Not_Execute then
+                           --  Exit the main loop
+                           return True;
+                        end if;
+                     end if;
+
+                     if In_Place_Mode then
+                        if Full_Lib_File = No_File then
+                           --  If the library file was not found, then save
+                           --  the library file near the source file.
+
+                           Lib_File := Osint.Lib_File_Name
+                             (Full_Source_File, Source_Index);
+                           Full_Lib_File := Lib_File;
+
+                        else
+                           --  If the library file was found, then save the
+                           --  library file in the same place.
+
+                           Lib_File := Full_Lib_File;
+                        end if;
+
+                        Lib_File_Attr := Unknown_Attributes;
+
+                     else
+                        --  We will recompile, so we'll have to guess the
+                        --  location of the object file based on the command
+                        --  line switches and object_dir
+
+                        Full_Lib_File := No_File;
+                        Lib_File_Attr := Unknown_Attributes;
+                     end if;
+
+                     --  Start the compilation and record it. We can do
+                     --  this because there is at least one free process.
+
+                     Collect_Arguments_And_Compile
+                       (Full_Source_File => Full_Source_File,
+                        Lib_File         => Lib_File,
+                        Source_Index     => Source_Index,
+                        Pid              => Pid,
+                        Process_Created  => Process_Created);
+
+                     --  Make sure we could successfully start
+                     --  the Compilation.
+
+                     if Process_Created then
+                        if Pid = Invalid_Pid then
+                           Record_Failure (Full_Source_File, Source_Unit);
+                        else
+                           Add_Process
+                             (Pid              => Pid,
+                              Sfile            => Full_Source_File,
+                              Afile            => Lib_File,
+                              Uname            => Source_Unit,
+                              Mfile            => Mfile,
+                              Full_Lib_File    => Full_Lib_File,
+                              Lib_File_Attr    => Lib_File_Attr);
+                        end if;
+                     end if;
+                  end if;
+               end if;
+            end if;
+         end if;
+         return False;
+      end Start_Compile_If_Possible;
+
+      -----------------------------
+      -- Wait_For_Available_Slot --
+      -----------------------------
+
+      procedure Wait_For_Available_Slot is
+         Compilation_OK   : Boolean;
+         Text             : Text_Buffer_Ptr;
+         ALI              : ALI_Id;
+         Data             : Compilation_Data;
+
+      begin
+         if Outstanding_Compiles = Max_Process
+           or else (Empty_Q
+                    and then not Good_ALI_Present
+                    and then Outstanding_Compiles > 0)
+         then
+            Await_Compile (Data, Compilation_OK);
+
+            if not Compilation_OK then
+               Record_Failure (Data.Full_Source_File, Data.Source_Unit);
+            end if;
+
+            if Compilation_OK or else Keep_Going then
+
+               --  Re-read the updated library file
+
+               declare
+                  Saved_Object_Consistency : constant Boolean :=
+                                               Check_Object_Consistency;
+
+               begin
+                  --  If compilation was not OK, or if output is not an
+                  --  object file and we don't do the bind step, don't check
+                  --  for object consistency.
+
+                  Check_Object_Consistency :=
+                    Check_Object_Consistency
+                    and Compilation_OK
+                    and (Output_Is_Object or Do_Bind_Step);
+
+                  if Data.Full_Lib_File = No_File then
+                     --  Compute the expected location of the ALI file. This
+                     --  can be from several places:
+                     --    -i => in place mode. In such a case, Full_Lib_File
+                     --          has already been set above
+                     --    -D => if specified
+                     --    or defaults in current dir
+                     --  We could simply use a call similar to
+                     --     Osint.Full_Lib_File_Name (Lib_File)
+                     --  but that involves system calls and is thus slower
+
+                     if Object_Directory_Path /= null then
+                        Name_Len := 0;
+                        Add_Str_To_Name_Buffer (Object_Directory_Path.all);
+                        Add_Str_To_Name_Buffer
+                          (Get_Name_String (Data.Lib_File));
+                        Data.Full_Lib_File := Name_Find;
+                     else
+                        Data.Full_Lib_File := Data.Lib_File;
+                     end if;
+
+                     --  Invalidate the cache for the attributes, since the
+                     --  file was just created
+
+                     Data.Lib_File_Attr := Unknown_Attributes;
+                  end if;
+
+                  Text := Read_Library_Info_From_Full
+                    (Data.Full_Lib_File, Data.Lib_File_Attr'Access);
+
+                  --  Restore Check_Object_Consistency to its initial value
+
+                  Check_Object_Consistency := Saved_Object_Consistency;
+               end;
+
+               --  If an ALI file was generated by this compilation, scan
+               --  the ALI file and record it.
+
+               --  If the scan fails, a previous ali file is inconsistent with
+               --  the unit just compiled.
+
+               if Text /= null then
+                  ALI := Scan_ALI
+                    (Data.Lib_File, Text, Ignore_ED => False, Err => True);
+
+                  if ALI = No_ALI_Id then
+
+                     --  Record a failure only if not already done
+
+                     if Compilation_OK then
+                        Inform
+                          (Data.Lib_File,
+                           "incompatible ALI file, please recompile");
+                        Record_Failure
+                          (Data.Full_Source_File, Data.Source_Unit);
+                     end if;
+
+                  else
+                     Record_Good_ALI (ALI);
+                  end if;
+
+                  Free (Text);
+
+               --  If we could not read the ALI file that was just generated
+               --  then there could be a problem reading either the ALI or the
+               --  corresponding object file (if Check_Object_Consistency is
+               --  set Read_Library_Info checks that the time stamp of the
+               --  object file is more recent than that of the ALI). However,
+               --  we record a failure only if not already done.
+
+               else
+                  if Compilation_OK and not Syntax_Only then
+                     Inform
+                       (Data.Lib_File,
+                        "WARNING: ALI or object file not found after compile");
+                     Record_Failure (Data.Full_Source_File, Data.Source_Unit);
+                  end if;
+               end if;
+            end if;
+         end if;
+      end Wait_For_Available_Slot;
 
    --  Start of processing for Compile_Sources
 
@@ -3121,461 +3632,14 @@ package body Make is
       --  and all the outstanding compilations have terminated
 
       Make_Loop : while not Empty_Q or else Outstanding_Compiles > 0 loop
+         exit Make_Loop when Must_Exit_Because_Of_Error;
+         exit Make_Loop when Start_Compile_If_Possible (Args);
 
-         --  If the user does not want to keep going in case of errors then
-         --  wait for the remaining outstanding compiles and then exit.
+         Wait_For_Available_Slot;
 
-         if Bad_Compilation_Count > 0 and then not Keep_Going then
-            while Outstanding_Compiles > 0 loop
-               Await_Compile
-                 (Full_Source_File, Lib_File, Source_Unit, Compilation_OK);
-
-               if not Compilation_OK then
-                  Record_Failure (Full_Source_File, Source_Unit);
-               end if;
-            end loop;
-
-            exit Make_Loop;
-         end if;
-
-         --  PHASE 1: Check if there is more work that we can do (i.e. the Q
-         --  is non empty). If there is, do it only if we have not yet used
-         --  up all the available processes.
-
-         if not Empty_Q and then Outstanding_Compiles < Max_Process then
-            declare
-               In_Lib_Dir   : Boolean;
-
-               Source_Index : Int;
-               --  Index of the current unit in the current source file
-
-            begin
-               Extract_From_Q (Source_File, Source_Unit, Source_Index);
-               Full_Source_File := Osint.Full_Source_Name (Source_File);
-               Lib_File         := Osint.Lib_File_Name
-                 (Source_File, Source_Index);
-
-               --  Compute the location of Lib_File (involves system calls)
-               --  ??? Can we compute at the same time if the file is
-               --  writable, which would save a system call on some systems
-               --  (when calling Is_Readonly_Library below)
-
-               Full_Lib_File    := Osint.Full_Lib_File_Name (Lib_File);
-
-               --  If this source has already been compiled, the executable is
-               --  obsolete.
-
-               if Is_In_Obsoleted (Source_File) then
-                  Executable_Obsolete := True;
-               end if;
-
-               In_Lib_Dir := Full_Lib_File /= No_File
-                 and then In_Ada_Lib_Dir (Full_Lib_File);
-
-               --  Since the following requires a system call, we precompute it
-               --  when needed
-
-               if not In_Lib_Dir then
-                  Read_Only :=
-                    Full_Lib_File /= No_File
-                    and then not Check_Readonly_Files
-                    and then Is_Readonly_Library (Full_Lib_File);
-               end if;
-
-               --  If the library file is an Ada library skip it
-
-               if In_Lib_Dir then
-                  Verbose_Msg
-                    (Lib_File,
-                     "is in an Ada library",
-                     Prefix => "  ",
-                     Minimum_Verbosity => Opt.High);
-
-                  --  If the library file is a read-only library skip it, but
-                  --  only if, when using project files, this library file is
-                  --  in the right object directory (a read-only ALI file
-                  --  in the object directory of a project being extended
-                  --  should not be skipped).
-
-               elsif Read_Only
-                 and then Is_In_Object_Directory (Source_File, Full_Lib_File)
-               then
-                  Verbose_Msg
-                    (Lib_File,
-                     "is a read-only library",
-                     Prefix => "  ",
-                     Minimum_Verbosity => Opt.High);
-
-                  --  The source file that we are checking cannot be located
-
-               elsif Full_Source_File = No_File then
-                  Record_Failure (Source_File, Source_Unit, False);
-
-                  --  Source and library files can be located but are internal
-                  --  files
-
-               elsif not Check_Readonly_Files
-                 and then Full_Lib_File /= No_File
-                 and then Is_Internal_File_Name (Source_File, False)
-               then
-                  if Force_Compilations then
-                     Fail
-                       ("not allowed to compile """ &
-                        Get_Name_String (Source_File) &
-                        """; use -a switch, or compile file with " &
-                        """-gnatg"" switch");
-                  end if;
-
-                  Verbose_Msg
-                    (Lib_File,
-                     "is an internal library",
-                     Prefix => "  ",
-                     Minimum_Verbosity => Opt.High);
-
-               --  The source file that we are checking can be located
-
-               else
-                  Collect_Arguments (Source_File, Source_Index,
-                                     Source_File = Main_Source, Args);
-
-                  --  Do nothing if project of source is externally built
-
-                  if Arguments_Project = No_Project
-                    or else not Arguments_Project.Externally_Built
-                  then
-                     --  Don't waste any time if we have to recompile anyway
-
-                     Obj_Stamp       := Empty_Time_Stamp;
-                     Need_To_Compile := Force_Compilations;
-
-                     if not Force_Compilations then
-                        Check (Source_File    => Source_File,
-                               Source_Index   => Source_Index,
-                               Is_Main_Source => Source_File = Main_Source,
-                               The_Args       => Args,
-                               Lib_File       => Lib_File,
-                               Full_Lib_File  => Full_Lib_File,
-                               Read_Only      => Read_Only,
-                               ALI            => ALI,
-                               O_File         => Obj_File,
-                               O_Stamp        => Obj_Stamp);
-                        Need_To_Compile := (ALI = No_ALI_Id);
-                     end if;
-
-                     if not Need_To_Compile then
-                        --  The ALI file is up-to-date. Record its Id
-
-                        Record_Good_ALI (ALI);
-
-                        --  Record the time stamp of the most recent object
-                        --  file as long as no (re)compilations are needed.
-
-                        if First_Compiled_File = No_File
-                          and then (Most_Recent_Obj_File = No_File
-                                    or else Obj_Stamp > Most_Recent_Obj_Stamp)
-                        then
-                           Most_Recent_Obj_File  := Obj_File;
-                           Most_Recent_Obj_Stamp := Obj_Stamp;
-                        end if;
-
-                     else
-                        --  Check that switch -x has been used if a source
-                        --  outside of project files need to be compiled.
-
-                        if Main_Project /= No_Project
-                          and then Arguments_Project = No_Project
-                          and then not External_Unit_Compilation_Allowed
-                        then
-                           Make_Failed ("external source ("
-                                        & Get_Name_String (Source_File)
-                                        & ") is not part of any project;"
-                                        & " cannot be compiled without"
-                                        & " gnatmake switch -x");
-                        end if;
-
-                        --  Is this the first file we have to compile?
-
-                        if First_Compiled_File = No_File then
-                           First_Compiled_File  := Full_Source_File;
-                           Most_Recent_Obj_File := No_File;
-
-                           if Do_Not_Execute then
-                              exit Make_Loop;
-                           end if;
-                        end if;
-
-                        if In_Place_Mode then
-                           --  If the library file was not found, then save
-                           --  the library file near the source file.
-
-                           if Full_Lib_File = No_File then
-                              Lib_File := Osint.Lib_File_Name
-                                (Full_Source_File, Source_Index);
-                              Full_Lib_File := Lib_File;
-
-                              --  If the library file was found, then save the
-                              --  library file in the same place.
-
-                           else
-                              Lib_File := Full_Lib_File;
-                           end if;
-                        end if;
-
-                        --  Start the compilation and record it. We can do
-                        --  this because there is at least one free process.
-
-                        Collect_Arguments_And_Compile (Source_Index);
-
-                        --  Make sure we could successfully start
-                        --  the Compilation.
-
-                        if Process_Created then
-                           if Pid = Invalid_Pid then
-                              Record_Failure (Full_Source_File, Source_Unit);
-                           else
-                              Add_Process
-                                (Pid,
-                                 Full_Source_File,
-                                 Lib_File,
-                                 Source_Unit,
-                                 Mfile);
-                           end if;
-                        end if;
-                     end if;
-                  end if;
-               end if;
-            end;
-         end if;
-
-         --  PHASE 2: Now check if we should wait for a compilation to
-         --  finish. This is the case if all the available processes are
-         --  busy compiling sources or there is nothing else to do
-         --  (that is the Q is empty and there are no good ALIs to process).
-
-         if Outstanding_Compiles = Max_Process
-           or else (Empty_Q
-                     and then not Good_ALI_Present
-                     and then Outstanding_Compiles > 0)
-         then
-            Await_Compile
-              (Full_Source_File, Lib_File, Source_Unit, Compilation_OK);
-
-            if not Compilation_OK then
-               Record_Failure (Full_Source_File, Source_Unit);
-            end if;
-
-            if Compilation_OK or else Keep_Going then
-
-               --  Re-read the updated library file
-
-               declare
-                  Saved_Object_Consistency : constant Boolean :=
-                                               Check_Object_Consistency;
-
-               begin
-                  --  If compilation was not OK, or if output is not an
-                  --  object file and we don't do the bind step, don't check
-                  --  for object consistency.
-
-                  Check_Object_Consistency :=
-                    Check_Object_Consistency
-                    and Compilation_OK
-                    and (Output_Is_Object or Do_Bind_Step);
-
-                  if Full_Lib_File = No_File then
-                     --  Compute the expected location of the ALI file. This
-                     --  can be from several places:
-                     --    -i => in place mode. In such a case, Full_Lib_File
-                     --          has already been set above
-                     --    -D => if specified
-                     --    or defaults in current dir
-                     --  We could simply use a call similar to
-                     --     Osint.Full_Lib_File_Name (Lib_File)
-                     --  but that involves system calls and is thus slower
-
-                     if Object_Directory_Path /= null then
-                        Name_Len := 0;
-                        Add_Str_To_Name_Buffer (Object_Directory_Path.all);
-                        Add_Str_To_Name_Buffer (Get_Name_String (Lib_File));
-                        Full_Lib_File := Name_Find;
-                     else
-                        Full_Lib_File := Lib_File;
-                     end if;
-                  end if;
-
-                  Text := Read_Library_Info_From_Full (Full_Lib_File);
-
-                  --  Restore Check_Object_Consistency to its initial value
-
-                  Check_Object_Consistency := Saved_Object_Consistency;
-               end;
-
-               --  If an ALI file was generated by this compilation, scan
-               --  the ALI file and record it.
-
-               --  If the scan fails, a previous ali file is inconsistent with
-               --  the unit just compiled.
-
-               if Text /= null then
-                  ALI :=
-                    Scan_ALI (Lib_File, Text, Ignore_ED => False, Err => True);
-
-                  if ALI = No_ALI_Id then
-
-                     --  Record a failure only if not already done
-
-                     if Compilation_OK then
-                        Inform
-                          (Lib_File,
-                           "incompatible ALI file, please recompile");
-                        Record_Failure (Full_Source_File, Source_Unit);
-                     end if;
-                  else
-                     Free (Text);
-                     Record_Good_ALI (ALI);
-                  end if;
-
-               --  If we could not read the ALI file that was just generated
-               --  then there could be a problem reading either the ALI or the
-               --  corresponding object file (if Check_Object_Consistency is
-               --  set Read_Library_Info checks that the time stamp of the
-               --  object file is more recent than that of the ALI). However,
-               --  we record a failure only if not already done.
-
-               else
-                  if Compilation_OK and not Syntax_Only then
-                     Inform
-                       (Lib_File,
-                        "WARNING: ALI or object file not found after compile");
-                     Record_Failure (Full_Source_File, Source_Unit);
-                  end if;
-               end if;
-            end if;
-         end if;
-
-         --  PHASE 3: Check if we recorded good ALI files. If yes process
-         --  them now in the order in which they have been recorded. There
-         --  are two occasions in which we record good ali files. The first is
-         --  in phase 1 when, after scanning an existing ALI file we realize
-         --  it is up-to-date, the second instance is after a successful
-         --  compilation.
-
-         while Good_ALI_Present loop
-            ALI := Get_Next_Good_ALI;
-
-            declare
-               Source_Index : Int := Unit_Index_Of (ALIs.Table (ALI).Afile);
-
-            begin
-               --  If we are processing the library file corresponding to the
-               --  main source file check if this source can be a main unit.
-
-               if ALIs.Table (ALI).Sfile = Main_Source and then
-                 Source_Index = Main_Index
-               then
-                  Main_Unit := ALIs.Table (ALI).Main_Program /= None;
-               end if;
-
-               --  The following adds the standard library (s-stalib) to the
-               --  list of files to be handled by gnatmake: this file and any
-               --  files it depends on are always included in every bind,
-               --  even if they are not in the explicit dependency list.
-               --  Of course, it is not added if Suppress_Standard_Library
-               --  is True.
-
-               --  However, to avoid annoying output about s-stalib.ali being
-               --  read only, when "-v" is used, we add the standard library
-               --  only when "-a" is used.
-
-               if Need_To_Check_Standard_Library then
-                  Check_Standard_Library;
-               end if;
-
-               --  Now insert in the Q the unmarked source files (i.e. those
-               --  which have never been inserted in the Q and hence never
-               --  considered). Only do that if Unique_Compile is False.
-
-               if not Unique_Compile then
-                  for J in
-                    ALIs.Table (ALI).First_Unit .. ALIs.Table (ALI).Last_Unit
-                  loop
-                     for K in
-                       Units.Table (J).First_With .. Units.Table (J).Last_With
-                     loop
-                        Sfile := Withs.Table (K).Sfile;
-                        Uname := Withs.Table (K).Uname;
-
-                        --  If project files are used, find the proper source
-                        --  to compile, in case Sfile is the spec, but there
-                        --  is a body.
-
-                        if Main_Project /= No_Project then
-                           declare
-                              Unit_Name : Name_Id;
-                              Uid       : Prj.Unit_Index;
-
-                           begin
-                              Get_Name_String (Uname);
-                              Name_Len := Name_Len - 2;
-                              Unit_Name := Name_Find;
-                              Uid :=
-                                Units_Htable.Get
-                                  (Project_Tree.Units_HT, Unit_Name);
-
-                              if Uid /= Prj.No_Unit_Index then
-                                 if Uid.File_Names (Impl) /= null
-                                   and then
-                                     not Uid.File_Names (Impl).Locally_Removed
-                                 then
-                                    Sfile := Uid.File_Names (Impl).File;
-                                    Source_Index :=
-                                      Uid.File_Names (Impl).Index;
-
-                                 elsif Uid.File_Names (Spec) /= null
-                                   and then
-                                     not Uid.File_Names (Spec).Locally_Removed
-                                 then
-                                    Sfile := Uid.File_Names (Spec).File;
-                                    Source_Index :=
-                                      Uid.File_Names (Spec).Index;
-                                 end if;
-                              end if;
-                           end;
-                        end if;
-
-                        Dependencies.Append ((ALIs.Table (ALI).Sfile, Sfile));
-
-                        if Is_In_Obsoleted (Sfile) then
-                           Executable_Obsolete := True;
-                        end if;
-
-                        if Sfile = No_File then
-                           Debug_Msg
-                             ("Skipping generic:", Withs.Table (K).Uname);
-
-                        else
-                           Source_Index :=
-                             Unit_Index_Of (Withs.Table (K).Afile);
-
-                           if Is_Marked (Sfile, Source_Index) then
-                              Debug_Msg ("Skipping marked file:", Sfile);
-
-                           elsif not Check_Readonly_Files
-                             and then Is_Internal_File_Name (Sfile, False)
-                           then
-                              Debug_Msg ("Skipping internal file:", Sfile);
-
-                           else
-                              Insert_Q
-                                (Sfile, Withs.Table (K).Uname, Source_Index);
-                              Mark (Sfile, Source_Index);
-                           end if;
-                        end if;
-                     end loop;
-                  end loop;
-               end if;
-            end;
-         end loop;
+         --  ??? Should be done as soon as we add a Good_ALI, wouldn't it avoid
+         --  the need for a list of good ALI ?
+         Fill_Queue_From_ALI_Files;
 
          if Display_Compilation_Progress then
             Write_Str ("completed ");
