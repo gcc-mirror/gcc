@@ -5,6 +5,7 @@
 
 2009-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/41870
 	* gcc-interface/decl.c (array_type_has_nonaliased_component): Swap
 	parameters and rewrite comments.  For a derived type, return the
 	setting of its parent type.
