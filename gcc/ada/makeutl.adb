@@ -328,7 +328,9 @@ package body Makeutl is
             return "";
          end if;
 
-         return Normalize_Pathname (Exec (Exec'First .. Path_Last - 4))
+         return Normalize_Pathname
+           (Exec (Exec'First .. Path_Last - 4),
+            Resolve_Links => Opt.Follow_Links_For_Dirs)
            & Directory_Separator;
       end Get_Install_Dir;
 

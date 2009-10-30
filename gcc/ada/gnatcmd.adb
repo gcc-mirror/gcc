@@ -1612,6 +1612,7 @@ begin
 
                   elsif Argv.all = "-eL" then
                      Follow_Links_For_Files := True;
+                     Follow_Links_For_Dirs  := True;
 
                      Remove_Switch (Arg_Num);
 

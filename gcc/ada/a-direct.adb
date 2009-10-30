@@ -210,6 +210,8 @@ package body Ada.Directories is
 
       else
          declare
+            --  We need to resolve links because of A.16(47), since we must not
+            --  return alternative names for files
             Norm    : constant String := Normalize_Pathname (Name);
             Last_DS : constant Natural :=
                         Strings.Fixed.Index
@@ -441,6 +443,8 @@ package body Ada.Directories is
       Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
       declare
+         --  We need to resolve links because of A.16(47), since we must not
+         --  return alternative names for files
          Cur : constant String := Normalize_Pathname (Buffer (1 .. Path_Len));
 
       begin
@@ -781,6 +785,8 @@ package body Ada.Directories is
          --  Use System.OS_Lib.Normalize_Pathname
 
          declare
+            --  We need to resolve links because of A.16(47), since we must not
+            --  return alternative names for files
             Value : constant String := Normalize_Pathname (Name);
             subtype Result is String (1 .. Value'Length);
          begin

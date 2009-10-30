@@ -663,7 +663,7 @@ package Opt is
    --  still valid if they point to a file which is outside of the project),
    --  and that no directory has a name which is a valid source name.
 
-   Follow_Links_For_Dirs : Boolean := True;
+   Follow_Links_For_Dirs : Boolean := False;
    --  PROJECT MANAGER
    --  Set to True if directories can be links in this project, and therefore
    --  additional system calls must be performed to ensure that we always see

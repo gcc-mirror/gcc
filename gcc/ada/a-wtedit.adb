@@ -477,21 +477,17 @@ package body Ada.Wide_Text_IO.Editing is
          raise Layout_Error;
       end if;
 
-      if Pic.Radix_Position = Invalid_Position then
-         Position := Answer'Last;
-      else
-         Position := Pic.Radix_Position - 1;
-      end if;
+      Position :=
+        (if Pic.Radix_Position = Invalid_Position then Answer'Last
+         else Pic.Radix_Position - 1);
 
       for J in reverse Attrs.Start_Of_Int .. Attrs.End_Of_Int loop
-
          while Answer (Position) /= '9'
                  and then
                Answer (Position) /= Pic.Floater
          loop
             if Answer (Position) = '_' then
                Answer (Position) := Separator_Character;
-
             elsif Answer (Position) = 'b' then
                Answer (Position) := ' ';
             end if;
@@ -790,25 +786,22 @@ package body Ada.Wide_Text_IO.Editing is
          --  No trailing digits, but now J may need to stick in a currency
          --  symbol or sign.
 
-         if Pic.Start_Currency = Invalid_Position then
-            Position := Answer'Last + 1;
-         else
-            Position := Pic.Start_Currency;
-         end if;
+         Position :=
+           (if Pic.Start_Currency = Invalid_Position then Answer'Last + 1
+            else Pic.Start_Currency);
       end if;
 
       for J in Position .. Answer'Last loop
-
          if Pic.Start_Currency /= Invalid_Position and then
             Answer (Pic.Start_Currency) = '#' then
             Currency_Pos := 1;
          end if;
 
-         --  Note: There are some weird cases J can imagine with 'b' or '#'
-         --  in currency strings where the following code will cause
-         --  glitches. The trick is to tell when the character in the
-         --  answer should be checked, and when to look at the original
-         --  string. Some other time. RIE 11/26/96 ???
+         --  Note: There are some weird cases J can imagine with 'b' or '#' in
+         --  currency strings where the following code will cause glitches. The
+         --  trick is to tell when the character in the answer should be
+         --  checked, and when to look at the original string. Some other time.
+         --  RIE 11/26/96 ???
 
          case Answer (J) is
             when '*' =>
@@ -942,8 +935,9 @@ package body Ada.Wide_Text_IO.Editing is
 
                --  1) Expand $, replace '.' with Radix_Point
 
-               return Answer (1 .. Currency_Pos - 1) & Currency_Symbol &
-                  Answer (Currency_Pos + 1 .. Answer'Last);
+               return
+                 Answer (1 .. Currency_Pos - 1) & Currency_Symbol &
+                 Answer (Currency_Pos + 1 .. Answer'Last);
 
             else
                --  2) No currency expansion, replace '.' with Radix_Point

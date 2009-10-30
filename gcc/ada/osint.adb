@@ -80,7 +80,8 @@ package body Osint is
    --  Appends Suffix to Name and returns the new name
 
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type;
-   --  Convert OS format time to GNAT format time stamp
+   --  Convert OS format time to GNAT format time stamp.
+   --  Returns Empty_Time_Stamp if T is Invalid_Time
 
    function Executable_Prefix return String_Ptr;
    --  Returns the name of the root directory where the executable is stored.
@@ -970,12 +971,13 @@ package body Osint is
 
       Get_Name_String (Name);
 
-      if not Is_Regular_File (Name_Buffer (1 .. Name_Len)) then
-         return Empty_Time_Stamp;
-      else
-         Name_Buffer (Name_Len + 1) := ASCII.NUL;
-         return OS_Time_To_GNAT_Time (File_Time_Stamp (Name_Buffer));
-      end if;
+      --  File_Time_Stamp will always return Invalid_Time if the file does not
+      --  exist, and that OS_Time_To_GNAT_Time will convert that to
+      --  Empty_Time_Stamp. Therefore we do not need to first test whether the
+      --  file actually exists, which saves a system call
+
+      return OS_Time_To_GNAT_Time
+        (File_Time_Stamp (Name_Buffer (1 .. Name_Len)));
    end File_Stamp;
 
    function File_Stamp (Name : Path_Name_Type) return Time_Stamp_Type is
@@ -1887,6 +1889,10 @@ package body Osint is
       S  : Second_Type;
 
    begin
+      if T = Invalid_Time then
+         return Empty_Time_Stamp;
+      end if;
+
       GM_Split (T, Y, Mo, D, H, Mn, S);
       Make_Time_Stamp
         (Year    => Nat (Y),

@@ -51,7 +51,6 @@ package body Ada.Text_IO.Decimal_IO is
    begin
       if Num'Size > Integer'Size then
          Item := Num'Fixed_Value (Aux.Get_LLD (File, Width, Scale));
-
       else
          Item := Num'Fixed_Value (Aux.Get_Dec (File, Width, Scale));
       end if;

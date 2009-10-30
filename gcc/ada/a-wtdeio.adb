@@ -54,16 +54,10 @@ package body Ada.Wide_Text_IO.Decimal_IO is
    is
    begin
       if Num'Size > Integer'Size then
-         Item := Num (Aux.Get_LLD (TFT (File), Width, Scale));
-         --  Item := Num'Fixed_Value (Aux.Get_LLD (TFT (File), Width, Scale));
-         --  above is what we should write, but gets assert error ???
-
+         Item := Num'Fixed_Value (Aux.Get_LLD (TFT (File), Width, Scale));
       else
-         Item := Num (Aux.Get_Dec (TFT (File), Width, Scale));
-         --  Item := Num'Fixed_Value (Aux.Get_Dec (TFT (File), Width, Scale));
-         --  above is what we should write, but gets assert error ???
+         Item := Num'Fixed_Value (Aux.Get_Dec (TFT (File), Width, Scale));
       end if;
-
    exception
       when Constraint_Error => raise Data_Error;
    end Get;

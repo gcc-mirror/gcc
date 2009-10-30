@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2009, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -189,19 +189,12 @@ package body Ada.Real_Time is
       --  Special-case for Time_First, whose absolute value is anomalous,
       --  courtesy of two's complement.
 
-      if T = Time_First then
-         T_Val := abs (Time_Last);
-      else
-         T_Val := abs (T);
-      end if;
+      T_Val := (if T = Time_First then abs (Time_Last) else abs (T));
 
       --  Extract the integer part of T, truncating towards zero
 
-      if T_Val < 0.5 then
-         SC := 0;
-      else
-         SC := Seconds_Count (Time_Span'(T_Val - 0.5));
-      end if;
+      SC :=
+        (if T_Val < 0.5 then 0 else Seconds_Count (Time_Span'(T_Val - 0.5)));
 
       if T < 0.0 then
          SC := -SC;
