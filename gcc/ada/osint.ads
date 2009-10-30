@@ -727,6 +727,7 @@ private
    type File_Attributes is
      array (1 .. File_Attributes_Size)
      of System.Storage_Elements.Storage_Element;
+   for File_Attributes'Alignment use Standard'Maximum_Alignment;
 
    Unknown_Attributes : constant File_Attributes := (others => 0);
    --  Will be initialized properly at elaboration (for efficiency later on,

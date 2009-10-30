@@ -325,7 +325,7 @@ const int __gnat_vmsp = 0;
 #endif
 
 /* Used for Ada bindings */
-const int size_of_file_attributes = sizeof (struct file_attributes);
+const int __gnat_size_of_file_attributes = sizeof (struct file_attributes);
 
 /* Reset the file attributes as if no system call had been performed */
 void __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr);
@@ -378,7 +378,7 @@ to_ptr32 (char **ptr64)
 #endif
 
 void
-reset_attributes
+__gnat_reset_attributes
   (struct file_attributes* attr)
 {
   attr->exists     = -1;
@@ -1133,7 +1133,7 @@ long
 __gnat_file_length (int fd)
 {
   struct file_attributes attr;
-  reset_attributes (&attr);
+  __gnat_reset_attributes (&attr);
   return __gnat_file_length_attr (fd, NULL, &attr);
 }
 
@@ -1141,7 +1141,7 @@ long
 __gnat_named_file_length (char *name)
 {
   struct file_attributes attr;
-  reset_attributes (&attr);
+  __gnat_reset_attributes (&attr);
   return __gnat_file_length_attr (-1, name, &attr);
 }
 
@@ -1371,7 +1371,7 @@ OS_Time
 __gnat_file_time_name (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_file_time_name_attr (name, &attr);
 }
 
@@ -1465,7 +1465,7 @@ OS_Time
 __gnat_file_time_fd (int fd)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_file_time_fd_attr (fd, &attr);
 }
 
@@ -1819,7 +1819,7 @@ int
 __gnat_file_exists (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_file_exists_attr (name, &attr);
 }
 
@@ -1876,7 +1876,7 @@ int
 __gnat_is_regular_file (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_is_regular_file_attr (name, &attr);
 }
 
@@ -1894,7 +1894,7 @@ int
 __gnat_is_directory (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_is_directory_attr (name, &attr);
 }
 
@@ -2118,7 +2118,7 @@ int
 __gnat_is_readable_file (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_is_readable_file_attr (name, &attr);
 }
 
@@ -2156,7 +2156,7 @@ int
 __gnat_is_writable_file (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_is_writable_file_attr (name, &attr);
 }
 
@@ -2192,7 +2192,7 @@ int
 __gnat_is_executable_file (char *name)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_is_executable_file_attr (name, &attr);
 }
 
@@ -2334,7 +2334,7 @@ int
 __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 {
    struct file_attributes attr;
-   reset_attributes (&attr);
+   __gnat_reset_attributes (&attr);
    return __gnat_is_symbolic_link_attr (name, &attr);
 
 }

@@ -1866,7 +1866,8 @@ package body Make is
                                   Normalize_Pathname
                                     (Dir_Name
                                       (Get_Name_String (Full_Lib_File)),
-                                     Resolve_Links  => True,
+                                     Resolve_Links  =>
+                                       Opt.Follow_Links_For_Dirs,
                                      Case_Sensitive => False);
 
                begin
@@ -2561,7 +2562,7 @@ package body Make is
          pragma Assert (Pid /= Invalid_Pid);
 
          Running_Compile (OC1) :=
-           (Pid => Pid,
+           (Pid              => Pid,
             Full_Source_File => Sfile,
             Lib_File         => Afile,
             Full_Lib_File    => Full_Lib_File,
@@ -2606,11 +2607,11 @@ package body Make is
 
             for J in Running_Compile'First .. Outstanding_Compiles loop
                if Pid = Running_Compile (J).Pid then
-                  Data  := Running_Compile (J);
+                  Data    := Running_Compile (J);
                   Project := Running_Compile (J).Project;
 
-                  --  If a mapping file was used by this compilation,
-                  --  get its file name for reuse by a subsequent compilation
+                  --  If a mapping file was used by this compilation, get its
+                  --  file name for reuse by a subsequent compilation.
 
                   if Running_Compile (J).Mapping_File /= No_Mapping_File then
                      Comp_Data := Project_Compilation_Htable.Get
@@ -3401,6 +3402,10 @@ package body Make is
                         end if;
                      end if;
 
+                     --  Compute where the ALI file must be generated in
+                     --  In_Place_Mode (this does not require to know the
+                     --  location of the object directory)
+
                      if In_Place_Mode then
                         if Full_Lib_File = No_File then
                            --  If the library file was not found, then save
@@ -3416,20 +3421,11 @@ package body Make is
 
                            Lib_File := Full_Lib_File;
                         end if;
-
-                        Lib_File_Attr := Unknown_Attributes;
-
-                     else
-                        --  We will recompile, so we'll have to guess the
-                        --  location of the object file based on the command
-                        --  line switches and Object_Dir.
-
-                        Full_Lib_File := No_File;
-                        Lib_File_Attr := Unknown_Attributes;
                      end if;
 
-                     --  Start the compilation and record it. We can do this
-                     --  because there is at least one free process.
+                     --  Start the compilation and record it. We can do
+                     --  this because there is at least one free process.
+                     --  This might change the current directory
 
                      Collect_Arguments_And_Compile
                        (Full_Source_File => Full_Source_File,
@@ -3438,7 +3434,49 @@ package body Make is
                         Pid              => Pid,
                         Process_Created  => Process_Created);
 
-                     --  Make sure we could successfully start the compilation
+                     --  Compute where the ALI file will be generated (for
+                     --  cases that might require to know the current
+                     --  directory). The current directory might be changed
+                     --  when compiling other files so we cannot rely on it
+                     --  being the same to find the resulting ALI file.
+
+                     if not In_Place_Mode then
+                        --  Compute the expected location of the ALI file. This
+                        --  can be from several places:
+                        --    -i => in place mode. In such a case,
+                        --          Full_Lib_File has already been set above
+                        --    -D => if specified
+                        --    or defaults in current dir
+                        --  We could simply use a call similar to
+                        --     Osint.Full_Lib_File_Name (Lib_File)
+                        --  but that involves system calls and is thus slower
+
+                        if Object_Directory_Path /= null then
+                           Name_Len := 0;
+                           Add_Str_To_Name_Buffer (Object_Directory_Path.all);
+                           Add_Str_To_Name_Buffer (Get_Name_String (Lib_File));
+                           Full_Lib_File := Name_Find;
+                        else
+                           if Project_Of_Current_Object_Directory /=
+                             No_Project
+                           then
+                              Get_Name_String
+                                (Project_Of_Current_Object_Directory
+                                 .Object_Directory.Name);
+                              Add_Str_To_Name_Buffer
+                                (Get_Name_String (Lib_File));
+                              Full_Lib_File := Name_Find;
+                           else
+                              Full_Lib_File := Lib_File;
+                           end if;
+                        end if;
+
+                     end if;
+
+                     Lib_File_Attr := Unknown_Attributes;
+
+                     --  Make sure we could successfully start
+                     --  the Compilation.
 
                      if Process_Created then
                         if Pid = Invalid_Pid then
@@ -3500,34 +3538,6 @@ package body Make is
                     Check_Object_Consistency
                     and Compilation_OK
                     and (Output_Is_Object or Do_Bind_Step);
-
-                  if Data.Full_Lib_File = No_File then
-                     --  Compute the expected location of the ALI file. This
-                     --  can be from several places:
-                     --    -i => in place mode. In such a case, Full_Lib_File
-                     --          has already been set above
-                     --    -D => if specified
-                     --  or defaults in current dir.
-                     --
-                     --  We could simply use a call similar to
-                     --     Osint.Full_Lib_File_Name (Lib_File)
-                     --  but that involves system calls and is thus slower.
-
-                     if Object_Directory_Path /= null then
-                        Name_Len := 0;
-                        Add_Str_To_Name_Buffer (Object_Directory_Path.all);
-                        Add_Str_To_Name_Buffer
-                          (Get_Name_String (Data.Lib_File));
-                        Data.Full_Lib_File := Name_Find;
-                     else
-                        Data.Full_Lib_File := Data.Lib_File;
-                     end if;
-
-                     --  Invalidate the cache for the attributes, since the
-                     --  file was just created.
-
-                     Data.Lib_File_Attr := Unknown_Attributes;
-                  end if;
 
                   Text := Read_Library_Info_From_Full
                     (Data.Full_Lib_File, Data.Lib_File_Attr'Access);
