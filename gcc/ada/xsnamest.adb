@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,10 +24,10 @@
 ------------------------------------------------------------------------------
 
 --  This utility is used to make a new version of the Snames package when new
---  names are added. This version reads a template file from snames.adt in
---  which the numbers are all written as $, and generates a new version of
---  the spec file snames.ads (written to snames.ns). It also reads snames.adb
---  and generates an updated body (written to snames.nb), and snames.h and
+--  names are added. This version reads a template file from snames.ads-tmpl in
+--  which the numbers are all written as $, and generates a new version of the
+--  spec file snames.ads (written to snames.ns). It also reads snames.adb-tmpl
+--  and generates an updated body (written to snames.nb), and snames.h-tmpl and
 --  generates an updated C header file (written to snames.nh).
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;

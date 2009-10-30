@@ -424,6 +424,8 @@ begin
    Write_Line ("        H*   turn off warnings for hiding variable");
    Write_Line ("        i*   turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
+   Write_Line ("        .i   turn on warnings for overlapping actuals");
+   Write_Line ("        .I*  turn off warnings for overlapping actuals");
    Write_Line ("        j    turn on warnings for obsolescent " &
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &
