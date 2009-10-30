@@ -8254,8 +8254,8 @@ package body Sem_Res is
    -----------------------------
 
    procedure Resolve_Type_Conversion (N : Node_Id; Typ : Entity_Id) is
-      Conv_OK     : constant Boolean := Conversion_OK (N);
-      Operand     : constant Node_Id := Expression (N);
+      Conv_OK     : constant Boolean   := Conversion_OK (N);
+      Operand     : constant Node_Id   := Expression (N);
       Operand_Typ : constant Entity_Id := Etype (Operand);
       Target_Typ  : constant Entity_Id := Etype (N);
       Rop         : Node_Id;
@@ -8400,9 +8400,25 @@ package body Sem_Res is
                   (Ekind (Entity (Orig_N)) = E_Loop_Parameter
                      and then Covers (Orig_T, Etype (Entity (Orig_N)))))
          then
-            Error_Msg_Node_2 := Orig_T;
-            Error_Msg_NE -- CODEFIX
-              ("?redundant conversion, & is of type &!", N, Entity (Orig_N));
+            --  One more check, do not give warning if the analyzed conversion
+            --  has an expression with non-static bounds, and the bounds of the
+            --  target are static. This avoids junk warnings in cases where the
+            --  conversion is necessary to establish staticness, for example in
+            --  a case statement.
+
+            if not Is_OK_Static_Subtype (Operand_Typ)
+              and then Is_OK_Static_Subtype (Target_Typ)
+            then
+               null;
+
+            --  Here we give the redundant conversion warning
+
+            else
+               Error_Msg_Node_2 := Orig_T;
+               Error_Msg_NE -- CODEFIX
+                 ("?redundant conversion, & is of type &!",
+                  N, Entity (Orig_N));
+            end if;
          end if;
       end if;
 
