@@ -635,6 +635,9 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   if (elf)
     elf_end (elf);
 
+  if (file->offset != 0)
+    close (lto_file_fd);
+
   return LDPS_OK;
 }
 
