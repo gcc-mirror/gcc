@@ -48,8 +48,8 @@ void test01()
 // { dg-error "instantiated from here" "" { target *-*-* } 40 }
 // { dg-error "instantiated from here" "" { target *-*-* } 42 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 475 }
-// { dg-error "declaration of" "" { target *-*-* } 437 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 467 }
+// { dg-error "declaration of" "" { target *-*-* } 429 }
 
 // { dg-excess-errors "At global scope" }
 // { dg-excess-errors "In instantiation of" }
