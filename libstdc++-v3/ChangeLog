@@ -1,5 +1,10 @@
 2009-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/41759
+	* include/bits/random.h: Tweak a bit the text of some static_asserts.
+
+2009-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/type_traits (__is_convertible_simple): Remove.
 	(__is_convertible_helper): Adjust.
 	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
