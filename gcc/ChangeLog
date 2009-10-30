@@ -1,3 +1,9 @@
+2009-10-30  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/linux-eabi.h (LINK_SPEC): BE8_LINK_SPEC added.
+	* config/arm/bpapi.h (BE8_LINK_SPEC): New define.
+	(LINK_SPEC): BE_LINK_SPEC added.
+
 2009-10-30  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41858
