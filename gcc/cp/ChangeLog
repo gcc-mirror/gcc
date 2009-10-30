@@ -1,3 +1,15 @@
+2009-10-30  Jerry Quinn  <jlquinn@optonline.net>
+
+	* mangle.c (mangle_type_string_for_rtti): Revert 153734.
+	(needs_fake_anon): Likewise.
+	(write_name): Likewise.
+	(write_nested_name): Likewise.
+	* cp-tree.h (mangle_type_string_for_rtti): Likewise.
+	(get_anonymous_namespace): Likewise.
+	* name-lookup.c (get_anonymous_namespace_name): Likewise.
+	* rtti.c (tinfo_name): Likewise.
+	(tinfo_base_init): Likewise.
+
 2009-10-30  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41863
