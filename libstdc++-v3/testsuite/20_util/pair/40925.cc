@@ -28,6 +28,15 @@ private:
   X(const X&) = delete;
 };
 
+struct move_only
+{
+  move_only() { }
+  move_only(move_only&&) { }
+
+private:
+  move_only(const move_only&) = delete;
+};
+
 // libstdc++/40925
 void test01()
 {
@@ -43,4 +52,16 @@ void test01()
   std::pair<int X::*, int X::*> p6(mp, 0);
   std::pair<int X::*, int X::*> p7(0, mp);
   std::pair<int X::*, int X::*> p8(mp, mp);
+
+  std::pair<int*, move_only> p9(0, move_only());
+  std::pair<int X::*, move_only> p10(0, move_only());
+  std::pair<move_only, int*> p11(move_only(), 0);
+  std::pair<move_only, int X::*> p12(move_only(), 0);
+
+  std::pair<int*, move_only> p13(ip, move_only());
+  std::pair<int X::*, move_only> p14(mp, move_only());
+  std::pair<move_only, int*> p15(move_only(), ip);
+  std::pair<move_only, int X::*> p16(move_only(), mp);
+
+  std::pair<move_only, move_only> p17(move_only(), move_only());
 }
