@@ -10,7 +10,7 @@
 
 2009-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
-	PR target/40836
+	PR target/40838
 	* cfgexpand.c (expand_stack_alignment): Call update_stack_boundary
 	first.  Move assert on stack_alignment_estimated just before
 	setting stack_realign_needed.
