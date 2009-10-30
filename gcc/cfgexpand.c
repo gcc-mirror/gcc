@@ -3447,8 +3447,18 @@ expand_stack_alignment (void)
       || crtl->has_nonlocal_goto)
     crtl->need_drap = true;
 
-  gcc_assert (crtl->stack_alignment_needed
-	      <= crtl->stack_alignment_estimated);
+  /* Call update_stack_boundary here again to update incoming stack
+     boundary.  It may set incoming stack alignment to a different
+     value after RTL expansion.  TARGET_FUNCTION_OK_FOR_SIBCALL may
+     use the minimum incoming stack alignment to check if it is OK
+     to perform sibcall optimization since sibcall optimization will
+     only align the outgoing stack to incoming stack boundary.  */
+  if (targetm.calls.update_stack_boundary)
+    targetm.calls.update_stack_boundary ();
+
+  /* The incoming stack frame has to be aligned at least at
+     parm_stack_boundary.  */
+  gcc_assert (crtl->parm_stack_boundary <= INCOMING_STACK_BOUNDARY);
 
   /* Update crtl->stack_alignment_estimated and use it later to align
      stack.  We check PREFERRED_STACK_BOUNDARY if there may be non-call
@@ -3463,6 +3473,9 @@ expand_stack_alignment (void)
     crtl->stack_alignment_estimated = preferred_stack_boundary;
   if (preferred_stack_boundary > crtl->stack_alignment_needed)
     crtl->stack_alignment_needed = preferred_stack_boundary;
+
+  gcc_assert (crtl->stack_alignment_needed
+	      <= crtl->stack_alignment_estimated);
 
   crtl->stack_realign_needed
     = INCOMING_STACK_BOUNDARY < crtl->stack_alignment_estimated;
@@ -3540,7 +3553,7 @@ gimple_expand_cfg (void)
   targetm.expand_to_rtl_hook ();
   crtl->stack_alignment_needed = STACK_BOUNDARY;
   crtl->max_used_stack_slot_alignment = STACK_BOUNDARY;
-  crtl->stack_alignment_estimated = STACK_BOUNDARY;
+  crtl->stack_alignment_estimated = 0;
   crtl->preferred_stack_boundary = STACK_BOUNDARY;
   cfun->cfg->max_jumptable_ents = 0;
 
@@ -3603,23 +3616,6 @@ gimple_expand_cfg (void)
      call to __main (if any) so that the external decl is initialized.  */
   if (crtl->stack_protect_guard)
     stack_protect_prologue ();
-
-  /* Update stack boundary if needed.  */
-  if (SUPPORTS_STACK_ALIGNMENT)
-    {
-      /* Call update_stack_boundary here to update incoming stack
-	 boundary before TARGET_FUNCTION_OK_FOR_SIBCALL is called.
-	 TARGET_FUNCTION_OK_FOR_SIBCALL needs to know the accurate
-	 incoming stack alignment to check if it is OK to perform
-	 sibcall optimization since sibcall optimization will only
-	 align the outgoing stack to incoming stack boundary.  */
-      if (targetm.calls.update_stack_boundary)
-	targetm.calls.update_stack_boundary ();
-      
-      /* The incoming stack frame has to be aligned at least at
-	 parm_stack_boundary.  */
-      gcc_assert (crtl->parm_stack_boundary <= INCOMING_STACK_BOUNDARY);
-    }
 
   expand_phi_nodes (&SA);
 

@@ -1,3 +1,19 @@
+2009-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40836
+	* cfgexpand.c (expand_stack_alignment): Call update_stack_boundary
+	first.  Move assert on stack_alignment_estimated just before
+	setting stack_realign_needed.
+	(gimple_expand_cfg): Initialize stack_alignment_estimated to 0.
+	Don't call update_stack_boundary.
+
+	* config/i386/i386.c (ix86_minimum_incoming_stack_boundary): New.
+	(verride_options): Don't check ix86_force_align_arg_pointer here.
+	(ix86_function_ok_for_sibcall): Use it.
+	(ix86_update_stack_boundary): Likewise.
+
+	* config/i386/i386.h (STACK_REALIGN_DEFAULT): Update comments.
+
 2009-10-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (QHSI): New mode iterator.
@@ -13,9 +29,9 @@
 	PR debug/41700
 	* dwarf2out.c (dwarf2_debug_hooks): Add entries for new hook (two
 	locations in the source).
-        (store_vcall_insn): New function.
-        (lookup_vcall_insn): New function.
-        (dwarf2out_virtual_call_token): Use store_vcall_insn.
+	(store_vcall_insn): New function.
+	(lookup_vcall_insn): New function.
+	(dwarf2out_virtual_call_token): Use store_vcall_insn.
 	(dwarf2out_copy_call_info): New function.
 	(dwarf2out_virtual_call): Use lookup_vcall_insn.
 	* emit-rtl.c (try_split): Call copy_call_info debug hook.
