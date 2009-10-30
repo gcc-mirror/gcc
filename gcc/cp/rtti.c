@@ -102,7 +102,7 @@ VEC(tree,gc) *unemitted_tinfo_decls;
 static GTY (()) VEC(tinfo_s,gc) *tinfo_descs;
 
 static tree ifnonnull (tree, tree);
-static tree tinfo_name (tree);
+static tree tinfo_name (tree, bool);
 static tree build_dynamic_cast_1 (tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
 static tree throw_bad_typeid (void);
@@ -349,16 +349,30 @@ build_typeid (tree exp)
   return exp;
 }
 
-/* Generate the NTBS name of a type.  */
+/* Generate the NTBS name of a type.  If MARK_PRIVATE, put a '*' in front so that
+   comparisons will be done by pointer rather than string comparison.  */
 static tree
-tinfo_name (tree type)
+tinfo_name (tree type, bool mark_private)
 {
   const char *name;
+  int length;
   tree name_string;
 
-  name = mangle_type_string_for_rtti (type);
-  name_string = fix_string_type (build_string (strlen (name) + 1, name));
-  return name_string;
+  name = mangle_type_string (type);
+  length = strlen (name);
+
+  if (mark_private)
+    {
+      /* Inject '*' at beginning of name to force pointer comparison.  */
+      char* buf = (char*) XALLOCAVEC (char, length + 1);
+      buf[0] = '*';
+      memcpy (buf + 1, name, length);
+      name_string = build_string (length + 1, buf);
+    }
+  else
+    name_string = build_string (length, name);
+
+  return fix_string_type (name_string);
 }
 
 /* Return a VAR_DECL for the internal ABI defined type_info object for
@@ -839,13 +853,12 @@ tinfo_base_init (tinfo_s *ti, tree target)
   tree vtable_ptr;
 
   {
-    tree name_name;
+    tree name_name, name_string;
 
     /* Generate the NTBS array variable.  */
     tree name_type = build_cplus_array_type
 		     (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
 		     NULL_TREE);
-    tree name_string = tinfo_name (target);
 
     /* Determine the name of the variable -- and remember with which
        type it is associated.  */
@@ -862,6 +875,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
     DECL_TINFO_P (name_decl) = 1;
     set_linkage_according_to_type (target, name_decl);
     import_export_decl (name_decl);
+    name_string = tinfo_name (target, !TREE_PUBLIC (name_decl));
     DECL_INITIAL (name_decl) = name_string;
     mark_used (name_decl);
     pushdecl_top_level_and_finish (name_decl, name_string);
