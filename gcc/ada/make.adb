@@ -360,7 +360,7 @@ package body Make is
    Project_Of_Current_Object_Directory : Project_Id := No_Project;
    --  The object directory of the project for the last compilation. Avoid
    --  calling Change_Dir if the current working directory is already this
-   --  directory
+   --  directory.
 
    --  Packages of project files where unknown attributes are errors
 
@@ -3219,7 +3219,7 @@ package body Make is
          Source_File      : File_Name_Type;
          Full_Source_File : File_Name_Type;
          Source_File_Attr : aliased File_Attributes;
-         --  The full name of the source file, and its attributes (size,...)
+         --  The full name of the source file and its attributes (size, ...)
 
          Source_Unit      : Unit_Name_Type;
          Source_Index     : Int;
@@ -3230,7 +3230,7 @@ package body Make is
          Lib_File_Attr    : aliased File_Attributes;
          Read_Only        : Boolean := False;
          ALI              : ALI_Id;
-         --  The ALI file and its attributes (size, stamp,...)
+         --  The ALI file and its attributes (size, stamp, ...)
 
          Obj_File         : File_Name_Type;
          Obj_Stamp        : Time_Stamp_Type;
@@ -3262,7 +3262,7 @@ package body Make is
               and then In_Ada_Lib_Dir (Full_Lib_File);
 
             --  Since the following requires a system call, we precompute it
-            --  when needed
+            --  when needed.
 
             if not In_Lib_Dir then
                if Full_Lib_File /= No_File
@@ -3286,11 +3286,10 @@ package body Make is
                   Prefix => "  ",
                   Minimum_Verbosity => Opt.High);
 
-               --  If the library file is a read-only library skip it, but
-               --  only if, when using project files, this library file is
-               --  in the right object directory (a read-only ALI file
-               --  in the object directory of a project being extended
-               --  should not be skipped).
+               --  If the library file is a read-only library skip it, but only
+               --  if, when using project files, this library file is in the
+               --  right object directory (a read-only ALI file in the object
+               --  directory of a project being extended must not be skipped).
 
             elsif Read_Only
               and then Is_In_Object_Directory (Source_File, Full_Lib_File)
@@ -3307,7 +3306,7 @@ package body Make is
                Record_Failure (Source_File, Source_Unit, False);
 
                --  Source and library files can be located but are internal
-               --  files
+               --  files.
 
             elsif not Check_Readonly_Files
               and then Full_Lib_File /= No_File
@@ -3397,6 +3396,7 @@ package body Make is
 
                         if Do_Not_Execute then
                            --  Exit the main loop
+
                            return True;
                         end if;
                      end if;
@@ -3422,14 +3422,14 @@ package body Make is
                      else
                         --  We will recompile, so we'll have to guess the
                         --  location of the object file based on the command
-                        --  line switches and object_dir
+                        --  line switches and Object_Dir.
 
                         Full_Lib_File := No_File;
                         Lib_File_Attr := Unknown_Attributes;
                      end if;
 
-                     --  Start the compilation and record it. We can do
-                     --  this because there is at least one free process.
+                     --  Start the compilation and record it. We can do this
+                     --  because there is at least one free process.
 
                      Collect_Arguments_And_Compile
                        (Full_Source_File => Full_Source_File,
@@ -3438,8 +3438,7 @@ package body Make is
                         Pid              => Pid,
                         Process_Created  => Process_Created);
 
-                     --  Make sure we could successfully start
-                     --  the Compilation.
+                     --  Make sure we could successfully start the compilation
 
                      if Process_Created then
                         if Pid = Invalid_Pid then
@@ -3493,9 +3492,9 @@ package body Make is
                                                Check_Object_Consistency;
 
                begin
-                  --  If compilation was not OK, or if output is not an
-                  --  object file and we don't do the bind step, don't check
-                  --  for object consistency.
+                  --  If compilation was not OK, or if output is not an object
+                  --  file and we don't do the bind step, don't check for
+                  --  object consistency.
 
                   Check_Object_Consistency :=
                     Check_Object_Consistency
@@ -3508,10 +3507,11 @@ package body Make is
                      --    -i => in place mode. In such a case, Full_Lib_File
                      --          has already been set above
                      --    -D => if specified
-                     --    or defaults in current dir
+                     --  or defaults in current dir.
+                     --
                      --  We could simply use a call similar to
                      --     Osint.Full_Lib_File_Name (Lib_File)
-                     --  but that involves system calls and is thus slower
+                     --  but that involves system calls and is thus slower.
 
                      if Object_Directory_Path /= null then
                         Name_Len := 0;
@@ -3524,7 +3524,7 @@ package body Make is
                      end if;
 
                      --  Invalidate the cache for the attributes, since the
-                     --  file was just created
+                     --  file was just created.
 
                      Data.Lib_File_Attr := Unknown_Attributes;
                   end if;
@@ -3629,7 +3629,7 @@ package body Make is
       Main_Unit             := False;
 
       --  Keep looping until there is no more work to do (the Q is empty)
-      --  and all the outstanding compilations have terminated
+      --  and all the outstanding compilations have terminated.
 
       Make_Loop : while not Empty_Q or else Outstanding_Compiles > 0 loop
          exit Make_Loop when Must_Exit_Because_Of_Error;
@@ -3638,7 +3638,8 @@ package body Make is
          Wait_For_Available_Slot;
 
          --  ??? Should be done as soon as we add a Good_ALI, wouldn't it avoid
-         --  the need for a list of good ALI ?
+         --  the need for a list of good ALI?
+
          Fill_Queue_From_ALI_Files;
 
          if Display_Compilation_Progress then
@@ -3896,7 +3897,7 @@ package body Make is
                --  recreate another config file: we cannot reuse the one that
                --  we just deleted!
 
-               Proj.Project.Config_Checked := False;
+               Proj.Project.Config_Checked   := False;
                Proj.Project.Config_File_Name := No_Path;
                Proj.Project.Config_File_Temp := False;
             end if;
@@ -3947,8 +3948,8 @@ package body Make is
                   then
                      Temporary_Config_File := False;
 
-                     --  Do not display the -F=mapping_file switch for
-                     --  gnatbind, if -dn is not specified.
+                     --  Do not display the -F=mapping_file switch for gnatbind
+                     --  if -dn is not specified.
 
                   elsif Debug.Debug_Flag_N
                     or else Args (J)'Length < 4
@@ -4108,8 +4109,7 @@ package body Make is
       Total_Compilation_Failures : Natural := 0;
 
       Is_Main_Unit : Boolean;
-      --  Set to True by Compile_Sources if the Main_Source_File can be a
-      --  main unit.
+      --  Set True by Compile_Sources if Main_Source_File can be a main unit
 
       Main_ALI_File : File_Name_Type;
       --  The ali file corresponding to Main_Source_File
@@ -4118,8 +4118,8 @@ package body Make is
       --  The file name of an executable
 
       Non_Std_Executable : Boolean := False;
-      --  Non_Std_Executable is set to True when there is a possibility
-      --  that the linker will not choose the correct executable file name.
+      --  Non_Std_Executable is set to True when there is a possibility that
+      --  the linker will not choose the correct executable file name.
 
       Current_Work_Dir : constant String_Access :=
                                     new String'(Get_Current_Dir);
@@ -4170,8 +4170,8 @@ package body Make is
          loop
             declare
                Main      : constant String := Mains.Next_Main;
-               --  The name specified on the command line may include
-               --  directory information.
+               --  The name specified on the command line may include directory
+               --  information.
 
                File_Name : constant String := Base_Name (Main);
                --  The simple file name of the current main
@@ -4186,17 +4186,16 @@ package body Make is
                Proj := Prj.Env.Project_Of
                          (File_Name, Main_Project, Project_Tree);
 
-               --  Fail if the current main is not a source of a
-               --  project.
+               --  Fail if the current main is not a source of a project
 
                if Proj = No_Project then
                   Make_Failed
                     ("""" & Main & """ is not a source of any project");
 
                else
-                  --  If there is directory information, check that
-                  --  the source exists and, if it does, that the path
-                  --  is the actual path of a source of a project.
+                  --  If there is directory information, check that the source
+                  --  exists and, if it does, that the path is the actual path
+                  --  of a source of a project.
 
                   if Main /= File_Name then
                      Lang := Get_Language_From_Name (Main_Project, "ada");
@@ -4270,8 +4269,8 @@ package body Make is
 
                      elsif Proj /= Real_Main_Project then
 
-                        --  Fail, as the current main is not a source
-                        --  of the same project as the first main.
+                        --  Fail, as the current main is not a source of the
+                        --  same project as the first main.
 
                         Make_Failed
                           ("""" & Main &
@@ -4281,9 +4280,9 @@ package body Make is
                   end if;
                end if;
 
-               --  If -u and -U are not used, we may have mains that
-               --  are sources of a project that is not the one
-               --  specified with switch -P.
+               --  If -u and -U are not used, we may have mains that are
+               --  sources of a project that is not the one specified with
+               --  switch -P.
 
                if not Unique_Compile then
                   Main_Project := Real_Main_Project;
@@ -4345,8 +4344,7 @@ package body Make is
                          (Unit.File_Names (Impl).Display_File);
                      ALI_Project := Unit.File_Names (Impl).Project;
 
-                     --  Otherwise, if there is a spec, put it in the
-                     --  mapping.
+                     --  Otherwise, if there is a spec, put it in the mapping
 
                   elsif Unit.File_Names (Spec) /= No_Source
                     and then Unit.File_Names (Spec).Project /=
@@ -4367,8 +4365,9 @@ package body Make is
                   --  If we have something to put in the mapping then do it
                   --  now. However, if the project is extended, we don't put
                   --  anything in the mapping file, because we don't know where
-                  --  the ALI file is: it might be in the extended project obj
-                  --  dir as well as in the extending project obj dir.
+                  --  the ALI file is: it might be in the extended project
+                  --  object directory as well as in the extending project
+                  --  object directory.
 
                   if ALI_Name /= No_File
                     and then ALI_Project.Extended_By = No_Project
@@ -4461,8 +4460,8 @@ package body Make is
 
             OK := OK and Status;
 
-            --  If the creation of the mapping file was successful,
-            --  we add the switch to the arguments of gnatbind.
+            --  If the creation of the mapping file was successful, we add the
+            --  switch to the arguments of gnatbind.
 
             if OK then
                Last_Arg := Last_Arg + 1;
@@ -4474,7 +4473,7 @@ package body Make is
 
    --  Start of processing for Gnatmake
 
-   --  This body is very long, should be broken down ???
+   --  This body is very long, should be broken down???
 
    begin
       Install_Int_Handler (Sigint_Intercepted'Access);
@@ -4527,10 +4526,10 @@ package body Make is
             end if;
 
             --  Specify -n for gnatbind and add the ALI files of all the
-            --  sources, except the one which is a fake main subprogram:
-            --  this is the one for the binder generated file and it will be
-            --  transmitted to gnatlink. These sources are those that are
-            --  in the queue.
+            --  sources, except the one which is a fake main subprogram: this
+            --  is the one for the binder generated file and it will be
+            --  transmitted to gnatlink. These sources are those that are in
+            --  the queue.
 
             Add_Switch ("-n", Binder, And_Save => True);
 
@@ -4547,8 +4546,8 @@ package body Make is
 
       elsif Main_Project /= No_Project then
 
-         --  If the main project file is a library project file, main(s)
-         --  cannot be specified on the command line.
+         --  If the main project file is a library project file, main(s) cannot
+         --  be specified on the command line.
 
          if Osint.Number_Of_Files /= 0 then
             if Main_Project.Library
@@ -4566,10 +4565,10 @@ package body Make is
                Check_Mains;
             end if;
 
-         --  If no mains have been specified on the command line,
-         --  and we are using a project file, we either find the main(s)
-         --  in the attribute Main of the main project, or we put all
-         --  the sources of the project file as mains.
+         --  If no mains have been specified on the command line, and we are
+         --  using a project file, we either find the main(s) in attribute
+         --  Main of the main project, or we put all the sources of the project
+         --  file as mains.
 
          else
             if Main_Index /= 0 then
@@ -4581,16 +4580,16 @@ package body Make is
                Value : String_List_Id := Main_Project.Mains;
 
             begin
-               --  The attribute Main is an empty list or not specified,
-               --  or else gnatmake was invoked with the switch "-u".
+               --  The attribute Main is an empty list or not specified, or
+               --  else gnatmake was invoked with the switch "-u".
 
                if Value = Prj.Nil_String or else Unique_Compile then
 
                   if (not Make_Steps) or else Compile_Only
                     or else not Main_Project.Library
                   then
-                     --  First make sure that the binder and the linker
-                     --  will not be invoked.
+                     --  First make sure that the binder and the linker will
+                     --  not be invoked.
 
                      Do_Bind_Step := False;
                      Do_Link_Step := False;
@@ -4618,8 +4617,8 @@ package body Make is
 
                else
                   --  The attribute Main is not an empty list.
-                  --  Put all the main subprograms in the list as if there
-                  --  were specified on the command line. However, if attribute
+                  --  Put all the main subprograms in the list as if they were
+                  --  specified on the command line. However, if attribute
                   --  Languages includes a language other than Ada, only
                   --  include the Ada mains; if there is no Ada main, compile
                   --  all the sources of the project.
@@ -4883,8 +4882,8 @@ package body Make is
                             & """ is not a unit of project "
                             & Project_File_Name.all & ".");
             else
-               --  Remove any directory information from the main
-               --  source file name.
+               --  Remove any directory information from the main source file
+               --  file name.
 
                declare
                   Pos : Natural := Main_Unit_File_Name'Last;
@@ -5156,8 +5155,8 @@ package body Make is
       end if;
 
       --  Get the target parameters, which are only needed for a couple of
-      --  cases in gnatmake. Protect against an exception, such as the case
-      --  of system.ads missing from the library, and fail gracefully.
+      --  cases in gnatmake. Protect against an exception, such as the case of
+      --  system.ads missing from the library, and fail gracefully.
 
       begin
          Targparm.Get_Target_Parameters;
@@ -5250,8 +5249,8 @@ package body Make is
             end;
          end if;
 
-         --  If a relative path output file has been specified, we add
-         --  the exec directory.
+         --  If a relative path output file has been specified, we add the
+         --  exec directory.
 
          for J in reverse 1 .. Saved_Linker_Switches.Last - 1 loop
             if Saved_Linker_Switches.Table (J).all = Output_Flag.all then
@@ -5372,9 +5371,9 @@ package body Make is
          The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last) := No_gnat_adc;
       end if;
 
-      --  If there was a --GCC, --GNATBIND or --GNATLINK switch on
-      --  the command line, then we have to use it, even if there was
-      --  another switch in the project file.
+      --  If there was a --GCC, --GNATBIND or --GNATLINK switch on the command
+      --  line, then we have to use it, even if there was another switch in
+      --  the project file.
 
       if Saved_Gcc /= null then
          Gcc := Saved_Gcc;
@@ -6691,8 +6690,8 @@ package body Make is
 
       Mains.Delete;
 
-      --  Add the directory where gnatmake is invoked in front of the
-      --  path, if gnatmake is invoked from a bin directory or with directory
+      --  Add the directory where gnatmake is invoked in front of the path,
+      --  if gnatmake is invoked from a bin directory or with directory
       --  information. Only do this if the platform is not VMS, where the
       --  notion of path does not really exist.
 
@@ -6860,8 +6859,8 @@ package body Make is
             Write_Eol;
          end if;
 
-         --  We add the source directories and the object directories
-         --  to the search paths.
+         --  We add the source directories and the object directories to the
+         --  search paths.
 
          Add_Source_Directories (Main_Project, Project_Tree);
          Add_Object_Directories (Main_Project);
@@ -7022,9 +7021,8 @@ package body Make is
            and then not Unit.File_Names (Spec).Locally_Removed
            and then Check_Project (Unit.File_Names (Spec).Project)
          then
-            --  If there is no source for the body, but there is a source
-            --  for the spec which has not been locally removed, then we take
-            --  this one.
+            --  If there is no source for the body, but there is one for the
+            --  spec which has not been locally removed, then we take this one.
 
             Sfile := Unit.File_Names (Spec).Display_File;
             Index := Unit.File_Names (Spec).Index;
@@ -7368,9 +7366,9 @@ package body Make is
       B : Byte;
 
       function Base_Directory return String;
-      --  If Dir comes from the command line, empty string (relative paths
-      --  are resolved with respect to the current directory), else return
-      --  the main project's directory.
+      --  If Dir comes from the command line, empty string (relative paths are
+      --  resolved with respect to the current directory), else return the main
+      --  project's directory.
 
       --------------------
       -- Base_Directory --
@@ -7671,7 +7669,7 @@ package body Make is
 
       --  If the previous switch has set the Object_Directory_Present flag
       --  (that is we have seen a -D), then the next argument is the path name
-      --  of the object directory..
+      --  of the object directory.
 
       elsif Object_Directory_Present
         and then not Object_Directory_Seen
@@ -7685,21 +7683,26 @@ package body Make is
             Make_Failed ("cannot find object directory """ & Argv & """");
 
          else
-            Add_Lib_Search_Dir (Argv);
-
-            --  Specify the object directory to the binder
-
-            Add_Switch ("-aO" & Argv, Binder, And_Save => And_Save);
-
             --  Record the object directory. Make sure it ends with a directory
             --  separator.
 
-            if Argv (Argv'Last) = Directory_Separator then
-               Object_Directory_Path := new String'(Argv);
-            else
-               Object_Directory_Path :=
-                 new String'(Argv & Directory_Separator);
-            end if;
+            declare
+               Norm : constant String := Normalize_Pathname (Argv);
+            begin
+               if Norm (Norm'Last) = Directory_Separator then
+                  Object_Directory_Path := new String'(Norm);
+               else
+                  Object_Directory_Path :=
+                    new String'(Norm & Directory_Separator);
+               end if;
+
+               Add_Lib_Search_Dir (Norm);
+
+               --  Specify the object directory to the binder
+
+               Add_Switch ("-aO" & Norm, Binder, And_Save => And_Save);
+            end;
+
          end if;
 
       --  Then check if we are dealing with -cargs/-bargs/-largs/-margs
@@ -7722,9 +7725,8 @@ package body Make is
                raise Program_Error;
          end case;
 
-      --  A special test is needed for the -o switch within a -largs
-      --  since that is another way to specify the name of the final
-      --  executable.
+      --  A special test is needed for the -o switch within a -largs since that
+      --  is another way to specify the name of the final executable.
 
       elsif Program_Args = Linker
         and then Argv = "-o"
@@ -7732,8 +7734,8 @@ package body Make is
          Make_Failed ("switch -o not allowed within a -largs. " &
                       "Use -o directly.");
 
-      --  Check to see if we are reading switches after a -cargs,
-      --  -bargs or -largs switch. If yes save it.
+      --  Check to see if we are reading switches after a -cargs, -bargs or
+      --  -largs switch. If so, save it.
 
       elsif Program_Args /= None then
 
@@ -7776,9 +7778,7 @@ package body Make is
 
                for J in 2 .. Program_Args.all'Last loop
                   Add_Switch
-                    (Program_Args.all (J).all,
-                     Compiler,
-                     And_Save => And_Save);
+                    (Program_Args.all (J).all, Compiler, And_Save => And_Save);
                end loop;
             end;
 
@@ -7826,7 +7826,7 @@ package body Make is
            Argv (1 .. 5) = "--RTS"
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
-            Add_Switch (Argv, Binder, And_Save => And_Save);
+            Add_Switch (Argv, Binder,   And_Save => And_Save);
 
             if Argv'Length <= 6 or else Argv (6) /= '=' then
                Make_Failed ("missing path for --RTS");
@@ -7889,7 +7889,7 @@ package body Make is
            Argv (1 .. 8) = "--param="
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
-            Add_Switch (Argv, Linker, And_Save => And_Save);
+            Add_Switch (Argv, Linker,   And_Save => And_Save);
 
          else
             Scan_Make_Switches (Project_Node_Tree, Argv, Success);
@@ -7927,18 +7927,17 @@ package body Make is
          --  -Idir
 
          elsif Argv (2) = 'I' then
-            Add_Source_Search_Dir (Argv (3 .. Argv'Last), And_Save);
+            Add_Source_Search_Dir  (Argv (3 .. Argv'Last), And_Save);
             Add_Library_Search_Dir (Argv (3 .. Argv'Last), And_Save);
             Add_Switch (Argv, Compiler, And_Save => And_Save);
-            Add_Switch (Argv, Binder, And_Save => And_Save);
+            Add_Switch (Argv, Binder,   And_Save => And_Save);
 
          --  -aIdir (to gcc this is like a -I switch)
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aI" then
             Add_Source_Search_Dir (Argv (4 .. Argv'Last), And_Save);
-            Add_Switch ("-I" & Argv (4 .. Argv'Last),
-                        Compiler,
-                        And_Save => And_Save);
+            Add_Switch
+              ("-I" & Argv (4 .. Argv'Last), Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
 
          --  -aOdir
@@ -7952,9 +7951,8 @@ package body Make is
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aL" then
             Mark_Directory (Argv (4 .. Argv'Last), Ada_Lib_Dir, And_Save);
             Add_Library_Search_Dir (Argv (4 .. Argv'Last), And_Save);
-            Add_Switch ("-aO" & Argv (4 .. Argv'Last),
-                        Binder,
-                        And_Save => And_Save);
+            Add_Switch
+              ("-aO" & Argv (4 .. Argv'Last), Binder, And_Save => And_Save);
 
          --  -aamp_target=...
 
@@ -7972,14 +7970,12 @@ package body Make is
 
          elsif Argv (2) = 'A' then
             Mark_Directory (Argv (3 .. Argv'Last), Ada_Lib_Dir, And_Save);
-            Add_Source_Search_Dir (Argv (3 .. Argv'Last), And_Save);
+            Add_Source_Search_Dir  (Argv (3 .. Argv'Last), And_Save);
             Add_Library_Search_Dir (Argv (3 .. Argv'Last), And_Save);
-            Add_Switch ("-I"  & Argv (3 .. Argv'Last),
-                        Compiler,
-                        And_Save => And_Save);
-            Add_Switch ("-aO" & Argv (3 .. Argv'Last),
-                        Binder,
-                        And_Save => And_Save);
+            Add_Switch
+              ("-I"  & Argv (3 .. Argv'Last), Compiler, And_Save => And_Save);
+            Add_Switch
+              ("-aO" & Argv (3 .. Argv'Last), Binder,   And_Save => And_Save);
 
          --  -Ldir
 
@@ -7987,11 +7983,11 @@ package body Make is
             Add_Switch (Argv, Linker, And_Save => And_Save);
 
          --  For -gxxxxx, -pg, -mxxx, -fxxx: give the switch to both the
-         --  compiler and the linker (except for -gnatxxx which is only for
-         --  the compiler). Some of the -mxxx (for example -m64) and -fxxx
-         --  (for example -ftest-coverage for gcov) need to be used when
-         --  compiling the binder generated files, and using all these gcc
-         --  switches for the binder generated files should not be a problem.
+         --  compiler and the linker (except for -gnatxxx which is only for the
+         --  compiler). Some of the -mxxx (for example -m64) and -fxxx (for
+         --  example -ftest-coverage for gcov) need to be used when compiling
+         --  the binder generated files, and using all these gcc switches for
+         --  the binder generated files should not be a problem.
 
          elsif
            (Argv (2) = 'g' and then (Argv'Last < 5
@@ -8001,7 +7997,7 @@ package body Make is
              or else (Argv (2) = 'f' and then Argv'Last > 2)
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
-            Add_Switch (Argv, Linker, And_Save => And_Save);
+            Add_Switch (Argv, Linker,   And_Save => And_Save);
 
             --  The following condition has to be kept synchronized with
             --  the Process_Multilib one.
@@ -8027,8 +8023,8 @@ package body Make is
 
          elsif Argv'Last = 2 and then Argv (2) = 'D' then
             if Project_File_Name /= null then
-               Make_Failed ("-D cannot be used in conjunction with a " &
-                            "project file");
+               Make_Failed
+                 ("-D cannot be used in conjunction with a project file");
 
             else
                Scan_Make_Switches (Project_Node_Tree, Argv, Success);
@@ -8036,17 +8032,15 @@ package body Make is
 
          --  -d
 
-         elsif Argv (2) = 'd'
-           and then Argv'Last = 2
-         then
+         elsif Argv (2) = 'd' and then Argv'Last = 2 then
             Display_Compilation_Progress := True;
 
          --  -i
 
          elsif Argv'Last = 2 and then Argv (2) = 'i' then
             if Project_File_Name /= null then
-               Make_Failed ("-i cannot be used in conjunction with a " &
-                            "project file");
+               Make_Failed
+                 ("-i cannot be used in conjunction with a project file");
             else
                Scan_Make_Switches (Project_Node_Tree, Argv, Success);
             end if;
@@ -8062,20 +8056,16 @@ package body Make is
 
          --  -m
 
-         elsif Argv (2) = 'm'
-           and then Argv'Last = 2
-         then
+         elsif Argv (2) = 'm' and then Argv'Last = 2 then
             Minimal_Recompilation := True;
 
          --  -u
 
-         elsif Argv (2) = 'u'
-           and then Argv'Last = 2
-         then
-            Unique_Compile   := True;
-            Compile_Only := True;
-            Do_Bind_Step     := False;
-            Do_Link_Step     := False;
+         elsif Argv (2) = 'u' and then Argv'Last = 2 then
+            Unique_Compile := True;
+            Compile_Only   := True;
+            Do_Bind_Step   := False;
+            Do_Link_Step   := False;
 
          --  -U
 
@@ -8083,10 +8073,10 @@ package body Make is
            and then Argv'Last = 2
          then
             Unique_Compile_All_Projects := True;
-            Unique_Compile   := True;
-            Compile_Only := True;
-            Do_Bind_Step     := False;
-            Do_Link_Step     := False;
+            Unique_Compile := True;
+            Compile_Only   := True;
+            Do_Bind_Step   := False;
+            Do_Link_Step   := False;
 
          --  -Pprj or -P prj (only once, and only on the command line)
 
@@ -8095,16 +8085,16 @@ package body Make is
                Make_Failed ("cannot have several project files specified");
 
             elsif Object_Directory_Path /= null then
-               Make_Failed ("-D cannot be used in conjunction with a " &
-                            "project file");
+               Make_Failed
+                 ("-D cannot be used in conjunction with a project file");
 
             elsif In_Place_Mode then
-               Make_Failed ("-i cannot be used in conjunction with a " &
-                            "project file");
+               Make_Failed
+                 ("-i cannot be used in conjunction with a project file");
 
             elsif not And_Save then
 
-               --  It could be a tool other than gnatmake (i.e, gnatdist)
+               --  It could be a tool other than gnatmake (e.g. gnatdist)
                --  or a -P switch inside a project file.
 
                Fail
@@ -8145,31 +8135,30 @@ package body Make is
          elsif Argv (2) = 'X'
            and then Is_External_Assignment (Project_Node_Tree, Argv)
          then
-            --  Is_External_Assignment has side effects
-            --  when it returns True;
+            --  Is_External_Assignment has side effects when it returns True
 
             null;
 
-         --  If -gnath is present, then generate the usage information
-         --  right now and do not pass this option on to the compiler calls.
+         --  If -gnath is present, then generate the usage information right
+         --  now and do not pass this option on to the compiler calls.
 
          elsif Argv = "-gnath" then
             Usage;
 
-         --  If -gnatc is specified, make sure the bind step and the link
-         --  step are not executed.
+         --  If -gnatc is specified, make sure the bind and link steps are not
+         --  executed.
 
          elsif Argv'Length >= 6 and then Argv (2 .. 6) = "gnatc" then
 
-            --  If -gnatc is specified, make sure the bind step and the link
-            --  step are not executed.
+            --  If -gnatc is specified, make sure the bind and link steps are
+            --  not executed.
 
             Add_Switch (Argv, Compiler, And_Save => And_Save);
-            Operating_Mode := Check_Semantics;
+            Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
             Compile_Only             := True;
-            Do_Bind_Step                 := False;
-            Do_Link_Step                 := False;
+            Do_Bind_Step             := False;
+            Do_Link_Step             := False;
 
          elsif Argv (2 .. Argv'Last) = "nostdlib" then
 
@@ -8187,7 +8176,7 @@ package body Make is
 
             No_Stdinc := True;
             Add_Switch (Argv, Compiler, And_Save => And_Save);
-            Add_Switch (Argv, Binder, And_Save => And_Save);
+            Add_Switch (Argv, Binder,   And_Save => And_Save);
 
          --  All other switches are processed by Scan_Make_Switches. If the
          --  call returns with Gnatmake_Switch_Found = False, then the switch
