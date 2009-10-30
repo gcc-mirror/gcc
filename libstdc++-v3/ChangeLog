@@ -1,5 +1,9 @@
 2009-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.h: Fix typo in static_assert text.
+
+2009-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/41759
 	* include/bits/random.h: Tweak a bit the text of some static_asserts.
 

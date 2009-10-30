@@ -1094,7 +1094,7 @@ namespace std
   template<typename _RandomNumberEngine, size_t __k>
     class shuffle_order_engine
     {
-      static_assert(1u <= __k, "template argument substituing "
+      static_assert(1u <= __k, "template argument substituting "
 		    "__k out of bound");
 
     public:
