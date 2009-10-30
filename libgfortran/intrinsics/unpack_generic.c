@@ -57,7 +57,7 @@ unpack_bounds (gfc_array_char *ret, const gfc_array_char *vector,
 static void
 unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 		 const gfc_array_l1 *mask, const gfc_array_char *field,
-		 index_type size, index_type fsize)
+		 index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -345,8 +345,7 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 #endif
     }
 
-  unpack_internal (ret, vector, mask, field, size,
-		   GFC_DESCRIPTOR_SIZE (field));
+  unpack_internal (ret, vector, mask, field, size);
 }
 
 
@@ -361,13 +360,13 @@ unpack1_char (gfc_array_char *ret,
 	      GFC_INTEGER_4 ret_length __attribute__((unused)),
 	      const gfc_array_char *vector, const gfc_array_l1 *mask,
 	      const gfc_array_char *field, GFC_INTEGER_4 vector_length,
-	      GFC_INTEGER_4 field_length)
+	      GFC_INTEGER_4 field_length __attribute__((unused)))
 {
 
   if (unlikely(compile_options.bounds_check))
     unpack_bounds (ret, vector, mask, field);
 
-  unpack_internal (ret, vector, mask, field, vector_length, field_length);
+  unpack_internal (ret, vector, mask, field, vector_length);
 }
 
 
@@ -382,15 +381,14 @@ unpack1_char4 (gfc_array_char *ret,
 	       GFC_INTEGER_4 ret_length __attribute__((unused)),
 	       const gfc_array_char *vector, const gfc_array_l1 *mask,
 	       const gfc_array_char *field, GFC_INTEGER_4 vector_length,
-	       GFC_INTEGER_4 field_length)
+	       GFC_INTEGER_4 field_length __attribute__((unused)))
 {
 
   if (unlikely(compile_options.bounds_check))
     unpack_bounds (ret, vector, mask, field);
 
   unpack_internal (ret, vector, mask, field,
-		   vector_length * sizeof (gfc_char4_t),
-		   field_length * sizeof (gfc_char4_t));
+		   vector_length * sizeof (gfc_char4_t));
 }
 
 
@@ -543,7 +541,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
   memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;
   tmp.data = field;
-  unpack_internal (ret, vector, mask, &tmp, GFC_DESCRIPTOR_SIZE (vector), 0);
+  unpack_internal (ret, vector, mask, &tmp, GFC_DESCRIPTOR_SIZE (vector));
 }
 
 
@@ -567,7 +565,7 @@ unpack0_char (gfc_array_char *ret,
   memset (&tmp, 0, sizeof (tmp));
   tmp.dtype = 0;
   tmp.data = field;
-  unpack_internal (ret, vector, mask, &tmp, vector_length, 0);
+  unpack_internal (ret, vector, mask, &tmp, vector_length);
 }
 
 
@@ -592,5 +590,5 @@ unpack0_char4 (gfc_array_char *ret,
   tmp.dtype = 0;
   tmp.data = field;
   unpack_internal (ret, vector, mask, &tmp,
-		   vector_length * sizeof (gfc_char4_t), 0);
+		   vector_length * sizeof (gfc_char4_t));
 }

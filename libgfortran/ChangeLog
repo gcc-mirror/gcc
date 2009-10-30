@@ -1,3 +1,17 @@
+2009-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/41219
+	* intrinsics/unpack_generic.c (unpack_internal): Remove unused
+	argument from prototype.
+	(unpack1): Update unpack_internal call.
+	(unpack1_char): Likewise.
+	(unpack1_char4): Likewise.
+	(unpack0): Likewise.
+	(unpack0_char): Likewise.
+	(unpack0_char4): Likewise.
+	* intrinsics/iso_c_binding.c (c_f_pointer_u0): Get rid of
+	uninitialized variable warning.
+
 2009-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/41711
