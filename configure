@@ -3509,12 +3509,14 @@ case "${target}" in
     # if the --with-newlib option has been given, because otherwise
     # 'target-newlib' will appear in skipdirs.
     ;;
-  i[3456789]86-*-mingw32*)
+  i[3456789]86-w64-mingw*)
+    noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
+    ;;
+  i[3456789]86-*-mingw*)
     target_configdirs="$target_configdirs target-winsup"
     noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
     ;;
   x86_64-*-mingw*)
-    target_configdirs="$target_configdirs target-winsup"
     noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
     ;;
   *-*-cygwin*)
@@ -7859,6 +7861,8 @@ case " $target_configdirs " in
   ;;
 esac
 case "$target" in
+x86_64-*-mingw* | *-w64-mingw*)
+  ;;
 *-mingw*)
   # Can't be handled as Cygwin above since Mingw does not use newlib.
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup/mingw -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/mingw/include -isystem $$s/winsup/w32api/include' ;;
