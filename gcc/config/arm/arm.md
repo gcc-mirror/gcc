@@ -392,6 +392,9 @@
 ; registers.
 (define_mode_iterator ANY64 [DI DF V8QI V4HI V2SI V2SF])
 
+;; The integer modes up to word size
+(define_mode_iterator QHSI [QI HI SI])
+
 ;;---------------------------------------------------------------------------
 ;; Predicates
 
@@ -5847,6 +5850,11 @@
       if (GET_CODE (operands[1]) == CONST_INT)
 	{
 	  rtx reg = gen_reg_rtx (SImode);
+
+	  /* For thumb we want an unsigned immediate, then we are more likely 
+	     to be able to use a movs insn.  */
+	  if (TARGET_THUMB)
+	    operands[1] = GEN_INT (INTVAL (operands[1]) & 255);
 
 	  emit_insn (gen_movsi (reg, operands[1]));
 	  operands[1] = gen_lowpart (QImode, reg);

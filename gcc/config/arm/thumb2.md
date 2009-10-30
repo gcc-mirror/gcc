@@ -1156,8 +1156,8 @@
 
 ;; 16-bit load immediate
 (define_peephole2
-  [(set (match_operand:SI 0 "low_register_operand" "")
-	(match_operand:SI 1 "const_int_operand" ""))]
+  [(set (match_operand:QHSI 0 "low_register_operand" "")
+	(match_operand:QHSI 1 "const_int_operand" ""))]
   "TARGET_THUMB2
    && peep2_regno_dead_p(0, CC_REGNUM)
    && (unsigned HOST_WIDE_INT) INTVAL(operands[1]) < 256"
@@ -1168,9 +1168,9 @@
   ""
 )
 
-(define_insn "*thumb2_movsi_shortim"
-  [(set (match_operand:SI 0 "low_register_operand" "=l")
-	(match_operand:SI 1 "const_int_operand" "I"))
+(define_insn "*thumb2_mov<mode>_shortim"
+  [(set (match_operand:QHSI 0 "low_register_operand" "=l")
+	(match_operand:QHSI 1 "const_int_operand" "I"))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed"
   "mov%!\t%0, %1"
