@@ -1,3 +1,59 @@
+2009-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-10-30  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41863
+	* g++.dg/template/sizeof12.C: New test.
+
+	2009-10-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/41775
+	* g++.dg/torture/pr41775.C: New testcase.
+
+	2009-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/41801
+	* g++.dg/ext/sync-3.C: New test.
+
+	2009-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41020
+	* g++.dg/lookup/extern-c-redecl5.C: Fix up regexp.
+
+	2009-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/41345
+	* gcc.dg/pr41345.c: New test.
+
+	2009-10-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41785
+	* g++.dg/cpp0x/variadic96.C: New test.
+
+	2009-10-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/41020
+	* g++.dg/lookup/extern-c-redecl2.C: New test.
+	* g++.dg/lookup/extern-c-redecl3.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl4.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl5.C: Likewise.
+
+	2009-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/40033
+	* gcc.dg/noncompile/pr40033-1.c: New test.
+
+	2009-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/41673
+	* gcc.dg/Wstrict-aliasing-bogus-vla-1.c: New test.
+
+	2009-10-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/41497
+	* gcc.dg/tree-ssa/pr41497.c: New.
+
 2009-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41777
@@ -25,6 +81,7 @@
 
 2009-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	Backport from mainline:
 	2009-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41728
