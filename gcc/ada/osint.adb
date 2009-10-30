@@ -1529,15 +1529,6 @@ package body Osint is
       return Name_Find;
    end Lib_File_Name;
 
-   ------------------------
-   -- Library_File_Stamp --
-   ------------------------
-
-   function Library_File_Stamp (N : File_Name_Type) return Time_Stamp_Type is
-   begin
-      return File_Stamp (Find_File (N, Library));
-   end Library_File_Stamp;
-
    -----------------
    -- Locate_File --
    -----------------
@@ -2119,7 +2110,20 @@ package body Osint is
 
    function Read_Library_Info
      (Lib_File  : File_Name_Type;
-      Fatal_Err : Boolean := False) return Text_Buffer_Ptr
+      Fatal_Err : Boolean := False) return Text_Buffer_Ptr is
+   begin
+      return Read_Library_Info_From_Full
+        (Full_Lib_File => Find_File (Lib_File, Library),
+         Fatal_Err     => Fatal_Err);
+   end Read_Library_Info;
+
+   ---------------------------------
+   -- Read_Library_Info_From_Full --
+   ---------------------------------
+
+   function Read_Library_Info_From_Full
+     (Full_Lib_File : File_Name_Type;
+      Fatal_Err     : Boolean := False) return Text_Buffer_Ptr
    is
       Lib_FD : File_Descriptor;
       --  The file descriptor for the current library file. A negative value
@@ -2133,7 +2137,7 @@ package body Osint is
       --  For the calls to Close
 
    begin
-      Current_Full_Lib_Name := Find_File (Lib_File, Library);
+      Current_Full_Lib_Name := Full_Lib_File;
       Current_Full_Obj_Name := Object_File_Name (Current_Full_Lib_Name);
 
       if Current_Full_Lib_Name = No_File then
@@ -2239,7 +2243,7 @@ package body Osint is
 
       return Text;
 
-   end Read_Library_Info;
+   end Read_Library_Info_From_Full;
 
    ----------------------
    -- Read_Source_File --
