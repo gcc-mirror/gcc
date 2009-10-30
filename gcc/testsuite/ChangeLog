@@ -1,3 +1,7 @@
+2009-10-30  Andrew Jenner  <andrew@codesourcery.com>
+
+	* lib/target-supports.exp: Handle powerpc-*-elf.
+
 2009-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40838
