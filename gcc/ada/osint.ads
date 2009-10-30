@@ -29,6 +29,7 @@
 with Namet; use Namet;
 with Types; use Types;
 
+with System.Storage_Elements;
 with System.OS_Lib; use System.OS_Lib;
 with System;        use System;
 
@@ -230,6 +231,47 @@ package Osint is
    --  this routine called with Name set to "gnat" will return "-lgnat-5.02"
    --  on UNIX and Windows and -lgnat_5_02 on VMS.
 
+   ---------------------
+   -- File attributes --
+   ---------------------
+   --  The following subprograms offer services similar to those found in
+   --  System.OS_Lib, but with the ability to extra multiple information from
+   --  a single system call, depending on the system. This can result in fewer
+   --  system calls when reused.
+   --  In all these subprograms, the requested value is either read from the
+   --  File_Attributes parameter (resulting in no system call), or computed
+   --  from the disk and then cached in the File_Attributes parameter (possibly
+   --  along with other values).
+
+   type File_Attributes is private;
+   Unknown_Attributes : constant File_Attributes;
+   --  A cache for various attributes for a file (length, accessibility,...)
+   --  This must be initialized to Unknown_Attributes prior to the first call.
+
+   function Is_Directory
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+   function Is_Regular_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+   function Is_Symbolic_Link
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+   --  Return the type of the file,
+
+   function File_Length
+     (Name : C_File_Name; Attr : access File_Attributes) return Long_Integer;
+   --  Return the length (number of bytes) of the file
+
+   function File_Time_Stamp
+     (Name : C_File_Name; Attr : access File_Attributes) return OS_Time;
+   --  Return the time stamp of the file
+
+   function Is_Readable_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+   function Is_Executable_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+   function Is_Writable_File
+     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+   --  Return the access rights for the file
+
    -------------------------
    -- Search Dir Routines --
    -------------------------
@@ -380,6 +422,10 @@ package Osint is
    --  using Read_Source_File. Calling this routine entails no source file
    --  directory lookup penalty.
 
+   procedure Full_Source_Name
+     (N         : File_Name_Type;
+      Full_File : out File_Name_Type;
+      Attr      : access File_Attributes);
    function Full_Source_Name (N : File_Name_Type) return File_Name_Type;
    function Source_File_Stamp (N : File_Name_Type) return Time_Stamp_Type;
    --  Returns the full name/time stamp of the source file whose simple name
@@ -390,6 +436,8 @@ package Osint is
    --  The source file directory lookup penalty is incurred every single time
    --  the routines are called unless you have previously called
    --  Source_File_Data (Cache => True). See below.
+   --  The procedural version also returns some file attributes for the ALI
+   --  file (to save on system calls later on).
 
    function Current_File_Index return Int;
    --  Return the index in its source file of the current main unit
@@ -488,10 +536,14 @@ package Osint is
 
    function Read_Library_Info_From_Full
      (Full_Lib_File : File_Name_Type;
+      Lib_File_Attr : access File_Attributes;
       Fatal_Err     : Boolean := False) return Text_Buffer_Ptr;
    --  Same as Read_Library_Info, except Full_Lib_File must contains the full
    --  path to the library file (instead of having Read_Library_Info recompute
-   --  it)
+   --  it).
+   --  Lib_File_Attr should be an initialized set of attributes for the
+   --  library file (it can be initialized to Unknown_Attributes, but in
+   --  general will have been initialized by a previous call to Find_File).
 
    function Full_Library_Info_Name return File_Name_Type;
    function Full_Object_File_Name return File_Name_Type;
@@ -508,6 +560,10 @@ package Osint is
    --  It is an error to call Current_Object_File_Stamp if
    --  Opt.Check_Object_Consistency is set to False.
 
+   procedure Full_Lib_File_Name
+     (N        : File_Name_Type;
+      Lib_File : out File_Name_Type;
+      Attr     : out File_Attributes);
    function Full_Lib_File_Name (N : File_Name_Type) return File_Name_Type;
    --  Returns the full name of library file N. N should not include
    --  path information. Note that if the file cannot be located No_File is
@@ -515,6 +571,8 @@ package Osint is
    --  for the second (this is not an error situation). The full name includes
    --  the appropriate directory information. The library file directory lookup
    --  penalty is incurred every single time this routine is called.
+   --  The procedural version also returns some file attributes for the ALI
+   --  file (to save on system calls later on).
 
    function Lib_File_Name
      (Source_File : File_Name_Type;
@@ -659,5 +717,19 @@ private
    --  in Output_File_Name. A check is made for disk full, and if this is
    --  detected, the file being written is deleted, and a fatal error is
    --  signalled.
+
+   File_Attributes_Size : constant Integer := 50;
+   --  This should be big enough to fit a "struct file_attributes" on any
+   --  system. It doesn't matter if it is too big (which avoids the need for
+   --  either mapping the struct exactly or importing the sizeof from C, which
+   --  would result in dynamic code)
+
+   type File_Attributes is
+     array (1 .. File_Attributes_Size)
+     of System.Storage_Elements.Storage_Element;
+
+   Unknown_Attributes : constant File_Attributes := (others => 0);
+   --  Will be initialized properly at elaboration (for efficiency later on,
+   --  avoid function calls every time we want to reset the attributes).
 
 end Osint;
