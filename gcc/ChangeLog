@@ -1,3 +1,8 @@
+2009-10-30  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41858
+	* lto-streamer.h (struct lto_file_decl_data): Remove fd member.
+
 2009-10-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* target-def.h (TARGET_ASM_TTYPE): Correct typo of TARGET_ARM_TTYPE.

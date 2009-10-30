@@ -334,7 +334,6 @@ lto_file_read (lto_file *file, FILE *resolution_file)
 
   file_data = XCNEW (struct lto_file_decl_data);
   file_data->file_name = file->filename;
-  file_data->fd = -1;
   file_data->section_hash_table = lto_elf_build_section_table (file);
   file_data->renaming_hash_table = lto_create_renaming_table ();
 
@@ -363,17 +362,33 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
 		       intptr_t offset, size_t len)
 {
   char *result;
+  static int fd = -1;
+  static char *fd_name;
 #if LTO_MMAP_IO
   intptr_t computed_len;
   intptr_t computed_offset;
   intptr_t diff;
 #endif
 
-  if (file_data->fd == -1)
-    file_data->fd = open (file_data->file_name, O_RDONLY);
-
-  if (file_data->fd == -1)
-    return NULL;
+  /* Keep a single-entry file-descriptor cache.  The last file we
+     touched will get closed at exit.
+     ???  Eventually we want to add a more sophisticated larger cache
+     or rather fix function body streaming to not stream them in
+     practically random order.  */
+  if (fd != -1
+      && strcmp (fd_name, file_data->file_name) != 0)
+    {
+      free (fd_name);
+      close (fd);
+      fd = -1;
+    }
+  if (fd == -1)
+    {
+      fd_name = xstrdup (file_data->file_name);
+      fd = open (file_data->file_name, O_RDONLY);
+      if (fd == -1)
+	return NULL;
+    }
 
 #if LTO_MMAP_IO
   if (!page_mask)
@@ -387,26 +402,17 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
   computed_len = len + diff;
 
   result = (char *) mmap (NULL, computed_len, PROT_READ, MAP_PRIVATE,
-			  file_data->fd, computed_offset);
+			  fd, computed_offset);
   if (result == MAP_FAILED)
-    {
-      close (file_data->fd);
-      return NULL;
-    }
+    return NULL;
 
   return result + diff;
 #else
   result = (char *) xmalloc (len);
-  if (result == NULL)
-    {
-      close (file_data->fd);
-      return NULL;
-    }
-  if (lseek (file_data->fd, offset, SEEK_SET) != offset
-      || read (file_data->fd, result, len) != (ssize_t) len)
+  if (lseek (fd, offset, SEEK_SET) != offset
+      || read (fd, result, len) != (ssize_t) len)
     {
       free (result);
-      close (file_data->fd);
       return NULL;
     }
 
@@ -449,7 +455,7 @@ get_section_data (struct lto_file_decl_data *file_data,
    starts at OFFSET and has LEN bytes.  */
 
 static void
-free_section_data (struct lto_file_decl_data *file_data,
+free_section_data (struct lto_file_decl_data *file_data ATTRIBUTE_UNUSED,
 		   enum lto_section_type section_type ATTRIBUTE_UNUSED,
 		   const char *name ATTRIBUTE_UNUSED,
 		   const char *offset, size_t len ATTRIBUTE_UNUSED)
@@ -459,9 +465,6 @@ free_section_data (struct lto_file_decl_data *file_data,
   intptr_t computed_offset;
   intptr_t diff;
 #endif
-
-  if (file_data->fd == -1)
-    return;
 
 #if LTO_MMAP_IO
   computed_offset = ((intptr_t) offset) & page_mask;
@@ -1712,15 +1715,12 @@ lto_read_all_file_options (void)
 
       file_data = XCNEW (struct lto_file_decl_data);
       file_data->file_name = file->filename;
-      file_data->fd = -1;
       file_data->section_hash_table = lto_elf_build_section_table (file);
 
       lto_read_file_options (file_data);
 
       lto_elf_file_close (file);
       htab_delete (file_data->section_hash_table);
-      if (file_data->fd != -1)
-	close (file_data->fd);
       free (file_data);
     }
 
