@@ -1,3 +1,10 @@
+2009-10-28  Jerry Quinn  <jlquinn@optonline.net>
+
+	* libsupc++/tinfo.cc (operator=(const type_info&)): Compare by
+	pointer if name begins with '*'.
+	* libsupc++/typeinfo (type_info::name()): Likewise.
+	* libsupc++/tinfo2.cc (before):  Likewise.
+
 2009-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
   	    Douglas Gregor  <doug.gregor@gmail.com>
 

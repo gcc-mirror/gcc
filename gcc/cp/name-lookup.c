@@ -62,14 +62,19 @@ static GTY(()) tree anonymous_namespace_name;
 
 /* Initialize anonymous_namespace_name if necessary, and return it.  */
 
-tree
+static tree
 get_anonymous_namespace_name (void)
 {
   if (!anonymous_namespace_name)
     {
       /* The anonymous namespace has to have a unique name
 	 if typeinfo objects are being compared by name.  */
-      anonymous_namespace_name = get_file_function_name ("N");
+      if (! flag_weak || ! SUPPORTS_ONE_ONLY)
+       anonymous_namespace_name = get_file_function_name ("N");
+      else
+       /* The demangler expects anonymous namespaces to be called
+          something starting with '_GLOBAL__N_'.  */
+       anonymous_namespace_name = get_identifier ("_GLOBAL__N_1");
     }
   return anonymous_namespace_name;
 }

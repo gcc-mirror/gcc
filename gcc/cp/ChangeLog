@@ -1,3 +1,15 @@
+2009-10-28  Jerry Quinn  <jlquinn@optonline.net>
+
+	* mangle.c (mangle_type_string_for_rtti): Revert r149964.
+	(needs_fake_anon): Likewise.
+	(write_name): Likewise.
+	(write_nested_name): Likewise.
+	* cp-tree.h (mangle_type_string_for_rtti): Likewise.
+	(get_anonymous_namespace): Likewise.
+	* name-lookup.c (get_anonymous_namespace_name): Likewise.
+	* rtti.c (tinfo_name): Insert '*' in front of private names.
+	(tinfo_base_init): Use it.
+
 2009-10-28  Jason Merrill  <jason@redhat.com>
 
 	Core issue 812, 861

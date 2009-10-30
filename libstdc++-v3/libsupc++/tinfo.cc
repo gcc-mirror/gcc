@@ -41,7 +41,8 @@ operator== (const std::type_info& arg) const
 #if __GXX_MERGED_TYPEINFO_NAMES
   return name () == arg.name ();
 #else
-  return (&arg == this) || (__builtin_strcmp (name (), arg.name ()) == 0);
+  return (&arg == this)
+    || (name ()[0] != '*' && (__builtin_strcmp (name (), arg.name ()) == 0));
 #endif
 }
 
