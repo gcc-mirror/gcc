@@ -1,3 +1,25 @@
+2009-10-30  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (Errno_Message): Suppress VMS-specific warning.
+
+2009-10-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_case.adb (Check_Choices): Add explanatory message when there are
+	missing alternatives when the required range of alternatives is given
+	by the base type of the case expression or discriminant in a variant
+	part.
+
+	* opt.ads: New flag Warn_On_Overlap, to enable warnings on potentially
+	dangerous overlap between actuals in a call, activated by -gnatw.i
+	* sem_warn.adb (Set_Dot_Warning_Switch): set flag.
+	(Warn_On_Overlapping_Actuals): use new flag.
+
+	* gnat_ugn.texi: Document -gnatw.i, warning on overlapping actuals
+
+2009-10-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb, exp_ch9.adb: Minor reformatting
+
 2009-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (make_type_from_size) <INTEGER_TYPE>: Do not

@@ -3983,13 +3983,16 @@ package body Exp_Ch9 is
       Spec_Id : Entity_Id;
 
    begin
+      --  Case of explicit task type, suffix TB
+
       if Comes_From_Source (T) then
-         --  This is an explicit task type
          Spec_Id :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (T), "TB"));
+
+      --  Case of anonymous task type, suffix B
+
       else
-         --  This is an anonymous task type
          Spec_Id :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (T), 'B'));

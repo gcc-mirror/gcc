@@ -3302,7 +3302,7 @@ package body Exp_Aggr is
       elsif Needs_Finalization (Typ) then
          Flist := Find_Final_List (Access_Type);
 
-         --  Otherwise there are no controlled actions to be performed.
+      --  Otherwise there are no controlled actions to be performed.
 
       else
          Flist := Empty;

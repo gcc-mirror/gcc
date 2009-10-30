@@ -1361,6 +1361,11 @@ package Opt is
    --  Set to True to generate warnings on use of any feature in Annex or if a
    --  subprogram is called for which a pragma Obsolescent applies.
 
+   Warn_On_Overlap : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings when a writable actual which is not
+   --  a by-copy type overlaps with another actual in a subprogram call.
+
    Warn_On_Questionable_Missing_Parens : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for cases where parentheses are missing
