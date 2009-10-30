@@ -1,3 +1,9 @@
+2009-10-30  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, osint.adb, osint.ads (Library_File_Stamp): Removed, since
+	unused.
+	(Read_Library_Info_From_Full): New subprogram.
+
 2009-10-30  Robert Dewar  <dewar@adacore.com>
 
 	* a-tideio.adb: Minor reformatting

@@ -740,6 +740,7 @@ package body Make is
       Is_Main_Source : Boolean;
       The_Args       : Argument_List;
       Lib_File       : File_Name_Type;
+      Full_Lib_File  : File_Name_Type;
       Read_Only      : Boolean;
       ALI            : out ALI_Id;
       O_File         : out File_Name_Type;
@@ -750,6 +751,8 @@ package body Make is
    --  ALI is the ALI_Id corresponding to Lib_File. If Lib_File in not
    --  up-to-date, then the corresponding source file needs to be recompiled.
    --  In this case ALI = No_ALI_Id.
+   --  Full_Lib_File must be the result of calling Osint.Full_Lib_File_Name on
+   --  Lib_File. Precomputing it saves system calls.
 
    procedure Check_Linker_Options
      (E_Stamp : Time_Stamp_Type;
@@ -1414,6 +1417,7 @@ package body Make is
       Is_Main_Source : Boolean;
       The_Args       : Argument_List;
       Lib_File       : File_Name_Type;
+      Full_Lib_File  : File_Name_Type;
       Read_Only      : Boolean;
       ALI            : out ALI_Id;
       O_File         : out File_Name_Type;
@@ -1523,9 +1527,6 @@ package body Make is
       -- Data declarations for Check --
       ---------------------------------
 
-      Full_Lib_File : File_Name_Type;
-      --  Full name of current library file
-
       Full_Obj_File : File_Name_Type;
       --  Full name of the object file corresponding to Lib_File
 
@@ -1576,15 +1577,14 @@ package body Make is
                                                Check_Object_Consistency;
          begin
             Check_Object_Consistency := False;
-            Text := Read_Library_Info (Lib_File);
+            Text := Read_Library_Info_From_Full (Full_Lib_File);
             Check_Object_Consistency := Saved_Check_Object_Consistency;
          end;
 
       else
-         Text := Read_Library_Info (Lib_File);
+         Text := Read_Library_Info_From_Full (Full_Lib_File);
       end if;
 
-      Full_Lib_File := Full_Library_Info_Name;
       Full_Obj_File := Full_Object_File_Name;
       Lib_Stamp     := Current_Library_File_Stamp;
       Obj_Stamp     := Current_Object_File_Stamp;
@@ -3144,6 +3144,8 @@ package body Make is
 
          if not Empty_Q and then Outstanding_Compiles < Max_Process then
             declare
+               In_Lib_Dir   : Boolean;
+
                Source_Index : Int;
                --  Index of the current unit in the current source file
 
@@ -3152,6 +3154,12 @@ package body Make is
                Full_Source_File := Osint.Full_Source_Name (Source_File);
                Lib_File         := Osint.Lib_File_Name
                  (Source_File, Source_Index);
+
+               --  Compute the location of Lib_File (involves system calls)
+               --  ??? Can we compute at the same time if the file is
+               --  writable, which would save a system call on some systems
+               --  (when calling Is_Readonly_Library below)
+
                Full_Lib_File    := Osint.Full_Lib_File_Name (Lib_File);
 
                --  If this source has already been compiled, the executable is
@@ -3161,11 +3169,22 @@ package body Make is
                   Executable_Obsolete := True;
                end if;
 
+               In_Lib_Dir := Full_Lib_File /= No_File
+                 and then In_Ada_Lib_Dir (Full_Lib_File);
+
+               --  Since the following requires a system call, we precompute it
+               --  when needed
+
+               if not In_Lib_Dir then
+                  Read_Only :=
+                    Full_Lib_File /= No_File
+                    and then not Check_Readonly_Files
+                    and then Is_Readonly_Library (Full_Lib_File);
+               end if;
+
                --  If the library file is an Ada library skip it
 
-               if Full_Lib_File /= No_File
-                 and then In_Ada_Lib_Dir (Full_Lib_File)
-               then
+               if In_Lib_Dir then
                   Verbose_Msg
                     (Lib_File,
                      "is in an Ada library",
@@ -3178,9 +3197,7 @@ package body Make is
                   --  in the object directory of a project being extended
                   --  should not be skipped).
 
-               elsif Full_Lib_File /= No_File
-                 and then not Check_Readonly_Files
-                 and then Is_Readonly_Library (Full_Lib_File)
+               elsif Read_Only
                  and then Is_In_Object_Directory (Source_File, Full_Lib_File)
                then
                   Verbose_Msg
@@ -3232,13 +3249,16 @@ package body Make is
                      Need_To_Compile := Force_Compilations;
 
                      if not Force_Compilations then
-                        Read_Only :=
-                          Full_Lib_File /= No_File
-                          and then not Check_Readonly_Files
-                          and then Is_Readonly_Library (Full_Lib_File);
-                        Check (Source_File, Source_Index,
-                               Source_File = Main_Source, Args, Lib_File,
-                               Read_Only, ALI, Obj_File, Obj_Stamp);
+                        Check (Source_File    => Source_File,
+                               Source_Index   => Source_Index,
+                               Is_Main_Source => Source_File = Main_Source,
+                               The_Args       => Args,
+                               Lib_File       => Lib_File,
+                               Full_Lib_File  => Full_Lib_File,
+                               Read_Only      => Read_Only,
+                               ALI            => ALI,
+                               O_File         => Obj_File,
+                               O_Stamp        => Obj_Stamp);
                         Need_To_Compile := (ALI = No_ALI_Id);
                      end if;
 
@@ -3285,13 +3305,13 @@ package body Make is
                         end if;
 
                         if In_Place_Mode then
-
                            --  If the library file was not found, then save
                            --  the library file near the source file.
 
                            if Full_Lib_File = No_File then
                               Lib_File := Osint.Lib_File_Name
                                 (Full_Source_File, Source_Index);
+                              Full_Lib_File := Lib_File;
 
                               --  If the library file was found, then save the
                               --  library file in the same place.
@@ -3299,7 +3319,6 @@ package body Make is
                            else
                               Lib_File := Full_Lib_File;
                            end if;
-
                         end if;
 
                         --  Start the compilation and record it. We can do
@@ -3362,7 +3381,29 @@ package body Make is
                     Check_Object_Consistency
                     and Compilation_OK
                     and (Output_Is_Object or Do_Bind_Step);
-                  Text := Read_Library_Info (Lib_File);
+
+                  if Full_Lib_File = No_File then
+                     --  Compute the expected location of the ALI file. This
+                     --  can be from several places:
+                     --    -i => in place mode. In such a case, Full_Lib_File
+                     --          has already been set above
+                     --    -D => if specified
+                     --    or defaults in current dir
+                     --  We could simply use a call similar to
+                     --     Osint.Full_Lib_File_Name (Lib_File)
+                     --  but that involves system calls and is thus slower
+
+                     if Object_Directory_Path /= null then
+                        Name_Len := 0;
+                        Add_Str_To_Name_Buffer (Object_Directory_Path.all);
+                        Add_Str_To_Name_Buffer (Get_Name_String (Lib_File));
+                        Full_Lib_File := Name_Find;
+                     else
+                        Full_Lib_File := Lib_File;
+                     end if;
+                  end if;
+
+                  Text := Read_Library_Info_From_Full (Full_Lib_File);
 
                   --  Restore Check_Object_Consistency to its initial value
 

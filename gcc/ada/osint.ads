@@ -486,6 +486,13 @@ package Osint is
    --  behaves as if it did not find Lib_File (namely if Fatal_Err is
    --  False, null is returned).
 
+   function Read_Library_Info_From_Full
+     (Full_Lib_File : File_Name_Type;
+      Fatal_Err     : Boolean := False) return Text_Buffer_Ptr;
+   --  Same as Read_Library_Info, except Full_Lib_File must contains the full
+   --  path to the library file (instead of having Read_Library_Info recompute
+   --  it)
+
    function Full_Library_Info_Name return File_Name_Type;
    function Full_Object_File_Name return File_Name_Type;
    --  Returns the full name of the library/object file most recently read
@@ -502,8 +509,7 @@ package Osint is
    --  Opt.Check_Object_Consistency is set to False.
 
    function Full_Lib_File_Name (N : File_Name_Type) return File_Name_Type;
-   function Library_File_Stamp (N : File_Name_Type) return Time_Stamp_Type;
-   --  Returns the full name/time stamp of library file N. N should not include
+   --  Returns the full name of library file N. N should not include
    --  path information. Note that if the file cannot be located No_File is
    --  returned for the first routine and an all blank time stamp is returned
    --  for the second (this is not an error situation). The full name includes
