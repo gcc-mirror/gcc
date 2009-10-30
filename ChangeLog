@@ -1,3 +1,9 @@
+2009-10-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure.ac: Disable target-winsup & co for
+	x86_64-*-mingw* and *-w64-mingw* targets.
+	* configure: Regenerated.
+
 2009-10-16  Nick Clifton  <nickc@redhat.com>
 
 	* MAINTAINERS: Add myself as a maintainer for the RX port.
