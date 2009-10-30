@@ -1,4 +1,13 @@
 2009-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+  	    Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR libstdc++/40925 (again)
+	* include/bits/stl_pair.h (pair<_T1, _T2>::pair(_U1&&, const _T2&),
+	pair<_T1, _T2>::pair(const _T1&, _U2&&)): Add, to deal correctly
+	with move-only types in the presence of "null pointers".
+	* testsuite/20_util/pair/40925.cc: Extend.
+
+2009-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/type_traits (__is_int_or_cref): Remove.
 	(__is_convertible_helper): Fix per C++0x and simplify (the hack to
