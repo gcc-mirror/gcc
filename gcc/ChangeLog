@@ -1,3 +1,7 @@
+2009-10-30  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (build_ref_for_offset_1): Remove a comment.
+
 2009-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/40836
