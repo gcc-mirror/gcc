@@ -1,3 +1,7 @@
+2009-10-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/pr41345.c: Removed.
+
 2009-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
