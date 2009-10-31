@@ -195,10 +195,9 @@ requirements of the license of GCC.
       <title>Implementation Bugs</title>
     <para>
       Information on known bugs, details on efforts to fix them, and
-      fixed bugs are all available as part of the GCC bug tracking
-      system, <ulink
-      url="http://gcc.gnu.org/bugzilla">bugzilla</ulink>, with the
-      category set to <literal>libstdc++</literal>.
+      fixed bugs are all available as part of the <ulink
+      url="http://gcc.gnu.org/bugs/">GCC bug tracking system</ulink>,
+      with the category set to <literal>libstdc++</literal>.
     </para>
     </sect2>
 
