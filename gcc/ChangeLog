@@ -1,3 +1,16 @@
+2009-10-31  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mn10300/mn10300.c (mn10300_function_value): Make static, add
+	new 'outgoing' argument.
+	(mn10300_libcall_value, mn10300_function_value_regno_p): New
+	functions.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
+	* config/mn10300/mn10300.h: (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
+	LIBCALL_VALUE): Remove.
+	(FUNCTION_VALUE_REGNO_P): Redefine, use mn10300_function_value_regno_p.
+	* config/mn10300/mn10300-protos.h (mn10300_function_value): Remove.
+	(mh10300_function_value_regno_p): Declare.
+
 2009-10-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/arm/cortex-a9.md: New - integer pipeline description.
