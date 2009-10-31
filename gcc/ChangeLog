@@ -1,3 +1,8 @@
+2009-10-31  Toon Moene  <toon@moene.org>
+
+	* ipa-inline.c (cgraph_decide_inlining):
+	Include reason for not inlining called-once functions in dump file.
+
 2009-10-30  Daniel Gutson  <dgutson@codesourcery.com>
 
 	* config/arm/linux-eabi.h (LINK_SPEC): BE8_LINK_SPEC added.

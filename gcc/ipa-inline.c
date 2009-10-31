@@ -1233,6 +1233,7 @@ cgraph_decide_inlining (void)
 	      && !DECL_EXTERNAL (node->decl)
 	      && !DECL_COMDAT (node->decl))
 	    {
+	      cgraph_inline_failed_t reason;
 	      old_size = overall_size;
 	      if (dump_file)
 		{
@@ -1246,7 +1247,7 @@ cgraph_decide_inlining (void)
 		}
 
 	      if (cgraph_check_inline_limits (node->callers->caller, node,
-					      NULL, false))
+					      &reason, false))
 		{
 		  cgraph_mark_inline (node->callers);
 		  if (dump_file)
@@ -1261,7 +1262,8 @@ cgraph_decide_inlining (void)
 		{
 		  if (dump_file)
 		    fprintf (dump_file,
-			     " Inline limit reached, not inlined.\n");
+			     " Not inlining: %s.\n",
+                             cgraph_inline_failed_string (reason));
 		}
 	    }
 	}
