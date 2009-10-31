@@ -273,6 +273,10 @@ static void frv_print_operand_memory_reference_reg
 static void frv_print_operand_memory_reference	(FILE *, rtx, int);
 static int frv_print_operand_jump_hint		(rtx);
 static const char *comparison_string		(enum rtx_code, rtx);
+static rtx frv_function_value			(const_tree, const_tree,
+						 bool);
+static rtx frv_libcall_value			(enum machine_mode,
+						 const_rtx);
 static FRV_INLINE int frv_regno_ok_for_base_p	(int, int);
 static rtx single_set_pattern			(rtx);
 static int frv_function_contains_far_jump	(void);
@@ -482,6 +486,11 @@ static void frv_trampoline_init			(rtx, tree, rtx);
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT frv_trampoline_init
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE frv_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE frv_libcall_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3290,6 +3299,35 @@ frv_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return ret;
 }
 
+
+/* Implements TARGET_FUNCTION_VALUE.  */
+
+static rtx
+frv_function_value (const_tree valtype,
+		    const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+		    bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype), RETURN_VALUE_REGNUM);
+}
+
+
+/* Implements TARGET_LIBCALL_VALUE.  */
+
+static rtx
+frv_libcall_value (enum machine_mode mode,
+		   const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, RETURN_VALUE_REGNUM);
+}
+
+
+/* Implements FUNCTION_VALUE_REGNO_P.  */
+
+bool
+frv_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == RETURN_VALUE_REGNUM);
+}
 
 /* Return true if a register is ok to use as a base or index register.  */
 

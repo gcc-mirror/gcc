@@ -1746,48 +1746,7 @@ typedef struct frv_stack {
    function call.  */
 #define RETURN_VALUE_REGNUM	(GPR_FIRST + 8)
 
-/* A C expression to create an RTX representing the place where a function
-   returns a value of data type VALTYPE.  VALTYPE is a tree node representing a
-   data type.  Write `TYPE_MODE (VALTYPE)' to get the machine mode used to
-   represent that type.  On many machines, only the mode is relevant.
-   (Actually, on most machines, scalar values are returned in the same place
-   regardless of mode).
-
-   If the precise function being called is known, FUNC is a tree node
-   (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This makes it
-   possible to use a different value-returning convention for specific
-   functions when all their calls are known.
-
-   `FUNCTION_VALUE' is not used for return vales with aggregate data types,
-   because these are returned in another way.  See
-   `TARGET_STRUCT_VALUE_RTX' and related macros, below.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), RETURN_VALUE_REGNUM)
-
-/* A C expression to create an RTX representing the place where a library
-   function returns a value of mode MODE.
-
-   Note that "library function" in this context means a compiler support
-   routine, used to perform arithmetic, whose name is known specially by the
-   compiler and was not mentioned in the C code being compiled.
-
-   The definition of `LIBRARY_VALUE' need not be concerned aggregate data
-   types, because none of the library functions returns such types.  */
-#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REGNUM)
-
-/* A C expression that is nonzero if REGNO is the number of a hard register in
-   which the values of called function may come back.
-
-   A register whose use for returning values is limited to serving as the
-   second of a pair (for a value of type `double', say) need not be recognized
-   by this macro.  So for most machines, this definition suffices:
-
-        #define FUNCTION_VALUE_REGNO_P(N) ((N) == RETURN)
-
-   If the machine has register windows, so that the caller and the called
-   function use different registers for the return value, this macro should
-   recognize only the caller's register numbers.  */
-#define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == RETURN_VALUE_REGNUM)
+#define FUNCTION_VALUE_REGNO_P(REGNO) frv_function_value_regno_p (REGNO)
 
 
 /* How Large Values are Returned.  */

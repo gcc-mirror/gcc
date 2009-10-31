@@ -62,6 +62,7 @@ extern rtx frv_function_arg			(CUMULATIVE_ARGS *,
 extern void frv_function_arg_advance		(CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, int);
+extern bool frv_function_value_regno_p		(const unsigned int);
 #endif /* TREE_CODE */
 
 extern int frv_expand_block_move		(rtx *);
