@@ -1,3 +1,7 @@
+2009-10-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/cortex-a9.md: New - integer pipeline description.
+
 2009-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Bail out instead of
