@@ -37,12 +37,13 @@ extern int symbolic_operand (rtx, enum machine_mode);
 extern int impossible_plus_operand (rtx, enum machine_mode);
 
 extern bool mn10300_wide_const_load_uses_clr (rtx operands[2]);
+
+extern bool mn10300_function_value_regno_p (const unsigned int);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
 extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int);
-extern rtx mn10300_function_value (const_tree, const_tree, int);
 #endif /* TREE_CODE */
 
 extern void expand_prologue (void);

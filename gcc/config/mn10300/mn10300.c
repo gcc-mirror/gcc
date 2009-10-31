@@ -86,6 +86,8 @@ static unsigned int mn10300_case_values_threshold (void);
 static void mn10300_encode_section_info (tree, rtx, int);
 static void mn10300_asm_trampoline_template (FILE *);
 static void mn10300_trampoline_init (rtx, tree, rtx);
+static rtx mn10300_function_value (const_tree, const_tree, bool);
+static rtx mn10300_libcall_value (enum machine_mode, const_rtx);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -138,6 +140,11 @@ static void mn10300_trampoline_init (rtx, tree, rtx);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE mn10300_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT mn10300_trampoline_init
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE mn10300_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE mn10300_libcall_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1624,8 +1631,10 @@ mn10300_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    we only return the PARALLEL for outgoing values; we do not want
    callers relying on this extra copy.  */
 
-rtx
-mn10300_function_value (const_tree valtype, const_tree func, int outgoing)
+static rtx
+mn10300_function_value (const_tree valtype,
+			const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+			bool outgoing)
 {
   rtx rv;
   enum machine_mode mode = TYPE_MODE (valtype);
@@ -1647,6 +1656,23 @@ mn10300_function_value (const_tree valtype, const_tree func, int outgoing)
 			 gen_rtx_REG (mode, FIRST_DATA_REGNUM),
 			 GEN_INT (0));
   return rv;
+}
+
+/* Implements TARGET_LIBCALL_VALUE.  */
+
+static rtx
+mn10300_libcall_value (enum machine_mode mode,
+		       const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, FIRST_DATA_REGNUM);
+}
+
+/* Implements FUNCTION_VALUE_REGNO_P.  */
+
+bool
+mn10300_function_value_regno_p (const unsigned int regno)
+{
+ return (regno == FIRST_DATA_REGNUM || regno == FIRST_ADDRESS_REGNUM);
 }
 
 /* Output a tst insn.  */
