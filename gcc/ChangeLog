@@ -1,3 +1,8 @@
+2009-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Bail out instead of
+	aborting if the sizes of the two references don't match.
+
 2009-10-31  Toon Moene  <toon@moene.org>
 
 	* ipa-inline.c (cgraph_decide_inlining):

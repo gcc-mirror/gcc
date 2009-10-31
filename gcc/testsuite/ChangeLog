@@ -1,8 +1,11 @@
+2009-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/rep_clause4.ads: New test.
+
 2009-10-30  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR target/41885
 	* gcc.target/avr/torture/pr41885.c: New test.
-
 
 2009-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 

@@ -1157,7 +1157,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       /* Adjust *ref from the new operands.  */
       if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))
 	return (void *)-1;
-      gcc_assert (ref->size == r.size);
+      /* This can happen with bitfields.  */
+      if (ref->size != r.size)
+	return (void *)-1;
       *ref = r;
 
       /* Keep looking for the adjusted *REF / VR pair.  */
