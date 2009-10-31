@@ -1,3 +1,8 @@
+2009-10-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/intro.xml: Refer to our bugs page instead of
+	Bugzilla directly.
+
 2009-10-30  Jerry Quinn  <jlquinn@optonline.net>
 
 	* libsupc++/tinfo.cc (operator=(const type_info&)): Reapply 153734.
