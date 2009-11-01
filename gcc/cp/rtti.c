@@ -364,10 +364,10 @@ tinfo_name (tree type, bool mark_private)
   if (mark_private)
     {
       /* Inject '*' at beginning of name to force pointer comparison.  */
-      char* buf = (char*) XALLOCAVEC (char, length + 1);
+      char* buf = (char*) XALLOCAVEC (char, length + 2);
       buf[0] = '*';
-      memcpy (buf + 1, name, length);
-      name_string = build_string (length + 1, buf);
+      memcpy (buf + 1, name, length + 1);
+      name_string = build_string (length + 2, buf);
     }
   else
     name_string = build_string (length + 1, name);
