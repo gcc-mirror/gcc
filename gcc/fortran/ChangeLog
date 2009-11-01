@@ -1,3 +1,9 @@
+2009-11-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41850
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate intent-out
+	variables only when present. Remove unneccessary present check.
+
 2009-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41777
