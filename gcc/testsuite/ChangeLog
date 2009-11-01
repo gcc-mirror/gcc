@@ -1,3 +1,8 @@
+2009-11-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41850
+	* gfortran.dg/intent_out_6.f90: New testcase.
+
 2009-10-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41754

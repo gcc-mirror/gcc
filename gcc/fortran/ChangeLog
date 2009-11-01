@@ -1,3 +1,9 @@
+2009-11-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41850
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate intent-out
+	variables only when present.
+
 2009-10-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41777
