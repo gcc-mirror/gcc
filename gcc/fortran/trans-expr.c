@@ -2892,6 +2892,37 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		{
 		  gfc_conv_expr_reference (&parmse, e);
+
+		  /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
+		     allocated on entry, it must be deallocated.  */
+		  if (fsym && fsym->attr.allocatable
+		      && fsym->attr.intent == INTENT_OUT)
+		    {
+		      stmtblock_t block;
+
+		      gfc_init_block  (&block);
+		      tmp = gfc_deallocate_with_status (parmse.expr, NULL_TREE,
+							true, NULL);
+		      gfc_add_expr_to_block (&block, tmp);
+		      tmp = fold_build2 (MODIFY_EXPR, void_type_node,
+					 parmse.expr, null_pointer_node);
+		      gfc_add_expr_to_block (&block, tmp);
+
+		      if (fsym->attr.optional
+			  && e->expr_type == EXPR_VARIABLE
+			  && e->symtree->n.sym->attr.optional)
+			{
+			  tmp = fold_build3 (COND_EXPR, void_type_node,
+				     gfc_conv_expr_present (e->symtree->n.sym),
+					    gfc_finish_block (&block),
+					    build_empty_stmt (input_location));
+			}
+		      else
+			tmp = gfc_finish_block (&block);
+
+		      gfc_add_expr_to_block (&se->pre, tmp);
+		    }
+
 		  if (fsym && e->expr_type != EXPR_NULL
 		      && ((fsym->attr.pointer
 			   && fsym->attr.flavor != FL_PROCEDURE)
@@ -2899,7 +2930,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			      && !(e->expr_type == EXPR_VARIABLE
 			      && e->symtree->n.sym->attr.dummy))
 			  || (e->expr_type == EXPR_VARIABLE
-			      && gfc_is_proc_ptr_comp (e, NULL))))
+			      && gfc_is_proc_ptr_comp (e, NULL))
+			  || fsym->attr.allocatable))
 		    {
 		      /* Scalar pointer dummy args require an extra level of
 			 indirection. The null pointer already contains
@@ -3169,7 +3201,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  cl.backend_decl = formal->sym->ts.u.cl->backend_decl;
 	    }
         }
-        else
+      else
         {
 	  tree tmp;
 

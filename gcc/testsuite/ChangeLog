@@ -1,5 +1,10 @@
 2009-11-01  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/41872
+	* gfortran.dg/allocatable_scalar_4.f90: New test.
+
+2009-11-01  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/41850
 	* gfortran.dg/intent_out_6.f90: New testcase.
 
