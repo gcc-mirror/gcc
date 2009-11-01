@@ -1,3 +1,9 @@
+2009-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41754
+	* call.c (compare_ics): Avoid bad union use when
+	comparing two ck_lists.
+
 2009-10-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/40808
