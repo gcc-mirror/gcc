@@ -946,6 +946,16 @@ cp_build_qualified_type_real (tree type,
   return result;
 }
 
+/* Return TYPE with const and volatile removed.  */
+
+tree
+cv_unqualified (tree type)
+{
+  int quals = TYPE_QUALS (type);
+  quals &= ~(TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
+  return cp_build_qualified_type (type, quals);
+}
+
 /* Builds a qualified variant of T that is not a typedef variant.
    E.g. consider the following declarations:
      typedef const int ConstInt;

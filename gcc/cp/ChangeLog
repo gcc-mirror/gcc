@@ -1,5 +1,9 @@
 2009-10-31  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (cv_unqualified): New fn.
+	* cp-tree.h: Declare it.
+	* typeck.c (decay_conversion): Use it instead of TYPE_MAIN_VARIANT.
+
 	* rtti.c (tinfo_name): Fix lengths for private case.
 
 2009-10-31  Jason Merrill  <jason@redhat.com>

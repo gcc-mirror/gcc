@@ -1691,7 +1691,7 @@ decay_conversion (tree exp)
      Non-class rvalues always have cv-unqualified types.  */
   type = TREE_TYPE (exp);
   if (!CLASS_TYPE_P (type) && cp_type_quals (type))
-    exp = build_nop (TYPE_MAIN_VARIANT (type), exp);
+    exp = build_nop (cv_unqualified (type), exp);
 
   return exp;
 }
