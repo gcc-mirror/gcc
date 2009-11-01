@@ -1,5 +1,15 @@
 2009-11-01  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/41872
+	* trans-decl.c (gfc_trans_deferred_vars): Do not nullify
+	autodeallocated allocatable scalars at the end of scope.
+	(gfc_generate_function_code): Fix indention.
+	* trans-expr.c (gfc_conv_procedure_call): For allocatable
+	scalars, fix calling by reference and autodeallocating
+	of intent out variables.
+
+2009-11-01  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/41850
 	* trans-expr.c (gfc_conv_procedure_call): Deallocate intent-out
 	variables only when present. Remove unneccessary present check.

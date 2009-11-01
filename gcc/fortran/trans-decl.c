@@ -3193,7 +3193,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  gfc_expr *e;
 	  gfc_se se;
 	  stmtblock_t block;
-	  
+
 	  e = gfc_lval_expr_from_sym (sym);
 	  if (sym->ts.type == BT_CLASS)
 	    gfc_add_component_ref (e, "$data");
@@ -3206,13 +3206,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  gfc_start_block (&block);
 	  gfc_add_expr_to_block (&block, fnbody);
 
+	  /* Note: Nullifying is not needed.  */
 	  tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true, NULL);
 	  gfc_add_expr_to_block (&block, tmp);
-
-	  tmp = fold_build2 (MODIFY_EXPR, void_type_node,
-			     se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
-	  gfc_add_expr_to_block (&block, tmp);
-
 	  fnbody = gfc_finish_block (&block);
 	}
       else if (sym->ts.type == BT_CHARACTER)
@@ -4396,10 +4392,10 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       /* Reset recursion-check variable.  */
       if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
-      {
-	gfc_add_modify (&block, recurcheckvar, boolean_false_node);
-	recurcheckvar = NULL;
-      }
+	{
+	  gfc_add_modify (&block, recurcheckvar, boolean_false_node);
+	  recurcheckvar = NULL;
+	}
 
       if (result == NULL_TREE)
 	{
