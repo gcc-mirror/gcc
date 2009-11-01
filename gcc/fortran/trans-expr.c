@@ -2935,17 +2935,22 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	        gfc_conv_array_parameter (&parmse, e, argss, f, fsym,
 					  sym->name, NULL);
 
-              /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
-                 allocated on entry, it must be deallocated.  */
-              if (fsym && fsym->attr.allocatable
-                  && fsym->attr.intent == INTENT_OUT)
-                {
-                  tmp = build_fold_indirect_ref_loc (input_location,
-						 parmse.expr);
-                  tmp = gfc_trans_dealloc_allocated (tmp);
-                  gfc_add_expr_to_block (&se->pre, tmp);
-                }
-
+	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
+		 allocated on entry, it must be deallocated.  */
+	      if (fsym && fsym->attr.allocatable
+		  && fsym->attr.intent == INTENT_OUT)
+		{
+		  tmp = build_fold_indirect_ref_loc (input_location,
+						     parmse.expr);
+		  tmp = gfc_trans_dealloc_allocated (tmp);
+		  if (fsym->attr.optional
+		      && e->expr_type == EXPR_VARIABLE
+		      && e->symtree->n.sym->attr.optional)
+		    tmp = fold_build3 (COND_EXPR, void_type_node,
+				     gfc_conv_expr_present (e->symtree->n.sym),
+				       tmp, build_empty_stmt (input_location));
+		  gfc_add_expr_to_block (&se->pre, tmp);
+		}
 	    } 
 	}
 
@@ -2957,9 +2962,20 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (e && (fsym == NULL || fsym->attr.optional))
 	{
 	  /* If an optional argument is itself an optional dummy argument,
-	     check its presence and substitute a null if absent.  */
+	     check its presence and substitute a null if absent.  This is
+	     only needed when passing an array to an elemental procedure
+	     as then array elements are accessed - or no NULL pointer is
+	     allowed and a "1" or "0" should be passed if not present.
+	     When passing a deferred array to a non-deferred array dummy,
+	     the array needs to be packed and a check needs thus to be
+	     inserted.  */
 	  if (e->expr_type == EXPR_VARIABLE
-	      && e->symtree->n.sym->attr.optional)
+	      && e->symtree->n.sym->attr.optional
+	      && ((e->rank > 0 && sym->attr.elemental)
+		  || e->representation.length || e->ts.type == BT_CHARACTER
+		  || (e->rank > 0 && (fsym == NULL
+				      || (fsym->as->type != AS_ASSUMED_SHAPE
+					  && fsym->as->type != AS_DEFERRED)))))
 	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts,
 				    e->representation.length);
 	}
