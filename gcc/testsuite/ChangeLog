@@ -1,3 +1,7 @@
+2009-10-31  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/tree-ssa/restrict1.C: New.
+
 2009-10-31  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/rtti/typeid9.C: New.
