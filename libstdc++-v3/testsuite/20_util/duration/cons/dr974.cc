@@ -29,9 +29,5 @@ void test01()
   using namespace std::chrono;
 
   duration<double> d(3.5);
-  duration<int> i = d;  // implicit truncation, should not compile
+  duration<int> i = d;  // { dg-error "conversion" }
 }
-
-// { dg-error "instantiated from here" "" { target *-*-* } 32 }
-// { dg-error "not exactly representable" "" { target *-*-* } 227 }
-// { dg-excess-errors "In instantiation of" }

@@ -1,3 +1,22 @@
+2009-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/chrono (struct __common_rep_type): New.
+	(duration_cast(const duration<>&),
+	duration<>::duration(const _Rep2&),
+	duration<>::duration(const duration<>&),
+	operator*(const duration<>&, const _Rep2&),
+	operator*(const _Rep1&, const duration<>&),
+	operator/(const duration<>&, const _Rep2&),
+	time_point_cast(const time_point<>&)): Implement resolution of
+	DR 1177 ([Ready] in Santa Cruz), change to not participate to
+	overload resolution if the constraints are not met. 
+	* testsuite/20_util/duration/cons/1_neg.cc: Adjust dg-errors.
+	* testsuite/20_util/duration/cons/dr974.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+
 2009-10-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/intro.xml: Refer to our bugs page instead of
