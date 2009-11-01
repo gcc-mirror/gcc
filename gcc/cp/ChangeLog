@@ -1,3 +1,9 @@
+2009-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41754
+	* call.c (compare_ics): Avoid bad union use when
+	comparing two ck_lists.
+
 2009-10-30  Jerry Quinn  <jlquinn@optonline.net>
 
 	* mangle.c (mangle_type_string_for_rtti): Reapply 153734.

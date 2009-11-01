@@ -6617,8 +6617,9 @@ compare_ics (conversion *ics1, conversion *ics2)
       /* We couldn't make up our minds; try to figure it out below.  */
     }
 
-  if (ics1->ellipsis_p)
-    /* Both conversions are ellipsis conversions.  */
+  if (ics1->ellipsis_p || ics1->kind == ck_list)
+    /* Both conversions are ellipsis conversions or both are building a
+       std::initializer_list.  */
     return 0;
 
   /* User-defined  conversion sequence U1 is a better conversion sequence

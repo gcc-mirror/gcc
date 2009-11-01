@@ -1,3 +1,8 @@
+2009-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41754
+	* g++.dg/cpp0x/initlist25.C: New.
+
 2009-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/rep_clause4.ads: New test.
