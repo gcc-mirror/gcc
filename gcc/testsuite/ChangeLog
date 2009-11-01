@@ -1,3 +1,7 @@
+2009-11-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt5.adb: New test.
+
 2009-11-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41872

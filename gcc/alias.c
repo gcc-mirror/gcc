@@ -640,7 +640,7 @@ get_alias_set (tree t)
      aren't types.  */
   if (! TYPE_P (t))
     {
-      tree inner = t;
+      tree inner;
 
       /* Remove any nops, then give the language a chance to do
 	 something with this tree before we look at it.  */
@@ -649,8 +649,13 @@ get_alias_set (tree t)
       if (set != -1)
 	return set;
 
+      /* Retrieve the original memory reference if needed.  */
+      if (TREE_CODE (t) == TARGET_MEM_REF)
+	t = TMR_ORIGINAL (t);
+
       /* First see if the actual object referenced is an INDIRECT_REF from a
 	 restrict-qualified pointer or a "void *".  */
+      inner = t;
       while (handled_component_p (inner))
 	{
 	  inner = TREE_OPERAND (inner, 0);
