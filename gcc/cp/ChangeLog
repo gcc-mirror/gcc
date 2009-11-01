@@ -1,5 +1,9 @@
 2009-10-31  Jason Merrill  <jason@redhat.com>
 
+	* rtti.c (tinfo_name): Fix lengths for private case.
+
+2009-10-31  Jason Merrill  <jason@redhat.com>
+
 	PR c++/41754
 	* call.c (compare_ics): Avoid bad union use when
 	comparing two ck_lists.

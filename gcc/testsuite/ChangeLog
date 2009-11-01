@@ -1,5 +1,7 @@
 2009-10-31  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/rtti/typeid9.C: New.
+
 	PR c++/41754
 	* g++.dg/cpp0x/initlist25.C: New.
 
