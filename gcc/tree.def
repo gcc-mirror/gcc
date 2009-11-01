@@ -967,9 +967,9 @@ DEFTREECODE (REALIGN_LOAD_EXPR, "realign_load", tcc_expression, 3)
 
    The type of STEP, INDEX and OFFSET is sizetype.  The type of BASE is
    sizetype or a pointer type (if SYMBOL is NULL).
-   
+
    The sixth argument is the reference to the original memory access, which
-   is preserved for the purposes of the RTL alias analysis.  */
+   is preserved for the purpose of alias analysis.  */
 
 DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 6)
 

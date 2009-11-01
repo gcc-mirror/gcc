@@ -1,3 +1,9 @@
+2009-11-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.def (TARGET_MEM_REF): Update comment.
+	* alias.c (get_alias_set): Retrieve the original memory reference for
+	a TARGET_MEM_REF before proceeding.
+
 2009-10-31  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/frv/frv.c (frv_function_value, frv_libcall_value,
