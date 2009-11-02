@@ -1,3 +1,10 @@
+2009-11-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/38867
+	* configure.ac (expanded_prefix): New variable, set to the
+	default prefix if none was passed on the command line.
+	* configure: Regenerate.
+
 2009-10-22  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Rename --enable-plugin to --enable-browser-plugin,

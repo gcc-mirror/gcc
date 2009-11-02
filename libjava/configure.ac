@@ -366,7 +366,12 @@ AM_CONDITIONAL(X_AWT, test "$use_x_awt" = yes)
 
 AC_DEFINE_UNQUOTED(AWT_TOOLKIT, "$TOOLKIT", [Name of default AWT toolkit])
 
-AC_DEFINE_UNQUOTED(LIBGCJ_PREFIX, "$prefix", [Installation prefix])
+expanded_prefix=$prefix
+if test "X$prefix" = XNONE; then
+  expanded_prefix=${ac_default_prefix}
+fi
+
+AC_DEFINE_UNQUOTED(LIBGCJ_PREFIX, "$expanded_prefix", [Installation prefix])
 
 # Create standard.omit based on decisions we just made.
 cp $srcdir/standard.omit.in standard.omit
@@ -1437,7 +1442,7 @@ if test ! -f gnu/classpath/Configuration.java; then
   test -d gnu || mkdir gnu
   test -d gnu/classpath || mkdir gnu/classpath
   # Note that it is not crucial that all the values here be correct.
-  sed -e "s,@prefix@,$prefix," \
+  sed -e "s,@prefix@,$expanded_prefix," \
       -e "s,@VERSION@,$VERSION," \
       -e "s,@LIBDEBUG@,false," \
       -e "s,@INIT_LOAD_LIBRARY@,false," \
@@ -1775,10 +1780,10 @@ then
   # Needed for installing Python modules during make install.
   python_mod_dir="\${prefix}/share/python"
   # Needed for substituting into aot-compile*
-  python_mod_dir_expanded="${prefix}/share/python"
+  python_mod_dir_expanded="${expanded_prefix}/share/python"
 else
   python_mod_dir="\${prefix}${with_python_dir}"
-  python_mod_dir_expanded="${prefix}${with_python_dir}"
+  python_mod_dir_expanded="${expanded_prefix}${with_python_dir}"
 fi
 AC_MSG_RESULT(Python modules dir: ${python_mod_dir_expanded});
 AC_SUBST(python_mod_dir)
@@ -1956,7 +1961,7 @@ then
   LIBDIR=$libdir
   if test "x${exec_prefix}" = "xNONE"
   then
-      lib_exec_prefix=$prefix
+      lib_exec_prefix=$expanded_prefix
   else
       lib_exec_prefix=$exec_prefix
   fi
