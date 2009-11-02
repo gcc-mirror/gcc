@@ -392,6 +392,33 @@ move_fixed_address_to_symbol (struct mem_address *parts, aff_tree *addr)
   aff_combination_remove_elt (addr, i);
 }
 
+/* If ADDR contains an instance of BASE_HINT, move it to PARTS->base.  */
+
+static void
+move_hint_to_base (tree type, struct mem_address *parts, tree base_hint,
+		   aff_tree *addr)
+{
+  unsigned i;
+  tree val = NULL_TREE;
+
+  for (i = 0; i < addr->n; i++)
+    {
+      if (!double_int_one_p (addr->elts[i].coef))
+	continue;
+
+      val = addr->elts[i].val;
+      if (operand_equal_p (val, base_hint, 0))
+	break;
+    }
+
+  if (i == addr->n)
+    return;
+
+  /* Cast value to appropriate pointer type.  */
+  parts->base = fold_convert (build_pointer_type (type), val);
+  aff_combination_remove_elt (addr, i);
+}
+
 /* If ADDR contains an address of a dereferenced pointer, move it to
    PARTS->base.  */
 
@@ -453,9 +480,11 @@ add_to_parts (struct mem_address *parts, tree elt)
    element(s) to PARTS.  */
 
 static void
-most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr,
-			      bool speed)
+most_expensive_mult_to_index (tree type, struct mem_address *parts,
+			      aff_tree *addr, bool speed)
 {
+  addr_space_t as = TYPE_ADDR_SPACE (type);
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
   HOST_WIDE_INT coef;
   double_int best_mult, amult, amult_neg;
   unsigned best_mult_cost = 0, acost;
@@ -469,15 +498,12 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr,
       if (!double_int_fits_in_shwi_p (addr->elts[i].coef))
 	continue;
 
-      /* FIXME: Should use the correct memory mode rather than Pmode.  */
-
       coef = double_int_to_shwi (addr->elts[i].coef);
       if (coef == 1
-	  || !multiplier_allowed_in_address_p (coef, Pmode,
-					       ADDR_SPACE_GENERIC))
+	  || !multiplier_allowed_in_address_p (coef, TYPE_MODE (type), as))
 	continue;
 
-      acost = multiply_by_cost (coef, Pmode, speed);
+      acost = multiply_by_cost (coef, address_mode, speed);
 
       if (acost > best_mult_cost)
 	{
@@ -520,8 +546,10 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr,
   parts->step = double_int_to_tree (sizetype, best_mult);
 }
 
-/* Splits address ADDR into PARTS.
-   
+/* Splits address ADDR for a memory access of type TYPE into PARTS.
+   If BASE_HINT is non-NULL, it specifies an SSA name to be used
+   preferentially as base of the reference.
+
    TODO -- be more clever about the distribution of the elements of ADDR
    to PARTS.  Some architectures do not support anything but single
    register in address, possibly with a small integer offset; while
@@ -530,7 +558,8 @@ most_expensive_mult_to_index (struct mem_address *parts, aff_tree *addr,
    addressing modes is useless.  */
 
 static void
-addr_to_parts (aff_tree *addr, struct mem_address *parts, bool speed)
+addr_to_parts (tree type, aff_tree *addr, tree base_hint,
+	       struct mem_address *parts, bool speed)
 {
   tree part;
   unsigned i;
@@ -550,12 +579,14 @@ addr_to_parts (aff_tree *addr, struct mem_address *parts, bool speed)
 
   /* First move the most expensive feasible multiplication
      to index.  */
-  most_expensive_mult_to_index (parts, addr, speed);
+  most_expensive_mult_to_index (type, parts, addr, speed);
 
   /* Try to find a base of the reference.  Since at the moment
      there is no reliable way how to distinguish between pointer and its
      offset, this is just a guess.  */
-  if (!parts->symbol)
+  if (!parts->symbol && base_hint)
+    move_hint_to_base (type, parts, base_hint, addr);
+  if (!parts->symbol && !parts->base)
     move_pointer_to_base (parts, addr);
 
   /* Then try to process the remaining elements.  */
@@ -592,13 +623,13 @@ gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
 
 tree
 create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
-		bool speed)
+		tree base_hint, bool speed)
 {
   tree mem_ref, tmp;
   tree atype;
   struct mem_address parts;
 
-  addr_to_parts (addr, &parts, speed);
+  addr_to_parts (type, addr, base_hint, &parts, speed);
   gimplify_mem_ref_parts (gsi, &parts);
   mem_ref = create_mem_ref_raw (type, &parts);
   if (mem_ref)
