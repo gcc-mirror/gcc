@@ -1,3 +1,9 @@
+2009-11-02  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/41878
+	* gfortran.dg/vect/vect-2.f90: Fix effective-target expression, add
+	spaces in some expressions.
+
 2009-11-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/other/linkage2.C: Move to...
