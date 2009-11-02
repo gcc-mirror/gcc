@@ -1,3 +1,17 @@
+2009-11-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR tree-optimization/41857
+	* tree-flow.h (rewrite_use_address): Add BASE_HINT argument.
+	* tree-ssa-loop-ivopts.c (rewrite_use_address): Pass base hint
+	to create_mem_ref.
+	* tree-ssa-address.c (move_hint_to_base): New function.
+	(most_expensive_mult_to_index): Add TYPE argument.  Use mode and
+	address space associated with TYPE.
+	(addr_to_parts): Add TYPE and BASE_HINT arguments.  Pass TYPE to
+	most_expensive_mult_to_index.  Call move_hint_to_base.
+	(create_mem_ref): Add BASE_HINT argument.  Pass BASE_HINT and
+	TYPE to addr_to_parts.
+
 2009-11-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/41750

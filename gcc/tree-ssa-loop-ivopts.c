@@ -5510,6 +5510,7 @@ rewrite_use_address (struct ivopts_data *data,
 {
   aff_tree aff;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
+  tree base_hint = NULL_TREE;
   tree ref;
   bool ok;
 
@@ -5517,7 +5518,22 @@ rewrite_use_address (struct ivopts_data *data,
   gcc_assert (ok);
   unshare_aff_combination (&aff);
 
-  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff, data->speed);
+  /* To avoid undefined overflow problems, all IV candidates use unsigned
+     integer types.  The drawback is that this makes it impossible for
+     create_mem_ref to distinguish an IV that is based on a memory object
+     from one that represents simply an offset.
+
+     To work around this problem, we pass a hint to create_mem_ref that
+     indicates which variable (if any) in aff is an IV based on a memory
+     object.  Note that we only consider the candidate.  If this is not
+     based on an object, the base of the reference is in some subexpression
+     of the use -- but these will use pointer types, so they are recognized
+     by the create_mem_ref heuristics anyway.  */
+  if (cand->iv->base_object)
+    base_hint = var_at_stmt (data->current_loop, cand, use->stmt);
+
+  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff, base_hint,
+			data->speed);
   copy_ref_info (ref, *use->op_p);
   *use->op_p = ref;
 }
