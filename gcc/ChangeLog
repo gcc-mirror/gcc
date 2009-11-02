@@ -1,5 +1,9 @@
 2009-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/41841
+	* ipa-struct-reorg.c (build_data_structure): Don't attempt to look at
+	local variables of not yet materialized clones.
+
 	PR debug/41893
 	* cfgexpand.c (expand_debug_expr): Don't attempt to create DECL_RTL
 	for a VOIDmode variable.
