@@ -1,5 +1,9 @@
 2009-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/41893
+	* gcc.dg/debug/pr41893-1.c: New test.
+	* gcc.dg/debug/pr41893-2.c: New file.
+
 	PR c++/41774
 	* g++.dg/ext/visibility/namespace3.C: New test.
 
