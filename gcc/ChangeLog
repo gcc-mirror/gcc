@@ -1,3 +1,9 @@
+2009-11-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/41750
+	* tree-sra.c (analyze_modified_params): Loop over all
+	representatives of components of a parameter.
+
 2009-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/41841
