@@ -15,6 +15,7 @@
 	* g++.old-deja/g++.pt/enum6.C: Likewise.
 	* g++.old-deja/g++.other/anon9.C: Likewise.
 	* g++.old-deja/g++.other/linkage1.C: Likewise.
+	* c-c++-common/dfp/pr35620.c: Give the union a name.
 
 2009-11-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
