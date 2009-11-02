@@ -1,5 +1,12 @@
 2009-11-02  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/41856
+	* g++.dg/lookup/extern-c-redecl3.C: Make the test x86
+	only.
+	* g++.dg/lookup/extern-c-redecl4.C: Likewise.
+
+2009-11-02  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/37093
 	* g++.dg/other/ptrmem10.C: New test.
 	* g++.dg/other/ptrmem11.C: Likewise.

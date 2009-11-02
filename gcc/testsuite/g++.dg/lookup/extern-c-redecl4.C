@@ -1,10 +1,9 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/41020
 
-// Avoid the "-ansi -pedantic" option
 // { dg-options "" }
 // { dg-do compile }
-// { dg-final { scan-assembler "call\[\t \]+_Z4forkv" } }
+// { dg-final { scan-assembler "call\[\t \]+\[^\$\]*?_Z4forkv" { target i?86-*-* x86_64-*-* } } }
 
 class frok
 {
