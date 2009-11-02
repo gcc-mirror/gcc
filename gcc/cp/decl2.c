@@ -3990,7 +3990,8 @@ mark_used (tree decl)
    o the variable or function has extern "C" linkage (7.5 [dcl.link]), or
    o the variable or function is not used (3.2 [basic.def.odr]) or is
    defined in the same translation unit.  */
-  if (decl_linkage (decl) != lk_none
+  if (cxx_dialect > cxx98
+      && decl_linkage (decl) != lk_none
       && !DECL_EXTERN_C_P (decl)
       && !DECL_ARTIFICIAL (decl)
       && !decl_defined_p (decl)

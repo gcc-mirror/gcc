@@ -2,6 +2,9 @@
 
 // namespace-scope unnamed types have no linkage, so we only test that they
 // are distinct.
+
+// { dg-options -std=c++0x }
+
 typedef struct { } *A;
 typedef struct { } *B;
 

@@ -3,6 +3,7 @@
 
 // { dg-additional-sources "nolinkage1a.cc" }
 // { dg-do link }
+// { dg-options -std=c++0x }
 
 #include "nolinkage1.h"
 
