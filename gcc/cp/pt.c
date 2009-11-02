@@ -4686,6 +4686,22 @@ convert_nontype_argument_function (tree type, tree expr)
   return fn;
 }
 
+/* Subroutine of convert_nontype_argument.
+   Check if EXPR of type TYPE is a valid pointer-to-member constant.
+   Emit an error otherwise.  */
+
+static bool
+check_valid_ptrmem_cst_expr (tree type, tree expr)
+{
+  STRIP_NOPS (expr);
+  if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
+    return true;
+  error ("%qE is not a valid template argument for type %qT",
+	 expr, type);
+  error ("it must be a pointer-to-member of the form `&X::Y'");
+  return false;
+}
+
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
    converted value.  If the conversion is unsuccessful, return
@@ -4985,6 +5001,11 @@ convert_nontype_argument (tree type, tree expr)
       if (expr == error_mark_node)
 	return error_mark_node;
 
+      /* [temp.arg.nontype] bullet 1 says the pointer to member
+         expression must be a pointer-to-member constant.  */
+      if (!check_valid_ptrmem_cst_expr (type, expr))
+	return error_mark_node;
+
       /* There is no way to disable standard conversions in
 	 resolve_address_of_overloaded_function (called by
 	 instantiate_type). It is possible that the call succeeded by
@@ -5011,6 +5032,11 @@ convert_nontype_argument (tree type, tree expr)
      qualification conversions (_conv.qual_) are applied.  */
   else if (TYPE_PTRMEM_P (type))
     {
+      /* [temp.arg.nontype] bullet 1 says the pointer to member
+         expression must be a pointer-to-member constant.  */
+      if (!check_valid_ptrmem_cst_expr (type, expr))
+	return error_mark_node;
+
       expr = perform_qualification_conversions (type, expr);
       if (expr == error_mark_node)
 	return expr;
