@@ -451,8 +451,8 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c runtime/bounds.c \
 	intrinsics/time.c intrinsics/transpose_generic.c \
 	intrinsics/umask.c intrinsics/unlink.c \
 	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
-	runtime/in_unpack_generic.c io/io.h \
-	$(srcdir)/generated/_abs_c4.F90 \
+	runtime/in_unpack_generic.c io/io.h io/fbuf.h io/format.h \
+	io/unix.h $(srcdir)/generated/_abs_c4.F90 \
 	$(srcdir)/generated/_abs_c8.F90 \
 	$(srcdir)/generated/_abs_c10.F90 \
 	$(srcdir)/generated/_abs_c16.F90 \
@@ -1004,7 +1004,10 @@ io/write.c \
 io/fbuf.c
 
 gfor_io_headers = \
-io/io.h
+io/io.h \
+io/fbuf.h \
+io/format.h \
+io/unix.h
 
 gfor_helper_src = \
 intrinsics/associated.c \

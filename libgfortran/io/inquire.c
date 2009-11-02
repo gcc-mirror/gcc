@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Implement the non-IOLENGTH variant of the INQUIRY statement */
 
 #include "io.h"
+#include "unix.h"
 
 
 static const char undefined[] = "UNDEFINED";

@@ -42,63 +42,13 @@ typedef enum
 }
 bt;
 
+/* Forward declarations.  */
 struct st_parameter_dt;
-
-typedef struct stream
-{
-  ssize_t (*read) (struct stream *, void *, ssize_t);
-  ssize_t (*write) (struct stream *, const void *, ssize_t);
-  off_t (*seek) (struct stream *, off_t, int);
-  off_t (*tell) (struct stream *);
-  /* Avoid keyword truncate due to AIX namespace collision.  */
-  int (*trunc) (struct stream *, off_t);
-  int (*flush) (struct stream *);
-  int (*close) (struct stream *);
-}
-stream;
-
-/* Inline functions for doing file I/O given a stream.  */
-static inline ssize_t
-sread (stream * s, void * buf, ssize_t nbyte)
-{
-  return s->read (s, buf, nbyte);
-}
-
-static inline ssize_t
-swrite (stream * s, const void * buf, ssize_t nbyte)
-{
-  return s->write (s, buf, nbyte);
-}
-
-static inline off_t
-sseek (stream * s, off_t offset, int whence)
-{
-  return s->seek (s, offset, whence);
-}
-
-static inline off_t
-stell (stream * s)
-{
-  return s->tell (s);
-}
-
-static inline int
-struncate (stream * s, off_t length)
-{
-  return s->trunc (s, length);
-}
-
-static inline int
-sflush (stream * s)
-{
-  return s->flush (s);
-}
-
-static inline int
-sclose (stream * s)
-{
-  return s->close (s);
-}
+typedef struct stream stream;
+struct fbuf;
+struct format_data;
+typedef struct fnode fnode;
+struct gfc_unit;
 
 
 /* Macros for testing what kinds of I/O we are doing.  */
@@ -131,7 +81,7 @@ array_loop_spec;
 
 /* A stucture to build a hash table for format data.  */
 
-#define FORMAT_HASH_SIZE 16 
+#define FORMAT_HASH_SIZE 16
 
 typedef struct format_hash_entry
 {
@@ -386,8 +336,6 @@ typedef struct
 }
 st_parameter_inquire;
 
-struct gfc_unit;
-struct format_data;
 
 #define IOPARM_DT_LIST_FORMAT			(1 << 7)
 #define IOPARM_DT_NAMELIST_READ_MODE		(1 << 8)
@@ -564,24 +512,6 @@ typedef struct
 unit_flags;
 
 
-/* Formatting buffer. This is a temporary scratch buffer. Currently used only
-   by formatted writes. After every
-   formatted write statement, this buffer is flushed. This buffer is needed since
-   not all devices are seekable, and T or TL edit descriptors require 
-   moving backwards in the record.  However, advance='no' complicates the
-   situation, so the buffer must only be partially flushed from the end of the
-   last flush until the current position in the record. */
-
-typedef struct fbuf
-{
-  char *buf;			/* Start of buffer.  */
-  int len;			/* Length of buffer.  */
-  int act;			/* Active bytes in buffer.  */
-  int pos;			/* Current position in buffer.  */
-}
-fbuf;
-
-
 typedef struct gfc_unit
 {
   int unit_number;
@@ -645,152 +575,6 @@ typedef struct gfc_unit
 }
 gfc_unit;
 
-/* Format tokens.  Only about half of these can be stored in the
-   format nodes.  */
-
-typedef enum
-{
-  FMT_NONE = 0, FMT_UNKNOWN, FMT_SIGNED_INT, FMT_ZERO, FMT_POSINT, FMT_PERIOD,
-  FMT_COMMA, FMT_COLON, FMT_SLASH, FMT_DOLLAR, FMT_T, FMT_TR, FMT_TL,
-  FMT_LPAREN, FMT_RPAREN, FMT_X, FMT_S, FMT_SS, FMT_SP, FMT_STRING,
-  FMT_BADSTRING, FMT_P, FMT_I, FMT_B, FMT_BN, FMT_BZ, FMT_O, FMT_Z, FMT_F,
-  FMT_E, FMT_EN, FMT_ES, FMT_G, FMT_L, FMT_A, FMT_D, FMT_H, FMT_END, FMT_DC,
-  FMT_DP, FMT_STAR, FMT_RC, FMT_RD, FMT_RN, FMT_RP, FMT_RU, FMT_RZ
-}
-format_token;
-
-
-/* Format nodes.  A format string is converted into a tree of these
-   structures, which is traversed as part of a data transfer statement.  */
-
-typedef struct fnode
-{
-  format_token format;
-  int repeat;
-  struct fnode *next;
-  char *source;
-
-  union
-  {
-    struct
-    {
-      int w, d, e;
-    }
-    real;
-
-    struct
-    {
-      int length;
-      char *p;
-    }
-    string;
-
-    struct
-    {
-      int w, m;
-    }
-    integer;
-
-    int w;
-    int k;
-    int r;
-    int n;
-
-    struct fnode *child;
-  }
-  u;
-
-  /* Members for traversing the tree during data transfer.  */
-
-  int count;
-  struct fnode *current;
-
-}
-fnode;
-
-
-/* unix.c */
-
-extern int compare_files (stream *, stream *);
-internal_proto(compare_files);
-
-extern stream *open_external (st_parameter_open *, unit_flags *);
-internal_proto(open_external);
-
-extern stream *open_internal (char *, int, gfc_offset);
-internal_proto(open_internal);
-
-extern char * mem_alloc_w (stream *, int *);
-internal_proto(mem_alloc_w);
-
-extern char * mem_alloc_r (stream *, int *);
-internal_proto(mem_alloc_w);
-
-extern stream *input_stream (void);
-internal_proto(input_stream);
-
-extern stream *output_stream (void);
-internal_proto(output_stream);
-
-extern stream *error_stream (void);
-internal_proto(error_stream);
-
-extern int compare_file_filename (gfc_unit *, const char *, int);
-internal_proto(compare_file_filename);
-
-extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
-internal_proto(find_file);
-
-extern int delete_file (gfc_unit *);
-internal_proto(delete_file);
-
-extern int file_exists (const char *file, gfc_charlen_type file_len);
-internal_proto(file_exists);
-
-extern const char *inquire_sequential (const char *, int);
-internal_proto(inquire_sequential);
-
-extern const char *inquire_direct (const char *, int);
-internal_proto(inquire_direct);
-
-extern const char *inquire_formatted (const char *, int);
-internal_proto(inquire_formatted);
-
-extern const char *inquire_unformatted (const char *, int);
-internal_proto(inquire_unformatted);
-
-extern const char *inquire_read (const char *, int);
-internal_proto(inquire_read);
-
-extern const char *inquire_write (const char *, int);
-internal_proto(inquire_write);
-
-extern const char *inquire_readwrite (const char *, int);
-internal_proto(inquire_readwrite);
-
-extern gfc_offset file_length (stream *);
-internal_proto(file_length);
-
-extern int is_seekable (stream *);
-internal_proto(is_seekable);
-
-extern int is_special (stream *);
-internal_proto(is_special);
-
-extern void flush_if_preconnected (stream *);
-internal_proto(flush_if_preconnected);
-
-extern void empty_internal_buffer(stream *);
-internal_proto(empty_internal_buffer);
-
-extern int stream_isatty (stream *);
-internal_proto(stream_isatty);
-
-extern char * stream_ttyname (stream *);
-internal_proto(stream_ttyname);
-
-extern int unpack_filename (char *, const char *, int);
-internal_proto(unpack_filename);
 
 /* unit.c */
 
@@ -847,31 +631,6 @@ internal_proto(get_unique_unit_number);
 extern gfc_unit *new_unit (st_parameter_open *, gfc_unit *, unit_flags *);
 internal_proto(new_unit);
 
-/* format.c */
-
-extern void parse_format (st_parameter_dt *);
-internal_proto(parse_format);
-
-extern const fnode *next_format (st_parameter_dt *);
-internal_proto(next_format);
-
-extern void unget_format (st_parameter_dt *, const fnode *);
-internal_proto(unget_format);
-
-extern void format_error (st_parameter_dt *, const fnode *, const char *);
-internal_proto(format_error);
-
-extern void free_format_data (struct format_data *);
-internal_proto(free_format_data);
-
-extern void free_format_hash_table (gfc_unit *);
-internal_proto(free_format_hash_table);
-
-extern void init_format_hash (st_parameter_dt *);
-internal_proto(init_format_hash);
-
-extern void free_format_hash (st_parameter_dt *);
-internal_proto(free_format_hash);
 
 /* transfer.c */
 
@@ -1014,39 +773,6 @@ internal_proto(size_from_real_kind);
 extern size_t size_from_complex_kind (int);
 internal_proto(size_from_complex_kind);
 
-/* fbuf.c */
-extern void fbuf_init (gfc_unit *, int);
-internal_proto(fbuf_init);
-
-extern void fbuf_destroy (gfc_unit *);
-internal_proto(fbuf_destroy);
-
-extern int fbuf_reset (gfc_unit *);
-internal_proto(fbuf_reset);
-
-extern char * fbuf_alloc (gfc_unit *, int);
-internal_proto(fbuf_alloc);
-
-extern int fbuf_flush (gfc_unit *, unit_mode);
-internal_proto(fbuf_flush);
-
-extern int fbuf_seek (gfc_unit *, int, int);
-internal_proto(fbuf_seek);
-
-extern char * fbuf_read (gfc_unit *, int *);
-internal_proto(fbuf_read);
-
-/* Never call this function, only use fbuf_getc().  */
-extern int fbuf_getc_refill (gfc_unit *);
-internal_proto(fbuf_getc_refill);
-
-static inline int
-fbuf_getc (gfc_unit * u)
-{
-  if (u->fbuf->pos < u->fbuf->act)
-    return (unsigned char) u->fbuf->buf[u->fbuf->pos++];
-  return fbuf_getc_refill (u);
-}
 
 /* lock.c */
 extern void free_ionml (st_parameter_dt *);

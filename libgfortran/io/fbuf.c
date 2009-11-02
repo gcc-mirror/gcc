@@ -24,6 +24,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 #include "io.h"
+#include "fbuf.h"
+#include "unix.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -37,7 +39,7 @@ fbuf_init (gfc_unit * u, int len)
   if (len == 0)
     len = 512;			/* Default size.  */
 
-  u->fbuf = get_mem (sizeof (fbuf));
+  u->fbuf = get_mem (sizeof (struct fbuf));
   u->fbuf->buf = get_mem (len);
   u->fbuf->len = len;
   u->fbuf->act = u->fbuf->pos = 0;

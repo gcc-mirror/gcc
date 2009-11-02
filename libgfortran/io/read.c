@@ -24,6 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "io.h"
+#include "format.h"
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
