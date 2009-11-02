@@ -59,7 +59,10 @@ io/write.c \
 io/fbuf.c
 
 gfor_io_headers= \
-io/io.h
+io/io.h \
+io/fbuf.h \
+io/format.h \
+io/unix.h
 
 gfor_helper_src= \
 intrinsics/associated.c \

@@ -1,3 +1,80 @@
+2009-11-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* Makefile.am (gfor_io_headers): Add fbuf.h, format.h, unix.h.
+	* Makefile.in: Regenerated.
+	* io/fbuf.h: New file.
+	* io/format.h: New file.
+	* io/unix.h: New file.
+	* io/io.h (struct stream): Move to unix.h, add forward declaration.
+	(sread): Likewise.
+	(swrite): Likewise.
+	(sseek): Likewise.
+	(stell): Likewise.
+	(struncate): Likewise.
+	(sflush): Likewise.
+	(sflush): Likewise.
+	(sclose): Likewise.
+	(compared_files): Move prototype to unix.h.
+	(open_external): Likewise.
+	(open_internal): Likewise.
+	(mem_alloc_w): Likewise.
+	(mem_alloc_r): Likewise.
+	(input_stream): Likewise.
+	(output_stream): Likewise.
+	(error_stream): Likewise.
+	(compare_file_filename): Likewise.
+	(find_file): Likewise.
+	(delete_file): Likewise.
+	(file_exists): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+	(file_length): Likewise.
+	(is_seekable): Likewise.
+	(is_special): Likewise.
+	(flush_if_preconnected): Likewise.
+	(empty_internal_buffer): Likewise.
+	(stream_isatty): Likewise.
+	(stream_ttyname): Likewise.
+	(unpack_filename): Likewise.
+	(struct fbuf): Move to fbuf.h, add forward declaration.
+	(fbuf_init): Move prototype to fbuf.h.
+	(fbuf_destroy): Likewise.
+	(fbuf_reset): Likewise.
+	(fbuf_alloc): Likewise.
+	(fbuf_flush): Likewise.
+	(fbuf_seek): Likewise.
+	(fbuf_read): Likewise.
+	(fbuf_getc_refill): Likewise.
+	(fbuf_getc): Move inline function to fbuf.h.
+	(enum format_token): Move to format.h.
+	(struct fnode): Move to format.h, add forward declaration.
+	(parse_format): Move prototype to format.h.
+	(next_format): Likewise.
+	(unget_format): Likewise.
+	(format_error): Likewise.
+	(free_format_data): Likewise.
+	(free_format_hash_table): Likewise.
+	(init_format_hash): Likewise.
+	(free_format_hash): Likewise.
+	* io/close.c: Include unix.h.
+	* io/fbuf.c: Include fbuf.h and unix.h.
+	* io/file_pos.c: Include fbuf.h and unix.h.
+	* io/format.c: Include format.h.
+	* io/inquire.c: Include unix.h.
+	* io/intrinsics.c: Include fbuf.h and unix.h.
+	* io/list_read.c: Include fbuf.h and unix.h.
+	* io/open.c: Include fbuf.h and unix.h.
+	* io/read.c: Include format.h.
+	* io/transfer.c: Include fbuf.h, format.h, and unix.h.
+	* io/unit.c: Likewise.
+	* io/unix.c: Include unix.h.
+	* io/write.c: Include format.h and unix.h.
+
 2009-10-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/41219

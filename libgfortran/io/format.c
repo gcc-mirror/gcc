@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * interpretation during I/O statements */
 
 #include "io.h"
+#include "format.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>

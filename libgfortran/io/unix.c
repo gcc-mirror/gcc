@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Unix stream I/O module */
 
 #include "io.h"
+#include "unix.h"
 #include <stdlib.h>
 #include <limits.h>
 

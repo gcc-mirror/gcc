@@ -29,6 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* transfer.c -- Top level handling of data transfer statements.  */
 
 #include "io.h"
+#include "fbuf.h"
+#include "format.h"
+#include "unix.h"
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
