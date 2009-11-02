@@ -12846,7 +12846,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 
 #ifdef HANDLE_PRAGMA_VISIBILITY
   if (has_visibility)
-    pop_visibility ();
+    pop_visibility (1);
 #endif
 
   /* Finish the namespace.  */

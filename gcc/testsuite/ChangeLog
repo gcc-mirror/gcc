@@ -1,3 +1,8 @@
+2009-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41774
+	* g++.dg/ext/visibility/namespace3.C: New test.
+
 2009-11-01  Jason Merrill  <jason@redhat.com>
 
 	* gcc.dg/tree-ssa/restrict-1.c: Move to c-c++-common.

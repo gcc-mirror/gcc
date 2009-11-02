@@ -1,3 +1,14 @@
+2009-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41774
+	* name-lookup.c (handle_namespace_attrs): Pass 1 as last argument to
+	push_visibility.
+	* parser.c (cp_parser_namespace_definition): Pass 1 as argument to
+	pop_visibility.
+	* rtti.c (push_abi_namespace): Pass 2 as last argument to
+	push_visibility.
+	(pop_abi_namespace): Pass 2 as argument to pop_visibility.
+
 2009-10-31  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (cv_unqualified): New fn.
