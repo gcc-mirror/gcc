@@ -4,6 +4,8 @@
 //   o the variable or function is not used (3.2 [basic.def.odr]) or is
 //   defined in the same translation unit.
 
+// { dg-options -std=c++0x }
+
 template <typename T> struct B {
   void g(T){}
   void h(T);			// { dg-error "never defined" }

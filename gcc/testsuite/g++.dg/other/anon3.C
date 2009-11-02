@@ -4,4 +4,4 @@
 
 // { dg-do compile }
 
-enum { a = 3 } x;
+enum { a = 3 } x; // { dg-warning "anonymous type" }

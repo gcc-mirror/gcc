@@ -1,3 +1,21 @@
+2009-11-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/other/linkage2.C: Move to...
+	* g++.dg/cpp0x/linkage2.C: ..here.
+	* g++.dg/abi/mangle32.C: Add -std=c++0x.
+	* g++.dg/cpp0x/nolinkage1.C: Likewise.
+	* g++.dg/debug/dwarf2/anonname1.C: Likewise.
+	* g++.dg/ext/anon-struct4.C: Revert earlier change.
+	* g++.dg/lookup/anon2.C: Likewise.
+	* g++.dg/other/anon3.C: Likewise.
+	* g++.dg/template/arg2.C: Likewise.
+	* g++.dg/template/local4.C: Likewise.
+	* g++.old-deja/g++.law/operators32.C: Likewise.
+	* g++.old-deja/g++.other/linkage2.C: Likewise.
+	* g++.old-deja/g++.pt/enum6.C: Likewise.
+	* g++.old-deja/g++.other/anon9.C: Likewise.
+	* g++.old-deja/g++.other/linkage1.C: Likewise.
+
 2009-11-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR tree-optimization/41857
