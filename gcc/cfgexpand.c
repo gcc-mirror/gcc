@@ -2349,7 +2349,8 @@ expand_debug_expr (tree exp)
 	      || DECL_EXTERNAL (exp)
 	      || !TREE_STATIC (exp)
 	      || !DECL_NAME (exp)
-	      || DECL_HARD_REGISTER (exp))
+	      || DECL_HARD_REGISTER (exp)
+	      || mode == VOIDmode)
 	    return NULL;
 
 	  op0 = DECL_RTL (exp);

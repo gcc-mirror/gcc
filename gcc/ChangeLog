@@ -1,5 +1,9 @@
 2009-11-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/41893
+	* cfgexpand.c (expand_debug_expr): Don't attempt to create DECL_RTL
+	for a VOIDmode variable.
+
 	PR c++/41774
 	* c-pragma.c (visstack): Change into vector of ints rather than
 	enum symbol_visibility.
