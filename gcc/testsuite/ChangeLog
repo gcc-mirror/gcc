@@ -1,3 +1,9 @@
+2009-11-01  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/tree-ssa/restrict-1.c: Move to c-c++-common.
+	* gcc.dg/tree-ssa/restrict-2.c: Move to c-c++-common.
+	* gcc.dg/tree-ssa/restrict-4.c: Move to c-c++-common.
+
 2009-11-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt5.adb: New test.
