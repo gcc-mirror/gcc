@@ -1,3 +1,8 @@
+2009-11-02  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR libffi/41908
+	* testsuite/libffi.call/testclosure.c: New test.
+
 2009-09-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* src/x86/win64.S (_ffi_call_win64 stack): Remove for gnu
