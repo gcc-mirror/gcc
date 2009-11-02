@@ -3219,7 +3219,7 @@ handle_namespace_attrs (tree ns, tree attributes)
 		     "%qD attribute is meaningless since members of the "
 		     "anonymous namespace get local symbols", name);
 
-	  push_visibility (TREE_STRING_POINTER (x));
+	  push_visibility (TREE_STRING_POINTER (x), 1);
 	  saw_vis = true;
 	}
       else

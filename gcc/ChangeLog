@@ -1,3 +1,18 @@
+2009-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41774
+	* c-pragma.c (visstack): Change into vector of ints rather than
+	enum symbol_visibility.
+	(push_visibility): Add kind argument, push default_visibility together
+	with kind.
+	(pop_visibility): Add kind argument, return true if successful, fail
+	if visibility stack is empty or if stack top is of different kind.
+	(handle_pragma_visibility): Don't check length of visstack, instead
+	call pop_visibility and issue diagnostics if it failed.  Pass 0
+	as last argument to push_visibility and pop_visibility.
+	* c-pragma.h (push_visibility): Add kind argument.
+	(pop_visibility): Likewise.  Return bool instead of void.
+
 2009-11-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.def (TARGET_MEM_REF): Update comment.

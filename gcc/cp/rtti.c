@@ -128,13 +128,13 @@ static void
 push_abi_namespace (void)
 {
   push_nested_namespace (abi_node);
-  push_visibility ("default");
+  push_visibility ("default", 2);
 }
 
 static void
 pop_abi_namespace (void)
 {
-  pop_visibility ();
+  pop_visibility (2);
   pop_nested_namespace (abi_node);
 }
 
