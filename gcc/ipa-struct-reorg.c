@@ -3380,6 +3380,14 @@ build_data_structure (VEC (tree, heap) **unsuitable_types)
 	      if (is_candidate (var, &type, unsuitable_types))
 		add_structure (type);
 
+	  if (fn == NULL)
+	    {
+	      /* Skip cones that haven't been materialized yet.  */
+	      gcc_assert (c_node->clone_of
+			  && c_node->clone_of->decl != c_node->decl);
+	      continue;
+	    }
+
 	  /* Check function local variables.  */
 	  for (var_list = fn->local_decls; var_list; 
 	       var_list = TREE_CHAIN (var_list))
