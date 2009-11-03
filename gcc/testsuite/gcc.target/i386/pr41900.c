@@ -4,7 +4,7 @@
 
 int main ()
 {
-  unsigned code = 0xc3;
+  volatile unsigned code = 0xc3;
 
   ((void (*)(void)) &code) ();
   return 0;
