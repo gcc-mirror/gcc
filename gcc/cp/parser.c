@@ -5803,7 +5803,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
   parser->type_definition_forbidden_message
     = "types may not be defined in a new-type-id";
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+  cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				/*is_trailing_return=*/false,
 				&type_specifier_seq);
   /* Restore the old message.  */
@@ -8049,7 +8049,7 @@ cp_parser_condition (cp_parser* parser)
   parser->type_definition_forbidden_message
     = "types may not be defined in conditions";
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, /*is_condition==*/true,
+  cp_parser_type_specifier_seq (parser, /*is_declaration==*/true,
 				/*is_trailing_return=*/false,
 				&type_specifiers);
   /* Restore the saved message.  */
@@ -9691,7 +9691,7 @@ cp_parser_conversion_type_id (cp_parser* parser)
   /* Parse the attributes.  */
   attributes = cp_parser_attributes_opt (parser);
   /* Parse the type-specifiers.  */
-  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+  cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				/*is_trailing_return=*/false,
 				&type_specifiers);
   /* If that didn't work, stop.  */
@@ -12561,7 +12561,7 @@ cp_parser_enum_specifier (cp_parser* parser)
       cp_lexer_consume_token (parser->lexer);
 
       /* Parse the type-specifier-seq.  */
-      cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+      cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				    /*is_trailing_return=*/false,
                                     &type_specifiers);
 
@@ -14531,7 +14531,7 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
   cp_declarator *abstract_declarator;
 
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+  cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				is_trailing_return,
 				&type_specifier_seq);
   if (type_specifier_seq.type == error_mark_node)
@@ -14593,8 +14593,8 @@ static tree cp_parser_trailing_type_id (cp_parser *parser)
    type-specifier-seq:
      attributes type-specifier-seq [opt]
 
-   If IS_CONDITION is true, we are at the start of a "condition",
-   e.g., we've just seen "if (".
+   If IS_DECLARATION is true, we are at the start of a "condition" or
+   exception-declaration, so we might be followed by a declarator-id.
 
    If IS_TRAILING_RETURN is true, we are in a trailing-return-type,
    i.e. we've just seen "->".
@@ -14603,7 +14603,7 @@ static tree cp_parser_trailing_type_id (cp_parser *parser)
 
 static void
 cp_parser_type_specifier_seq (cp_parser* parser,
-			      bool is_condition,
+			      bool is_declaration,
 			      bool is_trailing_return,
 			      cp_decl_specifier_seq *type_specifier_seq)
 {
@@ -14679,7 +14679,7 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 	 would be clearer just to allow a decl-specifier-seq here, and
 	 then add a semantic restriction that if any decl-specifiers
 	 that are not type-specifiers appear, the program is invalid.  */
-      if (is_condition && !is_cv_qualifier)
+      if (is_declaration && !is_cv_qualifier)
 	flags |= CP_PARSER_FLAGS_NO_USER_DEFINED_TYPES;
     }
 
@@ -17330,7 +17330,7 @@ cp_parser_exception_declaration (cp_parser* parser)
     = "types may not be defined in exception-declarations";
 
   /* Parse the type-specifier-seq.  */
-  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+  cp_parser_type_specifier_seq (parser, /*is_declaration=*/true,
 				/*is_trailing_return=*/false,
 				&type_specifiers);
   /* If it's a `)', then there is no declarator.  */
@@ -22104,7 +22104,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	     cp_parser_condition, from whence the bulk of this is copied.  */
 
 	  cp_parser_parse_tentatively (parser);
-	  cp_parser_type_specifier_seq (parser, /*is_condition=*/false,
+	  cp_parser_type_specifier_seq (parser, /*is_declaration=*/true,
 					/*is_trailing_return=*/false,
 					&type_specifiers);
 	  if (cp_parser_parse_definitely (parser))

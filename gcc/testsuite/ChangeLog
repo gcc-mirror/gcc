@@ -1,5 +1,8 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41876
+	* g++.dg/parse/eh-decl.C: New.
+
 	PR c++/41927
 	* g++.dg/template/sfinae16.C: New.
 
