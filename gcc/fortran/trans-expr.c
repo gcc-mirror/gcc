@@ -2998,16 +2998,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	     only needed when passing an array to an elemental procedure
 	     as then array elements are accessed - or no NULL pointer is
 	     allowed and a "1" or "0" should be passed if not present.
-	     When passing a deferred array to a non-deferred array dummy,
-	     the array needs to be packed and a check needs thus to be
-	     inserted.  */
+	     When passing a non-array-descriptor full array to a
+	     non-array-descriptor dummy, no check is needed. For
+	     array-descriptor actual to array-descriptor dummy, see
+	     PR 41911 for why a check has to be inserted.
+	     fsym == NULL is checked as intrinsics required the descriptor
+	     but do not always set fsym.  */
 	  if (e->expr_type == EXPR_VARIABLE
 	      && e->symtree->n.sym->attr.optional
 	      && ((e->rank > 0 && sym->attr.elemental)
 		  || e->representation.length || e->ts.type == BT_CHARACTER
-		  || (e->rank > 0 && (fsym == NULL
-				      || (fsym->as->type != AS_ASSUMED_SHAPE
-					  && fsym->as->type != AS_DEFERRED)))))
+		  || (e->rank > 0
+		      && (fsym == NULL || fsym->as->type == AS_ASSUMED_SHAPE
+			  || fsym->as->type == AS_DEFERRED))))
 	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts,
 				    e->representation.length);
 	}
