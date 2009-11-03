@@ -1,5 +1,8 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40944
+	* g++.dg/template/sfinae15.C: New.
+
 	PR c++/40687
 	* g++.dg/cpp0x/auto3.C: Remove xfail.
 
