@@ -1,3 +1,7 @@
+	2009-11-02  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	*gcc.c-torture/execute/pr40668.c: Correct for 16bit int size.
+
 2009-11-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41856
