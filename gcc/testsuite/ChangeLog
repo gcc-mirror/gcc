@@ -1,3 +1,8 @@
+2009-11-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41907
+	* gfortran.dg/missing_optional_dummy_6.f90: New test.
+
 2009-11-03  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.target/rx/builtins,c: Remove redundant tests.
