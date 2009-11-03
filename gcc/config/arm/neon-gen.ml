@@ -122,6 +122,7 @@ let rec signed_ctype = function
   | T_uint16 | T_int16 -> T_intHI
   | T_uint32 | T_int32 -> T_intSI
   | T_uint64 | T_int64 -> T_intDI
+  | T_float32 -> T_floatSF
   | T_poly8 -> T_intQI
   | T_poly16 -> T_intHI
   | T_arrayof (n, elt) -> T_arrayof (n, signed_ctype elt)
@@ -320,7 +321,7 @@ let deftypes () =
     typeinfo;
   Format.print_newline ();
   (* Extra types not in <stdint.h>.  *)
-  Format.printf "typedef __builtin_neon_sf float32_t;\n";
+  Format.printf "typedef float float32_t;\n";
   Format.printf "typedef __builtin_neon_poly8 poly8_t;\n";
   Format.printf "typedef __builtin_neon_poly16 poly16_t;\n"
 

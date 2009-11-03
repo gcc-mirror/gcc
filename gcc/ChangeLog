@@ -1,3 +1,11 @@
+2009-11-03  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/neon.ml (vectype): Add T_floatSF.
+	(string_of_vectype): Ditto.
+	* config/arm/neon-gen.ml (signed_ctype): Add T_floatSF.
+	(deftypes): Use float for float32_t.
+	* config/arm/arm_neon.h: Regenerate.
+
 2009-11-03  Nick Clifton  <nickc@redhat.com>
 	    Kevin Buettner  <kevinb@redhat.com>
 
