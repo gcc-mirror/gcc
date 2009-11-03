@@ -1,3 +1,8 @@
+2009-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr41900.c: Make test compile only.  Scan assembler
+	dump to not include "call *%esp".
+
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39786
@@ -26,7 +31,7 @@
 
 2009-11-03  Nick Clifton  <nickc@redhat.com>
 
-	* gcc.target/rx/builtins,c: Remove redundant tests.
+	* gcc.target/rx/builtins.c: Remove redundant tests.
 	Add test of MVTIPL instruction.
 	* gcc.target/rx/interrupts.c: Use fast_interrupt and interrupt
 	function attributes.  Add -msave-acc-in-interrupts option to the
@@ -1452,18 +1457,15 @@
 	* gcc.c-torture/execute/builtins/builtins.exp: Likewise.
 	* gcc.c-torture/execute/ieee/ieee.exp: Likewise.
 	* gcc.c-torture/unsorted/unsorted.exp: Likewise.
-	* gcc.target/i386/math-torture/math-torture.exp:
-	Likewise.
+	* gcc.target/i386/math-torture/math-torture.exp: Likewise.
 	* gcc.dg/lto/lto.exp: New.
 	* gfortran.dg/lto/lto.exp: New.
 	* lib/target-supports.exp (check_effective_target_lto): New.
-	* lib/c-torture.exp: Load target-supports.exp.
-	Define LTO_TORTURE_OPTIONS if check_effective_target_lto
-	returns nonzero.
+	* lib/c-torture.exp: Load target-supports.exp.  Define
+	LTO_TORTURE_OPTIONS if check_effective_target_lto returns nonzero.
 	* lib/gcc-dg.exp: Likewise.
 	* lib/lto.exp: New.
-	* lib/torture-options.exp: Add support for a third
-	argument.
+	* lib/torture-options.exp: Add support for a third argument.
 
 2009-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
