@@ -1,3 +1,8 @@
+2009-11-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36959
+	* g++.dg/opt/inline16.C: New.
+
 2009-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/stack_check.adb1: New test.
