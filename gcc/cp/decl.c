@@ -4390,7 +4390,7 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
      DECL_INITIAL for local references (instead assigning to them
      explicitly); we need to allow the temporary to be initialized
      first.  */
-  tmp = initialize_reference (type, init, decl, cleanup);
+  tmp = initialize_reference (type, init, decl, cleanup, tf_warning_or_error);
 
   if (tmp == error_mark_node)
     return NULL_TREE;

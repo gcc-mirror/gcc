@@ -1,5 +1,11 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40944
+	* call.c (initialize_reference): Add complain parm.
+	* typeck.c (convert_for_initialization): Pass it.
+	* decl.c (grok_reference_init): Likewise.
+	* cp-tree.h: Declare it.
+
 	PR c++/40687
 	* pt.c (do_auto_deduction): Diagnose inconsistent deduction.
 
