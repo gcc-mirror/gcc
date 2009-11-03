@@ -56,8 +56,7 @@
 	(UNSPEC_BUILTIN_MVTIPL): Define.
 	(revl): Rename to bswapsi2.
 	(bswaphi2): New pattern.
-	(mvtachi): Mark as volatile because it uses a register unknown to
-	GCC.
+	(mvtachi): Mark as volatile because it uses a register unknown to GCC.
 	(mvtaclo): Likewise.
 	(racw): Likewise.
 	(mvtc): Remove clobber of cc0.
@@ -69,8 +68,7 @@
 	(mcpu=): Add.
 	(patch=): Add.
 	(msave-acc-in-interrupts): Add.
-	* config/rx/t-rx (MULTILIB_OPTIONS): Change default to 64bit
-	doubles.
+	* config/rx/t-rx (MULTILIB_OPTIONS): Change default to 64bit doubles.
 	(MULTILIB_DIRS): Likewise.
 	(MULTILIB_MATCHES): Treat -fpu as an alias for -m32bit-doubles.
 	* doc/extend.texi: Remove description of "exception" function
@@ -108,7 +106,7 @@
 	TARGET_CALL_ESP.
 	(*call_pop_1, *call_1, *call_value_pop_1, *call_value_1):
 	New patterns, use "lsm" as operand 1 constraint.
-	* config/i386/predicates.md (call_insn_operand): Depend on 
+	* config/i386/predicates.md (call_insn_operand): Depend on
 	index_register_operand for !TARGET_CALL_ESP to avoid %esp register.
 
 2009-11-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
@@ -173,8 +171,7 @@
 
 	* config/mn10300/mn10300.c (mn10300_function_value): Make static, add
 	new 'outgoing' argument.
-	(mn10300_libcall_value, mn10300_function_value_regno_p): New
-	functions.
+	(mn10300_libcall_value, mn10300_function_value_regno_p): New functions.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
 	* config/mn10300/mn10300.h: (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
 	LIBCALL_VALUE): Remove.
@@ -283,7 +280,7 @@
 	PR target/38018
 	* doc/tm.texi (OVERRIDE_OPTIONS): Update.
 	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): New.
-	* optc-gen.awk (cl_target_option_restore): Include call to 
+	* optc-gen.awk (cl_target_option_restore): Include call to
 	targetm.override_options_after_change.
 	* target-def.h (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): New.
 	* target.h (override_options_after_change): New.
@@ -307,7 +304,7 @@
 2009-10-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (find_best_start): Fix type of remainder to be
-	unsigned .
+	unsigned.
 
 2009-10-29  Martin Jambor  <mjambor@suse.cz>
 
