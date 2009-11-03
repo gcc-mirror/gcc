@@ -1,3 +1,11 @@
+2009-11-03  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/rx/builtins,c: Remove redundant tests.
+	Add test of MVTIPL instruction.
+	* gcc.target/rx/interrupts.c: Use fast_interrupt and interrupt
+	function attributes.  Add -msave-acc-in-interrupts option to the
+	command line.
+
 2009-11-03  Andrew Stubbs  <ams@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 

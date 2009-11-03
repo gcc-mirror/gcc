@@ -27,8 +27,8 @@
 ;; This code iterator is used for sign- and zero- extensions.
 (define_mode_iterator small_int_modes [(HI "") (QI "")])
 
-;; We do not handle DFmode here because by default it is
-;; the same as SFmode, and if -m64bit-doubles is active
+;; We do not handle DFmode here because it is either
+;; the same as SFmode, or if -m64bit-doubles is active
 ;; then all operations on doubles have to be handled by
 ;; library functions.
 (define_mode_iterator register_modes
@@ -75,15 +75,14 @@
    (UNSPEC_BUILTIN_MVTACHI 41)
    (UNSPEC_BUILTIN_MVTACLO 42)
    (UNSPEC_BUILTIN_MVTC    43)
-   (UNSPEC_BUILTIN_MVTCP   44)
-   (UNSPEC_BUILTIN_OPEPC   45)
-   (UNSPEC_BUILTIN_RACW	   46)
-   (UNSPEC_BUILTIN_REVW    47)
-   (UNSPEC_BUILTIN_RMPA	   48)
-   (UNSPEC_BUILTIN_ROUND   49)
-   (UNSPEC_BUILTIN_SAT     50)
-   (UNSPEC_BUILTIN_SETPSW  51)
-   (UNSPEC_BUILTIN_WAIT	   52)
+   (UNSPEC_BUILTIN_MVTIPL  44)
+   (UNSPEC_BUILTIN_RACW	   45)
+   (UNSPEC_BUILTIN_REVW    46)
+   (UNSPEC_BUILTIN_RMPA	   47)
+   (UNSPEC_BUILTIN_ROUND   48)
+   (UNSPEC_BUILTIN_SAT     49)
+   (UNSPEC_BUILTIN_SETPSW  50)
+   (UNSPEC_BUILTIN_WAIT	   51)
   ]
 )
 
@@ -1002,10 +1001,8 @@
    (set_attr "timings" "11,11,11,11,11,33")
    (set_attr "length" "3,4,5,6,7,6")]
 )
-
+
 ;; Floating Point Instructions
-;; These patterns are only enabled with -ffast-math because the RX FPU
-;; cannot handle sub-normal values.
 
 (define_insn "addsf3"
   [(set (match_operand:SF          0 "register_operand"  "=r,r,r")
@@ -1298,7 +1295,6 @@
   [(set_attr "length" "3,6")
    (set_attr "timings" "22")]
 )
-
 
 ;; Block move functions.
 
@@ -1580,8 +1576,8 @@
 
 ;; Move to Accumulator (high)
 (define_insn "mvtachi"
-  [(unspec:SI [(match_operand:SI 0 "register_operand" "r")]
-	      UNSPEC_BUILTIN_MVTACHI)]
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+		       UNSPEC_BUILTIN_MVTACHI)]
   ""
   "mvtachi\t%0"
   [(set_attr "length" "3")]
@@ -1589,8 +1585,8 @@
 
 ;; Move to Accumulator (low)
 (define_insn "mvtaclo"
-  [(unspec:SI [(match_operand:SI 0 "register_operand" "r")]
-	      UNSPEC_BUILTIN_MVTACLO)]
+  [(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+		       UNSPEC_BUILTIN_MVTACLO)]
   ""
   "mvtaclo\t%0"
   [(set_attr "length" "3")]
@@ -1598,8 +1594,8 @@
 
 ;; Round Accumulator
 (define_insn "racw"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i")]
-	      UNSPEC_BUILTIN_RACW)]
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")]
+		       UNSPEC_BUILTIN_RACW)]
   ""
   "racw\t%0"
   [(set_attr "length" "3")]
@@ -1679,7 +1675,7 @@
 
 ;; Move from control register
 (define_insn "mvfc"
-  [(set (match_operand:SI                      0 "register_operand" "=r")
+  [(set (match_operand:SI             0 "register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "immediate_operand" "i")]
 		   UNSPEC_BUILTIN_MVFC))]
   ""
@@ -1691,13 +1687,24 @@
 (define_insn "mvtc"
   [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i,i")
 	       (match_operand:SI 1 "nonmemory_operand" "r,i")]
-	      UNSPEC_BUILTIN_MVTC)
-   (clobber (cc0))]
+	      UNSPEC_BUILTIN_MVTC)]
   ""
   "mvtc\t%1, %C0"
-  [(set_attr "length" "3,7")
-   (set_attr "cc" "clobber")]  ;; Just in case the control
-                               ;; register selected is the psw.
+  [(set_attr "length" "3,7")]
+  ;; Ignore possible clobbering of the comparison flags in the
+  ;; PSW register.  This is a cc0 target so any cc0 setting
+  ;; instruction will always be paired with a cc0 user, without
+  ;; the possibility of this instruction being placed in between
+  ;; them.
+)
+
+;; Move to interrupt priority level
+(define_insn "mvtipl"
+  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "Uint04")]
+	      UNSPEC_BUILTIN_MVTIPL)]
+  ""
+  "mvtipl\t%0"
+  [(set_attr "length" "3")]
 )
 
 ;;---------- Interrupts ------------------------
@@ -1745,27 +1752,6 @@
 		   UNSPEC_BUILTIN_MVFCP))]
   ""
   "; mvfcp\t%1, %0, %2"
-  [(set_attr "length" "5")]
-)
-
-;; Move to co-processor register
-(define_insn "mvtcp"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i,i")
-	       (match_operand:SI 1 "nonmemory_operand" "i,r")
-	       (match_operand:SI 2 "immediate_operand" "i,i")]
-	      UNSPEC_BUILTIN_MVTCP)]
-  ""
-  "; mvtcp\t%0, %1, %2"
-  [(set_attr "length" "7,5")]
-)
-
-;; Co-processor operation
-(define_insn "opecp"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i")
-	       (match_operand:SI 1 "immediate_operand" "i")]
-	      UNSPEC_BUILTIN_OPEPC)]
-  ""
-  "; opecp\t%0, %1"
   [(set_attr "length" "5")]
 )
 

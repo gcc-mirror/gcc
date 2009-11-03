@@ -55,7 +55,7 @@
 
 ;; This constraint is used by the SUBSI3 pattern because the
 ;; RX SUB instruction can only take a 4-bit unsigned integer
-;; value.
+;; value.  Also used by the MVTIPL instruction.
 (define_constraint "Uint04"
   "@internal An unsigned 4-bit immediate value"
   (and (match_code "const_int")

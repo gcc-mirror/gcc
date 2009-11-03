@@ -20,9 +20,9 @@
 
 # Enable multilibs:
 
-MULTILIB_OPTIONS    = m64bit-doubles mbig-endian-data
-MULTILIB_DIRNAMES   = 64fp           big-endian-data
-MULTILIB_MATCHES    = m64bit-doubles=mieee
+MULTILIB_OPTIONS    = m32bit-doubles mbig-endian-data
+MULTILIB_DIRNAMES   = 32fp           big-endian-data
+MULTILIB_MATCHES    = m32bit-doubles=fpu
 MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS = 
 

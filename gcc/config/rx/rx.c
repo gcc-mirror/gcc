@@ -51,6 +51,8 @@
 #include "target-def.h"
 #include "langhooks.h"
 
+enum rx_cpu_types  rx_cpu_type = RX600;
+
 /* Return true if OP is a reference to an object in a small data area.  */
 
 static bool
@@ -249,7 +251,6 @@ rx_is_mode_dependent_addr (rtx addr)
     }
 }
 
-
 /* A C compound statement to output to stdio stream FILE the
    assembler syntax for an instruction operand that is a memory
    reference whose address is ADDR.  */
@@ -445,8 +446,13 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	fprintf (file, "%s", reg_names [REGNO (op) + (WORDS_BIG_ENDIAN ? 0 : 1)]);
       else if (CONST_INT_P (op))
 	{
+	  HOST_WIDE_INT v = INTVAL (op);
+
 	  fprintf (file, "#");
-	  rx_print_integer (file, INTVAL (op) >> 32);
+	  /* Trickery to avoid problems with shifting 32 bits at a time.  */
+	  v = v >> 16;
+	  v = v >> 16;	  
+	  rx_print_integer (file, v);
 	}
       else
 	{
@@ -840,22 +846,20 @@ has_func_attr (const_tree decl, const char * func_attr)
   return lookup_attribute (func_attr, DECL_ATTRIBUTES (decl)) != NULL_TREE;
 }
 
-/* Returns true if the provided function has
-   the "[fast_]interrupt" attribute.  */
+/* Returns true if the provided function has the "fast_interrupt" attribute.  */
 
 static inline bool
 is_fast_interrupt_func (const_tree decl)
 {
-  return has_func_attr (decl, "interrupt")
-    || has_func_attr (decl, "fast_interrupt") ;
+  return has_func_attr (decl, "fast_interrupt");
 }
 
-/* Returns true if the provided function has the "exception" attribute.  */
+/* Returns true if the provided function has the "interrupt" attribute.  */
 
 static inline bool
-is_exception_func (const_tree decl)
+is_interrupt_func (const_tree decl)
 {
-  return has_func_attr (decl, "exception");
+  return has_func_attr (decl, "interrupt");
 }
 
 /* Returns true if the provided function has the "naked" attribute.  */
@@ -945,8 +949,8 @@ rx_set_current_function (tree fndecl)
 {
   /* Remember the last target of rx_set_current_function.  */
   static tree rx_previous_fndecl;
-  bool prev_was_interrupt;
-  bool current_is_interrupt;
+  bool prev_was_fast_interrupt;
+  bool current_is_fast_interrupt;
 
   /* Only change the context if the function changes.  This hook is called
      several times in the course of compiling a function, and we don't want
@@ -954,18 +958,19 @@ rx_set_current_function (tree fndecl)
   if (fndecl == rx_previous_fndecl)
     return;
 
-  prev_was_interrupt
+  prev_was_fast_interrupt
     = rx_previous_fndecl
     ? is_fast_interrupt_func (rx_previous_fndecl) : false;
-  current_is_interrupt
+
+  current_is_fast_interrupt
     = fndecl ? is_fast_interrupt_func (fndecl) : false;
       
-  if (prev_was_interrupt != current_is_interrupt)
+  if (prev_was_fast_interrupt != current_is_fast_interrupt)
     {
-      use_fixed_regs = current_is_interrupt;
+      use_fixed_regs = current_is_fast_interrupt;
       target_reinit ();
     }
-      
+
   rx_previous_fndecl = fndecl;
 }
 
@@ -1057,8 +1062,8 @@ rx_get_stack_layout (unsigned int * lowest,
       if (df_regs_ever_live_p (reg)
 	  && (! call_used_regs[reg]
 	      /* Even call clobbered registered must
-		 be pushed inside exception handlers.  */
-	      || is_exception_func (NULL_TREE)))
+		 be pushed inside interrupt handlers.  */
+	      || is_interrupt_func (NULL_TREE)))
 	{
 	  if (low == 0)
 	    low = reg;
@@ -1142,9 +1147,8 @@ rx_emit_stack_pushm (rtx * operands)
   gcc_assert (REG_P (first_push));
 
   asm_fprintf (asm_out_file, "\tpushm\t%s-%s\n",
-	       reg_names [REGNO (first_push)],
-	       reg_names [REGNO (first_push) + last_reg]);
-  
+	       reg_names [REGNO (first_push) - last_reg],
+	       reg_names [REGNO (first_push)]);
 }
 
 /* Generate a PARALLEL that will pass the rx_store_multiple_vector predicate.  */
@@ -1167,12 +1171,28 @@ gen_rx_store_vector (unsigned int low, unsigned int high)
     XVECEXP (vector, 0, i + 1) =
       gen_rtx_SET (SImode,
 		   gen_rtx_MEM (SImode,
-				i == 0 ? stack_pointer_rtx
-				: gen_rtx_MINUS (SImode, stack_pointer_rtx,
-						 GEN_INT (i * UNITS_PER_WORD))),
-		   gen_rtx_REG (SImode, low + i));
-
+				gen_rtx_MINUS (SImode, stack_pointer_rtx,
+					       GEN_INT ((i + 1) * UNITS_PER_WORD))),
+		   gen_rtx_REG (SImode, high - i));
   return vector;
+}
+
+/* Mark INSN as being frame related.  If it is a PARALLEL
+   then mark each element as being frame related as well.  */
+
+static void
+mark_frame_related (rtx insn)
+{
+  RTX_FRAME_RELATED_P (insn) = 1;
+  insn = PATTERN (insn);
+
+  if (GET_CODE (insn) == PARALLEL)
+    {
+      unsigned int i;
+
+      for (i = 0; i < XVECLEN (insn, 0); i++)
+	RTX_FRAME_RELATED_P (XVECEXP (insn, 0, i)) = 1;
+    }
 }
 
 void
@@ -1183,6 +1203,7 @@ rx_expand_prologue (void)
   unsigned int mask;
   unsigned int low;
   unsigned int high;
+  unsigned int reg;
   rtx insn;
 
   /* Naked functions use their own, programmer provided prologues.  */
@@ -1196,14 +1217,12 @@ rx_expand_prologue (void)
   /* If we use any of the callee-saved registers, save them now.  */
   if (mask)
     {
-      unsigned int reg;
-
       /* Push registers in reverse order.  */
       for (reg = FIRST_PSEUDO_REGISTER; reg --;)
 	if (mask & (1 << reg))
 	  {
 	    insn = emit_insn (gen_stack_push (gen_rtx_REG (SImode, reg)));
-	    RTX_FRAME_RELATED_P (insn) = 1;
+	    mark_frame_related (insn);
 	  }
     }
   else if (low)
@@ -1214,7 +1233,57 @@ rx_expand_prologue (void)
 	insn = emit_insn (gen_stack_pushm (GEN_INT (((high - low) + 1)
 						    * UNITS_PER_WORD),
 					   gen_rx_store_vector (low, high)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      mark_frame_related (insn);
+    }
+
+  if (is_interrupt_func (NULL_TREE) && TARGET_SAVE_ACC_REGISTER)
+    {
+      unsigned int acc_high, acc_low;
+
+      /* Interrupt handlers have to preserve the accumulator
+	 register if so requested by the user.  Use the first
+         two pushed register as intermediaries.  */
+      if (mask)
+	{
+	  acc_low = acc_high = 0;
+
+	  for (reg = 1; reg < FIRST_PSEUDO_REGISTER; reg ++)
+	    if (mask & (1 << reg))
+	      {
+		if (acc_low == 0)
+		  acc_low = reg;
+		else
+		  {
+		    acc_high = reg;
+		    break;
+		  }
+	      }
+	    
+	  /* We have assumed that there are at least two registers pushed... */
+	  gcc_assert (acc_high != 0);
+
+	  /* Note - the bottom 16 bits of the accumulator are inaccessible.
+	     We just assume that they are zero.  */
+	  emit_insn (gen_mvfacmi (gen_rtx_REG (SImode, acc_low)));
+	  emit_insn (gen_mvfachi (gen_rtx_REG (SImode, acc_high)));
+	  emit_insn (gen_stack_push (gen_rtx_REG (SImode, acc_low)));
+	  emit_insn (gen_stack_push (gen_rtx_REG (SImode, acc_high)));
+	}
+      else
+	{
+	  acc_low = low;
+	  acc_high = low + 1;
+
+	  /* We have assumed that there are at least two registers pushed... */
+	  gcc_assert (acc_high <= high);
+
+	  emit_insn (gen_mvfacmi (gen_rtx_REG (SImode, acc_low)));
+	  emit_insn (gen_mvfachi (gen_rtx_REG (SImode, acc_high)));
+	  emit_insn (gen_stack_pushm (GEN_INT (2 * UNITS_PER_WORD),
+				      gen_rx_store_vector (acc_low, acc_high)));
+	}
+
+      frame_size += 2 * UNITS_PER_WORD;
     }
 
   /* If needed, set up the frame pointer.  */
@@ -1270,8 +1339,8 @@ rx_output_function_prologue (FILE * file,
   if (is_fast_interrupt_func (NULL_TREE))
     asm_fprintf (file, "\t; Note: Fast Interrupt Handler\n");
 
-  if (is_exception_func (NULL_TREE))
-    asm_fprintf (file, "\t; Note: Exception Handler\n");
+  if (is_interrupt_func (NULL_TREE))
+    asm_fprintf (file, "\t; Note: Interrupt Handler\n");
 
   if (is_naked_func (NULL_TREE))
     asm_fprintf (file, "\t; Note: Naked Function\n");
@@ -1382,6 +1451,7 @@ rx_expand_epilogue (bool is_sibcall)
   unsigned int stack_size;
   unsigned int register_mask;
   unsigned int regs_size;
+  unsigned int reg;
   unsigned HOST_WIDE_INT total_size;
 
   if (is_naked_func (NULL_TREE))
@@ -1407,14 +1477,14 @@ rx_expand_epilogue (bool is_sibcall)
        their caller.  Instead they branch to their sibling and allow their
        return instruction to return to this function's parent.
 
-     - Fast interrupt and exception handling functions have to use special
+     - Fast and normal interrupt handling functions have to use special
        return instructions.
 
      - Functions where we have pushed a fragmented set of registers into the
        call-save area must have the same set of registers popped.  */
   if (is_sibcall
       || is_fast_interrupt_func (NULL_TREE)
-      || is_exception_func (NULL_TREE)
+      || is_interrupt_func (NULL_TREE)
       || register_mask)
     {
       /* Cannot use the special instructions - deconstruct by hand.  */
@@ -1422,10 +1492,47 @@ rx_expand_epilogue (bool is_sibcall)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       GEN_INT (total_size)));
 
+      if (is_interrupt_func (NULL_TREE) && TARGET_SAVE_ACC_REGISTER)
+	{
+	  unsigned int acc_low, acc_high;
+
+	  /* Reverse the saving of the accumulator register onto the stack.
+	     Note we must adjust the saved "low" accumulator value as it
+	     is really the middle 32-bits of the accumulator.  */
+	  if (register_mask)
+	    {
+	      acc_low = acc_high = 0;
+	      for (reg = 1; reg < FIRST_PSEUDO_REGISTER; reg ++)
+		if (register_mask & (1 << reg))
+		  {
+		    if (acc_low == 0)
+		      acc_low = reg;
+		    else
+		      {
+			acc_high = reg;
+			break;
+		      }
+		  }
+	      emit_insn (gen_stack_pop (gen_rtx_REG (SImode, acc_high)));
+	      emit_insn (gen_stack_pop (gen_rtx_REG (SImode, acc_low)));
+	    }
+	  else
+	    {
+	      acc_low = low;
+	      acc_high = low + 1;
+	      emit_insn (gen_stack_popm (GEN_INT (2 * UNITS_PER_WORD),
+					 gen_rx_popm_vector (acc_low, acc_high)));
+	    }
+
+	  emit_insn (gen_ashlsi3 (gen_rtx_REG (SImode, acc_low),
+				  gen_rtx_REG (SImode, acc_low),
+				  GEN_INT (16)));
+	  emit_insn (gen_mvtaclo (gen_rtx_REG (SImode, acc_low)));
+	  emit_insn (gen_mvtachi (gen_rtx_REG (SImode, acc_high)));
+	}
+
       if (register_mask)
 	{
-	  unsigned int reg;
-
 	  for (reg = 0; reg < FIRST_PSEUDO_REGISTER; reg ++)
 	    if (register_mask & (1 << reg))
 	      emit_insn (gen_stack_pop (gen_rtx_REG (SImode, reg)));
@@ -1441,7 +1548,7 @@ rx_expand_epilogue (bool is_sibcall)
 
       if (is_fast_interrupt_func (NULL_TREE))
 	emit_jump_insn (gen_fast_interrupt_return ());
-      else if (is_exception_func (NULL_TREE))
+      else if (is_interrupt_func (NULL_TREE))
 	emit_jump_insn (gen_exception_return ());
       else if (! is_sibcall)
 	emit_jump_insn (gen_simple_return ());
@@ -1670,6 +1777,7 @@ enum rx_builtin
   RX_BUILTIN_MVTACHI,
   RX_BUILTIN_MVTACLO,
   RX_BUILTIN_MVTC,
+  RX_BUILTIN_MVTIPL,
   RX_BUILTIN_RACW,
   RX_BUILTIN_REVW,
   RX_BUILTIN_RMPA,
@@ -1725,25 +1833,12 @@ rx_init_builtins (void)
   ADD_RX_BUILTIN1 (RMPA,    "rmpa",    void,  void);
   ADD_RX_BUILTIN1 (MVFC,    "mvfc",    intSI, integer);
   ADD_RX_BUILTIN2 (MVTC,    "mvtc",    void,  integer, integer);
+  ADD_RX_BUILTIN1 (MVTIPL,  "mvtipl",  void,  integer);
   ADD_RX_BUILTIN1 (RACW,    "racw",    void,  integer);
   ADD_RX_BUILTIN1 (ROUND,   "round",   intSI, float);
   ADD_RX_BUILTIN1 (REVW,    "revw",    intSI, intSI);
   ADD_RX_BUILTIN1 (SAT,     "sat",     intSI, intSI);
   ADD_RX_BUILTIN1 (WAIT,    "wait",    void,  void);
-}
-
-static rtx
-rx_expand_builtin_stz (rtx arg, rtx target, rtx (* gen_func)(rtx, rtx))
-{
-  if (! CONST_INT_P (arg))
-    return NULL_RTX;
-
-  if (target == NULL_RTX || ! REG_P (target))
-    target = gen_reg_rtx (SImode);
-
-  emit_insn (gen_func (target, arg));
-
-  return target;
 }
 
 static rtx
@@ -1788,6 +1883,21 @@ rx_expand_builtin_mvfc (tree t_arg, rtx target)
   emit_insn (gen_mvfc (target, arg));
 
   return target;
+}
+
+static rtx
+rx_expand_builtin_mvtipl (rtx arg)
+{
+  /* The RX610 does not support the MVTIPL instruction.  */
+  if (rx_cpu_type == RX610)
+    return NULL_RTX;
+
+  if (! CONST_INT_P (arg) || ! IN_RANGE (arg, 0, (1 << 4) - 1))
+    return NULL_RTX;
+
+  emit_insn (gen_mvtipl (arg));
+
+  return NULL_RTX;
 }
 
 static rtx
@@ -1887,6 +1997,7 @@ rx_expand_builtin (tree exp,
     case RX_BUILTIN_RMPA:    emit_insn (gen_rmpa ()); return NULL_RTX;
     case RX_BUILTIN_MVFC:    return rx_expand_builtin_mvfc (arg, target);
     case RX_BUILTIN_MVTC:    return rx_expand_builtin_mvtc (exp);
+    case RX_BUILTIN_MVTIPL:  return rx_expand_builtin_mvtipl (op);
     case RX_BUILTIN_RACW:    return rx_expand_void_builtin_1_arg
 	(op, gen_racw, false);
     case RX_BUILTIN_ROUND:   return rx_expand_builtin_round (op, target);
@@ -1945,7 +2056,7 @@ rx_elf_asm_destructor (rtx symbol, int priority)
   rx_elf_asm_cdtor (symbol, priority, /* is_ctor= */false);
 }
 
-/* Check "interrupt", "exception" and "naked" attributes.  */
+/* Check "fast_interrupt", "interrupt" and "naked" attributes.  */
 
 static tree
 rx_handle_func_attribute (tree * node,
@@ -1975,9 +2086,8 @@ rx_handle_func_attribute (tree * node,
 const struct attribute_spec rx_attribute_table[] =
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler.  */
-  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute },
   { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute },
-  { "exception",      0, 0, true, false, false, rx_handle_func_attribute },
+  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute },
   { "naked",          0, 0, true, false, false, rx_handle_func_attribute },
   { NULL,             0, 0, false, false, false, NULL }
 };
@@ -1993,7 +2103,7 @@ static bool
 rx_func_attr_inlinable (const_tree decl)
 {
   return ! is_fast_interrupt_func (decl)
-    &&   ! is_exception_func (decl)
+    &&   ! is_interrupt_func (decl)
     &&   ! is_naked_func (decl);  
 }
 
@@ -2115,6 +2225,20 @@ rx_is_legitimate_constant (rtx x)
 		        ( 1 << (rx_max_constant_size * 8)));
 }
 
+/* This is a tri-state variable.  The default value of 0 means that the user
+   has specified neither -mfpu nor -mnofpu on the command line.  In this case
+   the selection of RX FPU instructions is entirely based upon the size of
+   the floating point object and whether unsafe math optimizations were
+   enabled.  If 32-bit doubles have been enabled then both floats and doubles
+   can make use of FPU instructions, otherwise only floats may do so.
+
+   If the value is 1 then the user has specified -mfpu and the FPU
+   instructions should be used.  Unsafe math optimizations will automatically
+   be enabled and doubles set to 32-bits.  If the value is -1 then -mnofpu
+   has been specified and FPU instructions will not be used, even if unsafe
+   math optimizations have been enabled.  */
+int rx_enable_fpu = 0;
+
 /* Extra processing for target specific command line options.  */
 
 static bool
@@ -2122,6 +2246,27 @@ rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
 {
   switch (code)
     {
+      /* -mfpu enables the use of RX FPU instructions.  This implies the use
+	 of 32-bit doubles and also the enabling of fast math optimizations.
+	 (Since the RX FPU instructions are not IEEE compliant).  The -mnofpu
+	 option disables the use of RX FPU instructions, but does not make
+	 place any constraints on the size of doubles or the use of fast math
+	 optimizations.
+
+	 The selection of 32-bit vs 64-bit doubles is handled by the setting
+	 of the 32BIT_DOUBLES mask in the rx.opt file.  Enabling fast math
+	 optimizations is performed in OVERRIDE_OPTIONS since if it was done
+	 here it could be overridden by a -fno-fast-math option specified
+	 *earlier* on the command line.  (Target specific options are
+	 processed before generic ones).  */
+    case OPT_fpu:
+      rx_enable_fpu = 1;
+      break;
+
+    case OPT_nofpu:
+      rx_enable_fpu = -1;
+      break;
+
     case OPT_mint_register_:
       switch (value)
 	{
@@ -2145,12 +2290,21 @@ rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
       break;
 
     case OPT_mmax_constant_size_:
-      /* Make sure that the the -mmax-constant_size option is in range.  */
+      /* Make sure that the -mmax-constant_size option is in range.  */
       return IN_RANGE (value, 0, 4);
 
+    case OPT_mcpu_:
+    case OPT_patch_:
+      if (strcasecmp (arg, "RX610") == 0)
+	rx_cpu_type = RX610;
+      /* FIXME: Should we check for non-RX cpu names here ?  */
+      break;
+      
     default:
-      return true;
+      break;
     }
+
+  return true;
 }
 
 static int

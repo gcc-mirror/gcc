@@ -1,10 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-mint-register=3" } */
+/* { dg-options "-mint-register=3 -msave-acc-in-interrupts" } */
 
 /* Verify that the RX specific function attributes work.  */
 
+void fast_interrupt (void) __attribute__((__fast_interrupt__));
 void interrupt (void) __attribute__((__interrupt__));
-void exception (void) __attribute__((__exception__));
 int naked (int) __attribute__((__naked__));
 
 int flag = 0;
@@ -13,16 +13,16 @@ int flag = 0;
    by the -fixed-xxx gcc command line option.  Returns via RTFI.  */
 
 void
-interrupt (void)
+fast_interrupt (void)
 {
   flag = 1;
 }
 
-/* Exception handler.  Must preserve any register it uses, even
+/* Interrupt handler.  Must preserve any register it uses, even
    call clobbered ones.  Returns via RTE.  */
 
 void
-exception (void)
+interrupt (void)
 {
   switch (flag)
     {

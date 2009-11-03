@@ -784,14 +784,16 @@ See RS/6000 and PowerPC Options.
 -msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread}
 
 @emph{RX Options}
-@gccoptlist{-m64bit-doubles  -m32bit-doubles  -mieee  -mno-ieee@gol
+@gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
+-mcpu= -patch=@gol
 -mbig-endian-data -mlittle-endian-data @gol
 -msmall-data @gol
 -msim  -mno-sim@gol
 -mas100-syntax -mno-as100-syntax@gol
 -mrelax@gol
 -mmax-constant-size=@gol
--mint-register=}
+-mint-register=@gol
+-msave-acc-in-interrupts}
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
@@ -15408,15 +15410,36 @@ These @option{-m} options are defined for RX implementations:
 @table @gcctabopt
 @item -m64bit-doubles
 @itemx -m32bit-doubles
+@itemx -fpu
+@itemx -nofpu
 @opindex m64bit-doubles
 @opindex m32bit-doubles
+@opindex fpu
+@opindex nofpu
 Make the @code{double} data type be 64-bits (@option{-m64bit-doubles})
 or 32-bits (@option{-m32bit-doubles}) in size.  The default is
-@option{-m32bit-doubles}.  @emph{Note} the RX's hardware floating
+@option{-m64bit-doubles}.  @emph{Note} the RX's hardware floating
 point instructions are only used for 32-bit floating point values, and
 then only if @option{-ffast-math} has been specified on the command
 line.  This is because the RX FPU instructions do not properly support
 denormal (or sub-normal) values.
+
+The options @option{-fpu} and @option{-nofpu} have been provided at
+the request of Rensas for compatibility with their toolchain.  The
+@option{-mfpu} option enables the use of RX FPU instructions by
+selecting 32-bit doubles and enabling unsafe math optimizations.  The
+@option{-mnofpu} option disables the use of RX FPU instructions, even
+if @option{-m32bit-doubles} is active and unsafe math optimizations
+have been enabled.
+
+@item -mcpu=@var{name}
+@itemx -patch=@var{name}
+@opindex -mcpu
+@opindex -patch
+Selects the type of RX CPU to be targeted.  Currently on two types are
+supported, the generic @var{RX600} and the specific @var{RX610}.  The
+only difference between them is that the @var{RX610} does not support
+the @code{MVTIPL} instruction.
 
 @item -mbig-endian-data
 @itemx -mlittle-endian-data
@@ -15493,6 +15516,15 @@ of fast interrupt handlers.  A value of 2 reserves @code{r13} and
 @code{r12}.  A value of 3 reserves @code{r13}, @code{r12} and
 @code{r11}, and a value of 4 reserves @code{r13} through @code{r10}.
 A value of 0, the default, does not reserve any registers.
+
+@item -msave-acc-in-interrupts
+@opindex msave-acc-in-interrupts
+Specifies that interrupt handler functions should preserve the
+accumulator register.  This is only necessary if normal code might use
+the accumulator register, for example because it performs 64-bit
+multiplications.  The default is to ignore the accumulator as this
+makes the interrupt handlers faster.
+
 @end table
 
 @emph{Note:} The generic GCC command line @option{-ffixed-@var{reg}}

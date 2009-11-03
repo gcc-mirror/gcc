@@ -2270,13 +2270,6 @@ on data in the eight bit data area.  Note the eight bit data area is limited to
 You must use GAS and GLD from GNU binutils version 2.7 or later for
 this attribute to work correctly.
 
-@item exception
-@cindex exception handler functions on the RX processor
-Use this attribute on the RX to indicate that the specified function
-is an exception handler.  The compiler will generate function entry and
-exit sequences suitable for use in an exception handler when this
-attribute is present.
-
 @item exception_handler
 @cindex exception handler functions on the Blackfin processor
 Use this attribute on the Blackfin to indicate that the specified function

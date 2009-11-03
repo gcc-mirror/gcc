@@ -17,7 +17,6 @@
    to correctly set the psw flags.  */
 
 int saturate_add         (int, int)      __attribute__((__noinline__));
-int subtract_with_borrow (int, int, int) __attribute__((__noinline__));
 int exchange             (int, int)      __attribute__((__noinline__));
 
 int
@@ -31,6 +30,13 @@ saturate_add (int arg1, int arg2)
 {
   arg1 += arg2;
   return __builtin_rx_sat (arg1);
+}
+
+int
+exchange (int arg1, int arg2)
+{
+  arg1 = __builtin_rx_xchg (arg2);
+  return arg1;
 }
 
 long
@@ -156,4 +162,10 @@ void
 rmpa (int * multiplicand, int * multiplier, int num)
 {
   __builtin_rx_rmpa ();
+}
+
+void
+set_interrupts (void)
+{
+  __builtin_mvtipl (3);
 }
