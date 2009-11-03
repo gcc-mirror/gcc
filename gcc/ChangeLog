@@ -1,3 +1,7 @@
+2009-11-03  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (fold_offsetof_1): Use HOST_WIDE_INT_PRINT_DEC.
+
 2009-11-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38699
