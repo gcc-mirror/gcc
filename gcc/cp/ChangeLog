@@ -1,3 +1,10 @@
+2009-11-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/37093
+	* pt.c (check_valid_ptrmem_cst_expr): New function.
+	(convert_nontype_argument): Use it to output an error for
+	illegal pointer to member expressions used as template arguments.
+
 2009-08-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/39706
