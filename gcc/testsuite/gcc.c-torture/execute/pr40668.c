@@ -1,3 +1,8 @@
+#if (__SIZEOF_INT__ == 2)
+#define TESTVALUE 0x1234
+#else
+#define TESTVALUE 0x12345678
+#endif
 static void
 foo (unsigned int x, void *p)
 {
@@ -10,7 +15,7 @@ bar (int type, void *number)
   switch (type)
     {
     case 1:
-      foo (0x12345678, number);
+      foo (TESTVALUE, number);
       break;
     case 7:
       foo (0, number);
@@ -29,7 +34,7 @@ main (void)
 {
   unsigned int x;
   bar (1, &x);
-  if (x != 0x12345678)
+  if (x != TESTVALUE)
     __builtin_abort ();
   return 0;
 }
