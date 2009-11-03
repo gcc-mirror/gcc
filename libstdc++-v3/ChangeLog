@@ -1,3 +1,12 @@
+2009-11-03  David Krauss  <potswa@mac.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41351
+	* include/bits/stl_algo.h (__rotate(_RandomAccessIterator,
+	_RandomAccessIterator, _RandomAccessIterator,
+	random_access_iterator_tag)): Rewrite to use only std::swap in
+	general and std::copy/std::copy_backward when safe.
+
 2009-11-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/future: Use base class with nested types.
