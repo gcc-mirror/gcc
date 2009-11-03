@@ -14216,7 +14216,7 @@ assembler and the linker alone without help from the compiler.
 @opindex mmcount-ra-address
 @opindex mno-mcount-ra-address
 Emit (do not emit) code that allows @code{_mcount} to modify the
-colling function's return address.  When enabled, this option extends
+calling function's return address.  When enabled, this option extends
 the usual @code{_mcount} interface with a new @var{ra-address}
 parameter, which has type @code{intptr_t *} and is passed in register
 @code{$12}.  @code{_mcount} can then modify the return address by
