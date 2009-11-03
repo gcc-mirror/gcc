@@ -1,5 +1,8 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39786
+	* g++.dg/lookup/using22.C: New.
+
 	PR c++/41876
 	* g++.dg/parse/eh-decl.C: New.
 
