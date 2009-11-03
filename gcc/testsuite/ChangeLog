@@ -1,3 +1,8 @@
+2009-11-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/36959
+	* g++.dg/opt/inline16.C: New.
+
 2009-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/41917
