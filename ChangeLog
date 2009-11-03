@@ -1,3 +1,8 @@
+2009-11-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* MAINTAINERS: Add Jonathan Wakely under Various Maintainers, move
+	Phil Edwards to Write-After Approval.
+
 2009-10-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure.ac: Disable target-winsup & co for
