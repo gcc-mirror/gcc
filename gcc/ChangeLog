@@ -1,5 +1,9 @@
 2009-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.md: Fix typos.
+
+2009-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/invoke.texi: Fix typo.
 
 2009-11-03  Paul Brook  <paul@codesourcery.com>
