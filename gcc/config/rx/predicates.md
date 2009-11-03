@@ -117,16 +117,22 @@
   /* Check that the next element is the first push.  */
   element = XVECEXP (op, 0, 1);
   if (   ! SET_P (element)
+      || ! REG_P (SET_SRC (element))
+      || GET_MODE (SET_SRC (element)) != SImode
       || ! MEM_P (SET_DEST (element))
-      || ! REG_P (XEXP (SET_DEST (element), 0))
-      ||   REGNO (XEXP (SET_DEST (element), 0)) != SP_REG
-      || ! REG_P (SET_SRC (element)))
+      || GET_MODE (SET_DEST (element)) != SImode
+      || GET_CODE (XEXP (SET_DEST (element), 0)) != MINUS
+      || ! REG_P (XEXP (XEXP (SET_DEST (element), 0), 0))
+      ||   REGNO (XEXP (XEXP (SET_DEST (element), 0), 0)) != SP_REG
+      || ! CONST_INT_P (XEXP (XEXP (SET_DEST (element), 0), 1))
+      || INTVAL (XEXP (XEXP (SET_DEST (element), 0), 1))
+        != GET_MODE_SIZE (SImode))
     return false;
 
   src_regno = REGNO (SET_SRC (element));
 
   /* Check that the remaining elements use SP-<disp>
-     addressing and incremental register numbers.  */
+     addressing and decreasing register numbers.  */
   for (i = 2; i < count; i++)
     {
       element = XVECEXP (op, 0, i);
@@ -134,7 +140,7 @@
       if (   ! SET_P (element)
 	  || ! REG_P (SET_SRC (element))
 	  || GET_MODE (SET_SRC (element)) != SImode
-	  || REGNO (SET_SRC (element)) != src_regno + (i - 1)
+	  || REGNO (SET_SRC (element)) != src_regno - (i - 1)
 	  || ! MEM_P (SET_DEST (element))
 	  || GET_MODE (SET_DEST (element)) != SImode
 	  || GET_CODE (XEXP (SET_DEST (element), 0)) != MINUS
@@ -142,7 +148,7 @@
           ||   REGNO (XEXP (XEXP (SET_DEST (element), 0), 0)) != SP_REG
 	  || ! CONST_INT_P (XEXP (XEXP (SET_DEST (element), 0), 1))
 	  || INTVAL (XEXP (XEXP (SET_DEST (element), 0), 1))
-	     != (i - 1) * GET_MODE_SIZE (SImode))
+	     != i * GET_MODE_SIZE (SImode))
 	return false;
     }
   return true;

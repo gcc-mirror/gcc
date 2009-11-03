@@ -19,13 +19,31 @@
 ; <http://www.gnu.org/licenses/>.
 ;---------------------------------------------------
 
-m64bit-doubles
-Target RejectNegative Mask(64BIT_DOUBLES)
-Store doubles in 64 bits.
-
 m32bit-doubles
-Target RejectNegative InverseMask(64BIT_DOUBLES)
-Stores doubles in 32 bits.  This is the default.
+Target RejectNegative Mask(32BIT_DOUBLES)
+Stores doubles in 32 bits.
+
+m64bit-doubles
+Target RejectNegative InverseMask(32BIT_DOUBLES)
+Store doubles in 64 bits.  This is the default.
+
+fpu
+Target RejectNegative Mask(32BIT_DOUBLES) MaskExists
+Enable the use of RX FPU instructions.
+
+nofpu
+Target RejectNegative InverseMask(32BIT_DOUBLES) MaskExists
+Disable the use of RX FPU instructions.
+
+;---------------------------------------------------
+
+mcpu=
+Target RejectNegative Joined Var(rx_cpu_name)
+Specify the target RX cpu type.
+
+patch=
+Target RejectNegative Joined Var(rx_cpu_name)
+Alias for -mcpu.
 
 ;---------------------------------------------------
 
@@ -72,3 +90,9 @@ Maximum size in bytes of constant values allowed as operands.
 mint-register=
 Target RejectNegative Joined UInteger Var(rx_interrupt_registers) Init(0)
 Specifies the number of registers to reserve for interrupt handlers.
+
+;---------------------------------------------------
+
+msave-acc-in-interrupts
+Target Mask(SAVE_ACC_REGISTER)
+Specifies whether interrupt functions should save and restore the accumulator register.

@@ -24,24 +24,41 @@
     {                                           \
       builtin_define ("__RX__"); 		\
       builtin_assert ("cpu=RX"); 		\
-      builtin_assert ("machine=RX");		\
+      if (rx_cpu_type == RX610)			\
+        builtin_assert ("machine=RX610");	\
+     else					\
+        builtin_assert ("machine=RX600");	\
       						\
       if (TARGET_BIG_ENDIAN_DATA)		\
 	builtin_define ("__RX_BIG_ENDIAN__");	\
       else					\
 	builtin_define ("__RX_LITTLE_ENDIAN__");\
       						\
-      if (TARGET_64BIT_DOUBLES)			\
-	builtin_define ("__RX_64BIT_DOUBLES__");\
-      else					\
+      if (TARGET_32BIT_DOUBLES)			\
 	builtin_define ("__RX_32BIT_DOUBLES__");\
+      else					\
+	builtin_define ("__RX_64BIT_DOUBLES__");\
       						\
+      if (ALLOW_RX_FPU_INSNS)			\
+	builtin_define ("__RX_FPU_INSNS__");	\
+						\
       if (TARGET_AS100_SYNTAX)			\
 	builtin_define ("__RX_AS100_SYNTAX__"); \
       else					\
 	builtin_define ("__RX_GAS_SYNTAX__");   \
     }                                           \
   while (0)
+
+enum rx_cpu_types
+{
+  RX600,
+  RX610
+};
+
+extern enum rx_cpu_types  rx_cpu_type;
+
+#undef  CC1_SPEC
+#define CC1_SPEC "%{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}}"
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s} crtbegin.o%s"
@@ -52,7 +69,8 @@
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{mbig-endian-data:-mbig-endian-data} \
-%{m64bit-doubles:-m64bit-doubles} \
+%{m32bit-doubles:-m32bit-doubles} \
+%{!m32bit-doubles:-m64bit-doubles} \
 %{msmall-data-limit*:-msmall-data-limit} \
 %{mrelax:-relax} \
 "
@@ -88,16 +106,17 @@
 #define LONG_LONG_TYPE_SIZE		64
 
 #define FLOAT_TYPE_SIZE 		32
-#define DOUBLE_TYPE_SIZE 		(TARGET_64BIT_DOUBLES ? 64 : 32)
+#define DOUBLE_TYPE_SIZE 		(TARGET_32BIT_DOUBLES ? 32 : 64)
 #define LONG_DOUBLE_TYPE_SIZE		DOUBLE_TYPE_SIZE
 
-#ifdef __RX_64BIT_DOUBLES__
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
-#define LIBGCC2_DOUBLE_TYPE_SIZE	64
-#define LIBGCC2_HAS_DF_MODE		1
-#else
+#ifdef __RX_32BIT_DOUBLES__
+#define LIBGCC2_HAS_DF_MODE		0
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   32
 #define LIBGCC2_DOUBLE_TYPE_SIZE	32
+#else
+#define LIBGCC2_HAS_DF_MODE		1
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE   64
+#define LIBGCC2_DOUBLE_TYPE_SIZE	64
 #endif
 
 #define DEFAULT_SIGNED_CHAR		0
@@ -591,7 +610,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
   rx_print_operand_address (FILE, ADDR)
 
-
 #define CC_NO_CARRY			0400
 #define NOTICE_UPDATE_CC(EXP, INSN)	rx_notice_update_cc (EXP, INSN)
 
@@ -614,19 +632,28 @@ extern int rx_float_compare_mode;
 #define PREFERRED_DEBUGGING_TYPE (TARGET_AS100_SYNTAX \
 				  ? DBX_DEBUG : DWARF2_DEBUG)
 
-#undef  CC1_SPEC
-#define CC1_SPEC "%{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}}"
+#define INCOMING_FRAME_SP_OFFSET		4
+#define ARG_POINTER_CFA_OFFSET(FNDECL)		4
+#define FRAME_POINTER_CFA_OFFSET(FNDECL)	4
+
+extern int rx_enable_fpu;
 
 /* For some unknown reason LTO compression is not working, at
    least on my local system.  So set the default compression
-   level to none, for now.  */
+   level to none, for now.
+
+   For an explanation of rx_flag_no_fpu see rx_handle_option().  */
 #define OVERRIDE_OPTIONS			\
   do						\
     {						\
       if (flag_lto_compression_level == -1)	\
         flag_lto_compression_level = 0;		\
+						\
+      if (rx_enable_fpu == 1)			\
+	set_fast_math_flags (true);		\
     }						\
   while (0)
 
 /* This macro is used to decide when RX FPU instructions can be used.  */
-#define ALLOW_RX_FPU_INSNS	flag_unsafe_math_optimizations
+#define ALLOW_RX_FPU_INSNS	((rx_enable_fpu != -1) \
+				 && flag_unsafe_math_optimizations)

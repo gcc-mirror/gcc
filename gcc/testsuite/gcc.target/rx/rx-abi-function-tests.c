@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-msim" } */
-/* Note: The -msim abiove is actually there to override the default
+/* Note: The -msim above is actually there to override the default
    options which include -ansi -pendantic and -Wlong-long...   */
 
 extern int printf (const char *, ...);
