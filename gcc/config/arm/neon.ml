@@ -50,7 +50,7 @@ type vectype = T_int8x8    | T_int8x16
              | T_ptrto of vectype | T_const of vectype
              | T_void      | T_intQI
              | T_intHI     | T_intSI
-             | T_intDI
+             | T_intDI     | T_floatSF
 
 (* The meanings of the following are:
      TImode : "Tetra", two registers (four words).
@@ -1693,6 +1693,7 @@ let string_of_vectype vt =
   | T_intHI -> "__builtin_neon_hi"
   | T_intSI -> "__builtin_neon_si"
   | T_intDI -> "__builtin_neon_di"
+  | T_floatSF -> "__builtin_neon_sf"
   | T_arrayof (num, base) ->
       let basename = name (fun x -> x) base in
       affix (Printf.sprintf "%sx%d" basename num)
