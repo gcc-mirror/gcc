@@ -1930,7 +1930,7 @@
    (set (match_dup 0) (match_dup 5))
    (set (match_dup 4) (unspec:DI [(match_dup 3)] UNSPEC_MFHI))
 
-   ;; Zero-extend OP4.
+   ;; Zero-extend OP0.
    (set (match_dup 0)
 	(ashift:DI (match_dup 0)
 		   (const_int 32)))
@@ -1938,7 +1938,7 @@
 	(lshiftrt:DI (match_dup 0)
 		     (const_int 32)))
 
-   ;; Shift OP0 into place.
+   ;; Shift OP4 into place.
    (set (match_dup 4)
 	(ashift:DI (match_dup 4)
 		   (const_int 32)))
