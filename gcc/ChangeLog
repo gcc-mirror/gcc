@@ -1,3 +1,9 @@
+2009-11-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/41917
+	* rtlanal.c (num_sign_bit_copies1) <case UMOD>: If sign bit of second
+	operand isn't known to be 0, return 1.
+
 2009-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.md: Fix typos.
