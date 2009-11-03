@@ -1,3 +1,8 @@
+2009-10-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41876
+	* g++.dg/parse/eh-decl.C: New.
+
 2009-11-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/37093
