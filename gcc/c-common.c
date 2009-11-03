@@ -8356,15 +8356,14 @@ fold_offsetof_1 (tree expr, tree stop_ref)
       error ("cannot apply %<offsetof%> when %<operator[]%> is overloaded");
       return error_mark_node;
 
-    case INTEGER_CST:
-      gcc_assert (integer_zerop (expr));
-      return size_zero_node;
-
     case NOP_EXPR:
     case INDIRECT_REF:
-      base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
-      gcc_assert (base == error_mark_node || base == size_zero_node);
-      return base;
+      if (!integer_zerop (TREE_OPERAND (expr, 0)))
+	{
+	  error ("cannot apply %<offsetof%> to a non constant address");
+	  return error_mark_node;
+	}
+      return size_zero_node;
 
     case COMPONENT_REF:
       base = fold_offsetof_1 (TREE_OPERAND (expr, 0), stop_ref);
@@ -8397,6 +8396,16 @@ fold_offsetof_1 (tree expr, tree stop_ref)
 	}
       t = convert (sizetype, t);
       off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
+
+      /* Check if the offset goes beyond the upper bound of the array.  */
+      {
+	tree nelts = array_type_nelts (TREE_TYPE (TREE_OPERAND (expr, 0)));
+        HOST_WIDE_INT index = int_cst_value (t);
+	if (index > int_cst_value (nelts))
+	  warning (OPT_Warray_bounds,
+		   "index %ld denotes an offset greater than size of %qT",
+		   index, TREE_TYPE (TREE_OPERAND (expr, 0)));
+      }
       break;
 
     case COMPOUND_EXPR:

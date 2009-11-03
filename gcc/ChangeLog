@@ -1,3 +1,9 @@
+2009-11-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/38699
+	* c-common.c (fold_offsetof_1): Issue errors when the member designator
+	of the offsetoff expression is not legitimate.
+
 2009-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*call_value_1_rex64_ms_sysv): Use register
