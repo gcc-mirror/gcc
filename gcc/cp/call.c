@@ -313,6 +313,9 @@ build_call_a (tree function, int n, tree *argarray)
   gcc_assert (TREE_CODE (fntype) == FUNCTION_TYPE
 	      || TREE_CODE (fntype) == METHOD_TYPE);
   result_type = TREE_TYPE (fntype);
+  /* An rvalue has no cv-qualifiers.  */
+  if (SCALAR_TYPE_P (result_type) || VOID_TYPE_P (result_type))
+    result_type = cv_unqualified (result_type);
 
   if (TREE_CODE (function) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)

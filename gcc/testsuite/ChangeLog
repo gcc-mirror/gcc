@@ -1,5 +1,9 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41815
+	* g++.dg/cpp0x/rv-return.C: New.
+	* g++.dg/cpp0x/deduce.C: Adjust.
+
 	PR c++/40944
 	* g++.dg/template/sfinae15.C: New.
 
