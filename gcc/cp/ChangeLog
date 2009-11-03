@@ -1,5 +1,9 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/36959
+	* decl2.c (cxx_callgraph_analyze_expr): Don't reference a function
+	just because a static variable in it is needed unless -frepo.
+
 	PR c++/41876
 	* parser.c (cp_parser_type_specifier_seq): Rename is_condition to
 	is_declaration.
