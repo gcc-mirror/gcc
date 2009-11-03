@@ -1,3 +1,22 @@
+2009-11-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/future: Use base class with nested types.
+	(__future_base): New.
+	(__future_base::_Result_base): From _Future_result_base.
+	(__future_base::_Result): From _Future_result.
+	(__future_base::_Move_result): From _Move_future_result.
+	(__future_base::_Ptr): From _Future_ptr.
+	(__future_base::_State): From _Future_state.
+	(__basic_future): From _Future_impl.
+	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: Adjust line
+	numbers.
+	* testsuite/30_threads/packaged_task/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/shared_future/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/unique_future/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/unique_future/cons/copy_neg.cc: Same.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: Same.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: Same.
+
 2009-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/chrono (struct __common_rep_type): New.
@@ -9,7 +28,7 @@
 	operator/(const duration<>&, const _Rep2&),
 	time_point_cast(const time_point<>&)): Implement resolution of
 	DR 1177 ([Ready] in Santa Cruz), change to not participate to
-	overload resolution if the constraints are not met. 
+	overload resolution if the constraints are not met.
 	* testsuite/20_util/duration/cons/1_neg.cc: Adjust dg-errors.
 	* testsuite/20_util/duration/cons/dr974.cc: Likewise.
 	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust
