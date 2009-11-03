@@ -400,6 +400,7 @@ enum ix86_arch_indices {
   X86_ARCH_CMPXCHG8B,
   X86_ARCH_XADD,
   X86_ARCH_BSWAP,
+  X86_ARCH_CALL_ESP,
 
   X86_ARCH_LAST
 };
@@ -411,6 +412,7 @@ extern unsigned char ix86_arch_features[X86_ARCH_LAST];
 #define TARGET_CMPXCHG8B	ix86_arch_features[X86_ARCH_CMPXCHG8B]
 #define TARGET_XADD		ix86_arch_features[X86_ARCH_XADD]
 #define TARGET_BSWAP		ix86_arch_features[X86_ARCH_BSWAP]
+#define TARGET_CALL_ESP		ix86_arch_features[X86_ARCH_CALL_ESP]
 
 #define TARGET_FISTTP		(TARGET_SSE3 && TARGET_80387)
 

@@ -1,12 +1,16 @@
-	2009-11-02  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+2009-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
-	*gcc.c-torture/execute/pr40668.c: Correct for 16bit int size.
+	PR target/41900
+	* gcc.target/i386/pr41900.c: New test.
+
+2009-11-02  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr40668.c: Correct for 16bit int size.
 
 2009-11-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41856
-	* g++.dg/lookup/extern-c-redecl3.C: Make the test x86
-	only.
+	* g++.dg/lookup/extern-c-redecl3.C: Make the test x86 only.
 	* g++.dg/lookup/extern-c-redecl4.C: Likewise.
 
 2009-11-02  Dodji Seketeli  <dodji@redhat.com>
@@ -151,7 +155,7 @@
 2009-10-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41777
-	gfortran.dg/associated_target_3.f90: New testcase.
+	* gfortran.dg/associated_target_3.f90: New testcase.
 
 2009-10-29  Rafael Avila de Espindola  <espindola@google.com>
 
@@ -339,8 +343,7 @@
 
 	* lib/target-supports.exp (check_profiling_available):
 	Profiling is not, currently, available for the RX port.
-	(check_effective_target_hard_float): Add support for RX
-	target.
+	(check_effective_target_hard_float): Add support for RX target.
 	* gcc.target/rx: New directory.
 	* gcc.target/rx/builtins.c: New test file.
 	* gcc.target/rx/interrupts.c: New test file.

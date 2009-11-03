@@ -1,3 +1,19 @@
+2009-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41900
+	* config/i386/i386.h (ix86_arch_indices) <X86_ARCH_CALL_ESP>: New.
+	(TARGET_CALL_ESP): New define.
+	* config/i386/i386.c (initial_ix86_tune_features): Initialize
+	X86_ARCH_CALL_ESP.
+	* config/i386/i386.md 
+	(*call_pop_1_esp, *call_1_esp, *call_value_pop_1_esp,
+	*call_value_1_esp): Rename from *call_pop_1, *call_1,
+	*call_value_pop_1 and *call_value_1.  Depend on TARGET_CALL_ESP.
+	(*call_pop_1, *call_1, *call_value_pop_1, *call_value_1):
+	New patterns, use "lsm" as operand 1 constraint.
+	* config/i386/predicates.md (call_insn_operand): Depend on 
+	index_register_operand for !TARGET_CALL_ESP to avoid %esp register.
+
 2009-11-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR tree-optimization/41857
@@ -224,7 +240,7 @@
 2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
 
 	* doc/invoke.texi: Rename -use-linker-plugin -fuse-linker-plugin.
-	
+
 2009-10-28  Rafael Avila de Espindola  <espindola@google.com>
 
 	* dbxout.c (dbxout_common_check): Accept non public trees.
