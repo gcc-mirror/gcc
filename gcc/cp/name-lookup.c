@@ -3905,6 +3905,19 @@ lookup_using_namespace (tree name, struct scope_binding *val,
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val->value != error_mark_node);
 }
 
+/* Returns true iff VEC contains TARGET.  */
+
+static bool
+tree_vec_contains (VEC(tree,gc)* vec, tree target)
+{
+  unsigned int i;
+  tree elt;
+  for (i = 0; VEC_iterate(tree,vec,i,elt); ++i)
+    if (elt == target)
+      return true;
+  return false;
+}
+
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.
    Returns the name/type pair found into the cxx_binding *RESULT,
@@ -3915,62 +3928,72 @@ qualified_lookup_using_namespace (tree name, tree scope,
 				  struct scope_binding *result, int flags)
 {
   /* Maintain a list of namespaces visited...  */
-  tree seen = NULL_TREE;
+  VEC(tree,gc) *seen = NULL;
+  VEC(tree,gc) *seen_inline = NULL;
   /* ... and a list of namespace yet to see.  */
-  tree todo = NULL_TREE;
-  tree todo_maybe = NULL_TREE;
+  VEC(tree,gc) *todo = NULL;
+  VEC(tree,gc) *todo_maybe = NULL;
+  VEC(tree,gc) *todo_inline = NULL;
   tree usings;
   timevar_push (TV_NAME_LOOKUP);
   /* Look through namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
-  while (scope && result->value != error_mark_node)
-    {
-      cxx_binding *binding =
-	cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
-      seen = tree_cons (scope, NULL_TREE, seen);
-      if (binding)
-	ambiguous_decl (result, binding, flags);
 
-      /* Consider strong using directives always, and non-strong ones
-	 if we haven't found a binding yet.  ??? Shouldn't we consider
-	 non-strong ones if the initial RESULT is non-NULL, but the
-	 binding in the given namespace is?  */
-      for (usings = DECL_NAMESPACE_USING (scope); usings;
-	   usings = TREE_CHAIN (usings))
-	/* If this was a real directive, and we have not seen it.  */
-	if (!TREE_INDIRECT_USING (usings))
-	  {
-	    /* Try to avoid queuing the same namespace more than once,
-	       the exception being when a namespace was already
-	       enqueued for todo_maybe and then a strong using is
-	       found for it.  We could try to remove it from
-	       todo_maybe, but it's probably not worth the effort.  */
-	    if (is_associated_namespace (scope, TREE_PURPOSE (usings))
-		&& !purpose_member (TREE_PURPOSE (usings), seen)
-		&& !purpose_member (TREE_PURPOSE (usings), todo))
-	      todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
-	    else if ((!result->value && !result->type)
-		     && !purpose_member (TREE_PURPOSE (usings), seen)
-		     && !purpose_member (TREE_PURPOSE (usings), todo)
-		     && !purpose_member (TREE_PURPOSE (usings), todo_maybe))
-	      todo_maybe = tree_cons (TREE_PURPOSE (usings), NULL_TREE,
-				      todo_maybe);
-	  }
-      if (todo)
+  /* Algorithm: Starting with SCOPE, walk through the the set of used
+     namespaces.  For each used namespace, look through its inline
+     namespace set for any bindings and usings.  If no bindings are found,
+     add any usings seen to the set of used namespaces.  */
+  VEC_safe_push (tree, gc, todo, scope);
+
+  while (VEC_length (tree, todo))
+    {
+      bool found_here;
+      scope = VEC_pop (tree, todo);
+      if (tree_vec_contains (seen, scope))
+	continue;
+      VEC_safe_push (tree, gc, seen, scope);
+      VEC_safe_push (tree, gc, todo_inline, scope);
+
+      found_here = false;
+      while (VEC_length (tree, todo_inline))
 	{
-	  scope = TREE_PURPOSE (todo);
-	  todo = TREE_CHAIN (todo);
+	  cxx_binding *binding;
+
+	  scope = VEC_pop (tree, todo_inline);
+	  if (tree_vec_contains (seen_inline, scope))
+	    continue;
+	  VEC_safe_push (tree, gc, seen_inline, scope);
+
+	  binding =
+	    cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
+	  if (binding)
+	    {
+	      found_here = true;
+	      ambiguous_decl (result, binding, flags);
+	    }
+
+	  for (usings = DECL_NAMESPACE_USING (scope); usings;
+	       usings = TREE_CHAIN (usings))
+	    if (!TREE_INDIRECT_USING (usings))
+	      {
+		if (is_associated_namespace (scope, TREE_PURPOSE (usings)))
+		  VEC_safe_push (tree, gc, todo_inline, TREE_PURPOSE (usings));
+		else
+		  VEC_safe_push (tree, gc, todo_maybe, TREE_PURPOSE (usings));
+	      }
 	}
-      else if (todo_maybe
-	       && (!result->value && !result->type))
-	{
-	  scope = TREE_PURPOSE (todo_maybe);
-	  todo = TREE_CHAIN (todo_maybe);
-	  todo_maybe = NULL_TREE;
-	}
+
+      if (found_here)
+	VEC_truncate (tree, todo_maybe, 0);
       else
-	scope = NULL_TREE; /* If there never was a todo list.  */
+	while (VEC_length (tree, todo_maybe))
+	  VEC_safe_push (tree, gc, todo, VEC_pop (tree, todo_maybe));
     }
+  VEC_free (tree,gc,todo);
+  VEC_free (tree,gc,todo_maybe);
+  VEC_free (tree,gc,todo_inline);
+  VEC_free (tree,gc,seen);
+  VEC_free (tree,gc,seen_inline);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, result->value != error_mark_node);
 }
 

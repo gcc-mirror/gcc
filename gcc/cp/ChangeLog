@@ -1,3 +1,13 @@
+2009-11-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41876
+	* parser.c (cp_parser_exception_declaration): Pass true to
+	is_condition parm of cp_parser_type_specifier_seq.
+	(cp_parser_omp_for_loop): Likewise.
+
+	PR c++/39786, Core issue 812, 861
+	* name-lookup.c (qualified_lookup_using_namespace): Overhaul.
+
 2009-11-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/37093
