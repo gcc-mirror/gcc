@@ -5,7 +5,7 @@ template<typename T> struct same_type<T, T> {};
 int lval_int;
 int rval_int();
 int const lval_const_int=0;
-int const rval_const_int();
+int const&& rval_const_int();
 
 template <typename T> void deduce_lval_int(T && t)
 {

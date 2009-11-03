@@ -1,5 +1,8 @@
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41815
+	* call.c (build_call_a): Strip cv-quals from rvalue result.
+
 	PR c++/40944
 	* call.c (initialize_reference): Add complain parm.
 	* typeck.c (convert_for_initialization): Pass it.
