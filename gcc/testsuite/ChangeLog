@@ -1,6 +1,12 @@
 2009-11-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38699
+	* c-c++-common/dfp/builtin-offsetof.c: Moved to ...
+	* c-c++-common/builtin-offsetof.c: ... here.
+
+2009-11-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/38699
 	* c-c++-common/dfp/builtin-offsetof.c: New test.
 	* g++.dg/other/offsetof6.C: Likewise.
 
