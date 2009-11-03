@@ -1,3 +1,7 @@
+2009-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/invoke.texi: Fix typo.
+
 2009-11-03  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/neon.ml (vectype): Add T_floatSF.
