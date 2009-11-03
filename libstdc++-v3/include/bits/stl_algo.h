@@ -1647,53 +1647,64 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
 	_ValueType;
 
-      const _Distance __n = __last   - __first;
-      const _Distance __k = __middle - __first;
-      const _Distance __l = __n - __k;
+      _Distance __n = __last   - __first;
+      _Distance __k = __middle - __first;
 
-      if (__k == __l)
+      if (__k == __n - __k)
 	{
 	  std::swap_ranges(__first, __middle, __middle);
 	  return;
 	}
 
-      const _Distance __d = std::__gcd(__n, __k);
+      _RandomAccessIterator __p = __first;
 
-      for (_Distance __i = 0; __i < __d; __i++)
+      for (;;)
 	{
-	  _ValueType __tmp = _GLIBCXX_MOVE(*__first);
-	  _RandomAccessIterator __p = __first;
-
-	  if (__k < __l)
+	  if (__k < __n - __k)
 	    {
-	      for (_Distance __j = 0; __j < __l / __d; __j++)
+	      if (__is_pod(_ValueType) && __k == 1)
 		{
-		  if (__p > __first + __l)
-		    {
-		      *__p = _GLIBCXX_MOVE(*(__p - __l));
-		      __p -= __l;
-		    }
-
-		  *__p = _GLIBCXX_MOVE(*(__p + __k));
-		  __p += __k;
+		  _ValueType __t = _GLIBCXX_MOVE(*__p);
+		  _GLIBCXX_MOVE3(__p + 1, __p + __n, __p);
+		  *(__p + __n - 1) = _GLIBCXX_MOVE(__t);
+		  return;
 		}
+	      _RandomAccessIterator __q = __p + __k;
+	      for (_Distance __i = 0; __i < __n - __k; ++ __i)
+		{
+		  std::iter_swap(__p, __q);
+		  ++__p;
+		  ++__q;
+		}
+	      __n %= __k;
+	      if (__n == 0)
+		return;
+	      std::swap(__n, __k);
+	      __k = __n - __k;
 	    }
 	  else
 	    {
-	      for (_Distance __j = 0; __j < __k / __d - 1; __j ++)
+	      __k = __n - __k;
+	      if (__is_pod(_ValueType) && __k == 1)
 		{
-		  if (__p < __last - __k)
-		    {
-		      *__p = _GLIBCXX_MOVE(*(__p + __k));
-		      __p += __k;
-		    }
-		  *__p = _GLIBCXX_MOVE(*(__p - __l));
-		  __p -= __l;
+		  _ValueType __t = _GLIBCXX_MOVE(*(__p + __n - 1));
+		  _GLIBCXX_MOVE_BACKWARD3(__p, __p + __n - 1, __p + __n);
+		  *__p = _GLIBCXX_MOVE(__t);
+		  return;
 		}
+	      _RandomAccessIterator __q = __p + __n;
+	      __p = __q - __k;
+	      for (_Distance __i = 0; __i < __n - __k; ++ __i)
+		{
+		  --__p;
+		  --__q;
+		  std::iter_swap(__p, __q);
+		}
+	      __n %= __k;
+	      if (__n == 0)
+		return;
+	      std::swap(__n, __k);
 	    }
-
-	  *__p = _GLIBCXX_MOVE(__tmp);
-	  ++__first;
 	}
     }
 
