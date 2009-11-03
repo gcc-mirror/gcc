@@ -561,7 +561,9 @@
 ;; Test for a valid operand for a call instruction.
 (define_predicate "call_insn_operand"
   (ior (match_operand 0 "constant_call_address_operand")
-       (ior (match_operand 0 "register_no_elim_operand")
+       (ior (and (match_operand 0 "register_no_elim_operand")
+		 (ior (match_test "TARGET_CALL_ESP")
+		      (match_operand 0 "index_register_operand")))
 	    (match_operand 0 "memory_operand"))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
