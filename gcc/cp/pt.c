@@ -17796,10 +17796,7 @@ make_args_non_dependent (VEC(tree,gc) *args)
 tree
 make_auto (void)
 {
-  tree au;
-
-  /* ??? Is it worth caching this for multiple autos at the same level?  */
-  au = cxx_make_type (TEMPLATE_TYPE_PARM);
+  tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
   TYPE_NAME (au) = build_decl (BUILTINS_LOCATION,
 			       TYPE_DECL, get_identifier ("auto"), au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
@@ -17876,6 +17873,19 @@ do_auto_deduction (tree type, tree init, tree auto_node)
       error ("unable to deduce %qT from %qE", type, init);
       return error_mark_node;
     }
+
+  /* If the list of declarators contains more than one declarator, the type
+     of each declared variable is determined as described above. If the
+     type deduced for the template parameter U is not the same in each
+     deduction, the program is ill-formed.  */
+  if (TREE_TYPE (auto_node)
+      && !same_type_p (TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0)))
+    {
+      error ("inconsistent deduction for %qT: %qT and then %qT",
+	     auto_node, TREE_TYPE (auto_node), TREE_VEC_ELT (targs, 0));
+      return error_mark_node;
+    }
+  TREE_TYPE (auto_node) = TREE_VEC_ELT (targs, 0);
 
   if (processing_template_decl)
     targs = add_to_template_args (current_template_args (), targs);
