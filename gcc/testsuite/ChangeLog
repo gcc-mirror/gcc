@@ -1,3 +1,8 @@
+2009-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_check.adb1: New test.
+	* gnat.dg/stack_check.adb2: Likewise.
+
 2009-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/41917

@@ -2252,6 +2252,11 @@ may_trap_p_1 (const_rtx x, unsigned flags)
 
       /* Memory ref can trap unless it's a static var or a stack slot.  */
     case MEM:
+      /* Recognize specific pattern of stack checking probes.  */
+      if (flag_stack_check
+	  && MEM_VOLATILE_P (x)
+	  && XEXP (x, 0) == stack_pointer_rtx)
+	return 1;
       if (/* MEM_NOTRAP_P only relates to the actual position of the memory
 	     reference; moving it out of context such as when moving code
 	     when optimizing, might cause its address to become invalid.  */

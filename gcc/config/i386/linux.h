@@ -207,6 +207,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MD_UNWIND_SUPPORT "config/i386/linux-unwind.h"
 
+/* The stack pointer needs to be moved while checking the stack.  */
+#define STACK_CHECK_MOVING_SP 1
+
 /* This macro may be overridden in i386/k*bsd-gnu.h.  */
 #define REG_NAME(reg) reg
 

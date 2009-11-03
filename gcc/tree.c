@@ -9009,7 +9009,8 @@ build_common_builtin_nodes (void)
       tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
       ftype = build_function_type (ptr_type_node, tmp);
       local_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
-			    "alloca", ECF_NOTHROW | ECF_MALLOC);
+			    "alloca",
+			    ECF_MALLOC | (flag_stack_check ? 0 : ECF_NOTHROW));
     }
 
   tmp = tree_cons (NULL_TREE, ptr_type_node, void_list_node);

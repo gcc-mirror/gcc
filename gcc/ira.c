@@ -1442,6 +1442,9 @@ ira_setup_eliminable_regset (void)
   int need_fp
     = (! flag_omit_frame_pointer
        || (cfun->calls_alloca && EXIT_IGNORE_STACK)
+       /* We need the frame pointer to catch stack overflow exceptions
+	  if the stack pointer is moving.  */
+       || (flag_stack_check && STACK_CHECK_MOVING_SP)
        || crtl->accesses_prior_frames
        || crtl->stack_realign_needed
        || targetm.frame_pointer_required ());
