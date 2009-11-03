@@ -218,14 +218,19 @@ do {								\
 #define STACK_CHECK_STATIC_BUILTIN 0
 #endif
 
-/* The default interval is one page.  */
-#ifndef STACK_CHECK_PROBE_INTERVAL
-#define STACK_CHECK_PROBE_INTERVAL 4096
+/* The default interval is one page (4096 bytes).  */
+#ifndef STACK_CHECK_PROBE_INTERVAL_EXP
+#define STACK_CHECK_PROBE_INTERVAL_EXP 12
 #endif
 
 /* The default is to do a store into the stack.  */
 #ifndef STACK_CHECK_PROBE_LOAD
 #define STACK_CHECK_PROBE_LOAD 0
+#endif
+
+/* The default is not to move the stack pointer.  */
+#ifndef STACK_CHECK_MOVING_SP
+#define STACK_CHECK_MOVING_SP 0
 #endif
 
 /* This is a kludge to try to capture the discrepancy between the old
@@ -252,7 +257,7 @@ do {								\
    one probe per function.  */
 #ifndef STACK_CHECK_MAX_FRAME_SIZE
 #define STACK_CHECK_MAX_FRAME_SIZE \
-  (STACK_CHECK_PROBE_INTERVAL - UNITS_PER_WORD)
+  ((1 << STACK_CHECK_PROBE_INTERVAL_EXP) - UNITS_PER_WORD)
 #endif
 
 /* This is arbitrary, but should be large enough everywhere.  */
@@ -779,10 +784,9 @@ extern void update_nonlocal_goto_save_area (void);
 extern rtx allocate_dynamic_stack_space (rtx, rtx, int);
 
 /* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive.
-   FIRST is a constant and size is a Pmode RTX.  These are offsets from the
-   current stack pointer.  STACK_GROWS_DOWNWARD says whether to add or
-   subtract from the stack.  If SIZE is constant, this is done
-   with a fixed number of probes.  Otherwise, we must make a loop.  */
+   FIRST is a constant and size is a Pmode RTX.  These are offsets from
+   the current stack pointer.  STACK_GROWS_DOWNWARD says whether to add
+   or subtract them from the stack pointer.  */
 extern void probe_stack_range (HOST_WIDE_INT, rtx);
 
 /* Return an rtx that refers to the value returned by a library call

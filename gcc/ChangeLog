@@ -1,3 +1,37 @@
+2009-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/10127
+	PR ada/20548
+	* expr.h (STACK_CHECK_PROBE_INTERVAL): Delete.
+	(STACK_CHECK_PROBE_INTERVAL_EXP): New macro.
+	(STACK_CHECK_MOVING_SP): Likewise.
+	* system.h (STACK_CHECK_PROBE_INTERVAL): Poison it.
+	* doc/tm.texi (Stack Checking): Delete STACK_CHECK_PROBE_INTERVAL.
+	Document STACK_CHECK_PROBE_INTERVAL_EXP and STACK_CHECK_MOVING_SP.
+	* doc/md.texi (Standard Pattern Names): Tweak entry of CHECK_STACK.
+	Document PROBE_STACK.
+	* explow.c (anti_adjust_stack_and_probe): New function.
+	(allocate_dynamic_stack_space): Do not directly allocate space if
+	STACK_CHECK_MOVING_SP, instead invoke above function.
+	(emit_stack_probe): Handle probe_stack insn.
+	(PROBE_INTERVAL): New macro.
+	(STACK_GROW_OPTAB): Likewise.
+	(STACK_GROW_OFF): Likewise.
+	(probe_stack_range): Use Pmode and memory_address consistently.  Fix
+	loop condition in the small constant case.  Rewrite in the general
+	case to be immune to wraparounds.  Make sure the address of probes
+	is valid.  Try to use [base + disp] addressing mode if possible.
+	* ira.c (setup_eliminable_regset): Set frame_pointer_needed if stack
+	checking is enabled and STACK_CHECK_MOVING_SP.
+	* rtlanal.c (may_trap_p_1) <MEM>: If stack checking is enabled,
+	return 1 for volatile references to the stack pointer.
+	* tree.c (build_common_builtin_nodes): Do not set ECF_NOTHROW on
+	__builtin_alloca if stack checking is enabled.
+	* unwind-dw2.c (uw_identify_context): Take into account whether the
+	context is that of a signal frame or not.
+	* config/i386/linux.h (STACK_CHECK_MOVING_SP): Define to 1.
+	* config/i386/linux64.h (STACK_CHECK_MOVING_SP): Likewise.
+
 2009-11-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/41917
