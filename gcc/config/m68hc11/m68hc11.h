@@ -1108,9 +1108,6 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
      && (GET_CODE (XEXP (operand, 0)) == POST_INC) \
      && (SP_REG_P (XEXP (XEXP (operand, 0), 0))))
 
-/* 1 if X is an rtx for a constant that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X)	(CONSTANT_P (X))
-
 /* Maximum number of registers that can appear in a valid memory address */
 #define MAX_REGS_PER_ADDRESS	2
 

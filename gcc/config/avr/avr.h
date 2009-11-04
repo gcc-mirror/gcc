@@ -406,8 +406,6 @@ extern int avr_reg_order[];
 #define HAVE_POST_INCREMENT 1
 #define HAVE_PRE_DECREMENT 1
 
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
-
 #define MAX_REGS_PER_ADDRESS 1
 
 #define REG_OK_FOR_BASE_NOSTRICT_P(X) \

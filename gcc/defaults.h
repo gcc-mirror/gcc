@@ -1154,4 +1154,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GO_IF_MODE_DEPENDENT_ADDRESS(X, WIN)
 #endif
 
+/* For most ports anything that evaluates to a constant symbolic
+   or integer value is acceptable as a constant address.  */
+#ifndef CONSTANT_ADDRESS_P
+#define CONSTANT_ADDRESS_P(X)   (CONSTANT_P (X) && GET_CODE (X) != CONST_DOUBLE)
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

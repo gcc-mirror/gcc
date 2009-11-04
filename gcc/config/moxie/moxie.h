@@ -475,10 +475,6 @@ enum reg_class
    an immediate operand on the target machine.  */
 #define LEGITIMATE_CONSTANT_P(X) 1
 
-/* A C expression that is 1 if the RTX X is a constant which is a
-   valid address.  */
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P(X)
-
 /* A number, the maximum number of registers that can appear in a
    valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1

@@ -1927,16 +1927,6 @@ __asm__("\n"								\
 
 /* Addressing Modes.  */
 
-/* A C expression that is 1 if the RTX X is a constant which is a valid
-   address.  On most machines, this can be defined as `CONSTANT_P (X)', but a
-   few machines are more restrictive in which constant addresses are supported.
-
-   `CONSTANT_P' accepts integer-values expressions whose values are not
-   explicitly known, such as `symbol_ref', `label_ref', and `high' expressions
-   and `const' arithmetic expressions, in addition to `const_int' and
-   `const_double' expressions.  */
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
-
 /* A number, the maximum number of registers that can appear in a valid memory
    address.  Note that it is up to you to specify a value equal to the maximum
    number that `TARGET_LEGITIMATE_ADDRESS_P' would ever accept.  */

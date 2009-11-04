@@ -471,8 +471,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Addressing Modes  */
 
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P(X)
-
 #define MAX_REGS_PER_ADDRESS 1
 
 /* Legitimize reload address tries machine dependent means of
