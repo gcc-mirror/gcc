@@ -527,6 +527,9 @@ cleanup_handler (void)
 	}
     }
 
+  if (debug)
+    return LDPS_OK;
+
   /* If we are being called from an error handler, it is possible
      that the arguments file is still exists. */
   t = asprintf (&arguments, "%s/arguments", temp_obj_dir_name);
