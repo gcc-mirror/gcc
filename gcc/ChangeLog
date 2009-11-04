@@ -1,3 +1,8 @@
+2009-11-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/40835
+	* arm.md (peephole2 patterns for move and compare): New.
+
 2009-11-04  Nick Clifton  <nickc@redhat.com>
 
 	* defaults.h (CONSTANT_ADDRESS_P): Provide a default definition.
