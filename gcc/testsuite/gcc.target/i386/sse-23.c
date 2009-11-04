@@ -4,7 +4,7 @@
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile with optimization.  All of them are
-   defined as inline functions in {,x,e,p,t,s,w,a,b}mmintrin.h and mm3dnow.h
+   defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h, xopintrin.h and mm3dnow.h
    that reference the proper builtin functions.  Defining away "extern" and
    "__inline" results in all of them being compiled as proper functions.  */
 
@@ -93,14 +93,13 @@
 #define __builtin_ia32_vec_ext_v4hi(A, N) __builtin_ia32_vec_ext_v4hi(A, 0)
 #define __builtin_ia32_shufps(A, B, N) __builtin_ia32_shufps(A, B, 0)
 
-/* bmmintrin.h */
-#define __builtin_ia32_protbi(A, B) __builtin_ia32_protbi(A,1)
-#define __builtin_ia32_protwi(A, B) __builtin_ia32_protwi(A,1)
-#define __builtin_ia32_protdi(A, B) __builtin_ia32_protdi(A,1)
-#define __builtin_ia32_protqi(A, B) __builtin_ia32_protqi(A,1)
+/* xopintrin.h */
+#define __builtin_ia32_vprotbi(A, B) __builtin_ia32_vprotbi(A,1)
+#define __builtin_ia32_vprotwi(A, B) __builtin_ia32_vprotwi(A,1)
+#define __builtin_ia32_vprotdi(A, B) __builtin_ia32_vprotdi(A,1)
+#define __builtin_ia32_vprotqi(A, B) __builtin_ia32_vprotqi(A,1)
 
-
-#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul")
+#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

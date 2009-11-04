@@ -146,6 +146,20 @@ proc check_effective_target_fma4 { } {
     } "-O2 -mfma4" ]
 }
 
+# Return 1 if xop instructions can be compiled.
+proc check_effective_target_xop { } {
+    return [check_no_compiler_messages xop object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16), __may_alias__));
+	typedef short __v8hi __attribute__ ((__vector_size__ (16)));
+	__m128i _mm_maccs_epi16(__m128i __A, __m128i __B, __m128i __C)
+	{
+	    return (__m128i) __builtin_ia32_pmacssww ((__v8hi)__A,
+						      (__v8hi)__B,
+						      (__v8hi)__C);
+	}
+    } "-O2 -mxop" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
