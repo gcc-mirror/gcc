@@ -1,3 +1,8 @@
+2009-11-04  Wei Guozhi  <carrot@google.com>
+
+	PR target/40835
+	* gcc.target/arm/pr40835: New testcase.
+
 2009-11-04  Revital Eres  <eres@il.ibm.com>
 
 	* gcc.target/powerpc/vsx-vectorize-3.c: Adjust tetcase following
