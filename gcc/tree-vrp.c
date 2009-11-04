@@ -6748,13 +6748,9 @@ test_for_singularity (enum tree_code cond_code, tree op0,
      value range information we have for op0.  */
   if (min && max)
     {
-      if (compare_values (vr->min, min) == -1)
-	min = min;
-      else
+      if (compare_values (vr->min, min) == 1)
 	min = vr->min;
-      if (compare_values (vr->max, max) == 1)
-	max = max;
-      else
+      if (compare_values (vr->max, max) == -1)
 	max = vr->max;
 
       /* If the new min/max values have converged to a single value,
