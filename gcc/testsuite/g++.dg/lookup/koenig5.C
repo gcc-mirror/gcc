@@ -8,39 +8,39 @@
 namespace N
 {
   struct A {};
-  void One (...);  // { dg-error "conflict with" "" }
-  void (*Two) (...);  // { dg-error "not a function" "" }
-  namespace Three {} // { dg-error "lookup finds|not a function" "" }
+  void One (...);
+  void (*Two) (...);
+  namespace Three {}
 }
 
 namespace M
 {
   struct B {};
-  struct One {};  // { dg-error "lookup finds|not a function" "" }
-  void (*Two) (...);  // { dg-error "conflict with" "" }
-  void Three (...);  // { dg-error "conflict with" "" }
+  struct One {};
+  void (*Two) (...);
+  void Three (...);
 }
 
 namespace O 
 {
   struct C {};
-  void Two (...); // { dg-error "conflict with" "" }
+  void Two (...);
 }
   
 void g (N::A *a, M::B *b, O::C *c)
 {
   One (a); // ok
-  One (b); // { dg-error "in call to" "" }
-  One (a, b); // { dg-error "in call to" "" }
+  One (a, b); // ok
+  One (b); // { dg-error "not declared" }
 
-  Two (a); // ok
-  Two (a, a); // ok
-  Two (b); // ok
   Two (c); // ok
-  Two (a, b); // { dg-error "in call to" "" }
-  Two (a, c); // { dg-error "in call to" "" }
+  Two (a, c); // ok
+  Two (a); // { dg-error "not declared" }
+  Two (a, a); // error masked by earlier error
+  Two (b); // error masked by earlier error
+  Two (a, b); // error masked by earlier error
   
-  Three (a); // { dg-error "in call to" "" }
   Three (b); // ok
-  Three (a, b); // { dg-error "in call to" "" }
+  Three (a, b); // ok
+  Three (a); // { dg-error "not declared" }
 }

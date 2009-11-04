@@ -7,10 +7,10 @@
 
 namespace N
 {
-  struct A { A (A*); }; // { dg-error "lookup finds" "" }
+  struct A { A (A*); };
 }
 
 template<typename T> void g (N::A *p)
 {
-  (void) A (p); // { dg-error "in call" "" }
+  (void) A (p); // { dg-message "" "" }
 }
