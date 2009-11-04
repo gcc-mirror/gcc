@@ -950,8 +950,6 @@ struct cum_args {int regs;};
 
 #define HAVE_POST_INCREMENT 1
 
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
-
 /* Must be a compile-time constant, so we go with the highest value
    among all CRIS variants.  */
 #define MAX_REGS_PER_ADDRESS 2

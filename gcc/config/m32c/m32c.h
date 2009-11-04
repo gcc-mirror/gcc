@@ -560,7 +560,6 @@ typedef struct m32c_cumulative_args
 
 #define HAVE_PRE_DECREMENT 1
 #define HAVE_POST_INCREMENT 1
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P(X)
 #define MAX_REGS_PER_ADDRESS 1
 
 /* This is passed to the macros below, so that they can be implemented

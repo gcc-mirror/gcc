@@ -911,9 +911,6 @@ typedef struct {
 
 /* Addressing Modes */
 
-/* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X)	(CONSTANT_P (X))
-
 /* Nonzero if the constant value X is a legitimate general operand.
    symbol_ref are not legitimate and will be put into constant pool.
    See force_const_mem().

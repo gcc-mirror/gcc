@@ -688,9 +688,6 @@ typedef struct score_args
 #define HAVE_PRE_MODIFY_REG             0
 #define HAVE_POST_MODIFY_REG            0
 
-/* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X)           CONSTANT_P (X)
-
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS            1
 

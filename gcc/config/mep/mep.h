@@ -567,8 +567,6 @@ typedef struct
 #define TRAMPOLINE_SIZE 20
 
 
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
-
 #define MAX_REGS_PER_ADDRESS 1
 
 #ifdef REG_OK_STRICT

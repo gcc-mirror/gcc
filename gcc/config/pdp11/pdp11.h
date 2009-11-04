@@ -594,10 +594,6 @@ extern int may_call_alloca;
 
 #define MAX_REGS_PER_ADDRESS 1
 
-/* Recognize any constant value that is a valid address.  */
-
-#define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)
-
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 

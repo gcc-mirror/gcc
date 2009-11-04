@@ -1,3 +1,23 @@
+2009-11-04  Nick Clifton  <nickc@redhat.com>
+
+	* defaults.h (CONSTANT_ADDRESS_P): Provide a default definition.
+	Make sure that it does not allow CONST_DOUBLEs.
+	* doc/tm.texi (CONSTANT_ADDRESS_P): Update description.
+	* config/avr/avr.h (CONSTANT_ADDRESS_P): Delete.
+	* config/bfin/bfin.h (CONSTANT_ADDRESS_P): Delete.
+	* config/cris/cris.h (CONSTANT_ADDRESS_P): Delete.
+	* config/fr30/fr30.h (CONSTANT_ADDRESS_P): Delete.
+	* config/frv/frv.h (CONSTANT_ADDRESS_P): Delete.
+	* config/m32c/m32c.h (CONSTANT_ADDRESS_P): Delete.
+	* config/m68hc11/m68hc11.h (CONSTANT_ADDRESS_P): Delete.
+	* config/mep/mep.h (CONSTANT_ADDRESS_P): Delete.
+	* config/mn10300/mn10300.h (CONSTANT_ADDRESS_P): Delete.
+	* config/moxie/moxie.h (CONSTANT_ADDRESS_P): Delete.
+	* config/pdp11/pdp11.h (CONSTANT_ADDRESS_P): Delete.
+	* config/picochip/picochip.h (CONSTANT_ADDRESS_P): Delete.
+	* config/score/score.h (CONSTANT_ADDRESS_P): Delete.
+	* config/stormy16/stormy16.h (CONSTANT_ADDRESS_P): Delete.
+
 2009-11-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41919
