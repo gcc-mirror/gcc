@@ -1,3 +1,9 @@
+2009-11-04  Dodji Seketeli  <dodji@redhat.com>
+
+	Revert fix for PR c++/37093
+	* pt.c (check_valid_ptrmem_cst_expr): Revert my previous change.
+	(convert_nontype_argument): Likewise.
+
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41876
