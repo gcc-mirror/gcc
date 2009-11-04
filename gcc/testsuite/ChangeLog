@@ -1,10 +1,5 @@
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
-	PR c++/36912
-	* g++.dg/init/static-init2.C: New.
-
-2009-11-04  Jason Merrill  <jason@redhat.com>
-
 	PR c++/39413
 	* g++.dg/template/overload11.C: New.
 	* g++.dg/template/nested3.C: Adjust.

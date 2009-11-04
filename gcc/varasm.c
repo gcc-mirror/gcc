@@ -4322,10 +4322,6 @@ initializer_constant_valid_p (tree value, tree endtype)
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      /* Any valid floating-point constants will have been folded by now;
-	 with -frounding-math we hit this with addition of two constants.  */
-      if (TREE_CODE (endtype) == REAL_TYPE)
-	return NULL_TREE;
       if (! INTEGRAL_TYPE_P (endtype)
 	  || TYPE_PRECISION (endtype)
 	     >= int_or_pointer_precision (TREE_TYPE (value)))
@@ -4349,8 +4345,6 @@ initializer_constant_valid_p (tree value, tree endtype)
       break;
 
     case MINUS_EXPR:
-      if (TREE_CODE (endtype) == REAL_TYPE)
-	return NULL_TREE;
       if (! INTEGRAL_TYPE_P (endtype)
 	  || TYPE_PRECISION (endtype)
 	     >= int_or_pointer_precision (TREE_TYPE (value)))
@@ -4566,8 +4560,8 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
     case REAL_TYPE:
       if (TREE_CODE (exp) != REAL_CST)
 	error ("initializer for floating value is not a floating constant");
-      else
-	assemble_real (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)), align);
+
+      assemble_real (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)), align);
       break;
 
     case COMPLEX_TYPE:

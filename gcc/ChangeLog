@@ -1,10 +1,3 @@
-2009-11-04  Jason Merrill  <jason@redhat.com>
-
-	PR c++/36912
-	* varasm.c (initializer_constant_valid_p): A PLUS_EXPR
-	or MINUS_EXPR of REAL_TYPE is not a valid constant initializer.
-	(output_constant): Avoid crash after error.
-
 2009-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/10127
