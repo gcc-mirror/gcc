@@ -626,6 +626,7 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
 	 - Types and kinds do not conform, and
 	 - First argument is of derived type.  */
       if (sym->formal->sym->ts.type != BT_DERIVED
+	  && sym->formal->sym->ts.type != BT_CLASS
 	  && (r1 == 0 || r1 == r2)
 	  && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
 	      || (gfc_numeric_ts (&sym->formal->sym->ts)

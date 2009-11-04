@@ -1,3 +1,12 @@
+2009-11-04  Tobias Burnus <burnus@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41556
+	PR fortran/41937
+	* interface.c (gfc_check_operator_interface): Handle CLASS arguments.
+	* resolve.c (resolve_allocate_expr): Handle allocatable components of
+	CLASS variables.
+
 2009-11-04  Richard Guenther  <rguenther@suse.de>
 
 	* options.c (gfc_post_options): Rely on common code processing
