@@ -5,7 +5,7 @@
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile without optimization.  All of them are
-   defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h  and mm3dnow.h
+   defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h, xopintrin.h and mm3dnow.h
    that reference the proper builtin functions.  Defining away "extern" and
    "__inline" results in all of them being compiled as proper functions.  */
 
@@ -37,7 +37,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("mmx,3dnow,sse,sse2,sse3,ssse3,sse4.1,sse4.2,sse4a,aes,pclmul")
+#pragma GCC target ("mmx,3dnow,sse,sse2,sse3,ssse3,sse4.1,sse4.2,sse4a,aes,pclmul,xop")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -159,3 +159,13 @@ test_1 (_mm_round_pd, __m128d, __m128d, 1)
 test_1 (_mm_round_ps, __m128, __m128, 1)
 test_2 (_mm_round_sd, __m128d, __m128d, __m128d, 1)
 test_2 (_mm_round_ss, __m128, __m128, __m128, 1)
+
+/* xopintrin.h (XOP). */
+#ifdef DIFFERENT_PRAGMAS
+#pragma GCC target ("xop")
+#endif
+#include <x86intrin.h>
+test_1 ( _mm_roti_epi8, __m128i, __m128i, 1)
+test_1 ( _mm_roti_epi16, __m128i, __m128i, 1)
+test_1 ( _mm_roti_epi32, __m128i, __m128i, 1)
+test_1 ( _mm_roti_epi64, __m128i, __m128i, 1)

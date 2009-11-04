@@ -58,6 +58,10 @@
 #include <fma4intrin.h>
 #endif
 
+#ifdef __XOP__
+#include <xopintrin.h>
+#endif
+
 #if defined (__AES__) || defined (__PCLMUL__)
 #include <wmmintrin.h>
 #endif

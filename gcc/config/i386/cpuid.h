@@ -46,9 +46,10 @@
 
 /* Extended Features */
 /* %ecx */
+#define bit_FMA4        (1 << 16) 
 #define bit_LAHF_LM	(1 << 0)
 #define bit_SSE4a	(1 << 6)
-#define bit_FMA4	(1 << 16)
+#define bit_XOP         (1 << 11)
 
 /* %edx */
 #define bit_LM		(1 << 29)

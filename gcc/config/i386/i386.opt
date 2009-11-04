@@ -314,6 +314,10 @@ mfma4
 Target Report Mask(ISA_FMA4) Var(ix86_isa_flags) VarExists Save
 Support FMA4 built-in functions and code generation 
 
+mxop
+Target Report Mask(ISA_XOP) Var(ix86_isa_flags) VarExists Save
+Support XOP built-in functions and code generation 
+
 mabm
 Target Report Mask(ISA_ABM) Var(ix86_isa_flags) VarExists Save
 Support code generation of Advanced Bit Manipulation (ABM) instructions.

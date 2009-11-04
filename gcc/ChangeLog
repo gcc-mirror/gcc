@@ -1,3 +1,247 @@
+2009-11-04  Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	
+	* config.gcc (i[34567]86-*-*): Include xopintrin.h.
+	(x86_64-*-*): Ditto.
+	* config/i386/xopintrin.h: New file, provide common x86 compiler
+	intrinisics for XOP.
+	* config/i386/cpuid.h (bit_XOP): Define XOP bit.
+	* config/i386/x86intrin.h: Add XOP check and xopintrin.h.
+	* config/i386/i386-c.c(ix86_target_macros_internal): Check
+	ISA_FLAG for XOP. 
+	* config/i386/i386.h(TARGET_XOP): New macro for XOP.
+	* config/i386/i386.opt (-mxop): New switch for XOP support.
+	* config/i386/i386.md (UNSPEC_XOP_UNSIGNED_CMP)
+	(UNSPEC_XOP_TRUEFALSE)
+	(UNSPEC_XOP_PERMUTE)
+	(UNSPEC_FRCZ): Add new UNSPEC for XOP support.
+	(PPERM_*): New constants for vpperm instruction.
+	(xop_pcmov_<mode>): Add XOP conditional mov instructions.
+	* config/i386/i386.c (OPTION_MASK_ISA_XOP_SET): New.
+	(OPTION_MASK_ISA_XOP_UNSET): New.	
+	(OPTION_MASK_ISA_XOP_UNSET): Change definition to
+	depend on XOP.
+	(ix86_handle_option): Handle -mxop.
+	(isa_opts): Handle -mxop.
+	(enum pta_flags): Add PTA_XOP.
+	(override_options): Add XOP support.
+	(print_operand): Add code for XOP compare instructions.
+	(ix86_expand_sse_movcc): Extend for XOP conditional move instruction.
+	(ix86_expand_int_vcond): Extend for XOP compare instruction.
+
+	(IX86_BUILTIN_VPCMOV): New for XOP intrinsic.
+	(IX86_BUILTIN_VPCMOV_V2DI): Ditto.
+	(IX86_BUILTIN_VPCMOV_V4SI): Ditto.
+	(IX86_BUILTIN_VPCMOV_V8HI): Ditto.
+	(IX86_BUILTIN_VPCMOV_V16QI): Ditto.
+	(IX86_BUILTIN_VPCMOV_V4SF): Ditto.
+	(IX86_BUILTIN_VPCMOV_V2DF): Ditto.
+
+	(IX86_BUILTIN_VPCMOV256): Ditto.
+	(IX86_BUILTIN_VPCMOV_V4DI256): Ditto.
+	(IX86_BUILTIN_VPCMOV_V8SI256): Ditto.
+	(IX86_BUILTIN_VPCMOV_V16HI256): Ditto.
+	(IX86_BUILTIN_VPCMOV_V32QI256): Ditto.
+	(IX86_BUILTIN_VPCMOV_V8SF256): Ditto.
+	(IX86_BUILTIN_VPCMOV_V4DF256): Ditto.
+
+	(IX86_BUILTIN_VPPERM): Ditto.
+
+	(IX86_BUILTIN_VPMACSSWW): Ditto.
+	(IX86_BUILTIN_VPMACSWW): Ditto.
+	(IX86_BUILTIN_VPMACSSWD): Ditto.
+	(IX86_BUILTIN_VPMACSWD): Ditto.
+	(IX86_BUILTIN_VPMACSSDD): Ditto.
+	(IX86_BUILTIN_VPMACSDD): Ditto.
+	(IX86_BUILTIN_VPMACSSDQL): Ditto.
+	(IX86_BUILTIN_VPMACSSDQH): Ditto.
+	(IX86_BUILTIN_VPMACSDQL): Ditto.
+	(IX86_BUILTIN_VPMACSDQH): Ditto.
+	(IX86_BUILTIN_VPMADCSSWD): Ditto.
+	(IX86_BUILTIN_VPMADCSWD): Ditto.
+
+	(IX86_BUILTIN_VPHADDBW): Ditto.
+	(IX86_BUILTIN_VPHADDBD): Ditto.
+	(IX86_BUILTIN_VPHADDBQ): Ditto.
+	(IX86_BUILTIN_VPHADDWD): Ditto.
+	(IX86_BUILTIN_VPHADDWQ): Ditto.
+	(IX86_BUILTIN_VPHADDDQ): Ditto.
+	(IX86_BUILTIN_VPHADDUBW): Ditto.
+	(IX86_BUILTIN_VPHADDUBD): Ditto.
+	(IX86_BUILTIN_VPHADDUBQ): Ditto.
+	(IX86_BUILTIN_VPHADDUWD): Ditto.
+	(IX86_BUILTIN_VPHADDUWQ): Ditto.
+	(IX86_BUILTIN_VPHADDUDQ): Ditto.
+	(IX86_BUILTIN_VPHSUBBW): Ditto.
+	(IX86_BUILTIN_VPHSUBWD): Ditto.
+	(IX86_BUILTIN_VPHSUBDQ): Ditto.
+
+	(IX86_BUILTIN_VPROTB): Ditto.
+	(IX86_BUILTIN_VPROTW): Ditto.
+	(IX86_BUILTIN_VPROTD): Ditto.
+	(IX86_BUILTIN_VPROTQ): Ditto.
+	(IX86_BUILTIN_VPROTB_IMM): Ditto.
+	(IX86_BUILTIN_VPROTW_IMM): Ditto.
+	(IX86_BUILTIN_VPROTD_IMM): Ditto.
+	(IX86_BUILTIN_VPROTQ_IMM): Ditto.
+
+	(IX86_BUILTIN_VPSHLB): Ditto.
+	(IX86_BUILTIN_VPSHLW): Ditto.
+	(IX86_BUILTIN_VPSHLD): Ditto.
+	(IX86_BUILTIN_VPSHLQ): Ditto.
+	(IX86_BUILTIN_VPSHAB): Ditto.
+	(IX86_BUILTIN_VPSHAW): Ditto.
+	(IX86_BUILTIN_VPSHAD): Ditto.
+	(IX86_BUILTIN_VPSHAQ): Ditto.
+
+	(IX86_BUILTIN_VFRCZSS): Ditto.
+	(IX86_BUILTIN_VFRCZSD): Ditto.
+	(IX86_BUILTIN_VFRCZPS): Ditto.
+	(IX86_BUILTIN_VFRCZPD): Ditto.
+	(IX86_BUILTIN_VFRCZPS256): Ditto.
+	(IX86_BUILTIN_VFRCZPD256): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQUB): Ditto.
+	(IX86_BUILTIN_VPCOMNEUB): Ditto.
+	(IX86_BUILTIN_VPCOMLTUB): Ditto.
+	(IX86_BUILTIN_VPCOMLEUB): Ditto.
+	(IX86_BUILTIN_VPCOMGTUB): Ditto.
+	(IX86_BUILTIN_VPCOMGEUB): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEUB): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEUB): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQUW): Ditto.
+	(IX86_BUILTIN_VPCOMNEUW): Ditto.
+	(IX86_BUILTIN_VPCOMLTUW): Ditto.
+	(IX86_BUILTIN_VPCOMLEUW): Ditto.
+	(IX86_BUILTIN_VPCOMGTUW): Ditto.
+	(IX86_BUILTIN_VPCOMGEUW): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEUW): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEUW): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQUD): Ditto.
+	(IX86_BUILTIN_VPCOMNEUD): Ditto.
+	(IX86_BUILTIN_VPCOMLTUD): Ditto.
+	(IX86_BUILTIN_VPCOMLEUD): Ditto.
+	(IX86_BUILTIN_VPCOMGTUD): Ditto.
+	(IX86_BUILTIN_VPCOMGEUD): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEUD): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEUD): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQUQ): Ditto.
+	(IX86_BUILTIN_VPCOMNEUQ): Ditto.
+	(IX86_BUILTIN_VPCOMLTUQ): Ditto.
+	(IX86_BUILTIN_VPCOMLEUQ): Ditto.
+	(IX86_BUILTIN_VPCOMGTUQ): Ditto.
+	(IX86_BUILTIN_VPCOMGEUQ): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEUQ): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEUQ): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQB): Ditto.
+	(IX86_BUILTIN_VPCOMNEB): Ditto.
+	(IX86_BUILTIN_VPCOMLTB): Ditto.
+	(IX86_BUILTIN_VPCOMLEB): Ditto.
+	(IX86_BUILTIN_VPCOMGTB): Ditto.
+	(IX86_BUILTIN_VPCOMGEB): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEB): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEB): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQW): Ditto.
+	(IX86_BUILTIN_VPCOMNEW): Ditto.
+	(IX86_BUILTIN_VPCOMLTW): Ditto.
+	(IX86_BUILTIN_VPCOMLEW): Ditto.
+	(IX86_BUILTIN_VPCOMGTW): Ditto.
+	(IX86_BUILTIN_VPCOMGEW): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEW): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEW): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQD): Ditto.
+	(IX86_BUILTIN_VPCOMNED): Ditto.
+	(IX86_BUILTIN_VPCOMLTD): Ditto.
+	(IX86_BUILTIN_VPCOMLED): Ditto.
+	(IX86_BUILTIN_VPCOMGTD): Ditto.
+	(IX86_BUILTIN_VPCOMGED): Ditto.
+	(IX86_BUILTIN_VPCOMFALSED): Ditto.
+	(IX86_BUILTIN_VPCOMTRUED): Ditto.
+
+	(IX86_BUILTIN_VPCOMEQQ): Ditto.
+	(IX86_BUILTIN_VPCOMNEQ): Ditto.
+	(IX86_BUILTIN_VPCOMLTQ): Ditto.
+	(IX86_BUILTIN_VPCOMLEQ): Ditto.
+	(IX86_BUILTIN_VPCOMGTQ): Ditto.
+	(IX86_BUILTIN_VPCOMGEQ): Ditto.
+	(IX86_BUILTIN_VPCOMFALSEQ): Ditto.
+	(IX86_BUILTIN_VPCOMTRUEQ): Ditto.
+
+	(enum multi_arg_type): New enum for describing the various XOP
+	intrinsic argument types.
+	(bdesc_multi_arg): New table for XOP intrinsics.
+	(ix86_init_mmx_sse_builtins): Add XOP intrinsic support.
+	(ix86_expand_multi_arg_builtin): New function for creating XOP
+	intrinsics.
+
+	* config/i386/sse.md (sserotatemax): New mode attribute for XOP.
+	(xop_pmacsww): Ditto.
+	(xop_pmacssww): Ditto.
+	(xop_pmacsdd): Ditto.
+	(xop_pmacssdd): Ditto.
+	(xop_pmacssdql): Ditto.
+	(xop_pmacssdqh): Ditto.
+	(xop_pmacsdql): Ditto.
+	(xop_pmacsdql_mem): Ditto.
+	(xop_mulv2div2di3_low): Ditto.
+	(xop_pmacsdqh): Ditto.
+	(xop_pmacsdqh_mem): Ditto.
+	(xop_mulv2div2di3_high): Ditto.
+	(xop_pmacsswd): Ditto.
+	(xop_pmacswd): Ditto.
+	(xop_pmadcsswd): Ditto.
+	(xop_pmadcswd): Ditto.
+	(xop_pcmov_<mode>): Ditto.
+	(xop_pcmov_<mode>)256: Ditto.
+	(xop_phaddbw): Ditto.
+	(xop_phaddbd): Ditto.
+	(xop_phaddbq): Ditto.
+	(xop_phaddwd): Ditto.
+	(xop_phaddwq): Ditto.
+	(xop_phadddq): Ditto.
+	(xop_phaddubw): Ditto.
+	(xop_phaddubd): Ditto.
+	(xop_phaddubq): Ditto.
+	(xop_phadduwd): Ditto.
+	(xop_phadduwq): Ditto.
+	(xop_phaddudq): Ditto.
+	(xop_phsubbw): Ditto.
+	(xop_phsubwd): Ditto.
+	(xop_phsubdq): Ditto.
+	(xop_pperm): Ditto.
+	(rotl<mode>3): Ditto.
+	(rotr<mode>3): Ditto.
+	(xop_rotl<mode>3): Ditto.
+	(xop_rotr<mode>3): Ditto.
+	(vrotr<mode>3): Ditto.
+	(vrotl<mode>3): Ditto.
+	(xop_vrotl<mode>3): Ditto.
+	(vlshr<mode>3): Ditto.
+	(vashr<mode>3): Ditto.
+	(vashl<mode>3
+	(xop_ashl<mode>3): Ditto.
+	(xop_lshl<mode>3): Ditto.
+	(ashlv16qi3): Ditto.
+	(lshlv16qi3): Ditto.
+	(ashrv16qi3): Ditto.
+	(ashrv2di3): Ditto.
+	(xop_frcz<mode>2): Ditto.
+	(xop_vmfrcz<mode>2): Ditto.
+	(xop_frcz<mode>2256): Ditto.	
+	(xop_maskcmp<mode>3): Ditto.
+	(xop_maskcmp_uns<mode>3): Ditto.
+	(xop_maskcmp_uns2<mode>3): Ditto.
+	(xop_pcom_tf<mode>3): Ditto.
+
+	* doc/invoke.texi (-mxop): Add documentation.
+	* doc/extend.texi (x86 intrinsics): Add XOP intrinsics.
+	
 2009-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR driver/11810

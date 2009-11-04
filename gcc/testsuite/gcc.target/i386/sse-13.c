@@ -1,10 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -maes -mpclmul" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -maes -mpclmul" } */
 
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile with optimization.  All of them are
-   defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h and mm3dnow.h
+   defined as inline functions in {,x,e,p,t,s,w,a,b,i}mmintrin.h, xopintrin.h and mm3dnow.h
    that reference the proper builtin functions.  Defining away "extern" and
    "__inline" results in all of them being compiled as proper functions.  */
 
@@ -124,5 +124,11 @@
   __builtin_ia32_vec_set_v4hi(A, D, 0)
 #define __builtin_ia32_vec_ext_v4hi(A, N) __builtin_ia32_vec_ext_v4hi(A, 0)
 #define __builtin_ia32_shufps(A, B, N) __builtin_ia32_shufps(A, B, 0)
+
+/* xopintrin.h */
+#define  __builtin_ia32_vprotbi(A, N) __builtin_ia32_vprotbi (A,1)
+#define  __builtin_ia32_vprotwi(A, N) __builtin_ia32_vprotwi (A,1)
+#define  __builtin_ia32_vprotdi(A, N) __builtin_ia32_vprotdi (A,1)
+#define  __builtin_ia32_vprotqi(A, N) __builtin_ia32_vprotqi (A,1)
 
 #include <x86intrin.h>

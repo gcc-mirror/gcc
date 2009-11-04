@@ -1,3 +1,32 @@
+2009-11-04  Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+
+	* gcc.target/i386/xop-check.h: New file.
+	* gcc.target/i386/xop-hadduX.c: Ditto.
+	* gcc.target/i386/xop-haddX.c: Ditto.
+	* gcc.target/i386/xop-hsubX.c: Ditto.
+	* gcc.target/i386/xop-imul32widen-vector.c: Ditto.
+	* gcc.target/i386/xop-imul32widen-vector.c: Ditto.
+	* gcc.target/i386/xop-pcmov2.c: Ditto.
+	* gcc.target/i386/xop-pcmov.c: Ditto.
+	* gcc.target/i386/xop-rotate1-vector.c: Ditto.
+	* gcc.target/i386/xop-rotate2-vector.c: Ditto.
+	* gcc.target/i386/xop-rotate3-vector.c: Ditto.
+	* gcc.target/i386/xop-shift1-vector.c: Ditto.
+	* gcc.target/i386/xop-shift2-vector.c: Ditto.
+	* gcc.target/i386/xop-shift3-vector.c: Ditto.
+	* gcc.target/i386/i386.exp:  Add check_effective_target_xop.
+	* gcc.target/i386/sse-12.c: Update with new compile options to 
+	activate and check xopintrin.h intrinsic file.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+	* g++.dg/other/i386-5.C: Ditto.
+	* g++.dg/other/i386-6.C: Ditto.
+	
 2009-11-04  Wei Guozhi  <carrot@google.com>
 
 	PR target/40835
