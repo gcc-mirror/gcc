@@ -2,7 +2,7 @@
 
 	PR target/10127
 	PR ada/20548
-	* config/i386/i386.md (probe_stack_range): New expander.
+	* config/i386/i386.md (probe_stack): New expander.
 	(logical operation peepholes): Do not split stack checking probes.
 
 2009-11-04  Harsha Jagasia  <harsha.jagasia@amd.com>
