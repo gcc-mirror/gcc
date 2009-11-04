@@ -1,3 +1,10 @@
+2009-11-04  Richard Guenther  <rguenther@suse.de>
+            Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (plugin_file_info): Remove temp field.
+	(cleanup_handler): Don't delete temporary objects.
+	(claim_file_handler): Don't create temporary objects.
+
 2009-11-04  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (cleanup_handler): Don't cleanup if debugging.

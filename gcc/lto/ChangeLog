@@ -1,3 +1,9 @@
+2009-11-04  Richard Guenther  <rguenther@suse.de>
+            Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-elf.c (lto_elf_build_section_table): Add the base offset.
+	(lto_elf_file_open): Handle offsets in arguments name@offest.
+
 2009-10-30  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41858
