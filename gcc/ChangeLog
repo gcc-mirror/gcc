@@ -1,3 +1,9 @@
+2009-11-04  Revital Eres  <eres@il.ibm.com>
+
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Consider peeling for alignment only for stores and remove
+	redundant assignment.
+
 2009-11-04  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR target/41302
