@@ -1,3 +1,9 @@
+2009-11-04  Richard Guenther  <rguenther@suse.de>
+
+	* c-opts.c (c_common_post_options): Move LTO option processing
+	code ...
+	* opts.c (decode_options): ... here.
+
 2009-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (fold_offsetof_1): Use %wd instead of
