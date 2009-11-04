@@ -1,6 +1,6 @@
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
-	PR c++/15882
+	PR c++/35067
 	* method.c (use_thunk): Check DECL_WEAK as well as
 	DECL_ONE_ONLY.
 
