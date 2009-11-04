@@ -2946,6 +2946,9 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 				    tmp_op, gen_rtx_PARALLEL (VOIDmode, vec));
 	      return tmp;
 	    }
+	  if (GET_CODE (trueop0) == VEC_DUPLICATE
+	      && GET_MODE (XEXP (trueop0, 0)) == mode)
+	    return XEXP (trueop0, 0);
 	}
       else
 	{
