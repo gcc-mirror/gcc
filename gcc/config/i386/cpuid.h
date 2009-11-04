@@ -48,6 +48,7 @@
 /* %ecx */
 #define bit_FMA4        (1 << 16) 
 #define bit_LAHF_LM	(1 << 0)
+#define bit_LWP 	(1 << 15)
 #define bit_SSE4a	(1 << 6)
 #define bit_XOP         (1 << 11)
 

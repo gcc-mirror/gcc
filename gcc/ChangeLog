@@ -1,3 +1,58 @@
+2009-11-04  Harsha Jagasia  <harsha.jagasia@amd.com>
+	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+
+	* doc/invoke.texi (-mlwp): Add documentation.
+	* doc/extend.texi (x86 intrinsics): Add LWP intrinsics.
+	* config.gcc (i[34567]86-*-*): Include lwpintrin.h.
+	(x86_64-*-*): Ditto.
+	* config/i386/lwpintrin.h: New file, provide x86 compiler
+	intrinisics for LWP.
+	* config/i386/cpuid.h (bit_LWP): Define LWP bit.
+	* config/i386/x86intrin.h: Add LWP check and lwpintrin.h.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Check
+	ISA_FLAG for LWP. 
+	* config/i386/i386.h (TARGET_LWP): New macro for LWP.
+	* config/i386/i386.opt (-mlwp): New switch for LWP support.
+	* config/i386/i386.c (OPTION_MASK_ISA_LWP_SET): New.
+	(OPTION_MASK_ISA_LWP_UNSET): New.	
+	(ix86_handle_option): Handle -mlwp.
+	(isa_opts): Handle -mlwp.
+	(enum pta_flags): Add PTA_LWP.
+	(override_options): Add LWP support.
+	(IX86_BUILTIN_LLWPCB16): New for LWP intrinsic.
+	(IX86_BUILTIN_LLWPCB32): Ditto.
+	(IX86_BUILTIN_LLWPCB64): Ditto.
+	(IX86_BUILTIN_SLWPCB16): Ditto.
+	(IX86_BUILTIN_SLWPCB32): Ditto.
+	(IX86_BUILTIN_SLWPCB64): Ditto.
+	(IX86_BUILTIN_LWPVAL16): Ditto.
+	(IX86_BUILTIN_LWPVAL32): Ditto.
+	(IX86_BUILTIN_LWPVAL64): Ditto.
+	(IX86_BUILTIN_LWPINS16): Ditto.
+	(IX86_BUILTIN_LWPINS32): Ditto.
+	(IX86_BUILTIN_LWPINS64): Ditto.
+	(enum  ix86_special_builtin_type): Add LWP intrinsic support.
+	(builtin_description): Ditto.
+	(ix86_init_mmx_sse_builtins): Ditto.
+	(ix86_expand_special_args_builtin): Ditto.
+	* config/i386/i386.md (UNSPEC_LLWP_INTRINSIC): Add new UNSPEC for 
+	LWP support.
+	(UNSPEC_SLWP_INTRINSIC): Ditto.
+	(UNSPECV_LWPVAL_INTRINSIC): Ditto.
+	(UNSPECV_LWPINS_INTRINSIC): Ditto.
+	(lwp_llwpcbhi1): New lwp pattern.
+	(lwp_llwpcbsi1): Ditto.
+	(lwp_llwpcbdi1): Ditto.
+	(lwp_slwpcbhi1): Ditto.
+	(lwp_slwpcbsi1): Ditto.
+	(lwp_slwpcbdi1): Ditto.
+	(lwp_lwpvalhi3): Ditto.
+	(lwp_lwpvalsi3): Ditto.
+	(lwp_lwpvaldi3): Ditto.
+	(lwp_lwpinshi3): Ditto.
+	(lwp_lwpinssi3): Ditto.
+	(lwp_lwpinsdi3): Ditto.
+	
 2009-11-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
             Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 

@@ -1966,6 +1966,8 @@ static int ix86_isa_flags_explicit;
    | OPTION_MASK_ISA_AVX_SET)
 #define OPTION_MASK_ISA_XOP_SET \
   (OPTION_MASK_ISA_XOP | OPTION_MASK_ISA_FMA4_SET)
+#define OPTION_MASK_ISA_LWP_SET \
+  OPTION_MASK_ISA_LWP
 
 /* AES and PCLMUL need SSE2 because they use xmm registers */
 #define OPTION_MASK_ISA_AES_SET \
@@ -2020,6 +2022,7 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_FMA4_UNSET \
   (OPTION_MASK_ISA_FMA4 | OPTION_MASK_ISA_XOP_UNSET)
 #define OPTION_MASK_ISA_XOP_UNSET OPTION_MASK_ISA_XOP
+#define OPTION_MASK_ISA_LWP_UNSET OPTION_MASK_ISA_LWP
 
 #define OPTION_MASK_ISA_AES_UNSET OPTION_MASK_ISA_AES
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
@@ -2280,6 +2283,19 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	}
       return true;
 
+   case OPT_mlwp:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_LWP_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_LWP_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_LWP_UNSET;
+	}
+      return true;
+
     case OPT_mabm:
       if (value)
 	{
@@ -2409,6 +2425,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-m64",		OPTION_MASK_ISA_64BIT },
     { "-mfma4",		OPTION_MASK_ISA_FMA4 },
     { "-mxop",		OPTION_MASK_ISA_XOP },
+    { "-mlwp",		OPTION_MASK_ISA_LWP },
     { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
@@ -2640,7 +2657,8 @@ override_options (bool main_args_p)
       PTA_FMA = 1 << 19,
       PTA_MOVBE = 1 << 20,
       PTA_FMA4 = 1 << 21,
-      PTA_XOP = 1 << 22
+      PTA_XOP = 1 << 22,
+      PTA_LWP = 1 << 23
     };
 
   static struct pta
@@ -2989,6 +3007,9 @@ override_options (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_XOP
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_XOP))
 	  ix86_isa_flags |= OPTION_MASK_ISA_XOP;
+	if (processor_alias_table[i].flags & PTA_LWP
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_LWP))
+	  ix86_isa_flags |= OPTION_MASK_ISA_LWP;
 	if (processor_alias_table[i].flags & PTA_ABM
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_ABM))
 	  ix86_isa_flags |= OPTION_MASK_ISA_ABM;
@@ -3672,6 +3693,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[])
     IX86_ATTR_ISA ("ssse3",	OPT_mssse3),
     IX86_ATTR_ISA ("fma4",	OPT_mfma4),
     IX86_ATTR_ISA ("xop",	OPT_mxop),
+    IX86_ATTR_ISA ("lwp",	OPT_mlwp),
 
     /* string options */
     IX86_ATTR_STR ("arch=",	IX86_FUNCTION_SPECIFIC_ARCH),
@@ -20897,7 +20919,7 @@ enum ix86_builtins
 
   IX86_BUILTIN_CVTUDQ2PS,
 
-  /* FMA4 instructions.  */
+  /* FMA4 and XOP instructions.  */
   IX86_BUILTIN_VFMADDSS,
   IX86_BUILTIN_VFMADDSD,
   IX86_BUILTIN_VFMADDPS,
@@ -21073,6 +21095,20 @@ enum ix86_builtins
   IX86_BUILTIN_VPCOMGEQ,
   IX86_BUILTIN_VPCOMFALSEQ,
   IX86_BUILTIN_VPCOMTRUEQ,
+
+  /* LWP instructions.  */
+  IX86_BUILTIN_LLWPCB16,
+  IX86_BUILTIN_LLWPCB32,
+  IX86_BUILTIN_LLWPCB64,
+  IX86_BUILTIN_SLWPCB16,
+  IX86_BUILTIN_SLWPCB32,
+  IX86_BUILTIN_SLWPCB64,
+  IX86_BUILTIN_LWPVAL16,
+  IX86_BUILTIN_LWPVAL32,
+  IX86_BUILTIN_LWPVAL64,
+  IX86_BUILTIN_LWPINS16,
+  IX86_BUILTIN_LWPINS32,
+  IX86_BUILTIN_LWPINS64,
 
   IX86_BUILTIN_MAX
 };
@@ -21287,7 +21323,13 @@ enum ix86_special_builtin_type
   VOID_FTYPE_PV8SF_V8SF_V8SF,
   VOID_FTYPE_PV4DF_V4DF_V4DF,
   VOID_FTYPE_PV4SF_V4SF_V4SF,
-  VOID_FTYPE_PV2DF_V2DF_V2DF
+  VOID_FTYPE_PV2DF_V2DF_V2DF,
+  VOID_FTYPE_USHORT_UINT_USHORT,
+  VOID_FTYPE_UINT_UINT_UINT,
+  VOID_FTYPE_UINT64_UINT_UINT,
+  UCHAR_FTYPE_USHORT_UINT_USHORT,
+  UCHAR_FTYPE_UINT_UINT_UINT,
+  UCHAR_FTYPE_UINT64_UINT_UINT
 };
 
 /* Builtin types */
@@ -21534,6 +21576,22 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps, "__builtin_ia32_maskstoreps", IX86_BUILTIN_MASKSTOREPS, UNKNOWN, (int) VOID_FTYPE_PV4SF_V4SF_V4SF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd256, "__builtin_ia32_maskstorepd256", IX86_BUILTIN_MASKSTOREPD256, UNKNOWN, (int) VOID_FTYPE_PV4DF_V4DF_V4DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps256, "__builtin_ia32_maskstoreps256", IX86_BUILTIN_MASKSTOREPS256, UNKNOWN, (int) VOID_FTYPE_PV8SF_V8SF_V8SF },
+
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_llwpcbhi1,   "__builtin_ia32_llwpcb16",   IX86_BUILTIN_LLWPCB16,    UNKNOWN,     (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_llwpcbsi1,   "__builtin_ia32_llwpcb32",   IX86_BUILTIN_LLWPCB32,    UNKNOWN,     (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_llwpcbdi1,   "__builtin_ia32_llwpcb64",   IX86_BUILTIN_LLWPCB64,    UNKNOWN,     (int) VOID_FTYPE_VOID },
+
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_slwpcbhi1,   "__builtin_ia32_slwpcb16",   IX86_BUILTIN_SLWPCB16,    UNKNOWN,     (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_slwpcbsi1,   "__builtin_ia32_slwpcb32",   IX86_BUILTIN_SLWPCB32,    UNKNOWN,     (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_slwpcbdi1,   "__builtin_ia32_slwpcb64",   IX86_BUILTIN_SLWPCB64,    UNKNOWN,     (int) VOID_FTYPE_VOID },
+
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpvalhi3,   "__builtin_ia32_lwpval16", IX86_BUILTIN_LWPVAL16,  UNKNOWN,     (int) VOID_FTYPE_USHORT_UINT_USHORT },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpvalsi3,   "__builtin_ia32_lwpval32", IX86_BUILTIN_LWPVAL64,  UNKNOWN,     (int) VOID_FTYPE_UINT_UINT_UINT },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpvaldi3,   "__builtin_ia32_lwpval64", IX86_BUILTIN_LWPVAL64,  UNKNOWN,     (int) VOID_FTYPE_UINT64_UINT_UINT },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpinshi3,   "__builtin_ia32_lwpins16", IX86_BUILTIN_LWPINS16,  UNKNOWN,     (int) UCHAR_FTYPE_USHORT_UINT_USHORT },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpinssi3,   "__builtin_ia32_lwpins32", IX86_BUILTIN_LWPINS64,  UNKNOWN,     (int) UCHAR_FTYPE_UINT_UINT_UINT },
+  { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpinsdi3,   "__builtin_ia32_lwpins64", IX86_BUILTIN_LWPINS64,  UNKNOWN,     (int) UCHAR_FTYPE_UINT64_UINT_UINT },
+
 };
 
 /* Builtins with variable number of arguments.  */
@@ -23192,6 +23250,50 @@ ix86_init_mmx_sse_builtins (void)
 				integer_type_node,
 				NULL_TREE);
 
+  /* LWP instructions.  */
+
+  tree void_ftype_ushort_unsigned_ushort
+    = build_function_type_list (void_type_node,
+				short_unsigned_type_node,
+				unsigned_type_node,
+				short_unsigned_type_node,
+				NULL_TREE);
+
+  tree void_ftype_unsigned_unsigned_unsigned
+    = build_function_type_list (void_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				NULL_TREE);
+
+  tree void_ftype_uint64_unsigned_unsigned
+    = build_function_type_list (void_type_node,
+				long_long_unsigned_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				NULL_TREE);
+
+  tree uchar_ftype_ushort_unsigned_ushort
+    = build_function_type_list (unsigned_char_type_node,
+				short_unsigned_type_node,
+				unsigned_type_node,
+				short_unsigned_type_node,
+				NULL_TREE);
+
+  tree uchar_ftype_unsigned_unsigned_unsigned
+    = build_function_type_list (unsigned_char_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				NULL_TREE);
+
+  tree uchar_ftype_uint64_unsigned_unsigned
+    = build_function_type_list (unsigned_char_type_node,
+				long_long_unsigned_type_node,
+				unsigned_type_node,
+				unsigned_type_node,
+				NULL_TREE);
+
   tree ftype;
 
   /* Add all special builtins with variable number of operands.  */
@@ -23305,6 +23407,25 @@ ix86_init_mmx_sse_builtins (void)
 	case VOID_FTYPE_PV2DF_V2DF_V2DF:
 	  type = void_ftype_pv2df_v2df_v2df;
 	  break;
+	case VOID_FTYPE_USHORT_UINT_USHORT:
+	  type = void_ftype_ushort_unsigned_ushort;
+	  break;
+	case VOID_FTYPE_UINT_UINT_UINT:
+	  type = void_ftype_unsigned_unsigned_unsigned;
+	  break;
+	case VOID_FTYPE_UINT64_UINT_UINT:
+	  type = void_ftype_uint64_unsigned_unsigned;
+	  break;
+	case UCHAR_FTYPE_USHORT_UINT_USHORT:
+	  type = uchar_ftype_ushort_unsigned_ushort;
+	  break;
+	case UCHAR_FTYPE_UINT_UINT_UINT:
+	  type = uchar_ftype_unsigned_unsigned_unsigned;
+	  break;
+	case UCHAR_FTYPE_UINT64_UINT_UINT:
+	  type = uchar_ftype_uint64_unsigned_unsigned;
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -25195,6 +25316,16 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = store;
       /* Reserve memory operand for target.  */
       memory = ARRAY_SIZE (args);
+      break;
+    case VOID_FTYPE_USHORT_UINT_USHORT:
+    case VOID_FTYPE_UINT_UINT_UINT:
+    case VOID_FTYPE_UINT64_UINT_UINT:
+    case UCHAR_FTYPE_USHORT_UINT_USHORT:
+    case UCHAR_FTYPE_UINT_UINT_UINT:
+    case UCHAR_FTYPE_UINT64_UINT_UINT:
+      nargs = 3;
+      klass = store;
+      memory = 0;
       break;
     default:
       gcc_unreachable ();
