@@ -1,3 +1,27 @@
+2009-11-04  Revital Eres  <eres@il.ibm.com>
+
+	* gcc.target/powerpc/vsx-vectorize-3.c: Adjust tetcase following
+	change in decision of peeling for alignment.
+	* gcc.target/powerpc/vsx-vectorize-5.c: Likewise.
+	* gcc.dg/vect/vect-50.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-fast-math-vect-pr29925.c:
+	Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-fast-math-vect-pr29925.c:
+	Likewise.
+	* gcc.dg/vect/vect-multitypes-6.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/vect-52.c: Likewise.
+	* gcc.dg/vect/vect-44.c: Likewise.
+	* gcc.dg/vect/vect-27.c: Likewise.
+	* gcc.dg/vect/vect-29.c: Likewise.
+	* gcc.dg/vect/vect-72.c: Likewise.
+	* gcc.dg/vect/vect-56.c: Likewise.
+	* gcc.dg/vect/vect-48.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-3.c: Likewise.
+	* gfortran.dg/vect/vect-2.f90: Likewise.
+	* gfortran.dg/vect/vect-5.f90: Likewise.
+
 2009-11-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41919

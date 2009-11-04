@@ -1176,7 +1176,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
-      supportable_dr_alignment = vect_supportable_dr_alignment (dr);
 
       /* For interleaving, only the alignment of the first access
          matters.  */
@@ -1184,7 +1183,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           && DR_GROUP_FIRST_DR (stmt_info) != stmt)
         continue;
 
-      if (!aligned_access_p (dr))
+      if (!DR_IS_READ (dr) && !aligned_access_p (dr))
         {
 	  do_peeling = vector_alignment_reachable_p (dr);
 	  if (do_peeling)
