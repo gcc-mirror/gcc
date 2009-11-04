@@ -684,9 +684,15 @@ proper position among the other output files.  */
 #endif
 
 /* config.h can define SWITCHES_NEED_SPACES to control which options
-   require spaces between the option and the argument.  */
+   require spaces between the option and the argument.
+
+   We define SWITCHES_NEED_SPACES to include "o" by default.  This
+   causes "-ofoo.o" to be split into "-o foo.o" during the initial
+   processing of the command-line, before being seen by the specs
+   machinery.  This makes sure we record "foo.o" as the temporary file
+   to be deleted in the case of error, rather than "-ofoo.o".  */
 #ifndef SWITCHES_NEED_SPACES
-#define SWITCHES_NEED_SPACES ""
+#define SWITCHES_NEED_SPACES "o"
 #endif
 
 /* config.h can define ENDFILE_SPEC to override the default crtn files.  */

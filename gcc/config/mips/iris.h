@@ -63,9 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT mips_finish_declare_object
 
-/* The linker needs a space after "-o".  */
-#define SWITCHES_NEED_SPACES "o"
-
 /* Specify wchar_t types.  */
 #undef WCHAR_TYPE
 #define WCHAR_TYPE (Pmode == DImode ? "int" : "long int")
