@@ -1,3 +1,10 @@
+2009-11-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR driver/11810
+	* gcc.c (SWITCHES_NEED_SPACES): Define to "o".
+	* config/alpha/osf.h (SWITCHES_NEED_SPACES): Remove here.
+	* config/mips/iris.h (SWITCHES_NEED_SPACES): Remove here.
+
 2009-11-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/40835
