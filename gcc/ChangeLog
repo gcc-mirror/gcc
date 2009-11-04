@@ -1,8 +1,15 @@
+2009-11-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+            Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+
+	PR rtl-opt/41833
+	* simplify-rtx.c (simplify_binary_operation_1): Simplify vec_select of
+	a vec_duplicate.
+
 2009-11-04  Richard Guenther  <rguenther@suse.de>
             Rafael Avila de Espindola  <espindola@google.com>
  
 	* gcc.c (process_command): Handle arguments name@offset.
- 
+
 2009-11-04  Harsha Jagasia  <harsha.jagasia@amd.com>
 	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 	
