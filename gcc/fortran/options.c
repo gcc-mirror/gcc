@@ -242,27 +242,9 @@ gfc_post_options (const char **pfilename)
   if (flag_whole_program)
     gfc_option.flag_whole_file = 1;
 
+  /* Enable whole-file mode if LTO is in effect.  */
   if (flag_lto || flag_whopr)
-    {
-#ifdef ENABLE_LTO
-      flag_generate_lto = 1;
-
-      /* When generating IL, do not operate in whole-program mode.
-	 Otherwise, symbols will be privatized too early, causing link
-	 errors later.  */
-      flag_whole_program = 0;
-
-      /* But do enable whole-file mode.  */
-      gfc_option.flag_whole_file = 1;
-#else
-      error ("LTO support has not been enabled in this configuration");
-#endif
-    }
-
-  /* Reconcile -flto and -fwhopr.  Set additional flags as appropriate and
-     check option consistency.  */
-  if (flag_lto && flag_whopr)
-    error ("-flto and -fwhopr are mutually exclusive");
+    gfc_option.flag_whole_file = 1;
 
   /* -fbounds-check is equivalent to -fcheck=bounds */
   if (flag_bounds_check)
