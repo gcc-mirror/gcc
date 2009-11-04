@@ -3248,10 +3248,23 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 		    width = INTVAL (XEXP (dst, 1));
 		    offset = INTVAL (XEXP (dst, 2));
 		    mode = GET_MODE (dst);
-		    df_uses_record (DF_REF_EXTRACT, collection_rec, &XEXP (dst, 0), 
-				DF_REF_REG_USE, bb, insn_info, 
-				DF_REF_READ_WRITE | DF_REF_ZERO_EXTRACT, 
-				width, offset, mode);
+		    if (GET_CODE (XEXP (dst,0)) == MEM)
+		      {
+			/* Handle the case of zero_extract(mem(...)) in the set dest.
+			   This special case is allowed only if the mem is a single byte and 
+			   is useful to set a bitfield in memory.  */
+			df_uses_record (DF_REF_EXTRACT, collection_rec, &XEXP (XEXP (dst,0), 0),
+					DF_REF_REG_MEM_STORE, bb, insn_info,
+					DF_REF_ZERO_EXTRACT,
+					width, offset, mode);
+		      }
+		    else
+		      {
+			df_uses_record (DF_REF_EXTRACT, collection_rec, &XEXP (dst, 0), 
+					DF_REF_REG_USE, bb, insn_info, 
+					DF_REF_READ_WRITE | DF_REF_ZERO_EXTRACT, 
+					width, offset, mode);
+		      }
 		  }
 		else 
 		  {
