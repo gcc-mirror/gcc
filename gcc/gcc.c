@@ -4568,20 +4568,32 @@ process_command (int argc, const char **argv)
 	}
       else
 	{
+          const char *p = strchr (argv[i], '@');
+          char *fname;
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  argv[i] = convert_filename (argv[i], 0, access (argv[i], F_OK));
 #endif
+          if (!p)
+            fname = xstrdup (argv[i]);
+          else
+            {
+              fname = (char *)xmalloc (p - argv[i] + 1);
+              memcpy (fname, argv[i], p - argv[i]);
+              fname[p - argv[i]] = '\0';
+            }
 
-	  if (strcmp (argv[i], "-") != 0 && access (argv[i], F_OK) < 0)
-	    {
-	      perror_with_name (argv[i]);
-	      error_count++;
-	    }
-	  else
-	    {
-	      infiles[n_infiles].language = spec_lang;
-	      infiles[n_infiles++].name = argv[i];
-	    }
+          if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
+            {
+              perror_with_name (fname);
+              error_count++;
+            }
+          else
+            {
+              infiles[n_infiles].language = spec_lang;
+              infiles[n_infiles++].name = argv[i];
+            }
+
+          free (fname);
 	}
     }
 
