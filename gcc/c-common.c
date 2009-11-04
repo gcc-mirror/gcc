@@ -8403,8 +8403,7 @@ fold_offsetof_1 (tree expr, tree stop_ref)
         HOST_WIDE_INT index = int_cst_value (t);
 	if (index > int_cst_value (nelts))
 	  warning (OPT_Warray_bounds,
-		   "index " HOST_WIDE_INT_PRINT_DEC " denotes an offset "
-		   "greater than size of %qT",
+		   "index %wd denotes an offset greater than size of %qT",
 		   index, TREE_TYPE (TREE_OPERAND (expr, 0)));
       }
       break;

@@ -1,3 +1,8 @@
+2009-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (fold_offsetof_1): Use %wd instead of
+	HOST_WIDE_INT_PRINT_DEC.
+
 2009-11-04  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* config/vax/linux.h (TARGET_OS_CPP_BUILTINS): Don't define
@@ -134,7 +139,7 @@
 
 	PR c++/38699
 	* c-common.c (fold_offsetof_1): Issue errors when the member designator
-	of the offsetoff expression is not legitimate.
+	of the offsetof expression is not legitimate.
 
 2009-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
