@@ -1,6 +1,6 @@
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
-	PR c++/15882
+	PR c++/35067
 	* g++.dg/abi/thunk5.C: New.
 
 2009-11-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
