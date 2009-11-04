@@ -1,3 +1,8 @@
+2009-11-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/17365, DR 218
+	* name-lookup.c (add_function): Ignore non-functions.
+
 2009-11-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36959
