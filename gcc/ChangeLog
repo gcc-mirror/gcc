@@ -1,5 +1,10 @@
 2009-11-04  Maciej W. Rozycki  <macro@linux-mips.org>
 
+	* config/vax/linux.h (TARGET_OS_CPP_BUILTINS): Don't define
+	__pic__ or __PIC__.
+
+2009-11-04  Maciej W. Rozycki  <macro@linux-mips.org>
+
 	* config.gcc (vax-*-linux*): Keep the original contents of
 	tmake_file while adding vax/t-linux.
 
