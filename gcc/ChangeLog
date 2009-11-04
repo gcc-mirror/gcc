@@ -1,3 +1,9 @@
+2009-11-04  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR target/41302
+	* config/m68k/m68k.c (m68k_reg_present_p): New static function.
+	(m68k_ok_for_sibcall_p): Handle different result return locations.
+
 2009-11-04  Richard Guenther  <rguenther@suse.de>
 
 	* c-opts.c (c_common_post_options): Move LTO option processing

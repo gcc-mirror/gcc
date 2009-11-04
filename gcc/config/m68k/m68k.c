@@ -1399,6 +1399,30 @@ flags_in_68881 (void)
   return cc_status.flags & CC_IN_68881;
 }
 
+/* Return true if PARALLEL contains register REGNO.  */
+static bool
+m68k_reg_present_p (const_rtx parallel, unsigned int regno)
+{
+  int i;
+
+  if (REG_P (parallel) && REGNO (parallel) == regno)
+    return true;
+
+  if (GET_CODE (parallel) != PARALLEL)
+    return false;
+
+  for (i = 0; i < XVECLEN (parallel, 0); ++i)
+    {
+      const_rtx x;
+
+      x = XEXP (XVECEXP (parallel, 0, i), 0);
+      if (REG_P (x) && REGNO (x) == regno)
+	return true;
+    }
+
+  return false;
+}
+
 /* Implement TARGET_FUNCTION_OK_FOR_SIBCALL_P.  */
 
 static bool
@@ -1410,6 +1434,26 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
      static chain register for indirect calls.  */
   if (CALL_EXPR_STATIC_CHAIN (exp))
     return false;
+
+  if (!VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
+    {
+      /* Check that the return value locations are the same.  For
+	 example that we aren't returning a value from the sibling in
+	 a D0 register but then need to transfer it to a A0 register.  */
+      rtx cfun_value;
+      rtx call_value;
+
+      cfun_value = FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (cfun->decl)),
+				   cfun->decl);
+      call_value = FUNCTION_VALUE (TREE_TYPE (exp), decl);
+
+      /* Check that the values are equal or that the result the callee
+	 function returns is superset of what the current function returns.  */
+      if (!(rtx_equal_p (cfun_value, call_value)
+	    || (REG_P (cfun_value)
+		&& m68k_reg_present_p (call_value, REGNO (cfun_value)))))
+	return false;
+    }
 
   kind = m68k_get_function_kind (current_function_decl);
   if (kind == m68k_fk_normal_function)
@@ -5188,6 +5232,9 @@ m68k_libcall_value (enum machine_mode mode)
   return gen_rtx_REG (mode, m68k_libcall_value_in_a0_p ? A0_REG : D0_REG);
 }
 
+/* Location in which function value is returned.
+   NOTE: Due to differences in ABIs, don't call this function directly,
+   use FUNCTION_VALUE instead.  */
 rtx
 m68k_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
