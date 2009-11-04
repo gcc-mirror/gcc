@@ -62,6 +62,10 @@
 #include <xopintrin.h>
 #endif
 
+#ifdef __LWP__
+#include <lwpintrin.h>
+#endif
+
 #if defined (__AES__) || defined (__PCLMUL__)
 #include <wmmintrin.h>
 #endif

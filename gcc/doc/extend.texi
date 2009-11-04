@@ -3212,6 +3212,11 @@ Enable/disable the generation of the FMA4 instructions.
 @cindex @code{target("xop")} attribute
 Enable/disable the generation of the XOP instructions.
 
+@item lwp
+@itemx no-lwp
+@cindex @code{target("lwp")} attribute
+Enable/disable the generation of the LWP instructions.
+
 @item ssse3
 @itemx no-ssse3
 @cindex @code{target("ssse3")} attribute
@@ -9099,6 +9104,23 @@ v8sf __builtin_ia32_fmaddsubps256 (v8sf, v8sf, v8sf)
 v4df __builtin_ia32_fmsubaddpd256 (v4df, v4df, v4df)
 v8sf __builtin_ia32_fmsubaddps256 (v8sf, v8sf, v8sf)
 
+@end smallexample
+
+The following built-in functions are available when @option{-mlwp} is used.
+
+@smallexample
+void __builtin_ia32_llwpcb16 (void *);
+void __builtin_ia32_llwpcb32 (void *);
+void __builtin_ia32_llwpcb64 (void *);
+void * __builtin_ia32_llwpcb16 (void);
+void * __builtin_ia32_llwpcb32 (void);
+void * __builtin_ia32_llwpcb64 (void);
+void __builtin_ia32_lwpval16 (unsigned short, unsigned int, unsigned short)
+void __builtin_ia32_lwpval32 (unsigned int, unsigned int, unsigned int)
+void __builtin_ia32_lwpval64 (unsigned __int64, unsigned int, unsigned int)
+unsigned char __builtin_ia32_lwpins16 (unsigned short, unsigned int, unsigned short)
+unsigned char __builtin_ia32_lwpins32 (unsigned int, unsigned int, unsigned int)
+unsigned char __builtin_ia32_lwpins64 (unsigned __int64, unsigned int, unsigned int)
 @end smallexample
 
 The following built-in functions are available when @option{-m3dnow} is used.

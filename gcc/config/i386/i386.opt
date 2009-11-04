@@ -318,6 +318,10 @@ mxop
 Target Report Mask(ISA_XOP) Var(ix86_isa_flags) VarExists Save
 Support XOP built-in functions and code generation 
 
+mlwp
+Target Report Mask(ISA_LWP) Var(ix86_isa_flags) VarExists Save
+Support LWP built-in functions and code generation 
+
 mabm
 Target Report Mask(ISA_ABM) Var(ix86_isa_flags) VarExists Save
 Support code generation of Advanced Bit Manipulation (ABM) instructions.
