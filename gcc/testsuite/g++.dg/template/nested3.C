@@ -5,13 +5,13 @@ class A {
     int _k;
   };
   T1 _t1;
-  T2 _t2; // { dg-message "instantiated" }
+  T2 _t2;
 };
 
 template <class U>
-class B { // { dg-error "declaration" }
+class B {
   class SubB1 {
-    B _i; // { dg-error "incomplete type" }
+    B _i;
   };
 
   class SubB2 {
@@ -19,7 +19,6 @@ class B { // { dg-error "declaration" }
   };
   A<U,SubB1>::SubA<SubB2> _a; // { dg-error "not a base type" "not base" }
 		// { dg-message "note" "note" { target *-*-* } 20 }
-		// { dg-message "instantiated" "inst" { target *-*-* } 20 }
 		// { dg-error "non-template" "non-template" { target *-*-* } 20 }
 };
 

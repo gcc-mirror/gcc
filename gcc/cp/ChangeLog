@@ -1,5 +1,8 @@
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39413
+	* search.c (lookup_base): Don't complete_type (base).
+
 	PR c++/35067
 	* method.c (use_thunk): Check DECL_WEAK as well as
 	DECL_ONE_ONLY.
