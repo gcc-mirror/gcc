@@ -1,3 +1,9 @@
+2009-11-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41556
+	PR fortran/41937
+	* gfortran.dg/class_11.f03: New test.
+
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35067
