@@ -49,6 +49,7 @@ __bswapd (int __X)
   return __builtin_bswap32 (__X);
 }
 
+#ifdef __SSE4_2__
 /* 32bit accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -70,6 +71,7 @@ __crc32d (unsigned int __C, unsigned int __V)
 {
   return __builtin_ia32_crc32si (__C, __V);
 }
+#endif /* SSE4.2 */
 
 /* 32bit popcnt */
 extern __inline int
