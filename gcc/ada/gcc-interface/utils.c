@@ -2177,16 +2177,28 @@ gnat_type_for_mode (enum machine_mode mode, int unsignedp)
 {
   if (mode == BLKmode)
     return NULL_TREE;
-  else if (mode == VOIDmode)
+
+  if (mode == VOIDmode)
     return void_type_node;
-  else if (COMPLEX_MODE_P (mode))
+
+  if (COMPLEX_MODE_P (mode))
     return NULL_TREE;
-  else if (SCALAR_FLOAT_MODE_P (mode))
+
+  if (SCALAR_FLOAT_MODE_P (mode))
     return float_type_for_precision (GET_MODE_PRECISION (mode), mode);
-  else if (SCALAR_INT_MODE_P (mode))
+
+  if (SCALAR_INT_MODE_P (mode))
     return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
-  else
-    return NULL_TREE;
+
+  if (VECTOR_MODE_P (mode))
+    {
+      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      tree inner_type = gnat_type_for_mode (inner_mode, unsignedp);
+      if (inner_type)
+	return build_vector_type_for_mode (inner_type, mode);
+    }
+
+  return NULL_TREE;
 }
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */

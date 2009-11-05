@@ -1,5 +1,9 @@
 2009-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (gnat_type_for_mode): Handle vector modes.
+
+2009-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_p) <N_Unchecked_Conversion>:
 	New case.
 
