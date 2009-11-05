@@ -2574,13 +2574,16 @@ matching_typebound_op (gfc_expr** tb_base,
   gfc_actual_arglist* base;
 
   for (base = args; base; base = base->next)
-    if (base->expr->ts.type == BT_DERIVED)
+    if (base->expr->ts.type == BT_DERIVED || base->expr->ts.type == BT_CLASS)
       {
 	gfc_typebound_proc* tb;
 	gfc_symbol* derived;
 	gfc_try result;
 
-	derived = base->expr->ts.u.derived;
+	if (base->expr->ts.type == BT_CLASS)
+	  derived = base->expr->ts.u.derived->components->ts.u.derived;
+	else
+	  derived = base->expr->ts.u.derived;
 
 	if (op == INTRINSIC_USER)
 	  {
@@ -2837,7 +2840,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
   rhs = c->expr2;
 
   /* Don't allow an intrinsic assignment to be replaced.  */
-  if (lhs->ts.type != BT_DERIVED
+  if (lhs->ts.type != BT_DERIVED && lhs->ts.type != BT_CLASS
       && (rhs->rank == 0 || rhs->rank == lhs->rank)
       && (lhs->ts.type == rhs->ts.type
 	  || (gfc_numeric_ts (&lhs->ts) && gfc_numeric_ts (&rhs->ts))))
