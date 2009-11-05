@@ -1,3 +1,11 @@
+2009-11-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41556
+	PR fortran/41873
+	* resolve.c (resolve_function,resolve_call): Prevent abstract interfaces
+	from being called, but allow deferred type-bound procedures with
+	abstract interface.
+
 2009-11-04  Tobias Burnus <burnus@gcc.gnu.org>
 	    Janus Weil  <janus@gcc.gnu.org>
 

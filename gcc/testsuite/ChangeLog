@@ -1,3 +1,9 @@
+2009-11-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41556
+	PR fortran/41873
+	* gfortran.dg/interface_abstract_4.f90: New test.
+
 2009-11-05  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc.target/m68k/pr41302.c: Fix target triplet.
