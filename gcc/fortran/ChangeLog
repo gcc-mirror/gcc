@@ -1,3 +1,9 @@
+2009-11-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/41918
+	* fortran/trans-decl.c: Silence intent(out) warning for derived type
+	dummy arguments with default initialization.
+
 2009-11-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41556
