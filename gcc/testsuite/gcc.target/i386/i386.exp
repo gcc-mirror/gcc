@@ -153,9 +153,9 @@ proc check_effective_target_xop { } {
 	typedef short __v8hi __attribute__ ((__vector_size__ (16)));
 	__m128i _mm_maccs_epi16(__m128i __A, __m128i __B, __m128i __C)
 	{
-	    return (__m128i) __builtin_ia32_pmacssww ((__v8hi)__A,
-						      (__v8hi)__B,
-						      (__v8hi)__C);
+	    return (__m128i) __builtin_ia32_vpmacssww ((__v8hi)__A,
+						       (__v8hi)__B,
+						       (__v8hi)__C);
 	}
     } "-O2 -mxop" ]
 }

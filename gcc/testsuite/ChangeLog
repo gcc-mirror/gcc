@@ -1,3 +1,8 @@
+2009-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/i386.exp (check_effective_target_xop): Fix typo
+	in builtin's name.
+
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/36912
