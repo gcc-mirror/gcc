@@ -72,7 +72,7 @@ struct plugin_file_info
 };
 
 
-static char *temp_obj_dir_name;
+static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
 static ld_plugin_add_symbols add_symbols;
 static ld_plugin_register_all_symbols_read register_all_symbols_read;
@@ -291,8 +291,9 @@ free_2 (void)
   claimed_files = NULL;
   num_claimed_files = 0;
 
-  free (temp_obj_dir_name);
-  temp_obj_dir_name = NULL;
+  if (arguments_file_name)
+    free (arguments_file_name);
+  arguments_file_name = NULL;
 
   if (resolution_file)
     {
@@ -374,7 +375,6 @@ exec_lto_wrapper (char *argv[])
   int t;
   int status;
   char *at_args;
-  char *args_name;
   FILE *args;
   FILE *wrapper_output;
   char *new_argv[3];
@@ -382,17 +382,20 @@ exec_lto_wrapper (char *argv[])
   const char *errmsg;
 
   /* Write argv to a file to avoid a command line that is too long. */
-  t = asprintf (&at_args, "@%s/arguments", temp_obj_dir_name);
-  check (t >= 0, LDPL_FATAL, "asprintf failed");
+  arguments_file_name = make_temp_file ("");
+  check (arguments_file_name, LDPL_FATAL,
+         "Failed to generate a temorary file name");
 
-  args_name = at_args + 1;
-  args = fopen (args_name, "w");
+  args = fopen (arguments_file_name, "w");
   check (args, LDPL_FATAL, "could not open arguments file");
 
   t = writeargv (&argv[1], args);
   check (t == 0, LDPL_FATAL, "could not write arguments");
   t = fclose (args);
   check (t == 0, LDPL_FATAL, "could not close arguments file");
+
+  at_args = concat ("@", arguments_file_name, NULL);
+  check (at_args, LDPL_FATAL, "could not allocate");
 
   new_argv[0] = argv[0];
   new_argv[1] = at_args;
@@ -426,8 +429,6 @@ exec_lto_wrapper (char *argv[])
 
   pex_free (pex);
 
-  t = unlink (args_name);
-  check (t == 0, LDPL_FATAL, "could not unlink arguments file");
   free (at_args);
 }
 
@@ -511,25 +512,15 @@ static enum ld_plugin_status
 cleanup_handler (void)
 {
   int t;
-  char *arguments;
-  struct stat buf;
 
   if (debug)
     return LDPS_OK;
 
-  /* If we are being called from an error handler, it is possible
-     that the arguments file is still exists. */
-  t = asprintf (&arguments, "%s/arguments", temp_obj_dir_name);
-  check (t >= 0, LDPL_FATAL, "asprintf failed");
-  if (stat(arguments, &buf) == 0)
+  if (arguments_file_name)
     {
-      t = unlink (arguments);
+      t = unlink (arguments_file_name);
       check (t == 0, LDPL_FATAL, "could not unlink arguments file");
     }
-  free (arguments);
-
-  t = rmdir (temp_obj_dir_name);
-  check (t == 0, LDPL_FATAL, "could not remove temporary directory");
 
   free_2 ();
   return LDPS_OK;
@@ -651,7 +642,6 @@ onload (struct ld_plugin_tv *tv)
 {
   struct ld_plugin_tv *p;
   enum ld_plugin_status status;
-  char *t;
 
   unsigned version = elf_version (EV_CURRENT);
   check (version != EV_NONE, LDPL_FATAL, "invalid ELF version");
@@ -715,8 +705,5 @@ onload (struct ld_plugin_tv *tv)
 	     "could not register the all_symbols_read callback");
     }
 
-  temp_obj_dir_name = strdup ("tmp_objectsXXXXXX");
-  t = mkdtemp (temp_obj_dir_name);
-  assert (t == temp_obj_dir_name);
   return LDPS_OK;
 }
