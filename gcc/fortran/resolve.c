@@ -2526,7 +2526,9 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
-  if (sym && sym->attr.abstract)
+  /* If this ia a deferred TBP with an abstract interface (which may
+     of course be referenced), expr->value.function.name will be set.  */
+  if (sym && sym->attr.abstract && !expr->value.function.name)
     {
       gfc_error ("ABSTRACT INTERFACE '%s' must not be referenced at %L",
 		 sym->name, &expr->where);
@@ -3136,6 +3138,15 @@ resolve_call (gfc_code *c)
 	    c->symtree = st;
 	  csym = c->symtree->n.sym;
 	}
+    }
+
+  /* If this ia a deferred TBP with an abstract interface
+     (which may of course be referenced), c->expr1 will be set.  */
+  if (csym && csym->attr.abstract && !c->expr1)
+    {
+      gfc_error ("ABSTRACT INTERFACE '%s' must not be referenced at %L",
+		 csym->name, &c->loc);
+      return FAILURE;
     }
 
   /* Subroutines without the RECURSIVE attribution are not allowed to
