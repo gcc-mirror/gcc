@@ -3776,8 +3776,12 @@ generate_local_decl (gfc_symbol * sym)
       else if (warn_unused_variable
 	       && sym->attr.dummy
 	       && sym->attr.intent == INTENT_OUT)
-	gfc_warning ("Dummy argument '%s' at %L was declared INTENT(OUT) but was not set",
-		     sym->name, &sym->declared_at);
+	{
+	  if (!(sym->ts.type == BT_DERIVED
+		&& sym->ts.u.derived->components->initializer))
+	    gfc_warning ("Dummy argument '%s' at %L was declared INTENT(OUT) "
+		         "but was not set",  sym->name, &sym->declared_at);
+	}
       /* Specific warning for unused dummy arguments. */
       else if (warn_unused_variable && sym->attr.dummy)
 	gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
