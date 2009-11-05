@@ -163,7 +163,8 @@ template<typename _Tp, typename _Compare>
    */
 template<bool __stable/* default == true */, typename _Tp,
 	 typename _Compare>
-  class _LoserTree : public _LoserTreeBase<_Tp, _Compare>
+  class _LoserTree
+  : public _LoserTreeBase<_Tp, _Compare>
   {
     typedef _LoserTreeBase<_Tp, _Compare> _Base;
     using _Base::_M_k;
@@ -797,7 +798,7 @@ public:
 *  run empty.  This is a very fast variant.
 */
 template<typename _Tp, typename _Compare>
-  class LoserTreePointerUnguardedBase
+  class _LoserTreePointerUnguardedBase
   {
   protected:
     struct _Loser
@@ -812,8 +813,8 @@ template<typename _Tp, typename _Compare>
 
   public:
 
-    LoserTreePointerUnguardedBase(unsigned int __k, const _Tp& _sentinel,
-				  _Compare __comp = std::less<_Tp>())
+    _LoserTreePointerUnguardedBase(unsigned int __k, const _Tp& _sentinel,
+				   _Compare __comp = std::less<_Tp>())
     : _M_comp(__comp)
     {
       _M_ik = __k;
@@ -831,7 +832,7 @@ template<typename _Tp, typename _Compare>
 	}
     }
 
-    ~LoserTreePointerUnguardedBase()
+    ~_LoserTreePointerUnguardedBase()
     { delete[] _M_losers; }
 
     int
@@ -861,16 +862,16 @@ template<typename _Tp, typename _Compare>
  */
 template<bool __stable/* default == true */, typename _Tp, typename _Compare>
   class _LoserTreePointerUnguarded
-  : public LoserTreePointerUnguardedBase<_Tp, _Compare>
+  : public _LoserTreePointerUnguardedBase<_Tp, _Compare>
   {
-    typedef LoserTreePointerUnguardedBase<_Tp, _Compare> _Base;
+    typedef _LoserTreePointerUnguardedBase<_Tp, _Compare> _Base;
     using _Base::_M_k;
     using _Base::_M_losers;
 
   public:
     _LoserTreePointerUnguarded(unsigned int __k, const _Tp& _sentinel,
 			       _Compare __comp = std::less<_Tp>())
-    : _Base::LoserTreePointerUnguardedBase(__k, _sentinel, __comp)
+    : _Base::_LoserTreePointerUnguardedBase(__k, _sentinel, __comp)
     { }
 
     unsigned int
@@ -945,16 +946,16 @@ template<bool __stable/* default == true */, typename _Tp, typename _Compare>
  */
 template<typename _Tp, typename _Compare>
   class _LoserTreePointerUnguarded</* __stable == */false, _Tp, _Compare>
-  : public LoserTreePointerUnguardedBase<_Tp, _Compare>
+  : public _LoserTreePointerUnguardedBase<_Tp, _Compare>
   {
-    typedef LoserTreePointerUnguardedBase<_Tp, _Compare> _Base;
+    typedef _LoserTreePointerUnguardedBase<_Tp, _Compare> _Base;
     using _Base::_M_k;
     using _Base::_M_losers;
 
 public:
     _LoserTreePointerUnguarded(unsigned int __k, const _Tp& _sentinel,
 			       _Compare __comp = std::less<_Tp>())
-    : _Base::LoserTreePointerUnguardedBase(__k, _sentinel, __comp)
+    : _Base::_LoserTreePointerUnguardedBase(__k, _sentinel, __comp)
     { }
 
     unsigned int
