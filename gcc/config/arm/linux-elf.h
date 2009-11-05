@@ -98,7 +98,7 @@
 
 /* NWFPE always understands FPA instructions.  */
 #undef  FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT FPUTYPE_FPA_EMU3
+#define FPUTYPE_DEFAULT "fpe3"
 
 /* Call the function profiler with a given profile label.  */
 #undef  ARM_FUNCTION_PROFILER

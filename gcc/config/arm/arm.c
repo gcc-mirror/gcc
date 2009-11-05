@@ -524,14 +524,11 @@ enum processor_type arm_tune = arm_none;
 /* The default processor used if not overridden by commandline.  */
 static enum processor_type arm_default_cpu = arm_none;
 
-/* Which floating point model to use.  */
-enum arm_fp_model arm_fp_model;
-
-/* Which floating point hardware is available.  */
-enum fputype arm_fpu_arch;
-
 /* Which floating point hardware to schedule for.  */
-enum fputype arm_fpu_tune;
+int arm_fpu_attr;
+
+/* Which floating popint hardware to use.  */
+const struct arm_fpu_desc *arm_fpu_desc;
 
 /* Whether to use floating point hardware.  */
 enum float_abi_type arm_float_abi;
@@ -809,46 +806,21 @@ static struct arm_cpu_select arm_select[] =
 
 char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
-struct fpu_desc
-{
-  const char * name;
-  enum fputype fpu;
-};
-
-
 /* Available values for -mfpu=.  */
 
-static const struct fpu_desc all_fpus[] =
+static const struct arm_fpu_desc all_fpus[] =
 {
-  {"fpa",		FPUTYPE_FPA},
-  {"fpe2",		FPUTYPE_FPA_EMU2},
-  {"fpe3",		FPUTYPE_FPA_EMU2},
-  {"maverick",		FPUTYPE_MAVERICK},
-  {"vfp",		FPUTYPE_VFP},
-  {"vfp3",		FPUTYPE_VFP3},
-  {"vfpv3",		FPUTYPE_VFP3},
-  {"vfpv3-d16",		FPUTYPE_VFP3D16},
-  {"neon",		FPUTYPE_NEON},
-  {"neon-fp16",		FPUTYPE_NEON_FP16}
-};
-
-
-/* Floating point models used by the different hardware.
-   See fputype in arm.h.  */
-
-static const enum arm_fp_model fp_model_for_fpu[] =
-{
-  /* No FP hardware.  */
-  ARM_FP_MODEL_UNKNOWN,		/* FPUTYPE_NONE  */
-  ARM_FP_MODEL_FPA,		/* FPUTYPE_FPA  */
-  ARM_FP_MODEL_FPA,		/* FPUTYPE_FPA_EMU2  */
-  ARM_FP_MODEL_FPA,		/* FPUTYPE_FPA_EMU3  */
-  ARM_FP_MODEL_MAVERICK,	/* FPUTYPE_MAVERICK  */
-  ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP  */
-  ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP3D16  */
-  ARM_FP_MODEL_VFP,		/* FPUTYPE_VFP3  */
-  ARM_FP_MODEL_VFP,		/* FPUTYPE_NEON  */
-  ARM_FP_MODEL_VFP		/* FPUTYPE_NEON_FP16  */
+  {"fpa",		ARM_FP_MODEL_FPA, 0, 0, false, false},
+  {"fpe2",		ARM_FP_MODEL_FPA, 2, 0, false, false},
+  {"fpe3",		ARM_FP_MODEL_FPA, 3, 0, false, false},
+  {"maverick",		ARM_FP_MODEL_MAVERICK, 0, 0, false, false},
+  {"vfp",		ARM_FP_MODEL_VFP, 2, VFP_REG_D16, false, false},
+  {"vfpv3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
+  {"vfpv3-d16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, false},
+  {"neon",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , false},
+  {"neon-fp16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , true },
+  /* Compatibility aliases.  */
+  {"vfp3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
 };
 
 
@@ -1615,7 +1587,6 @@ arm_override_options (void)
   if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
     error ("iwmmxt abi requires an iwmmxt capable cpu");
 
-  arm_fp_model = ARM_FP_MODEL_UNKNOWN;
   if (target_fpu_name == NULL && target_fpe_name != NULL)
     {
       if (streq (target_fpe_name, "2"))
@@ -1626,46 +1597,52 @@ arm_override_options (void)
 	error ("invalid floating point emulation option: -mfpe=%s",
 	       target_fpe_name);
     }
-  if (target_fpu_name != NULL)
-    {
-      /* The user specified a FPU.  */
-      for (i = 0; i < ARRAY_SIZE (all_fpus); i++)
-	{
-	  if (streq (all_fpus[i].name, target_fpu_name))
-	    {
-	      arm_fpu_arch = all_fpus[i].fpu;
-	      arm_fpu_tune = arm_fpu_arch;
-	      arm_fp_model = fp_model_for_fpu[arm_fpu_arch];
-	      break;
-	    }
-	}
-      if (arm_fp_model == ARM_FP_MODEL_UNKNOWN)
-	error ("invalid floating point option: -mfpu=%s", target_fpu_name);
-    }
-  else
+
+  if (target_fpu_name == NULL)
     {
 #ifdef FPUTYPE_DEFAULT
-      /* Use the default if it is specified for this platform.  */
-      arm_fpu_arch = FPUTYPE_DEFAULT;
-      arm_fpu_tune = FPUTYPE_DEFAULT;
+      target_fpu_name = FPUTYPE_DEFAULT;
 #else
-      /* Pick one based on CPU type.  */
-      /* ??? Some targets assume FPA is the default.
-      if ((insn_flags & FL_VFP) != 0)
-	arm_fpu_arch = FPUTYPE_VFP;
-      else
-      */
       if (arm_arch_cirrus)
-	arm_fpu_arch = FPUTYPE_MAVERICK;
+	target_fpu_name = "maverick";
       else
-	arm_fpu_arch = FPUTYPE_FPA_EMU2;
+	target_fpu_name = "fpe2";
 #endif
-      if (tune_flags & FL_CO_PROC && arm_fpu_arch == FPUTYPE_FPA_EMU2)
-	arm_fpu_tune = FPUTYPE_FPA;
+    }
+
+  arm_fpu_desc = NULL;
+  for (i = 0; i < ARRAY_SIZE (all_fpus); i++)
+    {
+      if (streq (all_fpus[i].name, target_fpu_name))
+	{
+	  arm_fpu_desc = &all_fpus[i];
+	  break;
+	}
+    }
+  if (!arm_fpu_desc)
+    error ("invalid floating point option: -mfpu=%s", target_fpu_name);
+
+  switch (arm_fpu_desc->model)
+    {
+    case ARM_FP_MODEL_FPA:
+      if (arm_fpu_desc->rev == 2)
+	arm_fpu_attr = FPU_FPE2;
+      else if (arm_fpu_desc->rev == 3)
+	arm_fpu_attr = FPU_FPE3;
       else
-	arm_fpu_tune = arm_fpu_arch;
-      arm_fp_model = fp_model_for_fpu[arm_fpu_arch];
-      gcc_assert (arm_fp_model != ARM_FP_MODEL_UNKNOWN);
+	arm_fpu_attr = FPU_FPA;
+      break;
+
+    case ARM_FP_MODEL_MAVERICK:
+      arm_fpu_attr = FPU_MAVERICK;
+      break;
+
+    case ARM_FP_MODEL_VFP:
+      arm_fpu_attr = FPU_VFP;
+      break;
+
+    default:
+      gcc_unreachable();
     }
 
   if (target_float_abi_name != NULL)
@@ -1687,7 +1664,7 @@ arm_override_options (void)
     arm_float_abi = TARGET_DEFAULT_FLOAT_ABI;
 
   if (TARGET_AAPCS_BASED
-      && (arm_fp_model == ARM_FP_MODEL_FPA))
+      && (arm_fpu_desc->model == ARM_FP_MODEL_FPA))
     error ("FPA is unsupported in the AAPCS");
 
   if (TARGET_AAPCS_BASED)
@@ -1715,7 +1692,7 @@ arm_override_options (void)
 
   /* If soft-float is specified then don't use FPU.  */
   if (TARGET_SOFT_FLOAT)
-    arm_fpu_arch = FPUTYPE_NONE;
+    arm_fpu_attr = FPU_NONE;
 
   if (TARGET_AAPCS_BASED)
     {
@@ -1742,8 +1719,7 @@ arm_override_options (void)
   /* For arm2/3 there is no need to do any scheduling if there is only
      a floating point emulator, or we are doing software floating-point.  */
   if ((TARGET_SOFT_FLOAT
-       || arm_fpu_tune == FPUTYPE_FPA_EMU2
-       || arm_fpu_tune == FPUTYPE_FPA_EMU3)
+       || (TARGET_FPA && arm_fpu_desc->rev))
       && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
@@ -13305,7 +13281,7 @@ arm_output_epilogue (rtx sibling)
       /* This variable is for the Virtual Frame Pointer, not VFP regs.  */
       int vfp_offset = offsets->frame;
 
-      if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+      if (TARGET_FPA_EMU2)
 	{
 	  for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
 	    if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
@@ -13528,7 +13504,7 @@ arm_output_epilogue (rtx sibling)
 			 SP_REGNUM, HARD_FRAME_POINTER_REGNUM);
 	}
 
-      if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+      if (TARGET_FPA_EMU2)
 	{
 	  for (reg = FIRST_FPA_REGNUM; reg <= LAST_FPA_REGNUM; reg++)
 	    if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
@@ -14254,7 +14230,7 @@ arm_save_coproc_regs(void)
 
   /* Save any floating point call-saved registers used by this
      function.  */
-  if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+  if (TARGET_FPA_EMU2)
     {
       for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
 	if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
@@ -19736,45 +19712,8 @@ arm_file_start (void)
 	}
       else
 	{
-	  int set_float_abi_attributes = 0;
-	  switch (arm_fpu_arch)
-	    {
-	    case FPUTYPE_FPA:
-	      fpu_name = "fpa";
-	      break;
-	    case FPUTYPE_FPA_EMU2:
-	      fpu_name = "fpe2";
-	      break;
-	    case FPUTYPE_FPA_EMU3:
-	      fpu_name = "fpe3";
-	      break;
-	    case FPUTYPE_MAVERICK:
-	      fpu_name = "maverick";
-	      break;
-	    case FPUTYPE_VFP:
-	      fpu_name = "vfp";
-	      set_float_abi_attributes = 1;
-	      break;
-	    case FPUTYPE_VFP3D16:
-	      fpu_name = "vfpv3-d16";
-	      set_float_abi_attributes = 1;
-	      break;
-	    case FPUTYPE_VFP3:
-	      fpu_name = "vfpv3";
-	      set_float_abi_attributes = 1;
-	      break;
-	    case FPUTYPE_NEON:
-	      fpu_name = "neon";
-	      set_float_abi_attributes = 1;
-	      break;
-	    case FPUTYPE_NEON_FP16:
-	      fpu_name = "neon-fp16";
-	      set_float_abi_attributes = 1;
-	      break;
-	    default:
-	      abort();
-	    }
-	  if (set_float_abi_attributes)
+	  fpu_name = arm_fpu_desc->name;
+	  if (arm_fpu_desc->model == ARM_FP_MODEL_VFP)
 	    {
 	      if (TARGET_HARD_FLOAT)
 		asm_fprintf (asm_out_file, "\t.eabi_attribute 27, 3\n");

@@ -1,3 +1,25 @@
+2009-11-05  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_fp_model, arm_fpu_arch, arm_fpu_tune): Remove.
+	(arm_fpu_desc): New.
+	(all_fpus): Add FPU details.
+	(fp_model_for_fpu): Remove.
+	(arm_override_options): Set and use arm_fpu_desc and arm_fpu_attr.
+	(arm_output_epilogue, arm_save_coproc_regs): Use TARGET_FPA_EMU2.
+	(arm_file_start): Use arm_fpu_desc.
+	* config/arm/arm.h (TARGET_FPA, TARGET_MAVERICK, TARGET_VFP,
+	TARGET_VFPD32, TARGET_VFP3, TARGET_NEON_FP16, TARGET_NEON): Use
+	arm_fpu_desc.
+	(TARGET_FPA_EMU2): Define.
+	(arm_fp_model, fputype, arm_fpu_tune): Remove.
+	(vfp_reg_type, arm_fpu_desc): New.
+	* config/arm/arm.md (attr fpu): Simplify.
+	* config/arm/fpa.md (movxf_fpa): Use TARGET_FPA_EMU2.
+	* config/arm/linux-elf.h (FPUTYPE_DEFAULT): Use string value.
+	* config/arm/bpabi.h (FPUTYPE_DEFAULT): Use string value.
+	* config/arm/netbsd-elf.h (FPUTYPE_DEFAULT): Use string value.
+	* config/arm/vxworks.h (FPUTYPE_DEFAULT): Use string value.
+
 2009-11-05  Michael Matz  <matz@suse.de>
 
 	* config/i386/i386.c (ix86_builtin_reciprocal): Remove dependency
