@@ -657,17 +657,16 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   error_gnat_node = Empty;
 }
 
-/* Return a positive value if an lvalue is required for GNAT_NODE.
-   GNU_TYPE is the type that will be used for GNAT_NODE in the
-   translated GNU tree.  CONSTANT indicates whether the underlying
-   object represented by GNAT_NODE is constant in the Ada sense,
-   ALIASED whether it is aliased (but the latter doesn't affect
-   the outcome if CONSTANT is not true).
+/* Return a positive value if an lvalue is required for GNAT_NODE.  GNU_TYPE
+   is the type that will be used for GNAT_NODE in the translated GNU tree.
+   CONSTANT indicates whether the underlying object represented by GNAT_NODE
+   is constant in the Ada sense, ALIASED whether it is aliased (but the latter
+   doesn't affect the outcome if CONSTANT is not true).
 
-   The function climbs up the GNAT tree starting from the node and
-   returns 1 upon encountering a node that effectively requires an
-   lvalue downstream.  It returns int instead of bool to facilitate
-   usage in non purely binary logic contexts.  */
+   The function climbs up the GNAT tree starting from the node and returns 1
+   upon encountering a node that effectively requires an lvalue downstream.
+   It returns int instead of bool to facilitate usage in non-purely binary
+   logic contexts.  */
 
 static int
 lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
@@ -753,6 +752,13 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       return (Name (gnat_parent) == gnat_node
 	      || (Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
 		  && Is_Atomic (Entity (Name (gnat_parent)))));
+
+    case N_Unchecked_Type_Conversion:
+      /* Returning 0 is very likely correct but we get better code if we
+	 go through the conversion.  */
+      return lvalue_required_p (gnat_parent,
+				get_unpadded_type (Etype (gnat_parent)),
+				constant, aliased);
 
     default:
       return 0;
