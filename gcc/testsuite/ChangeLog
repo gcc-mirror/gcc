@@ -1,3 +1,8 @@
+2009-11-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41556
+	* gfortran.dg/class_12.f03: New test.
+
 2009-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/i386.exp (check_effective_target_xop): Fix typo
