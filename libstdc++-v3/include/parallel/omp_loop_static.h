@@ -40,7 +40,6 @@
 
 namespace __gnu_parallel
 {
-
   /** @brief Embarrassingly parallel algorithm for random access
    * iterators, using an OpenMP for loop with static scheduling.
    *
@@ -58,37 +57,38 @@ namespace __gnu_parallel
    *  std::count_n()).
    *  @return User-supplied functor (that may contain a part of the result).
    */
-template<typename _RAIter,
-         typename _Op,
-         typename _Fu,
-         typename _Red,
-         typename _Result>
-  _Op
-  __for_each_template_random_access_omp_loop_static(
-    _RAIter __begin, _RAIter __end, _Op __o, _Fu& __f, _Red __r,
-    _Result __base, _Result& __output,
-    typename std::iterator_traits<_RAIter>::difference_type __bound)
-  {
-    typedef typename
-      std::iterator_traits<_RAIter>::difference_type
-      _DifferenceType;
+  template<typename _RAIter,
+	   typename _Op,
+	   typename _Fu,
+	   typename _Red,
+	   typename _Result>
+    _Op
+    __for_each_template_random_access_omp_loop_static(_RAIter __begin,
+						      _RAIter __end, _Op __o,
+						      _Fu& __f, _Red __r,
+						      _Result __base,
+						      _Result& __output,
+      typename std::iterator_traits<_RAIter>::difference_type __bound)
+    {
+      typedef typename std::iterator_traits<_RAIter>::difference_type
+	_DifferenceType;
 
-    _DifferenceType __length = __end - __begin;
-    _ThreadIndex __num_threads =
-      std::min<_DifferenceType>(__get_max_threads(), __length);
+      _DifferenceType __length = __end - __begin;
+      _ThreadIndex __num_threads =
+	std::min<_DifferenceType>(__get_max_threads(), __length);
 
-    _Result *__thread_results;
+      _Result *__thread_results;
 
-#   pragma omp parallel num_threads(__num_threads)
+#     pragma omp parallel num_threads(__num_threads)
       {
 #       pragma omp single
-          {
-            __num_threads = omp_get_num_threads();
-            __thread_results = new _Result[__num_threads];
+	{
+	  __num_threads = omp_get_num_threads();
+	  __thread_results = new _Result[__num_threads];
 
-            for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
-              __thread_results[__i] = _Result();
-          }
+	  for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
+	    __thread_results[__i] = _Result();
+	}
 
         _ThreadIndex __iam = omp_get_thread_num();
 
@@ -98,17 +98,17 @@ template<typename _RAIter,
                                         __f(__o, __begin+__pos));
       } //parallel
 
-    for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
-      __output = __r(__output, __thread_results[__i]);
+      for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
+	__output = __r(__output, __thread_results[__i]);
 
-    delete [] __thread_results;
+      delete [] __thread_results;
 
-    // Points to last element processed (needed as return value for
-    // some algorithms like transform).
-    __f.finish_iterator = __begin + __length;
+      // Points to last element processed (needed as return value for
+      // some algorithms like transform).
+      __f.finish_iterator = __begin + __length;
 
-    return __o;
-  }
+      return __o;
+    }
 
 } // end namespace
 

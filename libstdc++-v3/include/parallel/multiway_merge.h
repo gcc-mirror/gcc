@@ -54,24 +54,6 @@
 
 namespace __gnu_parallel
 {
-
-// Announce guarded and unguarded iterator.
-
-template<typename _RAIter, typename _Compare>
-  class _GuardedIterator;
-
-// Making the arguments const references seems to dangerous,
-// the user-defined comparator might not be const.
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<(_GuardedIterator<_RAIter, _Compare>& __bi1,
-             _GuardedIterator<_RAIter, _Compare>& __bi2);
-
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<=(_GuardedIterator<_RAIter, _Compare>& __bi1,
-              _GuardedIterator<_RAIter, _Compare>& __bi2);
-
 /** @brief _Iterator wrapper supporting an implicit supremum at the end
  *         of the sequence, dominating all comparisons.
  *
@@ -96,12 +78,11 @@ template<typename _RAIter, typename _Compare>
   public:
     /** @brief Constructor. Sets iterator to beginning of sequence.
     *  @param __begin Begin iterator of sequence.
-    *  @param _M_end End iterator of sequence.
+    *  @param __end End iterator of sequence.
     *  @param __comp Comparator provided for associated overloaded
     *  compare operators. */
-    _GuardedIterator(_RAIter __begin,
-                     _RAIter _M_end, _Compare& __comp)
-    : _M_current(__begin), _M_end(_M_end), __comp(__comp)
+    _GuardedIterator(_RAIter __begin, _RAIter __end, _Compare& __comp)
+    : _M_current(__begin), _M_end(__end), __comp(__comp)
     { }
 
     /** @brief Pre-increment operator.
@@ -124,61 +105,36 @@ template<typename _RAIter, typename _Compare>
     operator _RAIter()
     { return _M_current; }
 
+    /** @brief Compare two elements referenced by guarded iterators.
+     *  @param __bi1 First iterator.
+     *  @param __bi2 Second iterator.
+     *  @return @__c true if less. */
     friend bool
-    operator< <_RAIter, _Compare>(
-      _GuardedIterator<_RAIter, _Compare>& __bi1,
-      _GuardedIterator<_RAIter, _Compare>& __bi2);
+    operator<(_GuardedIterator<_RAIter, _Compare>& __bi1,
+	      _GuardedIterator<_RAIter, _Compare>& __bi2)
+    {
+      if (__bi1._M_current == __bi1._M_end)       //__bi1 is sup
+	return __bi2._M_current == __bi2._M_end;  //__bi2 is not sup
+      if (__bi2._M_current == __bi2._M_end)       //__bi2 is sup
+	return true;
+      return (__bi1.__comp)(*__bi1, *__bi2);      //normal compare
+    }
 
+    /** @brief Compare two elements referenced by guarded iterators.
+     *  @param __bi1 First iterator.
+     *  @param __bi2 Second iterator.
+     *  @return @__c True if less equal. */
     friend bool
-    operator<= <_RAIter, _Compare>(
-      _GuardedIterator<_RAIter, _Compare>& __bi1,
-      _GuardedIterator<_RAIter, _Compare>& __bi2);
+    operator<=(_GuardedIterator<_RAIter, _Compare>& __bi1,
+	       _GuardedIterator<_RAIter, _Compare>& __bi2)
+    {
+      if (__bi2._M_current == __bi2._M_end)       //__bi1 is sup
+	return __bi1._M_current != __bi1._M_end;  //__bi2 is not sup
+      if (__bi1._M_current == __bi1._M_end)       //__bi2 is sup
+	return false;
+      return !(__bi1.__comp)(*__bi2, *__bi1);     //normal compare
+    } 
   };
-
-/** @brief Compare two elements referenced by guarded iterators.
- *  @param __bi1 First iterator.
- *  @param __bi2 Second iterator.
- *  @return @__c true if less. */
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<(_GuardedIterator<_RAIter, _Compare>& __bi1,
-            _GuardedIterator<_RAIter, _Compare>& __bi2)
-  {
-    if (__bi1._M_current == __bi1._M_end)       //__bi1 is sup
-      return __bi2._M_current == __bi2._M_end;  //__bi2 is not sup
-    if (__bi2._M_current == __bi2._M_end)       //__bi2 is sup
-      return true;
-    return (__bi1.__comp)(*__bi1, *__bi2);      //normal compare
-  }
-
-/** @brief Compare two elements referenced by guarded iterators.
- *  @param __bi1 First iterator.
- *  @param __bi2 Second iterator.
- *  @return @__c True if less equal. */
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<=(_GuardedIterator<_RAIter, _Compare>& __bi1,
-               _GuardedIterator<_RAIter, _Compare>& __bi2)
-  {
-    if (__bi2._M_current == __bi2._M_end)       //__bi1 is sup
-      return __bi1._M_current != __bi1._M_end;  //__bi2 is not sup
-    if (__bi1._M_current == __bi1._M_end)       //__bi2 is sup
-      return false;
-    return !(__bi1.__comp)(*__bi2, *__bi1);     //normal compare
-  }
-
-template<typename _RAIter, typename _Compare>
-  class _UnguardedIterator;
-
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-            _UnguardedIterator<_RAIter, _Compare>& __bi2);
-
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-             _UnguardedIterator<_RAIter, _Compare>& __bi2);
 
 template<typename _RAIter, typename _Compare>
   class _UnguardedIterator
@@ -192,10 +148,10 @@ template<typename _RAIter, typename _Compare>
   public:
     /** @brief Constructor. Sets iterator to beginning of sequence.
     *  @param __begin Begin iterator of sequence.
-    *  @param _M_end Unused, only for compatibility.
+    *  @param __end Unused, only for compatibility.
     *  @param __comp Unused, only for compatibility. */
     _UnguardedIterator(_RAIter __begin,
-                       _RAIter _M_end, _Compare& __comp)
+                       _RAIter /* __end */, _Compare& __comp)
     : _M_current(__begin), __comp(__comp)
     { }
 
@@ -219,42 +175,30 @@ template<typename _RAIter, typename _Compare>
     operator _RAIter()
     { return _M_current; }
 
+    /** @brief Compare two elements referenced by unguarded iterators.
+     *  @param __bi1 First iterator.
+     *  @param __bi2 Second iterator.
+     *  @return @__c true if less. */
     friend bool
-    operator< <_RAIter, _Compare>(
-      _UnguardedIterator<_RAIter, _Compare>& __bi1,
-      _UnguardedIterator<_RAIter, _Compare>& __bi2);
+    operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
+	      _UnguardedIterator<_RAIter, _Compare>& __bi2)
+    {
+      // Normal compare.
+      return (__bi1.__comp)(*__bi1, *__bi2);
+    }
 
+    /** @brief Compare two elements referenced by unguarded iterators.
+     *  @param __bi1 First iterator.
+     *  @param __bi2 Second iterator.
+     *  @return @__c True if less equal. */
     friend bool
-    operator<= <_RAIter, _Compare>(
-      _UnguardedIterator<_RAIter, _Compare>& __bi1,
-      _UnguardedIterator<_RAIter, _Compare>& __bi2);
+    operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
+	       _UnguardedIterator<_RAIter, _Compare>& __bi2)
+    {
+      // Normal compare.
+      return !(__bi1.__comp)(*__bi2, *__bi1);
+    }
   };
-
-/** @brief Compare two elements referenced by unguarded iterators.
- *  @param __bi1 First iterator.
- *  @param __bi2 Second iterator.
- *  @return @__c true if less. */
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-            _UnguardedIterator<_RAIter, _Compare>& __bi2)
-  {
-    // Normal compare.
-    return (__bi1.__comp)(*__bi1, *__bi2);
-  }
-
-/** @brief Compare two elements referenced by unguarded iterators.
- *  @param __bi1 First iterator.
- *  @param __bi2 Second iterator.
- *  @return @__c True if less equal. */
-template<typename _RAIter, typename _Compare>
-  inline bool
-  operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
-            _UnguardedIterator<_RAIter, _Compare>& __bi2)
-  {
-    // Normal compare.
-    return !(__bi1.__comp)(*__bi2, *__bi1);
-  }
 
 /** @brief Highly efficient 3-way merging procedure.
  *
@@ -287,11 +231,10 @@ template<template<typename RAI, typename C> class iterator,
          typename _DifferenceTp,
          typename _Compare>
   _RAIter3
-  multiway_merge_3_variant(
-      _RAIterIterator __seqs_begin,
-      _RAIterIterator __seqs_end,
-      _RAIter3 __target,
-      _DifferenceTp __length, _Compare __comp)
+  multiway_merge_3_variant(_RAIterIterator __seqs_begin,
+			   _RAIterIterator __seqs_end,
+			   _RAIter3 __target,
+			   _DifferenceTp __length, _Compare __comp)
   {
     _GLIBCXX_CALL(__length);
 
@@ -612,15 +555,14 @@ template<typename _LT,
 	 typename _RAIter3,
 	 typename _DifferenceTp, typename _Compare>
   _RAIter3
-  multiway_merge_loser_tree_unguarded(
-    _RAIterIterator __seqs_begin,
-    _RAIterIterator __seqs_end,
-    _RAIter3 __target,
-    const typename std::iterator_traits<typename std::iterator_traits<
-      _RAIterIterator>::value_type::first_type>::value_type&
-        __sentinel,
-    _DifferenceTp __length,
-    _Compare __comp)
+  multiway_merge_loser_tree_unguarded(_RAIterIterator __seqs_begin,
+				      _RAIterIterator __seqs_end,
+				      _RAIter3 __target,
+     const typename std::iterator_traits<typename std::iterator_traits<
+	_RAIterIterator>::value_type::first_type>::value_type&
+				      __sentinel,
+				      _DifferenceTp __length,
+				      _Compare __comp)
   {
     _GLIBCXX_CALL(__length)
     typedef _DifferenceTp _DifferenceType;
@@ -702,15 +644,14 @@ template<typename UnguardedLoserTree,
 	 typename _DifferenceTp,
 	 typename _Compare>
   _RAIter3
-  multiway_merge_loser_tree_sentinel(
-    _RAIterIterator __seqs_begin,
-    _RAIterIterator __seqs_end,
-    _RAIter3 __target,
+  multiway_merge_loser_tree_sentinel(_RAIterIterator __seqs_begin,
+				     _RAIterIterator __seqs_end,
+				     _RAIter3 __target,
     const typename std::iterator_traits<typename std::iterator_traits<
       _RAIterIterator>::value_type::first_type>::value_type&
-        __sentinel,
-    _DifferenceTp __length,
-    _Compare __comp)
+				     __sentinel,
+				     _DifferenceTp __length,
+				     _Compare __comp)
   {
     _GLIBCXX_CALL(__length)
 
@@ -773,16 +714,16 @@ template<typename UnguardedLoserTree,
  * @param _Tp type to give the loser tree traits for.
  */
 template <typename _Tp>
-struct _LoserTreeTraits
-{
-  /**
-   * @brief True iff to use pointers instead of values in loser trees.
-   *
-   * The default behavior is to use pointers if the data type is four
-   * times as big as the pointer to it.
-   */
-  static const bool _M_use_pointer = (sizeof(_Tp) > 4 * sizeof(_Tp*));
-};
+  struct _LoserTreeTraits
+  {
+    /**
+     * @brief True iff to use pointers instead of values in loser trees.
+     *
+     * The default behavior is to use pointers if the data type is four
+     * times as big as the pointer to it.
+     */
+    static const bool _M_use_pointer = (sizeof(_Tp) > 4 * sizeof(_Tp*));
+  };
 
 /**
  * @brief Switch for 3-way merging with __sentinels turned off.
@@ -796,10 +737,11 @@ template<bool __sentinels /*default == false*/,
 	 typename _Compare>
   struct __multiway_merge_3_variant_sentinel_switch
   {
-    _RAIter3 operator()(_RAIterIterator __seqs_begin,
-			_RAIterIterator __seqs_end,
-			_RAIter3 __target,
-			_DifferenceTp __length, _Compare __comp)
+    _RAIter3
+    operator()(_RAIterIterator __seqs_begin,
+	       _RAIterIterator __seqs_end,
+	       _RAIter3 __target,
+	       _DifferenceTp __length, _Compare __comp)
     {
       return multiway_merge_3_variant<_GuardedIterator>
 	(__seqs_begin, __seqs_end, __target, __length, __comp);
@@ -815,13 +757,15 @@ template<typename _RAIterIterator,
 	 typename _RAIter3,
 	 typename _DifferenceTp,
 	 typename _Compare>
-  struct __multiway_merge_3_variant_sentinel_switch
-         <true, _RAIterIterator, _RAIter3, _DifferenceTp, _Compare>
+  struct __multiway_merge_3_variant_sentinel_switch<true, _RAIterIterator,
+						    _RAIter3, _DifferenceTp,
+						    _Compare>
   {
-    _RAIter3 operator()(_RAIterIterator __seqs_begin,
-			_RAIterIterator __seqs_end,
-			_RAIter3 __target,
-			_DifferenceTp __length, _Compare __comp)
+    _RAIter3
+    operator()(_RAIterIterator __seqs_begin,
+	       _RAIterIterator __seqs_end,
+	       _RAIter3 __target,
+	       _DifferenceTp __length, _Compare __comp)
     {
       return multiway_merge_3_variant<_UnguardedIterator>
 	(__seqs_begin, __seqs_end, __target, __length, __comp);
@@ -840,10 +784,11 @@ template<bool __sentinels /*default == false*/,
 	 typename _Compare>
   struct __multiway_merge_4_variant_sentinel_switch
   {
-    _RAIter3 operator()(_RAIterIterator __seqs_begin,
-			_RAIterIterator __seqs_end,
-			_RAIter3 __target,
-			_DifferenceTp __length, _Compare __comp)
+    _RAIter3
+    operator()(_RAIterIterator __seqs_begin,
+	       _RAIterIterator __seqs_end,
+	       _RAIter3 __target,
+	       _DifferenceTp __length, _Compare __comp)
     {
       return multiway_merge_4_variant<_GuardedIterator>
 	(__seqs_begin, __seqs_end, __target, __length, __comp);
@@ -859,13 +804,15 @@ template<typename _RAIterIterator,
 	 typename _RAIter3,
 	 typename _DifferenceTp,
 	 typename _Compare>
-  struct __multiway_merge_4_variant_sentinel_switch
-    <true, _RAIterIterator, _RAIter3, _DifferenceTp, _Compare>
+  struct __multiway_merge_4_variant_sentinel_switch<true, _RAIterIterator,
+						    _RAIter3, _DifferenceTp,
+						    _Compare>
   {
-    _RAIter3 operator()(_RAIterIterator __seqs_begin,
-			_RAIterIterator __seqs_end,
-			_RAIter3 __target,
-			_DifferenceTp __length, _Compare __comp)
+    _RAIter3
+    operator()(_RAIterIterator __seqs_begin,
+	       _RAIterIterator __seqs_end,
+	       _RAIter3 __target,
+	       _DifferenceTp __length, _Compare __comp)
     {
       return multiway_merge_4_variant<_UnguardedIterator>
 	(__seqs_begin, __seqs_end, __target, __length, __comp);
@@ -882,30 +829,30 @@ template<bool __sentinels,
 	 typename _DifferenceTp,
 	 typename _Compare>
   struct __multiway_merge_k_variant_sentinel_switch
-   {
-     _RAIter3 operator()
-     (_RAIterIterator __seqs_begin,
-      _RAIterIterator __seqs_end,
-      _RAIter3 __target,
-      const typename std::iterator_traits<typename std::iterator_traits<
-      _RAIterIterator>::value_type::first_type>::value_type&
-      __sentinel,
-      _DifferenceTp __length, _Compare __comp)
-     {
-       typedef typename std::iterator_traits<_RAIterIterator>
-	 ::value_type::first_type
-	 _RAIter1;
-       typedef typename std::iterator_traits<_RAIter1>::value_type
-	 _ValueType;
+  {
+    _RAIter3
+    operator()(_RAIterIterator __seqs_begin,
+	       _RAIterIterator __seqs_end,
+	       _RAIter3 __target,
+    const typename std::iterator_traits<typename std::iterator_traits<
+    _RAIterIterator>::value_type::first_type>::value_type&
+	       __sentinel,
+	       _DifferenceTp __length, _Compare __comp)
+    {
+      typedef typename std::iterator_traits<_RAIterIterator>
+	::value_type::first_type
+	_RAIter1;
+      typedef typename std::iterator_traits<_RAIter1>::value_type
+	_ValueType;
 
-       return multiway_merge_loser_tree_sentinel<
-       typename __gnu_cxx::__conditional_type<
-       _LoserTreeTraits<_ValueType>::_M_use_pointer,
-	 _LoserTreePointerUnguarded<__stable, _ValueType, _Compare>,
-	 _LoserTreeUnguarded<__stable, _ValueType, _Compare>
-        >::__type>(
-            __seqs_begin, __seqs_end, __target, __sentinel, __length, __comp);
-     }
+      return multiway_merge_loser_tree_sentinel<
+      typename __gnu_cxx::__conditional_type<
+      _LoserTreeTraits<_ValueType>::_M_use_pointer,
+	_LoserTreePointerUnguarded<__stable, _ValueType, _Compare>,
+	_LoserTreeUnguarded<__stable, _ValueType, _Compare>
+        >::__type>
+	(__seqs_begin, __seqs_end, __target, __sentinel, __length, __comp);
+    }
   };
 
 /**
@@ -916,17 +863,18 @@ template<bool __stable,
 	 typename _RAIter3,
 	 typename _DifferenceTp,
 	 typename _Compare>
-  struct __multiway_merge_k_variant_sentinel_switch
-         <false, __stable, _RAIterIterator, _RAIter3, _DifferenceTp, _Compare>
+  struct __multiway_merge_k_variant_sentinel_switch<false, __stable,
+						    _RAIterIterator, _RAIter3,
+						    _DifferenceTp, _Compare>
   {
-    _RAIter3 operator()
-    (_RAIterIterator __seqs_begin,
-     _RAIterIterator __seqs_end,
-     _RAIter3 __target,
+    _RAIter3
+    operator()(_RAIterIterator __seqs_begin,
+	       _RAIterIterator __seqs_end,
+	       _RAIter3 __target,
      const typename std::iterator_traits<typename std::iterator_traits<
      _RAIterIterator>::value_type::first_type>::value_type&
-     __sentinel,
-     _DifferenceTp __length, _Compare __comp)
+	       __sentinel,
+	       _DifferenceTp __length, _Compare __comp)
     {
       typedef typename std::iterator_traits<_RAIterIterator>
 	::value_type::first_type
@@ -963,14 +911,13 @@ template<bool __stable,
 	 typename _DifferenceTp,
 	 typename _Compare>
   _RAIter3
-  __sequential_multiway_merge(
-    _RAIterIterator __seqs_begin,
-    _RAIterIterator __seqs_end,
-    _RAIter3 __target,
+  __sequential_multiway_merge(_RAIterIterator __seqs_begin,
+			      _RAIterIterator __seqs_end,
+			      _RAIter3 __target,
     const typename std::iterator_traits<typename std::iterator_traits<
       _RAIterIterator>::value_type::first_type>::value_type&
-        __sentinel,
-    _DifferenceTp __length, _Compare __comp)
+			      __sentinel,
+			      _DifferenceTp __length, _Compare __comp)
   {
     _GLIBCXX_CALL(__length)
 
@@ -1061,8 +1008,8 @@ template<bool __stable,
 template<bool __stable, class _RAIter, class _StrictWeakOrdering>
   struct _SamplingSorter
   {
-    void operator()(_RAIter __first, _RAIter __last,
-		    _StrictWeakOrdering __comp)
+    void
+    operator()(_RAIter __first, _RAIter __last, _StrictWeakOrdering __comp)
     { __gnu_sequential::stable_sort(__first, __last, __comp); }
   };
 
@@ -1074,8 +1021,8 @@ template<bool __stable, class _RAIter, class _StrictWeakOrdering>
 template<class _RAIter, class _StrictWeakOrdering>
   struct _SamplingSorter<false, _RAIter, _StrictWeakOrdering>
   {
-    void operator()(_RAIter __first, _RAIter __last,
-		    _StrictWeakOrdering __comp)
+    void
+    operator()(_RAIter __first, _RAIter __last, _StrictWeakOrdering __comp)
     { __gnu_sequential::sort(__first, __last, __comp); }
   };
 
@@ -1087,10 +1034,11 @@ template<bool __stable,
 	 typename _Compare,
 	 typename _DifferenceType>
   void
-  multiway_merge_sampling_splitting
-  (_RAIterIterator __seqs_begin,
-   _RAIterIterator __seqs_end,
-   _DifferenceType __length, _DifferenceType __total_length, _Compare __comp,
+  multiway_merge_sampling_splitting(_RAIterIterator __seqs_begin,
+				    _RAIterIterator __seqs_end,
+				    _DifferenceType __length,
+				    _DifferenceType __total_length,
+				    _Compare __comp,
    std::vector<std::pair<_DifferenceType, _DifferenceType> > *__pieces)
   {
     typedef typename std::iterator_traits<_RAIterIterator>
@@ -1168,11 +1116,11 @@ template<bool __stable,
 	 typename _Compare,
 	 typename _DifferenceType>
   void
-  multiway_merge_exact_splitting
-    (_RAIterIterator __seqs_begin,
-     _RAIterIterator __seqs_end,
-     _DifferenceType __length, _DifferenceType __total_length,
-     _Compare __comp,
+  multiway_merge_exact_splitting(_RAIterIterator __seqs_begin,
+				 _RAIterIterator __seqs_end,
+				 _DifferenceType __length,
+				 _DifferenceType __total_length,
+				 _Compare __comp,
      std::vector<std::pair<_DifferenceType, _DifferenceType> > *__pieces)
   {
     typedef typename std::iterator_traits<_RAIterIterator>
