@@ -1,3 +1,13 @@
+2009-11-05  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (temp_obj_dir_name): Remove.
+	(arguments_file_name): New.
+	(free_2): Free arguments_file_name instead of temp_obj_dir_name.
+	(exec_lto_wrapper):  Create arguments file with make_temp_file.
+	(cleanup_handler): Don't remove the temporary directory. Remove the
+	arguments file.
+	(onload): Don't create the temporary directory.
+
 2009-11-04  Richard Guenther  <rguenther@suse.de>
             Rafael Avila de Espindola  <espindola@google.com>
 
