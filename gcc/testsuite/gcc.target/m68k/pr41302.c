@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler "move.l \%d0,\%a0" { target *linux* } } } */
+/* { dg-final { scan-assembler "move.l \%d0,\%a0" { target *-*-*linux* } } } */
 
 struct pts {
   int c;
