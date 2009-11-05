@@ -599,10 +599,10 @@
     {
     default:
     case 0: return \"mvf%?e\\t%0, %1\";
-    case 1: if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+    case 1: if (TARGET_FPA_EMU2)
 	      return \"ldf%?e\\t%0, %1\";
 	    return \"lfm%?\\t%0, 1, %1\";
-    case 2: if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+    case 2: if (TARGET_FPA_EMU2)
 	      return \"stf%?e\\t%1, %0\";
 	    return \"sfm%?\\t%1, 1, %0\";
     }

@@ -153,5 +153,5 @@ do									\
 while (0)
 
 #undef FPUTYPE_DEFAULT
-#define FPUTYPE_DEFAULT FPUTYPE_VFP
+#define FPUTYPE_DEFAULT "vfp"
 
