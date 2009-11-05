@@ -144,7 +144,9 @@ struct access
      points to the first one.  */
   struct access *first_child;
 
-  /* Pointer to the next sibling in the access tree as described above.  */
+  /* In intraprocedural SRA, pointer to the next sibling in the access tree as
+     described above.  In IPA-SRA this is a pointer to the next access
+     belonging to the same group (having the same representative).  */
   struct access *next_sibling;
 
   /* Pointers to the first and last element in the linked list of assign
@@ -2824,33 +2826,28 @@ analyze_modified_params (VEC (access_p, heap) *representatives)
 	   repr;
 	   repr = repr->next_grp)
 	{
-	  VEC (access_p, heap) *access_vec;
-	  int j, access_count;
-	  tree parm;
+	  struct access *access;
+	  bitmap visited;
+	  ao_ref ar;
 
 	  if (no_accesses_p (repr))
 	    continue;
-	  parm = repr->base;
-	  if (!POINTER_TYPE_P (TREE_TYPE (parm))
+	  if (!POINTER_TYPE_P (TREE_TYPE (repr->base))
 	      || repr->grp_maybe_modified)
 	    continue;
 
-	  access_vec = get_base_access_vector (parm);
-	  access_count = VEC_length (access_p, access_vec);
-	  for (j = 0; j < access_count; j++)
+	  ao_ref_init (&ar, repr->expr);
+	  visited = BITMAP_ALLOC (NULL);
+	  for (access = repr; access; access = access->next_sibling)
 	    {
-	      struct access *access;
-	      ao_ref ar;
-
 	      /* All accesses are read ones, otherwise grp_maybe_modified would
 		 be trivially set.  */
-	      access = VEC_index (access_p, access_vec, j);
-	      ao_ref_init (&ar, access->expr);
 	      walk_aliased_vdefs (&ar, gimple_vuse (access->stmt),
-				  mark_maybe_modified, repr, NULL);
+				  mark_maybe_modified, repr, &visited);
 	      if (repr->grp_maybe_modified)
 		break;
 	    }
+	  BITMAP_FREE (visited);
 	}
     }
 }
@@ -3019,24 +3016,30 @@ static struct access *
 unmodified_by_ref_scalar_representative (tree parm)
 {
   int i, access_count;
-  struct access *access;
+  struct access *repr;
   VEC (access_p, heap) *access_vec;
 
   access_vec = get_base_access_vector (parm);
   gcc_assert (access_vec);
-  access_count = VEC_length (access_p, access_vec);
+  repr = VEC_index (access_p, access_vec, 0);
+  if (repr->write)
+    return NULL;
+  repr->group_representative = repr;
 
-  for (i = 0; i < access_count; i++)
+  access_count = VEC_length (access_p, access_vec);
+  for (i = 1; i < access_count; i++)
     {
-      access = VEC_index (access_p, access_vec, i);
+      struct access *access = VEC_index (access_p, access_vec, i);
       if (access->write)
 	return NULL;
+      access->group_representative = repr;
+      access->next_sibling = repr->next_sibling;
+      repr->next_sibling = access;
     }
 
-  access = VEC_index (access_p, access_vec, 0);
-  access->grp_read = 1;
-  access->grp_scalar_ptr = 1;
-  return access;
+  repr->grp_read = 1;
+  repr->grp_scalar_ptr = 1;
+  return repr;
 }
 
 /* Sort collected accesses for parameter PARM, identify representatives for
@@ -3091,6 +3094,9 @@ splice_param_accesses (tree parm, bool *ro_grp)
 	    return NULL;
 
 	  modification |= ac2->write;
+	  ac2->group_representative = access;
+	  ac2->next_sibling = access->next_sibling;
+	  access->next_sibling = ac2;
 	  j++;
 	}
 

@@ -1,3 +1,13 @@
+2009-11-05  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (struct access): Changed comment of next_sibling field.
+	(analyze_modified_params): Loop over accesses of a group rather than
+	over all with the ame base, pass a common bitmap to
+	walk_aliased_vdefs.
+	(unmodified_by_ref_scalar_representative): Build link lists of
+	accesses of a group.
+	(splice_param_accesses): Likewise.
+
 2009-11-04  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* df-scan.c (df-uses-record): Add case zero_extract of mem.
