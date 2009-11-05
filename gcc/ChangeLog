@@ -1,3 +1,7 @@
+2009-11-05  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/ia32intrin.h: Protect CRC32 builtins with __SSE4_2__.
+
 2009-11-05  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_fp_model, arm_fpu_arch, arm_fpu_tune): Remove.
