@@ -14854,6 +14854,35 @@ mark_decl_instantiated (tree result, int extern_p)
   DECL_INTERFACE_KNOWN (result) = 1;
 }
 
+/* Subroutine of more_specialized_fn: check whether TARGS is missing any
+   important template arguments.  If any are missing, we check whether
+   they're important by using error_mark_node for substituting into any
+   args that were used for partial ordering (the ones between ARGS and END)
+   and seeing if it bubbles up.  */
+
+static bool
+check_undeduced_parms (tree targs, tree args, tree end)
+{
+  bool found = false;
+  int i;
+  for (i = TREE_VEC_LENGTH (targs) - 1; i >= 0; --i)
+    if (TREE_VEC_ELT (targs, i) == NULL_TREE)
+      {
+	found = true;
+	TREE_VEC_ELT (targs, i) = error_mark_node;
+      }
+  if (found)
+    {
+      for (; args != end; args = TREE_CHAIN (args))
+	{
+	  tree substed = tsubst (TREE_VALUE (args), targs, tf_none, NULL_TREE);
+	  if (substed == error_mark_node)
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Given two function templates PAT1 and PAT2, return:
 
    1 if PAT1 is more specialized than PAT2 as described in [temp.func.order].
@@ -14877,8 +14906,12 @@ mark_decl_instantiated (tree result, int extern_p)
    neither is more cv-qualified, they both are equal).  Unlike regular
    deduction, after all the arguments have been deduced in this way,
    we do *not* verify the deduced template argument values can be
-   substituted into non-deduced contexts, nor do we have to verify
-   that all template arguments have been deduced.  */
+   substituted into non-deduced contexts.
+
+   The logic can be a bit confusing here, because we look at deduce1 and
+   targs1 to see if pat2 is at least as specialized, and vice versa; if we
+   can find template arguments for pat1 to make arg1 look like arg2, that
+   means that arg2 is at least as specialized as arg1.  */
 
 int
 more_specialized_fn (tree pat1, tree pat2, int len)
@@ -14891,8 +14924,9 @@ more_specialized_fn (tree pat1, tree pat2, int len)
   tree tparms2 = DECL_INNERMOST_TEMPLATE_PARMS (pat2);
   tree args1 = TYPE_ARG_TYPES (TREE_TYPE (decl1));
   tree args2 = TYPE_ARG_TYPES (TREE_TYPE (decl2));
-  int better1 = 0;
-  int better2 = 0;
+  tree origs1, origs2;
+  bool lose1 = false;
+  bool lose2 = false;
 
   /* Remove the this parameter from non-static member functions.  If
      one is a non-static member function and the other is not a static
@@ -14930,6 +14964,9 @@ more_specialized_fn (tree pat1, tree pat2, int len)
     }
 
   processing_template_decl++;
+
+  origs1 = args1;
+  origs2 = args2;
 
   while (len--
 	 /* Stop when an ellipsis is seen.  */
@@ -15065,28 +15102,37 @@ more_specialized_fn (tree pat1, tree pat2, int len)
           deduce2 = !unify (tparms2, targs2, arg2, arg1, UNIFY_ALLOW_NONE);
         }
 
+      /* If we couldn't deduce arguments for tparms1 to make arg1 match
+	 arg2, then arg2 is not as specialized as arg1.  */
       if (!deduce1)
-	better2 = -1;
+	lose2 = true;
       if (!deduce2)
-	better1 = -1;
-      if (better1 < 0 && better2 < 0)
+	lose1 = true;
+
+      /* "If, for a given type, deduction succeeds in both directions
+	 (i.e., the types are identical after the transformations above)
+	 and if the type from the argument template is more cv-qualified
+	 than the type from the parameter template (as described above)
+	 that type is considered to be more specialized than the other. If
+	 neither type is more cv-qualified than the other then neither type
+	 is more specialized than the other."
+
+         We check same_type_p explicitly because deduction can also succeed
+         in both directions when there is a nondeduced context.  */
+      if (deduce1 && deduce2
+	  && quals1 != quals2 && quals1 >= 0 && quals2 >= 0
+	  && same_type_p (arg1, arg2))
+	{
+	  if ((quals1 & quals2) == quals2)
+	    lose2 = true;
+	  if ((quals1 & quals2) == quals1)
+	    lose1 = true;
+	}
+
+      if (lose1 && lose2)
 	/* We've failed to deduce something in either direction.
 	   These must be unordered.  */
 	break;
-
-      if (deduce1 && deduce2 && quals1 >= 0 && quals2 >= 0)
-	{
-	  /* Deduces in both directions, see if quals can
-	     disambiguate.  Pretend the worse one failed to deduce. */
-	  if ((quals1 & quals2) == quals2)
-	    deduce1 = 0;
-	  if ((quals1 & quals2) == quals1)
-	    deduce2 = 0;
-	}
-      if (deduce1 && !deduce2 && !better2)
-	better2 = 1;
-      if (deduce2 && !deduce1 && !better1)
-	better1 = 1;
 
       if (TREE_CODE (arg1) == TYPE_PACK_EXPANSION
           || TREE_CODE (arg2) == TYPE_PACK_EXPANSION)
@@ -15098,22 +15144,38 @@ more_specialized_fn (tree pat1, tree pat2, int len)
       args2 = TREE_CHAIN (args2);
     }
 
+  /* "In most cases, all template parameters must have values in order for
+     deduction to succeed, but for partial ordering purposes a template
+     parameter may remain without a value provided it is not used in the
+     types being used for partial ordering."
+
+     Thus, if we are missing any of the targs1 we need to substitute into
+     origs1, then pat2 is not as specialized as pat1.  This can happen when
+     there is a nondeduced context.  */
+  if (!lose2 && check_undeduced_parms (targs1, origs1, args1))
+    lose2 = true;
+  if (!lose1 && check_undeduced_parms (targs2, origs2, args2))
+    lose1 = true;
+
   processing_template_decl--;
 
   /* All things being equal, if the next argument is a pack expansion
      for one function but not for the other, prefer the
-     non-variadic function.  */
-  if ((better1 > 0) - (better2 > 0) == 0
+     non-variadic function.  FIXME this is bogus; see c++/41958.  */
+  if (lose1 == lose2
       && args1 && TREE_VALUE (args1)
       && args2 && TREE_VALUE (args2))
     {
-      if (TREE_CODE (TREE_VALUE (args1)) == TYPE_PACK_EXPANSION)
-        return TREE_CODE (TREE_VALUE (args2)) == TYPE_PACK_EXPANSION ? 0 : -1;
-      else if (TREE_CODE (TREE_VALUE (args2)) == TYPE_PACK_EXPANSION)
-        return 1;
+      lose1 = TREE_CODE (TREE_VALUE (args1)) == TYPE_PACK_EXPANSION;
+      lose2 = TREE_CODE (TREE_VALUE (args2)) == TYPE_PACK_EXPANSION;
     }
 
-  return (better1 > 0) - (better2 > 0);
+  if (lose1 == lose2)
+    return 0;
+  else if (!lose1)
+    return 1;
+  else
+    return -1;
 }
 
 /* Determine which of two partial specializations is more specialized.
