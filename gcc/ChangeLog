@@ -1,3 +1,11 @@
+2009-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/41935
+	* c-common.c (fold_offsetof_1) <case ARRAY_REF>: Don't crash for VLAs
+	or non-constant index, allow index one past the last element and
+	allow exceeding array bound in arrays that might be used as flexible
+	array members.
+
 2009-11-05  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/ia32intrin.h: Protect CRC32 builtins with __SSE4_2__.

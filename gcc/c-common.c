@@ -8398,14 +8398,46 @@ fold_offsetof_1 (tree expr, tree stop_ref)
       off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
 
       /* Check if the offset goes beyond the upper bound of the array.  */
-      {
-	tree nelts = array_type_nelts (TREE_TYPE (TREE_OPERAND (expr, 0)));
-        HOST_WIDE_INT index = int_cst_value (t);
-	if (index > int_cst_value (nelts))
-	  warning (OPT_Warray_bounds,
-		   "index %wd denotes an offset greater than size of %qT",
-		   index, TREE_TYPE (TREE_OPERAND (expr, 0)));
-      }
+      if (code == PLUS_EXPR && TREE_CODE (t) == INTEGER_CST)
+	{
+	  tree upbound = array_ref_up_bound (expr);
+	  if (upbound != NULL_TREE
+	      && TREE_CODE (upbound) == INTEGER_CST
+	      && !tree_int_cst_equal (upbound,
+				      TYPE_MAX_VALUE (TREE_TYPE (upbound))))
+	    {
+	      upbound = size_binop (PLUS_EXPR, upbound,
+				    build_int_cst (TREE_TYPE (upbound), 1));
+	      if (tree_int_cst_lt (upbound, t))
+		{
+		  tree v;
+
+		  for (v = TREE_OPERAND (expr, 0);
+		       TREE_CODE (v) == COMPONENT_REF;
+		       v = TREE_OPERAND (v, 0))
+		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			== RECORD_TYPE)
+		      {
+			tree fld_chain = TREE_CHAIN (TREE_OPERAND (v, 1));
+			for (; fld_chain; fld_chain = TREE_CHAIN (fld_chain))
+			  if (TREE_CODE (fld_chain) == FIELD_DECL)
+			    break;
+
+			if (fld_chain)
+			  break;
+		      }
+		  /* Don't warn if the array might be considered a poor
+		     man's flexible array member with a very permissive
+		     definition thereof.  */
+		  if (TREE_CODE (v) == ARRAY_REF
+		      || TREE_CODE (v) == COMPONENT_REF)
+		    warning (OPT_Warray_bounds,
+			     "index %E denotes an offset "
+			     "greater than size of %qT",
+			     t, TREE_TYPE (TREE_OPERAND (expr, 0)));
+		}
+	    }
+	}
       break;
 
     case COMPOUND_EXPR:
