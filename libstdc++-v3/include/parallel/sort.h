@@ -54,12 +54,12 @@
 
 namespace __gnu_parallel
 {
-        //prototype
+  //prototype
   template<bool __stable, typename _RAIter,
            typename _Compare, typename _Parallelism>
-  void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-  _Compare __comp, _Parallelism __parallelism);
+    void
+    __parallel_sort(_RAIter __begin, _RAIter __end,
+		    _Compare __comp, _Parallelism __parallelism);
         
   /** 
    *  @brief Choose multiway mergesort, splitting variant at run-time,
@@ -70,19 +70,19 @@ namespace __gnu_parallel
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
-  inline void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-    _Compare __comp, multiway_mergesort_tag __parallelism)
-  {
-    _GLIBCXX_CALL(__end - __begin)
+    inline void
+    __parallel_sort(_RAIter __begin, _RAIter __end,
+		    _Compare __comp, multiway_mergesort_tag __parallelism)
+    {
+      _GLIBCXX_CALL(__end - __begin)
 
-    if(_Settings::get().sort_splitting == EXACT)
-      parallel_sort_mwms<__stable, true>
-        (__begin, __end, __comp, __parallelism.__get_num_threads());
-    else
-      parallel_sort_mwms<__stable, false>
-        (__begin, __end, __comp, __parallelism.__get_num_threads());
-  }
+      if(_Settings::get().sort_splitting == EXACT)
+	parallel_sort_mwms<__stable, true>
+	  (__begin, __end, __comp, __parallelism.__get_num_threads());
+      else
+	parallel_sort_mwms<__stable, false>
+	  (__begin, __end, __comp, __parallelism.__get_num_threads());
+    }
 
   /** 
    *  @brief Choose multiway mergesort with exact splitting,
@@ -93,15 +93,16 @@ namespace __gnu_parallel
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
-  inline void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-    _Compare __comp, multiway_mergesort_exact_tag __parallelism)
-  {
-    _GLIBCXX_CALL(__end - __begin)
+    inline void
+    __parallel_sort(_RAIter __begin, _RAIter __end,
+		    _Compare __comp,
+		    multiway_mergesort_exact_tag __parallelism)
+    {
+      _GLIBCXX_CALL(__end - __begin)
 
       parallel_sort_mwms<__stable, true>
         (__begin, __end, __comp, __parallelism.__get_num_threads());
-  }
+    }
 
   /** 
    *  @brief Choose multiway mergesort with splitting by sampling,
@@ -112,15 +113,16 @@ namespace __gnu_parallel
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
-  inline void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-    _Compare __comp, multiway_mergesort_sampling_tag __parallelism)
-  {
-    _GLIBCXX_CALL(__end - __begin)
+    inline void
+    __parallel_sort(_RAIter __begin, _RAIter __end,
+		    _Compare __comp,
+		    multiway_mergesort_sampling_tag __parallelism)
+    {
+      _GLIBCXX_CALL(__end - __begin)
 
-    parallel_sort_mwms<__stable, false>
+      parallel_sort_mwms<__stable, false>
       (__begin, __end, __comp, __parallelism.__get_num_threads());
-  }
+    }
 
   /**
    *  @brief Choose quicksort for parallel sorting.
@@ -130,17 +132,17 @@ namespace __gnu_parallel
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
-  inline void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-    _Compare __comp, quicksort_tag __parallelism)
-  {
-    _GLIBCXX_CALL(__end - __begin)
+    inline void
+    __parallel_sort(_RAIter __begin, _RAIter __end,
+		    _Compare __comp, quicksort_tag __parallelism)
+    {
+      _GLIBCXX_CALL(__end - __begin)
 
-    _GLIBCXX_PARALLEL_ASSERT(__stable == false);
+      _GLIBCXX_PARALLEL_ASSERT(__stable == false);
 
-    __parallel_sort_qs(__begin, __end, __comp,
-                       __parallelism.__get_num_threads());
-  }
+      __parallel_sort_qs(__begin, __end, __comp,
+			 __parallelism.__get_num_threads());
+    }
 
   /**
    *  @brief Choose balanced quicksort for parallel sorting.
@@ -150,19 +152,18 @@ namespace __gnu_parallel
    *  @param __stable Sort __stable.
    *  @callgraph 
    */
-  template<bool __stable, typename _RAIter, typename _Compare>
-  inline void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-    _Compare __comp, balanced_quicksort_tag __parallelism)
-  {
-    _GLIBCXX_CALL(__end - __begin)
+   template<bool __stable, typename _RAIter, typename _Compare>
+     inline void
+     __parallel_sort(_RAIter __begin, _RAIter __end,
+		     _Compare __comp, balanced_quicksort_tag __parallelism)
+     {
+       _GLIBCXX_CALL(__end - __begin)
 
-    _GLIBCXX_PARALLEL_ASSERT(__stable == false);
+       _GLIBCXX_PARALLEL_ASSERT(__stable == false);
 
-    __parallel_sort_qsb(__begin, __end, __comp,
-                        __parallelism.__get_num_threads());
-  }
-
+       __parallel_sort_qsb(__begin, __end, __comp,
+			   __parallelism.__get_num_threads());
+     }
 
   /** 
    *  @brief Choose multiway mergesort with exact splitting,
@@ -173,17 +174,16 @@ namespace __gnu_parallel
    *  @callgraph 
    */
   template<bool __stable, typename _RAIter, typename _Compare>
-  inline void
-  __parallel_sort(_RAIter __begin, _RAIter __end,
-    _Compare __comp, default_parallel_tag __parallelism)
-  {
-    _GLIBCXX_CALL(__end - __begin)
+    inline void
+    __parallel_sort(_RAIter __begin, _RAIter __end,
+		    _Compare __comp, default_parallel_tag __parallelism)
+    {
+      _GLIBCXX_CALL(__end - __begin)
 
-    __parallel_sort<__stable>
-      (__begin, __end, __comp,
-        multiway_mergesort_exact_tag(__parallelism.__get_num_threads()));
-  }
-
+      __parallel_sort<__stable>
+	(__begin, __end, __comp,
+	 multiway_mergesort_exact_tag(__parallelism.__get_num_threads()));
+    }
 
   /**
    *  @brief Choose a parallel sorting algorithm.
@@ -196,7 +196,7 @@ namespace __gnu_parallel
   template<bool __stable, typename _RAIter, typename _Compare>
     inline void
     __parallel_sort(_RAIter __begin, _RAIter __end,
-                  _Compare __comp, parallel_tag __parallelism)
+		    _Compare __comp, parallel_tag __parallelism)
     {
       _GLIBCXX_CALL(__end - __begin)
       typedef std::iterator_traits<_RAIter> _TraitsType;

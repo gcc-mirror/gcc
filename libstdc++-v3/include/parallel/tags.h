@@ -51,20 +51,16 @@ namespace __gnu_parallel
     public:
       /** @brief Default constructor. Use default number of threads. */
       parallel_tag()
-      {
-        this->_M_num_threads = 0;
-      }
+      { _M_num_threads = 0; }
 
       /** @brief Default constructor. Recommend number of threads to use.
        *  @param __num_threads Desired number of threads. */
       parallel_tag(_ThreadIndex __num_threads)
-      {
-        this->_M_num_threads = __num_threads;
-      }
+      { _M_num_threads = __num_threads; }
 
       /** @brief Find out desired number of threads.
        *  @return Desired number of threads. */
-      inline _ThreadIndex __get_num_threads()
+      _ThreadIndex __get_num_threads()
       {
         if(_M_num_threads == 0)
           return omp_get_max_threads();
@@ -74,19 +70,17 @@ namespace __gnu_parallel
 
       /** @brief Set the desired number of threads.
        *  @param __num_threads Desired number of threads. */
-      inline void set_num_threads(_ThreadIndex __num_threads)
-      {
-        this->_M_num_threads = __num_threads;
-      }
+      void set_num_threads(_ThreadIndex __num_threads)
+      { _M_num_threads = __num_threads; }
   };
 
   /** @brief Recommends parallel execution using the
       default parallel algorithm. */
   struct default_parallel_tag : public parallel_tag
   {
-      default_parallel_tag() { }
-      default_parallel_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    default_parallel_tag() { }
+    default_parallel_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
   /** @brief Recommends parallel execution using dynamic
@@ -114,18 +108,18 @@ namespace __gnu_parallel
    *  with exact splitting, at compile time. */
   struct exact_tag : public parallel_tag
   {
-      exact_tag() { }
-      exact_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    exact_tag() { }
+    exact_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
   /** @brief Forces parallel merging
    *  with exact splitting, at compile time. */
   struct sampling_tag : public parallel_tag
   {
-      sampling_tag() { }
-      sampling_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    sampling_tag() { }
+    sampling_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
 
@@ -133,45 +127,45 @@ namespace __gnu_parallel
    *  at compile time. */
   struct multiway_mergesort_tag : public parallel_tag
   {
-      multiway_mergesort_tag() { }
-      multiway_mergesort_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    multiway_mergesort_tag() { }
+    multiway_mergesort_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
   /** @brief Forces parallel sorting using multiway mergesort
    *  with exact splitting at compile time. */
   struct multiway_mergesort_exact_tag : public parallel_tag
   {
-      multiway_mergesort_exact_tag() { }
-      multiway_mergesort_exact_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    multiway_mergesort_exact_tag() { }
+    multiway_mergesort_exact_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
   /** @brief Forces parallel sorting using multiway mergesort
    *  with splitting by sampling at compile time. */
   struct multiway_mergesort_sampling_tag : public parallel_tag
   {
-      multiway_mergesort_sampling_tag() { }
-      multiway_mergesort_sampling_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    multiway_mergesort_sampling_tag() { }
+    multiway_mergesort_sampling_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
   /** @brief Forces parallel sorting using unbalanced quicksort
    *  at compile time. */
   struct quicksort_tag : public parallel_tag
   {
-      quicksort_tag() { }
-      quicksort_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    quicksort_tag() { }
+    quicksort_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
   /** @brief Forces parallel sorting using balanced quicksort
    *  at compile time. */
   struct balanced_quicksort_tag : public parallel_tag
   {
-      balanced_quicksort_tag() { }
-      balanced_quicksort_tag(_ThreadIndex __num_threads)
-          : parallel_tag(__num_threads) { }
+    balanced_quicksort_tag() { }
+    balanced_quicksort_tag(_ThreadIndex __num_threads)
+    : parallel_tag(__num_threads) { }
   };
 
 

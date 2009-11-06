@@ -48,11 +48,11 @@ namespace __gnu_parallel
   template<typename _IIter>
     void
     __shrink_and_double(std::vector<_IIter>& __os_starts,
-                      size_t& __count_to_two, size_t& __range_length,
-                      const bool __make_twice)
+			size_t& __count_to_two, size_t& __range_length,
+			const bool __make_twice)
     {
       ++__count_to_two;
-      if (not __make_twice or __count_to_two < 2)
+      if (!__make_twice || __count_to_two < 2)
         __shrink(__os_starts, __count_to_two, __range_length);
       else
         {
@@ -68,7 +68,7 @@ namespace __gnu_parallel
   template<typename _IIter>
     void
     __shrink(std::vector<_IIter>& __os_starts, size_t& __count_to_two,
-           size_t& __range_length)
+	     size_t& __range_length)
     {
       for (typename std::vector<_IIter>::size_type __i = 0;
            __i <= (__os_starts.size() / 2); ++__i)
@@ -112,8 +112,8 @@ namespace __gnu_parallel
 
       std::vector<_IIter> __os_starts(2 * __oversampling * __num_parts + 1);
 
-      __os_starts[0]= __begin;
-      _IIter __prev = __begin, __it = __begin;
+      __os_starts[0] = __begin;
+      _IIter __prev  = __begin, __it = __begin;
       size_t __dist_limit = 0, __dist = 0;
       size_t __cur = 1, __next = 1;
       size_t __range_length = 1;

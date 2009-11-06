@@ -125,8 +125,7 @@ namespace __gnu_parallel
   /** @brief Split by exact splitting. */
   template<typename _RAIter, typename _Compare,
 	   typename _SortingPlacesIterator>
-    struct _SplitConsistently<true, _RAIter,
-			      _Compare, _SortingPlacesIterator>
+    struct _SplitConsistently<true, _RAIter, _Compare, _SortingPlacesIterator>
     {
       void
       operator()(const _ThreadIndex __iam,
@@ -140,19 +139,19 @@ namespace __gnu_parallel
 
 	std::vector<std::pair<_SortingPlacesIterator,
 	                      _SortingPlacesIterator> >
-	  seqs(__sd->_M_num_threads);
+	  __seqs(__sd->_M_num_threads);
 	for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; __s++)
-	  seqs[__s] = std::make_pair(__sd->_M_temporary[__s],
-				     __sd->_M_temporary[__s]
-				     + (__sd->_M_starts[__s + 1]
-					- __sd->_M_starts[__s]));
+	  __seqs[__s] = std::make_pair(__sd->_M_temporary[__s],
+				       __sd->_M_temporary[__s]
+				       + (__sd->_M_starts[__s + 1]
+					  - __sd->_M_starts[__s]));
 
-	std::vector<_SortingPlacesIterator> _M_offsets(__sd->_M_num_threads);
+	std::vector<_SortingPlacesIterator> __offsets(__sd->_M_num_threads);
 
 	// if not last thread
 	if (__iam < __sd->_M_num_threads - 1)
-	  multiseq_partition(seqs.begin(), seqs.end(),
-			     __sd->_M_starts[__iam + 1], _M_offsets.begin(),
+	  multiseq_partition(__seqs.begin(), __seqs.end(),
+			     __sd->_M_starts[__iam + 1], __offsets.begin(),
 			     __comp);
 
 	for (int __seq = 0; __seq < __sd->_M_num_threads; __seq++)
@@ -160,7 +159,7 @@ namespace __gnu_parallel
 	    // for each sequence
 	    if (__iam < (__sd->_M_num_threads - 1))
 	      __sd->_M_pieces[__iam][__seq]._M_end
-		= _M_offsets[__seq] - seqs[__seq].first;
+		= __offsets[__seq] - __seqs[__seq].first;
 	    else
 	      // very end of this sequence
 	      __sd->_M_pieces[__iam][__seq]._M_end =
@@ -185,8 +184,7 @@ namespace __gnu_parallel
   /** @brief Split by sampling. */ 
   template<typename _RAIter, typename _Compare,
 	   typename _SortingPlacesIterator>
-    struct _SplitConsistently<false, _RAIter, _Compare,
-			      _SortingPlacesIterator>
+    struct _SplitConsistently<false, _RAIter, _Compare, _SortingPlacesIterator>
     {
       void
       operator()(const _ThreadIndex __iam,
@@ -282,10 +280,8 @@ namespace __gnu_parallel
 		      const _RAIter& __target,
 		      _Compare& __comp,
 		      _DiffType __length_am) const
-      {
-	stable_multiway_merge(__seqs_begin, __seqs_end, __target, __length_am,
-			      __comp, sequential_tag());
-      }
+      { stable_multiway_merge(__seqs_begin, __seqs_end, __target,
+			      __length_am, __comp, sequential_tag()); }
     };
 
   template<typename Seq_RAIter, typename _RAIter,
@@ -298,10 +294,8 @@ namespace __gnu_parallel
                       const _RAIter& __target,
                       _Compare& __comp,
                       _DiffType __length_am) const
-      {
-	multiway_merge(__seqs_begin, __seqs_end, __target, __length_am, __comp,
-                       sequential_tag());
-      }
+      { multiway_merge(__seqs_begin, __seqs_end, __target, __length_am,
+		       __comp, sequential_tag()); }
     };
 
   /** @brief PMWMS code executed by each thread.
@@ -321,8 +315,8 @@ namespace __gnu_parallel
       _ThreadIndex __iam = omp_get_thread_num();
 
       // Length of this thread's chunk, before merging.
-      _DifferenceType __length_local
-	= __sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam];
+      _DifferenceType __length_local =
+	__sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam];
 
       // Sort in temporary storage, leave space for sentinel.
 
@@ -350,8 +344,7 @@ namespace __gnu_parallel
 
       _DifferenceType __num_samples =
         _Settings::get().sort_mwms_oversampling * __sd->_M_num_threads - 1;
-      _SplitConsistently
-	<__exact, _RAIter, _Compare, _SortingPlacesIterator>()
+      _SplitConsistently<__exact, _RAIter, _Compare, _SortingPlacesIterator>()
         (__iam, __sd, __comp, __num_samples);
 
       // Offset from __target __begin, __length after merging.
@@ -364,26 +357,24 @@ namespace __gnu_parallel
 	}
 
       typedef std::vector<
-      std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
+        std::pair<_SortingPlacesIterator, _SortingPlacesIterator> >
         _SeqVector;
-      _SeqVector seqs(__sd->_M_num_threads);
+      _SeqVector __seqs(__sd->_M_num_threads);
 
       for (int __s = 0; __s < __sd->_M_num_threads; ++__s)
 	{
-	  seqs[__s] =
-	    std::make_pair
-	    (__sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_begin,
-	     __sd->_M_temporary[__s] + __sd->_M_pieces[__iam][__s]._M_end);
+	  __seqs[__s] =
+	    std::make_pair(__sd->_M_temporary[__s]
+			   + __sd->_M_pieces[__iam][__s]._M_begin,
+			   __sd->_M_temporary[__s]
+			   + __sd->_M_pieces[__iam][__s]._M_end);
 	}
 
       __possibly_stable_multiway_merge<
-        __stable,
-        typename _SeqVector::iterator,
-        _RAIter,
-        _Compare, _DifferenceType>()
-          (seqs.begin(), seqs.end(),
-	   __sd->_M_source + __offset, __comp,
-           __length_am);
+        __stable, typename _SeqVector::iterator,
+	_RAIter, _Compare, _DifferenceType>()(__seqs.begin(), __seqs.end(),
+				     __sd->_M_source + __offset, __comp,
+				     __length_am);
 
 #     pragma omp barrier
 
@@ -421,7 +412,7 @@ namespace __gnu_parallel
 
       // shared variables
       _PMWMSSortingData<_RAIter> __sd;
-      _DifferenceType* _M_starts;
+      _DifferenceType* __starts;
 
 #     pragma omp parallel num_threads(__num_threads)
       {
@@ -450,30 +441,29 @@ namespace __gnu_parallel
 	    = new std::vector<_Piece<_DifferenceType> >[__num_threads];
 	  for (int __s = 0; __s < __num_threads; ++__s)
 	    __sd._M_pieces[__s].resize(__num_threads);
-	  _M_starts = __sd._M_starts
-	    = new _DifferenceType[__num_threads + 1];
+	  __starts = __sd._M_starts = new _DifferenceType[__num_threads + 1];
 
 	  _DifferenceType __chunk_length = __n / __num_threads;
 	  _DifferenceType __split = __n % __num_threads;
 	  _DifferenceType __pos = 0;
 	  for (int __i = 0; __i < __num_threads; ++__i)
 	    {
-	      _M_starts[__i] = __pos;
-	      __pos += (__i < __split)
-		? (__chunk_length + 1) : __chunk_length;
+	      __starts[__i] = __pos;
+	      __pos += ((__i < __split)
+			? (__chunk_length + 1) : __chunk_length);
 	    }
-	  _M_starts[__num_threads] = __pos;
+	  __starts[__num_threads] = __pos;
 	} //single
 
         // Now sort in parallel.
         parallel_sort_mwms_pu<__stable, __exact>(&__sd, __comp);
       } //parallel
 
-      delete[] _M_starts;
+      delete[] __starts;
       delete[] __sd._M_temporary;
 
       if (!__exact)
-      ::operator delete(__sd._M_samples);
+	::operator delete(__sd._M_samples);
 
       delete[] __sd._M_offsets;
       delete[] __sd._M_pieces;

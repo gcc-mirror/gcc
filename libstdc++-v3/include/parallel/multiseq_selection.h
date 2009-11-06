@@ -53,8 +53,8 @@ namespace __gnu_parallel
   /** @brief Compare __a pair of types lexicographically, ascending. */
   template<typename _T1, typename _T2, typename _Compare>
     class _Lexicographic
-    : public std::binary_function<
-                                std::pair<_T1, _T2>, std::pair<_T1, _T2>, bool>
+    : public std::binary_function<std::pair<_T1, _T2>,
+				  std::pair<_T1, _T2>, bool>
     {
     private:
       _Compare& _M_comp;
@@ -142,19 +142,19 @@ namespace __gnu_parallel
 
       // Number of sequences, number of elements in total (possibly
       // including padding).
-      _DifferenceType __m = std::distance(__begin_seqs, __end_seqs), __N = 0,
+      _DifferenceType __m = std::distance(__begin_seqs, __end_seqs), __nn = 0,
                       __nmax, __n, __r;
 
       for (int __i = 0; __i < __m; __i++)
         {
-          __N += std::distance(__begin_seqs[__i].first,
+          __nn += std::distance(__begin_seqs[__i].first,
                                __begin_seqs[__i].second);
           _GLIBCXX_PARALLEL_ASSERT(
             std::distance(__begin_seqs[__i].first,
                           __begin_seqs[__i].second) > 0);
         }
 
-      if (__rank == __N)
+      if (__rank == __nn)
         {
           for (int __i = 0; __i < __m; __i++)
             __begin_offsets[__i] = __begin_seqs[__i].second; // Very end.
@@ -163,9 +163,9 @@ namespace __gnu_parallel
         }
 
       _GLIBCXX_PARALLEL_ASSERT(__m != 0);
-      _GLIBCXX_PARALLEL_ASSERT(__N != 0);
+      _GLIBCXX_PARALLEL_ASSERT(__nn != 0);
       _GLIBCXX_PARALLEL_ASSERT(__rank >= 0);
-      _GLIBCXX_PARALLEL_ASSERT(__rank < __N);
+      _GLIBCXX_PARALLEL_ASSERT(__rank < __nn);
 
       _DifferenceType* __ns = new _DifferenceType[__m];
       _DifferenceType* __a = new _DifferenceType[__m];
@@ -401,14 +401,14 @@ namespace __gnu_parallel
       // Number of sequences, number of elements in total (possibly
       // including padding).
       _DifferenceType __m = std::distance(__begin_seqs, __end_seqs);
-      _DifferenceType __N = 0;
+      _DifferenceType __nn = 0;
       _DifferenceType __nmax, __n, __r;
 
       for (int __i = 0; __i < __m; __i++)
-        __N += std::distance(__begin_seqs[__i].first,
-                             __begin_seqs[__i].second);
+        __nn += std::distance(__begin_seqs[__i].first,
+			      __begin_seqs[__i].second);
 
-      if (__m == 0 || __N == 0 || __rank < 0 || __rank >= __N)
+      if (__m == 0 || __nn == 0 || __rank < 0 || __rank >= __nn)
         {
           // result undefined if there is no data or __rank is outside bounds
           throw std::exception();
@@ -433,7 +433,7 @@ namespace __gnu_parallel
 
       // Pad all lists to this length, at least as long as any ns[__i],
       // equality iff __nmax = 2^__k - 1
-      __l = pow2(__r) - 1;
+      __l = __round_up_to_pow2(__r) - 1;
 
       for (int __i = 0; __i < __m; ++__i)
         {
