@@ -721,7 +721,8 @@ enum dwarf_calling_convention
     DW_CC_lo_user = 0x40,
     DW_CC_hi_user = 0xff,
 
-    DW_CC_GNU_renesas_sh = 0x40
+    DW_CC_GNU_renesas_sh = 0x40,
+    DW_CC_GNU_borland_fastcall_i386 = 0x41
   };
 
 /* Inline attribute.  */

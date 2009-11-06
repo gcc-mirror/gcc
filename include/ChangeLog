@@ -1,3 +1,9 @@
+2009-11-06  Jonas Maebe  <jonas.maebe@elis.ugent.be>
+
+	Add DWARF attribute value for the "Borland fastcall" calling
+	convention.
+	* elf/dwarf2.h: Add DW_CC_GNU_borland_fastcall_i386 constant.
+
 2009-10-23  Kai Tietz  <kai.tietz@onevision.com>
 
 	* splay-tree.h (libi_uhostptr_t): Add gcc specific
