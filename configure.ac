@@ -747,10 +747,10 @@ case "${target}" in
   i[[3456789]]86-*-mingw*)
     target_configdirs="$target_configdirs target-winsup"
     noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
-    ;;    
+    ;;
   x86_64-*-mingw*)
     noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
-    ;;    
+    ;;
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
     noconfigdirs="$noconfigdirs target-gperf target-libgloss"
@@ -760,7 +760,7 @@ case "${target}" in
     elif test -d "$srcdir/newlib"; then
       echo "Warning: winsup/cygwin is missing so newlib can't be built."
     fi
-    ;;    
+    ;;
   i[[3456789]]86-moss-msdos | i[[3456789]]86-*-moss* | \
   i[[3456789]]86-*-uwin* | i[[3456789]]86-*-interix* )
     ;;
@@ -2959,8 +2959,9 @@ case " $target_configdirs " in
   case " $target_configargs " in
   *" --with-newlib "*)
    case "$target" in
-   *-cygwin*)
-     FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/include -isystem $$s/winsup/cygwin/include -isystem $$s/winsup/w32api/include' ;;
+    *-cygwin*)
+      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup -L$$r/$(TARGET_SUBDIR)/winsup/cygwin -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/include -isystem $$s/winsup/cygwin/include -isystem $$s/winsup/w32api/include'
+      ;;
    esac
 
    # If we're not building GCC, don't discard standard headers.
@@ -3016,12 +3017,17 @@ case " $target_configdirs " in
   esac
   ;;
 esac
+
 case "$target" in
-x86_64-*-mingw* | *-w64-mingw*)
-  ;;
-*-mingw*)
-  # Can't be handled as Cygwin above since Mingw does not use newlib.
-  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup/mingw -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/mingw/include -isystem $$s/winsup/w32api/include' ;;
+  x86_64-*mingw* | *-w64-mingw*)
+  # MinGW-w64 does not use newlib, nor does it use winsup. It may,
+  # however, use a symlink named 'mingw' in ${prefix} .
+    FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L${prefix}/${target}/lib -L${prefix}/mingw/lib -isystem ${prefix}/${target}/include -isystem ${prefix}/mingw/include'
+    ;;
+  *-mingw*)
+  # MinGW can't be handled as Cygwin above since it does not use newlib.
+    FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup/mingw -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/mingw/include -isystem $$s/winsup/w32api/include'
+    ;;
 esac
 
 # Allow the user to override the flags for

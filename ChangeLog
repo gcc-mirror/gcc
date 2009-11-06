@@ -1,3 +1,9 @@
+2009-11-06  Ozkan Sezer  <sezeroz@gmail.com>
+
+	* configure.ac (FLAGS_FOR_TARGET):  Add -L and -isystem
+	paths for *-w64-mingw* and x86_64-*mingw*.
+	* configure: Regenerated.
+
 2009-11-05  Joern Rennecke <amylaar@spamcop.net>
 
 	* MAINTAINERS (Write After Approval): Add entry for my INRIA work.
