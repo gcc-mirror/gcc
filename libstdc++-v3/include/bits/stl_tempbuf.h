@@ -72,9 +72,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  This function tries to obtain storage for @c len adjacent Tp
    *  objects.  The objects themselves are not constructed, of course.
-   *  A pair<> is returned containing "the buffer s address and
+   *  A pair<> is returned containing 'the buffer s address and
    *  capacity (in the units of sizeof(Tp)), or a pair of 0 values if
-   *  no storage can be obtained."  Note that the capacity obtained
+   *  no storage can be obtained.'  Note that the capacity obtained
    *  may be less than that requested if the memory is unavailable;
    *  you should compare len with the .second return value.
    *

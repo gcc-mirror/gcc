@@ -149,10 +149,3 @@ summarized in <a href="tables.html">tables</a>.  */
  * Components for concurrent operations, including threads, mutexes,
  * and condition variables.
  */
-
-/**
- * @defgroup pointer_abstractions Pointer Abstractions
- * @ingroup memory
- *
- * Components for memory allocation, deallocation, and management.
- */

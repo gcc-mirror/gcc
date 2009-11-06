@@ -39,12 +39,12 @@
 namespace __gnu_parallel
 {
   /**
-   * @brief Check whether @__c [__begin, @__c __end) is sorted according
-   * to @__c __comp.
+   * @brief Check whether @c [__begin, @c __end) is sorted according
+   * to @c __comp.
    * @param __begin Begin iterator of sequence.
    * @param __end End iterator of sequence.
    * @param __comp Comparator.
-   * @return @__c true if sorted, @__c false otherwise.
+   * @return @c true if sorted, @c false otherwise.
    */
   template<typename _IIter, typename _Compare>
     bool

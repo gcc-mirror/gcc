@@ -1,3 +1,75 @@
+2009-11-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Adjust includes.
+
+	* doc/doxygen/doxygroups.cc: Move group markup.
+	* include/tr1_impl/regex: Change " to '. Add group markup.
+	* include/std/utility: Same.
+	* include/std/type_traits: Same.
+	* include/std/streambuf: Same.
+	* include/std/iosfwd: Same.
+	* include/std/limits: Same.
+	* include/std/sstream: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/profile/impl/profiler_hashtable_size.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_iterator_base_types.h: Same.
+	* include/bits/stream_iterator.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/streambuf_iterator.h: Same.
+	* libsupc++/exception: Same.
+	* libsupc++/cxxabi.h: Same.
+	* include/tr1_impl/type_traits: Same.
+
+	* include/parallel/multiway_merge.h: Change @__c to @c, @__f to @f.
+	* include/parallel/list_partition.h: Same.
+	* include/parallel/for_each.h: Same.
+	* include/parallel/workstealing.h: Same.
+	* include/parallel/base.h: Same.
+	* include/parallel/equally_split.h: Same.
+	* include/parallel/random_shuffle.h: Same.
+	* include/parallel/balanced_quicksort.h: Same.
+	* include/parallel/merge.h: Same.
+	* include/parallel/multiway_mergesort.h: Same.
+	* include/parallel/compatibility.h: Same.
+	* include/parallel/queue.h: Same.
+	* include/parallel/checkers.h: Same.
+	* include/parallel/random_number.h: Same.
+
+
+	* include/c_global/csignal: Change # to \#.
+	* include/c_global/cstdlib: Same.
+	* include/c_global/cstdio: Same.
+	* include/c_global/cstdarg: Same.
+	* include/c_global/cctype: Same.
+	* include/c_global/cerrno: Same.
+	* include/c_global/cstdatomic: Same.
+	* include/c_global/cmath: Same.
+	* include/c_global/ciso646: Same.
+	* include/c_global/ctime: Same.
+	* include/c_global/clocale: Same.
+	* include/c_global/climits: Same.
+	* include/c_global/cassert: Same.
+	* include/c_global/csetjmp: Same.
+	* include/c_global/cwchar: Same.
+	* include/c_global/cfloat: Same.
+	* include/c_global/cstring: Same.
+	* include/c_global/cstddef: Same.
+	* include/c_global/cwctype: Same.
+
+	* include/std/memory: Only dance around boost_sp_counted_base.h.
+	* include/tr1_impl/boost_sp_counted_base.h: Add markup.
+	* include/tr1/shared_ptr.h: Strip markup.
+	* include/bits/shared_ptr.h: Move base types...
+	* include/bits/shared_ptr_base.h: ...here.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* configure: Same.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+
 2009-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/multiway_merge.h: Simple formatting and

@@ -57,16 +57,12 @@ namespace std
 {
 namespace tr1
 {
-
   template<typename _Ptr, typename _Deleter, _Lock_policy _Lp>
     class _Sp_counted_base_impl
     : public _Sp_counted_base<_Lp>
     {
     public:
-      /**
-       *  @brief   
-       *  @pre     __d(__p) must not throw.
-       */
+      // Precondition: __d(__p) must not throw.
       _Sp_counted_base_impl(_Ptr __p, _Deleter __d)
       : _M_ptr(__p), _M_del(__d) { }
     
@@ -346,31 +342,19 @@ namespace tr1
   struct __const_cast_tag { };
   struct __dynamic_cast_tag { };
 
-  /**
-   *  @class __shared_ptr 
-   *
-   *  A smart pointer with reference-counted copy semantics.
-   *  The object pointed to is deleted when the last shared_ptr pointing to
-   *  it is destroyed or reset.
-   */
+  // A smart pointer with reference-counted copy semantics.  The
+  // object pointed to is deleted when the last shared_ptr pointing to
+  // it is destroyed or reset.
   template<typename _Tp, _Lock_policy _Lp>
     class __shared_ptr
     {
     public:
       typedef _Tp   element_type;
       
-      /** @brief  Construct an empty %__shared_ptr.
-       *  @post   use_count()==0 && get()==0
-       */
       __shared_ptr()
       : _M_ptr(0), _M_refcount() // never throws
       { }
 
-      /** @brief  Construct a %__shared_ptr that owns the pointer @a __p.
-       *  @param  __p  A pointer that is convertible to element_type*.
-       *  @post   use_count() == 1 && get() == __p
-       *  @throw  std::bad_alloc, in which case @c delete @a __p is called.
-       */
       template<typename _Tp1>
         explicit
         __shared_ptr(_Tp1* __p)
@@ -381,19 +365,6 @@ namespace tr1
 	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
 	}
 
-      //
-      // Requirements: _Deleter's copy constructor and destructor must
-      // not throw
-      //
-      // __shared_ptr will release __p by calling __d(__p)
-      //
-      /** @brief  Construct a %__shared_ptr that owns the pointer @a __p
-       *          and the deleter @a __d.
-       *  @param  __p  A pointer.
-       *  @param  __d  A deleter.
-       *  @post   use_count() == 1 && get() == __p
-       *  @throw  std::bad_alloc, in which case @a __d(__p) is called.
-       */
       template<typename _Tp1, typename _Deleter>
         __shared_ptr(_Tp1* __p, _Deleter __d)
         : _M_ptr(__p), _M_refcount(__p, __d)
@@ -405,24 +376,11 @@ namespace tr1
       
       //  generated copy constructor, assignment, destructor are fine.
       
-      /** @brief  If @a __r is empty, constructs an empty %__shared_ptr;
-       *          otherwise construct a %__shared_ptr that shares ownership
-       *          with @a __r.
-       *  @param  __r  A %__shared_ptr.
-       *  @post   get() == __r.get() && use_count() == __r.use_count()
-       */
       template<typename _Tp1>
         __shared_ptr(const __shared_ptr<_Tp1, _Lp>& __r)
 	: _M_ptr(__r._M_ptr), _M_refcount(__r._M_refcount) // never throws
         { __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>) }
 
-      /** @brief  Constructs a %__shared_ptr that shares ownership with @a __r
-       *          and stores a copy of the pointer stored in @a __r.
-       *  @param  __r  A weak_ptr.
-       *  @post   use_count() == __r.use_count()
-       *  @throw  bad_weak_ptr when __r.expired(),
-       *          in which case the constructor has no effect.
-       */
       template<typename _Tp1>
         explicit
         __shared_ptr(const __weak_ptr<_Tp1, _Lp>& __r)
@@ -435,9 +393,7 @@ namespace tr1
 	}
 
 #if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
-      /**
-       * @post use_count() == 1 and __r.get() == 0
-       */
+      // Postcondition: use_count() == 1 and __r.get() == 0
       template<typename _Tp1>
         explicit
         __shared_ptr(std::auto_ptr<_Tp1>& __r)
@@ -595,30 +551,30 @@ namespace tr1
     { __a.swap(__b); }
 
   // 2.2.3.9 shared_ptr casts
-  /** @warning The seemingly equivalent
-   *           <code>shared_ptr<_Tp, _Lp>(static_cast<_Tp*>(__r.get()))</code>
-   *           will eventually result in undefined behaviour,
-   *           attempting to delete the same object twice.
+  /*  The seemingly equivalent
+   *           shared_ptr<_Tp, _Lp>(static_cast<_Tp*>(__r.get()))
+   *  will eventually result in undefined behaviour,
+   *  attempting to delete the same object twice.
    */
   template<typename _Tp, typename _Tp1, _Lock_policy _Lp>
     inline __shared_ptr<_Tp, _Lp>
     static_pointer_cast(const __shared_ptr<_Tp1, _Lp>& __r)
     { return __shared_ptr<_Tp, _Lp>(__r, __static_cast_tag()); }
 
-  /** @warning The seemingly equivalent
-   *           <code>shared_ptr<_Tp, _Lp>(const_cast<_Tp*>(__r.get()))</code>
-   *           will eventually result in undefined behaviour,
-   *           attempting to delete the same object twice.
+  /*  The seemingly equivalent
+   *           shared_ptr<_Tp, _Lp>(const_cast<_Tp*>(__r.get()))
+   *  will eventually result in undefined behaviour,
+   *  attempting to delete the same object twice.
    */
   template<typename _Tp, typename _Tp1, _Lock_policy _Lp>
     inline __shared_ptr<_Tp, _Lp>
     const_pointer_cast(const __shared_ptr<_Tp1, _Lp>& __r)
     { return __shared_ptr<_Tp, _Lp>(__r, __const_cast_tag()); }
 
-  /** @warning The seemingly equivalent
-   *           <code>shared_ptr<_Tp, _Lp>(dynamic_cast<_Tp*>(__r.get()))</code>
-   *           will eventually result in undefined behaviour,
-   *           attempting to delete the same object twice.
+  /*  The seemingly equivalent
+   *           shared_ptr<_Tp, _Lp>(dynamic_cast<_Tp*>(__r.get()))
+   *  will eventually result in undefined behaviour,
+   *  attempting to delete the same object twice.
    */
   template<typename _Tp, typename _Tp1, _Lock_policy _Lp>
     inline __shared_ptr<_Tp, _Lp>
@@ -825,7 +781,6 @@ namespace tr1
     };
 
 
-  /// shared_ptr
   // The actual shared_ptr, with forwarding constructors and
   // assignment operators.
   template<typename _Tp>
@@ -914,7 +869,6 @@ namespace tr1
     { return shared_ptr<_Tp>(__r, __dynamic_cast_tag()); }
 
 
-  /// weak_ptr
   // The actual weak_ptr, with forwarding constructors and
   // assignment operators.
   template<typename _Tp>
@@ -971,7 +925,6 @@ namespace tr1
       }
     };
 
-  /// enable_shared_from_this
   template<typename _Tp>
     class enable_shared_from_this
     {
@@ -1013,7 +966,6 @@ namespace tr1
 
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
-
 }
 }
 

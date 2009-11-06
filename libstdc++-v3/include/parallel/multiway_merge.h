@@ -108,7 +108,7 @@ namespace __gnu_parallel
       /** @brief Compare two elements referenced by guarded iterators.
        *  @param __bi1 First iterator.
        *  @param __bi2 Second iterator.
-       *  @return @__c true if less. */
+       *  @return @c true if less. */
       friend bool
       operator<(_GuardedIterator<_RAIter, _Compare>& __bi1,
 		_GuardedIterator<_RAIter, _Compare>& __bi2)
@@ -123,7 +123,7 @@ namespace __gnu_parallel
       /** @brief Compare two elements referenced by guarded iterators.
        *  @param __bi1 First iterator.
        *  @param __bi2 Second iterator.
-       *  @return @__c True if less equal. */
+       *  @return @c True if less equal. */
       friend bool
       operator<=(_GuardedIterator<_RAIter, _Compare>& __bi1,
 		 _GuardedIterator<_RAIter, _Compare>& __bi2)
@@ -178,7 +178,7 @@ namespace __gnu_parallel
       /** @brief Compare two elements referenced by unguarded iterators.
        *  @param __bi1 First iterator.
        *  @param __bi2 Second iterator.
-       *  @return @__c true if less. */
+       *  @return @c true if less. */
       friend bool
       operator<(_UnguardedIterator<_RAIter, _Compare>& __bi1,
 		_UnguardedIterator<_RAIter, _Compare>& __bi2)
@@ -190,7 +190,7 @@ namespace __gnu_parallel
       /** @brief Compare two elements referenced by unguarded iterators.
        *  @param __bi1 First iterator.
        *  @param __bi2 Second iterator.
-       *  @return @__c True if less equal. */
+       *  @return @c True if less equal. */
       friend bool
       operator<=(_UnguardedIterator<_RAIter, _Compare>& __bi1,
 		 _UnguardedIterator<_RAIter, _Compare>& __bi2)
@@ -1724,7 +1724,7 @@ namespace __gnu_parallel
    * @pre All input sequences must be sorted.
    * @pre Target must provide enough space to merge out length elements or
    *    the number of elements in all sequences, whichever is smaller.
-   * @pre For each @__c __i, @__c __seqs_begin[__i].second must be the end
+   * @pre For each @c __i, @c __seqs_begin[__i].second must be the end
    *    marker of the sequence, but also reference the one more __sentinel
    *    element.
    *

@@ -42,7 +42,7 @@
 
 namespace __gnu_parallel
 {
-  /** @brief Chose the desired algorithm by evaluating @__c __parallelism_tag.
+  /** @brief Chose the desired algorithm by evaluating @c __parallelism_tag.
    *  @param __begin Begin iterator of input sequence.
    *  @param __end End iterator of input sequence.
    *  @param __user_op A user-specified functor (comparator, predicate,

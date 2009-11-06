@@ -102,15 +102,16 @@ namespace std
    *  violates the function's %exception specification.  */
   void unexpected() __attribute__ ((__noreturn__));
 
-  /** [18.6.4]/1:  "Returns true after completing evaluation of a
+  /** [18.6.4]/1:  'Returns true after completing evaluation of a
    *  throw-expression until either completing initialization of the
    *  exception-declaration in the matching handler or entering @c unexpected()
    *  due to the throw; or after entering @c terminate() for any reason
    *  other than an explicit call to @c terminate().  [Note: This includes
-   *  stack unwinding [15.2].  end note]"
+   *  stack unwinding [15.2].  end note]'
    *
-   *  2:  "When @c uncaught_exception() is true, throwing an %exception can
-   *  result in a call of @c terminate() (15.5.1)."
+   *  2: 'When @c uncaught_exception() is true, throwing an
+   *  %exception can result in a call of @c terminate()
+   *  (15.5.1).'
    */
   bool uncaught_exception() throw() __attribute__ ((__pure__));
 

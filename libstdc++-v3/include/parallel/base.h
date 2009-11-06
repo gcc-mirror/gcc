@@ -93,7 +93,7 @@ namespace __gnu_parallel
   __is_parallel(const _Parallelism __p) { return __p != sequential; }
 
 
-  /** @brief Calculates the rounded-down logarithm of @__c __n for base 2.
+  /** @brief Calculates the rounded-down logarithm of @c __n for base 2.
    *  @param __n Argument.
    *  @return Returns 0 for any argument <1.
    */
@@ -108,11 +108,11 @@ namespace __gnu_parallel
     }
 
   /** @brief Encode two integers into one gnu_parallel::_CASable.
-   *  @param __a First integer, to be encoded in the most-significant @__c
+   *  @param __a First integer, to be encoded in the most-significant @c
    *  _CASable_bits/2 bits.
    *  @param __b Second integer, to be encoded in the least-significant
-   *  @__c _CASable_bits/2 bits.
-   *  @return value encoding @__c __a and @__c __b.
+   *  @c _CASable_bits/2 bits.
+   *  @return value encoding @c __a and @c __b.
    *  @see decode2
    */
   inline _CASable
@@ -124,9 +124,9 @@ namespace __gnu_parallel
   /** @brief Decode two integers from one gnu_parallel::_CASable.
    *  @param __x __gnu_parallel::_CASable to decode integers from.
    *  @param __a First integer, to be decoded from the most-significant
-   *  @__c _CASable_bits/2 bits of @__c __x.
+   *  @c _CASable_bits/2 bits of @c __x.
    *  @param __b Second integer, to be encoded in the least-significant
-   *  @__c _CASable_bits/2 bits of @__c __x.
+   *  @c _CASable_bits/2 bits of @c __x.
    *  @see __encode2
    */
   inline void
@@ -422,7 +422,7 @@ namespace __gnu_parallel
     };
 
   /** @brief Compute the median of three referenced elements,
-      according to @__c __comp.
+      according to @c __comp.
       *  @param __a First iterator.
       *  @param __b Second iterator.
       *  @param __c Third iterator.

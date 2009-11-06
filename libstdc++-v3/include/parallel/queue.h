@@ -45,7 +45,7 @@ namespace __gnu_parallel
    *  atomic access.  push_front() and pop_front() must not be called
    *  concurrently to each other, while pop_back() can be called
    *  concurrently at all times.
-   *  @__c empty(), @__c size(), and @__c top() are intentionally not provided.
+   *  @c empty(), @c size(), and @c top() are intentionally not provided.
    *  Calling them would not make sense in a concurrent setting.
    *  @param _Tp Contained element type. */
   template<typename _Tp>

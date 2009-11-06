@@ -112,9 +112,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Copying out the string buffer.
        *  @return  A copy of one of the underlying sequences.
        *
-       *  "If the buffer is only created in input mode, the underlying
+       *  'If the buffer is only created in input mode, the underlying
        *  character sequence is equal to the input sequence; otherwise, it
-       *  is equal to the output sequence." [27.7.1.2]/1
+       *  is equal to the output sequence.' [27.7.1.2]/1
       */
       __string_type
       str() const

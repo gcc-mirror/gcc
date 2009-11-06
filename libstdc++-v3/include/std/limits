@@ -203,9 +203,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  Is this supposed to be "if the type is integral"?
     */
     static const bool is_integer = false;
-    /** True if the type uses an exact representation.  "All integer types are
+    /** True if the type uses an exact representation.  'All integer types are
         exact, but not all exact types are integer.  For example, rational and
-        fixed-exponent representations are exact but not integer."
+        fixed-exponent representations are exact but not integer.'
         [18.2.1.2]/15  */
     static const bool is_exact = false;
     /** For integer types, specifies the base of the representation.  For
@@ -229,23 +229,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /** True if the type has a representation for positive infinity.  */
     static const bool has_infinity = false;
     /** True if the type has a representation for a quiet (non-signaling)
-        "Not a Number."  */
+        'Not a Number.'  */
     static const bool has_quiet_NaN = false;
     /** True if the type has a representation for a signaling
-        "Not a Number."  */
+        'Not a Number.'  */
     static const bool has_signaling_NaN = false;
     /** See std::float_denorm_style for more information.  */
     static const float_denorm_style has_denorm = denorm_absent;
-    /** "True if loss of accuracy is detected as a denormalization loss,
-        rather than as an inexact result." [18.2.1.2]/42  */
+    /** 'True if loss of accuracy is detected as a denormalization loss,
+        rather than as an inexact result.' [18.2.1.2]/42  */
     static const bool has_denorm_loss = false;
 
     /** True if-and-only-if the type adheres to the IEC 559 standard, also
         known as IEEE 754.  (Only makes sense for floating point types.)  */
     static const bool is_iec559 = false;
-    /** "True if the set of values representable by the type is finite.   All
+    /** 'True if the set of values representable by the type is finite.   All
         built-in types are bounded, this member would be false for arbitrary
-	precision types." [18.2.1.2]/54  */
+	precision types.' [18.2.1.2]/54  */
     static const bool is_bounded = false;
     /** True if the type is @e modulo, that is, if it is possible to add two
         positive numbers and have a result that wraps around to a third number

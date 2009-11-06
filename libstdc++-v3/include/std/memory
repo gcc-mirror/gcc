@@ -46,6 +46,20 @@
 
 #pragma GCC system_header
 
+/**
+ * @defgroup memory Memory
+ * @ingroup utilities
+ *
+ * Components for memory allocation, deallocation, and management.
+ */
+
+/**
+ * @defgroup pointer_abstractions Pointer Abstractions
+ * @ingroup memory
+ *
+ * Smart pointers, etc.
+ */
+
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
@@ -64,37 +78,29 @@
 #  include <ext/concurrence.h>
 #  include <bits/functexcept.h>
 #  include <bits/stl_function.h>  // std::less
-#  include <bits/unique_ptr.h>
-#  include <debug/debug.h>
 #  include <type_traits>
 #  include <functional>
+#  include <debug/debug.h>
+#  include <bits/unique_ptr.h>
 #  if _GLIBCXX_DEPRECATED
 #    include <backward/auto_ptr.h>
 #  endif
 #  if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #    include <tr1_impl/boost_sp_counted_base.h>
-#    include <bits/shared_ptr.h>
 #  else
 #    define _GLIBCXX_INCLUDE_AS_CXX0X
 #    define _GLIBCXX_BEGIN_NAMESPACE_TR1
 #    define _GLIBCXX_END_NAMESPACE_TR1
 #    define _GLIBCXX_TR1
 #    include <tr1_impl/boost_sp_counted_base.h>
-#    include <bits/shared_ptr.h>
 #    undef _GLIBCXX_TR1
 #    undef _GLIBCXX_END_NAMESPACE_TR1
 #    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #    undef _GLIBCXX_INCLUDE_AS_CXX0X
 #  endif
+#  include <bits/shared_ptr.h>
 #else
 #  include <backward/auto_ptr.h>
 #endif
-
-/**
- * @defgroup memory Memory
- * @ingroup utilities
- *
- * Components for memory allocation, deallocation, and management.
- */
 
 #endif /* _GLIBCXX_MEMORY */

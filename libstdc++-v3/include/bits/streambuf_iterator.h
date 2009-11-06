@@ -39,6 +39,11 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
      
+  /**
+   * @addtogroup iterators
+   * @{
+   */
+
   // 24.5.3 Template class istreambuf_iterator
   /// Provides input iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
@@ -386,6 +391,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       return __first;
     }
+
+// @} group iterators
 
 _GLIBCXX_END_NAMESPACE
 

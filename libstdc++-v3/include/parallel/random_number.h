@@ -81,7 +81,7 @@ namespace __gnu_parallel
     /** @brief Constructor.
      *  @param __seed Random __seed.
      *  @param _M_supremum Generate integer random numbers in the
-     *                  interval @__c [0,_M_supremum). */
+     *                  interval @c [0,_M_supremum). */
     _RandomNumber(uint32_t __seed, uint64_t _M_supremum = 0x100000000ULL)
     : _M_mt(__seed), _M_supremum(_M_supremum),
       _M_rand_sup(1ULL << std::numeric_limits<uint32_t>::digits),
@@ -95,7 +95,7 @@ namespace __gnu_parallel
     { return __scale_down(_M_mt(), _M_supremum, _M_supremum_reciprocal); }
 
     /** @brief Generate unsigned random 32-bit integer in the
-        interval @__c [0,local_supremum). */
+        interval @c [0,local_supremum). */
     uint32_t
     operator()(uint64_t local_supremum)
     {
