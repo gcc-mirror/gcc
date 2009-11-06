@@ -200,6 +200,12 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case TYPENAME_TYPE:
     case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
+      if (CLASS_TYPE_P (t) && CLASSTYPE_USE_TEMPLATE (t))
+	{
+	  pp_cxx_begin_template_argument_list (pp);
+	  pp_cxx_template_argument_list (pp, CLASSTYPE_TI_ARGS (t));
+	  pp_cxx_end_template_argument_list (pp);
+	}
       break;
 
     case BIT_NOT_EXPR:

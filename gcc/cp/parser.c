@@ -2400,6 +2400,11 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
 	error_at (location, "%qE in namespace %qE does not name a type",
 		  id, parser->scope);
+      else if (TYPE_P (parser->scope)
+	       && dependent_scope_p (parser->scope))
+	error_at (location, "need %<typename%> before %<%T::%E%> to name "
+		  "a type in dependent scope %qT",
+		  parser->scope, id, parser->scope);
       else if (TYPE_P (parser->scope))
 	error_at (location, "%qE in class %qT does not name a type",
 		  id, parser->scope);
@@ -2433,11 +2438,8 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*declarator_p=*/true,
 				/*optional_p=*/false);
   /* After the id-expression, there should be a plain identifier,
-     otherwise this is not a simple variable declaration. Also, if
-     the scope is dependent, we cannot do much.  */
+     otherwise this is not a simple variable declaration.  */
   if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-      || (parser->scope && TYPE_P (parser->scope)
-	  && dependent_type_p (parser->scope))
       || TREE_CODE (id) == TYPE_DECL)
     {
       cp_parser_abort_tentative_parse (parser);
@@ -7760,11 +7762,20 @@ static tree
 cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
 {
   tree statement = NULL_TREE;
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   /* If the next token is a ';', then there is no expression
      statement.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     statement = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+
+  /* Give a helpful message for "A<T>::type t;"  */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
+      && !cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && TREE_CODE (statement) == SCOPE_REF)
+    error_at (token->location, "need %<typename%> before %qE to name "
+	      "a type in dependent scope %qT",
+	      statement, TREE_OPERAND (statement, 0));
 
   /* Consume the final `;'.  */
   cp_parser_consume_semicolon_at_end_of_statement (parser);
@@ -18197,9 +18208,13 @@ cp_parser_check_template_parameters (cp_parser* parser,
        template <class T> void S<T>::R<T>::f ();  */
   if (parser->num_template_parameter_lists < num_templates)
     {
-      if (declarator)
+      if (declarator && !current_function_decl)
 	error_at (location, "specializing member %<%T::%E%> "
 		  "requires %<template<>%> syntax", 
+		  declarator->u.id.qualifying_scope,
+		  declarator->u.id.unqualified_name);
+      else if (declarator)
+	error_at (location, "invalid declaration of %<%T::%E%>",
 		  declarator->u.id.qualifying_scope,
 		  declarator->u.id.unqualified_name);
       else 
