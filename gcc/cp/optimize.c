@@ -199,6 +199,8 @@ maybe_clone_body (tree fn)
       DECL_VISIBILITY (clone) = DECL_VISIBILITY (fn);
       DECL_VISIBILITY_SPECIFIED (clone) = DECL_VISIBILITY_SPECIFIED (fn);
       DECL_DLLIMPORT_P (clone) = DECL_DLLIMPORT_P (fn);
+      DECL_ATTRIBUTES (clone) = copy_list (DECL_ATTRIBUTES (fn));
+      DECL_DISREGARD_INLINE_LIMITS (clone) = DECL_DISREGARD_INLINE_LIMITS (fn);
 
       /* Adjust the parameter names and locations.  */
       parm = DECL_ARGUMENTS (fn);
