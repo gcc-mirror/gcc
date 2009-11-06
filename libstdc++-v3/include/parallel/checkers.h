@@ -68,5 +68,6 @@ namespace __gnu_parallel
 
       return true;
     }
+}
 
 #endif /* _GLIBCXX_PARALLEL_CHECKERS_H */

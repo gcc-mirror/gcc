@@ -74,8 +74,8 @@ namespace __gnu_parallel
         _DifferenceType;
 
       _DifferenceType __length = __end - __begin;
-      _ThreadIndex __num_threads =
-	__gnu_parallel::min<_DifferenceType>(__get_max_threads(), __length);
+      _ThreadIndex __num_threads = __gnu_parallel::min<_DifferenceType>
+	(__get_max_threads(), __length);
 
       _Result *__thread_results;
 
@@ -94,8 +94,8 @@ namespace __gnu_parallel
 
 #pragma omp for schedule(dynamic, _Settings::get().workstealing_chunk_size)
         for (_DifferenceType __pos = 0; __pos < __length; ++__pos)
-          __thread_results[__iam] =
-	    __r(__thread_results[__iam], __f(__o, __begin+__pos));
+          __thread_results[__iam] = __r(__thread_results[__iam],
+					__f(__o, __begin+__pos));
       } //parallel
 
       for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)

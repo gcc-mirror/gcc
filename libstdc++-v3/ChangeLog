@@ -1,3 +1,34 @@
+2009-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/multiway_merge.h: Simple formatting and
+	uglification fixes.
+	* include/parallel/find_selectors.h: Likewise.
+	* include/parallel/losertree.h: Likewise.
+	* include/parallel/list_partition.h: Likewise.
+	* include/parallel/for_each.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/workstealing.h: Likewise.
+	* include/parallel/par_loop.h: Likewise.
+	* include/parallel/numeric: Likewise.
+	* include/parallel/quicksort.h: Likewise.
+	* include/parallel/equally_split.h: Likewise.
+	* include/parallel/omp_loop_static.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/balanced_quicksort.h: Likewise.
+	* include/parallel/tags.h: Likewise.
+	* include/parallel/set_operations.h: Likewise.
+	* include/parallel/merge.h: Likewise.
+	* include/parallel/unique_copy.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/search.h: Likewise.
+	* include/parallel/partition.h: Likewise.
+	* include/parallel/partial_sum.h: Likewise.
+	* include/parallel/find.h: Likewise.
+	* include/parallel/queue.h: Likewise.
+	* include/parallel/omp_loop.h: Likewise.
+	* include/parallel/checkers.h: Likewise.
+	* include/parallel/sort.h: Likewise.
+
 2009-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/41949

@@ -69,7 +69,7 @@ namespace __parallel
     __accumulate_switch(_IIter __begin, _IIter __end,
                       _Tp __init, _IteratorTag) 
     { return accumulate(__begin, __end, __init,
-__gnu_parallel::sequential_tag()); }
+			__gnu_parallel::sequential_tag()); }
 
   template<typename _IIter, typename _Tp, typename _BinaryOperation,
            typename _IteratorTag>

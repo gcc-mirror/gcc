@@ -65,10 +65,10 @@ namespace __gnu_parallel
     public:
       /** @brief Constructor. Not to be called concurrent, of course.
        *  @param _M_max_size Maximal number of elements to be contained. */
-      _RestrictedBoundedConcurrentQueue(_SequenceIndex _M_max_size)
+      _RestrictedBoundedConcurrentQueue(_SequenceIndex __max_size)
       {
-        this->_M_max_size = _M_max_size;
-        _M_base = new _Tp[_M_max_size];
+        _M_max_size = __max_size;
+        _M_base = new _Tp[__max_size];
         _M_borders = __encode2(0, 0);
 #pragma omp flush
       }
@@ -105,12 +105,12 @@ namespace __gnu_parallel
         while (__former_front > __former_back)
           {
             // Chance.
-            _CASable
-                __former_borders = __encode2(__former_front, __former_back);
-            _CASable
-                __new_borders = __encode2(__former_front - 1, __former_back);
-            if (__compare_and_swap(
-                  &_M_borders, __former_borders, __new_borders))
+            _CASable __former_borders = __encode2(__former_front,
+						  __former_back);
+            _CASable __new_borders = __encode2(__former_front - 1,
+					       __former_back);
+            if (__compare_and_swap(&_M_borders, __former_borders,
+				   __new_borders))
               {
                 __t = *(_M_base + (__former_front - 1) % _M_max_size);
                 return true;
@@ -132,12 +132,12 @@ namespace __gnu_parallel
         while (__former_front > __former_back)
           {
             // Chance.
-            _CASable
-              __former_borders = __encode2(__former_front, __former_back);
-            _CASable
-              __new_borders = __encode2(__former_front, __former_back + 1);
-            if (__compare_and_swap(
-                  &_M_borders, __former_borders, __new_borders))
+            _CASable __former_borders = __encode2(__former_front,
+						  __former_back);
+            _CASable __new_borders = __encode2(__former_front,
+					       __former_back + 1);
+            if (__compare_and_swap(&_M_borders, __former_borders,
+				   __new_borders))
               {
                 __t = *(_M_base + __former_back % _M_max_size);
                 return true;

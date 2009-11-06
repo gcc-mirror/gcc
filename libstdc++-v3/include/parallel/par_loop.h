@@ -75,25 +75,24 @@ namespace __gnu_parallel
       _Result *__thread_results;
       bool* __constructed;
 
-      _ThreadIndex __num_threads =
-	__gnu_parallel::min<_DifferenceType>(__get_max_threads(), __length);
+      _ThreadIndex __num_threads = __gnu_parallel::min<_DifferenceType>
+	(__get_max_threads(), __length);
 
 #     pragma omp parallel num_threads(__num_threads)
       {
 #       pragma omp single
 	{
 	  __num_threads = omp_get_num_threads();
-	  __thread_results =
-	    static_cast<_Result*>(::operator new(__num_threads
-						 * sizeof(_Result)));
+	  __thread_results = static_cast<_Result*>
+	    (::operator new(__num_threads * sizeof(_Result)));
 	  __constructed = new bool[__num_threads];
 	}
 
 	_ThreadIndex __iam = omp_get_thread_num();
 
 	// Neutral element.
-	_Result* __reduct =
-	  static_cast<_Result*>(::operator new(sizeof(_Result)));
+	_Result* __reduct = static_cast<_Result*>
+	  (::operator new(sizeof(_Result)));
 
 	_DifferenceType
 	  __start = equally_split_point(__length, __num_threads, __iam),

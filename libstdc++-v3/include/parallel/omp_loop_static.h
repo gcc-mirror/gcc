@@ -74,8 +74,8 @@ namespace __gnu_parallel
 	_DifferenceType;
 
       _DifferenceType __length = __end - __begin;
-      _ThreadIndex __num_threads =
-	std::min<_DifferenceType>(__get_max_threads(), __length);
+      _ThreadIndex __num_threads = std::min<_DifferenceType>
+	(__get_max_threads(), __length);
 
       _Result *__thread_results;
 

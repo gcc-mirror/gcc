@@ -54,11 +54,10 @@ namespace __gnu_parallel
            typename _OutputIterator, typename _DifferenceTp,
            typename _Compare>
     _OutputIterator
-    __merge_advance_usual(_RAIter1& __begin1,
-                        _RAIter1 __end1,
-                        _RAIter2& __begin2,
-                        _RAIter2 __end2, _OutputIterator __target,
-                        _DifferenceTp __max_length, _Compare __comp)
+    __merge_advance_usual(_RAIter1& __begin1, _RAIter1 __end1,
+			  _RAIter2& __begin2, _RAIter2 __end2,
+			  _OutputIterator __target,
+			  _DifferenceTp __max_length, _Compare __comp)
     {
       typedef _DifferenceTp _DifferenceType;
       while (__begin1 != __end1 && __begin2 != __end2 && __max_length > 0)
@@ -103,12 +102,10 @@ namespace __gnu_parallel
            typename _OutputIterator, typename _DifferenceTp,
            typename _Compare>
     _OutputIterator
-    __merge_advance_movc(_RAIter1& __begin1,
-                       _RAIter1 __end1,
-                       _RAIter2& __begin2,
-                       _RAIter2 __end2,
-                       _OutputIterator __target,
-                       _DifferenceTp __max_length, _Compare __comp)
+    __merge_advance_movc(_RAIter1& __begin1, _RAIter1 __end1,
+			 _RAIter2& __begin2, _RAIter2 __end2,
+			 _OutputIterator __target,
+			 _DifferenceTp __max_length, _Compare __comp)
     {
       typedef _DifferenceTp _DifferenceType;
       typedef typename std::iterator_traits<_RAIter1>::value_type
@@ -172,14 +169,14 @@ namespace __gnu_parallel
            typename _Compare>
     inline _OutputIterator
     __merge_advance(_RAIter1& __begin1, _RAIter1 __end1,
-                  _RAIter2& __begin2, _RAIter2 __end2,
-                  _OutputIterator __target, _DifferenceTp __max_length,
-                  _Compare __comp)
+		    _RAIter2& __begin2, _RAIter2 __end2,
+		    _OutputIterator __target, _DifferenceTp __max_length,
+		    _Compare __comp)
     {
       _GLIBCXX_CALL(__max_length)
 
-      return __merge_advance_movc(__begin1, __end1, __begin2, __end2, __target,
-                                __max_length, __comp);
+      return __merge_advance_movc(__begin1, __end1, __begin2, __end2,
+				  __target, __max_length, __comp);
     }
 
   /** @brief Merge routine fallback to sequential in case the
@@ -195,17 +192,15 @@ namespace __gnu_parallel
   template<typename _RAIter1, typename _RAIter2,
            typename _RAIter3, typename _Compare>
     inline _RAIter3
-    __parallel_merge_advance(_RAIter1& __begin1,
-                           _RAIter1 __end1,
-                           _RAIter2& __begin2,
-                           // different iterators, parallel implementation
-                           // not available                        
-                           _RAIter2 __end2,
-                           _RAIter3 __target, typename
-                           std::iterator_traits<_RAIter1>::
-                           difference_type __max_length, _Compare __comp)
+    __parallel_merge_advance(_RAIter1& __begin1, _RAIter1 __end1,
+			     _RAIter2& __begin2,
+			     // different iterators, parallel implementation
+			     // not available
+			     _RAIter2 __end2, _RAIter3 __target, typename
+			     std::iterator_traits<_RAIter1>::
+			     difference_type __max_length, _Compare __comp)
     { return __merge_advance(__begin1, __end1, __begin2, __end2, __target,
-                           __max_length, __comp); }
+			     __max_length, __comp); }
 
   /** @brief Parallel merge routine being able to merge only the @__c
    * __max_length smallest elements.
@@ -225,13 +220,11 @@ namespace __gnu_parallel
   template<typename _RAIter1, typename _RAIter3,
            typename _Compare>
     inline _RAIter3
-    __parallel_merge_advance(_RAIter1& __begin1,
-                           _RAIter1 __end1,
-                           _RAIter1& __begin2,
-                           _RAIter1 __end2,
-                           _RAIter3 __target, typename
-                           std::iterator_traits<_RAIter1>::
-                           difference_type __max_length, _Compare __comp)
+    __parallel_merge_advance(_RAIter1& __begin1, _RAIter1 __end1,
+			     _RAIter1& __begin2, _RAIter1 __end2,
+			     _RAIter3 __target, typename
+			     std::iterator_traits<_RAIter1>::
+			     difference_type __max_length, _Compare __comp)
     {
       typedef typename
           std::iterator_traits<_RAIter1>::value_type _ValueType;
@@ -242,17 +235,14 @@ namespace __gnu_parallel
       typedef typename std::pair<_RAIter1, _RAIter1>
         _IteratorPair;
 
-      _IteratorPair
-        seqs[2] = { std::make_pair(__begin1, __end1),
-                    std::make_pair(__begin2, __end2) };
-      _RAIter3
-        __target_end = parallel_multiway_merge
-          < /* __stable = */ true, /* __sentinels = */ false>(
-            seqs, seqs + 2, __target,
-            multiway_merge_exact_splitting
-              < /* __stable = */ true, _IteratorPair*,
-                _Compare, _DifferenceType1>,
-            __max_length, __comp, omp_get_max_threads());
+      _IteratorPair __seqs[2] = { std::make_pair(__begin1, __end1),
+				  std::make_pair(__begin2, __end2) };
+      _RAIter3 __target_end = parallel_multiway_merge
+	< /* __stable = */ true, /* __sentinels = */ false>
+	(__seqs, __seqs + 2, __target, multiway_merge_exact_splitting
+	 < /* __stable = */ true, _IteratorPair*,
+	 _Compare, _DifferenceType1>, __max_length, __comp,
+	 omp_get_max_threads());
 
       return __target_end;
     }

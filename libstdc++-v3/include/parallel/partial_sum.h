@@ -149,9 +149,10 @@ namespace __gnu_parallel
         if (__iam == 0)
           {
             *__result = *__begin;
-            __parallel_partial_sum_basecase(
-                __begin + 1, __begin + __borders[1], __result + 1,
-                __bin_op, *__begin);
+            __parallel_partial_sum_basecase(__begin + 1,
+					    __begin + __borders[1],
+					    __result + 1,
+					    __bin_op, *__begin);
             ::new(&(__sums[__iam])) _ValueType(*(__result + __borders[1] - 1));
           }
         else
@@ -168,7 +169,7 @@ namespace __gnu_parallel
 
 #       pragma omp single
 	__parallel_partial_sum_basecase(__sums + 1, __sums + __num_threads,
-                                          __sums + 1, __bin_op, __sums[0]);
+					__sums + 1, __bin_op, __sums[0]);
 
 #       pragma omp barrier
 

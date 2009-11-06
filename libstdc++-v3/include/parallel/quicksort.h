@@ -48,13 +48,12 @@ namespace __gnu_parallel
    */
   template<typename _RAIter, typename _Compare>
     typename std::iterator_traits<_RAIter>::difference_type
-    __parallel_sort_qs_divide(_RAIter __begin,
-                            _RAIter __end,
-                            _Compare __comp, typename std::iterator_traits
-                            <_RAIter>::difference_type __pivot_rank,
-                            typename std::iterator_traits
-                            <_RAIter>::difference_type
-                            __num_samples, _ThreadIndex __num_threads)
+    __parallel_sort_qs_divide(_RAIter __begin, _RAIter __end,
+			      _Compare __comp, typename std::iterator_traits
+			      <_RAIter>::difference_type __pivot_rank,
+			      typename std::iterator_traits
+			      <_RAIter>::difference_type
+			      __num_samples, _ThreadIndex __num_threads)
     {
       typedef std::iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
@@ -64,25 +63,24 @@ namespace __gnu_parallel
       __num_samples = std::min(__num_samples, __n);
 
       // Allocate uninitialized, to avoid default constructor.
-      _ValueType* __samples =
-        static_cast<_ValueType*>(::operator new(__num_samples
-                                                * sizeof(_ValueType)));
+      _ValueType* __samples = static_cast<_ValueType*>
+	(::operator new(__num_samples * sizeof(_ValueType)));
 
       for (_DifferenceType __s = 0; __s < __num_samples; ++__s)
         {
-          const unsigned long long __index
-            = static_cast<unsigned long long>(__s) * __n / __num_samples;
+          const unsigned long long __index = static_cast<unsigned long long>
+	    (__s) * __n / __num_samples;
           ::new(&(__samples[__s])) _ValueType(__begin[__index]);
         }
 
       __gnu_sequential::sort(__samples, __samples + __num_samples, __comp);
 
-      _ValueType& pivot = __samples[__pivot_rank * __num_samples / __n];
+      _ValueType& __pivot = __samples[__pivot_rank * __num_samples / __n];
 
       __gnu_parallel::binder2nd<_Compare, _ValueType, _ValueType, bool>
-        __pred(__comp, pivot);
-      _DifferenceType __split =
-          __parallel_partition(__begin, __end, __pred, __num_threads);
+        __pred(__comp, __pivot);
+      _DifferenceType __split = __parallel_partition(__begin, __end,
+						     __pred, __num_threads);
 
       ::operator delete(__samples);
 
@@ -98,10 +96,9 @@ namespace __gnu_parallel
    */
   template<typename _RAIter, typename _Compare>
     void
-    __parallel_sort_qs_conquer(_RAIter __begin,
-                             _RAIter __end,
-                             _Compare __comp,
-                             _ThreadIndex __num_threads)
+    __parallel_sort_qs_conquer(_RAIter __begin, _RAIter __end,
+			       _Compare __comp,
+			       _ThreadIndex __num_threads)
     {
       typedef std::iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
@@ -127,22 +124,20 @@ namespace __gnu_parallel
 
       __pivot_rank = __n * __num_threads_left / __num_threads;
 
-      _DifferenceType __split =
-        __parallel_sort_qs_divide(__begin, __end, __comp, __pivot_rank,
-                                _Settings::get().sort_qs_num_samples_preset,
-                                __num_threads);
+      _DifferenceType __split = __parallel_sort_qs_divide
+	(__begin, __end, __comp, __pivot_rank,
+	 _Settings::get().sort_qs_num_samples_preset, __num_threads);
 
 #pragma omp parallel sections num_threads(2)
       {
 #pragma omp section
         __parallel_sort_qs_conquer(__begin, __begin + __split,
-                                 __comp, __num_threads_left);
+				   __comp, __num_threads_left);
 #pragma omp section
         __parallel_sort_qs_conquer(__begin + __split, __end,
-                                 __comp, __num_threads - __num_threads_left);
+				   __comp, __num_threads - __num_threads_left);
       }
     }
-
 
 
   /** @brief Unbalanced quicksort main call.
@@ -154,10 +149,9 @@ namespace __gnu_parallel
    */
   template<typename _RAIter, typename _Compare>
     void
-    __parallel_sort_qs(_RAIter __begin,
-                     _RAIter __end,
-                     _Compare __comp,
-                     _ThreadIndex __num_threads)
+    __parallel_sort_qs(_RAIter __begin, _RAIter __end,
+		       _Compare __comp,
+		       _ThreadIndex __num_threads)
     {
       _GLIBCXX_CALL(__n)
 
