@@ -35,15 +35,6 @@
 /* We need definitions from the SSE4A, SSE3, SSE2 and SSE header files.  */
 #include <ammintrin.h>
 
-/* Internal data types for implementing the intrinsics.  */
-typedef float __v8sf __attribute__ ((__vector_size__ (32)));
-typedef double __v4df __attribute__ ((__vector_size__ (32)));
-
-typedef float __m256 __attribute__ ((__vector_size__ (32),
-				     __may_alias__));
-typedef double __m256d __attribute__ ((__vector_size__ (32),
-				       __may_alias__));
-
 /* 128b Floating point multiply/add type instructions.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_macc_ps (__m128 __A, __m128 __B, __m128 __C)
