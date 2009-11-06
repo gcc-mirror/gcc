@@ -1,3 +1,17 @@
+2009-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9381
+	* decl2.c (build_memfn_type): Preserve attributes.
+	(cp_reconstruct_complex_type): Likewise.
+	(maybe_retrofit_in_chrg): Likewise.
+	* call.c (standard_conversion): Use build_memfn_type.
+	* pt.c (tsubst): Likewise.
+	* decl.c (build_ptrmem_type): Likewise
+	(check_function_type): Preserve attributes.
+	* tree.c (cp_build_type_attribute_variant): Propagate exception
+	specs on METHOD_TYPE, too.
+	(strip_typedefs): Preserve exception specs and attributes.
+
 2009-11-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/41536

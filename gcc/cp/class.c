@@ -4104,6 +4104,7 @@ adjust_clone_args (tree decl)
 	      /* A default parameter has been added. Adjust the
 		 clone's parameters.  */
 	      tree exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
+	      tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (clone));
 	      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
 	      tree type;
 
@@ -4121,6 +4122,8 @@ adjust_clone_args (tree decl)
 						 clone_parms);
 	      if (exceptions)
 		type = build_exception_variant (type, exceptions);
+	      if (attrs)
+		type = cp_build_type_attribute_variant (type, attrs);
 	      TREE_TYPE (clone) = type;
 
 	      clone_parms = NULL_TREE;

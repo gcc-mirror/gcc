@@ -1050,6 +1050,10 @@ strip_typedefs (tree t)
 	else
 	    result = build_function_type (type,
 					  arg_types);
+
+	if (TYPE_RAISES_EXCEPTIONS (t))
+	  result = build_exception_variant (result,
+					    TYPE_RAISES_EXCEPTIONS (t));
       }
       break;
     default:
@@ -1058,6 +1062,8 @@ strip_typedefs (tree t)
 
   if (!result)
       result = TYPE_MAIN_VARIANT (t);
+  if (TYPE_ATTRIBUTES (t))
+    result = cp_build_type_attribute_variant (result, TYPE_ATTRIBUTES (t));
   return cp_build_qualified_type (result, cp_type_quals (t));
 }
 
@@ -2609,7 +2615,8 @@ cp_build_type_attribute_variant (tree type, tree attributes)
   tree new_type;
 
   new_type = build_type_attribute_variant (type, attributes);
-  if (TREE_CODE (new_type) == FUNCTION_TYPE
+  if ((TREE_CODE (new_type) == FUNCTION_TYPE
+       || TREE_CODE (new_type) == METHOD_TYPE)
       && (TYPE_RAISES_EXCEPTIONS (new_type)
 	  != TYPE_RAISES_EXCEPTIONS (type)))
     new_type = build_exception_variant (new_type,
