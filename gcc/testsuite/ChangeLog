@@ -1,5 +1,9 @@
 2009-11-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/15946
+	* g++.dg/parse/error36.C: New.
+	* g++.old-deja/g++.other/typename1.C: Adjust.
+
 	PR c++/9381
 	* g++.dg/abi/regparm1.C: New.
 

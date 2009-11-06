@@ -1,5 +1,17 @@
 2009-11-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/15946
+	* parser.c (cp_parser_check_template_parameters): Don't talk about
+	specialization at function scope.
+	(cp_parser_diagnose_invalid_type_name): Handle dependent scope.
+	(cp_parser_parse_and_diagnose_invalid_type_name): Likewise.
+	(cp_parser_expression_statement): Suggest typename.
+	* error.c (dump_decl) [SCOPE_REF]: Print the type here.
+	(dump_expr) [SCOPE_REF]: Call it.
+	(dump_type) [UNBOUND_CLASS_TEMPLATE]: Check TFF_UNQUALIFIED_NAME.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Print class template
+	args.
+
 	PR c++/9381
 	* decl2.c (build_memfn_type): Preserve attributes.
 	(cp_reconstruct_complex_type): Likewise.
