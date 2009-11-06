@@ -5516,6 +5516,9 @@ finish_struct (tree t, tree attributes)
 	if (DECL_PURE_VIRTUAL_P (x))
 	  VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
+
+      /* Remember current #pragma pack value.  */
+      TYPE_PRECISION (t) = maximum_field_alignment;
     }
   else
     finish_struct_1 (t);

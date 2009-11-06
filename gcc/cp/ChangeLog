@@ -1,5 +1,10 @@
 2009-11-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/7046
+	* class.c (finish_struct): Store maximum_field_alignment in
+	TYPE_PRECISION.
+	* pt.c (instantiate_class_template): Set maximum_field_alignment.
+
 	PR c++/34870
 	* name-lookup.c (arg_assoc_class): Call complete_type.
 	* pt.c (instantiate_class_template): Call uses_template_parms

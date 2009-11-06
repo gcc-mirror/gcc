@@ -7352,6 +7352,7 @@ instantiate_class_template (tree type)
   tree typedecl;
   tree pbinfo;
   tree base_list;
+  unsigned int saved_maximum_field_alignment;
 
   if (type == error_mark_node)
     return error_mark_node;
@@ -7412,6 +7413,9 @@ instantiate_class_template (tree type)
   push_deferring_access_checks (dk_no_deferred);
 
   push_to_top_level ();
+  /* Use #pragma pack from the template context.  */
+  saved_maximum_field_alignment = maximum_field_alignment;
+  maximum_field_alignment = TYPE_PRECISION (pattern);
 
   SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
 
@@ -7827,6 +7831,7 @@ instantiate_class_template (tree type)
   perform_typedefs_access_check (pattern, args);
   perform_deferred_access_checks ();
   pop_nested_class ();
+  maximum_field_alignment = saved_maximum_field_alignment;
   pop_from_top_level ();
   pop_deferring_access_checks ();
   pop_tinst_level ();
