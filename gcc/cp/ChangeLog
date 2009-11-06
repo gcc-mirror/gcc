@@ -1,5 +1,9 @@
 2009-11-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/34180
+	* method.c (do_build_copy_constructor): Don't drop cv-quals from
+	the field type.
+
 	PR c++/7046
 	* class.c (finish_struct): Store maximum_field_alignment in
 	TYPE_PRECISION.

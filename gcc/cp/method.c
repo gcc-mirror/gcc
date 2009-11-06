@@ -622,6 +622,7 @@ do_build_copy_constructor (tree fndecl)
 
 	      if (DECL_MUTABLE_P (field))
 		quals &= ~TYPE_QUAL_CONST;
+	      quals |= TYPE_QUALS (expr_type);
 	      expr_type = cp_build_qualified_type (expr_type, quals);
 	    }
 
