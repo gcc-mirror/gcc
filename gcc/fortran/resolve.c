@@ -9480,8 +9480,8 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
       if (proc_pass_arg != argpos && old_pass_arg != argpos
 	  && !gfc_compare_types (&proc_formal->sym->ts, &old_formal->sym->ts))
 	{
-	  gfc_error ("Types mismatch for dummy argument '%s' of '%s' %L in"
-		     " in respect to the overridden procedure",
+	  gfc_error ("Types mismatch for dummy argument '%s' of '%s' %L "
+		     "in respect to the overridden procedure",
 		     proc_formal->sym->name, proc->name, &where);
 	  return FAILURE;
 	}
