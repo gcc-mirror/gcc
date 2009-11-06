@@ -1,3 +1,9 @@
+2009-11-06  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41963
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Check all uses
+	of a potential reciprocal to really be reciprocals.
+
 2009-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/x86intrin.h: Include fma4intrin.h, xopintrin.h and

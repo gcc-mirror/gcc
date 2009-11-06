@@ -531,7 +531,9 @@ execute_cse_reciprocals (void)
 		      || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD))
 		{
 		  enum built_in_function code;
-		  bool md_code;
+		  bool md_code, fail;
+		  imm_use_iterator ui;
+		  use_operand_p use_p;
 
 		  code = DECL_FUNCTION_CODE (fndecl);
 		  md_code = DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD;
@@ -540,12 +542,36 @@ execute_cse_reciprocals (void)
 		  if (!fndecl)
 		    continue;
 
+		  /* Check that all uses of the SSA name are divisions,
+		     otherwise replacing the defining statement will do
+		     the wrong thing.  */
+		  fail = false;
+		  FOR_EACH_IMM_USE_FAST (use_p, ui, arg1)
+		    {
+		      gimple stmt2 = USE_STMT (use_p);
+		      if (is_gimple_debug (stmt2))
+			continue;
+		      if (!is_gimple_assign (stmt2)
+			  || gimple_assign_rhs_code (stmt2) != RDIV_EXPR
+			  || gimple_assign_rhs1 (stmt2) == arg1
+			  || gimple_assign_rhs2 (stmt2) != arg1)
+			{
+			  fail = true;
+			  break;
+			}
+		    }
+		  if (fail)
+		    continue;
+
 		  gimple_call_set_fndecl (stmt1, fndecl);
 		  update_stmt (stmt1);
 
-		  gimple_assign_set_rhs_code (stmt, MULT_EXPR);
-		  fold_stmt_inplace (stmt);
-		  update_stmt (stmt);
+		  FOR_EACH_IMM_USE_STMT (stmt, ui, arg1)
+		    {
+		      gimple_assign_set_rhs_code (stmt, MULT_EXPR);
+		      fold_stmt_inplace (stmt);
+		      update_stmt (stmt);
+		    }
 		}
 	    }
 	}
