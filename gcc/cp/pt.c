@@ -7358,7 +7358,7 @@ instantiate_class_template (tree type)
 
   if (TYPE_BEING_DEFINED (type)
       || COMPLETE_TYPE_P (type)
-      || dependent_type_p (type))
+      || uses_template_parms (type))
     return type;
 
   /* Figure out which template is being instantiated.  */
