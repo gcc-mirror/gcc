@@ -1,3 +1,8 @@
+2009-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9381
+	* g++.dg/abi/regparm1.C: New.
+
 2009-11-06  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* g++.dg/plugin/pragma_plugin-test-1.C: new testcase for

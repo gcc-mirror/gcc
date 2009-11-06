@@ -7170,16 +7170,9 @@ build_ptrmem_type (tree class_type, tree member_type)
 {
   if (TREE_CODE (member_type) == METHOD_TYPE)
     {
-      tree arg_types;
-
-      arg_types = TYPE_ARG_TYPES (member_type);
-      class_type = (cp_build_qualified_type
-		    (class_type,
-		     cp_type_quals (TREE_TYPE (TREE_VALUE (arg_types)))));
-      member_type
-	= build_method_type_directly (class_type,
-				      TREE_TYPE (member_type),
-				      TREE_CHAIN (arg_types));
+      tree arg_types = TYPE_ARG_TYPES (member_type);
+      cp_cv_quals quals = cp_type_quals (TREE_TYPE (TREE_VALUE (arg_types)));
+      member_type = build_memfn_type (member_type, class_type, quals);
       return build_ptrmemfunc_type (build_pointer_type (member_type));
     }
   else
@@ -11551,7 +11544,7 @@ lookup_enumerator (tree enumtype, tree name)
 }
 
 
-/* We're defining DECL.  Make sure that it's type is OK.  */
+/* We're defining DECL.  Make sure that its type is OK.  */
 
 static void
 check_function_type (tree decl, tree current_function_parms)
@@ -11585,9 +11578,12 @@ check_function_type (tree decl, tree current_function_parms)
 					     TREE_CHAIN (args));
       else
 	fntype = build_function_type (void_type_node, args);
-      TREE_TYPE (decl)
+      fntype
 	= build_exception_variant (fntype,
 				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)));
+      fntype = (cp_build_type_attribute_variant
+		(fntype, TYPE_ATTRIBUTES (TREE_TYPE (decl))));
+      TREE_TYPE (decl) = fntype;
     }
   else
     abstract_virtuals_error (decl, TREE_TYPE (fntype));

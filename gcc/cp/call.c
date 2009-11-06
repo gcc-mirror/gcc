@@ -896,10 +896,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  || cp_type_quals (fbase) != cp_type_quals (tbase))
 	return NULL;
 
-      from = cp_build_qualified_type (tbase, cp_type_quals (fbase));
-      from = build_method_type_directly (from,
-					 TREE_TYPE (fromfn),
-					 TREE_CHAIN (TYPE_ARG_TYPES (fromfn)));
+      from = build_memfn_type (fromfn, tbase, cp_type_quals (tbase));
       from = build_ptrmemfunc_type (build_pointer_type (from));
       conv = build_conv (ck_pmem, from, conv);
       conv->base_p = true;
