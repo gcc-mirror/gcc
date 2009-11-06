@@ -1,5 +1,8 @@
 2009-11-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/7046
+	* g++.dg/abi/pragma-pack1.C: New.
+
 	PR c++/34870
 	* g++.dg/lookup/koenig7.C: New.
 
