@@ -1,3 +1,10 @@
+2009-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41967
+	* parser.c (cp_parser_omp_for_loop): After diagnosing not perfectly
+	nested loop and parsing statements, don't cp_parser_require }, instead
+	exit the loop if next token is CPP_EOF.
+
 2009-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34180
