@@ -1,5 +1,10 @@
 2009-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/x86intrin.h: Include fma4intrin.h, xopintrin.h and
+	lwpintrin.h after immintrin.h.
+	* config/i386/fma4intrin.h (__v8sf, __v4df, __m256, __m256d): Remove
+	typedefs.
+
 	PR middle-end/41935
 	* c-common.c (fold_offsetof_1) <case ARRAY_REF>: Don't crash for VLAs
 	or non-constant index, allow index one past the last element and

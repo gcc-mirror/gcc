@@ -54,6 +54,17 @@
 #include <smmintrin.h>
 #endif
 
+#if defined (__AES__) || defined (__PCLMUL__)
+#include <wmmintrin.h>
+#endif
+
+/* For including AVX instructions */
+#include <immintrin.h>
+
+#ifdef __3dNOW__
+#include <mm3dnow.h>
+#endif
+
 #ifdef __FMA4__
 #include <fma4intrin.h>
 #endif
@@ -64,17 +75,6 @@
 
 #ifdef __LWP__
 #include <lwpintrin.h>
-#endif
-
-#if defined (__AES__) || defined (__PCLMUL__)
-#include <wmmintrin.h>
-#endif
-
-/* For including AVX instructions */
-#include <immintrin.h>
-
-#ifdef __3dNOW__
-#include <mm3dnow.h>
 #endif
 
 #endif /* _X86INTRIN_H_INCLUDED */
