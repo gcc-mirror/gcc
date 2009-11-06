@@ -67,9 +67,14 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /**
+   * @addtogroup iterators
+   * @{
+   */
+
   // 24.4.1 Reverse iterators
   /**
-   *  "Bidirectional and random access iterators have corresponding reverse
+   *  'Bidirectional and random access iterators have corresponding reverse
    *  %iterator adaptors that iterate through the data structure in the
    *  opposite direction.  They have the same signatures as the corresponding
    *  iterators.  The fundamental relation between a reverse %iterator and its
@@ -80,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  This mapping is dictated by the fact that while there is always a
    *  pointer past the end of an array, there might not be a valid pointer
-   *  before the beginning of an array." [24.4.1]/1,2
+   *  before the beginning of an array.' [24.4.1]/1,2
    *
    *  Reverse iterators can be tricky and surprising at first.  Their
    *  semantics make sense, however, and the trickiness is a side effect of
@@ -97,14 +102,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       _Iterator current;
 
-    public:
-      typedef _Iterator					       iterator_type;
-      typedef typename iterator_traits<_Iterator>::difference_type
-							       difference_type;
-      typedef typename iterator_traits<_Iterator>::reference   reference;
-      typedef typename iterator_traits<_Iterator>::pointer     pointer;
+      typedef iterator_traits<_Iterator>		__traits_type;
 
     public:
+      typedef _Iterator					iterator_type;
+      typedef typename __traits_type::difference_type	difference_type;
+      typedef typename __traits_type::pointer		pointer;
+      typedef typename __traits_type::reference		reference;
+
       /**
        *  The default constructor default-initializes member @p current.
        *  If it is a pointer, that means it is zero-initialized.
@@ -651,6 +656,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 					 typename _Container::iterator(__i));
     }
 
+  // @} group iterators
+
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
@@ -670,15 +677,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     protected:
       _Iterator _M_current;
 
+      typedef iterator_traits<_Iterator>		__traits_type;
+
     public:
-      typedef _Iterator					     iterator_type;
-      typedef typename iterator_traits<_Iterator>::iterator_category
-                                                             iterator_category;
-      typedef typename iterator_traits<_Iterator>::value_type  value_type;
-      typedef typename iterator_traits<_Iterator>::difference_type
-                                                             difference_type;
-      typedef typename iterator_traits<_Iterator>::reference reference;
-      typedef typename iterator_traits<_Iterator>::pointer   pointer;
+      typedef _Iterator					iterator_type;
+      typedef typename __traits_type::iterator_category iterator_category;
+      typedef typename __traits_type::value_type  	value_type;
+      typedef typename __traits_type::difference_type 	difference_type;
+      typedef typename __traits_type::reference 	reference;
+      typedef typename __traits_type::pointer   	pointer;
 
       __normal_iterator() : _M_current(_Iterator()) { }
 
@@ -869,6 +876,11 @@ _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /**
+   * @addtogroup iterators
+   * @{
+   */
+
   // 24.4.3  Move iterators
   /**
    *  Class template move_iterator is an iterator adapter with the same
@@ -884,18 +896,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       _Iterator _M_current;
 
-    public:
-      typedef _Iterator                                        iterator_type;
-      typedef typename iterator_traits<_Iterator>::difference_type
-                                                               difference_type;
-      // NB: DR 680.
-      typedef _Iterator                                        pointer;
-      typedef typename iterator_traits<_Iterator>::value_type  value_type;
-      typedef typename iterator_traits<_Iterator>::iterator_category
-                                                               iterator_category;
-      typedef value_type&&                                     reference;
+      typedef iterator_traits<_Iterator>		__traits_type;
 
     public:
+      typedef _Iterator					iterator_type;
+      typedef typename __traits_type::iterator_category iterator_category;
+      typedef typename __traits_type::value_type  	value_type;
+      typedef typename __traits_type::difference_type	difference_type;
+      // NB: DR 680.
+      typedef _Iterator					pointer;
+      typedef value_type&&				reference;
+
       move_iterator()
       : _M_current() { }
 
@@ -1030,6 +1041,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline move_iterator<_Iterator>
     make_move_iterator(const _Iterator& __i)
     { return move_iterator<_Iterator>(__i); }
+
+  // @} group iterators
 
 _GLIBCXX_END_NAMESPACE
 

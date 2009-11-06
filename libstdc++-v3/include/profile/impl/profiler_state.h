@@ -28,7 +28,7 @@
 // reasons why the executable file might be covered by the GNU General
 // Public License.
 
-/** @file profile/impl/profiler_state.cc
+/** @file profile/impl/profiler_state.h
  *  @brief Global profiler state.
  */
 

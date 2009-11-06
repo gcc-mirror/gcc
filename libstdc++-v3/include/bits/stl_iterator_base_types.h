@@ -77,15 +77,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //@{ 
   ///  Marking input iterators.
   struct input_iterator_tag { };
+
   ///  Marking output iterators.
   struct output_iterator_tag { };
+
   /// Forward iterators support a superset of input iterator operations.
   struct forward_iterator_tag : public input_iterator_tag { };
+
   /// Bidirectional iterators support a superset of forward iterator
   /// operations.
   struct bidirectional_iterator_tag : public forward_iterator_tag { };
-  /// Random-access iterators support a superset of bidirectional iterator
-  /// operations.
+
+  /// Random-access iterators support a superset of bidirectional
+  /// iterator operations.
   struct random_access_iterator_tag : public bidirectional_iterator_tag { };
 
 
@@ -116,6 +120,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /**
+   *  @brief  Traits class for iterators.
+   *
    *  This class does nothing but define nested typedefs.  The general
    *  version simply "forwards" the nested typedefs from the Iterator
    *  argument.  Specialized versions for pointers and pointers-to-const
@@ -131,6 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename _Iterator::reference         reference;
     };
 
+  /// Partial specialization for pointer types.
   template<typename _Tp>
     struct iterator_traits<_Tp*>
     {
@@ -141,6 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef _Tp&                        reference;
     };
 
+  /// Partial specialization for const pointer types.
   template<typename _Tp>
     struct iterator_traits<const _Tp*>
     {

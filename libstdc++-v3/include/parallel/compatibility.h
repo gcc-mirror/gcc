@@ -227,8 +227,8 @@ namespace __gnu_parallel
 
 #endif
 
-  /** @brief Compare @__c *__ptr and @__c __comparand. If equal, let @__c
-   * *__ptr=__replacement and return @__c true, return @__c false otherwise.
+  /** @brief Compare @c *__ptr and @c __comparand. If equal, let @c
+   * *__ptr=__replacement and return @c true, return @c false otherwise.
    *
    *  Implementation is heavily platform-dependent.
    *  @param __ptr Pointer to 32-bit signed integer.
@@ -270,8 +270,8 @@ namespace __gnu_parallel
 #endif
   }
 
-  /** @brief Compare @__c *__ptr and @__c __comparand. If equal, let @__c
-   * *__ptr=__replacement and return @__c true, return @__c false otherwise.
+  /** @brief Compare @c *__ptr and @c __comparand. If equal, let @c
+   * *__ptr=__replacement and return @c true, return @c false otherwise.
    *
    *  Implementation is heavily platform-dependent.
    *  @param __ptr Pointer to 64-bit signed integer.
@@ -323,8 +323,8 @@ namespace __gnu_parallel
 #endif
   }
 
-  /** @brief Compare @__c *__ptr and @__c __comparand. If equal, let @__c
-   * *__ptr=__replacement and return @__c true, return @__c false otherwise.
+  /** @brief Compare @c *__ptr and @c __comparand. If equal, let @c
+   * *__ptr=__replacement and return @c true, return @c false otherwise.
    *
    *  Implementation is heavily platform-dependent.
    *  @param __ptr Pointer to signed integer.

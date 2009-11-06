@@ -106,7 +106,7 @@ namespace __gnu_parallel
       _DRandomShufflingGlobalData<_RAIter>* _M_sd;
     };
 
-  /** @brief Generate a random number in @__c [0,2^__logp).
+  /** @brief Generate a random number in @c [0,2^__logp).
     *  @param __logp Logarithm (basis 2) of the upper range __bound.
     *  @param __rng Random number generator to use.
     */

@@ -43,6 +43,36 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /** 
+   *  @defgroup io I/O
+   *
+   *  Nearly all of the I/O classes are parameterized on the type of
+   *  characters they read and write.  (The major exception is ios_base at
+   *  the top of the hierarchy.)  This is a change from pre-Standard
+   *  streams, which were not templates.
+   *
+   *  For ease of use and compatibility, all of the basic_* I/O-related
+   *  classes are given typedef names for both of the builtin character
+   *  widths (wide and narrow).  The typedefs are the same as the
+   *  pre-Standard names, for example:
+   *
+   *  @code
+   *     typedef basic_ifstream<char>  ifstream;
+   *  @endcode
+   *
+   *  Because properly forward-declaring these classes can be difficult, you
+   *  should not do it yourself.  Instead, include the &lt;iosfwd&gt;
+   *  header, which contains only declarations of all the I/O classes as
+   *  well as the typedefs.  Trying to forward-declare the typedefs
+   *  themselves (e.g., "class ostream;") is not valid ISO C++.
+   *
+   *  For more specific declarations, see
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
+   *
+   *  @{
+  */
+  class ios_base; 
+
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_ios;
 
@@ -94,36 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // Not included.   (??? Apparently no LWG number?)
-  class ios_base; 
 
-  /** 
-   *  @defgroup io I/O
-   *
-   *  Nearly all of the I/O classes are parameterized on the type of
-   *  characters they read and write.  (The major exception is ios_base at
-   *  the top of the hierarchy.)  This is a change from pre-Standard
-   *  streams, which were not templates.
-   *
-   *  For ease of use and compatibility, all of the basic_* I/O-related
-   *  classes are given typedef names for both of the builtin character
-   *  widths (wide and narrow).  The typedefs are the same as the
-   *  pre-Standard names, for example:
-   *
-   *  @code
-   *     typedef basic_ifstream<char>  ifstream;
-   *  @endcode
-   *
-   *  Because properly forward-declaring these classes can be difficult, you
-   *  should not do it yourself.  Instead, include the &lt;iosfwd&gt;
-   *  header, which contains only declarations of all the I/O classes as
-   *  well as the typedefs.  Trying to forward-declare the typedefs
-   *  themselves (e.g., "class ostream;") is not valid ISO C++.
-   *
-   *  For more specific declarations, see
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
-   *
-   *  @{
-  */
   typedef basic_ios<char> 		ios;		///< @isiosfwd
   typedef basic_streambuf<char> 	streambuf;	///< @isiosfwd
   typedef basic_istream<char> 		istream;	///< @isiosfwd

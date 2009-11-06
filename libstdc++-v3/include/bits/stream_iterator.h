@@ -36,6 +36,11 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+  /**
+   * @addtogroup iterators
+   * @{
+   */
+
   /// Provides input iterator semantics for streams.
   template<typename _Tp, typename _CharT = char,
            typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t>
@@ -205,6 +210,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator++(int)
       { return *this; }
     };
+
+  // @} group iterators
 
 _GLIBCXX_END_NAMESPACE
 

@@ -28,7 +28,7 @@
 // reasons why the executable file might be covered by the GNU General
 // Public License.
 
-/** @file profile/impl/profiler_hashtable_size.cc
+/** @file profile/impl/profiler_hashtable_size.h
  *  @brief Collection of hashtable size traces.
  */
 

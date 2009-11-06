@@ -66,7 +66,7 @@ namespace __gnu_parallel
        *  Changed by owning thread only. */
       _GLIBCXX_JOB_VOLATILE _DifferenceType _M_last;
 
-      /** @brief Number of elements, i.e. @__c _M_last-_M_first+1.
+      /** @brief Number of elements, i.e. @c _M_last-_M_first+1.
        *
        *  Changed by owning thread only. */
       _GLIBCXX_JOB_VOLATILE _DifferenceType _M_load;

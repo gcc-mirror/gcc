@@ -94,7 +94,7 @@ namespace __gnu_parallel
     *  @param __comp Comparator.
     *  @param __num_threads Number of threads that are allowed to work on
     *  this part.
-    *  @pre @__c (__end-__begin)>=1 */
+    *  @pre @c (__end-__begin)>=1 */
   template<typename _RAIter, typename _Compare>
     typename std::iterator_traits<_RAIter>::difference_type
     __qsb_divide(_RAIter __begin, _RAIter __end,

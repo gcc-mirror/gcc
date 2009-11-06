@@ -51,6 +51,10 @@ namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_TR1
 
+ /**
+   *  @brief  Exception possibly thrown by @c shared_ptr.
+   *  @ingroup exceptions
+   */
   class bad_weak_ptr : public std::exception
   {
   public:

@@ -58,6 +58,14 @@
 
 #pragma GCC system_header
 
+/**
+ * @defgroup utilities Utilities
+ *
+ * Components deemed generally useful. Includes pair, tuple,
+ * forward/move helpers, ratio, function object, metaprogramming and
+ * type traits, time, date, and memory functions.
+ */
+
 #include <bits/c++config.h>
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
@@ -82,13 +90,5 @@
 #  include <bits/move.h>
 #  include <initializer_list>
 #endif
-
-/**
- * @defgroup utilities Utilities
- *
- * Components deemed generally useful. Includes pair, tuple,
- * forward/move helpers, ratio, function object, metaprogramming and
- * type traits, time, date, and memory functions.
- */
 
 #endif /* _GLIBCXX_UTILITY */

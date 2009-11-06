@@ -57,7 +57,8 @@
 
 namespace std
 {
-  /** @addtogroup metaprogramming
+  /**
+   * @addtogroup metaprogramming
    * @{
    */
 
@@ -154,7 +155,7 @@ namespace std
 
   template<typename _Tp>
     struct __is_signed_helper<_Tp, true, false>
-    : public integral_constant<bool, _Tp(-1) < _Tp(0)>
+    : public integral_constant<bool, static_cast<bool>(_Tp(-1) < _Tp(0))>
     { };
 
   /// is_signed

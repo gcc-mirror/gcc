@@ -582,7 +582,7 @@ namespace __cxxabiv1
 /** @namespace abi
  *  @brief The cross-vendor C++ Application Binary Interface. A
  *  namespace alias to __cxxabiv1, but user programs should use the
- *  alias `abi'.
+ *  alias 'abi'.
  *
  *  A brief overview of an ABI is given in the libstdc++ FAQ, question
  *  5.8 (you may have a copy of the FAQ locally, or you can view the online
@@ -594,10 +594,10 @@ namespace __cxxabiv1
  *  along with the current specification.
  *
  *  For users of GCC greater than or equal to 3.x, entry points are
- *  available in <cxxabi.h>, which notes, <em>"It is not normally
+ *  available in <cxxabi.h>, which notes, <em>'It is not normally
  *  necessary for user programs to include this header, or use the
  *  entry points directly.  However, this header is available should
- *  that be needed."</em>
+ *  that be needed.'</em>
 */
 namespace abi = __cxxabiv1;
 

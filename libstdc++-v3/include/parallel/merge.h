@@ -37,11 +37,11 @@
 
 namespace __gnu_parallel
 {
-  /** @brief Merge routine being able to merge only the @__c __max_length
+  /** @brief Merge routine being able to merge only the @c __max_length
    * smallest elements.
    *
-   * The @__c __begin iterators are advanced accordingly, they might not
-   * reach @__c __end, in contrast to the usual variant.
+   * The @c __begin iterators are advanced accordingly, they might not
+   * reach @c __end, in contrast to the usual variant.
    * @param __begin1 Begin iterator of first sequence.
    * @param __end1 End iterator of first sequence.
    * @param __begin2 Begin iterator of second sequence.
@@ -83,11 +83,11 @@ namespace __gnu_parallel
       return __target;
     }
 
-  /** @brief Merge routine being able to merge only the @__c __max_length
+  /** @brief Merge routine being able to merge only the @c __max_length
    * smallest elements.
    *
-   * The @__c __begin iterators are advanced accordingly, they might not
-   * reach @__c __end, in contrast to the usual variant.
+   * The @c __begin iterators are advanced accordingly, they might not
+   * reach @c __end, in contrast to the usual variant.
    * Specially designed code should allow the compiler to generate
    * conditional moves instead of branches.
    * @param __begin1 Begin iterator of first sequence.
@@ -150,11 +150,11 @@ namespace __gnu_parallel
       return __target;
     }
 
-  /** @brief Merge routine being able to merge only the @__c __max_length
+  /** @brief Merge routine being able to merge only the @c __max_length
    * smallest elements.
    *
-   *  The @__c __begin iterators are advanced accordingly, they might not
-   *  reach @__c __end, in contrast to the usual variant.
+   *  The @c __begin iterators are advanced accordingly, they might not
+   *  reach @c __end, in contrast to the usual variant.
    *  Static switch on whether to use the conditional-move variant.
    *  @param __begin1 Begin iterator of first sequence.
    *  @param __end1 End iterator of first sequence.
@@ -202,11 +202,11 @@ namespace __gnu_parallel
     { return __merge_advance(__begin1, __end1, __begin2, __end2, __target,
 			     __max_length, __comp); }
 
-  /** @brief Parallel merge routine being able to merge only the @__c
+  /** @brief Parallel merge routine being able to merge only the @c
    * __max_length smallest elements.
    *
-   *  The @__c __begin iterators are advanced accordingly, they might not
-   *  reach @__c __end, in contrast to the usual variant.
+   *  The @c __begin iterators are advanced accordingly, they might not
+   *  reach @c __end, in contrast to the usual variant.
    *  The functionality is projected onto parallel_multiway_merge.
    *  @param __begin1 Begin iterator of first sequence.
    *  @param __end1 End iterator of first sequence.

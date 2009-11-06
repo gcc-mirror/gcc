@@ -82,14 +82,14 @@ namespace __gnu_parallel
       /** @brief Offsets to add to the found positions. */
       _DifferenceType* _M_offsets;
 
-      /** @brief Pieces of data to merge @__c [thread][__sequence] */
+      /** @brief Pieces of data to merge @c [thread][__sequence] */
       std::vector<_Piece<_DifferenceType> >* _M_pieces;
   };
 
   /**
    *  @brief Select _M_samples from a sequence.
    *  @param __sd Pointer to algorithm data. _Result will be placed in
-   *  @__c __sd->_M_samples.
+   *  @c __sd->_M_samples.
    *  @param __num_samples Number of _M_samples to select.
    */
   template<typename _RAIter, typename _DifferenceTp>
