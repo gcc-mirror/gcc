@@ -1,3 +1,10 @@
+2009-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41703
+	* pt.c (check_undeduced_parms): New subroutine of...
+	(more_specialized_fn): ...here.  Undeduced template parms can make
+	a template less specialized than another.
+
 2009-11-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39413
