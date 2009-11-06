@@ -533,8 +533,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  This manipulator is often mistakenly used when a simple newline is
    *  desired, leading to poor buffering performance.  See
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#2 for more
-   *  on this subject.
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
+   *  for more on this subject.
   */
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>& 
