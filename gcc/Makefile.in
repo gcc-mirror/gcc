@@ -1982,7 +1982,7 @@ c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(TREE_H) $(FUNCTION_H) $(C_PRAGMA_H) $(TOPLEV_H) output.h $(GGC_H) $(TM_P_H) \
     $(C_COMMON_H) $(TARGET_H) gt-c-pragma.h $(CPPLIB_H) $(FLAGS_H) $(DIAGNOSTIC_H) \
-    opts.h
+    opts.h $(PLUGINS_H)
 graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) $(TOPLEV_H) $(FLAGS_H) output.h \
     $(RTL_H) $(FUNCTION_H) hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(OBSTACK_H) \
     $(CONFIG_H)
@@ -4260,7 +4260,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
   intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) $(C_COMMON_H) $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_FLOW_H) langhooks.h incpath.h \
-  tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H)
+  tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
+  $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H)
 
 # Install the headers needed to build a plugin.
 install-plugin: installdirs lang.install-plugin
@@ -4524,7 +4525,7 @@ install-collect2: collect2 installdirs
 # Install lto-wrapper.
 install-lto-wrapper: lto-wrapper$(exeext)
 	$(INSTALL_PROGRAM) lto-wrapper$(exeext) $(DESTDIR)$(libexecsubdir)/lto-wrapper$(exeext)
-	
+
 # Cancel installation by deleting the installed files.
 uninstall: lang.uninstall
 	-rm -rf $(DESTDIR)$(libsubdir)

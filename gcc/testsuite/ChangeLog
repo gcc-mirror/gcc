@@ -1,3 +1,12 @@
+2009-11-06  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* g++.dg/plugin/pragma_plugin-test-1.C: new testcase for
+	PLUGIN_PRAGMAS.
+	* g++.dg/plugin/pragma_plugin.c: new test plugin for
+	PLUGIN_PRAGMAS.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add pragma_plugin.c and
+	pragma_plugin-test-1.C.
+
 2009-11-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/41536

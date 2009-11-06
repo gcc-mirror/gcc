@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic.h"
 #include "opts.h"
+#include "plugin.h"
 
 #define GCC_BAD(gmsgid) \
   do { warning (OPT_Wpragmas, gmsgid); return; } while (0)
@@ -1450,6 +1451,9 @@ init_pragma (void)
 #ifdef REGISTER_TARGET_PRAGMAS
   REGISTER_TARGET_PRAGMAS ();
 #endif
+
+  /* Allow plugins to register their own pragmas. */
+  invoke_plugin_callbacks (PLUGIN_PRAGMAS, NULL);
 }
 
 #include "gt-c-pragma.h"
