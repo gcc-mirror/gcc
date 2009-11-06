@@ -1,3 +1,8 @@
+2009-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/41949
+	* include/std/ostream: Adjust link.
+
 2009-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/multiway_merge.h: Simple formatting and
