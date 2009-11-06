@@ -16,6 +16,7 @@
 	* decl2.c (build_memfn_type): Preserve attributes.
 	(cp_reconstruct_complex_type): Likewise.
 	(maybe_retrofit_in_chrg): Likewise.
+	* class.c (adjust_clone_args): Likewise.
 	* call.c (standard_conversion): Use build_memfn_type.
 	* pt.c (tsubst): Likewise.
 	* decl.c (build_ptrmem_type): Likewise
