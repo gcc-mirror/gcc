@@ -43,6 +43,7 @@ enum plugin_event
   PLUGIN_REGISTER_GGC_CACHES,	/* Register an extra GGC cache table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration.  */
   PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
+  PLUGIN_PRAGMAS,	        /* Called during pragma registration.  */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 };

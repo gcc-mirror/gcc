@@ -136,6 +136,7 @@ enum plugin_event
   PLUGIN_REGISTER_GGC_CACHES,	/* Register an extra GGC cache table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
   PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
+  PLUGIN_PRAGMAS,	        /* Called during pragma registration. */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 @};
@@ -155,6 +156,11 @@ the arguments:
 For the PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS
 and PLUGIN_REGISTER_GGC_CACHES pseudo-events the @code{callback} should be
 null, and the @code{user_data} is specific.
+
+When the PLUGIN_PRAGMAS event is triggered (with a null
+pointer as data from GCC), plugins may register their own pragmas
+using functions like @code{c_register_pragma} or
+@code{c_register_pragma_with_expansion}.
 
 @section Interacting with the pass manager
 
