@@ -4780,6 +4780,8 @@ arg_assoc_class (struct arg_lookup *k, tree type)
   if (arg_assoc_namespace (k, context))
     return true;
 
+  complete_type (type);
+
   if (TYPE_BINFO (type))
     {
       /* Process baseclasses.  */

@@ -1,5 +1,10 @@
 2009-11-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/34870
+	* name-lookup.c (arg_assoc_class): Call complete_type.
+	* pt.c (instantiate_class_template): Call uses_template_parms
+	instead of dependent_type_p.
+
 	PR c++/41703
 	* pt.c (check_undeduced_parms): New subroutine of...
 	(more_specialized_fn): ...here.  Undeduced template parms can make
