@@ -22424,7 +22424,8 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	    }
 	  collapse_err = true;
 	  cp_parser_statement_seq_opt (parser, NULL);
-	  cp_parser_require (parser, CPP_CLOSE_BRACE, "%<}%>");
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+	    break;
 	}
     }
 
