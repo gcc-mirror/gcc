@@ -1100,6 +1100,9 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
   gfc_symbol* proc_sym;
   gfc_symbol* context_proc;
 
+  if (sym->attr.flavor == FL_PROGRAM)
+    return false;
+
   gcc_assert (sym->attr.flavor == FL_PROCEDURE);
 
   /* If we've got an ENTRY, find real procedure.  */
