@@ -5045,7 +5045,7 @@ static void
 check_regexp_units_distribution (const char *insn_reserv_name,
 				 regexp_t regexp)
 {
-  int i, j, k, cycle, cycle2, start, n_alts, alt, alt2;
+  int i, j, k, cycle, start, n_alts, alt, alt2;
   bool annotation_reservation_message_reported_p;
   regexp_t seq, allof, unit;
   struct unit_usage *unit_usage_ptr;
@@ -5164,7 +5164,6 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 		   j < (int) VEC_length (unit_usage_t, cycle_alt_unit_usages);
 		   j++)
 		{
-		  cycle2 = j / n_alts;
 		  alt2 = j % n_alts;
 		  if (! unit_present_on_list_p
 		        (VEC_index (unit_usage_t, cycle_alt_unit_usages,
