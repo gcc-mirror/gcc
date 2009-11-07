@@ -1,3 +1,14 @@
+2009-11-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (build_succ_graph): Feed stores
+	to anything only to variables that can take pointers.
+	(get_constraint_for_ssa_var): Properly exclude full
+	variables from expanding.
+	(first_vi_for_offset): Avoid overflow in arithmetic.
+	(first_or_preceding_vi_for_offset): Likewise.
+	(count_num_arguments): Fix implementation.
+	(gate_ipa_pta): Do not run when not optimizing.
+
 2009-11-07  David Binderman <dcb314@hotmail.com>
 
 	* builtins.c (apply_args_size, expand_builtin_mathfn, expand_powi,
