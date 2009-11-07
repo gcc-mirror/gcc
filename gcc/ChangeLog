@@ -1,3 +1,13 @@
+2009-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (xop_pmacsww, xop_pmacssww, xop_pmacsdd,
+	xop_pmacssdd, xop_pmacssdql, xop_pmacssdqh, xop_pmacsdql,
+	*xop_pmacsdql_mem, xop_pmacsdqh, *xop_pmacsdqh_mem, xop_pmacsswd,
+	xop_pmacswd, xop_pmadcsswd, xop_pmadcswd, xop_pcmov_<mode>,
+	xop_pcmov_<mode>256, xop_pperm, xop_pperm_pack_v2di_v4si,
+	xop_pperm_pack_v4si_v8hi, xop_pperm_pack_v8hi_v16qi): Compress
+	operand alternatives.
+
 2009-11-06  Michael Matz  <matz@suse.de>
 
 	PR middle-end/41963
@@ -166,8 +176,7 @@
 	(xop_pcmov_<mode>): Add XOP conditional mov instructions.
 	* config/i386/i386.c (OPTION_MASK_ISA_XOP_SET): New.
 	(OPTION_MASK_ISA_XOP_UNSET): New.	
-	(OPTION_MASK_ISA_XOP_UNSET): Change definition to
-	depend on XOP.
+	(OPTION_MASK_ISA_XOP_UNSET): Change definition to depend on XOP.
 	(ix86_handle_option): Handle -mxop.
 	(isa_opts): Handle -mxop.
 	(enum pta_flags): Add PTA_XOP.
@@ -584,8 +593,8 @@
 2009-11-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38699
-	* c-common.c (fold_offsetof_1): Issue errors when the member designator
-	of the offsetof expression is not legitimate.
+	* c-common.c (fold_offsetof_1): Issue errors when the member
+	designator of the offsetof expression is not legitimate.
 
 2009-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
