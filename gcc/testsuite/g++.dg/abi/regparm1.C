@@ -7,17 +7,28 @@ extern "C" int printf(const char *, ...);
 void *save_this;
 int *save_addr1, *save_addr2;
 
+int fail;
+
 struct Base
 {
   __attribute((regparm(3))) void
   set(int *addr1, int *addr2)
   {
     if (this != save_this)
-      printf("error! this == %p, should be %p\n", this, save_this);
+      {
+	++fail;
+	printf("error! this == %p, should be %p\n", this, save_this);
+      }
     if (addr1 != save_addr1)
-      printf("error! addr1 == %p, should be %p\n", addr1, save_addr1);
+      {
+	++fail;
+	printf("error! addr1 == %p, should be %p\n", addr1, save_addr1);
+      }
     if (addr2 != save_addr2)
-      printf("error! addr2 == %p, should be %p\n", addr2, save_addr1);
+      {
+	++fail;
+	printf("error! addr2 == %p, should be %p\n", addr2, save_addr1);
+      }
   }
 };
 
@@ -36,5 +47,5 @@ int main()
   (obj.* pfm3) (&x, &y);
   (obj.* pfm4) (&x, &y);
 
-  return 0;
+  return fail;
 }
