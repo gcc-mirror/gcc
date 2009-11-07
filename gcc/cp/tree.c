@@ -922,10 +922,14 @@ cp_build_qualified_type_real (tree type,
 tree
 canonical_type_variant (tree t)
 {
+  tree r;
+
   if (t == error_mark_node)
     return error_mark_node;
 
-  return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), cp_type_quals (t));
+  r = cp_build_type_attribute_variant (TYPE_MAIN_VARIANT (t),
+				       TYPE_ATTRIBUTES (t));
+  return cp_build_qualified_type (r, cp_type_quals (t));
 }
 
 /* Makes a copy of BINFO and TYPE, which is to be inherited into a

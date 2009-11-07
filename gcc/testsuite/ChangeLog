@@ -1,3 +1,8 @@
+2009-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9381
+	* g++.dg/abi/regparm1.C: New.
+
 2009-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/41643

@@ -1,3 +1,12 @@
+2009-11-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9381
+	* decl2.c (build_memfn_type): Preserve attributes.
+	* tree.c (canonical_type_variant): Likewise.
+	* call.c (standard_conversion): Use build_memfn_type.
+	* pt.c (tsubst): Likewise.
+	* decl.c (build_ptrmem_type): Likewise
+
 2009-11-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/41967
