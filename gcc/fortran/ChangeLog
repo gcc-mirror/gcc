@@ -1,6 +1,10 @@
+2009-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* resolve.c (is_illegal_recursion): Return false if sym is program.
+
 2009-11-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	resolve.c (check_typebound_override): Remove duplicate "in" in error
+	* resolve.c (check_typebound_override): Remove duplicate "in" in error
 	message.
 
 2009-11-05  Steven G. Kargl  <kargl@gcc.gnu.org>
