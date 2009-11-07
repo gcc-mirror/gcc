@@ -589,12 +589,9 @@ int
 flags_from_decl_or_type (const_tree exp)
 {
   int flags = 0;
-  const_tree type = exp;
 
   if (DECL_P (exp))
     {
-      type = TREE_TYPE (exp);
-
       /* The function exp may have the `malloc' attribute.  */
       if (DECL_IS_MALLOC (exp))
 	flags |= ECF_MALLOC;

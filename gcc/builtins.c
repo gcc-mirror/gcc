@@ -1263,7 +1263,7 @@ static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
    gives the offset of that register into the block returned by
    __builtin_apply_args.  0 indicates that the register is not
    used for calling a function.  */
-static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
+/* static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER]; not used */
 
 /* Return the size required for the block returned by __builtin_apply_args,
    and initialize apply_args_mode.  */
@@ -1297,14 +1297,12 @@ apply_args_size (void)
 	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	    if (size % align != 0)
 	      size = CEIL (size, align) * align;
-	    apply_args_reg_offset[regno] = size;
 	    size += GET_MODE_SIZE (mode);
 	    apply_args_mode[regno] = mode;
 	  }
 	else
 	  {
 	    apply_args_mode[regno] = VOIDmode;
-	    apply_args_reg_offset[regno] = 0;
 	  }
     }
   return size;
@@ -1924,7 +1922,7 @@ static rtx
 expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, insns, before_call;
+  rtx op0, insns;
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
   bool errno_set = false;
@@ -2030,8 +2028,6 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 	 with the stabilized argument list.  */
       end_sequence ();
     }
-
-  before_call = get_last_insn ();
 
   return expand_call (exp, target, target == const0_rtx);
 }
@@ -2903,14 +2899,11 @@ expand_powi_1 (enum machine_mode mode, unsigned HOST_WIDE_INT n, rtx *cache)
 static rtx
 expand_powi (rtx x, enum machine_mode mode, HOST_WIDE_INT n)
 {
-  unsigned HOST_WIDE_INT val;
   rtx cache[POWI_TABLE_SIZE];
   rtx result;
 
   if (n == 0)
     return CONST1_RTX (mode);
-
-  val = (n < 0) ? -n : n;
 
   memset (cache, 0, sizeof (cache));
   cache[1] = x;
@@ -4893,12 +4886,11 @@ expand_builtin_unop (enum machine_mode target_mode, tree exp, rtx target,
 static rtx
 expand_builtin_expect (tree exp, rtx target)
 {
-  tree arg, c;
+  tree arg;
 
   if (call_expr_nargs (exp) < 2)
     return const0_rtx;
   arg = CALL_EXPR_ARG (exp, 0);
-  c = CALL_EXPR_ARG (exp, 1);
 
   target = expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
   /* When guessing was done, the hints should be already stripped away.  */
@@ -12140,7 +12132,7 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
 static void
 maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 {
-  tree dest, size, len, fmt, flag;
+  tree size, len, fmt;
   const char *fmt_str;
   int nargs = call_expr_nargs (exp);
 
@@ -12148,8 +12140,6 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
   
   if (nargs < 4)
     return;
-  dest = CALL_EXPR_ARG (exp, 0);
-  flag = CALL_EXPR_ARG (exp, 1);
   size = CALL_EXPR_ARG (exp, 2);
   fmt = CALL_EXPR_ARG (exp, 3);
 

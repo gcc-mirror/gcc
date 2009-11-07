@@ -1,3 +1,11 @@
+2009-11-07  David Binderman <dcb314@hotmail.com>
+
+	* builtins.c (apply_args_size, expand_builtin_mathfn, expand_powi,
+	expand_builtin_expect, maybe_emit_sprintf_chk_warning): Remove some
+	set but not used variables.
+	* calls.c (flags_from_decl_or_type): Likewise.
+	* genautomata.c (check_regexp_units_distribution): Likewise.
+
 2009-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (xop_pmacsww, xop_pmacssww, xop_pmacsdd,
