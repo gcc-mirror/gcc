@@ -920,8 +920,10 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 
       if (!phis_constructed)
 	{
-	  /* Ensure that there is only one predecessor of the block.  */
-	  if (!single_pred_p (first))
+	  /* Ensure that there is only one predecessor of the block
+	     or if there are existing degenerate PHI nodes.  */
+	  if (!single_pred_p (first)
+	      || !gimple_seq_empty_p (phi_nodes (first)))
 	    first = split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
 
 	  /* Copy the args if needed.  */

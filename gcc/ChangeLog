@@ -1,3 +1,13 @@
+2009-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/41643
+	Backport from mainline
+	2009-04-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Also split the
+	edge from the entry block if we have degenerate PHI nodes in
+	the first basic block.
+
 2009-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (fold_offsetof_1): Revert the recently added
