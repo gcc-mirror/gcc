@@ -1269,11 +1269,13 @@ build_succ_graph (void)
 	}
     }
 
-  /* Add edges from STOREDANYTHING to all non-direct nodes.  */
+  /* Add edges from STOREDANYTHING to all non-direct nodes that can
+     receive pointers.  */
   t = find (storedanything_id);
   for (i = integer_id + 1; i < FIRST_REF_NODE; ++i)
     {
-      if (!TEST_BIT (graph->direct_nodes, i))
+      if (!TEST_BIT (graph->direct_nodes, i)
+	  && get_varinfo (i)->may_have_pointers)
 	add_graph_edge (graph, find (i), t);
     }
 }
@@ -2720,7 +2722,8 @@ get_constraint_for_ssa_var (tree t, VEC(ce_s, heap) **results, bool address_p)
 
   /* If we are not taking the address of the constraint expr, add all
      sub-fiels of the variable as well.  */
-  if (!address_p)
+  if (!address_p
+      && !vi->is_full_var)
     {
       for (; vi; vi = vi->next)
 	{
@@ -4032,7 +4035,7 @@ first_vi_for_offset (varinfo_t start, unsigned HOST_WIDE_INT offset)
 	 In that case, however, offset should still be within the size
 	 of the variable. */
       if (offset >= start->offset
-	  && offset < (start->offset + start->size))
+	  && (offset - start->offset) < start->size)
 	return start;
 
       start= start->next;
@@ -4062,7 +4065,7 @@ first_or_preceding_vi_for_offset (varinfo_t start,
      directly preceding offset which may be the last field.  */
   while (start->next
 	 && offset >= start->offset
-	 && !(offset < (start->offset + start->size)))
+	 && !((offset - start->offset) < start->size))
     start = start->next;
 
   return start;
@@ -4286,21 +4289,22 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 static unsigned int
 count_num_arguments (tree decl, bool *is_varargs)
 {
-  unsigned int i = 0;
+  unsigned int num = 0;
   tree t;
 
-  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl));
-       t;
-       t = TREE_CHAIN (t))
-    {
-      if (TREE_VALUE (t) == void_type_node)
-	break;
-      i++;
-    }
+  /* Capture named arguments for K&R functions.  They do not
+     have a prototype and thus no TYPE_ARG_TYPES.  */
+  for (t = DECL_ARGUMENTS (decl); t; t = TREE_CHAIN (t))
+    ++num;
 
+  /* Check if the function has variadic arguments.  */
+  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
+    if (TREE_VALUE (t) == void_type_node)
+      break;
   if (!t)
     *is_varargs = true;
-  return i;
+
+  return num;
 }
 
 /* Creation function node for DECL, using NAME, and return the index
@@ -5654,7 +5658,8 @@ struct gimple_opt_pass pass_build_ealias =
 static bool
 gate_ipa_pta (void)
 {
-  return (flag_ipa_pta
+  return (optimize
+	  && flag_ipa_pta
 	  /* Don't bother doing anything if the program has errors.  */
 	  && !(errorcount || sorrycount));
 }
