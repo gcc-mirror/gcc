@@ -455,7 +455,7 @@ struct gimple_opt_pass pass_record_bounds =
 {
  {
   GIMPLE_PASS,
-  NULL,					/* name */
+  "*record_bounds",			/* name */
   NULL,					/* gate */
   tree_ssa_loop_bounds,		       	/* execute */
   NULL,					/* sub */

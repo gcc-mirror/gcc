@@ -433,7 +433,7 @@ struct rtl_opt_pass pass_free_cfg =
 {
  {
   RTL_PASS,
-  NULL,                                 /* name */
+  "*free_cfg",                          /* name */
   NULL,                                 /* gate */
   rest_of_pass_free_cfg,                /* execute */
   NULL,                                 /* sub */
