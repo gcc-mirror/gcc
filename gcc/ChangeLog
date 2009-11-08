@@ -1,3 +1,7 @@
+2009-11-07  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (reconstruct_complex_type): Preserve attributes.
+
 2009-11-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (build_succ_graph): Feed stores
