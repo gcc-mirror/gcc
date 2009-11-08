@@ -1,3 +1,7 @@
+2009-11-08  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pta-escape-1.c: New testcase.
+
 2009-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/rep_clause4.adb: New test.
