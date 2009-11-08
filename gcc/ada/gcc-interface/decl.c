@@ -6052,6 +6052,7 @@ make_packable_type (tree type, bool in_record)
     {
       TYPE_SIZE (new_type) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (new_type) = TYPE_SIZE_UNIT (type);
+      new_size = size;
     }
   else
     {
@@ -6449,67 +6450,44 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   else
     gnu_size = NULL_TREE;
 
-  /* If we have a specified size that's smaller than that of the field type,
-     or a position is specified, and the field type is a record, see if we can
-     get either an integral mode form of the type or a smaller form.  If we
-     can, show a size was specified for the field if there wasn't one already,
-     so we know to make this a bitfield and avoid making things wider.
+  /* If we have a specified size that is smaller than that of the field's type,
+     or a position is specified, and the field's type is a record that doesn't
+     require strict alignment, see if we can get either an integral mode form
+     of the type or a smaller form.  If we can, show a size was specified for
+     the field if there wasn't one already, so we know to make this a bitfield
+     and avoid making things wider.
 
-     Doing this is first useful if the record is packed because we may then
-     place the field at a non-byte-aligned position and so achieve tighter
-     packing.
+     Changing to an integral mode form is useful when the record is packed as
+     we can then place the field at a non-byte-aligned position and so achieve
+     tighter packing.  This is in addition required if the field shares a byte
+     with another field and the front-end lets the back-end handle the access
+     to the field, because GCC cannot handle non-byte-aligned BLKmode fields.
 
-     This is in addition *required* if the field shares a byte with another
-     field and the front-end lets the back-end handle the references, because
-     GCC does not handle BLKmode bitfields properly.
+     Changing to a smaller form is required if the specified size is smaller
+     than that of the field's type and the type contains sub-fields that are
+     padded, in order to avoid generating accesses to these sub-fields that
+     are wider than the field.
 
      We avoid the transformation if it is not required or potentially useful,
      as it might entail an increase of the field's alignment and have ripple
      effects on the outer record type.  A typical case is a field known to be
-     byte aligned and not to share a byte with another field.
-
-     Besides, we don't even look the possibility of a transformation in cases
-     known to be in error already, for instance when an invalid size results
-     from a component clause.  */
-
-  if (TREE_CODE (gnu_field_type) == RECORD_TYPE
+     byte-aligned and not to share a byte with another field.  */
+  if (!needs_strict_alignment
+      && TREE_CODE (gnu_field_type) == RECORD_TYPE
       && !TYPE_FAT_POINTER_P (gnu_field_type)
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
       && (packed == 1
 	  || (gnu_size
 	      && (tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type))
-		  || Present (Component_Clause (gnat_field))))))
+		  || (Present (Component_Clause (gnat_field))
+		      && !(UI_To_Int (Component_Bit_Offset (gnat_field))
+			   % BITS_PER_UNIT == 0
+			   && value_factor_p (gnu_size, BITS_PER_UNIT)))))))
     {
-      /* See what the alternate type and size would be.  */
       tree gnu_packable_type = make_packable_type (gnu_field_type, true);
-
-      bool has_byte_aligned_clause
-	= Present (Component_Clause (gnat_field))
-	  && (UI_To_Int (Component_Bit_Offset (gnat_field))
-	      % BITS_PER_UNIT == 0);
-
-      /* Compute whether we should avoid the substitution.  */
-      bool reject
-	/* There is no point substituting if there is no change...  */
-	= (gnu_packable_type == gnu_field_type)
-	 /* ... nor when the field is known to be byte aligned and not to
-	    share a byte with another field.  */
-	  || (has_byte_aligned_clause
-	      && value_factor_p (gnu_size, BITS_PER_UNIT))
-	 /* The size of an aliased field must be an exact multiple of the
-	    type's alignment, which the substitution might increase.  Reject
-	    substitutions that would so invalidate a component clause when the
-	    specified position is byte aligned, as the change would have no
-	    real benefit from the packing standpoint anyway.  */
-	  || (Is_Aliased (gnat_field)
-	      && has_byte_aligned_clause
-	      && !value_factor_p (gnu_size, TYPE_ALIGN (gnu_packable_type)));
-
-      /* Substitute unless told otherwise.  */
-      if (!reject)
+      if (gnu_packable_type != gnu_field_type)
 	{
 	  gnu_field_type = gnu_packable_type;
-
 	  if (!gnu_size)
 	    gnu_size = rm_size (gnu_field_type);
 	}
