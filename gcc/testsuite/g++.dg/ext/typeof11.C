@@ -1,4 +1,4 @@
-// PR c++/37290
+// PR c++/37920
 
 template<typename T> T& ensure_obj(const T&);
 template <typename T>

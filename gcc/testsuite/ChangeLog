@@ -1,6 +1,6 @@
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
-	PR c++/37290
+	PR c++/37920
 	* g++.dg/ext/typeof11.C: New.
 
 2009-11-08  Jakub Jelinek  <jakub@redhat.com>

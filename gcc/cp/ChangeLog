@@ -1,6 +1,6 @@
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
-	PR c++/37290
+	PR c++/37920
 	* pt.c (tsubst) [TYPEOF_TYPE]: Set cp_unevaluated_operand.
 
 	PR c++/18451
