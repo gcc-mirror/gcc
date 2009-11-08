@@ -10220,10 +10220,17 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type;
 
-	type = finish_typeof (tsubst_expr 
-			      (TYPEOF_TYPE_EXPR (t), args,
-			       complain, in_decl,
-			       /*integral_constant_expression_p=*/false));
+	++cp_unevaluated_operand;
+	++c_inhibit_evaluation_warnings;
+
+	type = tsubst_expr (TYPEOF_TYPE_EXPR (t), args,
+			    complain, in_decl,
+			    /*integral_constant_expression_p=*/false);
+
+	--cp_unevaluated_operand;
+	--c_inhibit_evaluation_warnings;
+
+	type = finish_typeof (type);
 	return cp_build_qualified_type_real (type,
 					     cp_type_quals (t)
 					     | cp_type_quals (type),

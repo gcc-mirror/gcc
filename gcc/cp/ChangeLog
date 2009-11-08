@@ -1,5 +1,8 @@
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37290
+	* pt.c (tsubst) [TYPEOF_TYPE]: Set cp_unevaluated_operand.
+
 	PR c++/18451
 	PR c++/40738
 	* cp-tree.h (cp_decl_specifier_seq): Add any_type_specifiers_p.
