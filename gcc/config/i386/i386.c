@@ -11301,7 +11301,7 @@ get_some_local_dynamic_name (void)
 	&& for_each_rtx (&PATTERN (insn), get_some_local_dynamic_name_1, 0))
       return cfun->machine->some_ld_name;
 
-  gcc_unreachable ();
+  return NULL;
 }
 
 /* Meaning of CODE:
@@ -11353,8 +11353,15 @@ print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case '&':
-	  assemble_name (file, get_some_local_dynamic_name ());
-	  return;
+	  {
+	    const char *name = get_some_local_dynamic_name ();
+	    if (name == NULL)
+	      output_operand_lossage ("'%%&' used without any "
+				      "local dynamic TLS references");
+	    else
+	      assemble_name (file, name);
+	    return;
+	  }
 
 	case 'A':
 	  switch (ASSEMBLER_DIALECT)
