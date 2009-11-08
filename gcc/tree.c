@@ -9214,7 +9214,8 @@ reconstruct_complex_type (tree type, tree bottom)
   else
     return bottom;
 
-  return build_qualified_type (outer, TYPE_QUALS (type));
+  return build_type_attribute_qual_variant (outer, TYPE_ATTRIBUTES (type),
+					    TYPE_QUALS (type));
 }
 
 /* Returns a vector tree node given a mode (integer, vector, or BLKmode) and
