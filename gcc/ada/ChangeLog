@@ -1,3 +1,10 @@
+2009-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (make_packable_type): Fix oversight.
+	(gnat_to_gnu_field): Do not attempt to change the form of the type
+	if the field requires strict alignment.  Always change the form of
+	the type if the specified size is smaller than its size.
+
 2009-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (gnat_type_for_mode): Handle vector modes.
