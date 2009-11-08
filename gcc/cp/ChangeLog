@@ -1,3 +1,21 @@
+2009-11-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/18451
+	PR c++/40738
+	* cp-tree.h (cp_decl_specifier_seq): Add any_type_specifiers_p.
+	* parser.c (cp_parser_single_declaration): Call
+	cp_parser_parse_and_diagnose_invalid_type_name here, too.
+	(cp_parser_parameter_declaration): And here.
+	(cp_parser_parse_and_diagnose_invalid_type_name): Be
+	less picky about declarator form.  Don't skip to
+	the end of the block if	we're in a declarator.
+	(cp_parser_decl_specifier_seq): Set any_type_specifiers_p.
+	(cp_parser_simple_declaration): Check it.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_diagnose_invalid_type_name): Tweak error message.
+	(cp_parser_expression_statement): Likewise.
+	* decl2.c (grokfield): Mention decltype instead of typeof.
+
 2009-11-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15946

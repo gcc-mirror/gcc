@@ -15,6 +15,6 @@ struct B : public A<U>
 };
 
 template <class U>
-A<U>::A_Type B<U>::Func()       // { dg-error "expected" } function
+A<U>::A_Type B<U>::Func()       // { dg-error "typename" } function
 {				
-}
+} // { dg-error "expected" }

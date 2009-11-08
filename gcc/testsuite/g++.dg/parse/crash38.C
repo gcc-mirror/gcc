@@ -3,7 +3,7 @@
 /* This would not ICE.  */
 namespace M { } /* { dg-error "previous declaration" } */
 struct M; /* { dg-error "redeclared as different kind of symbol" } */
-M *p; /* { dg-error "expected constructor" } */
+M *p; /* { dg-error "does not name a type" } */
 
 /* This would ICE when processing 'p'.  */
 namespace N { } /* { dg-error "previous declaration" } */

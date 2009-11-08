@@ -4,5 +4,5 @@
 
 class A {
   template <class T> friend class B;
-  B<int> *b;	// { dg-error "no type|expected" }
+  B<int> *b;	// { dg-error "type|expected" }
 };
