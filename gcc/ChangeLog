@@ -1,3 +1,9 @@
+2009-11-08  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/41928
+	* loop-invariant.c (free_loop_data): If we didn't allocate
+	loop data do not try to free it.
+
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (reconstruct_complex_type): Preserve attributes.
