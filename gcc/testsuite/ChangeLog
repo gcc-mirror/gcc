@@ -483,7 +483,7 @@
 2009-10-29  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/41775
-	* testsuite/g++.dg/torture/pr41775.C: New testcase.
+	* g++.dg/torture/pr41775.C: New testcase.
 
 2009-10-28  Jason Merrill  <jason@redhat.com>
 
@@ -656,7 +656,7 @@
 2009-10-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/41785
-	* gcc/testsuite/g++.dg/cpp0x/variadic96.C: New test.
+	* g++.dg/cpp0x/variadic96.C: New test.
 
 2009-10-26  Nick Clifton  <nickc@redhat.com>
 
