@@ -1,5 +1,10 @@
 2009-11-08  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (build_succ_graph): Properly make
+	variables escape if they are stored to anything.
+
+2009-11-08  Richard Guenther  <rguenther@suse.de>
+
 	PR rtl-optimization/41928
 	* loop-invariant.c (free_loop_data): If we didn't allocate
 	loop data do not try to free it.

@@ -1278,6 +1278,9 @@ build_succ_graph (void)
 	  && get_varinfo (i)->may_have_pointers)
 	add_graph_edge (graph, find (i), t);
     }
+
+  /* Everything stored to ANYTHING also potentially escapes.  */
+  add_graph_edge (graph, find (escaped_id), t);
 }
 
 
