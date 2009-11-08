@@ -1,3 +1,12 @@
+2009-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-11-06  Michael Matz  <matz@suse.de>
+
+	PR middle-end/41963
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Check all uses
+	of a potential reciprocal to really be reciprocals.
+
 2009-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/41643
@@ -73,7 +82,7 @@
 
 	Backport from mainline:
 	2009-10-20  Pascal Obry  <obry@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+		    Eric Botcazou  <ebotcazou@adacore.com>
 
         * config/i386/cygming.h (DWARF_FRAME_REGNUM): Add enclosing parens.
 
@@ -97,12 +106,11 @@
 
 2009-10-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        Backport from mainline:
+	Backport from mainline:
 	2009-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/41702
-	* pa.md (casesi): Use sign extended index in call to
-	gen_casesi64p.
+	* pa.md (casesi): Use sign extended index in call to gen_casesi64p.
 	(casesi64p): Update pattern to reflect above.
 
 2009-10-20  Joseph Myers  <joseph@codesourcery.com>
