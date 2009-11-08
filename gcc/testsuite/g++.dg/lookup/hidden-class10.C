@@ -7,5 +7,5 @@
 
 class A {
   friend class abort;
-  abort *b;	// { dg-error "no type|expected" }
+  abort *b;	// { dg-error "type|expected" }
 };

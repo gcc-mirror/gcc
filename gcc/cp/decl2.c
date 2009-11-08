@@ -789,7 +789,7 @@ grokfield (const cp_declarator *declarator,
 
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
-      error ("typedef %qD is initialized (use __typeof__ instead)", value);
+      error ("typedef %qD is initialized (use decltype instead)", value);
       init = NULL_TREE;
     }
 

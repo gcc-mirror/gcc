@@ -10,4 +10,4 @@ class C {
   friend class B;
 };
 
-B *b;		// { dg-error "expected" }
+B *b;		// { dg-error "type|expected" }

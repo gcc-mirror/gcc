@@ -7,7 +7,5 @@ template<int> struct A
     ::A~();			// { dg-bogus "using-declaration" }
 };
 
-// Instead of the bogus error we get 3 separate errors.
-// { dg-error "no type" "" { target *-*-* } 7 }
-// { dg-error "::" "" { target *-*-* } 7 }
-// { dg-error "~" "" { target *-*-* } 7 }
+// Instead of the bogus error we get a different error.
+// { dg-error "template-name" "" { target *-*-* } 7 }

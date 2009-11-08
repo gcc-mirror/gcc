@@ -1,5 +1,30 @@
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/18451
+	PR c++/40738
+	* g++.dg/parse/error36.C: Add parameter and template cases.
+	* g++.dg/cpp0x/variadic-ex1.C: Update expected errors.
+	* g++.dg/ext/typedef-init.C: Likewise.
+	* g++.dg/lookup/hidden-class1.C: Likewise.
+	* g++.dg/lookup/hidden-class10.C: Likewise.
+	* g++.dg/lookup/hidden-class5.C: Likewise.
+	* g++.dg/lookup/hidden-class7.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class1.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class4.C: Likewise.
+	* g++.dg/lookup/hidden-temp-class7.C: Likewise.
+	* g++.dg/lookup/strong-using-2.C: Likewise.
+	* g++.dg/other/typedef1.C: Likewise.
+	* g++.dg/parse/access10.C: Likewise.
+	* g++.dg/parse/constructor1.C: Likewise.
+	* g++.dg/parse/crash38.C: Likewise.
+	* g++.dg/parse/error3.C: Likewise.
+	* g++.dg/parse/typespec1.C: Likewise.
+	* g++.dg/template/typedef5.C: Likewise.
+	* g++.old-deja/g++.pt/typename3.C: Likewise.
+	* g++.old-deja/g++.pt/typename4.C: Likewise.
+	* g++.old-deja/g++.pt/typename6.C: Likewise.
+	* g++.old-deja/g++.robertl/eb94.C: Likewise.
+
 	* g++.dg/abi/regparm1.C: Fix execute test.
 
 2009-11-07  Jakub Jelinek  <jakub@redhat.com>

@@ -22,5 +22,5 @@ struct C : public B<U>
 
 
 template <class U>
-C<U>::A_Type C<U>::Func() { // { dg-error "expected" } implicit typename
-}
+C<U>::A_Type C<U>::Func() { // { dg-error "typename" } implicit typename
+}			    // { dg-error "expected" }

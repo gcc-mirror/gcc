@@ -11,8 +11,7 @@
 
 /* Case A: just the bare name = initializer.  */
 
-typedef A = 0;  /* { dg-error "initialized" "A" } */
-                /* { dg-warning "no type" "A warns" { target *-*-* } 14 } */
+typedef A = 0;  /* { dg-error "does not name a type" "A" } */
 A a;            /* { dg-error "does not name a type" "A error cascade" } */
 
 /* Case B: with a type also.  */
@@ -24,9 +23,8 @@ B b;		    /* { dg-error "does not name a type" "B error cascade" } */
    field declarations go by a different code path in C++ (ick).  */
 
 struct S {
-  typedef C = 0; /* { dg-error "initialized" "C" } */
-                 /* { dg-warning "no type" "C warns" { target *-*-* } 27 } */
-  C c;		 /* { dg-bogus "" "C error cascade" } */
+  typedef C = 0; /* { dg-error "does not name a type" "C" } */
+  C c;		 /* { dg-error "" "C error cascade" } */
 
   typedef int D = 0; /* { dg-error "initialized" "D" } */
   D d;		     /* { dg-bogus "" "D error cascade" } */
