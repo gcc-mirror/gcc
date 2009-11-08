@@ -1,3 +1,8 @@
+2009-11-08  Jonathan Gray <jsg@openbsd.org>
+
+	* config/openbsd-stdint.h: Change to reflect what
+	c_common_nodes_and_builtins expects.
+
 2009-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* builtins.c (apply_args_reg_offset): Remove commented out delaration.
