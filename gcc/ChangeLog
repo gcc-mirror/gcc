@@ -1,3 +1,10 @@
+2009-11-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* df-problems.c: Fix documentation for forward simulation of LR.
+	(df_simulate_one_insn_forwards): Use df_simulate_find_defs.
+	(df_simulate_finalize_forwards): Remove.
+	* df.h (df_simulate_finalize_forwards): Remove.
+
 2009-11-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (build_succ_graph): Properly make
