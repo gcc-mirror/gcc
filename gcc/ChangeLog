@@ -1,3 +1,14 @@
+2009-11-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* collect2.c (main): Search PLUGIN_LD for plugin linker.
+
+	* configure.ac (--with-plugin-ld): New.  Default to ld.
+	* configure: Regenerated.
+	* config.in: Likewise.
+
+	* exec-tool.in (ORIGINAL_PLUGIN_LD_FOR_TARGET): New.
+	(collect-ld): Use ORIGINAL_PLUGIN_LD_FOR_TARGET for -plugin.
+
 2009-11-08  Jonathan Gray <jsg@openbsd.org>
 
 	* config/openbsd-stdint.h: Change to reflect what

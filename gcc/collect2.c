@@ -1100,6 +1100,7 @@ int
 main (int argc, char **argv)
 {
   static const char *const ld_suffix	= "ld";
+  static const char *const plugin_ld_suffix = PLUGIN_LD;
   static const char *const real_ld_suffix = "real-ld";
   static const char *const collect_ld_suffix = "collect-ld";
   static const char *const nm_suffix	= "nm";
@@ -1118,6 +1119,8 @@ main (int argc, char **argv)
 
   const char *const full_ld_suffix =
     concat(target_machine, "-", ld_suffix, NULL);
+  const char *const full_plugin_ld_suffix =
+    concat(target_machine, "-", plugin_ld_suffix, NULL);
   const char *const full_nm_suffix =
     concat (target_machine, "-", nm_suffix, NULL);
   const char *const full_gnm_suffix =
@@ -1132,6 +1135,7 @@ main (int argc, char **argv)
     concat (target_machine, "-", gstrip_suffix, NULL);
 #else
   const char *const full_ld_suffix	= ld_suffix;
+  const char *const full_plugin_ld_suffix = plugin_ld_suffix;
   const char *const full_nm_suffix	= nm_suffix;
   const char *const full_gnm_suffix	= gnm_suffix;
 #ifdef LDD_SUFFIX
@@ -1152,6 +1156,7 @@ main (int argc, char **argv)
   const char **c_ptr;
   char **ld1_argv;
   const char **ld1;
+  bool use_plugin = false;
   
   /* The kinds of symbols we will have to consider when scanning the
      outcome of a first pass link.  This is ALL to start with, then might
@@ -1217,7 +1222,6 @@ main (int argc, char **argv)
      what LTO mode we are in.  */
   {
     int i;
-    bool use_plugin = false;
 
     for (i = 1; argv[i] != NULL; i ++)
       {
@@ -1329,11 +1333,17 @@ main (int argc, char **argv)
   /* Search the compiler directories for `ld'.  We have protection against
      recursive calls in find_a_file.  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&cpath, ld_suffix);
+    ld_file_name = find_a_file (&cpath,
+				use_plugin
+				? plugin_ld_suffix
+				: ld_suffix);
   /* Search the ordinary system bin directories
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&path, full_ld_suffix);
+    ld_file_name = find_a_file (&path,
+				use_plugin
+				? full_plugin_ld_suffix
+				: full_ld_suffix);
 
 #ifdef REAL_NM_FILE_NAME
   nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
