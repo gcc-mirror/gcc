@@ -1915,6 +1915,17 @@ else
         AC_PATH_PROG(gcc_cv_ld, $LD_FOR_TARGET)
 fi])
 
+ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
+PLUGIN_LD=`basename $gcc_cv_ld`
+AC_ARG_WITH(plugin-ld,
+[  --with-plugin-ld=[[ARG]]  specify the plugin linker],
+[if test x"$withval" != x; then
+   ORIGINAL_PLUGIN_LD_FOR_TARGET="$withval"
+   PLUGIN_LD="$withval"
+ fi])
+AC_SUBST(ORIGINAL_PLUGIN_LD_FOR_TARGET)
+AC_DEFINE_UNQUOTED(PLUGIN_LD, "$PLUGIN_LD", [Specify plugin linker])
+
 ORIGINAL_LD_FOR_TARGET=$gcc_cv_ld
 AC_SUBST(ORIGINAL_LD_FOR_TARGET)
 case "$ORIGINAL_LD_FOR_TARGET" in
