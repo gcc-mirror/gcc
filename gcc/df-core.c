@@ -780,7 +780,7 @@ struct rtl_opt_pass pass_df_initialize_no_opt =
 {
  {
   RTL_PASS,
-  "dfinit",                             /* name */
+  "no-opt dfinit",                      /* name */
   gate_no_opt,                          /* gate */
   rest_of_handle_df_initialize,         /* execute */
   NULL,                                 /* sub */

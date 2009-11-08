@@ -1,3 +1,37 @@
+2009-11-08  Zbigniew Chamski  <zbigniew.chamski@gmail.com>
+	    Joern Rennecke  <amylaar@spamcop.net>
+
+	* cfgrtl.c (pass_free_cfg): Add pass name.
+	* cgraphbuild.c (pass_build_cgraph_edges): Likewise.
+	(pass_rebuild_cgraph_edges, pass_remove_cgraph_callee_edges): Likewise.
+	* dce.c (pass_ud_rtl_dce, pass_fast_rtl_dce): Change pass name.
+	* df-core.c (pass_df_initialize_no_opt): Likewise.
+	* except.c (pass_rtl_eh): Likewise.
+	* function.c (pass_init_function, pass_leaf_regs): Likewise.
+	* gcse.c (pass_rtl_pre): Change pass name.
+	* passes.c (pass_postreload): Add pass name.
+	(make_pass_instance): Don't use duplicate-tracking logic for
+	names starting with '*'.
+	(next_pass_1): Assert that pass has a name.
+	(register_one_dump_file): If there is an space in the name,
+	skip past it.
+	* predict.c (pass_strip_predict_hints): Add pass name.
+	* reg-stack.c (pass_stack_regs): Likewise.
+	* stack-ptr-mod.c (pass_stack_ptr_mod): Likewise.
+	* tree-cfg.c (pass_warn_function_return,
+	pass_warn_function_noreturn): Add pass name.
+	* tree-dfa.c (pass_referenced_vars): Likewise.
+	* tree-optimize.c (pass_cleanup_cfg_post_optimizing):
+	Fix whitespace before comment.
+	(pass_fixup_cfg): Add pass name, fix whitespace before comment.
+	(pass_init_datastructures): Add pass name.
+	* tree-ssa-loop.c (pass_record_bounds): Likewise.
+	* tree-ssa.c (pass_early_warn_uninitialized,
+	pass_late_warn_uninitialized): Likewise.
+	* tree.c (pass_ipa_free_lang_data): Likewise.
+	* doc/passes.texi (pass manager): Document how to disambiguate
+	pass names.
+
 2009-11-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	* df-problems.c: Fix documentation for forward simulation of LR.

@@ -3275,7 +3275,7 @@ struct rtl_opt_pass pass_stack_regs =
 {
  {
   RTL_PASS,
-  NULL,                                 /* name */
+  "*stack_regs",                        /* name */
   gate_handle_stack_regs,               /* gate */
   NULL,					/* execute */
   NULL,                                 /* sub */

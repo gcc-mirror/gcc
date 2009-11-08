@@ -5147,7 +5147,7 @@ struct rtl_opt_pass pass_rtl_pre =
 {
  {
   RTL_PASS,
-  "pre",                                /* name */
+  "rtl pre",                            /* name */
   gate_rtl_pre,                         /* gate */   
   execute_rtl_pre,    			/* execute */       
   NULL,                                 /* sub */

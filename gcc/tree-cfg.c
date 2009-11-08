@@ -7191,7 +7191,7 @@ struct gimple_opt_pass pass_warn_function_return =
 {
  {
   GIMPLE_PASS,
-  NULL,					/* name */
+  "*warn_function_return",		/* name */
   NULL,					/* gate */
   execute_warn_function_return,		/* execute */
   NULL,					/* sub */
@@ -7225,7 +7225,7 @@ struct gimple_opt_pass pass_warn_function_noreturn =
 {
  {
   GIMPLE_PASS,
-  NULL,					/* name */
+  "*warn_function_noreturn",		/* name */
   NULL,					/* gate */
   execute_warn_function_noreturn,	/* execute */
   NULL,					/* sub */

@@ -201,7 +201,7 @@ struct gimple_opt_pass pass_cleanup_cfg_post_optimizing =
 {
  {
   GIMPLE_PASS,
-  "optimized",			/* name */
+  "optimized",				/* name */
   NULL,					/* gate */
   execute_cleanup_cfg_post_optimizing,	/* execute */
   NULL,					/* sub */
@@ -287,9 +287,9 @@ struct gimple_opt_pass pass_fixup_cfg =
 {
  {
   GIMPLE_PASS,
-  NULL,					/* name */
+  "*free_cfg_annotations",		/* name */
   NULL,					/* gate */
-  execute_fixup_cfg,		/* execute */
+  execute_fixup_cfg,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -317,7 +317,7 @@ struct gimple_opt_pass pass_init_datastructures =
 {
  {
   GIMPLE_PASS,
-  NULL,					/* name */
+  "*init_datastructures",		/* name */
   NULL,					/* gate */
   execute_init_datastructures,		/* execute */
   NULL,					/* sub */
