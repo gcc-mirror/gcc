@@ -3722,9 +3722,11 @@ df_note_add_problem (void)
 
    You can either simulate in the forwards direction, starting from
    the top of a block or the backwards direction from the end of the
-   block.  The main difference is that if you go forwards, the uses
-   are examined first then the defs, and if you go backwards, the defs
-   are examined first then the uses.
+   block.  If you go backwards, defs are examined first to clear bits,
+   then uses are examined to set bits.  If you go forwards, defs are
+   examined first to set bits, then REG_DEAD and REG_UNUSED notes
+   are examined to clear bits.  In either case, the result of examining
+   a def can be undone (respectively by a use or a REG_UNUSED note).
 
    If you start at the top of the block, use one of DF_LIVE_IN or
    DF_LR_IN.  If you start at the bottom of the block use one of
@@ -3814,7 +3816,7 @@ df_simulate_fixup_sets (basic_block bb, bitmap live)
    df_simulate_initialize_backwards should be called first with a
    bitvector copyied from the DF_LIVE_OUT or DF_LR_OUT.  Then
    df_simulate_one_insn_backwards should be called for each insn in
-   the block, starting with the last on.  Finally,
+   the block, starting with the last one.  Finally,
    df_simulate_finalize_backwards can be called to get a new value
    of the sets at the top of the block (this is rarely used).
    ----------------------------------------------------------------------------*/
@@ -3896,13 +3898,16 @@ df_simulate_finalize_backwards (basic_block bb, bitmap live)
    df_simulate_initialize_forwards should be called first with a
    bitvector copyied from the DF_LIVE_IN or DF_LR_IN.  Then
    df_simulate_one_insn_forwards should be called for each insn in
-   the block, starting with the last on.  Finally,
-   df_simulate_finalize_forwards can be called to get a new value
-   of the sets at the bottom of the block (this is rarely used).
+   the block, starting with the first one.
    ----------------------------------------------------------------------------*/
 
-/* Apply the artificial uses and defs at the top of BB in a backwards
-   direction.  */
+/* Apply the artificial uses and defs at the top of BB in a forwards
+   direction.  ??? This is wrong; defs mark the point where a pseudo
+   becomes live when scanning forwards (unless a def is unused).  Since
+   there are no REG_UNUSED notes for artificial defs, passes that
+   require artificial defs probably should not call this function
+   unless (as is the case for fwprop) they are correct when liveness
+   bitmaps are *under*estimated.  */
 
 void 
 df_simulate_initialize_forwards (basic_block bb, bitmap live)
@@ -3918,7 +3923,7 @@ df_simulate_initialize_forwards (basic_block bb, bitmap live)
     }
 }
 
-/* Simulate the backwards effects of INSN on the bitmap LIVE.  */
+/* Simulate the forwards effects of INSN on the bitmap LIVE.  */
 
 void 
 df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
@@ -3927,10 +3932,15 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
   if (! INSN_P (insn))
     return;	
 
-  /* Make sure that the DF_NOTES really is an active df problem.  */ 
+  /* Make sure that DF_NOTE really is an active df problem.  */ 
   gcc_assert (df_note);
 
-  df_simulate_defs (insn, live);
+  /* Note that this is the opposite as how the problem is defined, because
+     in the LR problem defs _kill_ liveness.  However, they do so backwards,
+     while here the scan is performed forwards!  So, first assume that the
+     def is live, and if this is not true REG_UNUSED notes will rectify the
+     situation.  */
+  df_simulate_find_defs (insn, live);
 
   /* Clear all of the registers that go dead.  */
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -3957,24 +3967,6 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
 	}
     }
   df_simulate_fixup_sets (bb, live);
-}
-
-
-/* Apply the artificial uses and defs at the end of BB in a backwards
-   direction.  */
-
-void 
-df_simulate_finalize_forwards (basic_block bb, bitmap live)
-{
-  df_ref *def_rec;
-  int bb_index = bb->index;
-  
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      if ((DF_REF_FLAGS (def) & DF_REF_AT_TOP) == 0)
-	bitmap_clear_bit (live, DF_REF_REGNO (def));
-    }
 }
 
 

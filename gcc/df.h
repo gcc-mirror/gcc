@@ -985,7 +985,6 @@ extern void df_simulate_one_insn_backwards (basic_block, rtx, bitmap);
 extern void df_simulate_finalize_backwards (basic_block, bitmap);
 extern void df_simulate_initialize_forwards (basic_block, bitmap);
 extern void df_simulate_one_insn_forwards (basic_block, rtx, bitmap);
-extern void df_simulate_finalize_forwards (basic_block, bitmap);
 
 /* Functions defined in df-scan.c.  */
 
