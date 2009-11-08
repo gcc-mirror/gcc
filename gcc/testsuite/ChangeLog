@@ -1,3 +1,8 @@
+2009-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41985
+	* gcc.target/i386/pr41985.c: New test.
+
 2009-11-08  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/pta-escape-1.c: New testcase.

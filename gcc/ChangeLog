@@ -1,3 +1,11 @@
+2009-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/41985
+	* config/i386/i386.c (get_some_local_dynamic_name): Don't assert
+	function contains at least one local dynamic name.
+	(print_operand) <case '&'>: Instead output operand lossage diagnostics
+	here if that happens.
+
 2009-11-08  Zbigniew Chamski  <zbigniew.chamski@gmail.com>
 	    Joern Rennecke  <amylaar@spamcop.net>
 
