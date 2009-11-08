@@ -1,3 +1,7 @@
+2009-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* builtins.c (apply_args_reg_offset): Remove commented out delaration.
+
 2009-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/41985
@@ -78,6 +82,7 @@
 	* builtins.c (apply_args_size, expand_builtin_mathfn, expand_powi,
 	expand_builtin_expect, maybe_emit_sprintf_chk_warning): Remove some
 	set but not used variables.
+	(apply_args_reg_offset): Comment out as unused.
 	* calls.c (flags_from_decl_or_type): Likewise.
 	* genautomata.c (check_regexp_units_distribution): Likewise.
 
