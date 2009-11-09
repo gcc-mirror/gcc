@@ -529,7 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     void
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_mutate(size_type __pos, size_type __len1, const _CharT* __s,
-	      const size_type __len2)
+	      size_type __len2)
     {
       const size_type __how_much = _M_length() - __pos - __len1;
       

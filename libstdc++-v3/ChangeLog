@@ -1,3 +1,7 @@
+2009-11-08  Jason Merrill  <jason@redhat.com>
+
+	* include/ext/sso_string_base.h (_M_mutate): Remove extra 'const'.
+
 2009-11-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Adjust includes.
