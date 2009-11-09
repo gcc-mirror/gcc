@@ -230,9 +230,18 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU supports VFPv3 instructions.  */
 #define TARGET_VFP3 (TARGET_VFP && arm_fpu_desc->rev >= 3)
 
-/* FPU supports NEON/VFP half-precision floating-point.  */
+/* FPU only supports VFP single-precision instructions.  */
+#define TARGET_VFP_SINGLE (TARGET_VFP && arm_fpu_desc->regs == VFP_REG_SINGLE)
+
+/* FPU supports VFP double-precision instructions.  */
+#define TARGET_VFP_DOUBLE (TARGET_VFP && arm_fpu_desc->regs != VFP_REG_SINGLE)
+
+/* FPU supports half-precision floating-point with NEON element load/store.  */
 #define TARGET_NEON_FP16 \
   (TARGET_VFP && arm_fpu_desc->neon && arm_fpu_desc->fp16)
+
+/* FPU supports VFP half-precision floating-point.  */
+#define TARGET_FP16 (TARGET_VFP && arm_fpu_desc->fp16)
 
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
