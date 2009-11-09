@@ -444,7 +444,7 @@ namespace __gnu_parallel
 	if (__iam == 0)
 	  {
 	    // Do the last block.
-	    for (int __i = 0; __i < __num_threads; ++__i)
+	    for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
 	      __r += __lengths[__i];
 
 	    __block_begin = __block_begins[__num_threads];
@@ -457,7 +457,7 @@ namespace __gnu_parallel
 	  }
           else
             {
-              for (int __i = 0; __i < __iam; ++__i)
+              for (_ThreadIndex __i = 0; __i < __iam; ++__i)
         	__r += __lengths[ __i ];
 
               // Reset begins for copy pass.

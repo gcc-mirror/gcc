@@ -129,7 +129,7 @@ namespace __gnu_parallel
 
 	if (__iam == 0)
           {
-            for (int __t = 0; __t < __num_threads; ++__t)
+            for (_ThreadIndex __t = 0; __t < __num_threads; ++__t)
               __begin_output += __counter[__t];
 
             __i = 0;
@@ -154,7 +154,7 @@ namespace __gnu_parallel
           }
 	else
           {
-            for (int __t = 0; __t < __iam; __t++)
+            for (_ThreadIndex __t = 0; __t < __iam; __t++)
               __begin_output += __counter[__t];
 
             _OutputIterator __iter_out = __result + __begin_output;
@@ -168,7 +168,7 @@ namespace __gnu_parallel
       }
 
       _DifferenceType __end_output = 0;
-      for (int __t = 0; __t < __num_threads + 1; __t++)
+      for (_ThreadIndex __t = 0; __t < __num_threads + 1; __t++)
 	__end_output += __counter[__t];
 
       delete[] __borders;

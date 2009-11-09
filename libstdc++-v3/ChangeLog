@@ -1,3 +1,26 @@
+2009-11-09  Johannes Singler  <singler@kit.edu>
+
+	* include/parallel/multiway_merge.h (multiway_merge_*,
+	__sequential_multiway_merge, parallel_multiway_merge): Replace
+	int by appropriate difference_type (typedef to _SeqNumber) or
+	_ThreadIndex.
+	* include/parallel/multiseq_selection.h (multiseq_partition,
+	multiseq_selection): Replace int by appropriate difference_type
+	(typedef to _SeqNumber)
+	* include/parallel/base.h (__get_max_threads): Replace int by
+	_ThreadIndex.
+	* include/parallel/balanced_quicksort.h
+	(__qsb_local_sort_with_helping, __parallel_sort_qsb): Likewise.
+	* include/parallel/set_operations.h (__parallel_set_operation):
+	Likewise.
+	* include/parallel/unique_copy.h (__parallel_unique_copy): Likewise.
+	* include/parallel/multiway_mergesort.h (_SplitConsistently,
+	parallel_sort_mwms_pu, parallel_sort_mwms): Likewise.
+	* include/parallel/partial_sum.h (__parallel_partial_sum_linear):
+	Likewise.
+	* include/parallel/partition.h (__parallel_partition): Replace int
+	by appropriate difference_type or _ThreadIndex.
+
 2009-11-08  Jason Merrill  <jason@redhat.com>
 
 	* include/ext/sso_string_base.h (_M_mutate): Remove extra 'const'.
