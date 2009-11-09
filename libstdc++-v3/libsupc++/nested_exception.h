@@ -51,9 +51,11 @@ namespace std
    * @{
    */
 
-  /// nested_exception
+  /// Exception class with exception_ptr data member.
   class nested_exception
   {
+    exception_ptr _M_ptr;
+
   public:
     nested_exception() throw() : _M_ptr(current_exception()) { }
 
@@ -70,16 +72,12 @@ namespace std
     exception_ptr
     nested_ptr() const
     { return _M_ptr; }
-
-  private:
-    exception_ptr _M_ptr;
   };
 
   template<typename _Except>
     struct _Nested_exception : public _Except, public nested_exception
     {
-      explicit
-      _Nested_exception(_Except&& __ex)
+      explicit _Nested_exception(_Except&& __ex)
       : _Except(static_cast<_Except&&>(__ex))
       { }
     };
@@ -89,9 +87,7 @@ namespace std
     {
       static const nested_exception*
       _S_get(const _Ex& __ex)
-      {
-        return dynamic_cast<const nested_exception*>(&__ex);
-      }
+      { return dynamic_cast<const nested_exception*>(&__ex); }
     };
 
   template<typename _Ex>
@@ -99,17 +95,13 @@ namespace std
     {
       static const nested_exception*
       _S_get(const _Ex* __ex)
-      {
-        return dynamic_cast<const nested_exception*>(__ex);
-      }
+      { return dynamic_cast<const nested_exception*>(__ex); }
     };
 
   template<typename _Ex>
     inline const nested_exception*
     __get_nested_exception(const _Ex& __ex)
-    {
-      return __get_nested_helper<_Ex>::_S_get(__ex);
-    }
+    { return __get_nested_helper<_Ex>::_S_get(__ex); }
 
   template<typename _Ex>
     void
@@ -126,21 +118,19 @@ namespace std
   template<typename _Ex>
     inline void
     __throw_with_nested(_Ex&& __ex, const nested_exception* = 0)
-    {
-      throw __ex;
-    }
+    { throw __ex; }
 
   template<typename _Ex>
     inline void
     __throw_with_nested(_Ex&& __ex, ...)
-    {
-      throw _Nested_exception<_Ex>(static_cast<_Ex&&>(__ex));
-    }
+    { throw _Nested_exception<_Ex>(static_cast<_Ex&&>(__ex)); }
   
   template<typename _Ex>
     void
     throw_with_nested(_Ex __ex) __attribute__ ((__noreturn__));
 
+  /// If @p __ex is derived from nested_exception, @p __ex. 
+  /// Else, an implementation-defined object derived from both.
   template<typename _Ex>
     inline void
     throw_with_nested(_Ex __ex)
@@ -150,6 +140,7 @@ namespace std
       __throw_with_nested(static_cast<_Ex&&>(__ex), &__ex);
     }
 
+  /// If @p __ex is derived from nested_exception, @p __ex.rethrow_nested().
   template<typename _Ex>
     inline void
     rethrow_if_nested(const _Ex& __ex)
@@ -158,12 +149,10 @@ namespace std
         __nested->rethrow_nested();
     }
 
-  // see n2619
+  /// Overload, See N2619
   inline void
   rethrow_if_nested(const nested_exception& __ex)
-  {
-    __ex.rethrow_nested();
-  }
+  { __ex.rethrow_nested(); }
 
   // @} group exceptions
 } // namespace std

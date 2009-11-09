@@ -1,3 +1,12 @@
+2009-11-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Regenerate, add files.
+	* libsupc++/eh_ptr.cc: Format.
+	* libsupc++/exception_ptr.h: Same.
+	* libsupc++/cxxabi.h(recursive_init_error): Move declaration here.
+	* libsupc++/guard.cc: From here.
+	* libsupc++/nested_exception.h: Add markup.
+
 2009-11-09  Johannes Singler  <singler@kit.edu>
 
 	* include/parallel/multiway_merge.h (multiway_merge_*,
