@@ -1,5 +1,9 @@
 2009-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41972
+	* parser.c (cp_parser_template_argument): Accept SCOPE_REF around
+	VAR_DECL.
+
 	PR c++/41994
 	* pt.c (tsubst_baselink): tsubst the name.
 

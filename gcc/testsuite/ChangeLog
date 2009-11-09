@@ -1,5 +1,8 @@
 2009-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41972
+	* g++.dg/template/ref4.C: New.
+
 	PR c++/41994
 	* g++.dg/template/conv10.C: New.
 
