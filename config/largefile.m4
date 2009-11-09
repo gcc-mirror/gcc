@@ -4,6 +4,12 @@
 # of structures used to describe files.
 
 AC_DEFUN([ACX_LARGEFILE],[dnl
+
+# As the $enable_largefile decision depends on --enable-plugins we must set it
+# even in directories otherwise not depending on the $plugins option.
+
+AC_PLUGINS
+
 case "${host}" in
 changequote(,)dnl
   sparc-*-solaris*|i[3-7]86-*-solaris*)

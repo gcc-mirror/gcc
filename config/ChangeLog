@@ -1,3 +1,7 @@
+2009-11-09  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* largefile.m4 (ACX_LARGEFILE): Call AC_PLUGINS.
+
 2009-11-06  Jan Kratochvil  <jan.kratochvil@redhat.com>
 	    Joel Brobecker  <brobecker@adacore.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
