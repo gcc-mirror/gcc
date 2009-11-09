@@ -1,3 +1,8 @@
+2009-11-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41994
+	* g++.dg/template/conv10.C: New.
+
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37920
