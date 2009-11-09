@@ -1,3 +1,7 @@
+2009-11-09  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/cygwin.h (LINK_SPEC): Add -tsaware flag if !mno-cygwin.
+
 2009-11-09  Jason Merrill  <jason@redhat.com>
 
 	* gdbinit.in (pgq): New function for printing gimple sequence.
