@@ -1,3 +1,14 @@
+2009-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40946
+	* gcc.dg/pr40946.c: New test.
+
+	Backport from mainline
+	2009-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/41317
+	* gcc.c-torture/execute/pr41317.c: New testcase.
+
 2009-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
