@@ -1,3 +1,7 @@
+2009-11-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/regparm1.C: Fix execute test.
+
 2009-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40946
