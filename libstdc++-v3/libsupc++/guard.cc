@@ -136,20 +136,6 @@ __set_and_release (__cxxabiv1::__guard *g)
 
 namespace __gnu_cxx
 {
-  // 6.7[stmt.dcl]/4: If control re-enters the declaration (recursively)
-  // while the object is being initialized, the behavior is undefined.
-
-  // Since we already have a library function to handle locking, we might
-  // as well check for this situation and throw an exception.
-  // We use the second byte of the guard variable to remember that we're
-  // in the middle of an initialization.
-  class recursive_init_error: public std::exception
-  {
-  public:
-    recursive_init_error() throw() { }
-    virtual ~recursive_init_error() throw ();
-  };
-
   recursive_init_error::~recursive_init_error() throw() { }
 }
 
