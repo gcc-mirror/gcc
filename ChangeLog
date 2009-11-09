@@ -1,3 +1,7 @@
+2009-11-09  Jon Beniston <jon@beniston.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2009-11-06  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* configure.ac (FLAGS_FOR_TARGET):  Add -L and -isystem
