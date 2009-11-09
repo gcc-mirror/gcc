@@ -132,7 +132,7 @@ namespace __gnu_parallel
 		 / ((double)__num_threads + __s.partial_sum_dilation)),
 		__borderstart = __n - __num_threads * __chunk_length;
 	      __borders[0] = 0;
-	      for (int __i = 1; __i < (__num_threads + 1); ++__i)
+	      for (_ThreadIndex __i = 1; __i < (__num_threads + 1); ++__i)
 		{
 		  __borders[__i] = __borderstart;
 		  __borderstart += __chunk_length;

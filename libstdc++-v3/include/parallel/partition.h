@@ -103,7 +103,7 @@ namespace __gnu_parallel
 		_DifferenceType __num_chunks = ((__right - __left + 1) 
 						/ __chunk_size);
 
-		for (int __r = 0; __r < __num_threads; ++__r)
+		for (_ThreadIndex __r = 0; __r < __num_threads; ++__r)
 		  {
 		    __reserved_left[__r] = false;
 		    __reserved_right[__r] = false;
@@ -222,7 +222,7 @@ namespace __gnu_parallel
 		  // Find spot and swap.
 		  _DifferenceType __swapstart = -1;
 		  omp_set_lock(&__result_lock);
-		  for (int __r = 0; __r < __leftover_left; ++__r)
+		  for (_DifferenceType __r = 0; __r < __leftover_left; ++__r)
 		    if (!__reserved_left[__r])
 		      {
 			__reserved_left[__r] = true;
@@ -247,7 +247,7 @@ namespace __gnu_parallel
 		  // Find spot and swap
 		  _DifferenceType __swapstart = -1;
 		  omp_set_lock(&__result_lock);
-		  for (int __r = 0; __r < __leftover_right; ++__r)
+		  for (_DifferenceType __r = 0; __r < __leftover_right; ++__r)
 		    if (!__reserved_right[__r])
 		      {
 			__reserved_right[__r] = true;
@@ -269,9 +269,9 @@ namespace __gnu_parallel
 
 #             pragma omp single
 	      {
-		for (int __r = 0; __r < __leftover_left; ++__r)
+		for (_DifferenceType __r = 0; __r < __leftover_left; ++__r)
 		  _GLIBCXX_PARALLEL_ASSERT(__reserved_left[__r]);
-		for (int __r = 0; __r < __leftover_right; ++__r)
+		for (_DifferenceType __r = 0; __r < __leftover_right; ++__r)
 		  _GLIBCXX_PARALLEL_ASSERT(__reserved_right[__r]);
 	      }
 

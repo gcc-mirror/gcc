@@ -133,19 +133,21 @@ namespace __gnu_parallel
 
       typedef typename std::iterator_traits<_RanSeqs>::value_type::first_type
         _It;
+      typedef typename std::iterator_traits<_RanSeqs>::difference_type
+        _SeqNumber;
       typedef typename std::iterator_traits<_It>::difference_type
                _DifferenceType;
       typedef typename std::iterator_traits<_It>::value_type _ValueType;
 
-      _Lexicographic<_ValueType, int, _Compare> __lcomp(__comp);
-      _LexicographicReverse<_ValueType, int, _Compare> __lrcomp(__comp);
+      _Lexicographic<_ValueType, _SeqNumber, _Compare> __lcomp(__comp);
+      _LexicographicReverse<_ValueType, _SeqNumber, _Compare> __lrcomp(__comp);
 
       // Number of sequences, number of elements in total (possibly
       // including padding).
       _DifferenceType __m = std::distance(__begin_seqs, __end_seqs), __nn = 0,
                       __nmax, __n, __r;
 
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         {
           __nn += std::distance(__begin_seqs[__i].first,
                                __begin_seqs[__i].second);
@@ -156,7 +158,7 @@ namespace __gnu_parallel
 
       if (__rank == __nn)
         {
-          for (int __i = 0; __i < __m; __i++)
+          for (_SeqNumber __i = 0; __i < __m; __i++)
             __begin_offsets[__i] = __begin_seqs[__i].second; // Very end.
           // Return __m - 1;
           return;
@@ -174,7 +176,7 @@ namespace __gnu_parallel
 
       __ns[0] = std::distance(__begin_seqs[0].first, __begin_seqs[0].second);
       __nmax = __ns[0];
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         {
           __ns[__i] = std::distance(__begin_seqs[__i].first,
                                     __begin_seqs[__i].second);
@@ -187,7 +189,7 @@ namespace __gnu_parallel
       // equality iff __nmax = 2^__k - 1.
       __l = (1ULL << __r) - 1;
 
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         {
           __a[__i] = 0;
           __b[__i] = __l;
@@ -200,21 +202,21 @@ namespace __gnu_parallel
 #define __S(__i) (__begin_seqs[__i].first)
 
       // Initial partition.
-      std::vector<std::pair<_ValueType, int> > __sample;
+      std::vector<std::pair<_ValueType, _SeqNumber> > __sample;
 
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         if (__n < __ns[__i])    //__sequence long enough
           __sample.push_back(std::make_pair(__S(__i)[__n], __i));
       __gnu_sequential::sort(__sample.begin(), __sample.end(), __lcomp);
 
-      for (int __i = 0; __i < __m; __i++)       //conceptual infinity
+      for (_SeqNumber __i = 0; __i < __m; __i++)       //conceptual infinity
         if (__n >= __ns[__i])   //__sequence too short, conceptual infinity
           __sample.push_back(
             std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
       _DifferenceType __localrank = __rank / __l;
 
-      int __j;
+      _SeqNumber __j;
       for (__j = 0;
            __j < __localrank && ((__n + 1) <= __ns[__sample[__j].second]);
            ++__j)
@@ -227,9 +229,9 @@ namespace __gnu_parallel
         {
           __n /= 2;
 
-          int __lmax_seq = -1;  // to avoid warning
+          _SeqNumber __lmax_seq = -1;  // to avoid warning
           const _ValueType* __lmax = NULL; // impossible to avoid the warning?
-          for (int __i = 0; __i < __m; __i++)
+          for (_SeqNumber __i = 0; __i < __m; __i++)
             {
               if (__a[__i] > 0)
                 {
@@ -250,7 +252,7 @@ namespace __gnu_parallel
                 }
             }
 
-          int __i;
+          _SeqNumber __i;
           for (__i = 0; __i < __m; __i++)
             {
               _DifferenceType __middle = (__b[__i] + __a[__i]) / 2;
@@ -263,7 +265,7 @@ namespace __gnu_parallel
             }
 
           _DifferenceType __leftsize = 0;
-          for (int __i = 0; __i < __m; __i++)
+          for (_SeqNumber __i = 0; __i < __m; __i++)
               __leftsize += __a[__i] / (__n + 1);
 
           _DifferenceType __skew = __rank / (__n + 1) - __leftsize;
@@ -271,18 +273,18 @@ namespace __gnu_parallel
           if (__skew > 0)
             {
               // Move to the left, find smallest.
-              std::priority_queue<std::pair<_ValueType, int>,
-                std::vector<std::pair<_ValueType, int> >,
-                _LexicographicReverse<_ValueType, int, _Compare> >
+              std::priority_queue<std::pair<_ValueType, _SeqNumber>,
+                std::vector<std::pair<_ValueType, _SeqNumber> >,
+                _LexicographicReverse<_ValueType, _SeqNumber, _Compare> >
                 __pq(__lrcomp);
               
-              for (int __i = 0; __i < __m; __i++)
+              for (_SeqNumber __i = 0; __i < __m; __i++)
                 if (__b[__i] < __ns[__i])
                   __pq.push(std::make_pair(__S(__i)[__b[__i]], __i));
 
               for (; __skew != 0 && !__pq.empty(); --__skew)
                 {
-                  int __source = __pq.top().second;
+                  _SeqNumber __source = __pq.top().second;
                   __pq.pop();
 
                   __a[__source]
@@ -297,17 +299,18 @@ namespace __gnu_parallel
           else if (__skew < 0)
             {
               // Move to the right, find greatest.
-              std::priority_queue<std::pair<_ValueType, int>,
-                std::vector<std::pair<_ValueType, int> >,
-                _Lexicographic<_ValueType, int, _Compare> > __pq(__lcomp);
+              std::priority_queue<std::pair<_ValueType, _SeqNumber>,
+                std::vector<std::pair<_ValueType, _SeqNumber> >,
+                _Lexicographic<_ValueType, _SeqNumber, _Compare> >
+                  __pq(__lcomp);
 
-              for (int __i = 0; __i < __m; __i++)
+              for (_SeqNumber __i = 0; __i < __m; __i++)
                 if (__a[__i] > 0)
                   __pq.push(std::make_pair(__S(__i)[__a[__i] - 1], __i));
 
               for (; __skew != 0; ++__skew)
                 {
-                  int __source = __pq.top().second;
+                  _SeqNumber __source = __pq.top().second;
                   __pq.pop();
 
                   __a[__source] -= __n + 1;
@@ -331,7 +334,7 @@ namespace __gnu_parallel
       // Maximum of left edge, minimum of right edge.
       _ValueType* __maxleft = NULL;
       _ValueType* __minright = NULL;
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         {
           if (__a[__i] > 0)
             {
@@ -357,8 +360,8 @@ namespace __gnu_parallel
             }
         }
 
-      int __seq = 0;
-      for (int __i = 0; __i < __m; __i++)
+      _SeqNumber __seq = 0;
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         __begin_offsets[__i] = __S(__i) + __a[__i];
 
       delete[] __ns;
@@ -392,11 +395,13 @@ namespace __gnu_parallel
 
       typedef typename std::iterator_traits<_RanSeqs>::value_type::first_type
         _It;
+      typedef typename std::iterator_traits<_RanSeqs>::difference_type
+        _SeqNumber;
       typedef typename std::iterator_traits<_It>::difference_type
         _DifferenceType;
 
-      _Lexicographic<_Tp, int, _Compare> __lcomp(__comp);
-      _LexicographicReverse<_Tp, int, _Compare> __lrcomp(__comp);
+      _Lexicographic<_Tp, _SeqNumber, _Compare> __lcomp(__comp);
+      _LexicographicReverse<_Tp, _SeqNumber, _Compare> __lrcomp(__comp);
 
       // Number of sequences, number of elements in total (possibly
       // including padding).
@@ -404,7 +409,7 @@ namespace __gnu_parallel
       _DifferenceType __nn = 0;
       _DifferenceType __nmax, __n, __r;
 
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         __nn += std::distance(__begin_seqs[__i].first,
 			      __begin_seqs[__i].second);
 
@@ -422,7 +427,7 @@ namespace __gnu_parallel
 
       __ns[0] = std::distance(__begin_seqs[0].first, __begin_seqs[0].second);
       __nmax = __ns[0];
-      for (int __i = 0; __i < __m; ++__i)
+      for (_SeqNumber __i = 0; __i < __m; ++__i)
         {
           __ns[__i] = std::distance(__begin_seqs[__i].first,
                                     __begin_seqs[__i].second);
@@ -435,7 +440,7 @@ namespace __gnu_parallel
       // equality iff __nmax = 2^__k - 1
       __l = __round_up_to_pow2(__r) - 1;
 
-      for (int __i = 0; __i < __m; ++__i)
+      for (_SeqNumber __i = 0; __i < __m; ++__i)
         {
           __a[__i] = 0;
           __b[__i] = __l;
@@ -448,23 +453,23 @@ namespace __gnu_parallel
 #define __S(__i) (__begin_seqs[__i].first)
 
       // Initial partition.
-      std::vector<std::pair<_Tp, int> > __sample;
+      std::vector<std::pair<_Tp, _SeqNumber> > __sample;
 
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         if (__n < __ns[__i])
           __sample.push_back(std::make_pair(__S(__i)[__n], __i));
       __gnu_sequential::sort(__sample.begin(), __sample.end(),
                              __lcomp, sequential_tag());
 
       // Conceptual infinity.
-      for (int __i = 0; __i < __m; __i++)
+      for (_SeqNumber __i = 0; __i < __m; __i++)
         if (__n >= __ns[__i])
           __sample.push_back(
             std::make_pair(__S(__i)[0] /*__dummy element*/, __i));
 
       _DifferenceType __localrank = __rank / __l;
 
-      int __j;
+      _SeqNumber __j;
       for (__j = 0;
            __j < __localrank && ((__n + 1) <= __ns[__sample[__j].second]);
            ++__j)
@@ -478,7 +483,7 @@ namespace __gnu_parallel
           __n /= 2;
 
           const _Tp* __lmax = NULL;
-          for (int __i = 0; __i < __m; ++__i)
+          for (_SeqNumber __i = 0; __i < __m; ++__i)
             {
               if (__a[__i] > 0)
                 {
@@ -492,7 +497,7 @@ namespace __gnu_parallel
                 }
             }
 
-          int __i;
+          _SeqNumber __i;
           for (__i = 0; __i < __m; __i++)
             {
               _DifferenceType __middle = (__b[__i] + __a[__i]) / 2;
@@ -504,7 +509,7 @@ namespace __gnu_parallel
             }
 
           _DifferenceType __leftsize = 0;
-          for (int __i = 0; __i < __m; ++__i)
+          for (_SeqNumber __i = 0; __i < __m; ++__i)
               __leftsize += __a[__i] / (__n + 1);
 
           _DifferenceType __skew = __rank / (__n + 1) - __leftsize;
@@ -512,17 +517,18 @@ namespace __gnu_parallel
           if (__skew > 0)
             {
               // Move to the left, find smallest.
-              std::priority_queue<std::pair<_Tp, int>,
-                std::vector<std::pair<_Tp, int> >,
-                _LexicographicReverse<_Tp, int, _Compare> > __pq(__lrcomp);
+              std::priority_queue<std::pair<_Tp, _SeqNumber>,
+                std::vector<std::pair<_Tp, _SeqNumber> >,
+                _LexicographicReverse<_Tp, _SeqNumber, _Compare> >
+                  __pq(__lrcomp);
 
-              for (int __i = 0; __i < __m; ++__i)
+              for (_SeqNumber __i = 0; __i < __m; ++__i)
                 if (__b[__i] < __ns[__i])
                   __pq.push(std::make_pair(__S(__i)[__b[__i]], __i));
 
               for (; __skew != 0 && !__pq.empty(); --__skew)
                 {
-                  int __source = __pq.top().second;
+                  _SeqNumber __source = __pq.top().second;
                   __pq.pop();
 
                   __a[__source]
@@ -537,17 +543,17 @@ namespace __gnu_parallel
           else if (__skew < 0)
             {
               // Move to the right, find greatest.
-              std::priority_queue<std::pair<_Tp, int>,
-                std::vector<std::pair<_Tp, int> >,
-                _Lexicographic<_Tp, int, _Compare> > __pq(__lcomp);
+              std::priority_queue<std::pair<_Tp, _SeqNumber>,
+                std::vector<std::pair<_Tp, _SeqNumber> >,
+                _Lexicographic<_Tp, _SeqNumber, _Compare> > __pq(__lcomp);
 
-              for (int __i = 0; __i < __m; ++__i)
+              for (_SeqNumber __i = 0; __i < __m; ++__i)
                 if (__a[__i] > 0)
                   __pq.push(std::make_pair(__S(__i)[__a[__i] - 1], __i));
 
               for (; __skew != 0; ++__skew)
                 {
-                  int __source = __pq.top().second;
+                  _SeqNumber __source = __pq.top().second;
                   __pq.pop();
 
                   __a[__source] -= __n + 1;
@@ -573,7 +579,7 @@ namespace __gnu_parallel
 
       // Impossible to avoid the warning?
       _Tp __maxleft, __minright;
-      for (int __i = 0; __i < __m; ++__i)
+      for (_SeqNumber __i = 0; __i < __m; ++__i)
         {
           if (__a[__i] > 0)
             {
@@ -617,7 +623,7 @@ namespace __gnu_parallel
           // We have to calculate an offset.
           __offset = 0;
 
-          for (int __i = 0; __i < __m; ++__i)
+          for (_SeqNumber __i = 0; __i < __m; ++__i)
             {
               _DifferenceType lb
                 = std::lower_bound(__S(__i), __S(__i) + __ns[__i],

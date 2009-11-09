@@ -154,7 +154,7 @@ namespace __gnu_parallel
 			     __sd->_M_starts[__iam + 1], __offsets.begin(),
 			     __comp);
 
-	for (int __seq = 0; __seq < __sd->_M_num_threads; __seq++)
+	for (_ThreadIndex __seq = 0; __seq < __sd->_M_num_threads; __seq++)
 	  {
 	    // for each sequence
 	    if (__iam < (__sd->_M_num_threads - 1))
@@ -361,7 +361,7 @@ namespace __gnu_parallel
         _SeqVector;
       _SeqVector __seqs(__sd->_M_num_threads);
 
-      for (int __s = 0; __s < __sd->_M_num_threads; ++__s)
+      for (_ThreadIndex __s = 0; __s < __sd->_M_num_threads; ++__s)
 	{
 	  __seqs[__s] =
 	    std::make_pair(__sd->_M_temporary[__s]
@@ -439,14 +439,14 @@ namespace __gnu_parallel
 	  __sd._M_offsets = new _DifferenceType[__num_threads - 1];
 	  __sd._M_pieces
 	    = new std::vector<_Piece<_DifferenceType> >[__num_threads];
-	  for (int __s = 0; __s < __num_threads; ++__s)
+	  for (_ThreadIndex __s = 0; __s < __num_threads; ++__s)
 	    __sd._M_pieces[__s].resize(__num_threads);
 	  __starts = __sd._M_starts = new _DifferenceType[__num_threads + 1];
 
 	  _DifferenceType __chunk_length = __n / __num_threads;
 	  _DifferenceType __split = __n % __num_threads;
 	  _DifferenceType __pos = 0;
-	  for (int __i = 0; __i < __num_threads; ++__i)
+	  for (_ThreadIndex __i = 0; __i < __num_threads; ++__i)
 	    {
 	      __starts[__i] = __pos;
 	      __pos += ((__i < __split)

@@ -490,26 +490,28 @@ namespace __gnu_parallel
 
       typedef _DifferenceTp _DifferenceType;
       typedef typename std::iterator_traits<_RAIterIterator>
+	::difference_type _SeqNumber;
+      typedef typename std::iterator_traits<_RAIterIterator>
 	::value_type::first_type
 	_RAIter1;
       typedef typename std::iterator_traits<_RAIter1>::value_type
 	_ValueType;
 
-      int __k = static_cast<int>(__seqs_end - __seqs_begin);
+      _SeqNumber __k = static_cast<_SeqNumber>(__seqs_end - __seqs_begin);
 
       _LT __lt(__k, __comp);
 
       // Default value for potentially non-default-constructible types.
       _ValueType* __arbitrary_element = NULL;
 
-      for (int __t = 0; __t < __k; ++__t)
+      for (_SeqNumber __t = 0; __t < __k; ++__t)
 	{
           if(__arbitrary_element == NULL
 	     && _GLIBCXX_PARALLEL_LENGTH(__seqs_begin[__t]) > 0)
             __arbitrary_element = &(*__seqs_begin[__t].first);
 	}
 
-      for (int __t = 0; __t < __k; ++__t)
+      for (_SeqNumber __t = 0; __t < __k; ++__t)
 	{
           if (__seqs_begin[__t].first == __seqs_begin[__t].second)
             __lt.__insert_start(*__arbitrary_element, __t, true);
@@ -519,7 +521,7 @@ namespace __gnu_parallel
 
       __lt.__init();
 
-      int __source;
+      _SeqNumber __source;
 
       for (_DifferenceType __i = 0; __i < __length; ++__i)
 	{
@@ -575,16 +577,18 @@ namespace __gnu_parallel
       typedef _DifferenceTp _DifferenceType;
 
       typedef typename std::iterator_traits<_RAIterIterator>
+	::difference_type _SeqNumber;
+      typedef typename std::iterator_traits<_RAIterIterator>
 	::value_type::first_type
 	_RAIter1;
       typedef typename std::iterator_traits<_RAIter1>::value_type
 	_ValueType;
 
-      int __k = __seqs_end - __seqs_begin;
+      _SeqNumber __k = __seqs_end - __seqs_begin;
 
       _LT __lt(__k, __sentinel, __comp);
 
-      for (int __t = 0; __t < __k; ++__t)
+      for (_SeqNumber __t = 0; __t < __k; ++__t)
 	{
 #if _GLIBCXX_ASSERTIONS
           _GLIBCXX_PARALLEL_ASSERT(__seqs_begin[__t].first
@@ -595,7 +599,7 @@ namespace __gnu_parallel
 
       __lt.__init();
 
-      int __source;
+      _SeqNumber __source;
 
 #if _GLIBCXX_ASSERTIONS
       _DifferenceType __i = 0;
@@ -862,8 +866,9 @@ namespace __gnu_parallel
 	   typename _DifferenceTp,
 	   typename _Compare>
     struct __multiway_merge_k_variant_sentinel_switch<false, __stable,
-						      _RAIterIterator, _RAIter3,
-						      _DifferenceTp, _Compare>
+						      _RAIterIterator,
+						      _RAIter3, _DifferenceTp,
+						      _Compare>
     {
       _RAIter3
       operator()(_RAIterIterator __seqs_begin,
@@ -921,6 +926,8 @@ namespace __gnu_parallel
 
       typedef _DifferenceTp _DifferenceType;
       typedef typename std::iterator_traits<_RAIterIterator>
+	::difference_type _SeqNumber;
+      typedef typename std::iterator_traits<_RAIterIterator>
 	::value_type::first_type
 	_RAIter1;
       typedef typename std::iterator_traits<_RAIter1>::value_type
@@ -944,7 +951,7 @@ namespace __gnu_parallel
 	return __target;
 
       _RAIter3 __return_target = __target;
-      int __k = static_cast<int>(__seqs_end - __seqs_begin);
+      _SeqNumber __k = static_cast<_SeqNumber>(__seqs_end - __seqs_begin);
 
       switch (__k)
 	{
@@ -1030,15 +1037,17 @@ namespace __gnu_parallel
      std::vector<std::pair<_DifferenceType, _DifferenceType> > *__pieces)
     {
       typedef typename std::iterator_traits<_RAIterIterator>
+	::difference_type _SeqNumber;
+      typedef typename std::iterator_traits<_RAIterIterator>
 	::value_type::first_type
 	_RAIter1;
       typedef typename std::iterator_traits<_RAIter1>::value_type
 	_ValueType;
 
       // __k sequences.
-      int __k = static_cast<int>(__seqs_end - __seqs_begin);
+      _SeqNumber __k = static_cast<_SeqNumber>(__seqs_end - __seqs_begin);
 
-      int __num_threads = omp_get_num_threads();
+      _ThreadIndex __num_threads = omp_get_num_threads();
 
       _DifferenceType __num_samples =
 	__gnu_parallel::_Settings::get().merge_oversampling * __num_threads;
@@ -1046,7 +1055,7 @@ namespace __gnu_parallel
       _ValueType* __samples = static_cast<_ValueType*>
 	(::operator new(sizeof(_ValueType) * __k * __num_samples));
       // Sample.
-      for (int __s = 0; __s < __k; ++__s)
+      for (_SeqNumber __s = 0; __s < __k; ++__s)
 	for (_DifferenceType __i = 0; __i < __num_samples; ++__i)
 	  {
 	    _DifferenceType sample_index = static_cast<_DifferenceType>
@@ -1062,9 +1071,9 @@ namespace __gnu_parallel
       _SamplingSorter<__stable, _ValueType*, _Compare>()
 	(__samples, __samples + (__num_samples * __k), __comp);
 
-      for (int __slab = 0; __slab < __num_threads; ++__slab)
+      for (_ThreadIndex __slab = 0; __slab < __num_threads; ++__slab)
 	// For each slab / processor.
-	for (int __seq = 0; __seq < __k; ++__seq)
+	for (_SeqNumber __seq = 0; __seq < __k; ++__seq)
 	  {
 	    // For each sequence.
 	    if (__slab > 0)
@@ -1108,15 +1117,17 @@ namespace __gnu_parallel
        std::vector<std::pair<_DifferenceType, _DifferenceType> > *__pieces)
     {
       typedef typename std::iterator_traits<_RAIterIterator>
+	::difference_type _SeqNumber;
+      typedef typename std::iterator_traits<_RAIterIterator>
 	::value_type::first_type
 	_RAIter1;
 
       const bool __tight = (__total_length == __length);
 
       // __k sequences.
-      const int __k = static_cast<int>(__seqs_end - __seqs_begin);
+      const _SeqNumber __k = __seqs_end - __seqs_begin;
 
-      const int __num_threads = omp_get_num_threads();
+      const _ThreadIndex __num_threads = omp_get_num_threads();
 
       // (Settings::multiway_merge_splitting
       //  == __gnu_parallel::_Settings::EXACT).
@@ -1130,7 +1141,7 @@ namespace __gnu_parallel
 	new _DifferenceType[__num_threads + 1];
       equally_split(__length, __num_threads, __borders);
 
-      for (int __s = 0; __s < (__num_threads - 1); ++__s)
+      for (_ThreadIndex __s = 0; __s < (__num_threads - 1); ++__s)
 	{
 	  __offsets[__s].resize(__k);
 	  multiseq_partition(__se.begin(), __se.end(), __borders[__s + 1],
@@ -1148,10 +1159,10 @@ namespace __gnu_parallel
 	}
       delete[] __borders;
 
-      for (int __slab = 0; __slab < __num_threads; ++__slab)
+      for (_ThreadIndex __slab = 0; __slab < __num_threads; ++__slab)
 	{
 	  // For each slab / processor.
-	  for (int __seq = 0; __seq < __k; ++__seq)
+	  for (_SeqNumber __seq = 0; __seq < __k; ++__seq)
 	    {
 	      // For each sequence.
 	      if (__slab == 0)
@@ -1218,6 +1229,8 @@ namespace __gnu_parallel
 	_GLIBCXX_CALL(__length)
 
 	typedef _DifferenceTp _DifferenceType;
+        typedef typename std::iterator_traits<_RAIterIterator>
+	  ::difference_type _SeqNumber;
 	typedef typename std::iterator_traits<_RAIterIterator>
           ::value_type::first_type
           _RAIter1;
@@ -1227,7 +1240,7 @@ namespace __gnu_parallel
 	// Leave only non-empty sequences.
 	typedef std::pair<_RAIter1, _RAIter1> seq_type;
 	seq_type* __ne_seqs = new seq_type[__seqs_end - __seqs_begin];
-	int __k = 0;
+	_SeqNumber __k = 0;
 	_DifferenceType __total_length = 0;
 	for (_RAIterIterator __raii = __seqs_begin;
              __raii != __seqs_end; ++__raii)
@@ -1263,7 +1276,7 @@ namespace __gnu_parallel
 	    // Thread __t will have to merge pieces[__iam][0..__k - 1]
 	    __pieces = new std::vector<
 	    std::pair<_DifferenceType, _DifferenceType> >[__num_threads];
-	    for (int __s = 0; __s < __num_threads; ++__s)
+	    for (_ThreadIndex __s = 0; __s < __num_threads; ++__s)
 	      __pieces[__s].resize(__k);
 
 	    _DifferenceType __num_samples =
@@ -1278,12 +1291,12 @@ namespace __gnu_parallel
 
 	  _DifferenceType __target_position = 0;
 
-	  for (int __c = 0; __c < __k; ++__c)
+	  for (_SeqNumber __c = 0; __c < __k; ++__c)
 	    __target_position += __pieces[__iam][__c].first;
 
 	  seq_type* __chunks = new seq_type[__k];
 
-	  for (int __s = 0; __s < __k; ++__s)
+	  for (_SeqNumber __s = 0; __s < __k; ++__s)
 	    __chunks[__s] = std::make_pair(__ne_seqs[__s].first
 					   + __pieces[__iam][__s].first,
 					   __ne_seqs[__s].first

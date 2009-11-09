@@ -81,10 +81,10 @@ namespace __gnu_parallel
   // the OpenMP runtime unless the parallel mode is actually invoked
   // and active, which imples that the OpenMP runtime is actually
   // going to be linked in.
-  inline int
+  inline _ThreadIndex
   __get_max_threads() 
   { 
-    int __i = omp_get_max_threads();
+    _ThreadIndex __i = omp_get_max_threads();
     return __i > 1 ? __i : 1; 
   }
 
