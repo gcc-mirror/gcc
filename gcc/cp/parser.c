@@ -11368,18 +11368,26 @@ cp_parser_template_argument (cp_parser* parser)
 	cp_parser_abort_tentative_parse (parser);
       else
 	{
+	  tree probe;
+
 	  if (TREE_CODE (argument) == INDIRECT_REF)
 	    {
 	      gcc_assert (REFERENCE_REF_P (argument));
 	      argument = TREE_OPERAND (argument, 0);
 	    }
 
-	  if (TREE_CODE (argument) == VAR_DECL)
+	  /* If we're in a template, we represent a qualified-id referring
+	     to a static data member as a SCOPE_REF even if the scope isn't
+	     dependent so that we can check access control later.  */
+	  probe = argument;
+	  if (TREE_CODE (probe) == SCOPE_REF)
+	    probe = TREE_OPERAND (probe, 1);
+	  if (TREE_CODE (probe) == VAR_DECL)
 	    {
 	      /* A variable without external linkage might still be a
 		 valid constant-expression, so no error is issued here
 		 if the external-linkage check fails.  */
-	      if (!address_p && !DECL_EXTERNAL_LINKAGE_P (argument))
+	      if (!address_p && !DECL_EXTERNAL_LINKAGE_P (probe))
 		cp_parser_simulate_error (parser);
 	    }
 	  else if (is_overloaded_fn (argument))
