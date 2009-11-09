@@ -1,3 +1,8 @@
+2009-11-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41994
+	* pt.c (tsubst_baselink): tsubst the name.
+
 2009-11-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/37920
