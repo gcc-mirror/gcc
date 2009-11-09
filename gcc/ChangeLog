@@ -1,3 +1,7 @@
+2009-11-09  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in (pgq): New function for printing gimple sequence.
+
 2009-11-09  Paul Brook  <paul@codesourcery.com>
 	Daniel Jacobowitz  <dan@codesourcery.com>
 	Sandra Loosemore  <sandra@codesourcery.com>

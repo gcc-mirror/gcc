@@ -68,6 +68,15 @@ Print the Gimple statement that is $ in C syntax.
 Works only when an inferior is executing.
 end
 
+define pgq
+set debug_gimple_seq ($)
+end
+
+document pgq
+Print the Gimple sequence that is $ in C syntax.
+Works only when an inferior is executing.
+end
+
 define pgs
 set debug_generic_stmt ($)
 end
