@@ -960,8 +960,9 @@ direct conversion.
 ARM provides hardware support for conversions between 
 @code{__fp16} and @code{float} values
 as an extension to VFP and NEON (Advanced SIMD).  GCC generates
-code using the instructions provided by this extension if you compile
-with the options @option{-mfpu=neon-fp16 -mfloat-abi=softfp},
+code using these hardware instructions if you compile with
+options to select an FPU that provides them; 
+for example, @option{-mfpu=neon-fp16 -mfloat-abi=softfp},
 in addition to the @option{-mfp16-format} option to select
 a half-precision format.  
 

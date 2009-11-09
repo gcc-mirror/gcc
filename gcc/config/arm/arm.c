@@ -816,7 +816,11 @@ static const struct arm_fpu_desc all_fpus[] =
   {"maverick",		ARM_FP_MODEL_MAVERICK, 0, 0, false, false},
   {"vfp",		ARM_FP_MODEL_VFP, 2, VFP_REG_D16, false, false},
   {"vfpv3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
+  {"vfpv3-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, true},
   {"vfpv3-d16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, false},
+  {"vfpv3-d16-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D16, false, true},
+  {"vfpv3xd",		ARM_FP_MODEL_VFP, 3, VFP_REG_SINGLE, false, false},
+  {"vfpv3xd-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_SINGLE, false, true},
   {"neon",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , false},
   {"neon-fp16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , true },
   /* Compatibility aliases.  */
@@ -3817,38 +3821,57 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
   return -1;
 }
 
+/* Return true if PCS_VARIANT should use VFP registers.  */
 static bool
-aapcs_vfp_is_call_or_return_candidate (enum machine_mode mode, const_tree type,
-				       enum machine_mode *base_mode,
-				       int *count)
+use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
 {
+  if (pcs_variant == ARM_PCS_AAPCS_VFP)
+    return true;
+
+  if (pcs_variant != ARM_PCS_AAPCS_LOCAL)
+    return false;
+
+  return (TARGET_32BIT && TARGET_VFP && TARGET_HARD_FLOAT &&
+	  (TARGET_VFP_DOUBLE || !is_double));
+}
+
+static bool
+aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
+				       enum machine_mode mode, const_tree type,
+				       int *base_mode, int *count)
+{
+  enum machine_mode new_mode = VOIDmode;
+
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {
       *count = 1;
-      *base_mode = mode;
-      return true;
+      new_mode = mode;
     }
   else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
     {
       *count = 2;
-      *base_mode = (mode == DCmode ? DFmode : SFmode);
-      return true;
+      new_mode = (mode == DCmode ? DFmode : SFmode);
     }
   else if (type && (mode == BLKmode || TREE_CODE (type) == VECTOR_TYPE))
     {
-      enum machine_mode aggregate_mode = VOIDmode;
-      int ag_count = aapcs_vfp_sub_candidate (type, &aggregate_mode);
+      int ag_count = aapcs_vfp_sub_candidate (type, &new_mode);
 
       if (ag_count > 0 && ag_count <= 4)
-	{
-	  *count = ag_count;
-	  *base_mode = aggregate_mode;
-	  return true;
-	}
+	*count = ag_count;
+      else
+	return false;
     }
-  return false;
+  else
+    return false;
+
+
+  if (!use_vfp_abi (pcs_variant, ARM_NUM_REGS (new_mode) > 1))
+    return false;
+
+  *base_mode = new_mode;
+  return true;
 }
 
 static bool
@@ -3858,22 +3881,20 @@ aapcs_vfp_is_return_candidate (enum arm_pcs pcs_variant,
   int count ATTRIBUTE_UNUSED;
   enum machine_mode ag_mode ATTRIBUTE_UNUSED;
 
-  if (!(pcs_variant == ARM_PCS_AAPCS_VFP
-	|| (pcs_variant == ARM_PCS_AAPCS_LOCAL
-	    && TARGET_32BIT && TARGET_VFP && TARGET_HARD_FLOAT)))
+  if (!use_vfp_abi (pcs_variant, false))
     return false;
-  return aapcs_vfp_is_call_or_return_candidate (mode, type, &ag_mode, &count);
+  return aapcs_vfp_is_call_or_return_candidate (pcs_variant, mode, type,
+						&ag_mode, &count);
 }
 
 static bool
 aapcs_vfp_is_call_candidate (CUMULATIVE_ARGS *pcum, enum machine_mode mode, 
 			     const_tree type)
 {
-  if (!(pcum->pcs_variant == ARM_PCS_AAPCS_VFP
-	|| (pcum->pcs_variant == ARM_PCS_AAPCS_LOCAL
-	    && TARGET_32BIT && TARGET_VFP && TARGET_HARD_FLOAT)))
+  if (!use_vfp_abi (pcum->pcs_variant, false))
     return false;
-  return aapcs_vfp_is_call_or_return_candidate (mode, type,
+
+  return aapcs_vfp_is_call_or_return_candidate (pcum->pcs_variant, mode, type,
 						&pcum->aapcs_vfp_rmode,
 						&pcum->aapcs_vfp_rcount);
 }
@@ -3934,10 +3955,9 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
 			       enum machine_mode mode,
 			       const_tree type ATTRIBUTE_UNUSED)
 {
-  if (!(pcs_variant == ARM_PCS_AAPCS_VFP
-	|| (pcs_variant == ARM_PCS_AAPCS_LOCAL
-	    && TARGET_32BIT && TARGET_VFP && TARGET_HARD_FLOAT)))
+  if (!use_vfp_abi (pcs_variant, false))
     return false;
+
   if (mode == BLKmode || (mode == TImode && !TARGET_NEON))
     {
       int count;
@@ -3946,7 +3966,8 @@ aapcs_vfp_allocate_return_reg (enum arm_pcs pcs_variant ATTRIBUTE_UNUSED,
       rtx par;
       int shift;
       
-      aapcs_vfp_is_call_or_return_candidate (mode, type, &ag_mode, &count);
+      aapcs_vfp_is_call_or_return_candidate (pcs_variant, mode, type,
+					     &ag_mode, &count);
 
       if (!TARGET_NEON)
 	{
@@ -6316,7 +6337,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
     case UMOD:
       if (TARGET_HARD_FLOAT && mode == SFmode)
 	*total = COSTS_N_INSNS (2);
-      else if (TARGET_HARD_FLOAT && mode == DFmode)
+      else if (TARGET_HARD_FLOAT && mode == DFmode && !TARGET_VFP_SINGLE)
 	*total = COSTS_N_INSNS (4);
       else
 	*total = COSTS_N_INSNS (20);
@@ -6394,7 +6415,9 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+	  if (TARGET_HARD_FLOAT
+	      && (mode == SFmode
+		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      if (GET_CODE (XEXP (x, 0)) == CONST_DOUBLE
@@ -6489,7 +6512,9 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+	  if (TARGET_HARD_FLOAT
+	      && (mode == SFmode
+		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      if (GET_CODE (XEXP (x, 1)) == CONST_DOUBLE
@@ -6602,7 +6627,9 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
     case NEG:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+	  if (TARGET_HARD_FLOAT
+	      && (mode == SFmode
+		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      return false;
@@ -6751,7 +6778,9 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
     case ABS:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+	  if (TARGET_HARD_FLOAT
+	      && (mode == SFmode
+		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      return false;
@@ -6854,7 +6883,8 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       return true;
 
     case CONST_DOUBLE:
-      if (TARGET_HARD_FLOAT && vfp3_const_double_rtx (x))
+      if (TARGET_HARD_FLOAT && vfp3_const_double_rtx (x)
+	  && (mode == SFmode || !TARGET_VFP_SINGLE))
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (4);
@@ -6929,7 +6959,8 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
 
     case MINUS:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && (mode == SFmode || !TARGET_VFP_SINGLE))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return false;
@@ -6959,7 +6990,8 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
 
     case PLUS:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && (mode == SFmode || !TARGET_VFP_SINGLE))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return false;
@@ -6999,7 +7031,8 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
 
     case NEG:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && (mode == SFmode || !TARGET_VFP_SINGLE))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return false;
@@ -7023,7 +7056,8 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
 
     case ABS:
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && (mode == SFmode || !TARGET_VFP_SINGLE))
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (1 + ARM_NUM_REGS (mode));
@@ -7245,7 +7279,9 @@ arm_fastmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+	  if (TARGET_HARD_FLOAT
+	      && (mode == SFmode
+		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      return false;
@@ -7402,7 +7438,9 @@ arm_9e_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
+	  if (TARGET_HARD_FLOAT
+	      && (mode == SFmode
+		  || (mode == DFmode && !TARGET_VFP_SINGLE)))
 	    {
 	      *total = COSTS_N_INSNS (1);
 	      return false;
@@ -8341,6 +8379,8 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
 {
   if (mode == HFmode)
     {
+      if (!TARGET_NEON_FP16)
+	return GENERAL_REGS;
       if (s_register_operand (x, mode) || neon_vector_mem_operand (x, 2))
 	return NO_REGS;
       return GENERAL_REGS;
@@ -15055,6 +15095,30 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	}
       return;
 
+    /* Print the high single-precision register of a VFP double-precision
+       register.  */
+    case 'p':
+      {
+        int mode = GET_MODE (x);
+        int regno;
+
+        if (GET_MODE_SIZE (mode) != 8 || GET_CODE (x) != REG)
+          {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+          }
+
+        regno = REGNO (x);
+        if (!VFP_REGNO_OK_FOR_DOUBLE (regno))
+          {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+          }
+
+	fprintf (stream, "s%d", regno - FIRST_VFP_REGNUM + 1);
+      }
+      return;
+
     /* Print a VFP/Neon double precision or quad precision register name.  */
     case 'P':
     case 'q':
@@ -15973,10 +16037,9 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 	return VFP_REGNO_OK_FOR_DOUBLE (regno);
 
       /* VFP registers can hold HFmode values, but there is no point in
-	 putting them there unless we have the NEON extensions for
-	 loading/storing them, too.  */
+	 putting them there unless we have hardware conversion insns. */
       if (mode == HFmode)
-	return TARGET_NEON_FP16 && VFP_REGNO_OK_FOR_SINGLE (regno);
+	return TARGET_FP16 && VFP_REGNO_OK_FOR_SINGLE (regno);
 
       if (TARGET_NEON)
         return (VALID_NEON_DREG_MODE (mode) && VFP_REGNO_OK_FOR_DOUBLE (regno))

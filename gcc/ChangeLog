@@ -1,3 +1,42 @@
+2009-11-09  Paul Brook  <paul@codesourcery.com>
+	Daniel Jacobowitz  <dan@codesourcery.com>
+	Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Half-Precision): Update wording to reflect
+	that there are now multiple -mfpu options that enable fp16
+	hardware support.
+	* doc/invoke.texi: Update list of ARM -mfpu= options.
+	* config.gcc: Update ARM --with-fpu option list.
+	* config/arm/arm.c (all_fpus): Add vfpv3-fp16, vfpv3-d16-fp16,
+	vfpv3xd and vfpv3xd-fp16.
+	(use_vfp_abi): New function.
+	(aapcs_vfp_is_call_or_return_candidate): Avoid double precision regs
+	when undesirable.
+	(aapcs_vfp_is_return_candidate, aapcs_vfp_is_call_candidate,
+	aapcs_vfp_allocate_return_reg): Use use_vfp_abi.
+        (arm_rtx_costs_1, arm_size_rtx_costs, arm_fastmul_rtx_costs,
+        arm_9e_rtx_costs): Only expect double-precision operations if the FPU
+        provides them.
+	(coproc_secondary_reload_class): Reload HFmode via GENERAL_REGS if no
+	NEON.
+	(arm_print_operand): Handle 'p' modifier.
+	(arm_hard_regno_mode_ok): : Allow HFmode in VFP registers if
+	TARGET_FP16.
+	* config/arm/arm.h (TARGET_VFP_SINGLE, TARGET_VFP_DOUBLE): Define.
+	(TARGET_FP16): Define.
+	* config/arm/vfp.md: Disable double-precision patterns if the FPU
+	does not provide them.
+	(arm_movdi_vfp, thumb2_movdi_vfp): Use fcpys to move
+	double-precision values on a single-precision FPU.
+        (movdf_vfp, thumb2_movdf_vfp): Likewise.  Use "Dy" for
+        double-precision constants.
+	(movhf_vfp_neon): New pattern (was movhf_vfp).
+	(movhf_vfp): Remove NEON instructions.
+	* config/arm/constraints.md: Add new "Dy" constraint for
+	double-precision constants.  Update description of "Dv".
+	* config/arm/arm.md: Disable double-precision patterns if the FPU
+	does not provide them
+
 2009-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (print_operand) <case 'D'>: Fix formatting.

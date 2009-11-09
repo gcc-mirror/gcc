@@ -29,7 +29,7 @@
 ;; in Thumb-1 state: I, J, K, L, M, N, O
 
 ;; The following multi-letter normal constraints have been used:
-;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv
+;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv, Dy
 ;; in Thumb-1 state: Pa, Pb
 
 ;; The following memory constraints have been used:
@@ -207,9 +207,16 @@
 (define_constraint "Dv"
  "@internal
   In ARM/Thumb-2 state a const_double which can be used with a VFP fconsts
-  or fconstd instruction."
+  instruction."
  (and (match_code "const_double")
       (match_test "TARGET_32BIT && vfp3_const_double_rtx (op)")))
+
+(define_constraint "Dy"
+ "@internal
+  In ARM/Thumb-2 state a const_double which can be used with a VFP fconstd
+  instruction."
+ (and (match_code "const_double")
+      (match_test "TARGET_32BIT && TARGET_VFP_DOUBLE && vfp3_const_double_rtx (op)")))
 
 (define_memory_constraint "Ut"
  "@internal
