@@ -11597,7 +11597,8 @@ print_operand (FILE *file, rtx x, int code)
 		  fputs ("ord", file);
 		  break;
 		default:
-		  output_operand_lossage ("operand is not a condition code, invalid operand code 'D'");
+		  output_operand_lossage ("operand is not a condition code, "
+					  "invalid operand code 'D'");
 		  return;
 		}
 	    }
@@ -11636,7 +11637,8 @@ print_operand (FILE *file, rtx x, int code)
 		  fputs ("ord", file);
 		  break;
 		default:
-		  output_operand_lossage ("operand is not a condition code, invalid operand code 'D'");
+		  output_operand_lossage ("operand is not a condition code, "
+					  "invalid operand code 'D'");
 		  return;
 		}
 	    }
@@ -11810,7 +11812,8 @@ print_operand (FILE *file, rtx x, int code)
 	      fputs ("une", file);
 	      break;
 	    default:
-	      output_operand_lossage ("operand is not a condition code, invalid operand code 'D'");
+	      output_operand_lossage ("operand is not a condition code, "
+				      "invalid operand code 'Y'");
 	      return;
 	    }
 	  return;

@@ -1,3 +1,9 @@
+2009-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (print_operand) <case 'D'>: Fix formatting.
+	(print_operand) <case 'Y'>: Likewise.  Fix a pasto in operand lossage
+	diagnostics.
+
 2009-11-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* collect2.c (main): Search PLUGIN_LD for plugin linker.
