@@ -6958,19 +6958,19 @@ print_operand (FILE *file, rtx x, int code)
       /* Output the right displacement from the saved PC on function return.
 	 The caller may have placed an "unimp" insn immediately after the call
 	 so we have to account for it.  This insn is used in the 32-bit ABI
-	 when calling a function that returns a non zero-sized structure. The
+	 when calling a function that returns a non zero-sized structure.  The
 	 64-bit ABI doesn't have it.  Be careful to have this test be the same
-	 as that used on the call. The exception here is that when 
-	 sparc_std_struct_return is enabled, the psABI is followed exactly
-	 and the adjustment is made by the code in sparc_struct_value_rtx. 
-	 The call emitted is the same when sparc_std_struct_return is 
-	 present. */
-     if (! TARGET_ARCH64
+	 as that for the call.  The exception is when sparc_std_struct_return
+	 is enabled, the psABI is followed exactly and the adjustment is made
+	 by the code in sparc_struct_value_rtx.  The call emitted is the same
+	 when sparc_std_struct_return is enabled. */
+     if (!TARGET_ARCH64
 	 && cfun->returns_struct
-	 && ! sparc_std_struct_return
-	 && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
-	     == INTEGER_CST)
-	 && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl))))
+	 && !sparc_std_struct_return
+	 && DECL_SIZE (DECL_RESULT (current_function_decl))
+	 && TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
+	     == INTEGER_CST
+	 && !integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl))))
 	fputs ("12", file);
       else
         fputc ('8', file);

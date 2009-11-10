@@ -1,3 +1,8 @@
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (print_operand) <')'>: Test for a non-null
+	DECL_SIZE of DECL_RESULT before evaluating it.
+
 2009-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR tree-optimization/41987
