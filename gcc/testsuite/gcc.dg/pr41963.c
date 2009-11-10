@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math" } */
-#include <math.h>
 
+extern float fabsf(float);
 extern float sqrtf(float);
 
 static __attribute__((noinline)) void f (float *dst, float *src)

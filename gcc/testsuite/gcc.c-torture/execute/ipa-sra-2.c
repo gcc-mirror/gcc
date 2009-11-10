@@ -14,11 +14,10 @@ union both
   struct small small;
 };
 
-extern void *malloc(__SIZE_TYPE__);
+extern void *calloc (__SIZE_TYPE__, __SIZE_TYPE__);
 extern void free (void *);
 
-static int
-__attribute__((noinline))
+static int __attribute__((noinline))
 foo (int fail, union both *agg)
 {
   int r;
@@ -31,7 +30,7 @@ foo (int fail, union both *agg)
 
 int main (int argc, char *argv[])
 {
-  union both *agg = malloc (sizeof (struct small));
+  union both *agg = calloc (1, sizeof (struct small));
   int r;
 
   r = foo ((argc > 2000), agg);
