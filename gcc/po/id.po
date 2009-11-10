@@ -1,14 +1,14 @@
 # Pesan Bahasa Indonesia untuk GCC
 # Copyright (C) 2008 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Arif E. Nugroho <arif_endro@yahoo.com>, 2008.
+# Arif E. Nugroho <arif_endro@yahoo.com>, 2008, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.4-b20081121\n"
+"Project-Id-Version: gcc 4.4.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-07-15 13:37+0200\n"
-"PO-Revision-Date: 2008-11-30 09:00+0700\n"
+"PO-Revision-Date: 2009-11-10 09:00+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -628,7 +628,7 @@ msgstr "perpustakaan lib%s tidak ditemukan"
 #: cppspec.c:106
 #, c-format
 msgid "\"%s\" is not a valid option to the preprocessor"
-msgstr "\"%s\" bukan sebuah opsi valid untuk preprosesor"
+msgstr "\"%s\" bukan sebuah pilihan valid untuk preprosesor"
 
 #: cppspec.c:128
 #, c-format
@@ -850,11 +850,11 @@ msgstr "# %s %.2f %.2f\n"
 #: gcc.c:3225
 #, c-format
 msgid "Usage: %s [options] file...\n"
-msgstr "Penggunaan: %s [opsi] berkas...\n"
+msgstr "Penggunaan: %s [pilihan] berkas...\n"
 
 #: gcc.c:3226
 msgid "Options:\n"
-msgstr "Opsi:\n"
+msgstr "Pilihan:\n"
 
 #: gcc.c:3228
 msgid "  -pass-exit-codes         Exit with highest error code from a phase\n"
@@ -866,25 +866,23 @@ msgstr "  --help                   Tampilkan informasi ini\n"
 
 #: gcc.c:3230
 msgid "  --target-help            Display target specific command line options\n"
-msgstr "  --target-help            Tampilkan target spesifik opsi baris perintah\n"
+msgstr "  --target-help            Tampilkan target spesifik pilihan baris perintah\n"
 
 #: gcc.c:3231
-#, fuzzy
 msgid "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
-msgstr "  --help={target|optimisasi|peringatan|tidak terdokumentasi|parameter}[,{[^]tergabung|[^]dipisahkan}]\n"
+msgstr "  --help={target|optimisasi|peringatan|parameter|[^]{tergabung|dipisahkan|tidak terdokumentasi}}[,...]\n"
 
 #: gcc.c:3232
 msgid "                           Display specific types of command line options\n"
-msgstr "                           Tampilkan tipe spesifik dari opsi baris perintah\n"
+msgstr "                           Tampilkan tipe spesifik dari pilihan baris perintah\n"
 
 #: gcc.c:3234
 msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
-msgstr "  (Gunakan '-v --help' untuk menampilkan opsi baris perintah dari sub-proses)\n"
+msgstr "  (Gunakan '-v --help' untuk menampilkan pilihan baris perintah dari sub-proses)\n"
 
 #: gcc.c:3235
-#, fuzzy
 msgid "  --version                Display compiler version information\n"
-msgstr "  --help                   Tampilkan informasi ini\n"
+msgstr "  --version                Tampilkan informasi versi penyusun\n"
 
 #: gcc.c:3236
 msgid "  -dumpspecs               Display all of the built in spec strings\n"
@@ -923,7 +921,7 @@ msgid ""
 "  -print-multi-lib         Display the mapping between command line options and\n"
 "                           multiple library search directories\n"
 msgstr ""
-"  -print-multi-lib         Tampilkan pemetaan diantara opsi baris perintah dan\n"
+"  -print-multi-lib         Tampilkan pemetaan diantara pilihan baris perintah dan\n"
 "                           multiple pencarian direktori perpustakaan\n"
 
 #: gcc.c:3247
@@ -940,15 +938,15 @@ msgstr "  -print-sysroot-headers-suffix Tampilkan akhiran sysroot yang digunakan
 
 #: gcc.c:3250
 msgid "  -Wa,<options>            Pass comma-separated <options> on to the assembler\n"
-msgstr "  -Wa,<opsi>               Lewatkan dipisahkan-oleh-koma <opsi> ke perakit\n"
+msgstr "  -Wa,<pilihan>               Lewatkan dipisahkan-oleh-koma <pilihan> ke perakit\n"
 
 #: gcc.c:3251
 msgid "  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n"
-msgstr "  -Wp,<opsi>               Lewatkan dipisahkan-oleh-koma <opsi> ke preprosesor\n"
+msgstr "  -Wp,<pilihan>               Lewatkan dipisahkan-oleh-koma <pilihan> ke preprosesor\n"
 
 #: gcc.c:3252
 msgid "  -Wl,<options>            Pass comma-separated <options> on to the linker\n"
-msgstr "  -Wl,<opsi>               Lewatkan dipisahkan-oleh-koma <opsi> ke penghubung\n"
+msgstr "  -Wl,<pilihan>               Lewatkan dipisahkan-oleh-koma <pilihan> ke penghubung\n"
 
 #: gcc.c:3253
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler\n"
@@ -1012,7 +1010,7 @@ msgstr "  -v                       Tampilkan aplikasi yang dipanggil oleh kompil
 
 #: gcc.c:3269
 msgid "  -###                     Like -v but options quoted and commands not executed\n"
-msgstr "  -###                     Seperti -v tetapi opsi diquote dan perintah tidak dijalankan\n"
+msgstr "  -###                     Seperti -v tetapi pilihan diquote dan perintah tidak dijalankan\n"
 
 #: gcc.c:3270
 msgid "  -E                       Preprocess only; do not compile, assemble or link\n"
@@ -1051,14 +1049,14 @@ msgid ""
 " other options on to these processes the -W<letter> options must be used.\n"
 msgstr ""
 "\n"
-"Opsi dimulai dengan -g, -f, -m, -O, -W, atau --param secara otomatis\n"
+"Pilihan dimulai dengan -g, -f, -m, -O, -W, atau --param secara otomatis\n"
 " dilewatkan ke berbagai sub-proses dipanggil oleh %s. Dalam tujuan untuk melewatkan\n"
-" ke opsi lain di proses ini opsi -W<huruf> harus digunakan.\n"
+" ke pilihan lain di proses ini pilihan -W<huruf> harus digunakan.\n"
 
 #: gcc.c:3411
 #, c-format
 msgid "'-%c' option must have argument"
-msgstr "'-%c' opsi harus memiliki argumen"
+msgstr "'-%c' pilihan harus memiliki argumen"
 
 #: gcc.c:3437
 #, c-format
@@ -1066,9 +1064,9 @@ msgid "couldn't run '%s': %s"
 msgstr "tidak dapat menjalankan '%s': %s"
 
 #: gcc.c:3439
-#, fuzzy, c-format
+#, c-format
 msgid "couldn't run '%s': %s: %s"
-msgstr "tidak dapat menjalankan '%s': %s"
+msgstr "tidak dapat menjalankan '%s': %s: %s"
 
 #. translate_options () has turned --version into -fversion.
 #: gcc.c:3643
@@ -1307,7 +1305,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Opsi penghubung\n"
+"Pilihan penghubung\n"
 "===============\n"
 "\n"
 
@@ -1372,7 +1370,7 @@ msgid ""
 "=================\n"
 "\n"
 msgstr ""
-"Opsi perakit\n"
+"Pilihan perakit\n"
 "============\n"
 "\n"
 
@@ -1776,7 +1774,7 @@ msgstr "dioptimisasi untuk ukuran dan ukuran kode akan berkembang"
 
 #: ipa-inline.c:980
 msgid "target specific option mismatch"
-msgstr "opsi target spesifik tidak cocok"
+msgstr "pilihan target spesifik tidak cocok"
 
 #: ipa-inline.c:1056
 msgid "--param inline-unit-growth limit reached"
@@ -1842,63 +1840,61 @@ msgstr "[non-aktif]"
 #: opts.c:1283
 #, c-format
 msgid " No options with the desired characteristics were found\n"
-msgstr " Tidak ada opsi dengan karakteristik yang diinginkan ditemukan\n"
+msgstr " Tidak ada pilihan dengan karakteristik yang diinginkan ditemukan\n"
 
 #: opts.c:1292
 #, c-format
 msgid " None found.  Use --help=%s to show *all* the options supported by the %s front-end\n"
-msgstr " Tidak ditemukan apapun. Gunakan --help=%s untuk menunjukan *seluruh* opsi yang didukung oleh %s front-end\n"
+msgstr " Tidak ditemukan apapun. Gunakan --help=%s untuk menunjukan *seluruh* pilihan yang didukung oleh %s front-end\n"
 
 #: opts.c:1298
 #, c-format
 msgid " All options with the desired characteristics have already been displayed\n"
-msgstr " Seluruh opsi dengan karakteristik yang diinginkan telah ditampilkan\n"
+msgstr " Seluruh pilihan dengan karakteristik yang diinginkan telah ditampilkan\n"
 
 #: opts.c:1352
 msgid "The following options are target specific"
-msgstr "Opsi berikut adalah target spesifik"
+msgstr "Pilihan berikut adalah target spesifik"
 
 #: opts.c:1355
 msgid "The following options control compiler warning messages"
-msgstr "Opsi berikut mengontrol pesan peringatan kompiler"
+msgstr "Pilihan berikut mengontrol pesan peringatan kompiler"
 
 #: opts.c:1358
 msgid "The following options control optimizations"
-msgstr "Opsi berikut mengontrol optimisasi"
+msgstr "Pilihan berikut mengontrol optimisasi"
 
 #: opts.c:1361 opts.c:1400
 msgid "The following options are language-independent"
-msgstr "Opsi berikut adalah independen terhadap bahasa pemrograman"
+msgstr "Pilihan berikut adalah independen terhadap bahasa pemrograman"
 
 #: opts.c:1364
 msgid "The --param option recognizes the following as parameters"
-msgstr "Opsi --param dikenal sebagai parameters"
+msgstr "Pilihan --param dikenal sebagai parameters"
 
 #: opts.c:1370
 msgid "The following options are specific to just the language "
-msgstr "Opsi berikut hanya spesifik terhadap bahasa "
+msgstr "Pilihan berikut hanya spesifik terhadap bahasa "
 
 #: opts.c:1372
 msgid "The following options are supported by the language "
-msgstr "Opsi berikut tidak didukung oleh bahasa "
+msgstr "Pilihan berikut tidak didukung oleh bahasa "
 
 #: opts.c:1383
 msgid "The following options are not documented"
-msgstr "Opsi berikut tidak terdokumentasi"
+msgstr "Pilihan berikut tidak terdokumentasi"
 
 #: opts.c:1385
-#, fuzzy
 msgid "The following options take separate arguments"
-msgstr "Opsi berikut tidak terdokumentasi"
+msgstr "Pilihan berikut mengambil argumen terpisah"
 
 #: opts.c:1387
-#, fuzzy
 msgid "The following options take joined arguments"
-msgstr "Opsi berikut tidak terdokumentasi"
+msgstr "Pilihan berikut mengambil argumen tergabung"
 
 #: opts.c:1398
 msgid "The following options are language-related"
-msgstr "Opsi berikut adalah berhubungan dengan bahasa"
+msgstr "Pilihan berikut adalah berhubungan dengan bahasa"
 
 #: opts.c:1558
 #, c-format
@@ -1908,7 +1904,7 @@ msgstr "warning: --help argumen %.*s adalah ambigu, mohon lebih spesifik\n"
 #: opts.c:1566
 #, c-format
 msgid "warning: unrecognized argument to --help= option: %.*s\n"
-msgstr "peringatan: argumen tidak dikenal ke opsi --help=: %.*s\n"
+msgstr "peringatan: argumen tidak dikenal ke pilihan --help=: %.*s\n"
 
 #: protoize.c:583
 #, c-format
@@ -2335,11 +2331,11 @@ msgstr "%s%sGCC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%
 
 #: toplev.c:1276
 msgid "options passed: "
-msgstr "opsi dilewatkan: "
+msgstr "pilihan dilewatkan: "
 
 #: toplev.c:1310
 msgid "options enabled: "
-msgstr "opsi aktif: "
+msgstr "pilihan aktif: "
 
 #: toplev.c:1445
 #, c-format
@@ -2847,7 +2843,7 @@ msgstr "jumlah maksimal loops untuk daerah RA"
 
 #: params.def:755
 msgid "max size of conflict table in MB"
-msgstr ""
+msgstr "ukuran maksimal dari tabel konflik dalam MB"
 
 #: params.def:763
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place"
@@ -2855,7 +2851,7 @@ msgstr "Rasio maksimal diantara ukuran array dan cabang switch untuk sebuah konv
 
 #: params.def:771
 msgid "max basic blocks number in loop for loop invariant motion"
-msgstr ""
+msgstr "jumlah maksimal blok dasar dalam loop untuk gerakan loop invariant"
 
 #: config/alpha/alpha.c:5039
 #, c-format
@@ -3303,19 +3299,19 @@ msgid "invalid UNSPEC as operand"
 msgstr "UNSPEC tidak valid sebagai operan"
 
 #: config/i386/i386.c:11065 config/i386/i386.c:11104 config/i386/i386.c:11278
-#, fuzzy, c-format
+#, c-format
 msgid "operand is not a condition code, invalid operand code 'D'"
-msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'c' tidak valid"
+msgstr "operan bukan sebuah kode kondisi, kode operan 'D' tidak valid"
 
 #: config/i386/i386.c:11129
-#, fuzzy, c-format
+#, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'C'"
-msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'c' tidak valid"
+msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'C' tidak valid"
 
 #: config/i386/i386.c:11139
-#, fuzzy, c-format
+#, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'F'"
-msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'c' tidak valid"
+msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'F' tidak valid"
 
 #: config/i386/i386.c:11157
 #, c-format
@@ -3323,9 +3319,9 @@ msgid "operand is neither a constant nor a condition code, invalid operand code 
 msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'c' tidak valid"
 
 #: config/i386/i386.c:11167
-#, fuzzy, c-format
+#, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'f'"
-msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'c' tidak valid"
+msgstr "operan bukan sebuah konstanta ataupun sebuah kode kondisi, kode operan 'f' tidak valid"
 
 #: config/i386/i386.c:11292
 #, c-format
@@ -3850,17 +3846,17 @@ msgstr "Aritmetik OK mengubah %s ke %s di %L"
 #: fortran/arith.c:2064
 #, no-c-format
 msgid "Arithmetic overflow converting %s to %s at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetik overflow mengubah %s ke %s di %L. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
+msgstr "Aritmetik overflow mengubah %s ke %s di %L. Pemeriksaan ini dapat dinon-aktifkan dengan pilihan -fno-range-check"
 
 #: fortran/arith.c:2069
 #, no-c-format
 msgid "Arithmetic underflow converting %s to %s at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetik underflow mengubah %s ke %s di %L. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
+msgstr "Aritmetik underflow mengubah %s ke %s di %L. Pemeriksaan ini dapat dinon-aktifkan dengan pilihan -fno-range-check"
 
 #: fortran/arith.c:2074
 #, no-c-format
 msgid "Arithmetic NaN converting %s to %s at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetik NaN mengubah %s ke %s di %L. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
+msgstr "Aritmetik NaN mengubah %s ke %s di %L. Pemeriksaan ini dapat dinon-aktifkan dengan pilihan -fno-range-check"
 
 #: fortran/arith.c:2079
 #, no-c-format
@@ -4083,9 +4079,9 @@ msgid "'dim' argument of '%s' intrinsic at %L is not a valid dimension index"
 msgstr "'dim' argumen dari '%s' instrinsik di %L bukan sebuah indeks dimensi yang valid"
 
 #: fortran/check.c:431
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unequal character lengths (%ld/%ld) in %s at %L"
-msgstr "Panjang karakter tidak sama (%ld dan %ld) dalam %s intrinsik di %L"
+msgstr "Panjang karakter tidak sama (%ld/%ld) dalam %s di %L"
 
 #: fortran/check.c:537 fortran/check.c:2039 fortran/check.c:2054
 #, no-c-format
@@ -4211,9 +4207,9 @@ msgid "'a1' argument of '%s' intrinsic at %L must be INTEGER, REAL or CHARACTER"
 msgstr "'a1' argumen dari '%s' intrinsik di %L harus berupa INTEGER, REAL, atau KARAKTER"
 
 #: fortran/check.c:1821
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument types of '%s' intrinsic at %L must match (%s/%s)"
-msgstr "'a%d' argumen dari '%s' intrinsik di %L harus berupa %s(%d)"
+msgstr "Tipe argumen dari '%s' intrinsik di %L harus sesuai dengan (%s/%s)"
 
 #: fortran/check.c:1835
 #, no-c-format
@@ -4306,9 +4302,9 @@ msgid "Different shape in dimension %d for MASK and FIELD arguments of UNPACK at
 msgstr "Bentuk berbeda dalam dimensi %d untuk argumen MASK dan FIELD dari UNPACK di %L"
 
 #: fortran/check.c:3190 fortran/check.c:3222
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Size of '%s' argument of '%s' intrinsic at %L too small (%i/%i)"
-msgstr "'%s' argumen dari '%s' intrinsik di %L harus berupa %s"
+msgstr "Ukuran dari '%s' argumen dari '%s' intrinsik di %L terlalu kecil (%i/%i)"
 
 #: fortran/check.c:3230
 #, no-c-format
@@ -4636,9 +4632,9 @@ msgid "Kind %d not supported for type %s at %C"
 msgstr "Jenis %d tidak didukung untuk tipe %s di %C"
 
 #: fortran/decl.c:1992
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "C kind type parameter is for type %s but type at %L is %s"
-msgstr "parameter jenis C adalah untuk tipe %s tetapi simbol '%s' di %L adalah tipe %s"
+msgstr "Jenis tipe parameter C adalah untuk tipe %s tetapi tipe di %L adalah %s"
 
 #: fortran/decl.c:2001
 #, no-c-format
@@ -5136,7 +5132,7 @@ msgstr "Diduga \",\" atau akhir dari pernyataan di %C"
 #: fortran/decl.c:5619
 #, no-c-format
 msgid "Cray pointer declaration at %C requires -fcray-pointer flag"
-msgstr "Deklarasi penunjuk cray di %C membutuhkan opsi -fcray-pointer"
+msgstr "Deklarasi penunjuk cray di %C membutuhkan pilihan -fcray-pointer"
 
 #: fortran/decl.c:5714
 #, no-c-format
@@ -5757,17 +5753,17 @@ msgstr "BOZ literal di %L adalah bitwise dapat ditransfer bukan-integer simbol '
 #: fortran/expr.c:2974 fortran/resolve.c:6570
 #, no-c-format
 msgid "Arithmetic underflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetik underflow dari bit-wise dipindahkan BOZ di %L. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
+msgstr "Aritmetik underflow dari bit-wise dipindahkan BOZ di %L. Pemeriksaan ini dapat dinon-aktifkan dengan pilihan -fno-range-check"
 
 #: fortran/expr.c:2978 fortran/resolve.c:6574
 #, no-c-format
 msgid "Arithmetic overflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetik overflow dari bit-wise dipindahkan BOZ di %L. Pemeriksaan ini dapat dinonaktifkan dengan opsi -fno-range-check"
+msgstr "Aritmetik overflow dari bit-wise dipindahkan BOZ di %L. Pemeriksaan ini dapat dinonaktifkan dengan pilihan -fno-range-check"
 
 #: fortran/expr.c:2982 fortran/resolve.c:6578
 #, no-c-format
 msgid "Arithmetic NaN of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "Aritmetik NaN dari bit-wise dipindahkan BOZ di %L. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
+msgstr "Aritmetik NaN dari bit-wise dipindahkan BOZ di %L. Pemeriksaan ini dapat dinon-aktifkan dengan pilihan -fno-range-check"
 
 #: fortran/expr.c:3004
 #, no-c-format
@@ -5810,14 +5806,14 @@ msgid "Bad pointer object in PURE procedure at %L"
 msgstr "Objek penunjuk buruk dalam prosedur PURE di %L"
 
 #: fortran/expr.c:3134
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid procedure pointer assignment at %L"
-msgstr "Tingkat berbeda dalam penempatan penunjuk di %L"
+msgstr "Penempatan penunjuk prosedur tidak valid di %L"
 
 #: fortran/expr.c:3140
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Abstract interface '%s' is invalid in procedure pointer assignment at %L"
-msgstr "Jenis parameter berbeda dalam penempatan penunjuk di %L"
+msgstr "Antarmuka abstrak '%s' tidak valid dalam penempatan penunjuk prosedur di %L"
 
 #: fortran/expr.c:3159
 #, no-c-format
@@ -6202,7 +6198,7 @@ msgstr "Entiti '%s' di %C telah ada dalam sebuah antar-muka"
 #: fortran/intrinsic.c:840
 #, no-c-format
 msgid "The intrinsic '%s' at %L is not included in the selected standard but %s and '%s' will be treated as if declared EXTERNAL.  Use an appropriate -std=* option or define -fall-intrinsics to allow this intrinsic."
-msgstr "Intrinsik '%s' di %L tidak dimasukan dalam standar yang dipilih tetapi %s dan '%s' akan diperlakukan seperti jika dideklarasikan EXTERNAL. Gunakan sebuah opsi -std=* yang sesuai atau definisikan -fall-intrinsics untuk mengijinkan intrinsik ini."
+msgstr "Intrinsik '%s' di %L tidak dimasukan dalam standar yang dipilih tetapi %s dan '%s' akan diperlakukan seperti jika dideklarasikan EXTERNAL. Gunakan sebuah pilihan -std=* yang sesuai atau definisikan -fall-intrinsics untuk mengijinkan intrinsik ini."
 
 #: fortran/intrinsic.c:3079
 #, no-c-format
@@ -6372,9 +6368,8 @@ msgid "Fortran 2008: 'G0' in format at %C"
 msgstr "Fortran 2008: 'G0' dalam format di %C"
 
 #: fortran/io.c:745
-#, fuzzy
 msgid "E specifier not allowed with g0 descriptor"
-msgstr "Diduga P edit deskripsi"
+msgstr "Penspesifikasi E tidak diperbolehkan dengan pendeskripsi g0"
 
 #: fortran/io.c:759 fortran/io.c:761 fortran/io.c:822 fortran/io.c:824
 #, no-c-format
@@ -7303,19 +7298,19 @@ msgid "Error writing module file '%s' for writing: %s"
 msgstr "Error menulis berkas modul '%s' untuk menulis: %s"
 
 #: fortran/module.c:4876
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Can't delete module file '%s': %s"
-msgstr "%s: tidak dapat menghapus berkas '%s': %s\n"
+msgstr "tidak dapat menghapus berkas modul '%s': %s"
 
 #: fortran/module.c:4879
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Can't rename module file '%s' to '%s': %s"
-msgstr "%s: peringatan: tidak dapat mengubah nama berkas '%s' ke '%s': %s\n"
+msgstr "tidak dapat mengubah nama berkas modul '%s' ke '%s': %s"
 
 #: fortran/module.c:4885
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Can't delete temporary module file '%s': %s"
-msgstr "%s: tidak dapat menghapus berkas informasi tambahan '%s': %s\n"
+msgstr "Tidak dapat menghapus berkas modul sementara '%s': %s"
 
 #: fortran/module.c:4905 fortran/module.c:4987
 #, no-c-format
@@ -7345,12 +7340,12 @@ msgstr "Simbol '%s' direferensikan di %L tidak ada dalam modul intrinsik ISO_FOR
 #: fortran/module.c:5116
 #, no-c-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %L is incompatible with option %s"
-msgstr "Penggunaan dari NUMERIC_STORAGE_SIZE konstanta bernama dari modul intrinsik ISO_FORTRAN_ENV di %L adalah tidak kompatibel dengan opsi %s"
+msgstr "Penggunaan dari NUMERIC_STORAGE_SIZE konstanta bernama dari modul intrinsik ISO_FORTRAN_ENV di %L adalah tidak kompatibel dengan pilihan %s"
 
 #: fortran/module.c:5144
 #, no-c-format
 msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_FORTRAN_ENV at %C is incompatible with option %s"
-msgstr "Penggunaan dari NUMERIC_STORAGE_SIZE konstanta bernama dari modul intrinsik ISO_FORTRAN_ENV di %C adalah tidak kompatibel dengan opsi %s"
+msgstr "Penggunaan dari NUMERIC_STORAGE_SIZE konstanta bernama dari modul intrinsik ISO_FORTRAN_ENV di %C adalah tidak kompatibel dengan pilihan %s"
 
 #: fortran/module.c:5160
 #, no-c-format
@@ -7394,12 +7389,12 @@ msgstr "Berkas '%s' dibuka di %C bukan sebuah berkas modul GFORTRAN"
 #: fortran/module.c:5252
 #, no-c-format
 msgid "Parse error when checking module version for file '%s' opened at %C"
-msgstr ""
+msgstr "Parse error ketika memeriksa versi modul untuk berkas '%s' dibuka di %C"
 
 #: fortran/module.c:5257
 #, no-c-format
 msgid "Wrong module version '%s' (expected '"
-msgstr ""
+msgstr "Versi modul salah '%s' (diduga '"
 
 #: fortran/module.c:5270
 #, no-c-format
@@ -7640,7 +7635,7 @@ msgstr "tidak cukup DO loops untuk kolaps !$OMP DO di %L"
 #: fortran/options.c:233
 #, no-c-format
 msgid "Option -fwhole-program is not supported for Fortran"
-msgstr "Opsi -fwhole-program tidak didukung untuk Fortran"
+msgstr "Pilihan -fwhole-program tidak didukung untuk Fortran"
 
 #: fortran/options.c:287
 #, no-c-format
@@ -7660,32 +7655,32 @@ msgstr "'-fd-lines-as-code' tidak memiliki efek dalam format bebas"
 #: fortran/options.c:318
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -fmax-stack-var-size=%d"
-msgstr "Opsi -fno-automatic overwrites -fmax-stack-var-size=%d"
+msgstr "Pilihan -fno-automatic overwrites -fmax-stack-var-size=%d"
 
 #: fortran/options.c:321
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -frecursive"
-msgstr "Opsi -fno-automatic overwrites -frecursive"
+msgstr "Pilihan -fno-automatic overwrites -frecursive"
 
 #: fortran/options.c:323
 #, no-c-format
 msgid "Flag -fno-automatic overwrites -frecursive implied by -fopenmp"
-msgstr "Opsi -fno-automatic overwrites -frecursive diimplikasikan dengan -fopenmp"
+msgstr "Pilihan -fno-automatic overwrites -frecursive diimplikasikan dengan -fopenmp"
 
 #: fortran/options.c:327
 #, no-c-format
 msgid "Flag -frecursive overwrites -fmax-stack-var-size=%d"
-msgstr "Opsi -frecursive overwrites -fmax-stack-var-size=%d"
+msgstr "Pilihan -frecursive overwrites -fmax-stack-var-size=%d"
 
 #: fortran/options.c:331
 #, no-c-format
 msgid "Flag -fmax-stack-var-size=%d overwrites -frecursive implied by -fopenmp"
-msgstr "Opsi -fmax-stack-var-size=%d overwrites -frecursive diimplikasikan dengan -fopenmp"
+msgstr "Pilihan -fmax-stack-var-size=%d overwrites -frecursive diimplikasikan dengan -fopenmp"
 
 #: fortran/options.c:404
 #, no-c-format
 msgid "gfortran: Only one -J option allowed"
-msgstr "gfortran: Hanya satu opsi -J diperbolehkan"
+msgstr "gfortran: Hanya satu pilihan -J diperbolehkan"
 
 #: fortran/options.c:447
 #, no-c-format
@@ -7715,12 +7710,12 @@ msgstr "Panjang maksimal identifier yang didukung adalah %d"
 #: fortran/options.c:712
 #, no-c-format
 msgid "Unrecognized option to -finit-logical: %s"
-msgstr "Opsi ke -finit-logical: %s tidak dikenal"
+msgstr "Pilihan ke -finit-logical: %s tidak dikenal"
 
 #: fortran/options.c:726
 #, no-c-format
 msgid "Unrecognized option to -finit-real: %s"
-msgstr "Opsi ke -finit-real: %s tidak dikenal"
+msgstr "Pilihan ke -finit-real: %s tidak dikenal"
 
 #: fortran/options.c:742
 #, no-c-format
@@ -8114,7 +8109,7 @@ msgstr "Jenis integer  %d di %C tidak tersedia"
 #: fortran/primary.c:222
 #, no-c-format
 msgid "Integer too big for its kind at %C. This check can be disabled with the option -fno-range-check"
-msgstr "Integer terlalu besar untuk jenis ini di %C. Pemeriksaan ini dapat dinon-aktifkan dengan opsi -fno-range-check"
+msgstr "Integer terlalu besar untuk jenis ini di %C. Pemeriksaan ini dapat dinon-aktifkan dengan pilihan -fno-range-check"
 
 #: fortran/primary.c:251
 #, no-c-format
@@ -8284,7 +8279,7 @@ msgstr "Diduga daftar argumen di %C"
 #: fortran/primary.c:2103
 #, no-c-format
 msgid "Fortran 2003: Structure constructor with missing optional arguments at %C"
-msgstr "Fortran 2003: Konstruktor struktur dengan argumen opsional hilang di %C"
+msgstr "Fortran 2003: Konstruktor struktur dengan argumen pilihanonal hilang di %C"
 
 #: fortran/primary.c:2111
 #, no-c-format
@@ -8589,7 +8584,7 @@ msgstr "prosedur UMUM '%s' tidak diperbolehkan sebagai sebuah argumen aktual di 
 #: fortran/resolve.c:1163
 #, no-c-format
 msgid "Non-RECURSIVE procedure '%s' at %L is possibly calling itself recursively.  Declare it RECURSIVE or use -frecursive"
-msgstr ""
+msgstr "Bukan prosedur REKURSIF '%s' di %L mungkin memanggil dirinya sendiri secara rekursif. Deklarasikan itu secara RECURSIVE atau gunakan -frecursive"
 
 #: fortran/resolve.c:1196 fortran/resolve.c:6023 fortran/resolve.c:6778
 #, no-c-format
@@ -8644,7 +8639,7 @@ msgstr "Melewati prosedur internal di %L dengan lokasi tidak diperbolehkan"
 #: fortran/resolve.c:1523
 #, no-c-format
 msgid "'%s' at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optional argument with the same rank (12.4.1.5)"
-msgstr "'%s' di %L adalah sebuah array dan OPSIONAL; JIKA INI HILANG, ini tidak dapat berupa argumen aktual dari sebual prosedur ELEMENTAL kecuali disana ada sebuah tidak opsional argumen dengan tingkat sama (12.4.1.5)"
+msgstr "'%s' di %L adalah sebuah array dan OPSIONAL; JIKA INI HILANG, ini tidak dapat berupa argumen aktual dari sebual prosedur ELEMENTAL kecuali disana ada sebuah tidak pilihanonal argumen dengan tingkat sama (12.4.1.5)"
 
 #: fortran/resolve.c:1545
 msgid "elemental procedure"
@@ -8776,14 +8771,14 @@ msgid "Function reference to '%s' at %L is to a non-PURE procedure within a PURE
 msgstr "Referensi fungsi ke '%s' di %L adalah ke sebuah prosedur bukan-PURE dalam sebuah prosedur PURE"
 
 #: fortran/resolve.c:2493
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENTRY '%s' at %L cannot be called recursively, as function '%s' is not RECURSIVE"
-msgstr "Panggilan ke MASUKAN '%s' di %L adalah rekursif, bukan fungsi '%s' tidak terdeklarasi sebagai REKURSIF"
+msgstr "MASUKAN '%s' di %L tidak dapat dipanggil secara rekursif, karena fungsi '%s' tidak REKURSIF"
 
 #: fortran/resolve.c:2497
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function '%s' at %L cannot be called recursively, as it is not RECURSIVE"
-msgstr "Fungsi '%s' di %L tidak dapat memanggil dirinya sendiri, karena ini bukan REKURSIF"
+msgstr "Fungsi '%s' di %L tidak dapat dipanggil secara rekursif, karena ini bukan REKURSIF"
 
 #: fortran/resolve.c:2544
 #, no-c-format
@@ -8831,14 +8826,14 @@ msgid "'%s' at %L has a type, which is not consistent with the CALL at %L"
 msgstr "'%s' di %L memiliki sebuah tipe, yang tidak konsisten dengan CALL di %L"
 
 #: fortran/resolve.c:2957
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENTRY '%s' at %L cannot be called recursively, as subroutine '%s' is not RECURSIVE"
-msgstr "Panggilan ke MASUKAN '%s' di %L adalah rekursif, tetapi subroutine '%s' tidak dideklarasikan sebagai REKURSIF"
+msgstr "MASUKAN '%s' di %L tidak dapat dipanggil secara rekursif, karena subroutine '%s' tidak REKURSIF"
 
 #: fortran/resolve.c:2961
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "SUBROUTINE '%s' at %L cannot be called recursively, as it is not RECURSIVE"
-msgstr "SUBROUTINE '%s' di %L tidak dapat memanggil dirinya sendiri, karena ini bukan REKURSIF"
+msgstr "SUBROUTINE '%s' di %L tidak dapat dipanggil secara rekursif, karena ini bukan REKURSIF"
 
 #: fortran/resolve.c:3035
 #, no-c-format
@@ -9769,9 +9764,9 @@ msgid "Character length of component '%s' needs to be a constant specification e
 msgstr "Panjang karakter dari komponen '%s' butuh untuk menjadi sebuah ekspresi spesifikasi konstan di %L"
 
 #: fortran/resolve.c:8735
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: the component '%s' is a PRIVATE type and cannot be a component of '%s', which is PUBLIC at %L"
-msgstr "Komponen '%s' adalah sebuah tipe PRIVATE dan tidak dapat berupa sebuah komponen dari '%s', yang mana adalah PUBLIK di %L"
+msgstr "Fortran 2003: Komponen '%s' adalah sebuah tipe PRIVATE dan tidak dapat berupa sebuah komponen dari '%s', yang mana adalah PUBLIK di %L"
 
 #: fortran/resolve.c:8746
 #, no-c-format
@@ -9871,7 +9866,7 @@ msgstr "'%s' dideklarasikan INTRINSIC di %L tidak ada"
 #: fortran/resolve.c:9118
 #, no-c-format
 msgid "The intrinsic '%s' declared INTRINSIC at %L is not available in the current standard settings but %s.  Use an appropriate -std=* option or enable -fall-intrinsics in order to use it."
-msgstr "Intrinsik '%s' dideklarasikan INTRINSIC di %L tidak tersedia dalam konfigurasi baku sekarang tetapi %s. Gunakan sebuah opsi -std=* yang sesuai atau aktifkan -fall-intrinsics untuk menggunakan itu."
+msgstr "Intrinsik '%s' dideklarasikan INTRINSIC di %L tidak tersedia dalam konfigurasi baku sekarang tetapi %s. Gunakan sebuah pilihan -std=* yang sesuai atau aktifkan -fall-intrinsics untuk menggunakan itu."
 
 #: fortran/resolve.c:9162
 #, no-c-format
@@ -9929,9 +9924,9 @@ msgid "Threadprivate at %L isn't SAVEd"
 msgstr "Threadprivate di %L bukan SAVEd"
 
 #: fortran/resolve.c:9448
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "non-constant DATA value at %L"
-msgstr "bukan-konstanta array dalam pernyataan DATA %L"
+msgstr "bukan-konstanta nilai DATA di %L"
 
 #: fortran/resolve.c:9488
 #, no-c-format
@@ -10066,12 +10061,12 @@ msgstr "Prosedur operator pengguna '%s' di %L harus memiliki paling tida satu ar
 #: fortran/resolve.c:10349
 #, no-c-format
 msgid "First argument of operator interface at %L cannot be optional"
-msgstr "Argumen pertama dari antar-muka operator di %L tidak dapat berupa opsional"
+msgstr "Argumen pertama dari antar-muka operator di %L tidak dapat berupa pilihanonal"
 
 #: fortran/resolve.c:10361
 #, no-c-format
 msgid "Second argument of operator interface at %L cannot be optional"
-msgstr "Argumen kedua dari antar-muka operator di %L tidak dapat berupa opsional"
+msgstr "Argumen kedua dari antar-muka operator di %L tidak dapat berupa pilihanonal"
 
 #: fortran/resolve.c:10365
 #, no-c-format
@@ -10768,7 +10763,7 @@ msgstr "Membuat array sementara di %L"
 #: fortran/trans-array.c:3957
 #, no-c-format
 msgid "The number of elements in the array constructor at %L requires an increase of the allowed %d upper limit.   See -fmax-array-constructor option"
-msgstr "Jumlah dari elemen dalam konstruktor array di %L membutuhkan sebuah peningkatan dari batas atas %d yang diijinkan. Lihat opsi -fmax-array-constructor"
+msgstr "Jumlah dari elemen dalam konstruktor array di %L membutuhkan sebuah peningkatan dari batas atas %d yang diijinkan. Lihat pilihan -fmax-array-constructor"
 
 #: fortran/trans-array.c:5315
 #, no-c-format
@@ -11198,7 +11193,7 @@ msgstr "tidak dapat menggunakan mshared dan static bersamaan"
 
 #: config/vax/netbsd-elf.h:41
 msgid "the -shared option is not currently supported for VAX ELF"
-msgstr "opsi -shared saat ini tidak didukung untuk VAX ELF"
+msgstr "pilihan -shared saat ini tidak didukung untuk VAX ELF"
 
 #: config/i386/nwld.h:34
 msgid "Static linking is not supported.\n"
@@ -11598,7 +11593,7 @@ msgstr "Hasilkan kode little-endia"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line"
-msgstr ""
+msgstr "Asumsikan bahwa dukungan waktu jalan telah disediakan, jadi abaikan -lsim dari baris perintah penggabung"
 
 #: config/mcore/mcore.opt:60
 msgid "Use arbitrary sized immediates in bit operations"
@@ -12161,9 +12156,8 @@ msgid "Allow branches to be packed with other instructions"
 msgstr "Ijinkan percabangan untuk dipack dengan instruksi lain"
 
 #: config/picochip/picochip.opt:23
-#, fuzzy
 msgid "Specify which type of AE to target. This option sets the mul-type and byte-access."
-msgstr "Spesifikasikan tipe mana dari AE untuk target. Opsi in menset tipe-mul"
+msgstr "Spesifikasikan tipe mana dari AE untuk target. Pilihan ini menset mul-type dan byte-access."
 
 #: config/picochip/picochip.opt:27
 msgid "Specify which type of multiplication to use. Can be mem, mac or none."
@@ -12178,9 +12172,8 @@ msgid "Enable debug output to be generated."
 msgstr "Aktifkan keluaran debug untuk dihasilkan."
 
 #: config/picochip/picochip.opt:39
-#, fuzzy
 msgid "Allow a symbol value to be used as an immediate value in an instruction."
-msgstr "Ijinkan sebuah nilai simbol untuk digunakan sebagai sebuah nilai langsung dalam sebuah"
+msgstr "Ijinkan sebuah nilai simbol untuk digunakan sebagai sebuah nilai langsung dalam sebuah instruksi."
 
 #: config/picochip/picochip.opt:43
 msgid "Generate warnings when inefficient code is known to be generated."
@@ -12689,7 +12682,7 @@ msgstr "Jangan keluarkan fungsi prolog atau epilog"
 
 #: config/cris/cris.opt:149
 msgid "Use the most feature-enabling options allowed by other options"
-msgstr "Gunakan opsi paling feature-enabling yang diijinkan oleh opsi lain"
+msgstr "Gunakan pilihan paling feature-enabling yang diijinkan oleh pilihan lain"
 
 #: config/cris/cris.opt:158
 msgid "Override -mbest-lib-options"
@@ -12883,11 +12876,11 @@ msgstr "Gunakan set instruksi PowerPC-64"
 
 #: config/rs6000/rs6000.opt:48
 msgid "Use PowerPC General Purpose group optional instructions"
-msgstr "Gunakan grup opsional instruksi PowerPC General Purpose"
+msgstr "Gunakan grup pilihanonal instruksi PowerPC General Purpose"
 
 #: config/rs6000/rs6000.opt:52
 msgid "Use PowerPC Graphics group optional instructions"
-msgstr "Gunakan grup opsional instruksi PowerPC Graphics"
+msgstr "Gunakan grup pilihanonal instruksi PowerPC Graphics"
 
 #: config/rs6000/rs6000.opt:56
 msgid "Use PowerPC V2.01 single field mfcr instruction"
@@ -12955,7 +12948,7 @@ msgstr "Hasilkan load/store dengan update instruksi"
 
 #: config/rs6000/rs6000.opt:124
 msgid "Avoid generation of indexed load/store instructions when possible"
-msgstr ""
+msgstr "Abaikan pembuatan dari indeks instruksi muat/simpan jika memungkinkan"
 
 #: config/rs6000/rs6000.opt:128
 msgid "Do not generate fused multiply/add instructions"
@@ -13015,7 +13008,7 @@ msgstr "Hasilkan instruksi VRSAVE ketika menghasilkan kode AltiVec"
 
 #: config/rs6000/rs6000.opt:194
 msgid "Deprecated option.  Use -mvrsave/-mno-vrsave instead"
-msgstr "Opsi ditinggalkan. Gunakan -mvrsave/-mno-vrsave lebih baik"
+msgstr "Pilihan ditinggalkan. Gunakan -mvrsave/-mno-vrsave lebih baik"
 
 #: config/rs6000/rs6000.opt:198
 msgid "Generate isel instructions"
@@ -13023,7 +13016,7 @@ msgstr "Hasilkan instruksi isel"
 
 #: config/rs6000/rs6000.opt:202
 msgid "Deprecated option.  Use -misel/-mno-isel instead"
-msgstr "Opsi ditinggalkan. Gunakan -misel/-mno-isel lebih baik"
+msgstr "Pilihan ditinggalkan. Gunakan -misel/-mno-isel lebih baik"
 
 #: config/rs6000/rs6000.opt:206
 msgid "Generate SPE SIMD instructions on E500"
@@ -13035,7 +13028,7 @@ msgstr "Hasilkan instruksi PPC750CL paired-single"
 
 #: config/rs6000/rs6000.opt:214
 msgid "Deprecated option.  Use -mspe/-mno-spe instead"
-msgstr "Opsi ditinggalkan. Gunakan -mspe/-mno-spe lebih baik"
+msgstr "Pilihan ditinggalkan. Gunakan -mspe/-mno-spe lebih baik"
 
 #: config/rs6000/rs6000.opt:218
 msgid "Enable debug output"
@@ -14607,7 +14600,7 @@ msgstr "Buat untuk SDRAM"
 
 #: config/bfin/bfin.opt:101
 msgid "Assume ICPLBs are enabled at runtime."
-msgstr ""
+msgstr "Asumsikan ICPLB telah aktif di waktu jalan."
 
 #: java/lang.opt:69
 msgid "Warn if deprecated empty statements are found"
@@ -14719,7 +14712,7 @@ msgstr "Tampilkan informasi ini"
 
 #: common.opt:32
 msgid "Display descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params"
-msgstr "Tampilkan deskripsi dari opsi spesifik class. <class> adalah satu atau lebih dari pengoptimasi, target, peringatan, tidak terdokumentasi, params"
+msgstr "Tampilkan deskripsi dari pilihan spesifik class. <class> adalah satu atau lebih dari pengoptimasi, target, peringatan, tidak terdokumentasi, params"
 
 #: common.opt:36
 msgid "Alias for --help=target"
@@ -14743,7 +14736,7 @@ msgstr "Optimasi untuk ruang daripada kecepatan"
 
 #: common.opt:71
 msgid "This switch is deprecated; use -Wextra instead"
-msgstr "Opsi ini sudah ditinggalkan; lebih baik gunakan -Wextra"
+msgstr "Pilihan ini sudah ditinggalkan; lebih baik gunakan -Wextra"
 
 #: common.opt:75
 msgid "Warn about returning structures, unions or arrays"
@@ -15055,7 +15048,7 @@ msgstr "Seberapa sering mengeluarkan sumber lokasi di awal dari baris-wrapped di
 
 #: common.opt:448
 msgid "Amend appropriate diagnostic messages with the command line option that controls them"
-msgstr "Tambahkan pesan diagnosa yang sesuai dengan opsi baris perintah yang mengontrolnya"
+msgstr "Tambahkan pesan diagnosa yang sesuai dengan pilihan baris perintah yang mengontrolnya"
 
 #: common.opt:452
 msgid "Dump various compiler internals to a file"
@@ -15255,13 +15248,12 @@ msgid "Perform structure layout optimizations based"
 msgstr "Lakukan optimisasi berdasarkan struktur layout"
 
 #: common.opt:680
-#, fuzzy
 msgid "-fira-algorithm=[CB|priority] Set the used IRA algorithm"
-msgstr "-fire-algorithm=[regional|CB|mixed] Set penggunaan algoritma IRA"
+msgstr "-fire-algorithm=[CB|prioritas] Set penggunaan algoritma IRA"
 
 #: common.opt:684
 msgid "-fira-region=[one|all|mixed] Set regions for IRA"
-msgstr ""
+msgstr "-fira-region=[one|all|mixed] Set daerah untuk IRA"
 
 #: common.opt:688
 msgid "Do optimistic coalescing."
@@ -15445,19 +15437,19 @@ msgstr "Aktifkan koreksi dari alur profile tidak konsisten masukan data"
 
 #: common.opt:880
 msgid "Enable common options for generating profile info for profile feedback directed optimizations"
-msgstr "Aktifkan opsi umum untuk menghasilkan informasi profile untuk feedback profile direkted optimisasi"
+msgstr "Aktifkan pilihan umum untuk menghasilkan informasi profile untuk feedback profile direkted optimisasi"
 
 #: common.opt:884
 msgid "Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir="
-msgstr "Aktifkan opsi umum untuk menghasilkan informasi profile untuk feedback profile direkted optimisasi, dan set -fprofile-dir="
+msgstr "Aktifkan pilihan umum untuk menghasilkan informasi profile untuk feedback profile direkted optimisasi, dan set -fprofile-dir="
 
 #: common.opt:888
 msgid "Enable common options for performing profile feedback directed optimizations"
-msgstr "Aktifkan opsi umum untuk melakukan profile feedback directed optimisasi"
+msgstr "Aktifkan pilihan umum untuk melakukan profile feedback directed optimisasi"
 
 #: common.opt:892
 msgid "Enable common options for performing profile feedback directed optimizations, and set -fprofile-dir="
-msgstr "Aktifkan opsi umum untuk melakukan profile feedback directed optimisasi, dan set -fprofile-dir="
+msgstr "Aktifkan pilihan umum untuk melakukan profile feedback directed optimisasi, dan set -fprofile-dir="
 
 #: common.opt:896
 msgid "Insert code to profile values of expressions"
@@ -15469,7 +15461,7 @@ msgstr "Buat kompile reproducible menggunakan <string>"
 
 #: common.opt:913
 msgid "Record gcc command line switches in the object file."
-msgstr "Rekam opsi baris perintah gcc dalam berkas objek."
+msgstr "Rekam pilihan baris perintah gcc dalam berkas objek."
 
 #: common.opt:917
 msgid "Return small aggregates in registers"
@@ -16105,7 +16097,7 @@ msgstr "Peringatkan mengenai perbandingan dari tipe enum yang berbeda"
 
 #: c.opt:216
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead"
-msgstr "Opsi ini sudah ditinggalkan; lebih baik gunakan -Werror=implicit-function-declaration"
+msgstr "Pilihan ini sudah ditinggalkan; lebih baik gunakan -Werror=implicit-function-declaration"
 
 #: c.opt:220
 msgid "Warn if testing floating point numbers for equality"
@@ -16253,7 +16245,7 @@ msgstr "Peringatkan mengenai overriding penginisialisasi tanpa efek samping"
 
 #: c.opt:373
 msgid "Warn about packed bit-fields whose offset changed in GCC 4.4"
-msgstr ""
+msgstr "Peringatkan tentang pemaketan bit-filed yang offset-nya berbah dalam GCC 4.4"
 
 #: c.opt:377
 msgid "Warn about possibly missing parentheses"
@@ -16325,7 +16317,7 @@ msgstr "Peringatkan ketika __sync_fetch_and_nand dan __sync_nand_and_fetch fungs
 
 #: c.opt:445
 msgid "Deprecated.  This switch has no effect"
-msgstr "Ditinggalkan. Opsi ini tidak memiliki efek"
+msgstr "Ditinggalkan. Pilihan ini tidak memiliki efek"
 
 #: c.opt:453
 msgid "Warn about features not present in traditional C"
@@ -16520,9 +16512,8 @@ msgid "Enable Objective-C setjmp exception handling runtime"
 msgstr "Aktifkan Objectif-C setjmp eksepsi penanganan waktu-jalan"
 
 #: c.opt:694
-#, fuzzy
 msgid "Enable OpenMP (implies -frecursive in Fortran)"
-msgstr "Aktifkan OpenMP (juga sets frecursive)"
+msgstr "Aktifkan OpenMP (mengindikasikan -frecursive dalam Fortran)"
 
 #: c.opt:698
 msgid "Recognize C++ keywords like \"compl\" and \"xor\""
@@ -16530,7 +16521,7 @@ msgstr "Kenali kata kunci C++ seperti \"compl\" dan \"xor\""
 
 #: c.opt:702
 msgid "Enable optional diagnostics"
-msgstr "Aktifkan opsional diagnosa"
+msgstr "Aktifkan pilihanonal diagnosa"
 
 #: c.opt:709
 msgid "Look for and use PCH files even when preprocessing"
@@ -16674,7 +16665,7 @@ msgstr "Masukan isi dari <berkas> sebelum berkas lainnya"
 
 #: c.opt:862
 msgid "Specify <path> as a prefix for next two options"
-msgstr "Spesifikasikan <jalur> sebagai sebuah prefix untuk dua opsi berikutnya"
+msgstr "Spesifikasikan <jalur> sebagai sebuah prefix untuk dua pilihan berikutnya"
 
 #: c.opt:866
 msgid "Set <dir> to be the system root directory"
@@ -16774,7 +16765,7 @@ msgstr "Aktifkan keluaran verbose"
 
 #: ada/gcc-interface/lang.opt:100
 msgid "Specify options to GNAT"
-msgstr "Spesifikasikan opsi ke GNAT"
+msgstr "Spesifikasikan pilihan ke GNAT"
 
 #: attribs.c:284
 #, gcc-internal-format
@@ -17277,7 +17268,7 @@ msgstr "%J sebelumnya digunakan disini"
 #: c-common.c:4763
 #, gcc-internal-format
 msgid "multiple default labels in one switch"
-msgstr "multiple default label dalam satu opsi"
+msgstr "multiple default label dalam satu pilihan"
 
 #: c-common.c:4764
 #, gcc-internal-format
@@ -17642,12 +17633,12 @@ msgstr "posisi yang diminta lebih kecil dari nol"
 #: c-common.c:7074
 #, gcc-internal-format
 msgid "Bad option %s to optimize attribute."
-msgstr "Opsi %s buruk untuk mengoptimasi atribut."
+msgstr "Pilihan %s buruk untuk mengoptimasi atribut."
 
 #: c-common.c:7077
 #, gcc-internal-format
 msgid "Bad option %s to pragma attribute"
-msgstr "Opsi %s buruk untuk atribut pragma"
+msgstr "Pilihan %s buruk untuk atribut pragma"
 
 #: c-common.c:7270
 #, gcc-internal-format
@@ -18551,9 +18542,9 @@ msgstr "ISO C90 tidak mendukung keanggotaan array fleksibel"
 
 #. C99 6.7.5.2p4
 #: c-decl.c:4431
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<[*]%> not in a declaration"
-msgstr "%<[*]%> tidak diperbolehkan selain dari sebuah deklarasi"
+msgstr "%<[*]%> tidak dalam sebuah deklarasi"
 
 #: c-decl.c:4444
 #, gcc-internal-format
@@ -18985,7 +18976,7 @@ msgstr "%<for%> deklarasi inisial loop hanya diijinkan dalam mode C99"
 #: c-decl.c:6859
 #, gcc-internal-format
 msgid "use option -std=c99 or -std=gnu99 to compile your code"
-msgstr "gunakan opsi -std=c99 atau -std=gnu99 untuk mengkompile kode anda"
+msgstr "gunakan pilihan -std=c99 atau -std=gnu99 untuk mengkompile kode anda"
 
 #: c-decl.c:6890
 #, gcc-internal-format
@@ -19897,7 +19888,7 @@ msgstr "-I- dispesifikasikan dua kali"
 #: c-opts.c:324
 #, gcc-internal-format
 msgid "obsolete option -I- used, please use -iquote instead"
-msgstr "opsi ditinggalkan -I- digunakan, lebih baik mohon gunakan -iquote"
+msgstr "pilihan ditinggalkan -I- digunakan, lebih baik mohon gunakan -iquote"
 
 #: c-opts.c:495
 #, gcc-internal-format
@@ -19907,7 +19898,7 @@ msgstr "argumen %qs ke %<-Wnormalized%> tidak dikenal"
 #: c-opts.c:582
 #, gcc-internal-format
 msgid "switch %qs is no longer supported"
-msgstr "opsi %qs tidak lagi didukung"
+msgstr "pilihan %qs tidak lagi didukung"
 
 #: c-opts.c:689
 #, gcc-internal-format
@@ -19962,22 +19953,22 @@ msgstr "terlalu banyak nama berkas diberikan. Ketik %s --help untuk penggunaan"
 #: c-opts.c:1226
 #, gcc-internal-format
 msgid "The C parser does not support -dy, option ignored"
-msgstr "C parser tidak mendukung -dy, opsi diabaikan"
+msgstr "C parser tidak mendukung -dy, pilihan diabaikan"
 
 #: c-opts.c:1230
 #, gcc-internal-format
 msgid "The Objective-C parser does not support -dy, option ignored"
-msgstr "Objective-C parser tidak mendukung -dy, opsi diabaikan"
+msgstr "Objective-C parser tidak mendukung -dy, pilihan diabaikan"
 
 #: c-opts.c:1233
 #, gcc-internal-format
 msgid "The C++ parser does not support -dy, option ignored"
-msgstr "C++ parser tidak mendukung -dy, opsi diabaikan"
+msgstr "C++ parser tidak mendukung -dy, pilihan diabaikan"
 
 #: c-opts.c:1237
 #, gcc-internal-format
 msgid "The Objective-C++ parser does not support -dy, option ignored"
-msgstr "Objective-C++ parser tidak mendukung -dy, opsi diabaikan"
+msgstr "Objective-C++ parser tidak mendukung -dy, pilihan diabaikan"
 
 #: c-opts.c:1287
 #, gcc-internal-format
@@ -20734,12 +20725,12 @@ msgstr "diduga [error|warning|ignored] setelah %<#pragma GCC diagnosa%>"
 #: c-pragma.c:852
 #, gcc-internal-format
 msgid "missing option after %<#pragma GCC diagnostic%> kind"
-msgstr "hilang jenis opsi setelah %<#pragma GCC diagnosa%>"
+msgstr "hilang jenis pilihan setelah %<#pragma GCC diagnosa%>"
 
 #: c-pragma.c:866
 #, gcc-internal-format
 msgid "unknown option after %<#pragma GCC diagnostic%> kind"
-msgstr "jenis opsi tidak dikenal setelah %<#pragma GCC diagnosa%>"
+msgstr "jenis pilihan tidak dikenal setelah %<#pragma GCC diagnosa%>"
 
 #: c-pragma.c:879
 #, gcc-internal-format
@@ -21553,7 +21544,7 @@ msgstr "switch kuantiti bukan sebuah integer"
 #: c-typeck.c:7375
 #, gcc-internal-format
 msgid "%<long%> switch expression not converted to %<int%> in ISO C"
-msgstr "opsi %<long%> ekspresi tidak diubah ke %<int%> dalam ISO C"
+msgstr "pilihan %<long%> ekspresi tidak diubah ke %<int%> dalam ISO C"
 
 #: c-typeck.c:7418
 #, gcc-internal-format
@@ -22616,17 +22607,17 @@ msgstr "kependekan %s ambigu"
 #: gcc.c:1325
 #, gcc-internal-format
 msgid "incomplete '%s' option"
-msgstr "opsi '%s' tidak lengkap"
+msgstr "pilihan '%s' tidak lengkap"
 
 #: gcc.c:1336
 #, gcc-internal-format
 msgid "missing argument to '%s' option"
-msgstr "hilang argumen ke opsi '%s'"
+msgstr "hilang argumen ke pilihan '%s'"
 
 #: gcc.c:1349
 #, gcc-internal-format
 msgid "extraneous argument to '%s' option"
-msgstr "kelebihan argumen ke opsi '%s'"
+msgstr "kelebihan argumen ke pilihan '%s'"
 
 #: gcc.c:4029
 #, gcc-internal-format
@@ -22654,7 +22645,7 @@ msgstr "peringatan: penggunaan dari operator yang sudah ditinggalkan %%[ dalam s
 #: gcc.c:5495
 #, gcc-internal-format
 msgid "spec failure: unrecognized spec option '%c'"
-msgstr "spec gagal: opsi spec tidak dikenal '%c'"
+msgstr "spec gagal: pilihan spec tidak dikenal '%c'"
 
 #: gcc.c:6401
 #, gcc-internal-format
@@ -22669,7 +22660,7 @@ msgstr "spec gagal: lebih dari sat arg ke SYSROOT_HEADERS_SUFFIX_SPEC"
 #: gcc.c:6511
 #, gcc-internal-format
 msgid "unrecognized option '-%s'"
-msgstr "opsi '-%s' tidak dikenal"
+msgstr "pilihan '-%s' tidak dikenal"
 
 #: gcc.c:6726 gcc.c:6789
 #, gcc-internal-format
@@ -22884,17 +22875,17 @@ msgstr "%<-femit-struct-debug-detailed=dir:...%> harus mengijinkan paling tidak 
 #: opts.c:442
 #, gcc-internal-format
 msgid "command line option \"%s\" is valid for %s but not for %s"
-msgstr "opsi baris perintah \"%s\" valid untuk %s tetapi tidak untuk %s"
+msgstr "pilihan baris perintah \"%s\" valid untuk %s tetapi tidak untuk %s"
 
 #: opts.c:473 opts.c:769
 #, gcc-internal-format
 msgid "unrecognized command line option \"%s\""
-msgstr "opsi baris perintah \"%s\" tidak dikenal"
+msgstr "pilihan baris perintah \"%s\" tidak dikenal"
 
 #: opts.c:534
 #, gcc-internal-format
 msgid "command line option %qs is not supported by this configuration"
-msgstr "opsi baris perintah %qs tidak didukung dalam konfigurasi ini"
+msgstr "pilihan baris perintah %qs tidak didukung dalam konfigurasi ini"
 
 #: opts.c:587
 #, gcc-internal-format
@@ -22937,9 +22928,9 @@ msgid "-freorder-blocks-and-partition does not work on this architecture"
 msgstr "-freorder-blocks-and-partition tidak bekerja dalam arsitektur ini"
 
 #: opts.c:1081
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fira-algorithm=CB does not work on this architecture"
-msgstr "-fira tidak bekerja dalam arsitektur ini"
+msgstr "-fira-algorithm=CB tidak bekerja dalam arsitektur ini"
 
 #: opts.c:1390
 #, gcc-internal-format
@@ -22977,9 +22968,9 @@ msgid "unknown ira algorithm \"%s\""
 msgstr "algoritma ira \"%s\" tidak diketahui"
 
 #: opts.c:1980
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown ira region \"%s\""
-msgstr "algoritma ira \"%s\" tidak diketahui"
+msgstr "daerah ira \"%s\" tidak diketahui"
 
 #: opts.c:2083
 #, gcc-internal-format
@@ -23014,7 +23005,7 @@ msgstr "tingkat keluaran debug %s terlalu tinggi"
 #: opts.c:2313
 #, gcc-internal-format
 msgid "-Werror=%s: No option -%s"
-msgstr "-Werror=%s: Tidak ada opsi -%s"
+msgstr "-Werror=%s: Tidak ada pilihan -%s"
 
 #: params.c:69
 #, gcc-internal-format
@@ -23399,7 +23390,7 @@ msgstr "struktur padding ke align %q+D"
 #: stor-layout.c:969
 #, gcc-internal-format
 msgid "Offset of packed bit-field %qD has changed in GCC 4.4"
-msgstr ""
+msgstr "Offset dari packet bit-field %qD telah berubah dalam GCC 4.4"
 
 #: stor-layout.c:1273
 #, gcc-internal-format
@@ -23464,7 +23455,7 @@ msgstr "ld menghasilkan status keluaran %d"
 #: toplev.c:519
 #, gcc-internal-format
 msgid "invalid option argument %qs"
-msgstr "opsi argumen %qs tidak valid"
+msgstr "pilihan argumen %qs tidak valid"
 
 #: toplev.c:617
 #, gcc-internal-format
@@ -23514,7 +23505,7 @@ msgstr "tipe sudah ditinggalkan"
 #: toplev.c:1090
 #, gcc-internal-format
 msgid "unrecognized gcc debugging option: %c"
-msgstr "opsi debuggin gcc: %c tidak dikenal"
+msgstr "pilihan debuggin gcc: %c tidak dikenal"
 
 #: toplev.c:1347
 #, gcc-internal-format
@@ -23589,7 +23580,7 @@ msgstr "-fprefetch-loop-array tidak didukung untuk target ini"
 #: toplev.c:1920
 #, gcc-internal-format
 msgid "-fprefetch-loop-arrays not supported for this target (try -march switches)"
-msgstr "-fprefetch-loop-array tidak didukung untuk target ini (coba opsi -march)"
+msgstr "-fprefetch-loop-array tidak didukung untuk target ini (coba pilihan -march)"
 
 #: toplev.c:1929
 #, gcc-internal-format
@@ -23599,7 +23590,7 @@ msgstr "-fprefetch-loop-array tidak didukung dengan -Os"
 #: toplev.c:1940
 #, gcc-internal-format
 msgid "-fassociative-math disabled; other options take precedence"
-msgstr "-fassociative-math non-aktif; opsi lain mengambil prioritas"
+msgstr "-fassociative-math non-aktif; pilihan lain mengambil prioritas"
 
 #: toplev.c:1956
 #, gcc-internal-format
@@ -23632,9 +23623,9 @@ msgid "SSA name in freelist but still referenced"
 msgstr "SSA nama dalam daftar bebas tetapi tetap direferensikan"
 
 #: tree-cfg.c:2829
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Indirect reference's operand is not a register or a constant."
-msgstr "%s: Sumber operan ketiga bukan sebuah konstanta"
+msgstr "Referensi tidak langsung operan bukan sebuah register atau konstanta."
 
 #: tree-cfg.c:2838
 #, gcc-internal-format
@@ -23644,7 +23635,7 @@ msgstr "ASSERT_EXPR dengan sebuah kondisi always-false"
 #: tree-cfg.c:2844
 #, gcc-internal-format
 msgid "MODIFY_EXPR not expected while having tuples."
-msgstr ""
+msgstr "MODIFY_EXPR tidak terduga ketika memiliki tuples."
 
 #: tree-cfg.c:2865
 #, gcc-internal-format
@@ -24079,7 +24070,7 @@ msgstr "tidak dapat membuka berkas dump %qs: %s"
 #: tree-dump.c:1060
 #, gcc-internal-format
 msgid "ignoring unknown option %q.*s in %<-fdump-%s%>"
-msgstr "mengabaikan opsi tidak dikenal %q.*s dalam %<-fdump-%s%>"
+msgstr "mengabaikan pilihan tidak dikenal %q.*s dalam %<-fdump-%s%>"
 
 #: tree-eh.c:1993
 #, gcc-internal-format
@@ -24244,19 +24235,19 @@ msgid "unimplemented functionality"
 msgstr "fungsionalitas tidak terimplementasi"
 
 #: tree-ssa-structalias.c:4791
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialized from %qE"
-msgstr "tidak terinisialisasi const %qD"
+msgstr "terinisialisasi dari %qE"
 
 #: tree-ssa-structalias.c:4795
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialized from here"
-msgstr "dipanggil dari sini"
+msgstr "terinisialisasi dari sini"
 
 #: tree-ssa-structalias.c:4844
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "dereferencing pointer %qD does break strict-aliasing rules"
-msgstr "dereferencing tipe-punned penunjuk %D akan melanggar aturan strict aliasing"
+msgstr "dereferencing penunjuk %qD akan melanggar aturan strict aliasing"
 
 #: tree-ssa.c:252
 #, gcc-internal-format
@@ -24782,13 +24773,13 @@ msgstr "tidak ada sclass untuk %s stab (0x%x)"
 #: config/darwin-c.c:85
 #, gcc-internal-format
 msgid "too many #pragma options align=reset"
-msgstr "terlalu banyak opsi #pragma align=reset"
+msgstr "terlalu banyak pilihan #pragma align=reset"
 
 #: config/darwin-c.c:105 config/darwin-c.c:108 config/darwin-c.c:110
 #: config/darwin-c.c:112
 #, gcc-internal-format
 msgid "malformed '#pragma options', ignoring"
-msgstr "salah bentuk '#pragma opsi', diabaikan"
+msgstr "salah bentuk '#pragma pilihan', diabaikan"
 
 #: config/darwin-c.c:115
 #, gcc-internal-format
@@ -24944,7 +24935,7 @@ msgstr "dukungan profiler untuk VxWorks"
 #: config/alpha/alpha.c:233 config/rs6000/rs6000.c:2193
 #, gcc-internal-format
 msgid "bad value %qs for -mtls-size switch"
-msgstr "nilai buruk %qs untuk opsi -mtls-size"
+msgstr "nilai buruk %qs untuk pilihan -mtls-size"
 
 #: config/alpha/alpha.c:287
 #, gcc-internal-format
@@ -24964,22 +24955,22 @@ msgstr "-mieee-with-inexact tidak didukung dalam Unicos/Mk"
 #: config/alpha/alpha.c:339
 #, gcc-internal-format
 msgid "bad value %qs for -mtrap-precision switch"
-msgstr "nilai buruk %qs untuk opsi -mtrap-precision"
+msgstr "nilai buruk %qs untuk pilihan -mtrap-precision"
 
 #: config/alpha/alpha.c:353
 #, gcc-internal-format
 msgid "bad value %qs for -mfp-rounding-mode switch"
-msgstr "nilai buruk %qs untuk opsi -mfp-rounding-mode"
+msgstr "nilai buruk %qs untuk pilihan -mfp-rounding-mode"
 
 #: config/alpha/alpha.c:368
 #, gcc-internal-format
 msgid "bad value %qs for -mfp-trap-mode switch"
-msgstr "nilai buruk %qs untuk opsi -mfp-trap-mode"
+msgstr "nilai buruk %qs untuk pilihan -mfp-trap-mode"
 
 #: config/alpha/alpha.c:382 config/alpha/alpha.c:394
 #, gcc-internal-format
 msgid "bad value %qs for -mcpu switch"
-msgstr "nilai buruk %qs untuk opsi -mcpu"
+msgstr "nilai buruk %qs untuk pilihan -mcpu"
 
 #: config/alpha/alpha.c:401
 #, gcc-internal-format
@@ -25035,17 +25026,17 @@ msgstr "argumen dari atribut %qs bukan \"ilink1\" atau \"ilink2\""
 #: config/arm/arm.c:1182
 #, gcc-internal-format
 msgid "switch -mcpu=%s conflicts with -march= switch"
-msgstr "opsi -mcpu=%s konflik dengan opsi -march="
+msgstr "pilihan -mcpu=%s konflik dengan pilihan -march="
 
 #: config/arm/arm.c:1192 config/rs6000/rs6000.c:1593 config/sparc/sparc.c:764
 #, gcc-internal-format
 msgid "bad value (%s) for %s switch"
-msgstr "nilai (%s) buruk untuk opsi %s"
+msgstr "nilai (%s) buruk untuk pilihan %s"
 
 #: config/arm/arm.c:1305
 #, gcc-internal-format
 msgid "invalid ABI option: -mabi=%s"
-msgstr "opsi ABI tidak valid: -mabi=%s"
+msgstr "pilihan ABI tidak valid: -mabi=%s"
 
 #: config/arm/arm.c:1313
 #, gcc-internal-format
@@ -25115,12 +25106,12 @@ msgstr "iwmmxt abi membutuhkan sebuah iwmmxt kapabel cpu"
 #: config/arm/arm.c:1445
 #, gcc-internal-format
 msgid "invalid floating point emulation option: -mfpe=%s"
-msgstr "opsi emulasi titik pecahan tidak valid: -mfpe=%s"
+msgstr "pilihan emulasi titik pecahan tidak valid: -mfpe=%s"
 
 #: config/arm/arm.c:1462
 #, gcc-internal-format
 msgid "invalid floating point option: -mfpu=%s"
-msgstr "opsi titik pecahan tidak valid: -mfpu=%s"
+msgstr "pilihan titik pecahan tidak valid: -mfpu=%s"
 
 #: config/arm/arm.c:1502
 #, gcc-internal-format
@@ -25145,7 +25136,7 @@ msgstr "Thumb-2 iWMMXt"
 #: config/arm/arm.c:1542
 #, gcc-internal-format
 msgid "invalid thread pointer option: -mtp=%s"
-msgstr "opsi thread pointer tidak valid: -mtp=%s"
+msgstr "pilihan thread pointer tidak valid: -mtp=%s"
 
 #: config/arm/arm.c:1555
 #, gcc-internal-format
@@ -25224,7 +25215,7 @@ msgstr "Interrupt Sevice Routines tidak dapat dikodekan dalam mode Thumb"
 #: config/arm/arm.c:19618
 #, gcc-internal-format
 msgid "the mangling of %<va_list%> has changed in GCC 4.4"
-msgstr ""
+msgstr "mangling dari %<va_list%> telah berubah dalam GCC 4.4"
 
 #: config/arm/pe.c:158 config/mcore/mcore.c:2900
 #, gcc-internal-format
@@ -25239,17 +25230,17 @@ msgstr "variabel statis %q+D ditandai dllimport"
 #: config/avr/avr.c:399
 #, gcc-internal-format
 msgid "the -mno-tablejump switch is deprecated"
-msgstr ""
+msgstr "pilihan -mno-tablejump sudah ditinggalkan"
 
 #: config/avr/avr.c:400
 #, gcc-internal-format
 msgid "GCC 4.4 is the last release with this switch"
-msgstr ""
+msgstr "GCC 4.4 adalah keluaran terakhir dengan pilihan ini"
 
 #: config/avr/avr.c:401
 #, gcc-internal-format
 msgid "use the -fno-jump-tables switch instead"
-msgstr ""
+msgstr "lebih baik gunakan pilihan -fno-jump-tables"
 
 #: config/avr/avr.c:4626
 #, gcc-internal-format
@@ -25419,7 +25410,7 @@ msgstr "-fPIC dan -fpic tidak didukung dalam konfigurasi ini"
 #: config/cris/cris.c:2454
 #, gcc-internal-format
 msgid "that particular -g option is invalid with -maout and -melinux"
-msgstr "opsi -g tertentu tidak valid dengan -maout dan -melinux"
+msgstr "pilihan -g tertentu tidak valid dengan -maout dan -melinux"
 
 #: config/cris/cris.c:2680
 #, gcc-internal-format
@@ -25608,12 +25599,12 @@ msgstr "%smtune=x86-64%s sudah ditinggalkan. Lebih baik gunakan %stune=k8%s atau
 #: config/i386/i386.c:2713
 #, gcc-internal-format
 msgid "generic CPU can be used only for %stune=%s %s"
-msgstr "CPU generik hanya dapat digunakan untuk opsi %stune=%s %s"
+msgstr "CPU generik hanya dapat digunakan untuk pilihan %stune=%s %s"
 
 #: config/i386/i386.c:2716 config/i386/i386.c:2844
 #, gcc-internal-format
 msgid "bad value (%s) for %sarch=%s %s"
-msgstr "nilai (%s) buruk untuk opsi %sarch=%s %s"
+msgstr "nilai (%s) buruk untuk pilihan %sarch=%s %s"
 
 #: config/i386/i386.c:2728
 #, gcc-internal-format
@@ -25623,12 +25614,12 @@ msgstr "model kode %s tidak mendukung kode PIC"
 #: config/i386/i386.c:2734
 #, gcc-internal-format
 msgid "bad value (%s) for %scmodel=%s %s"
-msgstr "nilai (%s) buruk untuk opsi %scmodel=%s %s"
+msgstr "nilai (%s) buruk untuk pilihan %scmodel=%s %s"
 
 #: config/i386/i386.c:2758
 #, gcc-internal-format
 msgid "bad value (%s) for %sasm=%s %s"
-msgstr "nilai (%s) buruk untuk opsi %sasm=%s %s"
+msgstr "nilai (%s) buruk untuk pilihan %sasm=%s %s"
 
 #: config/i386/i386.c:2762
 #, gcc-internal-format
@@ -25656,9 +25647,9 @@ msgid "%sregparm=%d%s is not between 0 and %d"
 msgstr "%sregparm=%d%s tidak berada diantara 0 dan %d"
 
 #: config/i386/i386.c:2918
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%salign-loops%s is obsolete, use -falign-loops%s"
-msgstr "%salign-loops%s sudah ditinggalkan, gunakan %salign-loops%s"
+msgstr "%salign-loops%s sudah ditinggalkan, gunakan -falign-loops%s"
 
 #: config/i386/i386.c:2924 config/i386/i386.c:2939 config/i386/i386.c:2954
 #, gcc-internal-format
@@ -25666,14 +25657,14 @@ msgid "%salign-loops=%d%s is not between 0 and %d"
 msgstr "%salign-loops=%d%s tidak berada diantara 0 dan %d"
 
 #: config/i386/i386.c:2933
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%salign-jumps%s is obsolete, use -falign-jumps%s"
-msgstr "%salign-jumps%s sudah ditinggalkan, gunakan %salign-jumps%s"
+msgstr "%salign-jumps%s sudah ditinggalkan, gunakan -falign-jumps%s"
 
 #: config/i386/i386.c:2948
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%salign-functions%s is obsolete, use -falign-functions%s"
-msgstr "%salign-functions%s sudah ditinggalkan, gunakan %salign-functions%s"
+msgstr "%salign-functions%s sudah ditinggalkan, gunakan -falign-functions%s"
 
 #: config/i386/i386.c:2983
 #, gcc-internal-format
@@ -25688,7 +25679,7 @@ msgstr "%slarge-data-threshold=%d%s adalah negatif"
 #: config/i386/i386.c:3005
 #, gcc-internal-format
 msgid "bad value (%s) for %stls-dialect=%s %s"
-msgstr "nilai (%s) buruk untuk opsi %stls-dialect=%s %s"
+msgstr "nilai (%s) buruk untuk pilihan %stls-dialect=%s %s"
 
 #: config/i386/i386.c:3013
 #, gcc-internal-format
@@ -25728,12 +25719,12 @@ msgstr "set instruksi 387 non-aktif, menggunakan aritmetik SSE"
 #: config/i386/i386.c:3155
 #, gcc-internal-format
 msgid "bad value (%s) for %sfpmath=%s %s"
-msgstr "nilai (%s) buruk untuk opsi %sfpmath=%s %s"
+msgstr "nilai (%s) buruk untuk pilihan %sfpmath=%s %s"
 
 #: config/i386/i386.c:3171
 #, gcc-internal-format
 msgid "unknown vectorization library ABI type (%s) for %sveclibabi=%s %s"
-msgstr "perpusatakaan vektorisasi tidak dikenal tipe ABI (%s) untuk opsi %sveclibabi=%s %s"
+msgstr "perpusatakaan vektorisasi tidak dikenal tipe ABI (%s) untuk pilihan %sveclibabi=%s %s"
 
 #: config/i386/i386.c:3191
 #, gcc-internal-format
@@ -25753,7 +25744,7 @@ msgstr "atribut(target(\"%s\")) tidak diketahui"
 #: config/i386/i386.c:3637
 #, gcc-internal-format
 msgid "option(\"%s\") was already specified"
-msgstr "opsi(\"%s\") telah dispesifikasikan"
+msgstr "pilihan(\"%s\") telah dispesifikasikan"
 
 #: config/i386/i386.c:4231 config/i386/i386.c:4275
 #, gcc-internal-format
@@ -25808,7 +25799,7 @@ msgstr "Memanggil %qT dengan atribut sseregparm tanpa mengaktifkan SSE/SSE2"
 #: config/i386/i386.c:4722
 #, gcc-internal-format
 msgid "ms_abi attribute requires -maccumulate-outgoing-args or subtarget optimization implying it"
-msgstr ""
+msgstr "atribut ms_abi membutuhkan -maccumulate-outgoing-args atau mengindikasikan optimasi subtarget"
 
 #: config/i386/i386.c:4840
 #, gcc-internal-format
@@ -25818,17 +25809,17 @@ msgstr "argumen vektor AVX tanpa AVX aktif mengubah ABI"
 #: config/i386/i386.c:5020
 #, gcc-internal-format
 msgid "The ABI of passing struct with a flexible array member has changed in GCC 4.4"
-msgstr ""
+msgstr "ABI dari melewatkan struct dengan sebuah anggota array flexible telah berubah dalam GCC 4.4"
 
 #: config/i386/i386.c:5139
 #, gcc-internal-format
 msgid "The ABI of passing union with long double has changed in GCC 4.4"
-msgstr ""
+msgstr "ABI dari melewatkan union dengan long double telah berubah dalam GCC 4.4"
 
 #: config/i386/i386.c:5254
 #, gcc-internal-format
 msgid "The ABI of passing structure with complex float member has changed in GCC 4.4"
-msgstr ""
+msgstr "ABI dari melewatkan structure dengan anggota float kompleks telah berubah dalam GCC 4.4"
 
 #: config/i386/i386.c:5399
 #, gcc-internal-format
@@ -25928,12 +25919,12 @@ msgstr "pemilih harus berupa sebuah konstanta integer dalam jangkauan 0..%wi"
 #: config/i386/i386.c:24864
 #, gcc-internal-format
 msgid "%qE needs unknown isa option"
-msgstr "%qE membutuhkan opsi isa tidak diketahui"
+msgstr "%qE membutuhkan pilihan isa tidak diketahui"
 
 #: config/i386/i386.c:24868
 #, gcc-internal-format
 msgid "%qE needs isa option %s"
-msgstr "%qE membutuhkan opsi isa %s"
+msgstr "%qE membutuhkan pilihan isa %s"
 
 #: config/i386/i386.c:26511
 #, gcc-internal-format
@@ -25988,7 +25979,7 @@ msgstr "-f%s diabaikan untuk target (seluruh kode adalah bebas posisi)"
 #: config/i386/djgpp.h:180
 #, gcc-internal-format
 msgid "-mbnu210 is ignored (option is obsolete)"
-msgstr "-mbnu210 diabaikan (opsi ini sudah ditinggalkan)"
+msgstr "-mbnu210 diabaikan (pilihan ini sudah ditinggalkan)"
 
 #: config/i386/i386-interix.h:256
 #, gcc-internal-format
@@ -26035,22 +26026,22 @@ msgstr "%s-%s adalah sebuah ruang kosong"
 #: config/ia64/ia64.c:5225
 #, gcc-internal-format
 msgid "bad value %<%s%> for -mtls-size= switch"
-msgstr "nilai %<%s%> buruk untuk opsi -mtls-size="
+msgstr "nilai %<%s%> buruk untuk pilihan -mtls-size="
 
 #: config/ia64/ia64.c:5254
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "value %<%s%> for -mtune= switch is deprecated"
-msgstr "nilai %<%s%> buruk untuk opsi -mtune="
+msgstr "nilai %<%s%> untuk pilihan -mtune= sudah ditinggalkan"
 
 #: config/ia64/ia64.c:5256
 #, gcc-internal-format
 msgid "GCC 4.4 is the last release with Itanium1 tuning support"
-msgstr ""
+msgstr "GCC 4.4 adalah keluaran terakhir dengan dukungan penyesuaian Itanium1"
 
 #: config/ia64/ia64.c:5263
 #, gcc-internal-format
 msgid "bad value %<%s%> for -mtune= switch"
-msgstr "nilai %<%s%> buruk untuk opsi -mtune="
+msgstr "nilai %<%s%> buruk untuk pilihan -mtune="
 
 #: config/ia64/ia64.c:5282
 #, gcc-internal-format
@@ -26235,7 +26226,7 @@ msgstr "nama CPU harus huruf kecil"
 #: config/mips/mips.c:13777
 #, gcc-internal-format
 msgid "%<-%s%> conflicts with the other architecture options, which specify a %s processor"
-msgstr "%<-%s%> konflik dengan opsi arsitektur lain, yang menspesifikasikan sebuah %s prosesor"
+msgstr "%<-%s%> konflik dengan pilihan arsitektur lain, yang menspesifikasikan sebuah %s prosesor"
 
 #: config/mips/mips.c:13793
 #, gcc-internal-format
@@ -26388,7 +26379,7 @@ msgstr "-g hanya didukung ketika menggunakan GAS di prosesor ini,"
 #: config/pa/pa.c:494
 #, gcc-internal-format
 msgid "-g option disabled"
-msgstr "-g opsi tidak aktif"
+msgstr "-g pilihan tidak aktif"
 
 #: config/pa/pa.c:8388
 #, gcc-internal-format
@@ -26398,7 +26389,7 @@ msgstr "alignmen (%u) untuk %s melebihi maksimal alignmen untuk global common da
 #: config/pa/pa-hpux11.h:84
 #, gcc-internal-format
 msgid "-munix=98 option required for C89 Amendment 1 features.\n"
-msgstr "-munix=98 opsi dibutuhkan untuk feature C89 Amendment 1.\n"
+msgstr "-munix=98 pilihan dibutuhkan untuk feature C89 Amendment 1.\n"
 
 #: config/picochip/picochip.c:379
 #, gcc-internal-format
@@ -26489,7 +26480,7 @@ msgstr "%s: Sumber operan keempat bukan sebuah konstanta"
 #: config/picochip/picochip.c:4128
 #, gcc-internal-format
 msgid "%s (disable warning using -mno-inefficient-warnings)"
-msgstr "%s (Non-aktifkan peringatan menggunakan opsi -mno-inefficient-warnings)"
+msgstr "%s (Non-aktifkan peringatan menggunakan pilihan -mno-inefficient-warnings)"
 
 #: config/rs6000/host-darwin.c:62
 #, gcc-internal-format
@@ -26618,7 +26609,7 @@ msgstr "-mstring tidak didukung di sistem little endian"
 #: config/rs6000/rs6000.c:1655
 #, gcc-internal-format
 msgid "unknown -mdebug-%s switch"
-msgstr "opsi -mdebug-%s tidak dikenal"
+msgstr "pilihan -mdebug-%s tidak dikenal"
 
 #: config/rs6000/rs6000.c:1667
 #, gcc-internal-format
@@ -26628,12 +26619,12 @@ msgstr "tidak diketahui -mtraceback arg %qs; diduga %<full%>, %<partial%> atau %
 #: config/rs6000/rs6000.c:2176
 #, gcc-internal-format
 msgid "unknown -m%s= option specified: '%s'"
-msgstr "opsi -m%s= tidak diketahui dispesifikasikan: '%s'"
+msgstr "pilihan -m%s= tidak diketahui dispesifikasikan: '%s'"
 
 #: config/rs6000/rs6000.c:2222
 #, gcc-internal-format
 msgid "unknown value %s for -mfpu"
-msgstr "nilai %s tidak diketahui untuk opsi -mfpu"
+msgstr "nilai %s tidak diketahui untuk pilihan -mfpu"
 
 #: config/rs6000/rs6000.c:2415
 #, gcc-internal-format
@@ -26668,12 +26659,12 @@ msgstr "ABI yang dispesifikasikan tidak diketahui: '%s'"
 #: config/rs6000/rs6000.c:2478
 #, gcc-internal-format
 msgid "invalid option for -mfloat-gprs: '%s'"
-msgstr "opsi untuk -mfloat-gprs tidak valid: '%s'"
+msgstr "pilihan untuk -mfloat-gprs tidak valid: '%s'"
 
 #: config/rs6000/rs6000.c:2488
 #, gcc-internal-format
 msgid "Unknown switch -mlong-double-%s"
-msgstr "opsi -mlong-double-%s tidak diketahui"
+msgstr "pilihan -mlong-double-%s tidak diketahui"
 
 #: config/rs6000/rs6000.c:2509
 #, gcc-internal-format
@@ -26683,17 +26674,17 @@ msgstr "-malign-power tidak didukung untuk 64 bit Darwin; ini tidak kompatibel d
 #: config/rs6000/rs6000.c:2517
 #, gcc-internal-format
 msgid "unknown -malign-XXXXX option specified: '%s'"
-msgstr "opsi -malign-XXXXX tidak diketahui dispesifikasikan: '%s'"
+msgstr "pilihan -malign-XXXXX tidak diketahui dispesifikasikan: '%s'"
 
 #: config/rs6000/rs6000.c:2524
 #, gcc-internal-format
 msgid "-msingle-float option equivalent to -mhard-float"
-msgstr "opsi -msingle-float ekuivalen dengan -mhard-float"
+msgstr "pilihan -msingle-float ekuivalen dengan -mhard-float"
 
 #: config/rs6000/rs6000.c:2540
 #, gcc-internal-format
 msgid "-msimple-fpu option ignored"
-msgstr "opsi -msimple-fpu diabaikan"
+msgstr "pilihan -msimple-fpu diabaikan"
 
 #: config/rs6000/rs6000.c:5376
 #, gcc-internal-format
@@ -27177,7 +27168,7 @@ msgstr "-mlong-double-64 tidak diijinkan dengan -m64"
 #: config/sparc/sparc.c:728
 #, gcc-internal-format
 msgid "bad value (%s) for -mcmodel= switch"
-msgstr "nilai (%s) buruk untuk opsi -mcmodel="
+msgstr "nilai (%s) buruk untuk pilihan -mcmodel="
 
 #: config/sparc/sparc.c:733
 #, gcc-internal-format
@@ -27242,7 +27233,7 @@ msgstr "tidak dapat menggunakan va_start dalam interupsi fungsi"
 #: config/stormy16/stormy16.c:1875
 #, gcc-internal-format
 msgid "switch statement of size %lu entries too large"
-msgstr "pernyataan opsi dari ukuran %lu masukan terlalu besar"
+msgstr "pernyataan pilihan dari ukuran %lu masukan terlalu besar"
 
 #: config/stormy16/stormy16.c:2244
 #, gcc-internal-format
@@ -27377,7 +27368,7 @@ msgstr "terlalu banyak ruang stack untuk disiapkan: %d"
 #: config/xtensa/xtensa.c:2061
 #, gcc-internal-format
 msgid "boolean registers required for the floating-point option"
-msgstr "register boolean dibutuhkan untuk opsi titik pecahan"
+msgstr "register boolean dibutuhkan untuk pilihan titik pecahan"
 
 #: config/xtensa/xtensa.c:2096
 #, gcc-internal-format
@@ -27577,9 +27568,9 @@ msgid "converting %<false%> to pointer type for argument %P of %qD"
 msgstr "mengubah %<false%> ke tipe penunjuk untuk argumen %P dari %qD"
 
 #: cp/call.c:4573
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many braces around initializer for %qT"
-msgstr "hilang kurung diantara penginisialisasi untuk %qT"
+msgstr "terlalu banyak kurung diantara penginisialisasi untuk %qT"
 
 #: cp/call.c:4595 cp/cvt.c:217
 #, gcc-internal-format
@@ -27698,19 +27689,19 @@ msgid "  because conversion sequence for the argument is better"
 msgstr "  karena urutan konversi untuk argumen lebih baik"
 
 #: cp/call.c:6899
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default argument mismatch in overload resolution"
-msgstr "argumen baku dispesifikasikan dalam spesialisasi eksplisit"
+msgstr "argumen baku tidak cocok dalam kelebihan beban resolusi"
 
 #: cp/call.c:6902
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " candidate 1: %q+#F"
-msgstr "kandidat adalah: %+#D"
+msgstr " kandidat 1: %q+#F"
 
 #: cp/call.c:6904
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " candidate 2: %q+#F"
-msgstr "kandidat adalah: %+#D"
+msgstr " kandidat 2: %q+#F"
 
 #: cp/call.c:6942
 #, gcc-internal-format
@@ -28707,9 +28698,9 @@ msgid "cannot initialize %qT from %qT"
 msgstr "tidak dapat menginisialisasi %qT dari %qT"
 
 #: cp/decl.c:4437
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "name used in a GNU-style designated initializer for an array"
-msgstr "nama %qD digunakan dalam sebuah gaya GNU didesign penginisialisasi untuk sebuah array"
+msgstr "nama digunakan dalam sebuah gaya GNU diperuntukan penginisialisasi untuk sebuah array"
 
 #: cp/decl.c:4442
 #, gcc-internal-format
@@ -29377,9 +29368,9 @@ msgid "cannot declare pointer to %q#T member"
 msgstr "tidak dapat mendeklarasikan penunjuk ke %q#T anggota"
 
 #: cp/decl.c:8500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare %s to qualified function type %qT"
-msgstr "tidak dapat mendeklarasikan bit-field %qD dengan tipe fungsi"
+msgstr "tidak dapat mendeklarasikan %s untuk fungsi yang dikualifikasikan dengan tipe %qT"
 
 #: cp/decl.c:8537
 #, gcc-internal-format
@@ -29627,9 +29618,9 @@ msgid "%<inline%> specifier invalid for function %qs declared out of global scop
 msgstr "%<inline%> penspesifikasi tidak valid untuk fungsi %qs dideklarasikan diluar dari lingkup global"
 
 #: cp/decl.c:9365
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#T is not a class or a namespace"
-msgstr "%qT bukan sebuah class atau namespace"
+msgstr "%q#T bukan sebuah kelas atau ruang nama"
 
 #: cp/decl.c:9373
 #, gcc-internal-format
@@ -29637,9 +29628,9 @@ msgid "virtual non-class function %qs"
 msgstr "virtual bukan kelas fungsi %qs"
 
 #: cp/decl.c:9380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs defined in a non-class scope"
-msgstr "%qE atribut diabaikan dalam tipe bukan-class"
+msgstr "%qs didefinisikan dalam sebuah lingkup bukan kelas"
 
 #: cp/decl.c:9413
 #, gcc-internal-format
@@ -29975,9 +29966,9 @@ msgid "%<operator=%> should return a reference to %<*this%>"
 msgstr "%<operator=%> seharusnya mengembalikan referensi ke %<*this%>"
 
 #: cp/decl.c:11874
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid function declaration"
-msgstr "deklarasi anggota fungsi tidak valid"
+msgstr "deklarasi fungsi tidak valid"
 
 #: cp/decl.c:11958
 #, gcc-internal-format
@@ -30050,9 +30041,9 @@ msgid "Java method %qD has non-Java parameter type %qT"
 msgstr "metoda Java %qD memiliki tipe parameter %qT bukan Java"
 
 #: cp/decl2.c:579
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template parameter lists provided don't match the template parameters of %qD"
-msgstr "parameter template tidak cocok dengan template"
+msgstr "daftar parameter template yang disediakan tidak cocok dengan paramter template dari %qD"
 
 #: cp/decl2.c:647
 #, gcc-internal-format
@@ -30368,9 +30359,9 @@ msgid "%J%qD should be initialized in the member initialization list"
 msgstr "%J%qD seharusnya diinisialisasi dalam daftar anggota inisialisasi"
 
 #: cp/init.c:454
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jvalue-initialization of %q#D, which has reference type"
-msgstr "%J inisialisasi-baku dari %q#D, yang memiliki tipe referensi"
+msgstr "%Jinisialisasi-nilai dari %q#D, yang memiliki tipe referensi"
 
 #. TYPE_NEEDS_CONSTRUCTING can be set just because we have a
 #. vtable; still give this diagnostic.
@@ -30530,9 +30521,9 @@ msgid "request for member %qD is ambiguous"
 msgstr "permintaan untuk anggota %qD adalah ambigu"
 
 #: cp/init.c:2136
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-constant array size in new, unable to verify length of initializer-list"
-msgstr "indeks array bukan konstan dalam penginisialisasi"
+msgstr "bukan ukuran konstanta array dalam new, tidak dapat memverifikasi panjang dari daftar penginisialisasi"
 
 #: cp/init.c:2145
 #, gcc-internal-format
@@ -30657,17 +30648,17 @@ msgstr "mangling typeof, lebih baik gunakan decltype"
 #: cp/mangle.c:1903
 #, gcc-internal-format
 msgid "mangling unknown fixed point type"
-msgstr ""
+msgstr "mangling tipe fixed point tidak diketahui"
 
 #: cp/mangle.c:2332
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mangling %C"
-msgstr "peringatan: "
+msgstr "mangling %C"
 
 #: cp/mangle.c:2387
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mangling new-expression"
-msgstr "hilang ekspresi peningkatan"
+msgstr "mangling ekspresi-baru"
 
 #: cp/mangle.c:2407
 #, gcc-internal-format
@@ -31104,9 +31095,9 @@ msgid "%Hunsupported non-standard concatenation of string literals"
 msgstr "%Htidak didukung akhiran bukan-standar di konstanta floating"
 
 #: cp/parser.c:3154
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hfixed-point types not supported in C++"
-msgstr "tipe titik tetap tidak didukung untuk target ini"
+msgstr "%Htipe titik tetap tidak didukung dalam C++"
 
 #: cp/parser.c:3235
 #, gcc-internal-format
@@ -31354,9 +31345,9 @@ msgid "use %<%T::template %D%> to indicate that it is a template"
 msgstr "gunakan %<%T::template %D%> untuk mengindikasikan bahwa ini adalah template"
 
 #: cp/parser.c:10483
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hexpected parameter pack before %<...%>"
-msgstr "diduga deklarasi penspesifikasi atau %<...%>"
+msgstr "%Hdiduga parameter pack sebelum %<...%>"
 
 #: cp/parser.c:10893
 #, gcc-internal-format
@@ -32127,14 +32118,14 @@ msgid "%qE is not a valid template argument for type %qT because object %qD has 
 msgstr "%qE bukan sebuah argumen template yang valid untuk tipe %qT karena objek %qD bukan eksternal linkage"
 
 #: cp/pt.c:4578
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT"
-msgstr "%qE bukan sebuah argumen template yang valid untuk tipe %qT karena ini adalah sebuah penunjuk"
+msgstr "%qE bukan sebuah argumen template yang valid untuk tipe %qT"
 
 #: cp/pt.c:4579
 #, gcc-internal-format
 msgid "it must be the address of a function with external linkage"
-msgstr ""
+msgstr "ini harus berupa alamat dari sebuah fungsi dengan hubungan eksternal"
 
 #: cp/pt.c:4593
 #, gcc-internal-format
@@ -32199,9 +32190,9 @@ msgstr "  diduga sebuah template dari tipe %qD, diperoleh %qD"
 #. Not sure if this is reachable, but it doesn't hurt
 #. to be robust.
 #: cp/pt.c:5091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in nontype parameter pack"
-msgstr "tipe tidak cocok dalam referensi komponen"
+msgstr "tipe tidak cocok dalam paket parameter bukan tipe"
 
 #: cp/pt.c:5113
 #, gcc-internal-format
@@ -33108,9 +33099,9 @@ msgid "invalid use of %qD"
 msgstr "penggunaan tidak valid dari %qD"
 
 #: cp/typeck.c:2150
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "object type %qT does not match destructor name ~%qT"
-msgstr "tipe kualifikasi %qT tidak cocok dengan nama destruktor ~%qT"
+msgstr "tipe objek %qT tidak cocok dengan nama destruktor ~%qT"
 
 #: cp/typeck.c:2158
 #, gcc-internal-format
@@ -33796,9 +33787,9 @@ msgid "pointer to member type %qT incompatible with object type %qT"
 msgstr "penunjuk ke anggota tipe %qT tidak kompatibel dengan tipe objek %qT"
 
 #: cp/typeck2.c:1450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid value-initialization of reference types"
-msgstr "nilai-inisialisasi dari referensi"
+msgstr "nilai-inisialisasi dari referensi tidak valid"
 
 #: cp/typeck2.c:1637
 #, gcc-internal-format
@@ -33883,12 +33874,12 @@ msgstr "IO basetype buruk (%d)"
 #: fortran/trans-types.c:378
 #, gcc-internal-format
 msgid "integer kind=8 not available for -fdefault-integer-8 option"
-msgstr "integer kind=8 tidak tersedia untuk opsi -fdefault-integer-8"
+msgstr "integer kind=8 tidak tersedia untuk pilihan -fdefault-integer-8"
 
 #: fortran/trans-types.c:401
 #, gcc-internal-format
 msgid "real kind=8 not available for -fdefault-real-8 option"
-msgstr "real kind=8 tidak tersedia untuk opsi -fdefault-real-8"
+msgstr "real kind=8 tidak tersedia untuk pilihan -fdefault-real-8"
 
 #: fortran/trans-types.c:414
 #, gcc-internal-format
