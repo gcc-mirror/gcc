@@ -1,5 +1,12 @@
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/vect/vect-multitypes-5.c: XFAIL on SPARC 32-bit.
+	* gcc.dg/vect/vect-multitypes-6.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-12.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-3.c: Likewise.
+
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.c-torture/execute/ipa-sra-2.c: Use calloc instead of malloc.
 	* gcc.dg/pr41963.c: Do not include math.h.  Declare fabsf manually.
 
