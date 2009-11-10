@@ -1,3 +1,8 @@
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/ipa-sra-2.c: Use calloc instead of malloc.
+	* gcc.dg/pr41963.c: Do not include math.h.  Declare fabsf manually.
+
 2009-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/pr41987.c: New.
