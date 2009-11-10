@@ -1,3 +1,8 @@
+2009-11-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34158
+	* g++.dg/init/placement4.C: New.
+
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vect/vect-multitypes-5.c: XFAIL on SPARC 32-bit.

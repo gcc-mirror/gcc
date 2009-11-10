@@ -191,7 +191,6 @@ static tree tsubst_decl (tree, tree, tsubst_flags_t);
 static void perform_typedefs_access_check (tree tmpl, tree targs);
 static void append_type_to_template_for_access_check_1 (tree, tree, tree);
 static hashval_t iterative_hash_template_arg (tree arg, hashval_t val);
-static bool primary_template_instantiation_p (const_tree);
 static tree listify (tree);
 static tree listify_autos (tree, tree);
 
@@ -2739,7 +2738,7 @@ make_ith_pack_parameter_name (tree name, int i)
 /* Return true if T is a primary function
    or class template instantiation.  */
 
-static bool
+bool
 primary_template_instantiation_p (const_tree t)
 {
   if (!t)
