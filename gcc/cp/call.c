@@ -4613,8 +4613,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	 deallocation function, would have been selected as a match for the
 	 allocation function, the program is ill-formed."  */
       if (non_placement_deallocation_fn_p (fn))
-	error ("non-placement deallocation function %qD selected for "
-	       "placement delete", fn);
+	{
+	  error ("non-placement deallocation function %q+D", fn);
+	  error ("selected for placement delete");
+	}
     }
   else
     /* "Any non-placement deallocation function matches a non-placement

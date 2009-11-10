@@ -1,4 +1,6 @@
-2009-11-09  Jason Merrill  <jason@redhat.com>
+2009-11-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/init/placement5.C: New.
 
 	PR c++/34158
 	* g++.dg/init/placement4.C: New.
