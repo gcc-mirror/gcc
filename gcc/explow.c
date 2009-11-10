@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static rtx break_out_memory_refs (rtx);
 static void emit_stack_probe (rtx);
-static void anti_adjust_stack_and_probe (rtx);
 
 
 /* Truncate and perhaps sign-extend C as appropriate for MODE.  */
@@ -1308,7 +1307,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 	}
 
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
-	anti_adjust_stack_and_probe (size);
+	anti_adjust_stack_and_probe (size, false);
       else
 	anti_adjust_stack (size);
 
@@ -1545,13 +1544,17 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
     }
 }
 
-/* Adjust the stack by SIZE bytes while probing it.  Note that we skip the
-   probe for the first interval + a small dope of 4 words and instead probe
-   that many bytes past the specified size to maintain a protection area.  */
+/* Adjust the stack pointer by minus SIZE (an rtx for a number of bytes)
+   while probing it.  This pushes when SIZE is positive.  SIZE need not
+   be constant.  If ADJUST_BACK is true, adjust back the stack pointer
+   by plus SIZE at the end.  */
 
-static void
-anti_adjust_stack_and_probe (rtx size)
+void
+anti_adjust_stack_and_probe (rtx size, bool adjust_back)
 {
+  /* We skip the probe for the first interval + a small dope of 4 words and
+     probe that many bytes past the specified size to maintain a protection
+     area at the botton of the stack.  */
   const int dope = 4 * UNITS_PER_WORD;
 
   /* First ensure SIZE is Pmode.  */
@@ -1660,8 +1663,11 @@ anti_adjust_stack_and_probe (rtx size)
 	}
     }
 
-  /* Adjust back to account for the additional first interval.  */
-  adjust_stack (GEN_INT (PROBE_INTERVAL + dope));
+  /* Adjust back and account for the additional first interval.  */
+  if (adjust_back)
+    adjust_stack (plus_constant (size, PROBE_INTERVAL + dope));
+  else
+    adjust_stack (GEN_INT (PROBE_INTERVAL + dope));
 }
 
 /* Return an rtx representing the register or memory location

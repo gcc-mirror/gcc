@@ -470,8 +470,6 @@ static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_cfi_directive (dw_cfi_ref);
 static void output_call_frame_info (int);
 static void dwarf2out_note_section_used (void);
-static void dwarf2out_stack_adjust (rtx, bool);
-static void dwarf2out_args_size_adjust (HOST_WIDE_INT, const char *);
 static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (const_rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
@@ -1157,25 +1155,6 @@ dwarf2out_window_save (const char *label)
   add_fde_cfi (label, cfi);
 }
 
-/* Add a CFI to update the running total of the size of arguments
-   pushed onto the stack.  */
-
-void
-dwarf2out_args_size (const char *label, HOST_WIDE_INT size)
-{
-  dw_cfi_ref cfi;
-
-  if (size == old_args_size)
-    return;
-
-  old_args_size = size;
-
-  cfi = new_cfi ();
-  cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
-  cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
-  add_fde_cfi (label, cfi);
-}
-
 /* Entry point for saving a register to the stack.  REG is the GCC register
    number.  LABEL and OFFSET are passed to reg_save.  */
 
@@ -1526,6 +1505,48 @@ compute_barrier_args_size (void)
   VEC_free (rtx, heap, next);
 }
 
+/* Add a CFI to update the running total of the size of arguments
+   pushed onto the stack.  */
+
+static void
+dwarf2out_args_size (const char *label, HOST_WIDE_INT size)
+{
+  dw_cfi_ref cfi;
+
+  if (size == old_args_size)
+    return;
+
+  old_args_size = size;
+
+  cfi = new_cfi ();
+  cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
+  cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
+  add_fde_cfi (label, cfi);
+}
+
+/* Adjust args_size based on stack adjustment OFFSET.  */
+
+static void
+dwarf2out_args_size_adjust (HOST_WIDE_INT offset, const char *label)
+{
+  if (cfa.reg == STACK_POINTER_REGNUM)
+    cfa.offset += offset;
+
+  if (cfa_store.reg == STACK_POINTER_REGNUM)
+    cfa_store.offset += offset;
+
+#ifndef STACK_GROWS_DOWNWARD
+  offset = -offset;
+#endif
+
+  args_size += offset;
+  if (args_size < 0)
+    args_size = 0;
+
+  def_cfa_1 (label, &cfa);
+  if (flag_asynchronous_unwind_tables)
+    dwarf2out_args_size (label, args_size);
+}
 
 /* Check INSN to see if it looks like a push or a stack adjustment, and
    make a note of it if it does.  EH uses this information to find out how
@@ -1617,30 +1638,6 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
 
   label = dwarf2out_cfi_label (false);
   dwarf2out_args_size_adjust (offset, label);
-}
-
-/* Adjust args_size based on stack adjustment OFFSET.  */
-
-static void
-dwarf2out_args_size_adjust (HOST_WIDE_INT offset, const char *label)
-{
-  if (cfa.reg == STACK_POINTER_REGNUM)
-    cfa.offset += offset;
-
-  if (cfa_store.reg == STACK_POINTER_REGNUM)
-    cfa_store.offset += offset;
-
-#ifndef STACK_GROWS_DOWNWARD
-  offset = -offset;
-#endif
-
-  args_size += offset;
-  if (args_size < 0)
-    args_size = 0;
-
-  def_cfa_1 (label, &cfa);
-  if (flag_asynchronous_unwind_tables)
-    dwarf2out_args_size (label, args_size);
 }
 
 #endif
@@ -2209,7 +2206,8 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      && (!MEM_P (SET_DEST (elem)) || GET_CODE (expr) == SEQUENCE)
 	      && (RTX_FRAME_RELATED_P (elem) || par_index == 0))
 	    dwarf2out_frame_debug_expr (elem, label);
-	  else if (GET_CODE (elem) == SET
+	  else if (!ACCUMULATE_OUTGOING_ARGS
+		   && GET_CODE (elem) == SET
 		   && par_index != 0
 		   && !RTX_FRAME_RELATED_P (elem))
 	    {
