@@ -1,3 +1,14 @@
+2009-11-10  Chao-ying Fu  <fu@mips.com>
+
+	Backport from mainline
+	2009-10-29  Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips.c (mips_emit_unary, mips_force_unary): New
+	functions.
+	(mips_expand_synci_loop):  Use the length rtx to control the
+	synci loop from the begin rtx that points to the first byte of
+	the cache line.
+
 2009-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40946
