@@ -767,6 +767,9 @@ extern void adjust_stack (rtx);
 /* Add some bytes to the stack.  An rtx says how many.  */
 extern void anti_adjust_stack (rtx);
 
+/* Add some bytes to the stack while probing it.  An rtx says how many. */
+extern void anti_adjust_stack_and_probe (rtx, bool);
+
 /* This enum is used for the following two functions.  */
 enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
 

@@ -5161,11 +5161,6 @@ extern void dwarf2out_def_cfa (const char *, unsigned, HOST_WIDE_INT);
 
 extern void dwarf2out_window_save (const char *);
 
-/* Add a CFI to update the running total of the size of arguments pushed
-   onto the stack.  */
-
-extern void dwarf2out_args_size (const char *, HOST_WIDE_INT);
-
 /* Entry point for saving a register to the stack.  */
 
 extern void dwarf2out_reg_save (const char *, unsigned, HOST_WIDE_INT);

@@ -4642,9 +4642,12 @@ expand_function_end (void)
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	if (CALL_P (insn))
 	  {
+	    rtx max_frame_size = GEN_INT (STACK_CHECK_MAX_FRAME_SIZE);
 	    start_sequence ();
-	    probe_stack_range (STACK_OLD_CHECK_PROTECT,
-			       GEN_INT (STACK_CHECK_MAX_FRAME_SIZE));
+	    if (STACK_CHECK_MOVING_SP)
+	      anti_adjust_stack_and_probe (max_frame_size, true);
+	    else
+	      probe_stack_range (STACK_OLD_CHECK_PROTECT, max_frame_size);
 	    seq = get_insns ();
 	    end_sequence ();
 	    emit_insn_before (seq, stack_check_probe_note);

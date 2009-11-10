@@ -1,5 +1,21 @@
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR target/10127
+	PR ada/20548
+	* expr.h (anti_adjust_stack_and_probe): Declare.
+	* explow.c (anti_adjust_stack_and_probe): Make global, add ADJUST_BACK
+	parameter and rewrite head comment.
+	(allocate_dynamic_stack_space): Adjust call to above function.
+	* function.c (expand_function_end): Handle STACK_CHECK_MOVING_SP.
+
+	* tree.h (dwarf2out_args_size): Delete.
+	* dwarf2out.c (dwarf2out_args_size): Make static and move around.
+	(dwarf2out_args_size_adjust): Delete prototype and move around.
+	(dwarf2out_frame_debug_expr): Do not record arg size adjustments for
+	ACCUMULATE_OUTGOING_ARGS targets.
+
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/sparc/sparc.c (print_operand) <')'>: Test for a non-null
 	DECL_SIZE of DECL_RESULT before evaluating it.
 
