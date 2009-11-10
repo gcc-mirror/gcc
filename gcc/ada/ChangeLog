@@ -1,5 +1,13 @@
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/20548
+	* system-linux-alpha.ads (Stack_Check_Probes): Set to true.
+	* system-linux-hppa.ads (Stack_Check_Probes): Likewise.
+	* system-linux-sparc.ads (Stack_Check_Probes): Likewise.
+	* system-linux-sparcv9.ads (Stack_Check_Probes): Likewise.
+
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* system-linux-alpha.ads (AAMP, Compiler_System_Version, OpenVMS,
 	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
 	Delete.
