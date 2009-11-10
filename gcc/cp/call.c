@@ -4503,6 +4503,33 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
   return NULL_TREE;
 }
 
+/* Returns true iff T, an element of an OVERLOAD chain, is a usual
+   deallocation function (3.7.4.2 [basic.stc.dynamic.deallocation]).  */
+
+static bool
+non_placement_deallocation_fn_p (tree t)
+{
+  /* A template instance is never a usual deallocation function,
+     regardless of its signature.  */
+  if (TREE_CODE (t) == TEMPLATE_DECL
+      || primary_template_instantiation_p (t))
+    return false;
+
+  /* If a class T has a member deallocation function named operator delete
+     with exactly one parameter, then that function is a usual
+     (non-placement) deallocation function. If class T does not declare
+     such an operator delete but does declare a member deallocation
+     function named operator delete with exactly two parameters, the second
+     of which has type std::size_t (18.2), then this function is a usual
+     deallocation function.  */
+  t = FUNCTION_ARG_CHAIN (t);
+  if (t == void_list_node
+      || (t && same_type_p (TREE_VALUE (t), size_type_node)
+	  && TREE_CHAIN (t) == void_list_node))
+    return true;
+  return false;
+}
+
 /* Build a call to operator delete.  This has to be handled very specially,
    because the restrictions on what signatures match are different from all
    other call instances.  For a normal delete, only a delete taking (void *)
@@ -4528,8 +4555,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 		      tree alloc_fn)
 {
   tree fn = NULL_TREE;
-  tree fns, fnname, argtypes, type;
-  int pass;
+  tree fns, fnname, type, t;
 
   if (addr == error_mark_node)
     return error_mark_node;
@@ -4564,78 +4590,68 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
   if (placement)
     {
-      /* Get the parameter types for the allocation function that is
-	 being called.  */
-      gcc_assert (alloc_fn != NULL_TREE);
-      argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
+      /* "A declaration of a placement deallocation function matches the
+	 declaration of a placement allocation function if it has the same
+	 number of parameters and, after parameter transformations (8.3.5),
+	 all parameter types except the first are identical."
+
+	 So we build up the function type we want and ask instantiate_type
+	 to get it for us.  */
+      t = FUNCTION_ARG_CHAIN (alloc_fn);
+      t = tree_cons (NULL_TREE, ptr_type_node, t);
+      t = build_function_type (void_type_node, t);
+
+      fn = instantiate_type (t, fns, tf_none);
+      if (fn == error_mark_node)
+	return NULL_TREE;
+
+      if (BASELINK_P (fn))
+	fn = BASELINK_FUNCTIONS (fn);
+
+      /* "If the lookup finds the two-parameter form of a usual deallocation
+	 function (3.7.4.2) and that function, considered as a placement
+	 deallocation function, would have been selected as a match for the
+	 allocation function, the program is ill-formed."  */
+      if (non_placement_deallocation_fn_p (fn))
+	error ("non-placement deallocation function %qD selected for "
+	       "placement delete", fn);
     }
   else
-    {
-      /* First try it without the size argument.  */
-      argtypes = void_list_node;
-    }
+    /* "Any non-placement deallocation function matches a non-placement
+       allocation function. If the lookup finds a single matching
+       deallocation function, that function will be called; otherwise, no
+       deallocation function will be called."  */
+    for (t = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
+	 t; t = OVL_NEXT (t))
+      {
+	tree elt = OVL_CURRENT (t);
+	if (non_placement_deallocation_fn_p (elt))
+	  {
+	    fn = elt;
+	    /* "If a class T has a member deallocation function named
+	       operator delete with exactly one parameter, then that
+	       function is a usual (non-placement) deallocation
+	       function. If class T does not declare such an operator
+	       delete but does declare a member deallocation function named
+	       operator delete with exactly two parameters, the second of
+	       which has type std::size_t (18.2), then this function is a
+	       usual deallocation function."
 
-  /* We make two tries at finding a matching `operator delete'.  On
-     the first pass, we look for a one-operator (or placement)
-     operator delete.  If we're not doing placement delete, then on
-     the second pass we look for a two-argument delete.  */
-  for (pass = 0; pass < (placement ? 1 : 2); ++pass)
-    {
-      /* Go through the `operator delete' functions looking for one
-	 with a matching type.  */
-      for (fn = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
-	   fn;
-	   fn = OVL_NEXT (fn))
-	{
-	  tree t;
-
-	  /* The first argument must be "void *".  */
-	  t = TYPE_ARG_TYPES (TREE_TYPE (OVL_CURRENT (fn)));
-	  if (!same_type_p (TREE_VALUE (t), ptr_type_node))
-	    continue;
-	  t = TREE_CHAIN (t);
-	  /* On the first pass, check the rest of the arguments.  */
-	  if (pass == 0)
-	    {
-	      tree a = argtypes;
-	      while (a && t)
-		{
-		  if (!same_type_p (TREE_VALUE (a), TREE_VALUE (t)))
-		    break;
-		  a = TREE_CHAIN (a);
-		  t = TREE_CHAIN (t);
-		}
-	      if (!a && !t)
-		break;
-	    }
-	  /* On the second pass, look for a function with exactly two
-	     arguments: "void *" and "size_t".  */
-	  else if (pass == 1
-		   /* For "operator delete(void *, ...)" there will be
-		      no second argument, but we will not get an exact
-		      match above.  */
-		   && t
-		   && same_type_p (TREE_VALUE (t), size_type_node)
-		   && TREE_CHAIN (t) == void_list_node)
-	    break;
-	}
-
-      /* If we found a match, we're done.  */
-      if (fn)
-	break;
-    }
+	       So (void*) beats (void*, size_t).  */
+	    if (FUNCTION_ARG_CHAIN (fn) == void_list_node)
+	      break;
+	  }
+      }
 
   /* If we have a matching function, call it.  */
   if (fn)
     {
-      /* Make sure we have the actual function, and not an
-	 OVERLOAD.  */
-      fn = OVL_CURRENT (fn);
+      gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
       /* If the FN is a member function, make sure that it is
 	 accessible.  */
-      if (DECL_CLASS_SCOPE_P (fn))
-	perform_or_defer_access_check (TYPE_BINFO (type), fn, fn);
+      if (BASELINK_P (fns))
+	perform_or_defer_access_check (BASELINK_BINFO (fns), fn, fn);
 
       /* Core issue 901: It's ok to new a type with deleted delete.  */
       if (DECL_DELETED_FN (fn) && alloc_fn)
@@ -4659,7 +4675,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	  tree ret;
 	  VEC(tree,gc) *args = VEC_alloc (tree, gc, 2);
 	  VEC_quick_push (tree, args, addr);
-	  if (pass != 0)
+	  if (FUNCTION_ARG_CHAIN (fn) != void_list_node)
 	    VEC_quick_push (tree, args, size);
 	  ret = cp_build_function_call_vec (fn, &args, tf_warning_or_error);
 	  VEC_free (tree, gc, args);

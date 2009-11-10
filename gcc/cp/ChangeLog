@@ -1,5 +1,13 @@
 2009-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/34158
+	PR c++/36406
+	* call.c (non_placement_deallocation_fn_p): Split out...
+	(build_op_delete_call): ...from here.  Use instantiate_type
+	for placement delete.  Simplify logic.
+	* pt.c (primary_template_instantiation_p): Non-static.
+	* cp-tree.h: Declare it.
+
 	PR c++/41972
 	* parser.c (cp_parser_template_argument): Accept SCOPE_REF around
 	VAR_DECL.
