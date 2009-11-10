@@ -1,3 +1,41 @@
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-alpha.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
+	Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-mips.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
+	Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-mips64el.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Functions_Return_By_DSP, Front_End_ZCX_Support, High_Integrity_Mode,
+	Long_Shifts_Inlined): Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-mipsel.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
+	Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-s390.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
+	Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-s390x.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
+	Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-sh4.ads (Stack_Check_Limits, Always_Compatible_Rep):
+	New.
+	* system-linux-sparc.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support): Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-linux-sparcv9.ads (AAMP, Compiler_System_Version, OpenVMS,
+	Front_End_ZCX_Support, High_Integrity_Mode, Long_Shifts_Inlined):
+	Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+	* system-rtems.ads (OpenVMS): Delete.
+	(Stack_Check_Limits, Always_Compatible_Rep): New.
+
 2009-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (make_packable_type): Fix oversight.
