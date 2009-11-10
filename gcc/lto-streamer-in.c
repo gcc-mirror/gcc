@@ -1261,6 +1261,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   gimple *stmts;
   basic_block bb;
   struct bitpack_d *bp;
+  struct cgraph_node *node;
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = input_record_start (ib);
@@ -1340,7 +1341,9 @@ input_function (tree fn_decl, struct data_in *data_in,
     gimple_set_body (fn_decl, bb_seq (ei_edge (ei)->dest));
   }
 
-  fixup_call_stmt_edges (cgraph_node (fn_decl), stmts);
+  node = cgraph_node (fn_decl);
+  fixup_call_stmt_edges (node, stmts);
+  execute_all_ipa_stmt_fixups (node, stmts);
 
   update_ssa (TODO_update_ssa_only_virtuals); 
   free_dominance_info (CDI_DOMINATORS);

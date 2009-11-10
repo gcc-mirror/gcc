@@ -274,6 +274,7 @@ struct ipa_opt_pass_d pass_ipa_lto_wpa_fixup =
  lto_output_wpa_fixup,			/* write_summary */
  lto_input_wpa_fixup,			/* read_summary */
  NULL,					/* function_read_summary */
+ NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */
  NULL					/* variable_transform */

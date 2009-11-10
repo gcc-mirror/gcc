@@ -185,7 +185,10 @@ struct ipa_opt_pass_d
      as needed so both calls are necessary.  */
   void (*read_summary) (void);
   void (*function_read_summary) (struct cgraph_node *);
-  
+  /* Hook to convert gimple stmt uids into true gimple statements.  The second
+     parameter is an array of statements indexed by their uid. */
+  void (*stmt_fixup) (struct cgraph_node *, gimple *);
+
   /* Results of interprocedural propagation of an IPA pass is applied to
      function body via this hook.  */
   unsigned int function_transform_todo_flags_start;
@@ -566,6 +569,7 @@ extern void execute_pass_list (struct opt_pass *);
 extern void execute_ipa_pass_list (struct opt_pass *);
 extern void execute_ipa_summary_passes (struct ipa_opt_pass_d *);
 extern void execute_all_ipa_transforms (void);
+extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple *);
 
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);

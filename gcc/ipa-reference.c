@@ -1511,6 +1511,7 @@ struct ipa_opt_pass_d pass_ipa_reference =
  ipa_reference_write_summary,		/* write_summary */
  ipa_reference_read_summary,		/* read_summary */
  NULL,					/* function_read_summary */
+ NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */
  NULL					/* variable_transform */

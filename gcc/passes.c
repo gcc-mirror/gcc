@@ -1755,6 +1755,50 @@ execute_ipa_pass_list (struct opt_pass *pass)
   while (pass);
 }
 
+/* Execute stmt fixup hooks of all passes in PASS for NODE and STMTS.  */
+
+static void
+execute_ipa_stmt_fixups (struct opt_pass *pass,
+			  struct cgraph_node *node, gimple *stmts)
+{
+  while (pass)
+    {
+      /* Execute all of the IPA_PASSes in the list.  */
+      if (pass->type == IPA_PASS
+	  && (!pass->gate || pass->gate ()))
+	{
+	  struct ipa_opt_pass_d *ipa_pass = (struct ipa_opt_pass_d *) pass;
+
+	  if (ipa_pass->stmt_fixup)
+	    {
+	      pass_init_dump_file (pass);
+	      /* If a timevar is present, start it.  */
+	      if (pass->tv_id)
+		timevar_push (pass->tv_id);
+
+	      ipa_pass->stmt_fixup (node, stmts);
+
+	      /* Stop timevar.  */
+	      if (pass->tv_id)
+		timevar_pop (pass->tv_id);
+	      pass_fini_dump_file (pass);
+	    }
+	  if (pass->sub)
+	    execute_ipa_stmt_fixups (pass->sub, node, stmts);
+	}
+      pass = pass->next;
+    }
+}
+
+/* Execute stmt fixup hooks of all IPA passes for NODE and STMTS.  */
+
+void
+execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple *stmts)
+{
+  execute_ipa_stmt_fixups (all_regular_ipa_passes, node, stmts);
+}
+
+
 extern void debug_properties (unsigned int);
 extern void dump_properties (FILE *, unsigned int);
 

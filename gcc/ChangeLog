@@ -1,3 +1,19 @@
+2009-11-10  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-pass.h (struct ipa_opt_pass_d): Added stmt_fixup field.
+	(execute_all_ipa_stmt_fixups): Declare.
+	* ipa-cp.c (pass_ipa_cp): Added stmt_fixup value.
+	* ipa-inline.c (pass_ipa_inline): Likewise.
+	* ipa-pure-const.c (pass_ipa_pure_cons): Likewise.
+	* ipa-reference.c (pass_ipa_reference): Likewise.
+	* ipa.c (pass_ipa_whole_program_visibility): Likewise.
+	* lto-streamer-out.c (pass_ipa_lto_gimple_out): Likewise.
+	(pass_ipa_lto_finish_out): Likewise.
+	* lto-wpa-fixup.c (pass_ipa_lto_wpa_fixup): Likewise.
+	* passes.c (execute_ipa_stmt_fixups): New function.
+	(execute_all_ipa_stmt_fixups): New function.
+	* lto-streamer-in.c (input_function): Call execute_all_ipa_stmt_fixups.
+
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/20548

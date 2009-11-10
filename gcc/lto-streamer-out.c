@@ -2115,6 +2115,7 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
  lto_output,           			/* write_summary */
  NULL,		         		/* read_summary */
  NULL,					/* function_read_summary */
+ NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */
  NULL					/* variable_transform */
@@ -2545,6 +2546,7 @@ struct ipa_opt_pass_d pass_ipa_lto_finish_out =
  produce_asm_for_decls,			/* write_summary */
  NULL,		         		/* read_summary */
  NULL,					/* function_read_summary */
+ NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */
  NULL					/* variable_transform */
