@@ -6277,6 +6277,14 @@
   ""
   [(set_attr "length" "0")])
 
+(define_expand "probe_stack"
+  [(set (match_operand 0 "memory_operand" "") (const_int 0))]
+  ""
+{
+  operands[0]
+    = adjust_address (operands[0], GET_MODE (operands[0]), SPARC_STACK_BIAS);
+})
+
 ;; Prepare to return any type including a structure value.
 
 (define_expand "untyped_return"

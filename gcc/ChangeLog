@@ -1,3 +1,9 @@
+2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/20548
+	* explow.c (probe_stack_range): Fix typo.
+	* config/sparc/sparc.md (probe_stack): New expander.
+
 2009-11-09  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/cygwin.h (LINK_SPEC): Add -tsaware flag if !mno-cygwin.

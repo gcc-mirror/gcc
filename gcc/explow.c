@@ -1404,7 +1404,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 				 gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					         stack_pointer_rtx,
 					         plus_constant (size, first)));
-      emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr);
+      emit_library_call (stack_check_libfunc, LCT_NORMAL, VOIDmode, 1, addr,
+			 Pmode);
     }
 
   /* Next see if we have an insn to check the stack.  */
