@@ -1,3 +1,7 @@
+2009-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/compile/pr41987.c: New.
+
 2009-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40946
