@@ -82,7 +82,7 @@ tree_init_ic_make_global_vars (void)
   TREE_PUBLIC (ic_void_ptr_var) = 0;
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
-  assemble_variable (ic_void_ptr_var, 0, 0, 0);
+  varpool_finalize_decl (ic_void_ptr_var);
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   ic_gcov_type_ptr_var 
@@ -93,7 +93,7 @@ tree_init_ic_make_global_vars (void)
   TREE_PUBLIC (ic_gcov_type_ptr_var) = 0;
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
-  assemble_variable (ic_gcov_type_ptr_var, 0, 0, 0);
+  varpool_finalize_decl (ic_gcov_type_ptr_var);
 }
 
 static void
@@ -159,6 +159,14 @@ tree_init_edge_profiler (void)
       tree_ior_profiler_fn
 	      = build_fn_decl ("__gcov_ior_profiler",
 				     average_profiler_fn_type);
+      /* LTO streamer needs assembler names.  Because we create these decls
+         late, we need to initialize them by hand.  */
+      DECL_ASSEMBLER_NAME (tree_interval_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_pow2_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_one_value_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_indirect_call_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_average_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_ior_profiler_fn);
     }
 }
 

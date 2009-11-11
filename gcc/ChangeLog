@@ -1,3 +1,17 @@
+2009-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c: Include gcov-io.h
+	(output_profile_summary): New function.
+	(output_cgraph): Use it.
+	(input_profile_summary): New function.
+	(input_cgraph): Use it.
+	* coverage.c (build_ctr_info_value): Use varpool; initalize
+	DECL_ASSEMBLER_NAME.
+	(create_coverage): Likewise.
+	* tree-profile.c (tree_init_ic_make_global_vars): Likewise.
+	(tree_init_edge_profiler): Likewise.
+	* Makefile.in (lto-cgraph.o): Add dependency on gcov-io.h.
+
 2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/cygming.h (HANDLE_PRAGMA_PUSH_POP_MACRO):
