@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "pointer-set.h"
 #include "lto-streamer.h"
+#include "gcov-io.h"
 
 /* Create a new cgraph encoder.  */
 
@@ -307,6 +308,24 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   lto_output_uleb128_stream (ob->main_stream, node->global.inlined);
 }
 
+/* Stream out profile_summary to OB.  */
+
+static void
+output_profile_summary (struct lto_simple_output_block *ob)
+{
+  if (profile_info)
+    {
+      /* We do not output num, it is not terribly useful.  */
+      gcc_assert (profile_info->runs);
+      lto_output_uleb128_stream (ob->main_stream, profile_info->runs);
+      lto_output_sleb128_stream (ob->main_stream, profile_info->sum_all);
+      lto_output_sleb128_stream (ob->main_stream, profile_info->run_max);
+      lto_output_sleb128_stream (ob->main_stream, profile_info->sum_max);
+    }
+  else
+    lto_output_uleb128_stream (ob->main_stream, 0);
+}
+
 
 /* Output the part of the cgraph in SET.  */
 
@@ -323,6 +342,8 @@ output_cgraph (cgraph_node_set set)
   struct cgraph_asm_node *can;
 
   ob = lto_create_simple_output_block (LTO_section_cgraph);
+
+  output_profile_summary (ob);
 
   /* An encoder for cgraph nodes should have been created by
      ipa_write_summaries_1.  */
@@ -642,6 +663,35 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   VEC_free (cgraph_node_ptr, heap, nodes);
 }
 
+static struct gcov_ctr_summary lto_gcov_summary;
+
+/* Input profile_info from IB.  */
+static void
+input_profile_summary (struct lto_input_block *ib)
+{
+  unsigned int runs = lto_input_uleb128 (ib);
+  if (runs)
+    {
+      if (!profile_info)
+        {
+	  profile_info = &lto_gcov_summary;
+	  lto_gcov_summary.runs = runs;
+	  lto_gcov_summary.sum_all = lto_input_sleb128 (ib);
+	  lto_gcov_summary.run_max = lto_input_sleb128 (ib);
+	  lto_gcov_summary.sum_max = lto_input_sleb128 (ib);
+	}
+      /* We can support this by scaling all counts to nearest common multiple
+         of all different runs, but it is perhaps not worth the effort.  */
+      else if (profile_info->runs != runs
+	       || profile_info->sum_all != lto_input_sleb128 (ib)
+	       || profile_info->run_max != lto_input_sleb128 (ib)
+	       || profile_info->sum_max != lto_input_sleb128 (ib))
+	sorry ("Combining units with different profiles is not supported.");
+      /* We allow some units to have profile and other to not have one.  This will
+         just make unprofiled units to be size optimized that is sane.  */
+    }
+
+}
 
 /* Input and merge the cgraph from each of the .o files passed to
    lto1.  */
@@ -662,6 +712,7 @@ input_cgraph (void)
 
       ib = lto_create_simple_input_block (file_data, LTO_section_cgraph, 
 					  &data, &len);
+      input_profile_summary (ib);
       file_data->cgraph_node_encoder = lto_cgraph_encoder_new ();
       input_cgraph_1 (file_data, ib);
       lto_destroy_simple_input_block (file_data, LTO_section_cgraph, 
