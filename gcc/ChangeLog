@@ -1,5 +1,12 @@
 2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config/arm/neon.md (*neon_mov<mode>): Reject two non-register
+	operands.
+	(movti, mov<mode>): Call force_reg on one operand if required.
+	* config/arm/vec-common.md (mov<mode>): Likewise.
+
+2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* config/arm/arm.c (arm_override_options): Enable scheduling for
 	Thumb-2.
 
