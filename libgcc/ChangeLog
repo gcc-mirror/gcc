@@ -1,3 +1,24 @@
+libgcc/
+2009-11-11  Jon Beniston <jon@beniston.com>
+
+        * config.host: Add lm32 targets.
+        * config/lm32: New directory.
+        * config/lm32/libgcc_lm32.h: New file.
+        * config/lm32/_mulsi3.c: New file.
+        * config/lm32/_udivmodsi4.c: New file.
+        * config/lm32/_divsi3.c: New file.
+        * config/lm32/_modsi3.c: New file.
+        * config/lm32/_udivsi3.c: New file.
+        * config/lm32/_umodsi3.c: New file.
+        * config/lm32/_lshrsi3.S: New file.
+        * config/lm32/_ashrsi3.S: New file.
+        * config/lm32/_ashlsi3.S: New file.
+        * config/lm32/crti.S: New file.
+        * config/lm32/crtn.S: New file.
+        * config/lm32/t-lm32: New file.
+        * config/lm32/t-elf: New file.
+        * config/lm32/t-uclinux: New file.
+
 2009-10-26  Nick Clifton  <nickc@redhat.com>
 
 	* config.host: Add support for RX target.

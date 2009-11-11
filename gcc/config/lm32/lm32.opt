@@ -1,0 +1,40 @@
+; Options for the Lattice Mico32 port of the compiler.
+; Contributed by Jon Beniston <jon@beniston.com>
+;
+; Copyright (C) 2009 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published
+; by the Free Software Foundation; either version 3, or (at your
+; option) any later version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+;  <http://www.gnu.org/licenses/>.  
+   
+mmultiply-enabled
+Target Report Mask(MULTIPLY_ENABLED)
+Enable multiply instructions
+
+mdivide-enabled
+Target Report Mask(DIVIDE_ENABLED)
+Enable divide and modulus instructions
+
+mbarrel-shift-enabled
+Target Report Mask(BARREL_SHIFT_ENABLED)
+Enable barrel shift instructions
+
+msign-extend-enabled
+Target Report Mask(SIGN_EXTEND_ENABLED)
+Enable sign extend instructions
+
+muser-enabled
+Target Report Mask(USER_ENABLED)
+Enable user-defined instructions

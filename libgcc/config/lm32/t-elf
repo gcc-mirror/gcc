@@ -1,0 +1,12 @@
+# Assemble startup files.
+
+$(T)crti.o: $(srcdir)/config/lm32/crti.S $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/lm32/crti.S
+
+$(T)crtn.o: $(srcdir)/config/lm32/crtn.S $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
+	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/lm32/crtn.S
+
+CRTSTUFF_T_CFLAGS = -G 0 -msign-extend-enabled
+HOST_LIBGCC2_CFLAGS = -G 0 -msign-extend-enabled
