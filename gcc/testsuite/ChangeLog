@@ -1,3 +1,12 @@
+2009-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/42001
+	* gcc.dg/lto/lto.exp: Pass no-mathlib to lto_init.  Call
+	lto_finish at the end.
+
+	* lib/lto.exp (lto_init): Set mathlib to " " for no-mathlib.
+	(lto_finish): New. Restore mathlib.
+
 2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/torture/pushpop_macro.C: New testcase.
@@ -7,11 +16,11 @@
 
 2009-11-11  Jon Beniston <jon@beniston.com>
 
-        * lib/target-supports.exp (check_profiling_available): lm32 target 
-          doesn't support profiling.
-        * gcc.dg/20020312-2.c: Add lm32 support.
-        * g++.dg/other/packed1.C: Expect to fail on lm32.        
-        * g++.old-deja/g++.jason/thunk3.C: Likewise.                 
+	* lib/target-supports.exp (check_profiling_available): lm32 target 
+	  doesn't support profiling.
+	* gcc.dg/20020312-2.c: Add lm32 support.
+	* g++.dg/other/packed1.C: Expect to fail on lm32.        
+	* g++.old-deja/g++.jason/thunk3.C: Likewise.                 
 
 2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
