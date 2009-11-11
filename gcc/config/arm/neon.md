@@ -459,7 +459,9 @@
 	  "=w,Uv,w, w,  ?r,?w,?r,?r, ?Us")
 	(match_operand:VD 1 "general_operand"
 	  " w,w, Dn,Uvi, w, r, r, Usi,r"))]
-  "TARGET_NEON"
+  "TARGET_NEON
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
 {
   if (which_alternative == 2)
     {
@@ -506,7 +508,9 @@
   	  "=w,Un,w, w,  ?r,?w,?r,?r,  ?Us")
 	(match_operand:VQXMOV 1 "general_operand"
 	  " w,w, Dn,Uni, w, r, r, Usi, r"))]
-  "TARGET_NEON"
+  "TARGET_NEON
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
 {
   if (which_alternative == 2)
     {
@@ -549,6 +553,11 @@
 	(match_operand:TI 1 "general_operand" ""))]
   "TARGET_NEON"
 {
+  if (can_create_pseudo_p ())
+    {
+      if (GET_CODE (operands[0]) != REG)
+	operands[1] = force_reg (TImode, operands[1]);
+    }
 })
 
 (define_expand "mov<mode>"
@@ -556,12 +565,19 @@
 	(match_operand:VSTRUCT 1 "general_operand" ""))]
   "TARGET_NEON"
 {
+  if (can_create_pseudo_p ())
+    {
+      if (GET_CODE (operands[0]) != REG)
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+    }
 })
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VSTRUCT 0 "nonimmediate_operand"	"=w,Ut,w")
 	(match_operand:VSTRUCT 1 "general_operand"	" w,w, Ut"))]
-  "TARGET_NEON"
+  "TARGET_NEON
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
 {
   switch (which_alternative)
     {
