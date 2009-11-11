@@ -4275,7 +4275,9 @@ resolve_ref (gfc_expr *expr)
 	case REF_COMPONENT:
 	  if (current_part_dimension || seen_part_dimension)
 	    {
-	      if (ref->u.c.component->attr.pointer)
+	      /* F03:C614.  */
+	      if (ref->u.c.component->attr.pointer
+		  || ref->u.c.component->attr.proc_pointer)
 		{
 		  gfc_error ("Component to the right of a part reference "
 			     "with nonzero rank must not have the POINTER "

@@ -1,3 +1,8 @@
+2009-11-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41978
+	* gfortran.dg/proc_ptr_comp_22.f90: New test.
+
 2009-11-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/42001
