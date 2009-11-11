@@ -1,5 +1,15 @@
 2009-11-11  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/41729
+	* ipa.c (function_and_variable_visibility): Do not privatize COMDAT
+	and WEAK variables at -fwhole-program.
+
+	PR middle-end/41735
+	* ipa.c (whole_program_function_and_variable_visility): COMDAT
+	functions/variables are not needed even if they are externally visible.
+
+2009-11-11  Jan Hubicka  <jh@suse.cz>
+
 	(patch by Richard Guenther)
 	* lto-streamer-out.c (output_function): Output head of argument list
 	earlier.
