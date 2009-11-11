@@ -17,10 +17,21 @@
 # Contributed by Diego Novillo <dnovillo@google.com>
 
 
-# lto_init -- called at the start of eac subdir of tests
+# lto_init -- called at the start of each subdir of tests
 
 proc lto_init { args } {
     global LTO_OPTIONS
+
+    if {[info exists args] && $args == "no-mathlib"} {
+	global board_info
+	global saved_mathlib
+
+	set dest [target_info name]
+	if [board_info $dest exists mathlib] {
+	    set saved_mathlib [board_info $dest mathlib]
+	}
+	set board_info($dest,mathlib) " "
+    }
 
     # Each test is run with the compiler options from this list.
     # The default option lists can be overridden by LTO_OPTIONS="[list
@@ -37,6 +48,22 @@ proc lto_init { args } {
     }
 }
 
+#
+# lto_finish -- called at the end of each subdir of tests if mathlib is
+#		changed.
+#
+
+proc lto_finish { } {
+    global board_info
+    global saved_mathlib
+
+    set dest [target_info name]
+    if [info exists saved_mathlib] {
+	set board_info($dest,mathlib) $saved_mathlib
+    } elseif [board_info $dest exists mathlib] {
+	unset board_info($dest,mathlib)
+    }
+}
 
 # Subsets of tests can be selectively disabled by members of this list:
 #  - ATTRIBUTE: disable all tests using the __attribute__ extension,
