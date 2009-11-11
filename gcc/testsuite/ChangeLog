@@ -1,4 +1,10 @@
-gcc/testsuite/
+2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/torture/pushpop_macro.C: New testcase.
+	* gcc.c-torture/execute/pushpop_macro.c: New testcase.
+	* gcc.dg/cpp/pragma-pop_macro-1.c: Allow test for all
+	targets.
+
 2009-11-11  Jon Beniston <jon@beniston.com>
 
         * lib/target-supports.exp (check_profiling_available): lm32 target 

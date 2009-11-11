@@ -1,3 +1,15 @@
+2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/cygming.h (HANDLE_PRAGMA_PUSH_POP_MACRO):
+	Removed.
+	* c-pragma.c (def_pragma_macro_value): Likewise.
+	(def_pragma_macro): Likewise.
+	(pushed_macro_table): Likewise.
+	(HANDLE_PRAGMA_PUSH_POP_MACRO): Remove guarded
+	code.
+	* doc/tm.texi (HANDLE_PRAGMA_PUSH_POP_MACRO):
+	Removed.
+
 2009-11-11  Basile Starynkevitch  <basile@starynkevitch.net>
 	* doc/plugins.texi (Registering custom attributes): section
 	renamed as (Registering custom attributes or pragmas).
