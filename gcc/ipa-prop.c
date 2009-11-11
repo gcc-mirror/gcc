@@ -2158,11 +2158,14 @@ ipa_update_after_lto_read (void)
   struct cgraph_node *node;
   struct cgraph_edge *cs;
 
+  ipa_check_create_node_params ();
+  ipa_check_create_edge_args ();
+
   for (node = cgraph_nodes; node; node = node->next)
     {
       if (!node->analyzed)
 	continue;
-      ipa_populate_param_decls (node, IPA_NODE_REF (node));
+      ipa_initialize_node_params (node);
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
