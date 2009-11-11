@@ -216,6 +216,9 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   pfile->a_buff = _cpp_get_buff (pfile, 0);
   pfile->u_buff = _cpp_get_buff (pfile, 0);
 
+  /* Initialize table for push_macro/pop_macro.  */
+  pfile->pushed_macros = 0;
+
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);
 
@@ -245,6 +248,7 @@ void
 cpp_destroy (cpp_reader *pfile)
 {
   cpp_context *context, *contextn;
+  struct def_pragma_macro *pmacro;
   tokenrun *run, *runn;
   int i;
 
@@ -295,6 +299,17 @@ cpp_destroy (cpp_reader *pfile)
 	free (pfile->comments.entries[i].comment);
 
       free (pfile->comments.entries);
+    }
+  if (pfile->pushed_macros)
+    {
+      do
+	{
+	  pmacro = pfile->pushed_macros;
+	  pfile->pushed_macros = pmacro->next;
+	  free (pmacro->name);
+	  free (pmacro);
+	}
+      while (pfile->pushed_macros);
     }
 
   free (pfile);

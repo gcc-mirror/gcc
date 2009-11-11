@@ -1,7 +1,7 @@
 /* PR preprocessor/35061 */
 /* Do nothing if there is nothing on the macro stack to pop.  */
 
-/* { dg-do preprocess { target *-*-mingw* *-*-cygwin* } } */
+/* { dg-do preprocess } */
 
 #define X  1
 /* # pragma push_macro("X") */

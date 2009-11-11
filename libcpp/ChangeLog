@@ -1,3 +1,26 @@
+2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* directives.c (do_pragma_push_macro): New pragma handler.
+	(do_pragma_pop_macro): Likewise.
+	(_cpp_init_internal_pragmas): Add push_macro and
+	pop_macro handler to internal pragmas.
+	(lex_macro_node_from_str): Removed.
+	(cpp_push_definition): Replace lex_macro_node_from_str
+	by _cpp_lex_identifier.
+	(cpp_pop_definition): Likewise.
+	* internal.h (_cpp_lex_identifier): New prototype.
+	(def_pragma_macro): New structure.
+	(cpp_reader): New member pushed_macros.
+	* lex.c (_cpp_lex_identifier): New function.
+	(lex_identifier_intern): New function.
+	* init.c (cpp_create_reader): Initialize pushed_macros
+	member.
+	(cpp_destroy): Free elements in pushed_macros member.
+	* pch.c (_cpp_save_pushed_macros): New function.
+	(_cpp_restore_pushed_macros): Likewise.
+	(_cpp_restore_pushed_macros): Use _cpp_save_pushed_macros.
+	(cpp_read_state): Use _cpp_restore_pushed_macros.
+
 2009-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* charset.c (cpp_init_iconv): Initialize utf8_cset_desc.

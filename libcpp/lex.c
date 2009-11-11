@@ -504,6 +504,63 @@ forms_identifier_p (cpp_reader *pfile, int first,
   return false;
 }
 
+/* Helper function to get the cpp_hashnode of the identifier BASE.  */
+static cpp_hashnode *
+lex_identifier_intern (cpp_reader *pfile, const uchar *base)
+{
+  cpp_hashnode *result;
+  const uchar *cur;
+  unsigned int len;
+  unsigned int hash = HT_HASHSTEP (0, *base);
+
+  cur = base + 1;
+  while (ISIDNUM (*cur))
+    {
+      hash = HT_HASHSTEP (hash, *cur);
+      cur++;
+    }
+  len = cur - base;
+  hash = HT_HASHFINISH (hash, len);
+  result = CPP_HASHNODE (ht_lookup_with_hash (pfile->hash_table,
+					      base, len, hash, HT_ALLOC));
+
+  /* Rarely, identifiers require diagnostics when lexed.  */
+  if (__builtin_expect ((result->flags & NODE_DIAGNOSTIC)
+			&& !pfile->state.skipping, 0))
+    {
+      /* It is allowed to poison the same identifier twice.  */
+      if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
+	cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
+		   NODE_NAME (result));
+
+      /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
+	 replacement list of a variadic macro.  */
+      if (result == pfile->spec_nodes.n__VA_ARGS__
+	  && !pfile->state.va_args_ok)
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "__VA_ARGS__ can only appear in the expansion"
+		   " of a C99 variadic macro");
+
+      /* For -Wc++-compat, warn about use of C++ named operators.  */
+      if (result->flags & NODE_WARN_OPERATOR)
+	cpp_error (pfile, CPP_DL_WARNING,
+		   "identifier \"%s\" is a special operator name in C++",
+		   NODE_NAME (result));
+    }
+
+  return result;
+}
+
+/* Get the cpp_hashnode of an identifier specified by NAME in
+   the current cpp_reader object.  If none is found, NULL is returned.  */
+cpp_hashnode *
+_cpp_lex_identifier (cpp_reader *pfile, const char *name)
+{
+  cpp_hashnode *result;
+  result = lex_identifier_intern (pfile, (uchar *) name);
+  return result;
+}
+
 /* Lex an identifier starting at BUFFER->CUR - 1.  */
 static cpp_hashnode *
 lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
