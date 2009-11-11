@@ -319,6 +319,11 @@ function_and_variable_visibility (bool whole_program)
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
 	  && (!whole_program
+	      /* We can privatize comdat readonly variables whose address is not taken,
+	         but doing so is not going to bring us optimization oppurtunities until
+	         we start reordering datastructures.  */
+	      || DECL_COMDAT (vnode->decl)
+	      || DECL_WEAK (vnode->decl)
 	      || lookup_attribute ("externally_visible",
 				   DECL_ATTRIBUTES (vnode->decl))))
 	vnode->externally_visible = true;
@@ -396,10 +401,11 @@ whole_program_function_and_variable_visibility (void)
   function_and_variable_visibility (flag_whole_program);
 
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->local.externally_visible && node->local.finalized)
+    if ((node->local.externally_visible && !DECL_COMDAT (node->decl))
+        && node->local.finalized)
       cgraph_mark_needed_node (node);
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
-    if (vnode->externally_visible)
+    if (vnode->externally_visible && !DECL_COMDAT (vnode->decl))
       varpool_mark_needed_node (vnode);
   return 0;
 }
