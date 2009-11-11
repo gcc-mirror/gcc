@@ -1,3 +1,16 @@
+2009-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h (to_string(int), to_string(unsigned),
+	to_string(long), to_string(unsigned long), to_string(float),
+	to_string(double), to_wstring(int), to_wstring(unsigned),
+	to_wstring(long), to_wstring(unsigned long), to_wstring(float),
+	to_wstring(double)): Add, per resolution of DR 1261.
+	* include/ext/vstring.h: Likewise.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	dr1261.cc: Add.
+	* testsuite/21_strings/basic_string/numeric_conversions/wchar_t/
+	dr1261.cc: Likewise.
+
 2009-11-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/doxygen/user.cfg.in: Regenerate, add files.

@@ -2639,6 +2639,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
 
   // NB: (v)snprintf vs sprintf.
+
+  // DR 1261.
+  inline string
+  to_string(int __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(int),
+					   "%d", __val); }
+
+  inline string
+  to_string(unsigned __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
+					   4 * sizeof(unsigned),
+					   "%u", __val); }
+
+  inline string
+  to_string(long __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(long),
+					   "%ld", __val); }
+
+  inline string
+  to_string(unsigned long __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
+					   4 * sizeof(unsigned long),
+					   "%lu", __val); }
+
   inline string
   to_string(long long __val)
   { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
@@ -2650,6 +2674,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
 					   4 * sizeof(unsigned long long),
 					   "%llu", __val); }
+
+  inline string
+  to_string(float __val)
+  {
+    const int __n = 
+      __gnu_cxx::__numeric_traits<float>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
+					   "%f", __val);
+  }
+
+  inline string
+  to_string(double __val)
+  {
+    const int __n = 
+      __gnu_cxx::__numeric_traits<double>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
+					   "%f", __val);
+  }
 
   inline string
   to_string(long double __val)
@@ -2699,6 +2741,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   stold(const wstring& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::wcstold, "stold", __str.c_str(), __idx); }
 
+  // DR 1261.
+  inline wstring
+  to_wstring(int __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, 4 * sizeof(int),
+					    L"%d", __val); }
+
+  inline wstring
+  to_wstring(unsigned __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
+					    4 * sizeof(unsigned),
+					    L"%u", __val); }
+
+  inline wstring
+  to_wstring(long __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, 4 * sizeof(long),
+					    L"%ld", __val); }
+
+  inline wstring
+  to_wstring(unsigned long __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
+					    4 * sizeof(unsigned long),
+					    L"%lu", __val); }
+
   inline wstring
   to_wstring(long long __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
@@ -2710,6 +2775,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
 					    4 * sizeof(unsigned long long),
 					    L"%llu", __val); }
+
+  inline wstring
+  to_wstring(float __val)
+  {
+    const int __n =
+      __gnu_cxx::__numeric_traits<float>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, __n,
+					    L"%f", __val);
+  }
+
+  inline wstring
+  to_wstring(double __val)
+  {
+    const int __n =
+      __gnu_cxx::__numeric_traits<double>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, __n,
+					    L"%f", __val);
+  }
 
   inline wstring
   to_wstring(long double __val)
