@@ -1,4 +1,13 @@
-gcc/
+2009-11-11  Basile Starynkevitch  <basile@starynkevitch.net>
+	* doc/plugins.texi (Registering custom attributes): section
+	renamed as (Registering custom attributes or pragmas).
+	Mentions custom attributes & pragmas, and c_register_pragma, with
+	a small example.
+	* doc/cpp.texi (Pragmas): Mentions that plugins can provide their
+	pragmas.
+	* doc/extend.texi (Function Attributes): Mentions that plugin can
+	provide their attributes.
+
 2009-11-11  Jon Beniston <jon@beniston.com>
 
         * config.gcc: Add lm32 elf and uclinux targets.

@@ -261,9 +261,10 @@ Such a structure is passed as the @code{user_data} by the plugin's
 init routine using @code{register_callback} with the
 @code{PLUGIN_INFO} pseudo-event and a null callback.
 
-@section Registering custom attributes
+@section Registering custom attributes or pragmas
 
-For analysis purposes it is useful to be able to add custom attributes.
+For analysis (or other) purposes it is useful to be able to add custom
+attributes or pragmas.
 
 The @code{PLUGIN_ATTRIBUTES} callback is called during attribute
 registration. Use the @code{register_attribute} function to register
@@ -293,6 +294,28 @@ register_attributes (void *event_data, void *data)
 @}
 
 @end smallexample
+
+
+The @code{PLUGIN_PRAGMAS} callback is called during pragmas
+registration. Use the @code{c_register_pragma} or
+@code{c_register_pragma_with_expansion} functions to register custom
+pragmas.
+
+@smallexample
+/* Plugin callback called during pragmas registration. Registered with
+     register_callback (plugin_name, PLUGIN_PRAGMAS,
+                        register_my_pragma, NULL);
+*/
+static void 
+register_my_pragma (void *event_data, void *data) 
+@{
+  warning (0, G_("Callback to register pragmas"));
+  c_register_pragma ("GCCPLUGIN", "sayhello", handle_pragma_sayhello);
+@}
+@end smallexample
+
+It is suggested to pass @code{"GCCPLUGIN"} (or a short name identifying
+your plugin) as the ``space'' argument of your pragma. 
 
 
 @section Building GCC plugins
