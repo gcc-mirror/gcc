@@ -4614,8 +4614,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	 allocation function, the program is ill-formed."  */
       if (non_placement_deallocation_fn_p (fn))
 	{
-	  error ("non-placement deallocation function %q+D", fn);
-	  error ("selected for placement delete");
+	  permerror (0, "non-placement deallocation function %q+D", fn);
+	  permerror (input_location, "selected for placement delete");
 	}
     }
   else
