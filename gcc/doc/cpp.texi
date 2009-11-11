@@ -3541,6 +3541,8 @@ This manual documents the pragmas which are meaningful to the
 preprocessor itself.  Other pragmas are meaningful to the C or C++
 compilers.  They are documented in the GCC manual.
 
+GCC plugins may provide their own pragmas.
+
 @ftable @code
 @item #pragma GCC dependency
 @code{#pragma GCC dependency} allows you to check the relative dates of

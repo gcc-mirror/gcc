@@ -1922,6 +1922,8 @@ particular target systems.  Other attributes, including @code{section}
 are supported for variables declarations (@pxref{Variable Attributes})
 and for types (@pxref{Type Attributes}).
 
+GCC plugins may provide their own attributes.
+
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
 being concerned about a possible macro of the same name.  For example,
