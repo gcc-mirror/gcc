@@ -1,5 +1,13 @@
 2009-11-11  Jan Hubicka  <jh@suse.cz>
 
+	(patch by Richard Guenther)
+	* lto-streamer-out.c (output_function): Output head of argument list
+	earlier.
+	* lto-streamer-in.c (input_function): Re-map arguments into merged
+	declaration.
+
+2009-11-11  Jan Hubicka  <jh@suse.cz>
+
 	* lto-cgraph.c: Include gcov-io.h
 	(output_profile_summary): New function.
 	(output_cgraph): Use it.

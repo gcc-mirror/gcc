@@ -1870,6 +1870,9 @@ output_function (struct cgraph_node *node)
   /* Output all the local variables in the function.  */
   lto_output_tree_ref (ob, fn->local_decls);
 
+  /* Output the head of the arguments list.  */
+  lto_output_tree_ref (ob, DECL_ARGUMENTS (function));
+
   /* Output all the SSA names used in the function.  */
   output_ssa_names (ob, fn);
 
@@ -1879,9 +1882,6 @@ output_function (struct cgraph_node *node)
   /* Output DECL_INITIAL for the function, which contains the tree of
      lexical scopes.  */
   lto_output_tree (ob, DECL_INITIAL (function), true);
-
-  /* Output the head of the arguments list.  */
-  lto_output_tree_ref (ob, DECL_ARGUMENTS (function));
 
   /* We will renumber the statements.  The code that does this uses
      the same ordering that we use for serializing them so we can use

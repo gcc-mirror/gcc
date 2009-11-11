@@ -1262,6 +1262,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   basic_block bb;
   struct bitpack_d *bp;
   struct cgraph_node *node;
+  tree args, narg, oarg;
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = input_record_start (ib);
@@ -1296,6 +1297,22 @@ input_function (tree fn_decl, struct data_in *data_in,
   /* Read all the local symbols.  */
   fn->local_decls = lto_input_tree (ib, data_in);
 
+  /* Read all function arguments.  We need to re-map them here to the
+     arguments of the merged function declaration.  */
+  args = lto_input_tree (ib, data_in); 
+  for (oarg = args, narg = DECL_ARGUMENTS (fn_decl);
+       oarg && narg;
+       oarg = TREE_CHAIN (oarg), narg = TREE_CHAIN (narg))
+    {
+      int ix;
+      bool res;
+      res = lto_streamer_cache_lookup (data_in->reader_cache, oarg, &ix);
+      gcc_assert (res);
+      /* Replace the argument in the streamer cache.  */
+      lto_streamer_cache_insert_at (data_in->reader_cache, narg, ix);
+    }
+  gcc_assert (!oarg && !narg);
+
   /* Read all the SSA names.  */
   input_ssa_names (ib, data_in, fn);
 
@@ -1306,9 +1323,6 @@ input_function (tree fn_decl, struct data_in *data_in,
   DECL_INITIAL (fn_decl) = lto_input_tree (ib, data_in);
   gcc_assert (DECL_INITIAL (fn_decl));
   DECL_SAVED_TREE (fn_decl) = NULL_TREE;
-
-  /* Read all function arguments.  */
-  DECL_ARGUMENTS (fn_decl) = lto_input_tree (ib, data_in); 
 
   /* Read all the basic blocks.  */
   tag = input_record_start (ib);
