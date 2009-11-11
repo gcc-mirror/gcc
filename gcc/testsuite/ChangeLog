@@ -1,3 +1,11 @@
+2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	Backported from trunk
+	* g++.dg/torture/pushpop_macro.C: New testcase.
+	* gcc.c-torture/execute/pushpop_macro.c: New testcase.
+	* gcc.dg/cpp/pragma-pop_macro-1.c: Allow test for all
+	targets.
+
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vect/vect-multitypes-5.c: XFAIL on SPARC 32-bit.
