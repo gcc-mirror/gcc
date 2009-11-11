@@ -15,5 +15,5 @@ void test_vdup_nu16 (void)
   out_uint16x4_t = vdup_n_u16 (arg0_uint16_t);
 }
 
-/* { dg-final { scan-assembler "vdup\.16\[ 	\]+\[dD\]\[0-9\]+, \[rR\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
+/* { dg-final { scan-assembler "vdup\.16\[ 	\]+\[dD\]\[0-9\]+, (\[rR\]\[0-9\]+|\[dD\]\[0-9\]+\\\[\[0-9\]+\\\])!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

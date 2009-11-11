@@ -68,6 +68,7 @@ extern char *neon_output_logic_immediate (const char *, rtx *,
 					  enum machine_mode, int, int);
 extern void neon_pairwise_reduce (rtx, rtx, enum machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
+extern rtx neon_make_constant (rtx);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void neon_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);

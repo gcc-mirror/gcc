@@ -15,5 +15,5 @@ void test_vdupQ_ns16 (void)
   out_int16x8_t = vdupq_n_s16 (arg0_int16_t);
 }
 
-/* { dg-final { scan-assembler "vdup\.16\[ 	\]+\[qQ\]\[0-9\]+, \[rR\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
+/* { dg-final { scan-assembler "vdup\.16\[ 	\]+\[qQ\]\[0-9\]+, (\[rR\]\[0-9\]+|\[dD\]\[0-9\]+\\\[\[0-9\]+\\\])!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

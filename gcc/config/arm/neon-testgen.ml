@@ -175,6 +175,7 @@ let rec analyze_shape shape =
     | Element_of_dreg -> (analyze_shape_elt Dreg) ^ "\\\\\\[\\[0-9\\]+\\\\\\]"
     | Element_of_qreg -> (analyze_shape_elt Qreg) ^ "\\\\\\[\\[0-9\\]+\\\\\\]"
     | All_elements_of_dreg -> (analyze_shape_elt Dreg) ^ "\\\\\\[\\\\\\]"
+    | Alternatives (elts) -> "(" ^ (String.concat "|" (List.map analyze_shape_elt elts)) ^ ")"
   in
     match shape with
       All (n, elt) -> commas analyze_shape_elt (n_things n elt) ""

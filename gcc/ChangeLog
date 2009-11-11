@@ -1,5 +1,21 @@
 2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config/arm/arm.c (neon_vdup_constant, neon_make_constant): New.
+	(neon_expand_vector_init): Use them.  Also handle non-constant
+	vectors with identical elements and vectors with only one
+	non-constant element.
+	(arm_print_operand): Handle 'y' modifier.
+	* config/arm/arm-protos.h (neon_make_constant): Declare.
+	* config/arm/neon.md (neon_vdup_n<mode>): Split into two
+	patterns.  Use VX instead of VDQW for the first one.  Allow
+	a VFP alternative and V32 modes for the second one.
+	* config/arm/neon.ml (shape_elt): Add Alternatives.
+	(ops): Use Alternatives for vdup lane instructions.
+	* config/arm/neon-testgen.ml (analyze_shape): Handle Alternatives.
+	* config/arm/vec-common.md (mov<mode>): Use neon_make_constant.
+
+2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* config/arm/neon.md (*neon_mov<mode>): Reject two non-register
 	operands.
 	(movti, mov<mode>): Call force_reg on one operand if required.

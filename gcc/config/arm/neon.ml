@@ -68,6 +68,7 @@ type shape_elt = Dreg | Qreg | Corereg | Immed | VecArray of int * shape_elt
 	       | Element_of_dreg	(* Used for "lane" variants.  *)
 	       | Element_of_qreg	(* Likewise.  *)
 	       | All_elements_of_dreg	(* Used for "dup" variants.  *)
+	       | Alternatives of shape_elt list (* Used for multiple valid operands *)
 
 type shape_form = All of int * shape_elt
                 | Long
@@ -1008,7 +1009,10 @@ let ops =
       pf_su_8_64;
 
     (* Set all lanes to the same value.  *)
-    Vdup_n, [],
+    Vdup_n,
+      [Disassembles_as [Use_operands [| Dreg;
+                                        Alternatives [ Corereg;
+                                                       Element_of_dreg ] |]]],
       Use_operands [| Dreg; Corereg |], "vdup_n", bits_1,
       pf_su_8_32;
     Vdup_n,
@@ -1016,7 +1020,10 @@ let ops =
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Dreg; Corereg |], "vdup_n", notype_1,
       [S64; U64];
-    Vdup_n, [],
+    Vdup_n,
+      [Disassembles_as [Use_operands [| Qreg;
+                                        Alternatives [ Corereg;
+                                                       Element_of_dreg ] |]]],
       Use_operands [| Qreg; Corereg |], "vdupQ_n", bits_1,
       pf_su_8_32;
     Vdup_n,
@@ -1028,7 +1035,10 @@ let ops =
 
     (* These are just aliases for the above.  *)
     Vmov_n,
-      [Builtin_name "vdup_n"],
+      [Builtin_name "vdup_n";
+       Disassembles_as [Use_operands [| Dreg;
+                                        Alternatives [ Corereg;
+                                                       Element_of_dreg ] |]]],
       Use_operands [| Dreg; Corereg |],
       "vmov_n", bits_1, pf_su_8_32;
     Vmov_n,
@@ -1038,7 +1048,10 @@ let ops =
       Use_operands [| Dreg; Corereg |],
       "vmov_n", notype_1, [S64; U64];
     Vmov_n,
-      [Builtin_name "vdupQ_n"],
+      [Builtin_name "vdupQ_n";
+       Disassembles_as [Use_operands [| Qreg;
+                                        Alternatives [ Corereg;
+                                                       Element_of_dreg ] |]]],
       Use_operands [| Qreg; Corereg |],
       "vmovQ_n", bits_1, pf_su_8_32;
     Vmov_n,
