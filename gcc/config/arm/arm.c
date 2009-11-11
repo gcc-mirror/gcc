@@ -1813,8 +1813,7 @@ arm_override_options (void)
 	fix_cm3_ldrd = 0;
     }
 
-  /* ??? We might want scheduling for thumb2.  */
-  if (TARGET_THUMB && flag_schedule_insns)
+  if (TARGET_THUMB1 && flag_schedule_insns)
     {
       /* Don't warn since it's on by default in -O2.  */
       flag_schedule_insns = 0;
