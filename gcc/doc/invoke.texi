@@ -631,6 +631,10 @@ Objective-C and Objective-C++ Dialects}.
 @emph{IA-64/VMS Options}
 @gccoptlist{-mvms-return-codes -mdebug-main=@var{prefix} -mmalloc64}
 
+@emph{LM32 Options}
+@gccoptlist{-mbarrel-shift-enabled -mdivide-enabled -mmultiply-enabled @gol
+-msign-extend-enabled -muser-enabled}
+
 @emph{M32R/D Options}
 @gccoptlist{-m32r2 -m32rx -m32r @gol
 -mdebug @gol
@@ -9534,6 +9538,7 @@ platform.
 * i386 and x86-64 Windows Options::
 * IA-64 Options::
 * IA-64/VMS Options::
+* LM32 Options::
 * M32C Options::
 * M32R/D Options::
 * M680x0 Options::
@@ -12563,6 +12568,35 @@ routine for the debugger.
 @item -mmalloc64
 @opindex mmalloc64
 Default to 64bit memory allocation routines.
+@end table
+
+@node LM32 Options
+@subsection LM32 Options
+@cindex LM32 options
+
+These @option{-m} options are defined for the Lattice Mico32 architecture:
+
+@table @gcctabopt
+@item -mbarrel-shift-enabled
+@opindex mbarrel-shift-enabled
+Enable barrel-shift instructions.
+
+@item -mdivide-enabled
+@opindex mdivide-enabled
+Enable divide and modulus instructions.
+
+@item -mmultiply-enabled
+@opindex multiply-enabled
+Enable multiply instructions.
+
+@item -msign-extend-enabled
+@opindex msign-extend-enabled
+Enable sign extend instructions.
+
+@item -muser-enabled
+@opindex muser-enabled
+Enable user-defined instructions.
+
 @end table
 
 @node M32C Options

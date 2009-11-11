@@ -1,3 +1,22 @@
+gcc/
+2009-11-11  Jon Beniston <jon@beniston.com>
+
+        * config.gcc: Add lm32 elf and uclinux targets.
+        * config/lm32: New directory.
+        * config/lm32/lm32.c: New file.
+        * config/lm32/lm32.h: New file.
+        * config/lm32/lm32.md: New file.
+        * config/lm32/lm32.opt: New file.
+        * config/lm32/lm32-protos.h: New file.
+        * config/lm32/constraints.md: New file.
+        * config/lm32/predicates.md: New file.
+        * config/lm32/sfp-machine.h: New file.
+        * config/lm32/t-fprules-softfp: New file.
+        * config/lm32/uclinux-elf.h: New file.
+        * doc/invoke.texi: Document lm32 options. 
+        * doc/contrib.texi: Document lm32 porter.
+        * doc/install.texi: Document lm32 targets.
+
 2009-11-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/41932

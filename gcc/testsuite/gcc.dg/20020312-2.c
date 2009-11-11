@@ -30,6 +30,8 @@ extern void abort (void);
 # define PIC_REG  "ebx"
 #elif defined(__ia64__)
 /* PIC register is r1, but is used even without -fpic.  */
+#elif defined(__lm32__)
+/* No pic register.  */
 #elif defined(__M32R__)
 /* No pic register.  */
 #elif defined(__m68k__)
