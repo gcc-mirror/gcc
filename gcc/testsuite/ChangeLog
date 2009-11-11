@@ -1,3 +1,7 @@
+2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* gcc.target/arm/neon: Regenerate generated tests.
+
 2009-11-10  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/init/placement5.C: New.
