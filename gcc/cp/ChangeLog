@@ -1,5 +1,11 @@
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42013
+	* call.c (build_conditional_expr): Check specifically for folding
+	to CALL_EXPR rather than TREE_SIDE_EFFECTS.
+
+2009-11-12  Jason Merrill  <jason@redhat.com>
+
 	* typeck.c (cv_qualified_p): New fn.
 	(decay_conversion): Use it.
 	* cp-tree.h: Declare it.
