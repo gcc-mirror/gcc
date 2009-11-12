@@ -318,8 +318,8 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->finalized)
         continue;
-      gcc_assert ((!DECL_WEAK (vnode->decl) && !DECL_COMMON (vnode->decl) && !DECL_COMDAT (vnode->decl))
-      		  || TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (node->decl));
+      gcc_assert ((!DECL_WEAK (vnode->decl) && !DECL_COMMON (vnode->decl))
+      		  || TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (vnode->decl));
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
 	  && (!whole_program
@@ -337,6 +337,7 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  gcc_assert (whole_program || !TREE_PUBLIC (vnode->decl));
 	  TREE_PUBLIC (vnode->decl) = 0;
+	  DECL_COMMON (vnode->decl) = 0;
 	}
      gcc_assert (TREE_STATIC (vnode->decl));
     }
