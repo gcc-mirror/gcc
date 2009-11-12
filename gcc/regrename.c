@@ -40,15 +40,35 @@
 #include "tree-pass.h"
 #include "df.h"
 
+/* We keep linked lists of DU_HEAD structures, each of which describes
+   a chain of occurrences of a reg.  */
+struct du_head
+{
+  /* The next chain.  */
+  struct du_head *next_chain;
+  /* The first and last elements of this chain.  */
+  struct du_chain *first, *last;
+  /* Describes the register being tracked.  */
+  unsigned regno, nregs;
+  /* Nonzero if the chain crosses a call.  */
+  unsigned int need_caller_save_reg:1;
+  /* Nonzero if the chain is finished.  */
+  unsigned int terminated:1;
+};
+
+/* This struct describes a single occurrence of a register.  */
 struct du_chain
 {
-  struct du_chain *next_chain;
+  /* Links to the next occurrence of the register.  */
   struct du_chain *next_use;
 
+  /* The insn where the register appears.  */
   rtx insn;
+  /* The location inside the insn.  */
   rtx *loc;
+  /* The register class required by the insn at this location.  */
   ENUM_BITFIELD(reg_class) cl : 16;
-  unsigned int need_caller_save_reg:1;
+  /* Nonzero if the register is subject to earlyclobber.  */
   unsigned int earlyclobber:1;
 };
 
@@ -79,19 +99,19 @@ static const char * const scan_actions_name[] =
 
 static struct obstack rename_obstack;
 
-static void do_replace (struct du_chain *, int);
+static void do_replace (struct du_head *, int);
 static void scan_rtx_reg (rtx, rtx *, enum reg_class,
 			  enum scan_actions, enum op_type, int);
 static void scan_rtx_address (rtx, rtx *, enum reg_class,
 			      enum scan_actions, enum machine_mode);
 static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
 		      enum op_type, int);
-static struct du_chain *build_def_use (basic_block);
-static void dump_def_use_chain (struct du_chain *);
+static struct du_head *build_def_use (basic_block);
+static void dump_def_use_chain (struct du_head *);
 static void note_sets (rtx, const_rtx, void *);
 static void clear_dead_regs (HARD_REG_SET *, enum reg_note, rtx);
 static void merge_overlapping_regs (basic_block, HARD_REG_SET *,
-				    struct du_chain *);
+				    struct du_head *);
 
 /* Called through note_stores.  Find sets of registers, and
    record them in *DATA (which is actually a HARD_REG_SET *).  */
@@ -127,14 +147,14 @@ clear_dead_regs (HARD_REG_SET *pset, enum reg_note kind, rtx notes)
       }
 }
 
-/* For a def-use chain CHAIN in basic block B, find which registers overlap
+/* For a def-use chain HEAD in basic block B, find which registers overlap
    its lifetime and set the corresponding bits in *PSET.  */
 
 static void
 merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
-			struct du_chain *chain)
+			struct du_head *head)
 {
-  struct du_chain *t = chain;
+  struct du_chain *t;
   rtx insn;
   HARD_REG_SET live;
   df_ref *def_rec;
@@ -146,6 +166,8 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
       if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
 	SET_HARD_REG_BIT (live, DF_REF_REGNO (def));
     }
+
+  t = head->first;
   insn = BB_HEAD (b);
   while (t)
     {
@@ -159,7 +181,7 @@ merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
 	      note_stores (PATTERN (insn), note_sets, (void *) &live);
 	      /* Only record currently live regs if we are inside the
 		 reg's live range.  */
-	      if (t != chain)
+	      if (t != head->first)
 		IOR_HARD_REG_SET (*pset, live);
 	      clear_dead_regs (&live, REG_UNUSED, REG_NOTES (insn));
 	    }
@@ -200,7 +222,7 @@ regrename_optimize (void)
 
   FOR_EACH_BB (bb)
     {
-      struct du_chain *all_chains = 0;
+      struct du_head *all_chains = 0;
       HARD_REG_SET unavailable;
       HARD_REG_SET regs_seen;
 
@@ -229,13 +251,13 @@ regrename_optimize (void)
 	{
 	  int new_reg, best_new_reg;
 	  int n_uses;
-	  struct du_chain *this_du = all_chains;
+	  struct du_head *this_head = all_chains;
 	  struct du_chain *tmp;
 	  HARD_REG_SET this_unavailable;
-	  int reg = REGNO (*this_du->loc);
+	  int reg = this_head->regno;
 	  int i;
 
-	  all_chains = this_du->next_chain;
+	  all_chains = this_head->next_chain;
 
 	  best_new_reg = reg;
 
@@ -262,7 +284,7 @@ regrename_optimize (void)
 	  /* Count number of uses, and narrow the set of registers we can
 	     use for renaming.  */
 	  n_uses = 0;
-	  for (tmp = this_du; tmp; tmp = tmp->next_use)
+	  for (tmp = this_head->first; tmp; tmp = tmp->next_use)
 	    {
 	      if (DEBUG_INSN_P (tmp->insn))
 		continue;
@@ -274,16 +296,17 @@ regrename_optimize (void)
 	  if (n_uses < 2)
 	    continue;
 
-	  if (this_du->need_caller_save_reg)
+	  if (this_head->need_caller_save_reg)
 	    IOR_HARD_REG_SET (this_unavailable, call_used_reg_set);
 
-	  merge_overlapping_regs (bb, &this_unavailable, this_du);
+	  merge_overlapping_regs (bb, &this_unavailable, this_head);
 
 	  /* Now potential_regs is a reasonable approximation, let's
 	     have a closer look at each register still in there.  */
 	  for (new_reg = 0; new_reg < FIRST_PSEUDO_REGISTER; new_reg++)
 	    {
-	      int nregs = hard_regno_nregs[new_reg][GET_MODE (*this_du->loc)];
+	      enum machine_mode mode = GET_MODE (*this_head->first->loc);
+	      int nregs = hard_regno_nregs[new_reg][mode];
 
 	      for (i = nregs - 1; i >= 0; --i)
 	        if (TEST_HARD_REG_BIT (this_unavailable, new_reg + i)
@@ -308,10 +331,10 @@ regrename_optimize (void)
 
 	      /* See whether it accepts all modes that occur in
 		 definition and uses.  */
-	      for (tmp = this_du; tmp; tmp = tmp->next_use)
+	      for (tmp = this_head->first; tmp; tmp = tmp->next_use)
 		if ((! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc))
 		     && ! DEBUG_INSN_P (tmp->insn))
-		    || (tmp->need_caller_save_reg
+		    || (this_head->need_caller_save_reg
 			&& ! (HARD_REGNO_CALL_PART_CLOBBERED
 			      (reg, GET_MODE (*tmp->loc)))
 			&& (HARD_REGNO_CALL_PART_CLOBBERED
@@ -327,8 +350,8 @@ regrename_optimize (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Register %s in insn %d",
-		       reg_names[reg], INSN_UID (this_du->insn));
-	      if (this_du->need_caller_save_reg)
+		       reg_names[reg], INSN_UID (this_head->first->insn));
+	      if (this_head->need_caller_save_reg)
 		fprintf (dump_file, " crosses a call");
 	    }
 
@@ -343,7 +366,7 @@ regrename_optimize (void)
 	  if (dump_file)
 	    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
 
-	  do_replace (this_du, best_new_reg);
+	  do_replace (this_head, best_new_reg);
 	  tick[best_new_reg] = ++this_tick;
 	  df_set_regs_ever_live (best_new_reg, true);
 	}
@@ -360,16 +383,17 @@ regrename_optimize (void)
 }
 
 static void
-do_replace (struct du_chain *chain, int reg)
+do_replace (struct du_head *head, int reg)
 {
-  unsigned int base_regno = REGNO (*chain->loc);
+  struct du_chain *chain;
+  unsigned int base_regno = head->regno;
 
-  gcc_assert (! DEBUG_INSN_P (chain->insn));
+  gcc_assert (! DEBUG_INSN_P (head->first->insn));
 
-  while (chain)
+  for (chain = head->first; chain; chain = chain->next_use)
     {
       unsigned int regno = ORIGINAL_REGNO (*chain->loc);
-      struct reg_attrs * attr = REG_ATTRS (*chain->loc);
+      struct reg_attrs *attr = REG_ATTRS (*chain->loc);
       int reg_ptr = REG_POINTER (*chain->loc);
 
       if (DEBUG_INSN_P (chain->insn) && REGNO (*chain->loc) != base_regno)
@@ -399,37 +423,42 @@ do_replace (struct du_chain *chain, int reg)
 	}
 
       df_insn_rescan (chain->insn);
-      chain = chain->next_use;
     }
 }
 
 
-static struct du_chain *open_chains;
-static struct du_chain *closed_chains;
+static struct du_head *open_chains;
+static struct du_head *closed_chains;
 
 static void
 scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 	      enum scan_actions action, enum op_type type, int earlyclobber)
 {
-  struct du_chain **p;
+  struct du_head **p;
   rtx x = *loc;
   enum machine_mode mode = GET_MODE (x);
-  int this_regno = REGNO (x);
-  int this_nregs = hard_regno_nregs[this_regno][mode];
+  unsigned this_regno = REGNO (x);
+  unsigned this_nregs = hard_regno_nregs[this_regno][mode];
 
   if (action == mark_write)
     {
       if (type == OP_OUT)
 	{
+	  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
 	  struct du_chain *this_du = XOBNEW (&rename_obstack, struct du_chain);
+	  head->next_chain = open_chains;
+	  open_chains = head;
+	  head->first = head->last = this_du;
+	  head->regno = this_regno;
+	  head->nregs = this_nregs;
+	  head->need_caller_save_reg = 0;
+	  head->terminated = 0;
+
 	  this_du->next_use = 0;
-	  this_du->next_chain = open_chains;
 	  this_du->loc = loc;
 	  this_du->insn = insn;
 	  this_du->cl = cl;
-	  this_du->need_caller_save_reg = 0;
 	  this_du->earlyclobber = earlyclobber;
-	  open_chains = this_du;
 	}
       return;
     }
@@ -439,7 +468,7 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 
   for (p = &open_chains; *p;)
     {
-      struct du_chain *this_du = *p;
+      struct du_head *head = *p;
 
       /* Check if the chain has been terminated if it has then skip to
 	 the next chain.
@@ -448,18 +477,17 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 	 the chain in Step 3, but are trying to hide in-out operands
 	 from terminate_write in Step 5.  */
 
-      if (*this_du->loc == cc0_rtx)
-	p = &this_du->next_chain;
+      if (head->terminated)
+	p = &head->next_chain;
       else
 	{
-	  int regno = REGNO (*this_du->loc);
-	  int nregs = hard_regno_nregs[regno][GET_MODE (*this_du->loc)];
-	  int exact_match = (regno == this_regno && nregs == this_nregs);
+	  int exact_match = (head->regno == this_regno
+			     && head->nregs == this_nregs);
 
-	  if (regno + nregs <= this_regno
-	      || this_regno + this_nregs <= regno)
+	  if (head->regno + head->nregs <= this_regno
+	      || this_regno + this_nregs <= head->regno)
 	    {
-	      p = &this_du->next_chain;
+	      p = &head->next_chain;
 	      continue;
 	    }
 
@@ -473,37 +501,36 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 		 be replaced with, terminate the chain.  */
 	      if (cl != NO_REGS)
 		{
+		  struct du_chain *this_du;
 		  this_du = XOBNEW (&rename_obstack, struct du_chain);
 		  this_du->next_use = 0;
-		  this_du->next_chain = (*p)->next_chain;
 		  this_du->loc = loc;
 		  this_du->insn = insn;
 		  this_du->cl = cl;
-		  this_du->need_caller_save_reg = 0;
-		  while (*p)
-		    p = &(*p)->next_use;
-		  *p = this_du;
+		  head->last->next_use = this_du;
+		  head->last = this_du;
 		  return;
 		}
 	    }
 
 	  if (action != terminate_overlapping_read || ! exact_match)
 	    {
-	      struct du_chain *next = this_du->next_chain;
+	      struct du_head *next = head->next_chain;
 
 	      /* Whether the terminated chain can be used for renaming
 	         depends on the action and this being an exact match.
 	         In either case, we remove this element from open_chains.  */
 
+	      head->terminated = 1;
 	      if ((action == terminate_dead || action == terminate_write)
 		  && exact_match)
 		{
-		  this_du->next_chain = closed_chains;
-		  closed_chains = this_du;
+		  head->next_chain = closed_chains;
+		  closed_chains = head;
 		  if (dump_file)
 		    fprintf (dump_file,
 			     "Closing chain %s at insn %d (%s)\n",
-			     reg_names[REGNO (*this_du->loc)], INSN_UID (insn),
+			     reg_names[head->regno], INSN_UID (insn),
 			     scan_actions_name[(int) action]);
 		}
 	      else
@@ -511,13 +538,13 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 		  if (dump_file)
 		    fprintf (dump_file,
 			     "Discarding chain %s at insn %d (%s)\n",
-			     reg_names[REGNO (*this_du->loc)], INSN_UID (insn),
+			     reg_names[head->regno], INSN_UID (insn),
 			     scan_actions_name[(int) action]);
 		}
 	      *p = next;
 	    }
 	  else
-	    p = &this_du->next_chain;
+	    p = &head->next_chain;
 	}
     }
 }
@@ -760,7 +787,7 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
 
 /* Build def/use chain.  */
 
-static struct du_chain *
+static struct du_head *
 build_def_use (basic_block bb)
 {
   rtx insn;
@@ -914,7 +941,7 @@ build_def_use (basic_block bb)
 	     requires a caller-saved reg.  */
 	  if (CALL_P (insn))
 	    {
-	      struct du_chain *p;
+	      struct du_head *p;
 	      for (p = open_chains; p; p = p->next_chain)
 		p->need_caller_save_reg = 1;
 	    }
@@ -1014,14 +1041,13 @@ build_def_use (basic_block bb)
    printed in reverse order as that's how we build them.  */
 
 static void
-dump_def_use_chain (struct du_chain *chains)
+dump_def_use_chain (struct du_head *head)
 {
-  while (chains)
+  while (head)
     {
-      struct du_chain *this_du = chains;
-      int r = REGNO (*this_du->loc);
-      int nregs = hard_regno_nregs[r][GET_MODE (*this_du->loc)];
-      fprintf (dump_file, "Register %s (%d):", reg_names[r], nregs);
+      struct du_chain *this_du = head->first;
+      fprintf (dump_file, "Register %s (%d):",
+	       reg_names[head->regno], head->nregs);
       while (this_du)
 	{
 	  fprintf (dump_file, " %d [%s]", INSN_UID (this_du->insn),
@@ -1029,7 +1055,7 @@ dump_def_use_chain (struct du_chain *chains)
 	  this_du = this_du->next_use;
 	}
       fprintf (dump_file, "\n");
-      chains = chains->next_chain;
+      head = head->next_chain;
     }
 }
 

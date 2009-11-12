@@ -1,3 +1,22 @@
+2009-11-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-opt/38582
+	* regrename.c (struct du_head): New structure; some elements moved
+	from...
+	(struct du_chain): ... this one.
+	(open_chains, closed_chains): Now of type struct du_head *.
+	(do_replace): Accept du_head argument, not du_chain.  All callers
+	changed.  Modified code to match new data structures.
+	(build_def_use): Return a list of du_head structures.  Modified code
+	to match new data structures.
+	(dump_def_use_chain): Accept du_head argument, not du_chain.  All
+	callers changed.  Modified code to match new data structures.
+	(merge_overlapping_regs): Accept du_head argument, not du_chain.  All
+	callers changed.  Modified code to match new data structures.
+	(scan_rtx_reg): Change type of this_regno and this_nregs to unsigned.
+	Allocate a du_head structure as well as a du_chain when creating a
+	new chain.  Modified other code to match new data structures.
+
 2009-11-12 Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (varpool_node_name): Declare.
