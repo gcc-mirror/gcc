@@ -11181,7 +11181,8 @@ Bitwise logical exclusive or.
 
 This intrinsic routine is provided for backwards compatibility with 
 GNU Fortran 77.  For integer arguments, programmers should consider
-the use of the @ref{IEOR} intrinsic defined by the Fortran standard.
+the use of the @ref{IEOR} intrinsic and for logical arguments the
+@code{.NEQV.} operator, which are both defined by the Fortran standard.
 
 @item @emph{Standard}:
 GNU extension
@@ -11237,7 +11238,8 @@ Fortran 95 elemental function: @ref{IEOR}
 @section @code{ISO_FORTRAN_ENV}
 @table @asis
 @item @emph{Standard}:
-Fortran 2003 and later
+Fortran 2003 and later; @code{INT8}, @code{INT16}, @code{INT32}, @code{INT64},
+@code{REAL32}, @code{REAL64}, @code{REAL128} are Fortran 2008 or later
 @end table
 
 The @code{ISO_FORTRAN_ENV} module provides the following scalar default-integer

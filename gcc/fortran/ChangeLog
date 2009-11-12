@@ -1,3 +1,8 @@
+2009-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.texi (XOR): Refer also to .NEQV.
+	(ISO_FORTRAN_ENV): State which parameters are F2008.
+
 2009-11-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41978
