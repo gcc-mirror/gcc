@@ -284,6 +284,7 @@ lto_resolution_read (FILE *resolution, const char *file_name)
 
   for (i = 0; i < num_symbols; i++)
     {
+      int t;
       unsigned index;
       char r_str[27];
       enum ld_plugin_symbol_resolution r;
@@ -291,7 +292,9 @@ lto_resolution_read (FILE *resolution, const char *file_name)
       unsigned int lto_resolution_str_len =
 	sizeof (lto_resolution_str) / sizeof (char *);
 
-      fscanf (resolution, "%u %26s", &index, r_str);
+      t = fscanf (resolution, "%u %26s %*[^\n]\n", &index, r_str);
+      if (t != 2)
+        internal_error ("Invalid line in the resolution file.");
       if (index > max_index)
 	max_index = index;
 
@@ -303,9 +306,8 @@ lto_resolution_read (FILE *resolution, const char *file_name)
 	      break;
 	    }
 	}
-      if (j >= lto_resolution_str_len)
-	internal_error ("tried to read past the end of the linker resolution "
-			"file");
+      if (j == lto_resolution_str_len)
+	internal_error ("Invalid resolution in the resolution file.");
 
       VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, ret,
 			     index + 1);

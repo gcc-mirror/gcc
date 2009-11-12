@@ -310,9 +310,6 @@ write_resolution (void)
   unsigned int i;
   FILE *f;
 
-  if (!resolution_file)
-    return;
-
   f = fopen (resolution_file, "w");
   check (f, LDPL_FATAL, "could not open file");
 
@@ -334,7 +331,7 @@ write_resolution (void)
 	{
 	  uint32_t slot = symtab->slots[j];
 	  unsigned int resolution = syms[j].resolution;
-	  fprintf (f, "%d %s\n", slot, lto_resolution_str[resolution]);
+	  fprintf (f, "%d %s %s\n", slot, lto_resolution_str[resolution], syms[j].name);
 	}
     }
   fclose (f);
@@ -452,7 +449,7 @@ static enum ld_plugin_status
 all_symbols_read_handler (void)
 {
   unsigned i;
-  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 1;
+  unsigned num_lto_args = num_claimed_files + lto_wrapper_num_args + 2 + 1;
   char **lto_argv;
   const char **lto_arg_ptr;
   if (num_claimed_files == 0)
@@ -468,12 +465,17 @@ all_symbols_read_handler (void)
   lto_arg_ptr = (const char **) lto_argv;
   assert (lto_wrapper_argv);
 
+  resolution_file = make_temp_file ("");
+
   write_resolution ();
 
   free_1 ();
 
   for (i = 0; i < lto_wrapper_num_args; i++)
     *lto_arg_ptr++ = lto_wrapper_argv[i];
+
+  *lto_arg_ptr++ = "-fresolution";
+  *lto_arg_ptr++ = resolution_file;
 
   for (i = 0; i < num_claimed_files; i++)
     {
@@ -520,6 +522,12 @@ cleanup_handler (void)
     {
       t = unlink (arguments_file_name);
       check (t == 0, LDPL_FATAL, "could not unlink arguments file");
+    }
+
+  if (resolution_file)
+    {
+      t = unlink (resolution_file);
+      check (t == 0, LDPL_FATAL, "could not unlink resolution file");
     }
 
   free_2 ();
@@ -613,10 +621,6 @@ process_option (const char *option)
     debug = 1;
   else if (strcmp (option, "-nop") == 0)
     nop = 1;
-  else if (!strncmp (option, "-resolution=", strlen("-resolution=")))
-    {
-      resolution_file = strdup (option + strlen("-resolution="));
-    }
   else if (!strncmp (option, "-pass-through=", strlen("-pass-through=")))
     {
       num_pass_through_items++;
