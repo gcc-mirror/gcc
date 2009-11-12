@@ -3991,8 +3991,13 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
     }
 
  valid_operands:
-  result = fold_if_not_in_template (build3 (COND_EXPR, result_type, arg1,
-					    arg2, arg3));
+  result = build3 (COND_EXPR, result_type, arg1, arg2, arg3);
+
+  if (cp_unevaluated_operand && TREE_SIDE_EFFECTS (result))
+    /* Avoid folding a ?: of two calls within decltype (c++/42013).  */;
+  else
+    result = fold_if_not_in_template (result);
+
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 
