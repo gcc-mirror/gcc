@@ -1,3 +1,9 @@
+2009-11-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39131
+	* config/abi/pre/gnu.ver: Add DFP types.
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.4.
+
 2009-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/basic_string.h (to_string(int), to_string(unsigned),
