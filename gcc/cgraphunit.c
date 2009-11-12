@@ -884,6 +884,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
       if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
 	{
 	  mark_decl_referenced (decl);
+	  vnode->force_output = true;
 	  if (vnode->finalized)
 	    varpool_mark_needed_node (vnode);
 	}

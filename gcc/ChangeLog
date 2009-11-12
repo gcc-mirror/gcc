@@ -1,3 +1,14 @@
+2009-11-12 Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (varpool_node_name): Declare.
+	* cgraphunit.c (process_function_and_variable_attributes): Set force_output
+	flag on used variables.
+	* ipa.c (function_and_variable_visibility): Dump externally visible and needed
+	variables.
+	* varpool.c (varpool_node_name): Export.
+	(decide_is_variable_needed): Check COMDAT for externally visible vars;
+	ignore needed flag.
+
 2009-11-12 Uros Bizjak <ubizjak@gmail.com>
 
 	PR middle-end/41930

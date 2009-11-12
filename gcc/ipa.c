@@ -292,7 +292,8 @@ function_and_variable_visibility (bool whole_program)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      gcc_assert (!DECL_WEAK (node->decl) || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
+      gcc_assert ((!DECL_WEAK (node->decl) && !DECL_COMDAT (node->decl))
+      	          || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
       if (cgraph_externally_visible_p (node, whole_program))
         {
 	  gcc_assert (!node->global.inlined_to);
@@ -317,7 +318,7 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->finalized)
         continue;
-      gcc_assert ((!DECL_WEAK (vnode->decl) || DECL_COMMON (vnode->decl))
+      gcc_assert ((!DECL_WEAK (vnode->decl) && !DECL_COMMON (vnode->decl) && !DECL_COMDAT (vnode->decl))
       		  || TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (node->decl));
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
@@ -351,6 +352,11 @@ function_and_variable_visibility (bool whole_program)
       for (node = cgraph_nodes; node; node = node->next)
 	if (node->local.externally_visible)
 	  fprintf (dump_file, " %s", cgraph_node_name (node));
+      fprintf (dump_file, "\n\n");
+      fprintf (dump_file, "\nMarking externally visible variables:");
+      for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+	if (vnode->externally_visible)
+	  fprintf (dump_file, " %s", varpool_node_name (vnode));
       fprintf (dump_file, "\n\n");
     }
   cgraph_function_flags_ready = true;
@@ -410,6 +416,14 @@ whole_program_function_and_variable_visibility (void)
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     if (vnode->externally_visible && !DECL_COMDAT (vnode->decl))
       varpool_mark_needed_node (vnode);
+  if (dump_file)
+    {
+      fprintf (dump_file, "\nNeeded variables:");
+      for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
+	if (vnode->needed)
+	  fprintf (dump_file, " %s", varpool_node_name (vnode));
+      fprintf (dump_file, "\n\n");
+    }
   return 0;
 }
 
