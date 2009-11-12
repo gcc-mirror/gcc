@@ -1313,6 +1313,7 @@ build_anon_union_vars (tree type, tree object)
 	  decl = build_decl (input_location,
 			     VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
 	  DECL_ANON_UNION_VAR_P (decl) = 1;
+	  DECL_ARTIFICIAL (decl) = 1;
 
 	  base = get_base_address (object);
 	  TREE_PUBLIC (decl) = TREE_PUBLIC (base);

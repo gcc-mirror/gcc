@@ -1,5 +1,8 @@
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39560
+	* decl2.c (build_anon_union_vars): Set DECL_ARTIFICIAL.
+
 	PR c++/37037
 	* decl.c (grokdeclarator): Don't generate a void PARM_DECL.
 

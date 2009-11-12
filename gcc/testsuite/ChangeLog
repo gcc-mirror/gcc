@@ -1,5 +1,8 @@
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39560
+	* g++.dg/lookup/anon7.C: New.
+
 	PR c++/37037
 	* g++.dg/template/typedef21.C: New.
 
