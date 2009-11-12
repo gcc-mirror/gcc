@@ -1,3 +1,9 @@
+2009-11-11  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR middle-end/41440
+	* cfgexpand.c (expand_gimple_basic_block): Append NOP to a fallthru,
+	single successor block, ending with jump created by RTL expander.
+	
 2009-11-11  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/41729
