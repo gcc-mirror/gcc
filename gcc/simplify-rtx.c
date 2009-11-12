@@ -489,12 +489,15 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
 	break;
 
       case 'e':
-	op = simplify_replace_fn_rtx (XEXP (x, i), old_rtx, fn, data);
-	if (op != XEXP (x, i))
+	if (XEXP (x, i))
 	  {
-	    if (x == newx)
-	      newx = shallow_copy_rtx (x);
-	    XEXP (newx, i) = op;
+	    op = simplify_replace_fn_rtx (XEXP (x, i), old_rtx, fn, data);
+	    if (op != XEXP (x, i))
+	      {
+		if (x == newx)
+		  newx = shallow_copy_rtx (x);
+		XEXP (newx, i) = op;
+	      }
 	  }
 	break;
       }

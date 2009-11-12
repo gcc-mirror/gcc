@@ -1,3 +1,9 @@
+2009-11-12 Uros Bizjak <ubizjak@gmail.com>
+
+	PR middle-end/41930
+	* simplify-rtx.c (simplify_replace_fn_rtx) <case 'e'>: Skip
+	processing if XEXP (x, i) is NULL.
+
 2009-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (function_and_variable_visibility): Verify that WEAK || COMMON
@@ -43,17 +49,15 @@
 
 2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
 
-	* config/i386/cygming.h (HANDLE_PRAGMA_PUSH_POP_MACRO):
-	Removed.
+	* config/i386/cygming.h (HANDLE_PRAGMA_PUSH_POP_MACRO): Removed.
 	* c-pragma.c (def_pragma_macro_value): Likewise.
 	(def_pragma_macro): Likewise.
 	(pushed_macro_table): Likewise.
-	(HANDLE_PRAGMA_PUSH_POP_MACRO): Remove guarded
-	code.
-	* doc/tm.texi (HANDLE_PRAGMA_PUSH_POP_MACRO):
-	Removed.
+	(HANDLE_PRAGMA_PUSH_POP_MACRO): Remove guarded code.
+	* doc/tm.texi (HANDLE_PRAGMA_PUSH_POP_MACRO): Removed.
 
 2009-11-11  Basile Starynkevitch  <basile@starynkevitch.net>
+
 	* doc/plugins.texi (Registering custom attributes): section
 	renamed as (Registering custom attributes or pragmas).
 	Mentions custom attributes & pragmas, and c_register_pragma, with
@@ -65,21 +69,21 @@
 
 2009-11-11  Jon Beniston <jon@beniston.com>
 
-        * config.gcc: Add lm32 elf and uclinux targets.
-        * config/lm32: New directory.
-        * config/lm32/lm32.c: New file.
-        * config/lm32/lm32.h: New file.
-        * config/lm32/lm32.md: New file.
-        * config/lm32/lm32.opt: New file.
-        * config/lm32/lm32-protos.h: New file.
-        * config/lm32/constraints.md: New file.
-        * config/lm32/predicates.md: New file.
-        * config/lm32/sfp-machine.h: New file.
-        * config/lm32/t-fprules-softfp: New file.
-        * config/lm32/uclinux-elf.h: New file.
-        * doc/invoke.texi: Document lm32 options. 
-        * doc/contrib.texi: Document lm32 porter.
-        * doc/install.texi: Document lm32 targets.
+	* config.gcc: Add lm32 elf and uclinux targets.
+	* config/lm32: New directory.
+	* config/lm32/lm32.c: New file.
+	* config/lm32/lm32.h: New file.
+	* config/lm32/lm32.md: New file.
+	* config/lm32/lm32.opt: New file.
+	* config/lm32/lm32-protos.h: New file.
+	* config/lm32/constraints.md: New file.
+	* config/lm32/predicates.md: New file.
+	* config/lm32/sfp-machine.h: New file.
+	* config/lm32/t-fprules-softfp: New file.
+	* config/lm32/uclinux-elf.h: New file.
+	* doc/invoke.texi: Document lm32 options.
+	* doc/contrib.texi: Document lm32 porter.
+	* doc/install.texi: Document lm32 targets.
 
 2009-11-11  Martin Jambor  <mjambor@suse.cz>
 
@@ -173,8 +177,8 @@
 	* gdbinit.in (pgq): New function for printing gimple sequence.
 
 2009-11-09  Paul Brook  <paul@codesourcery.com>
-	Daniel Jacobowitz  <dan@codesourcery.com>
-	Sandra Loosemore  <sandra@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Half-Precision): Update wording to reflect
 	that there are now multiple -mfpu options that enable fp16
@@ -188,9 +192,9 @@
 	when undesirable.
 	(aapcs_vfp_is_return_candidate, aapcs_vfp_is_call_candidate,
 	aapcs_vfp_allocate_return_reg): Use use_vfp_abi.
-        (arm_rtx_costs_1, arm_size_rtx_costs, arm_fastmul_rtx_costs,
-        arm_9e_rtx_costs): Only expect double-precision operations if the FPU
-        provides them.
+	(arm_rtx_costs_1, arm_size_rtx_costs, arm_fastmul_rtx_costs,
+	arm_9e_rtx_costs): Only expect double-precision operations if the FPU
+	provides them.
 	(coproc_secondary_reload_class): Reload HFmode via GENERAL_REGS if no
 	NEON.
 	(arm_print_operand): Handle 'p' modifier.
@@ -202,8 +206,8 @@
 	does not provide them.
 	(arm_movdi_vfp, thumb2_movdi_vfp): Use fcpys to move
 	double-precision values on a single-precision FPU.
-        (movdf_vfp, thumb2_movdf_vfp): Likewise.  Use "Dy" for
-        double-precision constants.
+	(movdf_vfp, thumb2_movdf_vfp): Likewise.  Use "Dy" for
+	double-precision constants.
 	(movhf_vfp_neon): New pattern (was movhf_vfp).
 	(movhf_vfp): Remove NEON instructions.
 	* config/arm/constraints.md: Add new "Dy" constraint for
@@ -403,7 +407,7 @@
 2009-11-04  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* df-scan.c (df-uses-record): Add case zero_extract of mem.
-	
+
 2009-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/10127
@@ -423,11 +427,11 @@
 	* config/i386/cpuid.h (bit_LWP): Define LWP bit.
 	* config/i386/x86intrin.h: Add LWP check and lwpintrin.h.
 	* config/i386/i386-c.c (ix86_target_macros_internal): Check
-	ISA_FLAG for LWP. 
+	ISA_FLAG for LWP.
 	* config/i386/i386.h (TARGET_LWP): New macro for LWP.
 	* config/i386/i386.opt (-mlwp): New switch for LWP support.
 	* config/i386/i386.c (OPTION_MASK_ISA_LWP_SET): New.
-	(OPTION_MASK_ISA_LWP_UNSET): New.	
+	(OPTION_MASK_ISA_LWP_UNSET): New.
 	(ix86_handle_option): Handle -mlwp.
 	(isa_opts): Handle -mlwp.
 	(enum pta_flags): Add PTA_LWP.
@@ -448,7 +452,7 @@
 	(builtin_description): Ditto.
 	(ix86_init_mmx_sse_builtins): Ditto.
 	(ix86_expand_special_args_builtin): Ditto.
-	* config/i386/i386.md (UNSPEC_LLWP_INTRINSIC): Add new UNSPEC for 
+	* config/i386/i386.md (UNSPEC_LLWP_INTRINSIC): Add new UNSPEC for
 	LWP support.
 	(UNSPEC_SLWP_INTRINSIC): Ditto.
 	(UNSPECV_LWPVAL_INTRINSIC): Ditto.
@@ -465,22 +469,22 @@
 	(lwp_lwpinshi3): Ditto.
 	(lwp_lwpinssi3): Ditto.
 	(lwp_lwpinsdi3): Ditto.
-	
+
 2009-11-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+	    Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 
 	PR rtl-opt/41833
 	* simplify-rtx.c (simplify_binary_operation_1): Simplify vec_select of
 	a vec_duplicate.
 
 2009-11-04  Richard Guenther  <rguenther@suse.de>
-            Rafael Avila de Espindola  <espindola@google.com>
- 
+	    Rafael Avila de Espindola  <espindola@google.com>
+
 	* gcc.c (process_command): Handle arguments name@offset.
 
 2009-11-04  Harsha Jagasia  <harsha.jagasia@amd.com>
 	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
-	
+
 	* config.gcc (i[34567]86-*-*): Include xopintrin.h.
 	(x86_64-*-*): Ditto.
 	* config/i386/xopintrin.h: New file, provide common x86 compiler
@@ -488,7 +492,7 @@
 	* config/i386/cpuid.h (bit_XOP): Define XOP bit.
 	* config/i386/x86intrin.h: Add XOP check and xopintrin.h.
 	* config/i386/i386-c.c(ix86_target_macros_internal): Check
-	ISA_FLAG for XOP. 
+	ISA_FLAG for XOP.
 	* config/i386/i386.h(TARGET_XOP): New macro for XOP.
 	* config/i386/i386.opt (-mxop): New switch for XOP support.
 	* config/i386/i386.md (UNSPEC_XOP_UNSIGNED_CMP)
@@ -498,7 +502,7 @@
 	(PPERM_*): New constants for vpperm instruction.
 	(xop_pcmov_<mode>): Add XOP conditional mov instructions.
 	* config/i386/i386.c (OPTION_MASK_ISA_XOP_SET): New.
-	(OPTION_MASK_ISA_XOP_UNSET): New.	
+	(OPTION_MASK_ISA_XOP_UNSET): New.
 	(OPTION_MASK_ISA_XOP_UNSET): Change definition to depend on XOP.
 	(ix86_handle_option): Handle -mxop.
 	(isa_opts): Handle -mxop.
@@ -677,7 +681,7 @@
 	(xop_pmadcsswd): Ditto.
 	(xop_pmadcswd): Ditto.
 	(xop_pcmov_<mode>): Ditto.
-	(xop_pcmov_<mode>)256: Ditto.
+	(xop_pcmov_<mode>256): Ditto.
 	(xop_phaddbw): Ditto.
 	(xop_phaddbd): Ditto.
 	(xop_phaddbq): Ditto.
@@ -712,7 +716,7 @@
 	(ashrv2di3): Ditto.
 	(xop_frcz<mode>2): Ditto.
 	(xop_vmfrcz<mode>2): Ditto.
-	(xop_frcz<mode>2256): Ditto.	
+	(xop_frcz<mode>2256): Ditto.
 	(xop_maskcmp<mode>3): Ditto.
 	(xop_maskcmp_uns<mode>3): Ditto.
 	(xop_maskcmp_uns2<mode>3): Ditto.
@@ -720,7 +724,7 @@
 
 	* doc/invoke.texi (-mxop): Add documentation.
 	* doc/extend.texi (x86 intrinsics): Add XOP intrinsics.
-	
+
 2009-11-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR driver/11810
@@ -996,7 +1000,7 @@
 	* config/frv/frv.c (frv_function_value, frv_libcall_value,
 	frv_function_value_regno_p): New functions.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
-	* config/frv/frv.h: (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
+	* config/frv/frv.h (FUNCTION_VALUE, LIBCALL_VALUE): Remove.
 	(FUNCTION_VALUE_REGNO_P): Redefine, use frv_function_value_regno_p.
 	* config/frv/frv-protos.h (frv_function_value_regno_p): Declare.
 
@@ -1006,7 +1010,7 @@
 	new 'outgoing' argument.
 	(mn10300_libcall_value, mn10300_function_value_regno_p): New functions.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
-	* config/mn10300/mn10300.h: (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
+	* config/mn10300/mn10300.h (FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE,
 	LIBCALL_VALUE): Remove.
 	(FUNCTION_VALUE_REGNO_P): Redefine, use mn10300_function_value_regno_p.
 	* config/mn10300/mn10300-protos.h (mn10300_function_value): Remove.
@@ -1014,7 +1018,7 @@
 
 2009-10-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/cortex-a9.md: New - integer pipeline description.
+	* config/arm/cortex-a9.md: New - integer pipeline description.
 
 2009-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
