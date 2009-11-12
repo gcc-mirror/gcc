@@ -61,8 +61,6 @@
 #include <bits/algorithmfwd.h>
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
-#include <debug/debug.h>
-#include <initializer_list>
 
 // See concept_check.h for the __glibcxx_*_requires macros.
 
