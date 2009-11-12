@@ -1,3 +1,8 @@
+2009-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (function_and_variable_visibility): Verify that WEAK || COMMON
+	imply PUBLIC || EXTERNAL.
+
 2009-11-11  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR middle-end/41440
