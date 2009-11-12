@@ -1,3 +1,8 @@
+2009-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+            Laurent GUERBY  <laurent@guerby.net>
+
+	* init.c (GNU/Linux Section): Enable for all architectures.
+
 2009-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/20548
@@ -5250,7 +5255,7 @@
 	* s-oscons-tmplt.c (System.OS_Constants): Do not use special definition
 	of Msg_Iovlen_T for VMS.
 
-2009-05-04   Laurent GUERBY  <laurent@guerby.net>
+2009-05-04  Laurent GUERBY  <laurent@guerby.net>
 
 	PR ada/38874
 	* make.adb (Scan_Make_Arg): Pass --param= to compiler and linker.
