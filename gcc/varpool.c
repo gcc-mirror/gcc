@@ -80,7 +80,7 @@ static GTY(()) struct varpool_node *varpool_first_unanalyzed_node;
 static GTY(()) struct varpool_node *varpool_assembled_nodes_queue;
 
 /* Return name of the node used in debug output.  */
-static const char *
+const char *
 varpool_node_name (struct varpool_node *node)
 {
   return lang_hooks.decl_printable_name (node->decl, 2);
@@ -229,7 +229,8 @@ bool
 decide_is_variable_needed (struct varpool_node *node, tree decl)
 {
   /* If the user told us it is used, then it must be so.  */
-  if (node->externally_visible || node->force_output)
+  if ((node->externally_visible && !DECL_COMDAT (decl))
+      || node->force_output)
     return true;
 
   /* ??? If the assembler name is set by hand, it is possible to assemble
@@ -237,11 +238,6 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
      in assemble_name then.  This is arguably a bug.  */
   if (DECL_ASSEMBLER_NAME_SET_P (decl)
       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-    return true;
-
-  /* If we decided it was needed before, but at the time we didn't have
-     the definition available, then it's still needed.  */
-  if (node->needed)
     return true;
 
   /* Externally visible variables must be output.  The exception is
