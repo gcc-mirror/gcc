@@ -1,3 +1,9 @@
+2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h: Include the full <utility>, per
+	UK-300.
+	* include/bits/stl_algo.h: Tweak includes.
+
 2009-11-11  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/Makefile.am: Remove use of baseline_file.
