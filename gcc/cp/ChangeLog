@@ -1,5 +1,8 @@
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37037
+	* decl.c (grokdeclarator): Don't generate a void PARM_DECL.
+
 	PR c++/42013
 	* call.c (build_conditional_expr): Check specifically for folding
 	to CALL_EXPR rather than TREE_SIDE_EFFECTS.
