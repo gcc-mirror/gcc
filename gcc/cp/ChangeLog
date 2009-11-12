@@ -1,5 +1,10 @@
 2009-11-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/39131
+	* rtti.c (emit_support_tinfos): Add DFP types.
+
+2009-11-11  Jason Merrill  <jason@redhat.com>
+
 	* call.c (build_op_delete_call): Downgrade error about
 	placement/non-placement confusion to permerror.
 
