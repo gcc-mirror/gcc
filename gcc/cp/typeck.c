@@ -1690,7 +1690,7 @@ decay_conversion (tree exp)
 
      Non-class rvalues always have cv-unqualified types.  */
   type = TREE_TYPE (exp);
-  if (!CLASS_TYPE_P (type) && cp_type_quals (type))
+  if (!CLASS_TYPE_P (type) && cv_qualified_p (type))
     exp = build_nop (cv_unqualified (type), exp);
 
   return exp;
@@ -7409,6 +7409,15 @@ cp_type_readonly (const_tree type)
      argument unmodified and we assign it to a const_tree.  */
   type = strip_array_types (CONST_CAST_TREE(type));
   return TYPE_READONLY (type);
+}
+
+/* Returns nonzero if TYPE is const or volatile.  */
+
+bool
+cv_qualified_p (const_tree type)
+{
+  int quals = cp_type_quals (type);
+  return (quals & (TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE)) != 0;
 }
 
 /* Returns nonzero if the TYPE contains a mutable member.  */

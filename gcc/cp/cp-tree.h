@@ -5149,6 +5149,7 @@ extern tree move				(tree);
 extern tree cp_build_qualified_type_real	(tree, int, tsubst_flags_t);
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
+extern bool cv_qualified_p			(const_tree);
 extern tree cv_unqualified			(tree);
 extern special_function_kind special_function_p (const_tree);
 extern int count_trees				(tree);
