@@ -1,3 +1,8 @@
+2009-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42013
+	* g++.dg/cpp0x/decltype19.C: New.
+
 2009-11-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39131

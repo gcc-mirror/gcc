@@ -1,3 +1,9 @@
+2009-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42013
+	* call.c (build_conditional_expr): Don't fold a TREE_SIDE_EFFECTS
+	COND_EXPR in unevaluated context.
+
 2009-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (constrain_visibility): Clear WEAK and COMMON flags.
