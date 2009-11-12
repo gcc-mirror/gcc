@@ -36,7 +36,7 @@ fwpa
 LTO Report Var(flag_wpa) Optimization
 Run the link-time optimizer in whole program analysis (WPA) mode.
 
-resolution
+fresolution
 LTO Separate
 The resolution file
 

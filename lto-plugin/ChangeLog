@@ -1,3 +1,12 @@
+2009-11-12  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-plugin.c (write_resolution): Assume resolution_file is set.
+	Print the symbol name.
+	(all_symbols_read_handler): Create a resolution file.
+	Pass it to gcc.
+	(cleanup_handler): Remove the resolution file.
+	(process_option): Drop the -resolution option.
+
 2009-11-05  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (temp_obj_dir_name): Remove.
