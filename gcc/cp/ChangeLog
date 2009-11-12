@@ -1,3 +1,7 @@
+2009-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (constrain_visibility): Clear WEAK and COMMON flags.
+
 2009-11-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39131

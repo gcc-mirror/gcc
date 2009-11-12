@@ -292,6 +292,7 @@ function_and_variable_visibility (bool whole_program)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      gcc_assert (!DECL_WEAK (node->decl) || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
       if (cgraph_externally_visible_p (node, whole_program))
         {
 	  gcc_assert (!node->global.inlined_to);
@@ -316,6 +317,8 @@ function_and_variable_visibility (bool whole_program)
     {
       if (!vnode->finalized)
         continue;
+      gcc_assert ((!DECL_WEAK (vnode->decl) || DECL_COMMON (vnode->decl))
+      		  || TREE_PUBLIC (vnode->decl) || DECL_EXTERNAL (node->decl));
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
 	  && (!whole_program
