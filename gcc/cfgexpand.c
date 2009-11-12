@@ -3220,6 +3220,18 @@ expand_gimple_basic_block (basic_block bb)
 	}
     }
 
+  /* Expanded RTL can create a jump in the last instruction of block.
+     This later might be assumed to be a jump to successor and break edge insertion.
+     We need to insert dummy move to prevent this. PR41440. */
+  if (single_succ_p (bb)
+      && (single_succ_edge (bb)->flags & EDGE_FALLTHRU)
+      && (last = get_last_insn ())
+      && JUMP_P (last))
+    {
+      rtx dummy = gen_reg_rtx (SImode);
+      emit_insn_after_noloc (gen_move_insn (dummy, dummy), last, NULL);
+    }
+
   do_pending_stack_adjust ();
 
   /* Find the block tail.  The last insn in the block is the insn
