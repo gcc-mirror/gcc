@@ -1,5 +1,13 @@
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (cv_qualified_p): New fn.
+	(decay_conversion): Use it.
+	* cp-tree.h: Declare it.
+	* tree.c (rvalue): Use it and cv_unqualified.
+	* init.c (build_aggr_init): Likewise.
+
+2009-11-12  Jason Merrill  <jason@redhat.com>
+
 	PR c++/42013
 	* call.c (build_conditional_expr): Don't fold a TREE_SIDE_EFFECTS
 	COND_EXPR in unevaluated context.
