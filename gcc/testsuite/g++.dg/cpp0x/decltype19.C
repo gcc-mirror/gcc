@@ -2,7 +2,7 @@
 
 template<typename _Tp>
   _Tp
-declval();
+__attribute ((const)) declval();
 
 template<typename _Tp, typename _Up>
   struct common_type
