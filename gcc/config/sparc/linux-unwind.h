@@ -22,11 +22,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
-/* Handle multilib correctly.  */
 #if defined(__arch64__)
 
 /* 64-bit SPARC version */
@@ -37,50 +35,66 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
 			      _Unwind_FrameState *fs)
 {
   unsigned int *pc = context->ra;
-  long new_cfa, i;
+  long this_cfa = (long) context->cfa;
+  long new_cfa, ra_location, shifted_ra_location;
   long regs_off, fpu_save_off;
-  long this_cfa, fpu_save;
+  long fpu_save;
+  int i;
 
-  if (pc[0] != 0x82102065		/* mov NR_rt_sigreturn, %g1 */
-      || pc[1] != 0x91d0206d)		/* ta 0x6d */
+  if (pc[0] != 0x82102065	/* mov NR_rt_sigreturn, %g1 */
+      || pc[1] != 0x91d0206d)	/* ta 0x6d */
     return _URC_END_OF_STACK;
+
   regs_off = 192 + 128;
   fpu_save_off = regs_off + (16 * 8) + (3 * 8) + (2 * 4);
-  this_cfa = (long) context->cfa;
-  new_cfa = *(long *)((context->cfa) + (regs_off + (14 * 8)));
+
+  new_cfa = *(long *)(this_cfa + regs_off + (14 * 8));
   new_cfa += 2047; /* Stack bias */
-  fpu_save = *(long *)((this_cfa) + (fpu_save_off));
+  fpu_save = *(long *)(this_cfa + fpu_save_off);
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = 14;
-  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
-  for (i = 1; i < 16; ++i)
+  fs->regs.cfa_reg = __builtin_dwarf_sp_column ();
+  fs->regs.cfa_offset = new_cfa - this_cfa;
+
+  for (i = 1; i < 16; i++)
     {
+      /* We never restore %sp as everything is purely CFA-based.  */
+      if ((unsigned int) i == __builtin_dwarf_sp_column ())
+	continue;
+
       fs->regs.reg[i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i].loc.offset =
-	this_cfa + (regs_off + (i * 8)) - new_cfa;
+      fs->regs.reg[i].loc.offset
+	= this_cfa + regs_off + (i * 8) - new_cfa;
     }
-  for (i = 0; i < 16; ++i)
+  for (i = 0; i < 16; i++)
     {
       fs->regs.reg[i + 16].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i + 16].loc.offset =
-	this_cfa + (i * 8) - new_cfa;
+      fs->regs.reg[i + 16].loc.offset
+	= this_cfa + (i * 8) - new_cfa;
     }
   if (fpu_save)
     {
-      for (i = 0; i < 64; ++i)
+      for (i = 0; i < 64; i++)
 	{
 	  if (i > 32 && (i & 0x1))
 	    continue;
 	  fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[i + 32].loc.offset =
-	    (fpu_save + (i * 4)) - new_cfa;
+	  fs->regs.reg[i + 32].loc.offset
+	    = fpu_save + (i * 4) - new_cfa;
 	}
     }
-  /* Stick return address into %g0, same trick Alpha uses.  */
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
-  fs->regs.reg[0].loc.offset =
-    this_cfa + (regs_off + (16 * 8) + 8) - new_cfa;
+
+  /* State the rules to find the kernel's code "return address", which is
+     the address of the active instruction when the signal was caught.
+     On the SPARC, since RETURN_ADDR_OFFSET (essentially 8) is defined, we
+     need to preventively subtract it from the purported return address.  */
+  ra_location = this_cfa + regs_off + 17 * 8;
+  shifted_ra_location = this_cfa + regs_off + 19 * 8; /* Y register */
+  *(long *)shifted_ra_location = *(long *)ra_location - 8;
   fs->retaddr_column = 0;
+  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.reg[0].loc.offset = shifted_ra_location - new_cfa;
+  fs->signal_frame = 1;
+
   return _URC_NO_REASON;
 }
 
@@ -94,19 +108,23 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
 			    _Unwind_FrameState *fs)
 {
   unsigned int *pc = context->ra;
-  int new_cfa, i, oldstyle;
+  int this_cfa = (int) context->cfa;
+  int new_cfa, ra_location, shifted_ra_location;
   int regs_off, fpu_save_off;
-  int fpu_save, this_cfa;
+  int fpu_save;
+  int old_style, i;
 
-  if (pc[1] != 0x91d02010)		/* ta 0x10 */
+  if (pc[1] != 0x91d02010)	/* ta 0x10 */
     return _URC_END_OF_STACK;
-  if (pc[0] == 0x821020d8)		/* mov NR_sigreturn, %g1 */
-    oldstyle = 1;
+
+  if (pc[0] == 0x821020d8)	/* mov NR_sigreturn, %g1 */
+    old_style = 1;
   else if (pc[0] == 0x82102065)	/* mov NR_rt_sigreturn, %g1 */
-    oldstyle = 0;
+    old_style = 0;
   else
     return _URC_END_OF_STACK;
-  if (oldstyle)
+
+  if (old_style)
     {
       regs_off = 96;
       fpu_save_off = regs_off + (4 * 4) + (16 * 4);
@@ -116,39 +134,51 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
       regs_off = 96 + 128;
       fpu_save_off = regs_off + (4 * 4) + (16 * 4) + (2 * 4);
     }
-  this_cfa = (int) context->cfa;
-  new_cfa = *(int *)((context->cfa) + (regs_off+(4*4)+(14 * 4)));
-  fpu_save = *(int *)((this_cfa) + (fpu_save_off));
+
+  new_cfa = *(int *)(this_cfa + regs_off + (4 * 4) + (14 * 4));
+  fpu_save = *(int *)(this_cfa + fpu_save_off);
   fs->regs.cfa_how = CFA_REG_OFFSET;
-  fs->regs.cfa_reg = 14;
-  fs->regs.cfa_offset = new_cfa - (int) context->cfa;
-  for (i = 1; i < 16; ++i)
+  fs->regs.cfa_reg = __builtin_dwarf_sp_column ();
+  fs->regs.cfa_offset = new_cfa - this_cfa;
+
+  for (i = 1; i < 16; i++)
     {
-      if (i == 14)
+      /* We never restore %sp as everything is purely CFA-based.  */
+      if ((unsigned int) i == __builtin_dwarf_sp_column ())
 	continue;
+
       fs->regs.reg[i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i].loc.offset =
-	this_cfa + (regs_off+(4 * 4)+(i * 4)) - new_cfa;
+      fs->regs.reg[i].loc.offset
+	= this_cfa + regs_off + (4 * 4) + (i * 4) - new_cfa;
     }
-  for (i = 0; i < 16; ++i)
+  for (i = 0; i < 16; i++)
     {
       fs->regs.reg[i + 16].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i + 16].loc.offset =
-	this_cfa + (i * 4) - new_cfa;
+      fs->regs.reg[i + 16].loc.offset
+	= this_cfa + (i * 4) - new_cfa;
     }
   if (fpu_save)
     {
-      for (i = 0; i < 32; ++i)
+      for (i = 0; i < 32; i++)
 	{
 	  fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[i + 32].loc.offset =
-	    (fpu_save + (i * 4)) - new_cfa;
+	  fs->regs.reg[i + 32].loc.offset
+	    = fpu_save + (i * 4) - new_cfa;
 	}
     }
-  /* Stick return address into %g0, same trick Alpha uses.  */
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
-  fs->regs.reg[0].loc.offset = this_cfa+(regs_off+4)-new_cfa;
+
+  /* State the rules to find the kernel's code "return address", which is
+     the address of the active instruction when the signal was caught.
+     On the SPARC, since RETURN_ADDR_OFFSET (essentially 8) is defined, we
+     need to preventively subtract it from the purported return address.  */
+  ra_location = this_cfa + regs_off + 4;
+  shifted_ra_location = this_cfa + regs_off + 3 * 4; /* Y register */
+  *(int *)shifted_ra_location = *(int *)ra_location - 8;
   fs->retaddr_column = 0;
+  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.reg[0].loc.offset = shifted_ra_location - new_cfa;
+  fs->signal_frame = 1;
+
   return _URC_NO_REASON;
 }
 

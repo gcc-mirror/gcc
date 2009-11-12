@@ -525,8 +525,7 @@ __gnat_install_handler (void)
 /* GNU/Linux Section */
 /*********************/
 
-#elif defined (linux) && (defined (i386) || defined (__x86_64__) \
-                          || defined (__ia64__) || defined (__powerpc__))
+#elif defined (linux)
 
 #include <signal.h>
 

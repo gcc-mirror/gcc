@@ -1,7 +1,14 @@
+2009-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+            Laurent GUERBY  <laurent@guerby.net>
+
+	* config/sparc/linux-unwind.h (sparc64_fallback_frame_state): Tidy.
+	Do not schedule an %sp restore.  Compensate for RETURN_ADDR_OFFSET.
+	(sparc_fallback_frame_state): Tidy.  Compensate for RETURN_ADDR_OFFSET.
+
 2009-11-12  Jan Hubicka  <jh@suse.cz>
 
-	* ipa.c (function_and_variable_visibility): Fix my accidentail commit and
-	clear DECL_COMMON on localized declarations.
+	* ipa.c (function_and_variable_visibility): Fix my accidentail commit
+	and clear DECL_COMMON on localized declarations.
 
 2009-11-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
