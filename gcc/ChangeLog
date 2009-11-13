@@ -1,3 +1,8 @@
+2009-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (function_and_variable_visibility): Clear COMDAT on functions
+	when to PUBLIC is set.
+
 2009-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/42029
