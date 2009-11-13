@@ -1,8 +1,14 @@
+2009-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42029
+	* gimplify.c (gimplify_omp_atomic): Set DECL_GIMPLE_REG_P on
+	tmp_load if needed.
+
 2009-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41900
-	(*call_pop_1, *call_1, *call_value_pop_1, *call_value_1): Use "lsm"
-	as operand 1 constraint.
+	* config/i386/i386.md (*call_pop_1, *call_1, *call_value_pop_1,
+	*call_value_1): Use "lsm" as operand 1 constraint.
 	* config/i386/predicates.md (call_insn_operand): Depend on
 	index_register_operand to avoid %esp register.
 
