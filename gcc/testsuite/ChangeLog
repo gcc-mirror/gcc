@@ -1,5 +1,9 @@
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/27425
+	PR c++/34274
+	* g++.dg/template/arg7.C: New.
+
 	PR c++/29363
 	* g++.dg/template/error43.C: New.
 
