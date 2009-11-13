@@ -2038,7 +2038,6 @@ objc_add_static_instance (tree constructor, tree class_decl)
   sprintf (buf, "_OBJC_INSTANCE_%d", num_static_inst++);
   decl = build_decl (input_location,
 		     VAR_DECL, get_identifier (buf), class_decl);
-  DECL_COMMON (decl) = 1;
   TREE_STATIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   TREE_USED (decl) = 1;
