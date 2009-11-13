@@ -4269,12 +4269,8 @@ stack_protect_prologue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx x, y;
 
-  /* Avoid expand_expr here, because we don't want guard_decl pulled
-     into registers unless absolutely necessary.  And we know that
-     crtl->stack_protect_guard is a local stack slot, so this skips
-     all the fluff.  */
-  x = validize_mem (DECL_RTL (crtl->stack_protect_guard));
-  y = validize_mem (DECL_RTL (guard_decl));
+  x = expand_normal (crtl->stack_protect_guard);
+  y = expand_normal (guard_decl);
 
   /* Allow the target to copy from Y to X without leaking Y into a
      register.  */
@@ -4307,12 +4303,8 @@ stack_protect_epilogue (void)
   rtx label = gen_label_rtx ();
   rtx x, y, tmp;
 
-  /* Avoid expand_expr here, because we don't want guard_decl pulled
-     into registers unless absolutely necessary.  And we know that
-     crtl->stack_protect_guard is a local stack slot, so this skips
-     all the fluff.  */
-  x = validize_mem (DECL_RTL (crtl->stack_protect_guard));
-  y = validize_mem (DECL_RTL (guard_decl));
+  x = expand_normal (crtl->stack_protect_guard);
+  y = expand_normal (guard_decl);
 
   /* Allow the target to compare Y with X without leaking either into
      a register.  */
