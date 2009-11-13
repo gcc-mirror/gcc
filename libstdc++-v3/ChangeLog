@@ -1,5 +1,20 @@
 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/type_traits (declval): Add, per DR 1255.
+	(__is_convertible_helper, common_type): Use it.
+	* include/bits/move.h: Mention std::declval.
+	* testsuite/20_util/declval/requirements/1.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/common_type/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/common_type/requirements/
+	explicit_instantiation.cc: Extend.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_algobase.h: Include the full <utility>, per
 	UK-300.
 	* include/bits/stl_algo.h: Tweak includes.

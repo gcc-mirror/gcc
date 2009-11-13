@@ -240,6 +240,9 @@ namespace std
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
     { };
 
+  template<typename _Tp>
+    typename add_rvalue_reference<_Tp>::type declval();
+
   // Relationships between types.
   template<typename _From, typename _To,
 	   bool = (is_void<_From>::value || is_void<_To>::value
@@ -255,10 +258,9 @@ namespace std
     private:
       static __one __test(_To);
       static __two __test(...);
-      static typename add_rvalue_reference<_From>::type __makeFrom();
 
     public:
-      static const bool __value = sizeof(__test(__makeFrom())) == 1;
+      static const bool __value = sizeof(__test(declval<_From>())) == 1;
     };
 
   // XXX FIXME
@@ -556,23 +558,11 @@ namespace std
 
   template<typename _Tp>
     struct common_type<_Tp>
-    {
-      static_assert(sizeof(_Tp) > 0, "must be complete type");
-      typedef _Tp type;
-    };
+    { typedef _Tp type; };
 
   template<typename _Tp, typename _Up>
-    class common_type<_Tp, _Up>
-    {
-      static_assert(sizeof(_Tp) > 0, "must be complete type");
-      static_assert(sizeof(_Up) > 0, "must be complete type");
-
-      static _Tp&& __t();
-      static _Up&& __u();
-
-    public:
-      typedef decltype(true ? __t() : __u()) type;
-    };
+    struct common_type<_Tp, _Up>
+    { typedef decltype(true ? declval<_Tp>() : declval<_Up>()) type; };
 
   template<typename _Tp, typename _Up, typename... _Vp>
     struct common_type<_Tp, _Up, _Vp...>
@@ -580,11 +570,26 @@ namespace std
       typedef typename
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
-
   // @} group metaprogramming
+
+  /// declval
+  template<typename _Tp>
+    struct __declval_protector
+    {
+      static const bool __stop = false;
+      static typename add_rvalue_reference<_Tp>::type __delegate();
+    };
+
+  template<typename _Tp>
+    inline typename add_rvalue_reference<_Tp>::type
+    declval()
+    {
+      static_assert(__declval_protector<_Tp>::__stop,
+		    "declval() must not be used!");
+      return __declval_protector<_Tp>::__delegate();
+    }
 }
 
 #endif  // __GXX_EXPERIMENTAL_CXX0X__
 
-#endif  // _GLIBCXX_TYPE_TRAITS 
-
+#endif  // _GLIBCXX_TYPE_TRAITS
