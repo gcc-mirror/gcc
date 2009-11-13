@@ -5212,6 +5212,34 @@
 	mode.  Use it to convert addresses to other modes.  Accept
 	ptr_mode addresses.
 
+2009-09-23  Dodji Seketeli <dodji@redhat.com>
+
+	PR debug/41065
+	* function.h (types_used_by_vars_hash): Declare new hash table.
+	(types_used_by_vars_eq, types_used_by_var_decl_insert): Declare
+	equality and hash function for the hash table.
+	(types_used_by_cur_var_decl): Declare a new global chained list.
+	(types_used_by_var_decl_insert): Declare new function.
+	* function.c (types_used_by_vars_hash): Define the hashtable ...
+	(types_used_by_vars_eq, types_used_by_vars_do_hash): ... as well as
+	its equality and hash functions.
+	(hash_types_used_by_vars_entry): New hash helper.
+	(types_used_by_cur_var_decl): Define the global chained list.
+	(used_types_insert): Update the list of types used by the global
+	variable being parsed.
+	(types_used_by_var_decl_insert): Define new function.
+	* c-common.h (record_types_used_by_current_var_decl): Declare ...
+	* c-common.c (record_types_used_by_current_var_decl): ... new
+	function.
+	* c-decl.c (finish_decl): Record the types used by the global
+	variable declaration we've just parsed.
+	* dwarf2out.c (premark_used_types): Insert a new line between
+	comment and function.
+	(premark_used_types_helper): Fix comment.
+	(premark_types_used_by_global_vars_helper,
+	premark_types_used_by_global_vars): New functions.
+	(prune_unused_types): Do not prune types used by global variables.
+
 2009-09-23  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (ao_ref_from_mem): Correct for negative MEM_OFFSET
