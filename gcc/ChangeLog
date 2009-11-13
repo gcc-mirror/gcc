@@ -1,5 +1,11 @@
 2009-11-13  Andrey Belevantsev  <abel@ispras.ru>
 
+        PR rtl-optimization/41697
+	* sel-sched-ir.c (fallthru_bb_of_jump): Bail out when a block with 
+	a conditional jump has a single successor. 
+
+2009-11-13  Andrey Belevantsev  <abel@ispras.ru>
+
 	* sched-deps.c (init_deps): New parameter lazy_reg_last.  Don't
 	allocate reg_last when in case lazy_reg_last is true.
 	(init_deps_reg_last): New.
