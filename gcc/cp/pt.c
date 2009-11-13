@@ -6371,7 +6371,6 @@ lookup_template_class (tree d1,
 
 	  type_decl = create_implicit_typedef (DECL_NAME (gen_tmpl), t);
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
-	  TYPE_STUB_DECL (t) = type_decl;
 	  DECL_SOURCE_LOCATION (type_decl)
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
 	}

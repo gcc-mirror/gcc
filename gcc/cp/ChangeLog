@@ -1,5 +1,11 @@
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/29363
+	* decl.c (create_implicit_typedef): Set TYPE_STUB_DECL here.
+	(cxx_init_decl_processing): Not here.
+	* name-lookup.c (pushtag): Or here.
+	* pt.c (lookup_template_class): Or here.
+
 	PR c++/35075
 	* pt.c (convert_nontype_argument): Give helpful error about
 	reference variable argument to reference template parameter.

@@ -5288,7 +5288,6 @@ pushtag (tree name, tree type, tag_scope scope)
 
   decl = TYPE_NAME (type);
   gcc_assert (TREE_CODE (decl) == TYPE_DECL);
-  TYPE_STUB_DECL (type) = decl;
 
   /* Set type visibility now if this is a forward declaration.  */
   TREE_PUBLIC (decl) = 1;
