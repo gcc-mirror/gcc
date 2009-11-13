@@ -328,7 +328,7 @@ PERSONALITY_FUNCTION (int version,
 #ifdef HAVE_GETIPINFO
   ip = _Unwind_GetIPInfo (context, &ip_before_insn);
 #else
-  ip = _Unwind_GetIP (context) - 1;
+  ip = _Unwind_GetIP (context);
 #endif
   if (! ip_before_insn)
     --ip;
