@@ -14191,10 +14191,17 @@ cp_parser_direct_declarator (cp_parser* parser,
 					      /*only_current_p=*/false);
 		/* If that failed, the declarator is invalid.  */
 		if (TREE_CODE (type) == TYPENAME_TYPE)
-		  error_at (declarator_id_start_token->location,
-			    "%<%T::%E%> is not a type",
-			    TYPE_CONTEXT (qualifying_scope),
-			    TYPE_IDENTIFIER (qualifying_scope));
+		  {
+		    if (typedef_variant_p (type))
+		      error_at (declarator_id_start_token->location,
+				"cannot define member of dependent typedef "
+				"%qT", type);
+		    else
+		      error_at (declarator_id_start_token->location,
+				"%<%T::%E%> is not a type",
+				TYPE_CONTEXT (qualifying_scope),
+				TYPE_IDENTIFIER (qualifying_scope));
+		  }
 		qualifying_scope = type;
 	      }
 

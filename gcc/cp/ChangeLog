@@ -1,3 +1,12 @@
+2009-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/11987
+	* parser.c (cp_parser_direct_declarator): Give helpful error about
+	trying to define member of a dependent typedef.
+	* pt.c (resolve_typename_type): Don't resolve a typedef typename.
+	* tree.c (typedef_variant_p): New.
+	* cp-tree.h: Declare it.
+
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27078

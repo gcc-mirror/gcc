@@ -17689,6 +17689,9 @@ resolve_typename_type (tree type, bool only_current_p)
      to look inside it.  */
   if (only_current_p && !currently_open_class (scope))
     return type;
+  /* If this is a typedef, we don't want to look inside (c++/11987).  */
+  if (typedef_variant_p (type))
+    return type;
   /* If SCOPE isn't the template itself, it will not have a valid
      TYPE_FIELDS list.  */
   if (same_type_p (scope, CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope)))
