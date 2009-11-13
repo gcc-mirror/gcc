@@ -36,7 +36,7 @@ load_lib target-libpath.exp
 load_lib lto.exp
 
 g++_init
-lto_init
+lto_init no-mathlib
 
 # Define an identifier for use with this suite to avoid name conflicts
 # with other lto tests running at the same time.
@@ -56,3 +56,5 @@ foreach src [lsort [find $srcdir/$subdir *_0.C]] {
 
     lto-execute $src $sid
 }
+
+lto_finish

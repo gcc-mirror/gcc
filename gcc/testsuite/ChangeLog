@@ -1,3 +1,10 @@
+2009-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/42001
+	* g++.dg/lto/lto.exp: Pass no-mathlib to lto_init.  Call
+	lto_finish at the end.
+	* gfortran.dg/lto/lto.exp: Ditto.
+
 2009-11-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39560
@@ -32,16 +39,15 @@
 
 	* g++.dg/torture/pushpop_macro.C: New testcase.
 	* gcc.c-torture/execute/pushpop_macro.c: New testcase.
-	* gcc.dg/cpp/pragma-pop_macro-1.c: Allow test for all
-	targets.
+	* gcc.dg/cpp/pragma-pop_macro-1.c: Allow test for all targets.
 
-2009-11-11  Jon Beniston <jon@beniston.com>
+2009-11-11  Jon Beniston  <jon@beniston.com>
 
-	* lib/target-supports.exp (check_profiling_available): lm32 target 
+	* lib/target-supports.exp (check_profiling_available): lm32 target
 	  doesn't support profiling.
 	* gcc.dg/20020312-2.c: Add lm32 support.
-	* g++.dg/other/packed1.C: Expect to fail on lm32.        
-	* g++.old-deja/g++.jason/thunk3.C: Likewise.                 
+	* g++.dg/other/packed1.C: Expect to fail on lm32.
+	* g++.old-deja/g++.jason/thunk3.C: Likewise.
 
 2009-11-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
@@ -158,10 +164,9 @@
 
 	* g++.dg/plugin/pragma_plugin-test-1.C: new testcase for
 	PLUGIN_PRAGMAS.
-	* g++.dg/plugin/pragma_plugin.c: new test plugin for
-	PLUGIN_PRAGMAS.
-	* g++.dg/plugin/plugin.exp (plugin_test_list): Add pragma_plugin.c and
-	pragma_plugin-test-1.C.
+	* g++.dg/plugin/pragma_plugin.c: new test plugin for PLUGIN_PRAGMAS.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add pragma_plugin.c
+	and pragma_plugin-test-1.C.
 
 2009-11-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
@@ -280,7 +285,7 @@
 	* gcc.target/i386/xop-shift2-vector.c: Ditto.
 	* gcc.target/i386/xop-shift3-vector.c: Ditto.
 	* gcc.target/i386/i386.exp:  Add check_effective_target_xop.
-	* gcc.target/i386/sse-12.c: Update with new compile options to 
+	* gcc.target/i386/sse-12.c: Update with new compile options to
 	activate and check xopintrin.h intrinsic file.
 	* gcc.target/i386/sse-13.c: Ditto.
 	* gcc.target/i386/sse-14.c: Ditto.
