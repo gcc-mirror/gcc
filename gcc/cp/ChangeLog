@@ -1,5 +1,9 @@
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/35075
+	* pt.c (convert_nontype_argument): Give helpful error about
+	reference variable argument to reference template parameter.
+
 	PR c++/21008, DR 515
 	* semantics.c (finish_non_static_data_member): Don't check
 	derivation in a template.

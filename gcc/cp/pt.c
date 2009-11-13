@@ -4927,6 +4927,27 @@ convert_nontype_argument (tree type, tree expr)
 	 shall be one of: [...]
 
 	 -- the address of an object or function with external linkage.  */
+      if (TREE_CODE (expr) == INDIRECT_REF
+	  && TYPE_REF_OBJ_P (TREE_TYPE (TREE_OPERAND (expr, 0))))
+	{
+	  expr = TREE_OPERAND (expr, 0);
+	  if (DECL_P (expr))
+	    {
+	      error ("%q#D is not a valid template argument for type %qT "
+		     "because a reference variable does not have a constant "
+		     "address", expr, type);
+	      return NULL_TREE;
+	    }
+	}
+
+      if (!DECL_P (expr))
+	{
+	  error ("%qE is not a valid template argument for type %qT "
+		 "because it is not an object with external linkage",
+		 expr, type);
+	  return NULL_TREE;
+	}
+
       if (!DECL_EXTERNAL_LINKAGE_P (expr))
 	{
 	  error ("%qE is not a valid template argument for type %qT "
