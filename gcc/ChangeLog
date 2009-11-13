@@ -1,10 +1,15 @@
+2009-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (call_value): Fix comment.
+	(sibcall_value): Ditto.
+
 2009-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/linux-unwind.h (x86_frob_update_context): New function.
 	(MD_FROB_UPDATE_CONTEXT): Define.
 
 2009-11-12  Eric Botcazou  <ebotcazou@adacore.com>
-            Laurent GUERBY  <laurent@guerby.net>
+	    Laurent GUERBY  <laurent@guerby.net>
 
 	* config/sparc/linux-unwind.h (sparc64_fallback_frame_state): Tidy.
 	Do not schedule an %sp restore.  Compensate for RETURN_ADDR_OFFSET.
@@ -39,8 +44,8 @@
 	* cgraph.h (varpool_node_name): Declare.
 	* cgraphunit.c (process_function_and_variable_attributes): Set
 	force_output flag on used variables.
-	* ipa.c (function_and_variable_visibility): Dump externally visible and
-	needed variables.
+	* ipa.c (function_and_variable_visibility): Dump externally visible
+	and needed variables.
 	* varpool.c (varpool_node_name): Export.
 	(decide_is_variable_needed): Check COMDAT for externally visible vars;
 	ignore needed flag.
@@ -10124,7 +10129,7 @@
 	* arm.c (aapcs_vfp_is_call_or_return_candidate): Change base_mode
 	to pointer to enum machine_mode.  Update all callers as needed.
 
-2009-08-21 Uros Bizjak <ubizjak@gmail.com>
+2009-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (exception_receiver): Emit alternative
 	GP load sequence if flag_reorder_blocks_and_partition is set.
