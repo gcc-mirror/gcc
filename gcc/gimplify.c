@@ -6231,6 +6231,8 @@ gimplify_omp_atomic (tree *expr_p, gimple_seq *pre_p)
   tree tmp_load;
 
    tmp_load = create_tmp_var (type, NULL);
+   if (TREE_CODE (type) == COMPLEX_TYPE || TREE_CODE (type) == VECTOR_TYPE)
+     DECL_GIMPLE_REG_P (tmp_load) = 1;
    if (goa_stabilize_expr (&rhs, pre_p, addr, tmp_load) < 0)
      return GS_ERROR;
 
