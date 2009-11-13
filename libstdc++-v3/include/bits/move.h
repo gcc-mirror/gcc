@@ -35,7 +35,7 @@
 #include <bits/concept_check.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <type_traits>
+#include <type_traits> // Brings in std::declval too.
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -80,6 +80,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t)
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
+
+  /// declval, defined in <type_traits>.
 
 _GLIBCXX_END_NAMESPACE
 
