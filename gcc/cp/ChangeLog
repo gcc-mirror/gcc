@@ -1,5 +1,9 @@
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/21008, DR 515
+	* semantics.c (finish_non_static_data_member): Don't check
+	derivation in a template.
+
 	PR c++/11987
 	* parser.c (cp_parser_direct_declarator): Give helpful error about
 	trying to define member of a dependent typedef.
