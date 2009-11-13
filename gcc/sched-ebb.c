@@ -478,7 +478,7 @@ schedule_ebb (rtx head, rtx tail)
       init_deps_global ();
 
       /* Compute dependencies.  */
-      init_deps (&tmp_deps);
+      init_deps (&tmp_deps, false);
       sched_analyze (&tmp_deps, head, tail);
       free_deps (&tmp_deps);
 

@@ -3152,7 +3152,7 @@ sched_rgn_compute_dependencies (int rgn)
       /* Initializations for region data dependence analysis.  */
       bb_deps = XNEWVEC (struct deps, current_nr_blocks);
       for (bb = 0; bb < current_nr_blocks; bb++)
-	init_deps (bb_deps + bb);
+	init_deps (bb_deps + bb, false);
 
       /* Initialize bitmap used in add_branch_dependences.  */
       insn_referenced = sbitmap_alloc (sched_max_luid);

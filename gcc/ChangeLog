@@ -1,3 +1,26 @@
+2009-11-13  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sched-deps.c (init_deps): New parameter lazy_reg_last.  Don't
+	allocate reg_last when in case lazy_reg_last is true.
+	(init_deps_reg_last): New.
+	(free_deps): When max_reg is 0, this context is already freed.
+	* sched-int.h (init_deps_reg_last): Export.
+	(init_deps): Update prototype.
+	* sched-ebb.c (schedule_ebb): Update the call to init_deps.
+	* sched-rgn.c (sched_rgn_compute_dependencies): Likewise.
+	* ddg.c (build_intra_loop_deps): Likewise.
+	* sel-sched-ir.c (copy_deps_context, create_deps_context,
+	reset_deps_context, deps_init_id): Likewise.
+	(init_first_time_insn_data): Lazy allocate INSN_DEPS_CONTEXT.
+	(free_data_for_scheduled_insn): New, break down from ...
+	(free_first_time_insn_data): ... here.
+	(has_dependence_p): Allocate reg_last now, when it is needed.
+	(extend_insn_data): When maximal LUID is big enough, allocate
+	per-insn data in smaller chunks.
+	* sel-sched-ir.h (free_data_for_scheduled_insn): Export.
+	* sel-sched.c (update_seqnos_and_stage): Free INSN_DEPS_CONTEXT
+	in scheduled insn. 
+	
 2009-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (call_value): Fix comment.
