@@ -1,3 +1,7 @@
+2009-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exception.cc (PERSONALITY_FUNCTION): Fix oversight.
+
 2009-11-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/38867
