@@ -17926,26 +17926,6 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   dw_die_ref old_die = decl ? lookup_decl_die (decl) : NULL;
   dw_die_ref origin_die;
   int declaration = (DECL_EXTERNAL (decl_or_origin)
-		     /* If DECL is COMDAT and has not actually been
-			emitted, we cannot take its address; there
-			might end up being no definition anywhere in
-			the program.  For example, consider the C++
-			test case:
-
-			  template <class T>
-			  struct S { static const int i = 7; };
-
-			  template <class T>
-			  const int S<T>::i;
-
-			  int f() { return S<int>::i; }
-
-			Here, S<int>::i is not DECL_EXTERNAL, but no
-			definition is required, so the compiler will
-			not emit a definition.  */
-		     || (TREE_CODE (decl_or_origin) == VAR_DECL
-			 && DECL_COMDAT (decl_or_origin)
-			 && !TREE_ASM_WRITTEN (decl_or_origin))
 		     || class_or_namespace_scope_p (context_die));
 
   if (!origin)
@@ -18059,8 +18039,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
      and if we already emitted a DIE for it, don't emit a second
      DIE for it again.  */
   if (old_die
-      && declaration
-      && old_die->die_parent == context_die)
+      && declaration)
     return;
 
   /* For static data members, the declaration in the class is supposed

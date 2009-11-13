@@ -1,3 +1,9 @@
+2009-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR debug/26965
+	* dwarf2out.c (gen_variable_die): Don't worry about DECL_COMDAT.
+	Don't emit a second declaration at any scope.
+
 2009-11-13  Andrey Belevantsev  <abel@ispras.ru>
 
         PR rtl-optimization/41697
