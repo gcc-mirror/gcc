@@ -1,3 +1,8 @@
+2009-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/linux-unwind.h (x86_frob_update_context): New function.
+	(MD_FROB_UPDATE_CONTEXT): Define.
+
 2009-11-12  Eric Botcazou  <ebotcazou@adacore.com>
             Laurent GUERBY  <laurent@guerby.net>
 
