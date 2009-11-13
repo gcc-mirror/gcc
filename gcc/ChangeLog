@@ -34,18 +34,18 @@
 	Allocate a du_head structure as well as a du_chain when creating a
 	new chain.  Modified other code to match new data structures.
 
-2009-11-12 Jan Hubicka  <jh@suse.cz>
+2009-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (varpool_node_name): Declare.
-	* cgraphunit.c (process_function_and_variable_attributes): Set force_output
-	flag on used variables.
-	* ipa.c (function_and_variable_visibility): Dump externally visible and needed
-	variables.
+	* cgraphunit.c (process_function_and_variable_attributes): Set
+	force_output flag on used variables.
+	* ipa.c (function_and_variable_visibility): Dump externally visible and
+	needed variables.
 	* varpool.c (varpool_node_name): Export.
 	(decide_is_variable_needed): Check COMDAT for externally visible vars;
 	ignore needed flag.
 
-2009-11-12 Uros Bizjak <ubizjak@gmail.com>
+2009-11-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/41930
 	* simplify-rtx.c (simplify_replace_fn_rtx) <case 'e'>: Skip
@@ -114,7 +114,7 @@
 	* doc/extend.texi (Function Attributes): Mentions that plugin can
 	provide their attributes.
 
-2009-11-11  Jon Beniston <jon@beniston.com>
+2009-11-11  Jon Beniston  <jon@beniston.com>
 
 	* config.gcc: Add lm32 elf and uclinux targets.
 	* config/lm32: New directory.
@@ -279,7 +279,7 @@
 	* exec-tool.in (ORIGINAL_PLUGIN_LD_FOR_TARGET): New.
 	(collect-ld): Use ORIGINAL_PLUGIN_LD_FOR_TARGET for -plugin.
 
-2009-11-08  Jonathan Gray <jsg@openbsd.org>
+2009-11-08  Jonathan Gray  <jsg@openbsd.org>
 
 	* config/openbsd-stdint.h: Change to reflect what
 	c_common_nodes_and_builtins expects.
