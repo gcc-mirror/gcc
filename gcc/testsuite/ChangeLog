@@ -1,3 +1,9 @@
+2009-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/11987
+	* g++.dg/parse/typename11.C: New.
+	* g++.dg/template/crash48.C: Adjust.
+
 2009-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/42001
