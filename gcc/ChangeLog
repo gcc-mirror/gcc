@@ -1,3 +1,9 @@
+2009-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42029
+	* gimplify.c (gimplify_omp_atomic): Set DECL_GIMPLE_REG_P on
+	tmp_load if needed.
+
 2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	Backported from trunk
