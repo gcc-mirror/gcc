@@ -3150,6 +3150,8 @@ expand_template_argument_pack (tree args)
   for (in_arg = 0; in_arg < nargs; ++in_arg)
     {
       tree arg = TREE_VEC_ELT (args, in_arg);
+      if (arg == NULL_TREE)
+	return args;
       if (ARGUMENT_PACK_P (arg))
         {
           int num_packed = TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg));
@@ -5472,7 +5474,7 @@ convert_template_argument (tree parm,
 		      error ("type/value mismatch at argument %d in "
 			     "template parameter list for %qD",
 			     i + 1, in_decl);
-		      error ("  expected a template of type %qD, got %qD",
+		      error ("  expected a template of type %qD, got %qT",
 			     parm, orig_arg);
 		    }
 

@@ -1,5 +1,10 @@
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/27425
+	PR c++/34274
+	* pt.c (expand_template_argument_pack): Handle null arg gracefully.
+	(convert_template_argument): Use %T for type.
+
 	PR c++/29363
 	* decl.c (create_implicit_typedef): Set TYPE_STUB_DECL here.
 	(cxx_init_decl_processing): Not here.
