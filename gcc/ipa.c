@@ -292,6 +292,12 @@ function_and_variable_visibility (bool whole_program)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
+      /* C++ FE on lack of COMDAT support create local COMDAT functions
+	 (that ought to be shared but can not due to object format
+	 limitations).  It is neccesary to keep the flag to make rest of C++ FE
+	 happy.  Clear the flag here to avoid confusion in middle-end.  */
+      if (DECL_COMDAT (node->decl) && !TREE_PUBLIC (node->decl))
+        DECL_COMDAT (node->decl) = 0;
       gcc_assert ((!DECL_WEAK (node->decl) && !DECL_COMDAT (node->decl))
       	          || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
       if (cgraph_externally_visible_p (node, whole_program))
