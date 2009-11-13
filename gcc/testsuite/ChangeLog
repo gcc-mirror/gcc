@@ -1,5 +1,8 @@
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/29363
+	* g++.dg/template/error43.C: New.
+
 	PR debug/26965
 	* g++.dg/debug/dwarf2/static-data-member2.C: New.
 

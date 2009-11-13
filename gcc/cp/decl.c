@@ -849,6 +849,7 @@ create_implicit_typedef (tree name, tree type)
      amongst these.  */
   SET_DECL_IMPLICIT_TYPEDEF_P (decl);
   TYPE_NAME (type) = decl;
+  TYPE_STUB_DECL (type) = decl;
 
   return decl;
 }
@@ -3456,7 +3457,6 @@ cxx_init_decl_processing (void)
     bad_alloc_decl
       = create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
     DECL_CONTEXT (bad_alloc_decl) = current_namespace;
-    TYPE_STUB_DECL (bad_alloc_type_node) = bad_alloc_decl;
     pop_namespace ();
 
     ptr_ftype_sizetype
