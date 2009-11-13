@@ -113,42 +113,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
   template<typename _Tp, typename _Alloc>
-    typename _Fwd_list_base<_Tp, _Alloc>::_Node_base::_Pointer
+    void
     _Fwd_list_base<_Tp, _Alloc>::
     _M_erase_after(typename _Node_base::_Pointer __pos)
     {
-      typename _Node::_Pointer __curr 
+      typename _Node::_Pointer __curr
         = __static_pointer_cast<typename _Node::_Pointer>(__pos->_M_next);
-      if (__curr)
-        {
-          typename _Node_base::_Pointer __next = __curr->_M_next;
-          __pos->_M_next = __next;
-          _M_get_Node_allocator().destroy(__curr);
-          _M_put_node(__curr);
-        }
-      return __pos;
+      __pos->_M_next = __curr->_M_next;
+      _M_get_Node_allocator().destroy(__curr);
+      _M_put_node(__curr);
     }
 
   template<typename _Tp, typename _Alloc>
-    typename _Fwd_list_base<_Tp, _Alloc>::_Node_base::_Pointer
+    void
     _Fwd_list_base<_Tp, _Alloc>::
     _M_erase_after(typename _Node_base::_Pointer __pos, 
                    typename _Node_base::_Pointer __last)
     {
       typename _Node::_Pointer __curr 
         = __static_pointer_cast<typename _Node::_Pointer>(__pos->_M_next);
-      while (__curr)
+      while (__curr != __last)
         {
           typename _Node::_Pointer __temp = __curr;
           __curr = __static_pointer_cast<typename _Node::_Pointer>
                                         (__curr->_M_next);
           _M_get_Node_allocator().destroy(__temp);
           _M_put_node(__temp);
-          __pos->_M_next = __curr;
-          if (__temp == __last)
-            break;
         }
-      return __pos;
+      __pos->_M_next = __last;
     }
   
   // Called by the range constructor to implement [23.1.1]/9

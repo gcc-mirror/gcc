@@ -350,10 +350,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_put_node(typename _Node::_Pointer __p)
       { _M_get_Node_allocator().deallocate(__p, 1); }
 
-      typename _Node_base::_Pointer
+      void
       _M_erase_after(typename _Node_base::_Pointer __pos);
 
-      typename _Node_base::_Pointer
+      void
       _M_erase_after(typename _Node_base::_Pointer __pos, 
                      typename _Node_base::_Pointer __last);
     };
@@ -529,7 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  The forward_list dtor.
        */
       ~forward_list()
-      { _M_erase_after(&this->_M_impl._M_head, 0); }
+      { }
 
       /**
        *  @brief  The %forward_list assignment operator.
@@ -871,7 +871,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
       {
         forward_list __tmp(__n, __val, this->get_allocator());
-        this->splice_after(__pos, std::move(__tmp));
+        splice_after(__pos, std::move(__tmp));
       }
 
       /**
@@ -893,7 +893,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
                      _InputIterator __first, _InputIterator __last)
         {
           forward_list __tmp(__first, __last, this->get_allocator());
-          this->splice_after(__pos, std::move(__tmp));
+          splice_after(__pos, std::move(__tmp));
         }
 
       /**
@@ -913,14 +913,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
       {
         forward_list __tmp(__il, this->get_allocator());
-        this->splice_after(__pos, std::move(__tmp));
+        splice_after(__pos, std::move(__tmp));
       }
 
       /**
        *  @brief  Removes the element pointed to by the iterator following
        *          @c pos.
-       *  @param  pos  Iterator pointing to element to be erased.
-       *  @return  An iterator pointing to the next element (or end()).
+       *  @param  pos  Iterator pointing before element to be erased.
        *
        *  This function will erase the element at the given position and
        *  thus shorten the %forward_list by one.
@@ -932,14 +931,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  is itself a pointer, the pointed-to memory is not touched in
        *  any way.  Managing the pointer is the user's responsibility.
        */
-      iterator
+      void
       erase_after(const_iterator __pos)
       {
         _Node_base* __tmp = __const_pointer_cast<_Node_base*>(__pos._M_node);
-        if (__tmp)
-          return iterator(this->_M_erase_after(__tmp));
-        else
-          return end();
+	this->_M_erase_after(__tmp);
       }
 
       /**
@@ -948,8 +944,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *               erased.
        *  @param  last  Iterator pointing to one past the last element to be
        *                erased.
-       *  @return  An iterator pointing to the element pointed to by @a last
-       *           prior to erasing (or end()).
        *
        *  This function will erase the elements in the range @a
        *  (pos,last) and shorten the %forward_list accordingly.
@@ -961,11 +955,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  pointed-to memory is not touched in any way.  Managing the pointer
        *  is the user's responsibility.
        */
-      iterator
-      erase_after(const_iterator __pos, iterator __last)
+      void
+      erase_after(const_iterator __pos, const_iterator __last)
       {
-        _Node_base* __tmp = __const_pointer_cast<_Node_base*>(__pos._M_node);
-        return iterator(this->_M_erase_after(__tmp, &*__last._M_node));
+        _Node_base* __tmpp = __const_pointer_cast<_Node_base*>(__pos._M_node);
+	_Node_base* __tmpl = __const_pointer_cast<_Node_base*>(__last._M_node);
+        this->_M_erase_after(__tmpp, __tmpl);
       }
 
       /**
@@ -1044,7 +1039,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Insert element from another %forward_list.
        *  @param  pos  Iterator referencing the element to insert after.
        *  @param  list  Source list.
-       *  @param  it  Iterator referencing the element before the element
+       *  @param  i   Iterator referencing the element before the element
        *              to move.
        *
        *  Removes the element in list @a list referenced by @a i and
@@ -1052,10 +1047,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       void
       splice_after(const_iterator __pos, forward_list&& __list,
-                   const_iterator __it)
+                   const_iterator __i)
       {
-	this->splice_after(__pos, std::forward<forward_list>(__list),
-			   __it, __it._M_next());
+	const_iterator __j = __i;
+	++__j;
+	if (__pos == __i || __pos == __j)
+	  return;
+
+	splice_after(__pos, std::move(__list), __i, __j);
       }
 
       /**

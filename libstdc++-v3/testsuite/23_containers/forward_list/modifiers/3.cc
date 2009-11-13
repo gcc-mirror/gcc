@@ -37,8 +37,7 @@ test01()
   ++pos;
   VERIFY(*pos == 1);
 
-  std::forward_list<int>::iterator next = fl.erase_after(pos);
-  VERIFY(*next == 1);
+  fl.erase_after(pos);
 
   VERIFY(*pos == 1);
   ++pos;
@@ -65,12 +64,20 @@ test02()
   ++stop;
   VERIFY(*stop == 4);
 
-  std::forward_list<int>::iterator next = fl.erase_after(pos, stop);
-  VERIFY(*next == 1);
+  fl.erase_after(pos, stop);
 
   VERIFY(*pos == 1);
   ++pos;
-  VERIFY(*pos == 5);
+  VERIFY(*pos == 4);
+  VERIFY(std::distance(fl.begin(), fl.end()) == 8);
+
+  fl.erase_after(pos, fl.end());
+  VERIFY(++pos == fl.end());
+  VERIFY(std::distance(fl.begin(), fl.end()) == 3);
+
+  fl.erase_after(fl.before_begin(), pos);
+  VERIFY(std::distance(fl.begin(), fl.end()) == 0);
+  VERIFY(fl.empty());
 }
 
 int
