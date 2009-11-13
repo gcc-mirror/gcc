@@ -1553,11 +1553,6 @@ static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
 
   /* X86_ARCH_BSWAP: Byteswap was added for 80486.  */
   ~m_386,
-
-  /* X86_ARCH_CALL_ESP: P6 processors will jump to the address after
-     the decrement (so they will execute return address as code).  See
-     Pentium Pro errata 70, Pentium 2 errata A33, Pentium 3 errata E17.  */
-  ~(m_386 | m_486 | m_PENT | m_PPRO),
 };
 
 static const unsigned int x86_accumulate_outgoing_args
