@@ -1,5 +1,33 @@
 2009-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.h (forward_list<>::erase_after):
+	Change signature per N2988, return void; simplify.
+	(_Fwd_list_base<>::_M_erase_after): Likewise return void.
+	(forward_list<>::~forward_list): Do not call _M_erase_after
+	unnecessarily, the base class destructor already does it.
+	(forward_list<>::splice_after(const_iterator position,
+	forward_list&&, const_iterator i): Check position != i and
+	position != ++i.
+	* include/bits/forward_list.tcc (_Fwd_list_base<>::
+	_M_erase_after(typename _Node_base::_Pointer): Simplify.
+	(_Fwd_list_base<>::_M_erase_after(typename _Node_base::_Pointer,
+	typename _Node_base::_Pointer): Fix (remove the correct range
+	of element) and simplify (update __pos->_M_next at the end).
+	* testsuite/23_containers/forward_list/modifiers/3.cc: Adjust
+	and extend.
+	* testsuite/23_containers/forward_list/ext_pointer/
+	modifiers/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Tweak dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2009-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/algorithm: Include <utility>, per UK-300.
 	* include/bits/stl_algobase.h: Don't do it here.
 
