@@ -533,6 +533,22 @@
 			FIRST_PSEUDO_REGISTER, LAST_VIRTUAL_REGISTER));
 })
 
+;; P6 processors will jump to the address after the decrement when %esp
+;; is used as a call operand, so they will execute return address as a code.
+;; See Pentium Pro errata 70, Pentium 2 errata A33 and Pentium 3 errata E17.
+
+(define_predicate "call_register_no_elim_operand"
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (!TARGET_64BIT && op == stack_pointer_rtx)
+    return 0;
+
+  return register_no_elim_operand (op, mode);
+})
+
 ;; Similarly, but include the stack pointer.  This is used to prevent esp
 ;; from being used as an index reg.
 (define_predicate "index_register_operand"
@@ -561,7 +577,7 @@
 ;; Test for a valid operand for a call instruction.
 (define_predicate "call_insn_operand"
   (ior (match_operand 0 "constant_call_address_operand")
-       (ior (match_operand 0 "index_register_operand")
+       (ior (match_operand 0 "call_register_no_elim_operand")
 	    (match_operand 0 "memory_operand"))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
