@@ -523,7 +523,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(plus:DI (sign_extend:DI
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
-		 (match_operand:DI 1 "s_register_operand" "r,0")))
+		 (match_operand:DI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)"
   "#"
@@ -552,7 +552,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(plus:DI (zero_extend:DI
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
-		 (match_operand:DI 1 "s_register_operand" "r,0")))
+		 (match_operand:DI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)"
   "#"
@@ -1015,7 +1015,7 @@
 
 (define_insn "*subdi_di_zesidi"
   [(set (match_operand:DI           0 "s_register_operand" "=&r,&r")
-	(minus:DI (match_operand:DI 1 "s_register_operand"  "?r,0")
+	(minus:DI (match_operand:DI 1 "s_register_operand"  "0,r")
 		  (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))))
    (clobber (reg:CC CC_REGNUM))]
@@ -1027,7 +1027,7 @@
 
 (define_insn "*subdi_di_sesidi"
   [(set (match_operand:DI            0 "s_register_operand" "=&r,&r")
-	(minus:DI (match_operand:DI  1 "s_register_operand"  "r,0")
+	(minus:DI (match_operand:DI  1 "s_register_operand"  "0,r")
 		  (sign_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))))
    (clobber (reg:CC CC_REGNUM))]
@@ -1041,7 +1041,7 @@
   [(set (match_operand:DI            0 "s_register_operand" "=&r,&r")
 	(minus:DI (zero_extend:DI
 		   (match_operand:SI 2 "s_register_operand"  "r,r"))
-		  (match_operand:DI  1 "s_register_operand" "?r,0")))
+		  (match_operand:DI  1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, #0"
@@ -1053,7 +1053,7 @@
   [(set (match_operand:DI            0 "s_register_operand" "=&r,&r")
 	(minus:DI (sign_extend:DI
 		   (match_operand:SI 2 "s_register_operand"   "r,r"))
-		  (match_operand:DI  1 "s_register_operand"  "?r,0")))
+		  (match_operand:DI  1 "s_register_operand"  "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "rsbs\\t%Q0, %Q1, %2\;rsc\\t%R0, %R1, %2, asr #31"
@@ -1222,7 +1222,7 @@
 (define_insn "*arm_mulsi3"
   [(set (match_operand:SI          0 "s_register_operand" "=&r,&r")
 	(mult:SI (match_operand:SI 2 "s_register_operand" "r,r")
-		 (match_operand:SI 1 "s_register_operand" "%?r,0")))]
+		 (match_operand:SI 1 "s_register_operand" "%0,r")))]
   "TARGET_32BIT && !arm_arch6"
   "mul%?\\t%0, %2, %1"
   [(set_attr "insn" "mul")
@@ -1276,7 +1276,7 @@
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
-			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
+			  (match_operand:SI 1 "s_register_operand" "%0,r"))
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r")
 	(mult:SI (match_dup 2) (match_dup 1)))]
@@ -1304,7 +1304,7 @@
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (mult:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r")
-			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
+			  (match_operand:SI 1 "s_register_operand" "%0,r"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r"))]
   "TARGET_ARM && !arm_arch6"
@@ -1332,8 +1332,8 @@
   [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r,&r")
 	(plus:SI
 	  (mult:SI (match_operand:SI 2 "s_register_operand" "r,r,r,r")
-		   (match_operand:SI 1 "s_register_operand" "%r,0,r,0"))
-	  (match_operand:SI 3 "s_register_operand" "?r,r,0,0")))]
+		   (match_operand:SI 1 "s_register_operand" "%0,r,0,r"))
+	  (match_operand:SI 3 "s_register_operand" "r,r,0,0")))]
   "TARGET_32BIT && !arm_arch6"
   "mla%?\\t%0, %2, %1, %3"
   [(set_attr "insn" "mla")
@@ -1357,8 +1357,8 @@
 	(compare:CC_NOOV
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r,r,r,r")
-		   (match_operand:SI 1 "s_register_operand" "%r,0,r,0"))
-		  (match_operand:SI 3 "s_register_operand" "?r,r,0,0"))
+		   (match_operand:SI 1 "s_register_operand" "%0,r,0,r"))
+		  (match_operand:SI 3 "s_register_operand" "r,r,0,0"))
 	 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r,&r")
 	(plus:SI (mult:SI (match_dup 2) (match_dup 1))
@@ -1391,7 +1391,7 @@
 	(compare:CC_NOOV
 	 (plus:SI (mult:SI
 		   (match_operand:SI 2 "s_register_operand" "r,r,r,r")
-		   (match_operand:SI 1 "s_register_operand" "%r,0,r,0"))
+		   (match_operand:SI 1 "s_register_operand" "%0,r,0,r"))
 		  (match_operand:SI 3 "s_register_operand" "?r,r,0,0"))
 	 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r,&r,&r"))]
@@ -1571,7 +1571,7 @@
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI
-	   (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%r,0"))
+	   (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%0,r"))
 	   (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r,r")))
 	  (const_int 32))))
    (clobber (match_scratch:SI 3 "=&r,&r"))]
@@ -1615,7 +1615,7 @@
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI
-	   (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%r,0"))
+	   (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%0,r"))
 	   (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r,r")))
 	  (const_int 32))))
    (clobber (match_scratch:SI 3 "=&r,&r"))]
@@ -1870,7 +1870,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (zero_extend:DI
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "?r,0")))]
+		(match_operand:DI 1 "s_register_operand" "0,r")))]
   "TARGET_32BIT"
   "#"
   "TARGET_32BIT && reload_completed"
@@ -1891,7 +1891,7 @@
   [(set (match_operand:DI          0 "s_register_operand" "=&r,&r")
 	(and:DI (sign_extend:DI
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI  1 "s_register_operand" "?r,0")))]
+		(match_operand:DI  1 "s_register_operand" "0,r")))]
   "TARGET_32BIT"
   "#"
   [(set_attr "length" "8")]
@@ -2457,8 +2457,8 @@
 ; constants for op 2 will never be given to these patterns.
 (define_insn_and_split "*anddi_notdi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(and:DI (not:DI (match_operand:DI 1 "s_register_operand" "r,0"))
-		(match_operand:DI 2 "s_register_operand" "0,r")))]
+	(and:DI (not:DI (match_operand:DI 1 "s_register_operand" "0,r"))
+		(match_operand:DI 2 "s_register_operand" "r,0")))]
   "TARGET_32BIT"
   "#"
   "TARGET_32BIT && reload_completed && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
@@ -2612,7 +2612,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(ior:DI (sign_extend:DI
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "?r,0")))]
+		(match_operand:DI 1 "s_register_operand" "0,r")))]
   "TARGET_32BIT"
   "#"
   [(set_attr "length" "8")
@@ -2742,7 +2742,7 @@
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(xor:DI (sign_extend:DI
 		 (match_operand:SI 2 "s_register_operand" "r,r"))
-		(match_operand:DI 1 "s_register_operand" "?r,0")))]
+		(match_operand:DI 1 "s_register_operand" "0,r")))]
   "TARGET_32BIT"
   "#"
   [(set_attr "length" "8")
@@ -2836,7 +2836,7 @@
 
 (define_insn "*andsi_iorsi3_notsi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r")
-	(and:SI (ior:SI (match_operand:SI 1 "s_register_operand" "r,r,0")
+	(and:SI (ior:SI (match_operand:SI 1 "s_register_operand" "%0,r,r")
 			(match_operand:SI 2 "arm_rhs_operand" "rI,0,rI"))
 		(not:SI (match_operand:SI 3 "arm_rhs_operand" "rI,rI,rI"))))]
   "TARGET_32BIT"
@@ -3190,7 +3190,7 @@
 
 (define_insn "arm_ashldi3_1bit"
   [(set (match_operand:DI            0 "s_register_operand" "=&r,r")
-        (ashift:DI (match_operand:DI 1 "s_register_operand" "?r,0")
+        (ashift:DI (match_operand:DI 1 "s_register_operand" "0,r")
                    (const_int 1)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT"
@@ -3249,7 +3249,7 @@
 
 (define_insn "arm_ashrdi3_1bit"
   [(set (match_operand:DI              0 "s_register_operand" "=&r,r")
-        (ashiftrt:DI (match_operand:DI 1 "s_register_operand" "?r,0")
+        (ashiftrt:DI (match_operand:DI 1 "s_register_operand" "0,r")
                      (const_int 1)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT"
@@ -3305,7 +3305,7 @@
 
 (define_insn "arm_lshrdi3_1bit"
   [(set (match_operand:DI              0 "s_register_operand" "=&r,r")
-        (lshiftrt:DI (match_operand:DI 1 "s_register_operand" "?r,0")
+        (lshiftrt:DI (match_operand:DI 1 "s_register_operand" "0,r")
                      (const_int 1)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT"
@@ -3552,10 +3552,10 @@
 )
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
-;; The second alternative is to allow the common case of a *full* overlap.
+;; The first alternative allows the common case of a *full* overlap.
 (define_insn "*arm_negdi2"
   [(set (match_operand:DI         0 "s_register_operand" "=&r,r")
-	(neg:DI (match_operand:DI 1 "s_register_operand"  "?r,0")))
+	(neg:DI (match_operand:DI 1 "s_register_operand"  "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "rsbs\\t%Q0, %Q1, #0\;rsc\\t%R0, %R1, #0"
@@ -3708,7 +3708,7 @@
 
 (define_insn_and_split "one_cmpldi2"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
-	(not:DI (match_operand:DI 1 "s_register_operand" "?r,0")))]
+	(not:DI (match_operand:DI 1 "s_register_operand" "0,r")))]
   "TARGET_32BIT"
   "#"
   "TARGET_32BIT && reload_completed"
