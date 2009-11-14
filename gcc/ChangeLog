@@ -1,5 +1,6 @@
 2009-11-14  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/42031
 	* arm.md (adddi_sesidi_di): Place tied contraint first.
 	(adddi_zesidi_di, subdi_di_zesidi, subdi_di_sesidi): Likewise
 	(subdi_zesidi_di, subdi_sesidi_di): Likewise.
