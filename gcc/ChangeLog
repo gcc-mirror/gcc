@@ -1,3 +1,10 @@
+2009-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (call_register_no_elim_operand):
+	New predicate.  Reject stack register as valid call operand
+	for 32bit targets.
+	(call_insn_operand): Use call_register_no_elim_operand.
+
 2009-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41900
