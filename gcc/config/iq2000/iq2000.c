@@ -168,6 +168,8 @@ static bool iq2000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool iq2000_can_eliminate      (const int, const int);
 static void iq2000_asm_trampoline_template (FILE *);
 static void iq2000_trampoline_init    (rtx, tree, rtx);
+static rtx iq2000_function_value      (const_tree, const_tree, bool);
+static rtx iq2000_libcall_value       (enum machine_mode, const_rtx);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -197,6 +199,10 @@ static void iq2000_trampoline_init    (rtx, tree, rtx);
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES	hook_bool_const_tree_true
 
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE 		iq2000_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE		iq2000_libcall_value
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY		iq2000_return_in_memory
 #undef  TARGET_PASS_BY_REFERENCE
@@ -2210,18 +2216,47 @@ iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
 /* Return register to use for a function return value with VALTYPE for function
    FUNC.  */
 
-rtx
-iq2000_function_value (const_tree valtype, const_tree func)
+static rtx
+iq2000_function_value (const_tree valtype,
+		       const_tree fn_decl_or_type,
+		       bool outgoing ATTRIBUTE_UNUSED)
 {
   int reg = GP_RETURN;
   enum machine_mode mode = TYPE_MODE (valtype);
   int unsignedp = TYPE_UNSIGNED (valtype);
+  tree func = fn_decl_or_type;
+
+  if (fn_decl_or_type
+      && !DECL_P (fn_decl_or_type))
+    fn_decl_or_type = NULL;
 
   /* Since we promote return types, we must promote the mode here too.  */
   mode = promote_function_mode (valtype, mode, &unsignedp, func, 1);
 
   return gen_rtx_REG (mode, reg);
 }
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+iq2000_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (((GET_MODE_CLASS (mode) != MODE_INT
+	                || GET_MODE_SIZE (mode) >= 4)
+	               ? mode : SImode),
+	              GP_RETURN);
+}
+
+/* Worker function for FUNCTION_VALUE_REGNO_P.
+
+   On the IQ2000, R2 and R3 are the only register thus used.  */
+
+bool
+iq2000_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == GP_RETURN);
+}
+
 
 /* Return true when an argument must be passed by reference.  */
 
