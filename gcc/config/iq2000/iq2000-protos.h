@@ -47,7 +47,7 @@ extern void             gen_conditional_branch (rtx *, enum machine_mode);
 extern void             init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
 extern void             function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern struct rtx_def * function_arg (CUMULATIVE_ARGS *, enum machine_mode, const_tree, int);
-extern rtx              iq2000_function_value (const_tree, const_tree);
+extern bool 		iq2000_function_value_regno_p (const unsigned int);
 #endif
 
 #endif /* ! GCC_IQ2000_PROTOS_H */

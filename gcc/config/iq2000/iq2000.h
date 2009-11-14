@@ -422,20 +422,9 @@ typedef struct iq2000_args
   (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST))			
 
 
-/* How Scalar Function Values are Returned.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC)	iq2000_function_value (VALTYPE, FUNC)
-
-#define LIBCALL_VALUE(MODE)				\
-  gen_rtx_REG (((GET_MODE_CLASS (MODE) != MODE_INT	\
-		 || GET_MODE_SIZE (MODE) >= 4)		\
-		? (MODE)				\
-		: SImode),				\
-	       GP_RETURN)
-
 /* On the IQ2000, R2 and R3 are the only register thus used.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN)
+#define FUNCTION_VALUE_REGNO_P(N) iq2000_function_value_regno_p (N)
 
 
 /* How Large Values are Returned.  */
