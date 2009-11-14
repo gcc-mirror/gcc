@@ -1,3 +1,10 @@
+2009-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (call_register_no_elim_operand):
+	New predicate.  Reject stack register as valid call operand
+	for 32bit targets.
+	(call_insn_operand): Use call_register_no_elim_operand.
+
 2009-11-13  Richard Henderson  <rth@redhat.com>
 
 	* function.c (stack_protect_prologue): Don't bypass expand_expr
