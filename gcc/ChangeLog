@@ -1,3 +1,16 @@
+2009-11-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (adddi_sesidi_di): Place tied contraint first.
+	(adddi_zesidi_di, subdi_di_zesidi, subdi_di_sesidi): Likewise
+	(subdi_zesidi_di, subdi_sesidi_di): Likewise.
+	(mulsi3_compare0, mulsi_compare0_scratch): Likewise.
+	(mulsi3addsi, mulsi3addsi_compare0): Likewise.
+	(mulsi3addsi_compare0_scratch, smulsi3_highpart_nov6): Likewise.
+	(umulsi3_highpart_nov6, anddi_zesidi_di, anddi_sesdi_di): Likewise.
+	(anddi_notdi_di, iordi_sesidi_di, xordi_sesidi_di): Likewise.
+	(andsi_iorsi3_notsi, arm_ashldi3_1bit, arm_ashrdi3_1_bit): Likewise.
+	(arm_lshrdi3_1bit, one_cmpldi2): Likewise.
+
 2009-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (call_register_no_elim_operand):
