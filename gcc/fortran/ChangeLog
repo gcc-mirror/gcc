@@ -1,3 +1,9 @@
+2009-11-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42048
+	* match.c (gfc_match_call): If we're inside a function with derived
+	type return value, allow calling a TBP of the result variable.
+
 2009-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.texi (XOR): Refer also to .NEQV.
