@@ -1,3 +1,7 @@
+2009-11-15  Steve Ward  <planet36@gmail.com>
+
+	* libsupc++/cxxabi.h (__cxa_demangle): Fix typo in comment.
+
 2009-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h (forward_list<>::erase_after):
