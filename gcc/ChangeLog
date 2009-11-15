@@ -1,3 +1,14 @@
+2009-11-14  Andy Hutchinson   <hutchinsonandy@gcc.gnu.org>
+
+	PR target/21078, 21080
+	* config/avr/avr.c (avr_return_addr_rtx): New function for
+	builtin_return_address.
+	(expand_prologue): Calculate stack usage.
+	(avr_asm_function_end_prologue): Output stack size and offset label.
+	* config/avr/avr.h (RETURN_ADDR_RTX): Replace.
+	(machine_function): Add stack_usage.
+	* config/avr/avr-protos.h (avr_return_addr_rtx): New function.
+
 2009-11-14  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/iq2000/iq2000.c (iq2000_function_value): Make static, add

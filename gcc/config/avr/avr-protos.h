@@ -39,6 +39,7 @@ extern int avr_simple_epilogue (void);
 extern void gas_output_limited_string (FILE *file, const char *str);
 extern void gas_output_ascii (FILE *file, const char *str, size_t length);
 extern int avr_hard_regno_rename_ok (unsigned int, unsigned int);
+extern rtx avr_return_addr_rtx (int count, const_rtx tem);
 
 #ifdef TREE_CODE
 extern void asm_output_external (FILE *file, tree decl, char *name);
