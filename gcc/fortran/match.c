@@ -2975,7 +2975,7 @@ gfc_match_call (void)
 
   /* If this is a variable of derived-type, it probably starts a type-bound
      procedure call.  */
-  if (sym->attr.flavor != FL_PROCEDURE
+  if ((sym->attr.flavor != FL_PROCEDURE || sym == gfc_current_ns->proc_name)
       && (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS))
     return match_typebound_call (st);
 
