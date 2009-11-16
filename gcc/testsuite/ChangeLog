@@ -1,3 +1,7 @@
+2009-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.c-torture/execute/pr41919.c: Mark chars explicitely as signed.
+
 2009-11-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42048

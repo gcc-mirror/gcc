@@ -4,7 +4,7 @@ extern void abort (void);
 
 struct S1
 {
-  char f0;
+  signed char f0;
 };
 
 int g_23 = 0;
@@ -25,7 +25,7 @@ foo (void)
   return l_128;
 }
 
-static char bar(char si1, char si2)
+static signed char bar(signed char si1, signed char si2)
 {
   return (si1 <= 0) ? si1 : (si2 * 2);
 }
