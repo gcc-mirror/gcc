@@ -1,5 +1,11 @@
 2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/42055
+	* pt.c (determine_specialization): Assign to candidates the return
+	value of the chainon called before print_candidates.
+
+2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/32056
 	* decl.h (enum decl_context): Add TPARM enumerator.
 	* decl.c (grokdeclarator): Per 14.1/2, error out if a storage class

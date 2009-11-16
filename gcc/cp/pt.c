@@ -1941,7 +1941,7 @@ determine_specialization (tree template_id,
     {
       error ("ambiguous template specialization %qD for %q+D",
 	     template_id, decl);
-      chainon (candidates, templates);
+      candidates = chainon (candidates, templates);
       print_candidates (candidates);
       return error_mark_node;
     }

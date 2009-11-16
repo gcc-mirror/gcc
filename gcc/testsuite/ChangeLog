@@ -1,5 +1,10 @@
 2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/42055
+	* testsuite/g++.dg/template/crash92.C: New.
+
+2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/32056
 	* testsuite/g++.dg/template/error44.C: New.
 
