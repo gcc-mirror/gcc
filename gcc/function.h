@@ -522,11 +522,6 @@ struct GTY(()) function {
   unsigned int curr_properties;
   unsigned int last_verified;
 
-  /* Interprocedural passes scheduled to have their transform functions
-     applied next time we execute local pass on them.  We maintain it
-     per-function in order to allow IPA passes to introduce new functions.  */
-  VEC(ipa_opt_pass,heap) * GTY((skip)) ipa_transforms_to_apply;
-
   /* Non-null if the function does something that would prevent it from
      being copied; this applies to both versioning and inlining.  Set to
      a string describing the reason for failure.  */

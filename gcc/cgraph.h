@@ -190,6 +190,11 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
 
   PTR GTY ((skip)) aux;
 
+  /* Interprocedural passes scheduled to have their transform functions
+     applied next time we execute local pass on them.  We maintain it
+     per-function in order to allow IPA passes to introduce new functions.  */
+  VEC(ipa_opt_pass,heap) * GTY((skip)) ipa_transforms_to_apply;
+
   struct cgraph_local_info local;
   struct cgraph_global_info global;
   struct cgraph_rtl_info rtl;
@@ -206,16 +211,24 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
      number of cfg nodes with -fprofile-generate and -fprofile-use */
   int pid;
 
-  /* Set when function must be output - it is externally visible
-     or its address is taken.  */
+  /* Set when function must be output for some reason.  The primary
+     use of this flag is to mark functions needed to be output for
+     non-standard reason.  Functions that are externally visible
+     or reachable from functions needed to be output are marked
+     by specialized flags.  */
   unsigned needed : 1;
-  /* Set when function has address taken.  */
+  /* Set when function has address taken.
+     In current implementation it imply needed flag. */
   unsigned address_taken : 1;
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
   unsigned abstract_and_needed : 1;
   /* Set when function is reachable by call from other function
-     that is either reachable or needed.  */
+     that is either reachable or needed.  
+     This flag is computed at original cgraph construction and then
+     updated in cgraph_remove_unreachable_nodes.  Note that after
+     cgraph_remove_unreachable_nodes cgraph still can contain unreachable
+     nodes when they are needed for virtual clone instantiation.  */
   unsigned reachable : 1;
   /* Set once the function is lowered (i.e. its CFG is built).  */
   unsigned lowered : 1;

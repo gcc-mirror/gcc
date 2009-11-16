@@ -1665,10 +1665,12 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 
 		  /* We have missing edge in the callgraph.  This can happen
 		     when previous inlining turned an indirect call into a
-		     direct call by constant propagating arguments.  In all
+		     direct call by constant propagating arguments or we are
+		     producing dead clone (for further clonning).  In all
 		     other cases we hit a bug (incorrect node sharing is the
 		     most common reason for missing edges).  */
-		  gcc_assert (dest->needed || !dest->analyzed);
+		  gcc_assert (dest->needed || !dest->analyzed
+		  	      || !id->src_node->analyzed);
 		  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
 		    cgraph_create_edge_including_clones
 		      (id->dst_node, dest, stmt, bb->count,
@@ -1983,9 +1985,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count,
   cfun->function_end_locus = src_cfun->function_end_locus;
   cfun->curr_properties = src_cfun->curr_properties;
   cfun->last_verified = src_cfun->last_verified;
-  if (src_cfun->ipa_transforms_to_apply)
-    cfun->ipa_transforms_to_apply = VEC_copy (ipa_opt_pass, heap,
-					      src_cfun->ipa_transforms_to_apply);
   cfun->va_list_gpr_size = src_cfun->va_list_gpr_size;
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
   cfun->function_frequency = src_cfun->function_frequency;
@@ -3822,6 +3821,10 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   (*debug_hooks->outlining_inline_function) (cg_edge->callee->decl);
 
   /* Update callgraph if needed.  */
+  if (cg_edge->callee->clone_of
+      && !cg_edge->callee->clone_of->next_sibling_clone
+      && !cg_edge->callee->analyzed)
+    cgraph_remove_node (cg_edge->callee);
   cgraph_remove_node (cg_edge->callee);
 
   id->block = NULL_TREE;
@@ -4848,6 +4851,19 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.src_node = old_version_node;
   id.dst_node = new_version_node;
   id.src_cfun = DECL_STRUCT_FUNCTION (old_decl);
+  if (id.src_node->ipa_transforms_to_apply)
+    {
+      VEC(ipa_opt_pass,heap) * old_transforms_to_apply = id.dst_node->ipa_transforms_to_apply;
+      unsigned int i;
+
+      id.dst_node->ipa_transforms_to_apply = VEC_copy (ipa_opt_pass, heap,
+					               id.src_node->ipa_transforms_to_apply);
+      for (i = 0; i < VEC_length (ipa_opt_pass, old_transforms_to_apply); i++)
+        VEC_safe_push (ipa_opt_pass, heap, id.dst_node->ipa_transforms_to_apply,
+		       VEC_index (ipa_opt_pass,
+		       		  old_transforms_to_apply,
+				  i));
+    }
   
   id.copy_decl = copy_decl_no_change;
   id.transform_call_graph_edges

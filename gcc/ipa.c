@@ -121,6 +121,7 @@ bool
 cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   struct cgraph_node *first = (struct cgraph_node *) (void *) 1;
+  struct cgraph_node *processed = (struct cgraph_node *) (void *) 2;
   struct cgraph_node *node, *next;
   bool changed = false;
 
@@ -142,9 +143,13 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
         gcc_assert (!node->global.inlined_to);
 	node->aux = first;
 	first = node;
+	node->reachable = true;
       }
     else
-      gcc_assert (!node->aux);
+      {
+        gcc_assert (!node->aux);
+	node->reachable = false;
+      }
 
   /* Perform reachability analysis.  As a special case do not consider
      extern inline functions not inlined as live because we won't output
@@ -154,17 +159,26 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       struct cgraph_edge *e;
       node = first;
       first = (struct cgraph_node *) first->aux;
+      node->aux = processed;
 
-      for (e = node->callees; e; e = e->next_callee)
-	if (!e->callee->aux
-	    && node->analyzed
-	    && (!e->inline_failed || !e->callee->analyzed
-		|| (!DECL_EXTERNAL (e->callee->decl))
-                || before_inlining_p))
-	  {
-	    e->callee->aux = first;
-	    first = e->callee;
-	  }
+      if (node->reachable)
+        for (e = node->callees; e; e = e->next_callee)
+	  if (!e->callee->reachable
+	      && node->analyzed
+	      && (!e->inline_failed || !e->callee->analyzed
+		  || (!DECL_EXTERNAL (e->callee->decl))
+                  || before_inlining_p))
+	    {
+	      bool prev_reachable = e->callee->reachable;
+	      e->callee->reachable |= node->reachable;
+	      if (!e->callee->aux
+	          || (e->callee->aux == processed
+		      && prev_reachable != e->callee->reachable))
+	        {
+	          e->callee->aux = first;
+	          first = e->callee;
+	        }
+	    }
       while (node->clone_of && !node->clone_of->aux && !gimple_has_body_p (node->decl))
         {
 	  node = node->clone_of;
@@ -184,13 +198,18 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   for (node = cgraph_nodes; node; node = next)
     {
       next = node->next;
+      if (node->aux && !node->reachable)
+        {
+	  cgraph_node_remove_callees (node);
+	  node->analyzed = false;
+	  node->local.inlinable = false;
+	}
       if (!node->aux)
 	{
           node->global.inlined_to = NULL;
 	  if (file)
 	    fprintf (file, " %s", cgraph_node_name (node));
-	  if (!node->analyzed || !DECL_EXTERNAL (node->decl)
-	      || before_inlining_p)
+	  if (!node->analyzed || !DECL_EXTERNAL (node->decl) || before_inlining_p)
 	    cgraph_remove_node (node);
 	  else
 	    {
@@ -219,6 +238,12 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      node->analyzed = false;
 		      node->local.inlinable = false;
 		    }
+		  if (node->prev_sibling_clone)
+		    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
+		  else if (node->clone_of)
+		    node->clone_of->clones = node->next_sibling_clone;
+		  if (node->next_sibling_clone)
+		    node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
 		}
 	      else
 		cgraph_remove_node (node);

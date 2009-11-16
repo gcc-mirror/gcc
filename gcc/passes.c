@@ -1376,15 +1376,6 @@ update_properties_after_pass (void *data)
 		           & ~pass->properties_destroyed;
 }
 
-/* Schedule IPA transform pass DATA for CFUN.  */
-
-static void
-add_ipa_transform_pass (void *data)
-{
-  struct ipa_opt_pass_d *ipa_pass = (struct ipa_opt_pass_d *) data;
-  VEC_safe_push (ipa_opt_pass, heap, cfun->ipa_transforms_to_apply, ipa_pass);
-}
-
 /* Execute summary generation for all of the passes in IPA_PASS.  */
 
 void
@@ -1464,19 +1455,22 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
 void
 execute_all_ipa_transforms (void)
 {
-  if (cfun && cfun->ipa_transforms_to_apply)
+  struct cgraph_node *node;
+  if (!cfun)
+    return;
+  node = cgraph_node (current_function_decl);
+  if (node->ipa_transforms_to_apply)
     {
       unsigned int i;
-      struct cgraph_node *node = cgraph_node (current_function_decl);
 
-      for (i = 0; i < VEC_length (ipa_opt_pass, cfun->ipa_transforms_to_apply);
+      for (i = 0; i < VEC_length (ipa_opt_pass, node->ipa_transforms_to_apply);
 	   i++)
 	execute_one_ipa_transform_pass (node,
 					VEC_index (ipa_opt_pass,
-						   cfun->ipa_transforms_to_apply,
+						   node->ipa_transforms_to_apply,
 						   i));
-      VEC_free (ipa_opt_pass, heap, cfun->ipa_transforms_to_apply);
-      cfun->ipa_transforms_to_apply = NULL;
+      VEC_free (ipa_opt_pass, heap, node->ipa_transforms_to_apply);
+      node->ipa_transforms_to_apply = NULL;
     }
 }
 
@@ -1551,7 +1545,13 @@ execute_one_pass (struct opt_pass *pass)
   execute_todo (todo_after | pass->todo_flags_finish);
   verify_interpass_invariants ();
   if (pass->type == IPA_PASS)
-    do_per_function (add_ipa_transform_pass, pass);
+    {
+      struct cgraph_node *node;
+      for (node = cgraph_nodes; node; node = node->next)
+        if (node->analyzed)
+          VEC_safe_push (ipa_opt_pass, heap, node->ipa_transforms_to_apply,
+			 (struct ipa_opt_pass_d *)pass);
+    }
 
   if (!current_function_decl)
     cgraph_process_new_functions ();

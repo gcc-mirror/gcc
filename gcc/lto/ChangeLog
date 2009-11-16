@@ -1,3 +1,7 @@
+2009-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Set also ipa_transforms_to_apply.
+
 2009-11-12  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lang.opt (fresolution): Renamed from resolution.

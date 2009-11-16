@@ -1132,7 +1132,7 @@ cgraph_release_function_body (struct cgraph_node *node)
       pop_cfun();
       gimple_set_body (node->decl, NULL);
       VEC_free (ipa_opt_pass, heap,
-      		DECL_STRUCT_FUNCTION (node->decl)->ipa_transforms_to_apply);
+      		node->ipa_transforms_to_apply);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
       ggc_free (DECL_STRUCT_FUNCTION (node->decl));
@@ -1159,6 +1159,8 @@ cgraph_remove_node (struct cgraph_node *node)
   cgraph_call_node_removal_hooks (node);
   cgraph_node_remove_callers (node);
   cgraph_node_remove_callees (node);
+  VEC_free (ipa_opt_pass, heap,
+            node->ipa_transforms_to_apply);
 
   /* Incremental inlining access removed nodes stored in the postorder list.
      */

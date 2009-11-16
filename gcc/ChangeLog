@@ -1,3 +1,26 @@
+2009-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_release_function_body): Update use of
+	ipa_transforms_to_apply.
+	(cgraph_remove_node): Remove ipa_transforms_to_apply.
+	* cgraph.h (struct cgraph_node): Add ipa_transforms_to_apply.
+	* cgraphunit.c (save_inline_function_body): Clear ipa_transforms for
+	copied body.
+	(cgraph_materialize_clone): Remove original if dead.
+	* lto-streamer-in.c (lto_read_body): Remove FIXME and
+	ipa_transforms_to_apply hack.
+	* function.h (struct function): Add ipa_transforms_to_apply.
+	* ipa.c (cgraph_remove_unreachable_nodes): Handle dead clone originals.
+	* tree-inline.c (copy_bb): Update sanity check.
+	(initialize_cfun): Do not copy ipa_transforms_to_apply.
+	(expand_call_inline): remove dead clone originals.
+	(tree_function_versioning): Merge transformation queues.
+	* passes.c (add_ipa_transform_pass): Remove.
+	(execute_one_ipa_transform_pass): Update ipa_transforms_to_apply
+	tracking.
+	(execute_all_ipa_transforms): Update.
+	(execute_one_pass): Update.
+
 2009-11-14  Andy Hutchinson   <hutchinsonandy@gcc.gnu.org>
 
 	PR target/21078, 21080
