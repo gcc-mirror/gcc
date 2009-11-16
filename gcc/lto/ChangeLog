@@ -1,3 +1,7 @@
+2009-11-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-elf.c (lto_elf_file_open): Use strtoll to parse the offset.
+
 2009-11-14  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Set also ipa_transforms_to_apply.
