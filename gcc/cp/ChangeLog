@@ -1,3 +1,22 @@
+2009-11-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13950, DR 176
+	* search.c (lookup_field_r): Allow lookup to find the
+	injected-class-name from a template base.
+	(template_self_reference_p): Remove.
+	* decl.c (make_typename_type): Diagnose ambiguity.  Use
+	maybe_get_template_decl_from_type_decl.
+	* parser.c (cp_parser_template_name): Pass true to is_template
+	rather than use maybe_get_template_decl_from_type_decl.
+	(cp_parser_lookup_name): Use maybe_get_template_decl_from_type_decl.
+	* pt.c (maybe_get_template_decl_from_type_decl): Handle ambiguity.
+	Use DECL_SELF_REFERENCE_P.
+
+	* parser.c (cp_parser_parse_and_diagnose_invalid_type_name):
+	Avoid duplicate ambiguity error.
+	* error.c (dump_decl): Don't say "typedef" for injected-class-name.
+	* pt.c (convert_template_argument): Tweak logic.
+
 2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42055

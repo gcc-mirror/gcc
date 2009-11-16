@@ -2430,6 +2430,14 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
   tree id;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
+  /* Avoid duplicate error about ambiguous lookup.  */
+  if (token->type == CPP_NESTED_NAME_SPECIFIER)
+    {
+      cp_token *next = cp_lexer_peek_nth_token (parser->lexer, 2);
+      if (next->type == CPP_NAME && next->ambiguous_p)
+	goto out;
+    }
+
   cp_parser_parse_tentatively (parser);
   id = cp_parser_id_expression (parser,
 				/*template_keyword_p=*/false,
@@ -2451,6 +2459,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
   /* Emit a diagnostic for the invalid type.  */
   cp_parser_diagnose_invalid_type_name (parser, parser->scope,
 					id, token->location);
+ out:
   /* If we aren't in the middle of a declarator (i.e. in a
      parameter-declaration-clause), skip to the end of the declaration;
      there's no point in trying to process it.  */
@@ -11086,12 +11095,11 @@ cp_parser_template_name (cp_parser* parser,
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
 				none_type,
-				/*is_template=*/false,
+				/*is_template=*/true,
 				/*is_namespace=*/false,
 				check_dependency_p,
 				/*ambiguous_decls=*/NULL,
 				token->location);
-  decl = maybe_get_template_decl_from_type_decl (decl);
 
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -18044,6 +18052,10 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   /* If the lookup failed, let our caller know.  */
   if (!decl || decl == error_mark_node)
     return error_mark_node;
+
+  /* Pull out the template from an injected-class-name (or multiple).  */
+  if (is_template)
+    decl = maybe_get_template_decl_from_type_decl (decl);
 
   /* If it's a TREE_LIST, the result of the lookup was ambiguous.  */
   if (TREE_CODE (decl) == TREE_LIST)

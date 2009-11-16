@@ -63,7 +63,6 @@ static tree dfs_access_in_type (tree, void *);
 static access_kind access_in_type (tree, tree);
 static int protected_accessible_p (tree, tree, tree);
 static int friend_accessible_p (tree, tree, tree);
-static int template_self_reference_p (tree, tree);
 static tree dfs_get_pure_virtuals (tree, void *);
 
 
@@ -955,24 +954,6 @@ struct lookup_field_info {
   const char *errstr;
 };
 
-/* Within the scope of a template class, you can refer to the to the
-   current specialization with the name of the template itself.  For
-   example:
-
-     template <typename T> struct S { S* sp; }
-
-   Returns nonzero if DECL is such a declaration in a class TYPE.  */
-
-static int
-template_self_reference_p (tree type, tree decl)
-{
-  return  (CLASSTYPE_USE_TEMPLATE (type)
-	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
-	   && TREE_CODE (decl) == TYPE_DECL
-	   && DECL_ARTIFICIAL (decl)
-	   && DECL_NAME (decl) == constructor_name (type));
-}
-
 /* Nonzero for a class member means that it is shared between all objects
    of that class.
 
@@ -1091,11 +1072,6 @@ lookup_field_r (tree binfo, void *data)
 	    goto done;
 	}
     }
-
-  /* You must name a template base class with a template-id.  */
-  if (!same_type_p (type, lfi->type)
-      && template_self_reference_p (type, nval))
-    goto done;
 
   /* If the lookup already found a match, and the new value doesn't
      hide the old one, we might have an ambiguity.  */

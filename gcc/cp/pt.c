@@ -5451,7 +5451,7 @@ convert_template_argument (tree parm,
 						  complain, in_decl,
 						  args))
 		{
-		  val = orig_arg;
+		  val = arg;
 
 		  /* TEMPLATE_TEMPLATE_PARM node is preferred over
 		     TEMPLATE_DECL.  */
@@ -5459,12 +5459,8 @@ convert_template_argument (tree parm,
                     {
                       if (DECL_TEMPLATE_TEMPLATE_PARM_P (val))
                         val = TREE_TYPE (val);
-                      else if (TREE_CODE (val) == TYPE_PACK_EXPANSION
-                               && DECL_TEMPLATE_TEMPLATE_PARM_P (arg))
-                        {
-                          val = TREE_TYPE (arg);
-                          val = make_pack_expansion (val);
-                        }
+		      if (TREE_CODE (orig_arg) == TYPE_PACK_EXPANSION)
+			val = make_pack_expansion (val);
                     }
 		}
 	      else
@@ -5990,15 +5986,43 @@ lookup_template_function (tree fns, tree arglist)
    TEMPLATE_DECL.  If DECL is a TYPE_DECL for current_class_type,
    or one of its enclosing classes, and that type is a template,
    return the associated TEMPLATE_DECL.  Otherwise, the original
-   DECL is returned.  */
+   DECL is returned.
+
+   Also handle the case when DECL is a TREE_LIST of ambiguous
+   injected-class-names from different bases.  */
 
 tree
 maybe_get_template_decl_from_type_decl (tree decl)
 {
+  if (decl == NULL_TREE)
+    return decl;
+
+  /* DR 176: A lookup that finds an injected-class-name (10.2
+     [class.member.lookup]) can result in an ambiguity in certain cases
+     (for example, if it is found in more than one base class). If all of
+     the injected-class-names that are found refer to specializations of
+     the same class template, and if the name is followed by a
+     template-argument-list, the reference refers to the class template
+     itself and not a specialization thereof, and is not ambiguous.  */
+  if (TREE_CODE (decl) == TREE_LIST)
+    {
+      tree t, tmpl = NULL_TREE;
+      for (t = decl; t; t = TREE_CHAIN (t))
+	{
+	  tree elt = maybe_get_template_decl_from_type_decl (TREE_VALUE (t));
+	  if (!tmpl)
+	    tmpl = elt;
+	  else if (tmpl != elt)
+	    break;
+	}
+      if (tmpl && t == NULL_TREE)
+	return tmpl;
+      else
+	return decl;
+    }
+
   return (decl != NULL_TREE
-	  && TREE_CODE (decl) == TYPE_DECL
-	  && DECL_ARTIFICIAL (decl)
-	  && CLASS_TYPE_P (TREE_TYPE (decl))
+	  && DECL_SELF_REFERENCE_P (decl)
 	  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl)))
     ? CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)) : decl;
 }
