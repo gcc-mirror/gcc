@@ -16299,8 +16299,8 @@ configure-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared \
 	  || exit 1
 @endif gmp
 
@@ -16332,8 +16332,8 @@ configure-stage1-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  $(STAGE1_CONFIGURE_FLAGS) \
 	  --disable-shared
 @endif gmp-bootstrap
@@ -16365,8 +16365,8 @@ configure-stage2-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
 	  --disable-shared
@@ -16399,8 +16399,8 @@ configure-stage3-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
 	  --disable-shared
@@ -16433,8 +16433,8 @@ configure-stage4-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
 	  --disable-shared
@@ -16467,8 +16467,8 @@ configure-stageprofile-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
 	  --disable-shared
@@ -16501,8 +16501,8 @@ configure-stagefeedback-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
 	  --disable-shared

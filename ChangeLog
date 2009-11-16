@@ -1,5 +1,10 @@
 2009-11-16  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.def: Restore host and target settings for gmp.
+	* Makefile.in: Rebuild.
+
+2009-11-16  Alexandre Oliva  <aoliva@redhat.com>
+
 	* configure.ac: Add libelf to host_libs.  Enable in-tree configury
 	of ppl and cloog.  Fix in-tree configury of libelf, skip tests.
 	Fix portability of test of C++ as bootstrap language.  Add
