@@ -10508,7 +10508,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
 
   parm = grokdeclarator (parameter_declarator->declarator,
 			 &parameter_declarator->decl_specifiers,
-			 PARM, /*initialized=*/0,
+			 TPARM, /*initialized=*/0,
 			 /*attrlist=*/NULL);
   if (parm == error_mark_node)
     return error_mark_node;

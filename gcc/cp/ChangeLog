@@ -1,3 +1,12 @@
+2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/32056
+	* decl.h (enum decl_context): Add TPARM enumerator.
+	* decl.c (grokdeclarator): Per 14.1/2, error out if a storage class
+	is specified in a template parameter declaration.
+	* parser.c (cp_parser_template_parameter): Call grokdeclarator with
+	TPARM as third argument.
+
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27425
