@@ -62,7 +62,13 @@ host_modules= { module= gawk; };
 host_modules= { module= gettext; };
 host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared';
-		no_install= true; };
+		no_install= true;
+		// none-*-* disables asm optimizations, bootstrap-testing
+		// the compiler more thoroughly.
+	        host="none-${host_vendor}-${host_os}";
+		// gmp's configure will complain if given anything
+		// different from host for target.
+	        target="none-${host_vendor}-${host_os}"; };
 host_modules= { module= mpfr; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@';
 		no_install= true; };
