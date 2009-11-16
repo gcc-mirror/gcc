@@ -229,6 +229,21 @@ HOST_EXPORTS = \
 @endif gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
+POSTSTAGE1_CXX_EXPORT = \
+	CXX='$(CXX)'; export CXX; \
+	CXX_FOR_BUILD='$(CXX_FOR_BUILD)'; export CXX_FOR_BUILD;
+@if target-libstdc++-v3-bootstrap
+# Override the above if we're bootstrapping C++.
+POSTSTAGE1_CXX_EXPORT = \
+	CXX="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/g++$(exeext) \
+	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ -nostdinc++ \
+	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include/$(TARGET_SUBDIR) \
+	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include \
+	  -I$$s/libstdc++-v3/libsupc++ \
+	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs"; export CXX; \
+	CXX_FOR_BUILD="$$CXX"; export CXX_FOR_BUILD;
+@endif target-libstdc++-v3-bootstrap
+
 # Similar, for later GCC stages.
 POSTSTAGE1_HOST_EXPORTS = \
 	$(HOST_EXPORTS) \
@@ -236,13 +251,7 @@ POSTSTAGE1_HOST_EXPORTS = \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ \
 	  $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export CC; \
 	CC_FOR_BUILD="$$CC"; export CC_FOR_BUILD; \
-	CXX="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/g++$(exeext) \
-	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ -nostdinc++ \
-	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include/$(TARGET_SUBDIR) \
-	  -I$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/include \
-	  -I$$s/libstdc++-v3/libsupc++ \
-	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs"; export CXX; \
-	CXX_FOR_BUILD="$$CXX"; export CXX_FOR_BUILD; \
+	$(POSTSTAGE1_CXX_EXPORT) \
 	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind"; export GNATBIND; \
 	LDFLAGS="$(POSTSTAGE1_LDFLAGS) $(BOOT_LDFLAGS)"; export LDFLAGS; \
 	HOST_LIBS="$(POSTSTAGE1_LIBS)"; export HOST_LIBS;
@@ -401,6 +410,11 @@ STAGE_CONFIGURE_FLAGS=@stage2_werror_flag@
 [+ FOR bootstrap-stage +]
 # Defaults for stage [+id+]; some are overridden below.
 STAGE[+id+]_CFLAGS = $(STAGE_CFLAGS)
+STAGE[+id+]_CXXFLAGS = $(CXXFLAGS)
+@if target-libstdc++-v3-bootstrap
+# Override the above if we're bootstrapping C++.
+STAGE[+id+]_CXXFLAGS = $(STAGE[+id+]_CFLAGS)
+@endif target-libstdc++-v3-bootstrap
 STAGE[+id+]_TFLAGS = $(STAGE_TFLAGS)
 STAGE[+id+]_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 [+ ENDFOR bootstrap-stage +]
@@ -412,8 +426,8 @@ STAGE[+id+]_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 # overrideable (for a bootstrap build stage1 also builds gcc.info).
 
 STAGE1_CFLAGS = @stage1_cflags@
-STAGE1_CHECKING=@stage1_checking@
-STAGE1_LANGUAGES=@stage1_languages@
+STAGE1_CHECKING = @stage1_checking@
+STAGE1_LANGUAGES = @stage1_languages@
 # * We force-disable intermodule optimizations, even if
 #   --enable-intermodule was passed, since the installed compiler
 #   probably can't handle them.  Luckily, autoconf always respects
@@ -528,6 +542,7 @@ BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"`echo '[+flag+]=$([+flag+])' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"[+ ELSE optional +] \
 	"[+flag+]=$([+flag+])"[+ ENDIF optional+][+ ENDFOR flags_to_pass +][+ FOR bootstrap-stage +] \
 	"STAGE[+id+]_CFLAGS=$(STAGE[+id+]_CFLAGS)" \
+	"STAGE[+id+]_CXXFLAGS=$(STAGE[+id+]_CXXFLAGS)" \
 	"STAGE[+id+]_TFLAGS=$(STAGE[+id+]_TFLAGS)"[+ ENDFOR bootstrap-stage +] \
 	"TFLAGS=$(TFLAGS)" \
 	"CONFIG_SHELL=$(SHELL)" \
@@ -575,8 +590,8 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 	CXX="$${CXX}" CXX_FOR_BUILD="$${CXX_FOR_BUILD}" \
 	GNATBIND="$${GNATBIND}" \
-	LDFLAGS="$(POSTSTAGE1_LDFLAGS) $(BOOT_LDFLAGS)" \
-	HOST_LIBS="$(POSTSTAGE1_LIBS)" \
+	LDFLAGS="$${LDFLAGS}" \
+	HOST_LIBS="$${HOST_LIBS}" \
 	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 # Flags to pass down to makes which are built with the target environment.
@@ -918,7 +933,7 @@ configure-[+prefix+][+module+]: [+ IF bootstrap +][+ ELSE +]
 	fi; \
 	[+ ENDIF check_multilibs +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
-	[+exports+] \
+	[+exports+] [+extra_exports+] \
 	echo Configuring in [+subdir+]/[+module+]; \
 	cd "[+subdir+]/[+module+]" || exit 1; \
 	case $(srcdir) in \
@@ -967,9 +982,10 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;[+ ELSE prefix +] \
 	CFLAGS="$(STAGE[+id+]_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE[+id+]_CFLAGS)"; export CXXFLAGS;[+ IF prev +] \
+	CXXFLAGS="$(STAGE[+id+]_CXXFLAGS)"; export CXXFLAGS;[+ IF prev +] \
 	LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \
-	LIBCFLAGS="$(LIBCFLAGS)"[+ ENDIF prev +]; export LIBCFLAGS;[+ ENDIF prefix +] \
+	LIBCFLAGS="$(LIBCFLAGS)"[+ ENDIF prev +]; export LIBCFLAGS;[+
+  ENDIF prefix +] [+extra_exports+] \
 	echo Configuring stage [+id+] in [+subdir+]/[+module+] ; \
 	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
 	cd [+subdir+]/[+module+] || exit 1; \
@@ -1005,7 +1021,7 @@ all-[+prefix+][+module+]: configure-[+prefix+][+module+][+ IF bootstrap +][+ ELS
 	@: $(MAKE); $(unstage)[+ ENDIF bootstrap +]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	[+exports+] \
+	[+exports+] [+extra_exports+] \
 	(cd [+subdir+]/[+module+] && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) [+args+] [+extra_make_flags+] \
 		$(TARGET-[+prefix+][+module+]))
@@ -1027,14 +1043,14 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
 	[+exports+][+ IF prev +] \
-	[+poststage1_exports+][+ ENDIF prev +] \
+	[+poststage1_exports+][+ ENDIF prev +] [+extra_exports+] \
 	cd [+subdir+]/[+module+] && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS)[+ IF prefix +] \
 		CFLAGS="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"[+ ELSE prefix +] \
 		CFLAGS="$(STAGE[+id+]_CFLAGS)" \
-		CXXFLAGS="$(STAGE[+id+]_CFLAGS)"[+ IF prev +] \
+		CXXFLAGS="$(STAGE[+id+]_CXXFLAGS)"[+ IF prev +] \
 		LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \
 		LIBCFLAGS="$(LIBCFLAGS)"[+ ENDIF prev +][+ ENDIF prefix +] \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
