@@ -540,7 +540,7 @@ lto_file *
 lto_elf_file_open (const char *filename, bool writable)
 {
   lto_elf_file *elf_file;
-  lto_file *result;
+  lto_file *result = NULL;
   off_t offset;
   const char *offset_p;
   char *fname;
@@ -553,13 +553,17 @@ lto_elf_file_open (const char *filename, bool writable)
     }
   else
     {
-      int64_t t;
       fname = (char *) xmalloc (offset_p - filename + 1);
       memcpy (fname, filename, offset_p - filename);
       fname[offset_p - filename] = '\0';
       offset_p++;
-      sscanf(offset_p, "%" PRId64 , &t);
-      offset = t;
+      errno = 0;
+      offset = strtoll (offset_p, NULL, 10);
+      if (errno != 0)
+        {
+          error ("could not parse offset %s", offset_p);
+          goto fail;
+        }
       /* elf_rand expects the offset to point to the ar header, not the
          object itself. Subtract the size of the ar header (60 bytes).
          We don't uses sizeof (struct ar_hd) to avoid including ar.h */
@@ -631,7 +635,8 @@ lto_elf_file_open (const char *filename, bool writable)
   return result;
 
  fail:
-  lto_elf_file_close (result);
+  if (result)
+    lto_elf_file_close (result);
   return NULL;
 }
 
