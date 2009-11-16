@@ -4666,14 +4666,23 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
     case GIMPLE_ASM:
       {
 	int i, n = gimple_asm_nlabels (stmt);
-	tree label = gimple_block_label (dest);
+	tree label = NULL;
 
 	for (i = 0; i < n; ++i)
 	  {
 	    tree cons = gimple_asm_label_op (stmt, i);
 	    if (label_to_block (TREE_VALUE (cons)) == e->dest)
-	      TREE_VALUE (cons) = label;
+	      {
+		if (!label)
+		  label = gimple_block_label (dest);
+		TREE_VALUE (cons) = label;
+	      }
 	  }
+
+	/* If we didn't find any label matching the former edge in the
+	   asm labels, we must be redirecting the fallthrough
+	   edge.  */
+	gcc_assert (label || (e->flags & EDGE_FALLTHRU));
       }
       break;
 
