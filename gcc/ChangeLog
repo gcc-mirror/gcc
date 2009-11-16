@@ -1,5 +1,9 @@
 2009-11-16  Alexandre Oliva  <aoliva@redhat.com>
 
+	* stmt.c (expand_asm_stmt): Get locus from stmt.
+
+2009-11-16  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree-cfg.c (gimple_redirect_edge_and_branch) <case GIMPLE_ASM>:
 	Create the decl label for the new dest block on demand.  Require
 	a fallthrough edge if no asm labels were redirected.

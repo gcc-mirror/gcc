@@ -1099,6 +1099,7 @@ expand_asm_stmt (gimple stmt)
   size_t i, n;
   const char *s;
   tree str, out, in, cl, labels;
+  location_t locus = gimple_location (stmt);
 
   /* Meh... convert the gimple asm operands into real tree lists.
      Eventually we should make all routines work on the vectors instead
@@ -1144,7 +1145,7 @@ expand_asm_stmt (gimple stmt)
 
   if (gimple_asm_input_p (stmt))
     {
-      expand_asm_loc (str, gimple_asm_volatile_p (stmt), input_location);
+      expand_asm_loc (str, gimple_asm_volatile_p (stmt), locus);
       return;
     }
 
@@ -1160,7 +1161,7 @@ expand_asm_stmt (gimple stmt)
   /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
      OUTPUTS some trees for where the values were actually stored.  */
   expand_asm_operands (str, outputs, in, cl, labels,
-		       gimple_asm_volatile_p (stmt), input_location);
+		       gimple_asm_volatile_p (stmt), locus);
 
   /* Copy all the intermediate outputs into the specified outputs.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
