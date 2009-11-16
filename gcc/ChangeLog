@@ -1,3 +1,8 @@
+2009-11-16  Paul Brook  <paul@codesourcery.com>
+
+	* doc/invoke.texi: Document ARM VFPv4 based FPUs.
+	* config/arm/arm.c (all_fpus): Add VFPv4 entries.
+
 2009-11-14  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use proper ENTRY_BLOCK_PTR.
