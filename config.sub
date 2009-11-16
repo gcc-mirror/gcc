@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 #   Free Software Foundation, Inc.
 
-timestamp='2009-10-07'
+timestamp='2009-11-07'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -295,6 +295,7 @@ case $basic_machine in
 	| sparcv8 | sparcv9 | sparcv9b | sparcv9v \
 	| spu | strongarm \
 	| tahoe | thumb | tic4x | tic80 | tron \
+	| ubicom32 \
 	| v850 | v850e \
 	| we32k \
 	| x86 | xc16x | xscale | xscalee[bl] | xstormy16 | xtensa \
@@ -381,6 +382,7 @@ case $basic_machine in
 	| tahoe-* | thumb-* \
 	| tic30-* | tic4x-* | tic54x-* | tic55x-* | tic6x-* | tic80-* | tile-* \
 	| tron-* \
+	| ubicom32-* \
 	| v850-* | v850e-* | vax-* \
 	| we32k-* \
 	| x86-* | x86_64-* | xc16x-* | xps100-* | xscale-* | xscalee[bl]-* \
@@ -1698,4 +1700,3 @@ exit
 # time-stamp-format: "%:y-%02m-%02d"
 # time-stamp-end: "'"
 # End:
-
