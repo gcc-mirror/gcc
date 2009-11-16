@@ -1476,15 +1476,6 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
       /* Restore decl state */
       file_data->current_decl_state = file_data->global_decl_state;
 
-      /* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
-         summaries computed and needs to apply changes.  At the moment WHOPR only
-         supports inlining, so we can push it here by hand.  In future we need to stream
-         this field into ltrans compilation.  This will also need to move the field
-	 from struct function into cgraph node where it belongs.  */
-      if (flag_ltrans && !cgraph_node (fn_decl)->global.inlined_to)
-	 VEC_safe_push (ipa_opt_pass, heap,
-			cfun->ipa_transforms_to_apply,
-			(ipa_opt_pass)&pass_ipa_inline);
       pop_cfun ();
     }
   else 

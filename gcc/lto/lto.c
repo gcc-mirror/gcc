@@ -1826,9 +1826,19 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
      phase. */
   if (flag_ltrans)
     for (node = cgraph_nodes; node; node = node->next)
-      if (!node->global.inlined_to
-	  && cgraph_decide_is_function_needed (node, node->decl))
-        cgraph_mark_needed_node (node);
+      {
+        if (!node->global.inlined_to
+	    && cgraph_decide_is_function_needed (node, node->decl))
+          cgraph_mark_needed_node (node);
+	/* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
+	   summaries computed and needs to apply changes.  At the moment WHOPR only
+	   supports inlining, so we can push it here by hand.  In future we need to stream
+	   this field into ltrans compilation.  */
+	if (node->analyzed)
+	  VEC_safe_push (ipa_opt_pass, heap,
+			 node->ipa_transforms_to_apply,
+			 (ipa_opt_pass)&pass_ipa_inline);
+      }
 
   timevar_push (TV_IPA_LTO_DECL_IO);
 

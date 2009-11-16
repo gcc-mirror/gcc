@@ -1777,8 +1777,8 @@ save_inline_function_body (struct cgraph_node *node)
   TREE_PUBLIC (first_clone->decl) = 0;
   DECL_COMDAT (first_clone->decl) = 0;
   VEC_free (ipa_opt_pass, heap,
-            DECL_STRUCT_FUNCTION (first_clone->decl)->ipa_transforms_to_apply);
-  DECL_STRUCT_FUNCTION (first_clone->decl)->ipa_transforms_to_apply = NULL;
+            first_clone->ipa_transforms_to_apply);
+  first_clone->ipa_transforms_to_apply = NULL;
 
 #ifdef ENABLE_CHECKING
   verify_cgraph_node (first_clone);
@@ -1810,6 +1810,8 @@ cgraph_materialize_clone (struct cgraph_node *node)
     node->clone_of->clones = node->next_sibling_clone;
   node->next_sibling_clone = NULL;
   node->prev_sibling_clone = NULL;
+  if (!node->clone_of->analyzed && !node->clone_of->clones)
+    cgraph_remove_node (node->clone_of);
   node->clone_of = NULL;
   bitmap_obstack_release (NULL);
 }
