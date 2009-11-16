@@ -1126,23 +1126,6 @@
        (and (match_code "mult")
 	    (match_test "TARGET_TUNE_PROMOTE_HIMODE_IMUL"))))
 
-;; To avoid problems when jump re-emits comparisons like testqi_ext_ccno_0,
-;; re-recognize the operand to avoid a copy_to_mode_reg that will fail.
-;;
-;; ??? It seems likely that this will only work because cmpsi is an
-;; expander, and no actual insns use this.
-
-(define_predicate "cmpsi_operand"
-  (ior (match_operand 0 "nonimmediate_operand")
-       (and (match_code "and")
-	    (match_code "zero_extract" "0")
-	    (match_code "const_int"    "1")
-	    (match_code "const_int"    "01")
-	    (match_code "const_int"    "02")
-	    (match_test "INTVAL (XEXP (XEXP (op, 0), 1)) == 8")
-	    (match_test "INTVAL (XEXP (XEXP (op, 0), 2)) == 8")
-       )))
-
 (define_predicate "compare_operator"
   (match_code "compare"))
 

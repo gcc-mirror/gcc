@@ -1,3 +1,24 @@
+2009-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (cbranchsi4): Use nonimmediate_operand for
+	operand 1 predicate.
+	(cstoresi4): Ditto for operand 2.
+	(cbranch<mode>4): Macroize expander from cbranch{qi,hi,si,di,ti}4
+	patterns using SDWIM mode iterator.
+	(cstore<mode>4): Macroize expander from cstore{qi,hi,si,di}4 patterns
+	using SWIM mode iterator.
+	(cmpdi_1): Rename from cmpdi_1_rex64.
+	(cmp<mode>_1): Macroize expander from cmp{si,di}_1 patterns using
+	SWI48 mode iterator.
+	(*cmp<mode>_1): Macroize insn from *cmp{qi,hi,si,di}_1_insn using SWI
+	mode iterator.
+	(*cmp<mode>_ccno_1): Ditto from *cmp{qi,hi,si,di}_ccno_1.
+	(*cmp<mode>_minus_1): Ditto from *cmp{qi,hi,si,di}_minus_1.
+	(*cmpqi_ext_3_insn): Make private.
+	(*cmpqi_ext_3_insn_rex64): Make private.
+	(cmpstrnsi): Update for renamed cmpdi_1_rex64.
+	* config/i386/predicates.md (cmpsi_operand): Remove.
+
 2009-11-16  Paul Brook  <paul@codesourcery.com>
 
 	* doc/invoke.texi: Document ARM VFPv4 based FPUs.
@@ -5,19 +26,19 @@
 
 2009-11-14  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use proper ENTRY_BLOCK_PTR.
-	* cgraph.c (cgraph_clone_edge): Avoid freq_scale 0 to completely zero out all
-	callees.
-	* cgraphunit.c (verify_cgraph_node): Verify cgraph nodes for frequency and count match.
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use proper
+	ENTRY_BLOCK_PTR.
+	* cgraph.c (cgraph_clone_edge): Avoid freq_scale 0 to completely
+	zero out all callees.
+	* cgraphunit.c (verify_cgraph_node): Verify cgraph nodes for
+	frequency and count match.
 	* ipa-inline.c (update_noncloned_frequencies): New function.
 	(cgraph_clone_inlined_nodes): Use it.
 	* tree-inline.c (copy_bb): Fix frequency scaling; output
 	diagnostic on frequency mismatches to dump file.
 	(initialize_cfun): Do not scale frequency; fix count scaling;
-	initialize entry and exit block frequencies; copy profile
-	info.
-	(copy_cfg_body): Use frequency_scale as argument;
-	fix count scaling.
+	initialize entry and exit block frequencies; copy profile info.
+	(copy_cfg_body): Use frequency_scale as argument; fix count scaling.
 	(copy_body): Use frequency_scale as argument.
 	(expand_call_inline): Compute frequency scale and output diagnostic
 	to dump file.
@@ -65,7 +86,7 @@
 	new 'outgoing' argument.
 	(iq2000_libcall_value, iq2000_function_value_regno_p): New functions.
 	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
-	* config/iq2000/iq2000.h: (FUNCTION_VALUE_REGNO_P): Redefine, use
+	* config/iq2000/iq2000.h (FUNCTION_VALUE_REGNO_P): Redefine, use
 	iq2000_function_value_regno_p.
 	(FUNCTION_VALUE, LIBCALL_VALUE): Remove.
 	* config/iq2000/iq2000-protos.h (iq2000_function_value_regno_p):
