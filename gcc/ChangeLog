@@ -1,5 +1,27 @@
 2009-11-14  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Use proper ENTRY_BLOCK_PTR.
+	* cgraph.c (cgraph_clone_edge): Avoid freq_scale 0 to completely zero out all
+	callees.
+	* cgraphunit.c (verify_cgraph_node): Verify cgraph nodes for frequency and count match.
+	* ipa-inline.c (update_noncloned_frequencies): New function.
+	(cgraph_clone_inlined_nodes): Use it.
+	* tree-inline.c (copy_bb): Fix frequency scaling; output
+	diagnostic on frequency mismatches to dump file.
+	(initialize_cfun): Do not scale frequency; fix count scaling;
+	initialize entry and exit block frequencies; copy profile
+	info.
+	(copy_cfg_body): Use frequency_scale as argument;
+	fix count scaling.
+	(copy_body): Use frequency_scale as argument.
+	(expand_call_inline): Compute frequency scale and output diagnostic
+	to dump file.
+	(delete_unreachable_blocks_update_callgrah): Remove checking that
+	has to be done after edge redirection.
+	(tree_function_versioning): Update initialize_cfun and copy_body call.
+
+2009-11-14  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_release_function_body): Update use of
 	ipa_transforms_to_apply.
 	(cgraph_remove_node): Remove ipa_transforms_to_apply.

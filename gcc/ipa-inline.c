@@ -207,6 +207,29 @@ cgraph_estimate_size_after_inlining (int times, struct cgraph_node *to,
   return size;
 }
 
+/* Scale frequency of NODE edges by FREQ_SCALE and increase loop nest
+   by NEST.  */
+
+static void
+update_noncloned_frequencies (struct cgraph_node *node,
+			      int freq_scale, int nest)
+{
+  struct cgraph_edge *e;
+
+  /* We do not want to ignore high loop nest after freq drops to 0.  */
+  if (!freq_scale)
+    freq_scale = 1;
+  for (e = node->callees; e; e = e->next_callee)
+    {
+      e->loop_nest += nest;
+      e->frequency = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
+      if (e->frequency > CGRAPH_FREQ_MAX)
+        e->frequency = CGRAPH_FREQ_MAX;
+      if (!e->inline_failed)
+        update_noncloned_frequencies (e->callee, freq_scale, nest);
+    }
+}
+
 /* E is expected to be an edge being inlined.  Clone destination node of
    the edge and redirect it to the new clone.
    DUPLICATE is used for bookkeeping on whether we are actually creating new
@@ -234,6 +257,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	    }
 	  duplicate = false;
 	  e->callee->local.externally_visible = false;
+          update_noncloned_frequencies (e->callee, e->frequency, e->loop_nest);
 	}
       else
 	{
