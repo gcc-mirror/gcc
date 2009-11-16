@@ -1,3 +1,13 @@
+2009-11-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13950
+	* g++.dg/template/injected1.C: New.
+	* g++.dg/template/inherit.C: Adjust.
+	* g++.old-deja/g++.brendan/crash56.C: Adjust.
+	* g++.old-deja/g++.pt/lookup8.C: Adjust.
+	* g++.old-deja/g++.pt/ttp22.C: Adjust.
+	* g++.old-deja/g++.pt/ttp23.C: Adjust.
+
 2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42055

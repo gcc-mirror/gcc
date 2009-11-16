@@ -24,7 +24,7 @@ template<template<class> class DD,class EE> int C<DD,EE>::f()
 class E : C<D,int>
 {
 	public:
-		int f() { return C<D,int>::f(); }
+		int f() { return C< ::D,int>::f(); }
 };
 
 int main()

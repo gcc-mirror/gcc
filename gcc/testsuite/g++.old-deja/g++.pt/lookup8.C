@@ -11,5 +11,5 @@ class Y : public X<int>
 
 void Y::f()
 {
-  X x; // { dg-error "" } X is not a type.
+  X x;
 }

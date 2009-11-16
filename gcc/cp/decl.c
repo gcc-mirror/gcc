@@ -3040,11 +3040,11 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (!dependent_scope_p (context))
     /* We should only set WANT_TYPE when we're a nested typename type.
        Then we can give better diagnostics if we find a non-type.  */
-    t = lookup_field (context, name, 0, /*want_type=*/true);
+    t = lookup_field (context, name, 2, /*want_type=*/true);
   else
     t = NULL_TREE;
 
-  if (!t && dependent_type_p (context)) 
+  if ((!t || TREE_CODE (t) == TREE_LIST) && dependent_type_p (context))
     return build_typename_type (context, name, fullname, tag_type);
 
   want_template = TREE_CODE (fullname) == TEMPLATE_ID_EXPR;
@@ -3057,6 +3057,20 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
       return error_mark_node;
     }
   
+  /* Pull out the template from an injected-class-name (or multiple).  */
+  if (want_template)
+    t = maybe_get_template_decl_from_type_decl (t);
+
+  if (TREE_CODE (t) == TREE_LIST)
+    {
+      if (complain & tf_error)
+	{
+	  error ("lookup of %qT in %qT is ambiguous", name, context);
+	  print_candidates (t);
+	}
+      return error_mark_node;
+    }
+
   if (want_template && !DECL_CLASS_TEMPLATE_P (t))
     {
       if (complain & tf_error)
