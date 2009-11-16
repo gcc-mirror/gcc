@@ -1641,8 +1641,12 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
 {
   struct cgraph_edge *new_edge;
   gcov_type count = e->count * count_scale / REG_BR_PROB_BASE;
-  gcov_type freq = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
+  gcov_type freq;
 
+  /* We do not want to ignore loop nest after frequency drops to 0.  */
+  if (!freq_scale)
+    freq_scale = 1;
+  freq = e->frequency * (gcov_type) freq_scale / CGRAPH_FREQ_BASE;
   if (freq > CGRAPH_FREQ_MAX)
     freq = CGRAPH_FREQ_MAX;
   new_edge = cgraph_create_edge (n, e->callee, call_stmt, count, freq,
