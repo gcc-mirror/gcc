@@ -376,20 +376,26 @@ lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 static void
 lto_symtab_resolve_symbols (void **slot)
 {
-  lto_symtab_entry_t e = (lto_symtab_entry_t) *slot;
+  lto_symtab_entry_t e;
   lto_symtab_entry_t prevailing = NULL;
 
-  /* If the chain is already resolved there is nothing to do.  */
+  /* Always set e->node so that edges are updated to reflect decl merging. */
+  for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
+    {
+      if (TREE_CODE (e->decl) == FUNCTION_DECL)
+	e->node = cgraph_get_node (e->decl);
+    }
+
+  e = (lto_symtab_entry_t) *slot;
+
+  /* If the chain is already resolved there is nothing else to do.  */
   if (e->resolution != LDPR_UNKNOWN)
     return;
 
   /* Find the single non-replaceable prevailing symbol and
      diagnose ODR violations.  */
-  for (; e; e = e->next)
+  for (e = (lto_symtab_entry_t) *slot; e; e = e->next)
     {
-      if (TREE_CODE (e->decl) == FUNCTION_DECL)
-	e->node = cgraph_get_node (e->decl);
-
       if (!lto_symtab_resolve_can_prevail_p (e))
 	{
 	  e->resolution = LDPR_RESOLVED_IR;
