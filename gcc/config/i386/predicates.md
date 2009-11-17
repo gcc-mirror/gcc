@@ -327,8 +327,8 @@
 (define_predicate "x86_64_szext_general_operand"
   (if_then_else (match_test "TARGET_64BIT")
     (ior (match_operand 0 "nonimmediate_operand")
-	 (ior (match_operand 0 "x86_64_immediate_operand")
-	      (match_operand 0 "x86_64_zext_immediate_operand")))
+	 (match_operand 0 "x86_64_immediate_operand")
+	 (match_operand 0 "x86_64_zext_immediate_operand"))
     (match_operand 0 "general_operand")))
 
 ;; Return nonzero if OP is nonmemory operand representable on x86_64.
@@ -342,8 +342,8 @@
 (define_predicate "x86_64_szext_nonmemory_operand"
   (if_then_else (match_test "TARGET_64BIT")
     (ior (match_operand 0 "register_operand")
-	 (ior (match_operand 0 "x86_64_immediate_operand")
-	      (match_operand 0 "x86_64_zext_immediate_operand")))
+	 (match_operand 0 "x86_64_immediate_operand")
+	 (match_operand 0 "x86_64_zext_immediate_operand"))
     (match_operand 0 "nonmemory_operand")))
 
 ;; Return true when operand is PIC expression that can be computed by lea
@@ -577,8 +577,8 @@
 ;; Test for a valid operand for a call instruction.
 (define_predicate "call_insn_operand"
   (ior (match_operand 0 "constant_call_address_operand")
-       (ior (match_operand 0 "call_register_no_elim_operand")
-	    (match_operand 0 "memory_operand"))))
+       (match_operand 0 "call_register_no_elim_operand")
+       (match_operand 0 "memory_operand")))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
 (define_predicate "sibcall_insn_operand"

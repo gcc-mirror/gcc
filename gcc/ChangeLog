@@ -1,3 +1,10 @@
+2009-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (x86_64_szext_general_operand): Do not
+	nest ior expressions.
+	(x86_64_szext_nonmemory_operand): Ditto.
+	(call_insn_operand): Ditto.
+
 2009-11-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* stmt.c (expand_asm_stmt): Get locus from stmt.
@@ -79,7 +86,7 @@
 	(execute_all_ipa_transforms): Update.
 	(execute_one_pass): Update.
 
-2009-11-14  Andy Hutchinson   <hutchinsonandy@gcc.gnu.org>
+2009-11-14  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR target/21078, 21080
 	* config/avr/avr.c (avr_return_addr_rtx): New function for
