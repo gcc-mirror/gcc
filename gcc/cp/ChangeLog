@@ -1,3 +1,9 @@
+2009-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42059
+	* typeck.c (cp_build_modify_expr): For initializer list call
+	check_array_initializer to make sure lhs isn't a VLA.
+
 2009-11-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/189, c++/9937, c++/13950, DR 176
