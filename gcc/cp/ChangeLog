@@ -1,6 +1,6 @@
 2009-11-16  Jason Merrill  <jason@redhat.com>
 
-	PR c++/13950, DR 176
+	PR c++/189, c++/9937, c++/13950, DR 176
 	* search.c (lookup_field_r): Allow lookup to find the
 	injected-class-name from a template base.
 	(template_self_reference_p): Remove.
