@@ -1,3 +1,13 @@
+2009-11-17  Andrew Haley  <aph@redhat.com>
+
+	* posix-threads.cc (park): Rewrite code to handle time.
+	Move mutex lock before the call to compare_and_swap to avoid a
+	race condition.
+	Add some assertions.
+	(unpark): Add an assertion.
+	(init): Move here from posix-threads.h.
+	* include/posix-threads.h (destroy): removed.
+
 2009-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exception.cc (PERSONALITY_FUNCTION): Fix oversight.
