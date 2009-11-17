@@ -1710,6 +1710,8 @@ get_pic_reg (void)
   rtx pic_reg = pic_offset_table_rtx;
   if (!reload_completed && !reload_in_progress)
     abort ();
+  if (current_function_is_leaf && !df_regs_ever_live_p (LAST_ARG_REGNUM))
+    pic_reg = gen_rtx_REG (SImode, LAST_ARG_REGNUM);
   return pic_reg;
 }
 
