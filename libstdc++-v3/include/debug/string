@@ -36,6 +36,7 @@
 
 namespace __gnu_debug
 {
+  /// Class std::basic_string with safety/checking/debug instrumentation.
   template<typename _CharT, typename _Traits = std::char_traits<_CharT>,
             typename _Allocator = std::allocator<_CharT> >
     class basic_string

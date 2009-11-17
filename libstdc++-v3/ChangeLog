@@ -1,3 +1,17 @@
+2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/debug/bitset: Add doxygen markup.
+	* include/debug/deque: Same.
+	* include/debug/list: Same.
+	* include/debug/map.h: Same.
+	* include/debug/multimap.h: Same.
+	* include/debug/set.h: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/unordered_map: Same.
+	* include/debug/unordered_set: Same.
+	* include/debug/string: Same.
+	* include/debug/vector: Same.
+
 2009-11-15  Steve Ward  <planet36@gmail.com>
 
 	* libsupc++/cxxabi.h (__cxa_demangle): Fix typo in comment.

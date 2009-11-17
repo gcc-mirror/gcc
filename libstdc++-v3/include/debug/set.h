@@ -38,6 +38,7 @@ namespace std
 {
 namespace __debug
 {
+  /// Class std::set with safety/checking/debug instrumentation.
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class set

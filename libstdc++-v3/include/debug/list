@@ -39,6 +39,7 @@ namespace std
 {
 namespace __debug
 {
+  /// Class std::list with safety/checking/debug instrumentation.
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class list
     : public _GLIBCXX_STD_D::list<_Tp, _Allocator>,

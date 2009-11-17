@@ -44,6 +44,7 @@ namespace std
 {
 namespace __debug
 {
+  /// Class std::unordered_map with safety/checking/debug instrumentation.
   template<typename _Key, typename _Tp,
 	   typename _Hash = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
@@ -315,6 +316,7 @@ namespace __debug
     { __x.swap(__y); }
 
 
+  /// Class std::unordered_multimap with safety/checking/debug instrumentation.
   template<typename _Key, typename _Tp,
 	   typename _Hash = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
