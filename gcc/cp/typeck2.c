@@ -723,7 +723,7 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 {
   enum tree_code code = TREE_CODE (type);
 
-  if (init == error_mark_node)
+  if (error_operand_p (init))
     return error_mark_node;
 
   gcc_assert (init);
