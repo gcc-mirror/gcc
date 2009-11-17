@@ -375,13 +375,6 @@ struct ParkHelper
 };
 
 inline void
-ParkHelper::init ()
-{
-  pthread_mutex_init (&mutex, NULL);
-  pthread_cond_init (&cond, NULL);
-}
-
-inline void
 ParkHelper::destroy ()
 {
   pthread_mutex_destroy (&mutex);
