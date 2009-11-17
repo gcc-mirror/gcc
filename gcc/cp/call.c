@@ -1235,6 +1235,8 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 	  && CONSTRUCTOR_NELTS (expr) == 1)
 	{
 	  expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	  if (error_operand_p (expr))
+	    return NULL;
 	  from = TREE_TYPE (expr);
 	}
     }
