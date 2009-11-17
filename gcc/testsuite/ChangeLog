@@ -1,6 +1,7 @@
 2009-11-16  Jason Merrill  <jason@redhat.com>
 
-	PR c++/13950
+	PR c++/189, c++/9937, c++/13950, DR 176
+	* g++.dg/tc1/dr176.C: Adjust.
 	* g++.dg/template/injected1.C: New.
 	* g++.dg/template/inherit.C: Adjust.
 	* g++.old-deja/g++.brendan/crash56.C: Adjust.
