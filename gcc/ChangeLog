@@ -1,3 +1,8 @@
+2009-11-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (process_options): Remove dead code.
+	* doc/invoke.texi (-frename-registers): Mention -fpeel-loops.
+
 2009-11-17  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-symtab.c (lto_symtab_resolve_symbols): Always initialize the
