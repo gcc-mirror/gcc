@@ -1,3 +1,8 @@
+2009-11-17  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-symtab.c (lto_symtab_resolve_symbols): Always initialize the
+	nodes.
+
 2009-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR tree-optimization/41857
