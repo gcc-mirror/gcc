@@ -28,6 +28,7 @@ typedef struct lto_file_struct
 {
   /* The name of the file.  */
   const char *filename;
+  off_t offset;
 } lto_file;
 
 /* In lto-lang.c  */

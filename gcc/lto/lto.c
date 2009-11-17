@@ -254,7 +254,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
    size is written to SIZE. */
 
 static VEC(ld_plugin_symbol_resolution_t,heap) *
-lto_resolution_read (FILE *resolution, const char *file_name)
+lto_resolution_read (FILE *resolution, lto_file *file)
 {
   /* We require that objects in the resolution file are in the same
      order as the lto1 command line. */
@@ -268,15 +268,30 @@ lto_resolution_read (FILE *resolution, const char *file_name)
   if (!resolution)
     return NULL;
 
-  name_len = strlen (file_name);
+  name_len = strlen (file->filename);
   obj_name = XNEWVEC (char, name_len + 1);
   fscanf (resolution, " ");   /* Read white space. */
 
   fread (obj_name, sizeof (char), name_len, resolution);
   obj_name[name_len] = '\0';
-  if (strcmp (obj_name, file_name) != 0)
+  if (strcmp (obj_name, file->filename) != 0)
     internal_error ("unexpected file name %s in linker resolution file. "
-		    "Expected %s", obj_name, file_name);
+		    "Expected %s", obj_name, file->filename);
+  if (file->offset != 0)
+    {
+      int t;
+      char offset_p[21];
+      long long offset;
+      t = fscanf (resolution, "@%20s", offset_p);
+      if (t != 1)
+        internal_error ("could not parse file offset");
+      errno = 0;
+      offset = strtoll(offset_p, NULL, 10);
+      if (errno != 0)
+        internal_error ("could not parse file offset");
+      if (offset != file->offset)
+        internal_error ("unexpected offset");
+    }
 
   free (obj_name);
 
@@ -332,7 +347,7 @@ lto_file_read (lto_file *file, FILE *resolution_file)
   size_t len;
   VEC(ld_plugin_symbol_resolution_t,heap) *resolutions;
   
-  resolutions = lto_resolution_read (resolution_file, file->filename);
+  resolutions = lto_resolution_read (resolution_file, file);
 
   file_data = XCNEW (struct lto_file_decl_data);
   file_data->file_name = file->filename;
