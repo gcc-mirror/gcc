@@ -620,6 +620,18 @@ verify_cgraph_node (struct cgraph_node *node)
 	  error ("caller edge frequency is too large");
 	  error_found = true;
 	}
+      if (gimple_has_body_p (e->caller->decl)
+          && !e->caller->global.inlined_to
+          && (e->frequency
+	      != compute_call_stmt_bb_frequency (e->caller->decl,
+						 gimple_bb (e->call_stmt))))
+	{
+	  error ("caller edge frequency %i does not match BB freqency %i",
+	  	 e->frequency,
+		 compute_call_stmt_bb_frequency (e->caller->decl,
+						 gimple_bb (e->call_stmt)));
+	  error_found = true;
+	}
       if (!e->inline_failed)
 	{
 	  if (node->global.inlined_to
