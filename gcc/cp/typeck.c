@@ -6239,7 +6239,11 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
       int from_array;
 
       if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
-	rhs = digest_init (lhstype, rhs);
+	{
+	  if (check_array_initializer (lhs, lhstype, rhs))
+	    return error_mark_node;
+	  rhs = digest_init (lhstype, rhs);
+	}
 
       else if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
 				     TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
