@@ -1,3 +1,8 @@
+2009-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-struct-reorg.c (update_cgraph_with_malloc_call): Fix profile
+	info.
+
 2009-11-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* toplev.c (process_options): Remove dead code.
