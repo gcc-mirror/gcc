@@ -1,5 +1,9 @@
 2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/profile/impl/profiler.h: Remove namespace markup.
+	
+2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/profile/bitset: Tweak doxygen markup.
 	* include/profile/deque: Same.
 	* include/profile/list: Same.

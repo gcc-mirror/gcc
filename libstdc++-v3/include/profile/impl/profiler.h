@@ -43,10 +43,6 @@
 #include <stddef.h>
 #endif
 
-/**
- * @namespace std::__gnu_profile
- * @brief Implementation of profile extension.
- */
 namespace __gnu_profile
 {
   /** @brief Reentrance guard.
