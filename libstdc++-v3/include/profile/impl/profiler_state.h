@@ -43,7 +43,7 @@
 #include <stdio.h>
 #endif
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 /** @brief Profiling mode on/off state.  */
@@ -103,5 +103,5 @@ inline void __turn_off()
   __state<0>::_S_diag_state->__turn_off();
 }
 
-} // end namespace __cxxprof_impl
+} // end namespace __gnu_profile
 #endif /* PROFCXX_PROFILER_STATE_H__ */

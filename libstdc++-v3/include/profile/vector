@@ -42,7 +42,7 @@ namespace std
 {
 namespace __profile
 {
-  /** @brief Vector wrapper with performance instrumentation.  */
+  /// Class std::vector wrapper with performance instrumentation.
   template<typename _Tp,
 	   typename _Allocator = std::allocator<_Tp> >
     class vector

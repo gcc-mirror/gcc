@@ -35,7 +35,7 @@ namespace std
 {
 namespace __profile
 {
-  /** @brief Multimap wrapper with performance instrumentation.  */
+  /// Class std::multimap wrapper with performance instrumentation.
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
     class multimap

@@ -50,7 +50,7 @@
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 /** @brief A vector-to-list instrumentation line in the object table.  */
@@ -314,5 +314,5 @@ inline void __trace_vector_to_list_resize(const void* __obj,
   __tables<0>::_S_vector_to_list->__resize(__obj, __from, __to);
 }
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 #endif /* PROFCXX_PROFILER_VECTOR_TO_LIST_H__ */

@@ -51,7 +51,7 @@
 #include <execinfo.h>
 #endif
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 typedef const void* __object_t;
 typedef void* __instruction_address_t;
@@ -168,5 +168,5 @@ class __stack_info_base
   virtual const char* __get_id() const = 0;
 };
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 #endif /* PROFCXX_PROFILER_NODE_H__ */

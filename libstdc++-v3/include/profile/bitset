@@ -35,7 +35,7 @@ namespace std
 {
 namespace __profile
 {
-  /** @brief Bitset wrapper with performance instrumentation.  */
+  /// Class std::bitset wrapper with performance instrumentation.
   template<size_t _Nb>
     class bitset
     : public _GLIBCXX_STD_D::bitset<_Nb>

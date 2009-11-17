@@ -1,5 +1,38 @@
 2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/profile/bitset: Tweak doxygen markup.
+	* include/profile/deque: Same.
+	* include/profile/list: Same.
+	* include/profile/map.h: Same.
+	* include/profile/multimap.h: Same.
+	* include/profile/multiset.h: Same.
+	* include/profile/set.h: Same.
+	* include/profile/unordered_map: Same.
+	* include/profile/vector: Same.
+
+	* include/profile/impl/profiler_container_size.h: Use namespace
+	__gnu_profile instead of __cxxprof_impl.
+	* include/profile/impl/profiler.h: Same.
+	(_GLIBCXX_PROFILE_IMPL_REENTRANCE_GUARD): To
+	_GLIBCXX_PROFILE_REENTRANCE_GUARD.
+	Remove namespace __cxxprof_guard.
+	(__reentrance_guard): De-templatize.
+	(__reentrance_guard::__inside_cxxprof_impl): To
+	__reentrance_guard::_S_get_in.
+
+	* include/profile/impl/profiler_hash_func.h: Use namespace
+	__gnu_profile instead of __cxxprof_impl.
+	* include/profile/impl/profiler_hashtable_size.h: Same.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Same.
+	* include/profile/impl/profiler_node.h: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/profile/impl/profiler_trace.h: Same.
+	* include/profile/impl/profiler_vector_size.h: Same.
+	* include/profile/impl/profiler_vector_to_list.h: Same.
+	* doc/xml/manual/profile_mode.xml: Update.
+
+2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/debug/bitset: Add doxygen markup.
 	* include/debug/deque: Same.
 	* include/debug/list: Same.

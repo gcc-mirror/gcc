@@ -35,7 +35,7 @@ namespace std
 {
 namespace __profile
 {
-  /** @brief Multiset wrapper with performance instrumentation.  */
+  /// Class std::multiset wrapper with performance instrumentation.
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class multiset
