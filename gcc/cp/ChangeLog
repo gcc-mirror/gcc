@@ -1,5 +1,9 @@
 2009-11-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/42061
+	* call.c (reference_binding): Return NULL for initializer list with
+	error operand inside of it.
+
 	PR c++/42059
 	* typeck.c (cp_build_modify_expr): For initializer list call
 	check_array_initializer to make sure lhs isn't a VLA.
