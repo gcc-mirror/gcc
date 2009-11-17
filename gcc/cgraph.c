@@ -1000,10 +1000,10 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
 	  /* Otherwise remove edge and create new one; we can't simply redirect
 	     since function has changed, so inline plan and other information
 	     attached to edge is invalid.  */
-	  cgraph_remove_edge (e);
 	  count = e->count;
 	  frequency = e->frequency;
 	  loop_nest = e->loop_nest;
+	  cgraph_remove_edge (e);
 	}
       else
 	{

@@ -1,3 +1,9 @@
+2009-11-17  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Do not access
+	removed node.
+	* cgraphunit.c (verify_cgraph_node): Verify frequencies for match.
+
 2009-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (x86_64_szext_general_operand): Do not
