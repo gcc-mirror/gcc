@@ -1,3 +1,8 @@
+2009-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42059
+	* g++.dg/cpp0x/initlist26.C: New test.
+
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21008, DR 515
