@@ -400,6 +400,7 @@ move_hint_to_base (tree type, struct mem_address *parts, tree base_hint,
 {
   unsigned i;
   tree val = NULL_TREE;
+  int qual;
 
   for (i = 0; i < addr->n; i++)
     {
@@ -414,7 +415,12 @@ move_hint_to_base (tree type, struct mem_address *parts, tree base_hint,
   if (i == addr->n)
     return;
 
-  /* Cast value to appropriate pointer type.  */
+  /* Cast value to appropriate pointer type.  We cannot use a pointer
+     to TYPE directly, as the back-end will assume registers of pointer
+     type are aligned, and just the base itself may not actually be.
+     We use void pointer to the type's address space instead.  */
+  qual = ENCODE_QUAL_ADDR_SPACE (TYPE_ADDR_SPACE (type));
+  type = build_qualified_type (void_type_node, qual);
   parts->base = fold_convert (build_pointer_type (type), val);
   aff_combination_remove_elt (addr, i);
 }
