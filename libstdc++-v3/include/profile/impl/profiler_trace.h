@@ -63,7 +63,7 @@
 #include "profile/impl/profiler_state.h"
 #include "profile/impl/profiler_node.h"
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 #if defined _GLIBCXX_PROFILE_THREADS && defined HAVE_TLS
@@ -367,7 +367,7 @@ void __trace_base<__object_info, __stack_info>::__write(FILE* __f)
     if (__it->second.__is_valid()) {
       fprintf(__f, __id);
       fprintf(__f, "|");
-      __cxxprof_impl::__write(__f, __it->first);
+      __gnu_profile::__write(__f, __it->first);
       fprintf(__f, "|");
       __it->second.__write(__f);
     }
@@ -428,7 +428,7 @@ struct __warn
     fprintf(__file,  __info.__warning_id);
     fprintf(__file, ": improvement = %d", __log_magnitude(__info.__magnitude));
     fprintf(__file, ": call stack = ");
-    __cxxprof_impl::__write(__file, __info.__context);
+    __gnu_profile::__write(__file, __info.__context);
     fprintf(__file, ": advice = %s\n", __info.__warning_message);
   }
 };
@@ -457,7 +457,7 @@ inline FILE* __open_output_file(const char* extension)
  * This can also be called directly by user code, including signal handlers.
  * It is protected against deadlocks by the reentrance guard in profiler.h.
  * However, when called from a signal handler that triggers while within
- * __cxxprof_impl (under the guarded zone), no output will be produced.
+ * __gnu_profile (under the guarded zone), no output will be produced.
  */
 inline void __report(void)
 {
@@ -559,6 +559,6 @@ inline bool __profcxx_init(void)
   return __is_on();
 }
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 
 #endif /* PROFCXX_PROFILER_TRACE_H__ */

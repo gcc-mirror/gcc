@@ -51,7 +51,7 @@
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 /** @brief A container size instrumentation line in the object table.  */
@@ -246,5 +246,5 @@ inline void __trace_container_size::__resize(const void* __obj, int __from,
   __object_info->__resize(__from, __to);
 }
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 #endif /* PROFCXX_PROFILER_CONTAINER_SIZE_H__ */

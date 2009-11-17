@@ -50,7 +50,7 @@
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 // Cost model. XXX: this must be taken from the machine model instead.
@@ -301,5 +301,5 @@ inline void __trace_map_to_unordered_map_invalidate(const void* __obj)
   if (__info) __info->__record_invalidate();
 }
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 #endif /* PROFCXX_PROFILER_MAP_TO_UNORDERED_MAP_H__ */

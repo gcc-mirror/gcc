@@ -35,7 +35,7 @@ namespace std
 {
 namespace __profile
 {
-  /** @brief Set wrapper with performance instrumentation.  */
+  /// Class std::set wrapper with performance instrumentation.
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class set

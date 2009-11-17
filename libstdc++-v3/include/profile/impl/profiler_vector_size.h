@@ -52,7 +52,7 @@
 #include "profile/impl/profiler_state.h"
 #include "profile/impl/profiler_container_size.h"
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 /** @brief Hashtable size instrumentation trace producer.  */
@@ -107,6 +107,6 @@ inline void __trace_vector_size_resize(const void* __obj, size_t __from,
   __tables<0>::_S_vector_size->__resize(__obj, __from, __to);
 }
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 
 #endif /* PROFCXX_PROFILER_VECTOR_SIZE_H__ */

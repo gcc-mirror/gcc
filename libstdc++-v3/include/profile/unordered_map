@@ -51,7 +51,7 @@ namespace std
 {
 namespace __profile
 {
-  /** @brief Unordered_map wrapper with performance instrumentation.  */
+  /// Class std::unordered_map wrapper with performance instrumentation.
   template<typename _Key, typename _Tp,
 	   typename _Hash  = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
@@ -275,12 +275,13 @@ namespace __profile
      unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
+
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 #define _GLIBCXX_BASE unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
 
-  /** @brief Unordered_multimap wrapper with performance instrumentation.  */
+  /// Class std::unordered_multimap wrapper with performance instrumentation.
   template<typename _Key, typename _Tp,
 	   typename _Hash  = std::hash<_Key>,
 	   typename _Pred = std::equal_to<_Key>,
@@ -371,7 +372,8 @@ namespace __profile
 
       ~unordered_multimap()
       {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), _Base::size());
+        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
+				     _Base::size());
         _M_profile_destruct();
       }
 
@@ -385,7 +387,8 @@ namespace __profile
       void
       clear()
       {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), _Base::size());
+        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
+				     _Base::size());
         _M_profile_destruct();
         _Base::clear();
       }

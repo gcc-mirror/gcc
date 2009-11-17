@@ -50,7 +50,7 @@
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
 
-namespace __cxxprof_impl
+namespace __gnu_profile
 {
 
 /** @brief A hash performance instrumentation line in the object table.  */
@@ -188,5 +188,5 @@ inline void __trace_hash_func_destruct(const void* __obj, size_t __chain,
   __tables<0>::_S_hash_func->__destruct(__obj, __chain, __accesses, __hops);
 }
 
-} // namespace __cxxprof_impl
+} // namespace __gnu_profile
 #endif /* PROFCXX_PROFILER_HASH_FUNC_H__ */

@@ -640,10 +640,10 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
    Hook names must start with <code>__profcxx_</code>.
    Make sure they transform
    in no code with <code>-D_NO_GLBICXX_PROFILE_MAGIC</code>.
-   Make sure all calls to any method in namespace <code>__cxxprof_impl</code>
+   Make sure all calls to any method in namespace <code>__gnu_profile</code>
    is protected against reentrance using macro
-   <code>_GLIBCXX_PROFILE_IMPL_REENTRANCE_GUARD</code>.
-   All names of methods in namespace <code>__cxxprof_impl</code> called from
+   <code>_GLIBCXX_PROFILE_REENTRANCE_GUARD</code>.
+   All names of methods in namespace <code>__gnu_profile</code> called from
    <code>profiler.h</code> must start with <code>__trace_magic_</code>.
   </para>
 
