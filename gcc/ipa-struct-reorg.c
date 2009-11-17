@@ -1690,7 +1690,10 @@ update_cgraph_with_malloc_call (gimple malloc_stmt, tree context)
   src = cgraph_node (context);
   dest = cgraph_node (malloc_fn_decl);
   cgraph_create_edge (src, dest, malloc_stmt, 
-		      0, 0, gimple_bb (malloc_stmt)->loop_depth);
+		      gimple_bb (malloc_stmt)->count,
+		      compute_call_stmt_bb_frequency
+		        (context, gimple_bb (malloc_stmt)),
+		      gimple_bb (malloc_stmt)->loop_depth);
 }
 
 /* This function generates set of statements required 
