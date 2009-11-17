@@ -1,3 +1,12 @@
+2009-11-17  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-elf.c (lto_file_init): Add offset argument.
+	(lto_elf_file_open): Record the offset.
+	* lto.c (lto_resolution_read): Change file_name into a lto_file
+	argument. Check offsets.
+	(lto_file_read): Update call to lto_resolution_read.
+	* lto.h (lto_file_struct): Add the offset field.
+
 2009-11-16  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-elf.c (lto_elf_file_open): Use strtoll to parse the offset.
