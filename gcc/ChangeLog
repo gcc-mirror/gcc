@@ -1,3 +1,7 @@
+2009-11-17  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k-devices.def: Add MCF5441x family.
+
 2009-11-17  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Do not access
