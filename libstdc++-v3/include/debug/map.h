@@ -38,6 +38,7 @@ namespace std
 {
 namespace __debug
 {
+  /// Class std::map with safety/checking/debug instrumentation.
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
     class map

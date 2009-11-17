@@ -38,6 +38,7 @@ namespace std
 {
 namespace __debug
 {
+  /// Class std::deque with safety/checking/debug instrumentation.
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class deque
     : public _GLIBCXX_STD_D::deque<_Tp, _Allocator>,

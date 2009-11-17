@@ -39,6 +39,7 @@ namespace std
 {
 namespace __debug
 {
+  /// Class std::vector with safety/checking/debug instrumentation.
   template<typename _Tp,
 	   typename _Allocator = std::allocator<_Tp> >
     class vector
