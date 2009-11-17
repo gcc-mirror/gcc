@@ -1843,11 +1843,12 @@ process_options (void)
 
   /* The loop unrolling code assumes that cse will be run after loop.
      web and rename-registers also help when run after loop unrolling.  */
-
   if (flag_rerun_cse_after_loop == AUTODETECT_VALUE)
     flag_rerun_cse_after_loop = flag_unroll_loops || flag_peel_loops;
+
   if (flag_web == AUTODETECT_VALUE)
     flag_web = flag_unroll_loops || flag_peel_loops;
+
   if (flag_rename_registers == AUTODETECT_VALUE)
     flag_rename_registers = flag_unroll_loops || flag_peel_loops;
 
@@ -1991,9 +1992,8 @@ process_options (void)
     error ("target system does not support the \"%s\" debug format",
 	   debug_type_names[write_symbols]);
 
-  /* Now we know which debug output will be used so we can set
-     flag_var_tracking, flag_rename_registers if the user has
-     not specified them.  */
+  /* We know which debug output will be used so we can set flag_var_tracking
+     and flag_var_tracking_uninit if the user has not specified them.  */
   if (debug_info_level < DINFO_LEVEL_NORMAL
       || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
     {
@@ -2033,10 +2033,6 @@ process_options (void)
   if (flag_var_tracking_assignments
       && (flag_selective_scheduling || flag_selective_scheduling2))
     warning (0, "var-tracking-assignments changes selective scheduling");
-
-  if (flag_rename_registers == AUTODETECT_VALUE)
-    flag_rename_registers = default_debug_hooks->var_location
-	    		    != do_nothing_debug_hooks.var_location;
 
   if (flag_tree_cselim == AUTODETECT_VALUE)
 #ifdef HAVE_conditional_move
