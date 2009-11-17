@@ -1,5 +1,9 @@
 2009-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* reload.c (find_reloads_address): Fix typo.
+
+2009-11-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/spu/spu.c (get_pic_reg): Use LAST_ARG_REGNUM as PIC
 	registers in leaf functions if possible.
 

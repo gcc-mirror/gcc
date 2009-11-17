@@ -5239,7 +5239,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
   if (CONSTANT_P (ad) && ! strict_memory_address_addr_space_p (mode, ad, as))
     {
       enum machine_mode address_mode = GET_MODE (ad);
-      if (ad == VOIDmode)
+      if (address_mode == VOIDmode)
 	address_mode = targetm.addr_space.address_mode (as);
 
       /* If AD is an address in the constant pool, the MEM rtx may be shared.
