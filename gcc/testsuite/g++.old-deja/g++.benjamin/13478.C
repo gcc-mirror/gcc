@@ -27,10 +27,4 @@ const hand_table Agent::table_1[] =
    {0,     &Agent::table_2},
    {first, &Agent::foo},
    {last,  &(hand)Agent::foo} // { dg-error "" } no match
-}; // { dg-error "" } cannot convert
-
-
-
-
-
-
+};

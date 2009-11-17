@@ -4878,6 +4878,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
 
       field_init = reshape_init_r (TREE_TYPE (field), d,
 				   /*first_initializer_p=*/false);
+      if (field_init == error_mark_node)
+	return error_mark_node;
+
       CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init), field, field_init);
 
       /* [dcl.init.aggr]
