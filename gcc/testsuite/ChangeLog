@@ -1,5 +1,8 @@
 2009-11-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/42061
+	* g++.dg/cpp0x/initlist27.C: New test.
+
 	PR c++/42059
 	* g++.dg/cpp0x/initlist26.C: New test.
 
