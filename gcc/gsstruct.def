@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 
 DEFGSSTRUCT(GSS_BASE, gimple_statement_base, false)
 DEFGSSTRUCT(GSS_WITH_OPS, gimple_statement_with_ops, true)
+DEFGSSTRUCT(GSS_WITH_MEM_OPS_BASE, gimple_statement_with_memory_ops_base, false)
 DEFGSSTRUCT(GSS_WITH_MEM_OPS, gimple_statement_with_memory_ops, true)
 DEFGSSTRUCT(GSS_ASM, gimple_statement_asm, true)
 DEFGSSTRUCT(GSS_BIND, gimple_statement_bind, false)

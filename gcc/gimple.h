@@ -737,6 +737,7 @@ enum gimple_statement_structure_enum {
 union GTY ((desc ("gimple_statement_structure (&%h)"))) gimple_statement_d {
   struct gimple_statement_base GTY ((tag ("GSS_BASE"))) gsbase;
   struct gimple_statement_with_ops GTY ((tag ("GSS_WITH_OPS"))) gsops;
+  struct gimple_statement_with_memory_ops_base GTY ((tag ("GSS_WITH_MEM_OPS_BASE"))) gsmembase;
   struct gimple_statement_with_memory_ops GTY ((tag ("GSS_WITH_MEM_OPS"))) gsmem;
   struct gimple_statement_omp GTY ((tag ("GSS_OMP"))) omp;
   struct gimple_statement_bind GTY ((tag ("GSS_BIND"))) gimple_bind;
@@ -1330,7 +1331,7 @@ gimple_vuse_op (const_gimple g)
     return NULL_USE_OPERAND_P;
   ops = g->gsops.opbase.use_ops;
   if (ops
-      && USE_OP_PTR (ops)->use == &g->gsmem.membase.vuse)
+      && USE_OP_PTR (ops)->use == &g->gsmembase.vuse)
     return USE_OP_PTR (ops);
   return NULL_USE_OPERAND_P;
 }
@@ -1345,7 +1346,7 @@ gimple_vdef_op (const_gimple g)
     return NULL_DEF_OPERAND_P;
   ops = g->gsops.opbase.def_ops;
   if (ops
-      && DEF_OP_PTR (ops) == &g->gsmem.membase.vdef)
+      && DEF_OP_PTR (ops) == &g->gsmembase.vdef)
     return DEF_OP_PTR (ops);
   return NULL_DEF_OPERAND_P;
 }
@@ -1358,7 +1359,7 @@ gimple_vuse (const_gimple g)
 {
   if (!gimple_has_mem_ops (g))
     return NULL_TREE;
-  return g->gsmem.membase.vuse;
+  return g->gsmembase.vuse;
 }
 
 /* Return the single VDEF operand of the statement G.  */
@@ -1368,7 +1369,7 @@ gimple_vdef (const_gimple g)
 {
   if (!gimple_has_mem_ops (g))
     return NULL_TREE;
-  return g->gsmem.membase.vdef;
+  return g->gsmembase.vdef;
 }
 
 /* Return the single VUSE operand of the statement G.  */
@@ -1378,7 +1379,7 @@ gimple_vuse_ptr (gimple g)
 {
   if (!gimple_has_mem_ops (g))
     return NULL;
-  return &g->gsmem.membase.vuse;
+  return &g->gsmembase.vuse;
 }
 
 /* Return the single VDEF operand of the statement G.  */
@@ -1388,7 +1389,7 @@ gimple_vdef_ptr (gimple g)
 {
   if (!gimple_has_mem_ops (g))
     return NULL;
-  return &g->gsmem.membase.vdef;
+  return &g->gsmembase.vdef;
 }
 
 /* Set the single VUSE operand of the statement G.  */
@@ -1397,7 +1398,7 @@ static inline void
 gimple_set_vuse (gimple g, tree vuse)
 {
   gcc_assert (gimple_has_mem_ops (g));
-  g->gsmem.membase.vuse = vuse;
+  g->gsmembase.vuse = vuse;
 }
 
 /* Set the single VDEF operand of the statement G.  */
@@ -1406,7 +1407,7 @@ static inline void
 gimple_set_vdef (gimple g, tree vdef)
 {
   gcc_assert (gimple_has_mem_ops (g));
-  g->gsmem.membase.vdef = vdef;
+  g->gsmembase.vdef = vdef;
 }
 
 
