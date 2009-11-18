@@ -1,3 +1,9 @@
+2009-11-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42072
+	* trans-expr.c (gfc_conv_procedure_call): Handle procedure pointer
+	dummies which are passed to C_F_PROCPOINTER.
+
 2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* module.c (mio_f2k_derived): Initialize op.
