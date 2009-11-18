@@ -359,15 +359,16 @@ ParkHelper::unpark ()
   if (compare_and_swap 
       (ptr, Thread::THREAD_PARK_RUNNING, Thread::THREAD_PARK_PERMIT))
     return;
-  
+
   /* If this thread is parked, put it into state RUNNING and send it a
      signal.  */
-  if (compare_and_swap 
+  if (compare_and_swap
       (ptr, Thread::THREAD_PARK_PARKED, Thread::THREAD_PARK_RUNNING))
     {
       pthread_mutex_lock (&mutex);
-      pthread_cond_signal (&cond);
+      int result = pthread_cond_signal (&cond);
       pthread_mutex_unlock (&mutex);
+      JvAssert (result == 0);
     }
 }
 
@@ -378,6 +379,14 @@ void
 ParkHelper::deactivate ()
 {
   permit = ::java::lang::Thread::THREAD_PARK_DEAD;
+}
+
+void
+ParkHelper::init ()
+{
+  pthread_mutex_init (&mutex, NULL);
+  pthread_cond_init (&cond, NULL);
+  permit = ::java::lang::Thread::THREAD_PARK_RUNNING;
 }
 
 /**
@@ -407,32 +416,44 @@ ParkHelper::park (jboolean isAbsolute, jlong time)
     return;
 
   struct timespec ts;
-  jlong millis = 0, nanos = 0;
 
   if (time)
     {
+      unsigned long long seconds;
+      unsigned long usec;
+
       if (isAbsolute)
 	{
-	  millis = time;
-	  nanos = 0;
+	  ts.tv_sec = time / 1000;
+	  ts.tv_nsec = (time % 1000) * 1000 * 1000;
 	}
       else
 	{
-	  millis = java::lang::System::currentTimeMillis();
-	  nanos = time;
-	}
-
-      if (millis > 0 || nanos > 0)
-	{
 	  // Calculate the abstime corresponding to the timeout.
-	  // Everything is in milliseconds.
-	  //
-	  // We use `unsigned long long' rather than jlong because our
-	  // caller may pass up to Long.MAX_VALUE millis.  This would
-	  // overflow the range of a timespec.
+	  jlong nanos = time;
+	  jlong millis = 0;
 
-	  unsigned long long m = (unsigned long long)millis;
-	  unsigned long long seconds = m / 1000; 
+	  // For better accuracy, should use pthread_condattr_setclock
+	  // and clock_gettime.
+#ifdef HAVE_GETTIMEOFDAY
+	  timeval tv;
+	  gettimeofday (&tv, NULL);
+	  usec = tv.tv_usec;
+	  seconds = tv.tv_sec;
+#else
+	  unsigned long long startTime
+	    = java::lang::System::currentTimeMillis();
+	  seconds = startTime / 1000;
+	  /* Assume we're about half-way through this millisecond.  */
+	  usec = (startTime % 1000) * 1000 + 500;
+#endif
+	  /* These next two statements cannot overflow.  */
+	  usec += nanos / 1000;
+	  usec += (millis % 1000) * 1000;
+	  /* These two statements could overflow only if tv.tv_sec was
+	     insanely large.  */
+	  seconds += millis / 1000;
+	  seconds += usec / 1000000;
 
 	  ts.tv_sec = seconds;
 	  if (ts.tv_sec < 0 || (unsigned long long)ts.tv_sec != seconds)
@@ -442,29 +463,30 @@ ParkHelper::park (jboolean isAbsolute, jlong time)
 	      millis = nanos = 0;
 	    }
 	  else
-	    {
-	      m %= 1000;
-	      ts.tv_nsec = m * 1000000 + (unsigned long long)nanos;
-	    }
+	    /* This next statement also cannot overflow.  */
+	    ts.tv_nsec = (usec % 1000000) * 1000 + (nanos % 1000);
 	}
     }
-      
+
+  pthread_mutex_lock (&mutex);
   if (compare_and_swap 
       (ptr, Thread::THREAD_PARK_RUNNING, Thread::THREAD_PARK_PARKED))
     {
-      pthread_mutex_lock (&mutex);
-      if (millis == 0 && nanos == 0)
-	pthread_cond_wait (&cond, &mutex);
+      int result = 0;
+
+      if (! time)
+	result = pthread_cond_wait (&cond, &mutex);
       else
-	pthread_cond_timedwait (&cond, &mutex, &ts);
-      pthread_mutex_unlock (&mutex);
-      
+	result = pthread_cond_timedwait (&cond, &mutex, &ts);
+
+      JvAssert (result == 0 || result == ETIMEDOUT);
+
       /* If we were unparked by some other thread, this will already
-	 be in state THREAD_PARK_RUNNING.  If we timed out, we have to
-	 do it ourself.  */
-      compare_and_swap 
-	(ptr, Thread::THREAD_PARK_PARKED, Thread::THREAD_PARK_RUNNING);
+	 be in state THREAD_PARK_RUNNING.  If we timed out or were
+	 interrupted, we have to do it ourself.  */
+      permit = Thread::THREAD_PARK_RUNNING;
     }
+  pthread_mutex_unlock (&mutex);
 }
 
 static void
