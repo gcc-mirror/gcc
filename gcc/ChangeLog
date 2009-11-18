@@ -1,3 +1,14 @@
+2009-11-18  Paul Brook  <paul@codesourcery.com>
+	Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/arm.c (FL_ARCH7EM, FL_FOR_ARCH7EM): Define.
+	(arm_arch7em): New variable.
+	(all_architectures): Add armv7e-m.
+	(arm_override_options): Set arm_arch7em.
+	* config/arm/arm.h (TARGET_DSP_MULTIPLY, TARGET_INT_SIMD):
+	Include arm_arch7em.
+	(arm_arch7em): Declare.
+
 2009-11-18  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (input_gimple_stmt): Assert that we find
