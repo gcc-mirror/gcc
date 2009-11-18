@@ -1,3 +1,11 @@
+2009-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3187
+	* g++.dg/abi/mangle26.C: Also match *C2* definition.
+	* g++.dg/abi/mangle27.C: Likewise.
+	* g++.dg/abi/mangle28.C: Likewise.
+	* g++.dg/abi/mangle29.C: Likewise.
+
 2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41926

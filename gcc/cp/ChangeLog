@@ -1,3 +1,18 @@
+2009-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3187
+	* cp-tree.h (expand_or_defer_fn_1): New prototype.
+	* decl2.c (cp_write_global_declarations): Mark as !DECL_EXTERNAL
+	also all same_body aliases.
+	* semantics.c (expand_or_defer_fn): Move most of the function
+	except registering with cgraph to ...
+	(expand_or_defer_fn_1): ... here.  New function.
+	* optimize.c: Include cgraph.h.
+	(maybe_clone_body): If in charge parm is not used and both base
+	and complete clones are created and are not comdat, tell cgraph
+	they have the same body.
+	* Make-lang.in (cp/optimize.o): Depend on $(CGRAPH_H).
+
 2009-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42058

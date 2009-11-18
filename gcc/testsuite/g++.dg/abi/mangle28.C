@@ -11,4 +11,4 @@ namespace std {
 
 std::basic_istream<char,std::char_traits<char> > s1;
 
-// { dg-final { scan-assembler "\n_?_ZNSiC1Ev\[: \t\n\]" } }
+// { dg-final { scan-assembler "\n_?_ZNSiC\[12\]Ev\[: \t\n\]" } }

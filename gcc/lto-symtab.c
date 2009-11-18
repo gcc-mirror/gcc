@@ -221,6 +221,25 @@ lto_cgraph_replace_node (struct cgraph_node *node,
       cgraph_remove_edge (e);
     }
 
+  if (node->same_body)
+    {
+      struct cgraph_node *alias;
+
+      for (alias = node->same_body; alias; alias = alias->next)
+	if (DECL_ASSEMBLER_NAME_SET_P (alias->decl))
+	  {
+	    lto_symtab_entry_t se
+	      = lto_symtab_get (DECL_ASSEMBLER_NAME (alias->decl));
+
+	    for (; se; se = se->next)
+	      if (se->node == node)
+		{
+		  se->node = NULL;
+		  break;
+		}
+	  }
+    }
+
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
 }
@@ -634,7 +653,22 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   for (e = prevailing->next; e; e = e->next)
     {
       if (e->node != NULL)
-	lto_cgraph_replace_node (e->node, prevailing->node);
+	{
+	  if (e->node->decl != e->decl && e->node->same_body)
+	    {
+	      struct cgraph_node *alias;
+
+	      for (alias = e->node->same_body; alias; alias = alias->next)
+		if (alias->decl == e->decl)
+		  break;
+	      if (alias)
+		{
+		  cgraph_remove_same_body_alias (alias);
+		  continue;
+		}
+	    }
+	  lto_cgraph_replace_node (e->node, prevailing->node);
+	}
     }
 
   /* Drop all but the prevailing decl from the symtab.  */

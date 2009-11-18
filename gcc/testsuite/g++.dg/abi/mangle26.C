@@ -11,4 +11,4 @@ namespace std {
 
 std::A a;
 
-// { dg-final { scan-assembler "\n_?_ZNSt1AC1Ev\[: \t\n\]" } }
+// { dg-final { scan-assembler "\n_?_ZNSt1AC\[12\]Ev\[: \t\n\]" } }
