@@ -1,5 +1,10 @@
 2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-ssa.c (insert_debug_temp_for_var_def): Fix handling of
+	released SSA names.
+
+2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/41888
 	PR debug/41886
 	* graphite-scop-detection.c (stmt_simple_for_scop_p): Debug stmts

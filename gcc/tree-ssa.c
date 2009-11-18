@@ -383,8 +383,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	     dead SSA NAMEs.  SSA verification shall catch any
 	     errors.  */
 	  if ((!gsi && !gimple_bb (def_stmt))
-	      || !walk_gimple_op (def_stmt, find_released_ssa_name,
-				  &wi))
+	      || walk_gimple_op (def_stmt, find_released_ssa_name, &wi))
 	    no_value = true;
 	}
 
