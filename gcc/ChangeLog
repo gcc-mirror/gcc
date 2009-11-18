@@ -1,5 +1,9 @@
 2009-11-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (loc_list_from_tree): Don't call rtl_for_decl_location
+	unnecessarily.
+	(rtl_for_decl_location): Try harder to get a rtl for TREE_STATIC vars.
+
 	PR c++/3187
 	* cgraph.h (struct cgraph_node): Add same_body and same_body_alias
 	fields.
