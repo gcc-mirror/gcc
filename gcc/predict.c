@@ -77,7 +77,6 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
-static void compute_function_frequency (void);
 static void choose_function_section (void);
 static bool can_predict_insn_p (const_rtx);
 
@@ -2145,7 +2144,7 @@ estimate_bb_frequencies (void)
 }
 
 /* Decide whether function is hot, cold or unlikely executed.  */
-static void
+void
 compute_function_frequency (void)
 {
   basic_block bb;
