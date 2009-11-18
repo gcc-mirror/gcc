@@ -143,6 +143,8 @@ struct ipa_param_call_note
   struct ipa_param_call_note *next;
   /* Statement that contains the call to the parameter above.  */
   gimple stmt;
+  /* When in LTO, we the above stmt will be NULL and we need an uid. */
+  unsigned int lto_stmt_uid;
   /* Index of the parameter that is called.  */
   int formal_id;
   /* Expected number of executions: calculated in profile.c.  */
@@ -508,6 +510,7 @@ void ipa_dump_param_adjustments (FILE *, ipa_parm_adjustment_vec, tree);
 void ipa_prop_write_jump_functions (cgraph_node_set set);
 void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
+void lto_ipa_fixup_call_notes (struct cgraph_node *, gimple *);
 
 /* From tree-sra.c:  */
 bool build_ref_for_offset (tree *, tree, HOST_WIDE_INT, tree, bool);

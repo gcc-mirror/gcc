@@ -334,7 +334,7 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
     overall_size -= orig_size;
   ncalls_inlined++;
 
-  if (flag_indirect_inlining && !flag_wpa)
+  if (flag_indirect_inlining)
     return ipa_propagate_indirect_call_infos (curr, new_edges);
   else
     return false;
@@ -900,7 +900,7 @@ cgraph_decide_inlining_of_small_functions (void)
   int min_size, max_size;
   VEC (cgraph_edge_p, heap) *new_indirect_edges = NULL;
 
-  if (flag_indirect_inlining && !flag_wpa)
+  if (flag_indirect_inlining)
     new_indirect_edges = VEC_alloc (cgraph_edge_p, heap, 8);
 
   if (dump_file)
@@ -1047,10 +1047,10 @@ cgraph_decide_inlining_of_small_functions (void)
 	  if (where->global.inlined_to)
 	    where = where->global.inlined_to;
 	  if (!cgraph_decide_recursive_inlining (where,
-						 flag_indirect_inlining && !flag_wpa
+						 flag_indirect_inlining
 						 ? &new_indirect_edges : NULL))
 	    continue;
-	  if (flag_indirect_inlining && !flag_wpa)
+	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
           update_callee_keys (heap, where, updated_nodes);
 	}
@@ -1069,7 +1069,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	    }
 	  callee = edge->callee;
 	  cgraph_mark_inline_edge (edge, true, &new_indirect_edges);
-	  if (flag_indirect_inlining && !flag_wpa)
+	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
 
 	  update_callee_keys (heap, callee, updated_nodes);
@@ -1138,7 +1138,7 @@ cgraph_decide_inlining (void)
   int initial_size = 0;
 
   cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
-  if (in_lto_p && flag_indirect_inlining && !flag_wpa)
+  if (in_lto_p && flag_indirect_inlining)
     ipa_update_after_lto_read ();
 
   max_count = 0;
@@ -1294,7 +1294,7 @@ cgraph_decide_inlining (void)
     }
 
   /* Free ipa-prop structures if they are no longer needed.  */
-  if (flag_indirect_inlining && !flag_wpa)
+  if (flag_indirect_inlining)
     free_all_ipa_structures_after_iinln ();
 
   if (dump_file)
@@ -2001,7 +2001,7 @@ inline_transform (struct cgraph_node *node)
 static void 
 inline_read_summary (void)
 {
-  if (flag_indirect_inlining && !flag_wpa)
+  if (flag_indirect_inlining)
     {
       ipa_register_cgraph_hooks ();
       if (!flag_ipa_cp)
@@ -2044,7 +2044,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
  inline_write_summary,			/* write_summary */
  inline_read_summary,			/* read_summary */
  NULL,					/* function_read_summary */
- NULL,					/* stmt_fixup */
+ lto_ipa_fixup_call_notes,		/* stmt_fixup */
  0,					/* TODOs */
  inline_transform,			/* function_transform */
  NULL,					/* variable_transform */

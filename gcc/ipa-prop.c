@@ -751,6 +751,7 @@ ipa_note_param_call (struct ipa_node_params *info, int formal_id,
   note = XCNEW (struct ipa_param_call_note);
   note->formal_id = formal_id;
   note->stmt = stmt;
+  note->lto_stmt_uid = gimple_uid (stmt);
   note->count = bb->count;
   note->frequency = compute_call_stmt_bb_frequency (current_function_decl, bb);
 
@@ -1100,6 +1101,7 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
 	  new_indirect_edge = cgraph_create_edge (node, callee, nt->stmt,
 						  nt->count, nt->frequency,
 						  nt->loop_nest);
+	  new_indirect_edge->lto_stmt_uid = nt->lto_stmt_uid;
 	  new_indirect_edge->indirect_call = 1;
 	  ipa_check_create_edge_args ();
 	  if (new_edges)
@@ -1961,6 +1963,40 @@ ipa_read_jump_function (struct lto_input_block *ib,
     }
 }
 
+/* Stream out a parameter call note.  */
+
+static void
+ipa_write_param_call_note (struct output_block *ob,
+			   struct ipa_param_call_note *note)
+{
+  gcc_assert (!note->processed);
+  lto_output_uleb128_stream (ob->main_stream, gimple_uid (note->stmt));
+  lto_output_sleb128_stream (ob->main_stream, note->formal_id);
+  lto_output_sleb128_stream (ob->main_stream, note->count);
+  lto_output_sleb128_stream (ob->main_stream, note->frequency);
+  lto_output_sleb128_stream (ob->main_stream, note->loop_nest);
+}
+
+/* Read in a parameter call note.  */
+
+static void
+ipa_read_param_call_note (struct lto_input_block *ib,
+			  struct ipa_node_params *info)
+
+{
+  struct ipa_param_call_note *note = XCNEW (struct ipa_param_call_note);
+
+  note->lto_stmt_uid = (unsigned int) lto_input_uleb128 (ib);
+  note->formal_id = (int) lto_input_sleb128 (ib);
+  note->count = (gcov_type) lto_input_sleb128 (ib);
+  note->frequency = (int) lto_input_sleb128 (ib);
+  note->loop_nest = (int) lto_input_sleb128 (ib);
+
+  note->next = info->param_calls;
+  info->param_calls = note;
+}
+
+
 /* Stream out NODE info to OB.  */
 
 static void
@@ -1972,16 +2008,17 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   int j;
   struct cgraph_edge *e;
   struct bitpack_d *bp;
+  int note_count;
+  struct ipa_param_call_note *note;
 
   encoder = ob->decl_state->cgraph_node_encoder;
   node_ref = lto_cgraph_encoder_encode (encoder, node);
   lto_output_uleb128_stream (ob->main_stream, node_ref);
 
-  /* Note that flags will need to be read in the opposite
-     order as we are pushing the bitflags into FLAGS.  */
   bp = bitpack_create ();
   bp_pack_value (bp, info->called_with_var_arguments, 1);
-  gcc_assert (info->modification_analysis_done || ipa_get_param_count (info) == 0);
+  gcc_assert (info->modification_analysis_done
+	      || ipa_get_param_count (info) == 0);
   gcc_assert (info->uses_analysis_done || ipa_get_param_count (info) == 0);
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
@@ -1996,10 +2033,17 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
 
-      lto_output_uleb128_stream (ob->main_stream, ipa_get_cs_argument_count (args));
+      lto_output_uleb128_stream (ob->main_stream,
+				 ipa_get_cs_argument_count (args));
       for (j = 0; j < ipa_get_cs_argument_count (args); j++)
 	ipa_write_jump_function (ob, ipa_get_ith_jump_func (args, j));
     }
+
+  for (note = info->param_calls; note; note = note->next)
+    note_count++;
+  lto_output_uleb128_stream (ob->main_stream, note_count);
+  for (note = info->param_calls; note; note = note->next)
+    ipa_write_param_call_note (ob, note);
 }
 
 /* Srtream in NODE info from IB.  */
@@ -2012,12 +2056,10 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
   int k;
   struct cgraph_edge *e;
   struct bitpack_d *bp;
+  int i, note_count;
 
   ipa_initialize_node_params (node);
 
-  /* Note that the flags must be read in the opposite
-     order in which they were written (the bitflags were
-     pushed into FLAGS).  */
   bp = lto_input_bitpack (ib);
   info->called_with_var_arguments = bp_unpack_value (bp, 1);
   if (ipa_get_param_count (info) != 0)
@@ -2037,10 +2079,6 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       int count = lto_input_uleb128 (ib);
 
-      if (VEC_length (ipa_edge_args_t, ipa_edge_args_vector)
-	  <= (unsigned) cgraph_edge_max_uid)
-	VEC_safe_grow_cleared (ipa_edge_args_t, gc,
-			       ipa_edge_args_vector, cgraph_edge_max_uid + 1);
       ipa_set_cs_argument_count (args, count);
       if (!count)
 	continue;
@@ -2050,6 +2088,10 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
       for (k = 0; k < ipa_get_cs_argument_count (args); k++)
 	ipa_read_jump_function (ib, ipa_get_ith_jump_func (args, k), data_in);
     }
+
+  note_count = lto_input_uleb128 (ib);
+  for (i = 0; i < note_count; i++)
+    ipa_read_param_call_note (ib, info);
 }
 
 /* Write jump functions for nodes in SET.  */
@@ -2173,4 +2215,30 @@ ipa_update_after_lto_read (void)
 	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
 	}
     }
+}
+
+/* Walk param call notes of NODE and set their call statements given the uid
+   stored in each note and STMTS which is an array of statements indexed by the
+   uid.  */
+
+void
+lto_ipa_fixup_call_notes (struct cgraph_node *node, gimple *stmts)
+{
+  struct ipa_node_params *info;
+  struct ipa_param_call_note *note;
+
+  ipa_check_create_node_params ();
+  info = IPA_NODE_REF (node);
+  note = info->param_calls;
+  /* If there are no notes or they have already been fixed up (the same fixup
+     is called for both inlining and ipa-cp), there's nothing to do. */
+  if (!note || note->stmt)
+    return;
+
+  do
+    {
+      note->stmt = stmts[note->lto_stmt_uid];
+      note = note->next;
+    }
+  while (note);
 }
