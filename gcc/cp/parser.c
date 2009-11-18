@@ -3329,7 +3329,7 @@ cp_parser_primary_expression (cp_parser *parser,
       if (c_dialect_objc ())
         /* We have an Objective-C++ message. */
         return cp_parser_objc_expression (parser);
-      maybe_warn_cpp0x ("lambda expressions");
+      maybe_warn_cpp0x (CPP0X_LAMBDA_EXPR);
       return cp_parser_lambda_expression (parser);
 
     case CPP_OBJC_STRING:
@@ -5275,7 +5275,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	      {
 		/* A braced-init-list.  */
-		maybe_warn_cpp0x ("extended initializer lists");
+		maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 		expr = cp_parser_braced_list (parser, &expr_non_constant_p);
 		if (non_constant_p && expr_non_constant_p)
 		  *non_constant_p = true;
@@ -5992,7 +5992,7 @@ cp_parser_new_initializer (cp_parser* parser)
     {
       tree t;
       bool expr_non_constant_p;
-      maybe_warn_cpp0x ("extended initializer lists");
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
       t = cp_parser_braced_list (parser, &expr_non_constant_p);
       CONSTRUCTOR_IS_DIRECT_INIT (t) = 1;
       expression_list = make_tree_vector_single (t);
@@ -6553,7 +6553,7 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	      tree rhs = cp_parser_initializer_clause (parser, &non_constant_p);
 
 	      if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
-		maybe_warn_cpp0x ("extended initializer lists");
+		maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 
 	      /* An assignment may not appear in a
 		 constant-expression.  */
@@ -8143,7 +8143,7 @@ cp_parser_condition (cp_parser* parser)
 	      initializer = cp_parser_initializer_clause (parser, &non_constant_p);
 	    }
 	  if (BRACE_ENCLOSED_INITIALIZER_P (initializer))
-	    maybe_warn_cpp0x ("extended initializer lists");
+	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 
 	  if (!non_constant_p)
 	    initializer = fold_non_dependent_expr (initializer);
@@ -8407,7 +8407,7 @@ cp_parser_jump_statement (cp_parser* parser)
 
 	if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	  {
-	    maybe_warn_cpp0x ("extended initializer lists");
+	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 	    expr = cp_parser_braced_list (parser, &expr_non_constant_p);
 	  }
 	else if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
@@ -9922,7 +9922,7 @@ cp_parser_mem_initializer (cp_parser* parser)
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
       bool expr_non_constant_p;
-      maybe_warn_cpp0x ("extended initializer lists");
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
       expression_list = cp_parser_braced_list (parser, &expr_non_constant_p);
       CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
       expression_list = build_tree_list (NULL_TREE, expression_list);
@@ -11933,7 +11933,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
       
     case RID_AUTO:
-      maybe_warn_cpp0x ("C++0x auto");
+      maybe_warn_cpp0x (CPP0X_AUTO);
       type = make_auto ();
       break;
 
@@ -12240,7 +12240,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
           || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
         {
           if (cxx_dialect == cxx98)
-            maybe_warn_cpp0x ("scoped enums");
+            maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
           /* Consume the `struct' or `class'.  */
           cp_lexer_consume_token (parser->lexer);
@@ -12577,7 +12577,7 @@ cp_parser_enum_specifier (cp_parser* parser)
       || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
     {
       if (cxx_dialect == cxx98)
-        maybe_warn_cpp0x ("scoped enums");
+        maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
       /* Consume the `struct' or `class' token.  */
       cp_lexer_consume_token (parser->lexer);
@@ -12611,7 +12611,7 @@ cp_parser_enum_specifier (cp_parser* parser)
 	return NULL_TREE;
 
       if (cxx_dialect == cxx98)
-        maybe_warn_cpp0x ("scoped enums");
+        maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
       has_underlying_type = true;
 
@@ -15425,7 +15425,7 @@ cp_parser_initializer (cp_parser* parser, bool* is_direct_init,
     }
   else if (token->type == CPP_OPEN_BRACE)
     {
-      maybe_warn_cpp0x ("extended initializer lists");
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
       init = cp_parser_braced_list (parser, non_constant_p);
       CONSTRUCTOR_IS_DIRECT_INIT (init) = 1;
     }
@@ -16895,7 +16895,7 @@ cp_parser_pure_specifier (cp_parser* parser)
   if (token->keyword == RID_DEFAULT
       || token->keyword == RID_DELETE)
     {
-      maybe_warn_cpp0x ("defaulted and deleted functions");
+      maybe_warn_cpp0x (CPP0X_DEFAULTED_DELETED);
       return token->u.value;
     }
 
@@ -18895,7 +18895,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
-      maybe_warn_cpp0x ("extended initializer lists");
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
       expression_list = cp_parser_braced_list (parser, &nonconst_p);
       CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
       if (TREE_CODE (type) == TYPE_DECL)

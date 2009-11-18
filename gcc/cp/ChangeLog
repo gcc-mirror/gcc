@@ -1,3 +1,22 @@
+2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/40892
+	* error.c (maybe_warn_cpp0x): Accept enum cpp0x_warn_str as argument.
+	(maybe_warn_variadic_templates): Update the maybe_warn_cpp0x calls to
+	match the new declaration.
+	* cp-tree.h (cpp0x_warn_str): New type.
+	(maybe_warn_cpp0x): Adjust prototype with new argument.
+	* call.c (reference_binding): Update the maybe_warn_cpp0x calls.
+	* decl.c (reshape_init_r, check_initializer, grokdeclarator):
+	Likewise.
+	* parser.c (cp_parser_primary_expression)
+	(cp_parser_parenthesized_expression_list, cp_parser_new_initializer)
+	(cp_parser_assignment_expression, cp_parser_condition)
+	(cp_parser_jump_statement, cp_parser_mem_initializer)
+	(cp_parser_simple_type_specifier, cp_parser_elaborated_type_specifier)
+	(cp_parser_enum_specifier, cp_parser_initializer)
+	(cp_parser_pure_specifier, cp_parser_functional_cast): Likewise.
+
 2009-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/3187

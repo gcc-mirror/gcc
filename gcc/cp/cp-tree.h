@@ -382,6 +382,28 @@ typedef enum cp_id_kind
   CP_ID_KIND_QUALIFIED
 } cp_id_kind;
 
+
+/* The various kinds of C++0x warnings we encounter. */
+
+typedef enum cpp0x_warn_str
+{
+  /* extended initializer lists */
+  CPP0X_INITIALIZER_LISTS,
+  /* explicit conversion operators */
+  CPP0X_EXPLICIT_CONVERSION,
+  /* variadic templates */
+  CPP0X_VARIADIC_TEMPLATES,
+  /* lambda expressions */
+  CPP0X_LAMBDA_EXPR,
+  /* C++0x auto */
+  CPP0X_AUTO,
+  /* scoped enums */
+  CPP0X_SCOPED_ENUMS,
+  /* defaulted and deleted functions */
+  CPP0X_DEFAULTED_DELETED
+} cpp0x_warn_str;
+  
+
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
@@ -4672,7 +4694,7 @@ extern const char *language_to_string		(enum languages);
 extern const char *class_key_or_enum_as_string	(tree);
 extern void print_instantiation_context		(void);
 extern void maybe_warn_variadic_templates       (void);
-extern void maybe_warn_cpp0x			(const char *);
+extern void maybe_warn_cpp0x			(cpp0x_warn_str str);
 extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_CXXDIAG(3,4);
 
 /* in except.c */
