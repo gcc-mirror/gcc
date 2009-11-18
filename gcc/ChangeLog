@@ -1,3 +1,8 @@
+2009-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/neon-docgen.ml (analyze_shape_elt): Handle
+	Alternatives.
+
 2009-11-18  Paul Brook  <paul@codesourcery.com>
 	Daniel Jacobowitz  <dan@codesourcery.com>
 

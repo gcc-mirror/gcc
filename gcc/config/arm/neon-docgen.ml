@@ -214,6 +214,7 @@ let rec analyze_shape shape =
     | Element_of_dreg -> (analyze_shape_elt reg_no Dreg) ^ "[@var{0}]"
     | Element_of_qreg -> (analyze_shape_elt reg_no Qreg) ^ "[@var{0}]"
     | All_elements_of_dreg -> (analyze_shape_elt reg_no Dreg) ^ "[]"
+    | Alternatives alts -> (analyze_shape_elt reg_no (List.hd alts))
   in
     match shape with
       All (n, elt) -> commas (analyze_shape_elt 0) (n_things n elt) ""
