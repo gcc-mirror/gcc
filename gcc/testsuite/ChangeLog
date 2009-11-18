@@ -1,3 +1,7 @@
+2009-11-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.misc-tests/linkage.exp: Also check -m32 for i*86-*-linux*.
+
 2009-11-18  Nick Clifton  <nickc@redhat.com>
 	
 	* g++.dg/lto/20091002-1_0.C: Replace -shared with -r -nostlib.
