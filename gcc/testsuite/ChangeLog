@@ -1,3 +1,19 @@
+2009-11-18  Nick Clifton  <nickc@redhat.com>
+	
+	* g++.dg/lto/20091002-1_0.C: Replace -shared with -r -nostlib.
+	* g++.dg/lto/20081120-1_0.C: Likewise.
+	* g++.dg/lto/20091002-2_0.C: Likewise.
+	* g++.dg/lto/20081120-2_0.C: Likewise.
+	* g++.dg/lto/20091002-3_0.C: Likewise.
+	* g++.dg/lto/20081123_0.C: Likewise.
+	* g++.dg/lto/20090313_0.C: Likewise.
+	* g++.dg/lto/20081109-1_0.C: Likewise.
+	* g++.dg/lto/20081219_0.C: Likewise.
+	* g++.dg/lto/20081204-1_0.C: Likewise.
+	* g++.dg/lto/20090302_0.C: Likewise.
+	* g++.dg/lto/20081119-1_0.C: Likewise.
+	* g++.dg/lto/20081118_0.C: Likewise.
+
 2009-11-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/41913
