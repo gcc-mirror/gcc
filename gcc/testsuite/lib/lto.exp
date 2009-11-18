@@ -520,7 +520,7 @@ proc scan-symbol { args } {
 	verbose -log "nm is $nm"
     }
 
-    set output_file $execname
+    set output_file "[glob -nocomplain $execname]"
     if { $output_file == "" } {
 	fail "scan-symbol $args: dump file does not exist"
 	return
