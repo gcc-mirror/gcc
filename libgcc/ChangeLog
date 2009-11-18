@@ -1,4 +1,10 @@
-libgcc/
+2009-11-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR other/39888
+	* config/t-slibgcc-darwin: Fix embedded rpaths for
+	--enable-version-specific-runtime-libs, build extension stub
+	libs exposing features available from current libgcc_s.
+
 2009-11-11  Jon Beniston <jon@beniston.com>
 
         * config.host: Add lm32 targets.
