@@ -1,5 +1,11 @@
 2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/41926
+	* tree-vect-loop.c (vect_loop_kill_debug_uses): New.
+	(vect_transform_loop): Call it.
+
+2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree-ssa.c (insert_debug_temp_for_var_def): Fix handling of
 	released SSA names.
 

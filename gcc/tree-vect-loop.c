@@ -4112,6 +4112,44 @@ vectorizable_live_operation (gimple stmt,
   return true;
 }
 
+/* Kill any debug uses outside LOOP of SSA names defined in STMT.  */
+
+static void
+vect_loop_kill_debug_uses (struct loop *loop, gimple stmt)
+{
+  ssa_op_iter op_iter;
+  imm_use_iterator imm_iter;
+  def_operand_p def_p;
+  gimple ustmt;
+
+  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
+    {
+      FOR_EACH_IMM_USE_STMT (ustmt, imm_iter, DEF_FROM_PTR (def_p))
+	{
+	  basic_block bb;
+
+	  if (!is_gimple_debug (ustmt))
+	    continue;
+
+	  bb = gimple_bb (ustmt);
+
+	  if (!flow_bb_inside_loop_p (loop, bb))
+	    {
+	      if (gimple_debug_bind_p (ustmt))
+		{
+		  if (vect_print_dump_info (REPORT_DETAILS))
+		    fprintf (vect_dump, "killing debug use");
+
+		  gimple_debug_bind_reset_value (ustmt);
+		  update_stmt (ustmt);
+		}
+	      else
+		gcc_unreachable ();
+	    }
+	}
+    }
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -4202,7 +4240,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
-	    continue;
+	    {
+	      if (MAY_HAVE_DEBUG_STMTS)
+		vect_loop_kill_debug_uses (loop, phi);
+	      continue;
+	    }
 
 	  if ((TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
 	        != (unsigned HOST_WIDE_INT) vectorization_factor)
@@ -4242,6 +4284,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
 	    {
+	      if (MAY_HAVE_DEBUG_STMTS)
+		vect_loop_kill_debug_uses (loop, stmt);
 	      gsi_next (&si);
 	      continue;
 	    }
