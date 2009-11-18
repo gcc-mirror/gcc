@@ -1,3 +1,8 @@
+2009-11-18  Martin Jambor  <mjambor@suse.cz>
+
+	* passes.c (ipa_write_summaries): Call renumber_gimple_stmt_uids
+	on all nodes we write summaries for.
+
 2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
 	
 	PR middle-end/22201

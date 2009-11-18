@@ -1660,7 +1660,23 @@ ipa_write_summaries (void)
   gcc_assert (order_pos == cgraph_n_nodes);
 
   for (i = order_pos - 1; i >= 0; i--)
-    cgraph_node_set_add (set, order[i]);
+    {
+      struct cgraph_node *node = order[i];
+
+      if (node->analyzed)
+	{
+	  /* When streaming out references to statements as part of some IPA
+	     pass summary, the statements need to have uids assigned and the
+	     following does that for all the IPA passes here. Naturally, this
+	     ordering then matches the one IPA-passes get in their stmt_fixup
+	     hooks.  */
+
+	  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+	  renumber_gimple_stmt_uids ();
+	  pop_cfun ();
+	}
+      cgraph_node_set_add (set, node);
+    }
 
   ipa_write_summaries_1 (set);
   lto_delete_extern_inline_states ();
