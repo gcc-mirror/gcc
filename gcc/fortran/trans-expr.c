@@ -2640,13 +2640,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_conv_expr (&fptrse, arg->next->expr);
 	  gfc_add_block_to_block (&se->pre, &fptrse.pre);
 	  gfc_add_block_to_block (&se->post, &fptrse.post);
-
-	  if (gfc_is_proc_ptr_comp (arg->next->expr, NULL))
-	    tmp = gfc_get_ppc_type (arg->next->expr->ref->u.c.component);
-	  else
-	    tmp = TREE_TYPE (arg->next->expr->symtree->n.sym->backend_decl);
-	  se->expr = fold_build2 (MODIFY_EXPR, tmp, fptrse.expr,
-				  fold_convert (tmp, cptrse.expr));
+	  
+	  if (arg->next->expr->symtree->n.sym->attr.proc_pointer
+	      && arg->next->expr->symtree->n.sym->attr.dummy)
+	    fptrse.expr = build_fold_indirect_ref_loc (input_location,
+						       fptrse.expr);
+	  
+	  se->expr = fold_build2 (MODIFY_EXPR, TREE_TYPE (fptrse.expr),
+				  fptrse.expr,
+				  fold_convert (TREE_TYPE (fptrse.expr),
+						cptrse.expr));
 
 	  return 0;
 	}

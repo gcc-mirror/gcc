@@ -1,3 +1,8 @@
+2009-11-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42072
+	* gfortran.dg/proc_ptr_8.f90: Extended.
+
 2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* g++.old-deja/g++.other/crash28.C: Make expected dg-error strings
