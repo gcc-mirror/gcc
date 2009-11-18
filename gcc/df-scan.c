@@ -829,7 +829,8 @@ df_ref_create (rtx reg, rtx *loc, rtx insn,
   /* By adding the ref directly, df_insn_rescan my not find any
      differences even though the block will have changed.  So we need
      to mark the block dirty ourselves.  */  
-  df_set_bb_dirty (bb);
+  if (!DEBUG_INSN_P (DF_REF_INSN (ref)))
+    df_set_bb_dirty (bb);
 
   return ref;
 }
@@ -1027,7 +1028,8 @@ df_ref_remove (df_ref ref)
   /* By deleting the ref directly, df_insn_rescan my not find any
      differences even though the block will have changed.  So we need
      to mark the block dirty ourselves.  */  
-  df_set_bb_dirty (DF_REF_BB (ref));
+  if (!DEBUG_INSN_P (DF_REF_INSN (ref)))
+    df_set_bb_dirty (DF_REF_BB (ref));
   df_reg_chain_unlink (ref);
 }
 
