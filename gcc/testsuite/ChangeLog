@@ -1,3 +1,10 @@
+2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* g++.old-deja/g++.other/crash28.C: Make expected dg-error strings
+	explicit.
+	* g++.dg/inherit/error4.C: Likewise.
+	* g++.dg/template/crash90.C: Likewise.
+
 2009-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/3187

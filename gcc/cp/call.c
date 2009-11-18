@@ -1228,7 +1228,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
-      maybe_warn_cpp0x ("extended initializer lists");
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
       conv = implicit_conversion (to, from, expr, c_cast_p,
 				  flags);
       if (!CLASS_TYPE_P (to)

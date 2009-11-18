@@ -4929,7 +4929,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
 	      init = error_mark_node;
 	    }
 	  else
-	    maybe_warn_cpp0x ("extended initializer lists");
+	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 	}
 
       d->cur++;
@@ -5173,7 +5173,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	{
 	  if (init_len == 0)
 	    {
-	      maybe_warn_cpp0x ("extended initializer lists");
+	      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 	      init = build_zero_init (type, NULL_TREE, false);
 	    }
 	  else if (init_len != 1)
@@ -8526,7 +8526,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (explicitp == 1)
 		  {
-		    maybe_warn_cpp0x ("explicit conversion operators");
+		    maybe_warn_cpp0x (CPP0X_EXPLICIT_CONVERSION);
 		    explicitp = 2;
 		  }
 	      }

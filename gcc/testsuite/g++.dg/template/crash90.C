@@ -4,5 +4,5 @@ template < unsigned >
 struct A ;
 template < typename >
 struct B ;
-template < typename T , A < B < T > // { dg-error "" }
+template < typename T , A < B < T > // { dg-error "initializer|parse error|valid type|expected" }
 { }
