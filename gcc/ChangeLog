@@ -1,3 +1,9 @@
+2009-11-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR other/39888
+	* config/darwin.h: Use the extension stub libraries to access
+	current libgcc_s features.
+
 2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41926
