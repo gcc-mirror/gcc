@@ -425,7 +425,11 @@ cgraph_node_for_decl (tree decl)
       key.decl = decl;
       slot = htab_find_slot (cgraph_hash, &key, NO_INSERT);
       if (slot && *slot)
-	node = (struct cgraph_node *) *slot;
+	{
+	  node = (struct cgraph_node *) *slot;
+	  if (node->same_body_alias)
+	    node = node->same_body;
+	}
     }
 
   return node;
@@ -442,10 +446,10 @@ eq_node (const void *p1, const void *p2)
   return DECL_UID (n1->decl) == DECL_UID (n2->decl);
 }
 
-/* Allocate new callgraph node and insert it into basic data structures.  */
+/* Allocate new callgraph node.  */
 
-static struct cgraph_node *
-cgraph_create_node (void)
+static inline struct cgraph_node *
+cgraph_allocate_node (void)
 {
   struct cgraph_node *node;
 
@@ -459,6 +463,16 @@ cgraph_create_node (void)
       node = GGC_CNEW (struct cgraph_node);
       node->uid = cgraph_max_uid++;
     }
+
+  return node;
+}
+
+/* Allocate new callgraph node and insert it into basic data structures.  */
+
+static struct cgraph_node *
+cgraph_create_node (void)
+{
+  struct cgraph_node *node = cgraph_allocate_node ();
 
   node->next = cgraph_nodes;
   node->pid = -1;
@@ -491,6 +505,8 @@ cgraph_node (tree decl)
   if (*slot)
     {
       node = *slot;
+      if (node->same_body_alias)
+	node = node->same_body;
       return node;
     }
 
@@ -521,6 +537,52 @@ cgraph_node (tree decl)
   return node;
 }
 
+/* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+   Same body aliases are output whenever the body of DECL is output,
+   and cgraph_node (ALIAS) transparently returns cgraph_node (DECL).  */
+
+bool
+cgraph_same_body_alias (tree alias, tree decl)
+{
+  struct cgraph_node key, *alias_node, *decl_node, **slot;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (TREE_CODE (alias) == FUNCTION_DECL);
+  gcc_assert (!assembler_name_hash);
+
+#ifndef ASM_OUTPUT_DEF
+  /* If aliases aren't supported by the assembler, fail.  */
+  return false;
+#endif
+
+  /* Comdat same body aliases are only supported when comdat groups
+     are supported and the symbols are weak.  */
+  if (DECL_ONE_ONLY (decl) && (!HAVE_COMDAT_GROUP || !DECL_WEAK (decl)))
+    return false;
+
+  decl_node = cgraph_node (decl);
+
+  key.decl = alias;
+
+  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key, INSERT);
+
+  /* If the cgraph_node has been already created, fail.  */
+  if (*slot)
+    return false;
+
+  alias_node = cgraph_allocate_node ();
+  alias_node->decl = alias;
+  alias_node->same_body_alias = 1;
+  alias_node->same_body = decl_node;
+  alias_node->previous = NULL;
+  if (decl_node->same_body)
+    decl_node->same_body->previous = alias_node;
+  alias_node->next = decl_node->same_body;
+  decl_node->same_body = alias_node;
+  *slot = alias_node;
+  return true;
+}
+
 /* Returns the cgraph node assigned to DECL or NULL if no cgraph node
    is assigned.  */
 
@@ -540,7 +602,11 @@ cgraph_get_node (tree decl)
 						 NO_INSERT);
 
   if (slot && *slot)
-    node = *slot;
+    {
+      node = *slot;
+      if (node->same_body_alias)
+	node = node->same_body;
+    }
   return node;
 }
 
@@ -601,9 +667,23 @@ cgraph_node_for_asm (tree asmname)
 	       it is __builtin_strlen and strlen, for instance.  Do we need to
 	       record them all?  Original implementation marked just first one
 	       so lets hope for the best.  */
-	    if (*slot)
-	      continue;
-	    *slot = node;
+	    if (!*slot)
+	      *slot = node;
+	    if (node->same_body)
+	      {
+		struct cgraph_node *alias;
+
+		for (alias = node->same_body; alias; alias = alias->next)
+		  {
+		    hashval_t hash;
+		    name = DECL_ASSEMBLER_NAME (alias->decl);
+		    hash = decl_assembler_name_hash (name);
+		    slot = htab_find_slot_with_hash (assembler_name_hash, name,
+						     hash,  INSERT);
+		    if (!*slot)
+		      *slot = alias;
+		  }
+	      }
 	  }
     }
 
@@ -612,7 +692,12 @@ cgraph_node_for_asm (tree asmname)
 				   NO_INSERT);
 
   if (slot)
-    return (struct cgraph_node *) *slot;
+    {
+      node = (struct cgraph_node *) *slot;
+      if (node->same_body_alias)
+	node = node->same_body;
+      return node;
+    }
   return NULL;
 }
 
@@ -1146,6 +1231,44 @@ cgraph_release_function_body (struct cgraph_node *node)
     DECL_INITIAL (node->decl) = error_mark_node;
 }
 
+/* Remove same body alias node.  */
+
+void
+cgraph_remove_same_body_alias (struct cgraph_node *node)
+{
+  void **slot;
+  int uid = node->uid;
+
+  gcc_assert (node->same_body_alias);
+  if (node->previous)
+    node->previous->next = node->next;
+  else
+    node->same_body->same_body = node->next;
+  if (node->next)
+    node->next->previous = node->previous;
+  node->next = NULL;
+  node->previous = NULL;
+  slot = htab_find_slot (cgraph_hash, node, NO_INSERT);
+  if (*slot == node)
+    htab_clear_slot (cgraph_hash, slot);
+  if (assembler_name_hash)
+    {
+      tree name = DECL_ASSEMBLER_NAME (node->decl);
+      slot = htab_find_slot_with_hash (assembler_name_hash, name,
+				       decl_assembler_name_hash (name),
+				       NO_INSERT);
+      if (slot && *slot == node)
+	htab_clear_slot (assembler_name_hash, slot);
+    }
+
+  /* Clear out the node to NULL all pointers and add the node to the free
+     list.  */
+  memset (node, 0, sizeof(*node));
+  node->uid = uid;
+  NEXT_FREE_NODE (node) = free_nodes;
+  free_nodes = node;
+}
+
 /* Remove the node from cgraph.  */
 
 void
@@ -1282,6 +1405,9 @@ cgraph_remove_node (struct cgraph_node *node)
 	node->clone_of->clones->prev_sibling_clone = n;
       node->clone_of->clones = node->clones;
     }
+
+  while (node->same_body)
+    cgraph_remove_same_body_alias (node->same_body);
 
   /* While all the clones are removed after being proceeded, the function
      itself is kept in the cgraph even after it is compiled.  Check whether

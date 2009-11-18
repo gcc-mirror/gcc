@@ -1,3 +1,24 @@
+2009-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3187
+	* cgraph.h (struct cgraph_node): Add same_body and same_body_alias
+	fields.
+	(cgraph_same_body_alias, cgraph_remove_same_body_alias): New
+	prototypes.
+	* cgraphunit.c (cgraph_expand_function, cgraph_emit_thunks,
+	cgraph_materialize_all_clones): Handle same_body aliases.
+	* cgraph.c (cgraph_allocate_node): New function.
+	(cgraph_create_node): Use it.
+	(cgraph_node_for_decl, cgraph_node, cgraph_get_node,
+	cgraph_node_for_asm, cgraph_remove_node): Handle same_body aliases.
+	(cgraph_same_body_alias, cgraph_remove_same_body_alias): New
+	functions.
+	* lto-cgraph.c (lto_output_node): Stream out same_body aliases.
+	(input_node): Stream in same_body aliases.
+	* lto-symtab.c (lto_cgraph_replace_node): Clear node pointers
+	for same_body aliases.
+	(lto_symtab_merge_cgraph_nodes_1): Handle same_body aliases.
+
 2009-11-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR other/39888

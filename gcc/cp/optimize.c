@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "gimple.h"
 #include "tree-iterator.h"
+#include "cgraph.h"
 
 /* Prototypes.  */
 
@@ -149,8 +150,10 @@ bool
 maybe_clone_body (tree fn)
 {
   tree clone;
-  tree complete_dtor = NULL_TREE;
+  tree fns[3];
   bool first = true;
+  bool in_charge_parm_used;
+  int idx;
 
   /* We only clone constructors and destructors.  */
   if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
@@ -160,24 +163,39 @@ maybe_clone_body (tree fn)
   /* Emit the DWARF1 abstract instance.  */
   (*debug_hooks->deferred_inline_function) (fn);
 
+  in_charge_parm_used = CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)) != NULL;
+  fns[0] = NULL_TREE;
+  fns[1] = NULL_TREE;
+  fns[2] = NULL_TREE;
+
   /* Look for the complete destructor which may be used to build the
      delete destructor.  */
   FOR_EACH_CLONE (clone, fn)
-    if (DECL_NAME (clone) == complete_dtor_identifier)
-      {
-        complete_dtor = clone;
-        break;
-      }
+    if (DECL_NAME (clone) == complete_dtor_identifier
+	|| DECL_NAME (clone) == complete_ctor_identifier)
+      fns[1] = clone;
+    else if (DECL_NAME (clone) == base_dtor_identifier
+	     || DECL_NAME (clone) == base_ctor_identifier)
+      fns[0] = clone;
+    else if (DECL_NAME (clone) == deleting_dtor_identifier)
+      fns[2] = clone;
+    else
+      gcc_unreachable ();
 
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
   push_to_top_level ();
-  FOR_EACH_CLONE (clone, fn)
+  for (idx = 0; idx < 3; idx++)
     {
       tree parm;
       tree clone_parm;
       int parmno;
+      bool alias = false;
       struct pointer_map_t *decl_map;
+
+      clone = fns[idx];
+      if (!clone)
+	continue;      
 
       /* Update CLONE's source position information to match FN's.  */
       DECL_SOURCE_LOCATION (clone) = DECL_SOURCE_LOCATION (fn);
@@ -223,12 +241,25 @@ maybe_clone_body (tree fn)
       /* Start processing the function.  */
       start_preparsed_function (clone, NULL_TREE, SF_PRE_PARSED);
 
+      /* Tell cgraph if both ctors or both dtors are known to have
+	 the same body.  */
+      if (!in_charge_parm_used
+	  && fns[0]
+	  && idx == 1
+	  && !flag_use_repository
+	  && DECL_INTERFACE_KNOWN (fns[0])
+	  && !DECL_ONE_ONLY (fns[0])
+	  && cgraph_same_body_alias (clone, fns[0]))
+	alias = true;
+
       /* Build the delete destructor by calling complete destructor
          and delete function.  */
-      if (DECL_NAME (clone) == deleting_dtor_identifier)
-        build_delete_destructor_body (clone, complete_dtor);
+      if (idx == 2)
+	build_delete_destructor_body (clone, fns[1]);
+      else if (alias)
+	/* No need to populate body.  */ ;
       else
-        {
+	{
           /* Remap the parameters.  */
           decl_map = pointer_map_create ();
           for (parmno = 0,
@@ -291,7 +322,10 @@ maybe_clone_body (tree fn)
       /* Now, expand this function into RTL, if appropriate.  */
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
-      expand_or_defer_fn (clone);
+      if (alias)
+	expand_or_defer_fn_1 (clone);
+      else
+	expand_or_defer_fn (clone);
       first = false;
     }
   pop_from_top_level ();

@@ -1040,7 +1040,7 @@ cgraph_analyze_functions (void)
 static void
 cgraph_emit_thunks (void)
 {
-  struct cgraph_node *n;
+  struct cgraph_node *n, *alias;
 
   for (n = cgraph_nodes; n; n = n->next)
     {
@@ -1053,7 +1053,12 @@ cgraph_emit_thunks (void)
 	 cgraph_mark_functions_to_output in cgraph_optimize).  */
       if (n->reachable
 	  && !DECL_EXTERNAL (n->decl))
-	lang_hooks.callgraph.emit_associated_thunks (n->decl);
+	{
+	  lang_hooks.callgraph.emit_associated_thunks (n->decl);
+	  for (alias = n->same_body; alias; alias = alias->next)
+	    if (!DECL_EXTERNAL (alias->decl))
+	      lang_hooks.callgraph.emit_associated_thunks (alias->decl);
+	}
     }
 }
 
@@ -1175,6 +1180,14 @@ cgraph_expand_function (struct cgraph_node *node)
   /* Make sure that BE didn't give up on compiling.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
   current_function_decl = NULL;
+  if (node->same_body)
+    {
+      struct cgraph_node *alias;
+      bool saved_alias = node->alias;
+      for (alias = node->same_body; alias; alias = alias->next)
+	assemble_alias (alias->decl, DECL_ASSEMBLER_NAME (decl));
+      node->alias = saved_alias;
+    }
   gcc_assert (!cgraph_preserve_function_body_p (decl));
   cgraph_release_function_body (node);
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
@@ -1924,7 +1937,22 @@ cgraph_materialize_all_clones (void)
 	      {
 		gimple new_stmt;
 		gimple_stmt_iterator gsi;
-		
+
+		if (e->callee->same_body)
+		  {
+		    struct cgraph_node *alias;
+
+		    for (alias = e->callee->same_body;
+			 alias;
+			 alias = alias->next)
+		      if (decl == alias->decl)
+			break;
+		    /* Don't update call from same body alias to the real
+		       function.  */
+		    if (alias)
+		      continue;
+		  }
+
 		if (cgraph_dump_file)
 		  {
 		    fprintf (cgraph_dump_file, "updating call of %s in %s:",

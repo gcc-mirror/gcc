@@ -11,4 +11,4 @@ namespace std {
 
 std::basic_ostream<char,std::char_traits<char> > s1;
 
-// { dg-final { scan-assembler "\n_?_ZNSoC1Ev\[: \t\n\]" } }
+// { dg-final { scan-assembler "\n_?_ZNSoC\[12\]Ev\[: \t\n\]" } }

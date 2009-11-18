@@ -306,6 +306,23 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   lto_output_sleb128_stream (ob->main_stream,
 			     node->global.estimated_growth);
   lto_output_uleb128_stream (ob->main_stream, node->global.inlined);
+  if (node->same_body)
+    {
+      struct cgraph_node *alias;
+      unsigned long alias_count = 1;
+      for (alias = node->same_body; alias->next; alias = alias->next)
+	alias_count++;
+      lto_output_uleb128_stream (ob->main_stream, alias_count);
+      do
+	{
+	  lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
+				    alias->decl);
+	  alias = alias->previous;
+	}
+      while (alias);
+    }
+  else
+    lto_output_uleb128_stream (ob->main_stream, 0);
 }
 
 /* Stream out profile_summary to OB.  */
@@ -495,6 +512,7 @@ input_node (struct lto_file_decl_data *file_data,
   int self_size = 0;
   int time_inlining_benefit = 0;
   int size_inlining_benefit = 0;
+  unsigned long same_body_count = 0;
   bool inlined = false;
 
   clone_p = (lto_input_uleb128 (ib) != 0);
@@ -528,6 +546,7 @@ input_node (struct lto_file_decl_data *file_data,
   size = lto_input_sleb128 (ib);
   estimated_growth = lto_input_sleb128 (ib);
   inlined = lto_input_uleb128 (ib);
+  same_body_count = lto_input_uleb128 (ib);
 
   /* Make sure that we have not read this node before.  Nodes that
      have already been read will have their tag stored in the 'aux'
@@ -553,6 +572,13 @@ input_node (struct lto_file_decl_data *file_data,
   node->global.estimated_growth = estimated_growth;
   node->global.inlined = inlined;
 
+  while (same_body_count-- > 0)
+    {
+      tree alias_decl;
+      decl_index = lto_input_uleb128 (ib);
+      alias_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
+      cgraph_same_body_alias (alias_decl, fn_decl);
+    }
   return node;
 }
 
