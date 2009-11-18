@@ -252,10 +252,10 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
-  (TARGET_32BIT && arm_arch5e && arm_arch_notm)
+  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7em))
 /* Integer SIMD instructions, and extend-accumulate instructions.  */
 #define TARGET_INT_SIMD \
-  (TARGET_32BIT && arm_arch6 && arm_arch_notm)
+  (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7em))
 
 /* Should MOVW/MOVT be used in preference to a constant pool.  */
 #define TARGET_USE_MOVT (arm_arch_thumb2 && !optimize_size)
@@ -398,6 +398,9 @@ extern int arm_arch6;
 
 /* Nonzero if instructions not present in the 'M' profile can be used.  */
 extern int arm_arch_notm;
+
+/* Nonzero if instructions present in ARMv7E-M can be used.  */
+extern int arm_arch7em;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
