@@ -1,3 +1,9 @@
+2009-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (compute_function_frequency): Export.
+	* predict.h (compute_function_frequency): Declare.
+	* tree-optimize.c (execute_fixup_cfg): Rescale frequencies.
+
 2009-11-18  Martin Jambor  <mjambor@suse.cz>
 
 	* passes.c (ipa_write_summaries): Call renumber_gimple_stmt_uids
