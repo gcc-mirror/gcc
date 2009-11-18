@@ -1,3 +1,24 @@
+2009-11-18  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (struct ipa_param_call_note): New field lto_stmt_uid.
+	(lto_ipa_fixup_call_notes): Declare.
+	* ipa-prop.c (ipa_note_param_call): Store gimple uid.
+	(update_call_notes_after_inlining): Copy call stmt uid to the new
+	edge.
+	(ipa_write_param_call_note): New function.
+	(ipa_read_param_call_note): New function
+	(ipa_write_node_info): Write also param call notes.  Removed a bogus
+	comment, reformatted to fit 80 columns.
+	(ipa_read_node_info): Read also param call notes. Removed a bogus
+	comment.  Remove ipa_edge_args_vector growth.
+	(lto_ipa_fixup_call_notes): New function.
+	* ipa-cp.c (pass_ipa_cp): Add stmt_fixup hook.
+	* ipa-inline.c (cgraph_mark_inline_edge): Perform indirect
+	inlining regardless of flag_wpa.
+	(cgraph_decide_inlining_of_small_functions): Likewise.
+	(cgraph_decide_inlining): Likewise.
+	(inline_read_summary): Likewise.
+
 2009-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (compute_function_frequency): Export.

@@ -1327,7 +1327,7 @@ struct ipa_opt_pass_d pass_ipa_cp =
  ipcp_write_summary,			/* write_summary */
  ipcp_read_summary,			/* read_summary */
  NULL,					/* function_read_summary */
- NULL,					/* stmt_fixup */
+ lto_ipa_fixup_call_notes, 		/* stmt_fixup */
  0,					/* TODOs */
  NULL,					/* function_transform */
  NULL,					/* variable_transform */
