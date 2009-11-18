@@ -1,3 +1,8 @@
+2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* df-scan.c (df_ref_create): Don't mark BB as dirty on debug insns.
+	(df_ref_remove): Likewise.
+
 2009-11-17  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-struct-reorg.c (update_cgraph_with_malloc_call): Fix profile
