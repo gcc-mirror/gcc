@@ -1,3 +1,8 @@
+2009-11-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/41913
+	* lib/lto.exp (scan-symbol): Properly check if target exist.
+
 2009-11-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42072
