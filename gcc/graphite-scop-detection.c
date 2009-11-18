@@ -372,6 +372,9 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
       || (gimple_code (stmt) == GIMPLE_ASM))
     return false;
 
+  if (is_gimple_debug (stmt))
+    return true;
+
   if (!stmt_has_simple_data_refs_p (outermost_loop, stmt))
     return false;
 
