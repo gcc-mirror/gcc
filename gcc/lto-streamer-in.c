@@ -1090,7 +1090,11 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		    }
 		  /* In case of type mismatches across units we can fail
 		     to unify some types and thus not find a proper
-		     field-decl here.  Just do nothing in this case.  */
+		     field-decl here.  So only assert here if checking
+		     is enabled.  */
+#ifdef ENABLE_CHECKING
+		  gcc_assert (tem != NULL_TREE);
+#endif
 		  if (tem != NULL_TREE)
 		    TREE_OPERAND (op, 1) = tem;
 		}

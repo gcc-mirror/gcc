@@ -1,3 +1,8 @@
+2009-11-18  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer-in.c (input_gimple_stmt): Assert that we find
+	a valid field decl if checking is enabled.
+
 2009-11-18  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_param_call_note): New field lto_stmt_uid.
