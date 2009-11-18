@@ -176,15 +176,15 @@ DEFPARAM(PARAM_LARGE_UNIT_INSNS,
 	 10000, 0, 0)
 DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
-	 "how much can given compilation unit grow because of the inlining (in percent)",
+	 "How much can given compilation unit grow because of the inlining (in percent)",
 	 30, 0, 0)
 DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 "ipcp-unit-growth",
-	 "how much can given compilation unit grow because of the interprocedural constant propagation (in percent)",
+	 "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)",
 	 10, 0, 0)
 DEFPARAM(PARAM_EARLY_INLINING_INSNS,
 	 "early-inlining-insns",
-	 "maximal estimated growth of function body caused by early inlining of single call",
+	 "Maximal estimated growth of function body caused by early inlining of single call",
 	 8, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
@@ -711,12 +711,12 @@ DEFPARAM (PARAM_SCCVN_MAX_SCC_SIZE,
 
 DEFPARAM (PARAM_IRA_MAX_LOOPS_NUM,
 	  "ira-max-loops-num",
-	  "max loops number for regional RA",
+	  "Max loops number for regional RA",
 	  100, 0, 0)
 
 DEFPARAM (PARAM_IRA_MAX_CONFLICT_TABLE_SIZE,
 	  "ira-max-conflict-table-size",
-	  "max size of conflict table in MB",
+	  "Max size of conflict table in MB",
 	  1000, 0, 0)
 
 DEFPARAM (PARAM_IRA_LOOP_RESERVED_REGS,
@@ -737,7 +737,7 @@ DEFPARAM (PARAM_SWITCH_CONVERSION_BRANCH_RATIO,
 
 DEFPARAM (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
 	  "loop-invariant-max-bbs-in-loop",
-	  "max basic blocks number in loop for loop invariant motion",
+	  "Max basic blocks number in loop for loop invariant motion",
 	  10000, 0, 0)
 
 /* Avoid SLP vectorization of large basic blocks.  */
@@ -748,13 +748,13 @@ DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
 
 DEFPARAM (PARAM_MIN_INSN_TO_PREFETCH_RATIO,
 	  "min-insn-to-prefetch-ratio",
-	  "min. ratio of insns to prefetches to enable prefetching for "
+	  "Min. ratio of insns to prefetches to enable prefetching for "
           "a loop with an unknown trip count",
 	  10, 0, 0)
 
 DEFPARAM (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO,
 	  "prefetch-min-insn-to-mem-ratio",
-	  "min. ratio of insns to mem ops to enable prefetching in a loop",
+	  "Min. ratio of insns to mem ops to enable prefetching in a loop",
 	  3, 0, 0)
 
 /* Set minimum insn uid for non-debug insns.  */
@@ -766,7 +766,7 @@ DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,
 
 DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "ipa-sra-ptr-growth-factor",
-	  "maximum allowed growth of size of new parameters ipa-sra replaces "
+	  "Maximum allowed growth of size of new parameters ipa-sra replaces "
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 

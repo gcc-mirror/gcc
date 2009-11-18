@@ -1,3 +1,16 @@
+2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	PR middle-end/22201
+	* params.def (PARAM_INLINE_UNIT_GROWTH)
+	PARAM_IPCP_UNIT_GROWTH)
+	(PARAM_EARLY_INLINING_INSNS, PARAM_IRA_MAX_LOOPS_NUM)
+	(PARAM_IRA_MAX_CONFLICT_TABLE_SIZE)
+	(PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP)
+	(PARAM_MIN_INSN_TO_PREFETCH_RATIO)
+	(PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO)
+	PARAM_IPA_SRA_PTR_GROWTH_FACTOR): Uppercase the	first letter of the
+	description string.
+
 2009-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (loc_list_from_tree): Don't call rtl_for_decl_location
