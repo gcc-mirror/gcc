@@ -1,3 +1,7 @@
+2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* module.c (mio_f2k_derived): Initialize op.
+
 2009-11-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42048

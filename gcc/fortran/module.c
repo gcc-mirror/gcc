@@ -3469,7 +3469,7 @@ mio_f2k_derived (gfc_namespace *f2k)
   else
     while (peek_atom () != ATOM_RPAREN)
       {
-	gfc_intrinsic_op op;
+	gfc_intrinsic_op op = 0; /* Silence GCC.  */
 
 	mio_lparen ();
 	mio_intrinsic_op (&op);
