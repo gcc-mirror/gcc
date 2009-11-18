@@ -1,3 +1,16 @@
+2009-11-18  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (union gimple_statement_d): Add gsmembase member.
+	(gimple_vuse_op): Use gsmembase for access.
+	(gimple_vdef_op): Likewise.
+	(gimple_vuse): Likewise.
+	(gimple_vdef): Likewise.
+	(gimple_vuse_ptr): Likewise.
+	(gimple_vdef_ptr): Likewise.
+	(gimple_set_vuse): Likewise.
+	(gimple_set_vdef): Likewise.
+	* gsstruct.def (GSS_WITH_MEM_OPS_BASE): Add.
+
 2009-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* doc/arm-neon-intrinsics.texi: Regenerated.
