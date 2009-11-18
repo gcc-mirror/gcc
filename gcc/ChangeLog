@@ -1,5 +1,21 @@
 2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/41888
+	PR debug/41886
+	* graphite-scop-detection.c (stmt_simple_for_scop_p): Debug stmts
+	are ok.
+	* graphite-sese-to-poly.c (graphite_stmt_p): Likewise.
+	(try_generate_gimple_bb): Skip debug stmts when finding data refs.
+	* sese.c (sese_build_liveouts_bb): Skip debug stmts.
+	(sese_bad_liveouts_use): New.
+	(sese_reset_debug_liveouts_bb): New.
+	(sese_build_liveouts): Use it.
+	(rename_variables_in_stmt): Reset debug stmts rather than creating
+	new vars for them.
+	(expand_scalar_variable_stmt): Likewise.
+
+2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
+
 	* df-scan.c (df_ref_create): Don't mark BB as dirty on debug insns.
 	(df_ref_remove): Likewise.
 
