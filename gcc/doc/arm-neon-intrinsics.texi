@@ -4696,7 +4696,7 @@
 
 @itemize @bullet
 @item uint32_t vget_lane_u32 (uint32x2_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov.u32 @var{r0}, @var{d0}[@var{0}]}
+@*@emph{Form of expected instruction(s):} @code{vmov.32 @var{r0}, @var{d0}[@var{0}]}
 @end itemize
 
 
@@ -4714,7 +4714,7 @@
 
 @itemize @bullet
 @item int32_t vget_lane_s32 (int32x2_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov.s32 @var{r0}, @var{d0}[@var{0}]}
+@*@emph{Form of expected instruction(s):} @code{vmov.32 @var{r0}, @var{d0}[@var{0}]}
 @end itemize
 
 
@@ -4732,7 +4732,7 @@
 
 @itemize @bullet
 @item float32_t vget_lane_f32 (float32x2_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov.f32 @var{r0}, @var{d0}[@var{0}]}
+@*@emph{Form of expected instruction(s):} @code{vmov.32 @var{r0}, @var{d0}[@var{0}]}
 @end itemize
 
 
@@ -4762,7 +4762,7 @@
 
 @itemize @bullet
 @item uint32_t vgetq_lane_u32 (uint32x4_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov.u32 @var{r0}, @var{d0}[@var{0}]}
+@*@emph{Form of expected instruction(s):} @code{vmov.32 @var{r0}, @var{d0}[@var{0}]}
 @end itemize
 
 
@@ -4780,7 +4780,7 @@
 
 @itemize @bullet
 @item int32_t vgetq_lane_s32 (int32x4_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov.s32 @var{r0}, @var{d0}[@var{0}]}
+@*@emph{Form of expected instruction(s):} @code{vmov.32 @var{r0}, @var{d0}[@var{0}]}
 @end itemize
 
 
@@ -4798,7 +4798,7 @@
 
 @itemize @bullet
 @item float32_t vgetq_lane_f32 (float32x4_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov.f32 @var{r0}, @var{d0}[@var{0}]}
+@*@emph{Form of expected instruction(s):} @code{vmov.32 @var{r0}, @var{d0}[@var{0}]}
 @end itemize
 
 

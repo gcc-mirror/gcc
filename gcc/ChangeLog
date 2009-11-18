@@ -1,5 +1,9 @@
 2009-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* doc/arm-neon-intrinsics.texi: Regenerated.
+
+2009-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* config/arm/neon-docgen.ml (analyze_shape_elt): Handle
 	Alternatives.
 
