@@ -30,6 +30,9 @@ modifiers1()
   typedef _Tp list_type;
   typedef typename list_type::iterator iterator;
   typedef typename list_type::value_type value_type;
+  
+  using __gnu_test::copy_constructor;
+  using __gnu_test::destructor;
 
   list_type list0301;
   value_type::reset();
@@ -37,7 +40,7 @@ modifiers1()
   // fill insert at beginning of list / empty list
   list0301.insert(list0301.begin(), 3, value_type(11)); // should be [11 11 11]
   VERIFY(list0301.size() == 3);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
 
   // save iterators to verify post-insert validity
   iterator b = list0301.begin();
@@ -48,7 +51,7 @@ modifiers1()
   value_type::reset();
   list0301.insert(list0301.end(), 3, value_type(13)); // should be [11 11 11 13 13 13]
   VERIFY(list0301.size() == 6);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
   VERIFY(b == list0301.begin() && b->id() == 11);
   VERIFY(e == list0301.end());
   VERIFY(m->id() == 11);
@@ -58,7 +61,7 @@ modifiers1()
   value_type::reset();
   list0301.insert(m, 3, value_type(12)); // should be [11 11 11 12 12 12 13 13 13]
   VERIFY(list0301.size() == 9);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
   VERIFY(b == list0301.begin() && b->id() == 11);
   VERIFY(e == list0301.end());
   VERIFY(m->id() == 13);
@@ -67,7 +70,7 @@ modifiers1()
   value_type::reset();
   m = list0301.erase(m); // should be [11 11 11 12 12 12 13 13]
   VERIFY(list0301.size() == 8);
-  VERIFY(value_type::dtorCount() == 1);
+  VERIFY(destructor::count() == 1);
   VERIFY(b == list0301.begin() && b->id() == 11);
   VERIFY(e == list0301.end());
   VERIFY(m->id() == 13);
@@ -76,7 +79,7 @@ modifiers1()
   value_type::reset();
   m = list0301.erase(list0301.begin(), m); // should be [13 13]
   VERIFY(list0301.size() == 2);
-  VERIFY(value_type::dtorCount() == 6);
+  VERIFY(destructor::count() == 6);
   VERIFY(m->id() == 13);
 
   // range fill at beginning
@@ -86,14 +89,14 @@ modifiers1()
   b = list0301.begin();
   list0301.insert(b, A, A + N); // should be [321 322 333 13 13]
   VERIFY(list0301.size() == 5);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
   VERIFY(m->id() == 13);
 
   // range fill at end
   value_type::reset();
   list0301.insert(e, A, A + N); // should be [321 322 333 13 13 321 322 333]
   VERIFY(list0301.size() == 8);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
   VERIFY(e == list0301.end());
   VERIFY(m->id() == 13);
 
@@ -101,13 +104,13 @@ modifiers1()
   value_type::reset();
   list0301.insert(m, A, A + N);
   VERIFY(list0301.size() == 11);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
   VERIFY(e == list0301.end());
   VERIFY(m->id() == 13);
 
   value_type::reset();
   list0301.clear();
   VERIFY(list0301.size() == 0);
-  VERIFY(value_type::dtorCount() == 11);
+  VERIFY(destructor::count() == 11);
   VERIFY(e == list0301.end());
 }

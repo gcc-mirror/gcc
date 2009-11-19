@@ -30,16 +30,19 @@ modifiers2()
   typedef typename list_type::iterator iterator;
   typedef typename list_type::const_iterator const_iterator;
 
+  using __gnu_test::copy_constructor;
+  using __gnu_test::destructor;
+
   list_type list0201;
   value_type::reset();
 
   list0201.insert(list0201.begin(), value_type(1));     // list should be [1]
   VERIFY(list0201.size() == 1);
-  VERIFY(value_type::copyCount() == 1);
+  VERIFY(copy_constructor::count() == 1);
 
   list0201.insert(list0201.end(), value_type(2));     // list should be [1 2]
   VERIFY(list0201.size() == 2);
-  VERIFY(value_type::copyCount() == 2);
+  VERIFY(copy_constructor::count() == 2);
 
   iterator i = list0201.begin();
   const_iterator j = i;
@@ -48,7 +51,7 @@ modifiers2()
 
   list0201.insert(i, value_type(3));     // list should be [1 3 2]
   VERIFY(list0201.size() == 3);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
 
   const_iterator k = i;
   VERIFY(i->id() == 2); --i;
@@ -60,27 +63,27 @@ modifiers2()
   value_type::reset();
   list0201.erase(i); // should be [1 2]
   VERIFY(list0201.size() == 2);
-  VERIFY(value_type::dtorCount() == 1);
+  VERIFY(destructor::count() == 1);
   VERIFY(k->id() == 2);
   VERIFY(j->id() == 1);
 
   list_type list0202;
   value_type::reset();
   VERIFY(list0202.size() == 0);
-  VERIFY(value_type::copyCount() == 0);
-  VERIFY(value_type::dtorCount() == 0);
+  VERIFY(copy_constructor::count() == 0);
+  VERIFY(destructor::count() == 0);
 
   // member swap
   list0202.swap(list0201);
   VERIFY(list0201.size() == 0);
   VERIFY(list0202.size() == 2);
-  VERIFY(value_type::copyCount() == 0);
-  VERIFY(value_type::dtorCount() == 0);
+  VERIFY(copy_constructor::count() == 0);
+  VERIFY(destructor::count() == 0);
 
   // specialized swap
   swap(list0201, list0202);
   VERIFY(list0201.size() == 2);
   VERIFY(list0202.size() == 0);
-  VERIFY(value_type::copyCount() == 0);
-  VERIFY(value_type::dtorCount() == 0);
+  VERIFY(copy_constructor::count() == 0);
+  VERIFY(destructor::count() == 0);
 }

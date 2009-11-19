@@ -163,7 +163,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     __try 
       { _M_impl->_M_replace_categories(__add._M_impl, __cat); }
-    __catch (...) 
+    __catch(...) 
       { 
 	_M_impl->_M_remove_reference(); 
 	__throw_exception_again;
