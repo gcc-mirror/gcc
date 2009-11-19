@@ -1,3 +1,9 @@
+2009-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* plugin.c (FMT_FOR_PLUGIN_EVENT): added definition.
+	(dump_active_plugins): output to file everything. Use
+	internationalized dump & FMT_FOR_PLUGIN_EVENT.
+
 2009-11-19  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (canonicalize_cond_expr_cond): Strip conversions
