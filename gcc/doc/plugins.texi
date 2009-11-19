@@ -105,6 +105,25 @@ The function @code{plugin_default_version_check} takes two pointers to
 such structure and compare them field by field. It can be used by the
 plugin's @code{plugin_init} function.
 
+The version of GCC used to compile the plugin can be found in the symbol
+@code{gcc_version} defined in the header @file{plugin-version.h}. The
+recommended version check to perform looks like
+
+@smallexample
+#include "plugin-version.h"
+...
+
+int
+plugin_init (struct plugin_name_args *plugin_info,
+             struct plugin_gcc_version *version)
+@{
+  if (!plugin_default_version_check (version, &gcc_version))
+    return 1;
+
+@}
+@end smallexample
+
+but you can also check the individual fields if you want a less strict check.
 
 @subsection Plugin callbacks
 

@@ -13,6 +13,7 @@
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"
+#include "plugin-version.h"
 
 int plugin_is_GPL_compatible;
 
@@ -305,7 +306,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   bool enabled = true;
   int i;
 
-  if (!plugin_default_version_check (version, version))
+  if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
   /* Self-assign detection should happen after SSA is constructed.  */

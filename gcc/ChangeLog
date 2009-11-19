@@ -1,4 +1,11 @@
 2009-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
+            Rafael Avila de Espindola  <espindola@google.com>
+
+	* doc/plugins.texi (Plugin initialization): Added advices for
+	retrieving the version of GCC at plugin compilation and loading
+	times.
+
+2009-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* plugin.c (FMT_FOR_PLUGIN_EVENT): added definition.
 	(dump_active_plugins): output to file everything. Use
