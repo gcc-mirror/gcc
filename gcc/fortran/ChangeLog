@@ -1,3 +1,8 @@
+2009-11-19  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Interoperable Subroutines and Functions): Fix
+	example.
+
 2009-11-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42072
