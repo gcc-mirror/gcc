@@ -1,3 +1,7 @@
+2009-11-20  Ben Elliston  <bje@au.ibm.com>
+
+	* config.guess: Update from upstream sources.
+
 2009-11-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.def: Restore host and target settings for gmp.

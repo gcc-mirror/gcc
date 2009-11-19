@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 #   Free Software Foundation, Inc.
 
-timestamp='2009-11-08'
+timestamp='2009-11-19'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -891,7 +891,15 @@ EOF
     	echo frv-unknown-linux-gnu
 	exit ;;
     i*86:Linux:*:*)
-	echo ${UNAME_MACHINE}-pc-linux-gnu
+	LIBC=gnu
+	eval $set_cc_for_build
+	sed 's/^	//' << EOF >$dummy.c
+	#ifdef __dietlibc__
+	LIBC=dietlibc
+	#endif
+EOF
+	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^LIBC'`
+	echo "${UNAME_MACHINE}-pc-linux-${LIBC}"
 	exit ;;
     ia64:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux-gnu
@@ -918,11 +926,7 @@ EOF
 	#endif
 	#endif
 EOF
-	eval "`$CC_FOR_BUILD -E $dummy.c 2>/dev/null | sed -n '
-	    /^CPU/{
-		s: ::g
-		p
-	    }'`"
+	eval `$CC_FOR_BUILD -E $dummy.c 2>/dev/null | grep '^CPU'`
 	test x"${CPU}" != x && { echo "${CPU}-unknown-linux-gnu"; exit; }
 	;;
     or32:Linux:*:*)
