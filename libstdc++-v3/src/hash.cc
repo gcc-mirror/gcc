@@ -26,7 +26,7 @@
   // 10 bytes -> 12 bytes) and resort to frexp.
   template<>
     size_t
-    hash<long double>::operator()(long double __val) const throw ()
+    hash<long double>::operator()(long double __val) const
     {
       size_t __result = 0;
 
@@ -59,7 +59,7 @@
 
   template<>
     size_t
-    hash<const string&>::operator()(const string& __s) const throw ()
+    hash<const string&>::operator()(const string& __s) const
     { return _Fnv_hash<>::hash(__s.data(), __s.length()); }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -73,7 +73,7 @@
 
   template<>
     size_t
-    hash<const wstring&>::operator()(const wstring& __s) const throw ()
+    hash<const wstring&>::operator()(const wstring& __s) const
     {
       const char* __p = reinterpret_cast<const char*>(__s.data());
       return _Fnv_hash<>::hash(__p, __s.length() * sizeof(wchar_t));

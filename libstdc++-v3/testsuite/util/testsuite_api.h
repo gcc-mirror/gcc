@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 //
 
+#include <cstddef>
 #include <exception>
 #include <testsuite_hooks.h>
 
@@ -103,6 +104,14 @@ namespace __gnu_test
   operator<(const NonDefaultConstructible&, const NonDefaultConstructible&)
   { return false; }
 
+  // For 23 unordered_* requirements.
+  struct NonDefaultConstructible_hash
+  {
+    size_t
+    operator()(NonDefaultConstructible) const
+    { return 1; }
+  };
+
   // For 26 numeric algorithms requirements, need addable,
   // subtractable, multiplicable.
   inline NonDefaultConstructible
@@ -141,6 +150,6 @@ namespace __gnu_test
       operator()() const
       { return result_type(2); }
     };
-
 }
+
 #endif

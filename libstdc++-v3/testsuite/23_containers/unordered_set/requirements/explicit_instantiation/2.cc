@@ -24,4 +24,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_api.h>
 
-template class std::unordered_set<__gnu_test::NonDefaultConstructible>;
+typedef __gnu_test::NonDefaultConstructible      inst_type;
+typedef __gnu_test::NonDefaultConstructible_hash hash_type;
+template class std::unordered_set<inst_type, hash_type>;

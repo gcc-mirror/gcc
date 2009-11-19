@@ -24,4 +24,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_api.h>
 
-template class std::unordered_multiset<__gnu_test::NonDefaultConstructible>;
+typedef __gnu_test::NonDefaultConstructible      inst_type;
+typedef __gnu_test::NonDefaultConstructible_hash hash_type;
+template class std::unordered_multiset<inst_type, hash_type>;

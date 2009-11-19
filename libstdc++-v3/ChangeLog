@@ -1,3 +1,31 @@
+2009-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41622
+	* include/bits/functional_hash.h: Implement inline the various
+	std::hash specializations, using, when appropriate, pass by
+	const ref too, per DR 1245.
+	* include/tr1_impl/functional_hash.h: Remove, move its contents...
+	* include/tr1/functional_hash.h: ... here.
+	* include/std/functional: Tweak includes.
+	* src/hash_c++0x: Rename to...
+	* src/compatibility-c++0x.cc: ... this, implementing compatibility
+	std::hash<>::operator() specializations.
+	* src/hash.cc: Do not mark specializations as throw().
+	* src/Makefile.am: Adjust.
+	* include/Makefile.am: Likewise.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.in: Likewise.
+	* testsuite/util/testsuite_api.h: Define a dummy hash for
+	NonDefaultConstructible.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/2.cc: Use it.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/2.cc: Likewise.
+
 2009-11-19  Johannes Singler  <singler@kit.edu>
 
         * include/parallel/partition.h (__parallel_partition): Correctly
@@ -8,7 +36,7 @@
 2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/profile/impl/profiler.h: Remove namespace markup.
-	
+
 2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/profile/bitset: Tweak doxygen markup.

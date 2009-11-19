@@ -1,6 +1,6 @@
-// std::hash definitions -*- C++ -*-
+// Compatibility symbols for previous versions, C++0x bits -*- C++ -*-
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,15 +25,38 @@
 #include <cstddef>
 #include <string>
 #include <cmath>
-#include <functional>
 #include <system_error>
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-# error "hash_c++0x.cc must be compiled with -std=gnu++0x"
+# error "compatibility-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
 namespace std
 {
+  // We need these due to the symbols exported since GLIBCXX_3.4.10.
+  // See libstdc++/41662 for details.
+
+  template<typename _Tp>
+    struct hash : public std::unary_function<_Tp, size_t>
+    {
+      size_t
+      operator()(_Tp __val) const;
+    };
+
+  /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
+  template<size_t = sizeof(size_t)>
+    struct _Fnv_hash
+    {
+      static size_t
+      hash(const char* __first, size_t __length)
+      {
+	size_t __result = 0;
+	for (; __length > 0; --__length)
+	  __result = (__result * 131) + *__first++;
+	return __result;
+      }
+    };
+
 #include "hash.cc"
 
   template<>
