@@ -72,7 +72,7 @@ template<typename RandomAccessIterator, typename Predicate>
 
     bool* reserved_left = NULL, * reserved_right = NULL;
 
-    difference_type chunk_size;
+    difference_type chunk_size = __s.partition_chunk_size;
 
     omp_lock_t result_lock;
     omp_init_lock(&result_lock);
@@ -339,15 +339,16 @@ template<typename RandomAccessIterator, typename Comparator>
     RandomAccessIterator split;
     random_number rng;
 
-    difference_type minimum_length =
-      std::max<difference_type>(2, _Settings::get().partition_minimal_n);
+    const _Settings& __s = _Settings::get();
+    difference_type minimum_length = std::max<difference_type>(2,
+        std::max(__s.nth_element_minimal_n, __s.partition_minimal_n));
 
     // Break if input range to small.
     while (static_cast<sequence_index_t>(end - begin) >= minimum_length)
       {
         difference_type n = end - begin;
 
-        RandomAccessIterator pivot_pos = begin +  rng(n);
+        RandomAccessIterator pivot_pos = begin + rng(n);
 
         // Swap pivot_pos value to end.
         if (pivot_pos != (end - 1))
@@ -404,7 +405,7 @@ template<typename RandomAccessIterator, typename Comparator>
       }
 
     // Only at most _Settings::partition_minimal_n elements left.
-    __gnu_sequential::sort(begin, end, comp);
+    __gnu_sequential::nth_element(begin, nth, end, comp);
   }
 
 /** @brief Parallel implementation of std::partial_sort().
