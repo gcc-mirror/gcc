@@ -123,12 +123,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    __newsize = __ix + 1;
 	    __try
 	      { __words = new _Words[__newsize]; }
-	    __catch(...)
+	    __catch(const std::bad_alloc&)
 	      {
 		_M_streambuf_state |= badbit;
 		if (_M_streambuf_state & _M_exception)
 		  __throw_ios_failure(__N("ios_base::_M_grow_words "
-				      "allocation failed"));
+					  "allocation failed"));
 		if (__iword)
 		  _M_word_zero._M_iword = 0;
 		else

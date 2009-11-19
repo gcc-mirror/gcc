@@ -51,6 +51,9 @@ modifiers3()
   typedef typename list_type::const_iterator const_iterator;
   typedef typename list_type::const_reverse_iterator const_reverse_iterator;
 
+  using __gnu_test::copy_constructor;
+  using __gnu_test::destructor;
+
   list_type list0101;
   const_iterator i;
   const_reverse_iterator j;
@@ -59,7 +62,7 @@ modifiers3()
 
   list0101.push_back(value_type(1));     // list should be [1]
   VERIFY(list0101.size() == 1);
-  VERIFY(value_type::copyCount() == 1);
+  VERIFY(copy_constructor::count() == 1);
 
   k = list0101.end();
   --k;
@@ -69,12 +72,12 @@ modifiers3()
 
   list0101.push_front(value_type(2));    // list should be [2 1]
   VERIFY(list0101.size() == 2);
-  VERIFY(value_type::copyCount() == 2);
+  VERIFY(copy_constructor::count() == 2);
   VERIFY(k->id() == 1);
 
   list0101.push_back(value_type(3));     // list should be [2 1 3]
   VERIFY(list0101.size() == 3);
-  VERIFY(value_type::copyCount() == 3);
+  VERIFY(copy_constructor::count() == 3);
   VERIFY(k->id() == 1);
 
   try
@@ -85,7 +88,7 @@ modifiers3()
   catch (...)
   {
     VERIFY(list0101.size() == 3);
-    VERIFY(value_type::copyCount() == 4);
+    VERIFY(copy_constructor::count() == 4);
   }
 
   i = list0101.begin();
@@ -106,13 +109,13 @@ modifiers3()
 
   list0101.pop_back();          // list should be [2 1]
   VERIFY(list0101.size() == 2);
-  VERIFY(value_type::dtorCount() == 1);
+  VERIFY(destructor::count() == 1);
   VERIFY(i->id() == 1);
   VERIFY(k->id() == 1);
 
   list0101.pop_front();          // list should be [1]
   VERIFY(list0101.size() == 1);
-  VERIFY(value_type::dtorCount() == 2);
+  VERIFY(destructor::count() == 2);
   VERIFY(i->id() == 1);
   VERIFY(k->id() == 1);
 }

@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  {
 	    _S_start_free = static_cast<char*>(::operator new(__bytes_to_get));
 	  }
-	__catch (...)
+	__catch(const std::bad_alloc&)
 	  {
 	    // Try to make do with what we have.  That can't hurt.  We
 	    // do not try smaller requests, since that tends to result

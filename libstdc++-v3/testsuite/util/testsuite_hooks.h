@@ -270,11 +270,6 @@ namespace __gnu_test
     int
     id() const { return id_; }
 
-  private:
-    int   id_;
-    const bool  throw_on_copy_;
-
-  public:
     static void
     reset()
     {
@@ -283,17 +278,9 @@ namespace __gnu_test
       destructor::reset();
     }
 
-    // for backwards-compatibility
-    static int
-    copyCount() 
-    { return copy_constructor::count(); }
-
-    // for backwards-compatibility
-    static int
-    dtorCount() 
-    { return destructor::count(); }
-
   private:
+    int   id_;
+    const bool  throw_on_copy_;
     static int next_id_;
   };
 

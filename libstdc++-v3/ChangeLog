@@ -1,3 +1,19 @@
+2009-11-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/pool_allocator.cc: Adjust catch blocks.
+	* src/bitmap_allocator.cc: Same.
+	* src/localename.cc: Same.
+	* src/ios.cc: Same.
+
+	* libsupc++/cxxabi-forced.h: Adjust comments, markup.
+
+	* testsuite/util/testsuite_hooks.h (copy_constructor::copyCount):
+	Remove.
+	(copy_constructor::dtorCount): Remove.
+	* testsuite/23_containers/list/modifiers/1.h: Adjust.
+	* testsuite/23_containers/list/modifiers/2.h: Same.
+	* testsuite/23_containers/list/modifiers/3.h: Same.
+
 2009-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/41622

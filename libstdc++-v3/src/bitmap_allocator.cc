@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		__ret = reinterpret_cast<size_t*>
 		  (::operator new(__sz + sizeof(size_t)));
 	      }
-	    __catch(...)
+	    __catch(const std::bad_alloc&)
 	      {
 		this->_M_clear();
 	      }
