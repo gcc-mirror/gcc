@@ -1,3 +1,4 @@
+/* { dg-skip-if "The array is too big" { "avr-*-*" } { "*" } { "" } } */ 
 char paths[1024];
 static void x264_slicetype_path(char (*best_paths)[250], int n, int length)
 {
