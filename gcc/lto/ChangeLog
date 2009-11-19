@@ -1,3 +1,11 @@
+2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
+
+	PR bootstrap/42096
+	* lto-elf.c (lto_elf_file_open): Use lto_parse_hex.
+	* lto.c (lto_parse_hex): New.
+	(lto_resolution_read): Use lto_parse_hex.
+	* lto.h (lto_parse_hex): New.
+
 2009-11-17  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-elf.c (lto_file_init): Add offset argument.
