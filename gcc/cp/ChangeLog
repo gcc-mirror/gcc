@@ -1,3 +1,13 @@
+2009-11-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/561
+	* decl.c (static_fn_type): Split out...
+	(revert_static_member_fn): ...from here.
+	* cp-tree.h: Declare it.
+	* class.c (resolve_address_of_overloaded_function): Use it to compare
+	pointers to member functions.
+	* typeck.c (build_static_cast_1): Call instantiate_type.
+
 2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/40892
