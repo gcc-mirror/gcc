@@ -406,36 +406,6 @@ hash_node (const void *p)
 }
 
 
-/* Return the cgraph node associated with function DECL.  If none
-   exists, return NULL.  */
-
-struct cgraph_node *
-cgraph_node_for_decl (tree decl)
-{
-  struct cgraph_node *node;
-  void **slot;
-
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
-
-  node = NULL;
-  if (cgraph_hash)
-    {
-      struct cgraph_node key;
-
-      key.decl = decl;
-      slot = htab_find_slot (cgraph_hash, &key, NO_INSERT);
-      if (slot && *slot)
-	{
-	  node = (struct cgraph_node *) *slot;
-	  if (node->same_body_alias)
-	    node = node->same_body;
-	}
-    }
-
-  return node;
-}
-
-
 /* Returns nonzero if P1 and P2 are equal.  */
 
 static int
@@ -594,7 +564,7 @@ cgraph_get_node (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   if (!cgraph_hash)
-    cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
+    return NULL;
 
   key.decl = decl;
 
