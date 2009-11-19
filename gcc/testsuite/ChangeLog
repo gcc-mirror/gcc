@@ -1,5 +1,10 @@
 2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc.c-torture/compile/pr40204.c: Test only for int32 target.
+	* gcc.c-torture/compile/pr41181.c: Skip test for avr target.
+
+2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc-dg/raw-string-1.c: Skip test for avr target.
 	* gcc-dg/utf-array-short-wchar.c: Ditto.
 	* gcc-dg/utf-array.c: Ditto.

@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 /* PR middle-end/40204 */
 
 struct S
