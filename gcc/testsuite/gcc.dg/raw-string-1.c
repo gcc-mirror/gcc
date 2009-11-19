@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "No wchar.h" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-options "-std=gnu99" } */
 
 #include <wchar.h>

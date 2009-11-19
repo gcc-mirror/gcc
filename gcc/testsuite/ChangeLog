@@ -1,3 +1,10 @@
+2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* gcc-dg/raw-string-1.c: Skip test for avr target.
+	* gcc-dg/utf-array-short-wchar.c: Ditto.
+	* gcc-dg/utf-array.c: Ditto.
+	* gcc-dg/utf8-2.c: Ditto.
+
 2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
 
 	* g++.dg/plugin/selfassign.c: Include plugin-version.h.
