@@ -1,3 +1,9 @@
+2009-11-20  Ben Elliston  <bje@au.ibm.com>
+
+	* pex-unix.c (pex_child_error): Define writeerr macro to avoid
+	unused result warnings from write(3) calls.  Undefine writeerr
+	after all uses.
+
 2009-10-08  Daniel Gutson  <dgutson@codesourcery.com>
 	Daniel Jacobowitz  <dan@codesourcery.com>
 	Pedro Alves  <pedro@codesourcery.com>
