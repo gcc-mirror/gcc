@@ -832,6 +832,7 @@ static const struct arm_fpu_desc all_fpus[] =
   {"neon-fp16",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, true , true },
   {"vfpv4",		ARM_FP_MODEL_VFP, 4, VFP_REG_D32, false, true},
   {"vfpv4-d16",		ARM_FP_MODEL_VFP, 4, VFP_REG_D16, false, true},
+  {"fpv4-sp-d16",	ARM_FP_MODEL_VFP, 4, VFP_REG_SINGLE, false, true},
   {"neon-vfpv4",	ARM_FP_MODEL_VFP, 4, VFP_REG_D32, true, true},
   /* Compatibility aliases.  */
   {"vfp3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
