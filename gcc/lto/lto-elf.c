@@ -559,14 +559,8 @@ lto_elf_file_open (const char *filename, bool writable)
       fname = (char *) xmalloc (offset_p - filename + 1);
       memcpy (fname, filename, offset_p - filename);
       fname[offset_p - filename] = '\0';
-      offset_p++;
-      errno = 0;
-      offset = strtoll (offset_p, NULL, 10);
-      if (errno != 0)
-        {
-          error ("could not parse offset %s", offset_p);
-          goto fail;
-        }
+      offset_p += 3; /* skip the @0x */
+      offset = lto_parse_hex (offset_p);
       /* elf_rand expects the offset to point to the ar header, not the
          object itself. Subtract the size of the ar header (60 bytes).
          We don't uses sizeof (struct ar_hd) to avoid including ar.h */

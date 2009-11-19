@@ -551,7 +551,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
       Elf *archive;
       off_t offset;
       /* We pass the offset of the actual file, not the archive header. */
-      int t = asprintf (&objname, "%s@%" PRId64, file->name,
+      int t = asprintf (&objname, "%s@0x%" PRIx64, file->name,
                         (int64_t) file->offset);
       check (t >= 0, LDPL_FATAL, "asprintf failed");
       lto_file.name = objname;

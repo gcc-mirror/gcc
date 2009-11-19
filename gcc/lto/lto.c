@@ -249,6 +249,28 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   lto_data_in_delete (data_in);
 }
 
+/* strtoll is not portable. */
+int64_t
+lto_parse_hex (const char *p) {
+  uint64_t ret = 0;
+  for (; *p != '\0'; ++p)
+    {
+      char c = *p;
+      unsigned char part;
+      ret <<= 4;
+      if (c >= '0' && c <= '9')
+        part = c - '0';
+      else if (c >= 'a' && c <= 'f')
+        part = c - 'a' + 10;
+      else if (c >= 'A' && c <= 'F')
+        part = c - 'A' + 10;
+      else
+        internal_error ("could not parse hex number");
+      ret |= part;
+    }
+  return ret;
+}
+
 /* Read resolution for file named FILE_NAME. The resolution is read from
    RESOLUTION. An array with the symbol resolution is returned. The array
    size is written to SIZE. */
@@ -280,15 +302,12 @@ lto_resolution_read (FILE *resolution, lto_file *file)
   if (file->offset != 0)
     {
       int t;
-      char offset_p[21];
-      long long offset;
-      t = fscanf (resolution, "@%20s", offset_p);
+      char offset_p[17];
+      int64_t offset;
+      t = fscanf (resolution, "@0x%16s", offset_p);
       if (t != 1)
         internal_error ("could not parse file offset");
-      errno = 0;
-      offset = strtoll(offset_p, NULL, 10);
-      if (errno != 0)
-        internal_error ("could not parse file offset");
+      offset = lto_parse_hex (offset_p);
       if (offset != file->offset)
         internal_error ("unexpected offset");
     }

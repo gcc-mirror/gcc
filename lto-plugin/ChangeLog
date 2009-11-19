@@ -1,3 +1,8 @@
+2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
+
+	PR bootstrap/42096
+	* lto-plugin.c (claim_file_handler): Print offsets in hex.
+
 2009-11-12  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-plugin.c (write_resolution): Assume resolution_file is set.
