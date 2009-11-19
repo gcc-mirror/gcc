@@ -1,3 +1,9 @@
+2009-11-19  Janus Weil  <janus@gcc.gnu.org>
+
+	* trans-expr.c (conv_isocbinding_procedure): New function.
+	(gfc_conv_procedure_call): Move ISO_C_BINDING stuff to
+	separate function.
+
 2009-11-19  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (Interoperable Subroutines and Functions): Fix
