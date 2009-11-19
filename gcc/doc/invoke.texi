@@ -9795,8 +9795,8 @@ This specifies what floating point hardware (or hardware emulation) is
 available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
 @samp{fpe3}, @samp{maverick}, @samp{vfp}, @samp{vfpv3}, @samp{vfpv3-fp16},
 @samp{vfpv3-d16}, @samp{vfpv3-d16-fp16}, @samp{vfpv3xd}, @samp{vfpv3xd-fp16},
-@samp{neon}, @samp{neon-fp16}, @samp{vfpv4}, @samp{vfpv4-d16} and
-@samp{neon-vfpv4}.
+@samp{neon}, @samp{neon-fp16}, @samp{vfpv4}, @samp{vfpv4-d16},
+@samp{fpv4-sp-d16} and @samp{neon-vfpv4}.
 @option{-mfp} and @option{-mfpe} are synonyms for
 @option{-mfpu}=@samp{fpe}@var{number}, for compatibility with older versions
 of GCC@.

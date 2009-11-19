@@ -1,3 +1,9 @@
+2009-11-19  Paul Brook  <paul@codesourcery.com>
+
+	* config.gcc: Add new ARM --with-fpu options.
+	* doc/invoke.texi: Docuent ARM -mfpu=fpv4-sp-d16.
+	* config/arm/arm.c (all_fpus): Add fpv4-sp-d16.
+
 2009-11-18  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.h (union gimple_statement_d): Add gsmembase member.
