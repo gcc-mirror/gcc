@@ -2009,9 +2009,10 @@ Thus the following C prototype
 matches the Fortran declaration
 
 @smallexample
-  integer(c_int) func(i,j)
-    integer, VALUE :: i
-    integer :: j
+  integer(c_int) function func(i,j)
+    use iso_c_binding, only: c_int
+    integer(c_int), VALUE :: i
+    integer(c_int) :: j
 @end smallexample
 
 Note that pointer arguments also frequently need the @code{VALUE} attribute.
