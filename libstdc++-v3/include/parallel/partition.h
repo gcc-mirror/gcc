@@ -73,7 +73,7 @@ namespace __gnu_parallel
 
       bool* __reserved_left = NULL, * __reserved_right = NULL;
 
-      _DifferenceType __chunk_size;
+      _DifferenceType __chunk_size = __s.partition_chunk_size;
 
       omp_lock_t __result_lock;
       omp_init_lock(&__result_lock);
@@ -345,15 +345,16 @@ namespace __gnu_parallel
       _RAIter __split;
       _RandomNumber __rng;
 
-      _DifferenceType __minimum_length =
-	std::max<_DifferenceType>(2, _Settings::get().partition_minimal_n);
+      const _Settings& __s = _Settings::get();
+      _DifferenceType __minimum_length = std::max<_DifferenceType>(2,
+        std::max(__s.nth_element_minimal_n, __s.partition_minimal_n));
 
       // Break if input range to small.
       while (static_cast<_SequenceIndex>(__end - __begin) >= __minimum_length)
 	{
           _DifferenceType __n = __end - __begin;
 
-          _RAIter __pivot_pos = __begin +  __rng(__n);
+          _RAIter __pivot_pos = __begin + __rng(__n);
 
           // Swap __pivot_pos value to end.
           if (__pivot_pos != (__end - 1))
@@ -412,7 +413,7 @@ namespace __gnu_parallel
 	}
 
       // Only at most _Settings::partition_minimal_n __elements __left.
-      __gnu_sequential::sort(__begin, __end, __comp);
+      __gnu_sequential::nth_element(__begin, __nth, __end, __comp);
     }
 
   /** @brief Parallel implementation of std::partial_sort().
