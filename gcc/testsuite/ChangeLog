@@ -1,3 +1,12 @@
+2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
+
+	* g++.dg/plugin/selfassign.c: Include plugin-version.h.
+	(plugin_init): Pass correct version to plugin_default_version_check.
+	* gcc.dg/plugin/ggcplug.c: Include plugin-version.h.
+	(plugin_init): Pass correct version to plugin_default_version_check.
+	* gcc.dg/plugin/selfassign.c: Include plugin-version.h.
+	(plugin_init): Pass correct version to plugin_default_version_check.
+
 2009-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/561
