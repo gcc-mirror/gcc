@@ -1,6 +1,6 @@
 // { dg-lto-do link }
 // { dg-lto-options {{-fPIC -fwhopr -O2}} }
-// { dg-extra-ld-options "-O2 -fPIC -fwhopr -shared" }
+// { dg-extra-ld-options "-O2 -fPIC -fwhopr -r -nostdlib" }
 
 typedef long int ptrdiff_t;
 extern "C"

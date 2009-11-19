@@ -1,5 +1,5 @@
 // { dg-lto-do link }
-// { dg-lto-options {{-flto -shared}} }
+// { dg-lto-options {{-flto -r -nostdlib}} }
 extern "C"
 {
  extern __inline __attribute__((__gnu_inline__)) int pthread_equal(int, int)

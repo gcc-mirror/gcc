@@ -1,6 +1,6 @@
 // { dg-lto-do link }
 // { dg-lto-options {{-fPIC -flto}} }
-// { dg-extra-ld-options "-fPIC -shared" }
+// { dg-extra-ld-options "-fPIC -r -nostdlib" }
 
 namespace std __attribute__ ((__visibility__ ("default")))
 {
