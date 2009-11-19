@@ -1,3 +1,10 @@
+2009-11-19  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/partition.h (__parallel_partition): Correctly
+        initialize chunk size.
+        (__parallel_nth_element): Respect nth_element_minimal_n.  Use
+        sequential nth_element as base case, instead of sequential sort.
+
 2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/profile/impl/profiler.h: Remove namespace markup.
