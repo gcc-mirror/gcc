@@ -1,6 +1,6 @@
 // { dg-lto-do link }
 // { dg-lto-options {{-fPIC}} }
-// { dg-extra-ld-options "-fPIC -shared" }
+// { dg-extra-ld-options "-fPIC -r -nostdlib" }
 
 template < class T > 
 class DataArray {
