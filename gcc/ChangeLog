@@ -1,3 +1,9 @@
+2009-11-19  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (canonicalize_cond_expr_cond): Strip conversions
+	around truth-valued expressions.
+	* tree.c (free_lang_data): Untangle check for LTO frontend.
+
 2009-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (need_assembler_name_p): Use cgraph_get_node instead

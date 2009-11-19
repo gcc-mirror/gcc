@@ -2937,9 +2937,14 @@ recalculate_side_effects (tree t)
 tree
 canonicalize_cond_expr_cond (tree t)
 {
+  /* Strip conversions around boolean operations.  */
+  if (CONVERT_EXPR_P (t)
+      && truth_value_p (TREE_CODE (TREE_OPERAND (t, 0))))
+    t = TREE_OPERAND (t, 0);
+
   /* For (bool)x use x != 0.  */
-  if (TREE_CODE (t) == NOP_EXPR
-      && TREE_TYPE (t) == boolean_type_node)
+  if (CONVERT_EXPR_P (t)
+      && TREE_CODE (TREE_TYPE (t)) == BOOLEAN_TYPE)
     {
       tree top0 = TREE_OPERAND (t, 0);
       t = build2 (NE_EXPR, TREE_TYPE (t),
