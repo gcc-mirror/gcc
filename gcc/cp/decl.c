@@ -12812,26 +12812,47 @@ finish_stmt (void)
 {
 }
 
+/* Return the FUNCTION_TYPE that corresponds to MEMFNTYPE, which can be a
+   FUNCTION_DECL, METHOD_TYPE, FUNCTION_TYPE, pointer or reference to
+   METHOD_TYPE or FUNCTION_TYPE, or pointer to member function.  */
+
+tree
+static_fn_type (tree memfntype)
+{
+  tree fntype;
+  tree args;
+  int quals;
+
+  if (TYPE_PTRMEMFUNC_P (memfntype))
+    memfntype = TYPE_PTRMEMFUNC_FN_TYPE (memfntype);
+  if (POINTER_TYPE_P (memfntype)
+      || TREE_CODE (memfntype) == FUNCTION_DECL)
+    memfntype = TREE_TYPE (memfntype);
+  if (TREE_CODE (memfntype) == FUNCTION_TYPE)
+    return memfntype;
+  gcc_assert (TREE_CODE (memfntype) == METHOD_TYPE);
+  args = TYPE_ARG_TYPES (memfntype);
+  fntype = build_function_type (TREE_TYPE (memfntype), TREE_CHAIN (args));
+  quals = cp_type_quals (TREE_TYPE (TREE_VALUE (args)));
+  fntype = build_qualified_type (fntype, quals);
+  fntype = (cp_build_type_attribute_variant
+	    (fntype, TYPE_ATTRIBUTES (memfntype)));
+  fntype = (build_exception_variant
+	    (fntype, TYPE_RAISES_EXCEPTIONS (memfntype)));
+  return fntype;
+}
+
 /* DECL was originally constructed as a non-static member function,
    but turned out to be static.  Update it accordingly.  */
 
 void
 revert_static_member_fn (tree decl)
 {
-  tree tmp;
-  tree function = TREE_TYPE (decl);
-  tree args = TYPE_ARG_TYPES (function);
+  TREE_TYPE (decl) = static_fn_type (decl);
 
-  if (cp_type_quals (TREE_TYPE (TREE_VALUE (args)))
-      != TYPE_UNQUALIFIED)
+  if (cp_type_quals (TREE_TYPE (decl)) != TYPE_UNQUALIFIED)
     error ("static member function %q#D declared with type qualifiers", decl);
 
-  args = TREE_CHAIN (args);
-  tmp = build_function_type (TREE_TYPE (function), args);
-  tmp = build_qualified_type (tmp, cp_type_quals (function));
-  tmp = build_exception_variant (tmp,
-				 TYPE_RAISES_EXCEPTIONS (function));
-  TREE_TYPE (decl) = tmp;
   if (DECL_ARGUMENTS (decl))
     DECL_ARGUMENTS (decl) = TREE_CHAIN (DECL_ARGUMENTS (decl));
   DECL_STATIC_FUNCTION_P (decl) = 1;

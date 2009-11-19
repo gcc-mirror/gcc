@@ -5346,6 +5346,14 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 
   orig = expr;
 
+  /* Resolve overloaded address here rather than once in
+     implicit_conversion and again in the inverse code below.  */
+  if (TYPE_PTRMEMFUNC_P (type) && type_unknown_p (expr))
+    {
+      expr = instantiate_type (type, expr, complain);
+      intype = TREE_TYPE (expr);
+    }
+
   /* [expr.static.cast]
 
      An expression e can be explicitly converted to a type T using a
