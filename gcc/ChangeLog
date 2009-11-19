@@ -1,3 +1,11 @@
+2009-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (need_assembler_name_p): Use cgraph_get_node instead
+	of cgraph_node_for_decl.
+	* cgraph.h (cgraph_node_for_decl): Remove prototype.
+	* cgraph.c (cgraph_node_for_decl): Remove.
+	(cgraph_get_node): Just return NULL if !cgraph_hash.
+
 2009-11-19  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Add new ARM --with-fpu options.

@@ -4289,7 +4289,7 @@ need_assembler_name_p (tree decl)
 	return false;
 
       /* Functions represented in the callgraph need an assembler name.  */
-      if (cgraph_node_for_decl (decl) != NULL)
+      if (cgraph_get_node (decl) != NULL)
 	return true;
 
       /* Unused and not public functions don't need an assembler name.  */
