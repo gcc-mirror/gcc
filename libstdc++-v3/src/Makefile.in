@@ -87,8 +87,8 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	pool_allocator.cc mt_allocator.cc codecvt.cc compatibility.cc \
-	complex_io.cc ctype.cc debug.cc functexcept.cc hash_tr1.cc \
-	hash_c++0x.cc globals_io.cc hashtable_tr1.cc \
+	compatibility-c++0x.cc complex_io.cc ctype.cc debug.cc \
+	functexcept.cc hash_tr1.cc globals_io.cc hashtable_tr1.cc \
 	hashtable_c++0x.cc ios.cc ios_failure.cc ios_init.cc \
 	ios_locale.cc limits.cc limits_c++0x.cc list.cc debug_list.cc \
 	locale.cc locale_init.cc locale_facets.cc localename.cc \
@@ -113,18 +113,18 @@ am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
 	$(am__objects_3)
 am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
-	mt_allocator.lo codecvt.lo compatibility.lo complex_io.lo \
-	ctype.lo debug.lo functexcept.lo hash_tr1.lo hash_c++0x.lo \
-	globals_io.lo hashtable_tr1.lo hashtable_c++0x.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo \
-	limits_c++0x.lo list.lo debug_list.lo locale.lo locale_init.lo \
-	locale_facets.lo localename.lo math_stubs_float.lo \
-	math_stubs_long_double.lo stdexcept.lo strstream.lo \
-	system_error.lo tree.lo allocator-inst.lo concept-inst.lo \
-	fstream-inst.lo ext-inst.lo ios-inst.lo iostream-inst.lo \
-	istream-inst.lo istream.lo locale-inst.lo misc-inst.lo \
-	ostream-inst.lo sstream-inst.lo streambuf-inst.lo streambuf.lo \
-	string-inst.lo valarray-inst.lo wlocale-inst.lo \
+	mt_allocator.lo codecvt.lo compatibility.lo \
+	compatibility-c++0x.lo complex_io.lo ctype.lo debug.lo \
+	functexcept.lo hash_tr1.lo globals_io.lo hashtable_tr1.lo \
+	hashtable_c++0x.lo ios.lo ios_failure.lo ios_init.lo \
+	ios_locale.lo limits.lo limits_c++0x.lo list.lo debug_list.lo \
+	locale.lo locale_init.lo locale_facets.lo localename.lo \
+	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
+	strstream.lo system_error.lo tree.lo allocator-inst.lo \
+	concept-inst.lo fstream-inst.lo ext-inst.lo ios-inst.lo \
+	iostream-inst.lo istream-inst.lo istream.lo locale-inst.lo \
+	misc-inst.lo ostream-inst.lo sstream-inst.lo streambuf-inst.lo \
+	streambuf.lo string-inst.lo valarray-inst.lo wlocale-inst.lo \
 	wstring-inst.lo mutex.lo condition_variable.lo chrono.lo \
 	thread.lo future.lo $(am__objects_1) $(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
@@ -382,12 +382,12 @@ sources = \
 	mt_allocator.cc \
 	codecvt.cc \
 	compatibility.cc \
+	compatibility-c++0x.cc \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
 	hash_tr1.cc \
-	hash_c++0x.cc \
 	globals_io.cc \
 	hashtable_tr1.cc \
 	hashtable_c++0x.cc \
@@ -891,9 +891,9 @@ condition_variable.lo: condition_variable.cc
 condition_variable.o: condition_variable.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
-hash_c++0x.lo: hash_c++0x.cc
+compatibility-c++0x.lo: compatibility-c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-hash_c++0x.o: hash_c++0x.cc
+compatibility-c++0x.o: compatibility-c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hashtable_c++0x.lo: hashtable_c++0x.cc

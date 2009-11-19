@@ -1,6 +1,6 @@
 // TR1 functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,22 +32,154 @@
 
 #pragma GCC system_header
 
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  error TR1 header cannot be included from C++0x header
-#endif
+namespace std
+{
+namespace tr1
+{
+  /// Class template hash.
+  // Declaration of default hash functor std::tr1::hash.  The types for
+  // which std::tr1::hash<T> is well-defined is in clause 6.3.3. of the PDTR.
+  template<typename _Tp>
+    struct hash : public std::unary_function<_Tp, size_t>
+    {
+      size_t
+      operator()(_Tp __val) const;
+    };
 
-#if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  include <tr1_impl/functional_hash.h>
-#else
-#  define _GLIBCXX_INCLUDE_AS_TR1
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
-#  define _GLIBCXX_END_NAMESPACE_TR1 }
-#  define _GLIBCXX_TR1 tr1::
-#  include <tr1_impl/functional_hash.h>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_END_NAMESPACE_TR1
-#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  undef _GLIBCXX_INCLUDE_AS_TR1
+  /// Partial specializations for pointer types.
+  template<typename _Tp>
+    struct hash<_Tp*> : public std::unary_function<_Tp*, size_t>
+    {
+      size_t
+      operator()(_Tp* __p) const
+      { return reinterpret_cast<size_t>(__p); }
+    };
+
+  /// Explicit specializations for integer types.
+#define _TR1_hashtable_define_trivial_hash(_Tp) 	\
+  template<>						\
+    inline size_t					\
+    hash<_Tp>::operator()(_Tp __val) const		\
+    { return static_cast<size_t>(__val); }
+
+  _TR1_hashtable_define_trivial_hash(bool);
+  _TR1_hashtable_define_trivial_hash(char);
+  _TR1_hashtable_define_trivial_hash(signed char);
+  _TR1_hashtable_define_trivial_hash(unsigned char);
+  _TR1_hashtable_define_trivial_hash(wchar_t);
+  _TR1_hashtable_define_trivial_hash(short);
+  _TR1_hashtable_define_trivial_hash(int);
+  _TR1_hashtable_define_trivial_hash(long);
+  _TR1_hashtable_define_trivial_hash(long long);
+  _TR1_hashtable_define_trivial_hash(unsigned short);
+  _TR1_hashtable_define_trivial_hash(unsigned int);
+  _TR1_hashtable_define_trivial_hash(unsigned long);
+  _TR1_hashtable_define_trivial_hash(unsigned long long);
+
+#undef _TR1_hashtable_define_trivial_hash
+
+  // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
+  // (Used by the next specializations of std::tr1::hash.)
+
+  /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
+  template<size_t = sizeof(size_t)>
+    struct _Fnv_hash
+    {
+      static size_t
+      hash(const char* __first, size_t __length)
+      {
+	size_t __result = 0;
+	for (; __length > 0; --__length)
+	  __result = (__result * 131) + *__first++;
+	return __result;
+      }
+    };
+
+  template<>
+    struct _Fnv_hash<4>
+    {
+      static size_t
+      hash(const char* __first, size_t __length)
+      {
+	size_t __result = static_cast<size_t>(2166136261UL);
+	for (; __length > 0; --__length)
+	  {
+	    __result ^= static_cast<size_t>(*__first++);
+	    __result *= static_cast<size_t>(16777619UL);
+	  }
+	return __result;
+      }
+    };
+  
+  template<>
+    struct _Fnv_hash<8>
+    {
+      static size_t
+      hash(const char* __first, size_t __length)
+      {
+	size_t __result =
+	  static_cast<size_t>(14695981039346656037ULL);
+	for (; __length > 0; --__length)
+	  {
+	    __result ^= static_cast<size_t>(*__first++);
+	    __result *= static_cast<size_t>(1099511628211ULL);
+	  }
+	return __result;
+      }
+    };
+
+  /// Explicit specializations for float.
+  template<>
+    inline size_t
+    hash<float>::operator()(float __val) const
+    {
+      size_t __result = 0;
+      
+      // 0 and -0 both hash to zero.
+      if (__val != 0.0f)
+	__result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
+				     sizeof(__val));
+      return __result;
+    };
+
+  /// Explicit specializations for double.
+  template<>
+    inline size_t
+    hash<double>::operator()(double __val) const
+    {
+	size_t __result = 0;
+
+	// 0 and -0 both hash to zero.
+	if (__val != 0.0)
+	  __result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
+				       sizeof(__val));
+	return __result;
+    };
+
+  /// Explicit specializations for long double.
+  template<>
+    _GLIBCXX_PURE size_t
+    hash<long double>::operator()(long double __val) const;
+
+  /// Explicit specialization of member operator for non-builtin types.
+  template<>
+    _GLIBCXX_PURE size_t
+    hash<string>::operator()(string) const;
+
+  template<>
+    _GLIBCXX_PURE size_t
+    hash<const string&>::operator()(const string&) const;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    _GLIBCXX_PURE size_t
+    hash<wstring>::operator()(wstring) const;
+
+  template<>
+    _GLIBCXX_PURE size_t
+    hash<const wstring&>::operator()(const wstring&) const;
 #endif
+}
+}
 
 #endif // _GLIBCXX_TR1_FUNCTIONAL_HASH_H
