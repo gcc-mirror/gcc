@@ -1,3 +1,8 @@
+2009-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42060
+	* g++.dg/cpp0x/initlist28.C: New.
+
 2009-11-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gfortran.dg/proc_ptr_comp_23.f90: Add a missing space.

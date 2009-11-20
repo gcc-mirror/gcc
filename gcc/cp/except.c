@@ -752,8 +752,12 @@ build_throw (tree exp)
 	    }
 	}
       else
-	exp = build2 (INIT_EXPR, temp_type, object,
-		      decay_conversion (exp));
+	{
+	  tmp = decay_conversion (exp);
+	  if (tmp == error_mark_node)
+	    return error_mark_node;
+	  exp = build2 (INIT_EXPR, temp_type, object, tmp);
+	}
 
       /* Pre-evaluate the thrown expression first, since if we allocated
 	 the space first we would have to deal with cleaning it up if
