@@ -1,3 +1,11 @@
+2009-11-20  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42104
+	* trans-expr.c (gfc_conv_procedure_call): If procedure pointer
+	component call, use the component's 'always_explicit' attr
+	for array arguments.
+
 2009-11-19  Janus Weil  <janus@gcc.gnu.org>
 
 	* trans-expr.c (conv_isocbinding_procedure): New function.
