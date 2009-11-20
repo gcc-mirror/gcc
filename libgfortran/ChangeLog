@@ -1,3 +1,12 @@
+2009-11-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/42090
+	Backport from trunk.
+	* io/transfer.c (skip_record): Set bytes_left_subrecord to zero after
+	skipping the remaining bytes in the record.
+	(next_record_r): Call skip_record with the number of bytes_left to be
+	skipped.
+
 2009-10-15  Release Manager
 
 	* GCC 4.4.2 released.
