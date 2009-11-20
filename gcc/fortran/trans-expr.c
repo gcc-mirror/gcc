@@ -2979,7 +2979,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      f = (fsym != NULL)
 		  && !(fsym->attr.pointer || fsym->attr.allocatable)
 		  && fsym->as->type != AS_ASSUMED_SHAPE;
-	      f = f || !sym->attr.always_explicit;
+	      if (comp)
+		f = f || !comp->attr.always_explicit;
+	      else
+		f = f || !sym->attr.always_explicit;
 
 	      if (e->expr_type == EXPR_VARIABLE
 		    && is_subref_array (e))

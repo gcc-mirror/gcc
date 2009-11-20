@@ -1,3 +1,9 @@
+2009-11-20  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42104
+	* gfortran.dg/proc_ptr_comp_23.f90 : New test.
+
 2009-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42115
