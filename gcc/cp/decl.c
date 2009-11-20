@@ -9787,6 +9787,10 @@ type_is_deprecated (tree type)
       && TREE_DEPRECATED (TYPE_NAME (type)))
     return type;
 
+  /* Do warn about using typedefs to a deprecated class.  */
+  if (TAGGED_TYPE_P (type) && type != TYPE_MAIN_VARIANT (type))
+    return type_is_deprecated (TYPE_MAIN_VARIANT (type));
+
   code = TREE_CODE (type);
 
   if (code == POINTER_TYPE || code == REFERENCE_TYPE
@@ -10608,6 +10612,7 @@ check_elaborated_type_specifier (enum tag_types tag_code,
      elaborated type specifier is the implicit typedef created when
      the type is declared.  */
   else if (!DECL_IMPLICIT_TYPEDEF_P (decl)
+	   && !DECL_SELF_REFERENCE_P (decl)
 	   && tag_code != typename_type)
     {
       error ("using typedef-name %qD after %qs", decl, tag_name (tag_code));

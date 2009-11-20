@@ -19089,7 +19089,7 @@ get_context_die (tree context)
     {
       /* Find die that represents this context.  */
       if (TYPE_P (context))
-	return force_type_die (context);
+	return force_type_die (TYPE_MAIN_VARIANT (context));
       else
 	return force_decl_die (context);
     }

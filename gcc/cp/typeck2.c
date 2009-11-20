@@ -236,6 +236,7 @@ abstract_virtuals_error (tree decl, tree type)
      be abstract.  */
   if (!CLASS_TYPE_P (type))
     return 0;
+  type = TYPE_MAIN_VARIANT (type);
 
   /* If the type is incomplete, we register it within a hash table,
      so that we can check again once it is completed. This makes sense
