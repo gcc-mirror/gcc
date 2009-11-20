@@ -1,3 +1,10 @@
+2009-11-20  Paul Brook  <paul@codesourcery.com>
+
+	* doc/invoke.texi: Document ARM -mcpu=cortex-a5.
+	* config/arm/arm-cores.def: Add cortex-a5.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Add mcpu=cortex-a5.
+	* config/arm/arm-tune.md: Regenerate.
+
 2009-11-20 Olga Golovanevsky <olga@il.ibm.com>
 
 	PR middle-end/39960
