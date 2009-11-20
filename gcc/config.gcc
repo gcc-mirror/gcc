@@ -651,6 +651,7 @@ alpha*-dec-osf[45]*)
 	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm alpha/t-osf4"
 	tm_file="${tm_file} alpha/osf.h"
 	extra_headers=va_list.h
+	use_gcc_stdint=provide
 	case ${target} in
 	  *-*-osf4*)
 	    # Define TARGET_SUPPORT_ARCH except on 4.0a.

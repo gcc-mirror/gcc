@@ -1,3 +1,9 @@
+2009-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/c99-stdint-6.c: Set dg-options for alpha*-dec-osf5*.
+	Wrap *int_least*_t tests in !NO_LEAST_TYPES.
+	Wrap *intmax_t tests in !NO_MAX_TYPES.
+
 2009-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42060
