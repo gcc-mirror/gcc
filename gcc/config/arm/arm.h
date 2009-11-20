@@ -2274,24 +2274,44 @@ extern int making_const_table;
 #define ASM_APP_OFF (TARGET_THUMB1 ? "\t.code\t16\n" : \
 		     TARGET_THUMB2 ? "\t.thumb\n" : "")
 
-/* Output a push or a pop instruction (only used when profiling).  */
+/* Output a push or a pop instruction (only used when profiling).
+   We can't push STATIC_CHAIN_REGNUM (r12) directly with Thumb-1.  We know
+   that ASM_OUTPUT_REG_PUSH will be matched with ASM_OUTPUT_REG_POP, and
+   that r7 isn't used by the function profiler, so we can use it as a
+   scratch reg.  WARNING: This isn't safe in the general case!  It may be
+   sensitive to future changes in final.c:profile_function.  */
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)		\
   do							\
     {							\
       if (TARGET_ARM)					\
 	asm_fprintf (STREAM,"\tstmfd\t%r!,{%r}\n",	\
 		     STACK_POINTER_REGNUM, REGNO);	\
+      else if (TARGET_THUMB1				\
+	       && (REGNO) == STATIC_CHAIN_REGNUM)	\
+	{						\
+	  asm_fprintf (STREAM, "\tpush\t{r7}\n");	\
+	  asm_fprintf (STREAM, "\tmov\tr7, %r\n", REGNO);\
+	  asm_fprintf (STREAM, "\tpush\t{r7}\n");	\
+	}						\
       else						\
 	asm_fprintf (STREAM, "\tpush {%r}\n", REGNO);	\
     } while (0)
 
 
+/* See comment for ASM_OUTPUT_REG_PUSH concerning Thumb-1 issue.  */
 #define ASM_OUTPUT_REG_POP(STREAM, REGNO)		\
   do							\
     {							\
       if (TARGET_ARM)					\
 	asm_fprintf (STREAM, "\tldmfd\t%r!,{%r}\n",	\
 		     STACK_POINTER_REGNUM, REGNO);	\
+      else if (TARGET_THUMB1				\
+	       && (REGNO) == STATIC_CHAIN_REGNUM)	\
+	{						\
+	  asm_fprintf (STREAM, "\tpop\t{r7}\n");	\
+	  asm_fprintf (STREAM, "\tmov\t%r, r7\n", REGNO);\
+	  asm_fprintf (STREAM, "\tpop\t{r7}\n");	\
+	}						\
       else						\
 	asm_fprintf (STREAM, "\tpop {%r}\n", REGNO);	\
     } while (0)
