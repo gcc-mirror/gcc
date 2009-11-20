@@ -403,6 +403,17 @@ typedef enum cpp0x_warn_str
   CPP0X_DEFAULTED_DELETED
 } cpp0x_warn_str;
   
+/* The various kinds of operation used by composite_pointer_type. */
+
+typedef enum composite_pointer_operation
+{
+  /* comparison */
+  CPO_COMPARISON,
+  /* conversion */
+  CPO_CONVERSION,
+  /* conditional expression */
+  CPO_CONDITIONAL_EXPR
+} composite_pointer_operation;
 
 /* Macros for access to language-specific slots in an identifier.  */
 
@@ -5281,7 +5292,8 @@ extern void expand_ptrmemfunc_cst		(tree, tree *, tree *);
 extern tree type_after_usual_arithmetic_conversions (tree, tree);
 extern tree common_pointer_type                 (tree, tree);
 extern tree composite_pointer_type		(tree, tree, tree, tree,
-						 const char*, tsubst_flags_t);
+						 composite_pointer_operation, 
+						 tsubst_flags_t);
 extern tree merge_types				(tree, tree);
 extern tree check_return_expr			(tree, bool *);
 extern tree cp_build_binary_op                  (location_t,

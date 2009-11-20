@@ -3977,7 +3977,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 	   || (TYPE_PTRMEMFUNC_P (arg2_type) && TYPE_PTRMEMFUNC_P (arg3_type)))
     {
       result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
-					    arg3, "conditional expression",
+					    arg3, CPO_CONDITIONAL_EXPR,
 					    complain);
       if (result_type == error_mark_node)
 	return error_mark_node;

@@ -421,10 +421,11 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
 }
 
 /* Subroutine of composite_pointer_type to implement the recursive
-   case.  See that function for documentation fo the parameters.  */
+   case.  See that function for documentation of the parameters.  */
 
 static tree
-composite_pointer_type_r (tree t1, tree t2, const char* location,
+composite_pointer_type_r (tree t1, tree t2, 
+			  composite_pointer_operation operation,
 			  tsubst_flags_t complain)
 {
   tree pointee1;
@@ -457,14 +458,33 @@ composite_pointer_type_r (tree t1, tree t2, const char* location,
 	    && TREE_CODE (pointee2) == POINTER_TYPE)
 	   || (TYPE_PTR_TO_MEMBER_P (pointee1)
 	       && TYPE_PTR_TO_MEMBER_P (pointee2)))
-    result_type = composite_pointer_type_r (pointee1, pointee2, location,
+    result_type = composite_pointer_type_r (pointee1, pointee2, operation,
 					    complain);
   else
     {
       if (complain & tf_error)
-	permerror (input_location, "%s between distinct pointer types %qT and %qT "
-		   "lacks a cast",
-		   location, t1, t2);
+        {
+          switch (operation)
+            {
+            case CPO_COMPARISON:
+              permerror (input_location, "comparison between "
+                         "distinct pointer types %qT and %qT lacks a cast",
+                         t1, t2);
+              break;
+            case CPO_CONVERSION:
+              permerror (input_location, "conversion between "
+                         "distinct pointer types %qT and %qT lacks a cast",
+                         t1, t2);
+              break;
+            case CPO_CONDITIONAL_EXPR:
+              permerror (input_location, "conditional expression between "
+                         "distinct pointer types %qT and %qT lacks a cast",
+                         t1, t2);
+              break;
+            default:
+              gcc_unreachable ();
+            }
+        }
       result_type = void_type_node;
     }
   result_type = cp_build_qualified_type (result_type,
@@ -477,9 +497,28 @@ composite_pointer_type_r (tree t1, tree t2, const char* location,
       if (!same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
 			TYPE_PTRMEM_CLASS_TYPE (t2))
 	  && (complain & tf_error))
-	permerror (input_location, "%s between distinct pointer types %qT and %qT "
-		   "lacks a cast",
-		   location, t1, t2);
+        {
+          switch (operation)
+            {
+            case CPO_COMPARISON:
+              permerror (input_location, "comparison between "
+                         "distinct pointer types %qT and %qT lacks a cast", 
+                         t1, t2);
+              break;
+            case CPO_CONVERSION:
+              permerror (input_location, "conversion between "
+                         "distinct pointer types %qT and %qT lacks a cast",
+                         t1, t2);
+              break;
+            case CPO_CONDITIONAL_EXPR:
+              permerror (input_location, "conditional expression between "
+                         "distinct pointer types %qT and %qT lacks a cast",
+                         t1, t2);
+              break;
+            default:
+              gcc_unreachable ();
+            }
+        }
       result_type = build_ptrmem_type (TYPE_PTRMEM_CLASS_TYPE (t1),
 				       result_type);
     }
@@ -492,15 +531,17 @@ composite_pointer_type_r (tree t1, tree t2, const char* location,
 }
 
 /* Return the composite pointer type (see [expr.rel]) for T1 and T2.
-   ARG1 and ARG2 are the values with those types.  The LOCATION is a
-   string describing the current location, in case an error occurs.
+   ARG1 and ARG2 are the values with those types.  The OPERATION is to
+   describe the operation between the pointer types,
+   in case an error occurs.
 
    This routine also implements the computation of a common type for
    pointers-to-members as per [expr.eq].  */
 
 tree
 composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
-			const char* location, tsubst_flags_t complain)
+			composite_pointer_operation operation, 
+			tsubst_flags_t complain)
 {
   tree class1;
   tree class2;
@@ -539,9 +580,28 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       tree result_type;
 
       if (TYPE_PTRFN_P (t2) && (complain & tf_error))
-	pedwarn (input_location, OPT_pedantic, "ISO C++ forbids %s "
-		 "between pointer of type %<void *%> and pointer-to-function",
-		 location);
+        {
+          switch (operation)
+              {
+              case CPO_COMPARISON:
+                pedwarn (input_location, OPT_pedantic, 
+                         "ISO C++ forbids comparison between "
+                         "pointer of type %<void *%> and pointer-to-function");
+                break;
+              case CPO_CONVERSION:
+                pedwarn (input_location, OPT_pedantic,
+                         "ISO C++ forbids conversion between "
+                         "pointer of type %<void *%> and pointer-to-function");
+                break;
+              case CPO_CONDITIONAL_EXPR:
+                pedwarn (input_location, OPT_pedantic,
+                         "ISO C++ forbids conditional expression between "
+                         "pointer of type %<void *%> and pointer-to-function");
+                break;
+              default:
+                gcc_unreachable ();
+              }
+        }
       result_type
 	= cp_build_qualified_type (void_type_node,
 				   (cp_type_quals (TREE_TYPE (t1))
@@ -577,17 +637,32 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
 	t1 = (build_pointer_type
 	      (cp_build_qualified_type (class2, TYPE_QUALS (class1))));
       else
-	{
-	  if (complain & tf_error)
-	    error ("%s between distinct pointer types %qT and %qT "
-		   "lacks a cast", location, t1, t2);
-	  return error_mark_node;
-	}
+        {
+          if (complain & tf_error)
+            switch (operation)
+              {
+              case CPO_COMPARISON:
+                error ("comparison between distinct "
+                       "pointer types %qT and %qT lacks a cast", t1, t2);
+                break;
+              case CPO_CONVERSION:
+                error ("conversion between distinct "
+                       "pointer types %qT and %qT lacks a cast", t1, t2);
+                break;
+              case CPO_CONDITIONAL_EXPR:
+                error ("conditional expression between distinct "
+                       "pointer types %qT and %qT lacks a cast", t1, t2);
+                break;
+              default:
+                gcc_unreachable ();
+              }
+          return error_mark_node;
+        }
     }
   /* [expr.eq] permits the application of a pointer-to-member
      conversion to change the class type of one of the types.  */
   else if (TYPE_PTR_TO_MEMBER_P (t1)
-	   && !same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
+           && !same_type_p (TYPE_PTRMEM_CLASS_TYPE (t1),
 			    TYPE_PTRMEM_CLASS_TYPE (t2)))
     {
       class1 = TYPE_PTRMEM_CLASS_TYPE (t1);
@@ -598,15 +673,33 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       else if (DERIVED_FROM_P (class2, class1))
 	t2 = build_ptrmem_type (class1, TYPE_PTRMEM_POINTED_TO_TYPE (t2));
       else
-	{
-	  if (complain & tf_error)
-	    error ("%s between distinct pointer-to-member types %qT and %qT "
-		   "lacks a cast", location, t1, t2);
-	  return error_mark_node;
-	}
+        {
+          if (complain & tf_error)
+            switch (operation)
+              {
+              case CPO_COMPARISON:
+                error ("comparison between distinct "
+                       "pointer-to-member types %qT and %qT lacks a cast",
+                       t1, t2);
+                break;
+              case CPO_CONVERSION:
+                error ("conversion between distinct "
+                       "pointer-to-member types %qT and %qT lacks a cast",
+                       t1, t2);
+                break;
+              case CPO_CONDITIONAL_EXPR:
+                error ("conditional expression between distinct "
+                       "pointer-to-member types %qT and %qT lacks a cast",
+                       t1, t2);
+                break;
+              default:
+                gcc_unreachable ();
+              }
+          return error_mark_node;
+        }
     }
 
-  return composite_pointer_type_r (t1, t2, location, complain);
+  return composite_pointer_type_r (t1, t2, operation, complain);
 }
 
 /* Return the merged type of two types.
@@ -820,7 +913,7 @@ common_pointer_type (tree t1, tree t2)
               || (TYPE_PTRMEMFUNC_P (t1) && TYPE_PTRMEMFUNC_P (t2)));
 
   return composite_pointer_type (t1, t2, error_mark_node, error_mark_node,
-                                 "conversion", tf_warning_or_error);
+                                 CPO_CONVERSION, tf_warning_or_error);
 }
 
 /* Compare two exception specifier types for exactness or subsetness, if
@@ -3683,7 +3776,7 @@ cp_build_binary_op (location_t location,
       else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	       || (TYPE_PTRMEM_P (type0) && TYPE_PTRMEM_P (type1)))
 	result_type = composite_pointer_type (type0, type1, op0, op1,
-					      "comparison", complain);
+					      CPO_COMPARISON, complain);
       else if ((code0 == POINTER_TYPE || TYPE_PTRMEM_P (type0))
 	       && null_ptr_cst_p (op1))
 	{
@@ -3772,8 +3865,8 @@ cp_build_binary_op (location_t location,
 	  tree delta0;
 	  tree delta1;
 
-	  type = composite_pointer_type (type0, type1, op0, op1, "comparison",
-					 complain);
+	  type = composite_pointer_type (type0, type1, op0, op1, 
+					 CPO_COMPARISON, complain);
 
 	  if (!same_type_p (TREE_TYPE (op0), type))
 	    op0 = cp_convert_and_check (type, op0);
@@ -3884,7 +3977,7 @@ cp_build_binary_op (location_t location,
 	shorten = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	result_type = composite_pointer_type (type0, type1, op0, op1,
-					      "comparison", complain);
+					      CPO_COMPARISON, complain);
       break;
 
     case LE_EXPR:
@@ -3904,7 +3997,7 @@ cp_build_binary_op (location_t location,
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	result_type = composite_pointer_type (type0, type1, op0, op1,
-					      "comparison", complain);
+					      CPO_COMPARISON, complain);
       else if (code0 == POINTER_TYPE && TREE_CODE (op1) == INTEGER_CST
 	       && integer_zerop (op1))
 	result_type = type0;
