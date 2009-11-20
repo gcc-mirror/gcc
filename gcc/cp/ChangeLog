@@ -1,3 +1,10 @@
+2009-11-20  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/38646
+	* pt.c (process_partial_specialization): Do not turn wrongly located
+	parameter pack arguments into error_mark_node.
+	Split too long lines into two.
+
 2009-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42060
