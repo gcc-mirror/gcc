@@ -4622,8 +4622,20 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	 allocation function, the program is ill-formed."  */
       if (non_placement_deallocation_fn_p (fn))
 	{
+	  /* But if the class has an operator delete (void *), then that is
+	     the usual deallocation function, so we shouldn't complain
+	     about using the operator delete (void *, size_t).  */
+	  for (t = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns;
+	       t; t = OVL_NEXT (t))
+	    {
+	      tree elt = OVL_CURRENT (t);
+	      if (non_placement_deallocation_fn_p (elt)
+		  && FUNCTION_ARG_CHAIN (elt) == void_list_node)
+		goto ok;
+	    }
 	  permerror (0, "non-placement deallocation function %q+D", fn);
 	  permerror (input_location, "selected for placement delete");
+	ok:;
 	}
     }
   else
