@@ -1,5 +1,10 @@
 2009-11-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42115
+	* call.c (build_op_delete_call): Don't complain about using
+	op delete (void *, size_t) for placement delete if there's an
+	op delete (void *).
+
 	DR 176 permissiveness
 	* class.c (build_self_reference): Call set_underlying_type.
 	* decl.c (check_elaborated_type_specifier): Don't complain about
