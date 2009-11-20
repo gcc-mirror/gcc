@@ -1,4 +1,13 @@
-2009-11-21  Paolo Carlini  <paolo.carlini@oracle.com>
+2009-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/42019
+	* include/tr1/shared_ptr.h: Only use typeid when RTTI is enabled.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/shared_ptr.h: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/misc/42019.cc: New.
+	* testsuite/20_util/shared_ptr/misc/42019.cc: New.
+
+2009-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/compatibility-c++0x.cc (_Fnv_hash<4>, _Fnv_hash<8>): Add.
 

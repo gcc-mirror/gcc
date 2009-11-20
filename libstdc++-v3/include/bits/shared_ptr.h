@@ -76,7 +76,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Del, typename _Tp, _Lock_policy _Lp>
     inline _Del*
     get_deleter(const __shared_ptr<_Tp, _Lp>& __p)
-    { return static_cast<_Del*>(__p._M_get_deleter(typeid(_Del))); }
+    {
+#ifdef __GXX_RTTI
+      return static_cast<_Del*>(__p._M_get_deleter(typeid(_Del)));
+#else
+      return 0;
+#endif
+    }
 
 
   /**
