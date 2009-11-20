@@ -1,3 +1,7 @@
+2009-11-19  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (get_context_die): Take TYPE_MAIN_VARIANT.
+
 2009-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
             Rafael Avila de Espindola  <espindola@google.com>
 

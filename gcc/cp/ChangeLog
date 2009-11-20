@@ -1,5 +1,14 @@
 2009-11-19  Jason Merrill  <jason@redhat.com>
 
+	DR 176 permissiveness
+	* class.c (build_self_reference): Call set_underlying_type.
+	* decl.c (check_elaborated_type_specifier): Don't complain about
+	injected-class-name.
+	(type_is_deprecated): Use TYPE_MAIN_VARIANT.
+	* pt.c (convert_template_argument): Handle injected-class-name used
+	as template template argument.
+	* typeck2.c (abstract_virtuals_error): Use TYPE_MAIN_VARIANT.
+
 	PR c++/561
 	* decl.c (static_fn_type): Split out...
 	(revert_static_member_fn): ...from here.

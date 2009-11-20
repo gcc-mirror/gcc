@@ -5370,6 +5370,22 @@ convert_template_argument (tree parm,
   if (TREE_CODE (arg) == TYPE_PACK_EXPANSION)
     arg = PACK_EXPANSION_PATTERN (arg);
 
+  /* Deal with an injected-class-name used as a template template arg.  */
+  if (requires_tmpl_type && CLASS_TYPE_P (arg))
+    {
+      tree t = maybe_get_template_decl_from_type_decl (TYPE_NAME (arg));
+      if (TREE_CODE (t) == TEMPLATE_DECL)
+	{
+	  if (complain & tf_warning_or_error)
+	    pedwarn (input_location, OPT_pedantic, "injected-class-name %qD"
+		     " used as template template argument", TYPE_NAME (arg));
+	  else if (flag_pedantic_errors)
+	    t = arg;
+
+	  arg = t;
+	}
+    }
+
   is_tmpl_type = 
     ((TREE_CODE (arg) == TEMPLATE_DECL
       && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)

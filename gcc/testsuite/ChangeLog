@@ -1,3 +1,10 @@
+2009-11-19  Jason Merrill  <jason@redhat.com>
+
+	DR 176 permissiveness
+	* g++.dg/ext/injected-ttp.C: New.
+	* g++.old-deja/g++.pt/niklas01a.C: Adjust.
+	* g++.old-deja/g++.pt/ttp41.C: Adjust.
+
 2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.c-torture/compile/pr40204.c: Test only for int32 target.
