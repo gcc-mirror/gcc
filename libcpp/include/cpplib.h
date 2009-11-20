@@ -508,6 +508,9 @@ struct cpp_callbacks
   /* Called before #define and #undef or other macro definition
      changes are processed.  */
   void (*before_define) (cpp_reader *);
+  /* Called whenever a macro is expanded or tested.
+     Second argument is the location of the start of the current expansion.  */
+  void (*used) (cpp_reader *, source_location, cpp_hashnode *);
 };
 
 #ifdef VMS

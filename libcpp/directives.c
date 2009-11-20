@@ -1808,6 +1808,8 @@ do_ifdef (cpp_reader *pfile)
 		    pfile->cb.used_undef (pfile, pfile->directive_line, node);
 		}
 	    }
+	  if (pfile->cb.used)
+	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);
 	}
     }
@@ -1844,6 +1846,8 @@ do_ifndef (cpp_reader *pfile)
 		    pfile->cb.used_undef (pfile, pfile->directive_line, node);
 		}
 	    }
+	  if (pfile->cb.used)
+	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);
 	}
     }
