@@ -1,3 +1,12 @@
+2009-11-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/41787
+	* config/rs6000/rs6000.c (struct machine_function): Revert
+	2009-10-23 change to set VRSAVE to non-0 if we use VSX.
+	(rs6000_expand_to_rtl_hook): Ditto.
+	(rs6000_check_vector_mode): Ditto.
+	(compute_vrsave_mask): Ditto.
+
 2009-11-20  Paul Brook  <paul@codesourcery.com>
 
 	* doc/invoke.texi: Document ARM -mcpu=cortex-a5.
