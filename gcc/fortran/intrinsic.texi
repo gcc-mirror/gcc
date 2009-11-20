@@ -2005,9 +2005,6 @@ end program main
 @code{C_F_PROCPOINTER(CPTR, FPTR)} Assign the target of the C function pointer
 @var{CPTR} to the Fortran procedure pointer @var{FPTR}.
 
-Note: Due to the currently lacking support of procedure pointers in GNU Fortran
-this function is not fully operable.
-
 @item @emph{Standard}:
 Fortran 2003 and later
 
