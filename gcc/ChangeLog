@@ -1,3 +1,11 @@
+2009-11-20 Olga Golovanevsky <olga@il.ibm.com>
+
+	PR middle-end/39960
+	* ipa-struct-reorg.c (find_pos_in_stmt): New parameter.
+	(ref_pos): New field in structure.
+	(insert_new_var_in_stmt): New function.
+
+
 2009-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc (alpha*-dec-osf[45]*): Set use_gcc_stdint.
