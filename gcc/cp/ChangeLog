@@ -1,3 +1,9 @@
+2009-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42060
+	* except.c (build_throw): Check the tree returned by
+	decay_conversion for error_mark_node.
+
 2009-11-20  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/29017
