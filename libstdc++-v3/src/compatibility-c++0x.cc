@@ -57,6 +57,39 @@ namespace std
       }
     };
 
+  template<>
+    struct _Fnv_hash<4>
+    {
+      static size_t
+      hash(const char* __first, size_t __length)
+      {
+	size_t __result = static_cast<size_t>(2166136261UL);
+	for (; __length > 0; --__length)
+	  {
+	    __result ^= static_cast<size_t>(*__first++);
+	    __result *= static_cast<size_t>(16777619UL);
+	  }
+	return __result;
+      }
+    };
+  
+  template<>
+    struct _Fnv_hash<8>
+    {
+      static size_t
+      hash(const char* __first, size_t __length)
+      {
+	size_t __result =
+	  static_cast<size_t>(14695981039346656037ULL);
+	for (; __length > 0; --__length)
+	  {
+	    __result ^= static_cast<size_t>(*__first++);
+	    __result *= static_cast<size_t>(1099511628211ULL);
+	  }
+	return __result;
+      }
+    };
+
 #include "hash.cc"
 
   template<>
