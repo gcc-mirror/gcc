@@ -1,5 +1,11 @@
 2009-11-20  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* c-c++-common/pr41935.c: Removed.
+	* g++.dg/template/crash92.C: Likewise.
+	* gfortran.dg/missing_optional_dummy_6.f90: Likewise.
+
+2009-11-20  H.J. Lu  <hongjiu.lu@intel.com>
+
 	Backport from mainline:
 	2009-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
