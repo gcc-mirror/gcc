@@ -885,6 +885,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 	    pfile->cb.used_define (pfile, pfile->directive_line, node);
 	}
 
+      if (pfile->cb.used)
+	pfile->cb.used (pfile, result->src_loc, node);
+
       macro->used = 1;
 
       if (macro->paramc == 0)

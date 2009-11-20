@@ -1,3 +1,9 @@
+2009-11-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* macro.c (enter_macro_context): Call cb.used callback if defined.
+	* directives.c (do_idef, do_ifndef): Ditto.
+	* include/cpplib.h (struct cpp_callbacks): Add used callback.
+
 2009-11-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* directives.c (do_pragma_push_macro): New pragma handler.
