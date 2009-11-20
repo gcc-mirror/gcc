@@ -1,3 +1,8 @@
+2009-11-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc/testsuite/gcc.target/powerpc/vsx-vrsave.c: Delete,
+	2009-10-23 change to set VRSAVE if VSX has been reverted.
+
 2009-11-20  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/38646
