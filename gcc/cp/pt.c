@@ -3795,12 +3795,11 @@ process_partial_specialization (tree decl)
                   || (!packed_args && i < nargs - 1))
                 {
                   if (TREE_CODE (arg) == EXPR_PACK_EXPANSION)
-                    error ("parameter pack argument %qE must be at the end of the template argument list", arg);
+                    error ("parameter pack argument %qE must be at the "
+			   "end of the template argument list", arg);
                   else
-                    error ("parameter pack argument %qT must be at the end of the template argument list", arg);
-
-		  if (packed_args)
-		    TREE_VEC_ELT (packed_args, j) = error_mark_node;
+                    error ("parameter pack argument %qT must be at the "
+			   "end of the template argument list", arg);
                 }
             }
 

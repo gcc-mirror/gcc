@@ -1,3 +1,8 @@
+2009-11-20  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/38646
+	* g++.dg/cpp0x/pr38646.C: New test.
+
 2009-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/c99-stdint-6.c: Set dg-options for alpha*-dec-osf5*.
