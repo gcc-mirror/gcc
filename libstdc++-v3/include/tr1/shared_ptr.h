@@ -72,7 +72,13 @@ namespace tr1
       
       virtual void*
       _M_get_deleter(const std::type_info& __ti)
-      { return __ti == typeid(_Deleter) ? &_M_del : 0; }
+      {
+#ifdef __GXX_RTTI
+        return __ti == typeid(_Deleter) ? &_M_del : 0;
+#else
+        return 0;
+#endif
+      }
       
     private:
       _Sp_counted_base_impl(const _Sp_counted_base_impl&);
@@ -595,7 +601,13 @@ namespace tr1
   template<typename _Del, typename _Tp, _Lock_policy _Lp>
     inline _Del*
     get_deleter(const __shared_ptr<_Tp, _Lp>& __p)
-    { return static_cast<_Del*>(__p._M_get_deleter(typeid(_Del))); }
+    {
+#ifdef __GXX_RTTI
+      return static_cast<_Del*>(__p._M_get_deleter(typeid(_Del)));
+#else
+      return 0;
+#endif
+    }
 
 
   template<typename _Tp, _Lock_policy _Lp>

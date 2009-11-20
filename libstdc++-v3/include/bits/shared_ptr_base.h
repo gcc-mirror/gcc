@@ -151,7 +151,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       virtual void*
       _M_get_deleter(const std::type_info& __ti)
-      { return __ti == typeid(_Deleter) ? &_M_del._M_del : 0; }
+      {
+#ifdef __GXX_RTTI
+        return __ti == typeid(_Deleter) ? &_M_del._M_del : 0;
+#else
+        return 0;
+#endif
+      }
 
     protected:
       _My_Deleter      _M_del;  // copy constructor must not throw
@@ -209,9 +215,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       virtual void*
       _M_get_deleter(const std::type_info& __ti)
       {
+#ifdef __GXX_RTTI
 	return __ti == typeid(_Sp_make_shared_tag)
 	       ? static_cast<void*>(&_M_storage)
 	       : _Base_type::_M_get_deleter(__ti);
+#else
+        return 0;
+#endif
       }
 
     private:
@@ -740,6 +750,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
+#ifdef __GXX_RTTI
     protected:
       // This constructor is non-standard, it is used by allocate_shared.
       template<typename _Alloc, typename... _Args>
@@ -753,6 +764,39 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_ptr = static_cast<_Tp*>(__p);
 	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
 	}
+#else
+      template<typename _Alloc>
+        struct _Deleter
+        {
+          void operator()(_Tp* __ptr)
+          {
+            _M_alloc.destroy(__ptr);
+            _M_alloc.deallocate(__ptr, 1);
+          }
+          _Alloc _M_alloc;
+        };
+
+      template<typename _Alloc, typename... _Args>
+	__shared_ptr(_Sp_make_shared_tag __tag, _Alloc __a, _Args&&... __args)
+	: _M_ptr(), _M_refcount()
+        {
+	  typedef typename _Alloc::template rebind<_Tp>::other _Alloc2;
+          _Deleter<_Alloc2> __del = { _Alloc2(__a) };
+          _M_ptr = __del._M_alloc.allocate(1);
+	  __try
+	    {
+              __del._M_alloc.construct(_M_ptr, std::forward<_Args>(__args)...);
+	    }
+	  __catch(...)
+	    {
+              __del._M_alloc.deallocate(_M_ptr, 1);
+	      __throw_exception_again;
+	    }
+          __shared_count<_Lp> __count(_M_ptr, __del, __del._M_alloc);
+          _M_refcount._M_swap(__count);
+	  __enable_shared_from_this_helper(_M_refcount, _M_ptr, _M_ptr);
+        }
+#endif
 
       template<typename _Tp1, _Lock_policy _Lp1, typename _Alloc,
 	       typename... _Args>
