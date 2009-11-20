@@ -1,3 +1,27 @@
+2009-11-20  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386-builtin-types.awk: New file.
+	* config/i386/i386-builtin-types.def: New file.
+	* config/i386/t-i386: Use them to build i386-builtin-types.inc.
+	* config/i386/i386.c: Include it.
+	(ix86_builtin_type_tab, ix86_get_builtin_type): New.
+	(ix86_builtin_func_type_tab, ix86_get_builtin_func_type): New.
+	(struct builtin_isa): Remove GTY marker.  Replace tree type with
+	ix86_builtin_func_type; add set_and_not_built_p.
+	(def_builtin): Change type parameter to tcode; use
+	ix86_get_builtin_func_type; update all callers.  Accept zero mask
+	to mean the builtin is unconditionally available.
+	(ix86_add_new_builtins): Use set_and_not_built_p instead of type
+	being set to NULL.
+	(enum ix86_special_builtin_type, enum ix86_builtin_type): Remove.
+	Update some users to rationalized enumeration codes from new include.
+	(enum multi_arg_type): Remove.  Replace all enumeration values
+	with defines to new ix86_builtin_func_type.
+	(ix86_init_mmx_sse_builtins): Don't build any types here.  Defer
+	all type resolution to def_builtin.
+	(ix86_init_builtin_types): Split out from ...
+	(ix86_init_builtins): ... here.  Use ix86_get_builtin_func_type.
+
 2009-11-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/41787
