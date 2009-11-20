@@ -1,3 +1,7 @@
+2009-11-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/tree-ssa/vrp47.c: Skip on S/390.
+
 2009-11-20  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* g++.old-deja/g++.jason/rfg20.C: Make expected dg-error strings
