@@ -1,3 +1,9 @@
+2009-11-20  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.h (ASM_OUTPUT_REG_PUSH): Handle STATIC_CHAIN_REGNUM
+	specially for Thumb-1.
+	(ASM_OUTPUT_REG_POP): Likewise.
+
 2009-11-19  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (get_context_die): Take TYPE_MAIN_VARIANT.
