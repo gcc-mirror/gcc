@@ -1,3 +1,14 @@
+2009-11-20  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* g++.old-deja/g++.jason/rfg20.C: Make expected dg-error strings
+	explicit.
+	* g++.old-deja/g++.rfg/00321_01-.C: Likewise.
+	* g++.old-deja/g++.rfg/00324_02-.C: Likewise.
+	* g++.old-deja/g++.law/typeck1.C: Likewise.
+	* g++.old-deja/g++.bugs/900324_02.C: Likewise.
+	* g++.dg/conversion/ptrmem9.C: Likewise.
+	* g++.dg/expr/cond2.C: Likewise.
+
 2009-11-20  Paul Thomas  <pault@gcc.gnu.org>
 	    Janus Weil  <janus@gcc.gnu.org>
 

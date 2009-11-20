@@ -12,5 +12,5 @@ int i;
 void
 test ()
 {
-   i ? f : fp; // { dg-error "" } 
+   i ? f : fp; // { dg-error "conditional expression|invalid conversion" } 
 }

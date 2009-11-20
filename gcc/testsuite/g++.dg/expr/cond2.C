@@ -8,5 +8,5 @@ struct IsZero : Term {
 Term*
 IsZero::eval()
 {
-  return true ? new Boolean(false) : this; // { dg-error "" }
+  return true ? new Boolean(false) : this; // { dg-error "conditional expression" }
 }

@@ -1,3 +1,16 @@
+2009-11-20  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/29017
+	* cp-tree.h (composite_pointer_operation): New type.
+	(composite_pointer_type): Adjust prototype with new argument.
+	* typeck.c (composite_pointer_type): Accept
+	composite_pointer_operation as argument and emit diagnostic to be
+	visible to gettext and checked at compile time.
+	(composite_pointer_type_r): Likewise.
+	(common_pointer_type): Update call to composite_pointer_type.
+	(cp_build_binary_op): Likewise.
+	* call.c (build_conditional_expr): Likewise.
+
 2009-11-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42115
