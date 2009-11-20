@@ -117,9 +117,9 @@
 2009-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42058
-	* testsuite/g++.dg/init/array26.C: New.
-	* testsuite/g++.dg/init/array27.C: Likewise.
-	* testsuite/g++.old-deja/g++.benjamin/13478.C: Adjust dg-errors.
+	* g++.dg/init/array26.C: New.
+	* g++.dg/init/array27.C: Likewise.
+	* g++.old-deja/g++.benjamin/13478.C: Adjust dg-errors.
 
 2009-11-17  Jakub Jelinek  <jakub@redhat.com>
 
@@ -143,12 +143,12 @@
 2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42055
-	* testsuite/g++.dg/template/crash92.C: New.
+	* g++.dg/template/crash92.C: New.
 
 2009-11-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/32056
-	* testsuite/g++.dg/template/error44.C: New.
+	* g++.dg/template/error44.C: New.
 
 2009-11-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
