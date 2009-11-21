@@ -1,3 +1,7 @@
+2009-11-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/tree-ssa/vrp47.c: Fix target check.
+
 2009-11-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9050, DR 147, DR 318
