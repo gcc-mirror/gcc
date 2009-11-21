@@ -1,3 +1,8 @@
+2009-11-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/42090
+	* gfortran.dg/direct_io_11.f90: New test.
+
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/21008, DR 515
