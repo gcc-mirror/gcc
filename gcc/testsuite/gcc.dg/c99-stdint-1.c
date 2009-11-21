@@ -14,7 +14,9 @@
 #include <stdint.h>
 /* This and the later SIG_ATOMIC_* tests should be appropriately
    conditioned for any freestanding targets with no <signal.h>.  */
+#ifndef SIGNAL_SUPPRESS
 #include <signal.h>
+#endif
 
 /* Note that some of these conditions assume two's complement and no
    padding bits; GCC only supports two's complement, and no supported
@@ -212,8 +214,11 @@ test_max (void)
 void
 test_misc_limits (void)
 {
+/* { dg-bogus  "size" "ptrdiff is 16bits" { xfail avr-*-* } 218 } */
   CHECK_SIGNED_LIMITS_2(__PTRDIFF_TYPE__, PTRDIFF_MIN, PTRDIFF_MAX, -65535L, 65535L);
+#ifndef SIGNAL_SUPPRESS
   CHECK_LIMITS_2(sig_atomic_t, SIG_ATOMIC_MIN, SIG_ATOMIC_MAX, -127, 127, 255);
+#endif
   CHECK_UNSIGNED_LIMITS_2(__SIZE_TYPE__, SIZE_MAX, 65535U);
   CHECK_LIMITS_2(__WCHAR_TYPE__, WCHAR_MIN, WCHAR_MAX, -127, 127, 255);
   CHECK_LIMITS_2(__WINT_TYPE__, WINT_MIN, WINT_MAX, -32767, 32767, 65535);

@@ -6,7 +6,9 @@
 /* { dg-options "-std=gnu99 -pedantic-errors -DNO_LEAST_TYPES -DNO_FAST_TYPES -DNO_MAX_TYPES" { target alpha*-dec-osf5* } } */
 
 #include <inttypes.h>
+#ifndef SIGNAL_SUPPRESS
 #include <signal.h>
+#endif
 
 #define CHECK_TYPES(TYPE1, TYPE2) \
   do { TYPE1 a; TYPE2 *b = &a; TYPE2 c; TYPE1 *d = &c; } while (0)
@@ -68,5 +70,7 @@ check_types (void)
   CHECK_TYPES(__INTMAX_TYPE__, intmax_t);
   CHECK_TYPES(__UINTMAX_TYPE__, uintmax_t);
 #endif
+#ifndef SIGNAL_SUPPRESS
   CHECK_TYPES(__SIG_ATOMIC_TYPE__, sig_atomic_t);
+#endif
 }
