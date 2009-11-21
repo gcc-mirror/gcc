@@ -1,3 +1,13 @@
+2009-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42025
+	* tree-sra.c (access_precludes_ipa_sra_p): New function.
+	(splice_param_accesses): Check all accesses by calling
+	access_precludes_ipa_sra_p.
+	(sra_ipa_modify_expr): Rename argument erite to dont_convert and do
+	not convert types if it is true.
+	(sra_ipa_modify_assign): Convert types in case of mismatch.
+
 2009-11-21  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* config/sh/sh.md (cmpeqsi_t-1): Use logical_operand predicate

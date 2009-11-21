@@ -1,3 +1,9 @@
+2009-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42025
+	* gcc.c-torture/compile/pr42025-1.c: New test.
+	* gcc.c-torture/compile/pr42025-2.c: New test.
+
 2009-11-21  Adam Nemet  <adambnemet@gmail.com>
 
 	* gcc.target/mips/mult-1.c: Forbid octeon.
