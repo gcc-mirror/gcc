@@ -16,7 +16,7 @@
 	PR tree-optimization/42078
 	* gcc.dg/pr42078.c: New test.
 
-2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+2009-11-20  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR Testsuite/42114
 	* gcc-dg/c99-stdint-1.c: Condition test for target without signal.h.
