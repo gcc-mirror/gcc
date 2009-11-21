@@ -563,6 +563,7 @@ execute_cse_reciprocals (void)
 		  if (fail)
 		    continue;
 
+		  gimple_replace_lhs (stmt1, arg1);
 		  gimple_call_set_fndecl (stmt1, fndecl);
 		  update_stmt (stmt1);
 

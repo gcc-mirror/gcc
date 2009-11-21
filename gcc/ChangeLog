@@ -1,3 +1,11 @@
+2009-11-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-optimization/42078
+	* gimple.h (gimple_replace_lhs): New declaration.
+	* gimple.c (gimple_replace_lhs): New function.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Call it before
+	modifying the call.
+
 2009-11-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config/i386/sse.md (*xop_pmacsdql_mem): Don't call reg_mentioned_p.
