@@ -591,7 +591,7 @@
 (define_insn ""
   [(set (reg:SI T_REG)
 	(eq:SI (and:SI (match_operand:SI 0 "arith_reg_operand" "z,r")
-		       (match_operand:SI 1 "arith_operand" "K08,r"))
+		       (match_operand:SI 1 "logical_operand" "K08,r"))
 	       (const_int 0)))]
   "TARGET_SH1"
   "tst	%1,%0"
