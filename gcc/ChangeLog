@@ -1,3 +1,8 @@
+2009-11-21  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
+
+	* config/sh/sh.md (cmpeqsi_t-1): Use logical_operand predicate
+	for operand 1.
+
 2009-11-21  Adam Nemet  <adambnemet@gmail.com>
 
 	* config/mips/mips-protos.h (mulsidi3_gen_fn): New typedef.
