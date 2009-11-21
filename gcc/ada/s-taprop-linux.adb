@@ -589,12 +589,32 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    function Monotonic_Clock return Duration is
-      TV     : aliased struct_timeval;
-      Result : Interfaces.C.int;
+      use Interfaces;
+
+      type timeval is array (1 .. 2) of C.long;
+
+      procedure timeval_to_duration
+        (T    : not null access timeval;
+         sec  : not null access C.long;
+         usec : not null access C.long);
+      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
+
+      Micro  : constant := 10**6;
+      sec    : aliased C.long;
+      usec   : aliased C.long;
+      TV     : aliased timeval;
+      Result : int;
+
+      function gettimeofday
+        (Tv : access timeval;
+         Tz : System.Address := System.Null_Address) return int;
+      pragma Import (C, gettimeofday, "gettimeofday");
+
    begin
       Result := gettimeofday (TV'Access, System.Null_Address);
       pragma Assert (Result = 0);
-      return To_Duration (TV);
+      timeval_to_duration (TV'Access, sec'Access, usec'Access);
+      return Duration (sec) + Duration (usec) / Micro;
    end Monotonic_Clock;
 
    -------------------

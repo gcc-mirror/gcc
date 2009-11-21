@@ -38,25 +38,7 @@ package body System.OS_Primitives is
    --  these declarations in System.OS_Interface and move these ones in
    --  the spec.
 
-   type struct_timezone is record
-      tz_minuteswest  : Integer;
-      tz_dsttime   : Integer;
-   end record;
-   pragma Convention (C, struct_timezone);
-   type struct_timezone_ptr is access all struct_timezone;
-
    type time_t is new Long_Integer;
-
-   type struct_timeval is record
-      tv_sec       : time_t;
-      tv_usec      : Long_Integer;
-   end record;
-   pragma Convention (C, struct_timeval);
-
-   function gettimeofday
-     (tv : not null access struct_timeval;
-      tz : struct_timezone_ptr) return Integer;
-   pragma Import (C, gettimeofday, "gettimeofday");
 
    type timespec is record
       tv_sec  : time_t;
@@ -72,10 +54,25 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      TV     : aliased struct_timeval;
+      type timeval is array (1 .. 2) of Long_Integer;
 
+      procedure timeval_to_duration
+        (T    : not null access timeval;
+         sec  : not null access Long_Integer;
+         usec : not null access Long_Integer);
+      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
+
+      Micro  : constant := 10**6;
+      sec    : aliased Long_Integer;
+      usec   : aliased Long_Integer;
+      TV     : aliased timeval;
       Result : Integer;
       pragma Unreferenced (Result);
+
+      function gettimeofday
+        (Tv : access timeval;
+         Tz : System.Address := System.Null_Address) return Integer;
+      pragma Import (C, gettimeofday, "gettimeofday");
 
    begin
       --  The return codes for gettimeofday are as follows (from man pages):
@@ -86,8 +83,9 @@ package body System.OS_Primitives is
       --  None of these codes signal a potential clock skew, hence the return
       --  value is never checked.
 
-      Result := gettimeofday (TV'Access, null);
-      return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
+      Result := gettimeofday (TV'Access, System.Null_Address);
+      timeval_to_duration (TV'Access, sec'Access, usec'Access);
+      return Duration (sec) + Duration (usec) / Micro;
    end Clock;
 
    ---------------------

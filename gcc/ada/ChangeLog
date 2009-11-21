@@ -1,3 +1,14 @@
+2009-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+            Laurent GUERBY  <laurent@guerby.net>
+
+        * s-osinte-linux.ads (struct_timeval, To_Duration, To_Timeval,
+        gettimeofday): Delete.
+        * s-osinte-posix.adb (To_Duration, To_Timeval): Delete.
+        * s-osprim-posix.adb (struct_timezone, struct_timeval, 
+        gettimeofday): Delete.
+        (Clock): Use cal.c timeval_to_duration.
+        * s-taprop-linux.adb (Monotonic_Clock): Likewise.
+
 2009-11-12  Eric Botcazou  <ebotcazou@adacore.com>
             Laurent GUERBY  <laurent@guerby.net>
 

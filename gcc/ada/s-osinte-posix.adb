@@ -74,11 +74,6 @@ package body System.OS_Interface is
       return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
    end To_Duration;
 
-   function To_Duration (TV : struct_timeval) return Duration is
-   begin
-      return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
-   end To_Duration;
-
    ------------------------
    -- To_Target_Priority --
    ------------------------
@@ -113,31 +108,5 @@ package body System.OS_Interface is
       return timespec'(tv_sec => S,
                        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
-
-   ----------------
-   -- To_Timeval --
-   ----------------
-
-   function To_Timeval (D : Duration) return struct_timeval is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (Long_Long_Integer (D));
-      F := D - Duration (S);
-
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return
-        struct_timeval'
-          (tv_sec  => S,
-           tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
-   end To_Timeval;
 
 end System.OS_Interface;
