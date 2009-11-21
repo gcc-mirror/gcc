@@ -1,5 +1,13 @@
 2009-11-21  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-ssa.c (find_released_ssa_name): Handle NULL wi.
+	(insert_debug_temp_for_var_def): Handle degenerate PHI nodes.
+	(insert_debug_temps_for_defs): Handle PHI nodes.
+	* tree-ssa-dom.c (degenerate_phi_result): Don't crash on released
+	SSA names.
+
+2009-11-21  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree-ssa-pre.c (remove_dead_inserted_code): Don't release_defs
 	after remove_phi_node.
 

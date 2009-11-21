@@ -279,7 +279,7 @@ find_released_ssa_name (tree *tp, int *walk_subtrees, void *data_)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data_;
 
-  if (wi->is_lhs)
+  if (wi && wi->is_lhs)
     return NULL_TREE;
 
   if (TREE_CODE (*tp) == SSA_NAME)
@@ -346,7 +346,13 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
   /* If we didn't get an insertion point, and the stmt has already
      been removed, we won't be able to insert the debug bind stmt, so
      we'll have to drop debug information.  */
-  if (is_gimple_assign (def_stmt))
+  if (gimple_code (def_stmt) == GIMPLE_PHI)
+    {
+      value = degenerate_phi_result (def_stmt);
+      if (value && walk_tree (&value, find_released_ssa_name, NULL, NULL))
+	value = NULL;
+    }
+  else if (is_gimple_assign (def_stmt))
     {
       bool no_value = false;
 
@@ -408,6 +414,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	 at the expense of duplication of expressions.  */
 
       if (CONSTANT_CLASS_P (value)
+	  || gimple_code (def_stmt) == GIMPLE_PHI
 	  || (usecount == 1
 	      && (!gimple_assign_single_p (def_stmt)
 		  || is_gimple_min_invariant (value)))
@@ -478,7 +485,7 @@ insert_debug_temps_for_defs (gimple_stmt_iterator *gsi)
 
   stmt = gsi_stmt (*gsi);
 
-  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_DEF)
+  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
     {
       tree var = DEF_FROM_PTR (def_p);
 
