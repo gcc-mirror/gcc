@@ -1,3 +1,10 @@
+2009-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-cfg.c (verify_types_in_gimple_reference): Error out on
+	V_C_E of an SSA_NAME or an invariant if lvalue is required.
+	(verify_gimple_call): Verify LHS also with with
+	verify_types_in_gimple_reference.
+
 2009-11-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42025

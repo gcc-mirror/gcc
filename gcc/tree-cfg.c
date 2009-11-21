@@ -2889,12 +2889,24 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  return true;
 	}
 
-      /* For VIEW_CONVERT_EXPRs which are allowed here, too, there
-	 is nothing to verify.  Gross mismatches at most invoke
-	 undefined behavior.  */
-      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR
-	  && !handled_component_p (op))
-	return false;
+      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
+	{
+	  /* For VIEW_CONVERT_EXPRs which are allowed here too, we only check
+	     that their operand is not an SSA name or an invariant when
+	     requiring an lvalue (this usually means there is a SRA or IPA-SRA
+	     bug).  Otherwise there is nothing to verify, gross mismatches at
+	     most invoke undefined behavior.  */
+	  if (require_lvalue
+	      && (TREE_CODE (op) == SSA_NAME
+		  || is_gimple_min_invariant (op)))
+	    {
+	      error ("Conversion of an SSA_NAME on the left hand side.");
+	      debug_generic_stmt (expr);
+	      return true;
+	    }
+	  else if (!handled_component_p (op))
+	    return false;
+	}
 
       expr = op;
     }
@@ -2951,7 +2963,8 @@ verify_gimple_call (gimple stmt)
     }
 
   if (gimple_call_lhs (stmt)
-      && !is_gimple_lvalue (gimple_call_lhs (stmt)))
+      && (!is_gimple_lvalue (gimple_call_lhs (stmt))
+	  || verify_types_in_gimple_reference (gimple_call_lhs (stmt), true)))
     {
       error ("invalid LHS in gimple call");
       return true;
