@@ -5,7 +5,9 @@
 /* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
 
 #include <stdint.h>
+#ifndef SIGNAL_SUPPRESS
 #include <signal.h>
+#endif
 
 #define CHECK_TYPES(TYPE1, TYPE2) \
   do { TYPE1 a; TYPE2 *b = &a; TYPE2 c; TYPE1 *d = &c; } while (0)
@@ -61,5 +63,7 @@ check_types (void)
 #endif
   CHECK_TYPES(__INTMAX_TYPE__, intmax_t);
   CHECK_TYPES(__UINTMAX_TYPE__, uintmax_t);
+#ifndef SIGNAL_SUPPRESS
   CHECK_TYPES(__SIG_ATOMIC_TYPE__, sig_atomic_t);
+#endif
 }

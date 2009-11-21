@@ -1,3 +1,12 @@
+2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR Testsuite/42114
+	* gcc-dg/c99-stdint-1.c: Condition test for target without signal.h.
+	XFAIL ptrdiff range test for avr.
+	* gcc-dg/c99-stdint-2.c: XFAIL for avr target.
+	* gcc-dg/c99-stdint-5.c: Condition test for target without signal.h.
+	* gcc-dg/c99-stdint-6.c: Ditto.
+
 2009-11-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc/testsuite/gcc.target/powerpc/vsx-vrsave.c: Delete,
