@@ -1,3 +1,8 @@
+2009-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42078
+	* gcc.dg/pr42078.c: New test.
+
 2009-11-19  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR Testsuite/42114
