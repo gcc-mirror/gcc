@@ -2400,6 +2400,12 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
 	error_at (location, "%qE in namespace %qE does not name a type",
 		  id, parser->scope);
+      else if (CLASS_TYPE_P (parser->scope)
+	       && constructor_name_p (id, parser->scope)
+	       && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	/* A<T>::A<T>() */
+	error_at (location, "invalid use of constructor %<%T::%E%> as "
+		  "template", parser->scope, id);
       else if (TYPE_P (parser->scope)
 	       && dependent_scope_p (parser->scope))
 	error_at (location, "need %<typename%> before %<%T::%E%> because "
@@ -3890,7 +3896,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	if (scope
 	    && token->type == CPP_NAME
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
-		== CPP_OPEN_PAREN)
+		!= CPP_LESS)
 	    && constructor_name_p (token->u.value, scope))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
@@ -3898,7 +3904,11 @@ cp_parser_unqualified_id (cp_parser* parser,
 	  }
 
 	/* If there was an explicit qualification (S::~T), first look
-	   in the scope given by the qualification (i.e., S).  */
+	   in the scope given by the qualification (i.e., S).
+
+	   Note: in the calls to cp_parser_class_name below we pretend that
+	   the lookup had an explicit 'class' tag so that lookup finds the
+	   injected-class-name rather than the constructor.  */
 	done = false;
 	type_decl = NULL_TREE;
 	if (scope)
@@ -3907,7 +3917,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    type_decl = cp_parser_class_name (parser,
 					      /*typename_keyword_p=*/false,
 					      /*template_keyword_p=*/false,
-					      none_type,
+					      class_type,
 					      /*check_dependency=*/false,
 					      /*class_head_p=*/false,
 					      declarator_p);
@@ -3925,7 +3935,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      none_type,
+				      class_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -3943,7 +3953,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      none_type,
+				      class_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -3962,7 +3972,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      none_type,
+				      class_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -14275,6 +14285,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 			unqualified_name = constructor_name (class_type);
 			sfk = sfk_constructor;
 		      }
+		    else if (is_overloaded_fn (unqualified_name)
+			     && DECL_CONSTRUCTOR_P (get_first_fn
+						    (unqualified_name)))
+		      sfk = sfk_constructor;
 
 		    if (ctor_dtor_or_conv_p && sfk != sfk_none)
 		      *ctor_dtor_or_conv_p = -1;
@@ -17969,6 +17983,26 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     lookup_member, we must enter the scope here.  */
 	  if (dependent_p)
 	    pushed_scope = push_scope (parser->scope);
+
+	  /* 3.4.3.1: In a lookup in which the constructor is an acceptable
+	     lookup result and the nested-name-specifier nominates a class C:
+	       * if the name specified after the nested-name-specifier, when
+	       looked up in C, is the injected-class-name of C (Clause 9), or
+	       * if the name specified after the nested-name-specifier is the
+	       same as the identifier or the simple-template-id's template-
+	       name in the last component of the nested-name-specifier,
+	     the name is instead considered to name the constructor of
+	     class C. [ Note: for example, the constructor is not an
+	     acceptable lookup result in an elaborated-type-specifier so
+	     the constructor would not be used in place of the
+	     injected-class-name. --end note ] Such a constructor name
+	     shall be used only in the declarator-id of a declaration that
+	     names a constructor or in a using-declaration.  */
+	  if (tag_type == none_type
+	      && CLASS_TYPE_P (parser->scope)
+	      && constructor_name_p (name, parser->scope))
+	    name = ctor_identifier;
+
 	  /* If the PARSER->SCOPE is a template specialization, it
 	     may be instantiated during name lookup.  In that case,
 	     errors may be issued.  Even if we rollback the current
@@ -18320,8 +18354,7 @@ static bool
 cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 {
   bool constructor_p;
-  tree type_decl = NULL_TREE;
-  bool nested_name_p;
+  tree nested_name_specifier;
   cp_token *next_token;
 
   /* The common case is that this is not a constructor declarator, so
@@ -18347,34 +18380,48 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
   cp_parser_global_scope_opt (parser,
 			      /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  */
-  nested_name_p
+  nested_name_specifier
     = (cp_parser_nested_name_specifier_opt (parser,
 					    /*typename_keyword_p=*/false,
 					    /*check_dependency_p=*/false,
 					    /*type_p=*/false,
-					    /*is_declaration=*/false)
-       != NULL_TREE);
+					    /*is_declaration=*/false));
   /* Outside of a class-specifier, there must be a
      nested-name-specifier.  */
-  if (!nested_name_p &&
+  if (!nested_name_specifier &&
       (!at_class_scope_p () || !TYPE_BEING_DEFINED (current_class_type)
        || friend_p))
     constructor_p = false;
+  else if (nested_name_specifier == error_mark_node)
+    constructor_p = false;
+
+  /* If we have a class scope, this is easy; DR 147 says that S::S always
+     names the constructor, and no other qualified name could.  */
+  if (constructor_p && nested_name_specifier
+      && TYPE_P (nested_name_specifier))
+    {
+      tree id = cp_parser_unqualified_id (parser,
+					  /*template_keyword_p=*/false,
+					  /*check_dependency_p=*/false,
+					  /*declarator_p=*/true,
+					  /*optional_p=*/false);
+      if (is_overloaded_fn (id))
+	id = DECL_NAME (get_first_fn (id));
+      if (!constructor_name_p (id, nested_name_specifier))
+	constructor_p = false;
+    }
   /* If we still think that this might be a constructor-declarator,
      look for a class-name.  */
-  if (constructor_p)
+  else if (constructor_p)
     {
       /* If we have:
 
-	   template <typename T> struct S { S(); };
-	   template <typename T> S<T>::S ();
+	   template <typename T> struct S {
+	     S();
+	   };
 
-	 we must recognize that the nested `S' names a class.
-	 Similarly, for:
-
-	   template <typename T> S<T>::S<T> ();
-
-	 we must recognize that the nested `S' names a template.  */
+	 we must recognize that the nested `S' names a class.  */
+      tree type_decl;
       type_decl = cp_parser_class_name (parser,
 					/*typename_keyword_p=*/false,
 					/*template_keyword_p=*/false,
@@ -18384,22 +18431,23 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 					/*is_declaration=*/false);
       /* If there was no class-name, then this is not a constructor.  */
       constructor_p = !cp_parser_error_occurred (parser);
-    }
 
-  /* If we're still considering a constructor, we have to see a `(',
-     to begin the parameter-declaration-clause, followed by either a
-     `)', an `...', or a decl-specifier.  We need to check for a
-     type-specifier to avoid being fooled into thinking that:
+      /* If we're still considering a constructor, we have to see a `(',
+	 to begin the parameter-declaration-clause, followed by either a
+	 `)', an `...', or a decl-specifier.  We need to check for a
+	 type-specifier to avoid being fooled into thinking that:
 
-       S::S (f) (int);
+	   S (f) (int);
 
-     is a constructor.  (It is actually a function named `f' that
-     takes one parameter (of type `int') and returns a value of type
-     `S::S'.  */
-  if (constructor_p
-      && cp_parser_require (parser, CPP_OPEN_PAREN, "%<(%>"))
-    {
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN)
+	 is a constructor.  (It is actually a function named `f' that
+	 takes one parameter (of type `int') and returns a value of type
+	 `S'.  */
+      if (constructor_p
+	  && !cp_parser_require (parser, CPP_OPEN_PAREN, "%<(%>"))
+	constructor_p = false;
+
+      if (constructor_p
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_ELLIPSIS)
 	  /* A parameter declaration begins with a decl-specifier,
 	     which is either the "attribute" keyword, a storage class
@@ -18454,8 +18502,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	  constructor_p = !cp_parser_error_occurred (parser);
 	}
     }
-  else
-    constructor_p = false;
+
   /* We did not really want to consume any tokens.  */
   cp_parser_abort_tentative_parse (parser);
 

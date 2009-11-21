@@ -11,7 +11,7 @@ A::A() { }
 B::B() { }
 
 B::A ba;
-A::A a; // { dg-error "" "the injected-class-name can never be found through qualified lookup" { xfail *-*-* } }
+A::A a; // { dg-error "" "the injected-class-name can never be found through qualified lookup" }
 
 }
 
@@ -26,6 +26,6 @@ template <class T> struct A {
   template <class T2> A(T2);
   static A x;
 };
-template<> A<int>::A<int>(A<int>::x);  // { dg-error "" "this is an invalid declaration of the constructor" { xfail *-*-* } }
+template<> A<int>::A<int>(A<int>::x);  // { dg-error "" "this is an invalid declaration of the constructor" }
 
 }

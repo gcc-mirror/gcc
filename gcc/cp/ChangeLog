@@ -1,3 +1,21 @@
+2009-11-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9050, DR 147, DR 318
+	* parser.c (cp_parser_lookup_name): If the name matches the explicit
+	class scope, we're naming the constructor.
+	(cp_parser_constructor_declarator_p): Just use cp_parser_unqualified_id
+	if we have a nested-name-specifier.
+	(cp_parser_direct_declarator): Handle getting an overload set as a
+	constructor declarator.
+	(cp_parser_unqualified_id): Avoid looking up the constructor when
+	naming the destructor.
+	(cp_parser_diagnose_invalid_type_name): Give good
+	diagnostic for improper use of constructor as template.
+	* typeck.c (finish_class_member_access_expr): Give good diagnostic
+	about calling constructor.
+
+	* error.c (dump_aggr_type): Don't print A::A for injected-class-name.
+
 2009-11-20  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/38646
