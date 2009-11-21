@@ -2186,6 +2186,8 @@ skip_record (st_parameter_dt *dtp, size_t bytes)
 	 only I/O errors.  */
       if (sseek (dtp->u.p.current_unit->s, new) == FAILURE)
 	generate_error (&dtp->common, LIBERROR_OS, NULL);
+
+      dtp->u.p.current_unit->bytes_left_subrecord = 0;
     }
   else
     {			/* Seek by reading data.  */
@@ -2258,7 +2260,7 @@ next_record_r (st_parameter_dt *dtp)
 
     case FORMATTED_DIRECT:
     case UNFORMATTED_DIRECT:
-      skip_record (dtp, 0);
+      skip_record (dtp, dtp->u.p.current_unit->bytes_left);
       break;
 
     case FORMATTED_STREAM:
