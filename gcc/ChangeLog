@@ -1,3 +1,14 @@
+2009-11-21  Adam Nemet  <adambnemet@gmail.com>
+
+	* config/mips/mips-protos.h (mulsidi3_gen_fn): New typedef.
+	(mips_mulsidi3_gen_fn): Declare new function.
+	* config/mips/mips.c (mips_mulsidi3_gen_fn): New function.
+	* config/mips/mips.md (<u>mulsidi3): Change condition to use
+	mips_mulsidi3_gen_fn.  Use mips_mulsidi3_gen_fn to generate the
+	insn.
+	(<u>mulsidi3_64bit): Don't match for ISA_HAS_DMUL3.
+	(mulsidi3_64bit_dmul): New define_insn.
+
 2009-11-21  Ben Elliston  <bje@au.ibm.com>
 
 	* gengtype-lex.l: Enable noinput flex option.

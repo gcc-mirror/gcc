@@ -15982,6 +15982,39 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx insn,
   if (mips_need_noat_wrapper_p (insn, opvec, noperands))
     mips_pop_asm_switch (&mips_noat);
 }
+
+/* Return the function that is used to expand the <u>mulsidi3 pattern.
+   EXT_CODE is the code of the extension used.  Return NULL if widening
+   multiplication shouldn't be used.  */
+
+mulsidi3_gen_fn
+mips_mulsidi3_gen_fn (enum rtx_code ext_code)
+{
+  bool signed_p;
+
+  signed_p = ext_code == SIGN_EXTEND;
+  if (TARGET_64BIT)
+    {
+      /* Don't use widening multiplication with MULT when we have DMUL.  Even
+	 with the extension of its input operands DMUL is faster.  Note that
+	 the extension is not needed for signed multiplication.  In order to
+	 ensure that we always remove the redundant sign-extension in this
+	 case we still expand mulsidi3 for DMUL.  */
+      if (ISA_HAS_DMUL3)
+	return signed_p ? gen_mulsidi3_64bit_dmul : NULL;
+      if (TARGET_FIX_R4000)
+	return NULL;
+      return signed_p ? gen_mulsidi3_64bit : gen_umulsidi3_64bit;
+    }
+  else
+    {
+      if (TARGET_FIX_R4000)
+	return signed_p ? gen_mulsidi3_32bit_r4000 : gen_umulsidi3_32bit_r4000;
+      if (ISA_HAS_DSPR2)
+	return signed_p ? gen_mips_mult : gen_mips_multu;
+      return signed_p ? gen_mulsidi3_32bit : gen_umulsidi3_32bit;
+    }
+}
 
 /* Return the size in bytes of the trampoline code, padded to
    TRAMPOLINE_ALIGNMENT bits.  The static chain pointer and target
