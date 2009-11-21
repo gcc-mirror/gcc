@@ -2429,6 +2429,14 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE
 		      || TREE_CODE (name) == BIT_NOT_EXPR);
 
+	  if (constructor_name_p (name, scope))
+	    {
+	      if (complain & tf_error)
+		error ("cannot call constructor %<%T::%D%> directly",
+		       scope, name);
+	      return error_mark_node;
+	    }
+
 	  /* Find the base of OBJECT_TYPE corresponding to SCOPE.  */
 	  access_path = lookup_base (object_type, scope, ba_check, NULL);
 	  if (access_path == error_mark_node)
