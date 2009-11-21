@@ -1,3 +1,8 @@
+2009-11-21  Adam Nemet  <adambnemet@gmail.com>
+
+	* gcc.target/mips/mult-1.c: Forbid octeon.
+	* gcc.target/mips/octeon-dmul-3.c: New test.
+
 2009-11-21  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/tree-ssa/vrp47.c: Fix target check.
