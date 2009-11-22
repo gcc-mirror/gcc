@@ -1,3 +1,9 @@
+2009-11-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* opts.c (decode_options): Don't enable flag_schedule_insns 
+	when optimizing for size.
+	* doc/invoke.texi: Document change.
+
 2009-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42113

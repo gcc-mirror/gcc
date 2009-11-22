@@ -884,7 +884,8 @@ decode_options (unsigned int argc, const char **argv)
   flag_caller_saves = opt2;
   flag_peephole2 = opt2;
 #ifdef INSN_SCHEDULING
-  flag_schedule_insns = opt2;
+  /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
+  flag_schedule_insns = opt2 && ! optimize_size;
   flag_schedule_insns_after_reload = opt2;
 #endif
   flag_regmove = opt2;
