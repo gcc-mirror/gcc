@@ -4197,7 +4197,7 @@
 		 (match_dup 4)))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (DImode);
+    operands[5] = gen_reg_rtx (SImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
     operands[5] = operands[0];
 })
@@ -4223,9 +4223,9 @@
 				 (match_dup 4))))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (DImode);
+    operands[5] = gen_reg_rtx (SImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
-    operands[5] = operands[0];
+    operands[5] = gen_rtx_REG (SImode, REGNO (operands[0]));
 })
 
 (define_insn_and_split "*cmp_ssub_di"
@@ -4273,7 +4273,7 @@
 		 (match_dup 4)))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (DImode);
+    operands[5] = gen_reg_rtx (SImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
     operands[5] = operands[0];
 })
@@ -4299,9 +4299,9 @@
 				  (match_dup 4))))]
 {
   if (can_create_pseudo_p ())
-    operands[5] = gen_reg_rtx (DImode);
+    operands[5] = gen_reg_rtx (SImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
-    operands[5] = operands[0];
+    operands[5] = gen_rtx_REG (SImode, REGNO (operands[0]));
 })
 
 ;; Here are the CALL and unconditional branch insns.  Calls on NT and OSF
