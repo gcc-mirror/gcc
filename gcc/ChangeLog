@@ -1,3 +1,9 @@
+2009-11-21  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.in (HOST_LIBS): Move higher in file.
+	(LINKER, LINKER_FLAGS): If ENABLE_BUILD_WITH_CXX, but $(HOST_LIBS)
+	is not empty, set to $(CC) and $(CFLAGS).
+
 2009-11-22  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-cfg.c (verify_types_in_gimple_reference): Error out on
