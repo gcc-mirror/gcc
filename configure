@@ -683,8 +683,8 @@ clooginc
 clooglibs
 pplinc
 ppllibs
-poststage1_libs
 poststage1_ldflags
+poststage1_libs
 stage1_libs
 stage1_ldflags
 extra_mpc_mpfr_configure_flags
@@ -796,8 +796,8 @@ with_gmp_lib
 with_host_libstdcxx
 with_stage1_ldflags
 with_stage1_libs
-with_boot_ldflags
 with_boot_libs
+with_boot_ldflags
 with_ppl
 with_ppl_include
 with_ppl_lib
@@ -1531,8 +1531,8 @@ Optional Packages:
                           when linking with PPL
   --with-stage1-ldflags=FLAGS Linker flags for stage1
   -with-stage1-libs=LIBS      Libraries for stage1
-  --with-boot-ldflags=FLAGS Linker flags for stage2 and later
   --with-boot-libs=LIBS     Libraries for stage2 and later
+  --with-boot-ldflags=FLAGS Linker flags for stage2 and later
   --with-ppl=PATH         Specify prefix directory for the installed PPL package
                           Equivalent to --with-ppl-include=PATH/include
                           plus --with-ppl-lib=PATH/lib
@@ -5706,25 +5706,6 @@ fi
 
 
 
-# Linker flags to use for stage2 and later builds.
-
-# Check whether --with-boot-ldflags was given.
-if test "${with_boot_ldflags+set}" = set; then :
-  withval=$with_boot_ldflags; if test "$withval" = "no" -o "$withval" = "yes"; then
-   poststage1_ldflags=
- else
-   poststage1_ldflags=$withval
- fi
-else
-  if test "$ENABLE_BUILD_WITH_CXX" = "yes"; then
-   poststage1_ldflags=-static-libstdc++
- else
-   poststage1_ldflags=
- fi
-fi
-
-
-
 # Libraries to use for stage2 and later builds.  This defaults to the
 # argument passed to --with-host-libstdcxx.
 
@@ -5737,6 +5718,27 @@ if test "${with_boot_libs+set}" = set; then :
  fi
 else
   poststage1_libs=$with_host_libstdcxx
+fi
+
+
+
+# Linker flags to use for stage2 and later builds.
+
+# Check whether --with-boot-ldflags was given.
+if test "${with_boot_ldflags+set}" = set; then :
+  withval=$with_boot_ldflags; if test "$withval" = "no" -o "$withval" = "yes"; then
+   poststage1_ldflags=
+ else
+   poststage1_ldflags=$withval
+ fi
+else
+  poststage1_ldflags=
+ # With --enable-build-with-cxx, default to linking libstdc++ and
+ # libgcc statically.  But if the user explicitly specified the
+ # libraries to use, trust that they are doing what they want.
+ if test "$ENABLE_BUILD_WITH_CXX" = "yes" -a "$poststage1_libs" = ""; then
+   poststage1_ldflags="-static-libstdc++ -static-libgcc"
+ fi
 fi
 
 

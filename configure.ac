@@ -1481,21 +1481,6 @@ AC_ARG_WITH(stage1-libs,
 [stage1_libs=$with_host_libstdcxx])
 AC_SUBST(stage1_libs)
 
-# Linker flags to use for stage2 and later builds.
-AC_ARG_WITH(boot-ldflags,
-[  --with-boot-ldflags=FLAGS Linker flags for stage2 and later],
-[if test "$withval" = "no" -o "$withval" = "yes"; then
-   poststage1_ldflags=
- else
-   poststage1_ldflags=$withval
- fi],
-[if test "$ENABLE_BUILD_WITH_CXX" = "yes"; then
-   poststage1_ldflags=-static-libstdc++
- else
-   poststage1_ldflags=
- fi])
-AC_SUBST(poststage1_ldflags)
-
 # Libraries to use for stage2 and later builds.  This defaults to the
 # argument passed to --with-host-libstdcxx.
 AC_ARG_WITH(boot-libs,
@@ -1507,6 +1492,23 @@ AC_ARG_WITH(boot-libs,
  fi],
 [poststage1_libs=$with_host_libstdcxx])
 AC_SUBST(poststage1_libs)
+
+# Linker flags to use for stage2 and later builds.
+AC_ARG_WITH(boot-ldflags,
+[  --with-boot-ldflags=FLAGS Linker flags for stage2 and later],
+[if test "$withval" = "no" -o "$withval" = "yes"; then
+   poststage1_ldflags=
+ else
+   poststage1_ldflags=$withval
+ fi],
+[poststage1_ldflags=
+ # With --enable-build-with-cxx, default to linking libstdc++ and
+ # libgcc statically.  But if the user explicitly specified the
+ # libraries to use, trust that they are doing what they want.
+ if test "$ENABLE_BUILD_WITH_CXX" = "yes" -a "$poststage1_libs" = ""; then
+   poststage1_ldflags="-static-libstdc++ -static-libgcc"
+ fi])
+AC_SUBST(poststage1_ldflags)
 
 # Check for PPL
 ppl_major_version=0

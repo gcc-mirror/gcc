@@ -1,3 +1,10 @@
+2009-11-21  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Change default of poststage1_ldflags to be empty if
+	poststage1_libs is set.  When poststage1_libs is empty, and
+	ENABLE_BUILD_WITH_CXX is set, add -static-libgcc.
+	* configure: Rebuild.
+
 2009-11-21  Adam Nemet  <adambnmet@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Update my email address.

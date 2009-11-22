@@ -206,6 +206,9 @@ NM = @NM@
 RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 
+# Libraries to use on the host.
+HOST_LIBS = @HOST_LIBS@
+
 # The name of the compiler to use.
 ENABLE_BUILD_WITH_CXX = @ENABLE_BUILD_WITH_CXX@
 ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
@@ -216,8 +219,17 @@ LINKER_FLAGS = $(CFLAGS)
 else
 COMPILER = $(CXX)
 COMPILER_FLAGS = $(CXXFLAGS)
+# If HOST_LIBS is set, then the user is controlling the libraries to
+# link against.  In that case, link with $(CC) so that the -lstdc++
+# library is not introduced.  If HOST_LIBS is not set, link with
+# $(CXX) to pick up -lstdc++.
+ifeq ($(HOST_LIBS),)
 LINKER = $(CXX)
 LINKER_FLAGS = $(CXXFLAGS)
+else
+LINKER = $(CC)
+LINKER_FLAGS = $(CFLAGS)
+endif
 endif
 
 # -------------------------------------------
@@ -287,9 +299,6 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 # Some compilers can't handle cc -c blah.c -o foo/blah.o.
 # In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
 OUTPUT_OPTION = @OUTPUT_OPTION@
-
-# Libraries to use on the host.
-HOST_LIBS = @HOST_LIBS@
 
 # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
 # -I../zlib, unless we were configured with --with-system-zlib, in which
