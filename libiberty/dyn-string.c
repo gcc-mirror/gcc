@@ -336,7 +336,7 @@ dyn_string_append_cstr (dyn_string_t dest, const char *s)
   return 1;
 }
 
-/* Appends C to the end of DEST.  Returns 1 on success.  On failiure,
+/* Appends C to the end of DEST.  Returns 1 on success.  On failure,
    if RETURN_ON_ALLOCATION_FAILURE, deletes DEST and returns 0.  */
 
 int

@@ -1,3 +1,7 @@
+2009-11-22  Steve Ward  <planet36@gmail.com>
+
+	* dyn-string.c (dyn_string_append_char): Fix typo in comment.
+
 2009-11-20  Ben Elliston  <bje@au.ibm.com>
 
 	* pex-unix.c (pex_child_error): Define writeerr macro to avoid
