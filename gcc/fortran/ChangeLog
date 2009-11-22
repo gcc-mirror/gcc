@@ -1,3 +1,9 @@
+2009-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* trans-const.c (gfc_conv_const): Fix typo in comment. Replace assert
+	with error message if not constant.
+	* resolve.c (next_data_value): Delete check for constant.
+
 2009-11-20  Janus Weil  <janus@gcc.gnu.org>
 
 	* intrinsic.texi (C_F_PROCPOINTER): Remove obsolete comment.
