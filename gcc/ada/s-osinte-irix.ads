@@ -201,14 +201,6 @@ package System.OS_Interface is
    function To_Timespec (D : Duration) return timespec;
    pragma Inline (To_Timespec);
 
-   type struct_timeval is private;
-
-   function To_Duration (TV : struct_timeval) return Duration;
-   pragma Inline (To_Duration);
-
-   function To_Timeval (D : Duration) return struct_timeval;
-   pragma Inline (To_Timeval);
-
    -------------------------
    -- Priority Scheduling --
    -------------------------
@@ -492,12 +484,6 @@ private
    CLOCK_REALTIME  : constant clockid_t := 1;
    CLOCK_SGI_CYCLE : constant clockid_t := 2;
    CLOCK_SGI_FAST  : constant clockid_t := 3;
-
-   type struct_timeval is record
-      tv_sec  : time_t;
-      tv_usec : time_t;
-   end record;
-   pragma Convention (C, struct_timeval);
 
    type array_type_9 is array (Integer range 0 .. 4) of long;
    type pthread_attr_t is record

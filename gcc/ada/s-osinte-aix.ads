@@ -206,7 +206,6 @@ package System.OS_Interface is
    function clock_gettime
      (clock_id : clockid_t;
       tp       : access timespec) return int;
-   --  AIX threads don't have clock_gettime, so use gettimeofday() instead
 
    function To_Duration (TS : timespec) return Duration;
    pragma Inline (To_Duration);
@@ -220,16 +219,6 @@ package System.OS_Interface is
    end record;
    pragma Convention (C, struct_timezone);
    type struct_timezone_ptr is access all struct_timezone;
-
-   type struct_timeval is private;
-   --  This is needed on systems that do not have clock_gettime() but do have
-   --  gettimeofday().
-
-   function To_Duration (TV : struct_timeval) return Duration;
-   pragma Inline (To_Duration);
-
-   function To_Timeval (D : Duration) return struct_timeval;
-   pragma Inline (To_Timeval);
 
    -------------------------
    -- Priority Scheduling --
@@ -553,12 +542,6 @@ private
 
    type clockid_t is new int;
    CLOCK_REALTIME : constant clockid_t := 0;
-
-   type struct_timeval is record
-      tv_sec  : long;
-      tv_usec : long;
-   end record;
-   pragma Convention (C, struct_timeval);
 
    type pthread_attr_t is new System.Address;
    pragma Convention (C, pthread_attr_t);

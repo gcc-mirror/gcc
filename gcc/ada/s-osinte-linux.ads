@@ -518,12 +518,6 @@ private
    end record;
    pragma Convention (C, timespec);
 
-   type struct_timeval is record
-      tv_sec  : time_t;
-      tv_usec : time_t;
-   end record;
-   pragma Convention (C, struct_timeval);
-
    type pthread_attr_t is record
       detachstate   : int;
       schedpolicy   : int;
