@@ -1,5 +1,11 @@
 2009-11-23  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/42151
+	* ipa-inline.c (inline_transform): Avoid ICE when transform is called
+	twice.
+
+2009-11-23  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-cp.c (ipcp_compute_node_scale): Work around completely
 	wrong profile updates.
 	* predict.c (counts_to_freqs): Be expected for ENTRY/EXIT block

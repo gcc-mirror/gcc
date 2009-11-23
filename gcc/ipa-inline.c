@@ -1974,6 +1974,11 @@ inline_transform (struct cgraph_node *node)
   unsigned int todo = 0;
   struct cgraph_edge *e;
 
+  /* FIXME: Currently the passmanager is adding inline transform more than once to some
+     clones.  This needs revisiting after WPA cleanups.  */
+  if (cfun->after_inlining)
+    return 0;
+
   /* We might need the body of this function so that we can expand
      it inline somewhere else.  */
   if (cgraph_preserve_function_body_p (node->decl))
