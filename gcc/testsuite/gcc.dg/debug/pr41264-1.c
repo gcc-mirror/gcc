@@ -1,6 +1,10 @@
 /* { dg-do compile } */
 
+#if (__SIZEOF_INT__ <= 2)	
+typedef unsigned long hashval_t;
+#else
 typedef unsigned int hashval_t;
+#endif
 static hashval_t __attribute__((always_inline))
 iterative_hash_host_wide_int (long val, hashval_t val2)
 {
