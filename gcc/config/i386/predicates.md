@@ -1148,3 +1148,24 @@
 
   return 1;
 })
+
+;; Return 1 if OP is a parallel for a vpermilp[ds] permute.
+;; ??? It would be much easier if the PARALLEL for a VEC_SELECT
+;; had a mode, but it doesn't.  So we have 4 copies and install
+;; the mode by hand.
+
+(define_predicate "avx_vpermilp_v8sf_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vpermilp_parallel (op, V8SFmode)")))
+
+(define_predicate "avx_vpermilp_v4df_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vpermilp_parallel (op, V4DFmode)")))
+
+(define_predicate "avx_vpermilp_v4sf_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vpermilp_parallel (op, V4SFmode)")))
+
+(define_predicate "avx_vpermilp_v2df_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vpermilp_parallel (op, V2DFmode)")))

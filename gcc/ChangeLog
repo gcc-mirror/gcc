@@ -1,3 +1,15 @@
+2009-11-22  Richard Henderson  <rth@redhat.com>
+
+	* i386.c (avx_vpermilp_parallel): New function.
+	* i386-protos.h: Declare it.
+	* predicates.md (avx_vpermilp_v8sf_operand, avx_vpermilp_v4df_operand,
+	avx_vpermilp_v4sf_operand, avx_vpermilp_v2df_operand): New.
+	* sse.md (AVXMODEFDP, AVXMODEFSP): New iterators.
+	(ssescalarnum, ssedoublesizemode): Add AVX modes.
+	(vpermilbits): Remove.
+	(avx_vpermil<mode>): Change insns to expanders.
+	(*avx_vpermil<mode>): New.  Use vec_select.
+
 2009-11-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* opts.c (decode_options): Don't enable flag_schedule_insns 
