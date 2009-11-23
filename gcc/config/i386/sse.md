@@ -58,6 +58,8 @@
 (define_mode_iterator AVX256MODE8P [V8SI V8SF])
 (define_mode_iterator AVXMODEF2P [V4SF V2DF V8SF V4DF])
 (define_mode_iterator AVXMODEF4P [V4SF V4DF])
+(define_mode_iterator AVXMODEFDP [V2DF V4DF])
+(define_mode_iterator AVXMODEFSP [V4SF V8SF])
 (define_mode_iterator AVXMODEDCVTDQ2PS [V4SF V8SF])
 (define_mode_iterator AVXMODEDCVTPS2DQ [V4SI V8SI])
 
@@ -95,13 +97,16 @@
 				 (V4SI "SI") (V2DI "DI")])
 
 ;; Mapping of vector modes to a vector mode of double size
-(define_mode_attr ssedoublesizemode [(V2DF "V4DF") (V2DI "V4DI")
-				     (V4SF "V8SF") (V4SI "V8SI")])
+(define_mode_attr ssedoublesizemode
+  [(V2DF "V4DF") (V2DI "V4DI") (V4SF "V8SF") (V4SI "V8SI")
+   (V8HI "V16HI") (V16QI "V32QI")
+   (V4DF "V8DF") (V8SF "V16SF")
+   (V4DI "V8DI") (V8SI "V16SI") (V16HI "V32HI") (V32QI "V64QI")])
 
 ;; Number of scalar elements in each vector type
-(define_mode_attr ssescalarnum [(V4SF "4") (V2DF "2")
-				(V16QI "16") (V8HI "8")
-				(V4SI "4") (V2DI "2")])
+(define_mode_attr ssescalarnum
+  [(V4SF "4") (V2DF "2") (V16QI "16") (V8HI "8") (V4SI "4") (V2DI "2")
+   (V8SF "8") (V4DF "4") (V32QI "32") (V16HI "16") (V8SI "8") (V4DI "4")])
 
 ;; Mapping for AVX
 (define_mode_attr avxvecmode
@@ -133,10 +138,6 @@
 ;; Mapping of immediate bits for blend instructions
 (define_mode_attr blendbits
   [(V8SF "255") (V4SF "15") (V4DF "15") (V2DF "3")])
-
-;; Mapping of immediate bits for vpermil instructions
-(define_mode_attr vpermilbits
-  [(V8SF "255") (V4SF "255") (V4DF "15") (V2DF "3")])
 
 ;; Mapping of immediate bits for pinsr instructions
 (define_mode_attr pinsrbits [(V16QI "32768") (V8HI "128") (V4SI "8")])
@@ -12088,14 +12089,66 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_insn "avx_vpermil<mode>"
-  [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
-	(unspec:AVXMODEF2P
-	  [(match_operand:AVXMODEF2P 1 "register_operand" "xm")
-	   (match_operand:SI 2 "const_0_to_<vpermilbits>_operand" "n")]
-	  UNSPEC_VPERMIL))]
+(define_expand "avx_vpermil<mode>"
+  [(set (match_operand:AVXMODEFDP 0 "register_operand" "")
+	(vec_select:AVXMODEFDP
+	  (match_operand:AVXMODEFDP 1 "nonimmediate_operand" "")
+	  (match_operand:SI 2 "const_0_to_255_operand" "")))]
   "TARGET_AVX"
-  "vpermilp<avxmodesuffixf2c>\t{%2, %1, %0|%0, %1, %2}"
+{
+  int mask = INTVAL (operands[2]);
+  rtx perm[<ssescalarnum>];
+
+  perm[0] = GEN_INT (mask & 1);
+  perm[1] = GEN_INT ((mask >> 1) & 1);
+  if (<MODE>mode == V4DFmode)
+    {
+      perm[2] = GEN_INT (((mask >> 2) & 1) + 2);
+      perm[3] = GEN_INT (((mask >> 3) & 1) + 2);
+    }
+
+  operands[2]
+    = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (<ssescalarnum>, perm));
+})
+
+(define_expand "avx_vpermil<mode>"
+  [(set (match_operand:AVXMODEFSP 0 "register_operand" "")
+	(vec_select:AVXMODEFSP
+	  (match_operand:AVXMODEFSP 1 "nonimmediate_operand" "")
+	  (match_operand:SI 2 "const_0_to_255_operand" "")))]
+  "TARGET_AVX"
+{
+  int mask = INTVAL (operands[2]);
+  rtx perm[<ssescalarnum>];
+
+  perm[0] = GEN_INT (mask & 3);
+  perm[1] = GEN_INT ((mask >> 2) & 3);
+  perm[2] = GEN_INT ((mask >> 4) & 3);
+  perm[3] = GEN_INT ((mask >> 6) & 3);
+  if (<MODE>mode == V8SFmode)
+    {
+      perm[4] = GEN_INT ((mask & 3) + 4);
+      perm[5] = GEN_INT (((mask >> 2) & 3) + 4);
+      perm[6] = GEN_INT (((mask >> 4) & 3) + 4);
+      perm[7] = GEN_INT (((mask >> 6) & 3) + 4);
+    }
+
+  operands[2]
+    = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (<ssescalarnum>, perm));
+})
+
+(define_insn "*avx_vpermilp<mode>"
+  [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
+	(vec_select:AVXMODEF2P
+	  (match_operand:AVXMODEF2P 1 "nonimmediate_operand" "xm")
+	  (match_parallel 2 "avx_vpermilp_<mode>_operand"
+	    [(match_operand 3 "const_int_operand" "")])))]
+  "TARGET_AVX"
+{
+  int mask = avx_vpermilp_parallel (operands[2], <MODE>mode) - 1;
+  operands[2] = GEN_INT (mask);
+  return "vpermilp<avxmodesuffixf2c>\t{%2, %1, %0|%0, %1, %2}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")

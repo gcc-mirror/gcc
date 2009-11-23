@@ -47,6 +47,8 @@ extern bool x86_extended_QIreg_mentioned_p (rtx);
 extern bool x86_extended_reg_mentioned_p (rtx);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
+extern int avx_vpermilp_parallel (rtx par, enum machine_mode mode);
+
 extern int ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern int ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern int ix86_expand_strlen (rtx, rtx, rtx, rtx);
@@ -275,3 +277,4 @@ extern int asm_preferred_eh_data_format (int, int);
 #ifdef HAVE_ATTR_cpu
 extern enum attr_cpu ix86_schedule;
 #endif
+
