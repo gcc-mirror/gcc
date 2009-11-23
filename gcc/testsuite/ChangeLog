@@ -1,4 +1,9 @@
-2009-11-23  Andy Hutchinson <hutchinsonandy@gcc.gnu.org>
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* gcc.dg/sms-6.c: Use long for 16 bit int targets.
+	* gcc.dg/sms-7.c: Ditto.
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.dg/pr36998.c: Frame pointer required for avr target.
 	* gcc.dg/debug/pr41264-1.c: Use long if int size 16bit or smaller.
