@@ -24539,7 +24539,7 @@ avx_vpermilp_parallel (rtx par, enum machine_mode mode)
   unsigned mask = 0;
   unsigned char ipar[8];
 
-  if (XVECLEN (par, 0) != nelt)
+  if (XVECLEN (par, 0) != (int) nelt)
     return 0;
 
   /* Validate that all of the elements are constants, and not totally
