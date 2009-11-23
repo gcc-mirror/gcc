@@ -1,6 +1,6 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Expected errors for char32_t character constants. */
-/* { dg-do compile { target int32plus } } */
+/* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
 typedef __CHAR32_TYPE__ char32_t;

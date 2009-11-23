@@ -1,5 +1,15 @@
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	PR testsuite/36470
+	* gcc.dg/utf-cvt.c: Skip int test for 16bit int targets.
+	Enable short test for avr target.
+	* gcc.dg/utf32-1.c: Enable test for avr and m32 targets.
+	* gcc.dg/utf32-2.c: Ditto.
+	* gcc.dg/utf32-3.c: Ditto.
+	* gcc.dg/utf32-4.c: Enable test for non-32bit targets.
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc.dg/tree-ssa/asmgoto-1.c: Suppress warnings.
 
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
