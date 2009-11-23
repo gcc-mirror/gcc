@@ -48,7 +48,7 @@ if ![info exists COMPAT_OPTIONS] {
 	[list {} {}]]
 }
 
-set option_list $COMPAT_OPTIONS
+set compat_option_list $COMPAT_OPTIONS
 
 # Subsets of tests can be selectively disabled by members of this list:
 #  - ATTRIBUTE: disable all tests using the __attribute__ extension,
@@ -245,7 +245,7 @@ proc compat-get-options { src } {
 #
 proc compat-execute { src1 sid use_alt } {
     global srcdir tmpdir
-    global option_list
+    global compat_option_list
     global tool
     global verbose
     global testcase
@@ -328,7 +328,7 @@ proc compat-execute { src1 sid use_alt } {
     # Loop through all of the option lists used for this test.
 
     set count 0
-    foreach option_pair $option_list {
+    foreach option_pair $compat_option_list {
 
 	# Pick out each set of options.
 	set tst_option [lindex $option_pair 0]

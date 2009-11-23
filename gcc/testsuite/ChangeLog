@@ -1,3 +1,8 @@
+2009-11-23  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/lto.exp (lto_option_list): Rename from option_list.
+	* lib/compat.exp (compat_option_list): Rename from option_list.
+
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc-dg/raw-string-1.c: Require-effective-target wchar.
