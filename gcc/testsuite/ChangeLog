@@ -1,3 +1,7 @@
+2009-11-23  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/debug/dwarf2/inline2.c: Modify scan.
+
 2009-11-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/14777
