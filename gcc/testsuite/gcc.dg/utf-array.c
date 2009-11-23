@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Expected errors for char16_t/char32_t string literals. */
 /* { dg-do compile } */
-/* { dg-skip-if "No wchar.h" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-require-effective-target wchar } */
 /* { dg-options "-std=gnu99" } */
 
 #include <wchar.h>

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "No wchar.h" { "avr-*-*" } { "*" } { "" } } */
+/* { dg-require-effective-target wchar } */
 /* { dg-options "-std=gnu99" } */
 
 #include <wchar.h>
