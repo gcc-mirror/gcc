@@ -3,13 +3,23 @@
 /* { dg-skip-if "unaligned access" { sparc*-*-* } "*" "" } */
 
 extern void abort (void);
-
+#if (__SIZEOF_INT__ <= 2)
+struct X {
+  unsigned char pad : 4;
+  unsigned int a : 16;
+  unsigned int b : 8;
+  unsigned int c : 6;
+} __attribute__((packed));
+#else
 struct X {
   unsigned char pad : 4;
   unsigned int a : 32;
   unsigned int b : 24;
   unsigned int c : 6;
 } __attribute__((packed));
+
+#endif
+
 
 int main (void)
 {
