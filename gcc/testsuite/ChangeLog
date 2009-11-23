@@ -1,3 +1,8 @@
+2009-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/42086
+	* gcc.target/ia64/fptr-1.c: Make it a compile test.
+
 2009-11-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/lto.exp (lto_option_list): Rename from option_list.

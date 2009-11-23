@@ -1,10 +1,10 @@
-/* { dg-do run { target ia64-*-linux* } } */
+/* { dg-do compile { target ia64-*-linux* } } */
 /* { dg-options "-O2" } */
 
-/* Test function descriptor access.  */
+/* { dg-final { scan-assembler-not "@ltoffx\\(os_boot_rendez#\\)" } } */
+/* { dg-final { scan-assembler "@ltoff\\(@fptr\\(os_boot_rendez#\\)\\)" } } */
 
-extern unsigned long *_GLOBAL_OFFSET_TABLE_;
-extern void abort(void);
+/* Test function descriptor access.  */
 
 struct ia64_fdesc
 {
@@ -17,11 +17,7 @@ os_boot_rendez (void)
 {
 }
 
-static int
-check (unsigned long gp)
-{
-  return gp != (unsigned long) &_GLOBAL_OFFSET_TABLE_;
-}
+extern int check (unsigned long);
 
 int
 main (int argc, char **argv)
@@ -31,7 +27,5 @@ main (int argc, char **argv)
 
   for (i = 0; i < 1; i++)
     res += check (((struct ia64_fdesc *) os_boot_rendez)->gp);
-  if (res)
-    abort ();
   return res;
 }
