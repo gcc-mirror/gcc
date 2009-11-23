@@ -1,5 +1,10 @@
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc.c-torture/execute/ipa-sra-2.x: New. Skip for 16bit targets.
+
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc.dg/sms-6.c: Use long for 16 bit int targets.
 	* gcc.dg/sms-7.c: Ditto.
 
