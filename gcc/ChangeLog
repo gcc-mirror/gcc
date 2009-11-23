@@ -1,3 +1,14 @@
+2009-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipcp_compute_node_scale): Work around completely
+	wrong profile updates.
+	* predict.c (counts_to_freqs): Be expected for ENTRY/EXIT block
+	having largest frequency.
+	* ira-live.c (ira_implicitly_set_insn_hard_regs): Silecne
+	used uninitalized warning.
+	* tree-optimize.c (execute_fixup_cfg): Rescale entry and exit block
+	frequencies.
+
 2009-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (*cmp_sadd_sidi): Use gen_lowpart instead

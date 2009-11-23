@@ -578,7 +578,13 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
 
 /* Compute the proper scale for NODE.  It is the ratio between the number of
    direct calls (represented on the incoming cgraph_edges) and sum of all
-   invocations of NODE (represented as count in cgraph_node).  */
+   invocations of NODE (represented as count in cgraph_node).
+
+   FIXME: This code is wrong.  Since the callers can be also clones and
+   the clones are not scaled yet, the sums gets unrealistically high.
+   To properly compute the counts, we would need to do propagation across
+   callgraph (as external call to A might imply call to non-clonned B
+   if A's clone calls clonned B).  */
 static void
 ipcp_compute_node_scale (struct cgraph_node *node)
 {
@@ -589,6 +595,12 @@ ipcp_compute_node_scale (struct cgraph_node *node)
   /* Compute sum of all counts of callers. */
   for (cs = node->callers; cs != NULL; cs = cs->next_caller)
     sum += cs->count;
+  /* Work around the unrealistically high sum problem.  We just don't want
+     the non-cloned body to have negative or very low frequency.  Since
+     majority of execution time will be spent in clones anyway, this should
+     give good enough profile.  */
+  if (sum > node->count * 9 / 10)
+    sum = node->count * 9 / 10;
   if (node->count == 0)
     ipcp_set_node_scale (node, 0);
   else
