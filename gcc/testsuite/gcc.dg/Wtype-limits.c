@@ -2,6 +2,7 @@
 /* { dg-options "-Wtype-limits" } */
 
 
+
 void a (unsigned char x)
 {
   if (x < 0)  return;/* { dg-warning "comparison is always false due to limited range of data type" } */
