@@ -1,3 +1,9 @@
+2009-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (*cmp_sadd_sidi): Use gen_lowpart instead
+	of gen_rtx_REG to generate operand 5.
+	(*cmp_ssub_sidi): Ditto.
+
 2009-11-23  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (avx_vpermilp_parallel): Fix sign compare
@@ -28,7 +34,7 @@
 
 2009-11-22  Richard Earnshaw  <rearnsha@arm.com>
 
-	* opts.c (decode_options): Don't enable flag_schedule_insns 
+	* opts.c (decode_options): Don't enable flag_schedule_insns
 	when optimizing for size.
 	* doc/invoke.texi: Document change.
 
