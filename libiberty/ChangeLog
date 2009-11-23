@@ -1,3 +1,10 @@
+2009-11-23  Ben Elliston  <bje@au.ibm.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* pex-unix.c (pex_child_error): Improve warning avoidance by
+	checking the results of write(3) and exiting with -2 if any write
+	returns a negative value.
+
 2009-11-22  Steve Ward  <planet36@gmail.com>
 
 	* dyn-string.c (dyn_string_append_char): Fix typo in comment.
