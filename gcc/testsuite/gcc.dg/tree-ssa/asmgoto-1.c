@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -w -fdump-tree-optimized" } */
 
 extern void XYZZY (void);
 typedef unsigned long __kernel_size_t;
