@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 #define N 24
 #define M 100
 

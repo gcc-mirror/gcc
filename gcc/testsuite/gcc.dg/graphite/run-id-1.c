@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 void abort (void);
 
 void foo (int N)

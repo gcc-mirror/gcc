@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-O2 -fgraphite-identity" } */
 
 int buffer[256*256];

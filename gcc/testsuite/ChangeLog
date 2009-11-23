@@ -1,3 +1,25 @@
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* gcc.dg/graphite/block-1.c: Require 32-bit or larger array support.
+	* gcc.dg/graphite/block-3.c: Ditto.
+	* gcc.dg/graphite/block-4.c: Ditto.
+	* gcc.dg/graphite/block-5.c: Ditto.
+	* gcc.dg/graphite/block-6.c: Ditto.
+	* gcc.dg/graphite/interchange-0.c: Ditto.
+	* gcc.dg/graphite/interchange-1.c: Ditto.
+	* gcc.dg/graphite/interchange-2.c: Ditto.
+	* gcc.dg/graphite/interchange-3.c: Ditto.
+	* gcc.dg/graphite/interchange-4.c: Ditto.
+	* gcc.dg/graphite/interchange-5.c: Ditto.
+	* gcc.dg/graphite/interchange-6.c: Ditto.
+	* gcc.dg/graphite/run-id-1.c: Ditto.
+	* gcc.dg/graphite/scop-16.c: Ditto.
+	* gcc.dg/graphite/scop-17.c: Ditto.
+	* gcc.dg/graphite/scop-18.c: Ditto.
+	* gcc.dg/graphite/scop-matmult.c: Ditto.
+	* gcc.dg/graphite/pr40157.c: Require 32bit or larger int.
+	* gcc.dg/graphite/id-15.c: Ditto.
+
 2009-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/weak1.ads: New test.
