@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 int a[1000][1000];
 
 int

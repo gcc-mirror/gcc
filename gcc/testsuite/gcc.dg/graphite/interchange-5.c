@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 /* Formerly known as ltrans-5.c */
 
 int foo ()

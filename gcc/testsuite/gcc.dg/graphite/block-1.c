@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 #define MAX 8192
 
 void bar (void);

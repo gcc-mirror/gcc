@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 #define N 10000
 void foo (int);
 int test ()

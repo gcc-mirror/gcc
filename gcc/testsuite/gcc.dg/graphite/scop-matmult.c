@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 float A[1000][1000], B[1000][1000], C[1000][1000];
 
 /* Multiply two n x n matrices A and B and store the result in C.  */

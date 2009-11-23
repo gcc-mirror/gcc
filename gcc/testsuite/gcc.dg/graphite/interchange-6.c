@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size32plus } */
+
 /* Formerly known as ltrans-6.c */
 
 int medium_loop_interchange(int A[100][200])
