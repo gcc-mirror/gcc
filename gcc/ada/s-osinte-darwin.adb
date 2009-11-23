@@ -48,11 +48,6 @@ package body System.OS_Interface is
       return Duration (TS.tv_sec) + Duration (TS.tv_nsec) / 10#1#E9;
    end To_Duration;
 
-   function To_Duration (TV : struct_timeval) return Duration is
-   begin
-      return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
-   end To_Duration;
-
    ------------------------
    -- To_Target_Priority --
    ------------------------
@@ -88,31 +83,6 @@ package body System.OS_Interface is
         tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
-   ----------------
-   -- To_Timeval --
-   ----------------
-
-   function To_Timeval (D : Duration) return struct_timeval is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (D);
-      F := D - Duration (S);
-
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return struct_timeval'
-               (Tv_Sec  => S,
-                tv_usec => int32_t (Long_Long_Integer (F * 10#1#E6)));
-   end To_Timeval;
-
    -------------------
    -- clock_gettime --
    -------------------
@@ -122,17 +92,36 @@ package body System.OS_Interface is
       tp       : access timespec) return int
    is
       pragma Unreferenced (clock_id);
+
+      --  AIX threads don't have clock_gettime, so use
+      --  gettimeofday() instead.
+
+      use Interfaces;
+
+      type timeval is array (1 .. 2) of C.long;
+
+      procedure timeval_to_duration
+        (T    : not null access timeval;
+         sec  : not null access C.long;
+         usec : not null access C.long);
+      pragma Import (C, timeval_to_duration, "__gnat_timeval_to_duration");
+
+      Micro  : constant := 10**6;
+      sec    : aliased C.long;
+      usec   : aliased C.long;
+      TV     : aliased timeval;
       Result : int;
-      tv     : aliased struct_timeval;
 
       function gettimeofday
-        (tv : access struct_timeval;
-         tz : System.Address := System.Null_Address) return int;
+        (Tv : access timeval;
+         Tz : System.Address := System.Null_Address) return int;
       pragma Import (C, gettimeofday, "gettimeofday");
 
    begin
-      Result := gettimeofday (tv'Unchecked_Access);
-      tp.all := To_Timespec (To_Duration (tv));
+      Result := gettimeofday (TV'Access, System.Null_Address);
+      pragma Assert (Result = 0);
+      timeval_to_duration (TV'Access, sec'Access, usec'Access);
+      tp.all := To_Timespec (Duration (sec) + Duration (usec) / Micro);
       return Result;
    end clock_gettime;
 
