@@ -1,3 +1,41 @@
+2009-11-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/14777
+	* cp-tree.def <TEMPLATE_INFO>: Declare new kind of tree
+	node.
+	* cp-tree.h (struct tree_template_info,
+	struct qualified_typedef_usage_s): New.
+	(cp_tree_node_structure_enum): add TS_CP_TEMPLATE_INFO.
+	(union lang_tree_node): Add template_info.
+	(TI_TEMPLATE, TI_ARGS, TI_TYPEDEFS_NEEDING_ACCESS_CHECKING):
+	Adjust.
+	(build_template_info): Declare.
+	(get_types_needing_access_check): Adjust return type.
+	(add_typedef_to_current_template_for_access_check): Declare.
+	* cp-objcp-common.c (cp_tree_size): Handle TEMPLATE_INFO.
+	* semantics.c (add_typedef_to_current_template_for_access_check):
+	Split from ...
+	(check_accessibility_of_qualified_id): ... here.
+	* decl.c (make_typename_type): Use it.
+	* pt.c (build_template_info): Define.
+	(check_explicit_specialization, find_parameter_packs_r,
+	push_template_decl_real, lookup_template_class,
+	for_each_template_parm_r, tsubst_decl, tsubst): Use
+	build_template_info.
+	(get_types_needing_access_check): Adjust return type.
+	(append_type_to_template_for_access_check_1): Record the
+	location of the usage point of the typedef. Adjust to TEMPLATE_INFO.
+	(append_type_to_template_for_access_check): Add new location
+	parameter. Pass it to append_type_to_template_for_access_check_1.
+	Adjust to TEMPLATE_INFO.
+	(perform_typedefs_access_check): Temporarily set input_location to
+	the usage point of the typedef we are checking access for. Adjust
+	to new TEMPLATE_INFO tree node.
+	* tree.c (bind_template_template_parm): Use build_template_info.
+	* call.c (add_template_candidate_real): Likewise.
+	* decl.c (grokfndecl): Likewise.
+	(cp_tree_node_structure): Handle TEMPLATE_INFO.
+
 2009-11-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9050, DR 147, DR 318

@@ -633,6 +633,34 @@ struct GTY (()) tree_lambda_expr
   int discriminator;
 };
 
+/* A (typedef,context,usage location) triplet.
+   It represents a typedef used through a
+   context at a given source location.
+   e.g.
+   struct foo {
+     typedef int myint;
+   };
+
+   struct bar {
+    foo::myint v; // #1<-- this location.
+   };
+
+   In bar, the triplet will be (myint, foo, #1).
+   */
+struct GTY(()) qualified_typedef_usage_s {
+  tree typedef_decl;
+  tree context;
+  location_t locus;
+};
+typedef struct qualified_typedef_usage_s qualified_typedef_usage_t;
+DEF_VEC_O (qualified_typedef_usage_t);
+DEF_VEC_ALLOC_O (qualified_typedef_usage_t,gc);
+
+struct GTY(()) tree_template_info {
+  struct tree_common common;
+  VEC(qualified_typedef_usage_t,gc) *typedefs_needing_access_checking;
+};
+
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
@@ -647,6 +675,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_ARGUMENT_PACK_SELECT,
   TS_CP_TRAIT_EXPR,
   TS_CP_LAMBDA_EXPR,
+  TS_CP_TEMPLATE_INFO,
   LAST_TS_CP_ENUM
 };
 
@@ -669,6 +698,8 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
     trait_expression;
   struct tree_lambda_expr GTY ((tag ("TS_CP_LAMBDA_EXPR")))
     lambda_expression;
+  struct tree_template_info GTY ((tag ("TS_CP_TEMPLATE_INFO")))
+    template_info;
 };
 
 
@@ -2441,12 +2472,14 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    ? (ENUM_TEMPLATE_INFO (NODE) = (VAL))	\
    : (CLASSTYPE_TEMPLATE_INFO (NODE) = (VAL)))
 
-#define TI_TEMPLATE(NODE) (TREE_PURPOSE (NODE))
-#define TI_ARGS(NODE) (TREE_VALUE (NODE))
+#define TI_TEMPLATE(NODE) TREE_TYPE (TEMPLATE_INFO_CHECK (NODE))
+#define TI_ARGS(NODE) TREE_CHAIN (TEMPLATE_INFO_CHECK (NODE))
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
 /* The list of typedefs - used in the template - that need
    access checking at template instantiation time.  */
-#define TI_TYPEDEFS_NEEDING_ACCESS_CHECKING(NODE) (TREE_CHAIN (NODE))
+#define TI_TYPEDEFS_NEEDING_ACCESS_CHECKING(NODE) \
+  ((struct tree_template_info*)TEMPLATE_INFO_CHECK \
+     (NODE))->typedefs_needing_access_checking
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -4809,7 +4842,8 @@ extern tree check_explicit_specialization	(tree, tree, int, int);
 extern tree make_auto				(void);
 extern tree do_auto_deduction			(tree, tree, tree);
 extern tree type_uses_auto			(tree);
-extern void append_type_to_template_for_access_check (tree, tree, tree);
+extern void append_type_to_template_for_access_check (tree, tree, tree,
+						      location_t);
 extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, location_t, tree, 
@@ -4843,8 +4877,9 @@ extern bool function_parameter_pack_p		(const_tree);
 extern bool function_parameter_expanded_from_pack_p (tree, tree);
 extern tree make_pack_expansion                 (tree);
 extern bool check_for_bare_parameter_packs      (tree);
+extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
-extern tree get_types_needing_access_check	(tree);
+extern VEC(qualified_typedef_usage_t,gc)* get_types_needing_access_check (tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
@@ -5073,6 +5108,8 @@ extern void finish_mem_initializers		(tree);
 extern tree check_template_template_default_arg (tree);
 extern bool expand_or_defer_fn_1		(tree);
 extern void expand_or_defer_fn			(tree);
+extern void add_typedef_to_current_template_for_access_check (tree, tree,
+							      location_t);
 extern void check_accessibility_of_qualified_id (tree, tree, tree);
 extern tree finish_qualified_id_expr		(tree, tree, bool, bool,
 						 bool, bool);

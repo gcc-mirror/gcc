@@ -1,3 +1,11 @@
+2009-11-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/14777
+	* g++.dg/template/typedef13.C: Adjust.
+	* g++.dg/template/typedef19.C: Adjust.
+	* g++.dg/template/typedef20.C: Adjust.
+	* g++.dg/template/typedef22.C: New test.
+
 2009-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42113

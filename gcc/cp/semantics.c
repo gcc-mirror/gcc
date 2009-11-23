@@ -1531,6 +1531,37 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     }
 }
 
+/* If we are currently parsing a template and we encountered a typedef
+   TYPEDEF_DECL that is being accessed though CONTEXT, this function
+   adds the typedef to a list tied to the current template.
+   At tempate instantiatin time, that list is walked and access check
+   performed for each typedef.
+   LOCATION is the location of the usage point of TYPEDEF_DECL.  */
+
+void
+add_typedef_to_current_template_for_access_check (tree typedef_decl,
+                                                  tree context,
+						  location_t location)
+{
+    tree template_info = NULL;
+    tree cs = current_scope ();
+
+    if (!is_typedef_decl (typedef_decl)
+	|| !context
+	|| !CLASS_TYPE_P (context)
+	|| !cs)
+      return;
+
+    if (CLASS_TYPE_P (cs) || TREE_CODE (cs) == FUNCTION_DECL)
+      template_info = get_template_info (cs);
+
+    if (template_info
+	&& TI_TEMPLATE (template_info)
+	&& !currently_open_class (context))
+      append_type_to_template_for_access_check (cs, typedef_decl,
+						context, location);
+}
+
 /* DECL was the declaration to which a qualified-id resolved.  Issue
    an error message if it is not accessible.  If OBJECT_TYPE is
    non-NULL, we have just seen `x->' or `x.' and OBJECT_TYPE is the
@@ -1549,27 +1580,11 @@ check_accessibility_of_qualified_id (tree decl,
      add it to a list tied to the template.
      At template instantiation time, that list will be walked and
      access check performed.  */
-  if (is_typedef_decl (decl))
-    {
-      /* This the scope through which type_decl is accessed.
-	 It will be useful information later to do access check for
-	 type_decl usage.  */
-      tree scope = nested_name_specifier
-      ?  nested_name_specifier
-      : DECL_CONTEXT (decl);
-      tree templ_info = NULL;
-      tree cs = current_scope ();
-
-      if (cs && (CLASS_TYPE_P (cs) || TREE_CODE (cs) == FUNCTION_DECL))
-	templ_info = get_template_info (cs);
-
-      if (templ_info
-	  && TI_TEMPLATE (templ_info)
-	  && scope
-	  && CLASS_TYPE_P (scope)
-	  && !currently_open_class (scope))
-	append_type_to_template_for_access_check (current_scope (), decl, scope);
-    }
+  add_typedef_to_current_template_for_access_check (decl,
+						    nested_name_specifier
+						    ? nested_name_specifier
+						    : DECL_CONTEXT (decl),
+						    input_location);
 
   /* If we're not checking, return immediately.  */
   if (deferred_access_no_check)

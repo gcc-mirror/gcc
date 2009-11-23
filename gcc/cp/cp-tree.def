@@ -439,6 +439,16 @@ DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
    DECLTYPE_FOR_LAMBDA_RETURN is set if we want lambda return deduction.  */
 DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
 
+/* Used to represent the template information stored by template
+   specializations.
+   The accessors are:
+   TI_TEMPLATE the template declaration associated to the specialization
+   TI_ARGS the arguments of the template specialization
+   TI_TYPEDEFS_NEEDING_ACCESS_CHECKING the vector of typedefs used in
+   the pattern of the template for which access check is needed at template
+   instantiation time.  */
+DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
+
 /*
 Local variables:
 mode:c
