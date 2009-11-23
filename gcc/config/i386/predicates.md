@@ -1056,11 +1056,6 @@
   enum machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (!REG_P (XEXP (op, 0))
-      || REGNO (XEXP (op, 0)) != FLAGS_REG
-      || XEXP (op, 1) != const0_rtx)
-    return 0;
-
   if (inmode == CCFPmode || inmode == CCFPUmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
