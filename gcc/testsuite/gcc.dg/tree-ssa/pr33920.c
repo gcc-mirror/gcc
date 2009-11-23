@@ -30,7 +30,7 @@ void init_code ()
   object V658;
 
 T1240:
-if (V648 >= (intptr_t)V651) /* { dg-warning "cast from pointer to integer of different size" "" { target { ! int32plus } } } */
+if (V648 >= (intptr_t)V651)
     goto T1243;
   V653 = ((char *) V654->v.v_self)[V648];
   V659 = (object) V654 + V653;

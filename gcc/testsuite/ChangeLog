@@ -1,5 +1,9 @@
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc.dg/tree-ssa/pr33920.c: Remove warning check for 16 bit target.
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc-dg/Wtype-limits.c: Remove XFAIL for avr target.
 
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
