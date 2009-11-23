@@ -1404,10 +1404,12 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 	   != null_pointer_node)
     DECL_IGNORED_P (var_decl) = 1;
 
-  if (asm_name && VAR_OR_FUNCTION_DECL_P (var_decl))
-    SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
-
-  process_attributes (var_decl, attr_list);
+  if (TREE_CODE (var_decl) == VAR_DECL)
+    {
+      if (asm_name)
+	SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
+      process_attributes (var_decl, attr_list);
+    }
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (var_decl, gnat_node);
