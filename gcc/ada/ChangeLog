@@ -1,3 +1,7 @@
+2009-11-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* adaint.h: Assume large file support on IRIX only if _LFAPI.
+
 2009-11-21  Eric Botcazou  <ebotcazou@adacore.com>
             Laurent GUERBY  <laurent@guerby.net>
 
