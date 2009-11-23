@@ -1,5 +1,9 @@
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc.dg/tree-ssa/asmgoto-1.c: Suppress warnings.
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc.c-torture/execute/ipa-sra-2.x: New. Skip for 16bit targets.
 
 
