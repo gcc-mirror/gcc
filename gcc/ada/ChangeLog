@@ -5,43 +5,42 @@
 	* gcc-interface/utils.c (create_var_decl_1): Do not process attributes
 	for constants.
 
-2009-11-23  Eric Botcazou  <ebotcazou@adacore.com>
-            Laurent GUERBY  <laurent@guerby.net>
+2009-11-23  Laurent GUERBY  <laurent@guerby.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/42153
-        * s-osinte-linux.ads (struct_timeval): Delete.
-        * s-osinte-hpux.ads (struct_timeval, To_Duration, To_Timeval): 
-        Delete.
-        * s-osinte-kfreebsd-gnu.ads: Likewise.
-        * s-osinte-rtems.ads: Likewise.
-        * s-osinte-aix.ads: Likewise.
-        * s-osinte-hpux-dce.ads: Likewise.
-        * s-osinte-darwin.ads: Likewise.
-        * s-osinte-solaris-posix.ads: Likewise.
-        * s-osinte-irix.ads: Likewise.
-        * s-osinte-solaris.ads: Likewise.
-        * s-osinte-hpux-dce.adb (To_Duration, To_Timeval): Delete.
-        * s-osinte-irix.adb: Likewise.
-        * s-osinte-solaris.adb: Likewise.
-        * s-osinte-rtems.adb: Likewise. Minor reformatting.
-        * s-osinte-aix.adb (To_Duration, To_Timeval): Delete.
-        (clock_gettime): Use cal.c timeval_to_duration.
-        * s-osinte-darwin.adb: Likewise.
+	* s-osinte-linux.ads (struct_timeval): Delete.
+	* s-osinte-hpux.ads (struct_timeval, To_Duration, To_Timeval): Delete.
+	* s-osinte-kfreebsd-gnu.ads: Likewise.
+	* s-osinte-rtems.ads: Likewise.
+	* s-osinte-aix.ads: Likewise.
+	* s-osinte-hpux-dce.ads: Likewise.
+	* s-osinte-darwin.ads: Likewise.
+	* s-osinte-solaris-posix.ads: Likewise.
+	* s-osinte-irix.ads: Likewise.
+	* s-osinte-solaris.ads: Likewise.
+	* s-osinte-hpux-dce.adb (To_Duration, To_Timeval): Delete.
+	* s-osinte-irix.adb: Likewise.
+	* s-osinte-solaris.adb: Likewise.
+	* s-osinte-rtems.adb: Likewise.  Minor reformatting.
+	* s-osinte-aix.adb (To_Duration, To_Timeval): Delete.
+	(clock_gettime): Use cal.c's timeval_to_duration.
+	* s-osinte-darwin.adb: Likewise.
 
 2009-11-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* adaint.h: Assume large file support on IRIX only if _LFAPI.
 
-2009-11-21  Eric Botcazou  <ebotcazou@adacore.com>
-            Laurent GUERBY  <laurent@guerby.net>
+2009-11-21  Laurent GUERBY  <laurent@guerby.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
 
-        * s-osinte-linux.ads (struct_timeval, To_Duration, To_Timeval,
-        gettimeofday): Delete.
-        * s-osinte-posix.adb (To_Duration, To_Timeval): Delete.
-        * s-osprim-posix.adb (struct_timezone, struct_timeval, 
-        gettimeofday): Delete.
-        (Clock): Use cal.c timeval_to_duration.
-        * s-taprop-linux.adb (Monotonic_Clock): Likewise.
+	* s-osinte-linux.ads (struct_timeval, To_Duration, To_Timeval,
+	gettimeofday): Delete.
+	* s-osinte-posix.adb (To_Duration, To_Timeval): Delete.
+	* s-osprim-posix.adb (struct_timezone, struct_timeval, gettimeofday):
+	Delete.
+	(Clock): Use cal.c's timeval_to_duration.
+	* s-taprop-linux.adb (Monotonic_Clock): Likewise.
 
 2009-11-12  Eric Botcazou  <ebotcazou@adacore.com>
             Laurent GUERBY  <laurent@guerby.net>
