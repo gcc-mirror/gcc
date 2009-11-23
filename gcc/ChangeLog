@@ -1,3 +1,8 @@
+2009-11-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (avx_vpermilp_parallel): Fix sign compare
+	mismatch.
+
 2009-11-23  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Add special
