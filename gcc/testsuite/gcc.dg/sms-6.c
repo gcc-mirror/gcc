@@ -20,7 +20,12 @@ void foo (int * __restrict__ a, int * __restrict__ b, int * __restrict__ c)
 int a[100], b[100], c[100];
 int main()
 {
+#if (__SIZEOF_INT__ <= 2)
+  int i;
+  long res;
+#else
   int i, res;
+#endif  
   for(i = 0; i < 100; i++)
     {
       b[i] = c[i] = i;
