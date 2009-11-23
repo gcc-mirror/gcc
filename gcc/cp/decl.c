@@ -3089,6 +3089,11 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (complain & tf_error)
     perform_or_defer_access_check (TYPE_BINFO (context), t, t);
 
+  /* If we are currently parsing a template and if T is a typedef accessed
+     through CONTEXT then we need to remember and check access of T at
+     template instantiation time.  */
+  add_typedef_to_current_template_for_access_check (t, context, input_location);
+
   if (want_template)
     return lookup_template_class (t, TREE_OPERAND (fullname, 1),
 				  NULL_TREE, context,
@@ -6713,7 +6718,7 @@ grokfndecl (tree ctype,
 	    }
 	  gcc_assert (TREE_CODE (fns) == IDENTIFIER_NODE
 		      || TREE_CODE (fns) == OVERLOAD);
-	  DECL_TEMPLATE_INFO (decl) = tree_cons (fns, args, NULL_TREE);
+	  DECL_TEMPLATE_INFO (decl) = build_template_info (fns, args);
 
 	  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
 	    if (TREE_PURPOSE (t)
@@ -12881,6 +12886,7 @@ cp_tree_node_structure (union lang_tree_node * t)
     case ARGUMENT_PACK_SELECT:  return TS_CP_ARGUMENT_PACK_SELECT;
     case TRAIT_EXPR:		return TS_CP_TRAIT_EXPR;
     case LAMBDA_EXPR:		return TS_CP_LAMBDA_EXPR;
+    case TEMPLATE_INFO:		return TS_CP_TEMPLATE_INFO;
     default:			return TS_CP_GENERIC;
     }
 }

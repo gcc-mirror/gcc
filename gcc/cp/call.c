@@ -2581,7 +2581,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
        for this will point at template <class T> template <> S<T>::f(int),
        so that we can find the definition.  For the purposes of
        overload resolution, however, we want the original TMPL.  */
-    cand->template_decl = tree_cons (tmpl, targs, NULL_TREE);
+    cand->template_decl = build_template_info (tmpl, targs);
   else
     cand->template_decl = DECL_TEMPLATE_INFO (fn);
 

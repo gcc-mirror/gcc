@@ -14,8 +14,8 @@ class B : public A
 
 template<class T>
 class B<T*> : public A
-{ // { dg-error "within this context" }
-  mytype mem;
+{
+  mytype mem; // { dg-error "within this context" }
 };
 
 B<int*> b;

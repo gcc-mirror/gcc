@@ -18,9 +18,9 @@ struct y : public x
 
 template<typename T>
 struct y<T*> : public x
-{ // { dg-error "within this context" }
+{
   typedef x::type good;
-  typedef x::privtype bad;
+  typedef x::privtype bad; // { dg-error "within this context" }
 };
 
 template class y<int>;

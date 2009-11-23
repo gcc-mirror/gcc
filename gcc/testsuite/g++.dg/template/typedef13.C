@@ -8,8 +8,8 @@ class A
 };
 
 template <class T> class B : public A
-{ // { dg-error "within this context"  }
-  mytype mem;
+{
+  mytype mem; // { dg-error "within this context"  }
 };
 
 B<int> b; // { dg-message "instantiated from here" }
