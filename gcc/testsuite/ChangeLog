@@ -1,3 +1,7 @@
+2009-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/weak1.ads: New test.
+
 2009-11-23  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/debug/dwarf2/inline2.c: Modify scan.

@@ -1,4 +1,11 @@
 2009-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Pass the list
+	of attributes when building the corresponding variable of a constant.
+	* gcc-interface/utils.c (create_var_decl_1): Do not process attributes
+	for constants.
+
+2009-11-23  Eric Botcazou  <ebotcazou@adacore.com>
             Laurent GUERBY  <laurent@guerby.net>
 
 	PR ada/42153

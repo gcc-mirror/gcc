@@ -1366,7 +1366,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    tree gnu_corr_var
 	      = create_true_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 				      gnu_expr, true, Is_Public (gnat_entity),
-				      !definition, static_p, NULL,
+				      !definition, static_p, attr_list,
 				      gnat_entity);
 
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
