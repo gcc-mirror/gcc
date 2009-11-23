@@ -2020,7 +2020,7 @@ counts_to_freqs (void)
   gcov_type count_max, true_count_max = 0;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     true_count_max = MAX (bb->count, true_count_max);
 
   count_max = MAX (true_count_max, 1);

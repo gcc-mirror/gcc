@@ -745,7 +745,7 @@ single_reg_operand_class (int op_num)
 void
 ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 {
-  int i, c, regno;
+  int i, c, regno = 0;
   bool ignore_p;
   enum reg_class cl;
   rtx op;
