@@ -34,7 +34,7 @@
 /* There are 3 DW_AT_inline attributes: one per abstract inline instance.
    The value of the attribute must be 0x3, meaning the function was
    actually inlined.  */
-/* { dg-final { scan-assembler-times "byte.*?0x3.*? DW_AT_inline" 3 } } */
+/* { dg-final { scan-assembler-times  "(?:byte|data1)\[^\n\]*0x3\[^\n\]* DW_AT_inline" 3 } } */
 
 
 inline void
