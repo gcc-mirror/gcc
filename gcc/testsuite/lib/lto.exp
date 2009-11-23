@@ -311,7 +311,7 @@ proc lto-get-options { src } {
 # SID identifies a test suite in the names of temporary files.
 proc lto-execute { src1 sid } {
     global srcdir tmpdir
-    global option_list
+    global lto_option_list
     global tool
     global verbose
     global testcase
@@ -334,12 +334,12 @@ proc lto-execute { src1 sid } {
     set compile_xfail(0) "" 
 
     # If the main file defines dg-options, those flags are used to
-    # overwrite the default option_list taken from LTO_OPTIONS.
+    # overwrite the default lto_option_list taken from LTO_OPTIONS.
     if { [string length $extra_flags(0)] > 0 } {
-	set option_list $extra_flags(0)
+	set lto_option_list $extra_flags(0)
 	set extra_flags(0) ""
     } else {
-	set option_list $LTO_OPTIONS
+	set lto_option_list $LTO_OPTIONS
     }
 
     # Check whether this test is supported for this target.
@@ -417,7 +417,7 @@ proc lto-execute { src1 sid } {
 
     # Loop through all of the option lists used for this test.
     set count 0
-    foreach option $option_list {
+    foreach option $lto_option_list {
 	verbose "Testing $testcase, $option"
 
 	# There's a unique name for each executable we generate.
