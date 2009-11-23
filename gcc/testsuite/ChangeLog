@@ -1,5 +1,13 @@
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc-dg/raw-string-1.c: Require-effective-target wchar.
+	* gcc-dg/raw-string-2.c: Ditto.
+	* gcc-dg/utf-array-short-wchar.c: Ditto.
+	* gcc-dg/utf-array.c: Ditto.
+	* gcc-dg/utf8-2.c: Ditto. 
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc.dg/torture/pr37868.c: Use smaller bitfield for 16bit int
 	targets.
 
