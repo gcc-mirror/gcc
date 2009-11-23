@@ -1,3 +1,11 @@
+2009-11-23  Andy Hutchinson <hutchinsonandy@gcc.gnu.org>
+
+	* gcc.dg/pr36998.c: Frame pointer required for avr target.
+	* gcc.dg/debug/pr41264-1.c: Use long if int size 16bit or smaller.
+	* gcc.dg/pr39226.c: Use smaller bitfield if int size is 16bit.
+	* gcc.dg/pr41340.c: Test requires long pointer target.
+	* gcc.dg/profile-generate-3.c: Test requires profiling support.
+
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.dg/graphite/block-1.c: Require 32-bit or larger array support.
