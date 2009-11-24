@@ -191,6 +191,7 @@ static void arm_unwind_emit (FILE *, rtx);
 static bool arm_output_ttype (rtx);
 #endif
 static void arm_dwarf_handle_frame_unspec (const char *, rtx, int);
+static rtx arm_dwarf_register_span (rtx);
 
 static tree arm_cxx_guard_type (void);
 static bool arm_cxx_guard_mask_bit (void);
@@ -437,6 +438,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC arm_dwarf_handle_frame_unspec
+
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN arm_dwarf_register_span
 
 #undef  TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P arm_cannot_copy_insn_p
@@ -20752,9 +20756,14 @@ arm_dbx_register_number (unsigned int regno)
   if (IS_FPA_REGNUM (regno))
     return (TARGET_AAPCS_BASED ? 96 : 16) + regno - FIRST_FPA_REGNUM;
 
-  /* FIXME: VFPv3 register numbering.  */
   if (IS_VFP_REGNUM (regno))
-    return 64 + regno - FIRST_VFP_REGNUM;
+    {
+      /* See comment in arm_dwarf_register_span.  */
+      if (VFP_REGNO_OK_FOR_SINGLE (regno))
+	return 64 + regno - FIRST_VFP_REGNUM;
+      else
+	return 256 + (regno - FIRST_VFP_REGNUM) / 2;
+    }
 
   if (IS_IWMMXT_GR_REGNUM (regno))
     return 104 + regno - FIRST_IWMMXT_GR_REGNUM;
@@ -20765,6 +20774,39 @@ arm_dbx_register_number (unsigned int regno)
   gcc_unreachable ();
 }
 
+/* Dwarf models VFPv3 registers as 32 64-bit registers.
+   GCC models tham as 64 32-bit registers, so we need to describe this to
+   the DWARF generation code.  Other registers can use the default.  */
+static rtx
+arm_dwarf_register_span (rtx rtl)
+{
+  unsigned regno;
+  int nregs;
+  int i;
+  rtx p;
+
+  regno = REGNO (rtl);
+  if (!IS_VFP_REGNUM (regno))
+    return NULL_RTX;
+
+  /* XXX FIXME: The EABI defines two VFP register ranges:
+	64-95: Legacy VFPv2 numbering for S0-S31 (obsolescent)
+	256-287: D0-D31
+     The recommended encoding for S0-S31 is a DW_OP_bit_piece of the
+     corresponding D register.  Until GDB supports this, we shall use the
+     legacy encodings.  We also use these encodings for D0-D15 for
+     compatibility with older debuggers.  */
+  if (VFP_REGNO_OK_FOR_SINGLE (regno))
+    return NULL_RTX;
+
+  nregs = GET_MODE_SIZE (GET_MODE (rtl)) / 8;
+  p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs));
+  regno = (regno - FIRST_VFP_REGNUM) / 2;
+  for (i = 0; i < nregs; i++)
+    XVECEXP (p, 0, i) = gen_rtx_REG (DImode, 256 + regno + i);
+
+  return p;
+}
 
 #ifdef TARGET_UNWIND_INFO
 /* Emit unwind directives for a store-multiple instruction or stack pointer
