@@ -264,8 +264,9 @@ v850_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   return size > 8;
 }
 
-/* Return an RTX to represent where a value with mode MODE will be returned
-   from a function.  If the result is 0, the argument is pushed.  */
+/* Return an RTX to represent where an argument with mode MODE
+   and type TYPE will be passed to a function.  If the result
+   is NULL_RTX, the argument will be pushed.  */
 
 rtx
 function_arg (CUMULATIVE_ARGS * cum,
@@ -273,7 +274,7 @@ function_arg (CUMULATIVE_ARGS * cum,
               tree type,
               int named)
 {
-  rtx result = 0;
+  rtx result = NULL_RTX;
   int size, align;
 
   if (TARGET_GHS && !named)
@@ -285,7 +286,11 @@ function_arg (CUMULATIVE_ARGS * cum,
     size = GET_MODE_SIZE (mode);
 
   if (size < 1)
-    return 0;
+    {
+      /* Once we have stopped using argument registers, do not start up again.  */
+      cum->nbytes = 4 * UNITS_PER_WORD;
+      return NULL_RTX;
+    }
 
   if (type)
     align = TYPE_ALIGN (type) / BITS_PER_UNIT;
@@ -295,11 +300,11 @@ function_arg (CUMULATIVE_ARGS * cum,
   cum->nbytes = (cum->nbytes + align - 1) &~(align - 1);
 
   if (cum->nbytes > 4 * UNITS_PER_WORD)
-    return 0;
+    return NULL_RTX;
 
   if (type == NULL_TREE
       && cum->nbytes + size > 4 * UNITS_PER_WORD)
-    return 0;
+    return NULL_RTX;
 
   switch (cum->nbytes / UNITS_PER_WORD)
     {
@@ -316,7 +321,7 @@ function_arg (CUMULATIVE_ARGS * cum,
       result = gen_rtx_REG (mode, 9);
       break;
     default:
-      result = 0;
+      result = NULL_RTX;
     }
 
   return result;
@@ -340,12 +345,15 @@ v850_arg_partial_bytes (CUMULATIVE_ARGS * cum, enum machine_mode mode,
   else
     size = GET_MODE_SIZE (mode);
 
+  if (size < 1)
+    size = 1;
+  
   if (type)
     align = TYPE_ALIGN (type) / BITS_PER_UNIT;
   else
     align = size;
 
-  cum->nbytes = (cum->nbytes + align - 1) &~(align - 1);
+  cum->nbytes = (cum->nbytes + align - 1) & ~ (align - 1);
 
   if (cum->nbytes > 4 * UNITS_PER_WORD)
     return 0;
