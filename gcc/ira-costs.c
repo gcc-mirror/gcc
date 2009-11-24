@@ -1534,7 +1534,6 @@ setup_allocno_cover_class_and_costs (void)
   int i, j, n, regno, num;
   int *reg_costs;
   enum reg_class cover_class, rclass;
-  enum machine_mode mode;
   ira_allocno_t a;
   ira_allocno_iterator ai;
 
@@ -1542,7 +1541,6 @@ setup_allocno_cover_class_and_costs (void)
   FOR_EACH_ALLOCNO (a, ai)
     {
       i = ALLOCNO_NUM (a);
-      mode = ALLOCNO_MODE (a);
       cover_class = regno_cover_class[ALLOCNO_REGNO (a)];
       ira_assert (pref[i] == NO_REGS || cover_class != NO_REGS);
       ALLOCNO_MEMORY_COST (a) = COSTS (costs, i)->mem_cost;

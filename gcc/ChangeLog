@@ -1,3 +1,17 @@
+2009-11-24  Michael Matz  <matz@suse.de>
+
+	* expr.c (set_storage_via_libcall): Fix build_call_expr call.
+
+2009-11-24  David Binderman  <dcb314@hotmail.com>
+
+	* expr.c (store_field): Remove set but not used local variable
+	width_mask.
+	(expand_expr_real_2): Remove treeop2.
+	* gcse.c (update_ld_motion_stores): Remove new_rtx.
+	* haifa-sched.c (max_issue): Remove points.
+	(sched_create_recovery_edges): Remove e.
+	* ira-costs.c (setup_allocno_cover_class_and_costs): Remove mode.
+
 2009-11-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (function_arg): Fix handling of zero-length

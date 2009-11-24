@@ -2503,7 +2503,7 @@ int
 max_issue (struct ready_list *ready, int privileged_n, state_t state,
 	   int *index)
 {
-  int n, i, all, n_ready, best, delay, tries_num, points = -1, max_points;
+  int n, i, all, n_ready, best, delay, tries_num, max_points;
   int more_issue;
   struct choice_entry *top;
   rtx insn;
@@ -2593,7 +2593,6 @@ max_issue (struct ready_list *ready, int privileged_n, state_t state,
 		  /* This is the index of the insn issued first in this
 		     solution.  */
 		  *index = choice_stack [1].index;
-		  points = top->n;
 		  if (top->n == max_points || best == all)
 		    break;
 		}
@@ -4462,7 +4461,6 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 {
   rtx label;
   rtx jump;
-  edge e;
   int edge_flags;
 
   /* This is fixing of incoming edge.  */
@@ -4473,7 +4471,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
   else
     edge_flags = 0;
       
-  e = make_edge (first_bb, rec, edge_flags);
+  make_edge (first_bb, rec, edge_flags);
   label = block_label (second_bb);
   jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
   JUMP_LABEL (jump) = label;
