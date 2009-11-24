@@ -12839,7 +12839,7 @@ arm_compute_save_reg0_reg12_mask (void)
     {
       /* For noreturn functions we historically omitted register saves
 	 altogether.  However this really messes up debugging.  As a
-	 compromise save just the fame pointers.  Combined with the link
+	 compromise save just the frame pointers.  Combined with the link
 	 register saved elsewhere this should be sufficient to get
 	 a backtrace.  */
       if (frame_pointer_needed)

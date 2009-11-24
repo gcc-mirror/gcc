@@ -1,3 +1,9 @@
+2009-11-24  Paul Brook  <paul@codesourcery.com>
+
+	gcc/
+	* gcc/config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Fix comment
+	typo.
+
 2009-11-24  Julian Brown  <julian@codesourcery.com>
 	    Paul Brook  <paul@codesourcery.com>
 
