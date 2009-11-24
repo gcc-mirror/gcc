@@ -8,6 +8,6 @@ struct A {
 };
 
 template <class T>
-A<T>::A<T>()   // { dg-error "invalid use of constructor|qualified name" }
+A<T>::A<T>()   // { dg-error "constructor|qualified name" }
 {
 } // { dg-error "end of input" }

@@ -1,5 +1,11 @@
 2009-11-23  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/tc1/dr147.C: Check for helpful messages. Add DR 318 tests.
+	* g++.old-deja/g++.pt/ctor2.C: Adjust.
+	* g++.dg/lookup/name-clash4.C: Adjust.
+
+2009-11-23  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/template/spec15.C: Check for helpful message.
 
 2009-11-24  Janis Johnson  <janis187@us.ibm.com>

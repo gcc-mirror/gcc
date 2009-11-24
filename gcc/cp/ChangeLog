@@ -1,5 +1,14 @@
 2009-11-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42137
+	* parser.c (cp_parser_mem_initializer_id): Pass typename_type to
+	cp_parser_class_name.
+	(cp_parser_unqualified_id): Same, rather than class_type.
+
+	PR c++/11764
+	* parser.c (cp_parser_expression_statement): Give helpful error
+	for constructor name used as type.
+
 	* pt.c (determine_specialization): Give helpful error about missing
 	"template<>".
 

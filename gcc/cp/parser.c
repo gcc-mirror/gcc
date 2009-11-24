@@ -2401,11 +2401,15 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 	error_at (location, "%qE in namespace %qE does not name a type",
 		  id, parser->scope);
       else if (CLASS_TYPE_P (parser->scope)
-	       && constructor_name_p (id, parser->scope)
-	       && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
-	/* A<T>::A<T>() */
-	error_at (location, "invalid use of constructor %<%T::%E%> as "
-		  "template", parser->scope, id);
+	       && constructor_name_p (id, parser->scope))
+	{
+	  /* A<T>::A<T>() */
+	  error_at (location, "%<%T::%E%> names the constructor, not"
+		    " the type", parser->scope, id);
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	    error_at (location, "and %qT has no template constructors",
+		      parser->scope);
+	}
       else if (TYPE_P (parser->scope)
 	       && dependent_scope_p (parser->scope))
 	error_at (location, "need %<typename%> before %<%T::%E%> because "
@@ -3906,9 +3910,9 @@ cp_parser_unqualified_id (cp_parser* parser,
 	/* If there was an explicit qualification (S::~T), first look
 	   in the scope given by the qualification (i.e., S).
 
-	   Note: in the calls to cp_parser_class_name below we pretend that
-	   the lookup had an explicit 'class' tag so that lookup finds the
-	   injected-class-name rather than the constructor.  */
+	   Note: in the calls to cp_parser_class_name below we pass
+	   typename_type so that lookup finds the injected-class-name
+	   rather than the constructor.  */
 	done = false;
 	type_decl = NULL_TREE;
 	if (scope)
@@ -3917,7 +3921,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    type_decl = cp_parser_class_name (parser,
 					      /*typename_keyword_p=*/false,
 					      /*template_keyword_p=*/false,
-					      class_type,
+					      typename_type,
 					      /*check_dependency=*/false,
 					      /*class_head_p=*/false,
 					      declarator_p);
@@ -3935,7 +3939,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      class_type,
+				      typename_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -3953,7 +3957,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      class_type,
+				      typename_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -3972,7 +3976,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      class_type,
+				      typename_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -7800,13 +7804,24 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     statement = cp_parser_expression (parser, /*cast_p=*/false, NULL);
 
-  /* Give a helpful message for "A<T>::type t;"  */
+  /* Give a helpful message for "A<T>::type t;" and the like.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
-      && !cp_parser_uncommitted_to_tentative_parse_p (parser)
-      && TREE_CODE (statement) == SCOPE_REF)
-    error_at (token->location, "need %<typename%> before %qE because "
-	      "%qT is a dependent scope",
-	      statement, TREE_OPERAND (statement, 0));
+      && !cp_parser_uncommitted_to_tentative_parse_p (parser))
+    {
+      if (TREE_CODE (statement) == SCOPE_REF)
+	error_at (token->location, "need %<typename%> before %qE because "
+		  "%qT is a dependent scope",
+		  statement, TREE_OPERAND (statement, 0));
+      else if (is_overloaded_fn (statement)
+	       && DECL_CONSTRUCTOR_P (get_first_fn (statement)))
+	{
+	  /* A::A a; */
+	  tree fn = get_first_fn (statement);
+	  error_at (token->location,
+		    "%<%T::%D%> names the constructor, not the type",
+		    DECL_CONTEXT (fn), DECL_NAME (fn));
+	}
+    }
 
   /* Consume the final `;'.  */
   cp_parser_consume_semicolon_at_end_of_statement (parser);
@@ -10020,7 +10035,7 @@ cp_parser_mem_initializer_id (cp_parser* parser)
     return cp_parser_class_name (parser,
 				 /*typename_keyword_p=*/true,
 				 /*template_keyword_p=*/template_p,
-				 none_type,
+				 typename_type,
 				 /*check_dependency_p=*/true,
 				 /*class_head_p=*/false,
 				 /*is_declaration=*/true);
