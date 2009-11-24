@@ -1,3 +1,10 @@
+2009-11-24  Julian Brown  <julian@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (TARGET_DWARF_REGISTER_SPAN): Define.
+	(arm_dwarf_register_span): New function.
+	(arm_dbx_register_number): Add VFPv3 dwarf numbering.
+
 2009-11-24  David Binderman <dcb314@hotmail.com>
 
 	* cfgrtl.c (commit_one_edge_insertion): Remove set but not used
