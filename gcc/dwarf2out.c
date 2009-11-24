@@ -15722,7 +15722,6 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       struct var_loc_node *node;
 
       node = loc_list->first;
-      NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
       rtl = NOTE_VAR_LOCATION (node->var_loc_note);
       if (GET_CODE (rtl) == VAR_LOCATION
 	  && GET_CODE (XEXP (rtl, 1)) != PARALLEL)

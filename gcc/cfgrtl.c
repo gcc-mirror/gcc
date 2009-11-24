@@ -1504,20 +1504,11 @@ commit_one_edge_insertion (edge e)
 	      && targetm.have_named_sections
 	      && e->src != ENTRY_BLOCK_PTR
 	      && BB_PARTITION (e->src) == BB_COLD_PARTITION
-	      && !(e->flags & EDGE_CROSSING))
-	    {
-	      rtx cur_insn;
-
-	      for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb));
-		   cur_insn = NEXT_INSN (cur_insn))
-		if (NOTE_INSN_BASIC_BLOCK_P (cur_insn))
-		  break;
-
-	      if (JUMP_P (BB_END (bb))
-		  && !any_condjump_p (BB_END (bb))
-		  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
-		add_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX);
-	    }
+	      && !(e->flags & EDGE_CROSSING)
+	      && JUMP_P (after)
+	      && !any_condjump_p (after)
+	      && (single_succ_edge (bb)->flags & EDGE_CROSSING))
+	    add_reg_note (after, REG_CROSSING_JUMP, NULL_RTX);
 	}
     }
 
