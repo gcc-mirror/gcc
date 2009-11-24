@@ -9,4 +9,4 @@ struct A
     template<int> struct A {};	// { dg-error "same name" }
 };
 
-A::A<0> a;	// { dg-error "not a template|invalid use of constructor" }
+A::A<0> a;	// { dg-error "not a template|constructor" }
