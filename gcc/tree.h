@@ -356,7 +356,6 @@ enum omp_clause_code
 
    See the accessor macros, defined below, for documentation of the
    fields.  */
-union tree_ann_d;
 
 struct GTY(()) tree_base {
   ENUM_BITFIELD(tree_code) code : 16;
@@ -398,8 +397,6 @@ struct GTY(()) tree_base {
      in tree_base instead of tree_type is to save space.  The size of the
      field must be large enough to hold addr_space_t values.  */
   unsigned address_space : 8;
-
-  union tree_ann_d *ann;
 };
 
 struct GTY(()) tree_common {
@@ -2854,8 +2851,10 @@ struct GTY(()) tree_label_decl {
   int eh_landing_pad_nr;
 };
 
+struct var_ann_d;
 struct GTY(()) tree_result_decl {
   struct tree_decl_with_rtl common;
+  struct var_ann_d *ann;
 };
 
 struct GTY(()) tree_const_decl {
@@ -2873,6 +2872,7 @@ struct GTY(()) tree_const_decl {
 struct GTY(()) tree_parm_decl {
   struct tree_decl_with_rtl common;
   rtx incoming_rtl;
+  struct var_ann_d *ann;
 };
 
 
@@ -3082,8 +3082,15 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define DECL_THREAD_LOCAL_P(NODE) \
   (VAR_DECL_CHECK (NODE)->decl_with_vis.tls_model >= TLS_MODEL_REAL)
 
+#define DECL_VAR_ANN_PTR(NODE) \
+  (TREE_CODE (NODE) == VAR_DECL ? &(NODE)->var_decl.ann \
+   : TREE_CODE (NODE) == PARM_DECL ? &(NODE)->parm_decl.ann \
+   : TREE_CODE (NODE) == RESULT_DECL ? &(NODE)->result_decl.ann \
+   : NULL)
+
 struct GTY(()) tree_var_decl {
   struct tree_decl_with_vis common;
+  struct var_ann_d *ann;
 };
 
 

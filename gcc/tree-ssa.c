@@ -1138,9 +1138,11 @@ delete_tree_ssa (void)
     {
       if (is_global_var (var))
 	continue;
-      if (var->base.ann)
-        ggc_free (var->base.ann);
-      var->base.ann = NULL;
+      if (var_ann (var))
+	{
+	  ggc_free (var_ann (var));
+	  *DECL_VAR_ANN_PTR (var) = NULL;
+	}
     }
   htab_delete (gimple_referenced_vars (cfun));
   cfun->gimple_df->referenced_vars = NULL;

@@ -769,6 +769,10 @@ extern size_t const gimple_ops_offset_[];
 /* Map GIMPLE codes to GSS codes.  */
 extern enum gimple_statement_structure_enum const gss_for_code_[];
 
+/* This variable holds the currently expanded gimple statement for purposes
+   of comminucating the profile info to the builtin expanders.  */
+extern gimple currently_expanding_gimple_stmt;
+
 gimple gimple_build_return (tree);
 
 gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);

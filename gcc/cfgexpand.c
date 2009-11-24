@@ -49,6 +49,10 @@ along with GCC; see the file COPYING3.  If not see
    into RTL.  */
 struct ssaexpand SA;
 
+/* This variable holds the currently expanded gimple statement for purposes
+   of comminucating the profile info to the builtin expanders.  */
+gimple currently_expanding_gimple_stmt;
+
 /* Return an expression tree corresponding to the RHS of GIMPLE
    statement STMT.  */
 
@@ -1756,7 +1760,6 @@ expand_call_stmt (gimple stmt)
 {
   tree exp;
   tree lhs = gimple_call_lhs (stmt);
-  tree fndecl = gimple_call_fndecl (stmt);
   size_t i;
 
   exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
@@ -1781,15 +1784,6 @@ expand_call_stmt (gimple stmt)
   CALL_EXPR_VA_ARG_PACK (exp) = gimple_call_va_arg_pack_p (stmt);
   SET_EXPR_LOCATION (exp, gimple_location (stmt));
   TREE_BLOCK (exp) = gimple_block (stmt);
-
-  /* Record the original call statement, as it may be used
-     to retrieve profile information during expansion.  */
-
-  if (fndecl && DECL_BUILT_IN (fndecl))
-    {
-      tree_ann_common_t ann = get_tree_common_ann (exp);
-      ann->stmt = stmt;
-    }
 
   if (lhs)
     expand_assignment (lhs, exp, false);
@@ -3106,6 +3100,7 @@ expand_gimple_basic_block (basic_block bb)
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
+      currently_expanding_gimple_stmt = stmt;
 
       /* Expand this statement, then evaluate the resulting RTL and
 	 fixup the CFG accordingly.  */
@@ -3202,6 +3197,8 @@ expand_gimple_basic_block (basic_block bb)
 	    }
 	}
     }
+
+  currently_expanding_gimple_stmt = NULL;
 
   /* Expand implicit goto and convert goto_locus.  */
   FOR_EACH_EDGE (e, ei, bb->succs)

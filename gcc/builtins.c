@@ -3259,7 +3259,6 @@ expand_builtin_memcpy (tree exp, rtx target)
       rtx dest_mem, src_mem, dest_addr, len_rtx;
       HOST_WIDE_INT expected_size = -1;
       unsigned int expected_align = 0;
-      tree_ann_common_t ann;
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
@@ -3270,9 +3269,9 @@ expand_builtin_memcpy (tree exp, rtx target)
       if (src_align == 0)
 	return NULL_RTX;
  
-      ann = tree_common_ann (exp);
-      if (ann)
-        stringop_block_profile (ann->stmt, &expected_align, &expected_size);
+      if (currently_expanding_gimple_stmt)
+        stringop_block_profile (currently_expanding_gimple_stmt,
+				&expected_align, &expected_size);
 
       if (expected_align < dest_align)
 	expected_align = dest_align;
@@ -3737,7 +3736,6 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   rtx dest_mem, dest_addr, len_rtx;
   HOST_WIDE_INT expected_size = -1;
   unsigned int expected_align = 0;
-  tree_ann_common_t ann;
 
   dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
 
@@ -3745,9 +3743,9 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   if (dest_align == 0)
     return NULL_RTX;
 
-  ann = tree_common_ann (orig_exp);
-  if (ann)
-    stringop_block_profile (ann->stmt, &expected_align, &expected_size);
+  if (currently_expanding_gimple_stmt)
+    stringop_block_profile (currently_expanding_gimple_stmt,
+			    &expected_align, &expected_size);
 
   if (expected_align < dest_align)
     expected_align = dest_align;

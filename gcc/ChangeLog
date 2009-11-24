@@ -1,3 +1,36 @@
+2009-11-24  Michael Matz  <matz@suse.de>
+
+	* tree.h (union tree_ann_d): Don't declare.
+	(tree_base): Remove ann field.
+	(struct var_ann_d): Declare forward.
+	(tree_result_decl, tree_parm_decl, tree_var_decl): Add ann field.
+	(DECL_VAR_ANN_PTR): New macro.
+	* tree-dfa.c (create_var_ann): Rewrite in terms of above macro,
+	accept only VAR, PARM or RESULT decls.
+	(create_tree_common_ann): Remove.
+	(remove_referenced_var): Use DECL_VAR_ANN_PTR.
+	* tree-eh.c (lookup_expr_eh_lp): Remove.
+	* tree-flow-inline.h (var_ann, get_var_ann): Rewrite in terms of
+	DECL_VAR_ANN_PTR.
+	(ann_type, tree_common_ann, get_tree_common_ann): Remove.
+	* tree-flow.h (enum tree_ann_type): Remove.
+	(struct tree_ann_common_d): Remove.
+	(struct var_ann_d): Remove common field.
+	(union tree_ann_d): Remove.
+	(tree_ann_t, tree_ann_common_t): Remove typedefs.
+	(tree_common_ann, get_tree_common_ann, ann_type,
+	create_tree_common_ann, lookup_expr_eh_lp): Don't declare.
+	* tree-ssa.c (delete_tree_ssa): Use DECL_VAR_ANN_PTR.
+	* tree.c (copy_node_stat): Use DECL_VAR_ANN_PTR.
+	* builtins.c (expand_builtin_memcpy): Use
+	currently_expanding_gimple_stmt instead of tree annotation.
+	(expand_builtin_memset_args): Ditto.
+	* cfgexpand.c (currently_expanding_gimple_stmt): Add global variable.
+	(expand_call_stmt): Don't set tree annotation.
+	(expand_gimple_basic_block): Set currently_expanding_gimple_stmt.
+	* expr.c (expand_expr_real): Don't call lookup_expr_eh_lp.
+	* gimple.h (currently_expanding_gimple_stmt): Declare.
+
 2009-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* dwarf2out.c (add_location_or_const_value_attribute): Remove
@@ -11,7 +44,7 @@
 
 2009-11-24  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * Makefile.in (PLUGIN_HEADERS): Added files: cppdefault.h flags.h
+	* Makefile.in (PLUGIN_HEADERS): Added files: cppdefault.h flags.h
 	$(MD5_H) params.def params.h prefix.h tree-inline.h.
 
 2009-11-24  Paul Brook  <paul@codesourcery.com>
@@ -30,14 +63,14 @@
 
 	* cfgrtl.c (commit_one_edge_insertion): Remove set but not used
 	local variable bb_note.
-        * dominance.c (get_dominated_by): Likewise local var n.
-        (output_file_names): Likewise local var idx.
-        (add_location_or_const_value_attribute): Likewise local var status.
-        * dwarf2out.c (gen_variable_die): Likewise local var field.
-        * emit-rtl.c (no_line_numbers): Remove.
+	* dominance.c (get_dominated_by): Likewise local var n.
+	(output_file_names): Likewise local var idx.
+	(add_location_or_const_value_attribute): Likewise local var status.
+	* dwarf2out.c (gen_variable_die): Likewise local var field.
+	* emit-rtl.c (no_line_numbers): Remove.
 	(init_emit_once): Remove line_numbers parameter.
-        * rtl.h (init_emit_once): Adjust prototype.
-        * toplev.c (backend_init): Adjust init_emit_once call.
+	* rtl.h (init_emit_once): Adjust prototype.
+	* toplev.c (backend_init): Adjust init_emit_once call.
 
 2009-11-24  Richard Guenther  <rguenther@suse.de>
 
