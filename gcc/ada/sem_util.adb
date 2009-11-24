@@ -10428,6 +10428,10 @@ package body Sem_Util is
                end loop;
             end;
 
+            if Ekind (T) = E_Class_Wide_Subtype then
+               Set_Debug_Info_Needed_If_Not_Set (Equivalent_Type (T));
+            end if;
+
          elsif Is_Array_Type (T) then
             Set_Debug_Info_Needed_If_Not_Set (Component_Type (T));
 

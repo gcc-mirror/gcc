@@ -522,22 +522,21 @@ extern tree make_dummy_type (Entity_Id gnat_type);
 /* Record TYPE as a builtin type for Ada.  NAME is the name of the type.  */
 extern void record_builtin_type (const char *name, tree type);
 
-/* Given a record type RECORD_TYPE and a chain of FIELD_DECL nodes FIELDLIST,
+/* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
    finish constructing the record or union type.  If REP_LEVEL is zero, this
    record has no representation clause and so will be entirely laid out here.
    If REP_LEVEL is one, this record has a representation clause and has been
    laid out already; only set the sizes and alignment.  If REP_LEVEL is two,
    this record is derived from a parent record and thus inherits its layout;
-   only make a pass on the fields to finalize them.  If DO_NOT_FINALIZE is
-   true, the record type is expected to be modified afterwards so it will
-   not be sent to the back-end for finalization.  */
-extern void finish_record_type (tree record_type, tree fieldlist,
-                                int rep_level, bool do_not_finalize);
+   only make a pass on the fields to finalize them.  DEBUG_INFO_P is true if
+   we need to write debug information about this type.  */
+extern void finish_record_type (tree record_type, tree field_list,
+				int rep_level, bool debug_info_p);
 
-/* Wrap up compilation of RECORD_TYPE, i.e. most notably output all
-   the debug information associated with it.  It need not be invoked
-   directly in most cases since finish_record_type takes care of doing
-   so, unless explicitly requested not to through DO_NOT_FINALIZE.  */
+/* Wrap up compilation of RECORD_TYPE, i.e. output all the debug information
+   associated with it.  It need not be invoked directly in most cases since
+   finish_record_type takes care of doing so, but this can be necessary if
+   a parallel type is to be attached to the record type.  */
 extern void rest_of_record_type_compilation (tree record_type);
 
 /* Append PARALLEL_TYPE on the chain of parallel types for decl.  */
