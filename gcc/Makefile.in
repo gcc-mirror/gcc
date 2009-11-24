@@ -4270,7 +4270,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) $(C_COMMON_H) $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_FLOW_H) langhooks.h incpath.h \
   tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
-  $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H)
+  $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
+  cppdefault.h flags.h $(MD5_H) params.def params.h prefix.h tree-inline.h
 
 # Install the headers needed to build a plugin.
 install-plugin: installdirs lang.install-plugin
