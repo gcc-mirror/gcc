@@ -1,3 +1,16 @@
+2009-11-24  David Binderman <dcb314@hotmail.com>
+
+	* cfgrtl.c (commit_one_edge_insertion): Remove set but not used
+	local variable bb_note.
+        * dominance.c (get_dominated_by): Likewise local var n.
+        (output_file_names): Likewise local var idx.
+        (add_location_or_const_value_attribute): Likewise local var status.
+        * dwarf2out.c (gen_variable_die): Likewise local var field.
+        * emit-rtl.c (no_line_numbers): Remove.
+	(init_emit_once): Remove line_numbers parameter.
+        * rtl.h (init_emit_once): Adjust prototype.
+        * toplev.c (backend_init): Adjust init_emit_once call.
+
 2009-11-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42142

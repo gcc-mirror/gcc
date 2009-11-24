@@ -739,7 +739,6 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
 VEC (basic_block, heap) *
 get_dominated_by (enum cdi_direction dir, basic_block bb)
 {
-  int n;
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index], *son = node->son, *ason;
   VEC (basic_block, heap) *bbs = NULL;
@@ -750,7 +749,7 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
     return NULL;
 
   VEC_safe_push (basic_block, heap, bbs, (basic_block) son->data);
-  for (ason = son->right, n = 1; ason != son; ason = ason->right)
+  for (ason = son->right; ason != son; ason = ason->right)
     VEC_safe_push (basic_block, heap, bbs, (basic_block) ason->data);
 
   return bbs;

@@ -2182,13 +2182,7 @@ backend_init_target (void)
 static void
 backend_init (void)
 {
-  init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
-		  || debug_info_level == DINFO_LEVEL_VERBOSE
-#ifdef VMS_DEBUGGING_INFO
-		    /* Enable line number info for traceback.  */
-		    || debug_info_level > DINFO_LEVEL_NONE
-#endif
-		    || flag_test_coverage);
+  init_emit_once ();
 
   init_rtlanal ();
   init_inline_once ();

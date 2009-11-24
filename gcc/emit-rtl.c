@@ -84,10 +84,6 @@ rtx * regno_reg_rtx;
 
 static GTY(()) int label_num = 1;
 
-/* Nonzero means do not generate NOTEs for source line numbers.  */
-
-static int no_line_numbers;
-
 /* Commonly used rtx's, so that we only need space for one copy.
    These are initialized once for the entire compilation.
    All of these are unique; no other rtx-object will be equal to any
@@ -5714,11 +5710,10 @@ init_emit_regs (void)
     pic_offset_table_rtx = NULL_RTX;
 }
 
-/* Create some permanent unique rtl objects shared between all functions.
-   LINE_NUMBERS is nonzero if line numbers are to be generated.  */
+/* Create some permanent unique rtl objects shared between all functions.  */
 
 void
-init_emit_once (int line_numbers)
+init_emit_once (void)
 {
   int i;
   enum machine_mode mode;
@@ -5739,8 +5734,6 @@ init_emit_once (int line_numbers)
 				    mem_attrs_htab_eq, NULL);
   reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
 				    reg_attrs_htab_eq, NULL);
-
-  no_line_numbers = ! line_numbers;
 
   /* Compute the word and byte modes.  */
 
