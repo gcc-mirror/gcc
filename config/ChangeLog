@@ -1,3 +1,7 @@
+2009-11-24  Joel Brobecker  <brobecker@adacore.com>
+
+	* zlib.m4: New file.
+
 2009-11-09  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* largefile.m4 (ACX_LARGEFILE): Call AC_PLUGINS.
