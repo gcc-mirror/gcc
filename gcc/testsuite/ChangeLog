@@ -1,3 +1,8 @@
+2009-11-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* g++.dg/debug/dwarf2/anonname1.C: Escape backslash in
+	scan-assembler-not regular expression.
+
 2009-11-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42142
