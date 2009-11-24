@@ -9,7 +9,6 @@
   type t
     procedure(fcn), pointer, nopass :: ppc
     procedure(abstr), pointer, nopass :: ppc1
-    procedure(), nopass, pointer:: iptr3
     integer :: i
   end type
 
@@ -42,11 +41,6 @@
   base=f(6)
   if (base/=12) call abort
   call foo (f,7)
-
-! Check with implicit interface
-  obj%iptr3 => iabs
-  base=obj%iptr3(-9)
-  if (base/=9) call abort
 
 contains
 

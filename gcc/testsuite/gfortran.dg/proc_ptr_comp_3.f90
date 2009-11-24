@@ -16,6 +16,7 @@ end interface
 external :: aaargh
 
 type :: t
+  procedure(), pointer, nopass :: ptr1
   procedure(real), pointer, nopass :: ptr2
   procedure(sub), pointer, nopass :: ptr3
   procedure(), pointer, nopass ptr4              ! { dg-error "Expected '::'" }
@@ -40,6 +41,7 @@ x%ptr2 => x       ! { dg-error "Invalid procedure pointer assignment" }
 
 x => x%ptr2       ! { dg-error "Pointer assignment to non-POINTER" }
 
+print *, x%ptr1() ! { dg-error "attribute conflicts with" }
 call x%ptr2()     ! { dg-error "attribute conflicts with" }
 print *,x%ptr3()  ! { dg-error "attribute conflicts with" }
 
