@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-O2 -ftree-vectorize -mcpu=power7 -m64" } */
+/* { dg-options "-O2 -ftree-vectorize -mcpu=power7" } */
 /* { dg-final { scan-assembler "xvadddp" } } */
 /* { dg-final { scan-assembler "xvsubdp" } } */
 /* { dg-final { scan-assembler "xvmuldp" } } */

@@ -1,3 +1,27 @@
+2009-11-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.target/powerpc/altivec-32.c: Don't use -m64.
+	* gcc.target/powerpc/const-compare.c: Require lp64, don't use -m64.
+	* gcc.target/powerpc/darwin-bool-1.c: Require ilp32, remove dg-skip-if.
+	* gcc.target/powerpc/paired-1.c: Require ilp32, don't use -m32.
+	* gcc.target/powerpc/paired-2.c: Ditto.
+	* gcc.target/powerpc/paired-3.c: Ditto.
+	* gcc.target/powerpc/paired-4.c: Ditto.
+	* gcc.target/powerpc/paired-5.c: Ditto.
+	* gcc.target/powerpc/paired-6.c: Ditto.
+	* gcc.target/powerpc/paired-7.c: Ditto.
+	* gcc.target/powerpc/paired-8.c: Ditto.
+	* gcc.target/powerpc/paired-9.c: Ditto.
+	* gcc.target/powerpc/paired-10.c: Ditto.
+	* gcc.target/powerpc/popcount-2.c: Don't use -m32.
+	* gcc.target/powerpc/popcount-3.c: Don't use -m64.
+	* gcc.target/powerpc/ppc-paired.c: Require ilp32, don't use -m32.
+	* gcc.target/powerpc/pr39457.c: Don't use -m64.
+	* gcc.target/powerpc/vsx-vector-1.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-2.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-3.c: Ditto.
+	* gcc.target/powerpc/vsx-vector-4.c: Ditto.
+
 2009-11-24  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* g++.dg/debug/dwarf2/anonname1.C: Escape backslash in

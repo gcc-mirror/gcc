@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-options "-m64 -O2 -mminimal-toc" } */
+/* { dg-options "-O2 -mminimal-toc" } */
 
 /* PR 39457 -- fix breakage because the compiler ran out of registers and
    wanted to stash a floating point value to the LR/CTR register.  */

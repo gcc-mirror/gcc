@@ -1,5 +1,5 @@
-/* { dg-do compile { target powerpc*-*-darwin* } } */
-/* { dg-options "-m64 -O1 -static" } */
+/* { dg-do compile { target { powerpc*-*-darwin* && lp64 } } } */
+/* { dg-options "-O1 -static" } */
 typedef unsigned long long uint64_t;
 
 static int
