@@ -1,3 +1,7 @@
+2009-11-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/spec15.C: Check for helpful message.
+
 2009-11-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.target/powerpc/altivec-32.c: Don't use -m64.
