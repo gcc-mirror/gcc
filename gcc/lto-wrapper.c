@@ -66,12 +66,20 @@ static void maybe_unlink_file (const char *);
 static void
 lto_wrapper_exit (int status)
 {
-  if (ltrans_output_file)
-    maybe_unlink_file (ltrans_output_file);
-  if (flto_out)
-    maybe_unlink_file (flto_out);
-  if (args_name)
-    maybe_unlink_file (args_name);
+  static bool cleanup_done = false;
+  if (!cleanup_done)
+    {
+      /* Setting cleanup_done prevents an infinite loop if one of the
+         calls to maybe_unlink_file fails. */
+      cleanup_done = true;
+
+      if (ltrans_output_file)
+        maybe_unlink_file (ltrans_output_file);
+      if (flto_out)
+        maybe_unlink_file (flto_out);
+      if (args_name)
+        maybe_unlink_file (args_name);
+    }
   exit (status);
 }
 

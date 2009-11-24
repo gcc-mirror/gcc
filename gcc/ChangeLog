@@ -1,3 +1,8 @@
+2009-11-24  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-wrapper.c (lto_wrapper_exit): Don't try to delete files if
+	being called recursively.
+
 2009-11-24  Basile Starynkevitch  <basile@starynkevitch.net>
 
         * Makefile.in (PLUGIN_HEADERS): Added files: cppdefault.h flags.h
