@@ -1,6 +1,10 @@
+2009-11-24  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * Makefile.in (PLUGIN_HEADERS): Added files: cppdefault.h flags.h
+	$(MD5_H) params.def params.h prefix.h tree-inline.h.
+
 2009-11-24  Paul Brook  <paul@codesourcery.com>
 
-	gcc/
 	* gcc/config/arm/arm.c (arm_compute_save_reg0_reg12_mask): Fix comment
 	typo.
 
