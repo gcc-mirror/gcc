@@ -3459,10 +3459,7 @@ package body Freeze is
             end if;
 
             --  The equivalent type associated with a class-wide subtype needs
-            --  to be frozen to ensure that its layout is done. Class-wide
-            --  subtypes are currently only frozen on targets requiring
-            --  front-end layout (see New_Class_Wide_Subtype and
-            --  Make_CW_Equivalent_Type in exp_util.adb).
+            --  to be frozen to ensure that its layout is done.
 
             if Ekind (E) = E_Class_Wide_Subtype
               and then Present (Equivalent_Type (E))

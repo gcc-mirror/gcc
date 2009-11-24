@@ -1,3 +1,23 @@
+2009-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Make_CW_Equivalent_Type): Do not mark the type as
+	frozen for targets that do not require front-end layout.
+	(New_Class_Wide_Subtype): Always reset the freezing status to False.
+	* exp_ch8.adb: Do not 'with' Targparm.
+	(Expand_N_Object_Renaming_Declaration): Always freeze a class-wide
+	subtype that has been built from the expression.
+	* exp_intr.adb (Expand_Unc_Deallocation): If the designated type is
+	class wide, freeze the implicit type that has been built from the
+	expression at the dereference point.
+	* freeze.adb (Freeze_Entity): Adjust comment.
+	* gcc-interface/decl.c (Gigi_Equivalent_Type) <E_Class_Wide_Type>:
+	Remove useless test.
+	* gcc-interface/trans.c (process_freeze_entity): Do not special-case
+	class-wide subtypes.
+
+	* s-osinte-aix.adb (clock_gettime): Fix comment.
+	* s-osinte-darwin.adb (clock_gettime): Likewise.
+
 2009-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Pass the list

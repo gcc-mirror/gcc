@@ -4965,9 +4965,7 @@ Gigi_Equivalent_Type (Entity_Id gnat_entity)
       break;
 
     case E_Class_Wide_Type:
-      gnat_equiv = ((Present (Equivalent_Type (gnat_entity)))
-		    ? Equivalent_Type (gnat_entity)
-		    : Root_Type (gnat_entity));
+      gnat_equiv = Root_Type (gnat_entity);
       break;
 
     case E_Task_Type:

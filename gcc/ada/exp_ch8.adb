@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@ with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
-with Targparm; use Targparm;
 
 package body Exp_Ch8 is
 
@@ -254,15 +253,9 @@ package body Exp_Ch8 is
          Set_Etype (Defining_Identifier (N), Entity (Subtype_Mark (N)));
 
          --  Freeze the class-wide subtype here to ensure that the subtype
-         --  and equivalent type are frozen before the renaming. This is
-         --  required for targets where Frontend_Layout_On_Target is true.
-         --  For targets where Gigi is used, class-wide subtype should not
-         --  be frozen (in that case the subtype is marked as already frozen
-         --  when it's created).
+         --  and equivalent type are frozen before the renaming.
 
-         if Frontend_Layout_On_Target then
-            Freeze_Before (N, Entity (Subtype_Mark (N)));
-         end if;
+         Freeze_Before (N, Entity (Subtype_Mark (N)));
       end if;
 
       --  Ada 2005 (AI-318-02): If the renamed object is a call to a build-in-

@@ -6087,11 +6087,9 @@ process_freeze_entity (Node_Id gnat_node)
   if (Present (Address_Clause (gnat_entity)))
     gnu_old = 0;
 
-  /* Don't do anything for class-wide types they are always
-     transformed into their root type.  */
-  if (Ekind (gnat_entity) == E_Class_Wide_Type
-      || (Ekind (gnat_entity) == E_Class_Wide_Subtype
-	  && Present (Equivalent_Type (gnat_entity))))
+  /* Don't do anything for class-wide types as they are always transformed
+     into their root type.  */
+  if (Ekind (gnat_entity) == E_Class_Wide_Type)
     return;
 
   /* Don't do anything for subprograms that may have been elaborated before

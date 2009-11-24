@@ -110,8 +110,7 @@ package body System.OS_Interface is
    is
       pragma Unreferenced (clock_id);
 
-      --  Darwin threads don't have clock_gettime, so use
-      --  gettimeofday() instead.
+      --  Older AIX don't have clock_gettime, so use gettimeofday
 
       use Interfaces;
 
