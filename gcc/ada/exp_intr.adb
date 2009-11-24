@@ -1018,13 +1018,18 @@ package body Exp_Intr is
                else
                   D_Type := Make_Defining_Identifier (Loc,
                               New_Internal_Name ('A'));
-                  Insert_Action (N,
+                  Insert_Action (Deref,
                     Make_Subtype_Declaration (Loc,
                       Defining_Identifier => D_Type,
                       Subtype_Indication  => D_Subtyp));
-                  Freeze_Itype (D_Type, N);
 
                end if;
+
+               --  Force freezing at the point of the dereference. For the
+               --  class wide case, this avoids having the subtype frozen
+               --  before the equivalent type.
+
+               Freeze_Itype (D_Type, Deref);
 
                Set_Actual_Designated_Subtype (Free_Node, D_Type);
             end;

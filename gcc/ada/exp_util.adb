@@ -3775,19 +3775,6 @@ package body Exp_Util is
       --  end Equiv_T;
 
       Equiv_Type := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
-
-      --  When the target requires front-end layout, it's necessary to allow
-      --  the equivalent type to be frozen so that layout can occur (when the
-      --  associated class-wide subtype is frozen, the equivalent type will
-      --  be frozen, see freeze.adb). For other targets, Gigi wants to have
-      --  the equivalent type marked as frozen and deals with this type itself.
-      --  In the Gigi case this will also avoid the generation of an init
-      --  procedure for the type.
-
-      if not Frontend_Layout_On_Target then
-         Set_Is_Frozen (Equiv_Type);
-      end if;
-
       Set_Ekind (Equiv_Type, E_Record_Type);
       Set_Parent_Subtype (Equiv_Type, Constr_Root);
 
@@ -4090,18 +4077,7 @@ package body Exp_Util is
       Set_Ekind (Res, E_Class_Wide_Subtype);
       Set_Next_Entity (Res, Empty);
       Set_Etype (Res, Base_Type (CW_Typ));
-
-      --  For targets where front-end layout is required, reset the Is_Frozen
-      --  status of the subtype to False (it can be implicitly set to true
-      --  from the copy of the class-wide type). For other targets, Gigi
-      --  doesn't want the class-wide subtype to go through the freezing
-      --  process (though it's unclear why that causes problems and it would
-      --  be nice to allow freezing to occur normally for all targets ???).
-
-      if Frontend_Layout_On_Target then
-         Set_Is_Frozen (Res, False);
-      end if;
-
+      Set_Is_Frozen (Res, False);
       Set_Freeze_Node (Res, Empty);
       return (Res);
    end New_Class_Wide_Subtype;
