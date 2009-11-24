@@ -1,3 +1,33 @@
+2009-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (plusminus_carry_mnemonic): New code attribute.
+	(add<mode>3_carry): Change operand order of plus RTX.
+	(*add<mode>3_carry): Ditto.
+	(*addsi3_carry_zext): Ditto.
+	(*add<dwi>3_doubleword): Update for changed operand order.
+	(*negti2_1 splitter): Ditto.
+	(*negdi2_1 splitter): Ditto.
+	(<plusminus_insn><mode>3_carry): Macroize expander from
+	{add,sub}<mode>3_carry patterns using plusminus code iterator.
+	(*<plusminus_insn><mode>3_carry): Macroize insn from
+	*{add,sub}<mode>3_carry patetrns using plusminus code iterator.
+	(neg<mode>2): Macroize expander from neg{qi,hi,si,di,ti}2
+	patterns using SDWIM mode iterator.
+	(*neg<dwi>2_doubleword): New insn_and_split pattern.  Macroize
+	pattern from *neg{di,ti}2_1 patterns and corresponding splitters
+	using DWIH mode iterator.
+	(*neg<mode>2_1): Macroize insn from neg{qi,hi,si,di}2_1 patterns
+	using SWI mode iterator.
+	(*neg<mode>2_cmpz): Ditto from neg{qi,hi,si,di}2_cmpz patterns.
+	(one_cmpl<mode>2): Macroize expander from one_cmpl{qi,hi,si,di}2
+	patterns using SWIM mode iterator.
+	(*one_cmpl<mode>2_1): Macroize insn from one_cmpl{hi,si,di}2_1
+	patterns using SWI248 mode iterator.
+	(*one_cmpl<mode>2_2): Macroize insn from one_cmpl{qi,hi,si,di}2_2
+	patterns using SWI mode iterator.
+	(*one_cmpl<mode>2_2 splitter): Macroize splitter from
+	one_cmpl{qi,hi,si,di}2_2 splitter patterns using SWI mode iterator.
+
 2009-11-24  Michael Matz  <matz@suse.de>
 
 	* expr.c (set_storage_via_libcall): Fix build_call_expr call.
@@ -443,7 +473,7 @@
 	on all nodes we write summaries for.
 
 2009-11-18  Shujing Zhao  <pearly.zhao@oracle.com>
-	
+
 	PR middle-end/22201
 	* params.def (PARAM_INLINE_UNIT_GROWTH, PARAM_IPCP_UNIT_GROWTH)
 	(PARAM_EARLY_INLINING_INSNS, PARAM_IRA_MAX_LOOPS_NUM)
@@ -586,8 +616,8 @@
 	(cmpdi_1): Rename from cmpdi_1_rex64.
 	(cmp<mode>_1): Macroize expander from cmp{si,di}_1 patterns using
 	SWI48 mode iterator.
-	(*cmp<mode>_1): Macroize insn from *cmp{qi,hi,si,di}_1_insn using SWI
-	mode iterator.
+	(*cmp<mode>_1): Macroize insn from *cmp{qi,hi,si,di}_1_insn patterns
+	using SWI mode iterator.
 	(*cmp<mode>_ccno_1): Ditto from *cmp{qi,hi,si,di}_ccno_1.
 	(*cmp<mode>_minus_1): Ditto from *cmp{qi,hi,si,di}_minus_1.
 	(*cmpqi_ext_3_insn): Make private.
