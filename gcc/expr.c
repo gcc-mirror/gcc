@@ -7157,8 +7157,7 @@ rtx
 expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 		  enum expand_modifier modifier, rtx *alt_rtl)
 {
-  int lp_nr = 0;
-  rtx ret, last = NULL;
+  rtx ret;
 
   /* Handle ERROR_MARK before anybody tries to access its type.  */
   if (TREE_CODE (exp) == ERROR_MARK
@@ -7166,13 +7165,6 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
     {
       ret = CONST0_RTX (tmode);
       return ret ? ret : const0_rtx;
-    }
-
-  if (flag_non_call_exceptions)
-    {
-      lp_nr = lookup_expr_eh_lp (exp);
-      if (lp_nr)
-	last = get_last_insn ();
     }
 
   /* If this is an expression of some kind and it has an associated line
@@ -7199,25 +7191,6 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
   else
     {
       ret = expand_expr_real_1 (exp, target, tmode, modifier, alt_rtl);
-    }
-
-  /* If using non-call exceptions, mark all insns that may trap.
-     expand_call() will mark CALL_INSNs before we get to this code,
-     but it doesn't handle libcalls, and these may trap.  */
-  if (lp_nr)
-    {
-      rtx insn;
-      for (insn = next_real_insn (last); insn;
-	   insn = next_real_insn (insn))
-	{
-	  if (! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
-	      /* If we want exceptions for non-call insns, any
-		 may_trap_p instruction may throw.  */
-	      && GET_CODE (PATTERN (insn)) != CLOBBER
-	      && GET_CODE (PATTERN (insn)) != USE
-	      && insn_could_throw_p (insn))
-	    make_reg_eh_region_note (insn, 0, lp_nr);
-	}
     }
 
   return ret;

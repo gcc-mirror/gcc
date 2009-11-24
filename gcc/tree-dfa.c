@@ -133,12 +133,12 @@ create_var_ann (tree t)
   var_ann_t ann;
 
   gcc_assert (t);
-  gcc_assert (DECL_P (t));
-  gcc_assert (!t->base.ann || t->base.ann->common.type == VAR_ANN);
+  gcc_assert (TREE_CODE (t) == VAR_DECL
+	      || TREE_CODE (t) == PARM_DECL
+	      || TREE_CODE (t) == RESULT_DECL);
 
   ann = GGC_CNEW (struct var_ann_d);
-  ann->common.type = VAR_ANN;
-  t->base.ann = (tree_ann_t) ann;
+  *DECL_VAR_ANN_PTR (t) = ann;
 
   return ann;
 }
@@ -186,24 +186,6 @@ renumber_gimple_stmt_uids_in_blocks (basic_block *blocks, int n_blocks)
 	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
 	}
     }
-}
-
-/* Create a new annotation for a tree T.  */
-
-tree_ann_common_t
-create_tree_common_ann (tree t)
-{
-  tree_ann_common_t ann;
-
-  gcc_assert (t);
-  gcc_assert (!t->base.ann || t->base.ann->common.type == TREE_ANN_COMMON);
-
-  ann = GGC_CNEW (struct tree_ann_common_d);
-
-  ann->type = TREE_ANN_COMMON;
-  t->base.ann = (tree_ann_t) ann;
-
-  return ann;
 }
 
 /* Build a temporary.  Make sure and register it to be renamed.  */
@@ -654,7 +636,7 @@ remove_referenced_var (tree var)
       && (v_ann = var_ann (var)))
     {
       ggc_free (v_ann);
-      var->base.ann = NULL;
+      *DECL_VAR_ANN_PTR (var) = NULL;
     }
   gcc_assert (DECL_P (var));
   in.uid = uid;

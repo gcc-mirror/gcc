@@ -152,15 +152,8 @@ fill_referenced_var_vec (VEC (tree, heap) **vec)
 static inline var_ann_t
 var_ann (const_tree t)
 {
-  var_ann_t ann;
-
-  if (!t->base.ann)
-    return NULL;
-  ann = (var_ann_t) t->base.ann;
-
-  gcc_assert (ann->common.type == VAR_ANN);
-
-  return ann;
+  const var_ann_t *p = DECL_VAR_ANN_PTR (t);
+  return p ? *p : NULL;
 }
 
 /* Return the variable annotation for T, which must be a _DECL node.
@@ -168,8 +161,9 @@ var_ann (const_tree t)
 static inline var_ann_t
 get_var_ann (tree var)
 {
-  var_ann_t ann = var_ann (var);
-  return (ann) ? ann : create_var_ann (var);
+  var_ann_t *p = DECL_VAR_ANN_PTR (var);
+  gcc_assert (p);
+  return *p ? *p : create_var_ann (var);
 }
 
 /* Get the number of the next statement uid to be allocated.  */
@@ -191,13 +185,6 @@ static inline unsigned int
 inc_gimple_stmt_max_uid (struct function *fn)
 {
   return fn->last_stmt_uid++;
-}
-
-/* Return the annotation type for annotation ANN.  */
-static inline enum tree_ann_type
-ann_type (tree_ann_t ann)
-{
-  return ann->common.type;
 }
 
 /* Return the line number for EXPR, or return -1 if we have no line
@@ -676,26 +663,6 @@ is_call_used (const_tree var)
   return (is_call_clobbered (var)
 	  || (may_be_aliased (var)
 	      && pt_solution_includes (&cfun->gimple_df->callused, var)));
-}
-
-/* Return the common annotation for T.  Return NULL if the annotation
-   doesn't already exist.  */
-static inline tree_ann_common_t
-tree_common_ann (const_tree t)
-{
-  /* Watch out static variables with unshared annotations.  */
-  if (DECL_P (t) && TREE_CODE (t) == VAR_DECL)
-    return &var_ann (t)->common;
-  return &t->base.ann->common;
-}
-
-/* Return a common annotation for T.  Create the constant annotation if it
-   doesn't exist.  */
-static inline tree_ann_common_t
-get_tree_common_ann (tree t)
-{
-  tree_ann_common_t ann = tree_common_ann (t);
-  return (ann) ? ann : create_tree_common_ann (t);
 }
 
 /*  -----------------------------------------------------------------------  */

@@ -203,21 +203,6 @@ lookup_stmt_eh_lp (gimple t)
   return lookup_stmt_eh_lp_fn (cfun, t);
 }
 
-/* Likewise, but reference a tree expression instead.  */
-
-int
-lookup_expr_eh_lp (tree t)
-{
-  if (cfun && cfun->eh->throw_stmt_table && t && EXPR_P (t))
-    {
-      tree_ann_common_t ann = tree_common_ann (t);
-      if (ann)
-	return ann->lp_nr;
-    }
-  return 0;
-}
-
-
 /* First pass of EH node decomposition.  Build up a tree of GIMPLE_TRY_FINALLY
    nodes and LABEL_DECL nodes.  We will use this during the second phase to
    determine if a goto leaves the body of a TRY_FINALLY_EXPR node.  */

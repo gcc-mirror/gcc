@@ -125,24 +125,6 @@ struct GTY(()) ptr_info_def
 };
 
 
-/*---------------------------------------------------------------------------
-		   Tree annotations stored in tree_base.ann
----------------------------------------------------------------------------*/
-enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, FUNCTION_ANN };
-
-struct GTY(()) tree_ann_common_d {
-  /* Annotation type.  */
-  enum tree_ann_type type;
-
-  /* Record EH landing pad number into a statement tree created
-     during RTL expansion (see gimple_to_tree).  */
-  int lp_nr;
-
-  /* Pointer to original GIMPLE statement.  Used during RTL expansion
-     (see gimple_to_tree).  */
-  gimple stmt;
-};
-
 /* It is advantageous to avoid things like life analysis for variables which
    do not need PHI nodes.  This enum describes whether or not a particular
    variable may need a PHI node.  */
@@ -192,8 +174,6 @@ enum noalias_state {
 
 
 struct GTY(()) var_ann_d {
-  struct tree_ann_common_d common;
-
   /* Used when building base variable structures in a var_map.  */
   unsigned base_var_processed : 1;
 
@@ -318,20 +298,10 @@ typedef struct immediate_use_iterator_d
 
 
 
-union GTY((desc ("ann_type ((tree_ann_t)&%h)"))) tree_ann_d {
-  struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
-  struct var_ann_d GTY((tag ("VAR_ANN"))) vdecl;
-};
-
-typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
-typedef struct tree_ann_common_d *tree_ann_common_t;
 
-static inline tree_ann_common_t tree_common_ann (const_tree);
-static inline tree_ann_common_t get_tree_common_ann (tree);
 static inline var_ann_t var_ann (const_tree);
 static inline var_ann_t get_var_ann (tree);
-static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
 
@@ -556,7 +526,6 @@ extern const char *op_symbol_code (enum tree_code);
 extern var_ann_t create_var_ann (tree);
 extern void renumber_gimple_stmt_uids (void);
 extern void renumber_gimple_stmt_uids_in_blocks (basic_block *, int);
-extern tree_ann_common_t create_tree_common_ann (tree);
 extern void dump_dfa_stats (FILE *);
 extern void debug_dfa_stats (void);
 extern void debug_referenced_vars (void);
@@ -856,7 +825,6 @@ extern void add_stmt_to_eh_lp (gimple, int);
 extern bool remove_stmt_from_eh_lp (gimple);
 extern bool remove_stmt_from_eh_lp_fn (struct function *, gimple);
 extern int lookup_stmt_eh_lp_fn (struct function *, gimple);
-extern int lookup_expr_eh_lp (tree);
 extern int lookup_stmt_eh_lp (gimple);
 extern bool maybe_clean_eh_stmt_fn (struct function *, gimple);
 extern bool maybe_clean_eh_stmt (gimple);
