@@ -4884,7 +4884,7 @@ update_ld_motion_stores (struct expr * expr)
 	  rtx pat = PATTERN (insn);
 	  rtx src = SET_SRC (pat);
 	  rtx reg = expr->reaching_reg;
-	  rtx copy, new_rtx;
+	  rtx copy;
 
 	  /* If we've already copied it, continue.  */
 	  if (expr->reaching_reg == src)
@@ -4900,7 +4900,7 @@ update_ld_motion_stores (struct expr * expr)
 	    }
 
 	  copy = gen_move_insn (reg, copy_rtx (SET_SRC (pat)));
-	  new_rtx = emit_insn_before (copy, insn);
+	  emit_insn_before (copy, insn);
 	  SET_SRC (pat) = reg;
 	  df_insn_rescan (insn);
 
