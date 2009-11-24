@@ -1,3 +1,11 @@
+2009-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42154
+	* tree-sra.c (struct access): Added comments.
+	(sra_modify_expr): Build references to the old aggregate with
+	build_ref_for_offset instead of reusing access->expr.
+	(load_assign_lhs_subreplacements): Likewise.
+
 2009-11-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (add<mode>3_carry): Change insn pattern

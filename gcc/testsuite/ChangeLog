@@ -1,3 +1,8 @@
+2009-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42154
+	* gcc.c-torture/execute/pr42154.c: New test.
+
 2009-11-24  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42045
