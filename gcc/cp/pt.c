@@ -1945,6 +1945,10 @@ determine_specialization (tree template_id,
     {
       error ("template-id %qD for %q+D does not match any template "
 	     "declaration", template_id, decl);
+      if (header_count && header_count != template_count + 1)
+	inform (input_location, "saw %d %<template<>%>, need %d for "
+		"specializing a member function template",
+		header_count, template_count + 1);
       return error_mark_node;
     }
   else if ((templates && TREE_CHAIN (templates))
