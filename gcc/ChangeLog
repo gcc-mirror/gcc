@@ -1,3 +1,9 @@
+2009-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* dwarf2out.c (add_location_or_const_value_attribute): Remove
+	useless NOTE_VAR_LOCATION_STATUS call.
+	* cfgrtl.c (commit_one_edge_insertion): Remove useless loop, tidy.
+
 2009-11-24  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-wrapper.c (lto_wrapper_exit): Don't try to delete files if
@@ -20,7 +26,7 @@
 	(arm_dwarf_register_span): New function.
 	(arm_dbx_register_number): Add VFPv3 dwarf numbering.
 
-2009-11-24  David Binderman <dcb314@hotmail.com>
+2009-11-24  David Binderman  <dcb314@hotmail.com>
 
 	* cfgrtl.c (commit_one_edge_insertion): Remove set but not used
 	local variable bb_note.
