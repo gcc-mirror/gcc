@@ -560,19 +560,18 @@ record_builtin_type (const char *name, tree type)
     debug_hooks->type_decl (type_decl, false);
 }
 
-/* Given a record type RECORD_TYPE and a chain of FIELD_DECL nodes FIELDLIST,
+/* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
    finish constructing the record or union type.  If REP_LEVEL is zero, this
    record has no representation clause and so will be entirely laid out here.
    If REP_LEVEL is one, this record has a representation clause and has been
    laid out already; only set the sizes and alignment.  If REP_LEVEL is two,
    this record is derived from a parent record and thus inherits its layout;
-   only make a pass on the fields to finalize them.  If DO_NOT_FINALIZE is
-   true, the record type is expected to be modified afterwards so it will
-   not be sent to the back-end for finalization.  */
+   only make a pass on the fields to finalize them.  DEBUG_INFO_P is true if
+   we need to write debug information about this type.  */
 
 void
-finish_record_type (tree record_type, tree fieldlist, int rep_level,
-		    bool do_not_finalize)
+finish_record_type (tree record_type, tree field_list, int rep_level,
+		    bool debug_info_p)
 {
   enum tree_code code = TREE_CODE (record_type);
   tree name = TYPE_NAME (record_type);
@@ -583,7 +582,7 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
   bool had_align = TYPE_ALIGN (record_type) != 0;
   tree field;
 
-  TYPE_FIELDS (record_type) = fieldlist;
+  TYPE_FIELDS (record_type) = field_list;
 
   /* Always attach the TYPE_STUB_DECL for a record type.  It is required to
      generate debug info and have a parallel type.  */
@@ -627,9 +626,9 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
      handled yet, and adjust DECL_NONADDRESSABLE_P accordingly.  */
 
   if (code == QUAL_UNION_TYPE)
-    fieldlist = nreverse (fieldlist);
+    field_list = nreverse (field_list);
 
-  for (field = fieldlist; field; field = TREE_CHAIN (field))
+  for (field = field_list; field; field = TREE_CHAIN (field))
     {
       tree type = TREE_TYPE (field);
       tree pos = bit_position (field);
@@ -733,7 +732,7 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
     }
 
   if (code == QUAL_UNION_TYPE)
-    nreverse (fieldlist);
+    nreverse (field_list);
 
   if (rep_level < 2)
     {
@@ -764,24 +763,24 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
 	}
     }
 
-  if (!do_not_finalize)
+  if (debug_info_p)
     rest_of_record_type_compilation (record_type);
 }
 
-/* Wrap up compilation of RECORD_TYPE, i.e. most notably output all
-   the debug information associated with it.  It need not be invoked
-   directly in most cases since finish_record_type takes care of doing
-   so, unless explicitly requested not to through DO_NOT_FINALIZE.  */
+/* Wrap up compilation of RECORD_TYPE, i.e. output all the debug information
+   associated with it.  It need not be invoked directly in most cases since
+   finish_record_type takes care of doing so, but this can be necessary if
+   a parallel type is to be attached to the record type.  */
 
 void
 rest_of_record_type_compilation (tree record_type)
 {
-  tree fieldlist = TYPE_FIELDS (record_type);
+  tree field_list = TYPE_FIELDS (record_type);
   tree field;
   enum tree_code code = TREE_CODE (record_type);
   bool var_size = false;
 
-  for (field = fieldlist; field; field = TREE_CHAIN (field))
+  for (field = field_list; field; field = TREE_CHAIN (field))
     {
       /* We need to make an XVE/XVU record if any field has variable size,
 	 whether or not the record does.  For example, if we have a union,
@@ -2801,7 +2800,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     }
 
   TYPE_NAME (record_type) = create_concat_name (gnat_entity, "DESC");
-  finish_record_type (record_type, field_list, 0, true);
+  finish_record_type (record_type, field_list, 0, false);
   return record_type;
 }
 
@@ -3115,7 +3114,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     }
 
   TYPE_NAME (record64_type) = create_concat_name (gnat_entity, "DESC64");
-  finish_record_type (record64_type, field_list64, 0, true);
+  finish_record_type (record64_type, field_list64, 0, false);
   return record64_type;
 }
 
@@ -3527,7 +3526,7 @@ build_unc_object_type (tree template_type, tree object_type, tree name)
   finish_record_type (type,
 		      chainon (chainon (NULL_TREE, template_field),
 			       array_field),
-		      0, false);
+		      0, true);
 
   return type;
 }

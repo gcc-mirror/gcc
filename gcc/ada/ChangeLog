@@ -1,5 +1,27 @@
 2009-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_util.adb (Set_Debug_Info_Needed): For an E_Class_Wide_Subtype,
+	also set the flag on the Equivalent_Type.
+	* gcc-interface/utils.c (finish_record_type): Replace DO_NOT_FINALIZE
+	parameter with DEBUG_INFO_P.  Rename FIELDLIST into FIELD_LIST.
+	(rest_of_record_type_compilation): Rename FIELDLIST into FIELD_LIST.
+	(build_vms_descriptor32): Adjust call to finish_record_type.
+	(build_vms_descriptor): Likewise.
+	(build_unc_object_type): Likewise.
+	* decl.c (gnat_to_gnu_entity): Adjust calls to finish_record_type and
+	components_to_record.
+	(make_packable_type): Adjust call to finish_record_type.
+	(maybe_pad_type): Likewise.  Tweak condition.
+	(components_to_record): Likewise.  Replace DO_NOT_FINALIZE parameter
+	with MAYBE_UNUSED.  Adjust recursive call.
+	(create_variant_part_from): Adjust call to finish_record_type.  Do not
+	call rest_of_record_type_compilation on the new record types.
+	* trans.c (gigi): Adjust call to finish_record_type.
+	* gigi.h (finish_record_type): Adjust prototype and comment.
+	(rest_of_record_type_compilation): Adjust comment.
+
+2009-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_util.adb (Make_CW_Equivalent_Type): Do not mark the type as
 	frozen for targets that do not require front-end layout.
 	(New_Class_Wide_Subtype): Always reset the freezing status to False.

@@ -1630,20 +1630,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
 					 gnu_field_type, gnu_type, 1, 0, 0, 0);
 
-	  /* Do not finalize it until after the parallel type is added.  */
-	  finish_record_type (gnu_type, gnu_field, 0, true);
+	  /* Do not emit debug info until after the parallel type is added.  */
+	  finish_record_type (gnu_type, gnu_field, 0, false);
 	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
-	  /* Make the original array type a parallel type.  */
-	  if (debug_info_p
-	      && present_gnu_tree (Original_Array_Type (gnat_entity)))
-	    add_parallel_type (TYPE_STUB_DECL (gnu_type),
-			       gnat_to_gnu_type
-			       (Original_Array_Type (gnat_entity)));
+	  if (debug_info_p)
+	    {
+	      /* Make the original array type a parallel type.  */
+	      if (present_gnu_tree (Original_Array_Type (gnat_entity)))
+		add_parallel_type (TYPE_STUB_DECL (gnu_type),
+				   gnat_to_gnu_type
+				   (Original_Array_Type (gnat_entity)));
 
-	  rest_of_record_type_compilation (gnu_type);
+	      rest_of_record_type_compilation (gnu_type);
+	    }
 	}
 
       /* If the type we are dealing with has got a smaller alignment than the
@@ -1678,7 +1680,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
 					 gnu_field_type, gnu_type, 1, 0, 0, 0);
 
-	  finish_record_type (gnu_type, gnu_field, 0, false);
+	  finish_record_type (gnu_type, gnu_field, 0, debug_info_p);
 	  TYPE_PADDING_P (gnu_type) = 1;
 
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
@@ -1824,9 +1826,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Make sure we can put this into a register.  */
 	TYPE_ALIGN (gnu_fat_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
 
-	/* Do not finalize this record type since the types of its fields
-	   are still incomplete at this point.  */
-	finish_record_type (gnu_fat_type, tem, 0, true);
+	/* Do not emit debug info for this record type since the types of its
+	   fields are still incomplete at this point.  */
+	finish_record_type (gnu_fat_type, tem, 0, false);
 	TYPE_FAT_POINTER_P (gnu_fat_type) = 1;
 
 	/* Build a reference to the template from a PLACEHOLDER_EXPR that
@@ -1933,7 +1935,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    = chainon (gnu_template_fields, gnu_temp_fields[index]);
 
 	/* Install all the fields into the template.  */
-	finish_record_type (gnu_template_type, gnu_template_fields, 0, false);
+	finish_record_type (gnu_template_type, gnu_template_fields, 0,
+			    debug_info_p);
 	TYPE_READONLY (gnu_template_type) = 1;
 
 	/* Now make the array of arrays and update the pointer to the array
@@ -2393,7 +2396,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_field_list = gnu_field;
 		}
 
-	      finish_record_type (gnu_bound_rec, gnu_field_list, 0, false);
+	      finish_record_type (gnu_bound_rec, gnu_field_list, 0, true);
 	      add_parallel_type (TYPE_STUB_DECL (gnu_type), gnu_bound_rec);
 	    }
 
@@ -2867,8 +2870,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Add the fields into the record type and finish it up.  */
 	components_to_record (gnu_type, Component_List (record_definition),
 			      gnu_field_list, packed, definition, NULL,
-			      false, all_rep, false, is_unchecked_union,
-			      debug_info_p);
+			      false, all_rep, is_unchecked_union,
+			      debug_info_p, false);
 
 	/* If it is a tagged record force the type to BLKmode to insure that
 	   these objects will always be put in memory.  Likewise for limited
@@ -3188,9 +3191,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && !present_gnu_tree (Etype (gnat_field)))
 		  gnat_to_gnu_entity (Etype (gnat_field), NULL_TREE, 0);
 
-	      /* Do not finalize it since we're going to modify it below.  */
+	      /* Do not emit debug info for the type yet since we're going to
+		 modify it below.  */
 	      gnu_field_list = nreverse (gnu_field_list);
-	      finish_record_type (gnu_type, gnu_field_list, 2, true);
+	      finish_record_type (gnu_type, gnu_field_list, 2, false);
 
 	      /* See the E_Record_Type case for the rationale.  */
 	      if (Is_Tagged_Type (gnat_entity)
@@ -3225,7 +3229,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							 gnu_subtype_marker,
 							 0, NULL_TREE,
 							 NULL_TREE, 0),
-				      0, false);
+				      0, true);
 
 		  add_parallel_type (TYPE_STUB_DECL (gnu_type),
 				     gnu_subtype_marker);
@@ -3459,9 +3463,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
 		TYPE_FAT_POINTER_P (gnu_type) = 1;
 
-		/* Do not finalize this record type since the types of
-		   its fields are incomplete.  */
-		finish_record_type (gnu_type, fields, 0, true);
+		/* Do not emit debug info for this record type since the types
+		   of its fields are incomplete.  */
+		finish_record_type (gnu_type, fields, 0, false);
 
 		TYPE_OBJECT_RECORD_TYPE (gnu_old) = make_node (RECORD_TYPE);
 		TYPE_NAME (TYPE_OBJECT_RECORD_TYPE (gnu_old))
@@ -4074,7 +4078,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   stubbed since structures are incomplete for the back-end.  */
 	if (gnu_field_list && Convention (gnat_entity) != Convention_Stubbed)
 	  finish_record_type (gnu_return_type, nreverse (gnu_field_list),
-			      0, false);
+			      0, debug_info_p);
 
 	/* If we have a CICO list but it has only one entry, we convert
 	   this function into a function that simply returns that one
@@ -6041,7 +6045,7 @@ make_packable_type (tree type, bool in_record)
       field_list = new_field;
     }
 
-  finish_record_type (new_type, nreverse (field_list), 2, true);
+  finish_record_type (new_type, nreverse (field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
 
   /* If this is a padding record, we never want to make the size smaller
@@ -6198,8 +6202,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 			      orig_size, bitsize_zero_node, 1);
   DECL_INTERNAL_P (field) = 1;
 
-  /* Do not finalize it until after the auxiliary record is built.  */
-  finish_record_type (record, field, 1, true);
+  /* Do not emit debug info until after the auxiliary record is built.  */
+  finish_record_type (record, field, 1, false);
 
   /* Set the same size for its RM size if requested; otherwise reuse
      the RM size of the original type.  */
@@ -6208,9 +6212,9 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
      variable that indicates our size, if still variable.  */
-  if (TYPE_NAME (record)
-      && AGGREGATE_TYPE_P (type)
-      && TREE_CODE (orig_size) != INTEGER_CST
+  if (TREE_CODE (orig_size) != INTEGER_CST
+      && TYPE_NAME (record)
+      && TYPE_NAME (type)
       && !(TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	   && DECL_IGNORED_P (TYPE_NAME (type))))
     {
@@ -6230,7 +6234,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 					     build_reference_type (type),
 					     marker, 0, NULL_TREE, NULL_TREE,
 					     0),
-			  0, false);
+			  0, true);
 
       add_parallel_type (TYPE_STUB_DECL (record), marker);
 
@@ -6720,35 +6724,34 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
    with Component_Alignment of Storage_Unit, -2 if this is for a record
    with a specified alignment.
 
-   DEFINITION is true if we are defining this record.
+   DEFINITION is true if we are defining this record type.
 
    P_GNU_REP_LIST, if nonzero, is a pointer to a list to which each field
    with a rep clause is to be added; in this case, that is all that should
    be done with such fields.
 
-   CANCEL_ALIGNMENT, if true, means the alignment should be zeroed before
-   laying out the record.  This means the alignment only serves to force
-   fields to be bitfields, but not require the record to be that aligned.
-   This is used for variants.
+   CANCEL_ALIGNMENT is true if the alignment should be zeroed before laying
+   out the record.  This means the alignment only serves to force fields to
+   be bitfields, but not to require the record to be that aligned.  This is
+   used for variants.
 
-   ALL_REP, if true, means a rep clause was found for all the fields.  This
-   simplifies the logic since we know we're not in the mixed case.
+   ALL_REP is true if a rep clause is present for all the fields.
 
-   DO_NOT_FINALIZE, if true, means that the record type is expected to be
-   modified afterwards so it will not be finalized here.
+   UNCHECKED_UNION is true if we are building this type for a record with a
+   Pragma Unchecked_Union.
 
-   UNCHECKED_UNION, if true, means that we are building a type for a record
-   with a Pragma Unchecked_Union.
+   DEBUG_INFO_P is true if we need to write debug information about the type.
 
-   DEBUG_INFO_P, if true, means that we need to write debug information for
-   types that we may create in the process.  */
+   MAYBE_UNUSED is true if this type may be unused in the end; this doesn't
+   mean that its contents may be unused as well, but only the container.  */
+
 
 static void
 components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		      tree gnu_field_list, int packed, bool definition,
 		      tree *p_gnu_rep_list, bool cancel_alignment,
-		      bool all_rep, bool do_not_finalize,
-		      bool unchecked_union, bool debug_info_p)
+		      bool all_rep, bool unchecked_union, bool debug_info_p,
+		      bool maybe_unused)
 {
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool layout_with_rep = false;
@@ -6878,12 +6881,12 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		= TYPE_SIZE_UNIT (gnu_record_type);
 	    }
 
-	  /* Add the fields into the record type for the variant.  Note that we
-	     defer finalizing it until after we are sure to really use it.  */
+	  /* Add the fields into the record type for the variant.  Note that
+	     we aren't sure to really use it at this point, see below.  */
 	  components_to_record (gnu_variant_type, Component_List (variant),
 				NULL_TREE, packed, definition,
 				&gnu_our_rep_list, !all_rep_and_size, all_rep,
-				true, unchecked_union, debug_info_p);
+				unchecked_union, debug_info_p, true);
 
 	  gnu_qual = choices_to_gnu (gnu_discr, Discrete_Choices (variant));
 
@@ -6942,7 +6945,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	    }
 
 	  finish_record_type (gnu_union_type, nreverse (gnu_variant_list),
-			      all_rep_and_size ? 1 : 0, false);
+			      all_rep_and_size ? 1 : 0, debug_info_p);
 
 	  /* If GNU_UNION_TYPE is our record type, it means we must have an
 	     Unchecked_Union with no fields.  Verify that and, if so, just
@@ -7034,7 +7037,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 
       if (gnu_field_list)
 	{
-	  finish_record_type (gnu_rep_type, gnu_our_rep_list, 1, false);
+	  finish_record_type (gnu_rep_type, gnu_our_rep_list, 1, debug_info_p);
 	  gnu_field
 	    = create_field_decl (get_identifier ("REP"), gnu_rep_type,
 				 gnu_record_type, 0, NULL_TREE, NULL_TREE, 1);
@@ -7052,7 +7055,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
     TYPE_ALIGN (gnu_record_type) = 0;
 
   finish_record_type (gnu_record_type, nreverse (gnu_field_list),
-		      layout_with_rep ? 1 : 0, do_not_finalize);
+		      layout_with_rep ? 1 : 0, debug_info_p && !maybe_unused);
 }
 
 /* Given GNU_SIZE, a GCC tree representing a size, return a Uint to be
@@ -8141,12 +8144,10 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
 	  field_list = new_variant_subpart;
 	}
 
-      /* Finish up the new variant and create the field.  */
-      finish_record_type (new_variant, nreverse (field_list), 2, true);
+      /* Finish up the new variant and create the field.  No need for debug
+	 info thanks to the XVS type.  */
+      finish_record_type (new_variant, nreverse (field_list), 2, false);
       compute_record_mode (new_variant);
-      rest_of_record_type_compilation (new_variant);
-
-      /* No need for debug info thanks to the XVS type.  */
       create_type_decl (TYPE_NAME (new_variant), new_variant, NULL,
 			true, false, Empty);
 
@@ -8160,12 +8161,10 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
       union_field_list = new_field;
     }
 
-  /* Finish up the union type and create the variant part.  */
-  finish_record_type (new_union_type, union_field_list, 2, true);
+  /* Finish up the union type and create the variant part.  No need for debug
+     info thanks to the XVS type.  */
+  finish_record_type (new_union_type, union_field_list, 2, false);
   compute_record_mode (new_union_type);
-  rest_of_record_type_compilation (new_union_type);
-
-  /* No need for debug info thanks to the XVS type.  */
   create_type_decl (TYPE_NAME (new_union_type), new_union_type, NULL,
 		    true, false, Empty);
 

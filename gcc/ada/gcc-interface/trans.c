@@ -562,7 +562,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 	  null_list = tree_cons (field, null_node, null_list);
 	}
 
-      finish_record_type (fdesc_type_node, nreverse (field_list), 0, true);
+      finish_record_type (fdesc_type_node, nreverse (field_list), 0, false);
       record_builtin_type ("descriptor", fdesc_type_node);
       null_fdesc_node = gnat_build_constructor (fdesc_type_node, null_list);
     }
