@@ -1,5 +1,10 @@
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc.c-torture/execute/pr40404.c: Use long for bitfield on 16bit
+	int targets.
+
+2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	* gcc-dg/Wtype-limits.c: Add line to correct line numbers.
 
 2009-11-23  H.J. Lu  <hongjiu.lu@intel.com>
