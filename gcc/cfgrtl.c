@@ -1506,16 +1506,12 @@ commit_one_edge_insertion (edge e)
 	      && BB_PARTITION (e->src) == BB_COLD_PARTITION
 	      && !(e->flags & EDGE_CROSSING))
 	    {
-	      rtx bb_note, cur_insn;
+	      rtx cur_insn;
 
-	      bb_note = NULL_RTX;
 	      for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb));
 		   cur_insn = NEXT_INSN (cur_insn))
 		if (NOTE_INSN_BASIC_BLOCK_P (cur_insn))
-		  {
-		    bb_note = cur_insn;
-		    break;
-		  }
+		  break;
 
 	      if (JUMP_P (BB_END (bb))
 		  && !any_condjump_p (BB_END (bb))
