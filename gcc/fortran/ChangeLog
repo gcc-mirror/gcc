@@ -1,3 +1,13 @@
+2009-11-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42045
+	* resolve.c (resolve_actual_arglist): Make sure procedure pointer
+	actual arguments are resolved correctly.
+	(resolve_function): An EXPR_FUNCTION which is a procedure pointer
+	component, has already been resolved.
+	(resolve_fl_derived): Procedure pointer components should not be
+	implicitly typed.
+
 2009-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/41807

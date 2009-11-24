@@ -1321,6 +1321,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		e->rank = comp->as->rank;
 	      e->expr_type = EXPR_FUNCTION;
 	    }
+	  if (gfc_resolve_expr (e) == FAILURE)                          
+	    return FAILURE; 
 	  goto argument_list;
 	}
 
@@ -2519,6 +2521,10 @@ resolve_function (gfc_expr *expr)
   if (expr->symtree)
     sym = expr->symtree->n.sym;
 
+  /* If this is a procedure pointer component, it has already been resolved.  */
+  if (gfc_is_proc_ptr_comp (expr, NULL))
+    return SUCCESS;
+  
   if (sym && sym->attr.intrinsic
       && resolve_intrinsic (sym, &expr->where) == FAILURE)
     return FAILURE;
@@ -10219,8 +10225,9 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
       else if (c->attr.proc_pointer && c->ts.type == BT_UNKNOWN)
 	{
-	  c->ts = *gfc_get_default_type (c->name, NULL);
-	  c->attr.implicit_type = 1;
+	  /* Since PPCs are not implicitly typed, a PPC without an explicit
+	     interface must be a subroutine.  */
+	  gfc_add_subroutine (&c->attr, c->name, &c->loc);
 	}
 
       /* Procedure pointer components: Check PASS arg.  */

@@ -1,3 +1,10 @@
+2009-11-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42045
+	* gfortran.dg/proc_ptr_comp_2.f90: Correct invalid test case.
+	* gfortran.dg/proc_ptr_comp_3.f90: Extended test case.
+	* gfortran.dg/proc_ptr_comp_24.f90: New.
+
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.c-torture/execute/pr40404.c: Use long for bitfield on 16bit
