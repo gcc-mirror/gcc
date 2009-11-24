@@ -1,5 +1,5 @@
-/* { dg-do compile { target powerpc-*-linux*paired* } } */
-/* { dg-options "-mpaired -m32 -ffinite-math-only" } */
+/* { dg-do compile { target { powerpc-*-linux*paired* && ilp32 } } } */
+/* { dg-options "-mpaired -ffinite-math-only" } */
 
 /* Test PowerPC PAIRED extensions.  */
 
