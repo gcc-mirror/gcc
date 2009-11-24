@@ -1,3 +1,8 @@
+2009-11-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42142
+	* gcc.c-torture/execute/pr42142.c: New testcase.
+
 2009-11-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42154

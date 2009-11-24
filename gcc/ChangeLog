@@ -1,3 +1,11 @@
+2009-11-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42142
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1):
+	Handle iv-dependent (non-)kills properly.
+	(mark_aliased_reaching_defs_necessary): Pass the basic-block
+	of the reference statement to mark_aliased_reaching_defs_necessary_1.
+
 2009-11-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42154

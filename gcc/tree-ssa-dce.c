@@ -495,11 +495,11 @@ static bool chain_ovfl = false;
    which is based on a non-aliased decl, necessary.  It returns
    true whenever the defining statement of the current VDEF is
    a kill for REF, as no dominating may-defs are necessary for REF
-   anymore.  DATA points to cached get_ref_base_and_extent data for REF.  */
+   anymore.  DATA points to the basic-block that contains the
+   stmt that refers to REF.  */
 
 static bool
-mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef,
-					void *data ATTRIBUTE_UNUSED)
+mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
 {
   gimple def_stmt = SSA_NAME_DEF_STMT (vdef);
 
@@ -529,6 +529,12 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef,
 	    }
 	  /* Or they need to be exactly the same.  */
 	  else if (ref->ref
+		   /* Make sure there is no induction variable involved
+		      in the references (gcc.c-torture/execute/pr42142.c).
+		      The simplest way is to check if the kill dominates
+		      the use.  */
+		   && dominated_by_p (CDI_DOMINATORS, (basic_block) data,
+				      gimple_bb (def_stmt))
 		   && operand_equal_p (ref->ref, lhs, 0))
 	    return true;
 	}
@@ -547,7 +553,7 @@ mark_aliased_reaching_defs_necessary (gimple stmt, tree ref)
   ao_ref_init (&refd, ref);
   chain = walk_aliased_vdefs (&refd, gimple_vuse (stmt),
 			      mark_aliased_reaching_defs_necessary_1,
-			      NULL, NULL);
+			      gimple_bb (stmt), NULL);
   if (chain > longest_chain)
     longest_chain = chain;
   total_chain += chain;
