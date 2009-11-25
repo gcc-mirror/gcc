@@ -2226,9 +2226,21 @@ instantiate_scev_poly (basic_block instantiate_below,
   if (CHREC_LEFT (chrec) != op0
       || CHREC_RIGHT (chrec) != op1)
     {
+      unsigned var = CHREC_VARIABLE (chrec);
+
+      /* When the instantiated stride or base has an evolution in an
+	 innermost loop, return chrec_dont_know, as this is not a
+	 valid SCEV representation.  In the reduced testcase for
+	 PR40281 we would have {0, +, {1, +, 1}_2}_1 that has no
+	 meaning.  */
+      if ((tree_is_chrec (op0) && CHREC_VARIABLE (op0) > var)
+	  || (tree_is_chrec (op1) && CHREC_VARIABLE (op1) > var))
+	return chrec_dont_know;
+
       op1 = chrec_convert_rhs (chrec_type (op0), op1, NULL);
-      chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
+      chrec = build_polynomial_chrec (var, op0, op1);
     }
+
   return chrec;
 }
 
