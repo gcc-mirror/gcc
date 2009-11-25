@@ -955,45 +955,6 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
     }
 }
 
-/* Data structure for idx_record_params.  */
-
-struct irp_data
-{
-  struct loop *loop;
-  sese region;
-};
-
-/* For a data reference with an ARRAY_REF as its BASE, record the
-   parameters occurring in IDX.  DTA is passed in as complementary
-   information, and is used by the automatic walker function.  This
-   function is a callback for for_each_index.  */
-
-static bool
-idx_record_params (tree base, tree *idx, void *dta)
-{
-  struct irp_data *data = (struct irp_data *) dta;
-
-  if (TREE_CODE (base) != ARRAY_REF)
-    return true;
-
-  if (TREE_CODE (*idx) == SSA_NAME)
-    {
-      tree scev;
-      sese region = data->region;
-      struct loop *loop = data->loop;
-      Value one;
-
-      scev = scalar_evolution_in_region (region, loop, *idx);
-
-      value_init (one);
-      value_set_si (one, 1);
-      scan_tree_for_params (region, scev, NULL, one);
-      value_clear (one);
-    }
-
-  return true;
-}
-
 /* Find parameters with respect to REGION in BB. We are looking in memory
    access functions, conditions and loop bounds.  */
 
@@ -1001,34 +962,33 @@ static void
 find_params_in_bb (sese region, gimple_bb_p gbb)
 {
   int i;
+  unsigned j;
   data_reference_p dr;
   gimple stmt;
   loop_p loop = GBB_BB (gbb)->loop_father;
+  Value one;
 
+  value_init (one);
+  value_set_si (one, 1);
+
+  /* Find parameters in the access functions of data references.  */
   for (i = 0; VEC_iterate (data_reference_p, GBB_DATA_REFS (gbb), i, dr); i++)
-    {
-      struct irp_data irp;
-
-      irp.loop = loop;
-      irp.region = region;
-      for_each_index (&dr->ref, idx_record_params, &irp);
-    }
+    for (j = 0; j < DR_NUM_DIMENSIONS (dr); j++)
+      scan_tree_for_params (region, DR_ACCESS_FN (dr, j), NULL, one);
 
   /* Find parameters in conditional statements.  */
   for (i = 0; VEC_iterate (gimple, GBB_CONDITIONS (gbb), i, stmt); i++)
     {
-      Value one;
       tree lhs = scalar_evolution_in_region (region, loop,
 					     gimple_cond_lhs (stmt));
       tree rhs = scalar_evolution_in_region (region, loop,
 					     gimple_cond_rhs (stmt));
 
-      value_init (one);
-      value_set_si (one, 1);
       scan_tree_for_params (region, lhs, NULL, one);
       scan_tree_for_params (region, rhs, NULL, one);
-      value_clear (one);
     }
+
+  value_clear (one);
 }
 
 /* Record the parameters used in the SCOP.  A variable is a parameter
