@@ -1,3 +1,8 @@
+2009-09-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Add bounds only
+	for ARRAY_REFs.  Use array_ref_{low,up}_bound to determine bounds.
+
 2009-09-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (struct irp_data): Removed.
