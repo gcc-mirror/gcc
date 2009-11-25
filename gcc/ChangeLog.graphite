@@ -1,5 +1,10 @@
 2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_scev_binary): Adapted
+	to pass as parameters the operands of the binary expression.
+
+2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_scev_bitnot): Renamed
 	instantiate_scev_not.  Handle NEGATE_EXPR.
 	(instantiate_scev_r): Handle NEGATE_EXPR.

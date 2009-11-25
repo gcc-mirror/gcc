@@ -2235,7 +2235,7 @@ instantiate_scev_poly (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
-   CHREC is a binary expression to be instantiated.
+   "C0 CODE C1" is a binary expression of type TYPE to be instantiated.
 
    CACHE is the cache of already instantiated values.
 
@@ -2248,31 +2248,30 @@ instantiate_scev_poly (basic_block instantiate_below,
 
 static tree
 instantiate_scev_binary (basic_block instantiate_below,
-			 struct loop *evolution_loop, tree chrec,
+			 struct loop *evolution_loop, tree chrec, enum tree_code code,
+			 tree type, tree c0, tree c1,
 			 bool fold_conversions, htab_t cache, int size_expr)
 {
   tree op1;
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
-				 TREE_OPERAND (chrec, 0), fold_conversions, cache,
+				 c0, fold_conversions, cache,
 				 size_expr);
   if (op0 == chrec_dont_know)
     return chrec_dont_know;
 
   op1 = instantiate_scev_r (instantiate_below, evolution_loop,
-			    TREE_OPERAND (chrec, 1), fold_conversions, cache,
+			    c1, fold_conversions, cache,
 			    size_expr);
   if (op1 == chrec_dont_know)
     return chrec_dont_know;
 
-  if (TREE_OPERAND (chrec, 0) != op0
-      || TREE_OPERAND (chrec, 1) != op1)
+  if (c0 != op0
+      || c1 != op1)
     {
-      tree type = chrec_type (chrec);
-
       op0 = chrec_convert (type, op0, NULL);
       op1 = chrec_convert_rhs (type, op1, NULL);
 
-      switch (TREE_CODE (chrec))
+      switch (code)
 	{
 	case POINTER_PLUS_EXPR:
 	case PLUS_EXPR:
@@ -2289,7 +2288,7 @@ instantiate_scev_binary (basic_block instantiate_below,
 	}
     }
 
-  return chrec;
+  return chrec ? chrec : fold_build2 (code, type, c0, c1);
 }
 
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
@@ -2548,6 +2547,9 @@ instantiate_scev_r (basic_block instantiate_below,
     case MINUS_EXPR:
     case MULT_EXPR:
       return instantiate_scev_binary (instantiate_below, evolution_loop, chrec,
+				      TREE_CODE (chrec), chrec_type (chrec),
+				      TREE_OPERAND (chrec, 0),
+				      TREE_OPERAND (chrec, 1),
 				      fold_conversions, cache, size_expr);
 
     CASE_CONVERT:
