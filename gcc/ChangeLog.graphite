@@ -1,3 +1,12 @@
+2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c (instantiate_scev_name): New.
+	(instantiate_scev_1): Move code in instantiate_scev_name.
+
+2009-08-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Merge from mainline (150992:151171).
+
 2009-08-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (graphite_legal_transform_bb): Call

@@ -2109,6 +2109,88 @@ loop_closed_phi_def (tree var)
   return NULL_TREE;
 }
 
+static tree instantiate_scev_1 (basic_block, struct loop *, tree, bool,
+				htab_t, int);
+
+/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
+   and EVOLUTION_LOOP, that were left under a symbolic form.
+
+   CHREC is an SSA_NAME to be instantiated.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
+
+static tree
+instantiate_scev_name (basic_block instantiate_below,
+		       struct loop *evolution_loop, tree chrec,
+		       bool fold_conversions, htab_t cache, int size_expr)
+{
+  tree res;
+  struct loop *def_loop;
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (chrec));
+
+  /* A parameter (or loop invariant and we do not want to include
+     evolutions in outer loops), nothing to do.  */
+  if (!def_bb
+      || loop_depth (def_bb->loop_father) == 0
+      || dominated_by_p (CDI_DOMINATORS, instantiate_below, def_bb))
+    return chrec;
+
+  /* We cache the value of instantiated variable to avoid exponential
+     time complexity due to reevaluations.  We also store the convenient
+     value in the cache in order to prevent infinite recursion -- we do
+     not want to instantiate the SSA_NAME if it is in a mixer
+     structure.  This is used for avoiding the instantiation of
+     recursively defined functions, such as:
+
+     | a_2 -> {0, +, 1, +, a_2}_1  */
+
+  res = get_instantiated_value (cache, instantiate_below, chrec);
+  if (res)
+    return res;
+
+  res = chrec_dont_know;
+  set_instantiated_value (cache, instantiate_below, chrec, res);
+
+  def_loop = find_common_loop (evolution_loop, def_bb->loop_father);
+
+  /* If the analysis yields a parametric chrec, instantiate the
+     result again.  */
+  res = analyze_scalar_evolution (def_loop, chrec);
+
+  /* Don't instantiate loop-closed-ssa phi nodes.  */
+  if (TREE_CODE (res) == SSA_NAME
+      && (loop_containing_stmt (SSA_NAME_DEF_STMT (res)) == NULL
+	  || (loop_depth (loop_containing_stmt (SSA_NAME_DEF_STMT (res)))
+	      > loop_depth (def_loop))))
+    {
+      if (res == chrec)
+	res = loop_closed_phi_def (chrec);
+      else
+	res = chrec;
+
+      if (res == NULL_TREE
+	  || !dominated_by_p (CDI_DOMINATORS, instantiate_below,
+			      gimple_bb (SSA_NAME_DEF_STMT (res))))
+	res = chrec_dont_know;
+    }
+
+  else if (res != chrec_dont_know)
+    res = instantiate_scev_1 (instantiate_below, evolution_loop, res,
+			      fold_conversions, cache, size_expr);
+
+  /* Store the correct value to the cache.  */
+  set_instantiated_value (cache, instantiate_below, chrec, res);
+  return res;
+
+}
+
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.  
 
@@ -2128,9 +2210,7 @@ instantiate_scev_1 (basic_block instantiate_below,
 		    struct loop *evolution_loop, tree chrec,
 		    bool fold_conversions, htab_t cache, int size_expr)
 {
-  tree res, op0, op1, op2;
-  basic_block def_bb;
-  struct loop *def_loop;
+  tree op0, op1, op2;
   tree type = chrec_type (chrec);
 
   /* Give up if the expression is larger than the MAX that we allow.  */
@@ -2144,61 +2224,8 @@ instantiate_scev_1 (basic_block instantiate_below,
   switch (TREE_CODE (chrec))
     {
     case SSA_NAME:
-      def_bb = gimple_bb (SSA_NAME_DEF_STMT (chrec));
-
-      /* A parameter (or loop invariant and we do not want to include
-	 evolutions in outer loops), nothing to do.  */
-      if (!def_bb
-	  || loop_depth (def_bb->loop_father) == 0
-	  || dominated_by_p (CDI_DOMINATORS, instantiate_below, def_bb))
-	return chrec;
-
-      /* We cache the value of instantiated variable to avoid exponential
-	 time complexity due to reevaluations.  We also store the convenient
-	 value in the cache in order to prevent infinite recursion -- we do
-	 not want to instantiate the SSA_NAME if it is in a mixer
-	 structure.  This is used for avoiding the instantiation of
-	 recursively defined functions, such as: 
-
-	 | a_2 -> {0, +, 1, +, a_2}_1  */
-
-      res = get_instantiated_value (cache, instantiate_below, chrec);
-      if (res)
-	return res;
-
-      res = chrec_dont_know;
-      set_instantiated_value (cache, instantiate_below, chrec, res);
-
-      def_loop = find_common_loop (evolution_loop, def_bb->loop_father);
-
-      /* If the analysis yields a parametric chrec, instantiate the
-	 result again.  */
-      res = analyze_scalar_evolution (def_loop, chrec);
-
-      /* Don't instantiate loop-closed-ssa phi nodes.  */
-      if (TREE_CODE (res) == SSA_NAME
-	  && (loop_containing_stmt (SSA_NAME_DEF_STMT (res)) == NULL
-	      || (loop_depth (loop_containing_stmt (SSA_NAME_DEF_STMT (res)))
-		  > loop_depth (def_loop))))
-	{
-	  if (res == chrec)
-	    res = loop_closed_phi_def (chrec);
-	  else
-	    res = chrec;
-
-	  if (res == NULL_TREE
-	      || !dominated_by_p (CDI_DOMINATORS, instantiate_below,
-				  gimple_bb (SSA_NAME_DEF_STMT (res))))
-	    res = chrec_dont_know;
-	}
-
-      else if (res != chrec_dont_know)
-	res = instantiate_scev_1 (instantiate_below, evolution_loop, res,
-				  fold_conversions, cache, size_expr);
-
-      /* Store the correct value to the cache.  */
-      set_instantiated_value (cache, instantiate_below, chrec, res);
-      return res;
+      return instantiate_scev_name (instantiate_below, evolution_loop, chrec,
+				    fold_conversions, cache, size_expr);
 
     case POLYNOMIAL_CHREC:
       op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
