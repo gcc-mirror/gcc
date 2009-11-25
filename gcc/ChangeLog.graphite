@@ -1,3 +1,12 @@
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (struct scop): Add a field saved_schedule.
+	(SCOP_SAVED_SCHEDULE): New.
+	(store_lst_schedule): New.
+	(restore_lst_schedule): New.
+	(store_scattering): Call store_lst_schedule.
+	(restore_scattering): Call restore_lst_schedule.
+
 2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (free_data_refs_aux): Fix formatting.

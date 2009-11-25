@@ -823,8 +823,8 @@ struct scop
      representation.  */
   VEC (poly_bb_p, heap) *bbs;
 
-  /* Original and transformed schedules.  */
-  lst_p original_schedule, transformed_schedule;
+  /* Original, transformed and saved schedules.  */
+  lst_p original_schedule, transformed_schedule, saved_schedule;
 
   /* The context describes known restrictions concerning the parameters
      and relations in between the parameters.
@@ -852,6 +852,7 @@ struct scop
 #define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
 #define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
+#define SCOP_SAVED_SCHEDULE(S) (S->saved_schedule)
 
 extern scop_p new_scop (void *);
 extern void free_scop (scop_p);
@@ -939,6 +940,22 @@ store_scattering_pbb (poly_bb_p pbb)
   PBB_SAVED (pbb) = poly_scattering_copy (PBB_TRANSFORMED (pbb));
 }
 
+/* Stores the SCOP_TRANSFORMED_SCHEDULE to SCOP_SAVED_SCHEDULE.  */
+
+static inline void
+store_lst_schedule (scop_p scop)
+{
+  SCOP_SAVED_SCHEDULE (scop) = copy_lst (SCOP_TRANSFORMED_SCHEDULE (scop));
+}
+
+/* Restores the SCOP_TRANSFORMED_SCHEDULE from SCOP_SAVED_SCHEDULE.  */
+
+static inline void
+restore_lst_schedule (scop_p scop)
+{
+  SCOP_TRANSFORMED_SCHEDULE (scop) = copy_lst (SCOP_SAVED_SCHEDULE (scop));
+}
+
 /* Saves the scattering for all the pbbs in the SCOP.  */
 
 static inline void
@@ -949,6 +966,8 @@ store_scattering (scop_p scop)
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     store_scattering_pbb (pbb);
+
+  store_lst_schedule (scop);
 }
 
 /* Restores the scattering of PBB.  */
@@ -972,6 +991,8 @@ restore_scattering (scop_p scop)
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     restore_scattering_pbb (pbb);
+
+  restore_lst_schedule (scop);
 }
 
 #endif
