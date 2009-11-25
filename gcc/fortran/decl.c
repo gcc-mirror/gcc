@@ -1865,7 +1865,7 @@ variable_decl (int elem)
 	      m = MATCH_ERROR;
 	    }
 
-	  if (gfc_pure (NULL))
+	  if (gfc_pure (NULL) && gfc_state_stack->state != COMP_DERIVED)
 	    {
 	      gfc_error ("Initialization of pointer at %C is not allowed in "
 			 "a PURE procedure");

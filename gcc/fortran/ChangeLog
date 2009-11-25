@@ -1,3 +1,9 @@
+2009-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41807
+	* decl.c (variable_decl): Do not error on initialization within a
+	derived type specification of a pure procedure.
+
 2009-11-24  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42045
