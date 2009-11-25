@@ -1,3 +1,7 @@
+2009-11-25  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (consttable_4): Handle (high ...).
+
 2009-11-25  Robert Nelson  <robert.nelson@digikey.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
