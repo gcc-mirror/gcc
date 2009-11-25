@@ -1,3 +1,10 @@
+2009-11-04  Konrad Trifunovic  <konrad.trifunovic@inria.fr>
+
+        * graphite-interchange.c (build_partial_difference): New.
+        (memory_stride_in_loop): Refactored the computation of
+        equality constraints into build_partial_difference function.
+        Added support for debugging stride computations.
+
 2009-11-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gloog): Free if_region,
