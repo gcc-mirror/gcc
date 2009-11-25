@@ -1,3 +1,7 @@
+2009-10-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (pbb_remove_duplicate_pdrs): Free collapsed.
+
 2009-10-28  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
 
 	* graphite-poly.c (print_permutation): New.
