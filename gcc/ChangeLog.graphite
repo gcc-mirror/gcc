@@ -1,3 +1,10 @@
+2009-09-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* testsuite/gcc.dg/graphite/scop-dsyrk.c: New File.
+	* testsuite/gcc.dg/graphite/scop-dsyr2k.c: New File.
+	* testsuite/gcc.dg/graphite/scop-mvt.c: New File.
+	* testsuite/gcc.dg/graphite/scop-sor.c: New File.
+
 2009-09-17 Li Feng  <nemokingdom@gmail.com>
 
 	PR middle-end/41118
