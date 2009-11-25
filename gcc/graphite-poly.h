@@ -693,6 +693,21 @@ copy_lst (lst_p lst)
   return new_lst_stmt (LST_PBB (lst));
 }
 
+/* Adds a new loop under the loop LST.  */
+
+static inline void
+lst_add_loop_under_loop (lst_p lst)
+{
+  VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 1);
+  lst_p l = new_lst_loop (LST_SEQ (lst));
+
+  gcc_assert (LST_LOOP_P (lst));
+
+  LST_LOOP_FATHER (l) = lst;
+  VEC_quick_push (lst_p, seq, l);
+  LST_SEQ (lst) = seq;
+}
+
 /* Returns the loop depth of LST.  */
 
 static inline int
@@ -765,6 +780,27 @@ find_lst_loop (lst_p stmt, int loop_depth)
   return loop;
 }
 
+/* Return the LST node corresponding to PBB.  */
+
+static inline lst_p
+lst_find_first_pbb (lst_p lst)
+{
+  int i;
+  lst_p l;
+
+  if (!lst)
+    return NULL;
+
+  if (LST_LOOP_P (lst))
+    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      {
+	lst_p res = lst_find_first_pbb (l);
+	if (res)
+	  return res;
+      }
+
+  return lst;
+}
 
 /* A SCOP is a Static Control Part of the program, simple enough to be
    represented in polyhedral form.  */

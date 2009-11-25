@@ -1,5 +1,14 @@
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-blocking.c (pbb_do_strip_mine): Removed.
+	(lst_do_strip_mine_loop): New.
+	(lst_do_strip_mine): New.
+	(scop_do_strip_mine): Call lst_do_strip_mine.
+	* graphite-poly.h (lst_add_loop_under_loop): New.
+	(lst_find_first_pbb): New.
+
+2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (loop_to_lst): Fix LST creation.
 
 2009-10-14  Tobias Grosser  <grosser@fim.uni-passau.de>

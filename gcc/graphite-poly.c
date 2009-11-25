@@ -796,7 +796,7 @@ pbb_number_of_iterations_at_time (poly_bb_p pbb,
      them into the bigger polyhedron that has the following format:
      t0..t_{n-1} | l0..l_{nlcl-1} | i0..i_{niter-1} | g0..g_{nparm-1}.
      t0..t_{n-1} are time dimensions (scattering dimensions)
-     l0..l_{nclc-1} are local variables in scatterin function
+     l0..l_{nclc-1} are local variables in scattering function
      i0..i_{niter-1} are original iteration variables
      g0..g_{nparam-1} are global parameters.  */
 
