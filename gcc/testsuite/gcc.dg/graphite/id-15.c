@@ -9,10 +9,10 @@ encode (words, low, hi)
      unsigned long low;
      long hi;
 {
-  words[0] = ((low) & (((unsigned long) 1 << ((8 * 8) / 2)) - 1));
-  words[1] = ((unsigned long) (low) >> (8 * 8) / 2);
-  words[2] = ((hi) & (((unsigned long) 1 << ((8 * 8) / 2)) - 1));
-  words[3] = ((unsigned long) (hi) >> (8 * 8) / 2);
+  words[0] = ((low) & (((unsigned long) 1 << (sizeof(unsigned long) / 2)) - 1));
+  words[1] = ((unsigned long) (low) >> sizeof(unsigned long) / 2);
+  words[2] = ((hi) & (((unsigned long) 1 << (sizeof(unsigned long) / 2)) - 1));
+  words[3] = ((unsigned long) (hi) >> sizeof(unsigned long) / 2);
 }
 
 static void
@@ -21,8 +21,8 @@ decode (words, low, hi)
      unsigned long *low;
      long *hi;
 {
-  *low = words[0] + words[1] * ((unsigned long) 1 << (8 * 8) / 2);
-  *hi = words[2] + words[3] * ((unsigned long) 1 << (8 * 8) / 2);
+  *low = words[0] + words[1] * ((unsigned long) 1 << sizeof(unsigned long) / 2);
+  *hi = words[2] + words[3] * ((unsigned long) 1 << sizeof(unsigned long) / 2);
 }
 
 int
@@ -94,8 +94,8 @@ mul_double (l1, h1, l2, h2, lv, hv)
 	  carry += arg1[i] * arg2[j];
 
 	  carry += prod[k];
-	  prod[k] = ((carry) & (((unsigned long) 1 << ((8 * 8) / 2)) - 1));
-	  carry = ((unsigned long) (carry) >> (8 * 8) / 2);
+	  prod[k] = ((carry) & (((unsigned long) 1 << (sizeof(unsigned long) / 2)) - 1));
+	  carry = ((unsigned long) (carry) >> sizeof(unsigned long) / 2);
 	}
       prod[i + 4] = carry;
     }
