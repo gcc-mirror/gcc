@@ -1,5 +1,13 @@
 2009-11-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gloog): Free if_region,
+	if_region->true_region, and if_region->region.
+	* sese.c (if_region_set_false_region): Free if_region->false_region.
+	(create_if_region_on_edge): Do not use GGC_NEW.
+	(move_sese_in_condition): Remove useless initialization.
+
+2009-11-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (lst_perfect_nestify): Pass 3 parameters
 	for the loops created by the loop distribution.  Do not modify the
 	input LSTs.

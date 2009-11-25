@@ -1201,6 +1201,10 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   recompute_all_dominators ();
   graphite_verify ();
 
+  free (if_region->true_region);
+  free (if_region->region);
+  free (if_region);
+
   htab_delete (rename_map);
   htab_delete (newivs_index);
   VEC_free (tree, heap, newivs);
