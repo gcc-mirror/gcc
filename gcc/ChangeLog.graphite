@@ -1,5 +1,15 @@
 2009-10-06  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (lst_apply_interchange): New.
+	(lst_interchange_profitable_p): New.
+	(lst_try_interchange_loops): New.
+	(lst_try_interchange): New.
+	(lst_do_interchange): New.
+	(pbb_do_interchange): Removed.
+	(scop_do_interchange): Call lst_do_interchange.
+
+2009-10-06  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (print_scop): Print SCOP_ORIGINAL_SCHEDULE and
 	SCOP_TRANSFORMED_SCHEDULE.
 	(loop_to_lst): New.
