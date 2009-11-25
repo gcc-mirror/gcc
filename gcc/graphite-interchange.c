@@ -104,6 +104,94 @@ build_linearized_memory_access (ppl_dimension_type offset, poly_dr_p pdr)
   return res;
 }
 
+/* Builds a partial difference equations and inserts them
+   into pointset powerset polyhedron P.  Polyhedron is assumed
+   to have the format: T|I|T'|I'|G|S|S'|l1|l2.
+
+   TIME_DEPTH is the time dimension w.r.t. which we are
+   differentiating.
+   OFFSET represents the number of dimensions between
+   columns t_{time_depth} and t'_{time_depth}.
+   DIM_SCTR is the number of scattering dimensions.  It is
+   essentially the dimensionality of the T vector.
+
+   The following equations are inserted into the polyhedron P:
+    | t_1 = t_1'
+    | ...
+    | t_{time_depth-1} = t'_{time_depth-1}
+    | t_{time_depth} = t'_{time_depth} + 1
+    | t_{time_depth+1} = t'_{time_depth + 1}
+    | ...
+    | t_{dim_sctr} = t'_{dim_sctr}.  */
+
+static void
+build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
+                          ppl_dimension_type time_depth,
+                          ppl_dimension_type offset,
+                          ppl_dimension_type dim_sctr)
+{
+  ppl_Constraint_t new_cstr;
+  ppl_Linear_Expression_t le;
+  ppl_dimension_type i;
+  ppl_dimension_type dim;
+  ppl_Pointset_Powerset_C_Polyhedron_t temp;
+
+  /* Add the equality: t_{time_depth} = t'_{time_depth} + 1.
+     This is the core part of this alogrithm, since this
+     constraint asks for the memory access stride (difference)
+     between two consecutive points in time dimensions.  */
+
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (*p, &dim);
+  ppl_new_Linear_Expression_with_dimension (&le, dim);
+  ppl_set_coef (le, time_depth, 1);
+  ppl_set_coef (le, time_depth + offset, -1);
+  ppl_set_inhomogeneous (le, 1);
+  ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
+  ppl_Pointset_Powerset_C_Polyhedron_add_constraint (*p, new_cstr);
+  ppl_delete_Linear_Expression (le);
+  ppl_delete_Constraint (new_cstr);
+
+  /* Add equalities:
+     | t1 = t1'
+     | ...
+     | t_{time_depth-1} = t'_{time_depth-1}
+     | t_{time_depth+1} = t'_{time_depth+1}
+     | ...
+     | t_{dim_sctr} = t'_{dim_sctr}
+
+     This means that all the time dimensions are equal except for
+     time_depth, where the constraint is t_{depth} = t'_{depth} + 1
+     step.  More to this: we should be carefull not to add equalities
+     to the 'coupled' dimensions, which happens when the one dimension
+     is stripmined dimension, and the other dimension corresponds
+     to the point loop inside stripmined dimension.  */
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron (&temp, *p);
+
+  for (i = 0; i < dim_sctr; i++)
+    if (i != time_depth)
+      {
+        ppl_new_Linear_Expression_with_dimension (&le, dim);
+        ppl_set_coef (le, i, 1);
+        ppl_set_coef (le, i + offset, -1);
+        ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
+        ppl_Pointset_Powerset_C_Polyhedron_add_constraint (temp, new_cstr);
+
+        if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (temp))
+          {
+            ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
+            ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron (&temp, *p);
+          }
+        else
+          ppl_Pointset_Powerset_C_Polyhedron_add_constraint (*p, new_cstr);
+        ppl_delete_Linear_Expression (le);
+        ppl_delete_Constraint (new_cstr);
+      }
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
+}
+
+
 /* Set STRIDE to the stride of PDR in memory by advancing by one in
    time dimension DEPTH.  */
 
@@ -215,48 +303,11 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
     free (map);
   }
 
-  /* Add equalities:
-     | t1 = t1'
-     | ...
-     | t_{depth-1} = t'_{depth-1}
-     | t_{depth+1} = t'_{depth+1}
-     | ...
-     | t_{dim_sctr} = t'_{dim_sctr}
-
-     This means that all the time dimensions are equal except for
-     depth, where we will add t_{depth} = t'_{depth} + 1 in the next
-     step.  */
-
   time_depth = psct_dynamic_dim (pbb, depth);
-  for (i = 0; i < dim_sctr; i++)
-    if (i != time_depth)
-      {
-        ppl_new_Linear_Expression_with_dimension (&le, new_dim);
-        ppl_set_coef (le, i, 1);
-        ppl_set_coef (le, i + offset, -1);
-        ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
-        ppl_Pointset_Powerset_C_Polyhedron_add_constraint (p2, new_cstr);
-        ppl_delete_Linear_Expression (le);
-        ppl_delete_Constraint (new_cstr);
-      }
-
-  /* Add equality : t_{depth} = t'_{depth} + 1.
-     This is the core part of this alogrithm, since this
-     constraint asks for the memory access stride (difference)
-     between two consecutive points in time dimensions.  */
-  {
-    ppl_new_Linear_Expression_with_dimension (&le, new_dim);
-    ppl_set_coef (le, time_depth, 1);
-    ppl_set_coef (le, time_depth + offset, -1);
-    ppl_set_inhomogeneous (le, 1);
-    ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
-    ppl_Pointset_Powerset_C_Polyhedron_add_constraint (p2, new_cstr);
-    ppl_delete_Linear_Expression (le);
-    ppl_delete_Constraint (new_cstr);
-  }
 
   /* P1 = P1 inter P2.  */
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (p1, p2);
+  build_partial_difference (&p1, time_depth, offset, dim_sctr);
 
   /* Maximise the expression L2 - L1.  */
   {
@@ -265,6 +316,13 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
     ppl_set_coef (le, dim_L1, -1);
     ppl_max_for_le_pointset (p1, le, stride);
   }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nStride in BB_%d, DR_%d, depth %d:",
+	       pbb_index (pbb), PDR_ID (pdr), (int) depth);
+      value_print (dump_file, "  %s ", stride);
+    }
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (p1);
   ppl_delete_Pointset_Powerset_C_Polyhedron (p2);
