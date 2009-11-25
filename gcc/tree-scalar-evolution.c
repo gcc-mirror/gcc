@@ -2341,8 +2341,9 @@ instantiate_scev_convert (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
-   CHREC is a BIT_NOT_EXPR expression to be instantiated.
+   CHREC is a BIT_NOT_EXPR or a NEGATE_EXPR expression to be instantiated.
    Handle ~X as -1 - X.
+   Handle -X as -1 * X.
 
    CACHE is the cache of already instantiated values.
 
@@ -2354,9 +2355,9 @@ instantiate_scev_convert (basic_block instantiate_below,
    instantiated, and to stop if it exceeds some limit.  */
 
 static tree
-instantiate_scev_bitnot (basic_block instantiate_below,
-			 struct loop *evolution_loop, tree chrec,
-			 bool fold_conversions, htab_t cache, int size_expr)
+instantiate_scev_not (basic_block instantiate_below,
+		      struct loop *evolution_loop, tree chrec,
+		      bool fold_conversions, htab_t cache, int size_expr)
 {
   tree type = chrec_type (chrec);
   tree op0 = instantiate_scev_r (instantiate_below, evolution_loop,
@@ -2368,11 +2369,22 @@ instantiate_scev_bitnot (basic_block instantiate_below,
   if (TREE_OPERAND (chrec, 0) != op0)
     {
       op0 = chrec_convert (type, op0, NULL);
-      chrec = chrec_fold_minus (type,
-				fold_convert (type,
-					      integer_minus_one_node),
-				op0);
+
+      switch (TREE_CODE (chrec))
+	{
+	case BIT_NOT_EXPR:
+	  return chrec_fold_minus
+	    (type, fold_convert (type, integer_minus_one_node), op0);
+
+	case NEGATE_EXPR:
+	  return chrec_fold_multiply
+	    (type, fold_convert (type, integer_minus_one_node), op0);
+
+	default:
+	  gcc_unreachable ();
+	}
     }
+
   return chrec;
 }
 
@@ -2543,9 +2555,10 @@ instantiate_scev_r (basic_block instantiate_below,
 				       TREE_TYPE (chrec), TREE_OPERAND (chrec, 0),
 				       fold_conversions, cache, size_expr);
 
+    case NEGATE_EXPR:
     case BIT_NOT_EXPR:
-      return instantiate_scev_bitnot (instantiate_below, evolution_loop, chrec,
-				      fold_conversions, cache, size_expr);
+      return instantiate_scev_not (instantiate_below, evolution_loop, chrec,
+				   fold_conversions, cache, size_expr);
 
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
