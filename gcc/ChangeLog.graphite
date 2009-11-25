@@ -1,5 +1,10 @@
 2009-10-13  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite.c (graphite_initialize): Do not handle functions with
+	more than 100 basic blocks.
+
+2009-10-13  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-blocking.c (pbb_do_strip_mine): Use
 	PARAM_LOOP_BLOCK_TILE_SIZE.
 
