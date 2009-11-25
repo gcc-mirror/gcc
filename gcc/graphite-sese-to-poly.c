@@ -2025,6 +2025,42 @@ build_pbb_drs (poly_bb_p pbb)
     build_poly_dr (dr, pbb);
 }
 
+/* Dump to file the alias graphs for the data references in DRS.  */
+
+static void
+dump_alias_graphs (VEC (data_reference_p, heap) *drs)
+{
+  char comment[100];
+  FILE *file_dimacs, *file_ecc, *file_dot;
+
+  file_dimacs = fopen ("/tmp/dr_alias_graph_dimacs", "ab");
+  if (file_dimacs)
+    {
+      snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
+		current_function_name ());
+      write_alias_graph_to_ascii_dimacs (file_dimacs, comment, drs);
+      fclose (file_dimacs);
+    }
+
+  file_ecc = fopen ("/tmp/dr_alias_graph_ecc", "ab");
+  if (file_ecc)
+    {
+      snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
+		current_function_name ());
+      write_alias_graph_to_ascii_ecc (file_ecc, comment, drs);
+      fclose (file_ecc);
+    }
+
+  file_dot = fopen ("/tmp/dr_alias_graph_dot", "ab");
+  if (file_dot)
+    {
+      snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
+		current_function_name ());
+      write_alias_graph_to_ascii_dot (file_dot, comment, drs);
+      fclose (file_dot);
+    }
+}
+
 /* Build data references in SCOP.  */
 
 static void
@@ -2053,37 +2089,8 @@ build_scop_drs (scop_p scop)
 
   /* When debugging, enable the following code.  This cannot be used
      in production compilers.  */
-#if 0
-  {
-    char comment[100];
-    FILE *file_dimacs, *file_ecc, *file_dot;
-
-    file_dimacs = fopen ("/tmp/dr_alias_graph_dimacs", "ab");
-    file_ecc = fopen ("/tmp/dr_alias_graph_ecc", "ab");
-    file_dot = fopen ("/tmp/dr_alias_graph_dot", "ab");
-    if (file_dimacs)
-      {
-	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
-		  current_function_name ());
-	write_alias_graph_to_ascii_dimacs (file_dimacs, comment, drs);
-	fclose (file_dimacs);
-      }
-    if (file_ecc)
-      {
-	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
-		  current_function_name ());
-	write_alias_graph_to_ascii_ecc (file_ecc, comment, drs);
-	fclose (file_ecc);
-      }
-    if (file_dot)
-      {
-	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
-		  current_function_name ());
-	write_alias_graph_to_ascii_dot (file_dot, comment, drs);
-	fclose (file_dot);
-      }
-  }
-#endif
+  if (0)
+    dump_alias_graphs (drs);
 
   VEC_free (data_reference_p, heap, drs);
 
