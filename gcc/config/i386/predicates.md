@@ -1132,15 +1132,78 @@
   (and (match_code "mem")
        (match_test "MEM_ALIGN (op) < GET_MODE_ALIGNMENT (mode)")))
 
+;; Return 1 if OP is a emms operation, known to be a PARALLEL.
+(define_predicate "emms_operation"
+  (match_code "parallel")
+{
+  unsigned i;
+
+  if (XVECLEN (op, 0) != 17)
+    return 0;
+
+  for (i = 0; i < 8; i++)
+    {
+      rtx elt = XVECEXP (op, 0, i+1);
+
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != XFmode
+	  || REGNO (SET_DEST (elt)) != FIRST_STACK_REG + i)
+        return 0;
+
+      elt = XVECEXP (op, 0, i+9);
+
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != DImode
+	  || REGNO (SET_DEST (elt)) != FIRST_MMX_REG + i)
+	return 0;
+    }
+  return 1;
+})
+
 ;; Return 1 if OP is a vzeroall operation, known to be a PARALLEL.
 (define_predicate "vzeroall_operation"
   (match_code "parallel")
 {
-  int nregs = TARGET_64BIT ? 16 : 8;
+  unsigned i, nregs = TARGET_64BIT ? 16 : 8;
 
-  if (XVECLEN (op, 0) != nregs + 1)
+  if ((unsigned) XVECLEN (op, 0) != 1 + nregs)
     return 0;
 
+  for (i = 0; i < nregs; i++)
+    {
+      rtx elt = XVECEXP (op, 0, i+1);
+
+      if (GET_CODE (elt) != SET
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V8SImode
+	  || REGNO (SET_DEST (elt)) != SSE_REGNO (i)
+	  || SET_SRC (elt) != CONST0_RTX (V8SImode))
+	return 0;
+    }
+  return 1;
+})
+
+;; Return 1 if OP is a vzeroupper operation, known to be a PARALLEL.
+(define_predicate "vzeroupper_operation"
+  (match_code "parallel")
+{
+  unsigned i, nregs = TARGET_64BIT ? 16 : 8;
+ 
+  if ((unsigned) XVECLEN (op, 0) != 1 + nregs)
+    return 0;
+
+  for (i = 0; i < nregs; i++)
+    {
+      rtx elt = XVECEXP (op, 0, i+1);
+
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_CODE (SET_DEST (elt)) != REG
+	  || GET_MODE (SET_DEST (elt)) != V8SImode
+	  || REGNO (SET_DEST (elt)) != SSE_REGNO (i))
+	return 0;
+    }
   return 1;
 })
 
