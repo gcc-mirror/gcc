@@ -459,6 +459,13 @@ pass is implemented in @file{tree-vectorizer.c} (the main driver),
 Autoparallelization.  This pass splits the loop iteration space to run
 into several threads.  The pass is implemented in @file{tree-parloops.c}.
 
+Graphite is a loop transformation framework based on the polyhedral
+model.  Graphite stands for Gimple Represented as Polyhedra.  The
+internals of this infrastructure are documented in
+@w{@uref{http://gcc.gnu.org/wiki/Graphite}}.  The passes working on
+this representation are implemented in the various @file{graphite-*}
+files.
+
 @item Tree level if-conversion for vectorizer
 
 This pass applies if-conversion to simple loops to help vectorizer.

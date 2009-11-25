@@ -1,5 +1,9 @@
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* doc/passes.texi: Document the Graphite infrastructure.
+
+2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (insert_copyin): Use gsi_insert_seq_on_edge.
 	(rewrite_commutative_reductions_out_of_ssa): Call gsi_commit_edge_inserts,
 	and check the SSA representation.
