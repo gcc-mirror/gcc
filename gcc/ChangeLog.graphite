@@ -1,3 +1,17 @@
+2009-10-20  Li Feng  <nemokingdom@gmail.com>
+
+	* graphite-sese-to-poly.c (free_data_refs_aux): Update to free
+	the new structure.
+	(pdr_add_alias_set): Update retrieving alias_set_num.
+	(build_poly_dr): Update retrieving dr_base_object_set.
+	(partition_drs_to_sets): Remove.
+	(build_alias_set_optimal_p): New.
+	(build_alias_set_for_drs): Rename.
+	(build_scop_drs): Update.
+	* graphite-sese-to-poly.h (struct base_alias_pair): New.
+	(ALIAS_SET_INDEX): Remove.
+	(BASE_OBJECT_SET_INDEX): Remove.
+
 2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.c (get_vdef_before_sese): Handle GIMPLE_ASSIGN and GIMPLE_CALL.

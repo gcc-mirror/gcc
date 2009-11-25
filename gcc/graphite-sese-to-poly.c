@@ -290,15 +290,16 @@ free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
 {
   unsigned int i;
   struct data_reference *dr;
-
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
-    if (!dr->aux)
+   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    if (dr->aux != NULL)
       {
-	free (dr->aux);
+	base_alias_pair *bap = (base_alias_pair *)(dr->aux);
+	if (bap->alias_set != NULL)
+	  free (bap->alias_set);
+	free (bap);
 	dr->aux = NULL;
       }
 }
-
 /* Frees GBB.  */
 
 static void
@@ -1628,9 +1629,10 @@ pdr_add_alias_set (ppl_Polyhedron_t accesses, data_reference_p dr,
   ppl_Linear_Expression_t alias;
   ppl_Constraint_t cstr;
   int alias_set_num = 0;
+  base_alias_pair *bap = (base_alias_pair *)(dr->aux);
 
-  if (dr->aux != NULL)
-    alias_set_num = ((int *)(dr->aux))[ALIAS_SET_INDEX];
+  if (bap != NULL && bap->alias_set != NULL)
+    alias_set_num = *(bap->alias_set);
 
   ppl_new_Linear_Expression_with_dimension (&alias, accessp_nb_dims);
 
@@ -1773,7 +1775,8 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 							    accesses);
   ppl_delete_Polyhedron (accesses);
 
-  dr_base_object_set = ((int *)(dr->aux))[BASE_OBJECT_SET_INDEX];
+  if (dr->aux != NULL)
+    dr_base_object_set = ((base_alias_pair *)(dr->aux))->base_obj_set;
 
   new_poly_dr (pbb, dr_base_object_set, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
 	       dr, DR_NUM_DIMENSIONS (dr));
@@ -1869,17 +1872,22 @@ write_alias_graph_to_ascii_ecc (FILE *file, char *comment,
   return true;
 }
 
+/* Check if DR1 and DR2 are in the same object set.  */
+
+static bool
+dr_same_base_object_p (const struct data_reference *dr1,
+		       const struct data_reference *dr2)
+{
+  return operand_equal_p (DR_BASE_OBJECT (dr1), DR_BASE_OBJECT (dr2), 0);
+}
 
 /* Uses DFS component number as representative of alias-sets. Also tests for
    optimality by verifying if every connected component is a clique. Returns
    true (1) if the above test is true, and false (0) otherwise.  */
 
 static int
-partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
-		       bool (* edge_exist_p) (const struct data_reference *,
-					      const struct data_reference *))
+build_alias_set_optimal_p (VEC (data_reference_p, heap) *drs)
 {
-
   int num_vertices = VEC_length (data_reference_p, drs);
   struct graph *g = new_graph (num_vertices);
   data_reference_p dr1, dr2;
@@ -1893,7 +1901,7 @@ partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
 
   for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
     for (j = i+1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if (edge_exist_p (dr1, dr2))
+      if (dr_may_alias_p (dr1, dr2))
 	{
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
@@ -1904,7 +1912,18 @@ partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
   for (i = 0; i < num_vertices; i++)
     all_vertices[i] = i;
 
-  num_connected_components = graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
+  num_connected_components = graphds_dfs (g, all_vertices, num_vertices,
+					  NULL, true, NULL);
+  for (i = 0; i < g->n_vertices; i++)
+    {
+      data_reference_p dr = VEC_index (data_reference_p, drs, i);
+      base_alias_pair *bap;
+      if (dr->aux != NULL)
+	bap = (base_alias_pair *)(dr->aux);
+      bap->alias_set = XNEW (int);
+      *(bap->alias_set) = g->vertices[i].component + 1;
+    }
+
 
   /* Verify if the DFS numbering results in optimal solution.  */
   for (i = 0; i < num_connected_components; i++)
@@ -1942,33 +1961,10 @@ partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
 	}
     }
 
-  for (i = 0; i < g->n_vertices; i++)
-    {
-      data_reference_p dr = VEC_index (data_reference_p, drs, i);
-      if (!dr->aux)
-	dr->aux = XNEWVEC (int, 2);
-      ((int *)(dr->aux))[choice] = g->vertices[i].component + 1;
-    }
-
   free (all_vertices);
   free (vertices);
   free_graph (g);
   return all_components_are_cliques;
-}
-
-static bool
-dr_same_base_object_p (const struct data_reference *dr1,
-		       const struct data_reference *dr2)
-{
-  return operand_equal_p (DR_BASE_OBJECT (dr1), DR_BASE_OBJECT (dr2), 0);
-}
-
-/* Group each data reference in DRS with it's alias set num.  */
-
-static void
-build_alias_set_for_drs (VEC (data_reference_p, heap) *drs)
-{
-  partition_drs_to_sets (drs, ALIAS_SET_INDEX, dr_may_alias_p);
 }
 
 /* Group each data reference in DRS with it's base object set num.  */
@@ -1976,7 +1972,38 @@ build_alias_set_for_drs (VEC (data_reference_p, heap) *drs)
 static void
 build_base_obj_set_for_drs (VEC (data_reference_p, heap) *drs)
 {
-  partition_drs_to_sets (drs, BASE_OBJECT_SET_INDEX, dr_same_base_object_p);
+  int num_vertex = VEC_length (data_reference_p, drs);
+  struct graph *g = new_graph (num_vertex);
+  data_reference_p dr1, dr2;
+  int i, j;
+  int num_component;
+  int *queue;
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
+      if (dr_same_base_object_p (dr1, dr2))
+	{
+	  add_edge (g, i, j);
+	  add_edge (g, j, i);
+	}
+
+  queue = XNEWVEC (int, num_vertex);
+  for (i = 0; i < num_vertex; i++)
+    queue[i] = i;
+
+  num_component = graphds_dfs (g, queue, num_vertex, NULL, true, NULL);
+
+  for (i = 0; i < g->n_vertices; i++)
+    {
+      data_reference_p dr = VEC_index (data_reference_p, drs, i);
+      base_alias_pair *bap;
+      if (dr->aux != NULL)
+	bap = (base_alias_pair *)(dr->aux);
+      bap->base_obj_set = g->vertices[i].component + 1;
+    }
+
+  free (queue);
+  free_graph (g);
 }
 
 /* Build the data references for PBB.  */
@@ -2007,7 +2034,15 @@ build_scop_drs (scop_p scop)
 			     GBB_DATA_REFS (PBB_BLACK_BOX (pbb)), j, dr); j++)
       VEC_safe_push (data_reference_p, heap, drs, dr);
 
-  build_alias_set_for_drs (drs);
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr); i++)
+    dr->aux = XNEW (base_alias_pair);
+
+  if (!build_alias_set_optimal_p (drs))
+    {
+      /* TODO: Add support when building alias set is not optimal.  */
+      ;
+    }
+
   build_base_obj_set_for_drs (drs);
 
   /* When debugging, enable the following code.  This cannot be used

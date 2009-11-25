@@ -21,8 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_SESE_TO_POLY_H
 #define GCC_GRAPHITE_SESE_TO_POLY_H
 
-#define ALIAS_SET_INDEX 0
-#define BASE_OBJECT_SET_INDEX 1
+typedef struct base_alias_pair base_alias_pair;
+struct base_alias_pair
+{
+  int base_obj_set;
+  int *alias_set;
+};
 
 bool build_poly_scop (scop_p);
 void check_poly_representation (scop_p);
