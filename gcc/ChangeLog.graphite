@@ -1,5 +1,16 @@
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-blocking.c (lst_do_strip_mine): Avoid strip mining the
+	root of the LST.
+	* graphite-interchange.c (lst_do_interchange): Avoid interchanging
+	the root of the LST.
+	* graphite-poly.c (scop_to_lst): Fix LST sequence in an outermost
+	fake loop.
+	(print_lst): Print the root of LST in a different format.
+	* graphite-poly.h (lst_depth): Adjust to include the root of the LST.
+
+2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (print_scop): Fix pretty printing of a SCoP.
 
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>

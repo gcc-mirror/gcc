@@ -539,8 +539,9 @@ lst_do_interchange (scop_p scop, lst_p lst)
       lst_p l;
       bool res = false;
 
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-	res |= lst_try_interchange (scop, lst, l);
+      if (lst_depth (lst) >= 0)
+	for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	  res |= lst_try_interchange (scop, lst, l);
 
       for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
 	res |= lst_do_interchange (scop, l);
