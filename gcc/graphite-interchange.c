@@ -326,7 +326,7 @@ pbb_do_interchange (poly_bb_p pbb, scop_p scop)
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
 			 "PBB %d: loops at depths %d and %d will be interchanged.\n",
-			 GBB_BB (PBB_BLACK_BOX (pbb))->index, (int) i, (int) j);
+			 pbb_index (pbb), (int) i, (int) j);
 	    }
 	  else
 	    /* Undo the transform.  */

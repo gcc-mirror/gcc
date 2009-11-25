@@ -1158,7 +1158,7 @@ create_linear_expr_from_tree (poly_bb_p pbb, tree t)
   ppl_Linear_Expression_t res;
   ppl_dimension_type dim;
   sese region = SCOP_REGION (PBB_SCOP (pbb));
-  loop_p loop = GBB_BB (PBB_BLACK_BOX (pbb))->loop_father;
+  loop_p loop = pbb_loop (pbb);
 
   dim = pbb_dim_iter_domain (pbb) + pbb_nb_params (pbb);
   ppl_new_Linear_Expression_with_dimension (&res, dim);

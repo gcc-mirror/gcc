@@ -355,6 +355,14 @@ pbb_index (poly_bb_p pbb)
   return GBB_BB (PBB_BLACK_BOX (pbb))->index;
 }
 
+/* The loop of the PBB.  */
+
+static inline loop_p
+pbb_loop (poly_bb_p pbb)
+{
+  return gbb_loop (PBB_BLACK_BOX (pbb));
+}
+
 /* The scop that contains the PDR.  */
 
 static inline scop_p

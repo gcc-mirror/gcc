@@ -1,3 +1,12 @@
+2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (build_cloog_prog): Use pbb_index.
+	* graphite-interchange.c (pbb_do_interchange): Same.
+	* graphite-poly.c (print_scattering_function): Same.
+	(debug_pdrs): Same.
+	* graphite-poly.h (pbb_loop): New.
+	* graphite-sese-to-poly.c (create_linear_expr_from_tree): Use pbb_loop.
+
 2009-09-27  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-scop-detection.c (limit_scops): Do not build poly_bbs.
