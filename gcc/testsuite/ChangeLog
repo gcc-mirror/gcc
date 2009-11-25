@@ -1,3 +1,8 @@
+2009-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42008
+	* gfortran.dg/pure_initializer_2.f90: New test.
+
 2009-11-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/tc1/dr147.C: Check for helpful messages. Add DR 318 tests.
