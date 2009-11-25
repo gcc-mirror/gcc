@@ -1,5 +1,14 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (create_zero_dim_array): Pass an extra
+	argument base_name.
+	(rewrite_close_phi_out_of_ssa): Update use of create_zero_dim_array.
+	(rewrite_phi_out_of_ssa): Same.
+	(rewrite_cross_bb_scalar_deps): Same.
+	(translate_scalar_reduction_to_array): Same.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (build_scop_drs): Disable call to
 	dump_alias_graphs.
 
