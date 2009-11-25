@@ -1,5 +1,10 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (dependence_polyhedron_1): Add the
+	context to the dependence polyhedron.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (pbb_remove_duplicate_pdrs): Initialize
 	PBB_PDR_DUPLICATES_REMOVED.
 	(new_poly_bb): Same.

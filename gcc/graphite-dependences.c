@@ -121,7 +121,7 @@ pddr_is_empty (poly_ddr_p pddr)
 
 /* Returns a polyhedron of dimension DIM.
 
-   Maps the dimensions [0, ..., cut - 1] of polyhedron P to OFFSET0
+   Maps the dimensions [0, ..., cut - 1] of polyhedron P to OFFSET
    and the dimensions [cut, ..., nb_dim] to DIM - GDIM.  */
 
 static ppl_Pointset_Powerset_C_Polyhedron_t
@@ -388,7 +388,16 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
     }
 }
 
-/* Build the dependence polyhedron for data references PDR1 and PDR2.  */
+/* Build the dependence polyhedron for data references PDR1 and PDR2.
+   The layout of the dependence polyhedron is:
+
+   T1|I1|T2|I2|S1|S2|G
+
+   with
+   | T1 and T2 the scattering dimensions for PDR1 and PDR2
+   | I1 and I2 the iteration domains
+   | S1 and S2 the subscripts
+   | G the global parameters.  */
 
 static poly_ddr_p
 dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
@@ -414,8 +423,14 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_Pointset_Powerset_C_Polyhedron_t res;
   ppl_Pointset_Powerset_C_Polyhedron_t id1, id2, isc1, isc2, idr1, idr2;
   ppl_Pointset_Powerset_C_Polyhedron_t sc1, sc2, dreq;
+  ppl_Pointset_Powerset_C_Polyhedron_t context;
 
   gcc_assert (PBB_SCOP (pbb1) == PBB_SCOP (pbb2));
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+    (&context, SCOP_CONTEXT (scop));
+  ppl_insert_dimensions_pointset (context, 0, dim - gdim);
+
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc1, s1);
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc2, s2);
 
@@ -433,6 +448,7 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
   dreq = dr_equality_constraints (dim, tdim1 + ddim1 + tdim2 + ddim2, sdim1);
 
   ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&res, dim, 0);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, context);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, id1);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, id2);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, isc1);
@@ -440,6 +456,7 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, idr1);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, idr2);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, dreq);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (context);
   ppl_delete_Pointset_Powerset_C_Polyhedron (id1);
   ppl_delete_Pointset_Powerset_C_Polyhedron (id2);
   ppl_delete_Pointset_Powerset_C_Polyhedron (sc1);
