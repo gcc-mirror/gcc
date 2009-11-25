@@ -1,5 +1,10 @@
 2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42050
+	* testsuite/gfortran.dg/graphite/pr42050.f90: New.
+
+2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (memory_strides_in_loop_depth): New.
 	(pbb_interchange_profitable_p): Call memory_strides_in_loop_depth.
 
