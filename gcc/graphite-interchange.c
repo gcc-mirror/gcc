@@ -475,6 +475,51 @@ lst_interchange_profitable_p (lst_p lst, int depth1, int depth2)
     return pbb_interchange_profitable_p (depth1, depth2, LST_PBB (lst));
 }
 
+/* Return true when the nest starting at LOOP1 and ending on LOOP2 is
+   perfect: i.e. there are no sequence of statements.  */
+
+static bool
+lst_perfectly_nested_p (lst_p loop1, lst_p loop2)
+{
+  if (loop1 == loop2)
+    return true;
+
+  if (!LST_LOOP_P (loop1))
+    return false;
+
+  return VEC_length (lst_p, LST_SEQ (loop1)) == 1
+    && lst_perfectly_nested_p (VEC_index (lst_p, LST_SEQ (loop1), 0), loop2);
+}
+
+/* Transform the loop nest between LOOP1 and LOOP2 into a perfect
+   nest.  To continue the naming tradition, this function is called
+   after perfect_nestify.  */
+
+static void
+lst_perfect_nestify (lst_p loop1, lst_p loop2)
+{
+  lst_p before, after;
+  poly_bb_p first, last;
+
+  gcc_assert (loop1 && loop2
+	      && loop1 != loop2
+	      && LST_LOOP_P (loop1) && LST_LOOP_P (loop2));
+
+  first = LST_PBB (lst_find_first_pbb (loop2));
+  last = LST_PBB (lst_find_last_pbb (loop2));
+
+  before = copy_lst (loop1);
+  after = copy_lst (loop1);
+
+  lst_remove_all_before_including_pbb (before, first, false);
+  lst_remove_all_before_including_pbb (after, last, true);
+
+  lst_remove_all_before_excluding_pbb (loop1, first, true);
+  lst_remove_all_before_excluding_pbb (loop1, last, false);
+
+  lst_insert_in_sequence (before, loop1, true);
+  lst_insert_in_sequence (after, loop1, false);
+}
 
 /* Try to interchange LOOP1 with LOOP2 for all the statements of the
    body of LOOP2.  LOOP1 contains LOOP2.  Return true if it did the
@@ -489,6 +534,12 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
   if (!lst_interchange_profitable_p (loop2, depth1, depth2))
     return false;
 
+  store_lst_schedule (scop);
+
+  if (!lst_perfectly_nested_p (loop1, loop2))
+    lst_perfect_nestify (loop1, loop2);
+
+  gcc_assert (lst_perfectly_nested_p (loop1, loop2));
   lst_apply_interchange (loop2, depth1, depth2);
 
   if (graphite_legal_transform (scop))
@@ -503,6 +554,7 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
 
   /* Undo the transform.  */
   lst_apply_interchange (loop2, depth2, depth1);
+  restore_lst_schedule (scop);
   return false;
 }
 
@@ -563,22 +615,11 @@ lst_do_interchange (scop_p scop, lst_p lst)
 bool
 scop_do_interchange (scop_p scop)
 {
-  bool transform_done = false;
+  lst_p lst = copy_lst (SCOP_TRANSFORMED_SCHEDULE (scop));
+  bool res = lst_do_interchange (scop, lst);
 
-  store_scattering (scop);
-
-  transform_done = lst_do_interchange (scop, SCOP_TRANSFORMED_SCHEDULE (scop));
-
-  if (!transform_done)
-    return false;
-
-  if (!graphite_legal_transform (scop))
-    {
-      restore_scattering (scop);
-      return false;
-    }
-
-  return transform_done;
+  free_lst (lst);
+  return res;
 }
 
 

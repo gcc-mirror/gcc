@@ -1,5 +1,32 @@
 2009-10-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (lst_perfectly_nested_p): New.
+	(lst_perfect_nestify): New.
+	(lst_try_interchange_loops): Call store_lst_schedule,
+	lst_perfectly_nested_p, lst_perfect_nestify and restore_lst_schedule.
+	(scop_do_interchange): Avoid redundant legality test.
+	Call lst_do_interchange on a copy of SCOP_TRANSFORMED_SCHEDULE.
+	* graphite-poly.c (apply_poly_transforms): Call lst_update_scattering.
+	* graphite-poly.h (psct_static_dim): New.
+	(lst_dewey_number_at_depth): New.
+	(lst_find_pbb): Restructured.
+	(lst_find_first_pbb): Restructured.
+	(lst_find_last_pbb): New.
+	(lst_contains_p): New.
+	(lst_contains_pbb): New.
+	(lst_create_nest): New.
+	(lst_remove_from_sequence): New.
+	(pbb_update_scattering): New.
+	(lst_update_scattering_under): New.
+	(lst_update_scattering_seq): New.
+	(lst_update_scattering): New.
+	(lst_insert_in_sequence): New.
+	(lst_distribute_lst): New.
+	(lst_remove_all_before_including_pbb): New.
+	(lst_remove_all_before_excluding_pbb): New.
+
+2009-10-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-ssa-loop-niter.c (finite_loop_p): Do not call twice
 	get_loop_exit_edges.
 

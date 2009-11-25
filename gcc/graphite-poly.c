@@ -263,6 +263,7 @@ apply_poly_transforms (scop_p scop)
 	transform_done |= scop_do_interchange (scop);
     }
 
+  lst_update_scattering (SCOP_TRANSFORMED_SCHEDULE (scop));
   return transform_done;
 }
 
