@@ -1,5 +1,10 @@
 2009-10-16  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/interchange-7.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-9.c: Un-XFAILed.
+
+2009-10-16  Sebastian Pop  <sebastian.pop@amd.com>
+
 	Reapply the patch from Alexander Monakov that disappeared during
 	the last merges from trunk.
 
