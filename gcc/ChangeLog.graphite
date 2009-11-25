@@ -1,5 +1,10 @@
 2009-09-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-ssa-loop.c (gate_graphite_transforms): Disable Graphite
+	passes at -O1 and below.
+
+2009-09-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-blocking.c: Fix order of includes: tree-chrec.h, then
 	tree-scalar-evolution.h, and then tree-data-ref.h.
 	* graphite-clast-to-gimple.c: Same.
