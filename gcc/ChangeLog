@@ -1,3 +1,9 @@
+2009-11-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_call): Only use sr4 for long interspace calls if
+	call binds local and generating non PIC code.
+	(attr_length_call): Adjust length calculation for above.
+
 2009-11-24  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/s390.md: Added agen condition to operand
