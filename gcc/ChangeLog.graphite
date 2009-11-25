@@ -1,3 +1,8 @@
+2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_alias_set_optimal_p): Initialize
+	all_components_are_cliques to 1.
+
 2009-10-20  Li Feng  <nemokingdom@gmail.com>
 
 	* graphite-sese-to-poly.c (free_data_refs_aux): Update to free
