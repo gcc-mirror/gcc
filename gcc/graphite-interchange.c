@@ -110,6 +110,7 @@ build_linearized_memory_access (ppl_dimension_type offset, poly_dr_p pdr)
 static void
 memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
 {
+  ppl_dimension_type time_depth;
   ppl_Linear_Expression_t le, lma;
   ppl_Constraint_t new_cstr;
   ppl_dimension_type i, *map;
@@ -223,8 +224,10 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
      This means that all the time dimensions are equal except for
      depth, where we will add t_{depth} = t'_{depth} + 1 in the next
      step.  */
+
+  time_depth = psct_dynamic_dim (pbb, depth);
   for (i = 0; i < dim_sctr; i++)
-    if (i != depth)
+    if (i != time_depth)
       {
         ppl_new_Linear_Expression_with_dimension (&le, new_dim);
         ppl_set_coef (le, i, 1);
@@ -241,8 +244,8 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
      between two consecutive points in time dimensions.  */
   {
     ppl_new_Linear_Expression_with_dimension (&le, new_dim);
-    ppl_set_coef (le, depth, 1);
-    ppl_set_coef (le, depth + offset, -1);
+    ppl_set_coef (le, time_depth, 1);
+    ppl_set_coef (le, time_depth + offset, -1);
     ppl_set_inhomogeneous (le, 1);
     ppl_new_Constraint (&new_cstr, le, PPL_CONSTRAINT_TYPE_EQUAL);
     ppl_Pointset_Powerset_C_Polyhedron_add_constraint (p2, new_cstr);
