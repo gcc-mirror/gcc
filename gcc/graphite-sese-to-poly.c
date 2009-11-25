@@ -1708,7 +1708,7 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 	       dr, DR_NUM_DIMENSIONS (dr));
 }
 
-/* Write to FILE the alias graph of data references DRS.  */
+/* Write to FILE the alias graph of data references with DIMACS format.  */
 
 static inline bool
 write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
