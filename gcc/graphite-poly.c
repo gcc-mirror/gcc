@@ -643,6 +643,14 @@ print_scop (FILE *file, scop_p scop)
     print_pbb (file, pbb);
 
   fprintf (file, ")\n");
+
+  fprintf (file, "original_lst (\n");
+  print_lst (file, SCOP_ORIGINAL_SCHEDULE (scop), 0);
+  fprintf (file, ")\n");
+
+  fprintf (file, "transformed_lst (\n");
+  print_lst (file, SCOP_TRANSFORMED_SCHEDULE (scop), 0);
+  fprintf (file, ")\n");
 }
 
 /* Print to STDERR the domain of PBB.  */
@@ -805,6 +813,93 @@ pbb_number_of_iterations_at_time (poly_bb_p pbb,
   ppl_delete_Linear_Expression (le);
   ppl_delete_Pointset_Powerset_C_Polyhedron (sctr);
   ppl_delete_Pointset_Powerset_C_Polyhedron (ext_domain);
+}
+
+/* Translates LOOP to LST.  */
+
+static lst_p
+loop_to_lst (loop_p loop, VEC (poly_bb_p, heap) *bbs, int *i)
+{
+  poly_bb_p pbb;
+  VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 5);
+
+  for (; VEC_iterate (poly_bb_p, bbs, *i, pbb); (*i)++)
+    {
+      lst_p stmt;
+      basic_block bb = GBB_BB (PBB_BLACK_BOX (pbb));
+
+      if (bb->loop_father == loop)
+	stmt = new_lst_stmt (pbb);
+      else
+	{
+	  if (flow_bb_inside_loop_p (loop, bb))
+	    stmt = loop_to_lst (loop->inner, bbs, i);
+	  else
+	    {
+	      loop_p next = loop;
+
+	      while ((next = next->next)
+		     && !flow_bb_inside_loop_p (next, bb));
+
+	      if (!next)
+		return new_lst_loop (seq);
+
+	      stmt = loop_to_lst (next, bbs, i);
+	    }
+	}
+
+      VEC_safe_push (lst_p, heap, seq, stmt);
+    }
+
+  return new_lst_loop (seq);
+}
+
+/* Reads the original scattering of the SCOP and returns an LST
+   representing it.  */
+
+void
+scop_to_lst (scop_p scop)
+{
+  poly_bb_p pbb = VEC_index (poly_bb_p, SCOP_BBS (scop), 0);
+  loop_p loop = outermost_loop_in_sese (SCOP_REGION (scop), GBB_BB (PBB_BLACK_BOX (pbb)));
+  int i = 0;
+
+  SCOP_ORIGINAL_SCHEDULE (scop) = loop_to_lst (loop, SCOP_BBS (scop), &i);
+  SCOP_TRANSFORMED_SCHEDULE (scop) = copy_lst (SCOP_ORIGINAL_SCHEDULE (scop));
+}
+
+/* Print LST to FILE with INDENT spaces of indentation.  */
+
+void
+print_lst (FILE *file, lst_p lst, int indent)
+{
+  if (!lst)
+    return;
+
+  indent_to (file, indent);
+
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+
+      fprintf (file, "%d (loop", lst_dewey_number (lst));
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	print_lst (file, l, indent + 2);
+
+      fprintf (file, ")");
+    }
+  else
+    fprintf (file, "%d stmt_%d", lst_dewey_number (lst), pbb_index (LST_PBB (lst)));
+}
+
+/* Print LST to STDERR.  */
+
+void
+debug_lst (lst_p lst)
+{
+  print_lst (stderr, lst, 0);
 }
 
 #endif
