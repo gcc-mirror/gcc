@@ -1,3 +1,25 @@
+2009-09-17 Li Feng  <nemokingdom@gmail.com>
+
+	PR middle-end/41118
+	* graphite-dependences.c (poly_drs_may_alias_p): Adjust definition.
+	(pddr_original_scattering): Make sure 2 pdr2 in the same base object set.
+	(graphite_carried_dependence_level_k): Ditto.
+	* graphite-poly.c (new_poly_dr): Add init of PDR_BASE_OBJECT_SET.
+	* graphite-poly.h (struct poly_dr): Add member dr_base_object_set.
+	(new_poly_dr): Adjust declaration.
+	* graphite-sese-to-poly.c (free_data_refs_aux): New.
+	(free_gimple_bb): Added free_data_refs_aux.
+	(build_poly_dr): Add dr_base_object_set.
+	(partition_drs_to_sets): New.
+	(dr_same_base_object_p): New.
+	(build_alias_set_for_drs): New.
+	(build_base_object_set_for_drs): New.
+	(build_scop_drs): Add build_base_obj_set_for_drs.
+	* graphite-sese-to-poly.h: Added #define for alias set number index and
+	base object set index.
+	* libgomp/testsuite/libgomp.graphite/force-parallel-6.c: Refine tests.
+	* libgomp/testsuite/libgomp.graphite/pr4118.c: New.
+
 2009-09-16  Alexander Monakov  <amonakov@ispras.ru>
 
 	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Add bounds only

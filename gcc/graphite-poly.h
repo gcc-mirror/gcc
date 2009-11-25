@@ -72,13 +72,13 @@ struct poly_dr
 
      The polyhedron contains these dimensions:
 
-      - The alias set (a):
-      Every memory access is classified in at least one alias set.
+     - The alias set (a):
+     Every memory access is classified in at least one alias set.
 
-      - The subscripts (s_0, ..., s_n):
-      The memory is accessed using zero or more subscript dimensions.
+     - The subscripts (s_0, ..., s_n):
+     The memory is accessed using zero or more subscript dimensions.
 
-      - The iteration domain (variables and parameters)
+     - The iteration domain (variables and parameters)
 
      Do not hardcode the dimensions.  Use the following accessor functions:
      - pdr_alias_set_dim
@@ -135,6 +135,10 @@ struct poly_dr
      | 0   0   0  -1   15  = 0 */
   ppl_Pointset_Powerset_C_Polyhedron_t accesses;
 
+  /* Data reference's base object set number, we must assure 2 pdrs are in the
+     same base object set before dependency checking.  */
+  int dr_base_object_set;
+
   /* The number of subscripts.  */
   graphite_dim_t nb_subscripts;
 };
@@ -145,9 +149,10 @@ struct poly_dr
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
 #define PDR_ACCESSES(PDR) (PDR->accesses)
+#define PDR_BASE_OBJECT_SET(PDR) (PDR->dr_base_object_set)
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
-void new_poly_dr (poly_bb_p, ppl_Pointset_Powerset_C_Polyhedron_t,
+void new_poly_dr (poly_bb_p, int, ppl_Pointset_Powerset_C_Polyhedron_t,
 		  enum poly_dr_type, void *, graphite_dim_t);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p);

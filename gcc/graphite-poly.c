@@ -307,7 +307,7 @@ pbb_remove_duplicate_pdrs (poly_bb_p pbb)
    NB_SUBSCRIPTS.  */
 
 void
-new_poly_dr (poly_bb_p pbb,
+new_poly_dr (poly_bb_p pbb, int dr_base_object_set,
 	     ppl_Pointset_Powerset_C_Polyhedron_t accesses,
 	     enum poly_dr_type type, void *cdr, graphite_dim_t nb_subscripts)
 {
@@ -315,6 +315,7 @@ new_poly_dr (poly_bb_p pbb,
   poly_dr_p pdr = XNEW (struct poly_dr);
 
   PDR_ID (pdr) = id++;
+  PDR_BASE_OBJECT_SET (pdr) = dr_base_object_set;
   PDR_NB_REFS (pdr) = 1;
   PDR_PBB (pdr) = pbb;
   PDR_ACCESSES (pdr) = accesses;

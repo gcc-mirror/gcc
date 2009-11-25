@@ -494,8 +494,12 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
   return res;
 }
 
+static bool
+poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2);
+
 /* Returns the PDDR corresponding to the original schedule, or NULL if
-   the dependence relation is empty.  */
+   the dependence relation is empty or unknown (Can't judge dependency
+   under polyhedral model.  */
 
 static poly_ddr_p
 pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
@@ -507,8 +511,9 @@ pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_Polyhedron_t so1 = PBB_ORIGINAL_SCATTERING (pbb1);
   ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
 
-  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2)
-      || (pdr_read_p (pdr1) && pdr_read_p (pdr2)))
+  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
+      || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
+      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
     return NULL;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
@@ -706,13 +711,18 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_dimension_type dim;
   bool empty_p;
   poly_ddr_p pddr;
+  int obj_base_set1 = PDR_BASE_OBJECT_SET (pdr1);
+  int obj_base_set2 = PDR_BASE_OBJECT_SET (pdr2);
 
-  if ((PDR_TYPE (pdr1) == PDR_READ && PDR_TYPE (pdr2) == PDR_READ)
+  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
       || !poly_drs_may_alias_p (pdr1, pdr2))
     return false;
 
-  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
+  if (obj_base_set1 != obj_base_set2)
     return true;
+
+  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
+    return false;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
 				true, false);
