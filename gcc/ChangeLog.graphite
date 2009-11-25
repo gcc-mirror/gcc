@@ -1,3 +1,21 @@
+2009-10-28  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
+
+	* graphite-poly.c (print_permutation): New.
+	(debug_permutation): New.
+	(new_poly_bb): Initialize PBB_PERMUTATION.
+	(free_poly_bb): Free PBB_PERMUTATION.
+	* graphite-poly.h (pbb_permutation_elt_p): Declared.
+	(struct pbb_permutation_elt): New.
+	(PBB_PERMUTATION_ELT_STRIDE): New.
+	(PBB_PERMUTATION_ELT_STRIDED_P): New.
+	(PBB_PERMUTATION_ELT_TIME_DIMENSION): New.
+	(new_pbb_permutation_elt): New.
+	(pbb_permutation_elt_free): New.
+	(struct poly_bb): Add field permutation.
+	(PBB_PERMUTATION): New.
+	(print_permutation): Declared.
+	(debug_permutation): Declared.
+
 2009-10-26  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gloog): Do not call
