@@ -1,3 +1,24 @@
+2009-09-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-blocking.c: Fix order of includes: tree-chrec.h, then
+	tree-scalar-evolution.h, and then tree-data-ref.h.
+	* graphite-clast-to-gimple.c: Same.
+	* graphite-dependences.c: Same.
+	* graphite-interchange.c: Same.
+	* graphite-poly.c: Same.
+	* graphite-scop-detection.c: Same.
+	* graphite-sese-to-poly.c: Same.
+	* graphite.c: Same.
+	* lambda-code.c: Same.
+	* matrix-reorg.c: Same.
+	* tree-data-ref.c: Same.
+	* tree-if-conv.c: Same.
+	* tree-loop-distribu: Same.: Same.
+	* tree-loop-linear.c: Same.
+	* tree-parloops.c: Same.
+	* tree-predcom.c: Same.
+	* tree-vect-patterns.c: Same.
+
 2009-09-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	Partially revert the previous patch, except the following.
