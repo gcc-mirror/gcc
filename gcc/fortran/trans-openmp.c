@@ -1160,6 +1160,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
     {
       int simple = 0;
       int dovar_found = 0;
+      tree dovar_decl;
 
       if (clauses)
 	{
@@ -1200,12 +1201,19 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
       gfc_conv_expr_val (&se, code->ext.iterator->step);
       gfc_add_block_to_block (pblock, &se.pre);
       step = gfc_evaluate_now (se.expr, pblock);
+      dovar_decl = dovar;
 
       /* Special case simple loops.  */
-      if (integer_onep (step))
-	simple = 1;
-      else if (tree_int_cst_equal (step, integer_minus_one_node))
-	simple = -1;
+      if (TREE_CODE (dovar) == VAR_DECL)
+	{
+	  if (integer_onep (step))
+	    simple = 1;
+	  else if (tree_int_cst_equal (step, integer_minus_one_node))
+	    simple = -1;
+	}
+      else
+	dovar_decl
+	  = gfc_trans_omp_variable (code->ext.iterator->var->symtree->n.sym);
 
       /* Loop body.  */
       if (simple)
@@ -1249,7 +1257,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
       if (!dovar_found)
 	{
 	  tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
-	  OMP_CLAUSE_DECL (tmp) = dovar;
+	  OMP_CLAUSE_DECL (tmp) = dovar_decl;
 	  omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	}
       else if (dovar_found == 2)
@@ -1269,7 +1277,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	      tmp = fold_build2 (MODIFY_EXPR, type, dovar, tmp);
 	      for (c = omp_clauses; c ; c = OMP_CLAUSE_CHAIN (c))
 		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
-		    && OMP_CLAUSE_DECL (c) == dovar)
+		    && OMP_CLAUSE_DECL (c) == dovar_decl)
 		  {
 		    OMP_CLAUSE_LASTPRIVATE_STMT (c) = tmp;
 		    break;
@@ -1279,11 +1287,11 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	    {
 	      for (c = par_clauses; c ; c = OMP_CLAUSE_CHAIN (c))
 		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
-		    && OMP_CLAUSE_DECL (c) == dovar)
+		    && OMP_CLAUSE_DECL (c) == dovar_decl)
 		  {
 		    tree l = build_omp_clause (input_location,
 					       OMP_CLAUSE_LASTPRIVATE);
-		    OMP_CLAUSE_DECL (l) = dovar;
+		    OMP_CLAUSE_DECL (l) = dovar_decl;
 		    OMP_CLAUSE_CHAIN (l) = omp_clauses;
 		    OMP_CLAUSE_LASTPRIVATE_STMT (l) = tmp;
 		    omp_clauses = l;
