@@ -493,12 +493,14 @@ lst_perfectly_nested_p (lst_p loop1, lst_p loop2)
 
 /* Transform the loop nest between LOOP1 and LOOP2 into a perfect
    nest.  To continue the naming tradition, this function is called
-   after perfect_nestify.  */
+   after perfect_nestify.  NEST is set to the perfectly nested loop
+   that is created.  BEFORE/AFTER are set to the loops distributed
+   before/after the loop NEST.  */
 
 static void
-lst_perfect_nestify (lst_p loop1, lst_p loop2)
+lst_perfect_nestify (lst_p loop1, lst_p loop2, lst_p *before,
+		     lst_p *nest, lst_p *after)
 {
-  lst_p before, after;
   poly_bb_p first, last;
 
   gcc_assert (loop1 && loop2
@@ -508,39 +510,51 @@ lst_perfect_nestify (lst_p loop1, lst_p loop2)
   first = LST_PBB (lst_find_first_pbb (loop2));
   last = LST_PBB (lst_find_last_pbb (loop2));
 
-  before = copy_lst (loop1);
-  after = copy_lst (loop1);
+  *before = copy_lst (loop1);
+  *nest = copy_lst (loop1);
+  *after = copy_lst (loop1);
 
-  lst_remove_all_before_including_pbb (before, first, false);
-  lst_remove_all_before_including_pbb (after, last, true);
+  lst_remove_all_before_including_pbb (*before, first, false);
+  lst_remove_all_before_including_pbb (*after, last, true);
 
-  lst_remove_all_before_excluding_pbb (loop1, first, true);
-  lst_remove_all_before_excluding_pbb (loop1, last, false);
-
-  lst_insert_in_sequence (before, loop1, true);
-  lst_insert_in_sequence (after, loop1, false);
+  lst_remove_all_before_excluding_pbb (*nest, first, true);
+  lst_remove_all_before_excluding_pbb (*nest, last, false);
 }
 
 /* Try to interchange LOOP1 with LOOP2 for all the statements of the
    body of LOOP2.  LOOP1 contains LOOP2.  Return true if it did the
-   interchange.  */
+   interchange.  CREATED_LOOP_BEFORE/CREATED_LOOP_AFTER are set to
+   true if the loop distribution created a loop before/after LOOP1.  */
 
 static bool
-lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
+lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2,
+			   lst_p *before, lst_p *nest, lst_p *after)
 {
   int depth1 = lst_depth (loop1);
   int depth2 = lst_depth (loop2);
+  lst_p transformed;
+
+  *before = NULL;
+  *after = NULL;
+  *nest = NULL;
 
   if (!lst_interchange_profitable_p (loop2, depth1, depth2))
     return false;
 
-  store_lst_schedule (scop);
-
   if (!lst_perfectly_nested_p (loop1, loop2))
-    lst_perfect_nestify (loop1, loop2);
+    lst_perfect_nestify (loop1, loop2, before, nest, after);
 
-  gcc_assert (lst_perfectly_nested_p (loop1, loop2));
   lst_apply_interchange (loop2, depth1, depth2);
+
+  /* Sync the transformed LST information and the PBB scatterings
+     before using the scatterings in the data dependence analysis.  */
+  if (*before || *nest || *after)
+    {
+      transformed = lst_substitute_3 (SCOP_TRANSFORMED_SCHEDULE (scop), loop1,
+				      *before, *nest, *after);
+      lst_update_scattering (transformed);
+      free_lst (transformed);
+    }
 
   if (graphite_legal_transform (scop))
     {
@@ -549,65 +563,114 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
 		 "Loops at depths %d and %d will be interchanged.\n",
 		 depth1, depth2);
 
+      /* Transform the SCOP_TRANSFORMED_SCHEDULE of the SCOP.  */
+      lst_insert_in_sequence (*before, loop1, true);
+      lst_insert_in_sequence (*after, loop1, false);
+
+      if (*nest)
+	{
+	  lst_replace (loop1, *nest);
+	  free_lst (loop1);
+	}
+
       return true;
     }
 
   /* Undo the transform.  */
   lst_apply_interchange (loop2, depth2, depth1);
-  restore_lst_schedule (scop);
+  *before = NULL;
+  *after = NULL;
+  *nest = NULL;
   return false;
 }
+
+static bool lst_do_interchange_1 (scop_p, lst_p, int *);
 
 /* Try to interchange LOOP with all the loops contained in the body of
-   LST.  Return true if it did interchanged some loops.  */
+   LST.  Return true if it did interchanged some loops.  INDEX points
+   to the next element to be processed by lst_do_interchange.  */
 
 static bool
-lst_try_interchange (scop_p scop, lst_p loop, lst_p lst)
+lst_try_interchange (scop_p scop, lst_p loop, lst_p lst, int *index)
 {
-  if (!lst)
+  int i;
+  lst_p l;
+  lst_p before, nest, after;
+  bool res;
+
+  if (!lst || !LST_LOOP_P (lst))
     return false;
 
-  if (LST_LOOP_P (lst))
+  res = lst_try_interchange_loops (scop, loop, lst, &before, &nest, &after);
+
+  if (before)
     {
-      int i;
-      lst_p l;
-      bool res = lst_try_interchange_loops (scop, loop, lst);
-
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-	res |= lst_try_interchange (scop, loop, l);
-
-      return res;
+      res |= lst_do_interchange_1 (scop, before, index);
+      (*index)++;
     }
 
-  return false;
+  if (nest)
+    res |= lst_do_interchange_1 (scop, nest, index);
+  else
+    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      res |= lst_try_interchange (scop, loop, l, index);
+
+  if (after)
+    {
+      res |= lst_do_interchange_1 (scop, after, index);
+      (*index)++;
+    }
+
+  (*index)++;
+  return res;
 }
 
-/* Interchanges all the loops of LST that are considered profitable to
-   interchange.  Return true if it did interchanged some loops.  */
+/* Interchanges all the loops of LOOP that are considered profitable
+   to interchange.  Return true if it did interchanged some loops.
+   INDEX points to the next element to be processed by
+   lst_do_interchange.  */
 
 static bool
-lst_do_interchange (scop_p scop, lst_p lst)
+lst_do_interchange_1 (scop_p scop, lst_p loop, int *index)
 {
-  if (!lst)
+  int i;
+  lst_p l;
+  bool res = false;
+
+  if (!loop || !LST_LOOP_P (loop))
     return false;
 
-  if (LST_LOOP_P (lst))
-    {
-      int i;
-      lst_p l;
-      bool res = false;
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (loop), i, l); i++)
+    res |= lst_try_interchange (scop, loop, l, index);
 
-      if (lst_depth (lst) >= 0)
-	for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-	  res |= lst_try_interchange (scop, lst, l);
+  return res;
+}
 
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-	res |= lst_do_interchange (scop, l);
+/* Interchanges all the loops of LOOP and the loops of its body that
+   are considered profitable to interchange.  Return true if it did
+   interchanged some loops.  INDEX points to the next element to be
+   processed in the LST_SEQ (LOOP) vector.  */
 
-      return res;
-    }
+static bool
+lst_do_interchange (scop_p scop, lst_p loop, int *index)
+{
+  lst_p l;
+  bool res = false;
 
-  return false;
+  if (!loop || !LST_LOOP_P (loop))
+    return false;
+
+  if (lst_depth (loop) >= 0)
+    res = lst_do_interchange_1 (scop, loop, index);
+
+  while (VEC_iterate (lst_p, LST_SEQ (loop), *index, l))
+    if (LST_LOOP_P (l))
+      res |= lst_do_interchange (scop, l, index);
+    else
+      (*index)++;
+
+  (*index)++;
+  return res;
 }
 
 /* Interchanges all the loop depths that are considered profitable for SCOP.  */
@@ -615,10 +678,11 @@ lst_do_interchange (scop_p scop, lst_p lst)
 bool
 scop_do_interchange (scop_p scop)
 {
-  lst_p lst = copy_lst (SCOP_TRANSFORMED_SCHEDULE (scop));
-  bool res = lst_do_interchange (scop, lst);
+  int i = 0;
+  bool res = lst_do_interchange (scop, SCOP_TRANSFORMED_SCHEDULE (scop), &i);
 
-  free_lst (lst);
+  lst_update_scattering (SCOP_TRANSFORMED_SCHEDULE (scop));
+
   return res;
 }
 
