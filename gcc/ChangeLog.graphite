@@ -1,3 +1,14 @@
+2009-10-14  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-interchange.c (build_linearized_memory_access): Pass an
+	offset as parameter.
+	(memory_stride_in_loop): Include transform scattering in the
+	access functions to be able to querry the strides in the
+	transformed loops.
+	(pbb_interchange_loop_depths): Interchange the psct_dynamic_dim,
+	not the psct_iterator_dim.
+
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-blocking.c (pbb_do_strip_mine): Removed.
