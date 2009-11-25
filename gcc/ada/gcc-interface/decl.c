@@ -1416,30 +1416,31 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  break;
 	}
 
-      /* Normal case of non-character type or non-Standard character type.  */
       {
-	/* Here we have a list of enumeral constants in First_Literal.
-	   We make a CONST_DECL for each and build into GNU_LITERAL_LIST
-	   the list to be placed into TYPE_FIELDS.  Each node in the list
-	   is a TREE_LIST whose TREE_VALUE is the literal name and whose
-	   TREE_PURPOSE is the value of the literal.  */
-
-	Entity_Id gnat_literal;
+	/* We have a list of enumeral constants in First_Literal.  We make a
+	   CONST_DECL for each one and build into GNU_LITERAL_LIST the list to
+	   be placed into TYPE_FIELDS.  Each node in the list is a TREE_LIST
+	   whose TREE_VALUE is the literal name and whose TREE_PURPOSE is the
+	   value of the literal.  But when we have a regular boolean type, we
+	   simplify this a little by using a BOOLEAN_TYPE.  */
+	bool is_boolean = Is_Boolean_Type (gnat_entity)
+			  && !Has_Non_Standard_Rep (gnat_entity);
 	tree gnu_literal_list = NULL_TREE;
+	Entity_Id gnat_literal;
 
 	if (Is_Unsigned_Type (gnat_entity))
 	  gnu_type = make_unsigned_type (esize);
 	else
 	  gnu_type = make_signed_type (esize);
 
-	TREE_SET_CODE (gnu_type, ENUMERAL_TYPE);
+	TREE_SET_CODE (gnu_type, is_boolean ? BOOLEAN_TYPE : ENUMERAL_TYPE);
 
 	for (gnat_literal = First_Literal (gnat_entity);
 	     Present (gnat_literal);
 	     gnat_literal = Next_Literal (gnat_literal))
 	  {
-	    tree gnu_value = UI_To_gnu (Enumeration_Rep (gnat_literal),
-					gnu_type);
+	    tree gnu_value
+	      = UI_To_gnu (Enumeration_Rep (gnat_literal), gnu_type);
 	    tree gnu_literal
 	      = create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
 				 gnu_type, gnu_value, true, false, false,
@@ -1450,7 +1451,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					  gnu_value, gnu_literal_list);
 	  }
 
-	TYPE_VALUES (gnu_type) = nreverse (gnu_literal_list);
+	if (!is_boolean)
+	  TYPE_VALUES (gnu_type) = nreverse (gnu_literal_list);
 
 	/* Note that the bounds are updated at the end of this function
 	   to avoid an infinite recursion since they refer to the type.  */
