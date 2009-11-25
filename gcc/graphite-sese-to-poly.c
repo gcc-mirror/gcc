@@ -2089,39 +2089,16 @@ rewrite_cross_bb_scalar_dependence (tree zero_dim_array, tree def, gimple use_st
   use_operand_p use_p;
   gimple_stmt_iterator gsi;
 
+  gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
+
   gimple_assign_set_lhs (name_stmt, name);
 
-  if (gimple_code (use_stmt) == GIMPLE_PHI)
-    {
-      gimple phi = use_stmt;
-      edge entry;
-      unsigned i;
+  gsi = gsi_for_stmt (use_stmt);
+  gsi_insert_before (&gsi, name_stmt, GSI_NEW_STMT);
 
-      for (i = 0; i < gimple_phi_num_args (phi); i++)
-	if (operand_equal_p (def, gimple_phi_arg_def (phi, i), 0))
-	  {
-	    entry = gimple_phi_arg_edge (phi, i);
-	    break;
-	  }
-
-      FOR_EACH_PHI_ARG (use_p, phi, iter, SSA_OP_USE)
-	if (operand_equal_p (def, USE_FROM_PTR (use_p), 0))
-	  {
-	    gsi = gsi_last_bb (entry->src);
-	    gsi_insert_after (&gsi, name_stmt, GSI_NEW_STMT);
-	    SET_USE (use_p, name);
-	    break;
-	  }
-    }
-  else
-    {
-      gsi = gsi_for_stmt (use_stmt);
-      gsi_insert_before (&gsi, name_stmt, GSI_NEW_STMT);
-
-      FOR_EACH_SSA_USE_OPERAND (use_p, use_stmt, iter, SSA_OP_ALL_USES)
-	if (operand_equal_p (def, USE_FROM_PTR (use_p), 0))
-	  replace_exp (use_p, name);
-    }
+  FOR_EACH_SSA_USE_OPERAND (use_p, use_stmt, iter, SSA_OP_ALL_USES)
+    if (operand_equal_p (def, USE_FROM_PTR (use_p), 0))
+      replace_exp (use_p, name);
 
   update_stmt (use_stmt);
 }
@@ -2150,7 +2127,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   def_bb = gimple_bb (stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (def_bb != gimple_bb (use_stmt))
+    if (def_bb != gimple_bb (use_stmt)
+	&& gimple_code (use_stmt) != GIMPLE_PHI)
       {
 	if (!zero_dim_array)
 	  {
