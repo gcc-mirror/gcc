@@ -1,5 +1,11 @@
 2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_scev_bitnot): Renamed
+	instantiate_scev_not.  Handle NEGATE_EXPR.
+	(instantiate_scev_r): Handle NEGATE_EXPR.
+
+2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_scev_1): Renamed
 	instantiate_scev_r.
 	(instantiate_scev_r): Move code in instantiate_scev_2
