@@ -515,8 +515,8 @@ static bool
 poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2);
 
 /* Returns the PDDR corresponding to the original schedule, or NULL if
-   the dependence relation is empty or unknown (Can't judge dependency
-   under polyhedral model.  */
+   the dependence relation is empty or unknown (cannot judge dependency
+   under polyhedral model).  */
 
 static poly_ddr_p
 pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
@@ -540,6 +540,34 @@ pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
 
   return pddr;
 }
+
+/* Returns the PDDR corresponding to the transformed schedule, or NULL if
+   the dependence relation is empty or unknown (cannot judge dependency
+   under polyhedral model).  */
+
+static poly_ddr_p
+pddr_transformed_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
+			     poly_dr_p pdr1, poly_dr_p pdr2)
+{
+  poly_ddr_p pddr;
+  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
+  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
+  ppl_Polyhedron_t st1 = PBB_ORIGINAL_SCATTERING (pbb1);
+  ppl_Polyhedron_t st2 = PBB_ORIGINAL_SCATTERING (pbb2);
+
+  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
+      || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
+      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
+    return NULL;
+
+  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
+				true, false);
+  if (pddr_is_empty (pddr))
+    return NULL;
+
+  return pddr;
+}
+
 
 /* Return true when the data dependence relation between the data
    references PDR1 belonging to PBB1 and PDR2 is part of a
@@ -829,17 +857,15 @@ dependency_between_pbbs_p (poly_bb_p pbb1, poly_bb_p pbb2, int level)
   return false;
 }
 
-/* Pretty print to FILE all the data dependences of SCoP in DOT
-   format.  */
+/* Pretty print to FILE all the original data dependences of SCoP in
+   DOT format.  */
 
 static void
-dot_deps_stmt_1 (FILE *file, scop_p scop)
+dot_original_deps_stmt_1 (FILE *file, scop_p scop)
 {
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
-
-  fputs ("digraph all {\n", file);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
@@ -848,14 +874,92 @@ dot_deps_stmt_1 (FILE *file, scop_p scop)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
 	    if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
 	      {
-		fprintf (file, "S%d -> S%d\n",
+		fprintf (file, "OS%d -> OS%d\n",
 			 pbb_index (pbb1), pbb_index (pbb2));
 		goto done;
 	      }
       done:;
       }
+}
+
+/* Pretty print to FILE all the transformed data dependences of SCoP in
+   DOT format.  */
+
+static void
+dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
+{
+  int i, j, k, l;
+  poly_bb_p pbb1, pbb2;
+  poly_dr_p pdr1, pdr2;
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
+    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+      {
+	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
+	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	    if (pddr_transformed_scattering (pbb1, pbb2, pdr1, pdr2))
+	      {
+		fprintf (file, "TS%d -> TS%d\n",
+			 pbb_index (pbb1), pbb_index (pbb2));
+		goto done;
+	      }
+      done:;
+      }
+}
+
+
+/* Pretty print to FILE all the data dependences of SCoP in DOT
+   format.  */
+
+static void
+dot_deps_stmt_1 (FILE *file, scop_p scop)
+{
+  fputs ("digraph all {\n", file);
+
+  dot_original_deps_stmt_1 (file, scop);
+  dot_transformed_deps_stmt_1 (file, scop);
 
   fputs ("}\n\n", file);
+}
+
+/* Pretty print to FILE all the original data dependences of SCoP in
+   DOT format.  */
+
+static void
+dot_original_deps (FILE *file, scop_p scop)
+{
+  int i, j, k, l;
+  poly_bb_p pbb1, pbb2;
+  poly_dr_p pdr1, pdr2;
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
+    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+      for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
+	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	  if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
+	    fprintf (file, "OS%d_D%d -> OS%d_D%d\n",
+		     pbb_index (pbb1), PDR_ID (pdr1),
+		     pbb_index (pbb2), PDR_ID (pdr2));
+}
+
+/* Pretty print to FILE all the transformed data dependences of SCoP in
+   DOT format.  */
+
+static void
+dot_transformed_deps (FILE *file, scop_p scop)
+{
+  int i, j, k, l;
+  poly_bb_p pbb1, pbb2;
+  poly_dr_p pdr1, pdr2;
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
+    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+      for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
+	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	  if (pddr_transformed_scattering (pbb1, pbb2, pdr1, pdr2))
+	    fprintf (file, "TS%d_D%d -> TS%d_D%d\n",
+		     pbb_index (pbb1), PDR_ID (pdr1),
+		     pbb_index (pbb2), PDR_ID (pdr2));
 }
 
 /* Pretty print to FILE all the data dependences of SCoP in DOT
@@ -864,20 +968,10 @@ dot_deps_stmt_1 (FILE *file, scop_p scop)
 static void
 dot_deps_1 (FILE *file, scop_p scop)
 {
-  int i, j, k, l;
-  poly_bb_p pbb1, pbb2;
-  poly_dr_p pdr1, pdr2;
-
   fputs ("digraph all {\n", file);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
-    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
-      for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
-	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
-	    fprintf (file, "S%d_D%d -> S%d_D%d\n",
-		     pbb_index (pbb1), PDR_ID (pdr1),
-		     pbb_index (pbb2), PDR_ID (pdr2));
+  dot_original_deps (file, scop);
+  dot_transformed_deps (file, scop);
 
   fputs ("}\n\n", file);
 }

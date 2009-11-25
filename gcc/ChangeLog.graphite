@@ -1,8 +1,19 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (pddr_transformed_scattering): New.
+	(dot_original_deps_stmt_1): New.
+	(dot_transformed_deps_stmt_1): New.
+	(dot_deps_stmt_1): Call dot_original_deps_stmt_1 and
+	dot_transformed_deps_stmt_1.
+	(dot_original_deps): New.
+	(dot_transformed_deps): New.
+	(dot_deps_1): Call dot_original_deps and dot_transformed_deps.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (reduction_dr_1): Remove wrong
 	assert: reduction BBs can have multiple reduction writes
-	to memory.
+	to memory.  interchange-3.f90 is an example.
 
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
