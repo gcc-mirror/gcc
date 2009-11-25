@@ -248,6 +248,17 @@ pdr_may_write_p (poly_dr_p pdr)
   return PDR_TYPE (pdr) == PDR_MAY_WRITE;
 }
 
+/* Return true when PDR1 and PDR2 are similar data accesses: they have
+   the same base array, and the same access functions.  */
+
+static inline bool
+same_pdr_p (poly_dr_p pdr1, poly_dr_p pdr2)
+{
+  return PDR_TYPE (pdr1) == PDR_TYPE (pdr2)
+    && PDR_NB_SUBSCRIPTS (pdr1) == PDR_NB_SUBSCRIPTS (pdr2)
+    && PDR_BASE_OBJECT_SET (pdr1) == PDR_BASE_OBJECT_SET (pdr2);
+}
+
 typedef struct poly_scattering *poly_scattering_p;
 
 struct poly_scattering
@@ -350,6 +361,22 @@ extern bool scop_do_strip_mine (scop_p);
 extern void pbb_number_of_iterations (poly_bb_p, graphite_dim_t, Value);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, Value);
 extern void pbb_remove_duplicate_pdrs (poly_bb_p);
+
+/* Return the number of write data references in PBB.  */
+
+static inline int
+number_of_write_pdrs (poly_bb_p pbb)
+{
+  int res = 0;
+  int i;
+  poly_dr_p pdr;
+
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
+    if (PDR_TYPE (pdr) == PDR_WRITE)
+      res++;
+
+  return res;
+}
 
 /* The index of the PBB.  */
 

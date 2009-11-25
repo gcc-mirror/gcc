@@ -2213,6 +2213,22 @@ nb_pbbs_in_loops (scop_p scop)
   return res;
 }
 
+/* Return the number of data references in BB that write in
+   memory.  */
+
+static int
+nb_data_writes_in_bb (basic_block bb)
+{
+  int res = 0;
+  gimple_stmt_iterator gsi;
+
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    if (gimple_vdef (gsi_stmt (gsi)))
+      res++;
+
+  return res;
+}
+
 /* Splits STMT out of its current BB.  */
 
 static basic_block
@@ -2221,6 +2237,11 @@ split_reduction_stmt (gimple stmt)
   gimple_stmt_iterator gsi;
   basic_block bb = gimple_bb (stmt);
   edge e;
+
+  /* Do not split basic blocks with no writes to memory: the reduction
+     will be the only write to memory.  */
+  if (nb_data_writes_in_bb (bb) == 0)
+    return bb;
 
   split_block (bb, stmt);
 
@@ -2444,7 +2465,7 @@ translate_scalar_reduction_to_array_for_stmt (tree red, gimple stmt,
   gsi_insert_before (&insert_gsi, assign, GSI_SAME_STMT);
 
   assign = gimple_build_assign (red, gimple_assign_lhs (stmt));
-  insert_gsi = gsi_last_bb (bb);
+  insert_gsi = gsi_for_stmt (stmt);
   gsi_insert_after (&insert_gsi, assign, GSI_SAME_STMT);
 }
 
