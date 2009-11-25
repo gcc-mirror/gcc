@@ -63,6 +63,7 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define	TARGET_NO_PROTOTYPE	(! TARGET_PROTOTYPE)
 #define	TARGET_NO_TOC		(! TARGET_TOC)
 #define	TARGET_NO_EABI		(! TARGET_EABI)
+#define	TARGET_REGNAMES		rs6000_regnames
 
 #ifdef HAVE_AS_REL16
 #undef TARGET_SECURE_PLT
