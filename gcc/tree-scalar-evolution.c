@@ -2300,6 +2300,44 @@ instantiate_scev_convert (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
+   CHREC is a BIT_NOT_EXPR expression to be instantiated.
+   Handle ~X as -1 - X.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
+
+static tree
+instantiate_scev_bitnot (basic_block instantiate_below,
+			 struct loop *evolution_loop, tree chrec,
+			 bool fold_conversions, htab_t cache, int size_expr)
+{
+  tree type = chrec_type (chrec);
+  tree op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
+				 TREE_OPERAND (chrec, 0),
+				 fold_conversions, cache, size_expr);
+  if (op0 == chrec_dont_know)
+    return chrec_dont_know;
+
+  if (TREE_OPERAND (chrec, 0) != op0)
+    {
+      op0 = chrec_convert (type, op0, NULL);
+      chrec = chrec_fold_minus (type,
+				fold_convert (type,
+					      integer_minus_one_node),
+				op0);
+    }
+  return chrec;
+}
+
+/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
+   and EVOLUTION_LOOP, that were left under a symbolic form.
+
    CHREC is the scalar evolution to instantiate.
 
    CACHE is the cache of already instantiated values.
@@ -2317,7 +2355,6 @@ instantiate_scev_1 (basic_block instantiate_below,
 		    bool fold_conversions, htab_t cache, int size_expr)
 {
   tree op0, op1, op2;
-  tree type = chrec_type (chrec);
 
   /* Give up if the expression is larger than the MAX that we allow.  */
   if (size_expr++ > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
@@ -2367,22 +2404,8 @@ instantiate_scev_1 (basic_block instantiate_below,
 				       fold_conversions, cache, size_expr);
 
     case BIT_NOT_EXPR:
-      /* Handle ~X as -1 - X.  */
-      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 0),
-				fold_conversions, cache, size_expr);
-      if (op0 == chrec_dont_know)
-	return chrec_dont_know;
-
-      if (TREE_OPERAND (chrec, 0) != op0)
-	{
-	  op0 = chrec_convert (type, op0, NULL);
-	  chrec = chrec_fold_minus (type,
-				    fold_convert (type,
-						  integer_minus_one_node),
-				    op0);
-	}
-      return chrec;
+      return instantiate_scev_bitnot (instantiate_below, evolution_loop, chrec,
+				      fold_conversions, cache, size_expr);
 
     case SCEV_NOT_KNOWN:
       return chrec_dont_know;
@@ -2443,7 +2466,7 @@ instantiate_scev_1 (basic_block instantiate_below,
 	  && op1 == TREE_OPERAND (chrec, 1))
 	return chrec;
       return fold_build2 (TREE_CODE (chrec), TREE_TYPE (chrec), op0, op1);
-	    
+
     case 1:
       op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
 				TREE_OPERAND (chrec, 0),
