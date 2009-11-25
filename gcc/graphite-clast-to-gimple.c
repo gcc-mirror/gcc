@@ -558,27 +558,6 @@ mark_bb_with_pbb (poly_bb_p pbb, basic_block bb, htab_t bb_pbb_mapping)
     *x = new_bb_pbb_def (bb, pbb);
 }
 
-/* Returns the scattering dimension for STMTFOR.
-
-   FIXME: This is a hackish solution to locate the scattering
-   dimension in newly created loops. Here the hackish solush
-   assume that the stmt_for->iterator is always something like:
-   scat_1 , scat_3 etc., where after "scat_" is loop level in
-   scattering dimension.
-*/
-
-static int get_stmtfor_depth (struct clast_for *stmtfor)
-{
-  const char * iterator = stmtfor->iterator;
-  const char * depth;
-
-  depth = strchr (iterator, '_');
-  if (!strncmp (iterator, "scat_", 5))
-    return atoi (depth+1);
-
-  gcc_unreachable();
-}
-
 /* Translates a CLAST statement STMT to GCC representation in the
    context of a SESE.
 
@@ -593,14 +572,15 @@ static edge
 translate_clast (sese region, struct loop *context_loop,
 		 struct clast_stmt *stmt, edge next_e,
 		 htab_t rename_map, VEC (tree, heap) **newivs,
-		 htab_t newivs_index, htab_t bb_pbb_mapping)
+		 htab_t newivs_index, htab_t bb_pbb_mapping, int level)
 {
   if (!stmt)
     return next_e;
 
   if (CLAST_STMT_IS_A (stmt, stmt_root))
     return translate_clast (region, context_loop, stmt->next, next_e,
-			    rename_map, newivs, newivs_index, bb_pbb_mapping);
+			    rename_map, newivs, newivs_index,
+			    bb_pbb_mapping, level);
 
   if (CLAST_STMT_IS_A (stmt, stmt_user))
     {
@@ -624,7 +604,7 @@ translate_clast (sese region, struct loop *context_loop,
       graphite_verify ();
       return translate_clast (region, context_loop, stmt->next, next_e,
 			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping);
+			      bb_pbb_mapping, level);
     }
 
   if (CLAST_STMT_IS_A (stmt, stmt_for))
@@ -639,7 +619,7 @@ translate_clast (sese region, struct loop *context_loop,
 
       loop->aux = XNEW (int);
       /* Pass scattering level information of the new loop by LOOP->AUX.  */
-      *((int *)(loop->aux)) = get_stmtfor_depth (stmtfor);
+      *((int *)(loop->aux)) = get_scattering_level (level);
 
       /* Create a basic block for loop close phi nodes.  */
       last_e = single_succ_edge (split_edge (last_e));
@@ -648,7 +628,7 @@ translate_clast (sese region, struct loop *context_loop,
       next_e = translate_clast
 	(region, loop, ((struct clast_for *) stmt)->body,
 	 single_succ_edge (loop->header), rename_map, newivs,
-	 newivs_index, bb_pbb_mapping);
+	 newivs_index, bb_pbb_mapping, level + 1);
       redirect_edge_succ_nodup (next_e, after);
       set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
@@ -660,7 +640,7 @@ translate_clast (sese region, struct loop *context_loop,
       graphite_verify ();
       return translate_clast (region, context_loop, stmt->next, last_e,
 			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping);
+			      bb_pbb_mapping, level);
     }
 
   if (CLAST_STMT_IS_A (stmt, stmt_guard))
@@ -679,7 +659,7 @@ translate_clast (sese region, struct loop *context_loop,
       next_e = translate_clast (region, context_loop,
 				((struct clast_guard *) stmt)->then,
 				true_e, rename_map, newivs, newivs_index,
-				bb_pbb_mapping);
+				bb_pbb_mapping, level);
       insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
 			 before_guard, rename_map);
 
@@ -689,7 +669,7 @@ translate_clast (sese region, struct loop *context_loop,
 
       return translate_clast (region, context_loop, stmt->next, last_e,
 			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping);
+			      bb_pbb_mapping, level);
     }
 
   if (CLAST_STMT_IS_A (stmt, stmt_block))
@@ -697,12 +677,12 @@ translate_clast (sese region, struct loop *context_loop,
       next_e = translate_clast (region, context_loop,
 				((struct clast_block *) stmt)->body,
 				next_e, rename_map, newivs, newivs_index,
-				bb_pbb_mapping);
+				bb_pbb_mapping, level);
       recompute_all_dominators ();
       graphite_verify ();
       return translate_clast (region, context_loop, stmt->next, next_e,
 			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping);
+			      bb_pbb_mapping, level);
     }
 
   gcc_unreachable ();
@@ -1157,7 +1137,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   new_scop_exit_edge = translate_clast (region, context_loop, pc.stmt,
 					if_region->true_region->entry,
 					rename_map, &newivs, newivs_index,
-					bb_pbb_mapping);
+					bb_pbb_mapping, 1);
   sese_reset_aux_in_loops (region);
   graphite_verify ();
   sese_adjust_liveout_phis (region, rename_map,

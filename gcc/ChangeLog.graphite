@@ -1,3 +1,10 @@
+2009-10-20  Li Feng  <nemokingdom@gmail.com>
+
+	* graphite-clast-to-gimple.c (get_stmtfor_depth): Removed.
+	(translate_clast): Pass an extra parameter LEVEL.
+	Call get_scattering_level.
+	* graphite-clast-to-gimple.h (get_scattering_level): New.
+
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* cfgloop.c (alloc_loop): Initialize loop->single_iv.
