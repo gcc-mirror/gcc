@@ -1,3 +1,8 @@
+2009-11-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr40835.c: Require a thumb1 target, do not force
+	-march=armv5te.
+
 2009-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/42008

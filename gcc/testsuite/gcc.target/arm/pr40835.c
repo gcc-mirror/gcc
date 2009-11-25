@@ -1,4 +1,5 @@
-/* { dg-options "-mthumb -Os -march=armv5te" }  */
+/* { dg-options "-mthumb -Os" }  */
+/* { dg-require-effective-target arm_thumb1_ok } */
 /* { dg-final { scan-assembler-not "cmp" } } */
 
 int bar();
