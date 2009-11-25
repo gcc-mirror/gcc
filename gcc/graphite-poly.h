@@ -714,6 +714,12 @@ static inline int
 lst_depth (lst_p lst)
 {
   if (!lst)
+    return -2;
+
+  /* The depth of the outermost "fake" loop is -1.  This outermost
+     loop does not have a loop father and it is just a container, as
+     in the loop representation of GCC.  */
+  if (!LST_LOOP_FATHER (lst))
     return -1;
 
   return lst_depth (LST_LOOP_FATHER (lst)) + 1;

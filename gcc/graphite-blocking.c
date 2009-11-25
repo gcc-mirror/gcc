@@ -242,8 +242,9 @@ lst_do_strip_mine (lst_p lst)
   for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
     res |= lst_do_strip_mine (l);
 
-  if (pbb_strip_mine_profitable_p (LST_PBB (lst_find_first_pbb (lst)),
-				   lst_depth (lst), stride))
+  if (lst_depth (lst) >= 0
+      && pbb_strip_mine_profitable_p (LST_PBB (lst_find_first_pbb (lst)),
+				      lst_depth (lst), stride))
     {
       res |= lst_do_strip_mine_loop (lst, lst_depth (lst));
       lst_add_loop_under_loop (lst);

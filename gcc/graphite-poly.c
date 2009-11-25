@@ -869,12 +869,27 @@ loop_to_lst (loop_p loop, VEC (poly_bb_p, heap) *bbs, int *i)
 void
 scop_to_lst (scop_p scop)
 {
-  poly_bb_p pbb = VEC_index (poly_bb_p, SCOP_BBS (scop), 0);
-  loop_p loop = outermost_loop_in_sese (SCOP_REGION (scop), GBB_BB (PBB_BLACK_BOX (pbb)));
-  int i = 0;
+  lst_p res;
+  int i, n = VEC_length (poly_bb_p, SCOP_BBS (scop));
+  VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 5);
+  sese region = SCOP_REGION (scop);
 
-  SCOP_ORIGINAL_SCHEDULE (scop) = loop_to_lst (loop, SCOP_BBS (scop), &i);
-  SCOP_TRANSFORMED_SCHEDULE (scop) = copy_lst (SCOP_ORIGINAL_SCHEDULE (scop));
+  for (i = 0; i < n; i++)
+    {
+      poly_bb_p pbb = VEC_index (poly_bb_p, SCOP_BBS (scop), i);
+      loop_p loop = outermost_loop_in_sese (region, GBB_BB (PBB_BLACK_BOX (pbb)));
+
+      if (loop_in_sese_p (loop, region))
+	res = loop_to_lst (loop, SCOP_BBS (scop), &i);
+      else
+	res = new_lst_stmt (pbb);
+
+      VEC_safe_push (lst_p, heap, seq, res);
+    }
+
+  res = new_lst_loop (seq);
+  SCOP_ORIGINAL_SCHEDULE (scop) = res;
+  SCOP_TRANSFORMED_SCHEDULE (scop) = copy_lst (res);
 }
 
 /* Print LST to FILE with INDENT spaces of indentation.  */
@@ -892,7 +907,10 @@ print_lst (FILE *file, lst_p lst, int indent)
       int i;
       lst_p l;
 
-      fprintf (file, "%d (loop", lst_dewey_number (lst));
+      if (LST_LOOP_FATHER (lst))
+	fprintf (file, "%d (loop", lst_dewey_number (lst));
+      else
+	fprintf (file, "(root");
 
       for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
 	print_lst (file, l, indent + 2);
