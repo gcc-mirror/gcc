@@ -1708,6 +1708,40 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 	       dr, DR_NUM_DIMENSIONS (dr));
 }
 
+/* Write to FILE the alias graph of data references DRS.  */
+
+static inline bool
+write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
+				   VEC (data_reference_p, heap) *drs)
+{
+  int num_vertex = VEC_length (data_reference_p, drs);
+  int edge_num = 0;
+  data_reference_p dr1, dr2;
+  int i, j;
+
+  if (num_vertex == 0)
+    return true;
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
+      if (dr_may_alias_p (dr1, dr2))
+	edge_num++;
+
+  fprintf (file, "$\n");
+
+  if (comment)
+    fprintf (file, "c %s\n", comment);
+
+  fprintf (file, "p edge %d %d\n", num_vertex, edge_num);
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
+      if (dr_may_alias_p (dr1, dr2))
+	fprintf (file, "e %d %d\n", i + 1, j + 1);
+
+  return true;
+}
+
 static void
 partition_drs_to_sets (VEC (data_reference_p, heap) **drs, int choice,
 			 bool (* edge_exist_p) (const struct data_reference *,
@@ -1801,6 +1835,24 @@ build_scop_drs (scop_p scop)
 
   build_alias_set_for_drs (&drs);
   build_base_obj_set_for_drs (&drs);
+
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers.  */
+#if 0
+  {
+    char comment[100];
+    FILE *file;
+
+    file = fopen ("/tmp/dr_alias_graph", "ab");
+    if (file)
+      {
+	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
+		  current_function_name ());
+	write_alias_graph_to_ascii_dimacs (file, comment, drs);
+	fclose (file);
+      }
+  }
+#endif
 
   VEC_free (data_reference_p, heap, drs);
 
