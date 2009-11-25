@@ -1,3 +1,7 @@
+2009-11-25  Ben Elliston  <bje@au.ibm.com>
+
+	* functions.texi: Rebuild.
+
 2009-11-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	    Ben Elliston  <bje@au.ibm.com>
 
