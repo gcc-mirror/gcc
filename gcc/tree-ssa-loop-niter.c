@@ -2612,7 +2612,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple stmt,
    allocated structure.  If this is the case, the array may be allocated larger
    than its upper bound implies.  */
 
-static bool
+bool
 array_at_struct_end_p (tree ref)
 {
   tree base = get_base_address (ref);

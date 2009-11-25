@@ -1728,10 +1728,12 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 
       high = array_ref_up_bound (ref);
 
-      /* high - subscript >= 0
-	 XXX: 1-element arrays at end of structures may extend over their
-	 declared size.  */
-      if (high && host_integerp (high, 0))
+      /* high - subscript >= 0 */
+      if (high && host_integerp (high, 0)
+	  /* 1-element arrays at end of structures may extend over
+	     their declared size.  */
+	  && !(array_at_struct_end_p (ref)
+	       && operand_equal_p (low, high, 0)))
 	{
 	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
 	  ppl_set_coef (expr, subscript, -1);
