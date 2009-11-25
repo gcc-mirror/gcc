@@ -5,7 +5,7 @@ void abort (void);
 void foo (int N)
 {
   int i, j;
-  int x[10000][10000];
+  int x[1000][1000];
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -19,7 +19,7 @@ void foo (int N)
 
 int main(void)
 {
-  foo (10000);
+  foo (1000);
 
   return 0;
 }
