@@ -1,3 +1,9 @@
+2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+            John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/42170
+	* ada/acats/run_acats: Bump stack limit to 16MB.
+
 2009-11-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/pr40835.c: Require a thumb1 target, do not force

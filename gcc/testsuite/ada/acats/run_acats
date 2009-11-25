@@ -52,7 +52,7 @@ echo exec gnatmake '"$@"' >> host_gnatmake
 
 chmod +x host_gnatmake
 
-# Limit the stack to 8MB for stack checking
-ulimit -s 8192
+# Limit the stack to 16MB for stack checking
+ulimit -s 16384
 
 exec $testdir/run_all.sh ${1+"$@"}
