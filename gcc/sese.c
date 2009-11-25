@@ -1458,18 +1458,6 @@ move_sese_in_condition (sese region)
   return if_region;
 }
 
-/* Reset the loop->aux pointer for all loops in REGION.  */
-
-void
-sese_reset_aux_in_loops (sese region)
-{
-  int i;
-  loop_p loop;
-
-  for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop); i++)
-    loop->aux = NULL;
-}
-
 /* Returns the scalar evolution of T in REGION.  Every variable that
    is not defined in the REGION is considered a parameter.  */
 

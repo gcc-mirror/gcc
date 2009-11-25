@@ -1,5 +1,17 @@
 2009-10-26  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gloog): Do not call
+	sese_reset_aux_in_loops.
+	* graphite-sese-to-poly.c (build_loop_iteration_domains): Pass an
+	extra argument for domains.  Do not use loop->aux.
+	(build_scop_iteration_domain): Initialize and free domains, pass it
+	to build_loop_iteration_domains and extract the information from
+	domains.  Do not use loop->aux.
+	* sese.c (sese_reset_aux_in_loops): Removed.
+	* sese.h (sese_reset_aux_in_loops): Removed.
+
+2009-10-26  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (find_pbb_via_hash): Moved up.
 	(dependency_in_loop_p): Same.
 	(translate_clast): Do not use loop->aux.  Initialize

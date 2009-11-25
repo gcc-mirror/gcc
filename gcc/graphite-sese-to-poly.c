@@ -1066,7 +1066,8 @@ gbb_from_bb (basic_block bb)
 
 static void
 build_loop_iteration_domains (scop_p scop, struct loop *loop,
-                              ppl_Polyhedron_t outer_ph, int nb)
+                              ppl_Polyhedron_t outer_ph, int nb,
+			      ppl_Pointset_Powerset_C_Polyhedron_t *domains)
 {
   int i;
   ppl_Polyhedron_t ph;
@@ -1205,15 +1206,15 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
     gcc_unreachable ();
 
   if (loop->inner && loop_in_sese_p (loop->inner, region))
-    build_loop_iteration_domains (scop, loop->inner, ph, nb + 1);
+    build_loop_iteration_domains (scop, loop->inner, ph, nb + 1, domains);
 
   if (nb != 0
       && loop->next
       && loop_in_sese_p (loop->next, region))
-    build_loop_iteration_domains (scop, loop->next, outer_ph, nb);
+    build_loop_iteration_domains (scop, loop->next, outer_ph, nb, domains);
 
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-    ((ppl_Pointset_Powerset_C_Polyhedron_t *) &loop->aux, ph);
+    (&domains[loop->num], ph);
 
   ppl_delete_Polyhedron (ph);
 }
@@ -1592,31 +1593,34 @@ build_scop_iteration_domain (scop_p scop)
   int i;
   ppl_Polyhedron_t ph;
   poly_bb_p pbb;
+  int nb_loops = number_of_loops ();
+  ppl_Pointset_Powerset_C_Polyhedron_t *domains
+    = XNEWVEC (ppl_Pointset_Powerset_C_Polyhedron_t, nb_loops);
+
+  for (i = 0; i < nb_loops; i++)
+    domains[i] = NULL;
 
   ppl_new_C_Polyhedron_from_space_dimension (&ph, scop_nb_params (scop), 0);
 
   for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop); i++)
     if (!loop_in_sese_p (loop_outer (loop), region))
-      build_loop_iteration_domains (scop, loop, ph, 0);
+      build_loop_iteration_domains (scop, loop, ph, 0, domains);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    if (gbb_loop (PBB_BLACK_BOX (pbb))->aux)
+    if (domains[gbb_loop (PBB_BLACK_BOX (pbb))->num])
       ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
 	(&PBB_DOMAIN (pbb), (ppl_const_Pointset_Powerset_C_Polyhedron_t)
-	 gbb_loop (PBB_BLACK_BOX (pbb))->aux);
+	 domains[gbb_loop (PBB_BLACK_BOX (pbb))->num]);
     else
       ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
 	(&PBB_DOMAIN (pbb), ph);
 
-  for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop); i++)
-    if (loop->aux)
-      {
-	ppl_delete_Pointset_Powerset_C_Polyhedron
-	  ((ppl_Pointset_Powerset_C_Polyhedron_t) loop->aux);
-	loop->aux = NULL;
-      }
+  for (i = 0; i < nb_loops; i++)
+    if (domains[i])
+      ppl_delete_Pointset_Powerset_C_Polyhedron (domains[i]);
 
   ppl_delete_Polyhedron (ph);
+  free (domains);
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of

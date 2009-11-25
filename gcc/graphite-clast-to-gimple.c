@@ -1193,7 +1193,6 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 					if_region->true_region->entry,
 					rename_map, &newivs, newivs_index,
 					bb_pbb_mapping, 1);
-  sese_reset_aux_in_loops (region);
   graphite_verify ();
   sese_adjust_liveout_phis (region, rename_map,
 			    if_region->region->exit->src,
