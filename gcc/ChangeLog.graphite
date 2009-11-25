@@ -1,5 +1,11 @@
 2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_dependence): Do
+	not replace cross BB scalar dependences ending on PHI nodes.
+	(rewrite_cross_bb_scalar_deps): Filter out GIMPLE_PHI nodes.
+
+2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (apply_poly_transforms): Implement the high
 	level driver for flag_loop_block.
 	* tree-ssa-loop.c (gate_graphite_transforms): Remove call to sorry for
