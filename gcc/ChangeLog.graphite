@@ -1,5 +1,47 @@
 2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (reduction_ddr): New.
+	(graphite_legal_transform_bb): Call reduction_ddr.
+	* graphite-poly.c (new_poly_bb): Pass a new bool parameter.
+	Initialize PBB_IS_REDUCTION.
+	* graphite-poly.h (struct poly_bb): New bool field is_reduction.
+	(PBB_IS_REDUCTION): New.
+	(new_poly_bb): Update declaration.
+	* graphite-scop-detection.h (build_scop_bbs): Removed.
+	(nb_reductions_in_loop): Removed.
+	* graphite-sese-to-poly.c (try_generate_gimple_bb): Pass a sbitmap
+	parameter for reductions.
+	(try_generate_gimple_bb): Update call to new_poly_bb.
+	(build_scop_bbs_1): Same.
+	(build_scop_bbs): Same.
+	(gsi_for_phi_node): New.
+	(scalar_close_phi_node_p): Remove gcc_assert.
+	(split_reduction_stmt): New.
+	(is_reduction_operation_p): New.
+	(phi_contains_arg): New.
+	(follow_ssa_with_commutative_ops): New.
+	(detect_commutative_reduction_arg): New.
+	(detect_commutative_reduction_assign): New.
+	(follow_inital_value_to_phi): New.
+	(edge_initial_value_for_loop_phi): New.
+	(initial_value_for_loop_phi): New.
+	(detect_commutative_reduction): New.
+	(translate_scalar_reduction_to_array_for_stmt): New.
+	(insert_copyout): New.
+	(insert_copyin): New.
+	(translate_scalar_reduction_to_array): New.
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): New.
+	(rewrite_commutative_reductions_out_of_ssa_loop): New.
+	(rewrite_commutative_reductions_out_of_ssa): New.
+	(build_poly_scop): Call rewrite_commutative_reductions_out_of_ssa.
+	* sese.h (split_region_for_bb): New.
+
+	* gcc.dg/graphite/graphite.exp (DEFAULT_CFLAGS_GRAPHITE_BLOCK): Add -ffast-math.
+	* gcc.dg/graphite/interchange-1.c: Fix format.
+	* gcc.dg/graphite/interchange-10.c: New.
+
+2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Remove
 	buggy assert.
 

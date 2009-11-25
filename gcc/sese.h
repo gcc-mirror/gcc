@@ -188,6 +188,33 @@ sese_loop_depth (sese region, loop_p loop)
   return depth;
 }
 
+/* Splits BB to make a single entry single exit region.  */
+
+static inline sese
+split_region_for_bb (basic_block bb)
+{
+  edge entry, exit;
+
+  if (single_pred_p (bb))
+    entry = single_pred_edge (bb);
+  else
+    {
+      entry = split_block_after_labels (bb);
+      bb = single_succ (bb);
+    }
+
+  if (single_succ_p (bb))
+    exit = single_succ_edge (bb);
+  else
+    {
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      gsi_prev (&gsi);
+      exit = split_block (bb, gsi_stmt (gsi));
+    }
+
+  return new_sese (entry, exit);
+}
+
 /* Returns the block preceding the entry of a SESE.  */
 
 static inline basic_block

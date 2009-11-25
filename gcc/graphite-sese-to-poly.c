@@ -346,7 +346,7 @@ free_scops (VEC (scop_p, heap) *scops)
    information.  */
 
 static void
-try_generate_gimple_bb (scop_p scop, basic_block bb)
+try_generate_gimple_bb (scop_p scop, basic_block bb, sbitmap reductions)
 {
   VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 5);
   loop_p nest = outermost_loop_in_sese (SCOP_REGION (scop), bb);
@@ -362,7 +362,8 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   if (!graphite_stmt_p (SCOP_REGION (scop), bb, drs))
     free_data_refs (drs);
   else
-    new_poly_bb (scop, new_gimple_bb (bb, drs));
+    new_poly_bb (scop, new_gimple_bb (bb, drs), TEST_BIT (reductions,
+							  bb->index));
 }
 
 /* Returns true if all predecessors of BB, that are not dominated by BB, are
@@ -417,7 +418,7 @@ graphite_sort_dominated_info (VEC (basic_block, heap) *dom)
 /* Recursive helper function for build_scops_bbs.  */
 
 static void
-build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
+build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb, sbitmap reductions)
 {
   sese region = SCOP_REGION (scop);
   VEC (basic_block, heap) *dom;
@@ -426,7 +427,7 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
       || !bb_in_sese_p (bb, region))
     return;
 
-  try_generate_gimple_bb (scop, bb);
+  try_generate_gimple_bb (scop, bb, reductions);
   SET_BIT (visited, bb->index);
 
   dom = get_dominated_by (CDI_DOMINATORS, bb);
@@ -444,7 +445,7 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
       for (i = 0; VEC_iterate (basic_block, dom, i, dom_bb); i++)
 	if (all_non_dominated_preds_marked_p (dom_bb, visited))
 	  {
-	    build_scop_bbs_1 (scop, visited, dom_bb);
+	    build_scop_bbs_1 (scop, visited, dom_bb, reductions);
 	    VEC_unordered_remove (basic_block, dom, i);
 	    break;
 	  }
@@ -455,15 +456,14 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
 
 /* Gather the basic blocks belonging to the SCOP.  */
 
-void
-build_scop_bbs (scop_p scop)
+static void
+build_scop_bbs (scop_p scop, sbitmap reductions)
 {
   sbitmap visited = sbitmap_alloc (last_basic_block);
   sese region = SCOP_REGION (scop);
 
   sbitmap_zero (visited);
-  build_scop_bbs_1 (scop, visited, SESE_ENTRY_BB (region));
-
+  build_scop_bbs_1 (scop, visited, SESE_ENTRY_BB (region), reductions);
   sbitmap_free (visited);
 }
 
@@ -1857,6 +1857,22 @@ build_scop_drs (scop_p scop)
     build_pbb_drs (pbb);
 }
 
+/* Return a gsi at the position of the phi node STMT.  */
+
+static gimple_stmt_iterator
+gsi_for_phi_node (gimple stmt)
+{
+  gimple_stmt_iterator psi;
+  basic_block bb = gimple_bb (stmt);
+
+  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+    if (stmt == gsi_stmt (psi))
+      return psi;
+
+  gcc_unreachable ();
+  return psi;
+}
+
 /* Insert the assignment "RES := VAR" just after the definition of VAR.  */
 
 static void
@@ -1927,9 +1943,8 @@ create_zero_dim_array (tree var)
 static bool
 scalar_close_phi_node_p (gimple phi)
 {
-  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
-
-  if (!is_gimple_reg (gimple_phi_result (phi)))
+  if (gimple_code (phi) != GIMPLE_PHI
+      || !is_gimple_reg (gimple_phi_result (phi)))
     return false;
 
   return (gimple_phi_num_args (phi) == 1);
@@ -2198,14 +2213,382 @@ nb_pbbs_in_loops (scop_p scop)
   return res;
 }
 
+/* Splits STMT out of its current BB.  */
+
+static basic_block
+split_reduction_stmt (gimple stmt)
+{
+  gimple_stmt_iterator gsi;
+  basic_block bb = gimple_bb (stmt);
+  edge e;
+
+  split_block (bb, stmt);
+
+  gsi = gsi_last_bb (bb);
+  gsi_prev (&gsi);
+  e = split_block (bb, gsi_stmt (gsi));
+
+  return e->dest;
+}
+
+/* Return true when stmt is a reduction operation.  */
+
+static inline bool
+is_reduction_operation_p (gimple stmt)
+{
+  return flag_associative_math
+    && commutative_tree_code (gimple_assign_rhs_code (stmt))
+    && associative_tree_code (gimple_assign_rhs_code (stmt));
+}
+
+/* Returns true when PHI contains an argument ARG.  */
+
+static bool
+phi_contains_arg (gimple phi, tree arg)
+{
+  size_t i;
+
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    if (operand_equal_p (arg, gimple_phi_arg_def (phi, i), 0))
+      return true;
+
+  return false;
+}
+
+/* Return a loop phi node that corresponds to a reduction containing LHS.  */
+
+static gimple
+follow_ssa_with_commutative_ops (tree arg, tree lhs)
+{
+  gimple stmt;
+
+  if (TREE_CODE (arg) != SSA_NAME)
+    return NULL;
+
+  stmt = SSA_NAME_DEF_STMT (arg);
+
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      if (phi_contains_arg (stmt, lhs))
+	return stmt;
+      return NULL;
+    }
+
+  if (gimple_num_ops (stmt) == 2)
+    return follow_ssa_with_commutative_ops (gimple_assign_rhs1 (stmt), lhs);
+
+  if (is_reduction_operation_p (stmt))
+    {
+      gimple res = follow_ssa_with_commutative_ops (gimple_assign_rhs1 (stmt), lhs);
+
+      return res ? res :
+	follow_ssa_with_commutative_ops (gimple_assign_rhs2 (stmt), lhs);
+    }
+
+  return NULL;
+}
+
+/* Detect commutative and associative scalar reductions starting at
+   the STMT.  */
+
+static gimple
+detect_commutative_reduction_arg (tree lhs, gimple stmt, tree arg,
+				  VEC (gimple, heap) **in,
+				  VEC (gimple, heap) **out)
+{
+  gimple phi = follow_ssa_with_commutative_ops (arg, lhs);
+
+  if (phi)
+    {
+      VEC_safe_push (gimple, heap, *in, stmt);
+      VEC_safe_push (gimple, heap, *out, stmt);
+      return phi;
+    }
+
+  return NULL;
+}
+
+/* Detect commutative and associative scalar reductions starting at
+   the STMT.  */
+
+static gimple
+detect_commutative_reduction_assign (gimple stmt, VEC (gimple, heap) **in,
+				     VEC (gimple, heap) **out)
+{
+  tree lhs = gimple_assign_lhs (stmt);
+
+  if (gimple_num_ops (stmt) == 2)
+    return detect_commutative_reduction_arg (lhs, stmt,
+					     gimple_assign_rhs1 (stmt),
+					     in, out);
+
+  if (is_reduction_operation_p (stmt))
+    {
+      gimple res = detect_commutative_reduction_arg (lhs, stmt,
+						     gimple_assign_rhs1 (stmt),
+						     in, out);
+      return res ? res
+	: detect_commutative_reduction_arg (lhs, stmt,
+					    gimple_assign_rhs2 (stmt),
+					    in, out);
+    }
+
+  return NULL;
+}
+
+/* Return a loop phi node that corresponds to a reduction containing LHS.  */
+
+static gimple
+follow_inital_value_to_phi (tree arg, tree lhs)
+{
+  gimple stmt;
+
+  if (!arg || TREE_CODE (arg) != SSA_NAME)
+    return NULL;
+
+  stmt = SSA_NAME_DEF_STMT (arg);
+
+  if (gimple_code (stmt) == GIMPLE_PHI
+      && phi_contains_arg (stmt, lhs))
+    return stmt;
+
+  return NULL;
+}
+
+
+/* Return the argument of the loop PHI that is the inital value coming
+   from outside the loop.  */
+
+static edge
+edge_initial_value_for_loop_phi (gimple phi)
+{
+  size_t i;
+
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      edge e = gimple_phi_arg_edge (phi, i);
+
+      if (loop_depth (e->src->loop_father)
+	  < loop_depth (e->dest->loop_father))
+	return e;
+    }
+
+  return NULL;
+}
+
+/* Return the argument of the loop PHI that is the inital value coming
+   from outside the loop.  */
+
+static tree
+initial_value_for_loop_phi (gimple phi)
+{
+  size_t i;
+
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      edge e = gimple_phi_arg_edge (phi, i);
+
+      if (loop_depth (e->src->loop_father)
+	  < loop_depth (e->dest->loop_father))
+	return gimple_phi_arg_def (phi, i);
+    }
+
+  return NULL_TREE;
+}
+
+/* Detect commutative and associative scalar reductions starting at
+   the loop closed phi node CLOSE_PHI.  */
+
+static gimple
+detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
+			      VEC (gimple, heap) **out)
+{
+  if (scalar_close_phi_node_p (stmt))
+    {
+      tree arg = gimple_phi_arg_def (stmt, 0);
+      gimple def = SSA_NAME_DEF_STMT (arg);
+      gimple loop_phi = detect_commutative_reduction (def, in, out);
+
+      if (loop_phi)
+	{
+	  tree lhs = gimple_phi_result (stmt);
+	  tree init = initial_value_for_loop_phi (loop_phi);
+	  gimple phi = follow_inital_value_to_phi (init, lhs);
+
+	  VEC_safe_push (gimple, heap, *in, loop_phi);
+	  VEC_safe_push (gimple, heap, *out, stmt);
+	  return phi;
+	}
+      else
+	return NULL;
+    }
+
+  if (gimple_code (stmt) == GIMPLE_ASSIGN)
+    return detect_commutative_reduction_assign (stmt, in, out);
+
+  return NULL;
+}
+
+/* Translate the scalar reduction statement STMT to an array RED
+   knowing that its recursive phi node is LOOP_PHI.  */
+
+static void
+translate_scalar_reduction_to_array_for_stmt (tree red, gimple stmt,
+					      gimple loop_phi)
+{
+  basic_block bb = gimple_bb (stmt);
+  gimple_stmt_iterator insert_gsi = gsi_after_labels (bb);
+  tree res = gimple_phi_result (loop_phi);
+  gimple assign = gimple_build_assign (res, red);
+
+  gsi_insert_before (&insert_gsi, assign, GSI_SAME_STMT);
+
+  assign = gimple_build_assign (red, gimple_assign_lhs (stmt));
+  insert_gsi = gsi_last_bb (bb);
+  gsi_insert_after (&insert_gsi, assign, GSI_SAME_STMT);
+}
+
+/* Insert the assignment "result (CLOSE_PHI) = RED".  */
+
+static void
+insert_copyout (tree red, gimple close_phi)
+{
+  tree res = gimple_phi_result (close_phi);
+  basic_block bb = gimple_bb (close_phi);
+  gimple_stmt_iterator insert_gsi = gsi_after_labels (bb);
+  gimple assign = gimple_build_assign (res, red);
+
+  gsi_insert_before (&insert_gsi, assign, GSI_SAME_STMT);
+}
+
+/* Insert the assignment "RED = initial_value (LOOP_PHI)".  */
+
+static void
+insert_copyin (tree red, gimple loop_phi)
+{
+  gimple_seq stmts;
+  tree init = initial_value_for_loop_phi (loop_phi);
+  edge e = edge_initial_value_for_loop_phi (loop_phi);
+  basic_block bb = e->src;
+  gimple_stmt_iterator insert_gsi = gsi_last_bb (bb);
+  tree expr = build2 (MODIFY_EXPR, TREE_TYPE (init), red, init);
+
+  force_gimple_operand (expr, &stmts, true, NULL);
+  gsi_insert_seq_before (&insert_gsi, stmts, GSI_SAME_STMT);
+}
+
+/* Rewrite out of SSA the reduction described by the loop phi nodes
+   IN, and the close phi nodes OUT.  IN and OUT are structured by loop
+   levels like this:
+
+   IN: stmt, loop_n, ..., loop_0
+   OUT: stmt, close_n, ..., close_0
+
+   the first element is the reduction statement, and the next elements
+   are the loop and close phi nodes of each of the outer loops.  */
+
+static void
+translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
+				     VEC (gimple, heap) *out,
+				     sbitmap reductions)
+{
+  unsigned int i;
+  gimple loop_phi;
+  tree red;
+  gimple_stmt_iterator gsi;
+
+  for (i = 0; VEC_iterate (gimple, in, i, loop_phi); i++)
+    {
+      gimple close_phi = VEC_index (gimple, out, i);
+
+      if (i == 0)
+	{
+	  gimple stmt = loop_phi;
+	  basic_block bb = split_reduction_stmt (stmt);
+
+	  SET_BIT (reductions, bb->index);
+	  gcc_assert (close_phi == loop_phi);
+
+	  red = create_zero_dim_array (gimple_assign_lhs (stmt));
+	  translate_scalar_reduction_to_array_for_stmt
+	    (red, stmt, VEC_index (gimple, in, 1));
+	  continue;
+	}
+
+      if (i == VEC_length (gimple, in) - 1)
+	{
+	  insert_copyout (red, close_phi);
+	  insert_copyin (red, loop_phi);
+	}
+
+      gsi = gsi_for_phi_node (loop_phi);
+      remove_phi_node (&gsi, false);
+
+      gsi = gsi_for_phi_node (close_phi);
+      remove_phi_node (&gsi, false);
+    }
+}
+
+/* Rewrites out of SSA a commutative reduction at CLOSE_PHI.  */
+
+static void
+rewrite_commutative_reductions_out_of_ssa_close_phi (gimple close_phi,
+						     sbitmap reductions)
+{
+  VEC (gimple, heap) *in = VEC_alloc (gimple, heap, 10);
+  VEC (gimple, heap) *out = VEC_alloc (gimple, heap, 10);
+
+  detect_commutative_reduction (close_phi, &in, &out);
+  if (VEC_length (gimple, in) > 0)
+    translate_scalar_reduction_to_array (in, out, reductions);
+
+  VEC_free (gimple, heap, in);
+  VEC_free (gimple, heap, out);
+}
+
+/* Rewrites all the commutative reductions from LOOP out of SSA.  */
+
+static void
+rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
+						sbitmap reductions)
+{
+  gimple_stmt_iterator gsi;
+  edge exit = single_exit (loop);
+
+  if (!exit)
+    return;
+
+  for (gsi = gsi_start_phis (exit->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    rewrite_commutative_reductions_out_of_ssa_close_phi (gsi_stmt (gsi),
+							 reductions);
+}
+
+/* Rewrites all the commutative reductions from SCOP out of SSA.  */
+
+static void
+rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
+{
+  loop_iterator li;
+  loop_p loop;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    if (loop_in_sese_p (loop, region))
+      rewrite_commutative_reductions_out_of_ssa_loop (loop, reductions);
+}
+
 /* Builds the polyhedral representation for a SESE region.  */
 
 bool
 build_poly_scop (scop_p scop)
 {
   sese region = SCOP_REGION (scop);
+  sbitmap reductions = sbitmap_alloc (last_basic_block * 2);
+
+  sbitmap_zero (reductions);
+  rewrite_commutative_reductions_out_of_ssa (region, reductions);
   rewrite_reductions_out_of_ssa (scop);
-  build_scop_bbs (scop);
+  build_scop_bbs (scop, reductions);
+  sbitmap_free (reductions);
 
   /* FIXME: This restriction is needed to avoid a problem in CLooG.
      Once CLooG is fixed, remove this guard.  Anyways, it makes no
