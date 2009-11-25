@@ -306,6 +306,7 @@ pbb_remove_duplicate_pdrs (poly_bb_p pbb)
       if (!can_collapse_pdrs (pdr1, pdr2))
 	VEC_quick_push (poly_dr_p, collapsed, pdr1);
 
+  VEC_free (poly_dr_p, heap, collapsed);
   PBB_PDR_DUPLICATES_REMOVED (pbb) = true;
 }
 
