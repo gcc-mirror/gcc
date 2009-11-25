@@ -282,6 +282,20 @@ new_gimple_bb (basic_block bb, VEC (data_reference_p, heap) *drs)
   return gbb;
 }
 
+static void
+free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
+{
+  unsigned int i;
+  struct data_reference *dr;
+
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    if (!dr->aux)
+      {
+	free (dr->aux);
+	dr->aux = NULL;
+      }
+}
+
 /* Frees GBB.  */
 
 static void
@@ -290,6 +304,7 @@ free_gimple_bb (struct gimple_bb *gbb)
   if (GBB_CLOOG_IV_TYPES (gbb))
     htab_delete (GBB_CLOOG_IV_TYPES (gbb));
 
+  free_data_refs_aux (GBB_DATA_REFS (gbb));
   free_data_refs (GBB_DATA_REFS (gbb));
 
   VEC_free (gimple, heap, GBB_CONDITIONS (gbb));
@@ -1546,11 +1561,7 @@ pdr_add_alias_set (ppl_Polyhedron_t accesses, data_reference_p dr,
   int alias_set_num = 0;
 
   if (dr->aux != NULL)
-    {
-      alias_set_num = *((int *)(dr->aux));
-      free (dr->aux);
-      dr->aux = NULL;
-    }
+    alias_set_num = ((int *)(dr->aux))[ALIAS_SET_INDEX];
 
   ppl_new_Linear_Expression_with_dimension (&alias, accessp_nb_dims);
 
@@ -1675,6 +1686,7 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
   ppl_Pointset_Powerset_C_Polyhedron_t accesses_ps;
   ppl_dimension_type dom_nb_dims;
   ppl_dimension_type accessp_nb_dims;
+  int dr_base_object_set;
 
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PBB_DOMAIN (pbb),
 						      &dom_nb_dims);
@@ -1689,14 +1701,17 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&accesses_ps,
 							    accesses);
   ppl_delete_Polyhedron (accesses);
-  new_poly_dr (pbb, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE, dr,
-	       DR_NUM_DIMENSIONS (dr));
+
+  dr_base_object_set = ((int *)(dr->aux))[BASE_OBJECT_SET_INDEX];
+
+  new_poly_dr (pbb, dr_base_object_set, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
+	       dr, DR_NUM_DIMENSIONS (dr));
 }
 
-/* Group each data reference in DRS with it's alias set num.  */
-
 static void
-build_alias_set_for_drs (VEC (data_reference_p, heap) **drs)
+partition_drs_to_sets (VEC (data_reference_p, heap) **drs, int choice,
+			 bool (* edge_exist_p) (const struct data_reference *,
+						const struct data_reference *))
 {
   int num_vertex = VEC_length (data_reference_p, *drs);
   struct graph *g = new_graph (num_vertex);
@@ -1707,7 +1722,7 @@ build_alias_set_for_drs (VEC (data_reference_p, heap) **drs)
 
   for (i = 0; VEC_iterate (data_reference_p, *drs, i, dr1); i++)
     for (j = i+1; VEC_iterate (data_reference_p, *drs, j, dr2); j++)
-      if (dr_may_alias_p (dr1, dr2))
+      if ((*edge_exist_p) (dr1, dr2))
 	{
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
@@ -1722,12 +1737,36 @@ build_alias_set_for_drs (VEC (data_reference_p, heap) **drs)
   for (i = 0; i < g->n_vertices; i++)
     {
       data_reference_p dr = VEC_index (data_reference_p, *drs, i);
-      dr->aux = XNEW (int);
-      *((int *)(dr->aux)) = g->vertices[i].component + 1;
+      if (!dr->aux)
+	dr->aux = XNEWVEC (int, 2);
+      ((int *)(dr->aux))[choice] = g->vertices[i].component + 1;
     }
 
   free (queue);
   free_graph (g);
+}
+
+static bool
+dr_same_base_object_p (const struct data_reference *dr1,
+		       const struct data_reference *dr2)
+{
+  return operand_equal_p (DR_BASE_OBJECT (dr1), DR_BASE_OBJECT (dr2), 0);
+}
+
+/* Group each data reference in DRS with it's alias set num.  */
+
+static void
+build_alias_set_for_drs (VEC (data_reference_p, heap) **drs)
+{
+  partition_drs_to_sets (drs, ALIAS_SET_INDEX, dr_may_alias_p);
+}
+
+/* Group each data reference in DRS with it's base object set num.  */
+
+static void
+build_base_obj_set_for_drs (VEC (data_reference_p, heap) **drs)
+{
+  partition_drs_to_sets (drs, BASE_OBJECT_SET_INDEX, dr_same_base_object_p);
 }
 
 /* Build the data references for PBB.  */
@@ -1761,6 +1800,8 @@ build_scop_drs (scop_p scop)
     }
 
   build_alias_set_for_drs (&drs);
+  build_base_obj_set_for_drs (&drs);
+
   VEC_free (data_reference_p, heap, drs);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
