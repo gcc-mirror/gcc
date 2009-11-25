@@ -561,6 +561,30 @@ ppl_print_polyhedron_matrix (FILE *file, ppl_const_Polyhedron_t ph)
   cloog_matrix_free (mat);
 }
 
+/* Print to FILE the linear expression LE.  */
+
+void
+ppl_print_linear_expr (FILE *file, ppl_Linear_Expression_t le)
+{
+  ppl_Constraint_t c;
+  ppl_Polyhedron_t pol;
+  ppl_dimension_type dim;
+
+  ppl_Linear_Expression_space_dimension (le, &dim);
+  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
+  ppl_new_Constraint (&c, le, PPL_CONSTRAINT_TYPE_EQUAL);
+  ppl_Polyhedron_add_constraint (pol, c);
+  ppl_print_polyhedron_matrix (file, pol);
+}
+
+/* Print to STDERR the linear expression LE.  */
+
+void
+debug_ppl_linear_expr (ppl_Linear_Expression_t le)
+{
+  ppl_print_linear_expr (stderr, le);
+}
+
 /* Print to FILE the powerset PS in its PolyLib matrix form.  */
 
 void
