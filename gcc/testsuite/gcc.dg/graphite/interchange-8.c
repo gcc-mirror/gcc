@@ -40,6 +40,6 @@ foo (void)
   return A[0][1][0][2];
 }
 
-/* This should not be interchanged.  */
-/* { dg-final { scan-tree-dump-times "will be interchanged" 0 "graphite" } } */ 
+/* Loops K and L should be interchanged.  */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */ 
 /* { dg-final { cleanup-tree-dump "graphite" } } */

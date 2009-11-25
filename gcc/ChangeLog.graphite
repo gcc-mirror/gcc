@@ -1,5 +1,9 @@
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/interchange-8.c: Enable loop interchange.
+
+2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/graphite.exp (DEFAULT_CFLAGS_GRAPHITE_BLOCK):
 	Add -fno-loop-strip-mine and -fno-loop-interchange.
 	(DEFAULT_FLAGS_GRAPHITE_INTERCHANGE): Add -fno-loop-block and
