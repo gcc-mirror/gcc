@@ -2194,6 +2194,47 @@ instantiate_scev_name (basic_block instantiate_below,
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.
 
+   CHREC is a polynomial chain of recurrence to be instantiated.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
+
+static tree
+instantiate_scev_poly (basic_block instantiate_below,
+		       struct loop *evolution_loop, tree chrec,
+		       bool fold_conversions, htab_t cache, int size_expr)
+{
+  tree op1;
+  tree op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
+				 CHREC_LEFT (chrec), fold_conversions, cache,
+				 size_expr);
+  if (op0 == chrec_dont_know)
+    return chrec_dont_know;
+
+  op1 = instantiate_scev_1 (instantiate_below, evolution_loop,
+			    CHREC_RIGHT (chrec), fold_conversions, cache,
+			    size_expr);
+  if (op1 == chrec_dont_know)
+    return chrec_dont_know;
+
+  if (CHREC_LEFT (chrec) != op0
+      || CHREC_RIGHT (chrec) != op1)
+    {
+      op1 = chrec_convert_rhs (chrec_type (op0), op1, NULL);
+      chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
+    }
+  return chrec;
+}
+
+/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
+   and EVOLUTION_LOOP, that were left under a symbolic form.
+
    CHREC is a binary expression to be instantiated.
 
    CACHE is the cache of already instantiated values.
@@ -2371,25 +2412,8 @@ instantiate_scev_1 (basic_block instantiate_below,
 				    fold_conversions, cache, size_expr);
 
     case POLYNOMIAL_CHREC:
-      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				CHREC_LEFT (chrec), fold_conversions, cache,
-				size_expr);
-      if (op0 == chrec_dont_know)
-	return chrec_dont_know;
-
-      op1 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				CHREC_RIGHT (chrec), fold_conversions, cache,
-				size_expr);
-      if (op1 == chrec_dont_know)
-	return chrec_dont_know;
-
-      if (CHREC_LEFT (chrec) != op0
-	  || CHREC_RIGHT (chrec) != op1)
-	{
-	  op1 = chrec_convert_rhs (chrec_type (op0), op1, NULL);
-	  chrec = build_polynomial_chrec (CHREC_VARIABLE (chrec), op0, op1);
-	}
-      return chrec;
+      return instantiate_scev_poly (instantiate_below, evolution_loop, chrec,
+				    fold_conversions, cache, size_expr);
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
