@@ -110,7 +110,7 @@ typedef struct
 
 /*---------------------------------------------------------------------------
 		      Attributes for SSA_NAMEs.
-  
+
   NOTE: These structures are stored in struct tree_ssa_name
   but are only used by the tree optimizers, so it makes better sense
   to declare them here to avoid recompiling unrelated files when
@@ -135,7 +135,7 @@ enum need_phi_state {
      needs PHI nodes.  This is probably an overly conservative assumption.  */
   NEED_PHI_STATE_UNKNOWN,
 
-  /* This state indicates that we have seen one or more sets of the 
+  /* This state indicates that we have seen one or more sets of the
      variable in a single basic block and that the sets dominate all
      uses seen so far.  If after finding all definition and use sites
      we are still in this state, then the variable does not need any
@@ -205,7 +205,7 @@ struct GTY(()) var_ann_d {
 
 
 /* Immediate use lists are used to directly access all uses for an SSA
-   name and get pointers to the statement for each use. 
+   name and get pointers to the statement for each use.
 
    The structure ssa_use_operand_d consists of PREV and NEXT pointers
    to maintain the list.  A USE pointer, which points to address where
@@ -227,7 +227,7 @@ struct GTY(()) var_ann_d {
    iterator manages this by inserting a marker node into the list
    immediately before the node currently being examined in the list.
    this marker node is uniquely identified by having null stmt *and* a
-   null use pointer.  
+   null use pointer.
 
    When iterating to the next use, the iteration routines check to see
    if the node after the marker has changed. if it has, then the node
@@ -260,7 +260,7 @@ typedef struct immediate_use_iterator_d
   for ((DEST) = first_readonly_imm_use (&(ITER), (SSAVAR));	\
        !end_readonly_imm_use_p (&(ITER));			\
        (DEST) = next_readonly_imm_use (&(ITER)))
-  
+
 /* Use this iterator to visit each stmt which has a use of SSAVAR.  */
 
 #define FOR_EACH_IMM_USE_STMT(STMT, ITER, SSAVAR)		\
@@ -268,7 +268,7 @@ typedef struct immediate_use_iterator_d
        !end_imm_use_stmt_p (&(ITER));				\
        (STMT) = next_imm_use_stmt (&(ITER)))
 
-/* Use this to terminate the FOR_EACH_IMM_USE_STMT loop early.  Failure to 
+/* Use this to terminate the FOR_EACH_IMM_USE_STMT loop early.  Failure to
    do so will result in leaving a iterator marker node in the immediate
    use list, and nothing good will come from that.   */
 #define BREAK_FROM_IMM_USE_STMT(ITER)				\
@@ -278,7 +278,7 @@ typedef struct immediate_use_iterator_d
    }
 
 
-/* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to 
+/* Use this iterator in combination with FOR_EACH_IMM_USE_STMT to
    get access to each occurrence of ssavar on the stmt returned by
    that iterator..  for instance:
 
@@ -323,7 +323,7 @@ static inline void set_phi_nodes (basic_block, gimple_seq);
 			      Global declarations
 ---------------------------------------------------------------------------*/
 struct GTY(()) int_tree_map {
-  
+
   unsigned int uid;
   tree to;
 };
@@ -334,7 +334,7 @@ extern int int_tree_map_eq (const void *, const void *);
 extern unsigned int uid_decl_map_hash (const void *);
 extern int uid_decl_map_eq (const void *, const void *);
 
-typedef struct 
+typedef struct
 {
   htab_iterator hti;
 } referenced_var_iterator;
@@ -348,7 +348,7 @@ typedef struct
 #define FOR_EACH_REFERENCED_VAR(VAR, ITER) \
   for ((VAR) = first_referenced_var (&(ITER)); \
        !end_referenced_vars_p (&(ITER)); \
-       (VAR) = next_referenced_var (&(ITER))) 
+       (VAR) = next_referenced_var (&(ITER)))
 
 
 typedef struct
@@ -889,7 +889,7 @@ struct mem_address
 };
 
 struct affine_tree_combination;
-tree create_mem_ref (gimple_stmt_iterator *, tree, 
+tree create_mem_ref (gimple_stmt_iterator *, tree,
 		     struct affine_tree_combination *, tree, bool);
 rtx addr_for_mem_ref (struct mem_address *, addr_space_t, bool);
 void get_address_description (tree, struct mem_address *);

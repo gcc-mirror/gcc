@@ -83,7 +83,7 @@ struct cond_equivalence
 
    Computing and storing the edge equivalences instead of creating
    them on-demand can save significant amounts of time, particularly
-   for pathological cases involving switch statements.  
+   for pathological cases involving switch statements.
 
    These structures live for a single iteration of the dominator
    optimizer in the edge's AUX field.  At the end of an iteration we
@@ -210,7 +210,7 @@ initialize_hash_element (gimple stmt, tree lhs,
       enum tree_code subcode = gimple_assign_rhs_code (stmt);
 
       expr->type = NULL_TREE;
-      
+
       switch (get_gimple_rhs_class (subcode))
         {
         case GIMPLE_SINGLE_RHS:
@@ -255,7 +255,7 @@ initialize_hash_element (gimple stmt, tree lhs,
 
       if (gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE))
         expr->ops.call.pure = true;
-      else 
+      else
         expr->ops.call.pure = false;
 
       expr->ops.call.nargs = nargs;
@@ -293,7 +293,7 @@ static void
 initialize_expr_from_cond (tree cond, struct hashable_expr *expr)
 {
   expr->type = boolean_type_node;
-  
+
   if (COMPARISON_CLASS_P (cond))
     {
       expr->kind = EXPR_BINARY;
@@ -415,7 +415,7 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
 
         return true;
       }
-     
+
     default:
       gcc_unreachable ();
     }
@@ -473,7 +473,7 @@ iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
           val = iterative_hash_expr (expr->ops.call.args[i], val);
       }
       break;
-     
+
     default:
       gcc_unreachable ();
     }
@@ -496,7 +496,7 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
       print_generic_expr (stream, element->lhs, 0);
       fprintf (stream, " = ");
     }
-  
+
   switch (element->expr.kind)
     {
       case EXPR_SINGLE:
@@ -597,7 +597,7 @@ free_all_edge_infos (void)
     }
 }
 
-/* Jump threading, redundancy elimination and const/copy propagation. 
+/* Jump threading, redundancy elimination and const/copy propagation.
 
    This pass may expose new symbols that need to be renamed into SSA.  For
    every new symbol exposed, its corresponding bit will be set in
@@ -646,7 +646,7 @@ tree_ssa_dominator_optimize (void)
      for jump threading; this may include back edges that are not part of
      a single loop.  */
   mark_dfs_back_edges ();
-      
+
   /* Recursively walk the dominator tree optimizing statements.  */
   walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
 
@@ -720,10 +720,10 @@ tree_ssa_dominator_optimize (void)
 
   /* Free asserted bitmaps and stacks.  */
   BITMAP_FREE (need_eh_cleanup);
-  
+
   VEC_free (expr_hash_elt_t, heap, avail_exprs_stack);
   VEC_free (tree, heap, const_and_copies_stack);
-  
+
   /* Free the value-handle array.  */
   threadedge_finalize_values ();
   ssa_name_values = NULL;
@@ -737,7 +737,7 @@ gate_dominator (void)
   return flag_tree_dom != 0;
 }
 
-struct gimple_opt_pass pass_dominator = 
+struct gimple_opt_pass pass_dominator =
 {
  {
   GIMPLE_PASS,
@@ -908,7 +908,7 @@ static void
 record_equivalences_from_phis (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  
+
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple phi = gsi_stmt (gsi);
@@ -1094,7 +1094,7 @@ record_cond (struct cond_equivalence *p)
 
 /* Build a cond_equivalence record indicating that the comparison
    CODE holds between operands OP0 and OP1.  */
-   
+
 static void
 build_and_record_new_cond (enum tree_code code,
                            tree op0, tree op1,
@@ -1371,7 +1371,7 @@ record_equality (tree x, tree y)
 
 /* Returns true when STMT is a simple iv increment.  It detects the
    following situation:
-   
+
    i_1 = phi (..., i_2)
    i_2 = i_1 +/- ...  */
 
@@ -1410,7 +1410,7 @@ simple_iv_increment_p (gimple stmt)
 }
 
 /* CONST_AND_COPIES is a table which maps an SSA_NAME to the current
-   known value for that SSA_NAME (or NULL if no value is known).  
+   known value for that SSA_NAME (or NULL if no value is known).
 
    Propagate values from CONST_AND_COPIES into the PHI nodes of the
    successors of BB.  */
@@ -1846,7 +1846,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi)
 	}
 
       opt_stats.num_re++;
-      
+
       if (assigns_var_p
 	  && !useless_type_conversion_p (expr_type, TREE_TYPE (cached_lhs)))
 	cached_lhs = fold_convert (expr_type, cached_lhs);
@@ -1881,7 +1881,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
       && gimple_assign_single_p (stmt))
     {
       tree rhs = gimple_assign_rhs1 (stmt);
-               
+
       /* If the RHS of the assignment is a constant or another variable that
 	 may be propagated, register it in the CONST_AND_COPIES table.  We
 	 do not need to record unwind data for this, since this is a true
@@ -2031,7 +2031,7 @@ cprop_operand (gimple stmt, use_operand_p op_p)
 }
 
 /* CONST_AND_COPIES is a table which maps an SSA_NAME to the current
-   known value for that SSA_NAME (or NULL if no value is known).  
+   known value for that SSA_NAME (or NULL if no value is known).
 
    Propagate values from CONST_AND_COPIES into the uses, vuses and
    vdef_ops of STMT.  */
@@ -2050,7 +2050,7 @@ cprop_into_stmt (gimple stmt)
 }
 
 /* Optimize the statement pointed to by iterator SI.
-   
+
    We try to perform some simplistic global redundancy elimination and
    constant propagation:
 
@@ -2072,10 +2072,10 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   bool modified_p = false;
 
   old_stmt = stmt = gsi_stmt (si);
-  
+
   if (gimple_code (stmt) == GIMPLE_COND)
     canonicalize_comparison (stmt);
-  
+
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
 
@@ -2167,7 +2167,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
      where it goes.  If that is the case, then mark the CFG as altered.
 
      This will cause us to later call remove_unreachable_blocks and
-     cleanup_tree_cfg when it is safe to do so.  It is not safe to 
+     cleanup_tree_cfg when it is safe to do so.  It is not safe to
      clean things up here since removal of edges and such can trigger
      the removal of PHI nodes, which in turn can release SSA_NAMEs to
      the manager.
@@ -2191,7 +2191,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   if (gimple_modified_p (stmt) || modified_p)
     {
       tree val = NULL;
-      
+
       update_stmt_if_modified (stmt);
 
       if (gimple_code (stmt) == GIMPLE_COND)
@@ -2259,7 +2259,7 @@ lookup_avail_expr (gimple stmt, bool insert)
   if (slot == NULL)
     {
       free (element);
-      return NULL_TREE;  
+      return NULL_TREE;
     }
 
   if (*slot == NULL)
@@ -2469,7 +2469,7 @@ get_lhs_or_phi_result (gimple stmt)
    nodes as well in an effort to pick up secondary optimization
    opportunities.  */
 
-static void 
+static void
 propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_names)
 {
   /* First verify that propagation is valid and isn't going to move a
@@ -2496,7 +2496,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	  fprintf (dump_file, "'\n");
 	}
 
-      /* Walk over every use of LHS and try to replace the use with RHS. 
+      /* Walk over every use of LHS and try to replace the use with RHS.
 	 At this point the only reason why such a propagation would not
 	 be successful would be if the use occurs in an ASM_EXPR.  */
       FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
@@ -2506,7 +2506,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	     into debug stmts will occur then.  */
 	  if (gimple_debug_bind_p (use_stmt))
 	    continue;
-	
+
 	  /* It's not always safe to propagate into an ASM_EXPR.  */
 	  if (gimple_code (use_stmt) == GIMPLE_ASM
               && ! may_propagate_copy_into_asm (lhs))
@@ -2559,7 +2559,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	      continue;
 	    }
 
-	  /* From this point onward we are propagating into a 
+	  /* From this point onward we are propagating into a
 	     real statement.  Folding may (or may not) be possible,
 	     we may expose new operands, expose dead EH edges,
 	     etc.  */
@@ -2680,7 +2680,7 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	    }
 	}
 
-      /* Ensure there is nothing else to do. */ 
+      /* Ensure there is nothing else to do. */
       gcc_assert (!all || has_zero_uses (lhs));
 
       /* If we were able to propagate away all uses of LHS, then
@@ -2804,7 +2804,7 @@ eliminate_degenerate_phis (void)
      A set bit indicates that the statement or PHI node which
      defines the SSA_NAME should be (re)examined to determine if
      it has become a degenerate PHI or trivial const/copy propagation
-     opportunity. 
+     opportunity.
 
      Experiments have show we generally get better compilation
      time behavior with bitmaps rather than sbitmaps.  */
@@ -2882,7 +2882,7 @@ struct gimple_opt_pass pass_phi_only_cprop =
   0,		                        /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_cleanup_cfg
-    | TODO_dump_func 
+    | TODO_dump_func
     | TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_verify_stmts

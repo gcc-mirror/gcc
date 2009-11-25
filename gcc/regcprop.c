@@ -889,7 +889,7 @@ copyprop_hardreg_forward (void)
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (single_pred_p (bb) 
+      if (single_pred_p (bb)
 	  && TEST_BIT (visited, single_pred (bb)->index)
 	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
 	all_vd[bb->index] = all_vd[single_pred (bb)->index];
@@ -899,7 +899,7 @@ copyprop_hardreg_forward (void)
       copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
     }
 
-  sbitmap_free (visited);  
+  sbitmap_free (visited);
   free (all_vd);
   return 0;
 }

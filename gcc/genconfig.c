@@ -57,7 +57,7 @@ static void gen_peephole (rtx);
 static void gen_peephole2 (rtx);
 
 /* RECOG_P will be nonzero if this pattern was seen in a context where it will
-   be used to recognize, rather than just generate an insn. 
+   be used to recognize, rather than just generate an insn.
 
    NON_PC_SET_SRC will be nonzero if this pattern was seen in a SET_SRC
    of a SET whose destination is not (pc).  */
@@ -287,13 +287,13 @@ main (int argc, char **argv)
       desc = read_md_rtx (&line_no, &insn_code_number);
       if (desc == NULL)
 	break;
-	
-      switch (GET_CODE (desc)) 
+
+      switch (GET_CODE (desc))
 	{
   	  case DEFINE_INSN:
 	    gen_insn (desc);
 	    break;
-	  
+
 	  case DEFINE_EXPAND:
 	    gen_expand (desc);
 	    break;

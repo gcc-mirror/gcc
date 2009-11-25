@@ -381,7 +381,7 @@ alloc_object_size (const_gimple call, int object_size_type)
       if (TREE_CHAIN (p))
         arg2 = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (p)))-1;
     }
- 
+
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (callee))
       {
@@ -397,10 +397,10 @@ alloc_object_size (const_gimple call, int object_size_type)
 
   if (arg1 < 0 || arg1 >= (int)gimple_call_num_args (call)
       || TREE_CODE (gimple_call_arg (call, arg1)) != INTEGER_CST
-      || (arg2 >= 0 
+      || (arg2 >= 0
 	  && (arg2 >= (int)gimple_call_num_args (call)
 	      || TREE_CODE (gimple_call_arg (call, arg2)) != INTEGER_CST)))
-    return unknown[object_size_type];	  
+    return unknown[object_size_type];
 
   if (arg2 >= 0)
     bytes = size_binop (MULT_EXPR,
@@ -1111,7 +1111,7 @@ check_for_plus_in_loops (struct object_size_info *osi, tree var)
     {
       tree basevar = gimple_assign_rhs1 (stmt);
       tree cst = gimple_assign_rhs2 (stmt);
-	    
+
       gcc_assert (TREE_CODE (cst) == INTEGER_CST);
 
       if (integer_zerop (cst))

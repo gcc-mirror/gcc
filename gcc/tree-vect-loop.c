@@ -1,7 +1,7 @@
 /* Loop Vectorization
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software
    Foundation, Inc.
-   Contributed by Dorit Naishlos <dorit@il.ibm.com> and 
+   Contributed by Dorit Naishlos <dorit@il.ibm.com> and
    Ira Rosen <irar@il.ibm.com>
 
 This file is part of GCC.
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Loop Vectorization Pass.
 
-   This pass tries to vectorize loops. 
+   This pass tries to vectorize loops.
 
    For example, the vectorizer transforms the following simple loop:
 
@@ -282,10 +282,10 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	  if (STMT_VINFO_VECTYPE (stmt_info))
 	    {
-	      /* The only case when a vectype had been already set is for stmts 
+	      /* The only case when a vectype had been already set is for stmts
 	         that contain a dataref, or for "pattern-stmts" (stmts generated
 		 by the vectorizer to represent/replace a certain idiom).  */
-	      gcc_assert (STMT_VINFO_DATA_REF (stmt_info) 
+	      gcc_assert (STMT_VINFO_DATA_REF (stmt_info)
 			  || is_pattern_stmt_p (stmt_info));
 	      vectype = STMT_VINFO_VECTYPE (stmt_info);
 	    }
@@ -294,7 +294,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info)
 			  && !is_pattern_stmt_p (stmt_info));
 
-	      scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, 
+	      scalar_type = vect_get_smallest_scalar_type (stmt, &dummy,
                                                            &dummy);
 	      if (vect_print_dump_info (REPORT_DETAILS))
 		{
@@ -307,7 +307,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		{
 		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		    {
-		      fprintf (vect_dump, 
+		      fprintf (vect_dump,
 			       "not vectorized: unsupported data-type ");
 		      print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
 		    }
@@ -415,7 +415,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
     fprintf (vect_dump, "=== vect_analyze_scalar_cycles ===");
 
   /* First - identify all inductions. Reduction detection assumes that all the
-     inductions have been identified, therefore, this order must not be 
+     inductions have been identified, therefore, this order must not be
      changed.  */
   for (gsi = gsi_start_phis  (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -446,9 +446,9 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	}
 
       if (!access_fn
-	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &dumy, &dumy)) 
+	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &dumy, &dumy))
 	{
-	  VEC_safe_push (gimple, heap, worklist, phi);	  
+	  VEC_safe_push (gimple, heap, worklist, phi);
 	  continue;
 	}
 
@@ -468,7 +468,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       bool nested_cycle;
 
       if (vect_print_dump_info (REPORT_DETAILS))
-        { 
+        {
           fprintf (vect_dump, "Analyze phi: ");
           print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
         }
@@ -477,7 +477,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
       gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
       nested_cycle = (loop != LOOP_VINFO_LOOP (loop_vinfo));
-      reduc_stmt = vect_is_simple_reduction (loop_vinfo, phi, !nested_cycle, 
+      reduc_stmt = vect_is_simple_reduction (loop_vinfo, phi, !nested_cycle,
                                              &double_reduc);
       if (reduc_stmt)
         {
@@ -490,7 +490,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
               STMT_VINFO_DEF_TYPE (vinfo_for_stmt (reduc_stmt)) =
                                                     vect_double_reduction_def;
             }
-          else 
+          else
             {
               if (nested_cycle)
                 {
@@ -524,7 +524,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 /* Function vect_analyze_scalar_cycles.
 
    Examine the cross iteration def-use cycles of scalar variables, by
-   analyzing the loop-header PHIs of scalar variables; Classify each 
+   analyzing the loop-header PHIs of scalar variables; Classify each
    cycle as one of the following: invariant, induction, reduction, unknown.
    We do that for the loop represented by LOOP_VINFO, and also to its
    inner-loop, if exists.
@@ -555,7 +555,7 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
      1. When vectorized, they are executed in the same order as in the original
         scalar loop, so we can't change the order of computation when
         vectorizing them.
-     2. FIXME: Inner-loop reductions can be used in the inner-loop, so the 
+     2. FIXME: Inner-loop reductions can be used in the inner-loop, so the
         current checks are too strict.  */
 
   if (loop->inner)
@@ -855,13 +855,13 @@ vect_analyze_loop_form (struct loop *loop)
     fprintf (vect_dump, "=== vect_analyze_loop_form ===");
 
   /* Different restrictions apply when we are considering an inner-most loop,
-     vs. an outer (nested) loop.  
+     vs. an outer (nested) loop.
      (FORNOW. May want to relax some of these restrictions in the future).  */
 
   if (!loop->inner)
     {
-      /* Inner-most loop.  We currently require that the number of BBs is 
-	 exactly 2 (the header and latch).  Vectorizable inner-most loops 
+      /* Inner-most loop.  We currently require that the number of BBs is
+	 exactly 2 (the header and latch).  Vectorizable inner-most loops
 	 look like this:
 
                         (pre-header)
@@ -892,7 +892,7 @@ vect_analyze_loop_form (struct loop *loop)
       edge backedge, entryedge;
 
       /* Nested loop. We currently require that the loop is doubly-nested,
-	 contains a single inner loop, and the number of BBs is exactly 5. 
+	 contains a single inner loop, and the number of BBs is exactly 5.
 	 Vectorizable outer-loops look like this:
 
 			(pre-header)
@@ -902,7 +902,7 @@ vect_analyze_loop_form (struct loop *loop)
 		          inner-loop |
 			   |         |
 			  tail ------+
-			   | 
+			   |
 		        (exit-bb)
 
 	 The inner-loop has the properties expected of inner-most loops
@@ -934,7 +934,7 @@ vect_analyze_loop_form (struct loop *loop)
 	  return NULL;
 	}
 
-      if (loop->num_nodes != 5) 
+      if (loop->num_nodes != 5)
         {
 	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
 	    fprintf (vect_dump, "not vectorized: control flow in loop.");
@@ -943,14 +943,14 @@ vect_analyze_loop_form (struct loop *loop)
         }
 
       gcc_assert (EDGE_COUNT (innerloop->header->preds) == 2);
-      backedge = EDGE_PRED (innerloop->header, 1);	  
+      backedge = EDGE_PRED (innerloop->header, 1);
       entryedge = EDGE_PRED (innerloop->header, 0);
       if (EDGE_PRED (innerloop->header, 0)->src == innerloop->latch)
 	{
 	  backedge = EDGE_PRED (innerloop->header, 0);
-	  entryedge = EDGE_PRED (innerloop->header, 1);	
+	  entryedge = EDGE_PRED (innerloop->header, 1);
 	}
-	
+
       if (entryedge->src != loop->header
 	  || !single_exit (innerloop)
 	  || single_exit (innerloop)->dest !=  EDGE_PRED (loop->latch, 0)->src)
@@ -964,8 +964,8 @@ vect_analyze_loop_form (struct loop *loop)
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "Considering outer-loop vectorization.");
     }
-  
-  if (!single_exit (loop) 
+
+  if (!single_exit (loop)
       || EDGE_COUNT (loop->header->preds) != 2)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
@@ -1023,11 +1023,11 @@ vect_analyze_loop_form (struct loop *loop)
 	destroy_loop_vec_info (inner_loop_vinfo, true);
       return NULL;
     }
-  
-  if (!number_of_iterations) 
+
+  if (!number_of_iterations)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
-	fprintf (vect_dump, 
+	fprintf (vect_dump,
 		 "not vectorized: number of iterations cannot be computed.");
       if (inner_loop_vinfo)
 	destroy_loop_vec_info (inner_loop_vinfo, true);
@@ -1125,11 +1125,11 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                  (i.e. a phi in the tail of the outer-loop).
                  FORNOW: we currently don't support the case that these phis
                  are not used in the outerloop (unless it is double reduction,
-                 i.e., this phi is vect_reduction_def), cause this case 
+                 i.e., this phi is vect_reduction_def), cause this case
                  requires to actually do something here.  */
               if ((!STMT_VINFO_RELEVANT_P (stmt_info)
                    || STMT_VINFO_LIVE_P (stmt_info))
-                  && STMT_VINFO_DEF_TYPE (stmt_info) 
+                  && STMT_VINFO_DEF_TYPE (stmt_info)
                      != vect_double_reduction_def)
                 {
                   if (vect_print_dump_info (REPORT_DETAILS))
@@ -1191,7 +1191,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
           if (STMT_VINFO_RELEVANT_P (stmt_info) && !PURE_SLP_STMT (stmt_info))
             /* STMT needs both SLP and loop-based vectorization.  */
             only_slp_in_loop = false;
-        } 
+        }
     } /* bbs */
 
   /* All operations in the loop are either irrelevant (deal with loop
@@ -1323,7 +1323,7 @@ vect_analyze_loop (struct loop *loop)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "===== analyze_loop_nest =====");
 
-  if (loop_outer (loop) 
+  if (loop_outer (loop)
       && loop_vec_info_for_loop (loop_outer (loop))
       && LOOP_VINFO_VECTORIZABLE_P (loop_vec_info_for_loop (loop_outer (loop))))
     {
@@ -1396,7 +1396,7 @@ vect_analyze_loop (struct loop *loop)
       return NULL;
     }
 
-  /* Analyze data dependences between the data-refs in the loop. 
+  /* Analyze data dependences between the data-refs in the loop.
      FORNOW: fail at the first data dependence that we encounter.  */
 
   ok = vect_analyze_data_ref_dependences (loop_vinfo, NULL);
@@ -1539,29 +1539,29 @@ report_vect_op (gimple stmt, const char *msg)
      a1 = phi < a0, a2 >
      a3 = ...
      a2 = operation (a3, a1)
-  
+
    such that:
-   1. operation is commutative and associative and it is safe to 
+   1. operation is commutative and associative and it is safe to
       change the order of the computation (if CHECK_REDUCTION is true)
    2. no uses for a2 in the loop (a2 is used out of the loop)
    3. no uses of a1 in the loop besides the reduction operation.
 
    Condition 1 is tested here.
-   Conditions 2,3 are tested in vect_mark_stmts_to_be_vectorized.  
+   Conditions 2,3 are tested in vect_mark_stmts_to_be_vectorized.
 
-   (2) Detect a cross-iteration def-use cycle in nested loops, i.e., 
-   nested cycles, if CHECK_REDUCTION is false.  
+   (2) Detect a cross-iteration def-use cycle in nested loops, i.e.,
+   nested cycles, if CHECK_REDUCTION is false.
 
    (3) Detect cycles of phi nodes in outer-loop vectorization, i.e., double
    reductions:
 
      a1 = phi < a0, a2 >
      inner loop (def of a3)
-     a2 = phi < a3 >    
+     a2 = phi < a3 >
 */
 
 gimple
-vect_is_simple_reduction (loop_vec_info loop_info, gimple phi, 
+vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
                           bool check_reduction, bool *double_reduc)
 {
   struct loop *loop = (gimple_bb (phi))->loop_father;
@@ -1582,7 +1582,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
 
   /* If CHECK_REDUCTION is true, we assume inner-most loop vectorization,
      otherwise, we assume outer loop vectorization.  */
-  gcc_assert ((check_reduction && loop == vect_loop) 
+  gcc_assert ((check_reduction && loop == vect_loop)
               || (!check_reduction && flow_loop_nested_p (vect_loop, loop)));
 
   name = PHI_RESULT (phi);
@@ -1673,15 +1673,15 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
           return NULL;
         }
 
-      def1 = SSA_NAME_DEF_STMT (op1); 
-      if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)) 
+      def1 = SSA_NAME_DEF_STMT (op1);
+      if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
           && loop->inner
           && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
           && is_gimple_assign (def1))
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             report_vect_op (def_stmt, "detected double reduction: ");
- 
+
           *double_reduc = true;
           return def_stmt;
         }
@@ -1691,7 +1691,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
 
   code = gimple_assign_rhs_code (def_stmt);
 
-  if (check_reduction 
+  if (check_reduction
       && (!commutative_tree_code (code) || !associative_tree_code (code)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1699,7 +1699,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
       return NULL;
     }
 
-  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS) 
+  if (get_gimple_rhs_class (code) != GIMPLE_BINARY_RHS)
     {
       if (code != COND_EXPR)
         {
@@ -1714,8 +1714,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
         {
           op4 = TREE_OPERAND (op3, 1);
           op3 = TREE_OPERAND (op3, 0);
-        }  
-       
+        }
+
       op1 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 1);
       op2 = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 2);
 
@@ -1775,17 +1775,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
       return NULL;
     }
 
-  /* Check that it's ok to change the order of the computation.  
+  /* Check that it's ok to change the order of the computation.
      Generally, when vectorizing a reduction we change the order of the
      computation.  This may change the behavior of the program in some
-     cases, so we need to check that this is ok.  One exception is when 
+     cases, so we need to check that this is ok.  One exception is when
      vectorizing an outer-loop: the inner-loop is executed sequentially,
      and therefore vectorizing reductions in the inner-loop during
      outer-loop vectorization is safe.  */
 
   /* CHECKME: check for !flag_finite_math_only too?  */
   if (SCALAR_FLOAT_TYPE_P (type) && !flag_associative_math
-      && check_reduction) 
+      && check_reduction)
     {
       /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1804,7 +1804,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
     {
       /* Changing the order of operations changes the semantics.  */
       if (vect_print_dump_info (REPORT_DETAILS))
-	report_vect_op (def_stmt, 
+	report_vect_op (def_stmt,
 			"reduction: unsafe fixed-point math optimization: ");
       return NULL;
     }
@@ -1819,7 +1819,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
   if (TREE_CODE (op2) == SSA_NAME)
     def2 = SSA_NAME_DEF_STMT (op2);
 
-  if (code != COND_EXPR 
+  if (code != COND_EXPR
       && (!def1 || !def2 || gimple_nop_p (def1) || gimple_nop_p (def2)))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1835,10 +1835,10 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
       && (code == COND_EXPR
           || (def1 && flow_bb_inside_loop_p (loop, gimple_bb (def1))
               && (is_gimple_assign (def1)
-  	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) 
+  	          || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1))
                       == vect_induction_def
    	          || (gimple_code (def1) == GIMPLE_PHI
-	              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) 
+	              && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1))
                           == vect_internal_def
  	              && !is_loop_header_bb_p (gimple_bb (def1)))))))
     {
@@ -1853,7 +1853,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi,
 	               || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
                            == vect_induction_def
  	               || (gimple_code (def2) == GIMPLE_PHI
-		           && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) 
+		           && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2))
                                == vect_internal_def
 		           && !is_loop_header_bb_p (gimple_bb (def2)))))))
     {
@@ -1921,7 +1921,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   if (!flag_vect_cost_model)
     {
       if (vect_print_dump_info (REPORT_COST))
-        fprintf (vect_dump, "cost model disabled.");      
+        fprintf (vect_dump, "cost model disabled.");
       return 0;
     }
 
@@ -2021,7 +2021,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       peel_guard_costs +=  2 * (TARG_COND_TAKEN_BRANCH_COST
                               + TARG_COND_NOT_TAKEN_BRANCH_COST);
     }
-  else 
+  else
     {
       if (byte_misalign)
 	{
@@ -2048,10 +2048,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	  peel_guard_costs +=  2 * TARG_COND_TAKEN_BRANCH_COST;
 
         }
-      else      
+      else
 	{
 	  int niters = LOOP_VINFO_INT_NITERS (loop_vinfo);
-	  peel_iters_prologue = niters < peel_iters_prologue ? 
+	  peel_iters_prologue = niters < peel_iters_prologue ?
 					niters : peel_iters_prologue;
 	  peel_iters_epilogue = (niters - peel_iters_prologue) % vf;
 	}
@@ -2142,9 +2142,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       vec_inside_cost += SLP_INSTANCE_INSIDE_OF_LOOP_COST (instance);
     }
 
-  /* Calculate number of iterations required to make the vector version 
+  /* Calculate number of iterations required to make the vector version
      profitable, relative to the loop bodies only. The following condition
-     must hold true: 
+     must hold true:
      SIC * niters + SOC > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC
      where
      SIC = scalar iteration cost, VIC = vector iteration cost,
@@ -2199,7 +2199,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	       min_profitable_iters);
     }
 
-  min_profitable_iters = 
+  min_profitable_iters =
 	min_profitable_iters < vf ? vf : min_profitable_iters;
 
   /* Because the condition we create is:
@@ -2210,21 +2210,21 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "  Profitability threshold = %d\n",
 	     min_profitable_iters);
-    
+
   return min_profitable_iters;
 }
 
 
-/* TODO: Close dependency between vect_model_*_cost and vectorizable_* 
+/* TODO: Close dependency between vect_model_*_cost and vectorizable_*
    functions. Design better to avoid maintenance issues.  */
-    
-/* Function vect_model_reduction_cost.  
 
-   Models cost for a reduction operation, including the vector ops 
+/* Function vect_model_reduction_cost.
+
+   Models cost for a reduction operation, including the vector ops
    generated within the strip-mine loop, the initial definition before
    the loop, and the epilogue code that must be generated.  */
 
-static bool 
+static bool
 vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 			   int ncopies)
 {
@@ -2270,11 +2270,11 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
         }
       return false;
    }
-  
+
   mode = TYPE_MODE (vectype);
   orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
 
-  if (!orig_stmt) 
+  if (!orig_stmt)
     orig_stmt = STMT_VINFO_STMT (stmt_info);
 
   code = gimple_assign_rhs_code (orig_stmt);
@@ -2291,7 +2291,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
     {
       if (reduc_code != ERROR_MARK)
 	outer_cost += TARG_VEC_STMT_COST + TARG_VEC_TO_SCALAR_COST;
-      else 
+      else
 	{
 	  int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
 	  tree bitsize =
@@ -2308,7 +2308,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 	    /* Final reduction via vector shifts and the reduction operator. Also
 	       requires scalar extract.  */
 	    outer_cost += ((exact_log2(nelements) * 2) * TARG_VEC_STMT_COST
-				+ TARG_VEC_TO_SCALAR_COST); 
+				+ TARG_VEC_TO_SCALAR_COST);
 	  else
 	    /* Use extracts and reduction op for final reduction.  For N elements,
                we have N extracts and N-1 reduction ops.  */
@@ -2338,7 +2338,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
   STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) = ncopies * TARG_VEC_STMT_COST;
   /* prologue cost for vec_init and vec_step.  */
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info) = 2 * TARG_SCALAR_TO_VEC_COST;
-  
+
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_induction_cost: inside_cost = %d, "
              "outside_cost = %d .", STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info),
@@ -2355,7 +2355,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
    Output:
    Return a vector variable, initialized with the first VF values of
    the induction variable. E.g., for an iv with IV_PHI='X' and
-   evolution S, for a vector of 4 units, we want to return: 
+   evolution S, for a vector of 4 units, we want to return:
    [X, X + S, X + 2*S, X + 3*S].  */
 
 static tree
@@ -2365,7 +2365,7 @@ get_initial_def_for_induction (gimple iv_phi)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (gimple_phi_result (iv_phi));
-  tree vectype; 
+  tree vectype;
   int nunits;
   edge pe = loop_preheader_edge (loop);
   struct loop *iv_loop;
@@ -2438,7 +2438,7 @@ get_initial_def_for_induction (gimple iv_phi)
       /* iv_loop is nested in the loop to be vectorized.  init_expr had already
 	 been created during vectorization of previous stmts; We obtain it from
 	 the STMT_VINFO_VEC_STMT of the defining stmt. */
-      tree iv_def = PHI_ARG_DEF_FROM_EDGE (iv_phi, 
+      tree iv_def = PHI_ARG_DEF_FROM_EDGE (iv_phi,
                                            loop_preheader_edge (iv_loop));
       vec_init = vect_get_vec_def_for_operand (iv_def, iv_phi, NULL);
     }
@@ -2533,12 +2533,12 @@ get_initial_def_for_induction (gimple iv_phi)
   vec_def = make_ssa_name (vec_dest, new_stmt);
   gimple_assign_set_lhs (new_stmt, vec_def);
   gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo, 
+  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo,
                                                    NULL));
 
   /* Set the arguments of the phi node:  */
   add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
-  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop), 
+  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
 	       UNKNOWN_LOCATION);
 
 
@@ -2547,7 +2547,7 @@ get_initial_def_for_induction (gimple iv_phi)
      more than one vector stmt - i.e - we need to "unroll" the
      vector stmt by a factor VF/nunits.  For more details see documentation
      in vectorizable_operation.  */
-  
+
   if (ncopies > 1)
     {
       stmt_vec_info prev_stmt_vinfo;
@@ -2579,7 +2579,7 @@ get_initial_def_for_induction (gimple iv_phi)
 	  set_vinfo_for_stmt (new_stmt,
 			      new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
 	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
-	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt); 
+	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt);
 	}
     }
 
@@ -2596,7 +2596,7 @@ get_initial_def_for_induction (gimple iv_phi)
 	      break;
 	    }
         }
-      if (exit_phi) 
+      if (exit_phi)
 	{
 	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
 	  /* FORNOW. Currently not supporting the case that an inner-loop induction
@@ -2667,11 +2667,11 @@ get_initial_def_for_induction (gimple iv_phi)
    FORNOW, we are using the 'adjust in epilog' scheme, because this way the
    initialization vector is simpler (same element in all entries), if
    ADJUSTMENT_DEF is not NULL, and Option2 otherwise.
-   
+
    A cost model should help decide between these two schemes.  */
 
 tree
-get_initial_def_for_reduction (gimple stmt, tree init_val, 
+get_initial_def_for_reduction (gimple stmt, tree init_val,
                                tree *adjustment_def)
 {
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
@@ -2685,7 +2685,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
   tree init_def;
   tree t = NULL_TREE;
   int i;
-  bool nested_in_vect_loop = false; 
+  bool nested_in_vect_loop = false;
   tree init_value;
   REAL_VALUE_TYPE real_init_val = dconst0;
   int int_init_val = 0;
@@ -2710,8 +2710,8 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
       && (def_stmt = SSA_NAME_DEF_STMT (init_val))
       && gimple_code (def_stmt) == GIMPLE_PHI
       && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
-      && vinfo_for_stmt (def_stmt) 
-      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt)) 
+      && vinfo_for_stmt (def_stmt)
+      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def_stmt))
           == vect_double_reduction_def)
     {
       *adjustment_def = NULL;
@@ -2738,12 +2738,12 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
       case BIT_XOR_EXPR:
       case MULT_EXPR:
       case BIT_AND_EXPR:
-        /* ADJUSMENT_DEF is NULL when called from 
+        /* ADJUSMENT_DEF is NULL when called from
            vect_create_epilog_for_reduction to vectorize double reduction.  */
         if (adjustment_def)
           {
             if (nested_in_vect_loop)
-              *adjustment_def = vect_get_vec_def_for_operand (init_val, stmt, 
+              *adjustment_def = vect_get_vec_def_for_operand (init_val, stmt,
                                                               NULL);
             else
               *adjustment_def = init_val;
@@ -2760,7 +2760,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
         else
           def_for_init = build_int_cst (scalar_type, int_init_val);
 
-        /* Create a vector of '0' or '1' except the first element.  */ 
+        /* Create a vector of '0' or '1' except the first element.  */
         for (i = nunits - 2; i >= 0; --i)
           t = tree_cons (NULL_TREE, def_for_init, t);
 
@@ -2810,11 +2810,11 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
 
 
 /* Function vect_create_epilog_for_reduction
-    
+
    Create code at the loop-epilog to finalize the result of a reduction
-   computation. 
-  
-   VECT_DEF is a vector of partial results. 
+   computation.
+
+   VECT_DEF is a vector of partial results.
    REDUC_CODE is the tree-code for the epilog reduction.
    NCOPIES is > 1 in case the vectorization factor (VF) is bigger than the
      number of elements that we can fit in a vectype (nunits). In this case
@@ -2823,23 +2823,23 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
      in vectorizable_operation.
    STMT is the scalar reduction stmt that is being vectorized.
    REDUCTION_PHI is the phi-node that carries the reduction computation.
-   REDUC_INDEX is the index of the operand in the right hand side of the 
+   REDUC_INDEX is the index of the operand in the right hand side of the
      statement that is defined by REDUCTION_PHI.
    DOUBLE_REDUC is TRUE if double reduction phi nodes should be handled.
 
    This function:
-   1. Creates the reduction def-use cycle: sets the arguments for 
+   1. Creates the reduction def-use cycle: sets the arguments for
       REDUCTION_PHI:
       The loop-entry argument is the vectorized initial-value of the reduction.
       The loop-latch argument is VECT_DEF - the vector of partial sums.
    2. "Reduces" the vector of partial results VECT_DEF into a single result,
-      by applying the operation specified by REDUC_CODE if available, or by 
+      by applying the operation specified by REDUC_CODE if available, or by
       other means (whole-vector shifts or a scalar loop).
-      The function also creates a new phi node at the loop exit to preserve 
+      The function also creates a new phi node at the loop exit to preserve
       loop-closed form, as illustrated below.
-  
+
      The flow at the entry to this function:
-    
+
         loop:
           vec_def = phi <null, null>            # REDUCTION_PHI
           VECT_DEF = vector_stmt                # vectorized form of STMT
@@ -2854,7 +2854,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
         loop:
           vec_def = phi <vec_init, VECT_DEF>    # REDUCTION_PHI
           VECT_DEF = vector_stmt                # vectorized form of STMT
-          s_loop = scalar_stmt                  # (scalar) STMT 
+          s_loop = scalar_stmt                  # (scalar) STMT
         loop_exit:
           s_out0 = phi <s_loop>                 # (scalar) EXIT_PHI
           v_out1 = phi <VECT_DEF>               # NEW_EXIT_PHI
@@ -2870,7 +2870,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
 				  int ncopies,
 				  enum tree_code reduc_code,
 				  gimple reduction_phi,
-                                  int reduc_index, 
+                                  int reduc_index,
                                   bool double_reduc)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -2890,7 +2890,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   gimple epilog_stmt = NULL;
   tree new_scalar_dest, new_dest;
   gimple exit_phi;
-  tree bitsize, bitpos, bytesize; 
+  tree bitsize, bitpos, bytesize;
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree adjustment_def;
   tree vec_initial_def, def;
@@ -2905,18 +2905,18 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   VEC(gimple,heap) *phis = NULL;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
-  
+
   if (nested_in_vect_loop_p (loop, stmt))
     {
       outer_loop = loop;
       loop = loop->inner;
       nested_in_vect_loop = true;
     }
-  
+
   switch (get_gimple_rhs_class (gimple_assign_rhs_code (stmt)))
     {
     case GIMPLE_SINGLE_RHS:
-      gcc_assert (TREE_OPERAND_LENGTH (gimple_assign_rhs1 (stmt)) 
+      gcc_assert (TREE_OPERAND_LENGTH (gimple_assign_rhs1 (stmt))
                                        == ternary_op);
       reduction_op = TREE_OPERAND (gimple_assign_rhs1 (stmt), reduc_index);
       break;
@@ -2924,7 +2924,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
       reduction_op = gimple_assign_rhs1 (stmt);
       break;
     case GIMPLE_BINARY_RHS:
-      reduction_op = reduc_index ? 
+      reduction_op = reduc_index ?
                      gimple_assign_rhs2 (stmt) : gimple_assign_rhs1 (stmt);
       break;
     default:
@@ -2936,7 +2936,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   mode = TYPE_MODE (vectype);
 
   /*** 1. Create the reduction def-use cycle  ***/
-  
+
   /* For the case of reduction, vect_get_vec_def_for_operand returns
      the scalar def before the loop, that defines the initial value
      of the reduction variable.  */
@@ -2948,7 +2948,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   for (j = 0; j < ncopies; j++)
     {
       /* 1.1 set the loop-entry arg of the reduction-phi:  */
-      add_phi_arg (phi, vec_initial_def, loop_preheader_edge (loop), 
+      add_phi_arg (phi, vec_initial_def, loop_preheader_edge (loop),
 		   UNKNOWN_LOCATION);
 
       /* 1.2 set the loop-latch arg for the reduction-phi:  */
@@ -2978,9 +2978,9 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
           Step 1 can be accomplished using one the following three schemes:
           (scheme 1) using reduc_code, if available.
           (scheme 2) using whole-vector shifts, if available.
-          (scheme 3) using a scalar loop. In this case steps 1+2 above are 
+          (scheme 3) using a scalar loop. In this case steps 1+2 above are
                      combined.
-                
+
           The overall epilog code looks like this:
 
           s_out0 = phi <s_loop>         # original EXIT_PHI
@@ -3017,14 +3017,14 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
 
   exit_gsi = gsi_after_labels (exit_bb);
 
-  /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3 
+  /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3
          (i.e. when reduc_code is not available) and in the final adjustment
 	 code (if needed).  Also get the original scalar reduction variable as
-         defined in the loop.  In case STMT is a "pattern-stmt" (i.e. - it 
-         represents a reduction pattern), the tree-code and scalar-def are 
-         taken from the original stmt that the pattern-stmt (STMT) replaces.  
+         defined in the loop.  In case STMT is a "pattern-stmt" (i.e. - it
+         represents a reduction pattern), the tree-code and scalar-def are
+         taken from the original stmt that the pattern-stmt (STMT) replaces.
          Otherwise (it is a regular reduction) - the tree-code and scalar-def
-         are taken from STMT.  */ 
+         are taken from STMT.  */
 
   orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
   if (!orig_stmt)
@@ -3055,7 +3055,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   /* In case this is a reduction in an inner-loop while vectorizing an outer
      loop - we don't need to extract a single scalar result at the end of the
      inner-loop (unless it is double reduction, i.e., the use of reduction is
-     outside the outer-loop). The final vector of partial results will be used 
+     outside the outer-loop). The final vector of partial results will be used
      in the vectorized outer-loop, or reduced to a scalar result at the end of
      the outer-loop.  */
   if (nested_in_vect_loop && !double_reduc)
@@ -3140,7 +3140,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
 	       bit_offset /= 2)
 	    {
 	      tree bitpos = size_int (bit_offset);
-              
+
 	      epilog_stmt = gimple_build_assign_with_ops (shift_code, vec_dest,
 							  new_temp, bitpos);
 	      new_name = make_ssa_name (vec_dest, epilog_stmt);
@@ -3160,10 +3160,10 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
         {
 	  tree rhs;
 
-	  /*** Case 3: Create:  
+	  /*** Case 3: Create:
 	     s = extract_field <v_out2, 0>
-	     for (offset = element_size; 
-		  offset < vector_size; 
+	     for (offset = element_size;
+		  offset < vector_size;
 		  offset += element_size;)
 	       {
 	         Create:  s' = extract_field <v_out2, offset>
@@ -3181,15 +3181,15 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
 	  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
 	  gimple_assign_set_lhs (epilog_stmt, new_temp);
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
-	      
+
 	  for (bit_offset = element_bitsize;
 	       bit_offset < vec_size_in_bits;
 	       bit_offset += element_bitsize)
-	    { 
+	    {
 	      tree bitpos = bitsize_int (bit_offset);
 	      tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
 				 bitpos);
-		
+
 	      epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
 	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      gimple_assign_set_lhs (epilog_stmt, new_name);
@@ -3209,7 +3209,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
 
   /* 2.4  Extract the final scalar result.  Create:
          s_out3 = extract_field <v_out2, bitpos>  */
-  
+
   if (extract_scalar_result)
     {
       tree rhs;
@@ -3269,7 +3269,7 @@ vect_finalize_reduction:
 
   /* Replace uses of s_out0 with uses of s_out3:
      Find the loop-closed-use at the loop exit of the original scalar result.
-     (The reduction result is expected to have two immediate uses - one at the 
+     (The reduction result is expected to have two immediate uses - one at the
      latch block, and one at the loop exit).  */
   phis = VEC_alloc (gimple, heap, 10);
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
@@ -3294,35 +3294,35 @@ vect_finalize_reduction:
 	  /* FORNOW. Currently not supporting the case that an inner-loop
 	     reduction is not used in the outer-loop (but only outside the
 	     outer-loop), unless it is double reduction.  */
-	  gcc_assert ((STMT_VINFO_RELEVANT_P (stmt_vinfo) 
+	  gcc_assert ((STMT_VINFO_RELEVANT_P (stmt_vinfo)
                       && !STMT_VINFO_LIVE_P (stmt_vinfo)) || double_reduc);
 
 	  epilog_stmt = adjustment_def ? epilog_stmt : new_phi;
 	  STMT_VINFO_VEC_STMT (stmt_vinfo) = epilog_stmt;
-	  set_vinfo_for_stmt (epilog_stmt, 
-			      new_stmt_vec_info (epilog_stmt, loop_vinfo, 
+	  set_vinfo_for_stmt (epilog_stmt,
+			      new_stmt_vec_info (epilog_stmt, loop_vinfo,
 			                         NULL));
 	  if (adjustment_def)
 	    STMT_VINFO_RELATED_STMT (vinfo_for_stmt (epilog_stmt)) =
 		STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
 
-          if (!double_reduc 
+          if (!double_reduc
               || STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_double_reduction_def)
             continue;
 
-          /* Handle double reduction: 
+          /* Handle double reduction:
 
              stmt1: s1 = phi <s0, s2>  - double reduction phi (outer loop)
              stmt2:   s3 = phi <s1, s4> - (regular) reduction phi (inner loop)
              stmt3:   s4 = use (s3)     - (regular) reduction stmt (inner loop)
              stmt4: s2 = phi <s4>      - double reduction stmt (outer loop)
 
-             At that point the regular reduction (stmt2 and stmt3) is already 
+             At that point the regular reduction (stmt2 and stmt3) is already
              vectorized, as well as the exit phi node, stmt4.
              Here we vectorize the phi node of double reduction, stmt1, and
              update all relevant statements.  */
 
-          /* Go through all the uses of s2 to find double reduction phi node, 
+          /* Go through all the uses of s2 to find double reduction phi node,
              i.e., stmt1 above.  */
           orig_name = PHI_RESULT (exit_phi);
           FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
@@ -3337,13 +3337,13 @@ vect_finalize_reduction:
               if (gimple_code (use_stmt) != GIMPLE_PHI
                   || gimple_phi_num_args (use_stmt) != 2
                   || !use_stmt_vinfo
-                  || STMT_VINFO_DEF_TYPE (use_stmt_vinfo) 
+                  || STMT_VINFO_DEF_TYPE (use_stmt_vinfo)
                       != vect_double_reduction_def
                   || bb->loop_father != outer_loop)
                 continue;
 
-              /* Create vector phi node for double reduction: 
-                 vs1 = phi <vs0, vs2> 
+              /* Create vector phi node for double reduction:
+                 vs1 = phi <vs0, vs2>
                  vs1 was created previously in this function by a call to
                  vect_get_vec_def_for_operand and is stored in vec_initial_def;
                  vs2 is defined by EPILOG_STMT, the vectorized EXIT_PHI;
@@ -3351,22 +3351,22 @@ vect_finalize_reduction:
 
               /* Create vector phi node.  */
               vect_phi = create_phi_node (vec_initial_def, bb);
-              new_phi_vinfo = new_stmt_vec_info (vect_phi, 
+              new_phi_vinfo = new_stmt_vec_info (vect_phi,
                                     loop_vec_info_for_loop (outer_loop), NULL);
               set_vinfo_for_stmt (vect_phi, new_phi_vinfo);
 
-              /* Create vs0 - initial def of the double reduction phi.  */              
-              preheader_arg = PHI_ARG_DEF_FROM_EDGE (use_stmt, 
-                                             loop_preheader_edge (outer_loop)); 
+              /* Create vs0 - initial def of the double reduction phi.  */
+              preheader_arg = PHI_ARG_DEF_FROM_EDGE (use_stmt,
+                                             loop_preheader_edge (outer_loop));
               init_def = get_initial_def_for_reduction (stmt, preheader_arg,
                                                         NULL);
               vect_phi_init = vect_init_vector (use_stmt, init_def, vectype,
                                                 NULL);
-               
+
               /* Update phi node arguments with vs0 and vs2.  */
-              add_phi_arg (vect_phi, vect_phi_init, 
+              add_phi_arg (vect_phi, vect_phi_init,
                            loop_preheader_edge (outer_loop), UNKNOWN_LOCATION);
-              add_phi_arg (vect_phi, PHI_RESULT (epilog_stmt), 
+              add_phi_arg (vect_phi, PHI_RESULT (epilog_stmt),
                            loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
               if (vect_print_dump_info (REPORT_DETAILS))
                 {
@@ -3378,12 +3378,12 @@ vect_finalize_reduction:
 
               /* Replace the use, i.e., set the correct vs1 in the regular
                  reduction phi node. FORNOW, NCOPIES is always 1, so the loop
-                 is redundant.  */                  
+                 is redundant.  */
               use = reduction_phi;
               for (j = 0; j < ncopies; j++)
                 {
                   edge pr_edge = loop_preheader_edge (loop);
-                  SET_PHI_ARG_DEF (use, pr_edge->dest_idx, vect_phi_res); 
+                  SET_PHI_ARG_DEF (use, pr_edge->dest_idx, vect_phi_res);
                   use = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (use));
                 }
             }
@@ -3397,7 +3397,7 @@ vect_finalize_reduction:
     }
 
   VEC_free (gimple, heap, phis);
-} 
+}
 
 
 /* Function vectorizable_reduction.
@@ -3407,18 +3407,18 @@ vect_finalize_reduction:
    stmt to replace it, put it in VEC_STMT, and insert it at GSI.
    Return FALSE if not a vectorizable STMT, TRUE otherwise.
 
-   This function also handles reduction idioms (patterns) that have been 
+   This function also handles reduction idioms (patterns) that have been
    recognized in advance during vect_pattern_recog. In this case, STMT may be
    of this form:
      X = pattern_expr (arg0, arg1, ..., X)
    and it's STMT_VINFO_RELATED_STMT points to the last stmt in the original
    sequence that had been detected and replaced by the pattern-stmt (STMT).
-  
+
    In some cases of reduction patterns, the type of the reduction variable X is
    different than the type of the other arguments of STMT.
    In such cases, the vectype that is used when transforming STMT into a vector
    stmt is different than the vectype that is used to determine the
-   vectorization factor, because it consists of a different number of elements 
+   vectorization factor, because it consists of a different number of elements
    than the actual number of elements that are being operated upon in parallel.
 
    For example, consider an accumulation of shorts into an int accumulator.
@@ -3515,7 +3515,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       && STMT_VINFO_DEF_TYPE (stmt_info) != vect_nested_cycle)
     return false;
 
-  /* 2. Has this been recognized as a reduction pattern? 
+  /* 2. Has this been recognized as a reduction pattern?
 
      Check if STMT represents a pattern that has been recognized
      in earlier analysis stages.  For stmts that represent a pattern,
@@ -3530,7 +3530,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (STMT_VINFO_IN_PATTERN_P (orig_stmt_info));
       gcc_assert (!STMT_VINFO_IN_PATTERN_P (stmt_info));
     }
- 
+
   /* 3. Check the operands of the operation. The first operands are defined
         inside the loop body. The last operand is the reduction variable,
         which is defined by the loop-header-phi.  */
@@ -3571,12 +3571,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   scalar_dest = gimple_assign_lhs (stmt);
   scalar_type = TREE_TYPE (scalar_dest);
-  if (!POINTER_TYPE_P (scalar_type) && !INTEGRAL_TYPE_P (scalar_type) 
+  if (!POINTER_TYPE_P (scalar_type) && !INTEGRAL_TYPE_P (scalar_type)
       && !SCALAR_FLOAT_TYPE_P (scalar_type))
     return false;
 
   /* All uses but the last are expected to be defined in the loop.
-     The last use is the reduction variable. In case of nested cycle this 
+     The last use is the reduction variable. In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
   for (i = 0; i < op_type-1; i++)
@@ -3603,27 +3603,27 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
     }
 
-  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt, 
+  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt,
                                       &def, &dt);
   gcc_assert (is_simple_use);
   gcc_assert (dt == vect_reduction_def
               || dt == vect_nested_cycle
-              || ((dt == vect_internal_def || dt == vect_external_def 
+              || ((dt == vect_internal_def || dt == vect_external_def
                    || dt == vect_constant_def || dt == vect_induction_def)
-                   && nested_cycle && found_nested_cycle_def)); 
+                   && nested_cycle && found_nested_cycle_def));
   if (!found_nested_cycle_def)
     reduc_def_stmt = def_stmt;
 
   gcc_assert (gimple_code (reduc_def_stmt) == GIMPLE_PHI);
-  if (orig_stmt) 
-    gcc_assert (orig_stmt == vect_is_simple_reduction (loop_vinfo, 
-                                                       reduc_def_stmt, 
-                                                       !nested_cycle, 
+  if (orig_stmt)
+    gcc_assert (orig_stmt == vect_is_simple_reduction (loop_vinfo,
+                                                       reduc_def_stmt,
+                                                       !nested_cycle,
                                                        &dummy));
   else
-    gcc_assert (stmt == vect_is_simple_reduction (loop_vinfo, reduc_def_stmt, 
+    gcc_assert (stmt == vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
                                                   !nested_cycle, &dummy));
-  
+
   if (STMT_VINFO_LIVE_P (vinfo_for_stmt (reduc_def_stmt)))
     return false;
 
@@ -3692,24 +3692,24 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
                         STMT: int_acc = widen_sum <short_a, int_acc>
 
           This means that:
-          1. The tree-code that is used to create the vector operation in the 
-             epilog code (that reduces the partial results) is not the 
-             tree-code of STMT, but is rather the tree-code of the original 
-             stmt from the pattern that STMT is replacing. I.e, in the example 
-             above we want to use 'widen_sum' in the loop, but 'plus' in the 
+          1. The tree-code that is used to create the vector operation in the
+             epilog code (that reduces the partial results) is not the
+             tree-code of STMT, but is rather the tree-code of the original
+             stmt from the pattern that STMT is replacing. I.e, in the example
+             above we want to use 'widen_sum' in the loop, but 'plus' in the
              epilog.
           2. The type (mode) we use to check available target support
-             for the vector operation to be created in the *epilog*, is 
-             determined by the type of the reduction variable (in the example 
+             for the vector operation to be created in the *epilog*, is
+             determined by the type of the reduction variable (in the example
              above we'd check this: plus_optab[vect_int_mode]).
              However the type (mode) we use to check available target support
              for the vector operation to be created *inside the loop*, is
              determined by the type of the other arguments to STMT (in the
              example we'd check this: widen_sum_optab[vect_short_mode]).
-  
-          This is contrary to "regular" reductions, in which the types of all 
-          the arguments are the same as the type of the reduction variable. 
-          For "regular" reductions we can therefore use the same vector type 
+
+          This is contrary to "regular" reductions, in which the types of all
+          the arguments are the same as the type of the reduction variable.
+          For "regular" reductions we can therefore use the same vector type
           (and also the same tree-code) when generating the epilog code and
           when generating the code inside the loop.  */
 
@@ -3757,7 +3757,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   epilog_reduc_code = ERROR_MARK;
   if (reduction_code_for_scalar_code (orig_code, &epilog_reduc_code))
     {
-      reduc_optab = optab_for_tree_code (epilog_reduc_code, vectype, 
+      reduc_optab = optab_for_tree_code (epilog_reduc_code, vectype,
                                          optab_default);
       if (!reduc_optab)
         {
@@ -3768,12 +3768,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
 
       if (reduc_optab
-          && optab_handler (reduc_optab, vec_mode)->insn_code 
+          && optab_handler (reduc_optab, vec_mode)->insn_code
               == CODE_FOR_nothing)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "reduc op not supported by target.");
- 
+
           epilog_reduc_code = ERROR_MARK;
         }
     }
@@ -3795,7 +3795,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
       return false;
     }
- 
+
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
@@ -3859,7 +3859,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  /* Create the reduction-phi that defines the reduction-operand.  */
 	  new_phi = create_phi_node (vec_dest, loop->header);
-	  set_vinfo_for_stmt (new_phi, new_stmt_vec_info (new_phi, loop_vinfo, 
+	  set_vinfo_for_stmt (new_phi, new_stmt_vec_info (new_phi, loop_vinfo,
 	                                                  NULL));
           /* Get the vector def for the reduction variable from the phi
              node.  */
@@ -3877,19 +3877,19 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       /* Handle uses.  */
       if (j == 0)
         {
-	  loop_vec_def0 = vect_get_vec_def_for_operand (ops[!reduc_index], 
+	  loop_vec_def0 = vect_get_vec_def_for_operand (ops[!reduc_index],
                                                         stmt, NULL);
           if (op_type == ternary_op)
             {
               if (reduc_index == 0)
- 	        loop_vec_def1 = vect_get_vec_def_for_operand (ops[2], stmt, 
+ 	        loop_vec_def1 = vect_get_vec_def_for_operand (ops[2], stmt,
                                                               NULL);
               else
-                loop_vec_def1 = vect_get_vec_def_for_operand (ops[1], stmt, 
+                loop_vec_def1 = vect_get_vec_def_for_operand (ops[1], stmt,
                                                               NULL);
             }
 
-          /* Get the vector def for the reduction variable from the phi 
+          /* Get the vector def for the reduction variable from the phi
              node.  */
 	  first_phi = new_phi;
         }
@@ -3919,15 +3919,15 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       else
         {
           if (reduc_index == 0)
-            expr = build3 (code, vectype, reduc_def, loop_vec_def0, 
+            expr = build3 (code, vectype, reduc_def, loop_vec_def0,
                            loop_vec_def1);
-          else 
+          else
             {
               if (reduc_index == 1)
-                expr = build3 (code, vectype, loop_vec_def0, reduc_def, 
+                expr = build3 (code, vectype, loop_vec_def0, reduc_def,
                                loop_vec_def1);
               else
-                expr = build3 (code, vectype, loop_vec_def0, loop_vec_def1, 
+                expr = build3 (code, vectype, loop_vec_def0, loop_vec_def1,
 	     	               reduc_def);
             }
         }
@@ -3936,7 +3936,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (stmt, new_stmt, gsi);
-        
+
       if (j == 0)
 	STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
       else
@@ -4045,7 +4045,7 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 
 /* Function vectorizable_live_operation.
 
-   STMT computes a value that is used outside the loop. Check if 
+   STMT computes a value that is used outside the loop. Check if
    it can be supported.  */
 
 bool
@@ -4061,7 +4061,7 @@ vectorizable_live_operation (gimple stmt,
   tree op;
   tree def;
   gimple def_stmt;
-  enum vect_def_type dt; 
+  enum vect_def_type dt;
   enum tree_code code;
   enum gimple_rhs_class rhs_class;
 
@@ -4216,8 +4216,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   split_edge (loop_preheader_edge (loop));
 
   /* FORNOW: the vectorizer supports only loops which body consist
-     of one basic block (header + empty latch). When the vectorizer will 
-     support more involved loop forms, the order by which the BBs are 
+     of one basic block (header + empty latch). When the vectorizer will
+     support more involved loop forms, the order by which the BBs are
      traversed need to be reconsidered.  */
 
   for (i = 0; i < nbbs; i++)
@@ -4268,7 +4268,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	    {
 	      fprintf (vect_dump, "------>vectorizing statement: ");
 	      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
-	    }	
+	    }
 
 	  stmt_info = vinfo_for_stmt (stmt);
 
@@ -4321,7 +4321,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  continue;
 		}
 	    }
-	  
+
 	  /* -------- vectorize statement ------------ */
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "transform statement.");

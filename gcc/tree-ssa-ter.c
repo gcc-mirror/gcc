@@ -36,20 +36,20 @@ along with GCC; see the file COPYING3.  If not see
 /* Temporary Expression Replacement (TER)
 
    Replace SSA version variables during out-of-ssa with their defining
-   expression if there is only one use of the variable.  
+   expression if there is only one use of the variable.
 
    This pass is required in order for the RTL expansion pass to see larger
    chunks of code.  This allows it to make better choices on RTL pattern
    selection.  When expand is rewritten and merged with out-of-ssa, and
-   understands SSA, this should be eliminated.  
+   understands SSA, this should be eliminated.
 
    A pass is made through the function, one block at a time.  No cross block
    information is tracked.
 
    Variables which only have one use, and whose defining stmt is considered
    a replaceable expression (see is_replaceable_p) are tracked to see whether
-   they can be replaced at their use location.  
-   
+   they can be replaced at their use location.
+
    n_12 = C * 10
    a_2 = b_5 + 6
    v_9 = a_2 * n_12
@@ -64,16 +64,16 @@ along with GCC; see the file COPYING3.  If not see
 
    v = (b + 6) * (C * 10)
 
-   
-   This requires ensuring that none of the variables used by the expression 
-   change between the def point and where it is used.  Furthermore, if any 
-   of the ssa_names used in this expression are themselves replaceable, we 
-   have to ensure none of that expressions' arguments change either.  
-   Although SSA_NAMES themselves don't change, this pass is performed after 
-   coalescing has coalesced different SSA_NAMES together, so there could be a 
+
+   This requires ensuring that none of the variables used by the expression
+   change between the def point and where it is used.  Furthermore, if any
+   of the ssa_names used in this expression are themselves replaceable, we
+   have to ensure none of that expressions' arguments change either.
+   Although SSA_NAMES themselves don't change, this pass is performed after
+   coalescing has coalesced different SSA_NAMES together, so there could be a
    definition of an SSA_NAME which is coalesced with a use that causes a
    problem, i.e.,
-   
+
    PHI b_5 = <b_8(2), b_14(1)>
    <...>
    a_2 = b_5 + 6
@@ -85,7 +85,7 @@ along with GCC; see the file COPYING3.  If not see
    The expression b_5 + 6 CANNOT replace the use in the statement defining v_9
    because b_8 is in fact killing the value of b_5 since they share a partition
    and will be assigned the same memory or register location.
-   
+
    TER implements this but stepping through the instructions in a block and
    tracking potential expressions for replacement, and the partitions they are
    dependent on.  Expressions are represented by the SSA_NAME_VERSION of the
@@ -94,8 +94,8 @@ along with GCC; see the file COPYING3.  If not see
    When a stmt is determined to be a possible replacement expression, the
    following steps are taken:
 
-   EXPR_DECL_UID bitmap is allocated and set to the base variable UID of the 
-   def and any uses in the expression.  non-NULL means the expression is being 
+   EXPR_DECL_UID bitmap is allocated and set to the base variable UID of the
+   def and any uses in the expression.  non-NULL means the expression is being
    tracked.  The UID's themselves are used to prevent TER substitution into
    accumulating sequences, i.e.,
 
@@ -104,9 +104,9 @@ along with GCC; see the file COPYING3.  If not see
    x = x + w
    etc.
    this can result in very large expressions which don't accomplish anything
-   see PR tree-optimization/17549.  
+   see PR tree-optimization/17549.
 
-   PARTITION_DEPENDENCIES is another bitmap array, and it has a bit set for any 
+   PARTITION_DEPENDENCIES is another bitmap array, and it has a bit set for any
    partition which is used in the expression.  This is primarily used to remove
    an expression from the partition kill lists when a decision is made whether
    to replace it or not.  This is indexed by ssa version number as well, and
@@ -114,18 +114,18 @@ along with GCC; see the file COPYING3.  If not see
    but they are summarized by an artificial partition called VIRTUAL_PARTITION.
    This means a MAY or MUST def will kill *ALL* expressions that are dependent
    on a virtual operand.
-   Note that the EXPR_DECL_UID and this bitmap represent very similar 
+   Note that the EXPR_DECL_UID and this bitmap represent very similar
    information, but the info in one is not easy to obtain from the other.
 
    KILL_LIST is yet another bitmap array, this time it is indexed by partition
-   number, and represents a list of active expressions which will will no 
+   number, and represents a list of active expressions which will will no
    longer be valid if a definition into this partition takes place.
 
    PARTITION_IN_USE is simply a bitmap which is used to track which partitions
-   currently have something in their kill list.  This is used at the end of 
+   currently have something in their kill list.  This is used at the end of
    a block to clear out the KILL_LIST bitmaps at the end of each block.
 
-   NEW_REPLACEABLE_DEPENDENCIES is used as a temporary place to store 
+   NEW_REPLACEABLE_DEPENDENCIES is used as a temporary place to store
    dependencies which will be reused by the current definition. All the uses
    on an expression are processed before anything else is done. If a use is
    determined to be a replaceable expression AND the current stmt is also going
@@ -137,7 +137,7 @@ along with GCC; see the file COPYING3.  If not see
    a_2 = b_5 + 6
    v_8 = a_2 + c_4
 
-   a_2's expression 'b_5 + 6' is determined to be replaceable at the use 
+   a_2's expression 'b_5 + 6' is determined to be replaceable at the use
    location. It is dependent on the partition 'b_5' is in. This is cached into
    the NEW_REPLACEABLE_DEPENDENCIES bitmap, and when v_8 is examined for
    replaceability, it is a candidate, and it is dependent on the partition
@@ -148,14 +148,14 @@ along with GCC; see the file COPYING3.  If not see
    x_9 = v_8 * 5
 
    x_9 is dependent on partitions b_5, and c_4
-   
-   if a statement is found which has either of those partitions written to 
+
+   if a statement is found which has either of those partitions written to
    before x_9 is used, then x_9 itself is NOT replaceable.  */
 
 
 /* Temporary Expression Replacement (TER) table information.  */
 
-typedef struct temp_expr_table_d 
+typedef struct temp_expr_table_d
 {
   var_map map;
   bitmap *partition_dependencies;	/* Partitions expr is dependent on.  */
@@ -213,7 +213,7 @@ new_temp_expr_table (var_map map)
 }
 
 
-/* Free TER table T.  If there are valid replacements, return the expression 
+/* Free TER table T.  If there are valid replacements, return the expression
    vector.  */
 
 static bitmap
@@ -259,7 +259,7 @@ version_to_be_replaced_p (temp_expr_table_p tab, int version)
 }
 
 
-/* Add partition P to the list if partitions VERSION is dependent on.  TAB is 
+/* Add partition P to the list if partitions VERSION is dependent on.  TAB is
    the expression table */
 
 static inline void
@@ -286,10 +286,10 @@ add_to_partition_kill_list (temp_expr_table_p tab, int p, int ver)
 }
 
 
-/* Remove VER from the partition kill list for P.  TAB is the expression 
+/* Remove VER from the partition kill list for P.  TAB is the expression
    table.  */
 
-static inline void 
+static inline void
 remove_from_partition_kill_list (temp_expr_table_p tab, int p, int version)
 {
 #ifdef ENABLE_CHECKING
@@ -304,8 +304,8 @@ remove_from_partition_kill_list (temp_expr_table_p tab, int p, int version)
 }
 
 
-/* Add a dependency between the def of ssa VERSION and VAR.  If VAR is 
-   replaceable by an expression, add a dependence each of the elements of the 
+/* Add a dependency between the def of ssa VERSION and VAR.  If VAR is
+   replaceable by an expression, add a dependence each of the elements of the
    expression.  These are contained in the new_replaceable list.  TAB is the
    expression table.  */
 
@@ -321,18 +321,18 @@ add_dependence (temp_expr_table_p tab, int version, tree var)
     {
       if (!bitmap_empty_p (tab->new_replaceable_dependencies))
         {
-	  /* Version will now be killed by a write to any partition the 
+	  /* Version will now be killed by a write to any partition the
 	     substituted expression would have been killed by.  */
 	  EXECUTE_IF_SET_IN_BITMAP (tab->new_replaceable_dependencies, 0, x, bi)
 	    add_to_partition_kill_list (tab, x, version);
 
-	  /* Rather than set partition_dependencies and in_use lists bit by 
+	  /* Rather than set partition_dependencies and in_use lists bit by
 	     bit, simply OR in the new_replaceable_dependencies bits.  */
 	  if (!tab->partition_dependencies[version])
 	    tab->partition_dependencies[version] = BITMAP_ALLOC (NULL);
-	  bitmap_ior_into (tab->partition_dependencies[version], 
+	  bitmap_ior_into (tab->partition_dependencies[version],
 			   tab->new_replaceable_dependencies);
-	  bitmap_ior_into (tab->partition_in_use, 
+	  bitmap_ior_into (tab->partition_in_use,
 			   tab->new_replaceable_dependencies);
 	  /* It is only necessary to add these once.  */
 	  bitmap_clear (tab->new_replaceable_dependencies);
@@ -420,7 +420,7 @@ is_replaceable_p (gimple stmt)
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */
-  if (flag_float_store 
+  if (flag_float_store
       && FLOAT_TYPE_P (gimple_expr_type (stmt)))
     return false;
 
@@ -442,8 +442,8 @@ is_replaceable_p (gimple stmt)
 }
 
 
-/* This function will remove the expression for VERSION from replacement 
-   consideration in table TAB.  If FREE_EXPR is true, then remove the 
+/* This function will remove the expression for VERSION from replacement
+   consideration in table TAB.  If FREE_EXPR is true, then remove the
    expression from consideration as well by freeing the decl uid bitmap.  */
 
 static void
@@ -467,7 +467,7 @@ finished_with_expr (temp_expr_table_p tab, int version, bool free_expr)
 
 /* Create an expression entry for a replaceable expression.  */
 
-static void 
+static void
 process_replaceable (temp_expr_table_p tab, gimple stmt)
 {
   tree var, def, basevar;
@@ -520,7 +520,7 @@ kill_expr (temp_expr_table_p tab, int partition)
 {
   unsigned version;
 
-  /* Mark every active expr dependent on this var as not replaceable.  
+  /* Mark every active expr dependent on this var as not replaceable.
      finished_with_expr can modify the bitmap, so we can't execute over it.  */
   while (tab->kill_list[partition])
     {
@@ -534,7 +534,7 @@ kill_expr (temp_expr_table_p tab, int partition)
 }
 
 
-/* This function kills all expressions in TAB which are dependent on virtual 
+/* This function kills all expressions in TAB which are dependent on virtual
    partitions.  */
 
 static inline void
@@ -555,7 +555,7 @@ mark_replaceable (temp_expr_table_p tab, tree var, bool more_replacing)
 
   /* Move the dependence list to the pending listpending.  */
   if (more_replacing && tab->partition_dependencies[version])
-    bitmap_ior_into (tab->new_replaceable_dependencies, 
+    bitmap_ior_into (tab->new_replaceable_dependencies,
 		     tab->partition_dependencies[version]);
 
   finished_with_expr (tab, version, !more_replacing);
@@ -615,8 +615,8 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		      }
 		  }
 
-	      /* Mark expression as replaceable unless stmt is volatile or the 
-		 def variable has the same root variable as something in the 
+	      /* Mark expression as replaceable unless stmt is volatile or the
+		 def variable has the same root variable as something in the
 		 substitution list.  */
 	      if (gimple_has_volatile_ops (stmt) || same_root_var)
 		finished_with_expr (tab, ver, true);
@@ -624,7 +624,7 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		mark_replaceable (tab, use, stmt_replaceable);
 	    }
 	}
-      
+
       /* Next, see if this stmt kills off an active expression.  */
       FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
 	{
@@ -649,10 +649,10 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 
 
 /* This function is the driver routine for replacement of temporary expressions
-   in the SSA->normal phase, operating on MAP.  If there are replaceable 
-   expressions, a table is returned which maps SSA versions to the 
-   expressions they should be replaced with.  A NULL_TREE indicates no 
-   replacement should take place.  If there are no replacements at all, 
+   in the SSA->normal phase, operating on MAP.  If there are replaceable
+   expressions, a table is returned which maps SSA versions to the
+   expressions they should be replaced with.  A NULL_TREE indicates no
+   replacement should take place.  If there are no replacements at all,
    NULL is returned by the function, otherwise an expression vector indexed
    by SSA_NAME version numbers.  */
 
@@ -674,7 +674,7 @@ find_replaceable_exprs (var_map map)
 
   ret = free_temp_expr_table (table);
   return ret;
-} 
+}
 
 /* Dump TER expression table EXPR to file F.  */
 
@@ -709,7 +709,7 @@ debug_ter (FILE *f, temp_expr_table_p t)
   unsigned x, y;
   bitmap_iterator bi;
 
-  fprintf (f, "\nDumping current state of TER\n virtual partition = %d\n", 
+  fprintf (f, "\nDumping current state of TER\n virtual partition = %d\n",
 	   VIRTUAL_PARTITION (t));
   if (t->replaceable_expressions)
     dump_replaceable_exprs (f, t->replaceable_expressions);
@@ -720,7 +720,7 @@ debug_ter (FILE *f, temp_expr_table_p t)
       {
         print_generic_expr (stderr, ssa_name (x), TDF_SLIM);
         fprintf (f, " dep-parts : ");
-	if (t->partition_dependencies[x] 
+	if (t->partition_dependencies[x]
 	    && !bitmap_empty_p (t->partition_dependencies[x]))
 	  {
 	    EXECUTE_IF_SET_IN_BITMAP (t->partition_dependencies[x], 0, y, bi)
@@ -732,7 +732,7 @@ debug_ter (FILE *f, temp_expr_table_p t)
 	fprintf (stderr, "\n");
       }
 
-  bitmap_print (f, t->partition_in_use, "Partitions in use ", 
+  bitmap_print (f, t->partition_in_use, "Partitions in use ",
 		"\npartition KILL lists:\n");
 
   for (x = 0; x <= num_var_partitions (t->map); x++)

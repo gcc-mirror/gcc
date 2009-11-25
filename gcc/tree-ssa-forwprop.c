@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
    when we have a generalized tree combiner.
 
    One class of common cases we handle is forward propagating a single use
-   variable into a COND_EXPR.  
+   variable into a COND_EXPR.
 
      bb0:
        x = a COND b;
@@ -51,13 +51,13 @@ along with GCC; see the file COPYING3.  If not see
 
      bb0:
        if (a COND b) goto ... else goto ...
- 
+
    Similarly for the tests (x == 0), (x != 0), (x == 1) and (x != 1).
 
    Or (assuming c1 and c2 are constants):
 
      bb0:
-       x = a + c1;  
+       x = a + c1;
        if (x EQ/NEQ c2) goto ... else goto ...
 
    Will be transformed into:
@@ -66,7 +66,7 @@ along with GCC; see the file COPYING3.  If not see
         if (a EQ/NEQ (c2 - c1)) goto ... else goto ...
 
    Similarly for x = a - c1.
-    
+
    Or
 
      bb0:
@@ -331,7 +331,7 @@ remove_prop_source_from_use (tree name, gimple up_to_stmt)
 
 /* Return the rhs of a gimple_assign STMT in a form of a single tree,
    converted to type TYPE.
-   
+
    This should disappear, but is needed so we can combine expressions and use
    the fold() interfaces. Long term, we need to develop folding and combine
    routines that deal with gimple exclusively . */
@@ -387,14 +387,14 @@ combine_cond_expr_cond (location_t loc, enum tree_code code, tree type,
    in GIMPLE_COND statement STMT into the conditional if that simplifies it.
    Returns zero if no statement was changed, one if there were
    changes and two if cfg_cleanup needs to run.
-   
+
    This must be kept in sync with forward_propagate_into_cond.  */
 
 static int
 forward_propagate_into_gimple_cond (gimple stmt)
 {
   int did_something = 0;
-  location_t loc = gimple_location (stmt); 
+  location_t loc = gimple_location (stmt);
 
   do {
     tree tmp = NULL_TREE;
@@ -590,7 +590,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
   return did_something;
 }
 
-/* We've just substituted an ADDR_EXPR into stmt.  Update all the 
+/* We've just substituted an ADDR_EXPR into stmt.  Update all the
    relevant data structures to match.  */
 
 static void
@@ -657,7 +657,7 @@ forward_propagate_addr_into_variable_array_index (tree offset,
 	return false;
 
       /* The RHS of the statement which defines OFFSET must be a
-	 multiplication of an object by the size of the array elements. 
+	 multiplication of an object by the size of the array elements.
 	 This implicitly verifies that the size of the array elements
 	 is constant.  */
      if (gimple_assign_rhs_code (offset_def) == MULT_EXPR
@@ -765,14 +765,14 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       return true;
     }
 
-  /* Now strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS. 
+  /* Now strip away any outer COMPONENT_REF/ARRAY_REF nodes from the LHS.
      ADDR_EXPR will not appear on the LHS.  */
   lhsp = gimple_assign_lhs_ptr (use_stmt);
   while (handled_component_p (*lhsp))
     lhsp = &TREE_OPERAND (*lhsp, 0);
   lhs = *lhsp;
 
-  /* Now see if the LHS node is an INDIRECT_REF using NAME.  If so, 
+  /* Now see if the LHS node is an INDIRECT_REF using NAME.  If so,
      propagate the ADDR_EXPR into the use of NAME and fold the result.  */
   if (TREE_CODE (lhs) == INDIRECT_REF
       && TREE_OPERAND (lhs, 0) == name)
@@ -817,7 +817,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       return res;
     }
 
-  /* Now see if the RHS node is an INDIRECT_REF using NAME.  If so, 
+  /* Now see if the RHS node is an INDIRECT_REF using NAME.  If so,
      propagate the ADDR_EXPR into the use of NAME and try to
      create a VCE and fold the result.  */
   if (TREE_CODE (rhs) == INDIRECT_REF
@@ -1107,9 +1107,9 @@ forward_propagate_comparison (gimple stmt)
 
 /* If we have lhs = ~x (STMT), look and see if earlier we had x = ~y.
    If so, we can change STMT into lhs = y which can later be copy
-   propagated.  Similarly for negation. 
+   propagated.  Similarly for negation.
 
-   This could trivially be formulated as a forward propagation 
+   This could trivially be formulated as a forward propagation
    to immediate uses.  However, we already had an implementation
    from DOM which used backward propagation via the use-def links.
 
@@ -1372,7 +1372,7 @@ gate_forwprop (void)
   return flag_tree_forwprop;
 }
 
-struct gimple_opt_pass pass_forwprop = 
+struct gimple_opt_pass pass_forwprop =
 {
  {
   GIMPLE_PASS,

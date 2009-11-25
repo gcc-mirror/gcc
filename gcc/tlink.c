@@ -729,7 +729,7 @@ scan_linker_output (const char *fname)
       if (sym && sym->tweaked)
 	{
 	  error ("'%s' was assigned to '%s', but was not defined "
-		 "during recompilation, or vice versa", 
+		 "during recompilation, or vice versa",
 		 sym->key, sym->file->key);
 	  fclose (stream);
 	  return 0;

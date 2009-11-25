@@ -847,7 +847,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 	  high = ~high + !low;
 	  low = -low;
 	}
-      sprintf (pp_buffer (pp)->digit_buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX, 
+      sprintf (pp_buffer (pp)->digit_buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 	       (unsigned HOST_WIDE_INT) high, (unsigned HOST_WIDE_INT) low);
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
@@ -1953,7 +1953,7 @@ pp_c_conditional_expression (c_pretty_printer *pp, tree e)
 static void
 pp_c_assignment_expression (c_pretty_printer *pp, tree e)
 {
-  if (TREE_CODE (e) == MODIFY_EXPR 
+  if (TREE_CODE (e) == MODIFY_EXPR
       || TREE_CODE (e) == INIT_EXPR)
     {
       pp_c_unary_expression (pp, TREE_OPERAND (e, 0));

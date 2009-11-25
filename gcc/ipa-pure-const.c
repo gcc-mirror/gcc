@@ -69,13 +69,13 @@ enum pure_const_state_e
 
 /* Holder for the const_state.  There is one of these per function
    decl.  */
-struct funct_state_d 
+struct funct_state_d
 {
   /* See above.  */
   enum pure_const_state_e pure_const_state;
   /* What user set here; we can be always sure about this.  */
-  enum pure_const_state_e state_previously_known; 
-  bool looping_previously_known; 
+  enum pure_const_state_e state_previously_known;
+  bool looping_previously_known;
 
   /* True if the function could possibly infinite loop.  There are a
      lot of ways that this could be determined.  We are pretty
@@ -92,7 +92,7 @@ typedef struct funct_state_d * funct_state;
 
 /* The storage of the funct_state is abstracted because there is the
    possibility that it may be desirable to move this to the cgraph
-   local info.  */ 
+   local info.  */
 
 /* Array, indexed by cgraph node uid, of function states.  */
 
@@ -114,7 +114,7 @@ finish_state (void)
 }
 
 
-/* Return the function state from NODE.  */ 
+/* Return the function state from NODE.  */
 
 static inline funct_state
 get_function_state (struct cgraph_node *node)
@@ -139,14 +139,14 @@ set_function_state (struct cgraph_node *node, funct_state s)
 /* Check to see if the use (or definition when CHECKING_WRITE is true)
    variable T is legal in a function that is either pure or const.  */
 
-static inline void 
-check_decl (funct_state local, 
+static inline void
+check_decl (funct_state local,
 	    tree t, bool checking_write)
 {
   /* Do not want to do anything with volatile except mark any
      function that uses one to be not const or pure.  */
-  if (TREE_THIS_VOLATILE (t)) 
-    { 
+  if (TREE_THIS_VOLATILE (t))
+    {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
         fprintf (dump_file, "    Volatile operand is not const/pure");
@@ -170,7 +170,7 @@ check_decl (funct_state local,
   /* Since we have dealt with the locals and params cases above, if we
      are CHECKING_WRITE, this cannot be a pure or constant
      function.  */
-  if (checking_write) 
+  if (checking_write)
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
@@ -183,7 +183,7 @@ check_decl (funct_state local,
       /* Readonly reads are safe.  */
       if (TREE_READONLY (t) && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (t)))
 	return; /* Read of a constant, do not change the function state.  */
-      else 
+      else
 	{
           if (dump_file)
             fprintf (dump_file, "    global memory read is not const\n");
@@ -211,7 +211,7 @@ check_decl (funct_state local,
 /* Check to see if the use (or definition when CHECKING_WRITE is true)
    variable T is legal in a function that is either pure or const.  */
 
-static inline void 
+static inline void
 check_op (funct_state local, tree t, bool checking_write)
 {
   t = get_base_address (t);
@@ -286,17 +286,17 @@ check_call (funct_state local, gimple call, bool ipa)
 	      }
 	  }
     }
-  
+
   /* The const and pure flags are set by a variety of places in the
      compiler (including here).  If someone has already set the flags
      for the callee, (such as for some of the builtins) we will use
-     them, otherwise we will compute our own information. 
-  
+     them, otherwise we will compute our own information.
+
      Const and pure functions have less clobber effects than other
      functions so we process these first.  Otherwise if it is a call
      outside the compilation unit or an indirect call we punt.  This
      leaves local calls which will be processed by following the call
-     graph.  */  
+     graph.  */
   if (callee_t)
     {
       callee = cgraph_node(callee_t);
@@ -354,12 +354,12 @@ check_call (funct_state local, gimple call, bool ipa)
 	    }
           local->can_throw = true;
 	}
-      if (flags & ECF_CONST) 
+      if (flags & ECF_CONST)
 	{
           if (callee_t && DECL_LOOPING_CONST_OR_PURE_P (callee_t))
             local->looping = true;
 	 }
-      else if (flags & ECF_PURE) 
+      else if (flags & ECF_PURE)
 	{
           if (callee_t && DECL_LOOPING_CONST_OR_PURE_P (callee_t))
             local->looping = true;
@@ -368,7 +368,7 @@ check_call (funct_state local, gimple call, bool ipa)
 	  if (local->pure_const_state == IPA_CONST)
 	    local->pure_const_state = IPA_PURE;
 	}
-      else 
+      else
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "    uknown function call is not const/pure\n");
@@ -457,7 +457,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
 	{
 	  tree op = gimple_asm_clobber_op (stmt, i);
-	  if (simple_cst_equal(TREE_VALUE (op), memory_identifier_string) == 1) 
+	  if (simple_cst_equal(TREE_VALUE (op), memory_identifier_string) == 1)
 	    {
               if (dump_file)
                 fprintf (dump_file, "    memory asm clobber is not const/pure");
@@ -500,13 +500,13 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 
   if (dump_file)
     {
-      fprintf (dump_file, "\n\n local analysis of %s\n ", 
+      fprintf (dump_file, "\n\n local analysis of %s\n ",
 	       cgraph_node_name (fn));
     }
-  
+
   push_cfun (DECL_STRUCT_FUNCTION (decl));
   current_function_decl = decl;
-  
+
   FOR_EACH_BB (this_block)
     {
       gimple_stmt_iterator gsi;
@@ -544,7 +544,7 @@ end:
 	        fprintf (dump_file, "    has irreducible loops\n");
 	      l->looping = true;
 	    }
-	  else 
+	  else
 	    {
 	      loop_iterator li;
 	      struct loop *loop;
@@ -663,7 +663,7 @@ register_hooks (void)
 /* Analyze each function in the cgraph to see if it is locally PURE or
    CONST.  */
 
-static void 
+static void
 generate_summary (void)
 {
   struct cgraph_node *node;
@@ -676,7 +676,7 @@ generate_summary (void)
      operations.  */
   visited_nodes = pointer_set_create ();
 
-  /* Process all of the functions. 
+  /* Process all of the functions.
 
      We process AVAIL_OVERWRITABLE functions.  We can not use the results
      by default, but the info can be used at LTO with -fwhole-program or
@@ -708,9 +708,9 @@ pure_const_write_summary (cgraph_node_set set)
       if (node->analyzed && get_function_state (node) != NULL)
 	count++;
     }
-  
+
   lto_output_uleb128_stream (ob->main_stream, count);
-  
+
   /* Process all of the functions.  */
   for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
     {
@@ -721,13 +721,13 @@ pure_const_write_summary (cgraph_node_set set)
 	  funct_state fs;
 	  int node_ref;
 	  lto_cgraph_encoder_t encoder;
-	  
+
 	  fs = get_function_state (node);
 
 	  encoder = ob->decl_state->cgraph_node_encoder;
 	  node_ref = lto_cgraph_encoder_encode (encoder, node);
 	  lto_output_uleb128_stream (ob->main_stream, node_ref);
-	
+
 	  /* Note that flags will need to be read in the opposite
 	     order as we are pushing the bitflags into FLAGS.  */
 	  bp = bitpack_create ();
@@ -747,7 +747,7 @@ pure_const_write_summary (cgraph_node_set set)
 
 /* Deserialize the ipa info for lto.  */
 
-static void 
+static void
 pure_const_read_summary (void)
 {
   struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
@@ -760,8 +760,8 @@ pure_const_read_summary (void)
       const char *data;
       size_t len;
       struct lto_input_block *ib
-	= lto_create_simple_input_block (file_data, 
-					 LTO_section_ipa_pure_const, 
+	= lto_create_simple_input_block (file_data,
+					 LTO_section_ipa_pure_const,
 					 &data, &len);
       if (ib)
 	{
@@ -796,8 +796,8 @@ pure_const_read_summary (void)
 	      bitpack_delete (bp);
 	    }
 
-	  lto_destroy_simple_input_block (file_data, 
-					  LTO_section_ipa_pure_const, 
+	  lto_destroy_simple_input_block (file_data,
+					  LTO_section_ipa_pure_const,
 					  ib, data, len);
 	}
     }
@@ -884,8 +884,8 @@ propagate (void)
 
 	  if (count > 1)
 	    looping = true;
-		
-	  for (e = w->callees; e; e = e->next_callee) 
+
+	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      struct cgraph_node *y = e->callee;
 
@@ -943,22 +943,22 @@ propagate (void)
 	    {
 	    case IPA_CONST:
 	      if (!TREE_READONLY (w->decl) && dump_file)
-		fprintf (dump_file, "Function found to be %sconst: %s\n",  
+		fprintf (dump_file, "Function found to be %sconst: %s\n",
 			 this_looping ? "looping " : "",
-			 cgraph_node_name (w)); 
+			 cgraph_node_name (w));
 	      TREE_READONLY (w->decl) = 1;
 	      DECL_LOOPING_CONST_OR_PURE_P (w->decl) = this_looping;
 	      break;
-	      
+
 	    case IPA_PURE:
 	      if (!DECL_PURE_P (w->decl) && dump_file)
-		fprintf (dump_file, "Function found to be %spure: %s\n",  
+		fprintf (dump_file, "Function found to be %spure: %s\n",
 			 this_looping ? "looping " : "",
-			 cgraph_node_name (w)); 
+			 cgraph_node_name (w));
 	      DECL_PURE_P (w->decl) = 1;
 	      DECL_LOOPING_CONST_OR_PURE_P (w->decl) = this_looping;
 	      break;
-	      
+
 	    default:
 	      break;
 	    }
@@ -1006,8 +1006,8 @@ propagate (void)
 
 	  if (can_throw)
 	    break;
-		
-	  for (e = w->callees; e; e = e->next_callee) 
+
+	  for (e = w->callees; e; e = e->next_callee)
 	    {
 	      struct cgraph_node *y = e->callee;
 
@@ -1015,7 +1015,7 @@ propagate (void)
 		{
 		  funct_state y_l = get_function_state (y);
 
-		  if (can_throw) 
+		  if (can_throw)
 		    break;
 		  if (y_l->can_throw && !TREE_NOTHROW (w->decl)
 		      && e->can_throw_external)
@@ -1041,7 +1041,7 @@ propagate (void)
 	      for (e = w->callers; e; e = e->next_caller)
 	        e->can_throw_external = false;
 	      if (dump_file)
-		fprintf (dump_file, "Function found to be nothrow: %s\n",  
+		fprintf (dump_file, "Function found to be nothrow: %s\n",
 			 cgraph_node_name (w));
 	    }
 	  else if (can_throw && !TREE_NOTHROW (w->decl))
@@ -1064,7 +1064,7 @@ propagate (void)
       if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
 	free (get_function_state (node));
     }
-  
+
   free (order);
   VEC_free (funct_state, heap, funct_state_vec);
   finish_state ();

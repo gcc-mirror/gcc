@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 
 /* Walk tree and record all calls and references to functions/variables.
-   Called via walk_tree: TP is pointer to tree to be examined.  
+   Called via walk_tree: TP is pointer to tree to be examined.
    When DATA is non-null, record references to callgraph.
    */
 
@@ -222,14 +222,14 @@ struct gimple_opt_pass pass_build_cgraph_edges =
 };
 
 /* Record references to functions and other variables present in the
-   initial value of DECL, a variable.  
+   initial value of DECL, a variable.
    When ONLY_VARS is true, we mark needed only variables, not functions.  */
 
 void
 record_references_in_initializer (tree decl, bool only_vars)
 {
   struct pointer_set_t *visited_nodes = pointer_set_create ();
-  walk_tree (&DECL_INITIAL (decl), record_reference, 
+  walk_tree (&DECL_INITIAL (decl), record_reference,
             only_vars ? NULL : decl, visited_nodes);
   pointer_set_destroy (visited_nodes);
 }

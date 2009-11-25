@@ -1156,7 +1156,7 @@ sdbout_one_type (tree type)
 	      {
 		tree child_type = BINFO_TYPE (child);
 		tree child_type_name;
-		
+
 		if (TYPE_NAME (child_type) == 0)
 		  continue;
 		if (TREE_CODE (TYPE_NAME (child_type)) == IDENTIFIER_NODE)

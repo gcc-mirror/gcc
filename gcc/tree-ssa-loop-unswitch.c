@@ -1,18 +1,18 @@
 /* Loop unswitching.
    Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -216,7 +216,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 
   i = 0;
   bbs = get_loop_body (loop);
-  
+
   while (1)
     {
       /* Find a bb to unswitch on.  */
@@ -294,7 +294,7 @@ tree_unswitch_loop (struct loop *loop,
 
   extract_true_false_edges_from_block (unswitch_on, &edge_true, &edge_false);
   prob_true = edge_true->probability;
-  return loop_version (loop, unshare_expr (cond), 
+  return loop_version (loop, unshare_expr (cond),
 		       NULL, prob_true, prob_true,
 		       REG_BR_PROB_BASE - prob_true, false);
 }

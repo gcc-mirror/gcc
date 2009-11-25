@@ -1307,7 +1307,7 @@ decompose_multiword_subregs (void)
 	BITMAP_FREE (b);
   }
 
-  VEC_free (bitmap, heap, reg_copy_graph);  
+  VEC_free (bitmap, heap, reg_copy_graph);
 
   BITMAP_FREE (decomposable_context);
   BITMAP_FREE (non_decomposable_context);

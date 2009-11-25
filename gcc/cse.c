@@ -2237,7 +2237,7 @@ hash_rtx_string (const char *ps)
   return hash;
 }
 
-/* Same as hash_rtx, but call CB on each rtx if it is not NULL.  
+/* Same as hash_rtx, but call CB on each rtx if it is not NULL.
    When the callback returns true, we continue with the new rtx.  */
 
 unsigned
@@ -2260,7 +2260,7 @@ hash_rtx_cb (const_rtx x, enum machine_mode mode,
     return hash;
 
   /* Invoke the callback first.  */
-  if (cb != NULL 
+  if (cb != NULL
       && ((*cb) (x, mode, &newx, &newmode)))
     {
       hash += hash_rtx_cb (newx, newmode, do_not_record_p,
@@ -2370,7 +2370,7 @@ hash_rtx_cb (const_rtx x, enum machine_mode mode,
 	  {
 	    elt = CONST_VECTOR_ELT (x, i);
 	    hash += hash_rtx_cb (elt, GET_MODE (elt),
-                                 do_not_record_p, hash_arg_in_memory_p, 
+                                 do_not_record_p, hash_arg_in_memory_p,
                                  have_reg_qty, cb);
 	  }
 
@@ -2516,7 +2516,7 @@ hash_rtx_cb (const_rtx x, enum machine_mode mode,
 	      x = XEXP (x, i);
 	      goto repeat;
 	    }
-          
+
 	  hash += hash_rtx_cb (XEXP (x, i), VOIDmode, do_not_record_p,
                                hash_arg_in_memory_p,
                                have_reg_qty, cb);
@@ -2684,8 +2684,8 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 	     They could e.g. be two different entities allocated into the
 	     same space on the stack (see e.g. PR25130).  In that case, the
 	     MEM addresses can be the same, even though the two MEMs are
-	     absolutely not equivalent.  
-   
+	     absolutely not equivalent.
+
 	     But because really all MEM attributes should be the same for
 	     equivalent MEMs, we just use the invariant that MEMs that have
 	     the same attributes share the same mem_attrs data structure.  */
@@ -3427,7 +3427,7 @@ fold_rtx (rtx x, rtx insn)
 		     constant through simplifications.  */
 		  p = lookup (folded_arg0, SAFE_HASH (folded_arg0, mode_arg0),
 			      mode_arg0);
-		  
+
 		  if (p != NULL)
 		    {
 		      cheapest_simplification = x;
@@ -6001,7 +6001,7 @@ cse_process_notes (rtx x, rtx object, bool *changed)
    describe the path.
    It is filled with a queue of basic blocks, starting with FIRST_BB
    and following a trace through the CFG.
-  
+
    If all paths starting at FIRST_BB have been followed, or no new path
    starting at FIRST_BB can be constructed, this function returns FALSE.
    Otherwise, DATA->path is filled and the function returns TRUE indicating
@@ -6017,7 +6017,7 @@ cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
   basic_block bb;
   edge e;
   int path_size;
- 
+
   SET_BIT (cse_visited_basic_blocks, first_bb->index);
 
   /* See if there is a previous path.  */
@@ -6178,7 +6178,7 @@ cse_prescan_path (struct cse_basic_block_data *data)
   int path_entry;
 
   /* Scan to end of each basic block in the path.  */
-  for (path_entry = 0; path_entry < path_size; path_entry++) 
+  for (path_entry = 0; path_entry < path_size; path_entry++)
     {
       basic_block bb;
       rtx insn;
@@ -6784,7 +6784,7 @@ cse_change_cc_mode (rtx *loc, void *data)
       && GET_MODE (*loc) != GET_MODE (args->newreg))
     {
       validate_change (args->insn, loc, args->newreg, 1);
-      
+
       return -1;
     }
   return 0;
@@ -6804,10 +6804,10 @@ cse_change_cc_mode_insn (rtx insn, rtx newreg)
 
   args.insn = insn;
   args.newreg = newreg;
-  
+
   for_each_rtx (&PATTERN (insn), cse_change_cc_mode, &args);
   for_each_rtx (&REG_NOTES (insn), cse_change_cc_mode, &args);
-  
+
   /* If the following assertion was triggered, there is most probably
      something wrong with the cc_modes_compatible back end function.
      CC modes only can be considered compatible if the insn - with the mode
@@ -6926,7 +6926,7 @@ cse_cc_succs (basic_block bb, basic_block orig_bb, rtx cc_reg, rtx cc_src,
 				       XEXP (SET_SRC (set), 0))
 		       && rtx_equal_p (XEXP (cc_src, 1),
 				       XEXP (SET_SRC (set), 1)))
-			   
+
 		{
 		  comp_mode = targetm.cc_modes_compatible (mode, set_mode);
 		  if (comp_mode != VOIDmode
@@ -7183,8 +7183,8 @@ struct rtl_opt_pass pass_cse =
  {
   RTL_PASS,
   "cse1",                               /* name */
-  gate_handle_cse,                      /* gate */   
-  rest_of_handle_cse,			/* execute */       
+  gate_handle_cse,                      /* gate */
+  rest_of_handle_cse,			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -7246,8 +7246,8 @@ struct rtl_opt_pass pass_cse2 =
  {
   RTL_PASS,
   "cse2",                               /* name */
-  gate_handle_cse2,                     /* gate */   
-  rest_of_handle_cse2,			/* execute */       
+  gate_handle_cse2,                     /* gate */
+  rest_of_handle_cse2,			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -7307,8 +7307,8 @@ struct rtl_opt_pass pass_cse_after_global_opts =
  {
   RTL_PASS,
   "cse_local",                          /* name */
-  gate_handle_cse_after_global_opts,    /* gate */   
-  rest_of_handle_cse_after_global_opts, /* execute */       
+  gate_handle_cse_after_global_opts,    /* gate */
+  rest_of_handle_cse_after_global_opts, /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

@@ -57,7 +57,7 @@ struct cfg_hooks
   /* Creates a new basic block just after basic block B by splitting
      everything after specified instruction I.  */
   basic_block (*split_block) (basic_block b, void * i);
-  
+
   /* Move block B immediately after block A.  */
   bool (*move_block_after) (basic_block b, basic_block a);
 

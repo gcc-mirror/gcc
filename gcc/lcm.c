@@ -483,7 +483,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  qin = qout = worklist = 
+  qin = qout = worklist =
     XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
 
   /* We want a maximal solution.  */

@@ -2382,7 +2382,7 @@ insert_bypass (struct bypass_decl *bypass)
   struct bypass_decl *curr, *last;
   struct insn_reserv_decl *out_insn_reserv = bypass->out_insn_reserv;
   struct insn_reserv_decl *in_insn_reserv = bypass->in_insn_reserv;
-  
+
   for (curr = out_insn_reserv->bypass_list, last = NULL;
        curr != NULL;
        last = curr, curr = curr->next)
@@ -2420,7 +2420,7 @@ insert_bypass (struct bypass_decl *bypass)
 	    last = curr;
 	    break;
 	  }
-	  
+
       }
   if (last == NULL)
     {
@@ -2936,7 +2936,7 @@ process_regexp_cycles (regexp_t regexp, int max_start_cycle,
       {
 	int max_cycle = 0;
 	int min_cycle = 0;
-	
+
 	for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
 	  {
 	    process_regexp_cycles (REGEXP_ALLOF (regexp)->regexps [i],
@@ -2956,7 +2956,7 @@ process_regexp_cycles (regexp_t regexp, int max_start_cycle,
       {
 	int max_cycle = 0;
 	int min_cycle = 0;
-	
+
 	for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
 	  {
 	    process_regexp_cycles (REGEXP_ONEOF (regexp)->regexps [i],
@@ -4779,7 +4779,7 @@ transform_3 (regexp_t regexp)
 		  default:
 		    break;
 		  }
-	      
+
 	      if (allof_length == 1)
 		REGEXP_SEQUENCE (result)->regexps [i] = allof_op;
 	      else
@@ -4963,7 +4963,7 @@ store_alt_unit_usage (regexp_t regexp, regexp_t unit, int cycle,
   length = (cycle + 1) * REGEXP_ONEOF (regexp)->regexps_num;
   while (VEC_length (unit_usage_t, cycle_alt_unit_usages) < length)
     VEC_safe_push (unit_usage_t, heap, cycle_alt_unit_usages, 0);
-  
+
   index = cycle * REGEXP_ONEOF (regexp)->regexps_num + alt_num;
   prev = NULL;
   for (curr = VEC_index (unit_usage_t, cycle_alt_unit_usages, index);
@@ -5078,14 +5078,14 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 			gcc_assert (unit->mode == rm_nothing);
 		    }
 		  break;
-		  
+
 		case rm_unit:
 		  store_alt_unit_usage (regexp, allof, j, i);
 		  break;
-		  
+
 		case rm_nothing:
 		  break;
-		  
+
 		default:
 		  gcc_unreachable ();
 		}
@@ -5101,10 +5101,10 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 		case rm_unit:
 		  store_alt_unit_usage (regexp, unit, 0, i);
 		  break;
-		  
+
 		case rm_nothing:
 		  break;
-		  
+
 		default:
 		  gcc_unreachable ();
 		}
@@ -5271,7 +5271,7 @@ process_seq_for_forming_states (regexp_t regexp, automaton_t automaton,
         set_state_reserv (state_being_formed, curr_cycle,
                           REGEXP_UNIT (regexp)->unit_decl->unit_num);
       return curr_cycle;
-      
+
     case rm_sequence:
       for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
 	curr_cycle
@@ -5283,7 +5283,7 @@ process_seq_for_forming_states (regexp_t regexp, automaton_t automaton,
       {
 	int finish_cycle = 0;
 	int cycle;
-	
+
 	for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
 	  {
 	    cycle = process_seq_for_forming_states (REGEXP_ALLOF (regexp)
@@ -5819,7 +5819,7 @@ cache_presence (state_t state)
   unsigned int sz;
   sz = (description->query_units_num + sizeof (int) * CHAR_BIT - 1)
         / (sizeof (int) * CHAR_BIT);
-  
+
   state->presence_signature = XCREATENODEVEC (unsigned int, sz);
   for (i = 0; i < description->units_num; i++)
     if (units_array [i]->query_p)
@@ -5965,7 +5965,7 @@ partition_equiv_class (state_t first_state, int odd_iteration_flag,
 	       curr_state = next_state)
 	    {
 	      next_state = curr_state->next_equiv_class_state;
-	      if (state_is_differed (curr_state, first_state, 
+	      if (state_is_differed (curr_state, first_state,
 				     odd_iteration_flag))
 		{
 		  /* Remove curr state from the class equivalence.  */
@@ -6705,11 +6705,11 @@ form_regexp (regexp_t regexp)
 	const char *name = (regexp->mode == rm_unit
 			    ? REGEXP_UNIT (regexp)->name
 			    : REGEXP_RESERV (regexp)->name);
-	
+
 	obstack_grow (&irp, name, strlen (name));
 	break;
       }
-      
+
     case rm_sequence:
       for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
 	{
@@ -6735,7 +6735,7 @@ form_regexp (regexp_t regexp)
         }
       obstack_1grow (&irp, ')');
       break;
-      
+
     case rm_oneof:
       for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
 	{
@@ -6748,11 +6748,11 @@ form_regexp (regexp_t regexp)
           obstack_1grow (&irp, ')');
 	}
       break;
-      
+
     case rm_repeat:
       {
 	char digits [30];
-	
+
 	if (REGEXP_REPEAT (regexp)->regexp->mode == rm_sequence
 	    || REGEXP_REPEAT (regexp)->regexp->mode == rm_allof
 	    || REGEXP_REPEAT (regexp)->regexp->mode == rm_oneof)
@@ -7654,7 +7654,7 @@ output_dead_lock_vect (automaton_t automaton)
   output_states_vect = 0;
   pass_states (automaton, add_states_vect_el);
 
-  VEC_safe_grow (vect_el_t, heap, dead_lock_vect, 
+  VEC_safe_grow (vect_el_t, heap, dead_lock_vect,
 		 VEC_length (state_t, output_states_vect));
   for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
     {
@@ -7709,7 +7709,7 @@ output_reserved_units_table (automaton_t automaton)
 			 * state_byte_size);
 
   reserved_units_table = VEC_alloc (vect_el_t, heap, reserved_units_size);
-		 
+
   for (i = 0; i < reserved_units_size; i++)
     VEC_quick_push (vect_el_t, reserved_units_table, 0);
   for (n = 0; n < VEC_length (state_t, output_states_vect); n++)
@@ -8218,7 +8218,7 @@ output_min_insn_conflict_delay_func (void)
   fprintf (output_file, "}\n\n");
 }
 
-/* Output the array holding default latency values.  These are used in 
+/* Output the array holding default latency values.  These are used in
    insn_latency and maximal_insn_latency function implementations.  */
 static void
 output_default_latencies (void)
@@ -8442,7 +8442,7 @@ output_print_reservation_func (void)
 	{
 	  gcc_assert (j == DECL_INSN_RESERV (decl)->insn_num);
 	  j++;
-	  
+
 	  fprintf (output_file, "\n      \"%s\",",
 		   regexp_representation (DECL_INSN_RESERV (decl)->regexp));
 	  finish_regexp_representation ();

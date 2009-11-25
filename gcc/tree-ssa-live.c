@@ -60,7 +60,7 @@ var_map_base_init (var_map map)
   int x, num_part, num;
   tree var;
   var_ann_t ann;
-  
+
   num = 0;
   num_part = num_var_partitions (map);
 
@@ -163,8 +163,8 @@ delete_var_map (var_map map)
 }
 
 
-/* This function will combine the partitions in MAP for VAR1 and VAR2.  It 
-   Returns the partition which represents the new partition.  If the two 
+/* This function will combine the partitions in MAP for VAR1 and VAR2.  It
+   Returns the partition which represents the new partition.  If the two
    partitions cannot be combined, NO_PARTITION is returned.  */
 
 int
@@ -175,7 +175,7 @@ var_union (var_map map, tree var1, tree var2)
   gcc_assert (TREE_CODE (var1) == SSA_NAME);
   gcc_assert (TREE_CODE (var2) == SSA_NAME);
 
-  /* This is independent of partition_to_view. If partition_to_view is 
+  /* This is independent of partition_to_view. If partition_to_view is
      on, then whichever one of these partitions is absorbed will never have a
      dereference into the partition_to_view array any more.  */
 
@@ -196,12 +196,12 @@ var_union (var_map map, tree var1, tree var2)
   return p3;
 }
 
- 
-/* Compress the partition numbers in MAP such that they fall in the range 
+
+/* Compress the partition numbers in MAP such that they fall in the range
    0..(num_partitions-1) instead of wherever they turned out during
    the partitioning exercise.  This removes any references to unused
    partitions, thereby allowing bitmaps and other vectors to be much
-   denser.  
+   denser.
 
    This is implemented such that compaction doesn't affect partitioning.
    Ie., once partitions are created and possibly merged, running one
@@ -215,8 +215,8 @@ var_union (var_map map, tree var1, tree var2)
    definitions for assignment to program variables.  */
 
 
-/* Set MAP back to the initial state of having no partition view.  Return a 
-   bitmap which has a bit set for each partition number which is in use in the 
+/* Set MAP back to the initial state of having no partition view.  Return a
+   bitmap which has a bit set for each partition number which is in use in the
    varmap.  */
 
 static bitmap
@@ -256,11 +256,11 @@ partition_view_init (var_map map)
 
 
 /* This routine will finalize the view data for MAP based on the partitions
-   set in SELECTED.  This is either the same bitmap returned from 
+   set in SELECTED.  This is either the same bitmap returned from
    partition_view_init, or a trimmed down version if some of those partitions
    were not desired in this view.  SELECTED is freed before returning.  */
 
-static void 
+static void
 partition_view_fini (var_map map, bitmap selected)
 {
   bitmap_iterator bi;
@@ -294,7 +294,7 @@ partition_view_fini (var_map map, bitmap selected)
 }
 
 
-/* Create a partition view which includes all the used partitions in MAP.  If 
+/* Create a partition view which includes all the used partitions in MAP.  If
    WANT_BASES is true, create the base variable map as well.  */
 
 extern void
@@ -312,8 +312,8 @@ partition_view_normal (var_map map, bool want_bases)
 }
 
 
-/* Create a partition view in MAP which includes just partitions which occur in 
-   the bitmap ONLY. If WANT_BASES is true, create the base variable map 
+/* Create a partition view in MAP which includes just partitions which occur in
+   the bitmap ONLY. If WANT_BASES is true, create the base variable map
    as well.  */
 
 extern void
@@ -403,7 +403,7 @@ mark_scope_block_unused (tree scope)
 }
 
 /* Look if the block is dead (by possibly eliminating its dead subblocks)
-   and return true if so.  
+   and return true if so.
    Block is declared dead if:
      1) No statements are associated with it.
      2) Declares no live variables
@@ -430,7 +430,7 @@ remove_unused_scope_block_p (tree scope)
       /* Debug info of nested function refers to the block of the
 	 function.  We might stil call it even if all statements
 	 of function it was nested into was elliminated.
-	 
+
 	 TODO: We can actually look into cgraph to see if function
 	 will be output to file.  */
       if (TREE_CODE (*t) == FUNCTION_DECL)
@@ -463,12 +463,12 @@ remove_unused_scope_block_p (tree scope)
 
       /* When we are not doing full debug info, we however can keep around
 	 only the used variables for cfgexpand's memory packing saving quite
-	 a lot of memory.  
+	 a lot of memory.
 
 	 For sake of -g3, we keep around those vars but we don't count this as
 	 use of block, so innermost block with no used vars and no instructions
 	 can be considered dead.  We only want to keep around blocks user can
-	 breakpoint into and ask about value of optimized out variables. 
+	 breakpoint into and ask about value of optimized out variables.
 
 	 Similarly we need to keep around types at least until all variables of
 	 all nested blocks are gone.  We track no information on whether given
@@ -572,7 +572,7 @@ remove_unused_scope_block_p (tree scope)
    return unused;
 }
 
-/* Mark all VAR_DECLS under *EXPR_P as used, so that they won't be 
+/* Mark all VAR_DECLS under *EXPR_P as used, so that they won't be
    eliminated during the tree->rtl conversion process.  */
 
 static inline void
@@ -849,7 +849,7 @@ new_tree_live_info (var_map map)
 
 /* Free storage for live range info object LIVE.  */
 
-void 
+void
 delete_tree_live_info (tree_live_info_p live)
 {
   int x;
@@ -869,12 +869,12 @@ delete_tree_live_info (tree_live_info_p live)
 }
 
 
-/* Visit basic block BB and propagate any required live on entry bits from 
-   LIVE into the predecessors.  VISITED is the bitmap of visited blocks.  
+/* Visit basic block BB and propagate any required live on entry bits from
+   LIVE into the predecessors.  VISITED is the bitmap of visited blocks.
    TMP is a temporary work bitmap which is passed in to avoid reallocating
    it each time.  */
 
-static void 
+static void
 loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
 		 bitmap tmp)
 {
@@ -894,12 +894,12 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
       if (pred_bb == ENTRY_BLOCK_PTR)
 	continue;
       /* TMP is variables live-on-entry from BB that aren't defined in the
-	 predecessor block.  This should be the live on entry vars to pred.  
+	 predecessor block.  This should be the live on entry vars to pred.
 	 Note that liveout is the DEFs in a block while live on entry is
 	 being calculated.  */
       bitmap_and_compl (tmp, loe, live->liveout[pred_bb->index]);
 
-      /* Add these bits to live-on-entry for the pred. if there are any 
+      /* Add these bits to live-on-entry for the pred. if there are any
 	 changes, and pred_bb has been visited already, add it to the
 	 revisit stack.  */
       change = bitmap_ior_into (live_on_entry (live, pred_bb), tmp);
@@ -912,7 +912,7 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
 }
 
 
-/* Using LIVE, fill in all the live-on-entry blocks between the defs and uses 
+/* Using LIVE, fill in all the live-on-entry blocks between the defs and uses
    of all the variables.  */
 
 static void
@@ -999,7 +999,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 	  basic_block use_bb = gimple_bb (use_stmt);
 	  if (use_bb != def_bb)
 	    add_block = use_bb;
-	}  
+	}
 
       /* If there was a live on entry use, set the bit.  */
       if (add_block)
@@ -1040,7 +1040,7 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 	{
 	  gimple phi = gsi_stmt (gsi);
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
-	    { 
+	    {
 	      tree t = PHI_ARG_DEF (phi, i);
 	      int p;
 
@@ -1065,10 +1065,10 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 }
 
 
-/* Given partition map MAP, calculate all the live on entry bitmaps for 
+/* Given partition map MAP, calculate all the live on entry bitmaps for
    each partition.  Return a new live info object.  */
 
-tree_live_info_p 
+tree_live_info_p
 calculate_live_ranges (var_map map)
 {
   tree var;
@@ -1242,7 +1242,7 @@ verify_live_on_entry (tree_live_info_p live)
 		    fprintf (stderr, " in BB%d, ", tmp->index);
 		  fprintf (stderr, "by:\n");
 		  print_gimple_stmt (stderr, stmt, 0, TDF_SLIM);
-		  fprintf (stderr, "\nIt is also live-on-entry to entry BB %d", 
+		  fprintf (stderr, "\nIt is also live-on-entry to entry BB %d",
 			   entry_block);
 		  fprintf (stderr, " So it appears to have multiple defs.\n");
 		}
@@ -1268,7 +1268,7 @@ verify_live_on_entry (tree_live_info_p live)
 	  else
 	    if (d == var)
 	      {
-		/* The only way this var shouldn't be marked live on entry is 
+		/* The only way this var shouldn't be marked live on entry is
 		   if it occurs in a PHI argument of the block.  */
 		size_t z;
 		bool ok = false;
@@ -1289,7 +1289,7 @@ verify_live_on_entry (tree_live_info_p live)
 		  continue;
 	        num++;
 		print_generic_expr (stderr, var, TDF_SLIM);
-		fprintf (stderr, " is not marked live-on-entry to entry BB%d ", 
+		fprintf (stderr, " is not marked live-on-entry to entry BB%d ",
 			 entry_block);
 		fprintf (stderr, "but it is a default def so it should be.\n");
 	      }

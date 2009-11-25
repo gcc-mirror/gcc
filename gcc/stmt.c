@@ -937,7 +937,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       ASM_OPERANDS_INPUT (body, i) = op;
 
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
-	= gen_rtx_ASM_INPUT (TYPE_MODE (type), 
+	= gen_rtx_ASM_INPUT (TYPE_MODE (type),
 			     ggc_strdup (constraints[i + noutputs]));
 
       if (tree_conflicts_with_clobbers_p (val, &clobbered_regs))

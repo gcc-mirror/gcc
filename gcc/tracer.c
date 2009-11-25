@@ -306,7 +306,7 @@ tail_duplicate (void)
 	      nduplicated += counts [bb2->index];
 
 	      e = find_edge (bb, bb2);
-	      
+
 	      copy = duplicate_block (bb2, e, bb);
 	      flush_pending_stmts (e);
 

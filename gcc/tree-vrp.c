@@ -623,7 +623,7 @@ abs_extent_range (value_range_t *vr, tree min, tree max)
 }
 
 
-/* Return value range information for VAR.  
+/* Return value range information for VAR.
 
    If we have no values ranges recorded (ie, VRP is not running), then
    return NULL.  Otherwise create an empty range if none existed for VAR.  */
@@ -985,11 +985,11 @@ valid_value_p (tree expr)
       || TREE_CODE (expr) == MINUS_EXPR)
     return (TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
 	    && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST);
-  
+
   return is_gimple_min_invariant (expr);
 }
 
-/* Return 
+/* Return
    1 if VAL < VAL2
    0 if !(VAL < VAL2)
    -2 if those are incomparable.  */
@@ -1035,7 +1035,7 @@ operand_less_p (tree val, tree val2)
 }
 
 /* Compare two values VAL1 and VAL2.  Return
-   
+
    	-2 if VAL1 and VAL2 cannot be compared at compile-time,
    	-1 if VAL1 < VAL2,
    	 0 if VAL1 == VAL2,
@@ -1073,7 +1073,7 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
     {
       tree n1, c1, n2, c2;
       enum tree_code code1, code2;
-  
+
       /* If VAL1 and VAL2 are of the form 'NAME [+-] CST' or 'NAME',
 	 return -1 or +1 accordingly.  If VAL1 and VAL2 don't use the
 	 same name, return -2.  */
@@ -1209,7 +1209,7 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
       /* First see if VAL1 and VAL2 are not the same.  */
       if (val1 == val2 || operand_equal_p (val1, val2, 0))
 	return 0;
-      
+
       /* If VAL1 is a lower address than VAL2, return -1.  */
       if (operand_less_p (val1, val2) == 1)
 	return -1;
@@ -1270,7 +1270,7 @@ compare_values (tree val1, tree val2)
 	  This also applies to value_ranges_intersect_p and
 	  range_includes_zero_p.  The semantics of VR_RANGE and
 	  VR_ANTI_RANGE should be encoded here, but that also means
-	  adapting the users of these functions to the new semantics.  
+	  adapting the users of these functions to the new semantics.
 
    Benchmark compile/20001226-1.c compilation time after changing this
    function.  */
@@ -1295,8 +1295,8 @@ value_inside_range (tree val, value_range_t * vr)
 
 
 /* Return true if value ranges VR0 and VR1 have a non-empty
-   intersection.  
-   
+   intersection.
+
    Benchmark compile/20001226-1.c compilation time after changing this
    function.
    */
@@ -1542,7 +1542,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 
 	 The only situation in which we can build a valid
 	 anti-range is when LIMIT_VR is a single-valued range
-	 (i.e., LIMIT_VR->MIN == LIMIT_VR->MAX).  In that case, 
+	 (i.e., LIMIT_VR->MIN == LIMIT_VR->MAX).  In that case,
 	 build the anti-range ~[LIMIT_VR->MIN, LIMIT_VR->MAX].  */
       if (limit_vr
 	  && limit_vr->type == VR_RANGE
@@ -1736,7 +1736,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	     there are three cases to consider.
 
 
-	     1. The VR_ANTI_RANGE range is completely within the 
+	     1. The VR_ANTI_RANGE range is completely within the
 		VR_RANGE and the endpoints of the ranges are
 		different.  In that case the resulting range
 		should be whichever range is more precise.
@@ -2823,7 +2823,7 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
 	  set_value_range_to_varying (vr);
 	  return;
 	}
-	
+
       /* ABS_EXPR may flip the range around, if the original range
 	 included negative values.  */
       if (is_overflow_infinity (vr0.min))
@@ -2862,7 +2862,7 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
       /* If a VR_ANTI_RANGEs contains zero, then we have
 	 ~[-INF, min(MIN, MAX)].  */
       if (vr0.type == VR_ANTI_RANGE)
-	{ 
+	{
 	  if (range_includes_zero_p (&vr0))
 	    {
 	      /* Take the lower of the two values.  */
@@ -3040,7 +3040,7 @@ extract_range_from_comparison (value_range_t *vr, enum tree_code code,
 {
   bool sop = false;
   tree val;
-  
+
   val = vrp_evaluate_conditional_warnv_with_ops (code, op0, op1, false, &sop,
   						 NULL);
 
@@ -3309,7 +3309,7 @@ vrp_var_may_overflow (tree var, gimple stmt)
 
 
 /* Given two numeric value ranges VR0, VR1 and a comparison code COMP:
-   
+
    - Return BOOLEAN_TRUE_NODE if VR0 COMP VR1 always returns true for
      all the values in the ranges.
 
@@ -3466,7 +3466,7 @@ compare_ranges (enum tree_code comp, value_range_t *vr0, value_range_t *vr1,
       /* Otherwise, we don't know.  */
       return NULL_TREE;
     }
-    
+
   gcc_unreachable ();
 }
 
@@ -3726,7 +3726,7 @@ build_assert_expr_for (tree cond, tree v)
 
   if (COMPARISON_CLASS_P (cond))
     {
-      tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond); 
+      tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond);
       assertion = gimple_build_assign (n, a);
     }
   else if (TREE_CODE (cond) == TRUTH_NOT_EXPR)
@@ -3935,11 +3935,11 @@ register_new_assert_for (tree name, tree expr,
      registered location for A.  If we are doing an edge insertion,
      assume that A will be inserted at E->DEST.  Note that this is not
      necessarily true.
-     
+
      If E is a critical edge, it will be split.  But even if E is
      split, the new block will dominate the same set of blocks that
      E->DEST dominates.
-     
+
      The reverse, however, is not true, blocks dominated by E->DEST
      will not be dominated by the new block created to split E.  So,
      if the insertion location is on a critical edge, we will not use
@@ -4222,7 +4222,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 
 /* OP is an operand of a truth value expression which is known to have
    a particular value.  Register any asserts for OP and for any
-   operands in OP's defining statement. 
+   operands in OP's defining statement.
 
    If CODE is EQ_EXPR, then we want to register OP is zero (false),
    if CODE is NE_EXPR, then we want to register OP is nonzero (true).   */
@@ -4241,7 +4241,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     return false;
 
   /* We know that OP will have a zero or nonzero value.  If OP is used
-     more than once go ahead and register an assert for OP. 
+     more than once go ahead and register an assert for OP.
 
      The FOUND_IN_SUBGRAPH support is not helpful in this situation as
      it will always be set for OP (because OP is used in a COND_EXPR in
@@ -4302,7 +4302,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
 					    code, e, bsi);
     }
   else if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (op_def)))
-    { 
+    {
       /* Recurse through the type conversion.  */
       retval |= register_edge_assert_for_1 (gimple_assign_rhs1 (op_def),
 					    code, e, bsi);
@@ -4557,7 +4557,7 @@ find_switch_asserts (basic_block bb, gimple last)
    If a statement produces a useful assertion A for name N_i, then the
    list of assertions already generated for N_i is scanned to
    determine if A is actually needed.
-   
+
    If N_i already had the assertion A at a location dominating the
    current location, then nothing needs to be done.  Otherwise, the
    new location for A is recorded instead.
@@ -4601,7 +4601,7 @@ find_switch_asserts (basic_block bb, gimple last)
 
    4- If BB does not end in a conditional expression, then we recurse
       into BB's dominator children.
-   
+
    At the end of the recursive traversal, every SSA name will have a
    list of locations where ASSERT_EXPRs should be added.  When a new
    location for name N is found, it is registered by calling
@@ -4678,7 +4678,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 		{
 		  tree t = op;
 		  gimple def_stmt = SSA_NAME_DEF_STMT (t);
-	
+
 		  while (is_gimple_assign (def_stmt)
 			 && gimple_assign_rhs_code (def_stmt)  == NOP_EXPR
 			 && TREE_CODE
@@ -5054,7 +5054,7 @@ search_for_addr_array (tree t, location_t location)
       if (gimple_code (g) != GIMPLE_ASSIGN)
 	return;
 
-      if (get_gimple_rhs_class (gimple_assign_rhs_code (g)) 
+      if (get_gimple_rhs_class (gimple_assign_rhs_code (g))
 	  != GIMPLE_SINGLE_RHS)
 	return;
 
@@ -5063,11 +5063,11 @@ search_for_addr_array (tree t, location_t location)
 
 
   /* We are only interested in addresses of ARRAY_REF's.  */
-  if (TREE_CODE (t) != ADDR_EXPR) 
+  if (TREE_CODE (t) != ADDR_EXPR)
     return;
 
   /* Check each ARRAY_REFs in the reference chain. */
-  do 
+  do
     {
       if (TREE_CODE (t) == ARRAY_REF)
 	check_array_ref (location, t, true /*ignore_off_by_one*/);
@@ -5080,7 +5080,7 @@ search_for_addr_array (tree t, location_t location)
 /* walk_tree() callback that checks if *TP is
    an ARRAY_REF inside an ADDR_EXPR (in which an array
    subscript one outside the valid range is allowed). Call
-   check_array_ref for each ARRAY_REF found. The location is 
+   check_array_ref for each ARRAY_REF found. The location is
    passed in DATA.  */
 
 static tree
@@ -5188,21 +5188,21 @@ check_all_array_refs (void)
 /* Convert range assertion expressions into the implied copies and
    copy propagate away the copies.  Doing the trivial copy propagation
    here avoids the need to run the full copy propagation pass after
-   VRP. 
-   
+   VRP.
+
    FIXME, this will eventually lead to copy propagation removing the
    names that had useful range information attached to them.  For
    instance, if we had the assertion N_i = ASSERT_EXPR <N_j, N_j > 3>,
    then N_i will have the range [3, +INF].
-   
+
    However, by converting the assertion into the implied copy
    operation N_i = N_j, we will then copy-propagate N_j into the uses
    of N_i and lose the range information.  We may want to hold on to
    ASSERT_EXPRs a little while longer as the ranges could be used in
    things like jump threading.
-   
+
    The problem with keeping ASSERT_EXPRs around is that passes after
-   VRP need to handle them appropriately. 
+   VRP need to handle them appropriately.
 
    Another approach would be to make the range information a first
    class property of the SSA_NAME so that it can be queried from
@@ -5247,7 +5247,7 @@ remove_range_assertions (void)
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    gsi_remove (&si, true);
-	    release_defs (stmt); 
+	    release_defs (stmt);
 	  }
 	else
 	  gsi_next (&si);
@@ -5395,7 +5395,7 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
 
       return SSA_PROP_NOT_INTERESTING;
     }
-  
+
   /* Every other statement produces no useful ranges.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
     set_value_range_to_varying (get_value_range (def));
@@ -5753,7 +5753,7 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
 	  else
 	    location = gimple_location (stmt);
 
-	  warning_at (location, OPT_Wtype_limits, 
+	  warning_at (location, OPT_Wtype_limits,
 		      integer_zerop (ret)
 		      ? G_("comparison always false "
                            "due to limited range of data type")
@@ -5787,7 +5787,7 @@ vrp_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
       fprintf (dump_file, "\nVisiting conditional with predicate: ");
       print_gimple_stmt (dump_file, stmt, 0, 0);
       fprintf (dump_file, "\nWith known ranges\n");
-      
+
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
 	{
 	  fprintf (dump_file, "\t");
@@ -5801,7 +5801,7 @@ vrp_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
 
   /* Compute the value of the predicate COND by checking the known
      ranges of each of its operands.
-     
+
      Note that we cannot evaluate all the equivalent ranges here
      because those ranges may not yet be final and with the current
      propagation strategy, we cannot determine when the value ranges
@@ -5948,7 +5948,7 @@ find_case_label_range (gimple stmt, tree min, tree max, size_t *min_idx,
       && min_take_default
       && max_take_default)
     {
-      /* Only the default case label reached. 
+      /* Only the default case label reached.
          Return an empty range. */
       *min_idx = 1;
       *max_idx = 0;
@@ -6780,7 +6780,7 @@ simplify_cond_using_ranges (gimple stmt)
       && is_gimple_min_invariant (op1))
     {
       value_range_t *vr = get_value_range (op0);
-	  
+
       /* If we have range information for OP0, then we might be
 	 able to simplify this conditional. */
       if (vr->type == VR_RANGE)
@@ -6881,7 +6881,7 @@ simplify_switch_using_ranges (gimple stmt)
 	  i = 1;
 	  j = 0;
 	}
-      else 
+      else
 	{
 	  j = i;
 	}
@@ -7026,7 +7026,7 @@ fold_predicate_in (gimple_stmt_iterator *si)
     {
       if (assignment_p)
         val = fold_convert (gimple_expr_type (stmt), val);
-      
+
       if (dump_file)
 	{
 	  fprintf (dump_file, "Folding predicate ");
@@ -7067,7 +7067,7 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
 }
 
 /* Stack of dest,src equivalency pairs that need to be restored after
-   each attempt to thread a block's incoming edge to an outgoing edge. 
+   each attempt to thread a block's incoming edge to an outgoing edge.
 
    A NULL entry is used to mark the end of pairs which need to be
    restored.  */
@@ -7107,7 +7107,7 @@ simplify_stmt_for_jump_threading (gimple stmt, gimple within_stmt)
    Unlike DOM, we do not iterate VRP if jump threading was successful.
    While iterating may expose new opportunities for VRP, it is expected
    those opportunities would be very limited and the compile time cost
-   to expose those opportunities would be significant. 
+   to expose those opportunities would be significant.
 
    As jump threading opportunities are discovered, they are registered
    for later realization.  */
@@ -7302,7 +7302,7 @@ vrp_finalize (void)
      4	  p_5 = ASSERT_EXPR <p_4, p_4 == q_2>;
      5	endif
      6	if (q_2)
-	
+
    In the code above, pointer p_5 has range [q_2, q_2], but from the
    code we can also determine that p_5 cannot be NULL and, if q_2 had
    a non-varying range, p_5's range should also be compatible with it.
@@ -7316,7 +7316,7 @@ vrp_finalize (void)
    between names so that we can take advantage of information from
    multiple ranges when doing final replacement.  Note that this
    equivalency relation is transitive but not symmetric.
-   
+
    In the example above, p_5 is equivalent to p_4, q_2 and p_3, but we
    cannot assert that q_2 is equivalent to p_5 because q_2 may be used
    in contexts where that assertion does not hold (e.g., in line 6).

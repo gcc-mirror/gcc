@@ -775,7 +775,7 @@ compute_value_histograms (histogram_values values)
   gcov_type *histogram_counts[GCOV_N_VALUE_COUNTERS];
   gcov_type *act_count[GCOV_N_VALUE_COUNTERS];
   gcov_type *aact_count;
- 
+
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
     n_histogram_counters[t] = 0;
 
@@ -943,8 +943,8 @@ branch_prob (void)
 	    }
 
 	  /* Edge with goto locus might get wrong coverage info unless
-	     it is the only edge out of BB.   
-	     Don't do that when the locuses match, so 
+	     it is the only edge out of BB.
+	     Don't do that when the locuses match, so
 	     if (blah) goto something;
 	     is not computed twice.  */
 	  if (last
@@ -1127,7 +1127,7 @@ branch_prob (void)
 
 	  if (bb == ENTRY_BLOCK_PTR->next_bb)
 	    {
-	      expanded_location curr_location = 
+	      expanded_location curr_location =
 		expand_location (DECL_SOURCE_LOCATION (current_function_decl));
 	      output_location (curr_location.file, curr_location.line,
 			       &offset, bb);

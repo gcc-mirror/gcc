@@ -1374,7 +1374,7 @@ fix_up_fall_thru_edges (void)
         edge_iterator ei;
 
         /* Find EDGE_CAN_FALLTHRU edge.  */
-        FOR_EACH_EDGE (e, ei, cur_bb->succs) 
+        FOR_EACH_EDGE (e, ei, cur_bb->succs)
           if (e->flags & EDGE_CAN_FALLTHRU)
           {
             fall_thru = e;
@@ -1438,7 +1438,7 @@ fix_up_fall_thru_edges (void)
 		  /* This is the case where both edges out of the basic
 		     block are crossing edges. Here we will fix up the
 		     fall through edge. The jump edge will be taken care
-		     of later.  The EDGE_CROSSING flag of fall_thru edge 
+		     of later.  The EDGE_CROSSING flag of fall_thru edge
                      is unset before the call to force_nonfallthru
                      function because if a new basic-block is created
                      this edge remains in the current section boundary

@@ -325,7 +325,7 @@ dump_alias_info (FILE *file)
   fprintf (file, "\n\nAlias information for %s\n\n", funcname);
 
   fprintf (file, "Aliased symbols\n\n");
-  
+
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       if (may_be_aliased (var))
@@ -345,7 +345,7 @@ dump_alias_info (FILE *file)
     {
       tree ptr = ssa_name (i);
       struct ptr_info_def *pi;
-      
+
       if (ptr == NULL_TREE
 	  || SSA_NAME_IN_FREE_LIST (ptr))
 	continue;

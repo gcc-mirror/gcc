@@ -243,7 +243,7 @@ get_frame_size (void)
 
 bool
 frame_offset_overflow (HOST_WIDE_INT offset, tree func)
-{  
+{
   unsigned HOST_WIDE_INT size = FRAME_GROWS_DOWNWARD ? -offset : offset;
 
   if (size > ((unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (Pmode) - 1))
@@ -710,7 +710,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
   /* Try to find an available, already-allocated temporary of the proper
      mode which meets the size and alignment requirements.  Choose the
      smallest one with the closest alignment.
-   
+
      If assign_stack_temp is called outside of the tree->rtl expansion,
      we cannot reuse the stack slots (that may still refer to
      VIRTUAL_STACK_VARS_REGNUM).  */
@@ -1844,7 +1844,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
      check for by-invisible-reference returns, typically for CALL_EXPR input
      EXPressions.  */
   const_tree fndecl = NULL_TREE;
-  
+
   if (fntype)
     switch (TREE_CODE (fntype))
       {
@@ -1887,7 +1887,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   if (TREE_CODE (exp) == CALL_EXPR && fndecl && DECL_RESULT (fndecl)
       && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
     return 1;
-      
+
   if (targetm.calls.return_in_memory (type, fntype))
     return 1;
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
@@ -1921,7 +1921,7 @@ use_register_for_decl (const_tree decl)
 {
   if (!targetm.calls.allocate_stack_slots_for_args())
     return true;
-  
+
   /* Honor volatile.  */
   if (TREE_SIDE_EFFECTS (decl))
     return false;
@@ -2501,7 +2501,7 @@ assign_parm_adjust_entry_rtl (struct assign_parm_data_one *data)
 	 locations.  The Irix 6 ABI has examples of this.  */
       if (GET_CODE (entry_parm) == PARALLEL)
 	emit_group_store (validize_mem (stack_parm), entry_parm,
-			  data->passed_type, 
+			  data->passed_type,
 			  int_size_in_bytes (data->passed_type));
       else
 	{
@@ -2626,7 +2626,7 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
   return false;
 }
 
-/* A subroutine of assign_parms.  Arrange for the parameter to be 
+/* A subroutine of assign_parms.  Arrange for the parameter to be
    present and valid in DATA->STACK_RTL.  */
 
 static void
@@ -3167,7 +3167,7 @@ assign_parms (tree fndecl)
 	      crtl->stack_alignment_estimated = align;
 	    }
 	}
-	
+
       if (cfun->stdarg && !TREE_CHAIN (parm))
 	assign_parms_setup_varargs (&all, &data, false);
 
@@ -3224,7 +3224,7 @@ assign_parms (tree fndecl)
 		  crtl->stack_alignment_estimated = align;
 		}
 	    }
-	} 
+	}
     }
 
   /* If we are receiving a struct value address as the first argument, set up
@@ -3747,7 +3747,7 @@ setjmp_vars_warning (bitmap setjmp_crosses, tree block)
 	  && DECL_RTL_SET_P (decl)
 	  && REG_P (DECL_RTL (decl))
 	  && regno_clobbered_at_setjmp (setjmp_crosses, REGNO (DECL_RTL (decl))))
-	warning (OPT_Wclobbered, "variable %q+D might be clobbered by" 
+	warning (OPT_Wclobbered, "variable %q+D might be clobbered by"
                  " %<longjmp%> or %<vfork%>", decl);
     }
 
@@ -3767,14 +3767,14 @@ setjmp_args_warning (bitmap setjmp_crosses)
     if (DECL_RTL (decl) != 0
 	&& REG_P (DECL_RTL (decl))
 	&& regno_clobbered_at_setjmp (setjmp_crosses, REGNO (DECL_RTL (decl))))
-      warning (OPT_Wclobbered, 
+      warning (OPT_Wclobbered,
                "argument %q+D might be clobbered by %<longjmp%> or %<vfork%>",
 	       decl);
 }
 
 /* Generate warning messages for variables live across setjmp.  */
 
-void 
+void
 generate_setjmp_warnings (void)
 {
   bitmap setjmp_crosses = regstat_get_setjmp_crosses ();
@@ -4076,7 +4076,7 @@ pop_cfun (void)
 
 /* Return value of funcdef and increase it.  */
 int
-get_next_funcdef_no (void) 
+get_next_funcdef_no (void)
 {
   return funcdef_no++;
 }
@@ -4135,7 +4135,7 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 	   && TYPE_ARG_TYPES (fntype) != 0
 	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 	       != void_type_node));
-      
+
       /* Assume all registers in stdarg functions need to be saved.  */
       cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;
       cfun->va_list_fpr_size = VA_LIST_MAX_FPR_SIZE;
@@ -4229,8 +4229,8 @@ struct rtl_opt_pass pass_init_function =
  {
   RTL_PASS,
   "*init_function",                     /* name */
-  NULL,                                 /* gate */   
-  init_function_for_compilation,        /* execute */       
+  NULL,                                 /* gate */
+  init_function_for_compilation,        /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -5005,7 +5005,7 @@ thread_prologue_and_epilogue_insns (void)
       seq = gen_prologue ();
       emit_insn (seq);
 
-      /* Insert an explicit USE for the frame pointer 
+      /* Insert an explicit USE for the frame pointer
          if the profiling is on and the frame pointer is required.  */
       if (crtl->profile && frame_pointer_needed)
 	emit_use (hard_frame_pointer_rtx);
@@ -5013,7 +5013,7 @@ thread_prologue_and_epilogue_insns (void)
       /* Retain a map of the prologue insns.  */
       record_insns (seq, NULL, &prologue_insn_hash);
       emit_note (NOTE_INSN_PROLOGUE_END);
- 
+
 #ifndef PROFILE_BEFORE_PROLOGUE
       /* Ensure that instructions are not moved into the prologue when
 	 profiling is on.  The call to the profiling routine can be
@@ -5286,7 +5286,7 @@ epilogue_done:
       for (insn = epilogue_end; insn; insn = next)
 	{
 	  next = NEXT_INSN (insn);
-	  if (NOTE_P (insn) 
+	  if (NOTE_P (insn)
 	      && (NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG))
 	    reorder_insns (insn, insn, PREV_INSN (epilogue_end));
 	}
@@ -5389,7 +5389,7 @@ reposition_prologue_and_epilogue_notes (void)
 	  if (note)
 	    {
 	      /* If the function has a single basic block, and no real
-		 epilogue insns (e.g. sibcall with no cleanup), the 
+		 epilogue insns (e.g. sibcall with no cleanup), the
 		 epilogue note can get scheduled before the prologue
 		 note.  If we have frame related prologue insns, having
 		 them scanned during the epilogue will result in a crash.
@@ -5586,7 +5586,7 @@ struct rtl_opt_pass pass_thread_prologue_and_epilogue =
 
 
 /* This mini-pass fixes fall-out from SSA in asm statements that have
-   in-out constraints.  Say you start with 
+   in-out constraints.  Say you start with
 
      orig = inout;
      asm ("": "+mr" (inout));

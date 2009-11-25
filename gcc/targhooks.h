@@ -80,7 +80,7 @@ extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 extern bool
 default_builtin_support_vector_misalignment (enum machine_mode mode,
 					     const_tree,
-					     int, bool); 
+					     int, bool);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */

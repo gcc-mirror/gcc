@@ -725,7 +725,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
       err = true;
     }
 
-  /* Make sure the use is in an appropriate list by checking the previous 
+  /* Make sure the use is in an appropriate list by checking the previous
      element to make sure it's the same.  */
   if (use_p->prev == NULL)
     {
@@ -1044,7 +1044,7 @@ verify_ssa (bool check_modified_stmt)
     free_dominance_info (CDI_DOMINATORS);
   else
     set_dom_info_availability (CDI_DOMINATORS, orig_dom_state);
-  
+
   BITMAP_FREE (names_defined_in_bb);
   timevar_pop (TV_TREE_SSA_VERIFY);
   return;
@@ -1114,9 +1114,9 @@ void
 init_tree_ssa (struct function *fn)
 {
   fn->gimple_df = GGC_CNEW (struct gimple_df);
-  fn->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash, 
+  fn->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash,
 				     		    uid_decl_map_eq, NULL);
-  fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash, 
+  fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash,
 				                 uid_ssaname_map_eq, NULL);
   pt_solution_reset (&fn->gimple_df->escaped);
   pt_solution_reset (&fn->gimple_df->callused);
@@ -1444,7 +1444,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
     return false;
-  
+
   return false;
 }
 
@@ -1494,7 +1494,7 @@ tree_ssa_strip_useless_type_conversions (tree exp)
 
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
    described in walk_use_def_chains.
-   
+
    VISITED is a pointer set used to mark visited SSA_NAMEs to avoid
       infinite loops.  We used to have a bitmap for this to just mark
       SSA versions we had visited.  But non-sparse bitmaps are way too
@@ -1552,10 +1552,10 @@ walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
 	  if (fn (gimple_phi_arg_def (def_stmt, i), def_stmt, data))
 	    return true;
     }
-  
+
   return false;
 }
-  
+
 
 
 /* Walk use-def chains starting at the SSA variable VAR.  Call
@@ -1563,7 +1563,7 @@ walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
    arguments: VAR, its defining statement (DEF_STMT) and a generic
    pointer to whatever state information that FN may want to maintain
    (DATA).  FN is able to stop the walk by returning true, otherwise
-   in order to continue the walk, FN should return false.  
+   in order to continue the walk, FN should return false.
 
    Note, that if DEF_STMT is a PHI node, the semantics are slightly
    different.  The first argument to FN is no longer the original
@@ -1657,7 +1657,7 @@ warn_uninit (tree t, const char *gmsgid, void *data)
   /* Do not warn if it can be initialized outside this module.  */
   if (is_global_var (var))
     return;
-  
+
   location = (context != NULL && gimple_has_location (context))
 	     ? gimple_location (context)
 	     : DECL_SOURCE_LOCATION (var);
@@ -1714,7 +1714,7 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
 	use_operand_p vuse;
 	tree op;
 
-	/* If there is not gimple stmt, 
+	/* If there is not gimple stmt,
 	   or alias information has not been computed,
 	   then we cannot check VUSE ops.  */
 	if (data->stmt == NULL)
@@ -1729,7 +1729,7 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
 	  return NULL_TREE;
 
 	op = USE_FROM_PTR (vuse);
-	if (t != SSA_NAME_VAR (op) 
+	if (t != SSA_NAME_VAR (op)
 	    || !SSA_NAME_IS_DEFAULT_DEF (op))
 	  return NULL_TREE;
 	/* If this is a VUSE of t and it is the default definition,
@@ -1928,7 +1928,7 @@ execute_update_addresses_taken (bool do_optimize)
 	  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
 	    {
               tree lhs = gimple_get_lhs (stmt);
-              
+
               /* We may not rewrite TMR_SYMBOL to SSA.  */
               if (lhs && TREE_CODE (lhs) == TARGET_MEM_REF
                   && TMR_SYMBOL (lhs))

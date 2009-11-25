@@ -336,7 +336,7 @@ process_rtx (rtx desc, int lineno)
 
 	/* Queue them.  */
 	insn_elem
-	  = queue_pattern (desc, &define_insn_tail, read_rtx_filename, 
+	  = queue_pattern (desc, &define_insn_tail, read_rtx_filename,
 			   lineno);
 	split_elem
 	  = queue_pattern (split, &other_tail, read_rtx_filename, lineno);
@@ -875,7 +875,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 	  XVECEXP (split, 2, i) = pattern;
 	}
       /* Add the new split to the queue.  */
-      queue_pattern (split, &other_tail, read_rtx_filename, 
+      queue_pattern (split, &other_tail, read_rtx_filename,
 		     insn_elem->split->lineno);
     }
 }
@@ -927,7 +927,7 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
     {
       if (argv[i][0] != '-')
 	continue;
-      
+
       c = argv[i][1];
       switch (c)
 	{
@@ -996,7 +996,7 @@ init_md_reader_args_cb (int argc, char **argv, bool (*parse_opt)(const char *))
 	      /* Read stdin.  */
 	      if (already_read_stdin)
 		fatal ("cannot read standard input twice");
-	      
+
 	      base_dir = NULL;
 	      read_rtx_filename = in_fname = "<stdin>";
 	      read_rtx_lineno = 1;
@@ -1405,7 +1405,7 @@ init_predicate_table (void)
 	for (j = 0; j < NUM_RTX_CODE; j++)
 	  if (GET_RTX_CLASS (j) == RTX_CONST_OBJ)
 	    add_predicate_code (pred, (enum rtx_code) j);
-      
+
       add_predicate (pred);
     }
 }

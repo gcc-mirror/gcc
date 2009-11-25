@@ -1,7 +1,7 @@
 /* Vectorizer
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software
    Foundation, Inc.
-   Contributed by Dorit Naishlos <dorit@il.ibm.com> 
+   Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
 
@@ -21,21 +21,21 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Loop and basic block vectorizer.
 
-  This file contains drivers for the three vectorizers: 
-  (1) loop vectorizer (inter-iteration parallelism), 
+  This file contains drivers for the three vectorizers:
+  (1) loop vectorizer (inter-iteration parallelism),
   (2) loop-aware SLP (intra-iteration parallelism) (invoked by the loop
       vectorizer)
   (3) BB vectorizer (out-of-loops), aka SLP
-  
+
   The rest of the vectorizer's code is organized as follows:
-  - tree-vect-loop.c - loop specific parts such as reductions, etc. These are 
-    used by drivers (1) and (2). 
-  - tree-vect-loop-manip.c - vectorizer's loop control-flow utilities, used by 
-    drivers (1) and (2). 
-  - tree-vect-slp.c - BB vectorization specific analysis and transformation, 
+  - tree-vect-loop.c - loop specific parts such as reductions, etc. These are
+    used by drivers (1) and (2).
+  - tree-vect-loop-manip.c - vectorizer's loop control-flow utilities, used by
+    drivers (1) and (2).
+  - tree-vect-slp.c - BB vectorization specific analysis and transformation,
     used by drivers (2) and (3).
   - tree-vect-stmts.c - statements analysis and transformation (used by all).
-  - tree-vect-data-refs.c - vectorizer specific data-refs analysis and 
+  - tree-vect-data-refs.c - vectorizer specific data-refs analysis and
     manipulations (used by all).
   - tree-vect-patterns.c - vectorizable code patterns detector (used by all)
 
@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 /* vect_dump will be set to stderr or dump_file if exist.  */
 FILE *vect_dump;
 
-/* vect_verbosity_level set to an invalid value 
+/* vect_verbosity_level set to an invalid value
    to mark that it's uninitialized.  */
 static enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 static enum verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL;
@@ -100,7 +100,7 @@ vect_set_verbosity_level (const char *val)
    if (vl < MAX_VERBOSITY_LEVEL)
      user_vect_verbosity_level = (enum verbosity_levels) vl;
    else
-     user_vect_verbosity_level 
+     user_vect_verbosity_level
       = (enum verbosity_levels) (MAX_VERBOSITY_LEVEL - 1);
 }
 
@@ -125,9 +125,9 @@ vect_set_dump_settings (bool slp)
       vect_verbosity_level = user_vect_verbosity_level;
       /* Ignore user defined verbosity if dump flags require higher level of
          verbosity.  */
-      if (dump_file) 
+      if (dump_file)
         {
-          if (((dump_flags & TDF_DETAILS) 
+          if (((dump_flags & TDF_DETAILS)
                 && vect_verbosity_level >= REPORT_DETAILS)
   	       || ((dump_flags & TDF_STATS)
 	            && vect_verbosity_level >= REPORT_UNVECTORIZED_LOCATIONS))
@@ -135,8 +135,8 @@ vect_set_dump_settings (bool slp)
         }
       else
         {
-          /* If there is no dump file, print to stderr in case of loop 
-             vectorization.  */ 
+          /* If there is no dump file, print to stderr in case of loop
+             vectorization.  */
           if (!slp)
             vect_dump = stderr;
 
@@ -174,7 +174,7 @@ vect_print_dump_info (enum verbosity_levels vl)
 	     DECL_SOURCE_FILE (current_function_decl),
 	     DECL_SOURCE_LINE (current_function_decl));
   else
-    fprintf (vect_dump, "\n%s:%d: note: ", 
+    fprintf (vect_dump, "\n%s:%d: note: ",
 	     LOC_FILE (vect_location), LOC_LINE (vect_location));
 
   return true;
@@ -182,7 +182,7 @@ vect_print_dump_info (enum verbosity_levels vl)
 
 
 /* Function vectorize_loops.
-   
+
    Entry point to loop vectorization phase.  */
 
 unsigned
@@ -207,8 +207,8 @@ vectorize_loops (void)
 
   /*  ----------- Analyze loops. -----------  */
 
-  /* If some loop was duplicated, it gets bigger number 
-     than all previously defined loops. This fact allows us to run 
+  /* If some loop was duplicated, it gets bigger number
+     than all previously defined loops. This fact allows us to run
      only over initial loops skipping newly generated ones.  */
   FOR_EACH_LOOP (li, loop, 0)
     if (optimize_loop_nest_for_speed_p (loop))
@@ -255,7 +255,7 @@ vectorize_loops (void)
 
   return num_vectorized_loops > 0 ? TODO_cleanup_cfg : 0;
 }
- 
+
 
 /*  Entry point to basic block SLP phase.  */
 
@@ -289,9 +289,9 @@ execute_vect_slp (void)
 static bool
 gate_vect_slp (void)
 {
-  /* Apply SLP either if the vectorizer is on and the user didn't specify 
+  /* Apply SLP either if the vectorizer is on and the user didn't specify
      whether to run SLP or not, or if the SLP flag was set by the user.  */
-  return ((flag_tree_vectorize != 0 && flag_tree_slp_vectorize != 0) 
+  return ((flag_tree_vectorize != 0 && flag_tree_slp_vectorize != 0)
           || flag_tree_slp_vectorize == 1);
 }
 
@@ -313,7 +313,7 @@ struct gimple_opt_pass pass_slp_vectorize =
   TODO_ggc_collect
     | TODO_verify_ssa
     | TODO_dump_func
-    | TODO_update_ssa   
+    | TODO_update_ssa
     | TODO_verify_stmts                 /* todo_flags_finish */
  }
 };

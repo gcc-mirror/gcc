@@ -157,7 +157,7 @@ dump_file (const char *filename)
     const char *type = NULL;
     int endianness = 0;
     char m[4], v[4];
-    
+
     if ((endianness = gcov_magic (magic, GCOV_DATA_MAGIC)))
       type = "data";
     else if ((endianness = gcov_magic (magic, GCOV_NOTE_MAGIC)))
@@ -171,13 +171,13 @@ dump_file (const char *filename)
     version = gcov_read_unsigned ();
     GCOV_UNSIGNED2STRING (v, version);
     GCOV_UNSIGNED2STRING (m, magic);
-    
+
     printf ("%s:%s:magic `%.4s':version `%.4s'%s\n", filename, type,
  	    m, v, endianness < 0 ? " (swapped endianness)" : "");
     if (version != GCOV_VERSION)
       {
 	char e[4];
-	
+
 	GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
 	printf ("%s:warning:current version is `%.4s'\n", filename, e);
       }
@@ -189,7 +189,7 @@ dump_file (const char *filename)
 
     printf ("%s:stamp %lu\n", filename, (unsigned long)stamp);
   }
-  
+
   while (1)
     {
       gcov_position_t base, position = gcov_position ();

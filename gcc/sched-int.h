@@ -541,7 +541,7 @@ struct deps
   /* Shows the last value of reg_pending_barrier associated with the insn.  */
   enum reg_pending_barrier_mode last_reg_pending_barrier;
 
-  /* True when this context should be treated as a readonly by 
+  /* True when this context should be treated as a readonly by
      the analysis.  */
   BOOL_BITFIELD readonly : 1;
 };
@@ -563,7 +563,7 @@ struct haifa_sched_info
   int (*can_schedule_ready_p) (rtx);
   /* Return nonzero if there are more insns that should be scheduled.  */
   int (*schedule_more_p) (void);
-  /* Called after an insn has all its hard dependencies resolved. 
+  /* Called after an insn has all its hard dependencies resolved.
      Adjusts status of instruction (which is passed through second parameter)
      to indicate if instruction should be moved to the ready list or the
      queue, or if it should silently discard it (until next resolved
@@ -602,7 +602,7 @@ struct haifa_sched_info
   /* Hooks to support speculative scheduling.  */
 
   /* Called to notify frontend that instruction is being added (second
-     parameter == 0) or removed (second parameter == 1).  */     
+     parameter == 0) or removed (second parameter == 1).  */
   void (*add_remove_insn) (rtx, int);
 
   /* Called to notify frontend that instruction is being scheduled.
@@ -767,7 +767,7 @@ struct _haifa_insn_data
   /* INTER_TICK is used to adjust INSN_TICKs of instructions from the
      subsequent blocks in a region.  */
   int inter_tick;
-  
+
   /* See comment on QUEUE_INDEX macro in haifa-sched.c.  */
   int queue_index;
 
@@ -787,7 +787,7 @@ struct _haifa_insn_data
   ds_t todo_spec;
 
   /* What speculations were already applied.  */
-  ds_t done_spec; 
+  ds_t done_spec;
 
   /* What speculations are checked by this instruction.  */
   ds_t check_spec;
@@ -1011,7 +1011,7 @@ enum SPEC_TYPES_OFFSETS {
    Therefore, it can appear only in TODO_SPEC field of an instruction.  */
 #define HARD_DEP (DEP_ANTI << 1)
 
-/* This represents the results of calling sched-deps.c functions, 
+/* This represents the results of calling sched-deps.c functions,
    which modify dependencies.  */
 enum DEPS_ADJUST_RESULT {
   /* No dependence needed (e.g. producer == consumer).  */
@@ -1024,7 +1024,7 @@ enum DEPS_ADJUST_RESULT {
   DEP_CREATED
 };
 
-/* Represents the bits that can be set in the flags field of the 
+/* Represents the bits that can be set in the flags field of the
    sched_info structure.  */
 enum SCHED_FLAGS {
   /* If set, generate links between instruction as DEPS_LIST.
@@ -1329,7 +1329,7 @@ extern void compute_priorities (void);
 extern void increase_insn_priority (rtx, int);
 extern void debug_rgn_dependencies (int);
 extern void debug_dependencies (rtx, rtx);
-extern void free_rgn_deps (void);          
+extern void free_rgn_deps (void);
 extern int contributes_to_priority (rtx, rtx);
 extern void extend_rgns (int *, int *, sbitmap, int *);
 extern void deps_join (struct deps *, struct deps *);
@@ -1486,7 +1486,7 @@ extern void sd_debug_lists (rtx, sd_list_types_def);
 
 #endif /* INSN_SCHEDULING */
 
-/* Functions in sched-vis.c.  These must be outside INSN_SCHEDULING as 
+/* Functions in sched-vis.c.  These must be outside INSN_SCHEDULING as
    sched-vis.c is compiled always.  */
 extern void print_insn (char *, const_rtx, int);
 extern void print_pattern (char *, const_rtx, int);

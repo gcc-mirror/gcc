@@ -804,7 +804,7 @@ add_fde_cfi (const char *label, dw_cfi_ref cfi)
 
       /* Emit the state save.  */
       emit_cfa_remember = false;
-      cfi_remember = new_cfi (); 
+      cfi_remember = new_cfi ();
       cfi_remember->dw_cfi_opc = DW_CFA_remember_state;
       add_fde_cfi (label, cfi_remember);
     }
@@ -1042,7 +1042,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
   if (loc.reg == old_cfa.reg && !loc.indirect)
     {
       /* Construct a "DW_CFA_def_cfa_offset <offset>" instruction, indicating
-	 the CFA register did not change but the offset did.  The data 
+	 the CFA register did not change but the offset did.  The data
 	 factoring for DW_CFA_def_cfa_offset_sf happens in output_cfi, or
 	 in the assembler via the .cfi_def_cfa_offset directive.  */
       if (loc.offset < 0)
@@ -1882,7 +1882,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set, const char *label)
   addr = XEXP (set, 0);
   gcc_assert (MEM_P (addr));
   addr = XEXP (addr, 0);
-  
+
   /* As documented, only consider extremely simple addresses.  */
   switch (GET_CODE (addr))
     {
@@ -2870,7 +2870,7 @@ dwarf2out_begin_epilogue (rtx insn)
 void
 dwarf2out_frame_debug_restore_state (void)
 {
-  dw_cfi_ref cfi = new_cfi (); 
+  dw_cfi_ref cfi = new_cfi ();
   const char *label = dwarf2out_cfi_label (false);
 
   cfi->dw_cfi_opc = DW_CFA_restore_state;
@@ -9605,7 +9605,7 @@ htab_decl_del (void *what)
   free (entry);
 }
 
-/* Copy DIE and its ancestors, up to, but not including, the compile unit 
+/* Copy DIE and its ancestors, up to, but not including, the compile unit
    or type unit entry, to a new tree.  Adds the new tree to UNIT and returns
    a pointer to the copy of DIE.  If DECL_TABLE is provided, it is used
    to check if the ancestor has already been copied into UNIT.  */
@@ -14044,7 +14044,7 @@ add_loc_descr_to_each (dw_loc_list_ref list, dw_loc_descr_ref ref)
 
    TODO: We handle only simple cases of RET or LIST having at most one
    element. General case would inolve sorting the lists in program order
-   and merging them that will need some additional work.  
+   and merging them that will need some additional work.
    Adding that will improve quality of debug info especially for SRA-ed
    structures.  */
 
@@ -14432,7 +14432,7 @@ loc_list_from_tree (tree loc, int want_address)
 	if (bytepos > 0)
 	  add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_plus_uconst, bytepos, 0));
 	else if (bytepos < 0)
-	  loc_list_plus_const (list_ret, bytepos); 
+	  loc_list_plus_const (list_ret, bytepos);
 
 	have_address = 1;
 	break;
@@ -15041,11 +15041,11 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
       else
 	{
 	  enum dwarf_location_atom op;
-	  
+
 	  /* The DWARF2 standard says that we should assume that the structure
 	     address is already on the stack, so we can specify a structure
 	     field address by using DW_OP_plus_uconst.  */
-	  
+
 #ifdef MIPS_DEBUGGING_INFO
 	  /* ??? The SGI dwarf reader does not handle the DW_OP_plus_uconst
 	     operator correctly.  It works only if we leave the offset on the
@@ -15054,7 +15054,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
 #else
 	  op = DW_OP_plus_uconst;
 #endif
-	  
+
 	  loc_descr = new_loc_descr (op, offset, 0);
 	}
     }
@@ -16889,7 +16889,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_subscript_info (array_die, type, collapse_nested_arrays);
 
   /* Add representation of the type of the elements of this array type and
-     emit the corresponding DIE if we haven't done it already.  */  
+     emit the corresponding DIE if we haven't done it already.  */
   element_type = TREE_TYPE (type);
   if (collapse_nested_arrays)
     while (TREE_CODE (element_type) == ARRAY_TYPE)
@@ -17834,7 +17834,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 of the pack. Note that the set of pack arguments can be empty.
 	 In that case, the DW_TAG_GNU_formal_parameter_pack DIE will not have any
 	 children DIE.
-	
+
 	 Otherwise, we just consider the parameters of DECL.  */
       while (generic_decl_parm || parm)
 	{
@@ -19922,7 +19922,7 @@ gen_remaining_tmpl_value_param_die_attribute (void)
 
 
 /* Replace DW_AT_name for the decl with name.  */
- 
+
 static void
 dwarf2out_set_name (tree decl, tree name)
 {
@@ -20577,7 +20577,7 @@ prune_unused_types_mark (dw_die_ref die, int dokids)
 	 breaking out types into comdat sections, do this
 	 for all type definitions.  */
       if (die->die_tag == DW_TAG_array_type
-          || (dwarf_version >= 4 
+          || (dwarf_version >= 4
               && is_type_die (die) && ! is_declaration_die (die)))
 	FOR_EACH_CHILD (die, c, prune_unused_types_mark (c, 1));
       else

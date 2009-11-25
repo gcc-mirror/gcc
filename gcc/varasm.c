@@ -215,7 +215,7 @@ prefix_name (const char *prefix, tree name)
   unsigned plen = strlen (prefix);
   unsigned nlen = strlen (IDENTIFIER_POINTER (name));
   char *toname = (char *) alloca (plen + nlen + 1);
-  
+
   memcpy (toname, prefix, plen);
   memcpy (toname + plen, IDENTIFIER_POINTER (name), nlen + 1);
 
@@ -238,19 +238,19 @@ tree
 default_emutls_var_fields (tree type, tree *name ATTRIBUTE_UNUSED)
 {
   tree word_type_node, field, next_field;
-  
+
   field = build_decl (UNKNOWN_LOCATION,
 		      FIELD_DECL, get_identifier ("__templ"), ptr_type_node);
   DECL_CONTEXT (field) = type;
   next_field = field;
-    
+
   field = build_decl (UNKNOWN_LOCATION,
 		      FIELD_DECL, get_identifier ("__offset"),
 		      ptr_type_node);
   DECL_CONTEXT (field) = type;
   TREE_CHAIN (field) = next_field;
   next_field = field;
-  
+
   word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
   field = build_decl (UNKNOWN_LOCATION,
 		      FIELD_DECL, get_identifier ("__align"),
@@ -258,7 +258,7 @@ default_emutls_var_fields (tree type, tree *name ATTRIBUTE_UNUSED)
   DECL_CONTEXT (field) = type;
   TREE_CHAIN (field) = next_field;
   next_field = field;
-  
+
   field = build_decl (UNKNOWN_LOCATION,
 		      FIELD_DECL, get_identifier ("__size"), word_type_node);
   DECL_CONTEXT (field) = type;
@@ -300,7 +300,7 @@ static tree
 get_emutls_init_templ_addr (tree decl)
 {
   tree name, to;
-  
+
   if (targetm.emutls.register_common && !DECL_INITIAL (decl)
       && !DECL_SECTION_NAME (decl))
     return null_pointer_node;
@@ -324,7 +324,7 @@ get_emutls_init_templ_addr (tree decl)
   DECL_IGNORED_P (to) = 1;
   DECL_CONTEXT (to) = DECL_CONTEXT (decl);
   DECL_SECTION_NAME (to) = DECL_SECTION_NAME (decl);
-  
+
   DECL_WEAK (to) = DECL_WEAK (decl);
   if (DECL_ONE_ONLY (decl))
     {
@@ -464,7 +464,7 @@ emutls_finish (void)
       htab_traverse_noresize (emutls_htab, emutls_common_1, &body);
       if (body == NULL_TREE)
 	return;
-      
+
       cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
     }
 }
@@ -1509,7 +1509,7 @@ default_stabs_asm_out_destructor (rtx symbol ATTRIBUTE_UNUSED,
 }
 
 /* Write the address of the entity given by SYMBOL to SEC.  */
-void 
+void
 assemble_addr_to_section (rtx symbol, section *sec)
 {
   switch_to_section (sec);
@@ -1540,7 +1540,7 @@ default_named_section_asm_out_destructor (rtx symbol, int priority)
   section *sec;
 
   if (priority != DEFAULT_INIT_PRIORITY)
-    sec = get_cdtor_priority_section (priority, 
+    sec = get_cdtor_priority_section (priority,
 				      /*constructor_p=*/false);
   else
     sec = get_section (".dtors", SECTION_WRITE, NULL);
@@ -1580,7 +1580,7 @@ default_named_section_asm_out_constructor (rtx symbol, int priority)
   section *sec;
 
   if (priority != DEFAULT_INIT_PRIORITY)
-    sec = get_cdtor_priority_section (priority, 
+    sec = get_cdtor_priority_section (priority,
 				      /*constructor_p=*/true);
   else
     sec = get_section (".ctors", SECTION_WRITE, NULL);
@@ -2032,27 +2032,27 @@ default_emutls_var_init (tree to, tree decl, tree proxy)
   constructor_elt *elt;
   tree type = TREE_TYPE (to);
   tree field = TYPE_FIELDS (type);
-  
+
   elt = VEC_quick_push (constructor_elt, v, NULL);
   elt->index = field;
   elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
-  
+
   elt = VEC_quick_push (constructor_elt, v, NULL);
   field = TREE_CHAIN (field);
   elt->index = field;
   elt->value = build_int_cst (TREE_TYPE (field),
 			      DECL_ALIGN_UNIT (decl));
-  
+
   elt = VEC_quick_push (constructor_elt, v, NULL);
   field = TREE_CHAIN (field);
   elt->index = field;
   elt->value = null_pointer_node;
-  
+
   elt = VEC_quick_push (constructor_elt, v, NULL);
   field = TREE_CHAIN (field);
   elt->index = field;
   elt->value = proxy;
-  
+
   return build_constructor (type, v);
 }
 
@@ -2806,7 +2806,7 @@ static void maybe_output_constant_def_contents (struct constant_descriptor_tree 
 
 /* Constant pool accessor function.  */
 
-htab_t 
+htab_t
 constant_pool_htab (void)
 {
   return const_desc_htab;
@@ -4498,7 +4498,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       else if (TREE_CODE (exp) == INTEGER_CST)
 	exp = build_int_cst_wide (saved_type, TREE_INT_CST_LOW (exp),
 				  TREE_INT_CST_HIGH (exp));
-      
+
     }
 
   /* Eliminate any conversions since we'll be outputting the underlying
@@ -4722,7 +4722,7 @@ output_constructor_array_range (oc_local_state *local)
 
   unsigned int align2
     = min_align (local->align, fieldsize * BITS_PER_UNIT);
-  
+
   for (index = lo_index; index <= hi_index; index++)
     {
       /* Output the element's initial value.  */
@@ -4730,7 +4730,7 @@ output_constructor_array_range (oc_local_state *local)
 	assemble_zeros (fieldsize);
       else
 	output_constant (local->val, fieldsize, align2);
-      
+
       /* Count its size.  */
       local->total_bytes += fieldsize;
     }
@@ -4751,12 +4751,12 @@ output_constructor_regular_field (oc_local_state *local)
 
   if (local->index != NULL_TREE)
     fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
-		* ((tree_low_cst (local->index, 0) 
+		* ((tree_low_cst (local->index, 0)
 		    - tree_low_cst (local->min_index, 0))));
-  else if (local->field != NULL_TREE) 
+  else if (local->field != NULL_TREE)
     fieldpos = int_byte_position (local->field);
   else
-    fieldpos = 0; 
+    fieldpos = 0;
 
   /* Output any buffered-up bit-fields preceding this element.  */
   if (local->byte_buffer_in_use)
@@ -4765,7 +4765,7 @@ output_constructor_regular_field (oc_local_state *local)
       local->total_bytes++;
       local->byte_buffer_in_use = false;
     }
-  
+
   /* Advance to offset of this element.
      Note no alignment needed in an array, since that is guaranteed
      if each element has the proper size.  */
@@ -4776,7 +4776,7 @@ output_constructor_regular_field (oc_local_state *local)
       assemble_zeros (fieldpos - local->total_bytes);
       local->total_bytes = fieldpos;
     }
-  
+
   /* Find the alignment of this element.  */
   align2 = min_align (local->align, BITS_PER_UNIT * fieldpos);
 
@@ -4784,7 +4784,7 @@ output_constructor_regular_field (oc_local_state *local)
   if (local->field)
     {
       fieldsize = 0;
-      
+
       /* If this is an array with an unspecified upper bound,
 	 the initializer determines the size.  */
       /* ??? This ought to only checked if DECL_SIZE_UNIT is NULL,
@@ -4809,7 +4809,7 @@ output_constructor_regular_field (oc_local_state *local)
     }
   else
     fieldsize = int_size_in_bytes (TREE_TYPE (local->type));
-  
+
   /* Output the element's initial value.  */
   if (local->val == NULL_TREE)
     assemble_zeros (fieldsize);
@@ -4836,38 +4836,38 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
   HOST_WIDE_INT relative_index
     = (!local->field
        ? (local->index
-	  ? (tree_low_cst (local->index, 0) 
+	  ? (tree_low_cst (local->index, 0)
 	     - tree_low_cst (local->min_index, 0))
 	  : local->last_relative_index + 1)
        : 0);
-  
+
   /* Bit position of this element from the start of the containing
      constructor.  */
   HOST_WIDE_INT constructor_relative_ebitpos
       = (local->field
-	 ? int_bit_position (local->field) 
+	 ? int_bit_position (local->field)
 	 : ebitsize * relative_index);
-  
+
   /* Bit position of this element from the start of a possibly ongoing
      outer byte buffer.  */
   HOST_WIDE_INT byte_relative_ebitpos
       = ((outer ? outer->bit_offset : 0) + constructor_relative_ebitpos);
 
-  /* From the start of a possibly ongoing outer byte buffer, offsets to 
+  /* From the start of a possibly ongoing outer byte buffer, offsets to
      the first bit of this element and to the first bit past the end of
      this element.  */
   HOST_WIDE_INT next_offset = byte_relative_ebitpos;
   HOST_WIDE_INT end_offset = byte_relative_ebitpos + ebitsize;
-  
+
   local->last_relative_index = relative_index;
-  
+
   if (local->val == NULL_TREE)
     local->val = integer_zero_node;
-  
+
   while (TREE_CODE (local->val) == VIEW_CONVERT_EXPR
 	 || TREE_CODE (local->val) == NON_LVALUE_EXPR)
     local->val = TREE_OPERAND (local->val, 0);
-    
+
   if (TREE_CODE (local->val) != INTEGER_CST
       && TREE_CODE (local->val) != CONSTRUCTOR)
     {
@@ -4886,7 +4886,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	  local->total_bytes++;
 	  local->byte_buffer_in_use = false;
 	}
-      
+
       /* If still not at proper byte, advance to there.  */
       if (next_offset / BITS_PER_UNIT != local->total_bytes)
 	{
@@ -4895,7 +4895,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	  local->total_bytes = next_offset / BITS_PER_UNIT;
 	}
     }
-  
+
   /* Set up the buffer if necessary.  */
   if (!local->byte_buffer_in_use)
     {
@@ -4903,7 +4903,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
       if (ebitsize > 0)
 	local->byte_buffer_in_use = true;
     }
-  
+
   /* If this is nested constructor, recurse passing the bit offset and the
      pending data, then retrieve the new pending data afterwards.  */
   if (TREE_CODE (local->val) == CONSTRUCTOR)
@@ -4917,10 +4917,10 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
       local->byte = output_state.byte;
       return;
     }
-  
+
   /* Otherwise, we must split the element into pieces that fall within
      separate bytes, and combine each byte with previous or following
-     bit-fields.  */  
+     bit-fields.  */
   while (next_offset < end_offset)
     {
       int this_time;
@@ -4928,7 +4928,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
       HOST_WIDE_INT value;
       HOST_WIDE_INT next_byte = next_offset / BITS_PER_UNIT;
       HOST_WIDE_INT next_bit = next_offset % BITS_PER_UNIT;
-      
+
       /* Advance from byte to byte
 	 within this element when necessary.  */
       while (next_byte != local->total_bytes)
@@ -4937,7 +4937,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	  local->total_bytes++;
 	  local->byte = 0;
 	}
-      
+
       /* Number of bits we can process at once
 	 (all part of the same byte).  */
       this_time = MIN (end_offset - next_offset,
@@ -4948,7 +4948,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	     first (of the bits that are significant)
 	     and put them into bytes from the most significant end.  */
 	  shift = end_offset - next_offset - this_time;
-	  
+
 	  /* Don't try to take a bunch of bits that cross
 	     the word boundary in the INTEGER_CST. We can
 	     only select bits from the LOW or HIGH part
@@ -4959,7 +4959,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	      this_time = shift + this_time - HOST_BITS_PER_WIDE_INT;
 	      shift = HOST_BITS_PER_WIDE_INT;
 	    }
-	  
+
 	  /* Now get the bits from the appropriate constant word.  */
 	  if (shift < HOST_BITS_PER_WIDE_INT)
 	    value = TREE_INT_CST_LOW (local->val);
@@ -4969,7 +4969,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	      value = TREE_INT_CST_HIGH (local->val);
 	      shift -= HOST_BITS_PER_WIDE_INT;
 	    }
-	  
+
 	  /* Get the result. This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 	  local->byte |= (((value >> shift)
@@ -4983,7 +4983,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	     and pack them starting at the least significant
 	     bits of the bytes.  */
 	  shift = next_offset - byte_relative_ebitpos;
-	  
+
 	  /* Don't try to take a bunch of bits that cross
 	     the word boundary in the INTEGER_CST. We can
 	     only select bits from the LOW or HIGH part
@@ -4991,7 +4991,7 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	  if (shift < HOST_BITS_PER_WIDE_INT
 	      && shift + this_time > HOST_BITS_PER_WIDE_INT)
 	    this_time = (HOST_BITS_PER_WIDE_INT - shift);
-	  
+
 	  /* Now get the bits from the appropriate constant word.  */
 	  if (shift < HOST_BITS_PER_WIDE_INT)
 	    value = TREE_INT_CST_LOW (local->val);
@@ -5001,14 +5001,14 @@ output_constructor_bitfield (oc_local_state *local, oc_outer_state *outer)
 	      value = TREE_INT_CST_HIGH (local->val);
 	      shift -= HOST_BITS_PER_WIDE_INT;
 	    }
-	  
+
 	  /* Get the result. This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
 	  local->byte |= (((value >> shift)
 			   & (((HOST_WIDE_INT) 2 << (this_time - 1)) - 1))
 			  << next_bit);
 	}
-      
+
       next_offset += this_time;
       local->byte_buffer_in_use = true;
     }
@@ -5044,7 +5044,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
   if (TREE_CODE (local.type) == ARRAY_TYPE
       && TYPE_DOMAIN (local.type) != NULL_TREE)
     local.min_index = TYPE_MIN_VALUE (TYPE_DOMAIN (local.type));
-  
+
   gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_UNIT);
 
   /* As CE goes through the elements of the constant, FIELD goes through the
@@ -5105,7 +5105,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 	       && (local.field == NULL_TREE
 		   || !CONSTRUCTOR_BITFIELD_P (local.field)))
 	output_constructor_regular_field (&local);
-      
+
       /* For a true bitfield or part of an outer one.  */
       else
 	output_constructor_bitfield (&local, outer);
@@ -5129,7 +5129,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 	  local.total_bytes = local.size;
 	}
     }
-      
+
   return local.total_bytes;
 }
 
@@ -6347,7 +6347,7 @@ default_unique_section (tree decl, int reloc)
   /* If we're using one_only, then there needs to be a .gnu.linkonce
      prefix to the section name.  */
   linkonce = one_only ? ".gnu.linkonce" : "";
-  
+
   string = ACONCAT ((linkonce, prefix, ".", name, NULL));
 
   DECL_SECTION_NAME (decl) = build_string (strlen (string), string);

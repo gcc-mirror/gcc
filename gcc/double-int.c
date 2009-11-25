@@ -1,18 +1,18 @@
 /* Operations with long integers.
    Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -50,7 +50,7 @@ double_int_mask (unsigned prec)
 /* Clears the bits of CST over the precision PREC.  If UNS is false, the bits
    outside of the precision are set to the sign bit (i.e., the PREC-th one),
    otherwise they are set to zero.
- 
+
    This corresponds to returning the value represented by PREC lowermost bits
    of CST, with the given signedness.  */
 
@@ -102,7 +102,7 @@ double_int_sext (double_int cst, unsigned prec)
     {
       r.low = cst.low & mask.low;
       r.high = cst.high & mask.high;
-    } 
+    }
 
   return r;
 }
@@ -450,7 +450,7 @@ mpz_get_double_int (const_tree type, mpz_t val, bool wrap)
   double_int res;
 
   if (!wrap)
-    {  
+    {
       mpz_t min, max;
 
       mpz_init (min);

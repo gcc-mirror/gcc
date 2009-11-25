@@ -482,7 +482,7 @@ struct ira_allocno
 #define ALLOCNO_MAX(A) ((A)->max)
 #define ALLOCNO_CONFLICT_ID(A) ((A)->conflict_id)
 
-/* Map regno -> allocnos with given regno (see comments for 
+/* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
 extern ira_allocno_t *ira_regno_allocno_map;
 
@@ -590,7 +590,7 @@ extern int ira_max_nregs;
        }								\
      ((R)[(unsigned) (_i - _min) / IRA_INT_BITS]			\
       |= ((IRA_INT_TYPE) 1 << ((unsigned) (_i - _min) % IRA_INT_BITS))); }))
-  
+
 
 #define CLEAR_ALLOCNO_SET_BIT(R, I, MIN, MAX) __extension__	        \
   (({ int _min = (MIN), _max = (MAX), _i = (I);				\
@@ -680,18 +680,18 @@ ira_allocno_set_iter_cond (ira_allocno_set_iterator *i, int *n)
     {
       i->word_num++;
       i->bit_num = i->word_num * IRA_INT_BITS;
-      
+
       /* If we have reached the end, break.  */
       if (i->bit_num >= i->nel)
 	return false;
     }
-  
+
   /* Skip bits that are zero.  */
   for (; (i->word & 1) == 0; i->word >>= 1)
     i->bit_num++;
-  
+
   *n = (int) i->bit_num + i->start_val;
-  
+
   return true;
 }
 
@@ -1086,20 +1086,20 @@ ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
       for (; i->word == 0; i->word = ((IRA_INT_TYPE *) i->vec)[i->word_num])
 	{
 	  i->word_num++;
-	  
+
 	  /* If we have reached the end, break.  */
 	  if (i->word_num * sizeof (IRA_INT_TYPE) >= i->size)
 	    return false;
-	  
+
 	  i->bit_num = i->word_num * IRA_INT_BITS;
 	}
-      
+
       /* Skip bits that are zero.  */
       for (; (i->word & 1) == 0; i->word >>= 1)
 	i->bit_num++;
-      
+
       *a = ira_conflict_id_allocno_map[i->bit_num + i->base_conflict_id];
-      
+
       return true;
     }
 }

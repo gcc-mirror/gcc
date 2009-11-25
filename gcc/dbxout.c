@@ -216,8 +216,8 @@ struct dbx_file
   struct dbx_file *prev;          /* Chain to traverse all pending bincls.  */
 };
 
-/* This is the top of the stack.  
-   
+/* This is the top of the stack.
+
    This is not saved for PCH, because restoring a PCH should not change it.
    next_file_number does have to be saved, because the PCH may use some
    file numbers; however, just before restoring a PCH, next_file_number
@@ -306,7 +306,7 @@ static void emit_pending_bincls         (void);
 static inline void emit_pending_bincls_if_required (void);
 
 static void dbxout_init (const char *);
- 
+
 static void dbxout_finish (const char *);
 static void dbxout_start_source_file (unsigned, const char *);
 static void dbxout_end_source_file (unsigned);
@@ -848,7 +848,7 @@ do {								\
    SYM is the DECL of the symbol under consideration; it is used only
    for its DECL_SOURCE_LINE.  The other arguments are all passed directly
    to DBX_FINISH_STABS; see above for details.  */
-   
+
 static void
 dbxout_finish_complex_stabs (tree sym, stab_code_type code,
 			     rtx addr, const char *label, int number)
@@ -902,7 +902,7 @@ dbxout_finish_complex_stabs (tree sym, stab_code_type code,
       obstack_grow (&stabstr_ob, "\",", 2);
       len = obstack_object_size (&stabstr_ob);
       str = XOBFINISH (&stabstr_ob, char *);
-      
+
       fwrite (str, 1, len, asm_out_file);
       DBX_FINISH_STABS (sym, code, line, addr, label, number);
     }
@@ -919,7 +919,7 @@ dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
   /* The Lscope label must be emitted even if we aren't doing anything
      else; dbxout_block needs it.  */
   switch_to_section (function_section (current_function_decl));
-  
+
   /* Convert Lscope into the appropriate format for local labels in case
      the system doesn't insert underscores in front of user generated
      labels.  */
@@ -939,10 +939,10 @@ dbxout_function_end (tree decl ATTRIBUTE_UNUSED)
   if (flag_reorder_blocks_and_partition)
     {
       dbxout_begin_empty_stabs (N_FUN);
-      dbxout_stab_value_label_diff (crtl->subsections.hot_section_end_label, 
+      dbxout_stab_value_label_diff (crtl->subsections.hot_section_end_label,
 				    crtl->subsections.hot_section_label);
       dbxout_begin_empty_stabs (N_FUN);
-      dbxout_stab_value_label_diff (crtl->subsections.cold_section_end_label, 
+      dbxout_stab_value_label_diff (crtl->subsections.cold_section_end_label,
 				    crtl->subsections.cold_section_label);
     }
   else
@@ -1178,7 +1178,7 @@ dbxout_start_source_file (unsigned int line ATTRIBUTE_UNUSED,
 
   n->next = current_file;
   n->next_type_number = 1;
-  /* Do not assign file number now. 
+  /* Do not assign file number now.
      Delay it until we actually emit BINCL.  */
   n->file_number = 0;
   n->prev = NULL;
@@ -1259,7 +1259,7 @@ dbxout_source_file (const char *filename)
     }
 }
 
-/* Output N_BNSYM, line number symbol entry, and local symbol at 
+/* Output N_BNSYM, line number symbol entry, and local symbol at
    function scope  */
 
 static void
@@ -1275,7 +1275,7 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
   scope_labelno++;
 
   dbxout_source_line (lineno, filename, 0, true);
-  /* Output function begin block at function scope, referenced 
+  /* Output function begin block at function scope, referenced
      by dbxout_block, dbxout_source_line and dbxout_function_end.  */
   emit_pending_bincls_if_required ();
   targetm.asm_out.internal_label (asm_out_file, "LFBB", scope_labelno);
@@ -1299,7 +1299,7 @@ dbxout_source_line (unsigned int lineno, const char *filename,
       char begin_label[20];
       dbxout_begin_stabn_sline (lineno);
       /* Reference current function start using LFBB.  */
-      ASM_GENERATE_INTERNAL_LABEL (begin_label, "LFBB", scope_labelno); 
+      ASM_GENERATE_INTERNAL_LABEL (begin_label, "LFBB", scope_labelno);
       dbxout_stab_value_internal_label_diff ("LM", &dbxout_source_line_counter,
 					     begin_label);
     }
@@ -2093,7 +2093,7 @@ dbxout_type (tree type, int full)
 	    int i;
 	    tree child;
 	    VEC(tree,gc) *accesses = BINFO_BASE_ACCESSES (binfo);
-	    
+
 	    if (use_gnu_debug_info_extensions)
 	      {
 		if (BINFO_N_BASE_BINFOS (binfo))
@@ -2320,7 +2320,7 @@ static void
 dbxout_type_name (tree type)
 {
   tree t = TYPE_NAME (type);
-  
+
   gcc_assert (t);
   switch (TREE_CODE (t))
     {
@@ -3138,7 +3138,7 @@ dbxout_symbol_name (tree decl, const char *suffix, int letter)
 {
   tree name;
 
-  if (DECL_CONTEXT (decl) 
+  if (DECL_CONTEXT (decl)
       && (TYPE_P (DECL_CONTEXT (decl))
 	  || TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL))
     /* One slight hitch: if this is a VAR_DECL which is a class member
@@ -3190,12 +3190,12 @@ dbxout_common_check (tree decl, int *value)
   rtx home;
   rtx sym_addr;
   const char *name = NULL;
-  
+
   /* If the decl isn't a VAR_DECL, or if it isn't static, or if
      it does not have a value (the offset into the common area), or if it
      is thread local (as opposed to global) then it isn't common, and shouldn't
      be handled as such.
-     
+
      ??? DECL_THREAD_LOCAL_P check prevents problems with improper .stabs
      for thread-local symbols.  Can be handled via same mechanism as used
      in dwarf2out.c.  */
@@ -3206,7 +3206,7 @@ dbxout_common_check (tree decl, int *value)
       || !is_fortran ())
     return NULL;
 
-  home = DECL_RTL (decl); 
+  home = DECL_RTL (decl);
   if (home == NULL_RTX || GET_CODE (home) != MEM)
     return NULL;
 
@@ -3431,7 +3431,7 @@ dbxout_parms (tree parms)
 	       that it was actually passed by invisible reference.  */
 
 	    code = DBX_REGPARM_STABS_CODE;
- 
+
 	    /* GDB likes this marked with a special letter.  */
 	    letter = (use_gnu_debug_info_extensions
 		      ? 'a' : DBX_REGPARM_STABS_LETTER);
@@ -3502,7 +3502,7 @@ dbxout_parms (tree parms)
 	  continue;
 
 	dbxout_begin_complex_stabs ();
-	    
+
 	if (DECL_NAME (parms))
 	  {
 	    stabstr_I (DECL_NAME (parms));

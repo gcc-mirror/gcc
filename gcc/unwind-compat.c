@@ -192,7 +192,7 @@ extern void __libunwind_Unwind_SetGR
 
 void
 _Unwind_SetGR (struct _Unwind_Context *context, int index,
-	       _Unwind_Word val) 
+	       _Unwind_Word val)
 {
   __libunwind_Unwind_SetGR (context, index, val);
 }

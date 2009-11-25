@@ -121,7 +121,7 @@ cancel_option (int opt_idx, int next_opt_idx, int orig_next_opt_idx)
   if (cl_options [next_opt_idx].neg_index != orig_next_opt_idx)
     return cancel_option (opt_idx, cl_options [next_opt_idx].neg_index,
 			  orig_next_opt_idx);
-    
+
   return false;
 }
 

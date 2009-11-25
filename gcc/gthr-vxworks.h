@@ -137,7 +137,7 @@ __gthread_once_t;
 
 #if defined (__RTP__)
 # define __GTHREAD_ONCE_INIT { 0 }
-#elif defined (__PPC__) 
+#elif defined (__PPC__)
 # define __GTHREAD_ONCE_INIT { 0, 0, 0, 0 }
 #else
 # define __GTHREAD_ONCE_INIT { 0, 0 }

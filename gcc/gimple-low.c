@@ -202,7 +202,7 @@ lower_function_body (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_lower_cf = 
+struct gimple_opt_pass pass_lower_cf =
 {
  {
   GIMPLE_PASS,
@@ -309,7 +309,7 @@ static void
 lower_omp_directive (gimple_stmt_iterator *gsi, struct lower_data *data)
 {
   gimple stmt;
-  
+
   stmt = gsi_stmt (*gsi);
 
   lower_sequence (gimple_omp_body (stmt), data);
@@ -616,7 +616,7 @@ block_may_fallthru (const_tree block)
     {
     case GOTO_EXPR:
     case RETURN_EXPR:
-      /* Easy cases.  If the last statement of the block implies 
+      /* Easy cases.  If the last statement of the block implies
 	 control transfer, then we can't fall through.  */
       return false;
 
@@ -659,7 +659,7 @@ block_may_fallthru (const_tree block)
     case CALL_EXPR:
       /* Functions that do not return do not fall through.  */
       return (call_expr_flags (stmt) & ECF_NORETURN) == 0;
-    
+
     case CLEANUP_POINT_EXPR:
       return block_may_fallthru (TREE_OPERAND (stmt, 0));
 
@@ -686,7 +686,7 @@ gimple_stmt_may_fallthru (gimple stmt)
     case GIMPLE_GOTO:
     case GIMPLE_RETURN:
     case GIMPLE_RESX:
-      /* Easy cases.  If the last statement of the seq implies 
+      /* Easy cases.  If the last statement of the seq implies
 	 control transfer, then we can't fall through.  */
       return false;
 

@@ -171,7 +171,7 @@ __gthread_active_p (void)
 static inline int
 __gthread_active_p (void)
 {
-  static void *const __gthread_active_ptr 
+  static void *const __gthread_active_ptr
     = __extension__ (void *) &__gthrw_(pthread_cancel);
   return __gthread_active_ptr != 0;
 }

@@ -61,7 +61,7 @@ DEFCIFCODE(MAX_INLINE_INSNS_SINGLE_LIMIT,
 DEFCIFCODE(MAX_INLINE_INSNS_AUTO_LIMIT,
 	   N_("--param max-inline-insns-auto limit reached"))
 DEFCIFCODE(INLINE_UNIT_GROWTH_LIMIT,
-	   N_("--param inline-unit-growth limit reached")) 
+	   N_("--param inline-unit-growth limit reached"))
 
 /* Recursive inlining.  */
 DEFCIFCODE(RECURSIVE_INLINING, N_("recursive inlining"))

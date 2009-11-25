@@ -463,7 +463,7 @@ read_input_list (const char *listname)
 	 things there are.  (We do not bother resizing the arrays down.)  */
       num_lang_dirs = langno;
       /* Add the plugin files if provided.  */
-      if (plugin_files) 
+      if (plugin_files)
 	{
 	  size_t i;
 	  for (i = 0; i < nb_plugin_files; i++)
@@ -976,7 +976,7 @@ write_rtx_next (void)
 {
   outf_p f = get_output_file_with_visibility (NULL);
   int i;
-  if (!f) 
+  if (!f)
     return;
 
   oprintf (f, "\n/* Used to implement the RTX_NEXT macro.  */\n");
@@ -1393,7 +1393,7 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 				&length, &skip, &nested_ptr);
 
 	    if (nested_ptr && f->type->kind == TYPE_POINTER)
-	      set_gc_used_type (nested_ptr, GC_POINTED_TO, 
+	      set_gc_used_type (nested_ptr, GC_POINTED_TO,
 				pass_param ? param : NULL);
 	    else if (length && f->type->kind == TYPE_POINTER)
 	      set_gc_used_type (f->type->u.p, GC_USED, NULL);
@@ -1503,7 +1503,7 @@ create_file (const char *name, const char *oname)
   return f;
 }
 
-/* Print, like fprintf, to O.  
+/* Print, like fprintf, to O.
    N.B. You might think this could be implemented more efficiently
    with vsnprintf().  Unfortunately, there are C libraries that
    provide that function but without the C99 semantics for its return
@@ -1517,7 +1517,7 @@ oprintf (outf_p o, const char *format, ...)
 
   /* In plugin mode, the O could be a NULL pointer, so avoid crashing
      in that case.  */
-  if (!o) 
+  if (!o)
     return;
 
   va_start (ap, format);
@@ -1564,7 +1564,7 @@ open_base_files (void)
   {
     /* The order of files here matters very much.  */
     static const char *const ifiles [] = {
-      "config.h", "system.h", "coretypes.h", "tm.h", "varray.h", 
+      "config.h", "system.h", "coretypes.h", "tm.h", "varray.h",
       "hashtab.h", "splay-tree.h",  "obstack.h", "bitmap.h", "input.h",
       "tree.h", "rtl.h", "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
@@ -1593,7 +1593,7 @@ static const char *
 get_file_realbasename (const char *f)
 {
   const char * lastslash = strrchr (f, '/');
-  
+
   return (lastslash != NULL) ? lastslash + 1 : f;
 }
 
@@ -1635,7 +1635,7 @@ get_prefix_langdir_index (const char *f)
     {
       const char * langdir = lang_dir_names [lang_index];
       size_t langdir_len = strlen (langdir);
-	  
+
       if (f_len > langdir_len
 	  && IS_DIR_SEPARATOR (f[langdir_len])
 	  && memcmp (f, langdir, langdir_len) == 0)
@@ -1676,7 +1676,7 @@ get_file_gtfilename (const char *f)
 
   const char *basename = get_file_realbasename (f);
   const char *langdir = get_file_langdir (f);
-  
+
   char * result =
     (langdir ? xasprintf ("gt-%s-%s", langdir, basename)
      : xasprintf ("gt-%s", basename));
@@ -1735,7 +1735,7 @@ get_output_file_with_visibility (const char *input_file)
       || (len > 2 && memcmp (basename+len-2, ".y", 2) == 0)
       || (len > 3 && memcmp (basename+len-3, ".in", 3) == 0))
     {
-      output_name = get_file_gtfilename (input_file); 
+      output_name = get_file_gtfilename (input_file);
       for_name = basename;
     }
   /* Some headers get used by more than one front-end; hence, it
@@ -1761,7 +1761,7 @@ get_output_file_with_visibility (const char *input_file)
   else if (strncmp (basename, "objc", 4) == 0 && IS_DIR_SEPARATOR (basename[4])
 	   && strcmp (basename + 5, "objc-act.h") == 0)
     output_name = "gt-objc-objc-act.h", for_name = "objc/objc-act.c";
-  else 
+  else
     {
       int lang_index = get_prefix_langdir_index (basename);
 
@@ -2172,9 +2172,9 @@ walk_type (type_p t, struct walk_type_data *d)
 		d->indent += 2;
 		d->val = xasprintf ("x%d", d->counter++);
 		oprintf (d->of, "%*s%s %s * %s%s =\n", d->indent, "",
-			 (nested_ptr_d->type->kind == TYPE_UNION 
-			  ? "union" : "struct"), 
-			 nested_ptr_d->type->u.s.tag, 
+			 (nested_ptr_d->type->kind == TYPE_UNION
+			  ? "union" : "struct"),
+			 nested_ptr_d->type->u.s.tag,
 			 d->fn_wants_lvalue ? "" : "const ",
 			 d->val);
 		oprintf (d->of, "%*s", d->indent + 2, "");
@@ -2262,7 +2262,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	else
 	  oprintf (d->of, "%s", t->u.a.len);
 	oprintf (d->of, ");\n");
-	
+
 	oprintf (d->of, "%*sfor (i%d = 0; i%d != l%d; i%d++) {\n",
 		 d->indent, "",
 		 loopcounter, loopcounter, loopcounter, loopcounter);
@@ -2790,8 +2790,8 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	    continue;
 	  }
       }
-  
-  /* At last we emit the functions code.  */ 
+
+  /* At last we emit the functions code.  */
   oprintf (output_header, "\n/* functions code */\n");
   for (s = structures; s; s = s->next)
     if (s->gc_used == GC_POINTED_TO
@@ -2807,7 +2807,7 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	    break;
 	if (opt)
 	  continue;
-	
+
 	if (s->kind == TYPE_LANG_STRUCT)
 	  {
 	    type_p ss;
@@ -2934,7 +2934,7 @@ write_local (outf_p output_header, type_p structures, type_p param_structs)
 {
   type_p s;
 
-  if (!output_header) 
+  if (!output_header)
     return;
   oprintf (output_header, "\n/* Local pointer-walking routines.  */\n");
   for (s = structures; s; s = s->next)
@@ -3021,7 +3021,7 @@ write_enum_defn (type_p structures, type_p param_structs)
 {
   type_p s;
 
-  if (!header_file) 
+  if (!header_file)
     return;
   oprintf (header_file, "\n/* Enumeration of types known.  */\n");
   oprintf (header_file, "enum gt_types_enum {\n");
@@ -3073,7 +3073,7 @@ static void
 put_mangled_filename (outf_p f, const char *fn)
 {
   const char *name = get_output_file_name (fn);
-  if (!f || !name) 
+  if (!f || !name)
     return;
   for (; *name != 0; name++)
     if (ISALNUM (*name))
@@ -3719,11 +3719,11 @@ main (int argc, char **argv)
         strcpy (plugin_files[i], name);
       }
     }
-  else if (argc == 3) 
+  else if (argc == 3)
     {
       srcdir = argv[1];
       inputlist = argv[2];
-    } 
+    }
   else
     fatal ("usage: gengtype [-P pluginout.h] srcdir input-list "
            "[file1 file2 ... fileN]");

@@ -75,7 +75,7 @@ static void
 switch_dump (FILE *to)
 {
   gcc_assert (saved_sched_dump == NULL);
-  
+
   saved_sched_dump = sched_dump;
   sched_dump = to;
 }
@@ -89,7 +89,7 @@ restore_dump (void)
 }
 
 
-/* Functions for dumping instructions, av sets, and exprs.  */ 
+/* Functions for dumping instructions, av sets, and exprs.  */
 
 /* Default flags for dumping insns.  */
 static int dump_insn_rtx_flags = DUMP_INSN_RTX_PATTERN;
@@ -219,7 +219,7 @@ debug_vinsn (vinsn_t vi)
 {
   switch_dump (stderr);
   dump_vinsn_1 (vi, debug_vinsn_flags);
-  sel_print ("\n"); 
+  sel_print ("\n");
   restore_dump ();
 }
 
@@ -281,7 +281,7 @@ dump_expr_1 (expr_t expr, int flags)
       if (orig_bb != 0)
 	sel_print ("orig_bb:%d;", orig_bb);
     }
-  
+
   if (EXPR_TARGET_AVAILABLE (expr) < 1)
     sel_print ("target:%d;", EXPR_TARGET_AVAILABLE (expr));
   sel_print ("]");
@@ -368,10 +368,10 @@ dump_av_set (av_set_t av)
 {
   av_set_iterator i;
   expr_t expr;
-  
+
   if (!sched_dump_to_dot_p)
     sel_print ("{");
-  
+
   FOR_EACH_EXPR (expr, i, av)
     {
       dump_expr (expr);
@@ -380,7 +380,7 @@ dump_av_set (av_set_t av)
       else
         sel_print ("\n");
     }
-  
+
   if (!sched_dump_to_dot_p)
     sel_print ("}");
 }
@@ -399,7 +399,7 @@ dump_lv_set (regset lv)
       unsigned i;
       reg_set_iterator rsi;
       int count = 0;
-      
+
       EXECUTE_IF_SET_IN_REG_SET (lv, 0, i, rsi)
         {
           sel_print (" %d", i);
@@ -408,9 +408,9 @@ dump_lv_set (regset lv)
               sel_print (" [%s]", reg_names[i]);
               ++count;
             }
-          
+
           ++count;
-          
+
           if (sched_dump_to_dot_p && count == 12)
             {
               count = 0;
@@ -418,7 +418,7 @@ dump_lv_set (regset lv)
             }
         }
     }
-  
+
   sel_print ("}\n");
 }
 
@@ -440,7 +440,7 @@ dump_blist (blist_t bnds)
   for (; bnds; bnds = BLIST_NEXT (bnds))
     {
       bnd_t bnd = BLIST_BND (bnds);
-      
+
       sel_print ("[to: %d; ptr: ", INSN_UID (BND_TO (bnd)));
       dump_ilist (BND_PTR (bnd));
       sel_print ("] ");
@@ -465,7 +465,7 @@ dump_insn_vector (rtx_vec_t succs)
 {
   int i;
   rtx succ;
-  
+
   for (i = 0; VEC_iterate (rtx, succs, i, succ); i++)
     if (succ)
       dump_insn (succ);
@@ -501,16 +501,16 @@ sel_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
 {
   static char buf[80];
 
-  /* '+' before insn means it is a new cycle start and it's not been 
+  /* '+' before insn means it is a new cycle start and it's not been
      scheduled yet.  '>' - has been scheduled.  */
   if (s_i_d && INSN_LUID (insn) > 0)
     if (GET_MODE (insn) == TImode)
-      sprintf (buf, "%s %4d", 
-               INSN_SCHED_TIMES (insn) > 0 ? "> " : "< ", 
+      sprintf (buf, "%s %4d",
+               INSN_SCHED_TIMES (insn) > 0 ? "> " : "< ",
                INSN_UID (insn));
     else
-      sprintf (buf, "%s %4d", 
-               INSN_SCHED_TIMES (insn) > 0 ? "! " : "  ", 
+      sprintf (buf, "%s %4d",
+               INSN_SCHED_TIMES (insn) > 0 ? "! " : "  ",
                INSN_UID (insn));
   else
     if (GET_MODE (insn) == TImode)
@@ -538,7 +538,7 @@ replace_str_in_buf (char *buf, const char *str1, const char *str2)
   do
     {
       p = strstr (p, str1);
-      if (p) 
+      if (p)
 	{
 	  char *p1 = p + str1_len;
 	  /* Copy the rest of buf and '\0'.  */
@@ -556,7 +556,7 @@ replace_str_in_buf (char *buf, const char *str1, const char *str2)
 	  /* Copy str2.  */
 	  for (i = 0; i < str2_len; i++)
 	    p[i] = str2[i];
-	    
+
 	  p += str2_len;
 	  buf_len += diff;
 	}
@@ -571,7 +571,7 @@ sel_prepare_string_for_dot_label (char *buf)
 {
   static char specials_from[7][2] = { "<", ">", "{", "|", "}", "\"",
                                       "\n" };
-  static char specials_to[7][3] = { "\\<", "\\>", "\\{", "\\|", "\\}", 
+  static char specials_to[7][3] = { "\\<", "\\>", "\\{", "\\|", "\\}",
                                     "\\\"", "\\l" };
   unsigned i;
 
@@ -801,7 +801,7 @@ sel_dump_cfg_2 (FILE *f, int flags)
   sched_dump_to_dot_p = false;
 }
 
-/* Dump a cfg region to the file specified by TAG honoring flags.  
+/* Dump a cfg region to the file specified by TAG honoring flags.
    The file is created by the function.  */
 static void
 sel_dump_cfg_1 (const char *tag, int flags)

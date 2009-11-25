@@ -407,12 +407,12 @@ static int vars_copy_1 (void **, void *);
 static void vars_copy (htab_t, htab_t);
 static tree var_debug_decl (tree);
 static void var_reg_set (dataflow_set *, rtx, enum var_init_status, rtx);
-static void var_reg_delete_and_set (dataflow_set *, rtx, bool, 
+static void var_reg_delete_and_set (dataflow_set *, rtx, bool,
 				    enum var_init_status, rtx);
 static void var_reg_delete (dataflow_set *, rtx, bool);
 static void var_regno_delete (dataflow_set *, int);
 static void var_mem_set (dataflow_set *, rtx, enum var_init_status, rtx);
-static void var_mem_delete_and_set (dataflow_set *, rtx, bool, 
+static void var_mem_delete_and_set (dataflow_set *, rtx, bool,
 				    enum var_init_status, rtx);
 static void var_mem_delete (dataflow_set *, rtx, bool);
 
@@ -521,7 +521,7 @@ stack_adjust_offset_pre_post (rtx pattern, HOST_WIDE_INT *pre,
 	      /* We handle only adjustments by constant amount.  */
 	      gcc_assert (GET_CODE (XEXP (src, 1)) == PLUS &&
 			  CONST_INT_P (val));
-	      
+
 	      if (code == PRE_MODIFY)
 		*pre -= INTVAL (val);
 	      else
@@ -1367,7 +1367,7 @@ get_init_value (dataflow_set *set, rtx loc, decl_or_value dv)
    part.  */
 
 static void
-var_reg_delete_and_set (dataflow_set *set, rtx loc, bool modify, 
+var_reg_delete_and_set (dataflow_set *set, rtx loc, bool modify,
 			enum var_init_status initialized, rtx set_src)
 {
   tree decl = REG_EXPR (loc);
@@ -1465,7 +1465,7 @@ var_mem_decl_set (dataflow_set *set, rtx loc, enum var_init_status initialized,
    Adjust the address first if it is stack pointer based.  */
 
 static void
-var_mem_set (dataflow_set *set, rtx loc, enum var_init_status initialized, 
+var_mem_set (dataflow_set *set, rtx loc, enum var_init_status initialized,
 	     rtx set_src)
 {
   tree decl = MEM_EXPR (loc);
@@ -1483,7 +1483,7 @@ var_mem_set (dataflow_set *set, rtx loc, enum var_init_status initialized,
    Adjust the address first if it is stack pointer based.  */
 
 static void
-var_mem_delete_and_set (dataflow_set *set, rtx loc, bool modify, 
+var_mem_delete_and_set (dataflow_set *set, rtx loc, bool modify,
 			enum var_init_status initialized, rtx set_src)
 {
   tree decl = MEM_EXPR (loc);
@@ -1687,7 +1687,7 @@ val_resolve (dataflow_set *set, rtx val, rtx loc, rtx insn)
 		       VAR_INIT_STATUS_INITIALIZED, NULL_RTX, INSERT);
 }
 
-/* Initialize dataflow set SET to be empty. 
+/* Initialize dataflow set SET to be empty.
    VARS_SIZE is the initial size of hash table VARS.  */
 
 static void
@@ -1758,7 +1758,7 @@ variable_union_info_cmp_pos (const void *n1, const void *n2)
 
   if (i1->pos != i2->pos)
     return i1->pos - i2->pos;
-  
+
   return (i1->pos_dst - i2->pos_dst);
 }
 
@@ -4128,8 +4128,8 @@ track_expr_p (tree expr, bool need_rtl)
   decl_rtl = DECL_RTL_IF_SET (expr);
   if (!decl_rtl && need_rtl)
     return 0;
-  
-  /* If this expression is really a debug alias of some other declaration, we 
+
+  /* If this expression is really a debug alias of some other declaration, we
      don't need to track this expression if the ultimate declaration is
      ignored.  */
   realdecl = expr;
@@ -4143,7 +4143,7 @@ track_expr_p (tree expr, bool need_rtl)
     }
 
   /* Do not track EXPR if REALDECL it should be ignored for debugging
-     purposes.  */ 
+     purposes.  */
   if (DECL_IGNORED_P (realdecl))
     return 0;
 
@@ -5116,14 +5116,14 @@ find_src_set_src (dataflow_set *set, rtx src)
 	{
 	  found = false;
 	  for (i = 0; i < var->n_var_parts && !found; i++)
-	    for (nextp = var->var_part[i].loc_chain; nextp && !found; 
+	    for (nextp = var->var_part[i].loc_chain; nextp && !found;
 		 nextp = nextp->next)
 	      if (rtx_equal_p (nextp->loc, src))
 		{
 		  set_src = nextp->set_src;
 		  found = true;
 		}
-	      
+
 	}
     }
 
@@ -6513,7 +6513,7 @@ emit_note_insn_var_location (void **varp, void *data)
 	= gen_rtx_EXPR_LIST (VOIDmode, loc[0], GEN_INT (offsets[0]));
 
       NOTE_VAR_LOCATION (note) = gen_rtx_VAR_LOCATION (VOIDmode, decl,
-						       expr_list, 
+						       expr_list,
 						       (int) initialized);
     }
   else if (n_var_parts)
@@ -6527,7 +6527,7 @@ emit_note_insn_var_location (void **varp, void *data)
       parallel = gen_rtx_PARALLEL (VOIDmode,
 				   gen_rtvec_v (n_var_parts, loc));
       NOTE_VAR_LOCATION (note) = gen_rtx_VAR_LOCATION (VOIDmode, decl,
-						       parallel, 
+						       parallel,
 						       (int) initialized);
     }
 
@@ -7095,7 +7095,7 @@ static void
 vt_add_function_parameters (void)
 {
   tree parm;
-  
+
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm; parm = TREE_CHAIN (parm))
     {

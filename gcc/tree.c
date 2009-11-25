@@ -196,13 +196,13 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
 /* General tree->tree mapping  structure for use in hash tables.  */
 
 
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
      htab_t debug_expr_for_decl;
 
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
      htab_t value_expr_for_decl;
 
-static GTY ((if_marked ("tree_priority_map_marked_p"), 
+static GTY ((if_marked ("tree_priority_map_marked_p"),
 	     param_is (struct tree_priority_map)))
   htab_t init_priority_for_decl;
 
@@ -273,7 +273,7 @@ static inline enum tree_node_structure_enum
 tree_node_structure_for_code (enum tree_code code)
 {
   switch (TREE_CODE_CLASS (code))
-    {      
+    {
     case tcc_declaration:
       {
 	switch (code)
@@ -367,7 +367,7 @@ initialize_tree_contains_struct (void)
     MARK_TS_COMMON (C);					\
     tree_contains_struct[C][TS_DECL_MINIMAL] = 1;	\
   } while (0)
-  
+
 #define MARK_TS_DECL_COMMON(C)				\
   do {							\
     MARK_TS_DECL_MINIMAL (C);				\
@@ -543,7 +543,7 @@ init_ttree (void)
 
   int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
 					int_cst_hash_eq, NULL);
-  
+
   int_cst_node = make_node (INTEGER_CST);
 
   cl_option_hash_table = htab_create_ggc (64, cl_option_hash_hash,
@@ -584,7 +584,7 @@ decl_assembler_name_equal (tree decl, const_tree asmname)
 
   decl_str = IDENTIFIER_POINTER (decl_asmname);
   asmname_str = IDENTIFIER_POINTER (asmname);
-  
+
 
   /* If the target assembler name was set by the user, things are trickier.
      We have a leading '*' to begin with.  After that, it's arguable what
@@ -844,7 +844,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	  break;
 	}
       break;
-      
+
     default:
       gcc_unreachable ();
     }
@@ -986,7 +986,7 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	 but the optimizer should catch that.  */
       TYPE_SYMTAB_POINTER (t) = 0;
       TYPE_SYMTAB_ADDRESS (t) = 0;
-      
+
       /* Do not copy the values cache.  */
       if (TYPE_CACHED_VALUES_P(t))
 	{
@@ -1187,7 +1187,7 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 	  TREE_INT_CST_LOW (t) = low;
 	  TREE_INT_CST_HIGH (t) = hi;
 	  TREE_TYPE (t) = type;
-	  
+
 	  TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
 	}
     }
@@ -1456,7 +1456,7 @@ build_string (int len, const char *str)
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int) c_kind]++;
   tree_node_sizes[(int) c_kind] += length;
-#endif  
+#endif
 
   s = ggc_alloc_tree (length);
 
@@ -4206,7 +4206,7 @@ free_lang_data_in_type (tree type)
 	    }
 	}
     }
-	      
+
   /* Remove members that are not actually FIELD_DECLs from the field
      list of an aggregate.  These occur in C++.  */
   if (RECORD_OR_UNION_TYPE_P (type))
@@ -4218,7 +4218,7 @@ free_lang_data_in_type (tree type)
 	 to be removed, we cannot set its TREE_CHAIN to NULL.
 	 Otherwise, we would not be able to find all the other fields
 	 in the other instances of this TREE_TYPE.
-	 
+
 	 This was causing an ICE in testsuite/g++.dg/lto/20080915.C.  */
       prev = NULL_TREE;
       member = TYPE_FIELDS (type);
@@ -4454,7 +4454,7 @@ free_lang_data_in_decl (tree decl)
   else if (TREE_CODE (decl) == TYPE_DECL)
     {
       DECL_INITIAL (decl) = NULL_TREE;
-  
+
       /* DECL_CONTEXT is overloaded as DECL_FIELD_CONTEXT for
 	 FIELD_DECLs, which should be preserved.  Otherwise,
 	 we shouldn't be concerned with source-level lexical
@@ -4988,7 +4988,7 @@ free_lang_data (void)
 }
 
 
-struct simple_ipa_opt_pass pass_ipa_free_lang_data = 
+struct simple_ipa_opt_pass pass_ipa_free_lang_data =
 {
  {
   SIMPLE_IPA_PASS,
@@ -5023,10 +5023,10 @@ is_attribute_with_length_p (const char *attr, int attr_len, const_tree ident)
 
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     return 0;
-  
+
   p = IDENTIFIER_POINTER (ident);
   ident_len = IDENTIFIER_LENGTH (ident);
-  
+
   if (ident_len == attr_len
       && strcmp (attr, p) == 0)
     return 1;
@@ -5208,12 +5208,12 @@ merge_dllimport_decl_attributes (tree old, tree new_tree)
      marked dllimport and a definition appears later, then the object
      is not dllimport'd.  We also remove a `new' dllimport if the old list
      contains dllexport:  dllexport always overrides dllimport, regardless
-     of the order of declaration.  */     
+     of the order of declaration.  */
   if (!VAR_OR_FUNCTION_DECL_P (new_tree))
     delete_dllimport_p = 0;
   else if (DECL_DLLIMPORT_P (new_tree)
      	   && lookup_attribute ("dllexport", DECL_ATTRIBUTES (old)))
-    { 
+    {
       DECL_DLLIMPORT_P (new_tree) = 0;
       warning (OPT_Wattributes, "%q+D already declared with dllexport attribute: "
 	      "dllimport ignored", new_tree);
@@ -5239,7 +5239,7 @@ merge_dllimport_decl_attributes (tree old, tree new_tree)
 	}
 
       /* Let an inline definition silently override the external reference,
-	 but otherwise warn about attribute inconsistency.  */ 
+	 but otherwise warn about attribute inconsistency.  */
       else if (TREE_CODE (new_tree) == VAR_DECL
 	       || !DECL_DECLARED_INLINE_P (new_tree))
 	warning (OPT_Wattributes, "%q+D redeclared without dllimport attribute: "
@@ -5250,11 +5250,11 @@ merge_dllimport_decl_attributes (tree old, tree new_tree)
 
   a = merge_attributes (DECL_ATTRIBUTES (old), DECL_ATTRIBUTES (new_tree));
 
-  if (delete_dllimport_p) 
+  if (delete_dllimport_p)
     {
       tree prev, t;
-      const size_t attr_len = strlen ("dllimport"); 
-     
+      const size_t attr_len = strlen ("dllimport");
+
       /* Scan the list for dllimport and delete it.  */
       for (prev = NULL_TREE, t = a; t; prev = t, t = TREE_CHAIN (t))
 	{
@@ -5335,7 +5335,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
      any damage.  */
   if (is_dllimport)
     {
-      /* Honor any target-specific overrides. */ 
+      /* Honor any target-specific overrides. */
       if (!targetm.valid_dllimport_attribute_p (node))
 	*no_add_attrs = true;
 
@@ -5343,7 +5343,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	        && DECL_DECLARED_INLINE_P (node))
 	{
 	  warning (OPT_Wattributes, "inline function %q+D declared as "
-		  " dllimport: attribute ignored", node); 
+		  " dllimport: attribute ignored", node);
 	  *no_add_attrs = true;
 	}
       /* Like MS, treat definition of dllimported variables and
@@ -5400,7 +5400,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       if (DECL_VISIBILITY_SPECIFIED (node)
 	  && DECL_VISIBILITY (node) != VISIBILITY_DEFAULT)
 	error ("%qE implies default visibility, but %qD has already "
-	       "been declared with a different visibility", 
+	       "been declared with a different visibility",
 	       name, node);
       DECL_VISIBILITY (node) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (node) = 1;
@@ -5486,7 +5486,7 @@ build_qualified_type (tree type, int type_quals)
       else
 	/* T is its own canonical type. */
 	TYPE_CANONICAL (t) = t;
-      
+
     }
 
   return t;
@@ -5501,7 +5501,7 @@ tree
 build_distinct_type_copy (tree type)
 {
   tree t = copy_node (type);
-  
+
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;
 
@@ -5539,7 +5539,7 @@ build_variant_type_copy (tree type)
   /* Since we're building a variant, assume that it is a non-semantic
      variant. This also propagates TYPE_STRUCTURAL_EQUALITY_P. */
   TYPE_CANONICAL (t) = TYPE_CANONICAL (type);
-  
+
   /* Add the new type to the chain of variants of TYPE.  */
   TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
   TYPE_NEXT_VARIANT (m) = t;
@@ -5646,7 +5646,7 @@ decl_init_priority_insert (tree decl, priority_type priority)
   gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
   h = decl_priority_info (decl);
   h->init = priority;
-}  
+}
 
 /* Set the finalization priority for DECL to PRIORITY.  */
 
@@ -5658,7 +5658,7 @@ decl_fini_priority_insert (tree decl, priority_type priority)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   h = decl_priority_info (decl);
   h->fini = priority;
-}  
+}
 
 /* Print out the statistics for the DECL_DEBUG_EXPR hash table.  */
 
@@ -5684,7 +5684,7 @@ print_value_expr_statistics (void)
 
 /* Lookup a debug expression for FROM, and return it if we find one.  */
 
-tree 
+tree
 decl_debug_expr_lookup (tree from)
 {
   struct tree_map *h, in;
@@ -5711,11 +5711,11 @@ decl_debug_expr_insert (tree from, tree to)
   h->to = to;
   loc = htab_find_slot_with_hash (debug_expr_for_decl, h, h->hash, INSERT);
   *(struct tree_map **) loc = h;
-}  
+}
 
 /* Lookup a value expression for FROM, and return it if we find one.  */
 
-tree 
+tree
 decl_value_expr_lookup (tree from)
 {
   struct tree_map *h, in;
@@ -5782,7 +5782,7 @@ type_hash_eq (const void *va, const void *vb)
 				 TYPE_ATTRIBUTES (b->type))
       || TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
       || TYPE_MODE (a->type) != TYPE_MODE (b->type)
-      || (TREE_CODE (a->type) != COMPLEX_TYPE 
+      || (TREE_CODE (a->type) != COMPLEX_TYPE
           && TYPE_NAME (a->type) != TYPE_NAME (b->type)))
     return 0;
 
@@ -6612,7 +6612,7 @@ iterative_hash_expr (const_tree t, hashval_t val)
       else
 	{
 	  gcc_assert (IS_EXPR_CODE_CLASS (tclass));
-	  
+
 	  val = iterative_hash_object (code, val);
 
 	  /* Don't hash the type, that can lead to having nodes which
@@ -6793,7 +6793,7 @@ build_reference_type_for_mode (tree to_type, enum machine_mode mode,
   if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if (TYPE_CANONICAL (to_type) != to_type)
-    TYPE_CANONICAL (t) 
+    TYPE_CANONICAL (t)
       = build_reference_type_for_mode (TYPE_CANONICAL (to_type),
 				       mode, can_alias_all);
 
@@ -7027,7 +7027,7 @@ build_array_type (tree elt_type, tree index_type)
 	SET_TYPE_STRUCTURAL_EQUALITY (t);
       else if (TYPE_CANONICAL (elt_type) != elt_type
 	       || (index_type && TYPE_CANONICAL (index_type) != index_type))
-	TYPE_CANONICAL (t) 
+	TYPE_CANONICAL (t)
 	  = build_array_type (TYPE_CANONICAL (elt_type),
 			      index_type ? TYPE_CANONICAL (index_type) : NULL);
     }
@@ -7048,7 +7048,7 @@ strip_array_types (tree type)
 }
 
 /* Computes the canonical argument types from the argument type list
-   ARGTYPES. 
+   ARGTYPES.
 
    Upon return, *ANY_STRUCTURAL_P will be true iff either it was true
    on entry to this function, or if any of the ARGTYPES are
@@ -7062,14 +7062,14 @@ strip_array_types (tree type)
    canonical argument list is unneeded (i.e., *ANY_STRUCTURAL_P is
    true) or would not differ from ARGTYPES.  */
 
-static tree 
-maybe_canonicalize_argtypes(tree argtypes, 
+static tree
+maybe_canonicalize_argtypes(tree argtypes,
 			    bool *any_structural_p,
 			    bool *any_noncanonical_p)
 {
   tree arg;
   bool any_noncanonical_argtypes_p = false;
-  
+
   for (arg = argtypes; arg && !(*any_structural_p); arg = TREE_CHAIN (arg))
     {
       if (!TREE_VALUE (arg) || TREE_VALUE (arg) == error_mark_node)
@@ -7153,7 +7153,7 @@ build_function_type (tree value_type, tree arg_types)
   /* Set up the canonical type. */
   any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
   any_noncanonical_p = TYPE_CANONICAL (value_type) != value_type;
-  canon_argtypes = maybe_canonicalize_argtypes (arg_types, 
+  canon_argtypes = maybe_canonicalize_argtypes (arg_types,
 						&any_structural_p,
 						&any_noncanonical_p);
   if (any_structural_p)
@@ -7161,7 +7161,7 @@ build_function_type (tree value_type, tree arg_types)
   else if (any_noncanonical_p)
     TYPE_CANONICAL (t) = build_function_type (TYPE_CANONICAL (value_type),
 					      canon_argtypes);
-      
+
   if (!COMPLETE_TYPE_P (t))
     layout_type (t);
   return t;
@@ -7227,8 +7227,8 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
   return new_type;
 }
 
-/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP.  
-  
+/* Build variant of function type ORIG_TYPE skipping ARGS_TO_SKIP.
+
    Arguments from DECL_ARGUMENTS list can't be removed now, since they are
    linked by TREE_CHAIN directly.  It is caller responsibility to eliminate
    them when they are being duplicated (i.e. copy_arguments_for_versioning).  */
@@ -7366,7 +7366,7 @@ build_method_type_directly (tree basetype,
   if (any_structural_p)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if (any_noncanonical_p)
-    TYPE_CANONICAL (t) 
+    TYPE_CANONICAL (t)
       = build_method_type_directly (TYPE_CANONICAL (basetype),
 				    TYPE_CANONICAL (rettype),
 				    canon_argtypes);
@@ -7422,7 +7422,7 @@ build_offset_type (tree basetype, tree type)
 	SET_TYPE_STRUCTURAL_EQUALITY (t);
       else if (TYPE_CANONICAL (TYPE_MAIN_VARIANT (basetype)) != basetype
 	       || TYPE_CANONICAL (type) != type)
-	TYPE_CANONICAL (t) 
+	TYPE_CANONICAL (t)
 	  = build_offset_type (TYPE_CANONICAL (TYPE_MAIN_VARIANT (basetype)),
 			       TYPE_CANONICAL (type));
     }
@@ -7459,7 +7459,7 @@ build_complex_type (tree component_type)
       if (TYPE_STRUCTURAL_EQUALITY_P (component_type))
 	SET_TYPE_STRUCTURAL_EQUALITY (t);
       else if (TYPE_CANONICAL (component_type) != component_type)
-	TYPE_CANONICAL (t) 
+	TYPE_CANONICAL (t)
 	  = build_complex_type (TYPE_CANONICAL (component_type));
     }
 
@@ -7888,7 +7888,7 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
 	}
     }
 
-  if (!POINTER_TYPE_P (type) && TYPE_MAX_VALUE (type) 
+  if (!POINTER_TYPE_P (type) && TYPE_MAX_VALUE (type)
       && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
     mpz_set_double_int (max, tree_to_double_int (TYPE_MAX_VALUE (type)),
 			TYPE_UNSIGNED (type));
@@ -8337,7 +8337,7 @@ tree_check_failed (const_tree node, const char *file,
       while ((code = va_arg (args, int)))
 	{
 	  const char *prefix = length ? " or " : "expected ";
-	  
+
 	  strcpy (tmp + length, prefix);
 	  length += strlen (prefix);
 	  strcpy (tmp + length, tree_code_name[code]);
@@ -8514,9 +8514,9 @@ static const char *ts_enum_names[] = {
    whether CODE contains the tree structure identified by EN.  */
 
 void
-tree_contains_struct_check_failed (const_tree node, 
+tree_contains_struct_check_failed (const_tree node,
 				   const enum tree_node_structure_enum en,
-				   const char *file, int line, 
+				   const char *file, int line,
 				   const char *function)
 {
   internal_error
@@ -8586,7 +8586,7 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if (TYPE_CANONICAL (innertype) != innertype
 	   || mode != VOIDmode)
-    TYPE_CANONICAL (t) 
+    TYPE_CANONICAL (t)
       = make_vector_type (TYPE_CANONICAL (innertype), nunits, VOIDmode);
 
   layout_type (t);
@@ -8846,7 +8846,7 @@ build_common_tree_nodes_2 (int short_double)
 
   /* Decimal float types. */
   dfloat32_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE; 
+  TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE;
   layout_type (dfloat32_type_node);
   SET_TYPE_MODE (dfloat32_type_node, SDmode);
   dfloat32_ptr_type_node = build_pointer_type (dfloat32_type_node);
@@ -8858,7 +8858,7 @@ build_common_tree_nodes_2 (int short_double)
   dfloat64_ptr_type_node = build_pointer_type (dfloat64_type_node);
 
   dfloat128_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE; 
+  TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
   layout_type (dfloat128_type_node);
   SET_TYPE_MODE (dfloat128_type_node, TDmode);
   dfloat128_ptr_type_node = build_pointer_type (dfloat128_type_node);
@@ -8931,7 +8931,7 @@ build_common_tree_nodes_2 (int short_double)
        declare the type to be __builtin_va_list.  */
     if (TREE_CODE (t) != RECORD_TYPE)
       t = build_variant_type_copy (t);
-    
+
     va_list_type_node = t;
   }
 }
@@ -9119,7 +9119,7 @@ build_common_builtin_nodes (void)
 
   /* Complex multiplication and division.  These are handled as builtins
      rather than optabs because emit_library_call_value doesn't support
-     complex.  Further, we can do slightly better with folding these 
+     complex.  Further, we can do slightly better with folding these
      beasties if the real and complex parts of the arguments are separate.  */
   {
     int mode;
@@ -9176,7 +9176,7 @@ tree
 reconstruct_complex_type (tree type, tree bottom)
 {
   tree inner, outer;
-  
+
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
@@ -9204,8 +9204,8 @@ reconstruct_complex_type (tree type, tree bottom)
       inner = reconstruct_complex_type (TREE_TYPE (type), bottom);
       /* The build_method_type_directly() routine prepends 'this' to argument list,
          so we must compensate by getting rid of it.  */
-      outer 
-	= build_method_type_directly 
+      outer
+	= build_method_type_directly
 	    (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))),
 	     inner,
 	     TREE_CHAIN (TYPE_ARG_TYPES (type)));
@@ -9363,7 +9363,7 @@ build_omp_clause (location_t loc, enum omp_clause_code code)
   tree_node_counts[(int) omp_clause_kind]++;
   tree_node_sizes[(int) omp_clause_kind] += size;
 #endif
-  
+
   return t;
 }
 
@@ -9695,7 +9695,7 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
 
   if (!INTEGRAL_TYPE_P (t) || TYPE_UNSIGNED (t) == unsignedp)
     return t;
-  
+
   return lang_hooks.types.type_for_size (TYPE_PRECISION (t), unsignedp);
 }
 
@@ -9841,7 +9841,7 @@ operand_equal_for_phi_arg_p (const_tree arg0, const_tree arg1)
 }
 
 /* Returns number of zeros at the end of binary representation of X.
-   
+
    ??? Use ffs if available?  */
 
 tree
@@ -10179,7 +10179,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	 that are directly gimplified in gimplify_type_sizes in order for the
 	 mark/copy-if-shared/unmark machinery of the gimplifier to work with
 	 variable-sized types.
-  
+
 	 Note that DECLs get walked as part of processing the BIND_EXPR.  */
       if (TREE_CODE (DECL_EXPR_DECL (*tp)) == TYPE_DECL)
 	{

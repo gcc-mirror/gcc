@@ -48,7 +48,7 @@ main (int argc, char **argv)
 
   progname = "genmddeps";
   include_callback = add_filedep;
-  
+
   if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 

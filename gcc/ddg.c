@@ -355,7 +355,7 @@ add_inter_loop_mem_dep (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to)
   if (!insn_alias_sets_conflict_p (from->insn, to->insn))
     /* Do not create edge if memory references have disjoint alias sets.  */
     return;
-    
+
   if (mem_write_insn_p (from->insn))
     {
       if (mem_read_insn_p (to->insn))
@@ -523,10 +523,10 @@ create_ddg (basic_block bb, int closing_branch_deps)
       g->nodes[i++].insn = insn;
       first_note = NULL_RTX;
     }
-  
+
   /* We must have found a branch in DDG.  */
   gcc_assert (g->closing_branch);
-  
+
 
   /* Build the data dependency graph.  */
   build_intra_loop_deps (g);
@@ -869,9 +869,9 @@ static int
 compare_sccs (const void *s1, const void *s2)
 {
   const int rec_l1 = (*(const ddg_scc_ptr *)s1)->recurrence_length;
-  const int rec_l2 = (*(const ddg_scc_ptr *)s2)->recurrence_length; 
+  const int rec_l2 = (*(const ddg_scc_ptr *)s2)->recurrence_length;
   return ((rec_l2 > rec_l1) - (rec_l2 < rec_l1));
-	  
+
 }
 
 /* Order the backarcs in descending recMII order using compare_sccs.  */

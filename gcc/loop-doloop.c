@@ -317,7 +317,7 @@ add_test (rtx cond, edge *e, basic_block dest)
       redirect_edge_and_branch_force (*e, dest);
       return false;
     }
-      
+
   JUMP_LABEL (jump) = label;
 
   /* The jump is supposed to handle an unlikely special case.  */
@@ -462,7 +462,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	  set_zero->count = preheader->count;
 	  set_zero->frequency = preheader->frequency;
 	}
- 
+
       if (EDGE_COUNT (set_zero->preds) == 0)
 	{
 	  /* All the conditions were simplified to false, remove the
@@ -477,7 +477,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	  sequence = get_insns ();
 	  end_sequence ();
 	  emit_insn_after (sequence, BB_END (set_zero));
-      
+
 	  set_immediate_dominator (CDI_DOMINATORS, set_zero,
 				   recompute_dominator (CDI_DOMINATORS,
 							set_zero));
@@ -530,7 +530,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   if (true_prob_val)
     {
       /* Seems safer to use the branch probability.  */
-      add_reg_note (jump_insn, REG_BR_PROB, 
+      add_reg_note (jump_insn, REG_BR_PROB,
 		    GEN_INT (desc->in_edge->probability));
     }
 }

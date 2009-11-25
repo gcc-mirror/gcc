@@ -523,7 +523,7 @@ flow_loops_find (struct loops *loops)
    profile is usually too flat and unreliable for this (and it is mostly based
    on the loop structure of the program, so it does not make much sense to
    derive the loop structure from it).  */
-   
+
 static edge
 find_subloop_latch_edge_by_profile (VEC (edge, heap) *latches)
 {
@@ -656,7 +656,7 @@ form_subloop (struct loop *loop, edge latch)
   edge_iterator ei;
   edge e, new_entry;
   struct loop *new_loop;
-      
+
   mfb_reis_set = pointer_set_create ();
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     {
@@ -892,7 +892,7 @@ get_loop_body_in_dom_order (const struct loop *loop)
 /* Gets body of a LOOP sorted via provided BB_COMPARATOR.  */
 
 basic_block *
-get_loop_body_in_custom_order (const struct loop *loop, 
+get_loop_body_in_custom_order (const struct loop *loop,
 			       int (*bb_comparator) (const void *, const void *))
 {
   basic_block *bbs = get_loop_body (loop);
@@ -983,7 +983,7 @@ loop_exit_free (void *ex)
   for (; exit; exit = next)
     {
       next = exit->next_e;
-	  
+
       exit->next->prev = exit->prev;
       exit->prev->next = exit->next;
 
@@ -1037,7 +1037,7 @@ rescan_loop_exit (edge e, bool new_edge, bool removed)
 	  exit->next_e = exits;
 	  exits = exit;
 	}
-    } 
+    }
 
   if (!exits && new_edge)
     return;
@@ -1523,7 +1523,7 @@ verify_loop_structure (void)
 	      exit = get_exit_descriptions (e);
 	      if (!exit)
 		{
-		  error ("Exit %d->%d not recorded", 
+		  error ("Exit %d->%d not recorded",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1541,7 +1541,7 @@ verify_loop_structure (void)
 
 	      if (eloops != 0)
 		{
-		  error ("Wrong list of exited loops for edge  %d->%d", 
+		  error ("Wrong list of exited loops for edge  %d->%d",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}

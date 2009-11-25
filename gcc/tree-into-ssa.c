@@ -762,7 +762,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
 	set_livein_block (sym, bb);
       set_rewrite_uses (stmt, true);
     }
-  
+
   /* Now process the defs.  Mark BB as the definition block and add
      each def to the set of killed symbols.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
@@ -866,7 +866,7 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
      then for each of them find the nearest def that dominates them.  If this
      def is a phi node, we mark it live, and if it was not live before, we
      add the predecessors of its basic block to the worklist.
-   
+
      To quickly locate the nearest def that dominates use, we use dfs numbering
      of the dominance tree (that is already available in order to speed up
      queries).  For each def, we have the interval given by the dfs number on
@@ -1154,7 +1154,7 @@ insert_phi_nodes (bitmap *dfs)
   tree var;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
-  
+
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       struct def_blocks_d *def_map;
@@ -1183,7 +1183,7 @@ static void
 register_new_def (tree def, tree sym)
 {
   tree currdef;
-   
+
   /* If this variable is set in a single basic block and all uses are
      dominated by the set(s) in that single basic block, then there is
      no reason to record anything for this variable in the block local
@@ -1230,7 +1230,7 @@ register_new_def (tree def, tree sym)
    2- Every statement in BB is rewritten.  USE and VUSE operands are
       rewritten with their corresponding reaching definition.  DEF and
       VDEF targets are registered as new definitions.
-      
+
    3- All the PHI nodes in successor blocks of BB are visited.  The
       argument corresponding to BB is replaced with its current reaching
       definition.
@@ -1250,7 +1250,7 @@ static tree
 get_reaching_def (tree var)
 {
   tree currdef;
-  
+
   /* Lookup the current reaching definition for VAR.  */
   currdef = get_current_def (var);
 
@@ -1439,7 +1439,7 @@ rewrite_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	  saved_def = NULL;
 	  var = tmp;
 	}
-                                                                                
+
       set_current_def (var, saved_def);
     }
 }
@@ -1500,7 +1500,7 @@ dump_defs_stack (FILE *file, int n)
   for (j = (int) VEC_length (tree, block_defs_stack) - 1; j >= 0; j--)
     {
       tree name, var;
-      
+
       name = VEC_index (tree, block_defs_stack, j);
       if (name == NULL_TREE)
 	{
@@ -1693,7 +1693,7 @@ debug_def_blocks_r (void **slot, void *data)
 {
   FILE *file = (FILE *) data;
   struct def_blocks_d *db_p = (struct def_blocks_d *) *slot;
-  
+
   fprintf (file, "VAR: ");
   print_generic_expr (file, db_p->var, dump_flags);
   bitmap_print (file, db_p->def_blocks, ", DEF_BLOCKS: { ", "}");
@@ -1956,7 +1956,7 @@ rewrite_update_phi_arguments (basic_block bb)
 
       if (!bitmap_bit_p (blocks_with_phis_to_rewrite, e->dest->index))
 	continue;
-     
+
       phis = VEC_index (gimple_vec, phis_to_rewrite, e->dest->index);
       for (i = 0; VEC_iterate (gimple, phis, i, phi); i++)
 	{
@@ -2001,9 +2001,9 @@ rewrite_update_phi_arguments (basic_block bb)
 	      SET_USE (arg_p, reaching_def);
 	      stmt = SSA_NAME_DEF_STMT (reaching_def);
 
-	      /* Single element PHI nodes  behave like copies, so get the 
+	      /* Single element PHI nodes  behave like copies, so get the
 		 location from the phi argument.  */
-	      if (gimple_code (stmt) == GIMPLE_PHI && 
+	      if (gimple_code (stmt) == GIMPLE_PHI &&
 		  gimple_phi_num_args (stmt) == 1)
 		locus = gimple_phi_arg_location (stmt, 0);
 	      else
@@ -2066,7 +2066,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
       if (!register_defs_p (phi))
 	continue;
-      
+
       lhs = gimple_phi_result (phi);
       lhs_sym = SSA_NAME_VAR (lhs);
 
@@ -2079,7 +2079,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	     the names replaced by LHS.  */
 	  if (is_new_name (lhs))
 	    register_new_update_set (lhs, names_replaced_by (lhs));
-	  
+
 	  /* If LHS is an OLD name, register it as a new definition
 	     for itself.  */
 	  if (is_old_name (lhs))
@@ -2116,7 +2116,7 @@ rewrite_update_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     {
       tree var = VEC_pop (tree, block_defs_stack);
       tree saved_def;
-      
+
       /* NULL indicates the unwind stop point for this block (see
 	 rewrite_update_enter_block).  */
       if (var == NULL)
@@ -2129,7 +2129,7 @@ rewrite_update_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
 
 /* Rewrite the actual blocks, statements, and PHI arguments, to be in SSA
-   form.  
+   form.
 
    ENTRY indicates the block where to start.  Every block dominated by
       ENTRY will be rewritten.
@@ -2146,7 +2146,7 @@ static void
 rewrite_blocks (basic_block entry, enum rewrite_mode what)
 {
   struct dom_walk_data walk_data;
-  
+
   /* Rewrite all the basic blocks in the program.  */
   timevar_push (TV_TREE_SSA_REWRITE_BLOCKS);
 
@@ -2187,7 +2187,7 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what)
       if (def_blocks)
 	dump_tree_ssa_stats (dump_file);
     }
-  
+
   VEC_free (tree, heap, block_defs_stack);
 
   timevar_pop (TV_TREE_SSA_REWRITE_BLOCKS);
@@ -2312,7 +2312,7 @@ rewrite_into_ssa (void)
 {
   bitmap *dfs;
   basic_block bb;
-  
+
   timevar_push (TV_TREE_SSA_OTHER);
 
   /* Initialize operand data structures.  */
@@ -2359,7 +2359,7 @@ rewrite_into_ssa (void)
 }
 
 
-struct gimple_opt_pass pass_build_ssa = 
+struct gimple_opt_pass pass_build_ssa =
 {
  {
   GIMPLE_PASS,
@@ -2505,7 +2505,7 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
       ssa_op_iter i;
       use_operand_p use_p;
       def_operand_p def_p;
-      
+
       stmt = gsi_stmt (si);
 
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_ALL_USES)
@@ -2916,7 +2916,7 @@ ssa_names_to_replace (void)
   unsigned i = 0;
   bitmap ret;
   sbitmap_iterator sbi;
-  
+
   gcc_assert (update_ssa_initialized_fn == NULL
 	      || update_ssa_initialized_fn == cfun);
 
@@ -2948,7 +2948,7 @@ release_ssa_name_after_update_ssa (tree name)
    This is slightly different than the regular PHI insertion
    algorithm.  The value of UPDATE_FLAGS controls how PHI nodes for
    real names (i.e., GIMPLE registers) are inserted:
- 
+
    - If UPDATE_FLAGS == TODO_update_ssa, we are only interested in PHI
      nodes inside the region affected by the block that defines VAR
      and the blocks that define all its replacements.  All these

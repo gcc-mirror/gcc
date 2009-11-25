@@ -74,7 +74,7 @@ struct field_entry
    The original structure is decomposed into substructures, or clusters.  */
 struct field_cluster
 {
-  /* A bitmap of field indices. The set bit indicates that the field 
+  /* A bitmap of field indices. The set bit indicates that the field
      corresponding to it is a part of this cluster.  */
   sbitmap fields_in_cluster;
   struct field_cluster *sibling;

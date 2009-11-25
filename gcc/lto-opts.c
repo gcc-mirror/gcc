@@ -308,7 +308,7 @@ lto_write_options (void)
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
   header.lto_header.section_type = LTO_section_opts;
-  
+
   header.compressed_size = 0;
   header.main_size = stream.total_size;
 

@@ -2960,7 +2960,7 @@ execute (void)
 
   commands[0].prog = argbuf[0]; /* first command.  */
   commands[0].argv = &argbuf[0];
- 
+
   if (!wrapper_string)
     {
       string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
@@ -4309,7 +4309,7 @@ process_command (int argc, const char **argv)
   /* Set up the search paths.  We add directories that we expect to
      contain GNU Toolchain components before directories specified by
      the machine description so that we will find GNU components (like
-     the GNU assembler) before those of the host system.  */ 
+     the GNU assembler) before those of the host system.  */
 
   /* If we don't know where the toolchain has been installed, use the
      configured-in locations.  */
@@ -6265,7 +6265,7 @@ handle_braces (const char *p)
 	  if (atom == end_atom)
 	    {
 	      if (!n_way_choice || disj_matched || *p == '|'
-		  || a_is_negated || a_is_suffix || a_is_spectype 
+		  || a_is_negated || a_is_suffix || a_is_spectype
 		  || a_is_starred)
 		goto invalid;
 
@@ -7048,9 +7048,9 @@ main (int argc, char **argv)
       else if (*cross_compile == '0')
 	{
 	  add_prefix (&startfile_prefixes,
-		      concat (gcc_exec_prefix 
-			      ? gcc_exec_prefix : standard_exec_prefix, 
-			      machine_suffix, 
+		      concat (gcc_exec_prefix
+			      ? gcc_exec_prefix : standard_exec_prefix,
+			      machine_suffix,
 			      standard_startfile_prefix, NULL),
 		      NULL, PREFIX_PRIORITY_LAST, 0, 1);
 	}
@@ -8564,9 +8564,9 @@ getenv_spec_function (int argc, const char **argv)
       ptr[0] = '\\';
       ptr[1] = *value++;
     }
-  
+
   strcpy (ptr, argv[1]);
-  
+
   return result;
 }
 

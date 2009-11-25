@@ -171,8 +171,8 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 		   && strncmp (p->fname, cpp_PREFIX, cpp_PREFIX_len) == 0)
 	    {
  	      static const char *relocated_prefix;
-	      /* If this path starts with the configure-time prefix, 
-		 but the compiler has been relocated, replace it 
+	      /* If this path starts with the configure-time prefix,
+		 but the compiler has been relocated, replace it
 		 with the run-time prefix.  The run-time exec prefix
 		 is GCC_EXEC_PREFIX.  Compute the path from there back
 		 to the toplevel prefix.  */
@@ -182,13 +182,13 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 		  /* Make relative prefix expects the first argument
 		     to be a program, not a directory.  */
 		  dummy = concat (gcc_exec_prefix, "dummy", NULL);
-		  relocated_prefix 
+		  relocated_prefix
 		    = make_relative_prefix (dummy,
 					    cpp_EXEC_PREFIX,
 					    cpp_PREFIX);
 		}
 	      str = concat (relocated_prefix,
-			    p->fname + cpp_PREFIX_len, 
+			    p->fname + cpp_PREFIX_len,
 			    NULL);
 	      str = update_path (str, p->component);
 	    }
@@ -399,7 +399,7 @@ add_path (char *path, int chain, int cxx_aware, bool user_supplied_p)
   char* end = path + pathlen - 1;
   /* Preserve the lead '/' or lead "c:/".  */
   char* start = path + (pathlen > 2 && path[1] == ':' ? 3 : 1);
-  
+
   for (; end > start && IS_DIR_SEPARATOR (*end); end--)
     *end = 0;
 #endif

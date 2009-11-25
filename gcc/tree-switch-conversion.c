@@ -443,7 +443,7 @@ build_constructors (gimple swtch)
 	  tree low = CASE_LOW (cs);
 	  pos = CASE_LOW (cs);
 
-	  do 
+	  do
 	    {
 	      constructor_elt *elt;
 
@@ -473,7 +473,7 @@ constructor_contains_same_values_p (VEC (constructor_elt, gc) *vec)
   for (i = 0; i < len; i++)
     {
       constructor_elt *elt = VEC_index (constructor_elt, vec, i);
-      
+
       if (!prev)
 	prev = elt->value;
       else if (!operand_equal_p (elt->value, prev, OEP_ONLY_CONST))

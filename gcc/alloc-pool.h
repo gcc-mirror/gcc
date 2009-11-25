@@ -45,7 +45,7 @@ typedef struct alloc_pool_def
   char* virgin_free_list;
 
   /* The number of elements in the virgin_free_list that can be
-     allocated before needing another block.  */ 
+     allocated before needing another block.  */
   size_t virgin_elts_remaining;
 
   size_t elts_allocated;

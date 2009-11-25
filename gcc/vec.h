@@ -86,12 +86,12 @@ along with GCC; see the file COPYING3.  If not see
    when the type is defined, and is therefore part of the type.  If
    you need both gc'd and heap allocated versions, you still must have
    *exactly* one definition of the common non-memory managed base vector.
-   
+
    If you need to directly manipulate a vector, then the 'address'
    accessor will return the address of the start of the vector.  Also
    the 'space' predicate will tell you whether there is spare capacity
    in the vector.  You will not normally need to use these two functions.
-   
+
    Vector types are defined using a DEF_VEC_{O,P,I}(TYPEDEF) macro, to
    get the non-memory allocation version, and then a
    DEF_VEC_ALLOC_{O,P,I}(TYPEDEF,ALLOC) macro to get memory managed
@@ -204,10 +204,10 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Use these to determine the required size and initialization of a
    vector embedded within another structure (as the final member).
-   
+
    size_t VEC_T_embedded_size(int reserve);
    void VEC_T_embedded_init(VEC(T) *v, int reserve);
-   
+
    These allow the caller to perform the memory allocation.  */
 
 #define VEC_embedded_size(T,N)	 (VEC_OP(T,base,embedded_size)(N))
@@ -222,7 +222,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VEC_copy(T,A,V) (VEC_OP(T,A,copy)(VEC_BASE(V) MEM_STAT_INFO))
 
 /* Determine if a vector has additional capacity.
-   
+
    int VEC_T_space (VEC(T) *v,int reserve)
 
    If V has space for RESERVE additional entries, return nonzero.  You
@@ -260,7 +260,7 @@ along with GCC; see the file COPYING3.  If not see
    T *VEC_T_quick_push (VEC(T) *v, T obj); // Integer
    T *VEC_T_quick_push (VEC(T) *v, T obj); // Pointer
    T *VEC_T_quick_push (VEC(T) *v, T *obj); // Object
-   
+
    Push a new element onto the end, returns a pointer to the slot
    filled in. For object vectors, the new value can be NULL, in which
    case NO initialization is performed.  There must
@@ -273,7 +273,7 @@ along with GCC; see the file COPYING3.  If not see
    T *VEC_T_A_safe_push (VEC(T,A) *&v, T obj); // Integer
    T *VEC_T_A_safe_push (VEC(T,A) *&v, T obj); // Pointer
    T *VEC_T_A_safe_push (VEC(T,A) *&v, T *obj); // Object
-   
+
    Push a new element onto the end, returns a pointer to the slot
    filled in. For object vectors, the new value can be NULL, in which
    case NO initialization is performed.  Reallocates V, if needed.  */
@@ -293,7 +293,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Truncate to specific length
    void VEC_T_truncate (VEC(T) *v, unsigned len);
-   
+
    Set the length as specified.  The new length must be less than or
    equal to the current length.  This is an O(1) operation.  */
 
@@ -324,7 +324,7 @@ along with GCC; see the file COPYING3.  If not see
    T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Integer
    T VEC_T_replace (VEC(T) *v, unsigned ix, T val); // Pointer
    T *VEC_T_replace (VEC(T) *v, unsigned ix, T *val);  // Object
-   
+
    Replace the IXth element of V with a new value, VAL.  For pointer
    vectors returns the original value. For object vectors returns a
    pointer to the new value.  For object vectors the new value can be
@@ -338,7 +338,7 @@ along with GCC; see the file COPYING3.  If not see
    T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T val); // Integer
    T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T val); // Pointer
    T *VEC_T_quick_insert (VEC(T) *v, unsigned ix, T *val); // Object
-   
+
    Insert an element, VAL, at the IXth position of V. Return a pointer
    to the slot created.  For vectors of object, the new value can be
    NULL, in which case no initialization of the inserted slot takes
@@ -351,7 +351,7 @@ along with GCC; see the file COPYING3.  If not see
    T *VEC_T_A_safe_insert (VEC(T,A) *&v, unsigned ix, T val); // Integer
    T *VEC_T_A_safe_insert (VEC(T,A) *&v, unsigned ix, T val); // Pointer
    T *VEC_T_A_safe_insert (VEC(T,A) *&v, unsigned ix, T *val); // Object
-   
+
    Insert an element, VAL, at the IXth position of V. Return a pointer
    to the slot created.  For vectors of object, the new value can be
    NULL, in which case no initialization of the inserted slot takes
@@ -359,12 +359,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #define VEC_safe_insert(T,A,V,I,O)	\
 	(VEC_OP(T,A,safe_insert)(&(V),I,O VEC_CHECK_INFO MEM_STAT_INFO))
-     
+
 /* Remove element retaining order
    T VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Integer
    T VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Pointer
    void VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Object
-   
+
    Remove an element from the IXth position of V. Ordering of
    remaining elements is preserved.  For pointer vectors returns the
    removed object.  This is an O(N) operation due to a memmove.  */
@@ -376,7 +376,7 @@ along with GCC; see the file COPYING3.  If not see
    T VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Integer
    T VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Pointer
    void VEC_T_unordered_remove (VEC(T) *v, unsigned ix); // Object
-   
+
    Remove an element from the IXth position of V. Ordering of
    remaining elements is destroyed.  For pointer vectors returns the
    removed object.  This is an O(1) operation.  */
@@ -386,7 +386,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Remove a block of elements
    void VEC_T_block_remove (VEC(T) *v, unsigned ix, unsigned len);
-   
+
    Remove LEN elements starting at the IXth.  Ordering is retained.
    This is an O(1) operation.  */
 
@@ -402,17 +402,17 @@ along with GCC; see the file COPYING3.  If not see
 #define VEC_address(T,V)		(VEC_OP(T,base,address)(VEC_BASE(V)))
 
 /* Find the first index in the vector not less than the object.
-   unsigned VEC_T_lower_bound (VEC(T) *v, const T val, 
+   unsigned VEC_T_lower_bound (VEC(T) *v, const T val,
                                bool (*lessthan) (const T, const T)); // Integer
-   unsigned VEC_T_lower_bound (VEC(T) *v, const T val, 
+   unsigned VEC_T_lower_bound (VEC(T) *v, const T val,
                                bool (*lessthan) (const T, const T)); // Pointer
    unsigned VEC_T_lower_bound (VEC(T) *v, const T *val,
                                bool (*lessthan) (const T*, const T*)); // Object
-   
+
    Find the first position in which VAL could be inserted without
    changing the ordering of V.  LESSTHAN is a function that returns
    true if the first argument is strictly less than the second.  */
-   
+
 #define VEC_lower_bound(T,V,O,LT)    \
        (VEC_OP(T,base,lower_bound)(VEC_BASE(V),O,LT VEC_CHECK_INFO))
 
@@ -440,7 +440,7 @@ void vec_heap_free (void *);
 #define VEC_CHECK_INFO ,__FILE__,__LINE__,__FUNCTION__
 #define VEC_CHECK_DECL ,const char *file_,unsigned line_,const char *function_
 #define VEC_CHECK_PASS ,file_,line_,function_
-     
+
 #define VEC_ASSERT(EXPR,OP,T,A) \
   (void)((EXPR) ? 0 : (VEC_ASSERT_FAIL(OP,VEC(T,A)), 0))
 
@@ -461,7 +461,7 @@ extern void vec_assert_fail (const char *, const char * VEC_CHECK_DECL)
 #define VEC(T,A) VEC_##T##_##A
 #define VEC_OP(T,A,OP) VEC_##T##_##A##_##OP
 
-/* Base of vector type, not user visible.  */     
+/* Base of vector type, not user visible.  */
 #define VEC_T(T,B)							  \
 typedef struct VEC(T,B) 				 		  \
 {									  \

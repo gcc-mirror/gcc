@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GENGTYPE_H
 #define GCC_GENGTYPE_H
 
-/* A file position, mostly for error messages.  
+/* A file position, mostly for error messages.
    The FILE element may be compared using pointer equality.  */
 struct fileloc {
   const char *file;
@@ -38,7 +38,7 @@ extern int lexer_toplevel_done;
 extern struct fileloc lexer_line;
 
 /* Print an error message.  */
-extern void error_at_line 
+extern void error_at_line
   (struct fileloc *pos, const char *msg, ...) ATTRIBUTE_PRINTF_2;
 
 /* Like asprintf, but calls fatal() on out of memory.  */

@@ -177,7 +177,7 @@ cfg_blocks_empty_p (void)
 /* Add a basic block to the worklist.  The block must not be already
    in the worklist, and it must not be the ENTRY or EXIT block.  */
 
-static void 
+static void
 cfg_blocks_add (basic_block bb)
 {
   bool head = false;
@@ -512,7 +512,7 @@ ssa_prop_init (void)
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	gimple_set_plf (gsi_stmt (si), STMT_IN_SSA_EDGE_WORKLIST, false);
-    
+
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	gimple_set_plf (gsi_stmt (si), STMT_IN_SSA_EDGE_WORKLIST, false);
 
@@ -717,7 +717,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
         {
           args = VEC_alloc (tree, heap, nargs);
           VEC_safe_grow (tree, heap, args, nargs);
-      
+
           for (i = 0; i < nargs; i++)
             VEC_replace (tree, args, i, CALL_EXPR_ARG (expr, i));
         }
@@ -799,7 +799,7 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
   ssa_prop_init ();
 
   /* Iterate until the worklists are empty.  */
-  while (!cfg_blocks_empty_p () 
+  while (!cfg_blocks_empty_p ()
 	 || VEC_length (gimple, interesting_ssa_edges) > 0
 	 || VEC_length (gimple, varying_ssa_edges) > 0)
     {
@@ -943,7 +943,7 @@ replace_phi_args_in (gimple phi, prop_value_t *prop_value)
 	    }
 	}
     }
-  
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       if (!replaced)
@@ -1083,7 +1083,7 @@ substitute_and_fold (prop_value_t *prop_value, ssa_prop_fold_stmt_fn fold_fn)
                       == GIMPLE_SINGLE_RHS))
               {
                 tree rhs = gimple_assign_rhs1 (stmt);
-                
+
                 if (TREE_CODE (rhs) == ADDR_EXPR)
                   recompute_tree_invariant_for_addr_expr (rhs);
               }

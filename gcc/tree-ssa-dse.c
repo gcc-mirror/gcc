@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
    In our SSA + virtual operand world we use immediate uses of virtual
    operands to detect dead stores.  If a store's virtual definition
    is used precisely once by a later store to the same location which
-   post dominates the first store, then the first store is dead. 
+   post dominates the first store, then the first store is dead.
 
    The single use of the store's virtual definition ensures that
    there are no intervening aliased loads and the requirement that
@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
    It may help to think of this as first moving the earlier store to
    the point immediately before the later store.  Again, the single
    use of the virtual definition and the post-dominance relationship
-   ensure that such movement would be safe.  Clearly if there are 
+   ensure that such movement would be safe.  Clearly if there are
    back to back stores, then the second is redundant.
 
    Reviewing section 10.7.2 in Morgan's "Building an Optimizing Compiler"
@@ -77,7 +77,7 @@ struct dse_global_data
 };
 
 /* We allocate a bitmap-per-block for stores which are encountered
-   during the scan of that block.  This allows us to restore the 
+   during the scan of that block.  This allows us to restore the
    global bitmap of stores when we finish processing a block.  */
 struct dse_block_local_data
 {
@@ -441,7 +441,7 @@ gate_dse (void)
   return flag_tree_dse != 0;
 }
 
-struct gimple_opt_pass pass_dse = 
+struct gimple_opt_pass pass_dse =
 {
  {
   GIMPLE_PASS,

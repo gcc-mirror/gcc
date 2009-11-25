@@ -695,7 +695,7 @@ type (options_p *optsp, bool nested)
     case UNION:
       {
 	options_p opts = 0;
-    /* GTY annotations follow attribute syntax 
+    /* GTY annotations follow attribute syntax
        GTY_BEFORE_ID is for union/struct declarations
        GTY_AFTER_ID is for variable declarations.  */
     enum {
@@ -729,22 +729,22 @@ type (options_p *optsp, bool nested)
         is_gty = GTY_AFTER_ID;
         opts = gtymarker_opt ();
 	  }
-        
-    if (is_gty) 
+
+    if (is_gty)
       {
         if (token () == '{')
           {
             pair_p fields;
 
-            if (is_gty == GTY_AFTER_ID) 
+            if (is_gty == GTY_AFTER_ID)
                 parse_error ("GTY must be specified before identifier");
-              
+
             advance ();
             fields = struct_field_seq ();
             require ('}');
             return new_structure (s, is_union, &lexer_line, fields, opts);
           }
-      } 
+      }
     else if (token () == '{')
       consume_balanced ('{', '}');
 	if (opts)

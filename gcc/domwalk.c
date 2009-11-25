@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "ggc.h"
 
-/* This file implements a generic walker for dominator trees. 
+/* This file implements a generic walker for dominator trees.
 
   To understand the dominator walker one must first have a grasp of dominators,
   immediate dominators and the dominator tree.
@@ -69,8 +69,8 @@ along with GCC; see the file COPYING3.  If not see
        |    +--9    11
        |      /      |
        +--- 10 ---> 12
-	  
-  
+
+
   We have a dominator tree which looks like
 
                    1
@@ -88,34 +88,34 @@ along with GCC; see the file COPYING3.  If not see
                    9
                    |
                   10
-  
-  
-  
+
+
+
   The dominator tree is the basis for a number of analysis, transformation
   and optimization algorithms that operate on a semi-global basis.
-  
+
   The dominator walker is a generic routine which visits blocks in the CFG
   via a depth first search of the dominator tree.  In the example above
   the dominator walker might visit blocks in the following order
   1, 2, 3, 4, 5, 8, 9, 10, 6, 7, 11, 12.
-  
+
   The dominator walker has a number of callbacks to perform actions
   during the walk of the dominator tree.  There are two callbacks
   which walk statements, one before visiting the dominator children,
-  one after visiting the dominator children.  There is a callback 
+  one after visiting the dominator children.  There is a callback
   before and after each statement walk callback.  In addition, the
   dominator walker manages allocation/deallocation of data structures
   which are local to each block visited.
-  
+
   The dominator walker is meant to provide a generic means to build a pass
   which can analyze or transform/optimize a function based on walking
   the dominator tree.  One simply fills in the dominator walker data
   structure with the appropriate callbacks and calls the walker.
-  
+
   We currently use the dominator walker to prune the set of variables
   which might need PHI nodes (which can greatly improve compile-time
   performance in some cases).
-  
+
   We also use the dominator walker to rewrite the function into SSA form
   which reduces code duplication since the rewriting phase is inherently
   a walk of the dominator tree.

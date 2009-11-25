@@ -1,4 +1,4 @@
-/* Data references and dependences detectors. 
+/* Data references and dependences detectors.
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
@@ -32,14 +32,14 @@ along with GCC; see the file COPYING3.  If not see
   reference in the innermost enclosing loop.  The address is expressed as
   BASE + STEP * # of iteration, and base is further decomposed as the base
   pointer (BASE_ADDRESS),  loop invariant offset (OFFSET) and
-  constant offset (INIT).  Examples, in loop nest 
-  
+  constant offset (INIT).  Examples, in loop nest
+
   for (i = 0; i < 100; i++)
     for (j = 3; j < 100; j++)
 
                        Example 1                      Example 2
       data-ref         a[j].b[i][j]                   *(p + x + 16B + 4B * j)
-      
+
 
   innermost_loop_behavior
       base_address     &a                             p
@@ -79,7 +79,7 @@ struct indices
 {
   /* The object.  */
   tree base_object;
-  
+
   /* A list of chrecs.  Access functions of the indices.  */
   VEC(tree,heap) *access_fns;
 };
@@ -110,7 +110,7 @@ struct dr_alias
    |    loop_2
    |      a[i+3][2*j+n-1]
 
-   if "i" varies in loop_1 and "j" varies in loop_2, the access 
+   if "i" varies in loop_1 and "j" varies in loop_2, the access
    matrix with respect to the loop nest {loop_1, loop_2} is:
 
    | loop_1  loop_2  param_n  cst
@@ -163,7 +163,7 @@ struct data_reference
 {
   /* A pointer to the statement that contains this DR.  */
   gimple stmt;
-  
+
   /* A pointer to the memory reference.  */
   tree ref;
 
@@ -191,7 +191,7 @@ struct data_reference
 #define DR_BASE_OBJECT(DR)         (DR)->indices.base_object
 #define DR_ACCESS_FNS(DR)	   (DR)->indices.access_fns
 #define DR_ACCESS_FN(DR, I)        VEC_index (tree, DR_ACCESS_FNS (DR), I)
-#define DR_NUM_DIMENSIONS(DR)      VEC_length (tree, DR_ACCESS_FNS (DR))  
+#define DR_NUM_DIMENSIONS(DR)      VEC_length (tree, DR_ACCESS_FNS (DR))
 #define DR_IS_READ(DR)             (DR)->is_read
 #define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
 #define DR_OFFSET(DR)              (DR)->innermost.offset
@@ -206,9 +206,9 @@ DEF_VEC_P(data_reference_p);
 DEF_VEC_ALLOC_P (data_reference_p, heap);
 
 enum data_dependence_direction {
-  dir_positive, 
-  dir_negative, 
-  dir_equal, 
+  dir_positive,
+  dir_negative,
+  dir_equal,
   dir_positive_or_negative,
   dir_positive_or_equal,
   dir_negative_or_equal,
@@ -252,11 +252,11 @@ struct subscript
      accessed twice.  */
   conflict_function *conflicting_iterations_in_a;
   conflict_function *conflicting_iterations_in_b;
-  
+
   /* This field stores the information about the iteration domain
      validity of the dependence relation.  */
   tree last_conflict;
-  
+
   /* Distance from the iteration that access a conflicting element in
      A to the iteration that access this same conflicting element in
      B.  The distance is a tree scalar expression, i.e. a constant or a
@@ -278,23 +278,23 @@ DEF_VEC_ALLOC_P (subscript_p, heap);
 
 struct data_dependence_relation
 {
-  
+
   struct data_reference *a;
   struct data_reference *b;
 
   /* A "yes/no/maybe" field for the dependence relation:
-     
+
      - when "ARE_DEPENDENT == NULL_TREE", there exist a dependence
        relation between A and B, and the description of this relation
        is given in the SUBSCRIPTS array,
-     
+
      - when "ARE_DEPENDENT == chrec_known", there is no dependence and
        SUBSCRIPTS is empty,
-     
+
      - when "ARE_DEPENDENT == chrec_dont_know", there may be a dependence,
        but the analyzer cannot be more specific.  */
   tree are_dependent;
-  
+
   /* For each subscript in the dependence test, there is an element in
      this array.  This is the attribute that labels the edge A->B of
      the data_dependence_relation.  */
@@ -380,7 +380,7 @@ extern bool compute_data_dependences_for_loop (struct loop *, bool,
 extern bool compute_data_dependences_for_bb (basic_block, bool,
                                              VEC (data_reference_p, heap) **,
                                              VEC (ddr_p, heap) **);
-extern tree find_data_references_in_loop (struct loop *, 
+extern tree find_data_references_in_loop (struct loop *,
                                           VEC (data_reference_p, heap) **);
 extern void print_direction_vector (FILE *, lambda_vector, int);
 extern void print_dir_vectors (FILE *, VEC (lambda_vector, heap) *, int);
@@ -393,11 +393,11 @@ extern void debug_data_reference (struct data_reference *);
 extern void dump_data_references (FILE *, VEC (data_reference_p, heap) *);
 extern void debug_data_references (VEC (data_reference_p, heap) *);
 extern void debug_data_dependence_relation (struct data_dependence_relation *);
-extern void dump_data_dependence_relation (FILE *, 
+extern void dump_data_dependence_relation (FILE *,
 					   struct data_dependence_relation *);
 extern void dump_data_dependence_relations (FILE *, VEC (ddr_p, heap) *);
 extern void debug_data_dependence_relations (VEC (ddr_p, heap) *);
-extern void dump_data_dependence_direction (FILE *, 
+extern void dump_data_dependence_direction (FILE *,
 					    enum data_dependence_direction);
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
@@ -509,24 +509,24 @@ int rdg_vertex_for_stmt (struct graph *, gimple);
 
 /* Data dependence type.  */
 
-enum rdg_dep_type 
+enum rdg_dep_type
 {
   /* Read After Write (RAW).  */
   flow_dd = 'f',
-  
+
   /* Write After Read (WAR).  */
   anti_dd = 'a',
-  
+
   /* Write After Write (WAW).  */
-  output_dd = 'o', 
-  
+  output_dd = 'o',
+
   /* Read After Read (RAR).  */
-  input_dd = 'i' 
+  input_dd = 'i'
 };
 
 /* Dependence information attached to an edge of the RDG.  */
 
-typedef struct rdg_edge 
+typedef struct rdg_edge
 {
   /* Type of the dependence.  */
   enum rdg_dep_type type;

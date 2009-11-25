@@ -101,7 +101,7 @@ bb_in_region (basic_block bb, basic_block entry, basic_block exit)
        predecessors of EXIT are dominated by ENTRY.  */
     FOR_EACH_EDGE (e, ei, exit->preds)
       dominated_by_p (CDI_DOMINATORS, e->src, entry);
- 
+
     /* Check that there are no edges going out of the region: the
        entry is post-dominated by the exit.  FIXME: This cannot be
        checked right now as the CDI_POST_DOMINATORS are needed.  */
@@ -138,7 +138,7 @@ defined_in_sese_p (tree name, sese region)
 
 /* Returns true when LOOP is in REGION.  */
 
-static inline bool 
+static inline bool
 loop_in_sese_p (struct loop *loop, sese region)
 {
   return (bb_in_sese_p (loop->header, region)
@@ -153,7 +153,7 @@ loop_in_sese_p (struct loop *loop, sese region)
    loop_0
      loop_1
        {
-         S0 
+         S0
             <- region start
          S1
 
@@ -162,7 +162,7 @@ loop_in_sese_p (struct loop *loop, sese region)
 
          S3
             <- region end
-       } 
+       }
 
     loop_0 does not exist in the region -> invalid
     loop_1 exists, but is not completely contained in the region -> depth 0
@@ -376,7 +376,7 @@ static inline rename_map_elt
 new_rename_map_elt (tree old_name, tree expr)
 {
   rename_map_elt res;
-  
+
   res = XNEW (struct rename_map_elt_s);
   res->old_name = old_name;
   res->expr = expr;
@@ -402,7 +402,7 @@ static inline ivtype_map_elt
 new_ivtype_map_elt (const char *cloog_iv, tree type)
 {
   ivtype_map_elt res;
-  
+
   res = XNEW (struct ivtype_map_elt_s);
   res->cloog_iv = cloog_iv;
   res->type = type;
@@ -429,19 +429,19 @@ typedef struct gimple_bb
   /* Lists containing the restrictions of the conditional statements
      dominating this bb.  This bb can only be executed, if all conditions
      are true.
- 
+
      Example:
- 
+
      for (i = 0; i <= 20; i++)
      {
        A
- 
+
        if (2i <= 8)
          B
      }
- 
+
      So for B there is an additional condition (2i <= 8).
- 
+
      List of COND_EXPR and SWITCH_EXPR.  A COND_EXPR is true only if the
      corresponding element in CONDITION_CASES is not NULL_TREE.  For a
      SWITCH_EXPR the corresponding element in CONDITION_CASES is a
@@ -466,7 +466,7 @@ gbb_loop (struct gimple_bb *gbb)
   return GBB_BB (gbb)->loop_father;
 }
 
-/* Returns the gimple loop, that corresponds to the loop_iterator_INDEX.  
+/* Returns the gimple loop, that corresponds to the loop_iterator_INDEX.
    If there is no corresponding gimple loop, we return NULL.  */
 
 static inline loop_p
@@ -491,7 +491,7 @@ nb_common_loops (sese region, gimple_bb_p gbb1, gimple_bb_p gbb2)
   loop_p l1 = gbb_loop (gbb1);
   loop_p l2 = gbb_loop (gbb2);
   loop_p common = find_common_loop (l1, l2);
-  
+
   return sese_loop_depth (region, common);
 }
 

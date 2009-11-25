@@ -233,7 +233,7 @@ mark_all_labels (rtx f)
 			    && (rtx_equal_p (label_dest, XEXP (pc_src, 1))
 				|| rtx_equal_p (label_dest,
 						XEXP (pc_src, 2))))))
-				
+
 		  {
 		    /* The CODE_LABEL referred to in the note must be the
 		       CODE_LABEL in the LABEL_REF of the "set".  We can
@@ -1452,7 +1452,7 @@ redirect_jump (rtx jump, rtx nlabel, int delete_unused)
 }
 
 /* Fix up JUMP_LABEL and label ref counts after OLABEL has been replaced with
-   NLABEL in JUMP.  
+   NLABEL in JUMP.
    If DELETE_UNUSED is positive, delete related insn to OLABEL if its ref
    count has dropped to zero.  */
 void
@@ -1547,7 +1547,7 @@ invert_jump_1 (rtx jump, rtx nlabel)
     return 0;
   ok = invert_exp_1 (SET_SRC (x), jump);
   gcc_assert (ok);
-  
+
   if (num_validated_changes () == ochanges)
     return 0;
 

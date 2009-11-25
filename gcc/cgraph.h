@@ -227,7 +227,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
   unsigned abstract_and_needed : 1;
   /* Set when function is reachable by call from other function
-     that is either reachable or needed.  
+     that is either reachable or needed.
      This flag is computed at original cgraph construction and then
      updated in cgraph_remove_unreachable_nodes.  Note that after
      cgraph_remove_unreachable_nodes cgraph still can contain unreachable
@@ -312,7 +312,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   cgraph_inline_failed_t inline_failed;
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
-  /* Expected frequency of executions within the function. 
+  /* Expected frequency of executions within the function.
      When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
      per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
   int frequency;
@@ -669,7 +669,7 @@ cgraph_node_set_size (cgraph_node_set set)
 struct GTY(()) constant_descriptor_tree {
   /* A MEM for the constant.  */
   rtx rtl;
-  
+
   /* The value of the constant.  */
   tree value;
 

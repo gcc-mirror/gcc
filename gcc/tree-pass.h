@@ -71,7 +71,7 @@ enum tree_dump_index
 
 #define TDF_DIAGNOSTIC	(1 << 15)	/* A dump to be put in a diagnostic
 					   message.  */
-#define TDF_VERBOSE     (1 << 16)       /* A dump that uses the full tree 
+#define TDF_VERBOSE     (1 << 16)       /* A dump that uses the full tree
 					   dumper to print stmts.  */
 #define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
@@ -232,7 +232,7 @@ struct dump_file_info
 /* To-do flags.  */
 #define TODO_dump_func			(1 << 0)
 #define TODO_ggc_collect		(1 << 1)
-#define TODO_verify_ssa			(1 << 2) 
+#define TODO_verify_ssa			(1 << 2)
 #define TODO_verify_flow		(1 << 3)
 #define TODO_verify_stmts		(1 << 4)
 #define TODO_cleanup_cfg        	(1 << 5)
@@ -264,7 +264,7 @@ struct dump_file_info
    IDF is done.  This is used by passes that need the PHI nodes for
    O_j even if it means that some arguments will come from the default
    definition of O_j's symbol (e.g., pass_linear_transform).
-   
+
    WARNING: If you need to use this flag, chances are that your pass
    may be doing something wrong.  Inserting PHI nodes for an old name
    where not all edges carry a new replacement may lead to silent

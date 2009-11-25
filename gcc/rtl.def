@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
    3.  The print format, and type of each rtx->u.fld[] (field) in this rtx.
    These formats are stored in rtx_format[].
    The meaning of the formats is documented in front of this array in rtl.c
-   
+
    4.  The class of the rtx.  These are stored in rtx_class and are accessed
    via the GET_RTX_CLASS macro.  They are defined as follows:
 
@@ -160,10 +160,10 @@ DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", RTX_EXTRA)
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
    ---------------------------------------------------------------------- */
-   
+
 /* Conditionally execute code.
    Operand 0 is the condition that if true, the code is executed.
-   Operand 1 is the code to be executed (typically a SET). 
+   Operand 1 is the code to be executed (typically a SET).
 
    Semantics are that there are no side effects if the condition
    is false.  This pattern is created automatically by the if_convert
@@ -204,7 +204,7 @@ DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEEi", RTX_EXTRA)
    genrecog.c record positions within an insn.)
 
    UNSPEC can occur all by itself in a PATTERN, as a component of a PARALLEL,
-   or inside an expression.  
+   or inside an expression.
    UNSPEC by itself or as a component of a PARALLEL
    is currently considered not deletable.
 
@@ -242,7 +242,7 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", RTX_EXTRA)
    The third, fourth and fifth operands are only valid when
    CASE_VECTOR_SHORTEN_MODE is defined, and only in an optimizing
    compilations.  */
-     
+
 DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEee0", RTX_EXTRA)
 
 /* Memory prefetch, with attributes supported on some targets.
@@ -270,7 +270,7 @@ DEF_RTL_EXPR(SET, "set", "ee", RTX_EXTRA)
 
 /* Indicate something is used in a way that we don't want to explain.
    For example, subroutine calls will use the register
-   in which the static chain is passed.  
+   in which the static chain is passed.
 
    USE can not appear as an operand of other rtx except for PARALLEL.
    USE is not deletable, as it indicates that the operand
@@ -279,7 +279,7 @@ DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
 
 /* Indicate something is clobbered in a way that we don't want to explain.
    For example, subroutine calls will clobber some physical registers
-   (the ones that are by convention not saved).  
+   (the ones that are by convention not saved).
 
    CLOBBER can not appear as an operand of other rtx except for PARALLEL.
    CLOBBER of a hard register appearing by itself (not within PARALLEL)
@@ -394,7 +394,7 @@ DEF_RTL_EXPR(MEM, "mem", "e0", RTX_OBJ)
    The operand is a CODE_LABEL found in the insn chain.  */
 DEF_RTL_EXPR(LABEL_REF, "label_ref", "u", RTX_CONST_OBJ)
 
-/* Reference to a named label: 
+/* Reference to a named label:
    Operand 0: label name
    Operand 1: flags (see SYMBOL_FLAG_* in rtl.h)
    Operand 2: tree from which this symbol is derived, or null.
@@ -673,7 +673,7 @@ DEF_RTL_EXPR(VEC_CONCAT, "vec_concat", "ee", RTX_BIN_ARITH)
    submodes as the input vector mode, and the number of output parts must be
    an integer multiple of the number of input parts.  */
 DEF_RTL_EXPR(VEC_DUPLICATE, "vec_duplicate", "e", RTX_UNARY)
-     
+
 /* Addition with signed saturation */
 DEF_RTL_EXPR(SS_PLUS, "ss_plus", "ee", RTX_COMM_ARITH)
 
@@ -770,7 +770,7 @@ DEF_RTL_EXPR(MATCH_OPERATOR, "match_operator", "isE", RTX_MATCH)
    to the PARALLEL and the initial expressions in the PARALLEL are matched.
    Operand 0 is the operand-number, as in match_operand.
    Operand 1 is a predicate to apply to the PARALLEL.
-   Operand 2 is a vector of expressions, each of which must match the 
+   Operand 2 is a vector of expressions, each of which must match the
    corresponding element in the PARALLEL.  */
 DEF_RTL_EXPR(MATCH_PARALLEL, "match_parallel", "isE", RTX_MATCH)
 
@@ -858,14 +858,14 @@ DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", RTX_EXTRA)
       C code to run to decide on a template to use.  Otherwise, it is the
       template to use.
    4: C expression that must be true for split.  This may start with "&&"
-      in which case the split condition is the logical and of the insn 
+      in which case the split condition is the logical and of the insn
       condition and what follows the "&&" of this operand.
    5: vector of insn patterns to place into a SEQUENCE
    6: optionally, some C code to execute before generating the
 	insns.  This might, for example, create some RTX's and store them in
 	elements of `recog_data.operand' for use by the vector of
 	insn-patterns.
-	(`operands' is an alias here for `recog_data.operand').  
+	(`operands' is an alias here for `recog_data.operand').
    7: optionally, a vector of attributes for this insn.  */
 DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsTsESV", RTX_EXTRA)
 
@@ -885,7 +885,7 @@ DEF_RTL_EXPR(DEFINE_PEEPHOLE2, "define_peephole2", "EsES", RTX_EXTRA)
 	insn-patterns.
 	(`operands' is an alias here for `recog_data.operand').  */
 DEF_RTL_EXPR(DEFINE_EXPAND, "define_expand", "sEss", RTX_EXTRA)
-   
+
 /* Define a requirement for delay slots.
    1st operand: Condition involving insn attributes that, if true,
 	        indicates that the insn requires the number of delay slots
@@ -896,7 +896,7 @@ DEF_RTL_EXPR(DEFINE_EXPAND, "define_expand", "sEss", RTX_EXTRA)
 		The first must be true for an insn to occupy that delay slot
 		location.  The second is true for all insns that can be
 		annulled if the branch is true and the third is true for all
-		insns that can be annulled if the branch is false. 
+		insns that can be annulled if the branch is false.
 
    Multiple DEFINE_DELAYs may be present.  They indicate differing
    requirements for delay slots.  */
@@ -964,7 +964,7 @@ DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sss", RT
    (reg X) where X is a base register.  It is suitable for constraints that
    describe a subset of all address references.
 
-   When in doubt, use plain DEFINE_CONSTRAINT.  
+   When in doubt, use plain DEFINE_CONSTRAINT.
 
    Operand:
    0: The name of the constraint (often, but not always, a single letter).
@@ -988,7 +988,7 @@ DEF_RTL_EXPR(DEFINE_REGISTER_CONSTRAINT, "define_register_constraint", "sss", RT
 DEF_RTL_EXPR(DEFINE_CONSTRAINT, "define_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_MEMORY_CONSTRAINT, "define_memory_constraint", "sse", RTX_EXTRA)
 DEF_RTL_EXPR(DEFINE_ADDRESS_CONSTRAINT, "define_address_constraint", "sse", RTX_EXTRA)
-   
+
 
 /* Constructions for CPU pipeline description described by NDFAs.  */
 
@@ -1024,7 +1024,7 @@ DEF_RTL_EXPR(EXCLUSION_SET, "exclusion_set", "ss", RTX_EXTRA)
    an asymmetric relation.  CPU units or unit patterns in the strings
    are separated by commas.  Pattern is one unit name or unit names
    separated by white-spaces.
- 
+
    For example, it is useful for description that slot1 is reserved
    after slot0 reservation for a VLIW processor.  We could describe it
    by the following construction
@@ -1049,7 +1049,7 @@ DEF_RTL_EXPR(PRESENCE_SET, "presence_set", "ss", RTX_EXTRA)
    state reservation, checking for `final_presence_set' is done on the
    result reservation.  This construction is useful to describe a
    reservation which is actually two subsequent reservations.  For
-   example, if we use 
+   example, if we use
 
       (presence_set "slot1" "slot0")
 
@@ -1122,7 +1122,7 @@ DEF_RTL_EXPR(DEFINE_AUTOMATON, "define_automaton", "s", RTX_EXTRA)
 
    o "time" which means printing additional time statistics about
       generation of automata.
-  
+
    o "v" which means generation of file describing the result
      automata.  The file has suffix `.dfa' and can be used for the
      description verification and debugging.
@@ -1160,7 +1160,7 @@ DEF_RTL_EXPR(DEFINE_RESERVATION, "define_reservation", "ss", RTX_EXTRA)
 
        allof = allof "+" repeat
              | repeat
- 
+
        repeat = element "*" number
               | element
 

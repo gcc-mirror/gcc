@@ -4,19 +4,19 @@
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.
- 
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -618,7 +618,7 @@ degenerate_phi_p (gimple phi)
 /* Propagate necessity using the operands of necessary statements.
    Process the uses on each statement in the worklist, and add all
    feeding statements which contribute to the calculation of this
-   value to the worklist. 
+   value to the worklist.
 
    In conservative mode, EL is NULL.  */
 
@@ -626,7 +626,7 @@ static void
 propagate_necessity (struct edge_list *el)
 {
   gimple stmt;
-  bool aggressive = (el ? true : false); 
+  bool aggressive = (el ? true : false);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nProcessing worklist:\n");
@@ -694,7 +694,7 @@ propagate_necessity (struct edge_list *el)
       else
 	{
 	  /* Propagate through the operands.  Examine all the USE, VUSE and
-	     VDEF operands in this statement.  Mark all the statements 
+	     VDEF operands in this statement.  Mark all the statements
 	     which feed this statement's uses as necessary.  */
 	  ssa_op_iter iter;
 	  tree use;
@@ -1071,8 +1071,8 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
     }
 
   unlink_stmt_vdef (stmt);
-  gsi_remove (i, true);  
-  release_defs (stmt); 
+  gsi_remove (i, true);
+  release_defs (stmt);
 }
 
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
@@ -1159,7 +1159,7 @@ eliminate_unnecessary_stmts (void)
 			  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 			  fprintf (dump_file, "\n");
 			}
-		      
+
 		      gimple_call_set_lhs (stmt, NULL_TREE);
 		      maybe_clean_or_replace_eh_stmt (stmt, stmt);
 		      update_stmt (stmt);
@@ -1404,7 +1404,7 @@ perform_tree_ssa_dce (bool aggressive)
   free_edge_list (el);
 
   if (something_changed)
-    return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect 
+    return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect
 	    | TODO_remove_unused_locals);
   else
     return 0;

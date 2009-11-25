@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    scaling, skewing, and reversal.  They are used to change the
    iteration order of loop nests in order to optimize data locality of
    traversals, or remove dependences that prevent
-   parallelization/vectorization/etc.  
+   parallelization/vectorization/etc.
 
    TODO: Determine reuse vectors/matrix and use it to determine optimal
    transform matrix for locality purposes.
@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
    considered. The first loop in the considered loop nest is
    FIRST_LOOP, and consequently, the index of the considered loop is
    obtained by LOOP->DEPTH - FIRST_LOOP->DEPTH
-   
+
    Initializes:
    - DEPENDENCE_STEPS the sum of all the data dependence distances
    carried by loop LOOP,
@@ -78,12 +78,12 @@ along with GCC; see the file COPYING3.  If not see
    |   A[{0, +, 1336}_1]
    | endloop_1
 
-   gather_interchange_stats (in loop_1) will return 
+   gather_interchange_stats (in loop_1) will return
    DEPENDENCE_STEPS = 3002
    NB_DEPS_NOT_CARRIED_BY_LOOP = 5
    ACCESS_STRIDES = 10694
 
-   gather_interchange_stats (in loop_2) will return 
+   gather_interchange_stats (in loop_2) will return
    DEPENDENCE_STEPS = 3000
    NB_DEPS_NOT_CARRIED_BY_LOOP = 7
    ACCESS_STRIDES = 8010
@@ -94,8 +94,8 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
 			  VEC (data_reference_p, heap) *datarefs ATTRIBUTE_UNUSED,
 			  struct loop *loop ATTRIBUTE_UNUSED,
 			  struct loop *first_loop ATTRIBUTE_UNUSED,
-			  unsigned int *dependence_steps ATTRIBUTE_UNUSED, 
-			  unsigned int *nb_deps_not_carried_by_loop ATTRIBUTE_UNUSED, 
+			  unsigned int *dependence_steps ATTRIBUTE_UNUSED,
+			  unsigned int *nb_deps_not_carried_by_loop ATTRIBUTE_UNUSED,
 			  double_int *access_strides ATTRIBUTE_UNUSED)
 {
   unsigned int i, j;
@@ -140,11 +140,11 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
       struct loop *stmt_loop = loop_containing_stmt (stmt);
       struct loop *inner_loop = first_loop->inner;
 
-      if (inner_loop != stmt_loop 
+      if (inner_loop != stmt_loop
 	  && !flow_loop_nested_p (inner_loop, stmt_loop))
 	continue;
 
-      for (it = 0; it < DR_NUM_DIMENSIONS (dr); 
+      for (it = 0; it < DR_NUM_DIMENSIONS (dr);
 	   it++, ref = TREE_OPERAND (ref, 0))
 	{
 	  int num = am_vector_index_for_loop (DR_ACCESS_MATRIX (dr), loop->num);
@@ -152,11 +152,11 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
 	  tree array_size = TYPE_SIZE (TREE_TYPE (ref));
 	  double_int dstride;
 
-	  if (array_size == NULL_TREE 
+	  if (array_size == NULL_TREE
 	      || TREE_CODE (array_size) != INTEGER_CST)
 	    continue;
 
-	  dstride = double_int_mul (tree_to_double_int (array_size), 
+	  dstride = double_int_mul (tree_to_double_int (array_size),
 				    shwi_to_double_int (istride));
 	  (*access_strides) = double_int_add (*access_strides, dstride);
 	}
@@ -164,7 +164,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
 }
 
 /* Attempt to apply interchange transformations to TRANS to maximize the
-   spatial and temporal locality of the loop.  
+   spatial and temporal locality of the loop.
    Returns the new transform matrix.  The smaller the reuse vector
    distances in the inner loops, the fewer the cache misses.
    FIRST_LOOP is the loop->num of the first loop in the analyzed loop
@@ -172,8 +172,8 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
 
 
 static lambda_trans_matrix
-try_interchange_loops (lambda_trans_matrix trans, 
-		       unsigned int depth,		       
+try_interchange_loops (lambda_trans_matrix trans,
+		       unsigned int depth,
 		       VEC (ddr_p, heap) *dependence_relations,
 		       VEC (data_reference_p, heap) *datarefs,
 		       struct loop *first_loop)
@@ -202,24 +202,24 @@ try_interchange_loops (lambda_trans_matrix trans,
   l2_cache_size = uhwi_to_double_int (L2_CACHE_SIZE * 1024);
 
   /* LOOP_I is always the outer loop.  */
-  for (loop_j = first_loop->inner; 
-       loop_j; 
+  for (loop_j = first_loop->inner;
+       loop_j;
        loop_j = loop_j->inner)
-    for (loop_i = first_loop; 
-	 loop_depth (loop_i) < loop_depth (loop_j); 
+    for (loop_i = first_loop;
+	 loop_depth (loop_i) < loop_depth (loop_j);
 	 loop_i = loop_i->inner)
       {
 	gather_interchange_stats (dependence_relations, datarefs,
 				  loop_i, first_loop,
-				  &dependence_steps_i, 
+				  &dependence_steps_i,
 				  &nb_deps_not_carried_by_i,
 				  &access_strides_i);
 	gather_interchange_stats (dependence_relations, datarefs,
 				  loop_j, first_loop,
-				  &dependence_steps_j, 
-				  &nb_deps_not_carried_by_j, 
+				  &dependence_steps_j,
+				  &nb_deps_not_carried_by_j,
 				  &access_strides_j);
-	
+
 	/* Heuristics for loop interchange profitability:
 
 	   0. Don't transform if the smallest stride is larger than
@@ -251,7 +251,7 @@ try_interchange_loops (lambda_trans_matrix trans,
 	if (res && double_int_ucmp (large, l1_cache_size) < 0)
 	  continue;
 
-	if (dependence_steps_i < dependence_steps_j 
+	if (dependence_steps_i < dependence_steps_j
 	    || nb_deps_not_carried_by_i > nb_deps_not_carried_by_j
 	    || cmp < 0)
 	  {
@@ -261,8 +261,8 @@ try_interchange_loops (lambda_trans_matrix trans,
 	    /* Validate the resulting matrix.  When the transformation
 	       is not valid, reverse to the previous transformation.  */
 	    if (!lambda_transform_legal_p (trans, depth, dependence_relations))
-	      lambda_matrix_row_exchange (LTM_MATRIX (trans), 
-					  loop_depth (loop_i) - loop_depth (first_loop), 
+	      lambda_matrix_row_exchange (LTM_MATRIX (trans),
+					  loop_depth (loop_i) - loop_depth (first_loop),
 					  loop_depth (loop_j) - loop_depth (first_loop));
 	  }
       }
@@ -330,7 +330,7 @@ linear_transform_loops (void)
       unsigned int depth = 0;
       VEC (ddr_p, heap) *dependence_relations;
       VEC (data_reference_p, heap) *datarefs;
-      
+
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
       struct obstack lambda_obstack;
@@ -355,7 +355,7 @@ linear_transform_loops (void)
       if (!compute_data_dependences_for_loop (loop_nest, true, &datarefs,
 					      &dependence_relations))
 	goto free_and_continue;
-      
+
       lambda_collect_parameters (datarefs, &lambda_parameters);
       if (!lambda_compute_access_matrices (datarefs, lambda_parameters, nest))
 	goto free_and_continue;
@@ -395,7 +395,7 @@ linear_transform_loops (void)
 	  fprintf (dump_file, "Before:\n");
 	  print_lambda_loopnest (dump_file, before, 'i');
 	}
-  
+
       after = lambda_loopnest_transform (before, trans, &lambda_obstack);
 
       if (dump_file)

@@ -52,10 +52,10 @@ typedef struct param_info
 
   /* Minimum acceptable value.  */
   int min_value;
-  
+
   /* Maximum acceptable value, if greater than minimum  */
   int max_value;
-  
+
   /* A short description of the option.  */
   const char *const help;
 } param_info;

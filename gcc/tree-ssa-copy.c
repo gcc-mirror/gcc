@@ -73,7 +73,7 @@ may_propagate_copy (tree dest, tree orig)
   if (TREE_CODE (dest) == SSA_NAME
       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest))
     return false;
-  
+
   /* Do not copy between types for which we *do* need a conversion.  */
   if (!useless_type_conversion_p (type_d, type_o))
     return false;
@@ -351,7 +351,7 @@ get_last_copy_of (tree var)
   /* Traverse COPY_OF starting at VAR until we get to the last
      link in the chain.  Since it is possible to have cycles in PHI
      nodes, the copy-of chain may also contain cycles.
-     
+
      To avoid infinite loops and to avoid traversing lengthy copy-of
      chains, we artificially limit the maximum number of chains we are
      willing to traverse.
@@ -390,7 +390,7 @@ set_copy_of_val (tree dest, tree first)
 {
   unsigned int dest_ver = SSA_NAME_VERSION (dest);
   tree old_first, old_last, new_last;
-  
+
   /* Set FIRST to be the first link in COPY_OF[DEST].  If that
      changed, return true.  */
   old_first = copy_of[dest_ver].value;
@@ -430,11 +430,11 @@ dump_copy_of (FILE *file, tree var)
 
   if (TREE_CODE (var) != SSA_NAME)
     return;
-    
+
   visited = sbitmap_alloc (num_ssa_names);
   sbitmap_zero (visited);
   SET_BIT (visited, SSA_NAME_VERSION (var));
-  
+
   fprintf (file, " copy-of chain: ");
 
   val = var;
@@ -458,7 +458,7 @@ dump_copy_of (FILE *file, tree var)
     fprintf (file, "[COPY]");
   else
     fprintf (file, "[NOT A COPY]");
-  
+
   sbitmap_free (visited);
 }
 
@@ -477,7 +477,7 @@ copy_prop_visit_assignment (gimple stmt, tree *result_p)
 
   lhs = gimple_assign_lhs (stmt);
   rhs = gimple_assign_rhs1 (stmt);
-  
+
 
   gcc_assert (gimple_assign_rhs_code (stmt) == SSA_NAME);
 
@@ -494,7 +494,7 @@ copy_prop_visit_assignment (gimple stmt, tree *result_p)
 	 copy of RHS's value, not of RHS itself.  This avoids keeping
 	 unnecessary copy-of chains (assignments cannot be in a cycle
 	 like PHI nodes), speeding up the propagation process.
-	 This is different from what we do in copy_prop_visit_phi_node. 
+	 This is different from what we do in copy_prop_visit_phi_node.
 	 In those cases, we are interested in the copy-of chains.  */
       *result_p = lhs;
       if (set_copy_of_val (*result_p, rhs_val->value))
@@ -820,7 +820,7 @@ fini_copy_prop (void)
 {
   size_t i;
   prop_value_t *tmp;
-  
+
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
   tmp = XCNEWVEC (prop_value_t, num_ssa_names);
@@ -858,7 +858,7 @@ fini_copy_prop (void)
 /* Main entry point to the copy propagator.
 
    PHIS_ONLY is true if we should only consider PHI nodes as generating
-   copy propagation opportunities. 
+   copy propagation opportunities.
 
    The algorithm propagates the value COPY-OF using ssa_propagate.  For
    every variable X_i, COPY-OF(X_i) indicates which variable is X_i created
@@ -881,7 +881,7 @@ fini_copy_prop (void)
    Visit #2: a_2 is copy-of x_298.  Value changed.
    Visit #3: a_5 is copy-of x_298.  Value changed.
    Visit #4: x_1 is copy-of x_298.  Stable state reached.
-   
+
    When visiting PHI nodes, we only consider arguments that flow
    through edges marked executable by the propagation engine.  So,
    when visiting statement #2 for the first time, we will only look at
@@ -918,7 +918,7 @@ fini_copy_prop (void)
 
 	    1	x_54 = PHI <x_53, x_52>
 	    2	x_53 = PHI <x_898, x_54>
-   
+
    Visit #1: x_54 is copy-of x_53 (because x_52 is copy-of x_53)
    Visit #2: x_53 is copy-of x_898 (because x_54 is a copy of x_53,
 				    so it is considered irrelevant
@@ -935,7 +935,7 @@ fini_copy_prop (void)
    same variable.  So, as long as their copy-of chains overlap, we
    know that they will be a copy of the same variable, regardless of
    which variable that may be).
-   
+
    Propagation would then proceed as follows (the notation a -> b
    means that a is a copy-of b):
 

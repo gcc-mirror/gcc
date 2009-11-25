@@ -109,7 +109,7 @@ static void
 free_move_list (move_t head)
 {
   move_t next;
-  
+
   for (; head != NULL; head = next)
     {
       next = head->next;
@@ -450,7 +450,7 @@ change_loop (ira_loop_tree_node_t node)
 
   if (node != ira_loop_tree_root)
     {
-      
+
       if (node->bb != NULL)
 	{
 	  FOR_BB_INSNS (node->bb, insn)
@@ -461,12 +461,12 @@ change_loop (ira_loop_tree_node_t node)
 	      }
 	  return;
 	}
-      
+
       if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	fprintf (ira_dump_file,
 		 "      Changing RTL for loop %d (header bb%d)\n",
 		 node->loop->num, node->loop->header->index);
-      
+
       parent = ira_curr_loop_tree_node->parent;
       map = parent->regno_allocno_map;
       EXECUTE_IF_SET_IN_REG_SET (ira_curr_loop_tree_node->border_allocnos,

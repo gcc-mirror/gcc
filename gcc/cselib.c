@@ -278,7 +278,7 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
 
   gcc_assert (!CONST_INT_P (x) && GET_CODE (x) != CONST_FIXED
 	      && (mode != VOIDmode || GET_CODE (x) != CONST_DOUBLE));
-  
+
   if (mode != GET_MODE (v->val_rtx))
     return 0;
 
@@ -815,10 +815,10 @@ cselib_hash_rtx (rtx x, int create)
 	  {
 	    rtx tem = XEXP (x, i);
 	    unsigned int tem_hash = cselib_hash_rtx (tem, create);
-	    
+
 	    if (tem_hash == 0)
 	      return 0;
-	    
+
 	    hash += tem_hash;
 	  }
 	  break;
@@ -827,10 +827,10 @@ cselib_hash_rtx (rtx x, int create)
 	    {
 	      unsigned int tem_hash
 		= cselib_hash_rtx (XVECEXP (x, i, j), create);
-	      
+
 	      if (tem_hash == 0)
 		return 0;
-	      
+
 	      hash += tem_hash;
 	    }
 	  break;
@@ -838,13 +838,13 @@ cselib_hash_rtx (rtx x, int create)
 	case 's':
 	  {
 	    const unsigned char *p = (const unsigned char *) XSTR (x, i);
-	    
+
 	    if (p)
 	      while (*p)
 		hash += *p++;
 	    break;
 	  }
-	  
+
 	case 'i':
 	  hash += XINT (x, i);
 	  break;
@@ -853,7 +853,7 @@ cselib_hash_rtx (rtx x, int create)
 	case 't':
 	  /* unused */
 	  break;
-	  
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -971,7 +971,7 @@ cselib_lookup_mem (rtx x, int create)
    non-reg results, we just take the first one because they will all
    expand to the same place.  */
 
-static rtx 
+static rtx
 expand_loc (struct elt_loc_list *p, struct expand_value_data *evd,
 	    int max_depth)
 {
@@ -983,8 +983,8 @@ expand_loc (struct elt_loc_list *p, struct expand_value_data *evd,
     {
       /* Avoid infinite recursion trying to expand a reg into a
 	 the same reg.  */
-      if ((REG_P (p->loc)) 
-	  && (REGNO (p->loc) < regno) 
+      if ((REG_P (p->loc))
+	  && (REGNO (p->loc) < regno)
 	  && !bitmap_bit_p (evd->regs_active, REGNO (p->loc)))
 	{
 	  reg_result = p->loc;
@@ -992,7 +992,7 @@ expand_loc (struct elt_loc_list *p, struct expand_value_data *evd,
 	}
       /* Avoid infinite recursion and do not try to expand the
 	 value.  */
-      else if (GET_CODE (p->loc) == VALUE 
+      else if (GET_CODE (p->loc) == VALUE
 	       && CSELIB_VAL_PTR (p->loc)->locs == p_in)
 	continue;
       else if (!REG_P (p->loc))
@@ -1013,9 +1013,9 @@ expand_loc (struct elt_loc_list *p, struct expand_value_data *evd,
 	  if (result)
 	    return result;
 	}
-	
+
     }
-  
+
   if (regno != UINT_MAX)
     {
       rtx result;
@@ -1034,7 +1034,7 @@ expand_loc (struct elt_loc_list *p, struct expand_value_data *evd,
 	  print_inline_rtx (dump_file, reg_result, 0);
 	  fprintf (dump_file, "\n");
 	}
-      else 
+      else
 	fprintf (dump_file, "NULL\n");
     }
   return reg_result;
@@ -1045,7 +1045,7 @@ expand_loc (struct elt_loc_list *p, struct expand_value_data *evd,
    This is the opposite of common subexpression.  Because local value
    numbering is such a weak optimization, the expanded expression is
    pretty much unique (not from a pointer equals point of view but
-   from a tree shape point of view.  
+   from a tree shape point of view.
 
    This function returns NULL if the expansion fails.  The expansion
    will fail if there is no value number for one of the operands or if
@@ -1124,7 +1124,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	    {
 	      rtx result;
 	      int regno = REGNO (orig);
-	      
+
 	      /* The only thing that we are not willing to do (this
 		 is requirement of dse and if others potential uses
 		 need this function we should add a parm to control
@@ -1156,11 +1156,11 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 
 	      if (result)
 		return result;
-	      else 
+	      else
 		return orig;
 	    }
       }
-      
+
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -1979,7 +1979,7 @@ cselib_process_insn (rtx insn)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (call_used_regs[i]
 	    || (REG_VALUES (i) && REG_VALUES (i)->elt
-		&& HARD_REGNO_CALL_PART_CLOBBERED (i, 
+		&& HARD_REGNO_CALL_PART_CLOBBERED (i,
 		      GET_MODE (REG_VALUES (i)->elt->val_rtx))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
@@ -2025,11 +2025,11 @@ cselib_process_insn (rtx insn)
 void
 cselib_init (bool record_memory)
 {
-  elt_list_pool = create_alloc_pool ("elt_list", 
+  elt_list_pool = create_alloc_pool ("elt_list",
 				     sizeof (struct elt_list), 10);
-  elt_loc_list_pool = create_alloc_pool ("elt_loc_list", 
+  elt_loc_list_pool = create_alloc_pool ("elt_loc_list",
 				         sizeof (struct elt_loc_list), 10);
-  cselib_val_pool = create_alloc_pool ("cselib_val_list", 
+  cselib_val_pool = create_alloc_pool ("cselib_val_list",
 				       sizeof (cselib_val), 10);
   value_pool = create_alloc_pool ("value", RTX_CODE_SIZE (VALUE), 100);
   cselib_record_memory = record_memory;

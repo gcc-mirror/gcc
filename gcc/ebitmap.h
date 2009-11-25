@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #define EBITMAP_ELT_TYPE unsigned HOST_WIDEST_FAST_INT
 
 typedef struct ebitmap_def
-{  
+{
   unsigned int n_elts;		/* number of elements in the array.  */
   sbitmap wordmask;		/* wordmask saying which words are
 				   nonzero.  */
@@ -86,11 +86,11 @@ typedef struct {
   /* The word mask iterator.  */
   sbitmap_iterator maskiter;
 } ebitmap_iterator;
-  
+
 static inline void
 ebitmap_iter_init (ebitmap_iterator *i, ebitmap bmp, unsigned int min)
 {
-  sbitmap_iter_init (&i->maskiter, bmp->wordmask, 
+  sbitmap_iter_init (&i->maskiter, bmp->wordmask,
 		     min / EBITMAP_ELT_BITS);
   i->size = bmp->numwords;
   if (i->size == 0)

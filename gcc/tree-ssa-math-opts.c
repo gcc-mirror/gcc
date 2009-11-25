@@ -1,18 +1,18 @@
 /* Global, SSA-based optimizations using mathematical identities.
    Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -312,7 +312,7 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
       recip_def = make_rename_temp (type, "reciptmp");
       new_stmt = gimple_build_assign_with_ops (RDIV_EXPR, recip_def,
 					       build_one_cst (type), def);
-  
+
       if (occ->bb_has_division)
         {
           /* Case 1: insert before an existing division.  */
@@ -418,7 +418,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 	  count++;
 	}
     }
-  
+
   /* Do the expensive part only if we can hope to optimize something.  */
   threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
   if (count >= threshold)
@@ -737,7 +737,7 @@ execute_cse_sincos_1 (tree name)
 
 	gsi = gsi_for_stmt (use_stmt);
 	gsi_insert_after (&gsi, stmt, GSI_SAME_STMT);
-	gsi_remove (&gsi, true); 
+	gsi_remove (&gsi, true);
     }
 
   VEC_free(gimple, heap, stmts);

@@ -717,7 +717,7 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index];
- 
+
   gcc_assert (dom_computed[dir_index]);
 
   if (node->father)
@@ -758,7 +758,7 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
 /* Returns the list of basic blocks that are immediately dominated (in
    direction DIR) by some block between N_REGION ones stored in REGION,
    except for blocks in the REGION itself.  */
-  
+
 VEC (basic_block, heap) *
 get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 			 unsigned n_region)
@@ -815,7 +815,7 @@ redirect_immediate_dominators (enum cdi_direction dir, basic_block bb,
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *bb_node, *to_node, *son;
- 
+
   bb_node = bb->dom[dir_index];
   to_node = to->dom[dir_index];
 
@@ -862,7 +862,7 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
   unsigned i, first;
   bitmap_iterator bi;
   basic_block dom;
-  
+
   first = bitmap_first_set_bit (blocks);
   dom = BASIC_BLOCK (first);
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
@@ -881,11 +881,11 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
     You can view these as bounds for the range of dfs numbers the
     nodes in the subtree of the dominator tree rooted at that node
     will contain.
-    
+
     The dominator tree is always a simple acyclic tree, so there are
     only three possible relations two nodes in the dominator tree have
     to each other:
-    
+
     1. Node A is above Node B (and thus, Node A dominates node B)
 
      A
@@ -899,10 +899,10 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
    B, and DFS_Number_Out of A will be >= DFS_Number_Out of B.  This is
    because we must hit A in the dominator tree *before* B on the walk
    down, and we will hit A *after* B on the walk back up
-   
+
    2. Node A is below node B (and thus, node B dominates node A)
-   
-   
+
+
      B
      |
      A
@@ -911,10 +911,10 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
 
    In the above case, DFS_Number_In of A will be >= DFS_Number_In of
    B, and DFS_Number_Out of A will be <= DFS_Number_Out of B.
-   
+
    This is because we must hit A in the dominator tree *after* B on
    the walk down, and we will hit A *before* B on the walk back up
-   
+
    3. Node A and B are siblings (and thus, neither dominates the other)
 
      C
@@ -937,7 +937,7 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
 
    A_Dominates_B (node A, node B)
    {
-     return DFS_Number_In(A) <= DFS_Number_In(B) 
+     return DFS_Number_In(A) <= DFS_Number_In(B)
             && DFS_Number_Out (A) >= DFS_Number_Out(B);
    }
 
@@ -950,10 +950,10 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
 /* Return TRUE in case BB1 is dominated by BB2.  */
 bool
 dominated_by_p (enum cdi_direction dir, const_basic_block bb1, const_basic_block bb2)
-{ 
+{
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *n1 = bb1->dom[dir_index], *n2 = bb2->dom[dir_index];
- 
+
   gcc_assert (dom_computed[dir_index]);
 
   if (dom_computed[dir_index] == DOM_OK)
@@ -1389,7 +1389,7 @@ add_to_dominance_info (enum cdi_direction dir, basic_block bb)
   gcc_assert (!bb->dom[dir_index]);
 
   n_bbs_in_dom_tree[dir_index]++;
-  
+
   bb->dom[dir_index] = et_new_tree (bb);
 
   if (dom_computed[dir_index] == DOM_OK)

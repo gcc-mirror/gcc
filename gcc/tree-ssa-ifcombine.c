@@ -657,7 +657,7 @@ gate_ifcombine (void)
   return 1;
 }
 
-struct gimple_opt_pass pass_tree_ifcombine = 
+struct gimple_opt_pass pass_tree_ifcombine =
 {
  {
   GIMPLE_PASS,

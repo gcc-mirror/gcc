@@ -51,12 +51,12 @@ free_list (rtx *listp, rtx *unused_listp)
 
   gcc_assert (unused_listp != &unused_insn_list
 	      || GET_CODE (prev_link) == INSN_LIST);
-  
+
   while (link)
     {
       gcc_assert (unused_listp != &unused_insn_list
 		  || GET_CODE (prev_link) == INSN_LIST);
-  
+
       prev_link = link;
       link = XEXP (link, 1);
     }

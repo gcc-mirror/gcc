@@ -1,19 +1,19 @@
 /* Interprocedural constant propagation
    Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com>
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 3, or (at your option) any later
 version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    {
      printf ("value is %d",y);
    }
-   
+
    int f (int x)
    {
      g (x);
@@ -43,32 +43,32 @@ along with GCC; see the file COPYING3.  If not see
      f (3);
      h (3);
    }
-   
-   
+
+
    The IPCP algorithm will find that g's formal argument y is always called
    with the value 3.
 
    The algorithm used is based on "Interprocedural Constant Propagation", by
    Challahan David, Keith D Cooper, Ken Kennedy, Linda Torczon, Comp86, pg
    152-161
-   
+
    The optimization is divided into three stages:
 
    First stage - intraprocedural analysis
    =======================================
    This phase computes jump_function and modification flags.
-   
+
    A jump function for a callsite represents the values passed as an actual
    arguments of a given callsite. There are three types of values:
    Pass through - the caller's formal parameter is passed as an actual argument.
    Constant - a constant is passed as an actual argument.
    Unknown - neither of the above.
-   
+
    The jump function info, ipa_jump_func, is stored in ipa_edge_args
    structure (defined in ipa_prop.h and pointed to by cgraph_node->aux)
    modified_flags are defined in ipa_node_params structure
    (defined in ipa_prop.h and pointed to by cgraph_edge->aux).
-   
+
    -ipcp_init_stage() is the first stage driver.
 
    Second stage - interprocedural analysis
@@ -79,10 +79,10 @@ along with GCC; see the file COPYING3.  If not see
    TOP - unknown.
    BOTTOM - non constant.
    CONSTANT - constant value.
-   
+
    Lattice describing a formal parameter p will have a constant value if all
    callsites invoking this function have the same constant value passed to p.
-   
+
    The lattices are stored in ipcp_lattice which is itself in ipa_node_params
    structure (defined in ipa_prop.h and pointed to by cgraph_edge->aux).
 
@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
    and many calls redirected back to fit the description above.
 
    -ipcp_insert_stage() is the third phase driver.
-   
+
 */
 
 #include "config.h"
@@ -473,7 +473,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
       if (cgraph_maybe_hot_edge_p (e))
 	n_hot_calls ++;
     }
-  
+
   if (!n_calls)
     {
       if (dump_file)
@@ -487,7 +487,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
         fprintf (dump_file, "Considering %s for cloning; code would shrink.\n",
  	         cgraph_node_name (node));
       return true;
-    }  
+    }
 
   if (!flag_ipa_cp_clone)
     {
@@ -634,7 +634,7 @@ ipcp_init_stage (void)
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
 	    {
-	      /* Handle cases of functions with 
+	      /* Handle cases of functions with
 	         a variable number of parameters.  */
 	      ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
 	      if (flag_indirect_inlining)
@@ -1291,7 +1291,7 @@ ipcp_generate_summary (void)
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
   ipa_register_cgraph_hooks ();
-  /* 1. Call the init stage to initialize 
+  /* 1. Call the init stage to initialize
      the ipa_node_params and ipa_edge_args structures.  */
   ipcp_init_stage ();
 }

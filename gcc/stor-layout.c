@@ -2098,7 +2098,7 @@ layout_type (tree type)
    change the result of vector_mode_supported_p and have_regs_of_mode
    on a per-function basis.  Thus the TYPE_MODE of a VECTOR_TYPE can
    change on a per-function basis.  */
-/* ??? Possibly a better solution is to run through all the types 
+/* ??? Possibly a better solution is to run through all the types
    referenced by a function and re-compute the TYPE_MODE once, rather
    than make the TYPE_MODE macro call a function.  */
 

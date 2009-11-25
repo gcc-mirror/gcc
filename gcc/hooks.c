@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; see the file COPYING3.  If not see
-   <http://www.gnu.org/licenses/>.  
+   <http://www.gnu.org/licenses/>.
 
    In other words, you are welcome to use, share and improve this program.
    You are forbidden to forbid anyone else to use, share and improve

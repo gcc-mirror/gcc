@@ -1,24 +1,24 @@
 /* Induction variable canonicalization.
    Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This pass detects the loops that iterate a constant number of times,
-   adds a canonical induction variable (step -1, tested against 0) 
+   adds a canonical induction variable (step -1, tested against 0)
    and replaces the exit test.  This enables the less powerful rtl
    level analysis to use this information.
 
@@ -155,7 +155,7 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
 
   if (is_gimple_min_invariant (op))
     return true;
-  
+
   /* We can still fold accesses to constant arrays when index is known.  */
   if (TREE_CODE (op) != SSA_NAME)
     {
@@ -291,7 +291,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, struct loop_size *size)
     fprintf (dump_file, "size: %i-%i, last_iteration: %i-%i\n", size->overall,
     	     size->eliminated_by_peeling, size->last_iteration,
 	     size->last_iteration_eliminated_by_peeling);
-  
+
   free (body);
 }
 
@@ -323,7 +323,7 @@ estimated_unrolled_size (struct loop_size *size,
 }
 
 /* Tries to unroll LOOP completely, i.e. NITER times.
-   UL determines which loops we are allowed to unroll. 
+   UL determines which loops we are allowed to unroll.
    EXIT is the exit of the loop that should be eliminated.  */
 
 static bool
@@ -431,9 +431,9 @@ try_unroll_loop_completely (struct loop *loop,
 }
 
 /* Adds a canonical induction variable to LOOP if suitable.
-   CREATE_IV is true if we may create a new iv.  UL determines 
+   CREATE_IV is true if we may create a new iv.  UL determines
    which loops we are allowed to completely unroll.  If TRY_EVAL is true, we try
-   to determine the number of iterations of a loop by direct evaluation. 
+   to determine the number of iterations of a loop by direct evaluation.
    Returns true if cfg is changed.  */
 
 static bool
@@ -494,7 +494,7 @@ canonicalize_induction_variables (void)
   loop_iterator li;
   struct loop *loop;
   bool changed = false;
-  
+
   FOR_EACH_LOOP (li, loop, 0)
     {
       changed |= canonicalize_loop_induction_variables (loop,

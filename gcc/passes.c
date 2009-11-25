@@ -114,7 +114,7 @@ void
 print_current_pass (FILE *file)
 {
   if (current_pass)
-    fprintf (file, "current pass = %s (%d)\n", 
+    fprintf (file, "current pass = %s (%d)\n",
 	     current_pass->name, current_pass->static_pass_number);
   else
     fprintf (file, "no current pass.\n");
@@ -126,7 +126,7 @@ void
 debug_pass (void)
 {
   print_current_pass (stderr);
-} 
+}
 
 
 
@@ -407,7 +407,7 @@ register_one_dump_file (struct opt_pass *pass)
 
 /* Recursive worker function for register_dump_files.  */
 
-static int 
+static int
 register_dump_files_1 (struct opt_pass *pass, int properties)
 {
   do
@@ -435,11 +435,11 @@ register_dump_files_1 (struct opt_pass *pass, int properties)
   return properties;
 }
 
-/* Register the dump files for the pipeline starting at PASS. 
+/* Register the dump files for the pipeline starting at PASS.
    PROPERTIES reflects the properties that are guaranteed to be available at
    the beginning of the pipeline.  */
 
-static void 
+static void
 register_dump_files (struct opt_pass *pass,int properties)
 {
   pass->properties_required |= properties;
@@ -479,8 +479,8 @@ make_pass_instance (struct opt_pass *pass, bool track_duplicates)
     {
       pass->todo_flags_start |= TODO_mark_first_instance;
       pass->static_pass_number = -1;
-    } 
-  return pass; 
+    }
+  return pass;
 }
 
 /* Add a pass to the pass list. Duplicate the pass if it's already
@@ -493,7 +493,7 @@ next_pass_1 (struct opt_pass **list, struct opt_pass *pass)
   gcc_assert (pass->name != NULL);
 
   *list = make_pass_instance (pass, false);
-  
+
   return &(*list)->next;
 }
 
@@ -513,7 +513,7 @@ struct pass_list_node
 static struct pass_list_node *added_pass_nodes = NULL;
 static struct pass_list_node *prev_added_pass_node;
 
-/* Insert the pass at the proper position. Return true if the pass 
+/* Insert the pass at the proper position. Return true if the pass
    is successfully added.
 
    NEW_PASS_INFO - new pass to be inserted
@@ -543,7 +543,7 @@ position_pass (struct register_pass_info *new_pass_info,
           struct pass_list_node *new_pass_node;
 
 	  new_pass = make_pass_instance (new_pass_info->pass, true);
-  
+
           /* Insert the new pass instance based on the positioning op.  */
           switch (new_pass_info->pos_op)
             {
@@ -554,7 +554,7 @@ position_pass (struct register_pass_info *new_pass_info,
 		/* Skip newly inserted pass to avoid repeated
 		   insertions in the case where the new pass and the
 		   existing one have the same name.  */
-                pass = new_pass; 
+                pass = new_pass;
                 break;
               case PASS_POS_INSERT_BEFORE:
                 new_pass->next = pass;
@@ -779,7 +779,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_reference);
-  NEXT_PASS (pass_ipa_pure_const); 
+  NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_type_escape);
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_ipa_struct_reorg);
@@ -906,7 +906,7 @@ init_optimization_passes (void)
 	 we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
 	 However, this also causes us to misdiagnose cases that should be
 	 real warnings (e.g., testsuite/gcc.dg/pr18501.c).
-	 
+
 	 To fix the false positives in uninit-5.c, we would have to
 	 account for the predicates protecting the set and the use of each
 	 variable.  Using a representation like Gated Single Assignment
@@ -1037,23 +1037,23 @@ init_optimization_passes (void)
 
   /* Register the passes with the tree dump code.  */
   register_dump_files (all_lowering_passes, PROP_gimple_any);
-  register_dump_files (all_small_ipa_passes, 
+  register_dump_files (all_small_ipa_passes,
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
-  register_dump_files (all_regular_ipa_passes, 
+  register_dump_files (all_regular_ipa_passes,
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
-  register_dump_files (all_lto_gen_passes, 
+  register_dump_files (all_lto_gen_passes,
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
-  register_dump_files (all_passes, 
+  register_dump_files (all_passes,
 		       PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh
 		       | PROP_cfg);
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
-   call CALLBACK on the current function.  */ 
+   call CALLBACK on the current function.  */
 
 static void
 do_per_function (void (*callback) (void *data), void *data)
@@ -1090,7 +1090,7 @@ static GTY ((length ("nnodes"))) struct cgraph_node **order;
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
-   call CALLBACK on the current function.  */ 
+   call CALLBACK on the current function.  */
 
 static void
 do_per_function_toporder (void (*callback) (void *data), void *data)
@@ -1152,7 +1152,7 @@ execute_function_todo (void *data)
 
       if (cleanup && (cfun->curr_properties & PROP_ssa))
 	flags |= TODO_remove_unused_locals;
-	
+
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single
 	 valued PHI nodes.  This propagation may, in turn, cause the
@@ -1169,7 +1169,7 @@ execute_function_todo (void *data)
       update_ssa (update_flags);
       cfun->last_verified &= ~TODO_verify_ssa;
     }
-  
+
   if (flags & TODO_update_address_taken)
     execute_update_addresses_taken (true);
 
@@ -1179,7 +1179,7 @@ execute_function_todo (void *data)
 	execute_update_addresses_taken (true);
       compute_may_aliases ();
     }
-  
+
   if (flags & TODO_remove_unused_locals)
     remove_unused_locals ();
 
@@ -1279,7 +1279,7 @@ execute_todo (unsigned int flags)
   if (flags & TODO_ggc_collect)
     ggc_collect ();
 
-  /* Now that the dumping has been done, we can get rid of the optional 
+  /* Now that the dumping has been done, we can get rid of the optional
      df problems.  */
   if (flags & TODO_df_finish)
     df_finish_pass ((flags & TODO_df_verify) != 0);
@@ -1386,7 +1386,7 @@ execute_ipa_summary_passes (struct ipa_opt_pass_d *ipa_pass)
       struct opt_pass *pass = &ipa_pass->pass;
 
       /* Execute all of the IPA_PASSes in the list.  */
-      if (ipa_pass->pass.type == IPA_PASS 
+      if (ipa_pass->pass.type == IPA_PASS
 	  && (!pass->gate || pass->gate ())
 	  && ipa_pass->generate_summary)
 	{
@@ -1644,7 +1644,7 @@ ipa_write_summaries (void)
   cgraph_node_set set;
   struct cgraph_node **order;
   int i, order_pos;
- 
+
   if (!flag_generate_lto || errorcount || sorrycount)
     return;
 

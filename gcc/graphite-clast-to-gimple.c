@@ -789,7 +789,7 @@ compute_cloog_iv_types_1 (poly_bb_p pbb, struct clast_user_stmt *user_stmt)
     {
       PTR *slot;
       struct ivtype_map_elt_s tmp;
-      struct clast_expr *expr = (struct clast_expr *) 
+      struct clast_expr *expr = (struct clast_expr *)
 	((struct clast_assignment *)t)->RHS;
 
       /* Create an entry (clast_var, type).  */

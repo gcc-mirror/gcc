@@ -434,7 +434,7 @@ convert_to_integer (tree type, tree expr)
       tree s_intype = TREE_TYPE (s_expr);
       const enum built_in_function fcode = builtin_mathfn_code (s_expr);
       tree fn = 0;
-      
+
       switch (fcode)
         {
 	CASE_FLT_FN (BUILT_IN_CEIL):
@@ -494,7 +494,7 @@ convert_to_integer (tree type, tree expr)
 	default:
 	  break;
 	}
-      
+
       if (fn)
         {
 	  tree newexpr = build_call_expr (fn, 1, CALL_EXPR_ARG (s_expr, 0));
@@ -515,7 +515,7 @@ convert_to_integer (tree type, tree expr)
       tree s_intype = TREE_TYPE (s_expr);
       const enum built_in_function fcode = builtin_mathfn_code (s_expr);
       tree fn = 0;
-       
+
       switch (fcode)
 	{
 	CASE_FLT_FN (BUILT_IN_LOGB):

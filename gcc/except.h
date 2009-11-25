@@ -156,7 +156,7 @@ struct GTY(()) eh_region_d
 	 The normal way for this to happen is for there to be a CLEANUP region
 	 contained within this MUST_NOT_THROW region.  Note that if the
 	 runtime handles the MUST_NOT_THROW region, we have no control over
-	 what termination function is called; it will be decided by the 
+	 what termination function is called; it will be decided by the
 	 personality function in effect for this CIE.  */
       tree failure_decl;
       /* The location assigned to the call of FAILURE_DECL, if expanded.  */

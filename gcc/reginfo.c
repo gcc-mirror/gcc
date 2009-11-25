@@ -996,7 +996,7 @@ free_reg_info (void)
 }
 
 /* Initialize some global data for this pass.  */
-static unsigned int 
+static unsigned int
 reginfo_init (void)
 {
   if (df)
@@ -1298,7 +1298,7 @@ record_subregs_of_mode (rtx subreg)
 }
 
 /* Call record_subregs_of_mode for all the subregs in X.  */
-static void 
+static void
 find_subregs_of_mode (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
@@ -1307,7 +1307,7 @@ find_subregs_of_mode (rtx x)
 
   if (code == SUBREG)
     record_subregs_of_mode (x);
-    
+
   /* Time for some deep diving.  */
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {

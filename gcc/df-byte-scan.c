@@ -43,12 +43,12 @@ along with GCC; see the file COPYING3.  If not see
 /* Helper for df_compute_accessed_bytes.  Ref is some sort of extract.
    Return true if this effects the entire reg in REF.  Return false if
    otherwise and set START_BYTE and LAST_BYTE.  See the description of
-   df_compute_accessed_bytes for a description of MM.  */ 
+   df_compute_accessed_bytes for a description of MM.  */
 
-static bool 
+static bool
 df_compute_accessed_bytes_extract (df_ref ref,
 				   enum df_mm mm ,
-				   unsigned int *start_byte, 
+				   unsigned int *start_byte,
 				   unsigned int *last_byte)
 {
   int start;
@@ -61,12 +61,12 @@ df_compute_accessed_bytes_extract (df_ref ref,
 
   /* (*_extract:M1 (reg:M2 X) WIDTH POS)
      (*_extract:M1 (subreg:M1 (reg:M2 X N) WIDTH POS)
-      
+
      This is a bitfield extraction.  The assignment clobbers/extracts
      exactly the bits named by WIDTH and POS and does not affect the
      other bits in register X.  It is also technically possible that
      the bits asked for are longer than units per word.  */
-  
+
   int offset = DF_REF_EXTRACT_OFFSET (ref);
   int width = DF_REF_EXTRACT_WIDTH (ref);
 
@@ -134,9 +134,9 @@ df_compute_accessed_bytes_extract (df_ref ref,
     last = m2_size;
 
   if (dump_file)
-    fprintf (dump_file, "    cpb extract regno=%d start=%d last=%d\n", 
+    fprintf (dump_file, "    cpb extract regno=%d start=%d last=%d\n",
 	     DF_REF_REGNO (ref), start, last);
-  
+
   *start_byte = start;
   *last_byte = last;
   return false;
@@ -145,11 +145,11 @@ df_compute_accessed_bytes_extract (df_ref ref,
 
 /* Helper for df_compute_accessed_bytes.  Ref is a strict_low_part.
    Return true if this effects the entire reg in REF. Return false if
-   otherwise and set START_BYTE and LAST_BYTE.  */ 
+   otherwise and set START_BYTE and LAST_BYTE.  */
 
-static bool 
-df_compute_accessed_bytes_strict_low_part (df_ref ref, 
-					   unsigned int *start_byte, 
+static bool
+df_compute_accessed_bytes_strict_low_part (df_ref ref,
+					   unsigned int *start_byte,
 					   unsigned int *last_byte)
 {
   int start;
@@ -177,17 +177,17 @@ df_compute_accessed_bytes_strict_low_part (df_ref ref,
   gcc_assert (m1_size <= m2_size);
 
   /* (set (strict_low_part (subreg:M1 (reg:M2 X) N)) ...)
-      
+
   This is a bitfield insertion.  The assignment clobbers exactly the
   bits named by the subreg--the M1 bits at position N.  It is also
   technically possible that the bits asked for are longer than units
   per word.  */
-  
+
   start = offset;
   last = offset + m1_size;
 
   if (dump_file)
-    fprintf (dump_file, "    cpb strict low part regno=%d start=%d last=%d\n", 
+    fprintf (dump_file, "    cpb strict low part regno=%d start=%d last=%d\n",
 	     DF_REF_REGNO (ref), start, last);
 
   *start_byte = start;
@@ -197,10 +197,10 @@ df_compute_accessed_bytes_strict_low_part (df_ref ref,
 
 /* Helper for df_compute_accessed_bytes.  Ref is a naked subreg.
    Return true if this effects the entire reg in REF. Return false if
-   otherwise and set START_BYTE and LAST_BYTE.  */ 
+   otherwise and set START_BYTE and LAST_BYTE.  */
 
-static bool 
-df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte, 
+static bool
+df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte,
 				  unsigned int *last_byte)
 
 {
@@ -231,7 +231,7 @@ df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte,
   /* Defs and uses are different in the amount of the reg that touch.  */
   if (DF_REF_REG_DEF_P (ref))
     {
-      /* This is an lvalue.  */ 
+      /* This is an lvalue.  */
 
       if (m2_size > UNITS_PER_WORD)
 	{
@@ -239,23 +239,23 @@ df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte,
 	     Look at the bytes named by the subreg, and expand it to
 	     cover a UNITS_PER_WORD part of register X.  That part of
 	     register X is clobbered, the rest is not.
-	     
+
 	     E.g., (subreg:SI (reg:DI X) 0), where UNITS_PER_WORD is the
 	     size of SImode, clobbers the first SImode part of X, and does
 	     not affect the second SImode part.
-	     
+
 	     E.g., (subreg:QI (reg:DI X) 0), where UNITS_PER_WORD is the
 	     size of SImode, clobbers the first SImode part of X, and does
 	     not affect the second SImode part.  Here the QImode byte is
 	     expanded to a UNITS_PER_WORD portion of the register for
 	     purposes of determining what is clobbered.
-	     
+
 	     If this is an rvalue, then it touches just the bytes that it
 	     talks about.  */
 	  int offset = SUBREG_BYTE (reg);
-	  
+
 	  start = offset & ~(UNITS_PER_WORD - 1);
-	  last = (offset + m1_size + UNITS_PER_WORD - 1) 
+	  last = (offset + m1_size + UNITS_PER_WORD - 1)
 	    & ~(UNITS_PER_WORD - 1);
 	}
       else
@@ -264,7 +264,7 @@ df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte,
 	   X.  */
 	return true;
     }
-  else 
+  else
     {
       /* This is an rvalue. It touches just the bytes they explicitly
 	 mentioned.  */
@@ -272,9 +272,9 @@ df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte,
       start = offset;
       last = start + m1_size;
     }
-  
+
   if (dump_file)
-    fprintf (dump_file, "    cpb subreg regno=%d start=%d last=%d\n", 
+    fprintf (dump_file, "    cpb subreg regno=%d start=%d last=%d\n",
 	     DF_REF_REGNO (ref), start, last);
 
   *start_byte = start;
@@ -299,15 +299,15 @@ df_compute_accessed_bytes_subreg (df_ref ref, unsigned int *start_byte,
    in, START_BYTE and LAST_BYTE are set to 0 and false is returned.
    This means that this use can be ignored.  */
 
-bool 
-df_compute_accessed_bytes (df_ref ref, enum df_mm mm, 
-			   unsigned int *start_byte, 
+bool
+df_compute_accessed_bytes (df_ref ref, enum df_mm mm,
+			   unsigned int *start_byte,
 			   unsigned int *last_byte)
 {
   if (!dbg_cnt (df_byte_scan))
     return true;
 
-  if (!DF_REF_REG_DEF_P (ref) 
+  if (!DF_REF_REG_DEF_P (ref)
       && DF_REF_FLAGS_IS_SET (ref, DF_REF_READ_WRITE))
     {
       if (DF_REF_FLAGS_IS_SET (ref, DF_REF_PRE_POST_MODIFY))
@@ -331,7 +331,7 @@ df_compute_accessed_bytes (df_ref ref, enum df_mm mm,
   if (DF_REF_FLAGS_IS_SET (ref, DF_REF_SIGN_EXTRACT | DF_REF_ZERO_EXTRACT))
     return df_compute_accessed_bytes_extract (ref, mm, start_byte, last_byte);
   else if (DF_REF_FLAGS_IS_SET (ref, DF_REF_STRICT_LOW_PART))
-    return df_compute_accessed_bytes_strict_low_part (ref, 
+    return df_compute_accessed_bytes_strict_low_part (ref,
 						      start_byte, last_byte);
   else if (GET_CODE (DF_REF_REG (ref)) == SUBREG)
     return df_compute_accessed_bytes_subreg (ref, start_byte, last_byte);

@@ -622,7 +622,7 @@ mark_artificial_uses (void)
 
   FOR_ALL_BB (bb)
     {
-      for (use_rec = df_get_artificial_uses (bb->index); 
+      for (use_rec = df_get_artificial_uses (bb->index);
 	   *use_rec; use_rec++)
 	for (defs = DF_REF_CHAIN (*use_rec); defs; defs = defs->next)
 	  if (! DF_REF_IS_ARTIFICIAL (defs->ref))
@@ -825,7 +825,7 @@ byte_dce_process_block (basic_block bb, bool redo_out, bitmap au)
 		mark_insn (insn, true);
 		goto quickexit;
 	      }
-	    
+
 	    last = start + len;
 	    while (start < last)
 	      if (bitmap_bit_p (local_live, start++))
@@ -834,9 +834,9 @@ byte_dce_process_block (basic_block bb, bool redo_out, bitmap au)
 		  goto quickexit;
 		}
 	  }
-	
-      quickexit: 
-	
+
+      quickexit:
+
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
 	df_byte_lr_simulate_defs (insn, local_live);
@@ -848,12 +848,12 @@ byte_dce_process_block (basic_block bb, bool redo_out, bitmap au)
 
 	if (dump_file)
 	  {
-	    fprintf (dump_file, "finished processing insn %d live out = ", 
+	    fprintf (dump_file, "finished processing insn %d live out = ",
 		     INSN_UID (insn));
 	    df_print_byte_regset (dump_file, local_live);
 	  }
       }
-  
+
   df_byte_lr_simulate_artificial_refs_at_top (bb, local_live);
 
   block_changed = !bitmap_equal_p (local_live, DF_BYTE_LR_IN (bb));
@@ -913,10 +913,10 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	      needed = true;
 	      break;
 	    }
-	    
+
 	if (needed)
 	  mark_insn (insn, true);
-	
+
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
 	df_simulate_defs (insn, local_live);
@@ -926,7 +926,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 	if (marked_insn_p (insn))
 	  df_simulate_uses (insn, local_live);
       }
-  
+
   df_simulate_finalize_backwards (bb, local_live);
 
   block_changed = !bitmap_equal_p (local_live, DF_LR_IN (bb));
@@ -986,15 +986,15 @@ fast_dce (bool byte_level)
 	    }
 
 	  if (byte_level)
-	    local_changed 
+	    local_changed
 	      = byte_dce_process_block (bb, bitmap_bit_p (redo_out, index),
 					  bb_has_eh_pred (bb) ? au_eh : au);
 	  else
-	    local_changed 
+	    local_changed
 	      = dce_process_block (bb, bitmap_bit_p (redo_out, index),
 				   bb_has_eh_pred (bb) ? au_eh : au);
 	  bitmap_set_bit (processed, index);
-	  
+
 	  if (local_changed)
 	    {
 	      edge e;
@@ -1010,7 +1010,7 @@ fast_dce (bool byte_level)
 		  bitmap_set_bit (redo_out, e->src->index);
 	    }
 	}
-      
+
       if (global_changed)
 	{
 	  /* Turn off the RUN_DCE flag to prevent recursive calls to
@@ -1023,11 +1023,11 @@ fast_dce (bool byte_level)
 	  sbitmap_zero (marked);
 	  bitmap_clear (processed);
 	  bitmap_clear (redo_out);
-	  
+
 	  /* We do not need to rescan any instructions.  We only need
 	     to redo the dataflow equations for the blocks that had a
 	     change at the top of the block.  Then we need to redo the
-	     iteration.  */ 
+	     iteration.  */
 	  if (byte_level)
 	    df_analyze_problem (df_byte_lr, all_blocks, postorder, n_blocks);
 	  else

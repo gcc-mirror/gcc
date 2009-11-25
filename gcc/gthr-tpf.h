@@ -23,7 +23,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* TPF needs its own version of gthr-*.h because TPF always links to 
+/* TPF needs its own version of gthr-*.h because TPF always links to
    the thread library.  However, for performance reasons we still do not
    want to issue thread api calls unless a check is made to see that we
    are running as a thread.  */
@@ -206,7 +206,7 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 
 static inline int
 __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
-{ 
+{
   if (__tpf_pthread_active ())
     {
       pthread_mutexattr_t __attr;

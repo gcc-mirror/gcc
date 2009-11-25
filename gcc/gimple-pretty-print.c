@@ -228,7 +228,7 @@ dump_gimple_fmt (pretty_printer *buffer, int spc, int flags,
               default:
                 gcc_unreachable ();
             }
-        } 
+        }
       else
         pp_character (buffer, *c);
     }
@@ -270,13 +270,13 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       else
 	dump_generic_node (buffer, rhs, spc, flags, false);
       break;
-      
+
     case PAREN_EXPR:
       pp_string (buffer, "((");
       dump_generic_node (buffer, rhs, spc, flags, false);
       pp_string (buffer, "))");
       break;
-      
+
     case ABS_EXPR:
       pp_string (buffer, "ABS_EXPR <");
       dump_generic_node (buffer, rhs, spc, flags, false);

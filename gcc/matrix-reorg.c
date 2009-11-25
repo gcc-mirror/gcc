@@ -2,7 +2,7 @@
    Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <razya@il.ibm.com>
    Originally written by Revital Eres and Mustafa Hagog.
-   
+
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify it under
@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /*
-   Matrix flattening optimization tries to replace a N-dimensional 
+   Matrix flattening optimization tries to replace a N-dimensional
    matrix with its equivalent M-dimensional matrix, where M < N.
    This first implementation focuses on global matrices defined dynamically.
 
@@ -43,31 +43,31 @@ along with GCC; see the file COPYING3.  If not see
    and transformation.
    The driver of the optimization is matrix_reorg ().
 
-    
-      
+
+
    Analysis phase:
    ===============
 
-   We'll number the dimensions outside-in, meaning the most external 
-   is 0, then 1, and so on.   
-   The analysis part of the optimization determines K, the escape 
-   level of a N-dimensional matrix (K <= N), that allows flattening of 
+   We'll number the dimensions outside-in, meaning the most external
+   is 0, then 1, and so on.
+   The analysis part of the optimization determines K, the escape
+   level of a N-dimensional matrix (K <= N), that allows flattening of
    the external dimensions 0,1,..., K-1. Escape level 0 means that the
    whole matrix escapes and no flattening is possible.
-     
-   The analysis part is implemented in analyze_matrix_allocation_site() 
+
+   The analysis part is implemented in analyze_matrix_allocation_site()
    and analyze_matrix_accesses().
 
    Transformation phase:
    =====================
-   In this phase we define the new flattened matrices that replace the 
-   original matrices in the code. 
-   Implemented in transform_allocation_sites(), 
-   transform_access_sites().  
+   In this phase we define the new flattened matrices that replace the
+   original matrices in the code.
+   Implemented in transform_allocation_sites(),
+   transform_access_sites().
 
    Matrix Transposing
    ==================
-   The idea of Matrix Transposing is organizing the matrix in a different 
+   The idea of Matrix Transposing is organizing the matrix in a different
    layout such that the dimensions are reordered.
    This could produce better cache behavior in some cases.
 
@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
     for (j=0; j<M; j++)
      access to a[i][j]
 
-   This loop can produce good cache behavior because the elements of 
+   This loop can produce good cache behavior because the elements of
    the inner dimension are accessed sequentially.
 
   However, if the accesses of the matrix were of the following form:
@@ -86,27 +86,27 @@ along with GCC; see the file COPYING3.  If not see
    for (j=0; j<M; j++)
      access to a[j][i]
 
-  In this loop we iterate the columns and not the rows. 
-  Therefore, replacing the rows and columns 
+  In this loop we iterate the columns and not the rows.
+  Therefore, replacing the rows and columns
   would have had an organization with better (cache) locality.
   Replacing the dimensions of the matrix is called matrix transposing.
 
-  This  example, of course, could be enhanced to multiple dimensions matrices 
+  This  example, of course, could be enhanced to multiple dimensions matrices
   as well.
 
-  Since a program could include all kind of accesses, there is a decision 
-  mechanism, implemented in analyze_transpose(), which implements a  
+  Since a program could include all kind of accesses, there is a decision
+  mechanism, implemented in analyze_transpose(), which implements a
   heuristic that tries to determine whether to transpose the matrix or not,
   according to the form of the more dominant accesses.
-  This decision is transferred to the flattening mechanism, and whether 
+  This decision is transferred to the flattening mechanism, and whether
   the matrix was transposed or not, the matrix is flattened (if possible).
-  
+
   This decision making is based on profiling information and loop information.
-  If profiling information is available, decision making mechanism will be 
+  If profiling information is available, decision making mechanism will be
   operated, otherwise the matrix will only be flattened (if possible).
 
-  Both optimizations are described in the paper "Matrix flattening and 
-  transposing in GCC" which was presented in GCC summit 2006. 
+  Both optimizations are described in the paper "Matrix flattening and
+  transposing in GCC" which was presented in GCC summit 2006.
   http://www.gccsummit.org/2006/2006-GCC-Summit-Proceedings.pdf.  */
 
 #include "config.h"
@@ -291,7 +291,7 @@ struct matrix_info
    */
   tree *dimension_size;
 
-  /* An array which holds for each dimension it's original size 
+  /* An array which holds for each dimension it's original size
      (before transposing and flattening take place).  */
   tree *dimension_size_orig;
 
@@ -308,7 +308,7 @@ struct matrix_info
      elements are of type "struct access_site_info *".  */
   VEC (access_site_info_p, heap) * access_l;
 
-  /* A map of how the dimensions will be organized at the end of 
+  /* A map of how the dimensions will be organized at the end of
      the analyses.  */
   int *dim_map;
 };
@@ -408,7 +408,7 @@ mtt_info_eq (const void *mtt1, const void *mtt2)
   return false;
 }
 
-/* Return false if STMT may contain a vector expression.  
+/* Return false if STMT may contain a vector expression.
    In this situation, all matrices should not be flattened.  */
 static bool
 may_flatten_matrices_1 (gimple stmt)
@@ -452,7 +452,7 @@ may_flatten_matrices_1 (gimple stmt)
   return true;
 }
 
-/* Return false if there are hand-written vectors in the program.  
+/* Return false if there are hand-written vectors in the program.
    We disable the flattening in such a case.  */
 static bool
 may_flatten_matrices (struct cgraph_node *node)
@@ -687,7 +687,7 @@ ssa_accessed_in_assign_rhs (gimple stmt, struct ssa_acc_in_tree *a)
     }
 }
 
-/* Record the access/allocation site information for matrix MI so we can 
+/* Record the access/allocation site information for matrix MI so we can
    handle it later in transformation.  */
 static void
 record_access_alloc_site_info (struct matrix_info *mi, gimple stmt, tree offset,
@@ -747,7 +747,7 @@ add_allocation_site (struct matrix_info *mi, gimple stmt, int level)
       else
 	{
 	  mark_min_matrix_escape_level (mi, level, stmt);
-	  /* cannot be that (level == min_malloc_level) 
+	  /* cannot be that (level == min_malloc_level)
 	     we would have returned earlier.  */
 	  return;
 	}
@@ -785,7 +785,7 @@ add_allocation_site (struct matrix_info *mi, gimple stmt, int level)
    will hold the size for each dimension; each malloc that allocates a
    dimension has the size parameter; we use that parameter to
    initialize the dimension size variable so we can use it later in
-   the address calculations.  LEVEL is the dimension we're inspecting.  
+   the address calculations.  LEVEL is the dimension we're inspecting.
    Return if STMT is related to an allocation site.  */
 
 static void
@@ -840,12 +840,12 @@ analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
 	      return;
 	    }
 	}
-      /* This is a call to malloc of level 'level'.  
-	 mi->max_malloced_level-1 == level  means that we've 
-	 seen a malloc statement of level 'level' before.  
-	 If the statement is not the same one that we've 
-	 seen before, then there's another malloc statement 
-	 for the same level, which means that we need to mark 
+      /* This is a call to malloc of level 'level'.
+	 mi->max_malloced_level-1 == level  means that we've
+	 seen a malloc statement of level 'level' before.
+	 If the statement is not the same one that we've
+	 seen before, then there's another malloc statement
+	 for the same level, which means that we need to mark
 	 it escaping.  */
       if (mi->malloc_for_level
 	  && mi->max_malloced_level-1 == level
@@ -864,26 +864,26 @@ analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
 }
 
 /* The transposing decision making.
-   In order to to calculate the profitability of transposing, we collect two 
+   In order to to calculate the profitability of transposing, we collect two
    types of information regarding the accesses:
    1. profiling information used to express the hotness of an access, that
-   is how often the matrix is accessed by this access site (count of the 
-   access site). 
+   is how often the matrix is accessed by this access site (count of the
+   access site).
    2. which dimension in the access site is iterated by the inner
    most loop containing this access.
 
-   The matrix will have a calculated value of weighted hotness for each 
+   The matrix will have a calculated value of weighted hotness for each
    dimension.
-   Intuitively the hotness level of a dimension is a function of how 
-   many times it was the most frequently accessed dimension in the 
+   Intuitively the hotness level of a dimension is a function of how
+   many times it was the most frequently accessed dimension in the
    highly executed access sites of this matrix.
 
    As computed by following equation:
-   m      n 
-   __   __  
-   \    \  dim_hot_level[i] +=   
+   m      n
+   __   __
+   \    \  dim_hot_level[i] +=
    /_   /_
-   j     i 
+   j     i
                  acc[j]->dim[i]->iter_by_inner_loop * count(j)
 
   Where n is the number of dims and m is the number of the matrix
@@ -957,7 +957,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* Find the index which defines the OFFSET from base.  
+/* Find the index which defines the OFFSET from base.
    We walk from use to def until we find how the offset was defined.  */
 static tree
 get_index_from_offset (tree offset, gimple def_stmt)
@@ -1043,9 +1043,9 @@ update_type_size (struct matrix_info *mi, gimple stmt, tree ssa_var,
     }
 }
 
-/* USE_STMT represents a GIMPLE_CALL, where one of the arguments is the 
-   ssa var that we want to check because it came from some use of matrix 
-   MI.  CURRENT_INDIRECT_LEVEL is the indirection level we reached so 
+/* USE_STMT represents a GIMPLE_CALL, where one of the arguments is the
+   ssa var that we want to check because it came from some use of matrix
+   MI.  CURRENT_INDIRECT_LEVEL is the indirection level we reached so
    far.  */
 
 static int
@@ -1122,14 +1122,14 @@ analyze_accesses_for_call_stmt (struct matrix_info *mi, tree ssa_var,
   return current_indirect_level;
 }
 
-/* USE_STMT represents a phi node of the ssa var that we want to 
-   check  because it came from some use of matrix 
+/* USE_STMT represents a phi node of the ssa var that we want to
+   check  because it came from some use of matrix
    MI.
    We check all the escaping levels that get to the PHI node
    and make sure they are all the same escaping;
    if not (which is rare) we let the escaping level be the
    minimum level that gets into that PHI because starting from
-   that level we cannot expect the behavior of the indirections.  
+   that level we cannot expect the behavior of the indirections.
    CURRENT_INDIRECT_LEVEL is the indirection level we reached so far.  */
 
 static void
@@ -1186,8 +1186,8 @@ analyze_accesses_for_phi_node (struct matrix_info *mi, gimple use_stmt,
     }
 }
 
-/* USE_STMT represents an assign statement (the rhs or lhs include 
-   the ssa var that we want to check  because it came from some use of matrix 
+/* USE_STMT represents an assign statement (the rhs or lhs include
+   the ssa var that we want to check  because it came from some use of matrix
    MI.  CURRENT_INDIRECT_LEVEL is the indirection level we reached so far.  */
 
 static int
@@ -1246,7 +1246,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
 	}
       return current_indirect_level;
     }
-  /* Now, check the right-hand-side, to see how the SSA variable 
+  /* Now, check the right-hand-side, to see how the SSA variable
      is used.  */
   if (rhs_acc.var_found)
     {
@@ -1317,8 +1317,8 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
 
 	  /* One exception is when we are storing to the matrix
 	     variable itself; this is the case of malloc, we must make
-	     sure that it's the one and only one call to malloc so 
-	     we call analyze_matrix_allocation_site to check 
+	     sure that it's the one and only one call to malloc so
+	     we call analyze_matrix_allocation_site to check
 	     this out.  */
 	  if (TREE_CODE (lhs) != VAR_DECL || lhs != mi->decl)
 	    mark_min_matrix_escape_level (mi, current_indirect_level,
@@ -1344,7 +1344,7 @@ analyze_accesses_for_assign_stmt (struct matrix_info *mi, tree ssa_var,
   return current_indirect_level;
 }
 
-/* Given a SSA_VAR (coming from a use statement of the matrix MI), 
+/* Given a SSA_VAR (coming from a use statement of the matrix MI),
    follow its uses and level of indirection and find out the minimum
    indirection level it escapes in (the highest dimension) and the maximum
    level it is accessed in (this will be the actual dimension of the
@@ -1400,7 +1400,7 @@ analyze_matrix_accesses (struct matrix_info *mi, tree ssa_var,
   }
 }
 
-typedef struct 
+typedef struct
 {
   tree fn;
   gimple stmt;
@@ -1457,7 +1457,7 @@ can_calculate_stmt_before_stmt (gimple stmt, sbitmap visited)
     case GIMPLE_ASSIGN:
       code = gimple_assign_rhs_code (stmt);
       op1 = gimple_assign_rhs1 (stmt);
-	
+
       switch (code)
 	{
 	case POINTER_PLUS_EXPR:
@@ -1804,12 +1804,12 @@ compute_offset (HOST_WIDE_INT orig, HOST_WIDE_INT new_val, tree result)
    according to the following equation:
 
      a[I1][I2]...[Ik] , where D1..Dk is the length of each dimension and the
-     escaping level is m <= k, and a' is the new allocated matrix, 
+     escaping level is m <= k, and a' is the new allocated matrix,
      will be translated to :
-       
+
        b[I(m+1)]...[Ik]
-       
-       where 
+
+       where
        b = a' + I1*D2...*Dm + I2*D3...Dm + ... + Im
                                                       */
 
@@ -2017,7 +2017,7 @@ sort_dim_hot_level (gcov_type * a, int *dim_map, int n)
    Make sure that we hold the size in the malloc site inside a
    new global variable; this way we ensure that the size doesn't
    change and it is accessible from all the other functions that
-   uses the matrix.  Also, the original calls to free are deleted, 
+   uses the matrix.  Also, the original calls to free are deleted,
    and replaced by a new call to free the flattened matrix.  */
 
 static int
@@ -2413,7 +2413,7 @@ gate_matrix_reorg (void)
   return flag_ipa_matrix_reorg && flag_whole_program;
 }
 
-struct simple_ipa_opt_pass pass_ipa_matrix_reorg = 
+struct simple_ipa_opt_pass pass_ipa_matrix_reorg =
 {
  {
   SIMPLE_IPA_PASS,

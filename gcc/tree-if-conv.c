@@ -252,7 +252,7 @@ tree_if_convert_stmt (struct loop *  loop, gimple t, tree cond,
       /* This GIMPLE_ASSIGN is killing previous value of LHS. Appropriate
 	 value will be selected by PHI node based on condition. It is possible
 	 that before this transformation, PHI nodes was selecting default
-	 value and now it will use this new value. This is OK because it does 
+	 value and now it will use this new value. This is OK because it does
 	 not change validity the program.  */
       break;
 
@@ -489,7 +489,7 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 	    fprintf (dump_file, "non empty basic block after exit bb\n");
 	  return false;
 	}
-      else if (bb == loop->latch 
+      else if (bb == loop->latch
 	       && bb != exit_bb
 	       && !dominated_by_p (CDI_DOMINATORS, bb, exit_bb))
 	  {
@@ -706,7 +706,7 @@ clean_predicate_lists (struct loop *loop)
    whose phi arguments are selected when cond is true.  */
 
 static basic_block
-find_phi_replacement_condition (struct loop *loop, 
+find_phi_replacement_condition (struct loop *loop,
 				basic_block bb, tree *cond,
                                 gimple_stmt_iterator *gsi)
 {
@@ -724,7 +724,7 @@ find_phi_replacement_condition (struct loop *loop,
        S2: x = c ? b : a;
 
        S2 is preferred over S1. Make 'b' first_bb and use its condition.
-       
+
      2) Do not make loop header first_bb.
 
      3)
@@ -735,7 +735,7 @@ find_phi_replacement_condition (struct loop *loop,
 
        S3: x = (c == d) ? b : a;
 
-       S3 is preferred over S1 and S2*, Make 'b' first_bb and use 
+       S3 is preferred over S1 and S2*, Make 'b' first_bb and use
        its condition.
 
      4) If  pred B is dominated by pred A then use pred B's condition.
@@ -832,7 +832,7 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
   tree arg_0, arg_1;
 
   gcc_assert (gimple_code (phi) == GIMPLE_PHI);
-  
+
   /* If this is not filtered earlier, then now it is too late.  */
   gcc_assert (gimple_phi_num_args (phi) == 2);
 

@@ -1741,7 +1741,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 #define MAXPATH 256
 
 /* descrip.h doesn't have everything ...  */
-typedef struct fibdef* __fibdef_ptr32 __attribute__ (( mode (SI) )); 
+typedef struct fibdef* __fibdef_ptr32 __attribute__ (( mode (SI) ));
 struct dsc$descriptor_fib
 {
   unsigned int fib$l_len;

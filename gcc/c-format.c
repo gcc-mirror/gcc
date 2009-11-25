@@ -1775,7 +1775,7 @@ check_format_info_main (format_check_results *res,
       scalar_identity_flag = 0;
       if (fli)
 	{
-	  while (fli->name != 0 
+	  while (fli->name != 0
  		 && strncmp (fli->name, format_chars, strlen (fli->name)))
 	      fli++;
 	  if (fli->name != 0)

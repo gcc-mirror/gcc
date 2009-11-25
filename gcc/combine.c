@@ -767,7 +767,7 @@ do_SUBST_MODE (rtx *into, enum machine_mode newval)
 /* Subroutine of try_combine.  Determine whether the combine replacement
    patterns NEWPAT, NEWI2PAT and NEWOTHERPAT are cheaper according to
    insn_rtx_cost that the original instruction sequence I1, I2, I3 and
-   undobuf.other_insn.  Note that I1 and/or NEWI2PAT may be NULL_RTX. 
+   undobuf.other_insn.  Note that I1 and/or NEWI2PAT may be NULL_RTX.
    NEWOTHERPAT and undobuf.other_insn may also both be NULL_RTX.  This
    function returns false, if the costs of all instructions can be
    estimated, and the replacements are more expensive than the original
@@ -912,7 +912,7 @@ create_log_links (void)
      register and establishing log links when def is encountered.
      Note that we do not clear next_use array in order to save time,
      so we have to test whether the use is in the same basic block as def.
-              
+
      There are a few cases below when we do not consider the definition or
      usage -- these are taken from original flow.c did. Don't ask me why it is
      done this way; I don't know and if it works, I don't want to know.  */
@@ -1367,7 +1367,7 @@ setup_incoming_promotions (rtx first)
       mode2 = TYPE_MODE (DECL_ARG_TYPE (arg));
       uns3 = TYPE_UNSIGNED (DECL_ARG_TYPE (arg));
 
-      /* The mode and signedness of the argument as it is actually passed, 
+      /* The mode and signedness of the argument as it is actually passed,
          after any TARGET_PROMOTE_FUNCTION_ARGS-driven ABI promotions.  */
       mode3 = promote_function_mode (DECL_ARG_TYPE (arg), mode2, &uns3,
 				     TREE_TYPE (cfun->decl), 0);
@@ -3887,7 +3887,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
     if (newi2pat && new_i2_notes)
       distribute_notes (new_i2_notes, i2, i2, NULL_RTX, NULL_RTX, NULL_RTX);
-    
+
     if (new_i3_notes)
       distribute_notes (new_i3_notes, i3, i3, NULL_RTX, NULL_RTX, NULL_RTX);
 
@@ -4033,7 +4033,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	}
       df_insn_rescan (i3);
     }
-  
+
   /* Set new_direct_jump_p if a new return or simple jump instruction
      has been created.  Adjust the CFG accordingly.  */
 
@@ -4061,7 +4061,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       *new_direct_jump_p = 1;
       update_cfg_for_uncondjump (i3);
     }
-  
+
   combine_successes++;
   undo_commit ();
 
@@ -5272,7 +5272,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 	}
 
       /* Try simplify a*(b/c) as (a*b)/c.  */
-      if (FLOAT_MODE_P (mode) && flag_associative_math 
+      if (FLOAT_MODE_P (mode) && flag_associative_math
 	  && GET_CODE (XEXP (x, 0)) == DIV)
 	{
 	  rtx tem = simplify_binary_operation (MULT, mode,
@@ -10175,7 +10175,7 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
 	  if (REG_P (XEXP (XVECEXP (newpat, 0, i), 0))
 	      && ! reg_dead_at_p (XEXP (XVECEXP (newpat, 0, i), 0), insn))
 	    return -1;
-	  if (GET_CODE (XEXP (XVECEXP (newpat, 0, i), 0)) != SCRATCH) 
+	  if (GET_CODE (XEXP (XVECEXP (newpat, 0, i), 0)) != SCRATCH)
 	    {
 	      gcc_assert (REG_P (XEXP (XVECEXP (newpat, 0, i), 0)));
 	      notes = alloc_reg_note (REG_UNUSED,

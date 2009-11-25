@@ -43,21 +43,21 @@
    nonlocal references.  We want to do this sooner rather than later, in
    order to give us more freedom in emitting all of the functions in question.
 
-   Back in olden times, when gcc was young, we developed an insanely 
+   Back in olden times, when gcc was young, we developed an insanely
    complicated scheme whereby variables which were referenced nonlocally
    were forced to live in the stack of the declaring function, and then
    the nested functions magically discovered where these variables were
    placed.  In order for this scheme to function properly, it required
-   that the outer function be partially expanded, then we switch to 
+   that the outer function be partially expanded, then we switch to
    compiling the inner function, and once done with those we switch back
    to compiling the outer function.  Such delicate ordering requirements
-   makes it difficult to do whole translation unit optimizations 
+   makes it difficult to do whole translation unit optimizations
    involving such functions.
 
    The implementation here is much more direct.  Everything that can be
    referenced by an inner function is a member of an explicitly created
    structure herein called the "nonlocal frame struct".  The incoming
-   static chain for a nested function is a pointer to this struct in 
+   static chain for a nested function is a pointer to this struct in
    the parent.  In this way, we settle on known offsets from a known
    base, and so are decoupled from the logic that places objects in the
    function's stack frame.  More importantly, we don't have to wait for
@@ -66,8 +66,8 @@
    allocated anywhere.  Which means that the outer function is now
    inlinable.
 
-   Theory of operation here is very simple.  Iterate over all the 
-   statements in all the functions (depth first) several times, 
+   Theory of operation here is very simple.  Iterate over all the
+   statements in all the functions (depth first) several times,
    allocating structures and fields on demand.  In general we want to
    examine inner functions first, so that we can avoid making changes
    to outer functions which are unnecessary.
@@ -83,7 +83,7 @@ struct nesting_info
   struct nesting_info *outer;
   struct nesting_info *inner;
   struct nesting_info *next;
-  
+
   struct pointer_map_t *field_map;
   struct pointer_map_t *var_map;
   bitmap suppress_expansion;
@@ -335,7 +335,7 @@ get_chain_decl (struct nesting_info *info)
 	 the construction of this variable is handled specially in
 	 expand_function_start and initialize_inlined_parameters.
 	 Note also that it's represented as a parameter.  This is more
-	 close to the truth, since the initial value does come from 
+	 close to the truth, since the initial value does come from
 	 the caller.  */
       decl = build_decl (DECL_SOURCE_LOCATION (info->context),
 			 PARM_DECL, create_tmp_var_name ("CHAIN"), type);
@@ -413,7 +413,7 @@ init_tmp_var_with_call (struct nesting_info *info, gimple_stmt_iterator *gsi,
   return t;
 }
 
-  
+
 /* Copy EXP into a temporary.  Allocate the temporary in the context of
    INFO and insert the initialization statement before GSI.  */
 
@@ -533,7 +533,7 @@ lookup_tramp_for_decl (struct nesting_info *info, tree decl,
     }
 
   return (tree) *slot;
-} 
+}
 
 /* Build or return the field within the non-local frame state that holds
    the non-local goto "jmp_buf".  The buffer itself is maintained by the
@@ -657,7 +657,7 @@ walk_gimple_omp_for (gimple for_stmt,
 }
 
 /* Similarly for ROOT and all functions nested underneath, depth first.  */
-    
+
 static void
 walk_all_functions (walk_stmt_fn callback_stmt, walk_tree_fn callback_op,
 		    struct nesting_info *root)
@@ -811,7 +811,7 @@ static void note_nonlocal_vla_type (struct nesting_info *info, tree type);
 
 /* A subroutine of convert_nonlocal_reference_op.  Create a local variable
    in the nested function with DECL_VALUE_EXPR set to reference the true
-   variable in the parent function.  This is used both for debug info 
+   variable in the parent function.  This is used both for debug info
    and in OpenMP lowering.  */
 
 static tree
@@ -1445,7 +1445,7 @@ convert_local_reference_op (tree *tp, int *walk_subtrees, void *data)
 
 	  /* Then the frame decl is now addressable.  */
 	  TREE_ADDRESSABLE (info->frame_decl) = 1;
-	    
+
 	  save_context = current_function_decl;
 	  current_function_decl = info->context;
 	  recompute_tree_invariant_for_addr_expr (t);
@@ -1785,7 +1785,7 @@ convert_nl_goto_reference (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     }
   else
     new_label = (tree) *slot;
-  
+
   /* Build: __builtin_nl_goto(new_label, &chain->nl_goto_field).  */
   field = get_nl_goto_field (i);
   x = get_frame_field (info, target_context, field, &wi->gsi);
@@ -2078,7 +2078,7 @@ convert_all_function_calls (struct nesting_info *root)
      transformations can induce new uses of the static chain, which in turn
      require re-examining all users of the decl.  */
   /* ??? It would make sense to try to use the call graph to speed this up,
-     but the call graph hasn't really been built yet.  Even if it did, we 
+     but the call graph hasn't really been built yet.  Even if it did, we
      would still need to iterate in this loop since address-of references
      wouldn't show up in the callgraph anyway.  */
   iter_count = 0;
@@ -2292,7 +2292,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 		    gimple_seq_first_stmt (gimple_body (context)), true);
     }
 
-  /* If any parameters were referenced non-locally, then we need to 
+  /* If any parameters were referenced non-locally, then we need to
      insert a copy.  Likewise, if any variables were referenced by
      pointer, we need to initialize the address.  */
   if (root->any_parm_remapped)

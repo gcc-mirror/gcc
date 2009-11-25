@@ -72,7 +72,7 @@ loop_optimizer_init (unsigned flags)
 
       if (flags & LOOPS_HAVE_FALLTHRU_PREHEADERS)
         cp_flags |= CP_FALLTHRU_PREHEADERS;
-      
+
       create_preheaders (cp_flags);
     }
 
@@ -126,7 +126,7 @@ loop_optimizer_finalize (void)
 
   /* Checking.  */
 #ifdef ENABLE_CHECKING
-  /* FIXME: no point to verify flow info after bundling on ia64.  Use this 
+  /* FIXME: no point to verify flow info after bundling on ia64.  Use this
      hack for achieving this.  */
   if (!reload_completed)
     verify_flow_info ();
@@ -177,7 +177,7 @@ static unsigned int
 rtl_loop_init (void)
 {
   gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
-  
+
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
@@ -269,7 +269,7 @@ struct rtl_opt_pass pass_rtl_move_loop_invariants =
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */ 
+  0,                                    /* todo_flags_start */
   TODO_df_verify |
   TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func                        /* todo_flags_finish */

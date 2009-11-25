@@ -410,13 +410,13 @@ do_replace (struct du_head *head, int reg)
 
 	  for (note = REG_NOTES (chain->insn); note; note = XEXP (note, 1))
 	    {
-	      if (REG_NOTE_KIND (note) == REG_DEAD 
+	      if (REG_NOTE_KIND (note) == REG_DEAD
 		  || REG_NOTE_KIND (note) == REG_UNUSED)
 		{
 		  rtx reg = XEXP (note, 0);
 		  gcc_assert (HARD_REGISTER_P (reg));
-		  
-		  if (REGNO (reg) == base_regno) 
+
+		  if (REGNO (reg) == base_regno)
 		    XEXP (note, 0) = *chain->loc;
 		}
 	    }

@@ -319,7 +319,7 @@ outside_finally_tree (treemple start, gimple target)
    The eh region creation is straight-forward, but frobbing all the gotos
    and such into shape isn't.  */
 
-/* The sequence into which we record all EH stuff.  This will be 
+/* The sequence into which we record all EH stuff.  This will be
    placed at the end of the function when we're all done.  */
 static gimple_seq eh_seq;
 
@@ -2118,7 +2118,7 @@ redirect_eh_edge_1 (edge edge_in, basic_block new_bb, bool change_region)
     {
       new_lp = get_eh_landing_pad_from_number (new_lp_nr);
       gcc_assert (new_lp);
-      
+
       /* Unless CHANGE_REGION is true, the new and old landing pad
 	 had better be associated with the same EH region.  */
       gcc_assert (change_region || new_lp->region == old_lp->region);
@@ -3278,7 +3278,7 @@ remove_unreachable_handlers (void)
 	  fprintf (dump_file, "Removing unreachable landing pad %d\n", lp_nr);
 	remove_eh_landing_pad (lp);
       }
-    
+
   if (dump_file)
     {
       fprintf (dump_file, "\n\nAfter removal of unreachable regions:\n");
@@ -3588,7 +3588,7 @@ cleanup_empty_eh_move_lp (basic_block bb, edge e_out,
 }
 
 /* A subroutine of cleanup_empty_eh.  Handle more complex cases of
-   unsplitting than unsplit_eh was prepared to handle, e.g. when 
+   unsplitting than unsplit_eh was prepared to handle, e.g. when
    multiple incoming edges and phis are involved.  */
 
 static bool

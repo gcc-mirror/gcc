@@ -86,7 +86,7 @@ struct GTY(()) emit_status {
 
 
 /* Indexed by pseudo register number, gives the rtx for that pseudo.
-   Allocated in parallel with regno_pointer_align.  
+   Allocated in parallel with regno_pointer_align.
    FIXME: We could put it into emit_status struct, but gengtype is not able to deal
    with length attribute nested in top level structures.  */
 
@@ -335,7 +335,7 @@ struct GTY(()) rtl_data {
   /* The stack alignment estimated before reload, with consideration of
      following factors:
      1. Alignment of local stack variables (max_used_stack_slot_alignment)
-     2. Alignment requirement to call other functions 
+     2. Alignment requirement to call other functions
         (preferred_stack_boundary)
      3. Alignment of non-local stack variables but might be spilled in
         local stack.  */
@@ -361,7 +361,7 @@ struct GTY(()) rtl_data {
   /* Nonzero if function being compiled has nonlocal gotos to parent
      function.  */
   bool has_nonlocal_goto;
-  
+
   /* Nonzero if function being compiled has an asm statement.  */
   bool has_asm_statement;
 
@@ -488,7 +488,7 @@ struct GTY(()) function {
   tree static_chain_decl;
 
   /* An expression that contains the non-local goto save area.  The first
-     word is the saved frame pointer and the second is the saved stack 
+     word is the saved frame pointer and the second is the saved stack
      pointer.  */
   tree nonlocal_goto_save_area;
 
@@ -553,7 +553,7 @@ struct GTY(()) function {
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
 
-  /* Nonzero if we've set cannot_be_copied_reason.  I.e. if 
+  /* Nonzero if we've set cannot_be_copied_reason.  I.e. if
      (cannot_be_copied_set && !cannot_be_copied_reason), the function
      can in fact be copied.  */
   unsigned int cannot_be_copied_set : 1;

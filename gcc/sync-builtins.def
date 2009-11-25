@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
      DEF_SYNC_BUILTIN (ENUM, NAME, TYPE, ATTRS)
 
    See builtins.def for details.  */
-   
+
 /* Synchronization Primitives.  The "_N" version is the one that the user
    is supposed to be using.  It's overloaded, and is resolved to one of the
    "_1" through "_16" versions, plus some extra casts.  */

@@ -293,7 +293,7 @@ print_rtx (const_rtx in_rtx)
 #endif
 		  break;
 		}
-		
+
 	      case NOTE_INSN_VAR_LOCATION:
 #ifndef GENERATOR_FILE
 		fputc (' ', outfile);

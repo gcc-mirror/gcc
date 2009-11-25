@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 /* For basic_block.  */
 #include "basic-block.h"
 #include "df.h"
- 
+
 typedef struct ddg_node *ddg_node_ptr;
 typedef struct ddg_edge *ddg_edge_ptr;
 typedef struct ddg *ddg_ptr;

@@ -3765,7 +3765,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 	     test_bb->index, else_bb->index);
 
   /* ELSE is small.  */
-  if (! cheap_bb_rtx_cost_p (else_bb, 
+  if (! cheap_bb_rtx_cost_p (else_bb,
 	COSTS_N_INSNS (BRANCH_COST (optimize_bb_for_speed_p (else_edge->src),
 				    predictable_edge_p (else_edge)))))
     return FALSE;
@@ -3987,11 +3987,11 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 		fail = 1;
 	    }
 	}
-      
+
       /* For TEST, we're interested in a range of insns, not a whole block.
 	 Moreover, we're interested in the insns live from OTHER_BB.  */
-      
-      /* The loop below takes the set of live registers 
+
+      /* The loop below takes the set of live registers
          after JUMP, and calculates the live set before EARLIEST. */
       bitmap_copy (test_live, df_get_live_in (other_bb));
       df_simulate_initialize_backwards (test_bb, test_live);
@@ -4157,7 +4157,7 @@ if_convert (void)
       FOR_EACH_BB (bb)
 	{
           basic_block new_bb;
-          while (!df_get_bb_dirty (bb) 
+          while (!df_get_bb_dirty (bb)
                  && (new_bb = find_if_header (bb, pass)) != NULL)
             bb = new_bb;
 	}

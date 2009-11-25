@@ -1343,7 +1343,7 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 
       if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
 	i = r->sig[SIGSZ-1];
-      else 
+      else
 	{
 	  gcc_assert (HOST_BITS_PER_WIDE_INT == 2 * HOST_BITS_PER_LONG);
 	  i = r->sig[SIGSZ-1];
@@ -1394,11 +1394,11 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 
     case rvc_normal:
       if (r->decimal)
-	{ 
+	{
 	  decimal_real_to_integer2 (plow, phigh, r);
 	  return;
 	}
-	
+
       exp = REAL_EXP (r);
       if (exp <= 0)
 	goto underflow;
@@ -1415,7 +1415,7 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 	  high = t.sig[SIGSZ-1];
 	  low = t.sig[SIGSZ-2];
 	}
-      else 
+      else
 	{
 	  gcc_assert (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG);
 	  high = t.sig[SIGSZ-1];
@@ -2117,7 +2117,7 @@ real_from_string2 (const char *s, enum machine_mode mode)
 
 /* Initialize R from string S and desired MODE. */
 
-void 
+void
 real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
 {
   if (DECIMAL_FLOAT_MODE_P (mode))
@@ -2126,8 +2126,8 @@ real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
     real_from_string (r, s);
 
   if (mode != VOIDmode)
-    real_convert (r, mode, r);  
-} 
+    real_convert (r, mode, r);
+}
 
 /* Initialize R from the integer pair HIGH+LOW.  */
 
@@ -2342,7 +2342,7 @@ dconst_e_ptr (void)
       mpfr_exp (m, m, GMP_RNDN);
       real_from_mpfr (&value, m, NULL_TREE, GMP_RNDN);
       mpfr_clear (m);
-      
+
     }
   return &value;
 }
@@ -2497,7 +2497,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
   fmt = REAL_MODE_FORMAT (mode);
   gcc_assert (fmt);
   memset (r, 0, sizeof (*r));
-  
+
   if (fmt->b == 10)
     decimal_real_maxval (r, sign, mode);
   else
@@ -4459,41 +4459,41 @@ const struct real_format vax_g_format =
 /* Encode real R into a single precision DFP value in BUF.  */
 static void
 encode_decimal_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
-                       long *buf ATTRIBUTE_UNUSED, 
+                       long *buf ATTRIBUTE_UNUSED,
 		       const REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED)
 {
   encode_decimal32 (fmt, buf, r);
 }
 
 /* Decode a single precision DFP value in BUF into a real R.  */
-static void 
+static void
 decode_decimal_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
-		       REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED, 
+		       REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED,
 		       const long *buf ATTRIBUTE_UNUSED)
 {
   decode_decimal32 (fmt, r, buf);
 }
 
 /* Encode real R into a double precision DFP value in BUF.  */
-static void 
+static void
 encode_decimal_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
-		       long *buf ATTRIBUTE_UNUSED, 
+		       long *buf ATTRIBUTE_UNUSED,
 		       const REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED)
 {
   encode_decimal64 (fmt, buf, r);
 }
 
 /* Decode a double precision DFP value in BUF into a real R.  */
-static void 
+static void
 decode_decimal_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
-		       REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED, 
+		       REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED,
 		       const long *buf ATTRIBUTE_UNUSED)
 {
   decode_decimal64 (fmt, r, buf);
 }
 
 /* Encode real R into a quad precision DFP value in BUF.  */
-static void 
+static void
 encode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		     long *buf ATTRIBUTE_UNUSED,
 		     const REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED)
@@ -4502,7 +4502,7 @@ encode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
 }
 
 /* Decode a quad precision DFP value in BUF into a real R.  */
-static void 
+static void
 decode_decimal_quad (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		     REAL_VALUE_TYPE *r ATTRIBUTE_UNUSED,
 		     const long *buf ATTRIBUTE_UNUSED)
@@ -4515,7 +4515,7 @@ const struct real_format decimal_single_format =
   {
     encode_decimal_single,
     decode_decimal_single,
-    10, 
+    10,
     7,
     7,
     -94,
@@ -4527,7 +4527,7 @@ const struct real_format decimal_single_format =
     true,
     true,
     true,
-    true, 
+    true,
     true,
     false
   };
@@ -4570,8 +4570,8 @@ const struct real_format decimal_quad_format =
     true,
     true,
     true,
-    true, 
-    true, 
+    true,
+    true,
     true,
     false
   };
@@ -4998,13 +4998,13 @@ mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r, mp_rnd_t rndmode)
       mpfr_set_inf (m, r->sign == 1 ? -1 : 1);
       return;
     }
-  
+
   if (r->cl == rvc_nan)
     {
       mpfr_set_nan (m);
       return;
     }
-  
+
   real_to_hexadecimal (buf, r, sizeof (buf), 0, 1);
   /* mpfr_set_str() parses hexadecimal floats from strings in the same
      format that GCC will output them.  Nothing extra is needed.  */
@@ -5054,7 +5054,7 @@ real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, tree type, mp_rnd_t rndmode)
     sprintf (buf, "0x.%sp%d", rstr, (int) exp);
 
   mpfr_free_str (rstr);
-  
+
   real_from_string (r, buf);
 }
 

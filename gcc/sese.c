@@ -348,7 +348,7 @@ free_sese (sese region)
     SESE_LOOPS (region) = BITMAP_ALLOC (NULL);
 
   VEC_free (tree, heap, SESE_PARAMS (region));
-  VEC_free (loop_p, heap, SESE_LOOP_NEST (region)); 
+  VEC_free (loop_p, heap, SESE_LOOP_NEST (region));
 
   if (SESE_PARAMS_INDEX (region))
     htab_delete (SESE_PARAMS_INDEX (region));
@@ -599,7 +599,7 @@ sese_adjust_liveout_phis (sese region, htab_t rename_map, basic_block bb,
 
 /* Rename the SSA_NAMEs used in STMT and that appear in MAP.  */
 
-static void 
+static void
 rename_variables_in_stmt (gimple stmt, htab_t map, gimple_stmt_iterator *insert_gsi)
 {
   ssa_op_iter iter;
@@ -723,16 +723,16 @@ expand_scalar_variables_call (gimple stmt, basic_block bb, sese region,
 
 static tree
 expand_scalar_variables_ssa_name (tree op0, basic_block bb,
-				  sese region, htab_t map, 
+				  sese region, htab_t map,
 				  gimple_stmt_iterator *gsi)
 {
   gimple def_stmt;
   tree new_op;
-      
+
   if (is_parameter (region, op0)
       || is_iv (op0))
     return get_rename (map, op0);
-      
+
   def_stmt = SSA_NAME_DEF_STMT (op0);
 
   /* Check whether we already have a rename for OP0.  */
@@ -741,7 +741,7 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
   if (new_op != op0
       && gimple_bb (SSA_NAME_DEF_STMT (new_op)) == bb)
     return new_op;
-      
+
   if (gimple_bb (def_stmt) == bb)
     {
       /* If the defining statement is in the basic block already
@@ -788,8 +788,8 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
    used to translate the names of induction variables.  */
 
 static tree
-expand_scalar_variables_expr (tree type, tree op0, enum tree_code code, 
-			      tree op1, basic_block bb, sese region, 
+expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
+			      tree op1, basic_block bb, sese region,
 			      htab_t map, gimple_stmt_iterator *gsi)
 {
   if (TREE_CODE_CLASS (code) == tcc_constant
@@ -859,7 +859,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
       enum tree_code op0_code = TREE_CODE (op0);
       tree op0_expr = expand_scalar_variables_expr (op0_type, op0, op0_code,
 						    NULL, bb, region, map, gsi);
-  
+
       return fold_build1 (code, type, op0_expr);
     }
 
@@ -895,7 +895,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
    only induction variables from the generated code: MAP contains the
    induction variables renaming mapping, and is used to translate the
    names of induction variables.  */
- 
+
 static void
 expand_scalar_variables_stmt (gimple stmt, basic_block bb, sese region,
 			      htab_t map, gimple_stmt_iterator *gsi)
@@ -958,11 +958,11 @@ expand_scalar_variables_stmt (gimple stmt, basic_block bb, sese region,
    induction variables renaming mapping, and is used to translate the
    names of induction variables.  */
 
-static void 
+static void
 expand_scalar_variables (basic_block bb, sese region, htab_t map)
 {
   gimple_stmt_iterator gsi;
-  
+
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
     {
       gimple stmt = gsi_stmt (gsi);
@@ -973,12 +973,12 @@ expand_scalar_variables (basic_block bb, sese region, htab_t map)
 
 /* Rename all the SSA_NAMEs from block BB according to the MAP.  */
 
-static void 
+static void
 rename_variables (basic_block bb, htab_t map)
 {
   gimple_stmt_iterator gsi;
   gimple_stmt_iterator insert_gsi = gsi_start_bb (bb);
-  
+
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     rename_variables_in_stmt (gsi_stmt (gsi), map, &insert_gsi);
 }
@@ -1006,7 +1006,7 @@ get_true_edge_from_guard_bb (basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags & EDGE_TRUE_VALUE) 
+    if (e->flags & EDGE_TRUE_VALUE)
       return e;
 
   gcc_unreachable ();
@@ -1022,7 +1022,7 @@ get_false_edge_from_guard_bb (basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & EDGE_TRUE_VALUE)) 
+    if (!(e->flags & EDGE_TRUE_VALUE))
       return e;
 
   gcc_unreachable ();
@@ -1323,7 +1323,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb, htab_t map)
 /* Copies BB and includes in the copied BB all the statements that can
    be reached following the use-def chains from the memory accesses,
    and returns the next edge following this new block.  */
- 
+
 edge
 copy_bb_and_scalar_dependences (basic_block bb, sese region,
 				edge next_e, htab_t map)

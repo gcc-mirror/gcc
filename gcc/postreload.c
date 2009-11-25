@@ -794,7 +794,7 @@ reload_combine (void)
 	 ... (MEM (PLUS (REGZ) (REGY)))... .
 
 	 First, check that we have (set (REGX) (PLUS (REGX) (REGY)))
-	 and that we know all uses of REGX before it dies.  
+	 and that we know all uses of REGX before it dies.
 	 Also, explicitly check that REGX != REGY; our life information
 	 does not yet show whether REGY changes in this insn.  */
       set = single_set (insn);

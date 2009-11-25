@@ -179,7 +179,7 @@ new_mode (enum mode_class cl, const char *name,
   n_modes[cl]++;
 
   *htab_find_slot (modes_by_name, m, INSERT) = m;
-  
+
   return m;
 }
 
@@ -230,7 +230,7 @@ new_adjust (const char *name,
 	     mode_class_names[required_class_to] + 5);
       return;
     }
-  
+
   for (a = *category; a; a = a->next)
     if (a->mode == mode)
       {
@@ -1147,7 +1147,7 @@ emit_class_narrowest_mode (void)
 			 ? modes[c]->next->name
 			 : void_mode->name))
 		   : void_mode->name);
-  
+
   print_closer ();
 }
 
@@ -1295,7 +1295,7 @@ emit_mode_adjustments (void)
 	      a->file, a->line, a->adjustment);
       printf ("  mode_fbit[%smode] = s;\n", a->mode->name);
     }
-      
+
   /* Real mode formats don't have to propagate anywhere.  */
   for (a = adj_format; a; a = a->next)
     printf ("\n  /* %s:%d */\n  REAL_MODE_FORMAT (%smode) = %s;\n",
@@ -1397,7 +1397,7 @@ main (int argc, char **argv)
 
   if (have_error)
     return FATAL_EXIT_CODE;
-  
+
   calc_wider_mode ();
 
   if (gen_header)

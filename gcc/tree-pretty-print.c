@@ -626,13 +626,13 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  {
 	    size_t len = TREE_VEC_LENGTH (node);
 	    for (i = 0; i < len - 1; i++)
-	      {	    
+	      {
 		dump_generic_node (buffer, TREE_VEC_ELT (node, i), spc, flags,
 				   false);
 		pp_character (buffer, ',');
 		pp_space (buffer);
 	      }
-	    dump_generic_node (buffer, TREE_VEC_ELT (node, len - 1), spc, 
+	    dump_generic_node (buffer, TREE_VEC_ELT (node, len - 1), spc,
 			       flags, false);
 	  }
       }
@@ -1905,7 +1905,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
       pp_string (buffer, ">");
       break;
-      
+
     case VEC_COND_EXPR:
       pp_string (buffer, " VEC_COND_EXPR < ");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
@@ -2010,7 +2010,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case OMP_SECTION:
       pp_string (buffer, "#pragma omp section");
       goto dump_omp_body;
- 
+
     case OMP_MASTER:
       pp_string (buffer, "#pragma omp master");
       goto dump_omp_body;
@@ -2144,7 +2144,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
       pp_string (buffer, " > ");
       break;
-  
+
     case VEC_EXTRACT_ODD_EXPR:
       pp_string (buffer, " VEC_EXTRACT_ODD_EXPR < ");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
@@ -2583,7 +2583,7 @@ op_symbol_code (enum tree_code code)
 
     case POINTER_PLUS_EXPR:
       return "+";
- 
+
     case PLUS_EXPR:
       return "+";
 

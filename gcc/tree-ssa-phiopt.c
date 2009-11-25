@@ -207,7 +207,7 @@ tree_ssa_phiopt_worker (bool do_store_elim)
   bb_order = blocks_in_phiopt_order ();
   n = n_basic_blocks - NUM_FIXED_BLOCKS;
 
-  for (i = 0; i < n; i++) 
+  for (i = 0; i < n; i++)
     {
       gimple cond_stmt, phi;
       basic_block bb1, bb2;
@@ -307,7 +307,7 @@ tree_ssa_phiopt_worker (bool do_store_elim)
     }
 
   free (bb_order);
-  
+
   if (do_store_elim)
     pointer_set_destroy (nontrap);
   /* If the CFG has changed, we should cleanup the CFG.  */
@@ -332,12 +332,12 @@ blocks_in_phiopt_order (void)
 {
   basic_block x, y;
   basic_block *order = XNEWVEC (basic_block, n_basic_blocks);
-  unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS; 
+  unsigned n = n_basic_blocks - NUM_FIXED_BLOCKS;
   unsigned np, i;
-  sbitmap visited = sbitmap_alloc (last_basic_block); 
+  sbitmap visited = sbitmap_alloc (last_basic_block);
 
-#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index)) 
-#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index)) 
+#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index))
+#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index))
 
   sbitmap_zero (visited);
 
@@ -696,7 +696,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	  && operand_equal_for_phi_arg_p (arg_false, larger))
 	{
 	  /* Case
-	 
+
 	     if (smaller < larger)
 	     rslt = smaller;
 	     else
@@ -905,7 +905,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
      optimize.  */
   if (assign == NULL)
     return false;
-      
+
   /* If we got here, then we have found the only executable statement
      in OTHER_BLOCK.  If it is anything other than arg = -arg1 or
      arg1 = -arg0, then we can not optimize.  */
@@ -918,7 +918,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     return false;
 
   rhs = gimple_assign_rhs1 (assign);
-              
+
   /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
   if (!(lhs == arg0 && rhs == arg1)
       && !(lhs == arg1 && rhs == arg0))

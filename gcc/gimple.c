@@ -171,7 +171,7 @@ gimple_set_subcode (gimple g, unsigned subcode)
 
 /* Build a tuple with operands.  CODE is the statement to build (which
    must be one of the GIMPLE_WITH_OPS tuples).  SUBCODE is the sub-code
-   for the new tuple.  NUM_OPS is the number of operands to allocate.  */ 
+   for the new tuple.  NUM_OPS is the number of operands to allocate.  */
 
 #define gimple_build_with_ops(c, s, n) \
   gimple_build_with_ops_stat (c, s, n MEM_STAT_INFO)
@@ -350,7 +350,7 @@ gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
   /* Need 1 operand for LHS and 1 or 2 for the RHS (depending on the
      code).  */
   num_ops = get_gimple_rhs_num_ops (subcode) + 1;
-  
+
   p = gimple_build_with_ops_stat (GIMPLE_ASSIGN, (unsigned)subcode, num_ops
   			          PASS_MEM_STAT);
   gimple_assign_set_lhs (p, lhs);
@@ -375,7 +375,7 @@ gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
 
 gimple
 gimplify_assign (tree dst, tree src, gimple_seq *seq_p)
-{ 
+{
   tree t = build2 (MODIFY_EXPR, TREE_TYPE (dst), dst, src);
   gimplify_and_add (t, seq_p);
   ggc_free (t);
@@ -485,7 +485,7 @@ gimple_build_goto (tree dest)
 
 /* Build a GIMPLE_NOP statement.  */
 
-gimple 
+gimple
 gimple_build_nop (void)
 {
   return gimple_alloc (GIMPLE_NOP, 0);
@@ -517,7 +517,7 @@ gimple_build_bind (tree vars, gimple_seq body, tree block)
    */
 
 static inline gimple
-gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs, 
+gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
                     unsigned nclobbers, unsigned nlabels)
 {
   gimple p;
@@ -539,7 +539,7 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
 #ifdef GATHER_STATISTICS
   gimple_alloc_sizes[(int) gimple_alloc_kind (GIMPLE_ASM)] += size;
 #endif
-  
+
   return p;
 }
 
@@ -555,7 +555,7 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
    LABELS is a vector of destination labels.  */
 
 gimple
-gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs, 
+gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs,
                       VEC(tree,gc)* outputs, VEC(tree,gc)* clobbers,
 		      VEC(tree,gc)* labels)
 {
@@ -564,10 +564,10 @@ gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs,
 
   p = gimple_build_asm_1 (string,
                           VEC_length (tree, inputs),
-                          VEC_length (tree, outputs), 
+                          VEC_length (tree, outputs),
                           VEC_length (tree, clobbers),
 			  VEC_length (tree, labels));
-  
+
   for (i = 0; i < VEC_length (tree, inputs); i++)
     gimple_asm_set_input_op (p, i, VEC_index (tree, inputs, i));
 
@@ -576,10 +576,10 @@ gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs,
 
   for (i = 0; i < VEC_length (tree, clobbers); i++)
     gimple_asm_set_clobber_op (p, i, VEC_index (tree, clobbers, i));
-  
+
   for (i = 0; i < VEC_length (tree, labels); i++)
     gimple_asm_set_label_op (p, i, VEC_index (tree, labels, i));
-  
+
   return p;
 }
 
@@ -684,7 +684,7 @@ gimple_build_resx (int region)
    NLABELS is the number of labels in the switch excluding the default.
    DEFAULT_LABEL is the default label for the switch statement.  */
 
-gimple 
+gimple
 gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
 {
   /* nlabels + 1 default label + 1 index.  */
@@ -700,10 +700,10 @@ gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
 /* Build a GIMPLE_SWITCH statement.
 
    INDEX is the switch's index.
-   NLABELS is the number of labels in the switch excluding the DEFAULT_LABEL. 
+   NLABELS is the number of labels in the switch excluding the DEFAULT_LABEL.
    ... are the labels excluding the default.  */
 
-gimple 
+gimple
 gimple_build_switch (unsigned nlabels, tree index, tree default_label, ...)
 {
   va_list al;
@@ -779,7 +779,7 @@ gimple_build_debug_bind_stat (tree var, tree value, gimple stmt MEM_STAT_DECL)
    BODY is the sequence of statements for which only one thread can execute.
    NAME is optional identifier for this critical block.  */
 
-gimple 
+gimple
 gimple_build_omp_critical (gimple_seq body, tree name)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_CRITICAL, 0);
@@ -793,7 +793,7 @@ gimple_build_omp_critical (gimple_seq body, tree name)
 /* Build a GIMPLE_OMP_FOR statement.
 
    BODY is sequence of statements inside the for loop.
-   CLAUSES, are any of the OMP loop construct's clauses: private, firstprivate, 
+   CLAUSES, are any of the OMP loop construct's clauses: private, firstprivate,
    lastprivate, reductions, ordered, schedule, and nowait.
    COLLAPSE is the collapse count.
    PRE_BODY is the sequence of statements that are loop invariant.  */
@@ -822,8 +822,8 @@ gimple_build_omp_for (gimple_seq body, tree clauses, size_t collapse,
    CHILD_FN is the function created for the parallel threads to execute.
    DATA_ARG are the shared data argument(s).  */
 
-gimple 
-gimple_build_omp_parallel (gimple_seq body, tree clauses, tree child_fn, 
+gimple
+gimple_build_omp_parallel (gimple_seq body, tree clauses, tree child_fn,
 			   tree data_arg)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_PARALLEL, 0);
@@ -846,7 +846,7 @@ gimple_build_omp_parallel (gimple_seq body, tree clauses, tree child_fn,
    COPY_FN is the optional function for firstprivate initialization.
    ARG_SIZE and ARG_ALIGN are size and alignment of the data block.  */
 
-gimple 
+gimple
 gimple_build_omp_task (gimple_seq body, tree clauses, tree child_fn,
 		       tree data_arg, tree copy_fn, tree arg_size,
 		       tree arg_align)
@@ -884,7 +884,7 @@ gimple_build_omp_section (gimple_seq body)
 
    BODY is the sequence of statements to be executed by just the master.  */
 
-gimple 
+gimple
 gimple_build_omp_master (gimple_seq body)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_MASTER, 0);
@@ -900,7 +900,7 @@ gimple_build_omp_master (gimple_seq body)
    CONTROL_DEF is the definition of the control variable.
    CONTROL_USE is the use of the control variable.  */
 
-gimple 
+gimple
 gimple_build_omp_continue (tree control_def, tree control_use)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_CONTINUE, 0);
@@ -914,7 +914,7 @@ gimple_build_omp_continue (tree control_def, tree control_use)
    BODY is the sequence of statements inside a loop that will executed in
    sequence.  */
 
-gimple 
+gimple
 gimple_build_omp_ordered (gimple_seq body)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_ORDERED, 0);
@@ -928,7 +928,7 @@ gimple_build_omp_ordered (gimple_seq body)
 /* Build a GIMPLE_OMP_RETURN statement.
    WAIT_P is true if this is a non-waiting return.  */
 
-gimple 
+gimple
 gimple_build_omp_return (bool wait_p)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_RETURN, 0);
@@ -945,7 +945,7 @@ gimple_build_omp_return (bool wait_p)
    CLAUSES are any of the OMP sections contsruct's clauses: private,
    firstprivate, lastprivate, reduction, and nowait.  */
 
-gimple 
+gimple
 gimple_build_omp_sections (gimple_seq body, tree clauses)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_SECTIONS, 0);
@@ -972,7 +972,7 @@ gimple_build_omp_sections_switch (void)
    CLAUSES are any of the OMP single construct's clauses: private, firstprivate,
    copyprivate, nowait.  */
 
-gimple 
+gimple
 gimple_build_omp_single (gimple_seq body, tree clauses)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_SINGLE, 0);
@@ -1081,7 +1081,7 @@ gimple_seq_free (gimple_seq seq)
   /* If this triggers, it's a sign that the same list is being freed
      twice.  */
   gcc_assert (seq != gimple_seq_cache || gimple_seq_cache == NULL);
-  
+
   /* Add SEQ to the pool of free sequences.  */
   seq->next_free = gimple_seq_cache;
   gimple_seq_cache = seq;
@@ -1179,7 +1179,7 @@ gimple_seq_copy (gimple_seq src)
 
 /* Walk all the statements in the sequence SEQ calling walk_gimple_stmt
    on each one.  WI is as in walk_gimple_stmt.
-   
+
    If walk_gimple_stmt returns non-NULL, the walk is stopped, the
    value is stored in WI->CALLBACK_RESULT and the statement that
    produced the value is returned.
@@ -1789,7 +1789,7 @@ gimple_assign_single_p (gimple gs)
    assignment.  I suspect there may be cases where gimple_assign_copy_p,
    gimple_assign_single_p, or equivalent logic is used where a similar
    treatment of unary NOPs is appropriate.  */
-   
+
 bool
 gimple_assign_unary_nop_p (gimple gs)
 {
@@ -2902,7 +2902,7 @@ get_base_address (tree t)
 {
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
-  
+
   if (SSA_VAR_P (t)
       || TREE_CODE (t) == STRING_CST
       || TREE_CODE (t) == CONSTRUCTOR

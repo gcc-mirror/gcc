@@ -145,7 +145,7 @@ create_var_ann (tree t)
 
 /* Renumber all of the gimple stmt uids.  */
 
-void 
+void
 renumber_gimple_stmt_uids (void)
 {
   basic_block bb;
@@ -165,7 +165,7 @@ renumber_gimple_stmt_uids (void)
 /* Like renumber_gimple_stmt_uids, but only do work on the basic blocks
    in BLOCKS, of which there are N_BLOCKS.  Also renumbers PHIs.  */
 
-void 
+void
 renumber_gimple_stmt_uids_in_blocks (basic_block *blocks, int n_blocks)
 {
   int i;
@@ -221,10 +221,10 @@ dump_referenced_vars (FILE *file)
 {
   tree var;
   referenced_var_iterator rvi;
-  
+
   fprintf (file, "\nReferenced variables in %s: %u\n\n",
 	   get_name (current_function_decl), (unsigned) num_referenced_vars);
-  
+
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       fprintf (file, "Variable: ");
@@ -275,7 +275,7 @@ dump_variable (FILE *file, tree var)
 
   if (TREE_ADDRESSABLE (var))
     fprintf (file, ", is addressable");
-  
+
   if (is_global_var (var))
     fprintf (file, ", is global");
 
@@ -509,7 +509,7 @@ find_referenced_vars_in (gimple stmt)
 /* Lookup UID in the referenced_vars hashtable and return the associated
    variable.  */
 
-tree 
+tree
 referenced_var_lookup (unsigned int uid)
 {
   tree h;
@@ -520,12 +520,12 @@ referenced_var_lookup (unsigned int uid)
   return h;
 }
 
-/* Check if TO is in the referenced_vars hash table and insert it if not.  
+/* Check if TO is in the referenced_vars hash table and insert it if not.
    Return true if it required insertion.  */
 
 bool
 referenced_var_check_and_insert (tree to)
-{ 
+{
   tree h, *loc;
   struct tree_decl_minimal in;
   unsigned int uid = DECL_UID (to);
@@ -549,7 +549,7 @@ referenced_var_check_and_insert (tree to)
 /* Lookup VAR UID in the default_defs hashtable and return the associated
    variable.  */
 
-tree 
+tree
 gimple_default_def (struct function *fn, tree var)
 {
   struct tree_decl_minimal ind;
@@ -564,7 +564,7 @@ gimple_default_def (struct function *fn, tree var)
 
 void
 set_default_def (tree var, tree def)
-{ 
+{
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
   void **loc;
@@ -602,7 +602,7 @@ add_referenced_var (tree var)
 
   v_ann = get_var_ann (var);
   gcc_assert (DECL_P (var));
-  
+
   /* Insert VAR into the referenced_vars has table if it isn't present.  */
   if (referenced_var_check_and_insert (var))
     {

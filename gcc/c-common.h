@@ -1038,9 +1038,9 @@ extern void warn_about_parentheses (enum tree_code,
 extern void warn_for_unused_label (tree label);
 extern void warn_for_div_by_zero (location_t, tree divisor);
 extern void warn_for_sign_compare (location_t,
-				   tree orig_op0, tree orig_op1, 
-				   tree op0, tree op1, 
-				   tree result_type, 
+				   tree orig_op0, tree orig_op1,
+				   tree op0, tree op1,
+				   tree result_type,
 				   enum tree_code resultcode);
 extern void set_underlying_type (tree x);
 extern bool is_typedef_decl (tree x);

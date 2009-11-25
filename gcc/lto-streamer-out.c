@@ -86,7 +86,7 @@ eq_string_slot_node (const void *p1, const void *p2)
 
 /* Free the string slot pointed-to by P.  */
 
-static void 
+static void
 string_slot_free (void *p)
 {
   struct string_slot *slot = (struct string_slot *) p;
@@ -365,7 +365,7 @@ pack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   unsigned i;
   REAL_VALUE_TYPE r;
-  
+
   r = TREE_REAL_CST (expr);
   bp_pack_value (bp, r.cl, 2);
   bp_pack_value (bp, r.decimal, 1);
@@ -758,7 +758,7 @@ static void
 lto_output_chain (struct output_block *ob, tree t, bool ref_p)
 {
   int i, count;
-  
+
   count = list_length (t);
   output_sleb128 (ob, count);
   for (i = 0; i < count; i++)
@@ -1612,7 +1612,7 @@ static void
 output_phi (struct output_block *ob, gimple phi)
 {
   unsigned i, len = gimple_phi_num_args (phi);
-  
+
   output_record_start (ob, lto_gimple_code_to_tag (GIMPLE_PHI));
   output_uleb128 (ob, SSA_NAME_VERSION (PHI_RESULT (phi)));
 
@@ -1732,7 +1732,7 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 	  gimple stmt = gsi_stmt (bsi);
 
 	  output_gimple_stmt (ob, stmt);
-	
+
 	  /* Emit the EH region holding STMT.  */
 	  region = lookup_stmt_eh_lp_fn (fn, stmt);
 	  if (region != 0)
@@ -1785,14 +1785,14 @@ produce_asm (struct output_block *ob, tree fn)
 
   /* The entire header is stream computed here.  */
   memset (&header, 0, sizeof (struct lto_function_header));
-  
+
   /* Write the header.  */
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
   header.lto_header.section_type = section_type;
-  
+
   header.compressed_size = 0;
-  
+
   if (section_type == LTO_section_function_body)
     header.cfg_size = ob->cfg_stream->total_size;
   header.main_size = ob->main_stream->total_size;
@@ -2037,7 +2037,7 @@ copy_function (struct cgraph_node *node)
 	VEC_safe_push (tree, heap, encoder->trees, trees[j]);
       encoder->next_index = n;
     }
-  
+
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);
   free (output_stream);
@@ -2122,7 +2122,7 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
 };
 
 
-/* Write each node in encoded by ENCODER to OB, as well as those reachable 
+/* Write each node in encoded by ENCODER to OB, as well as those reachable
    from it and required for correct representation of its semantics.
    Each node in ENCODER must be a global declaration or a type.  A node
    is written only once, even if it appears multiple times in the
@@ -2230,7 +2230,7 @@ lto_output_decl_state_refs (struct output_block *ob,
   unsigned i;
   int32_t ref;
   tree decl;
-  
+
   /* Write reference to FUNCTION_DECL.  If there is not function,
      write reference to void_type_node. */
   decl = (state->fn_decl) ? state->fn_decl : void_type_node;
@@ -2442,7 +2442,7 @@ produce_asm_for_decls (cgraph_node_set set)
      needed.  */
   output_unreferenced_globals (set);
 
-  memset (&header, 0, sizeof (struct lto_decl_header)); 
+  memset (&header, 0, sizeof (struct lto_decl_header));
 
   section_name = lto_get_section_name (LTO_section_decls, NULL);
   lto_begin_section (section_name, !flag_wpa);
@@ -2488,7 +2488,7 @@ produce_asm_for_decls (cgraph_node_set set)
   lto_output_data_stream (header_stream, &header, sizeof header);
   lto_write_stream (header_stream);
   free (header_stream);
- 
+
   /* Write the main out-decl state, followed by out-decl states of
      functions. */
   decl_state_stream = ((struct lto_output_stream *)
@@ -2504,7 +2504,7 @@ produce_asm_for_decls (cgraph_node_set set)
       lto_output_decl_state_refs (ob, decl_state_stream, fn_out_state);
     }
   lto_write_stream (decl_state_stream);
-  free(decl_state_stream); 
+  free(decl_state_stream);
 
   lto_write_stream (ob->main_stream);
   lto_write_stream (ob->string_stream);

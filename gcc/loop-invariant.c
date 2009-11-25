@@ -179,14 +179,14 @@ static VEC(invariant_p,heap) *invariants;
 
 /* Check the size of the invariant table and realloc if necessary.  */
 
-static void 
+static void
 check_invariant_table_size (void)
 {
   if (invariant_table_size < DF_DEFS_TABLE_SIZE())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
       invariant_table = XRESIZEVEC (struct invariant *, invariant_table, new_size);
-      memset (&invariant_table[invariant_table_size], 0, 
+      memset (&invariant_table[invariant_table_size], 0,
 	      (new_size - invariant_table_size) * sizeof (struct rtx_iv *));
       invariant_table_size = new_size;
     }
@@ -776,26 +776,26 @@ check_dependency (basic_block bb, df_ref use, bitmap depends_on)
   struct df_link *defs;
   struct def *def_data;
   struct invariant *inv;
-  
+
   if (DF_REF_FLAGS (use) & DF_REF_READ_WRITE)
     return false;
-  
+
   defs = DF_REF_CHAIN (use);
   if (!defs)
     return true;
-  
+
   if (defs->next)
     return false;
-  
+
   def = defs->ref;
   check_invariant_table_size ();
   inv = invariant_table[DF_REF_ID(def)];
   if (!inv)
     return false;
-  
+
   def_data = inv->def;
   gcc_assert (def_data != NULL);
-  
+
   def_bb = DF_REF_BB (def);
   /* Note that in case bb == def_bb, we know that the definition
      dominates insn, because def has invariant_table[DF_REF_ID(def)]
@@ -803,7 +803,7 @@ check_dependency (basic_block bb, df_ref use, bitmap depends_on)
      sequentially.  */
   if (!dominated_by_p (CDI_DOMINATORS, bb, def_bb))
     return false;
-  
+
   bitmap_set_bit (depends_on, def_data->invno);
   return true;
 }
@@ -826,7 +826,7 @@ check_dependencies (rtx insn, bitmap depends_on)
   for (use_rec = DF_INSN_INFO_EQ_USES (insn_info); *use_rec; use_rec++)
     if (!check_dependency (bb, *use_rec, depends_on))
       return false;
-	
+
   return true;
 }
 
@@ -1020,7 +1020,7 @@ get_cover_class_and_nregs (rtx insn, int *nregs)
   rtx reg;
   enum reg_class cover_class;
   rtx set = single_set (insn);
-  
+
   /* Considered invariant insns have only one set.  */
   gcc_assert (set != NULL_RTX);
   reg = SET_DEST (set);
@@ -1324,7 +1324,7 @@ find_invariants_to_move (bool speed)
     return;
 
   if (flag_ira_loop_pressure)
-    /* REGS_USED is actually never used when the flag is on.  */ 
+    /* REGS_USED is actually never used when the flag is on.  */
     regs_used = 0;
   else
     /* We do not really do a good job in estimating number of
@@ -1334,7 +1334,7 @@ find_invariants_to_move (bool speed)
       unsigned int n_regs = DF_REG_SIZE (df);
 
       regs_used = 2;
-      
+
       for (i = 0; i < n_regs; i++)
 	{
 	  if (!DF_REGNO_FIRST_DEF (i) && DF_REGNO_LAST_USE (i))
@@ -1457,7 +1457,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	{
 	  *use->pos = reg;
 	  df_insn_rescan (use->insn);
-	}      
+	}
     }
 
   return true;
@@ -1529,7 +1529,7 @@ free_inv_motion_data (void)
 	{
 	  def = inv->def;
 	  gcc_assert (def != NULL);
-	  
+
 	  free_use_list (def->uses);
 	  free (def);
 	  invariant_table[i] = NULL;
@@ -1590,7 +1590,7 @@ static rtx regs_set[(FIRST_PSEUDO_REGISTER > MAX_RECOG_OPERANDS
 static int n_regs_set;
 
 /* Return cover class and number of needed hard registers (through
-   *NREGS) of register REGNO.  */ 
+   *NREGS) of register REGNO.  */
 static enum reg_class
 get_regno_cover_class (int regno, int *nregs)
 {
@@ -1735,7 +1735,7 @@ mark_ref_regs (rtx x)
   if (code == REG)
     {
       struct loop *loop;
-      
+
       for (loop = curr_loop;
 	   loop != current_loops->tree_root;
 	   loop = loop_outer (loop))
@@ -1750,7 +1750,7 @@ mark_ref_regs (rtx x)
     else if (fmt[i] == 'E')
       {
 	int j;
-	
+
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  mark_ref_regs (XVECEXP (x, i, j));
       }
@@ -1802,20 +1802,20 @@ calculate_loop_reg_pressure (void)
 	  mark_ref_regs (PATTERN (insn));
 	  n_regs_set = 0;
 	  note_stores (PATTERN (insn), mark_reg_clobber, NULL);
-	  
+
 	  /* Mark any registers dead after INSN as dead now.  */
-	  
+
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) == REG_DEAD)
 	      mark_reg_death (XEXP (link, 0));
-	  
+
 	  /* Mark any registers set in INSN as live,
 	     and mark them as conflicting with all other live regs.
 	     Clobbers are processed again, so they conflict with
 	     the registers that are set.  */
-	  
+
 	  note_stores (PATTERN (insn), mark_reg_store, NULL);
-	  
+
 #ifdef AUTO_INC_DEC
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) == REG_INC)
@@ -1827,7 +1827,7 @@ calculate_loop_reg_pressure (void)
 					  REGNO (regs_set[n_regs_set]));
 	      if (! note)
 		continue;
-	      
+
 	      mark_reg_death (XEXP (note, 0));
 	    }
 	}
@@ -1865,7 +1865,7 @@ calculate_loop_reg_pressure (void)
       for (i = 0; (int) i < ira_reg_class_cover_size; i++)
 	{
 	  enum reg_class cover_class;
-	  
+
 	  cover_class = ira_reg_class_cover[i];
 	  if (LOOP_DATA (loop)->max_reg_pressure[cover_class] == 0)
 	    continue;

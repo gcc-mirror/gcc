@@ -30,7 +30,7 @@ struct host_hooks
   void * (*gt_pch_get_address) (size_t size, int fd);
 
   /* ADDR is an address returned by gt_pch_get_address.  Attempt to allocate
-     SIZE bytes at the same address and load it with the data from FD at 
+     SIZE bytes at the same address and load it with the data from FD at
      OFFSET.  Return -1 if we couldn't allocate memory at ADDR, return 0
      if the memory is allocated but the data not loaded, return 1 if done.  */
   int (*gt_pch_use_address) (void *addr, size_t size, int fd, size_t offset);

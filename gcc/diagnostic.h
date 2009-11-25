@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Constants used to discriminate diagnostics.  */
 typedef enum
 {
-#define DEFINE_DIAGNOSTIC_KIND(K, msgid) K,  
+#define DEFINE_DIAGNOSTIC_KIND(K, msgid) K,
 #include "diagnostic.def"
 #undef DEFINE_DIAGNOSTIC_KIND
   DK_LAST_DIAGNOSTIC_KIND
@@ -70,7 +70,7 @@ struct diagnostic_context
   /* True if we should display the "warnings are being tread as error"
      message, usually displayed once per compiler run.  */
   bool issue_warnings_are_errors_message;
-  
+
   /* True if it has been requested that warnings be treated as errors.  */
   bool warning_as_error_requested;
 

@@ -1483,7 +1483,7 @@ read_rtx_1 (FILE *infile, struct map_value **mode_maps)
 
   if (c == EOF)
     return 0;
-  
+
   if (c != '(')
     fatal_expected_char (infile, '(', c);
 
@@ -1738,7 +1738,7 @@ read_rtx_variadic (FILE *infile, struct map_value **mode_maps, rtx form)
 
       XEXP (q, 0) = XEXP (p, 1);
       XEXP (q, 1) = read_rtx_1 (infile, mode_maps);
-      
+
       XEXP (p, 1) = q;
       p = q;
       c = read_skip_spaces (infile);

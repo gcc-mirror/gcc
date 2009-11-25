@@ -452,8 +452,8 @@ walk_mems_2 (rtx *x, rtx mem)
     {
       if (alias_sets_conflict_p (MEM_ALIAS_SET(*x), MEM_ALIAS_SET(mem)))
         return 1;
-        
-      return -1;  
+
+      return -1;
     }
   return 0;
 }
@@ -467,7 +467,7 @@ walk_mems_1 (rtx *x, rtx *pat)
       if (for_each_rtx (pat, (rtx_function) walk_mems_2, *x))
         /* Indicate that dependence was determined and stop traversal.  */
         return 1;
-        
+
       return -1;
     }
   return 0;

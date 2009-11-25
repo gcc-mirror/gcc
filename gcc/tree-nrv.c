@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
    That copy can often be avoided by directly constructing the return value
    into the final destination mandated by the target's ABI.
 
-   This is basically a generic equivalent to the C++ front-end's 
+   This is basically a generic equivalent to the C++ front-end's
    Named Return Value optimization.  */
 
 struct nrv_data
@@ -104,7 +104,7 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
    ever encounter languages which prevent this kind of optimization,
    then we could either have the languages register the optimization or
    we could change the gating function to check the current language.  */
-   
+
 static unsigned int
 tree_nrv (void)
 {
@@ -184,7 +184,7 @@ tree_nrv (void)
 	  else if (gimple_has_lhs (stmt))
 	    {
 	      tree addr = get_base_address (gimple_get_lhs (stmt));
-	       /* If there's any MODIFY of component of RESULT, 
+	       /* If there's any MODIFY of component of RESULT,
 		  then bail out.  */
 	      if (addr && addr == result)
 		return 0;
@@ -262,7 +262,7 @@ gate_pass_return_slot (void)
   return optimize > 0;
 }
 
-struct gimple_opt_pass pass_nrv = 
+struct gimple_opt_pass pass_nrv =
 {
  {
   GIMPLE_PASS,
@@ -349,7 +349,7 @@ execute_return_slot_opt (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_return_slot = 
+struct gimple_opt_pass pass_return_slot =
 {
  {
   GIMPLE_PASS,

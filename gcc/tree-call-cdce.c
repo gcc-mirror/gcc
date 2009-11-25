@@ -4,17 +4,17 @@
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
    not used, the compiler can still not eliminate the call without
    powerful interprocedural analysis to prove that the errno is not
    checked.  However, if the conditions under which the error occurs
-   are known, the compiler can conditionally dead code eliminate the 
+   are known, the compiler can conditionally dead code eliminate the
    calls by shrink-wrapping the semi-dead calls into the error condition:
 
         built_in_call (args)
@@ -65,7 +65,7 @@ along with GCC; see the file COPYING3.  If not see
      With this change, call to log (x) is effectively eliminated, as
      in majority of the cases, log won't be called with x out of
      range.  The branch is totally predictable, so the branch cost
-     is low.  
+     is low.
 
    Note that library functions are not supposed to clear errno to zero without
    error.  See IEEE Std 1003.1, section 2.3 Error Numbers, and section 7.5:3 of
@@ -81,12 +81,12 @@ along with GCC; see the file COPYING3.  If not see
    inlining).  */
 
 
-/* A structure for representing input domain of 
+/* A structure for representing input domain of
    a function argument in integer.  If the lower
-   bound is -inf, has_lb is set to false.  If the 
-   upper bound is +inf, has_ub is false. 
-   is_lb_inclusive and is_ub_inclusive are flags 
-   to indicate if lb and ub value are inclusive 
+   bound is -inf, has_lb is set to false.  If the
+   upper bound is +inf, has_ub is false.
+   is_lb_inclusive and is_ub_inclusive are flags
+   to indicate if lb and ub value are inclusive
    respectively.  */
 
 typedef struct input_domain
@@ -100,11 +100,11 @@ typedef struct input_domain
 } inp_domain;
 
 /* A helper function to construct and return an input
-   domain object.  LB is the lower bound, HAS_LB is 
+   domain object.  LB is the lower bound, HAS_LB is
    a boolean flag indicating if the lower bound exists,
    and LB_INCLUSIVE is a boolean flag indicating if the
    lower bound is inclusive or not.  UB, HAS_UB, and
-   UB_INCLUSIVE have the same meaning, but for upper 
+   UB_INCLUSIVE have the same meaning, but for upper
    bound of the domain.  */
 
 static inp_domain
@@ -121,13 +121,13 @@ get_domain (int lb, bool has_lb, bool lb_inclusive,
   return domain;
 }
 
-/* A helper function to check the target format for the 
+/* A helper function to check the target format for the
    argument type. In this implementation, only IEEE formats
-   are supported.  ARG is the call argument to be checked.  
+   are supported.  ARG is the call argument to be checked.
    Returns true if the format is supported.  To support other
    target formats,  function get_no_error_domain needs to be
-   enhanced to have range bounds properly computed. Since 
-   the check is cheap (very small number of candidates 
+   enhanced to have range bounds properly computed. Since
+   the check is cheap (very small number of candidates
    to be checked), the result is not cached for each float type.  */
 
 static bool
@@ -136,7 +136,7 @@ check_target_format (tree arg)
   tree type;
   enum machine_mode mode;
   const struct real_format *rfmt;
-  
+
   type = TREE_TYPE (arg);
   mode = TYPE_MODE (type);
   rfmt = REAL_MODE_FORMAT (mode);
@@ -147,16 +147,16 @@ check_target_format (tree arg)
 	  && (rfmt == &ieee_double_format || rfmt == &mips_double_format
 	      || rfmt == &motorola_double_format))
       /* For long double, we can not really check XFmode
-         which is only defined on intel platforms.  
-         Candidate pre-selection using builtin function 
-         code guarantees that we are checking formats 
+         which is only defined on intel platforms.
+         Candidate pre-selection using builtin function
+         code guarantees that we are checking formats
          for long double modes: double, quad, and extended.  */
-      || (mode != SFmode && mode != DFmode 
+      || (mode != SFmode && mode != DFmode
           && (rfmt == &ieee_quad_format
 	      || rfmt == &mips_quad_format
 	      || rfmt == &ieee_extended_motorola_format
-              || rfmt == &ieee_extended_intel_96_format 
-              || rfmt == &ieee_extended_intel_128_format 
+              || rfmt == &ieee_extended_intel_96_format
+              || rfmt == &ieee_extended_intel_128_format
               || rfmt == &ieee_extended_intel_96_round_53_format)))
     return true;
 
@@ -167,7 +167,7 @@ check_target_format (tree arg)
 /* A helper function to help select calls to pow that are suitable for
    conditional DCE transformation.  It looks for pow calls that can be
    guided with simple conditions.  Such calls either have constant base
-   values or base values converted from integers.  Returns true if 
+   values or base values converted from integers.  Returns true if
    the pow call POW_CALL is a candidate.  */
 
 /* The maximum integer bit size for base argument of a pow call
@@ -218,7 +218,7 @@ check_pow (gimple pow_call)
       int bit_sz;
 
       /* Only handles cases where base value is converted
-         from integer values.  */ 
+         from integer values.  */
       base_def = SSA_NAME_DEF_STMT (base);
       if (gimple_code (base_def) != GIMPLE_ASSIGN)
         return false;
@@ -277,7 +277,7 @@ is_call_dce_candidate (gimple call)
 
   fn = gimple_call_fndecl (call);
   if (!fn
-      || !DECL_BUILT_IN (fn) 
+      || !DECL_BUILT_IN (fn)
       || (DECL_BUILT_IN_CLASS (fn) != BUILT_IN_NORMAL))
     return false;
 
@@ -324,11 +324,11 @@ is_call_dce_candidate (gimple call)
    TEMP_NAME1/TEMP_NAME2 are names of the temporaries,
    CONDS is a vector holding the produced GIMPLE statements,
    and NCONDS points to the variable holding the number
-   of logical comparisons.  CONDS is either empty or 
+   of logical comparisons.  CONDS is either empty or
    a list ended with a null tree.  */
 
 static void
-gen_one_condition (tree arg, int lbub, 
+gen_one_condition (tree arg, int lbub,
                    enum tree_code tcode,
                    const char *temp_name1,
 		   const char *temp_name2,
@@ -367,14 +367,14 @@ gen_one_condition (tree arg, int lbub,
    out of input domain check.  ARG is the call argument
    to be runtime checked, DOMAIN holds the valid domain
    for the given function, CONDS points to the vector
-   holding the result GIMPLE statements.  *NCONDS is 
-   the number of logical comparisons.  This function 
+   holding the result GIMPLE statements.  *NCONDS is
+   the number of logical comparisons.  This function
    produces no more than two logical comparisons, one
    for lower bound check, one for upper bound check.  */
 
 static void
 gen_conditions_for_domain (tree arg, inp_domain domain,
-                           VEC (gimple, heap) *conds, 
+                           VEC (gimple, heap) *conds,
                            unsigned *nconds)
 {
   if (domain.has_lb)
@@ -401,7 +401,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
 
 /* A helper function to generate condition
    code for the y argument in call pow (some_const, y).
-   See candidate selection in check_pow.  Since the 
+   See candidate selection in check_pow.  Since the
    candidates' base values have a limited range,
    the guarded code generated for y are simple:
    if (y > max_y)
@@ -420,8 +420,8 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
                                  VEC (gimple, heap) *conds,
                                  unsigned *nconds)
 {
-  inp_domain exp_domain; 
-  /* Validate the range of the base constant to make 
+  inp_domain exp_domain;
+  /* Validate the range of the base constant to make
      sure it is consistent with check_pow.  */
   REAL_VALUE_TYPE mv;
   REAL_VALUE_TYPE bcv = TREE_REAL_CST (base);
@@ -444,11 +444,11 @@ gen_conditions_for_pow_cst_base (tree base, tree expn,
    the max exp value is computed based on the size
    of the integer type (i.e. max possible base value).
    The resulting input domain for exp argument is thus
-   conservative (smaller than the max value allowed by 
-   the runtime value of the base).  BASE is the integer 
-   base value, EXPN is the expression for the exponent 
-   argument, *CONDS is the vector to hold resulting 
-   statements, and *NCONDS is the number of logical 
+   conservative (smaller than the max value allowed by
+   the runtime value of the base).  BASE is the integer
+   base value, EXPN is the expression for the exponent
+   argument, *CONDS is the vector to hold resulting
+   statements, and *NCONDS is the number of logical
    conditions.  */
 
 static void
@@ -471,7 +471,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
   base_var = SSA_NAME_VAR (base_val0);
   int_type = TREE_TYPE (base_var);
   bit_sz = TYPE_PRECISION (int_type);
-  gcc_assert (bit_sz > 0 
+  gcc_assert (bit_sz > 0
               && bit_sz <= MAX_BASE_INT_BIT_SIZE);
 
   /* Determine the max exp argument value according to
@@ -544,7 +544,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
    and *NCONDS is the number of logical conditions.  */
 
 static void
-gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds, 
+gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds,
                         unsigned *nconds)
 {
   tree base, expn;
@@ -576,15 +576,15 @@ gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds,
    resulting region can be conservative (smaller) than the actual
    one and rounded to integers.  Some of the bounds are documented
    in the standard, while other limit constants are computed
-   assuming IEEE floating point format (for SF and DF modes).  
-   Since IEEE only sets minimum requirements for long double format, 
-   different long double formats exist under different implementations 
-   (e.g, 64 bit double precision (DF), 80 bit double-extended 
-   precision (XF), and 128 bit quad precision (QF) ).  For simplicity, 
-   in this implementation, the computed bounds for long double assume 
-   64 bit format (DF), and are therefore conservative.  Another 
+   assuming IEEE floating point format (for SF and DF modes).
+   Since IEEE only sets minimum requirements for long double format,
+   different long double formats exist under different implementations
+   (e.g, 64 bit double precision (DF), 80 bit double-extended
+   precision (XF), and 128 bit quad precision (QF) ).  For simplicity,
+   in this implementation, the computed bounds for long double assume
+   64 bit format (DF), and are therefore conservative.  Another
    assumption is that single precision float type is always SF mode,
-   and double type is DF mode.  This function is quite 
+   and double type is DF mode.  This function is quite
    implementation specific, so it may not be suitable to be part of
    builtins.c.  This needs to be revisited later to see if it can
    be leveraged in x87 assembly expansion.  */
@@ -668,22 +668,22 @@ get_no_error_domain (enum built_in_function fnc)
       return get_domain (0, true, true,
                          0, false, false);
     default:
-      gcc_unreachable (); 
+      gcc_unreachable ();
     }
 
-  gcc_unreachable (); 
+  gcc_unreachable ();
 }
 
 /* The function to generate shrink wrap conditions for a partially
    dead builtin call whose return value is not used anywhere,
    but has to be kept live due to potential error condition.
-   BI_CALL is the builtin call, CONDS is the vector of statements 
-   for condition code, NCODES is the pointer to the number of 
+   BI_CALL is the builtin call, CONDS is the vector of statements
+   for condition code, NCODES is the pointer to the number of
    logical conditions.  Statements belonging to different logical
    condition are separated by NULL tree in the vector.  */
 
 static void
-gen_shrink_wrap_conditions (gimple bi_call, VEC (gimple, heap) *conds, 
+gen_shrink_wrap_conditions (gimple bi_call, VEC (gimple, heap) *conds,
                             unsigned int *nconds)
 {
   gimple call;
@@ -718,12 +718,12 @@ gen_shrink_wrap_conditions (gimple bi_call, VEC (gimple, heap) *conds,
 /* Probability of the branch (to the call) is taken.  */
 #define ERR_PROB 0.01
 
-/* The function to shrink wrap a partially dead builtin call 
-   whose return value is not used anywhere, but has to be kept 
+/* The function to shrink wrap a partially dead builtin call
+   whose return value is not used anywhere, but has to be kept
    live due to potential error condition.  Returns true if the
    transformation actually happens.  */
 
-static bool 
+static bool
 shrink_wrap_one_built_in_call (gimple bi_call)
 {
   gimple_stmt_iterator bi_call_bsi;
@@ -743,7 +743,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
 
   /* This can happen if the condition generator decides
      it is not beneficial to do the transformation.  Just
-     return false and do not do any transformation for 
+     return false and do not do any transformation for
      the call.  */
   if (nconds == 0)
     return false;
@@ -788,7 +788,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
   bi_call_in_edge0->flags |= EDGE_TRUE_VALUE;
   guard_bb0 = bi_call_bb;
   bi_call_bb = bi_call_in_edge0->dest;
-  join_tgt_in_edge_fall_thru = make_edge (guard_bb0, join_tgt_bb, 
+  join_tgt_in_edge_fall_thru = make_edge (guard_bb0, join_tgt_bb,
                                           EDGE_FALSE_VALUE);
 
   bi_call_in_edge0->probability = REG_BR_PROB_BASE * ERR_PROB;
@@ -851,7 +851,7 @@ shrink_wrap_conditional_dead_built_in_calls (VEC (gimple, heap) *calls)
   unsigned i = 0;
 
   unsigned n = VEC_length (gimple, calls);
-  if (n == 0) 
+  if (n == 0)
     return false;
 
   for (; i < n ; i++)
@@ -909,7 +909,7 @@ tree_call_cdce (void)
       /* As we introduced new control-flow we need to insert PHI-nodes
          for the call-clobbers of the remaining call.  */
       mark_sym_for_renaming (gimple_vop (cfun));
-      return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect 
+      return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect
               | TODO_remove_unused_locals);
     }
   else
@@ -922,7 +922,7 @@ gate_call_cdce (void)
   /* The limit constants used in the implementation
      assume IEEE floating point format.  Other formats
      can be supported in the future if needed.  */
-  return flag_tree_builtin_call_dce != 0 && optimize_function_for_speed_p (cfun); 
+  return flag_tree_builtin_call_dce != 0 && optimize_function_for_speed_p (cfun);
 }
 
 struct gimple_opt_pass pass_call_cdce =

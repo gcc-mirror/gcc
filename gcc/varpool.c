@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "ggc.h"
 #include "timevar.h"
-#include "debug.h" 
+#include "debug.h"
 #include "target.h"
 #include "output.h"
 #include "gimple.h"
@@ -57,21 +57,21 @@ struct varpool_node *varpool_nodes;
 
 /* Queue of cgraph nodes scheduled to be lowered and output.
    The queue is maintained via mark_needed_node, linked via node->next_needed
-   pointer. 
+   pointer.
 
    LAST_NEEDED_NODE points to the end of queue, so it can be
    maintained in forward order.  GTY is needed to make it friendly to
    PCH.
- 
+
    During compilation we construct the queue of needed variables
    twice: first time it is during cgraph construction, second time it is at the
    end of compilation in VARPOOL_REMOVE_UNREFERENCED_DECLS so we can avoid
    optimized out variables being output.
-   
-   Each variable is thus first analyzed and then later possibly output.  
+
+   Each variable is thus first analyzed and then later possibly output.
    FIRST_UNANALYZED_NODE points to first node in queue that was not analyzed
    yet and is moved via VARPOOL_ANALYZE_PENDING_DECLS.  */
-   
+
 struct varpool_node *varpool_nodes_queue;
 static GTY(()) struct varpool_node *varpool_last_needed_node;
 static GTY(()) struct varpool_node *varpool_first_unanalyzed_node;

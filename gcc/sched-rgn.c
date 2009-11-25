@@ -448,7 +448,7 @@ dump_region_dot (FILE *f, int rgn)
 }
 
 /* The same, but first open a file specified by FNAME.  */
-void 
+void
 dump_region_dot_file (const char *fname, int rgn)
 {
   FILE *f = fopen (fname, "wt");
@@ -497,7 +497,7 @@ find_single_block_region (bool ebbs_p)
             if (bb->next_bb == EXIT_BLOCK_PTR
                 || LABEL_P (BB_HEAD (bb->next_bb)))
               break;
-            
+
             FOR_EACH_EDGE (e, ei, bb->succs)
              if ((e->flags & EDGE_FALLTHRU) != 0)
                break;
@@ -783,7 +783,7 @@ haifa_find_rgns (void)
       int *queue, *degree1 = NULL;
       /* We use EXTENDED_RGN_HEADER as an addition to HEADER and put
 	 there basic blocks, which are forced to be region heads.
-	 This is done to try to assemble few smaller regions 
+	 This is done to try to assemble few smaller regions
 	 from a too_large region.  */
       sbitmap extended_rgn_header = NULL;
       bool extend_regions_p;
@@ -795,7 +795,7 @@ haifa_find_rgns (void)
 	 block of each region.  */
 
       queue = XNEWVEC (int, n_basic_blocks);
-      
+
       extend_regions_p = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS) > 0;
       if (extend_regions_p)
         {
@@ -851,11 +851,11 @@ haifa_find_rgns (void)
 	      loop_head = max_hdr[bb->index];
 
               if (extend_regions_p)
-                /* We save degree in case when we meet a too_large region 
-		   and cancel it.  We need a correct degree later when 
+                /* We save degree in case when we meet a too_large region
+		   and cancel it.  We need a correct degree later when
                    calling extend_rgns.  */
                 memcpy (degree1, degree, last_basic_block * sizeof (int));
-	      
+
 	      /* Decrease degree of all I's successors for topological
 		 ordering.  */
 	      FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1022,7 +1022,7 @@ haifa_find_rgns (void)
 
                   degree = degree1;
                   degree1 = t;
-                  
+
                   /* And force successors of BB to be region heads.
 		     This may provide several smaller regions instead
 		     of one too_large region.  */
@@ -1037,10 +1037,10 @@ haifa_find_rgns (void)
       if (extend_regions_p)
         {
           free (degree1);
-          
+
           sbitmap_a_or_b (header, header, extended_rgn_header);
           sbitmap_free (extended_rgn_header);
- 
+
           extend_rgns (degree, &idx, header, max_hdr);
         }
     }
@@ -1084,8 +1084,8 @@ find_rgns (void)
 static int gather_region_statistics (int **);
 static void print_region_statistics (int *, int, int *, int);
 
-/* Calculate the histogram that shows the number of regions having the 
-   given number of basic blocks, and store it in the RSP array.  Return 
+/* Calculate the histogram that shows the number of regions having the
+   given number of basic blocks, and store it in the RSP array.  Return
    the size of this array.  */
 static int
 gather_region_statistics (int **rsp)
@@ -1100,7 +1100,7 @@ gather_region_statistics (int **rsp)
       gcc_assert (nr_blocks >= 1);
 
       if (nr_blocks > a_sz)
-	{	 
+	{
 	  a = XRESIZEVEC (int, a, nr_blocks);
 	  do
 	    a[a_sz++] = 0;
@@ -1114,14 +1114,14 @@ gather_region_statistics (int **rsp)
   return a_sz;
 }
 
-/* Print regions statistics.  S1 and S2 denote the data before and after 
+/* Print regions statistics.  S1 and S2 denote the data before and after
    calling extend_rgns, respectively.  */
 static void
 print_region_statistics (int *s1, int s1_sz, int *s2, int s2_sz)
 {
   int i;
-  
-  /* We iterate until s2_sz because extend_rgns does not decrease 
+
+  /* We iterate until s2_sz because extend_rgns does not decrease
      the maximal region size.  */
   for (i = 1; i < s2_sz; i++)
     {
@@ -1175,28 +1175,28 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
         /* This block already was processed in find_rgns.  */
         max_hdr[bbn] = -1;
     }
-  
+
   /* The idea is to topologically walk through CFG in top-down order.
      During the traversal, if all the predecessors of a node are
      marked to be in the same region (they all have the same max_hdr),
-     then current node is also marked to be a part of that region. 
+     then current node is also marked to be a part of that region.
      Otherwise the node starts its own region.
-     CFG should be traversed until no further changes are made.  On each 
-     iteration the set of the region heads is extended (the set of those 
-     blocks that have max_hdr[bbi] == bbi).  This set is upper bounded by the 
+     CFG should be traversed until no further changes are made.  On each
+     iteration the set of the region heads is extended (the set of those
+     blocks that have max_hdr[bbi] == bbi).  This set is upper bounded by the
      set of all basic blocks, thus the algorithm is guaranteed to
      terminate.  */
 
   while (rescan && iter < max_iter)
     {
       rescan = 0;
-      
+
       for (i = nblocks - 1; i >= 0; i--)
 	{
 	  edge e;
 	  edge_iterator ei;
 	  int bbn = order[i];
-	
+
 	  if (max_hdr[bbn] != -1 && !TEST_BIT (header, bbn))
 	    {
 	      int hdr = -1;
@@ -1222,16 +1222,16 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 			{
 			  hdr = bbn;
 			  break;
-			}		    
+			}
 		    }
 		  else
 		    /* BB starts its own region.  */
 		    {
 		      hdr = bbn;
 		      break;
-		    }		
+		    }
 		}
-	    
+
 	      if (hdr == bbn)
 		{
 		  /* If BB start its own region,
@@ -1240,7 +1240,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 		  rescan = 1;
 		}
 	      else
-		gcc_assert (hdr != -1);	    
+		gcc_assert (hdr != -1);
 
 	      max_hdr[bbn] = hdr;
 	    }
@@ -1248,17 +1248,17 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 
       iter++;
     }
-  
+
   /* Statistics were gathered on the SPEC2000 package of tests with
      mainline weekly snapshot gcc-4.1-20051015 on ia64.
-     
+
      Statistics for SPECint:
      1 iteration : 1751 cases (38.7%)
      2 iterations: 2770 cases (61.3%)
      Blocks wrapped in regions by find_rgns without extension: 18295 blocks
      Blocks wrapped in regions by 2 iterations in extend_rgns: 23821 blocks
      (We don't count single block regions here).
-     
+
      Statistics for SPECfp:
      1 iteration : 621 cases (35.9%)
      2 iterations: 1110 cases (64.1%)
@@ -1270,11 +1270,11 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
      This can be overridden with max-sched-extend-regions-iters parameter:
      0 - disable region extension,
      N > 0 - do at most N iterations.  */
-  
+
   if (sched_verbose && iter != 0)
     fprintf (sched_dump, ";; Region extension iterations: %d%s\n", iter,
 	     rescan ? "... failed" : "");
-    
+
   if (!rescan && iter != 0)
     {
       int *s1 = NULL, s1_sz = 0;
@@ -1294,7 +1294,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 	      edge e;
 	      edge_iterator ei;
 	      int num_bbs = 0, j, num_insns = 0, large;
-	
+
 	      large = too_large (bbn, &num_bbs, &num_insns);
 
 	      degree[bbn] = -1;
@@ -1329,7 +1329,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 		{
 		  RGN_NR_BLOCKS (nr_regions) = 1;
 		  nr_regions++;
-		}          
+		}
 
 	      num_bbs = 1;
 
@@ -1338,7 +1338,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 		  int succn = order[j];
 
 		  if (max_hdr[succn] == bbn)
-		    /* This cycle iterates over all basic blocks, that 
+		    /* This cycle iterates over all basic blocks, that
 		       are supposed to be in the region with head BBN,
 		       and wraps them into that region (or in single
 		       block region).  */
@@ -1346,7 +1346,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 		      gcc_assert (degree[succn] == 0);
 
 		      degree[succn] = -1;
-		      rgn_bb_table[idx] = succn;		 
+		      rgn_bb_table[idx] = succn;
 		      BLOCK_TO_BB (succn) = large ? 0 : num_bbs++;
 		      CONTAINING_RGN (succn) = nr_regions;
 
@@ -1361,7 +1361,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 			}
 
 		      idx++;
-				
+
 		      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (succn)->succs)
 			if (e->dest != EXIT_BLOCK_PTR)
 			  degree[e->dest->index]--;
@@ -1380,7 +1380,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 	{
 	  int *s2, s2_sz;
 
-          /* Get the new statistics and print the comparison with the 
+          /* Get the new statistics and print the comparison with the
              one before calling this function.  */
 	  s2_sz = gather_region_statistics (&s2);
 	  print_region_statistics (s1, s1_sz, s2, s2_sz);
@@ -1388,11 +1388,11 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 	  free (s2);
 	}
     }
-  
+
   free (order);
   free (max_hdr);
 
-  *idxp = idx; 
+  *idxp = idx;
 }
 
 /* Functions for regions scheduling information.  */
@@ -1408,7 +1408,7 @@ compute_dom_prob_ps (int bb)
 
   /* We shouldn't have any real ebbs yet.  */
   gcc_assert (ebb_head [bb] == bb + current_blocks);
-  
+
   if (IS_RGN_ENTRY (bb))
     {
       SET_BIT (dom[bb], 0);
@@ -2119,7 +2119,7 @@ init_ready_list (void)
   /* Initialize ready list with all 'ready' insns in target block.
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
-    {      
+    {
       try_ready (insn);
       target_n_insns++;
 
@@ -2157,7 +2157,7 @@ can_schedule_ready_p (rtx insn)
   if (INSN_BB (insn) != target_bb
       && IS_SPECULATIVE_INSN (insn)
       && !check_live (insn, INSN_BB (insn)))
-    return 0;          
+    return 0;
   else
     return 1;
 }
@@ -2206,12 +2206,12 @@ new_ready (rtx next, ds_t ts)
       int not_ex_free = 0;
 
       /* For speculative insns, before inserting to ready/queue,
-	 check live, exception-free, and issue-delay.  */	
+	 check live, exception-free, and issue-delay.  */
       if (!IS_VALID (INSN_BB (next))
 	  || CANT_MOVE (next)
 	  || (IS_SPECULATIVE_INSN (next)
 	      && ((recog_memoized (next) >= 0
-		   && min_insn_conflict_delay (curr_state, next, next) 
+		   && min_insn_conflict_delay (curr_state, next, next)
                    > PARAM_VALUE (PARAM_MAX_SCHED_INSN_CONFLICT_DELAY))
                   || IS_SPECULATION_CHECK_P (next)
 		  || !check_live (next, INSN_BB (next))
@@ -2242,7 +2242,7 @@ new_ready (rtx next, ds_t ts)
             ts = (ts & ~SPECULATIVE) | HARD_DEP;
 	}
     }
-  
+
   return ts;
 }
 
@@ -2325,7 +2325,7 @@ compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
      add_branch_dependences.  */
 }
 
-/* This variable holds common_sched_info hooks and data relevant to 
+/* This variable holds common_sched_info hooks and data relevant to
    the interblock scheduler.  */
 static struct common_sched_info_def rgn_common_sched_info;
 
@@ -2872,9 +2872,9 @@ sched_is_disabled_for_current_region_p (void)
   return true;
 }
 
-/* Free all region dependencies saved in INSN_BACK_DEPS and 
+/* Free all region dependencies saved in INSN_BACK_DEPS and
    INSN_RESOLVED_BACK_DEPS.  The Haifa scheduler does this on the fly
-   when scheduling, so this function is supposed to be called from 
+   when scheduling, so this function is supposed to be called from
    the selective scheduling only.  */
 void
 free_rgn_deps (void)
@@ -2884,7 +2884,7 @@ free_rgn_deps (void)
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
       rtx head, tail;
-      
+
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
 
@@ -2896,7 +2896,7 @@ static int rgn_n_insns;
 
 /* Compute insn priority for a current region.  */
 void
-compute_priorities (void) 
+compute_priorities (void)
 {
   int bb;
 
@@ -2904,7 +2904,7 @@ compute_priorities (void)
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
       rtx head, tail;
-      
+
       gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
       get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
 
@@ -2951,12 +2951,12 @@ schedule_region (int rgn)
 	{
 	  basic_block first_bb, last_bb;
 	  rtx head, tail;
-	  
+
 	  first_bb = EBB_FIRST_BB (bb);
 	  last_bb = EBB_LAST_BB (bb);
-	  
+
 	  get_ebb_head_tail (first_bb, last_bb, &head, &tail);
-	  
+
 	  if (no_real_insns_p (head, tail))
 	    {
 	      gcc_assert (first_bb == last_bb);
@@ -3127,7 +3127,7 @@ rgn_setup_region (int rgn)
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
   current_blocks = RGN_BLOCKS (rgn);
-  
+
   /* EBB_HEAD is a region-scope structure.  But we realloc it for
      each region to save time/memory/something else.
      See comments in add_block1, for what reasons we allocate +1 element.  */
@@ -3157,11 +3157,11 @@ sched_rgn_compute_dependencies (int rgn)
       /* Initialize bitmap used in add_branch_dependences.  */
       insn_referenced = sbitmap_alloc (sched_max_luid);
       sbitmap_zero (insn_referenced);
-      
+
       /* Compute backward dependencies.  */
       for (bb = 0; bb < current_nr_blocks; bb++)
 	compute_block_dependences (bb);
-      
+
       sbitmap_free (insn_referenced);
       free_pending_lists ();
       finish_deps_global ();
@@ -3185,7 +3185,7 @@ void
 sched_rgn_local_init (int rgn)
 {
   int bb;
-      
+
   /* Compute interblock info: probabilities, split-edges, dominators, etc.  */
   if (current_nr_blocks > 1)
     {
@@ -3242,7 +3242,7 @@ sched_rgn_local_init (int rgn)
 }
 
 /* Free data computed for the finished region.  */
-void 
+void
 sched_rgn_local_free (void)
 {
   free (prob);
@@ -3372,7 +3372,7 @@ rgn_make_new_region_out_of_new_block (basic_block bb)
   BLOCK_TO_BB (bb->index) = 0;
 
   nr_regions++;
-      
+
   RGN_BLOCKS (nr_regions) = i + 1;
 }
 
@@ -3389,7 +3389,7 @@ rgn_add_block (basic_block bb, basic_block after)
       RGN_DONT_CALC_DEPS (nr_regions - 1) = (after == EXIT_BLOCK_PTR);
     }
   else
-    { 
+    {
       int i, pos;
 
       /* We need to fix rgn_table, block_to_bb, containing_rgn
@@ -3398,7 +3398,7 @@ rgn_add_block (basic_block bb, basic_block after)
       BLOCK_TO_BB (bb->index) = BLOCK_TO_BB (after->index);
 
       /* We extend ebb_head to one more position to
-	 easily find the last position of the last ebb in 
+	 easily find the last position of the last ebb in
 	 the current region.  Thus, ebb_head[BLOCK_TO_BB (after) + 1]
 	 is _always_ valid for access.  */
 
@@ -3417,24 +3417,24 @@ rgn_add_block (basic_block bb, basic_block after)
 
       /* Source position: ebb_head[i]
 	 Destination position: ebb_head[i] + 1
-	 Last position: 
+	 Last position:
 	   RGN_BLOCKS (nr_regions) - 1
 	 Number of elements to copy: (last_position) - (source_position) + 1
        */
-      
+
       memmove (rgn_bb_table + pos + 1,
 	       rgn_bb_table + pos,
 	       ((RGN_BLOCKS (nr_regions) - 1) - (pos) + 1)
 	       * sizeof (*rgn_bb_table));
 
       rgn_bb_table[pos] = bb->index;
-      
+
       for (; i <= current_nr_blocks; i++)
 	ebb_head [i]++;
 
       i = CONTAINING_RGN (after->index);
       CONTAINING_RGN (bb->index) = i;
-      
+
       RGN_HAS_REAL_EBB (i) = 1;
 
       for (++i; i <= nr_regions; i++)
@@ -3451,7 +3451,7 @@ rgn_fix_recovery_cfg (int bbi, int check_bbi, int check_bb_nexti)
   int old_pos, new_pos, i;
 
   BLOCK_TO_BB (check_bb_nexti) = BLOCK_TO_BB (bbi);
-  
+
   for (old_pos = ebb_head[BLOCK_TO_BB (check_bbi) + 1] - 1;
        rgn_bb_table[old_pos] != check_bb_nexti;
        old_pos--);
@@ -3462,7 +3462,7 @@ rgn_fix_recovery_cfg (int bbi, int check_bbi, int check_bb_nexti)
        new_pos--);
   new_pos++;
   gcc_assert (new_pos > ebb_head[BLOCK_TO_BB (bbi)]);
-  
+
   gcc_assert (new_pos < old_pos);
 
   memmove (rgn_bb_table + new_pos + 1,
@@ -3518,7 +3518,7 @@ static bool
 gate_handle_sched2 (void)
 {
 #ifdef INSN_SCHEDULING
-  return optimize > 0 && flag_schedule_insns_after_reload 
+  return optimize > 0 && flag_schedule_insns_after_reload
     && dbg_cnt (sched2_func);
 #else
   return 0;

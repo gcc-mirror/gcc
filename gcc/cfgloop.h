@@ -58,7 +58,7 @@ struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
      b) it is consistent with the result of number_of_iterations_exit.  */
   double_int bound;
 
-  /* True if the statement will cause the loop to be leaved the (at most) 
+  /* True if the statement will cause the loop to be leaved the (at most)
      BOUND + 1-st time it is executed, that is, all the statements after it
      are executed at most BOUND times.  */
   bool is_exit;
@@ -240,7 +240,7 @@ extern unsigned get_loop_body_with_size (const struct loop *, basic_block *,
 					 unsigned);
 extern basic_block *get_loop_body_in_dom_order (const struct loop *);
 extern basic_block *get_loop_body_in_bfs_order (const struct loop *);
-extern basic_block *get_loop_body_in_custom_order (const struct loop *, 
+extern basic_block *get_loop_body_in_custom_order (const struct loop *,
 			       int (*) (const void *, const void *));
 
 extern VEC (edge, heap) *get_loop_exit_edges (const struct loop *);
@@ -293,7 +293,7 @@ extern struct loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
 					       tree *, tree *, struct loop *);
 extern struct loop * duplicate_loop (struct loop *, struct loop *);
 extern void duplicate_subloops (struct loop *, struct loop *);
-extern bool duplicate_loop_to_header_edge (struct loop *, edge, 
+extern bool duplicate_loop_to_header_edge (struct loop *, edge,
 					   unsigned, sbitmap, edge,
  					   VEC (edge, heap) **, int);
 extern struct loop *loopify (edge, edge,
