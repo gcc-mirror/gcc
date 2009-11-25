@@ -670,6 +670,28 @@ new_lst_stmt (poly_bb_p pbb)
   return lst;
 }
 
+/* Frees the memory used by LST.  */
+
+static inline void
+free_lst (lst_p lst)
+{
+  if (!lst)
+    return;
+
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	free_lst (l);
+
+      VEC_free (lst_p, heap, LST_SEQ (lst));
+    }
+
+  free (lst);
+}
+
 /* Returns a copy of LST.  */
 
 static inline lst_p
@@ -945,6 +967,9 @@ store_scattering_pbb (poly_bb_p pbb)
 static inline void
 store_lst_schedule (scop_p scop)
 {
+  if (SCOP_SAVED_SCHEDULE (scop))
+    free_lst (SCOP_SAVED_SCHEDULE (scop));
+
   SCOP_SAVED_SCHEDULE (scop) = copy_lst (SCOP_TRANSFORMED_SCHEDULE (scop));
 }
 
@@ -953,6 +978,9 @@ store_lst_schedule (scop_p scop)
 static inline void
 restore_lst_schedule (scop_p scop)
 {
+  if (SCOP_TRANSFORMED_SCHEDULE (scop))
+    free_lst (SCOP_TRANSFORMED_SCHEDULE (scop));
+
   SCOP_TRANSFORMED_SCHEDULE (scop) = copy_lst (SCOP_SAVED_SCHEDULE (scop));
 }
 
