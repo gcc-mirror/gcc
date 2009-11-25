@@ -1,5 +1,11 @@
 2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (gsi_for_ssa_name_def): Removed.
+	(insert_out_of_ssa_copy): Directly use gsi_after_labels and
+	gsi_for_stmt.
+
+2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (build_cloog_prog): Use pbb_index.
 	* graphite-interchange.c (pbb_do_interchange): Same.
 	* graphite-poly.c (print_scattering_function): Same.
