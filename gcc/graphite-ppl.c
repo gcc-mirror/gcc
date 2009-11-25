@@ -669,4 +669,36 @@ ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
   ppl_delete_Coefficient (denom);
 }
 
+/* Return in RES the maximum of the linear expression LE on the
+   polyhedron POL.  */
+
+void
+ppl_min_for_le_polyhedron (ppl_Polyhedron_t pol,
+			   ppl_Linear_Expression_t le, Value res)
+{
+  ppl_Coefficient_t num, denom;
+  Value dv, nv;
+  int maximum, err;
+
+  value_init (nv);
+  value_init (dv);
+  ppl_new_Coefficient (&num);
+  ppl_new_Coefficient (&denom);
+  err = ppl_Polyhedron_minimize (pol, le, num, denom, &maximum);
+
+  if (err > 0)
+    {
+      ppl_Coefficient_to_mpz_t (num, nv);
+      ppl_Coefficient_to_mpz_t (denom, dv);
+      gcc_assert (value_notzero_p (dv));
+      value_division (res, nv, dv);
+    }
+
+  value_clear (nv);
+  value_clear (dv);
+  ppl_delete_Coefficient (num);
+  ppl_delete_Coefficient (denom);
+}
+
+
 #endif
