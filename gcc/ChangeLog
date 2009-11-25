@@ -3,6 +3,20 @@
 	* print-rtl.c (print_rtx): When printing newline, append
 	print_rtx_head and indentation after the newline.
 
+	PR target/42165
+	* config/i386/i386.c (print_operand): For 32-byte memory use
+	YMMWORD in -masm=intel mode.  Use TBYTE instead of XWORD.
+	* config/i386/i386.md (crc32modesuffix): Expand to nothing
+	in -masm=intel mode.
+	(sse4_2_crc32di): Print just crc32 instead of crc32q in
+	-masm=intel mode.
+	* config/i386/mmx.md (*mmx_pinsrw): Print correct size of
+	memory operand in -masm=intel mode.
+	* config/i386/sse.md (*avx_pinsr<ssevecsize>, *sse4_1_pinsrb,
+	*sse2_pinsrw): Likewise.
+	(sse_cvtss2siq, sse_cvtss2siq_2, sse_cvttss2siq): Don't print
+	q suffix in -masm=intel mode.
+
 2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/10127
