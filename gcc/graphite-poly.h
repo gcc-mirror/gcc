@@ -792,6 +792,48 @@ lst_dewey_number_at_depth (lst_p lst, int depth)
   return lst_dewey_number_at_depth (LST_LOOP_FATHER (lst), depth);
 }
 
+/* Returns the predecessor of LST in the sequence of its loop father.
+   Returns NULL if LST is the first statement in the sequence.  */
+
+static inline lst_p
+lst_pred (lst_p lst)
+{
+  int dewey;
+  lst_p father;
+
+  if (!lst || !LST_LOOP_FATHER (lst))
+    return NULL;
+
+  dewey = lst_dewey_number (lst);
+  if (dewey == 0)
+    return NULL;
+
+  father = LST_LOOP_FATHER (lst);
+  return VEC_index (lst_p, LST_SEQ (father), dewey - 1);
+}
+
+/* Returns the successor of LST in the sequence of its loop father.
+   Returns NULL if there is none.  */
+
+static inline lst_p
+lst_succ (lst_p lst)
+{
+  int dewey;
+  lst_p father;
+
+  if (!lst || !LST_LOOP_FATHER (lst))
+    return NULL;
+
+  dewey = lst_dewey_number (lst);
+  father = LST_LOOP_FATHER (lst);
+
+  if (VEC_length (lst_p, LST_SEQ (father)) == (unsigned) dewey + 1)
+    return NULL;
+
+  return VEC_index (lst_p, LST_SEQ (father), dewey + 1);
+}
+
+
 /* Return the LST node corresponding to PBB.  */
 
 static inline lst_p
@@ -853,8 +895,16 @@ lst_find_first_pbb (lst_p lst)
 	return res;
     }
 
-  gcc_unreachable ();
   return NULL;
+}
+
+/* Returns true when LST is a loop that does not contains
+   statements.  */
+
+static inline bool
+lst_empty_p (lst_p lst)
+{
+  return !lst_find_first_pbb (lst);
 }
 
 /* Return the last lst representing a PBB statement in LST.  */
@@ -1029,14 +1079,74 @@ lst_update_scattering (lst_p lst)
 static inline void
 lst_insert_in_sequence (lst_p lst1, lst_p lst2, bool before)
 {
-  lst_p father = LST_LOOP_FATHER (lst2);
-  int dewey = lst_dewey_number (lst2);
+  lst_p father;
+  int dewey;
 
-  gcc_assert (lst1 && lst2 && father && dewey >= 0);
+  /* Do not insert empty loops.  */
+  if (!lst1 || lst_empty_p (lst1))
+    return;
+
+  father = LST_LOOP_FATHER (lst2);
+  dewey = lst_dewey_number (lst2);
+
+  gcc_assert (lst2 && father && dewey >= 0);
 
   VEC_safe_insert (lst_p, heap, LST_SEQ (father), before ? dewey : dewey + 1,
 		   lst1);
   LST_LOOP_FATHER (lst1) = father;
+}
+
+/* Replaces LST1 with LST2.  */
+
+static inline void
+lst_replace (lst_p lst1, lst_p lst2)
+{
+  lst_p father;
+  int dewey;
+
+  if (!lst2 || lst_empty_p (lst2))
+    return;
+
+  father = LST_LOOP_FATHER (lst1);
+  dewey = lst_dewey_number (lst1);
+  LST_LOOP_FATHER (lst2) = father;
+  VEC_replace (lst_p, LST_SEQ (father), dewey, lst2);
+}
+
+/* Returns a copy of ROOT where LST has been replaced by a copy of the
+   LSTs A B C in this sequence.  */
+
+static inline lst_p
+lst_substitute_3 (lst_p root, lst_p lst, lst_p a, lst_p b, lst_p c)
+{
+  int i;
+  lst_p l;
+  VEC (lst_p, heap) *seq;
+
+  if (!root)
+    return NULL;
+
+  gcc_assert (lst && root != lst);
+
+  if (!LST_LOOP_P (root))
+    return new_lst_stmt (LST_PBB (root));
+
+  seq = VEC_alloc (lst_p, heap, 5);
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (root), i, l); i++)
+    if (l != lst)
+      VEC_safe_push (lst_p, heap, seq, lst_substitute_3 (l, lst, a, b, c));
+    else
+      {
+	if (!lst_empty_p (a))
+	  VEC_safe_push (lst_p, heap, seq, copy_lst (a));
+	if (!lst_empty_p (b))
+	  VEC_safe_push (lst_p, heap, seq, copy_lst (b));
+	if (!lst_empty_p (c))
+	  VEC_safe_push (lst_p, heap, seq, copy_lst (c));
+      }
+
+  return new_lst_loop (seq);
 }
 
 /* Moves LST before LOOP if BEFORE is true, and after the LOOP if

@@ -1,3 +1,28 @@
+2009-11-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-interchange.c (lst_perfect_nestify): Pass 3 parameters
+	for the loops created by the loop distribution.  Do not modify the
+	input LSTs.
+	(lst_try_interchange_loops): Same.  Use a temporary LST for the
+	transformed schedule.  Call lst_update_scattering before data
+	dependence analysis.
+	(lst_try_interchange): Pass an extra parameter INDEX.
+	(lst_do_interchange_1): New.
+	(lst_do_interchange): Call lst_do_interchange_1.
+	(scop_do_interchange): Call lst_update_scattering.
+	* graphite-poly.c (apply_poly_transforms): Do not call
+	lst_update_scattering.
+	* graphite-poly.h (lst_pred): New.
+	(lst_succ): New.
+	(lst_find_first_pbb): Return NULL when not found.
+	(lst_empty_p): New.
+	(lst_insert_in_sequence): Allow LST1 to be NULL.
+	(lst_replace): New.
+	(lst_substitute_3): New.
+	* gcc.dg/graphite/interchange-1.c: XFail.
+	* gcc.dg/graphite/interchange-8.c: XFail.
+	* gcc.dg/graphite/interchange-11.c: XFail.
+
 2009-10-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-interchange.c (lst_perfectly_nested_p): New.
