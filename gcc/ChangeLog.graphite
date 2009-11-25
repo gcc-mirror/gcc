@@ -1,5 +1,10 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (memory_stride_in_loop): Delete p1, lma
+	and new_cstr.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (dependence_polyhedron_1): Remove
 	unused gdim dimensions from the DDR polyhedron.
 

@@ -168,6 +168,8 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
     ppl_set_coef (lma, dim_L1, -1);
     ppl_new_Constraint (&new_cstr, lma, PPL_CONSTRAINT_TYPE_EQUAL);
     ppl_Pointset_Powerset_C_Polyhedron_add_constraint (p1, new_cstr);
+    ppl_delete_Linear_Expression (lma);
+    ppl_delete_Constraint (new_cstr);
   }
 
   /* Now intersect all the parts to get the polyhedron P1:
@@ -254,10 +256,7 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
   }
 
   /* P1 = P1 inter P2.  */
-  {
-    ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (p1, p2);
-    ppl_delete_Pointset_Powerset_C_Polyhedron (p2);
-  }
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (p1, p2);
 
   /* Maximise the expression L2 - L1.  */
   {
@@ -265,8 +264,11 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
     ppl_set_coef (le, dim_L2, 1);
     ppl_set_coef (le, dim_L1, -1);
     ppl_max_for_le_pointset (p1, le, stride);
-    ppl_delete_Linear_Expression (le);
   }
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (p1);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (p2);
+  ppl_delete_Linear_Expression (le);
 }
 
 /* Returns true when it is profitable to interchange time dimensions DEPTH1
