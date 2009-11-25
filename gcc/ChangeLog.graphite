@@ -1,3 +1,7 @@
+2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* g++.dg/graphite/pr41305.C: New.
+
 2009-10-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	* graphite-sese-to-poly.c (build_loop_iteration_domains): Generalize
