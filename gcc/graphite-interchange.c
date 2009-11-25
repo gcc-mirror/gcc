@@ -305,35 +305,141 @@ pbb_interchange_loop_depths (graphite_dim_t depth1, graphite_dim_t depth2, poly_
   free (map);
 }
 
-/* Interchanges all the loop depths that are considered profitable for PBB.  */
+/* Apply the interchange of loops at depths DEPTH1 and DEPTH2 to all
+   the statements below LST.  */
+
+static void
+lst_apply_interchange (lst_p lst, int depth1, int depth2)
+{
+  if (!lst)
+    return;
+
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	lst_apply_interchange (l, depth1, depth2);
+    }
+  else
+    pbb_interchange_loop_depths (depth1, depth2, LST_PBB (lst));
+}
+
+/* Return true when the interchange of loops at depths DEPTH1 and
+   DEPTH2 to all the statements below LST is profitable.  */
 
 static bool
-pbb_do_interchange (poly_bb_p pbb, scop_p scop)
+lst_interchange_profitable_p (lst_p lst, int depth1, int depth2)
 {
-  graphite_dim_t i, j;
-  bool transform_done = false;
+  if (!lst)
+    return false;
 
-  for (i = 0; i < pbb_dim_iter_domain (pbb); i++)
-    for (j = i + 1; j < pbb_dim_iter_domain (pbb); j++)
-      if (pbb_interchange_profitable_p (i, j, pbb))
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+      bool res = false;
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
 	{
-	  pbb_interchange_loop_depths (i, j, pbb);
+	  bool profitable = lst_interchange_profitable_p (l, depth1, depth2);
 
-	  if (graphite_legal_transform (scop))
-	    {
-	      transform_done = true;
+	  if (profitable && !LST_LOOP_P (lst)
+	      && dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Interchanging loops at depths %d and %d is profitable for stmt_%d.\n",
+		     depth1, depth2, pbb_index (LST_PBB (lst)));
 
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file,
-			 "PBB %d: loops at depths %d and %d will be interchanged.\n",
-			 pbb_index (pbb), (int) i, (int) j);
-	    }
-	  else
-	    /* Undo the transform.  */
-	    pbb_interchange_loop_depths (j, i, pbb);
+	  res |= profitable;
 	}
 
-  return transform_done;
+      return res;
+    }
+  else
+    return pbb_interchange_profitable_p (depth1, depth2, LST_PBB (lst));
+}
+
+
+/* Try to interchange LOOP1 with LOOP2 for all the statements of the
+   body of LOOP2.  LOOP1 contains LOOP2.  Return true if it did the
+   interchange.  */
+
+static bool
+lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
+{
+  int depth1 = lst_depth (loop1);
+  int depth2 = lst_depth (loop2);
+
+  if (!lst_interchange_profitable_p (loop2, depth1, depth2))
+    return false;
+
+  lst_apply_interchange (loop2, depth1, depth2);
+
+  if (graphite_legal_transform (scop))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loops at depths %d and %d will be interchanged.\n",
+		 depth1, depth2);
+
+      return true;
+    }
+
+  /* Undo the transform.  */
+  lst_apply_interchange (loop2, depth2, depth1);
+  return false;
+}
+
+/* Try to interchange LOOP with all the loops contained in the body of
+   LST.  Return true if it did interchanged some loops.  */
+
+static bool
+lst_try_interchange (scop_p scop, lst_p loop, lst_p lst)
+{
+  if (!lst)
+    return false;
+
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+      bool res = lst_try_interchange_loops (scop, loop, lst);
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	res |= lst_try_interchange (scop, loop, l);
+
+      return res;
+    }
+
+  return false;
+}
+
+/* Interchanges all the loops of LST that are considered profitable to
+   interchange.  Return true if it did interchanged some loops.  */
+
+static bool
+lst_do_interchange (scop_p scop, lst_p lst)
+{
+  if (!lst)
+    return false;
+
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+      bool res = false;
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	res |= lst_try_interchange (scop, lst, l);
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	res |= lst_do_interchange (scop, l);
+
+      return res;
+    }
+
+  return false;
 }
 
 /* Interchanges all the loop depths that are considered profitable for SCOP.  */
@@ -341,14 +447,11 @@ pbb_do_interchange (poly_bb_p pbb, scop_p scop)
 bool
 scop_do_interchange (scop_p scop)
 {
-  int i;
-  poly_bb_p pbb;
   bool transform_done = false;
 
   store_scattering (scop);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    transform_done |= pbb_do_interchange (pbb, scop);
+  transform_done = lst_do_interchange (scop, SCOP_TRANSFORMED_SCHEDULE (scop));
 
   if (!transform_done)
     return false;
@@ -361,6 +464,7 @@ scop_do_interchange (scop_p scop)
 
   return transform_done;
 }
+
 
 #endif
 
