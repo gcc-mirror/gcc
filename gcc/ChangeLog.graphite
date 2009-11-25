@@ -1,3 +1,9 @@
+2009-09-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-scop-detection.c (stmt_simple_memref_p): Removed.
+	(is_simple_operand): Remove call to stmt_simple_memref_p.
+	(stmt_simple_for_scop_p): Update call to is_simple_operand.
+
 2009-09-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* testsuite/gcc.dg/graphite/interchange-mvt.c: New File.

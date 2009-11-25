@@ -249,29 +249,6 @@ graphite_can_represent_expr (basic_block scop_entry, loop_p loop,
   return graphite_can_represent_scev (scev, outermost_loop->num);
 }
 
-/* Return false if the tree_code of the operand OP or any of its operands
-   is component_ref.  */
-
-static bool
-exclude_component_ref (tree op)
-{
-  int i;
-  int len;
-
-  if (!op)
-    return true;
-
-  if (TREE_CODE (op) == COMPONENT_REF)
-    return false;
-
-  len = TREE_OPERAND_LENGTH (op);
-  for (i = 0; i < len; ++i)
-    if (!exclude_component_ref (TREE_OPERAND (op, i)))
-      return false;
-
-  return true;
-}
-
 /* Return true if the data references of STMT can be represented by
    Graphite.  */
 
@@ -300,53 +277,39 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop, gimple stmt)
   return res;
 }
 
-/* Return true if we can create an affine data-ref for OP in STMT
-   in regards to OUTERMOST_LOOP.  */
+/* Return false if the TREE_CODE of the operand OP or any of its operands
+   is a COMPONENT_REF.  */
 
 static bool
-stmt_simple_memref_p (loop_p outermost_loop, gimple stmt, tree op)
+exclude_component_ref (tree op)
 {
-  data_reference_p dr;
-  unsigned int i;
-  VEC(tree,heap) *fns;
-  tree t;
-  bool res = true;
+  int i;
+  int len;
 
-  dr = create_data_ref (outermost_loop, op, stmt, true);
-  fns = DR_ACCESS_FNS (dr);
+  if (!op)
+    return true;
 
-  for (i = 0; VEC_iterate (tree, fns, i, t); i++)
-    if (!graphite_can_represent_scev (t, outermost_loop->num))
-      {
-	res = false;
-	break;
-      }
+  if (TREE_CODE (op) == COMPONENT_REF)
+    return false;
 
-  free_data_ref (dr);
-  return res;
+  len = TREE_OPERAND_LENGTH (op);
+  for (i = 0; i < len; ++i)
+    if (!exclude_component_ref (TREE_OPERAND (op, i)))
+      return false;
+
+  return true;
 }
 
 /* Return true if the operand OP used in STMT is simple in regards to
    OUTERMOST_LOOP.  */
 
-static bool
-is_simple_operand (loop_p outermost_loop, gimple stmt, tree op)
+static inline bool
+is_simple_operand (tree op)
 {
-  /* It is not a simple operand when it is a declaration,  */
-  if (DECL_P (op))
-      return false;
-
-  /* or a structure,  */
-  if (AGGREGATE_TYPE_P (TREE_TYPE (op)))
-      return false;
-
-  /* or a memory access that cannot be analyzed by the data reference
-     analysis.  */
-  if (handled_component_p (op) || INDIRECT_REF_P (op))
-    if (!stmt_simple_memref_p (outermost_loop, stmt, op))
-      return false;
-
-  return exclude_component_ref (op);
+  /* It is not a simple operand when it is a declaration or a
+     structure.  */
+  return !DECL_P (op) && !AGGREGATE_TYPE_P (TREE_TYPE (op))
+    && exclude_component_ref (op);
 }
 
 /* Return true only when STMT is simple enough for being handled by
@@ -419,18 +382,13 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 	  {
 	  case GIMPLE_UNARY_RHS:
 	  case GIMPLE_SINGLE_RHS:
-	    return (is_simple_operand (outermost_loop, stmt,
-				       gimple_assign_lhs (stmt))
-		    && is_simple_operand (outermost_loop, stmt,
-					  gimple_assign_rhs1 (stmt)));
+	    return (is_simple_operand (gimple_assign_lhs (stmt))
+		    && is_simple_operand (gimple_assign_rhs1 (stmt)));
 
 	  case GIMPLE_BINARY_RHS:
-	    return (is_simple_operand (outermost_loop, stmt,
-				       gimple_assign_lhs (stmt))
-		    && is_simple_operand (outermost_loop, stmt,
-					  gimple_assign_rhs1 (stmt))
-		    && is_simple_operand (outermost_loop, stmt,
-					  gimple_assign_rhs2 (stmt)));
+	    return (is_simple_operand (gimple_assign_lhs (stmt))
+		    && is_simple_operand (gimple_assign_rhs1 (stmt))
+		    && is_simple_operand (gimple_assign_rhs2 (stmt)));
 
 	  case GIMPLE_INVALID_RHS:
 	  default:
@@ -444,12 +402,11 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
 	size_t n = gimple_call_num_args (stmt);
 	tree lhs = gimple_call_lhs (stmt);
 
-	if (lhs && !is_simple_operand (outermost_loop, stmt, lhs))
+	if (lhs && !is_simple_operand (lhs))
 	  return false;
 
 	for (i = 0; i < n; i++)
-	  if (!is_simple_operand (outermost_loop, stmt,
-				  gimple_call_arg (stmt, i)))
+	  if (!is_simple_operand (gimple_call_arg (stmt, i)))
 	    return false;
 
 	return true;
