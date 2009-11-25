@@ -1,3 +1,8 @@
+2009-09-26  Li Feng  <nemokingdom@gmail.com>
+
+	* graphite-sese-to-poly.c (build_scop_drs): Disable writing to file
+	the alias graph of data references.
+
 2009-09-25  Li Feng  <nemokingdom@gmail.com>
 
 	* graphite-sese-to-poly.c (write_alias_graph_to_ascii_dimacs): New.
