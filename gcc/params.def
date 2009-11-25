@@ -733,6 +733,13 @@ DEFPARAM (PARAM_SWITCH_CONVERSION_BRANCH_RATIO,
 	  "a switch conversion to take place",
 	  8, 1, 0)
 
+/* Size of tiles when doing loop blocking.  */
+
+DEFPARAM (PARAM_LOOP_BLOCK_TILE_SIZE,
+	  "loop-block-tile-size",
+	  "size of tiles for loop blocking",
+	  51, 0, 0)
+
 /* Avoid doing loop invariant motion on very large loops.  */
 
 DEFPARAM (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,

@@ -202,7 +202,7 @@ static bool
 pbb_do_strip_mine (poly_bb_p pbb)
 {
   graphite_dim_t s_dim;
-  int stride = 64;
+  int stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
   bool transform_done = false;
 
   for (s_dim = 0; s_dim < pbb_nb_dynamic_scattering_transform (pbb); s_dim++)
