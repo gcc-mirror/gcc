@@ -450,7 +450,6 @@ new_scop (void *region)
 {
   scop_p scop = XNEW (struct scop);
 
-  SCOP_DEP_GRAPH (scop) = NULL;
   SCOP_CONTEXT (scop) = NULL;
   scop_set_region (scop, region);
   SCOP_BBS (scop) = VEC_alloc (poly_bb_p, heap, 3);

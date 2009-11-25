@@ -742,9 +742,6 @@ struct scop
   /* Original and transformed schedules.  */
   lst_p original_schedule, transformed_schedule;
 
-  /* Data dependence graph for this SCoP.  */
-  struct graph *dep_graph;
-
   /* The context describes known restrictions concerning the parameters
      and relations in between the parameters.
 
@@ -767,7 +764,6 @@ struct scop
 
 #define SCOP_BBS(S) (S->bbs)
 #define SCOP_REGION(S) ((sese) S->region)
-#define SCOP_DEP_GRAPH(S) (S->dep_graph)
 #define SCOP_CONTEXT(S) (S->context)
 #define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
