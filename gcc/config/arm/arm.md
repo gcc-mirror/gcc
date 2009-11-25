@@ -10957,6 +10957,13 @@
  	  }
  	break;
       default:
+	/* XXX: Sometimes gcc does something really dumb and ends up with
+	   a HIGH in a constant pool entry, usually because it's trying to
+	   load into a VFP register.  We know this will always be used in
+	   combination with a LO_SUM which ignores the high bits, so just
+	   strip off the HIGH.  */
+	if (GET_CODE (x) == HIGH)
+	  x = XEXP (x, 0);
         assemble_integer (x, 4, BITS_PER_WORD, 1);
 	mark_symbol_refs_as_used (x);
         break;
