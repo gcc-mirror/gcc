@@ -25,13 +25,14 @@ There are two sets of files:  Those that are "required" will be
 included in the library for all configurations, while those
 that are "optional" will be included in the library only if "needed."
 
-To add a new required file, edit Makefile to add the source file
+To add a new required file, edit Makefile.in to add the source file
 name to CFILES and the object file to REQUIRED_OFILES.
 
 To add a new optional file, it must provide a single function, and the
 name of the function must be the same as the name of the file.
 
-    * Add the source file name to CFILES.
+    * Add the source file name to CFILES in Makefile.in and the object
+      file to CONFIGURED_OFILES.
 
     * Add the function to name to the funcs shell variable in
       configure.ac.
@@ -47,6 +48,11 @@ name of the function must be the same as the name of the file.
       to do anything.  If it does not provide the function, add the
       object file to LIBOBJS, and add the function name to the case
       controlling whether to define HAVE_func.
+
+Finally, in the build directory of libiberty, configure with
+"--enable-maintainer-mode", run "make maint-deps" to update
+Makefile.in, and run 'make stamp-functions' to regenerate
+functions.texi.
 
 The optional file you've added (e.g. getcwd.c) should compile and work
 on all hosts where it is needed.  It does not have to work or even

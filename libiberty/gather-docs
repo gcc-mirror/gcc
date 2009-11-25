@@ -110,7 +110,7 @@ print "Writing $outfile\n" if $verbose;
 print OUT "\@c Automatically generated from *.c and others (the comments before\n";
 print OUT "\@c each entry tell you which file and where in that file).  DO NOT EDIT!\n";
 print OUT "\@c Edit the *.c files, configure with --enable-maintainer-mode,\n";
-print OUT "\@c and let gather-docs build you a new copy.\n\n";
+print OUT "\@c run 'make stamp-functions' and gather-docs will build a new copy.\n\n";
 
 for $key (sort keys %name) {
     print OUT "\@c $src_file{$key}:$src_line{$key}\n";

@@ -1,3 +1,9 @@
+2009-11-25  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* README: Mention changes to Makefile.in and functions.texi.
+	* gather-docs: Mention 'make stamp-functions' in the header.
+
 2009-11-23  Ben Elliston  <bje@au.ibm.com>
 	    Ian Lance Taylor  <iant@google.com>
 
