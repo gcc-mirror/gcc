@@ -1,5 +1,13 @@
 2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (scev_analyzable_p): New.
+	(rewrite_cross_bb_scalar_dependence): New.
+	(rewrite_cross_bb_scalar_deps): New.
+	(rewrite_reductions_out_of_ssa): Use bb_in_sese_p.
+	Call rewrite_cross_bb_scalar_deps.
+
+2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (gsi_for_ssa_name_def): Removed.
 	(insert_out_of_ssa_copy): Directly use gsi_after_labels and
 	gsi_for_stmt.
