@@ -32,7 +32,9 @@
                enddo
             enddo
          enddo
-      enddo          
+      enddo
       return
       end
 
+
+! { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } }
