@@ -220,6 +220,22 @@ graphite_initialize (void)
   return true;
 }
 
+/* Free loop->aux in newly created loops by translate_clast.  */
+
+static void
+free_aux_in_new_loops (void)
+{
+  loop_p loop;
+  loop_iterator li;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    if (loop->aux)
+      {
+	free (loop->aux);
+	loop->aux = NULL;
+      }
+}
+
 /* Finalize graphite: perform CFG cleanup when NEED_CFG_CLEANUP_P is
    true.  */
 
