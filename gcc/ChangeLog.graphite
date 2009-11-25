@@ -1,5 +1,10 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (dependence_polyhedron_1): Remove
+	unused gdim dimensions from the DDR polyhedron.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (pddr_transformed_scattering): New.
 	(dot_original_deps_stmt_1): New.
 	(dot_transformed_deps_stmt_1): New.

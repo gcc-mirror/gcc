@@ -419,7 +419,7 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
   graphite_dim_t gdim = scop_nb_params (scop);
   graphite_dim_t dim1 = pdr_dim (pdr1);
   graphite_dim_t dim2 = pdr_dim (pdr2);
-  graphite_dim_t dim = tdim1 + tdim2 + dim1 + dim2;
+  graphite_dim_t dim = tdim1 + tdim2 + dim1 + dim2 - gdim;
   ppl_Pointset_Powerset_C_Polyhedron_t res;
   ppl_Pointset_Powerset_C_Polyhedron_t id1, id2, isc1, isc2, idr1, idr2;
   ppl_Pointset_Powerset_C_Polyhedron_t sc1, sc2, dreq;
