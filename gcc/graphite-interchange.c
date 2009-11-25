@@ -193,7 +193,7 @@ build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
 
 
 /* Set STRIDE to the stride of PDR in memory by advancing by one in
-   time dimension DEPTH.  */
+   the loop at DEPTH.  */
 
 static void
 memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
@@ -329,6 +329,32 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
   ppl_delete_Linear_Expression (le);
 }
 
+/* Sets STRIDES to the sum of all the strides of the data references accessed   */
+
+static void
+memory_strides_in_loop_depth (poly_bb_p pbb, graphite_dim_t depth, Value strides)
+{
+  int i;
+  poly_dr_p pdr;
+  Value s, n;
+
+  value_set_si (strides, 0);
+  value_init (s);
+  value_init (n);
+
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
+    {
+      value_set_si (n, PDR_NB_REFS (pdr));
+
+      memory_stride_in_loop (s, depth, pdr);
+      value_multiply (s, s, n);
+      value_addto (strides, strides, s);
+    }
+
+  value_clear (s);
+  value_clear (n);
+}
+
 /* Returns true when it is profitable to interchange time dimensions DEPTH1
    and DEPTH2 with DEPTH1 < DEPTH2 for PBB.
 
@@ -414,39 +440,21 @@ static bool
 pbb_interchange_profitable_p (graphite_dim_t depth1, graphite_dim_t depth2,
 			      poly_bb_p pbb)
 {
-  int i;
-  poly_dr_p pdr;
-  Value d1, d2, s, n;
+  Value d1, d2;
   bool res;
 
   gcc_assert (depth1 < depth2);
 
   value_init (d1);
-  value_set_si (d1, 0);
   value_init (d2);
-  value_set_si (d2, 0);
-  value_init (s);
-  value_init (n);
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
-    {
-      value_set_si (n, PDR_NB_REFS (pdr));
-
-      memory_stride_in_loop (s, depth1, pdr);
-      value_multiply (s, s, n);
-      value_addto (d1, d1, s);
-
-      memory_stride_in_loop (s, depth2, pdr);
-      value_multiply (s, s, n);
-      value_addto (d2, d2, s);
-    }
+  memory_strides_in_loop_depth (pbb, depth1, d1);
+  memory_strides_in_loop_depth (pbb, depth2, d2);
 
   res = value_lt (d1, d2);
 
   value_clear (d1);
   value_clear (d2);
-  value_clear (s);
-  value_clear (n);
 
   return res;
 }

@@ -1,5 +1,10 @@
 2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (memory_strides_in_loop_depth): New.
+	(pbb_interchange_profitable_p): Call memory_strides_in_loop_depth.
+
+2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-blocking.c (scop_do_block): New.
 	* graphite-poly.c (apply_poly_transforms): Call scop_do_block.
 	* graphite-poly.h (scop_do_block): Declared.
