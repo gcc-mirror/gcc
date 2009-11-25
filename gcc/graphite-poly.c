@@ -834,22 +834,19 @@ loop_to_lst (loop_p loop, VEC (poly_bb_p, heap) *bbs, int *i)
 
       if (bb->loop_father == loop)
 	stmt = new_lst_stmt (pbb);
+      else if (flow_bb_inside_loop_p (loop, bb))
+	{
+	  loop_p next = loop->inner;
+
+	  while (next && !flow_bb_inside_loop_p (next, bb))
+	    next = next->next;
+
+	  stmt = loop_to_lst (next, bbs, i);
+	}
       else
 	{
-	  if (flow_bb_inside_loop_p (loop, bb))
-	    stmt = loop_to_lst (loop->inner, bbs, i);
-	  else
-	    {
-	      loop_p next = loop;
-
-	      while ((next = next->next)
-		     && !flow_bb_inside_loop_p (next, bb));
-
-	      if (!next)
-		return new_lst_loop (seq);
-
-	      stmt = loop_to_lst (next, bbs, i);
-	    }
+	  (*i)--;
+	  return new_lst_loop (seq);
 	}
 
       VEC_safe_push (lst_p, heap, seq, stmt);
