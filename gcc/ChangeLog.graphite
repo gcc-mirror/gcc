@@ -1,3 +1,10 @@
+2009-10-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (reduction_phi_p): Call remove_invariant_phi
+	when the loop stride is zero.
+
+	* gcc.dg/graphite/id-16.c: New.
+
 2009-10-06  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (reduction_dr_1): New.
