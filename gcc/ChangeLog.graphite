@@ -1,5 +1,11 @@
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (memory_stride_in_loop): The depth
+	argument corresponds to a dynamic time dimension, so use
+	psct_dynamic_dim to refer to the transformed scattering dimension.
+
+2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (memory_stride_in_loop): Fix comments.
 
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
