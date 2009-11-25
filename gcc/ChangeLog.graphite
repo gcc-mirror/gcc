@@ -1,5 +1,14 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (find_scop_parameters): Initialize
+	SCOP_CONTEXT.
+	(build_loop_iteration_domains): Extract bounds on parameters
+	based on the data size.
+	(build_scop_context): Do not initialize SCOP_CONTEXT;
+	add new constraints.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-ppl.c (ppl_min_for_le_polyhedron): New.
 	* graphite-ppl.h (graphite-ppl.h): Declared.
 
