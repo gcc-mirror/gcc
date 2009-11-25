@@ -1882,7 +1882,6 @@ insert_out_of_ssa_copy (tree res, tree var)
     }
   else
     {
-      gcc_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
       gsi = gsi_for_stmt (stmt);
       gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
     }

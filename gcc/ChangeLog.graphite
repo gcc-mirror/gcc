@@ -1,5 +1,10 @@
 2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Remove
+	buggy assert.
+
+2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (scev_analyzable_p): New.
 	(rewrite_cross_bb_scalar_dependence): New.
 	(rewrite_cross_bb_scalar_deps): New.
