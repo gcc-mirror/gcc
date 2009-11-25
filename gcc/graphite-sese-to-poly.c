@@ -2166,12 +2166,12 @@ insert_out_of_ssa_copy_on_edge (edge e, tree res, tree expr)
 /* Creates a zero dimension array of the same type as VAR.  */
 
 static tree
-create_zero_dim_array (tree var)
+create_zero_dim_array (tree var, const char *base_name)
 {
   tree index_type = build_index_type (integer_zero_node);
   tree elt_type = TREE_TYPE (var);
   tree array_type = build_array_type (elt_type, index_type);
-  tree base = create_tmp_var (array_type, "Red");
+  tree base = create_tmp_var (array_type, base_name);
 
   add_referenced_var (base);
 
@@ -2200,7 +2200,7 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
   tree var = SSA_NAME_VAR (res);
-  tree zero_dim_array = create_zero_dim_array (var);
+  tree zero_dim_array = create_zero_dim_array (var, "Close_Phi");
   gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (phi));
   gimple stmt = gimple_build_assign (res, zero_dim_array);
   tree arg = gimple_phi_arg_def (phi, 0);
@@ -2223,7 +2223,7 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
   basic_block bb = gimple_bb (phi);
   tree res = gimple_phi_result (phi);
   tree var = SSA_NAME_VAR (res);
-  tree zero_dim_array = create_zero_dim_array (var);
+  tree zero_dim_array = create_zero_dim_array (var, "General_Reduction");
   gimple_stmt_iterator gsi;
   gimple stmt;
   gimple_seq stmts;
@@ -2370,7 +2370,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
       {
 	if (!zero_dim_array)
 	  {
-	    zero_dim_array = create_zero_dim_array (SSA_NAME_VAR (def));
+	    zero_dim_array = create_zero_dim_array
+	      (SSA_NAME_VAR (def), "Cross_BB_scalar_dependence");
 	    insert_out_of_ssa_copy (zero_dim_array, def);
 	    gsi_next (gsi);
 	  }
@@ -2746,7 +2747,8 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
 	  SET_BIT (reductions, bb->index);
 	  gcc_assert (close_phi == loop_phi);
 
-	  red = create_zero_dim_array (gimple_assign_lhs (stmt));
+	  red = create_zero_dim_array
+	    (gimple_assign_lhs (stmt), "Commutative_Associative_Reduction");
 	  translate_scalar_reduction_to_array_for_stmt
 	    (red, stmt, VEC_index (gimple, in, 1));
 	  continue;
