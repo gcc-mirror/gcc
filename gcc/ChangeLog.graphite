@@ -1,5 +1,12 @@
 2009-09-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (struct irp_data): Removed.
+	(idx_record_params): Removed.
+	(find_params_in_bb): Scan for parameters the access functions; don't
+	parse the tree representation.
+
+2009-09-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-ssa-loop.c (gate_graphite_transforms): Disable Graphite
 	passes at -O1 and below.
 
