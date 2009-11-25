@@ -145,7 +145,7 @@ print_scattering_function (FILE *file, poly_bb_p pbb)
   if (!PBB_TRANSFORMED (pbb))
     return;
 
-  fprintf (file, "scattering bb_%d (\n", GBB_BB (PBB_BLACK_BOX (pbb))->index);
+  fprintf (file, "scattering bb_%d (\n", pbb_index (pbb));
   fprintf (file, "#  eq");
 
   for (i = 0; i < pbb_nb_scattering_transform (pbb); i++)
@@ -579,7 +579,7 @@ debug_pdrs (poly_bb_p pbb)
 void
 print_pbb (FILE *file, poly_bb_p pbb)
 {
-  fprintf (file, "pbb_%d (\n", GBB_BB (PBB_BLACK_BOX (pbb))->index);
+  fprintf (file, "pbb_%d (\n", pbb_index (pbb));
   dump_gbb_conditions (file, PBB_BLACK_BOX (pbb));
   dump_gbb_cases (file, PBB_BLACK_BOX (pbb));
   print_pdrs (file, pbb);

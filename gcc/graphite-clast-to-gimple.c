@@ -921,7 +921,7 @@ build_cloog_prog (scop_p scop, CloogProgram *prog)
 	continue;
 
       /* Build the new statement and its block.  */
-      stmt = cloog_statement_alloc (GBB_BB (PBB_BLACK_BOX (pbb))->index);
+      stmt = cloog_statement_alloc (pbb_index (pbb));
       block = cloog_block_alloc (stmt, 0, NULL, pbb_dim_iter_domain (pbb));
       cloog_statement_set_usr (stmt, pbb);
 
