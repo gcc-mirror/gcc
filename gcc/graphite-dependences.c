@@ -551,11 +551,6 @@ reduction_dr_1 (poly_bb_p pbb1, poly_dr_p pdr1, poly_dr_p pdr2)
   int i;
   poly_dr_p pdr;
 
-  /* PBB1 should be a reduction PBB.  Reduction PBBs should have only
-     one write.  */
-  gcc_assert (PBB_IS_REDUCTION (pbb1)
-	      && number_of_write_pdrs (pbb1) == 1);
-
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr); i++)
     if (PDR_TYPE (pdr) == PDR_WRITE)
       break;
