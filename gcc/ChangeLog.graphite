@@ -1,5 +1,10 @@
 2009-10-30  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-ssa-loop-niter.c (finite_loop_p): Do not call twice
+	get_loop_exit_edges.
+
+2009-10-30  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (pbb_remove_duplicate_pdrs): Free collapsed.
 
 2009-10-28  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
