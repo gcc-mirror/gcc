@@ -195,27 +195,63 @@ pbb_strip_mine_profitable_p (poly_bb_p pbb,
   return res;
 }
 
-/* Strip mines all the loops around PBB.  Nothing profitable in all this:
-   this is just a driver function.  */
+/* Strip-mines all the loops of LST that are considered profitable to
+   strip-mine.  Return true if it did strip-mined some loops.  */
 
 static bool
-pbb_do_strip_mine (poly_bb_p pbb)
+lst_do_strip_mine_loop (lst_p lst, int depth)
 {
-  graphite_dim_t s_dim;
+  int i;
+  lst_p l;
   int stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
-  bool transform_done = false;
+  poly_bb_p pbb;
 
-  for (s_dim = 0; s_dim < pbb_nb_dynamic_scattering_transform (pbb); s_dim++)
-    if (pbb_strip_mine_profitable_p (pbb, psct_dynamic_dim (pbb, s_dim),
-                                     stride))
-      {
-	ppl_dimension_type d = psct_dynamic_dim (pbb, s_dim);
-	transform_done |= pbb_strip_mine_time_depth (pbb, d, stride);
-	s_dim++;
-      }
+  if (!lst)
+    return false;
 
-  return transform_done;
+  if (LST_LOOP_P (lst))
+    {
+      bool res = false;
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	res |= lst_do_strip_mine_loop (l, depth);
+
+      return res;
+    }
+
+  pbb = LST_PBB (lst);
+  return pbb_strip_mine_time_depth (pbb, psct_dynamic_dim (pbb, depth),
+				    stride);
 }
+
+/* Strip-mines all the loops of LST that are considered profitable to
+   strip-mine.  Return true if it did strip-mined some loops.  */
+
+static bool
+lst_do_strip_mine (lst_p lst)
+{
+  int i;
+  lst_p l;
+  bool res = false;
+  int stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
+
+  if (!lst
+      || !LST_LOOP_P (lst))
+    return false;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    res |= lst_do_strip_mine (l);
+
+  if (pbb_strip_mine_profitable_p (LST_PBB (lst_find_first_pbb (lst)),
+				   lst_depth (lst), stride))
+    {
+      res |= lst_do_strip_mine_loop (lst, lst_depth (lst));
+      lst_add_loop_under_loop (lst);
+    }
+
+  return res;
+}
+
 
 /* Strip mines all the loops in SCOP.  Nothing profitable in all this:
    this is just a driver function.  */
@@ -223,14 +259,11 @@ pbb_do_strip_mine (poly_bb_p pbb)
 bool
 scop_do_strip_mine (scop_p scop)
 {
-  poly_bb_p pbb;
-  int i;
   bool transform_done = false;
 
   store_scattering (scop);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    transform_done |= pbb_do_strip_mine (pbb);
+  transform_done = lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
 
   if (!transform_done)
     return false;
@@ -241,7 +274,7 @@ scop_do_strip_mine (scop_p scop)
       return false;
     }
 
-  return true;
+  return transform_done;
 }
 
 #endif
