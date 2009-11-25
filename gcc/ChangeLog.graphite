@@ -1,5 +1,9 @@
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (print_scop): Fix pretty printing of a SCoP.
+
+2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* doc/passes.texi: Document the Graphite infrastructure.
 
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>

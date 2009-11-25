@@ -646,14 +646,14 @@ print_scop (FILE *file, scop_p scop)
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
     print_pbb (file, pbb);
 
-  fprintf (file, ")\n");
-
   fprintf (file, "original_lst (\n");
   print_lst (file, SCOP_ORIGINAL_SCHEDULE (scop), 0);
   fprintf (file, ")\n");
 
   fprintf (file, "transformed_lst (\n");
   print_lst (file, SCOP_TRANSFORMED_SCHEDULE (scop), 0);
+  fprintf (file, ")\n");
+
   fprintf (file, ")\n");
 }
 
