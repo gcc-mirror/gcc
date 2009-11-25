@@ -1,3 +1,7 @@
+2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/pr40157.c: Use -floop-block as reported in the PR.
+
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/interchange-11.c: New.
