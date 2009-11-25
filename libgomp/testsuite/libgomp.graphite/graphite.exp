@@ -36,7 +36,7 @@ if ![check_effective_target_fgraphite] {
 set PARALLEL_CFLAGS "-ansi -pedantic-errors -O2 \
 -ftree-parallelize-loops=4 -floop-parallelize-all \
 -fdump-tree-parloops-details -fdump-tree-optimized \
--fno-loop-strip-mine -fdump-tree-graphite-all"
+-fno-loop-strip-mine -fno-loop-block -fdump-tree-graphite-all"
 
 # Initialize `dg'.
 dg-init

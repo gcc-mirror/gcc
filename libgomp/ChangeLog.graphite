@@ -1,0 +1,8 @@
+2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/libgomp.graphite/graphite.exp (PARALLEL_CFLAGS): Add
+	-fno-loop-block.
+
+2009-09-16  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/libgomp.graphite/bounds.c: New.
