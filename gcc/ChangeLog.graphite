@@ -1,5 +1,10 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (dump_alias_graphs): New.
+	(build_scop_drs): Call dump_alias_graphs.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (new_scop): Initialize SCOP_ORIGINAL_SCHEDULE,
 	SCOP_TRANSFORMED_SCHEDULE, and SCOP_SAVED_SCHEDULE.
 	(free_scop): Call free_lst on SCOP_ORIGINAL_SCHEDULE,
