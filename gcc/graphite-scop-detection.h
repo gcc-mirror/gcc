@@ -21,7 +21,5 @@ along with GCC; see the file COPYING3.  If not see
 
 
 extern void build_scops (VEC (scop_p, heap) **);
-extern void build_scop_bbs (scop_p);
-extern int nb_reductions_in_loop (loop_p);
 extern void dot_all_scops (VEC (scop_p, heap) *);
 extern void dot_scop (scop_p);

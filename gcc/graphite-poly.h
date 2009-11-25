@@ -306,6 +306,9 @@ struct poly_bb
 
   /* True when the PDR duplicates have already been removed.  */
   bool pdr_duplicates_removed;
+
+  /* True when this PBB contains only a reduction statement.  */
+  bool is_reduction;
 };
 
 #define PBB_BLACK_BOX(PBB) ((gimple_bb_p) PBB->black_box)
@@ -320,8 +323,9 @@ struct poly_bb
 #define PBB_NB_LOCAL_VARIABLES(PBB) (PBB->transformed->nb_local_variables)
 #define PBB_NB_SCATTERING_TRANSFORM(PBB) (PBB->transformed->nb_scattering)
 #define PBB_PDR_DUPLICATES_REMOVED(PBB) (PBB->pdr_duplicates_removed)
+#define PBB_IS_REDUCTION(PBB) (PBB->is_reduction)
 
-extern void new_poly_bb (scop_p, void *);
+extern void new_poly_bb (scop_p, void *, bool);
 extern void free_poly_bb (poly_bb_p);
 extern void debug_loop_vec (poly_bb_p);
 extern void schedule_to_scattering (poly_bb_p, int);

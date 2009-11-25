@@ -585,6 +585,15 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   return is_empty_p;
 }
 
+/* Return true when the data dependence relation for PBB1 and PBB2 is
+   part of a reduction.  */
+
+static inline bool
+reduction_ddr (poly_bb_p pbb1, poly_bb_p pbb2)
+{
+  return pbb1 == pbb2 && PBB_IS_REDUCTION (pbb1);
+}
+
 /* Iterates over the data references of PBB1 and PBB2 and detect
    whether the transformed schedule is correct.  */
 
@@ -599,6 +608,9 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
 
   if (!PBB_PDR_DUPLICATES_REMOVED (pbb2))
     pbb_remove_duplicate_pdrs (pbb2);
+
+  if (reduction_ddr (pbb1, pbb2))
+    return true;
 
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)
     for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
