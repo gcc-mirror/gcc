@@ -1,5 +1,15 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (new_scop): Initialize SCOP_ORIGINAL_SCHEDULE,
+	SCOP_TRANSFORMED_SCHEDULE, and SCOP_SAVED_SCHEDULE.
+	(free_scop): Call free_lst on SCOP_ORIGINAL_SCHEDULE,
+	SCOP_TRANSFORMED_SCHEDULE, and SCOP_SAVED_SCHEDULE.
+	* graphite-poly.h (free_lst): New.
+	(store_lst_schedule): Free SCOP_SAVED_SCHEDULE.
+	(restore_lst_schedule): Free SCOP_TRANSFORMED_SCHEDULE.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h (struct scop): Add a field saved_schedule.
 	(SCOP_SAVED_SCHEDULE): New.
 	(store_lst_schedule): New.
