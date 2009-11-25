@@ -1,5 +1,9 @@
 2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* sese.c (get_vdef_before_sese): Handle GIMPLE_ASSIGN and GIMPLE_CALL.
+
+2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (pdr_add_data_dimensions): Do not infer
 	loop upper bounds for 1-element arrays at end of structures.
 	* tree-flow.h (array_at_struct_end_p): Declared.
