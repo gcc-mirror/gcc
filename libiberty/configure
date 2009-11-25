@@ -5281,15 +5281,22 @@ checkfuncs="$checkfuncs getsysinfo table sysctl wait3 wait4 __fsetlocking"
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
 if test "x" = "y"; then
-  for ac_func in asprintf atexit basename bcmp bcopy bsearch bzero calloc clock \
-  getcwd getpagesize gettimeofday index insque mkstemps memchr memcmp memcpy \
-  memmem memmove mempcpy memset putenv random rename rindex sigsetmask \
-  strcasecmp setenv stpcpy stpncpy strchr strdup strncasecmp strndup strrchr strstr \
-  strtod strtol strtoul strverscmp tmpnam vasprintf vfprintf vprintf \
-  vsprintf waitpid getrusage on_exit psignal strerror strsignal \
-  sysconf times sbrk gettimeofday ffs snprintf vsnprintf \
-  pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl wait3 wait4 \
-  realpath canonicalize_file_name __fsetlocking
+  for ac_func in asprintf atexit \
+    basename bcmp bcopy bsearch bzero \
+    calloc canonicalize_file_name clock \
+    ffs __fsetlocking \
+    getcwd getpagesize getrusage getsysinfo gettimeofday \
+    index insque \
+    memchr memcmp memcpy memmem memmove memset mkstemps \
+    on_exit \
+    psignal pstat_getdynamic pstat_getstatic putenv \
+    random realpath rename rindex \
+    sbrk setenv sigsetmask snprintf stpcpy stpncpy strcasecmp strchr strdup \
+     strerror strncasecmp strndup strrchr strsignal strstr strtod strtol \
+     strtoul strverscmp sysconf sysctl sysmp \
+    table times tmpnam \
+    vasprintf vfprintf vprintf vsprintf \
+    wait3 wait4 waitpid
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
