@@ -558,6 +558,60 @@ mark_bb_with_pbb (poly_bb_p pbb, basic_block bb, htab_t bb_pbb_mapping)
     *x = new_bb_pbb_def (bb, pbb);
 }
 
+/* Find BB's related poly_bb_p in hash table BB_PBB_MAPPING.  */
+
+static poly_bb_p
+find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
+{
+  bb_pbb_def tmp;
+  PTR *slot;
+
+  tmp.bb = bb;
+  slot = htab_find_slot (bb_pbb_mapping, &tmp, NO_INSERT);
+
+  if (slot && *slot)
+    return ((bb_pbb_def *) *slot)->pbb;
+
+  return NULL;
+}
+
+/* Check data dependency in LOOP at scattering level LEVEL.
+   BB_PBB_MAPPING is a basic_block and it's related poly_bb_p
+   mapping.  */
+
+static bool
+dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping, int level)
+{
+  unsigned i,j;
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      poly_bb_p pbb1 = find_pbb_via_hash (bb_pbb_mapping, bbs[i]);
+
+      if (pbb1 == NULL)
+       continue;
+
+      for (j = 0; j < loop->num_nodes; j++)
+       {
+	 poly_bb_p pbb2 = find_pbb_via_hash (bb_pbb_mapping, bbs[j]);
+
+	 if (pbb2 == NULL)
+	   continue;
+
+	 if (dependency_between_pbbs_p (pbb1, pbb2, level))
+	   {
+	     free (bbs);
+	     return true;
+	   }
+       }
+    }
+
+  free (bbs);
+
+  return false;
+}
+
 /* Translates a CLAST statement STMT to GCC representation in the
    context of a SESE.
 
@@ -617,10 +671,6 @@ translate_clast (sese region, struct loop *context_loop,
       edge to_body = single_succ_edge (loop->header);
       basic_block after = to_body->dest;
 
-      loop->aux = XNEW (int);
-      /* Pass scattering level information of the new loop by LOOP->AUX.  */
-      *((int *)(loop->aux)) = get_scattering_level (level);
-
       /* Create a basic block for loop close phi nodes.  */
       last_e = single_succ_edge (split_edge (last_e));
 
@@ -635,6 +685,11 @@ translate_clast (sese region, struct loop *context_loop,
       /* Remove from rename_map all the tuples containing variables
 	 defined in loop's body.  */
       insert_loop_close_phis (rename_map, loop);
+
+      if (flag_loop_parallelize_all
+	  && !dependency_in_loop_p (loop, bb_pbb_mapping,
+				    get_scattering_level (level)))
+	loop->can_be_parallel = true;
 
       recompute_all_dominators ();
       graphite_verify ();
@@ -1154,89 +1209,21 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   cloog_program_free (pc.prog);
   timevar_pop (TV_GRAPHITE_CODE_GEN);
 
-  return true;
-}
-
-
-
-/* Find BB's related poly_bb_p in hash table BB_PBB_MAPPING.  */
-
-static poly_bb_p
-find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
-{
-  bb_pbb_def tmp;
-  PTR *slot;
-
-  tmp.bb = bb;
-  slot = htab_find_slot (bb_pbb_mapping, &tmp, NO_INSERT);
-
-  if (slot && *slot)
-    return ((bb_pbb_def *) *slot)->pbb;
-
-  return NULL;
-}
-
-/* Check data dependency in LOOP. BB_PBB_MAPPING is a basic_block and
-   it's related poly_bb_p mapping.
-*/
-
-static bool
-dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping)
-{
-  unsigned i,j;
-  int level = 0;
-  basic_block *bbs = get_loop_body_in_dom_order (loop);
-
-  level = *((int *)(loop->aux));
-
-  for (i = 0; i < loop->num_nodes; i++)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      poly_bb_p pbb1 = find_pbb_via_hash (bb_pbb_mapping, bbs[i]);
+      loop_p loop;
+      loop_iterator li;
+      int num_no_dependency = 0;
 
-      if (pbb1 == NULL)
-       continue;
+      FOR_EACH_LOOP (li, loop, 0)
+	if (loop->can_be_parallel)
+	  num_no_dependency++;
 
-      for (j = 0; j < loop->num_nodes; j++)
-       {
-	 poly_bb_p pbb2 = find_pbb_via_hash (bb_pbb_mapping, bbs[j]);
-
-	 if (pbb2 == NULL)
-	   continue;
-
-	 if (dependency_between_pbbs_p (pbb1, pbb2, level))
-	   {
-	     free (bbs);
-	     return true;
-	   }
-       }
+      fprintf (dump_file, "\n%d loops carried no dependency.\n",
+	       num_no_dependency);
     }
 
-  free (bbs);
-
-  return false;
-}
-
-/* Mark loop as parallel if data dependency does not exist.
-   BB_PBB_MAPPING is a basic_block and it's related poly_bb_p mapping.
-*/
-
-void mark_loops_parallel (htab_t bb_pbb_mapping)
-{
-  loop_p loop;
-  loop_iterator li;
-  int num_no_dependency = 0;
-
-  FOR_EACH_LOOP (li, loop, 0)
-    if (loop->aux
-	&& !dependency_in_loop_p (loop, bb_pbb_mapping))
-      {
-	loop->can_be_parallel = true;
-	num_no_dependency++;
-      }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n%d loops carried no dependency.\n",
-	     num_no_dependency);
+  return true;
 }
 
 #endif
