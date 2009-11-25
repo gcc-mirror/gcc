@@ -1,5 +1,6 @@
 2009-09-17  David Edelsohn  <edelsohn@gnu.org>
 
+	* testsuite/gcc.dg/graphite/interchange-mvt.c: New File.
 	* testsuite/gcc.dg/graphite/scop-dsyrk.c: New File.
 	* testsuite/gcc.dg/graphite/scop-dsyr2k.c: New File.
 	* testsuite/gcc.dg/graphite/scop-mvt.c: New File.
