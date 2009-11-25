@@ -5897,8 +5897,8 @@ fi
 if test "x$with_cloog" != "xno" -a "${ENABLE_CLOOG_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $clooginc $gmpinc $pplinc"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for correct version of CLooG" >&5
-$as_echo_n "checking for correct version of CLooG... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.15.5 (or later revision) of CLooG" >&5
+$as_echo_n "checking for version 0.15.5 (or later revision) of CLooG... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "cloog/cloog.h"
@@ -5906,7 +5906,7 @@ int
 main ()
 {
 
-  #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15
+  #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15 || CLOOG_VERSION_REVISION < 5
   choke me
   #endif
 
