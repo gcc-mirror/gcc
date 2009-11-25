@@ -1,3 +1,10 @@
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-ppl.c (ppl_print_linear_expr): New.
+	(debug_ppl_linear_expr): New.
+	* graphite-ppl.h (ppl_print_linear_expr): Declared.
+	(debug_ppl_linear_expr): Declared.
+
 2009-10-16  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-interchange.c: Fix comments.

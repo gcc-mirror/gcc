@@ -38,6 +38,8 @@ void ppl_print_polyhedron_matrix (FILE *, ppl_const_Polyhedron_t);
 void ppl_print_powerset_matrix (FILE *, ppl_Pointset_Powerset_C_Polyhedron_t);
 void debug_ppl_polyhedron_matrix (ppl_Polyhedron_t);
 void debug_ppl_powerset_matrix (ppl_Pointset_Powerset_C_Polyhedron_t);
+void ppl_print_linear_expr (FILE *, ppl_Linear_Expression_t);
+void debug_ppl_linear_expr (ppl_Linear_Expression_t);
 void ppl_read_polyhedron_matrix (ppl_Polyhedron_t *, FILE *);
 void ppl_insert_dimensions (ppl_Polyhedron_t, int, int);
 void ppl_insert_dimensions_pointset (ppl_Pointset_Powerset_C_Polyhedron_t, int,
