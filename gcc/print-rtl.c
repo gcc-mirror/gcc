@@ -109,7 +109,8 @@ print_rtx (const_rtx in_rtx)
     }
   else if (GET_CODE (in_rtx) > NUM_RTX_CODE)
     {
-       fprintf (outfile, "(??? bad code %d\n)", GET_CODE (in_rtx));
+       fprintf (outfile, "(??? bad code %d\n%s%*s)", GET_CODE (in_rtx),
+		print_rtx_head, indent * 2, "");
        sawclose = 1;
        return;
     }
@@ -307,7 +308,8 @@ print_rtx (const_rtx in_rtx)
 	  }
 	else if (i == 8 && JUMP_P (in_rtx) && JUMP_LABEL (in_rtx) != NULL)
 	  /* Output the JUMP_LABEL reference.  */
-	  fprintf (outfile, "\n -> %d", INSN_UID (JUMP_LABEL (in_rtx)));
+	  fprintf (outfile, "\n%s%*s -> %d", print_rtx_head, indent * 2, "",
+		   INSN_UID (JUMP_LABEL (in_rtx)));
 	else if (i == 0 && GET_CODE (in_rtx) == VALUE)
 	  {
 #ifndef GENERATOR_FILE
