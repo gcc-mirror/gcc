@@ -311,9 +311,6 @@ gate_graphite_transforms (void)
       || flag_graphite_identity || flag_loop_parallelize_all)
     flag_graphite = 1;
 
-  if (flag_loop_block)
-    sorry ("loop blocking not implemented");
-
   return flag_graphite != 0;
 }
 
