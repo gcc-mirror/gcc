@@ -2192,6 +2192,66 @@ instantiate_scev_name (basic_block instantiate_below,
 }
 
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
+   and EVOLUTION_LOOP, that were left under a symbolic form.
+
+   CHREC is a binary expression to be instantiated.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
+
+static tree
+instantiate_scev_binary (basic_block instantiate_below,
+			 struct loop *evolution_loop, tree chrec,
+			 bool fold_conversions, htab_t cache, int size_expr)
+{
+  tree op1;
+  tree op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
+				 TREE_OPERAND (chrec, 0), fold_conversions, cache,
+				 size_expr);
+  if (op0 == chrec_dont_know)
+    return chrec_dont_know;
+
+  op1 = instantiate_scev_1 (instantiate_below, evolution_loop,
+			    TREE_OPERAND (chrec, 1), fold_conversions, cache,
+			    size_expr);
+  if (op1 == chrec_dont_know)
+    return chrec_dont_know;
+
+  if (TREE_OPERAND (chrec, 0) != op0
+      || TREE_OPERAND (chrec, 1) != op1)
+    {
+      tree type = chrec_type (chrec);
+
+      op0 = chrec_convert (type, op0, NULL);
+      op1 = chrec_convert_rhs (type, op1, NULL);
+
+      switch (TREE_CODE (chrec))
+	{
+	case POINTER_PLUS_EXPR:
+	case PLUS_EXPR:
+	  return chrec_fold_plus (type, op0, op1);
+
+	case MINUS_EXPR:
+	  return chrec_fold_minus (type, op0, op1);
+
+	case MULT_EXPR:
+	  return chrec_fold_multiply (type, op0, op1);
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  return chrec;
+}
+
+/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
    and EVOLUTION_LOOP, that were left under a symbolic form.  
 
    CHREC is the scalar evolution to instantiate.
@@ -2250,70 +2310,10 @@ instantiate_scev_1 (basic_block instantiate_below,
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 0), fold_conversions, cache,
-				size_expr);
-      if (op0 == chrec_dont_know)
-	return chrec_dont_know;
-
-      op1 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 1), fold_conversions, cache,
-				size_expr);
-      if (op1 == chrec_dont_know)
-	return chrec_dont_know;
-
-      if (TREE_OPERAND (chrec, 0) != op0
-	  || TREE_OPERAND (chrec, 1) != op1)
-	{
-	  op0 = chrec_convert (type, op0, NULL);
-	  op1 = chrec_convert_rhs (type, op1, NULL);
-	  chrec = chrec_fold_plus (type, op0, op1);
-	}
-      return chrec;
-
     case MINUS_EXPR:
-      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 0), fold_conversions, cache,
-				size_expr);
-      if (op0 == chrec_dont_know)
-	return chrec_dont_know;
-
-      op1 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 1),
-				fold_conversions, cache, size_expr);
-      if (op1 == chrec_dont_know)
-	return chrec_dont_know;
-
-      if (TREE_OPERAND (chrec, 0) != op0
-	  || TREE_OPERAND (chrec, 1) != op1)
-	{
-	  op0 = chrec_convert (type, op0, NULL);
-	  op1 = chrec_convert (type, op1, NULL);
-	  chrec = chrec_fold_minus (type, op0, op1);
-	}
-      return chrec;
-
     case MULT_EXPR:
-      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 0),
-				fold_conversions, cache, size_expr);
-      if (op0 == chrec_dont_know)
-	return chrec_dont_know;
-
-      op1 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 1),
-				fold_conversions, cache, size_expr);
-      if (op1 == chrec_dont_know)
-	return chrec_dont_know;
-
-      if (TREE_OPERAND (chrec, 0) != op0
-	  || TREE_OPERAND (chrec, 1) != op1)
-	{
-	  op0 = chrec_convert (type, op0, NULL);
-	  op1 = chrec_convert (type, op1, NULL);
-	  chrec = chrec_fold_multiply (type, op0, op1);
-	}
-      return chrec;
+      return instantiate_scev_binary (instantiate_below, evolution_loop, chrec,
+				      fold_conversions, cache, size_expr);
 
     CASE_CONVERT:
       op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
@@ -2363,7 +2363,7 @@ instantiate_scev_1 (basic_block instantiate_below,
 
     case SCEV_KNOWN:
       return chrec_known;
-                                     
+
     default:
       break;
     }

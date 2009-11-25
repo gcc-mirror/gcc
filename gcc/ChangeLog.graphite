@@ -1,5 +1,10 @@
 2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_scev_binary): New.
+	(instantiate_scev_1): Move code in instantiate_scev_binary.
+
+2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_scev_name): New.
 	(instantiate_scev_1): Move code in instantiate_scev_name.
 
