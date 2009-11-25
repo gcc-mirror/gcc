@@ -1,5 +1,11 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (reduction_dr_1): Remove wrong
+	assert: reduction BBs can have multiple reduction writes
+	to memory.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gfortran.dg/graphite/interchange-3.f90: New.
 
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
