@@ -1897,7 +1897,8 @@ build_alias_set_optimal_p (VEC (data_reference_p, heap) *drs)
   int *all_vertices;
   int *vertices;
   struct graph_edge *e;
-  int this_component_is_clique, all_components_are_cliques;
+  int this_component_is_clique;
+  int all_components_are_cliques = 1;
 
   for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
     for (j = i+1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
