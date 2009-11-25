@@ -1,5 +1,9 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* g++.dg/graphite/id-1.C: New.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (create_zero_dim_array): Pass an extra
 	argument base_name.
 	(rewrite_close_phi_out_of_ssa): Update use of create_zero_dim_array.
