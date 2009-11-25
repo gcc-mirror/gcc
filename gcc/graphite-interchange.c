@@ -310,7 +310,8 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
 
    Next, to measure the impact of iterating once in loop "i", we build
    a maximization problem: first, we add to DR accesses the dimensions
-   k, s2, s3, L1 = 100 * s0 + s1, L2, and D1: polyhedron P1.
+   k, s2, s3, L1 = 100 * s0 + s1, L2, and D1: this is the polyhedron P1.
+   L1 and L2 are the linearized memory access functions.
 
    | i   j   N   a  s0  s1   k  s2  s3  L1  L2  D1   1
    | 0   0   0   1   0   0   0   0   0   0   0   0  -5    = 0  alias = 5
