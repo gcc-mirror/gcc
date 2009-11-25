@@ -1858,45 +1858,15 @@ build_scop_drs (scop_p scop)
     build_pbb_drs (pbb);
 }
 
-/* Return a gsi at the position of the VAR definition.  */
-
-static gimple_stmt_iterator
-gsi_for_ssa_name_def (tree var)
-{
-  gimple stmt;
-  basic_block bb;
-  gimple_stmt_iterator gsi;
-  gimple_stmt_iterator psi;
-
-  gcc_assert (TREE_CODE (var) == SSA_NAME);
-
-  stmt = SSA_NAME_DEF_STMT (var);
-  bb = gimple_bb (stmt);
-
-  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-    if (stmt == gsi_stmt (psi))
-      return gsi_after_labels (bb);
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (stmt == gsi_stmt (gsi))
-      {
-	gsi_next (&gsi);
-	return gsi;
-      }
-
-  gcc_unreachable ();
-  return gsi;
-}
-
 /* Insert the assignment "RES := VAR" just after the definition of VAR.  */
 
 static void
 insert_out_of_ssa_copy (tree res, tree var)
 {
-  gimple_stmt_iterator gsi = gsi_for_ssa_name_def (var);
   gimple stmt;
   gimple_seq stmts;
   gimple_stmt_iterator si;
+  gimple_stmt_iterator gsi;
 
   var = force_gimple_operand (var, &stmts, true, NULL_TREE);
   stmt = gimple_build_assign (res, var);
@@ -1904,7 +1874,19 @@ insert_out_of_ssa_copy (tree res, tree var)
     stmts = gimple_seq_alloc ();
   si = gsi_last (stmts);
   gsi_insert_after (&si, stmt, GSI_NEW_STMT);
-  gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
+
+  stmt = SSA_NAME_DEF_STMT (var);
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      gsi = gsi_after_labels (gimple_bb (stmt));
+      gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
+    }
+  else
+    {
+      gcc_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
+      gsi = gsi_for_stmt (stmt);
+      gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
+    }
 }
 
 /* Insert on edge E the assignment "RES := EXPR".  */
