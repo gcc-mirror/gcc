@@ -1710,7 +1710,7 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 	       dr, DR_NUM_DIMENSIONS (dr));
 }
 
-/* Write to FILE the alias graph of data references with DIMACS format.  */
+/* Write to FILE the alias graph of data references in DIMACS format.  */
 
 static inline bool
 write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
@@ -1744,31 +1744,134 @@ write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
   return true;
 }
 
-static void
+/* Write to FILE the alias graph of data references in DOT format.  */
+
+static inline bool
+write_alias_graph_to_ascii_dot (FILE *file, char *comment,
+				VEC (data_reference_p, heap) *drs)
+{
+  int num_vertex = VEC_length (data_reference_p, drs);
+  data_reference_p dr1, dr2;
+  int i, j;
+
+  if (num_vertex == 0)
+    return true;
+
+  fprintf (file, "$\n");
+
+  if (comment)
+    fprintf (file, "c %s\n", comment);
+
+  /* First print all the vertices.  */
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    fprintf (file, "n%d;\n", i);
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
+      if (dr_may_alias_p (dr1, dr2))
+	fprintf (file, "n%d n%d\n", i, j);
+
+  return true;
+}
+
+/* Write to FILE the alias graph of data references in ECC format.  */
+
+static inline bool
+write_alias_graph_to_ascii_ecc (FILE *file, char *comment,
+				VEC (data_reference_p, heap) *drs)
+{
+  int num_vertex = VEC_length (data_reference_p, drs);
+  data_reference_p dr1, dr2;
+  int i, j;
+
+  if (num_vertex == 0)
+    return true;
+
+  fprintf (file, "$\n");
+
+  if (comment)
+    fprintf (file, "c %s\n", comment);
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
+      if (dr_may_alias_p (dr1, dr2))
+	fprintf (file, "%d %d\n", i, j);
+
+  return true;
+}
+
+
+/* Uses DFS component number as representative of alias-sets. Also tests for
+   optimality by verifying if every connected component is a clique. Returns
+   true (1) if the above test is true, and false (0) otherwise.  */
+
+static int
 partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
 		       bool (* edge_exist_p) (const struct data_reference *,
 					      const struct data_reference *))
 {
-  int num_vertex = VEC_length (data_reference_p, drs);
-  struct graph *g = new_graph (num_vertex);
+
+  int num_vertices = VEC_length (data_reference_p, drs);
+  struct graph *g = new_graph (num_vertices);
   data_reference_p dr1, dr2;
   int i, j;
-  int num_component;
-  int *queue;
+  int num_connected_components;
+  int v_indx1, v_indx2, num_vertices_in_component;
+  int *all_vertices;
+  int *vertices;
+  struct graph_edge *e;
+  int this_component_is_clique, all_components_are_cliques;
 
   for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
-    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
-      if ((*edge_exist_p) (dr1, dr2))
+    for (j = i+1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
+      if (edge_exist_p (dr1, dr2))
 	{
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
 	}
 
-  queue = XNEWVEC (int, num_vertex);
-  for (i = 0; i < num_vertex; i++)
-    queue[i] = i;
+  all_vertices = XNEWVEC (int, num_vertices);
+  vertices = XNEWVEC (int, num_vertices);
+  for (i = 0; i < num_vertices; i++)
+    all_vertices[i] = i;
 
-  num_component = graphds_dfs (g, queue, num_vertex, NULL, true, NULL);
+  num_connected_components = graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
+
+  /* Verify if the DFS numbering results in optimal solution.  */
+  for (i = 0; i < num_connected_components; i++)
+    {
+      num_vertices_in_component = 0;
+      /* Get all vertices whose DFS component number is the same as i.  */
+      for (j = 0; j < num_vertices; j++)
+	if (g->vertices[j].component == i)
+	  vertices[num_vertices_in_component++] = j;
+
+      /* Now test if the vertices in 'vertices' form a clique, by testing
+	 for edges among each pair.  */
+      this_component_is_clique = 1;
+      for (v_indx1 = 0; v_indx1 < num_vertices_in_component; v_indx1++)
+	{
+	  for (v_indx2 = v_indx1+1; v_indx2 < num_vertices_in_component; v_indx2++)
+	    {
+	      /* Check if the two vertices are connected by iterating
+		 through all the edges which have one of these are source.  */
+	      e = g->vertices[vertices[v_indx2]].pred;
+	      while (e)
+		{
+		  if (e->src == vertices[v_indx1])
+		    break;
+		  e = e->pred_next;
+		}
+	      if (!e)
+		{
+		  this_component_is_clique = 0;
+		  break;
+		}
+	    }
+	  if (!this_component_is_clique)
+	    all_components_are_cliques = 0;
+	}
+    }
 
   for (i = 0; i < g->n_vertices; i++)
     {
@@ -1778,8 +1881,10 @@ partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
       ((int *)(dr->aux))[choice] = g->vertices[i].component + 1;
     }
 
-  free (queue);
+  free (all_vertices);
+  free (vertices);
   free_graph (g);
+  return all_components_are_cliques;
 }
 
 static bool
@@ -1841,15 +1946,31 @@ build_scop_drs (scop_p scop)
 #if 0
   {
     char comment[100];
-    FILE *file;
+    FILE *file_dimacs, *file_ecc, *file_dot;
 
-    file = fopen ("/tmp/dr_alias_graph", "ab");
-    if (file)
+    file_dimacs = fopen ("/tmp/dr_alias_graph_dimacs", "ab");
+    file_ecc = fopen ("/tmp/dr_alias_graph_ecc", "ab");
+    file_dot = fopen ("/tmp/dr_alias_graph_dot", "ab");
+    if (file_dimacs)
       {
 	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
 		  current_function_name ());
-	write_alias_graph_to_ascii_dimacs (file, comment, drs);
-	fclose (file);
+	write_alias_graph_to_ascii_dimacs (file_dimacs, comment, drs);
+	fclose (file_dimacs);
+      }
+    if (file_ecc)
+      {
+	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
+		  current_function_name ());
+	write_alias_graph_to_ascii_ecc (file_ecc, comment, drs);
+	fclose (file_ecc);
+      }
+    if (file_dot)
+      {
+	snprintf (comment, sizeof (comment), "%s %s", main_input_filename,
+		  current_function_name ());
+	write_alias_graph_to_ascii_dot (file_dot, comment, drs);
+	fclose (file_dot);
       }
   }
 #endif
