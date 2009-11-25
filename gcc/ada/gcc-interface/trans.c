@@ -3432,19 +3432,21 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   invalidate_global_renaming_pointers ();
 }
 
-/* Return whether GNAT_NODE, an unchecked type conversion, is on the LHS
-   of an assignment and a no-op as far as gigi is concerned.  */
+/* Return true if GNAT_NODE, an unchecked type conversion, is a no-op as far
+   as gigi is concerned.  This is used to avoid conversions on the LHS.  */
 
 static bool
-unchecked_conversion_lhs_nop (Node_Id gnat_node)
+unchecked_conversion_nop (Node_Id gnat_node)
 {
   Entity_Id from_type, to_type;
 
-  /* The conversion must be on the LHS of an assignment.  Otherwise, even
-     if the conversion was essentially a no-op, it could de facto ensure
-     type consistency and this should be preserved.  */
+  /* The conversion must be on the LHS of an assignment or an actual parameter
+     of a call.  Otherwise, even if the conversion was essentially a no-op, it
+     could de facto ensure type consistency and this should be preserved.  */
   if (!(Nkind (Parent (gnat_node)) == N_Assignment_Statement
-	&& Name (Parent (gnat_node)) == gnat_node))
+	&& Name (Parent (gnat_node)) == gnat_node)
+      && !(Nkind (Parent (gnat_node)) == N_Procedure_Call_Statement
+	   && Name (Parent (gnat_node)) != gnat_node))
     return false;
 
   from_type = Etype (Expression (gnat_node));
@@ -4156,7 +4158,7 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = gnat_to_gnu (Expression (gnat_node));
 
       /* Skip further processing if the conversion is deemed a no-op.  */
-      if (unchecked_conversion_lhs_nop (gnat_node))
+      if (unchecked_conversion_nop (gnat_node))
 	{
 	  gnu_result_type = TREE_TYPE (gnu_result);
 	  break;
@@ -5409,7 +5411,7 @@ gnat_to_gnu (Node_Id gnat_node)
       && ((Nkind (Parent (gnat_node)) == N_Assignment_Statement
 	   && Name (Parent (gnat_node)) == gnat_node)
 	  || (Nkind (Parent (gnat_node)) == N_Unchecked_Type_Conversion
-	      && unchecked_conversion_lhs_nop (Parent (gnat_node)))
+	      && unchecked_conversion_nop (Parent (gnat_node)))
 	  || (Nkind (Parent (gnat_node)) == N_Procedure_Call_Statement
 	      && Name (Parent (gnat_node)) != gnat_node)
 	  || Nkind (Parent (gnat_node)) == N_Parameter_Association

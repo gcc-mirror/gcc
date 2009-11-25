@@ -1,5 +1,11 @@
 2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (unchecked_conversion_lhs_nop): Rename into...
+	(unchecked_conversion_nop): ...this.  Handle actual parameters.
+	(gnat_to_gnu): Adjust for above renaming.
+
+2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Enumeration_Type>:
 	Translate regular boolean types into BOOLEAN_TYPEs.
 
