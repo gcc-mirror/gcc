@@ -1,5 +1,10 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (build_scop_drs): Disable call to
+	dump_alias_graphs.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (dump_alias_graphs): New.
 	(build_scop_drs): Call dump_alias_graphs.
 
