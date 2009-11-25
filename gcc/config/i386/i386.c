@@ -20941,7 +20941,6 @@ enum ix86_builtins
   IX86_BUILTIN_EXTRACTF128SI256,
   IX86_BUILTIN_VZEROALL,
   IX86_BUILTIN_VZEROUPPER,
-  IX86_BUILTIN_VZEROUPPER_REX64,
   IX86_BUILTIN_VPERMILVARPD,
   IX86_BUILTIN_VPERMILVARPS,
   IX86_BUILTIN_VPERMILVARPD256,
@@ -21465,8 +21464,7 @@ static const struct builtin_description bdesc_special_args[] =
 
   /* AVX */
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vzeroall, "__builtin_ia32_vzeroall", IX86_BUILTIN_VZEROALL, UNKNOWN, (int) VOID_FTYPE_VOID },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vzeroupper, 0, IX86_BUILTIN_VZEROUPPER, UNKNOWN, (int) VOID_FTYPE_VOID },
-  { OPTION_MASK_ISA_AVX | OPTION_MASK_ISA_64BIT, CODE_FOR_avx_vzeroupper_rex64, 0, IX86_BUILTIN_VZEROUPPER_REX64, UNKNOWN, (int) VOID_FTYPE_VOID },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vzeroupper, "__builtin_ia32_vzeroupper", IX86_BUILTIN_VZEROUPPER, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastss, "__builtin_ia32_vbroadcastss", IX86_BUILTIN_VBROADCASTSS, UNKNOWN, (int) V4SF_FTYPE_PCFLOAT },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastsd256, "__builtin_ia32_vbroadcastsd256", IX86_BUILTIN_VBROADCASTSD256, UNKNOWN, (int) V4DF_FTYPE_PCDOUBLE },
@@ -22480,12 +22478,6 @@ ix86_init_mmx_sse_builtins (void)
   /* PCLMUL */
   def_builtin_const (OPTION_MASK_ISA_PCLMUL, "__builtin_ia32_pclmulqdq128",
 		     V2DI_FTYPE_V2DI_V2DI_INT, IX86_BUILTIN_PCLMULQDQ128);
-
-  /* AVX */
-  def_builtin (OPTION_MASK_ISA_AVX, "__builtin_ia32_vzeroupper",
-	       VOID_FTYPE_VOID,
-	       (TARGET_64BIT ? IX86_BUILTIN_VZEROUPPER_REX64
-		: IX86_BUILTIN_VZEROUPPER));
 
   /* MMX access to the vec_init patterns.  */
   def_builtin_const (OPTION_MASK_ISA_MMX, "__builtin_ia32_vec_init_v2si",

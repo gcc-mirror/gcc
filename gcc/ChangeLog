@@ -1,3 +1,23 @@
+2009-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (emms_operation): New predicate.
+	(vzeroupper_operation): Ditto.
+	(vzeroall_operation): Improve pattern recognition.
+	* config/i386/sse.md (avx_vzeroupper_rex64): Remove insn pattern.
+	(avx_vzeroupper): Change insn pattern to expander.
+	(*avx_vzeroupper): New insn pattern.  Use vzeroupper_operation
+	predicate.
+	(*avx_vzeroall): Remove operands 1 and 2.
+	* config/i386/mmx.md (mmx_emms): Change insn pattern to expander.
+	(mmx_femms): Ditto.
+	(*mmx_emms): New insn pattern.  Use emms_operation predicate.
+	(*mmx_femms): Ditto.
+	* config/i386/i386.c (enum ix86_builtins)
+	<IX86_BUILTIN_VZEROUPPER_REX64>: Remove.
+	(struct builtin_description) <CODE_FOR_avx_vzeroupper_rex64>:
+	Remove initailization.
+	<CODE_FOR_avx_vzeroupper>: Unconditionally initialize here.
+	
 2009-11-25  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (consttable_4): Handle (high ...).
