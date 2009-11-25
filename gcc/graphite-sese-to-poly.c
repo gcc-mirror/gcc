@@ -1743,19 +1743,19 @@ write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
 }
 
 static void
-partition_drs_to_sets (VEC (data_reference_p, heap) **drs, int choice,
-			 bool (* edge_exist_p) (const struct data_reference *,
-						const struct data_reference *))
+partition_drs_to_sets (VEC (data_reference_p, heap) *drs, int choice,
+		       bool (* edge_exist_p) (const struct data_reference *,
+					      const struct data_reference *))
 {
-  int num_vertex = VEC_length (data_reference_p, *drs);
+  int num_vertex = VEC_length (data_reference_p, drs);
   struct graph *g = new_graph (num_vertex);
   data_reference_p dr1, dr2;
   int i, j;
   int num_component;
   int *queue;
 
-  for (i = 0; VEC_iterate (data_reference_p, *drs, i, dr1); i++)
-    for (j = i+1; VEC_iterate (data_reference_p, *drs, j, dr2); j++)
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+    for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if ((*edge_exist_p) (dr1, dr2))
 	{
 	  add_edge (g, i, j);
@@ -1770,7 +1770,7 @@ partition_drs_to_sets (VEC (data_reference_p, heap) **drs, int choice,
 
   for (i = 0; i < g->n_vertices; i++)
     {
-      data_reference_p dr = VEC_index (data_reference_p, *drs, i);
+      data_reference_p dr = VEC_index (data_reference_p, drs, i);
       if (!dr->aux)
 	dr->aux = XNEWVEC (int, 2);
       ((int *)(dr->aux))[choice] = g->vertices[i].component + 1;
@@ -1790,7 +1790,7 @@ dr_same_base_object_p (const struct data_reference *dr1,
 /* Group each data reference in DRS with it's alias set num.  */
 
 static void
-build_alias_set_for_drs (VEC (data_reference_p, heap) **drs)
+build_alias_set_for_drs (VEC (data_reference_p, heap) *drs)
 {
   partition_drs_to_sets (drs, ALIAS_SET_INDEX, dr_may_alias_p);
 }
@@ -1798,7 +1798,7 @@ build_alias_set_for_drs (VEC (data_reference_p, heap) **drs)
 /* Group each data reference in DRS with it's base object set num.  */
 
 static void
-build_base_obj_set_for_drs (VEC (data_reference_p, heap) **drs)
+build_base_obj_set_for_drs (VEC (data_reference_p, heap) *drs)
 {
   partition_drs_to_sets (drs, BASE_OBJECT_SET_INDEX, dr_same_base_object_p);
 }
@@ -1827,14 +1827,12 @@ build_scop_drs (scop_p scop)
   VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 3);
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
-    {
-      VEC (data_reference_p, heap) *gbb_drs = GBB_DATA_REFS (PBB_BLACK_BOX (pbb));
-      for (j = 0; VEC_iterate (data_reference_p, gbb_drs, j, dr); j++)
-       VEC_safe_push (data_reference_p, heap, drs, dr);
-    }
+    for (j = 0; VEC_iterate (data_reference_p,
+			     GBB_DATA_REFS (PBB_BLACK_BOX (pbb)), j, dr); j++)
+      VEC_safe_push (data_reference_p, heap, drs, dr);
 
-  build_alias_set_for_drs (&drs);
-  build_base_obj_set_for_drs (&drs);
+  build_alias_set_for_drs (drs);
+  build_base_obj_set_for_drs (drs);
 
   /* When debugging, enable the following code.  This cannot be used
      in production compilers.  */

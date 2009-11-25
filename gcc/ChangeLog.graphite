@@ -1,3 +1,11 @@
+2009-09-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (partition_drs_to_sets): Drs is not modified,
+	so don't pass a pointer to it.
+	(build_alias_set_for_drs): Same.
+	(build_base_obj_set_for_drs): Same.
+	(build_scop_drs): Same.
+
 2009-09-26  Li Feng  <nemokingdom@gmail.com>
 
 	* graphite-sese-to-poly.c (build_scop_drs): Disable writing to file
