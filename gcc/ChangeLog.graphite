@@ -1,5 +1,12 @@
 2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_scev_1): Renamed
+	instantiate_scev_r.
+	(instantiate_scev_r): Move code in instantiate_scev_2
+	and instantiate_scev_1.
+
+2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_scev_3): New.
 	(instantiate_scev_1): Move code in instantiate_scev_3.
 
