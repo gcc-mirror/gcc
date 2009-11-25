@@ -908,7 +908,7 @@ dot_deps_stmt (scop_p scop)
 
   x = system ("dotty /tmp/scopdeps.dot");
 #else
-  dot_deps_1 (stderr, scop);
+  dot_deps_stmt_1 (stderr, scop);
 #endif
 }
 

@@ -636,6 +636,7 @@ struct lst {
 void scop_to_lst (scop_p);
 void print_lst (FILE *, lst_p, int);
 void debug_lst (lst_p);
+void dot_lst (lst_p);
 
 /* Creates a new LST loop with SEQ.  */
 

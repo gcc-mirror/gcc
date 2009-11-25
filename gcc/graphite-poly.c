@@ -906,5 +906,67 @@ debug_lst (lst_p lst)
   print_lst (stderr, lst, 0);
 }
 
+/* Pretty print to FILE the loop statement tree LST in DOT format.  */
+
+static void
+dot_lst_1 (FILE *file, lst_p lst)
+{
+  if (!lst)
+    return;
+
+  if (LST_LOOP_P (lst))
+    {
+      int i;
+      lst_p l;
+
+      if (!LST_LOOP_FATHER (lst))
+	fprintf (file, "L -> L_%d_%d\n",
+		 lst_depth (lst),
+		 lst_dewey_number (lst));
+      else
+	fprintf (file, "L_%d_%d -> L_%d_%d\n",
+		 lst_depth (LST_LOOP_FATHER (lst)),
+		 lst_dewey_number (LST_LOOP_FATHER (lst)),
+		 lst_depth (lst),
+		 lst_dewey_number (lst));
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	dot_lst_1 (file, l);
+    }
+
+  else
+    fprintf (file, "L_%d_%d -> S_%d\n",
+	     lst_depth (LST_LOOP_FATHER (lst)),
+	     lst_dewey_number (LST_LOOP_FATHER (lst)),
+	     pbb_index (LST_PBB (lst)));
+
+}
+
+/* Display the LST using dotty.  */
+
+void
+dot_lst (lst_p lst)
+{
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers because it calls "system".  */
+#if 0
+  int x;
+  FILE *stream = fopen ("/tmp/lst.dot", "w");
+  gcc_assert (stream);
+
+  fputs ("digraph all {\n", stream);
+  dot_lst_1 (stream, lst);
+  fputs ("}\n\n", stream);
+  fclose (stream);
+
+  x = system ("dotty /tmp/lst.dot");
+#else
+  fputs ("digraph all {\n", stderr);
+  dot_lst_1 (stderr, lst);
+  fputs ("}\n\n", stderr);
+
+#endif
+}
+
 #endif
 

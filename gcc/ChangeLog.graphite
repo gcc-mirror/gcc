@@ -1,5 +1,11 @@
 2009-10-13  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (dot_lst_1): New.
+	(dot_lst): New.
+	* graphite-poly.h (dot_lst): Declared.
+
+2009-10-13  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (dot_deps_stmt_1): New.
 	(dot_deps_stmt): New.
 	* graphite-dependences.h (dot_deps_stmt): Declared.
