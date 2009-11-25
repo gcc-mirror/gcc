@@ -1,5 +1,15 @@
 2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_scev_assign): New.
+	Do not call analyze_scalar_evolution on assignments.
+	(instantiate_scev_phi): Call analyze_scalar_evolution.
+	(instantiate_scev_name): Call instantiate_scev_assign and
+	instantiate_scev_phi.
+	(instantiate_scev_not): Adapted to pass as parameters the operands
+	of the not expression.
+
+2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_scev_binary): Adapted
 	to pass as parameters the operands of the binary expression.
 
