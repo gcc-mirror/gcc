@@ -1,5 +1,23 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* cfgloop.c (alloc_loop): Initialize loop->single_iv.
+	* cfgloop.h (struct loop): New field single_iv.
+
+	* graphite-clast-to-gimple.c (pbb_to_depth_to_oldiv): Do not use
+	loop->aux anymore: use loop->single_iv.
+	(graphite_loop_normal_form): Moved...
+	(build_graphite_loop_normal_form): Removed.
+	(gloog): Do not call build_graphite_loop_normal_form.
+	(free_aux_in_new_loops): Moved...
+	(mark_loops_parallel): Restructure.
+	* graphite-clast-to-gimple.h (free_aux_in_new_loops): Do not declare.
+	* graphite-sese-to-poly.c (graphite_loop_normal_form): ...here.
+	(scop_canonicalize_loops): New.
+	(build_poly_scop): Call scop_canonicalize_loops.
+	* graphite.c (free_aux_in_new_loops): ...here.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* g++.dg/graphite/graphite.exp: Add the same rules as in
 	gcc.dg/graphite/graphite.exp.
 

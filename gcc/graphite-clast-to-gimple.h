@@ -42,7 +42,6 @@ extern void debug_clast_stmt (struct clast_stmt *);
 extern void print_clast_stmt (FILE *, struct clast_stmt *);
 extern void debug_clast_name_indexes (htab_t);
 extern void mark_loops_parallel (htab_t);
-extern void free_aux_in_new_loops (void);
 
 /* Hash function for data base element BB_PBB.  */
 

@@ -160,6 +160,10 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* True if the loop can be parallel.  */
   bool can_be_parallel;
+
+  /* The single induction variable of the loop when the loop is in
+     normal form.  */
+  tree single_iv;
 };
 
 /* Flags for state of loop structure.  */
