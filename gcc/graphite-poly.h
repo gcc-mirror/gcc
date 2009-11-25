@@ -678,7 +678,16 @@ copy_lst (lst_p lst)
     return NULL;
 
   if (LST_LOOP_P (lst))
-    return new_lst_loop (VEC_copy (lst_p, heap, LST_SEQ (lst)));
+    {
+      int i;
+      lst_p l;
+      VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 5);
+
+      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+	VEC_safe_push (lst_p, heap, seq, copy_lst (l));
+
+      return new_lst_loop (seq);
+    }
 
   return new_lst_stmt (LST_PBB (lst));
 }
