@@ -821,6 +821,35 @@ dependency_between_pbbs_p (poly_bb_p pbb1, poly_bb_p pbb2, int level)
    format.  */
 
 static void
+dot_deps_stmt_1 (FILE *file, scop_p scop)
+{
+  int i, j, k, l;
+  poly_bb_p pbb1, pbb2;
+  poly_dr_p pdr1, pdr2;
+
+  fputs ("digraph all {\n", file);
+
+  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
+    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+      {
+	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
+	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	    if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
+	      {
+		fprintf (file, "S%d -> S%d\n",
+			 pbb_index (pbb1), pbb_index (pbb2));
+		goto done;
+	      }
+      done:;
+      }
+
+  fputs ("}\n\n", file);
+}
+
+/* Pretty print to FILE all the data dependences of SCoP in DOT
+   format.  */
+
+static void
 dot_deps_1 (FILE *file, scop_p scop)
 {
   int i, j, k, l;
@@ -862,5 +891,25 @@ dot_deps (scop_p scop)
 #endif
 }
 
+/* Display all the statement dependences in SCoP using dotty.  */
+
+void
+dot_deps_stmt (scop_p scop)
+{
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers because it calls "system".  */
+#if 0
+  int x;
+  FILE *stream = fopen ("/tmp/scopdeps.dot", "w");
+  gcc_assert (stream);
+
+  dot_deps_stmt_1 (stream, scop);
+  fclose (stream);
+
+  x = system ("dotty /tmp/scopdeps.dot");
+#else
+  dot_deps_1 (stderr, scop);
+#endif
+}
 
 #endif
