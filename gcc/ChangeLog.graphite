@@ -1,5 +1,18 @@
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/graphite.exp (DEFAULT_CFLAGS_GRAPHITE_BLOCK):
+	Renamed DEFAULT_FLAGS_GRAPHITE_BLOCK.
+	(DEFAULT_CFLAGS_GRAPHITE_IDENTITY): Renamed
+	DEFAULT_FLAGS_GRAPHITE_IDENTITY.
+	(DEFAULT_CFLAGS_GRAPHITE_INTERCHANGE): Renamed
+	DEFAULT_FLAGS_GRAPHITE_INTERCHANGE.
+	(DEFAULT_CFLAGS_GRAPHITE_SCOP): Renamed
+	DEFAULT_FLAGS_GRAPHITE_SCOP.
+	(DEFAULT_CFLAGS_RUN_ID): Renamed DEFAULT_FLAGS_RUN_ID.
+	(DEFAULT_CFLAGS_GRAPHITE): Renamed DEFAULT_FLAGS_GRAPHITE.
+
+2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (pbb_number_of_iterations_at_time): Cleanup comments.
 
 2009-10-14  Konrad Trifunovic  <konrad.trifunovic@gmail.com>
