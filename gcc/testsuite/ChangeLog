@@ -1,3 +1,8 @@
+2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/pack6.ads: New test.
+	* gnat.dg/specs/pack6_pkg.ads: New helper.
+
 2009-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/powerpc/regnames-1.c: New test.
