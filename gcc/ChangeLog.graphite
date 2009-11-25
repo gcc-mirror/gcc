@@ -1,5 +1,9 @@
 2009-09-27  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-scop-detection.c (limit_scops): Do not build poly_bbs.
+
+2009-09-27  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (partition_drs_to_sets): Drs is not modified,
 	so don't pass a pointer to it.
 	(build_alias_set_for_drs): Same.

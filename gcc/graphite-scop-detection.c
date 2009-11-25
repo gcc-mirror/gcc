@@ -1258,7 +1258,6 @@ limit_scops (VEC (scop_p, heap) **scops)
       int j;
       loop_p loop;
       sese region = SCOP_REGION (scop);
-      build_scop_bbs (scop);
       build_sese_loop_nests (region);
 
       for (j = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), j, loop); j++)
