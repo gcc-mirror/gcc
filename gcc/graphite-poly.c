@@ -790,28 +790,36 @@ pbb_number_of_iterations_at_time (poly_bb_p pbb,
   ppl_Linear_Expression_t le;
   ppl_dimension_type dim;
 
-  value_set_si (niter, -1);
-
   /* Takes together domain and scattering polyhedrons, and composes
      them into the bigger polyhedron that has the following format:
-     t0..t_{n-1} | l0..l_{nlcl-1} | i0..i_{niter-1} | g0..g_{nparm-1}.
-     t0..t_{n-1} are time dimensions (scattering dimensions)
-     l0..l_{nclc-1} are local variables in scattering function
-     i0..i_{niter-1} are original iteration variables
-     g0..g_{nparam-1} are global parameters.  */
 
+     t0..t_{n-1} | l0..l_{nlcl-1} | i0..i_{niter-1} | g0..g_{nparm-1}
+
+     where
+     | t0..t_{n-1} are time dimensions (scattering dimensions)
+     | l0..l_{nclc-1} are local variables in scattering function
+     | i0..i_{niter-1} are original iteration variables
+     | g0..g_{nparam-1} are global parameters.  */
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sctr,
+      PBB_TRANSFORMED_SCATTERING (pbb));
+
+  /* Extend the iteration domain with the scattering dimensions:
+     0..0 | 0..0 | i0..i_{niter-1} | g0..g_{nparm-1}.   */
   ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
     (&ext_domain, PBB_DOMAIN (pbb));
   ppl_insert_dimensions_pointset (ext_domain, 0,
                                   pbb_nb_scattering_transform (pbb)
                                   + pbb_nb_local_vars (pbb));
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sctr,
-      PBB_TRANSFORMED_SCATTERING (pbb));
+
+  /* Add to sctr the extended domain.  */
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (sctr, ext_domain);
 
+  /* Extract the number of iterations.  */
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (sctr, &dim);
   ppl_new_Linear_Expression_with_dimension (&le, dim);
   ppl_set_coef (le, time_depth, 1);
+  value_set_si (niter, -1);
   ppl_max_for_le_pointset (sctr, le, niter);
 
   ppl_delete_Linear_Expression (le);
