@@ -1140,15 +1140,22 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	  Value val;
 	  ppl_Linear_Expression_t nb_iters_le;
 	  ppl_Polyhedron_t pol;
-	  graphite_dim_t p, n = scop_nb_params (scop);
+	  graphite_dim_t n = scop_nb_params (scop);
 	  ppl_Coefficient_t coef;
 
 	  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
 	  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
 							    ub_expr);
 
+	  /* Construct the negated number of last iteration in VAL.  */
 	  value_init (val);
 	  mpz_set_double_int (val, nit, false);
+	  value_sub_int (val, val, 1);
+	  value_oppose (val, val);
+
+	  /* NB_ITERS_LE holds number of last iteration in parametrical form.
+	  Subtract estimated number of last iteration and assert that result
+	  is not positive.  */
 	  ppl_new_Coefficient_from_mpz_t (&coef, val);
 	  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
 	  ppl_delete_Coefficient (coef);
@@ -1156,33 +1163,25 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 			      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
 	  ppl_Polyhedron_add_constraint (pol, ub);
 
-	  for (p = 0; p < n; p++)
+	  /* Remove all but last N dimensions from POL to obtain constraints
+	     on parameters.  */
 	    {
-	      ppl_Linear_Expression_t le;
+	      ppl_dimension_type *dims = XNEWVEC (ppl_dimension_type, dim - n);
+	      graphite_dim_t i;
+	      for (i = 0; i < dim - n; i++)
+		dims[i] = i;
+	      ppl_Polyhedron_remove_space_dimensions (pol, dims, dim - n);
+	      XDELETEVEC (dims);
+	    }
 
-	      ppl_new_Linear_Expression_with_dimension (&le, dim);
-	      ppl_set_coef (le, nb + 1 + p, -1);
-
-	      value_set_si (val, -1);
-	      ppl_min_for_le_polyhedron (pol, le, val);
-	      if (!value_mone_p (val))
-		{
-		  ppl_Linear_Expression_t parm_bound;
-		  ppl_Constraint_t cstr;
-
-		  ppl_new_Linear_Expression_with_dimension (&parm_bound, n);
-		  ppl_set_coef (parm_bound, p, -1);
-		  ppl_set_inhomogeneous_gmp (parm_bound, val);
-		  ppl_new_Constraint (&cstr, parm_bound,
-				      PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-		  ppl_Pointset_Powerset_C_Polyhedron_add_constraint
-		    (SCOP_CONTEXT (scop), cstr);
-
-		  ppl_delete_Constraint (cstr);
-		  ppl_delete_Linear_Expression (parm_bound);
-		}
-
-	      ppl_delete_Linear_Expression (le);
+	  /* Add constraints on parameters to SCoP context.  */
+	    {
+	      ppl_Pointset_Powerset_C_Polyhedron_t constraints_ps;
+	      ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
+	       (&constraints_ps, pol);
+	      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
+	       (SCOP_CONTEXT (scop), constraints_ps);
+	      ppl_delete_Pointset_Powerset_C_Polyhedron (constraints_ps);
 	    }
 
 	  ppl_delete_Polyhedron (pol);
