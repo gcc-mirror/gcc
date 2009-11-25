@@ -307,6 +307,7 @@ enum arm_fp_model
 
 enum vfp_reg_type
 {
+  VFP_NONE = 0,
   VFP_REG_D16,
   VFP_REG_D32,
   VFP_REG_SINGLE
