@@ -1,5 +1,17 @@
 2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (apply_poly_transforms): Implement the high
+	level driver for flag_loop_block.
+	* tree-ssa-loop.c (gate_graphite_transforms): Remove call to sorry for
+	flag_loop_block.
+
+	* gcc.dg/graphite/graphite.exp (DEFAULT_CFLAGS_GRAPHITE_BLOCK): Add
+	-floop-block.
+	* gfortran.dg/graphite/graphite.exp (DEFAULT_CFLAGS_GRAPHITE_BLOCK):
+	Add -floop-block.
+
+2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.h (lst_find_pbb): New.
 	(find_lst_loop): New.
 

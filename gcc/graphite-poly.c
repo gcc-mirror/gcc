@@ -250,13 +250,18 @@ apply_poly_transforms (scop_p scop)
     transform_done = true;
 
   if (flag_loop_block)
-    gcc_unreachable (); /* Not yet supported.  */
+    {
+      transform_done |= scop_do_strip_mine (scop);
+      transform_done |= scop_do_interchange (scop);
+    }
+  else
+    {
+      if (flag_loop_strip_mine)
+	transform_done |= scop_do_strip_mine (scop);
 
-  if (flag_loop_strip_mine)
-    transform_done |= scop_do_strip_mine (scop);
-
-  if (flag_loop_interchange)
-    transform_done |= scop_do_interchange (scop);
+      if (flag_loop_interchange)
+	transform_done |= scop_do_interchange (scop);
+    }
 
   return transform_done;
 }
