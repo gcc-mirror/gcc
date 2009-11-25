@@ -2591,13 +2591,10 @@ insert_copyin (tree red, gimple loop_phi)
 {
   gimple_seq stmts;
   tree init = initial_value_for_loop_phi (loop_phi);
-  edge e = edge_initial_value_for_loop_phi (loop_phi);
-  basic_block bb = e->src;
-  gimple_stmt_iterator insert_gsi = gsi_last_bb (bb);
   tree expr = build2 (MODIFY_EXPR, TREE_TYPE (init), red, init);
 
   force_gimple_operand (expr, &stmts, true, NULL);
-  gsi_insert_seq_before (&insert_gsi, stmts, GSI_SAME_STMT);
+  gsi_insert_seq_on_edge (edge_initial_value_for_loop_phi (loop_phi), stmts);
 }
 
 /* Rewrite out of SSA the reduction described by the loop phi nodes
@@ -2697,6 +2694,13 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
   FOR_EACH_LOOP (li, loop, 0)
     if (loop_in_sese_p (loop, region))
       rewrite_commutative_reductions_out_of_ssa_loop (loop, reductions);
+
+  gsi_commit_edge_inserts ();
+  update_ssa (TODO_update_ssa);
+#ifdef ENABLE_CHECKING
+  verify_ssa (false);
+  verify_loop_closed_ssa ();
+#endif
 }
 
 /* Builds the polyhedral representation for a SESE region.  */
