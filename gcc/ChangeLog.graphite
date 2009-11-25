@@ -1,5 +1,14 @@
 2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-blocking.c (pbb_strip_mine_profitable_p): The parameter
+	depth is the loop nesting depth in the LST.  Call psct_dynamic_dim
+	to transform depth into the time_depth before calling
+	pbb_number_of_iterations_at_time.
+	(lst_do_strip_mine): Use a scalar variable instead of recomputing
+	lst_depth.
+
+2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
+
 	Reverted the patch for "scattering permutations" from 2009-10-28.
 
 	* graphite-poly.c (print_permutation): New.

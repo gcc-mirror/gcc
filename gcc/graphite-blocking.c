@@ -174,11 +174,11 @@ pbb_strip_mine_time_depth (poly_bb_p pbb, int time_depth, int stride)
 }
 
 /* Returns true when strip mining with STRIDE of the loop around PBB
-   at scattering time TIME_DEPTH is profitable.  */
+   at DEPTH is profitable.  */
 
 static bool
 pbb_strip_mine_profitable_p (poly_bb_p pbb,
-			     graphite_dim_t time_depth,
+			     graphite_dim_t depth,
 			     int stride)
 {
   Value niter, strip_stride;
@@ -187,7 +187,7 @@ pbb_strip_mine_profitable_p (poly_bb_p pbb,
   value_init (strip_stride);
   value_init (niter);
   value_set_si (strip_stride, stride);
-  pbb_number_of_iterations_at_time (pbb, time_depth, niter);
+  pbb_number_of_iterations_at_time (pbb, psct_dynamic_dim (pbb, depth), niter);
   res = value_gt (niter, strip_stride);
   value_clear (strip_stride);
   value_clear (niter);
@@ -234,6 +234,7 @@ lst_do_strip_mine (lst_p lst)
   lst_p l;
   bool res = false;
   int stride = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
+  int depth;
 
   if (!lst
       || !LST_LOOP_P (lst))
@@ -242,9 +243,10 @@ lst_do_strip_mine (lst_p lst)
   for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
     res |= lst_do_strip_mine (l);
 
-  if (lst_depth (lst) >= 0
+  depth = lst_depth (lst);
+  if (depth >= 0
       && pbb_strip_mine_profitable_p (LST_PBB (lst_find_first_pbb (lst)),
-				      lst_depth (lst), stride))
+				      depth, stride))
     {
       res |= lst_do_strip_mine_loop (lst, lst_depth (lst));
       lst_add_loop_under_loop (lst);
