@@ -1,5 +1,9 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/interchange-1.c: Un-XFAILed.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (dependence_polyhedron_1): Add the
 	context to the dependence polyhedron.
 
