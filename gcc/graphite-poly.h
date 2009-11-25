@@ -575,8 +575,19 @@ psct_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 static inline ppl_dimension_type
 psct_dynamic_dim (poly_bb_p pbb, graphite_dim_t level)
 {
-  graphite_dim_t result;
-  result = 1 + 2 * level;
+  graphite_dim_t result = 1 + 2 * level;
+
+  gcc_assert (result < pbb_nb_scattering_transform (pbb));
+  return result;
+}
+
+/* The scattering dimension of PBB corresponding to the static
+   sequence of the loop level LEVEL.  */
+
+static inline ppl_dimension_type
+psct_static_dim (poly_bb_p pbb, graphite_dim_t level)
+{
+  graphite_dim_t result = 2 * level;
 
   gcc_assert (result < pbb_nb_scattering_transform (pbb));
   return result;
@@ -768,6 +779,19 @@ lst_dewey_number (lst_p lst)
   return -1;
 }
 
+/* Returns the Dewey number of LST at depth DEPTH.  */
+
+static inline int
+lst_dewey_number_at_depth (lst_p lst, int depth)
+{
+  gcc_assert (lst && depth >= 0 && lst_depth (lst) <= depth);
+
+  if (lst_depth (lst) == depth)
+    return lst_dewey_number (lst);
+
+  return lst_dewey_number_at_depth (LST_LOOP_FATHER (lst), depth);
+}
+
 /* Return the LST node corresponding to PBB.  */
 
 static inline lst_p
@@ -779,15 +803,15 @@ lst_find_pbb (lst_p lst, poly_bb_p pbb)
   if (!lst)
     return NULL;
 
-  if (LST_LOOP_P (lst))
-    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-      {
-	lst_p res = lst_find_pbb (l, pbb);
-	if (res)
-	  return res;
-      }
-  else if (pbb == LST_PBB (lst))
-    return lst;
+  if (!LST_LOOP_P (lst))
+    return (pbb == LST_PBB (lst)) ? lst : NULL;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    {
+      lst_p res = lst_find_pbb (l, pbb);
+      if (res)
+	return res;
+    }
 
   return NULL;
 }
@@ -808,7 +832,7 @@ find_lst_loop (lst_p stmt, int loop_depth)
   return loop;
 }
 
-/* Return the LST node corresponding to PBB.  */
+/* Return the first lst representing a PBB statement in LST.  */
 
 static inline lst_p
 lst_find_first_pbb (lst_p lst)
@@ -819,15 +843,310 @@ lst_find_first_pbb (lst_p lst)
   if (!lst)
     return NULL;
 
+  if (!LST_LOOP_P (lst))
+    return lst;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    {
+      lst_p res = lst_find_first_pbb (l);
+      if (res)
+	return res;
+    }
+
+  gcc_unreachable ();
+  return NULL;
+}
+
+/* Return the last lst representing a PBB statement in LST.  */
+
+static inline lst_p
+lst_find_last_pbb (lst_p lst)
+{
+  int i;
+  lst_p l, res = NULL;
+
+  if (!lst)
+    return NULL;
+
+  if (!LST_LOOP_P (lst))
+    return lst;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    {
+      lst_p last = lst_find_last_pbb (l);
+
+      if (last)
+	res = last;
+    }
+
+  gcc_assert (res);
+  return res;
+}
+
+/* Returns true if LOOP contains LST, in other words, if LST is nested
+   in LOOP.  */
+
+static inline bool
+lst_contains_p (lst_p loop, lst_p lst)
+{
+  if (!loop || !lst || !LST_LOOP_P (loop))
+    return false;
+
+  if (loop == lst)
+    return true;
+
+  return lst_contains_p (loop, LST_LOOP_FATHER (lst));
+}
+
+/* Returns true if LOOP contains PBB, in other words, if PBB is nested
+   in LOOP.  */
+
+static inline bool
+lst_contains_pbb (lst_p loop, poly_bb_p pbb)
+{
+  return lst_find_pbb (loop, pbb) ? true : false;
+}
+
+/* Creates a loop nest of depth NB_LOOPS containing LST.  */
+
+static inline lst_p
+lst_create_nest (int nb_loops, lst_p lst)
+{
+  lst_p res, loop;
+  VEC (lst_p, heap) *seq;
+
+  if (nb_loops == 0)
+    return lst;
+
+  seq = VEC_alloc (lst_p, heap, 1);
+  loop = lst_create_nest (nb_loops - 1, lst);
+  VEC_quick_push (lst_p, seq, loop);
+  res = new_lst_loop (seq);
+  LST_LOOP_FATHER (loop) = res;
+
+  return res;
+}
+
+/* Removes LST from the sequence of statements of its loop father.  */
+
+static inline void
+lst_remove_from_sequence (lst_p lst)
+{
+  lst_p father = LST_LOOP_FATHER (lst);
+  int dewey = lst_dewey_number (lst);
+
+  gcc_assert (lst && father && dewey >= 0);
+
+  VEC_ordered_remove (lst_p, LST_SEQ (father), dewey);
+  LST_LOOP_FATHER (lst) = NULL;
+}
+
+/* Updates the scattering of PBB to be at the DEWEY number in the loop
+   at depth LEVEL.  */
+
+static inline void
+pbb_update_scattering (poly_bb_p pbb, graphite_dim_t level, int dewey)
+{
+  ppl_Polyhedron_t ph = PBB_TRANSFORMED_SCATTERING (pbb);
+  ppl_dimension_type sched = psct_static_dim (pbb, level);
+  ppl_dimension_type ds[1];
+  ppl_Constraint_t new_cstr;
+  ppl_Linear_Expression_t expr;
+  ppl_dimension_type dim;
+
+  ppl_Polyhedron_space_dimension (ph, &dim);
+  ds[0] = sched;
+  ppl_Polyhedron_remove_space_dimensions (ph, ds, 1);
+  ppl_insert_dimensions (ph, sched, 1);
+
+  ppl_new_Linear_Expression_with_dimension (&expr, dim);
+  ppl_set_coef (expr, sched, -1);
+  ppl_set_inhomogeneous (expr, dewey);
+  ppl_new_Constraint (&new_cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
+  ppl_delete_Linear_Expression (expr);
+  ppl_Polyhedron_add_constraint (ph, new_cstr);
+  ppl_delete_Constraint (new_cstr);
+}
+
+/* Updates the scattering of all the PBBs under LST to be at the DEWEY
+   number in the loop at depth LEVEL.  */
+
+static inline void
+lst_update_scattering_under (lst_p lst, int level, int dewey)
+{
+  int i;
+  lst_p l;
+
+  gcc_assert (lst && level >= 0 && dewey >= 0);
+
   if (LST_LOOP_P (lst))
     for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      lst_update_scattering_under (l, level, dewey);
+  else
+    pbb_update_scattering (LST_PBB (lst), level, dewey);
+}
+
+/* Updates the scattering of all the PBBs under LST and in sequence
+   with LST.  */
+
+static inline void
+lst_update_scattering_seq (lst_p lst)
+{
+  int i;
+  lst_p l;
+  lst_p father = LST_LOOP_FATHER (lst);
+  int dewey = lst_dewey_number (lst);
+  int level = lst_depth (lst);
+
+  gcc_assert (lst && father && dewey >= 0 && level >= 0);
+
+  for (i = dewey; VEC_iterate (lst_p, LST_SEQ (father), i, l); i++)
+    lst_update_scattering_under (l, level, i);
+}
+
+/* Updates the all the scattering levels of all the PBBs under
+   LST.  */
+
+static inline void
+lst_update_scattering (lst_p lst)
+{
+  int i;
+  lst_p l;
+
+  if (!lst || !LST_LOOP_P (lst))
+    return;
+
+  if (LST_LOOP_FATHER (lst))
+    lst_update_scattering_seq (lst);
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    lst_update_scattering (l);
+}
+
+/* Inserts LST1 before LST2 if BEFORE is true; inserts LST1 after LST2
+   if BEFORE is false.  */
+
+static inline void
+lst_insert_in_sequence (lst_p lst1, lst_p lst2, bool before)
+{
+  lst_p father = LST_LOOP_FATHER (lst2);
+  int dewey = lst_dewey_number (lst2);
+
+  gcc_assert (lst1 && lst2 && father && dewey >= 0);
+
+  VEC_safe_insert (lst_p, heap, LST_SEQ (father), before ? dewey : dewey + 1,
+		   lst1);
+  LST_LOOP_FATHER (lst1) = father;
+}
+
+/* Moves LST before LOOP if BEFORE is true, and after the LOOP if
+   BEFORE is false.  */
+
+static inline void
+lst_distribute_lst (lst_p loop, lst_p lst, bool before)
+{
+  int loop_depth = lst_depth (loop);
+  int depth = lst_depth (lst);
+  int nb_loops = depth - loop_depth;
+
+  gcc_assert (lst && loop && LST_LOOP_P (loop) && nb_loops > 0);
+
+  lst_remove_from_sequence (lst);
+  lst_insert_in_sequence (lst_create_nest (nb_loops, lst), loop, before);
+}
+
+/* Removes from LOOP all the statements before/after and including PBB
+   if BEFORE is true/false.  Returns the negation of BEFORE when the
+   statement PBB has been found.  */
+
+static inline bool
+lst_remove_all_before_including_pbb (lst_p loop, poly_bb_p pbb, bool before)
+{
+  int i;
+  lst_p l;
+
+  if (!loop || !LST_LOOP_P (loop))
+    return before;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (loop), i, l);)
+    if (LST_LOOP_P (l))
       {
-	lst_p res = lst_find_first_pbb (l);
-	if (res)
-	  return res;
+	before = lst_remove_all_before_including_pbb (l, pbb, before);
+
+	if (VEC_length (lst_p, LST_SEQ (l)) == 0)
+	  {
+	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    free_lst (l);
+	  }
+	else
+	  i++;
+      }
+    else
+      {
+	if (before)
+	  {
+	    if (LST_PBB (l) == pbb)
+	      before = false;
+
+	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    free_lst (l);
+	  }
+	else if (LST_PBB (l) == pbb)
+	  {
+	    before = true;
+	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    free_lst (l);
+	  }
+	else
+	  i++;
       }
 
-  return lst;
+  return before;
+}
+
+/* Removes from LOOP all the statements before/after and excluding PBB
+   if BEFORE is true/false; Returns the negation of BEFORE when the
+   statement PBB has been found.  */
+
+static inline bool
+lst_remove_all_before_excluding_pbb (lst_p loop, poly_bb_p pbb, bool before)
+{
+  int i;
+  lst_p l;
+
+  if (!loop || !LST_LOOP_P (loop))
+    return before;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (loop), i, l);)
+    if (LST_LOOP_P (l))
+      {
+	before = lst_remove_all_before_excluding_pbb (l, pbb, before);
+
+	if (VEC_length (lst_p, LST_SEQ (l)) == 0)
+	  {
+	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    free_lst (l);
+	    continue;
+	  }
+
+	i++;
+      }
+    else
+      {
+	if (before && LST_PBB (l) != pbb)
+	  {
+	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    free_lst (l);
+	    continue;
+	  }
+
+	i++;
+
+	if (LST_PBB (l) == pbb)
+	  before = before ? false : true;
+      }
+
+  return before;
 }
 
 /* A SCOP is a Static Control Part of the program, simple enough to be
