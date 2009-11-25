@@ -580,6 +580,114 @@ psct_add_scattering_dimension (poly_bb_p pbb, ppl_dimension_type index)
   PBB_NB_SCATTERING_TRANSFORM (pbb) += 1;
 }
 
+typedef struct lst *lst_p;
+DEF_VEC_P(lst_p);
+DEF_VEC_ALLOC_P (lst_p, heap);
+
+/* Loops and Statements Tree.  */
+struct lst {
+
+  /* LOOP_P is true when an LST node is a loop.  */
+  bool loop_p;
+
+  /* A pointer to the loop that contains this node.  */
+  lst_p loop_father;
+
+  /* Loop nodes contain a sequence SEQ of LST nodes, statements
+     contain a pointer to their polyhedral representation PBB.  */
+  union {
+    poly_bb_p pbb;
+    VEC (lst_p, heap) *seq;
+  } node;
+};
+
+#define LST_LOOP_P(LST) ((LST)->loop_p)
+#define LST_LOOP_FATHER(LST) ((LST)->loop_father)
+#define LST_PBB(LST) ((LST)->node.pbb)
+#define LST_SEQ(LST) ((LST)->node.seq)
+
+void scop_to_lst (scop_p);
+void print_lst (FILE *, lst_p, int);
+void debug_lst (lst_p);
+
+/* Creates a new LST loop with SEQ.  */
+
+static inline lst_p
+new_lst_loop (VEC (lst_p, heap) *seq)
+{
+  lst_p lst = XNEW (struct lst);
+  int i;
+  lst_p l;
+
+  LST_LOOP_P (lst) = true;
+  LST_SEQ (lst) = seq;
+  LST_LOOP_FATHER (lst) = NULL;
+
+  for (i = 0; VEC_iterate (lst_p, seq, i, l); i++)
+    LST_LOOP_FATHER (l) = lst;
+
+  return lst;
+}
+
+/* Creates a new LST statement with PBB.  */
+
+static inline lst_p
+new_lst_stmt (poly_bb_p pbb)
+{
+  lst_p lst = XNEW (struct lst);
+
+  LST_LOOP_P (lst) = false;
+  LST_PBB (lst) = pbb;
+  LST_LOOP_FATHER (lst) = NULL;
+  return lst;
+}
+
+/* Returns a copy of LST.  */
+
+static inline lst_p
+copy_lst (lst_p lst)
+{
+  if (!lst)
+    return NULL;
+
+  if (LST_LOOP_P (lst))
+    return new_lst_loop (VEC_copy (lst_p, heap, LST_SEQ (lst)));
+
+  return new_lst_stmt (LST_PBB (lst));
+}
+
+/* Returns the loop depth of LST.  */
+
+static inline int
+lst_depth (lst_p lst)
+{
+  if (!lst)
+    return -1;
+
+  return lst_depth (LST_LOOP_FATHER (lst)) + 1;
+}
+
+/* Returns the Dewey number for LST.  */
+
+static inline int
+lst_dewey_number (lst_p lst)
+{
+  int i;
+  lst_p l;
+
+  if (!lst)
+    return -1;
+
+  if (!LST_LOOP_FATHER (lst))
+    return 0;
+
+  for (i = 0; VEC_iterate (lst_p, LST_SEQ (LST_LOOP_FATHER (lst)), i, l); i++)
+    if (l == lst)
+      return i;
+
+  return -1;
+}
+
 /* A SCOP is a Static Control Part of the program, simple enough to be
    represented in polyhedral form.  */
 struct scop
@@ -594,6 +702,9 @@ struct scop
      and that will be represented as statements in the polyhedral
      representation.  */
   VEC (poly_bb_p, heap) *bbs;
+
+  /* Original and transformed schedules.  */
+  lst_p original_schedule, transformed_schedule;
 
   /* Data dependence graph for this SCoP.  */
   struct graph *dep_graph;
@@ -623,6 +734,8 @@ struct scop
 #define SCOP_DEP_GRAPH(S) (S->dep_graph)
 #define SCOP_CONTEXT(S) (S->context)
 #define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
+#define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
+#define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
 
 extern scop_p new_scop (void *);
 extern void free_scop (scop_p);

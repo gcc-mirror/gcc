@@ -1,3 +1,30 @@
+2009-10-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (print_scop): Print SCOP_ORIGINAL_SCHEDULE and
+	SCOP_TRANSFORMED_SCHEDULE.
+	(loop_to_lst): New.
+	(scop_to_lst): New.
+	(print_lst): New.
+	(debug_lst): New.
+	* graphite-poly.h (lst_p): New.
+	(struct lst): New.
+	(LST_LOOP_P): New.
+	(LST_LOOP_FATHER): New.
+	(LST_PBB): New.
+	(LST_SEQ): New.
+	(scop_to_lst): Declared.
+	(print_lst): Declared.
+	(debug_lst): Declared.
+	(new_lst_loop): New.
+	(new_lst_stmt): New.
+	(copy_lst): New.
+	(lst_depth): New.
+	(lst_dewey_number): New.
+	(struct scop): Add original_schedule and transformed_schedule fields.
+	(SCOP_ORIGINAL_SCHEDULE): New.
+	(SCOP_TRANSFORMED_SCHEDULE): New.
+	* graphite-sese-to-poly.c (build_poly_scop): Call scop_to_lst.
+
 2009-10-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (reduction_ddr): New.
