@@ -1,5 +1,11 @@
 2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-blocking.c (scop_do_block): New.
+	* graphite-poly.c (apply_poly_transforms): Call scop_do_block.
+	* graphite-poly.h (scop_do_block): Declared.
+
+2009-11-18  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-blocking.c (pbb_strip_mine_profitable_p): The parameter
 	depth is the loop nesting depth in the LST.  Call psct_dynamic_dim
 	to transform depth into the time_depth before calling

@@ -250,10 +250,7 @@ apply_poly_transforms (scop_p scop)
     transform_done = true;
 
   if (flag_loop_block)
-    {
-      transform_done |= scop_do_strip_mine (scop);
-      transform_done |= scop_do_interchange (scop);
-    }
+    transform_done |= scop_do_block (scop);
   else
     {
       if (flag_loop_strip_mine)

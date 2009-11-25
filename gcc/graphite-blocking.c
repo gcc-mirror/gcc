@@ -255,7 +255,6 @@ lst_do_strip_mine (lst_p lst)
   return res;
 }
 
-
 /* Strip mines all the loops in SCOP.  Nothing profitable in all this:
    this is just a driver function.  */
 
@@ -276,6 +275,33 @@ scop_do_strip_mine (scop_p scop)
       restore_scattering (scop);
       return false;
     }
+
+  return transform_done;
+}
+
+/* Loop blocks all the loops in SCOP.  Returns true when we manage to
+   block some loops.  */
+
+bool
+scop_do_block (scop_p scop)
+{
+  bool transform_done = false;
+
+  store_scattering (scop);
+
+  lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
+  transform_done = scop_do_interchange (scop);
+
+  /* If we don't interchange loops, then the strip mine is not
+     profitable, and the transform is not a loop blocking.  */
+  if (!transform_done
+      || !graphite_legal_transform (scop))
+    {
+      restore_scattering (scop);
+      return false;
+    }
+  else if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "SCoP will be loop blocked.\n");
 
   return transform_done;
 }
