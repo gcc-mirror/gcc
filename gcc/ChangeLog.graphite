@@ -1,5 +1,10 @@
 2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.h (lst_find_pbb): New.
+	(find_lst_loop): New.
+
+2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (new_scop): Remove init of SCOP_DEP_GRAPH.
 	* graphite-poly.h (struct scop): Remove dep_graph field.
 	(SCOP_DEP_GRAPH): Removed.

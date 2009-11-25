@@ -724,6 +724,47 @@ lst_dewey_number (lst_p lst)
   return -1;
 }
 
+/* Return the LST node corresponding to PBB.  */
+
+static inline lst_p
+lst_find_pbb (lst_p lst, poly_bb_p pbb)
+{
+  int i;
+  lst_p l;
+
+  if (!lst)
+    return NULL;
+
+  if (LST_LOOP_P (lst))
+    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      {
+	lst_p res = lst_find_pbb (l, pbb);
+	if (res)
+	  return res;
+      }
+  else if (pbb == LST_PBB (lst))
+    return lst;
+
+  return NULL;
+}
+
+/* Return the LST node corresponding to the loop around STMT at depth
+   LOOP_DEPTH.  */
+
+static inline lst_p
+find_lst_loop (lst_p stmt, int loop_depth)
+{
+  lst_p loop = LST_LOOP_FATHER (stmt);
+
+  gcc_assert (loop_depth >= 0);
+
+  while (loop_depth < lst_depth (loop))
+    loop = LST_LOOP_FATHER (loop);
+
+  return loop;
+}
+
+
 /* A SCOP is a Static Control Part of the program, simple enough to be
    represented in polyhedral form.  */
 struct scop
