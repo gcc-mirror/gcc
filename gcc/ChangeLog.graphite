@@ -1,5 +1,10 @@
 2009-10-16  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c: Fix comments.
+	* gcc.dg/graphite/block-1.c: Fix comments.
+
+2009-10-16  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/interchange-7.c: Un-XFAILed.
 	* gcc.dg/graphite/interchange-9.c: Un-XFAILed.
 
