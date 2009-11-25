@@ -1,5 +1,10 @@
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* g++.dg/graphite/graphite.exp: Add the same rules as in
+	gcc.dg/graphite/graphite.exp.
+
+2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* g++.dg/graphite/id-1.C: New.
 
 2009-10-22  Sebastian Pop  <sebastian.pop@amd.com>
