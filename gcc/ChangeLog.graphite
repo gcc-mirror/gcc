@@ -1,3 +1,9 @@
+2009-09-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	Partially revert the previous patch, except the following.
+	* tree-scalar-evolution.c (instantiate_scev_not): Adapted to pass
+	as parameters the operands of the not expression.
+
 2009-09-01  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-scalar-evolution.c (instantiate_scev_assign): New.
