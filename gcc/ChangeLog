@@ -1,5 +1,8 @@
 2009-11-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/sysv4.opt (mregnames): Change Var to rs6000_regnames.
+	* config/rs6000/sysv4.h (TARGET_REGNAMES): Define.
+
 	* print-rtl.c (print_rtx): When printing newline, append
 	print_rtx_head and indentation after the newline.
 

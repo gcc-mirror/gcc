@@ -91,7 +91,7 @@ Target Report Var(TARGET_NO_BITFIELD_WORD)
 Allow bit-fields to cross word boundaries
 
 mregnames
-Target Var(TARGET_REGNAMES)
+Target Var(rs6000_regnames)
 Use alternate register names
 
 ;; This option does nothing and only exists because the compiler
