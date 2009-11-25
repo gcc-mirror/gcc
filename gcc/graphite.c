@@ -199,7 +199,10 @@ print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
 static bool
 graphite_initialize (void)
 {
-  if (number_of_loops () <= 1)
+  if (number_of_loops () <= 1
+      /* FIXME: This limit on the number of basic blocks of a function
+	 should be removed when the SCOP detection is faster.  */
+      || n_basic_blocks > 100)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	print_global_statistics (dump_file);
