@@ -1,3 +1,7 @@
+2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (loop_to_lst): Fix LST creation.
+
 2009-10-14  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* testsuite/gcc.dg/graphite/id-15.c: (8 * 8) replaced with
