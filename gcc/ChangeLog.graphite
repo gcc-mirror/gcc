@@ -1,4 +1,16 @@
-2009-10-20  Li Feng  <nemokingdom@gmail.com>
+2009-10-26  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (find_pbb_via_hash): Moved up.
+	(dependency_in_loop_p): Same.
+	(translate_clast): Do not use loop->aux.  Initialize
+	loop->can_be_parallel.
+	(mark_loops_parallel): Removed.
+	* graphite-clast-to-gimple.h (mark_loops_parallel): Removed.
+	* graphite.c (free_aux_in_new_loops): Removed.
+	(graphite_finalize): Do not call free_aux_in_new_loops.
+	(graphite_transform_loops): Do not call mark_loops_parallel.
+
+2009-10-26  Li Feng  <nemokingdom@gmail.com>
 
 	* graphite-clast-to-gimple.c (get_stmtfor_depth): Removed.
 	(translate_clast): Pass an extra parameter LEVEL.

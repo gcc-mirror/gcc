@@ -220,22 +220,6 @@ graphite_initialize (void)
   return true;
 }
 
-/* Free loop->aux in newly created loops by translate_clast.  */
-
-static void
-free_aux_in_new_loops (void)
-{
-  loop_p loop;
-  loop_iterator li;
-
-  FOR_EACH_LOOP (li, loop, 0)
-    if (loop->aux)
-      {
-	free (loop->aux);
-	loop->aux = NULL;
-      }
-}
-
 /* Finalize graphite: perform CFG cleanup when NEED_CFG_CLEANUP_P is
    true.  */
 
@@ -252,7 +236,6 @@ graphite_finalize (bool need_cfg_cleanup_p)
 
   cloog_finalize ();
   free_original_copy_tables ();
-  free_aux_in_new_loops ();
 
   if (dump_file && dump_flags)
     print_loops (dump_file, 3);
@@ -301,9 +284,6 @@ graphite_transform_loops (void)
 	  need_cfg_cleanup_p = true;
 	}
     }
-
-  if (flag_loop_parallelize_all)
-    mark_loops_parallel (bb_pbb_mapping);
 
   htab_delete (bb_pbb_mapping);
   free_scops (scops);
