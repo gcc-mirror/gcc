@@ -305,6 +305,8 @@ pbb_remove_duplicate_pdrs (poly_bb_p pbb)
     for (j = 0; VEC_iterate (poly_dr_p, collapsed, j, pdr2); j++)
       if (!can_collapse_pdrs (pdr1, pdr2))
 	VEC_quick_push (poly_dr_p, collapsed, pdr1);
+
+  PBB_PDR_DUPLICATES_REMOVED (pbb) = true;
 }
 
 /* Create a new polyhedral data reference and add it to PBB.  It is
@@ -354,6 +356,7 @@ new_poly_bb (scop_p scop, void *black_box, bool reduction)
   PBB_ORIGINAL (pbb) = NULL;
   PBB_DRS (pbb) = VEC_alloc (poly_dr_p, heap, 3);
   PBB_IS_REDUCTION (pbb) = reduction;
+  PBB_PDR_DUPLICATES_REMOVED (pbb) = false;
   VEC_safe_push (poly_bb_p, heap, SCOP_BBS (scop), pbb);
 }
 
