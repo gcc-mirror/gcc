@@ -7504,7 +7504,7 @@ attr_length_call (rtx insn, int sibcall)
     {
       length += 20;
 
-      if (!TARGET_PA_20 && !TARGET_NO_SPACE_REGS && flag_pic)
+      if (!TARGET_PA_20 && !TARGET_NO_SPACE_REGS && (!local_call || flag_pic))
 	length += 8;
     }
 
@@ -7524,7 +7524,7 @@ attr_length_call (rtx insn, int sibcall)
 	  if (!sibcall)
 	    length += 8;
 
-	  if (!TARGET_NO_SPACE_REGS && flag_pic)
+	  if (!TARGET_NO_SPACE_REGS && (!local_call || flag_pic))
 	    length += 8;
 	}
     }
@@ -7721,7 +7721,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 		  if (!sibcall && !TARGET_PA_20)
 		    {
 		      output_asm_insn ("{bl|b,l} .+8,%%r2", xoperands);
-		      if (TARGET_NO_SPACE_REGS)
+		      if (TARGET_NO_SPACE_REGS || (local_call && !flag_pic))
 			output_asm_insn ("addi 8,%%r2,%%r2", xoperands);
 		      else
 			output_asm_insn ("addi 16,%%r2,%%r2", xoperands);
@@ -7746,20 +7746,20 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 		}
 	      else
 		{
-		  if (!TARGET_NO_SPACE_REGS && flag_pic)
+		  if (!TARGET_NO_SPACE_REGS && (!local_call || flag_pic))
 		    output_asm_insn ("ldsid (%%r1),%%r31\n\tmtsp %%r31,%%sr0",
 				     xoperands);
 
 		  if (sibcall)
 		    {
-		      if (TARGET_NO_SPACE_REGS || !flag_pic)
+		      if (TARGET_NO_SPACE_REGS || (local_call && !flag_pic))
 			output_asm_insn ("be 0(%%sr4,%%r1)", xoperands);
 		      else
 			output_asm_insn ("be 0(%%sr0,%%r1)", xoperands);
 		    }
 		  else
 		    {
-		      if (TARGET_NO_SPACE_REGS || !flag_pic)
+		      if (TARGET_NO_SPACE_REGS || (local_call && !flag_pic))
 			output_asm_insn ("ble 0(%%sr4,%%r1)", xoperands);
 		      else
 			output_asm_insn ("ble 0(%%sr0,%%r1)", xoperands);

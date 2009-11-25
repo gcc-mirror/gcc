@@ -1,3 +1,9 @@
+2009-11-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_call): Only use sr4 for long interspace calls if
+	call binds local and generating non PIC code.
+	(attr_length_call): Adjust length calculation for above.
+
 2009-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (plusminus_carry_mnemonic): New code attribute.
