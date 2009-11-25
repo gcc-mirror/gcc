@@ -1044,6 +1044,9 @@ find_scop_parameters (scop_p scop)
 
   scop_set_nb_params (scop, sese_nb_params (region));
   SESE_ADD_PARAMS (region) = false;
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension
+    (&SCOP_CONTEXT (scop), scop_nb_params (scop), 0);
 }
 
 /* Returns a gimple_bb from BB.  */
@@ -1119,6 +1122,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
       Value one;
       ppl_Constraint_t ub;
       ppl_Linear_Expression_t ub_expr;
+      double_int nit;
 
       value_init (one);
       value_set_si (one, 1);
@@ -1126,6 +1130,66 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
       nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
       scan_tree_for_params (SCOP_REGION (scop), nb_iters, ub_expr, one);
       value_clear (one);
+
+      /* N <= estimated_nb_iters
+
+	 FIXME: This is a workaround that should go away once we will
+	 have the PIP algorithm.  */
+      if (estimated_loop_iterations (loop, true, &nit))
+	{
+	  Value val;
+	  ppl_Linear_Expression_t nb_iters_le;
+	  ppl_Polyhedron_t pol;
+	  graphite_dim_t p, n = scop_nb_params (scop);
+	  ppl_Coefficient_t coef;
+
+	  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
+	  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
+							    ub_expr);
+
+	  value_init (val);
+	  mpz_set_double_int (val, nit, false);
+	  ppl_new_Coefficient_from_mpz_t (&coef, val);
+	  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
+	  ppl_delete_Coefficient (coef);
+	  ppl_new_Constraint (&ub, nb_iters_le,
+			      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
+	  ppl_Polyhedron_add_constraint (pol, ub);
+
+	  for (p = 0; p < n; p++)
+	    {
+	      ppl_Linear_Expression_t le;
+
+	      ppl_new_Linear_Expression_with_dimension (&le, dim);
+	      ppl_set_coef (le, nb + 1 + p, -1);
+
+	      value_set_si (val, -1);
+	      ppl_min_for_le_polyhedron (pol, le, val);
+	      if (!value_mone_p (val))
+		{
+		  ppl_Linear_Expression_t parm_bound;
+		  ppl_Constraint_t cstr;
+
+		  ppl_new_Linear_Expression_with_dimension (&parm_bound, n);
+		  ppl_set_coef (parm_bound, p, -1);
+		  ppl_set_inhomogeneous_gmp (parm_bound, val);
+		  ppl_new_Constraint (&cstr, parm_bound,
+				      PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
+		  ppl_Pointset_Powerset_C_Polyhedron_add_constraint
+		    (SCOP_CONTEXT (scop), cstr);
+
+		  ppl_delete_Constraint (cstr);
+		  ppl_delete_Linear_Expression (parm_bound);
+		}
+
+	      ppl_delete_Linear_Expression (le);
+	    }
+
+	  ppl_delete_Polyhedron (pol);
+	  ppl_delete_Linear_Expression (nb_iters_le);
+	  ppl_delete_Constraint (ub);
+	  value_clear (val);
+	}
 
       /* loop_i <= expr_nb_iters */
       ppl_set_coef (ub_expr, nb, -1);
@@ -1496,6 +1560,7 @@ static void
 build_scop_context (scop_p scop)
 {
   ppl_Polyhedron_t context;
+  ppl_Pointset_Powerset_C_Polyhedron_t ps;
   graphite_dim_t p, n = scop_nb_params (scop);
 
   ppl_new_C_Polyhedron_from_space_dimension (&context, n, 0);
@@ -1504,8 +1569,11 @@ build_scop_context (scop_p scop)
     add_param_constraints (scop, context, p);
 
   ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-    (&SCOP_CONTEXT (scop), context);
+    (&ps, context);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
+    (SCOP_CONTEXT (scop), ps);
 
+  ppl_delete_Pointset_Powerset_C_Polyhedron (ps);
   ppl_delete_Polyhedron (context);
 }
 
