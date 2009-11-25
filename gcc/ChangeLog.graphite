@@ -1,5 +1,14 @@
 2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (free_data_refs_aux): Fix formatting.
+	(pdr_add_alias_set): Same.
+	(build_poly_dr): Same.
+	(build_alias_set_optimal_p): Same.
+	(build_base_obj_set_for_drs): Same.  Do not store the result of
+	graphds_dfs.
+
+2009-10-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (build_alias_set_optimal_p): Initialize
 	all_components_are_cliques to 1.
 
