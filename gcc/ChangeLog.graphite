@@ -1,5 +1,11 @@
 2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (pbb_remove_duplicate_pdrs): Initialize
+	PBB_PDR_DUPLICATES_REMOVED.
+	(new_poly_bb): Same.
+
+2009-10-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (find_scop_parameters): Initialize
 	SCOP_CONTEXT.
 	(build_loop_iteration_domains): Extract bounds on parameters
