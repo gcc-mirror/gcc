@@ -290,12 +290,15 @@ free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
 {
   unsigned int i;
   struct data_reference *dr;
-   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
-    if (dr->aux != NULL)
+
+  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+    if (dr->aux)
       {
 	base_alias_pair *bap = (base_alias_pair *)(dr->aux);
-	if (bap->alias_set != NULL)
+
+	if (bap->alias_set)
 	  free (bap->alias_set);
+
 	free (bap);
 	dr->aux = NULL;
       }
@@ -1631,7 +1634,7 @@ pdr_add_alias_set (ppl_Polyhedron_t accesses, data_reference_p dr,
   int alias_set_num = 0;
   base_alias_pair *bap = (base_alias_pair *)(dr->aux);
 
-  if (bap != NULL && bap->alias_set != NULL)
+  if (bap && bap->alias_set)
     alias_set_num = *(bap->alias_set);
 
   ppl_new_Linear_Expression_with_dimension (&alias, accessp_nb_dims);
@@ -1775,7 +1778,7 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 							    accesses);
   ppl_delete_Polyhedron (accesses);
 
-  if (dr->aux != NULL)
+  if (dr->aux)
     dr_base_object_set = ((base_alias_pair *)(dr->aux))->base_obj_set;
 
   new_poly_dr (pbb, dr_base_object_set, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
@@ -1919,12 +1922,13 @@ build_alias_set_optimal_p (VEC (data_reference_p, heap) *drs)
     {
       data_reference_p dr = VEC_index (data_reference_p, drs, i);
       base_alias_pair *bap;
-      if (dr->aux != NULL)
+
+      if (dr->aux)
 	bap = (base_alias_pair *)(dr->aux);
+
       bap->alias_set = XNEW (int);
       *(bap->alias_set) = g->vertices[i].component + 1;
     }
-
 
   /* Verify if the DFS numbering results in optimal solution.  */
   for (i = 0; i < num_connected_components; i++)
@@ -1977,7 +1981,6 @@ build_base_obj_set_for_drs (VEC (data_reference_p, heap) *drs)
   struct graph *g = new_graph (num_vertex);
   data_reference_p dr1, dr2;
   int i, j;
-  int num_component;
   int *queue;
 
   for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
@@ -1992,14 +1995,16 @@ build_base_obj_set_for_drs (VEC (data_reference_p, heap) *drs)
   for (i = 0; i < num_vertex; i++)
     queue[i] = i;
 
-  num_component = graphds_dfs (g, queue, num_vertex, NULL, true, NULL);
+  graphds_dfs (g, queue, num_vertex, NULL, true, NULL);
 
   for (i = 0; i < g->n_vertices; i++)
     {
       data_reference_p dr = VEC_index (data_reference_p, drs, i);
       base_alias_pair *bap;
-      if (dr->aux != NULL)
+
+      if (dr->aux)
 	bap = (base_alias_pair *)(dr->aux);
+
       bap->base_obj_set = g->vertices[i].component + 1;
     }
 
