@@ -821,10 +821,10 @@ char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
 static const struct arm_fpu_desc all_fpus[] =
 {
-  {"fpa",		ARM_FP_MODEL_FPA, 0, 0, false, false},
-  {"fpe2",		ARM_FP_MODEL_FPA, 2, 0, false, false},
-  {"fpe3",		ARM_FP_MODEL_FPA, 3, 0, false, false},
-  {"maverick",		ARM_FP_MODEL_MAVERICK, 0, 0, false, false},
+  {"fpa",		ARM_FP_MODEL_FPA, 0, VFP_NONE, false, false},
+  {"fpe2",		ARM_FP_MODEL_FPA, 2, VFP_NONE, false, false},
+  {"fpe3",		ARM_FP_MODEL_FPA, 3, VFP_NONE, false, false},
+  {"maverick",		ARM_FP_MODEL_MAVERICK, 0, VFP_NONE, false, false},
   {"vfp",		ARM_FP_MODEL_VFP, 2, VFP_REG_D16, false, false},
   {"vfpv3",		ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, false},
   {"vfpv3-fp16",	ARM_FP_MODEL_VFP, 3, VFP_REG_D32, false, true},
@@ -3853,7 +3853,7 @@ use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
 static bool
 aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
 				       enum machine_mode mode, const_tree type,
-				       int *base_mode, int *count)
+				       enum machine_mode *base_mode, int *count)
 {
   enum machine_mode new_mode = VOIDmode;
 

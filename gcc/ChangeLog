@@ -1,3 +1,12 @@
+2009-11-25  Robert Nelson  <robert.nelson@digikey.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (enum vfp_reg_type): Add VFP_NONE.
+	* arm.c (all_fpus): Use it for floating point units that aren't based
+	on the VFP architecture.
+	(aapcs_vfp_is_call_or_return_candidate): Make base_mode a pointer to
+	enum machine_mode.
+
 2009-11-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* alias.c: Remove trailing white spaces.
