@@ -524,6 +524,45 @@ pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
   return pddr;
 }
 
+/* Return true when the data dependence relation between the data
+   references PDR1 belonging to PBB1 and PDR2 is part of a
+   reduction.  */
+
+static inline bool
+reduction_dr_1 (poly_bb_p pbb1, poly_dr_p pdr1, poly_dr_p pdr2)
+{
+  int i;
+  poly_dr_p pdr;
+
+  /* PBB1 should be a reduction PBB.  Reduction PBBs should have only
+     one write.  */
+  gcc_assert (PBB_IS_REDUCTION (pbb1)
+	      && number_of_write_pdrs (pbb1) == 1);
+
+  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr); i++)
+    if (PDR_TYPE (pdr) == PDR_WRITE)
+      break;
+
+  return same_pdr_p (pdr, pdr1) && same_pdr_p (pdr, pdr2);
+}
+
+/* Return true when the data dependence relation between the data
+   references PDR1 belonging to PBB1 and PDR2 belonging to PBB2 is
+   part of a reduction.  */
+
+static inline bool
+reduction_dr_p (poly_bb_p pbb1, poly_bb_p pbb2,
+		poly_dr_p pdr1, poly_dr_p pdr2)
+{
+  if (PBB_IS_REDUCTION (pbb1))
+    return reduction_dr_1 (pbb1, pdr1, pdr2);
+
+  if (PBB_IS_REDUCTION (pbb2))
+    return reduction_dr_1 (pbb2, pdr2, pdr1);
+
+  return false;
+}
+
 /* Returns true when the PBB_TRANSFORMED_SCATTERING functions of PBB1
    and PBB2 respect the data dependences of PBB_ORIGINAL_SCATTERING
    functions.  */
@@ -541,6 +580,9 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   poly_ddr_p pddr;
   ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
   ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
+
+  if (reduction_dr_p (pbb1, pbb2, pdr1, pdr2))
+    return true;
 
   pddr = pddr_original_scattering (pbb1, pbb2, pdr1, pdr2);
   if (!pddr)
@@ -589,7 +631,7 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
    part of a reduction.  */
 
 static inline bool
-reduction_ddr (poly_bb_p pbb1, poly_bb_p pbb2)
+reduction_ddr_p (poly_bb_p pbb1, poly_bb_p pbb2)
 {
   return pbb1 == pbb2 && PBB_IS_REDUCTION (pbb1);
 }
@@ -609,7 +651,7 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
   if (!PBB_PDR_DUPLICATES_REMOVED (pbb2))
     pbb_remove_duplicate_pdrs (pbb2);
 
-  if (reduction_ddr (pbb1, pbb2))
+  if (reduction_ddr_p (pbb1, pbb2))
     return true;
 
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)

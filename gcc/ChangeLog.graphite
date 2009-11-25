@@ -1,5 +1,24 @@
 2009-10-06  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (reduction_dr_1): New.
+	(reduction_dr_p): New.
+	(graphite_legal_transform_dr): Call reduction_dr_p.
+	(reduction_ddr): Renamed reduction_ddr_p.
+	* graphite-poly.h (same_pdr_p): New.
+	(number_of_write_pdrs): New.
+	* graphite-sese-to-poly.c (nb_data_writes_in_bb): New.
+	(split_reduction_stmt): Do not split reduction statements
+	when there are no writes to memory.
+	(translate_scalar_reduction_to_array_for_stmt): Insert the
+	memory reduction statement just after the scalar reduction statement.
+
+	* gcc.dg/graphite/interchange-10.c: Updated to differ from interchange-4.c.
+	Un-XFAIL-ed.
+	* gcc.dg/graphite/interchange-3.c: Un-XFAIL-ed.
+	* gcc.dg/graphite/interchange-4.c: Un-XFAIL-ed.
+
+2009-10-06  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (lst_apply_interchange): New.
 	(lst_interchange_profitable_p): New.
 	(lst_try_interchange_loops): New.
