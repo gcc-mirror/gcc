@@ -407,8 +407,8 @@ static tree
 get_vdef_before_sese (sese region, tree name, sbitmap visited)
 {
   unsigned i;
-  gimple def_stmt = SSA_NAME_DEF_STMT (name);
-  basic_block def_bb = gimple_bb (def_stmt);
+  gimple stmt = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (stmt);
 
   if (!def_bb || !bb_in_sese_p (def_bb, region))
     return name;
@@ -418,17 +418,35 @@ get_vdef_before_sese (sese region, tree name, sbitmap visited)
 
   SET_BIT (visited, def_bb->index);
 
-  switch (gimple_code (def_stmt))
+  switch (gimple_code (stmt))
     {
     case GIMPLE_PHI:
-      for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
+      for (i = 0; i < gimple_phi_num_args (stmt); i++)
 	{
-	  tree arg = gimple_phi_arg_def (def_stmt, i);
-	  tree res = get_vdef_before_sese (region, arg, visited);
+	  tree arg = gimple_phi_arg_def (stmt, i);
+	  tree res;
+
+	  if (gimple_bb (SSA_NAME_DEF_STMT (arg))
+	      && def_bb->index == gimple_bb (SSA_NAME_DEF_STMT (arg))->index)
+	    continue;
+
+	  res = get_vdef_before_sese (region, arg, visited);
 	  if (res)
 	    return res;
 	}
       return NULL_TREE;
+
+    case GIMPLE_ASSIGN:
+    case GIMPLE_CALL:
+      {
+	use_operand_p use_p = gimple_vuse_op (stmt);
+	tree use = USE_FROM_PTR (use_p);
+
+	if (def_bb->index == gimple_bb (SSA_NAME_DEF_STMT (use))->index)
+	  RESET_BIT (visited, def_bb->index);
+
+	return get_vdef_before_sese (region, use, visited);
+      }
 
     default:
       return NULL_TREE;
