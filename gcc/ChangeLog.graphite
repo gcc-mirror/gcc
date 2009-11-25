@@ -1,3 +1,9 @@
+2009-10-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (dot_deps_stmt_1): New.
+	(dot_deps_stmt): New.
+	* graphite-dependences.h (dot_deps_stmt): Declared.
+
 2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_dependence): Do
