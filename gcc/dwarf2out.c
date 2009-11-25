@@ -1524,16 +1524,19 @@ dwarf2out_args_size (const char *label, HOST_WIDE_INT size)
   add_fde_cfi (label, cfi);
 }
 
-/* Adjust args_size based on stack adjustment OFFSET.  */
+/* Record a stack adjustment of OFFSET bytes.  */
 
 static void
-dwarf2out_args_size_adjust (HOST_WIDE_INT offset, const char *label)
+dwarf2out_stack_adjust (HOST_WIDE_INT offset, const char *label)
 {
   if (cfa.reg == STACK_POINTER_REGNUM)
     cfa.offset += offset;
 
   if (cfa_store.reg == STACK_POINTER_REGNUM)
     cfa_store.offset += offset;
+
+  if (ACCUMULATE_OUTGOING_ARGS)
+    return;
 
 #ifndef STACK_GROWS_DOWNWARD
   offset = -offset;
@@ -1549,11 +1552,11 @@ dwarf2out_args_size_adjust (HOST_WIDE_INT offset, const char *label)
 }
 
 /* Check INSN to see if it looks like a push or a stack adjustment, and
-   make a note of it if it does.  EH uses this information to find out how
-   much extra space it needs to pop off the stack.  */
+   make a note of it if it does.  EH uses this information to find out
+   how much extra space it needs to pop off the stack.  */
 
 static void
-dwarf2out_stack_adjust (rtx insn, bool after_p)
+dwarf2out_notice_stack_adjust (rtx insn, bool after_p)
 {
   HOST_WIDE_INT offset;
   const char *label;
@@ -1637,7 +1640,7 @@ dwarf2out_stack_adjust (rtx insn, bool after_p)
     return;
 
   label = dwarf2out_cfi_label (false);
-  dwarf2out_args_size_adjust (offset, label);
+  dwarf2out_stack_adjust (offset, label);
 }
 
 #endif
@@ -2206,8 +2209,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      && (!MEM_P (SET_DEST (elem)) || GET_CODE (expr) == SEQUENCE)
 	      && (RTX_FRAME_RELATED_P (elem) || par_index == 0))
 	    dwarf2out_frame_debug_expr (elem, label);
-	  else if (!ACCUMULATE_OUTGOING_ARGS
-		   && GET_CODE (elem) == SET
+	  else if (GET_CODE (elem) == SET
 		   && par_index != 0
 		   && !RTX_FRAME_RELATED_P (elem))
 	    {
@@ -2216,7 +2218,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	      HOST_WIDE_INT offset = stack_adjust_offset (elem, args_size, 0);
 
 	      if (offset != 0)
-		dwarf2out_args_size_adjust (offset, label);
+		dwarf2out_stack_adjust (offset, label);
 	    }
 	}
       return;
@@ -2709,10 +2711,13 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     flush_queued_reg_saves ();
 
-  if (! RTX_FRAME_RELATED_P (insn))
+  if (!RTX_FRAME_RELATED_P (insn))
     {
+      /* ??? This should be done unconditionally since stack adjustments
+	 matter if the stack pointer is not the CFA register anymore but
+	 is still used to save registers.  */
       if (!ACCUMULATE_OUTGOING_ARGS)
-	dwarf2out_stack_adjust (insn, after_p);
+	dwarf2out_notice_stack_adjust (insn, after_p);
       return;
     }
 

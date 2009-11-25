@@ -1,3 +1,16 @@
+2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/10127
+	PR ada/20548
+	PR middle-end/42004
+	* dwarf2out.c (dwarf2out_args_size_adjust): Rename to...
+	(dwarf2out_stack_adjust): ...this.  Do not adjust the arg size for
+	ACCUMULATE_OUTGOING_ARGS targets.  Rename former version to...
+	(dwarf2out_notice_stack_adjust): ...this.  Adjust for above renaming.
+	(dwarf2out_frame_debug_expr): Revert previous change and adjust for
+	above renaming.
+	(dwarf2out_frame_debug): Add ??? comment.  Adjust for above renaming.
+
 2009-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (emms_operation): New predicate.
