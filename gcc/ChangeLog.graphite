@@ -1,5 +1,9 @@
 2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (memory_stride_in_loop): Fix comments.
+
+2009-10-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-blocking.c (lst_do_strip_mine): Avoid strip mining the
 	root of the LST.
 	* graphite-interchange.c (lst_do_interchange): Avoid interchanging

@@ -169,7 +169,7 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
     ppl_Pointset_Powerset_C_Polyhedron_add_constraint (p1, new_cstr);
   }
 
-  /* Now intersect all the parts to get:
+  /* Now intersect all the parts to get the polyhedron P1:
      T|I|0|0|G|0|0|0 |0
      0|I|0|0|G|S|0|0 |0
      0|0|0|0|0|S|0|l1|0
@@ -196,14 +196,14 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
 
     map = ppl_new_id_map (new_dim);
 
-    /* T->T' and I->I'.  */
+    /* TI -> T'I'.  */
     for (i = 0; i < offset; i++)
       ppl_interchange (map, i, i + offset);
 
-    /* l1->l2.  */
+    /* l1 -> l2.  */
     ppl_interchange (map, dim_L1, dim_L2);
 
-    /* S->S'.  */
+    /* S -> S'.  */
     for (i = 0; i < nb_subscripts; i++)
       ppl_interchange (map, offset + offsetg + i,
 		       offset + offsetg + nb_subscripts + i);
