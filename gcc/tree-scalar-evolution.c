@@ -2252,7 +2252,53 @@ instantiate_scev_binary (basic_block instantiate_below,
 }
 
 /* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
-   and EVOLUTION_LOOP, that were left under a symbolic form.  
+   and EVOLUTION_LOOP, that were left under a symbolic form.
+
+   "CHREC" that stands for a convert expression "(TYPE) OP" is to be
+   instantiated.
+
+   CACHE is the cache of already instantiated values.
+
+   FOLD_CONVERSIONS should be set to true when the conversions that
+   may wrap in signed/pointer type are folded, as long as the value of
+   the chrec is preserved.
+
+   SIZE_EXPR is used for computing the size of the expression to be
+   instantiated, and to stop if it exceeds some limit.  */
+
+static tree
+instantiate_scev_convert (basic_block instantiate_below,
+			  struct loop *evolution_loop, tree chrec,
+			  tree type, tree op,
+			  bool fold_conversions, htab_t cache, int size_expr)
+{
+  tree op0 = instantiate_scev_1 (instantiate_below, evolution_loop, op,
+				 fold_conversions, cache, size_expr);
+
+  if (op0 == chrec_dont_know)
+    return chrec_dont_know;
+
+  if (fold_conversions)
+    {
+      tree tmp = chrec_convert_aggressive (type, op0);
+      if (tmp)
+	return tmp;
+    }
+
+  if (chrec && op0 == op)
+    return chrec;
+
+  /* If we used chrec_convert_aggressive, we can no longer assume that
+     signed chrecs do not overflow, as chrec_convert does, so avoid
+     calling it in that case.  */
+  if (fold_conversions)
+    return fold_convert (type, op0);
+
+  return chrec_convert (type, op0, NULL);
+}
+
+/* Analyze all the parameters of the chrec, between INSTANTIATE_BELOW
+   and EVOLUTION_LOOP, that were left under a symbolic form.
 
    CHREC is the scalar evolution to instantiate.
 
@@ -2264,7 +2310,7 @@ instantiate_scev_binary (basic_block instantiate_below,
 
    SIZE_EXPR is used for computing the size of the expression to be
    instantiated, and to stop if it exceeds some limit.  */
-  
+
 static tree
 instantiate_scev_1 (basic_block instantiate_below,
 		    struct loop *evolution_loop, tree chrec,
@@ -2316,29 +2362,9 @@ instantiate_scev_1 (basic_block instantiate_below,
 				      fold_conversions, cache, size_expr);
 
     CASE_CONVERT:
-      op0 = instantiate_scev_1 (instantiate_below, evolution_loop,
-				TREE_OPERAND (chrec, 0),
-				fold_conversions, cache, size_expr);
-      if (op0 == chrec_dont_know)
-        return chrec_dont_know;
-
-      if (fold_conversions)
-	{
-	  tree tmp = chrec_convert_aggressive (TREE_TYPE (chrec), op0);
-	  if (tmp)
-	    return tmp;
-	}
-
-      if (op0 == TREE_OPERAND (chrec, 0))
-	return chrec;
-
-      /* If we used chrec_convert_aggressive, we can no longer assume that
-	 signed chrecs do not overflow, as chrec_convert does, so avoid
-         calling it in that case.  */
-      if (fold_conversions)
-	return fold_convert (TREE_TYPE (chrec), op0);
-
-      return chrec_convert (TREE_TYPE (chrec), op0, NULL);
+      return instantiate_scev_convert (instantiate_below, evolution_loop, chrec,
+				       TREE_TYPE (chrec), TREE_OPERAND (chrec, 0),
+				       fold_conversions, cache, size_expr);
 
     case BIT_NOT_EXPR:
       /* Handle ~X as -1 - X.  */
