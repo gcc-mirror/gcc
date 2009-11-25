@@ -76,7 +76,7 @@ lto_delete_extern_inline_states (void)
 
 /* Force all the functions in DECLS to be output as extern inline.
    DECLS is a bitmap indexed by DECL_UID. */
- 
+
 void
 lto_force_functions_extern_inline (bitmap decls)
 {
@@ -345,7 +345,7 @@ lto_output_uleb128_stream (struct lto_output_stream *obs,
   while (work != 0);
 }
 
-/* Identical to output_uleb128_stream above except using unsigned 
+/* Identical to output_uleb128_stream above except using unsigned
    HOST_WIDEST_INT type.  For efficiency on host where unsigned HOST_WIDEST_INT
    is not native, we only use this if we know that HOST_WIDE_INT is not wide
    enough.  */
@@ -448,7 +448,7 @@ lto_output_field_decl_index (struct lto_out_decl_state *decl_state,
 /* Output a function DECL to OBS.  */
 
 void
-lto_output_fn_decl_index (struct lto_out_decl_state *decl_state, 
+lto_output_fn_decl_index (struct lto_out_decl_state *decl_state,
 			  struct lto_output_stream * obs, tree decl)
 {
   unsigned int index;
@@ -539,9 +539,9 @@ lto_destroy_simple_output_block (struct lto_simple_output_block *ob)
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
   header.lto_header.section_type = LTO_section_cgraph;
-  
+
   header.compressed_size = 0;
-  
+
   header.main_size = ob->main_stream->total_size;
 
   header_stream = XCNEW (struct lto_output_stream);

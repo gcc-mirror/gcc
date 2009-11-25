@@ -114,7 +114,7 @@ update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined
 
 /* Perform reachability analysis and reclaim all unreachable nodes.
    If BEFORE_INLINING_P is true this function is called before inlining
-   decisions has been made.  If BEFORE_INLINING_P is false this function also 
+   decisions has been made.  If BEFORE_INLINING_P is false this function also
    removes unneeded bodies of extern inline functions.  */
 
 bool
@@ -136,7 +136,7 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #endif
   for (node = cgraph_nodes; node; node = node->next)
     if (!cgraph_can_remove_if_no_direct_calls_p (node)
-	&& ((!DECL_EXTERNAL (node->decl)) 
+	&& ((!DECL_EXTERNAL (node->decl))
             || !node->analyzed
             || before_inlining_p))
       {
@@ -404,7 +404,7 @@ local_function_and_variable_visibility (void)
   return function_and_variable_visibility (flag_whole_program && !flag_lto && !flag_whopr);
 }
 
-struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility = 
+struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
 {
  {
   SIMPLE_IPA_PASS,
@@ -588,7 +588,7 @@ cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
       VEC_replace (cgraph_node_ptr, set->nodes, last_element->index,
 		   last_node);
     }
-  
+
   /* Remove element from hash table.  */
   htab_clear_slot (set->hashtab, slot);
   ggc_free (element);

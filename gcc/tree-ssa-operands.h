@@ -42,7 +42,7 @@ struct def_optype_d
 typedef struct def_optype_d *def_optype_p;
 
 /* This represents the USE operands of a stmt.  */
-struct use_optype_d 
+struct use_optype_d
 {
   struct use_optype_d *next;
   struct ssa_use_operand_d use_ptr;
@@ -52,7 +52,7 @@ typedef struct use_optype_d *use_optype_p;
 /* This structure represents a variable sized buffer which is allocated by the
    operand memory manager.  Operands are suballocated out of this block.  The
    MEM array varies in size.  */
-   
+
 struct GTY((chain_next("%h.next"))) ssa_operand_memory_d {
   struct ssa_operand_memory_d *next;
   char mem[1];
@@ -70,7 +70,7 @@ struct GTY(()) ssa_operands {
    struct def_optype_d * GTY ((skip (""))) free_defs;
    struct use_optype_d * GTY ((skip (""))) free_uses;
 };
-                                                                              
+
 #define USE_FROM_PTR(PTR)	get_use_from_ptr (PTR)
 #define DEF_FROM_PTR(PTR)	get_def_from_ptr (PTR)
 #define SET_USE(USE, V)		set_ssa_use_from_ptr (USE, V)
@@ -123,9 +123,9 @@ enum ssa_op_iter_type {
   ssa_op_iter_def
 };
 
-/* This structure is used in the operand iterator loops.  It contains the 
+/* This structure is used in the operand iterator loops.  It contains the
    items required to determine which operand is retrieved next.  During
-   optimization, this structure is scalarized, and any unused fields are 
+   optimization, this structure is scalarized, and any unused fields are
    optimized away, resulting in little overhead.  */
 
 typedef struct ssa_operand_iterator_d
@@ -139,7 +139,7 @@ typedef struct ssa_operand_iterator_d
   gimple phi_stmt;
 } ssa_op_iter;
 
-/* These flags are used to determine which operands are returned during 
+/* These flags are used to determine which operands are returned during
    execution of the loop.  */
 #define SSA_OP_USE		0x01	/* Real USE operands.  */
 #define SSA_OP_DEF		0x02	/* Real DEF operands.  */
@@ -154,7 +154,7 @@ typedef struct ssa_operand_iterator_d
 #define SSA_OP_ALL_DEFS		(SSA_OP_VIRTUAL_DEFS | SSA_OP_DEF)
 #define SSA_OP_ALL_OPERANDS	(SSA_OP_ALL_USES | SSA_OP_ALL_DEFS)
 
-/* This macro executes a loop over the operands of STMT specified in FLAG, 
+/* This macro executes a loop over the operands of STMT specified in FLAG,
    returning each operand as a 'tree' in the variable TREEVAR.  ITER is an
    ssa_op_iter structure used to control the loop.  */
 #define FOR_EACH_SSA_TREE_OPERAND(TREEVAR, STMT, ITER, FLAGS)	\
@@ -162,16 +162,16 @@ typedef struct ssa_operand_iterator_d
        !op_iter_done (&(ITER));					\
        TREEVAR = op_iter_next_tree (&(ITER)))
 
-/* This macro executes a loop over the operands of STMT specified in FLAG, 
-   returning each operand as a 'use_operand_p' in the variable USEVAR.  
+/* This macro executes a loop over the operands of STMT specified in FLAG,
+   returning each operand as a 'use_operand_p' in the variable USEVAR.
    ITER is an ssa_op_iter structure used to control the loop.  */
 #define FOR_EACH_SSA_USE_OPERAND(USEVAR, STMT, ITER, FLAGS)	\
   for (USEVAR = op_iter_init_use (&(ITER), STMT, FLAGS);	\
        !op_iter_done (&(ITER));					\
        USEVAR = op_iter_next_use (&(ITER)))
 
-/* This macro executes a loop over the operands of STMT specified in FLAG, 
-   returning each operand as a 'def_operand_p' in the variable DEFVAR.  
+/* This macro executes a loop over the operands of STMT specified in FLAG,
+   returning each operand as a 'def_operand_p' in the variable DEFVAR.
    ITER is an ssa_op_iter structure used to control the loop.  */
 #define FOR_EACH_SSA_DEF_OPERAND(DEFVAR, STMT, ITER, FLAGS)	\
   for (DEFVAR = op_iter_init_def (&(ITER), STMT, FLAGS);	\
@@ -204,19 +204,19 @@ typedef struct ssa_operand_iterator_d
 		   : op_iter_init_def (&(ITER), STMT, FLAGS));	\
        !op_iter_done (&(ITER));					\
        (DEFVAR) = op_iter_next_def (&(ITER)))
-  
+
 /* This macro returns an operand in STMT as a tree if it is the ONLY
    operand matching FLAGS.  If there are 0 or more than 1 operand matching
    FLAGS, then NULL_TREE is returned.  */
 #define SINGLE_SSA_TREE_OPERAND(STMT, FLAGS)			\
   single_ssa_tree_operand (STMT, FLAGS)
-                                                                                
+
 /* This macro returns an operand in STMT as a use_operand_p if it is the ONLY
    operand matching FLAGS.  If there are 0 or more than 1 operand matching
    FLAGS, then NULL_USE_OPERAND_P is returned.  */
 #define SINGLE_SSA_USE_OPERAND(STMT, FLAGS)			\
   single_ssa_use_operand (STMT, FLAGS)
-                                                                                
+
 /* This macro returns an operand in STMT as a def_operand_p if it is the ONLY
    operand matching FLAGS.  If there are 0 or more than 1 operand matching
    FLAGS, then NULL_DEF_OPERAND_P is returned.  */

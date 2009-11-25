@@ -460,11 +460,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef DECIMAL32_TYPE_SIZE
 #define DECIMAL32_TYPE_SIZE 32
-#endif 
+#endif
 
-#ifndef DECIMAL64_TYPE_SIZE 
+#ifndef DECIMAL64_TYPE_SIZE
 #define DECIMAL64_TYPE_SIZE 64
-#endif 
+#endif
 
 #ifndef DECIMAL128_TYPE_SIZE
 #define DECIMAL128_TYPE_SIZE 128

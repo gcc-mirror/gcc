@@ -68,7 +68,7 @@ typedef _xlist_t ilist_t;
 #define ILIST_INSN(L) (_XLIST_X (L))
 #define ILIST_NEXT(L) (_XLIST_NEXT (L))
 
-/* This lists possible transformations that done locally, i.e. in 
+/* This lists possible transformations that done locally, i.e. in
    moveup_expr.  */
 enum local_trans_type
   {
@@ -76,7 +76,7 @@ enum local_trans_type
     TRANS_SPECULATION
   };
 
-/* This struct is used to record the history of expression's 
+/* This struct is used to record the history of expression's
    transformations.  */
 struct expr_history_def_1
 {
@@ -114,8 +114,8 @@ struct _expr
      control on scheduling.  */
   int spec;
 
-  /* Degree of speculativeness measured as probability of executing 
-     instruction's original basic block given relative to 
+  /* Degree of speculativeness measured as probability of executing
+     instruction's original basic block given relative to
      the current scheduling point.  */
   int usefulness;
 
@@ -128,7 +128,7 @@ struct _expr
   /* Number of times the insn was scheduled.  */
   int sched_times;
 
-  /* A basic block index this was originated from.  Zero when there is 
+  /* A basic block index this was originated from.  Zero when there is
      more than one originator.  */
   int orig_bb_index;
 
@@ -140,23 +140,23 @@ struct _expr
      (used only during move_op ()).  */
   ds_t spec_to_check_ds;
 
-  /* Cycle on which original insn was scheduled.  Zero when it has not yet 
+  /* Cycle on which original insn was scheduled.  Zero when it has not yet
      been scheduled or more than one originator.  */
   int orig_sched_cycle;
 
   /* This vector contains the history of insn's transformations.  */
   VEC(expr_history_def, heap) *history_of_changes;
 
-  /* True (1) when original target (register or memory) of this instruction 
+  /* True (1) when original target (register or memory) of this instruction
      is available for scheduling, false otherwise.  -1 means we're not sure;
      please run find_used_regs to clarify.  */
   signed char target_available;
 
-  /* True when this expression needs a speculation check to be scheduled.  
+  /* True when this expression needs a speculation check to be scheduled.
      This is used during find_used_regs.  */
   BOOL_BITFIELD needs_spec_check_p : 1;
 
-  /* True when the expression was substituted.  Used for statistical 
+  /* True when the expression was substituted.  Used for statistical
      purposes.  */
   BOOL_BITFIELD was_substituted : 1;
 
@@ -195,7 +195,7 @@ typedef expr_def *expr_t;
 #define EXPR_CANT_MOVE(EXPR) ((EXPR)->cant_move)
 
 #define EXPR_WAS_CHANGED(EXPR) (VEC_length (expr_history_def, \
-                                            EXPR_HISTORY_OF_CHANGES (EXPR)) > 0) 
+                                            EXPR_HISTORY_OF_CHANGES (EXPR)) > 0)
 
 /* Insn definition for list of original insns in find_used_regs.  */
 struct _def
@@ -204,7 +204,7 @@ struct _def
 
   /* FIXME: Get rid of CROSSES_CALL in each def, since if we're moving up
      rhs from two different places, but only one of the code motion paths
-     crosses a call, we can't use any of the call_used_regs, no matter which 
+     crosses a call, we can't use any of the call_used_regs, no matter which
      path or whether all paths crosses a call.  Thus we should move CROSSES_CALL
      to static params.  */
   bool crosses_call;
@@ -232,7 +232,7 @@ struct _bnd
 
   /* This set moved to the fence.  */
   av_set_t av1;
-  
+
   /* Deps context at this boundary.  As long as we have one boundary per fence,
      this is just a pointer to the same deps context as in the corresponding
      fence.  */
@@ -286,7 +286,7 @@ struct _fence
   /* A vector of insns that are scheduled but not yet completed.  */
   VEC (rtx,gc) *executing_insns;
 
-  /* A vector indexed by UIDs that caches the earliest cycle on which 
+  /* A vector indexed by UIDs that caches the earliest cycle on which
      an insn can be scheduled on this fence.  */
   int *ready_ticks;
 
@@ -464,7 +464,7 @@ _list_iter_remove_nofree (_list_iterator *ip)
 #define _FOR_EACH_1(TYPE, ELEM, I, LP)                              \
   for (_list_iter_start (&(I), (LP), true);                         \
        _list_iter_cond_##TYPE (*(I).lp, &(ELEM));                   \
-       _list_iter_next (&(I))) 
+       _list_iter_next (&(I)))
 
 
 /* _xlist_t functions.  */
@@ -666,7 +666,7 @@ struct vinsn_def
 #define VINSN_MAY_TRAP_P(VI) ((VI)->may_trap_p)
 
 
-/* An entry of the hashtable describing transformations happened when 
+/* An entry of the hashtable describing transformations happened when
    moving up through an insn.  */
 struct transformed_insns
 {
@@ -709,18 +709,18 @@ struct _sel_insn_data
   /* An INSN_UID bit is set when deps analysis result is already known.  */
   bitmap analyzed_deps;
 
-  /* An INSN_UID bit is set when a hard dep was found, not set when 
+  /* An INSN_UID bit is set when a hard dep was found, not set when
      no dependence is found.  This is meaningful only when the analyzed_deps
      bitmap has its bit set.  */
   bitmap found_deps;
 
-  /* An INSN_UID bit is set when this is a bookkeeping insn generated from 
+  /* An INSN_UID bit is set when this is a bookkeeping insn generated from
      a parent with this uid.  */
   bitmap originators;
 
   /* A hashtable caching the result of insn transformations through this one.  */
   htab_t transformed_insns;
-  
+
   /* A context incapsulating this insn.  */
   struct deps deps_context;
 
@@ -767,8 +767,8 @@ extern sel_insn_data_def insn_sid (insn_t);
 #define INSN_ASM_P(INSN) (SID (INSN)->asm_p)
 #define INSN_SCHED_NEXT(INSN) (SID (INSN)->sched_next)
 #define INSN_ANALYZED_DEPS(INSN) (SID (INSN)->analyzed_deps)
-#define INSN_FOUND_DEPS(INSN) (SID (INSN)->found_deps) 
-#define INSN_DEPS_CONTEXT(INSN) (SID (INSN)->deps_context) 
+#define INSN_FOUND_DEPS(INSN) (SID (INSN)->found_deps)
+#define INSN_DEPS_CONTEXT(INSN) (SID (INSN)->deps_context)
 #define INSN_ORIGINATORS(INSN) (SID (INSN)->originators)
 #define INSN_ORIGINATORS_BY_UID(UID) (SID_BY_UID (UID)->originators)
 #define INSN_TRANSFORMED_INSNS(INSN) (SID (INSN)->transformed_insns)
@@ -898,7 +898,7 @@ extern void sel_finish_global_bb_info (void);
 #define BB_LV_SET_VALID_P(BB) (SEL_GLOBAL_BB_INFO (BB)->lv_set_valid_p)
 
 /* Per basic block data for the region.  */
-typedef struct 
+typedef struct
 {
   /* This insn stream is constructed in such a way that it should be
      traversed by PREV_INSN field - (*not* NEXT_INSN).  */
@@ -947,11 +947,11 @@ extern sbitmap bbs_pipelined;
 extern bool enable_moveup_set_path_p;
 extern bool pipelining_p;
 extern bool bookkeeping_p;
-extern int max_insns_to_rename;  
+extern int max_insns_to_rename;
 extern bool preheader_removed;
 
 /* Software lookahead window size.
-   According to the results in Nakatani and Ebcioglu [1993], window size of 16 
+   According to the results in Nakatani and Ebcioglu [1993], window size of 16
    is enough to extract most ILP in integer code.  */
 #define MAX_WS (PARAM_VALUE (PARAM_SELSCHED_MAX_LOOKAHEAD))
 
@@ -969,7 +969,7 @@ typedef struct
 
   /* The previous edge saved after skipping empty blocks.  */
   edge e2;
-  
+
   /* Edge iterator used when there are successors in other basic blocks.  */
   edge_iterator ei;
 
@@ -979,8 +979,8 @@ typedef struct
   /* Flags that are passed to the iterator.  We return only successors
      that comply to these flags.  */
   short flags;
-  
-  /* When flags include SUCCS_ALL, this will be set to the exact type 
+
+  /* When flags include SUCCS_ALL, this will be set to the exact type
      of the sucessor we're traversing now.  */
   short current_flags;
 
@@ -998,7 +998,7 @@ struct succs_info
   /* Successors that correspond to the flags.  */
   insn_vec_t succs_ok;
 
-  /* Their probabilities.  As of now, we don't need this for other 
+  /* Their probabilities.  As of now, we don't need this for other
      successors.  */
   VEC(int,heap) *probs_ok;
 
@@ -1027,7 +1027,7 @@ extern bool in_current_region_p (basic_block);
 static inline bool
 inner_loop_header_p (basic_block bb)
 {
-  struct loop *inner_loop; 
+  struct loop *inner_loop;
 
   if (!current_loop_nest)
     return false;
@@ -1048,7 +1048,7 @@ inner_loop_header_p (basic_block bb)
       return true;
     }
 
-  return false;  
+  return false;
 }
 
 /* Return exit edges of LOOP, filtering out edges with the same dest bb.  */
@@ -1066,7 +1066,7 @@ get_loop_exit_edges_unique_dests (const struct loop *loop)
       int i;
       edge e;
       bool was_dest = false;
-      
+
       for (i = 0; VEC_iterate (edge, edges, i, e); i++)
         if (e->dest == exit->e->dest)
           {
@@ -1101,10 +1101,10 @@ sel_bb_empty_or_nop_p (basic_block bb)
   return true;
 }
 
-/* Collect all loop exits recursively, skipping empty BBs between them.  
+/* Collect all loop exits recursively, skipping empty BBs between them.
    E.g. if BB is a loop header which has several loop exits,
    traverse all of them and if any of them turns out to be another loop header
-   (after skipping empty BBs), add its loop exits to the resulting vector 
+   (after skipping empty BBs), add its loop exits to the resulting vector
    as well.  */
 static inline VEC(edge, heap) *
 get_all_loop_exits (basic_block bb)
@@ -1129,12 +1129,12 @@ get_all_loop_exits (basic_block bb)
       struct loop *pred_loop = NULL;
       int i;
       edge e;
-      
+
       for (this_loop = bb->loop_father;
            this_loop && this_loop != current_loop_nest;
            this_loop = loop_outer (this_loop))
         pred_loop = this_loop;
-      
+
       this_loop = pred_loop;
       gcc_assert (this_loop != NULL);
 
@@ -1145,17 +1145,17 @@ get_all_loop_exits (basic_block bb)
 	if (in_current_region_p (e->dest))
 	  {
 	    VEC(edge, heap) *next_exits = get_all_loop_exits (e->dest);
-  
+
 	    if (next_exits)
 	      {
 		int j;
 		edge ne;
-  
+
 		/* Add all loop exits for the current edge into the
 		   resulting vector.  */
 		for (j = 0; VEC_iterate (edge, next_exits, j, ne); j++)
 		  VEC_safe_push (edge, heap, exits, ne);
-  
+
 		/* Remove the original edge.  */
 		VEC_ordered_remove (edge, exits, i);
 
@@ -1181,7 +1181,7 @@ get_all_loop_exits (basic_block bb)
 /* Include successors that are outside of the current region.  */
 #define SUCCS_OUT (4)
 
-/* When pipelining of the outer loops is enabled, skip innermost loops 
+/* When pipelining of the outer loops is enabled, skip innermost loops
    to their exits.  */
 #define SUCCS_SKIP_TO_LOOP_EXITS (8)
 
@@ -1244,7 +1244,7 @@ _succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
     }
   else
     {
-      while (1) 
+      while (1)
         {
           edge e_tmp = NULL;
 
@@ -1253,12 +1253,12 @@ _succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
             {
               do
                 {
-                  VEC_iterate (edge, ip->loop_exits, 
+                  VEC_iterate (edge, ip->loop_exits,
                                ip->current_exit, e_tmp);
                   ip->current_exit++;
                 }
 	      while (e_tmp && !check (e_tmp, ip));
-              
+
               if (!e_tmp)
                 VEC_free (edge, heap, ip->loop_exits);
             }
@@ -1278,8 +1278,8 @@ _succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
               /* Consider bb as a possible loop header.  */
               if ((ip->flags & SUCCS_SKIP_TO_LOOP_EXITS)
                   && flag_sel_sched_pipelining_outer_loops
-		  && (!in_current_region_p (bb) 
-		      || BLOCK_TO_BB (ip->bb->index) 
+		  && (!in_current_region_p (bb)
+		      || BLOCK_TO_BB (ip->bb->index)
 			 < BLOCK_TO_BB (bb->index)))
                 {
 		  /* Get all loop exits recursively.  */
@@ -1288,7 +1288,7 @@ _succ_iter_cond (succ_iterator *ip, rtx *succp, rtx insn,
 		  if (ip->loop_exits)
 		    {
   		      ip->current_exit = 0;
-		      /* Move the iterator now, because we won't do 
+		      /* Move the iterator now, because we won't do
 			 succ_iter_next until loop exits will end.  */
 		      ei_next (&(ip->ei));
 		      break;
@@ -1390,8 +1390,8 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
 	  bb = nbb;
 	  continue;
 	}
-        
-      if (!in_current_region_p (bb) 
+
+      if (!in_current_region_p (bb)
           && !(flags & SUCCS_OUT))
         return false;
 
@@ -1401,22 +1401,22 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
       e2 = EDGE_SUCC (bb, 0);
       bb = e2->dest;
     }
-  
+
   /* Save the second edge for later checks.  */
   ip->e2 = e2;
 
   if (in_current_region_p (bb))
     {
-      /* BLOCK_TO_BB sets topological order of the region here.  
-         It is important to use real predecessor here, which is ip->bb, 
-         as we may well have e1->src outside current region, 
+      /* BLOCK_TO_BB sets topological order of the region here.
+         It is important to use real predecessor here, which is ip->bb,
+         as we may well have e1->src outside current region,
          when skipping to loop exits.  */
       bool succeeds_in_top_order = (BLOCK_TO_BB (ip->bb->index)
 				    < BLOCK_TO_BB (bb->index));
 
       /* This is true for the all cases except the last one.  */
       ip->current_flags = SUCCS_NORMAL;
-      
+
       /* We are advancing forward in the region, as usual.  */
       if (succeeds_in_top_order)
         {
@@ -1426,9 +1426,9 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
           return !!(flags & SUCCS_NORMAL);
         }
 
-      /* This is a back edge.  During pipelining we ignore back edges, 
+      /* This is a back edge.  During pipelining we ignore back edges,
          but only when it leads to the same loop.  It can lead to the header
-         of the outer loop, which will also be the preheader of 
+         of the outer loop, which will also be the preheader of
          the current loop.  */
       if (pipelining_p
            && e1->src->loop_father == bb->loop_father)
@@ -1463,12 +1463,12 @@ bb_next_bb (basic_block bb)
     case 0:
       return bb->next_bb;
 
-    case 1: 
+    case 1:
       return single_succ (bb);
 
     case 2:
       return FALLTHRU_EDGE (bb)->dest;
-      
+
     default:
       return bb->next_bb;
     }
@@ -1536,11 +1536,11 @@ extern void merge_expr_data (expr_t, expr_t, insn_t);
 extern void merge_expr (expr_t, expr_t, insn_t);
 extern void clear_expr (expr_t);
 extern unsigned expr_dest_regno (expr_t);
-extern rtx expr_dest_reg (expr_t); 
-extern int find_in_history_vect (VEC(expr_history_def, heap) *, 
+extern rtx expr_dest_reg (expr_t);
+extern int find_in_history_vect (VEC(expr_history_def, heap) *,
                                  rtx, vinsn_t, bool);
-extern void insert_in_history_vect (VEC(expr_history_def, heap) **, 
-                                    unsigned, enum local_trans_type, 
+extern void insert_in_history_vect (VEC(expr_history_def, heap) **,
+                                    unsigned, enum local_trans_type,
                                     vinsn_t, vinsn_t, ds_t);
 extern void mark_unavailable_targets (av_set_t, av_set_t, regset);
 extern int speculate_expr (expr_t, ds_t);

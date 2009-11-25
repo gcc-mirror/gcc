@@ -88,7 +88,7 @@ ebitmap_last_set_bit (ebitmap map)
   unsigned int i = 0;
   ebitmap_iterator ebi;
   bool foundbit = false;
-  
+
   /* This is not the fastest way to do this, we could simply look for
      the popcount, and start there, but this function is not used
      anywhere speed critical.  */
@@ -96,7 +96,7 @@ ebitmap_last_set_bit (ebitmap map)
     {
       foundbit = true;
     }
-  
+
 
   if (foundbit)
     return i;
@@ -176,7 +176,7 @@ ebitmap_array_init (ebitmap map, unsigned int size)
 static inline void
 ebitmap_array_clear (ebitmap map)
 {
-  if (map->elts) 
+  if (map->elts)
     {
       free (map->elts);
       map->elts = NULL;
@@ -225,7 +225,7 @@ ebitmap_clear_bit (ebitmap map, unsigned int bit)
   unsigned int bitindex, shift;
   bool have_eltwordindex = false;
   EBITMAP_ELT_TYPE *elt_ptr;
-  
+
   /* If the bit can't exist in our bitmap, just return.  */
   if (map->numwords == 0)
     return;
@@ -233,7 +233,7 @@ ebitmap_clear_bit (ebitmap map, unsigned int bit)
   if (wordindex >= map->wordmask->n_bits
       || !TEST_BIT (map->wordmask, wordindex))
     return;
-  
+
   if (map->cache != NULL && map->cacheindex == wordindex)
     elt_ptr = map->cache;
   else
@@ -242,10 +242,10 @@ ebitmap_clear_bit (ebitmap map, unsigned int bit)
       elt_ptr = &map->elts[eltwordindex];
       have_eltwordindex = true;
     }
-  
+
   bitindex = bit % EBITMAP_ELT_BITS;
   shift = bitindex;
-  
+
   *(elt_ptr) &= ~(((EBITMAP_ELT_TYPE)1) << shift);
 
   /* Clear out the empty words.  */
@@ -253,7 +253,7 @@ ebitmap_clear_bit (ebitmap map, unsigned int bit)
     {
       if (!have_eltwordindex)
 	eltwordindex = sbitmap_popcount (map->wordmask, wordindex);
-      
+
       if (map->cache != NULL && map->cacheindex == eltwordindex)
 	map->cache = NULL;
 

@@ -44,15 +44,15 @@ along with GCC; see the file COPYING3.  If not see
    that is printed before the nodes are printed.  ORDER is an array of
    cgraph_nodes that has COUNT useful nodes in it.  */
 
-void 
-ipa_utils_print_order (FILE* out, 
-		       const char * note, 
-		       struct cgraph_node** order, 
-		       int count) 
+void
+ipa_utils_print_order (FILE* out,
+		       const char * note,
+		       struct cgraph_node** order,
+		       int count)
 {
   int i;
   fprintf (out, "\n\n ordered call graph: %s\n", note);
-  
+
   for (i = count - 1; i >= 0; i--)
     dump_cgraph_node(dump_file, order[i]);
   fprintf (out, "\n");
@@ -86,17 +86,17 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 {
   struct cgraph_edge *edge;
   struct ipa_dfs_info *v_info = (struct ipa_dfs_info *) v->aux;
-  
+
   /* mark node as old */
   v_info->new_node = false;
   splay_tree_remove (env->nodes_marked_new, v->uid);
-  
+
   v_info->dfn_number = env->count;
   v_info->low_link = env->count;
   env->count++;
   env->stack[(env->stack_size)++] = v;
   v_info->on_stack = true;
-  
+
   for (edge = v->callees; edge; edge = edge->next_callee)
     {
       struct ipa_dfs_info * w_info;
@@ -108,16 +108,16 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
       if (w->aux && cgraph_function_body_availability (edge->callee) > AVAIL_OVERWRITABLE)
 	{
 	  w_info = (struct ipa_dfs_info *) w->aux;
-	  if (w_info->new_node) 
+	  if (w_info->new_node)
 	    {
 	      searchc (env, w, ignore_edge);
 	      v_info->low_link =
 		(v_info->low_link < w_info->low_link) ?
 		v_info->low_link : w_info->low_link;
-	    } 
-	  else 
-	    if ((w_info->dfn_number < v_info->dfn_number) 
-		&& (w_info->on_stack)) 
+	    }
+	  else
+	    if ((w_info->dfn_number < v_info->dfn_number)
+		&& (w_info->on_stack))
 	      v_info->low_link =
 		(w_info->dfn_number < v_info->low_link) ?
 		w_info->dfn_number : v_info->low_link;
@@ -125,7 +125,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
     }
 
 
-  if (v_info->low_link == v_info->dfn_number) 
+  if (v_info->low_link == v_info->dfn_number)
     {
       struct cgraph_node *last = NULL;
       struct cgraph_node *x;
@@ -134,17 +134,17 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 	x = env->stack[--(env->stack_size)];
 	x_info = (struct ipa_dfs_info *) x->aux;
 	x_info->on_stack = false;
-	
-	if (env->reduce) 
+
+	if (env->reduce)
 	  {
 	    x_info->next_cycle = last;
 	    last = x;
-	  } 
-	else 
+	  }
+	else
 	  env->result[env->order_pos++] = x;
-      } 
+      }
       while (v != x);
-      if (env->reduce) 
+      if (env->reduce)
 	env->result[env->order_pos++] = v;
     }
 }
@@ -155,7 +155,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
    nodes.  Only consider nodes that have the output bit set. */
 
 int
-ipa_utils_reduced_inorder (struct cgraph_node **order, 
+ipa_utils_reduced_inorder (struct cgraph_node **order,
 			   bool reduce, bool allow_overwritable,
 			   bool (*ignore_edge) (struct cgraph_edge *))
 {
@@ -169,13 +169,13 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
   env.nodes_marked_new = splay_tree_new (splay_tree_compare_ints, 0, 0);
   env.count = 1;
   env.reduce = reduce;
-  
-  for (node = cgraph_nodes; node; node = node->next) 
+
+  for (node = cgraph_nodes; node; node = node->next)
     {
       enum availability avail = cgraph_function_body_availability (node);
 
       if (avail > AVAIL_OVERWRITABLE
-	  || (allow_overwritable 
+	  || (allow_overwritable
 	      && (avail == AVAIL_OVERWRITABLE)))
 	{
 	  /* Reuse the info if it is already there.  */
@@ -186,12 +186,12 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
 	  info->on_stack = false;
 	  info->next_cycle = NULL;
 	  node->aux = info;
-	  
+
 	  splay_tree_insert (env.nodes_marked_new,
-			     (splay_tree_key)node->uid, 
+			     (splay_tree_key)node->uid,
 			     (splay_tree_value)node);
-	} 
-      else 
+	}
+      else
 	node->aux = NULL;
     }
   result = splay_tree_min (env.nodes_marked_new);
@@ -215,7 +215,7 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
 tree
 get_base_var (tree t)
 {
-  while (!SSA_VAR_P (t) 
+  while (!SSA_VAR_P (t)
 	 && (!CONSTANT_CLASS_P (t))
 	 && TREE_CODE (t) != LABEL_DECL
 	 && TREE_CODE (t) != FUNCTION_DECL
@@ -225,5 +225,5 @@ get_base_var (tree t)
       t = TREE_OPERAND (t, 0);
     }
   return t;
-} 
+}
 

@@ -71,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
    assuming that the following script is called binarySearch,
    the command:
 
-	binarySearch tryTest 
+	binarySearch tryTest
 
    will automatically find the highest value of the counter for which
    the program fails.  If tryTest never fails, binarySearch will
@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
    dump_file of the form:
 
        ***dbgcnt: limit reached for %s.***
-	
+
    Assuming that the dump file is logging the analysis/transformations
    it is making, this pinpoints the exact position in the log file
    where the problem transformation is being logged.

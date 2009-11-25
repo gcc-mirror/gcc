@@ -34,7 +34,7 @@ lambda_trans_matrix
 lambda_trans_matrix_new (int colsize, int rowsize)
 {
   lambda_trans_matrix ret;
-  
+
   ret = GGC_NEW (struct lambda_trans_matrix_s);
   LTM_MATRIX (ret) = lambda_matrix_new (rowsize, colsize);
   LTM_ROWSIZE (ret) = rowsize;
@@ -56,14 +56,14 @@ lambda_trans_matrix_id_p (lambda_trans_matrix mat)
 
 /* Compute the inverse of the transformation matrix MAT.  */
 
-lambda_trans_matrix 
+lambda_trans_matrix
 lambda_trans_matrix_inverse (lambda_trans_matrix mat)
 {
   lambda_trans_matrix inverse;
   int determinant;
-  
+
   inverse = lambda_trans_matrix_new (LTM_ROWSIZE (mat), LTM_COLSIZE (mat));
-  determinant = lambda_matrix_inverse (LTM_MATRIX (mat), LTM_MATRIX (inverse), 
+  determinant = lambda_matrix_inverse (LTM_MATRIX (mat), LTM_MATRIX (inverse),
 				       LTM_ROWSIZE (mat));
   LTM_DENOMINATOR (inverse) = determinant;
   return inverse;
@@ -75,6 +75,6 @@ lambda_trans_matrix_inverse (lambda_trans_matrix mat)
 void
 print_lambda_trans_matrix (FILE *outfile, lambda_trans_matrix mat)
 {
-  print_lambda_matrix (outfile, LTM_MATRIX (mat), LTM_ROWSIZE (mat), 
+  print_lambda_matrix (outfile, LTM_MATRIX (mat), LTM_ROWSIZE (mat),
 		       LTM_COLSIZE (mat));
 }

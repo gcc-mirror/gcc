@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 # include <sys/mman.h>
 # ifdef HAVE_MINCORE
 /* This is on Solaris.  */
-#  include <sys/types.h> 
+#  include <sys/types.h>
 # endif
 #endif
 
@@ -101,7 +101,7 @@ static VEC(const_ggc_root_tab_t, heap) *extra_root_vec;
 /* Dynamically register a new GGC root table RT. This is useful for
    plugins. */
 
-void 
+void
 ggc_register_root_tab (const struct ggc_root_tab* rt)
 {
   if (rt)
@@ -523,11 +523,11 @@ gt_pch_save (FILE *f)
 
   /* Try to arrange things so that no relocation is necessary, but
      don't try very hard.  On most platforms, this will always work,
-     and on the rest it's a lot of work to do better.  
+     and on the rest it's a lot of work to do better.
      (The extra work goes in HOST_HOOKS_GT_PCH_GET_ADDRESS and
      HOST_HOOKS_GT_PCH_USE_ADDRESS.)  */
   mmi.preferred_base = host_hooks.gt_pch_get_address (mmi.size, fileno (f));
-      
+
   ggc_pch_this_base (state.d, mmi.preferred_base);
 
   state.ptrs = XNEWVEC (struct ptr_data *, state.count);
@@ -710,7 +710,7 @@ mmap_gt_pch_get_address (size_t size, int fd)
 }
 
 /* Default version of HOST_HOOKS_GT_PCH_USE_ADDRESS when mmap is present.
-   Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at 
+   Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at
    mapping the data at BASE, -1 if we couldn't.
 
    This version assumes that the kernel honors the START operand of mmap
@@ -802,7 +802,7 @@ ggc_min_heapsize_heuristic (void)
   phys_kbytes /= 8;
 
 #if defined(HAVE_GETRLIMIT) && defined (RLIMIT_RSS)
-  /* Try not to overrun the RSS limit while doing garbage collection.  
+  /* Try not to overrun the RSS limit while doing garbage collection.
      The RSS limit is only advisory, so no margin is subtracted.  */
  {
    struct rlimit rlim;

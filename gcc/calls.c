@@ -903,7 +903,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 }
 
 /* Fill in ARGS_SIZE and ARGS array based on the parameters found in
-   CALL_EXPR EXP.  
+   CALL_EXPR EXP.
 
    NUM_ACTUALS is the total number of parameters.
 
@@ -1343,7 +1343,7 @@ precompute_arguments (int num_actuals, struct arg_data *args)
    compute and return the final value for MUST_PREALLOCATE.  */
 
 static int
-finalize_must_preallocate (int must_preallocate, int num_actuals, 
+finalize_must_preallocate (int must_preallocate, int num_actuals,
 			   struct arg_data *args, struct args_size *args_size)
 {
   /* See if we have or want to preallocate stack space.

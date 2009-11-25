@@ -102,7 +102,7 @@ process_define_predicate (rtx defn, int lineno)
   for (p = XSTR (defn, 0) + 1; *p; p++)
     if (!ISALNUM (*p) && *p != '_')
       goto bad_name;
-  
+
   if (validate_exp (XEXP (defn, 1), XSTR (defn, 0), lineno))
     return;
 
@@ -153,7 +153,7 @@ process_define_predicate (rtx defn, int lineno)
    The only wart is that there's no way to insist on a { } string in
    an RTL template, so we have to handle "" strings.  */
 
-   
+
 static void
 write_predicate_subfunction (struct pred_data *p)
 {
@@ -290,7 +290,7 @@ mark_mode_tests (rtx exp)
       NO_MODE_TEST (exp) = (NO_MODE_TEST (XEXP (exp, 0))
 			    && NO_MODE_TEST (XEXP (exp, 1)));
       break;
-      
+
     case IOR:
       mark_mode_tests (XEXP (exp, 0));
       mark_mode_tests (XEXP (exp, 1));
@@ -383,23 +383,23 @@ add_mode_tests (struct pred_data *p)
 	  {
 	    int test0 = NO_MODE_TEST (XEXP (subexp, 0));
 	    int test1 = NO_MODE_TEST (XEXP (subexp, 1));
-	    
+
 	    gcc_assert (test0 || test1);
-	    
+
 	    if (test0 && test1)
 	      goto break_loop;
 	    pos = test0 ? &XEXP (subexp, 0) : &XEXP (subexp, 1);
 	  }
 	  break;
-	  
+
 	case IF_THEN_ELSE:
 	  {
 	    int test0 = NO_MODE_TEST (XEXP (subexp, 0));
 	    int test1 = NO_MODE_TEST (XEXP (subexp, 1));
 	    int test2 = NO_MODE_TEST (XEXP (subexp, 2));
-	    
+
 	    gcc_assert ((test0 && test1) || test2);
-	    
+
 	    if (test0 && test1 && test2)
 	      goto break_loop;
 	    if (test0 && test1)
@@ -411,7 +411,7 @@ add_mode_tests (struct pred_data *p)
 	      pos = &XEXP (subexp, 2);
 	  }
 	  break;
-	  
+
 	default:
 	  goto break_loop;
 	}
@@ -473,7 +473,7 @@ write_match_code (const char *path, const char *codes)
 	  putchar (TOUPPER (*code));
 	  code++;
 	}
-      
+
       if (*codes == ',')
 	fputs (" || ", stdout);
     }
@@ -493,7 +493,7 @@ write_predicate_expr (rtx exp)
       write_predicate_expr (XEXP (exp, 1));
       putchar (')');
       break;
-  
+
     case IOR:
       putchar ('(');
       write_predicate_expr (XEXP (exp, 0));
@@ -801,7 +801,7 @@ add_constraint (const char *name, const char *regclass,
       return;
     }
 
-  
+
   namelen = strlen (name);
   slot = &constraints_by_letter_table[(unsigned int)name[0]];
   for (iter = slot; *iter; iter = &(*iter)->next_this_letter)
@@ -861,7 +861,7 @@ add_constraint (const char *name, const char *regclass,
 	  else
 	    message_with_line (lineno, "constraint names beginning with '%c' "
 			       "(%s) are reserved for %s constraints",
-			       name[0], name, 
+			       name[0], name,
 			       GET_RTX_NAME (appropriate_code));
 
 	  have_error = 1;
@@ -896,7 +896,7 @@ add_constraint (const char *name, const char *regclass,
 	}
     }
 
-  
+
   c = XOBNEW (rtl_obstack, struct constraint_data);
   c->name = name;
   c->c_name = need_mangled_name ? mangle (name) : name;
@@ -1048,7 +1048,7 @@ write_insn_constraint_len (void)
 	"  return 1;\n"
 	"}\n");
 }
-  
+
 /* Write out the function which computes the register class corresponding
    to a register constraint.  */
 static void
@@ -1320,7 +1320,7 @@ write_tm_preds_h (void)
   puts ("#endif /* tm-preds.h */");
 }
 
-/* Write insn-preds.c.  
+/* Write insn-preds.c.
    N.B. the list of headers to include was copied from genrecog; it
    may not be ideal.
 
@@ -1367,7 +1367,7 @@ write_insn_preds_c (void)
       if (have_register_constraints)
 	write_regclass_for_constraint ();
       write_constraint_satisfied_p ();
-      
+
       if (have_const_int_constraints)
 	write_insn_const_int_ok_for_constraint ();
 

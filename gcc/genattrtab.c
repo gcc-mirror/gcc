@@ -1941,22 +1941,22 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
       else
 	newexp = false_rtx;
       break;
-      
+
     case SYMBOL_REF:
       {
 	char *p;
 	char string[256];
-	
+
 	gcc_assert (GET_CODE (exp) == EQ_ATTR);
 	gcc_assert (strlen (XSTR (exp, 0)) + strlen (XSTR (exp, 1)) + 2
 		    <= 256);
-	
+
 	strcpy (string, XSTR (exp, 0));
 	strcat (string, "_");
 	strcat (string, XSTR (exp, 1));
 	for (p = string; *p; p++)
 	  *p = TOUPPER (*p);
-	
+
 	newexp = attr_rtx (EQ, value,
 			   attr_rtx (SYMBOL_REF,
 				     DEF_ATTR_STRING (string)));
@@ -1967,12 +1967,12 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
       /* We construct an IOR of all the cases for which the
 	 requested attribute value is present.  Since we start with
 	 FALSE, if it is not present, FALSE will be returned.
-	  
+
 	 Each case is the AND of the NOT's of the previous conditions with the
 	 current condition; in the default case the current condition is TRUE.
-	  
+
 	 For each possible COND value, call ourselves recursively.
-	  
+
 	 The extra TRUE and FALSE expressions will be eliminated by another
 	 call to the simplification routine.  */
 
@@ -2108,7 +2108,7 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
 
       if (attr_alt_subset_p (exp, *pterm))
 	*pterm = true_rtx;
-	
+
       return exp;
     }
 
@@ -4307,7 +4307,7 @@ gen_insn_reserv (rtx def)
   decl->insn_num        = n_insn_reservs;
   decl->bypassed	= false;
   decl->next            = 0;
-  
+
   *last_insn_reserv_p = decl;
   last_insn_reserv_p  = &decl->next;
   n_insn_reservs++;
@@ -4392,7 +4392,7 @@ make_automaton_attrs (void)
 
   code_exp = rtx_alloc (COND);
   lats_exp = rtx_alloc (COND);
-  
+
   XVEC (code_exp, 0) = rtvec_alloc (n_insn_reservs * 2);
   XVEC (lats_exp, 0) = rtvec_alloc (n_insn_reservs * 2);
 
@@ -4405,7 +4405,7 @@ make_automaton_attrs (void)
     {
       XVECEXP (code_exp, 0, i)   = decl->condexp;
       XVECEXP (lats_exp, 0, i)   = decl->condexp;
-      
+
       XVECEXP (code_exp, 0, i+1) = make_numeric_value (decl->insn_num);
       XVECEXP (lats_exp, 0, i+1) = make_numeric_value (decl->default_latency);
     }

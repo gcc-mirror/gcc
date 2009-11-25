@@ -167,7 +167,7 @@ along with GCC; see the file COPYING3.  If not see
      o Coloring.  Now IRA has all necessary info to start graph coloring
        process.  It is done in each region on top-down traverse of the
        region tree (file ira-color.c).  There are following subpasses:
-        
+
        * Optional aggressive coalescing of allocnos in the region.
 
        * Putting allocnos onto the coloring stack.  IRA uses Briggs
@@ -447,7 +447,7 @@ setup_class_hard_regs (void)
 	  hard_regno = reg_alloc_order[i];
 #else
 	  hard_regno = i;
-#endif	  
+#endif
 	  if (TEST_HARD_REG_BIT (processed_hard_reg_set, hard_regno))
 	    continue;
 	  SET_HARD_REG_BIT (processed_hard_reg_set, hard_regno);
@@ -843,7 +843,7 @@ setup_class_translate (void)
 
   for (cl = 0; cl < N_REG_CLASSES; cl++)
     ira_class_translate[cl] = NO_REGS;
-  
+
   if (flag_ira_algorithm == IRA_ALGORITHM_PRIORITY)
     for (cl = 0; cl < LIM_REG_CLASSES; cl++)
       {
@@ -852,7 +852,7 @@ setup_class_translate (void)
 	for (i = 0; i < ira_reg_class_cover_size; i++)
 	  {
 	    HARD_REG_SET temp_hard_regset2;
-	    
+
 	    cover_class = ira_reg_class_cover[i];
 	    COPY_HARD_REG_SET (temp_hard_regset2,
 			       reg_class_contents[cover_class]);
@@ -921,7 +921,7 @@ setup_class_translate (void)
 }
 
 /* Order numbers of cover classes in original target cover class
-   array, -1 for non-cover classes.  */ 
+   array, -1 for non-cover classes.  */
 static int cover_class_order[N_REG_CLASSES];
 
 /* The function used to sort the important classes.  */
@@ -1072,7 +1072,7 @@ setup_reg_class_relations (void)
 		  AND_COMPL_HARD_REG_SET (temp_set2, no_unit_alloc_regs);
 	 	  if (ira_reg_class_union[cl1][cl2] == NO_REGS
 		      || (hard_reg_set_subset_p (temp_set2, temp_hard_regset)
-		      
+
 			  && (! hard_reg_set_equal_p (temp_set2,
 						      temp_hard_regset)
 			      /* Ignore unavailable hard registers and
@@ -1151,7 +1151,7 @@ setup_hard_regno_cover_class (void)
 	      break;
 	    }
 	}
-	    
+
     }
 }
 
@@ -1392,7 +1392,7 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
   basic_block bb;
 
   memset (regs_asm_clobbered, 0, sizeof (char) * FIRST_PSEUDO_REGISTER);
-  
+
   FOR_EACH_BB (bb)
     {
       rtx insn;
@@ -1409,7 +1409,7 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
 		  {
 		    unsigned int i;
 		    enum machine_mode mode = GET_MODE (DF_REF_REAL_REG (def));
-		    unsigned int end = dregno 
+		    unsigned int end = dregno
 		      + hard_regno_nregs[dregno][mode] - 1;
 
 		    for (i = dregno; i <= end; ++i)
@@ -1534,12 +1534,12 @@ find_reg_equiv_invariant_const (void)
 	{
 	  insn = XEXP (list, 0);
 	  note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
-	  
+
 	  if (note == NULL_RTX)
 	    continue;
 
 	  x = XEXP (note, 0);
-	  
+
 	  if (! function_invariant_p (x)
 	      || ! flag_pic
 	      /* A function invariant is often CONSTANT_P but may
@@ -1663,7 +1663,7 @@ calculate_allocation_cost (void)
       ira_assert (hard_regno < 0
 		  || ! ira_hard_reg_not_in_set_p
 		       (hard_regno, ALLOCNO_MODE (a),
-			reg_class_contents[ALLOCNO_COVER_CLASS (a)])); 
+			reg_class_contents[ALLOCNO_COVER_CLASS (a)]));
       if (hard_regno < 0)
 	{
 	  cost = ALLOCNO_MEMORY_COST (a);
@@ -1742,7 +1742,7 @@ fix_reg_equiv_init (void)
   int max_regno = max_reg_num ();
   int i, new_regno;
   rtx x, prev, next, insn, set;
-  
+
   if (reg_equiv_init_size < max_regno)
     {
       reg_equiv_init
@@ -1791,7 +1791,7 @@ print_redundant_copies (void)
   ira_allocno_t a;
   ira_copy_t cp, next_cp;
   ira_allocno_iterator ai;
-  
+
   FOR_EACH_ALLOCNO (a, ai)
     {
       if (ALLOCNO_CAP_MEMBER (a) != NULL)
@@ -1828,7 +1828,7 @@ setup_preferred_alternate_classes_for_new_pseudos (int start)
   for (i = start; i < max_regno; i++)
     {
       old_regno = ORIGINAL_REGNO (regno_reg_rtx[i]);
-      ira_assert (i != old_regno); 
+      ira_assert (i != old_regno);
       setup_reg_classes (i, reg_preferred_class (old_regno),
 			 reg_alternate_class (old_regno),
 			 reg_cover_class (old_regno));
@@ -1862,7 +1862,7 @@ too_high_register_pressure_p (void)
 {
   int i;
   enum reg_class cover_class;
-  
+
   for (i = 0; i < ira_reg_class_cover_size; i++)
     {
       cover_class = ira_reg_class_cover[i];
@@ -2237,7 +2237,7 @@ memref_used_between_p (rtx memref, rtx start, rtx end)
     {
       if (!NONDEBUG_INSN_P (insn))
 	continue;
-      
+
       if (memref_referenced_p (memref, PATTERN (insn)))
 	return 1;
 
@@ -2303,7 +2303,7 @@ update_equiv_regs (void)
   basic_block bb;
   int loop_depth;
   bitmap cleared_regs;
-  
+
   /* We need to keep track of whether or not we recorded a LABEL_REF so
      that we know if the jump optimizer needs to be rerun.  */
   recorded_label_ref = 0;
@@ -2791,7 +2791,7 @@ init_live_subregs (bool init_value, sbitmap *live_subregs,
      to init all of the subregs to ones else init to 0.  */
   if (init_value)
     sbitmap_ones (live_subregs[allocnum]);
-  else 
+  else
     sbitmap_zero (live_subregs[allocnum]);
 
   /* Set the number of bits that we really want.  */
@@ -2827,10 +2827,10 @@ build_insn_chain (void)
     {
       bitmap_iterator bi;
       rtx insn;
-      
+
       CLEAR_REG_SET (live_relevant_regs);
       memset (live_subregs_used, 0, max_regno * sizeof (int));
-      
+
       EXECUTE_IF_SET_IN_BITMAP (DF_LR_OUT (bb), 0, i, bi)
 	{
 	  if (i >= FIRST_PSEUDO_REGISTER)
@@ -2858,7 +2858,7 @@ build_insn_chain (void)
 	      next = c;
 	      *p = c;
 	      p = &c->prev;
-	      
+
 	      c->insn = insn;
 	      c->block = bb->index;
 
@@ -2867,7 +2867,7 @@ build_insn_chain (void)
 		  {
 		    df_ref def = *def_rec;
 		    unsigned int regno = DF_REF_REGNO (def);
-		    
+
 		    /* Ignore may clobbers because these are generated
 		       from calls. However, every other kind of def is
 		       added to dead_or_set.  */
@@ -2895,11 +2895,11 @@ build_insn_chain (void)
 			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
 			  {
 			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start 
+			    unsigned int last = start
 			      + GET_MODE_SIZE (GET_MODE (reg));
 
 			    init_live_subregs
-			      (bitmap_bit_p (live_relevant_regs, regno), 
+			      (bitmap_bit_p (live_relevant_regs, regno),
 			       live_subregs, live_subregs_used, regno, reg);
 
 			    if (!DF_REF_FLAGS_IS_SET
@@ -2922,7 +2922,7 @@ build_insn_chain (void)
 				RESET_BIT (live_subregs[regno], start);
 				start++;
 			      }
-			    
+
 			    if (sbitmap_empty_p (live_subregs[regno]))
 			      {
 				live_subregs_used[regno] = 0;
@@ -2949,7 +2949,7 @@ build_insn_chain (void)
 			  }
 		      }
 		  }
-	  
+
 	      bitmap_and_compl_into (live_relevant_regs, elim_regset);
 	      bitmap_copy (&c->live_throughout, live_relevant_regs);
 
@@ -2959,18 +2959,18 @@ build_insn_chain (void)
 		    df_ref use = *use_rec;
 		    unsigned int regno = DF_REF_REGNO (use);
 		    rtx reg = DF_REF_REG (use);
-		    
+
 		    /* DF_REF_READ_WRITE on a use means that this use
 		       is fabricated from a def that is a partial set
 		       to a multiword reg.  Here, we only model the
 		       subreg case that is not wrapped in ZERO_EXTRACT
 		       precisely so we do not need to look at the
 		       fabricated use. */
-		    if (DF_REF_FLAGS_IS_SET (use, DF_REF_READ_WRITE) 
-			&& !DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT) 
+		    if (DF_REF_FLAGS_IS_SET (use, DF_REF_READ_WRITE)
+			&& !DF_REF_FLAGS_IS_SET (use, DF_REF_ZERO_EXTRACT)
 			&& DF_REF_FLAGS_IS_SET (use, DF_REF_SUBREG))
 		      continue;
-		    
+
 		    /* Add the last use of each var to dead_or_set.  */
 		    if (!bitmap_bit_p (live_relevant_regs, regno))
 		      {
@@ -2982,23 +2982,23 @@ build_insn_chain (void)
 			else if (pseudo_for_reload_consideration_p (regno))
 			  bitmap_set_bit (&c->dead_or_set, regno);
 		      }
-		    
+
 		    if (regno < FIRST_PSEUDO_REGISTER
 			|| pseudo_for_reload_consideration_p (regno))
 		      {
 			if (GET_CODE (reg) == SUBREG
 			    && !DF_REF_FLAGS_IS_SET (use,
 						     DF_REF_SIGN_EXTRACT
-						     | DF_REF_ZERO_EXTRACT)) 
+						     | DF_REF_ZERO_EXTRACT))
 			  {
 			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start 
+			    unsigned int last = start
 			      + GET_MODE_SIZE (GET_MODE (reg));
-			    
+
 			    init_live_subregs
-			      (bitmap_bit_p (live_relevant_regs, regno), 
+			      (bitmap_bit_p (live_relevant_regs, regno),
 			       live_subregs, live_subregs_used, regno, reg);
-			    
+
 			    /* Ignore the paradoxical bits.  */
 			    if ((int)last > live_subregs_used[regno])
 			      last = live_subregs_used[regno];
@@ -3025,12 +3025,12 @@ build_insn_chain (void)
 	 labels and jump tables that are just hanging out in between
 	 the basic blocks.  See pr33676.  */
       insn = BB_HEAD (bb);
-      
+
       /* Skip over the barriers and cruft.  */
-      while (insn && (BARRIER_P (insn) || NOTE_P (insn) 
+      while (insn && (BARRIER_P (insn) || NOTE_P (insn)
 		      || BLOCK_FOR_INSN (insn) == bb))
 	insn = PREV_INSN (insn);
-      
+
       /* While we add anything except barriers and notes, the focus is
 	 to get the labels and jump tables into the
 	 reload_insn_chain.  */
@@ -3040,19 +3040,19 @@ build_insn_chain (void)
 	    {
 	      if (BLOCK_FOR_INSN (insn))
 		break;
-	      
+
 	      c = new_insn_chain ();
 	      c->next = next;
 	      next = c;
 	      *p = c;
 	      p = &c->prev;
-	      
+
 	      /* The block makes no sense here, but it is what the old
 		 code did.  */
 	      c->block = bb->index;
 	      c->insn = insn;
 	      bitmap_copy (&c->live_throughout, live_relevant_regs);
-	    }	  
+	    }
 	  insn = PREV_INSN (insn);
 	}
     }
@@ -3145,7 +3145,7 @@ ira (FILE *f)
 #endif
   bitmap_obstack_initialize (&ira_bitmap_obstack);
   if (optimize)
-    {      
+    {
       max_regno = max_reg_num ();
       ira_reg_equiv_len = max_regno;
       ira_reg_equiv_invariant_p
@@ -3165,39 +3165,39 @@ ira (FILE *f)
 
   max_regno_before_ira = allocated_reg_info_size = max_reg_num ();
   ira_setup_eliminable_regset ();
-      
+
   ira_overall_cost = ira_reg_cost = ira_mem_cost = 0;
   ira_load_cost = ira_store_cost = ira_shuffle_cost = 0;
   ira_move_loops_num = ira_additional_jumps_num = 0;
-  
+
   ira_assert (current_loops == NULL);
   flow_loops_find (&ira_loops);
   current_loops = &ira_loops;
-      
+
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
   loops_p = ira_build (optimize
 		       && (flag_ira_region == IRA_REGION_ALL
 			   || flag_ira_region == IRA_REGION_MIXED));
-  
+
   ira_assert (ira_conflicts_p || !loops_p);
 
   saved_flag_ira_share_spill_slots = flag_ira_share_spill_slots;
   if (too_high_register_pressure_p ())
     /* It is just wasting compiler's time to pack spilled pseudos into
-       stack slots in this case -- prohibit it.  */ 
+       stack slots in this case -- prohibit it.  */
     flag_ira_share_spill_slots = FALSE;
 
   ira_color ();
-      
+
   ira_max_point_before_emit = ira_max_point;
-      
+
   ira_emit (loops_p);
-  
+
   if (ira_conflicts_p)
     {
       max_regno = max_reg_num ();
-      
+
       if (! loops_p)
 	ira_initiate_assign ();
       else
@@ -3206,14 +3206,14 @@ ira (FILE *f)
 	  setup_preferred_alternate_classes_for_new_pseudos
 	    (allocated_reg_info_size);
 	  allocated_reg_info_size = max_regno;
-	  
+
 	  if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file, "Flattening IR\n");
 	  ira_flattening (max_regno_before_ira, ira_max_point_before_emit);
 	  /* New insns were generated: add notes and recalculate live
 	     info.  */
 	  df_analyze ();
-	  
+
 	  flow_loops_find (&ira_loops);
 	  current_loops = &ira_loops;
 
@@ -3224,17 +3224,17 @@ ira (FILE *f)
     }
 
   setup_reg_renumber ();
-  
+
   calculate_allocation_cost ();
-  
+
 #ifdef ENABLE_IRA_CHECKING
   if (ira_conflicts_p)
     check_allocation ();
 #endif
-      
+
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
   max_regno = max_reg_num ();
-  
+
   /* And the reg_equiv_memory_loc array.  */
   VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
   memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
@@ -3255,7 +3255,7 @@ ira (FILE *f)
   if (ira_conflicts_p)
     {
       fix_reg_equiv_init ();
-      
+
 #ifdef ENABLE_IRA_CHECKING
       print_redundant_copies ();
 #endif
@@ -3268,7 +3268,7 @@ ira (FILE *f)
       memset (ira_spilled_reg_stack_slots, 0,
 	      max_regno * sizeof (struct ira_spilled_reg_stack_slot));
     }
-  
+
   timevar_pop (TV_IRA);
 
   timevar_push (TV_RELOAD);
@@ -3286,15 +3286,15 @@ ira (FILE *f)
   if (ira_conflicts_p)
     {
       ira_free (ira_spilled_reg_stack_slots);
-      
+
       ira_finish_assign ();
-      
-    }  
+
+    }
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL
       && overall_cost_before != ira_overall_cost)
     fprintf (ira_dump_file, "+++Overall after reload %d\n", ira_overall_cost);
   ira_destroy ();
-  
+
   flag_ira_share_spill_slots = saved_flag_ira_share_spill_slots;
 
   flow_loops_free (&ira_loops);
@@ -3305,11 +3305,11 @@ ira (FILE *f)
 
   regstat_free_ri ();
   regstat_free_n_sets_and_refs ();
-      
+
   if (optimize)
     {
       cleanup_cfg (CLEANUP_EXPENSIVE);
-      
+
       ira_free (ira_reg_equiv_invariant_p);
       ira_free (ira_reg_equiv_const);
     }

@@ -195,7 +195,7 @@ gen_insn (int line_no, rtx insn)
   int len;
   int truth = maybe_eval_c_test (XSTR (insn, 2));
 
-  lt = strchr (name, '<'); 
+  lt = strchr (name, '<');
   if (lt && strchr (lt + 1, '>'))
     {
       message_with_line (line_no, "unresolved iterator");
@@ -203,7 +203,7 @@ gen_insn (int line_no, rtx insn)
       return;
     }
 
-  gt = strchr (name, '>'); 
+  gt = strchr (name, '>');
   if (lt || gt)
     {
       message_with_line (line_no,

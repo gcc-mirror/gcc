@@ -3,17 +3,17 @@
    Free Software Foundation, Inc.
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -417,12 +417,12 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (TREE_CODE (type) != VECTOR_TYPE)
     return;
 
-  if (code == NOP_EXPR 
+  if (code == NOP_EXPR
       || code == FLOAT_EXPR
       || code == FIX_TRUNC_EXPR
       || code == VIEW_CONVERT_EXPR)
     return;
-  
+
   gcc_assert (code != CONVERT_EXPR);
 
   /* The signedness is determined from input argument.  */
@@ -432,8 +432,8 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 
   /* Choose between vector shift/rotate by vector and vector shift/rotate by
      scalar */
-  if (code == LSHIFT_EXPR 
-      || code == RSHIFT_EXPR 
+  if (code == LSHIFT_EXPR
+      || code == RSHIFT_EXPR
       || code == LROTATE_EXPR
       || code == RROTATE_EXPR)
     {
@@ -454,7 +454,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   else
     op = optab_for_tree_code (code, type, optab_default);
 
-  /* For widening/narrowing vector operations, the relevant type is of the 
+  /* For widening/narrowing vector operations, the relevant type is of the
      arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
      calculated in the same way above.  */
   if (code == WIDEN_SUM_EXPR
@@ -548,7 +548,7 @@ expand_vector_operations (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_lower_vector = 
+struct gimple_opt_pass pass_lower_vector =
 {
  {
   GIMPLE_PASS,
@@ -568,7 +568,7 @@ struct gimple_opt_pass pass_lower_vector =
  }
 };
 
-struct gimple_opt_pass pass_lower_vector_ssa = 
+struct gimple_opt_pass pass_lower_vector_ssa =
 {
  {
   GIMPLE_PASS,

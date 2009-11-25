@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 
 /* Function prototypes */
-static void vect_pattern_recog_1 
+static void vect_pattern_recog_1
   (gimple (* ) (gimple, tree *, tree *), gimple_stmt_iterator);
 static bool widened_name_p (tree, gimple, tree *, gimple *);
 
@@ -60,7 +60,7 @@ static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
    Check whether NAME, an ssa-name used in USE_STMT,
    is a result of a type-promotion, such that:
      DEF_STMT: NAME = NOP (name0)
-   where the type of name0 (HALF_TYPE) is smaller than the type of NAME. 
+   where the type of name0 (HALF_TYPE) is smaller than the type of NAME.
 */
 
 static bool
@@ -102,7 +102,7 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt)
       || (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 2)))
     return false;
 
-  if (!vect_is_simple_use (oprnd0, loop_vinfo, NULL, &dummy_gimple, &dummy, 
+  if (!vect_is_simple_use (oprnd0, loop_vinfo, NULL, &dummy_gimple, &dummy,
                            &dt))
     return false;
 
@@ -139,10 +139,10 @@ vect_recog_temp_ssa_var (tree type, gimple stmt)
      [S6  prod = (TYPE2) prod;  #optional]
      S7  sum_1 = prod + sum_0;
 
-   where 'TYPE1' is exactly double the size of type 'type', and 'TYPE2' is the 
-   same size of 'TYPE1' or bigger. This is a special case of a reduction 
+   where 'TYPE1' is exactly double the size of type 'type', and 'TYPE2' is the
+   same size of 'TYPE1' or bigger. This is a special case of a reduction
    computation.
-      
+
    Input:
 
    * LAST_STMT: A stmt from which the pattern search begins. In the example,
@@ -186,13 +186,13 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   type = gimple_expr_type (last_stmt);
 
-  /* Look for the following pattern 
+  /* Look for the following pattern
           DX = (TYPE1) X;
           DY = (TYPE1) Y;
-          DPROD = DX * DY; 
+          DPROD = DX * DY;
           DDPROD = (TYPE2) DPROD;
           sum_1 = DDPROD + sum_0;
-     In which 
+     In which
      - DX is double the size of X
      - DY is double the size of Y
      - DX, DY, DPROD all have the same type
@@ -254,10 +254,10 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   prod_type = half_type;
   stmt = SSA_NAME_DEF_STMT (oprnd0);
-  /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi 
+  /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   if (!is_gimple_assign (stmt))
-    return NULL; 
+    return NULL;
   stmt_vinfo = vinfo_for_stmt (stmt);
   gcc_assert (stmt_vinfo);
   if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_internal_def)
@@ -303,12 +303,12 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
   half_type = TREE_TYPE (oprnd00);
   *type_in = half_type;
   *type_out = type;
-  
+
   /* Pattern detected. Create a stmt to be used to replace the pattern: */
   var = vect_recog_temp_ssa_var (type, NULL);
   rhs =	build3 (DOT_PROD_EXPR, type, oprnd00, oprnd01, oprnd1),
   pattern_stmt = gimple_build_assign (var, rhs);
-				      
+
   if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "vect_recog_dot_prod_pattern: detected: ");
@@ -321,7 +321,7 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
   return pattern_stmt;
 }
- 
+
 /* Function vect_recog_widen_mult_pattern
 
    Try to find the following pattern:
@@ -354,8 +354,8 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 */
 
 static gimple
-vect_recog_widen_mult_pattern (gimple last_stmt, 
-			       tree *type_in, 
+vect_recog_widen_mult_pattern (gimple last_stmt,
+			       tree *type_in,
 			       tree *type_out)
 {
   gimple def_stmt0, def_stmt1;
@@ -516,7 +516,7 @@ vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 	      != NULL_TREE)
 	    {
 	      var = vect_recog_temp_ssa_var (TREE_TYPE (base), stmt);
-	      gimple_call_set_lhs (stmt, var); 
+	      gimple_call_set_lhs (stmt, var);
 	      return stmt;
 	    }
 	}
@@ -530,7 +530,7 @@ vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
    Try to find the following pattern:
 
-     type x_t; 
+     type x_t;
      TYPE x_T, sum = init;
    loop:
      sum_0 = phi <init, sum_1>
@@ -538,7 +538,7 @@ vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
      S2  x_T = (TYPE) x_t;
      S3  sum_1 = x_T + sum_0;
 
-   where type 'TYPE' is at least double the size of type 'type', i.e - we're 
+   where type 'TYPE' is at least double the size of type 'type', i.e - we're
    summing elements of type 'type' into an accumulator of type 'TYPE'. This is
    a special case of a reduction computation.
 
@@ -546,9 +546,9 @@ vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 
    * LAST_STMT: A stmt from which the pattern search begins. In the example,
    when this function is called with S3, the pattern {S2,S3} will be detected.
-        
+
    Output:
-      
+
    * TYPE_IN: The type of the input arguments to the pattern.
 
    * TYPE_OUT: The type of the output of this pattern.
@@ -557,12 +557,12 @@ vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
    stmts that constitute the pattern. In this case it will be:
         WIDEN_SUM <x_t, sum_0>
 
-   Note: The widening-sum idiom is a widening reduction pattern that is 
+   Note: The widening-sum idiom is a widening reduction pattern that is
 	 vectorized without preserving all the intermediate results. It
-         produces only N/2 (widened) results (by summing up pairs of 
-	 intermediate results) rather than all N results.  Therefore, we 
-	 cannot allow this pattern when we want to get all the results and in 
-	 the correct order (as is the case when this computation is in an 
+         produces only N/2 (widened) results (by summing up pairs of
+	 intermediate results) rather than all N results.  Therefore, we
+	 cannot allow this pattern when we want to get all the results and in
+	 the correct order (as is the case when this computation is in an
 	 inner-loop nested in an outer-loop that us being vectorized).  */
 
 static gimple
@@ -637,7 +637,7 @@ vect_recog_widen_sum_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 }
 
 
-/* Function vect_pattern_recog_1 
+/* Function vect_pattern_recog_1
 
    Input:
    PATTERN_RECOG_FUNC: A pointer to a function that detects a certain
@@ -645,18 +645,18 @@ vect_recog_widen_sum_pattern (gimple last_stmt, tree *type_in, tree *type_out)
    STMT: A stmt from which the pattern search should start.
 
    If PATTERN_RECOG_FUNC successfully detected the pattern, it creates an
-   expression that computes the same functionality and can be used to 
-   replace the sequence of stmts that are involved in the pattern. 
+   expression that computes the same functionality and can be used to
+   replace the sequence of stmts that are involved in the pattern.
 
    Output:
-   This function checks if the expression returned by PATTERN_RECOG_FUNC is 
-   supported in vector form by the target.  We use 'TYPE_IN' to obtain the 
-   relevant vector type. If 'TYPE_IN' is already a vector type, then this 
+   This function checks if the expression returned by PATTERN_RECOG_FUNC is
+   supported in vector form by the target.  We use 'TYPE_IN' to obtain the
+   relevant vector type. If 'TYPE_IN' is already a vector type, then this
    indicates that target support had already been checked by PATTERN_RECOG_FUNC.
    If 'TYPE_OUT' is also returned by PATTERN_RECOG_FUNC, we check that it fits
    to the available target pattern.
 
-   This function also does some bookkeeping, as explained in the documentation 
+   This function also does some bookkeeping, as explained in the documentation
    for vect_recog_pattern.  */
 
 static void
@@ -674,12 +674,12 @@ vect_pattern_recog_1 (
 
   pattern_stmt = (* vect_recog_func) (stmt, &type_in, &type_out);
   if (!pattern_stmt)
-    return; 
- 
-  if (VECTOR_MODE_P (TYPE_MODE (type_in))) 
-    { 
-      /* No need to check target support (already checked by the pattern 
-         recognition function).  */ 
+    return;
+
+  if (VECTOR_MODE_P (TYPE_MODE (type_in)))
+    {
+      /* No need to check target support (already checked by the pattern
+         recognition function).  */
       pattern_vectype = type_in;
     }
   else
@@ -716,16 +716,16 @@ vect_pattern_recog_1 (
   /* Found a vectorizable pattern.  */
   if (vect_print_dump_info (REPORT_DETAILS))
     {
-      fprintf (vect_dump, "pattern recognized: "); 
+      fprintf (vect_dump, "pattern recognized: ");
       print_gimple_stmt (vect_dump, pattern_stmt, 0, TDF_SLIM);
     }
-  
+
   /* Mark the stmts that are involved in the pattern. */
   gsi_insert_before (&si, pattern_stmt, GSI_SAME_STMT);
   set_vinfo_for_stmt (pattern_stmt,
 		      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
   pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
-  
+
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = stmt;
   STMT_VINFO_DEF_TYPE (pattern_stmt_info) = STMT_VINFO_DEF_TYPE (stmt_info);
   STMT_VINFO_VECTYPE (pattern_stmt_info) = pattern_vectype;
@@ -764,7 +764,7 @@ vect_pattern_recog_1 (
    - fill in the STMT_VINFO fields as follows:
 
                                   in_pattern_p  related_stmt    vec_stmt
-         S1: a_i = ....                 -       -               -       
+         S1: a_i = ....                 -       -               -
          S2: a_2 = ..use(a_i)..         -       -               -
          S3: a_1 = ..use(a_2)..         -       -               -
        > S6: a_new = ....               -       S4              -
@@ -780,7 +780,7 @@ vect_pattern_recog_1 (
 
    If vectorization succeeds, vect_transform_stmt will skip over {S1,S2,S3}
    (because they are marked as irrelevant). It will vectorize S6, and record
-   a pointer to the new vector stmt VS6 both from S6 (as usual), and also 
+   a pointer to the new vector stmt VS6 both from S6 (as usual), and also
    from S4. We do that so that when we get to vectorizing stmts that use the
    def of S4 (like S5 that uses a_0), we'll know where to take the relevant
    vector-def from. S4 will be skipped, and S5 will be vectorized as usual:
@@ -798,7 +798,7 @@ vect_pattern_recog_1 (
    DCE could then get rid of {S1,S2,S3,S4,S5,S6} (if their defs are not used
    elsewhere), and we'll end up with:
 
-        VS6: va_new = .... 
+        VS6: va_new = ....
         VS5: ... = ..vuse(va_new)..
 
    If vectorization does not succeed, DCE will clean S6 away (its def is

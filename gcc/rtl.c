@@ -220,7 +220,7 @@ bool
 shared_const_p (const_rtx orig)
 {
   gcc_assert (GET_CODE (orig) == CONST);
-  
+
   /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
      a LABEL_REF, it isn't sharable.  */
   return (GET_CODE (XEXP (orig, 0)) == PLUS
@@ -350,7 +350,7 @@ int currently_expanding_to_rtl;
 
 
 
-/* Same as rtx_equal_p, but call CB on each pair of rtx if CB is not NULL.  
+/* Same as rtx_equal_p, but call CB on each pair of rtx if CB is not NULL.
    When the callback returns true, we continue with the new pair.
    Whenever changing this function check if rtx_equal_p below doesn't need
    changing as well.  */
@@ -440,7 +440,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 
 	  /* And the corresponding elements must match.  */
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (rtx_equal_p_cb (XVECEXP (x, i, j), 
+	    if (rtx_equal_p_cb (XVECEXP (x, i, j),
                                 XVECEXP (y, i, j), cb) == 0)
 	      return 0;
 	  break;
@@ -623,7 +623,7 @@ dump_rtx_statistics (void)
   fprintf (stderr, "%-20s %7d %10d\n",
            "Total", total_counts, total_sizes);
   fprintf (stderr, "---------------------------------------\n");
-#endif  
+#endif
 }
 
 #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)

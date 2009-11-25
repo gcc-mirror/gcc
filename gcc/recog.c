@@ -286,7 +286,7 @@ canonicalize_change_group (rtx insn, rtx x)
   else
     return false;
 }
-  
+
 
 /* This subroutine of apply_change_group verifies whether the changes to INSN
    were valid; i.e. whether INSN can still be recognized.  */
@@ -529,7 +529,7 @@ cancel_changes (int num)
    rtx.  */
 
 static void
-simplify_while_replacing (rtx *loc, rtx to, rtx object, 
+simplify_while_replacing (rtx *loc, rtx to, rtx object,
                           enum machine_mode op0_mode)
 {
   rtx x = *loc;
@@ -660,7 +660,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
    validate_change passing OBJECT.  */
 
 static void
-validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object, 
+validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
                         bool simplify)
 {
   int i, j;
@@ -713,7 +713,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
 				      from, to, object, simplify);
 	    }
 	  else
-	    validate_replace_rtx_1 (&XVECEXP (x, 0, j), from, to, object, 
+	    validate_replace_rtx_1 (&XVECEXP (x, 0, j), from, to, object,
                                     simplify);
 	}
     }
@@ -724,7 +724,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
 	  validate_replace_rtx_1 (&XEXP (x, i), from, to, object, simplify);
 	else if (fmt[i] == 'E')
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object, 
+	    validate_replace_rtx_1 (&XVECEXP (x, i, j), from, to, object,
                                     simplify);
       }
 
@@ -765,9 +765,9 @@ validate_replace_rtx (rtx from, rtx to, rtx insn)
 }
 
 /* Try replacing every occurrence of FROM in WHERE with TO.  Assume that WHERE
-   is a part of INSN.  After all changes have been made, validate by seeing if 
-   INSN is still valid.  
-   validate_replace_rtx (from, to, insn) is equivalent to 
+   is a part of INSN.  After all changes have been made, validate by seeing if
+   INSN is still valid.
+   validate_replace_rtx (from, to, insn) is equivalent to
    validate_replace_rtx_part (from, to, &PATTERN (insn), insn).  */
 
 int
@@ -778,8 +778,8 @@ validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx insn)
 }
 
 /* Same as above, but do not simplify rtx afterwards.  */
-int 
-validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where, 
+int
+validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
                                       rtx insn)
 {
   validate_replace_rtx_1 (where, from, to, insn, false);
@@ -1435,7 +1435,7 @@ asm_noperands (const_rtx body)
       if (GET_CODE (XVECEXP (body, 0, 0)) == SET)
 	{
 	  /* Multiple output operands, or 1 output plus some clobbers:
-	     body is 
+	     body is
 	     [(set OUTPUT (asm_operands ...))... (clobber (reg ...))...].  */
 	  /* Count backwards through CLOBBERs to determine number of SETs.  */
 	  for (i = XVECLEN (body, 0); i > 0; i--)
@@ -3674,7 +3674,7 @@ gate_do_final_split (void)
   return 1;
 #else
   return 0;
-#endif 
+#endif
 }
 
 struct rtl_opt_pass pass_split_for_shorten_branches =

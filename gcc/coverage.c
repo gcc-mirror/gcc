@@ -201,7 +201,7 @@ read_counts_file (void)
 
   /* Read and discard the stamp.  */
   gcov_read_unsigned ();
-  
+
   counts_hash = htab_create (10,
 			     htab_counts_entry_hash, htab_counts_entry_eq,
 			     htab_counts_entry_del);
@@ -779,7 +779,7 @@ build_ctr_info_value (unsigned int counter, tree type)
       varpool_finalize_decl (tree_ctr_tables[counter]);
 
       value = tree_cons (fields,
-			 build1 (ADDR_EXPR, TREE_TYPE (fields), 
+			 build1 (ADDR_EXPR, TREE_TYPE (fields),
 					    tree_ctr_tables[counter]),
 			 value);
     }
@@ -1003,14 +1003,14 @@ coverage_init (const char *filename)
   int len = strlen (filename);
   /* + 1 for extra '/', in case prefix doesn't end with /.  */
   int prefix_len;
- 
+
   if (profile_data_prefix == 0 && filename[0] != '/')
     profile_data_prefix = getpwd ();
 
   prefix_len = (profile_data_prefix) ? strlen (profile_data_prefix) + 1 : 0;
 
   /* Name of da file.  */
-  da_file_name = XNEWVEC (char, len + strlen (GCOV_DATA_SUFFIX) 
+  da_file_name = XNEWVEC (char, len + strlen (GCOV_DATA_SUFFIX)
 			  + prefix_len + 1);
 
   if (profile_data_prefix)

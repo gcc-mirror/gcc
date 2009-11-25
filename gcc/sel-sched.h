@@ -1,4 +1,4 @@
-/* Instruction scheduling pass.  
+/* Instruction scheduling pass.
    Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.

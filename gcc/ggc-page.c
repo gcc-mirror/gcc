@@ -439,16 +439,16 @@ static struct globals
     /* Total allocations and overhead for sizes less than 32, 64 and 128.
        These sizes are interesting because they are typical cache line
        sizes.  */
-   
+
     unsigned long long total_allocated_under32;
     unsigned long long total_overhead_under32;
-  
+
     unsigned long long total_allocated_under64;
     unsigned long long total_overhead_under64;
-  
+
     unsigned long long total_allocated_under128;
     unsigned long long total_overhead_under128;
-  
+
     /* The allocations for each of the allocation orders.  */
     unsigned long long total_allocated_per_order[NUM_ORDERS];
 
@@ -945,7 +945,7 @@ free_page (page_entry *entry)
       /* We cannot free a page from a context deeper than the current
 	 one.  */
       gcc_assert (entry->context_depth == top->context_depth);
-      
+
       /* Put top element into freed slot.  */
       G.by_depth[i] = top;
       G.save_in_use[i] = G.save_in_use[G.by_depth_in_use-1];
@@ -1413,7 +1413,7 @@ ggc_free (void *p)
 
 #ifdef ENABLE_GC_ALWAYS_COLLECT
   /* In the completely-anal-checking mode, we do *not* immediately free
-     the data, but instead verify that the data is *actually* not 
+     the data, but instead verify that the data is *actually* not
      reachable the next time we collect.  */
   {
     struct free_object *fo = XNEW (struct free_object);
@@ -1440,7 +1440,7 @@ ggc_free (void *p)
 	/* If the page is completely full, then it's supposed to
 	   be after all pages that aren't.  Since we've freed one
 	   object from a page that was full, we need to move the
-	   page to the head of the list. 
+	   page to the head of the list.
 
 	   PE is the node we want to move.  Q is the previous node
 	   and P is the next node in the list.  */
@@ -1484,7 +1484,7 @@ ggc_free (void *p)
 static void
 compute_inverse (unsigned order)
 {
-  size_t size, inv; 
+  size_t size, inv;
   unsigned int e;
 
   size = OBJECT_SIZE (order);
@@ -1744,7 +1744,7 @@ sweep_pages (void)
 		G.pages[order] = next;
 	      else
 		previous->next = next;
-	    
+
 	      /* Splice P out of the back pointers too.  */
 	      if (next)
 		next->prev = previous;
@@ -2044,7 +2044,7 @@ ggc_print_statistics (void)
 	   SCALE (G.allocated), STAT_LABEL(G.allocated),
 	   SCALE (total_overhead), STAT_LABEL (total_overhead));
 
-#ifdef GATHER_STATISTICS  
+#ifdef GATHER_STATISTICS
   {
     fprintf (stderr, "\nTotal allocations and overheads during the compilation process\n");
 
@@ -2065,7 +2065,7 @@ ggc_print_statistics (void)
              G.stats.total_overhead_under128);
     fprintf (stderr, "Total Allocated under 128B:            %10lld\n",
              G.stats.total_allocated_under128);
-   
+
     for (i = 0; i < NUM_ORDERS; i++)
       if (G.stats.total_allocated_per_order[i])
         {

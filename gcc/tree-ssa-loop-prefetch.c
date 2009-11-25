@@ -1,18 +1,18 @@
 /* Array prefetching.
    Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -99,12 +99,12 @@ along with GCC; see the file COPYING3.  If not see
       while still within this bound (starting with those with lowest
       prefetch_mod, since they are responsible for most of the cache
       misses).
-      
+
    5) We unroll and peel loops so that we are able to satisfy PREFETCH_MOD
       and PREFETCH_BEFORE requirements (within some bounds), and to avoid
       prefetching nonaccessed memory.
       TODO -- actually implement peeling.
-      
+
    6) We actually emit the prefetch instructions.  ??? Perhaps emit the
       prefetch instructions with guards in cases where 5) was not sufficient
       to satisfy the constraints?
@@ -114,18 +114,18 @@ along with GCC; see the file COPYING3.  If not see
    model has two heuristcs:
    1. A heuristic that determines whether the given loop has enough CPU
       ops that can be overlapped with cache missing memory ops.
-      If not, the loop won't benefit from prefetching. This is implemented 
-      by requirung the ratio between the instruction count and the mem ref 
+      If not, the loop won't benefit from prefetching. This is implemented
+      by requirung the ratio between the instruction count and the mem ref
       count to be above a certain minimum.
    2. A heuristic that disables prefetching in a loop with an unknown trip
-      count if the prefetching cost is above a certain limit. The relative 
+      count if the prefetching cost is above a certain limit. The relative
       prefetching cost is estimated by taking the ratio between the
       prefetch count and the total intruction count (this models the I-cache
       cost).
    The limits used in these heuristics are defined as parameters with
-   reasonable default values. Machine-specific default values will be 
+   reasonable default values. Machine-specific default values will be
    added later.
- 
+
    Some other TODO:
       -- write and use more general reuse analysis (that could be also used
 	 in other cache aimed loop optimizations)
@@ -451,7 +451,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
       off = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1));
       bit_offset = TREE_INT_CST_LOW (off);
       gcc_assert (bit_offset % BITS_PER_UNIT == 0);
-      
+
       *delta += bit_offset / BITS_PER_UNIT;
     }
 
@@ -593,15 +593,15 @@ ddown (HOST_WIDE_INT x, unsigned HOST_WIDE_INT by)
     return (x + by - 1) / by;
 }
 
-/* Given a CACHE_LINE_SIZE and two inductive memory references 
-   with a common STEP greater than CACHE_LINE_SIZE and an address 
-   difference DELTA, compute the probability that they will fall 
-   in different cache lines.  DISTINCT_ITERS is the number of 
-   distinct iterations after which the pattern repeats itself.  
+/* Given a CACHE_LINE_SIZE and two inductive memory references
+   with a common STEP greater than CACHE_LINE_SIZE and an address
+   difference DELTA, compute the probability that they will fall
+   in different cache lines.  DISTINCT_ITERS is the number of
+   distinct iterations after which the pattern repeats itself.
    ALIGN_UNIT is the unit of alignment in bytes.  */
 
 static int
-compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size, 
+compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size,
 		   HOST_WIDE_INT step, HOST_WIDE_INT delta,
 		   unsigned HOST_WIDE_INT distinct_iters,
 		   int align_unit)
@@ -612,7 +612,7 @@ compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size,
 
   total_positions = 0;
   miss_positions = 0;
-  
+
   /* Iterate through all possible alignments of the first
      memory reference within its cache line.  */
   for (align = 0; align < cache_line_size; align += align_unit)
@@ -657,7 +657,7 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
 	 former.  */
       if (by_is_before)
 	ref->prefetch_before = 0;
-      
+
       return;
     }
 
@@ -711,11 +711,11 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
       return;
     }
 
-  /* A more complicated case with step > prefetch_block.  First reduce 
+  /* A more complicated case with step > prefetch_block.  First reduce
      the ratio between the step and the cache line size to its simplest
-     terms.  The resulting denominator will then represent the number of 
-     distinct iterations after which each address will go back to its 
-     initial location within the cache line.  This computation assumes 
+     terms.  The resulting denominator will then represent the number of
+     distinct iterations after which each address will go back to its
+     initial location within the cache line.  This computation assumes
      that PREFETCH_BLOCK is a power of two.  */
   prefetch_block = PREFETCH_BLOCK;
   reduced_prefetch_block = prefetch_block;
@@ -731,7 +731,7 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   delta %= step;
   ref_type = TREE_TYPE (ref->mem);
   align_unit = TYPE_ALIGN (ref_type) / 8;
-  miss_rate = compute_miss_rate(prefetch_block, step, delta, 
+  miss_rate = compute_miss_rate(prefetch_block, step, delta,
 				reduced_prefetch_block, align_unit);
   if (miss_rate <= ACCEPTABLE_MISS_RATE)
     {
@@ -744,9 +744,9 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   /* Try also the following iteration.  */
   prefetch_before++;
   delta = step - delta;
-  miss_rate = compute_miss_rate(prefetch_block, step, delta, 
+  miss_rate = compute_miss_rate(prefetch_block, step, delta,
 				reduced_prefetch_block, align_unit);
-  if (miss_rate <= ACCEPTABLE_MISS_RATE) 
+  if (miss_rate <= ACCEPTABLE_MISS_RATE)
     {
       if (prefetch_before < ref->prefetch_before)
 	ref->prefetch_before = prefetch_before;
@@ -1314,7 +1314,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
 	 know its stride.  */
       while (handled_component_p (ref) && TREE_CODE (ref) != ARRAY_REF)
 	ref = TREE_OPERAND (ref, 0);
-      
+
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
 	  stride = TYPE_SIZE_UNIT (TREE_TYPE (ref));
@@ -1457,7 +1457,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 	  /* If the dependence cannot be analyzed, assume that there might be
 	     a reuse.  */
 	  dist = 0;
-      
+
 	  ref->independent_p = false;
 	  refb->independent_p = false;
 	}
@@ -1525,14 +1525,14 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 /* Do a cost-benefit analysis to determine if prefetching is profitable
    for the current loop given the following parameters:
    AHEAD: the iteration ahead distance,
-   EST_NITER: the estimated trip count,  
+   EST_NITER: the estimated trip count,
    NINSNS: estimated number of instructions in the loop,
    PREFETCH_COUNT: an estimate of the number of prefetches
    MEM_REF_COUNT: total number of memory references in the loop.  */
 
-static bool 
-is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter, 
-				unsigned ninsns, unsigned prefetch_count, 
+static bool
+is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
+				unsigned ninsns, unsigned prefetch_count,
 				unsigned mem_ref_count)
 {
   int insn_to_mem_ratio, insn_to_prefetch_ratio;
@@ -1540,41 +1540,41 @@ is_loop_prefetching_profitable (unsigned ahead, HOST_WIDE_INT est_niter,
   if (mem_ref_count == 0)
     return false;
 
-  /* Prefetching improves performance by overlapping cache missing 
-     memory accesses with CPU operations.  If the loop does not have 
-     enough CPU operations to overlap with memory operations, prefetching 
-     won't give a significant benefit.  One approximate way of checking 
-     this is to require the ratio of instructions to memory references to 
+  /* Prefetching improves performance by overlapping cache missing
+     memory accesses with CPU operations.  If the loop does not have
+     enough CPU operations to overlap with memory operations, prefetching
+     won't give a significant benefit.  One approximate way of checking
+     this is to require the ratio of instructions to memory references to
      be above a certain limit.  This approximation works well in practice.
      TODO: Implement a more precise computation by estimating the time
      for each CPU or memory op in the loop. Time estimates for memory ops
      should account for cache misses.  */
-  insn_to_mem_ratio = ninsns / mem_ref_count;  
+  insn_to_mem_ratio = ninsns / mem_ref_count;
 
   if (insn_to_mem_ratio < PREFETCH_MIN_INSN_TO_MEM_RATIO)
     return false;
 
   /* Profitability of prefetching is highly dependent on the trip count.
-     For a given AHEAD distance, the first AHEAD iterations do not benefit 
-     from prefetching, and the last AHEAD iterations execute useless 
+     For a given AHEAD distance, the first AHEAD iterations do not benefit
+     from prefetching, and the last AHEAD iterations execute useless
      prefetches.  So, if the trip count is not large enough relative to AHEAD,
      prefetching may cause serious performance degradation.  To avoid this
-     problem when the trip count is not known at compile time, we 
+     problem when the trip count is not known at compile time, we
      conservatively skip loops with high prefetching costs.  For now, only
-     the I-cache cost is considered.  The relative I-cache cost is estimated 
+     the I-cache cost is considered.  The relative I-cache cost is estimated
      by taking the ratio between the number of prefetches and the total
      number of instructions.  Since we are using integer arithmetic, we
-     compute the reciprocal of this ratio.  
+     compute the reciprocal of this ratio.
      TODO: Account for loop unrolling, which may reduce the costs of
-     shorter stride prefetches.  Note that not accounting for loop 
+     shorter stride prefetches.  Note that not accounting for loop
      unrolling over-estimates the cost and hence gives more conservative
      results.  */
   if (est_niter < 0)
     {
-      insn_to_prefetch_ratio = ninsns / prefetch_count;      
+      insn_to_prefetch_ratio = ninsns / prefetch_count;
       return insn_to_prefetch_ratio >= MIN_INSN_TO_PREFETCH_RATIO;
     }
-       
+
   if (est_niter <= (HOST_WIDE_INT) ahead)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1626,19 +1626,19 @@ loop_prefetch_arrays (struct loop *loop)
      the loop body.  */
   time = tree_num_loop_insns (loop, &eni_time_weights);
   ahead = (PREFETCH_LATENCY + time - 1) / time;
-  est_niter = estimated_loop_iterations_int (loop, false);  
+  est_niter = estimated_loop_iterations_int (loop, false);
 
   ninsns = tree_num_loop_insns (loop, &eni_size_weights);
   unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc,
 					   est_niter);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Ahead %d, unroll factor %d, trip count " 
+    fprintf (dump_file, "Ahead %d, unroll factor %d, trip count "
 	     HOST_WIDE_INT_PRINT_DEC "\n"
-	     "insn count %d, mem ref count %d, prefetch count %d\n", 
-	     ahead, unroll_factor, est_niter, 
-	     ninsns, mem_ref_count, prefetch_count);    
+	     "insn count %d, mem ref count %d, prefetch count %d\n",
+	     ahead, unroll_factor, est_niter,
+	     ninsns, mem_ref_count, prefetch_count);
 
-  if (!is_loop_prefetching_profitable (ahead, est_niter, ninsns, 
+  if (!is_loop_prefetching_profitable (ahead, est_niter, ninsns,
 				       prefetch_count, mem_ref_count))
     goto fail;
 
@@ -1693,10 +1693,10 @@ tree_ssa_prefetch_arrays (void)
       fprintf (dump_file, "    L1 cache size: %d lines, %d kB\n",
 	       L1_CACHE_SIZE_BYTES / L1_CACHE_LINE_SIZE, L1_CACHE_SIZE);
       fprintf (dump_file, "    L1 cache line size: %d\n", L1_CACHE_LINE_SIZE);
-      fprintf (dump_file, "    L2 cache size: %d kB\n", L2_CACHE_SIZE);      
-      fprintf (dump_file, "    min insn-to-prefetch ratio: %d \n", 
+      fprintf (dump_file, "    L2 cache size: %d kB\n", L2_CACHE_SIZE);
+      fprintf (dump_file, "    min insn-to-prefetch ratio: %d \n",
 	       MIN_INSN_TO_PREFETCH_RATIO);
-      fprintf (dump_file, "    min insn-to-mem ratio: %d \n", 
+      fprintf (dump_file, "    min insn-to-mem ratio: %d \n",
 	       PREFETCH_MIN_INSN_TO_MEM_RATIO);
       fprintf (dump_file, "\n");
     }

@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    a given statement does throw.  During this lowering process,
    we create an EH_LANDING_PAD node for each EH_REGION that has
    some code within the function that needs to be executed if a
-   throw does happen.  We also create RESX statements that are 
+   throw does happen.  We also create RESX statements that are
    used to transfer control from an inner EH_REGION to an outer
    EH_REGION.  We also create EH_DISPATCH statements as placeholders
    for a runtime type comparison that should be made in order to
@@ -75,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
    handler for the exception must be within a function somewhere
    up the call chain, so we call back into the exception runtime
    (__builtin_unwind_resume).
-   
+
    During pass_expand (cfgexpand.c), we generate REG_EH_REGION notes
    that create an rtl to eh_region mapping that corresponds to the
    gimple to eh_region mapping that had been recorded in the
@@ -93,7 +93,7 @@ along with GCC; see the file COPYING3.  If not see
    frame are emitted at this time.
 
    During pass_convert_to_eh_region_ranges (except.c), we transform
-   the REG_EH_REGION notes attached to individual insns into 
+   the REG_EH_REGION notes attached to individual insns into
    non-overlapping ranges of insns bounded by NOTE_INSN_EH_REGION_BEG
    and NOTE_INSN_EH_REGION_END.  Each insn within such ranges has the
    same associated action within the exception region tree, meaning
@@ -611,7 +611,7 @@ duplicate_eh_regions (struct function *ifun,
   data.eh_map = pointer_map_create ();
 
   outer_region = get_eh_region_from_lp_number (outer_lp);
-  
+
   /* Copy all the regions in the subtree.  */
   if (copy_region)
     duplicate_eh_regions_1 (&data, copy_region, outer_region);
@@ -1490,7 +1490,7 @@ remove_eh_landing_pad (eh_landing_pad lp)
   for (pp = &lp->region->landing_pads; *pp != lp; pp = &(*pp)->next_lp)
     continue;
   *pp = lp->next_lp;
-  
+
   if (lp->post_landing_pad)
     EH_LANDING_PAD_NR (lp->post_landing_pad) = 0;
   VEC_replace (eh_landing_pad, cfun->eh->lp_array, lp->index, NULL);
@@ -1555,7 +1555,7 @@ for_each_eh_label (void (*callback) (rtx))
 }
 
 /* Create the REG_EH_REGION note for INSN, given its ECF_FLAGS for a
-   call insn. 
+   call insn.
 
    At the gimple level, we use LP_NR
        > 0 : The statement transfers to landing pad LP_NR

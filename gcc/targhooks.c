@@ -396,7 +396,7 @@ default_fixed_point_supported_p (void)
 
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
-  
+
    This function checks whether a given INSN is valid within a low-overhead
    loop.  If INSN is invalid it returns the reason for that, otherwise it
    returns NULL. A called function may clobber any special registers required
@@ -409,10 +409,10 @@ default_invalid_within_doloop (const_rtx insn)
 {
   if (CALL_P (insn))
     return "Function call in loop.";
-  
+
   if (JUMP_TABLE_DATA_P (insn))
     return "Computed branch in the loop.";
-  
+
   return NULL;
 }
 
@@ -472,7 +472,7 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
   return 0;
 }
 
-void 
+void
 hook_void_bitmap (bitmap regs ATTRIBUTE_UNUSED)
 {
 }
@@ -517,7 +517,7 @@ default_stack_protect_guard (void)
 
 static GTY(()) tree stack_chk_fail_decl;
 
-tree 
+tree
 default_external_stack_protect_fail (void)
 {
   tree t = stack_chk_fail_decl;
@@ -815,7 +815,7 @@ default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
 }
 
 /* By default, assume that a target supports any factor of misalignment
-   memory access if it supports movmisalign patten. 
+   memory access if it supports movmisalign patten.
    is_packed is true if the memory access is defined in a packed struct.  */
 bool
 default_builtin_support_vector_misalignment (enum machine_mode mode,

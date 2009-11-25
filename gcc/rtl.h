@@ -251,7 +251,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      In a CODE_LABEL, part of the two-bit alternate entry field.  */
   unsigned int jump : 1;
   /* In a CODE_LABEL, part of the two-bit alternate entry field.
-     1 in a MEM if it cannot trap.  
+     1 in a MEM if it cannot trap.
      1 in a CALL_INSN logically equivalent to
        ECF_LOOPING_CONST_OR_PURE and DECL_LOOPING_CONST_OR_PURE_P. */
   unsigned int call : 1;
@@ -259,7 +259,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a SUBREG used for SUBREG_PROMOTED_UNSIGNED_P.
      1 in a SYMBOL_REF if it addresses something in the per-function
      constants pool.
-     1 in a CALL_INSN logically equivalent to ECF_CONST and TREE_READONLY. 
+     1 in a CALL_INSN logically equivalent to ECF_CONST and TREE_READONLY.
      1 in a NOTE, or EXPR_LIST for a const call.
      1 in a JUMP_INSN, CALL_INSN, or INSN of an annulling branch.  */
   unsigned int unchanging : 1;
@@ -305,8 +305,8 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
   unsigned frame_related : 1;
   /* 1 in a REG or PARALLEL that is the current function's return value.
      1 in a MEM if it refers to a scalar.
-     1 in a SYMBOL_REF for a weak symbol. 
-     1 in a CALL_INSN logically equivalent to ECF_PURE and DECL_PURE_P. */ 
+     1 in a SYMBOL_REF for a weak symbol.
+     1 in a CALL_INSN logically equivalent to ECF_PURE and DECL_PURE_P. */
   unsigned return_val : 1;
 
   /* The first element of the operands of this rtx.
@@ -946,7 +946,7 @@ enum var_init_status
 
 /* Codes that appear in the NOTE_KIND field for kinds of notes
    that are not line numbers.  These codes are all negative.
-   
+
    Notice that we do not try to use zero here for any of
    the special note codes because sometimes the source line
    actually can be zero!  This happens (for example) when we
@@ -2375,7 +2375,7 @@ extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
 /* In varasm.c */
 extern void init_varasm_once (void);
 extern enum tls_model decl_default_tls_model (const_tree);
-  
+
 /* In rtl.c */
 extern void traverse_md_constants (int (*) (void **, void *), void *);
 struct md_constant { char *name, *value; };

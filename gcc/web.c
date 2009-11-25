@@ -81,7 +81,7 @@ unionfind_root (struct web_entry *element)
   return element;
 }
 
-/* Union sets.  
+/* Union sets.
    Return true if FIRST and SECOND points to the same web entry structure and
    nothing is done.  Otherwise, return false.  */
 
@@ -253,7 +253,7 @@ replace_ref (df_ref ref, rtx reg)
     return;
   if (dump_file)
     fprintf (dump_file, "Updating insn %i (%i->%i)\n",
-	     uid, REGNO (oldreg), REGNO (reg)); 
+	     uid, REGNO (oldreg), REGNO (reg));
   *loc = reg;
   df_insn_rescan (DF_REF_INSN (ref));
 }
@@ -386,7 +386,7 @@ struct rtl_opt_pass pass_web =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing | 
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func                        /* todo_flags_finish */
  }
 };

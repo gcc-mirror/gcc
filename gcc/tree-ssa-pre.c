@@ -1156,7 +1156,7 @@ fully_constant_expression (pre_expr e)
 	    }
 	  case tcc_reference:
 	    if (nary->opcode != REALPART_EXPR
-		&& nary->opcode != IMAGPART_EXPR 
+		&& nary->opcode != IMAGPART_EXPR
 		&& nary->opcode != VIEW_CONVERT_EXPR)
 	      return e;
 	    /* Fallthrough.  */
@@ -2998,7 +2998,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 		genop2 = fold_convert (sizetype, genop2);
 	      else
 		genop2 = fold_convert (TREE_TYPE (nary->op[1]), genop2);
-	      
+
 	      folded = fold_build2 (nary->opcode, nary->type,
 				    genop1, genop2);
 	    }
@@ -3257,7 +3257,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  if (!useless_type_conversion_p (type, TREE_TYPE (constant)))
 	    {
 	      tree builtexpr = fold_convert (type, constant);
-	      if (!is_gimple_min_invariant (builtexpr)) 
+	      if (!is_gimple_min_invariant (builtexpr))
 		{
 		  tree forcedexpr = force_gimple_operand (builtexpr,
 							  &stmts, true,
@@ -4589,7 +4589,7 @@ execute_pre (bool do_fre)
 	  remove_dead_inserted_code ();
 	  loop_optimizer_finalize ();
 	}
-      
+
       return 0;
     }
   init_pre (do_fre);

@@ -2311,7 +2311,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
   if (len == 0)
     return 1;
 
-  if (! (memsetp 
+  if (! (memsetp
 	 ? SET_BY_PIECES_P (len, align)
 	 : STORE_BY_PIECES_P (len, align)))
     return 0;
@@ -4511,7 +4511,7 @@ emit_storent_insn (rtx to, rtx from)
 
    If CALL_PARAM_P is nonzero, this is a store into a call param on the
    stack, and block moves may need to be treated specially.
- 
+
    If NONTEMPORAL is true, try using a nontemporal store instruction.  */
 
 rtx
@@ -5753,7 +5753,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
    ALIAS_SET is the alias set for the destination.  This value will
    (in general) be different from that for TARGET, since TARGET is a
    reference to the containing structure.
-   
+
    If NONTEMPORAL is true, try generating a nontemporal store.  */
 
 static rtx
@@ -6143,7 +6143,7 @@ contains_packed_reference (const_tree exp)
 	case COMPONENT_REF:
 	  {
 	    tree field = TREE_OPERAND (exp, 1);
-	    packed_p = DECL_PACKED (field) 
+	    packed_p = DECL_PACKED (field)
 		       || TYPE_PACKED (TREE_TYPE (field))
 		       || TYPE_PACKED (TREE_TYPE (exp));
 	    if (packed_p)
@@ -6750,7 +6750,7 @@ highest_pow2_factor_for_target (const_tree target, const_tree exp)
 {
   unsigned HOST_WIDE_INT talign = target_align (target) / BITS_PER_UNIT;
   unsigned HOST_WIDE_INT factor = highest_pow2_factor (exp);
-  
+
   return MAX (factor, talign);
 }
 
@@ -6940,7 +6940,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
 
       if (modifier != EXPAND_NORMAL)
 	result = force_operand (result, NULL);
-      tmp = expand_expr (offset, NULL_RTX, tmode, 
+      tmp = expand_expr (offset, NULL_RTX, tmode,
 			 modifier == EXPAND_INITIALIZER
 			  ? EXPAND_INITIALIZER : EXPAND_NORMAL);
 
@@ -7390,9 +7390,9 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	return CONST0_RTX (mode);
       }
 
-    case POINTER_PLUS_EXPR: 
+    case POINTER_PLUS_EXPR:
       /* Even though the sizetype mode and the pointer's mode can be different
-         expand is able to handle this correctly and get the correct result out 
+         expand is able to handle this correctly and get the correct result out
          of the PLUS_EXPR code.  */
       /* Make sure to sign-extend the sizetype offset in a POINTER_PLUS_EXPR
          if sizetype precision is smaller than pointer precision.  */
@@ -9330,7 +9330,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* If both modes are integral, then we can convert from one to the
 	 other.  */
       else if (SCALAR_INT_MODE_P (GET_MODE (op0)) && SCALAR_INT_MODE_P (mode))
-	op0 = convert_modes (mode, GET_MODE (op0), op0, 
+	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* As a last resort, spill op0 to memory, and reload it in a
 	 different mode.  */

@@ -353,7 +353,7 @@ reserve_phi_args_for_new_edge (basic_block bb)
 
 /* Adds PHI to BB.  */
 
-void 
+void
 add_phi_node_to_bb (gimple phi, basic_block bb)
 {
   gimple_stmt_iterator gsi;
@@ -441,7 +441,7 @@ remove_phi_arg_num (gimple phi, int i)
       *(new_p->use) = *(old_p->use);
       relink_imm_use (new_p, old_p);
       /* Move the location as well.  */
-      gimple_phi_arg_set_location (phi, i, 
+      gimple_phi_arg_set_location (phi, i,
 				   gimple_phi_arg_location (phi, num_elem - 1));
     }
 

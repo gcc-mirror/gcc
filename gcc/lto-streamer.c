@@ -190,7 +190,7 @@ print_lto_report (void)
   fprintf (stderr, "[%s] # of input files: "
 	   HOST_WIDE_INT_PRINT_UNSIGNED "\n", s, lto_stats.num_input_files);
 
-  fprintf (stderr, "[%s] # of input cgraph nodes: " 
+  fprintf (stderr, "[%s] # of input cgraph nodes: "
 	   HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
 	   lto_stats.num_input_cgraph_nodes);
 
@@ -544,7 +544,7 @@ lto_streamer_cache_insert_1 (struct lto_streamer_cache_d *cache,
     *ix_p = ix;
 
   if (offset_p)
-    *offset_p = offset; 
+    *offset_p = offset;
 
   return existed_p;
 }
@@ -697,7 +697,7 @@ lto_get_common_nodes (void)
      These should be assured in pass_ipa_free_lang_data.  */
   gcc_assert (fileptr_type_node == ptr_type_node);
   gcc_assert (TYPE_MAIN_VARIANT (fileptr_type_node) == ptr_type_node);
-  
+
   seen_nodes = pointer_set_create ();
 
   /* Skip itk_char.  char_type_node is shared with the appropriately
@@ -816,7 +816,7 @@ gate_lto_out (void)
    session can be started on both reader and writer using ORIG_T
    as a breakpoint value in both sessions.
 
-   Note that this mapping is transient and only valid while T is 
+   Note that this mapping is transient and only valid while T is
    being reconstructed.  Once T is fully built, the mapping is
    removed.  */
 

@@ -53,7 +53,7 @@ struct edge_equivalency
    in the CFG.
 
    When complete, each edge that creates an equivalency will have an
-   EDGE_EQUIVALENCY structure hanging off the edge's AUX field. 
+   EDGE_EQUIVALENCY structure hanging off the edge's AUX field.
    The caller is responsible for freeing the AUX fields.  */
 
 static void
@@ -157,7 +157,7 @@ associate_equivalences_with_edges (void)
 		  equivalency->rhs = op1;
 		  if (code == EQ_EXPR)
 		    true_edge->aux = equivalency;
-		  else 
+		  else
 		    false_edge->aux = equivalency;
 
 		}
@@ -358,7 +358,7 @@ record_equiv (tree value, tree equivalence)
      free (equiv_hash_elt);
 
   equiv_hash_elt = (struct equiv_hash_elt *) *slot;
-  
+
   VEC_safe_push (tree, heap, equiv_hash_elt->equivalences, equivalence);
 }
 
@@ -585,7 +585,7 @@ gate_uncprop (void)
   return flag_tree_dom != 0;
 }
 
-struct gimple_opt_pass pass_uncprop = 
+struct gimple_opt_pass pass_uncprop =
 {
  {
   GIMPLE_PASS,

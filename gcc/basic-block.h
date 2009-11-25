@@ -463,7 +463,7 @@ struct GTY(()) control_flow_graph {
   for ((INSN) = BB_HEAD (BB), (CURR) = (INSN) ? NEXT_INSN ((INSN)): NULL;	\
        (INSN) && (INSN) != NEXT_INSN (BB_END (BB));	\
        (INSN) = (CURR), (CURR) = (INSN) ? NEXT_INSN ((INSN)) : NULL)
-       
+
 #define FOR_BB_INSNS_REVERSE(BB, INSN)		\
   for ((INSN) = BB_END (BB);			\
        (INSN) && (INSN) != PREV_INSN (BB_HEAD (BB));	\

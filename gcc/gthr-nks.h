@@ -100,7 +100,7 @@ __gthread_objc_thread_detach (void (*func)(void *), void *arg)
     NXContextFree (context);
     thread_id = NULL;
   }
-  
+
   return thread_id;
 }
 

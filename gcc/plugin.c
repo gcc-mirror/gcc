@@ -132,7 +132,7 @@ add_new_plugin (const char* plugin_name)
   void **slot;
   char *base_name = get_plugin_base_name (plugin_name);
 
-  /* If this is the first -fplugin= option we encounter, create 
+  /* If this is the first -fplugin= option we encounter, create
      'plugin_name_args_tab' hash table.  */
   if (!plugin_name_args_tab)
     plugin_name_args_tab = htab_create (10, htab_hash_string, htab_str_eq,
@@ -493,7 +493,7 @@ initialize_plugins (void)
     return;
 
   timevar_push (TV_PLUGIN_INIT);
- 
+
 #ifdef ENABLE_PLUGIN
   /* Traverse and initialize each plugin specified in the command-line.  */
   htab_traverse_noresize (plugin_name_args_tab, init_one_plugin, NULL);

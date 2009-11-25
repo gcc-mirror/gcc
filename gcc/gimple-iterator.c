@@ -45,9 +45,9 @@ static void
 update_modified_stmts (gimple_seq seq)
 {
   gimple_stmt_iterator gsi;
- 
+
   if (!ssa_operands_active ())
-    return;  
+    return;
   for (gsi = gsi_start (seq); !gsi_end_p (gsi); gsi_next (&gsi))
     update_stmt_if_modified (gsi_stmt (gsi));
 }
@@ -60,7 +60,7 @@ static void
 update_bb_for_stmts (gimple_seq_node first, basic_block bb)
 {
   gimple_seq_node n;
-  
+
   for (n = first; n; n = n->next)
     gimple_set_bb (n->stmt, bb);
 }

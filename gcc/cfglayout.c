@@ -694,7 +694,7 @@ relink_block_chain (bool stay_in_cfglayout_mode)
   free_original_copy_tables ();
   if (stay_in_cfglayout_mode)
     initialize_original_copy_tables ();
-  
+
   /* Finally, put basic_block_info in the new order.  */
   compact_blocks ();
 }
@@ -928,7 +928,7 @@ fixup_reorder_chain (void)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->flags & EDGE_FALLTHRU)
 	  break;
-      
+
       if (e && !can_fallthru (e->src, e->dest))
 	force_nonfallthru (e);
     }

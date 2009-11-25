@@ -5,17 +5,17 @@
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
       mark the outgoing edges as executable or not executable
       depending on the predicate's value.  This is then used when
       visiting PHI nodes to know when a PHI argument can be ignored.
-      
+
 
    2- In ccp_visit_phi_node, if all the PHI arguments evaluate to the
       same constant C, then the LHS of the PHI is set to C.  This
@@ -714,7 +714,7 @@ do_dbg_cnt (void)
 
 
 /* Do final substitution of propagated values, cleanup the flowgraph and
-   free allocated storage.  
+   free allocated storage.
 
    Return TRUE when something was optimized.  */
 
@@ -882,7 +882,7 @@ ccp_visit_phi_node (gimple phi)
     return SSA_PROP_NOT_INTERESTING;
 }
 
-/* Return true if we may propagate the address expression ADDR into the 
+/* Return true if we may propagate the address expression ADDR into the
    dereference DEREF and cancel them.  */
 
 bool
@@ -1027,7 +1027,7 @@ ccp_fold (gimple stmt)
                 return get_symbol_constant_value (rhs);
               return rhs;
             }
-            
+
           case GIMPLE_UNARY_RHS:
             {
               /* Handle unary operators that can appear in GIMPLE form.
@@ -1071,7 +1071,7 @@ ccp_fold (gimple stmt)
 		  return op0;
 		}
 
-              return 
+              return
 		fold_unary_ignore_overflow_loc (loc, subcode,
 						gimple_expr_type (stmt), op0);
             }
@@ -1415,7 +1415,7 @@ evaluate_stmt (gimple stmt)
       if (code == GIMPLE_ASSIGN)
         {
           enum tree_code subcode = gimple_assign_rhs_code (stmt);
-          
+
           /* Other cases cannot satisfy is_gimple_min_invariant
              without folding.  */
           if (get_gimple_rhs_class (subcode) == GIMPLE_SINGLE_RHS)
@@ -1495,7 +1495,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 
   if (integer_zerop (val.value))
     gimple_cond_make_false (stmt);
-  else 
+  else
     gimple_cond_make_true (stmt);
 
   return true;
@@ -1587,7 +1587,7 @@ visit_cond_stmt (gimple stmt, edge *taken_edge_p)
    its evaluation changes the lattice value of its output, return
    SSA_PROP_INTERESTING and set *OUTPUT_P to the SSA_NAME holding the
    output value.
-   
+
    If STMT is a conditional branch and we can determine its truth
    value, set *TAKEN_EDGE_P accordingly.  If STMT produces a varying
    value, return SSA_PROP_VARYING.  */
@@ -1669,7 +1669,7 @@ gate_ccp (void)
 }
 
 
-struct gimple_opt_pass pass_ccp = 
+struct gimple_opt_pass pass_ccp =
 {
  {
   GIMPLE_PASS,
@@ -1807,7 +1807,7 @@ maybe_fold_offset_to_array_ref (location_t loc, tree base, tree offset,
        (char *)a - 4;
      which should be not folded to &a->d[-8].  */
   if (domain_type
-      && TYPE_MAX_VALUE (domain_type) 
+      && TYPE_MAX_VALUE (domain_type)
       && TREE_CODE (TYPE_MAX_VALUE (domain_type)) == INTEGER_CST)
     {
       tree up_bound = TYPE_MAX_VALUE (domain_type);
@@ -1902,7 +1902,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
 	  t = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
 	  return t;
 	}
-      
+
       /* Don't care about offsets into the middle of scalars.  */
       if (!AGGREGATE_TYPE_P (field_type))
 	continue;
@@ -1944,7 +1944,7 @@ maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
   field_type = TREE_TYPE (f);
   offset = int_const_binop (MINUS_EXPR, offset, byte_position (f), 1);
 
-  /* If we get here, we've got an aggregate field, and a possibly 
+  /* If we get here, we've got an aggregate field, and a possibly
      nonzero offset into them.  Recurse and hope for a valid match.  */
   base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
   SET_EXPR_LOCATION (base, loc);
@@ -2135,7 +2135,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
     }
   else
     {
-      /* We can get here for out-of-range string constant accesses, 
+      /* We can get here for out-of-range string constant accesses,
 	 such as "_"[3].  Bail out of the entire substitution search
 	 and arrange for the entire statement to be replaced by a
 	 call to __builtin_trap.  In all likelihood this will all be
@@ -2148,11 +2148,11 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == STRING_CST)
 	{
 	  /* FIXME: Except that this causes problems elsewhere with dead
-	     code not being deleted, and we die in the rtl expanders 
+	     code not being deleted, and we die in the rtl expanders
 	     because we failed to remove some ssa_name.  In the meantime,
 	     just return zero.  */
 	  /* FIXME2: This condition should be signaled by
-	     fold_read_from_constant_string directly, rather than 
+	     fold_read_from_constant_string directly, rather than
 	     re-checking for it here.  */
 	  return integer_zero_node;
 	}
@@ -2380,7 +2380,7 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
 {
   tree var, val;
   gimple def_stmt;
-  
+
   if (TREE_CODE (arg) != SSA_NAME)
     {
       if (TREE_CODE (arg) == COND_EXPR)
@@ -2475,7 +2475,7 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
               return false;
           }
         }
-        return true;        
+        return true;
 
       default:
         return false;
@@ -2772,7 +2772,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
           result = fold (rhs);
 
         /* Strip away useless type conversions.  Both the NON_LVALUE_EXPR
-           that may have been added by fold, and "useless" type 
+           that may have been added by fold, and "useless" type
            conversions that might now be apparent due to propagation.  */
         STRIP_USELESS_TYPE_CONVERSION (result);
 
@@ -3205,7 +3205,7 @@ optimize_stdarg_builtin (gimple call)
 	  || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
 	     != TYPE_MAIN_VARIANT (cfun_va_list))
 	return NULL_TREE;
-      
+
       lhs = build_fold_indirect_ref_loc (loc, lhs);
       rhs = build_call_expr_loc (loc, built_in_decls[BUILT_IN_NEXT_ARG],
                              1, integer_zero_node);
@@ -3271,7 +3271,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 
   if (lhs == NULL_TREE)
     gimplify_and_add (expr, &stmts);
-  else 
+  else
     tmp = get_initialized_tmp_var (expr, &stmts, NULL);
 
   pop_gimplify_context (NULL);
@@ -3316,7 +3316,7 @@ execute_fold_all_builtins (void)
   bool cfg_changed = false;
   basic_block bb;
   unsigned int todoflags = 0;
-  
+
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator i;
@@ -3418,16 +3418,16 @@ execute_fold_all_builtins (void)
 	    gsi_next (&i);
 	}
     }
-  
+
   /* Delete unreachable blocks.  */
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;
-  
+
   return todoflags;
 }
 
 
-struct gimple_opt_pass pass_fold_builtins = 
+struct gimple_opt_pass pass_fold_builtins =
 {
  {
   GIMPLE_PASS,

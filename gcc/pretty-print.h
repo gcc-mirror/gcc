@@ -71,9 +71,9 @@ struct chunk_info
 
 /* The output buffer datatype.  This is best seen as an abstract datatype
    whose fields should not be accessed directly by clients.  */
-typedef struct 
+typedef struct
 {
-  /* Obstack where the text is built up.  */  
+  /* Obstack where the text is built up.  */
   struct obstack formatted_obstack;
 
   /* Obstack containing a chunked representation of the format
@@ -90,7 +90,7 @@ typedef struct
   /* Where to output formatted text.  */
   FILE *stream;
 
-  /* The amount of characters output so far.  */  
+  /* The amount of characters output so far.  */
   int line_length;
 
   /* This must be large enough to hold any printed integer or
@@ -114,7 +114,7 @@ typedef struct
   diagnostic_prefixing_rule_t rule;
 
   /* The ideal upper bound of number of characters per line, as suggested
-     by front-end.  */  
+     by front-end.  */
   int line_cutoff;
 } pp_wrapping_mode_t;
 
@@ -140,7 +140,7 @@ typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
 
 /* TRUE if a newline character needs to be added before further
    formatting.  */
-#define pp_needs_newline(PP)  pp_base (PP)->need_newline 
+#define pp_needs_newline(PP)  pp_base (PP)->need_newline
 
 /* True if PRETTY-PRINTER is in line-wrapping mode.  */
 #define pp_is_wrapping_line(PP) (pp_line_cutoff (PP) > 0)
@@ -162,12 +162,12 @@ struct pretty_print_info
 
   /* The prefix for each new line.  */
   const char *prefix;
-  
+
   /* Where to put whitespace around the entity being formatted.  */
   pp_padding padding;
-  
+
   /* The real upper bound of number of characters per line, taking into
-     account the case of a very very looong prefix.  */  
+     account the case of a very very looong prefix.  */
   int maximum_length;
 
   /* Indentation count.  */

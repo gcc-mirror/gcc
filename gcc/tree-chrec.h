@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_CHREC_H
 #define GCC_TREE_CHREC_H
 
-/* The following trees are unique elements.  Thus the comparison of another 
-   element to these elements should be done on the pointer to these trees, 
+/* The following trees are unique elements.  Thus the comparison of another
+   element to these elements should be done on the pointer to these trees,
    and not on their value.  */
 
 extern tree chrec_not_analyzed_yet;
@@ -90,26 +90,26 @@ extern bool evolution_function_right_is_integer_cst (const_tree);
 
 /* Determines whether CHREC is equal to zero.  */
 
-static inline bool 
+static inline bool
 chrec_zerop (const_tree chrec)
 {
   if (chrec == NULL_TREE)
     return false;
-  
+
   if (TREE_CODE (chrec) == INTEGER_CST)
     return integer_zerop (chrec);
-  
+
   return false;
 }
 
-/* Determines whether CHREC is a loop invariant with respect to LOOP_NUM.  
+/* Determines whether CHREC is a loop invariant with respect to LOOP_NUM.
    Set the result in RES and return true when the property can be computed.  */
 
 static inline bool
 no_evolution_in_loop_p (tree chrec, unsigned loop_num, bool *res)
 {
   tree scev;
-  
+
   if (chrec == chrec_not_analyzed_yet
       || chrec == chrec_dont_know
       || chrec_contains_symbols_defined_in_loop (chrec, loop_num))
@@ -123,9 +123,9 @@ no_evolution_in_loop_p (tree chrec, unsigned loop_num, bool *res)
 
 /* Build a polynomial chain of recurrence.  */
 
-static inline tree 
-build_polynomial_chrec (unsigned loop_num, 
-			tree left, 
+static inline tree
+build_polynomial_chrec (unsigned loop_num,
+			tree left,
 			tree right)
 {
   bool val;
@@ -151,13 +151,13 @@ build_polynomial_chrec (unsigned loop_num,
   if (chrec_zerop (right))
     return left;
 
-  return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left), 
+  return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left),
 		 build_int_cst (NULL_TREE, loop_num), left, right);
 }
 
 /* Determines whether the expression CHREC is a constant.  */
 
-static inline bool 
+static inline bool
 evolution_function_is_constant_p (const_tree chrec)
 {
   if (chrec == NULL_TREE)
@@ -168,7 +168,7 @@ evolution_function_is_constant_p (const_tree chrec)
     case INTEGER_CST:
     case REAL_CST:
       return true;
-      
+
     default:
       return false;
     }
@@ -176,12 +176,12 @@ evolution_function_is_constant_p (const_tree chrec)
 
 /* Determine whether CHREC is an affine evolution function in LOOPNUM.  */
 
-static inline bool 
+static inline bool
 evolution_function_is_affine_in_loop (const_tree chrec, int loopnum)
 {
   if (chrec == NULL_TREE)
     return false;
-  
+
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
@@ -190,7 +190,7 @@ evolution_function_is_affine_in_loop (const_tree chrec, int loopnum)
 	return true;
       else
 	return false;
-      
+
     default:
       return false;
     }
@@ -198,12 +198,12 @@ evolution_function_is_affine_in_loop (const_tree chrec, int loopnum)
 
 /* Determine whether CHREC is an affine evolution function or not.  */
 
-static inline bool 
+static inline bool
 evolution_function_is_affine_p (const_tree chrec)
 {
   if (chrec == NULL_TREE)
     return false;
-  
+
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
@@ -214,7 +214,7 @@ evolution_function_is_affine_p (const_tree chrec)
 	return true;
       else
 	return false;
-      
+
     default:
       return false;
     }

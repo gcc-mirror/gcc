@@ -905,7 +905,7 @@ update_df (rtx insn, rtx *loc, df_ref *use_rec, enum df_ref_type type,
          use was within a MEM.  */
       new_use = df_ref_create (DF_REF_REG (orig_use), new_loc,
 			       insn, BLOCK_FOR_INSN (insn),
-			       type, DF_REF_FLAGS (orig_use) | new_flags, 
+			       type, DF_REF_FLAGS (orig_use) | new_flags,
 			       width, offset, mode);
 
       /* Set up the use-def chain.  */

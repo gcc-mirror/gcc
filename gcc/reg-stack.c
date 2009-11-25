@@ -1369,7 +1369,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
       /* Uninitialized USE might happen for functions returning uninitialized
          value.  We will properly initialize the USE on the edge to EXIT_BLOCK,
 	 so it is safe to ignore the use here. This is consistent with behavior
-	 of dataflow analyzer that ignores USE too.  (This also imply that 
+	 of dataflow analyzer that ignores USE too.  (This also imply that
 	 forcibly initializing the register to NaN here would lead to ICE later,
 	 since the REG_DEAD notes are not issued.)  */
       break;
@@ -3023,7 +3023,7 @@ convert_regs_1 (basic_block block)
 	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	}
     }
-  
+
   /* Amongst the insns possibly deleted during the substitution process above,
      might have been the only trapping insn in the block.  We purge the now
      possibly dead EH edges here to avoid an ICE from fixup_abnormal_edges,
@@ -3047,7 +3047,7 @@ convert_regs_1 (basic_block block)
   /* Something failed if the stack lives don't match.  If we had malformed
      asms, we zapped the instruction itself, but that didn't produce the
      same pattern of register kills as before.  */
-     
+
   gcc_assert (hard_reg_set_equal_p (regstack.reg_set, bi->out_reg_set)
 	      || any_malformed_asm);
   bi->stack_out = regstack;
@@ -3063,7 +3063,7 @@ convert_regs_2 (basic_block block)
 
   /* We process the blocks in a top-down manner, in a way such that one block
      is only processed after all its predecessors.  The number of predecessors
-     of every block has already been computed.  */ 
+     of every block has already been computed.  */
 
   stack = XNEWVEC (basic_block, n_basic_blocks);
   sp = stack;

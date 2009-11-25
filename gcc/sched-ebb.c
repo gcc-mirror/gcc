@@ -144,13 +144,13 @@ begin_schedule_ready (rtx insn, rtx last)
 	 instruction scheduled after last control flow instruction.
 	 In this case we can create new basic block.  It is
 	 always exactly one basic block last in the sequence.  */
-      
+
       FOR_EACH_EDGE (e, ei, last_bb->succs)
 	if (e->flags & EDGE_FALLTHRU)
 	  break;
 
 #ifdef ENABLE_CHECKING
-      gcc_assert (!e || !(e->flags & EDGE_COMPLEX));	    
+      gcc_assert (!e || !(e->flags & EDGE_COMPLEX));
 
       gcc_assert (BLOCK_FOR_INSN (insn) == last_bb
 		  && !IS_SPECULATION_CHECK_P (insn)
@@ -176,7 +176,7 @@ begin_schedule_ready (rtx insn, rtx last)
       else
 	/* Create an empty unreachable block after the INSN.  */
 	bb = create_basic_block (NEXT_INSN (insn), NULL_RTX, last_bb);
-      
+
       /* split_edge () creates BB before E->DEST.  Keep in mind, that
 	 this operation extends scheduling region till the end of BB.
 	 Hence, we need to shift NEXT_TAIL, so haifa-sched.c won't go out
@@ -327,7 +327,7 @@ earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
     {
       rtx insn1 = DEP_PRO (back_dep);
 
-      if (DEP_TYPE (back_dep) == REG_DEP_TRUE)	
+      if (DEP_TYPE (back_dep) == REG_DEP_TRUE)
 	/* Found a DEF-USE dependence (insn1, load_insn).  */
 	{
 	  sd_iterator_def fore_sd_it;
@@ -464,7 +464,7 @@ schedule_ebb (rtx head, rtx tail)
 {
   basic_block first_bb, target_bb;
   struct deps tmp_deps;
-  
+
   first_bb = BLOCK_FOR_INSN (head);
   last_bb = BLOCK_FOR_INSN (tail);
 
@@ -491,7 +491,7 @@ schedule_ebb (rtx head, rtx tail)
     }
   else
     /* Only recovery blocks can have their dependencies already calculated,
-       and they always are single block ebbs.  */       
+       and they always are single block ebbs.  */
     gcc_assert (first_bb == last_bb);
 
   /* Set priorities.  */
@@ -516,7 +516,7 @@ schedule_ebb (rtx head, rtx tail)
 
   /* We might pack all instructions into fewer blocks,
      so we may made some of them empty.  Can't assert (b == last_bb).  */
-  
+
   /* Sanity check: verify that all region insns were scheduled.  */
   gcc_assert (sched_rgn_n_insns == rgn_n_insns);
 
@@ -643,7 +643,7 @@ ebb_add_remove_insn (rtx insn ATTRIBUTE_UNUSED, int remove_p)
 static void
 ebb_add_block (basic_block bb, basic_block after)
 {
-  /* Recovery blocks are always bounded by BARRIERS, 
+  /* Recovery blocks are always bounded by BARRIERS,
      therefore, they always form single block EBB,
      therefore, we can use rec->index to identify such EBBs.  */
   if (after == EXIT_BLOCK_PTR)

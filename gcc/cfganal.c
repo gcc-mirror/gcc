@@ -653,7 +653,7 @@ connect_infinite_loops_to_exit (void)
    true, unreachable blocks are deleted.  */
 
 int
-post_order_compute (int *post_order, bool include_entry_exit, 
+post_order_compute (int *post_order, bool include_entry_exit,
 		    bool delete_unreachable)
 {
   edge_iterator *stack;
@@ -719,9 +719,9 @@ post_order_compute (int *post_order, bool include_entry_exit,
       post_order[post_order_num++] = ENTRY_BLOCK;
       count = post_order_num;
     }
-  else 
+  else
     count = post_order_num + 2;
-  
+
   /* Delete the unreachable blocks if some were found and we are
      supposed to do it.  */
   if (delete_unreachable && (count != n_basic_blocks))
@@ -731,11 +731,11 @@ post_order_compute (int *post_order, bool include_entry_exit,
       for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR; b = next_bb)
 	{
 	  next_bb = b->next_bb;
-	  
+
 	  if (!(TEST_BIT (visited, b->index)))
 	    delete_basic_block (b);
 	}
-      
+
       tidy_fallthru_edges ();
     }
 
@@ -745,7 +745,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
 }
 
 
-/* Helper routine for inverted_post_order_compute. 
+/* Helper routine for inverted_post_order_compute.
    BB has to belong to a region of CFG
    unreachable by inverted traversal from the exit.
    i.e. there's no control flow path from ENTRY to EXIT
@@ -753,8 +753,8 @@ post_order_compute (int *post_order, bool include_entry_exit,
    This can happen in two cases - if there's an infinite loop
    or if there's a block that has no successor
    (call to a function with no return).
-   Some RTL passes deal with this condition by 
-   calling connect_infinite_loops_to_exit () and/or 
+   Some RTL passes deal with this condition by
+   calling connect_infinite_loops_to_exit () and/or
    add_noreturn_fake_exit_edges ().
    However, those methods involve modifying the CFG itself
    which may not be desirable.
@@ -801,12 +801,12 @@ dfs_find_deadend (basic_block bb)
    with no successors can't visit all blocks.
    To solve this problem, we first do inverted traversal
    starting from the blocks with no successor.
-   And if there's any block left that's not visited by the regular 
+   And if there's any block left that's not visited by the regular
    inverted traversal from EXIT,
    those blocks are in such problematic region.
-   Among those, we find one block that has 
+   Among those, we find one block that has
    any visited predecessor (which is an entry into such a region),
-   and start looking for a "dead end" from that block 
+   and start looking for a "dead end" from that block
    and do another inverted traversal from that block.  */
 
 int
@@ -833,14 +833,14 @@ inverted_post_order_compute (int *post_order)
     if (EDGE_COUNT (bb->succs) == 0)
       {
         /* Push the initial edge on to the stack.  */
-        if (EDGE_COUNT (bb->preds) > 0) 
+        if (EDGE_COUNT (bb->preds) > 0)
           {
             stack[sp++] = ei_start (bb->preds);
             SET_BIT (visited, bb->index);
           }
       }
 
-  do 
+  do
     {
       bool has_unvisited_bb = false;
 
@@ -880,7 +880,7 @@ inverted_post_order_compute (int *post_order)
             }
         }
 
-      /* Detect any infinite loop and activate the kludge. 
+      /* Detect any infinite loop and activate the kludge.
          Note that this doesn't check EXIT_BLOCK itself
          since EXIT_BLOCK is always added after the outer do-while loop.  */
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
@@ -914,7 +914,7 @@ inverted_post_order_compute (int *post_order)
 
       if (has_unvisited_bb && sp == 0)
         {
-          /* No blocks are reachable from EXIT at all. 
+          /* No blocks are reachable from EXIT at all.
              Find a dead-end from the ENTRY, and restart the iteration. */
           basic_block be = dfs_find_deadend (ENTRY_BLOCK_PTR);
           gcc_assert (be != NULL);
@@ -922,7 +922,7 @@ inverted_post_order_compute (int *post_order)
           stack[sp++] = ei_start (be->preds);
         }
 
-      /* The only case the below while fires is 
+      /* The only case the below while fires is
          when there's an infinite loop.  */
     }
   while (sp);
@@ -940,14 +940,14 @@ inverted_post_order_compute (int *post_order)
   REV_POST_ORDER is nonzero, return the reverse completion number for each
   node.  Returns the number of nodes visited.  A depth first search
   tries to get as far away from the starting point as quickly as
-  possible. 
+  possible.
 
   pre_order is a really a preorder numbering of the graph.
   rev_post_order is really a reverse postorder numbering of the graph.
  */
 
 int
-pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order, 
+pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
 				bool include_entry_exit)
 {
   edge_iterator *stack;
@@ -968,7 +968,7 @@ pre_and_rev_post_order_compute (int *pre_order, int *rev_post_order,
       if (rev_post_order)
 	rev_post_order[rev_post_order_num--] = ENTRY_BLOCK;
     }
-  else 
+  else
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
   /* Allocate bitmap to track nodes that have been visited.  */
@@ -1165,12 +1165,12 @@ dfs_enumerate_from (basic_block bb, int reverse,
   static sbitmap visited;
   static unsigned v_size;
 
-#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index)) 
-#define UNMARK_VISITED(BB) (RESET_BIT (visited, (BB)->index)) 
-#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index)) 
+#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index))
+#define UNMARK_VISITED(BB) (RESET_BIT (visited, (BB)->index))
+#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index))
 
   /* Resize the VISITED sbitmap if necessary.  */
-  size = last_basic_block; 
+  size = last_basic_block;
   if (size < 10)
     size = 10;
 

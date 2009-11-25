@@ -61,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
       entry, there is word with the offset within the section to the
       entry.
 
-   7) THE LABEL NAMES.  
+   7) THE LABEL NAMES.
 
       Since most labels do not have names, this section my be of zero
       length.  It consists of an array of string table references, one
@@ -70,18 +70,18 @@ along with GCC; see the file COPYING3.  If not see
       the negative ones do not.  The positive index can be used to
       find the name in this array.
 
-   9) THE CFG. 
+   9) THE CFG.
 
    10) Index into the local decls.  Since local decls can have local
       decls inside them, they must be read in randomly in order to
-      properly restore them.  
+      properly restore them.
 
    11-12) GIMPLE FOR THE LOCAL DECLS AND THE FUNCTION BODY.
 
      The gimple consists of a set of records.
 
      THE FUNCTION
-	
+
      At the top level of (8) is the function. It consists of five
      pieces:
 
@@ -172,7 +172,7 @@ struct bitpack_d
    (GIMPLE statements, basic blocks, EH regions, tree nodes, etc).
 
    NOTE, when adding new LTO tags, also update lto_tag_name.  */
-enum LTO_tags 
+enum LTO_tags
 {
   LTO_null = 0,
 
@@ -284,7 +284,7 @@ DEF_VEC_ALLOC_I(ld_plugin_symbol_resolution_t, heap);
 
 
 /* Macro to define convenience functions for type and decl streams
-   in lto_file_decl_data.  */ 
+   in lto_file_decl_data.  */
 #define DEFINE_DECL_STREAM_FUNCS(UPPER_NAME, name) \
 static inline tree \
 lto_file_decl_data_get_ ## name (struct lto_file_decl_data *data, \
@@ -307,17 +307,17 @@ lto_file_decl_data_num_ ## name ## s (struct lto_file_decl_data *data) \
    or function.  The first parameter is the file data that contains
    the information.  The second parameter is the type of information
    to be obtained.  The third parameter is the name of the function
-   and is only used when finding a function body; otherwise it is 
+   and is only used when finding a function body; otherwise it is
    NULL.  The fourth parameter is the length of the data returned.  */
-typedef const char* (lto_get_section_data_f) (struct lto_file_decl_data *, 
+typedef const char* (lto_get_section_data_f) (struct lto_file_decl_data *,
 					      enum lto_section_type,
-					      const char *, 
+					      const char *,
 					      size_t *);
 
 /* Return the data found from the above call.  The first three
    parameters are the same as above.  The fourth parameter is the data
    itself and the fifth is the lenght of the data. */
-typedef void (lto_free_section_data_f) (struct lto_file_decl_data *, 
+typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 					enum lto_section_type,
 					const char *,
 					const char *,
@@ -357,7 +357,7 @@ struct lto_streamer_cache_d
 
 
 /* Structure used as buffer for reading an LTO file.  */
-struct lto_input_block 
+struct lto_input_block
 {
   const char *data;
   unsigned int p;
@@ -673,7 +673,7 @@ struct data_in
 
   /* Number of named labels.  Used to find the index of unnamed labels
      since they share space with the named labels.  */
-  unsigned int num_named_labels;  
+  unsigned int num_named_labels;
 
   /* Number of unnamed labels.  */
   unsigned int num_unnamed_labels;
@@ -692,13 +692,13 @@ struct data_in
 
 /* In lto-section-in.c  */
 extern struct lto_input_block * lto_create_simple_input_block (
-			       struct lto_file_decl_data *, 
+			       struct lto_file_decl_data *,
 			       enum lto_section_type, const char **, size_t *);
 extern void
-lto_destroy_simple_input_block (struct lto_file_decl_data *, 
+lto_destroy_simple_input_block (struct lto_file_decl_data *,
 				enum lto_section_type,
 				struct lto_input_block *, const char *, size_t);
-extern void lto_set_in_hooks (struct lto_file_decl_data **, 
+extern void lto_set_in_hooks (struct lto_file_decl_data **,
 			      lto_get_section_data_f *,
 			      lto_free_section_data_f *);
 extern struct lto_file_decl_data **lto_get_file_decl_data (void);

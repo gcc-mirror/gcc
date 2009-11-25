@@ -55,7 +55,7 @@ void
 objc_check_decl (tree ARG_UNUSED (decl))
 {
 }
-   
+
 int
 objc_is_reserved_word (tree ARG_UNUSED (ident))
 {
@@ -88,7 +88,7 @@ objc_rewrite_function_call (tree function, tree ARG_UNUSED (first_param))
 
 tree
 objc_message_selector (void)
-{ 
+{
   return 0;
 }
 
@@ -295,7 +295,7 @@ void
 objc_begin_try_stmt (location_t ARG_UNUSED (try_locus), tree ARG_UNUSED (body))
 {
 }
-   
+
 void
 objc_begin_catch_clause (tree ARG_UNUSED (decl))
 {
@@ -324,4 +324,4 @@ objc_generate_write_barrier (tree ARG_UNUSED (lhs),
 			     tree ARG_UNUSED (rhs))
 {
   return 0;
-}  
+}

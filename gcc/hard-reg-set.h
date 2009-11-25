@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #ifndef GCC_HARD_REG_SET_H
-#define GCC_HARD_REG_SET_H 
+#define GCC_HARD_REG_SET_H
 
 /* Define the type of a set of hard registers.  */
 
@@ -500,10 +500,10 @@ typedef struct
 
 #define HARD_REG_ELT_BITS UHOST_BITS_PER_WIDE_INT
 
-/* The implementation of the iterator functions is fully analogous to 
+/* The implementation of the iterator functions is fully analogous to
    the bitmap iterators.  */
 static inline void
-hard_reg_set_iter_init (hard_reg_set_iterator *iter, HARD_REG_SET set, 
+hard_reg_set_iter_init (hard_reg_set_iterator *iter, HARD_REG_SET set,
                         unsigned min, unsigned *regno)
 {
 #ifdef HARD_REG_SET_LONGS
@@ -525,7 +525,7 @@ hard_reg_set_iter_init (hard_reg_set_iterator *iter, HARD_REG_SET set,
   *regno = min;
 }
 
-static inline bool 
+static inline bool
 hard_reg_set_iter_set (hard_reg_set_iterator *iter, unsigned *regno)
 {
   while (1)
@@ -544,7 +544,7 @@ hard_reg_set_iter_set (hard_reg_set_iterator *iter, unsigned *regno)
             }
           return (*regno < FIRST_PSEUDO_REGISTER);
         }
-  
+
       /* Round to the beginning of the next word.  */
       *regno = (*regno + HARD_REG_ELT_BITS - 1);
       *regno -= *regno % HARD_REG_ELT_BITS;

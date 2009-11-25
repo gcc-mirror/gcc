@@ -313,7 +313,7 @@ timevar_pop_1 (timevar_id_t timevar)
   struct timevar_stack_def *popped = stack;
 
   gcc_assert (&timevars[timevar] == stack->timevar);
-  
+
   /* What time is it?  */
   get_time (&now);
 

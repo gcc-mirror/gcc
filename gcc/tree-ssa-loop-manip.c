@@ -1,18 +1,18 @@
 /* High-level loop manipulation functions.
    Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
    It is expected that neither BASE nor STEP are shared with other expressions
    (unless the sharing rules allow this).  Use VAR as a base var_decl for it
    (if NULL, a new temporary will be created).  The increment will occur at
-   INCR_POS (after it if AFTER is true, before it otherwise).  INCR_POS and 
+   INCR_POS (after it if AFTER is true, before it otherwise).  INCR_POS and
    AFTER can be computed using standard_iv_increment_position.  The ssa versions
    of the variable before and after increment will be stored in VAR_BEFORE and
    VAR_AFTER (unless they are NULL).  */
@@ -302,11 +302,11 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
     for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
       find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (gsi_stmt (bsi), e),
 			       use_blocks, need_phis);
- 
+
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     find_uses_to_rename_stmt (gsi_stmt (bsi), use_blocks, need_phis);
 }
-     
+
 /* Marks names that are used outside of the loop they are defined in
    for rewrite.  Records the set of blocks in that the ssa
    names are defined to USE_BLOCKS.  If CHANGED_BBS is not NULL,
@@ -360,7 +360,7 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
       Looking from the outer loop with the normal SSA form, the first use of k
       is not well-behaved, while the second one is an induction variable with
       base 99 and step 1.
-      
+
       If CHANGED_BBS is not NULL, we look for uses outside loops only in
       the basic blocks in this set.
 
@@ -414,7 +414,7 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
 {
   gimple def;
   basic_block def_bb;
-  
+
   if (TREE_CODE (use) != SSA_NAME || !is_gimple_reg (use))
     return;
 
@@ -818,7 +818,7 @@ scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
 
    If N is number of iterations of the loop and MAY_BE_ZERO is the condition
    under that loop exits in the first iteration even if N != 0,
-   
+
    while (1)
      {
        x = phi (init, next);
@@ -831,7 +831,7 @@ scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
 
    becomes (with possibly the exit conditions formulated a bit differently,
    avoiding the need to create a new iv):
-   
+
    if (MAY_BE_ZERO || N < FACTOR)
      goto rest;
 
@@ -847,7 +847,7 @@ scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
        pre;
        post;
        N -= FACTOR;
-       
+
      } while (N >= FACTOR);
 
    rest:
@@ -862,7 +862,7 @@ scale_dominated_blocks_in_loop (struct loop *loop, basic_block bb,
          break;
        post;
      }
- 
+
    Before the loop is unrolled, TRANSFORM is called for it (only for the
    unrolled loop, but not for its versioned copy).  DATA is passed to
    TRANSFORM.  */

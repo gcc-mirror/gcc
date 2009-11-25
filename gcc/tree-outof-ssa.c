@@ -45,22 +45,22 @@ DEF_VEC_ALLOC_I(source_location,heap);
    edges represented as pairs of nodes.
 
    The predecessor and successor list:  Nodes are entered in pairs, where
-   [0] ->PRED, [1]->SUCC.  All the even indexes in the array represent 
-   predecessors, all the odd elements are successors. 
-   
+   [0] ->PRED, [1]->SUCC.  All the even indexes in the array represent
+   predecessors, all the odd elements are successors.
+
    Rationale:
-   When implemented as bitmaps, very large programs SSA->Normal times were 
+   When implemented as bitmaps, very large programs SSA->Normal times were
    being dominated by clearing the interference graph.
 
-   Typically this list of edges is extremely small since it only includes 
-   PHI results and uses from a single edge which have not coalesced with 
+   Typically this list of edges is extremely small since it only includes
+   PHI results and uses from a single edge which have not coalesced with
    each other.  This means that no virtual PHI nodes are included, and
    empirical evidence suggests that the number of edges rarely exceed
    3, and in a bootstrap of GCC, the maximum size encountered was 7.
    This also limits the number of possible nodes that are involved to
    rarely more than 6, and in the bootstrap of gcc, the maximum number
    of nodes encountered was 12.  */
- 
+
 typedef struct _elim_graph {
   /* Size of the elimination vectors.  */
   int size;
@@ -79,7 +79,7 @@ typedef struct _elim_graph {
 
   /* Stack for visited nodes.  */
   VEC(int,heap) *stack;
-  
+
   /* The variable partition map.  */
   var_map map;
 
@@ -324,7 +324,7 @@ new_elim_graph (int size)
   g->edge_list = VEC_alloc (int, heap, 20);
   g->edge_locus = VEC_alloc (source_location, heap, 10);
   g->stack = VEC_alloc (int, heap, 30);
-  
+
   g->visited = sbitmap_alloc (size);
 
   return g;
@@ -371,7 +371,7 @@ elim_graph_size (elim_graph g)
 
 /* Add NODE to graph G, if it doesn't exist already.  */
 
-static inline void 
+static inline void
 elim_graph_add_node (elim_graph g, int node)
 {
   int x;
@@ -478,7 +478,7 @@ eliminate_build (elim_graph g)
   gimple_stmt_iterator gsi;
 
   clear_elim_graph (g);
-  
+
   for (gsi = gsi_start_phis (g->e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple phi = gsi_stmt (gsi);
@@ -521,7 +521,7 @@ eliminate_build (elim_graph g)
 
 /* Push successors of T onto the elimination stack for G.  */
 
-static void 
+static void
 elim_forward (elim_graph g, int T)
 {
   int S;
@@ -588,10 +588,10 @@ get_temp_reg (tree name)
   return x;
 }
 
-/* Insert required copies for T in graph G.  Check for a strongly connected 
+/* Insert required copies for T in graph G.  Check for a strongly connected
    region, and create a temporary to break the cycle if one is found.  */
 
-static void 
+static void
 elim_create (elim_graph g, int T)
 {
   int P, S;
@@ -655,7 +655,7 @@ eliminate_phi (edge e, elim_graph g)
 	  if (!TEST_BIT (g->visited, part))
 	    elim_forward (g, part);
 	}
-       
+
       sbitmap_zero (g->visited);
       while (VEC_length (int, g->stack) > 0)
 	{
@@ -680,7 +680,7 @@ eliminate_phi (edge e, elim_graph g)
 }
 
 
-/* Remove each argument from PHI.  If an arg was the last use of an SSA_NAME, 
+/* Remove each argument from PHI.  If an arg was the last use of an SSA_NAME,
    check to see if this allows another PHI node to be removed.  */
 
 static void
@@ -746,7 +746,7 @@ eliminate_useless_phis (void)
 	      for (i = 0; i < gimple_phi_num_args (phi); i++)
 	        {
 		  tree arg = PHI_ARG_DEF (phi, i);
-		  if (TREE_CODE (arg) == SSA_NAME 
+		  if (TREE_CODE (arg) == SSA_NAME
 		      && is_gimple_reg (SSA_NAME_VAR (arg)))
 		    {
 		      fprintf (stderr, "Argument of PHI is not virtual (");
@@ -776,9 +776,9 @@ eliminate_useless_phis (void)
 
 
 /* This function will rewrite the current program using the variable mapping
-   found in MAP.  If the replacement vector VALUES is provided, any 
-   occurrences of partitions with non-null entries in the vector will be 
-   replaced with the expression in the vector instead of its mapped 
+   found in MAP.  If the replacement vector VALUES is provided, any
+   occurrences of partitions with non-null entries in the vector will be
+   replaced with the expression in the vector instead of its mapped
    variable.  */
 
 static void
@@ -924,7 +924,7 @@ maybe_renumber_stmts_bb (basic_block bb)
 {
   unsigned i = 0;
   gimple_stmt_iterator gsi;
-  
+
   if (!bb->aux)
     return;
   bb->aux = NULL;
@@ -972,7 +972,7 @@ trivially_conflicts_p (basic_block bb, tree result, tree arg)
       if (gimple_uid (defa) < gimple_uid (use_stmt))
 	return true;
     }
-  
+
   return false;
 }
 
@@ -1013,9 +1013,9 @@ insert_backedge_copies (void)
 	      tree arg = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
 
-	      /* If the argument is not an SSA_NAME, then we will need a 
+	      /* If the argument is not an SSA_NAME, then we will need a
 		 constant initialization.  If the argument is an SSA_NAME with
-		 a different underlying variable then a copy statement will be 
+		 a different underlying variable then a copy statement will be
 		 needed.  */
 	      if ((e->flags & EDGE_DFS_BACK)
 		  && (TREE_CODE (arg) != SSA_NAME
@@ -1032,7 +1032,7 @@ insert_backedge_copies (void)
 
 		  /* In theory the only way we ought to get back to the
 		     start of a loop should be with a COND_EXPR or GOTO_EXPR.
-		     However, better safe than sorry. 
+		     However, better safe than sorry.
 		     If the block ends with a control statement or
 		     something that might throw, then we have to
 		     insert this assignment before the last
@@ -1047,7 +1047,7 @@ insert_backedge_copies (void)
 			continue;
 		    }
 
-		  /* Create a new instance of the underlying variable of the 
+		  /* Create a new instance of the underlying variable of the
 		     PHI result.  */
 		  stmt = gimple_build_assign (result_var,
 					      gimple_phi_arg_def (phi, i));
@@ -1056,7 +1056,7 @@ insert_backedge_copies (void)
 
 		  /* copy location if present.  */
 		  if (gimple_phi_arg_has_location (phi, i))
-		    gimple_set_location (stmt, 
+		    gimple_set_location (stmt,
 					 gimple_phi_arg_location (phi, i));
 
 		  /* Insert the new statement into the block and update

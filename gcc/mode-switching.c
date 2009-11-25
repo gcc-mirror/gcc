@@ -377,7 +377,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		last_insn = return_copy;
 	      }
 	    while (nregs);
-	    
+
 	    /* If we didn't see a full return value copy, verify that there
 	       is a plausible reason for this.  If some, but not all of the
 	       return register is likely spilled, we can expect that there
@@ -397,7 +397,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		   	   failures, so let it pass.  */
 			|| (GET_MODE_CLASS (GET_MODE (ret_reg)) != MODE_INT
 			    && nregs != 1));
-	    
+
 	    if (INSN_P (last_insn))
 	      {
 		before_return_copy

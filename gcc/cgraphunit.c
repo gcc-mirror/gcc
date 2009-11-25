@@ -151,8 +151,8 @@ static GTY (()) VEC(tree, gc) *static_dtors;
 
 /* When target does not have ctors and dtors, we call all constructor
    and destructor by special initialization/destruction function
-   recognized by collect2.  
-   
+   recognized by collect2.
+
    When we are going to build this function, collect all constructors and
    destructors and turn them into normal functions.  */
 
@@ -239,7 +239,7 @@ compare_ctor (const void *p1, const void *p2)
   f2 = *(const tree *)p2;
   priority1 = DECL_INIT_PRIORITY (f1);
   priority2 = DECL_INIT_PRIORITY (f2);
-  
+
   if (priority1 < priority2)
     return -1;
   else if (priority1 > priority2)
@@ -265,7 +265,7 @@ compare_dtor (const void *p1, const void *p2)
   f2 = *(const tree *)p2;
   priority1 = DECL_FINI_PRIORITY (f1);
   priority2 = DECL_FINI_PRIORITY (f2);
-  
+
   if (priority1 < priority2)
     return -1;
   else if (priority1 > priority2)
@@ -286,12 +286,12 @@ cgraph_build_cdtor_fns (void)
     {
       gcc_assert (!targetm.have_ctors_dtors);
       qsort (VEC_address (tree, static_ctors),
-	     VEC_length (tree, static_ctors), 
+	     VEC_length (tree, static_ctors),
 	     sizeof (tree),
 	     compare_ctor);
       build_cdtor (/*ctor_p=*/true,
 		   VEC_address (tree, static_ctors),
-		   VEC_length (tree, static_ctors)); 
+		   VEC_length (tree, static_ctors));
       VEC_truncate (tree, static_ctors, 0);
     }
 
@@ -299,12 +299,12 @@ cgraph_build_cdtor_fns (void)
     {
       gcc_assert (!targetm.have_ctors_dtors);
       qsort (VEC_address (tree, static_dtors),
-	     VEC_length (tree, static_dtors), 
+	     VEC_length (tree, static_dtors),
 	     sizeof (tree),
 	     compare_dtor);
       build_cdtor (/*ctor_p=*/false,
 		   VEC_address (tree, static_dtors),
-		   VEC_length (tree, static_dtors)); 
+		   VEC_length (tree, static_dtors));
       VEC_truncate (tree, static_dtors, 0);
     }
 }
@@ -1689,7 +1689,7 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
     TREE_MAP is a mapping of tree nodes we want to replace with
     new ones (according to results of prior analysis).
     OLD_VERSION_NODE is the node that is versioned.
-    It returns the new version's cgraph node. 
+    It returns the new version's cgraph node.
     ARGS_TO_SKIP lists arguments to be omitted from functions
     */
 
@@ -1739,7 +1739,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
 
   /* Update the call_expr on the edges to call the new version node. */
   update_call_expr (new_version_node);
-  
+
   cgraph_call_function_insertion_hooks (new_version_node);
   return new_version_node;
 }

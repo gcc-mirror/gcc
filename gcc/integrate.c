@@ -343,7 +343,7 @@ allocate_initial_values (rtx *reg_equiv_memory_loc)
 	{
 	  int regno = REGNO (ivs->entries[i].pseudo);
 	  rtx x = targetm.allocate_initial_value (ivs->entries[i].hard_reg);
-  
+
 	  if (x && REG_N_SETS (REGNO (ivs->entries[i].pseudo)) <= 1)
 	    {
 	      if (MEM_P (x))

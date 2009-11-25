@@ -268,7 +268,7 @@ dw2_asm_output_addr_rtx (int size, rtx addr,
    If COMMENT is not NULL and comments in the debug information
    have been requested by the user, append the given COMMENT
    to the generated output.  */
-   
+
 void
 dw2_asm_output_nstring (const char *str, size_t orig_len,
 			const char *comment, ...)
@@ -528,7 +528,7 @@ eh_data_format_name (int format)
   };
 
   gcc_assert (format >= 0 && format < 0x100 && format_names[format]);
-  
+
   return format_names[format];
 #else
   }

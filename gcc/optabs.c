@@ -424,11 +424,11 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return vec_shr_optab;
 
     case VEC_WIDEN_MULT_HI_EXPR:
-      return TYPE_UNSIGNED (type) ? 
+      return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
 
     case VEC_WIDEN_MULT_LO_EXPR:
-      return TYPE_UNSIGNED (type) ? 
+      return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
 
     case VEC_UNPACK_HI_EXPR:
@@ -436,7 +436,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	vec_unpacku_hi_optab : vec_unpacks_hi_optab;
 
     case VEC_UNPACK_LO_EXPR:
-      return TYPE_UNSIGNED (type) ? 
+      return TYPE_UNSIGNED (type) ?
 	vec_unpacku_lo_optab : vec_unpacks_lo_optab;
 
     case VEC_UNPACK_FLOAT_HI_EXPR:
@@ -446,7 +446,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 
     case VEC_UNPACK_FLOAT_LO_EXPR:
       /* The signedness is determined from input operand.  */
-      return TYPE_UNSIGNED (type) ? 
+      return TYPE_UNSIGNED (type) ?
 	vec_unpacku_float_lo_optab : vec_unpacks_float_lo_optab;
 
     case VEC_PACK_TRUNC_EXPR:
@@ -524,7 +524,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
    E.g, when called to expand the following operations, this is how
    the arguments will be initialized:
                                 nops    OP0     OP1     WIDE_OP
-   widening-sum                 2       oprnd0  -       oprnd1          
+   widening-sum                 2       oprnd0  -       oprnd1
    widening-dot-product         3       oprnd0  oprnd1  oprnd2
    widening-mult                2       oprnd0  oprnd1  -
    type-promotion (vec-unpack)  1       oprnd0  -       -  */
@@ -532,11 +532,11 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 rtx
 expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 			   rtx target, int unsignedp)
-{   
+{
   tree oprnd0, oprnd1, oprnd2;
   enum machine_mode wmode = VOIDmode, tmode0, tmode1 = VOIDmode;
   optab widen_pattern_optab;
-  int icode; 
+  int icode;
   enum machine_mode xmode0, xmode1 = VOIDmode, wxmode = VOIDmode;
   rtx temp;
   rtx pat;
@@ -1426,7 +1426,7 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
   rtx xop0 = op0, xop1 = op1;
   rtx temp;
   rtx swap;
-  
+
   if (target)
     temp = target;
   else
@@ -1443,7 +1443,7 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
       xop0 = xop1;
       xop1 = swap;
     }
-  
+
   /* If we are optimizing, force expensive constants into a register.  */
   xop0 = avoid_expensive_constant (mode0, binoptab, xop0, unsignedp);
   if (!shift_optab_p (binoptab))
@@ -1454,21 +1454,21 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
      seem that we don't need to convert CONST_INTs, but we do, so
      that they're properly zero-extended, sign-extended or truncated
      for their mode.  */
-  
+
   if (GET_MODE (xop0) != mode0 && mode0 != VOIDmode)
     xop0 = convert_modes (mode0,
 			  GET_MODE (xop0) != VOIDmode
 			  ? GET_MODE (xop0)
 			  : mode,
 			  xop0, unsignedp);
-  
+
   if (GET_MODE (xop1) != mode1 && mode1 != VOIDmode)
     xop1 = convert_modes (mode1,
 			  GET_MODE (xop1) != VOIDmode
 			  ? GET_MODE (xop1)
 			  : mode,
 			  xop1, unsignedp);
-  
+
   /* If operation is commutative,
      try to make the first operand a register.
      Even better, try to make it the same as the target.
@@ -1483,16 +1483,16 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 
   /* Now, if insn's predicates don't allow our operands, put them into
      pseudo regs.  */
-  
+
   if (!insn_data[icode].operand[1].predicate (xop0, mode0)
       && mode0 != VOIDmode)
     xop0 = copy_to_mode_reg (mode0, xop0);
-  
+
   if (!insn_data[icode].operand[2].predicate (xop1, mode1)
       && mode1 != VOIDmode)
     xop1 = copy_to_mode_reg (mode1, xop1);
-  
-  if (binoptab == vec_pack_trunc_optab 
+
+  if (binoptab == vec_pack_trunc_optab
       || binoptab == vec_pack_usat_optab
       || binoptab == vec_pack_ssat_optab
       || binoptab == vec_pack_ufix_trunc_optab
@@ -1509,7 +1509,7 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 
   if (!insn_data[icode].operand[0].predicate (temp, tmp_mode))
     temp = gen_reg_rtx (tmp_mode);
-  
+
   pat = GEN_FCN (icode) (temp, xop0, xop1);
   if (pat)
     {
@@ -1523,7 +1523,7 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 	  return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
 			       unsignedp, methods);
 	}
-      
+
       emit_insn (pat);
       return temp;
     }
@@ -1602,7 +1602,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
         newop1 = expand_binop (GET_MODE (op1), sub_optab,
 			       GEN_INT (bits), op1,
 			       NULL_RTX, unsignedp, OPTAB_DIRECT);
-				   
+
       temp = expand_binop_directly (mode, otheroptab, op0, newop1,
 				    target, unsignedp, methods, last);
       if (temp)
@@ -2794,10 +2794,10 @@ static rtx
 expand_ctz (enum machine_mode mode, rtx op0, rtx target)
 {
   rtx seq, temp;
-  
+
   if (optab_handler (clz_optab, mode)->insn_code == CODE_FOR_nothing)
     return 0;
-  
+
   start_sequence ();
 
   temp = expand_unop_direct (mode, neg_optab, op0, NULL_RTX, true);
@@ -2827,7 +2827,7 @@ expand_ctz (enum machine_mode mode, rtx op0, rtx target)
 
 /* Try calculating ffs(x) using ctz(x) if we have that instruction, or
    else with the sequence used by expand_clz.
-   
+
    The ffs builtin promises to return zero for a zero value and ctz/clz
    may have an undefined value in that case.  If they do not give us a
    convenient value, we have to generate a test and branch.  */
@@ -2866,7 +2866,7 @@ expand_ffs (enum machine_mode mode, rtx op0, rtx target)
 
   if (defined_at_zero && val == -1)
     /* No correction needed at zero.  */;
-  else 
+  else
     {
       /* We don't try to do anything clever with the situation found
 	 on some processors (eg Alpha) where ctz(0:mode) ==
@@ -3795,7 +3795,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
    with two operands: an output TARGET and an input OP0.
    TARGET *must* be nonzero, and the output is always stored there.
    CODE is an rtx code such that (CODE OP0) is an rtx that describes
-   the value that is stored into TARGET. 
+   the value that is stored into TARGET.
 
    Return false if expansion failed.  */
 
@@ -4238,7 +4238,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       /* There are two kinds of comparison routines. Biased routines
 	 return 0/1/2, and unbiased routines return -1/0/1. Other parts
 	 of gcc expect that the comparison operation is equivalent
-	 to the modified comparison. For signed comparisons compare the 
+	 to the modified comparison. For signed comparisons compare the
 	 result against 1 in the biased case, and zero in the unbiased
 	 case. For unsigned comparisons always compare against 1 after
 	 biasing the unbiased result by adding 1. This gives us a way to
@@ -4249,7 +4249,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       if (!TARGET_LIB_INT_CMP_BIASED)
 	{
 	  if (unsignedp)
-	    x = plus_constant (result, 1);  
+	    x = plus_constant (result, 1);
 	  else
 	    y = const0_rtx;
 	}
@@ -4258,7 +4258,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       prepare_cmp_insn (x, y, comparison, NULL_RTX, unsignedp, methods,
 			ptest, pmode);
     }
-  else 
+  else
     prepare_float_lib_cmp (x, y, comparison, ptest, pmode);
 
   return;
@@ -5942,7 +5942,7 @@ gen_trunc_conv_libfunc (convert_optab tab,
   if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
       || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
      gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-  
+
   if (GET_MODE_PRECISION (fmode) <= GET_MODE_PRECISION (tmode))
     return;
 
@@ -5971,7 +5971,7 @@ gen_extend_conv_libfunc (convert_optab tab,
   if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
       || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
      gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-  
+
   if (GET_MODE_PRECISION (fmode) > GET_MODE_PRECISION (tmode))
     return;
 
@@ -6361,7 +6361,7 @@ init_optabs (void)
 
   init_optab (ssum_widen_optab, UNKNOWN);
   init_optab (usum_widen_optab, UNKNOWN);
-  init_optab (sdot_prod_optab, UNKNOWN); 
+  init_optab (sdot_prod_optab, UNKNOWN);
   init_optab (udot_prod_optab, UNKNOWN);
 
   init_optab (vec_extract_optab, UNKNOWN);

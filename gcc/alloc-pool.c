@@ -274,7 +274,7 @@ pool_alloc (alloc_pool pool)
 	  block = XNEWVEC (char, pool->block_size);
 	  block_header = (alloc_pool_list) block;
 	  block += align_eight (sizeof (struct alloc_pool_list_def));
-	  
+
 	  /* Throw it on the block list.  */
 	  block_header->next = pool->block_list;
 	  pool->block_list = block_header;
@@ -290,7 +290,7 @@ pool_alloc (alloc_pool pool)
 	  pool->blocks_allocated += 1;
 	}
 
-      
+
       /* We now know that we can take the first elt off the virgin list and
 	 put it on the returned list. */
       block = pool->virgin_free_list;
@@ -374,8 +374,8 @@ print_statistics (void **slot, void *b)
   if (d->allocated)
     {
       fprintf (stderr, "%-22s %6d %10lu %10lu(%10lu) %10lu(%10lu) %10lu(%10lu)\n", d->name,
-	       d->elt_size, d->created, d->allocated, d->allocated / d->elt_size, 
-	       d->peak, d->peak / d->elt_size, 
+	       d->elt_size, d->created, d->allocated, d->allocated / d->elt_size,
+	       d->peak, d->peak / d->elt_size,
 	       d->current, d->current / d->elt_size);
       i->total_allocated += d->allocated;
       i->total_created += d->created;

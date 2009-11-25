@@ -795,8 +795,8 @@ cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
 }
 
 /* Like cgraph_create_edge walk the clone tree and update all clones sharing
-   same function body.  
-   
+   same function body.
+
    TODO: COUNT and LOOP_DEPTH should be properly distributed based on relative
    frequencies of the clones.  */
 
@@ -1853,7 +1853,7 @@ clone_function_name (tree decl)
 }
 
 /* Create callgraph node clone with new declaration.  The actual body will
-   be copied later at compilation stage.  
+   be copied later at compilation stage.
 
    TODO: after merging in ipa-sra use function call notes instead of args_to_skip
    bitmap interface.
@@ -2004,7 +2004,7 @@ cgraph_function_body_availability (struct cgraph_node *node)
    GIMPLE.
 
    The function is assumed to be reachable and have address taken (so no
-   API breaking optimizations are performed on it).  
+   API breaking optimizations are performed on it).
 
    Main work done by this function is to enqueue the function for later
    processing to avoid need the passes to be re-entrant.  */

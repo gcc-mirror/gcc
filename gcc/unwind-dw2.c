@@ -404,7 +404,7 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
       else if (aug[0] == 'P')
 	{
 	  _Unwind_Ptr personality;
-	  
+
 	  p = read_encoded_value (context, *p, p + 1, &personality);
 	  fs->personality = (_Unwind_Personality_Fn) personality;
 	  aug += 1;
@@ -672,7 +672,7 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	  /* Unary operations.  */
 	  gcc_assert (stack_elt);
 	  stack_elt -= 1;
-	  
+
 	  result = stack[stack_elt];
 
 	  switch (op)
@@ -749,7 +749,7 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	    _Unwind_Word first, second;
 	    gcc_assert (stack_elt >= 2);
 	    stack_elt -= 2;
-	    
+
 	    second = stack[stack_elt];
 	    first = stack[stack_elt + 1];
 
@@ -822,7 +822,7 @@ execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 	case DW_OP_bra:
 	  gcc_assert (stack_elt);
 	  stack_elt -= 1;
-	  
+
 	  offset = read_2s (op_ptr);
 	  op_ptr += 2;
 	  if (stack[stack_elt] != 0)
@@ -902,7 +902,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	case DW_CFA_set_loc:
 	  {
 	    _Unwind_Ptr pc;
-	    
+
 	    insn_ptr = read_encoded_value (context, fs->fde_encoding,
 					   insn_ptr, &pc);
 	    fs->pc = (void *) pc;
@@ -1164,7 +1164,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   if (fs->lsda_encoding != DW_EH_PE_omit)
     {
       _Unwind_Ptr lsda;
-      
+
       aug = read_encoded_value (context, fs->lsda_encoding, aug, &lsda);
       context->lsda = (void *) lsda;
     }
@@ -1248,7 +1248,7 @@ _Unwind_SetSpColumn (struct _Unwind_Context *context, void *cfa,
 		     _Unwind_SpTmp *tmp_sp)
 {
   int size = dwarf_reg_size_table[__builtin_dwarf_sp_column ()];
-  
+
   if (size == sizeof(_Unwind_Ptr))
     tmp_sp->ptr = (_Unwind_Ptr) cfa;
   else

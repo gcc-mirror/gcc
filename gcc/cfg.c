@@ -92,9 +92,9 @@ init_flow (struct function *the_fun)
   EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)
     = GGC_CNEW (struct basic_block_def);
   EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)->index = EXIT_BLOCK;
-  ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)->next_bb 
+  ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun)->next_bb
     = EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun);
-  EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)->prev_bb 
+  EXIT_BLOCK_PTR_FOR_FUNCTION (the_fun)->prev_bb
     = ENTRY_BLOCK_PTR_FOR_FUNCTION (the_fun);
 }
 
@@ -171,13 +171,13 @@ compact_blocks (void)
 
   SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR);
   SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR);
-  
+
   if (df)
     df_compact_blocks ();
-  else 
+  else
     {
       basic_block bb;
-      
+
       i = NUM_FIXED_BLOCKS;
       FOR_EACH_BB (bb)
 	{
@@ -433,7 +433,7 @@ clear_bb_flags (void)
   basic_block bb;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    bb->flags = (BB_PARTITION (bb)  
+    bb->flags = (BB_PARTITION (bb)
 		 | (bb->flags & (BB_DISABLE_SCHEDULE + BB_RTL + BB_NON_LOCAL_GOTO_TARGET)));
 }
 
@@ -544,7 +544,7 @@ dump_bb_info (basic_block bb, bool header, bool footer, int flags,
       fprintf (file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
       fprintf (file, ", freq %i", bb->frequency);
       /* Both maybe_hot_bb_p & probably_never_executed_bb_p functions
-	 crash without cfun. */ 
+	 crash without cfun. */
       if (cfun && maybe_hot_bb_p (bb))
 	fputs (", maybe hot", file);
       if (cfun && probably_never_executed_bb_p (bb))
@@ -584,7 +584,7 @@ dump_bb_info (basic_block bb, bool header, bool footer, int flags,
 
 /* Dump the register info to FILE.  */
 
-void 
+void
 dump_reg_info (FILE *file)
 {
   unsigned int i, max = max_reg_num ();
@@ -598,14 +598,14 @@ dump_reg_info (FILE *file)
   for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
     {
       enum reg_class rclass, altclass;
-      
+
       if (regstat_n_sets_and_refs)
 	fprintf (file, "\nRegister %d used %d times across %d insns",
 		 i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
       else if (df)
 	fprintf (file, "\nRegister %d used %d times across %d insns",
 		 i, DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i), REG_LIVE_LENGTH (i));
-      
+
       if (REG_BASIC_BLOCK (i) >= NUM_FIXED_BLOCKS)
 	fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
       if (regstat_n_sets_and_refs)
@@ -627,7 +627,7 @@ dump_reg_info (FILE *file)
       if (regno_reg_rtx[i] != NULL
 	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
-      
+
       rclass = reg_preferred_class (i);
       altclass = reg_alternate_class (i);
       if (rclass != GENERAL_REGS || altclass != ALL_REGS)
@@ -641,7 +641,7 @@ dump_reg_info (FILE *file)
 		     reg_class_names[(int) rclass],
 		     reg_class_names[(int) altclass]);
 	}
-      
+
       if (regno_reg_rtx[i] != NULL && REG_POINTER (regno_reg_rtx[i]))
 	fputs ("; pointer", file);
       fputs (".\n", file);

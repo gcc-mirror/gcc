@@ -50,22 +50,22 @@ along with GCC; see the file COPYING3.  If not see
    T.3_5 = <blah>
    a_1 = T.3_5
 
-   If this copy couldn't be copy propagated, it could possibly remain in the 
-   program throughout the optimization phases.   After SSA->normal, it would 
+   If this copy couldn't be copy propagated, it could possibly remain in the
+   program throughout the optimization phases.   After SSA->normal, it would
    become:
 
    T.3 = <blah>
    a = T.3
-   
-   Since T.3_5 is distinct from all other SSA versions of T.3, there is no 
-   fundamental reason why the base variable needs to be T.3, subject to 
-   certain restrictions.  This optimization attempts to determine if we can 
+
+   Since T.3_5 is distinct from all other SSA versions of T.3, there is no
+   fundamental reason why the base variable needs to be T.3, subject to
+   certain restrictions.  This optimization attempts to determine if we can
    change the base variable on copies like this, and result in code such as:
 
    a_5 = <blah>
    a_1 = a_5
 
-   This gives the SSA->normal pass a shot at coalescing a_1 and a_5. If it is 
+   This gives the SSA->normal pass a shot at coalescing a_1 and a_5. If it is
    possible, the copy goes away completely. If it isn't possible, a new temp
    will be created for a_5, and you will end up with the exact same code:
 
@@ -79,8 +79,8 @@ along with GCC; see the file COPYING3.  If not see
    a_1 = <blah>
    <blah2> = a_1
 
-   get turned into 
-    
+   get turned into
+
    T.3_5 = <blah>
    a_1 = T.3_5
    <blah2> = a_1
@@ -99,7 +99,7 @@ along with GCC; see the file COPYING3.  If not see
    <blah2> = a_1
 
    which copy propagation would then turn into:
-   
+
    a_5 = <blah>
    <blah2> = a_5
 
@@ -187,7 +187,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   ign1 = TREE_CODE (root1) == VAR_DECL && DECL_IGNORED_P (root1);
   ign2 = TREE_CODE (root2) == VAR_DECL && DECL_IGNORED_P (root2);
 
-  /* Never attempt to coalesce 2 user variables unless one is an inline 
+  /* Never attempt to coalesce 2 user variables unless one is an inline
      variable.  */
   if (!ign1 && !ign2)
     {
@@ -195,7 +195,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
         ign2 = true;
       else if (DECL_FROM_INLINE (root1))
 	ign1 = true;
-      else 
+      else
 	{
 	  if (debug)
 	    fprintf (debug, " : 2 different USER vars. No coalesce.\n");
@@ -203,7 +203,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 	}
     }
 
-  /* If both values have default defs, we can't coalesce.  If only one has a 
+  /* If both values have default defs, we can't coalesce.  If only one has a
      tag, make sure that variable is the new root partition.  */
   if (gimple_default_def (cfun, root1))
     {
@@ -236,7 +236,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   /* Merge the two partitions.  */
   p3 = partition_union (map->var_partition, p1, p2);
 
-  /* Set the root variable of the partition to the better choice, if there is 
+  /* Set the root variable of the partition to the better choice, if there is
      one.  */
   if (!ign2)
     replace_ssa_name_symbol (partition_to_var (map, p3), root2);
@@ -246,7 +246,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   if (debug)
     {
       fprintf (debug, " --> P%d ", p3);
-      print_generic_expr (debug, SSA_NAME_VAR (partition_to_var (map, p3)), 
+      print_generic_expr (debug, SSA_NAME_VAR (partition_to_var (map, p3)),
 			  TDF_SLIM);
       fprintf (debug, "\n");
     }
@@ -256,8 +256,8 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 
 /* This function will make a pass through the IL, and attempt to coalesce any
    SSA versions which occur in PHI's or copies.  Coalescing is accomplished by
-   changing the underlying root variable of all coalesced version.  This will 
-   then cause the SSA->normal pass to attempt to coalesce them all to the same 
+   changing the underlying root variable of all coalesced version.  This will
+   then cause the SSA->normal pass to attempt to coalesce them all to the same
    variable.  */
 
 static unsigned int
@@ -324,7 +324,7 @@ rename_ssa_copies (void)
 
   /* Now one more pass to make all elements of a partition share the same
      root variable.  */
-  
+
   for (x = 1; x < num_ssa_names; x++)
     {
       part_var = partition_to_var (map, x);
@@ -357,7 +357,7 @@ gate_copyrename (void)
   return flag_tree_copyrename != 0;
 }
 
-struct gimple_opt_pass pass_rename_ssa_copies = 
+struct gimple_opt_pass pass_rename_ssa_copies =
 {
  {
   GIMPLE_PASS,
@@ -371,7 +371,7 @@ struct gimple_opt_pass pass_rename_ssa_copies =
   PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
-  0,					/* todo_flags_start */ 
+  0,					/* todo_flags_start */
   TODO_dump_func | TODO_verify_ssa      /* todo_flags_finish */
  }
-}; 
+};

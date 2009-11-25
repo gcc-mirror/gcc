@@ -214,7 +214,7 @@ along with GCC; see the file COPYING3.  If not see
 
    In addition, expressions in REG_EQUAL notes are candidates for GXSE-ing.
    This allows PRE to hoist expressions that are expressed in multiple insns,
-   such as comprex address calculations (e.g. for PIC code, or loads with a 
+   such as comprex address calculations (e.g. for PIC code, or loads with a
    high part and as lowe part).
 
    PRE handles moving invariant expressions out of loops (by treating them as
@@ -843,17 +843,17 @@ can_assign_to_reg_without_clobbers_p (rtx x)
      valid.  */
   PUT_MODE (SET_DEST (PATTERN (test_insn)), GET_MODE (x));
   SET_SRC (PATTERN (test_insn)) = x;
-  
+
   icode = recog (PATTERN (test_insn), test_insn, &num_clobbers);
   if (icode < 0)
     return false;
-  
+
   if (num_clobbers > 0 && added_clobbers_hard_reg_p (icode))
     return false;
-  
+
   if (targetm.cannot_copy_insn_p && targetm.cannot_copy_insn_p (test_insn))
     return false;
-  
+
   return true;
 }
 
@@ -2094,7 +2094,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap, int set_p)
 
 	    /* Now iterate over the blocks which have memory modifications
 	       but which do not have any calls.  */
-	    EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set, 
+	    EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set,
 					    blocks_with_calls,
 					    0, bb_index, bi)
 	      {
@@ -2993,7 +2993,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
       removed_p = 0;
-	  
+
       if (e->flags & EDGE_COMPLEX)
 	{
 	  ei_next (&ei);
@@ -3328,7 +3328,7 @@ pre_expr_reaches_here_p_work (basic_block occr_bb, struct expr *expr, basic_bloc
 {
   edge pred;
   edge_iterator ei;
-  
+
   FOR_EACH_EDGE (pred, ei, bb->preds)
     {
       basic_block pred_bb = pred->src;
@@ -3410,7 +3410,7 @@ process_insert_insn (struct expr *expr)
       if (insn_invalid_p (insn))
 	gcc_unreachable ();
     }
-  
+
 
   pat = get_insns ();
   end_sequence ();
@@ -4980,7 +4980,7 @@ one_cprop_pass (void)
      FIXME: This local pass should not be necessary after CSE (but for
 	    some reason it still is).  It is also (proven) not necessary
 	    to run the local pass right after FWPWOP.
-	    
+
      FIXME: The global analysis would not get into infinite loops if it
 	    would use the DF solver (via df_simple_dataflow) instead of
 	    the solver implemented in this file.  */
@@ -5127,8 +5127,8 @@ struct rtl_opt_pass pass_rtl_cprop =
  {
   RTL_PASS,
   "cprop",                              /* name */
-  gate_rtl_cprop,                       /* gate */   
-  execute_rtl_cprop,  			/* execute */       
+  gate_rtl_cprop,                       /* gate */
+  execute_rtl_cprop,  			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -5148,8 +5148,8 @@ struct rtl_opt_pass pass_rtl_pre =
  {
   RTL_PASS,
   "rtl pre",                            /* name */
-  gate_rtl_pre,                         /* gate */   
-  execute_rtl_pre,    			/* execute */       
+  gate_rtl_pre,                         /* gate */
+  execute_rtl_pre,    			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -5169,8 +5169,8 @@ struct rtl_opt_pass pass_rtl_hoist =
  {
   RTL_PASS,
   "hoist",                              /* name */
-  gate_rtl_hoist,                       /* gate */   
-  execute_rtl_hoist,  			/* execute */       
+  gate_rtl_hoist,                       /* gate */
+  execute_rtl_hoist,  			/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

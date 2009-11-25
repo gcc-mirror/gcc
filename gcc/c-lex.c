@@ -433,7 +433,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	}
       *value = build_string (tok->val.str.len, (const char *) tok->val.str.text);
       break;
-      
+
     case CPP_PRAGMA:
       *value = build_int_cst (NULL, tok->val.pragma);
       break;
@@ -588,11 +588,11 @@ interpret_integer (const cpp_token *token, unsigned int flags)
       type = integer_types[itk];
       if (itk > itk_unsigned_long
 	  && (flags & CPP_N_WIDTH) != CPP_N_LARGE)
-	emit_diagnostic 
+	emit_diagnostic
 	  ((c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99)
 	   ? DK_PEDWARN : DK_WARNING,
 	   input_location, OPT_Wlong_long,
-	   (flags & CPP_N_UNSIGNED) 
+	   (flags & CPP_N_UNSIGNED)
 	   ? "integer constant is too large for %<unsigned long%> type"
 	   : "integer constant is too large for %<long%> type");
     }
@@ -689,9 +689,9 @@ interpret_float (const cpp_token *token, unsigned int flags)
      has any suffixes, cut them off; REAL_VALUE_ATOF/ REAL_VALUE_HTOF
      can't handle them.  */
   copylen = token->val.str.len;
-  if (flags & CPP_N_DFLOAT) 
+  if (flags & CPP_N_DFLOAT)
     copylen -= 2;
-  else 
+  else
     {
       if ((flags & CPP_N_WIDTH) != CPP_N_MEDIUM)
 	/* Must be an F or L or machine defined suffix.  */
@@ -732,7 +732,7 @@ interpret_float (const cpp_token *token, unsigned int flags)
     {
       REAL_VALUE_TYPE realvoidmode;
       int overflow = real_from_string (&realvoidmode, copy);
-      if (overflow < 0 || !REAL_VALUES_EQUAL (realvoidmode, dconst0)) 
+      if (overflow < 0 || !REAL_VALUES_EQUAL (realvoidmode, dconst0))
 	warning (OPT_Woverflow, "floating constant truncated to zero");
     }
 

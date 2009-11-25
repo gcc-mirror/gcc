@@ -57,7 +57,7 @@ static bool
 gate_all_optimizations (void)
 {
   return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors. 
+	  /* Don't bother doing anything if the program has errors.
 	     We have to pass down the queue if we already went into SSA */
 	  && (!(errorcount || sorrycount) || gimple_in_ssa_p (cfun)));
 }
@@ -272,7 +272,7 @@ execute_fixup_cfg (void)
 
 	  if (decl
 	      && gimple_call_flags (stmt) & (ECF_CONST
-					     | ECF_PURE 
+					     | ECF_PURE
 					     | ECF_LOOPING_CONST_OR_PURE))
 	    {
 	      if (gimple_in_ssa_p (cfun))
@@ -400,7 +400,7 @@ tree_rest_of_compilation (tree fndecl)
      We haven't necessarily assigned RTL to all variables yet, so it's
      not safe to try to expand expressions involving them.  */
   cfun->dont_save_pending_sizes_p = 1;
-  
+
   gimple_register_cfg_hooks ();
 
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
@@ -409,12 +409,12 @@ tree_rest_of_compilation (tree fndecl)
 
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);
-  
+
   bitmap_obstack_release (&reg_obstack);
 
   /* Release the default bitmap obstack.  */
   bitmap_obstack_release (NULL);
-  
+
   set_cfun (NULL);
 
   /* If requested, warn about function definitions where the function will

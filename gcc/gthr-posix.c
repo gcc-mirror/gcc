@@ -72,8 +72,8 @@ pthread_create (pthread_t *thread ATTRIBUTE_UNUSED,
   return 0;
 }
 
-int 
-pthread_join (pthread_t thread ATTRIBUTE_UNUSED, 
+int
+pthread_join (pthread_t thread ATTRIBUTE_UNUSED,
 	      void **value_ptr ATTRIBUTE_UNUSED)
 {
   return 0;
@@ -84,7 +84,7 @@ pthread_exit (void *value_ptr ATTRIBUTE_UNUSED)
 {
 }
 
-int 
+int
 pthread_detach (pthread_t thread ATTRIBUTE_UNUSED)
 {
   return 0;
@@ -178,7 +178,7 @@ pthread_cond_wait (pthread_cond_t *cond ATTRIBUTE_UNUSED,
 
 int
 pthread_cond_timedwait (pthread_cond_t *cond ATTRIBUTE_UNUSED, 
-			pthread_mutex_t *mutex ATTRIBUTE_UNUSED, 
+			pthread_mutex_t *mutex ATTRIBUTE_UNUSED,
 			const struct timespec *abstime ATTRIBUTE_UNUSED)
 {
   return 0;

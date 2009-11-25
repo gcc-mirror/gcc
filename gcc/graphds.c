@@ -266,7 +266,7 @@ graphds_dfs (struct graph *g, int *qs, int nq, VEC (int, heap) **qt,
    numbers assigned by the previous pass.  If SUBGRAPH is not NULL, it
    specifies the subgraph of G whose strongly connected components we want
    to determine.
-   
+
    After running this function, v->component is the number of the strongly
    connected component for each vertex of G.  Returns the number of the
    sccs of G.  */
@@ -409,7 +409,7 @@ graphds_domtree (struct graph *g, int entry,
 
   /* We use a slight modification of the standard iterative algorithm, as
      described in
-     
+
      K. D. Cooper, T. J. Harvey and K. Kennedy: A Simple, Fast Dominance
 	Algorithm
 

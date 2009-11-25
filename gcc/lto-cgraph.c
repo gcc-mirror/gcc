@@ -80,7 +80,7 @@ lto_cgraph_encoder_encode (lto_cgraph_encoder_t encoder,
 {
   int ref;
   void **slot;
-  
+
   slot = pointer_map_contains (encoder->map, node);
   if (!slot)
     {
@@ -116,7 +116,7 @@ lto_cgraph_encoder_deref (lto_cgraph_encoder_t encoder, int ref)
   if (ref == LCC_NOT_FOUND)
     return NULL;
 
-  return VEC_index (cgraph_node_ptr, encoder->nodes, ref); 
+  return VEC_index (cgraph_node_ptr, encoder->nodes, ref);
 }
 
 
@@ -142,11 +142,11 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   lto_output_uleb128_stream (ob->main_stream, LTO_cgraph_edge);
 
   ref = lto_cgraph_encoder_lookup (encoder, edge->caller);
-  gcc_assert (ref != LCC_NOT_FOUND); 
+  gcc_assert (ref != LCC_NOT_FOUND);
   lto_output_sleb128_stream (ob->main_stream, ref);
 
   ref = lto_cgraph_encoder_lookup (encoder, edge->callee);
-  gcc_assert (ref != LCC_NOT_FOUND); 
+  gcc_assert (ref != LCC_NOT_FOUND);
   lto_output_sleb128_stream (ob->main_stream, ref);
 
   lto_output_sleb128_stream (ob->main_stream, edge->count);
@@ -197,15 +197,15 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     case AVAIL_LOCAL:
       tag = LTO_cgraph_avail_node;
       break;
-    
+
     case AVAIL_OVERWRITABLE:
       tag = LTO_cgraph_overwritable_node;
       break;
-      
+
     default:
       gcc_unreachable ();
     }
- 
+
   if (boundary_p)
     tag = LTO_cgraph_unavail_node;
 
@@ -221,7 +221,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
      Boundary nodes: There are nodes that are not part of SET but are
      called from within SET.  We artificially make them look like
-     externally visible nodes with no function body. 
+     externally visible nodes with no function body.
 
      Cherry-picked nodes:  These are nodes we pulled from other
      translation units into SET during IPA-inlining.  We make them as
@@ -273,15 +273,15 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   if (tag != LTO_cgraph_unavail_node)
     {
-      lto_output_sleb128_stream (ob->main_stream, 
+      lto_output_sleb128_stream (ob->main_stream,
 				 node->local.inline_summary.estimated_self_stack_size);
-      lto_output_sleb128_stream (ob->main_stream, 
+      lto_output_sleb128_stream (ob->main_stream,
 				 node->local.inline_summary.self_size);
-      lto_output_sleb128_stream (ob->main_stream, 
+      lto_output_sleb128_stream (ob->main_stream,
 				 node->local.inline_summary.size_inlining_benefit);
-      lto_output_sleb128_stream (ob->main_stream, 
+      lto_output_sleb128_stream (ob->main_stream,
 				 node->local.inline_summary.self_time);
-      lto_output_sleb128_stream (ob->main_stream, 
+      lto_output_sleb128_stream (ob->main_stream,
 				 node->local.inline_summary.time_inlining_benefit);
     }
 
@@ -488,9 +488,9 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 }
 
 
-/* Read a node from input_block IB.  TAG is the node's tag just read. 
+/* Read a node from input_block IB.  TAG is the node's tag just read.
    Return the node read or overwriten.  */
- 
+
 static struct cgraph_node *
 input_node (struct lto_file_decl_data *file_data,
 	    struct lto_input_block *ib,
@@ -529,7 +529,7 @@ input_node (struct lto_file_decl_data *file_data,
 
   node->count = lto_input_sleb128 (ib);
   bp = lto_input_bitpack (ib);
-  
+
   if (tag != LTO_cgraph_unavail_node)
     {
       stack_size = lto_input_sleb128 (ib);
@@ -650,7 +650,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
     {
       if (tag == LTO_cgraph_edge)
         input_edge (ib, nodes);
-      else 
+      else
 	{
 	  node = input_node (file_data, ib, tag);
 	  if (node == NULL || node->decl == NULL_TREE)
@@ -736,18 +736,18 @@ input_cgraph (void)
       size_t len;
       struct lto_input_block *ib;
 
-      ib = lto_create_simple_input_block (file_data, LTO_section_cgraph, 
+      ib = lto_create_simple_input_block (file_data, LTO_section_cgraph,
 					  &data, &len);
       input_profile_summary (ib);
       file_data->cgraph_node_encoder = lto_cgraph_encoder_new ();
       input_cgraph_1 (file_data, ib);
-      lto_destroy_simple_input_block (file_data, LTO_section_cgraph, 
+      lto_destroy_simple_input_block (file_data, LTO_section_cgraph,
 				      ib, data, len);
-      
+
       /* Assume that every file read needs to be processed by LTRANS.  */
       if (flag_wpa)
 	lto_mark_file_for_ltrans (file_data);
-    } 
+    }
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */

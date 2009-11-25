@@ -182,9 +182,9 @@ static const char * const optabs[] =
   "optab_handler (logb_optab, $A)->insn_code = CODE_FOR_$(logb$a2$)",
   "optab_handler (ilogb_optab, $A)->insn_code = CODE_FOR_$(ilogb$a2$)",
   "optab_handler (log_optab, $A)->insn_code = CODE_FOR_$(log$a2$)",
-  "optab_handler (log10_optab, $A)->insn_code = CODE_FOR_$(log10$a2$)",  
-  "optab_handler (log2_optab, $A)->insn_code = CODE_FOR_$(log2$a2$)",  
-  "optab_handler (log1p_optab, $A)->insn_code = CODE_FOR_$(log1p$a2$)",  
+  "optab_handler (log10_optab, $A)->insn_code = CODE_FOR_$(log10$a2$)",
+  "optab_handler (log2_optab, $A)->insn_code = CODE_FOR_$(log2$a2$)",
+  "optab_handler (log1p_optab, $A)->insn_code = CODE_FOR_$(log1p$a2$)",
   "optab_handler (tan_optab, $A)->insn_code = CODE_FOR_$(tan$a2$)",
   "optab_handler (atan_optab, $A)->insn_code = CODE_FOR_$(atan$a2$)",
   "optab_handler (strlen_optab, $A)->insn_code = CODE_FOR_$(strlen$a$)",
@@ -366,14 +366,14 @@ gen_insn (rtx insn)
 			break;
 
 		    if (*p == 0
-			&& (! force_int || mode_class[i] == MODE_INT 
+			&& (! force_int || mode_class[i] == MODE_INT
 			    || mode_class[i] == MODE_VECTOR_INT)
 		        && (! force_partial_int
                             || mode_class[i] == MODE_INT
                             || mode_class[i] == MODE_PARTIAL_INT
 			    || mode_class[i] == MODE_VECTOR_INT)
 			&& (! force_float
-			    || mode_class[i] == MODE_FLOAT 
+			    || mode_class[i] == MODE_FLOAT
 			    || mode_class[i] == MODE_DECIMAL_FLOAT
 			    || mode_class[i] == MODE_COMPLEX_FLOAT
 			    || mode_class[i] == MODE_VECTOR_FLOAT)

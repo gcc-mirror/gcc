@@ -17,13 +17,13 @@
 
 /* The string that should be inserted into a printf style format to
    indicate a "long" operand.  */
-#ifndef HOST_LONG_FORMAT 
+#ifndef HOST_LONG_FORMAT
 #define HOST_LONG_FORMAT "l"
 #endif
 
 /* The string that should be inserted into a printf style format to
    indicate a "long long" operand.  */
-#ifndef HOST_LONG_LONG_FORMAT 
+#ifndef HOST_LONG_LONG_FORMAT
 #define HOST_LONG_LONG_FORMAT "ll"
 #endif
 

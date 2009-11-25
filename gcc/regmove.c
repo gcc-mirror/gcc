@@ -306,7 +306,7 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 		  if (sregno < FIRST_PSEUDO_REGISTER
 		      && reg_mentioned_p (dest, PATTERN (q)))
 		    failed = 1;
-		  
+
 		  /* Attempt to replace all uses.  */
 		  else if (!validate_replace_rtx (src, dest, q))
 		    failed = 1;
@@ -527,7 +527,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
   for (p = PREV_INSN (insn); p && ! reg_set_p (src_reg, p); p = PREV_INSN (p))
     if (INSN_P (p) && BLOCK_FOR_INSN (p) != bb)
       break;
-  
+
   if (! p || BLOCK_FOR_INSN (p) != bb)
     return;
 
@@ -933,7 +933,7 @@ regmove_backward_pass (void)
   FOR_EACH_BB_REVERSE (bb)
     {
       /* ??? Use the safe iterator because fixup_match_2 can remove
-	     insns via try_auto_increment.  */ 
+	     insns via try_auto_increment.  */
       FOR_BB_INSNS_REVERSE_SAFE (bb, insn, prev)
 	{
 	  struct match match;

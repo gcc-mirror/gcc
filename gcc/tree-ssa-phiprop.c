@@ -298,7 +298,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 
       /* Check whether this is a load of *ptr.  */
       if (!(is_gimple_assign (use_stmt)
-	    && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME 
+	    && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
 	    && gimple_assign_rhs_code (use_stmt) == INDIRECT_REF
 	    && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == ptr
 	    /* We cannot replace a load that may throw or is volatile.  */
@@ -355,7 +355,7 @@ tree_ssa_phiprop (void)
 {
   VEC(basic_block, heap) *bbs;
   struct phiprop_d *phivn;
-  bool did_something = false; 
+  bool did_something = false;
   basic_block bb;
   gimple_stmt_iterator gsi;
   unsigned i;
@@ -388,7 +388,7 @@ gate_phiprop (void)
   return flag_tree_phiprop;
 }
 
-struct gimple_opt_pass pass_phiprop = 
+struct gimple_opt_pass pass_phiprop =
 {
  {
   GIMPLE_PASS,

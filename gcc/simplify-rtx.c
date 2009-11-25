@@ -86,7 +86,7 @@ mode_signbit_p (enum machine_mode mode, const_rtx x)
   width = GET_MODE_BITSIZE (mode);
   if (width == 0)
     return false;
-  
+
   if (width <= HOST_BITS_PER_WIDE_INT
       && CONST_INT_P (x))
     val = INTVAL (x);
@@ -594,7 +594,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       /* (not (ashiftrt foo C)) where C is the number of bits in FOO
 	 minus 1 is (ge foo (const_int 0)) if STORE_FLAG_VALUE is -1,
 	 so we can perform the above simplification.  */
- 
+
       if (STORE_FLAG_VALUE == -1
 	  && GET_CODE (op) == ASHIFTRT
 	  && GET_CODE (XEXP (op, 1))
@@ -658,11 +658,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if (GET_CODE (op) == PLUS
 	  && XEXP (op, 1) == const1_rtx)
 	return simplify_gen_unary (NOT, mode, XEXP (op, 0), mode);
-      
+
       /* Similarly, (neg (not X)) is (plus X 1).  */
       if (GET_CODE (op) == NOT)
 	return plus_constant (XEXP (op, 0), 1);
-      
+
       /* (neg (minus X Y)) can become (minus Y X).  This transformation
 	 isn't safe for modes with signed zeros, since if X and Y are
 	 both +0, (minus Y X) is the same as (minus X Y).  If the
@@ -672,7 +672,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && !HONOR_SIGNED_ZEROS (mode)
 	  && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
 	return simplify_gen_binary (MINUS, mode, XEXP (op, 1), XEXP (op, 0));
-      
+
       if (GET_CODE (op) == PLUS
 	  && !HONOR_SIGNED_ZEROS (mode)
 	  && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
@@ -725,7 +725,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && INTVAL (XEXP (op, 1)) == GET_MODE_BITSIZE (mode) - 1)
 	return simplify_gen_binary (ASHIFTRT, mode,
 				    XEXP (op, 0), XEXP (op, 1));
-      
+
       /* (neg (xor A 1)) is (plus A -1) if A is known to be either 0 or 1.  */
       if (GET_CODE (op) == XOR
 	  && XEXP (op, 1) == const1_rtx
@@ -798,7 +798,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
          replace the TRUNCATE with a SUBREG.  Note that this is also
          valid if TRULY_NOOP_TRUNCATION is false for the corresponding
          modes we just have to apply a different definition for
-         truncation.  But don't do this for an (LSHIFTRT (MULT ...)) 
+         truncation.  But don't do this for an (LSHIFTRT (MULT ...))
          since this will cause problems with the umulXi3_highpart
          patterns.  */
       if ((TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
@@ -1059,7 +1059,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
     default:
       break;
     }
-  
+
   return 0;
 }
 
@@ -2220,7 +2220,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (op0, mode) & ~INTVAL (op1)) == 0)
 	return op1;
- 
+
       /* Canonicalize (X & C1) | C2.  */
       if (GET_CODE (op0) == AND
 	  && CONST_INT_P (trueop1)
@@ -3442,23 +3442,23 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  arg0s = arg0;
 	  arg1s = arg1;
 	}
-      
+
       /* Compute the value of the arithmetic.  */
-      
+
       switch (code)
 	{
 	case PLUS:
 	  val = arg0s + arg1s;
 	  break;
-	  
+
 	case MINUS:
 	  val = arg0s - arg1s;
 	  break;
-	  
+
 	case MULT:
 	  val = arg0s * arg1s;
 	  break;
-	  
+
 	case DIV:
 	  if (arg1s == 0
 	      || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
@@ -3466,7 +3466,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    return 0;
 	  val = arg0s / arg1s;
 	  break;
-	  
+
 	case MOD:
 	  if (arg1s == 0
 	      || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
@@ -3474,7 +3474,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    return 0;
 	  val = arg0s % arg1s;
 	  break;
-	  
+
 	case UDIV:
 	  if (arg1 == 0
 	      || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
@@ -3482,7 +3482,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    return 0;
 	  val = (unsigned HOST_WIDE_INT) arg0 / arg1;
 	  break;
-	  
+
 	case UMOD:
 	  if (arg1 == 0
 	      || (arg0s == (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1)
@@ -3490,19 +3490,19 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    return 0;
 	  val = (unsigned HOST_WIDE_INT) arg0 % arg1;
 	  break;
-	  
+
 	case AND:
 	  val = arg0 & arg1;
 	  break;
-	  
+
 	case IOR:
 	  val = arg0 | arg1;
 	  break;
-	  
+
 	case XOR:
 	  val = arg0 ^ arg1;
 	  break;
-	  
+
 	case LSHIFTRT:
 	case ASHIFT:
 	case ASHIFTRT:
@@ -3517,56 +3517,56 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    arg1 = (unsigned HOST_WIDE_INT) arg1 % width;
 	  else if (arg1 < 0 || arg1 >= GET_MODE_BITSIZE (mode))
 	    return 0;
-	  
+
 	  val = (code == ASHIFT
 		 ? ((unsigned HOST_WIDE_INT) arg0) << arg1
 		 : ((unsigned HOST_WIDE_INT) arg0) >> arg1);
-	  
+
 	  /* Sign-extend the result for arithmetic right shifts.  */
 	  if (code == ASHIFTRT && arg0s < 0 && arg1 > 0)
 	    val |= ((HOST_WIDE_INT) -1) << (width - arg1);
 	  break;
-	  
+
 	case ROTATERT:
 	  if (arg1 < 0)
 	    return 0;
-	  
+
 	  arg1 %= width;
 	  val = ((((unsigned HOST_WIDE_INT) arg0) << (width - arg1))
 		 | (((unsigned HOST_WIDE_INT) arg0) >> arg1));
 	  break;
-	  
+
 	case ROTATE:
 	  if (arg1 < 0)
 	    return 0;
-	  
+
 	  arg1 %= width;
 	  val = ((((unsigned HOST_WIDE_INT) arg0) << arg1)
 		 | (((unsigned HOST_WIDE_INT) arg0) >> (width - arg1)));
 	  break;
-	  
+
 	case COMPARE:
 	  /* Do nothing here.  */
 	  return 0;
-	  
+
 	case SMIN:
 	  val = arg0s <= arg1s ? arg0s : arg1s;
 	  break;
-	  
+
 	case UMIN:
 	  val = ((unsigned HOST_WIDE_INT) arg0
 		 <= (unsigned HOST_WIDE_INT) arg1 ? arg0 : arg1);
 	  break;
-	  
+
 	case SMAX:
 	  val = arg0s > arg1s ? arg0s : arg1s;
 	  break;
-	  
+
 	case UMAX:
 	  val = ((unsigned HOST_WIDE_INT) arg0
 		 > (unsigned HOST_WIDE_INT) arg1 ? arg0 : arg1);
 	  break;
-	  
+
 	case SS_PLUS:
 	case US_PLUS:
 	case SS_MINUS:
@@ -3579,7 +3579,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case US_ASHIFT:
 	  /* ??? There are simplifications that can be done.  */
 	  return 0;
-	  
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -3808,7 +3808,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		  }
 		else
 		  tem = simplify_binary_operation (ncode, mode, lhs, rhs);
-		
+
 		/* Reject "simplifications" that just wrap the two
 		   arguments in a CONST.  Failure to do so can result
 		   in infinite recursion with simplify_binary_operation
@@ -3855,7 +3855,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
       && CONSTANT_P (ops[0].op)
       && ops[0].neg)
     return gen_rtx_fmt_ee (MINUS, mode, ops[1].op, ops[0].op);
-  
+
   /* We suppressed creation of trivial CONST expressions in the
      combination loop to avoid recursion.  Create one manually now.
      The combination loop should have ensured that there is exactly
@@ -3942,7 +3942,7 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
 	  }
 #else
 	  return NULL_RTX;
-#endif 
+#endif
 	}
       if (VECTOR_MODE_P (mode))
 	{
@@ -4179,7 +4179,7 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
   return NULL_RTX;
 }
 
-enum 
+enum
 {
   CMP_EQ = 1,
   CMP_LT = 2,
@@ -4191,7 +4191,7 @@ enum
 
 /* Convert the known results for EQ, LT, GT, LTU, GTU contained in
    KNOWN_RESULT to a CONST_INT, based on the requested comparison CODE
-   For KNOWN_RESULT to make sense it should be either CMP_EQ, or the 
+   For KNOWN_RESULT to make sense it should be either CMP_EQ, or the
    logical OR of one of (CMP_LT, CMP_GT) and one of (CMP_LTU, CMP_GTU).
    For floating-point comparisons, assume that the operands were ordered.  */
 
@@ -4826,7 +4826,7 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
    and then repacking them again for OUTERMODE.  */
 
 static rtx
-simplify_immed_subreg (enum machine_mode outermode, rtx op, 
+simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		       enum machine_mode innermode, unsigned int byte)
 {
   /* We support up to 512-bit values (for V8DFmode).  */
@@ -4874,17 +4874,17 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
   gcc_assert (BITS_PER_UNIT % value_bit == 0);
   /* I don't know how to handle endianness of sub-units.  */
   gcc_assert (elem_bitsize % BITS_PER_UNIT == 0);
-  
+
   for (elem = 0; elem < num_elem; elem++)
     {
       unsigned char * vp;
       rtx el = elems[elem];
-      
+
       /* Vectors are kept in target memory order.  (This is probably
 	 a mistake.)  */
       {
 	unsigned byte = (elem * elem_bitsize) / BITS_PER_UNIT;
-	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize) 
+	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize)
 			  / BITS_PER_UNIT);
 	unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
 	unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
@@ -4892,19 +4892,19 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 			 + (word_byte / UNITS_PER_WORD) * UNITS_PER_WORD);
 	vp = value + (bytele * BITS_PER_UNIT) / value_bit;
       }
-	
+
       switch (GET_CODE (el))
 	{
 	case CONST_INT:
 	  for (i = 0;
-	       i < HOST_BITS_PER_WIDE_INT && i < elem_bitsize; 
+	       i < HOST_BITS_PER_WIDE_INT && i < elem_bitsize;
 	       i += value_bit)
 	    *vp++ = INTVAL (el) >> i;
 	  /* CONST_INTs are always logically sign-extended.  */
 	  for (; i < elem_bitsize; i += value_bit)
 	    *vp++ = INTVAL (el) < 0 ? -1 : 0;
 	  break;
-      
+
 	case CONST_DOUBLE:
 	  if (GET_MODE (el) == VOIDmode)
 	    {
@@ -4950,7 +4950,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		    ibase = i;
 		  *vp++ = tmp[ibase / 32] >> i % 32;
 		}
-	      
+
 	      /* It shouldn't matter what's done here, so fill it with
 		 zero.  */
 	      for (; i < elem_bitsize; i += value_bit)
@@ -4976,7 +4976,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		*vp++ = 0;
 	    }
           break;
-	  
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -4988,7 +4988,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
      will already have offset 0.  */
   if (GET_MODE_SIZE (innermode) >= GET_MODE_SIZE (outermode))
     {
-      unsigned ibyte = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode) 
+      unsigned ibyte = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode)
 			- byte);
       unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
       unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
@@ -5004,7 +5004,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
   value_start = byte * (BITS_PER_UNIT / value_bit);
 
   /* Re-pack the value.  */
-    
+
   if (VECTOR_MODE_P (outermode))
     {
       num_elem = GET_MODE_NUNITS (outermode);
@@ -5028,12 +5028,12 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
   for (elem = 0; elem < num_elem; elem++)
     {
       unsigned char *vp;
-      
+
       /* Vectors are stored in target memory order.  (This is probably
 	 a mistake.)  */
       {
 	unsigned byte = (elem * elem_bitsize) / BITS_PER_UNIT;
-	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize) 
+	unsigned ibyte = (((num_elem - 1 - elem) * elem_bitsize)
 			  / BITS_PER_UNIT);
 	unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
 	unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
@@ -5056,7 +5056,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	    for (; i < elem_bitsize; i += value_bit)
 	      hi |= ((HOST_WIDE_INT)(*vp++ & value_mask)
 		     << (i - HOST_BITS_PER_WIDE_INT));
-	    
+
 	    /* immed_double_const doesn't call trunc_int_for_mode.  I don't
 	       know why.  */
 	    if (elem_bitsize <= HOST_BITS_PER_WIDE_INT)
@@ -5067,13 +5067,13 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	      return NULL_RTX;
 	  }
 	  break;
-      
+
 	case MODE_FLOAT:
 	case MODE_DECIMAL_FLOAT:
 	  {
 	    REAL_VALUE_TYPE r;
 	    long tmp[max_bitsize / 32];
-	    
+
 	    /* real_from_target wants its input in words affected by
 	       FLOAT_WORDS_BIG_ENDIAN.  However, we ignore this,
 	       and use WORDS_BIG_ENDIAN instead; see the documentation
@@ -5116,7 +5116,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	    elems[elem] = CONST_FIXED_FROM_FIXED_VALUE (f, outer_submode);
           }
           break;
-	    
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -5428,7 +5428,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       && CONST_INT_P (XEXP (op, 1))
       && (INTVAL (XEXP (op, 1)) & (GET_MODE_BITSIZE (outermode) - 1)) == 0
       && INTVAL (XEXP (op, 1)) >= 0
-      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (innermode)      
+      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (innermode)
       && byte == subreg_lowpart_offset (outermode, innermode))
     {
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;

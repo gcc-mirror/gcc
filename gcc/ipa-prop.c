@@ -2190,7 +2190,7 @@ ipa_prop_read_jump_functions (void)
     }
 }
 
-/* After merging units, we can get mismatch in argument counts. 
+/* After merging units, we can get mismatch in argument counts.
    Also decl merging might've rendered parameter lists obsolette.
    Also compute called_with_variable_arg info.  */
 

@@ -234,7 +234,7 @@ clear_allocno_live (ira_allocno_t a)
 	    if (high_pressure_start_point[cl] >= 0
 		&& curr_reg_pressure[cl] <= ira_available_class_regs[cl])
 	      high_pressure_start_point[cl] = -1;
-	  
+
 	}
     }
   sparseset_clear_bit (allocnos_live, ALLOCNO_NUM (a));
@@ -416,10 +416,10 @@ make_pseudo_conflict (rtx reg, enum reg_class cl, rtx dreg, bool advance_p)
 
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
-  
+
   if (! REG_P (reg) || REGNO (reg) < FIRST_PSEUDO_REGISTER)
     return advance_p;
-  
+
   a = ira_curr_regno_allocno_map[REGNO (reg)];
   if (! reg_classes_intersect_p (cl, ALLOCNO_COVER_CLASS (a)))
     return advance_p;
@@ -447,7 +447,7 @@ check_and_make_def_use_conflict (rtx dreg, enum reg_class def_cl,
 {
   if (! reg_classes_intersect_p (def_cl, use_cl))
     return advance_p;
-  
+
   advance_p = make_pseudo_conflict (recog_data.operand[use],
 				    use_cl, dreg, advance_p);
   /* Reload may end up swapping commutative operands, so you
@@ -480,41 +480,41 @@ check_and_make_def_conflict (int alt, int def, enum reg_class def_cl)
   enum reg_class use_cl, acl;
   bool advance_p;
   rtx dreg = recog_data.operand[def];
-	
+
   if (def_cl == NO_REGS)
     return;
-  
+
   if (GET_CODE (dreg) == SUBREG)
     dreg = SUBREG_REG (dreg);
-  
+
   if (! REG_P (dreg) || REGNO (dreg) < FIRST_PSEUDO_REGISTER)
     return;
-  
+
   a = ira_curr_regno_allocno_map[REGNO (dreg)];
   acl = ALLOCNO_COVER_CLASS (a);
   if (! reg_classes_intersect_p (acl, def_cl))
     return;
-  
+
   advance_p = true;
-  
+
   for (use = 0; use < recog_data.n_operands; use++)
     {
       if (use == def || recog_data.operand_type[use] == OP_OUT)
 	continue;
-      
+
       if (recog_op_alt[use][alt].anything_ok)
 	use_cl = ALL_REGS;
       else
 	use_cl = recog_op_alt[use][alt].cl;
-      
+
       advance_p = check_and_make_def_use_conflict (dreg, def_cl, use,
 						   use_cl, advance_p);
-      
+
       if ((use_match = recog_op_alt[use][alt].matches) >= 0)
 	{
 	  if (use_match == def)
 	    continue;
-	  
+
 	  if (recog_op_alt[use_match][alt].anything_ok)
 	    use_cl = ALL_REGS;
 	  else
@@ -573,7 +573,7 @@ mark_hard_reg_early_clobbers (rtx insn, bool live_p)
     if (DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MUST_CLOBBER))
       {
 	rtx dreg = DF_REF_REG (*def_rec);
-	
+
 	if (GET_CODE (dreg) == SUBREG)
 	  dreg = SUBREG_REG (dreg);
 	if (! REG_P (dreg) || REGNO (dreg) >= FIRST_PSEUDO_REGISTER)
@@ -581,7 +581,7 @@ mark_hard_reg_early_clobbers (rtx insn, bool live_p)
 
 	/* Hard register clobbers are believed to be early clobber
 	   because there is no way to say that non-operand hard
-	   register clobbers are not early ones.  */ 
+	   register clobbers are not early ones.  */
 	if (live_p)
 	  mark_ref_live (*def_rec);
 	else
@@ -638,7 +638,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 			  && GET_MODE (equiv_const) == VOIDmode))))
 	    return NO_REGS;
 	  break;
-	  
+
 	case 's':
 	  if ((CONSTANT_P (op) && !CONST_INT_P (op)
 	       && (GET_CODE (op) != CONST_DOUBLE || GET_MODE (op) != VOIDmode))
@@ -649,7 +649,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 		      || GET_MODE (equiv_const) != VOIDmode)))
 	    return NO_REGS;
 	  break;
-	  
+
 	case 'I':
 	case 'J':
 	case 'K':
@@ -666,7 +666,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 						c, constraints)))
 	    return NO_REGS;
 	  break;
-	  
+
 	case 'E':
 	case 'F':
 	  if (GET_CODE (op) == CONST_DOUBLE
@@ -679,7 +679,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 			      == MODE_VECTOR_FLOAT)))))
 	    return NO_REGS;
 	  break;
-	  
+
 	case 'G':
 	case 'H':
 	  if ((GET_CODE (op) == CONST_DOUBLE
@@ -707,7 +707,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	    return NO_REGS;
 	  cl = next_cl;
 	  break;
-	  
+
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
 	  next_cl
@@ -720,7 +720,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	    return NO_REGS;
 	  cl = next_cl;
 	  break;
-	  
+
 	default:
 	  return NO_REGS;
 	}
@@ -758,7 +758,7 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
-      
+
       if (GET_CODE (op) == SCRATCH
 	  || (REG_P (op) && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER))
 	{
@@ -825,7 +825,7 @@ process_single_reg_class_operands (bool in_p, int freq)
 
       if (GET_CODE (operand) == SUBREG)
 	operand = SUBREG_REG (operand);
-      
+
       if (REG_P (operand)
 	  && (regno = REGNO (operand)) >= FIRST_PSEUDO_REGISTER)
 	{
@@ -883,7 +883,7 @@ bb_has_abnormal_call_pred (basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  
+
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
@@ -926,7 +926,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	if (TEST_HARD_REG_BIT (hard_regs_live, i))
 	  {
 	    enum reg_class cover_class, cl;
-	    
+
 	    cover_class = ira_class_translate[REGNO_REG_CLASS (i)];
 	    for (j = 0;
 		 (cl = ira_reg_class_super_classes[cover_class][j])
@@ -943,14 +943,14 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
       EXECUTE_IF_SET_IN_BITMAP (reg_live_out, FIRST_PSEUDO_REGISTER, j, bi)
 	{
 	  ira_allocno_t a = ira_curr_regno_allocno_map[j];
-	  
+
 	  if (a == NULL)
 	    continue;
 	  ira_assert (! sparseset_bit_p (allocnos_live, ALLOCNO_NUM (a)));
 	  set_allocno_live (a);
 	  make_regno_born (j);
 	}
-      
+
       freq = REG_FREQ_FROM_BB (bb);
       if (freq == 0)
 	freq = 1;
@@ -971,10 +971,10 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	{
 	  df_ref *def_rec, *use_rec;
 	  bool call_p;
-	  
+
 	  if (!NONDEBUG_INSN_P (insn))
 	    continue;
-	  
+
 	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file, "   Insn %u(l%d): point = %d\n",
 		     INSN_UID (insn), loop_tree_node->parent->loop->num,
@@ -1027,11 +1027,11 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      }
 		  }
 	      }
-	  
+
 	  extract_insn (insn);
 	  preprocess_constraints ();
 	  process_single_reg_class_operands (false, freq);
-	  
+
 	  /* See which defined values die here.  */
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	    if (!call_p || !DF_REF_FLAGS_IS_SET (*def_rec, DF_REF_MAY_CLOBBER))
@@ -1044,7 +1044,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, i)
 	        {
 		  ira_allocno_t a = ira_allocnos[i];
-		  
+
 		  if (allocno_saved_at_call[i] != last_call_num)
 		    /* Here we are mimicking caller-save.c behaviour
 		       which does not save hard register at a call if
@@ -1074,7 +1074,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		    }
 		}
 	    }
-	  
+
 	  make_early_clobber_and_input_conflicts ();
 
 	  curr_point++;
@@ -1084,7 +1084,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	    mark_ref_live (*use_rec);
 
 	  process_single_reg_class_operands (true, freq);
-	  
+
 	  set_p = mark_hard_reg_early_clobbers (insn, true);
 
 	  if (set_p)
@@ -1097,12 +1097,12 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
 		{
 		  rtx ureg = DF_REF_REG (*use_rec);
-		  
+
 		  if (GET_CODE (ureg) == SUBREG)
 		    ureg = SUBREG_REG (ureg);
 		  if (! REG_P (ureg) || REGNO (ureg) >= FIRST_PSEUDO_REGISTER)
 		    continue;
-		  
+
 		  mark_ref_live (*use_rec);
 		}
 	    }
@@ -1223,7 +1223,7 @@ remove_some_program_points_and_update_live_ranges (void)
   allocno_live_range_t r;
   bitmap born_or_died;
   bitmap_iterator bi;
-  
+
   born_or_died = ira_allocate_bitmap ();
   FOR_EACH_ALLOCNO (a, ai)
     {

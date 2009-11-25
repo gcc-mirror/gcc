@@ -1,5 +1,5 @@
-/* Source code for an implementation of the Omega test, an integer 
-   programming algorithm for dependence analysis, by William Pugh, 
+/* Source code for an implementation of the Omega test, an integer
+   programming algorithm for dependence analysis, by William Pugh,
    appeared in Supercomputing '91 and CACM Aug 92.
 
    This code has no license restrictions, and is considered public
@@ -507,7 +507,7 @@ omega_pretty_print_problem (FILE *file, omega_pb pb)
     none, le, lt
   } partial_order_type;
 
-  partial_order_type **po = XNEWVEC (partial_order_type *, 
+  partial_order_type **po = XNEWVEC (partial_order_type *,
 				     OMEGA_MAX_VARS * OMEGA_MAX_VARS);
   int **po_eq = XNEWVEC (int *, OMEGA_MAX_VARS * OMEGA_MAX_VARS);
   int *last_links = XNEWVEC (int, OMEGA_MAX_VARS);
@@ -673,7 +673,7 @@ omega_pretty_print_problem (FILE *file, omega_pb pb)
 	    }
 
 	  fprintf (file, "%s", omega_variable_to_str (pb, chain[0]));
-	  
+
 	  for (multiprint = false, i = 1; i < m; i++)
 	    {
 	      v = chain[i - 1];
@@ -1310,7 +1310,7 @@ verify_omega_pb (omega_pb pb)
   omega_copy_problem (tmp_problem, pb);
   tmp_problem->safe_vars = 0;
   tmp_problem->num_subs = 0;
-  
+
   for (e = pb->num_geqs - 1; e >= 0; e--)
     if (pb->geqs[e].color == omega_red)
       {
@@ -1358,7 +1358,7 @@ verify_omega_pb (omega_pb pb)
 static void
 adding_equality_constraint (omega_pb pb, int e)
 {
-  if (original_problem != no_problem 
+  if (original_problem != no_problem
       && original_problem != pb
       && !conservative)
     {
@@ -1525,7 +1525,7 @@ normalize_omega_problem (omega_pb pb)
 		    {
 		      i = packing[i0];
 		      pb->geqs[e].coef[i] = pb->geqs[e].coef[i] / g;
-		      hashCode = hashCode * hash_key_multiplier * (i + 3) 
+		      hashCode = hashCode * hash_key_multiplier * (i + 3)
 			+ pb->geqs[e].coef[i];
 		    }
 		}
@@ -1643,7 +1643,7 @@ normalize_omega_problem (omega_pb pb)
 		  }
 
 		if (pb->geqs[e2].coef[0] == -cTerm
-		    && (create_color 
+		    && (create_color
 			|| pb->geqs[e].color == omega_black))
 		  {
 		    omega_copy_eqn (&pb->eqs[pb->num_eqs], &pb->geqs[e],
@@ -1685,7 +1685,7 @@ normalize_omega_problem (omega_pb pb)
 
 	    e2 = fast_lookup[MAX_KEYS + eKey];
 
-	    if (e2 < e && pb->geqs[e2].key == eKey 
+	    if (e2 < e && pb->geqs[e2].key == eKey
 		&& pb->geqs[e2].color == omega_black)
 	      {
 		if (pb->geqs[e2].coef[0] > cTerm)
@@ -1834,7 +1834,7 @@ cleanout_wildcards (omega_pb pb)
 	      for (e2 = pb->num_eqs - 1; e2 >= 0; e2--)
 		if (e != e2 && pb->eqs[e2].coef[i]
 		    && (pb->eqs[e2].color == omega_red
-			|| (pb->eqs[e2].color == omega_black 
+			|| (pb->eqs[e2].color == omega_black
 			    && pb->eqs[e].color == omega_black)))
 		  {
 		    eqn eqn = &(pb->eqs[e2]);
@@ -1853,9 +1853,9 @@ cleanout_wildcards (omega_pb pb)
 		  }
 
 	      for (e2 = pb->num_geqs - 1; e2 >= 0; e2--)
-		if (pb->geqs[e2].coef[i] 
+		if (pb->geqs[e2].coef[i]
 		    && (pb->geqs[e2].color == omega_red
-			|| (pb->eqs[e].color == omega_black 
+			|| (pb->eqs[e].color == omega_black
 			    && pb->geqs[e2].color == omega_black)))
 		  {
 		    eqn eqn = &(pb->geqs[e2]);
@@ -1875,9 +1875,9 @@ cleanout_wildcards (omega_pb pb)
 		  }
 
 	      for (e2 = pb->num_subs - 1; e2 >= 0; e2--)
-		if (pb->subs[e2].coef[i] 
+		if (pb->subs[e2].coef[i]
 		    && (pb->subs[e2].color == omega_red
-			|| (pb->subs[e2].color == omega_black 
+			|| (pb->subs[e2].color == omega_black
 			    && pb->eqs[e].color == omega_black)))
 		  {
 		    eqn eqn = &(pb->subs[e2]);
@@ -1975,7 +1975,7 @@ omega_unprotect_1 (omega_pb pb, int *idx, bool *unprotect)
 static void
 resurrect_subs (omega_pb pb)
 {
-  if (pb->num_subs > 0 
+  if (pb->num_subs > 0
       && please_no_equalities_in_simplified_problems == 0)
     {
       int i, e, n, m;
@@ -2132,7 +2132,7 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
 	    continue;
 
 	  foundPQ:
-	    pz = ((zeqs[e1] & zeqs[e2]) | (peqs[e1] & neqs[e2]) 
+	    pz = ((zeqs[e1] & zeqs[e2]) | (peqs[e1] & neqs[e2])
 		  | (neqs[e1] & peqs[e2]));
 	    pp = peqs[e1] | peqs[e2];
 	    pn = neqs[e1] | neqs[e2];
@@ -2162,7 +2162,7 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
 		  if (alpha3 > 0)
 		    {
 		      /* Trying to prove e3 is redundant.  */
-		      if (!implies (peqs[e3], pp) 
+		      if (!implies (peqs[e3], pp)
 			  || !implies (neqs[e3], pn))
 			goto nextE3;
 
@@ -2206,7 +2206,7 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
 		      /* Trying to prove e3 <= 0 and therefore e3 = 0,
 		        or trying to prove e3 < 0, and therefore the
 		        problem has no solutions.  */
-		      if (!implies (peqs[e3], pn) 
+		      if (!implies (peqs[e3], pn)
 			  || !implies (neqs[e3], pp))
 			goto nextE3;
 
@@ -2267,7 +2267,7 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
 			      fprintf (dump_file, "\n\n");
 			    }
 
-			  omega_copy_eqn (&pb->eqs[pb->num_eqs++], 
+			  omega_copy_eqn (&pb->eqs[pb->num_eqs++],
 					  &pb->geqs[e3], pb->num_vars);
 			  gcc_assert (pb->num_eqs <= OMEGA_MAX_EQS);
 			  adding_equality_constraint (pb, pb->num_eqs - 1);
@@ -2469,12 +2469,12 @@ coalesce (omega_pb pb)
     is_dead[e] = false;
 
   for (e = 0; e < pb->num_geqs; e++)
-    if (pb->geqs[e].color == omega_red 
+    if (pb->geqs[e].color == omega_red
 	&& !pb->geqs[e].touched)
       for (e2 = e + 1; e2 < pb->num_geqs; e2++)
-	if (!pb->geqs[e2].touched 
+	if (!pb->geqs[e2].touched
 	    && pb->geqs[e].key == -pb->geqs[e2].key
-	    && pb->geqs[e].coef[0] == -pb->geqs[e2].coef[0] 
+	    && pb->geqs[e].coef[0] == -pb->geqs[e2].coef[0]
 	    && pb->geqs[e2].color == omega_red)
 	  {
 	    omega_copy_eqn (&pb->eqs[pb->num_eqs++], &pb->geqs[e],
@@ -2527,7 +2527,7 @@ omega_eliminate_red (omega_pb pb, bool eliminate_all)
   for (e = pb->num_geqs - 1; e >= 0; e--)
     if (pb->geqs[e].color == omega_black && !is_dead[e])
       for (e2 = e - 1; e2 >= 0; e2--)
-	if (pb->geqs[e2].color == omega_black 
+	if (pb->geqs[e2].color == omega_black
 	    && !is_dead[e2])
 	  {
 	    a = 0;
@@ -2557,7 +2557,7 @@ omega_eliminate_red (omega_pb pb, bool eliminate_all)
 	    for (e3 = pb->num_geqs - 1; e3 >= 0; e3--)
 	      if (pb->geqs[e3].color == omega_red)
 		{
-		  alpha1 = (pb->geqs[e2].coef[j] * pb->geqs[e3].coef[i] 
+		  alpha1 = (pb->geqs[e2].coef[j] * pb->geqs[e3].coef[i]
 			    - pb->geqs[e2].coef[i] * pb->geqs[e3].coef[j]);
 		  alpha2 = -(pb->geqs[e].coef[j] * pb->geqs[e3].coef[i]
 			     - pb->geqs[e].coef[i] * pb->geqs[e3].coef[j]);
@@ -2577,7 +2577,7 @@ omega_eliminate_red (omega_pb pb, bool eliminate_all)
 
 		      for (k = pb->num_vars; k >= 0; k--)
 			{
-			  c = (alpha1 * pb->geqs[e].coef[k] 
+			  c = (alpha1 * pb->geqs[e].coef[k]
 			       + alpha2 * pb->geqs[e2].coef[k]);
 
 			  if (c != a * pb->geqs[e3].coef[k])
@@ -2743,7 +2743,7 @@ static void
 omega_problem_reduced (omega_pb pb)
 {
   if (omega_verify_simplification
-      && !in_approximate_mode 
+      && !in_approximate_mode
       && verify_omega_pb (pb) == omega_false)
     return;
 
@@ -2756,7 +2756,7 @@ omega_problem_reduced (omega_pb pb)
   if (!please_no_equalities_in_simplified_problems)
     coalesce (pb);
 
-  if (omega_reduce_with_subs 
+  if (omega_reduce_with_subs
       || please_no_equalities_in_simplified_problems)
     chain_unprotect (pb);
   else
@@ -3448,7 +3448,7 @@ omega_solve_eq (omega_pb pb, enum omega_result desired_res)
 
 	      j = 0;
 	      for (i = pb->num_vars; i != sv; i--)
-		if (pb->eqs[e].coef[i] != 0 
+		if (pb->eqs[e].coef[i] != 0
 		    && factor > abs (pb->eqs[e].coef[i]) + 1)
 		  {
 		    factor = abs (pb->eqs[e].coef[i]) + 1;
@@ -3591,7 +3591,7 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 		  c = int_div (c, -a);
 
 		if (upper_bound > c
-		    || (upper_bound == c 
+		    || (upper_bound == c
 			&& !omega_eqn_is_red (&pb->geqs[e], desired_res)))
 		  {
 		    upper_bound = c;
@@ -3857,9 +3857,9 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 	      lucky = (diff >= (Uc - 1) * (Lc - 1));
 	    }
 
-	  if (maxC == 1 
-	      || minC == -1 
-	      || lucky 
+	  if (maxC == 1
+	      || minC == -1
+	      || lucky
 	      || in_approximate_mode)
 	    {
 	      neweqns = score = upper_bound_count * lower_bound_count;
@@ -3870,7 +3870,7 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 			 "\nlucky = %d, in_approximate_mode=%d \n",
 			 omega_variable_to_str (pb, i),
 			 upper_bound_count,
-			 lower_bound_count, minC, maxC, lucky, 
+			 lower_bound_count, minC, maxC, lucky,
 			 in_approximate_mode);
 
 	      if (!exact
@@ -4163,9 +4163,9 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 			  {
 			    constantTerm = -int_div (constantTerm, coefficient);
 
-			    if (constantTerm > lower_bound 
-				|| (constantTerm == lower_bound 
-				    && (desired_res != omega_simplify 
+			    if (constantTerm > lower_bound
+				|| (constantTerm == lower_bound
+				    && (desired_res != omega_simplify
 					|| (pb->geqs[Ue].color == omega_black
 					    && pb->geqs[Le].color == omega_black))))
 			      {
@@ -4285,7 +4285,7 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 		}
 	      else
 		{
-		  if (!conservative 
+		  if (!conservative
 		      && (desired_res != omega_simplify
 			  || (lb_color == omega_black
 			      && ub_color == omega_black))
@@ -4415,7 +4415,7 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 			      pb->geqs[e2].coef[n_vars + 1] = 0;
 			      pb->geqs[e2].touched = 1;
 
-			      if (pb->geqs[Ue].color == omega_red 
+			      if (pb->geqs[Ue].color == omega_red
 				  || pb->geqs[Le].color == omega_red)
 				pb->geqs[e2].color = omega_red;
 			      else
@@ -4803,7 +4803,7 @@ omega_solve_problem (omega_pb pb, enum omega_result desired_res)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, 
+	  fprintf (dump_file,
 		   "Solve depth = %d, in_approximate_mode = %d, aborting\n",
 		   omega_solve_depth, in_approximate_mode);
 	  omega_print_problem (dump_file, pb);
@@ -4831,7 +4831,7 @@ omega_solve_problem (omega_pb pb, enum omega_result desired_res)
   if (!omega_reduce_with_subs)
     {
       resurrect_subs (pb);
-      gcc_assert (please_no_equalities_in_simplified_problems 
+      gcc_assert (please_no_equalities_in_simplified_problems
 		  || !result || pb->num_subs == 0);
     }
 
@@ -5117,7 +5117,7 @@ omega_unprotect_variable (omega_pb pb, int var)
 	      {
 		for (e = pb->num_geqs - 1; e >= 0; e--)
 		  {
-		    pb->geqs[e].coef[pb->num_vars] = 
+		    pb->geqs[e].coef[pb->num_vars] =
 		      pb->geqs[e].coef[pb->safe_vars];
 
 		    pb->geqs[e].coef[pb->safe_vars] = 0;
@@ -5310,7 +5310,7 @@ omega_query_variable (omega_pb pb, int i, int *lower_bound, int *upper_bound)
 	  continue;
 	else
 	  {
-	    *lower_bound = *upper_bound = 
+	    *lower_bound = *upper_bound =
 	      -pb->eqs[e].coef[i] * pb->eqs[e].coef[0];
 	    return false;
 	  }
@@ -5425,7 +5425,7 @@ omega_query_variable_bounds (omega_pb pb, int i, int *l, int *u)
       || (pb->num_vars == 1 && pb->forwarding_address[i] == 1))
     return false;
 
-  if (abs (pb->forwarding_address[i]) == 1 
+  if (abs (pb->forwarding_address[i]) == 1
       && pb->num_vars + pb->num_subs == 2
       && pb->num_eqs + pb->num_subs == 1)
     {

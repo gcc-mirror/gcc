@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* First field in the following declarations is the code of the command
-   used by the tree browser.  
+   used by the tree browser.
    Second field is what is parsed in order to recognize a command.
    Third field is used for printing the help message.  */
 
@@ -82,12 +82,12 @@ DEFTBCODE (TB_MIN,              "min", "Field accessor.")
 DEFTBCODE (TB_MAX,              "max", "Field accessor.")
 
 /* Searching commands.  */
-DEFTBCODE (TB_SEARCH_CODE,	"sc",	"Search a node having a TREE_CODE given as a parameter.") 
+DEFTBCODE (TB_SEARCH_CODE,	"sc",	"Search a node having a TREE_CODE given as a parameter.")
 DEFTBCODE (TB_SEARCH_NAME,	"sn",	"Search an identifier having a name given as a parameter.")
 
 /* Printing commands.  */
-DEFTBCODE (TB_PRETTY_PRINT,     "pp",   "Pretty print current node.") 
-DEFTBCODE (TB_PRINT,            "p",    "Prints the current node.")  
+DEFTBCODE (TB_PRETTY_PRINT,     "pp",   "Pretty print current node.")
+DEFTBCODE (TB_PRINT,            "p",    "Prints the current node.")
 
 
 /*

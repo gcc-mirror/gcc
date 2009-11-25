@@ -367,7 +367,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  continue;
 		}
 	    }
-	  
+
 	  /* Scan all the constraint letters.  See if the operand
 	     matches any of the constraints.  Collect the valid
 	     register classes and see if this operand accepts
@@ -651,7 +651,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
       {
 	ira_allocno_t a;
 	rtx op = ops[i];
-	
+
 	if (! REG_P (op) || REGNO (op) < FIRST_PSEUDO_REGISTER)
 	  continue;
 	a = ira_curr_regno_allocno_map [REGNO (op)];
@@ -703,7 +703,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 			  if (! TEST_HARD_REG_BIT (reg_class_contents[rclass],
 						   regno + nr))
 			    break;
-			
+
 			if (nr == (unsigned) hard_regno_nregs[regno][mode])
 			  op_costs[i]->cost[k] = -frequency;
 		      }
@@ -1180,7 +1180,7 @@ find_costs_and_classes (FILE *dump_file)
     {
       ira_allocno_t a;
       ira_allocno_iterator ai;
-      
+
       pref = pref_buffer;
       FOR_EACH_ALLOCNO (a, ai)
 	pref[ALLOCNO_NUM (a)] = reg_preferred_class (ALLOCNO_REGNO (a));
@@ -1375,7 +1375,7 @@ find_costs_and_classes (FILE *dump_file)
 	      if (regno_cover_class[i] == NO_REGS)
 		best = NO_REGS;
 	      else
-		{	      
+		{
 		  /* Finding best class which is subset of the common
 		     class.  */
 		  best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
@@ -1435,7 +1435,7 @@ find_costs_and_classes (FILE *dump_file)
 	      pref[a_num] = best;
 	    }
 	}
-      
+
       if (internal_flag_ira_verbose > 4 && dump_file)
 	{
 	  if (allocno_p)

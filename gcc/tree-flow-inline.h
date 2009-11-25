@@ -75,7 +75,7 @@ first_htab_element (htab_iterator *hti, htab_t table)
       if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
 	break;
     } while (++(hti->slot) < hti->limit);
-  
+
   if (hti->slot < hti->limit)
     return *(hti->slot);
   return NULL;
@@ -133,7 +133,7 @@ static inline tree
 next_referenced_var (referenced_var_iterator *iter)
 {
   return (tree) next_htab_element (&iter->hti);
-} 
+}
 
 /* Fill up VEC with the variables in the referenced vars hashtable.  */
 
@@ -222,7 +222,7 @@ delink_imm_use (ssa_use_operand_t *linknode)
 static inline void
 link_imm_use_to_list (ssa_use_operand_t *linknode, ssa_use_operand_t *list)
 {
-  /* Link the new node at the head of the list.  If we are in the process of 
+  /* Link the new node at the head of the list.  If we are in the process of
      traversing the list, we won't visit any new nodes added to it.  */
   linknode->prev = list;
   linknode->next = list->next;
@@ -258,7 +258,7 @@ set_ssa_use_from_ptr (use_operand_p use, tree val)
   link_imm_use (use, val);
 }
 
-/* Link ssa_imm_use node LINKNODE into the chain for DEF, with use occurring 
+/* Link ssa_imm_use node LINKNODE into the chain for DEF, with use occurring
    in STMT.  */
 static inline void
 link_imm_use_stmt (ssa_use_operand_t *linknode, tree def, gimple stmt)
@@ -287,7 +287,7 @@ relink_imm_use (ssa_use_operand_t *node, ssa_use_operand_t *old)
     }
 }
 
-/* Relink ssa_imm_use node LINKNODE into the chain for OLD, with use occurring 
+/* Relink ssa_imm_use node LINKNODE into the chain for OLD, with use occurring
    in STMT.  */
 static inline void
 relink_imm_use_stmt (ssa_use_operand_t *linknode, ssa_use_operand_t *old,
@@ -445,12 +445,12 @@ num_imm_uses (const_tree var)
   return num;
 }
 
-/* Return the tree pointed-to by USE.  */ 
+/* Return the tree pointed-to by USE.  */
 static inline tree
 get_use_from_ptr (use_operand_p use)
-{ 
+{
   return *(use->use);
-} 
+}
 
 /* Return the tree pointed-to by DEF.  */
 static inline tree
@@ -571,13 +571,13 @@ phi_arg_index_from_use (use_operand_p use)
   index = element - root;
 
 #ifdef ENABLE_CHECKING
-  /* Make sure the calculation doesn't have any leftover bytes.  If it does, 
+  /* Make sure the calculation doesn't have any leftover bytes.  If it does,
      then imm_use is likely not the first element in phi_arg_d.  */
   gcc_assert (
 	  (((char *)element - (char *)root) % sizeof (struct phi_arg_d)) == 0);
   gcc_assert (index < gimple_phi_capacity (phi));
 #endif
- 
+
  return index;
 }
 
@@ -875,7 +875,7 @@ single_ssa_def_operand (gimple stmt, int flags)
 }
 
 
-/* Return true if there are zero operands in STMT matching the type 
+/* Return true if there are zero operands in STMT matching the type
    given in FLAGS.  */
 static inline bool
 zero_ssa_operands (gimple stmt, int flags)
@@ -920,7 +920,7 @@ static inline tree
 single_phi_def (gimple stmt, int flags)
 {
   tree def = PHI_RESULT (stmt);
-  if ((flags & SSA_OP_DEF) && is_gimple_reg (def)) 
+  if ((flags & SSA_OP_DEF) && is_gimple_reg (def))
     return def;
   if ((flags & SSA_OP_VIRTUAL_DEFS) && !is_gimple_reg (def))
     return def;
@@ -941,7 +941,7 @@ op_iter_init_phiuse (ssa_op_iter *ptr, gimple phi, int flags)
   gcc_assert ((flags & (SSA_OP_USE | SSA_OP_VIRTUAL_USES)) != 0);
 
   comp = (is_gimple_reg (phi_def) ? SSA_OP_USE : SSA_OP_VIRTUAL_USES);
-    
+
   /* If the PHI node doesn't the operand type we care about, we're done.  */
   if ((flags & comp) == 0)
     {
@@ -970,7 +970,7 @@ op_iter_init_phidef (ssa_op_iter *ptr, gimple phi, int flags)
   gcc_assert ((flags & (SSA_OP_DEF | SSA_OP_VIRTUAL_DEFS)) != 0);
 
   comp = (is_gimple_reg (phi_def) ? SSA_OP_DEF : SSA_OP_VIRTUAL_DEFS);
-    
+
   /* If the PHI node doesn't have the operand type we care about,
      we're done.  */
   if ((flags & comp) == 0)
@@ -1005,12 +1005,12 @@ end_imm_use_stmt_traverse (imm_use_iterator *imm)
 
 /* Immediate use traversal of uses within a stmt require that all the
    uses on a stmt be sequentially listed.  This routine is used to build up
-   this sequential list by adding USE_P to the end of the current list 
-   currently delimited by HEAD and LAST_P.  The new LAST_P value is 
+   this sequential list by adding USE_P to the end of the current list
+   currently delimited by HEAD and LAST_P.  The new LAST_P value is
    returned.  */
 
 static inline use_operand_p
-move_use_after_head (use_operand_p use_p, use_operand_p head, 
+move_use_after_head (use_operand_p use_p, use_operand_p head,
 		      use_operand_p last_p)
 {
   gcc_assert (USE_FROM_PTR (use_p) == USE_FROM_PTR (head));
@@ -1079,7 +1079,7 @@ static inline gimple
 first_imm_use_stmt (imm_use_iterator *imm, tree var)
 {
   gcc_assert (TREE_CODE (var) == SSA_NAME);
-  
+
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
   imm->next_imm_name = NULL_USE_OPERAND_P;

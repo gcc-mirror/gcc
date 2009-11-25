@@ -992,7 +992,7 @@ c_parser_translation_unit (c_parser *parser)
 {
   if (c_parser_next_token_is (parser, CPP_EOF))
     {
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 	       "ISO C forbids an empty translation unit");
     }
   else
@@ -1078,7 +1078,7 @@ c_parser_external_declaration (c_parser *parser)
 	}
       break;
     case CPP_SEMICOLON:
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 	       "ISO C does not allow extra %<;%> outside of a function");
       c_parser_consume_token (parser);
       break;
@@ -1158,9 +1158,9 @@ c_parser_external_declaration (c_parser *parser)
    C we also allow but diagnose declarations without declaration
    specifiers, but only at top level (elsewhere they conflict with
    other syntax).
-   
+
    OpenMP:
-   
+
    declaration:
      threadprivate-directive  */
 
@@ -1908,7 +1908,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	  /* Parse any stray semicolon.  */
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+	      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 		       "extra semicolon in struct or union specified");
 	      c_parser_consume_token (parser);
 	      continue;
@@ -1937,7 +1937,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 	  else
 	    {
 	      if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
-		pedwarn (c_parser_peek_token (parser)->location, 0, 
+		pedwarn (c_parser_peek_token (parser)->location, 0,
 			 "no semicolon at end of struct or union");
 	      else
 		{
@@ -2033,7 +2033,7 @@ c_parser_struct_declaration (c_parser *parser)
       tree ret;
       if (!specs->type_seen_p)
 	{
-	  pedwarn (decl_loc, OPT_pedantic, 
+	  pedwarn (decl_loc, OPT_pedantic,
 		   "ISO C forbids member declarations with no members");
 	  shadow_tag_warned (specs, pedantic);
 	  ret = NULL_TREE;
@@ -2414,7 +2414,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
   /* Parse a sequence of array declarators and parameter lists.  */
   if (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
     {
-      location_t brace_loc = c_parser_peek_token (parser)->location; 
+      location_t brace_loc = c_parser_peek_token (parser)->location;
       struct c_declarator *declarator;
       struct c_declspecs *quals_attrs = build_null_declspecs ();
       bool static_seen;
@@ -3143,7 +3143,7 @@ c_parser_initelt (c_parser *parser)
       /* Old-style structure member designator.  */
       set_init_label (c_parser_peek_token (parser)->value);
       /* Use the colon as the error location.  */
-      pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_pedantic, 
+      pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_pedantic,
 	       "obsolete use of designated initializer with %<:%>");
       c_parser_consume_token (parser);
       c_parser_consume_token (parser);
@@ -3278,7 +3278,7 @@ c_parser_initelt (c_parser *parser)
 		  c_parser_consume_token (parser);
 		  set_init_index (first, second);
 		  if (second)
-		    pedwarn (ellipsis_loc, OPT_pedantic, 
+		    pedwarn (ellipsis_loc, OPT_pedantic,
 			     "ISO C forbids specifying range of elements to initialize");
 		}
 	      else
@@ -3291,14 +3291,14 @@ c_parser_initelt (c_parser *parser)
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      if (!flag_isoc99)
-		pedwarn (des_loc, OPT_pedantic, 
+		pedwarn (des_loc, OPT_pedantic,
 			 "ISO C90 forbids specifying subobject to initialize");
 	      c_parser_consume_token (parser);
 	    }
 	  else
 	    {
 	      if (des_seen == 1)
-		pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+		pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 			 "obsolete use of designated initializer without %<=%>");
 	      else
 		{
@@ -3385,9 +3385,9 @@ c_parser_initval (c_parser *parser, struct c_expr *after)
    old parser in requiring something after label declarations.
    Although they are erroneous if the labels declared aren't defined,
    is it useful for the syntax to be this way?
-   
+
    OpenMP:
-   
+
    block-item:
      openmp-directive
 
@@ -3496,7 +3496,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  mark_valid_location_for_stdc_pragma (false);
 	  c_parser_declaration_or_fndef (parser, true, true, true, true);
 	  if (last_stmt)
-	    pedwarn_c90 (loc, 
+	    pedwarn_c90 (loc,
 			 (pedantic && !flag_isoc99)
 			 ? OPT_pedantic
 			 : OPT_Wdeclaration_after_statement,
@@ -3553,13 +3553,13 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_ELSE))
         {
-          if (parser->in_if_block) 
+          if (parser->in_if_block)
             {
 	      mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
               error_at (loc, """expected %<}%> before %<else%>");
               return;
             }
-          else 
+          else
             {
               error_at (loc, "%<else%> without a previous %<if%>");
               c_parser_consume_token (parser);
@@ -3658,7 +3658,7 @@ c_parser_label (c_parser *parser)
 	  error_at (c_parser_peek_token (parser)->location,
 		    "a label can only be part of a statement and "
 		    "a declaration is not a statement");
-	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false, 
+	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false,
 					 /*nested*/ true, /*empty_ok*/ false,
 					 /*start_attr_ok*/ true);
 	}
@@ -4014,7 +4014,7 @@ c_parser_else_body (c_parser *parser)
       add_stmt (build_empty_stmt (loc));
       c_parser_consume_token (parser);
     }
-  else 
+  else
     c_parser_statement_after_labels (parser);
   return c_end_compound_stmt (else_loc, block, flag_isoc99);
 }
@@ -4501,7 +4501,7 @@ c_parser_asm_clobbers (c_parser *parser)
 }
 
 /* Parse asm goto labels, a GNU extension.
- 
+
    asm-goto-operands:
      identifier
      asm-goto-operands , identifier
@@ -4652,7 +4652,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
       tree eptype = NULL_TREE;
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 	       "ISO C forbids omitting the middle term of a ?: expression");
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
@@ -5436,7 +5436,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  c_parser_compound_statement_nostart (parser);
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
-	  pedwarn (loc, OPT_pedantic, 
+	  pedwarn (loc, OPT_pedantic,
 		   "ISO C forbids braced-groups within expressions");
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
 	}
@@ -6216,7 +6216,7 @@ c_parser_objc_class_instance_variables (c_parser *parser)
       /* Parse any stray semicolon.  */
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
-	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 		   "extra semicolon in struct or union specified");
 	  c_parser_consume_token (parser);
 	  continue;
@@ -6433,7 +6433,7 @@ c_parser_objc_method_definition (c_parser *parser)
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       c_parser_consume_token (parser);
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 	       "extra semicolon in method definition specified");
     }
   if (!c_parser_next_token_is (parser, CPP_OPEN_BRACE))
@@ -6470,7 +6470,7 @@ c_parser_objc_methodprotolist (c_parser *parser)
       switch (c_parser_peek_token (parser)->type)
 	{
 	case CPP_SEMICOLON:
-	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
+	  pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
 		   "ISO C does not allow extra %<;%> outside of a function");
 	  c_parser_consume_token (parser);
 	  break;
@@ -7046,7 +7046,7 @@ c_parser_pragma (c_parser *parser, enum pragma_context context)
   c_parser_consume_pragma (parser);
   c_invoke_pragma_handler (id);
 
-  /* Skip to EOL, but suppress any error message.  Those will have been 
+  /* Skip to EOL, but suppress any error message.  Those will have been
      generated by the handler routine through calling error, as opposed
      to calling c_parser_error.  */
   parser->error = true;
@@ -7810,7 +7810,7 @@ c_parser_omp_structured_block (c_parser *parser)
    binop:
      +, *, -, /, &, ^, |, <<, >>
 
-  where x is an lvalue expression with scalar type.  
+  where x is an lvalue expression with scalar type.
 
   LOC is the location of the #pragma token.  */
 
@@ -8320,7 +8320,7 @@ c_parser_omp_ordered (location_t loc, c_parser *parser)
 
    section-sequence:
      section-directive[opt] structured-block
-     section-sequence section-directive structured-block  
+     section-sequence section-directive structured-block
 
     SECTIONS_LOC is the location of the #pragma omp sections.  */
 

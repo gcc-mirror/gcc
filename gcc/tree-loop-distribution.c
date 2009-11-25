@@ -4,17 +4,17 @@
    and Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
    |    D(I) = A(I-1)*E
    |ENDDO
 
-   is transformed to 
+   is transformed to
 
    |DOALL I = 2, N
    |   A(I) = B(I) + C
@@ -855,7 +855,7 @@ free_rdg_components (VEC (rdgc, heap) *components)
    of RDG in which the STARTING_VERTICES occur.  */
 
 static void
-rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices, 
+rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
 		      VEC (rdgc, heap) **components)
 {
   int i, v;
@@ -910,10 +910,10 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
       bitmap np;
       bool part_has_writes = false;
       int v = VEC_index (int, x->vertices, 0);
-	
+
       if (bitmap_bit_p (processed, v))
 	continue;
-  
+
       np = build_rdg_partition_for_component (rdg, x, &part_has_writes,
 					      other_stores);
       bitmap_ior_into (partition, np);

@@ -106,34 +106,34 @@ along with GCC; see the file COPYING3.  If not see
     mergetmp2 = d + e
 
     and put mergetmp2 on the merge worklist.
-    
+
     so merge worklist = {mergetmp, c, mergetmp2}
-    
+
     Continue building binary ops of these operations until you have only
     one operation left on the worklist.
-    
+
     So we have
-    
+
     build binary op
     mergetmp3 = mergetmp + c
-    
+
     worklist = {mergetmp2, mergetmp3}
-    
+
     mergetmp4 = mergetmp2 + mergetmp3
-    
+
     worklist = {mergetmp4}
-    
+
     because we have one operation left, we can now just set the original
     statement equal to the result of that operation.
-    
+
     This will at least expose a + b  and d + e to redundancy elimination
     as binary operations.
-    
+
     For extra points, you can reuse the old statements to build the
     mergetmps, since you shouldn't run out.
 
     So why don't we do this?
-    
+
     Because it's expensive, and rarely will help.  Most trees we are
     reassociating have 3 or less ops.  If they have 2 ops, they already
     will be written into a nice single binary op.  If you have 3 ops, a
@@ -142,15 +142,15 @@ along with GCC; see the file COPYING3.  If not see
 
     mergetmp = op1 + op2
     newstmt = mergetmp + op3
-    
+
     instead of
     mergetmp = op2 + op3
     newstmt = mergetmp + op1
-    
+
     If all three are of the same rank, you can't expose them all in a
     single binary operator anyway, so the above is *still* the best you
     can do.
-    
+
     Thus, this is what we do.  When we have three ops left, we check to see
     what order to put them in, and call it a day.  As a nod to vector sum
     reduction, we check if any of the ops are really a phi node that is a
@@ -447,7 +447,7 @@ eliminate_duplicate_pair (enum tree_code opcode,
 	    {
 	      VEC_free (operand_entry_t, heap, *ops);
 	      *ops = NULL;
-	      add_to_ops_vec (ops, fold_convert (TREE_TYPE (last->op), 
+	      add_to_ops_vec (ops, fold_convert (TREE_TYPE (last->op),
 						 integer_zero_node));
 	      *all_done = true;
 	    }
@@ -511,7 +511,7 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	    }
 
 	  VEC_ordered_remove (operand_entry_t, *ops, i);
-	  add_to_ops_vec (ops, fold_convert(TREE_TYPE (oe->op), 
+	  add_to_ops_vec (ops, fold_convert(TREE_TYPE (oe->op),
 					    integer_zero_node));
 	  VEC_ordered_remove (operand_entry_t, *ops, currindex);
 	  reassociate_stats.ops_eliminated ++;
@@ -579,7 +579,7 @@ eliminate_not_pairs (enum tree_code opcode,
 	    oe->op = build_low_bits_mask (TREE_TYPE (oe->op),
 					  TYPE_PRECISION (TREE_TYPE (oe->op)));
 
-	  reassociate_stats.ops_eliminated 
+	  reassociate_stats.ops_eliminated
 	    += VEC_length (operand_entry_t, *ops) - 1;
 	  VEC_free (operand_entry_t, heap, *ops);
 	  *ops = NULL;
@@ -618,9 +618,9 @@ eliminate_using_constants (enum tree_code opcode,
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Found & 0, removing all other ops\n");
 
-		  reassociate_stats.ops_eliminated 
+		  reassociate_stats.ops_eliminated
 		    += VEC_length (operand_entry_t, *ops) - 1;
-		  
+
 		  VEC_free (operand_entry_t, heap, *ops);
 		  *ops = NULL;
 		  VEC_safe_push (operand_entry_t, heap, *ops, oelast);
@@ -646,15 +646,15 @@ eliminate_using_constants (enum tree_code opcode,
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Found | -1, removing all other ops\n");
 
-		  reassociate_stats.ops_eliminated 
+		  reassociate_stats.ops_eliminated
 		    += VEC_length (operand_entry_t, *ops) - 1;
-		  
+
 		  VEC_free (operand_entry_t, heap, *ops);
 		  *ops = NULL;
 		  VEC_safe_push (operand_entry_t, heap, *ops, oelast);
 		  return;
 		}
-	    }	  
+	    }
 	  else if (integer_zerop (oelast->op))
 	    {
 	      if (VEC_length (operand_entry_t, *ops) != 1)
@@ -677,8 +677,8 @@ eliminate_using_constants (enum tree_code opcode,
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Found * 0, removing all other ops\n");
-		  
-		  reassociate_stats.ops_eliminated 
+
+		  reassociate_stats.ops_eliminated
 		    += VEC_length (operand_entry_t, *ops) - 1;
 		  VEC_free (operand_entry_t, heap, *ops);
 		  *ops = NULL;
@@ -1740,14 +1740,14 @@ repropagate_negates (void)
 
    We do this top down because we don't know whether the subtract is
    part of a possible chain of reassociation except at the top.
- 
+
    IE given
    d = f + g
    c = a + e
    b = c - d
    q = b - r
    k = t - q
-   
+
    we want to break up k = t - q, but we won't until we've transformed q
    = b - r, which won't be broken up until we transform b = c - d.
 

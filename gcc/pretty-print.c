@@ -233,7 +233,7 @@ pp_base_format (pretty_printer *pp, text_info *text)
      this point.  */
 
   memset (formatters, 0, sizeof formatters);
-  
+
   for (p = text->format_spec; *p; )
     {
       while (*p != '\0' && *p != '%')
@@ -249,7 +249,7 @@ pp_base_format (pretty_printer *pp, text_info *text)
 	{
 	case '\0':
 	  gcc_unreachable ();
-	  
+
 	case '%':
 	  obstack_1grow (&buffer->chunk_obstack, '%');
 	  p++;
@@ -366,7 +366,7 @@ pp_base_format (pretty_printer *pp, text_info *text)
   gcc_assert (chunk < PP_NL_ARGMAX * 2);
   args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
   args[chunk] = 0;
-		  
+
   /* Set output to the argument obstack, and switch line-wrapping and
      prefixing off.  */
   buffer->obstack = &buffer->chunk_obstack;

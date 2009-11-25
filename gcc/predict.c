@@ -66,7 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
-/* Random guesstimation given names.  
+/* Random guesstimation given names.
    PROV_VERY_UNLIKELY should be small enough so basic block predicted
    by it gets bellow HOT_BB_FREQUENCY_FRANCTION.  */
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
@@ -386,7 +386,7 @@ gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 
   if (!preds)
     return false;
-  
+
   for (i = (struct edge_prediction *) *preds; i; i = i->ep_next)
     if (i->ep_predictor == predictor)
       return true;
@@ -394,7 +394,7 @@ gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 }
 
 /* Return true when the probability of edge is reliable.
-  
+
    The profile guessing code is good at predicting branch outcome (ie.
    taken/not taken), that is predicted right slightly over 75% of time.
    It is however notoriously poor on predicting the probability itself.
@@ -504,7 +504,7 @@ void
 remove_predictions_associated_with_edge (edge e)
 {
   void **preds;
-  
+
   if (!bb_predictions)
     return;
 
@@ -787,7 +787,7 @@ combine_predictions_for_bb (basic_block bb)
 	  first = e;
       }
 
-  /* When there is no successor or only one choice, prediction is easy. 
+  /* When there is no successor or only one choice, prediction is easy.
 
      We are lazy for now and predict only basic blocks with two outgoing
      edges.  It is possible to predict generic case too, but we have to
@@ -836,7 +836,7 @@ combine_predictions_for_bb (basic_block bb)
 		   if (pred2->ep_edge != first)
 		     probability2 = REG_BR_PROB_BASE - probability2;
 
-		   if ((probability < REG_BR_PROB_BASE / 2) != 
+		   if ((probability < REG_BR_PROB_BASE / 2) !=
 		       (probability2 < REG_BR_PROB_BASE / 2))
 		     break;
 
@@ -1021,7 +1021,7 @@ predict_loops (void)
 		 EDGE_PROBABILITY_RELIABLE from trusting the branch prediction
 		 as this was causing regression in perl benchmark containing such
 		 a wide loop.  */
-	        
+
 	      int probability = ((REG_BR_PROB_BASE
 		                  - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
 				 / n_exits);
@@ -1033,7 +1033,7 @@ predict_loops (void)
 		  predict_edge (e, PRED_LOOP_EXIT, probability);
 	    }
 	}
-      
+
       /* Free basic blocks from get_loop_body.  */
       free (bbs);
     }
@@ -1262,10 +1262,10 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code, tree op1, bitma
   return NULL;
 }
 
-/* Return constant EXPR will likely have at execution time, NULL if unknown. 
+/* Return constant EXPR will likely have at execution time, NULL if unknown.
    The function is used by builtin_expect branch predictor so the evidence
    must come from this construct and additional possible constant folding.
-  
+
    We may want to implement more involved value guess (such as value range
    propagation based prediction), but such tricks shall go to new
    implementation.  */
@@ -1931,11 +1931,11 @@ propagate_freq (basic_block head, bitmap tovisit)
       if (e)
 	{
 	  sreal tmp;
-	    
+
 	  /* EDGE_INFO (e)->back_edge_prob
 	     = ((e->probability * BLOCK_INFO (bb)->frequency)
 	     / REG_BR_PROB_BASE); */
-	    
+
 	  sreal_init (&tmp, e->probability, 0);
 	  sreal_mul (&tmp, &tmp, &BLOCK_INFO (bb)->frequency);
 	  sreal_mul (&EDGE_INFO (e)->back_edge_prob,
@@ -1954,7 +1954,7 @@ propagate_freq (basic_block head, bitmap tovisit)
 		  nextbb = e->dest;
 		else
 		  BLOCK_INFO (last)->next = e->dest;
-		
+
 		last = e->dest;
 	      }
 	  }
@@ -2222,7 +2222,7 @@ predictor_name (enum br_predictor predictor)
   return predictor_info[predictor].name;
 }
 
-struct gimple_opt_pass pass_profile = 
+struct gimple_opt_pass pass_profile =
 {
  {
   GIMPLE_PASS,
@@ -2241,7 +2241,7 @@ struct gimple_opt_pass pass_profile =
  }
 };
 
-struct gimple_opt_pass pass_strip_predict_hints = 
+struct gimple_opt_pass pass_strip_predict_hints =
 {
  {
   GIMPLE_PASS,

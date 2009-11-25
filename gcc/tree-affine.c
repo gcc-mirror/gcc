@@ -1,18 +1,18 @@
 /* Operations with affine combinations of trees.
    Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -122,7 +122,7 @@ aff_combination_scale (aff_tree *comb, double_int scale)
 	  comb->n++;
 	}
       else
-	comb->rest = fold_build2 (MULT_EXPR, type, comb->rest, 
+	comb->rest = fold_build2 (MULT_EXPR, type, comb->rest,
 				  double_int_to_tree (type, scale));
     }
 }
@@ -182,7 +182,7 @@ aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
   else
     elt = fold_build2 (MULT_EXPR, type,
 		       fold_convert (type, elt),
-		       double_int_to_tree (type, scale)); 
+		       double_int_to_tree (type, scale));
 
   if (comb->rest)
     comb->rest = fold_build2 (PLUS_EXPR, type, comb->rest,
@@ -471,7 +471,7 @@ aff_combination_remove_elt (aff_tree *comb, unsigned m)
 
 /* Adds C * COEF * VAL to R.  VAL may be NULL, in that case only
    C * COEF is added to R.  */
-   
+
 
 static void
 aff_combination_add_product (aff_tree *c, double_int coef, tree val,
@@ -534,7 +534,7 @@ aff_combination_mult (aff_tree *c1, aff_tree *c2, aff_tree *r)
 /* Returns the element of COMB whose value is VAL, or NULL if no such
    element exists.  If IDX is not NULL, it is set to the index of VAL in
    COMB.  */
-	      
+
 static struct aff_comb_elt *
 aff_combination_find_elt (aff_tree *comb, tree val, unsigned *idx)
 {
@@ -803,7 +803,7 @@ print_aff (FILE *file, aff_tree *val)
 	{
 	  fprintf (file, "    [%d] = ", i);
 	  print_generic_expr (file, val->elts[i].val, TDF_VOPS|TDF_MEMSYMS);
-	  
+
 	  fprintf (file, " * ");
 	  dump_double_int (file, val->elts[i].coef, uns);
 	  if (i != val->n - 1)

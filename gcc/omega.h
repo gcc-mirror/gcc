@@ -1,5 +1,5 @@
-/* Source code for an implementation of the Omega test, an integer 
-   programming algorithm for dependence analysis, by William Pugh, 
+/* Source code for an implementation of the Omega test, an integer
+   programming algorithm for dependence analysis, by William Pugh,
    appeared in Supercomputing '91 and CACM Aug 92.
 
    This code has no license restrictions, and is considered public
@@ -52,7 +52,7 @@ enum omega_result {
 
 /* Values used for labeling equations.  Private (not used outside the
    solver).  */
-enum omega_eqn_color { 
+enum omega_eqn_color {
   omega_black = 0,
   omega_red = 1
 };
@@ -76,7 +76,7 @@ typedef struct omega_pb_d
 {
   /* The number of variables in the system of equations.  */
   int num_vars;
-  
+
   /* Safe variables are not eliminated during the Fourier-Motzkin
      simplification of the system.  Safe variables are all those
      variables that are placed at the beginning of the array of

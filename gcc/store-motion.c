@@ -276,7 +276,7 @@ store_ops_ok (const_rtx x, int *regs_set)
 }
 
 /* Helper for extract_mentioned_regs.  */
- 
+
 static int
 extract_mentioned_regs_1 (rtx *loc, void *data)
 {
@@ -803,7 +803,7 @@ insert_store (struct st_expr * expr, edge e)
     if (!(tmp->flags & EDGE_FAKE))
       {
 	int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
-	
+
 	gcc_assert (index != EDGE_INDEX_NO_EDGE);
 	if (! TEST_BIT (st_insert_map[index], expr->index))
 	  break;
@@ -1184,7 +1184,7 @@ one_store_motion_pass (void)
 		     INDEX_EDGE (edge_list, x)->dest->index);
 	  continue;
 	}
-		      
+
       /* Now we want to insert the new stores which are going to be needed.  */
 
       FOR_EACH_BB (bb)
@@ -1246,8 +1246,8 @@ struct rtl_opt_pass pass_rtl_store_motion =
  {
   RTL_PASS,
   "store_motion",                       /* name */
-  gate_rtl_store_motion,                /* gate */   
-  execute_rtl_store_motion,		/* execute */       
+  gate_rtl_store_motion,                /* gate */
+  execute_rtl_store_motion,		/* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */

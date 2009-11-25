@@ -390,7 +390,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 always get higher addresses.  */
       int inner_mode_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)));
       int outer_mode_size = GET_MODE_SIZE (GET_MODE (op0));
-      
+
       byte_offset = 0;
 
       /* Paradoxical subregs need special handling on big endian machines.  */
@@ -2365,7 +2365,7 @@ struct alg_hash_entry {
      Otherwise, the cost within which multiplication by T is
      impossible.  */
   struct mult_cost cost;
- 
+
   /* OPtimized for speed? */
   bool speed;
 };
@@ -3198,7 +3198,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 				   target, unsignedp);
 	    }
 	}
-        
+
       /* We used to test optimize here, on the grounds that it's better to
 	 produce a smaller program when -O is not used.  But this causes
 	 such a terrible slowdown sometimes that it seems better to always
@@ -3577,8 +3577,8 @@ expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
 
   cnst1 = INTVAL (op1) & GET_MODE_MASK (mode);
 
-  /* We can't optimize modes wider than BITS_PER_WORD. 
-     ??? We might be able to perform double-word arithmetic if 
+  /* We can't optimize modes wider than BITS_PER_WORD.
+     ??? We might be able to perform double-word arithmetic if
      mode == word_mode, however all the cost calculations in
      synth_mult etc. assume single-word operations.  */
   if (GET_MODE_BITSIZE (wider_mode) > BITS_PER_WORD)
@@ -4944,7 +4944,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	  if (!remainder)
 	    {
 	      remainder = gen_reg_rtx (compute_mode);
-	      if (!expand_twoval_binop_libfunc 
+	      if (!expand_twoval_binop_libfunc
 		  (unsignedp ? udivmod_optab : sdivmod_optab,
 		   op0, op1,
 		   NULL_RTX, remainder,
@@ -4987,12 +4987,12 @@ make_tree (tree type, rtx x)
 		 && (GET_MODE_BITSIZE (TYPE_MODE (type))
 		     < HOST_BITS_PER_WIDE_INT)))
 	  hi = -1;
-      
+
 	t = build_int_cst_wide (type, INTVAL (x), hi);
-	
+
 	return t;
       }
-      
+
     case CONST_DOUBLE:
       if (GET_MODE (x) == VOIDmode)
 	t = build_int_cst_wide (type,
@@ -5154,7 +5154,7 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
     target_mode = result_mode;
   if (!target)
     target = gen_reg_rtx (target_mode);
-  
+
   if (optimize
       || !(insn_data[(int) icode].operand[0].predicate (target, result_mode)))
     subtarget = gen_reg_rtx (result_mode);
@@ -5530,7 +5530,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       /* Cannot split ORDERED and UNORDERED, only try the above trick.   */
       if (code == ORDERED || code == UNORDERED)
 	return 0;
-	
+
       and_them = split_comparison (code, mode, &first_code, &code);
 
       /* If there are no NaNs, the first comparison should always fall through.
@@ -5783,7 +5783,7 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
   /* If this failed, we have to do this with set/compare/jump/set code.
      For foo != 0, if foo is in OP0, just replace it with 1 if nonzero.  */
   trueval = normalizep ? GEN_INT (normalizep) : const1_rtx;
-  if (code == NE 
+  if (code == NE
       && GET_MODE_CLASS (mode) == MODE_INT
       && REG_P (target)
       && op0 == target

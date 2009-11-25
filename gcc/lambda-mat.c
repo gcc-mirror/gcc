@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "lambda.h"
 
-static void lambda_matrix_get_column (lambda_matrix, int, int, 
+static void lambda_matrix_get_column (lambda_matrix, int, int,
 				      lambda_vector);
 
 /* Allocate a matrix of M rows x  N cols.  */
@@ -39,7 +39,7 @@ lambda_matrix_new (int m, int n)
   int i;
 
   mat = GGC_NEWVEC (lambda_vector, m);
-  
+
   for (i = 0; i < m; i++)
     mat[i] = lambda_vector_new (n);
 
@@ -318,7 +318,7 @@ lambda_matrix_inverse (lambda_matrix mat, lambda_matrix inv, int n)
       a = mat[0][0];
       b = mat[1][0];
       c = mat[0][1];
-      d = mat[1][1];      
+      d = mat[1][1];
       inv[0][0] =  d;
       inv[0][1] = -c;
       inv[1][0] = -b;
@@ -483,7 +483,7 @@ lambda_matrix_hermite (lambda_matrix mat, int n,
 /* Given an M x N integer matrix A, this function determines an M x
    M unimodular matrix U, and an M x N echelon matrix S such that
    "U.A = S".  This decomposition is also known as "right Hermite".
-   
+
    Ref: Algorithm 2.1 page 33 in "Loop Transformations for
    Restructuring Compilers" Utpal Banerjee.  */
 
@@ -528,7 +528,7 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 /* Given an M x N integer matrix A, this function determines an M x M
    unimodular matrix V, and an M x N echelon matrix S such that "A =
    V.S".  This decomposition is also known as "left Hermite".
-   
+
    Ref: Algorithm 2.2 page 36 in "Loop Transformations for
    Restructuring Compilers" Utpal Banerjee.  */
 

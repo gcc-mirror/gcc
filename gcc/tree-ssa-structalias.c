@@ -1444,10 +1444,10 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 	      changed_count++;
 	    }
 	}
-      
+
       BITMAP_FREE (get_varinfo (from)->solution);
       BITMAP_FREE (get_varinfo (from)->oldsolution);
-      
+
       if (stats.iterations > 0)
 	{
 	  BITMAP_FREE (get_varinfo (to)->oldsolution);
@@ -2288,10 +2288,10 @@ unite_pointer_equivalences (constraint_graph_t graph)
       if (label)
 	{
 	  int label_rep = graph->pe_rep[label];
-	  
+
 	  if (label_rep == -1)
 	    continue;
-	  
+
 	  label_rep = find (label_rep);
 	  if (label_rep >= 0 && unite (label_rep, find (i)))
 	    unify_nodes (graph, label_rep, i, false);
@@ -2368,7 +2368,7 @@ rewrite_constraints (constraint_graph_t graph,
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      
+
 	      fprintf (dump_file, "%s is a non-pointer variable,"
 		       "ignoring constraint:",
 		       get_varinfo (lhs.var)->name);
@@ -2382,7 +2382,7 @@ rewrite_constraints (constraint_graph_t graph,
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      
+
 	      fprintf (dump_file, "%s is a non-pointer variable,"
 		       "ignoring constraint:",
 		       get_varinfo (rhs.var)->name);
@@ -4752,7 +4752,7 @@ shared_bitmap_add (bitmap pt_vars)
 
 /* Set bits in INTO corresponding to the variable uids in solution set FROM.  */
 
-static void 
+static void
 set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
 {
   unsigned int i;
@@ -5424,16 +5424,16 @@ solve_constraints (void)
 	     "substitution\n");
 
   init_graph (VEC_length (varinfo_t, varmap) * 2);
-  
+
   if (dump_file)
     fprintf (dump_file, "Building predecessor graph\n");
   build_pred_graph ();
-  
+
   if (dump_file)
     fprintf (dump_file, "Detecting pointer and location "
 	     "equivalences\n");
   si = perform_var_substitution (graph);
-  
+
   if (dump_file)
     fprintf (dump_file, "Rewriting constraints and unifying "
 	     "variables\n");

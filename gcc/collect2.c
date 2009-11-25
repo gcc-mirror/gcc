@@ -349,7 +349,7 @@ typedef enum {
 enum scanfilter_masks {
   SCAN_NOTHING = 0,
 
-  SCAN_CTOR = 1 << SYM_CTOR, 
+  SCAN_CTOR = 1 << SYM_CTOR,
   SCAN_DTOR = 1 << SYM_DTOR,
   SCAN_INIT = 1 << SYM_INIT,
   SCAN_FINI = 1 << SYM_FINI,
@@ -1157,7 +1157,7 @@ main (int argc, char **argv)
   char **ld1_argv;
   const char **ld1;
   bool use_plugin = false;
-  
+
   /* The kinds of symbols we will have to consider when scanning the
      outcome of a first pass link.  This is ALL to start with, then might
      be adjusted before getting to the first pass link per se, typically on
@@ -1653,25 +1653,25 @@ main (int argc, char **argv)
      would otherwise reference them all, hence drag all the corresponding
      objects even if nothing else is referenced.  */
   {
-    const char **export_object_lst 
+    const char **export_object_lst
       = CONST_CAST2 (const char **, char **, object_lst);
-    
+
     struct id *list = libs.first;
 
     /* Compute the filter to use from the current one, do scan, then adjust
        the "current" filter to remove what we just included here.  This will
        control whether we need a first pass link later on or not, and what
        will remain to be scanned there.  */
-    
+
     scanfilter this_filter
       = shared_obj ? ld1_filter : (ld1_filter & ~SCAN_DWEH);
-    
+
     while (export_object_lst < object)
       scan_prog_file (*export_object_lst++, PASS_OBJ, this_filter);
-    
+
     for (; list; list = list->next)
       scan_prog_file (list->name, PASS_FIRST, this_filter);
-    
+
     ld1_filter = ld1_filter & ~this_filter;
   }
 
@@ -1744,9 +1744,9 @@ main (int argc, char **argv)
 
   /* Load the program, searching all libraries and attempting to provide
      undefined symbols from repository information.
-     
+
      If -r or they will be run via some other method, do not build the
-     constructor or destructor list, just return now.  */  
+     constructor or destructor list, just return now.  */
   {
     bool early_exit
       = rflag || (! DO_COLLECT_EXPORT_LIST && ! do_collecting);
@@ -1759,10 +1759,10 @@ main (int argc, char **argv)
        objects and libraries has performed above.  In the !shared_obj case, we
        expect the relevant tables to be dragged together with their associated
        functions from precise cross reference insertions by the compiler.  */
-       
+
     if (early_exit || ld1_filter != SCAN_NOTHING)
       do_tlink (ld1_argv, object_lst);
-    
+
     if (early_exit)
       {
 #ifdef COLLECT_EXPORT_LIST

@@ -54,7 +54,7 @@ extern int max_regno;
    and is not using incremental df scanning.
 
    At the end of a pass that uses REG_N_REFS and REG_N_SETS, a call
-   should be made to regstat_free_n_sets_and_refs.  
+   should be made to regstat_free_n_sets_and_refs.
 
    Local alloc seems to play pretty loose with these values.
    REG_N_REFS is set to 0 if the register is used in an asm.

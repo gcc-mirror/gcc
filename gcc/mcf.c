@@ -1019,7 +1019,7 @@ find_augmenting_path (fixup_graph_type *fixup_graph,
    2. Find an augmenting path form source to sink.
    3. Send flow equal to the path's residual capacity along the edges of this path.
    4. Repeat steps 2 and 3 until no new augmenting path is found.
-   
+
 Parameters:
 SOURCE: index of source vertex (input)
 SINK: index of sink vertex    (input)
@@ -1239,9 +1239,9 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	    fprintf (dump_file, " = " HOST_WIDEST_INT_PRINT_DEC "\t(%.1f%%)\n",
 		     e->count, e->probability * 100.0 / REG_BR_PROB_BASE);
         }
-    } 
+    }
 
-  ENTRY_BLOCK_PTR->count = sum_edge_counts (ENTRY_BLOCK_PTR->succs); 
+  ENTRY_BLOCK_PTR->count = sum_edge_counts (ENTRY_BLOCK_PTR->succs);
   EXIT_BLOCK_PTR->count = sum_edge_counts (EXIT_BLOCK_PTR->preds);
 
   /* Compute edge probabilities.  */

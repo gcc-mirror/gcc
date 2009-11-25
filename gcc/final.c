@@ -1413,7 +1413,7 @@ int
 asm_str_count (const char *templ)
 {
   int count = 1;
-  
+
   if (!*templ)
     return 0;
 

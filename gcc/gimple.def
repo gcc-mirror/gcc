@@ -32,7 +32,7 @@ DEFGSCODE(GIMPLE_ERROR_MARK, "gimple_error_mark", GSS_BASE)
 
 /* GIMPLE_COND <COND_CODE, OP1, OP2, TRUE_LABEL, FALSE_LABEL>
    represents the conditional jump:
-   
+
    if (OP1 COND_CODE OP2) goto TRUE_LABEL else goto FALSE_LABEL
 
    COND_CODE is the tree code used as the comparison predicate.  It
@@ -74,7 +74,7 @@ DEFGSCODE(GIMPLE_LABEL, "gimple_label", GSS_WITH_OPS)
 DEFGSCODE(GIMPLE_SWITCH, "gimple_switch", GSS_WITH_OPS)
 
 /* IMPORTANT.
-   
+
    Do not rearrange the codes between GIMPLE_ASSIGN and GIMPLE_RETURN.
    It's exposed by GIMPLE_RANGE_CHECK calls. These are all the GIMPLE
    statements with memory and register operands.  */
@@ -132,7 +132,7 @@ DEFGSCODE(GIMPLE_RETURN, "gimple_return", GSS_WITH_MEM_OPS)
 
 /* GIMPLE_BIND <VARS, BLOCK, BODY> represents a lexical scope.
    VARS is the set of variables declared in that scope.
-   BLOCK is the symbol binding block used for debug information.  
+   BLOCK is the symbol binding block used for debug information.
    BODY is the sequence of statements in the scope.  */
 DEFGSCODE(GIMPLE_BIND, "gimple_bind", GSS_BIND)
 
@@ -190,7 +190,7 @@ DEFGSCODE(GIMPLE_NOP, "gimple_nop", GSS_BASE)
 
 
 /* IMPORTANT.
-   
+
    Do not rearrange any of the GIMPLE_OMP_* codes.  This ordering is
    exposed by the range check in gimple_omp_subcode().  */
 
@@ -345,6 +345,6 @@ DEFGSCODE(GIMPLE_PREDICT, "gimple_predict", GSS_BASE)
 /*  This node represents a cleanup expression.  It is ONLY USED INTERNALLY
     by the gimplifier as a placeholder for cleanups, and its uses will be
     cleaned up by the time gimplification is done.
-    
+
     This tuple should not exist outside of the gimplifier proper.  */
 DEFGSCODE(GIMPLE_WITH_CLEANUP_EXPR, "gimple_with_cleanup_expr", GSS_WCE)

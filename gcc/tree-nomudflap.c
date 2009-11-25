@@ -89,7 +89,7 @@ gate_mudflap (void)
   return flag_mudflap != 0;
 }
 
-struct gimple_opt_pass pass_mudflap_1 = 
+struct gimple_opt_pass pass_mudflap_1 =
 {
  {
   GIMPLE_PASS,
@@ -108,7 +108,7 @@ struct gimple_opt_pass pass_mudflap_1 =
  }
 };
 
-struct gimple_opt_pass pass_mudflap_2 = 
+struct gimple_opt_pass pass_mudflap_2 =
 {
  {
   GIMPLE_PASS,

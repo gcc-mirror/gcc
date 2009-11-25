@@ -86,7 +86,7 @@ lto_symtab_entry_eq (const void *p1, const void *p2)
 }
 
 /* Returns non-zero if P points to an lto_symtab_entry_def struct that needs
-   to be marked for GC.  */ 
+   to be marked for GC.  */
 
 static int
 lto_symtab_entry_marked_p (const void *p)

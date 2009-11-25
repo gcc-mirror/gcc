@@ -164,7 +164,7 @@ fix_loop_placement (struct loop *loop)
    placement of subloops of FROM->loop_father, that might also be altered due
    to this change; the condition for them is similar, except that instead of
    successors we consider edges coming out of the loops.
- 
+
    If the changes may invalidate the information about irreducible regions,
    IRRED_INVALIDATED is set to true.  */
 
@@ -330,7 +330,7 @@ remove_path (edge e)
 	  {
 	    SET_BIT (seen, ae->dest->index);
 	    bord_bbs[n_bord_bbs++] = ae->dest;
-	  
+
 	    if (ae->flags & EDGE_IRREDUCIBLE_LOOP)
 	      irred_invalidated = true;
 	  }
@@ -504,7 +504,7 @@ update_dominators_in_loop (struct loop *loop)
 }
 
 /* Creates an if region as shown above. CONDITION is used to create
-   the test for the if. 
+   the test for the if.
 
    |
    |     -------------                 -------------
@@ -549,7 +549,7 @@ create_empty_if_region_on_edge (edge entry_edge, tree condition)
 
   succ_bb = entry_edge->dest;
   cond_bb = split_edge (entry_edge);
-  
+
   /* Insert condition in cond_bb.  */
   gsi = gsi_last_bb (cond_bb);
   simple_cond =
@@ -558,7 +558,7 @@ create_empty_if_region_on_edge (edge entry_edge, tree condition)
   cond_stmt = gimple_build_cond_from_tree (simple_cond, NULL_TREE, NULL_TREE);
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
-  
+
   join_bb = split_edge (single_succ_edge (cond_bb));
 
   e_true = single_succ_edge (cond_bb);
@@ -839,7 +839,7 @@ unloop (struct loop *loop, bool *irred_invalidated)
    condition stated in description of fix_loop_placement holds for them.
    It is used in case when we removed some edges coming out of LOOP, which
    may cause the right placement of LOOP inside loop tree to change.
- 
+
    IRRED_INVALIDATED is set to true if a change in the loop structures might
    invalidate the information about irreducible regions.  */
 
@@ -1320,7 +1320,7 @@ has_preds_from_loop (basic_block block, struct loop *loop)
 {
   edge e;
   edge_iterator ei;
-  
+
   FOR_EACH_EDGE (e, ei, block->preds)
     if (e->src->loop_father == loop)
       return true;
@@ -1331,7 +1331,7 @@ has_preds_from_loop (basic_block block, struct loop *loop)
    CP_SIMPLE_PREHEADERS is set in FLAGS, we only force LOOP to have single
    entry; otherwise we also force preheader block to have only one successor.
    When CP_FALLTHRU_PREHEADERS is set in FLAGS, we force the preheader block
-   to be a fallthru predecessor to the loop header and to have only 
+   to be a fallthru predecessor to the loop header and to have only
    predecessors from outside of the loop.
    The function also updates dominators.  */
 
@@ -1360,7 +1360,7 @@ create_preheader (struct loop *loop, int flags)
   if (nentry == 1)
     {
       bool need_forwarder_block = false;
-      
+
       /* We do not allow entry block to be the loop preheader, since we
 	     cannot emit code there.  */
       if (single_entry->src == ENTRY_BLOCK_PTR)
@@ -1416,7 +1416,7 @@ create_preheader (struct loop *loop, int flags)
   if (dump_file)
     fprintf (dump_file, "Created preheader block for loop %i\n",
 	     loop->num);
-  
+
   if (flags & CP_FALLTHRU_PREHEADERS)
     gcc_assert ((single_succ_edge (dummy)->flags & EDGE_FALLTHRU)
                 && !JUMP_P (BB_END (dummy)));
@@ -1524,7 +1524,7 @@ lv_adjust_loop_entry_edge (basic_block first_head, basic_block second_head,
    is the ratio by that the frequencies in the original loop should
    be scaled.  ELSE_SCALE is the ratio by that the frequencies in the
    new loop should be scaled.
-   
+
    If PLACE_AFTER is true, we place the new loop after LOOP in the
    instruction stream, otherwise it is placed before LOOP.  */
 

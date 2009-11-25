@@ -334,7 +334,7 @@ enum optab_index
   OTI_vec_shr,
   /* Extract specified elements from vectors, for vector load.  */
   OTI_vec_realign_load,
-  /* Widening multiplication.  
+  /* Widening multiplication.
      The high/low part of the resulting vector of products is returned.  */
   OTI_vec_widen_umult_hi,
   OTI_vec_widen_umult_lo,

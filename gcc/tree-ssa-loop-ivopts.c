@@ -1,19 +1,19 @@
 /* Induction variable optimizations.
    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 
    4) The trees are transformed to use the new variables, the dead code is
       removed.
-   
+
    All of this is done loop by loop.  Doing it globally is theoretically
    possible, it might give a better performance and it might enable us
    to decide costs more precisely, but getting all the interactions right
@@ -1076,7 +1076,7 @@ find_induction_variables (struct ivopts_data *data)
 	  print_generic_expr (dump_file, niter, TDF_SLIM);
 	  fprintf (dump_file, "\n\n");
     	};
- 
+
       fprintf (dump_file, "Induction variables:\n\n");
 
       EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
@@ -1159,7 +1159,7 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
   iv = get_iv (data, op);
   if (!iv)
     return NULL;
-  
+
   if (iv->have_use_for)
     {
       use = iv_use (data, iv->use_id);
@@ -1545,7 +1545,7 @@ may_be_unaligned_p (tree ref, tree step)
 	  || bitpos % GET_MODE_ALIGNMENT (mode) != 0
 	  || bitpos % BITS_PER_UNIT != 0)
 	return true;
-    
+
       if (!constant_multiple_of (step, al, &mul))
 	return true;
     }
@@ -2097,7 +2097,7 @@ add_candidate_1 (struct ivopts_data *data,
   unsigned i;
   struct iv_cand *cand = NULL;
   tree type, orig_type;
-  
+
   if (base)
     {
       orig_type = TREE_TYPE (base);
@@ -2267,7 +2267,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
    it.  The candidate computation is scheduled on all available positions.  */
 
 static void
-add_candidate (struct ivopts_data *data, 
+add_candidate (struct ivopts_data *data,
 	       tree base, tree step, bool important, struct iv_use *use)
 {
   if (ip_normal_pos (data->current_loop))
@@ -2604,7 +2604,7 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
 
       return ret;
     }
-      
+
   /* n_map_members is a power of two, so this computes modulo.  */
   s = cand->id & (use->n_map_members - 1);
   for (i = s; i < use->n_map_members; i++)
@@ -2645,7 +2645,7 @@ produce_memory_decl_rtl (tree obj, int *regno)
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
   enum machine_mode address_mode = targetm.addr_space.address_mode (as);
   rtx x;
-  
+
   gcc_assert (obj);
   if (TREE_STATIC (obj) || DECL_EXTERNAL (obj))
     {
@@ -2876,7 +2876,7 @@ get_computation_aff (struct loop *loop,
   if (stmt_after_increment (loop, cand, at))
     {
       aff_tree cstep_aff;
-  
+
       if (common_type != uutype)
 	cstep_common = fold_convert (common_type, cstep);
       else
@@ -2947,7 +2947,7 @@ add_cost (enum machine_mode mode, bool speed)
     cost = 1;
 
   costs[mode] = cost;
-      
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Addition in %s costs %d\n",
 	     GET_MODE_NAME (mode), cost);
@@ -3012,7 +3012,7 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode, bool speed)
 	       gen_int_mode (cst, mode), NULL_RTX, 0);
   seq = get_insns ();
   end_sequence ();
-  
+
   cost = seq_cost (seq, speed);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3241,7 +3241,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	    base = gen_int_mode (off, address_mode);
 	  else
 	    base = NULL_RTX;
-    
+
 	  if (base)
 	    addr = gen_rtx_fmt_ee (PLUS, address_mode, addr, base);
 
@@ -3293,7 +3293,7 @@ get_address_cost (bool symbol_present, bool var_present,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Address costs:\n");
-      
+
 	  for (i = 0; i < 16; i++)
 	    {
 	      sym_p = i & 1;
@@ -3498,7 +3498,7 @@ force_expr_to_var_cost (tree expr, bool speed)
     case MULT_EXPR:
       if (cst_and_fits_in_hwi (op0))
 	cost = new_cost (multiply_by_cost (int_cst_value (op0), mode, speed), 0);
-      else if (cst_and_fits_in_hwi (op1))                                  
+      else if (cst_and_fits_in_hwi (op1))
 	cost = new_cost (multiply_by_cost (int_cst_value (op1), mode, speed), 0);
       else
 	return new_cost (target_spill_cost [speed], 0);
@@ -3553,7 +3553,7 @@ split_address_cost (struct ivopts_data *data,
   tree toffset;
   enum machine_mode mode;
   int unsignedp, volatilep;
-  
+
   core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
 			      &unsignedp, &volatilep, false);
 
@@ -3576,7 +3576,7 @@ split_address_cost (struct ivopts_data *data,
       *var_present = false;
       return zero_cost;
     }
-      
+
   *symbol_present = false;
   *var_present = true;
   return zero_cost;
@@ -3750,7 +3750,7 @@ get_computation_cost_at (struct ivopts_data *data,
 
   if (!constant_multiple_of (ustep, cstep, &rat))
     return infinite_cost;
-    
+
   if (double_int_fits_in_shwi_p (rat))
     ratio = double_int_to_shwi (rat);
   else
@@ -3761,14 +3761,14 @@ get_computation_cost_at (struct ivopts_data *data,
 
   /* use = ubase + ratio * (var - cbase).  If either cbase is a constant
      or ratio == 1, it is better to handle this like
-     
+
      ubase - ratio * cbase + ratio * var
-     
+
      (also holds in the case ratio == -1, TODO.  */
 
   if (cst_and_fits_in_hwi (cbase))
     {
-      offset = - ratio * int_cst_value (cbase); 
+      offset = - ratio * int_cst_value (cbase);
       cost = difference_cost (data,
 			      ubase, build_int_cst (utype, 0),
 			      &symbol_present, &var_present, &offset,
@@ -4341,7 +4341,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
   if (cand->pos != IP_ORIGINAL
       || DECL_ARTIFICIAL (SSA_NAME_VAR (cand->var_before)))
     cost++;
-  
+
   /* Prefer not to insert statements into latch unless there are some
      already (so that we do not create unnecessary jumps).  */
   if (cand->pos == IP_END
@@ -4414,7 +4414,7 @@ determine_set_costs (struct ivopts_data *data)
      etc.).  For now the reserve is a constant 3.
 
      Let I be the number of induction variables.
-     
+
      -- if U + I + R <= A, the cost is I * SMALL_COST (just not to encourage
 	make a lot of ivs without a reason).
      -- if A - R < U + I <= A, the cost is I * PRES_COST
@@ -4893,7 +4893,7 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
 
       if (!iv_ca_has_deps (ivs, new_cp))
 	continue;
-      
+
       if (!cheaper_cost_pair (new_cp, old_cp))
 	continue;
 
@@ -4948,7 +4948,7 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 		continue;
 	      if (!iv_ca_has_deps (ivs, cp))
 		continue;
-      
+
 	      if (!cheaper_cost_pair (cp, new_cp))
 		continue;
 
@@ -4969,7 +4969,7 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 		continue;
 	      if (!iv_ca_has_deps (ivs, cp))
 		continue;
-      
+
 	      if (!cheaper_cost_pair (cp, new_cp))
 		continue;
 
@@ -5117,7 +5117,7 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 	  /* Already tried this.  */
 	  if (cand->important && cand->iv->base_object == NULL_TREE)
 	    continue;
-      
+
 	  if (iv_ca_cand_used_p (ivs, cand))
 	    continue;
 
@@ -5179,7 +5179,7 @@ try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
   for (i = 0; i < n_iv_cands (data); i++)
     {
       cand = iv_cand (data, i);
-      
+
       if (iv_ca_cand_used_p (ivs, cand))
 	continue;
 
@@ -5310,10 +5310,10 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
 
       /* Rewrite the increment so that it uses var_before directly.  */
       find_interesting_uses_op (data, cand->var_after)->selected = cand;
-      
+
       return;
     }
- 
+
   gimple_add_tmp_var (cand->var_before);
   add_referenced_var (cand->var_before);
 
@@ -5606,7 +5606,7 @@ rewrite_use (struct ivopts_data *data, struct iv_use *use, struct iv_cand *cand)
       default:
 	gcc_unreachable ();
     }
-  
+
   update_stmt (use->stmt);
 }
 
@@ -5763,7 +5763,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Processing loop %d\n", loop->num);
-      
+
       exit = single_dom_exit (loop);
       if (exit)
 	{
@@ -5807,7 +5807,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
   /* Create the new induction variables (item 4, part 1).  */
   create_new_ivs (data, iv_ca);
   iv_ca_free (&iv_ca);
-  
+
   /* Rewrite the uses (item 4, part 2).  */
   rewrite_uses (data);
 

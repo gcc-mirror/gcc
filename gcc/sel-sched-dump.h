@@ -1,4 +1,4 @@
-/* Instruction scheduling pass.  Log dumping infrastructure.  
+/* Instruction scheduling pass.  Log dumping infrastructure.
    Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -55,13 +55,13 @@ enum sel_dump_cfg_def
     SEL_DUMP_CFG_BB_LOOP = 512,
 
     /* The default flags for cfg dumping.  */
-    SEL_DUMP_CFG_FLAGS = (SEL_DUMP_CFG_CURRENT_REGION   
-                          | SEL_DUMP_CFG_BB_NOTES_LIST   
-                          | SEL_DUMP_CFG_AV_SET         
-                          | SEL_DUMP_CFG_LV_SET         
-                          | SEL_DUMP_CFG_BB_INSNS       
-                          | SEL_DUMP_CFG_FENCES         
-                          | SEL_DUMP_CFG_INSN_SEQNO     
+    SEL_DUMP_CFG_FLAGS = (SEL_DUMP_CFG_CURRENT_REGION
+                          | SEL_DUMP_CFG_BB_NOTES_LIST
+                          | SEL_DUMP_CFG_AV_SET
+                          | SEL_DUMP_CFG_LV_SET
+                          | SEL_DUMP_CFG_BB_INSNS
+                          | SEL_DUMP_CFG_FENCES
+                          | SEL_DUMP_CFG_INSN_SEQNO
                           | SEL_DUMP_CFG_BB_LOOP)
   };
 
@@ -117,7 +117,7 @@ enum dump_expr_def
   {
     /* Dump the vinsn behind this expression.  */
     DUMP_EXPR_VINSN = 2,
-    
+
     /* Dump expression's SPEC parameter.  */
     DUMP_EXPR_SPEC = 4,
 
@@ -146,7 +146,7 @@ extern void dump_expr_1 (expr_t, int);
 extern void dump_expr (expr_t);
 extern void debug_expr (expr_t);
 
-/* A enumeration for dumping flags of an insn.  The difference from 
+/* A enumeration for dumping flags of an insn.  The difference from
    dump_insn_rtx_def is that these fields are for insns in stream only.  */
 enum dump_insn_def
 {
@@ -183,7 +183,7 @@ extern void sel_prepare_string_for_dot_label (char *);
    When it is off, we are dumping to log.  */
 extern bool sched_dump_to_dot_p;
 
-/* This macro acts like printf but dumps information to the .dot file.  
+/* This macro acts like printf but dumps information to the .dot file.
    Used when dumping control flow.  */
 #define sel_print_to_dot(...)                           \
   do {                                                  \

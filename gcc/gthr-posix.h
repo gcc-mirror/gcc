@@ -51,7 +51,7 @@ typedef struct timespec __gthread_time_t;
 
 /* POSIX like conditional variables are supported.  Please look at comments
    in gthr.h for details. */
-#define __GTHREAD_HAS_COND	1	
+#define __GTHREAD_HAS_COND	1
 
 #define __GTHREAD_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
 #define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
@@ -237,7 +237,7 @@ __gthread_active_p (void)
 static inline int
 __gthread_active_p (void)
 {
-  static void *const __gthread_active_ptr 
+  static void *const __gthread_active_ptr
     = __extension__ (void *) &__gthrw_(pthread_cancel);
   return __gthread_active_ptr != 0;
 }

@@ -114,7 +114,7 @@ extern int optimize_size;
 /* True if this is the LTO front end (lto1).  This is used to disable
    gimple generation and lowering passes that are normally run on the
    output of a front end.  These passes must be bypassed for lto since
-   they have already been done before the gimple was written.  */ 
+   they have already been done before the gimple was written.  */
 
 extern bool in_lto_p;
 
@@ -122,9 +122,9 @@ extern bool in_lto_p;
 
 extern int flag_generate_lto;
 
-/* Used to set the level of -Wstrict-aliasing, when no level is specified.  
+/* Used to set the level of -Wstrict-aliasing, when no level is specified.
    The external way to set the default level is to use
-   -Wstrict-aliasing=level.  
+   -Wstrict-aliasing=level.
    ONOFF is assumed to take value 1 when -Wstrict-aliasing is specified,
    and 0 otherwise.  After calling this function, wstrict_aliasing will be
    set to the default value of -Wstrict_aliasing=level.  */
@@ -264,8 +264,8 @@ extern bool sel_sched_switch_set;
 /* Whether to run the warn_unused_result attribute pass.  */
 extern bool flag_warn_unused_result;
 
-/* Values of the -falign-* flags: how much to align labels in code. 
-   0 means `use default', 1 means `don't align'.  
+/* Values of the -falign-* flags: how much to align labels in code.
+   0 means `use default', 1 means `don't align'.
    For each variable, there is an _log variant which is the power
    of two not less than the variable, for .align output.  */
 

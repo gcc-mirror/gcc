@@ -470,7 +470,7 @@ emit_insn_at_entry (rtx insn)
 }
 
 /* Update BLOCK_FOR_INSN of insns between BEGIN and END
-   (or BARRIER if found) and notify df of the bb change. 
+   (or BARRIER if found) and notify df of the bb change.
    The insn chain range is inclusive
    (i.e. both BEGIN and END will be updated. */
 
@@ -1256,7 +1256,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   if (abnormal_edge_flags)
     make_edge (src, target, abnormal_edge_flags);
 
-  df_mark_solutions_dirty (); 
+  df_mark_solutions_dirty ();
   return new_bb;
 }
 
@@ -1612,7 +1612,7 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent, int flags ATTRIBUTE_UNUSED)
   s_indent = (char *) alloca ((size_t) indent + 1);
   memset (s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
-  
+
   if (df)
     {
       df_dump_top (bb, outf);
@@ -1679,7 +1679,7 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
 	    {
 	      edge e;
 	      edge_iterator ei;
-	      
+
 	      fprintf (outf, ";; Start of basic block (");
 	      FOR_EACH_EDGE (e, ei, bb->preds)
 		fprintf (outf, " %d", e->src->index);

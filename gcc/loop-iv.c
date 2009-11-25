@@ -1,19 +1,19 @@
 /* Rtl-level induction variable analysis.
    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
-   
+
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
 Free Software Foundation; either version 3, or (at your option) any
 later version.
-   
+
 GCC is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
-   
+
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    iv_analysis_done () to clean up the memory.
 
    The available functions are:
- 
+
    iv_analyze (insn, reg, iv): Stores the description of the induction variable
      corresponding to the use of register REG in INSN to IV.  Returns true if
      REG is an induction variable in INSN. false otherwise.
@@ -168,14 +168,14 @@ lowpart_subreg (enum machine_mode outer_mode, rtx expr,
 			      subreg_lowpart_offset (outer_mode, inner_mode));
 }
 
-static void 
+static void
 check_iv_ref_table_size (void)
 {
   if (iv_ref_table_size < DF_DEFS_TABLE_SIZE())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
       iv_ref_table = XRESIZEVEC (struct rtx_iv *, iv_ref_table, new_size);
-      memset (&iv_ref_table[iv_ref_table_size], 0, 
+      memset (&iv_ref_table[iv_ref_table_size], 0,
 	      (new_size - iv_ref_table_size) * sizeof (struct rtx_iv *));
       iv_ref_table_size = new_size;
     }
@@ -330,7 +330,7 @@ iv_get_reaching_def (rtx insn, rtx reg, df_ref *def)
   basic_block def_bb, use_bb;
   rtx def_insn;
   bool dom_p;
-  
+
   *def = NULL;
   if (!simple_reg_p (reg))
     return GRD_INVALID;
@@ -859,7 +859,7 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
       print_rtl (dump_file, def);
       fprintf (dump_file, " for bivness.\n");
     }
-    
+
   if (!REG_P (def))
     {
       if (!CONSTANT_P (def))
@@ -919,7 +919,7 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
   return iv->base != NULL_RTX;
 }
 
-/* Analyzes expression RHS used at INSN and stores the result to *IV. 
+/* Analyzes expression RHS used at INSN and stores the result to *IV.
    The mode of the induction variable is MODE.  */
 
 bool
@@ -943,7 +943,7 @@ iv_analyze_expr (rtx insn, rtx rhs, enum machine_mode mode, struct rtx_iv *iv)
     {
       if (!iv_analyze_op (insn, rhs, iv))
 	return false;
-	
+
       if (iv->mode == VOIDmode)
 	{
 	  iv->mode = mode;
@@ -1057,7 +1057,7 @@ iv_analyze_def (df_ref def, struct rtx_iv *iv)
       fprintf (dump_file, " in insn ");
       print_rtl_single (dump_file, insn);
     }
-  
+
   check_iv_ref_table_size ();
   if (DF_REF_IV (def))
     {
@@ -1749,7 +1749,7 @@ simplify_using_condition (rtx cond, rtx *expr, regset altered)
       *expr = const_true_rtx;
       return;
     }
-  
+
   if (reve && implies_p (cond, reve))
     {
       *expr = const0_rtx;
@@ -1855,7 +1855,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	default:
 	  gcc_unreachable ();
 	}
-      
+
       simplify_using_initial_values (loop, UNKNOWN, &head);
       if (head == aggr)
 	{
@@ -1876,7 +1876,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	  *expr = tail;
 	  return;
 	}
-  
+
       XEXP (*expr, 0) = head;
       XEXP (*expr, 1) = tail;
       return;
@@ -1942,7 +1942,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	  if (CALL_P (insn))
 	    {
 	      int i;
-		  
+
 	      /* Kill all call clobbered registers.  */
 	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
@@ -2137,7 +2137,7 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
      and iv0 and iv1 are both ivs iterating in SI mode, but calculated
      in different modes.  This does not seem impossible to handle, but
      it hardly ever occurs in practice.
-     
+
      The only exception is the case when one of operands is invariant.
      For example pentium 3 generates comparisons like
      (lt (subreg:HI (reg:SI)) 100).  Here we assign HImode to 100, but we
@@ -2299,7 +2299,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
     goto fail;
   if (iv0.extend_mode == VOIDmode)
     iv0.mode = iv0.extend_mode = mode;
-  
+
   op1 = XEXP (condition, 1);
   if (!iv_analyze (insn, op1, &iv1))
     goto fail;
@@ -2867,7 +2867,7 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	{
 	  if (flow_bb_inside_loop_p (loop, e->dest))
 	    continue;
-	  
+
 	  check_simple_exit (loop, e, &act);
 	  if (!act.simple_p)
 	    continue;
@@ -2886,7 +2886,7 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	      if (act.infinite && !desc->infinite)
 		continue;
 	    }
-	  
+
 	  *desc = act;
 	}
     }
@@ -2953,15 +2953,15 @@ get_simple_loop_desc (struct loop *loop)
 
   if (desc->simple_p && (desc->assumptions || desc->infinite))
     {
-      const char *wording; 
+      const char *wording;
 
-      /* Assume that no overflow happens and that the loop is finite.  
+      /* Assume that no overflow happens and that the loop is finite.
 	 We already warned at the tree level if we ran optimizations there.  */
       if (!flag_tree_loop_optimize && warn_unsafe_loop_optimizations)
 	{
 	  if (desc->infinite)
 	    {
-	      wording = 
+	      wording =
 		flag_unsafe_loop_optimizations
 		? N_("assuming that the loop is not infinite")
 		: N_("cannot optimize possibly infinite loops");
@@ -2970,7 +2970,7 @@ get_simple_loop_desc (struct loop *loop)
 	    }
 	  if (desc->assumptions)
 	    {
-	      wording = 
+	      wording =
 		flag_unsafe_loop_optimizations
 		? N_("assuming that the loop counter does not overflow")
 		: N_("cannot optimize loop, the loop counter may overflow");

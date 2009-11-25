@@ -215,7 +215,7 @@ gt_pch_n_S (const void *x)
    to restore the string pool.  */
 
 struct GTY(()) string_pool_data {
-  struct ht_identifier * * 
+  struct ht_identifier * *
     GTY((length ("%h.nslots"),
 	 nested_ptr (union tree_node, "%h ? GCC_IDENT_TO_HT_IDENT (%h) : NULL",
 		     "%h ? HT_IDENT_TO_GCC_IDENT (%h) : NULL")))

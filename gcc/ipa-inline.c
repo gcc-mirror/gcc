@@ -262,7 +262,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       else
 	{
 	  struct cgraph_node *n;
-	  n = cgraph_clone_node (e->callee, e->count, e->frequency, e->loop_nest, 
+	  n = cgraph_clone_node (e->callee, e->count, e->frequency, e->loop_nest,
 				 update_original, NULL);
 	  cgraph_redirect_edge_callee (e, n);
 	}
@@ -402,7 +402,7 @@ cgraph_estimate_growth (struct cgraph_node *node)
 }
 
 /* Return false when inlining WHAT into TO is not good idea
-   as it would cause too large growth of function bodies.  
+   as it would cause too large growth of function bodies.
    When ONE_ONLY is true, assume that only one call site is going
    to be inlined, otherwise figure out how many call sites in
    TO calls WHAT and verify that all can be inlined.
@@ -571,7 +571,7 @@ cgraph_edge_badness (struct cgraph_edge *edge)
       badness = growth * 10000;
       div *= MIN (100 * inline_summary (edge->callee)->time_inlining_benefit
       	          / (edge->callee->global.time + 1) + 1, 100);
-      
+
 
       /* Decrease badness if call is nested.  */
       /* Compress the range so we don't overflow.  */
@@ -595,7 +595,7 @@ cgraph_edge_badness (struct cgraph_edge *edge)
       badness = cgraph_estimate_growth (edge->callee) * 256;
 
       /* Decrease badness if call is nested.  */
-      if (badness > 0)    
+      if (badness > 0)
 	badness >>= nest;
       else
         {
@@ -744,7 +744,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
     }
 
   if (dump_file)
-    fprintf (dump_file, 
+    fprintf (dump_file,
 	     "  Performing recursive inlining on %s\n",
 	     cgraph_node_name (node));
 
@@ -773,7 +773,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
       if (depth > max_depth)
 	{
           if (dump_file)
-	    fprintf (dump_file, 
+	    fprintf (dump_file,
 		     "   maximal depth reached\n");
 	  continue;
 	}
@@ -789,7 +789,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
           if (curr->count * 100 / node->count < probability)
 	    {
 	      if (dump_file)
-		fprintf (dump_file, 
+		fprintf (dump_file,
 			 "   Probability of edge is too small\n");
 	      continue;
 	    }
@@ -797,7 +797,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, 
+	  fprintf (dump_file,
 		   "   Inlining call of depth %i", depth);
 	  if (node->count)
 	    {
@@ -816,7 +816,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node,
 
   fibheap_delete (heap);
   if (dump_file)
-    fprintf (dump_file, 
+    fprintf (dump_file,
 	     "\n   Inlined %i times, body grown from size %i to %i, time %i to %i\n", n,
 	     master_clone->global.size, node->global.size,
 	     master_clone->global.time, node->global.time);
@@ -947,11 +947,11 @@ cgraph_decide_inlining_of_small_functions (void)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, 
+	  fprintf (dump_file,
 		   "\nConsidering %s with %i size\n",
 		   cgraph_node_name (edge->callee),
 		   edge->callee->global.size);
-	  fprintf (dump_file, 
+	  fprintf (dump_file,
 		   " to be inlined into %s in %s:%i\n"
 		   " Estimated growth after inlined into all callees is %+i insns.\n"
 		   " Estimated badness is %i, frequency %.2f.\n",
@@ -1089,7 +1089,7 @@ cgraph_decide_inlining_of_small_functions (void)
 
       if (dump_file)
 	{
-	  fprintf (dump_file, 
+	  fprintf (dump_file,
 		   " Inlined into %s which now has size %i and self time %i,"
 		   "net change of %+i.\n",
 		   cgraph_node_name (edge->caller),
@@ -1228,7 +1228,7 @@ cgraph_decide_inlining (void)
 	    if (e->inline_failed)
 	      e->inline_failed = CIF_RECURSIVE_INLINING;
 	  if (dump_file)
-	    fprintf (dump_file, 
+	    fprintf (dump_file,
 		     " Inlined for a net change of %+i size.\n",
 		     overall_size - old_size);
 	}
@@ -1360,7 +1360,7 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
           return false;
 	}
     }
-      
+
   callee->aux = (void *)(size_t) mode;
   if (dump_file)
     {
@@ -1375,7 +1375,7 @@ try_inline (struct cgraph_edge *e, enum inlining_mode mode, int depth)
 
       /* In order to fully inline always_inline functions, we need to
 	 recurse here, since the inlined functions might not be processed by
-	 incremental inlining at all yet.  
+	 incremental inlining at all yet.
 
 	 Also flattening needs to be done recursively.  */
 
@@ -1402,7 +1402,7 @@ leaf_node_p (struct cgraph_node *n)
 }
 
 /* Decide on the inlining.  We do so in the topological order to avoid
-   expenses on updating data structures.  
+   expenses on updating data structures.
    DEPTH is depth of recursion, used only for debug output.  */
 
 static bool
@@ -1638,7 +1638,7 @@ cgraph_gate_early_inlining (void)
   return flag_early_inlining;
 }
 
-struct gimple_opt_pass pass_early_inline = 
+struct gimple_opt_pass pass_early_inline =
 {
  {
   GIMPLE_PASS,
@@ -1669,7 +1669,7 @@ cgraph_gate_ipa_early_inlining (void)
 
 /* IPA pass wrapper for early inlining pass.  We need to run early inlining
    before tree profiling so we have stand alone IPA pass for doing so.  */
-struct simple_ipa_opt_pass pass_ipa_early_inline = 
+struct simple_ipa_opt_pass pass_ipa_early_inline =
 {
  {
   SIMPLE_IPA_PASS,
@@ -1723,7 +1723,7 @@ likely_eliminated_by_inlining_p (gimple stmt)
  	    while (handled_component_p (inner_rhs)
 	           || TREE_CODE (inner_rhs) == ADDR_EXPR || TREE_CODE (inner_rhs) == INDIRECT_REF)
 	      inner_rhs = TREE_OPERAND (inner_rhs, 0);
-		
+
 
 	    if (TREE_CODE (inner_rhs) == PARM_DECL
 	        || (TREE_CODE (inner_rhs) == SSA_NAME
@@ -1875,7 +1875,7 @@ compute_inline_parameters_for_current (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_inline_parameters = 
+struct gimple_opt_pass pass_inline_parameters =
 {
  {
   GIMPLE_PASS,
@@ -1963,7 +1963,7 @@ inline_generate_summary (void)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed)
       analyze_function (node);
-  
+
   return;
 }
 
@@ -2003,7 +2003,7 @@ inline_transform (struct cgraph_node *node)
    and inliner, so when ipa-cp is active, we don't need to write them
    twice.  */
 
-static void 
+static void
 inline_read_summary (void)
 {
   if (flag_indirect_inlining)
@@ -2020,7 +2020,7 @@ inline_read_summary (void)
    Jump functions are shared among ipa-cp and inliner, so when ipa-cp is
    active, we don't need to write them twice.  */
 
-static void 
+static void
 inline_write_summary (cgraph_node_set set)
 {
   if (flag_indirect_inlining && !flag_ipa_cp)

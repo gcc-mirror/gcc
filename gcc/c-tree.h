@@ -521,7 +521,7 @@ extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
 extern struct c_expr parser_build_unary_op (location_t, enum tree_code,
     					    struct c_expr);
-extern struct c_expr parser_build_binary_op (location_t, 
+extern struct c_expr parser_build_binary_op (location_t,
     					     enum tree_code, struct c_expr,
 					     struct c_expr);
 extern tree build_conditional_expr (location_t, tree, bool, tree, tree,

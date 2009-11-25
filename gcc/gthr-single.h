@@ -213,12 +213,12 @@ __gthread_active_p (void)
   return 0;
 }
 
-static inline int 
+static inline int
 __gthread_once (__gthread_once_t *__once UNUSED, void (*__func) (void) UNUSED)
 {
   return 0;
 }
-  
+
 static inline int UNUSED
 __gthread_key_create (__gthread_key_t *__key UNUSED, void (*__func) (void *) UNUSED)
 {
@@ -230,14 +230,14 @@ __gthread_key_delete (__gthread_key_t __key UNUSED)
 {
   return 0;
 }
-  
+
 static inline void *
 __gthread_getspecific (__gthread_key_t __key UNUSED)
 {
   return 0;
 }
 
-static inline int 
+static inline int
 __gthread_setspecific (__gthread_key_t __key UNUSED, const void *__v UNUSED)
 {
   return 0;

@@ -300,7 +300,7 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
    front-end independent format specifiers are exactly those described
-   in the documentation of output_format.  
+   in the documentation of output_format.
    Return true if a diagnostic was printed, false otherwise.  */
 
 bool
@@ -320,9 +320,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   if (diagnostic->kind == DK_NOTE && flag_compare_debug)
     return false;
 
-  if (diagnostic->kind == DK_PEDWARN) 
+  if (diagnostic->kind == DK_PEDWARN)
     diagnostic->kind = pedantic_warning_kind ();
-  
+
   if (context->lock > 0)
     {
       /* If we're reporting an ICE in the middle of some other error,
@@ -344,7 +344,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       diagnostic->kind = DK_ERROR;
       maybe_print_warnings_as_errors_message = true;
     }
-  
+
   if (diagnostic->option_index)
     {
       /* This tests if the user provided the appropriate -Wfoo or
@@ -384,7 +384,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       dump_active_plugins (stderr);
     }
 
-  if (diagnostic->kind == DK_ICE) 
+  if (diagnostic->kind == DK_ICE)
     {
 #ifndef ENABLE_CHECKING
       /* When not checking, ICEs are converted to fatal errors when an
@@ -405,13 +405,13 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 				    diagnostic->message.args_ptr);
     }
   ++diagnostic_kind_count (context, diagnostic->kind);
-  
+
   saved_format_spec = diagnostic->message.format_spec;
   if (context->show_option_requested && diagnostic->option_index)
     diagnostic->message.format_spec
       = ACONCAT ((diagnostic->message.format_spec,
                   " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
-  
+
   diagnostic->message.locus = &diagnostic->location;
   diagnostic->message.abstract_origin = &diagnostic->abstract_origin;
   diagnostic->abstract_origin = NULL;
@@ -482,7 +482,7 @@ verbatim (const char *gmsgid, ...)
 }
 
 bool
-emit_diagnostic (diagnostic_t kind, location_t location, int opt, 
+emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 		 const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;
@@ -520,7 +520,7 @@ inform (location_t location, const char *gmsgid, ...)
 }
 
 /* A warning at INPUT_LOCATION.  Use this for code which is correct according
-   to the relevant language specification but is likely to be buggy anyway.  
+   to the relevant language specification but is likely to be buggy anyway.
    Returns true if the warning was printed, false if it was inhibited.  */
 bool
 warning (int opt, const char *gmsgid, ...)

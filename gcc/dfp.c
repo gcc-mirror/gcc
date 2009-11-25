@@ -138,7 +138,7 @@ encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
 
-  decimal_to_decnumber (r, &dn); 
+  decimal_to_decnumber (r, &dn);
   decimal32FromNumber (&d32, &dn, &set);
 
   memcpy (&image, d32.bytes, sizeof (int32_t));
@@ -163,7 +163,7 @@ decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   memcpy (&d32.bytes, &image, sizeof (int32_t));
 
   decimal32ToNumber (&d32, &dn);
-  decimal_from_decnumber (r, &dn, &set); 
+  decimal_from_decnumber (r, &dn, &set);
 }
 
 /* Encode a real into an IEEE 754 decimal64 type.  */
@@ -204,7 +204,7 @@ encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 void
 decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		  REAL_VALUE_TYPE *r, const long *buf)
-{ 
+{
   decNumber dn;
   decimal64 d64;
   decContext set;
@@ -229,7 +229,7 @@ decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
     }
 
   decimal64ToNumber (&d64, &dn);
-  decimal_from_decnumber (r, &dn, &set); 
+  decimal_from_decnumber (r, &dn, &set);
 }
 
 /* Encode a real into an IEEE 754 decimal128 type.  */
@@ -311,7 +311,7 @@ decode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
     }
 
   decimal128ToNumber (&d128, &dn);
-  decimal_from_decnumber (r, &dn, &set); 
+  decimal_from_decnumber (r, &dn, &set);
 }
 
 /* Helper function to convert from a binary real internal
@@ -365,10 +365,10 @@ decimal_do_compare (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b,
       decimal_from_binary (&b1, b);
       b = &b1;
     }
-    
+
   /* Convert into decNumber form for comparison operation.  */
   decContextDefault (&set, DEC_INIT_DECIMAL128);
-  set.traps = 0;  
+  set.traps = 0;
   decimal128ToNumber ((const decimal128 *) a->sig, &dn2);
   decimal128ToNumber ((const decimal128 *) b->sig, &dn3);
 
@@ -382,7 +382,7 @@ decimal_do_compare (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b,
     return 0;
   else if (decNumberIsNegative (&dn))
     return -1;
-  else 
+  else
     return 1;
 }
 
@@ -435,7 +435,7 @@ decimal_round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
    binary and decimal types.  */
 
 void
-decimal_real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode, 
+decimal_real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
 		      const REAL_VALUE_TYPE *a)
 {
   const struct real_format *fmt = REAL_MODE_FORMAT (mode);
@@ -484,7 +484,7 @@ decimal_do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *op0,
 
   if (subtract_p)
     decNumberSubtract (&dn, &dn2, &dn3, &set);
-  else 
+  else
     decNumberAdd (&dn, &dn2, &dn3, &set);
 
   decimal_from_decnumber (r, &dn, &set);
@@ -697,7 +697,7 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, enum tree_code code,
 
 void
 decimal_real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
-{ 
+{
   const char *max;
 
   switch (mode)

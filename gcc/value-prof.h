@@ -30,7 +30,7 @@ enum hist_type
 			   always constant.  */
   HIST_TYPE_CONST_DELTA, /* Tries to identify the (almost) always constant
 			   difference between two evaluations of a value.  */
-  HIST_TYPE_INDIR_CALL,   /* Tries to identify the function that is (almost) 
+  HIST_TYPE_INDIR_CALL,   /* Tries to identify the function that is (almost)
 			    called in indirect call */
   HIST_TYPE_AVERAGE,	/* Compute average value (sum of all values).  */
   HIST_TYPE_IOR		/* Used to compute expected alignment.  */

@@ -40,7 +40,7 @@ int ipa_utils_reduced_inorder (struct cgraph_node **, bool, bool,
 			       bool (*ignore_edge) (struct cgraph_edge *));
 tree get_base_var (tree);
 
- 
+
 #endif  /* GCC_IPA_UTILS_H  */
 
 

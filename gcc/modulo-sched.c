@@ -96,7 +96,7 @@ along with GCC; see the file COPYING3.  If not see
     Currently SMS relies on the do-loop pattern to recognize such loops,
     where (1) the control part comprises of all insns defining and/or
     using a certain 'count' register and (2) the loop count can be
-    adjusted by modifying this register prior to the loop.  
+    adjusted by modifying this register prior to the loop.
     TODO: Rely on cfgloop analysis instead.  */
 
 /* This page defines partial-schedule structures and functions for
@@ -168,7 +168,7 @@ struct undo_replace_buff_elem
 };
 
 
-  
+
 static partial_schedule_ptr create_partial_schedule (int ii, ddg_ptr, int history);
 static void free_partial_schedule (partial_schedule_ptr);
 static void reset_partial_schedule (partial_schedule_ptr, int new_ii);
@@ -275,7 +275,7 @@ static struct haifa_sched_info sms_sched_info =
   NULL, NULL,
   0, 0,
 
-  NULL, NULL, NULL, 
+  NULL, NULL, NULL,
   0
 };
 
@@ -373,8 +373,8 @@ static int
 res_MII (ddg_ptr g)
 {
   if (targetm.sched.sms_res_mii)
-    return targetm.sched.sms_res_mii (g); 
-  
+    return targetm.sched.sms_res_mii (g);
+
   return ((g->num_nodes - g->num_debug) / issue_rate);
 }
 
@@ -705,7 +705,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
   int i;
   int last_stage = PS_STAGE_COUNT (ps) - 1;
   edge e;
-  
+
   /* Generate the prolog, inserting its insns on the loop-entry edge.  */
   start_sequence ();
 
@@ -727,7 +727,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
 
   for (i = 0; i < last_stage; i++)
     duplicate_insns_of_cycles (ps, 0, i, 1, count_reg);
-  
+
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
   split_edge_and_insert (e, get_insns ());
@@ -739,7 +739,7 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
 
   for (i = 0; i < last_stage; i++)
     duplicate_insns_of_cycles (ps, i + 1, last_stage, 0, count_reg);
-  
+
   /* Put the epilogue on the exit edge.  */
   gcc_assert (single_exit (loop));
   e = single_exit (loop);
@@ -809,7 +809,7 @@ loop_canon_p (struct loop *loop)
       if (dump_file)
 	{
 	  rtx insn = BB_END (loop->header);
- 
+
 	  fprintf (dump_file, "SMS loop many exits ");
 	  	  fprintf (dump_file, " %s %d (file, line)\n",
 			   insn_file (insn), insn_line (insn));
@@ -822,7 +822,7 @@ loop_canon_p (struct loop *loop)
       if (dump_file)
 	{
 	  rtx insn = BB_END (loop->header);
- 
+
 	  fprintf (dump_file, "SMS loop many BBs. ");
 	  fprintf (dump_file, " %s %d (file, line)\n",
 		   insn_file (insn), insn_line (insn));
@@ -1011,7 +1011,7 @@ sms_schedule (void)
 
       /* Don't handle BBs with calls or barriers, or !single_set insns,
          or auto-increment insns (to avoid creating invalid reg-moves
-         for the auto-increment insns).  
+         for the auto-increment insns).
          ??? Should handle auto-increment insns.
          ??? Should handle insns defining subregs.  */
      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
@@ -1160,7 +1160,7 @@ sms_schedule (void)
       if (ps){
 	stage_count = PS_STAGE_COUNT (ps);
         gcc_assert(stage_count >= 1);
-      }  
+      }
 
       /* Stage count of 1 means that there is no interleaving between
          iterations, let the scheduling passes do the job.  */
@@ -1198,14 +1198,14 @@ sms_schedule (void)
 	     the closing_branch was scheduled and should appear in the last (ii-1)
 	     row.  Otherwise, we are free to schedule the branch, and we let nodes
 	     that were scheduled at the first PS_MIN_CYCLE cycle appear in the first
-	     row; this should reduce stage_count to minimum.  
+	     row; this should reduce stage_count to minimum.
              TODO: Revisit the issue of scheduling the insns of the
              control part relative to the branch when the control part
              has more than one insn.  */
 	  normalize_sched_times (ps);
 	  rotate_partial_schedule (ps, PS_MIN_CYCLE (ps));
 	  set_columns_for_ps (ps);
-	  
+
 	  canon_loop (loop);
 
           /* case the BCT count is not known , Do loop-versioning */
@@ -1241,7 +1241,7 @@ sms_schedule (void)
 	    print_node_sched_params (dump_file, g->num_nodes, g);
 	  /* Generate prolog and epilog.  */
           generate_prolog_epilog (ps, loop, count_reg, count_init);
- 
+
 	  free_undo_replace_buff (reg_move_replaces);
 	}
 
@@ -1377,7 +1377,7 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
 	  ddg_node_ptr v_node = e->src;
 
           if (dump_file)
-            {     
+            {
 	      fprintf (dump_file, "\nProcessing edge: ");
               print_ddg_edge (dump_file, e);
 	      fprintf (dump_file,
@@ -1395,7 +1395,7 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
                 MAX (early_start, p_st + e->latency - (e->distance * ii));
 
               if (dump_file)
-                fprintf (dump_file, 
+                fprintf (dump_file,
                          "pred st = %d; early_start = %d; latency: %d",
                          p_st, early_start, e->latency);
 
@@ -1444,7 +1444,7 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
                                 s_st - e->latency + (e->distance * ii));
 
               if (dump_file)
-                fprintf (dump_file, 
+                fprintf (dump_file,
                          "succ st = %d; late_start = %d; latency = %d",
                          s_st, late_start, e->latency);
 
@@ -1503,7 +1503,7 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
 				 - (e->distance * ii));
 
               if (dump_file)
-                fprintf (dump_file, 
+                fprintf (dump_file,
                          "pred st = %d; early_start = %d; latency = %d",
                          p_st, early_start, e->latency);
 
@@ -1541,7 +1541,7 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
 				+ (e->distance * ii));
 
               if (dump_file)
-                fprintf (dump_file, 
+                fprintf (dump_file,
                          "succ st = %d; late_start = %d; latency = %d",
                          s_st, late_start, e->latency);
 
@@ -1665,7 +1665,7 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
       && e->latency == 0
      we use the fact that latency is non-negative:
       SCHED_TIME (e->dest) + (e->distance * ii) >=
-      SCHED_TIME (e->dest) - e->latency + (e->distance * ii)) >= 
+      SCHED_TIME (e->dest) - e->latency + (e->distance * ii)) >=
       last_cycle_in_window
      and check only if
       SCHED_TIME (e->dest) + (e->distance * ii) == last_cycle_in_window  */
@@ -2080,10 +2080,10 @@ check_nodes_order (int *node_order, int num_nodes)
 
       SET_BIT (tmp, u);
     }
- 
+
   if (dump_file)
     fprintf (dump_file, "\n");
- 
+
   sbitmap_free (tmp);
 }
 
@@ -2622,8 +2622,8 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
 }
 
 /* Advances the PS_INSN one column in its current row; returns false
-   in failure and true in success.  Bit N is set in MUST_FOLLOW if 
-   the node with cuid N must be come after the node pointed to by 
+   in failure and true in success.  Bit N is set in MUST_FOLLOW if
+   the node with cuid N must be come after the node pointed to by
    PS_I when scheduled in the same cycle.  */
 static int
 ps_insn_advance_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
@@ -2671,9 +2671,9 @@ ps_insn_advance_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
 }
 
 /* Inserts a DDG_NODE to the given partial schedule at the given cycle.
-   Returns 0 if this is not possible and a PS_INSN otherwise.  Bit N is 
-   set in MUST_PRECEDE/MUST_FOLLOW if the node with cuid N must be come 
-   before/after (respectively) the node pointed to by PS_I when scheduled 
+   Returns 0 if this is not possible and a PS_INSN otherwise.  Bit N is
+   set in MUST_PRECEDE/MUST_FOLLOW if the node with cuid N must be come
+   before/after (respectively) the node pointed to by PS_I when scheduled
    in the same cycle.  */
 static ps_insn_ptr
 add_node_to_ps (partial_schedule_ptr ps, ddg_node_ptr node, int cycle,
@@ -2774,8 +2774,8 @@ ps_has_conflicts (partial_schedule_ptr ps, int from, int to)
 
 /* Checks if the given node causes resource conflicts when added to PS at
    cycle C.  If not the node is added to PS and returned; otherwise zero
-   is returned.  Bit N is set in MUST_PRECEDE/MUST_FOLLOW if the node with 
-   cuid N must be come before/after (respectively) the node pointed to by 
+   is returned.  Bit N is set in MUST_PRECEDE/MUST_FOLLOW if the node with
+   cuid N must be come before/after (respectively) the node pointed to by
    PS_I when scheduled in the same cycle.  */
 ps_insn_ptr
 ps_add_node_check_conflicts (partial_schedule_ptr ps, ddg_node_ptr n,
