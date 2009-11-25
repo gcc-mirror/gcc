@@ -1,5 +1,9 @@
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/interchange-11.c: New.
+
+2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/interchange-8.c: Enable loop interchange.
 
 2009-10-14  Sebastian Pop  <sebastian.pop@amd.com>
