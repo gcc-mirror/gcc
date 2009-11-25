@@ -193,7 +193,11 @@ reduction_phi_p (sese region, gimple_stmt_iterator *psi)
      reductions.  */
   if (simple_iv (loop, loop, res, &iv, true))
     {
-      gsi_next (psi);
+      if (integer_zerop (iv.step))
+	remove_invariant_phi (region, psi);
+      else
+	gsi_next (psi);
+
       return false;
     }
 
