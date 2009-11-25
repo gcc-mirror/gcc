@@ -1960,7 +1960,7 @@ bool
 finite_loop_p (struct loop *loop)
 {
   unsigned i;
-  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  VEC (edge, heap) *exits;
   edge ex;
   struct tree_niter_desc desc;
   bool finite = false;
