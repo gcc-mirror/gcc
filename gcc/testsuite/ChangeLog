@@ -1,5 +1,8 @@
 2009-11-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42026, DR 239
+	* g++.dg/lookup/koenig8.C: New.
+
 	PR c++/10690
 	* g++.dg/template/explicit-args2.C: Add typeid cases.
 

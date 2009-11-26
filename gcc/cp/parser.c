@@ -4844,14 +4844,13 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			 && is_overloaded_fn (postfix_expression))
 		  {
 		    tree fn = get_first_fn (postfix_expression);
+		    fn = STRIP_TEMPLATE (fn);
 
-		    if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
-		      fn = OVL_CURRENT (TREE_OPERAND (fn, 0));
-
-		    /* Only do argument dependent lookup if regular
-		       lookup does not find a set of member functions.
-		       [basic.lookup.koenig]/2a  */
-		    if (!DECL_FUNCTION_MEMBER_P (fn))
+		    /* Do not do argument dependent lookup if regular
+		       lookup finds a member function or a block-scope
+		       function declaration.  [basic.lookup.argdep]/3  */
+		    if (!DECL_FUNCTION_MEMBER_P (fn)
+			&& !DECL_LOCAL_FUNCTION_P (fn))
 		      {
 			koenig_p = true;
 			if (!any_type_dependent_arguments_p (args))
