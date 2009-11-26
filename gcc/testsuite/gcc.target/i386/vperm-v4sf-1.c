@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -msse" } */
+/* { dg-options "-O -msse2" } */
 
 #include "isa-check.h"
 

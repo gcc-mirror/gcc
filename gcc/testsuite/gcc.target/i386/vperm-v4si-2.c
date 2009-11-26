@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target ssse3 } */
 /* { dg-options "-O -mssse3" } */
 
 #include "isa-check.h"
