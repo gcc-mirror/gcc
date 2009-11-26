@@ -1,5 +1,11 @@
 2009-11-26  Michael Matz  <matz@suse.de>
 
+	PR tree-optimization/41905
+	* tree-eh.c (lower_eh_constructs_2): Don't add assignments
+	below statements that can't fall thru.
+
+2009-11-26  Michael Matz  <matz@suse.de>
+
 	* builtins.c (expand_builtin_printf, expand_builtin_fprintf,
 	expand_builtin_sprintf): Remove.
 	(expand_builtin): Don't call them.
