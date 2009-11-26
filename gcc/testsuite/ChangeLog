@@ -1,3 +1,10 @@
+2009-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42048
+	PR fortran/42167
+	* gfortran.dg/select_type_10.f03: New test case.
+	* gfortran.dg/typebound_call_11.f03: Extended test case.
+
 2009-11-26  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/41905

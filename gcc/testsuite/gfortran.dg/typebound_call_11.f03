@@ -35,6 +35,14 @@ contains
   call new%mesh%new_grid()
  end function
 
+ type(field) function new_field3()
+  call g()
+ contains
+  subroutine g()
+    call new_field3%mesh%new_grid()
+  end subroutine g
+ end function new_field3
+
 end module
 
 ! { dg-final { cleanup-modules "grid_module field_module" } }
