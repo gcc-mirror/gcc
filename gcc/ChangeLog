@@ -1,3 +1,11 @@
+2009-11-26  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (mulv16qi3): Change back from an expander
+	to an insn-and-split.
+	(mulv4si): Mention AVX not XOP for AVX exception.
+	(*sse2_mulv4si3): Likewise.
+	(mulv2di3): Use vmulld not vpmacsdd for XOP expansion.  Tidy.
+
 2009-11-26  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* cfgexpand (n_stack_vars_conflict): New static variable.
