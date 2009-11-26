@@ -39,6 +39,8 @@ int main (void)
 { 
   int i, j;
 
+  check_vect ();
+  
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       {
@@ -46,8 +48,6 @@ int main (void)
         c[i][j] = i+j;
       }
          
-  check_vect ();
-  
   main1 ();
 
   return 0;

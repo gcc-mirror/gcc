@@ -30,6 +30,8 @@ int main ()
 {
   int d[256], src[128], i;
  
+  check_vect ();
+
   for (i = 0; i < 128; i++)
     src[i] = i; 
   
