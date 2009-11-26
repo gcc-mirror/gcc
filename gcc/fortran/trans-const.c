@@ -336,7 +336,7 @@ void
 gfc_conv_constant (gfc_se * se, gfc_expr * expr)
 {
   /* We may be receiving an expression for C_NULL_PTR or C_NULL_FUNPTR.  If
-     so, they expr_type will not yet be an EXPR_CONSTANT.  We need to make
+     so, the expr_type will not yet be an EXPR_CONSTANT.  We need to make
      it so here.  */
   if (expr->ts.type == BT_DERIVED && expr->ts.derived
       && expr->ts.derived->attr.is_iso_c)
@@ -349,7 +349,12 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
         }
     }
 
-  gcc_assert (expr->expr_type == EXPR_CONSTANT);
+  if (expr->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("non-constant initialization expression at %L", &expr->where);
+      se->expr = gfc_conv_constant_to_tree (gfc_int_expr (0));
+      return;
+    }
 
   if (se->ss != NULL)
     {

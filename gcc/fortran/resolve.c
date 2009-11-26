@@ -9447,10 +9447,6 @@ next_data_value (void)
 {
   while (mpz_cmp_ui (values.left, 0) == 0)
     {
-      if (!gfc_is_constant_expr (values.vnode->expr))
-	gfc_error ("non-constant DATA value at %L",
-		   &values.vnode->expr->where);
-
       if (values.vnode->next == NULL)
 	return FAILURE;
 
