@@ -1,3 +1,7 @@
+2009-11-26  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-dce.c (perform_tree_ssa_dce): Allocate visited bitmap.
+
 2009-11-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_expand_epilogue): Add checks for sibcalls
