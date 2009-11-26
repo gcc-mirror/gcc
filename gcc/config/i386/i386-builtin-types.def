@@ -10,12 +10,12 @@
 #   At present, that's all that's required; revisit if it turns out
 #   that we need more than that.
 #
-# DEF_VECTOR_TYPE (ENUM, TYPE)
+# DEF_VECTOR_TYPE (ENUM, TYPE [, MODE])
 #
-#  This describes a vector type.  ENUM doubles as both the identifier
-#  to define in the enumeration as well as the mode of the vector; TYPE is
-#  the enumeral for the inner type which should of course name a type of
-#  the proper inner mode.
+#  This describes a vector type.  ENUM is an identifier as above.
+#  TYPE is the enumeral for the inner type which should of course
+#  name a type of the proper inner mode.  If present, MODE is the
+#  machine mode, else the machine mode should be the same as ENUM.
 #
 # DEF_POINTER_TYPE (ENUM, TYPE [, CONST])
 #
@@ -40,10 +40,22 @@
 DEF_PRIMITIVE_TYPE (VOID, void_type_node)
 DEF_PRIMITIVE_TYPE (CHAR, char_type_node)
 DEF_PRIMITIVE_TYPE (UCHAR, unsigned_char_type_node)
-DEF_PRIMITIVE_TYPE (QI, intQI_type_node)
+# ??? Logically this should be intQI_type_node, but that maps to "signed char"
+# which is a different type than "char" even if "char" is signed.  This must
+# match the usage in emmintrin.h and changing this would change name mangling
+# and so is not advisable.
+DEF_PRIMITIVE_TYPE (QI, char_type_node)
 DEF_PRIMITIVE_TYPE (HI, intHI_type_node)
 DEF_PRIMITIVE_TYPE (SI, intSI_type_node)
+# ??? Logically this should be intDI_type_node, but that maps to "long"
+# with 64-bit, and that's not how the emmintrin.h is written.  Again, 
+# changing this would change name mangling.
 DEF_PRIMITIVE_TYPE (DI, long_long_integer_type_node)
+DEF_PRIMITIVE_TYPE (UQI, unsigned_intQI_type_node)
+DEF_PRIMITIVE_TYPE (UHI, unsigned_intHI_type_node)
+DEF_PRIMITIVE_TYPE (USI, unsigned_intSI_type_node)
+DEF_PRIMITIVE_TYPE (UDI, long_long_unsigned_type_node)
+# ??? Some of the types below should use the mode types above.
 DEF_PRIMITIVE_TYPE (USHORT, short_unsigned_type_node)
 DEF_PRIMITIVE_TYPE (INT, integer_type_node)
 DEF_PRIMITIVE_TYPE (UINT, unsigned_type_node)
@@ -59,23 +71,33 @@ DEF_PRIMITIVE_TYPE (DOUBLE, double_type_node)
 DEF_PRIMITIVE_TYPE (FLOAT80, float80_type_node)
 DEF_PRIMITIVE_TYPE (FLOAT128, float128_type_node)
 
-DEF_VECTOR_TYPE (V16HI, HI)
-DEF_VECTOR_TYPE (V16QI, CHAR)
-DEF_VECTOR_TYPE (V1DI, DI)
-DEF_VECTOR_TYPE (V2DF, DOUBLE)
-DEF_VECTOR_TYPE (V2DI, DI)
+# MMX vectors
 DEF_VECTOR_TYPE (V2SF, FLOAT)
+DEF_VECTOR_TYPE (V1DI, DI)
 DEF_VECTOR_TYPE (V2SI, SI)
-DEF_VECTOR_TYPE (V32QI, CHAR)
-DEF_VECTOR_TYPE (V4DF, DOUBLE)
-DEF_VECTOR_TYPE (V4DI, DI)
 DEF_VECTOR_TYPE (V4HI, HI)
+DEF_VECTOR_TYPE (V8QI, QI)
+
+# SSE vectors
+DEF_VECTOR_TYPE (V2DF, DOUBLE)
 DEF_VECTOR_TYPE (V4SF, FLOAT)
+DEF_VECTOR_TYPE (V2DI, DI)
 DEF_VECTOR_TYPE (V4SI, SI)
 DEF_VECTOR_TYPE (V8HI, HI)
-DEF_VECTOR_TYPE (V8QI, CHAR)
+DEF_VECTOR_TYPE (V16QI, QI)
+DEF_VECTOR_TYPE (V2UDI, UDI, V2DI)
+DEF_VECTOR_TYPE (V4USI, USI, V4SI)
+DEF_VECTOR_TYPE (V8UHI, UHI, V8HI)
+DEF_VECTOR_TYPE (V16UQI, UQI, V16QI)
+
+# AVX vectors
+DEF_VECTOR_TYPE (V4DF, DOUBLE)
 DEF_VECTOR_TYPE (V8SF, FLOAT)
+DEF_VECTOR_TYPE (V4DI, DI)
 DEF_VECTOR_TYPE (V8SI, SI)
+DEF_VECTOR_TYPE (V16HI, HI)
+DEF_VECTOR_TYPE (V32QI, QI)
+
 
 DEF_POINTER_TYPE (PCCHAR, CHAR, CONST)
 DEF_POINTER_TYPE (PCDOUBLE, DOUBLE, CONST)
@@ -323,6 +345,12 @@ DEF_FUNCTION_TYPE (VOID, UINT64, UINT, UINT)
 DEF_FUNCTION_TYPE (VOID, USHORT, UINT, USHORT)
 DEF_FUNCTION_TYPE (VOID, V16QI, V16QI, PCHAR)
 DEF_FUNCTION_TYPE (VOID, V8QI, V8QI, PCHAR)
+DEF_FUNCTION_TYPE (V2DF, V2DF, V2DF, V2DI)
+DEF_FUNCTION_TYPE (V4SF, V4SF, V4SF, V4SI)
+DEF_FUNCTION_TYPE (V2UDI, V2UDI, V2UDI, V2UDI)
+DEF_FUNCTION_TYPE (V4USI, V4USI, V4USI, V4USI)
+DEF_FUNCTION_TYPE (V8UHI, V8UHI, V8UHI, V8UHI)
+DEF_FUNCTION_TYPE (V16UQI, V16UQI, V16UQI, V16UQI)
 
 DEF_FUNCTION_TYPE (V2DI, V2DI, V2DI, UINT, UINT)
 DEF_FUNCTION_TYPE (V4HI, HI, HI, HI, HI)

@@ -1,5 +1,39 @@
 2009-11-25  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386-builtin-types.awk (DEF_VECTOR_TYPE): Allow an
+	optional 3rd argument to define the mode.
+	* config/i386/i386-builtin-types.def (UQI, UHI, USI, UDI): New.
+	(V2UDI, V4USI, V8UHI, V16UQI): New.
+	(V4SF_FTYPE_V4SF_V4SF_V4SI, V2UDI_FTYPE_V2UDI_V2UDI_V2UDI,
+	V4USI_FTYPE_V4USI_V4USI_V4USI, V8UHI_FTYPE_V8UHI_V8UHI_V8UHI,
+	V16UQI_FTYPE_V16UQI_V16UQI_V16UQI): New.
+	* config/i386/i386-modes.def: Rearrange for double-wide AVX.
+	* config/i386/i386-protos.h (ix86_expand_vec_extract_even_odd): New.
+	* config/i386/i386.c (IX86_BUILTIN_VEC_PERM_*): New.
+	(bdesc_args): Add the builtin definitions to match.
+	(ix86_expand_builtin): Expand them.
+	(ix86_builtin_vectorization_cost): Rename from
+	x86_builtin_vectorization_cost.
+	(ix86_vectorize_builtin_vec_perm, struct expand_vec_perm_d,
+	doublesize_vector_mode, expand_vselect, expand_vselect_vconcat,
+	expand_vec_perm_blend, expand_vec_perm_vpermil,
+	expand_vec_perm_pshufb, expand_vec_perm_1,
+	expand_vec_perm_pshuflw_pshufhw, expand_vec_perm_palignr,
+	expand_vec_perm_interleave2, expand_vec_perm_pshufb2,
+	expand_vec_perm_even_odd_1, expand_vec_perm_even_odd,
+	ix86_expand_vec_perm_builtin_1, extract_vec_perm_cst,
+	ix86_expand_vec_perm_builtin, ix86_vectorize_builtin_vec_perm_ok,
+	ix86_expand_vec_extract_even_odd, TARGET_VECTORIZE_BUILTIN_VEC_PERM,
+	TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK): New.
+	* sse.md (SSEMODE_EO): New.
+	(vec_extract_even<mode>): Use SSEMODE_EO and
+	ix86_expand_vec_extract_even_odd.
+	(vec_extract_odd<mode>): Likewise.
+	(mulv16qi3, vec_pack_trunc_v8hi, vec_pack_trunc_v4si,
+	vec_pack_trunc_v2di): Use ix86_expand_vec_extract_even_odd.
+
+2009-11-25  Richard Henderson  <rth@redhat.com>
+
 	* target.h (targetm.vectorize.builtin_vec_perm_ok): New.
 	* target-def.h (TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK): New.
 	* hooks.h, hooks.c (hook_bool_tree_tree_true): New.

@@ -69,11 +69,12 @@ $1 == "DEF_PRIMITIVE_TYPE" {
 }
 
 $1 == "DEF_VECTOR_TYPE" {
-    if (NF == 4) {
+    if (NF == 4 || NF == 5) {
 	check_type($3)
 	type_hash[$2] = 1
-	vect_mode[vect_defs] = $2
+	vect_name[vect_defs] = $2
 	vect_base[vect_defs] = $3
+	vect_mode[vect_defs] = (NF == 5 ? $4 : $2)
 	vect_defs++
     } else
 	do_error("DEF_VECTOR_TYPE expected 2 arguments")
@@ -152,8 +153,8 @@ END {
 	print "  IX86_BT_" prim_name[i] ","
     print "  IX86_BT_LAST_PRIM = IX86_BT_" prim_name[i-1] ","
     for (i = 0; i < vect_defs; ++i)
-	print "  IX86_BT_" vect_mode[i] ","
-    print "  IX86_BT_LAST_VECT = IX86_BT_" vect_mode[i-1] ","
+	print "  IX86_BT_" vect_name[i] ","
+    print "  IX86_BT_LAST_VECT = IX86_BT_" vect_name[i-1] ","
     for (i = 0; i < ptr_defs; ++i)
 	print "  IX86_BT_" ptr_name[i] ","
     print "  IX86_BT_LAST_PTR = IX86_BT_" ptr_name[i-1] ","

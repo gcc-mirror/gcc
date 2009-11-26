@@ -219,6 +219,8 @@ extern void ix86_expand_reduc_v4sf (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 extern bool ix86_fma4_valid_op_p (rtx [], rtx, int, bool, int, bool);
 extern void ix86_expand_fma4_multiple_memory (rtx [], int, enum machine_mode);
 
+extern void ix86_expand_vec_extract_even_odd (rtx, rtx, rtx, unsigned);
+
 /* In i386-c.c  */
 extern void ix86_target_macros (void);
 extern void ix86_register_pragmas (void);
@@ -277,4 +279,3 @@ extern int asm_preferred_eh_data_format (int, int);
 #ifdef HAVE_ATTR_cpu
 extern enum attr_cpu ix86_schedule;
 #endif
-

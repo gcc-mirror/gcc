@@ -71,6 +71,14 @@
 (define_mode_iterator SSEMODE124C8 [V16QI V8HI V4SI
 				    (V2DI "TARGET_SSE4_2")])
 
+;; Modes handled by vec_extract_even/odd pattern.
+(define_mode_iterator SSEMODE_EO
+  [(V4SF "TARGET_SSE")
+   (V2DF "TARGET_SSE2")
+   (V2DI "TARGET_SSE2") (V4SI "TARGET_SSE2")
+   (V8HI "TARGET_SSE2") (V16QI "TARGET_SSE2")
+   (V4DF "TARGET_AVX") (V8SF "TARGET_AVX")])
+
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse [(SF "sse") (DF "sse2") (V4SF "sse") (V2DF "sse2")])
 
@@ -4693,48 +4701,24 @@
 })
 
 (define_expand "vec_extract_even<mode>"
-  [(set (match_operand:SSEMODE4S 0 "register_operand" "")
-	(vec_select:SSEMODE4S
-	  (vec_concat:<ssedoublesizemode>
-	    (match_operand:SSEMODE4S 1 "register_operand" "")
-	    (match_operand:SSEMODE4S 2 "nonimmediate_operand" ""))
-	  (parallel [(const_int 0)
-		     (const_int 2)
-		     (const_int 4)
-		     (const_int 6)])))]
-  "TARGET_SSE")
+  [(match_operand:SSEMODE_EO 0 "register_operand" "")
+   (match_operand:SSEMODE_EO 1 "register_operand" "")
+   (match_operand:SSEMODE_EO 2 "register_operand" "")]
+  ""
+{
+  ix86_expand_vec_extract_even_odd (operands[0], operands[1], operands[2], 0);
+  DONE;
+})
 
 (define_expand "vec_extract_odd<mode>"
-  [(set (match_operand:SSEMODE4S 0 "register_operand" "")
-	(vec_select:SSEMODE4S
-	  (vec_concat:<ssedoublesizemode>
-	    (match_operand:SSEMODE4S 1 "register_operand" "")
-	    (match_operand:SSEMODE4S 2 "nonimmediate_operand" ""))
-	  (parallel [(const_int 1)
-		     (const_int 3)
-		     (const_int 5)
-		     (const_int 7)])))]
-  "TARGET_SSE")
-
-(define_expand "vec_extract_even<mode>"
-  [(set (match_operand:SSEMODE2D 0 "register_operand" "")
-	(vec_select:SSEMODE2D
-	  (vec_concat:<ssedoublesizemode>
-	    (match_operand:SSEMODE2D 1 "register_operand" "")
-	    (match_operand:SSEMODE2D 2 "nonimmediate_operand" ""))
-	  (parallel [(const_int 0)
-	  	     (const_int 2)])))]
-  "TARGET_SSE2")
-
-(define_expand "vec_extract_odd<mode>"
-  [(set (match_operand:SSEMODE2D 0 "register_operand" "")
-	(vec_select:SSEMODE2D
-	  (vec_concat:<ssedoublesizemode>
-	    (match_operand:SSEMODE2D 1 "register_operand" "")
-	    (match_operand:SSEMODE2D 2 "nonimmediate_operand" ""))
-	  (parallel [(const_int 1)
-	  	     (const_int 3)])))]
-  "TARGET_SSE2")
+  [(match_operand:SSEMODE_EO 0 "register_operand" "")
+   (match_operand:SSEMODE_EO 1 "register_operand" "")
+   (match_operand:SSEMODE_EO 2 "register_operand" "")]
+  ""
+{
+  ix86_expand_vec_extract_even_odd (operands[0], operands[1], operands[2], 1);
+  DONE;
+})
 
 ;; punpcklqdq and punpckhqdq are shorter than shufpd.
 (define_insn "*avx_punpckhqdq"
@@ -5243,20 +5227,16 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "mulv16qi3"
+(define_expand "mulv16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "")
 	(mult:V16QI (match_operand:V16QI 1 "register_operand" "")
 		    (match_operand:V16QI 2 "register_operand" "")))]
-  "TARGET_SSE2
-   && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
+  "TARGET_SSE2"
 {
-  rtx t[12];
+  rtx t[6];
   int i;
 
-  for (i = 0; i < 12; ++i)
+  for (i = 0; i < 6; ++i)
     t[i] = gen_reg_rtx (V16QImode);
 
   /* Unpack data such that we've got a source byte in each low byte of
@@ -5278,15 +5258,8 @@
 			   gen_lowpart (V8HImode, t[2]),
 			   gen_lowpart (V8HImode, t[3])));
 
-  /* Extract the relevant bytes and merge them back together.  */
-  emit_insn (gen_sse2_punpckhbw (t[6], t[5], t[4]));	/* ..AI..BJ..CK..DL */
-  emit_insn (gen_sse2_punpcklbw (t[7], t[5], t[4]));	/* ..EM..FN..GO..HP */
-  emit_insn (gen_sse2_punpckhbw (t[8], t[7], t[6]));	/* ....AEIM....BFJN */
-  emit_insn (gen_sse2_punpcklbw (t[9], t[7], t[6]));	/* ....CGKO....DHLP */
-  emit_insn (gen_sse2_punpckhbw (t[10], t[9], t[8]));	/* ........ACEGIKMO */
-  emit_insn (gen_sse2_punpcklbw (t[11], t[9], t[8]));	/* ........BDFHJLNP */
-
-  emit_insn (gen_sse2_punpcklbw (operands[0], t[11], t[10]));	/* ABCDEFGHIJKLMNOP */
+  /* Extract the even bytes and merge them back together.  */
+  ix86_expand_vec_extract_even_odd (operands[0], t[5], t[4], 0);
   DONE;
 })
 
@@ -6578,96 +6551,39 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Reduce:
-;;      op1 = abcdefghijklmnop
-;;      op2 = qrstuvwxyz012345
-;;       h1 = aqbrcsdteufvgwhx
-;;       l1 = iyjzk0l1m2n3o4p5
-;;       h2 = aiqybjrzcks0dlt1
-;;       l2 = emu2fnv3gow4hpx5
-;;       h3 = aeimquy2bfjnrvz3
-;;       l3 = cgkosw04dhlptx15
-;;   result = bdfhjlnprtvxz135
 (define_expand "vec_pack_trunc_v8hi"
   [(match_operand:V16QI 0 "register_operand" "")
    (match_operand:V8HI 1 "register_operand" "")
    (match_operand:V8HI 2 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx op1, op2, h1, l1, h2, l2, h3, l3;
-
-  op1 = gen_lowpart (V16QImode, operands[1]);
-  op2 = gen_lowpart (V16QImode, operands[2]);
-  h1 = gen_reg_rtx (V16QImode);
-  l1 = gen_reg_rtx (V16QImode);
-  h2 = gen_reg_rtx (V16QImode);
-  l2 = gen_reg_rtx (V16QImode);
-  h3 = gen_reg_rtx (V16QImode);
-  l3 = gen_reg_rtx (V16QImode);
-
-  emit_insn (gen_vec_interleave_highv16qi (h1, op1, op2));
-  emit_insn (gen_vec_interleave_lowv16qi (l1, op1, op2));
-  emit_insn (gen_vec_interleave_highv16qi (h2, l1, h1));
-  emit_insn (gen_vec_interleave_lowv16qi (l2, l1, h1));
-  emit_insn (gen_vec_interleave_highv16qi (h3, l2, h2));
-  emit_insn (gen_vec_interleave_lowv16qi (l3, l2, h2));
-  emit_insn (gen_vec_interleave_lowv16qi (operands[0], l3, h3));
+  rtx op1 = gen_lowpart (V16QImode, operands[1]);
+  rtx op2 = gen_lowpart (V16QImode, operands[2]);
+  ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
   DONE;
 })
 
-;; Reduce:
-;;      op1 = abcdefgh
-;;      op2 = ijklmnop
-;;       h1 = aibjckdl
-;;       l1 = emfngohp
-;;       h2 = aeimbfjn
-;;       l2 = cgkodhlp
-;;   result = bdfhjlnp
 (define_expand "vec_pack_trunc_v4si"
   [(match_operand:V8HI 0 "register_operand" "")
    (match_operand:V4SI 1 "register_operand" "")
    (match_operand:V4SI 2 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx op1, op2, h1, l1, h2, l2;
-
-  op1 = gen_lowpart (V8HImode, operands[1]);
-  op2 = gen_lowpart (V8HImode, operands[2]);
-  h1 = gen_reg_rtx (V8HImode);
-  l1 = gen_reg_rtx (V8HImode);
-  h2 = gen_reg_rtx (V8HImode);
-  l2 = gen_reg_rtx (V8HImode);
-
-  emit_insn (gen_vec_interleave_highv8hi (h1, op1, op2));
-  emit_insn (gen_vec_interleave_lowv8hi (l1, op1, op2));
-  emit_insn (gen_vec_interleave_highv8hi (h2, l1, h1));
-  emit_insn (gen_vec_interleave_lowv8hi (l2, l1, h1));
-  emit_insn (gen_vec_interleave_lowv8hi (operands[0], l2, h2));
+  rtx op1 = gen_lowpart (V8HImode, operands[1]);
+  rtx op2 = gen_lowpart (V8HImode, operands[2]);
+  ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
   DONE;
 })
 
-;; Reduce:
-;;     op1 = abcd
-;;     op2 = efgh
-;;      h1 = aebf
-;;      l1 = cgdh
-;;  result = bdfh
 (define_expand "vec_pack_trunc_v2di"
   [(match_operand:V4SI 0 "register_operand" "")
    (match_operand:V2DI 1 "register_operand" "")
    (match_operand:V2DI 2 "register_operand" "")]
   "TARGET_SSE2"
 {
-  rtx op1, op2, h1, l1;
-
-  op1 = gen_lowpart (V4SImode, operands[1]);
-  op2 = gen_lowpart (V4SImode, operands[2]);
-  h1 = gen_reg_rtx (V4SImode);
-  l1 = gen_reg_rtx (V4SImode);
-
-  emit_insn (gen_vec_interleave_highv4si (h1, op1, op2));
-  emit_insn (gen_vec_interleave_lowv4si (l1, op1, op2));
-  emit_insn (gen_vec_interleave_lowv4si (operands[0], l1, h1));
+  rtx op1 = gen_lowpart (V4SImode, operands[1]);
+  rtx op2 = gen_lowpart (V4SImode, operands[2]);
+  ix86_expand_vec_extract_even_odd (operands[0], op1, op2, 0);
   DONE;
 })
 
