@@ -8799,7 +8799,7 @@ grokdeclarator (const cp_declarator *declarator,
              membership class as `constexpr'.  */
           if (constexpr_p)
             error ("a constexpr function cannot be defined "
-                   "outside of its class.");
+                   "outside of its class");
 
 	  if (TREE_CODE (sname) == IDENTIFIER_NODE
 	      && NEW_DELETE_OPNAME_P (sname))

@@ -1,3 +1,7 @@
+2009-11-26  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* decl.c (grokdeclarator): Remove period at end of diagnosic message.
+
 2009-11-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10690
