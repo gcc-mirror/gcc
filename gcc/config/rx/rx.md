@@ -388,7 +388,7 @@
 	 (match_operand:SI         1 "general_operand" "g,g"))]
   ""
   "@
-  jsr\t%A0
+  jsr\t%0
   bsr\t%A0"
   [(set_attr "length" "2,4")
    (set_attr "timings" "33")]
@@ -415,32 +415,60 @@
 	      (match_operand:SI         2 "general_operand"   "g,g")))]
   ""
   "@
-  jsr\t%A1
+  jsr\t%1
   bsr\t%A1"
   [(set_attr "length" "2,4")
    (set_attr "timings" "33")]
 )
 
-(define_insn "sibcall"
- [(call (mem:QI (match_operand:SI 0 "rx_symbolic_call_operand" "Symbol"))
-	(match_operand:SI         1 "general_operand"          "g"))
-  (return)
-  (use (match_operand             2 "" ""))]
+;; Note - we do not allow indirect sibcalls (with the address
+;; held in a register) because we cannot guarantee that the register
+;; chosen will be a call-used one.  If it is a call-saved register,
+;; then the epilogue code will corrupt it by popping the saved value
+;; off of the stack.
+(define_expand "sibcall"
+  [(parallel
+    [(call (mem:QI (match_operand:SI 0 "rx_symbolic_call_operand"))
+	   (match_operand:SI         1 "general_operand"))
+     (return)])]
+  ""
+  {
+    if (MEM_P (operands[0]))
+      operands[0] = XEXP (operands[0], 0);
+  }
+)
+
+(define_insn "sibcall_internal"
+  [(call (mem:QI (match_operand:SI 0 "rx_symbolic_call_operand" "Symbol"))
+	 (match_operand:SI         1 "general_operand"          "g"))
+   (return)]
   ""
   "bra\t%A0"
-  [(set_attr "length" "4")
+  [(set_attr "length"  "4")
    (set_attr "timings" "33")]
 )
 
-(define_insn "sibcall_value"
+(define_expand "sibcall_value"
+ [(parallel
+   [(set (match_operand                  0 "register_operand")
+	 (call (mem:QI (match_operand:SI 1 "rx_symbolic_call_operand"))
+	       (match_operand:SI         2 "general_operand")))
+    (return)])]
+  ""
+  {
+    if (MEM_P (operands[1]))
+      operands[1] = XEXP (operands[1], 0);
+  }
+)
+
+(define_insn "sibcall_value_internal"
  [(set (match_operand                  0 "register_operand"         "=r")
        (call (mem:QI (match_operand:SI 1 "rx_symbolic_call_operand" "Symbol"))
 	     (match_operand:SI         2 "general_operand"          "g")))
-  (return)
-  (use (match_operand                  3 "" ""))]
+  (return)]
   ""
   "bra\t%A1"
-  [(set_attr "length" "4")
+  [(set_attr "length"  "4")
    (set_attr "timings" "33")]
 )
 
