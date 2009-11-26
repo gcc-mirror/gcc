@@ -1,3 +1,14 @@
+2009-11-26  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-opt/38582
+	* regrename.c (struct du_chain): Remove member earlyclobber.
+	(scan_rtx_reg): Don't set it.  Remove argument earlyclobber,
+	all callers changed.
+	(scan_rtx): Remove argument earlyclobber, all callers changed.
+	(hide_operands, restore_operands, record_out_operands): New functions,
+	broken out of build_def_use.
+	(build_def_use): Call them as necessary.
+
 2009-11-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dce.c (nr_walks): New variable.

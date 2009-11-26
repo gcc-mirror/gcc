@@ -68,8 +68,6 @@ struct du_chain
   rtx *loc;
   /* The register class required by the insn at this location.  */
   ENUM_BITFIELD(reg_class) cl : 16;
-  /* Nonzero if the register is subject to earlyclobber.  */
-  unsigned int earlyclobber:1;
 };
 
 enum scan_actions
@@ -101,11 +99,11 @@ static struct obstack rename_obstack;
 
 static void do_replace (struct du_head *, int);
 static void scan_rtx_reg (rtx, rtx *, enum reg_class,
-			  enum scan_actions, enum op_type, int);
+			  enum scan_actions, enum op_type);
 static void scan_rtx_address (rtx, rtx *, enum reg_class,
 			      enum scan_actions, enum machine_mode);
 static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
-		      enum op_type, int);
+		      enum op_type);
 static struct du_head *build_def_use (basic_block);
 static void dump_def_use_chain (struct du_head *);
 static void note_sets (rtx, const_rtx, void *);
@@ -431,8 +429,8 @@ static struct du_head *open_chains;
 static struct du_head *closed_chains;
 
 static void
-scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
-	      enum scan_actions action, enum op_type type, int earlyclobber)
+scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
+	      enum op_type type)
 {
   struct du_head **p;
   rtx x = *loc;
@@ -458,7 +456,6 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl,
 	  this_du->loc = loc;
 	  this_du->insn = insn;
 	  this_du->cl = cl;
-	  this_du->earlyclobber = earlyclobber;
 	}
       return;
     }
@@ -681,7 +678,7 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
       return;
 
     case REG:
-      scan_rtx_reg (insn, loc, cl, action, OP_IN, 0);
+      scan_rtx_reg (insn, loc, cl, action, OP_IN);
       return;
 
     default:
@@ -700,8 +697,8 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 }
 
 static void
-scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
-	  enum scan_actions action, enum op_type type, int earlyclobber)
+scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
+	  enum op_type type)
 {
   const char *fmt;
   rtx x = *loc;
@@ -723,7 +720,7 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
       return;
 
     case REG:
-      scan_rtx_reg (insn, loc, cl, action, type, earlyclobber);
+      scan_rtx_reg (insn, loc, cl, action, type);
       return;
 
     case MEM:
@@ -733,21 +730,21 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
       return;
 
     case SET:
-      scan_rtx (insn, &SET_SRC (x), cl, action, OP_IN, 0);
+      scan_rtx (insn, &SET_SRC (x), cl, action, OP_IN);
       scan_rtx (insn, &SET_DEST (x), cl, action,
-		GET_CODE (PATTERN (insn)) == COND_EXEC ? OP_INOUT : OP_OUT, 0);
+		GET_CODE (PATTERN (insn)) == COND_EXEC ? OP_INOUT : OP_OUT);
       return;
 
     case STRICT_LOW_PART:
-      scan_rtx (insn, &XEXP (x, 0), cl, action, OP_INOUT, earlyclobber);
+      scan_rtx (insn, &XEXP (x, 0), cl, action, OP_INOUT);
       return;
 
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
       scan_rtx (insn, &XEXP (x, 0), cl, action,
-		type == OP_IN ? OP_IN : OP_INOUT, earlyclobber);
-      scan_rtx (insn, &XEXP (x, 1), cl, action, OP_IN, 0);
-      scan_rtx (insn, &XEXP (x, 2), cl, action, OP_IN, 0);
+		type == OP_IN ? OP_IN : OP_INOUT);
+      scan_rtx (insn, &XEXP (x, 1), cl, action, OP_IN);
+      scan_rtx (insn, &XEXP (x, 2), cl, action, OP_IN);
       return;
 
     case POST_INC:
@@ -761,13 +758,13 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
 
     case CLOBBER:
       scan_rtx (insn, &SET_DEST (x), cl, action,
-		GET_CODE (PATTERN (insn)) == COND_EXEC ? OP_INOUT : OP_OUT, 0);
+		GET_CODE (PATTERN (insn)) == COND_EXEC ? OP_INOUT : OP_OUT);
       return;
 
     case EXPR_LIST:
-      scan_rtx (insn, &XEXP (x, 0), cl, action, type, 0);
+      scan_rtx (insn, &XEXP (x, 0), cl, action, type);
       if (XEXP (x, 1))
-	scan_rtx (insn, &XEXP (x, 1), cl, action, type, 0);
+	scan_rtx (insn, &XEXP (x, 1), cl, action, type);
       return;
 
     default:
@@ -778,10 +775,99 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl,
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	scan_rtx (insn, &XEXP (x, i), cl, action, type, 0);
+	scan_rtx (insn, &XEXP (x, i), cl, action, type);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  scan_rtx (insn, &XVECEXP (x, i, j), cl, action, type, 0);
+	  scan_rtx (insn, &XVECEXP (x, i, j), cl, action, type);
+    }
+}
+
+/* Hide operands of the current insn (of which there are N_OPS) by
+   substituting cc0 for them.
+   Previous values are stored in the OLD_OPERANDS and OLD_DUPS.
+   If INOUT_ONLY is set, we only do this for OP_INOUT type operands.  */
+
+static void
+hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
+	       bool inout_only)
+{
+  int i;
+  for (i = 0; i < n_ops; i++)
+    {
+      old_operands[i] = recog_data.operand[i];
+      /* Don't squash match_operator or match_parallel here, since
+	 we don't know that all of the contained registers are
+	 reachable by proper operands.  */
+      if (recog_data.constraints[i][0] == '\0')
+	continue;
+      if (!inout_only || recog_data.operand_type[i] == OP_INOUT)
+	*recog_data.operand_loc[i] = cc0_rtx;
+    }
+  for (i = 0; i < recog_data.n_dups; i++)
+    {
+      int opn = recog_data.dup_num[i];
+      old_dups[i] = *recog_data.dup_loc[i];
+      if (!inout_only || recog_data.operand_type[opn] == OP_INOUT)
+	*recog_data.dup_loc[i] = cc0_rtx;
+    }
+}
+
+/* Undo the substitution performed by hide_operands.  INSN is the insn we
+   are processing; the arguments are the same as in hide_operands.  */
+
+static void
+restore_operands (rtx insn, int n_ops, rtx *old_operands, rtx *old_dups)
+{
+  int i;
+  for (i = 0; i < recog_data.n_dups; i++)
+    *recog_data.dup_loc[i] = old_dups[i];
+  for (i = 0; i < n_ops; i++)
+    *recog_data.operand_loc[i] = old_operands[i];
+  if (recog_data.n_dups)
+    df_insn_rescan (insn);
+}
+
+/* For each output operand of INSN, call scan_rtx to create a new
+   open chain.  */
+
+static void
+record_out_operands (rtx insn)
+{
+  int n_ops = recog_data.n_operands;
+  int alt = which_alternative;
+
+  int i;
+
+  for (i = 0; i < n_ops + recog_data.n_dups; i++)
+    {
+      int opn = i < n_ops ? i : recog_data.dup_num[i - n_ops];
+      rtx *loc = (i < n_ops
+		  ? recog_data.operand_loc[opn]
+		  : recog_data.dup_loc[i - n_ops]);
+      rtx op = *loc;
+      enum reg_class cl = recog_op_alt[opn][alt].cl;
+
+      struct du_head *prev_open;
+
+      if (recog_data.operand_type[opn] != OP_OUT)
+	continue;
+
+      prev_open = open_chains;
+      scan_rtx (insn, loc, cl, mark_write, OP_OUT);
+
+      /* ??? Many targets have output constraints on the SET_DEST
+	 of a call insn, which is stupid, since these are certainly
+	 ABI defined hard registers.  For these, and for asm operands
+	 that originally referenced hard registers, we must record that
+	 the chain cannot be renamed.  */
+      if (CALL_P (insn)
+	  || (asm_noperands (PATTERN (insn)) > 0
+	      && REG_P (op)
+	      && REGNO (op) == ORIGINAL_REGNO (op)))
+	{
+	  if (prev_open != open_chains)
+	    open_chains->first->cl = NO_REGS;
+	}
     }
 }
 
@@ -849,42 +935,21 @@ build_def_use (basic_block bb)
 	  for (i = 0; i < n_ops; i++)
 	    scan_rtx (insn, recog_data.operand_loc[i],
 		      NO_REGS, terminate_overlapping_read,
-		      recog_data.operand_type[i], 0);
+		      recog_data.operand_type[i]);
 
 	  /* Step 2: Close chains for which we have reads outside operands.
 	     We do this by munging all operands into CC0, and closing
 	     everything remaining.  */
 
-	  for (i = 0; i < n_ops; i++)
-	    {
-	      old_operands[i] = recog_data.operand[i];
-	      /* Don't squash match_operator or match_parallel here, since
-		 we don't know that all of the contained registers are
-		 reachable by proper operands.  */
-	      if (recog_data.constraints[i][0] == '\0')
-		continue;
-	      *recog_data.operand_loc[i] = cc0_rtx;
-	    }
-	  for (i = 0; i < recog_data.n_dups; i++)
-	    {
-	      old_dups[i] = *recog_data.dup_loc[i];
-	      *recog_data.dup_loc[i] = cc0_rtx;
-	    }
-
+	  hide_operands (n_ops, old_operands, old_dups, false);
 	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_all_read,
-		    OP_IN, 0);
-
-	  for (i = 0; i < recog_data.n_dups; i++)
-	    *recog_data.dup_loc[i] = old_dups[i];
-	  for (i = 0; i < n_ops; i++)
-	    *recog_data.operand_loc[i] = old_operands[i];
-	  if (recog_data.n_dups)
-	    df_insn_rescan (insn);
+		    OP_IN);
+	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 2B: Can't rename function call argument registers.  */
 	  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
 	    scan_rtx (insn, &CALL_INSN_FUNCTION_USAGE (insn),
-		      NO_REGS, terminate_all_read, OP_IN, 0);
+		      NO_REGS, terminate_all_read, OP_IN);
 
 	  /* Step 2C: Can't rename asm operands that were originally
 	     hard registers.  */
@@ -898,7 +963,7 @@ build_def_use (basic_block bb)
 		    && REGNO (op) == ORIGINAL_REGNO (op)
 		    && (recog_data.operand_type[i] == OP_IN
 			|| recog_data.operand_type[i] == OP_INOUT))
-		  scan_rtx (insn, loc, NO_REGS, terminate_all_read, OP_IN, 0);
+		  scan_rtx (insn, loc, NO_REGS, terminate_all_read, OP_IN);
 	      }
 
 	  /* Step 3: Append to chains for reads inside operands.  */
@@ -920,7 +985,7 @@ build_def_use (basic_block bb)
 	      if (recog_op_alt[opn][alt].is_address)
 		scan_rtx_address (insn, loc, cl, mark_read, VOIDmode);
 	      else
-		scan_rtx (insn, loc, cl, mark_read, type, 0);
+		scan_rtx (insn, loc, cl, mark_read, type);
 	    }
 
 	  /* Step 3B: Record updates for regs in REG_INC notes, and
@@ -929,13 +994,13 @@ build_def_use (basic_block bb)
 	    if (REG_NOTE_KIND (note) == REG_INC
 		|| REG_NOTE_KIND (note) == REG_FRAME_RELATED_EXPR)
 	      scan_rtx (insn, &XEXP (note, 0), ALL_REGS, mark_read,
-			OP_INOUT, 0);
+			OP_INOUT);
 
 	  /* Step 4: Close chains for registers that die here.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_DEAD)
 	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
-			OP_IN, 0);
+			OP_IN);
 
 	  /* Step 4B: If this is a call, any chain live at this point
 	     requires a caller-saved reg.  */
@@ -950,83 +1015,32 @@ build_def_use (basic_block bb)
 	     step 2, we hide in-out operands, since we do not want to
 	     close these chains.  */
 
-	  for (i = 0; i < n_ops; i++)
-	    {
-	      old_operands[i] = recog_data.operand[i];
-	      if (recog_data.operand_type[i] == OP_INOUT)
-		*recog_data.operand_loc[i] = cc0_rtx;
-	    }
-	  for (i = 0; i < recog_data.n_dups; i++)
-	    {
-	      int opn = recog_data.dup_num[i];
-	      old_dups[i] = *recog_data.dup_loc[i];
-	      if (recog_data.operand_type[opn] == OP_INOUT)
-		*recog_data.dup_loc[i] = cc0_rtx;
-	    }
-
-	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_write, OP_IN, 0);
-
-	  for (i = 0; i < recog_data.n_dups; i++)
-	    *recog_data.dup_loc[i] = old_dups[i];
-	  for (i = 0; i < n_ops; i++)
-	    *recog_data.operand_loc[i] = old_operands[i];
+	  hide_operands (n_ops, old_operands, old_dups, true);
+	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_write, OP_IN);
+	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 6: Begin new chains for writes inside operands.  */
-	  /* ??? Many targets have output constraints on the SET_DEST
-	     of a call insn, which is stupid, since these are certainly
-	     ABI defined hard registers.  Don't change calls at all.
-	     Similarly take special care for asm statement that originally
-	     referenced hard registers.  */
-	  if (asm_noperands (PATTERN (insn)) > 0)
-	    {
-	      for (i = 0; i < n_ops; i++)
-		if (recog_data.operand_type[i] == OP_OUT)
-		  {
-		    rtx *loc = recog_data.operand_loc[i];
-		    rtx op = *loc;
-		    enum reg_class cl = recog_op_alt[i][alt].cl;
-
-		    if (REG_P (op)
-			&& REGNO (op) == ORIGINAL_REGNO (op))
-		      continue;
-
-		    scan_rtx (insn, loc, cl, mark_write, OP_OUT,
-			      recog_op_alt[i][alt].earlyclobber);
-		  }
-	    }
-	  else if (!CALL_P (insn))
-	    for (i = 0; i < n_ops + recog_data.n_dups; i++)
-	      {
-		int opn = i < n_ops ? i : recog_data.dup_num[i - n_ops];
-		rtx *loc = (i < n_ops
-			    ? recog_data.operand_loc[opn]
-			    : recog_data.dup_loc[i - n_ops]);
-		enum reg_class cl = recog_op_alt[opn][alt].cl;
-
-		if (recog_data.operand_type[opn] == OP_OUT)
-		  scan_rtx (insn, loc, cl, mark_write, OP_OUT,
-			    recog_op_alt[opn][alt].earlyclobber);
-	      }
+	  record_out_operands (insn);
 
 	  /* Step 6B: Record destination regs in REG_FRAME_RELATED_EXPR
 	     notes for update.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_FRAME_RELATED_EXPR)
 	      scan_rtx (insn, &XEXP (note, 0), ALL_REGS, mark_access,
-			OP_INOUT, 0);
+			OP_INOUT);
 
 	  /* Step 7: Close chains for registers that were never
 	     really used here.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_UNUSED)
 	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
-			OP_IN, 0);
+			OP_IN);
 	}
       else if (DEBUG_INSN_P (insn)
 	       && !VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))
 	{
 	  scan_rtx (insn, &INSN_VAR_LOCATION_LOC (insn),
-		    ALL_REGS, mark_read, OP_IN, 0);
+		    ALL_REGS, mark_read, OP_IN);
 	}
       if (insn == BB_END (bb))
 	break;
