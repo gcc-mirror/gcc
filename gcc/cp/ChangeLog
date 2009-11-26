@@ -1,3 +1,8 @@
+2009-11-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10690
+	* rtti.c (get_tinfo_decl_dynamic): Call resolve_nondeduced_context.
+
 2009-11-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42137
