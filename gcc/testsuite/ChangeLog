@@ -1,3 +1,10 @@
+2009-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vperm-v4sf-1.c (dg-options): Use -msse2.
+	* gcc.target/i386/vperm-v4sf-2.c: Require effective target ssse3.
+	* gcc.target/i386/vperm-v4si-2.c: Ditto.
+	* gcc.target/i386/vperm-v4si-2x.c: Require effective target xop.
+
 2009-11-26  Richard Henderson  <rth@redhat.com>
 
 	* gcc.target/i386/xop-imul64-vector.c: Look for vpmulld not vpmacsdd.
@@ -59,7 +66,7 @@
 	* gcc.target/powerpc/regnames-1.c: New test.
 
 2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
-            John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/42170
 	* ada/acats/run_acats: Bump stack limit to 16MB.
