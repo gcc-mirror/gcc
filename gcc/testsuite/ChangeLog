@@ -1,3 +1,8 @@
+2009-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41278
+	* gfortran.dg/array_function_5.f90: New test.
+
 2009-11-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42048
