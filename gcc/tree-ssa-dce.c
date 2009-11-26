@@ -489,6 +489,7 @@ ref_may_be_aliased (tree ref)
 static bitmap visited = NULL;
 static unsigned int longest_chain = 0;
 static unsigned int total_chain = 0;
+static unsigned int nr_walks = 0;
 static bool chain_ovfl = false;
 
 /* Worker for the walker that marks reaching definitions of REF,
@@ -557,6 +558,7 @@ mark_aliased_reaching_defs_necessary (gimple stmt, tree ref)
   if (chain > longest_chain)
     longest_chain = chain;
   total_chain += chain;
+  nr_walks++;
 }
 
 /* Worker for the walker that marks reaching definitions of REF, which
@@ -803,11 +805,16 @@ propagate_necessity (struct edge_list *el)
 	    gcc_unreachable ();
 
 	  /* If we over-used our alias oracle budget drop to simple
-	     mode.  The cost metric allows quadratic behavior up to
-	     a constant maximal chain and after that falls back to
+	     mode.  The cost metric allows quadratic behavior
+	     (number of uses times number of may-defs queries) up to
+	     a constant maximal number of queries and after that falls back to
 	     super-linear complexity.  */
-	  if (longest_chain > 256
-	      && total_chain > 256 * longest_chain)
+	  if (/* Constant but quadratic for small functions.  */
+	      total_chain > 128 * 128
+	      /* Linear in the number of may-defs.  */
+	      && total_chain > 32 * longest_chain
+	      /* Linear in the number of uses.  */
+	      && total_chain > nr_walks * 32)
 	    {
 	      chain_ovfl = true;
 	      if (visited)
@@ -1376,6 +1383,7 @@ perform_tree_ssa_dce (bool aggressive)
 
   longest_chain = 0;
   total_chain = 0;
+  nr_walks = 0;
   chain_ovfl = false;
   visited = BITMAP_ALLOC (NULL);
   propagate_necessity (el);
