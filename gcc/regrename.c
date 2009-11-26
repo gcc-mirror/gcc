@@ -50,10 +50,22 @@ struct du_head
   struct du_chain *first, *last;
   /* Describes the register being tracked.  */
   unsigned regno, nregs;
+
+  /* A unique id to be used as an index into the conflicts bitmaps.  */
+  unsigned id;
+  /* A bitmap to record conflicts with other chains.  */
+  bitmap_head conflicts;
+  /* Conflicts with untracked hard registers.  */
+  HARD_REG_SET hard_conflicts;
+
+  /* Nonzero if the chain is finished; zero if it is still open.  */
+  unsigned int terminated:1;
   /* Nonzero if the chain crosses a call.  */
   unsigned int need_caller_save_reg:1;
-  /* Nonzero if the chain is finished.  */
-  unsigned int terminated:1;
+  /* Nonzero if the register is used in a way that prevents renaming,
+     such as the SET_DEST of a CALL_INSN or an asm operand that used
+     to be a hard register.  */
+  unsigned int cannot_rename:1;
 };
 
 /* This struct describes a single occurrence of a register.  */
@@ -72,10 +84,9 @@ struct du_chain
 
 enum scan_actions
 {
-  terminate_all_read,
-  terminate_overlapping_read,
   terminate_write,
   terminate_dead,
+  mark_all_read,
   mark_read,
   mark_write,
   /* mark_access is for marking the destination regs in
@@ -86,10 +97,9 @@ enum scan_actions
 
 static const char * const scan_actions_name[] =
 {
-  "terminate_all_read",
-  "terminate_overlapping_read",
   "terminate_write",
   "terminate_dead",
+  "mark_all_read",
   "mark_read",
   "mark_write",
   "mark_access"
@@ -106,95 +116,38 @@ static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
 		      enum op_type);
 static struct du_head *build_def_use (basic_block);
 static void dump_def_use_chain (struct du_head *);
-static void note_sets (rtx, const_rtx, void *);
-static void clear_dead_regs (HARD_REG_SET *, enum reg_note, rtx);
-static void merge_overlapping_regs (basic_block, HARD_REG_SET *,
-				    struct du_head *);
 
-/* Called through note_stores.  Find sets of registers, and
-   record them in *DATA (which is actually a HARD_REG_SET *).  */
+typedef struct du_head *du_head_p;
+DEF_VEC_P (du_head_p);
+DEF_VEC_ALLOC_P (du_head_p, heap);
+static VEC(du_head_p, heap) *id_to_chain;
 
 static void
-note_sets (rtx x, const_rtx set ATTRIBUTE_UNUSED, void *data)
+free_chain_data (void)
 {
-  HARD_REG_SET *pset = (HARD_REG_SET *) data;
+  int i;
+  du_head_p ptr;
+  for (i = 0; VEC_iterate(du_head_p, id_to_chain, i, ptr); i++)
+    bitmap_clear (&ptr->conflicts);
 
-  if (GET_CODE (x) == SUBREG)
-    x = SUBREG_REG (x);
-  if (!REG_P (x))
-    return;
-  /* There must not be pseudos at this point.  */
-  gcc_assert (HARD_REGISTER_P (x));
-  add_to_hard_reg_set (pset, GET_MODE (x), REGNO (x));
+  VEC_free (du_head_p, heap, id_to_chain);
 }
 
-/* Clear all registers from *PSET for which a note of kind KIND can be found
-   in the list NOTES.  */
+/* For a def-use chain HEAD, find which registers overlap its lifetime and
+   set the corresponding bits in *PSET.  */
 
 static void
-clear_dead_regs (HARD_REG_SET *pset, enum reg_note kind, rtx notes)
+merge_overlapping_regs (HARD_REG_SET *pset, struct du_head *head)
 {
-  rtx note;
-  for (note = notes; note; note = XEXP (note, 1))
-    if (REG_NOTE_KIND (note) == kind && REG_P (XEXP (note, 0)))
-      {
-	rtx reg = XEXP (note, 0);
-	/* There must not be pseudos at this point.  */
-	gcc_assert (HARD_REGISTER_P (reg));
-	remove_from_hard_reg_set (pset, GET_MODE (reg), REGNO (reg));
-      }
-}
-
-/* For a def-use chain HEAD in basic block B, find which registers overlap
-   its lifetime and set the corresponding bits in *PSET.  */
-
-static void
-merge_overlapping_regs (basic_block b, HARD_REG_SET *pset,
-			struct du_head *head)
-{
-  struct du_chain *t;
-  rtx insn;
-  HARD_REG_SET live;
-  df_ref *def_rec;
-
-  REG_SET_TO_HARD_REG_SET (live, df_get_live_in (b));
-  for (def_rec = df_get_artificial_defs (b->index); *def_rec; def_rec++)
+  bitmap_iterator bi;
+  unsigned i;
+  IOR_HARD_REG_SET (*pset, head->hard_conflicts);
+  EXECUTE_IF_SET_IN_BITMAP (&head->conflicts, 0, i, bi)
     {
-      df_ref def = *def_rec;
-      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	SET_HARD_REG_BIT (live, DF_REF_REGNO (def));
-    }
-
-  t = head->first;
-  insn = BB_HEAD (b);
-  while (t)
-    {
-      /* Search forward until the next reference to the register to be
-	 renamed.  */
-      while (insn != t->insn)
-	{
-	  if (INSN_P (insn))
-	    {
-	      clear_dead_regs (&live, REG_DEAD, REG_NOTES (insn));
-	      note_stores (PATTERN (insn), note_sets, (void *) &live);
-	      /* Only record currently live regs if we are inside the
-		 reg's live range.  */
-	      if (t != head->first)
-		IOR_HARD_REG_SET (*pset, live);
-	      clear_dead_regs (&live, REG_UNUSED, REG_NOTES (insn));
-	    }
-	  insn = NEXT_INSN (insn);
-	}
-
-      IOR_HARD_REG_SET (*pset, live);
-
-      /* For the last reference, also merge in all registers set in the
-	 same insn.
-	 @@@ We only have take earlyclobbered sets into account.  */
-      if (! t->next_use)
-	note_stores (PATTERN (insn), note_sets, (void *) pset);
-
-      t = t->next_use;
+      du_head_p other = VEC_index (du_head_p, id_to_chain, i);
+      unsigned j = other->nregs;
+      while (j-- > 0)
+	SET_HARD_REG_BIT (*pset, other->regno + j);
     }
 }
 
@@ -224,6 +177,8 @@ regrename_optimize (void)
       HARD_REG_SET unavailable;
       HARD_REG_SET regs_seen;
 
+      id_to_chain = VEC_alloc (du_head_p, heap, 0);
+
       CLEAR_HARD_REG_SET (unavailable);
 
       if (dump_file)
@@ -247,7 +202,7 @@ regrename_optimize (void)
       CLEAR_HARD_REG_SET (regs_seen);
       while (all_chains)
 	{
-	  int new_reg, best_new_reg;
+	  int new_reg, best_new_reg, best_nregs;
 	  int n_uses;
 	  struct du_head *this_head = all_chains;
 	  struct du_chain *tmp;
@@ -257,7 +212,11 @@ regrename_optimize (void)
 
 	  all_chains = this_head->next_chain;
 
+	  if (this_head->cannot_rename)
+	    continue;
+
 	  best_new_reg = reg;
+	  best_nregs = this_head->nregs;
 
 #if 0 /* This just disables optimization opportunities.  */
 	  /* Only rename once we've seen the reg more than once.  */
@@ -297,7 +256,7 @@ regrename_optimize (void)
 	  if (this_head->need_caller_save_reg)
 	    IOR_HARD_REG_SET (this_unavailable, call_used_reg_set);
 
-	  merge_overlapping_regs (bb, &this_unavailable, this_head);
+	  merge_overlapping_regs (&this_unavailable, this_head);
 
 	  /* Now potential_regs is a reasonable approximation, let's
 	     have a closer look at each register still in there.  */
@@ -341,7 +300,10 @@ regrename_optimize (void)
 	      if (! tmp)
 		{
 		  if (tick[best_new_reg] > tick[new_reg])
-		    best_new_reg = new_reg;
+		    {
+		      best_new_reg = new_reg;
+		      best_nregs = nregs;
+		    }
 		}
 	    }
 
@@ -365,10 +327,13 @@ regrename_optimize (void)
 	    fprintf (dump_file, ", renamed as %s\n", reg_names[best_new_reg]);
 
 	  do_replace (this_head, best_new_reg);
+	  this_head->regno = best_new_reg;
+	  this_head->nregs = best_nregs;
 	  tick[best_new_reg] = ++this_tick;
 	  df_set_regs_ever_live (best_new_reg, true);
 	}
 
+      free_chain_data ();
       obstack_free (&rename_obstack, first_obj);
     }
 
@@ -385,6 +350,7 @@ do_replace (struct du_head *head, int reg)
 {
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
+  bool found_note = false;
 
   gcc_assert (! DEBUG_INSN_P (head->first->insn));
 
@@ -408,25 +374,91 @@ do_replace (struct du_head *head, int reg)
 
 	  for (note = REG_NOTES (chain->insn); note; note = XEXP (note, 1))
 	    {
-	      if (REG_NOTE_KIND (note) == REG_DEAD
-		  || REG_NOTE_KIND (note) == REG_UNUSED)
+	      enum reg_note kind = REG_NOTE_KIND (note);
+	      if (kind == REG_DEAD || kind == REG_UNUSED)
 		{
 		  rtx reg = XEXP (note, 0);
 		  gcc_assert (HARD_REGISTER_P (reg));
 
 		  if (REGNO (reg) == base_regno)
-		    XEXP (note, 0) = *chain->loc;
+		    {
+		      found_note = true;
+		      if (kind == REG_DEAD
+			  && reg_set_p (*chain->loc, chain->insn))
+			remove_note (chain->insn, note);
+		      else
+			XEXP (note, 0) = *chain->loc;
+		      break;
+		    }
 		}
 	    }
 	}
 
       df_insn_rescan (chain->insn);
     }
+  if (!found_note)
+    {
+      /* If the chain's first insn is the same as the last, we should have
+	 found a REG_UNUSED note.  */
+      gcc_assert (head->first->insn != head->last->insn);
+      if (!reg_set_p (*head->last->loc, head->last->insn))
+	add_reg_note (head->last->insn, REG_DEAD, *head->last->loc);
+    }
 }
 
 
+/* Walk all chains starting with CHAINS and record that they conflict with
+   another chain whose id is ID.  */
+
+static void
+mark_conflict (struct du_head *chains, unsigned id)
+{
+  while (chains)
+    {
+      bitmap_set_bit (&chains->conflicts, id);
+      chains = chains->next_chain;
+    }
+}
+
+/* True if we found a register with a size mismatch, which means that we
+   can't track its lifetime accurately.  If so, we abort the current block
+   without renaming.  */
+static bool fail_current_block;
+
+/* The id to be given to the next opened chain.  */
+static unsigned current_id;
+
+/* List of currently open chains, and closed chains that can be renamed.  */
 static struct du_head *open_chains;
 static struct du_head *closed_chains;
+
+/* Conflict bitmaps, tracking the live chains and the live hard registers.
+   The bits set in open_chains_set always match the list found in
+   open_chains.  */
+static bitmap_head open_chains_set;
+static HARD_REG_SET live_hard_regs;
+
+/* Called through note_stores.  DATA points to a rtx_code, either SET or
+   CLOBBER, which tells us which kind of rtx to look at.  If we have a
+   match, record the set register in live_hard_regs and in the hard_conflicts
+   bitmap of open chains.  */
+
+static void
+note_sets_clobbers (rtx x, const_rtx set, void *data)
+{
+  enum rtx_code code = *(enum rtx_code *)data;
+  struct du_head *chain;
+
+  if (GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+  if (!REG_P (x) || GET_CODE (set) != code)
+    return;
+  /* There must not be pseudos at this point.  */
+  gcc_assert (HARD_REGISTER_P (x));
+  add_to_hard_reg_set (&live_hard_regs, GET_MODE (x), REGNO (x));
+  for (chain = open_chains; chain; chain = chain->next_chain)
+    add_to_hard_reg_set (&chain->hard_conflicts, GET_MODE (x), REGNO (x));
+}
 
 static void
 scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
@@ -444,18 +476,45 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	{
 	  struct du_head *head = XOBNEW (&rename_obstack, struct du_head);
 	  struct du_chain *this_du = XOBNEW (&rename_obstack, struct du_chain);
+	  int nregs;
+
 	  head->next_chain = open_chains;
 	  open_chains = head;
 	  head->first = head->last = this_du;
 	  head->regno = this_regno;
 	  head->nregs = this_nregs;
 	  head->need_caller_save_reg = 0;
+	  head->cannot_rename = 0;
 	  head->terminated = 0;
+
+	  VEC_safe_push (du_head_p, heap, id_to_chain, head);
+	  head->id = current_id++;
+
+	  bitmap_initialize (&head->conflicts, &bitmap_default_obstack);
+	  bitmap_copy (&head->conflicts, &open_chains_set);
+	  mark_conflict (open_chains, head->id);
+
+	  /* Since we're tracking this as a chain now, remove it from the
+	     list of conflicting live hard registers.  */
+	  nregs = head->nregs;
+	  while (nregs-- > 0)
+	    CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+
+	  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
+	  bitmap_set_bit (&open_chains_set, head->id);
+
+	  open_chains = head;
 
 	  this_du->next_use = 0;
 	  this_du->loc = loc;
 	  this_du->insn = insn;
 	  this_du->cl = cl;
+
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Creating chain %s (%d) at insn %d (%s)\n",
+		     reg_names[head->regno], head->id, INSN_UID (insn),
+		     scan_actions_name[(int) action]);
 	}
       return;
     }
@@ -466,82 +525,94 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
   for (p = &open_chains; *p;)
     {
       struct du_head *head = *p;
+      struct du_head *next = head->next_chain;
+      int exact_match = (head->regno == this_regno
+			 && head->nregs == this_nregs);
+      int superset = (this_regno <= head->regno
+		      && this_regno + this_nregs >= head->regno + head->nregs);
 
-      /* Check if the chain has been terminated if it has then skip to
-	 the next chain.
-
-	 This can happen when we've already appended the location to
-	 the chain in Step 3, but are trying to hide in-out operands
-	 from terminate_write in Step 5.  */
-
-      if (head->terminated)
-	p = &head->next_chain;
-      else
+      if (head->terminated
+	  || head->regno + head->nregs <= this_regno
+	  || this_regno + this_nregs <= head->regno)
 	{
-	  int exact_match = (head->regno == this_regno
-			     && head->nregs == this_nregs);
+	  p = &head->next_chain;
+	  continue;
+	}
 
-	  if (head->regno + head->nregs <= this_regno
-	      || this_regno + this_nregs <= head->regno)
+      if (action == mark_read || action == mark_access)
+	{
+	  /* ??? Class NO_REGS can happen if the md file makes use of
+	     EXTRA_CONSTRAINTS to match registers.  Which is arguably
+	     wrong, but there we are.  */
+
+	  if (cl == NO_REGS || (!exact_match && !DEBUG_INSN_P (insn)))
 	    {
-	      p = &head->next_chain;
-	      continue;
-	    }
-
-	  if (action == mark_read || action == mark_access)
-	    {
-	      gcc_assert (exact_match || DEBUG_INSN_P (insn));
-
-	      /* ??? Class NO_REGS can happen if the md file makes use of
-		 EXTRA_CONSTRAINTS to match registers.  Which is arguably
-		 wrong, but there we are.  Since we know not what this may
-		 be replaced with, terminate the chain.  */
-	      if (cl != NO_REGS)
-		{
-		  struct du_chain *this_du;
-		  this_du = XOBNEW (&rename_obstack, struct du_chain);
-		  this_du->next_use = 0;
-		  this_du->loc = loc;
-		  this_du->insn = insn;
-		  this_du->cl = cl;
-		  head->last->next_use = this_du;
-		  head->last = this_du;
-		  return;
-		}
-	    }
-
-	  if (action != terminate_overlapping_read || ! exact_match)
-	    {
-	      struct du_head *next = head->next_chain;
-
-	      /* Whether the terminated chain can be used for renaming
-	         depends on the action and this being an exact match.
-	         In either case, we remove this element from open_chains.  */
-
-	      head->terminated = 1;
-	      if ((action == terminate_dead || action == terminate_write)
-		  && exact_match)
-		{
-		  head->next_chain = closed_chains;
-		  closed_chains = head;
-		  if (dump_file)
-		    fprintf (dump_file,
-			     "Closing chain %s at insn %d (%s)\n",
-			     reg_names[head->regno], INSN_UID (insn),
-			     scan_actions_name[(int) action]);
-		}
-	      else
-		{
-		  if (dump_file)
-		    fprintf (dump_file,
-			     "Discarding chain %s at insn %d (%s)\n",
-			     reg_names[head->regno], INSN_UID (insn),
-			     scan_actions_name[(int) action]);
-		}
-	      *p = next;
+	      if (dump_file)
+		fprintf (dump_file,
+			 "Cannot rename chain %s (%d) at insn %d (%s)\n",
+			 reg_names[head->regno], head->id, INSN_UID (insn),
+			 scan_actions_name[(int) action]);
+	      head->cannot_rename = 1;
 	    }
 	  else
-	    p = &head->next_chain;
+	    {
+	      struct du_chain *this_du;
+	      this_du = XOBNEW (&rename_obstack, struct du_chain);
+	      this_du->next_use = 0;
+	      this_du->loc = loc;
+	      this_du->insn = insn;
+	      this_du->cl = cl;
+	      head->last->next_use = this_du;
+	      head->last = this_du;
+
+	    }
+	  /* Avoid adding the same location in a DEBUG_INSN multiple times,
+	     which could happen with non-exact overlap.  */
+	  if (DEBUG_INSN_P (insn))
+	    return;
+	  /* Otherwise, find any other chains that do not match exactly;
+	     ensure they all get marked unrenamable.  */
+	  p = &head->next_chain;
+	  continue;
+	}
+
+      /* Whether the terminated chain can be used for renaming
+	 depends on the action and this being an exact match.
+	 In either case, we remove this element from open_chains.  */
+
+      if ((action == terminate_dead || action == terminate_write)
+	  && superset)
+	{
+	  head->terminated = 1;
+	  head->next_chain = closed_chains;
+	  closed_chains = head;
+	  bitmap_clear_bit (&open_chains_set, head->id);
+	  *p = next;
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Closing chain %s (%d) at insn %d (%s)\n",
+		     reg_names[head->regno], head->id, INSN_UID (insn),
+		     scan_actions_name[(int) action]);
+	}
+      else if (action == terminate_dead || action == terminate_write)
+	{
+	  /* In this case, tracking liveness gets too hard.  Fail the
+	     entire basic block.  */
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Failing basic block due to unhandled overlap\n");
+	  fail_current_block = true;
+	  return;
+	}
+      else
+	{
+	  head->cannot_rename = 1;
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Cannot rename chain %s (%d) at insn %d (%s)\n",
+		     reg_names[head->regno], head->id, INSN_UID (insn),
+		     scan_actions_name[(int) action]);
+	  p = &head->next_chain;
 	}
     }
 }
@@ -667,7 +738,7 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 #ifndef AUTO_INC_DEC
       /* If the target doesn't claim to handle autoinc, this must be
 	 something special, like a stack push.  Kill this chain.  */
-      action = terminate_all_read;
+      action = mark_all_read;
 #endif
       break;
 
@@ -785,13 +856,15 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 /* Hide operands of the current insn (of which there are N_OPS) by
    substituting cc0 for them.
    Previous values are stored in the OLD_OPERANDS and OLD_DUPS.
-   If INOUT_ONLY is set, we only do this for OP_INOUT type operands.  */
+   If INOUT_AND_EC_ONLY is set, we only do this for OP_INOUT type operands
+   and earlyclobbers.  */
 
 static void
 hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
-	       bool inout_only)
+	       bool inout_and_ec_only)
 {
   int i;
+  int alt = which_alternative;
   for (i = 0; i < n_ops; i++)
     {
       old_operands[i] = recog_data.operand[i];
@@ -800,14 +873,16 @@ hide_operands (int n_ops, rtx *old_operands, rtx *old_dups,
 	 reachable by proper operands.  */
       if (recog_data.constraints[i][0] == '\0')
 	continue;
-      if (!inout_only || recog_data.operand_type[i] == OP_INOUT)
+      if (!inout_and_ec_only || recog_data.operand_type[i] == OP_INOUT
+	  || recog_op_alt[i][alt].earlyclobber)
 	*recog_data.operand_loc[i] = cc0_rtx;
     }
   for (i = 0; i < recog_data.n_dups; i++)
     {
       int opn = recog_data.dup_num[i];
       old_dups[i] = *recog_data.dup_loc[i];
-      if (!inout_only || recog_data.operand_type[opn] == OP_INOUT)
+      if (!inout_and_ec_only || recog_data.operand_type[opn] == OP_INOUT
+	  || recog_op_alt[opn][alt].earlyclobber)
 	*recog_data.dup_loc[i] = cc0_rtx;
     }
 }
@@ -828,10 +903,11 @@ restore_operands (rtx insn, int n_ops, rtx *old_operands, rtx *old_dups)
 }
 
 /* For each output operand of INSN, call scan_rtx to create a new
-   open chain.  */
+   open chain.  Do this only for normal or earlyclobber outputs,
+   depending on EARLYCLOBBER.  */
 
 static void
-record_out_operands (rtx insn)
+record_out_operands (rtx insn, bool earlyclobber)
 {
   int n_ops = recog_data.n_operands;
   int alt = which_alternative;
@@ -849,7 +925,8 @@ record_out_operands (rtx insn)
 
       struct du_head *prev_open;
 
-      if (recog_data.operand_type[opn] != OP_OUT)
+      if (recog_data.operand_type[opn] != OP_OUT
+	  || recog_op_alt[opn][alt].earlyclobber != earlyclobber)
 	continue;
 
       prev_open = open_chains;
@@ -866,7 +943,7 @@ record_out_operands (rtx insn)
 	      && REGNO (op) == ORIGINAL_REGNO (op)))
 	{
 	  if (prev_open != open_chains)
-	    open_chains->first->cl = NO_REGS;
+	    open_chains->cannot_rename = 1;
 	}
     }
 }
@@ -877,8 +954,21 @@ static struct du_head *
 build_def_use (basic_block bb)
 {
   rtx insn;
+  df_ref *def_rec;
 
   open_chains = closed_chains = NULL;
+
+  fail_current_block = false;
+
+  current_id = 0;
+  bitmap_initialize (&open_chains_set, &bitmap_default_obstack);
+  REG_SET_TO_HARD_REG_SET (live_hard_regs, df_get_live_in (bb));
+  for (def_rec = df_get_artificial_defs (bb->index); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	SET_HARD_REG_BIT (live_hard_regs, DF_REF_REGNO (def));
+    }
 
   for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
     {
@@ -891,22 +981,31 @@ build_def_use (basic_block bb)
 	  int i, icode;
 	  int alt;
 	  int predicated;
+	  enum rtx_code set_code = SET;
+	  enum rtx_code clobber_code = CLOBBER;
 
 	  /* Process the insn, determining its effect on the def-use
-	     chains.  We perform the following steps with the register
-	     references in the insn:
-	     (1) Any read that overlaps an open chain, but doesn't exactly
-	         match, causes that chain to be closed.  We can't deal
-	         with overlaps yet.
+	     chains and live hard registers.  We perform the following
+	     steps with the register references in the insn, simulating
+	     its effect:
+	     (1) Deal with earlyclobber operands and CLOBBERs of non-operands
+	         by creating chains and marking hard regs live.
 	     (2) Any read outside an operand causes any chain it overlaps
-	         with to be closed, since we can't replace it.
+	         with to be marked unrenamable.
 	     (3) Any read inside an operand is added if there's already
 	         an open chain for it.
 	     (4) For any REG_DEAD note we find, close open chains that
 	         overlap it.
-	     (5) For any write we find, close open chains that overlap it.
-	     (6) For any write we find in an operand, make a new chain.
-	     (7) For any REG_UNUSED, close any chains we just opened.  */
+	     (5) For any non-earlyclobber write we find, close open chains
+	         that overlap it.
+	     (6) For any non-earlyclobber write we find in an operand, make
+	         a new chain or mark the hard register as live.
+	     (7) For any REG_UNUSED, close any chains we just opened.
+
+	     We cannot deal with situations where we track a reg in one mode
+	     and see a reference in another mode; these will cause the chain
+	     to be marked unrenamable or even cause us to abort the entire
+	     basic block.  */
 
 	  icode = recog_memoized (insn);
 	  extract_insn (insn);
@@ -928,28 +1027,41 @@ build_def_use (basic_block bb)
 		recog_op_alt[i][alt].cl = recog_op_alt[matches][alt].cl;
 	      if (matches >= 0 || recog_op_alt[i][alt].matched >= 0
 	          || (predicated && recog_data.operand_type[i] == OP_OUT))
-		recog_data.operand_type[i] = OP_INOUT;
+		{
+		  recog_data.operand_type[i] = OP_INOUT;
+		  if (matches >= 0
+		      && (GET_MODE_SIZE (recog_data.operand_mode[i])
+			  != GET_MODE_SIZE (recog_data.operand_mode[matches])))
+		    fail_current_block = true;
+		}
 	    }
 
-	  /* Step 1: Close chains for which we have overlapping reads.  */
-	  for (i = 0; i < n_ops; i++)
-	    scan_rtx (insn, recog_data.operand_loc[i],
-		      NO_REGS, terminate_overlapping_read,
-		      recog_data.operand_type[i]);
+	  if (fail_current_block)
+	    break;
 
-	  /* Step 2: Close chains for which we have reads outside operands.
+	  /* Step 1a: Mark hard registers that are clobbered in this insn,
+	     outside an operand, as live.  */
+	  hide_operands (n_ops, old_operands, old_dups, false);
+	  note_stores (PATTERN (insn), note_sets_clobbers, &clobber_code);
+	  restore_operands (insn, n_ops, old_operands, old_dups);
+
+	  /* Step 1b: Begin new chains for earlyclobbered writes inside
+	     operands.  */
+	  record_out_operands (insn, true);
+
+	  /* Step 2: Mark chains for which we have reads outside operands
+	     as unrenamable.
 	     We do this by munging all operands into CC0, and closing
 	     everything remaining.  */
 
 	  hide_operands (n_ops, old_operands, old_dups, false);
-	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_all_read,
-		    OP_IN);
+	  scan_rtx (insn, &PATTERN (insn), NO_REGS, mark_all_read, OP_IN);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 2B: Can't rename function call argument registers.  */
 	  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
 	    scan_rtx (insn, &CALL_INSN_FUNCTION_USAGE (insn),
-		      NO_REGS, terminate_all_read, OP_IN);
+		      NO_REGS, mark_all_read, OP_IN);
 
 	  /* Step 2C: Can't rename asm operands that were originally
 	     hard registers.  */
@@ -963,7 +1075,7 @@ build_def_use (basic_block bb)
 		    && REGNO (op) == ORIGINAL_REGNO (op)
 		    && (recog_data.operand_type[i] == OP_IN
 			|| recog_data.operand_type[i] == OP_INOUT))
-		  scan_rtx (insn, loc, NO_REGS, terminate_all_read, OP_IN);
+		  scan_rtx (insn, loc, NO_REGS, mark_all_read, OP_IN);
 	      }
 
 	  /* Step 3: Append to chains for reads inside operands.  */
@@ -999,8 +1111,13 @@ build_def_use (basic_block bb)
 	  /* Step 4: Close chains for registers that die here.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_DEAD)
-	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
-			OP_IN);
+	      {
+		remove_from_hard_reg_set (&live_hard_regs,
+					  GET_MODE (XEXP (note, 0)),
+					  REGNO (XEXP (note, 0)));
+		scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
+			  OP_IN);
+	      }
 
 	  /* Step 4B: If this is a call, any chain live at this point
 	     requires a caller-saved reg.  */
@@ -1013,16 +1130,26 @@ build_def_use (basic_block bb)
 
 	  /* Step 5: Close open chains that overlap writes.  Similar to
 	     step 2, we hide in-out operands, since we do not want to
-	     close these chains.  */
+	     close these chains.  We also hide earlyclobber operands,
+	     since we've opened chains for them in step 1, and earlier
+	     chains they would overlap with must have been closed at
+	     the previous insn at the latest, as such operands cannot
+	     possibly overlap with any input operands.  */
 
 	  hide_operands (n_ops, old_operands, old_dups, true);
 	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_write, OP_IN);
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
-	  /* Step 6: Begin new chains for writes inside operands.  */
-	  record_out_operands (insn);
+	  /* Step 6a: Mark hard registers that are set in this insn,
+	     outside an operand, as live.  */
+	  hide_operands (n_ops, old_operands, old_dups, false);
+	  note_stores (PATTERN (insn), note_sets_clobbers, &set_code);
+	  restore_operands (insn, n_ops, old_operands, old_dups);
 
-	  /* Step 6B: Record destination regs in REG_FRAME_RELATED_EXPR
+	  /* Step 6b: Begin new chains for writes inside operands.  */
+	  record_out_operands (insn, false);
+
+	  /* Step 6c: Record destination regs in REG_FRAME_RELATED_EXPR
 	     notes for update.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_FRAME_RELATED_EXPR)
@@ -1033,8 +1160,13 @@ build_def_use (basic_block bb)
 	     really used here.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_UNUSED)
-	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
-			OP_IN);
+	      {
+		remove_from_hard_reg_set (&live_hard_regs,
+					  GET_MODE (XEXP (note, 0)),
+					  REGNO (XEXP (note, 0)));
+		scan_rtx (insn, &XEXP (note, 0), NO_REGS, terminate_dead,
+			  OP_IN);
+	      }
 	}
       else if (DEBUG_INSN_P (insn)
 	       && !VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))
@@ -1045,6 +1177,11 @@ build_def_use (basic_block bb)
       if (insn == BB_END (bb))
 	break;
     }
+
+  bitmap_clear (&open_chains_set);
+
+  if (fail_current_block)
+    return NULL;
 
   /* Since we close every chain when we find a REG_DEAD note, anything that
      is still open lives past the basic block, so it can't be renamed.  */

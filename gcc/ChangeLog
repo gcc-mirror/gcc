@@ -9,6 +9,38 @@
 	broken out of build_def_use.
 	(build_def_use): Call them as necessary.
 
+	* regrename.c (struct du_head): New members id, conflicts,
+	hard_conflicts and cannot_rename.
+	(enum scan_actions): Remove terminate_all_read and
+	terminate_overlapping_read; add mark_all_read.
+	(scan_actions_name): Likewise.
+	(du_head_p): New typedef.  Define a vector type for it.
+	(id_to_chain): New static variable.
+	(note_sets, clear_dead_regs): Delete functions.
+	(free_chain_data): New function.
+	(merge_overlapping_regs): Simply walk the conflicts bitmap.
+	Remove argument B, all callers changed.
+	(regrename_optimize): Allocate id_to_chain.  Ignore chains that have
+	the cannot_rename bit set.  Update regno and nregs of a renamed chain.
+	Call free_chain_data when done.
+	(do_replace): Remove death notes when the renamed reg is set in the
+	last insn; add them if not.
+	(mark_conflict, note_sets_clobbers): New static function.
+	(fail_current_block, current_id, open_chains_set, live_hard_regs): New
+	static variables.
+	(scan_rtx_reg): Keep track of conflicts between chains, and between
+	chains and hard regs.  Don't terminate chains when we find a read we
+	can't handle, mark it unrenameable instead.  For terminate_write,
+	terminate chains that are written with an exact match or a superset
+	of registers.  Set fail_current_block if multi-word lifetimes are too
+	complex to handle.
+	(scan_rtx_address): Use mark_all_read instead of terminate_all_read.
+	(build_def_use): Initialize current_id, live_chains and live_hard_regs;
+	free memory for them when done.
+	Rearrange the steps so that earlyclobbers are noted before reads
+	are processed.  Add new steps to keep track of hard register lifetimes
+	outside insn operands.
+
 2009-11-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dce.c (nr_walks): New variable.
