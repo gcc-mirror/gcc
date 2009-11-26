@@ -365,8 +365,9 @@ ParkHelper::unpark ()
   if (compare_and_swap
       (ptr, Thread::THREAD_PARK_PARKED, Thread::THREAD_PARK_RUNNING))
     {
+      int result;
       pthread_mutex_lock (&mutex);
-      int result = pthread_cond_signal (&cond);
+      result = pthread_cond_signal (&cond);
       pthread_mutex_unlock (&mutex);
       JvAssert (result == 0);
     }

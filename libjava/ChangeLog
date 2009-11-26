@@ -1,3 +1,9 @@
+2009-11-26  Ben Elliston  <bje@au.ibm.com>
+
+	* posix-threads.cc (ParkHelper::unpark): Do not initialise result,
+	but assign it instead. Eliminates an unused variable warning when
+	the result == 0 assertion is disabled.
+
 2009-11-17  Andrew Haley  <aph@redhat.com>
 
 	* posix-threads.cc (park): Rewrite code to handle time.
