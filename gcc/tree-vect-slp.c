@@ -1630,27 +1630,18 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
 
 static inline void
 vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
-                           int *mask_array, int mask_nunits,
-                           tree mask_element_type, tree mask_type,
-                           int first_vec_indx, int second_vec_indx,
+                           tree mask, int first_vec_indx, int second_vec_indx,
                            gimple_stmt_iterator *gsi, slp_tree node,
                            tree builtin_decl, tree vectype,
                            VEC(tree,heap) *dr_chain,
                            int ncopies, int vect_stmts_counter)
 {
-  tree t = NULL_TREE, mask_vec, mask, perm_dest;
+  tree perm_dest;
   gimple perm_stmt = NULL;
   stmt_vec_info next_stmt_info;
   int i, group_size, stride, dr_chain_size;
   tree first_vec, second_vec, data_ref;
   VEC (tree, heap) *params = NULL;
-
-  /* Create a vector mask.  */
-  for (i = mask_nunits - 1; i >= 0; --i)
-    t = tree_cons (NULL_TREE, build_int_cst (mask_element_type, mask_array[i]),
-                   t);
-  mask_vec = build_vector (mask_type, t);
-  mask = vect_init_vector (stmt, mask_vec, mask_type, NULL);
 
   group_size = VEC_length (gimple, SLP_TREE_SCALAR_STMTS (node));
   stride = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
@@ -1890,7 +1881,28 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 
               if (index == mask_nunits)
                 {
-                  index = 0;
+		  tree mask_vec = NULL;
+
+		  while (--index >= 0)
+		    {
+		      tree t = build_int_cst (mask_element_type, mask[index]);
+		      mask_vec = tree_cons (NULL, t, mask_vec);
+		    }
+		  mask_vec = build_vector (mask_type, mask_vec);
+		  index = 0;
+
+		  if (!targetm.vectorize.builtin_vec_perm_ok (vectype,
+							      mask_vec))
+		    {
+		      if (vect_print_dump_info (REPORT_DETAILS))
+			{
+			  fprintf (vect_dump, "unsupported vect permute ");
+			  print_generic_expr (vect_dump, mask_vec, 0);
+			}
+		      free (mask);
+		      return false;
+		    }
+
                   if (!analyze_only)
                     {
                       if (need_next_vector)
@@ -1903,10 +1915,9 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
                                 SLP_TREE_SCALAR_STMTS (node), scalar_index++);
 
                       vect_create_mask_and_perm (stmt, next_scalar_stmt,
-                               mask, mask_nunits, mask_element_type, mask_type,
-                               first_vec_index, second_vec_index, gsi, node,
-                               builtin_decl, vectype, dr_chain, ncopies,
-                               vect_stmts_counter++);
+                               mask_vec, first_vec_index, second_vec_index,
+			       gsi, node, builtin_decl, vectype, dr_chain,
+			       ncopies, vect_stmts_counter++);
                     }
                 }
             }

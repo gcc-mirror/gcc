@@ -490,6 +490,10 @@ struct gcc_target
 
     /* Target builtin that implements vector permute.  */
     tree (* builtin_vec_perm) (tree, tree*);
+
+    /* Return true if a vector created for builtin_vec_perm is valid.  */
+    bool (* builtin_vec_perm_ok) (tree, tree);
+
     /* Return true if the target supports misaligned store/load of a
        specific factor denoted in the third parameter.  The last parameter
        is true if the access is defined in a packed struct.  */
