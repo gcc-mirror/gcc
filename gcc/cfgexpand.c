@@ -217,6 +217,7 @@ static size_t *stack_vars_sorted;
    is lower triangular.  */
 static bool *stack_vars_conflict;
 static size_t stack_vars_conflict_alloc;
+static size_t n_stack_vars_conflict;
 
 /* The phase of the stack frame.  This is the known misalignment of
    virtual_stack_vars_rtx from PREFERRED_STACK_BOUNDARY.  That is,
@@ -335,7 +336,11 @@ triangular_index (size_t i, size_t j)
       size_t t;
       t = i, i = j, j = t;
     }
-  return (i * (i + 1)) / 2 + j;
+
+  if (i & 1)
+    return ((i + 1) / 2) * i + j;
+  else
+    return (i / 2) * (i + 1) + j;
 }
 
 /* Ensure that STACK_VARS_CONFLICT is large enough for N objects.  */
@@ -346,12 +351,17 @@ resize_stack_vars_conflict (size_t n)
   size_t size = triangular_index (n-1, n-1) + 1;
 
   if (size <= stack_vars_conflict_alloc)
-    return;
+    {
+      if (n > n_stack_vars_conflict)
+	fatal_error ("program is too large to be compiled on this machine");
+      return;
+    }
 
   stack_vars_conflict = XRESIZEVEC (bool, stack_vars_conflict, size);
   memset (stack_vars_conflict + stack_vars_conflict_alloc, 0,
 	  (size - stack_vars_conflict_alloc) * sizeof (bool));
   stack_vars_conflict_alloc = size;
+  n_stack_vars_conflict = n;
 }
 
 /* Make the decls associated with luid's X and Y conflict.  */
