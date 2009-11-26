@@ -1,3 +1,9 @@
+2009-11-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42026, DR 239
+	* parser.c (cp_parser_postfix_expression): A local extern also
+	prevents arg-dependent lookup.
+
 2009-11-26  Gabriel Dos Reis  <gdr@cs.tamu.edu>
 
 	* decl.c (grokdeclarator): Remove period at end of diagnosic message.
