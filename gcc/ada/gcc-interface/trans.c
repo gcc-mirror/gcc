@@ -4196,13 +4196,12 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_In:
     case N_Not_In:
       {
-	tree gnu_object = gnat_to_gnu (Left_Opnd (gnat_node));
+	tree gnu_obj = gnat_to_gnu (Left_Opnd (gnat_node));
 	Node_Id gnat_range = Right_Opnd (gnat_node);
-	tree gnu_low;
-	tree gnu_high;
+	tree gnu_low, gnu_high;
 
-	/* GNAT_RANGE is either an N_Range node or an identifier
-	   denoting a subtype.  */
+	/* GNAT_RANGE is either an N_Range node or an identifier denoting a
+	   subtype.  */
 	if (Nkind (gnat_range) == N_Range)
 	  {
 	    gnu_low = gnat_to_gnu (Low_Bound (gnat_range));
@@ -4221,21 +4220,24 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-	/* If LOW and HIGH are identical, perform an equality test.
-	   Otherwise, ensure that GNU_OBJECT is only evaluated once
-	   and perform a full range test.  */
+	/* If LOW and HIGH are identical, perform an equality test.  Otherwise,
+	   ensure that GNU_OBJ is evaluated only once and perform a full range
+	   test.  */
 	if (operand_equal_p (gnu_low, gnu_high, 0))
-	  gnu_result = build_binary_op (EQ_EXPR, gnu_result_type,
-					gnu_object, gnu_low);
+	  gnu_result
+	    = build_binary_op (EQ_EXPR, gnu_result_type, gnu_obj, gnu_low);
 	else
 	  {
-	    gnu_object = protect_multiple_eval (gnu_object);
+	    tree t1, t2;
+	    gnu_obj = protect_multiple_eval (gnu_obj);
+	    t1 = build_binary_op (GE_EXPR, gnu_result_type, gnu_obj, gnu_low);
+	    if (EXPR_P (t1))
+	      set_expr_location_from_node (t1, gnat_node);
+	    t2 = build_binary_op (LE_EXPR, gnu_result_type, gnu_obj, gnu_high);
+	    if (EXPR_P (t2))
+	      set_expr_location_from_node (t2, gnat_node);
 	    gnu_result
-	      = build_binary_op (TRUTH_ANDIF_EXPR, gnu_result_type,
-				 build_binary_op (GE_EXPR, gnu_result_type,
-						  gnu_object, gnu_low),
-				 build_binary_op (LE_EXPR, gnu_result_type,
-						  gnu_object, gnu_high));
+	      = build_binary_op (TRUTH_ANDIF_EXPR, gnu_result_type, t1, t2);
 	  }
 
 	if (kind == N_Not_In)
