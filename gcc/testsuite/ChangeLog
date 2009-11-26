@@ -1,3 +1,10 @@
+2009-11-25  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/pr36493.c: Call check_vect.
+	* gcc.dg/vect/pr37539.c: Likewise.
+	* gcc.dg/vect/vect-nest-cycle-3.c: Call check_vect earlier.
+	* tree-vect.h (check_vect): Use cpuid for x86.
+
 2009-11-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/pack6.ads: New test.
