@@ -356,6 +356,7 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
   if (expr->expr_type != EXPR_CONSTANT)
     {
       gfc_error ("non-constant initialization expression at %L", &expr->where);
+      se->expr = gfc_conv_constant_to_tree (gfc_int_expr (0));
       return;
     }
 

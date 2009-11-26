@@ -1,5 +1,10 @@
 2009-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR fortran/41807
+	* trans-const.c (gfc_conv_const): Set se->expr to a constant on error.
+
+2009-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR fortran/41278
 	* trans-array.c (gfc_conv_array_transpose): Delete unnecessary assert.
 
