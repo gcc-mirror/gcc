@@ -69,22 +69,20 @@ CC_MODE (CCZ);
 CC_MODE (CCFP);
 CC_MODE (CCFPU);
 
-/* Vector modes.  */
-VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
-VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
-VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
-VECTOR_MODES (INT, 32);       /* V32QI V16HI V8SI V4DI */
-VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
-VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
-VECTOR_MODES (FLOAT, 32);     /*      V16HF V8SF V4DF */
-VECTOR_MODE (INT, DI, 1);     /*                 V1DI */
-VECTOR_MODE (INT, SI, 1);     /*                 V1SI */
-VECTOR_MODE (INT, QI, 2);     /*                 V2QI */
-VECTOR_MODE (INT, DI, 8);     /*                 V8DI */
-VECTOR_MODE (INT, HI, 32);    /*                V32HI */
-VECTOR_MODE (INT, QI, 64);    /*                V64QI */
-VECTOR_MODE (FLOAT, DF, 8);   /*                 V8DF */
-VECTOR_MODE (FLOAT, SF, 16);  /*                V16SF */
+/* Vector modes.  Note that VEC_CONCAT patterns require vector
+   sizes twice as big as implemented in hardware.  */
+VECTOR_MODES (INT, 4);        /*              V4QI V2HI */
+VECTOR_MODES (INT, 8);        /*         V8QI V4HI V2SI */
+VECTOR_MODES (INT, 16);       /*   V16QI V8HI V4SI V2DI */
+VECTOR_MODES (INT, 32);       /*  V32QI V16HI V8SI V4DI */
+VECTOR_MODES (INT, 64);       /* V64QI V32HI V16SI V8DI */
+VECTOR_MODES (FLOAT, 8);      /*              V4HF V2SF */
+VECTOR_MODES (FLOAT, 16);     /*         V8HF V4SF V2DF */
+VECTOR_MODES (FLOAT, 32);     /*        V16HF V8SF V4DF */
+VECTOR_MODES (FLOAT, 64);     /*       V32HF V16SF V8DF */
+VECTOR_MODE (INT, DI, 1);     /*                   V1DI */
+VECTOR_MODE (INT, SI, 1);     /*                   V1SI */
+VECTOR_MODE (INT, QI, 2);     /*                   V2QI */
 
 INT_MODE (OI, 32);
 

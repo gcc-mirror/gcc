@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "cselib.h"
 
-static int x86_builtin_vectorization_cost (bool);
 static rtx legitimize_dllimport_symbol (rtx, bool);
 
 #ifndef CHECK_STACK_LIMIT
@@ -1885,6 +1884,7 @@ static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
 static void ix86_add_new_builtins (int);
+static rtx ix86_expand_vec_perm_builtin (tree);
 
 enum ix86_function_specific_strings
 {
@@ -21037,6 +21037,17 @@ enum ix86_builtins
 
   IX86_BUILTIN_CVTUDQ2PS,
 
+  IX86_BUILTIN_VEC_PERM_V2DF,
+  IX86_BUILTIN_VEC_PERM_V4SF,
+  IX86_BUILTIN_VEC_PERM_V2DI,
+  IX86_BUILTIN_VEC_PERM_V4SI,
+  IX86_BUILTIN_VEC_PERM_V8HI,
+  IX86_BUILTIN_VEC_PERM_V16QI,
+  IX86_BUILTIN_VEC_PERM_V2DI_U,
+  IX86_BUILTIN_VEC_PERM_V4SI_U,
+  IX86_BUILTIN_VEC_PERM_V8HI_U,
+  IX86_BUILTIN_VEC_PERM_V16QI_U,
+
   /* FMA4 and XOP instructions.  */
   IX86_BUILTIN_VFMADDSS,
   IX86_BUILTIN_VFMADDSD,
@@ -21709,6 +21720,17 @@ static const struct builtin_description bdesc_args[] =
 
   /* SSE2 */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_shufpd, "__builtin_ia32_shufpd", IX86_BUILTIN_SHUFPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v2df", IX86_BUILTIN_VEC_PERM_V2DF, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_V2DI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4sf", IX86_BUILTIN_VEC_PERM_V4SF, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v2di", IX86_BUILTIN_VEC_PERM_V2DI, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_V2DI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4si", IX86_BUILTIN_VEC_PERM_V4SI, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v8hi", IX86_BUILTIN_VEC_PERM_V8HI, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI_V8HI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v16qi", IX86_BUILTIN_VEC_PERM_V16QI, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI_V16QI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v2di_u", IX86_BUILTIN_VEC_PERM_V2DI_U, UNKNOWN, (int) V2UDI_FTYPE_V2UDI_V2UDI_V2UDI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4si_u", IX86_BUILTIN_VEC_PERM_V4SI_U, UNKNOWN, (int) V4USI_FTYPE_V4USI_V4USI_V4USI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v8hi_u", IX86_BUILTIN_VEC_PERM_V8HI_U, UNKNOWN, (int) V8UHI_FTYPE_V8UHI_V8UHI_V8UHI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v16qi_u", IX86_BUILTIN_VEC_PERM_V16QI_U, UNKNOWN, (int) V16UQI_FTYPE_V16UQI_V16UQI_V16UQI },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movmskpd, "__builtin_ia32_movmskpd", IX86_BUILTIN_MOVMSKPD, UNKNOWN, (int) INT_FTYPE_V2DF  },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pmovmskb, "__builtin_ia32_pmovmskb128", IX86_BUILTIN_PMOVMSKB128, UNKNOWN, (int) INT_FTYPE_V16QI },
@@ -24118,6 +24140,18 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_SET_V4HI:
     case IX86_BUILTIN_VEC_SET_V16QI:
       return ix86_expand_vec_set_builtin (exp);
+
+    case IX86_BUILTIN_VEC_PERM_V2DF:
+    case IX86_BUILTIN_VEC_PERM_V4SF:
+    case IX86_BUILTIN_VEC_PERM_V2DI:
+    case IX86_BUILTIN_VEC_PERM_V4SI:
+    case IX86_BUILTIN_VEC_PERM_V8HI:
+    case IX86_BUILTIN_VEC_PERM_V16QI:
+    case IX86_BUILTIN_VEC_PERM_V2DI_U:
+    case IX86_BUILTIN_VEC_PERM_V4SI_U:
+    case IX86_BUILTIN_VEC_PERM_V8HI_U:
+    case IX86_BUILTIN_VEC_PERM_V16QI_U:
+      return ix86_expand_vec_perm_builtin (exp);
 
     case IX86_BUILTIN_INFQ:
     case IX86_BUILTIN_HUGE_VALQ:
@@ -28904,7 +28938,7 @@ static const struct attribute_spec ix86_attribute_table[] =
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int
-x86_builtin_vectorization_cost (bool runtime_test)
+ix86_builtin_vectorization_cost (bool runtime_test)
 {
   /* If the branch of the runtime test is taken - i.e. - the vectorized
      version is skipped - this incurs a misprediction cost (because the
@@ -28926,6 +28960,1091 @@ x86_builtin_vectorization_cost (bool runtime_test)
     return 0;
 }
 
+/* Implement targetm.vectorize.builtin_vec_perm.  */
+
+static tree
+ix86_vectorize_builtin_vec_perm (tree vec_type, tree *mask_type)
+{
+  tree itype = TREE_TYPE (vec_type);
+  bool u = TYPE_UNSIGNED (itype);
+  enum ix86_builtins fcode;
+
+  if (!TARGET_SSE2)
+    return NULL_TREE;
+
+  switch (TYPE_MODE (vec_type))
+    {
+    case V2DFmode:
+      itype = ix86_get_builtin_type (IX86_BT_DI);
+      fcode = IX86_BUILTIN_VEC_PERM_V2DF;
+      break;
+    case V4SFmode:
+      itype = ix86_get_builtin_type (IX86_BT_SI);
+      fcode = IX86_BUILTIN_VEC_PERM_V4SF;
+      break;
+    case V2DImode:
+      fcode = u ? IX86_BUILTIN_VEC_PERM_V2DI_U : IX86_BUILTIN_VEC_PERM_V2DI;
+      break;
+    case V4SImode:
+      fcode = u ? IX86_BUILTIN_VEC_PERM_V4SI_U : IX86_BUILTIN_VEC_PERM_V4SI;
+      break;
+    case V8HImode:
+      fcode = u ? IX86_BUILTIN_VEC_PERM_V8HI_U : IX86_BUILTIN_VEC_PERM_V8HI;
+      break;
+    case V16QImode:
+      fcode = u ? IX86_BUILTIN_VEC_PERM_V16QI_U : IX86_BUILTIN_VEC_PERM_V16QI;
+      break;
+    default:
+      return NULL_TREE;
+    }
+
+  *mask_type = itype;
+  return ix86_builtins[(int) fcode];
+}
+
+/* AVX does not support 32-byte integer vector operations,
+   thus the longest vector we are faced with is V16QImode.  */
+#define MAX_VECT_LEN	16
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool testing_p;
+};
+
+/* Return a vector mode with twice as many elements as VMODE.  */
+/* ??? Consider moving this to a table generated by genmodes.c.  */
+
+static enum machine_mode
+doublesize_vector_mode (enum machine_mode vmode)
+{
+  switch (vmode)
+    {
+    case V2SFmode:	return V4SFmode;
+    case V1DImode:	return V2DImode;
+    case V2SImode:	return V4SImode;
+    case V4HImode:	return V8HImode;
+    case V8QImode:	return V16QImode;
+
+    case V2DFmode:	return V4DFmode;
+    case V4SFmode:	return V8SFmode;
+    case V2DImode:	return V4DImode;
+    case V4SImode:	return V8SImode;
+    case V8HImode:	return V16HImode;
+    case V16QImode:	return V32QImode;
+
+    case V4DFmode:	return V8DFmode;
+    case V8SFmode:	return V16SFmode;
+    case V4DImode:	return V8DImode;
+    case V8SImode:	return V16SImode;
+    case V16HImode:	return V32HImode;
+    case V32QImode:	return V64QImode;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Construct (set target (vec_select op0 (parallel perm))) and
+   return true if that's a valid instruction in the active ISA.  */
+
+static bool
+expand_vselect (rtx target, rtx op0, const unsigned char *perm, unsigned nelt)
+{
+  rtx rperm[MAX_VECT_LEN], x;
+  unsigned i;
+
+  for (i = 0; i < nelt; ++i)
+    rperm[i] = GEN_INT (perm[i]);
+
+  x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelt, rperm));
+  x = gen_rtx_VEC_SELECT (GET_MODE (target), op0, x);
+  x = gen_rtx_SET (VOIDmode, target, x);
+
+  x = emit_insn (x);
+  if (recog_memoized (x) < 0)
+    {
+      remove_insn (x);
+      return false;
+    }
+  return true;
+}
+
+/* Similar, but generate a vec_concat from op0 and op1 as well.  */
+
+static bool
+expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
+			const unsigned char *perm, unsigned nelt)
+{
+  enum machine_mode v2mode;
+  rtx x;
+
+  v2mode = doublesize_vector_mode (GET_MODE (op0));
+  x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
+  return expand_vselect (target, x, perm, nelt);
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
+   in terms of blendp[sd] / pblendw / pblendvb.  */
+
+static bool
+expand_vec_perm_blend (struct expand_vec_perm_d *d)
+{
+  enum machine_mode vmode = d->vmode;
+  unsigned i, mask, nelt = d->nelt;
+  rtx target, op0, op1, x;
+
+  if (!TARGET_SSE4_1 || d->op0 == d->op1)
+    return false;
+  if (!(GET_MODE_SIZE (vmode) == 16 || vmode == V4DFmode || vmode == V8SFmode))
+    return false;
+
+  /* This is a blend, not a permute.  Elements must stay in their
+     respective lanes.  */
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned e = d->perm[i];
+      if (!(e == i || e == i + nelt))
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  /* ??? Without SSE4.1, we could implement this with and/andn/or.  This
+     decision should be extracted elsewhere, so that we only try that
+     sequence once all budget==3 options have been tried.  */
+
+  /* For bytes, see if bytes move in pairs so we can use pblendw with
+     an immediate argument, rather than pblendvb with a vector argument.  */
+  if (vmode == V16QImode)
+    {
+      bool pblendw_ok = true;
+      for (i = 0; i < 16 && pblendw_ok; i += 2)
+	pblendw_ok = (d->perm[i] + 1 == d->perm[i + 1]);
+
+      if (!pblendw_ok)
+	{
+	  rtx rperm[16], vperm;
+
+	  for (i = 0; i < nelt; ++i)
+	    rperm[i] = (d->perm[i] < nelt ? const0_rtx : constm1_rtx);
+
+	  vperm = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, rperm));
+	  vperm = force_reg (V16QImode, vperm);
+
+	  emit_insn (gen_sse4_1_pblendvb (d->target, d->op0, d->op1, vperm));
+	  return true;
+	}
+    }
+
+  target = d->target;
+  op0 = d->op0;
+  op1 = d->op1;
+  mask = 0;
+
+  switch (vmode)
+    {
+    case V4DFmode:
+    case V8SFmode:
+    case V2DFmode:
+    case V4SFmode:
+    case V8HImode:
+      for (i = 0; i < nelt; ++i)
+	mask |= (d->perm[i] >= nelt) << i;
+      break;
+
+    case V2DImode:
+      for (i = 0; i < 2; ++i)
+	mask |= (d->perm[i] >= 2 ? 15 : 0) << (i * 4);
+      goto do_subreg;
+
+    case V4SImode:
+      for (i = 0; i < 4; ++i)
+	mask |= (d->perm[i] >= 4 ? 3 : 0) << (i * 2);
+      goto do_subreg;
+
+    case V16QImode:
+      for (i = 0; i < 8; ++i)
+	mask |= (d->perm[i * 2] >= 16) << i;
+
+    do_subreg:
+      vmode = V8HImode;
+      target = gen_lowpart (vmode, target);
+      op0 = gen_lowpart (vmode, target);
+      op1 = gen_lowpart (vmode, target);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* This matches five different patterns with the different modes.  */
+  x = gen_rtx_VEC_MERGE (vmode, op0, op1, GEN_INT (mask));
+  x = gen_rtx_SET (VOIDmode, target, x);
+  emit_insn (x);
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
+   in terms of the variable form of vpermilps.
+
+   Note that we will have already failed the immediate input vpermilps,
+   which requires that the high and low part shuffle be identical; the
+   variable form doesn't require that.  */
+
+static bool
+expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
+{
+  rtx rperm[8], vperm;
+  unsigned i;
+
+  if (!TARGET_AVX || d->vmode != V8SFmode || d->op0 != d->op1)
+    return false;
+
+  /* We can only permute within the 128-bit lane.  */
+  for (i = 0; i < 8; ++i)
+    {
+      unsigned e = d->perm[i];
+      if (i < 4 ? e >= 4 : e < 4)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  for (i = 0; i < 8; ++i)
+    {
+      unsigned e = d->perm[i];
+
+      /* Within each 128-bit lane, the elements of op0 are numbered
+	 from 0 and the elements of op1 are numbered from 4.  */
+      if (e >= 8 + 4)
+	e -= 8;
+      else if (e >= 4)
+	e -= 4;
+
+      rperm[i] = GEN_INT (e);
+    }
+
+  vperm = gen_rtx_CONST_VECTOR (V8SImode, gen_rtvec_v (8, rperm));
+  vperm = force_reg (V8SImode, vperm);
+  emit_insn (gen_avx_vpermilvarv8sf3 (d->target, d->op0, vperm));
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
+   in terms of pshufb or vpperm.  */
+
+static bool
+expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
+{
+  unsigned i, nelt, eltsz;
+  rtx rperm[16], vperm, target, op0, op1;
+
+  if (!(d->op0 == d->op1 ? TARGET_SSSE3 : TARGET_XOP))
+    return false;
+  if (GET_MODE_SIZE (d->vmode) != 16)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  nelt = d->nelt;
+  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned j, e = d->perm[i];
+      for (j = 0; j < eltsz; ++j)
+	rperm[i * eltsz + j] = GEN_INT (e * eltsz + j);
+    }
+
+  vperm = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, rperm));
+  vperm = force_reg (V16QImode, vperm);
+
+  target = gen_lowpart (V16QImode, d->target);
+  op0 = gen_lowpart (V16QImode, d->op0);
+  if (d->op0 == d->op1)
+    emit_insn (gen_ssse3_pshufbv16qi3 (target, op0, vperm));
+  else
+    {
+      op1 = gen_lowpart (V16QImode, d->op1);
+      emit_insn (gen_xop_pperm (target, op0, op1, vperm));
+    }
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to instantiate D
+   in a single instruction.  */
+
+static bool
+expand_vec_perm_1 (struct expand_vec_perm_d *d)
+{
+  unsigned i, nelt = d->nelt;
+  unsigned char perm2[MAX_VECT_LEN];
+
+  /* Check plain VEC_SELECT first, because AVX has instructions that could
+     match both SEL and SEL+CONCAT, but the plain SEL will allow a memory
+     input where SEL+CONCAT may not.  */
+  if (d->op0 == d->op1)
+    {
+      if (expand_vselect (d->target, d->op0, d->perm, nelt))
+	return true;
+
+      /* There are plenty of patterns in sse.md that are written for
+	 SEL+CONCAT and are not replicated for a single op.  Perhaps
+	 that should be changed, to avoid the nastiness here.  */
+
+      /* Recognize interleave style patterns, which means incrementing
+	 every other permutation operand.  */
+      for (i = 0; i < nelt; i += 2)
+	{
+	  perm2[i] = d->perm[i];
+	  perm2[i+1] = d->perm[i+1] + nelt;
+	}
+      if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt))
+	return true;
+
+      /* Recognize shufps, which means adding {0, 0, nelt, nelt}.  */
+      if (nelt >= 4)
+	{
+	  memcpy (perm2, d->perm, nelt);
+	  for (i = 2; i < nelt; i += 4)
+	    {
+	      perm2[i+0] += nelt;
+	      perm2[i+1] += nelt;
+	    }
+
+	  if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt))
+	    return true;
+	}
+    }
+
+  /* Finally, try the fully general two operand permute.  */
+  if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt))
+    return true;
+
+  /* Recognize interleave style patterns with reversed operands.  */
+  if (d->op0 != d->op1)
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  unsigned e = d->perm[i];
+	  if (e >= nelt)
+	    e -= nelt;
+	  else
+	    e += nelt;
+	  perm2[i] = e;
+	}
+
+      if (expand_vselect_vconcat (d->target, d->op1, d->op0, perm2, nelt))
+	return true;
+    }
+
+  /* Try the SSE4.1 blend variable merge instructions.  */
+  if (expand_vec_perm_blend (d))
+    return true;
+
+  /* Try one of the AVX vpermil variable permutations.  */
+  if (expand_vec_perm_vpermil (d))
+    return true;
+
+  /* Try the SSSE3 pshufb or XOP vpperm variable permutation.  */
+  if (expand_vec_perm_pshufb (d))
+    return true;
+
+  return false;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to implement D
+   in terms of a pair of pshuflw + pshufhw instructions.  */
+
+static bool
+expand_vec_perm_pshuflw_pshufhw (struct expand_vec_perm_d *d)
+{
+  unsigned char perm2[MAX_VECT_LEN];
+  unsigned i;
+  bool ok;
+
+  if (d->vmode != V8HImode || d->op0 != d->op1)
+    return false;
+
+  /* The two permutations only operate in 64-bit lanes.  */
+  for (i = 0; i < 4; ++i)
+    if (d->perm[i] >= 4)
+      return false;
+  for (i = 4; i < 8; ++i)
+    if (d->perm[i] < 4)
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  /* Emit the pshuflw.  */
+  memcpy (perm2, d->perm, 4);
+  for (i = 4; i < 8; ++i)
+    perm2[i] = i;
+  ok = expand_vselect (d->target, d->op0, perm2, 8);
+  gcc_assert (ok);
+
+  /* Emit the pshufhw.  */
+  memcpy (perm2 + 4, d->perm + 4, 4);
+  for (i = 0; i < 4; ++i)
+    perm2[i] = i;
+  ok = expand_vselect (d->target, d->target, perm2, 8);
+  gcc_assert (ok);
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
+   the permutation using the SSSE3 palignr instruction.  This succeeds
+   when all of the elements in PERM fit within one vector and we merely
+   need to shift them down so that a single vector permutation has a
+   chance to succeed.  */
+
+static bool
+expand_vec_perm_palignr (struct expand_vec_perm_d *d)
+{
+  unsigned i, nelt = d->nelt;
+  unsigned min, max;
+  bool in_order, ok;
+  rtx shift;
+
+  /* Even with AVX, palignr only operates on 128-bit vectors.  */
+  if (!TARGET_SSSE3 || GET_MODE_SIZE (d->vmode) != 16)
+    return false;
+
+  min = nelt, max = 0;
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned e = d->perm[i];
+      if (e < min)
+	min = e;
+      if (e > max)
+	max = e;
+    }
+  if (min == 0 || max - min >= nelt)
+    return false;
+
+  /* Given that we have SSSE3, we know we'll be able to implement the
+     single operand permutation after the palignr with pshufb.  */
+  if (d->testing_p)
+    return true;
+
+  shift = GEN_INT (min * GET_MODE_BITSIZE (GET_MODE_INNER (d->vmode)));
+  emit_insn (gen_ssse3_palignrti (gen_lowpart (TImode, d->target),
+				  gen_lowpart (TImode, d->op1),
+				  gen_lowpart (TImode, d->op0), shift));
+
+  d->op0 = d->op1 = d->target;
+
+  in_order = true;
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned e = d->perm[i] - min;
+      if (e != i)
+	in_order = false;
+      d->perm[i] = e;
+    }
+
+  /* Test for the degenerate case where the alignment by itself
+     produces the desired permutation.  */
+  if (in_order)
+    return true;
+
+  ok = expand_vec_perm_1 (d);
+  gcc_assert (ok);
+
+  return ok;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Try to simplify
+   a two vector permutation into a single vector permutation by using
+   an interleave operation to merge the vectors.  */
+
+static bool
+expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
+{
+  struct expand_vec_perm_d dremap, dfinal;
+  unsigned i, nelt = d->nelt, nelt2 = nelt / 2;
+  unsigned contents, h1, h2, h3, h4;
+  unsigned char remap[2 * MAX_VECT_LEN];
+  rtx seq;
+  bool ok;
+
+  if (d->op0 == d->op1)
+    return false;
+
+  /* The 256-bit unpck[lh]p[sd] instructions only operate within the 128-bit
+     lanes.  We can use similar techniques with the vperm2f128 instruction,
+     but it requires slightly different logic.  */
+  if (GET_MODE_SIZE (d->vmode) != 16)
+    return false;
+
+  /* Examine from whence the elements come.  */
+  contents = 0;
+  for (i = 0; i < nelt; ++i)
+    contents |= 1u << d->perm[i];
+
+  /* Split the two input vectors into 4 halves.  */
+  h1 = (1u << nelt2) - 1;
+  h2 = h1 << nelt2;
+  h3 = h2 << nelt2;
+  h4 = h3 << nelt2;
+
+  memset (remap, 0xff, sizeof (remap));
+  dremap = *d;
+
+  /* If the elements from the low halves use interleave low, and similarly
+     for interleave high.  If the elements are from mis-matched halves, we
+     can use shufps for V4SF/V4SI or do a DImode shuffle.  */
+  if ((contents & (h1 | h3)) == contents)
+    {
+      for (i = 0; i < nelt2; ++i)
+	{
+	  remap[i] = i * 2;
+	  remap[i + nelt] = i * 2 + 1;
+	  dremap.perm[i * 2] = i;
+	  dremap.perm[i * 2 + 1] = i + nelt;
+	}
+    }
+  else if ((contents & (h2 | h4)) == contents)
+    {
+      for (i = 0; i < nelt2; ++i)
+	{
+	  remap[i + nelt2] = i * 2;
+	  remap[i + nelt + nelt2] = i * 2 + 1;
+	  dremap.perm[i * 2] = i + nelt2;
+	  dremap.perm[i * 2 + 1] = i + nelt + nelt2;
+	}
+    }
+  else if ((contents & (h1 | h4)) == contents)
+    {
+      for (i = 0; i < nelt2; ++i)
+	{
+	  remap[i] = i;
+	  remap[i + nelt + nelt2] = i + nelt2;
+	  dremap.perm[i] = i;
+	  dremap.perm[i + nelt2] = i + nelt + nelt2;
+	}
+      if (nelt != 4)
+	{
+	  dremap.vmode = V2DImode;
+	  dremap.nelt = 2;
+	  dremap.perm[0] = 0;
+	  dremap.perm[1] = 3;
+	}
+    }
+  else if ((contents & (h2 | h3)) == contents)
+    {
+      for (i = 0; i < nelt2; ++i)
+	{
+	  remap[i + nelt2] = i;
+	  remap[i + nelt] = i + nelt2;
+	  dremap.perm[i] = i + nelt2;
+	  dremap.perm[i + nelt2] = i + nelt;
+	}
+      if (nelt != 4)
+	{
+	  dremap.vmode = V2DImode;
+	  dremap.nelt = 2;
+	  dremap.perm[0] = 1;
+	  dremap.perm[1] = 2;
+	}
+    }
+  else
+    return false;
+
+  /* Use the remapping array set up above to move the elements from their
+     swizzled locations into their final destinations.  */
+  dfinal = *d;
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned e = remap[d->perm[i]];
+      gcc_assert (e < nelt);
+      dfinal.perm[i] = e;
+    }
+  dfinal.op0 = gen_reg_rtx (dfinal.vmode);
+  dfinal.op1 = dfinal.op0;
+  dremap.target = dfinal.op0;
+
+  /* Test if the final remap can be done with a single insn.  For V4SFmode or
+     V4SImode this *will* succeed.  For V8HImode or V16QImode it may not.  */
+  start_sequence ();
+  ok = expand_vec_perm_1 (&dfinal);
+  seq = get_insns ();
+  end_sequence ();
+
+  if (!ok)
+    return false;
+
+  if (dremap.vmode != dfinal.vmode)
+    {
+      dremap.target = gen_lowpart (dremap.vmode, dremap.target);
+      dremap.op0 = gen_lowpart (dremap.vmode, dremap.op0);
+      dremap.op1 = gen_lowpart (dremap.vmode, dremap.op1);
+    }
+
+  ok = expand_vec_perm_1 (&dremap);
+  gcc_assert (ok);
+
+  emit_insn (seq);
+  return true;
+}
+
+/* A subroutine of expand_vec_perm_even_odd_1.  Implement the double-word
+   permutation with two pshufb insns and an ior.  We should have already
+   failed all two instruction sequences.  */
+
+static bool
+expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
+{
+  rtx rperm[2][16], vperm, l, h, op, m128;
+  unsigned int i, nelt, eltsz;
+
+  if (!TARGET_SSSE3)
+    return false;
+
+  nelt = d->nelt;
+  eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
+  
+  /* Generate two permutation masks.  If the required element is within
+     the given vector it is shuffled into the proper lane.  If the required
+     element is in the other vector, force a zero into the lane by setting
+     bit 7 in the permutation mask.  */
+  m128 = GEN_INT (-128);
+  for (i = 0; i < nelt; ++i)
+    {
+      unsigned j, e = d->perm[i];
+      unsigned which = (e >= nelt);
+      if (e >= nelt)
+	e -= nelt;
+
+      for (j = 0; j < eltsz; ++j)
+	{
+	  rperm[which][i*eltsz + j] = GEN_INT (e*eltsz + j);
+	  rperm[1-which][i*eltsz + j] = m128;
+	}
+    }
+
+  vperm = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, rperm[0]));
+  vperm = force_reg (V16QImode, vperm);
+
+  l = gen_reg_rtx (V16QImode);
+  op = gen_lowpart (V16QImode, d->op0);
+  emit_insn (gen_ssse3_pshufbv16qi3 (l, op, vperm));
+
+  vperm = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, rperm[1]));
+  vperm = force_reg (V16QImode, vperm);
+
+  h = gen_reg_rtx (V16QImode);
+  op = gen_lowpart (V16QImode, d->op1);
+  emit_insn (gen_ssse3_pshufbv16qi3 (h, op, vperm));
+
+  op = gen_lowpart (V16QImode, d->target);
+  emit_insn (gen_iorv16qi3 (op, l, h));
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_builtin_1.  Pattern match
+   extract-even and extract-odd permutations.  */
+
+static bool
+expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
+{
+  rtx t1, t2, t3, t4;
+
+  switch (d->vmode)
+    {
+    case V4DFmode:
+      t1 = gen_reg_rtx (V4DFmode);
+      t2 = gen_reg_rtx (V4DFmode);
+
+      /* Shuffle the lanes around into { 0 1 4 5 } and { 2 3 6 7 }.  */
+      emit_insn (gen_avx_vperm2f128v4df3 (t1, d->op0, d->op1, GEN_INT (0x20)));
+      emit_insn (gen_avx_vperm2f128v4df3 (t2, d->op0, d->op1, GEN_INT (0x31)));
+
+      /* Now an unpck[lh]pd will produce the result required.  */
+      if (odd)
+	t3 = gen_avx_unpckhpd256 (d->target, t1, t2);
+      else
+	t3 = gen_avx_unpcklpd256 (d->target, t1, t2);
+      emit_insn (t3);
+      break;
+
+    case V8SFmode:
+      {
+	static const unsigned char perm1[8] = { 0, 2, 1, 3, 5, 6, 5, 7 };
+	static const unsigned char perme[8] = { 0, 1,  8,  9, 4, 5, 12, 13 };
+	static const unsigned char permo[8] = { 2, 3, 10, 11, 6, 7, 14, 15 };
+
+	t1 = gen_reg_rtx (V8SFmode);
+	t2 = gen_reg_rtx (V8SFmode);
+	t3 = gen_reg_rtx (V8SFmode);
+	t4 = gen_reg_rtx (V8SFmode);
+
+	/* Shuffle within the 128-bit lanes to produce:
+	   { 0 2 1 3 4 6 5 7 } and { 8 a 9 b c e d f }.  */
+	expand_vselect (t1, d->op0, perm1, 8);
+	expand_vselect (t2, d->op1, perm1, 8);
+
+	/* Shuffle the lanes around to produce:
+	   { 0 2 1 3 8 a 9 b } and { 4 6 5 7 c e d f }.  */
+	emit_insn (gen_avx_vperm2f128v8sf3 (t3, t1, t2, GEN_INT (0x20)));
+	emit_insn (gen_avx_vperm2f128v8sf3 (t4, t1, t2, GEN_INT (0x31)));
+
+	/* Now a vpermil2p will produce the result required.  */
+	/* ??? The vpermil2p requires a vector constant.  Another option
+	   is a unpck[lh]ps to merge the two vectors to produce
+	   { 0 4 2 6 8 c a e } or { 1 5 3 7 9 d b f }.  Then use another
+	   vpermilps to get the elements into the final order.  */
+	d->op0 = t3;
+	d->op1 = t4;
+	memcpy (d->perm, odd ? permo: perme, 8);
+	expand_vec_perm_vpermil (d);
+      }
+      break;
+
+    case V2DFmode:
+    case V4SFmode:
+    case V2DImode:
+    case V4SImode:
+      /* These are always directly implementable by expand_vec_perm_1.  */
+      gcc_unreachable ();
+
+    case V8HImode:
+      if (TARGET_SSSE3)
+	return expand_vec_perm_pshufb2 (d);
+      else
+	{
+	  /* We need 2*log2(N)-1 operations to achieve odd/even
+	     with interleave. */
+	  t1 = gen_reg_rtx (V8HImode);
+	  t2 = gen_reg_rtx (V8HImode);
+	  emit_insn (gen_sse2_punpckhwd (t1, d->op0, d->op1));
+	  emit_insn (gen_sse2_punpcklwd (d->target, d->op0, d->op1));
+	  emit_insn (gen_sse2_punpckhwd (t2, d->target, t1));
+	  emit_insn (gen_sse2_punpcklwd (d->target, d->target, t1));
+	  if (odd)
+	    emit_insn (gen_sse2_punpckhwd (d->target, d->target, t2));
+	  else
+	    emit_insn (gen_sse2_punpcklwd (d->target, d->target, t2));
+	}
+      break;
+
+    case V16QImode:
+      if (TARGET_SSSE3)
+	return expand_vec_perm_pshufb2 (d);
+      else
+	{
+	  t1 = gen_reg_rtx (V16QImode);
+	  t2 = gen_reg_rtx (V16QImode);
+	  t3 = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_sse2_punpckhbw (t1, d->op0, d->op1));
+	  emit_insn (gen_sse2_punpcklbw (d->target, d->op0, d->op1));
+	  emit_insn (gen_sse2_punpckhbw (t2, d->target, t1));
+	  emit_insn (gen_sse2_punpcklbw (d->target, d->target, t1));
+	  emit_insn (gen_sse2_punpckhbw (t3, d->target, t2));
+	  emit_insn (gen_sse2_punpcklbw (d->target, d->target, t2));
+	  if (odd)
+	    emit_insn (gen_sse2_punpckhbw (d->target, d->target, t3));
+	  else
+	    emit_insn (gen_sse2_punpcklbw (d->target, d->target, t3));
+	}
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return true;
+}
+
+static bool
+expand_vec_perm_even_odd (struct expand_vec_perm_d *d)
+{
+  unsigned i, odd, nelt = d->nelt;
+
+  odd = d->perm[0];
+  if (odd != 0 && odd != 1)
+    return false;
+
+  for (i = 1; i < nelt; ++i)
+    if (d->perm[i] != 2 * i + odd)
+      return false;
+
+  return expand_vec_perm_even_odd_1 (d, odd);
+}
+
+/* The guts of ix86_expand_vec_perm_builtin, also used by the ok hook.
+   With all of the interface bits taken care of, perform the expansion
+   in D and return true on success.  */
+
+static bool
+ix86_expand_vec_perm_builtin_1 (struct expand_vec_perm_d *d)
+{
+  /* First things first -- check if the instruction is implementable
+     with a single instruction.  */
+  if (expand_vec_perm_1 (d))
+    return true;
+
+  /* Try sequences of two instructions.  */
+
+  if (expand_vec_perm_pshuflw_pshufhw (d))
+    return true;
+
+  if (expand_vec_perm_palignr (d))
+    return true;
+
+  if (expand_vec_perm_interleave2 (d))
+    return true;
+
+  /* Try sequences of three instructions.  */
+
+  if (expand_vec_perm_pshufb2 (d))
+    return true;
+
+  /* ??? Look for narrow permutations whose element orderings would
+     allow the promition to a wider mode.  */
+
+  /* ??? Look for sequences of interleave or a wider permute that place
+     the data into the correct lanes for a half-vector shuffle like
+     pshuf[lh]w or vpermilps.  */
+
+  /* ??? Look for sequences of interleave that produce the desired results.
+     The combinatorics of punpck[lh] get pretty ugly... */
+
+  if (expand_vec_perm_even_odd (d))
+    return true;
+
+  /* ??? Pattern match broadcast.  */
+
+  return false;
+}
+
+/* Extract the values from the vector CST into the permutation array in D.
+   Return 0 on error, 1 if all values from the permutation come from the
+   first vector, 2 if all values from the second vector, and 3 otherwise.  */
+
+static int
+extract_vec_perm_cst (struct expand_vec_perm_d *d, tree cst)
+{
+  tree list = TREE_VECTOR_CST_ELTS (cst);
+  unsigned i, nelt = d->nelt;
+  int ret = 0;
+
+  for (i = 0; i < nelt; ++i, list = TREE_CHAIN (list))
+    {
+      unsigned HOST_WIDE_INT e;
+
+      if (!host_integerp (TREE_VALUE (list), 1))
+	return 0;
+      e = tree_low_cst (TREE_VALUE (list), 1);
+      if (e >= 2 * nelt)
+	return 0;
+
+      ret |= (e < nelt ? 1 : 2);
+      d->perm[i] = e;
+    }
+  gcc_assert (list == NULL);
+
+  /* For all elements from second vector, fold the elements to first.  */
+  if (ret == 2)
+    for (i = 0; i < nelt; ++i)
+      d->perm[i] -= nelt;
+
+  return ret;
+}
+
+static rtx
+ix86_expand_vec_perm_builtin (tree exp)
+{
+  struct expand_vec_perm_d d;
+  tree arg0, arg1, arg2;
+
+  arg0 = CALL_EXPR_ARG (exp, 0);
+  arg1 = CALL_EXPR_ARG (exp, 1);
+  arg2 = CALL_EXPR_ARG (exp, 2);
+
+  d.vmode = TYPE_MODE (TREE_TYPE (arg0));
+  d.nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+
+  if (TREE_CODE (arg2) != VECTOR_CST)
+    {
+      error_at (EXPR_LOCATION (exp),
+		"vector permutation requires vector constant");
+      goto exit_error;
+    }
+
+  switch (extract_vec_perm_cst (&d, arg2))
+    {
+    default:
+      gcc_unreachable();
+
+    case 0:
+      error_at (EXPR_LOCATION (exp), "invalid vector permutation constant");
+      goto exit_error;
+
+    case 3:
+      if (!operand_equal_p (arg0, arg1, 0))
+	{
+	  d.op0 = expand_expr (arg0, NULL_RTX, d.vmode, EXPAND_NORMAL);
+	  d.op0 = force_reg (d.vmode, d.op0);
+	  d.op1 = expand_expr (arg1, NULL_RTX, d.vmode, EXPAND_NORMAL);
+	  d.op1 = force_reg (d.vmode, d.op1);
+	  break;
+	}
+
+      /* The elements of PERM do not suggest that only the first operand
+	 is used, but both operands are identical.  Allow easier matching
+	 of the permutation by folding the permutation into the single
+	 input vector.  */
+      {
+	unsigned i, nelt = d.nelt;
+	for (i = 0; i < nelt; ++i)
+	  if (d.perm[i] >= nelt)
+	    d.perm[i] -= nelt;
+      }
+      /* FALLTHRU */
+
+    case 1:
+      d.op0 = expand_expr (arg0, NULL_RTX, d.vmode, EXPAND_NORMAL);
+      d.op0 = force_reg (d.vmode, d.op0);
+      d.op1 = d.op0;
+      break;
+
+    case 2:
+      d.op0 = expand_expr (arg1, NULL_RTX, d.vmode, EXPAND_NORMAL);
+      d.op0 = force_reg (d.vmode, d.op0);
+      d.op1 = d.op0;
+      break;
+    }
+ 
+  d.target = gen_reg_rtx (d.vmode);
+  if (ix86_expand_vec_perm_builtin_1 (&d))
+    return d.target;
+
+  /* For compiler generated permutations, we should never got here, because
+     the compiler should also be checking the ok hook.  But since this is a
+     builtin the user has access too, so don't abort.  */
+  switch (d.nelt)
+    {
+    case 2:
+      sorry ("vector permutation (%d %d)", d.perm[0], d.perm[1]);
+      break;
+    case 4:
+      sorry ("vector permutation (%d %d %d %d)",
+	     d.perm[0], d.perm[1], d.perm[2], d.perm[3]);
+      break;
+    case 8:
+      sorry ("vector permutation (%d %d %d %d %d %d %d %d)",
+	     d.perm[0], d.perm[1], d.perm[2], d.perm[3],
+	     d.perm[4], d.perm[5], d.perm[6], d.perm[7]);
+      break;
+    case 16:
+      sorry ("vector permutation "
+	     "(%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)",
+	     d.perm[0], d.perm[1], d.perm[2], d.perm[3],
+	     d.perm[4], d.perm[5], d.perm[6], d.perm[7],
+	     d.perm[8], d.perm[9], d.perm[10], d.perm[11],
+	     d.perm[12], d.perm[13], d.perm[14], d.perm[15]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+ exit_error:
+  return CONST0_RTX (d.vmode);
+}
+
+/* Implement targetm.vectorize.builtin_vec_perm_ok.  */
+
+static bool
+ix86_vectorize_builtin_vec_perm_ok (tree vec_type, tree mask)
+{
+  struct expand_vec_perm_d d;
+  int vec_mask;
+  bool ret, one_vec;
+
+  d.vmode = TYPE_MODE (vec_type);
+  d.nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = true;
+
+  /* Given sufficient ISA support we can just return true here
+     for selected vector modes.  */
+  if (GET_MODE_SIZE (d.vmode) == 16)
+    {
+      /* All implementable with a single vpperm insn.  */
+      if (TARGET_XOP)
+	return true;
+      /* All implementable with 2 pshufb + 1 ior.  */
+      if (TARGET_SSSE3)
+	return true;
+      /* All implementable with shufpd or unpck[lh]pd.  */
+      if (d.nelt == 2)
+	return true;
+    }
+
+  vec_mask = extract_vec_perm_cst (&d, mask);
+
+  /* This hook is cannot be called in response to something that the
+     user does (unlike the builtin expander) so we shouldn't ever see
+     an error generated from the extract.  */
+  gcc_assert (vec_mask > 0 && vec_mask <= 3);
+  one_vec = (vec_mask != 3);
+  
+  /* Implementable with shufps or pshufd.  */
+  if (one_vec && (d.vmode == V4SFmode || d.vmode == V4SImode))
+    return true;
+
+  /* Otherwise we have to go through the motions and see if we can
+     figure out how to generate the requested permutation.  */
+  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+  if (!one_vec)
+    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+  start_sequence ();
+  ret = ix86_expand_vec_perm_builtin_1 (&d);
+  end_sequence ();
+
+  return ret;
+}
+
+void
+ix86_expand_vec_extract_even_odd (rtx targ, rtx op0, rtx op1, unsigned odd)
+{
+  struct expand_vec_perm_d d;
+  unsigned i, nelt;
+
+  d.target = targ;
+  d.op0 = op0;
+  d.op1 = op1;
+  d.vmode = GET_MODE (targ);
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+
+  for (i = 0; i < nelt; ++i)
+    d.perm[i] = i * 2 + odd;
+
+  /* We'll either be able to implement the permutation directly...  */
+  if (expand_vec_perm_1 (&d))
+    return;
+
+  /* ... or we use the special-case patterns.  */
+  expand_vec_perm_even_odd_1 (&d, odd);
+}
+
 /* This function returns the calling abi specific va_list type node.
    It returns  the FNDECL specific va_list type.  */
 
@@ -29254,7 +30373,14 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST x86_builtin_vectorization_cost
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
+  ix86_builtin_vectorization_cost
+#undef TARGET_VECTORIZE_BUILTIN_VEC_PERM
+#define TARGET_VECTORIZE_BUILTIN_VEC_PERM \
+  ix86_vectorize_builtin_vec_perm
+#undef TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK
+#define TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK \
+  ix86_vectorize_builtin_vec_perm_ok
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function

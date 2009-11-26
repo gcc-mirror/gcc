@@ -2562,7 +2562,9 @@ proc check_effective_target_vect_extract_even_odd { } {
         verbose "check_effective_target_vect_extract_even_odd: using cached result" 2
     } else {
         set et_vect_extract_even_odd_saved 0 
-        if { [istarget powerpc*-*-*]
+        if { [istarget powerpc*-*-*] 
+             || [istarget i?86-*-*]
+             || [istarget x86_64-*-*]
              || [istarget spu-*-*] } {
            set et_vect_extract_even_odd_saved 1
         }

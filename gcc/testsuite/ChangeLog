@@ -1,5 +1,20 @@
 2009-11-25  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/vect/slp-21.c: Succeed with vect_extract_even_odd too.
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_extract_even_odd): Add x86.
+
+	* gcc.target/i386/isa-check.h: New.
+	* gcc.target/i386/vperm-2-2.inc, gcc.target/i386/vperm-4-1.inc,
+	gcc.target/i386/vperm-4-2.inc, gcc.target/i386/vperm-v2df.c,
+	gcc.target/i386/vperm-v2di.c, gcc.target/i386/vperm-v4sf-1.c,
+	gcc.target/i386/vperm-v4sf-2.c, gcc.target/i386/vperm-v4si-1.c,
+	gcc.target/i386/vperm-v4si-2.c, gcc.target/i386/vperm-v4si-2x.c,
+	gcc.target/i386/vperm.pl: New files.
+
+2009-11-25  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/vect/pr36493.c: Call check_vect.
 	* gcc.dg/vect/pr37539.c: Likewise.
 	* gcc.dg/vect/vect-nest-cycle-3.c: Call check_vect earlier.
