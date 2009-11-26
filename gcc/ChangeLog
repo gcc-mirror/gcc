@@ -1,5 +1,11 @@
 2009-11-26  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* cfgexpand (n_stack_vars_conflict): New static variable.
+	(triangular_index): Reduce likelyhood of overflow by performing
+	the division before the multiplication.
+	(resize_stack_vars_conflict): Call fatal_error if overflow
+	occurred in triangular_index.  Update n_stack_vars_conflict.
+
 	PR rtl-opt/38582
 	* regrename.c (struct du_chain): Remove member earlyclobber.
 	(scan_rtx_reg): Don't set it.  Remove argument earlyclobber,
