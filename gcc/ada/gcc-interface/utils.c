@@ -1157,6 +1157,23 @@ copy_type (tree type)
 {
   tree new_type = copy_node (type);
 
+  /* Unshare the language-specific data.  */
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      TYPE_LANG_SPECIFIC (new_type) = NULL;
+      SET_TYPE_LANG_SPECIFIC (new_type, GET_TYPE_LANG_SPECIFIC (type));
+    }
+
+  /* And the contents of the language-specific slot if needed.  */
+  if ((INTEGRAL_TYPE_P (type) || TREE_CODE (type) == REAL_TYPE)
+      && TYPE_RM_VALUES (type))
+    {
+      TYPE_RM_VALUES (new_type) = NULL_TREE;
+      SET_TYPE_RM_SIZE (new_type, TYPE_RM_SIZE (type));
+      SET_TYPE_RM_MIN_VALUE (new_type, TYPE_RM_MIN_VALUE (type));
+      SET_TYPE_RM_MAX_VALUE (new_type, TYPE_RM_MAX_VALUE (type));
+    }
+
   /* copy_node clears this field instead of copying it, because it is
      aliased with TREE_CHAIN.  */
   TYPE_STUB_DECL (new_type) = TYPE_STUB_DECL (type);

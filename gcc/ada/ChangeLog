@@ -1,5 +1,10 @@
 2009-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (copy_type): Unshare the language-specific data
+	and the contents of the language-specific slot if needed.
+
+2009-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_In>: Set the source location
 	of the operator on both branches of the test in the generic case.
 
