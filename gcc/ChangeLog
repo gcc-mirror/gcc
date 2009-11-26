@@ -1,3 +1,9 @@
+2009-11-26  Michael Matz  <matz@suse.de>
+
+	* builtins.c (expand_builtin_printf, expand_builtin_fprintf,
+	expand_builtin_sprintf): Remove.
+	(expand_builtin): Don't call them.
+
 2009-11-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dce.c (perform_tree_ssa_dce): Allocate visited bitmap.
