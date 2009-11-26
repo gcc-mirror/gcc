@@ -1347,6 +1347,25 @@ gfc_match_literal_constant (gfc_expr **result, int signflag)
 }
 
 
+/* This checks if a symbol is the return value of an encompassing function.
+   Function nesting can be maximally two levels deep, but we may have
+   additional local namespaces like BLOCK etc.  */
+
+bool
+gfc_is_function_return_value (gfc_symbol *sym, gfc_namespace *ns)
+{
+  if (!sym->attr.function || (sym->result != sym))
+    return false;
+  while (ns)
+    {
+      if (ns->proc_name == sym)
+	return true;
+      ns = ns->parent;
+    }
+  return false;
+}
+
+
 /* Match a single actual argument value.  An actual argument is
    usually an expression, but can also be a procedure name.  If the
    argument is a single name, it is not always possible to tell
@@ -1415,9 +1434,7 @@ match_actual_arg (gfc_expr **result)
 	     is being defined, then we have a variable.  */
 	  if (sym->attr.function && sym->result == sym)
 	    {
-	      if (gfc_current_ns->proc_name == sym
-		  || (gfc_current_ns->parent != NULL
-		      && gfc_current_ns->parent->proc_name == sym))
+	      if (gfc_is_function_return_value (sym, gfc_current_ns))
 		break;
 
 	      if (sym->attr.entry
@@ -2521,9 +2538,7 @@ gfc_match_rvalue (gfc_expr **result)
 	  return MATCH_ERROR;
 	}
 
-      if (gfc_current_ns->proc_name == sym
-	  || (gfc_current_ns->parent != NULL
-	      && gfc_current_ns->parent->proc_name == sym))
+      if (gfc_is_function_return_value (sym, gfc_current_ns))
 	goto variable;
 
       if (sym->attr.entry
@@ -2998,10 +3013,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       if (sym->attr.function
           && !sym->attr.external
           && sym->result == sym
-          && ((sym == gfc_current_ns->proc_name
-               && sym == gfc_current_ns->proc_name->result)
-              || (gfc_current_ns->parent
-                  && sym == gfc_current_ns->parent->proc_name->result)
+          && (gfc_is_function_return_value (sym, gfc_current_ns)
               || (sym->attr.entry
                   && sym->ns == gfc_current_ns)
               || (sym->attr.entry

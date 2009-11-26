@@ -1,3 +1,16 @@
+2009-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42048
+	PR fortran/42167
+	* gfortran.h (gfc_is_function_return_value): New prototype.
+	* match.c (gfc_match_call): Use new function
+	'gfc_is_function_return_value'.
+	* primary.c (gfc_is_function_return_value): New function to check if a
+	symbol is the return value of an encompassing function.
+	(match_actual_arg,gfc_match_rvalue,match_variable): Use new function
+	'gfc_is_function_return_value'.
+	* resolve.c (resolve_common_blocks,resolve_actual_arglist): Ditto.
+
 2009-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/42162

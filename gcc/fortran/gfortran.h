@@ -2751,6 +2751,7 @@ symbol_attribute gfc_expr_attr (gfc_expr *);
 match gfc_match_rvalue (gfc_expr **);
 match gfc_match_varspec (gfc_expr*, int, bool, bool);
 int gfc_check_digit (char, int);
+bool gfc_is_function_return_value (gfc_symbol *, gfc_namespace *);
 
 /* trans.c */
 void gfc_generate_code (gfc_namespace *);

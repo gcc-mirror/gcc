@@ -776,7 +776,7 @@ resolve_common_blocks (gfc_symtree *common_root)
     gfc_error ("COMMON block '%s' at %L is also an intrinsic procedure",
 	       sym->name, &common_root->n.common->where);
   else if (sym->attr.result
-	   ||(sym->attr.function && gfc_current_ns->proc_name == sym))
+	   || gfc_is_function_return_value (sym, gfc_current_ns))
     gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' at %L "
 		    "that is also a function result", sym->name,
 		    &common_root->n.common->where);
@@ -1400,10 +1400,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  /* If the symbol is the function that names the current (or
 	     parent) scope, then we really have a variable reference.  */
 
-	  if (sym->attr.function && sym->result == sym
-	      && (sym->ns->proc_name == sym
-		  || (sym->ns->parent != NULL
-		      && sym->ns->parent->proc_name == sym)))
+	  if (gfc_is_function_return_value (sym, sym->ns))
 	    goto got_variable;
 
 	  /* If all else fails, see if we have a specific intrinsic.  */
