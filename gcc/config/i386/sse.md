@@ -5227,11 +5227,15 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_expand "mulv16qi3"
+(define_insn_and_split "mulv16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "")
 	(mult:V16QI (match_operand:V16QI 1 "register_operand" "")
 		    (match_operand:V16QI 2 "register_operand" "")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2
+   && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   rtx t[6];
   int i;
@@ -5592,7 +5596,7 @@
 		   (match_operand:V4SI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
-  if (TARGET_SSE4_1 || TARGET_XOP)
+  if (TARGET_SSE4_1 || TARGET_AVX)
     ix86_fixup_binary_operands_no_copy (MULT, V4SImode, operands);
 })
 
@@ -5621,7 +5625,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "")
 	(mult:V4SI (match_operand:V4SI 1 "register_operand" "")
 		   (match_operand:V4SI 2 "register_operand" "")))]
-  "TARGET_SSE2 && !TARGET_SSE4_1 && !TARGET_XOP
+  "TARGET_SSE2 && !TARGET_SSE4_1 && !TARGET_AVX
    && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -5683,17 +5687,20 @@
   rtx t1, t2, t3, t4, t5, t6, thirtytwo;
   rtx op0, op1, op2;
 
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+
   if (TARGET_XOP)
     {
       /* op1: A,B,C,D, op2: E,F,G,H */
-      op0 = operands[0];
-      op1 = gen_lowpart (V4SImode, operands[1]);
-      op2 = gen_lowpart (V4SImode, operands[2]);
+      op1 = gen_lowpart (V4SImode, op1);
+      op2 = gen_lowpart (V4SImode, op2);
+
       t1 = gen_reg_rtx (V4SImode);
       t2 = gen_reg_rtx (V4SImode);
-      t3 = gen_reg_rtx (V4SImode);
+      t3 = gen_reg_rtx (V2DImode);
       t4 = gen_reg_rtx (V2DImode);
-      t5 = gen_reg_rtx (V2DImode);
 
       /* t1: B,A,D,C */
       emit_insn (gen_sse2_pshufd_1 (t1, op1,
@@ -5702,55 +5709,50 @@
 				    GEN_INT (3),
 				    GEN_INT (2)));
 
-      /* t2: 0 */
-      emit_move_insn (t2, CONST0_RTX (V4SImode));
-
-      /* t3: (B*E),(A*F),(D*G),(C*H) */
-      emit_insn (gen_xop_pmacsdd (t3, t1, op2, t2));
+      /* t2: (B*E),(A*F),(D*G),(C*H) */
+      emit_insn (gen_mulv4si3 (t2, t1, op2));
 
       /* t4: (B*E)+(A*F), (D*G)+(C*H) */
-      emit_insn (gen_xop_phadddq (t4, t3));
+      emit_insn (gen_xop_phadddq (t3, t2));
 
       /* t5: ((B*E)+(A*F))<<32, ((D*G)+(C*H))<<32 */
-      emit_insn (gen_ashlv2di3 (t5, t4, GEN_INT (32)));
+      emit_insn (gen_ashlv2di3 (t4, t3, GEN_INT (32)));
 
       /* op0: (((B*E)+(A*F))<<32)+(B*F), (((D*G)+(C*H))<<32)+(D*H) */
-      emit_insn (gen_xop_pmacsdql (op0, op1, op2, t5));
-      DONE;
+      emit_insn (gen_xop_pmacsdql (op0, op1, op2, t4));
     }
+  else
+    {
+      t1 = gen_reg_rtx (V2DImode);
+      t2 = gen_reg_rtx (V2DImode);
+      t3 = gen_reg_rtx (V2DImode);
+      t4 = gen_reg_rtx (V2DImode);
+      t5 = gen_reg_rtx (V2DImode);
+      t6 = gen_reg_rtx (V2DImode);
+      thirtytwo = GEN_INT (32);
 
-  op0 = operands[0];
-  op1 = operands[1];
-  op2 = operands[2];
-  t1 = gen_reg_rtx (V2DImode);
-  t2 = gen_reg_rtx (V2DImode);
-  t3 = gen_reg_rtx (V2DImode);
-  t4 = gen_reg_rtx (V2DImode);
-  t5 = gen_reg_rtx (V2DImode);
-  t6 = gen_reg_rtx (V2DImode);
-  thirtytwo = GEN_INT (32);
+      /* Multiply low parts.  */
+      emit_insn (gen_sse2_umulv2siv2di3 (t1, gen_lowpart (V4SImode, op1),
+				         gen_lowpart (V4SImode, op2)));
 
-  /* Multiply low parts.  */
-  emit_insn (gen_sse2_umulv2siv2di3 (t1, gen_lowpart (V4SImode, op1),
-				     gen_lowpart (V4SImode, op2)));
+      /* Shift input vectors left 32 bits so we can multiply high parts.  */
+      emit_insn (gen_lshrv2di3 (t2, op1, thirtytwo));
+      emit_insn (gen_lshrv2di3 (t3, op2, thirtytwo));
 
-  /* Shift input vectors left 32 bits so we can multiply high parts.  */
-  emit_insn (gen_lshrv2di3 (t2, op1, thirtytwo));
-  emit_insn (gen_lshrv2di3 (t3, op2, thirtytwo));
+      /* Multiply high parts by low parts.  */
+      emit_insn (gen_sse2_umulv2siv2di3 (t4, gen_lowpart (V4SImode, op1),
+					 gen_lowpart (V4SImode, t3)));
+      emit_insn (gen_sse2_umulv2siv2di3 (t5, gen_lowpart (V4SImode, op2),
+					 gen_lowpart (V4SImode, t2)));
 
-  /* Multiply high parts by low parts.  */
-  emit_insn (gen_sse2_umulv2siv2di3 (t4, gen_lowpart (V4SImode, op1),
-				     gen_lowpart (V4SImode, t3)));
-  emit_insn (gen_sse2_umulv2siv2di3 (t5, gen_lowpart (V4SImode, op2),
-				     gen_lowpart (V4SImode, t2)));
+      /* Shift them back.  */
+      emit_insn (gen_ashlv2di3 (t4, t4, thirtytwo));
+      emit_insn (gen_ashlv2di3 (t5, t5, thirtytwo));
 
-  /* Shift them back.  */
-  emit_insn (gen_ashlv2di3 (t4, t4, thirtytwo));
-  emit_insn (gen_ashlv2di3 (t5, t5, thirtytwo));
-
-  /* Add the three parts together.  */
-  emit_insn (gen_addv2di3 (t6, t1, t4));
-  emit_insn (gen_addv2di3 (op0, t6, t5));
+      /* Add the three parts together.  */
+      emit_insn (gen_addv2di3 (t6, t1, t4));
+      emit_insn (gen_addv2di3 (op0, t6, t5));
+    }
   DONE;
 })
 

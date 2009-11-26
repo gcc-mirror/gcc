@@ -31,6 +31,6 @@ int main ()
   exit (0);
 }
 
-/* { dg-final { scan-assembler "vpmacsdd" } } */
+/* { dg-final { scan-assembler "vpmulld" } } */
 /* { dg-final { scan-assembler "vphadddq" } } */
 /* { dg-final { scan-assembler "vpmacsdql" } } */
