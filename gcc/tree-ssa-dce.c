@@ -1377,6 +1377,7 @@ perform_tree_ssa_dce (bool aggressive)
   longest_chain = 0;
   total_chain = 0;
   chain_ovfl = false;
+  visited = BITMAP_ALLOC (NULL);
   propagate_necessity (el);
   BITMAP_FREE (visited);
 
