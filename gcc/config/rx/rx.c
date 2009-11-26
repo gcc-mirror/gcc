@@ -1190,7 +1190,7 @@ mark_frame_related (rtx insn)
     {
       unsigned int i;
 
-      for (i = 0; i < XVECLEN (insn, 0); i++)
+      for (i = 0; i < (unsigned) XVECLEN (insn, 0); i++)
 	RTX_FRAME_RELATED_P (XVECEXP (insn, 0, i)) = 1;
     }
 }
@@ -1454,8 +1454,26 @@ rx_expand_epilogue (bool is_sibcall)
   unsigned int reg;
   unsigned HOST_WIDE_INT total_size;
 
+  /* FIXME: We do not support indirect sibcalls at the moment becaause we
+     cannot guarantee that the register holding the function address is a
+     call-used register.  If it is a call-saved register then the stack
+     pop instructions generated in the epilogue will corrupt the address
+     before it is used.
+
+     Creating a new call-used-only register class works but then the
+     reload pass gets stuck because it cannot always find a call-used
+     register for spilling sibcalls.
+
+     The other possible solution is for this pass to scan forward for the
+     sibcall instruction (if it has been generated) and work out if it
+     is an indirect sibcall using a call-saved register.  If it is then
+     the address can copied into a call-used register in this epilogue
+     code and the sibcall instruction modified to use that register.  */
+
   if (is_naked_func (NULL_TREE))
     {
+      gcc_assert (! is_sibcall);
+
       /* Naked functions use their own, programmer provided epilogues.
 	 But, in order to keep gcc happy we have to generate some kind of
 	 epilogue RTL.  */
@@ -1547,9 +1565,15 @@ rx_expand_epilogue (bool is_sibcall)
 	}
 
       if (is_fast_interrupt_func (NULL_TREE))
-	emit_jump_insn (gen_fast_interrupt_return ());
+	{
+	  gcc_assert (! is_sibcall);
+	  emit_jump_insn (gen_fast_interrupt_return ());
+	}
       else if (is_interrupt_func (NULL_TREE))
-	emit_jump_insn (gen_exception_return ());
+	{
+	  gcc_assert (! is_sibcall);
+	  emit_jump_insn (gen_exception_return ());
+	}
       else if (! is_sibcall)
 	emit_jump_insn (gen_simple_return ());
 
@@ -2107,6 +2131,26 @@ rx_func_attr_inlinable (const_tree decl)
     &&   ! is_naked_func (decl);  
 }
 
+/* Return nonzero if it is ok to make a tail-call to DECL,
+   a function_decl or NULL if this is an indirect call, using EXP  */
+
+static bool
+rx_function_ok_for_sibcall (tree decl, tree exp)
+{
+  /* Do not allow indirect tailcalls.  The
+     sibcall patterns do not support them.  */
+  if (decl == NULL)
+    return false;
+
+  /* Never tailcall from inside interrupt handlers or naked functions.  */
+  if (is_fast_interrupt_func (NULL_TREE)
+      || is_interrupt_func (NULL_TREE)
+      || is_naked_func (NULL_TREE))
+    return false;
+
+  return true;
+}
+
 static void
 rx_file_start (void)
 {
@@ -2484,6 +2528,9 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 
 #undef  TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
 #define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P 	rx_func_attr_inlinable
+
+#undef  TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL		rx_function_ok_for_sibcall
 
 #undef  TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION		rx_set_current_function
