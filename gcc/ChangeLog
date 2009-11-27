@@ -1,3 +1,29 @@
+2009-11-27  Nick Clifton  <nickc@redhat.com>
+
+	* longlong.h (count_leading_zeros): Define macro for stormy16
+	target.
+	(COUNT_LEADING_ZEROS_0): Likewise.	
+	* config/stormy16/stormy16-lib2.c: Arrange for separate
+	compilation of each function.
+	(__ffshi2): New function.
+	(__stormy16_count_leading_zeros): New function.
+	* config/stormy16/t-stormy16 (LIB2FUNCS_EXTRA): Use stub files to
+	compile each function into its own object file.
+	(stormy16-lib2-ashlsi3.c): New stub file.
+	(stormy16-lib2-ashrsi3.c): New stub file.
+	(stormy16-lib2-clzhi2.c): New stub file.
+	(stormy16-lib2-count-leading-zeros.c): New stub file.
+	(stormy16-lib2-ctzhi2.c): New stub file.
+	(stormy16-lib2-divsi3.c): New stub file.
+	(stormy16-lib2-ffshi2.c): New stub file.
+	(stormy16-lib2-lshrsi3.c): New stub file.
+	(stormy16-lib2-modsi3.c): New stub file.
+	(stormy16-lib2-parityhi2.c): New stub file.
+	(stormy16-lib2-popcounthi2.c): New stub file.
+	(stormy16-lib2-udivmodsi4.c): New stub file.
+	(stormy16-lib2-udivsi3.c): New stub file.
+	(stormy16-lib2-umodsi3.c): New stub file.
+
 2009-11-27  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sse.md (vec_interleave_highv16qi,
