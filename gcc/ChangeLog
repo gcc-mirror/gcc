@@ -1,3 +1,19 @@
+2009-11-27  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (vec_interleave_highv16qi,
+	vec_interleave_lowv16qi, vec_interleave_highv8hi,
+	vec_interleave_lowv8hi, vec_interleave_highv4si,
+	vec_interleave_lowv4si, vec_interleave_highv2di,
+	vec_interleave_lowv2di, vec_interleave_highv4sf,
+	vec_interleave_lowv4sf, vec_interleave_highv2df,
+	vec_interleave_lowv2df): Remove expanders.
+	(sse_unpcklps, sse_unpckhps, sse2_unpckhpd_exp, sse2_unpcklpd_exp,
+	sse2_punpckhqdq, sse2_punpcklqdq, sse2_punpckhbw, sse2_punpcklbw,
+	sse2_punpckhwd, sse2_punpcklwd, sse2_punpckhdq, sse2_punpckldq):
+	Rename to their proper vec_interleave equivalent.  Update all users
+	to the new name.
+	* config/i386/i386.c, config/i386/i386.md: Update all users.
+
 2009-11-27  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/42084
