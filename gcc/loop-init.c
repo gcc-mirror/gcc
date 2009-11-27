@@ -265,7 +265,7 @@ struct rtl_opt_pass pass_rtl_move_loop_invariants =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_LOOP,                              /* tv_id */
+  TV_LOOP_MOVE_INVARIANTS,              /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -302,7 +302,7 @@ struct rtl_opt_pass pass_rtl_unswitch =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_LOOP,                              /* tv_id */
+  TV_LOOP_UNSWITCH,                     /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -350,7 +350,7 @@ struct rtl_opt_pass pass_rtl_unroll_and_peel_loops =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_LOOP,                              /* tv_id */
+  TV_LOOP_UNROLL,                       /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -391,7 +391,7 @@ struct rtl_opt_pass pass_rtl_doloop =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_LOOP,                              /* tv_id */
+  TV_LOOP_DOLOOP,                       /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
