@@ -1,3 +1,8 @@
+2009-11-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42006
+	* gcc.c-torture/execute/pr42006.c: New test.
+
 2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38656

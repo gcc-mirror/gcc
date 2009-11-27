@@ -1,3 +1,11 @@
+2009-11-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42006
+	* tree-sra.c (get_replaced_param_substitute): Call create_tmp_var
+	instead of create_tmp_var.  Set DECL_GIMPLE_REG_P to one manually
+	for vector and complex types.
+	(get_adjustment_for_base): Describe return value in the comment.
+
 2009-11-27  Nick Clifton  <nickc@redhat.com>
 
 	* longlong.h (count_leading_zeros): Define macro for stormy16

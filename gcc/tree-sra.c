@@ -3478,7 +3478,10 @@ get_replaced_param_substitute (struct ipa_parm_adjustment *adj)
     {
       char *pretty_name = make_fancy_name (adj->base);
 
-      repl = make_rename_temp (TREE_TYPE (adj->base), "ISR");
+      repl = create_tmp_var (TREE_TYPE (adj->base), "ISR");
+      if (TREE_CODE (TREE_TYPE (repl)) == COMPLEX_TYPE
+	  || TREE_CODE (TREE_TYPE (repl)) == VECTOR_TYPE)
+	DECL_GIMPLE_REG_P (repl) = 1;
       DECL_NAME (repl) = get_identifier (pretty_name);
       obstack_free (&name_obstack, pretty_name);
 
@@ -3516,7 +3519,8 @@ get_adjustment_for_base (ipa_parm_adjustment_vec adjustments, tree base)
 /* Callback for scan_function.  If the statement STMT defines an SSA_NAME of a
    parameter which is to be removed because its value is not used, replace the
    SSA_NAME with a one relating to a created VAR_DECL and replace all of its
-   uses too.  DATA is a pointer to an adjustments vector.  */
+   uses too and return true (update_stmt is then issued for the statement by
+   the caller).  DATA is a pointer to an adjustments vector.  */
 
 static bool
 replace_removed_params_ssa_names (gimple stmt, void *data)
