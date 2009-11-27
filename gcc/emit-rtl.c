@@ -3213,8 +3213,8 @@ last_call_insn (void)
 }
 
 /* Find the next insn after INSN that really does something.  This routine
-   does not look inside SEQUENCEs.  Until reload has completed, this is the
-   same as next_real_insn.  */
+   does not look inside SEQUENCEs.  After reload this also skips over
+   standalone USE and CLOBBER insn.  */
 
 int
 active_insn_p (const_rtx insn)
@@ -3240,8 +3240,8 @@ next_active_insn (rtx insn)
 }
 
 /* Find the last insn before INSN that really does something.  This routine
-   does not look inside SEQUENCEs.  Until reload has completed, this is the
-   same as prev_real_insn.  */
+   does not look inside SEQUENCEs.  After reload this also skips over
+   standalone USE and CLOBBER insn.  */
 
 rtx
 prev_active_insn (rtx insn)
