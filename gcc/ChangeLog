@@ -1,3 +1,13 @@
+2009-11-27  Richard Guenther  <rguenther@suse.de>
+
+	* timevar.def (TV_LOOP_MOVE_INVARIANTS, TV_LOOP_UNSWITCH,
+	TV_LOOP_UNROLL, TV_LOOP_DOLOOP): New timevars.
+	* loop-init.c (pass_rtl_move_loop_invariants): Use
+	TV_LOOP_MOVE_INVARIANTS.
+	(pass_rtl_unswitch): Use TV_LOOP_UNSWITCH.
+	(pass_rtl_unroll_and_peel): Use TV_LOOP_UNROLL.
+	(pass_rtl_doloop): Use TV_LOOP_DOLOOP.
+
 2009-11-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* emit-rtl.c (next_active_insn, prev_active_insn): Correct
