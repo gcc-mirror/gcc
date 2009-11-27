@@ -1092,6 +1092,10 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_ws_string (pp, "...");
       break;
 
+    case TEMPLATE_ID_EXPR:
+      pp_cxx_template_id (pp, t);
+      break;
+
     case NONTYPE_ARGUMENT_PACK:
       {
 	tree args = ARGUMENT_PACK_ARGS (t);
