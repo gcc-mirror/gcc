@@ -1646,29 +1646,36 @@ explicit_class_specialization_p (tree type)
   return !uses_template_parms (CLASSTYPE_TI_ARGS (type));
 }
 
+/* Print the list of overloaded FNS in an error message.   */
+
+static void
+print_overloaded_functions (tree fns, const char **str)
+{
+  tree fn;
+  for (fn = fns; fn; fn = OVL_NEXT (fn))
+    {
+      if (TREE_CODE (fn) == TREE_LIST)
+	print_candidates (fn);
+      else
+	error ("%s %+#D", *str, OVL_CURRENT (fn));
+      *str = "               ";
+    }
+}
+
 /* Print the list of candidate FNS in an error message.  */
 
 void
 print_candidates (tree fns)
 {
-  tree fn;
-  tree f;
-
   const char *str = "candidates are:";
 
   if (is_overloaded_fn (fns))
+    print_overloaded_functions (fns, &str);
+  else
     {
-      for (f = fns; f; f = OVL_NEXT (f))
-	{
-	  error ("%s %+#D", str, OVL_CURRENT (f));
-	  str = "               ";
-	}
-    }
-  else for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
-    {
-      for (f = TREE_VALUE (fn); f; f = OVL_NEXT (f))
-	error ("%s %+#D", str, OVL_CURRENT (f));
-      str = "               ";
+      tree fn;
+      for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
+	print_overloaded_functions (TREE_VALUE (fn), &str);
     }
 }
 

@@ -15738,14 +15738,8 @@ cp_parser_class_name (cp_parser *parser,
 					identifier_token->location);
 	  if (ambiguous_decls)
 	    {
-	      error_at (identifier_token->location,
-			"reference to %qD is ambiguous", identifier);
-	      print_candidates (ambiguous_decls);
 	      if (cp_parser_parsing_tentatively (parser))
-		{
-		  identifier_token->ambiguous_p = true;
-		  cp_parser_simulate_error (parser);
-		}
+		cp_parser_simulate_error (parser);
 	      return error_mark_node;
 	    }
 	}

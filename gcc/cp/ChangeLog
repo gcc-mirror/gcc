@@ -1,3 +1,11 @@
+2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/35112
+	* pt.c (print_overloaded_functions): New.
+	(print_candidates): Call the latter.
+	* parser.c (cp_parser_class_name): Do not duplicate the diagnostics
+	after the cp_parser_lookup_name call.
+
 2009-11-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42026, DR 239

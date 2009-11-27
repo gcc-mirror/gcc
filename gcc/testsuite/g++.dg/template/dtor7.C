@@ -1,10 +1,10 @@
 // PR c++/40373
 // { dg-compile }
 
-struct A;	// { dg-bogus "candidates are" "" { xfail *-*-* } }
+struct A;
 namespace
 {
-  struct A;	// { dg-bogus "struct" "" { xfail *-*-* } }
+  struct A;
 }
 
 struct B {};
@@ -20,5 +20,3 @@ bar ()
 {
   foo (B ());	// { dg-bogus "instantiated from here" "" { xfail *-*-* } }
 }
-
-// { dg-bogus "is ambiguous" "" { xfail *-*-* } 15 }

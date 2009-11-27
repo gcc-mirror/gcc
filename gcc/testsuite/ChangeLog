@@ -1,3 +1,11 @@
+2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/35112
+	* g++.dg/parse/crash53.C: New.
+	* g++.dg/parse/error17.C: Adjust, error messages are not
+	duplicated anymore.
+	* g++.dg/template/dtor7.C: Remove xfail-ed dg-bogus directives.
+
 2009-11-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/vperm-v4sf-1.c (dg-options): Use -msse2.
