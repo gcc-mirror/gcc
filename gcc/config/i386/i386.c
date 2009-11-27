@@ -8844,7 +8844,7 @@ ix86_emit_restore_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
 {
   int regno;
   rtx base_address = gen_rtx_MEM (TImode, pointer);
-  rtx mem, insn;
+  rtx mem;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (SSE_REGNO_P (regno) && ix86_save_reg (regno, maybe_eh_return))
@@ -8865,7 +8865,7 @@ ix86_emit_restore_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
 	  }
 	mem = adjust_address (base_address, TImode, offset);
 	set_mem_align (mem, 128);
-	insn = emit_move_insn (reg, mem);
+	emit_move_insn (reg, mem);
 	offset += 16;
 
 	ix86_add_cfa_restore_note (NULL_RTX, reg, red_offset);
