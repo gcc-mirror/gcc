@@ -1,3 +1,12 @@
+2009-11-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (last_scheduled_insn): New variable.
+	(s390_fpload_toreg, s390_z10_prevent_earlyload_conflicts): New
+	functions.
+	(s390_sched_reorder, s390_sched_variable_issue): New functions.
+	(TARGET_SCHED_VARIABLE_ISSUE, TARGET_SCHED_REORDER): Target hooks
+	defined.
+
 2009-11-27  Michael Matz  <matz@suse.de>
 
 	PR c++/41906

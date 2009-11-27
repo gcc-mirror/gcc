@@ -224,6 +224,9 @@ struct processor_costs z10_cost =
 
 extern int reload_completed;
 
+/* Kept up to date using the SCHED_VARIABLE_ISSUE hook.  */
+static rtx last_scheduled_insn;
+
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
    form
@@ -8895,7 +8898,7 @@ s390_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 {
   rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
   rtx mem;
-  
+
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (2*UNITS_PER_WORD), BLOCK_OP_NORMAL);
 
@@ -10038,6 +10041,119 @@ s390_reorg (void)
     }
 }
 
+/* Return true if INSN is a fp load insn writing register REGNO.  */
+static inline bool
+s390_fpload_toreg (rtx insn, unsigned int regno)
+{
+  rtx set;
+  enum attr_type flag = s390_safe_attr_type (insn);
+
+  if (flag != TYPE_FLOADSF && flag != TYPE_FLOADDF)
+    return false;
+
+  set = single_set (insn);
+
+  if (set == NULL_RTX)
+    return false;
+
+  if (!REG_P (SET_DEST (set)) || !MEM_P (SET_SRC (set)))
+    return false;
+
+  if (REGNO (SET_DEST (set)) != regno)
+    return false;
+
+  return true;
+}
+
+/* This value describes the distance to be avoided between an
+   aritmetic fp instruction and an fp load writing the same register.
+   Z10_EARLYLOAD_DISTANCE - 1 as well as Z10_EARLYLOAD_DISTANCE + 1 is
+   fine but the exact value has to be avoided. Otherwise the FP
+   pipeline will throw an exception causing a major penalty.  */
+#define Z10_EARLYLOAD_DISTANCE 7
+
+/* Rearrange the ready list in order to avoid the situation described
+   for Z10_EARLYLOAD_DISTANCE.  A problematic load instruction is
+   moved to the very end of the ready list.  */
+static void
+s390_z10_prevent_earlyload_conflicts (rtx *ready, int *nready_p)
+{
+  unsigned int regno;
+  int nready = *nready_p;
+  rtx tmp;
+  int i;
+  rtx insn;
+  rtx set;
+  enum attr_type flag;
+  int distance;
+
+  /* Skip DISTANCE - 1 active insns.  */
+  for (insn = last_scheduled_insn, distance = Z10_EARLYLOAD_DISTANCE - 1;
+       distance > 0 && insn != NULL_RTX;
+       distance--, insn = prev_active_insn (insn))
+    if (CALL_P (insn) || JUMP_P (insn))
+      return;
+
+  if (insn == NULL_RTX)
+    return;
+
+  set = single_set (insn);
+
+  if (set == NULL_RTX || !REG_P (SET_DEST (set))
+      || GET_MODE_CLASS (GET_MODE (SET_DEST (set))) != MODE_FLOAT)
+    return;
+
+  flag = s390_safe_attr_type (insn);
+
+  if (flag == TYPE_FLOADSF || flag == TYPE_FLOADDF)
+    return;
+
+  regno = REGNO (SET_DEST (set));
+  i = nready - 1;
+
+  while (!s390_fpload_toreg (ready[i], regno) && i > 0)
+    i--;
+
+  if (!i)
+    return;
+
+  tmp = ready[i];
+  memmove (&ready[1], &ready[0], sizeof (rtx) * i);
+  ready[0] = tmp;
+}
+
+/* This function is called via hook TARGET_SCHED_REORDER before
+   issueing one insn from list READY which contains *NREADYP entries.
+   For target z10 it reorders load instructions to avoid early load
+   conflicts in the floating point pipeline  */
+static int
+s390_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		    rtx *ready, int *nreadyp, int clock ATTRIBUTE_UNUSED)
+{
+  if (s390_tune == PROCESSOR_2097_Z10)
+    if (reload_completed && *nreadyp > 1)
+      s390_z10_prevent_earlyload_conflicts (ready, nreadyp);
+
+  return s390_issue_rate ();
+}
+
+/* This function is called via hook TARGET_SCHED_VARIABLE_ISSUE after
+   the scheduler has issued INSN.  It stores the last issued insn into
+   last_scheduled_insn in order to make it available for
+   s390_sched_reorder.  */
+static int
+s390_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
+                           int verbose ATTRIBUTE_UNUSED,
+                         rtx insn, int more)
+{
+  last_scheduled_insn = insn;
+
+  if (GET_CODE (PATTERN (insn)) != USE
+      && GET_CODE (PATTERN (insn)) != CLOBBER)
+    return more - 1;
+  else
+    return more;
+}
 
 /* Initialize GCC target structure.  */
 
@@ -10094,6 +10210,11 @@ s390_reorg (void)
 #define TARGET_SCHED_ISSUE_RATE s390_issue_rate
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE s390_sched_variable_issue
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER s390_sched_reorder
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
