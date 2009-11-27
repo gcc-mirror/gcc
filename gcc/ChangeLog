@@ -1,3 +1,8 @@
+2009-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* opts.c (decode_options): If optimize is bigger than 255,
+	set it to 255.
+
 2009-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/42165
