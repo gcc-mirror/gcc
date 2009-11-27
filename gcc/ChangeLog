@@ -1,3 +1,14 @@
+2009-11-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/ia64/itanium1.md: Remove.
+	* config/ia64/ia64.md: Do not include it.
+	* config/ia64/ia64.c (ia64_handle_option): Remove "itanium",
+	"itanium1", and "merced" from the processor alias table.
+	(clocks, add_cycles): Remove global variables.
+	(ia64_sched_reorder2): Don't set/use them.
+	(ia64_dfa_new_cycle, ia64_h_i_d_extended, ia64_reorg): Likewise.
+	(bundling): Likewise. Remove extra pass for MMMUL/MMSHF.
+
 2009-11-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (last_scheduled_insn): New variable.

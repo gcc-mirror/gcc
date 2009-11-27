@@ -5435,8 +5435,6 @@ fix_range (const char *const_str)
 static bool
 ia64_handle_option (size_t code, const char *arg, int value)
 {
-  static bool warned_itanium1_deprecated;
-
   switch (code)
     {
     case OPT_mfixed_range_:
@@ -5457,9 +5455,6 @@ ia64_handle_option (size_t code, const char *arg, int value)
 	  }
 	const processor_alias_table[] =
 	  {
-	    {"itanium", PROCESSOR_ITANIUM},
-	    {"itanium1", PROCESSOR_ITANIUM},
-	    {"merced", PROCESSOR_ITANIUM},
 	    {"itanium2", PROCESSOR_ITANIUM2},
 	    {"mckinley", PROCESSOR_ITANIUM2},
 	  };
@@ -5470,16 +5465,6 @@ ia64_handle_option (size_t code, const char *arg, int value)
 	  if (!strcmp (arg, processor_alias_table[i].name))
 	    {
 	      ia64_tune = processor_alias_table[i].processor;
-	      if (ia64_tune == PROCESSOR_ITANIUM
-		  && ! warned_itanium1_deprecated)
-		{
-		  inform (0,
-			  "value %<%s%> for -mtune= switch is deprecated",
-			  arg);
-		  inform (0, "GCC 4.4 is the last release with "
-			  "Itanium1 tuning support");
-		  warned_itanium1_deprecated = true;
-		}
 	      break;
 	    }
 	if (i == pta_size)
@@ -6619,17 +6604,6 @@ static int stop_before_p = 0;
 
 static int clocks_length;
 
-/* The following array element values are cycles on which the
-   corresponding insn will be issued.  The array is used only for
-   Itanium1.  */
-
-static int *clocks;
-
-/* The following array element values are numbers of cycles should be
-   added to improve insn scheduling for MM_insns for Itanium1.  */
-
-static int *add_cycles;
-
 /* The following variable value is number of data speculations in progress.  */
 static int pending_data_specs = 0;
 
@@ -7003,8 +6977,6 @@ ia64_sched_reorder2 (FILE *dump ATTRIBUTE_UNUSED,
 		     int sched_verbose ATTRIBUTE_UNUSED, rtx *ready,
 		     int *pn_ready, int clock_var)
 {
-  if (ia64_tune == PROCESSOR_ITANIUM && reload_completed && last_scheduled_insn)
-    clocks [INSN_UID (last_scheduled_insn)] = clock_var;
   return ia64_dfa_sched_reorder (dump, sched_verbose, ready, pn_ready,
 				 clock_var, 1);
 }
@@ -7173,37 +7145,6 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
   else if (reload_completed)
     setup_clocks_p = TRUE;
 
-  if (setup_clocks_p && ia64_tune == PROCESSOR_ITANIUM
-      && GET_CODE (PATTERN (insn)) != ASM_INPUT
-      && asm_noperands (PATTERN (insn)) < 0)
-    {
-      enum attr_itanium_class c = ia64_safe_itanium_class (insn);
-
-      if (c != ITANIUM_CLASS_MMMUL && c != ITANIUM_CLASS_MMSHF)
-	{
-	  sd_iterator_def sd_it;
-	  dep_t dep;
-	  int d = -1;
-
-	  FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
-	    if (DEP_TYPE (dep) == REG_DEP_TRUE)
-	      {
-		enum attr_itanium_class dep_class;
-		rtx dep_insn = DEP_PRO (dep);
-
-		dep_class = ia64_safe_itanium_class (dep_insn);
-		if ((dep_class == ITANIUM_CLASS_MMMUL
-		     || dep_class == ITANIUM_CLASS_MMSHF)
-		    && last_clock - clocks [INSN_UID (dep_insn)] < 4
-		    && (d < 0
-			|| last_clock - clocks [INSN_UID (dep_insn)] < d))
-		  d = last_clock - clocks [INSN_UID (dep_insn)];
-	      }
-	  if (d >= 0)
-	    add_cycles [INSN_UID (insn)] = 3 - d;
-	}
-    }
-
   return 0;
 }
 
@@ -7215,17 +7156,7 @@ ia64_h_i_d_extended (void)
   if (stops_p != NULL) 
     {
       int new_clocks_length = get_max_uid () * 3 / 2;
-      
       stops_p = (char *) xrecalloc (stops_p, new_clocks_length, clocks_length, 1);
-      
-      if (ia64_tune == PROCESSOR_ITANIUM)
-	{
-	  clocks = (int *) xrecalloc (clocks, new_clocks_length, clocks_length,
-				      sizeof (int));
-	  add_cycles = (int *) xrecalloc (add_cycles, new_clocks_length,
-					  clocks_length, sizeof (int));
-	}
-      
       clocks_length = new_clocks_length;
     }
 }
@@ -8582,9 +8513,7 @@ ia64_add_bundle_selector_before (int template0, rtx insn)
    automaton state for each insn in chosen bundle states.
 
    So the algorithm makes two (forward and backward) passes through
-   EBB.  There is an additional forward pass through EBB for Itanium1
-   processor.  This pass inserts more nops to make dependency between
-   a producer insn and MMMUL/MMSHF at least 4 cycles long.  */
+   EBB.  */
 
 static void
 bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
@@ -8683,14 +8612,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	       || (GET_MODE (next_insn) == TImode
 		   && INSN_CODE (insn) != CODE_FOR_insn_group_barrier));
 	  if (type == TYPE_F || type == TYPE_B || type == TYPE_L
-	      || type == TYPE_S
-	      /* We need to insert 2 nops for cases like M_MII.  To
-		 guarantee issuing all insns on the same cycle for
-		 Itanium 1, we need to issue 2 nops after the first M
-		 insn (MnnMII where n is a nop insn).  */
-	      || ((type == TYPE_M || type == TYPE_A)
-		  && ia64_tune == PROCESSOR_ITANIUM
-		  && !bundle_end_p && pos == 1))
+	      || type == TYPE_S)
 	    issue_nops_and_insn (curr_state, 2, insn, bundle_end_p,
 				 only_bundle_end_p);
 	  issue_nops_and_insn (curr_state, 1, insn, bundle_end_p,
@@ -8726,9 +8648,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	       curr_state->before_nops_num, curr_state->after_nops_num,
 	       curr_state->accumulated_insns_num, curr_state->branch_deviation,
 	       curr_state->middle_bundle_stops,
-	       (ia64_tune == PROCESSOR_ITANIUM
-		? ((struct DFA_chip *) curr_state->dfa_state)->oneb_automaton_state
-		: ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state),
+	       ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state,
 	       INSN_UID (insn));
 	  }
     }
@@ -8791,9 +8711,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	     curr_state->before_nops_num, curr_state->after_nops_num,
 	     curr_state->accumulated_insns_num, curr_state->branch_deviation,
 	     curr_state->middle_bundle_stops,
-	     (ia64_tune == PROCESSOR_ITANIUM
-	      ? ((struct DFA_chip *) curr_state->dfa_state)->oneb_automaton_state
-	      : ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state),
+	     ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state,
 	     INSN_UID (insn));
 	}
       /* Find the position in the current bundle window.  The window can
@@ -8892,103 +8810,6 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	    }
 	}
     }
-  if (ia64_tune == PROCESSOR_ITANIUM)
-    /* Insert additional cycles for MM-insns (MMMUL and MMSHF).
-       Itanium1 has a strange design, if the distance between an insn
-       and dependent MM-insn is less 4 then we have a 6 additional
-       cycles stall.  So we make the distance equal to 4 cycles if it
-       is less.  */
-    for (insn = get_next_important_insn (NEXT_INSN (prev_head_insn), tail);
-	 insn != NULL_RTX;
-	 insn = next_insn)
-      {
-	gcc_assert (INSN_P (insn)
-		    && ia64_safe_itanium_class (insn) != ITANIUM_CLASS_IGNORE
-		    && GET_CODE (PATTERN (insn)) != USE
-		    && GET_CODE (PATTERN (insn)) != CLOBBER);
-	next_insn = get_next_important_insn (NEXT_INSN (insn), tail);
-	if (INSN_UID (insn) < clocks_length && add_cycles [INSN_UID (insn)])
-	  /* We found a MM-insn which needs additional cycles.  */
-	  {
-	    rtx last;
-	    int i, j, n;
-	    int pred_stop_p;
-
-	    /* Now we are searching for a template of the bundle in
-	       which the MM-insn is placed and the position of the
-	       insn in the bundle (0, 1, 2).  Also we are searching
-	       for that there is a stop before the insn.  */
-	    last = prev_active_insn (insn);
-	    pred_stop_p = recog_memoized (last) == CODE_FOR_insn_group_barrier;
-	    if (pred_stop_p)
-	      last = prev_active_insn (last);
-	    n = 0;
-	    for (;; last = prev_active_insn (last))
-	      if (recog_memoized (last) == CODE_FOR_bundle_selector)
-		{
-		  template0 = XINT (XVECEXP (PATTERN (last), 0, 0), 0);
-		  if (template0 == 9)
-		    /* The insn is in MLX bundle.  Change the template
-		       onto MFI because we will add nops before the
-		       insn.  It simplifies subsequent code a lot.  */
-		    PATTERN (last)
-		      = gen_bundle_selector (const2_rtx); /* -> MFI */
-		  break;
-		}
-	      else if (recog_memoized (last) != CODE_FOR_insn_group_barrier
-		       && (ia64_safe_itanium_class (last)
-			   != ITANIUM_CLASS_IGNORE))
-		n++;
-	    /* Some check of correctness: the stop is not at the
-	       bundle start, there are no more 3 insns in the bundle,
-	       and the MM-insn is not at the start of bundle with
-	       template MLX.  */
-	    gcc_assert ((!pred_stop_p || n)
-			&& n <= 2
-			&& (template0 != 9 || !n));
-	    /* Put nops after the insn in the bundle.  */
-	    for (j = 3 - n; j > 0; j --)
-	      ia64_emit_insn_before (gen_nop (), insn);
-	    /* It takes into account that we will add more N nops
-	       before the insn lately -- please see code below.  */
-	    add_cycles [INSN_UID (insn)]--;
-	    if (!pred_stop_p || add_cycles [INSN_UID (insn)])
-	      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
-				     insn);
-	    if (pred_stop_p)
-	      add_cycles [INSN_UID (insn)]--;
-	    for (i = add_cycles [INSN_UID (insn)]; i > 0; i--)
-	      {
-		/* Insert "MII;" template.  */
-		ia64_emit_insn_before (gen_bundle_selector (const0_rtx),
-				       insn);
-		ia64_emit_insn_before (gen_nop (), insn);
-		ia64_emit_insn_before (gen_nop (), insn);
-		if (i > 1)
-		  {
-		    /* To decrease code size, we use "MI;I;"
-		       template.  */
-		    ia64_emit_insn_before
-		      (gen_insn_group_barrier (GEN_INT (3)), insn);
-		    i--;
-		  }
-		ia64_emit_insn_before (gen_nop (), insn);
-		ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
-				       insn);
-	      }
-	    /* Put the MM-insn in the same slot of a bundle with the
-	       same template as the original one.  */
-	    ia64_add_bundle_selector_before (template0, insn);
-	    /* To put the insn in the same slot, add necessary number
-	       of nops.  */
-	    for (j = n; j > 0; j --)
-	      ia64_emit_insn_before (gen_nop (), insn);
-	    /* Put the stop if the original bundle had it.  */
-	    if (pred_stop_p)
-	      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
-				     insn);
-	  }
-      }
 
 #ifdef ENABLE_CHECKING
   {
@@ -9383,11 +9204,7 @@ ia64_reorg (void)
       recog_memoized (ia64_nop);
       clocks_length = get_max_uid () + 1;
       stops_p = XCNEWVEC (char, clocks_length);
-      if (ia64_tune == PROCESSOR_ITANIUM)
-	{
-	  clocks = XCNEWVEC (int, clocks_length);
-	  add_cycles = XCNEWVEC (int, clocks_length);
-	}
+
       if (ia64_tune == PROCESSOR_ITANIUM2)
 	{
 	  pos_1 = get_cpu_unit_code ("2_1");
@@ -9459,11 +9276,6 @@ ia64_reorg (void)
       /* We cannot reuse this one because it has been corrupted by the
 	 evil glat.  */
       finish_bundle_states ();
-      if (ia64_tune == PROCESSOR_ITANIUM)
-	{
-	  free (add_cycles);
-	  free (clocks);
-	}
       free (stops_p);
       stops_p = NULL;
       emit_insn_group_barriers (dump_file);
