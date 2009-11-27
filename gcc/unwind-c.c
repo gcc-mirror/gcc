@@ -120,7 +120,7 @@ PERSONALITY_FUNCTION (int version,
 #endif
 {
   lsda_header_info info;
-  const unsigned char *language_specific_data, *p, *action_record;
+  const unsigned char *language_specific_data, *p;
   _Unwind_Ptr landing_pad, ip;
   int ip_before_insn = 0;
 
@@ -181,8 +181,6 @@ PERSONALITY_FUNCTION (int version,
       /* Can never have null landing pad for sjlj -- that would have
 	 been indicated by a -1 call site index.  */
       landing_pad = (_Unwind_Ptr)cs_lp + 1;
-      if (cs_action)
-	action_record = info.action_table + cs_action - 1;
       goto found_something;
     }
 #else
@@ -205,8 +203,6 @@ PERSONALITY_FUNCTION (int version,
 	{
 	  if (cs_lp)
 	    landing_pad = info.LPStart + cs_lp;
-	  if (cs_action)
-	    action_record = info.action_table + cs_action - 1;
 	  goto found_something;
 	}
     }

@@ -541,13 +541,12 @@ edge
 create_empty_if_region_on_edge (edge entry_edge, tree condition)
 {
 
-  basic_block succ_bb, cond_bb, true_bb, false_bb, join_bb;
+  basic_block cond_bb, true_bb, false_bb, join_bb;
   edge e_true, e_false, exit_edge;
   gimple cond_stmt;
   tree simple_cond;
   gimple_stmt_iterator gsi;
 
-  succ_bb = entry_edge->dest;
   cond_bb = split_edge (entry_edge);
 
   /* Insert condition in cond_bb.  */
@@ -628,8 +627,6 @@ create_empty_loop_on_edge (edge entry_edge,
 {
   basic_block loop_header, loop_latch, succ_bb, pred_bb;
   struct loop *loop;
-  int freq;
-  gcov_type cnt;
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
   gimple cond_expr;
@@ -659,9 +656,6 @@ create_empty_loop_on_edge (edge entry_edge,
   add_loop (loop, outer);
 
   /* TODO: Fix frequencies and counts.  */
-  freq = EDGE_FREQUENCY (entry_edge);
-  cnt = entry_edge->count;
-
   prob = REG_BR_PROB_BASE / 2;
 
   scale_loop_frequencies (loop, REG_BR_PROB_BASE - prob, REG_BR_PROB_BASE);

@@ -1,5 +1,15 @@
 2009-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_emit_restore_sse_regs_using_mov): Remove
+	unused insn variable.
+	* genemit.c (output_peephole2_scratches): Only declare and initialize
+	_regs_allocated if it will be ever used.
+	* cfgloopmanip.c (create_empty_if_region_on_edge): Remove unused
+	succ_bb variable.
+	(create_empty_loop_on_edge): Remove unused freq and cnt variables.
+	* unwind-c.c (PERSONALITY_FUNCTION): Remove unused action_record
+	variable.
+
 	* opts.c (decode_options): If optimize is bigger than 255,
 	set it to 255.
 
