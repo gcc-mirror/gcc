@@ -1118,7 +1118,8 @@ RTEMS thread support.
 @item single
 Disable thread support, should work for all platforms.
 @item solaris
-Sun Solaris 2 thread support.
+Sun Solaris 2/Unix International thread support.  Only use this if you
+really need to use this legacy API instead of the default, @samp{posix}.
 @item vxworks
 VxWorks thread support.
 @item win32

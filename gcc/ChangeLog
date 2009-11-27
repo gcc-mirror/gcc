@@ -1,3 +1,13 @@
+2009-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/41810
+	* gthr-solaris.h (__gthread_mutex_destroy): Remove UNUSED.
+	[SUPPORTS_WEAK && GTHREAD_USE_WEAK] (__gthread_active_p): Use
+	__extension__ to allow cast from function pointer to object
+	pointer in C++.
+	* doc/install.texi (--enable-threads): Clarify use of Solaris
+	threads.
+
 2009-11-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/ia64/itanium1.md: Remove.
