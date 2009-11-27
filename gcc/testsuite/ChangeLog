@@ -1,5 +1,10 @@
 2009-11-27  Michael Matz  <matz@suse.de>
 
+	PR rtl-optimization/42084
+	* gcc.dg/pr42084.c: New test.
+
+2009-11-27  Michael Matz  <matz@suse.de>
+
 	PR c++/41906
 	* g++.dg/tree-ssa/pr41906.C: New testcase.
 
