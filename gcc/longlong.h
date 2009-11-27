@@ -1324,6 +1324,28 @@ UDItype __umulsidi3 (USItype, USItype);
 #define count_trailing_zeros(COUNT, X)	((COUNT) = __builtin_ctz (X))
 #endif /* __xtensa__ */
 
+#if defined xstormy16
+extern UHItype __stormy16_count_leading_zeros (UHItype);
+#define count_leading_zeros(count, x)					\
+  do									\
+    {									\
+      UHItype size;							\
+									\
+      /* We assume that W_TYPE_SIZE is a multiple of 16...  */		\
+      for ((count) = 0, size = W_TYPE_SIZE; size; size -= 16)		\
+	{								\
+	  UHItype c;							\
+									\
+	  c = __stormy16_count_leading_zeros ((x) >> (size - 16));	\
+	  (count) += c;							\
+	  if (c != 16)							\
+	    break;							\
+	}								\
+    }									\
+  while (0)
+#define COUNT_LEADING_ZEROS_0 W_TYPE_SIZE
+#endif
+
 #if defined (__z8000__) && W_TYPE_SIZE == 16
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add	%H1,%H5\n\tadc	%H0,%H3"				\
