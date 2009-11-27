@@ -1,3 +1,10 @@
+2009-11-27  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/42084
+	* cfgexpand.c (maybe_cleanup_end_of_block): Add new parameter,
+	use it to stop walking.
+	(expand_gimple_cond): Adjust call to above.
+
 2009-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/41810

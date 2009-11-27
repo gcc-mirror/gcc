@@ -1586,10 +1586,11 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
 
 /* A subroutine of expand_gimple_cond.  Given E, a fallthrough edge
    of a basic block where we just expanded the conditional at the end,
-   possibly clean up the CFG and instruction sequence.  */
+   possibly clean up the CFG and instruction sequence.  LAST is the
+   last instruction before the just emitted jump sequence.  */
 
 static void
-maybe_cleanup_end_of_block (edge e)
+maybe_cleanup_end_of_block (edge e, rtx last)
 {
   /* Special case: when jumpif decides that the condition is
      trivial it emits an unconditional jump (and the necessary
@@ -1604,7 +1605,6 @@ maybe_cleanup_end_of_block (edge e)
      normally isn't there in a cleaned CFG), fix it here.  */
   if (BARRIER_P (get_last_insn ()))
     {
-      basic_block bb = e->src;
       rtx insn;
       remove_edge (e);
       /* Now, we have a single successor block, if we have insns to
@@ -1620,7 +1620,7 @@ maybe_cleanup_end_of_block (edge e)
       /* Make sure we have an unconditional jump.  Otherwise we're
 	 confused.  */
       gcc_assert (JUMP_P (insn) && !any_condjump_p (insn));
-      for (insn = PREV_INSN (insn); insn != BB_HEAD (bb);)
+      for (insn = PREV_INSN (insn); insn != last;)
 	{
 	  insn = PREV_INSN (insn);
 	  if (JUMP_P (NEXT_INSN (insn)))
@@ -1699,7 +1699,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 	}
       true_edge->goto_block = NULL;
       false_edge->flags |= EDGE_FALLTHRU;
-      maybe_cleanup_end_of_block (false_edge);
+      maybe_cleanup_end_of_block (false_edge, last);
       return NULL;
     }
   if (true_edge->dest == bb->next_bb)
@@ -1715,7 +1715,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 	}
       false_edge->goto_block = NULL;
       true_edge->flags |= EDGE_FALLTHRU;
-      maybe_cleanup_end_of_block (true_edge);
+      maybe_cleanup_end_of_block (true_edge, last);
       return NULL;
     }
 
