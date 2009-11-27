@@ -1,3 +1,8 @@
+2009-11-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* emit-rtl.c (next_active_insn, prev_active_insn): Correct
+	comment.
+
 2009-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_emit_restore_sse_regs_using_mov): Remove
