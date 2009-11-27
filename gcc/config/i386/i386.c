@@ -13944,7 +13944,7 @@ ix86_expand_convert_uns_didf_sse (rtx target, rtx input)
   exponents = validize_mem (force_const_mem (V4SImode, x));
 
   /* int_xmm = {0x45300000UL, fp_xmm/hi, 0x43300000, fp_xmm/lo } */
-  emit_insn (gen_sse2_punpckldq (int_xmm, int_xmm, exponents));
+  emit_insn (gen_vec_interleave_lowv4si (int_xmm, int_xmm, exponents));
 
   /* Concatenating (juxtaposing) (0x43300000UL ## fp_value_low_xmm)
      yields a valid DF value equal to (0x1.0p52 + double(fp_value_lo_xmm)).
@@ -13970,7 +13970,7 @@ ix86_expand_convert_uns_didf_sse (rtx target, rtx input)
   else
     {
       x = copy_to_mode_reg (V2DFmode, fp_xmm);
-      emit_insn (gen_sse2_unpckhpd (fp_xmm, fp_xmm, fp_xmm));
+      emit_insn (gen_vec_interleave_highv2df (fp_xmm, fp_xmm, fp_xmm));
       emit_insn (gen_addv2df3 (fp_xmm, fp_xmm, x));
     }
 
@@ -21690,8 +21690,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movss,  "__builtin_ia32_movss", IX86_BUILTIN_MOVSS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movhlps_exp,  "__builtin_ia32_movhlps", IX86_BUILTIN_MOVHLPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movlhps_exp,  "__builtin_ia32_movlhps", IX86_BUILTIN_MOVLHPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
-  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_unpckhps, "__builtin_ia32_unpckhps", IX86_BUILTIN_UNPCKHPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
-  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_unpcklps, "__builtin_ia32_unpcklps", IX86_BUILTIN_UNPCKLPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_vec_interleave_highv4sf, "__builtin_ia32_unpckhps", IX86_BUILTIN_UNPCKHPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_vec_interleave_lowv4sf, "__builtin_ia32_unpcklps", IX86_BUILTIN_UNPCKLPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF },
 
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_cvtpi2ps, "__builtin_ia32_cvtpi2ps", IX86_BUILTIN_CVTPI2PS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V2SI },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_cvtsi2ss, "__builtin_ia32_cvtsi2ss", IX86_BUILTIN_CVTSI2SS, UNKNOWN, (int) V4SF_FTYPE_V4SF_SI },
@@ -21799,8 +21799,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_copysignv2df3,  "__builtin_ia32_copysignpd", IX86_BUILTIN_CPYSGNPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movsd,  "__builtin_ia32_movsd", IX86_BUILTIN_MOVSD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_unpckhpd_exp, "__builtin_ia32_unpckhpd", IX86_BUILTIN_UNPCKHPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_unpcklpd_exp, "__builtin_ia32_unpcklpd", IX86_BUILTIN_UNPCKLPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_highv2df, "__builtin_ia32_unpckhpd", IX86_BUILTIN_UNPCKHPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_lowv2df, "__builtin_ia32_unpcklpd", IX86_BUILTIN_UNPCKLPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_pack_sfix_v2df, "__builtin_ia32_vec_pack_sfix", IX86_BUILTIN_VEC_PACK_SFIX, UNKNOWN, (int) V4SI_FTYPE_V2DF_V2DF },
 
@@ -21845,14 +21845,14 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_uminv16qi3, "__builtin_ia32_pminub128", IX86_BUILTIN_PMINUB128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sminv8hi3, "__builtin_ia32_pminsw128", IX86_BUILTIN_PMINSW128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI },
 
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpckhbw, "__builtin_ia32_punpckhbw128", IX86_BUILTIN_PUNPCKHBW128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpckhwd, "__builtin_ia32_punpckhwd128", IX86_BUILTIN_PUNPCKHWD128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI  },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpckhdq, "__builtin_ia32_punpckhdq128", IX86_BUILTIN_PUNPCKHDQ128, UNKNOWN,  (int) V4SI_FTYPE_V4SI_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpckhqdq, "__builtin_ia32_punpckhqdq128", IX86_BUILTIN_PUNPCKHQDQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpcklbw, "__builtin_ia32_punpcklbw128", IX86_BUILTIN_PUNPCKLBW128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpcklwd, "__builtin_ia32_punpcklwd128", IX86_BUILTIN_PUNPCKLWD128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpckldq, "__builtin_ia32_punpckldq128", IX86_BUILTIN_PUNPCKLDQ128, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_punpcklqdq, "__builtin_ia32_punpcklqdq128", IX86_BUILTIN_PUNPCKLQDQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_highv16qi, "__builtin_ia32_punpckhbw128", IX86_BUILTIN_PUNPCKHBW128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_highv8hi, "__builtin_ia32_punpckhwd128", IX86_BUILTIN_PUNPCKHWD128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI  },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_highv4si, "__builtin_ia32_punpckhdq128", IX86_BUILTIN_PUNPCKHDQ128, UNKNOWN,  (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_highv2di, "__builtin_ia32_punpckhqdq128", IX86_BUILTIN_PUNPCKHQDQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_lowv16qi, "__builtin_ia32_punpcklbw128", IX86_BUILTIN_PUNPCKLBW128, UNKNOWN, (int) V16QI_FTYPE_V16QI_V16QI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_lowv8hi, "__builtin_ia32_punpcklwd128", IX86_BUILTIN_PUNPCKLWD128, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_lowv4si, "__builtin_ia32_punpckldq128", IX86_BUILTIN_PUNPCKLDQ128, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_interleave_lowv2di, "__builtin_ia32_punpcklqdq128", IX86_BUILTIN_PUNPCKLQDQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_packsswb, "__builtin_ia32_packsswb128", IX86_BUILTIN_PACKSSWB128, UNKNOWN, (int) V16QI_FTYPE_V8HI_V8HI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_packssdw, "__builtin_ia32_packssdw128", IX86_BUILTIN_PACKSSDW128, UNKNOWN, (int) V8HI_FTYPE_V4SI_V4SI },
@@ -26483,6 +26483,7 @@ x86_emit_floatuns (rtx operands[2])
 
 /* A subroutine of ix86_expand_vector_init.  Store into TARGET a vector
    with all elements equal to VAR.  Return true if successful.  */
+/* ??? Call into the vec_perm support to implement the broadcast.  */
 
 static bool
 ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
@@ -26552,7 +26553,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 	  tmp1 = gen_reg_rtx (V8HImode);
 	  emit_move_insn (tmp1, gen_lowpart (V8HImode, tmp2));
 	  /* Duplicate the low short through the whole low SImode word.  */
-	  emit_insn (gen_sse2_punpcklwd (tmp1, tmp1, tmp1));
+	  emit_insn (gen_vec_interleave_lowv8hi (tmp1, tmp1, tmp1));
 	  /* Cast the V8HImode vector back to a V4SImode vector.  */
 	  tmp2 = gen_reg_rtx (V4SImode);
 	  emit_move_insn (tmp2, gen_lowpart (V4SImode, tmp1));
@@ -26584,8 +26585,8 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, enum machine_mode mode,
 	  tmp1 = gen_reg_rtx (V16QImode);
 	  emit_move_insn (tmp1, gen_lowpart (V16QImode, tmp2));
 	  /* Duplicate the low byte through the whole low SImode word.  */
-	  emit_insn (gen_sse2_punpcklbw (tmp1, tmp1, tmp1));
-	  emit_insn (gen_sse2_punpcklbw (tmp1, tmp1, tmp1));
+	  emit_insn (gen_vec_interleave_lowv16qi (tmp1, tmp1, tmp1));
+	  emit_insn (gen_vec_interleave_lowv16qi (tmp1, tmp1, tmp1));
 	  /* Cast the V16QImode vector back to a V4SImode vector.  */
 	  tmp2 = gen_reg_rtx (V4SImode);
 	  emit_move_insn (tmp2, gen_lowpart (V4SImode, tmp1));
@@ -27417,7 +27418,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	  /* tmp = target = A B C D */
 	  tmp = copy_to_reg (target);
 	  /* target = A A B B */
-	  emit_insn (gen_sse_unpcklps (target, target, target));
+	  emit_insn (gen_vec_interleave_lowv4sf (target, target, target));
 	  /* target = X A B B */
 	  ix86_expand_vector_set (false, target, val, 0);
 	  /* target = A X C D  */
@@ -27627,7 +27628,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 
 	case 2:
 	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_sse_unpckhps (tmp, vec, vec));
+	  emit_insn (gen_vec_interleave_highv4sf (tmp, vec, vec));
 	  break;
 
 	default:
@@ -27661,7 +27662,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 
 	    case 2:
 	      tmp = gen_reg_rtx (mode);
-	      emit_insn (gen_sse2_punpckhdq (tmp, vec, vec));
+	      emit_insn (gen_vec_interleave_highv4si (tmp, vec, vec));
 	      break;
 
 	    default:
@@ -29730,14 +29731,15 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	     with interleave. */
 	  t1 = gen_reg_rtx (V8HImode);
 	  t2 = gen_reg_rtx (V8HImode);
-	  emit_insn (gen_sse2_punpckhwd (t1, d->op0, d->op1));
-	  emit_insn (gen_sse2_punpcklwd (d->target, d->op0, d->op1));
-	  emit_insn (gen_sse2_punpckhwd (t2, d->target, t1));
-	  emit_insn (gen_sse2_punpcklwd (d->target, d->target, t1));
+	  emit_insn (gen_vec_interleave_highv8hi (t1, d->op0, d->op1));
+	  emit_insn (gen_vec_interleave_lowv8hi (d->target, d->op0, d->op1));
+	  emit_insn (gen_vec_interleave_highv8hi (t2, d->target, t1));
+	  emit_insn (gen_vec_interleave_lowv8hi (d->target, d->target, t1));
 	  if (odd)
-	    emit_insn (gen_sse2_punpckhwd (d->target, d->target, t2));
+	    t3 = gen_vec_interleave_highv8hi (d->target, d->target, t2);
 	  else
-	    emit_insn (gen_sse2_punpcklwd (d->target, d->target, t2));
+	    t3 = gen_vec_interleave_lowv8hi (d->target, d->target, t2);
+	  emit_insn (t3);
 	}
       break;
 
@@ -29749,16 +29751,17 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	  t1 = gen_reg_rtx (V16QImode);
 	  t2 = gen_reg_rtx (V16QImode);
 	  t3 = gen_reg_rtx (V16QImode);
-	  emit_insn (gen_sse2_punpckhbw (t1, d->op0, d->op1));
-	  emit_insn (gen_sse2_punpcklbw (d->target, d->op0, d->op1));
-	  emit_insn (gen_sse2_punpckhbw (t2, d->target, t1));
-	  emit_insn (gen_sse2_punpcklbw (d->target, d->target, t1));
-	  emit_insn (gen_sse2_punpckhbw (t3, d->target, t2));
-	  emit_insn (gen_sse2_punpcklbw (d->target, d->target, t2));
+	  emit_insn (gen_vec_interleave_highv16qi (t1, d->op0, d->op1));
+	  emit_insn (gen_vec_interleave_lowv16qi (d->target, d->op0, d->op1));
+	  emit_insn (gen_vec_interleave_highv16qi (t2, d->target, t1));
+	  emit_insn (gen_vec_interleave_lowv16qi (d->target, d->target, t1));
+	  emit_insn (gen_vec_interleave_highv16qi (t3, d->target, t2));
+	  emit_insn (gen_vec_interleave_lowv16qi (d->target, d->target, t2));
 	  if (odd)
-	    emit_insn (gen_sse2_punpckhbw (d->target, d->target, t3));
+	    t3 = gen_vec_interleave_highv16qi (d->target, d->target, t3);
 	  else
-	    emit_insn (gen_sse2_punpcklbw (d->target, d->target, t3));
+	    t3 = gen_vec_interleave_lowv16qi (d->target, d->target, t3);
+	  emit_insn (t3);
 	}
       break;
 

@@ -279,12 +279,14 @@
       				  gen_rtx_SUBREG (SImode, operands[1], 0)));
       emit_insn (gen_sse2_loadld (operands[2], CONST0_RTX (V4SImode),
 				  gen_rtx_SUBREG (SImode, operands[1], 4)));
-      emit_insn (gen_sse2_punpckldq (operands[0], operands[0], operands[2]));
+      emit_insn (gen_vec_interleave_lowv4si (operands[0], operands[0],
+      					     operands[2]));
     }
  else if (memory_operand (operands[1], DImode))
-      emit_insn (gen_vec_concatv2di (gen_lowpart (V2DImode, operands[0]), operands[1], const0_rtx));
+   emit_insn (gen_vec_concatv2di (gen_lowpart (V2DImode, operands[0]),
+   	     			  operands[1], const0_rtx));
  else
-      gcc_unreachable ();
+   gcc_unreachable ();
 })
 
 (define_split
@@ -3453,9 +3455,9 @@
 
   emit_insn (gen_sse2_cvttpd2dq (r1, operands[1]));
   emit_insn (gen_sse2_cvttpd2dq (r2, operands[2]));
-  emit_insn (gen_sse2_punpcklqdq (gen_lowpart (V2DImode, operands[0]),
-				  gen_lowpart (V2DImode, r1),
-				  gen_lowpart (V2DImode, r2)));
+  emit_insn (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
+  	    				 gen_lowpart (V2DImode, r1),
+ 					 gen_lowpart (V2DImode, r2)));
   DONE;
 })
 
@@ -3472,9 +3474,9 @@
 
   emit_insn (gen_sse2_cvtpd2dq (r1, operands[1]));
   emit_insn (gen_sse2_cvtpd2dq (r2, operands[2]));
-  emit_insn (gen_sse2_punpcklqdq (gen_lowpart (V2DImode, operands[0]),
-				  gen_lowpart (V2DImode, r1),
-				  gen_lowpart (V2DImode, r2)));
+  emit_insn (gen_vec_interleave_lowv2di (gen_lowpart (V2DImode, operands[0]),
+  	    				 gen_lowpart (V2DImode, r1),
+ 					 gen_lowpart (V2DImode, r2)));
   DONE;
 })
 
@@ -3584,6 +3586,7 @@
   [(set_attr "type" "ssemov")
    (set_attr "mode" "V4SF,V2SF,V2SF")])
 
+;; Recall that the 256-bit unpck insns only shuffle within their lanes.
 (define_insn "avx_unpckhps256"
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(vec_select:V8SF
@@ -3600,7 +3603,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "*avx_unpckhps"
+(define_insn "*avx_interleave_highv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -3614,7 +3617,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "sse_unpckhps"
+(define_insn "vec_interleave_highv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -3627,6 +3630,7 @@
   [(set_attr "type" "sselog")
    (set_attr "mode" "V4SF")])
 
+;; Recall that the 256-bit unpck insns only shuffle within their lanes.
 (define_insn "avx_unpcklps256"
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(vec_select:V8SF
@@ -3643,7 +3647,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "*avx_unpcklps"
+(define_insn "*avx_interleave_lowv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -3657,7 +3661,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "sse_unpcklps"
+(define_insn "vec_interleave_lowv4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_select:V4SF
 	  (vec_concat:V8SF
@@ -4464,6 +4468,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Recall that the 256-bit unpck insns only shuffle within their lanes.
 (define_insn "avx_unpckhpd256"
   [(set (match_operand:V4DF 0 "register_operand" "=x")
 	(vec_select:V4DF
@@ -4478,7 +4483,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
-(define_expand "sse2_unpckhpd_exp"
+(define_expand "vec_interleave_highv2df"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -4489,7 +4494,7 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
-(define_insn "*avx_unpckhpd"
+(define_insn "*avx_interleave_highv2df"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,m")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -4506,7 +4511,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V2DF,V1DF,V1DF")])
 
-(define_insn "sse2_unpckhpd"
+(define_insn "*sse2_interleave_highv2df"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,m")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -4585,6 +4590,7 @@
   DONE;
 })
 
+;; Recall that the 256-bit unpck insns only shuffle within their lanes.
 (define_insn "avx_unpcklpd256"
   [(set (match_operand:V4DF 0 "register_operand" "=x")
 	(vec_select:V4DF
@@ -4599,7 +4605,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
-(define_expand "sse2_unpcklpd_exp"
+(define_expand "vec_interleave_lowv2df"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -4610,7 +4616,7 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands (UNKNOWN, V2DFmode, operands);")
 
-(define_insn "*avx_unpcklpd"
+(define_insn "*avx_interleave_lowv2df"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,o")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -4627,7 +4633,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V2DF,V1DF,V1DF")])
 
-(define_insn "sse2_unpcklpd"
+(define_insn "*sse2_interleave_lowv2df"
   [(set (match_operand:V2DF 0 "nonimmediate_operand"     "=x,x,o")
 	(vec_select:V2DF
 	  (vec_concat:V4DF
@@ -4721,7 +4727,7 @@
 })
 
 ;; punpcklqdq and punpckhqdq are shorter than shufpd.
-(define_insn "*avx_punpckhqdq"
+(define_insn "*avx_interleave_highv2di"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(vec_select:V2DI
 	  (vec_concat:V4DI
@@ -4735,7 +4741,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpckhqdq"
+(define_insn "vec_interleave_highv2di"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(vec_select:V2DI
 	  (vec_concat:V4DI
@@ -4749,7 +4755,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpcklqdq"
+(define_insn "*avx_interleave_lowv2di"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(vec_select:V2DI
 	  (vec_concat:V4DI
@@ -4763,7 +4769,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpcklqdq"
+(define_insn "vec_interleave_lowv2di"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(vec_select:V2DI
 	  (vec_concat:V4DI
@@ -5247,10 +5253,10 @@
      each word.  We don't care what goes into the high byte of each word.
      Rather than trying to get zero in there, most convenient is to let
      it be a copy of the low byte.  */
-  emit_insn (gen_sse2_punpckhbw (t[0], operands[1], operands[1]));
-  emit_insn (gen_sse2_punpckhbw (t[1], operands[2], operands[2]));
-  emit_insn (gen_sse2_punpcklbw (t[2], operands[1], operands[1]));
-  emit_insn (gen_sse2_punpcklbw (t[3], operands[2], operands[2]));
+  emit_insn (gen_vec_interleave_highv16qi (t[0], operands[1], operands[1]));
+  emit_insn (gen_vec_interleave_highv16qi (t[1], operands[2], operands[2]));
+  emit_insn (gen_vec_interleave_lowv16qi (t[2], operands[1], operands[1]));
+  emit_insn (gen_vec_interleave_lowv16qi (t[3], operands[2], operands[2]));
 
   /* Multiply words.  The end-of-line annotations here give a picture of what
      the output of that instruction looks like.  Dot means don't care; the
@@ -5670,7 +5676,7 @@
 				const0_rtx, const0_rtx));
 
   /* Merge the parts back together.  */
-  emit_insn (gen_sse2_punpckldq (op0, t5, t6));
+  emit_insn (gen_vec_interleave_lowv4si (op0, t5, t6));
   DONE;
 })
 
@@ -6589,174 +6595,6 @@
   DONE;
 })
 
-(define_expand "vec_interleave_highv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "")
-        (vec_select:V16QI
-          (vec_concat:V32QI
-            (match_operand:V16QI 1 "register_operand" "")
-            (match_operand:V16QI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 8)  (const_int 24)
-                     (const_int 9)  (const_int 25)
-                     (const_int 10) (const_int 26)
-                     (const_int 11) (const_int 27)
-                     (const_int 12) (const_int 28)
-                     (const_int 13) (const_int 29)
-                     (const_int 14) (const_int 30)
-                     (const_int 15) (const_int 31)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpckhbw (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_lowv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "")
-        (vec_select:V16QI
-          (vec_concat:V32QI
-            (match_operand:V16QI 1 "register_operand" "")
-            (match_operand:V16QI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 0) (const_int 16)
-                     (const_int 1) (const_int 17)
-                     (const_int 2) (const_int 18)
-                     (const_int 3) (const_int 19)
-                     (const_int 4) (const_int 20)
-                     (const_int 5) (const_int 21)
-                     (const_int 6) (const_int 22)
-                     (const_int 7) (const_int 23)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpcklbw (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_highv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=")
-        (vec_select:V8HI
-          (vec_concat:V16HI
-            (match_operand:V8HI 1 "register_operand" "")
-            (match_operand:V8HI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 4) (const_int 12)
-                     (const_int 5) (const_int 13)
-                     (const_int 6) (const_int 14)
-                     (const_int 7) (const_int 15)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpckhwd (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_lowv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "")
-        (vec_select:V8HI
-          (vec_concat:V16HI
-            (match_operand:V8HI 1 "register_operand" "")
-            (match_operand:V8HI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 0) (const_int 8)
-                     (const_int 1) (const_int 9)
-                     (const_int 2) (const_int 10)
-                     (const_int 3) (const_int 11)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpcklwd (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_highv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "")
-        (vec_select:V4SI
-          (vec_concat:V8SI
-            (match_operand:V4SI 1 "register_operand" "")
-            (match_operand:V4SI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 2) (const_int 6)
-                     (const_int 3) (const_int 7)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpckhdq (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_lowv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "")
-        (vec_select:V4SI
-          (vec_concat:V8SI
-            (match_operand:V4SI 1 "register_operand" "")
-            (match_operand:V4SI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 0) (const_int 4)
-                     (const_int 1) (const_int 5)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpckldq (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_highv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-        (vec_select:V2DI
-          (vec_concat:V4DI
-            (match_operand:V2DI 1 "register_operand" "")
-            (match_operand:V2DI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 1)
-                     (const_int 3)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpckhqdq (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_lowv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "")
-        (vec_select:V2DI
-          (vec_concat:V4DI
-            (match_operand:V2DI 1 "register_operand" "")
-            (match_operand:V2DI 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 0)
-                     (const_int 2)])))]
-  "TARGET_SSE2"
-{
-  emit_insn (gen_sse2_punpcklqdq (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vec_interleave_highv4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "")
-        (vec_select:V4SF
-          (vec_concat:V8SF
-            (match_operand:V4SF 1 "register_operand" "")
-            (match_operand:V4SF 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 2) (const_int 6)
-                     (const_int 3) (const_int 7)])))]
-  "TARGET_SSE")
-
-(define_expand "vec_interleave_lowv4sf"
-  [(set (match_operand:V4SF 0 "register_operand" "")
-        (vec_select:V4SF
-          (vec_concat:V8SF
-            (match_operand:V4SF 1 "register_operand" "")
-            (match_operand:V4SF 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 0) (const_int 4)
-                     (const_int 1) (const_int 5)])))]
-  "TARGET_SSE")
-
-(define_expand "vec_interleave_highv2df"
-  [(set (match_operand:V2DF 0 "register_operand" "")
-        (vec_select:V2DF
-          (vec_concat:V4DF
-            (match_operand:V2DF 1 "register_operand" "")
-            (match_operand:V2DF 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 1)
-                     (const_int 3)])))]
-  "TARGET_SSE2")
-
-(define_expand "vec_interleave_lowv2df"
-  [(set (match_operand:V2DF 0 "register_operand" "")
-        (vec_select:V2DF
-          (vec_concat:V4DF
-            (match_operand:V2DF 1 "register_operand" "")
-            (match_operand:V2DF 2 "nonimmediate_operand" ""))
-          (parallel [(const_int 0)
-                     (const_int 2)])))]
-  "TARGET_SSE2")
-
 (define_insn "*avx_packsswb"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
 	(vec_concat:V16QI
@@ -6835,7 +6673,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpckhbw"
+(define_insn "*avx_interleave_highv16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
@@ -6855,7 +6693,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpckhbw"
+(define_insn "vec_interleave_highv16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
@@ -6875,7 +6713,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpcklbw"
+(define_insn "*avx_interleave_lowv16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
@@ -6895,7 +6733,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpcklbw"
+(define_insn "vec_interleave_lowv16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
@@ -6915,7 +6753,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpckhwd"
+(define_insn "*avx_interleave_highv8hi"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
@@ -6931,7 +6769,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpckhwd"
+(define_insn "vec_interleave_highv8hi"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
@@ -6947,7 +6785,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpcklwd"
+(define_insn "*avx_interleave_lowv8hi"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
@@ -6963,7 +6801,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpcklwd"
+(define_insn "vec_interleave_lowv8hi"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(vec_select:V8HI
 	  (vec_concat:V16HI
@@ -6979,7 +6817,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpckhdq"
+(define_insn "*avx_interleave_highv4si"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
@@ -6993,7 +6831,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpckhdq"
+(define_insn "vec_interleave_highv4si"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
@@ -7007,7 +6845,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_punpckldq"
+(define_insn "*avx_interleave_lowv4si"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
@@ -7021,7 +6859,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
-(define_insn "sse2_punpckldq"
+(define_insn "vec_interleave_lowv4si"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(vec_select:V4SI
 	  (vec_concat:V8SI
