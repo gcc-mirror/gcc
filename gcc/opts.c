@@ -829,6 +829,8 @@ decode_options (unsigned int argc, const char **argv)
 	      if (optimize_val != -1)
 		{
 		  optimize = optimize_val;
+		  if ((unsigned int) optimize > 255)
+		    optimize = 255;
 		  optimize_size = 0;
 		}
 	    }
