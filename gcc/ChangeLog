@@ -1,3 +1,8 @@
+2009-11-27  Michael Matz  <matz@suse.de>
+
+	PR c++/41906
+	* tree-eh.c (lower_catch): Stop after expanding a catch-all.
+
 2009-11-27  Richard Guenther  <rguenther@suse.de>
 
 	* timevar.def (TV_LOOP_MOVE_INVARIANTS, TV_LOOP_UNSWITCH,

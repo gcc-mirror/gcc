@@ -1,3 +1,8 @@
+2009-11-27  Michael Matz  <matz@suse.de>
+
+	PR c++/41906
+	* g++.dg/tree-ssa/pr41906.C: New testcase.
+
 2009-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/O16384.c: New test.

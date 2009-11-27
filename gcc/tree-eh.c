@@ -1666,6 +1666,8 @@ lower_catch (struct leh_state *state, gimple tp)
 	  x = gimple_build_goto (out_label);
 	  gimple_seq_add_stmt (&new_seq, x);
 	}
+      if (!c->type_list)
+	break;
     }
 
   gimple_try_set_cleanup (tp, new_seq);
