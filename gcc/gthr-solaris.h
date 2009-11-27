@@ -102,7 +102,8 @@ __gthrw(cond_signal)
 static inline int
 __gthread_active_p (void)
 {
-  static void *const __gthread_active_ptr = (void *) &__gthrw_(thr_create);
+  static void *const __gthread_active_ptr
+    = __extension__ (void *) &__gthrw_(thr_create);
   return __gthread_active_ptr != 0;
 }
 
@@ -460,7 +461,7 @@ __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(__mutex))
+__gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
     return __gthrw_(mutex_destroy) (__mutex);
