@@ -1,3 +1,8 @@
+2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38656
+	* g++.dg/cpp0x/error2.C: New.
+
 2009-11-27  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/42084

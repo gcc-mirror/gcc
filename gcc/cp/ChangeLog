@@ -1,5 +1,10 @@
 2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/38656
+	* cxx-pretty-print.c (pp_cxx_expression): Handle TEMPLATE_ID_EXPR.
+
+2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/35112
 	* pt.c (print_overloaded_functions): New.
 	(print_candidates): Call the latter.
