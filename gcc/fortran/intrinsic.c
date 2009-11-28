@@ -4054,14 +4054,12 @@ gfc_try
 gfc_convert_chartype (gfc_expr *expr, gfc_typespec *ts)
 {
   gfc_intrinsic_sym *sym;
-  gfc_typespec from_ts;
   locus old_where;
   gfc_expr *new_expr;
   int rank;
   mpz_t *shape;
 
   gcc_assert (expr->ts.type == BT_CHARACTER && ts->type == BT_CHARACTER);
-  from_ts = expr->ts;		/* expr->ts gets clobbered */
 
   sym = find_char_conv (&expr->ts, ts);
   gcc_assert (sym);

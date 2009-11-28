@@ -4060,15 +4060,12 @@ gfc_match_wait (void)
 {
   gfc_wait *wait;
   match m;
-  locus loc;
 
   m = gfc_match_char ('(');
   if (m == MATCH_NO)
     return m;
 
   wait = XCNEW (gfc_wait);
-
-  loc = gfc_current_locus;
 
   m = match_wait_element (wait);
   if (m == MATCH_ERROR)

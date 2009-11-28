@@ -5122,7 +5122,6 @@ check_members (gfc_symbol *derived)
 static void 
 check_class_members (gfc_symbol *derived)
 {
-  gfc_symbol* tbp_sym;
   gfc_expr *e;
   gfc_symtree *tbp;
   gfc_class_esym_list *etmp;
@@ -5142,8 +5141,6 @@ check_class_members (gfc_symbol *derived)
 
   if (tbp->n.tb->is_generic)
     {
-      tbp_sym = NULL;
-
       /* If we have to match a passed class member, force the actual
 	 expression to have the correct type.  */
       if (!tbp->n.tb->nopass)
@@ -5156,8 +5153,6 @@ check_class_members (gfc_symbol *derived)
           e->value.compcall.base_object->ts.u.derived = derived;
 	}
     }
-  else
-    tbp_sym = tbp->n.tb->u.specific->n.sym;
 
   e->value.compcall.tbp = tbp->n.tb;
   e->value.compcall.name = tbp->name;
@@ -7610,14 +7605,12 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   if (gfc_extend_assign (code, ns) == SUCCESS)
     {
-      gfc_symbol* assign_proc;
       gfc_expr** rhsptr;
 
       if (code->op == EXEC_ASSIGN_CALL)
 	{
 	  lhs = code->ext.actual->expr;
 	  rhsptr = &code->ext.actual->next->expr;
-	  assign_proc = code->symtree->n.sym;
 	}
       else
 	{
@@ -7632,7 +7625,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
 	  tbp = code->expr1->value.compcall.tbp;
 	  gcc_assert (!tbp->is_generic);
-	  assign_proc = tbp->u.specific->n.sym;
 	}
 
       /* Make a temporary rhs when there is a default initializer
@@ -11690,10 +11682,8 @@ resolve_equivalence (gfc_equiv *eq)
   seq_type eq_type, last_eq_type;
   gfc_typespec *last_ts;
   int object, cnt_protected;
-  const char *value_name;
   const char *msg;
 
-  value_name = NULL;
   last_ts = &eq->expr->symtree->n.sym->ts;
 
   first_sym = eq->expr->symtree->n.sym;

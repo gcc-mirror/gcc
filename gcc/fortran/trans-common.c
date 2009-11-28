@@ -1,5 +1,5 @@
 /* Common block and equivalence list handling
-   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Canqun Yang <canqun@nudt.edu.cn>
 
@@ -636,7 +636,6 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
   if (is_init)
     {
       tree ctor, tmp;
-      HOST_WIDE_INT offset = 0;
       VEC(constructor_elt,gc) *v = NULL;
 
       if (field != NULL_TREE && field_init != NULL_TREE)
@@ -652,7 +651,6 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 		    s->sym->attr.pointer || s->sym->attr.allocatable);
 
 		CONSTRUCTOR_APPEND_ELT (v, s->field, tmp);
-		offset = s->offset + s->length;
 	      }
 	  }
 

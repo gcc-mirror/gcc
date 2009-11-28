@@ -1,3 +1,40 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-common.c (create_common): Remove unused offset variable.
+	* io.c (gfc_match_wait): Remove unused loc variable.
+	* trans-openmp.c (gfc_trans_omp_clauses): Remove unused old_clauses
+	variable.
+	(gfc_trans_omp_do): Remove unused outermost variable.
+	* iresolve.c (gfc_resolve_alarm_sub, gfc_resolve_fseek_sub): Remove
+	unused status variable.
+	* module.c (number_use_names): Remove unused c variable.
+	(load_derived_extensions): Remove unused nuse variable.
+	* trans-expr.c (gfc_conv_substring): Remove unused var variable.
+	* trans-types.c (gfc_get_array_descr_info): Remove unused offset_off
+	variable.
+	* matchexp.c (match_primary): Remove unused where variable.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Remove unused cond2
+	variable.
+	(gfc_conv_intrinsic_sizeof): Remove unused source variable.
+	(gfc_conv_intrinsic_transfer): Remove unused stride variable.
+	(gfc_conv_intrinsic_function): Remove unused isym variable.
+	* arith.c (gfc_hollerith2real, gfc_hollerith2complex,
+	gfc_hollerith2logical): Remove unused len variable.
+	* parse.c (parse_derived): Remove unused derived_sym variable.
+	* decl.c (variable_decl): Remove unused old_locus variable.
+	* resolve.c (check_class_members): Remove unused tbp_sym variable.
+	(resolve_ordinary_assign): Remove unused assign_proc variable.
+	(resolve_equivalence): Remove unused value_name variable.
+	* data.c (get_array_index): Remove unused re variable.
+	* trans-array.c (gfc_conv_array_transpose): Remove unused src_info
+	variable.
+	(gfc_conv_resolve_dependencies): Remove unused aref and temp_dim
+	variables.
+	(gfc_conv_loop_setup): Remove unused dim and len variables.
+	(gfc_walk_variable_expr): Remove unused head variable.
+	* match.c (match_typebound_call): Remove unused var variable.
+	* intrinsic.c (gfc_convert_chartype): Remove unused from_ts variable.
+
 2009-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/41807

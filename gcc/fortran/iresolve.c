@@ -1,5 +1,5 @@
 /* Intrinsic function resolution.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
@@ -2573,13 +2573,12 @@ void
 gfc_resolve_alarm_sub (gfc_code *c)
 {
   const char *name;
-  gfc_expr *seconds, *handler, *status;
+  gfc_expr *seconds, *handler;
   gfc_typespec ts;
   gfc_clear_ts (&ts);
 
   seconds = c->ext.actual->expr;
   handler = c->ext.actual->next->expr;
-  status = c->ext.actual->next->next->expr;
   ts.type = BT_INTEGER;
   ts.kind = gfc_c_int_kind;
 
@@ -3261,14 +3260,12 @@ gfc_resolve_fseek_sub (gfc_code *c)
   gfc_expr *unit;
   gfc_expr *offset;
   gfc_expr *whence;
-  gfc_expr *status;
   gfc_typespec ts;
   gfc_clear_ts (&ts);
 
   unit   = c->ext.actual->expr;
   offset = c->ext.actual->next->expr;
   whence = c->ext.actual->next->next->expr;
-  status = c->ext.actual->next->next->next->expr;
 
   if (unit->ts.kind != gfc_c_int_kind)
     {

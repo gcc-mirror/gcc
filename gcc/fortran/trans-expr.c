@@ -356,7 +356,6 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 {
   tree tmp;
   tree type;
-  tree var;
   tree fault;
   gfc_se start;
   gfc_se end;
@@ -365,7 +364,6 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
   type = gfc_get_character_type (kind, ref->u.ss.length);
   type = build_pointer_type (type);
 
-  var = NULL_TREE;
   gfc_init_se (&start, se);
   gfc_conv_expr_type (&start, ref->u.ss.start, gfc_charlen_type_node);
   gfc_add_block_to_block (&se->pre, &start.pre);

@@ -741,8 +741,7 @@ static int
 number_use_names (const char *name, bool interface)
 {
   int i = 0;
-  const char *c;
-  c = find_use_name_n (name, &i, interface);
+  find_use_name_n (name, &i, interface);
   return i;
 }
 
@@ -3977,7 +3976,7 @@ load_equiv (void)
 static void
 load_derived_extensions (void)
 {
-  int symbol, nuse, j;
+  int symbol, j;
   gfc_symbol *derived;
   gfc_symbol *dt;
   gfc_symtree *st;
@@ -4013,7 +4012,6 @@ load_derived_extensions (void)
 	  mio_internal_string (module);
 
           /* Only use one use name to find the symbol.  */
-	  nuse = number_use_names (name, false);
 	  j = 1;
 	  p = find_use_name_n (name, &j, false);
 	  if (p)

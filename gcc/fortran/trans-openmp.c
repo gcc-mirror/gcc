@@ -700,7 +700,7 @@ static tree
 gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		       locus where)
 {
-  tree omp_clauses = NULL_TREE, chunk_size, c, old_clauses;
+  tree omp_clauses = NULL_TREE, chunk_size, c;
   int list;
   enum omp_clause_code clause_code;
   gfc_se se;
@@ -759,7 +759,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	    default:
 	      gcc_unreachable ();
 	    }
-	  old_clauses = omp_clauses;
 	  omp_clauses
 	    = gfc_trans_omp_reduction_list (n, omp_clauses, reduction_code,
 					    where);
@@ -1134,14 +1133,13 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
   stmtblock_t block;
   stmtblock_t body;
   gfc_omp_clauses *clauses = code->ext.omp_clauses;
-  gfc_code *outermost;
   int i, collapse = clauses->collapse;
   tree dovar_init = NULL_TREE;
 
   if (collapse <= 0)
     collapse = 1;
 
-  outermost = code = code->block->next;
+  code = code->block->next;
   gcc_assert (code->op == EXEC_DO);
 
   init = make_tree_vec (collapse);
