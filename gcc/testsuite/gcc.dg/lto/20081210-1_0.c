@@ -1,5 +1,7 @@
-#if defined(_LP64) || defined(_WIN64)
+#if defined(_LP64)
 typedef unsigned long int uintptr_t;
+#elif defined (_WIN64)
+typedef unsigned long long int uintptr_t;
 #else
 typedef unsigned int uintptr_t;
 #endif
