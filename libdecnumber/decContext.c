@@ -393,11 +393,11 @@ Int decContextTestEndian(Flag quiet) {
   if (dle>1) dle=1;	      /* ensure 0 or 1 */
 
   if (LITEND!=DECLITEND) {
-    const char *adj;
     if (!quiet) {
+#if DECCHECK
+      const char *adj;
       if (LITEND) adj="little";
 	     else adj="big";
-#if DECCHECK
       printf("Warning: DECLITEND is set to %d, but this computer appears to be %s-endian\n",
 	     DECLITEND, adj);
 #endif
