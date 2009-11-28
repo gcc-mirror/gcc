@@ -384,7 +384,6 @@ ssum_r10 (gfc_array_r10 * const restrict retarray,
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
-  index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   GFC_REAL_10 * restrict dest;
   index_type rank;
@@ -403,7 +402,6 @@ ssum_r10 (gfc_array_r10 * const restrict retarray,
 
   for (n = 0; n < dim; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n);
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
 
       if (extent[n] <= 0)
@@ -412,7 +410,6 @@ ssum_r10 (gfc_array_r10 * const restrict retarray,
 
   for (n = dim; n < rank; n++)
     {
-      sstride[n] = GFC_DESCRIPTOR_STRIDE(array,n + 1);
       extent[n] =
 	GFC_DESCRIPTOR_EXTENT(array,n + 1);
 

@@ -87,7 +87,6 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
-  int zero_sized;
   index_type n;
   index_type dim;
   index_type nelem;
@@ -117,13 +116,10 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   else
     runtime_error ("Funny sized logical array");
 
-  zero_sized = 0;
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
-      if (extent[n] <= 0)
-       zero_sized = 1;
       sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,n);
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
     }
