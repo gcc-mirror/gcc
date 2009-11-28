@@ -1,3 +1,7 @@
+2009-11-28  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* config/avr/avr.h (ASM_OUTPUT_EXTERNAL): Add. 
+
 2009-11-28  David Binderman  <dcb314@hotmail.com>
 
 	* ira-color.c (put_allocno_into_bucket): Remove set but not used

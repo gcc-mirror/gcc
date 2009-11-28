@@ -703,6 +703,9 @@ fprintf (STREAM, "\t.skip %lu,0\n", (unsigned long)(N))
           fprintf (STREAM, "\t.p2align\t%d\n", POWER);	\
   } while (0)
 
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+  default_elf_asm_output_external (FILE, DECL, NAME)
+
 #define CASE_VECTOR_MODE HImode
 
 #undef WORD_REGISTER_OPERATIONS
