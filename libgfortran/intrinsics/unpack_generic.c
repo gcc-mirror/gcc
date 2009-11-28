@@ -403,15 +403,13 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
   gfc_array_char tmp;
 
   index_type type_size;
-  index_type size;
 
   if (unlikely(compile_options.bounds_check))
     unpack_bounds (ret, vector, mask, NULL);
 
   type_size = GFC_DTYPE_TYPE_SIZE (vector);
-  size = GFC_DESCRIPTOR_SIZE (vector);
 
-  switch(type_size)
+  switch (type_size)
     {
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:

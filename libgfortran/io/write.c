@@ -1427,10 +1427,8 @@ namelist_write_newline (st_parameter_dt *dtp)
   if (is_array_io (dtp))
     {
       gfc_offset record;
-      int finished, length;
+      int finished;
 
-      length = (int) dtp->u.p.current_unit->bytes_left;
-	      
       /* Now that the current record has been padded out,
 	 determine where the next record in the array is. */
       record = next_array_record (dtp, dtp->u.p.current_unit->ls,
