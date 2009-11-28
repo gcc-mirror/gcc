@@ -1,3 +1,9 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* sarray.c (sarray_free): Use old_buckets variable.
+	* encoding.c (objc_layout_structure_next_member): Remove unused
+	bfld_type_size variable.
+
 2009-08-24  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac (AC_PREREQ): Bump to 2.64.

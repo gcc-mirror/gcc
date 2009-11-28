@@ -422,7 +422,7 @@ sarray_free (struct sarray *array) {
       nindices -= 1;
     }
 #else /* OBJC_SPARSE2 */
-    struct sbucket *bkt = array->buckets[counter];
+    struct sbucket *bkt = old_buckets[counter];
     if ((bkt != array->empty_bucket) &&
 	(bkt->version.version == array->version.version))
       {

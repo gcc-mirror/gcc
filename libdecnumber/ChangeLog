@@ -1,3 +1,8 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* decContext.c (decContextTestEndian): Move adj definition into
+	#if DECCHECK guarded code.
+
 2009-09-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.

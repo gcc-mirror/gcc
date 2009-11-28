@@ -904,7 +904,7 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
 
   /* The following are used only if the field is a bitfield */
   register const char *bfld_type = 0;
-  register int bfld_type_size, bfld_type_align = 0, bfld_field_size = 0;
+  register int bfld_type_align = 0, bfld_field_size = 0;
 
   /* The current type without the type qualifiers */
   const char *type;
@@ -927,7 +927,6 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
              bfld_type++)
           /* do nothing */;
 
-        bfld_type_size = objc_sizeof_type (bfld_type) * BITS_PER_UNIT;
         bfld_type_align = objc_alignof_type (bfld_type) * BITS_PER_UNIT;
         bfld_field_size = atoi (objc_skip_typespec (bfld_type));
         layout->record_size += bfld_field_size;
@@ -958,7 +957,6 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
            bfld_type++)
         /* do nothing */;
 
-      bfld_type_size = objc_sizeof_type (bfld_type) * BITS_PER_UNIT;
       bfld_type_align = objc_alignof_type (bfld_type) * BITS_PER_UNIT;
       bfld_field_size = atoi (objc_skip_typespec (bfld_type));
     }
