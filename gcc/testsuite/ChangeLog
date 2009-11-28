@@ -1,3 +1,8 @@
+2009-11-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42183
+	* g++.dg/torture/pr42183.C: New testcase.
+
 2009-11-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.dg/lto/20081210-1_0.c (uintptr_t): Use for

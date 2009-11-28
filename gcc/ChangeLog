@@ -1,3 +1,10 @@
+2009-11-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42183
+	* tree-nrv.c (tree_nrv): Bail out if the RESULT_DECL has its
+	address taken.  Merge the addressable state of the NRV
+	variable and the result instead of copying it.
+
 2009-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* matrix-reorg.c (analyze_matrix_allocation_site): Remove unused
