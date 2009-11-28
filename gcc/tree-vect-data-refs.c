@@ -1885,7 +1885,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     {
       gimple stmt;
       stmt_vec_info stmt_info;
-      basic_block bb;
       tree base, offset, init;
 
       if (!dr || !DR_REF (dr))
@@ -1923,7 +1922,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       init = unshare_expr (DR_INIT (dr));
 
       /* Update DR field in stmt_vec_info struct.  */
-      bb = gimple_bb (stmt);
 
       /* If the dataref is in an inner-loop of the loop that is considered for
 	 for vectorization, we also want to analyze the access relative to
@@ -2764,12 +2762,9 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
   tree perm_dest, vect1, vect2, high, low;
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
-  tree scalar_dest;
   int i;
   unsigned int j;
   enum tree_code high_code, low_code;
-
-  scalar_dest = gimple_assign_lhs (stmt);
 
   /* Check that the operation is supported.  */
   if (!vect_strided_store_supported (vectype))
@@ -3382,7 +3377,6 @@ vect_supportable_dr_alignment (struct data_reference *dr)
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   enum machine_mode mode = TYPE_MODE (vectype);
-  bool invariant_in_outerloop = false;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *vect_loop = NULL;
   bool nested_in_vect_loop = false;
@@ -3396,13 +3390,6 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 
   vect_loop = LOOP_VINFO_LOOP (loop_vinfo);
   nested_in_vect_loop = nested_in_vect_loop_p (vect_loop, stmt);
-
-  if (nested_in_vect_loop)
-    {
-      tree outerloop_step = STMT_VINFO_DR_STEP (stmt_info);
-      invariant_in_outerloop =
-	(tree_int_cst_compare (outerloop_step, size_zero_node) == 0);
-    }
 
   /* Possibly unaligned access.  */
 

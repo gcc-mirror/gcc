@@ -879,7 +879,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   unsigned int unrolling_factor = 1, nunits;
   tree vectype, scalar_type;
   gimple next;
-  unsigned int vectorization_factor = 0, ncopies;
+  unsigned int vectorization_factor = 0;
   int inside_cost = 0, outside_cost = 0, ncopies_for_cost;
   unsigned int max_nunits = 0;
   VEC (int, heap) *load_permutation;
@@ -904,8 +904,6 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   else
     /* No multitypes in BB SLP.  */
     vectorization_factor = nunits;
-
-  ncopies = vectorization_factor / nunits;
 
   /* Calculate the unrolling factor.  */
   unrolling_factor = least_common_multiple (nunits, group_size) / group_size;
@@ -1639,13 +1637,11 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
   tree perm_dest;
   gimple perm_stmt = NULL;
   stmt_vec_info next_stmt_info;
-  int i, group_size, stride, dr_chain_size;
+  int i, stride;
   tree first_vec, second_vec, data_ref;
   VEC (tree, heap) *params = NULL;
 
-  group_size = VEC_length (gimple, SLP_TREE_SCALAR_STMTS (node));
   stride = SLP_TREE_NUMBER_OF_VEC_STMTS (node) / ncopies;
-  dr_chain_size = VEC_length (tree, dr_chain);
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */

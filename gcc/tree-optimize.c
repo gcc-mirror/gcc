@@ -378,13 +378,10 @@ void
 tree_rest_of_compilation (tree fndecl)
 {
   location_t saved_loc;
-  struct cgraph_node *node;
 
   timevar_push (TV_EXPAND);
 
   gcc_assert (cgraph_global_info_ready);
-
-  node = cgraph_node (fndecl);
 
   /* Initialize the default bitmap obstack.  */
   bitmap_obstack_initialize (NULL);

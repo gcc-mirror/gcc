@@ -407,7 +407,6 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
       cselib_val *v;
       struct elt_loc_list *l;
       rtx op;
-      enum machine_mode mode;
 
       CLEAR_HARD_REG_SET (equiv_regs[i]);
 
@@ -420,11 +419,10 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	continue;
 
       op = recog_data.operand[i];
-      mode = GET_MODE (op);
 #ifdef LOAD_EXTEND_OP
       if (MEM_P (op)
-	  && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
-	  && LOAD_EXTEND_OP (mode) != UNKNOWN)
+	  && GET_MODE_BITSIZE (GET_MODE (op)) < BITS_PER_WORD
+	  && LOAD_EXTEND_OP (GET_MODE (op)) != UNKNOWN)
 	{
 	  rtx set = single_set (insn);
 
@@ -457,7 +455,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		   && SET_DEST (set) == recog_data.operand[1-i])
 	    {
 	      validate_change (insn, recog_data.operand_loc[i],
-			       gen_rtx_fmt_e (LOAD_EXTEND_OP (mode),
+			       gen_rtx_fmt_e (LOAD_EXTEND_OP (GET_MODE (op)),
 					      word_mode, op),
 			       1);
 	      validate_change (insn, recog_data.operand_loc[1-i],

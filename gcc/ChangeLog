@@ -1,3 +1,100 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* matrix-reorg.c (analyze_matrix_allocation_site): Remove unused
+	malloc_fname variable.
+	(check_allocation_function): Remove unused gsi and bb_level_0
+	variables.
+	(transform_access_sites): Remove unused d_type_size and d_type_size_k
+	variables.
+	* omega.c (resurrect_subs): Remove unused n variable.
+	(omega_solve_geq): Remove unused neweqns variable.
+	* lto-streamer-in.c (lto_read_tree): Remove unused end_marker variable.
+	* tree-inline.c (declare_return_variable): Remove USE_P argument,
+	return use instead of var.
+	(remap_decl, remap_block): Remove unused fn variable.
+	(expand_call_inline): Remove unused retvar variable, adjust
+	declare_return_variable caller.
+	(optimize_inline_calls): Remove unused prev_fn variable.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Remove unused ncopies
+	variable.
+	(vect_create_mask_and_perm): Remove unused group_size and dr_chain_size
+	variables.
+	* tree-ssa-loop-niter.c (split_to_var_and_offset): Handle MINUS_EXPR
+	properly.
+	* tree-vect-loop.c (vect_analyze_loop_form): Remove unused backedge
+	variable.
+	(vect_create_epilog_for_reduction): Remove unused bytesize variable.
+	* omp-low.c (workshare_safe_to_combine_p): Remove par_entry_bb
+	parameter.  Remove unused par_stmt variable.
+	(determine_parallel_type): Adjust workshare_safe_to_combine_p caller.
+	(expand_omp_sections): Remove unused l1 variable.
+	(lower_omp_for): Remove unused ilist variable.
+	* tree-loop-distribution.c (mark_nodes_having_upstream_mem_writes):
+	Remove unused has_upstream_mem_write_p variable.
+	* recog.c (decode_asm_operands): Remove unused noperands variable.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Remove unused size1 and
+	size2 variable.
+	* libgcov.c (__gcov_merge_delta): Remove unused last variable.
+	* tree-call-cdce.c (gen_conditions_for_pow_int_base): Remove unused
+	base_nm variable.
+	(gen_conditions_for_pow): Remove unused ec variable.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Remove unused size
+	variable.
+	* ipa-struct-reorg.c (program_redefines_malloc_p): Remove unused
+	fndecl variable.
+	* tree-ssa-sink.c (statement_sink_location): Remove unused code
+	variable.
+	* regmove.c (copy_src_to_dest): Remove unused insn_uid and move_uid
+	variables.
+	* tree-complex.c (create_one_component_var): Remove unused inner_type
+	variable.
+	* calls.c (emit_call_1): Don't GEN_INT (struct_value_size)
+	unnecessarily when GEN_*CALL omits that argument.
+	* regrename.c (regrename_optimize): Remove unused regs_seen variable.
+	(build_def_use): Remove unused icode variable.
+	* ipa-pure-const.c (check_call): Remove unused callee and avail
+	variables.
+	* tree-dfa.c (add_referenced_var): Remove unused v_ann variable.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Remove unused type
+	variable.
+	(vect_pattern_recog): Remove unused stmt variable.
+	* sel-sched-ir.c (make_regions_from_the_rest): Remove unused
+	new_regions variable.
+	* postreload.c (reload_cse_simplify_operands): Remove unused mode
+	variable.
+	* tree-parloops.c (create_call_for_reduction_1): Remove unused
+	addr_type variable.
+	(create_parallel_loop): Remove unused res variable.
+	(gen_parallel_loop): Remove unused nloop variable.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Likewise.
+	* value-prof.c (gimple_mod_subtract_transform,
+	gimple_stringops_transform): Remove unused value variable.
+	(gimple_stringops_values_to_profile): Remove unused fcode variable.
+	* tree-vrp.c (register_new_assert_for): Remove unused found variable.
+	(vrp_visit_switch_stmt): Remove unused n variable.
+	* tree-vect-stmts.c (vectorizable_conversion): Remove unused expr
+	variable.
+	(vectorizable_operation): Remove unused shift_p variable.
+	(vectorizable_store): Remove unused first_stmt_vinfo variable.
+	* tree-ssa-operands.c (add_stmt_operand): Remove unused v_ann variable.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Remove unused bb
+	variable.
+	(vect_permute_store_chain): Remove unused scalar_dest variable.
+	(vect_supportable_dr_alignment): Remove unused invariant_in_outerloop
+	variable.
+	* tree-ssa-threadupdate.c (thread_single_edge): Remove unused
+	local_info variable.
+	* tree-optimize.c (tree_rest_of_compilation): Remove unused node
+	variable.
+	* optabs.c (expand_binop): Remove unused equiv_value variable.
+	(emit_libcall_block): Remove unused prev variable.
+	(init_optabs): Remove unused int_mode variable.
+	* tree-ssa-structalias.c (scc_visit): Remove unused have_ref_node
+	variable.
+	(do_structure_copy): Remove unused lhsbase and rhsbase variables.
+	(find_func_aliases): Remove unused rhstype variable.
+	(ipa_pta_execute): Remove unused varid variable.
+
 2009-11-28  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* config/avr/avr.h (ASM_OUTPUT_EXTERNAL): Add. 

@@ -3911,7 +3911,6 @@ register_new_assert_for (tree name, tree expr,
 			 gimple_stmt_iterator si)
 {
   assert_locus_t n, loc, last_loc;
-  bool found;
   basic_block dest_bb;
 
 #if defined ENABLE_CHECKING
@@ -3960,7 +3959,6 @@ register_new_assert_for (tree name, tree expr,
      COMP_CODE and VAL could be implemented.  */
   loc = asserts_for[SSA_NAME_VERSION (name)];
   last_loc = loc;
-  found = false;
   while (loc)
     {
       if (loc->comp_code == comp_code
@@ -5997,7 +5995,7 @@ vrp_visit_switch_stmt (gimple stmt, edge *taken_edge_p)
 {
   tree op, val;
   value_range_t *vr;
-  size_t i = 0, j = 0, n;
+  size_t i = 0, j = 0;
   bool take_default;
 
   *taken_edge_p = NULL;
@@ -6020,8 +6018,6 @@ vrp_visit_switch_stmt (gimple stmt, edge *taken_edge_p)
     return SSA_PROP_VARYING;
 
   /* Find the single edge that is taken from the switch expression.  */
-  n = gimple_switch_num_labels (stmt);
-
   take_default = !find_case_label_range (stmt, vr->min, vr->max, &i, &j);
 
   /* Check if the range spans no CASE_LABEL. If so, we only reach the default

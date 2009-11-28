@@ -5787,7 +5787,7 @@ generate_category (tree cat)
 static void
 generate_shared_structures (int cls_flags)
 {
-  tree sc_spec, decl_specs, decl;
+  tree decl;
   tree name_expr, super_expr, root_expr;
   tree my_root_id = NULL_TREE, my_super_id = NULL_TREE;
   tree cast_type, initlist, protocol_decl;
@@ -5843,9 +5843,6 @@ generate_shared_structures (int cls_flags)
     protocol_decl = 0;
 
   /* static struct objc_class _OBJC_METACLASS_Foo = { ... }; */
-
-  sc_spec = build_tree_list (NULL_TREE, ridpointers[(int) RID_STATIC]);
-  decl_specs = tree_cons (NULL_TREE, objc_class_template, sc_spec);
 
   decl = start_var_decl (objc_class_template,
 			 IDENTIFIER_POINTER
@@ -6269,7 +6266,6 @@ tree
 objc_build_message_expr (tree mess)
 {
   tree receiver = TREE_PURPOSE (mess);
-  location_t loc;
   tree sel_name;
 #ifdef OBJCPLUS
   tree args = TREE_PURPOSE (TREE_VALUE (mess));
@@ -6280,11 +6276,6 @@ objc_build_message_expr (tree mess)
 
   if (TREE_CODE (receiver) == ERROR_MARK || TREE_CODE (args) == ERROR_MARK)
     return error_mark_node;
-
-  if (CAN_HAVE_LOCATION_P (receiver))
-    loc = EXPR_LOCATION (receiver);
-  else
-    loc = input_location;
 
   /* Obtain the full selector name.  */
   if (TREE_CODE (args) == IDENTIFIER_NODE)
@@ -6448,7 +6439,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
     }
   else if (rtype)
     {
-      tree orig_rtype = rtype, saved_rtype;
+      tree orig_rtype = rtype;
 
       if (TREE_CODE (rtype) == POINTER_TYPE)
 	rtype = TREE_TYPE (rtype);
@@ -6457,7 +6448,6 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	     && TREE_CODE (OBJC_TYPE_NAME (rtype)) == TYPE_DECL
 	     && DECL_ORIGINAL_TYPE (OBJC_TYPE_NAME (rtype)))
 	rtype = DECL_ORIGINAL_TYPE (OBJC_TYPE_NAME (rtype));
-      saved_rtype = rtype;
       if (TYPED_OBJECT (rtype))
 	{
 	  rprotos = TYPE_OBJC_PROTOCOL_LIST (rtype);
@@ -8311,16 +8301,12 @@ encode_gnu_bitfield (int position, tree type, int size)
 static void
 encode_field_decl (tree field_decl, int curtype, int format)
 {
-  tree type;
-
 #ifdef OBJCPLUS
   /* C++ static members, and things that are not fields at all,
      should not appear in the encoding.  */
   if (TREE_CODE (field_decl) != FIELD_DECL || TREE_STATIC (field_decl))
     return;
 #endif
-
-  type = TREE_TYPE (field_decl);
 
   /* Generate the bitfield typing information, if needed.  Note the difference
      between GNU and NeXT runtimes.  */

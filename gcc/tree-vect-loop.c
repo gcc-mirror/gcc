@@ -889,7 +889,7 @@ vect_analyze_loop_form (struct loop *loop)
   else
     {
       struct loop *innerloop = loop->inner;
-      edge backedge, entryedge;
+      edge entryedge;
 
       /* Nested loop. We currently require that the loop is doubly-nested,
 	 contains a single inner loop, and the number of BBs is exactly 5.
@@ -943,13 +943,9 @@ vect_analyze_loop_form (struct loop *loop)
         }
 
       gcc_assert (EDGE_COUNT (innerloop->header->preds) == 2);
-      backedge = EDGE_PRED (innerloop->header, 1);
       entryedge = EDGE_PRED (innerloop->header, 0);
       if (EDGE_PRED (innerloop->header, 0)->src == innerloop->latch)
-	{
-	  backedge = EDGE_PRED (innerloop->header, 0);
-	  entryedge = EDGE_PRED (innerloop->header, 1);
-	}
+	entryedge = EDGE_PRED (innerloop->header, 1);
 
       if (entryedge->src != loop->header
 	  || !single_exit (innerloop)
@@ -2890,7 +2886,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   gimple epilog_stmt = NULL;
   tree new_scalar_dest, new_dest;
   gimple exit_phi;
-  tree bitsize, bitpos, bytesize;
+  tree bitsize, bitpos;
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree adjustment_def;
   tree vec_initial_def, def;
@@ -3045,7 +3041,6 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   scalar_type = TREE_TYPE (scalar_dest);
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
   bitsize = TYPE_SIZE (scalar_type);
-  bytesize = TYPE_SIZE_UNIT (scalar_type);
 
   /* For MINUS_EXPR the initial vector is [init_val,0,...,0], therefore,
      partial results are added and not subtracted.  */

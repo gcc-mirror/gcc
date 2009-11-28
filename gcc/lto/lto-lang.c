@@ -285,7 +285,6 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 			  bool * ARG_UNUSED (no_add_attrs))
 {
   tree type = *node;
-  unsigned HOST_WIDE_INT attr_arg_num;
 
   /* If no arguments are specified, all pointer arguments should be
      non-null.  Verify a full prototype is given so that the arguments
@@ -298,7 +297,7 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
   /* Argument list specified.  Verify that each argument number references
      a pointer argument.  */
-  for (attr_arg_num = 1; args; args = TREE_CHAIN (args))
+  for (; args; args = TREE_CHAIN (args))
     {
       tree argument;
       unsigned HOST_WIDE_INT arg_num = 0, ck_num;

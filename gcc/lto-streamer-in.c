@@ -2597,7 +2597,6 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
 	       enum LTO_tags tag)
 {
   tree result;
-  char end_marker;
   int ix;
 
   result = lto_materialize_tree (ib, data_in, tag, &ix);
@@ -2614,7 +2613,7 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
   else if (TREE_CODE (result) == FUNCTION_DECL && !DECL_BUILT_IN (result))
     lto_register_function_decl_in_symtab (data_in, result);
 
-  end_marker = lto_input_1_unsigned (ib);
+  /* end_marker = */ lto_input_1_unsigned (ib);
 
 #ifdef LTO_STREAMER_DEBUG
   /* Remove the mapping to RESULT's original address set by

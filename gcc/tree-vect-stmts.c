@@ -1548,7 +1548,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   int nunits_out;
   tree vectype_out, vectype_in;
   int ncopies, j;
-  tree expr;
   tree rhs_type, lhs_type;
   tree builtin_decl;
   enum { NARROW, NONE, WIDEN } modifier;
@@ -1765,7 +1764,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	    }
 
 	  /* Arguments are ready. Create the new vector stmt.  */
-	  expr = build2 (code1, vectype_out, vec_oprnd0, vec_oprnd1);
 	  new_stmt = gimple_build_assign_with_ops (code1, vec_dest, vec_oprnd0,
 						   vec_oprnd1);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -1929,7 +1927,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   VEC(tree,heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   tree vop0, vop1;
   unsigned int k;
-  bool shift_p = false;
   bool scalar_shift_arg = false;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
@@ -2013,8 +2010,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (code == LSHIFT_EXPR || code == RSHIFT_EXPR || code == LROTATE_EXPR
       || code == RROTATE_EXPR)
     {
-      shift_p = true;
-
       /* vector shifted by vector */
       if (dt[1] == vect_internal_def)
 	{
@@ -2893,7 +2888,6 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   bool inv_p;
   VEC(tree,heap) *vec_oprnds = NULL;
   bool slp = (slp_node != NULL);
-  stmt_vec_info first_stmt_vinfo;
   unsigned int vec_num;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
 
@@ -3036,7 +3030,6 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       first_stmt = stmt;
       first_dr = dr;
       group_size = vec_num = 1;
-      first_stmt_vinfo = stmt_info;
     }
 
   if (vect_print_dump_info (REPORT_DETAILS))

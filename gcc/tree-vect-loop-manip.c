@@ -2327,7 +2327,6 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
 		      tree *cond_expr, gimple_seq *cond_expr_stmt_list)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  struct loop *nloop;
   basic_block condition_bb;
   gimple_stmt_iterator gsi, cond_exp_gsi;
   basic_block merge_bb;
@@ -2374,8 +2373,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
     return;
 
   initialize_original_copy_tables ();
-  nloop = loop_version (loop, *cond_expr, &condition_bb,
-			prob, prob, REG_BR_PROB_BASE - prob, true);
+  loop_version (loop, *cond_expr, &condition_bb,
+		prob, prob, REG_BR_PROB_BASE - prob, true);
   free_original_copy_tables();
 
   /* Loop versioning violates an assumption we try to maintain during

@@ -273,7 +273,6 @@ statement_sink_location (gimple stmt, basic_block frombb,
   def_operand_p def_p;
   ssa_op_iter iter;
   imm_use_iterator imm_iter;
-  enum tree_code code;
 
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     {
@@ -320,7 +319,6 @@ statement_sink_location (gimple stmt, basic_block frombb,
      to use specific hard registers.
 
   */
-  code = gimple_assign_rhs_code (stmt);
   if (stmt_ends_bb_p (stmt)
       || gimple_has_side_effects (stmt)
       || is_hidden_global_store (stmt)

@@ -767,7 +767,6 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 {
   tree base1, base2;
   HOST_WIDE_INT offset1 = 0, offset2 = 0;
-  HOST_WIDE_INT size1 = -1, size2 = -1;
   HOST_WIDE_INT max_size1 = -1, max_size2 = -1;
   bool var1_p, var2_p, ind1_p, ind2_p;
   alias_set_type set;
@@ -788,11 +787,9 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   /* Decompose the references into their base objects and the access.  */
   base1 = ao_ref_base (ref1);
   offset1 = ref1->offset;
-  size1 = ref1->size;
   max_size1 = ref1->max_size;
   base2 = ao_ref_base (ref2);
   offset2 = ref2->offset;
-  size2 = ref2->size;
   max_size2 = ref2->max_size;
 
   /* We can end up with registers or constants as bases for example from

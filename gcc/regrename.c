@@ -175,7 +175,10 @@ regrename_optimize (void)
     {
       struct du_head *all_chains = 0;
       HARD_REG_SET unavailable;
+#if 0
       HARD_REG_SET regs_seen;
+      CLEAR_HARD_REG_SET (regs_seen);
+#endif
 
       id_to_chain = VEC_alloc (du_head_p, heap, 0);
 
@@ -199,7 +202,6 @@ regrename_optimize (void)
 #endif
 	}
 
-      CLEAR_HARD_REG_SET (regs_seen);
       while (all_chains)
 	{
 	  int new_reg, best_new_reg, best_nregs;
@@ -978,7 +980,7 @@ build_def_use (basic_block bb)
 	  rtx note;
 	  rtx old_operands[MAX_RECOG_OPERANDS];
 	  rtx old_dups[MAX_DUP_OPERANDS];
-	  int i, icode;
+	  int i;
 	  int alt;
 	  int predicated;
 	  enum rtx_code set_code = SET;
@@ -1007,7 +1009,6 @@ build_def_use (basic_block bb)
 	     to be marked unrenamable or even cause us to abort the entire
 	     basic block.  */
 
-	  icode = recog_memoized (insn);
 	  extract_insn (insn);
 	  if (! constrain_operands (1))
 	    fatal_insn_not_found (insn);

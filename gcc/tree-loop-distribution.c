@@ -521,7 +521,6 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
       {
 	unsigned i;
 	VEC (int, heap) *nodes = VEC_alloc (int, heap, 3);
-	bool has_upstream_mem_write_p = false;
 
 	graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
 
@@ -539,7 +538,6 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
 		   should be placed in the same partition.  */
 		|| has_anti_dependence (&(rdg->vertices[x])))
 	      {
-		has_upstream_mem_write_p = true;
 		bitmap_set_bit (upstream_mem_writes, x);
 	      }
 	  }

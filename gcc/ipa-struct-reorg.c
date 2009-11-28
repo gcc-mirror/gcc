@@ -3435,13 +3435,10 @@ program_redefines_malloc_p (void)
   struct cgraph_node *c_node;
   struct cgraph_node *c_node2;
   struct cgraph_edge *c_edge;
-  tree fndecl;
   tree fndecl2;
 
   for (c_node = cgraph_nodes; c_node; c_node = c_node->next)
     {
-      fndecl = c_node->decl;
-
       for (c_edge = c_node->callees; c_edge; c_edge = c_edge->next_callee)
 	{
 	  c_node2 = c_edge->callee;

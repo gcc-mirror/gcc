@@ -1,3 +1,8 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-lang.c (handle_nonnull_attribute): Remove unused attr_arg_num
+	variable.
+
 2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR bootstrap/42096

@@ -653,13 +653,11 @@ static void
 add_stmt_operand (tree *var_p, gimple stmt, int flags)
 {
   tree var, sym;
-  var_ann_t v_ann;
 
   gcc_assert (SSA_VAR_P (*var_p));
 
   var = *var_p;
   sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
-  v_ann = var_ann (sym);
 
   /* Mark statements with volatile operands.  */
   if (TREE_THIS_VOLATILE (sym))

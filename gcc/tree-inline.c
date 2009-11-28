@@ -118,7 +118,7 @@ eni_weights eni_time_weights;
 
 /* Prototypes.  */
 
-static tree declare_return_variable (copy_body_data *, tree, tree, tree *);
+static tree declare_return_variable (copy_body_data *, tree, tree);
 static void remap_block (tree *, copy_body_data *);
 static void copy_bind_expr (tree *, int *, copy_body_data *);
 static tree mark_local_for_remap_r (tree *, int *, void *);
@@ -256,10 +256,8 @@ tree
 remap_decl (tree decl, copy_body_data *id)
 {
   tree *n;
-  tree fn;
 
   /* We only remap local variables in the current function.  */
-  fn = id->src_fn;
 
   /* See if we have remapped this declaration.  */
 
@@ -590,7 +588,6 @@ remap_block (tree *block, copy_body_data *id)
 {
   tree old_block;
   tree new_block;
-  tree fn;
 
   /* Make the new block.  */
   old_block = *block;
@@ -606,8 +603,6 @@ remap_block (tree *block, copy_body_data *id)
   BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block),
   					&BLOCK_NONLOCALIZED_VARS (new_block),
 					id);
-
-  fn = id->dst_fn;
 
   if (id->transform_lang_insert_block)
     id->transform_lang_insert_block (new_block);
@@ -2533,13 +2528,11 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
    is set only for CALL_EXPR_RETURN_SLOT_OPT.  MODIFY_DEST, if non-null,
    was the LHS of the MODIFY_EXPR to which this call is the RHS.
 
-   The return value is a (possibly null) value that is the result of the
-   function as seen by the callee.  *USE_P is a (possibly null) value that
-   holds the result as seen by the caller.  */
+   The return value is a (possibly null) value that holds the result
+   as seen by the caller.  */
 
 static tree
-declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
-			 tree *use_p)
+declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest)
 {
   tree callee = id->src_fn;
   tree caller = id->dst_fn;
@@ -2551,10 +2544,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   /* We don't need to do anything for functions that don't return
      anything.  */
   if (!result || VOID_TYPE_P (callee_type))
-    {
-      *use_p = NULL_TREE;
-      return NULL_TREE;
-    }
+    return NULL_TREE;
 
   /* If there was a return slot, then the return value is the
      dereferenced address of that object.  */
@@ -2705,8 +2695,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   /* Remember this so we can ignore it in remap_decls.  */
   id->retvar = var;
 
-  *use_p = use;
-  return var;
+  return use;
 }
 
 /* Callback through walk_tree.  Determine if a DECL_INITIAL makes reference
@@ -3506,7 +3495,7 @@ get_indirect_callee_fndecl (struct cgraph_node *node, gimple stmt)
 static bool
 expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 {
-  tree retvar, use_retvar;
+  tree use_retvar;
   tree fn;
   struct pointer_map_t *st, *dst;
   tree return_slot;
@@ -3725,7 +3714,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
     }
 
   /* Declare the return variable for the function.  */
-  retvar = declare_return_variable (id, return_slot, modify_dest, &use_retvar);
+  use_retvar = declare_return_variable (id, return_slot, modify_dest);
 
   /* Add local vars in this inlined callee to caller.  */
   t_step = id->src_cfun->local_decls;
@@ -3981,7 +3970,6 @@ unsigned int
 optimize_inline_calls (tree fn)
 {
   copy_body_data id;
-  tree prev_fn;
   basic_block bb;
   int last = n_basic_blocks;
   struct gimplify_ctx gctx;
@@ -3998,12 +3986,8 @@ optimize_inline_calls (tree fn)
   id.src_node = id.dst_node = cgraph_node (fn);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */
-  prev_fn = NULL_TREE;
   if (current_function_decl)
-    {
-      id.dst_fn = current_function_decl;
-      prev_fn = current_function_decl;
-    }
+    id.dst_fn = current_function_decl;
 
   id.copy_decl = copy_decl_maybe_to_var;
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;

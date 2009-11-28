@@ -456,15 +456,12 @@ vect_recog_widen_mult_pattern (gimple last_stmt,
 static gimple
 vect_recog_pow_pattern (gimple last_stmt, tree *type_in, tree *type_out)
 {
-  tree type;
   tree fn, base, exp = NULL;
   gimple stmt;
   tree var;
 
   if (!is_gimple_call (last_stmt) || gimple_call_lhs (last_stmt) == NULL)
     return NULL;
-
-  type = gimple_expr_type (last_stmt);
 
   fn = gimple_call_fndecl (last_stmt);
   switch (DECL_FUNCTION_CODE (fn))
@@ -812,7 +809,6 @@ vect_pattern_recog (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned int nbbs = loop->num_nodes;
   gimple_stmt_iterator si;
-  gimple stmt;
   unsigned int i, j;
   gimple (* vect_recog_func_ptr) (gimple, tree *, tree *);
 
@@ -826,8 +822,6 @@ vect_pattern_recog (loop_vec_info loop_vinfo)
       basic_block bb = bbs[i];
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
-          stmt = gsi_stmt (si);
-
           /* Scan over all generic vect_recog_xxx_pattern functions.  */
           for (j = 0; j < NUM_PATTERNS; j++)
             {

@@ -1,5 +1,11 @@
 2009-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* objc-act.c (generate_shared_structures): Remove unused sc_spec and
+	decl_specs variables.
+	(objc_build_message_expr): Remove unused loc variable.
+	(objc_finish_message_expr): Remove unused saved_rtype variable.
+	(encode_field_decl): Remove unused type variable.
+
 	PR obj-c++/42156
 	* objc-act.c (objc_build_struct): INIT_TYPE_OBJC_INFO for
 	type variants that don't have it initialized yet.

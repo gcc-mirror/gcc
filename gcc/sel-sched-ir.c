@@ -5843,11 +5843,9 @@ make_regions_from_the_rest (void)
   edge e;
   edge_iterator ei;
   int *degree;
-  int new_regions;
 
   /* Index in rgn_bb_table where to start allocating new regions.  */
   cur_rgn_blocks = nr_regions ? RGN_BLOCKS (nr_regions) : 0;
-  new_regions = nr_regions;
 
   /* Make regions from all the rest basic blocks - those that don't belong to
      any loop or belong to irreducible loops.  Prepare the data structures

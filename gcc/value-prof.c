@@ -959,7 +959,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   histogram_value histogram;
   enum tree_code code;
   gcov_type count, wrong_values, all;
-  tree lhs_type, result, value;
+  tree lhs_type, result;
   gcov_type prob1, prob2;
   unsigned int i, steps;
   gcov_type count1, count2;
@@ -982,7 +982,6 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   if (!histogram)
     return false;
 
-  value = histogram->hvalue.value;
   all = 0;
   wrong_values = 0;
   for (i = 0; i < histogram->hdata.intvl.steps; i++)
@@ -1367,7 +1366,6 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   enum built_in_function fcode;
   histogram_value histogram;
   gcov_type count, all, val;
-  tree value;
   tree dest, src;
   unsigned int dest_align, src_align;
   gcov_type prob;
@@ -1390,7 +1388,6 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_SINGLE_VALUE);
   if (!histogram)
     return false;
-  value = histogram->hvalue.value;
   val = histogram->hvalue.counters[0];
   count = histogram->hvalue.counters[1];
   all = histogram->hvalue.counters[2];
@@ -1593,7 +1590,6 @@ gimple_stringops_values_to_profile (gimple stmt, histogram_values *values)
   tree fndecl;
   tree blck_size;
   tree dest;
-  enum built_in_function fcode;
   int size_arg;
 
   if (gimple_code (stmt) != GIMPLE_CALL)
@@ -1601,7 +1597,6 @@ gimple_stringops_values_to_profile (gimple stmt, histogram_values *values)
   fndecl = gimple_call_fndecl (stmt);
   if (!fndecl)
     return;
-  fcode = DECL_FUNCTION_CODE (fndecl);
 
   if (!interesting_stringop_to_profile_p (fndecl, stmt, &size_arg))
     return;
