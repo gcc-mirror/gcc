@@ -1,3 +1,10 @@
+2009-11-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36408
+	* cp-tree.h (empty_expr_stmt_p): Declare ...
+	* semantics.c (empty_expr_stmt_p): ... this.
+	* pt.c (tsubst_copy_and_build) <STMT_EXPR>: Use it.
+
 2009-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38656
