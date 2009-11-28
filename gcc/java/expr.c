@@ -632,7 +632,7 @@ java_stack_pop (int count)
 {
   while (count > 0)
     {
-      tree type, val;
+      tree type;
 
       gcc_assert (stack_pointer != 0);
 
@@ -644,7 +644,7 @@ java_stack_pop (int count)
 
 	  type = stack_type_map[stack_pointer - 2];
 	}
-      val = pop_value (type);
+      pop_value (type);
       count--;
     }
 }
@@ -2652,7 +2652,7 @@ build_jni_stub (tree method)
   tree jniarg0, jniarg1, jniarg2, jniarg3;
   tree jni_func_type, tem;
   tree env_var, res_var = NULL_TREE, block;
-  tree method_args, res_type;
+  tree method_args;
   tree meth_var;
   tree bind;
 
@@ -2805,7 +2805,6 @@ build_jni_stub (tree method)
   TREE_SIDE_EFFECTS (body) = 1;
 
   /* Finally, do the return.  */
-  res_type = void_type_node;
   if (res_var != NULL_TREE)
     {
       tree drt;

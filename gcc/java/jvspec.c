@@ -147,9 +147,6 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 {
   int i, j;
 
-  /* If nonzero, the user gave us the `-v' flag.  */
-  int saw_verbose_flag = 0;
-
   int saw_save_temps = 0;
 
   /* This will be 0 if we encounter a situation where we should not
@@ -266,7 +263,6 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	    want_spec_file = 0;
 	  else if (strcmp (argv[i], "-v") == 0)
 	    {
-	      saw_verbose_flag = 1;
 	      if (argc == 2)
 		{
 		  /* If they only gave us `-v', don't try to link

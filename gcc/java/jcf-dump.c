@@ -1305,7 +1305,6 @@ main (int argc, char** argv)
 	    {
 	      long compressed_size, member_size;
 	      int compression_method, filename_length, extra_length;
-	      int general_purpose_bits;
 	      const char *filename;
 	      int total_length;
 	      if (flag_print_class_info)
@@ -1325,7 +1324,7 @@ main (int argc, char** argv)
 		    }
 		  JCF_FILL (jcf, 26);
 		  JCF_SKIP (jcf, 2);
-		  general_purpose_bits = JCF_readu2_le (jcf);
+		  (void) /* general_purpose_bits = */ JCF_readu2_le (jcf);
 		  compression_method = JCF_readu2_le (jcf);
 		  JCF_SKIP (jcf, 8);
 		  compressed_size = JCF_readu4_le (jcf);
