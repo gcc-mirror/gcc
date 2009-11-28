@@ -1,3 +1,11 @@
+2009-11-28  David Binderman  <dcb314@hotmail.com>
+
+	* ira-color.c (put_allocno_into_bucket): Remove set but not used
+	local variable hard_regs_num.
+	* ira-lives.c (process_single_reg_class_operands): Remove cover_class.
+	* loop-unswitch.c (unswitch_loop): Remove zero_bitmap.
+	* lower-subreg.c (decompose_multiword_subregs): Remove next.
+
 2009-11-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42006

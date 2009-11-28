@@ -1476,11 +1476,9 @@ setup_allocno_left_conflicts_size (ira_allocno_t allocno)
 static void
 put_allocno_into_bucket (ira_allocno_t allocno)
 {
-  int hard_regs_num;
   enum reg_class cover_class;
 
   cover_class = ALLOCNO_COVER_CLASS (allocno);
-  hard_regs_num = ira_class_hard_regs_num[cover_class];
   if (ALLOCNO_FIRST_COALESCED_ALLOCNO (allocno) != allocno)
     return;
   ALLOCNO_IN_GRAPH_P (allocno) = true;

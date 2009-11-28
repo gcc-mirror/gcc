@@ -804,7 +804,7 @@ process_single_reg_class_operands (bool in_p, int freq)
 {
   int i, regno, cost;
   unsigned int px;
-  enum reg_class cl, cover_class;
+  enum reg_class cl;
   rtx operand;
   ira_allocno_t operand_a, a;
 
@@ -861,7 +861,6 @@ process_single_reg_class_operands (bool in_p, int freq)
       EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, px)
         {
 	  a = ira_allocnos[px];
-	  cover_class = ALLOCNO_COVER_CLASS (a);
 	  if (a != operand_a)
 	    {
 	      /* We could increase costs of A instead of making it
