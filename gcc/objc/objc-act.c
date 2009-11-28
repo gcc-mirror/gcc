@@ -871,9 +871,16 @@ objc_build_struct (tree klass, tree fields, tree super_name)
      finish_struct(), and then reinstate it afterwards.  */
 
   for (t = TYPE_NEXT_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t))
-    objc_info
-      = chainon (objc_info,
-		 build_tree_list (NULL_TREE, TYPE_OBJC_INFO (t)));
+    {
+      if (!TYPE_HAS_OBJC_INFO (t))
+	{
+	  INIT_TYPE_OBJC_INFO (t);
+	  TYPE_OBJC_INTERFACE (t) = klass;
+	}
+      objc_info
+	= chainon (objc_info,
+		   build_tree_list (NULL_TREE, TYPE_OBJC_INFO (t)));
+    }
 
   /* Point the struct at its related Objective-C class.  */
   INIT_TYPE_OBJC_INFO (s);

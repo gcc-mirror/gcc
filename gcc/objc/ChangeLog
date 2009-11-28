@@ -1,3 +1,9 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR obj-c++/42156
+	* objc-act.c (objc_build_struct): INIT_TYPE_OBJC_INFO for
+	type variants that don't have it initialized yet.
+
 2009-09-14  Jan Hubicka  <jh@suse.cz>
 
 	* objc-act.c (objc_add_static_instance): Do not set DECL_COMMON.
