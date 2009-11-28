@@ -1,3 +1,15 @@
+2009-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* jvspec.c (lang_specific_driver): Remove unused
+	saw_verbose_flag variable.
+	* jcf-dump.c (main): Remove unused general_purpose_bits
+	variable.
+	* builtins.c (initialize_builtins): Remove unused float_ftype_float
+	variable.
+	* expr.c (java_stack_pop): Remove unused val variable.
+	(build_jni_stub): Remove unused res_type variable.
+	* verify-impl.c (check_field_constant): Remove unused len variable.
+
 2009-10-20  Joel Dice <dicej@mailsnare.net>
 
 	PR java/28474

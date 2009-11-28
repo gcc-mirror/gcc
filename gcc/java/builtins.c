@@ -484,7 +484,7 @@ void
 initialize_builtins (void)
 {
   tree double_ftype_double, double_ftype_double_double;
-  tree float_ftype_float, float_ftype_float_float;
+  tree float_ftype_float_float;
   tree boolean_ftype_boolean_boolean;
   tree t;
   int i;
@@ -501,7 +501,6 @@ initialize_builtins (void)
   void_list_node = end_params_node;
 
   t = tree_cons (NULL_TREE, float_type_node, end_params_node);
-  float_ftype_float = build_function_type (float_type_node, t);
   t = tree_cons (NULL_TREE, float_type_node, t);
   float_ftype_float_float = build_function_type (float_type_node, t);
 
