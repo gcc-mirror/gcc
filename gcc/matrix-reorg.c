@@ -821,7 +821,6 @@ analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
       else
 	{
 	  tree malloc_fn_decl;
-	  const char *malloc_fname;
 
 	  malloc_fn_decl = gimple_call_fndecl (stmt);
 	  if (malloc_fn_decl == NULL_TREE)
@@ -829,7 +828,6 @@ analyze_matrix_allocation_site (struct matrix_info *mi, gimple stmt,
 	      mark_min_matrix_escape_level (mi, level, stmt);
 	      return;
 	    }
-	  malloc_fname = IDENTIFIER_POINTER (DECL_NAME (malloc_fn_decl));
 	  if (DECL_FUNCTION_CODE (malloc_fn_decl) != BUILT_IN_MALLOC)
 	    {
 	      if (dump_file)
@@ -1572,8 +1570,6 @@ static int
 check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   int level;
-  gimple_stmt_iterator gsi;
-  basic_block bb_level_0;
   struct matrix_info *mi = (struct matrix_info *) *slot;
   sbitmap visited;
 
@@ -1594,9 +1590,6 @@ check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
       break;
 
   mark_min_matrix_escape_level (mi, level, NULL);
-
-  gsi = gsi_for_stmt (mi->malloc_for_level[0]);
-  bb_level_0 = gsi.bb;
 
   /* Check if the expression of the size passed to malloc could be
      pre-calculated before the malloc of level 0.  */
@@ -1918,10 +1911,6 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	      else
 		{
 		  tree new_offset;
-		  tree d_type_size, d_type_size_k;
-
-		  d_type_size = size_int (mi->dimension_type_size[min_escape_l]);
-		  d_type_size_k = size_int (mi->dimension_type_size[k + 1]);
 
 		  new_offset =
 		    compute_offset (mi->dimension_type_size[min_escape_l],

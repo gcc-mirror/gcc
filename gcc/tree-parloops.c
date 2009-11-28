@@ -862,13 +862,12 @@ create_call_for_reduction_1 (void **slot, void *data)
   basic_block bb;
   basic_block new_bb;
   edge e;
-  tree t, addr, addr_type, ref, x;
+  tree t, addr, ref, x;
   tree tmp_load, name;
   gimple load;
 
   load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
   t = build3 (COMPONENT_REF, type, load_struct, reduc->field, NULL_TREE);
-  addr_type = build_pointer_type (type);
 
   addr = build_addr (t, current_function_decl);
 
@@ -1405,7 +1404,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
 {
   gimple_stmt_iterator gsi;
   basic_block bb, paral_bb, for_bb, ex_bb;
-  tree t, param, res;
+  tree t, param;
   gimple stmt, for_stmt, phi, cond_stmt;
   tree cvar, cvar_init, initvar, cvar_next, cvar_base, type;
   edge exit, nexit, guard, end, e;
@@ -1474,7 +1473,6 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
       source_location locus;
       tree def;
       phi = gsi_stmt (gsi);
-      res = PHI_RESULT (phi);
       stmt = SSA_NAME_DEF_STMT (PHI_ARG_DEF_FROM_EDGE (phi, exit));
 
       def = PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
@@ -1531,7 +1529,6 @@ static void
 gen_parallel_loop (struct loop *loop, htab_t reduction_list,
 		   unsigned n_threads, struct tree_niter_desc *niter)
 {
-  struct loop *nloop;
   loop_iterator li;
   tree many_iterations_cond, type, nit;
   tree arg_struct, new_arg_struct;
@@ -1624,8 +1621,8 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
 
   /* We assume that the loop usually iterates a lot.  */
   prob = 4 * REG_BR_PROB_BASE / 5;
-  nloop = loop_version (loop, many_iterations_cond, NULL,
-			prob, prob, REG_BR_PROB_BASE - prob, true);
+  loop_version (loop, many_iterations_cond, NULL,
+		prob, prob, REG_BR_PROB_BASE - prob, true);
   update_ssa (TODO_update_ssa);
   free_original_copy_tables ();
 

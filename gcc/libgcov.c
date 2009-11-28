@@ -675,13 +675,13 @@ void
 __gcov_merge_delta (gcov_type *counters, unsigned n_counters)
 {
   unsigned i, n_measures;
-  gcov_type last, value, counter, all;
+  gcov_type value, counter, all;
 
   gcc_assert (!(n_counters % 4));
   n_measures = n_counters / 4;
   for (i = 0; i < n_measures; i++, counters += 4)
     {
-      last = gcov_read_counter ();
+      /* last = */ gcov_read_counter ();
       value = gcov_read_counter ();
       counter = gcov_read_counter ();
       all = gcov_read_counter ();

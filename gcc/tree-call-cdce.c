@@ -457,7 +457,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
                                  unsigned *nconds)
 {
   gimple base_def;
-  tree base_nm, base_val0;
+  tree base_val0;
   tree base_var, int_type;
   tree temp, tempn;
   tree cst0;
@@ -466,7 +466,6 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
   inp_domain exp_domain;
 
   base_def = SSA_NAME_DEF_STMT (base);
-  base_nm = gimple_assign_lhs (base_def);
   base_val0 = gimple_assign_rhs1 (base_def);
   base_var = SSA_NAME_VAR (base_val0);
   int_type = TREE_TYPE (base_var);
@@ -483,10 +482,10 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
   else if (bit_sz == 16)
     max_exp = 64;
   else
-  {
-    gcc_assert (bit_sz == MAX_BASE_INT_BIT_SIZE);
-    max_exp = 32;
-  }
+    {
+      gcc_assert (bit_sz == MAX_BASE_INT_BIT_SIZE);
+      max_exp = 32;
+    }
 
   /* For pow ((double)x, y), generate the following conditions:
      cond 1:
@@ -548,7 +547,7 @@ gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds,
                         unsigned *nconds)
 {
   tree base, expn;
-  enum tree_code bc, ec;
+  enum tree_code bc;
 
 #ifdef ENABLE_CHECKING
   gcc_assert (check_pow (pow_call));
@@ -560,12 +559,11 @@ gen_conditions_for_pow (gimple pow_call, VEC (gimple, heap) *conds,
   expn = gimple_call_arg (pow_call, 1);
 
   bc = TREE_CODE (base);
-  ec = TREE_CODE (expn);
 
   if (bc == REAL_CST)
-      gen_conditions_for_pow_cst_base (base, expn, conds, nconds);
+    gen_conditions_for_pow_cst_base (base, expn, conds, nconds);
   else if (bc == SSA_NAME)
-      gen_conditions_for_pow_int_base (base, expn, conds, nconds);
+    gen_conditions_for_pow_int_base (base, expn, conds, nconds);
   else
     gcc_unreachable ();
 }

@@ -1023,11 +1023,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
   gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
   tree fndecl;
   tree base;
-  HOST_WIDE_INT offset, size, maxsize;
+  HOST_WIDE_INT offset, maxsize;
 
   base = ao_ref_base (ref);
   offset = ref->offset;
-  size = ref->size;
   maxsize = ref->max_size;
 
   /* If we cannot constrain the size of the reference we cannot

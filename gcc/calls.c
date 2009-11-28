@@ -256,10 +256,6 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   rtx call_insn;
   int already_popped = 0;
   HOST_WIDE_INT n_popped = RETURN_POPS_ARGS (fndecl, funtype, stack_size);
-#if defined (HAVE_call) && defined (HAVE_call_value)
-  rtx struct_value_size_rtx;
-  struct_value_size_rtx = GEN_INT (struct_value_size);
-#endif
 
 #ifdef CALL_POPS_ARGS
   n_popped += CALL_POPS_ARGS (* args_so_far);
@@ -341,7 +337,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       else
 	emit_call_insn (GEN_SIBCALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
 				     rounded_stack_size_rtx, next_arg_reg,
-				     struct_value_size_rtx));
+				     GEN_INT (struct_value_size)));
     }
   else
 #endif
@@ -357,7 +353,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       else
 	emit_call_insn (GEN_CALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
 				  rounded_stack_size_rtx, next_arg_reg,
-				  struct_value_size_rtx));
+				  GEN_INT (struct_value_size)));
     }
   else
 #endif

@@ -518,13 +518,10 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
    hack something up here, it is really not worth the aggravation.  */
 
 static bool
-workshare_safe_to_combine_p (basic_block par_entry_bb, basic_block ws_entry_bb)
+workshare_safe_to_combine_p (basic_block ws_entry_bb)
 {
   struct omp_for_data fd;
-  gimple par_stmt, ws_stmt;
-
-  par_stmt = last_stmt (par_entry_bb);
-  ws_stmt = last_stmt (ws_entry_bb);
+  gimple ws_stmt = last_stmt (ws_entry_bb);
 
   if (gimple_code (ws_stmt) == GIMPLE_OMP_SECTIONS)
     return true;
@@ -631,7 +628,7 @@ determine_parallel_type (struct omp_region *region)
 
   if (single_succ (par_entry_bb) == ws_entry_bb
       && single_succ (ws_exit_bb) == par_exit_bb
-      && workshare_safe_to_combine_p (par_entry_bb, ws_entry_bb)
+      && workshare_safe_to_combine_p (ws_entry_bb)
       && (gimple_omp_parallel_combined_p (last_stmt (par_entry_bb))
 	  || (last_and_only_stmt (ws_entry_bb)
 	      && last_and_only_stmt (par_exit_bb))))
@@ -4647,7 +4644,7 @@ expand_omp_for (struct omp_region *region)
 static void
 expand_omp_sections (struct omp_region *region)
 {
-  tree t, u, vin = NULL, vmain, vnext, l1, l2;
+  tree t, u, vin = NULL, vmain, vnext, l2;
   VEC (tree,heap) *label_vec;
   unsigned len;
   basic_block entry_bb, l0_bb, l1_bb, l2_bb, default_bb;
@@ -4692,12 +4689,10 @@ expand_omp_sections (struct omp_region *region)
 	      }
 	}
       default_bb = create_empty_bb (l1_bb->prev_bb);
-      l1 = gimple_block_label (l1_bb);
     }
   else
     {
       default_bb = create_empty_bb (l0_bb);
-      l1 = NULL_TREE;
       l2 = gimple_block_label (default_bb);
     }
 
@@ -6023,7 +6018,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   tree *rhs_p, block;
   struct omp_for_data fd;
   gimple stmt = gsi_stmt (*gsi_p), new_stmt;
-  gimple_seq omp_for_body, body, dlist, ilist;
+  gimple_seq omp_for_body, body, dlist;
   size_t i;
   struct gimplify_ctx gctx;
 
@@ -6046,7 +6041,6 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     }
 
   /* The pre-body and input clauses go before the lowered GIMPLE_OMP_FOR.  */
-  ilist = NULL;
   dlist = NULL;
   body = NULL;
   lower_rec_input_clauses (gimple_omp_for_clauses (stmt), &body, &dlist, ctx);

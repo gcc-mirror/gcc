@@ -1719,7 +1719,6 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
     {
       int i;
       rtx insns;
-      rtx equiv_value;
 
       /* If TARGET is the same as one of the operands, the REG_EQUAL note
 	 won't be accurate, so use a new target.  */
@@ -1749,13 +1748,6 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       if (i == GET_MODE_BITSIZE (mode) / BITS_PER_WORD)
 	{
-	  if (binoptab->code != UNKNOWN)
-	    equiv_value
-	      = gen_rtx_fmt_ee (binoptab->code, mode,
-				copy_rtx (op0), copy_rtx (op1));
-	  else
-	    equiv_value = 0;
-
 	  emit_insn (insns);
 	  return target;
 	}
@@ -3903,7 +3895,7 @@ void
 emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 {
   rtx final_dest = target;
-  rtx prev, next, last, insn;
+  rtx next, last, insn;
 
   /* If this is a reg with REG_USERVAR_P set, then it could possibly turn
      into a MEM later.  Protect the libcall block from this change.  */
@@ -3980,10 +3972,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
 	break;
     }
 
-  prev = get_last_insn ();
-
   /* Write the remaining insns followed by the final copy.  */
-
   for (insn = insns; insn; insn = next)
     {
       next = NEXT_INSN (insn);
@@ -6201,7 +6190,6 @@ void
 init_optabs (void)
 {
   unsigned int i;
-  enum machine_mode int_mode;
   static bool reinit;
 
   libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
@@ -6657,11 +6645,8 @@ init_optabs (void)
   /* The ffs function operates on `int'.  Fall back on it if we do not
      have a libgcc2 function for that width.  */
   if (INT_TYPE_SIZE < BITS_PER_WORD)
-    {
-      int_mode = mode_for_size (INT_TYPE_SIZE, MODE_INT, 0);
-      set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
-			 "ffs");
-    }
+    set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
+		       "ffs");
 
   /* Explicitly initialize the bswap libfuncs since we need them to be
      valid for things other than word_mode.  */

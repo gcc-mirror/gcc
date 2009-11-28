@@ -598,9 +598,7 @@ set_default_def (tree var, tree def)
 bool
 add_referenced_var (tree var)
 {
-  var_ann_t v_ann;
-
-  v_ann = get_var_ann (var);
+  get_var_ann (var);
   gcc_assert (DECL_P (var));
 
   /* Insert VAR into the referenced_vars has table if it isn't present.  */

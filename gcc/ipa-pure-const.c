@@ -259,8 +259,6 @@ check_call (funct_state local, gimple call, bool ipa)
 {
   int flags = gimple_call_flags (call);
   tree callee_t = gimple_call_fndecl (call);
-  struct cgraph_node* callee;
-  enum availability avail = AVAIL_NOT_AVAILABLE;
   bool possibly_throws = stmt_could_throw_p (call);
   bool possibly_throws_externally = (possibly_throws
   				     && stmt_can_throw_external (call));
@@ -299,9 +297,6 @@ check_call (funct_state local, gimple call, bool ipa)
      graph.  */
   if (callee_t)
     {
-      callee = cgraph_node(callee_t);
-      avail = cgraph_function_body_availability (callee);
-
       /* When bad things happen to bad functions, they cannot be const
 	 or pure.  */
       if (setjmp_call_p (callee_t))

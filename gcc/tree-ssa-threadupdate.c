@@ -635,7 +635,6 @@ thread_single_edge (edge e)
   basic_block bb = e->dest;
   edge eto = (edge) e->aux;
   struct redirection_data rd;
-  struct local_info local_info;
 
   e->aux = NULL;
 
@@ -657,7 +656,6 @@ thread_single_edge (edge e)
   /* Otherwise, we need to create a copy.  */
   update_bb_profile_for_threading (bb, EDGE_FREQUENCY (e), e->count, eto);
 
-  local_info.bb = bb;
   rd.outgoing_edge = eto;
 
   create_block_for_threading (bb, &rd);

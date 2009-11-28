@@ -1978,7 +1978,7 @@ resurrect_subs (omega_pb pb)
   if (pb->num_subs > 0
       && please_no_equalities_in_simplified_problems == 0)
     {
-      int i, e, n, m;
+      int i, e, m;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1992,7 +1992,6 @@ resurrect_subs (omega_pb pb)
 	  omega_unprotect_1 (pb, &i, NULL);
 
       m = pb->num_subs;
-      n = MAX (pb->num_vars, pb->safe_vars + m);
 
       for (e = pb->num_geqs - 1; e >= 0; e--)
 	if (single_var_geq (&pb->geqs[e], pb->num_vars))
@@ -3723,7 +3722,6 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
       int max_splinters = 1;
       bool exact = false;
       bool lucky_exact = false;
-      int neweqns = 0;
       int best = (INT_MAX);
       int j = 0, jLe = 0, jLowerBoundCount = 0;
 
@@ -3862,7 +3860,7 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 	      || lucky
 	      || in_approximate_mode)
 	    {
-	      neweqns = score = upper_bound_count * lower_bound_count;
+	      score = upper_bound_count * lower_bound_count;
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file,
@@ -3898,7 +3896,6 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 			 upper_bound_count,
 			 lower_bound_count, minC, maxC);
 
-	      neweqns = upper_bound_count * lower_bound_count;
 	      score = maxC - minC;
 
 	      if (best > score)

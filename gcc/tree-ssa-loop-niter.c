@@ -94,8 +94,10 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
 
       *var = op0;
       /* Always sign extend the offset.  */
-      off = double_int_sext (tree_to_double_int (op1),
-			     TYPE_PRECISION (type));
+      off = tree_to_double_int (op1);
+      if (negate)
+	off = double_int_neg (off);
+      off = double_int_sext (off, TYPE_PRECISION (type));
       mpz_set_double_int (offset, off, false);
       break;
 

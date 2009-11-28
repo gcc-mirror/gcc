@@ -1496,7 +1496,7 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
 		     const char **constraints, enum machine_mode *modes,
 		     location_t *loc)
 {
-  int noperands, nbase = 0, n, i;
+  int nbase = 0, n, i;
   rtx asmop;
 
   switch (GET_CODE (body))
@@ -1555,9 +1555,6 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
     default:
       gcc_unreachable ();
     }
-
-  noperands = (ASM_OPERANDS_INPUT_LENGTH (asmop)
-	       + ASM_OPERANDS_LABEL_LENGTH (asmop) + nbase);
 
   n = ASM_OPERANDS_INPUT_LENGTH (asmop);
   for (i = 0; i < n; i++)
