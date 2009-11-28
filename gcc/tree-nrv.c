@@ -129,6 +129,12 @@ tree_nrv (void)
   if (DECL_NAME (result))
     return 0;
 
+  /* If the result has its address taken then it might be modified
+     by means not detected in the following loop.  Bail out in this
+     case.  */
+  if (TREE_ADDRESSABLE (result))
+    return 0;
+
   /* Look through each block for assignments to the RESULT_DECL.  */
   FOR_EACH_BB (bb)
     {
@@ -178,7 +184,7 @@ tree_nrv (void)
 		  || TREE_ADDRESSABLE (found)
 		  || DECL_ALIGN (found) > DECL_ALIGN (result)
 		  || !useless_type_conversion_p (result_type,
-					        TREE_TYPE (found)))
+						 TREE_TYPE (found)))
 		return 0;
 	    }
 	  else if (gimple_has_lhs (stmt))
@@ -218,7 +224,7 @@ tree_nrv (void)
       DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (found);
     }
 
-  TREE_ADDRESSABLE (result) = TREE_ADDRESSABLE (found);
+  TREE_ADDRESSABLE (result) |= TREE_ADDRESSABLE (found);
 
   /* Now walk through the function changing all references to VAR to be
      RESULT.  */
