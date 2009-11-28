@@ -2490,7 +2490,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   int rank, dim;
   bool indirect = false;
   tree etype, ptype, field, t, base_decl;
-  tree data_off, offset_off, dim_off, dim_size, elem_size;
+  tree data_off, dim_off, dim_size, elem_size;
   tree lower_suboff, upper_suboff, stride_suboff;
 
   if (! GFC_DESCRIPTOR_TYPE_P (type))
@@ -2546,7 +2546,6 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   field = TYPE_FIELDS (TYPE_MAIN_VARIANT (type));
   data_off = byte_position (field);
   field = TREE_CHAIN (field);
-  offset_off = byte_position (field);
   field = TREE_CHAIN (field);
   field = TREE_CHAIN (field);
   dim_off = byte_position (field);

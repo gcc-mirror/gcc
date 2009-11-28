@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
@@ -46,7 +46,6 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
 {
   gfc_expr *e;
   int i;
-  gfc_try re;
   mpz_t delta;
   mpz_t tmp;
 
@@ -56,7 +55,7 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
   for (i = 0; i < ar->dimen; i++)
     {
       e = gfc_copy_expr (ar->start[i]);
-      re = gfc_simplify_expr (e, 1);
+      gfc_simplify_expr (e, 1);
 
       if ((gfc_is_constant_expr (ar->as->lower[i]) == 0)
 	  || (gfc_is_constant_expr (ar->as->upper[i]) == 0)

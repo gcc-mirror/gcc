@@ -837,7 +837,7 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
 {
   tree dest, src, dest_index, src_index;
   gfc_loopinfo *loop;
-  gfc_ss_info *dest_info, *src_info;
+  gfc_ss_info *dest_info;
   gfc_ss *dest_ss, *src_ss;
   gfc_se src_se;
   int n;
@@ -847,7 +847,6 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
   src_ss = gfc_walk_expr (expr);
   dest_ss = se->ss;
 
-  src_info = &src_ss->data.info;
   dest_info = &dest_ss->data.info;
   gcc_assert (dest_info->dimen == 2);
 
@@ -3458,13 +3457,9 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
   gfc_ss *ss;
   gfc_ref *lref;
   gfc_ref *rref;
-  gfc_ref *aref;
   int nDepend = 0;
-  int temp_dim = 0;
 
   loop->temp_ss = NULL;
-  aref = dest->data.info.ref;
-  temp_dim = 0;
 
   for (ss = rss; ss != gfc_ss_terminator; ss = ss->next)
     {
@@ -3513,7 +3508,6 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 		  if (depends[n])
 		  loop->order[dim++] = n;
 		}
-	      temp_dim = dim;
 	      for (n = 0; n < loop->dimen; n++)
 	        {
 		  if (! depends[n])
@@ -3556,12 +3550,10 @@ void
 gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 {
   int n;
-  int dim;
   gfc_ss_info *info;
   gfc_ss_info *specinfo;
   gfc_ss *ss;
   tree tmp;
-  tree len;
   gfc_ss *loopspec[GFC_MAX_DIMENSIONS];
   bool dynamic[GFC_MAX_DIMENSIONS];
   gfc_constructor *c;
@@ -3742,7 +3734,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 			 loop->temp_ss->string_length);
 
       tmp = loop->temp_ss->data.temp.type;
-      len = loop->temp_ss->string_length;
       n = loop->temp_ss->data.temp.dimen;
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_ss_info));
       loop->temp_ss->type = GFC_SS_SECTION;
@@ -3774,8 +3765,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
       for (n = 0; n < info->dimen; n++)
 	{
-	  dim = info->dim[n];
-
 	  /* If we are specifying the range the delta is already set.  */
 	  if (loopspec[n] != ss)
 	    {
@@ -6179,7 +6168,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
   gfc_ref *ref;
   gfc_array_ref *ar;
   gfc_ss *newss;
-  gfc_ss *head;
   int n;
 
   for (ref = expr->ref; ref; ref = ref->next)
@@ -6251,8 +6239,6 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	  newss->next = ss;
 	  newss->data.info.dimen = 0;
 	  newss->data.info.ref = ref;
-
-	  head = newss;
 
           /* We add SS chains for all the subscripts in the section.  */
 	  for (n = 0; n < ar->dimen; n++)

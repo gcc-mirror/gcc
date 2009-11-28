@@ -1,5 +1,5 @@
 /* Compiler arithmetic
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -2668,9 +2668,6 @@ gfc_expr *
 gfc_hollerith2real (gfc_expr *src, int kind)
 {
   gfc_expr *result;
-  int len;
-
-  len = src->value.character.length;
 
   result = gfc_get_expr ();
   result->expr_type = EXPR_CONSTANT;
@@ -2692,9 +2689,6 @@ gfc_expr *
 gfc_hollerith2complex (gfc_expr *src, int kind)
 {
   gfc_expr *result;
-  int len;
-
-  len = src->value.character.length;
 
   result = gfc_get_expr ();
   result->expr_type = EXPR_CONSTANT;
@@ -2741,9 +2735,6 @@ gfc_expr *
 gfc_hollerith2logical (gfc_expr *src, int kind)
 {
   gfc_expr *result;
-  int len;
-
-  len = src->value.character.length;
 
   result = gfc_get_expr ();
   result->expr_type = EXPR_CONSTANT;

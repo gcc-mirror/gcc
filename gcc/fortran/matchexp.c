@@ -1,5 +1,5 @@
 /* Expression parser.
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -149,7 +149,6 @@ match_primary (gfc_expr **result)
 {
   match m;
   gfc_expr *e;
-  locus where;
 
   m = gfc_match_literal_constant (result, 0);
   if (m != MATCH_NO)
@@ -164,8 +163,6 @@ match_primary (gfc_expr **result)
     return m;
 
   /* Match an expression in parentheses.  */
-  where = gfc_current_locus;
-
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
 
