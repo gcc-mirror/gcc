@@ -12544,6 +12544,11 @@ tsubst_copy_and_build (tree t,
 	stmt_expr = finish_stmt_expr (stmt_expr, false);
 	cur_stmt_expr = old_stmt_expr;
 
+	/* If the resulting list of expression statement is empty,
+	   fold it further into void_zero_node.  */
+	if (empty_expr_stmt_p (cur_stmt_expr))
+	  cur_stmt_expr = void_zero_node;
+
 	return stmt_expr;
       }
 

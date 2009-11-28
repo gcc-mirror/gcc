@@ -5074,6 +5074,7 @@ extern tree begin_stmt_expr			(void);
 extern tree finish_stmt_expr_expr		(tree, tree);
 extern tree finish_stmt_expr			(tree, bool);
 extern tree stmt_expr_value_expr		(tree);
+bool empty_expr_stmt_p				(tree);
 extern tree perform_koenig_lookup		(tree, VEC(tree,gc) *);
 extern tree finish_call_expr			(tree, VEC(tree,gc) **, bool,
 						 bool, tsubst_flags_t);

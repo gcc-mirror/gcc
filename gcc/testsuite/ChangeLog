@@ -1,3 +1,8 @@
+2009-11-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36408
+	* g++.dg/template/stmtexpr2.C: New test.
+
 2009-11-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42183
