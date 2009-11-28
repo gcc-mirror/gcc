@@ -1174,12 +1174,10 @@ decompose_multiword_subregs (void)
 
 	  FOR_BB_INSNS (bb, insn)
 	    {
-	      rtx next, pat;
+	      rtx pat;
 
 	      if (!INSN_P (insn))
 		continue;
-
-	      next = NEXT_INSN (insn);
 
 	      pat = PATTERN (insn);
 	      if (GET_CODE (pat) == CLOBBER)
