@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "diagnostic.h"
 #include "cgraph.h"
+#include "gimple.h"
 
 /* Various flags to control the mangling process.  */
 
@@ -58,7 +59,6 @@ enum mangling_flags
 
 typedef enum mangling_flags mangling_flags;
 
-static tree thunk_adjust (tree, bool, HOST_WIDE_INT, tree);
 static void do_build_assign_ref (tree);
 static void do_build_copy_constructor (tree);
 static tree synthesize_exception_spec (tree, tree (*) (tree, void *), void *);
@@ -205,56 +205,6 @@ finish_thunk (tree thunk)
   SET_DECL_ASSEMBLER_NAME (thunk, name);
 }
 
-/* Adjust PTR by the constant FIXED_OFFSET, and by the vtable
-   offset indicated by VIRTUAL_OFFSET, if that is
-   non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
-   zero for a result adjusting thunk.  */
-
-static tree
-thunk_adjust (tree ptr, bool this_adjusting,
-	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
-{
-  if (this_adjusting)
-    /* Adjust the pointer by the constant.  */
-    ptr = fold_build2_loc (input_location,
-		       POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
-		       size_int (fixed_offset));
-
-  /* If there's a virtual offset, look up that value in the vtable and
-     adjust the pointer again.  */
-  if (virtual_offset)
-    {
-      tree vtable;
-
-      ptr = save_expr (ptr);
-      /* The vptr is always at offset zero in the object.  */
-      vtable = build1 (NOP_EXPR,
-		       build_pointer_type (build_pointer_type
-					   (vtable_entry_type)),
-		       ptr);
-      /* Form the vtable address.  */
-      vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
-      /* Find the entry with the vcall offset.  */
-      vtable = fold_build2_loc (input_location,
-			    POINTER_PLUS_EXPR, TREE_TYPE (vtable), vtable,
-			    fold_convert (sizetype, virtual_offset));
-      /* Get the offset itself.  */
-      vtable = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (vtable)), vtable);
-      /* Adjust the `this' pointer.  */
-      ptr = fold_build2_loc (input_location,
-			 POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
-			 fold_convert (sizetype, vtable));
-    }
-
-  if (!this_adjusting)
-    /* Adjust the pointer by the constant.  */
-    ptr = fold_build2_loc (input_location,
-		       POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
-		       size_int (fixed_offset));
-
-  return ptr;
-}
-
 static GTY (()) int thunk_labelno;
 
 /* Create a static alias to function.  */
@@ -303,7 +253,11 @@ make_alias_for_thunk (tree function)
   alias = make_alias_for (function, get_identifier (buf));
 
   if (!flag_syntax_only)
-    assemble_alias (alias, DECL_ASSEMBLER_NAME (function));
+    {
+      bool ok = cgraph_same_body_alias (alias, function);
+      DECL_ASSEMBLER_NAME (function);
+      gcc_assert (ok);
+    }
 
   return alias;
 }
@@ -416,42 +370,15 @@ use_thunk (tree thunk_fndecl, bool emit_p)
     }
   a = nreverse (t);
   DECL_ARGUMENTS (thunk_fndecl) = a;
+  TREE_ASM_WRITTEN (thunk_fndecl) = 1;
+  cgraph_add_thunk (thunk_fndecl, function,
+		    this_adjusting, fixed_offset, virtual_value,
+		    virtual_offset, alias);
 
-  if (this_adjusting
-      && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
-					      virtual_value, alias))
+  if (!this_adjusting
+      || !targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
+					       virtual_value, alias))
     {
-      const char *fnname;
-      tree fn_block;
-      
-      current_function_decl = thunk_fndecl;
-      DECL_RESULT (thunk_fndecl)
-	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
-		      RESULT_DECL, 0, integer_type_node);
-      fnname = IDENTIFIER_POINTER (DECL_NAME (thunk_fndecl));
-      /* The back end expects DECL_INITIAL to contain a BLOCK, so we
-	 create one.  */
-      fn_block = make_node (BLOCK);
-      BLOCK_VARS (fn_block) = a;
-      DECL_INITIAL (thunk_fndecl) = fn_block;
-      init_function_start (thunk_fndecl);
-      cfun->is_thunk = 1;
-      assemble_start_function (thunk_fndecl, fnname);
-
-      targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
-				       fixed_offset, virtual_value, alias);
-
-      assemble_end_function (thunk_fndecl, fnname);
-      init_insn_lengths ();
-      free_after_compilation (cfun);
-      current_function_decl = 0;
-      set_cfun (NULL);
-      TREE_ASM_WRITTEN (thunk_fndecl) = 1;
-    }
-  else
-    {
-      int i;
-      tree *argarray = (tree *) alloca (list_length (a) * sizeof (tree));
       /* If this is a covariant thunk, or we don't have the necessary
 	 code for efficient thunks, generate a thunk function that
 	 just makes a call to the real function.  Unfortunately, this
@@ -460,69 +387,6 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       if (varargs_function_p (function))
 	error ("generic thunk code fails for method %q#D which uses %<...%>",
 	       function);
-
-      DECL_RESULT (thunk_fndecl) = NULL_TREE;
-
-      start_preparsed_function (thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
-      /* We don't bother with a body block for thunks.  */
-
-      /* There's no need to check accessibility inside the thunk body.  */
-      push_deferring_access_checks (dk_no_check);
-
-      t = a;
-      if (this_adjusting)
-	t = thunk_adjust (t, /*this_adjusting=*/1,
-			  fixed_offset, virtual_offset);
-
-      /* Build up the call to the real function.  */
-      argarray[0] = t;
-      for (i = 1, a = TREE_CHAIN (a); a; a = TREE_CHAIN (a), i++)
-	argarray[i] = a;
-      t = build_call_a (alias, i, argarray);
-      CALL_FROM_THUNK_P (t) = 1;
-      CALL_CANNOT_INLINE_P (t) = 1;
-
-      if (VOID_TYPE_P (TREE_TYPE (t)))
-	finish_expr_stmt (t);
-      else
-	{
-	  if (!this_adjusting)
-	    {
-	      tree cond = NULL_TREE;
-
-	      if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
-		{
-		  /* If the return type is a pointer, we need to
-		     protect against NULL.  We know there will be an
-		     adjustment, because that's why we're emitting a
-		     thunk.  */
-		  t = save_expr (t);
-		  cond = cp_convert (boolean_type_node, t);
-		}
-
-	      t = thunk_adjust (t, /*this_adjusting=*/0,
-				fixed_offset, virtual_offset);
-	      if (cond)
-		t = build3 (COND_EXPR, TREE_TYPE (t), cond, t,
-			    cp_convert (TREE_TYPE (t), integer_zero_node));
-	    }
-	  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (t)))
-	    t = build_cplus_new (TREE_TYPE (t), t);
-	  finish_return_stmt (t);
-	}
-
-      /* Since we want to emit the thunk, we explicitly mark its name as
-	 referenced.  */
-      mark_decl_referenced (thunk_fndecl);
-
-      /* But we don't want debugging information about it.  */
-      DECL_IGNORED_P (thunk_fndecl) = 1;
-
-      /* Re-enable access control.  */
-      pop_deferring_access_checks ();
-
-      thunk_fndecl = finish_function (0);
-      cgraph_add_new_function (thunk_fndecl, false);
     }
 
   pop_from_top_level ();

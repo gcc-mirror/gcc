@@ -149,6 +149,9 @@ static GTY (()) VEC(tree, gc) *static_ctors;
 /* A vector of FUNCTION_DECLs declared as static destructors.  */
 static GTY (()) VEC(tree, gc) *static_dtors;
 
+/* Used for vtable lookup in thunk adjusting.  */
+static GTY (()) tree vtable_entry_type;
+
 /* When target does not have ctors and dtors, we call all constructor
    and destructor by special initialization/destruction function
    recognized by collect2.
@@ -741,8 +744,13 @@ verify_cgraph_node (struct cgraph_node *node)
 			    debug_gimple_stmt (stmt);
 			    error_found = true;
 			  }
-			if (!clone_of_p (cgraph_node (decl), e->callee)
-			    && !e->callee->global.inlined_to)
+			if (e->callee->same_body_alias)
+			  {
+			    error ("edge points to same body alias:");
+			    debug_tree (e->callee->decl);
+			  }
+			else if (!clone_of_p (cgraph_node (decl), e->callee)
+			         && !e->callee->global.inlined_to)
 			  {
 			    error ("edge points to wrong declaration:");
 			    debug_tree (e->callee->decl);
@@ -1034,35 +1042,6 @@ cgraph_analyze_functions (void)
 }
 
 
-/* Emit thunks for every node in the cgraph.
-   FIXME: We really ought to emit thunks only for functions that are needed.  */
-
-static void
-cgraph_emit_thunks (void)
-{
-  struct cgraph_node *n, *alias;
-
-  for (n = cgraph_nodes; n; n = n->next)
-    {
-      /* Only emit thunks on functions defined in this TU.
-	 Note that this may emit more thunks than strictly necessary.
-	 During optimization some nodes may disappear.  It would be
-	 nice to only emit thunks only for the functions that will be
-	 emitted, but we cannot know that until the inliner and other
-	 IPA passes have run (see the sequencing of the call to
-	 cgraph_mark_functions_to_output in cgraph_optimize).  */
-      if (n->reachable
-	  && !DECL_EXTERNAL (n->decl))
-	{
-	  lang_hooks.callgraph.emit_associated_thunks (n->decl);
-	  for (alias = n->same_body; alias; alias = alias->next)
-	    if (!DECL_EXTERNAL (alias->decl))
-	      lang_hooks.callgraph.emit_associated_thunks (alias->decl);
-	}
-    }
-}
-
-
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
 void
@@ -1092,10 +1071,6 @@ cgraph_finalize_compilation_unit (void)
   /* Gimplify and lower all functions, compute reachability and
      remove unreachable nodes.  */
   cgraph_analyze_functions ();
-
-  /* Emit thunks for reachable nodes, if needed.  */
-  if (lang_hooks.callgraph.emit_associated_thunks)
-    cgraph_emit_thunks ();
 
   /* Mark alias targets necessary and emit diagnostics.  */
   finish_aliases_1 ();
@@ -1159,6 +1134,347 @@ cgraph_mark_functions_to_output (void)
     }
 }
 
+/* DECL is FUNCTION_DECL.  Initialize datastructures so DECL is a function
+   in lowered gimple form.
+   
+   Set current_function_decl and cfun to newly constructed empty function body.
+   return basic block in the function body.  */
+
+static basic_block
+init_lowered_empty_function (tree decl)
+{
+  basic_block bb;
+
+  current_function_decl = decl;
+  allocate_struct_function (decl, false);
+  gimple_register_cfg_hooks ();
+  init_empty_tree_cfg ();
+  init_tree_ssa (cfun);
+  init_ssa_operands ();
+  cfun->gimple_df->in_ssa_p = true;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+
+  DECL_SAVED_TREE (decl) = error_mark_node;
+  cfun->curr_properties |=
+    (PROP_gimple_lcf | PROP_gimple_leh | PROP_cfg | PROP_referenced_vars |
+     PROP_ssa);
+
+  /* Create BB for body of the function and connect it properly.  */
+  bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
+  make_edge (ENTRY_BLOCK_PTR, bb, 0);
+  make_edge (bb, EXIT_BLOCK_PTR, 0);
+
+  return bb;
+}
+
+/* Adjust PTR by the constant FIXED_OFFSET, and by the vtable
+   offset indicated by VIRTUAL_OFFSET, if that is
+   non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
+   zero for a result adjusting thunk.  */
+
+static tree
+thunk_adjust (gimple_stmt_iterator * bsi,
+	      tree ptr, bool this_adjusting,
+	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
+{
+  gimple stmt;
+  tree ret;
+
+  if (this_adjusting)
+    {
+      stmt = gimple_build_assign (ptr,
+				  fold_build2_loc (input_location,
+						   POINTER_PLUS_EXPR,
+						   TREE_TYPE (ptr), ptr,
+						   size_int (fixed_offset)));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+    }
+
+  /* If there's a virtual offset, look up that value in the vtable and
+     adjust the pointer again.  */
+  if (virtual_offset)
+    {
+      tree vtabletmp;
+      tree vtabletmp2;
+      tree vtabletmp3;
+      tree offsettmp;
+
+      if (!vtable_entry_type)
+	{
+	  tree vfunc_type = make_node (FUNCTION_TYPE);
+	  TREE_TYPE (vfunc_type) = integer_type_node;
+	  TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
+	  layout_type (vfunc_type);
+
+	  vtable_entry_type = build_pointer_type (vfunc_type);
+	}
+
+      vtabletmp =
+	create_tmp_var (build_pointer_type
+			(build_pointer_type (vtable_entry_type)), "vptr");
+
+      /* The vptr is always at offset zero in the object.  */
+      stmt = gimple_build_assign (vtabletmp,
+				  build1 (NOP_EXPR, TREE_TYPE (vtabletmp),
+					  ptr));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+      mark_symbols_for_renaming (stmt);
+      find_referenced_vars_in (stmt);
+
+      /* Form the vtable address.  */
+      vtabletmp2 = create_tmp_var (TREE_TYPE (TREE_TYPE (vtabletmp)),
+				   "vtableaddr");
+      stmt = gimple_build_assign (vtabletmp2,
+				  build1 (INDIRECT_REF,
+					  TREE_TYPE (vtabletmp2), vtabletmp));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+      mark_symbols_for_renaming (stmt);
+      find_referenced_vars_in (stmt);
+
+      /* Find the entry with the vcall offset.  */
+      stmt = gimple_build_assign (vtabletmp2,
+				  fold_build2_loc (input_location,
+						   POINTER_PLUS_EXPR,
+						   TREE_TYPE (vtabletmp2),
+						   vtabletmp2,
+						   fold_convert (sizetype,
+								 virtual_offset)));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+
+      /* Get the offset itself.  */
+      vtabletmp3 = create_tmp_var (TREE_TYPE (TREE_TYPE (vtabletmp2)),
+				   "vcalloffset");
+      stmt = gimple_build_assign (vtabletmp3,
+				  build1 (INDIRECT_REF,
+					  TREE_TYPE (vtabletmp3),
+					  vtabletmp2));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+      mark_symbols_for_renaming (stmt);
+      find_referenced_vars_in (stmt);
+
+      /* Cast to sizetype.  */
+      offsettmp = create_tmp_var (sizetype, "offset");
+      stmt = gimple_build_assign (offsettmp, fold_convert (sizetype, vtabletmp3));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+      mark_symbols_for_renaming (stmt);
+      find_referenced_vars_in (stmt);
+
+      /* Adjust the `this' pointer.  */
+      ptr = fold_build2_loc (input_location,
+			     POINTER_PLUS_EXPR, TREE_TYPE (ptr), ptr,
+			     offsettmp);
+    }
+
+  if (!this_adjusting)
+    /* Adjust the pointer by the constant.  */
+    {
+      tree ptrtmp;
+
+      if (TREE_CODE (ptr) == VAR_DECL)
+        ptrtmp = ptr;
+      else
+        {
+          ptrtmp = create_tmp_var (TREE_TYPE (ptr), "ptr");
+          stmt = gimple_build_assign (ptrtmp, ptr);
+	  gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+	  mark_symbols_for_renaming (stmt);
+	  find_referenced_vars_in (stmt);
+	}
+      ptr = fold_build2_loc (input_location,
+			     POINTER_PLUS_EXPR, TREE_TYPE (ptrtmp), ptrtmp,
+			     size_int (fixed_offset));
+    }
+
+  /* Emit the statement and gimplify the adjustment expression.  */
+  ret = create_tmp_var (TREE_TYPE (ptr), "adjusted_this");
+  stmt = gimple_build_assign (ret, ptr);
+  mark_symbols_for_renaming (stmt);
+  find_referenced_vars_in (stmt);
+  gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+
+  return ret;
+}
+
+/* Produce assembler for thunk NODE.  */
+
+static void
+assemble_thunk (struct cgraph_node *node)
+{
+  bool this_adjusting = node->thunk.this_adjusting;
+  HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
+  HOST_WIDE_INT virtual_value = node->thunk.virtual_value;
+  tree virtual_offset = NULL;
+  tree alias = node->thunk.alias;
+  tree thunk_fndecl = node->decl;
+  tree a = DECL_ARGUMENTS (thunk_fndecl);
+
+  current_function_decl = thunk_fndecl;
+
+  if (this_adjusting
+      && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
+					      virtual_value, alias))
+    {
+      const char *fnname;
+      tree fn_block;
+      
+      DECL_RESULT (thunk_fndecl)
+	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
+		      RESULT_DECL, 0, integer_type_node);
+      fnname = IDENTIFIER_POINTER (DECL_NAME (thunk_fndecl));
+
+      /* The back end expects DECL_INITIAL to contain a BLOCK, so we
+	 create one.  */
+      fn_block = make_node (BLOCK);
+      BLOCK_VARS (fn_block) = a;
+      DECL_INITIAL (thunk_fndecl) = fn_block;
+      init_function_start (thunk_fndecl);
+      cfun->is_thunk = 1;
+      assemble_start_function (thunk_fndecl, fnname);
+
+      targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
+				       fixed_offset, virtual_value, alias);
+
+      assemble_end_function (thunk_fndecl, fnname);
+      init_insn_lengths ();
+      free_after_compilation (cfun);
+      set_cfun (NULL);
+      TREE_ASM_WRITTEN (thunk_fndecl) = 1;
+    }
+  else
+    {
+      tree restype;
+      basic_block bb, then_bb, else_bb, return_bb;
+      gimple_stmt_iterator bsi;
+      int nargs = 0;
+      tree arg;
+      int i;
+      tree resdecl;
+      tree restmp = NULL;
+      VEC(tree, heap) *vargs;
+
+      gimple call;
+      gimple ret;
+
+      DECL_IGNORED_P (thunk_fndecl) = 1;
+      bitmap_obstack_initialize (NULL);
+
+      if (node->thunk.virtual_offset_p)
+        virtual_offset = size_int (virtual_value);
+
+      /* Build the return declaration for the function.  */
+      restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
+      if (DECL_RESULT (thunk_fndecl) == NULL_TREE)
+	{
+	  resdecl = build_decl (input_location, RESULT_DECL, 0, restype);
+	  DECL_ARTIFICIAL (resdecl) = 1;
+	  DECL_IGNORED_P (resdecl) = 1;
+	  DECL_RESULT (thunk_fndecl) = resdecl;
+	}
+      else
+	resdecl = DECL_RESULT (thunk_fndecl);
+
+      bb = then_bb = else_bb = return_bb = init_lowered_empty_function (thunk_fndecl);
+
+      bsi = gsi_start_bb (bb);
+
+      /* Build call to the function being thunked.  */
+      if (!VOID_TYPE_P (restype))
+	{
+	  if (!is_gimple_reg_type (restype))
+	    {
+	      restmp = resdecl;
+	      cfun->local_decls = tree_cons (NULL_TREE, restmp, cfun->local_decls);
+	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
+	    }
+	  else
+            restmp = create_tmp_var_raw (restype, "retval");
+	}
+
+      for (arg = a; arg; arg = TREE_CHAIN (arg))
+        nargs++;
+      vargs = VEC_alloc (tree, heap, nargs);
+      if (this_adjusting)
+        VEC_quick_push (tree, vargs,
+			thunk_adjust (&bsi,
+				      a, 1, fixed_offset,
+				      virtual_offset));
+      else
+        VEC_quick_push (tree, vargs, a);
+      for (i = 1, arg = TREE_CHAIN (a); i < nargs; i++, arg = TREE_CHAIN (arg))
+        VEC_quick_push (tree, vargs, arg);
+      call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
+      VEC_free (tree, heap, vargs);
+      gimple_call_set_cannot_inline (call, true);
+      gimple_call_set_from_thunk (call, true);
+      if (restmp)
+        gimple_call_set_lhs (call, restmp);
+      gsi_insert_after (&bsi, call, GSI_NEW_STMT);
+      mark_symbols_for_renaming (call);
+      find_referenced_vars_in (call);
+      update_stmt (call);
+
+      if (restmp && !this_adjusting)
+        {
+	  tree true_label = NULL_TREE, false_label = NULL_TREE;
+
+	  if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
+	    {
+	      gimple stmt;
+	      /* If the return type is a pointer, we need to
+		 protect against NULL.  We know there will be an
+		 adjustment, because that's why we're emitting a
+		 thunk.  */
+	      then_bb = create_basic_block (NULL, (void *) 0, bb);
+	      return_bb = create_basic_block (NULL, (void *) 0, then_bb);
+	      else_bb = create_basic_block (NULL, (void *) 0, else_bb);
+	      remove_edge (single_succ_edge (bb));
+	      true_label = gimple_block_label (then_bb);
+	      false_label = gimple_block_label (else_bb);
+	      stmt = gimple_build_cond (NE_EXPR, restmp,
+	      				fold_convert (TREE_TYPE (restmp),
+						      integer_zero_node),
+	      			        NULL_TREE, NULL_TREE);
+	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+	      make_edge (bb, then_bb, EDGE_TRUE_VALUE);
+	      make_edge (bb, else_bb, EDGE_FALSE_VALUE);
+	      make_edge (return_bb, EXIT_BLOCK_PTR, 0);
+	      make_edge (then_bb, return_bb, EDGE_FALLTHRU);
+	      make_edge (else_bb, return_bb, EDGE_FALLTHRU);
+	      bsi = gsi_last_bb (then_bb);
+	    }
+
+	  restmp = thunk_adjust (&bsi, restmp, /*this_adjusting=*/0,
+			         fixed_offset, virtual_offset);
+	  if (true_label)
+	    {
+	      gimple stmt;
+	      bsi = gsi_last_bb (else_bb);
+	      stmt = gimple_build_assign (restmp, fold_convert (TREE_TYPE (restmp),
+								integer_zero_node));
+	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+	      bsi = gsi_last_bb (return_bb);
+	    }
+	}
+      else
+        gimple_call_set_tail (call, true);
+
+      /* Build return value.  */
+      ret = gimple_build_return (restmp);
+      gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
+
+      delete_unreachable_blocks ();
+      update_ssa (TODO_update_ssa);
+
+      cgraph_remove_same_body_alias (node);
+      /* Since we want to emit the thunk, we explicitly mark its name as
+	 referenced.  */
+      mark_decl_referenced (thunk_fndecl);
+      cgraph_add_new_function (thunk_fndecl, true);
+      bitmap_obstack_release (NULL);
+    }
+  current_function_decl = NULL;
+}
+
 /* Expand function specified by NODE.  */
 
 static void
@@ -1182,10 +1498,22 @@ cgraph_expand_function (struct cgraph_node *node)
   current_function_decl = NULL;
   if (node->same_body)
     {
-      struct cgraph_node *alias;
+      struct cgraph_node *alias, *next;
       bool saved_alias = node->alias;
-      for (alias = node->same_body; alias; alias = alias->next)
-	assemble_alias (alias->decl, DECL_ASSEMBLER_NAME (decl));
+      for (alias = node->same_body;
+      	   alias && alias->next; alias = alias->next)
+        ;
+      /* Walk aliases in the order they were created; it is possible that
+         thunks reffers to the aliases made earlier.  */
+      for (; alias; alias = next)
+        {
+	  next = alias->previous;
+	  if (!alias->thunk.thunk_p)
+	    assemble_alias (alias->decl,
+			    DECL_ASSEMBLER_NAME (alias->thunk.alias));
+	  else
+	    assemble_thunk (alias);
+	}
       node->alias = saved_alias;
     }
   gcc_assert (!cgraph_preserve_function_body_p (decl));

@@ -69,6 +69,19 @@ struct GTY(()) inline_summary
   int time_inlining_benefit;
 };
 
+/* Information about thunk, used only for same body aliases.  */
+
+struct GTY(()) cgraph_thunk_info {
+  /* Information about the thunk.  */
+  HOST_WIDE_INT fixed_offset;
+  HOST_WIDE_INT virtual_value;
+  tree alias;
+  bool this_adjusting;
+  bool virtual_offset_p;
+  /* Set to true when alias node is thunk.  */
+  bool thunk_p;
+};
+
 /* Information about the function collected locally.
    Available after function is analyzed.  */
 
@@ -184,8 +197,8 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   struct cgraph_node *prev_sibling_clone;
   struct cgraph_node *clones;
   struct cgraph_node *clone_of;
-  /* For normal nodes pointer to the list of alias nodes, in alias
-     nodes pointer to the normal node.  */
+  /* For normal nodes pointer to the list of alias and thunk nodes,
+     in alias/thunk nodes pointer to the normal node.  */
   struct cgraph_node *same_body;
   /* For functions with many calls sites it holds map from call expression
      to the edge to speed up cgraph_edge function.  */
@@ -202,6 +215,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   struct cgraph_global_info global;
   struct cgraph_rtl_info rtl;
   struct cgraph_clone_info clone;
+  struct cgraph_thunk_info thunk;
 
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
@@ -244,8 +258,8 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   unsigned alias : 1;
   /* Set for nodes that was constructed and finalized by frontend.  */
   unsigned finalized_by_frontend : 1;
-  /* Set for alias nodes, same_body points to the node they are alias of
-     and they are linked through the next/previous pointers.  */
+  /* Set for alias and thunk nodes, same_body points to the node they are alias
+     of and they are linked through the next/previous pointers.  */
   unsigned same_body_alias : 1;
 };
 
@@ -423,6 +437,7 @@ struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 struct cgraph_node * cgraph_get_node (tree);
 struct cgraph_node *cgraph_node (tree);
 bool cgraph_same_body_alias (tree, tree);
+void cgraph_add_thunk (tree, tree, bool, HOST_WIDE_INT, HOST_WIDE_INT, tree, tree);
 void cgraph_remove_same_body_alias (struct cgraph_node *);
 struct cgraph_node *cgraph_node_for_asm (tree);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, gimple);

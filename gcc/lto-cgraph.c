@@ -317,6 +317,21 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 	{
 	  lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
 				    alias->decl);
+	  if (alias->thunk.thunk_p)
+	    {
+              lto_output_uleb128_stream
+	         (ob->main_stream,
+	      	  1 + (alias->thunk.this_adjusting != 0) * 2
+		  + (alias->thunk.virtual_offset_p != 0) * 4);
+	      lto_output_uleb128_stream (ob->main_stream,
+	      				 alias->thunk.fixed_offset);
+	      lto_output_uleb128_stream (ob->main_stream,
+	      				 alias->thunk.virtual_value);
+	      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
+					alias->thunk.alias);
+	    }
+	  else
+            lto_output_uleb128_stream (ob->main_stream, 0);
 	  alias = alias->previous;
 	}
       while (alias);
@@ -575,9 +590,24 @@ input_node (struct lto_file_decl_data *file_data,
   while (same_body_count-- > 0)
     {
       tree alias_decl;
+      int type;
       decl_index = lto_input_uleb128 (ib);
       alias_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-      cgraph_same_body_alias (alias_decl, fn_decl);
+      type = lto_input_uleb128 (ib);
+      if (!type)
+        cgraph_same_body_alias (alias_decl, fn_decl);
+      else
+        {
+	  HOST_WIDE_INT fixed_offset = lto_input_uleb128 (ib);
+	  HOST_WIDE_INT virtual_value = lto_input_uleb128 (ib);
+	  tree real_alias;
+	  decl_index = lto_input_uleb128 (ib);
+	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
+	  cgraph_add_thunk (alias_decl, fn_decl, type & 2, fixed_offset,
+	  		    virtual_value,
+			    (type & 4) ? size_int (virtual_value) : NULL_TREE,
+			    real_alias);
+	}
     }
   return node;
 }

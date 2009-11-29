@@ -104,8 +104,6 @@ extern bool cp_function_decl_explicit_p (tree decl);
 
 #undef LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR
 #define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR cxx_callgraph_analyze_expr
-#undef LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS
-#define LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS emit_associated_thunks
 
 #undef LANG_HOOKS_MAKE_TYPE
 #define LANG_HOOKS_MAKE_TYPE cxx_make_type

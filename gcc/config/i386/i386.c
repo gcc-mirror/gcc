@@ -26002,7 +26002,10 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
   /* Adjust the this parameter by a fixed constant.  */
   if (delta)
     {
-      xops[0] = GEN_INT (delta);
+      /* Make things pretty and `subl $4,%eax' rather than `addl $-4,%eax'.
+         Exceptions: -128 encodes smaller than 128, so swap sign and op.  */
+      bool sub = delta < 0 || delta == 128;
+      xops[0] = GEN_INT (sub ? -delta : delta);
       xops[1] = this_reg ? this_reg : this_param;
       if (TARGET_64BIT)
 	{
@@ -26014,8 +26017,13 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	      xops[0] = tmp;
 	      xops[1] = this_param;
 	    }
-	  output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
+	  if (sub)
+	    output_asm_insn ("sub{q}\t{%0, %1|%1, %0}", xops);
+	  else
+	    output_asm_insn ("add{q}\t{%0, %1|%1, %0}", xops);
 	}
+      else if (sub)
+	output_asm_insn ("sub{l}\t{%0, %1|%1, %0}", xops);
       else
 	output_asm_insn ("add{l}\t{%0, %1|%1, %0}", xops);
     }

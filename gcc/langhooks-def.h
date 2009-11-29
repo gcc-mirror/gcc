@@ -126,11 +126,9 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 }
 
 #define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR lhd_callgraph_analyze_expr
-#define LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS NULL
 
 #define LANG_HOOKS_CALLGRAPH_INITIALIZER { \
-  LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR, \
-  LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS, \
+  LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR \
 }
 
 /* Hooks for tree gimplification.  */

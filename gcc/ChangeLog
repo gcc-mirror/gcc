@@ -1,3 +1,27 @@
+2009-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (same_body_alias_1): Break out of
+	(same_body_alias): ... here; remove comdat check; it is handled
+	in cp already.
+	(cgraph_add_thunk): New.
+	(dump_cgraph_node): Dump aliases and thunks.
+	* cgraph.h (cgraph_thunk_info): New structure.
+	(struct cgraph_node): Add thunk info.
+	(cgraph_add_thunk): New.
+	* cgraphunit.c (cgraph_emit_thunks): Remove.
+	(cgraph_finalize_compilation_unit): Do not call cgraph_emit_thunks.
+	(assemble_thunk): New function.
+	(cgraph_expand_function): Handle thunks.
+	(thunk_adjust): New.
+	(init_lowered_empty_function): New.
+	* cp-objcp-common.h (LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS): Remove.
+	* lto-cgraph.c (lto_output_node): Stream thunk info.
+	(input_node): Likewise.
+	* langhooks.h (lang_hooks_for_callgraph): Remove emit_associated_thunks.
+	* langhooks-def.h (LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS): Remove.
+	(LANG_HOOKS_CALLGRAPH_INITIALIZER): Update.
+	* i386.c (x86_output_mi_thunk): Make output prettier.
+
 2009-11-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42183

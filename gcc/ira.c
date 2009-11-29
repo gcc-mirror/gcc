@@ -3172,6 +3172,7 @@ ira (FILE *f)
 
   ira_assert (current_loops == NULL);
   flow_loops_find (&ira_loops);
+  record_loop_exits ();
   current_loops = &ira_loops;
 
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
@@ -3215,6 +3216,7 @@ ira (FILE *f)
 	  df_analyze ();
 
 	  flow_loops_find (&ira_loops);
+	  record_loop_exits ();
 	  current_loops = &ira_loops;
 
 	  setup_allocno_assignment_flags ();

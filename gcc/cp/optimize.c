@@ -250,7 +250,10 @@ maybe_clone_body (tree fn)
 	  && DECL_INTERFACE_KNOWN (fns[0])
 	  && !DECL_ONE_ONLY (fns[0])
 	  && cgraph_same_body_alias (clone, fns[0]))
-	alias = true;
+	{
+	  alias = true;
+	  emit_associated_thunks (clone);
+	}
 
       /* Build the delete destructor by calling complete destructor
          and delete function.  */
