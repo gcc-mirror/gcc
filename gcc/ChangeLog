@@ -1,3 +1,11 @@
+2009-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (fnmaddsf4_powerpc_1): Remove
+	HONOR_SIGNED_ZEROS final condition.
+	(fnmsubsf4_powerpc_1): Same.
+	(fnmadddf4_fpr_1): Same.
+	(fnmsubdf4_fpr_1): Same.
+
 2009-11-29  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/42193
