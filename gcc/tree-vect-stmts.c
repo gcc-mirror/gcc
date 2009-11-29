@@ -1934,8 +1934,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (loop_vinfo)
     vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   else
-    /* FORNOW: multiple types are not supported in basic block SLP.  */
-    vf = nunits_in;
+    vf = 1;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
@@ -3279,8 +3278,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
     }
   else
-    /* FORNOW: multiple types are not supported in basic block SLP.  */
-    vf = nunits;
+    vf = 1;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in

@@ -1,3 +1,10 @@
+2009-11-29  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/42193
+	* tree-vect-stmts.c (vectorizable_operation): Set vectorization factor
+	to 1 in case of basic block SLP.
+	(vectorizable_load): Likewise.
+
 2009-11-28  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (same_body_alias_1): Break out of
