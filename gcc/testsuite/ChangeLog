@@ -1,3 +1,8 @@
+2009-11-29  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/42193
+	* gcc.dg/vect/pr42193.c: New test.
+
 2009-11-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36408
