@@ -1,3 +1,7 @@
+2009-11-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/doxygen/user.cfg.in: Add __GXX_RTTI to PREDEFINED macros.
+
 2009-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/42019
