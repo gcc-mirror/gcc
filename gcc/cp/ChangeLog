@@ -1,3 +1,13 @@
+2009-11-29  Jan Hubicka  <jh@suse.cz>
+
+	* optimize.c (maybe_clone_body): Emit thunks associated to alias.
+	* Make-lang.in (method.o): Add dependency on gimple.h.
+	* method.c: Include gimple.h
+	(make_alias_for_thunk): Use same body alias instead of assemble_alias.
+	(use_thunk): Drop codegen; use cgraph_add_thunk; gimplify
+	generic thunks.
+	* semantics.c (expand_or_defer_fn): Emit associated thunks.
+
 2009-11-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36408

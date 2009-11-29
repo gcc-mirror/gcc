@@ -85,6 +85,7 @@ The callgraph:
 #include "tree-flow.h"
 #include "value-prof.h"
 #include "except.h"
+#include "diagnostic.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -507,29 +508,15 @@ cgraph_node (tree decl)
   return node;
 }
 
-/* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
-   Same body aliases are output whenever the body of DECL is output,
-   and cgraph_node (ALIAS) transparently returns cgraph_node (DECL).  */
+/* Mark ALIAS as an alias to DECL.  */
 
-bool
-cgraph_same_body_alias (tree alias, tree decl)
+static struct cgraph_node *
+cgraph_same_body_alias_1 (tree alias, tree decl)
 {
   struct cgraph_node key, *alias_node, *decl_node, **slot;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   gcc_assert (TREE_CODE (alias) == FUNCTION_DECL);
-  gcc_assert (!assembler_name_hash);
-
-#ifndef ASM_OUTPUT_DEF
-  /* If aliases aren't supported by the assembler, fail.  */
-  return false;
-#endif
-
-  /* Comdat same body aliases are only supported when comdat groups
-     are supported and the symbols are weak.  */
-  if (DECL_ONE_ONLY (decl) && (!HAVE_COMDAT_GROUP || !DECL_WEAK (decl)))
-    return false;
-
   decl_node = cgraph_node (decl);
 
   key.decl = alias;
@@ -538,7 +525,7 @@ cgraph_same_body_alias (tree alias, tree decl)
 
   /* If the cgraph_node has been already created, fail.  */
   if (*slot)
-    return false;
+    return NULL;
 
   alias_node = cgraph_allocate_node ();
   alias_node->decl = alias;
@@ -548,9 +535,56 @@ cgraph_same_body_alias (tree alias, tree decl)
   if (decl_node->same_body)
     decl_node->same_body->previous = alias_node;
   alias_node->next = decl_node->same_body;
+  alias_node->thunk.alias = decl;
   decl_node->same_body = alias_node;
   *slot = alias_node;
-  return true;
+  return alias_node;
+}
+
+/* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
+   Same body aliases are output whenever the body of DECL is output,
+   and cgraph_node (ALIAS) transparently returns cgraph_node (DECL).   */
+
+bool
+cgraph_same_body_alias (tree alias, tree decl)
+{
+#ifndef ASM_OUTPUT_DEF
+  /* If aliases aren't supported by the assembler, fail.  */
+  return false;
+#endif
+
+  /*gcc_assert (!assembler_name_hash);*/
+
+  return cgraph_same_body_alias_1 (alias, decl) != NULL;
+}
+
+void
+cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
+		  HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value,
+		  tree virtual_offset,
+		  tree real_alias)
+{
+  struct cgraph_node *node = cgraph_get_node (alias);
+
+  if (node)
+    {
+      gcc_assert (node->local.finalized);
+      gcc_assert (!node->same_body);
+      cgraph_remove_node (node);
+    }
+  
+  node = cgraph_same_body_alias_1 (alias, decl);
+  gcc_assert (node);
+#ifdef ENABLE_CHECKING
+  gcc_assert (!virtual_offset
+  	      || tree_int_cst_equal (virtual_offset, size_int (virtual_value)));
+#endif
+  node->thunk.fixed_offset = fixed_offset;
+  node->thunk.this_adjusting = this_adjusting;
+  node->thunk.virtual_value = virtual_value;
+  node->thunk.virtual_offset_p = virtual_offset != NULL;
+  node->thunk.alias = real_alias;
+  node->thunk.thunk_p = true;
 }
 
 /* Returns the cgraph node assigned to DECL or NULL if no cgraph node
@@ -1646,6 +1680,27 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	fprintf(f, "(can throw external) ");
     }
   fprintf (f, "\n");
+
+  if (node->same_body)
+    {
+      struct cgraph_node *n;
+      fprintf (f, "  aliases & thunks:");
+      for (n = node->same_body; n; n = n->next)
+        {
+          fprintf (f, " %s/%i", cgraph_node_name (n), n->uid);
+	  if (n->thunk.thunk_p)
+	    {
+	      fprintf (f, " (thunk of %s fixed ofset %i virtual value %i has "
+		       "virtual offset %i",
+	      	       lang_hooks.decl_printable_name (n->thunk.alias, 2),
+		       (int)n->thunk.fixed_offset,
+		       (int)n->thunk.virtual_value,
+		       (int)n->thunk.virtual_offset_p);
+	      fprintf (f, ")");
+	    }
+	}
+      fprintf (f, "\n");
+    }
 }
 
 

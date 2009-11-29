@@ -3832,10 +3832,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   (*debug_hooks->outlining_inline_function) (cg_edge->callee->decl);
 
   /* Update callgraph if needed.  */
-  if (cg_edge->callee->clone_of
-      && !cg_edge->callee->clone_of->next_sibling_clone
-      && !cg_edge->callee->analyzed)
-    cgraph_remove_node (cg_edge->callee);
   cgraph_remove_node (cg_edge->callee);
 
   id->block = NULL_TREE;
