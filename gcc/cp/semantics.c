@@ -1855,6 +1855,9 @@ empty_expr_stmt_p (tree expr_stmt)
 {
   tree body = NULL_TREE;
 
+  if (expr_stmt == void_zero_node)
+    return true;
+
   if (expr_stmt)
     {
       if (TREE_CODE (expr_stmt) == EXPR_STMT)
@@ -1863,13 +1866,13 @@ empty_expr_stmt_p (tree expr_stmt)
 	body = expr_stmt;
     }
 
-    if (body)
-      {
-	if (TREE_CODE (body) == STATEMENT_LIST)
-	  return tsi_end_p (tsi_start (body));
-	else
-	  return empty_expr_stmt_p (body);
-      }
+  if (body)
+    {
+      if (TREE_CODE (body) == STATEMENT_LIST)
+	return tsi_end_p (tsi_start (body));
+      else
+	return empty_expr_stmt_p (body);
+    }
   return false;
 }
 

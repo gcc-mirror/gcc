@@ -1,3 +1,10 @@
+2009-11-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/36408
+	* semantics.c (empty_expr_stmt_p): Handle void_zero_node and fix
+	bad indentation.
+	* pt.c (tsubst_copy_and_build): Fix typo.
+
 2009-11-29  Jan Hubicka  <jh@suse.cz>
 
 	* optimize.c (maybe_clone_body): Emit thunks associated to alias.
