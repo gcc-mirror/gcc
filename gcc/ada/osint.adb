@@ -1081,7 +1081,8 @@ package body Osint is
 
    function File_Time_Stamp
      (Name : Path_Name_Type;
-      Attr : access File_Attributes) return Time_Stamp_Type is
+      Attr : access File_Attributes) return Time_Stamp_Type
+   is
    begin
       if Name = No_Path then
          return Empty_Time_Stamp;
@@ -1090,7 +1091,7 @@ package body Osint is
       Get_Name_String (Name);
       Name_Buffer (Name_Len + 1) := ASCII.NUL;
       return OS_Time_To_GNAT_Time
-        (File_Time_Stamp (Name_Buffer'Address, Attr));
+               (File_Time_Stamp (Name_Buffer'Address, Attr));
    end File_Time_Stamp;
 
    ----------------
