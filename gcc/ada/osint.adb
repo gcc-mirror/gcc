@@ -813,12 +813,16 @@ package body Osint is
       end if;
 
       if Exec_Suffix'Length /= 0 then
-         Add_Suffix := not Only_If_No_Suffix;
-
-         if not Add_Suffix then
-            for J in 1 .. Name_Len loop
+         Add_Suffix := True;
+         if Only_If_No_Suffix then
+            for J in reverse 1 .. Name_Len loop
                if Name_Buffer (J) = '.' then
-                  Add_Suffix := True;
+                  Add_Suffix := False;
+                  exit;
+
+               elsif Name_Buffer (J) = '/' or else
+                     Name_Buffer (J) = Directory_Separator
+               then
                   exit;
                end if;
             end loop;
@@ -875,40 +879,50 @@ package body Osint is
          Exec_Suffix := new String'(Name_Buffer (1 .. Name_Len));
       end if;
 
-      declare
-         Suffix : constant String := Exec_Suffix.all;
-
-      begin
+      if Exec_Suffix'Length = 0 then
          Free (Exec_Suffix);
-         Canonical_Case_File_Name (Canonical_Name);
-         Add_Suffix := not Only_If_No_Suffix;
+         return Name;
 
-         if not Add_Suffix then
-            for J in 1 .. Name_Len loop
-               if Name_Buffer (J) = '.' then
-                  Add_Suffix := True;
-                  exit;
-               end if;
-            end loop;
-         end if;
+      else
+         declare
+            Suffix : constant String := Exec_Suffix.all;
 
-         if Suffix'Length = 0 and then
-           Add_Suffix and then
-           (Canonical_Name'Length <= Suffix'Length
-            or else Canonical_Name (Canonical_Name'Last - Suffix'Length + 1
-                                    .. Canonical_Name'Last) /= Suffix)
-         then
-            declare
-               Result : String (1 .. Name'Length + Suffix'Length);
-            begin
-               Result (1 .. Name'Length) := Name;
-               Result (Name'Length + 1 .. Result'Last) := Suffix;
-               return Result;
-            end;
-         else
-            return Name;
-         end if;
-      end;
+         begin
+            Free (Exec_Suffix);
+            Canonical_Case_File_Name (Canonical_Name);
+
+            Add_Suffix := True;
+            if Only_If_No_Suffix then
+               for J in reverse 1 .. Name_Len loop
+                  if Name_Buffer (J) = '.' then
+                     Add_Suffix := False;
+                     exit;
+
+                  elsif Name_Buffer (J) = '/' or else
+                    Name_Buffer (J) = Directory_Separator
+                  then
+                     exit;
+                  end if;
+               end loop;
+            end if;
+
+            if Add_Suffix and then
+              (Canonical_Name'Length <= Suffix'Length
+               or else Canonical_Name (Canonical_Name'Last - Suffix'Length + 1
+                                       .. Canonical_Name'Last) /= Suffix)
+            then
+               declare
+                  Result : String (1 .. Name'Length + Suffix'Length);
+               begin
+                  Result (1 .. Name'Length) := Name;
+                  Result (Name'Length + 1 .. Result'Last) := Suffix;
+                  return Result;
+               end;
+            else
+               return Name;
+            end if;
+         end;
+      end if;
    end Executable_Name;
 
    -----------------------

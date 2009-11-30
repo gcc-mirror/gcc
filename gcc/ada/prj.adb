@@ -23,9 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Ada.Unchecked_Deallocation;
-
 with Debug;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -33,6 +30,9 @@ with Prj.Attr;
 with Prj.Err;  use Prj.Err;
 with Snames;   use Snames;
 with Uintp;    use Uintp;
+
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
+with Ada.Unchecked_Deallocation;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
@@ -107,6 +107,7 @@ package body Prj is
                       Config_File_Temp               => False,
                       Config_Checked                 => False,
                       Need_To_Build_Lib              => False,
+                      Has_Multi_Unit_Sources         => False,
                       Depth                          => 0,
                       Unkept_Comments                => False);
 

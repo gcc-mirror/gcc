@@ -400,6 +400,7 @@ begin
          then
             Initialize_Scalars := True;
          end if;
+
          Next (Item);
       end loop;
    end;

@@ -3083,15 +3083,17 @@ package body Prj.Tree is
               Optional_Index_Case_Insensitive_Associative_Array
          then
             --  Results in:   for Name ("index" at index) use "value";
-            --  This is currently only used for executables
+            --  This is currently only used for executables.
+
             Set_Source_Index_Of (Node, Tree, To => Int (At_Index));
+
          else
             --  Results in:   for Name ("index") use "value" at index;
 
             --  ??? This limitation makes no sense, we should be able to
-            --  set the source index on an expression
-            pragma Assert (Kind_Of (Value, Tree) = N_Literal_String);
+            --  set the source index on an expression.
 
+            pragma Assert (Kind_Of (Value, Tree) = N_Literal_String);
             Set_Source_Index_Of (Value, Tree, To => Int (At_Index));
          end if;
       end if;
