@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                        GNAT RUN-TIME COMPONENTS                          --
 --                                                                          --
---                  GNAT.SOCKETS.THIN.SOCKET_ERROR_MESSAGE                  --
+--                  S Y S T E M . C R T L . R U N T I M E                   --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2007-2009, AdaCore                     --
+--             Copyright (C) 2009, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,30 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the default implementation of this unit, using the standard C
---  library's strerror(3) function. It is used on all platforms except Windows,
---  since on that platform socket errno values are distinct from the system
---  ones: there is a specific variant of this function in g-socthi-mingw.adb.
+--  This package provides the low level interface to the C runtime library
+--  (additional declarations for use in the Ada runtime only, not in the
+--  compiler itself).
 
-with System.CRTL.Runtime;
+with Interfaces.C.Strings;
 
-separate (GNAT.Sockets.Thin)
+package System.CRTL.Runtime is
+   pragma Preelaborate;
 
---------------------------
--- Socket_Error_Message --
---------------------------
+   subtype chars_ptr is Interfaces.C.Strings.chars_ptr;
 
-function Socket_Error_Message
-  (Errno : Integer) return C.Strings.chars_ptr
-is
-   use type Interfaces.C.Strings.chars_ptr;
-   C_Msg : constant C.Strings.chars_ptr :=
-             System.CRTL.Runtime.strerror (Errno);
+   function strerror (errno : int) return chars_ptr;
+   pragma Import (C, strerror, "strerror");
 
-begin
-   if C_Msg = C.Strings.Null_Ptr then
-      return Unknown_System_Error;
-   else
-      return C_Msg;
-   end if;
-end Socket_Error_Message;
+end System.CRTL.Runtime;

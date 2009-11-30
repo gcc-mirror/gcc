@@ -212,9 +212,8 @@ package GNAT.Sockets.Thin_Common is
                       C.Strings.Null_Ptr);
    --  Arrays of C (char *)
 
-   sizeof_servent : constant C.size_t;
-   pragma Import (C, sizeof_servent, "__gnat_sizeof_servent");
-   type Servent is array (1 .. sizeof_servent) of C.char;
+   type Servent is new System.Storage_Elements.Storage_Array
+                         (1 .. SOSC.SIZEOF_struct_servent);
    for Servent'Alignment use 8;
    --  Service entry. This is an opaque type used only via the following
    --  accessor functions, because 'struct servent' has different layouts on

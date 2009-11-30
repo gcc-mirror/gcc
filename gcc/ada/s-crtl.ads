@@ -31,18 +31,18 @@
 
 --  This package provides the low level interface to the C runtime library
 
-with Interfaces.C.Strings;
+pragma Compiler_Unit;
 
 with System.Parameters;
 
 package System.CRTL is
    pragma Preelaborate;
 
-   subtype chars_ptr is Interfaces.C.Strings.chars_ptr;
-
    subtype chars is System.Address;
    --  Pointer to null-terminated array of characters
-   --  Should use Interfaces.C.Strings types instead???
+   --  Should use Interfaces.C.Strings types instead, but this causes bootstrap
+   --  issues as i-c contains Ada 2005 specific features, not compatible with
+   --  older, Ada 95-only base compilers???
 
    subtype DIRs is System.Address;
    --  Corresponds to the C type DIR*
@@ -116,8 +116,7 @@ package System.CRTL is
    function fseek
      (stream : FILEs;
       offset : long;
-      origin : int)
-      return   int;
+      origin : int) return int;
    pragma Import (C, fseek, "fseek");
 
    function ftell (stream : FILEs) return long;
@@ -167,8 +166,7 @@ package System.CRTL is
      (stream : FILEs;
       buffer : chars;
       mode   : int;
-      size   : size_t)
-      return   int;
+      size   : size_t) return int;
    pragma Import (C, setvbuf, "setvbuf");
 
    procedure tmpnam (string : chars);
@@ -194,8 +192,5 @@ package System.CRTL is
 
    function write (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, write, "write");
-
-   function strerror (errno : int) return chars_ptr;
-   pragma Import (C, strerror, "strerror");
 
 end System.CRTL;

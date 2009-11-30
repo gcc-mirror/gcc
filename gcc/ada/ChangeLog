@@ -1,3 +1,27 @@
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-makr.adb (Source_Files): New hash table to keep track of source
+	file names.
+	(Finalize): Avoid putting several times the same source file name
+	in the source list file.
+	* prj-pp.adb (Print): Fix a bug in the placement of "at nn" for
+	associative array indexes.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* g-dyntab.ads: Add missing pragma Compiler_Unit
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-crtrun.ads, s-crtl.ads, g-stseme.adb, Makefile.rtl, s-fileio.adb
+	(System.CRTL.Runtime): New unit, to contain parts of s-crtl that are
+	used in the Ada runtime but can't be used in the compiler because of
+	bootstrap issues.
+	* socket.c, s-oscons-tmplt.c, g-sothco.ads
+	(System.OS_Constants.SIZEOF_struct_servent): New constant.
+	Use s-oscons constant instead of external variable to get size of
+	struct hostent.
+
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
 	* s-crtl.ads, g-stseme.adb, s-fileio.adb (System.CRTL.strerror): Change

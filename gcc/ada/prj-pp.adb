@@ -532,6 +532,12 @@ package body Prj.PP is
                      Write_String (" (");
                      Output_String
                        (Associative_Array_Index_Of (Node, In_Tree));
+
+                     if Source_Index_Of (Node, In_Tree) /= 0 then
+                        Write_String (" at");
+                        Write_String (Source_Index_Of (Node, In_Tree)'Img);
+                     end if;
+
                      Write_String (")");
                   end if;
 
@@ -572,11 +578,6 @@ package body Prj.PP is
 
                      Write_String ("'");
                      Output_Attribute_Name (Name_Of (Node, In_Tree));
-                  end if;
-
-                  if Source_Index_Of (Node, In_Tree) /= 0 then
-                     Write_String (" at");
-                     Write_String (Source_Index_Of (Node, In_Tree)'Img);
                   end if;
 
                   Write_String (";");
