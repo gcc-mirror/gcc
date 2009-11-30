@@ -1,3 +1,7 @@
+2009-11-30  Ira Rosen  <irar@il.ibm.com>
+
+	* gfortran.dg/vect/vect-7.f90: New test.
+
 2009-11-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42119

@@ -1,3 +1,8 @@
+2009-11-30  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-stmts.c (vectorizable_assignment): Support
+	multiple types.
+
 2009-11-30  Richard Guenther  <rguenther@suse.de>
 
 	* doc/contrib.texi (Contributors): Add myself.
