@@ -1,3 +1,8 @@
+2009-11-30  Ben Elliston  <bje@au.ibm.com>
+
+	* jni.cc (_Jv_JNI_GetObjectRefType): Mark `object' parameter as
+	maybe unused.
+
 2009-11-26  Ben Elliston  <bje@au.ibm.com>
 
 	* posix-threads.cc (ParkHelper::unpark): Do not initialise result,
