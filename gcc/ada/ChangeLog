@@ -1,3 +1,7 @@
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Document new syntax for pragma Annotate
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* scans.ads (Wide_Wide_Character_Found): New flag

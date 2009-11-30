@@ -929,7 +929,7 @@ same syntax and effect.
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Annotate (IDENTIFIER @{, ARG@});
+pragma Annotate (IDENTIFIER [,IDENTIFIER] @{, ARG@});
 
 ARG ::= NAME | EXPRESSION
 @end smallexample
@@ -937,11 +937,14 @@ ARG ::= NAME | EXPRESSION
 @noindent
 This pragma is used to annotate programs.  @var{identifier} identifies
 the type of annotation.  GNAT verifies that it is an identifier, but does
-not otherwise analyze it.  The @var{arg} argument
-can be either a string literal or an
-expression.  String literals are assumed to be of type
-@code{Standard.String}.  Names of entities are simply analyzed as entity
-names.  All other expressions are analyzed as expressions, and must be
+not otherwise analyze it. The second optional identifier is also left
+unanalyzed, and by convention is used to control the action of the tool to
+which the annotation is addressed.  The remaining @var{arg} arguments
+can be either string literals or more generally expressions.
+String literals are assumed to be either of type
+@code{Standard.String} or else @code{Wide_String} or @code{Wide_Wide_String}
+depending on the character literals they contain.
+All other kinds of arguments are analyzed as expressions, and must be
 unambiguous.
 
 The analyzed pragma is retained in the tree, but not otherwise processed

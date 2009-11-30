@@ -21028,7 +21028,7 @@ exemption control annotations is as follows:
 @group
 pragma Annotate (gnatcheck, @i{exemption_control}, @i{Rule_Name}, [@i{justification}]);
 
-@i{exemption_control} ::= "Exempt_On" | "Exempt_Off"
+@i{exemption_control} ::= Exempt_On | Exempt_Off
 
 @i{Rule_Name}         ::= string_literal
 
@@ -21052,9 +21052,9 @@ A source code section where an exemption is active for a given rule is
 delimited by an @code{exempt_on} and @code{exempt_off} annotation pair:
 
 @smallexample @c ada
-pragma Annotate (gnatcheck, "Exempt_On", Rule_Name, "justification");
+pragma Annotate (gnatcheck, Exempt_On, Rule_Name, "justification");
 -- source code section
-pragma Annotate (gnatcheck, "Exempt_Off", Rule_Name);
+pragma Annotate (gnatcheck, Exempt_Off, Rule_Name);
 @end smallexample
 
 
