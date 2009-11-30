@@ -569,7 +569,7 @@ static new_var
 is_in_new_vars_htab (tree decl, htab_t new_vars_htab)
 {
   return (new_var) htab_find_with_hash (new_vars_htab, decl,
-					htab_hash_pointer (decl));
+					DECL_UID (decl));
 }
 
 /* Given original variable ORIG_VAR, this function returns
@@ -1962,7 +1962,7 @@ add_to_new_vars_htab (new_var new_node, htab_t new_vars_htab)
   void **slot;
 
   slot = htab_find_slot_with_hash (new_vars_htab, new_node->orig_var,
-				   htab_hash_pointer (new_node->orig_var),
+				   DECL_UID (new_node->orig_var),
 				   INSERT);
   *slot = new_node;
 }
@@ -2254,15 +2254,19 @@ create_new_var (tree var_decl, htab_t new_vars_htab)
 static hashval_t
 new_var_hash (const void *x)
 {
-  return htab_hash_pointer (((const_new_var)x)->orig_var);
+  return DECL_UID (((const_new_var)x)->orig_var);
 }
 
-/* This function returns nonzero if orig_var of new_var X is equal to Y.  */
+/* This function returns nonzero if orig_var of new_var X 
+   and tree Y have equal UIDs.  */
 
 static int
 new_var_eq (const void *x, const void *y)
 {
-  return ((const_new_var)x)->orig_var == (const_tree)y;
+  if (DECL_P ((const_tree)y))
+    return DECL_UID (((const_new_var)x)->orig_var) == DECL_UID ((const_tree)y);
+  else
+    return 0;
 }
 
 /* This function check whether a structure type represented by STR
