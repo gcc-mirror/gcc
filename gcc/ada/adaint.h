@@ -74,15 +74,15 @@ typedef long OS_Time;
 */
 
 struct file_attributes {
-  short exists;
+  char exists;
 
-  short writable;
-  short readable;
-  short executable;
+  char writable;
+  char readable;
+  char executable;
 
-  short symbolic_link;
-  short regular;
-  short directory;
+  char symbolic_link;
+  char regular;
+  char directory;
 
   OS_Time timestamp;
   long file_length;

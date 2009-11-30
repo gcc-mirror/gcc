@@ -35,8 +35,8 @@ package body System.Secure_Hashes.MD5 is
 
    use Interfaces;
 
-   --  The sixteen values used to rotate the context words.
-   --  Four for each rounds. Used in procedure Transform.
+   --  The sixteen values used to rotate the context words. Four for each
+   --  rounds. Used in procedure Transform.
 
    --  Round 1
 
@@ -67,8 +67,8 @@ package body System.Secure_Hashes.MD5 is
    S44 : constant := 21;
 
    --  The following functions (F, FF, G, GG, H, HH, I and II) are the
-   --  equivalent of the macros of the same name in the example
-   --  C implementation in the annex of RFC 1321.
+   --  equivalent of the macros of the same name in the example C
+   --  implementation in the annex of RFC 1321.
 
    function F (X, Y, Z : Unsigned_32) return Unsigned_32;
    pragma Inline (F);
