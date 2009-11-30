@@ -1,3 +1,20 @@
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* par_sco.adb (Traverse_Handled_Statement_Sequence): Do not emit SCO's
+	for null statements that do not come from source.
+	* sinfo.ads: Clarify documentation of Comes_From_Source
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Use Display_Name for both projects when
+	displaying the paths in error message.
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* adaint.h, adaint.c (file_attributes): force the use of unsigned char.
+ 	On some platforms, "char" is signed, on others unsigned, so we
+ 	explicitly specify the one we expect
+
 2009-11-30  Matthew Heaney  <heaney@adacore.com>
 
 	* a-coinve.adb (Insert): Move exception handler closer to point where

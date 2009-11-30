@@ -377,19 +377,21 @@ to_ptr32 (char **ptr64)
 #define MAYBE_TO_PTR32(argv) argv
 #endif
 
+const char ATTR_UNSET = 127;
+
 void
 __gnat_reset_attributes
   (struct file_attributes* attr)
 {
-  attr->exists     = -1;
+  attr->exists     = ATTR_UNSET;
 
-  attr->writable   = -1;
-  attr->readable   = -1;
-  attr->executable = -1;
+  attr->writable   = ATTR_UNSET;
+  attr->readable   = ATTR_UNSET;
+  attr->executable = ATTR_UNSET;
 
-  attr->regular    = -1;
-  attr->symbolic_link = -1;
-  attr->directory = -1;
+  attr->regular    = ATTR_UNSET;
+  attr->symbolic_link = ATTR_UNSET;
+  attr->directory = ATTR_UNSET;
 
   attr->timestamp = (OS_Time)-2;
   attr->file_length = -1;
@@ -1799,7 +1801,7 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
 int
 __gnat_file_exists_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->exists == -1) {
+   if (attr->exists == ATTR_UNSET) {
 #ifdef __MINGW32__
       /*  On Windows do not use __gnat_stat() because of a bug in Microsoft
          _stat() routine. When the system time-zone is set with a negative
@@ -1865,7 +1867,7 @@ __gnat_is_absolute_path (char *name, int length)
 int
 __gnat_is_regular_file_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->regular == -1) {
+   if (attr->regular == ATTR_UNSET) {
       __gnat_stat_to_attr (-1, name, attr);
    }
 
@@ -1883,7 +1885,7 @@ __gnat_is_regular_file (char *name)
 int
 __gnat_is_directory_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->directory == -1) {
+   if (attr->directory == ATTR_UNSET) {
       __gnat_stat_to_attr (-1, name, attr);
    }
 
@@ -2091,7 +2093,7 @@ __gnat_can_use_acl (TCHAR *wname)
 int
 __gnat_is_readable_file_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->readable == -1) {
+   if (attr->readable == ATTR_UNSET) {
 #if defined (_WIN32) && !defined (RTX)
      TCHAR wname [GNAT_MAX_PATH_LEN + 2];
      GENERIC_MAPPING GenericMapping;
@@ -2125,7 +2127,7 @@ __gnat_is_readable_file (char *name)
 int
 __gnat_is_writable_file_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->writable == -1) {
+   if (attr->writable == ATTR_UNSET) {
 #if defined (_WIN32) && !defined (RTX)
      TCHAR wname [GNAT_MAX_PATH_LEN + 2];
      GENERIC_MAPPING GenericMapping;
@@ -2163,7 +2165,7 @@ __gnat_is_writable_file (char *name)
 int
 __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->executable == -1) {
+   if (attr->executable == ATTR_UNSET) {
 #if defined (_WIN32) && !defined (RTX)
      TCHAR wname [GNAT_MAX_PATH_LEN + 2];
      GENERIC_MAPPING GenericMapping;
@@ -2314,7 +2316,7 @@ __gnat_set_non_readable (char *name)
 int
 __gnat_is_symbolic_link_attr (char* name, struct file_attributes* attr)
 {
-   if (attr->symbolic_link == -1) {
+   if (attr->symbolic_link == ATTR_UNSET) {
 #if defined (__vxworks) || defined (__nucleus__)
       attr->symbolic_link = 0;
 

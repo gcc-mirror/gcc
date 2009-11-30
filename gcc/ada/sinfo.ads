@@ -462,10 +462,18 @@ package Sinfo is
    --    reasons.
 
    --  Comes_From_Source (Flag2)
-   --    This flag is on for any nodes built by the scanner or parser from the
-   --    source program, and off for any nodes built by the analyzer or
-   --    expander. It indicates that a node comes from the original source.
-   --    This flag is defined in Atree.
+   --    This flag is set if the node comes directly from an explicit construct
+   --    in the source. It is normally on for any nodes built by the scanner or
+   --    parser from the source program, with the exception that in a few cases
+   --    the parser adds nodes to normalize the representation (in particular
+   --    a null statement is added to a package body if there is no begin/end
+   --    initialization section.
+   --
+   --    Most nodes inserted by the analyzer or expander are not considered
+   --    as coming from source, so the flag is off for such nodes. In a few
+   --    cases, the expander constructs nodes closely equivalent to nodes
+   --    from the source program (e.g. the allocator built for build-in-place
+   --    case), and the Comes_From_Source flag is deliberately set.
 
    --  Error_Posted (Flag3)
    --    This flag is used to avoid multiple error messages being posted on or
