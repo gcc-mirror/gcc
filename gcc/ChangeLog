@@ -1,3 +1,9 @@
+2009-11-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/40086
+	* reorg.c (relax_delay_slots): When looking for redundant insn at
+	the branch target, use next_real_insn, not next_active_insn.
+
 2009-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Update minimum MPC version to 0.8.
