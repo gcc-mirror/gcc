@@ -163,7 +163,7 @@ extern rtx sh_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern void sh_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern int sh_pass_in_reg_p (CUMULATIVE_ARGS *, enum machine_mode, tree);
 extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, signed int, enum machine_mode);
-extern bool sh_promote_prototypes (const_tree);
+extern bool sh_function_value_regno_p (const unsigned int);
 extern rtx sh_dwarf_register_span (rtx);
 
 extern rtx replace_n_hard_rtx (rtx, rtx *, int , int);

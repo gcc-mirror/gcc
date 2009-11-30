@@ -251,6 +251,8 @@ static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 						struct save_schedule_s *, int);
 
 static rtx sh_struct_value_rtx (tree, int);
+static rtx sh_function_value (const_tree, const_tree, bool);
+static rtx sh_libcall_value (enum machine_mode, const_rtx);
 static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
 static void sh_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
@@ -259,6 +261,7 @@ static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 static tree sh_build_builtin_va_list (void);
 static void sh_va_start (tree, rtx);
 static tree sh_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
+static bool sh_promote_prototypes (const_tree);
 static enum machine_mode sh_promote_function_mode (const_tree type,
 						   enum machine_mode,
 						   int *punsignedp,
@@ -451,6 +454,10 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE sh_promote_function_mode
 
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE sh_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE sh_libcall_value
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX sh_struct_value_rtx
 #undef TARGET_RETURN_IN_MEMORY
@@ -7947,7 +7954,7 @@ sh_promote_function_mode (const_tree type, enum machine_mode mode,
     return mode;
 }
 
-bool
+static bool
 sh_promote_prototypes (const_tree type)
 {
   if (TARGET_HITACHI)
@@ -8304,6 +8311,54 @@ sh_struct_value_rtx (tree fndecl, int incoming ATTRIBUTE_UNUSED)
   if (TARGET_HITACHI || sh_attr_renesas_p (fndecl))
     return 0;
   return gen_rtx_REG (Pmode, 2);
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE.
+
+   For the SH, this is like LIBCALL_VALUE, except that we must change the
+   mode like PROMOTE_MODE does.
+   ??? PROMOTE_MODE is ignored for non-scalar types.  The set of types
+   tested here has to be kept in sync with the one in explow.c:promote_mode.
+*/
+
+static rtx
+sh_function_value (const_tree valtype,
+		   const_tree fn_decl_or_type,
+		   bool outgoing ATTRIBUTE_UNUSED)
+{
+  if (fn_decl_or_type
+      && !DECL_P (fn_decl_or_type))
+    fn_decl_or_type = NULL;
+
+  return gen_rtx_REG (
+	   ((GET_MODE_CLASS (TYPE_MODE (valtype)) == MODE_INT
+	     && GET_MODE_SIZE (TYPE_MODE (valtype)) < 4
+	     && (TREE_CODE (valtype) == INTEGER_TYPE
+		 || TREE_CODE (valtype) == ENUMERAL_TYPE
+		 || TREE_CODE (valtype) == BOOLEAN_TYPE
+		 || TREE_CODE (valtype) == REAL_TYPE
+		 || TREE_CODE (valtype) == OFFSET_TYPE))
+	    && sh_promote_prototypes (fn_decl_or_type)
+	    ? (TARGET_SHMEDIA64 ? DImode : SImode) : TYPE_MODE (valtype)),
+	   BASE_RETURN_VALUE_REG (TYPE_MODE (valtype)));
+}
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+sh_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, BASE_RETURN_VALUE_REG (mode));
+}
+
+/* Worker function for FUNCTION_VALUE_REGNO_P.  */
+
+bool
+sh_function_value_regno_p (const unsigned int regno)
+{
+  return ((regno) == FIRST_RET_REG 
+	  || (TARGET_SH2E && (regno) == FIRST_FP_RET_REG)
+	  || (TARGET_SHMEDIA_FPU && (regno) == FIRST_FP_RET_REG));
 }
 
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
