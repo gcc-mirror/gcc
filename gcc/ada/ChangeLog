@@ -1,3 +1,7 @@
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Fix typo.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Add documentation for attribute Result.
