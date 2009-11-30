@@ -1189,8 +1189,9 @@ package body Prj.Conf is
          Pkg   : Project_Node_Id := Empty_Node)
       is
          Attr : Project_Node_Id;
-         Val  : Name_Id := No_Name;
+         Val, Expr  : Name_Id := No_Name;
          Parent : Project_Node_Id := Config_File;
+         pragma Unreferenced (Attr);
       begin
          if Index /= "" then
             Name_Len := Index'Length;
@@ -1202,22 +1203,17 @@ package body Prj.Conf is
             Parent := Pkg;
          end if;
 
+         Name_Len := Value'Length;
+         Name_Buffer (1 .. Name_Len) := Value;
+         Expr := Name_Find;
+
          Attr := Create_Attribute
            (Tree       => Project_Tree,
             Prj_Or_Pkg => Parent,
             Name       => Name,
             Index_Name => Val,
-            Kind       => Prj.Single);
-
-         Name_Len := Value'Length;
-         Name_Buffer (1 .. Name_Len) := Value;
-         Val := Name_Find;
-
-         Set_Expression_Of
-           (Attr, Project_Tree,
-            Enclose_In_Expression
-              (Create_Literal_String (Val, Project_Tree),
-               Project_Tree));
+            Kind       => Prj.Single,
+            Value      => Create_Literal_String (Expr, Project_Tree));
       end Create_Attribute;
 
       Name   : Name_Id;
