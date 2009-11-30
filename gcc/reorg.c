@@ -3506,8 +3506,11 @@ relax_delay_slots (rtx first)
 	    }
 
 	  /* If the first insn at TARGET_LABEL is redundant with a previous
-	     insn, redirect the jump to the following insn process again.  */
-	  trial = next_active_insn (target_label);
+	     insn, redirect the jump to the following insn and process again.
+	     We use next_real_insn instead of next_active_insn so we
+	     don't skip USE-markers, or we'll end up with incorrect
+	     liveness info.  */
+	  trial = next_real_insn (target_label);
 	  if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
 	      && redundant_insn (trial, insn, 0)
 	      && ! can_throw_internal (trial))
