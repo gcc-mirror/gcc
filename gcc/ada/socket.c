@@ -91,6 +91,10 @@ extern char * __gnat_servent_s_name (struct servent *);
 extern char ** __gnat_servent_s_aliases (struct servent *);
 extern int __gnat_servent_s_port (struct servent *);
 extern char * __gnat_servent_s_proto (struct servent *);
+extern void __gnat_servent_set_s_name (struct servent *, char *);
+extern void __gnat_servent_set_s_aliases (struct servent *, char **);
+extern void __gnat_servent_set_s_port (struct servent *, int);
+extern void __gnat_servent_set_s_proto (struct servent *, char *);
 #if defined (__vxworks) || defined (_WIN32)
 extern int  __gnat_inet_pton (int, const char *, void *);
 #endif
@@ -535,6 +539,8 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
  *   };
  */
 
+/* Getters */
+
 char *
 __gnat_servent_s_name (struct servent * s)
 {
@@ -559,6 +565,31 @@ __gnat_servent_s_proto (struct servent * s)
   return s->s_proto;
 }
 
+/* Setters */
+
+void
+__gnat_servent_set_s_name (struct servent * s, char * s_name)
+{
+  s->s_name = s_name;
+}
+
+void
+__gnat_servent_set_s_aliases (struct servent * s, char ** s_aliases)
+{
+  s->s_aliases = s_aliases;
+}
+
+void
+__gnat_servent_set_s_port (struct servent * s, int s_port)
+{
+  s->s_port = s_port;
+}
+
+void
+__gnat_servent_set_s_proto (struct servent * s, char * s_proto)
+{
+  s->s_proto = s_proto;
+}
 
 #else
 # warning Sockets are not supported on this platform
