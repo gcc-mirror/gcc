@@ -43,8 +43,9 @@ package Switch.M is
    --  consists of one small letter causes a fatal error exit and control does
    --  not return. For all other not recognized switches, Success is set to
    --  False, so that the switch may be passed to the compiler.
+   --
    --  Project_Node_Tree is used to store tree-specific parameters like the
-   --  project path
+   --  project path.
 
    procedure Normalize_Compiler_Switches
      (Switch_Chars : String;

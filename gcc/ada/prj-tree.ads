@@ -1377,8 +1377,8 @@ package Prj.Tree is
       Key        => Name_Id,
       Hash       => Hash,
       Equal      => "=");
-   --  General type for htables associating name_id to name_id.
-   --  This is in particular used to store the values of external references
+   --  General type for htables associating name_id to name_id. This is in
+   --  particular used to store the values of external references.
 
    type Project_Node_Tree_Data is record
       Project_Nodes : Tree_Private_Part.Project_Node_Table.Instance;
