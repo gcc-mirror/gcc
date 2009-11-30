@@ -20874,14 +20874,13 @@ lines and end-of-line comments). There can be several rule options on a
 single line (separated by a space).
 
 A coding standard file may reference other coding standard files by including
-other @option{-from=@var{rule_option_filename}}
+more @option{-from=@var{rule_option_filename}}
 options, each such option being replaced with the content of the
 corresponding coding standard file during processing. In case a
 cycle is detected (that is, @file{@var{rule_file_1}} reads rule options
 from @file{@var{rule_file_2}}, and @file{@var{rule_file_2}} reads
 (directly or indirectly) rule options from @file{@var{rule_file_1}}),
-the processing of coding standard files is interrupted and a part of their
-content is ignored.
+processing fails with an error message.
 
 
 @node Adding the Results of Compiler Checks to gnatcheck Output

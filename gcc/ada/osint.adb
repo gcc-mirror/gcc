@@ -893,13 +893,13 @@ package body Osint is
 
             Add_Suffix := True;
             if Only_If_No_Suffix then
-               for J in reverse 1 .. Name_Len loop
-                  if Name_Buffer (J) = '.' then
+               for J in reverse Canonical_Name'Range loop
+                  if Canonical_Name (J) = '.' then
                      Add_Suffix := False;
                      exit;
 
-                  elsif Name_Buffer (J) = '/' or else
-                    Name_Buffer (J) = Directory_Separator
+                  elsif Canonical_Name (J) = '/' or else
+                        Canonical_Name (J) = Directory_Separator
                   then
                      exit;
                   end if;
