@@ -1389,22 +1389,23 @@ propagate (void)
 	      ipa_reference_local_vars_info_t w_l = w_ri->local;
 	      fprintf (dump_file, "\n  next cycle: %s/%i ",
 		       cgraph_node_name (w), w->uid);
- 	      fprintf (dump_file, "\n    locals read: ");
-	      EXECUTE_IF_SET_IN_BITMAP (w_l->statics_read,
-					0, index, bi)
-		{
-		  fprintf (dump_file, "%s ",
-			   get_static_name (index));
-		}
+	      fprintf (dump_file, "\n    locals read: ");
+	      if (w_l->statics_read)
+		EXECUTE_IF_SET_IN_BITMAP (w_l->statics_read,
+					  0, index, bi)
+		  {
+		    fprintf (dump_file, "%s ",
+			     get_static_name (index));
+		  }
 
 	      fprintf (dump_file, "\n    locals written: ");
-	      EXECUTE_IF_SET_IN_BITMAP (w_l->statics_written,
-					0, index, bi)
-		{
-		  fprintf(dump_file, "%s ",
-			  get_static_name (index));
-		}
-
+	      if (w_l->statics_written)
+		EXECUTE_IF_SET_IN_BITMAP (w_l->statics_written,
+					  0, index, bi)
+		  {
+		    fprintf (dump_file, "%s ",
+			     get_static_name (index));
+		  }
 
 	      w_info = (struct ipa_dfs_info *) w->aux;
 	      w = w_info->next_cycle;

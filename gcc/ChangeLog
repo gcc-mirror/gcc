@@ -1,3 +1,7 @@
+2009-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-reference.c (propagate): Only dump bitmaps if computed.
+
 2009-11-30  Olga Golovanevsky  <olga@il.ibm.com>
 
 	PR middle-end/39806
