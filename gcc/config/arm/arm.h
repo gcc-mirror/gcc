@@ -1275,7 +1275,7 @@ enum reg_class
    In general this is just CLASS, but for the Thumb core registers and
    immediate constants we prefer a LO_REGS class or a subset.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS)		\
-  (TARGET_ARM ? (CLASS) :				\
+  (TARGET_32BIT ? (CLASS) :				\
    ((CLASS) == GENERAL_REGS || (CLASS) == HI_REGS	\
     || (CLASS) == NO_REGS || (CLASS) == STACK_REG	\
    ? LO_REGS : (CLASS)))
