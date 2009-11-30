@@ -821,6 +821,7 @@ static const struct dump_option_value_info dump_options[] =
   {"memsyms", TDF_MEMSYMS},
   {"verbose", TDF_VERBOSE},
   {"eh", TDF_EH},
+  {"nouid", TDF_NOUID},
   {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_TREE | TDF_RTL | TDF_IPA
 	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
 	    | TDF_RHS_ONLY)},
