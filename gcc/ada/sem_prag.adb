@@ -12006,6 +12006,14 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
             Check_No_Identifiers;
 
+            --  If debug flag -gnatd.i is set, pragma is ignored
+
+            if Debug_Flag_Dot_I then
+               return;
+            end if;
+
+            --  Process various forms of the pragma
+
             declare
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
 
