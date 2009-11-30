@@ -161,6 +161,9 @@ int counter = 0;
 #define CNS(name,comment) \
   printf ("\n->CNS:$%d:" #name ":" name ":" comment, __LINE__);
 
+#define C(sname,type,value,comment)\
+  printf ("\n->C:$%d:" sname ":" #type ":" value ":" comment, __LINE__);
+
 #define TXT(text) \
   printf ("\n->TXT:$%d:" text, __LINE__);
 
@@ -174,7 +177,12 @@ int counter = 0;
 #define CNS(name, comment) \
   asm volatile("\n->CNS:%0:" #name ":" name ":" comment \
   : : "i" (__LINE__));
-/* General expression constant */
+/* General expression named number */
+
+#define C(sname, type, value, comment) \
+  asm volatile("\n->C:%0:" sname ":" #type ":" value ":" comment \
+  : : "i" (__LINE__));
+/* Typed constant */
 
 #define TXT(text) \
   asm volatile("\n->TXT:%0:" text \
@@ -182,6 +190,8 @@ int counter = 0;
 /* Freeform text */
 
 #endif
+
+#define CST(name,comment) C(#name,String,name,comment)
 
 #define STR(x) STR1(x)
 #define STR1(x) #x
@@ -233,10 +243,7 @@ package System.OS_Constants is
    -- Platform identification --
    -----------------------------
 
-*/
-TXT("   Target_Name : constant String := " STR(TARGET) ";")
-/*
-   type Target_OS_Type is (Windows, VMS, Other_OS);
+   type OS_Type is (Windows, VMS, Other_OS);
 */
 #if defined (__MINGW32__)
 # define TARGET_OS "Windows"
@@ -245,7 +252,9 @@ TXT("   Target_Name : constant String := " STR(TARGET) ";")
 #else
 # define TARGET_OS "Other_OS"
 #endif
-TXT("   Target_OS : constant Target_OS_Type := " TARGET_OS ";")
+C("Target_OS", OS_Type, TARGET_OS, "")
+#define Target_Name TARGET
+CST(Target_Name, "")
 /*
 
    -------------------
@@ -1251,7 +1260,7 @@ CND(Has_Sockaddr_Len,  "Sockaddr has sa_len field")
  ** Do not change the format of the line below without also updating the
  ** MaRTE Makefile.
  **/
-TXT("   Thread_Blocking_IO  : constant Boolean := True;")
+C("Thread_Blocking_IO", Boolean, "True", "")
 /*
    --  Set False for contexts where socket i/o are process blocking
 
@@ -1262,9 +1271,30 @@ TXT("   Thread_Blocking_IO  : constant Boolean := True;")
 #else
 # define Inet_Pton_Linkname "__gnat_inet_pton"
 #endif
-TXT("   Inet_Pton_Linkname  : constant String := \"" Inet_Pton_Linkname "\";")
+CST(Inet_Pton_Linkname, "")
 
 #endif /* HAVE_SOCKETS */
+
+/*
+
+   ---------------------------------
+   -- C runtime library interface --
+   ---------------------------------
+
+*/
+#if defined (__VMS)
+# define malloc32_Linkname  "_malloc32"
+# define realloc32_Linkname "_realloc32"
+# define strerror_Linkname  "DECC$STRERROR"
+#else
+# define malloc32_Linkname  "malloc"
+# define realloc32_Linkname "realloc"
+# define strerror_Linkname  "strerror"
+#endif
+
+CST(malloc32_Linkname, "")
+CST(realloc32_Linkname, "")
+CST(strerror_Linkname, "")
 
 /**
  **  System-specific constants follow
