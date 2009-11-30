@@ -84,11 +84,13 @@ pragma Style_Checks ("M32766");
 #define _XOPEN_SOURCE 500
 
 #elif defined (__mips) && defined (__sgi)
-/** For IRIX _XOPEN5 must be defined and _XOPEN_IOV_MAX must be used as IOV_MAX,
- ** otherwise IOV_MAX is not defined.
+/** For IRIX 6, _XOPEN5 must be defined and _XOPEN_IOV_MAX must be used as
+ ** IOV_MAX, otherwise IOV_MAX is not defined.  IRIX 5 has neither.
  **/
+#ifdef _XOPEN_IOV_MAX
 #define _XOPEN5
 #define IOV_MAX _XOPEN_IOV_MAX
+#endif
 #endif
 
 #include <stdlib.h>
