@@ -2966,12 +2966,17 @@ package body Prj.Tree is
      (Node : Project_Node_Id;
       Tree : Project_Node_Tree_Ref) return Project_Node_Id
    is
-      Expr : constant Project_Node_Id :=
-               Default_Project_Node (Tree, N_Expression, Single);
+      Expr : Project_Node_Id;
    begin
-      Set_First_Term (Expr, Tree, Default_Project_Node (Tree, N_Term, Single));
-      Set_Current_Term (First_Term (Expr, Tree), Tree, Node);
-      return Expr;
+      if Kind_Of (Node, Tree) /= N_Expression then
+         Expr := Default_Project_Node (Tree, N_Expression, Single);
+         Set_First_Term
+           (Expr, Tree, Default_Project_Node (Tree, N_Term, Single));
+         Set_Current_Term (First_Term (Expr, Tree), Tree, Node);
+         return Expr;
+      else
+         return Node;
+      end if;
    end Enclose_In_Expression;
 
    --------------------
@@ -3032,7 +3037,8 @@ package body Prj.Tree is
       Name       : Name_Id;
       Index_Name : Name_Id       := No_Name;
       Kind       : Variable_Kind := List;
-      At_Index   : Integer       := 0) return Project_Node_Id
+      At_Index   : Integer       := 0;
+      Value      : Project_Node_Id := Empty_Node) return Project_Node_Id
    is
       Node : constant Project_Node_Id :=
                Default_Project_Node (Tree, N_Attribute_Declaration, Kind);
@@ -3041,13 +3047,10 @@ package body Prj.Tree is
 
       Pkg      : Package_Node_Id;
       Start_At : Attribute_Node_Id;
+      Expr     : Project_Node_Id;
 
    begin
       Set_Name_Of (Node, Tree, Name);
-
-      if At_Index /= 0 then
-         Set_Source_Index_Of (Node, Tree, To => Int (At_Index));
-      end if;
 
       if Index_Name /= No_Name then
          Set_Associative_Array_Index_Of (Node, Tree, Index_Name);
@@ -3072,6 +3075,29 @@ package body Prj.Tree is
       Case_Insensitive :=
         Attribute_Kind_Of (Start_At) = Case_Insensitive_Associative_Array;
       Tree.Project_Nodes.Table (Node).Flag1 := Case_Insensitive;
+
+      if At_Index /= 0 then
+         if Attribute_Kind_Of (Start_At) =
+           Optional_Index_Associative_Array
+         then
+            --  Results in:   for Name ("index" at index) use "value";
+            --  This is currently only used for executables
+            Set_Source_Index_Of (Node, Tree, To => Int (At_Index));
+         else
+            --  Results in:   for Name ("index") use "value" at index;
+
+            --  ??? This limitation makes no sense, we should be able to
+            --  set the source index on an expression
+            pragma Assert (Kind_Of (Value, Tree) = N_Literal_String);
+
+            Set_Source_Index_Of (Value, Tree, To => Int (At_Index));
+         end if;
+      end if;
+
+      if Value /= Empty_Node then
+         Expr := Enclose_In_Expression (Value, Tree);
+         Set_Expression_Of (Node, Tree, Expr);
+      end if;
 
       return Node;
    end Create_Attribute;

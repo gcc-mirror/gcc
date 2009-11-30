@@ -1,3 +1,14 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document pragma Short_Circuit
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-conf.adb, prj-tree.adb, prj-tree.ads (Create_Attribute): Now set
+	the index either on the attribute or on its value, depending on the
+	kind of the attribute. Done to match recent changes in Prj.PP that were
+	not synchronized with this function.
+
 2009-11-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Fix typo.

@@ -182,6 +182,7 @@ Implementation Defined Pragmas
 * Pragma Pure_Function::
 * Pragma Restriction_Warnings::
 * Pragma Shared::
+* Pragma Short_Circuit_And_Or::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -794,6 +795,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Pure_Function::
 * Pragma Restriction_Warnings::
 * Pragma Shared::
+* Pragma Short_Circuit_And_Or::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -4254,6 +4256,20 @@ if the restriction is violated.
 This pragma is provided for compatibility with Ada 83. The syntax and
 semantics are identical to pragma Atomic.
 
+@node Pragma Short_Circuit_And_Or
+@unnumberedsec Pragma Short_Circuit_And_Or
+@findex Short_Circuit_And_Or
+
+@noindent
+This configuration pragma causes any occurrence of the AND operator applied to
+operands of type Standard.Boolean to be short-circuited (i.e. the AND operator
+is treated as if it were AND THEN). Or is similarly treated as OR ELSE. This
+may be useful in the context of certification protocols requiring the use of
+short-circuited logical operators. If this configuration pragma occurs locally
+within the file being compiled, it applies only to the file being compiled.
+There is no requirement that all units in a partition use this option.
+
+semantics are identical to pragma Atomic.
 @node Pragma Source_File_Name
 @unnumberedsec Pragma Source_File_Name
 @findex Source_File_Name
