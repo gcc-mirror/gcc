@@ -37,8 +37,7 @@ package body GNAT.Secure_Hashes is
    use Ada.Streams;
 
    Hex_Digit : constant array (Stream_Element range 0 .. 15) of Character :=
-                 ('0', '1', '2', '3', '4', '5', '6', '7',
-                  '8', '9', 'a', 'b', 'c', 'd', 'e', 'f');
+                 "0123456789abcdef";
 
    type Fill_Buffer_Access is
      access procedure

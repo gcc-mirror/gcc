@@ -1,5 +1,15 @@
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
+	* g-sechas.adb: Minor reformatting
+
+2009-11-30  Matthew Heaney  <heaney@adacore.com>
+
+	* a-crbtgo.adb (Delete_Fixup): Add comments explaining why predicates
+	were removed.
+	* a-cdlili.adb (Vet): Remove always-true predicates.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
 	* s-sechas.adb, s-sechas.ads, s-shshco.adb, s-shshco.ads, s-shsh64.adb,
 	s-shsh64.ads, s-sehamd.adb, s-sehamd.ads, s-shsh32.adb, s-shsh32.ads,
 	s-sehash.adb, s-sehash.ads, g-sechas.adb, g-sechas.ads, g-shshco.adb,

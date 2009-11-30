@@ -49,6 +49,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
    procedure Left_Rotate  (Tree : in out Tree_Type; X : Node_Access);
    procedure Right_Rotate (Tree : in out Tree_Type; Y : Node_Access);
 
+--  Why is all the following code commented out ???
+
 --     ---------------------
 --     -- Check_Invariant --
 --     ---------------------
@@ -171,8 +173,15 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
                if Right (W) = null
                  or else Color (Right (W)) = Black
                then
+                  --  As a condition for setting the color of the left child to
+                  --  black, the left child access value must be non-null. A
+                  --  truth table analysis shows that if we arrive here, that
+                  --  condition holds, so there's no need for an explicit test.
+                  --  The assertion is here to document what we know is true.
+
                   pragma Assert (Left (W) /= null);
                   Set_Color (Left (W), Black);
+
                   Set_Color (W, Red);
                   Right_Rotate (Tree, W);
                   W := Right (Parent (X));
@@ -206,8 +215,16 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
 
             else
                if Left (W) = null or else Color (Left (W)) = Black then
+
+                  --  As a condition for setting the color of the right child
+                  --  to black, the right child access value must be non-null.
+                  --  A truth table analysis shows that if we arrive here, that
+                  --  condition holds, so there's no need for an explicit test.
+                  --  The assertion is here to document what we know is true.
+
                   pragma Assert (Right (W) /= null);
                   Set_Color (Right (W), Black);
+
                   Set_Color (W, Red);
                   Left_Rotate (Tree, W);
                   W := Left (Parent (X));
@@ -245,6 +262,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
          raise Program_Error with
            "attempt to tamper with cursors (container is busy)";
       end if;
+
+      --  Why are these all commented out ???
 
 --    pragma Assert (Tree.Length > 0);
 --    pragma Assert (Tree.Root /= null);
