@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005, AdaCore                     --
+--                     Copyright (C) 2000-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,16 +88,10 @@ package body GNAT.Exception_Traces is
    procedure Set_Trace_Decorator (Decorator : Traceback_Decorator) is
    begin
       Current_Decorator := Decorator;
-
-      if Current_Decorator /= null then
-         Traceback_Decorator_Wrapper := Decorator_Wrapper'Access;
-      else
-         Traceback_Decorator_Wrapper := null;
-      end if;
+      Traceback_Decorator_Wrapper :=
+        (if Current_Decorator /= null
+         then Decorator_Wrapper'Access else null);
    end Set_Trace_Decorator;
-
-   --  Trace_On/Trace_Off control the kind of automatic output to occur
-   --  by way of the global Exception_Trace variable.
 
    ---------------
    -- Trace_Off --

@@ -519,27 +519,17 @@ package body System.File_IO is
             end if;
 
          when Inout_File | Append_File =>
-            if Creat then
-               Fopstr (1) := 'w';
-            else
-               Fopstr (1) := 'r';
-            end if;
-
+            Fopstr (1) := (if Creat then 'w' else 'r');
             Fopstr (2) := '+';
             Fptr := 3;
 
       end case;
 
-      --  If text_translation_required is true then we need to append
-      --  either a t or b to the string to get the right mode
+      --  If text_translation_required is true then we need to append either a
+      --  "t" or "b" to the string to get the right mode.
 
       if text_translation_required then
-         if Text then
-            Fopstr (Fptr) := 't';
-         else
-            Fopstr (Fptr) := 'b';
-         end if;
-
+         Fopstr (Fptr) := (if Text then 't' else 'b');
          Fptr := Fptr + 1;
       end if;
 

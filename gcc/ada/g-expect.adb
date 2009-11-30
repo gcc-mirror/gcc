@@ -1003,11 +1003,10 @@ package body GNAT.Expect is
          --  Prepare low-level argument list from the normalized arguments
 
          for K in Arg_List'Range loop
-            if Arg_List (K) /= null then
-               C_Arg_List (K) := Arg_List (K).all'Address;
-            else
-               C_Arg_List (K) := System.Null_Address;
-            end if;
+            C_Arg_List (K) :=
+              (if Arg_List (K) /= null
+               then Arg_List (K).all'Address
+               else System.Null_Address);
          end loop;
 
          --  This does not return on Unix systems

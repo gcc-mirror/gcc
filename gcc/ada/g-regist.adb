@@ -417,11 +417,7 @@ package body GNAT.Registry is
       Result     : LONG;
 
    begin
-      if Expand then
-         Value_Type := REG_EXPAND_SZ;
-      else
-         Value_Type := REG_SZ;
-      end if;
+      Value_Type := (if Expand then REG_EXPAND_SZ else REG_SZ);
 
       Result :=
         RegSetValueEx

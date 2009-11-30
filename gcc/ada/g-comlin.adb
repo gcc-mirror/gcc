@@ -574,11 +574,8 @@ package body GNAT.Command_Line is
             --  Depending on the value of Concatenate, the full switch is
             --  a single character or the rest of the argument.
 
-            if Concatenate then
-               End_Index := Parser.Current_Index;
-            else
-               End_Index := Arg'Last;
-            end if;
+            End_Index :=
+              (if Concatenate then Parser.Current_Index else Arg'Last);
 
             if Switches (Switches'First) = '*' then
 
@@ -2279,20 +2276,16 @@ package body GNAT.Command_Line is
 
          Cmd.Coalesce_Sections := new Argument_List (Cmd.Sections'Range);
          for E in Cmd.Sections'Range loop
-            if Cmd.Sections (E) = null then
-               Cmd.Coalesce_Sections (E) := null;
-            else
-               Cmd.Coalesce_Sections (E) := new String'(Cmd.Sections (E).all);
-            end if;
+            Cmd.Coalesce_Sections (E) :=
+              (if Cmd.Sections (E) = null then null
+               else new String'(Cmd.Sections (E).all));
          end loop;
 
          Cmd.Coalesce_Params := new Argument_List (Cmd.Params'Range);
          for E in Cmd.Params'Range loop
-            if Cmd.Params (E) = null then
-               Cmd.Coalesce_Params (E) := null;
-            else
-               Cmd.Coalesce_Params (E) := new String'(Cmd.Params (E).all);
-            end if;
+            Cmd.Coalesce_Params (E) :=
+              (if Cmd.Params (E) = null then null
+               else new String'(Cmd.Params (E).all));
          end loop;
 
          --  Not a clone, since we will not modify the parameters anyway

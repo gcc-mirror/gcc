@@ -211,7 +211,10 @@ package body GNAT.Serial_Communications is
       pragma Import (C, tcflush, "tcflush");
 
       Current : termios;
-      Res     : int;
+
+      Res : int;
+      pragma Warnings (Off, Res);
+      --  Warnings off, since we don't always test the result
 
    begin
       if Port.H = null then
@@ -246,11 +249,7 @@ package body GNAT.Serial_Communications is
 
       --  Block
 
-      if Block then
-         Res := fcntl (int (Port.H.all), F_SETFL, 0);
-      else
-         Res := fcntl (int (Port.H.all), F_SETFL, FNDELAY);
-      end if;
+      Res := fcntl (int (Port.H.all), F_SETFL, (if Block then 0 else FNDELAY));
 
       if Res = -1 then
          Raise_Error ("set: fcntl failed");

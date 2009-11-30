@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2008, AdaCore                     --
+--                     Copyright (C) 1998-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,12 +97,7 @@ package body GNAT.Directory_Operations is
       begin
          --  Cut_Start point to the first basename character
 
-         if Cut_Start = 0 then
-            Cut_Start := Path'First;
-
-         else
-            Cut_Start := Cut_Start + 1;
-         end if;
+         Cut_Start := (if Cut_Start = 0 then Path'First else Cut_Start + 1);
 
          --  Cut_End point to the last basename character
 
@@ -580,11 +575,8 @@ package body GNAT.Directory_Operations is
    begin
       Local_Get_Current_Dir (Buffer'Address, Path_Len'Address);
 
-      if Dir'Length > Path_Len then
-         Last := Dir'First + Path_Len - 1;
-      else
-         Last := Dir'Last;
-      end if;
+      Last :=
+        (if Dir'Length > Path_Len then Dir'First + Path_Len - 1 else Dir'Last);
 
       Dir (Buffer'First .. Last) := Buffer (Buffer'First .. Last);
 
@@ -683,11 +675,9 @@ package body GNAT.Directory_Operations is
          return;
       end if;
 
-      if Str'Length > Filename_Len then
-         Last := Str'First + Filename_Len - 1;
-      else
-         Last := Str'Last;
-      end if;
+      Last :=
+        (if Str'Length > Filename_Len then Str'First + Filename_Len - 1
+         else Str'Last);
 
       declare
          subtype Path_String is String (1 .. Filename_Len);

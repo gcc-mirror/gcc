@@ -232,12 +232,7 @@ package body System.Fat_Gen is
                end loop;
             end if;
 
-            if X > 0.0 then
-               Frac := Ax;
-            else
-               Frac := -Ax;
-            end if;
-
+            Frac := (if X > 0.0 then Ax else -Ax);
             Expo := Ex;
          end;
       end if;

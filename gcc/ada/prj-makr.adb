@@ -39,7 +39,7 @@ with Table;    use Table;
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
-with System.Case_Util;          use System.Case_Util;
+with System.Case_Util; use System.Case_Util;
 with System.CRTL;
 with System.HTable;
 
@@ -613,13 +613,14 @@ package body Prj.Makr is
                                 In_Tree       => Tree);
 
             begin
-               --  Add source file name to the source list file, if it is not
+               --  Add source file name to the source list file if it is not
                --  already there.
 
                if not Source_Files.Get (Current_Source.File_Name) then
                   Source_Files.Set (Current_Source.File_Name, True);
                   Get_Name_String (Current_Source.File_Name);
                   Add_Char_To_Name_Buffer (ASCII.LF);
+
                   if Write (Source_List_FD,
                             Name_Buffer (1)'Address,
                             Name_Len) /= Name_Len
