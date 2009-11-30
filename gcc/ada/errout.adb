@@ -2851,14 +2851,12 @@ package body Errout is
                   if Is_Itype (Ent) then
                      declare
                         Assoc : constant Node_Id :=
-                          Associated_Node_For_Itype (Ent);
+                                  Associated_Node_For_Itype (Ent);
 
                      begin
-                        if Nkind (Assoc) = N_Procedure_Specification
-                          or else Nkind (Assoc) = N_Function_Specification
-                        then
+                        if Nkind (Assoc) in N_Subprogram_Specification then
 
-                           --  Anonymous access to subprogram in a signature
+                           --  Anonymous access to subprogram in a signature.
                            --  Indicate the enclosing subprogram.
 
                            Ent :=
@@ -2878,6 +2876,7 @@ package body Errout is
                else
                   Set_Msg_Str ("access to procedure ");
                end if;
+
                exit;
 
             --  Type is access to object, named or anonymous
