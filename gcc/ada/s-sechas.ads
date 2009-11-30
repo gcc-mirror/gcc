@@ -43,12 +43,11 @@ package System.Secure_Hashes is
    --  Secure hash functions use a string buffer that is also accessed as an
    --  array of words, which may require up to 64 bit alignment.
 
-   --  The function-independent part of processing state:
-   --  A buffer of data being accumulated until a complete block is ready for
-   --  hashing.
+   --  The function-independent part of processing state: A buffer of data
+   --  being accumulated until a complete block is ready for hashing.
 
    type Message_State (Block_Length : Natural) is record
-      Last   : Natural := 0;
+      Last : Natural := 0;
       --  Index of last used element in Buffer
 
       Length : Interfaces.Unsigned_64 := 0;
@@ -59,6 +58,7 @@ package System.Secure_Hashes is
    end record;
 
    --  The function-specific part of processing state:
+
    --  Each hash function maintains an internal state as an array of words,
    --  which is ultimately converted to a stream representation with the
    --  appropriate bit order.
@@ -92,13 +92,13 @@ package System.Secure_Hashes is
    --  instance of this generic package.
 
    generic
-      Block_Words    : Natural;
+      Block_Words : Natural;
       --  Number of words in each block
 
-      State_Words    : Natural;
+      State_Words : Natural;
       --  Number of words in internal state
 
-      Hash_Words     : Natural;
+      Hash_Words : Natural;
       --  Number of words in the final hash (must be no greater than
       --  State_Words).
 
@@ -132,21 +132,22 @@ package System.Secure_Hashes is
       procedure Update      (C : in out Context; Input : String);
       procedure Wide_Update (C : in out Context; Input : Wide_String);
       procedure Update
-        (C : in out Context; Input : Ada.Streams.Stream_Element_Array);
-      --  Update C to process the given input. Successive calls to
-      --  Update are equivalent to a single call with the concatenation
-      --  of the inputs. For the Wide_String version, each Wide_Character is
-      --  processed low order byte first.
+        (C     : in out Context;
+         Input : Ada.Streams.Stream_Element_Array);
+      --  Update C to process the given input. Successive calls to Update are
+      --  equivalent to a single call with the concatenation of the inputs. For
+      --  the Wide_String version, each Wide_Character is processed low order
+      --  byte first.
 
       Word_Length : constant Natural := Hash_State.Word'Size / 8;
       Hash_Length : constant Natural := Hash_Words * Word_Length;
 
       subtype Message_Digest is String (1 .. 2 * Hash_Length);
-      --  The fixed-length string returned by Digest, providing the
-      --  hash in hexadecimal representation.
+      --  The fixed-length string returned by Digest, providing the hash in
+      --  hexadecimal representation.
 
-      function Digest      (C  : Context)     return Message_Digest;
-      --  Return the hash for the data accumulated with C in hexadecimal
+      function Digest (C : Context) return Message_Digest;
+      --  Return hash for the data accumulated with C in hexadecimal
       --  representation.
 
       function Digest      (S : String)      return Message_Digest;
