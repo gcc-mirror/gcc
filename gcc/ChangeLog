@@ -1,3 +1,13 @@
+2009-11-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16-lib2-count-leading-zeros.c: Delete.
+	* config/stormy16/t-stormy16 (LIB2FUNCS_EXTRA): Remove
+	stormy16-lib2-count-leading-zeros.c.
+	* config/stormy16/stormy16-lib2.c (__clzhi2): Move code from
+	__stormy16_count_leading_zeros() into this function.
+	(__ctzhi2): Use __builtin_clz.
+	(__ffshi2): Likewise.
+
 2009-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (DF_MODES): Simplify.
