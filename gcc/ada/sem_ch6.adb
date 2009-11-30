@@ -4454,7 +4454,9 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      if Present (Overridden_Subp) then
+      if Present (Overridden_Subp)
+        and then not Is_Hidden (Overridden_Subp)
+      then
          if Must_Not_Override (Spec) then
             Error_Msg_Sloc := Sloc (Overridden_Subp);
 

@@ -7238,6 +7238,18 @@ package body Sem_Util is
       end if;
    end Is_Variable;
 
+   ---------------------------
+   -- Is_Visibly_Controlled --
+   ---------------------------
+
+   function Is_Visibly_Controlled (T : Entity_Id) return Boolean is
+      Root : constant Entity_Id := Root_Type (T);
+   begin
+      return Chars (Scope (Root)) = Name_Finalization
+        and then Chars (Scope (Scope (Root))) = Name_Ada
+        and then Scope (Scope (Scope (Root))) = Standard_Standard;
+   end Is_Visibly_Controlled;
+
    ------------------------
    -- Is_Volatile_Object --
    ------------------------
