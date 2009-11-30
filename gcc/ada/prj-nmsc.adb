@@ -655,7 +655,7 @@ package body Prj.Nmsc is
                   Location, Project);
 
                Error_Msg_Name_1 := Project.Name;
-               Error_Msg_Name_2 := Name_Id (Path.Name);
+               Error_Msg_Name_2 := Name_Id (Path.Display_Name);
                Error_Msg
                  (Data.Flags, "\  project %%, %%", Location, Project);
 
