@@ -31,6 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Why no documentation ???
+
 with System.Secure_Hashes.SHA1;
 package GNAT.SHA1 is new System.Secure_Hashes.H
   (Block_Words    => System.Secure_Hashes.SHA1.Block_Words,

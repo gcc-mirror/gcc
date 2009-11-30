@@ -1,3 +1,23 @@
+2009-11-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb (Process_Convention): Change formal E to Ent. In the
+	case where the pragma's entity argument is a renaming, return the
+	entity denoted by the renaming rather than the renamed entity. Loop
+	through the homonyms of the original argument entity, rather than the
+	homonyms of any renamed entity. Correct call to Generate_Entity to
+	pass the homonym.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* impunit.adb: Add packages that were added to the GNAT library:
+	GNAT.SHA224, GNAT.SHA256, GNAT.SHA384 and GNAT.SHA512.
+	* s-sechas.adb (Fill_Buffer_Copy): Fixes incorrect slice index
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting
+	* g-md5.ads, g-sha1.ads: Add comment.
+
 2009-11-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Remove handling of libgccprefix, no longer

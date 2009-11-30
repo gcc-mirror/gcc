@@ -263,6 +263,10 @@ package body Impunit is
      "g-sercom",    -- GNAT.Serial_Communications
      "g-sestin",    -- GNAT.Secondary_Stack_Info
      "g-sha1  ",    -- GNAT.SHA1
+     "g-sha224",    -- GNAT.SHA224
+     "g-sha256",    -- GNAT.SHA256
+     "g-sha384",    -- GNAT.SHA384
+     "g-sha512",    -- GNAT.SHA512
      "g-signal",    -- GNAT.Signals
      "g-socket",    -- GNAT.Sockets
      "g-souinf",    -- GNAT.Source_Info
