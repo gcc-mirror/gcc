@@ -1,3 +1,7 @@
+2009-11-30  Tristan Gingold  <gingold@adacore.com>
+
+        * gcc-interface/Makefile.in: Do not link with -static-libgcc on Darwin.
+
 2009-11-30  Emmanuel Briot  <briot@adacore.com>
 
 	* gnat_ugn.texi: Extend doc for -eL

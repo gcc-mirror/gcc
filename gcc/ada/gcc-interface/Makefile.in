@@ -190,6 +190,11 @@ TOOLSCASE =
 MULTISUBDIR =
 RTSDIR = rts$(subst /,_,$(MULTISUBDIR))
 
+# Link flags used to build gnat tools.  By default we prefer to statically
+# link with libgcc to avoid a dependency on shared libgcc (which is tricky
+# to deal with as it may conflict with the libgcc provided by the system).
+GCC_LINK_FLAGS=-static-libgcc
+
 # End of variables for you to override.
 
 all: all.indirect
@@ -2116,6 +2121,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
   soext = .dylib
+  GCC_LINK_FLAGS=
 endif
 
 ifneq ($(EH_MECHANISM),)
@@ -2182,7 +2188,7 @@ ADA_INCLUDE_SRCS =\
 
 LIBGNAT=../$(RTSDIR)/libgnat.a
 
-GCC_LINK=$(CC) -static-libgcc $(ADA_INCLUDES)
+GCC_LINK=$(CC) $(GCC_LINK_FLAGS) $(ADA_INCLUDES)
 
 # when compiling the tools, the runtime has to be first on the path so that
 # it hides the runtime files lying with the rest of the sources
