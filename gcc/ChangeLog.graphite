@@ -1,3 +1,27 @@
+2009-11-21  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c (clast_name_index, new_clast_name_index,
+	clast_name_to_index, save_clast_name_index, debug_clast_name_index,
+	debug_clast_name_indexes_1, debug_clast_name_indexes,
+	clast_name_index_elt_info, eq_clast_name_indexes): Moved from sese.h.
+	(clast_name_to_gcc, clast_to_gcc_expression,
+	clast_to_gcc_expression_red, gcc_type_for_clast_expr,
+	gcc_type_for_clast_eq, graphite_translate_clast_equation,
+	graphite_create_guard_cond_expr, graphite_create_new_loop,
+	translate_clast): Add params_index.
+	(initialize_cloog_names): Create parameter strings from scratch, do
+	not reference other strings.
+	(create_params_index): New.
+	(gloog): Initialize params_index.
+	* graphite-scop-detection (free_scops_1): Removed.
+	(limit_scops): Use normal free_scops.
+	* graphite-sese-to-poly.c (save_var_names): Removed.
+	(parameter_index_in_region): Do not initialize SESE_PARAM_NAMES
+	and SESE_PARAMS_INDEX.
+	* sese.c (new_sese, free_sese): Dito.
+	* sese.h (struct sese): Remove params_index, params_names.
+	(SESE_PARAMS_INDEX, SESE_PARAMS_NAMES): Removed.
+
 2009-11-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	Revert the following patch from 2009-09-14:

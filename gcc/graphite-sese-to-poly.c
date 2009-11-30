@@ -746,26 +746,6 @@ scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, Value k)
   ppl_delete_Coefficient (coef);
 }
 
-/* Saves in NV at index I a new name for variable P.  */
-
-static void
-save_var_name (char **nv, int i, tree p)
-{
-  const char *name = get_name (SSA_NAME_VAR (p));
-
-  if (name)
-    {
-      int len = strlen (name) + 16;
-      nv[i] = XNEWVEC (char, len);
-      snprintf (nv[i], len, "%s_%d", name, SSA_NAME_VERSION (p));
-    }
-  else
-    {
-      nv[i] = XNEWVEC (char, 16);
-      snprintf (nv[i], 2 + 16, "T_%d", SSA_NAME_VERSION (p));
-    }
-}
-
 /* When parameter NAME is in REGION, returns its index in SESE_PARAMS.
    Otherwise returns -1.  */
 
@@ -802,9 +782,6 @@ parameter_index_in_region (tree name, sese region)
   gcc_assert (SESE_ADD_PARAMS (region));
 
   i = VEC_length (tree, SESE_PARAMS (region));
-  save_var_name (SESE_PARAMS_NAMES (region), i, name);
-  save_clast_name_index (SESE_PARAMS_INDEX (region),
-			 SESE_PARAMS_NAMES (region)[i], i);
   VEC_safe_push (tree, heap, SESE_PARAMS (region), name);
   return i;
 }
