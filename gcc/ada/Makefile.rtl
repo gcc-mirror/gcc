@@ -431,6 +431,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-conca8$(objext) \
   s-conca9$(objext) \
   s-crtl$(objext)   \
+  s-crtrun$(objext) \
   s-crc32$(objext)  \
   s-direio$(objext) \
   s-dsaser$(objext) \

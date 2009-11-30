@@ -36,7 +36,7 @@ with Interfaces.C;
 with Interfaces.C.Strings;        use Interfaces.C.Strings;
 with Interfaces.C_Streams;        use Interfaces.C_Streams;
 
-with System.CRTL;
+with System.CRTL.Runtime;
 with System.Case_Util;            use System.Case_Util;
 with System.OS_Lib;
 with System.Soft_Links;
@@ -374,7 +374,7 @@ package body System.File_IO is
    -------------------
 
    function Errno_Message (Errno : Integer := OS_Lib.Errno) return String is
-      Message : constant chars_ptr := CRTL.strerror (Errno);
+      Message : constant chars_ptr := CRTL.Runtime.strerror (Errno);
 
    begin
       if Message = Null_Ptr then

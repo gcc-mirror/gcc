@@ -1198,7 +1198,7 @@ CND(SIZEOF_tv_usec, "tv_usec")
 }
 /*
 
-   --  Sizes of protocol specific address types (for sockaddr.sa_len)
+   --  Sizes of various data types
 */
 
 #define SIZEOF_sockaddr_in (sizeof (struct sockaddr_in))
@@ -1210,12 +1210,11 @@ CND(SIZEOF_sockaddr_in, "struct sockaddr_in")
 #endif
 CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
 
-/*
-
-   --  Size of file descriptor sets
-*/
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set");
+
+#define SIZEOF_struct_servent (sizeof (struct servent))
+CND(SIZEOF_struct_servent, "struct servent");
 /*
 
    --  Fields of struct hostent

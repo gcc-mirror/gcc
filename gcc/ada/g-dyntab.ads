@@ -47,6 +47,8 @@
 --  GNAT.Table and the GNAT compiler source unit Table to keep as much
 --  coherency as possible between these three related units.
 
+pragma Compiler_Unit;
+
 generic
    type Table_Component_Type is private;
    type Table_Index_Type     is range <>;

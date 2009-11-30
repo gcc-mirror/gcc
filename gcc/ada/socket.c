@@ -35,11 +35,24 @@
 #ifdef VMS
 /*
  * For VMS, gsocket.h can't include sockets-related DEC C header files
- * when building the runtime (because these files are in DEC C archives,
- * not accessable to GCC). So, we generate a separate header file along
- * with s-oscons.ads and include it here.
+ * when building the runtime (because these files are in a DEC C text library
+ * (DECC$RTLDEF.TLB) not accessable to GCC). So, we generate a separate header
+ * file along with s-oscons.ads and include it here.
  */
 # include "s-oscons.h"
+
+/*
+ * We also need the declaration of struct servent, which s-oscons can't
+ * provide, so we copy it manually here. This needs to be kept in synch
+ * with the definition of that structure in the DEC C headers, which
+ * hopefully won't change frequently.
+ */
+struct servent {
+  char *s_name;     /* official service name */
+  char **s_aliases; /* alias list */
+  int  s_port;      /* port # */
+  char *s_proto;    /* protocol to use */
+};
 #endif
 
 #if defined(HAVE_SOCKETS)
@@ -58,9 +71,6 @@
 
 #include <string.h>
 /* Required for memcpy() */
-
-extern const size_t __gnat_sizeof_servent = sizeof(struct servent);
-/* For passing the size of servent to Ada code. */
 
 extern void __gnat_disable_sigpipe (int fd);
 extern void __gnat_disable_all_sigpipes (void);
