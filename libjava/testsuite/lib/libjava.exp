@@ -145,6 +145,13 @@ proc libjava_init { args } {
     setenv LC_ALL C
     setenv LANG C
 
+    # Many hosts now default to a non-ASCII C locale, however, so
+    # they can set a charset encoding here if they need.
+    if { [ishost "*-*-cygwin*"] } {
+      setenv LC_ALL C.ASCII
+      setenv LANG C.ASCII
+    }
+
     if { $libjava_initialized == 1 } { return; }
 
     if ![info exists GCJ_UNDER_TEST] {

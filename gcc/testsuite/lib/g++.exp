@@ -193,6 +193,13 @@ proc g++_init { args } {
     setenv LC_ALL C
     setenv LANG C
 
+    # Many hosts now default to a non-ASCII C locale, however, so
+    # they can set a charset encoding here if they need.
+    if { [ishost "*-*-cygwin*"] } {
+      setenv LC_ALL C.ASCII
+      setenv LANG C.ASCII
+    }
+
     if ![info exists GXX_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GXX_UNDER_TEST $TOOL_EXECUTABLE

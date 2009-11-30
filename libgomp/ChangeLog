@@ -1,3 +1,8 @@
+2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Add host-dependent
+	settings for LC_ALL and LANG.
+
 2009-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/42162

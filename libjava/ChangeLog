@@ -1,3 +1,8 @@
+2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* testsuite/lib/libjava.exp (libjava_init):  Add host-dependent
+	settings for LC_ALL and LANG.
+
 2009-11-30  Ben Elliston  <bje@au.ibm.com>
 
 	* jni.cc (_Jv_JNI_GetObjectRefType): Mark `object' parameter as

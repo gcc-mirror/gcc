@@ -136,6 +136,13 @@ proc gfortran_init { args } {
     setenv LC_ALL C
     setenv LANG C
 
+    # Many hosts now default to a non-ASCII C locale, however, so
+    # they can set a charset encoding here if they need.
+    if { [ishost "*-*-cygwin*"] } {
+      setenv LC_ALL C.ASCII
+      setenv LANG C.ASCII
+    }
+
     if ![info exists GFORTRAN_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GFORTRAN_UNDER_TEST $TOOL_EXECUTABLE
