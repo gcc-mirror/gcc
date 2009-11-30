@@ -743,9 +743,7 @@ package body System.Tasking.Stages is
       function State
         (Int : System.Interrupt_Management.Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
+      --  Get interrupt state for interrupt number Int. Defined in init.c
 
       Default : constant Character := 's';
       --    's'   Interrupt_State pragma set state to System (use "default"

@@ -1,3 +1,11 @@
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tassta.adb: Update comment.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-ngelfu.adb: Minor code reorganization.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* osint.ads, prj.adb, prj.ads: Minor reformatting

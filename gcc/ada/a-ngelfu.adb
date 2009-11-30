@@ -68,9 +68,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    --  FP type.
 
    function Local_Atan
-     (Y    : Float_Type'Base;
-      X    : Float_Type'Base := 1.0)
-      return Float_Type'Base;
+     (Y : Float_Type'Base;
+      X : Float_Type'Base := 1.0) return Float_Type'Base;
    --  Common code for arc tangent after cycle reduction
 
    ----------
@@ -721,20 +720,35 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    ----------------
 
    function Local_Atan
-     (Y    : Float_Type'Base;
-      X    : Float_Type'Base := 1.0)
-      return Float_Type'Base
+     (Y : Float_Type'Base;
+      X : Float_Type'Base := 1.0) return Float_Type'Base
    is
       Z        : Float_Type'Base;
       Raw_Atan : Float_Type'Base;
 
    begin
-      Z := (if abs Y > abs X then abs (X / Y) else abs (Y / X));
+      --  Z := (if abs Y > abs X then abs (X / Y) else abs (Y / X));
 
-      Raw_Atan :=
-        (if Z < Sqrt_Epsilon then Z
-         elsif Z = 1.0 then Pi / 4.0
-         else Float_Type'Base (Aux.Atan (Double (Z))));
+      --  Raw_Atan :=
+      --    (if Z < Sqrt_Epsilon then Z
+      --     elsif Z = 1.0 then Pi / 4.0
+      --     else Float_Type'Base (Aux.Atan (Double (Z))));
+
+      --  Replace above with IF statements for now (ASIS gnatelim problem???)
+
+      if abs Y > abs X then
+         Z := abs (X / Y);
+      else
+         Z := abs (Y / X);
+      end if;
+
+      if Z < Sqrt_Epsilon then
+         Raw_Atan := Z;
+      elsif Z = 1.0 then
+         Raw_Atan := Pi / 4.0;
+      else
+         Raw_Atan := Float_Type'Base (Aux.Atan (Double (Z)));
+      end if;
 
       if abs Y > abs X then
          Raw_Atan := Half_Pi - Raw_Atan;
