@@ -36,11 +36,10 @@ with System.WCh_WtS; use System.WCh_WtS;
 package body Ada.Wide_Text_IO.Integer_IO is
 
    Need_LLI : constant Boolean := Num'Base'Size > Integer'Size;
-   --  Throughout this generic body, we distinguish between the case
-   --  where type Integer is acceptable, and where a Long_Long_Integer
-   --  is needed. This constant Boolean is used to test for these cases
-   --  and since it is a constant, only the code for the relevant case
-   --  will be included in the instance.
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Integer is acceptable, and where a Long_Long_Integer is needed. This
+   --  Boolean is used to test for these cases and since it is a constant, only
+   --  code for the relevant case will be included in the instance.
 
    subtype TFT is Ada.Wide_Text_IO.File_Type;
    --  File type required for calls to routines in Aux

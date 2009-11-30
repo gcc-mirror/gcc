@@ -2992,8 +2992,10 @@ package body Sem_Warn is
             Warn_On_Object_Renames_Function     := True;
             Warn_On_Obsolescent_Feature         := True;
             Warn_On_Overlap                     := True;
+            Warn_On_Parameter_Order             := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;
+            Warn_On_Reverse_Bit_Order           := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unrecognized_Pragma         := True;
             Warn_On_Unrepped_Components         := True;
@@ -3031,6 +3033,12 @@ package body Sem_Warn is
 
          when 'R' =>
             Warn_On_Object_Renames_Function     := False;
+
+         when 'v' =>
+            Warn_On_Reverse_Bit_Order           := True;
+
+         when 'V' =>
+            Warn_On_Reverse_Bit_Order           := False;
 
          when 'w' =>
             Warn_On_Warnings_Off                := True;
@@ -3084,6 +3092,7 @@ package body Sem_Warn is
       Warn_On_Obsolescent_Feature         := True;
       Warn_On_Questionable_Missing_Parens := True;
       Warn_On_Redundant_Constructs        := True;
+      Warn_On_Reverse_Bit_Order           := False;
       Warn_On_Object_Renames_Function     := True;
       Warn_On_Unchecked_Conversion        := True;
       Warn_On_Unrecognized_Pragma         := True;
@@ -3120,11 +3129,13 @@ package body Sem_Warn is
             Warn_On_Parameter_Order             := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Redundant_Constructs        := True;
+            Warn_On_Reverse_Bit_Order           := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unrecognized_Pragma         := True;
             Warn_On_Unrepped_Components         := True;
 
          when 'A' =>
+            Address_Clause_Overlay_Warnings     := False;
             Check_Unreferenced                  := False;
             Check_Unreferenced_Formals          := False;
             Check_Withs                         := False;
@@ -3133,6 +3144,7 @@ package body Sem_Warn is
             Implementation_Unit_Warnings        := False;
             Ineffective_Inline_Warnings         := False;
             Warn_On_Ada_2005_Compatibility      := False;
+            Warn_On_All_Unread_Out_Parameters   := False;
             Warn_On_Assertion_Failure           := False;
             Warn_On_Assumed_Low_Bound           := False;
             Warn_On_Bad_Fixed_Value             := False;
@@ -3145,13 +3157,13 @@ package body Sem_Warn is
             Warn_On_Modified_Unread             := False;
             Warn_On_No_Value_Assigned           := False;
             Warn_On_Non_Local_Exception         := False;
+            Warn_On_Object_Renames_Function     := False;
             Warn_On_Obsolescent_Feature         := False;
             Warn_On_Overlap                     := False;
-            Warn_On_All_Unread_Out_Parameters   := False;
             Warn_On_Parameter_Order             := False;
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
-            Warn_On_Object_Renames_Function     := False;
+            Warn_On_Reverse_Bit_Order           := False;
             Warn_On_Unchecked_Conversion        := False;
             Warn_On_Unrecognized_Pragma         := False;
             Warn_On_Unrepped_Components         := False;

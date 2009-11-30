@@ -2678,8 +2678,7 @@ package body Make is
                --  library only if we can find it.
 
                if RTS_Switch then
-                  Add_It :=
-                    Find_File (Sfile, Osint.Source) /= No_File;
+                  Add_It := Full_Source_Name (Sfile) /= No_File;
                end if;
 
                if Add_It then
@@ -3247,6 +3246,13 @@ package body Make is
                Attr      => Source_File_Attr'Access);
 
             Lib_File := Osint.Lib_File_Name (Source_File, Source_Index);
+
+            --  ??? This call could be avoided when using projects, since we
+            --  know where the ALI file is supposed to be. That would avoid
+            --  searches in the object directories, including in the runtime
+            --  dir. However, that would require getting access to the
+            --  Source_Id.
+
             Osint.Full_Lib_File_Name
               (Lib_File,
                Lib_File => Full_Lib_File,
