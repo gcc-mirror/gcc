@@ -1,5 +1,16 @@
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
+	* scans.ads (Wide_Wide_Character_Found): New flag
+	* scn.adb (Post_Scan): Set new flag Has_Wide_Wide_Character
+	* scng.adb (Set_String): Set new flag Wide_Wide_Character_Found
+	(Set_String): Fix failure to reset Wide_Character_Found
+	* sinfo.adb (Has_Wide_Wide_Character): New flag in N_String_Literal
+	* sinfo.ads (Has_Wide_Wide_Character): New flag in N_String_Literal
+	* a-ngelfu.adb: Minor reformatting & code reorganization.
+	* usage.adb: Fix typo in -gnatw.W line
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
 	* osint.adb, prj-nmsc.adb, sem_prag.adb, sem_util.adb: Minor
 	reformatting.
 	* csinfo.adb: Terminate run if improper use of reserved flag

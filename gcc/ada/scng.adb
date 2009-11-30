@@ -785,12 +785,12 @@ package body Scng is
 
          procedure Set_String;
          --  Procedure used to distinguish between string and operator symbol.
-         --  On entry the string has been scanned out, and its characters
-         --  start at Token_Ptr and end one character before Scan_Ptr. On exit
-         --  Token is set to Tok_String_Literal or Tok_Operator_Symbol as
-         --  appropriate, and Token_Node is appropriately initialized. In
-         --  addition, in the operator symbol case, Token_Name is
-         --  appropriately set.
+         --  On entry the string has been scanned out, and its characters start
+         --  at Token_Ptr and end one character before Scan_Ptr. On exit Token
+         --  is set to Tok_String_Literal/Tok_Operator_Symbol as appropriate,
+         --  and Token_Node is appropriately initialized. In addition, in the
+         --  operator symbol case, Token_Name is appropriately set, and the
+         --  flags [Wide_]Wide_Character_Found are set appropriately.
 
          ---------------------------
          -- Error_Bad_String_Char --
@@ -1016,7 +1016,10 @@ package body Scng is
 
          Delimiter := Source (Scan_Ptr);
          Accumulate_Checksum (Delimiter);
+
          Start_String;
+         Wide_Character_Found      := False;
+         Wide_Wide_Character_Found := False;
          Scan_Ptr := Scan_Ptr + 1;
 
          --  Loop to scan out characters of string literal
@@ -1096,7 +1099,11 @@ package body Scng is
             Store_String_Char (Code);
 
             if not In_Character_Range (Code) then
-               Wide_Character_Found := True;
+               if In_Wide_Character_Range (Code) then
+                  Wide_Character_Found := True;
+               else
+                  Wide_Wide_Character_Found := True;
+               end if;
             end if;
          end loop;
 

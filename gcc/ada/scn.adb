@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -383,7 +383,10 @@ package body Scn is
 
          when Tok_String_Literal =>
             Token_Node := New_Node (N_String_Literal, Token_Ptr);
-            Set_Has_Wide_Character (Token_Node, Wide_Character_Found);
+            Set_Has_Wide_Character
+              (Token_Node, Wide_Character_Found);
+            Set_Has_Wide_Wide_Character
+              (Token_Node, Wide_Wide_Character_Found);
             Set_Strval (Token_Node, String_Literal_Id);
 
          when Tok_Operator_Symbol =>

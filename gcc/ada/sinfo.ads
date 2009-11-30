@@ -1149,7 +1149,13 @@ package Sinfo is
 
    --  Has_Wide_Character (Flag11-Sem)
    --    Present in string literals, set if any wide character (i.e. character
-   --    code outside the Character range) appears in the string.
+   --    code outside the Character range but within Wide_Character range)
+   --    appears in the string. Used to implement pragma preference rules.
+
+   --  Has_Wide_Wide_Character (Flag13-Sem)
+   --    Present in string literals, set if any wide character (i.e. character
+   --    code outside the Wide_Character range) appears in the string. Used to
+   --    implement pragma preference rules.
 
    --  Hidden_By_Use_Clause (Elist4-Sem)
    --     An entity list present in use clauses that appear within
@@ -1179,7 +1185,7 @@ package Sinfo is
    --    to the node for the spec of the instance, inserted as part of the
    --    semantic processing for instantiations in Sem_Ch12.
 
-   --  Is_Accessibility_Actual (Flag13-Sem)
+   --  Is_Accessibility_Actual (Flag12-Sem)
    --    Present in N_Parameter_Association nodes. True if the parameter is
    --    an extra actual that carries the accessibility level of the actual
    --    for an access parameter, in a function that dispatches on result and
@@ -1937,6 +1943,7 @@ package Sinfo is
       --  Sloc points to literal
       --  Strval (Str3) contains Id of string value
       --  Has_Wide_Character (Flag11-Sem)
+      --  Has_Wide_Wide_Character (Flag13-Sem)
       --  Is_Folded_In_Parser (Flag4)
       --  plus fields for expression
 
@@ -8059,6 +8066,9 @@ package Sinfo is
    function Has_Wide_Character
      (N : Node_Id) return Boolean;    -- Flag11
 
+   function Has_Wide_Wide_Character
+     (N : Node_Id) return Boolean;    -- Flag13
+
    function Hidden_By_Use_Clause
      (N : Node_Id) return Elist_Id;   -- Elist4
 
@@ -8973,6 +8983,9 @@ package Sinfo is
 
    procedure Set_Has_Wide_Character
      (N : Node_Id; Val : Boolean := True);    -- Flag11
+
+   procedure Set_Has_Wide_Wide_Character
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_Hidden_By_Use_Clause
      (N : Node_Id; Val : Elist_Id);           -- Elist4
@@ -11274,6 +11287,7 @@ package Sinfo is
    pragma Inline (Has_Task_Info_Pragma);
    pragma Inline (Has_Task_Name_Pragma);
    pragma Inline (Has_Wide_Character);
+   pragma Inline (Has_Wide_Wide_Character);
    pragma Inline (Hidden_By_Use_Clause);
    pragma Inline (High_Bound);
    pragma Inline (Identifier);
@@ -11575,6 +11589,7 @@ package Sinfo is
    pragma Inline (Set_Has_Task_Info_Pragma);
    pragma Inline (Set_Has_Task_Name_Pragma);
    pragma Inline (Set_Has_Wide_Character);
+   pragma Inline (Set_Has_Wide_Wide_Character);
    pragma Inline (Set_Hidden_By_Use_Clause);
    pragma Inline (Set_High_Bound);
    pragma Inline (Set_Identifier);
