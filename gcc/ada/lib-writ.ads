@@ -157,7 +157,7 @@ package Lib.Writ is
 
    --      One of these lines appears for each of the arguments present in the
    --      call to the gnat1 program. This can be used if it is necessary to
-   --      reconstruct this call (e.g. for fix and continue)
+   --      reconstruct this call (e.g. for fix and continue).
 
    --  -------------------
    --  -- P  Parameters --
@@ -235,7 +235,7 @@ package Lib.Writ is
    --             generated exception tables. If ZX is not present, the
    --             longjmp/setjmp exception scheme is in use.
    --
-   --      Note that language defined units never output policy (Lx,Tx,Qx)
+   --      Note that language defined units never output policy (Lx, Tx, Qx)
    --      parameters. Language defined units must correctly handle all
    --      possible cases. These values are checked for consistency by the
    --      binder and then copied to the generated binder output file.
