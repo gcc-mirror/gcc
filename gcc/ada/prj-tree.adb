@@ -3078,7 +3078,9 @@ package body Prj.Tree is
 
       if At_Index /= 0 then
          if Attribute_Kind_Of (Start_At) =
-           Optional_Index_Associative_Array
+              Optional_Index_Associative_Array
+           or else Attribute_Kind_Of (Start_At) =
+              Optional_Index_Case_Insensitive_Associative_Array
          then
             --  Results in:   for Name ("index" at index) use "value";
             --  This is currently only used for executables

@@ -46,15 +46,27 @@ package Prj.Attr is
 
    type Attribute_Kind is
      (Unknown,
+      --  The attribute does not exist
+
       Single,
+      --  Single variable attribute (not an associative array)
+
       Associative_Array,
+      --  Associative array attribute with a case sensitive index
+
       Optional_Index_Associative_Array,
+      --  Associative array attribute with a case sensitive index and an
+      --  optional source index.
+
       Case_Insensitive_Associative_Array,
+      --  Associative array attribute with a case insensitive index
+
       Optional_Index_Case_Insensitive_Associative_Array);
+      --  Associative array attribute with a case insensitive index and an
+      --  optional source index.
    --  Characteristics of an attribute. Optional_Index indicates that there
    --  may be an optional index in the index of the associative array, as in
    --     for Switches ("files.ada" at 2) use ...
-   --  Above character literals should be documented ???
 
    subtype Defined_Attribute_Kind is Attribute_Kind
      range Single .. Optional_Index_Case_Insensitive_Associative_Array;
