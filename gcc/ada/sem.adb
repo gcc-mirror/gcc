@@ -612,6 +612,7 @@ package body Sem is
            N_SCIL_Dispatch_Table_Object_Init        |
            N_SCIL_Dispatch_Table_Tag_Init           |
            N_SCIL_Dispatching_Call                  |
+           N_SCIL_Membership_Test                   |
            N_SCIL_Tag_Init                          =>
             null;
 

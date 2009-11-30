@@ -41,18 +41,23 @@ package Exp_Atag is
    --  Ada 2005 (AI-345): Generate statements that are common between timed,
    --  asynchronous, and conditional select expansion.
 
-   function Build_CW_Membership
+   procedure Build_CW_Membership
      (Loc          : Source_Ptr;
-      Obj_Tag_Node : Node_Id;
-      Typ_Tag_Node : Node_Id) return Node_Id;
+      Obj_Tag_Node : in out Node_Id;
+      Typ_Tag_Node : Node_Id;
+      Related_Nod  : Node_Id;
+      New_Node     : out Node_Id);
    --  Build code that returns true if Obj_Tag is in Typ_Tag'Class. Each DT
    --  has a table of ancestors and its inheritance level (Idepth). Obj is in
    --  Typ'Class if Typ'Tag is found in the table of ancestors referenced by
    --  Obj'Tag. Knowing the level of inheritance of both types, this can be
    --  computed in constant time by the formula:
    --
-   --   TSD (Obj'tag).Tags_Table (TSD (Obj'tag).Idepth - TSD (Typ'tag).Idepth)
-   --     = Typ'tag
+   --   Index := TSD (Obj'Tag).Idepth - TSD (Typ'Tag).Idepth;
+   --   Index > 0 and then TSD (Obj'Tag).Tags_Table (Index) = Typ'Tag
+   --
+   --  Related_Nod is the node where the implicit declaration of variable Index
+   --  is inserted. Obj_Tag_Node is relocated.
 
    function Build_Get_Access_Level
      (Loc      : Source_Ptr;

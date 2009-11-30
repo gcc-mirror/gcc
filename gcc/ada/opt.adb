@@ -56,6 +56,8 @@ package body Opt is
       External_Name_Exp_Casing_Config       := External_Name_Exp_Casing;
       External_Name_Imp_Casing_Config       := External_Name_Imp_Casing;
       Fast_Math_Config                      := Fast_Math;
+      Init_Or_Norm_Scalars_Config           := Init_Or_Norm_Scalars;
+      Initialize_Scalars_Config             := Initialize_Scalars;
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
@@ -86,6 +88,8 @@ package body Opt is
       External_Name_Exp_Casing       := Save.External_Name_Exp_Casing;
       External_Name_Imp_Casing       := Save.External_Name_Imp_Casing;
       Fast_Math                      := Save.Fast_Math;
+      Init_Or_Norm_Scalars           := Save.Init_Or_Norm_Scalars;
+      Initialize_Scalars             := Save.Initialize_Scalars;
       Optimize_Alignment             := Save.Optimize_Alignment;
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
@@ -111,6 +115,8 @@ package body Opt is
       Save.External_Name_Exp_Casing       := External_Name_Exp_Casing;
       Save.External_Name_Imp_Casing       := External_Name_Imp_Casing;
       Save.Fast_Math                      := Fast_Math;
+      Save.Init_Or_Norm_Scalars           := Init_Or_Norm_Scalars;
+      Save.Initialize_Scalars             := Initialize_Scalars;
       Save.Optimize_Alignment             := Optimize_Alignment;
       Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
@@ -175,6 +181,8 @@ package body Opt is
          External_Name_Exp_Casing    := External_Name_Exp_Casing_Config;
          External_Name_Imp_Casing    := External_Name_Imp_Casing_Config;
          Fast_Math                   := Fast_Math_Config;
+         Init_Or_Norm_Scalars        := Init_Or_Norm_Scalars_Config;
+         Initialize_Scalars          := Initialize_Scalars_Config;
          Optimize_Alignment          := Optimize_Alignment_Config;
          Optimize_Alignment_Local    := False;
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;

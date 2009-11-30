@@ -147,13 +147,17 @@ package Osint is
    --  Strips the suffix (the last '.' and whatever comes after it) from Name.
    --  Returns the stripped name.
 
-   function Executable_Name (Name : File_Name_Type) return File_Name_Type;
+   function Executable_Name
+     (Name              : File_Name_Type;
+      Only_If_No_Suffix : Boolean := False) return File_Name_Type;
    --  Given a file name it adds the appropriate suffix at the end so that
    --  it becomes the name of the executable on the system at end. For
    --  instance under DOS it adds the ".exe" suffix, whereas under UNIX no
    --  suffix is added.
 
-   function Executable_Name (Name : String) return String;
+   function Executable_Name
+     (Name              : String;
+      Only_If_No_Suffix : Boolean := False) return String;
    --  Same as above, with String parameters
 
    function File_Stamp (Name : File_Name_Type) return Time_Stamp_Type;

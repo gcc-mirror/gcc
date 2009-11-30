@@ -234,19 +234,28 @@ package body Exp_Intr is
       --  the tag in the table of ancestor tags.
 
       elsif not Is_Interface (Result_Typ) then
-         Insert_Action (N,
-           Make_Implicit_If_Statement (N,
-             Condition =>
-               Make_Op_Not (Loc,
-                 Build_CW_Membership (Loc,
-                   Obj_Tag_Node => Duplicate_Subexpr (Tag_Arg),
-                   Typ_Tag_Node =>
-                     New_Reference_To (
-                        Node (First_Elmt (Access_Disp_Table (
-                                            Root_Type (Result_Typ)))), Loc))),
-             Then_Statements =>
-               New_List (Make_Raise_Statement (Loc,
-                           New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+         declare
+            Obj_Tag_Node : Node_Id := Duplicate_Subexpr (Tag_Arg);
+            CW_Test_Node : Node_Id;
+
+         begin
+            Build_CW_Membership (Loc,
+              Obj_Tag_Node => Obj_Tag_Node,
+              Typ_Tag_Node =>
+                New_Reference_To (
+                   Node (First_Elmt (Access_Disp_Table (
+                                       Root_Type (Result_Typ)))), Loc),
+              Related_Nod => N,
+              New_Node    => CW_Test_Node);
+
+            Insert_Action (N,
+              Make_Implicit_If_Statement (N,
+                Condition =>
+                  Make_Op_Not (Loc, CW_Test_Node),
+                Then_Statements =>
+                  New_List (Make_Raise_Statement (Loc,
+                              New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+         end;
 
       --  Call IW_Membership test if the Result_Type is an abstract interface
       --  to look for the tag in the table of interface tags.

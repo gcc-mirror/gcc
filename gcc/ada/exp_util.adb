@@ -2761,6 +2761,7 @@ package body Exp_Util is
                N_SCIL_Dispatch_Table_Object_Init        |
                N_SCIL_Dispatch_Table_Tag_Init           |
                N_SCIL_Dispatching_Call                  |
+               N_SCIL_Membership_Test                   |
                N_SCIL_Tag_Init                          |
                N_Selected_Component                     |
                N_Signed_Integer_Type_Definition         |

@@ -2556,6 +2556,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
         or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Membership_Test
         or else NT (N).Nkind = N_SCIL_Tag_Init);
       return Node4 (N);
    end SCIL_Entity;
@@ -2567,9 +2568,18 @@ package body Sinfo is
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
         or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Membership_Test
         or else NT (N).Nkind = N_SCIL_Tag_Init);
       return Node1 (N);
    end SCIL_Related_Node;
+
+   function SCIL_Tag_Value
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_SCIL_Membership_Test);
+      return Node5 (N);
+   end SCIL_Tag_Value;
 
    function SCIL_Target_Prim
       (N : Node_Id) return Node_Id is
@@ -5416,6 +5426,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
         or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Membership_Test
         or else NT (N).Nkind = N_SCIL_Tag_Init);
       Set_Node4 (N, Val); -- semantic field, no parent set
    end Set_SCIL_Entity;
@@ -5427,9 +5438,18 @@ package body Sinfo is
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Object_Init
         or else NT (N).Nkind = N_SCIL_Dispatch_Table_Tag_Init
         or else NT (N).Nkind = N_SCIL_Dispatching_Call
+        or else NT (N).Nkind = N_SCIL_Membership_Test
         or else NT (N).Nkind = N_SCIL_Tag_Init);
       Set_Node1 (N, Val); -- semantic field, no parent set
    end Set_SCIL_Related_Node;
+
+   procedure Set_SCIL_Tag_Value
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_SCIL_Membership_Test);
+      Set_Node5 (N, Val); -- semantic field, no parent set
+   end Set_SCIL_Tag_Value;
 
    procedure Set_SCIL_Target_Prim
       (N : Node_Id; Val : Node_Id) is

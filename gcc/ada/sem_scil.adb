@@ -101,15 +101,58 @@ package body Sem_SCIL is
    -- Check_SCIL_Node --
    ---------------------
 
-   --  Is this a good name for the function, given it only deals with
-   --  N_SCIL_Dispatching_Call case ???
-
    function Check_SCIL_Node (N : Node_Id) return Traverse_Result is
       Ctrl_Tag : Node_Id;
       Ctrl_Typ : Entity_Id;
 
    begin
-      if Nkind (N) = N_SCIL_Dispatching_Call then
+      if Nkind (N) = N_SCIL_Membership_Test then
+
+         --  Check contents of the boolean expression associated with the
+         --  membership test.
+
+         pragma Assert (Nkind (SCIL_Related_Node (N)) = N_Identifier
+           and then Etype (SCIL_Related_Node (N)) = Standard_Boolean);
+
+         --  Check the entity identifier of the associated tagged type (that
+         --  is, in testing for membership in T'Class, the entity id of the
+         --  specific type T).
+
+         --  Note: When the SCIL node is generated the private and full-view
+         --    of the tagged types may have been swapped and hence the node
+         --    referenced by attribute SCIL_Entity may be the private view.
+         --    Therefore, in order to uniformily locate the full-view we use
+         --    attribute Underlying_Type.
+
+         pragma Assert (Is_Tagged_Type (Underlying_Type (SCIL_Entity (N))));
+
+         --  Interface types are unsupported
+
+         pragma Assert (not Is_Interface (Underlying_Type (SCIL_Entity (N))));
+
+         --  Check the decoration of the expression that denotes the tag value
+         --  being tested
+
+         Ctrl_Tag := SCIL_Tag_Value (N);
+
+         case Nkind (Ctrl_Tag) is
+
+            --  For class-wide membership tests the SCIL tag value is the tag
+            --  of the tested object (i.e. Obj.Tag).
+
+            when N_Selected_Component =>
+               pragma Assert (Etype (Ctrl_Tag) = RTE (RE_Tag));
+               null;
+
+            when others =>
+               pragma Assert (False);
+               null;
+
+         end case;
+
+         return Skip;
+
+      elsif Nkind (N) = N_SCIL_Dispatching_Call then
          Ctrl_Tag := SCIL_Controlling_Tag (N);
 
          --  SCIL_Related_Node of SCIL dispatching call nodes MUST reference
@@ -452,6 +495,7 @@ package body Sem_SCIL is
                N_SCIL_Dispatch_Table_Object_Init        |
                N_SCIL_Dispatch_Table_Tag_Init           |
                N_SCIL_Dispatching_Call                  |
+               N_SCIL_Membership_Test                   |
                N_SCIL_Tag_Init
             =>
                pragma Assert (False);

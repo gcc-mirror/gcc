@@ -205,7 +205,10 @@ package body Exp_Ch4 is
    --  its expression. If N is neither comparison nor a type conversion, the
    --  call has no effect.
 
-   function Tagged_Membership (N : Node_Id) return Node_Id;
+   procedure Tagged_Membership
+     (N         : Node_Id;
+      SCIL_Node : out Node_Id;
+      Result    : out Node_Id);
    --  Construct the expression corresponding to the tagged membership test.
    --  Deals with a second operand being (or not) a class-wide type.
 
@@ -4503,10 +4506,12 @@ package body Exp_Ch4 is
 
       else
          declare
-            Typ    : Entity_Id        := Etype (Rop);
-            Is_Acc : constant Boolean := Is_Access_Type (Typ);
-            Obj    : Node_Id          := Lop;
-            Cond   : Node_Id          := Empty;
+            Typ       : Entity_Id        := Etype (Rop);
+            Is_Acc    : constant Boolean := Is_Access_Type (Typ);
+            Cond      : Node_Id          := Empty;
+            New_N     : Node_Id;
+            Obj       : Node_Id          := Lop;
+            SCIL_Node : Node_Id;
 
          begin
             Remove_Side_Effects (Obj);
@@ -4521,8 +4526,19 @@ package body Exp_Ch4 is
                --  normal tagged membership expansion is not what we want).
 
                if Tagged_Type_Expansion then
-                  Rewrite (N, Tagged_Membership (N));
+                  Tagged_Membership (N, SCIL_Node, New_N);
+                  Rewrite (N, New_N);
                   Analyze_And_Resolve (N, Rtyp);
+
+                  --  Update decoration of relocated node referenced by the
+                  --  SCIL node.
+
+                  if Generate_SCIL
+                    and then Present (SCIL_Node)
+                  then
+                     Set_SCIL_Related_Node (SCIL_Node, N);
+                     Insert_Action (N, SCIL_Node);
+                  end if;
                end if;
 
                return;
@@ -9857,16 +9873,23 @@ package body Exp_Ch4 is
    --  table of abstract interface types plus the ancestor table contained in
    --  the dispatch table pointed by Left_Expr.Tag for Typ'Tag
 
-   function Tagged_Membership (N : Node_Id) return Node_Id is
+   procedure Tagged_Membership
+     (N         : Node_Id;
+      SCIL_Node : out Node_Id;
+      Result    : out Node_Id)
+   is
       Left  : constant Node_Id    := Left_Opnd  (N);
       Right : constant Node_Id    := Right_Opnd (N);
       Loc   : constant Source_Ptr := Sloc (N);
 
       Left_Type  : Entity_Id;
+      New_Node   : Node_Id;
       Right_Type : Entity_Id;
       Obj_Tag    : Node_Id;
 
    begin
+      SCIL_Node := Empty;
+
       --  Handle entities from the limited view
 
       Left_Type  := Available_View (Etype (Left));
@@ -9914,7 +9937,8 @@ package body Exp_Ch4 is
                                            (Typ   => Left_Type,
                                             Iface => Etype (Right_Type))))
          then
-            return New_Reference_To (Standard_True, Loc);
+            Result := New_Reference_To (Standard_True, Loc);
+            return;
          end if;
 
          --  Ada 2005 (AI-251): Class-wide applied to interfaces
@@ -9931,10 +9955,11 @@ package body Exp_Ch4 is
             if not RTE_Available (RE_IW_Membership) then
                Error_Msg_CRT
                  ("dynamic membership test on interface types", N);
-               return Empty;
+               Result := Empty;
+               return;
             end if;
 
-            return
+            Result :=
               Make_Function_Call (Loc,
                  Name => New_Occurrence_Of (RTE (RE_IW_Membership), Loc),
                  Parameter_Associations => New_List (
@@ -9949,14 +9974,27 @@ package body Exp_Ch4 is
          --  Ada 95: Normal case
 
          else
-            return
-              Build_CW_Membership (Loc,
-                Obj_Tag_Node => Obj_Tag,
-                Typ_Tag_Node =>
-                   New_Reference_To (
-                     Node (First_Elmt
-                            (Access_Disp_Table (Root_Type (Right_Type)))),
-                     Loc));
+            Build_CW_Membership (Loc,
+              Obj_Tag_Node => Obj_Tag,
+              Typ_Tag_Node =>
+                 New_Reference_To (
+                   Node (First_Elmt
+                          (Access_Disp_Table (Root_Type (Right_Type)))),
+                   Loc),
+              Related_Nod => N,
+              New_Node    => New_Node);
+
+            --  Generate the SCIL node for this class-wide membership test.
+            --  Done here because the previous call to Build_CW_Membership
+            --  relocates Obj_Tag.
+
+            if Generate_SCIL then
+               SCIL_Node := Make_SCIL_Membership_Test (Sloc (N));
+               Set_SCIL_Entity (SCIL_Node, Etype (Right_Type));
+               Set_SCIL_Tag_Value (SCIL_Node, Obj_Tag);
+            end if;
+
+            Result := New_Node;
          end if;
 
       --  Right_Type is not a class-wide type
@@ -9965,10 +10003,10 @@ package body Exp_Ch4 is
          --  No need to check the tag of the object if Right_Typ is abstract
 
          if Is_Abstract_Type (Right_Type) then
-            return New_Reference_To (Standard_False, Loc);
+            Result := New_Reference_To (Standard_False, Loc);
 
          else
-            return
+            Result :=
               Make_Op_Eq (Loc,
                 Left_Opnd  => Obj_Tag,
                 Right_Opnd =>
