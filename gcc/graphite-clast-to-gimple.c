@@ -718,6 +718,146 @@ dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping, int level)
   return false;
 }
 
+static edge
+translate_clast (sese, loop_p, struct clast_stmt *, edge, htab_t,
+		 VEC (tree, heap) **, htab_t, htab_t, int, htab_t);
+
+/* Translates a clast user statement STMT to gimple.
+
+   - REGION is the sese region we used to generate the scop.
+   - NEXT_E is the edge where new generated code should be attached.
+   - CONTEXT_LOOP is the loop in which the generated code will be placed
+   - RENAME_MAP contains a set of tuples of new names associated to
+     the original variables names.
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
+   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
+     the sese region.  */
+static edge
+translate_clast_user (sese region, struct loop *context_loop,
+		      struct clast_stmt *stmt, edge next_e,
+		      htab_t rename_map, VEC (tree, heap) **newivs,
+		      htab_t newivs_index, htab_t bb_pbb_mapping, int level,
+		      htab_t params_index)
+{
+  gimple_bb_p gbb;
+  basic_block new_bb;
+  CloogStatement *cs = ((struct clast_user_stmt*) stmt)->statement;
+  poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
+  gbb = PBB_BLACK_BOX (pbb);
+
+  if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
+    return next_e;
+
+  build_iv_mapping (rename_map, region, *newivs, newivs_index,
+		    (struct clast_user_stmt*) stmt, params_index);
+  next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), region,
+					   next_e, rename_map);
+  new_bb = next_e->src;
+  mark_bb_with_pbb (pbb, new_bb, bb_pbb_mapping);
+  recompute_all_dominators ();
+  update_ssa (TODO_update_ssa);
+  graphite_verify ();
+  return translate_clast (region, context_loop, stmt->next, next_e,
+			  rename_map, newivs, newivs_index,
+			  bb_pbb_mapping, level, params_index);
+}
+
+/* Translates a clast for statement STMT to gimple.
+
+   - REGION is the sese region we used to generate the scop.
+   - NEXT_E is the edge where new generated code should be attached.
+   - CONTEXT_LOOP is the loop in which the generated code will be placed
+   - RENAME_MAP contains a set of tuples of new names associated to
+     the original variables names.
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
+   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
+     the sese region.  */
+static edge
+translate_clast_for (sese region, loop_p context_loop, struct clast_stmt *stmt,
+		     edge next_e, htab_t rename_map, VEC (tree, heap) **newivs,
+		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
+		     htab_t params_index)
+{
+  struct clast_for *stmtfor = (struct clast_for *)stmt;
+  struct loop *loop
+    = graphite_create_new_loop (region, next_e, stmtfor,
+				context_loop, newivs, newivs_index,
+				params_index);
+  edge last_e = single_exit (loop);
+  edge to_body = single_succ_edge (loop->header);
+  basic_block after = to_body->dest;
+
+  /* Create a basic block for loop close phi nodes.  */
+  last_e = single_succ_edge (split_edge (last_e));
+
+  /* Translate the body of the loop.  */
+  next_e = translate_clast
+    (region, loop, ((struct clast_for *) stmt)->body,
+     single_succ_edge (loop->header), rename_map, newivs,
+     newivs_index, bb_pbb_mapping, level + 1, params_index);
+  redirect_edge_succ_nodup (next_e, after);
+  set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
+
+  /* Remove from rename_map all the tuples containing variables
+     defined in loop's body.  */
+  insert_loop_close_phis (rename_map, loop);
+
+  if (flag_loop_parallelize_all
+      && !dependency_in_loop_p (loop, bb_pbb_mapping,
+				get_scattering_level (level)))
+    loop->can_be_parallel = true;
+
+  recompute_all_dominators ();
+  graphite_verify ();
+  return translate_clast (region, context_loop, stmt->next, last_e,
+			  rename_map, newivs, newivs_index,
+			  bb_pbb_mapping, level, params_index);
+}
+
+/* Translates a clast guard statement STMT to gimple.
+
+   - REGION is the sese region we used to generate the scop.
+   - NEXT_E is the edge where new generated code should be attached.
+   - CONTEXT_LOOP is the loop in which the generated code will be placed
+   - RENAME_MAP contains a set of tuples of new names associated to
+     the original variables names.
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
+   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
+     the sese region.  */
+static edge
+translate_clast_guard (sese region, loop_p context_loop,
+		       struct clast_stmt *stmt, edge next_e, htab_t rename_map,
+		       VEC (tree, heap) **newivs, htab_t newivs_index,
+		       htab_t bb_pbb_mapping, int level, htab_t params_index)
+{
+  edge last_e = graphite_create_new_guard (region, next_e,
+					   ((struct clast_guard *) stmt),
+					   *newivs, newivs_index,
+					   params_index);
+  edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  edge false_e = get_false_edge_from_guard_bb (next_e->dest);
+  edge exit_true_e = single_succ_edge (true_e->dest);
+  edge exit_false_e = single_succ_edge (false_e->dest);
+  htab_t before_guard = htab_create (10, rename_map_elt_info,
+				     eq_rename_map_elts, free);
+
+  htab_traverse (rename_map, copy_renames, before_guard);
+  next_e = translate_clast (region, context_loop,
+			    ((struct clast_guard *) stmt)->then,
+			    true_e, rename_map, newivs, newivs_index,
+			    bb_pbb_mapping, level, params_index);
+  insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
+		     before_guard, rename_map);
+
+  htab_delete (before_guard);
+  recompute_all_dominators ();
+  graphite_verify ();
+
+  return translate_clast (region, context_loop, stmt->next, last_e,
+			  rename_map, newivs, newivs_index,
+			  bb_pbb_mapping, level, params_index);
+}
+
 /* Translates a CLAST statement STMT to GCC representation in the
    context of a SESE.
 
@@ -725,13 +865,10 @@ dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping, int level)
    - CONTEXT_LOOP is the loop in which the generated code will be placed
    - RENAME_MAP contains a set of tuples of new names associated to
      the original variables names.
-   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
-*/
-
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
 static edge
-translate_clast (sese region, struct loop *context_loop,
-		 struct clast_stmt *stmt, edge next_e,
-		 htab_t rename_map, VEC (tree, heap) **newivs,
+translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
+		 edge next_e, htab_t rename_map, VEC (tree, heap) **newivs,
 		 htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		 htab_t params_index)
 {
@@ -744,97 +881,19 @@ translate_clast (sese region, struct loop *context_loop,
 			    bb_pbb_mapping, level, params_index);
 
   if (CLAST_STMT_IS_A (stmt, stmt_user))
-    {
-      gimple_bb_p gbb;
-      basic_block new_bb;
-      CloogStatement *cs = ((struct clast_user_stmt *) stmt)->statement;
-      poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
-      gbb = PBB_BLACK_BOX (pbb);
-
-      if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
-	return next_e;
-
-      build_iv_mapping (rename_map, region, *newivs, newivs_index,
-			(struct clast_user_stmt *) stmt, params_index);
-      next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), region,
-					       next_e, rename_map);
-      new_bb = next_e->src;
-      mark_bb_with_pbb (pbb, new_bb, bb_pbb_mapping);
-      recompute_all_dominators ();
-      update_ssa (TODO_update_ssa);
-      graphite_verify ();
-      return translate_clast (region, context_loop, stmt->next, next_e,
-			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping, level, params_index);
-    }
+    return translate_clast_user (region, context_loop, stmt, next_e,
+				 rename_map, newivs, newivs_index,
+				 bb_pbb_mapping, level, params_index);
 
   if (CLAST_STMT_IS_A (stmt, stmt_for))
-    {
-      struct clast_for *stmtfor = (struct clast_for *)stmt;
-      struct loop *loop
-	= graphite_create_new_loop (region, next_e, stmtfor,
-				    context_loop, newivs, newivs_index,
-				    params_index);
-      edge last_e = single_exit (loop);
-      edge to_body = single_succ_edge (loop->header);
-      basic_block after = to_body->dest;
-
-      /* Create a basic block for loop close phi nodes.  */
-      last_e = single_succ_edge (split_edge (last_e));
-
-      /* Translate the body of the loop.  */
-      next_e = translate_clast
-	(region, loop, ((struct clast_for *) stmt)->body,
-	 single_succ_edge (loop->header), rename_map, newivs,
-	 newivs_index, bb_pbb_mapping, level + 1, params_index);
-      redirect_edge_succ_nodup (next_e, after);
-      set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
-
-      /* Remove from rename_map all the tuples containing variables
-	 defined in loop's body.  */
-      insert_loop_close_phis (rename_map, loop);
-
-      if (flag_loop_parallelize_all
-	  && !dependency_in_loop_p (loop, bb_pbb_mapping,
-				    get_scattering_level (level)))
-	loop->can_be_parallel = true;
-
-      recompute_all_dominators ();
-      graphite_verify ();
-      return translate_clast (region, context_loop, stmt->next, last_e,
-			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping, level, params_index);
-    }
+    return translate_clast_for (region, context_loop, stmt, next_e,
+				rename_map, newivs, newivs_index,
+				bb_pbb_mapping, level, params_index);
 
   if (CLAST_STMT_IS_A (stmt, stmt_guard))
-    {
-      edge last_e = graphite_create_new_guard (region, next_e,
-					       ((struct clast_guard *) stmt),
-					       *newivs, newivs_index,
-					       params_index);
-      edge true_e = get_true_edge_from_guard_bb (next_e->dest);
-      edge false_e = get_false_edge_from_guard_bb (next_e->dest);
-      edge exit_true_e = single_succ_edge (true_e->dest);
-      edge exit_false_e = single_succ_edge (false_e->dest);
-      htab_t before_guard = htab_create (10, rename_map_elt_info,
-					 eq_rename_map_elts, free);
-
-      htab_traverse (rename_map, copy_renames, before_guard);
-      next_e = translate_clast (region, context_loop,
-				((struct clast_guard *) stmt)->then,
-				true_e, rename_map, newivs, newivs_index,
-				bb_pbb_mapping, level, params_index);
-      insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
-			 before_guard, rename_map);
-
-      htab_delete (before_guard);
-      recompute_all_dominators ();
-      graphite_verify ();
-
-      return translate_clast (region, context_loop, stmt->next, last_e,
-			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping, level, params_index);
-    }
+    return translate_clast_guard (region, context_loop, stmt, next_e,
+				  rename_map, newivs, newivs_index,
+				  bb_pbb_mapping, level, params_index);
 
   if (CLAST_STMT_IS_A (stmt, stmt_block))
     {
