@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-sources class_4a.f03 class_4b.f03 }
 !
 ! Test the fix for PR41583, in which the different source files
 ! would generate the same 'vindex' for different class declared

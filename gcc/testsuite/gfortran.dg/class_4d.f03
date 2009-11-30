@@ -8,8 +8,8 @@
 !
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>
 !
-module m
+module m3
   type t
   end type t
-end module m
-! { dg-final { cleanup-modules "m m2" } }
+end module m3
+! { dg-final { cleanup-modules "m m2 m3" } }

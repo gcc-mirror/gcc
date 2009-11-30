@@ -1,3 +1,27 @@
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42053
+	* gfortran.dg/select_type_9.f03: New.
+
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41631
+	* gfortran.dg/extends_type_of_1.f03: Fix invalid test case.
+	* gfortran.dg/module_md5_1.f90: Adjusted MD5 sum.
+	* gfortran.dg/select_type_1.f03: Remove FIXMEs.
+	* gfortran.dg/select_type_2.f03: Ditto.
+	* gfortran.dg/select_type_8.f03: New test.
+
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.dg/extends_type_of_1.f03: New test.
+	* gfortran.dg/same_type_as_1.f03: Extended.
+
+2009-11-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/class_4c.f03: Add dg-additional-sources.
+	* gfortran.dg/class_4d.f03: Rename module. Cleanup modules.
+
 2009-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/42212

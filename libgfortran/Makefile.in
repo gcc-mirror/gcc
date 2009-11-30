@@ -433,15 +433,15 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c runtime/bounds.c \
 	intrinsics/date_and_time.c intrinsics/dtime.c intrinsics/env.c \
 	intrinsics/eoshift0.c intrinsics/eoshift2.c \
 	intrinsics/erfc_scaled.c intrinsics/etime.c intrinsics/exit.c \
-	intrinsics/fnum.c intrinsics/gerror.c intrinsics/getcwd.c \
-	intrinsics/getlog.c intrinsics/getXid.c intrinsics/hostnm.c \
-	intrinsics/ierrno.c intrinsics/ishftc.c \
-	intrinsics/iso_c_generated_procs.c intrinsics/iso_c_binding.c \
-	intrinsics/kill.c intrinsics/link.c intrinsics/malloc.c \
-	intrinsics/mvbits.c intrinsics/move_alloc.c \
-	intrinsics/pack_generic.c intrinsics/perror.c \
-	intrinsics/selected_char_kind.c intrinsics/signal.c \
-	intrinsics/size.c intrinsics/sleep.c \
+	intrinsics/extends_type_of.c intrinsics/fnum.c \
+	intrinsics/gerror.c intrinsics/getcwd.c intrinsics/getlog.c \
+	intrinsics/getXid.c intrinsics/hostnm.c intrinsics/ierrno.c \
+	intrinsics/ishftc.c intrinsics/iso_c_generated_procs.c \
+	intrinsics/iso_c_binding.c intrinsics/kill.c intrinsics/link.c \
+	intrinsics/malloc.c intrinsics/mvbits.c \
+	intrinsics/move_alloc.c intrinsics/pack_generic.c \
+	intrinsics/perror.c intrinsics/selected_char_kind.c \
+	intrinsics/signal.c intrinsics/size.c intrinsics/sleep.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
 	intrinsics/system.c intrinsics/rand.c intrinsics/random.c \
 	intrinsics/rename.c intrinsics/reshape_generic.c \
@@ -725,15 +725,16 @@ am__objects_36 = associated.lo abort.lo access.lo args.lo \
 	bit_intrinsics.lo c99_functions.lo chdir.lo chmod.lo clock.lo \
 	cpu_time.lo cshift0.lo ctime.lo date_and_time.lo dtime.lo \
 	env.lo eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo exit.lo \
-	fnum.lo gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo \
-	ierrno.lo ishftc.lo iso_c_generated_procs.lo iso_c_binding.lo \
-	kill.lo link.lo malloc.lo mvbits.lo move_alloc.lo \
-	pack_generic.lo perror.lo selected_char_kind.lo signal.lo \
-	size.lo sleep.lo spread_generic.lo string_intrinsics.lo \
-	system.lo rand.lo random.lo rename.lo reshape_generic.lo \
-	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
-	stat.lo symlnk.lo system_clock.lo time.lo transpose_generic.lo \
-	umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
+	extends_type_of.lo fnum.lo gerror.lo getcwd.lo getlog.lo \
+	getXid.lo hostnm.lo ierrno.lo ishftc.lo \
+	iso_c_generated_procs.lo iso_c_binding.lo kill.lo link.lo \
+	malloc.lo mvbits.lo move_alloc.lo pack_generic.lo perror.lo \
+	selected_char_kind.lo signal.lo size.lo sleep.lo \
+	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
+	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
+	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
+	system_clock.lo time.lo transpose_generic.lo umask.lo \
+	unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo
 am__objects_37 =
 am__objects_38 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
@@ -1030,6 +1031,7 @@ intrinsics/eoshift2.c \
 intrinsics/erfc_scaled.c \
 intrinsics/etime.c \
 intrinsics/exit.c \
+intrinsics/extends_type_of.c \
 intrinsics/fnum.c \
 intrinsics/gerror.c \
 intrinsics/getcwd.c \
@@ -1892,6 +1894,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponent_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponent_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exponent_r8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/extends_type_of.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fbuf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_pos.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fmain.Plo@am__quote@
@@ -5477,6 +5480,13 @@ exit.lo: intrinsics/exit.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/exit.c' object='exit.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exit.lo `test -f 'intrinsics/exit.c' || echo '$(srcdir)/'`intrinsics/exit.c
+
+extends_type_of.lo: intrinsics/extends_type_of.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT extends_type_of.lo -MD -MP -MF $(DEPDIR)/extends_type_of.Tpo -c -o extends_type_of.lo `test -f 'intrinsics/extends_type_of.c' || echo '$(srcdir)/'`intrinsics/extends_type_of.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/extends_type_of.Tpo $(DEPDIR)/extends_type_of.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/extends_type_of.c' object='extends_type_of.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o extends_type_of.lo `test -f 'intrinsics/extends_type_of.c' || echo '$(srcdir)/'`intrinsics/extends_type_of.c
 
 fnum.lo: intrinsics/fnum.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fnum.lo -MD -MP -MF $(DEPDIR)/fnum.Tpo -c -o fnum.lo `test -f 'intrinsics/fnum.c' || echo '$(srcdir)/'`intrinsics/fnum.c

@@ -40,16 +40,14 @@
     print *,"a is TYPE(t1)"
   type is (t2)
     print *,"a is TYPE(t2)"
-! FIXME: CLASS IS specification is not yet supported
-!  class is (ts)  ! { FIXME: error "must be extensible" }
-!    print *,"a is TYPE(ts)"
+  class is (ts)  ! { dg-error "must be extensible" }
+    print *,"a is TYPE(ts)"
   type is (t3)   ! { dg-error "must be an extension of" }
     print *,"a is TYPE(t3)"
   type is (t4)   ! { dg-error "is not an accessible derived type" }
     print *,"a is TYPE(t3)"
-! FIXME: CLASS IS specification is not yet supported
-!  class is (t1)
-!    print *,"a is CLASS(t1)"
+  class is (t1)
+    print *,"a is CLASS(t1)"
   class is (t2) label  ! { dg-error "Syntax error" }
     print *,"a is CLASS(t2)"
   class default  ! { dg-error "cannot be followed by a second DEFAULT CASE" }

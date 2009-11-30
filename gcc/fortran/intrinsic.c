@@ -1601,7 +1601,7 @@ add_functions (void)
 
   add_sym_2 ("extends_type_of", GFC_ISYM_EXTENDS_TYPE_OF, CLASS_INQUIRY,
 	     ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,
-	     gfc_check_same_type_as, NULL, NULL,
+	     gfc_check_same_type_as, NULL, gfc_resolve_extends_type_of,
 	     a, BT_UNKNOWN, 0, REQUIRED,
 	     mo, BT_UNKNOWN, 0, REQUIRED);
 

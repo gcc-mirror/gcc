@@ -806,6 +806,57 @@ gfc_resolve_exponent (gfc_expr *f, gfc_expr *x)
 }
 
 
+/* Resolve the EXTENDS_TYPE_OF intrinsic function.  */
+
+void
+gfc_resolve_extends_type_of (gfc_expr *f, gfc_expr *a, gfc_expr *mo)
+{
+  gfc_symbol *vtab;
+  gfc_symtree *st;
+
+  /* Prevent double resolution.  */
+  if (f->ts.type == BT_LOGICAL)
+    return;
+
+  /* Replace the first argument with the corresponding vtab.  */
+  if (a->ts.type == BT_CLASS)
+    gfc_add_component_ref (a, "$vptr");
+  else if (a->ts.type == BT_DERIVED)
+    {
+      vtab = gfc_find_derived_vtab (a->ts.u.derived);
+      /* Clear the old expr.  */
+      gfc_free_ref_list (a->ref);
+      memset (a, '\0', sizeof (gfc_expr));
+      /* Construct a new one.  */
+      a->expr_type = EXPR_VARIABLE;
+      st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
+      a->symtree = st;
+      a->ts = vtab->ts;
+    }
+
+  /* Replace the second argument with the corresponding vtab.  */
+  if (mo->ts.type == BT_CLASS)
+    gfc_add_component_ref (mo, "$vptr");
+  else if (mo->ts.type == BT_DERIVED)
+    {
+      vtab = gfc_find_derived_vtab (mo->ts.u.derived);
+      /* Clear the old expr.  */
+      gfc_free_ref_list (mo->ref);
+      memset (mo, '\0', sizeof (gfc_expr));
+      /* Construct a new one.  */
+      mo->expr_type = EXPR_VARIABLE;
+      st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
+      mo->symtree = st;
+      mo->ts = vtab->ts;
+    }
+
+  f->ts.type = BT_LOGICAL;
+  f->ts.kind = 4;
+  /* Call library function.  */
+  f->value.function.name = gfc_get_string (PREFIX ("is_extension_of"));
+}
+
+
 void
 gfc_resolve_fdate (gfc_expr *f)
 {
