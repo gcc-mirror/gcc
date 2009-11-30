@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Program to check consistency of sinfo.ads and sinfo.adb. Checks that
---  field name usage is consistent and that assertion cross-reference lists
---  are correct, as well as making sure that all the comments on field name
---  usage are consistent.
+--  Program to check consistency of sinfo.ads and sinfo.adb. Checks that field
+--  name usage is consistent and that assertion cross-reference lists are
+--  correct, as well as making sure that all the comments on field name usage
+--  are consistent.
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
@@ -296,6 +296,7 @@ begin
 
       if Bad then
          Put_Line ("fields conflict with standard fields for node " & Node);
+         raise Done;
       end if;
    end loop;
 

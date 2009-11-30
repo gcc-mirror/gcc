@@ -1588,7 +1588,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Parameter_Association);
-      return Flag12 (N);
+      return Flag13 (N);
    end Is_Accessibility_Actual;
 
    function Is_Asynchronous_Call_Block
@@ -4458,7 +4458,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Parameter_Association);
-      Set_Flag12 (N, Val);
+      Set_Flag13 (N, Val);
    end Set_Is_Accessibility_Actual;
 
    procedure Set_Is_Asynchronous_Call_Block

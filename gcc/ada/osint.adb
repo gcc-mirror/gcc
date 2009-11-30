@@ -846,11 +846,11 @@ package body Osint is
                if Buffer'Length <= Exec_Suffix'Length
                  or else
                    Buffer (Buffer'Last - Exec_Suffix'Length + 1 .. Buffer'Last)
-                   /= Exec_Suffix.all
+                     /= Exec_Suffix.all
                then
                   Name_Buffer
                     (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
-                    Exec_Suffix.all;
+                      Exec_Suffix.all;
                   Name_Len := Name_Len + Exec_Suffix'Length;
                   Free (Exec_Suffix);
                   return Name_Find;
