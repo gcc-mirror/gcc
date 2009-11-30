@@ -1,3 +1,8 @@
+2009-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/41961
+	* g++.dg/tree-ssa/pr41961.C: New.
+
 2009-11-29  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/42193
