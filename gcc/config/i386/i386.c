@@ -21047,6 +21047,8 @@ enum ix86_builtins
   IX86_BUILTIN_VEC_PERM_V4SI_U,
   IX86_BUILTIN_VEC_PERM_V8HI_U,
   IX86_BUILTIN_VEC_PERM_V16QI_U,
+  IX86_BUILTIN_VEC_PERM_V4DF,
+  IX86_BUILTIN_VEC_PERM_V8SF,
 
   /* FMA4 and XOP instructions.  */
   IX86_BUILTIN_VFMADDSS,
@@ -21722,7 +21724,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_shufpd, "__builtin_ia32_shufpd", IX86_BUILTIN_SHUFPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v2df", IX86_BUILTIN_VEC_PERM_V2DF, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_V2DI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4sf", IX86_BUILTIN_VEC_PERM_V4SF, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_V4SI },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4sf", IX86_BUILTIN_VEC_PERM_V4SF, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_V4SI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v2di", IX86_BUILTIN_VEC_PERM_V2DI, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_V2DI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4si", IX86_BUILTIN_VEC_PERM_V4SI, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_V4SI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v8hi", IX86_BUILTIN_VEC_PERM_V8HI, UNKNOWN, (int) V8HI_FTYPE_V8HI_V8HI_V8HI },
@@ -21731,6 +21733,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4si_u", IX86_BUILTIN_VEC_PERM_V4SI_U, UNKNOWN, (int) V4USI_FTYPE_V4USI_V4USI_V4USI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v8hi_u", IX86_BUILTIN_VEC_PERM_V8HI_U, UNKNOWN, (int) V8UHI_FTYPE_V8UHI_V8UHI_V8UHI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v16qi_u", IX86_BUILTIN_VEC_PERM_V16QI_U, UNKNOWN, (int) V16UQI_FTYPE_V16UQI_V16UQI_V16UQI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v4df", IX86_BUILTIN_VEC_PERM_V4DF, UNKNOWN, (int) V4DF_FTYPE_V4DF_V4DF_V4DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_nothing, "__builtin_ia32_vec_perm_v8sf", IX86_BUILTIN_VEC_PERM_V8SF, UNKNOWN, (int) V8SF_FTYPE_V8SF_V8SF_V8SI },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movmskpd, "__builtin_ia32_movmskpd", IX86_BUILTIN_MOVMSKPD, UNKNOWN, (int) INT_FTYPE_V2DF  },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pmovmskb, "__builtin_ia32_pmovmskb128", IX86_BUILTIN_PMOVMSKB128, UNKNOWN, (int) INT_FTYPE_V16QI },
@@ -24151,6 +24155,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case IX86_BUILTIN_VEC_PERM_V4SI_U:
     case IX86_BUILTIN_VEC_PERM_V8HI_U:
     case IX86_BUILTIN_VEC_PERM_V16QI_U:
+    case IX86_BUILTIN_VEC_PERM_V4DF:
+    case IX86_BUILTIN_VEC_PERM_V8SF:
       return ix86_expand_vec_perm_builtin (exp);
 
     case IX86_BUILTIN_INFQ:
@@ -28976,21 +28982,33 @@ ix86_vectorize_builtin_vec_perm (tree vec_type, tree *mask_type)
 {
   tree itype = TREE_TYPE (vec_type);
   bool u = TYPE_UNSIGNED (itype);
+  enum machine_mode vmode = TYPE_MODE (vec_type);
   enum ix86_builtins fcode;
+  bool ok = TARGET_SSE2;
 
-  if (!TARGET_SSE2)
-    return NULL_TREE;
-
-  switch (TYPE_MODE (vec_type))
+  switch (vmode)
     {
+    case V4DFmode:
+      ok = TARGET_AVX;
+      fcode = IX86_BUILTIN_VEC_PERM_V4DF;
+      goto get_di;
     case V2DFmode:
-      itype = ix86_get_builtin_type (IX86_BT_DI);
       fcode = IX86_BUILTIN_VEC_PERM_V2DF;
+    get_di:
+      itype = ix86_get_builtin_type (IX86_BT_DI);
       break;
+
+    case V8SFmode:
+      ok = TARGET_AVX;
+      fcode = IX86_BUILTIN_VEC_PERM_V8SF;
+      goto get_si;
     case V4SFmode:
-      itype = ix86_get_builtin_type (IX86_BT_SI);
+      ok = TARGET_SSE;
       fcode = IX86_BUILTIN_VEC_PERM_V4SF;
+    get_si:
+      itype = ix86_get_builtin_type (IX86_BT_SI);
       break;
+
     case V2DImode:
       fcode = u ? IX86_BUILTIN_VEC_PERM_V2DI_U : IX86_BUILTIN_VEC_PERM_V2DI;
       break;
@@ -29004,8 +29022,12 @@ ix86_vectorize_builtin_vec_perm (tree vec_type, tree *mask_type)
       fcode = u ? IX86_BUILTIN_VEC_PERM_V16QI_U : IX86_BUILTIN_VEC_PERM_V16QI;
       break;
     default:
-      return NULL_TREE;
+      ok = false;
+      break;
     }
+
+  if (!ok)
+    return NULL_TREE;
 
   *mask_type = itype;
   return ix86_builtins[(int) fcode];
@@ -29619,8 +29641,9 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
   rtx rperm[2][16], vperm, l, h, op, m128;
   unsigned int i, nelt, eltsz;
 
-  if (!TARGET_SSSE3)
+  if (!TARGET_SSSE3 || GET_MODE_SIZE (d->vmode) != 16)
     return false;
+  gcc_assert (d->op0 != d->op1);
 
   nelt = d->nelt;
   eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
