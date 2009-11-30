@@ -187,8 +187,6 @@ GNAT_ADA_OBJS =	\
  ada/gnatvsn.o	\
  ada/hlo.o	\
  ada/hostparm.o	\
- ada/i-c.o	\
- ada/i-cstrin.o	\
  ada/impunit.o	\
  ada/inline.o	\
  ada/interfac.o	\
@@ -389,8 +387,6 @@ GNATBIND_OBJS = \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
  ada/hostparm.o   \
- ada/i-c.o        \
- ada/i-cstrin.o	\
  ada/interfac.o   \
  ada/lib.o        \
  ada/namet.o      \
@@ -4124,17 +4120,17 @@ ada/sprint.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/hostparm.ads ada/interfac.ads ada/lib.ads ada/lib.adb \
    ada/lib-list.adb ada/lib-sort.adb ada/namet.ads ada/namet.adb \
    ada/nlists.ads ada/nlists.adb ada/nmake.ads ada/opt.ads ada/output.ads \
-   ada/output.adb ada/rtsfind.ads ada/sem_util.ads ada/sinfo.ads \
-   ada/sinfo.adb ada/sinput.ads ada/sinput.adb ada/sinput-d.ads \
-   ada/snames.ads ada/sprint.ads ada/sprint.adb ada/stand.ads \
-   ada/stringt.ads ada/stringt.adb ada/system.ads ada/s-exctab.ads \
-   ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads \
-   ada/s-parame.ads ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads \
-   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads \
-   ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads \
-   ada/table.adb ada/tree_io.ads ada/types.ads ada/uintp.ads ada/uintp.adb \
-   ada/uname.ads ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads \
-   ada/urealp.adb ada/widechar.ads 
+   ada/output.adb ada/rtsfind.ads ada/sem_eval.ads ada/sem_util.ads \
+   ada/sinfo.ads ada/sinfo.adb ada/sinput.ads ada/sinput.adb \
+   ada/sinput-d.ads ada/snames.ads ada/sprint.ads ada/sprint.adb \
+   ada/stand.ads ada/stringt.ads ada/stringt.adb ada/system.ads \
+   ada/s-exctab.ads ada/s-htable.ads ada/s-imenne.ads ada/s-memory.ads \
+   ada/s-os_lib.ads ada/s-parame.ads ada/s-secsta.ads ada/s-soflin.ads \
+   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
+   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
+   ada/table.ads ada/table.adb ada/tree_io.ads ada/types.ads ada/uintp.ads \
+   ada/uintp.adb ada/uname.ads ada/unchconv.ads ada/unchdeal.ads \
+   ada/urealp.ads ada/urealp.adb ada/widechar.ads 
 
 ada/stand.o : ada/ada.ads ada/a-unccon.ads ada/a-uncdea.ads ada/stand.ads \
    ada/stand.adb ada/system.ads ada/s-exctab.ads ada/s-os_lib.ads \

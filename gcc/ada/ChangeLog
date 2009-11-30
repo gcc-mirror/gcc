@@ -1,6 +1,7 @@
 2009-11-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Fix typo.
+	Update dependencies.
 
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
