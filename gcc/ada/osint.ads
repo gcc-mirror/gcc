@@ -210,6 +210,7 @@ package Osint is
    --  Convert a canonical syntax directory specification to host syntax.
    --  The Prefix_Style flag is currently ignored but should be set to
    --  False.
+   --  Caller must free result
 
    function To_Host_File_Spec
      (Canonical_File : String) return String_Access;

@@ -6875,24 +6875,15 @@ package body Make is
 
          --  We add the source directories and the object directories to the
          --  search paths.
+         --  ??? Why do we need these search directories, we already know the
+         --  locations from parsing the project, except for the runtime which
+         --  has its own directories anyway
 
          Add_Source_Directories (Main_Project, Project_Tree);
          Add_Object_Directories (Main_Project);
 
          Recursive_Compute_Depth (Main_Project);
-
-         --  For each project compute the list of the projects it imports
-         --  directly or indirectly.
-
-         declare
-            Proj : Project_List;
-         begin
-            Proj := Project_Tree.Projects;
-            while Proj /= null loop
-               Compute_All_Imported_Projects (Proj.Project);
-               Proj := Proj.Next;
-            end loop;
-         end;
+         Compute_All_Imported_Projects (Project_Tree);
 
       else
 

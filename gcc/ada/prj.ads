@@ -316,6 +316,10 @@ package Prj is
       Table_Increment      => 100);
    --  The table for lists of names
 
+   function Length
+     (Table : Name_List_Table.Instance; List : Name_List_Index) return Natural;
+   --  Return the number of elements in that list
+
    type Number_List_Index is new Nat;
    No_Number_List : constant Number_List_Index := 0;
 
@@ -839,9 +843,10 @@ package Prj is
    --  If Only_If_Ada is True, then No_Name will be returned when the project
    --  doesn't Ada sources.
 
-   procedure Compute_All_Imported_Projects (Project : Project_Id);
-   --  Compute, the list of the projects imported directly or indirectly by
-   --  project Project. The result is stored in Project.All_Imported_Projects
+   procedure Compute_All_Imported_Projects (Tree : Project_Tree_Ref);
+   --  For all projects in the tree, compute the list of the projects imported
+   --  directly or indirectly by project Project. The result is stored in
+   --  Project.All_Imported_Projects for each project
 
    function Ultimate_Extending_Project_Of
      (Proj : Project_Id) return Project_Id;
@@ -1163,17 +1168,9 @@ package Prj is
       --  True if attribute Interfaces is declared for the project or any
       --  project it extends.
 
-      Include_Path : String_Access := null;
-      --  The search source path for the project. Used as the value for an
-      --  environment variable, specified by attribute Include_Path
-      --  (<language>). The names of the environment variables are in component
-      --  Include_Path of the records Language_Config.
-
       Include_Path_File : Path_Name_Type := No_Path;
-      --  The path name of the of the source search directory file
-
-      Include_Data_Set : Boolean := False;
-      --  Set True when Imported_Directories_Switches or Include_Path are set
+      --  The path name of the of the source search directory file.
+      --  This is only used by gnatmake
 
       Source_Dirs : String_List_Id := Nil_String;
       --  The list of all the source directories
@@ -1189,10 +1186,6 @@ package Prj is
       -------------------
       -- Miscellaneous --
       -------------------
-
-      Imported_Directories_Switches : Argument_List_Access := null;
-      --  List of the source search switches (-I<source dir>) to be used
-      --  when compiling.
 
       Ada_Objects_Path : String_Access := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file. Do not
