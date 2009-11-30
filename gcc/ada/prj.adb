@@ -687,10 +687,11 @@ package body Prj is
    is
       Index_Img : constant String := Source_Index'Img;
       Last      : Natural;
+
    begin
       Get_Name_String (Source_File_Name);
-      Last := Name_Len;
 
+      Last := Name_Len;
       while Last > 1 and then Name_Buffer (Last) /= '.' loop
          Last := Last - 1;
       end loop;
@@ -704,7 +705,6 @@ package body Prj is
 
       if Object_File_Suffix = No_Name then
          Add_Str_To_Name_Buffer (Object_Suffix);
-
       else
          Add_Str_To_Name_Buffer (Get_Name_String (Object_File_Suffix));
       end if;

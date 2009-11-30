@@ -1869,12 +1869,16 @@ package body Prj.Proc is
                      else
                         declare
                            Index_Name : Name_Id :=
-                             Associative_Array_Index_Of
-                               (Current_Item, From_Project_Node_Tree);
+                                          Associative_Array_Index_Of
+                                           (Current_Item,
+                                            From_Project_Node_Tree);
+
                            Source_Index : constant Int :=
-                             Source_Index_Of
-                               (Current_Item, From_Project_Node_Tree);
-                           The_Array : Array_Id;
+                                            Source_Index_Of
+                                              (Current_Item,
+                                               From_Project_Node_Tree);
+
+                           The_Array         : Array_Id;
                            The_Array_Element : Array_Element_Id :=
                                                  No_Array_Element;
 
@@ -1892,9 +1896,9 @@ package body Prj.Proc is
                            if Pkg /= No_Package then
                               The_Array :=
                                 In_Tree.Packages.Table (Pkg).Decl.Arrays;
-
                            else
-                              The_Array := Project.Decl.Arrays;
+                              The_Array :=
+                                Project.Decl.Arrays;
                            end if;
 
                            while
@@ -1903,8 +1907,8 @@ package body Prj.Proc is
                                  In_Tree.Arrays.Table (The_Array).Name /=
                                                             Current_Item_Name
                            loop
-                              The_Array := In_Tree.Arrays.Table
-                                             (The_Array).Next;
+                              The_Array :=
+                                In_Tree.Arrays.Table (The_Array).Next;
                            end loop;
 
                            --  If the array cannot be found, create a new entry
@@ -1952,7 +1956,7 @@ package body Prj.Proc is
                              and then
                                (In_Tree.Array_Elements.Table
                                  (The_Array_Element).Index /= Index_Name
-                                or else
+                                 or else
                                 In_Tree.Array_Elements.Table
                                  (The_Array_Element).Src_Index /= Source_Index)
                            loop
@@ -1968,21 +1972,23 @@ package body Prj.Proc is
                            if The_Array_Element = No_Array_Element then
                               Array_Element_Table.Increment_Last
                                 (In_Tree.Array_Elements);
-                              The_Array_Element := Array_Element_Table.Last
-                                (In_Tree.Array_Elements);
+                              The_Array_Element :=
+                                Array_Element_Table.Last
+                                  (In_Tree.Array_Elements);
 
                               In_Tree.Array_Elements.Table
                                 (The_Array_Element) :=
-                                  (Index  => Index_Name,
-                                   Src_Index => Source_Index,
+                                  (Index                => Index_Name,
+                                   Src_Index            => Source_Index,
                                    Index_Case_Sensitive =>
                                      not Case_Insensitive
                                        (Current_Item, From_Project_Node_Tree),
-                                   Value  => New_Value,
-                                   Next   => In_Tree.Arrays.Table
-                                             (The_Array).Value);
-                              In_Tree.Arrays.Table
-                                (The_Array).Value := The_Array_Element;
+                                   Value                => New_Value,
+                                   Next                 =>
+                                     In_Tree.Arrays.Table (The_Array).Value);
+
+                              In_Tree.Arrays.Table (The_Array).Value :=
+                                The_Array_Element;
 
                            --  An element with the same index already exists,
                            --  just replace its value with the new one.

@@ -167,12 +167,13 @@ package body Makeutl is
       Index_Separator : Character) return File_Name_Type
    is
       Result : File_Name_Type;
+
    begin
       Name_Len := 0;
       Add_Str_To_Name_Buffer (Base_Name (Main));
 
-      --  Remove the extension, if any, that is the last part of the base
-      --  name starting with a dot and following some characters.
+      --  Remove the extension, if any, that is the last part of the base name
+      --  starting with a dot and following some characters.
 
       for J in reverse 2 .. Name_Len loop
          if Name_Buffer (J) = '.' then
@@ -192,6 +193,7 @@ package body Makeutl is
             Add_Str_To_Name_Buffer (Img (2 .. Img'Last));
          end;
       end if;
+
       Result := Name_Find;
       return Result;
    end Base_Name_Index_For;
