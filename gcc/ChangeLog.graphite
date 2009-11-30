@@ -1,3 +1,8 @@
+2009-11-24  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c (try_mark_loop_parallel,
+	graphite_create_new_loop_guard, translate_clast_for): Fix comments.
+
 2009-11-23  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	PR middle-end/42130

@@ -754,8 +754,8 @@ translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
 }
 
 /* Mark a loop parallel, if the graphite dependency check cannot find any
- * dependencies.  This triggers parallel code generation in the autopar pass.
- * */
+   dependencies.  This triggers parallel code generation in the autopar pass.
+   */
 static void
 try_mark_loop_parallel (sese region, loop_p loop, htab_t bb_pbb_mapping)
 {
@@ -772,7 +772,7 @@ static tree gcc_type_for_iv_of_clast_loop (struct clast_for *);
 
 
 /* Creates a new if region protecting the loop to be executed, if the execution
- * count is zero (lb > ub).  */
+   count is zero (lb > ub).  */
 static edge
 graphite_create_new_loop_guard (sese region, edge entry_edge,
 				struct clast_for *stmt,
@@ -788,10 +788,10 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
 				     newivs_index, params_index);
 
   /* XXX: Adding +1 and using LT_EXPR helps with loop latches that have a
-   * loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
-   * 2^{32|64}, and the condition lb <= ub is true, even if we do not want this.
-   * However lb < ub + 1 is false, as expected.
-   * There might be a problem with cases where ub is 2^32.  */
+     loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
+     2^{32|64}, and the condition lb <= ub is true, even if we do not want this.
+     However lb < ub + 1 is false, as expected.
+     There might be a problem with cases where ub is 2^32.  */
   tree one;
   Value gmp_one;
   value_init (gmp_one);
@@ -842,8 +842,8 @@ translate_clast_for_loop (sese region, struct clast_for *stmt, edge next_e,
 }
 
 /* Translates a clast for statement STMT to gimple.  First a guard is created
- * protecting the loop, if it is executed zero times.  In this guard we create
- * the real loop structure.
+   protecting the loop, if it is executed zero times.  In this guard we create
+   the real loop structure.
 
    - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
