@@ -1009,44 +1009,61 @@ gfc_trans_do (gfc_code * code)
 
   /* Initialize loop count and jump to exit label if the loop is empty.
      This code is executed before we enter the loop body. We generate:
+     step_sign = sign(1,step);
      if (step > 0)
        {
-	 if (to < from) goto exit_label;
-	 countm1 = (to - from) / step;
+	 if (to < from)
+	   goto exit_label;
        }
      else
        {
-	 if (to > from) goto exit_label;
-	 countm1 = (from - to) / -step;
-       }  */
+	 if (to > from)
+	   goto exit_label;
+       }
+       countm1 = (to*step_sign - from*step_sign) / (step*step_sign);
+
+  */
+
   if (TREE_CODE (type) == INTEGER_TYPE)
     {
-      tree pos, neg;
+      tree pos, neg, step_sign, to2, from2, step2;
+
+      /* Calculate SIGN (1,step) */
+
+      tmp = fold_build2 (RSHIFT_EXPR, type, step,
+			 build_int_cst (type,
+					TYPE_PRECISION (type) - 1));
+
+      tmp = fold_build2 (MULT_EXPR, type, tmp,
+			 build_int_cst (type, 2));
+
+      step_sign = fold_build2 (PLUS_EXPR, type, tmp,
+			       fold_convert (type, integer_one_node));
 
       tmp = fold_build2 (LT_EXPR, boolean_type_node, to, from);
       pos = fold_build3 (COND_EXPR, void_type_node, tmp,
 			 build1_v (GOTO_EXPR, exit_label),
 			 build_empty_stmt (input_location));
-      tmp = fold_build2 (MINUS_EXPR, type, to, from);
-      tmp = fold_convert (utype, tmp);
-      tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp,
-			 fold_convert (utype, step));
-      tmp = fold_build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
-      pos = fold_build2 (COMPOUND_EXPR, void_type_node, pos, tmp);
 
       tmp = fold_build2 (GT_EXPR, boolean_type_node, to, from);
       neg = fold_build3 (COND_EXPR, void_type_node, tmp,
 			 build1_v (GOTO_EXPR, exit_label),
 			 build_empty_stmt (input_location));
-      tmp = fold_build2 (MINUS_EXPR, type, from, to);
-      tmp = fold_convert (utype, tmp);
-      tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp,
-			 fold_convert (utype, fold_build1 (NEGATE_EXPR,
-							   type, step)));
-      tmp = fold_build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
-      neg = fold_build2 (COMPOUND_EXPR, void_type_node, neg, tmp);
-
       tmp = fold_build3 (COND_EXPR, void_type_node, pos_step, pos, neg);
+
+      gfc_add_expr_to_block (&block, tmp);
+
+      /* Calculate the loop count.  to-from can overflow, so
+	 we cast to unsigned.  */
+
+      to2 = fold_build2 (MULT_EXPR, type, step_sign, to);
+      from2 = fold_build2 (MULT_EXPR, type, step_sign, from);
+      step2 = fold_build2 (MULT_EXPR, type, step_sign, step);
+      step2 = fold_convert (utype, step2);
+      tmp = fold_build2 (MINUS_EXPR, type, to2, from2);
+      tmp = fold_convert (utype, tmp);
+      tmp = fold_build2 (TRUNC_DIV_EXPR, utype, tmp, step2);
+      tmp = fold_build2 (MODIFY_EXPR, void_type_node, countm1, tmp);
       gfc_add_expr_to_block (&block, tmp);
     }
   else
