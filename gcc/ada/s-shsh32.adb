@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
 --         S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ 3 2          --
 --                                                                          --
