@@ -1171,6 +1171,7 @@ begin
            Pragma_Share_Generic                 |
            Pragma_Shared                        |
            Pragma_Shared_Passive                |
+           Pragma_Short_Circuit_And_Or          |
            Pragma_Storage_Size                  |
            Pragma_Storage_Unit                  |
            Pragma_Static_Elaboration_Desired    |

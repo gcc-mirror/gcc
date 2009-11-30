@@ -1,3 +1,38 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add documentation for attribute Result.
+
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-hpux.ads, s-osinte-aix.ads, s-osinte-solaris-posix.ads,
+	s-osinte-tru64.ads, s-osinte-darwin.ads, s-osinte-freebsd.ads
+	(Get_Page_Size): Update comment since Get_Page_Size is now required.
+
+2009-11-30  Jerome Lambourg  <lambourg@adacore.com>
+
+	* freeze.adb: Disable Warning on VM targets concerning C Imports, not
+	relevant.
+
+2009-11-30  Bob Duff  <duff@adacore.com>
+
+	* sprint.adb (Source_Dump): Minor comment fix.
+	(Write_Itype): When writing a string literal subtype, use Expr_Value
+	instead of Intval to get the low bound.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* gnatlink.adb (Process_Args): Do not call Executable_Name on arguments
+	of switch -o.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_And): Implement pragma Short_Circuit_And_Or
+	(Expand_N_Op_Or): Implement pragma Short_Circuit_And_Or
+	* opt.ads (Short_Circuit_And_Or): New flag
+	* par-prag.adb: Add dummy entry for pragma Short_Circuit_And_Or
+	* sem_prag.adb: Implement pragma Short_Circuit_And_Or
+	* snames.ads-tmpl: Add entries for pragma Short_Circuit_And_Or
+
 2009-11-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taprop-posix.adb: Fix casing.
