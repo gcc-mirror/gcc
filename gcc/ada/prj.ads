@@ -317,8 +317,9 @@ package Prj is
    --  The table for lists of names
 
    function Length
-     (Table : Name_List_Table.Instance; List : Name_List_Index) return Natural;
-   --  Return the number of elements in that list
+     (Table : Name_List_Table.Instance;
+      List  : Name_List_Index) return Natural;
+   --  Return the number of elements in specified list
 
    type Number_List_Index is new Nat;
    No_Number_List : constant Number_List_Index := 0;

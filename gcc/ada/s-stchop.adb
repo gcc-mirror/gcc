@@ -149,11 +149,9 @@ package body System.Stack_Checking.Operations is
          --  If a stack base address has been registered, honor it. Fallback to
          --  the address of a local object otherwise.
 
-         if My_Stack.Limit /= System.Null_Address then
-            My_Stack.Base := My_Stack.Limit;
-         else
-            My_Stack.Base := Frame_Address;
-         end if;
+         My_Stack.Base :=
+           (if My_Stack.Limit /= System.Null_Address
+            then My_Stack.Limit else Frame_Address);
 
          if Stack_Grows_Down then
 

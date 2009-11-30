@@ -609,20 +609,18 @@ package body System.Stack_Usage is
             --  Take either the label size or the number image size for the
             --  size of the column "Stack Size".
 
-            if Size_Str_Len > Stack_Size_Str'Length then
-               Max_Stack_Size_Len := Size_Str_Len;
-            else
-               Max_Stack_Size_Len := Stack_Size_Str'Length;
-            end if;
+            Max_Stack_Size_Len :=
+              (if Size_Str_Len > Stack_Size_Str'Length
+               then Size_Str_Len
+               else Stack_Size_Str'Length);
 
             --  Take either the label size or the number image size for the
-            --  size of the column "Stack Usage"
+            --  size of the column "Stack Usage".
 
-            if Result_Str_Len > Actual_Size_Str'Length then
-               Max_Actual_Use_Len := Result_Str_Len;
-            else
-               Max_Actual_Use_Len := Actual_Size_Str'Length;
-            end if;
+            Max_Actual_Use_Len :=
+              (if Result_Str_Len > Actual_Size_Str'Length
+               then Result_Str_Len
+               else Actual_Size_Str'Length);
 
             Output_Result
               (Analyzer.Result_Id,

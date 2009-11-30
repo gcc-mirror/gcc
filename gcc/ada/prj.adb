@@ -1215,15 +1215,19 @@ package body Prj is
    ------------
 
    function Length
-     (Table : Name_List_Table.Instance; List : Name_List_Index) return Natural
+     (Table : Name_List_Table.Instance;
+      List  : Name_List_Index) return Natural
    is
       Count : Natural := 0;
-      Tmp   : Name_List_Index := List;
+      Tmp   : Name_List_Index;
+
    begin
+      Tmp := List;
       while Tmp /= No_Name_List loop
          Count := Count + 1;
          Tmp := Table.Table (Tmp).Next;
       end loop;
+
       return Count;
    end Length;
 
