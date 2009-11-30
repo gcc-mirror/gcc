@@ -2983,6 +2983,10 @@ package VMS_Data is
                                                "-gnatwv "                  &
                                             "NOVARIABLES_UNINITIALIZED "   &
                                                "-gnatwV "                  &
+                                            "REVERSE_BIT_ORDER "           &
+                                               "-gnatw.v "                 &
+                                            "NOREVERSE_BIT_ORDER "         &
+                                               "-gnatw.V "                 &
                                             "LOWBOUND_ASSUMED "            &
                                                "-gnatww "                  &
                                             "NOLOWBOUND_ASSUMED "          &
