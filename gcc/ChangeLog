@@ -1,5 +1,10 @@
 2009-11-30  Richard Guenther  <rguenther@suse.de>
 
+	* tree.c (free_lang_data): Do not set debug_info_level to
+	none if terse.
+
+2009-11-30  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42119
 	PR fortran/38530
 	* expr.c (expand_expr_addr_expr_1): Properly expand the initializer
