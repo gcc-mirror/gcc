@@ -1,3 +1,12 @@
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* osint.adb (Executable_Name): Test the name instead of the name buffer
+	to check if there is a dot in the given name.
+
+2009-11-30  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Update gnatcheck doc.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_disp.adb, usage.adb: Minor reformatting
