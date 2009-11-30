@@ -85,7 +85,7 @@ package body System.Secure_Hashes is
       pragma Assert (Length > 0);
 
       Buf_String (M.Last + 1 .. M.Last + Length) :=
-        S (First .. First + Length);
+        S (First .. First + Length - 1);
       M.Last := M.Last + Length;
       Last := First + Length - 1;
    end Fill_Buffer_Copy;

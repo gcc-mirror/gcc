@@ -31,6 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Why is this package undocumented ???
+
 with System.Secure_Hashes.MD5;
 package GNAT.MD5 is new System.Secure_Hashes.H
   (Block_Words    => System.Secure_Hashes.MD5.Block_Words,
