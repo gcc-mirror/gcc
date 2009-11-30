@@ -60,7 +60,14 @@ package Makeutl is
    function Create_Name (Name : String) return File_Name_Type;
    function Create_Name (Name : String) return Name_Id;
    function Create_Name (Name : String) return Path_Name_Type;
-   --  Get the Name_Id of a name
+   --  Get an id for a name
+
+   function Base_Name_Index_For
+     (Main            : String;
+      Main_Index      : Int;
+      Index_Separator : Character) return File_Name_Type;
+   --  Returns the base name of Main, without the extension, plus the
+   --  Index_Separator followed by the Main_Index, if Main_Index is not 0.
 
    function Executable_Prefix_Path return String;
    --  Return the absolute path parent directory of the directory where the
@@ -143,6 +150,8 @@ package Makeutl is
       procedure Add_Main (Name : String);
       --  Add one main to the table
 
+      procedure Set_Index (Index : Int);
+
       procedure Set_Location (Location : Source_Ptr);
       --  Set the location of the last main added. By default, the location is
       --  No_Location.
@@ -156,6 +165,8 @@ package Makeutl is
       function Next_Main return String;
       --  Increase the index and return the next main. If table is exhausted,
       --  return an empty string.
+
+      function Get_Index return Int;
 
       function Get_Location return Source_Ptr;
       --  Get the location of the current main

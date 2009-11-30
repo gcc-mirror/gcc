@@ -1871,6 +1871,9 @@ package body Prj.Proc is
                            Index_Name : Name_Id :=
                              Associative_Array_Index_Of
                                (Current_Item, From_Project_Node_Tree);
+                           Source_Index : constant Int :=
+                             Source_Index_Of
+                               (Current_Item, From_Project_Node_Tree);
                            The_Array : Array_Id;
                            The_Array_Element : Array_Element_Id :=
                                                  No_Array_Element;
@@ -1943,12 +1946,15 @@ package body Prj.Proc is
                            end if;
 
                            --  Look in the list, if any, to find an element
-                           --  with the same index.
+                           --  with the same index and same source index.
 
                            while The_Array_Element /= No_Array_Element
                              and then
-                               In_Tree.Array_Elements.Table
+                               (In_Tree.Array_Elements.Table
                                  (The_Array_Element).Index /= Index_Name
+                                or else
+                                In_Tree.Array_Elements.Table
+                                 (The_Array_Element).Src_Index /= Source_Index)
                            loop
                               The_Array_Element :=
                                 In_Tree.Array_Elements.Table
@@ -1968,9 +1974,7 @@ package body Prj.Proc is
                               In_Tree.Array_Elements.Table
                                 (The_Array_Element) :=
                                   (Index  => Index_Name,
-                                   Src_Index =>
-                                     Source_Index_Of
-                                       (Current_Item, From_Project_Node_Tree),
+                                   Src_Index => Source_Index,
                                    Index_Case_Sensitive =>
                                      not Case_Insensitive
                                        (Current_Item, From_Project_Node_Tree),

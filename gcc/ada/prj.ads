@@ -160,7 +160,7 @@ package Prj is
       end case;
    end record;
    --  Values for variables and array elements. Default is True if the
-   --  current value is the default one for the variable
+   --  current value is the default one for the variable.
 
    Nil_Variable_Value : constant Variable_Value;
    --  Value of a non existing variable or array element
@@ -278,8 +278,8 @@ package Prj is
    function Hash (Name : Name_Id)        return Header_Num;
    function Hash (Name : File_Name_Type) return Header_Num;
    function Hash (Name : Path_Name_Type) return Header_Num;
-   function Hash (Project : Project_Id) return Header_Num;
-   --  Used for computing hash values for names put into above hash table
+   function Hash (Project : Project_Id)  return Header_Num;
+   --  Used for computing hash values for names put into hash tables
 
    type Language_Kind is (File_Based, Unit_Based);
    --  Type for the kind of language. All languages are file based, except Ada
@@ -433,6 +433,14 @@ package Prj is
       --  The list of final switches that are required as a minimum to invoke
       --  the compiler driver.
 
+      Multi_Unit_Switches                 : Name_List_Index := No_Name_List;
+      --  The switch(es) to indicate the index of a unit in a multi-source
+      --  file.
+
+      Multi_Unit_Object_Separator         : Character         := ' ';
+      --  The string separating the base name of a source from the index of
+      --  the unit in a multi-source file, in the object file name.
+
       Path_Syntax                  : Path_Syntax_Kind := Host;
       --  Value may be Canonical (Unix style) or Host (host syntax, for example
       --  on VMS for DEC C).
@@ -515,13 +523,21 @@ package Prj is
       --  The template for a pragma Source_File_Name(_Project) for a specific
       --  file name of a body.
 
-      Config_Spec           : Name_Id         := No_Name;
+      Config_Body_Index          : Name_Id         := No_Name;
       --  The template for a pragma Source_File_Name(_Project) for a specific
-      --  file name of a spec.
+      --  file name of a body in a multi-source file.
 
       Config_Body_Pattern   : Name_Id         := No_Name;
       --  The template for a pragma Source_File_Name(_Project) for a naming
       --  body pattern.
+
+      Config_Spec           : Name_Id         := No_Name;
+      --  The template for a pragma Source_File_Name(_Project) for a specific
+      --  file name of a spec.
+
+      Config_Spec_Index      : Name_Id         := No_Name;
+      --  The template for a pragma Source_File_Name(_Project) for a specific
+      --  file name of a spec in a multi-source file.
 
       Config_Spec_Pattern   : Name_Id         := No_Name;
       --  The template for a pragma Source_File_Name(_Project) for a naming
@@ -561,6 +577,8 @@ package Prj is
                            Compiler_Driver_Path         => null,
                            Compiler_Leading_Required_Switches  => No_Name_List,
                            Compiler_Trailing_Required_Switches => No_Name_List,
+                           Multi_Unit_Switches          => No_Name_List,
+                           Multi_Unit_Object_Separator  => ' ',
                            Path_Syntax                  => Canonical,
                            Object_File_Suffix           => No_Name,
                            Object_File_Switches         => No_Name_List,
@@ -582,8 +600,10 @@ package Prj is
                            Objects_Path                 => No_Name,
                            Objects_Path_File            => No_Name,
                            Config_Body                  => No_Name,
-                           Config_Spec                  => No_Name,
+                           Config_Body_Index            => No_Name,
                            Config_Body_Pattern          => No_Name,
+                           Config_Spec                  => No_Name,
+                           Config_Spec_Index            => No_Name,
                            Config_Spec_Pattern          => No_Name,
                            Config_File_Unique           => False,
                            Binder_Driver                => No_File,
@@ -1361,6 +1381,14 @@ package Prj is
      (Source_File_Name   : File_Name_Type;
       Object_File_Suffix : Name_Id := No_Name) return File_Name_Type;
    --  Returns the object file name corresponding to a source file name
+
+   function Object_Name
+     (Source_File_Name   : File_Name_Type;
+      Source_Index       : Int;
+      Index_Separator    : Character;
+      Object_File_Suffix : Name_Id := No_Name) return File_Name_Type;
+   --  Returns the object file name corresponding to a unit in a multi-source
+   --  file.
 
    function Dependency_Name
      (Source_File_Name : File_Name_Type;

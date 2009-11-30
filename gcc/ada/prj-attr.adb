@@ -179,6 +179,8 @@ package body Prj.Attr is
    "Sapath_syntax#" &
    "Saobject_file_suffix#" &
    "Laobject_file_switches#" &
+   "Lamulti_unit_switches#" &
+   "Samulti_unit_object_separator#" &
 
    --  Configuration - Mapping files
 
@@ -190,8 +192,10 @@ package body Prj.Attr is
 
    "Laconfig_file_switches#" &
    "Saconfig_body_file_name#" &
-   "Saconfig_spec_file_name#" &
+   "Saconfig_body_file_name_index#" &
    "Saconfig_body_file_name_pattern#" &
+   "Saconfig_spec_file_name#" &
+   "Saconfig_spec_file_name_index#" &
    "Saconfig_spec_file_name_pattern#" &
    "Saconfig_file_unique#" &
 

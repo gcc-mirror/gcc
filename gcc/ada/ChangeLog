@@ -1,3 +1,33 @@
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* osint.adb: Minor reformatting
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.ads, makeutl.adb (Base_Name_Index_For): New function to get
+	the base name of a main without the extension, with an eventual source
+	index.
+	(Mains.Get_Index): New procedure to set the source index of a main
+	(Mains.Get_Index): New function to get the source index of a main
+	* prj-attr.adb: New attributes Config_Body_File_Name_Index,
+	Config_Spec_File_Name_Index, Multi_Unit_Object_Separator and
+	Multi_Unit_Switches.
+	* prj-nmsc.adb (Process_Compiler): Takle into account new attributes
+	Config_Body_File_Name_Index, Config_Spec_File_Name_Index,
+	Multi_Unit_Object_Separator and Multi_Unit_Switches.
+	Allow only one character for Multi_Unit_Object_Separator.
+	* prj-proc.adb (Process_Declarative_Items): Take into account the
+	source indexes in indexes of associative array attribute declarations.
+	* prj.adb (Object_Name): New function to get the object file name for
+	units in multi-unit sources.
+	* prj.ads (Language_Config): New components Multi_Unit_Switches,
+	Multi_Unit_Object_Separator Config_Body_Index and Config_Spec_Index.
+	(Object_Name): New function to get the object file name for units in
+	multi-unit sources.
+	* snames.ads-tmpl: New standard names Config_Body_File_Name_Index,
+	Config_Spec_File_Name_Index, Multi_Unit_Object_Separator and
+	Multi_Unit_Switches.
+
 2009-11-30  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-tassta.adb: Update comment.
