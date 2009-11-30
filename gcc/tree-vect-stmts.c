@@ -1809,10 +1809,12 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
-  int i;
+  int i, j;
   VEC(tree,heap) *vec_oprnds = NULL;
   tree vop;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+  gimple new_stmt = NULL;
+  stmt_vec_info prev_stmt_info = NULL;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
@@ -1823,8 +1825,6 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
 
   gcc_assert (ncopies >= 1);
-  if (ncopies > 1)
-    return false; /* FORNOW */
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -1870,20 +1870,35 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Handle use.  */
-  vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node);
-
-  /* Arguments are ready. create the new vector stmt.  */
-  for (i = 0; VEC_iterate (tree, vec_oprnds, i, vop); i++)
+  for (j = 0; j < ncopies; j++)
     {
-      *vec_stmt = gimple_build_assign (vec_dest, vop);
-      new_temp = make_ssa_name (vec_dest, *vec_stmt);
-      gimple_assign_set_lhs (*vec_stmt, new_temp);
-      vect_finish_stmt_generation (stmt, *vec_stmt, gsi);
-      STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt;
+      /* Handle uses.  */
+      if (j == 0)
+        vect_get_vec_defs (op, NULL, stmt, &vec_oprnds, NULL, slp_node);
+      else
+        vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
+
+      /* Arguments are ready. create the new vector stmt.  */
+      for (i = 0; VEC_iterate (tree, vec_oprnds, i, vop); i++)
+       {
+         new_stmt = gimple_build_assign (vec_dest, vop);
+         new_temp = make_ssa_name (vec_dest, new_stmt);
+         gimple_assign_set_lhs (new_stmt, new_temp);
+         vect_finish_stmt_generation (stmt, new_stmt, gsi);
+         if (slp_node)
+           VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
+       }
 
       if (slp_node)
-	VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), *vec_stmt);
-   }
+        continue;
+
+      if (j == 0)
+        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+      else
+        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+
+      prev_stmt_info = vinfo_for_stmt (new_stmt);
+    }
 
   VEC_free (tree, heap, vec_oprnds);
   return true;
