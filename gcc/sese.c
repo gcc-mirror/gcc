@@ -332,9 +332,6 @@ new_sese (edge entry, edge exit)
   SESE_LOOP_NEST (region) = VEC_alloc (loop_p, heap, 3);
   SESE_ADD_PARAMS (region) = true;
   SESE_PARAMS (region) = VEC_alloc (tree, heap, 3);
-  SESE_PARAMS_INDEX (region) = htab_create (10, clast_name_index_elt_info,
-					    eq_clast_name_indexes, free);
-  SESE_PARAMS_NAMES (region) = XNEWVEC (char *, num_ssa_names);
 
   return region;
 }
@@ -349,11 +346,6 @@ free_sese (sese region)
 
   VEC_free (tree, heap, SESE_PARAMS (region));
   VEC_free (loop_p, heap, SESE_LOOP_NEST (region));
-
-  if (SESE_PARAMS_INDEX (region))
-    htab_delete (SESE_PARAMS_INDEX (region));
-
-  /* Do not free SESE_PARAMS_NAMES: CLooG does that.  */
 
   XDELETE (region);
 }
