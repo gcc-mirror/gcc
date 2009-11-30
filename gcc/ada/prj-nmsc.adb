@@ -1431,6 +1431,34 @@ package body Prj.Nmsc is
                                 From_List => Element.Value.Values,
                                 In_Tree   => Data.Tree);
 
+                        when Name_Multi_Unit_Switches =>
+                           Put (Into_List =>
+                                  Lang_Index.Config.Multi_Unit_Switches,
+                                From_List => Element.Value.Values,
+                                In_Tree   => Data.Tree);
+
+                        when Name_Multi_Unit_Object_Separator =>
+                           Get_Name_String (Element.Value.Value);
+
+                           if Name_Len /= 1 then
+                              Error_Msg
+                                (Data.Flags,
+                                 "multi-unit object separator must have " &
+                                 "a single character",
+                                 Element.Value.Location, Project);
+
+                           elsif Name_Buffer (1) = ' ' then
+                              Error_Msg
+                                (Data.Flags,
+                                 "multi-unit object separator cannot be " &
+                                 "a space",
+                                 Element.Value.Location, Project);
+
+                           else
+                              Lang_Index.Config.Multi_Unit_Object_Separator :=
+                                Name_Buffer (1);
+                           end if;
+
                         when Name_Path_Syntax =>
                            begin
                               Lang_Index.Config.Path_Syntax :=
@@ -1552,10 +1580,18 @@ package body Prj.Nmsc is
                            Lang_Index.Config.Config_Body :=
                              Element.Value.Value;
 
+                        when Name_Config_Body_File_Name_Index =>
+
+                           --  Attribute Config_Body_File_Name_Index
+                           --     ( < Language > )
+
+                           Lang_Index.Config.Config_Body_Index :=
+                             Element.Value.Value;
+
                         when Name_Config_Body_File_Name_Pattern =>
 
                            --  Attribute Config_Body_File_Name_Pattern
-                           --  (<language>)
+                           --    (<language>)
 
                            Lang_Index.Config.Config_Body_Pattern :=
                              Element.Value.Value;
@@ -1567,10 +1603,18 @@ package body Prj.Nmsc is
                            Lang_Index.Config.Config_Spec :=
                              Element.Value.Value;
 
+                        when Name_Config_Spec_File_Name_Index =>
+
+                           --  Attribute Config_Spec_File_Name_Index
+                           --    ( < Language > )
+
+                           Lang_Index.Config.Config_Spec_Index :=
+                             Element.Value.Value;
+
                         when Name_Config_Spec_File_Name_Pattern =>
 
                            --  Attribute Config_Spec_File_Name_Pattern
-                           --  (<language>)
+                           --    (<language>)
 
                            Lang_Index.Config.Config_Spec_Pattern :=
                              Element.Value.Value;

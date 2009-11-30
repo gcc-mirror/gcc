@@ -1033,10 +1033,12 @@ package Snames is
    Name_Compiler                         : constant Name_Id := N + $;
    Name_Compiler_Command                 : constant Name_Id := N + $; --  GPR
    Name_Config_Body_File_Name            : constant Name_Id := N + $;
+   Name_Config_Body_File_Name_Index      : constant Name_Id := N + $;
    Name_Config_Body_File_Name_Pattern    : constant Name_Id := N + $;
    Name_Config_File_Switches             : constant Name_Id := N + $;
    Name_Config_File_Unique               : constant Name_Id := N + $;
    Name_Config_Spec_File_Name            : constant Name_Id := N + $;
+   Name_Config_Spec_File_Name_Index      : constant Name_Id := N + $;
    Name_Config_Spec_File_Name_Pattern    : constant Name_Id := N + $;
    Name_Configuration                    : constant Name_Id := N + $;
    Name_Cross_Reference                  : constant Name_Id := N + $;
@@ -1103,6 +1105,8 @@ package Snames is
    Name_Mapping_Body_Suffix              : constant Name_Id := N + $;
    Name_Max_Command_Line_Length          : constant Name_Id := N + $;
    Name_Metrics                          : constant Name_Id := N + $;
+   Name_Multi_Unit_Object_Separator      : constant Name_Id := N + $;
+   Name_Multi_Unit_Switches              : constant Name_Id := N + $;
    Name_Naming                           : constant Name_Id := N + $;
    Name_None                             : constant Name_Id := N + $;
    Name_Object_File_Suffix               : constant Name_Id := N + $;

@@ -679,6 +679,39 @@ package body Prj is
       end if;
    end Object_Name;
 
+   function Object_Name
+     (Source_File_Name   : File_Name_Type;
+      Source_Index       : Int;
+      Index_Separator    : Character;
+      Object_File_Suffix : Name_Id := No_Name) return File_Name_Type
+   is
+      Index_Img : constant String := Source_Index'Img;
+      Last      : Natural;
+   begin
+      Get_Name_String (Source_File_Name);
+      Last := Name_Len;
+
+      while Last > 1 and then Name_Buffer (Last) /= '.' loop
+         Last := Last - 1;
+      end loop;
+
+      if Last > 1 then
+         Name_Len := Last - 1;
+      end if;
+
+      Add_Char_To_Name_Buffer (Index_Separator);
+      Add_Str_To_Name_Buffer (Index_Img (2 .. Index_Img'Last));
+
+      if Object_File_Suffix = No_Name then
+         Add_Str_To_Name_Buffer (Object_Suffix);
+
+      else
+         Add_Str_To_Name_Buffer (Get_Name_String (Object_File_Suffix));
+      end if;
+
+      return Name_Find;
+   end Object_Name;
+
    ----------------------
    -- Record_Temp_File --
    ----------------------
