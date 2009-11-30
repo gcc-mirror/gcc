@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2007-2008, AdaCore                      --
+--                    Copyright (C) 2007-2009, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,9 @@ package GNAT.Serial_Communications is
       Buffer : out Ada.Streams.Stream_Element_Array;
       Last   : out Ada.Streams.Stream_Element_Offset);
    --  Read a set of bytes, put result into Buffer and set Last accordingly.
-   --  Last is set to 0 if no byte has been read.
+   --  Last is set to Buffer'First - 1 if no byte has been read, unless
+   --  Buffer'First = Stream_Element_Offset'First, in which case Last is
+   --  set to Stream_Element_Offset'Last instead.
 
    overriding procedure Write
      (Port   : in out Serial_Port;

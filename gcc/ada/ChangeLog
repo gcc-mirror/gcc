@@ -1,3 +1,18 @@
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-commun.adb, s-commun.ads: New internal support unit,
+	allowing code sharing between GNAT.Sockets and
+	GNAT.Serial_Communication.
+	* g-sercom.ads, g-sercom-mingw.adb, g-sercom-linux.adb,
+	g-socket.adb (GNAT.Sockets.Last_Index): Move to System.Communication.
+	(GNAT.Serial_Communication.Read): Handle correctly the case where no
+	data was read, and Buffer'First = Stream_Element_Offset'First.
+	* Makefile.rtl: Add entry for s-commun
+	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-stseme.adb, g-socthi-mingw.ads,
+	g-socthi.adb, g-socthi.ads (GNAT.Sockets.Thin.Socket_Error_Message):
+	Reimplement in terms of System.CRTL.strerror.
+
 2009-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (copy_type): Unshare the language-specific data

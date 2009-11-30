@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2008, AdaCore                      --
+--                    Copyright (C) 2007-2009, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,9 @@ with Ada.Streams;                use Ada.Streams;
 with Ada;                        use Ada;
 with Ada.Unchecked_Deallocation;
 
-with System.CRTL; use System, System.CRTL;
+with System;               use System;
+with System.Communication; use System.Communication;
+with System.CRTL;          use System.CRTL;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
@@ -167,11 +169,10 @@ package body GNAT.Serial_Communications is
       Res := read (Integer (Port.H.all), Buffer'Address, Len);
 
       if Res = -1 then
-         Last := 0;
          Raise_Error ("read failed");
-      else
-         Last := Buffer'First + Stream_Element_Offset (Res) - 1;
       end if;
+
+      Last := Last_Index (Buffer'First, C.int (Res));
    end Read;
 
    ---------
