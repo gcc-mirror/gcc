@@ -221,7 +221,6 @@
 --  general use 'Unchecked_Access instead of 'Access as the package can be
 --  instantiated from within a local context.
 
-with System.Error_Reporting;
 with System.Storage_Elements;
 with System.Task_Primitives.Operations;
 with System.Tasking;
@@ -237,8 +236,7 @@ pragma Elaborate_All (System.Tasking.Task_Attributes);
 
 package body Ada.Task_Attributes is
 
-   use System.Error_Reporting,
-       System.Tasking.Initialization,
+   use System.Tasking.Initialization,
        System.Tasking,
        System.Tasking.Task_Attributes,
        Ada.Exceptions;
@@ -423,9 +421,6 @@ package body Ada.Task_Attributes is
                raise;
          end;
       end if;
-
-      pragma Assert (Shutdown ("Should never get here in Reference"));
-      return null;
 
    exception
       when Tasking_Error | Program_Error =>
