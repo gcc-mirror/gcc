@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---         S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ 6 4          --
+--           G N A T . S E C U R E _ H A S H E S . S H A 2 _ 6 4            --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -30,14 +30,17 @@
 ------------------------------------------------------------------------------
 
 --  This pacakge provides support for the 64-bit FIPS PUB 180-3 functions
---  (SHA-384 and SHA-512).
+--  SHA-384 and SHA-512.
+
+--  This is an internal unit and should not be used directly in applications.
+--  Use GNAT.SHA384 and GNAT.SHA512 instead.
 
 with Interfaces;
 with GNAT.Byte_Swapping;
 
-with System.Secure_Hashes.SHA2_Common;
+with GNAT.Secure_Hashes.SHA2_Common;
 
-package System.Secure_Hashes.SHA2_64 is
+package GNAT.Secure_Hashes.SHA2_64 is
    subtype Word is Interfaces.Unsigned_64;
 
    package Hash_State is new Hash_Function_State
@@ -126,4 +129,4 @@ package System.Secure_Hashes.SHA2_64 is
                           7 => 16#5be0cd19137e2179#);
    --  Initialization vectors from FIPS PUB 180-3
 
-end System.Secure_Hashes.SHA2_64;
+end GNAT.Secure_Hashes.SHA2_64;

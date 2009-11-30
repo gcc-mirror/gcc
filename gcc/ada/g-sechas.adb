@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                 S Y S T E M . S E C U R E _ H A S H E S                  --
+--                   G N A T . S E C U R E _ H A S H E S                    --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -32,7 +32,7 @@
 with System;     use System;
 with Interfaces; use Interfaces;
 
-package body System.Secure_Hashes is
+package body GNAT.Secure_Hashes is
 
    use Ada.Streams;
 
@@ -364,4 +364,4 @@ package body System.Secure_Hashes is
 
    end Hash_Function_State;
 
-end System.Secure_Hashes;
+end GNAT.Secure_Hashes;

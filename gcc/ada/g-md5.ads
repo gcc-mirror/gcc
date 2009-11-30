@@ -35,16 +35,17 @@
 --  RFC 1321. The complete text of RFC 1321 can be found at:
 --          http://www.ietf.org/rfc/rfc1321.txt
 
---  See the declaration of System.Secure_Hashes.H in s-sechas.ads for complete
+--  See the declaration of GNAT.Secure_Hashes.H in g-sechas.ads for complete
 --  documentation.
 
-with System.Secure_Hashes.MD5;
+with GNAT.Secure_Hashes.MD5;
+with System;
 
-package GNAT.MD5 is new System.Secure_Hashes.H
-  (Block_Words    => System.Secure_Hashes.MD5.Block_Words,
+package GNAT.MD5 is new GNAT.Secure_Hashes.H
+  (Block_Words    => GNAT.Secure_Hashes.MD5.Block_Words,
    State_Words    => 4,
    Hash_Words     => 4,
    Hash_Bit_Order => System.Low_Order_First,
-   Hash_State     => System.Secure_Hashes.MD5.Hash_State,
-   Initial_State  => System.Secure_Hashes.MD5.Initial_State,
-   Transform      => System.Secure_Hashes.MD5.Transform);
+   Hash_State     => GNAT.Secure_Hashes.MD5.Hash_State,
+   Initial_State  => GNAT.Secure_Hashes.MD5.Initial_State,
+   Transform      => GNAT.Secure_Hashes.MD5.Transform);

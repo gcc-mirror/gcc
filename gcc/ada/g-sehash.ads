@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---         S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ 3 2          --
+--              G N A T . S E C U R E _ H A S H E S . S H A 1               --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2009, Free Software Foundation, Inc.             --
+--         Copyright (C) 2002-2009, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,52 +29,44 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Secure_Hashes.SHA2_32 is
+--  This package provides supporting code for implementation of the SHA-1
+--  secure hash function as decsribed in FIPS PUB 180-3. The complete text
+--  of FIPS PUB 180-3 can be found at:
+--    http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf
 
-   use Interfaces;
+--  This is an internal unit and should not be used directly in applications.
+--  Use GNAT.SHA1 instead.
 
-   ------------
-   -- Sigma0 --
-   ------------
+with GNAT.Byte_Swapping;
+with Interfaces;
 
-   function Sigma0 (X : Word) return Word is
-   begin
-      return Rotate_Right (X, 2)
-         xor Rotate_Right (X, 13)
-         xor Rotate_Right (X, 22);
-   end Sigma0;
+package GNAT.Secure_Hashes.SHA1 is
 
-   ------------
-   -- Sigma1 --
-   ------------
+   package Hash_State is new Hash_Function_State
+     (Word           => Interfaces.Unsigned_32,
+      Swap           => GNAT.Byte_Swapping.Swap4,
+      Hash_Bit_Order => System.High_Order_First);
+   --  SHA-1 operates on 32-bit big endian words
 
-   function Sigma1 (X : Word) return Word is
-   begin
-      return Rotate_Right (X, 6)
-         xor Rotate_Right (X, 11)
-         xor Rotate_Right (X, 25);
-   end Sigma1;
+   Block_Words : constant := 16;
+   --  Messages are processed in chunks of 16 words
 
-   --------
-   -- S0 --
-   --------
+   procedure Transform
+     (H : in out Hash_State.State;
+      M : in out Message_State);
+   --  Transformation function applied for each block
 
-   function S0 (X : Word) return Word is
-   begin
-      return Rotate_Right (X, 7)
-         xor Rotate_Right (X, 18)
-         xor Shift_Right  (X, 3);
-   end S0;
+   Initial_State : constant Hash_State.State;
+   --  Initialization vector
 
-   --------
-   -- S1 --
-   --------
+private
 
-   function S1 (X : Word) return Word is
-   begin
-      return Rotate_Right (X, 17)
-         xor Rotate_Right (X, 19)
-         xor Shift_Right  (X, 10);
-   end S1;
+   Initial_State : constant Hash_State.State :=
+                     (0 => 16#67452301#,
+                      1 => 16#EFCDAB89#,
+                      2 => 16#98BADCFE#,
+                      3 => 16#10325476#,
+                      4 => 16#C3D2E1F0#);
+   --  Initialization vector from FIPS PUB 180-3
 
-end System.Secure_Hashes.SHA2_32;
+end GNAT.Secure_Hashes.SHA1;

@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---     S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ C O M M O N      --
+--           G N A T . S E C U R E _ H A S H E S . S H A 2 _ 3 2            --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --           Copyright (C) 2009, Free Software Foundation, Inc.             --
 --                                                                          --
@@ -29,35 +29,52 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides supporting code for implementation of the following
---  secure hash functions described in FIPS PUB 180-3: SHA-224, SHA-256,
---  SHA-384, SHA-512. It contains the generic transform operation that is
---  common to the above four functions. The complete text of FIPS PUB 180-3
---  can be found at:
---    http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf
+package body GNAT.Secure_Hashes.SHA2_32 is
 
-package System.Secure_Hashes.SHA2_Common is
+   use Interfaces;
 
-   Block_Words : constant := 16;
-   --  All functions operate on blocks of 16 words
+   ------------
+   -- Sigma0 --
+   ------------
 
-   generic
-      with package Hash_State is new Hash_Function_State (<>);
+   function Sigma0 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 2)
+         xor Rotate_Right (X, 13)
+         xor Rotate_Right (X, 22);
+   end Sigma0;
 
-      Rounds : Natural;
-      --  Number of transformation rounds
+   ------------
+   -- Sigma1 --
+   ------------
 
-      K : Hash_State.State;
-      --  Constants used in the transform operation
+   function Sigma1 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 6)
+         xor Rotate_Right (X, 11)
+         xor Rotate_Right (X, 25);
+   end Sigma1;
 
-      with function Sigma0 (X : Hash_State.Word) return Hash_State.Word is <>;
-      with function Sigma1 (X : Hash_State.Word) return Hash_State.Word is <>;
-      with function S0 (X : Hash_State.Word) return Hash_State.Word is <>;
-      with function S1 (X : Hash_State.Word) return Hash_State.Word is <>;
-      --  FIPS PUB 180-3 elementary functions
+   --------
+   -- S0 --
+   --------
 
-   procedure Transform
-     (H_St : in out Hash_State.State;
-      M_St : in out Message_State);
+   function S0 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 7)
+         xor Rotate_Right (X, 18)
+         xor Shift_Right  (X, 3);
+   end S0;
 
-end System.Secure_Hashes.SHA2_Common;
+   --------
+   -- S1 --
+   --------
+
+   function S1 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 17)
+         xor Rotate_Right (X, 19)
+         xor Shift_Right  (X, 10);
+   end S1;
+
+end GNAT.Secure_Hashes.SHA2_32;

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---     S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ C O M M O N      --
+--       G N A T . S E C U R E _ H A S H E S . S H A 2 _ C O M M O N        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Secure_Hashes.SHA2_Common is
+package body GNAT.Secure_Hashes.SHA2_Common is
 
    ---------------
    -- Transform --
@@ -39,6 +39,8 @@ package body System.Secure_Hashes.SHA2_Common is
      (H_St : in out Hash_State.State;
       M_St : in out Message_State)
    is
+      use System;
+
       subtype Word is Hash_State.Word;
       use type Hash_State.Word;
 
@@ -78,7 +80,7 @@ package body System.Secure_Hashes.SHA2_Common is
    --  Start of processing for Transform
 
    begin
-      if System.Default_Bit_Order /= High_Order_First then
+      if Default_Bit_Order /= High_Order_First then
          for J in X'Range loop
             Hash_State.Swap (X (J)'Address);
          end loop;
@@ -130,4 +132,4 @@ package body System.Secure_Hashes.SHA2_Common is
       H_St (7) := H + H_St (7);
    end Transform;
 
-end System.Secure_Hashes.SHA2_Common;
+end GNAT.Secure_Hashes.SHA2_Common;

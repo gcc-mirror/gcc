@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                 S Y S T E M . S E C U R E _ H A S H E S                  --
+--                   G N A T . S E C U R E _ H A S H E S                    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -33,10 +33,14 @@
 --  hash functions (including MD5 and the FIPS PUB 180-3 functions SHA-1,
 --  SHA-224, SHA-256, SHA-384 and SHA-512).
 
+--  This is an internal unit and should be not used directly in applications.
+--  Use GNAT.MD5 and GNAT.SHA* instead.
+
 with Ada.Streams;
 with Interfaces;
+with System;
 
-package System.Secure_Hashes is
+package GNAT.Secure_Hashes is
 
    type Buffer_Type is new String;
    for Buffer_Type'Alignment use 8;
@@ -120,6 +124,10 @@ package System.Secure_Hashes is
 
    package H is
 
+      --  The visible part of H is the interface to secure hashing functions
+      --  that is exposed to user applications, and is intended to remain
+      --  a stable interface.
+
       pragma Assert (Hash_Words <= State_Words);
 
       type Context is private;
@@ -176,4 +184,4 @@ package System.Secure_Hashes is
 
    end H;
 
-end System.Secure_Hashes;
+end GNAT.Secure_Hashes;
