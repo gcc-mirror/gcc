@@ -35,9 +35,15 @@
 --  ones: there is a specific variant of this function in g-socthi-mingw.adb.
 
 with Ada.Unchecked_Conversion;
+
 with System.CRTL;
 
 separate (GNAT.Sockets.Thin)
+
+--------------------------
+-- Socket_Error_Message --
+--------------------------
+
 function Socket_Error_Message
   (Errno : Integer) return C.Strings.chars_ptr
 is
@@ -56,6 +62,7 @@ is
 
 begin
    C_Msg := To_Chars_Ptr (System.CRTL.strerror (Errno));
+
    if C_Msg = C.Strings.Null_Ptr then
       return Unknown_System_Error;
    else

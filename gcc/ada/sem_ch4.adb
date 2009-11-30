@@ -1251,7 +1251,7 @@ package body Sem_Ch4 is
          Analyze_Expression (Else_Expr);
       end if;
 
-      if not  Is_Overloaded (Then_Expr) then
+      if not Is_Overloaded (Then_Expr) then
          Set_Etype (N, Etype (Then_Expr));
       else
          declare
