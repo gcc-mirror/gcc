@@ -2008,7 +2008,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
   int j;
   struct cgraph_edge *e;
   struct bitpack_d *bp;
-  int note_count;
+  int note_count = 0;
   struct ipa_param_call_note *note;
 
   encoder = ob->decl_state->cgraph_node_encoder;
