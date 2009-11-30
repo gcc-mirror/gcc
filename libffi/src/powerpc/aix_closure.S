@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   aix_closure.S - Copyright (c) 2002 2003 Free Software Foundation, Inc.
+   aix_closure.S - Copyright (c) 2002, 2003, 2009 Free Software Foundation, Inc.
    based on darwin_closure.S
 
    PowerPC Assembly glue.
@@ -94,8 +94,162 @@ LC..60:
 	.globl ffi_closure_ASM
 	.globl .ffi_closure_ASM
 .csect ffi_closure_ASM[DS]
-
 ffi_closure_ASM:
+#ifdef __64BIT__
+	.llong .ffi_closure_ASM, TOC[tc0], 0
+	.csect .text[PR]
+.ffi_closure_ASM:
+
+	mflr r0			/* extract return address */
+	std r0,16(r1)		/* save the return address */
+
+	/* 48  Bytes (Linkage Area) */
+	/* 64  Bytes (params) */
+	/* 104 Bytes (13*8 from FPR) */
+	/* 32  Bytes (result) */
+	/* 248 Bytes */
+
+	stdu r1,-248(r1)	/* skip over caller save area
+				   keep stack aligned to 16  */
+
+/* we want to build up an area for the parameters passed */
+/* in registers (both floating point and integer) */
+
+	/* we store gpr 3 to gpr 10 (aligned to 4)
+	in the parents outgoing area  */
+	std   r3, (304+0*8)(r1)
+	std   r4, (304+1*8)(r1)
+	std   r5, (304+2*8)(r1)
+	std   r6, (304+3*8)(r1)
+	std   r7, (304+4*8)(r1)
+	std   r8, (304+5*8)(r1)
+	std   r9, (304+6*8)(r1)
+	std   r10, (304+7*8)(r1)
+
+	/* next save fpr 1 to fpr 13 (aligned to 8) */
+	stfd  f1, (112+0*8)(r1)
+	stfd  f2, (112+1*8)(r1)
+	stfd  f3, (112+2*8)(r1)
+	stfd  f4, (112+3*8)(r1)
+	stfd  f5, (112+4*8)(r1)
+	stfd  f6, (112+5*8)(r1)
+	stfd  f7, (112+6*8)(r1)
+	stfd  f8, (112+7*8)(r1)
+	stfd  f9, (112+8*8)(r1)
+	stfd  f10, (112+9*8)(r1)
+	stfd  f11, (112+10*8)(r1)
+	stfd  f12, (112+11*8)(r1)
+	stfd  f13, (112+12*8)(r1)
+
+	/* set up registers for the routine that actually does the work */
+	/* get the context pointer from the trampoline */
+	mr r3,r11
+
+	/* now load up the pointer to the result storage */
+	addi r4,r1,216
+
+	/* now load up the pointer to the saved gpr registers */
+	addi r5,r1,304
+
+	/* now load up the pointer to the saved fpr registers */
+	addi r6,r1,112
+
+	/* make the call */
+	bl .ffi_closure_helper_DARWIN
+	nop
+
+	/* now r3 contains the return type */
+	/* so use it to look up in a table */
+	/* so we know how to deal with each type */
+
+	/* look up the proper starting point in table  */
+	/* by using return type as offset */
+	addi r5,r1,216		/* get pointer to results area */
+	ld r4,LC..60(2)		/* get address of jump table */
+	sldi r3,r3,2		/* now multiply return type by 4 */
+	lwzx r3,r4,r3		/* get the contents of that table value */
+	add r3,r3,r4		/* add contents of table to table address */
+	mtctr r3
+	bctr			/* jump to it */
+
+L..60:
+	.long L..44-L..60    /* FFI_TYPE_VOID */
+	.long L..51-L..60    /* FFI_TYPE_INT */
+	.long L..47-L..60    /* FFI_TYPE_FLOAT */
+	.long L..46-L..60    /* FFI_TYPE_DOUBLE */
+	.long L..45-L..60    /* FFI_TYPE_LONGDOUBLE */
+	.long L..56-L..60    /* FFI_TYPE_UINT8 */
+	.long L..55-L..60    /* FFI_TYPE_SINT8 */
+	.long L..58-L..60    /* FFI_TYPE_UINT16 */
+	.long L..57-L..60    /* FFI_TYPE_SINT16 */
+	.long L..50-L..60    /* FFI_TYPE_UINT32 */
+	.long L..51-L..60    /* FFI_TYPE_SINT32 */
+	.long L..48-L..60    /* FFI_TYPE_UINT64 */
+	.long L..48-L..60    /* FFI_TYPE_SINT64 */
+	.long L..44-L..60    /* FFI_TYPE_STRUCT */
+	.long L..48-L..60    /* FFI_TYPE_POINTER */
+
+
+/* case long double */
+L..45:
+	lfd f1,0(r5)
+	lfd f2,8(r5)
+	b L..44
+
+/* case double */
+L..46:
+	lfd f1,0(r5)
+	b L..44
+
+/* case float */
+L..47:
+	lfs f1,0(r5)
+	b L..44
+
+/* case long long / pointer */
+L..48:
+	ld r3,0(r5)
+	b L..44
+
+/* case uint32 */
+L..50:
+	lwz r3,4(r5)
+	b L..44
+
+/* case int / sint32 */
+L..51:
+	lwa r3,4(r5)
+	b L..44
+
+/* case signed int8 */
+L..55:
+	lbz r3,7(r5)
+	extsb r3,r3
+	b L..44
+
+/* case unsigned int8 */
+L..56:
+	lbz r3,7(r5)
+	b L..44
+
+/* case signed int16 */
+L..57:
+	lha r3,6(r5)
+	b L..44
+
+/* case unsigned int16 */
+L..58:
+	lhz r3,6(r5)
+
+/* case void / done	 */
+L..44:
+	addi r1,r1,248		/* restore stack pointer */
+	ld r0,16(r1)		/* get return address */
+	mtlr r0			/* reset link register */
+	blr
+
+#else /* ! __64BIT__ */
+	
 	.long .ffi_closure_ASM, TOC[tc0], 0
 	.csect .text[PR]
 .ffi_closure_ASM:
@@ -106,8 +260,8 @@ ffi_closure_ASM:
 	/* 24 Bytes (Linkage Area) */
 	/* 32 Bytes (params) */
 	/* 104 Bytes (13*8 from FPR) */
-	/* 8 Bytes (result) */
-	/* 168 Bytes */
+	/* 16  Bytes (result) */
+	/* 176 Bytes */
 
 	stwu r1,-176(r1)	/* skip over caller save area
 				keep stack aligned to 16  */
@@ -177,7 +331,7 @@ L..60:
 	.long L..50-L..60    /* FFI_TYPE_INT */
 	.long L..47-L..60    /* FFI_TYPE_FLOAT */
 	.long L..46-L..60    /* FFI_TYPE_DOUBLE */
-	.long L..46-L..60    /* FFI_TYPE_LONGDOUBLE */
+	.long L..45-L..60    /* FFI_TYPE_LONGDOUBLE */
 	.long L..56-L..60    /* FFI_TYPE_UINT8 */
 	.long L..55-L..60    /* FFI_TYPE_SINT8 */
 	.long L..58-L..60    /* FFI_TYPE_UINT16 */
@@ -189,6 +343,12 @@ L..60:
 	.long L..44-L..60    /* FFI_TYPE_STRUCT */
 	.long L..50-L..60    /* FFI_TYPE_POINTER */
 
+
+/* case long double */
+L..45:
+	lfd f1,0(r5)
+	lfd f2,8(r5)
+	b L..44
 
 /* case double */
 L..46:
@@ -211,31 +371,25 @@ L..50:
 	lwz r3,0(r5)
 	b L..44
 
-/* case signed int8	 */
+/* case signed int8 */
 L..55:
-	addi r5,r5,3
-	lbz r3,0(r5)
-	slwi r3,r3,24
-	srawi r3,r3,24
+	lbz r3,3(r5)
+	extsb r3,r3
 	b L..44
 
-/* case unsigned int8	 */
+/* case unsigned int8 */
 L..56:
-	addi r5,r5,3
-	lbz r3,0(r5)
+	lbz r3,3(r5)
 	b L..44
 
 /* case signed int16 */
 L..57:
-	addi r5,r5,2
-	lhz r3,0(r5)
-	extsh r3,r3
+	lha r3,2(r5)
 	b L..44
 
 /* case unsigned int16 */
 L..58:
-	addi r5,r5,2
-	lhz r3,0(r5)
+	lhz r3,2(r5)
 
 /* case void / done	 */
 L..44:
@@ -243,5 +397,5 @@ L..44:
 	lwz r0,8(r1)		/* get return address */
 	mtlr r0			/* reset link register */
 	blr
-
+#endif
 /* END(ffi_closure_ASM) */

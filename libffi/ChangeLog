@@ -1,3 +1,17 @@
+2009-11-30  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/35484
+	* src/powerpc/ffitarget.h (POWERPC64): Define for PPC64 Linux and
+	AIX64.
+	* src/powerpc/aix.S: Implement AIX64 version.
+	* src/powerpc/aix_closure.S: Implement AIX64 version.
+	(ffi_closure_ASM): Use extsb, lha and displament addresses.
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Implement AIX64
+	support.
+	(ffi_prep_cif_machdep): Same.
+	(ffi_call): Same.
+	(ffi_closure_helper_DARWIN): Same.
+
 2009-11-02  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR libffi/41908
