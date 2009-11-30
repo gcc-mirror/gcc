@@ -1,3 +1,22 @@
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-tree.ads: Minor comment updates
+	* prj-tree.adb: Minor reformatting
+
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): Indicate that an inherited
+	predefined control operation is hidden if the parent type is not
+	visibly controlled.
+	* sem_ch6.adb (Check_Overriding_Indicator): Do not report error if
+	overridden operation is not visible, as may be the case with predefined
+	control operations.
+	* sem_disp.adb (Check_Dispatching_Operation): Do not emit warning on
+	non-overriding control operation when type is not visibly controlled,
+	if the subprogram has an explicit overriding indicator.
+	* sem_util.ads, sem_util.adb (Is_Visibly_Controlled): Moved here from
+	sem_disp.adb.
+
 2009-11-30  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-tree.adb (Create_Attribute): Fix handling of VMS and Windows

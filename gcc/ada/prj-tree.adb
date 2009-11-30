@@ -3027,7 +3027,7 @@ package body Prj.Tree is
       return Pack;
    end Create_Package;
 
-   -------------------
+   ----------------------
    -- Create_Attribute --
    ----------------------
 

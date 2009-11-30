@@ -812,6 +812,13 @@ package Sem_Util is
    --  the point at which Assignment_OK is checked, and True is returned
    --  for any tree thus marked.
 
+   function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
+   --  Check whether T is derived from a visibly controlled type.
+   --  This is true if the root type is declared in Ada.Finalization.
+   --  If T is derived instead from a private type whose full view
+   --  is controlled, an explicit Initialize/Adjust/Finalize subprogram
+   --  does not override the inherited one.
+
    function Is_Volatile_Object (N : Node_Id) return Boolean;
    --  Determines if the given node denotes an volatile object in the sense
    --  of the legality checks described in RM C.6(12). Note that the test

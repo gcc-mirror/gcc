@@ -48,7 +48,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
-with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -673,27 +672,6 @@ package body Sem_Disp is
       Has_Dispatching_Parent : Boolean := False;
       Body_Is_Last_Primitive : Boolean := False;
 
-      function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
-      --  Check whether T is derived from a visibly controlled type.
-      --  This is true if the root type is declared in Ada.Finalization.
-      --  If T is derived instead from a private type whose full view
-      --  is controlled, an explicit Initialize/Adjust/Finalize subprogram
-      --  does not override the inherited one.
-
-      ---------------------------
-      -- Is_Visibly_Controlled --
-      ---------------------------
-
-      function Is_Visibly_Controlled (T : Entity_Id) return Boolean is
-         Root : constant Entity_Id := Root_Type (T);
-      begin
-         return Chars (Scope (Root)) = Name_Finalization
-           and then Chars (Scope (Scope (Root))) = Name_Ada
-           and then Scope (Scope (Scope (Root))) = Standard_Standard;
-      end Is_Visibly_Controlled;
-
-   --  Start of processing for Check_Dispatching_Operation
-
    begin
       if Ekind (Subp) /= E_Procedure and then Ekind (Subp) /= E_Function then
          return;
@@ -1030,8 +1008,20 @@ package body Sem_Disp is
            and then not Is_Visibly_Controlled (Tagged_Type)
          then
             Set_Is_Overriding_Operation (Subp, False);
-            Error_Msg_NE
-              ("operation does not override inherited&?", Subp, Subp);
+            --  If the subprogram specification carries an overriding
+            --  indicator, no need for the warning: it is either redundant,
+            --  or else an error will be reported.
+
+            if Nkind (Parent (Subp)) = N_Procedure_Specification
+              and then
+                (Must_Override (Parent (Subp))
+                  or else Must_Not_Override (Parent (Subp)))
+            then
+               null;
+            else
+               Error_Msg_NE
+                 ("operation does not override inherited&?", Subp, Subp);
+            end if;
          else
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
             Set_Is_Overriding_Operation (Subp);
