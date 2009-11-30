@@ -501,7 +501,13 @@ void GC_enable_signals(void)
       && !defined(MACOS) && !defined(DJGPP) && !defined(DOS4GW) \
       && !defined(NOSYS) && !defined(ECOS)
 
-#   if defined(sigmask) && !defined(UTS4) && !defined(HURD)
+#   if defined(SIG_BLOCK)
+	/* Use POSIX/SYSV interface */
+#	define SIGSET_T sigset_t
+#	define SIG_DEL(set, signal) sigdelset(&(set), (signal))
+#	define SIG_FILL(set) sigfillset(&set)
+#	define SIGSETMASK(old, new) sigprocmask(SIG_SETMASK, &(new), &(old))
+#   elif defined(sigmask) && !defined(UTS4) && !defined(HURD)
 	/* Use the traditional BSD interface */
 #	define SIGSET_T int
 #	define SIG_DEL(set, signal) (set) &= ~(sigmask(signal))
@@ -511,11 +517,7 @@ void GC_enable_signals(void)
     	  /* a signal 32.						*/
 #	define SIGSETMASK(old, new) (old) = sigsetmask(new)
 #   else
-	/* Use POSIX/SYSV interface	*/
-#	define SIGSET_T sigset_t
-#	define SIG_DEL(set, signal) sigdelset(&(set), (signal))
-#	define SIG_FILL(set) sigfillset(&set)
-#	define SIGSETMASK(old, new) sigprocmask(SIG_SETMASK, &(new), &(old))
+#       error undetectable signal API
 #   endif
 
 static GC_bool mask_initialized = FALSE;

@@ -1,3 +1,9 @@
+2009-11-30  Ben Elliston  <bje@au.ibm.com>
+
+	* os_dep.c: Use the POSIX signal API in preference to the BSD API.
+	Generate a compilation error if neither the POSIX nor BSD APIs can
+	be detected.
+
 2009-09-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (libgcjgc_la_LINK, gctest_LINK): New.
