@@ -1,3 +1,8 @@
+2009-11-30  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.h (PREFERRED_RELOAD_CLASS): Don't restrict Thumb-2
+	reloads to LO_REGS.
+
 2009-11-30  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_vec_interleave_v2df_operator_ok): New.
