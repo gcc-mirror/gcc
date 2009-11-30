@@ -3733,27 +3733,22 @@ enum sparc_mode_class {
 #define SF_MODES (S_MODES)
 
 /* Modes for double-float and smaller quantities.  */
-#define DF_MODES (S_MODES | D_MODES)
+#define DF_MODES (D_MODES)
+
+/* Modes for quad-float and smaller quantities.  */
+#define TF_MODES (DF_MODES | (1 << (int) TF_MODE))
+
+/* Modes for quad-float pairs and smaller quantities.  */
+#define OF_MODES (TF_MODES | (1 << (int) OF_MODE))
 
 /* Modes for double-float only quantities.  */
 #define DF_MODES_NO_S ((1 << (int) D_MODE) | (1 << (int) DF_MODE))
 
-/* Modes for quad-float only quantities.  */
-#define TF_ONLY_MODES (1 << (int) TF_MODE)
+/* Modes for quad-float and double-float only quantities.  */
+#define TF_MODES_NO_S (DF_MODES_NO_S | (1 << (int) TF_MODE))
 
-/* Modes for quad-float and smaller quantities.  */
-#define TF_MODES (DF_MODES | TF_ONLY_MODES)
-
-/* Modes for quad-float and double-float quantities.  */
-#define TF_MODES_NO_S (DF_MODES_NO_S | TF_ONLY_MODES)
-
-/* Modes for quad-float pair only quantities.  */
-#define OF_ONLY_MODES (1 << (int) OF_MODE)
-
-/* Modes for quad-float pairs and smaller quantities.  */
-#define OF_MODES (TF_MODES | OF_ONLY_MODES)
-
-#define OF_MODES_NO_S (TF_MODES_NO_S | OF_ONLY_MODES)
+/* Modes for quad-float pairs and double-float only quantities.  */
+#define OF_MODES_NO_S (TF_MODES_NO_S | (1 << (int) OF_MODE))
 
 /* Modes for condition codes.  */
 #define CC_MODES (1 << (int) CC_MODE)
