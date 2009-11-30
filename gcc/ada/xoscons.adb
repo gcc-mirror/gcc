@@ -72,11 +72,14 @@ procedure XOSCons is
    end record;
 
    type Asm_Info_Kind is
-     (CND,     --  Constant (decimal)
-      CNS,     --  Constant (freeform string)
+     (CND,     --  Named number (decimal)
+      CNS,     --  Named number (freeform text)
+      C,       --  Constant object
       TXT);    --  Literal text
    --  Recognized markers found in assembly file. These markers are produced by
    --  the same-named macros from the C template.
+
+   subtype Named_Number is Asm_Info_Kind range CND .. CNS;
 
    type Asm_Info (Kind : Asm_Info_Kind := TXT) is record
       Line_Number   : Integer;
@@ -85,11 +88,14 @@ procedure XOSCons is
       Constant_Name : String_Access;
       --  Name of constant to be defined
 
+      Constant_Type : String_Access;
+      --  Type of constant (case of Kind = C)
+
       Value_Len     : Natural := 0;
       --  Length of text representation of constant's value
 
       Text_Value    : String_Access;
-      --  Value for CNS constant
+      --  Value for CNS / C constant
 
       Int_Value     : Int_Value_Type;
       --  Value for CND constant
@@ -105,8 +111,9 @@ procedure XOSCons is
       Table_Initial        => 100,
       Table_Increment      => 10);
 
-   Max_Const_Name_Len     : Natural := 0;
+   Max_Constant_Name_Len  : Natural := 0;
    Max_Constant_Value_Len : Natural := 0;
+   Max_Constant_Type_Len  : Natural := 0;
    --  Lengths of longest name and longest value
 
    type Language is (Lang_Ada, Lang_C);
@@ -170,13 +177,22 @@ procedure XOSCons is
          case Lang is
             when Lang_Ada =>
                Put ("   " & Info.Constant_Name.all);
-               Put (Spaces (Max_Const_Name_Len - Info.Constant_Name'Length));
+               Put (Spaces (Max_Constant_Name_Len
+                              - Info.Constant_Name'Length));
 
-               Put (" : constant := ");
+               if Info.Kind in Named_Number then
+                  Put (" : constant := ");
+               else
+                  Put (" : constant " & Info.Constant_Type.all);
+                  Put (Spaces (Max_Constant_Type_Len
+                                 - Info.Constant_Type'Length));
+                  Put (" := ");
+               end if;
 
             when Lang_C =>
                Put ("#define " & Info.Constant_Name.all & " ");
-               Put (Spaces (Max_Const_Name_Len - Info.Constant_Name'Length));
+               Put (Spaces (Max_Constant_Name_Len
+                              - Info.Constant_Name'Length));
          end case;
 
          if Info.Kind = CND then
@@ -185,7 +201,19 @@ procedure XOSCons is
             end if;
             Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
          else
-            Put (Info.Text_Value.all);
+            declare
+               Is_String : constant Boolean :=
+                             Info.Kind = C
+                               and then Info.Constant_Type.all = "String";
+            begin
+               if Is_String then
+                  Put ("""");
+               end if;
+               Put (Info.Text_Value.all);
+               if Is_String then
+                  Put ("""");
+               end if;
+            end;
          end if;
 
          if Lang = Lang_Ada then
@@ -290,17 +318,27 @@ procedure XOSCons is
            Integer (Parse_Int (Line (Index1 .. Index2 - 1)).Abs_Value);
 
          case Info.Kind is
-            when CND | CNS =>
+            when CND | CNS | C =>
                Index1 := Index2 + 1;
                Find_Colon (Index2);
 
                Info.Constant_Name := Field_Alloc;
-               if Info.Constant_Name'Length > Max_Const_Name_Len then
-                  Max_Const_Name_Len := Info.Constant_Name'Length;
+               if Info.Constant_Name'Length > Max_Constant_Name_Len then
+                  Max_Constant_Name_Len := Info.Constant_Name'Length;
                end if;
 
                Index1 := Index2 + 1;
                Find_Colon (Index2);
+
+               if Info.Kind = C then
+                  Info.Constant_Type := Field_Alloc;
+                  if Info.Constant_Type'Length > Max_Constant_Type_Len then
+                     Max_Constant_Type_Len := Info.Constant_Type'Length;
+                  end if;
+
+                  Index1 := Index2 + 1;
+                  Find_Colon (Index2);
+               end if;
 
                if Info.Kind = CND then
                   Info.Int_Value := Parse_Int (Line (Index1 .. Index2 - 1));

@@ -1,5 +1,10 @@
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
+	* s-oscons-tmplt.c, xoscons.adb: Add new constants in preparation for
+	sharing s-crtl across all platforms.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
 	* s-commun.adb, s-commun.ads: New internal support unit,
 	allowing code sharing between GNAT.Sockets and
 	GNAT.Serial_Communication.
