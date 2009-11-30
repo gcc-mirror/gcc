@@ -1,5 +1,9 @@
 2009-11-30  Richard Guenther  <rguenther@suse.de>
 
+	* doc/contrib.texi (Contributors): Add myself.
+
+2009-11-30  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (free_lang_data): Do not set debug_info_level to
 	none if terse.
 

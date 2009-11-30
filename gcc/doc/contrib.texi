@@ -326,6 +326,10 @@ Stu Grossman for gdb hacking, allowing GCJ developers to debug Java code.
 Michael K. Gschwind contributed the port to the PDP-11.
 
 @item
+Richard Guenther for his ongoing middle-end contributions and bug fixes
+and for release management.
+
+@item
 Ron Guilmette implemented the @command{protoize} and @command{unprotoize}
 tools, the support for Dwarf symbolic debugging information, and much of
 the support for System V Release 4.  He has also worked heavily on the
