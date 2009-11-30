@@ -20858,28 +20858,30 @@ Turn off the check for a specified rule with the specified parameter, if any.
 
 @cindex @option{-from} (@command{gnatcheck})
 @item -from=@var{rule_option_filename}
-Read the rule options from the text file @var{rule_option_filename}, referred as
-``rule file'' below.
+Read the rule options from the text file @var{rule_option_filename}, referred
+to as a ``coding standard file'' below.
 
 @end table
 
 @noindent
 The default behavior is that all the rule checks are disabled.
 
-A rule file is a text file containing a set of rule options.
-@cindex Rule file (for @code{gnatcheck})
+A coding standard file is a text file that contains a set of rule options
+described above.
+@cindex Coding standard file (for @code{gnatcheck})
 The file may contain empty lines and Ada-style comments (comment
-lines and end-of-line comments). The rule file has free format; that is,
-you do not have to start a new rule option on a new line.
+lines and end-of-line comments). There can be several rule options on a
+single line (separated by a space).
 
-A rule file may contain other @option{-from=@var{rule_option_filename}}
+A coding standard file may reference other coding standard files by including
+other @option{-from=@var{rule_option_filename}}
 options, each such option being replaced with the content of the
-corresponding rule file during the rule files processing. In case a
+corresponding coding standard file during processing. In case a
 cycle is detected (that is, @file{@var{rule_file_1}} reads rule options
 from @file{@var{rule_file_2}}, and @file{@var{rule_file_2}} reads
 (directly or indirectly) rule options from @file{@var{rule_file_1}}),
-the processing of rule files is interrupted and a part of their content
-is ignored.
+the processing of coding standard files is interrupted and a part of their
+content is ignored.
 
 
 @node Adding the Results of Compiler Checks to gnatcheck Output

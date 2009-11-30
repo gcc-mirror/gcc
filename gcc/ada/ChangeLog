@@ -1,3 +1,16 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_disp.adb, usage.adb: Minor reformatting
+
+2009-11-30  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: Minor editing.
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Search_Directories): when -eL was not specified, assume
+	that no directory matches the naming scheme for sources.
+
 2009-11-30  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.adb, prj.ads, prj-nmsc.adb (Has_Multi_Unit_Sources): New field in

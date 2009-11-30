@@ -6833,12 +6833,15 @@ package body Prj.Nmsc is
 
                      exit when Last = 0;
 
-                     --  ??? Duplicate system call here, we just did a a
-                     --  similar one. Maybe Ada.Directories would be more
-                     --  appropriate here.
+                     --  In fast project loading mode (without -eL), the user
+                     --  guarantees that no directory has a name which is a
+                     --  valid source name, so we can avoid doing a system call
+                     --  here. This provides a very significant speed up on
+                     --  slow file systems (remote files for instance).
 
-                     if Is_Regular_File
-                          (Source_Directory & Name (1 .. Last))
+                     if not Opt.Follow_Links_For_Files
+                       or else Is_Regular_File
+                                 (Source_Directory & Name (1 .. Last))
                      then
                         if Current_Verbosity = High then
                            Write_Str  ("   Checking ");
