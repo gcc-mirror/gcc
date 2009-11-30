@@ -377,6 +377,10 @@ The GNAT Library
 * GNAT.Semaphores (g-semaph.ads)::
 * GNAT.Serial_Communications (g-sercom.ads)::
 * GNAT.SHA1 (g-sha1.ads)::
+* GNAT.SHA224 (g-sha224.ads)::
+* GNAT.SHA256 (g-sha256.ads)::
+* GNAT.SHA384 (g-sha384.ads)::
+* GNAT.SHA512 (g-sha512.ads)::
 * GNAT.Signals (g-signal.ads)::
 * GNAT.Sockets (g-socket.ads)::
 * GNAT.Source_Info (g-souinf.ads)::
@@ -13554,6 +13558,10 @@ of GNAT, and will generate a warning message.
 * GNAT.Semaphores (g-semaph.ads)::
 * GNAT.Serial_Communications (g-sercom.ads)::
 * GNAT.SHA1 (g-sha1.ads)::
+* GNAT.SHA224 (g-sha224.ads)::
+* GNAT.SHA256 (g-sha256.ads)::
+* GNAT.SHA384 (g-sha384.ads)::
+* GNAT.SHA512 (g-sha512.ads)::
 * GNAT.Signals (g-signal.ads)::
 * GNAT.Sockets (g-socket.ads)::
 * GNAT.Source_Info (g-souinf.ads)::
@@ -14551,7 +14559,40 @@ port. This is only supported on GNU/Linux and Windows.
 @cindex Secure Hash Algorithm SHA-1
 
 @noindent
-Implements the SHA-1 Secure Hash Algorithm as described in RFC 3174.
+Implements the SHA-1 Secure Hash Algorithm as described in FIPS PUB 180-3
+and RFC 3174.
+
+@node GNAT.SHA224 (g-sha224.ads)
+@section @code{GNAT.SHA224} (@file{g-sha224.ads})
+@cindex @code{GNAT.SHA224} (@file{g-sha224.ads})
+@cindex Secure Hash Algorithm SHA-224
+
+@noindent
+Implements the SHA-224 Secure Hash Algorithm as described in FIPS PUB 180-3.
+
+@node GNAT.SHA256 (g-sha256.ads)
+@section @code{GNAT.SHA256} (@file{g-sha256.ads})
+@cindex @code{GNAT.SHA256} (@file{g-sha256.ads})
+@cindex Secure Hash Algorithm SHA-256
+
+@noindent
+Implements the SHA-256 Secure Hash Algorithm as described in FIPS PUB 180-3.
+
+@node GNAT.SHA384 (g-sha384.ads)
+@section @code{GNAT.SHA384} (@file{g-sha384.ads})
+@cindex @code{GNAT.SHA384} (@file{g-sha384.ads})
+@cindex Secure Hash Algorithm SHA-384
+
+@noindent
+Implements the SHA-384 Secure Hash Algorithm as described in FIPS PUB 180-3.
+
+@node GNAT.SHA512 (g-sha512.ads)
+@section @code{GNAT.SHA512} (@file{g-sha512.ads})
+@cindex @code{GNAT.SHA512} (@file{g-sha512.ads})
+@cindex Secure Hash Algorithm SHA-512
+
+@noindent
+Implements the SHA-512 Secure Hash Algorithm as described in FIPS PUB 180-3.
 
 @node GNAT.Signals (g-signal.ads)
 @section @code{GNAT.Signals} (@file{g-signal.ads})

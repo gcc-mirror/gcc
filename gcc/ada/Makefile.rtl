@@ -80,9 +80,9 @@ GNATRTL_TASKING_OBJS= \
 GNATRTL_NONTASKING_OBJS= \
   a-assert$(objext) \
   a-calari$(objext) \
+  a-calcon$(objext) \
   a-caldel$(objext) \
   a-calend$(objext) \
-  a-calcon$(objext) \
   a-calfor$(objext) \
   a-catizo$(objext) \
   a-cdlili$(objext) \
@@ -146,12 +146,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-izteio$(objext) \
   a-lcteio$(objext) \
   a-lfteio$(objext) \
-  a-llctio$(objext) \
   a-lfwtio$(objext) \
   a-lfztio$(objext) \
   a-liteio$(objext) \
   a-liwtio$(objext) \
   a-liztio$(objext) \
+  a-llctio$(objext) \
   a-llftio$(objext) \
   a-llfwti$(objext) \
   a-llfzti$(objext) \
@@ -239,9 +239,9 @@ GNATRTL_NONTASKING_OBJS= \
   a-szuzha$(objext) \
   a-szuzti$(objext) \
   a-tags$(objext) \
-  a-tgdico$(objext) \
   a-teioed$(objext) \
   a-textio$(objext) \
+  a-tgdico$(objext) \
   a-tiboio$(objext) \
   a-ticoau$(objext) \
   a-ticoio$(objext) \
@@ -337,18 +337,18 @@ GNATRTL_NONTASKING_OBJS= \
   g-crc32$(objext) \
   g-ctrl_c$(objext) \
   g-curexc$(objext) \
-  g-debuti$(objext) \
   g-debpoo$(objext) \
+  g-debuti$(objext) \
   g-decstr$(objext) \
   g-deutst$(objext) \
   g-diopit$(objext) \
   g-dirope$(objext) \
-  g-dyntab$(objext) \
   g-dynhta$(objext) \
+  g-dyntab$(objext) \
   g-encstr$(objext) \
   g-enutst$(objext) \
-  g-except$(objext) \
   g-excact$(objext) \
+  g-except$(objext) \
   g-exctra$(objext) \
   g-expect$(objext) \
   g-flocon$(objext) \
@@ -370,9 +370,13 @@ GNATRTL_NONTASKING_OBJS= \
   g-sercom$(objext) \
   g-sestin$(objext) \
   g-sha1$(objext) \
+  g-sha224$(objext) \
+  g-sha256$(objext) \
+  g-sha384$(objext) \
+  g-sha512$(objext) \
   g-souinf$(objext) \
-  g-speche$(objext) \
   g-spchge$(objext) \
+  g-speche$(objext) \
   g-spipat$(objext) \
   g-spitbo$(objext) \
   g-sptabo$(objext) \
@@ -384,8 +388,8 @@ GNATRTL_NONTASKING_OBJS= \
   g-tasloc$(objext) \
   g-timsta$(objext) \
   g-traceb$(objext) \
-  g-utf_32$(objext) \
   g-u3spch$(objext) \
+  g-utf_32$(objext) \
   g-wispch$(objext) \
   g-wistsp$(objext) \
   g-zspche$(objext) \
@@ -430,13 +434,13 @@ GNATRTL_NONTASKING_OBJS= \
   s-conca7$(objext) \
   s-conca8$(objext) \
   s-conca9$(objext) \
+  s-crc32$(objext)  \
   s-crtl$(objext)   \
   s-crtrun$(objext) \
-  s-crc32$(objext)  \
   s-direio$(objext) \
   s-dsaser$(objext) \
-  s-exctab$(objext) \
   s-except$(objext) \
+  s-exctab$(objext) \
   s-exnint$(objext) \
   s-exnllf$(objext) \
   s-exnlli$(objext) \
@@ -453,14 +457,15 @@ GNATRTL_NONTASKING_OBJS= \
   s-ficobl$(objext) \
   s-fileio$(objext) \
   s-filofl$(objext) \
-  s-fishfl$(objext) \
   s-finimp$(objext) \
   s-finroo$(objext) \
+  s-fishfl$(objext) \
   s-fore$(objext)   \
   s-fvadfl$(objext) \
   s-fvaffl$(objext) \
   s-fvagfl$(objext) \
   s-geveop$(objext) \
+  s-gloloc$(objext) \
   s-htable$(objext) \
   s-imenne$(objext) \
   s-imgbiu$(objext) \
@@ -479,10 +484,11 @@ GNATRTL_NONTASKING_OBJS= \
   s-imgwch$(objext) \
   s-imgwiu$(objext) \
   s-io$(objext)     \
-  s-gloloc$(objext) \
   s-maccod$(objext) \
   s-mantis$(objext) \
   s-mastop$(objext) \
+  s-memcop$(objext) \
+  s-memory$(objext) \
   s-os_lib$(objext) \
   s-osprim$(objext) \
   s-pack03$(objext) \
@@ -556,22 +562,26 @@ GNATRTL_NONTASKING_OBJS= \
   s-rident$(objext) \
   s-rpc$(objext)    \
   s-scaval$(objext) \
+  s-sechas$(objext) \
   s-secsta$(objext) \
+  s-sehamd$(objext) \
+  s-sehash$(objext) \
   s-sequio$(objext) \
   s-shasto$(objext) \
+  s-shsh32$(objext) \
+  s-shsh64$(objext) \
+  s-shshco$(objext) \
+  s-soflin$(objext) \
   s-stache$(objext) \
+  s-stalib$(objext) \
   s-stausa$(objext) \
   s-stchop$(objext) \
-  s-stalib$(objext) \
   s-stoele$(objext) \
   s-stopoo$(objext) \
   s-stratt$(objext) \
   s-strhas$(objext) \
-  s-ststop$(objext) \
-  s-soflin$(objext) \
-  s-memory$(objext) \
-  s-memcop$(objext) \
   s-string$(objext) \
+  s-ststop$(objext) \
   s-tasloc$(objext) \
   s-traceb$(objext) \
   s-traces$(objext) \

@@ -1,3 +1,17 @@
+2009-11-30  Pascal Obry  <obry@adacore.com>
+
+	* expect.c: Fix cast to avoid warnings in x86-64 Windows.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi, s-sechas.adb, s-sechas.ads, s-shshco.adb,
+	s-shshco.ads, g-md5.adb, g-md5.ads, g-sha256.ads, s-shsh64.adb,
+	s-shsh64.ads, s-sehamd.adb, s-sehamd.ads, g-sha512.ads, g-sha1.adb,
+	g-sha1.ads, Makefile.rtl, g-sha224.ads, g-sha384.ads, s-shsh32.adb,
+	s-shsh32.ads, s-sehash.adb, s-sehash.ads: Reimplementation of GNAT.MD5
+	and GNAT.SHA1 to factor shared code and avoid unnecessary stack copies.
+	Also introduce new functions SHA-{224,256,384,512}
+
 2009-11-30  Jerome Lambourg  <lambourg@adacore.com>
 
 	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Improve comment for

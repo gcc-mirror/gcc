@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT LIBRARY COMPONENTS                          --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             G N A T . M D 5                              --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2008, AdaCore                     --
+--           Copyright (C) 2009, Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -16,8 +16,8 @@
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
 -- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
+-- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- As a special exception,  if other files  instantiate  generics from this --
 -- unit, or you link  this unit with other files  to produce an executable, --
@@ -31,81 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements the MD5 Message-Digest Algorithm as described in
---  RFC 1321. The complete text of RFC 1321 can be found at:
---
---          http://www.ietf.org/rfc/rfc1321.txt
---
---  The implementation is derived from the RSA Data Security, Inc. MD5
---  Message-Digest Algorithm, as described in RFC 1321.
-
-with Ada.Streams;
-with Interfaces;
-
-package GNAT.MD5 is
-
-   type Context is private;
-   --  This type is the four-word (16 byte) MD buffer, as described in
-   --  RFC 1321 (3.3). Its initial value is Initial_Context below.
-
-   Initial_Context : constant Context;
-   --  Initial value of a Context object. May be used to reinitialize
-   --  a Context value by simple assignment of this value to the object.
-
-   procedure Update
-     (C     : in out Context;
-      Input : String);
-   procedure Wide_Update
-     (C     : in out Context;
-      Input : Wide_String);
-   procedure Update
-     (C     : in out Context;
-      Input : Ada.Streams.Stream_Element_Array);
-   --  Modify the Context C. If C has the initial value Initial_Context,
-   --  then, after a call to one of these procedures, Digest (C) will return
-   --  the Message-Digest of Input.
-   --
-   --  These procedures may be called successively with the same context and
-   --  different inputs, and these several successive calls will produce
-   --  the same final context as a call with the concatenation of the inputs.
-
-   subtype Message_Digest is String (1 .. 32);
-   --  The string type returned by function Digest
-
-   function Digest (C : Context) return Message_Digest;
-   --  Extracts the Message-Digest from a context. This function should be
-   --  used after one or several calls to Update.
-
-   function Digest      (S : String)      return Message_Digest;
-   function Wide_Digest (W : Wide_String) return Message_Digest;
-   function Digest
-     (A    : Ada.Streams.Stream_Element_Array)
-      return Message_Digest;
-   --  These functions are equivalent to the corresponding Update (or
-   --  Wide_Update) on a default initialized Context, followed by Digest
-   --  on the resulting Context.
-
-private
-
-   --  Magic numbers
-
-   Initial_A : constant := 16#67452301#;
-   Initial_B : constant := 16#EFCDAB89#;
-   Initial_C : constant := 16#98BADCFE#;
-   Initial_D : constant := 16#10325476#;
-
-   type Context is record
-      A : Interfaces.Unsigned_32 := Initial_A;
-      B : Interfaces.Unsigned_32 := Initial_B;
-      C : Interfaces.Unsigned_32 := Initial_C;
-      D : Interfaces.Unsigned_32 := Initial_D;
-      Buffer : String (1 .. 64)  := (others => ASCII.NUL);
-      Last   : Natural := 0;
-      Length : Natural := 0;
-   end record;
-
-   Initial_Context : constant Context :=
-     (A => Initial_A, B => Initial_B, C => Initial_C, D => Initial_D,
-      Buffer => (others => ASCII.NUL), Last => 0, Length => 0);
-
-end GNAT.MD5;
+with System.Secure_Hashes.MD5;
+package GNAT.MD5 is new System.Secure_Hashes.H
+  (Block_Words    => System.Secure_Hashes.MD5.Block_Words,
+   State_Words    => 4,
+   Hash_Words     => 4,
+   Hash_Bit_Order => System.Low_Order_First,
+   Hash_State     => System.Secure_Hashes.MD5.Hash_State,
+   Initial_State  => System.Secure_Hashes.MD5.Initial_State,
+   Transform      => System.Secure_Hashes.MD5.Transform);
