@@ -777,6 +777,10 @@ package body Prj.Nmsc is
          Source_Paths_Htable.Set (Data.Tree.Source_Paths_HT, Path.Name, Id);
       end if;
 
+      if Index /= 0 then
+         Project.Has_Multi_Unit_Sources := True;
+      end if;
+
       --  Add the source to the language list
 
       Id.Next_In_Lang := Lang_Id.First_Source;

@@ -1,3 +1,18 @@
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb, prj.ads, prj-nmsc.adb (Has_Multi_Unit_Sources): New field in
+	project_data.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* osint.adb (Executable_Name): Correctly decide if the executable
+	suffix should be added when Only_If_No_Suffix is True.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb, gnatlink.adb, prj-conf.adb, prj-tree.adb,
+	prj-tree.ads: Minor reformatting
+
 2009-11-30  Vincent Celier  <celier@adacore.com>
 
 	* gnatlink.adb (Process_Args): Call Executable_Name on argument of -o

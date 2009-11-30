@@ -614,9 +614,9 @@ package Prj.Tree is
      (Tree       : Project_Node_Tree_Ref;
       Prj_Or_Pkg : Project_Node_Id;
       Name       : Name_Id;
-      Index_Name : Name_Id       := No_Name;
-      Kind       : Variable_Kind := List;
-      At_Index   : Integer       := 0;
+      Index_Name : Name_Id         := No_Name;
+      Kind       : Variable_Kind   := List;
+      At_Index   : Integer         := 0;
       Value      : Project_Node_Id := Empty_Node) return Project_Node_Id;
    --  Create a new attribute. The new declaration is added at the end of the
    --  declarative item list for Prj_Or_Pkg (a project or a package), but
@@ -624,14 +624,15 @@ package Prj.Tree is
    --  Empty_Node. If Index_Name is not "", then if creates an attribute value
    --  for a specific index. At_Index is used for the " at <idx>" in the naming
    --  exceptions.
-   --  To set the value of the attribute, either provide a value for
-   --  Value, or use Set_Expression_Of to set the value of the attribute
-   --  (in which case Enclose_In_Expression might be useful). The former is
-   --  recommended since it will more correctly handle cases where the index
-   --  needs to be set on the expression rather than on the index of the
-   --  attribute ('for Specification ("unit") use "file" at 3', versus
-   --  'for Executable ("file" at 3) use "name"'). Value must be a
-   --  N_String_Literal if an index will be added to it
+   --
+   --  To set the value of the attribute, either provide a value for Value, or
+   --  use Set_Expression_Of to set the value of the attribute (in which case
+   --  Enclose_In_Expression might be useful). The former is recommended since
+   --  it will more correctly handle cases where the index needs to be set on
+   --  the expression rather than on the index of the attribute (i.e. 'for
+   --  Specification ("unit") use "file" at 3', versus 'for Executable ("file"
+   --  at 3) use "name"'). Value must be a N_String_Literal if an index will be
+   --  added to it.
 
    function Create_Literal_String
      (Str  : Namet.Name_Id;
@@ -657,7 +658,7 @@ package Prj.Tree is
      (Node : Project_Node_Id;
       Tree : Project_Node_Tree_Ref) return Project_Node_Id;
    --  Enclose the Node inside a N_Expression node, and return this expression.
-   --  This does nothing if Node is already a N_Expression
+   --  This does nothing if Node is already a N_Expression.
 
    --------------------
    -- Set Procedures --

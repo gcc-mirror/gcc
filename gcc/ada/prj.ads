@@ -1207,6 +1207,9 @@ package Prj is
       --  use this field directly outside of the project manager, use
       --  Prj.Env.Ada_Include_Path instead.
 
+      Has_Multi_Unit_Sources : Boolean := False;
+      --  Whether there is at least one source file containing multiple units
+
       -------------------
       -- Miscellaneous --
       -------------------
