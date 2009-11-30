@@ -376,7 +376,13 @@ ptr_t GC_approx_sp()
 #   ifdef _MSC_VER
 #     pragma warning(disable:4172)
 #   endif
-    return((ptr_t)(&dummy));
+#ifdef __GNUC__
+    /* Eliminate a warning from GCC about taking the address of a
+       local variable.  */
+    return __builtin_frame_address (0);
+#else
+    return ((ptr_t)(&dummy));
+#endif /* __GNUC__ */
 #   ifdef _MSC_VER
 #     pragma warning(default:4172)
 #   endif

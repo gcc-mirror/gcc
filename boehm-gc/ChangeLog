@@ -1,5 +1,11 @@
 2009-11-30  Ben Elliston  <bje@au.ibm.com>
 
+	* mark_rts.c (GC_approx_sp): Use __builtin_frame_address when
+	compiling with GCC rather than taking the address of a local
+	variable.
+
+2009-11-30  Ben Elliston  <bje@au.ibm.com>
+
 	* os_dep.c: Use the POSIX signal API in preference to the BSD API.
 	Generate a compilation error if neither the POSIX nor BSD APIs can
 	be detected.
