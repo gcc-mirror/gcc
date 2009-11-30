@@ -46,7 +46,8 @@ with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
 --  Need to include pragma Linker_Options which is platform dependent
 
-with System; use System;
+with System;               use System;
+with System.Communication; use System.Communication;
 
 package body GNAT.Sockets is
 
@@ -248,14 +249,6 @@ package body GNAT.Sockets is
 
    function Err_Code_Image (E : Integer) return String;
    --  Return the value of E surrounded with brackets
-
-   function Last_Index
-     (First : Stream_Element_Offset;
-      Count : C.int) return Stream_Element_Offset;
-   --  Compute the Last OUT parameter for the various Receive_Socket
-   --  subprograms: returns First + Count - 1, except for the case
-   --  where First = Stream_Element_Offset'First and Res = 0, in which
-   --  case Stream_Element_Offset'Last is returned instead.
 
    procedure Initialize (X : in out Sockets_Library_Controller);
    procedure Finalize   (X : in out Sockets_Library_Controller);
@@ -1415,22 +1408,6 @@ package body GNAT.Sockets is
         and then Socket <= Item.Last
         and then Is_Socket_In_Set (Item.Set'Access, C.int (Socket)) /= 0;
    end Is_Set;
-
-   ----------------
-   -- Last_Index --
-   ----------------
-
-   function Last_Index
-     (First : Stream_Element_Offset;
-      Count : C.int) return Stream_Element_Offset
-   is
-   begin
-      if First = Stream_Element_Offset'First and then Count = 0 then
-         return Stream_Element_Offset'Last;
-      else
-         return First + Stream_Element_Offset (Count - 1);
-      end if;
-   end Last_Index;
 
    -------------------
    -- Listen_Socket --

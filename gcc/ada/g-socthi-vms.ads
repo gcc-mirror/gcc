@@ -187,9 +187,6 @@ package GNAT.Sockets.Thin is
       Typ      : C.int;
       Protocol : C.int) return C.int;
 
-   function C_Strerror
-     (Errnum : C.int) return C.Strings.chars_ptr;
-
    function C_System
      (Command : System.Address) return C.int;
 
@@ -255,7 +252,6 @@ private
    pragma Import (C, C_Select,        "DECC$SELECT");
    pragma Import (C, C_Setsockopt,    "DECC$SETSOCKOPT");
    pragma Import (C, C_Shutdown,      "DECC$SHUTDOWN");
-   pragma Import (C, C_Strerror,      "DECC$STRERROR");
    pragma Import (C, C_System,        "DECC$SYSTEM");
 
    pragma Import (C, Nonreentrant_Gethostbyname, "DECC$GETHOSTBYNAME");

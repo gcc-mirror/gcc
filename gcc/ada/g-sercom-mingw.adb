@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2008, AdaCore                      --
+--                    Copyright (C) 2007-2009, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,11 @@
 
 with Ada.Unchecked_Deallocation; use Ada;
 with Ada.Streams;                use Ada.Streams;
-with System.Win32.Ext;           use System, System.Win32, System.Win32.Ext;
+
+with System;               use System;
+with System.Communication; use System.Communication;
+with System.Win32;         use System.Win32;
+with System.Win32.Ext;     use System.Win32.Ext;
 
 package body GNAT.Serial_Communications is
 
@@ -158,7 +162,7 @@ package body GNAT.Serial_Communications is
          Raise_Error ("read error");
       end if;
 
-      Last := Buffer'First - 1 + Stream_Element_Offset (Read_Last);
+      Last := Last_Index (Buffer'First, C.int (Read_Last));
    end Read;
 
    ---------

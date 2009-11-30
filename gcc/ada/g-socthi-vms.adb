@@ -473,19 +473,6 @@ package body GNAT.Sockets.Thin is
 
    function Socket_Error_Message
      (Errno : Integer) return C.Strings.chars_ptr
-   is
-      use type Interfaces.C.Strings.chars_ptr;
-
-      C_Msg : C.Strings.chars_ptr;
-
-   begin
-      C_Msg := C_Strerror (C.int (Errno));
-
-      if C_Msg = C.Strings.Null_Ptr then
-         return Unknown_System_Error;
-      else
-         return C_Msg;
-      end if;
-   end Socket_Error_Message;
+   is separate;
 
 end GNAT.Sockets.Thin;
