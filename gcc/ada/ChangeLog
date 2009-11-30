@@ -1,3 +1,8 @@
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-tree.adb (Create_Attribute): Fix handling of VMS and Windows
+	* prj-attr.ads: Minor comment updates
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document pragma Short_Circuit
