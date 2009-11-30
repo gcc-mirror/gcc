@@ -31,6 +31,7 @@
 
 with System.Secure_Hashes.SHA2_Common;
 with System.Secure_Hashes.SHA2_32;
+
 package GNAT.SHA224 is new System.Secure_Hashes.H
   (Block_Words    => System.Secure_Hashes.SHA2_Common.Block_Words,
    State_Words    => 8,

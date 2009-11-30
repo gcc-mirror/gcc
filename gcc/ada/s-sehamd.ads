@@ -46,7 +46,7 @@ package System.Secure_Hashes.MD5 is
             Hash_Bit_Order => System.Low_Order_First);
    --  MD5 operates on 32-bit little endian words
 
-   Block_Words  : constant := 16;
+   Block_Words : constant := 16;
    --  Messages are processed in chunks of 16 words
 
    procedure Transform

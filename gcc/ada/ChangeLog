@@ -1,5 +1,23 @@
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
+	* g-sha256.ads, s-sehamd.ads, s-sehamd.adb, g-sha512.ads, g-sha224.ads,
+	g-sha384.ads: Minor reformatting
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* adaint.h (file_attributes): Reduce size of the structure, so that it
+	is less costly to store in records.
+	* makeutl.adb:
+	(Check_Source_Info_In_ALI): use Full_Source_Name instead of a direct
+	call to Find_File, since the former provides caching when appropriate,
+	which limits the number of system calls in some cases.
+	* osint.ads, prj.ads (Source_Data): do not store directly the timestamp,
+	but the file attributes since we also need access to the size of the
+	ALI file to parse it. This gives an opportunity for saving system calls
+	on Unix systems.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb, s-sechas.ads, s-sechas.adb: Minor reformatting.
 
 2009-11-30  Gary Dismukes  <dismukes@adacore.com>

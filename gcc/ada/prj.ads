@@ -31,6 +31,7 @@
 
 with Casing; use Casing;
 with Namet;  use Namet;
+with Osint;
 with Scans;  use Scans;
 with Types;  use Types;
 
@@ -745,7 +746,7 @@ package Prj is
       Dep_Path : Path_Name_Type := No_Path;
       --  Path name of the real dependency file
 
-      Dep_TS : Time_Stamp_Type := Empty_Time_Stamp;
+      Dep_TS : aliased Osint.File_Attributes := Osint.Unknown_Attributes;
       --  Dependency file time stamp
 
       Switches : File_Name_Type := No_File;
@@ -789,7 +790,7 @@ package Prj is
                        Dep_Name               => No_File,
                        Current_Dep_Path       => No_Path,
                        Dep_Path               => No_Path,
-                       Dep_TS                 => Empty_Time_Stamp,
+                       Dep_TS                 => Osint.Unknown_Attributes,
                        Switches               => No_File,
                        Switches_Path          => No_Path,
                        Switches_TS            => Empty_Time_Stamp,
