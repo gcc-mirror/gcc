@@ -1,3 +1,19 @@
+2009-11-30  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Update gnatcheck doc.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	make.adb, prj-makr.adb, g-sothco.ads: Minor reformattting
+	* s-taprop-dummy.adb: Minor code reorganization (raise with msgs start
+	with lower case).
+	* i-vxwoio.adb, g-dirope.adb, g-sercom-linux.adb,
+	g-enblsp-vms-alpha.adb, g-regist.adb, s-imgcha.adb, s-tarest.adb,
+	s-taprop-mingw.adb, g-exctra.adb, g-expect.adb, g-comlin.adb,
+	g-debpoo.adb, g-expect-vms.adb, g-pehage.adb, g-trasym-vms-alpha.adb,
+	g-enblsp-vms-ia64.adb, s-fatgen.adb, s-fileio.adb: Minor code
+	reorganization (use conditional expressions).
+
 2009-11-30  Vincent Celier  <celier@adacore.com>
 
 	* prj-makr.adb (Source_Files): New hash table to keep track of source

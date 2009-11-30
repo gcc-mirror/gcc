@@ -22519,7 +22519,9 @@ This rule has no parameters.
 @cindex @code{Positional_Generic_Parameters} rule (for @command{gnatcheck})
 
 @noindent
-Flag each instantiation using positional parameter notation.
+Flag each positional actual generic parameter except for the case when
+the generic unit being iinstantiated has exactly one generic formal
+parameter.
 
 This rule has no parameters.
 
@@ -22529,15 +22531,15 @@ This rule has no parameters.
 @cindex @code{Positional_Parameters} rule (for @command{gnatcheck})
 
 @noindent
-Flag each subprogram or entry call using positional parameter notation,
+Flag each positional parameter notation in a subprogram or entry call,
 except for the following:
 
 @itemize @bullet
 @item
-Invocations of prefix or infix operators are not flagged
+Parameters of calls to of prefix or infix operators are not flagged
 @item
 If the called subprogram or entry has only one formal parameter,
-the call is not flagged;
+the parameter of the call is not flagged;
 @item
 If a subprogram call uses the @emph{Object.Operation} notation, then
 @itemize @minus

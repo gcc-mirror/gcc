@@ -63,16 +63,10 @@ package body Interfaces.VxWorks.IO is
    is
       Status : int;
       Fd     : int;
-
    begin
       Fd := fileno (File);
       Status := ioctl (Fd, FIOSETOPTIONS, OPT_TERMINAL);
-
-      if Status /= int (ERROR) then
-         Success := True;
-      else
-         Success := False;
-      end if;
+      Success := (if Status /= int (ERROR) then True else False);
    end Disable_Get_Immediate;
 
 end Interfaces.VxWorks.IO;

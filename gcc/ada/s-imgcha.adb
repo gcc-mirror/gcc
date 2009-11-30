@@ -124,22 +124,13 @@ package body System.Img_Char is
 
       if V in C0_Range then
          S (1 .. 3) := C0 (V);
-
-         if S (3) = ' ' then
-            P := 2;
-         else
-            P := 3;
-         end if;
+         P := (if S (3) = ' ' then 2 else 3);
 
       elsif V in C1_Range then
          S (1 .. 3) := C1 (V);
 
          if S (1) /= 'r' then
-            if S (3) = ' ' then
-               P := 2;
-            else
-               P := 3;
-            end if;
+            P := (if S (3) = ' ' then 2 else 3);
 
          --  Special case, res means RESERVED_nnn where nnn is the three digit
          --  decimal value corresponding to the code position (more efficient

@@ -985,11 +985,7 @@ package body GNAT.Debug_Pools is
       is
       begin
          if H.Block_Size /= 0 then
-            if In_Use then
-               To_Byte (A).all := In_Use_Mark;
-            else
-               To_Byte (A).all := Free_Mark;
-            end if;
+            To_Byte (A).all := (if In_Use then In_Use_Mark else Free_Mark);
          end if;
       end Mark;
 
@@ -1416,11 +1412,8 @@ package body GNAT.Debug_Pools is
                Backtrace_Htable_Cumulate.Set (Elem);
 
                if Cumulate then
-                  if Data.Kind = Alloc then
-                     K := Indirect_Alloc;
-                  else
-                     K := Indirect_Dealloc;
-                  end if;
+                  K := (if Data.Kind = Alloc then Indirect_Alloc
+                                             else Indirect_Dealloc);
 
                   --  Propagate the direct call to all its parents
 

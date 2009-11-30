@@ -1030,11 +1030,7 @@ package body GNAT.Expect is
          Reinitialize_Buffer (Descriptor);
       end if;
 
-      if Add_LF then
-         Last := Full_Str'Last;
-      else
-         Last := Full_Str'Last - 1;
-      end if;
+      Last := (if Add_LF then Full_Str'Last else Full_Str'Last - 1);
 
       Call_Filters (Descriptor, Full_Str (Full_Str'First .. Last), Input);
 

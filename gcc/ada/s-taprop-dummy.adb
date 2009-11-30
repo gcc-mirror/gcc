@@ -190,7 +190,7 @@ package body System.Task_Primitives.Operations is
    procedure Initialize (Environment_Task : Task_Id) is
       No_Tasking : Boolean;
    begin
-      raise Program_Error with "Tasking not implemented on this configuration";
+      raise Program_Error with "tasking not implemented on this configuration";
    end Initialize;
 
    procedure Initialize (S : in out Suspension_Object) is

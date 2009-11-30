@@ -340,11 +340,10 @@ package body System.Tasking.Restricted.Stages is
 
             Write_Lock (C);
 
-            if C.Common.Base_Priority < Get_Priority (Self_ID) then
-               Activate_Prio := Get_Priority (Self_ID);
-            else
-               Activate_Prio := C.Common.Base_Priority;
-            end if;
+            Activate_Prio :=
+              (if C.Common.Base_Priority < Get_Priority (Self_ID)
+               then Get_Priority (Self_ID)
+               else C.Common.Base_Priority);
 
             STPO.Create_Task
               (C, Task_Wrapper'Address,
@@ -477,11 +476,10 @@ package body System.Tasking.Restricted.Stages is
 
       pragma Assert (Stack_Address = Null_Address);
 
-      if Priority = Unspecified_Priority then
-         Base_Priority := Self_ID.Common.Base_Priority;
-      else
-         Base_Priority := System.Any_Priority (Priority);
-      end if;
+      Base_Priority :=
+        (if Priority = Unspecified_Priority
+         then Self_ID.Common.Base_Priority
+         else System.Any_Priority (Priority));
 
       if Single_Lock then
          Lock_RTS;

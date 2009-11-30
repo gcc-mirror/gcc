@@ -212,8 +212,8 @@ package GNAT.Sockets.Thin_Common is
                       C.Strings.Null_Ptr);
    --  Arrays of C (char *)
 
-   type Servent is new System.Storage_Elements.Storage_Array
-                         (1 .. SOSC.SIZEOF_struct_servent);
+   type Servent is new
+     System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_struct_servent);
    for Servent'Alignment use 8;
    --  Service entry. This is an opaque type used only via the following
    --  accessor functions, because 'struct servent' has different layouts on
@@ -223,11 +223,14 @@ package GNAT.Sockets.Thin_Common is
    pragma Convention (C, Servent_Access);
    --  Access to service entry
 
-   function Servent_S_Name (E : Servent_Access) return C.Strings.chars_ptr;
-   function Servent_S_Aliases (E : Servent_Access)
-                               return Chars_Ptr_Pointers.Pointer;
-   function Servent_S_Port (E : Servent_Access) return C.int;
-   function Servent_S_Proto (E : Servent_Access) return C.Strings.chars_ptr;
+   function Servent_S_Name
+     (E : Servent_Access) return C.Strings.chars_ptr;
+   function Servent_S_Aliases
+     (E : Servent_Access) return Chars_Ptr_Pointers.Pointer;
+   function Servent_S_Port
+     (E : Servent_Access) return C.int;
+   function Servent_S_Proto
+     (E : Servent_Access) return C.Strings.chars_ptr;
 
    ------------------
    -- Host entries --

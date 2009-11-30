@@ -3427,8 +3427,8 @@ package body Make is
                      end if;
 
                      --  Start the compilation and record it. We can do this
-                     --  because there is at least one free process. This
-                     --  might change the current directory.
+                     --  because there is at least one free process. This might
+                     --  change the current directory.
 
                      Collect_Arguments_And_Compile
                        (Full_Source_File => Full_Source_File,

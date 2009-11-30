@@ -312,18 +312,17 @@ package body System.Task_Primitives.Operations is
       Unlock (L, Global_Lock => True);
 
       --  No problem if we are interrupted here: if the condition is signaled,
-      --  WaitForSingleObject will simply not block
+      --  WaitForSingleObject will simply not block.
 
       if Rel_Time <= 0.0 then
          Timed_Out := True;
          Wait_Result := 0;
 
       else
-         if Rel_Time >= Duration (Time_Out_Max) / 1000 then
-            Time_Out := Time_Out_Max;
-         else
-            Time_Out := DWORD (Rel_Time * 1000);
-         end if;
+         Time_Out :=
+           (if Rel_Time >= Duration (Time_Out_Max) / 1000
+            then Time_Out_Max
+            else DWORD (Rel_Time * 1000));
 
          Wait_Result := WaitForSingleObject (HANDLE (Cond.all), Time_Out);
 
