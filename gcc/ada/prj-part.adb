@@ -2083,7 +2083,7 @@ package body Prj.Part is
                              GNAT.OS_Lib.Normalize_Pathname
                                (Result.all,
                                 Directory      => Directory,
-                                Resolve_Links  => False,
+                                Resolve_Links  => Opt.Follow_Links_For_Files,
                                 Case_Sensitive => True);
          begin
             Free (Result);

@@ -813,6 +813,8 @@ package body Osint is
       end if;
 
       if Exec_Suffix'Length /= 0 then
+         Get_Name_String (Name);
+
          Add_Suffix := True;
          if Only_If_No_Suffix then
             for J in reverse 1 .. Name_Len loop
@@ -829,8 +831,6 @@ package body Osint is
          end if;
 
          if Add_Suffix then
-            Get_Name_String (Name);
-
             declare
                Buffer : String := Name_Buffer (1 .. Name_Len);
 

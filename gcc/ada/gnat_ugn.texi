@@ -9326,7 +9326,21 @@ This switch cannot be used when using a project file.
 @ifclear vms
 @item -eL
 @cindex @option{-eL} (@command{gnatmake})
+@cindex symbolic links
 Follow all symbolic links when processing project files.
+This should be used if your project uses symbolic links for files or
+directories, but is not needed in other cases.
+
+@cindex naming scheme
+This also assumes that no directory matches the naming scheme for files (for
+instance that you do not have a directory called "sources.ads" when using the
+default GNAT naming scheme).
+
+When you do not have to use this switch (ie by default), gnatmake is able to
+save a lot of system calls (several per source file and object file), which
+can result in a significant speed up to load and manipulate a project file,
+especially when using source files from a remote system.
+
 @end ifclear
 
 @item ^-eS^/STANDARD_OUTPUT_FOR_COMMANDS^
