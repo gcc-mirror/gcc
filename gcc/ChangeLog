@@ -1,3 +1,11 @@
+2009-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (DF_MODES): Simplify.
+	(TF_ONLY_MODES, OF_ONLY_MODES): Delete.
+	(TF_MODES, OF_MODES): Adjust for above change.
+	(TF_MODES_NO_S, OF_MODES_NO_S): Likewise.
+	*  config/sparc/sparc.h (REGNO_REG_CLASS): Move around.
+
 2009-11-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/41812
@@ -13,7 +21,6 @@
 	(df_md_local_compute): Only include live registers in init.
 	(df_md_transfer_function): Prune the in-set computed by
 	the confluence function, and the gen-set too.
-	(df_simulate_one_insn_forwards): Fix typo.
 
 2009-11-30  Hans-Peter Nilsson  <hp@axis.com>
 
