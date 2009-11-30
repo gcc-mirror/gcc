@@ -81,6 +81,15 @@ package Exp_Ch9 is
    --  object at the outer level, but it is much easier to generate one per
    --  declarative part.
 
+   function Build_Private_Protected_Declaration (N : Node_Id) return Entity_Id;
+   --  A subprogram body without a previous spec that appears in a protected
+   --  body must be expanded separately to create a subprogram declaration
+   --  for it, in order to resolve internal calls to it from other protected
+   --  operations. It would seem that no locking version of the operation is
+   --  needed, but in fact, in Ada2005 the subprogram may be used in a call-
+   --  back, and therefore a protected version of the operation must be
+   --  generated as well.
+
    function Build_Protected_Sub_Specification
      (N        : Node_Id;
       Prot_Typ : Entity_Id;

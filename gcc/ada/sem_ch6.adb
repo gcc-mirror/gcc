@@ -1994,61 +1994,7 @@ package body Sem_Ch6 is
         and then Comes_From_Source (N)
         and then Is_Protected_Type (Current_Scope)
       then
-         declare
-            Decl     : Node_Id;
-            Plist    : List_Id;
-            Formal   : Entity_Id;
-            New_Spec : Node_Id;
-
-         begin
-            Formal := First_Formal (Body_Id);
-
-            --  The protected operation always has at least one formal, namely
-            --  the object itself, but it is only placed in the parameter list
-            --  if expansion is enabled.
-
-            if Present (Formal)
-              or else Expander_Active
-            then
-               Plist := Copy_Parameter_List (Body_Id);
-            else
-               Plist := No_List;
-            end if;
-
-            if Nkind (Body_Spec) = N_Procedure_Specification then
-               New_Spec :=
-                 Make_Procedure_Specification (Loc,
-                    Defining_Unit_Name =>
-                      Make_Defining_Identifier (Sloc (Body_Id),
-                        Chars => Chars (Body_Id)),
-                    Parameter_Specifications => Plist);
-            else
-               New_Spec :=
-                 Make_Function_Specification (Loc,
-                    Defining_Unit_Name =>
-                      Make_Defining_Identifier (Sloc (Body_Id),
-                        Chars => Chars (Body_Id)),
-                    Parameter_Specifications => Plist,
-                    Result_Definition =>
-                      New_Occurrence_Of (Etype (Body_Id), Loc));
-            end if;
-
-            Decl :=
-              Make_Subprogram_Declaration (Loc,
-                Specification => New_Spec);
-            Insert_Before (N, Decl);
-            Spec_Id := Defining_Unit_Name (New_Spec);
-
-            --  Indicate that the entity comes from source, to ensure that
-            --  cross-reference information is properly generated. The body
-            --  itself is rewritten during expansion, and the body entity will
-            --  not appear in calls to the operation.
-
-            Set_Comes_From_Source (Spec_Id, True);
-            Analyze (Decl);
-            Set_Has_Completion (Spec_Id);
-            Set_Convention (Spec_Id, Convention_Protected);
-         end;
+         Spec_Id := Build_Private_Protected_Declaration (N);
       end if;
 
       --  If a separate spec is present, then deal with freezing issues
