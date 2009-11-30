@@ -1,5 +1,10 @@
 2009-11-30  Richard Guenther  <rguenther@suse.de>
 
+	* tree-into-ssa.c (insert_phi_nodes): Add PHI nodes in
+	variable UID order.
+
+2009-11-30  Richard Guenther  <rguenther@suse.de>
+
 	* tree-dump.c (dump_option_value_in): Add TDF_NOUID.
 	* tree-pass.h (TDF_NOUID): Likewise.
 	* print-rtl.c: Include tree-pass.h.
