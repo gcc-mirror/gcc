@@ -1,3 +1,15 @@
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): Recognize documented switches that have a
+	separate parameter.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads: Minor reformatting
+	* errout.adb: Minor reformatting
+	Minor code reorganization (use N_Subprogram_Specification to simplify)
+	* exp_ch7.adb: Add comment.
+
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
 	* put_scos.adb (Put_SCOs): Do not generate a SCO unit header for a unit

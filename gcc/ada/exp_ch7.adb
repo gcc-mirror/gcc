@@ -3288,9 +3288,10 @@ package body Exp_Ch7 is
 
    begin
       --  Class-wide types must be treated as controlled because they may
-      --  contain an extension that has controlled components
+      --  contain an extension that has controlled components.
 
-      --  We can skip this if finalization is not available
+      --  We can skip this if finalization is not available.
+      --  or if it is a value type (because ???)
 
       return (Is_Class_Wide_Type (T)
                 and then not In_Finalization_Root (T)
