@@ -80,8 +80,8 @@ package body Osint is
    --  Appends Suffix to Name and returns the new name
 
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type;
-   --  Convert OS format time to GNAT format time stamp.
-   --  Returns Empty_Time_Stamp if T is Invalid_Time
+   --  Convert OS format time to GNAT format time stamp. If T is Invalid_Time,
+   --  then returns Empty_Time_Stamp.
 
    function Executable_Prefix return String_Ptr;
    --  Returns the name of the root directory where the executable is stored.
@@ -91,8 +91,8 @@ package body Osint is
    --  "/foo/bar/". Return "" if location is not recognized as described above.
 
    function Update_Path (Path : String_Ptr) return String_Ptr;
-   --  Update the specified path to replace the prefix with the location
-   --  where GNAT is installed. See the file prefix.c in GCC for details.
+   --  Update the specified path to replace the prefix with the location where
+   --  GNAT is installed. See the file prefix.c in GCC for details.
 
    procedure Locate_File
      (N     : File_Name_Type;
@@ -106,9 +106,11 @@ package body Osint is
    --  if T = Source, Dir is an index into the Src_Search_Directories table.
    --  Returns the File_Name_Type of the full file name if file found, or
    --  No_File if not found.
+   --
    --  On exit, Found is set to the file that was found, and Attr to a cache of
    --  its attributes (at least those that have been computed so far). Reusing
    --  the cache will save some system calls.
+   --
    --  Attr is always reset in this call to Unknown_Attributes, even in case of
    --  failure
 
@@ -239,8 +241,9 @@ package body Osint is
       File : File_Name_Type;
       Attr : aliased File_Attributes;
    end record;
+
    No_File_Info_Cache : constant File_Info_Cache :=
-     (No_File, Unknown_Attributes);
+                          (No_File, Unknown_Attributes);
 
    package File_Name_Hash_Table is new GNAT.HTable.Simple_HTable (
      Header_Num => File_Hash_Num,
@@ -584,13 +587,13 @@ package body Osint is
 
       declare
          Norm : String_Ptr := Normalize_Directory_Name (Dir);
-      begin
 
+      begin
          --  Do nothing if the directory is already in the list. This saves
          --  system calls and avoid unneeded work
 
          for D in Lib_Search_Directories.First ..
-           Lib_Search_Directories.Last
+                  Lib_Search_Directories.Last
          loop
             if Lib_Search_Directories.Table (D).all = Norm.all then
                Free (Norm);
@@ -1002,10 +1005,13 @@ package body Osint is
    -----------------
 
    function File_Length
-     (Name : C_File_Name; Attr : access File_Attributes) return Long_Integer
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Long_Integer
    is
       function Internal
-        (F : Integer; N : C_File_Name; A : System.Address) return Long_Integer;
+        (F : Integer;
+         N : C_File_Name;
+         A : System.Address) return Long_Integer;
       pragma Import (C, Internal, "__gnat_file_length_attr");
    begin
       return Internal (-1, Name, Attr.all'Address);
@@ -1016,7 +1022,8 @@ package body Osint is
    ---------------------
 
    function File_Time_Stamp
-     (Name : C_File_Name; Attr : access File_Attributes) return OS_Time
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return OS_Time
    is
       function Internal (N : C_File_Name; A : System.Address) return OS_Time;
       pragma Import (C, Internal, "__gnat_file_time_name_attr");
@@ -1036,13 +1043,13 @@ package body Osint is
 
       Get_Name_String (Name);
 
-      --  File_Time_Stamp will always return Invalid_Time if the file does not
-      --  exist, and OS_Time_To_GNAT_Time will convert this value to
-      --  Empty_Time_Stamp. Therefore we do not need to first test whether the
-      --  file actually exists, which saves a system call.
+      --  File_Time_Stamp will always return Invalid_Time if the file does
+      --  not exist, and OS_Time_To_GNAT_Time will convert this value to
+      --  Empty_Time_Stamp. Therefore we do not need to first test whether
+      --  the file actually exists, which saves a system call.
 
       return OS_Time_To_GNAT_Time
-        (File_Time_Stamp (Name_Buffer (1 .. Name_Len)));
+               (File_Time_Stamp (Name_Buffer (1 .. Name_Len)));
    end File_Stamp;
 
    function File_Stamp (Name : Path_Name_Type) return Time_Stamp_Type is
@@ -1084,9 +1091,9 @@ package body Osint is
 
       begin
          --  If we are looking for a config file, look only in the current
-         --  directory, i.e. return input argument unchanged. Also look
-         --  only in the current directory if we are looking for a .dg
-         --  file (happens in -gnatD mode).
+         --  directory, i.e. return input argument unchanged. Also look only in
+         --  the curren directory if we are looking for a .dg file (happens in
+         --  -gnatD mode).
 
          if T = Config
            or else (Debug_Generated_Code
@@ -2392,10 +2399,13 @@ package body Osint is
 
       if Opt.Check_Object_Consistency then
          --  On most systems, this does not result in an extra system call
-         Current_Full_Lib_Stamp := OS_Time_To_GNAT_Time
-           (File_Time_Stamp (Name_Buffer'Address, Lib_File_Attr));
+
+         Current_Full_Lib_Stamp :=
+           OS_Time_To_GNAT_Time
+             (File_Time_Stamp (Name_Buffer'Address, Lib_File_Attr));
 
          --  ??? One system call here
+
          Current_Full_Obj_Stamp := File_Stamp (Current_Full_Obj_Name);
 
          if Current_Full_Obj_Stamp (1) = ' ' then
@@ -2710,6 +2720,7 @@ package body Osint is
    is
       File : File_Name_Type;
       Attr : aliased File_Attributes;
+
    begin
       if not File_Cache_Enabled then
          Find_File (N, T, File, Attr'Access);
@@ -2722,8 +2733,9 @@ package body Osint is
       else
          Get_Name_String (File);
          Name_Buffer (Name_Len + 1) := ASCII.NUL;
-         return OS_Time_To_GNAT_Time
-           (File_Time_Stamp (Name_Buffer'Address, Attr'Access));
+         return
+           OS_Time_To_GNAT_Time
+             (File_Time_Stamp (Name_Buffer'Address, Attr'Access));
       end if;
    end Smart_File_Stamp;
 
@@ -2757,8 +2769,10 @@ package body Osint is
    begin
       if not File_Cache_Enabled then
          Find_File (N, T, Info.File, Info.Attr'Access);
+
       else
          Info := File_Name_Hash_Table.Get (N);
+
          if Info.File = No_File then
             Find_File (N, T, Info.File, Info.Attr'Access);
             File_Name_Hash_Table.Set (N, Info);
@@ -2801,8 +2815,7 @@ package body Osint is
 
          if Is_Directory_Separator (Name_Buffer (J)) then
 
-            --  Return the part of Name that follows this last directory
-            --  separator.
+            --  Return part of Name that follows this last directory separator
 
             Name_Buffer (1 .. Name_Len - J) := Name_Buffer (J + 1 .. Name_Len);
             Name_Len := Name_Len - J;
@@ -2849,7 +2862,7 @@ package body Osint is
          Prefix_Flag : Integer) return Address;
       pragma Import (C, To_Canonical_Dir_Spec, "__gnat_to_canonical_dir_spec");
 
-      C_Host_Dir      : String (1 .. Host_Dir'Length + 1);
+      C_Host_Dir         : String (1 .. Host_Dir'Length + 1);
       Canonical_Dir_Addr : Address;
       Canonical_Dir_Len  : Integer;
 
@@ -2862,6 +2875,7 @@ package body Osint is
       else
          Canonical_Dir_Addr := To_Canonical_Dir_Spec (C_Host_Dir'Address, 0);
       end if;
+
       Canonical_Dir_Len := C_String_Length (Canonical_Dir_Addr);
 
       if Canonical_Dir_Len = 0 then

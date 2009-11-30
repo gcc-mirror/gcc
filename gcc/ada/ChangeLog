@@ -1,3 +1,23 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* bcheck.adb, gnatlink.adb, make.adb, makeutl.adb, osint.adb,
+	osint.ads, prj-ext.adb, sem_case.adb: Minor reformatting
+	* g-alleve.adb: Minor code reorganization (use conditional expressions)
+
+2009-11-30  Matthew Heaney  <heaney@adacore.com>
+
+	* a-crbtgo.adb (Delete_Fixup): Changed always-true predicates to
+	assertions.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* a-tasatt.adb, s-crtl.ads, s-taprop-dummy.adb (System.CRTL.malloc32,
+	System.CRTL.realloc32): Remove VMS-specific routines.
+	(Ada.Task_Attributes.Reference): Remove unreachable code.
+	(System.Task_Primitives.Operations.Initialize, dummy version):
+	Use plain Program_Error rather than call to
+	System.Error_Reporting.Shutdown.
+
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
 	* s-oscons-tmplt.c, xoscons.adb: Add new constants in preparation for
