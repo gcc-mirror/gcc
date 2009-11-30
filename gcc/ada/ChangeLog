@@ -1,3 +1,16 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-tiinio.adb: Remove extraneous pragma Warnings (Off).
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Minor reformatting
+
+2009-11-30  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext.ad[s,b], system-vxworks-ppc.ads, s-stchop-vxworks.adb:
+	Comment update.
+
 2009-11-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* par_sco.adb (Traverse_Handled_Statement_Sequence): Do not emit SCO's

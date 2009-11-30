@@ -990,13 +990,11 @@ package body Par_SCO is
 
    begin
 
-      --  for package bodies without a statement part, the parser adds an
-      --  empty one, to normalize the representation. The null statement
-      --  therein, which does not come from source, does not get a SCO.
+      --  For package bodies without a statement part, the parser adds an empty
+      --  one, to normalize the representation. The null statement therein,
+      --  which does not come from source, does not get a SCO.
 
-      if Present (N)
-        and then Comes_From_Source (N)
-      then
+      if Present (N) and then Comes_From_Source (N) then
          Traverse_Declarations_Or_Statements (Statements (N));
 
          if Present (Exception_Handlers (N)) then

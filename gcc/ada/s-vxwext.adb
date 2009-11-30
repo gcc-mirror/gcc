@@ -31,7 +31,7 @@
 --  This package provides vxworks specific support functions needed
 --  by System.OS_Interface.
 
---  This is the VxWorks 5.x version of this package
+--  This is the VxWorks 5 and VxWorks MILS version of this package
 
 package body System.VxWorks.Ext is
 
