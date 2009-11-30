@@ -5212,11 +5212,12 @@ package body Sem_Prag is
          -- Annotate --
          --------------
 
-         --  pragma Annotate (IDENTIFIER, [IDENTIFIER], {, ARG});
+         --  pragma Annotate (IDENTIFIER [, IDENTIFIER {, ARG}]);
          --  ARG ::= NAME | EXPRESSION
-         --  The first two arguments are by convention intended to refer
-         --  to an external tool and a tool-specific function. These
-         --  arguments are not analyzed.
+
+         --  The first two arguments are by convention intended to refer to an
+         --  external tool and a tool-specific function. These arguments are
+         --  not analyzed.
 
          when Pragma_Annotate => Annotate : begin
             GNAT_Pragma;
@@ -5228,7 +5229,7 @@ package body Sem_Prag is
                Exp : Node_Id;
 
             begin
-               --  Second unanalyzed parameter is optional.
+               --  Second unanalyzed parameter is optional
 
                if No (Arg2) then
                   null;

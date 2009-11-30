@@ -7051,19 +7051,23 @@ package body Sem_Util is
 
    function Is_Delegate (T : Entity_Id) return Boolean is
       Desig_Type : Entity_Id;
+
    begin
       if VM_Target /= CLI_Target then
          return False;
       end if;
 
       --  Access-to-subprograms are delegates in CIL
+
       if Ekind (T) = E_Access_Subprogram_Type then
          return True;
       end if;
 
       if Ekind (T) not in Access_Kind then
-         --  a delegate is a managed pointer. If no designated type is defined
+
+         --  A delegate is a managed pointer. If no designated type is defined
          --  it means that it's not a delegate.
+
          return False;
       end if;
 
@@ -7074,6 +7078,7 @@ package body Sem_Util is
       end if;
 
       --  Test if the type is inherited from [mscorlib]System.Delegate
+
       while Etype (Desig_Type) /= Desig_Type loop
          if Chars (Scope (Desig_Type)) /= No_Name
            and then Is_Imported (Scope (Desig_Type))
@@ -7095,11 +7100,11 @@ package body Sem_Util is
    function Is_Variable (N : Node_Id) return Boolean is
 
       Orig_Node : constant Node_Id := Original_Node (N);
-      --  We do the test on the original node, since this is basically a
-      --  test of syntactic categories, so it must not be disturbed by
-      --  whatever rewriting might have occurred. For example, an aggregate,
-      --  which is certainly NOT a variable, could be turned into a variable
-      --  by expansion.
+      --  We do the test on the original node, since this is basically a test
+      --  of syntactic categories, so it must not be disturbed by whatever
+      --  rewriting might have occurred. For example, an aggregate, which is
+      --  certainly NOT a variable, could be turned into a variable by
+      --  expansion.
 
       function In_Protected_Function (E : Entity_Id) return Boolean;
       --  Within a protected function, the private components of the

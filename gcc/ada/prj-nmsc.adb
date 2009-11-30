@@ -2521,10 +2521,10 @@ package body Prj.Nmsc is
                         Data.Tree);
 
       Library_Interface : constant Prj.Variable_Value :=
-                     Prj.Util.Value_Of
-                       (Snames.Name_Library_Interface,
-                        Project.Decl.Attributes,
-                        Data.Tree);
+                            Prj.Util.Value_Of
+                              (Snames.Name_Library_Interface,
+                               Project.Decl.Attributes,
+                               Data.Tree);
 
       List      : String_List_Id;
       Element   : String_Element;
@@ -2678,8 +2678,8 @@ package body Prj.Nmsc is
 
          Project.Interfaces_Defined := True;
 
-      elsif Project.Extends /= No_Project and then
-            Project.Extends.Interfaces_Defined
+      elsif Project.Extends /= No_Project
+        and then Project.Extends.Interfaces_Defined
       then
          Project.Interfaces_Defined := True;
 
