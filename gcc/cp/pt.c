@@ -5526,6 +5526,13 @@ convert_template_argument (tree parm,
       if (TYPE_P (val))
 	val = strip_typedefs (val);
     }
+  else if (TREE_CODE (orig_arg) == SCOPE_REF)
+    {
+      /* Strip typedefs from the SCOPE_REF.  */
+      tree type = strip_typedefs (TREE_TYPE (orig_arg));
+      tree scope = strip_typedefs (TREE_OPERAND (orig_arg, 0));
+      val = build2 (SCOPE_REF, type, scope, TREE_OPERAND (orig_arg, 1));
+    }
   else
     {
       tree t = tsubst (TREE_TYPE (parm), args, complain, in_decl);
