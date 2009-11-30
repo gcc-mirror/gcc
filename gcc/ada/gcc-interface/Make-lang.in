@@ -191,7 +191,6 @@ GNAT_ADA_OBJS =	\
  ada/i-cstrin.o	\
  ada/impunit.o	\
  ada/inline.o	\
- ada/instpar.o	\
  ada/interfac.o	\
  ada/itypes.o	\
  ada/krunch.o	\
