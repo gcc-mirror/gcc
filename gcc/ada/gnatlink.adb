@@ -2148,11 +2148,10 @@ begin
 
             if Linker_Path = Gcc_Path and then VM_Target = No_VM then
 
-               --  For systems where the default is to link statically
-               --  with libgcc, if gcc is not called with
-               --  -shared-libgcc, call it with -static-libgcc, as
-               --  there are some platforms where one of these two
-               --  switches is compulsory to link.
+               --  For systems where the default is to link statically with
+               --  libgcc, if gcc is not called with -shared-libgcc, call it
+               --  with -static-libgcc, as there are some platforms where one
+               --  of these two switches is compulsory to link.
 
                if Shared_Libgcc_Default = 'T'
                  and then not Shared_Libgcc_Seen

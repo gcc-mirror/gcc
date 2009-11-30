@@ -171,10 +171,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
                if Right (W) = null
                  or else Color (Right (W)) = Black
                then
-                  if Left (W) /= null then
-                     Set_Color (Left (W), Black);
-                  end if;
-
+                  pragma Assert (Left (W) /= null);
+                  Set_Color (Left (W), Black);
                   Set_Color (W, Red);
                   Right_Rotate (Tree, W);
                   W := Right (Parent (X));
@@ -208,10 +206,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
 
             else
                if Left (W) = null or else Color (Left (W)) = Black then
-                  if Right (W) /= null then
-                     Set_Color (Right (W), Black);
-                  end if;
-
+                  pragma Assert (Right (W) /= null);
+                  Set_Color (Right (W), Black);
                   Set_Color (W, Red);
                   Left_Rotate (Tree, W);
                   W := Left (Parent (X));

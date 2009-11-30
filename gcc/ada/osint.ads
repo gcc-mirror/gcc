@@ -30,8 +30,8 @@ with Namet; use Namet;
 with Types; use Types;
 
 with System.Storage_Elements;
-with System.OS_Lib; use System.OS_Lib;
-with System;        use System;
+with System.OS_Lib;           use System.OS_Lib;
+with System;                  use System;
 
 pragma Elaborate_All (System.OS_Lib);
 --  For the call to function Get_Target_Object_Suffix in the private part
@@ -234,10 +234,12 @@ package Osint is
    ---------------------
    -- File attributes --
    ---------------------
+
    --  The following subprograms offer services similar to those found in
    --  System.OS_Lib, but with the ability to extra multiple information from
    --  a single system call, depending on the system. This can result in fewer
    --  system calls when reused.
+
    --  In all these subprograms, the requested value is either read from the
    --  File_Attributes parameter (resulting in no system call), or computed
    --  from the disk and then cached in the File_Attributes parameter (possibly
@@ -249,27 +251,35 @@ package Osint is
    --  This must be initialized to Unknown_Attributes prior to the first call.
 
    function Is_Directory
-     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Boolean;
    function Is_Regular_File
-     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Boolean;
    function Is_Symbolic_Link
-     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Boolean;
    --  Return the type of the file,
 
    function File_Length
-     (Name : C_File_Name; Attr : access File_Attributes) return Long_Integer;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Long_Integer;
    --  Return the length (number of bytes) of the file
 
    function File_Time_Stamp
-     (Name : C_File_Name; Attr : access File_Attributes) return OS_Time;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return OS_Time;
    --  Return the time stamp of the file
 
    function Is_Readable_File
-     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Boolean;
    function Is_Executable_File
-     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Boolean;
    function Is_Writable_File
-     (Name : C_File_Name; Attr : access File_Attributes) return Boolean;
+     (Name : C_File_Name;
+      Attr : access File_Attributes) return Boolean;
    --  Return the access rights for the file
 
    -------------------------
@@ -436,6 +446,7 @@ package Osint is
    --  The source file directory lookup penalty is incurred every single time
    --  the routines are called unless you have previously called
    --  Source_File_Data (Cache => True). See below.
+   --
    --  The procedural version also returns some file attributes for the ALI
    --  file (to save on system calls later on).
 
@@ -468,11 +479,11 @@ package Osint is
    -- Representation of Library Information --
    -------------------------------------------
 
-   --  Associated with each compiled source file is library information,
-   --  a string of bytes whose exact format is described in the body of
-   --  Lib.Writ. Compiling a source file generates this library information
-   --  for the compiled unit, and access the library information for units
-   --  that were compiled previously on which the unit being compiled depends.
+   --  Associated with each compiled source file is library information, a
+   --  string of bytes whose exact format is described in the body of Lib.Writ.
+   --  Compiling a source file generates this library information for the
+   --  compiled unit, and access the library information for units that were
+   --  compiled previously on which the unit being compiled depends.
 
    --  How this information is stored is up to the implementation of this
    --  package. At the interface level, this information is simply associated
@@ -524,15 +535,14 @@ package Osint is
    --  include any directory information. The implementation is responsible
    --  for searching for the file in appropriate directories.
    --
-   --  If Opt.Check_Object_Consistency is set to True then this routine
-   --  checks whether the object file corresponding to the Lib_File is
-   --  consistent with it. The object file is inconsistent if the object
-   --  does not exist or if it has an older time stamp than Lib_File.
-   --  This check is not performed when the Lib_File is "locked" (i.e.
-   --  read/only) because in this case the object file may be buried
-   --  in a library. In case of inconsistencies Read_Library_Info
-   --  behaves as if it did not find Lib_File (namely if Fatal_Err is
-   --  False, null is returned).
+   --  If Opt.Check_Object_Consistency is set to True then this routine checks
+   --  whether the object file corresponding to the Lib_File is consistent with
+   --  it. The object file is inconsistent if the object does not exist or if
+   --  it has an older time stamp than Lib_File. This check is not performed
+   --  when the Lib_File is "locked" (i.e. read/only) because in this case the
+   --  object file may be buried in a library. In case of inconsistencies
+   --  Read_Library_Info behaves as if it did not find Lib_File (namely if
+   --  Fatal_Err is False, null is returned).
 
    function Read_Library_Info_From_Full
      (Full_Lib_File : File_Name_Type;
@@ -726,7 +736,7 @@ private
 
    type File_Attributes is
      array (1 .. File_Attributes_Size)
-     of System.Storage_Elements.Storage_Element;
+       of System.Storage_Elements.Storage_Element;
    for File_Attributes'Alignment use Standard'Maximum_Alignment;
 
    Unknown_Attributes : constant File_Attributes := (others => 0);

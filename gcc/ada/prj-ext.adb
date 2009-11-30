@@ -213,9 +213,9 @@ package body Prj.Ext is
 
             declare
                New_Dir : constant String :=
-                 Normalize_Pathname
-                   (Name_Buffer (First .. Last),
-                    Resolve_Links => Opt.Follow_Links_For_Dirs);
+                           Normalize_Pathname
+                             (Name_Buffer (First .. Last),
+                              Resolve_Links => Opt.Follow_Links_For_Dirs);
 
             begin
                --  If the absolute path was resolved and is different from

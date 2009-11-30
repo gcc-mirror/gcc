@@ -2453,14 +2453,12 @@ package body Make is
       procedure Await_Compile
         (Data  : out Compilation_Data;
          OK    : out Boolean);
-      --  Awaits that an outstanding compilation process terminates. When
-      --  it does set Data to the information registered for the corresponding
-      --  call to Add_Process.
-      --  Note that this time stamp can be used to check whether the
-      --  compilation did generate an object file. OK is set to True if the
-      --  compilation succeeded.
-      --  Data could be No_Compilation_Data if there was no compilation to wait
-      --  for.
+      --  Awaits that an outstanding compilation process terminates. When it
+      --  does set Data to the information registered for the corresponding
+      --  call to Add_Process. Note that this time stamp can be used to check
+      --  whether the compilation did generate an object file. OK is set to
+      --  True if the compilation succeeded. Data could be No_Compilation_Data
+      --  if there was no compilation to wait for.
 
       function Bad_Compilation_Count return Natural;
       --  Returns the number of compilation failures
@@ -2474,9 +2472,9 @@ package body Make is
          Source_Index     : Int;
          Pid              : out Process_Id;
          Process_Created  : out Boolean);
-      --  Collect arguments from project file (if any) and compile.
-      --  If no compilation was attempted, Processed_Created is set to False,
-      --  and the value of Pid is unknown.
+      --  Collect arguments from project file (if any) and compile. If no
+      --  compilation was attempted, Processed_Created is set to False, and the
+      --  value of Pid is unknown.
 
       function Compile
         (Project      : Project_Id;
@@ -2579,18 +2577,18 @@ package body Make is
       -------------------
 
       procedure Await_Compile
-        (Data  : out Compilation_Data;
-         OK    : out Boolean)
+        (Data : out Compilation_Data;
+         OK   : out Boolean)
       is
-         Pid     : Process_Id;
-         Project : Project_Id;
+         Pid       : Process_Id;
+         Project   : Project_Id;
          Comp_Data : Project_Compilation_Access;
 
       begin
          pragma Assert (Outstanding_Compiles > 0);
 
-         Data  := No_Compilation_Data;
-         OK    := False;
+         Data := No_Compilation_Data;
+         OK   := False;
 
          --  The loop here is a work-around for a problem on VMS; in some
          --  circumstances (shared library and several executables, for
@@ -2614,13 +2612,14 @@ package body Make is
                   --  file name for reuse by a subsequent compilation.
 
                   if Running_Compile (J).Mapping_File /= No_Mapping_File then
-                     Comp_Data := Project_Compilation_Htable.Get
-                       (Project_Compilation, Project);
+                     Comp_Data :=
+                       Project_Compilation_Htable.Get
+                         (Project_Compilation, Project);
                      Comp_Data.Last_Free_Indices :=
                        Comp_Data.Last_Free_Indices + 1;
                      Comp_Data.Free_Mapping_File_Indices
                        (Comp_Data.Last_Free_Indices) :=
-                       Running_Compile (J).Mapping_File;
+                         Running_Compile (J).Mapping_File;
                   end if;
 
                   --  To actually remove this Pid and related info from
@@ -2629,7 +2628,6 @@ package body Make is
 
                   if J = Outstanding_Compiles then
                      null;
-
                   else
                      Running_Compile (J) :=
                        Running_Compile (Outstanding_Compiles);
@@ -2642,6 +2640,8 @@ package body Make is
 
             --  This child process was not one of our compilation processes;
             --  just ignore it for now.
+
+            --  Why is this commented out code sitting here???
 
             --  raise Program_Error;
          end loop;
@@ -3001,6 +3001,7 @@ package body Make is
          Uname        : Unit_Name_Type;
          Unit_Name    : Name_Id;
          Uid          : Prj.Unit_Index;
+
       begin
          while Good_ALI_Present loop
             ALI          := Get_Next_Good_ALI;
@@ -3015,24 +3016,23 @@ package body Make is
                Main_Unit := ALIs.Table (ALI).Main_Program /= None;
             end if;
 
-            --  The following adds the standard library (s-stalib) to the
-            --  list of files to be handled by gnatmake: this file and any
-            --  files it depends on are always included in every bind,
-            --  even if they are not in the explicit dependency list.
-            --  Of course, it is not added if Suppress_Standard_Library
-            --  is True.
+            --  The following adds the standard library (s-stalib) to the list
+            --  of files to be handled by gnatmake: this file and any files it
+            --  depends on are always included in every bind, even if they are
+            --  not in the explicit dependency list. Of course, it is not added
+            --  if Suppress_Standard_Library is True.
 
-            --  However, to avoid annoying output about s-stalib.ali being
-            --  read only, when "-v" is used, we add the standard library
-            --  only when "-a" is used.
+            --  However, to avoid annoying output about s-stalib.ali being read
+            --  only, when "-v" is used, we add the standard library only when
+            --  "-a" is used.
 
             if Need_To_Check_Standard_Library then
                Check_Standard_Library;
             end if;
 
-            --  Now insert in the Q the unmarked source files (i.e. those
-            --  which have never been inserted in the Q and hence never
-            --  considered). Only do that if Unique_Compile is False.
+            --  Now insert in the Q the unmarked source files (i.e. those which
+            --  have never been inserted in the Q and hence never considered).
+            --  Only do that if Unique_Compile is False.
 
             if not Unique_Compile then
                for J in
@@ -3044,9 +3044,8 @@ package body Make is
                      Sfile := Withs.Table (K).Sfile;
                      Uname := Withs.Table (K).Uname;
 
-                     --  If project files are used, find the proper source
-                     --  to compile, in case Sfile is the spec, but there
-                     --  is a body.
+                     --  If project files are used, find the proper source to
+                     --  compile in case Sfile is the spec but there is a body.
 
                      if Main_Project /= No_Project then
                         Get_Name_String (Uname);
@@ -3163,8 +3162,9 @@ package body Make is
       --------------------------------
 
       function Must_Exit_Because_Of_Error return Boolean is
-         Data        : Compilation_Data;
-         Success     : Boolean;
+         Data    : Compilation_Data;
+         Success : Boolean;
+
       begin
          if Bad_Compilation_Count > 0 and then not Keep_Going then
             while Outstanding_Compiles > 0 loop
@@ -3212,29 +3212,29 @@ package body Make is
       function Start_Compile_If_Possible
         (Args : Argument_List) return Boolean
       is
-         In_Lib_Dir       : Boolean;
-         Need_To_Compile  : Boolean;
-         Pid              : Process_Id;
-         Process_Created  : Boolean;
+         In_Lib_Dir      : Boolean;
+         Need_To_Compile : Boolean;
+         Pid             : Process_Id;
+         Process_Created : Boolean;
 
          Source_File      : File_Name_Type;
          Full_Source_File : File_Name_Type;
          Source_File_Attr : aliased File_Attributes;
          --  The full name of the source file and its attributes (size, ...)
 
-         Source_Unit      : Unit_Name_Type;
-         Source_Index     : Int;
+         Source_Unit  : Unit_Name_Type;
+         Source_Index : Int;
          --  Index of the current unit in the current source file
 
-         Lib_File         : File_Name_Type;
-         Full_Lib_File    : File_Name_Type;
-         Lib_File_Attr    : aliased File_Attributes;
-         Read_Only        : Boolean := False;
-         ALI              : ALI_Id;
+         Lib_File      : File_Name_Type;
+         Full_Lib_File : File_Name_Type;
+         Lib_File_Attr : aliased File_Attributes;
+         Read_Only     : Boolean := False;
+         ALI           : ALI_Id;
          --  The ALI file and its attributes (size, stamp, ...)
 
-         Obj_File         : File_Name_Type;
-         Obj_Stamp        : Time_Stamp_Type;
+         Obj_File  : File_Name_Type;
+         Obj_Stamp : Time_Stamp_Type;
          --  The object file
 
       begin
@@ -3252,8 +3252,7 @@ package body Make is
                Lib_File => Full_Lib_File,
                Attr     => Lib_File_Attr);
 
-            --  If this source has already been compiled, the executable is
-            --  obsolete.
+            --  If source has already been compiled, executable is obsolete
 
             if Is_In_Obsoleted (Source_File) then
                Executable_Obsolete := True;
@@ -3359,7 +3358,8 @@ package body Make is
                   end if;
 
                   if not Need_To_Compile then
-                     --  The ALI file is up-to-date. Record its Id
+
+                     --  The ALI file is up-to-date; record its Id
 
                      Record_Good_ALI (ALI);
 
@@ -3368,15 +3368,15 @@ package body Make is
 
                      if First_Compiled_File = No_File
                        and then (Most_Recent_Obj_File = No_File
-                                 or else Obj_Stamp > Most_Recent_Obj_Stamp)
+                                  or else Obj_Stamp > Most_Recent_Obj_Stamp)
                      then
                         Most_Recent_Obj_File  := Obj_File;
                         Most_Recent_Obj_Stamp := Obj_Stamp;
                      end if;
 
                   else
-                     --  Check that switch -x has been used if a source
-                     --  outside of project files need to be compiled.
+                     --  Check that switch -x has been used if a source outside
+                     --  of project files need to be compiled.
 
                      if Main_Project /= No_Project
                        and then Arguments_Project = No_Project
@@ -3396,6 +3396,7 @@ package body Make is
                         Most_Recent_Obj_File := No_File;
 
                         if Do_Not_Execute then
+
                            --  Exit the main loop
 
                            return True;
@@ -3408,11 +3409,13 @@ package body Make is
 
                      if In_Place_Mode then
                         if Full_Lib_File = No_File then
+
                            --  If the library file was not found, then save
                            --  the library file near the source file.
 
-                           Lib_File := Osint.Lib_File_Name
-                             (Full_Source_File, Source_Index);
+                           Lib_File :=
+                             Osint.Lib_File_Name
+                               (Full_Source_File, Source_Index);
                            Full_Lib_File := Lib_File;
 
                         else
@@ -3441,6 +3444,7 @@ package body Make is
                      --  being the same to find the resulting ALI file.
 
                      if not In_Place_Mode then
+
                         --  Compute the expected location of the ALI file. This
                         --  can be from several places:
                         --    -i => in place mode. In such a case,
@@ -3456,6 +3460,7 @@ package body Make is
                            Add_Str_To_Name_Buffer (Object_Directory_Path.all);
                            Add_Str_To_Name_Buffer (Get_Name_String (Lib_File));
                            Full_Lib_File := Name_Find;
+
                         else
                            if Project_Of_Current_Object_Directory /=
                              No_Project
@@ -3466,6 +3471,7 @@ package body Make is
                               Add_Str_To_Name_Buffer
                                 (Get_Name_String (Lib_File));
                               Full_Lib_File := Name_Find;
+
                            else
                               Full_Lib_File := Lib_File;
                            end if;
@@ -3475,21 +3481,20 @@ package body Make is
 
                      Lib_File_Attr := Unknown_Attributes;
 
-                     --  Make sure we could successfully start
-                     --  the Compilation.
+                     --  Make sure we could successfully start the Compilation
 
                      if Process_Created then
                         if Pid = Invalid_Pid then
                            Record_Failure (Full_Source_File, Source_Unit);
                         else
                            Add_Process
-                             (Pid              => Pid,
-                              Sfile            => Full_Source_File,
-                              Afile            => Lib_File,
-                              Uname            => Source_Unit,
-                              Mfile            => Mfile,
-                              Full_Lib_File    => Full_Lib_File,
-                              Lib_File_Attr    => Lib_File_Attr);
+                             (Pid           => Pid,
+                              Sfile         => Full_Source_File,
+                              Afile         => Lib_File,
+                              Uname         => Source_Unit,
+                              Mfile         => Mfile,
+                              Full_Lib_File => Full_Lib_File,
+                              Lib_File_Attr => Lib_File_Attr);
                         end if;
                      end if;
                   end if;
@@ -3504,16 +3509,16 @@ package body Make is
       -----------------------------
 
       procedure Wait_For_Available_Slot is
-         Compilation_OK   : Boolean;
-         Text             : Text_Buffer_Ptr;
-         ALI              : ALI_Id;
-         Data             : Compilation_Data;
+         Compilation_OK : Boolean;
+         Text           : Text_Buffer_Ptr;
+         ALI            : ALI_Id;
+         Data           : Compilation_Data;
 
       begin
          if Outstanding_Compiles = Max_Process
            or else (Empty_Q
-                    and then not Good_ALI_Present
-                    and then Outstanding_Compiles > 0)
+                     and then not Good_ALI_Present
+                     and then Outstanding_Compiles > 0)
          then
             Await_Compile (Data, Compilation_OK);
 
@@ -3536,26 +3541,28 @@ package body Make is
 
                   Check_Object_Consistency :=
                     Check_Object_Consistency
-                    and Compilation_OK
-                    and (Output_Is_Object or Do_Bind_Step);
+                      and Compilation_OK
+                      and (Output_Is_Object or Do_Bind_Step);
 
-                  Text := Read_Library_Info_From_Full
-                    (Data.Full_Lib_File, Data.Lib_File_Attr'Access);
+                  Text :=
+                    Read_Library_Info_From_Full
+                      (Data.Full_Lib_File, Data.Lib_File_Attr'Access);
 
                   --  Restore Check_Object_Consistency to its initial value
 
                   Check_Object_Consistency := Saved_Object_Consistency;
                end;
 
-               --  If an ALI file was generated by this compilation, scan
-               --  the ALI file and record it.
+               --  If an ALI file was generated by this compilation, scan the
+               --  ALI file and record it.
 
                --  If the scan fails, a previous ali file is inconsistent with
                --  the unit just compiled.
 
                if Text /= null then
-                  ALI := Scan_ALI
-                    (Data.Lib_File, Text, Ignore_ED => False, Err => True);
+                  ALI :=
+                    Scan_ALI
+                      (Data.Lib_File, Text, Ignore_ED => False, Err => True);
 
                   if ALI = No_ALI_Id then
 
@@ -3616,11 +3623,11 @@ package body Make is
       end if;
 
       --  The following two flags affect the behavior of ALI.Set_Source_Table.
-      --  We set Check_Source_Files to True to ensure that source file
-      --  time stamps are checked, and we set All_Sources to False to
-      --  avoid checking the presence of the source files listed in the
-      --  source dependency section of an ali file (which would be a mistake
-      --  since the ali file may be obsolete).
+      --  We set Check_Source_Files to True to ensure that source file time
+      --  stamps are checked, and we set All_Sources to False to avoid checking
+      --  the presence of the source files listed in the source dependency
+      --  section of an ali file (which would be a mistake since the ali file
+      --  may be obsolete).
 
       Check_Source_Files := True;
       All_Sources        := False;
@@ -4357,8 +4364,7 @@ package body Make is
                      --  Otherwise, if there is a spec, put it in the mapping
 
                   elsif Unit.File_Names (Spec) /= No_Source
-                    and then Unit.File_Names (Spec).Project /=
-                    No_Project
+                    and then Unit.File_Names (Spec).Project /= No_Project
                   then
                      Get_Name_String (Unit.Name);
                      Add_Str_To_Name_Buffer ("%s");
@@ -4576,9 +4582,9 @@ package body Make is
             end if;
 
          --  If no mains have been specified on the command line, and we are
-         --  using a project file, we either find the main(s) in attribute
-         --  Main of the main project, or we put all the sources of the project
-         --  file as mains.
+         --  using a project file, we either find the main(s) in attribute Main
+         --  of the main project, or we put all the sources of the project file
+         --  as mains.
 
          else
             if Main_Index /= 0 then
@@ -4626,19 +4632,18 @@ package body Make is
                   end if;
 
                else
-                  --  The attribute Main is not an empty list.
-                  --  Put all the main subprograms in the list as if they were
-                  --  specified on the command line. However, if attribute
-                  --  Languages includes a language other than Ada, only
-                  --  include the Ada mains; if there is no Ada main, compile
-                  --  all the sources of the project.
+                  --  The attribute Main is not an empty list. Put all the main
+                  --  subprograms in the list as if they were specified on the
+                  --  command line. However, if attribute Languages includes a
+                  --  language other than Ada, only include the Ada mains; if
+                  --  there is no Ada main, compile all sources of the project.
 
                   declare
                      Languages : constant Variable_Value :=
                                    Prj.Util.Value_Of
-                                    (Name_Languages,
-                                     Main_Project.Decl.Attributes,
-                                     Project_Tree);
+                                     (Name_Languages,
+                                      Main_Project.Decl.Attributes,
+                                      Project_Tree);
 
                      Current : String_List_Id;
                      Element : String_Element;
@@ -4652,7 +4657,6 @@ package body Make is
 
                      if not Languages.Default then
                         Current := Languages.Values;
-
                         Look_For_Foreign :
                         while Current /= Nil_String loop
                            Element := Project_Tree.String_Elements.
@@ -7698,6 +7702,7 @@ package body Make is
 
             declare
                Norm : constant String := Normalize_Pathname (Argv);
+
             begin
                if Norm (Norm'Last) = Directory_Separator then
                   Object_Directory_Path := new String'(Norm);

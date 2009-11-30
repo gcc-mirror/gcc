@@ -191,6 +191,7 @@ package body Bcheck is
                else
                   ALI_Path_Id :=
                     Osint.Full_Lib_File_Name (ALIs.Table (A).Afile);
+
                   if Osint.Is_Readonly_Library (ALI_Path_Id) then
                      if Tolerate_Consistency_Errors then
                         Error_Msg ("?{ should be recompiled");
