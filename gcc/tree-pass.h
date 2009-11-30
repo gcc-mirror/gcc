@@ -79,6 +79,7 @@ enum tree_dump_index
 #define TDF_EH		(1 << 19)	/* display EH region number
 					   holding this gimple statement.  */
 
+#define TDF_NOUID	(1 << 20)	/* omit UIDs from dumps.  */
 
 /* In tree-dump.c */
 

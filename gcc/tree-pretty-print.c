@@ -182,13 +182,21 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
   if ((flags & TDF_UID) || DECL_NAME (node) == NULL_TREE)
     {
       if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
-        pp_printf (buffer, "L.%d", (int) LABEL_DECL_UID (node));
+	pp_printf (buffer, "L.%d", (int) LABEL_DECL_UID (node));
       else if (TREE_CODE (node) == DEBUG_EXPR_DECL)
-	pp_printf (buffer, "D#%i", DEBUG_TEMP_UID (node));
+	{
+	  if (flags & TDF_NOUID)
+	    pp_string (buffer, "D#xxxx");
+	  else
+	    pp_printf (buffer, "D#%i", DEBUG_TEMP_UID (node));
+	}
       else
 	{
 	  char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
-	  pp_printf (buffer, "%c.%u", c, DECL_UID (node));
+	  if (flags & TDF_NOUID)
+	    pp_printf (buffer, "%c.xxxx", c);
+	  else
+	    pp_printf (buffer, "%c.%u", c, DECL_UID (node));
 	}
     }
 }
@@ -1030,9 +1038,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       if (DECL_NAME (node))
 	dump_decl_name (buffer, node, flags);
       else if (LABEL_DECL_UID (node) != -1)
-        pp_printf (buffer, "<L%d>", (int) LABEL_DECL_UID (node));
+	pp_printf (buffer, "<L%d>", (int) LABEL_DECL_UID (node));
       else
-        pp_printf (buffer, "<D.%u>", DECL_UID (node));
+	{
+	  if (flags & TDF_NOUID)
+	    pp_string (buffer, "<D.xxxx>");
+	  else
+	    pp_printf (buffer, "<D.%u>", DECL_UID (node));
+	}
       break;
 
     case TYPE_DECL:

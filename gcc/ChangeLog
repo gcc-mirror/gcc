@@ -1,3 +1,18 @@
+2009-11-30  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dump.c (dump_option_value_in): Add TDF_NOUID.
+	* tree-pass.h (TDF_NOUID): Likewise.
+	* print-rtl.c: Include tree-pass.h.
+	(print_mem_expr): Pass dump_flags.
+	(print_rtx): Likewise.
+	* print-tree.c: Include tree-pass.h.
+	(print_node_brief): Handle TDF_NOUID.
+	(print_node): Likewise.
+	* tree-pretty-print.c (dump_decl_name): Likewise.
+	(dump_generic_node): Likewise.
+	* Makefile.in (print-rtl.o, print-tree.o): Add $(TREE_PASS_H)
+	dependency.
+
 2009-11-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16-lib2-count-leading-zeros.c: Delete.

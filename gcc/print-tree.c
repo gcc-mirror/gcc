@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "diagnostic.h"
 #include "tree-flow.h"
+#include "tree-pass.h"
 
 /* Define the hash table of nodes already seen.
    Such nodes are not repeated; brief cross-references are used.  */
@@ -95,10 +96,22 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
 	fprintf (file, " %s", IDENTIFIER_POINTER (DECL_NAME (node)));
       else if (TREE_CODE (node) == LABEL_DECL
 	       && LABEL_DECL_UID (node) != -1)
-	fprintf (file, " L.%d", (int) LABEL_DECL_UID (node));
+	{
+	  if (dump_flags & TDF_NOUID)
+	    fprintf (file, " L.xxxx");
+	  else
+	    fprintf (file, " L.%d", (int) LABEL_DECL_UID (node));
+	}
       else
-	fprintf (file, " %c.%u", TREE_CODE (node) == CONST_DECL ? 'C' : 'D',
-		 DECL_UID (node));
+	{
+	  if (dump_flags & TDF_NOUID)
+	    fprintf (file, " %c.xxxx",
+		     TREE_CODE (node) == CONST_DECL ? 'C' : 'D');
+	  else
+	    fprintf (file, " %c.%u",
+		     TREE_CODE (node) == CONST_DECL ? 'C' : 'D',
+		     DECL_UID (node));
+	}
     }
   else if (tclass == tcc_type)
     {
@@ -260,10 +273,20 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	fprintf (file, " %s", IDENTIFIER_POINTER (DECL_NAME (node)));
       else if (code == LABEL_DECL
 	       && LABEL_DECL_UID (node) != -1)
-	fprintf (file, " L.%d", (int) LABEL_DECL_UID (node));
+	{
+	  if (dump_flags & TDF_NOUID)
+	    fprintf (file, " L.xxxx");
+	  else
+	    fprintf (file, " L.%d", (int) LABEL_DECL_UID (node));
+	}
       else
-	fprintf (file, " %c.%u", code == CONST_DECL ? 'C' : 'D',
-		 DECL_UID (node));
+	{
+	  if (dump_flags & TDF_NOUID)
+	    fprintf (file, " %c.xxxx", code == CONST_DECL ? 'C' : 'D');
+	  else
+	    fprintf (file, " %c.%u", code == CONST_DECL ? 'C' : 'D',
+		     DECL_UID (node));
+	}
     }
   else if (tclass == tcc_type)
     {

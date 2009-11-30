@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "cselib.h"
+#include "tree-pass.h"
 #endif
 
 static FILE *outfile;
@@ -78,7 +79,7 @@ void
 print_mem_expr (FILE *outfile, const_tree expr)
 {
   fputc (' ', outfile);
-  print_generic_expr (outfile, CONST_CAST_TREE (expr), 0);
+  print_generic_expr (outfile, CONST_CAST_TREE (expr), dump_flags);
 }
 #endif
 
@@ -241,7 +242,7 @@ print_rtx (const_rtx in_rtx)
 	  {
 	    tree decl = SYMBOL_REF_DECL (in_rtx);
 	    if (decl)
-	      print_node_brief (outfile, "", decl, 0);
+	      print_node_brief (outfile, "", decl, dump_flags);
 	  }
 #endif
 	else if (i == 4 && NOTE_P (in_rtx))
