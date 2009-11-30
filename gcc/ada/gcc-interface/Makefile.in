@@ -1503,7 +1503,6 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     i-cstrea.adb<i-cstrea-vms.adb \
     memtrack.adb<memtrack-vms_64.adb \
     s-auxdec.ads<s-auxdec-vms_64.ads \
-    s-crtl.ads<s-crtl-vms_64.ads \
     s-inmaop.adb<s-inmaop-vms.adb \
     s-interr.adb<s-interr-vms.adb \
     s-intman.adb<s-intman-vms.adb \

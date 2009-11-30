@@ -439,34 +439,14 @@ procedure Gnatlink is
                         Compile_Bind_File := False;
 
                      when 'o' =>
-                        if VM_Target = CLI_Target then
-                           Linker_Options.Increment_Last;
-                           Linker_Options.Table (Linker_Options.Last) :=
-                              new String'("/QUIET");
-
-                        else
-                           Linker_Options.Increment_Last;
-                           Linker_Options.Table (Linker_Options.Last) :=
-                             new String'(Arg);
-                        end if;
-
                         Next_Arg := Next_Arg + 1;
 
                         if Next_Arg > Argument_Count then
                            Exit_With_Error ("Missing argument for -o");
                         end if;
 
-                        if VM_Target = CLI_Target then
-                           Output_File_Name :=
-                             new String'("/OUTPUT=" & Argument (Next_Arg));
-                        else
-                           Output_File_Name :=
-                             new String'(Argument (Next_Arg));
-                        end if;
-
-                        Linker_Options.Increment_Last;
-                        Linker_Options.Table (Linker_Options.Last) :=
-                          Output_File_Name;
+                        Output_File_Name :=
+                          new String'(Executable_Name (Argument (Next_Arg)));
 
                      when 'R' =>
                         Opt.Run_Path_Option := False;
@@ -1728,32 +1708,43 @@ begin
       Output_File_Name :=
         new String'(Base_Name (Ali_File_Name.all)
                       & Get_Target_Debuggable_Suffix.all);
-
-      if VM_Target = CLI_Target then
-         Linker_Options.Increment_Last;
-         Linker_Options.Table (Linker_Options.Last) := new String'("/QUIET");
-
-         Linker_Options.Increment_Last;
-         Linker_Options.Table (Linker_Options.Last) := new String'("/DEBUG");
-
-         Linker_Options.Increment_Last;
-         Linker_Options.Table (Linker_Options.Last) :=
-           new String'("/OUTPUT=" & Output_File_Name.all);
-
-      elsif RTX_RTSS_Kernel_Module_On_Target then
-         Linker_Options.Increment_Last;
-         Linker_Options.Table (Linker_Options.Last) :=
-           new String'("/OUT:" & Output_File_Name.all);
-
-      else
-         Linker_Options.Increment_Last;
-         Linker_Options.Table (Linker_Options.Last) := new String'("-o");
-
-         Linker_Options.Increment_Last;
-         Linker_Options.Table (Linker_Options.Last) :=
-           new String'(Output_File_Name.all);
-      end if;
    end if;
+
+   if VM_Target = CLI_Target then
+      Linker_Options.Increment_Last;
+      Linker_Options.Table (Linker_Options.Last) := new String'("/QUIET");
+
+      Linker_Options.Increment_Last;
+      Linker_Options.Table (Linker_Options.Last) := new String'("/DEBUG");
+
+      Linker_Options.Increment_Last;
+      Linker_Options.Table (Linker_Options.Last) :=
+        new String'("/OUTPUT=" & Output_File_Name.all);
+
+   elsif RTX_RTSS_Kernel_Module_On_Target then
+      Linker_Options.Increment_Last;
+      Linker_Options.Table (Linker_Options.Last) :=
+        new String'("/OUT:" & Output_File_Name.all);
+
+   else
+      Linker_Options.Increment_Last;
+      Linker_Options.Table (Linker_Options.Last) := new String'("-o");
+
+      Linker_Options.Increment_Last;
+      Linker_Options.Table (Linker_Options.Last) :=
+        new String'(Output_File_Name.all);
+   end if;
+
+   --  Delete existing executable, in case it is a symbolic link, to avoid
+   --  modifying the target of the symbolic link.
+
+   declare
+      Dummy : Boolean;
+      pragma Unreferenced (Dummy);
+
+   begin
+      Delete_File (Output_File_Name.all, Dummy);
+   end;
 
    --  Warn if main program is called "test", as that may be a built-in command
    --  on Unix. On non-Unix systems executables have a suffix, so the warning

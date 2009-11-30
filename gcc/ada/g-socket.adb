@@ -163,7 +163,7 @@ package body GNAT.Sockets is
    function To_Host_Entry (E : Hostent) return Host_Entry_Type;
    --  Conversion function
 
-   function To_Service_Entry (E : Servent) return Service_Entry_Type;
+   function To_Service_Entry (E : Servent_Access) return Service_Entry_Type;
    --  Conversion function
 
    function To_Timeval (Val : Timeval_Duration) return Timeval;
@@ -970,7 +970,7 @@ package body GNAT.Sockets is
 
       --  Translate from the C format to the API format
 
-      return To_Service_Entry (Res);
+      return To_Service_Entry (Res'Unchecked_Access);
    end Get_Service_By_Name;
 
    -------------------------
@@ -996,7 +996,7 @@ package body GNAT.Sockets is
 
       --  Translate from the C format to the API format
 
-      return To_Service_Entry (Res);
+      return To_Service_Entry (Res'Unchecked_Access);
    end Get_Service_By_Port;
 
    ---------------------
@@ -2352,17 +2352,17 @@ package body GNAT.Sockets is
    -- To_Service_Entry --
    ----------------------
 
-   function To_Service_Entry (E : Servent) return Service_Entry_Type is
+   function To_Service_Entry (E : Servent_Access) return Service_Entry_Type is
       use type C.size_t;
 
-      Official : constant String := C.Strings.Value (E.S_Name);
+      Official : constant String := C.Strings.Value (Servent_S_Name (E));
 
       Aliases : constant Chars_Ptr_Array :=
-                  Chars_Ptr_Pointers.Value (E.S_Aliases);
+                  Chars_Ptr_Pointers.Value (Servent_S_Aliases (E));
       --  S_Aliases points to a list of name aliases. The list is
       --  terminated by a NULL pointer.
 
-      Protocol : constant String := C.Strings.Value (E.S_Proto);
+      Protocol : constant String := C.Strings.Value (Servent_S_Proto (E));
 
       Result : Service_Entry_Type (Aliases_Length => Aliases'Length - 1);
       --  The last element is a null pointer
@@ -2383,7 +2383,7 @@ package body GNAT.Sockets is
       end loop;
 
       Result.Port :=
-        Port_Type (Network_To_Short (C.unsigned_short (E.S_Port)));
+        Port_Type (Network_To_Short (C.unsigned_short (Servent_S_Port (E))));
 
       Result.Protocol := To_Name (Protocol);
       return Result;

@@ -238,10 +238,10 @@ package body GNAT.Array_Split is
          loop
             if K > Count_Sep then
 
-               --  No more separators, last slice ends at the end of the source
-               --  string.
+               --  No more separators, last slice ends at end of source string
 
                Stop := S.Source'Last;
+
             else
                Stop := S.Indexes (K) - 1;
             end if;

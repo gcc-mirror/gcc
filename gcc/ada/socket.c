@@ -59,6 +59,9 @@
 #include <string.h>
 /* Required for memcpy() */
 
+extern const size_t __gnat_sizeof_servent = sizeof(struct servent);
+/* For passing the size of servent to Ada code. */
+
 extern void __gnat_disable_sigpipe (int fd);
 extern void __gnat_disable_all_sigpipes (void);
 extern int  __gnat_create_signalling_fds (int *fds);
@@ -74,6 +77,10 @@ extern void __gnat_remove_socket_from_set (fd_set *, int);
 extern void __gnat_reset_socket_set (fd_set *);
 extern int  __gnat_get_h_errno (void);
 extern int  __gnat_socket_ioctl (int, int, int *);
+extern char * __gnat_servent_s_name (struct servent *);
+extern char ** __gnat_servent_s_aliases (struct servent *);
+extern int __gnat_servent_s_port (struct servent *);
+extern char * __gnat_servent_s_proto (struct servent *);
 #if defined (__vxworks) || defined (_WIN32)
 extern int  __gnat_inet_pton (int, const char *, void *);
 #endif
@@ -487,6 +494,61 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
 #endif
 }
 #endif
+
+/*
+ * Accessor functions for struct servent.
+ *
+ * These are needed because servent has different representations on different
+ * platforms, and we don't want to deal with that on the Ada side. For example,
+ * on Linux, we have (see /usr/include netdb.h):
+ *
+ *   struct servent
+ *   {
+ *     char *s_name;
+ *     char **s_aliases;
+ *     int s_port;
+ *     char *s_proto;
+ *   };
+ *
+ * and on Windows (see mingw's socket.h):
+ *
+ *   struct servent {
+ *     char *s_name;
+ *     char **s_aliases;
+ *   #ifdef _WIN64
+ *     char *s_proto;
+ *     short s_port;
+ *   #else
+ *     short s_port;
+ *     char *s_proto;
+ *   #endif
+ *   };
+ */
+
+char *
+__gnat_servent_s_name (struct servent * s)
+{
+  return s->s_name;
+}
+
+char **
+__gnat_servent_s_aliases (struct servent * s)
+{
+  return s->s_aliases;
+}
+
+int
+__gnat_servent_s_port (struct servent * s)
+{
+  return s->s_port;
+}
+
+char *
+__gnat_servent_s_proto (struct servent * s)
+{
+  return s->s_proto;
+}
+
 
 #else
 # warning Sockets are not supported on this platform
