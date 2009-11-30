@@ -1,3 +1,9 @@
+2009-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/40371
+	* call.c (add_template_candidate_real): Early return NULL if
+	the arglist length is smaller than skip_without_in_chrg; tidy.
+
 2009-11-30  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42069

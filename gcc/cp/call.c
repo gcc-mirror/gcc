@@ -2457,9 +2457,10 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_tree_vec (ntparms);
-  unsigned int nargs;
-  int skip_without_in_chrg;
-  tree first_arg_without_in_chrg;
+  unsigned int len = VEC_length (tree, arglist);
+  unsigned int nargs = (first_arg == NULL_TREE ? 0 : 1) + len;
+  unsigned int skip_without_in_chrg = 0;
+  tree first_arg_without_in_chrg = first_arg;
   tree *args_without_in_chrg;
   unsigned int nargs_without_in_chrg;
   unsigned int ia, ix;
@@ -2467,12 +2468,6 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   struct z_candidate *cand;
   int i;
   tree fn;
-
-  nargs = (first_arg == NULL_TREE ? 0 : 1) + VEC_length (tree, arglist);
-
-  skip_without_in_chrg = 0;
-
-  first_arg_without_in_chrg = first_arg;
 
   /* We don't do deduction on the in-charge parameter, the VTT
      parameter or 'this'.  */
@@ -2494,9 +2489,11 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 	++skip_without_in_chrg;
     }
 
+  if (len < skip_without_in_chrg)
+    return NULL;
+
   nargs_without_in_chrg = ((first_arg_without_in_chrg != NULL_TREE ? 1 : 0)
-			   + (VEC_length (tree, arglist)
-			      - skip_without_in_chrg));
+			   + (len - skip_without_in_chrg));
   args_without_in_chrg = XALLOCAVEC (tree, nargs_without_in_chrg);
   ia = 0;
   if (first_arg_without_in_chrg != NULL_TREE)
