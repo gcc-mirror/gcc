@@ -11917,7 +11917,44 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx_vperm2f128<mode>3"
+(define_expand "avx_vperm2f128<mode>3"
+  [(set (match_operand:AVX256MODE2P 0 "register_operand" "")
+	(unspec:AVX256MODE2P
+	  [(match_operand:AVX256MODE2P 1 "register_operand" "")
+	   (match_operand:AVX256MODE2P 2 "nonimmediate_operand" "")
+	   (match_operand:SI 3 "const_0_to_255_operand" "")]
+	  UNSPEC_VPERMIL2F128))]
+  "TARGET_AVX"
+{
+  int mask = INTVAL (operands[2]);
+  if ((mask & 0x88) == 0)
+    {
+      rtx perm[<ssescalarnum>], t1, t2;
+      int i, base, nelt = <ssescalarnum>, nelt2 = nelt / 2;
+
+      base = (mask & 3) * nelt2;
+      for (i = 0; i < nelt2; ++i)
+	perm[i] = GEN_INT (base + i);
+
+      base = ((mask >> 4) & 3) * nelt2;
+      for (i = 0; i < nelt2; ++i)
+	perm[i + nelt2] = GEN_INT (base + i);
+
+      t2 = gen_rtx_VEC_CONCAT (<ssedoublesizemode>mode,
+			       operands[1], operands[2]);
+      t1 = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelt, perm));
+      t2 = gen_rtx_VEC_SELECT (<MODE>mode, t2, t1);
+      t2 = gen_rtx_SET (VOIDmode, operands[0], t2);
+      emit_insn (t2);
+      DONE;
+    }
+})
+
+;; Note that bits 7 and 3 of the imm8 allow lanes to be zeroed, which
+;; means that in order to represent this properly in rtl we'd have to
+;; nest *another* vec_concat with a zero operand and do the select from
+;; a 4x wide vector.  That doesn't seem very nice.
+(define_insn "*avx_vperm2f128<mode>_full"
   [(set (match_operand:AVX256MODE2P 0 "register_operand" "=x")
 	(unspec:AVX256MODE2P
 	  [(match_operand:AVX256MODE2P 1 "register_operand" "x")
@@ -11926,6 +11963,26 @@
 	  UNSPEC_VPERMIL2F128))]
   "TARGET_AVX"
   "vperm2f128\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V8SF")])
+
+(define_insn "*avx_vperm2f128<mode>_nozero"
+  [(set (match_operand:AVX256MODE2P 0 "register_operand" "=x")
+	(vec_select:AVX256MODE2P
+	  (vec_concat:<ssedoublesizemode>
+	    (match_operand:AVX256MODE2P 1 "register_operand" "x")
+	    (match_operand:AVX256MODE2P 2 "nonimmediate_operand" "xm"))
+	  (match_parallel 3 "avx_vperm2f128_<mode>_operand"
+	    [(match_operand 4 "const_int_operand" "")])))]
+  "TARGET_AVX"
+{
+  int mask = avx_vperm2f128_parallel (operands[3], <MODE>mode) - 1;
+  operands[3] = GEN_INT (mask);
+  return "vperm2f128\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+}
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")

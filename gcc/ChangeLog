@@ -1,5 +1,15 @@
 2009-11-30  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (avx_vperm2f128_parallel): New.
+	* config/i386/i386-protos.h: Declare it.
+	* config/i386/predicates.md (avx_vperm2f128_v8sf_operand,
+	avx_vperm2f128_v8si_operand, avx_vperm2f128_v4df_operand): New.
+	* config/i386/sse.md (avx_vperm2f128<mode>3): Change to expander.
+	(*avx_vperm2f128<mode>_full): Renamed from avx_vperm2f128<mode>3.
+	(*avx_vperm2f128<mode>_nozero): New.
+
+2009-11-30  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386-builtin-types.def (V4DF_FTYPE_V4DF_V4DF_V4DI): New.
 	(V8SF_FTYPE_V8SF_V8SF_V8SI): New.
 	* config/i386/i386.c (ix86_vectorize_builtin_vec_perm): Support

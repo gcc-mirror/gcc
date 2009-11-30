@@ -1227,3 +1227,17 @@
 (define_predicate "avx_vpermilp_v2df_operand"
   (and (match_code "parallel")
        (match_test "avx_vpermilp_parallel (op, V2DFmode)")))
+
+;; Return 1 if OP is a parallel for a vperm2f128 permute.
+
+(define_predicate "avx_vperm2f128_v8sf_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vperm2f128_parallel (op, V8SFmode)")))
+
+(define_predicate "avx_vperm2f128_v8si_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vperm2f128_parallel (op, V8SImode)")))
+
+(define_predicate "avx_vperm2f128_v4df_operand"
+  (and (match_code "parallel")
+       (match_test "avx_vperm2f128_parallel (op, V4DFmode)")))

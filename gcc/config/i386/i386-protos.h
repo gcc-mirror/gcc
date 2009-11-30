@@ -48,6 +48,7 @@ extern bool x86_extended_reg_mentioned_p (rtx);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
 extern int avx_vpermilp_parallel (rtx par, enum machine_mode mode);
+extern int avx_vperm2f128_parallel (rtx par, enum machine_mode mode);
 
 extern int ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
 extern int ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);

@@ -24646,6 +24646,58 @@ avx_vpermilp_parallel (rtx par, enum machine_mode mode)
   /* Make sure success has a non-zero value by adding one.  */
   return mask + 1;
 }
+
+/* Helper for avx_vperm2f128_v4df_operand et al.  This is also used by
+   the expansion functions to turn the parallel back into a mask.
+   The return value is 0 for no match and the imm8+1 for a match.  */
+
+int
+avx_vperm2f128_parallel (rtx par, enum machine_mode mode)
+{
+  unsigned i, nelt = GET_MODE_NUNITS (mode), nelt2 = nelt / 2;
+  unsigned mask = 0;
+  unsigned char ipar[8];
+
+  if (XVECLEN (par, 0) != (int) nelt)
+    return 0;
+
+  /* Validate that all of the elements are constants, and not totally
+     out of range.  Copy the data into an integral array to make the
+     subsequent checks easier.  */
+  for (i = 0; i < nelt; ++i)
+    {
+      rtx er = XVECEXP (par, 0, i);
+      unsigned HOST_WIDE_INT ei;
+
+      if (!CONST_INT_P (er))
+	return 0;
+      ei = INTVAL (er);
+      if (ei >= 2 * nelt)
+	return 0;
+      ipar[i] = ei;
+    }
+
+  /* Validate that the halves of the permute are halves.  */
+  for (i = 0; i < nelt2 - 1; ++i)
+    if (ipar[i] + 1 != ipar[i + 1])
+      return 0;
+  for (i = nelt2; i < nelt - 1; ++i)
+    if (ipar[i] + 1 != ipar[i + 1])
+      return 0;
+
+  /* Reconstruct the mask.  */
+  for (i = 0; i < 2; ++i)
+    {
+      unsigned e = ipar[i * nelt2];
+      if (e % nelt2)
+	return 0;
+      e /= nelt2;
+      mask |= e << (i * 4);
+    }
+
+  /* Make sure success has a non-zero value by adding one.  */
+  return mask + 1;
+}
 
 
 /* Store OPERAND to the memory after reload is completed.  This means
