@@ -158,9 +158,16 @@ procedure Gnat1drv is
          Front_End_Inlining := False;
          Inline_Active      := False;
 
-         --  Turn off ASIS mode: incompatible with front-end expansion.
+         --  Turn off ASIS mode: incompatible with front-end expansion
 
          ASIS_Mode := False;
+
+         --  Disable specific expansions for Restrictions pragmas to avoid
+         --  tree inconsistencies between compilations with different pragmas
+         --  that will cause different SCIL files to be generated for the
+         --  same Ada spec.
+
+         Treat_Restrictions_As_Warnings := True;
 
          --  Suppress overflow, division by zero and access checks since they
          --  are handled implicitly by CodePeer.

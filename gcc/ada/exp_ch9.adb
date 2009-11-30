@@ -2551,6 +2551,72 @@ package body Exp_Ch9 is
       end loop;
    end Build_Master_Entity;
 
+   -----------------------------------------
+   -- Build_Private_Protected_Declaration --
+   -----------------------------------------
+
+   function Build_Private_Protected_Declaration (N : Node_Id)
+     return Entity_Id
+   is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Body_Id  : constant Entity_Id := Defining_Entity (N);
+      Decl     : Node_Id;
+      Plist    : List_Id;
+      Formal   : Entity_Id;
+      New_Spec : Node_Id;
+      Spec_Id  : Entity_Id;
+
+   begin
+      Formal := First_Formal (Body_Id);
+
+      --  The protected operation always has at least one formal, namely
+      --  the object itself, but it is only placed in the parameter list
+      --  if expansion is enabled.
+
+      if Present (Formal)
+        or else Expander_Active
+      then
+         Plist := Copy_Parameter_List (Body_Id);
+      else
+         Plist := No_List;
+      end if;
+
+      if Nkind (Specification (N)) = N_Procedure_Specification then
+         New_Spec :=
+           Make_Procedure_Specification (Loc,
+              Defining_Unit_Name =>
+                Make_Defining_Identifier (Sloc (Body_Id),
+                  Chars => Chars (Body_Id)),
+              Parameter_Specifications => Plist);
+      else
+         New_Spec :=
+           Make_Function_Specification (Loc,
+              Defining_Unit_Name =>
+                Make_Defining_Identifier (Sloc (Body_Id),
+                  Chars => Chars (Body_Id)),
+              Parameter_Specifications => Plist,
+              Result_Definition =>
+                New_Occurrence_Of (Etype (Body_Id), Loc));
+      end if;
+
+      Decl :=
+        Make_Subprogram_Declaration (Loc,
+          Specification => New_Spec);
+      Insert_Before (N, Decl);
+      Spec_Id := Defining_Unit_Name (New_Spec);
+
+      --  Indicate that the entity comes from source, to ensure that
+      --  cross-reference information is properly generated. The body
+      --  itself is rewritten during expansion, and the body entity will
+      --  not appear in calls to the operation.
+
+      Set_Comes_From_Source (Spec_Id, True);
+      Analyze (Decl);
+      Set_Has_Completion (Spec_Id);
+      Set_Convention (Spec_Id, Convention_Protected);
+      return Spec_Id;
+   end Build_Private_Protected_Declaration;
+
    ---------------------------
    -- Build_Protected_Entry --
    ---------------------------
@@ -7182,7 +7248,6 @@ package body Exp_Ch9 is
       New_Op_Body  : Node_Id;
       Num_Entries  : Natural := 0;
       Op_Body      : Node_Id;
-      Op_Decl      : Node_Id;
       Op_Id        : Entity_Id;
 
       Chain        : Entity_Id := Empty;
@@ -7344,41 +7409,36 @@ package body Exp_Ch9 is
                   --  to an external caller. This is the common idiom in code
                   --  that uses the Ada 2005 Timing_Events package. As a result
                   --  we need to produce the protected body for both visible
-                  --  and private operations.
+                  --  and private operations, as well as operations that only
+                  --  have a body in the source, and for which we create a
+                  --  declaration in the protected body itself.
 
                   if Present (Corresponding_Spec (Op_Body)) then
-                     Op_Decl :=
-                       Unit_Declaration_Node (Corresponding_Spec (Op_Body));
+                     New_Op_Body :=
+                       Build_Protected_Subprogram_Body (
+                         Op_Body, Pid, Specification (New_Op_Body));
 
-                     if Nkind (Parent (Op_Decl)) =
-                          N_Protected_Definition
+                     Insert_After (Current_Node, New_Op_Body);
+                     Analyze (New_Op_Body);
+
+                     Current_Node := New_Op_Body;
+
+                     --  Generate an overriding primitive operation body for
+                     --  this subprogram if the protected type implements
+                     --  an interface.
+
+                     if Ada_Version >= Ada_05
+                       and then Present (Interfaces (
+                                  Corresponding_Record_Type (Pid)))
                      then
-                        New_Op_Body :=
-                          Build_Protected_Subprogram_Body (
-                            Op_Body, Pid, Specification (New_Op_Body));
+                        Disp_Op_Body :=
+                          Build_Dispatching_Subprogram_Body (
+                            Op_Body, Pid, New_Op_Body);
 
-                        Insert_After (Current_Node, New_Op_Body);
-                        Analyze (New_Op_Body);
+                        Insert_After (Current_Node, Disp_Op_Body);
+                        Analyze (Disp_Op_Body);
 
-                        Current_Node := New_Op_Body;
-
-                        --  Generate an overriding primitive operation body for
-                        --  this subprogram if the protected type implements
-                        --  an interface.
-
-                        if Ada_Version >= Ada_05
-                          and then Present (Interfaces (
-                                     Corresponding_Record_Type (Pid)))
-                        then
-                           Disp_Op_Body :=
-                             Build_Dispatching_Subprogram_Body (
-                               Op_Body, Pid, New_Op_Body);
-
-                           Insert_After (Current_Node, Disp_Op_Body);
-                           Analyze (Disp_Op_Body);
-
-                           Current_Node := Disp_Op_Body;
-                        end if;
+                        Current_Node := Disp_Op_Body;
                      end if;
                   end if;
                end if;

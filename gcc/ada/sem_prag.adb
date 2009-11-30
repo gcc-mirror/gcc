@@ -1154,6 +1154,14 @@ package body Sem_Prag is
          String_Val : constant String_Id := Strval (Nam);
 
       begin
+         --  We allow duplicated export names in CIL, as they are always
+         --  enclosed in a namespace that differenciates them, and overloaded
+         --  entities are supported by the VM.
+
+         if VM_Target = CLI_Target then
+            return;
+         end if;
+
          --  We are only interested in the export case, and in the case of
          --  generics, it is the instance, not the template, that is the
          --  problem (the template will generate a warning in any case).

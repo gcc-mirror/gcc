@@ -1,3 +1,27 @@
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.ads (Build_Private_Protected_Declaration): For a protected
+	operation that is only declared in a protected body, create a
+	corresponding subprogram declaration.
+	* exp_ch9.adb (Expand_N_Protected_Body): Create protected body of
+	operation in all cases, including for an operation that is only
+	declared in the body.
+	* sem_ch6.adb: Call Build_Private_Protected_Declaration
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): For an operation
+	declared in a protected body, create the declaration for the
+	corresponding protected version of the operation.
+
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Disable specific expansions
+	for Restrictions pragmas, to avoid tree inconsistencies between
+	compilations with different pragmas.
+
+2009-11-30  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sem_prag.adb (Check_Duplicated_Export_Name): Allow entities exported
+	to CIL to have duplicated export name.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* a-tiinio.adb: Remove extraneous pragma Warnings (Off).
