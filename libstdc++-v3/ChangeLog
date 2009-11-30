@@ -3,7 +3,7 @@
 	* include/tr1_impl/functional: Remove file, copy its contents,
 	trivially adjusted...
 	* include/std/functional: ... here, and...
-	* include/tr1_impl/functional: ... here.
+	* include/tr1/functional: ... here.
 	* include/Makefile.am: Adjust.
 	* include/Makefile.in: Regenerate.
 
