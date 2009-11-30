@@ -1,3 +1,12 @@
+2009-11-30  Bob Duff  <duff@adacore.com>
+
+	* socket.c: Add more accessor functions for struct servent (need
+	setters as well as getters).
+	* g-sothco.ads (Servent): Declare interfaces to C setter functions for
+	struct servent.
+	* g-sttsne-locking.adb (Copy_Service_Entry): Use setter functions for
+	struct servent.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* s-stchop-vxworks.adb: Add comment.
