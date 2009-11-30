@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---             S Y S T E M . S E C U R E _ H A S H E S . M D 5              --
+--               G N A T . S E C U R E _ H A S H E S . M D 5                --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -31,7 +31,7 @@
 
 with GNAT.Byte_Swapping; use GNAT.Byte_Swapping;
 
-package body System.Secure_Hashes.MD5 is
+package body GNAT.Secure_Hashes.MD5 is
 
    use Interfaces;
 
@@ -226,6 +226,8 @@ package body System.Secure_Hashes.MD5 is
      (H : in out Hash_State.State;
       M : in out Message_State)
    is
+      use System;
+
       X : array (0 .. 15) of Interfaces.Unsigned_32;
       for X'Address use M.Buffer'Address;
       pragma Import (Ada, X);
@@ -236,7 +238,7 @@ package body System.Secure_Hashes.MD5 is
       DD : Unsigned_32 := H (3);
 
    begin
-      if System.Default_Bit_Order /= Low_Order_First then
+      if Default_Bit_Order /= Low_Order_First then
          for J in X'Range loop
             Swap4 (X (J)'Address);
          end loop;
@@ -337,4 +339,4 @@ package body System.Secure_Hashes.MD5 is
 
    end Transform;
 
-end System.Secure_Hashes.MD5;
+end GNAT.Secure_Hashes.MD5;

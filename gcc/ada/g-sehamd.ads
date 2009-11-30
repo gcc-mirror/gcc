@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---             S Y S T E M . S E C U R E _ H A S H E S . M D 5              --
+--               G N A T . S E C U R E _ H A S H E S . M D 5                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -34,13 +34,16 @@
 --  RFC 1321 can be found at:
 --          http://www.ietf.org/rfc/rfc1321.txt
 
+--  This is an internal unit and should not be used directly in applications.
+--  Use GNAT.MD5 instead.
+
 with GNAT.Byte_Swapping;
 with Interfaces;
 
-package System.Secure_Hashes.MD5 is
+package GNAT.Secure_Hashes.MD5 is
 
    package Hash_State is
-     new System.Secure_Hashes.Hash_Function_State
+     new GNAT.Secure_Hashes.Hash_Function_State
            (Word           => Interfaces.Unsigned_32,
             Swap           => GNAT.Byte_Swapping.Swap4,
             Hash_Bit_Order => System.Low_Order_First);
@@ -68,4 +71,4 @@ private
                      (Initial_A, Initial_B, Initial_C, Initial_D);
    --  Initialization vector from RFC 1321
 
-end System.Secure_Hashes.MD5;
+end GNAT.Secure_Hashes.MD5;

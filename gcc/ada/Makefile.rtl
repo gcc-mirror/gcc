@@ -367,6 +367,9 @@ GNATRTL_NONTASKING_OBJS= \
   g-rannum$(objext) \
   g-regexp$(objext) \
   g-regpat$(objext) \
+  g-sechas$(objext) \
+  g-sehamd$(objext) \
+  g-sehash$(objext) \
   g-sercom$(objext) \
   g-sestin$(objext) \
   g-sha1$(objext) \
@@ -374,6 +377,9 @@ GNATRTL_NONTASKING_OBJS= \
   g-sha256$(objext) \
   g-sha384$(objext) \
   g-sha512$(objext) \
+  g-shsh32$(objext) \
+  g-shsh64$(objext) \
+  g-shshco$(objext) \
   g-souinf$(objext) \
   g-spchge$(objext) \
   g-speche$(objext) \
@@ -562,15 +568,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-rident$(objext) \
   s-rpc$(objext)    \
   s-scaval$(objext) \
-  s-sechas$(objext) \
   s-secsta$(objext) \
-  s-sehamd$(objext) \
-  s-sehash$(objext) \
   s-sequio$(objext) \
   s-shasto$(objext) \
-  s-shsh32$(objext) \
-  s-shsh64$(objext) \
-  s-shshco$(objext) \
   s-soflin$(objext) \
   s-stache$(objext) \
   s-stalib$(objext) \

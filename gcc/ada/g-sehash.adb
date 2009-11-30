@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---            S Y S T E M . S E C U R E _ H A S H E S . S H A 1             --
+--              G N A T . S E C U R E _ H A S H E S . S H A 1               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Secure_Hashes.SHA1 is
+package body GNAT.Secure_Hashes.SHA1 is
 
    use Interfaces;
    use GNAT.Byte_Swapping;
@@ -99,6 +99,8 @@ package body System.Secure_Hashes.SHA1 is
      (H : in out Hash_State.State;
       M : in out Message_State)
    is
+      use System;
+
       type Words is array (Natural range <>) of Interfaces.Unsigned_32;
 
       X : Words (0 .. 15);
@@ -110,7 +112,7 @@ package body System.Secure_Hashes.SHA1 is
       A, B, C, D, E, Temp : Interfaces.Unsigned_32;
 
    begin
-      if System.Default_Bit_Order /= High_Order_First then
+      if Default_Bit_Order /= High_Order_First then
          for J in X'Range loop
             Swap4 (X (J)'Address);
          end loop;
@@ -174,4 +176,4 @@ package body System.Secure_Hashes.SHA1 is
       H (4) := H (4) + E;
    end Transform;
 
-end System.Secure_Hashes.SHA1;
+end GNAT.Secure_Hashes.SHA1;

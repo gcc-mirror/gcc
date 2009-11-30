@@ -1,3 +1,13 @@
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-sechas.adb, s-sechas.ads, s-shshco.adb, s-shshco.ads, s-shsh64.adb,
+	s-shsh64.ads, s-sehamd.adb, s-sehamd.ads, s-shsh32.adb, s-shsh32.ads,
+	s-sehash.adb, s-sehash.ads, g-sechas.adb, g-sechas.ads, g-shshco.adb,
+	g-shshco.ads, g-md5.ads, g-sha256.ads, g-shsh64.adb, g-shsh64.ads,
+	g-sehamd.adb, g-sehamd.ads, g-sha512.ads, g-sha1.ads, Makefile.rtl,
+	g-sha224.ads, g-shsh32.adb, g-shsh32.ads, g-sha384.ads, g-sehash.adb,
+	g-sehash.ads: Rename System.Secure_Hashes to GNAT.Secure_Hashes.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* osint.ads: Minor comment update.
