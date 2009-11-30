@@ -38,10 +38,10 @@ procedure Usage is
 
    procedure Write_Switch_Char (Sw : String; Prefix : String := "gnat");
    --  Output two spaces followed by the switch character minus followed
-   --  Prefix, followed by the string given as the argument, and then
-   --  enough blanks to tab to column 13, i.e. assuming Sw is not longer
-   --  than 5 characters, the maximum allowed, Write_Switch_Char will
-   --  always output exactly 12 characters.
+   --  Prefix, followed by the string given as the argument, and then enough
+   --  blanks to tab to column 13, i.e. assuming Sw is not longer than 5
+   --  characters, the maximum allowed, Write_Switch_Char will always output
+   --  exactly 12 characters.
 
    -----------------------
    -- Write_Switch_Char --

@@ -1008,6 +1008,7 @@ package body Sem_Disp is
            and then not Is_Visibly_Controlled (Tagged_Type)
          then
             Set_Is_Overriding_Operation (Subp, False);
+
             --  If the subprogram specification carries an overriding
             --  indicator, no need for the warning: it is either redundant,
             --  or else an error will be reported.
@@ -1018,10 +1019,14 @@ package body Sem_Disp is
                   or else Must_Not_Override (Parent (Subp)))
             then
                null;
+
+            --  Here we need the warning
+
             else
                Error_Msg_NE
                  ("operation does not override inherited&?", Subp, Subp);
             end if;
+
          else
             Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
             Set_Is_Overriding_Operation (Subp);

@@ -12511,8 +12511,8 @@ package body Sem_Ch3 is
       then
          if No (Actual_Subp) then
             Set_Alias (New_Subp, Visible_Subp);
-            Set_Is_Abstract_Subprogram
-              (New_Subp, True);
+            Set_Is_Abstract_Subprogram (New_Subp, True);
+
          else
             --  If this is a derivation for an instance of a formal derived
             --  type, abstractness comes from the primitive operation of the
