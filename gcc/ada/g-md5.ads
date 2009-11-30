@@ -31,9 +31,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Why is this package undocumented ???
+--  This package implements the MD5 Message-Digest Algorithm as described in
+--  RFC 1321. The complete text of RFC 1321 can be found at:
+--          http://www.ietf.org/rfc/rfc1321.txt
+
+--  See the declaration of System.Secure_Hashes.H in s-sechas.ads for complete
+--  documentation.
 
 with System.Secure_Hashes.MD5;
+
 package GNAT.MD5 is new System.Secure_Hashes.H
   (Block_Words    => System.Secure_Hashes.MD5.Block_Words,
    State_Words    => 4,

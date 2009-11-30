@@ -46,8 +46,9 @@ package body System.Secure_Hashes is
         S     : String;
         First : Natural;
         Last  : out Natural);
-   --  A procedure to transfer data from S into M's block buffer until either
-   --  the block buffer is full or all data from S has been consumed.
+   --  A procedure to transfer data from S, starting at First, into M's block
+   --  buffer until either the block buffer is full or all data from S has been
+   --  consumed.
 
    procedure Fill_Buffer_Copy
      (M     : in out Message_State;
@@ -61,7 +62,12 @@ package body System.Secure_Hashes is
       S     : String;
       First : Natural;
       Last  : out Natural);
-   --  Transfer procedure which swaps bytes from S when copying into M
+   --  Transfer procedure which swaps bytes from S when copying into M. S must
+   --  have even length. Note that the swapping is performed considering pairs
+   --  starting at S'First, even if S'First /= First (that is, if
+   --  First = S'First then the first copied byte is always S (S'First + 1),
+   --  and if First = S'First + 1 then the first copied byte is always
+   --  S (S'First).
 
    procedure To_String (SEA : Stream_Element_Array; S : out String);
    --  Return the hexadecimal representation of SEA
@@ -102,13 +108,16 @@ package body System.Secure_Hashes is
       First : Natural;
       Last  : out Natural)
    is
+      pragma Assert (S'Length mod 2 = 0);
       Length : constant Natural :=
                   Natural'Min (M.Block_Length - M.Last, S'Last - First + 1);
    begin
       Last := First;
       while Last - First < Length loop
          M.Buffer (M.Last + 1 + Last - First) :=
-            (if (Last - First) mod 2 = 0 then S (Last + 1) else S (Last - 1));
+           (if (Last - S'First) mod 2 = 0
+            then S (Last + 1)
+            else S (Last - 1));
          Last := Last + 1;
       end loop;
       M.Last := M.Last + Length;
