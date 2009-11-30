@@ -1,3 +1,7 @@
+2009-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi: Update minimum MPC version to 0.8.
+
 2009-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (fnmaddsf4_powerpc_1): Remove

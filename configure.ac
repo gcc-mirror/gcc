@@ -1367,7 +1367,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     CFLAGS="$CFLAGS $mpcinc"
     AC_MSG_CHECKING([for the correct version of mpc.h])
     AC_TRY_COMPILE([#include <mpc.h>],[
-    #if MPC_VERSION < MPC_VERSION_NUM (0,7,0)
+    #if MPC_VERSION < MPC_VERSION_NUM (0,8,0)
     choke me
     #endif
     ], [AC_MSG_RESULT([yes]); have_mpc=maybe],
@@ -1414,6 +1414,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     mpc_neg (n, n, MPC_RNDNN);
     mpc_sqr (n, n, MPC_RNDNN);
     mpc_pow (n, n, n, MPC_RNDNN);
+    mpc_acosh (n, n, MPC_RNDNN);
     mpc_clear (n);
     ], [AC_MSG_RESULT([yes]); have_mpc=yes],
        [AC_MSG_RESULT([no]); have_mpc=no; mpclibs= ; mpcinc= ])

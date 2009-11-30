@@ -344,7 +344,7 @@ not installed in your default library search path.
 
 Necessary to build libgcj, the GCJ runtime.
 
-@item MPC Library version 0.7.0 (or later)
+@item MPC Library version 0.8.0 (or later)
 
 Optional when building GCC@.  Having this library will enable
 additional optimizations on complex numbers.  It can be downloaded
