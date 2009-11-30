@@ -1,3 +1,11 @@
+2009-11-30  Olga Golovanevsky  <olga@il.ibm.com>
+
+	PR middle-end/39806
+	* ipa-struct-reorg.c (new_var_eq): Use DECL_UID to hash new variables.
+	(new_var_hash): Likewise.
+	(is_in_new_vars_htab): Likewise.
+	(add_to_new_vars_htab): Likewise.
+
 2009-11-30  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-stmts.c (vectorizable_assignment): Support
