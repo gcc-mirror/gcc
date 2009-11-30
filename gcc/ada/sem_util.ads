@@ -210,10 +210,10 @@ package Sem_Util is
    --  of Old is set and Old has no yet been Frozen (i.e. Is_Frozen is false);
 
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
-   --  Utility to create a parameter profile for a new subprogram spec,
-   --  when the subprogram has a body that acts as spec. This is done for
-   --  some cases of inlining, and for private protected ops. Also used
-   --  to create bodies for stubbed subprograms.
+   --  Utility to create a parameter profile for a new subprogram spec, when
+   --  the subprogram has a body that acts as spec. This is done for some cases
+   --  of inlining, and for private protected ops. Also used to create bodies
+   --  for stubbed subprograms.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    --  Find the currently visible definition for a given identifier, that is to
@@ -230,9 +230,9 @@ package Sem_Util is
 
    function Current_Subprogram return Entity_Id;
    --  Returns current enclosing subprogram. If Current_Scope is a subprogram,
-   --  then that is what is returned, otherwise the Enclosing_Subprogram of
-   --  the Current_Scope is returned. The returned value is Empty if this
-   --  is called from a library package which is not within any subprogram.
+   --  then that is what is returned, otherwise the Enclosing_Subprogram of the
+   --  Current_Scope is returned. The returned value is Empty if this is called
+   --  from a library package which is not within any subprogram.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If

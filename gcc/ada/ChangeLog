@@ -1,3 +1,17 @@
+2009-11-30  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* vms_data.ads: Add new VMS qualifiers,
+	REVERSE_BIT_ORDER/NOREVERSE_BIT_ORDER, to support warnings on bit order
+	effects.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb, exp_ch9.ads, sem_util.ads: Minor reformatting.
+
+2009-11-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb: Fix spelling error.
+
 2009-11-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch9.ads (Build_Private_Protected_Declaration): For a protected

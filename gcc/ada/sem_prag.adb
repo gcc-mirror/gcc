@@ -1155,7 +1155,7 @@ package body Sem_Prag is
 
       begin
          --  We allow duplicated export names in CIL, as they are always
-         --  enclosed in a namespace that differenciates them, and overloaded
+         --  enclosed in a namespace that differentiates them, and overloaded
          --  entities are supported by the VM.
 
          if VM_Target = CLI_Target then

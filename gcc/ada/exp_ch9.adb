@@ -2555,8 +2555,8 @@ package body Exp_Ch9 is
    -- Build_Private_Protected_Declaration --
    -----------------------------------------
 
-   function Build_Private_Protected_Declaration (N : Node_Id)
-     return Entity_Id
+   function Build_Private_Protected_Declaration
+     (N : Node_Id) return Entity_Id
    is
       Loc      : constant Source_Ptr := Sloc (N);
       Body_Id  : constant Entity_Id := Defining_Entity (N);
@@ -2569,13 +2569,11 @@ package body Exp_Ch9 is
    begin
       Formal := First_Formal (Body_Id);
 
-      --  The protected operation always has at least one formal, namely
-      --  the object itself, but it is only placed in the parameter list
-      --  if expansion is enabled.
+      --  The protected operation always has at least one formal, namely the
+      --  object itself, but it is only placed in the parameter list if
+      --  expansion is enabled.
 
-      if Present (Formal)
-        or else Expander_Active
-      then
+      if Present (Formal) or else Expander_Active then
          Plist := Copy_Parameter_List (Body_Id);
       else
          Plist := No_List;
@@ -2584,31 +2582,31 @@ package body Exp_Ch9 is
       if Nkind (Specification (N)) = N_Procedure_Specification then
          New_Spec :=
            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name =>
+              Defining_Unit_Name       =>
                 Make_Defining_Identifier (Sloc (Body_Id),
                   Chars => Chars (Body_Id)),
-              Parameter_Specifications => Plist);
+              Parameter_Specifications =>
+                Plist);
       else
          New_Spec :=
            Make_Function_Specification (Loc,
-              Defining_Unit_Name =>
+              Defining_Unit_Name       =>
                 Make_Defining_Identifier (Sloc (Body_Id),
                   Chars => Chars (Body_Id)),
-              Parameter_Specifications => Plist,
-              Result_Definition =>
+              Parameter_Specifications =>
+                Plist,
+              Result_Definition        =>
                 New_Occurrence_Of (Etype (Body_Id), Loc));
       end if;
 
-      Decl :=
-        Make_Subprogram_Declaration (Loc,
-          Specification => New_Spec);
+      Decl := Make_Subprogram_Declaration (Loc, Specification => New_Spec);
       Insert_Before (N, Decl);
       Spec_Id := Defining_Unit_Name (New_Spec);
 
-      --  Indicate that the entity comes from source, to ensure that
-      --  cross-reference information is properly generated. The body
-      --  itself is rewritten during expansion, and the body entity will
-      --  not appear in calls to the operation.
+      --  Indicate that the entity comes from source, to ensure that cross-
+      --  reference information is properly generated. The body itself is
+      --  rewritten during expansion, and the body entity will not appear in
+      --  calls to the operation.
 
       Set_Comes_From_Source (Spec_Id, True);
       Analyze (Decl);
@@ -7424,16 +7422,16 @@ package body Exp_Ch9 is
                      Current_Node := New_Op_Body;
 
                      --  Generate an overriding primitive operation body for
-                     --  this subprogram if the protected type implements
-                     --  an interface.
+                     --  this subprogram if the protected type implements an
+                     --  interface.
 
                      if Ada_Version >= Ada_05
-                       and then Present (Interfaces (
-                                  Corresponding_Record_Type (Pid)))
+                          and then
+                        Present (Interfaces (Corresponding_Record_Type (Pid)))
                      then
                         Disp_Op_Body :=
-                          Build_Dispatching_Subprogram_Body (
-                            Op_Body, Pid, New_Op_Body);
+                          Build_Dispatching_Subprogram_Body
+                            (Op_Body, Pid, New_Op_Body);
 
                         Insert_After (Current_Node, Disp_Op_Body);
                         Analyze (Disp_Op_Body);
@@ -7494,8 +7492,8 @@ package body Exp_Ch9 is
       end loop;
 
       --  Finally, create the body of the function that maps an entry index
-      --  into the corresponding body index, except when there is no entry,
-      --  or in a ravenscar-like profile.
+      --  into the corresponding body index, except when there is no entry, or
+      --  in a Ravenscar-like profile.
 
       if Corresponding_Runtime_Package (Pid) =
            System_Tasking_Protected_Objects_Entries
