@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+pragma Compiler_Unit;
 
 with Ada.Unchecked_Deallocation;
 

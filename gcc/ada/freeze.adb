@@ -2535,6 +2535,8 @@ package body Freeze is
                        and then not Has_Warnings_Off (F_Type)
                        and then not Has_Warnings_Off (Formal)
                      then
+                        --  Qualify mention of formals with subprogram name
+
                         Error_Msg_Qual_Level := 1;
 
                         --  Check suspicious use of fat C pointer
@@ -2543,8 +2545,8 @@ package body Freeze is
                           and then Esize (F_Type) > Ttypes.System_Address_Size
                         then
                            Error_Msg_N
-                             ("?type of & does not correspond "
-                              & "to C pointer!", Formal);
+                             ("?type of & does not correspond to C pointer!",
+                              Formal);
 
                         --  Check suspicious return of boolean
 
@@ -2554,8 +2556,10 @@ package body Freeze is
                           and then not Has_Size_Clause (F_Type)
                         then
                            Error_Msg_N
-                             ("?& is an 8-bit Ada Boolean, "
-                              & "use char in C!", Formal);
+                             ("& is an 8-bit Ada Boolean?", Formal);
+                           Error_Msg_N
+                             ("\use appropriate corresponding type in C "
+                              & "(e.g. char)?", Formal);
 
                         --  Check suspicious tagged type
 
@@ -2583,6 +2587,8 @@ package body Freeze is
                              ("\?add Convention pragma to declaration of &#",
                               Formal, F_Type);
                         end if;
+
+                        --  Turn off name qualification after message output
 
                         Error_Msg_Qual_Level := 0;
                      end if;
@@ -2680,9 +2686,17 @@ package body Freeze is
                           and then not Has_Warnings_Off (R_Type)
                           and then not Has_Size_Clause (R_Type)
                         then
-                           Error_Msg_N
-                             ("?return type of & is an 8-bit "
-                              & "Ada Boolean, use char in C!", E);
+                           declare
+                              N : constant Node_Id :=
+                                    Result_Definition (Declaration_Node (E));
+                           begin
+                              Error_Msg_NE
+                                ("return type of & is an 8-bit Ada Boolean?",
+                                 N, E);
+                              Error_Msg_NE
+                                ("\use appropriate corresponding type in C "
+                                 & "(e.g. char)?", N, E);
+                           end;
 
                         --  Check suspicious return tagged type
 

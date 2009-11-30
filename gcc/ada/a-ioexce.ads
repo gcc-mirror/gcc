@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Compiler_Unit;
+
 package Ada.IO_Exceptions is
    pragma Pure;
 

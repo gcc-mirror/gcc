@@ -31,6 +31,8 @@
 
 --  This is the default (used on all native platforms) version of this package
 
+pragma Compiler_Unit;
+
 package body System.Parameters is
 
    -------------------------

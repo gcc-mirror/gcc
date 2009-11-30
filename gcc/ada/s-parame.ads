@@ -46,6 +46,8 @@
 --  Note: do not introduce any pragma Inline statements into this unit, since
 --  otherwise the relinking and rebinding capability would be deactivated.
 
+pragma Compiler_Unit;
+
 package System.Parameters is
    pragma Pure;
 

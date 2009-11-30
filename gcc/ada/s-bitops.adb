@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Compiler_Unit;
+
 with System;                 use System;
 with System.Unsigned_Types;  use System.Unsigned_Types;
 
