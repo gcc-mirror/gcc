@@ -733,33 +733,27 @@ translate_clast (sese, loop_p, struct clast_stmt *, edge, htab_t,
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
-translate_clast_user (sese region, struct loop *context_loop,
-		      struct clast_stmt *stmt, edge next_e,
+translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
 		      htab_t rename_map, VEC (tree, heap) **newivs,
-		      htab_t newivs_index, htab_t bb_pbb_mapping, int level,
+		      htab_t newivs_index, htab_t bb_pbb_mapping,
 		      htab_t params_index)
 {
   gimple_bb_p gbb;
   basic_block new_bb;
-  CloogStatement *cs = ((struct clast_user_stmt*) stmt)->statement;
-  poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
+  poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (stmt->statement);
   gbb = PBB_BLACK_BOX (pbb);
 
   if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
     return next_e;
 
-  build_iv_mapping (rename_map, region, *newivs, newivs_index,
-		    (struct clast_user_stmt*) stmt, params_index);
+  build_iv_mapping (rename_map, region, *newivs, newivs_index, stmt,
+		    params_index);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), region,
 					   next_e, rename_map);
   new_bb = next_e->src;
   mark_bb_with_pbb (pbb, new_bb, bb_pbb_mapping);
-  recompute_all_dominators ();
   update_ssa (TODO_update_ssa);
-  graphite_verify ();
-  return translate_clast (region, context_loop, stmt->next, next_e,
-			  rename_map, newivs, newivs_index,
-			  bb_pbb_mapping, level, params_index);
+  return next_e;
 }
 
 /* Translates a clast for statement STMT to gimple.
@@ -773,16 +767,14 @@ translate_clast_user (sese region, struct loop *context_loop,
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
-translate_clast_for (sese region, loop_p context_loop, struct clast_stmt *stmt,
+translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
 		     edge next_e, htab_t rename_map, VEC (tree, heap) **newivs,
 		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		     htab_t params_index)
 {
-  struct clast_for *stmtfor = (struct clast_for *)stmt;
-  struct loop *loop
-    = graphite_create_new_loop (region, next_e, stmtfor,
-				context_loop, newivs, newivs_index,
-				params_index);
+  struct loop *loop = graphite_create_new_loop (region, next_e, stmt,
+						context_loop, newivs,
+						newivs_index, params_index);
   edge last_e = single_exit (loop);
   edge to_body = single_succ_edge (loop->header);
   basic_block after = to_body->dest;
@@ -791,10 +783,9 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_stmt *stmt,
   last_e = single_succ_edge (split_edge (last_e));
 
   /* Translate the body of the loop.  */
-  next_e = translate_clast
-    (region, loop, ((struct clast_for *) stmt)->body,
-     single_succ_edge (loop->header), rename_map, newivs,
-     newivs_index, bb_pbb_mapping, level + 1, params_index);
+  next_e = translate_clast (region, loop, stmt->body, to_body, rename_map,
+			    newivs, newivs_index, bb_pbb_mapping, level + 1,
+			    params_index);
   redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
@@ -807,11 +798,7 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_stmt *stmt,
 				get_scattering_level (level)))
     loop->can_be_parallel = true;
 
-  recompute_all_dominators ();
-  graphite_verify ();
-  return translate_clast (region, context_loop, stmt->next, last_e,
-			  rename_map, newivs, newivs_index,
-			  bb_pbb_mapping, level, params_index);
+  return last_e;
 }
 
 /* Translates a clast guard statement STMT to gimple.
@@ -826,36 +813,33 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_stmt *stmt,
      the sese region.  */
 static edge
 translate_clast_guard (sese region, loop_p context_loop,
-		       struct clast_stmt *stmt, edge next_e, htab_t rename_map,
-		       VEC (tree, heap) **newivs, htab_t newivs_index,
-		       htab_t bb_pbb_mapping, int level, htab_t params_index)
+		       struct clast_guard *stmt, edge next_e,
+		       htab_t rename_map, VEC (tree, heap) **newivs,
+		       htab_t newivs_index, htab_t bb_pbb_mapping, int level,
+		       htab_t params_index)
 {
-  edge last_e = graphite_create_new_guard (region, next_e,
-					   ((struct clast_guard *) stmt),
-					   *newivs, newivs_index,
-					   params_index);
+  edge last_e = graphite_create_new_guard (region, next_e, stmt, *newivs,
+					   newivs_index, params_index);
+
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
   edge false_e = get_false_edge_from_guard_bb (next_e->dest);
   edge exit_true_e = single_succ_edge (true_e->dest);
   edge exit_false_e = single_succ_edge (false_e->dest);
+
   htab_t before_guard = htab_create (10, rename_map_elt_info,
 				     eq_rename_map_elts, free);
-
   htab_traverse (rename_map, copy_renames, before_guard);
-  next_e = translate_clast (region, context_loop,
-			    ((struct clast_guard *) stmt)->then,
-			    true_e, rename_map, newivs, newivs_index,
-			    bb_pbb_mapping, level, params_index);
+
+  next_e = translate_clast (region, context_loop, stmt->then, true_e,
+			    rename_map, newivs, newivs_index, bb_pbb_mapping,
+			    level, params_index);
+
   insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
 		     before_guard, rename_map);
 
   htab_delete (before_guard);
-  recompute_all_dominators ();
-  graphite_verify ();
 
-  return translate_clast (region, context_loop, stmt->next, last_e,
-			  rename_map, newivs, newivs_index,
-			  bb_pbb_mapping, level, params_index);
+  return last_e;
 }
 
 /* Translates a CLAST statement STMT to GCC representation in the
@@ -876,39 +860,39 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
     return next_e;
 
   if (CLAST_STMT_IS_A (stmt, stmt_root))
-    return translate_clast (region, context_loop, stmt->next, next_e,
-			    rename_map, newivs, newivs_index,
-			    bb_pbb_mapping, level, params_index);
+    ; /* Do nothing.  */
 
-  if (CLAST_STMT_IS_A (stmt, stmt_user))
-    return translate_clast_user (region, context_loop, stmt, next_e,
-				 rename_map, newivs, newivs_index,
-				 bb_pbb_mapping, level, params_index);
+  else if (CLAST_STMT_IS_A (stmt, stmt_user))
+    next_e = translate_clast_user (region, (struct clast_user_stmt *) stmt,
+				   next_e, rename_map, newivs, newivs_index,
+				   bb_pbb_mapping, params_index);
 
-  if (CLAST_STMT_IS_A (stmt, stmt_for))
-    return translate_clast_for (region, context_loop, stmt, next_e,
-				rename_map, newivs, newivs_index,
-				bb_pbb_mapping, level, params_index);
-
-  if (CLAST_STMT_IS_A (stmt, stmt_guard))
-    return translate_clast_guard (region, context_loop, stmt, next_e,
+  else if (CLAST_STMT_IS_A (stmt, stmt_for))
+    next_e = translate_clast_for (region, context_loop,
+				  (struct clast_for *) stmt, next_e,
 				  rename_map, newivs, newivs_index,
 				  bb_pbb_mapping, level, params_index);
 
-  if (CLAST_STMT_IS_A (stmt, stmt_block))
-    {
-      next_e = translate_clast (region, context_loop,
-				((struct clast_block *) stmt)->body,
-				next_e, rename_map, newivs, newivs_index,
-				bb_pbb_mapping, level, params_index);
-      recompute_all_dominators ();
-      graphite_verify ();
-      return translate_clast (region, context_loop, stmt->next, next_e,
-			      rename_map, newivs, newivs_index,
-			      bb_pbb_mapping, level, params_index);
-    }
+  else if (CLAST_STMT_IS_A (stmt, stmt_guard))
+    next_e = translate_clast_guard (region, context_loop,
+				    (struct clast_guard *) stmt, next_e,
+				    rename_map, newivs, newivs_index,
+				    bb_pbb_mapping, level, params_index);
 
-  gcc_unreachable ();
+  else if (CLAST_STMT_IS_A (stmt, stmt_block))
+    next_e = translate_clast (region, context_loop,
+			      ((struct clast_block *) stmt)->body,
+			      next_e, rename_map, newivs, newivs_index,
+			      bb_pbb_mapping, level, params_index);
+  else
+    gcc_unreachable();
+
+  recompute_all_dominators ();
+  graphite_verify ();
+
+  return translate_clast (region, context_loop, stmt->next, next_e,
+			  rename_map, newivs, newivs_index,
+			  bb_pbb_mapping, level, params_index);
 }
 
 /* Returns the first cloog name used in EXPR.  */

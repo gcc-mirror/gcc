@@ -1,6 +1,13 @@
 2009-11-23  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (translate_clast_user,
+	translate_clast_for, translate_clast_guard): Simplify and move common
+	elements to translate_clast().
+	(translate_clast): Simplify and get common elements.
+
+2009-11-23  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c (translate_clast_user,
 	translate_clast_for, translate_clast_guard): Split out of
 	translate_clast.
 
