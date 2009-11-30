@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-linux* } */
+/* { dg-do compile { target powerpc*-*-linux* } } */
 /* { dg-options "-mregnames" } */
 
 register double f17 asm ("f17");

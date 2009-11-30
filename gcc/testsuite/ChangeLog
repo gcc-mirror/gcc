@@ -1,3 +1,8 @@
+2009-11-30  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/42212
+	* gcc.target/powerpc/regnames-1.c: Add missing brace dg-do.
+
 2009-11-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42196
