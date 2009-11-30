@@ -79,8 +79,10 @@ package body System.Secure_Hashes is
       Buf_String : String (M.Buffer'Range);
       for Buf_String'Address use M.Buffer'Address;
       pragma Import (Ada, Buf_String);
+
       Length : constant Natural :=
-                  Natural'Min (M.Block_Length - M.Last, S'Last - First + 1);
+                 Natural'Min (M.Block_Length - M.Last, S'Last - First + 1);
+
    begin
       pragma Assert (Length > 0);
 
@@ -162,20 +164,12 @@ package body System.Secure_Hashes is
          end return;
       end Digest;
 
-      ------------
-      -- Digest --
-      ------------
-
       function Digest (S : String) return Message_Digest is
          C : Context;
       begin
          Update (C, S);
          return Digest (C);
       end Digest;
-
-      ------------
-      -- Digest --
-      ------------
 
       function Digest (A : Stream_Element_Array) return Message_Digest is
          C : Context;
@@ -215,27 +209,31 @@ package body System.Secure_Hashes is
          declare
             Pad : String (1 .. 1 + Zeroes + Size_Length) :=
                     (1 => Character'Val (128), others => ASCII.NUL);
-            Index : Natural;
+
+            Index       : Natural;
             First_Index : Natural;
+
          begin
-            First_Index := (if Hash_Bit_Order = Low_Order_First then
-                              Pad'Last - Size_Length + 1
-                            else
-                              Pad'Last);
+            First_Index := (if Hash_Bit_Order = Low_Order_First
+                            then Pad'Last - Size_Length + 1
+                            else Pad'Last);
 
             Index := First_Index;
             while Message_Length > 0 loop
                if Index = First_Index then
+
                   --  Message_Length is in bytes, but we need to store it as
                   --  a bit count).
 
                   Pad (Index) := Character'Val
                                    (Shift_Left (Message_Length and 16#1f#, 3));
                   Message_Length := Shift_Right (Message_Length, 5);
+
                else
                   Pad (Index) := Character'Val (Message_Length and 16#ff#);
                   Message_Length := Shift_Right (Message_Length, 8);
                end if;
+
                Index := Index +
                           (if Hash_Bit_Order = Low_Order_First then 1 else -1);
             end loop;
@@ -258,6 +256,7 @@ package body System.Secure_Hashes is
          Fill_Buffer : Fill_Buffer_Access)
       is
          Last : Natural := S'First - 1;
+
       begin
          C.M_State.Length := C.M_State.Length + S'Length;
 
@@ -305,8 +304,8 @@ package body System.Secure_Hashes is
          Update
            (C, S,
             (if System.Default_Bit_Order /= Low_Order_First
-               then Fill_Buffer_Swap'Access
-               else Fill_Buffer_Copy'Access));
+             then Fill_Buffer_Swap'Access
+             else Fill_Buffer_Copy'Access));
       end Wide_Update;
 
       -----------------
@@ -334,12 +333,13 @@ package body System.Secure_Hashes is
 
       procedure To_Hash (H : State; H_Bits : out Stream_Element_Array) is
          Hash_Words : constant Natural := H'Size / Word'Size;
-         Result : State (1 .. Hash_Words) :=
-                    H (H'Last - Hash_Words + 1 .. H'Last);
+         Result     : State (1 .. Hash_Words) :=
+                        H (H'Last - Hash_Words + 1 .. H'Last);
 
          R_SEA : Stream_Element_Array (1 .. Result'Size / 8);
          for R_SEA'Address use Result'Address;
          pragma Import (Ada, R_SEA);
+
       begin
          if System.Default_Bit_Order /= Hash_Bit_Order then
             for J in Result'Range loop

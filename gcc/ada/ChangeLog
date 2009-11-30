@@ -1,3 +1,7 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, s-sechas.ads, s-sechas.adb: Minor reformatting.
+
 2009-11-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_prag.adb (Process_Convention): Change formal E to Ent. In the

@@ -597,7 +597,8 @@ package body Sem_Prag is
       --  Common processing for Compile_Time_Error and Compile_Time_Warning
 
       procedure Process_Convention
-        (C : out Convention_Id; Ent : out Entity_Id);
+        (C   : out Convention_Id;
+         Ent : out Entity_Id);
       --  Common processing for Convention, Interface, Import and Export.
       --  Checks first two arguments of pragma, and sets the appropriate
       --  convention value in the specified entity or entities. On return
