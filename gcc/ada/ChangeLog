@@ -1,5 +1,34 @@
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
+	* s-crtl.ads, g-stseme.adb, s-fileio.adb (System.CRTL.strerror): Change
+	return type to Interfaces.C.Strings.chars_ptr to eliminate need for
+	dubious unchecked conversion at call sites.
+	* s-errrep.adb, s-errrep.ads, Makefile.rtl (System.Error_Reporting):
+	Remove obsolete, unused runtime unit.
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/Makefile.in: Remove VMS specialization of s-crtl, not
+	required anymore.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* gnatlink.adb: Delete an eventual existing executable file, in case it
+	is a symbolic link, to avoid modifying the target of the symbolic link.
+
+2009-11-30  Bob Duff  <duff@adacore.com>
+
+	* socket.c: Add accessor functions for struct servent.
+	* g-sothco.ads (Servent): Declare interfaces to C accessor functions
+	for struct servent.
+	* g-socket.adb (To_Service_Entry): Use accessor functions for struct
+	servent.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* g-arrspl.adb: Minor reformatting
+	* g-dyntab.adb: Add missing pragma Compiler_Unit
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
 	* s-crtl.ads, s-oscons-tmplt.c: Fix support for VMS
 	* make.adb, g-comlin.ads, exp_ch6.adb: Minor reformatting
 

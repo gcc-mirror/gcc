@@ -34,8 +34,6 @@
 --  since on that platform socket errno values are distinct from the system
 --  ones: there is a specific variant of this function in g-socthi-mingw.adb.
 
-with Ada.Unchecked_Conversion;
-
 with System.CRTL;
 
 separate (GNAT.Sockets.Thin)
@@ -48,21 +46,9 @@ function Socket_Error_Message
   (Errno : Integer) return C.Strings.chars_ptr
 is
    use type Interfaces.C.Strings.chars_ptr;
-
-   pragma Warnings (Off);
-   function To_Chars_Ptr is
-     new Ada.Unchecked_Conversion
-       (System.Address, Interfaces.C.Strings.chars_ptr);
-   --  On VMS, the compiler warns because System.Address is 64 bits, but
-   --  chars_ptr is 32 bits. It should be safe, though, because strerror
-   --  will return a 32-bit pointer.
-   pragma Warnings (On);
-
-   C_Msg : C.Strings.chars_ptr;
+   C_Msg : constant C.Strings.chars_ptr := System.CRTL.strerror (Errno);
 
 begin
-   C_Msg := To_Chars_Ptr (System.CRTL.strerror (Errno));
-
    if C_Msg = C.Strings.Null_Ptr then
       return Unknown_System_Error;
    else

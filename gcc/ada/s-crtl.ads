@@ -31,13 +31,18 @@
 
 --  This package provides the low level interface to the C runtime library
 
+with Interfaces.C.Strings;
+
 with System.Parameters;
 
 package System.CRTL is
    pragma Preelaborate;
 
+   subtype chars_ptr is Interfaces.C.Strings.chars_ptr;
+
    subtype chars is System.Address;
    --  Pointer to null-terminated array of characters
+   --  Should use Interfaces.C.Strings types instead???
 
    subtype DIRs is System.Address;
    --  Corresponds to the C type DIR*
@@ -48,7 +53,7 @@ package System.CRTL is
    subtype int is Integer;
 
    type long is range -(2 ** (System.Parameters.long_bits - 1))
-      .. +(2 ** (System.Parameters.long_bits - 1)) - 1;
+                   .. +(2 ** (System.Parameters.long_bits - 1)) - 1;
 
    subtype off_t is Long_Integer;
 
@@ -190,7 +195,7 @@ package System.CRTL is
    function write (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, write, "write");
 
-   function strerror (errno : int) return chars;
+   function strerror (errno : int) return chars_ptr;
    pragma Import (C, strerror, "strerror");
 
 end System.CRTL;

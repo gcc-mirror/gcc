@@ -31,6 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Compiler_Unit;
+
 with GNAT.Heap_Sort_G;
 with System;        use System;
 with System.Memory; use System.Memory;
@@ -64,10 +66,7 @@ package body GNAT.Dynamic_Tables is
    -- Allocate --
    --------------
 
-   procedure Allocate
-     (T   : in out Instance;
-      Num : Integer := 1)
-   is
+   procedure Allocate (T : in out Instance; Num : Integer := 1) is
    begin
       T.P.Last_Val := T.P.Last_Val + Num;
 
