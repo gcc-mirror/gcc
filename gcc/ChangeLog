@@ -1,3 +1,20 @@
+2009-11-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/41812
+	* fwprop.c (local_md, local_lr): New globals.
+	(process_defs, process_uses): Remove local_md argument.  Never
+	consider dead pseudos to have singleton def-use chains.
+	(single_def_use_enter_block): Perform LR simulation.
+	(build_single_def_use_links): Remove local_md local variable.
+	Add DF_NOTE.  Allocate local_lr.
+	(fwprop_done): Do not remove DF_CHAIN, we do not use it anymore.
+	* df-problems.c (df_md_scratch): New.
+	(df_md_alloc, df_md_free): Allocate/free it.
+	(df_md_local_compute): Only include live registers in init.
+	(df_md_transfer_function): Prune the in-set computed by
+	the confluence function, and the gen-set too.
+	(df_simulate_one_insn_forwards): Fix typo.
+
 2009-11-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/40086

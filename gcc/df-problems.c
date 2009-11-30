@@ -1574,10 +1574,9 @@ df_live_transfer_function (int bb_index)
   bitmap gen = bb_info->gen;
   bitmap kill = bb_info->kill;
 
-  /* We need to use a scratch set here so that the value returned from
-     this function invocation properly reflects if the sets changed in
-     a significant way; i.e. not just because the lr set was anded
-     in.  */
+  /* We need to use a scratch set here so that the value returned from this
+     function invocation properly reflects whether the sets changed in a
+     significant way; i.e. not just because the lr set was anded in.  */
   bitmap_and (df_live_scratch, gen, bb_lr_info->out);
   /* No register may reach a location where it is not used.  Thus
      we trim the rr result to the places where it is used.  */
@@ -3975,8 +3974,8 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
    MULTIPLE DEFINITIONS
 
    Find the locations in the function reached by multiple definition sites
-   for a pseudo.  In and out bitvectors are built for each basic
-   block.
+   for a live pseudo.  In and out bitvectors are built for each basic
+   block.  They are restricted for efficiency to live registers.
 
    The gen and kill sets for the problem are obvious.  Together they
    include all defined registers in a basic block; the gen set includes
@@ -4017,6 +4016,10 @@ df_simulate_one_insn_forwards (basic_block bb, rtx insn, bitmap live)
     anything like PHI functions there!  Instead, dataflow will take care of
     propagating the information to BB3's successors.
    ---------------------------------------------------------------------------*/
+
+/* Scratch var used by transfer functions.  This is used to do md analysis
+   only for live registers.  */
+static bitmap df_md_scratch;
 
 /* Set basic block info.  */
 
@@ -4061,6 +4064,7 @@ df_md_alloc (bitmap all_blocks)
                                            sizeof (struct df_md_bb_info), 50);
 
   df_grow_bb_info (df_md);
+  df_md_scratch = BITMAP_ALLOC (NULL);
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
     {
@@ -4236,8 +4240,10 @@ df_md_local_compute (bitmap all_blocks)
       bitmap kill = df_md_get_bb_info (bb_index)->kill;
       EXECUTE_IF_SET_IN_BITMAP (frontiers[bb_index], 0, df_bb_index, bi2)
 	{
+	  basic_block bb = BASIC_BLOCK (df_bb_index);
 	  if (bitmap_bit_p (all_blocks, df_bb_index))
-	    bitmap_ior_into (df_md_get_bb_info (df_bb_index)->init, kill);
+	    bitmap_ior_and_into (df_md_get_bb_info (df_bb_index)->init, kill,
+				 df_get_live_in (bb));
 	}
     }
 
@@ -4267,13 +4273,23 @@ df_md_reset (bitmap all_blocks)
 static bool
 df_md_transfer_function (int bb_index)
 {
+  basic_block bb = BASIC_BLOCK (bb_index);
   struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
   bitmap in = bb_info->in;
   bitmap out = bb_info->out;
   bitmap gen = bb_info->gen;
   bitmap kill = bb_info->kill;
 
-  return bitmap_ior_and_compl (out, gen, in, kill);
+  /* We need to use a scratch set here so that the value returned from this
+     function invocation properly reflects whether the sets changed in a
+     significant way; i.e. not just because the live set was anded in.  */
+  bitmap_and (df_md_scratch, gen, df_get_live_out (bb));
+
+  /* Multiple definitions of a register are not relevant if it is not
+     live.  Thus we trim the result to the places where it is live.  */
+  bitmap_and_into (in, df_get_live_in (bb));
+
+  return bitmap_ior_and_compl (out, df_md_scratch, in, kill);
 }
 
 /* Initialize the solution bit vectors for problem.  */
@@ -4336,6 +4352,7 @@ df_md_free (void)
 	}
     }
 
+  BITMAP_FREE (df_md_scratch);
   free_alloc_pool (df_md->block_pool);
 
   df_md->block_info_size = 0;
