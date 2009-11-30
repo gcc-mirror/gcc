@@ -1,3 +1,37 @@
+2009-11-30  Matthew Heaney  <heaney@adacore.com>
+
+	* a-coinve.adb (Insert): Move exception handler closer to point where
+	exception can occur.
+	Minor reformatting & comment additions.
+
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Disable warning on 'Foreign caller must
+	pass bounds' for VM targets, not relevant.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (Wrong_Type): Diagnose additional case of modular
+	missing parens.
+	* a-tiinio.adb, a-wtinio.adb, a-ztinio.adb: Minor reformatting
+
+	* exp_util.adb (Kill_Dead_Code): Suppress warning for some additional
+	cases.
+
+	* sem_warn.adb (Set_Warning_Flag): Clean up gnatwA list and ensure
+	completeness.
+	(Set_Dot_Warning_Flag): Ditto for -gnatw.e
+	(Set_Dot_Warning_Flag): Implement -gnbatw.v/w.V
+	* usage.adb: Add lines for -gnatw.v/w.V
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb (Check_Standard_Library): use Full_Source_Name instead of
+	direct call to Find_File. The former provides caching of the results, so
+	might be more efficient
+	(Start_Compile_If_Necessary): Add comment on possible optimization,
+	not done for now.
+
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
 	* g-sechas.adb: Minor reformatting

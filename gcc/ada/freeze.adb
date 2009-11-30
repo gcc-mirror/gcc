@@ -2602,6 +2602,11 @@ package body Freeze is
                        and then Is_Array_Type (F_Type)
                        and then not Is_Constrained (F_Type)
                        and then Warn_On_Export_Import
+
+                       --  Exclude VM case, since both .NET and JVM can handle
+                       --  unconstrained arrays without a problem.
+
+                       and then VM_Target = No_VM
                      then
                         Error_Msg_Qual_Level := 1;
 

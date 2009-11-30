@@ -11380,7 +11380,15 @@ package body Sem_Util is
                L  : constant Node_Id := Left_Opnd (Op);
                R  : constant Node_Id := Right_Opnd (Op);
             begin
-               if Etype (L) = Found_Type
+               --  The case for the message is when the left operand of the
+               --  comparison is the same modular type, or when it is an
+               --  integer literal (or other universal integer expression),
+               --  which would have been typed as the modular type if the
+               --  parens had been there.
+
+               if (Etype (L) = Found_Type
+                     or else
+                   Etype (L) = Universal_Integer)
                  and then Is_Integer_Type (Etype (R))
                then
                   Error_Msg_N
