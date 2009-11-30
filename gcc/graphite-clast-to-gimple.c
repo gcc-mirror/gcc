@@ -768,8 +768,47 @@ try_mark_loop_parallel (sese region, loop_p loop, htab_t bb_pbb_mapping)
     loop->can_be_parallel = true;
 }
 
+static tree gcc_type_for_iv_of_clast_loop (struct clast_for *);
 
-/* Translates a clast for statement STMT to gimple.
+
+/* Creates a new if region protecting the loop to be executed, if the execution
+ * count is zero (lb > ub).  */
+static edge
+graphite_create_new_loop_guard (sese region, edge entry_edge,
+				struct clast_for *stmt,
+				VEC (tree, heap) *newivs,
+				htab_t newivs_index, htab_t params_index)
+{
+  tree cond_expr;
+  edge exit_edge;
+  tree type = gcc_type_for_iv_of_clast_loop (stmt);
+  tree lb = clast_to_gcc_expression (type, stmt->LB, region, newivs,
+				     newivs_index, params_index);
+  tree ub = clast_to_gcc_expression (type, stmt->UB, region, newivs,
+				     newivs_index, params_index);
+
+  /* XXX: Adding +1 and using LT_EXPR helps with loop latches that have a
+   * loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
+   * 2^{32|64}, and the condition lb <= ub is true, even if we do not want this.
+   * However lb < ub + 1 is false, as expected.
+   * There might be a problem with cases where ub is 2^32.  */
+  tree one;
+  Value gmp_one;
+  value_init (gmp_one);
+  value_set_si (gmp_one, 1);
+  one = gmp_cst_to_tree (type, gmp_one);
+  value_clear (gmp_one);
+
+  ub = fold_build2 (PLUS_EXPR, type, ub, one);
+  cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub);
+
+  exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
+
+  return exit_edge;
+}
+
+
+/* Create the loop for a clast for statement.
 
    - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
@@ -779,7 +818,7 @@ try_mark_loop_parallel (sese region, loop_p loop, htab_t bb_pbb_mapping)
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
-translate_clast_for (sese region, struct clast_for *stmt, edge next_e,
+translate_clast_for_loop (sese region, struct clast_for *stmt, edge next_e,
 		     htab_t rename_map, VEC (tree, heap) **newivs,
 		     htab_t newivs_index, htab_t bb_pbb_mapping,
 		     htab_t params_index)
@@ -798,6 +837,47 @@ translate_clast_for (sese region, struct clast_for *stmt, edge next_e,
   insert_loop_close_phis (rename_map, loop);
 
   try_mark_loop_parallel (region, loop, bb_pbb_mapping);
+
+  return last_e;
+}
+
+/* Translates a clast for statement STMT to gimple.  First a guard is created
+ * protecting the loop, if it is executed zero times.  In this guard we create
+ * the real loop structure.
+
+   - REGION is the sese region we used to generate the scop.
+   - NEXT_E is the edge where new generated code should be attached.
+   - RENAME_MAP contains a set of tuples of new names associated to
+     the original variables names.
+   - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
+   - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
+     the sese region.  */
+static edge
+translate_clast_for (sese region, struct clast_for *stmt, edge next_e,
+		     htab_t rename_map, VEC (tree, heap) **newivs,
+		     htab_t newivs_index, htab_t bb_pbb_mapping,
+		     htab_t params_index)
+{
+  edge last_e = graphite_create_new_loop_guard (region, next_e, stmt, *newivs,
+					   newivs_index, params_index);
+
+  edge true_e = get_true_edge_from_guard_bb (next_e->dest);
+  edge false_e = get_false_edge_from_guard_bb (next_e->dest);
+  edge exit_true_e = single_succ_edge (true_e->dest);
+  edge exit_false_e = single_succ_edge (false_e->dest);
+
+  htab_t before_guard = htab_create (10, rename_map_elt_info,
+				     eq_rename_map_elts, free);
+  htab_traverse (rename_map, copy_renames, before_guard);
+
+  next_e = translate_clast_for_loop (region, stmt, true_e, rename_map, newivs,
+				     newivs_index, bb_pbb_mapping,
+				     params_index);
+
+  insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
+		     before_guard, rename_map);
+
+  htab_delete (before_guard);
 
   return last_e;
 }

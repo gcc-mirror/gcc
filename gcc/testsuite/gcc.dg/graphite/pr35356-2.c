@@ -25,8 +25,20 @@ foo (int bar, int n, int k)
    | for (i = max(k+1,0); i < n; i++)
    |   a[i] = i;
 
+   XXX: At the moment we generate to protect loops that are executed zero times.
+
+   | if (0 < min (n, k) + 1)
+   |   for (i = 0; i < min (n, k); i++)
+   |     a[i] = i;
+   | if (k >= 0 && k < n)
+   |   a[k] = 1;
+   | if (0 < max(n, k) + 1)
+   |   for (i = max(k+1,0); i < n; i++)
+   |     a[i] = i;
+
 */
 
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "graphite" } } */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR" 1 "graphite" } } */
+
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "MAX_EXPR" 2 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

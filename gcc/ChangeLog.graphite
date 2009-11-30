@@ -1,5 +1,15 @@
 2009-11-23  Tobias Grosser  <grosser@fim.uni-passau.de>
 
+	PR middle-end/42130
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard,
+	translate_clast_for_loop): New.
+	(translate_clast_for): Add a condition around the loop, to do not
+	execute loops with zero iterations.
+	* testsuite/g++.dg/graphite/pr42130.C: New.
+	* testsuite/gcc.dg/graphite/pr35356-2.c: Adapt.
+
+2009-11-23  Tobias Grosser  <grosser@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c (try_mark_loop_parallel): New.
 	(translate_clast_for, translate_clast_guard, translate_clast, gloog):
 	Remove context_loop and level.
