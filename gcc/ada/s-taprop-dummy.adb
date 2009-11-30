@@ -38,8 +38,6 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
-with System.Error_Reporting;
-
 package body System.Task_Primitives.Operations is
 
    use System.Tasking;
@@ -192,9 +190,7 @@ package body System.Task_Primitives.Operations is
    procedure Initialize (Environment_Task : Task_Id) is
       No_Tasking : Boolean;
    begin
-      No_Tasking :=
-        System.Error_Reporting.Shutdown
-          ("Tasking not implemented on this configuration");
+      raise Program_Error with "Tasking not implemented on this configuration";
    end Initialize;
 
    procedure Initialize (S : in out Suspension_Object) is
