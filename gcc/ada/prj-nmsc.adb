@@ -2520,6 +2520,12 @@ package body Prj.Nmsc is
                         Project.Decl.Attributes,
                         Data.Tree);
 
+      Library_Interface : constant Prj.Variable_Value :=
+                     Prj.Util.Value_Of
+                       (Snames.Name_Library_Interface,
+                        Project.Decl.Attributes,
+                        Data.Tree);
+
       List      : String_List_Id;
       Element   : String_Element;
       Name      : File_Name_Type;
@@ -2604,22 +2610,90 @@ package body Prj.Nmsc is
 
          Project.Interfaces_Defined := True;
 
-      elsif Project.Extends /= No_Project then
-         Project.Interfaces_Defined := Project.Extends.Interfaces_Defined;
+      elsif Project.Library and then not Library_Interface.Default then
 
-         if Project.Interfaces_Defined then
-            Iter := For_Each_Source (Data.Tree, Project);
+         --  Set In_Interfaces to False for all sources. It will be set to True
+         --  later for the sources in the Library_Interface list.
+
+         Project_2 := Project;
+         while Project_2 /= No_Project loop
+            Iter := For_Each_Source (Data.Tree, Project_2);
             loop
                Source := Prj.Element (Iter);
                exit when Source = No_Source;
-
-               if not Source.Declared_In_Interfaces then
-                  Source.In_Interfaces := False;
-               end if;
-
+               Source.In_Interfaces := False;
                Next (Iter);
             end loop;
-         end if;
+
+            Project_2 := Project_2.Extends;
+         end loop;
+
+         List := Library_Interface.Values;
+         while List /= Nil_String loop
+            Element := Data.Tree.String_Elements.Table (List);
+            Get_Name_String (Element.Value);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            Name := Name_Find;
+
+            Project_2 := Project;
+            Big_Loop_2 :
+            while Project_2 /= No_Project loop
+               Iter := For_Each_Source (Data.Tree, Project_2);
+
+               loop
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source;
+
+                  if Source.Unit /= No_Unit_Index and then
+                     Source.Unit.Name = Name_Id (Name)
+                  then
+                     if not Source.Locally_Removed then
+                        Source.In_Interfaces := True;
+                        Source.Declared_In_Interfaces := True;
+
+                        Other := Other_Part (Source);
+
+                        if Other /= No_Source then
+                           Other.In_Interfaces := True;
+                           Other.Declared_In_Interfaces := True;
+                        end if;
+
+                        if Current_Verbosity = High then
+                           Write_Str ("   interface: ");
+                           Write_Line (Get_Name_String (Source.Path.Name));
+                        end if;
+                     end if;
+
+                     exit Big_Loop_2;
+                  end if;
+
+                  Next (Iter);
+               end loop;
+
+               Project_2 := Project_2.Extends;
+            end loop Big_Loop_2;
+
+            List := Element.Next;
+         end loop;
+
+         Project.Interfaces_Defined := True;
+
+      elsif Project.Extends /= No_Project and then
+            Project.Extends.Interfaces_Defined
+      then
+         Project.Interfaces_Defined := True;
+
+         Iter := For_Each_Source (Data.Tree, Project);
+         loop
+            Source := Prj.Element (Iter);
+            exit when Source = No_Source;
+
+            if not Source.Declared_In_Interfaces then
+               Source.In_Interfaces := False;
+            end if;
+
+            Next (Iter);
+         end loop;
       end if;
    end Check_Interfaces;
 

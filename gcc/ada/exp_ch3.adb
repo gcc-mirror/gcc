@@ -8121,7 +8121,9 @@ package body Exp_Ch3 is
                   and then not Is_Limited_Interface (Tag_Typ)
                   and then Is_Limited_Interface (Etype (Tag_Typ)))
       then
-         if not Is_Limited_Type (Tag_Typ) then
+         if not Is_Limited_Type (Tag_Typ)
+           and then not Is_Value_Type (Tag_Typ)
+         then
             Append_To (Res,
               Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust));
          end if;

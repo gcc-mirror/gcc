@@ -1,3 +1,34 @@
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* clean.adb ("-eL"): Also set Follow_Links_For_Dirs, to match what is
+	done in other project-aware tools like gnatmake and gprbuild.
+
+2009-11-30  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Take care of CIL
+	ValueTypes.
+	* exp_ch7.adb (Needs_Finalization): Do not finalize CIL valuetypes.
+	* sem_util.adb (Is_Value_Type): Protect against invalid calls to Chars
+	(Is_Delegate): New method used for CIL.
+	* sem_util.ads (Is_Delegate): New method for CIL handling.
+	(Is_Value_Type): Improve documentation.
+
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* errout.adb (Unwind_Internal_Type): Improve error reporting if the
+	type is an anonymous access to subprogram that is the type of a formal
+	in a subprogram spec.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Interfaces): In a Stand-Alone Library project, if
+	attribute Interfaces is not declared, then Library_Interface should
+	define the interfaces.
+
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: New semantics for Annotate.
+
 2009-11-30  Tristan Gingold  <gingold@adacore.com>
 
         * gcc-interface/Makefile.in: Do not link with -static-libgcc on Darwin.
