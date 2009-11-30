@@ -36,7 +36,6 @@ package body Ada.Text_IO.Integer_IO is
    package Aux renames Ada.Text_IO.Integer_Aux;
 
    Need_LLI : constant Boolean := Num'Base'Size > Integer'Size;
-   pragma Warnings (Off, Need_LLI);
    --  Throughout this generic body, we distinguish between the case where type
    --  Integer is acceptable, and where a Long_Long_Integer is needed. This
    --  Boolean is used to test for these cases and since it is a constant, only
