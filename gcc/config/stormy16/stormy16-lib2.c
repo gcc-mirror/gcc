@@ -253,14 +253,24 @@ __parityhi2 (UHWtype x)
 #endif
 
 #ifdef XSTORMY16_CLZHI2
-/* Returns the number of leading zero bits in X.
-   FIXME:  The return type really should be "unsigned int"
-   but this is not how the builtin is prototyped.  */
-
+/* Returns the number of zero-bits from the most significant bit to the
+   first nonzero bit in X.  Returns 16 for X == 0.  Implemented as a
+   simple for loop in order to save space by removing the need for
+   the __clz_tab array.
+   FIXME:  The return type really should be "unsigned int" but this is
+   not how the builtin is prototyped.  */
+#undef unsigned
 int
 __clzhi2 (UHWtype x)
 {
-  return __stormy16_count_leading_zeros (x);
+  unsigned int i;
+  unsigned int c;
+  unsigned int value = x;
+
+  for (c = 0, i = 1 << 15; i; i >>= 1, c++)
+    if (i & value)
+      break;
+  return c;
 }
 #endif
 
@@ -278,7 +288,7 @@ __ctzhi2 (UHWtype x)
      bits.  */
   x &= - x;
 
-  return 15 - __stormy16_count_leading_zeros (x);
+  return 15 - __builtin_clz (x);
 }
 #endif
 
@@ -296,26 +306,6 @@ __ffshi2 (UHWtype u)
   if (u == 0)
     return 0;
 
-  return 16 - __stormy16_count_leading_zeros (u & - u);
+  return 16 - __builtin_clz (u & - u);
 }
 #endif
-
-#ifdef XSTORMY16_COUNT_LEADING_ZEROS
-#undef unsigned
-/* Count the number of zero-bits from the most significant bit to the
-   first nonzero bit in VALUE.  Returns 16 for VALUE == 0.  Implemented
-   as a simple for loop in order to save space by removing the need for
-   the __clz_tab array.  */
-
-unsigned int
-__stormy16_count_leading_zeros (unsigned int value)
-{
-  unsigned int i;
-  unsigned int c;
-
-  for (c = 0, i = 1 << 15; i; i >>= 1, c++)
-    if (i & value)
-      break;
-  return c;
-}
-#endif /* XSTORMY16_COUNT_LEADING_ZEROS */

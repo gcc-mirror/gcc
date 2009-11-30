@@ -18,8 +18,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# SImode routines
-
+# SImode arithmetic and logical routines, HImode bit counting routines.
 LIB2FUNCS_EXTRA = \
 	$(srcdir)/config/stormy16/stormy16-lib2-udivmodsi4.c \
 	$(srcdir)/config/stormy16/stormy16-lib2-divsi3.c \
@@ -33,12 +32,9 @@ LIB2FUNCS_EXTRA = \
 	$(srcdir)/config/stormy16/stormy16-lib2-parityhi2.c \
 	$(srcdir)/config/stormy16/stormy16-lib2-clzhi2.c \
 	$(srcdir)/config/stormy16/stormy16-lib2-ctzhi2.c \
-	$(srcdir)/config/stormy16/stormy16-lib2-ffshi2.c \
-	$(srcdir)/config/stormy16/stormy16-lib2-count-leading-zeros.c
+	$(srcdir)/config/stormy16/stormy16-lib2-ffshi2.c
 
-
-# floating point emulation libraries
-
+# Floating point emulation libraries.
 FPBIT = fp-bit.c
 DPBIT = dp-bit.c
 
