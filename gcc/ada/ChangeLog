@@ -1,3 +1,8 @@
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-crtl.ads, s-oscons-tmplt.c: Fix support for VMS
+	* make.adb, g-comlin.ads, exp_ch6.adb: Minor reformatting
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* bcheck.adb, gnatlink.adb, make.adb, makeutl.adb, osint.adb,

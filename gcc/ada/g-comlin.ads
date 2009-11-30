@@ -622,8 +622,7 @@ package GNAT.Command_Line is
       Section    : String    := "";
       Add_Before : Boolean   := False;
       Success    : out Boolean);
-   --  Same as above, returning the status of
-   --  the operation
+   --  Same as above, returning the status of the operation
 
    procedure Remove_Switch
      (Cmd           : in out Command_Line;
