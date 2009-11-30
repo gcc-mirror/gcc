@@ -35,8 +35,8 @@
 --  advantage of the C functions, e.g. in providing interface to hardware
 --  provided versions of the elementary functions.
 
---  Uses functions sqrt, exp, log, pow, sin, asin, cos, acos, tan, atan,
---  sinh, cosh, tanh from C library via math.h
+--  Uses functions sqrt, exp, log, pow, sin, asin, cos, acos, tan, atan, sinh,
+--  cosh, tanh from C library via math.h
 
 with Ada.Numerics.Aux;
 
@@ -46,6 +46,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    Sqrt_Two : constant := 1.41421_35623_73095_04880_16887_24209_69807_85696;
    Log_Two  : constant := 0.69314_71805_59945_30941_72321_21458_17656_80755;
+
    Half_Log_Two : constant := Log_Two / 2;
 
    subtype T is Float_Type'Base;
@@ -63,9 +64,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    -----------------------
 
    function Exp_Strict (X : Float_Type'Base) return Float_Type'Base;
-   --  Cody/Waite routine, supposedly more precise than the library
-   --  version. Currently only needed for Sinh/Cosh on X86 with the largest
-   --  FP type.
+   --  Cody/Waite routine, supposedly more precise than the library version.
+   --  Currently only needed for Sinh/Cosh on X86 with the largest FP type.
 
    function Local_Atan
      (Y : Float_Type'Base;
@@ -120,9 +120,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                A_Right := abs (Right);
 
                --  If exponent is larger than one, compute integer exponen-
-               --  tiation if possible, and evaluate fractional part with
-               --  more precision. The relative error is now proportional
-               --  to the fractional part of the exponent only.
+               --  tiation if possible, and evaluate fractional part with more
+               --  precision. The relative error is now proportional to the
+               --  fractional part of the exponent only.
 
                if A_Right > 1.0
                  and then A_Right < Float_Type'Base (Integer'Last)
@@ -240,8 +240,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Arccosh (X : Float_Type'Base) return Float_Type'Base is
    begin
-      --  Return positive branch of Log (X - Sqrt (X * X - 1.0)), or
-      --  the proper approximation for X close to 1 or >> 1.
+      --  Return positive branch of Log (X - Sqrt (X * X - 1.0)), or the proper
+      --  approximation for X close to 1 or >> 1.
 
       if X < 1.0 then
          raise Argument_Error;
@@ -304,8 +304,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error;
 
       else
-         --  1.0 < abs X <= 2.0.  One of X + 1.0 and X - 1.0 is exact, the
-         --  other has error 0 or Epsilon.
+         --  1.0 < abs X <= 2.0. One of X + 1.0 and X - 1.0 is exact, the other
+         --  has error 0 or Epsilon.
 
          return 0.5 * (Log (abs (X + 1.0)) - Log (abs (X - 1.0)));
       end if;
@@ -393,9 +393,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       return Float_Type'Base
    is
    begin
-      if X = 0.0
-        and then Y = 0.0
-      then
+      if X = 0.0 and then Y = 0.0 then
          raise Argument_Error;
 
       elsif Y = 0.0 then
@@ -406,11 +404,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          end if;
 
       elsif X = 0.0 then
-         if Y > 0.0 then
-            return Half_Pi;
-         else -- Y < 0.0
-            return -Half_Pi;
-         end if;
+         return Float_Type'Copy_Sign (Half_Pi, Y);
 
       else
          return Local_Atan (Y, X);
@@ -429,9 +423,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       if Cycle <= 0.0 then
          raise Argument_Error;
 
-      elsif X = 0.0
-        and then Y = 0.0
-      then
+      elsif X = 0.0 and then Y = 0.0 then
          raise Argument_Error;
 
       elsif Y = 0.0 then
@@ -442,11 +434,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          end if;
 
       elsif X = 0.0 then
-         if Y > 0.0 then
-            return Cycle / 4.0;
-         else -- Y < 0.0
-            return -(Cycle / 4.0);
-         end if;
+         return Float_Type'Copy_Sign (Cycle / 4.0, Y);
 
       else
          return Local_Atan (Y, X) *  Cycle / Two_Pi;
@@ -459,6 +447,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Arctanh (X : Float_Type'Base) return Float_Type'Base is
       A, B, D, A_Plus_1, A_From_1 : Float_Type'Base;
+
       Mantissa : constant Integer := Float_Type'Base'Machine_Mantissa;
 
    begin
@@ -490,9 +479,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       --  why is above line commented out ???
 
       else
-         --  Use several piecewise linear approximations.
-         --  A is close to X, chosen so 1.0 + A, 1.0 - A, and X - A are exact.
-         --  The two scalings remove the low-order bits of X.
+         --  Use several piecewise linear approximations. A is close to X,
+         --  chosen so 1.0 + A, 1.0 - A, and X - A are exact. The two scalings
+         --  remove the low-order bits of X.
 
          A := Float_Type'Base'Scaling (
              Float_Type'Base (Long_Long_Integer
@@ -504,16 +493,13 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          D := A_Plus_1 * A_From_1;  --  1 - A*A.
 
          --  use one term of the series expansion:
-         --  f (x + e) = f(x) + e * f'(x) + ..
+
+         --    f (x + e) = f(x) + e * f'(x) + ..
 
          --  The derivative of Arctanh at A is 1/(1-A*A). Next term is
          --  A*(B/D)**2 (if a quadratic approximation is ever needed).
 
          return 0.5 * (Log (A_Plus_1) - Log (A_From_1)) + B / D;
-
-         --  else
-         --  return 0.5 * Log ((X + 1.0) / (1.0 - X));
-         --  why are above lines commented out ???
       end if;
    end Arctanh;
 
@@ -540,8 +526,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Cos (X, Cycle : Float_Type'Base) return Float_Type'Base is
    begin
-      --  Just reuse the code for Sin. The potential small
-      --  loss of speed is negligible with proper (front-end) inlining.
+      --  Just reuse the code for Sin. The potential small loss of speed is
+      --  negligible with proper (front-end) inlining.
 
       return -Sin (abs X - Cycle * 0.25, Cycle);
    end Cos;
@@ -704,8 +690,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
       --  Deal with case of Exp returning IEEE infinity. If Machine_Overflows
       --  is False, then we can just leave it as an infinity (and indeed we
-      --  prefer to do so). But if Machine_Overflows is True, then we have
-      --  to raise a Constraint_Error exception as required by the RM.
+      --  prefer to do so). But if Machine_Overflows is True, then we have to
+      --  raise a Constraint_Error exception as required by the RM.
 
       if Float_Type'Machine_Overflows and then not R'Valid then
          raise Constraint_Error;
@@ -727,46 +713,21 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       Raw_Atan : Float_Type'Base;
 
    begin
-      --  Z := (if abs Y > abs X then abs (X / Y) else abs (Y / X));
+      Z := (if abs Y > abs X then abs (X / Y) else abs (Y / X));
 
-      --  Raw_Atan :=
-      --    (if Z < Sqrt_Epsilon then Z
-      --     elsif Z = 1.0 then Pi / 4.0
-      --     else Float_Type'Base (Aux.Atan (Double (Z))));
-
-      --  Replace above with IF statements for now (ASIS gnatelim problem???)
-
-      if abs Y > abs X then
-         Z := abs (X / Y);
-      else
-         Z := abs (Y / X);
-      end if;
-
-      if Z < Sqrt_Epsilon then
-         Raw_Atan := Z;
-      elsif Z = 1.0 then
-         Raw_Atan := Pi / 4.0;
-      else
-         Raw_Atan := Float_Type'Base (Aux.Atan (Double (Z)));
-      end if;
+      Raw_Atan :=
+        (if Z < Sqrt_Epsilon then Z
+         elsif Z = 1.0 then Pi / 4.0
+         else Float_Type'Base (Aux.Atan (Double (Z))));
 
       if abs Y > abs X then
          Raw_Atan := Half_Pi - Raw_Atan;
       end if;
 
       if X > 0.0 then
-         if Y > 0.0 then
-            return Raw_Atan;
-         else                 --  Y < 0.0
-            return -Raw_Atan;
-         end if;
-
-      else                    --  X < 0.0
-         if Y > 0.0 then
-            return Pi - Raw_Atan;
-         else                  --  Y < 0.0
-            return -(Pi - Raw_Atan);
-         end if;
+         return Float_Type'Copy_Sign (Raw_Atan, Y);
+      else
+         return Float_Type'Copy_Sign (Pi - Raw_Atan, Y);
       end if;
    end Local_Atan;
 
@@ -835,27 +796,27 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       if Cycle <= 0.0 then
          raise Argument_Error;
 
+      --  If X is zero, return it as the result, preserving the argument sign.
+      --  Is this test really needed on any machine ???
+
       elsif X = 0.0 then
-         --  Is this test really needed on any machine ???
          return X;
       end if;
 
       T := Float_Type'Base'Remainder (X, Cycle);
 
-      --  The following two reductions reduce the argument
-      --  to the interval [-0.25 * Cycle, 0.25 * Cycle].
-      --  This reduction is exact and is needed to prevent
-      --  inaccuracy that may result if the sinus function
-      --  a different (more accurate) value of Pi in its
-      --  reduction than is used in the multiplication with Two_Pi.
+      --  The following two reductions reduce the argument to the interval
+      --  [-0.25 * Cycle, 0.25 * Cycle]. This reduction is exact and is needed
+      --  to prevent inaccuracy that may result if the sinus function uses a
+      --  different (more accurate) value of Pi in its reduction than is used
+      --  in the multiplication with Two_Pi.
 
       if abs T > 0.25 * Cycle then
          T := 0.5 * Float_Type'Copy_Sign (Cycle, T) - T;
       end if;
 
-      --  Could test for 12.0 * abs T = Cycle, and return
-      --  an exact value in those cases. It is not clear that
-      --  this is worth the extra test though.
+      --  Could test for 12.0 * abs T = Cycle, and return an exact value in
+      --  those cases. It is not clear this is worth the extra test though.
 
       return Float_Type'Base (Aux.Sin (Double (T / Cycle * Two_Pi)));
    end Sin;
@@ -938,7 +899,6 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
       elsif X = 0.0 then
          return X;
-
       end if;
 
       return Float_Type'Base (Aux.Sqrt (Double (X)));

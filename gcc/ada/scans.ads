@@ -428,7 +428,13 @@ package Scans is
    --  Valid only when Token = Tok_String_Literal or Tok_Operator_Symbol.
 
    Wide_Character_Found : Boolean := False;
-   --  Set True if wide character found.
+   --  Set True if wide character found (i.e. a character that does not fit
+   --  in Character, but fits in Wide_Wide_Character).
+   --  Valid only when Token = Tok_String_Literal.
+
+   Wide_Wide_Character_Found : Boolean := False;
+   --  Set True if wide wide character found (i.e. a character that does
+   --  not fit in Character or Wide_Character).
    --  Valid only when Token = Tok_String_Literal.
 
    Special_Character : Character;

@@ -476,7 +476,7 @@ begin
    Write_Line ("        W    turn off warnings for wrong low bound " &
                                                   "assumption");
    Write_Line ("        .w   turn on warnings on pragma Warnings Off");
-   Write_Line ("        .w*  turn off warnings on pragma Warnings Off");
+   Write_Line ("        .W*  turn off warnings on pragma Warnings Off");
    Write_Line ("        x*   turn on warnings for export/import");
    Write_Line ("        X    turn off warnings for export/import");
    Write_Line ("        .x   turn on warnings for non-local exception");

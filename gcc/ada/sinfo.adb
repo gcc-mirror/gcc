@@ -1481,6 +1481,14 @@ package body Sinfo is
       return Flag11 (N);
    end Has_Wide_Character;
 
+   function Has_Wide_Wide_Character
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_String_Literal);
+      return Flag13 (N);
+   end Has_Wide_Wide_Character;
+
    function Hidden_By_Use_Clause
      (N : Node_Id) return Elist_Id is
    begin
@@ -4350,6 +4358,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_String_Literal);
       Set_Flag11 (N, Val);
    end Set_Has_Wide_Character;
+
+   procedure Set_Has_Wide_Wide_Character
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_String_Literal);
+      Set_Flag13 (N, Val);
+   end Set_Has_Wide_Wide_Character;
 
    procedure Set_Hidden_By_Use_Clause
      (N : Node_Id; Val : Elist_Id) is
