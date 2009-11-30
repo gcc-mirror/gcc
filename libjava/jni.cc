@@ -1806,7 +1806,7 @@ _Jv_JNI_GetDirectBufferCapacity (JNIEnv *, jobject buffer)
 }
 
 static jobjectRefType JNICALL
-_Jv_JNI_GetObjectRefType (JNIEnv *, jobject object)
+_Jv_JNI_GetObjectRefType (JNIEnv *, MAYBE_UNUSED jobject object)
 {
   JvFail("GetObjectRefType not implemented");
   return JNIInvalidRefType;
