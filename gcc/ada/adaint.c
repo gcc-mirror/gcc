@@ -697,7 +697,7 @@ __gnat_os_filename (char *filename ATTRIBUTE_UNUSED,
 		    char *encoding ATTRIBUTE_UNUSED, int *e_length)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
-  WS2SC (os_name, (TCHAR *)w_filename, (DWORD)o_length);
+  WS2SC (os_name, (TCHAR *)w_filename, (DWORD)*o_length);
   *o_length = strlen (os_name);
   strcpy (encoding, "encoding=utf8");
   *e_length = strlen (encoding);

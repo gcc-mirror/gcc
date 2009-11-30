@@ -78,12 +78,11 @@
 
 #ifdef _WIN32
 
-/* We need functionality available only starting with Windows XP */
-#define _WIN32_WINNT 0x0501
-
 #include <windows.h>
 #include <process.h>
 #include <signal.h>
+#include <io.h>
+#include "mingw32.h"
 
 void
 __gnat_kill (int pid, int sig, int close)
