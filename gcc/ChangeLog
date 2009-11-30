@@ -1,3 +1,14 @@
+2009-11-30  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386-builtin-types.def (V4DF_FTYPE_V4DF_V4DF_V4DI): New.
+	(V8SF_FTYPE_V8SF_V8SF_V8SI): New.
+	* config/i386/i386.c (ix86_vectorize_builtin_vec_perm): Support
+	V4DF and V8SF for AVX; relax constraint on V4SF to SSE1 from SSE2.
+	(IX86_BUILTIN_VEC_PERM_V4DF, IX86_BUILTIN_VEC_PERM_V8SF): New.
+	(bdesc_args): Add them.
+	(ix86_expand_builtin): Expand them.
+	(expand_vec_perm_pshufb2): Only operate on 16-byte vectors.
+
 2009-11-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42206
