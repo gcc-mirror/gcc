@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -326,7 +326,7 @@ package System.OS_Interface is
    function Get_Page_Size return size_t;
    function Get_Page_Size return Address;
    pragma Import (C, Get_Page_Size, "getpagesize");
-   --  returns the size of a page, or 0 if this is not relevant on this target
+   --  Returns the size of a page
 
    PROT_NONE  : constant := 0;
    PROT_READ  : constant := 1;

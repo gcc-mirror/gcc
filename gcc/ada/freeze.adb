@@ -2554,6 +2554,7 @@ package body Freeze is
                           and then Convention (F_Type) = Convention_Ada
                           and then not Has_Warnings_Off (F_Type)
                           and then not Has_Size_Clause (F_Type)
+                          and then VM_Target = No_VM
                         then
                            Error_Msg_N
                              ("& is an 8-bit Ada Boolean?", Formal);
@@ -2682,6 +2683,7 @@ package body Freeze is
 
                         elsif Root_Type (R_Type) = Standard_Boolean
                           and then Convention (R_Type) = Convention_Ada
+                          and then VM_Target = No_VM
                           and then not Has_Warnings_Off (E)
                           and then not Has_Warnings_Off (R_Type)
                           and then not Has_Size_Clause (R_Type)

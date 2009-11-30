@@ -1042,6 +1042,10 @@ package Opt is
    --  for GNATBIND and to False when using the -static option. The value of
    --  this flag is set by Gnatbind.Scan_Bind_Arg.
 
+   Short_Circuit_And_Or : Boolean := False;
+   --  GNAT
+   --  Set True if a pragma Short_Circuit_And_Or applies to the current unit.
+
    Sprint_Line_Limit : Nat := 72;
    --  Limit values for chopping long lines in Sprint output, can be reset
    --  by use of NNN parameter with -gnatG or -gnatD switches.

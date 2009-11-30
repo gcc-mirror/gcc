@@ -253,6 +253,7 @@ Implementation Defined Attributes
 * Passed_By_Reference::
 * Pool_Address::
 * Range_Length::
+* Result::
 * Safe_Emax::
 * Safe_Large::
 * Small::
@@ -5423,6 +5424,7 @@ consideration, you should minimize the use of these attributes.
 * Passed_By_Reference::
 * Pool_Address::
 * Range_Length::
+* Result::
 * Safe_Emax::
 * Safe_Large::
 * Small::
@@ -6073,6 +6075,16 @@ the number of values represented by the subtype (zero for a null
 range).  The result is static for static subtypes.  @code{Range_Length}
 applied to the index subtype of a one dimensional array always gives the
 same result as @code{Range} applied to the array itself.
+
+@node Result
+@unnumberedsec Result
+@findex Result
+@noindent
+@code{@var{function}'Result} can only be used with in a Postcondition pragma
+for a function. The prefix must be the name of the corresponding function. This
+is used to refer to the result of the function in the postcondition expression.
+For a further discussion of the use of this attribute and examples of its use,
+see the description of pragma Postcondition.
 
 @node Safe_Emax
 @unnumberedsec Safe_Emax

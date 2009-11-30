@@ -35,6 +35,7 @@ with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Output;   use Output;
 with Rtsfind;  use Rtsfind;
+with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -526,7 +527,7 @@ package body Sprint is
          Write_Eol;
       end Underline;
 
-   --  Start of processing for Tree_Dump
+   --  Start of processing for Source_Dump
 
    begin
       Dump_Generated_Only := Debug_Flag_G or
@@ -3961,7 +3962,7 @@ package body Sprint is
                   when E_String_Literal_Subtype =>
                      declare
                         LB  : constant Uint :=
-                                Intval (String_Literal_Low_Bound (Typ));
+                                Expr_Value (String_Literal_Low_Bound (Typ));
                         Len : constant Uint :=
                                 String_Literal_Length (Typ);
                      begin

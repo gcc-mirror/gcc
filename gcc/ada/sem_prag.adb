@@ -10658,7 +10658,23 @@ package body Sem_Prag is
          when Pragma_Reviewable =>
             Check_Ada_83_Warning;
             Check_Arg_Count (0);
+
+            --  Call dummy debugging function rv. This is done to assist front
+            --  end debugging. By placing a Reviewable pragma in the source
+            --  program, a breakpoint on rv catches this place in the source,
+            --  allowing convenient stepping to the point of interest.
+
             rv;
+
+         --------------------------
+         -- Short_Circuit_And_Or --
+         --------------------------
+
+         when Pragma_Short_Circuit_And_Or =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Short_Circuit_And_Or := True;
 
          -------------------
          -- Share_Generic --
@@ -12522,6 +12538,7 @@ package body Sem_Prag is
       Pragma_Restriction_Warnings          => -1,
       Pragma_Restrictions                  => -1,
       Pragma_Reviewable                    => -1,
+      Pragma_Short_Circuit_And_Or          => -1,
       Pragma_Share_Generic                 => -1,
       Pragma_Shared                        => -1,
       Pragma_Shared_Passive                => -1,
