@@ -33,6 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Compiler_Unit;
+
 package Ada.Command_Line is
    pragma Preelaborate;
 

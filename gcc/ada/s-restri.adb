@@ -29,6 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Compiler_Unit;
+
 package body System.Restrictions is
    use Rident;
 

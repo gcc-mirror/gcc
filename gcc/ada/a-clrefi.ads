@@ -36,6 +36,8 @@
 --  Using a response file allow passing a set of arguments to an executable
 --  longer than the maximum allowed by the system on the command line.
 
+pragma Compiler_Unit;
+
 with System.Strings;
 
 package Ada.Command_Line.Response_File is

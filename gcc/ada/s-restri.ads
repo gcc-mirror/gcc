@@ -38,6 +38,8 @@
 --  with names discarded, so that we do not have image tables for the
 --  large restriction enumeration types at run time.
 
+pragma Compiler_Unit;
+
 with System.Rident;
 
 package System.Restrictions is

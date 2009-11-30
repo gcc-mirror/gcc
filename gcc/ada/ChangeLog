@@ -1,3 +1,18 @@
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-posix.adb: Fix casing.
+	* s-osinte-tru64.adb: Complete previous check-in.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document pragma Compiler_Unit
+	* s-bitops.adb, s-restri.adb, g-htable.adb, s-restri.ads,
+	a-comlin.ads, a-strhas.ads, s-strhas.adb, s-parame.adb,
+	s-parame.ads, a-clrefi.adb, a-clrefi.ads, a-ioexce.ads: Supply missing
+	Compiler_Unit pragmas.
+	* freeze.adb (Freeze_Entity): Improve message for 8-bit boolean passed
+	to C.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* makeutl.adb, makeutl.ads, prj-proc.adb, prj.adb, prj.ads: Minor

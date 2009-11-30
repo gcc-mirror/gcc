@@ -112,6 +112,7 @@ Implementation Defined Pragmas
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
+* Pragma Compiler_Unit::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
@@ -722,6 +723,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
+* Pragma Compiler_Unit::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
@@ -1332,6 +1334,24 @@ One typical use is within a generic where compile time known characteristics
 of formal parameters are tested, and warnings given appropriately. Another use
 with a first parameter of True is to warn a client about use of a package,
 for example that it is not fully implemented.
+
+@node Pragma Compiler_Unit
+@unnumberedsec Pragma Compiler_Unit
+@findex Compiler_Unit
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Compiler_Unit;
+@end smallexample
+
+@noindent
+This pragma is intended only for internal use in the GNAT run-time library.
+It indicates that the unit is used as part of the compiler build. The effect
+is to disallow constructs (raise with message, conditional expressions etc)
+that would cause trouble when bootstrapping using an older version of GNAT.
+For the exact list of restrictions, see the compiler sources and references
+to Is_Compiler_Unit.
 
 @node Pragma Complete_Representation
 @unnumberedsec Pragma Complete_Representation

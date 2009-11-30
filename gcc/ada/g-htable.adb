@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,9 @@
 --  This is a dummy body, required because if we remove the body we have
 --  bootstrap path problems (this unit used to have a body, and if we do not
 --  supply a dummy body, the old incorrect body is picked up during the
---  bootstrap process.
+--  bootstrap process).
+
+pragma Compiler_Unit;
 
 package body GNAT.HTable is
 end GNAT.HTable;

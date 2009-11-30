@@ -102,7 +102,7 @@ package body System.OS_Interface is
          Res :=
            mprotect
              (Teb.all.stack_yellow, Get_Page_Size,
-              prot => (if Res then PROT_ON else PROT_OFF));
+              prot => (if Hide then PROT_ON else PROT_OFF));
       end if;
    end Hide_Unhide_Yellow_Zone;
 

@@ -246,7 +246,7 @@ package body System.Task_Primitives.Operations is
 
          Res :=
            mprotect (Guard_Page_Address, Get_Page_Size,
-                     prot => (if ON then PROT_ON else PROT_OFF));
+                     prot => (if On then PROT_ON else PROT_OFF));
          pragma Assert (Res = 0);
       end if;
    end Stack_Guard;

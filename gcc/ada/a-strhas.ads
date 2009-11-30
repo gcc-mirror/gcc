@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Compiler_Unit;
+
 with Ada.Containers;
 
 function Ada.Strings.Hash (Key : String) return Containers.Hash_Type;
