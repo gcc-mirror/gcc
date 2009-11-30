@@ -3405,7 +3405,7 @@ package body Make is
 
                      --  Compute where the ALI file must be generated in
                      --  In_Place_Mode (this does not require to know the
-                     --  location of the object directory)
+                     --  location of the object directory).
 
                      if In_Place_Mode then
                         if Full_Lib_File = No_File then
@@ -3426,9 +3426,9 @@ package body Make is
                         end if;
                      end if;
 
-                     --  Start the compilation and record it. We can do
-                     --  this because there is at least one free process.
-                     --  This might change the current directory
+                     --  Start the compilation and record it. We can do this
+                     --  because there is at least one free process. This
+                     --  might change the current directory.
 
                      Collect_Arguments_And_Compile
                        (Full_Source_File => Full_Source_File,
@@ -3481,7 +3481,7 @@ package body Make is
 
                      Lib_File_Attr := Unknown_Attributes;
 
-                     --  Make sure we could successfully start the Compilation
+                     --  Make sure we could successfully start the compilation
 
                      if Process_Created then
                         if Pid = Invalid_Pid then

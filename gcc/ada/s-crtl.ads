@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides the low level interface to the C Run Time Library
---  on non-VMS systems.
+--  This package provides the low level interface to the C runtime library
 
 with System.Parameters;
 

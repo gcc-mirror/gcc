@@ -2314,9 +2314,9 @@ package body Exp_Ch6 is
 
                      end case;
 
-                  --  For allocators we pass the level of the execution of
-                  --  the called subprogram, which is one greater than the
-                  --  current scope level.
+                  --  For allocators we pass the level of the execution of the
+                  --  called subprogram, which is one greater than the current
+                  --  scope level.
 
                   when N_Allocator =>
                      Add_Extra_Actual

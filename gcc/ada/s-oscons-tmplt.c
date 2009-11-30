@@ -1275,27 +1275,6 @@ CST(Inet_Pton_Linkname, "")
 
 #endif /* HAVE_SOCKETS */
 
-/*
-
-   ---------------------------------
-   -- C runtime library interface --
-   ---------------------------------
-
-*/
-#if defined (__VMS)
-# define malloc32_Linkname  "_malloc32"
-# define realloc32_Linkname "_realloc32"
-# define strerror_Linkname  "DECC$STRERROR"
-#else
-# define malloc32_Linkname  "malloc"
-# define realloc32_Linkname "realloc"
-# define strerror_Linkname  "strerror"
-#endif
-
-CST(malloc32_Linkname, "")
-CST(realloc32_Linkname, "")
-CST(strerror_Linkname, "")
-
 /**
  **  System-specific constants follow
  **  Each section should be activated if compiling for the corresponding
