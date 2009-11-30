@@ -1,3 +1,9 @@
+2009-11-30  Steve Ellcey  <sje@cup.hp.com>
+	    Jakub Jelinek <jakub@redhat.com>
+
+	* function.c (instantiate_virtual_regs_in_insn): Copy to new reg
+	before forcing mode.
+
 2009-11-30  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/sh/sh.c (sh_promote_prototypes): Make static.
