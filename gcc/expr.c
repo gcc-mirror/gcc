@@ -6840,9 +6840,8 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
       return expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
 
     case CONST_DECL:
-      /* Recurse and make the output_constant_def clause above handle this.  */
-      return expand_expr_addr_expr_1 (DECL_INITIAL (exp), target,
-				      tmode, modifier, as);
+      /* Expand the initializer like constants above.  */
+      return XEXP (expand_expr_constant (DECL_INITIAL (exp), 0, modifier), 0);
 
     case REALPART_EXPR:
       /* The real part of the complex number is always first, therefore

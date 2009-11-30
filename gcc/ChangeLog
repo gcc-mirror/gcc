@@ -1,5 +1,12 @@
 2009-11-30  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/42119
+	PR fortran/38530
+	* expr.c (expand_expr_addr_expr_1): Properly expand the initializer
+	of CONST_DECLs.
+
+2009-11-30  Richard Guenther  <rguenther@suse.de>
+
 	* tree-into-ssa.c (insert_phi_nodes): Add PHI nodes in
 	variable UID order.
 
