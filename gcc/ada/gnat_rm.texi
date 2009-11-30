@@ -5197,79 +5197,11 @@ The form with a single static_string_EXPRESSION argument provides more precise
 control over which warnings are active. The string is a list of letters
 specifying which warnings are to be activated and which deactivated. The
 code for these letters is the same as the string used in the command
-line switch controlling warnings. The following is a brief summary. For
+line switch controlling warnings. For a brief summary, use the gnatmake
+command with no arguments, which will generate usage information containing
+the list of warnings switches supported. For
 full details see @ref{Warning Message Control,,, gnat_ugn, @value{EDITION}
 User's Guide}.
-
-@smallexample
-a    turn on all optional warnings (except d h l .o)
-A    turn off all optional warnings
-.a*  turn on warnings for failing assertions
-.A   turn off warnings for failing assertions
-b    turn on warnings for bad fixed value (not multiple of small)
-B*   turn off warnings for bad fixed value (not multiple of small)
-.b*  turn on warnings for biased representation
-.B   turn off warnings for biased representation
-c    turn on warnings for constant conditional
-C*   turn off warnings for constant conditional
-.c   turn on warnings for unrepped components
-.C*  turn off warnings for unrepped components
-d    turn on warnings for implicit dereference
-D*   turn off warnings for implicit dereference
-e    treat all warnings as errors
-.e   turn on every optional warning
-f    turn on warnings for unreferenced formal
-F*   turn off warnings for unreferenced formal
-g*   turn on warnings for unrecognized pragma
-G    turn off warnings for unrecognized pragma
-h    turn on warnings for hiding variable
-H*   turn off warnings for hiding variable
-i*   turn on warnings for implementation unit
-I    turn off warnings for implementation unit
-j    turn on warnings for obsolescent (annex J) feature
-J*   turn off warnings for obsolescent (annex J) feature
-k    turn on warnings on constant variable
-K*   turn off warnings on constant variable
-l    turn on warnings for missing elaboration pragma
-L*   turn off warnings for missing elaboration pragma
-m    turn on warnings for variable assigned but not read
-M*   turn off warnings for variable assigned but not read
-n*   normal warning mode (cancels -gnatws/-gnatwe)
-o*   turn on warnings for address clause overlay
-O    turn off warnings for address clause overlay
-.o   turn on warnings for out parameters assigned but not read
-.O*  turn off warnings for out parameters assigned but not read
-p    turn on warnings for ineffective pragma Inline in frontend
-P*   turn off warnings for ineffective pragma Inline in frontend
-.p   turn on warnings for parameter ordering
-.P*  turn off warnings for parameter ordering
-q*   turn on warnings for questionable missing parentheses
-Q    turn off warnings for questionable missing parentheses
-r    turn on warnings for redundant construct
-R*   turn off warnings for redundant construct
-.r   turn on warnings for object renaming function
-.R*  turn off warnings for object renaming function
-s    suppress all warnings
-t    turn on warnings for tracking deleted code
-T*   turn off warnings for tracking deleted code
-u    turn on warnings for unused entity
-U*   turn off warnings for unused entity
-v*   turn on warnings for unassigned variable
-V    turn off warnings for unassigned variable
-w*   turn on warnings for wrong low bound assumption
-W    turn off warnings for wrong low bound assumption
-.w   turn on warnings for unnecessary Warnings Off pragmas
-.W*  turn off warnings for unnecessary Warnings Off pragmas
-x*   turn on warnings for export/import
-X    turn off warnings for export/import
-.x   turn on warnings for non-local exceptions
-.X*  turn off warnings for non-local exceptions
-y*   turn on warnings for Ada 2005 incompatibility
-Y    turn off warnings for Ada 2005 incompatibility
-z*   turn on convention/size/align warnings for unchecked conversion
-Z    turn off convention/size/align warnings for unchecked conversion
-*    indicates default in above list
-@end smallexample
 
 @noindent
 The specified warnings will be in effect until the end of the program
@@ -5307,6 +5239,11 @@ pragma Warnings (On, Pattern);
 @noindent
 In this usage, the pattern string must match in the Off and On pragmas,
 and at least one matching warning must be suppressed.
+
+Note: the debug flag -gnatd.i (@code{/NOWARNINGS_PRAGMAS} in VMS) can be
+used to cause the compiler to entirely ignore all WARNINGS pragmas. This can
+be useful in checking whether obsolete pragmas in existing programs are hiding
+real problems.
 
 @node Pragma Weak_External
 @unnumberedsec Pragma Weak_External

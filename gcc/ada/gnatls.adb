@@ -40,7 +40,6 @@ with Rident;      use Rident;
 with Sdefault;
 with Snames;
 with Switch;      use Switch;
-with Targparm;    use Targparm;
 with Types;       use Types;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
@@ -1574,8 +1573,6 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    if Verbose_Mode then
-      Targparm.Get_Target_Parameters;
-
       Write_Eol;
       Display_Version ("GNATLS", "1997");
       Write_Eol;

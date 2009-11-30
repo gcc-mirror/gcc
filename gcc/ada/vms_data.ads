@@ -1933,6 +1933,13 @@ package VMS_Data is
    --
    --    Do not look for library files in the system default directory.
 
+   S_GCC_NoWarnP  : aliased constant S := "/NOWARNING_PRAGMAS "            &
+                                             "-gnatd.i";
+   --        /NOWARNING_PRAGMAS
+   --
+   --   Causes all Warnings pragmas to be ignored. Useful to check if the
+   --   program has obsolete warnings pragmas that are hiding problems.
+
    S_GCC_Opt     : aliased constant S := "/OPTIMIZE="                      &
                                             "ALL "                         &
                                                "-O2,!-O0,!-O1,!-O3 "       &
@@ -3473,6 +3480,7 @@ package VMS_Data is
                      S_GCC_Noload  'Access,
                      S_GCC_Nostinc 'Access,
                      S_GCC_Nostlib 'Access,
+                     S_GCC_NoWarnP 'Access,
                      S_GCC_Opt     'Access,
                      S_GCC_OptX    'Access,
                      S_GCC_Pointer 'Access,

@@ -273,6 +273,9 @@ package Osint is
    function File_Time_Stamp
      (Name : C_File_Name;
       Attr : access File_Attributes) return OS_Time;
+   function File_Time_Stamp
+     (Name : Path_Name_Type;
+      Attr : access File_Attributes) return Time_Stamp_Type;
    --  Return the time stamp of the file
 
    function Is_Readable_File

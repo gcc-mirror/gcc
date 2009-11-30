@@ -1,3 +1,26 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Remove list of warning letters, and refer instead to
+	using gnatmake to get a brief list.
+
+	* debug.adb: Document -gnatd.i to disable pragma Warnings
+	* par-prag.adb, sem_prag.adb: Recognize -gnatd.i to disable Warnings
+	pragma.
+	* vms_data.ads: Add /NOWARNINGS_PRAGMS for -gnatd.i
+	
+2009-11-30  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngelfu.adb (Sin): Correct spelling of sine in comment.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* gnatls.adb: Do not call Get_Target_Parameters in Verbose_Mode, as it
+	is not needed and gnatls fails when called with -v -nostdinc.
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* osint.adb, osint.ads (File_Time_Stamp): new subprogram.
+
 2009-11-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat_rm.texi, gnat_ugn.texi: Document new syntax for pragma Annotate

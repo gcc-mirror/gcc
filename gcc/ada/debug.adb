@@ -99,7 +99,7 @@ package body Debug is
    --  d.f  Inhibit folding of static expressions
    --  d.g  Enable conversion of raise into goto
    --  d.h
-   --  d.i
+   --  d.i  Ignore Warnings pragmas
    --  d.j
    --  d.k
    --  d.l  Use Ada 95 semantics for limited function returns
@@ -512,6 +512,10 @@ package body Debug is
    --       relevant handler is statically determinable. For now we only try
    --       this if this debug flag is set. Later we will enable this more
    --       generally by default.
+
+   --  d.i  Ignore all occurrences of pragma Warnings in the sources. This can
+   --       be used in particular to disable Warnings (Off) to check if any of
+   --       these statements are inappropriate.
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.

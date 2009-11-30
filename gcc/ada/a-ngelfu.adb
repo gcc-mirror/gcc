@@ -807,7 +807,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
       --  The following two reductions reduce the argument to the interval
       --  [-0.25 * Cycle, 0.25 * Cycle]. This reduction is exact and is needed
-      --  to prevent inaccuracy that may result if the sinus function uses a
+      --  to prevent inaccuracy that may result if the sine function uses a
       --  different (more accurate) value of Pi in its reduction than is used
       --  in the multiplication with Two_Pi.
 
