@@ -5,6 +5,11 @@
 
 AC_DEFUN([ACX_LARGEFILE],[dnl
 
+# The tests for host and target for $enable_largefile require
+# canonical names.
+AC_REQUIRE([AC_CANONICAL_HOST])
+AC_REQUIRE([AC_CANONICAL_TARGET])
+
 # As the $enable_largefile decision depends on --enable-plugins we must set it
 # even in directories otherwise not depending on the $plugins option.
 
