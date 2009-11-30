@@ -410,7 +410,7 @@ package body Prj.Env is
          end loop;
 
          if Add_It then
-            Source_Path_Table.Append (Source_Paths, Source_Dir.Value);
+            Source_Path_Table.Append (Source_Paths, Source_Dir.Display_Value);
          end if;
 
          --  Next source directory

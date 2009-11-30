@@ -1,3 +1,24 @@
+2009-11-30  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb, sem_scil.adb (Adjust_SCIL_Node): Add missing management
+	of N_Unchecked_Type_Conversion nodes when searching for SCIL nodes.
+	(Expand_Call): Adjust decoration of SCIL node associated with relocated
+	function call.
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-env.adb (Add_To_Source_Path): Preserve casing of directories
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads (No_Split_Units): New flag initialized to False
+
+2009-11-30  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_ch7.adb (Needs_Finalization): Add comments.
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Improve handling of
+	CIL Value types.
+
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
 	* osint.adb, a-rttiev.adb: Minor reformatting.

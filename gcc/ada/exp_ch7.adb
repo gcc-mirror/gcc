@@ -3287,18 +3287,29 @@ package body Exp_Ch7 is
    --  Start of processing for Needs_Finalization
 
    begin
-      --  Class-wide types must be treated as controlled because they may
-      --  contain an extension that has controlled components.
+      return
 
-      --  We can skip this if finalization is not available.
-      --  or if it is a value type (because ???)
+        --  Class-wide types must be treated as controlled and therefore
+        --  requiring finalization (because they may be extended with an
+        --  extension that has controlled components.
 
-      return (Is_Class_Wide_Type (T)
-                and then not In_Finalization_Root (T)
-                and then not Restriction_Active (No_Finalization)
-                and then not Is_Value_Type (Etype (T)))
+        (Is_Class_Wide_Type (T)
+
+          --  However, avoid treating class-wide types as controlled if
+          --  finalization is not available and in particular CIL value
+          --  types never have finalization).
+
+          and then not In_Finalization_Root (T)
+          and then not Restriction_Active (No_Finalization)
+          and then not Is_Value_Type (Etype (T)))
+
+        --  Controlled types always need finalization
+
         or else Is_Controlled (T)
         or else Has_Some_Controlled_Component (T)
+
+        --  For concurrent types, test the corresponding record type
+
         or else (Is_Concurrent_Type (T)
                   and then Present (Corresponding_Record_Type (T))
                   and then Needs_Finalization (Corresponding_Record_Type (T)));

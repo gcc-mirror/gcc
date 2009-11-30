@@ -8104,6 +8104,11 @@ package body Exp_Ch3 is
       elsif Restriction_Active (No_Finalization) then
          null;
 
+      --  We skip these for CIL Value types (why???)
+
+      elsif Is_Value_Type (Tag_Typ) then
+         null;
+
       elsif Etype (Tag_Typ) = Tag_Typ
         or else Needs_Finalization (Tag_Typ)
 
@@ -8121,9 +8126,7 @@ package body Exp_Ch3 is
                   and then not Is_Limited_Interface (Tag_Typ)
                   and then Is_Limited_Interface (Etype (Tag_Typ)))
       then
-         if not Is_Limited_Type (Tag_Typ)
-           and then not Is_Value_Type (Tag_Typ)
-         then
+         if not Is_Limited_Type (Tag_Typ) then
             Append_To (Res,
               Predef_Deep_Spec (Loc, Tag_Typ, TSS_Deep_Adjust));
          end if;

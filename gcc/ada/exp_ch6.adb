@@ -2779,6 +2779,19 @@ package body Exp_Ch6 is
                           Unchecked_Convert_To (Parent_Typ,
                             Relocate_Node (Actual)));
 
+                        --  If the relocated node is a function call then it
+                        --  can be part of the expansion of the predefined
+                        --  equality operator of a tagged type and we may
+                        --  need to adjust its SCIL dispatching node.
+
+                        if Generate_SCIL
+                          and then Nkind (Actual) /= N_Null
+                          and then Nkind (Expression (Actual))
+                                     = N_Function_Call
+                        then
+                           Adjust_SCIL_Node (Actual, Expression (Actual));
+                        end if;
+
                         Analyze (Actual);
                         Resolve (Actual, Parent_Typ);
                      end if;
