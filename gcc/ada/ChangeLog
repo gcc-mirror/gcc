@@ -1,5 +1,9 @@
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
+	* osint.adb, a-rttiev.adb: Minor reformatting.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Remove list of warning letters, and refer instead to
 	using gnatmake to get a brief list.
 
