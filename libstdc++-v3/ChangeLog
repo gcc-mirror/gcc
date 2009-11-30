@@ -1,3 +1,30 @@
+2009-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/functional: Remove file, copy its contents,
+	trivially adjusted...
+	* include/std/functional: ... here, and...
+	* include/tr1_impl/functional: ... here.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+
+2009-11-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+        * include/tr1_impl/functional (function): Add rvalue support and
+        tweak doxygen markup.
+        * testsuite/20_util/function/assign/move.cc: New.
+        * testsuite/20_util/function/cons/move.cc: New.
+        * testsuite/20_util/function/invoke/move_only.cc: New.
+        * testsuite/20_util/function/cmp/cmp_neg.cc: New.
+        * testsuite/20_util/function/1.cc: Copy from testsuite/tr1/.
+        * testsuite/20_util/function/2.cc: Likewise.
+        * testsuite/20_util/function/3.cc: Likewise.
+        * testsuite/20_util/function/4.cc: Likewise.
+        * testsuite/20_util/function/5.cc: Likewise.
+        * testsuite/20_util/function/6.cc: Likewise.
+        * testsuite/20_util/function/7.cc: Likewise.
+        * testsuite/20_util/function/8.cc: Likewise.
+        * testsuite/20_util/function/9.cc: Likewise.
+
 2009-11-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/doxygen/user.cfg.in: Add __GXX_RTTI to PREDEFINED macros.

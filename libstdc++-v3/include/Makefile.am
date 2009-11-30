@@ -609,7 +609,6 @@ tr1_impl_headers = \
 	${tr1_impl_srcdir}/cstdlib \
 	${tr1_impl_srcdir}/cwchar \
 	${tr1_impl_srcdir}/cwctype \
-	${tr1_impl_srcdir}/functional \
 	${tr1_impl_srcdir}/hashtable \
 	${tr1_impl_srcdir}/hashtable_policy.h \
 	${tr1_impl_srcdir}/regex \
