@@ -1,3 +1,8 @@
+2009-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac: Update minimum MPC version to 0.8.
+	* configure: Regenerate.
+
 2009-11-21  Sebastian Pop  <sebpop@gmail.com>
 
 	* configure.ac: Check for version 0.15.5 or later revision of CLooG.
