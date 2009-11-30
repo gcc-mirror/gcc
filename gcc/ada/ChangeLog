@@ -1,3 +1,8 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* makeutl.adb, makeutl.ads, prj-proc.adb, prj.adb, prj.ads: Minor
+	reformatting.
+
 2009-11-30  Thomas Quinot  <quinot@adacore.com>
 
 	* osint.adb: Minor reformatting
