@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                           G N A T . S H A 1                              --
+--            S Y S T E M . S E C U R E _ H A S H E S . S H A 1             --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2009, Free Software Foundation, Inc.             --
+--         Copyright (C) 2002-2009, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is a package renaming. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
+--  This package provides supporting code for implementation of the SHA-1
+--  secure hash function as decsribed in FIPS PUB 180-3. The complete text
+--  of FIPS PUB 180-3 can be found at:
+--    http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf
 
-pragma No_Body;
+with GNAT.Byte_Swapping;
+with Interfaces;
+
+package System.Secure_Hashes.SHA1 is
+
+   package Hash_State is new Hash_Function_State
+     (Word           => Interfaces.Unsigned_32,
+      Swap           => GNAT.Byte_Swapping.Swap4,
+      Hash_Bit_Order => System.High_Order_First);
+   --  SHA-1 operates on 32-bit big endian words
+
+   Block_Words : constant := 16;
+   --  Messages are processed in chunks of 16 words
+
+   procedure Transform
+     (H : in out Hash_State.State;
+      M : in out Message_State);
+   --  Transformation function applied for each block
+
+   Initial_State : constant Hash_State.State;
+   --  Initialization vector
+
+private
+
+   Initial_State : constant Hash_State.State :=
+                     (0 => 16#67452301#,
+                      1 => 16#EFCDAB89#,
+                      2 => 16#98BADCFE#,
+                      3 => 16#10325476#,
+                      4 => 16#C3D2E1F0#);
+   --  Initialization vector from FIPS PUB 180-3
+
+end System.Secure_Hashes.SHA1;

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                           G N A T . S H A 1                              --
+--         S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ 3 2          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,8 +29,52 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is a package renaming. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
+package body System.Secure_Hashes.SHA2_32 is
 
-pragma No_Body;
+   use Interfaces;
+
+   ------------
+   -- Sigma0 --
+   ------------
+
+   function Sigma0 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 2)
+         xor Rotate_Right (X, 13)
+         xor Rotate_Right (X, 22);
+   end Sigma0;
+
+   ------------
+   -- Sigma1 --
+   ------------
+
+   function Sigma1 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 6)
+         xor Rotate_Right (X, 11)
+         xor Rotate_Right (X, 25);
+   end Sigma1;
+
+   --------
+   -- S0 --
+   --------
+
+   function S0 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 7)
+         xor Rotate_Right (X, 18)
+         xor Shift_Right  (X, 3);
+   end S0;
+
+   --------
+   -- S1 --
+   --------
+
+   function S1 (X : Word) return Word is
+   begin
+      return Rotate_Right (X, 17)
+         xor Rotate_Right (X, 19)
+         xor Shift_Right  (X, 10);
+   end S1;
+
+end System.Secure_Hashes.SHA2_32;

@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                           G N A T . S H A 1                              --
+--     S Y S T E M . S E C U R E _ H A S H E S . S H A 2 _ C O M M O N      --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --           Copyright (C) 2009, Free Software Foundation, Inc.             --
 --                                                                          --
@@ -29,8 +29,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package does not require a body, since it is a package renaming. We
---  provide a dummy file containing a No_Body pragma so that previous versions
---  of the body (which did exist) will not interfere.
+--  This package provides supporting code for implementation of the following
+--  secure hash functions described in FIPS PUB 180-3: SHA-224, SHA-256,
+--  SHA-384, SHA-512. It contains the generic transform operation that is
+--  common to the above four functions. The complete text of FIPS PUB 180-3
+--  can be found at:
+--    http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf
 
-pragma No_Body;
+package System.Secure_Hashes.SHA2_Common is
+
+   Block_Words : constant := 16;
+   --  All functions operate on blocks of 16 words
+
+   generic
+      with package Hash_State is new Hash_Function_State (<>);
+
+      Rounds : Natural;
+      --  Number of transformation rounds
+
+      K : Hash_State.State;
+      --  Constants used in the transform operation
+
+      with function Sigma0 (X : Hash_State.Word) return Hash_State.Word is <>;
+      with function Sigma1 (X : Hash_State.Word) return Hash_State.Word is <>;
+      with function S0 (X : Hash_State.Word) return Hash_State.Word is <>;
+      with function S1 (X : Hash_State.Word) return Hash_State.Word is <>;
+      --  FIPS PUB 180-3 elementary functions
+
+   procedure Transform
+     (H_St : in out Hash_State.State;
+      M_St : in out Message_State);
+
+end System.Secure_Hashes.SHA2_Common;

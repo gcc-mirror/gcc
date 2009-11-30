@@ -143,8 +143,8 @@ __gnat_pipe (int *fd)
   HANDLE read, write;
 
   CreatePipe (&read, &write, NULL, 0);
-  fd[0]=_open_osfhandle ((long)read, 0);
-  fd[1]=_open_osfhandle ((long)write, 0);
+  fd[0]=_open_osfhandle ((intptr_t)read, 0);
+  fd[1]=_open_osfhandle ((intptr_t)write, 0);
   return 0;  /* always success */
 }
 
