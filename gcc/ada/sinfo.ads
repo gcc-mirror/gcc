@@ -1608,6 +1608,10 @@ package Sinfo is
    --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the
    --    controlling tag of a dispatching call.
 
+   --  SCIL_Tag_Value (Node5-Sem)
+   --    Present in N_SCIL_Membership_Test nodes. Used to reference the tag
+   --    value that is being tested.
+
    --  SCIL_Target_Prim (Node2-Sem)
    --    Present in N_SCIL_Dispatching_Call nodes. Used to reference the tagged
    --    type primitive associated with the SCIL node.
@@ -6886,6 +6890,12 @@ package Sinfo is
       --  SCIL_Entity (Node4-Sem)
       --  SCIL_Controlling_Tag (Node5-Sem)
 
+      --  N_SCIL_Membership_Test
+      --  Sloc references the node of a membership test
+      --  SCIL_Related_Node (Node1-Sem)
+      --  SCIL_Tag_Value (Node5-Sem)
+      --  SCIL_Entity (Node4-Sem)
+
       --  N_SCIL_Tag_Init
       --  Sloc references the node of a tag component initialization
       --  SCIL_Related_Node (Node1-Sem)
@@ -7333,6 +7343,7 @@ package Sinfo is
       N_SCIL_Dispatch_Table_Object_Init,
       N_SCIL_Dispatch_Table_Tag_Init,
       N_SCIL_Dispatching_Call,
+      N_SCIL_Membership_Test,
       N_SCIL_Tag_Init,
 
       --  Other nodes (not part of any subtype class)
@@ -8390,6 +8401,9 @@ package Sinfo is
    function SCIL_Related_Node
      (N : Node_Id) return Node_Id;    -- Node1
 
+   function SCIL_Tag_Value
+     (N : Node_Id) return Node_Id;    -- Node5
+
    function SCIL_Target_Prim
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -9301,6 +9315,9 @@ package Sinfo is
 
    procedure Set_SCIL_Related_Node
      (N : Node_Id; Val : Node_Id);            -- Node1
+
+   procedure Set_SCIL_Tag_Value
+     (N : Node_Id; Val : Node_Id);            -- Node5
 
    procedure Set_SCIL_Target_Prim
      (N : Node_Id; Val : Node_Id);            -- Node2
@@ -11056,6 +11073,13 @@ package Sinfo is
         4 => False,   --  SCIL_Entity (Node4-Sem)
         5 => False),  --  SCIL_Controlling_Tag (Node5-Sem)
 
+     N_SCIL_Membership_Test =>
+       (1 => False,   --  SCIL_Related_Node (Node1-Sem)
+        2 => False,   --  unused
+        3 => False,   --  unused
+        4 => False,   --  SCIL_Entity (Node4-Sem)
+        5 => False),  --  SCIL_Tag_Value (Node5-Sem)
+
      N_SCIL_Tag_Init =>
        (1 => False,   --  SCIL_Related_Node (Node1-Sem)
         2 => False,   --  unused
@@ -11364,6 +11388,7 @@ package Sinfo is
    pragma Inline (SCIL_Controlling_Tag);
    pragma Inline (SCIL_Entity);
    pragma Inline (SCIL_Related_Node);
+   pragma Inline (SCIL_Tag_Value);
    pragma Inline (SCIL_Target_Prim);
    pragma Inline (Scope);
    pragma Inline (Select_Alternatives);
@@ -11664,6 +11689,7 @@ package Sinfo is
    pragma Inline (Set_SCIL_Controlling_Tag);
    pragma Inline (Set_SCIL_Entity);
    pragma Inline (Set_SCIL_Related_Node);
+   pragma Inline (Set_SCIL_Tag_Value);
    pragma Inline (Set_SCIL_Target_Prim);
    pragma Inline (Set_Scope);
    pragma Inline (Set_Select_Alternatives);

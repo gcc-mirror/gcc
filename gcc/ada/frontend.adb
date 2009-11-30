@@ -47,6 +47,7 @@ with Prepcomp;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
+with Snames;   use Snames;
 with Sprint;
 with Scn;      use Scn;
 with Sem;      use Sem;
@@ -380,6 +381,28 @@ begin
    --  of -gnatD, where it rewrites all source locations in the tree.
 
    Sprint.Source_Dump;
+
+   --  Check again for configuration pragmas that appear in the context of
+   --  the main unit. These pragmas only affect the main unit, and the
+   --  corresponding flag is reset after each call to Semantics, but they
+   --  may affect the generated ali for the unit, and therefore the flag
+   --  must be set properly after compilation. Currently we only check for
+   --  Initialize_Scalars, but others should be checked: as well???
+
+   declare
+      Item  : Node_Id;
+
+   begin
+      Item := First (Context_Items (Cunit (Main_Unit)));
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma
+           and then Pragma_Name (Item) = Name_Initialize_Scalars
+         then
+            Initialize_Scalars := True;
+         end if;
+         Next (Item);
+      end loop;
+   end;
 
    --  If a mapping file has been specified by a -gnatem switch, update
    --  it if there has been some sources that were not in the mappings.

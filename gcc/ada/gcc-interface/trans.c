@@ -5321,6 +5321,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_SCIL_Dispatch_Table_Object_Init:
     case N_SCIL_Dispatch_Table_Tag_Init:
     case N_SCIL_Dispatching_Call:
+    case N_SCIL_Membership_Test:
     case N_SCIL_Tag_Init:
       /* SCIL nodes require no processing for GCC.  */
       gnu_result = alloc_stmt_list ();

@@ -793,8 +793,12 @@ package body Osint is
    -- Executable_Name --
    ---------------------
 
-   function Executable_Name (Name : File_Name_Type) return File_Name_Type is
+   function Executable_Name
+     (Name              : File_Name_Type;
+      Only_If_No_Suffix : Boolean := False) return File_Name_Type
+   is
       Exec_Suffix : String_Access;
+      Add_Suffix  : Boolean;
 
    begin
       if Name = No_File then
@@ -808,40 +812,59 @@ package body Osint is
          Exec_Suffix := new String'(Name_Buffer (1 .. Name_Len));
       end if;
 
-      Get_Name_String (Name);
-
       if Exec_Suffix'Length /= 0 then
-         declare
-            Buffer : String := Name_Buffer (1 .. Name_Len);
+         Add_Suffix := not Only_If_No_Suffix;
 
-         begin
-            --  Get the file name in canonical case to accept as is names
-            --  ending with ".EXE" on VMS and Windows.
+         if not Add_Suffix then
+            for J in 1 .. Name_Len loop
+               if Name_Buffer (J) = '.' then
+                  Add_Suffix := True;
+                  exit;
+               end if;
+            end loop;
+         end if;
 
-            Canonical_Case_File_Name (Buffer);
+         if Add_Suffix then
+            Get_Name_String (Name);
 
-            --  If Executable does not end with the executable suffix, add it
+            declare
+               Buffer : String := Name_Buffer (1 .. Name_Len);
 
-            if Buffer'Length <= Exec_Suffix'Length
-              or else
-                Buffer (Buffer'Last - Exec_Suffix'Length + 1 .. Buffer'Last)
-                  /= Exec_Suffix.all
-            then
-               Name_Buffer (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
-                 Exec_Suffix.all;
-               Name_Len := Name_Len + Exec_Suffix'Length;
-               Free (Exec_Suffix);
-               return Name_Find;
-            end if;
-         end;
+            begin
+               --  Get the file name in canonical case to accept as is names
+               --  ending with ".EXE" on VMS and Windows.
+
+               Canonical_Case_File_Name (Buffer);
+
+               --  If Executable does not end with the executable suffix, add
+               --  it.
+
+               if Buffer'Length <= Exec_Suffix'Length
+                 or else
+                   Buffer (Buffer'Last - Exec_Suffix'Length + 1 .. Buffer'Last)
+                   /= Exec_Suffix.all
+               then
+                  Name_Buffer
+                    (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
+                    Exec_Suffix.all;
+                  Name_Len := Name_Len + Exec_Suffix'Length;
+                  Free (Exec_Suffix);
+                  return Name_Find;
+               end if;
+            end;
+         end if;
       end if;
 
       Free (Exec_Suffix);
       return Name;
    end Executable_Name;
 
-   function Executable_Name (Name : String) return String is
+   function Executable_Name
+     (Name              : String;
+      Only_If_No_Suffix : Boolean := False) return String
+   is
       Exec_Suffix    : String_Access;
+      Add_Suffix     : Boolean;
       Canonical_Name : String := Name;
 
    begin
@@ -858,12 +881,22 @@ package body Osint is
       begin
          Free (Exec_Suffix);
          Canonical_Case_File_Name (Canonical_Name);
+         Add_Suffix := not Only_If_No_Suffix;
 
-         if Suffix'Length /= 0
-           and then
-             (Canonical_Name'Length <= Suffix'Length
-               or else Canonical_Name (Canonical_Name'Last - Suffix'Length + 1
-                                         .. Canonical_Name'Last) /= Suffix)
+         if not Add_Suffix then
+            for J in 1 .. Name_Len loop
+               if Name_Buffer (J) = '.' then
+                  Add_Suffix := True;
+                  exit;
+               end if;
+            end loop;
+         end if;
+
+         if Suffix'Length = 0 and then
+           Add_Suffix and then
+           (Canonical_Name'Length <= Suffix'Length
+            or else Canonical_Name (Canonical_Name'Last - Suffix'Length + 1
+                                    .. Canonical_Name'Last) /= Suffix)
          then
             declare
                Result : String (1 .. Name'Length + Suffix'Length);

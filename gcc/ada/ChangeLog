@@ -1,5 +1,57 @@
 2009-11-30  Vincent Celier  <celier@adacore.com>
 
+	* gnatlink.adb (Process_Args): Call Executable_Name on argument of -o
+	with Only_If_No_Suffix set to True.
+	* osint.adb (Executable_Name): Do not add executable suffix if there is
+	already a suffix and Only_If_No_Suffix is True.
+	* osint.ads (Executable_Name): New Boolean parameter Only_If_No_Suffix,
+	defaulted to False.
+
+2009-11-30  Javier Miranda  <miranda@adacore.com>
+
+	* exp_atag.adb (Build_TSD): Change argument name because the actual is
+	now the address of a tag (instead of the tag). Update implementation
+	accordingly.
+	(Build_CW_Membership): New implementation. Converted into a procedure
+	because it has an additional out mode parameter. Its implementation has
+	been rewritten to improve the generated code but also to facilitate
+	referencing the relocated object node in the caller.
+	* exp_atag.ads (Build_CW_Membership): Update profile and documentation.
+	* sinfo.ads (N_SCIL_Membership_Test) New_Node.
+	(SCIL_Tag_Value): New field of N_SCIL_Membership_Test nodes.
+	(Is_Syntactic_Field): Add entry of new node.
+	(SCIL_Tag_Value/Set_SCIL_Tag_Value): New subprograms.
+	* sinfo.adb (SCIL_Related_Node, SCIL_Entity): Update assertions to
+	handle N_SCIL_Membership_Test nodes.
+	(SCIL_Tag_Value/Set_SCIL_Tag_Value): New subprograms.
+	* sem.adb (Analyze): Add null management for new node.
+	* sem_scil.adb (Find_SCIL_Node): Add null management for new node.
+	(Check_SCIL_Node): Add checks of N_SCIL_Membership_Test nodes.
+	* exp_ch4.adb (Tagged_Membership): Change profile from function to
+	procedure. Add generation of SCIL node associated with class-wide
+	membership test.
+	(Expand_N_In): Complete decoration of SCIL nodes.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Tune call to
+	Build_CW_Membership because its profile has been changed.
+	* exp_util.adb (Insert_Actions): Add null management for new node.
+	* sprint.adb (Sprint_Node_Actual): Handle new node.
+	* gcc-interface/trans.c Add no processing for N_SCIL_Membership_Test
+	nodes.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* opt.ads: New flags Init_Or_Norm_Scalars_Config,
+	Initialize_Scalars_Config, to capture the presence of the corresponding
+	pragmas in a configuration file.
+	* opt.adb (Register_, Save_, Set_, Restore_Opt_Configuration_Switches):
+	handle new flags so that they are restored for each compilation unit.
+	* frontend.adb: At the end of compilation, scan the context of the main
+	unit to recover occurrences of pragma Initialize_Scalars, to annotate
+	the ALI file accordingly.
+
+2009-11-30  Vincent Celier  <celier@adacore.com>
+
 	* prj-tree.ads: Minor comment updates
 	* prj-tree.adb: Minor reformatting
 

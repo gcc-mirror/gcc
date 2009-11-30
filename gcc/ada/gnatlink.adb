@@ -445,7 +445,10 @@ procedure Gnatlink is
                            Exit_With_Error ("Missing argument for -o");
                         end if;
 
-                        Output_File_Name := new String'(Argument (Next_Arg));
+                        Output_File_Name :=
+                          new String'(Executable_Name
+                            (Argument (Next_Arg),
+                             Only_If_No_Suffix => True));
 
                      when 'R' =>
                         Opt.Run_Path_Option := False;

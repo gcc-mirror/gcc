@@ -2652,6 +2652,9 @@ package body Sprint is
          when N_SCIL_Dispatching_Call =>
             Write_Indent_Str ("[N_SCIL_Dispatching_Node]");
 
+         when N_SCIL_Membership_Test =>
+            Write_Indent_Str ("[N_SCIL_Membership_Test]");
+
          when N_SCIL_Tag_Init =>
             Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
 
