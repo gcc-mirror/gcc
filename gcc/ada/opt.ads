@@ -861,6 +861,12 @@ package Opt is
    --  This flag is set True if a No_Run_Time pragma is encountered. See
    --  spec of Rtsfind for a full description of handling of this pragma.
 
+   No_Split_Units : Boolean := False;
+   --  GPRBUILD
+   --  Set to True with switch --no-split-units. When True, unit sources, spec,
+   --  body and subunits, must all be in the same project.This is checked after
+   --  each compilation.
+
    No_Stdinc : Boolean := False;
    --  GNAT, GNATBIND, GNATMAKE, GNATFIND, GNATXREF
    --  Set to True if no default source search dirs added to search list

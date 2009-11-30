@@ -74,7 +74,9 @@ package body Sem_SCIL is
       --  Type conversions may involve dispatching calls to functions whose
       --  associated SCIL dispatching node needs adjustment.
 
-      elsif Nkind (Old_Node) = N_Type_Conversion then
+      elsif Nkind_In (Old_Node, N_Type_Conversion,
+                                N_Unchecked_Type_Conversion)
+      then
          null;
 
       --  Relocated subprogram call
