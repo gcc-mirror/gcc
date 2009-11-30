@@ -1,3 +1,15 @@
+2009-11-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/sh/sh.c (sh_promote_prototypes): Make static.
+	(sh_function_value, sh_libcall_value, sh_function_value_regno_p): New
+	functions.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Declare.
+	* config/sh/sh.h: (FUNCTION_VALUE_REGNO_P): Redefine, use
+	sh_function_value_regno_p.
+	(FUNCTION_VALUE, LIBCALL_VALUE): Remove.
+	* config/sh/sh-protos.h (sh_function_value_regno_p): Declare.
+	(sh_promote_prototypes) : Remove.
+
 2009-11-30  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.h (PREFERRED_RELOAD_CLASS): Don't restrict Thumb-2
