@@ -86,8 +86,6 @@ package body Prj is
                       Libgnarl_Needed                => Unknown,
                       Symbol_Data                    => No_Symbols,
                       Interfaces_Defined             => False,
-                      Include_Path                   => null,
-                      Include_Data_Set               => False,
                       Source_Dirs                    => Nil_String,
                       Source_Dir_Ranks               => No_Number_List,
                       Object_Directory               => No_Path_Information,
@@ -98,12 +96,11 @@ package body Prj is
                       Languages                      => No_Language_Index,
                       Decl                           => No_Declarations,
                       Imported_Projects              => null,
+                      Include_Path_File              => No_Path,
                       All_Imported_Projects          => null,
                       Ada_Include_Path               => null,
-                      Imported_Directories_Switches  => null,
                       Ada_Objects_Path               => null,
                       Objects_Path                   => null,
-                      Include_Path_File              => No_Path,
                       Objects_Path_File_With_Libs    => No_Path,
                       Objects_Path_File_Without_Libs => No_Path,
                       Config_File_Name               => No_Path,
@@ -704,7 +701,6 @@ package body Prj is
 
    begin
       if Project /= null then
-         Free (Project.Include_Path);
          Free (Project.Ada_Include_Path);
          Free (Project.Objects_Path);
          Free (Project.Ada_Objects_Path);
@@ -1055,7 +1051,8 @@ package body Prj is
    -- Compute_All_Imported_Projects --
    -----------------------------------
 
-   procedure Compute_All_Imported_Projects (Project : Project_Id) is
+   procedure Compute_All_Imported_Projects (Tree : Project_Tree_Ref) is
+      Project : Project_Id;
 
       procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean);
       --  Recursively add the projects imported by project Project, but not
@@ -1103,10 +1100,16 @@ package body Prj is
         new For_Every_Project_Imported (Boolean, Recursive_Add);
 
       Dummy : Boolean := False;
+      List  : Project_List;
 
    begin
-      Free_List (Project.All_Imported_Projects, Free_Project => False);
-      For_All_Projects (Project, Dummy);
+      List := Tree.Projects;
+      while List /= null loop
+         Project := List.Project;
+         Free_List (Project.All_Imported_Projects, Free_Project => False);
+         For_All_Projects (Project, Dummy);
+         List := List.Next;
+      end loop;
    end Compute_All_Imported_Projects;
 
    -------------------
@@ -1206,6 +1209,23 @@ package body Prj is
          Compiler_Driver_Mandatory  => Compiler_Driver_Mandatory,
          Require_Obj_Dirs           => Require_Obj_Dirs);
    end Create_Flags;
+
+   ------------
+   -- Length --
+   ------------
+
+   function Length
+     (Table : Name_List_Table.Instance; List : Name_List_Index) return Natural
+   is
+      Count : Natural := 0;
+      Tmp   : Name_List_Index := List;
+   begin
+      while Tmp /= No_Name_List loop
+         Count := Count + 1;
+         Tmp := Table.Table (Tmp).Next;
+      end loop;
+      return Count;
+   end Length;
 
 begin
    --  Make sure that the standard config and user project file extensions are

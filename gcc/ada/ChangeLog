@@ -1,3 +1,16 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* s-stchop-vxworks.adb: Add comment.
+
+2009-11-30  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, prj.adb, prj.ads (Compute_All_Imported_Projects): Now acts
+	on the whole tree, to better share code with gprbuild.
+	(Length): New subprogram, to share code in gprbuild.
+	(Project_Data): Remove fields that are only needed when compiling a
+ 	project in gprbuild (where we use local variables instead)
+	* osint.adb, osint.ads: Added minor comment on memory management
+
 2009-11-30  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: Update gnatcheck doc.

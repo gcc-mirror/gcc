@@ -129,6 +129,9 @@ package body System.Stack_Checking.Operations is
 
       Get_Stack_Info (Stack_Info'Access);
 
+      --  In s-stchop.adb, we check for overflow in the following operations,
+      --  but we have no such check in this vxworks version. Why not ???
+
       if Stack_Grows_Down then
          Limit := Stack_Info.Base - Storage_Offset (Stack_Info.Size);
       else

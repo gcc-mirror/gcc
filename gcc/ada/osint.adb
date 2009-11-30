@@ -138,6 +138,7 @@ package body Osint is
       Path_Len  : Integer) return String_Access;
    --  Converts a C String to an Ada String. Are we doing this to avoid withing
    --  Interfaces.C.Strings ???
+   --  Caller must free result
 
    function Include_Dir_Default_Prefix return String_Access;
    --  Same as exported version, except returns a String_Access
