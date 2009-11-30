@@ -18,6 +18,13 @@
 setenv LC_ALL C
 setenv LANG C
 
+# Many hosts now default to a non-ASCII C locale, however, so
+# they can set a charset encoding here if they need.
+if { [ishost "*-*-cygwin*"] } {
+  setenv LC_ALL C.ASCII
+  setenv LANG C.ASCII
+}
+
 # Run the LANGUAGE compiler with GCC_OPTIONS and inspect the compiler
 # output to make sure that they match the newline-separated patterns
 # in COMPILER_PATTERNS but not the patterns in COMPILER_NON_PATTERNS.

@@ -1,3 +1,12 @@
+2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* lib/g++.exp (g++_init): Add host-dependent settings for
+	LC_ALL and LANG.
+	* lib/gcc-dg.exp: Likewise.
+	* lib/options.exp: Likewise.
+	* lib/objc.exp (objc_init): Likewise.
+	* lib/gfortran.exp (gfortran_init): Likewise.
+
 2009-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/40371
