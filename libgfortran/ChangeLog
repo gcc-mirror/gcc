@@ -1,3 +1,10 @@
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.map: Add _gfortran_is_extension_of.
+	* Makefile.am: Add intrinsics/extends_type_of.c.
+	* Makefile.in: Regenerated.
+	* intrinsics/extends_type_of.c: New file. 
+
 2009-11-30  Kai Tietz  <Kai.Tietz@onevision.com>
 
 	* io/unix.c (find_file): Add variable id conditionally for

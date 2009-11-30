@@ -670,9 +670,10 @@ typedef struct
   unsigned untyped:1;		/* No implicit type could be found.  */
 
   unsigned is_bind_c:1;		/* say if is bound to C.  */
-  unsigned extension:1;		/* extends a derived type.  */
+  unsigned extension:8;		/* extension level of a derived type.  */
   unsigned is_class:1;		/* is a CLASS container.  */
   unsigned class_ok:1;		/* is a CLASS object with correct attributes.  */
+  unsigned vtab:1;		/* is a derived type vtab.  */
 
   /* These flags are both in the typespec and attribute.  The attribute
      list is what gets read from/written to a module file.  The typespec
@@ -1137,8 +1138,8 @@ typedef struct gfc_symbol
 
   int entry_id;			/* Used in resolve.c for entries.  */
 
-  /* CLASS vindex for declared and dynamic types in the class.  */
-  int vindex;
+  /* CLASS hashed name for declared and dynamic types in the class.  */
+  int hash_value;
 
   struct gfc_symbol *common_next;	/* Links for COMMON syms */
 
@@ -1599,7 +1600,7 @@ typedef struct gfc_class_esym_list
 {
   gfc_symbol *derived;
   gfc_symbol *esym;
-  struct gfc_expr *vindex;
+  struct gfc_expr *hash_value;
   struct gfc_class_esym_list *next;
 }
 gfc_class_esym_list;
@@ -2380,6 +2381,7 @@ gfc_try gfc_check_any_c_kind (gfc_typespec *);
 int gfc_validate_kind (bt, int, bool);
 int gfc_get_int_kind_from_width_isofortranenv (int size);
 int gfc_get_real_kind_from_width_isofortranenv (int size);
+tree gfc_get_derived_type (gfc_symbol * derived);
 extern int gfc_index_integer_kind;
 extern int gfc_default_integer_kind;
 extern int gfc_max_integer_kind;
@@ -2517,6 +2519,9 @@ void gfc_free_dt_list (void);
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 
+gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
+				gfc_array_spec **);
+gfc_symbol *gfc_find_derived_vtab (gfc_symbol *);
 gfc_typebound_proc* gfc_get_typebound_proc (void);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
 gfc_symbol* gfc_get_ultimate_derived_super_type (gfc_symbol*);

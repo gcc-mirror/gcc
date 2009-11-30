@@ -3405,7 +3405,7 @@ gfc_create_module_variable (gfc_symbol * sym)
       && (sym->equiv_built || sym->attr.in_equivalence))
     return;
 
-  if (sym->backend_decl)
+  if (sym->backend_decl && !sym->attr.vtab)
     internal_error ("backend decl for module variable %s already exists",
 		    sym->name);
 

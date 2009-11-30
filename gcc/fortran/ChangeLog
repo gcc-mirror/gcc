@@ -1,3 +1,74 @@
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42053
+	* resolve.c (resolve_select_type): Check for duplicate CLASS IS blocks.
+
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41631
+	* decl.c (gfc_match_derived_decl): Set extension level.
+	* gfortran.h (symbol_attribute): Expand 'extension' bit field to 8 bit.
+	* iresolve.c (gfc_resolve_extends_type_of): Return value of
+	'is_extension_of' has kind=4.
+	* match.c (select_type_set_tmp,gfc_match_class_is): Create temporary
+	for CLASS IS blocks.
+	* module.c (MOD_VERSION): Bump module version.
+	(ab_attribute,attr_bits): Remove AB_EXTENSION.
+	(mio_symbol_attribute): Handle expanded 'extension' field.
+	* resolve.c (resolve_select_type): Implement CLASS IS blocks.
+	(resolve_fl_variable_derived): Show correct type name.
+	* symbol.c (gfc_build_class_symbol): Set extension level.
+
+2009-11-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* intrinsic.h (gfc_resolve_extends_type_of): Add prototype.
+	* intrinsic.c (add_functions): Use 'gfc_resolve_extends_type_of'.
+	* iresolve.c (gfc_resolve_extends_type_of): New function, which
+	replaces the call to EXTENDS_TYPE_OF by the library function
+	'is_extension_of' and modifies the arguments.
+	* trans-intrinsic.c (gfc_conv_extends_type_of): Removed.
+	(gfc_conv_intrinsic_function): FOR EXTENDS_TYPE_OF, don't call
+	gfc_conv_extends_type_of but gfc_conv_intrinsic_funcall.
+
+2009-11-30  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	* decl.c (encapsulate_class_symbol): Replaced by
+	'gfc_build_class_symbol'.
+	(build_sym,build_struct): Call 'gfc_build_class_symbol'.
+	(gfc_match_derived_decl): Replace vindex by hash_value.
+	* dump-parse-tree.c (show_symbol): Replace vindex by hash_value.
+	* gfortran.h (symbol_attribute): Add field 'vtab'.
+	(gfc_symbol): Replace vindex by hash_value.
+	(gfc_class_esym_list): Ditto.
+	(gfc_get_derived_type,gfc_build_class_symbol,gfc_find_derived_vtab):
+	New prototypes.
+	* module.c (mio_symbol): Replace vindex by hash_value.
+	* resolve.c (vindex_expr): Rename to 'hash_value_expr'.
+	(resolve_class_compcall,resolve_class_typebound_call): Renamed
+	'vindex_expr'.
+	(resolve_select_type): Replace $vindex by $vptr->$hash.
+	* symbol.c (gfc_add_save): Handle vtab symbols.
+	(gfc_type_compatible): Rewrite.
+	(gfc_build_class_symbol): New function which replaces
+	'encapsulate_class_symbol'.
+	(gfc_find_derived_vtab): New function to set up a vtab symbol for a
+	derived type.
+	* trans-decl.c (gfc_create_module_variable): Handle vtab symbols.
+	* trans-expr.c (select_class_proc): Replace vindex by hash_value.
+	(gfc_conv_derived_to_class): New function to construct a temporary
+	CLASS variable from a derived type expression.
+	(gfc_conv_procedure_call): Call 'gfc_conv_derived_to_class'.
+	(gfc_conv_structure): Initialize the $extends and $size fields of
+	vtab symbols.
+	(gfc_trans_class_assign): Replace $vindex by $vptr. Remove the $size
+	assignment.
+	* trans-intrinsic.c (gfc_conv_same_type_as): Replace $vindex by
+	$vptr->$hash, and replace vindex by hash_value.
+	* trans-stmt.c (gfc_trans_allocate): Insert $vptr references, replace
+	$vindex by $vptr. Remove the $size assignment.
+	* trans-types.c (gfc_get_derived_type): Make it non-static.
+
 2009-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/42131

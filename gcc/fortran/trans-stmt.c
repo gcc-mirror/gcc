@@ -4046,6 +4046,7 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_expr *sz;
 	      gfc_se se_sz;
 	      sz = gfc_copy_expr (code->expr3);
+	      gfc_add_component_ref (sz, "$vptr");
 	      gfc_add_component_ref (sz, "$size");
 	      gfc_init_se (&se_sz, NULL);
 	      gfc_conv_expr (&se_sz, sz);
@@ -4141,42 +4142,49 @@ gfc_trans_allocate (gfc_code * code)
 	{
 	  gfc_expr *lhs,*rhs;
 	  gfc_se lse;
-	  /* Initialize VINDEX for CLASS objects.  */
+
+	  /* Initialize VPTR for CLASS objects.  */
 	  lhs = gfc_expr_to_initialize (expr);
-	  gfc_add_component_ref (lhs, "$vindex");
+	  gfc_add_component_ref (lhs, "$vptr");
+	  rhs = NULL;
 	  if (code->expr3 && code->expr3->ts.type == BT_CLASS)
 	    {
-	      /* vindex must be determined at run time.  */
+	      /* VPTR must be determined at run time.  */
 	      rhs = gfc_copy_expr (code->expr3);
-	      gfc_add_component_ref (rhs, "$vindex");
+	      gfc_add_component_ref (rhs, "$vptr");
+	      tmp = gfc_trans_pointer_assignment (lhs, rhs);
+	      gfc_add_expr_to_block (&block, tmp);
+	      gfc_free_expr (rhs);
 	    }
 	  else
 	    {
-	      /* vindex is fixed at compile time.  */
-	      int vindex;
+	      /* VPTR is fixed at compile time.  */
+	      gfc_symbol *vtab;
+	      gfc_typespec *ts;
 	      if (code->expr3)
-		vindex = code->expr3->ts.u.derived->vindex;
+		ts = &code->expr3->ts;
+	      else if (expr->ts.type == BT_DERIVED)
+		ts = &expr->ts;
 	      else if (code->ext.alloc.ts.type == BT_DERIVED)
-		vindex = code->ext.alloc.ts.u.derived->vindex;
+		ts = &code->ext.alloc.ts;
 	      else if (expr->ts.type == BT_CLASS)
-		vindex = expr->ts.u.derived->components->ts.u.derived->vindex;
+		ts = &expr->ts.u.derived->components->ts;
 	      else
-		vindex = expr->ts.u.derived->vindex;
-	      rhs = gfc_int_expr (vindex);
-	    }
-	  tmp = gfc_trans_assignment (lhs, rhs, false);
-	  gfc_free_expr (lhs);
-	  gfc_free_expr (rhs);
-	  gfc_add_expr_to_block (&block, tmp);
+		ts = &expr->ts;
 
-	  /* Initialize SIZE for CLASS objects.  */
-	  lhs = gfc_expr_to_initialize (expr);
-	  gfc_add_component_ref (lhs, "$size");
-	  gfc_init_se (&lse, NULL);
-	  gfc_conv_expr (&lse, lhs);
-	  gfc_add_modify (&block, lse.expr,
-			  fold_convert (TREE_TYPE (lse.expr), memsz));
-	  gfc_free_expr (lhs);
+	      if (ts->type == BT_DERIVED)
+		{
+		  vtab = gfc_find_derived_vtab (ts->u.derived);
+		  gcc_assert (vtab);
+		  gfc_init_se (&lse, NULL);
+		  lse.want_pointer = 1;
+		  gfc_conv_expr (&lse, lhs);
+		  tmp = gfc_build_addr_expr (NULL_TREE,
+					     gfc_get_symbol_decl (vtab));
+		  gfc_add_modify (&block, lse.expr,
+			fold_convert (TREE_TYPE (lse.expr), tmp));
+		}
+	    }
 	}
 
     }

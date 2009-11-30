@@ -1045,7 +1045,7 @@ gfc_add_save (symbol_attribute *attr, const char *name, locus *where)
       return FAILURE;
     }
 
-  if (attr->save == SAVE_EXPLICIT)
+  if (attr->save == SAVE_EXPLICIT && !attr->vtab)
     {
 	if (gfc_notify_std (GFC_STD_LEGACY, 
 			    "Duplicate SAVE attribute specified at %L",
@@ -4592,22 +4592,228 @@ gfc_type_is_extension_of (gfc_symbol *t1, gfc_symbol *t2)
 bool
 gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
 {
-  if ((ts1->type == BT_DERIVED || ts1->type == BT_CLASS)
-      && (ts2->type == BT_DERIVED || ts2->type == BT_CLASS))
+  gfc_component *cmp1, *cmp2;
+
+  bool is_class1 = (ts1->type == BT_CLASS);
+  bool is_class2 = (ts2->type == BT_CLASS);
+  bool is_derived1 = (ts1->type == BT_DERIVED);
+  bool is_derived2 = (ts2->type == BT_DERIVED);
+
+  if (!is_derived1 && !is_derived2 && !is_class1 && !is_class2)
+    return (ts1->type == ts2->type);
+
+  if (is_derived1 && is_derived2)
+    return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
+
+  cmp1 = cmp2 = NULL;
+
+  if (is_class1)
     {
-      if (ts1->type == BT_CLASS && ts2->type == BT_DERIVED)
-	return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
-					 ts2->u.derived);
-      else if (ts1->type == BT_CLASS && ts2->type == BT_CLASS)
-	return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
-					 ts2->u.derived->components->ts.u.derived);
-      else if (ts2->type != BT_CLASS)
-	return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
-      else
+      cmp1 = gfc_find_component (ts1->u.derived, "$data", true, false);
+      if (cmp1 == NULL)
 	return 0;
     }
+
+  if (is_class2)
+    {
+      cmp2 = gfc_find_component (ts2->u.derived, "$data", true, false);
+      if (cmp2 == NULL)
+	return 0;
+    }
+
+  if (is_class1 && is_derived2)
+    return gfc_type_is_extension_of (cmp1->ts.u.derived, ts2->u.derived);
+
+  else if (is_class1 && is_class2)
+    return gfc_type_is_extension_of (cmp1->ts.u.derived, cmp2->ts.u.derived);
+
   else
-    return (ts1->type == ts2->type);
+    return 0;
+}
+
+
+/* Build a polymorphic CLASS entity, using the symbol that comes from
+   build_sym. A CLASS entity is represented by an encapsulating type,
+   which contains the declared type as '$data' component, plus a pointer
+   component '$vptr' which determines the dynamic type.  */
+
+gfc_try
+gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
+			gfc_array_spec **as)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 5];
+  gfc_symbol *fclass;
+  gfc_symbol *vtab;
+  gfc_component *c;
+
+  /* Determine the name of the encapsulating type.  */
+  if ((*as) && (*as)->rank && attr->allocatable)
+    sprintf (name, ".class.%s.%d.a", ts->u.derived->name, (*as)->rank);
+  else if ((*as) && (*as)->rank)
+    sprintf (name, ".class.%s.%d", ts->u.derived->name, (*as)->rank);
+  else if (attr->allocatable)
+    sprintf (name, ".class.%s.a", ts->u.derived->name);
+  else
+    sprintf (name, ".class.%s", ts->u.derived->name);
+
+  gfc_find_symbol (name, ts->u.derived->ns, 0, &fclass);
+  if (fclass == NULL)
+    {
+      gfc_symtree *st;
+      /* If not there, create a new symbol.  */
+      fclass = gfc_new_symbol (name, ts->u.derived->ns);
+      st = gfc_new_symtree (&ts->u.derived->ns->sym_root, name);
+      st->n.sym = fclass;
+      gfc_set_sym_referenced (fclass);
+      fclass->refs++;
+      fclass->ts.type = BT_UNKNOWN;
+      fclass->attr.abstract = ts->u.derived->attr.abstract;
+      if (ts->u.derived->f2k_derived)
+	fclass->f2k_derived = gfc_get_namespace (NULL, 0);
+      if (gfc_add_flavor (&fclass->attr, FL_DERIVED,
+	  NULL, &gfc_current_locus) == FAILURE)
+	return FAILURE;
+
+      /* Add component '$data'.  */
+      if (gfc_add_component (fclass, "$data", &c) == FAILURE)
+	return FAILURE;
+      c->ts = *ts;
+      c->ts.type = BT_DERIVED;
+      c->attr.access = ACCESS_PRIVATE;
+      c->ts.u.derived = ts->u.derived;
+      c->attr.pointer = attr->pointer || attr->dummy;
+      c->attr.allocatable = attr->allocatable;
+      c->attr.dimension = attr->dimension;
+      c->attr.abstract = ts->u.derived->attr.abstract;
+      c->as = (*as);
+      c->initializer = gfc_get_expr ();
+      c->initializer->expr_type = EXPR_NULL;
+
+      /* Add component '$vptr'.  */
+      if (gfc_add_component (fclass, "$vptr", &c) == FAILURE)
+	return FAILURE;
+      c->ts.type = BT_DERIVED;
+      vtab = gfc_find_derived_vtab (ts->u.derived);
+      gcc_assert (vtab);
+      c->ts.u.derived = vtab->ts.u.derived;
+      c->attr.pointer = 1;
+      c->initializer = gfc_get_expr ();
+      c->initializer->expr_type = EXPR_NULL;
+    }
+
+  /* Since the extension field is 8 bit wide, we can only have
+     up to 255 extension levels.  */
+  if (ts->u.derived->attr.extension == 255)
+    {
+      gfc_error ("Maximum extension level reached with type '%s' at %L",
+		 ts->u.derived->name, &ts->u.derived->declared_at);
+      return FAILURE;
+    }
+    
+  fclass->attr.extension = ts->u.derived->attr.extension + 1;
+  fclass->attr.is_class = 1;
+  ts->u.derived = fclass;
+  attr->allocatable = attr->pointer = attr->dimension = 0;
+  (*as) = NULL;  /* XXX */
+  return SUCCESS;
+}
+
+
+/* Find the symbol for a derived type's vtab.  */
+
+gfc_symbol *
+gfc_find_derived_vtab (gfc_symbol *derived)
+{
+  gfc_namespace *ns;
+  gfc_symbol *vtab = NULL, *vtype = NULL;
+  char name[2 * GFC_MAX_SYMBOL_LEN + 8];
+
+  ns = gfc_current_ns;
+
+  for (; ns; ns = ns->parent)
+    if (!ns->parent)
+      break;
+
+  if (ns)
+    {
+      sprintf (name, "vtab$%s", derived->name);
+      gfc_find_symbol (name, ns, 0, &vtab);
+
+      if (vtab == NULL)
+	{
+	  gfc_get_symbol (name, ns, &vtab);
+	  vtab->ts.type = BT_DERIVED;
+	  vtab->attr.flavor = FL_VARIABLE;
+	  vtab->attr.target = 1;
+	  vtab->attr.save = SAVE_EXPLICIT;
+	  vtab->attr.vtab = 1;
+	  vtab->refs++;
+	  gfc_set_sym_referenced (vtab);
+	  sprintf (name, "vtype$%s", derived->name);
+	  
+	  gfc_find_symbol (name, ns, 0, &vtype);
+	  if (vtype == NULL)
+	    {
+	      gfc_component *c;
+	      gfc_symbol *parent = NULL, *parent_vtab = NULL;
+
+	      gfc_get_symbol (name, ns, &vtype);
+	      if (gfc_add_flavor (&vtype->attr, FL_DERIVED,
+				  NULL, &gfc_current_locus) == FAILURE)
+		return NULL;
+	      vtype->refs++;
+	      gfc_set_sym_referenced (vtype);
+
+	      /* Add component '$hash'.  */
+	      if (gfc_add_component (vtype, "$hash", &c) == FAILURE)
+		return NULL;
+	      c->ts.type = BT_INTEGER;
+	      c->ts.kind = 4;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->initializer = gfc_int_expr (derived->hash_value);
+
+	      /* Add component '$size'.  */
+	      if (gfc_add_component (vtype, "$size", &c) == FAILURE)
+		return NULL;
+	      c->ts.type = BT_INTEGER;
+	      c->ts.kind = 4;
+	      c->attr.access = ACCESS_PRIVATE;
+	      /* Remember the derived type in ts.u.derived,
+		 so that the correct initializer can be set later on
+		 (in gfc_conv_structure).  */
+	      c->ts.u.derived = derived;
+	      c->initializer = gfc_int_expr (0);
+
+	      /* Add component $extends.  */
+	      if (gfc_add_component (vtype, "$extends", &c) == FAILURE)
+		return NULL;
+	      c->attr.pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->initializer = gfc_get_expr ();
+	      parent = gfc_get_derived_super_type (derived);
+	      if (parent)
+		{
+		  parent_vtab = gfc_find_derived_vtab (parent);
+		  c->ts.type = BT_DERIVED;
+		  c->ts.u.derived = parent_vtab->ts.u.derived;
+		  c->initializer->expr_type = EXPR_VARIABLE;
+		  gfc_find_sym_tree (parent_vtab->name, parent_vtab->ns, 0,
+				     &c->initializer->symtree);
+		}
+	      else
+		{
+		  c->ts.type = BT_DERIVED;
+		  c->ts.u.derived = vtype;
+		  c->initializer->expr_type = EXPR_NULL;
+		}
+	    }
+	  vtab->ts.u.derived = vtype;
+
+	  vtab->value = gfc_default_initializer (&vtab->ts);
+	}
+    }
+
+  return vtab;
 }
 
 

@@ -3968,13 +3968,25 @@ select_type_set_tmp (gfc_typespec *ts)
 {
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp;
+  
+  if (!gfc_type_is_extensible (ts->u.derived))
+    return;
 
-  sprintf (name, "tmp$%s", ts->u.derived->name);
+  if (ts->type == BT_CLASS)
+    sprintf (name, "tmp$class$%s", ts->u.derived->name);
+  else
+    sprintf (name, "tmp$type$%s", ts->u.derived->name);
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);
   gfc_set_sym_referenced (tmp->n.sym);
   gfc_add_pointer (&tmp->n.sym->attr, NULL);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
+  if (ts->type == BT_CLASS)
+    {
+      gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
+			      &tmp->n.sym->as);
+      tmp->n.sym->attr.class_ok = 1;
+    }
 
   select_type_stack->tmp = tmp;
 }
@@ -4228,8 +4240,9 @@ gfc_match_class_is (void)
 
   new_st.op = EXEC_SELECT_TYPE;
   new_st.ext.case_list = c;
-
-  gfc_error_now ("CLASS IS specification at %C is not yet supported");
+  
+  /* Create temporary variable.  */
+  select_type_set_tmp (&c->ts);
 
   return MATCH_YES;
 

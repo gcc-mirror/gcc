@@ -827,8 +827,8 @@ show_symbol (gfc_symbol *sym)
   if (sym->f2k_derived)
     {
       show_indent ();
-      if (sym->vindex)
-	fprintf (dumpfile, "vindex: %d", sym->vindex);
+      if (sym->hash_value)
+	fprintf (dumpfile, "hash: %d", sym->hash_value);
       show_f2k_derived (sym->f2k_derived);
     }
 

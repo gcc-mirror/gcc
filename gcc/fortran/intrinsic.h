@@ -390,6 +390,7 @@ void gfc_resolve_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 void gfc_resolve_etime_sub (gfc_code *);
 void gfc_resolve_exp (gfc_expr *, gfc_expr *);
 void gfc_resolve_exponent (gfc_expr *, gfc_expr *);
+void gfc_resolve_extends_type_of (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_fdate (gfc_expr *);
 void gfc_resolve_floor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_fnum (gfc_expr *, gfc_expr *);
