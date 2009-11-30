@@ -37,21 +37,26 @@ begin
          Stop  : Nat;
 
       begin
-         Write_Info_Initiate ('C');
-         Write_Info_Char (' ');
-         Write_Info_Nat (SUT.Dep_Num);
-         Write_Info_Char (' ');
+         Start := SUT.From;
+         Stop  := SUT.To;
 
-         for N in SUT.File_Name'Range loop
-            Write_Info_Char (SUT.File_Name (N));
-         end loop;
+         --  Write unit header (omitted if no SCOs are generated for this unit)
 
-         Write_Info_Terminate;
+         if Start <= Stop then
+            Write_Info_Initiate ('C');
+            Write_Info_Char (' ');
+            Write_Info_Nat (SUT.Dep_Num);
+            Write_Info_Char (' ');
+
+            for N in SUT.File_Name'Range loop
+               Write_Info_Char (SUT.File_Name (N));
+            end loop;
+
+            Write_Info_Terminate;
+         end if;
 
          --  Loop through SCO entries for this unit
 
-         Start := SUT.From;
-         Stop  := SUT.To;
          loop
             exit when Start = Stop + 1;
             pragma Assert (Start <= Stop);

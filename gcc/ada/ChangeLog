@@ -1,3 +1,24 @@
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* put_scos.adb (Put_SCOs): Do not generate a SCO unit header for a unit
+	that has no SCOs.
+	* scos.ads: Minor reformatting
+
+2009-11-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: Second unanalyzed parameter of Annotate is optional.
+
+2009-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_adjust_context_for_raise, Linux version): Add guard
+	for null PC saved in the context.
+
+2009-11-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb (Day_Of_Week): Rewritten. The routine determines the
+	number of days from the Ada Epoch to the input date while ensuring that
+	both dates are in the same time zone.
+
 2009-11-30  Emmanuel Briot  <briot@adacore.com>
 
 	* clean.adb ("-eL"): Also set Follow_Links_For_Dirs, to match what is

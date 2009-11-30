@@ -5228,10 +5228,10 @@ package body Sem_Prag is
                Exp : Node_Id;
 
             begin
-               if No (Arg2) then
-                     Error_Pragma_Arg
-                       ("pragma requires at least two arguments", Arg1);
+               --  Second unanalyzed parameter is optional.
 
+               if No (Arg2) then
+                  null;
                else
                   Arg := Next (Arg2);
                   while Present (Arg) loop

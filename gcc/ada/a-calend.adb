@@ -1029,63 +1029,40 @@ package body Ada.Calendar is
       -----------------
 
       function Day_Of_Week (Date : Time) return Integer is
-         Y  : Year_Number;
-         Mo : Month_Number;
-         D  : Day_Number;
-         Ds : Day_Duration;
-         H  : Integer;
-         Mi : Integer;
-         Se : Integer;
-         Su : Duration;
-         Le : Boolean;
+         Date_N    : constant Time_Rep := Time_Rep (Date);
+         Time_Zone : constant Long_Integer :=
+                       Time_Zones_Operations.UTC_Time_Offset (Date);
 
-         pragma Unreferenced (Ds, H, Mi, Se, Su, Le);
-
+         Ada_Low_N : Time_Rep;
          Day_Count : Long_Integer;
-         Res_Dur   : Time_Dur;
-         Res_N     : Time_Rep;
+         Day_Dur   : Time_Dur;
+         High_N    : Time_Rep;
+         Low_N     : Time_Rep;
 
       begin
-         Formatting_Operations.Split
-           (Date      => Date,
-            Year      => Y,
-            Month     => Mo,
-            Day       => D,
-            Day_Secs  => Ds,
-            Hour      => H,
-            Minute    => Mi,
-            Second    => Se,
-            Sub_Sec   => Su,
-            Leap_Sec  => Le,
-            Is_Ada_05 => True,
-            Time_Zone => 0);
+         --  As declared, the Ada Epoch is set in UTC. For this calculation to
+         --  work properly, both the Epoch and the input date must be in the
+         --  same time zone. The following places the Epoch in the input date's
+         --  time zone.
 
-         --  Build a time value in the middle of the same day
+         Ada_Low_N := Ada_Low - Time_Rep (Time_Zone) * Nano;
 
-         Res_N :=
-           Time_Rep
-             (Formatting_Operations.Time_Of
-               (Year         => Y,
-                Month        => Mo,
-                Day          => D,
-                Day_Secs     => 0.0,
-                Hour         => 12,
-                Minute       => 0,
-                Second       => 0,
-                Sub_Sec      => 0.0,
-                Leap_Sec     => False,
-                Use_Day_Secs => False,
-                Is_Ada_05    => True,
-                Time_Zone    => 0));
+         if Date_N > Ada_Low_N then
+            High_N := Date_N;
+            Low_N  := Ada_Low_N;
+         else
+            High_N := Ada_Low_N;
+            Low_N  := Date_N;
+         end if;
 
          --  Determine the elapsed seconds since the start of Ada time
 
-         Res_Dur := Time_Dur (Res_N / Nano - Ada_Low / Nano);
+         Day_Dur := Time_Dur (High_N / Nano - Low_N / Nano);
 
-         --  Count the number of days since the start of Ada time. 1901-1-1
+         --  Count the number of days since the start of Ada time. 1901-01-01
          --  GMT was a Tuesday.
 
-         Day_Count := Long_Integer (Res_Dur / Secs_In_Day) + 1;
+         Day_Count := Long_Integer (Day_Dur / Secs_In_Day) + 1;
 
          return Integer (Day_Count mod 7);
       end Day_Of_Week;

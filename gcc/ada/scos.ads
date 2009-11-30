@@ -54,7 +54,7 @@ package SCOs is
 
    --  Source coverage obligations are generated on a unit-by-unit basis in the
    --  ALI file, using lines that start with the identifying character C. These
-   --  lines are generated if the -gnatC switch is set.
+   --  lines are generated if the -gnateS switch is set.
 
    --  Sloc Ranges
 
@@ -75,7 +75,7 @@ package SCOs is
    --    is divided into sections, one section for each unit for which SCO's
    --    are generated. A SCO section has a header of the form:
 
-   --      C  dependency-number  filename
+   --      C dependency-number filename
 
    --        This header precedes SCO information for the unit identified by
    --        dependency number and file name. The dependency number is the
