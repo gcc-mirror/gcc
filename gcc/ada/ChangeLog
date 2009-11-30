@@ -1,3 +1,8 @@
+2009-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* s-oscons-tmplt.c [__mips && __sgi]: Only define _XOPEN5, IOV_MAX
+	if _XOPEN_IOV_MAX is defined.
+
 2009-11-30  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* vms_data.ads: Add new VMS qualifiers,
