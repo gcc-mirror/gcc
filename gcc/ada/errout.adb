@@ -2848,7 +2848,30 @@ package body Errout is
                      Buffer_Remove ("type ");
                   end if;
 
-                  Set_Msg_Str ("access to subprogram with profile ");
+                  if Is_Itype (Ent) then
+                     declare
+                        Assoc : constant Node_Id :=
+                          Associated_Node_For_Itype (Ent);
+
+                     begin
+                        if Nkind (Assoc) = N_Procedure_Specification
+                          or else Nkind (Assoc) = N_Function_Specification
+                        then
+
+                           --  Anonymous access to subprogram in a signature
+                           --  Indicate the enclosing subprogram.
+
+                           Ent :=
+                             Defining_Unit_Name
+                               (Associated_Node_For_Itype (Ent));
+                           Set_Msg_Str
+                             ("access to subprogram declared in profile of ");
+
+                        else
+                           Set_Msg_Str ("access to subprogram with profile ");
+                        end if;
+                     end;
+                  end if;
 
                elsif Ekind (Ent) = E_Function then
                   Set_Msg_Str ("access to function ");

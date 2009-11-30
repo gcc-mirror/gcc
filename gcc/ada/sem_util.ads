@@ -800,8 +800,14 @@ package Sem_Util is
    function Is_Value_Type (T : Entity_Id) return Boolean;
    --  Returns true if type T represents a value type. This is only relevant to
    --  CIL, will always return false for other targets.
-   --  What is a "value type", since this is not an Ada term, it should be
-   --  defined here ???
+   --  A value type is a CIL object that is accessed directly, as opposed to
+   --  the other CIL objects that are accessed through managed pointers.
+
+   function Is_Delegate (T : Entity_Id) return Boolean;
+   --  Returns true if type T represents a delegate. A Delegate is the CIL
+   --  object used to represent access-to-subprogram types.
+   --  This is only relevant to CIL, will always return false for other
+   --  targets.
 
    function Is_Variable (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents a variable, i.e.

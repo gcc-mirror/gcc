@@ -5212,8 +5212,11 @@ package body Sem_Prag is
          -- Annotate --
          --------------
 
-         --  pragma Annotate (IDENTIFIER {, ARG});
+         --  pragma Annotate (IDENTIFIER, [IDENTIFIER], {, ARG});
          --  ARG ::= NAME | EXPRESSION
+         --  The first two arguments are by convention intended to refer
+         --  to an external tool and a tool-specific function. These
+         --  arguments are not analyzed.
 
          when Pragma_Annotate => Annotate : begin
             GNAT_Pragma;
@@ -5225,26 +5228,33 @@ package body Sem_Prag is
                Exp : Node_Id;
 
             begin
-               Arg := Arg2;
-               while Present (Arg) loop
-                  Exp := Expression (Arg);
-                  Analyze (Exp);
+               if No (Arg2) then
+                     Error_Pragma_Arg
+                       ("pragma requires at least two arguments", Arg1);
 
-                  if Is_Entity_Name (Exp) then
-                     null;
+               else
+                  Arg := Next (Arg2);
+                  while Present (Arg) loop
+                     Exp := Expression (Arg);
+                     Analyze (Exp);
 
-                  elsif Nkind (Exp) = N_String_Literal then
-                     Resolve (Exp, Standard_String);
+                     if Is_Entity_Name (Exp) then
+                        null;
 
-                  elsif Is_Overloaded (Exp) then
-                     Error_Pragma_Arg ("ambiguous argument for pragma%", Exp);
+                     elsif Nkind (Exp) = N_String_Literal then
+                        Resolve (Exp, Standard_String);
 
-                  else
-                     Resolve (Exp);
-                  end if;
+                     elsif Is_Overloaded (Exp) then
+                           Error_Pragma_Arg
+                             ("ambiguous argument for pragma%", Exp);
 
-                  Next (Arg);
-               end loop;
+                     else
+                        Resolve (Exp);
+                     end if;
+
+                     Next (Arg);
+                  end loop;
+               end if;
             end;
          end Annotate;
 

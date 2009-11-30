@@ -3294,7 +3294,8 @@ package body Exp_Ch7 is
 
       return (Is_Class_Wide_Type (T)
                 and then not In_Finalization_Root (T)
-                and then not Restriction_Active (No_Finalization))
+                and then not Restriction_Active (No_Finalization)
+                and then not Is_Value_Type (Etype (T)))
         or else Is_Controlled (T)
         or else Has_Some_Controlled_Component (T)
         or else (Is_Concurrent_Type (T)
