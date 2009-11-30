@@ -603,6 +603,64 @@ i386_pe_maybe_record_exported_symbol (tree decl, const char *name, int is_data)
   export_head = p;
 }
 
+#ifdef CXX_WRAP_SPEC_LIST
+
+/*  Hash table equality helper function.  */
+
+static int
+wrapper_strcmp (const void *x, const void *y)
+{
+  return !strcmp ((const char *) x, (const char *) y);
+}
+
+/* Search for a function named TARGET in the list of library wrappers
+   we are using, returning a pointer to it if found or NULL if not.
+   This function might be called on quite a few symbols, and we only
+   have the list of names of wrapped functions available to us as a
+   spec string, so first time round we lazily initialise a hash table
+   to make things quicker.  */
+
+static const char *
+i386_find_on_wrapper_list (const char *target)
+{
+  static char first_time = 1;
+  static htab_t wrappers;
+
+  if (first_time)
+    {
+      /* Beware that this is not a complicated parser, it assumes
+         that any sequence of non-whitespace beginning with an
+	 underscore is one of the wrapped symbols.  For now that's
+	 adequate to distinguish symbols from spec substitutions
+	 and command-line options.  */
+      static char wrapper_list_buffer[] = CXX_WRAP_SPEC_LIST;
+      char *bufptr;
+      /* Breaks up the char array into separated strings
+         strings and enter them into the hash table.  */
+      wrappers = htab_create_alloc (8, htab_hash_string, wrapper_strcmp,
+	0, xcalloc, free);
+      for (bufptr = wrapper_list_buffer; *bufptr; ++bufptr)
+	{
+	  char *found = NULL;
+	  if (ISSPACE (*bufptr))
+	    continue;
+	  if (*bufptr == '_')
+	    found = bufptr;
+	  while (*bufptr && !ISSPACE (*bufptr))
+	    ++bufptr;
+	  if (*bufptr)
+	    *bufptr = 0;
+	  if (found)
+	    *htab_find_slot (wrappers, found, INSERT) = found;
+	}
+      first_time = 0;
+    }
+
+  return (const char *) htab_find (wrappers, target);
+}
+
+#endif /* CXX_WRAP_SPEC_LIST */
+
 /* This is called at the end of assembly.  For each external function
    which has not been defined, we output a declaration now.  We also
    output the .drectve section.  */
@@ -624,6 +682,15 @@ i386_pe_file_end (void)
       if (! TREE_ASM_WRITTEN (decl)
 	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	{
+#ifdef CXX_WRAP_SPEC_LIST
+	  /* To ensure the DLL that provides the corresponding real
+	     functions is still loaded at runtime, we must reference
+	     the real function so that an (unused) import is created.  */
+	  const char *realsym = i386_find_on_wrapper_list (p->name);
+	  if (realsym)
+	    i386_pe_declare_function_type (asm_out_file,
+		concat ("__real_", realsym, NULL), TREE_PUBLIC (decl));
+#endif /* CXX_WRAP_SPEC_LIST */
 	  TREE_ASM_WRITTEN (decl) = 1;
 	  i386_pe_declare_function_type (asm_out_file, p->name,
 					 TREE_PUBLIC (decl));

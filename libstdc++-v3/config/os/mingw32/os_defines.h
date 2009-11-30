@@ -45,6 +45,15 @@
 #undef NOMINMAX
 #define NOMINMAX 1
 
+#if defined (_GLIBCXX_DLL)
+#define _GLIBCXX_PSEUDO_VISIBILITY_default __attribute__ ((__dllimport__))
+#else
+#define _GLIBCXX_PSEUDO_VISIBILITY_default
+#endif
+#define _GLIBCXX_PSEUDO_VISIBILITY_hidden
+
+#define _GLIBCXX_PSEUDO_VISIBILITY(V) _GLIBCXX_PSEUDO_VISIBILITY_ ## V
+
 // See libstdc++/20806.
 #define _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM 1
 

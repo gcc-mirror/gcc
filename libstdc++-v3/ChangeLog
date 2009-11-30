@@ -1,3 +1,26 @@
+2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* libstdc++-v3/acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Don't disable
+	on PE targets.
+	* libstdc++-v3/configure: Regenerate.
+	* libstdc++-v3/configure.host: Add libtool DLL options for Cygwin
+	and MinGW platforms.
+
+	* libstdc++-v3/include/bits/c++config (_GLIBCXX_VISIBILITY_ATTR): On
+	platforms that don't support visibility, allow them to declare a macro
+	_GLIBCXX_PSEUDO_VISIBILITY that is applied in place of visibility.
+	(_GLIBCXX_PSEUDO_VISIBILITY): Supply empty default if not declared by
+	CPU- or OS-specific headers.
+
+	* libstdc++-v3/config/os/newlib/os_defines.h
+	(_GLIBCXX_PSEUDO_VISIBILITY_default): New macro for dllimport.
+	(_GLIBCXX_PSEUDO_VISIBILITY_hidden): New empty macro.
+	(_GLIBCXX_PSEUDO_VISIBILITY): Evaluate to one of the above.
+	* libstdc++-v3/config/os/mingw32/os_defines.h
+	(_GLIBCXX_PSEUDO_VISIBILITY_default,
+	_GLIBCXX_PSEUDO_VISIBILITY_hidden,
+	_GLIBCXX_PSEUDO_VISIBILITY): Likewise.
+
 2009-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/functional: Remove file, copy its contents,

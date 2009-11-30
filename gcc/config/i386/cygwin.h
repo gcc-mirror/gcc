@@ -85,9 +85,41 @@ along with GCC; see the file COPYING3.  If not see
   %{mwindows:-lgdi32 -lcomdlg32} \
   -luser32 -lkernel32 -ladvapi32 -lshell32"
 
+/* To implement C++ function replacement we always wrap the cxx
+   malloc-like operators.  See N2800 #17.6.4.6 [replacement.functions] */
+#define CXX_WRAP_SPEC_LIST "%{!static: %{!static-libstdc++: \
+  --wrap _Znwj \
+  --wrap _Znaj \
+  --wrap _ZdlPv \
+  --wrap _ZdaPv \
+  --wrap _ZnwjRKSt9nothrow_t \
+  --wrap _ZnajRKSt9nothrow_t \
+  --wrap _ZdlPvRKSt9nothrow_t \
+  --wrap _ZdaPvRKSt9nothrow_t \
+  }}"
+
+#if defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)
+
+#if USE_CYGWIN_LIBSTDCXX_WRAPPERS
+/* Default on, only explict -mno disables.  */
+#define CXX_WRAP_SPEC_OPT "!mno-use-libstdc-wrappers"
+#else
+/* Default off, only explict -m enables.  */
+#define CXX_WRAP_SPEC_OPT "muse-libstdc-wrappers"
+#endif
+
+#define CXX_WRAP_SPEC "%{" CXX_WRAP_SPEC_OPT ":" CXX_WRAP_SPEC_LIST "}"
+
+#else /* !defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)  */
+
+#define CXX_WRAP_SPEC ""
+
+#endif /* ?defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS) */
+
 #define LINK_SPEC "\
   %{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
+  " CXX_WRAP_SPEC " \
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \

@@ -42,7 +42,9 @@
 #if _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
 # define _GLIBCXX_VISIBILITY_ATTR(V) __attribute__ ((__visibility__ (#V)))
 #else
-# define _GLIBCXX_VISIBILITY_ATTR(V) 
+// If this is not supplied by the OS-specific or CPU-specific
+// headers included below, it will be defined to an empty default.
+# define _GLIBCXX_VISIBILITY_ATTR(V) _GLIBCXX_PSEUDO_VISIBILITY(V)
 #endif
 
 // Macros for deprecated.
@@ -274,6 +276,12 @@ namespace std
 
 // Pick up any CPU-specific definitions.
 #include <bits/cpu_defines.h>
+
+// If platform uses neither visibility nor psuedo-visibility,
+// specify empty default for namespace annotation macros.
+#ifndef _GLIBCXX_PSEUDO_VISIBILITY
+#define _GLIBCXX_PSEUDO_VISIBILITY(V)
+#endif
 
 // Allow use of "export template." This is currently not a feature
 // that g++ supports.

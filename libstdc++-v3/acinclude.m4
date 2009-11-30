@@ -2737,7 +2737,7 @@ if test x$enable_symvers = xyes ; then
   else
     if test $with_gnu_ld = yes ; then
       case ${target_os} in
-        cygwin* | pe | mingw32* | hpux*)
+        hpux*)
           enable_symvers=no ;;
         *)
           enable_symvers=gnu ;;

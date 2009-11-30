@@ -1,3 +1,25 @@
+2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac (USE_CYGWIN_LIBSTDCXX_WRAPPERS): Define to reflect
+	status of AC_CHECK_FUNC for Cygwin DLL libstdc++ support wrappers.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/i386/cygwin.h (CXX_WRAP_SPEC_LIST): Define list of --wrap
+	options for Cygwin DLL libstdc++ support wrappers.
+	(CXX_WRAP_SPEC_OPT): Define spec to use wrappers or not by default
+	according to defined value of USE_CYGWIN_LIBSTDCXX_WRAPPERS.
+	(CXX_WRAP_SPEC): Define entire wrapper spec in or out according to
+	whether USE_CYGWIN_LIBSTDCXX_WRAPPERS is even defined or not.
+	(LINK_SPEC): Include CXX_WRAP_SPEC.
+	* gcc/config/i386/winnt.c (wrapper_strcmp): New qsort helper function.
+	(i386_find_on_wrapper_list): Check if a function is found on the list
+	of libstdc++ wrapper options.
+	(i386_pe_file_end): If we are importing a wrapped function, also emit
+	an external declaration for the real version.
+	* config/i386/cygming.opt (muse-libstdc-wrappers): New option for
+	Cygwin targets. Update copyright year.
+
 2009-11-30  Steve Ellcey  <sje@cup.hp.com>
 	    Jakub Jelinek <jakub@redhat.com>
 
