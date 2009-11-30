@@ -99,11 +99,10 @@ package body System.OS_Interface is
       --  Stick a guard page right above the Yellow Zone if it exists
 
       if Teb.all.stack_yellow /= Teb.all.stack_guard then
-         if Hide then
-            Res := mprotect (Teb.all.stack_yellow, Get_Page_Size, PROT_ON);
-         else
-            Res := mprotect (Teb.all.stack_yellow, Get_Page_Size, PROT_OFF);
-         end if;
+         Res :=
+           mprotect
+             (Teb.all.stack_yellow, Get_Page_Size,
+              prot => (if Res then PROT_ON else PROT_OFF));
       end if;
    end Hide_Unhide_Yellow_Zone;
 

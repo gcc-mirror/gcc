@@ -244,12 +244,9 @@ package body System.Task_Primitives.Operations is
          Guard_Page_Address :=
            Stack_Base - (Stack_Base mod Get_Page_Size) + Get_Page_Size;
 
-         if On then
-            Res := mprotect (Guard_Page_Address, Get_Page_Size, PROT_ON);
-         else
-            Res := mprotect (Guard_Page_Address, Get_Page_Size, PROT_OFF);
-         end if;
-
+         Res :=
+           mprotect (Guard_Page_Address, Get_Page_Size,
+                     prot => (if ON then PROT_ON else PROT_OFF));
          pragma Assert (Res = 0);
       end if;
    end Stack_Guard;
@@ -491,15 +488,12 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
 
    begin
-      if Single_Lock then
-         Result :=
-           pthread_cond_wait
-             (Self_ID.Common.LL.CV'Access, Single_RTS_Lock'Access);
-      else
-         Result :=
-           pthread_cond_wait
-             (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
-      end if;
+      Result :=
+        pthread_cond_wait
+          (cond  => Self_ID.Common.LL.CV'Access,
+           mutex => (if Single_Lock
+                     then Single_RTS_Lock'Access
+                     else Self_ID.Common.LL.L'Access));
 
       --  EINTR is not considered a failure
 
@@ -551,27 +545,19 @@ package body System.Task_Primitives.Operations is
       end if;
 
       if Abs_Time > Check_Time then
-         if Relative_Timed_Wait then
-            Request := To_Timespec (Rel_Time);
-         else
-            Request := To_Timespec (Abs_Time);
-         end if;
+         Request :=
+           To_Timespec (if Relative_Timed_Wait then Rel_Time else Abs_Time);
 
          loop
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
-            if Single_Lock then
-               Result :=
-                 pthread_cond_timedwait
-                   (Self_ID.Common.LL.CV'Access, Single_RTS_Lock'Access,
-                    Request'Access);
-
-            else
-               Result :=
-                 pthread_cond_timedwait
-                   (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access,
-                    Request'Access);
-            end if;
+            Result :=
+              pthread_cond_timedwait
+                (cond    => Self_ID.Common.LL.CV'Access,
+                 mutex   => (if Single_Lock
+                             then Single_RTS_Lock'Access
+                             else Self_ID.Common.LL.L'Access),
+                 abstime => Request'Access);
 
             Check_Time := Monotonic_Clock;
             exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;
@@ -633,28 +619,20 @@ package body System.Task_Primitives.Operations is
       end if;
 
       if Abs_Time > Check_Time then
-         if Relative_Timed_Wait then
-            Request := To_Timespec (Rel_Time);
-         else
-            Request := To_Timespec (Abs_Time);
-         end if;
-
+         Request :=
+           To_Timespec (if Relative_Timed_Wait then Rel_Time else Abs_Time);
          Self_ID.Common.State := Delay_Sleep;
 
          loop
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
-            if Single_Lock then
-               Result := pthread_cond_timedwait
-                           (Self_ID.Common.LL.CV'Access,
-                            Single_RTS_Lock'Access,
-                            Request'Access);
-            else
-               Result := pthread_cond_timedwait
-                           (Self_ID.Common.LL.CV'Access,
-                            Self_ID.Common.LL.L'Access,
-                            Request'Access);
-            end if;
+            Result :=
+              pthread_cond_timedwait
+                (cond    => Self_ID.Common.LL.CV'Access,
+                 mutex   => (if Single_Lock
+                             then Single_RTS_Lock'Access
+                             else Self_ID.Common.LL.L'Access),
+                 abstime => Request'Access);
 
             Check_Time := Monotonic_Clock;
             exit when Abs_Time <= Check_Time or else Check_Time < Base_Time;

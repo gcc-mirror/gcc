@@ -57,8 +57,8 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
    --  is too small for the associated data).
 
    procedure Copy_Service_Entry
-     (Source_Servent       : Servent;
-      Target_Servent       : out Servent;
+     (Source_Servent       : Servent_Access;
+      Target_Servent       : Servent_Access;
       Target_Buffer        : System.Address;
       Target_Buffer_Length : C.int;
       Result               : out C.int);
@@ -194,8 +194,8 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
    ------------------------
 
    procedure Copy_Service_Entry
-     (Source_Servent       : Servent;
-      Target_Servent       : out Servent;
+     (Source_Servent       : Servent_Access;
+      Target_Servent       : Servent_Access;
       Target_Buffer        : System.Address;
       Target_Buffer_Length : C.int;
       Result               : out C.int)
@@ -383,11 +383,14 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
          goto Unlock_Return;
       end if;
 
-      --  Now copy the data to the user-provided buffer
+      --  Now copy the data to the user-provided buffer. We convert Ret to
+      --  type Servent_Access using the .all'Unchecked_Access trick to avoid
+      --  an accessibility check. Ret could be pointing to a nested variable,
+      --  and we don't want to raise an exception in that case.
 
       Copy_Service_Entry
-        (Source_Servent       => SE.all,
-         Target_Servent       => Ret.all,
+        (Source_Servent       => SE,
+         Target_Servent       => Ret.all'Unchecked_Access,
          Target_Buffer        => Buf,
          Target_Buffer_Length => Buflen,
          Result               => Result);
@@ -420,11 +423,12 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
          goto Unlock_Return;
       end if;
 
-      --  Now copy the data to the user-provided buffer
+      --  Now copy the data to the user-provided buffer. See Safe_Getservbyname
+      --  for comment regarding .all'Unchecked_Access.
 
       Copy_Service_Entry
-        (Source_Servent       => SE.all,
-         Target_Servent       => Ret.all,
+        (Source_Servent       => SE,
+         Target_Servent       => Ret.all'Unchecked_Access,
          Target_Buffer        => Buf,
          Target_Buffer_Length => Buflen,
          Result               => Result);

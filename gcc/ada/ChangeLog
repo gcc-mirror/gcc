@@ -1,3 +1,17 @@
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
+	* osint.ads, prj.adb, prj.ads: Minor reformatting
+	* s-stchop.adb, s-taprop-vxworks.adb, s-taprop-tru64.adb,
+	s-taprop-vms.adb, s-taprop-linux.adb, s-taprop-solaris.adb,
+	s-strxdr.adb, s-taprop-irix.adb, s-osinte-hpux-dce.adb,
+	s-osinte-tru64.adb, s-taenca.adb, s-taprop-hpux-dce.adb, s-stausa.adb,
+	s-taprop-posix.adb: Minor code reorganization (use conditional
+	expressions).
+
+2009-11-30  Bob Duff  <duff@adacore.com>
+
+	* g-sttsne-locking.adb (Copy_Service_Entry): Complete previous change.
+
 2009-11-30  Bob Duff  <duff@adacore.com>
 
 	* socket.c: Add more accessor functions for struct servent (need

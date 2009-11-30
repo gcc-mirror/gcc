@@ -165,13 +165,8 @@ package body System.Tasking.Entry_Calls is
            and then Entry_Call.State = Now_Abortable
          then
             Queuing.Dequeue_Call (Entry_Call);
-
-            if Entry_Call.Cancellation_Attempted then
-               Entry_Call.State := Cancelled;
-            else
-               Entry_Call.State := Done;
-            end if;
-
+            Entry_Call.State :=
+              (if Entry_Call.Cancellation_Attempted then Cancelled else Done);
             Unlock_And_Update_Server (Self_ID, Entry_Call);
 
          else

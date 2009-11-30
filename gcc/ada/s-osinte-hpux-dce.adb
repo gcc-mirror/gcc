@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2007, AdaCore                     --
+--                     Copyright (C) 1995-2009, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,11 +314,7 @@ package body System.OS_Interface is
 
    begin
       if pthread_cond_timedwait_base (cond, mutex, abstime) /= 0 then
-         if errno = EAGAIN then
-            return ETIMEDOUT;
-         else
-            return errno;
-         end if;
+         return (if errno = EAGAIN then ETIMEDOUT else errno);
       else
          return 0;
       end if;

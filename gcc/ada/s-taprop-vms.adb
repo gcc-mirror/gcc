@@ -408,15 +408,12 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
 
    begin
-      if Single_Lock then
-         Result :=
-           pthread_cond_wait
-             (Self_ID.Common.LL.CV'Access, Single_RTS_Lock'Access);
-      else
-         Result :=
-           pthread_cond_wait
-             (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
-      end if;
+      Result :=
+        pthread_cond_wait
+          (cond  => Self_ID.Common.LL.CV'Access,
+           mutex => (if Single_Lock
+                     then Single_RTS_Lock'Access
+                     else Self_ID.Common.LL.L'Access));
 
       --  EINTR is not considered a failure
 
@@ -540,19 +537,13 @@ package body System.Task_Primitives.Operations is
                   exit;
                end if;
 
-               if Single_Lock then
-                  Result :=
-                    pthread_cond_wait
-                      (Self_ID.Common.LL.CV'Access,
-                       Single_RTS_Lock'Access);
-                  pragma Assert (Result = 0);
-               else
-                  Result :=
-                    pthread_cond_wait
-                      (Self_ID.Common.LL.CV'Access,
-                       Self_ID.Common.LL.L'Access);
-                  pragma Assert (Result = 0);
-               end if;
+               Result :=
+                 pthread_cond_wait
+                   (cond  => Self_ID.Common.LL.CV'Access,
+                    mutex => (if Single_Lock
+                              then Single_RTS_Lock'Access
+                              else Self_ID.Common.LL.L'Access));
+               pragma Assert (Result = 0);
 
                Yielded := True;
 

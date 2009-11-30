@@ -1226,15 +1226,13 @@ package body System.Task_Primitives.Operations is
       Timedout := True;
       Yielded := False;
 
-      if Mode = Relative then
-         Abs_Time := Duration'Min (Time, Max_Sensible_Delay) + Check_Time;
-      else
-         Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
-      end if;
+      Abs_Time :=
+        (if Mode = Relative
+         then Duration'Min (Time, Max_Sensible_Delay) + Check_Time
+         else Duration'Min (Check_Time + Max_Sensible_Delay, Time));
 
       if Abs_Time > Check_Time then
          Request := To_Timespec (Abs_Time);
-
          loop
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
@@ -1294,11 +1292,10 @@ package body System.Task_Primitives.Operations is
 
       Write_Lock (Self_ID);
 
-      if Mode = Relative then
-         Abs_Time := Time + Check_Time;
-      else
-         Abs_Time := Duration'Min (Check_Time + Max_Sensible_Delay, Time);
-      end if;
+      Abs_Time :=
+        (if Mode = Relative
+         then Time + Check_Time
+         else Duration'Min (Check_Time + Max_Sensible_Delay, Time));
 
       if Abs_Time > Check_Time then
          Request := To_Timespec (Abs_Time);

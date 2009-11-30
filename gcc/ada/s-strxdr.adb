@@ -1263,11 +1263,9 @@ package body System.Stream_Attributes is
       else
          --  Test sign and apply two complement notation
 
-         if Item < 0 then
-            U := XDR_U'Last xor XDR_U (-(Item + 1));
-         else
-            U := XDR_U (Item);
-         end if;
+         U := (if Item < 0
+               then XDR_U'Last xor XDR_U (-(Item + 1))
+               else XDR_U (Item));
 
          for N in reverse S'Range loop
             S (N) := SE (U mod BB);
@@ -1386,8 +1384,7 @@ package body System.Stream_Attributes is
             X := Long_Unsigned (Item);
          end if;
 
-         --  Compute using machine unsigned
-         --  rather than long_unsigned.
+         --  Compute using machine unsigned rather than long_unsigned
 
          for N in reverse S'Range loop
 
@@ -1530,8 +1527,7 @@ package body System.Stream_Attributes is
             X := Long_Long_Unsigned (Item);
          end if;
 
-         --  Compute using machine unsigned
-         --  rather than long_long_unsigned.
+         --  Compute using machine unsigned rather than long_long_unsigned
 
          for N in reverse S'Range loop
 
@@ -1571,8 +1567,7 @@ package body System.Stream_Attributes is
          S := Long_Long_Unsigned_To_XDR_S_LLU (Item);
 
       else
-         --  Compute using machine unsigned
-         --  rather than long_long_unsigned.
+         --  Compute using machine unsigned rather than long_long_unsigned
 
          for N in reverse S'Range loop
 
@@ -1609,8 +1604,7 @@ package body System.Stream_Attributes is
          S := Long_Long_Unsigned_To_XDR_S_LU (Long_Long_Unsigned (Item));
 
       else
-         --  Compute using machine unsigned
-         --  rather than long_unsigned.
+         --  Compute using machine unsigned rather than long_unsigned
 
          for N in reverse S'Range loop
 
@@ -1729,11 +1723,9 @@ package body System.Stream_Attributes is
       else
          --  Test sign and apply two complement's notation
 
-         if Item < 0 then
-            U := XDR_SU'Last xor XDR_SU (-(Item + 1));
-         else
-            U := XDR_SU (Item);
-         end if;
+         U := (if Item < 0
+               then XDR_SU'Last xor XDR_SU (-(Item + 1))
+               else XDR_SU (Item));
 
          for N in reverse S'Range loop
             S (N) := SE (U mod BB);
@@ -1766,11 +1758,9 @@ package body System.Stream_Attributes is
       else
          --  Test sign and apply two complement's notation
 
-         if Item < 0 then
-            U := XDR_SSU'Last xor XDR_SSU (-(Item + 1));
-         else
-            U := XDR_SSU (Item);
-         end if;
+         U := (if Item < 0
+               then XDR_SSU'Last xor XDR_SSU (-(Item + 1))
+               else XDR_SSU (Item));
 
          S (1) := SE (U);
       end if;
