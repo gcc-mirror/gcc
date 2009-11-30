@@ -118,10 +118,16 @@ static int num_changes;
 
 DEF_VEC_P(df_ref);
 DEF_VEC_ALLOC_P(df_ref,heap);
-VEC(df_ref,heap) *use_def_ref;
-VEC(df_ref,heap) *reg_defs;
-VEC(df_ref,heap) *reg_defs_stack;
+static VEC(df_ref,heap) *use_def_ref;
+static VEC(df_ref,heap) *reg_defs;
+static VEC(df_ref,heap) *reg_defs_stack;
 
+/* The MD bitmaps are trimmed to include only live registers to cut
+   memory usage on testcases like insn-recog.c.  Track live registers
+   in the basic block and do not perform forward propagation if the
+   destination is a dead pseudo occurring in a note.  */
+static bitmap local_md;
+static bitmap local_lr;
 
 /* Return the only def in USE's use-def chain, or NULL if there is
    more than one def in the chain.  */
@@ -143,7 +149,7 @@ get_def_for_use (df_ref use)
 	(DF_REF_PARTIAL | DF_REF_CONDITIONAL | DF_REF_MAY_CLOBBER)
 
 static void
-process_defs (bitmap local_md, df_ref *def_rec, int top_flag)
+process_defs (df_ref *def_rec, int top_flag)
 {
   df_ref def;
   while ((def = *def_rec++) != NULL)
@@ -188,7 +194,7 @@ process_defs (bitmap local_md, df_ref *def_rec, int top_flag)
    is an artificial use vector.  */
 
 static void
-process_uses (bitmap local_md, df_ref *use_rec, int top_flag)
+process_uses (df_ref *use_rec, int top_flag)
 {
   df_ref use;
   while ((use = *use_rec++) != NULL)
@@ -196,7 +202,8 @@ process_uses (bitmap local_md, df_ref *use_rec, int top_flag)
       {
         unsigned int uregno = DF_REF_REGNO (use);
         if (VEC_index (df_ref, reg_defs, uregno)
-	    && !bitmap_bit_p (local_md, uregno))
+	    && !bitmap_bit_p (local_md, uregno)
+	    && bitmap_bit_p (local_lr, uregno))
 	  VEC_replace (df_ref, use_def_ref, DF_REF_ID (use),
 		       VEC_index (df_ref, reg_defs, uregno));
       }
@@ -204,32 +211,36 @@ process_uses (bitmap local_md, df_ref *use_rec, int top_flag)
 
 
 static void
-single_def_use_enter_block (struct dom_walk_data *walk_data, basic_block bb)
+single_def_use_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
+			    basic_block bb)
 {
-  bitmap local_md = (bitmap) walk_data->global_data;
   int bb_index = bb->index;
-  struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
+  struct df_md_bb_info *md_bb_info = df_md_get_bb_info (bb_index);
+  struct df_lr_bb_info *lr_bb_info = df_lr_get_bb_info (bb_index);
   rtx insn;
 
-  bitmap_copy (local_md, bb_info->in);
+  bitmap_copy (local_md, md_bb_info->in);
+  bitmap_copy (local_lr, lr_bb_info->in);
 
   /* Push a marker for the leave_block callback.  */
   VEC_safe_push (df_ref, heap, reg_defs_stack, NULL);
 
-  process_uses (local_md, df_get_artificial_uses (bb_index), DF_REF_AT_TOP);
-  process_defs (local_md, df_get_artificial_defs (bb_index), DF_REF_AT_TOP);
+  process_uses (df_get_artificial_uses (bb_index), DF_REF_AT_TOP);
+  process_defs (df_get_artificial_defs (bb_index), DF_REF_AT_TOP);
+  df_simulate_initialize_forwards (bb, local_lr);
 
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
         unsigned int uid = INSN_UID (insn);
-        process_uses (local_md, DF_INSN_UID_USES (uid), 0);
-        process_uses (local_md, DF_INSN_UID_EQ_USES (uid), 0);
-        process_defs (local_md, DF_INSN_UID_DEFS (uid), 0);
+        process_uses (DF_INSN_UID_USES (uid), 0);
+        process_uses (DF_INSN_UID_EQ_USES (uid), 0);
+        process_defs (DF_INSN_UID_DEFS (uid), 0);
+	df_simulate_one_insn_forwards (bb, insn, local_lr);
       }
 
-  process_uses (local_md, df_get_artificial_uses (bb_index), 0);
-  process_defs (local_md, df_get_artificial_defs (bb_index), 0);
+  process_uses (df_get_artificial_uses (bb_index), 0);
+  process_defs (df_get_artificial_defs (bb_index), 0);
 }
 
 /* Pop the definitions created in this basic block when leaving its
@@ -260,12 +271,12 @@ static void
 build_single_def_use_links (void)
 {
   struct dom_walk_data walk_data;
-  bitmap local_md;
 
   /* We use the multiple definitions problem to compute our restricted
      use-def chains.  */
   df_set_flags (DF_EQ_NOTES);
   df_md_add_problem ();
+  df_note_add_problem ();
   df_analyze ();
   df_maybe_reorganize_use_refs (DF_REF_ORDER_BY_INSN_WITH_NOTES);
 
@@ -277,6 +288,7 @@ build_single_def_use_links (void)
 
   reg_defs_stack = VEC_alloc (df_ref, heap, n_basic_blocks * 10);
   local_md = BITMAP_ALLOC (NULL);
+  local_lr = BITMAP_ALLOC (NULL);
 
   /* Walk the dominator tree looking for single reaching definitions
      dominating the uses.  This is similar to how SSA form is built.  */
@@ -284,12 +296,12 @@ build_single_def_use_links (void)
   walk_data.initialize_block_local_data = NULL;
   walk_data.before_dom_children = single_def_use_enter_block;
   walk_data.after_dom_children = single_def_use_leave_block;
-  walk_data.global_data = local_md;
 
   init_walk_dominator_tree (&walk_data);
   walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
   fini_walk_dominator_tree (&walk_data);
 
+  BITMAP_FREE (local_lr);
   BITMAP_FREE (local_md);
   VEC_free (df_ref, heap, reg_defs);
   VEC_free (df_ref, heap, reg_defs_stack);
@@ -1385,9 +1397,7 @@ fwprop_done (void)
     fprintf (dump_file,
 	     "\nNumber of successful forward propagations: %d\n\n",
 	     num_changes);
-  df_remove_problem (df_chain);
 }
-
 
 
 /* Main entry point.  */
