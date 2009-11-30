@@ -1,3 +1,17 @@
+2009-11-30  Jerome Lambourg  <lambourg@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Improve comment for
+	the Value_Type case.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* a-textio.adb: Minor reformatting
+
+2009-11-30  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Fix bug in passing parameter.
+	* expect.c: Include io.h to get definition of _open_osfhandle
+
 2009-11-30  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.adb, sem_scil.adb (Adjust_SCIL_Node): Add missing management

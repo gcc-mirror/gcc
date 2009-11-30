@@ -1659,8 +1659,8 @@ package body Ada.Text_IO is
    begin
       --  Don't allow change of mode for current file (RM A.10.2(5))
 
-      if (File = Current_In or else
-          File = Current_Out  or else
+      if (File = Current_In  or else
+          File = Current_Out or else
           File = Current_Error)
         and then To_FCB (Mode) /= File.Mode
       then
