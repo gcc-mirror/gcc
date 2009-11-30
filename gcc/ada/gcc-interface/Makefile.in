@@ -375,18 +375,6 @@ GNATLIB_SHARED = gnatlib
 # default value for gnatmake's target dependent file
 MLIB_TGT = mlib-tgt
 
-# By default, do not distribute prefix.o (in libgccprefix), since it is only
-# needed by external GNAT tools such as gnatdist and Glide.
-# Override this variable on native platforms when needed.
-PREFIX_OBJS =
-
-# To avoid duplicate code, use this variable to set PREFIX_OBJS when needed:
-PREFIX_REAL_OBJS = ../prefix.o \
-  ../../libiberty/concat.o     \
-  ../../libiberty/xmalloc.o    \
-  ../../libiberty/xstrdup.o    \
-  ../../libiberty/xexit.o
-
 # By default, build socket support units. On platforms that do not support
 # sockets, reset this variable to empty and add DUMMY_SOCKETS_TARGET_PAIRS
 # to LIBGNAT_TARGET_PAIRS.
@@ -939,7 +927,6 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 
   ifeq ($(strip $(filter-out pthread PTHREAD,$(THREAD_KIND))),)
@@ -998,7 +985,6 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1070,7 +1056,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
 
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1099,7 +1084,6 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1128,7 +1112,6 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1155,7 +1138,6 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   EH_MECHANISM=-gcc
   THREADSLIB= -lpthread
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1203,7 +1185,6 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
   EH_MECHANISM=-gcc
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1253,7 +1234,6 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
   TOOLS_TARGET_PAIRS = mlib-tgt-specific.adb<mlib-tgt-specific-irix.adb
   TGT_LIB = -lexc
   MISCLIB = -lexc
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
   GMEM_LIB = gmemlib
 endif
@@ -1275,7 +1255,6 @@ ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
   system.ads<system-hpux.ads
 
   EH_MECHANISM=-gcc
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
 endif
 
 ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
@@ -1300,7 +1279,6 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
   GMEM_LIB = gmemlib
   soext = .sl
   SO_OPTS = -Wl,+h,
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1335,7 +1313,6 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
   endif
 
   THREADSLIB = -lpthreads
-  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
 
   TOOLS_TARGET_PAIRS = \
   mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
@@ -1369,7 +1346,6 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
     g-trasym.adb<g-trasym-unimplemented.adb \
     system.ads<system-lynxos-x86.ads
 
-    PREFIX_OBJS=$(PREFIX_REAL_OBJS)
 
   else
     LIBGNAT_TARGET_PAIRS = \
@@ -1430,7 +1406,6 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
   EH_MECHANISM=-gcc
   GMEM_LIB=gmemlib
   THREADSLIB = -lpthread -lmach -lexc -lrt
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   GNATLIB_SHARED = gnatlib-shared-default
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1644,7 +1619,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   indepsw.adb<indepsw-mingw.adb
 
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   EXTRA_GNATTOOLS = ../../gnatdll$(exeext)
   EXTRA_GNATMAKE_OBJS = mdll.o mdll-utl.o mdll-fil.o
   soext = .dll
@@ -1671,7 +1645,6 @@ ifeq ($(strip $(filter-out mips linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1714,7 +1687,6 @@ ifeq ($(strip $(filter-out mipsel linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1757,7 +1729,6 @@ ifeq ($(strip $(filter-out mips64el linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1818,7 +1789,6 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1862,7 +1832,6 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1893,7 +1862,6 @@ ifeq ($(strip $(filter-out hppa% linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1923,7 +1891,6 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1955,7 +1922,6 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -1981,7 +1947,6 @@ ifeq ($(strip $(filter-out ia64% hp hpux%,$(targ))),)
   GMEM_LIB = gmemlib
   soext = .sl
   SO_OPTS = -Wl,+h,
-  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -2012,7 +1977,6 @@ ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
   MISCLIB=
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
-  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -2045,7 +2009,6 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
-  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -2118,7 +2081,6 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   SO_OPTS = -Wl,-flat_namespace -shared-libgcc
   RANLIB = ranlib -c
   GMEM_LIB = gmemlib
-  PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
   soext = .dylib
   GCC_LINK_FLAGS=
@@ -2405,11 +2367,6 @@ gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR)
 	$(RM) $(RTSDIR)/libgnat$(arext) $(RTSDIR)/libgnarl$(arext)
 	$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgnat$(arext) \
 	   $(addprefix $(RTSDIR)/,$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS))
-        ifneq ($(PREFIX_OBJS),)
-		$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgccprefix$(arext) \
-		  $(PREFIX_OBJS);
-		$(RANLIB_FOR_TARGET) $(RTSDIR)/libgccprefix$(arext)
-        endif
 	$(RANLIB_FOR_TARGET) $(RTSDIR)/libgnat$(arext)
 	$(AR_FOR_TARGET) $(AR_FLAGS) $(RTSDIR)/libgnarl$(arext) \
 	   $(addprefix $(RTSDIR)/,$(GNATRTL_TASKING_OBJS))

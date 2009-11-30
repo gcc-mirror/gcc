@@ -1,3 +1,8 @@
+2009-11-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Remove handling of libgccprefix, no longer
+	needed.
+
 2009-11-30  Pascal Obry  <obry@adacore.com>
 
 	* expect.c: Fix cast to avoid warnings in x86-64 Windows.
