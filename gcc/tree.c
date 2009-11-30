@@ -4934,7 +4934,7 @@ free_lang_data (void)
 
   /* FIXME.  Remove after save_debug_info is working.  */
   if (!(flag_generate_lto
-	|| (!flag_gtoggle && debug_info_level <= DINFO_LEVEL_TERSE)))
+	|| (!flag_gtoggle && debug_info_level == DINFO_LEVEL_NONE)))
     return 0;
 
   /* Traverse the IL resetting language specific information for
