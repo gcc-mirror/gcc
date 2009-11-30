@@ -1,3 +1,9 @@
+2009-11-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/42131
+	* trans-stmt.c (gfc_trans_do):  Calculate loop count
+	without if statements.
+
 2009-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-common.c (create_common): Remove unused offset variable.
