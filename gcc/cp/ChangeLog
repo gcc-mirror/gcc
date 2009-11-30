@@ -1,3 +1,8 @@
+2009-11-30  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42069
+	* pt.c (convert_template_argument): Strip typedefs from SCOPE_REFs.
+
 2009-11-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/36408
