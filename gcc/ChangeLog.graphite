@@ -1,3 +1,7 @@
+2009-11-29  Alexander Monakov <amonakov@gcc.gnu.org>
+
+	* testsuite/g++.dg/graphite/pr42130.C: Correct testcase.
+
 2009-11-24  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (try_mark_loop_parallel,
