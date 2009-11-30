@@ -1,3 +1,14 @@
+2009-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42196
+	* tree-sra.c (struct access): New field grp_different_types.
+	(dump_access): Dump grp_different_types.
+	(compare_access_positions): Prefer scalars and vectors over other
+	scalar types.
+	(sort_and_splice_var_accesses): Set grp_different_types if appropriate.
+	(sra_modify_expr): Use the original also when dealing with a complex
+	 or vector group accessed as multiple types.
+
 2009-11-30  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (avx_vperm2f128_parallel): New.

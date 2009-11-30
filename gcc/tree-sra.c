@@ -199,6 +199,10 @@ struct access
      BIT_FIELD_REF?  */
   unsigned grp_partial_lhs : 1;
 
+  /* Does this group contain accesses to different types? (I.e. through a union
+     or a similar mechanism).  */
+  unsigned grp_different_types : 1;
+
   /* Set when a scalar replacement should be created for this variable.  We do
      the decision and creation at different places because create_tmp_var
      cannot be called from within FOR_EACH_REFERENCED_VAR. */
@@ -339,12 +343,14 @@ dump_access (FILE *f, struct access *access, bool grp)
     fprintf (f, ", grp_write = %d, grp_read = %d, grp_hint = %d, "
 	     "grp_covered = %d, grp_unscalarizable_region = %d, "
 	     "grp_unscalarized_data = %d, grp_partial_lhs = %d, "
-	     "grp_to_be_replaced = %d\n grp_maybe_modified = %d, "
+	     "grp_different_types = %d, grp_to_be_replaced = %d, "
+	     "grp_maybe_modified = %d, "
 	     "grp_not_necessarilly_dereferenced = %d\n",
 	     access->grp_write, access->grp_read, access->grp_hint,
 	     access->grp_covered, access->grp_unscalarizable_region,
 	     access->grp_unscalarized_data, access->grp_partial_lhs,
-	     access->grp_to_be_replaced, access->grp_maybe_modified,
+	     access->grp_different_types, access->grp_to_be_replaced,
+	     access->grp_maybe_modified,
 	     access->grp_not_necessarilly_dereferenced);
   else
     fprintf (f, ", write = %d, grp_partial_lhs = %d\n", access->write,
@@ -1112,14 +1118,25 @@ compare_access_positions (const void *a, const void *b)
     {
       /* Put any non-aggregate type before any aggregate type.  */
       if (!is_gimple_reg_type (f1->type)
-	       && is_gimple_reg_type (f2->type))
+	  && is_gimple_reg_type (f2->type))
 	return 1;
       else if (is_gimple_reg_type (f1->type)
 	       && !is_gimple_reg_type (f2->type))
 	return -1;
+      /* Put any complex or vector type before any other scalar type.  */
+      else if (TREE_CODE (f1->type) != COMPLEX_TYPE
+	       && TREE_CODE (f1->type) != VECTOR_TYPE
+	       && (TREE_CODE (f2->type) == COMPLEX_TYPE
+		   || TREE_CODE (f2->type) == VECTOR_TYPE))
+	return 1;
+      else if ((TREE_CODE (f1->type) == COMPLEX_TYPE
+		|| TREE_CODE (f1->type) == VECTOR_TYPE)
+	       && TREE_CODE (f2->type) != COMPLEX_TYPE
+	       && TREE_CODE (f2->type) != VECTOR_TYPE)
+	return -1;
       /* Put the integral type with the bigger precision first.  */
       else if (INTEGRAL_TYPE_P (f1->type)
-	  && INTEGRAL_TYPE_P (f2->type))
+	       && INTEGRAL_TYPE_P (f2->type))
 	return TYPE_PRECISION (f1->type) > TYPE_PRECISION (f2->type) ? -1 : 1;
       /* Put any integral type with non-full precision last.  */
       else if (INTEGRAL_TYPE_P (f1->type)
@@ -1417,6 +1434,7 @@ sort_and_splice_var_accesses (tree var)
       bool grp_read = !access->write;
       bool multiple_reads = false;
       bool grp_partial_lhs = access->grp_partial_lhs;
+      bool grp_different_types = false;
       bool first_scalar = is_gimple_reg_type (access->type);
       bool unscalarizable_region = access->grp_unscalarizable_region;
 
@@ -1448,6 +1466,7 @@ sort_and_splice_var_accesses (tree var)
 		grp_read = true;
 	    }
 	  grp_partial_lhs |= ac2->grp_partial_lhs;
+	  grp_different_types |= !types_compatible_p (access->type, ac2->type);
 	  unscalarizable_region |= ac2->grp_unscalarizable_region;
 	  relink_to_new_repr (access, ac2);
 
@@ -1466,6 +1485,7 @@ sort_and_splice_var_accesses (tree var)
       access->grp_read = grp_read;
       access->grp_hint = multiple_reads;
       access->grp_partial_lhs = grp_partial_lhs;
+      access->grp_different_types = grp_different_types;
       access->grp_unscalarizable_region = unscalarizable_region;
       if (access->first_link)
 	add_access_to_work_queue (access);
@@ -2112,8 +2132,15 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write,
          access expression to extract the scalar component afterwards.
 	 This happens if scalarizing a function return value or parameter
 	 like in gcc.c-torture/execute/20041124-1.c, 20050316-1.c and
-	 gcc.c-torture/compile/20011217-1.c.  */
-      if (!is_gimple_reg_type (type))
+	 gcc.c-torture/compile/20011217-1.c.
+
+         We also want to use this when accessing a complex or vector which can
+         be accessed as a different type too, potentially creating a need for
+         type conversion  (see PR42196).  */
+      if (!is_gimple_reg_type (type)
+	  || (access->grp_different_types
+	      && (TREE_CODE (type) == COMPLEX_TYPE
+		  || TREE_CODE (type) == VECTOR_TYPE)))
 	{
 	  tree ref = access->base;
 	  bool ok;
