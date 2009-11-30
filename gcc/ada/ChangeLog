@@ -1,5 +1,15 @@
 2009-11-30  Robert Dewar  <dewar@adacore.com>
 
+	* osint.ads: Minor comment update.
+
+2009-11-30  Thomas Quinot  <quinot@adacore.com>
+
+	* s-sechas.adb: Fix swapping error in previous checkin.
+	* g-md5.ads, g-sha256.ads, g-sha512.ads, g-sha1.ads, g-sha224.ads,
+	g-sha384.ads: Add missing documentation.
+
+2009-11-30  Robert Dewar  <dewar@adacore.com>
+
 	* g-sha256.ads, s-sehamd.ads, s-sehamd.adb, g-sha512.ads, g-sha224.ads,
 	g-sha384.ads: Minor reformatting
 

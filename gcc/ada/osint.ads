@@ -737,9 +737,11 @@ private
 
    File_Attributes_Size : constant Natural := 24;
    --  This should be big enough to fit a "struct file_attributes" on any
-   --  system. It doesn't matter if it is too big (which avoids the need for
-   --  either mapping the struct exactly or importing the sizeof from C, which
-   --  would result in dynamic code)
+   --  system. It doesn't cause any malfunction if it is too big (which avoids
+   --  the need for either mapping the struct exactly or importing the sizeof
+   --  from C, which would result in dynamic code). However, it does waste
+   --  space (e.g. when a component of this type appears in a record, if it is
+   --  unnecessarily large.
 
    type File_Attributes is
      array (1 .. File_Attributes_Size)

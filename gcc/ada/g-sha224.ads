@@ -29,6 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package implaments the SHA-224 secure hash function as decsribed in
+--  FIPS PUB 180-3. The complete text of FIPS PUB 180-3 can be found at:
+--    http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf
+
+--  See the declaration of System.Secure_Hashes.H in s-sechas.ads for complete
+--  documentation.
+
 with System.Secure_Hashes.SHA2_Common;
 with System.Secure_Hashes.SHA2_32;
 
