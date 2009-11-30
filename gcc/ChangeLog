@@ -1,3 +1,50 @@
+2009-11-30  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_vec_interleave_v2df_operator_ok): New.
+	(bdesc_special_args): Update insn codes.
+	(avx_vpermilp_parallel): Correct range check.
+	(ix86_rtx_costs): Handle vector permutation rtx codes.
+	(struct expand_vec_perm_d): Move earlier.
+	(get_mode_wider_vector): New.
+	(expand_vec_perm_broadcast_1): New.
+	(ix86_expand_vector_init_duplicate): Use it.  Tidy AVX modes.
+	(expand_vec_perm_broadcast): New.
+	(ix86_expand_vec_perm_builtin_1): Use it.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/predicates.md (avx_vbroadcast_operand): New.
+	* config/i386/sse.md (AVX256MODE24P): New.
+	(ssescalarmodesuffix2s): New.
+	(avxhalfvecmode, avxscalarmode): Fill out to all modes.
+	(avxmodesuffixf2c): Add V8SI, V4DI.
+	(vec_dupv4sf): New expander.
+	(*vec_dupv4sf_avx): Add vbroadcastss alternative.
+	(*vec_set<mode>_0_avx, **vec_set<mode>_0_sse4_1): Macro-ize for
+	V4SF and V4SI.  Move C alternatives to front.  Add insertps and
+	pinsrd alternatives.
+	(*vec_set<mode>_0_sse2): Split out from ...
+	(vec_set<mode>_0): Macro-ize for V4SF and V4SI.
+	(vec_interleave_highv2df, vec_interleave_lowv2df): Require register
+	destination; use ix86_vec_interleave_v2df_operator_ok, instead of
+	ix86_fixup_binary_operands.
+	(*avx_interleave_highv2df, avx_interleave_lowv2df): Add movddup.
+	(*sse3_interleave_highv2df, sse3_interleave_lowv2df): New.
+	(*avx_movddup, *sse3_movddup): Remove.  New splitter from
+	vec_select form to vec_duplicate form.
+	(*sse2_interleave_highv2df, sse2_interleave_lowv2df): Use
+	ix86_vec_interleave_v2df_operator_ok.
+	(avx_movddup256, avx_unpcklpd256): Change to expanders, merge into ... 
+	(*avx_unpcklpd256): ... here.
+	(*vec_dupv4si_avx): New.
+	(*vec_dupv2di_avx): Add movddup alternative.
+	(*vec_dupv2di_sse3): New.
+	(vec_dup<AVX256MODE24P>): Replace avx_vbroadcasts<AVXMODEF4P> and
+	avx_vbroadcastss256; represent with vec_duplicate instead of 
+	nested vec_concat operations.
+	(avx_vbroadcastf128_<mode>): Rename from
+	avx_vbroadcastf128_p<avxmodesuffixf2c>256.
+	(*avx_vperm_broadcast_v4sf): New.
+	(*avx_vperm_broadcast_<AVX256MODEF2P>): New.
+
 2009-11-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42196

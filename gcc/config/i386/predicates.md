@@ -1241,3 +1241,20 @@
 (define_predicate "avx_vperm2f128_v4df_operand"
   (and (match_code "parallel")
        (match_test "avx_vperm2f128_parallel (op, V4DFmode)")))
+
+;; Return 1 if OP is a parallel for a vbroadcast permute.
+
+(define_predicate "avx_vbroadcast_operand"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  rtx elt = XVECEXP (op, 0, 0);
+  int i, nelt = XVECLEN (op, 0);
+
+  /* Don't bother checking there are the right number of operands,
+     merely that they're all identical.  */
+  for (i = 1; i < nelt; ++i)
+    if (XVECEXP (op, 0, i) != elt)
+      return false;
+  return true;
+})
