@@ -3707,12 +3707,22 @@ sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi, void *data)
   any |= sra_ipa_modify_expr (lhs_p, gsi, true, data);
   if (any)
     {
+      tree new_rhs = NULL_TREE;
+
       if (!useless_type_conversion_p (TREE_TYPE (*lhs_p), TREE_TYPE (*rhs_p)))
+	new_rhs = fold_build1_loc (gimple_location (stmt), VIEW_CONVERT_EXPR,
+				   TREE_TYPE (*lhs_p), *rhs_p);
+      else if (REFERENCE_CLASS_P (*rhs_p)
+	       && is_gimple_reg_type (TREE_TYPE (*lhs_p))
+	       && !is_gimple_reg (*lhs_p))
+	/* This can happen when an assignment in between two single field
+	   structures is turned into an assignment in between two pointers to
+	   scalars (PR 42237).  */
+	new_rhs = *rhs_p;
+
+      if (new_rhs)
 	{
-	  location_t loc = gimple_location (stmt);
-	  tree vce = fold_build1_loc (loc, VIEW_CONVERT_EXPR,
-				      TREE_TYPE (*lhs_p), *rhs_p);
-	  tree tmp = force_gimple_operand_gsi (gsi, vce, true, NULL_TREE,
+	  tree tmp = force_gimple_operand_gsi (gsi, new_rhs, true, NULL_TREE,
 					       true, GSI_SAME_STMT);
 
 	  gimple_assign_set_rhs_from_tree (gsi, tmp);
