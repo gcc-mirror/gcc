@@ -61,8 +61,8 @@ java::net::VMURLConnection::init ()
 }
 
 ::java::lang::String *
-java::net::VMURLConnection::guessContentTypeFromBuffer (jbyteArray bytes,
-							jint valid)
+java::net::VMURLConnection::guessContentTypeFromBuffer (jbyteArray bytes __attribute__ ((unused)),
+							jint valid __attribute__ ((unused)))
 {
 #if defined (HAVE_MAGIC_T) && defined (HAVE_MAGIC_H) && defined (USE_LTDL)
   const char *result;
