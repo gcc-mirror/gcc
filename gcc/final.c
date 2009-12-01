@@ -4382,6 +4382,8 @@ rest_of_clean_state (void)
 	     : "");
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
+	  if (flag_compare_debug_opt || flag_compare_debug)
+	    dump_flags |= TDF_NOUID;
 
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	    if (LABEL_P (insn))

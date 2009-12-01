@@ -1,3 +1,10 @@
+2009-12-01  Richard Guenther  <rguenther@suse.de>
+
+	* final.c (rest_of_clean_state): If -fcompare-debug is
+	given dump final insns without UIDs.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Remove
+	after_inlining checks.
+
 2009-11-30  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips-dsp.md (mips_lhx_<mode>): Use sign_extend.

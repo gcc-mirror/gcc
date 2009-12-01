@@ -475,11 +475,7 @@ remove_unused_scope_block_p (tree scope)
 	 type is used or not.  */
 
       else if (debug_info_level == DINFO_LEVEL_NORMAL
-	       || debug_info_level == DINFO_LEVEL_VERBOSE
-	       /* Removing declarations before inlining is going to affect
-		  DECL_UID that in turn is going to affect hashtables and
-		  code generation.  */
-	       || !cfun->after_inlining)
+	       || debug_info_level == DINFO_LEVEL_VERBOSE)
 	;
       else
 	{
@@ -527,12 +523,6 @@ remove_unused_scope_block_p (tree scope)
       eliminated.  */
    else if (!nsubblocks)
      ;
-   /* If there are live subblocks and we still have some unused variables
-      or types declared, we must keep them.
-      Before inliing we must not depend on debug info verbosity to keep
-      DECL_UIDs stable.  */
-   else if (!cfun->after_inlining && BLOCK_VARS (scope))
-     unused = false;
    /* For terse debug info we can eliminate info on unused variables.  */
    else if (debug_info_level == DINFO_LEVEL_NONE
 	    || debug_info_level == DINFO_LEVEL_TERSE)
