@@ -1,3 +1,7 @@
+2009-12-91  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vperm-v4sf-1.c (dg-options): Use -msse.
+
 2009-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42234
