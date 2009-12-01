@@ -310,6 +310,8 @@ typedef enum {
 } cgraph_inline_failed_t;
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
   struct cgraph_node *caller;
   struct cgraph_node *callee;
   struct cgraph_edge *prev_caller;
@@ -317,29 +319,27 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   struct cgraph_edge *prev_callee;
   struct cgraph_edge *next_callee;
   gimple call_stmt;
-  /* The stmt_uid of this call stmt.  This is used by LTO to recover
-     the call_stmt when the function is serialized in.  */
-  unsigned int lto_stmt_uid;
   PTR GTY ((skip (""))) aux;
   /* When equal to CIF_OK, inline this call.  Otherwise, points to the
      explanation why function was not inlined.  */
   cgraph_inline_failed_t inline_failed;
-  /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  /* The stmt_uid of call_stmt.  This is used by LTO to recover the call_stmt
+     when the function is serialized in.  */
+  unsigned int lto_stmt_uid;
   /* Expected frequency of executions within the function.
      When set to CGRAPH_FREQ_BASE, the edge is expected to be called once
      per function call.  The range is 0 to CGRAPH_FREQ_MAX.  */
   int frequency;
+  /* Unique id of the edge.  */
+  int uid;
   /* Depth of loop nest, 1 means no loop nest.  */
-  unsigned int loop_nest : 30;
+  unsigned short int loop_nest;
   /* Whether this edge describes a call that was originally indirect.  */
   unsigned int indirect_call : 1;
   /* True if the corresponding CALL stmt cannot be inlined.  */
   unsigned int call_stmt_cannot_inline_p : 1;
   /* Can this call throw externally?  */
   unsigned int can_throw_external : 1;
-  /* Unique id of the edge.  */
-  int uid;
 };
 
 #define CGRAPH_FREQ_BASE 1000
