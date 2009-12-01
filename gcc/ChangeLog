@@ -1,3 +1,7 @@
+2009-11-30  Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips-dsp.md (mips_lhx_<mode>): Use sign_extend.
+
 2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.ac (USE_CYGWIN_LIBSTDCXX_WRAPPERS): Define to reflect
