@@ -26,7 +26,7 @@ struct attribute_spec;
 
 extern void add_new_plugin (const char *);
 extern void parse_plugin_arg_opt (const char *);
-extern void invoke_plugin_callbacks (enum plugin_event, void *);
+extern int invoke_plugin_callbacks (int, void *);
 extern void initialize_plugins (void);
 extern bool plugins_active_p (void);
 extern void dump_active_plugins (FILE *);

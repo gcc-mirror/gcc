@@ -943,7 +943,8 @@ TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
 IPA_PROP_H = ipa-prop.h $(TREE_H) vec.h $(CGRAPH_H)
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
-GCC_PLUGIN_H = gcc-plugin.h $(CONFIG_H) $(SYSTEM_H)
+GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h $(CONFIG_H) $(SYSTEM_H) \
+		$(HASHTAB_H)
 PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
 
@@ -2503,8 +2504,9 @@ tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
    langhooks.h alloc-pool.h pointer-set.h $(CFGLOOP_H)
 tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) hard-reg-set.h $(EXPR_H) $(GGC_H) output.h \
-   $(DIAGNOSTIC_H) $(BASIC_BLOCK_H) $(FLAGS_H) $(TIMEVAR_H) $(TM_H) coretypes.h \
-   $(TREE_DUMP_H) $(TOPLEV_H) $(FUNCTION_H) langhooks.h $(FLAGS_H) $(CGRAPH_H) \
+   $(DIAGNOSTIC_H) $(BASIC_BLOCK_H) $(FLAGS_H) $(TIMEVAR_H) $(TM_H) \
+   coretypes.h $(TREE_DUMP_H) $(TOPLEV_H) $(FUNCTION_H) langhooks.h \
+   $(FLAGS_H) $(CGRAPH_H) $(PLUGIN_H) \
    $(TREE_INLINE_H) tree-mudflap.h $(GGC_H) graph.h $(CGRAPH_H) \
    $(TREE_PASS_H) $(CFGLOOP_H) $(EXCEPT_H)
 
@@ -2725,7 +2727,8 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h insn-flags.h $(CFGLAYOUT_H) $(REAL_H) $(CFGLOOP_H) \
    hosthooks.h $(CGRAPH_H) $(COVERAGE_H) $(TREE_PASS_H) $(TREE_DUMP_H) \
    $(GGC_H) $(INTEGRATE_H) $(CPPLIB_H) opts.h $(TREE_FLOW_H) $(TREE_INLINE_H) \
-   gt-passes.h $(DF_H) $(PREDICT_H) $(LTO_HEADER_H) $(LTO_SECTION_OUT_H)
+   gt-passes.h $(DF_H) $(PREDICT_H) $(LTO_HEADER_H) $(LTO_SECTION_OUT_H) \
+   $(PLUGIN_H)
 
 plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TOPLEV_H) $(TREE_H) $(TREE_PASS_H) intl.h $(PLUGIN_VERSION_H) $(GGC_H)
@@ -4264,7 +4267,7 @@ installdirs:
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TOPLEV_H) $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_PASS_H) $(GCC_PLUGIN_H) \
-  $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) \
+  $(GGC_H) $(TREE_DUMP_H) $(PRETTY_PRINT_H) opts.h $(PARAMS_H) plugin.def \
   $(tm_file_list) $(tm_include_list) $(tm_p_file_list) $(tm_p_include_list) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
   intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) $(C_COMMON_H) $(C_PRETTY_PRINT_H) \
@@ -4273,8 +4276,15 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
   cppdefault.h flags.h $(MD5_H) params.def params.h prefix.h tree-inline.h
 
+# generate the 'build fragment' b-header-vars
+s-header-vars: Makefile
+	rm -f tmp-header-vars
+	$(foreach header_var,$(shell sed < Makefile -e 's/^\([A-Z0-9_]*_H\)[      ]*=.*/\1/p' -e d),echo $(header_var)=$(shell echo $($(header_var):$(srcdir)/%=.../%) | sed -e 's~\.\.\./config/~config/~' -e 's~\.\.\..*/~~') >> tmp-header-vars;) \
+	$(SHELL) $(srcdir)/../move-if-change tmp-header-vars b-header-vars
+	$(STAMP) s-header-vars
+
 # Install the headers needed to build a plugin.
-install-plugin: installdirs lang.install-plugin
+install-plugin: installdirs lang.install-plugin s-header-vars
 # We keep the directory structure for files in config and .def files. All
 # other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
@@ -4298,6 +4308,7 @@ install-plugin: installdirs lang.install-plugin
 	  $(mkinstalldirs) $(DESTDIR)$$dir; \
 	  $(INSTALL_DATA) $$path $(DESTDIR)$$dest; \
 	done
+	$(INSTALL_DATA) b-header-vars $(DESTDIR)$(plugin_includedir)/b-header-vars
 
 # Install the compiler executables built during cross compilation.
 install-common: native lang.install-common installdirs

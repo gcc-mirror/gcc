@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "predict.h"
 #include "lto-streamer.h"
+#include "plugin.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -104,7 +105,8 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* This is used for debugging.  It allows the current pass to printed
-   from anywhere in compilation.  */
+   from anywhere in compilation.
+   The variable current_pass is also used for statistics and plugins.  */
 struct opt_pass *current_pass;
 
 /* Call from anywhere to find out what pass this is.  Useful for
@@ -479,6 +481,8 @@ make_pass_instance (struct opt_pass *pass, bool track_duplicates)
     {
       pass->todo_flags_start |= TODO_mark_first_instance;
       pass->static_pass_number = -1;
+
+      invoke_plugin_callbacks (PLUGIN_NEW_PASS, pass);
     }
   return pass;
 }
@@ -1090,9 +1094,9 @@ static GTY ((length ("nnodes"))) struct cgraph_node **order;
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
-   call CALLBACK on the current function.  */
-
-static void
+   call CALLBACK on the current function.
+   This function is global so that plugins can use it.  */
+void
 do_per_function_toporder (void (*callback) (void *data), void *data)
 {
   int i;
@@ -1317,8 +1321,9 @@ verify_curr_properties (void *data)
 #endif
 
 /* Initialize pass dump file.  */
+/* This is non-static so that the plugins can use it.  */
 
-static bool
+bool
 pass_init_dump_file (struct opt_pass *pass)
 {
   /* If a dump file name is present, open it if enabled.  */
@@ -1347,8 +1352,9 @@ pass_init_dump_file (struct opt_pass *pass)
 }
 
 /* Flush PASS dump file.  */
+/* This is non-static so that plugins can use it.  */
 
-static void
+void
 pass_fini_dump_file (struct opt_pass *pass)
 {
   /* Flush and close dump file.  */
@@ -1476,11 +1482,13 @@ execute_all_ipa_transforms (void)
 
 /* Execute PASS. */
 
-static bool
+bool
 execute_one_pass (struct opt_pass *pass)
 {
   bool initializing_dump;
   unsigned int todo_after = 0;
+
+  bool gate_status;
 
   /* IPA passes are executed on whole program, so cfun should be NULL.
      Other passes need function context set.  */
@@ -1491,9 +1499,22 @@ execute_one_pass (struct opt_pass *pass)
 
   current_pass = pass;
 
-  /* See if we're supposed to run this pass.  */
-  if (pass->gate && !pass->gate ())
-    return false;
+  /* Check whether gate check should be avoided.
+     User controls the value of the gate through the parameter "gate_status". */
+  gate_status = (pass->gate == NULL) ? true : pass->gate();
+
+  /* Override gate with plugin.  */
+  invoke_plugin_callbacks (PLUGIN_OVERRIDE_GATE, &gate_status);
+
+  if (!gate_status)
+    {
+      current_pass = NULL;
+      return false;
+    }
+
+  /* Pass execution event trigger: useful to identify passes being
+     executed.  */
+  invoke_plugin_callbacks (PLUGIN_PASS_EXECUTION, pass);
 
   if (!quiet_flag && !cfun)
     fprintf (stderr, " <%s>", pass->name ? pass->name : "");
@@ -1756,8 +1777,12 @@ execute_ipa_pass_list (struct opt_pass *pass)
       if (execute_one_pass (pass) && pass->sub)
 	{
 	  if (pass->sub->type == GIMPLE_PASS)
-	    do_per_function_toporder ((void (*)(void *))execute_pass_list,
-				      pass->sub);
+	    {
+	      invoke_plugin_callbacks (PLUGIN_EARLY_GIMPLE_PASSES_START, NULL);
+	      do_per_function_toporder ((void (*)(void *))execute_pass_list,
+					pass->sub);
+	      invoke_plugin_callbacks (PLUGIN_EARLY_GIMPLE_PASSES_END, NULL);
+	    }
 	  else if (pass->sub->type == SIMPLE_IPA_PASS
 		   || pass->sub->type == IPA_PASS)
 	    execute_ipa_pass_list (pass->sub);
