@@ -1,3 +1,8 @@
+2009-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42057
+	* g++.dg/parse/crash54.C: New.
+
 2009-11-30  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/dsp-lhx.c: New test.
