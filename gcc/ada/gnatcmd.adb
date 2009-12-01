@@ -575,8 +575,12 @@ procedure GNATCmd is
                                   (Unit.File_Names (Kind).Project, Project)
                        and then not Unit.File_Names (Kind).Locally_Removed
                      then
-                        Get_Name_String
-                          (Unit.File_Names (Kind).Path.Display_Name);
+                        Name_Len := 0;
+                        Add_Char_To_Name_Buffer ('"');
+                        Add_Str_To_Name_Buffer
+                          (Get_Name_String
+                             (Unit.File_Names (Kind).Path.Display_Name));
+                        Add_Char_To_Name_Buffer ('"');
 
                         if FD /= Invalid_FD then
                            Name_Len := Name_Len + 1;

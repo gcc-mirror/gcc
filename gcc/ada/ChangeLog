@@ -1,3 +1,27 @@
+2009-12-01  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sechas.ads (GNAT.Secure_Hashes.H."=" on Context): Make abstract.
+
+2009-12-01  Matthew Gingell  <gingell@adacore.com>
+
+	* adadecode.c: Allow compilation when building the run time in the gnat
+	runtime.
+	(__gnat_decode): Strip the .nnnn suffix from names of nested functions.
+
+	* gcc-interface/Makefile.in: Ada adadecode to LIBGNAT_SRCS and
+	LIBGNAT_OBJS.
+
+2009-12-01  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): Quote the path names as they may include
+	spaces.
+
+2009-12-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If the defining identifier
+	has already been declared, it may have been rewritten as a renaming
+	declaration.
+
 2009-12-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads: Clarify use of Is_Private_Primitive.

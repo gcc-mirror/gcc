@@ -2113,15 +2113,16 @@ endif
 # while GNATRTL_OBJS lists the object files compiled from Ada sources that
 # go into the directory.  The pthreads emulation is built in the threads
 # subdirectory and copied.
-LIBGNAT_SRCS = adaint.c adaint.h argv.c cio.c cstreams.c \
-  errno.c exit.c cal.c ctrl_c.c env.c env.h arit64.c \
-  raise.h raise.c sysdep.c aux-io.c init.c initialize.c seh_init.c \
-  final.c tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c expect.c mkdir.c \
-  socket.c gsocket.h targext.c $(EXTRA_LIBGNAT_SRCS)
+LIBGNAT_SRCS = adadecode.c adadecode.h adaint.c adaint.h	\
+  argv.c cio.c cstreams.c errno.c exit.c cal.c ctrl_c.c env.c env.h	\
+  arit64.c raise.h raise.c sysdep.c aux-io.c init.c initialize.c	\
+  seh_init.c final.c tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c		\
+  expect.c mkdir.c socket.c gsocket.h targext.c $(EXTRA_LIBGNAT_SRCS)
 
-LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o ctrl_c.o errno.o exit.o env.o \
-  raise.o sysdep.o aux-io.o init.o initialize.o seh_init.o cal.o arit64.o \
-  final.o tracebak.o expect.o mkdir.o socket.o targext.o $(EXTRA_LIBGNAT_OBJS)
+LIBGNAT_OBJS = adadecode.o adaint.o argv.o cio.o cstreams.o ctrl_c.o	\
+  errno.o exit.o env.o raise.o sysdep.o aux-io.o init.o initialize.o	\
+  seh_init.o cal.o arit64.o final.o tracebak.o expect.o mkdir.o		\
+  socket.o targext.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
 #  the library installation will change and there will be a

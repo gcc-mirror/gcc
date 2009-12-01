@@ -133,6 +133,13 @@ package GNAT.Secure_Hashes is
       type Context is private;
       --  The internal processing state of the hashing function
 
+      function "=" (L, R : Context) return Boolean is abstract;
+      --  Context is the internal, implementation defined state of an
+      --  intermediate state in a hash computation, and no specific semantics
+      --  can be expected on equality of context values. Only equality of
+      --  final hash values (as returned by the [Wide_]Digest functions below)
+      --  is meaningful.
+
       Initial_Context : constant Context;
       --  Initial value of a Context object. May be used to reinitialize
       --  a Context value by simple assignment of this value to the object.

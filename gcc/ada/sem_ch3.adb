@@ -9725,11 +9725,12 @@ package body Sem_Ch3 is
          New_T := Any_Type;
       end if;
 
-      --  If previous full declaration exists, or if a homograph is present,
-      --  let Enter_Name handle it, either with an error, or with the removal
-      --  of an overridden implicit subprogram.
+      --  If previous full declaration or a renaming declaration exists, or if
+      --  a homograph is present, let Enter_Name handle it, either with an
+      --  error or with the removal of an overridden implicit subprogram.
 
       if Ekind (Prev) /= E_Constant
+        or else Nkind (Parent (Prev)) = N_Object_Renaming_Declaration
         or else Present (Expression (Parent (Prev)))
         or else Present (Full_View (Prev))
       then
