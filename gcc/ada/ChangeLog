@@ -1,3 +1,8 @@
+2009-12-01  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb (Get_Base_Time): Make sure that the base time is
+	taken at a clock tick boundary.
+
 2009-12-01  Thomas Quinot  <quinot@adacore.com>
 
 	* g-sechas.ads (GNAT.Secure_Hashes.H."=" on Context): Make abstract.
