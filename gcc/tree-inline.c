@@ -1093,10 +1093,10 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 
       /* If EXPR has block defined, map it to newly constructed block.
          When inlining we want EXPRs without block appear in the block
-	 of function call.  */
+	 of function call if we are not remapping a type.  */
       if (EXPR_P (*tp))
 	{
-	  new_block = id->block;
+	  new_block = id->remapping_type_depth == 0 ? id->block : NULL;
 	  if (TREE_BLOCK (*tp))
 	    {
 	      tree *n;
