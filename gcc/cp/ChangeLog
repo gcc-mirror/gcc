@@ -1,3 +1,11 @@
+2009-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3187
+	* optimize.c (cdtor_comdat_group): New function.
+	(maybe_clone_body): Also optimize DECL_COMDAT base/complete cdtors
+	and in that case put also the deleting dtor in the same comdat group
+	as base and complete dtor if dtor is virtual.
+
 2009-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/40371

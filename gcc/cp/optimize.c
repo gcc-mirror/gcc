@@ -142,6 +142,46 @@ build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
     }
 }
 
+/* Return name of comdat group for complete and base ctor (or dtor)
+   that have the same body.  If dtor is virtual, deleting dtor goes
+   into this comdat group as well.  */
+
+static tree
+cdtor_comdat_group (tree complete, tree base)
+{
+  tree complete_name = DECL_COMDAT_GROUP (complete);
+  tree base_name = DECL_COMDAT_GROUP (base);
+  char *grp_name;
+  const char *p, *q;
+  bool diff_seen = false;
+  size_t idx;
+  if (complete_name == NULL)
+    complete_name = cxx_comdat_group (complete);
+  if (base_name == NULL)
+    base_name = cxx_comdat_group (base);
+  gcc_assert (IDENTIFIER_LENGTH (complete_name)
+	      == IDENTIFIER_LENGTH (base_name));
+  grp_name = XALLOCAVEC (char, IDENTIFIER_LENGTH (complete_name) + 1);
+  p = IDENTIFIER_POINTER (complete_name);
+  q = IDENTIFIER_POINTER (base_name);
+  for (idx = 0; idx < IDENTIFIER_LENGTH (complete_name); idx++)
+    if (p[idx] == q[idx])
+      grp_name[idx] = p[idx];
+    else
+      {
+	gcc_assert (!diff_seen
+		    && idx > 0
+		    && (p[idx - 1] == 'C' || p[idx - 1] == 'D')
+		    && p[idx] == '1'
+		    && q[idx] == '2');
+	grp_name[idx] = '5';
+	diff_seen = true;
+      }
+  grp_name[idx] = '\0';
+  gcc_assert (diff_seen);
+  return get_identifier (grp_name);
+}
+
 /* FN is a function that has a complete body.  Clone the body as
    necessary.  Returns nonzero if there's no longer any need to
    process the main body.  */
@@ -149,6 +189,7 @@ build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
 bool
 maybe_clone_body (tree fn)
 {
+  tree comdat_group = NULL_TREE;
   tree clone;
   tree fns[3];
   bool first = true;
@@ -248,10 +289,26 @@ maybe_clone_body (tree fn)
 	  && idx == 1
 	  && !flag_use_repository
 	  && DECL_INTERFACE_KNOWN (fns[0])
-	  && !DECL_ONE_ONLY (fns[0])
+	  && (SUPPORTS_ONE_ONLY || !DECL_WEAK (fns[0]))
+	  && (!DECL_ONE_ONLY (fns[0])
+	      || (HAVE_COMDAT_GROUP
+		  && DECL_WEAK (fns[0])
+		  /* Don't optimize synthetized virtual dtors, because then
+		     the deleting and other dtors are emitted when needed
+		     and so it is not certain we would emit both
+		     deleting and complete/base dtors in the comdat group.  */
+		  && (fns[2] == NULL || !DECL_ARTIFICIAL (fn))))
 	  && cgraph_same_body_alias (clone, fns[0]))
 	{
 	  alias = true;
+	  if (DECL_ONE_ONLY (fns[0]))
+	    {
+	      /* For comdat base and complete cdtors put them
+		 into the same, *[CD]5* comdat group instead of
+		 *[CD][12]*.  */
+	      comdat_group = cdtor_comdat_group (fns[1], fns[0]);
+	      DECL_COMDAT_GROUP (fns[0]) = comdat_group;
+	    }
 	  emit_associated_thunks (clone);
 	}
 
@@ -332,6 +389,15 @@ maybe_clone_body (tree fn)
       first = false;
     }
   pop_from_top_level ();
+
+  if (comdat_group)
+    {
+      DECL_COMDAT_GROUP (fns[1]) = comdat_group;
+      if (fns[2])
+	/* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
+	   virtual, it goes into the same comdat group as well.  */
+	DECL_COMDAT_GROUP (fns[2]) = comdat_group;
+    }
 
   /* We don't need to process the original function any further.  */
   return 1;
