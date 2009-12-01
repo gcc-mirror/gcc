@@ -1,3 +1,8 @@
+2009-12-02  Ben Elliston  <bje@au.ibm.com>
+
+	* java/net/natVMURLConnection.cc (guessContentTypeFromBuffer):
+	Mark `bytes' and `valid' parameters as potentially unused.
+
 2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* testsuite/lib/libjava.exp (libjava_init):  Add host-dependent
