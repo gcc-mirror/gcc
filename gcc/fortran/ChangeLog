@@ -1,3 +1,9 @@
+2009-11-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/41278
+	Backport from mainline.
+	* trans-array.c (gfc_conv_array_transpose): Delete unnecessary assert.
+	
 2009-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/41807
