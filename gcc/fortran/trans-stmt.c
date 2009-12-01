@@ -1028,17 +1028,13 @@ gfc_trans_do (gfc_code * code)
     {
       tree pos, neg, step_sign, to2, from2, step2;
 
-      /* Calculate SIGN (1,step) */
+      /* Calculate SIGN (1,step), as (step < 0 ? -1 : 1)  */
 
-      tmp = fold_build2 (RSHIFT_EXPR, type, step,
-			 build_int_cst (type,
-					TYPE_PRECISION (type) - 1));
-
-      tmp = fold_build2 (MULT_EXPR, type, tmp,
-			 build_int_cst (type, 2));
-
-      step_sign = fold_build2 (PLUS_EXPR, type, tmp,
-			       fold_convert (type, integer_one_node));
+      tmp = fold_build2 (LT_EXPR, boolean_type_node, step, 
+			 build_int_cst (TREE_TYPE (step), 0));
+      step_sign = fold_build3 (COND_EXPR, type, tmp, 
+			       build_int_cst (type, -1), 
+			       build_int_cst (type, 1));
 
       tmp = fold_build2 (LT_EXPR, boolean_type_node, to, from);
       pos = fold_build3 (COND_EXPR, void_type_node, tmp,
