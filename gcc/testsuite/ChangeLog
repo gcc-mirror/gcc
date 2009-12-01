@@ -1,3 +1,8 @@
+2009-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41611
+	* g++.dg/abi/guard1.C: New.
+
 2009-12-91  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/vperm-v4sf-1.c (dg-options): Use -msse.

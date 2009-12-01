@@ -1574,8 +1574,7 @@ comdat_linkage (tree decl)
 	}
     }
 
-  if (DECL_LANG_SPECIFIC (decl))
-    DECL_COMDAT (decl) = 1;
+  DECL_COMDAT (decl) = 1;
 }
 
 /* For win32 we also want to put explicit instantiations in
@@ -2555,6 +2554,7 @@ get_guard (tree decl)
       TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
       TREE_STATIC (guard) = TREE_STATIC (decl);
       DECL_COMMON (guard) = DECL_COMMON (decl);
+      DECL_COMDAT (guard) = DECL_COMDAT (decl);
       DECL_COMDAT_GROUP (guard) = DECL_COMDAT_GROUP (decl);
       if (TREE_PUBLIC (decl))
 	DECL_WEAK (guard) = DECL_WEAK (decl);

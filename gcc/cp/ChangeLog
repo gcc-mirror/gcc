@@ -1,3 +1,9 @@
+2009-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41611
+	* decl2.c (get_guard): Copy DECL_COMDAT.
+	(comdat_linkage): Set DECL_COMDAT unconditionally.
+
 2009-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/3187
