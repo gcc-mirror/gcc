@@ -1,3 +1,8 @@
+2009-11-30  Chao-ying Fu  <fu@mips.com>
+
+	* gcc.target/mips/dsp-lhx.c: New test.
+	* gcc.target/mips/dsp-no-lhx.c: New test.
+
 2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* lib/g++.exp (g++_init): Add host-dependent settings for
