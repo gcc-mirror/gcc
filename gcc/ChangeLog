@@ -1,3 +1,8 @@
+2009-12-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (copy_tree_body_r): Do not set TREE_BLOCK
+	to the block of the call when remapping a type.
+
 2009-12-01  Martin Jambor  <mjambor@suse.cz>
 
         * cgraph.h (struct cgraph_edge): Reorder fields.  Make loop_nest
