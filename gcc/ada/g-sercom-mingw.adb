@@ -38,6 +38,7 @@ with Ada.Streams;                use Ada.Streams;
 
 with System;               use System;
 with System.Communication; use System.Communication;
+with System.CRTL;          use System.CRTL;
 with System.Win32;         use System.Win32;
 with System.Win32.Ext;     use System.Win32.Ext;
 
@@ -162,7 +163,7 @@ package body GNAT.Serial_Communications is
          Raise_Error ("read error");
       end if;
 
-      Last := Last_Index (Buffer'First, C.int (Read_Last));
+      Last := Last_Index (Buffer'First, size_t (Read_Last));
    end Read;
 
    ---------

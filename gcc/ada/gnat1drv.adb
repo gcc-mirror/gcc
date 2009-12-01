@@ -162,6 +162,12 @@ procedure Gnat1drv is
 
          ASIS_Mode := False;
 
+         --  Disable front-end optimizations, to keep the tree as close to the
+         --  source code as possible, and also to avoid inconsistencies between
+         --  trees when using different optimization switches.
+
+         Optimization_Level := 0;
+
          --  Disable specific expansions for Restrictions pragmas to avoid
          --  tree inconsistencies between compilations with different pragmas
          --  that will cause different SCIL files to be generated for the

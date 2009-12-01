@@ -2098,7 +2098,11 @@ package Einfo is
 --       Present in all entities. Set true for all entities declared in the
 --       private part or body of a package. Also marks generic formals of a
 --       formal package declared without a box. For library level entities,
---       this flag is set if the entity is not publicly visible.
+--       this flag is set if the entity is not publicly visible. This flag
+--       is reset when compiling the body of the package where the entity
+--       is declared, when compiling the private part or body of a public
+--       child unit, and when compiling a private child unit (see Install_
+--       Private_Declaration in sem_ch7).
 
 --    Is_Hidden_Open_Scope (Flag171)
 --       Present in all entities. Set true for a scope that contains the
@@ -2451,8 +2455,12 @@ package Einfo is
 --       child unit, or if it is the descendent of a private child unit.
 
 --    Is_Private_Primitive (Flag245)
---       Present in subprograms. Set if the first parameter of the subprogram
---       is of concurrent tagged type with a private view.
+--       Present in subprograms. Set if the operation is a primitive of a
+--       tagged type (procedure or function dispatching on result) whose
+--       full view has not been seen. Used in particular for primitive
+--       subprograms of a synchronized type declared between the two views
+--       of the type, so that the wrapper built for such a subprogram can
+--       be given the proper signature.
 
 --    Is_Private_Type (synthesized)
 --       Applies to all entities, true for private types and subtypes,

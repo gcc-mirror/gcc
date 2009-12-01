@@ -48,6 +48,10 @@ package SCOs is
    --  Put_SCO reads the internal tables and generates text lines in the ALI
    --  format.
 
+   --  ??? The specification below for the SCO ALI format and the internal
+   --  data structures have been modified, but the implementation has not been
+   --  updated yet to reflect these specification changes.
+
    --------------------
    -- SCO ALI Format --
    --------------------
@@ -102,31 +106,52 @@ package SCOs is
    --      renaming_declaration
    --      generic_instantiation
 
+   --    and the following regions of the syntax tree:
+
+   --      the part of a case_statement from CASE up to the expression
+   --      the part of a FOR iteration scheme from FOR up to the
+   --        loop_parameter_specification
+   --      the part of an extended_return_statement from RETURN up to the
+   --        expression (if present) or to the return_subtype_indication (if
+   --        no expression)
+
    --  Statement lines
 
-   --    These lines correspond to a sequence of one or more statements which
-   --    are always executed in sequence, The first statement may be an entry
-   --    point (e.g. statement after a label), and the last statement may be
-   --    an exit point (e.g. an exit statement), but no other entry or exit
-   --    points may occur within the sequence of statements. The idea is that
-   --    the sequence can be treated as a single unit from a coverage point of
-   --    view, if any of the code for the statement sequence is executed, this
-   --    corresponds to coverage of the entire statement sequence. The form of
-   --    a statement line in the ALI file is:
+   --    These lines correspond to one or more successive statements (in the
+   --    sense of the above list) which are always executed in sequence (in the
+   --    absence of exceptions or other external interruptions).
 
-   --      CS sloc-range
+   --    Entry points to such sequences are:
 
-   --  Exit points
+   --      the first statement of any sequence_of_statements
+   --      the first statement after a compound statement
+   --      the first statement after an EXIT, RAISE or GOTO statement
+   --      any statement with a label
 
-   --    An exit point is a statement that causes transfer of control. Examples
-   --    are exit statements, raise statements and return statements. The form
-   --    of an exit point in the ALI file is:
+   --    Each entry point must appear as the first entry on a CS line.
+   --    The idea is that if any simple statement on a CS line is known to have
+   --    been executed, then all statements that appear before it on the same
+   --    CS line are certain to also have been executed.
 
-   --      CT sloc-range
+   --    The form of a statement line in the ALI file is:
+
+   --      CS *sloc-range [*sloc-range...]
+
+   --    where each sloc-range corresponds to a single statement, and * is
+   --    one of:
+
+   --      t  type declaration
+   --      s  subtype declaration
+   --      o  object declaration
+   --      r  renaming declaration
+   --      i  generic instantiation
+   --      C  CASE statement
+   --      F  FOR loop statement
+   --      R  extended RETURN statement
+
+   --    and is omitted for all other cases.
 
    --  Decisions
-
-   --    Decisions represent the most significant section of the SCO lines
 
    --    Note: in the following description, logical operator includes the
    --    short circuited forms (so can be any of AND, OR, XOR, NOT, AND THEN,
@@ -136,7 +161,7 @@ package SCOs is
    --    expresssion that occurs in the context of a control structure in the
    --    source program, including WHILE, IF, EXIT WHEN. Note that a boolean
    --    expression in any other context, for example, on the right side of an
-   --    assignment, is not considered to be a decision.
+   --    assignment, is not considered to be a simple decision.
 
    --    A complex decision is an occurrence of a logical operator which is not
    --    itself an operand of some other logical operator. If any operand of
@@ -160,7 +185,7 @@ package SCOs is
 
    --    For each decision, a decision line is generated with the form:
 
-   --      C* expression
+   --      C*sloc expression
 
    --    Here * is one of the following characters:
 
@@ -169,15 +194,23 @@ package SCOs is
    --      W  decision in WHILE iteration scheme
    --      X  decision appearing in some other expression context
 
+   --    For I, E, W, sloc is the source location of the IF, EXIT or WHILE
+   --    token.
+
+   --    For X, sloc is omitted.
+
    --    The expression is a prefix polish form indicating the structure of
    --    the decision, including logical operators and short circuit forms.
    --    The following is a grammar showing the structure of expression:
 
    --      expression ::= term             (if expr is not logical operator)
-   --      expression ::= & term term      (if expr is AND or AND THEN)
-   --      expression ::= | term term      (if expr is OR or OR ELSE)
-   --      expression ::= ^ term term      (if expr is XOR)
-   --      expression ::= !term            (if expr is NOT)
+   --      expression ::= &sloc term term  (if expr is AND or AND THEN)
+   --      expression ::= |sloc term term  (if expr is OR or OR ELSE)
+   --      expression ::= ^sloc term term  (if expr is XOR)
+   --      expression ::= !sloc term       (if expr is NOT)
+
+   --      In the last four cases, sloc is the source location of the AND, OR,
+   --      XOR or NOT token, respectively.
 
    --      term ::= element
    --      term ::= expression
@@ -194,15 +227,15 @@ package SCOs is
    --      the compiler as always being true or false.
 
    --    & indicates either AND or AND THEN connecting two conditions. In the
-   --    context of couverture we only permit AND THEN in the source in any
+   --    context of Couverture we only permit AND THEN in the source in any
    --    case, so & can always be understood to be AND THEN.
 
    --    | indicates either OR or OR ELSE connection two conditions. In the
-   --    context of couverture we only permit OR ELSE in the source in any
+   --    context of Couverture we only permit OR ELSE in the source in any
    --    case, so | can always be understood to be OR ELSE.
 
    --    ^ indicates XOR connecting two conditions. In the context of
-   --    couverture, we do not permit XOR, so this will never appear.
+   --    Couverture, we do not permit XOR, so this will never appear.
 
    --    ! indicates NOT applied to the expression.
 
@@ -235,41 +268,34 @@ package SCOs is
    --  The SCO_Table_Entry values appear as follows:
 
    --    Statements
-   --      C1   = 'S'
-   --      C2   = ' '
+   --      C1   = 'S' for entry point, 's' otherwise
+   --      C2   = 't', 's', 'o', 'r', 'i', 'C', 'F', 'R', ' '
+   --             (type/subtype/object/renaming/instantiation/CASE/FOR/RETURN)
    --      From = starting source location
    --      To   = ending source location
-   --      Last = unused
+   --      Last = False for all but the last entry, True for last entry
 
-   --    Exit
-   --      C1   = 'T'
-   --      C2   = ' '
-   --      From = starting source location
-   --      To   = ending source location
-   --      Last = unused
+   --    Note: successive statements (possibly interspersed with entries of
+   --    other kinds, that are ignored for this purpose), starting with one
+   --    labeled with C1 = 'S', up to and including the first one labeled with
+   --    Last=True, indicate the sequence to be output for a sequence of
+   --    statements on a single CS line.
 
-   --    Simple Decision
-   --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
-   --      C2   = 'c', 't', or 'f'
-   --      From = starting source location
-   --      To   = ending source location
-   --      Last = True
-
-   --    Complex Decision
+   --    Decision
    --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
    --      C2   = ' '
-   --      From = No_Source_Location
+   --      From = location of IF/EXIT/WHILE token, No_Source_Location for X
    --      To   = No_Source_Location
-   --      Last = False
+   --      Last = unused
 
    --    Operator
    --      C1   = '!', '^', '&', '|'
    --      C2   = ' '
-   --      From = No_Source_Location
+   --      From = location of NOT/XOR/AND/OR token
    --      To   = No_Source_Location
    --      Last = False
 
-   --    Element
+   --    Element (condition)
    --      C1   = ' '
    --      C2   = 'c', 't', or 'f' (condition/true/false)
    --      From = starting source location
