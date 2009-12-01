@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graph.h"
 #include "cfgloop.h"
 #include "except.h"
+#include "plugin.h"
 
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
@@ -405,7 +406,14 @@ tree_rest_of_compilation (tree fndecl)
   execute_all_ipa_transforms ();
 
   /* Perform all tree transforms and optimizations.  */
+
+  /* Signal the start of passes.  */
+  invoke_plugin_callbacks (PLUGIN_ALL_PASSES_START, NULL);
+
   execute_pass_list (all_passes);
+
+  /* Signal the end of passes.  */
+  invoke_plugin_callbacks (PLUGIN_ALL_PASSES_END, NULL);
 
   bitmap_obstack_release (&reg_obstack);
 

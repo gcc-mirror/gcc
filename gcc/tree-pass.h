@@ -566,12 +566,16 @@ extern struct opt_pass *all_passes, *all_small_ipa_passes, *all_lowering_passes,
 extern struct opt_pass *current_pass;
 
 extern struct opt_pass * get_pass_for_id (int);
+extern bool execute_one_pass (struct opt_pass *);
 extern void execute_pass_list (struct opt_pass *);
 extern void execute_ipa_pass_list (struct opt_pass *);
 extern void execute_ipa_summary_passes (struct ipa_opt_pass_d *);
 extern void execute_all_ipa_transforms (void);
 extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple *);
+extern bool pass_init_dump_file (struct opt_pass *);
+extern void pass_fini_dump_file (struct opt_pass *);
 
+extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void ipa_write_summaries (void);
@@ -590,5 +594,8 @@ extern void register_pass (struct register_pass_info *);
    throughout the compilation -- we will be able to mark the affected loops
    directly in jump threading, and avoid peeling them next time.  */
 extern bool first_pass_instance;
+
+/* Declare for plugins.  */
+extern void do_per_function_toporder (void (*) (void *), void *);
 
 #endif /* GCC_TREE_PASS_H */

@@ -1,3 +1,58 @@
+2009-12-01  Grigori Fursin  <grigori.fursin@inria.fr>
+	    Joern Rennecke  <amylaar@spamcop.net>
+
+	* cgraphunit.c (plugin.h): Include.
+	(ipa_passes): Invoke PLUGIN_ALL_IPA_PASSES_START /
+	PLUGIN_ALL_IPA_PASSES_END at start / end of processing.
+	* gcc-plugin.h (highlev-plugin-common.h, hashtab.h): Include.
+	(enum plugin_event): Define by including plugin.def.
+	Last enumerator is now called PLUGIN_EVENT_FIRST_DYNAMIC.
+	(plugin_event_name): Change type to const char **.
+	(get_event_last, get_named_event_id, unregister_callback): Declare.
+	(register_callback): Change type of event argument to int.
+	(highlev-plugin-common.h): New file.
+	* Makefile.in (GCC_PLUGIN_H): Add highlev-plugin-common.h and
+	$(HASHTAB_H)
+	(tree-optimize.o passes.o): Depend on $(PLUGIN_H).
+	(PLUGIN_HEADERS): Add opts.h, $(PARAMS_H) and plugin.def.
+	(s-header-vars): New rule.
+	(install-plugin): Depend on s-header-vars.  Install b-header-vars.
+	* params.c (get_num_compiler_params): New function.
+	* params.h (get_num_compiler_params): Declare.
+	* passes.c (plugin.h): Include.
+	(make_pass_instance): Invoke PLUGIN_NEW_PASS.
+	(do_per_function_toporder, pass_init_dump_file): No longer static.
+	(pass_fini_dump_file): Likewise.
+	(execute_one_pass): Likewise.  Invoke PLUGIN_OVERRIDE_GATE and
+	PLUGIN_PASS_EXECUTION.
+	(execute_ipa_pass_list): Invoke PLUGIN_EARLY_GIMPLE_PASSES_START and
+	PLUGIN_EARLY_GIMPLE_PASSES_END.
+	* plugin.c (plugin_event_name_init): New array, defined by
+	including plugin.def.
+	(FMT_FOR_PLUGIN_EVENT): Update.
+	(plugin_event_name): Change type to const char ** and initialize
+	to plugin_event_name_init.
+	(event_tab, event_last, event_horizon): New variable.
+	(get_event_last): New function.
+	(plugin_callbacks_init): New array.
+	(plugin_callbacks: Change type to struct callback_info **.
+	Initialize to plugin_callbacks_init.
+	(htab_event_eq, get_named_event_id, unregister_callback): New function.
+	(invoke_plugin_va_callbacks): Likewise.
+	(register_callback): Change type of event argument to int.
+	Handle new events.  Allow dynamic events.
+	(invoke_plugin_callbacks): Likewise.  Return success status.
+	(plugins_active_p): Allow dynamic callbacks.
+	* plugin.def: New file.
+	* plugin.h (invoke_plugin_callbacks): Update prototype.
+	(invoke_plugin_va_callbacks): Declare.
+	* tree-optimize.c (plugin.h): Include.
+	(tree_rest_of_compilation): Invoke PLUGIN_ALL_PASSES_START and
+	PLUGIN_ALL_PASSES_END.
+	* tree-pass.h (execute_one_pass, pass_init_dump_file): Declare.
+	(pass_fini_dump_file, do_per_function_toporder): Likewise.
+	* doc/plugin.texi: Document new event types.
+
 2009-12-01  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42237

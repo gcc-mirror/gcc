@@ -65,6 +65,9 @@ typedef struct param_info
 
 extern param_info *compiler_params;
 
+/* Returns the number of entries in the table, for the use by plugins.  */
+extern size_t get_num_compiler_params (void);
+
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
 extern void add_params (const param_info params[], size_t n);

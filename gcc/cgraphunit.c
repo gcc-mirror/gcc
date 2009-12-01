@@ -135,6 +135,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "output.h"
 #include "coverage.h"
+#include "plugin.h"
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
@@ -1712,6 +1713,8 @@ ipa_passes (void)
   gimple_register_cfg_hooks ();
   bitmap_obstack_initialize (NULL);
 
+  invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_START, NULL);
+
   if (!in_lto_p)
     execute_ipa_pass_list (all_small_ipa_passes);
 
@@ -1730,7 +1733,8 @@ ipa_passes (void)
       current_function_decl = NULL;
       cgraph_process_new_functions ();
 
-      execute_ipa_summary_passes ((struct ipa_opt_pass_d *) all_regular_ipa_passes);
+      execute_ipa_summary_passes
+	((struct ipa_opt_pass_d *) all_regular_ipa_passes);
     }
   execute_ipa_summary_passes ((struct ipa_opt_pass_d *) all_lto_gen_passes);
 
@@ -1739,6 +1743,7 @@ ipa_passes (void)
 
   if (!flag_ltrans)
     execute_ipa_pass_list (all_regular_ipa_passes);
+  invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
   bitmap_obstack_release (NULL);
 }

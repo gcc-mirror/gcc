@@ -156,18 +156,42 @@ enum plugin_event
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
   PLUGIN_START_UNIT,            /* Called before processing a translation unit.  */
   PLUGIN_PRAGMAS,	        /* Called during pragma registration. */
-  PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
+  /* Called before first pass from all_passes.  */
+  PLUGIN_ALL_PASSES_START,
+  /* Called after last pass from all_passes.  */
+  PLUGIN_ALL_PASSES_END,
+  /* Called before first ipa pass.  */
+  PLUGIN_ALL_IPA_PASSES_START,
+  /* Called after last ipa pass.  */
+  PLUGIN_ALL_IPA_PASSES_END,
+  /* Allows to override pass gate decision for current_pass.  */
+  PLUGIN_OVERRIDE_GATE,
+  /* Called before executing a pass.  */
+  PLUGIN_PASS_EXECUTION,
+  /* Called before executing subpasses of a GIMPLE_PASS in
+     execute_ipa_pass_list.  */
+  PLUGIN_EARLY_GIMPLE_PASSES_START,
+  /* Called after executing subpasses of a GIMPLE_PASS in
+     execute_ipa_pass_list.  */
+  PLUGIN_EARLY_GIMPLE_PASSES_END,
+  /* Called when a pass is first instantiated.  */
+  PLUGIN_NEW_PASS,
+
+  PLUGIN_EVENT_FIRST_DYNAMIC    /* Dummy event used for indexing callback
                                    array.  */
 @};
 @end smallexample
 
+In addition, plugins can also look up the enumerator of a named event,
+and / or generate new events dynamically, by calling the function
+@code{get_named_event_id}.
 
 To register a callback, the plugin calls @code{register_callback} with
 the arguments:
 
 @itemize
 @item @code{char *name}: Plugin name.
-@item @code{enum plugin_event event}: The event code.
+@item @code{int event}: The event code.
 @item @code{plugin_callback_func callback}: The function that handles @code{event}.
 @item @code{void *user_data}: Pointer to plugin-specific data.
 @end itemize
@@ -335,6 +359,41 @@ register_my_pragma (void *event_data, void *data)
 
 It is suggested to pass @code{"GCCPLUGIN"} (or a short name identifying
 your plugin) as the ``space'' argument of your pragma. 
+
+
+@section Recording information about pass execution
+
+The event PLUGIN_PASS_EXECUTION passes the pointer to the executed pass
+(the same as current_pass) as @code{gcc_data} to the callback.  You can also
+inspect cfun to find out about which function this pass is executed for.
+Note that this event will only be invoked if the gate check (if
+applicable, modified by PLUGIN_OVERRIDE_GATE) succeeds.
+You can use other hooks, like @code{PLUGIN_ALL_PASSES_START},
+@code{PLUGIN_ALL_PASSES_END}, @code{PLUGIN_ALL_IPA_PASSES_START},
+@code{PLUGIN_ALL_IPA_PASSES_END}, @code{PLUGIN_EARLY_GIMPLE_PASSES_START},
+and/or @code{PLUGIN_EARLY_GIMPLE_PASSES_END} to manipulate global state
+in your plugin(s) in order to get context for the pass execution.
+
+
+@section Controlling which passes are being run
+
+After the original gate function for a pass is called, its result
+- the gate status - is stored as an integer.
+Then the event @code{PLUGIN_OVERRIDE_GATE} is invoked, with a pointer
+to the gate status in the @code{gcc_data} parameter to the callback function.
+A nonzero value of the gate status means that the pass is to be executed.
+You can both read and write the gate status via the passed pointer.
+
+
+@section Keeping track of available passes
+
+When your plugin is loaded, you can inspect the various
+pass lists to determine what passes are available.  However, other
+plugins might add new passes.  Also, future changes to GCC might cause
+generic passes to be added after plugin loading.
+When a pass is first added to one of the pass lists, the event
+@code{PLUGIN_NEW_PASS} is invoked, with the callback parameter
+@code{gcc_data} pointing to the new pass.
 
 
 @section Building GCC plugins
