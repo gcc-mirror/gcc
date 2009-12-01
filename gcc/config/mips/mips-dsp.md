@@ -1066,7 +1066,7 @@
 
 (define_insn "mips_lhx_<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(zero_extend:SI
+	(sign_extend:SI
 	  (mem:HI (plus:P (match_operand:P 1 "register_operand" "d")
 			  (match_operand:P 2 "register_operand" "d")))))]
   "ISA_HAS_DSP"
