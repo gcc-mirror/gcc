@@ -754,6 +754,7 @@ ipa_note_param_call (struct ipa_node_params *info, int formal_id,
   note->lto_stmt_uid = gimple_uid (stmt);
   note->count = bb->count;
   note->frequency = compute_call_stmt_bb_frequency (current_function_decl, bb);
+  note->loop_nest = bb->loop_depth;
 
   note->next = info->param_calls;
   info->param_calls = note;

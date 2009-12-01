@@ -1,3 +1,10 @@
+2009-12-01  Martin Jambor  <mjambor@suse.cz>
+
+        * cgraph.h (struct cgraph_edge): Reorder fields.  Make loop_nest
+	unsigned short int.
+	* ipa-prop.h (struct ipa_param_call_note): Likewise.
+	* ipa-prop.c (ipa_note_param_call): Initialize note->loop_nest.
+
 2009-12-01  Richard Guenther  <rguenther@suse.de>
 
 	* final.c (rest_of_clean_state): If -fcompare-debug is

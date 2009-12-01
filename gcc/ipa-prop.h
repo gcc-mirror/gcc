@@ -139,6 +139,8 @@ struct ipcp_lattice
    are linked in a list.  */
 struct ipa_param_call_note
 {
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
   /* Linked list's next */
   struct ipa_param_call_note *next;
   /* Statement that contains the call to the parameter above.  */
@@ -147,13 +149,11 @@ struct ipa_param_call_note
   unsigned int lto_stmt_uid;
   /* Index of the parameter that is called.  */
   int formal_id;
-  /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
   /* Expected frequency of executions within the function. see cgraph_edge in
      cgraph.h for more on this. */
   int frequency;
   /* Depth of loop nest, 1 means no loop nest.  */
-  int loop_nest;
+  unsigned short int loop_nest;
   /* Set when we have already found the target to be a compile time constant
      and turned this into an edge or when the note was found unusable for some
      reason.  */
