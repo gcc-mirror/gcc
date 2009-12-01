@@ -1,3 +1,12 @@
+2009-12-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWI124): Rename from CRC32MODE.
+	(crc32modesuffix): Remove.
+	(crc32modeconstraint): Ditto.
+	(sse4_2_crc32<mode>): Update for renamed mode iterator.  Use
+	imodesuffix instead of crc32modesuffix and <r>m instead of
+	crc32modeconstraint.
+
 2009-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42234
@@ -72,7 +81,7 @@
 
 2009-12-01  Martin Jambor  <mjambor@suse.cz>
 
-        * cgraph.h (struct cgraph_edge): Reorder fields.  Make loop_nest
+	* cgraph.h (struct cgraph_edge): Reorder fields.  Make loop_nest
 	unsigned short int.
 	* ipa-prop.h (struct ipa_param_call_note): Likewise.
 	* ipa-prop.c (ipa_note_param_call): Initialize note->loop_nest.
@@ -167,13 +176,13 @@
 	vec_select form to vec_duplicate form.
 	(*sse2_interleave_highv2df, sse2_interleave_lowv2df): Use
 	ix86_vec_interleave_v2df_operator_ok.
-	(avx_movddup256, avx_unpcklpd256): Change to expanders, merge into ... 
+	(avx_movddup256, avx_unpcklpd256): Change to expanders, merge into ...
 	(*avx_unpcklpd256): ... here.
 	(*vec_dupv4si_avx): New.
 	(*vec_dupv2di_avx): Add movddup alternative.
 	(*vec_dupv2di_sse3): New.
 	(vec_dup<AVX256MODE24P>): Replace avx_vbroadcasts<AVXMODEF4P> and
-	avx_vbroadcastss256; represent with vec_duplicate instead of 
+	avx_vbroadcastss256; represent with vec_duplicate instead of
 	nested vec_concat operations.
 	(avx_vbroadcastf128_<mode>): Rename from
 	avx_vbroadcastf128_p<avxmodesuffixf2c>256.
@@ -345,7 +354,8 @@
 	(cgraph_expand_function): Handle thunks.
 	(thunk_adjust): New.
 	(init_lowered_empty_function): New.
-	* cp-objcp-common.h (LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS): Remove.
+	* cp-objcp-common.h (LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS):
+	Remove.
 	* lto-cgraph.c (lto_output_node): Stream thunk info.
 	(input_node): Likewise.
 	* langhooks.h (lang_hooks_for_callgraph): Remove emit_associated_thunks.
@@ -459,7 +469,7 @@
 
 2009-11-28  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
-	* config/avr/avr.h (ASM_OUTPUT_EXTERNAL): Add. 
+	* config/avr/avr.h (ASM_OUTPUT_EXTERNAL): Add.
 
 2009-11-28  David Binderman  <dcb314@hotmail.com>
 
@@ -479,9 +489,8 @@
 
 2009-11-27  Nick Clifton  <nickc@redhat.com>
 
-	* longlong.h (count_leading_zeros): Define macro for stormy16
-	target.
-	(COUNT_LEADING_ZEROS_0): Likewise.	
+	* longlong.h (count_leading_zeros): Define macro for stormy16 target.
+	(COUNT_LEADING_ZEROS_0): Likewise.
 	* config/stormy16/stormy16-lib2.c: Arrange for separate
 	compilation of each function.
 	(__ffshi2): New function.
@@ -533,8 +542,7 @@
 	[SUPPORTS_WEAK && GTHREAD_USE_WEAK] (__gthread_active_p): Use
 	__extension__ to allow cast from function pointer to object
 	pointer in C++.
-	* doc/install.texi (--enable-threads): Clarify use of Solaris
-	threads.
+	* doc/install.texi (--enable-threads): Clarify use of Solaris threads.
 
 2009-11-27  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -573,8 +581,7 @@
 
 2009-11-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* emit-rtl.c (next_active_insn, prev_active_insn): Correct
-	comment.
+	* emit-rtl.c (next_active_insn, prev_active_insn): Correct comment.
 
 2009-11-27  Jakub Jelinek  <jakub@redhat.com>
 
@@ -781,7 +788,7 @@
 	(struct builtin_description) <CODE_FOR_avx_vzeroupper_rex64>:
 	Remove initailization.
 	<CODE_FOR_avx_vzeroupper>: Unconditionally initialize here.
-	
+
 2009-11-25  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (consttable_4): Handle (high ...).
