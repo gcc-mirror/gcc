@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -511,7 +511,7 @@ cleanup_omp_return (basic_block bb)
   control_bb = single_pred (bb);
   stmt = last_stmt (control_bb);
 
-  if (gimple_code (stmt) != GIMPLE_OMP_SECTIONS_SWITCH)
+  if (stmt == NULL || gimple_code (stmt) != GIMPLE_OMP_SECTIONS_SWITCH)
     return false;
 
   /* The block with the control statement normally has two entry edges -- one

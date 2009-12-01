@@ -1,3 +1,9 @@
+2009-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42234
+	* tree-cfgcleanup.c (cleanup_omp_return): Don't ICE if control_bb
+	contains no statements.
+
 2009-12-01  Grigori Fursin  <grigori.fursin@inria.fr>
 	    Joern Rennecke  <amylaar@spamcop.net>
 
