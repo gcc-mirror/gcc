@@ -895,10 +895,11 @@ package GNAT.Sockets is
       Flags  : Request_Flag_Type := No_Request_Flag);
    --  Receive message from Socket. Last is the index value such that Item
    --  (Last) is the last character assigned. Note that Last is set to
-   --  Item'First - 1 (or to Stream_Element_Array'Last if Item'First is
-   --  Stream_Element_Offset'First) when the socket has been closed by peer.
-   --  This is not an error and no exception is raised. Flags allows to
-   --  control the reception. Raise Socket_Error on error.
+   --  Item'First - 1 when the socket has been closed by peer. This is not
+   --  an error, and no exception is raised in this case unless Item'First
+   --  is Stream_Element_Offset'First, in which case Constraint_Error is
+   --  raised. Flags allows to control the reception. Raise Socket_Error on
+   --  error.
 
    procedure Receive_Socket
      (Socket : Socket_Type;
@@ -937,12 +938,13 @@ package GNAT.Sockets is
    --  Transmit a message over a socket. For a datagram socket, the address
    --  is given by To.all. For a stream socket, To must be null. Last
    --  is the index value such that Item (Last) is the last character
-   --  sent. Note that Last is set to Item'First - 1 (if Item'First is
-   --  Stream_Element_Offset'First, to Stream_Element_Array'Last) when the
-   --  socket has been closed by peer. This is not an error and no exception
-   --  is raised. Flags allows control of the transmission. Raises exception
-   --  Socket_Error on error. Note: this subprogram is inlined because it is
-   --  also used to implement the two variants below.
+   --  sent. Note that Last is set to Item'First - 1 if the socket has been
+   --  closed by the peer (unless Item'First is Stream_Element_Offset'First,
+   --  in which case Constraint_Error is raised instead). This is not an error,
+   --  and Socket_Error is not raised in that case. Flags allows control of the
+   --  transmission. Raises exception Socket_Error on error. Note: this
+   --  subprogram is inlined because it is also used to implement the two
+   --  variants below.
 
    procedure Send_Socket
      (Socket : Socket_Type;

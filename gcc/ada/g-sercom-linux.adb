@@ -172,7 +172,7 @@ package body GNAT.Serial_Communications is
          Raise_Error ("read failed");
       end if;
 
-      Last := Last_Index (Buffer'First, C.int (Res));
+      Last := Last_Index (Buffer'First, size_t (Res));
    end Read;
 
    ---------

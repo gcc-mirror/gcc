@@ -32,20 +32,17 @@
 --  Common support unit for GNAT.Sockets and GNAT.Serial_Communication
 
 with Ada.Streams;
-with Interfaces.C;
+with System.CRTL;
 
 package System.Communication is
 
-   package C renames Interfaces.C;
-
-   use type C.int;
-
    function Last_Index
      (First : Ada.Streams.Stream_Element_Offset;
-      Count : C.int) return Ada.Streams.Stream_Element_Offset;
+      Count : CRTL.size_t) return Ada.Streams.Stream_Element_Offset;
    --  Compute the Last OUT parameter for the various Read / Receive
-   --  subprograms: returns First + Count - 1, except for the case
-   --  where First = Stream_Element_Offset'First and Res = 0, in which
-   --  case Stream_Element_Offset'Last is returned instead.
+   --  subprograms: returns First + Count - 1.
+   --  When First = Stream_Element_Offset'First and Res = 0, Constraint_Error
+   --  is raised. This is consistent with the semantics of stream operations
+   --  as clarified in AI95-227.
 
 end System.Communication;

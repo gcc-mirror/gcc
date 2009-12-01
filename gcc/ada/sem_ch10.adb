@@ -4000,13 +4000,44 @@ package body Sem_Ch10 is
 
          --  If the item is a private with-clause on a child unit, the parent
          --  may have been installed already, but the child unit must remain
-         --  invisible until installed in a private part or body.
+         --  invisible until installed in a private part or body, unless there
+         --  is already a regular with_clause for it in the current unit.
 
          elsif Private_Present (Item) then
             Id := Entity (Name (Item));
 
             if Is_Child_Unit (Id) then
-               Set_Is_Visible_Child_Unit (Id, False);
+               declare
+                  Clause : Node_Id;
+
+                  function In_Context return Boolean;
+                  --  Scan context of current unit, to check whether there is
+                  --  a with_clause on the same unit as a private with-clause
+                  --  on a parent, in which case child unit is visible.
+
+                  function In_Context return Boolean is
+                  begin
+                     Clause :=
+                       First (Context_Items (Cunit (Current_Sem_Unit)));
+                     while Present (Clause) loop
+                        if Nkind (Clause) = N_With_Clause
+                          and then Comes_From_Source (Clause)
+                          and then Is_Entity_Name (Name (Clause))
+                          and then Entity (Name (Clause)) = Id
+                          and then not Private_Present (Clause)
+                        then
+                           return True;
+                        end if;
+
+                        Next (Clause);
+                     end loop;
+
+                     return False;
+                  end In_Context;
+
+               begin
+                  Set_Is_Visible_Child_Unit (Id, In_Context);
+               end;
             end if;
          end if;
 

@@ -1,3 +1,38 @@
+2009-12-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads: Clarify use of Is_Private_Primitive.
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): An operation is a
+	private primitive operation only if it is declared in the scope of the
+	private controlling type.
+	* exp_ch9.adb (Build_Wrapper_Spec): Build wrappers for private
+	protected operations as well.
+
+2009-12-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Disable front-end
+	optimizations in CodePeer mode, to keep the tree as close to the source
+	code as possible, and also to avoid inconsistencies between trees when
+	using different optimization switches.
+
+2009-12-01  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Updated specification of source coverage obligation
+	information.
+
+2009-12-01  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.ads, g-sercom-mingw.adb, g-sercom-linux.adb,
+	a-ststio.adb, s-commun.adb, s-commun.ads, g-socket.adb,
+	g-socket.ads (System.Communications.Last_Index): For the case where no
+	element has been transferred and Item'First =
+	Stream_Element_Offset'First, raise CONSTRAINT_ERROR.
+
+2009-12-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Install_Siblings): A private with_clause on some child
+	unit U in an ancestor of the current unit must be ignored if the
+	current unit has a regular with_clause on U.
+
 2009-11-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* s-oscons-tmplt.c [__mips && __sgi]: Only define _XOPEN5, IOV_MAX

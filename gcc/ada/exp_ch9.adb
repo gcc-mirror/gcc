@@ -2180,6 +2180,58 @@ package body Exp_Ch9 is
    is
       Def     : Node_Id;
       Rec_Typ : Entity_Id;
+      procedure Scan_Declarations (L : List_Id);
+      --  Common processing for visible and private declarations
+      --  of a protected type.
+
+      procedure Scan_Declarations (L : List_Id) is
+         Decl      : Node_Id;
+         Wrap_Decl : Node_Id;
+         Wrap_Spec : Node_Id;
+
+      begin
+         if No (L) then
+            return;
+         end if;
+
+         Decl := First (L);
+         while Present (Decl) loop
+            Wrap_Spec := Empty;
+
+            if Nkind (Decl) = N_Entry_Declaration
+              and then Ekind (Defining_Identifier (Decl)) = E_Entry
+            then
+               Wrap_Spec :=
+                 Build_Wrapper_Spec
+                   (Subp_Id => Defining_Identifier (Decl),
+                    Obj_Typ => Rec_Typ,
+                    Formals => Parameter_Specifications (Decl));
+
+            elsif Nkind (Decl) = N_Subprogram_Declaration then
+               Wrap_Spec :=
+                 Build_Wrapper_Spec
+                   (Subp_Id => Defining_Unit_Name (Specification (Decl)),
+                    Obj_Typ => Rec_Typ,
+                    Formals =>
+                      Parameter_Specifications (Specification (Decl)));
+            end if;
+
+            if Present (Wrap_Spec) then
+               Wrap_Decl :=
+                 Make_Subprogram_Declaration (Loc,
+                   Specification => Wrap_Spec);
+
+               Insert_After (N, Wrap_Decl);
+               N := Wrap_Decl;
+
+               Analyze (Wrap_Decl);
+            end if;
+
+            Next (Decl);
+         end loop;
+      end Scan_Declarations;
+
+      --  start of processing for Build_Wrapper_Specs
 
    begin
       if Is_Protected_Type (Typ) then
@@ -2191,54 +2243,14 @@ package body Exp_Ch9 is
       Rec_Typ := Corresponding_Record_Type (Typ);
 
       --  Generate wrapper specs for a concurrent type which implements an
-      --  interface and has visible entries and/or protected procedures.
+      --  interface. Operations in both the visible and private parts may
+      --  implement progenitor operations.
 
       if Present (Interfaces (Rec_Typ))
         and then Present (Def)
-        and then Present (Visible_Declarations (Def))
       then
-         declare
-            Decl      : Node_Id;
-            Wrap_Decl : Node_Id;
-            Wrap_Spec : Node_Id;
-
-         begin
-            Decl := First (Visible_Declarations (Def));
-            while Present (Decl) loop
-               Wrap_Spec := Empty;
-
-               if Nkind (Decl) = N_Entry_Declaration
-                 and then Ekind (Defining_Identifier (Decl)) = E_Entry
-               then
-                  Wrap_Spec :=
-                    Build_Wrapper_Spec
-                      (Subp_Id => Defining_Identifier (Decl),
-                       Obj_Typ => Rec_Typ,
-                       Formals => Parameter_Specifications (Decl));
-
-               elsif Nkind (Decl) = N_Subprogram_Declaration then
-                  Wrap_Spec :=
-                    Build_Wrapper_Spec
-                      (Subp_Id => Defining_Unit_Name (Specification (Decl)),
-                       Obj_Typ => Rec_Typ,
-                       Formals =>
-                         Parameter_Specifications (Specification (Decl)));
-               end if;
-
-               if Present (Wrap_Spec) then
-                  Wrap_Decl :=
-                    Make_Subprogram_Declaration (Loc,
-                      Specification => Wrap_Spec);
-
-                  Insert_After (N, Wrap_Decl);
-                  N := Wrap_Decl;
-
-                  Analyze (Wrap_Decl);
-               end if;
-
-               Next (Decl);
-            end loop;
-         end;
+         Scan_Declarations (Visible_Declarations (Def));
+         Scan_Declarations (Private_Declarations (Def));
       end if;
    end Build_Wrapper_Specs;
 

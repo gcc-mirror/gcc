@@ -48,6 +48,7 @@ pragma Warnings (Off, GNAT.Sockets.Linker_Options);
 
 with System;               use System;
 with System.Communication; use System.Communication;
+with System.CRTL;          use System.CRTL;
 
 package body GNAT.Sockets is
 
@@ -1636,7 +1637,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Last := Last_Index (First => Item'First, Count => Res);
+      Last := Last_Index (First => Item'First, Count => size_t (Res));
    end Receive_Socket;
 
    --------------------
@@ -1668,7 +1669,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Last := Last_Index (First => Item'First, Count => Res);
+      Last := Last_Index (First => Item'First, Count => size_t (Res));
 
       To_Inet_Addr (Sin.Sin_Addr, From.Addr);
       From.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
@@ -1917,7 +1918,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Last := Last_Index (First => Item'First, Count => Res);
+      Last := Last_Index (First => Item'First, Count => size_t (Res));
    end Send_Socket;
 
    -----------------

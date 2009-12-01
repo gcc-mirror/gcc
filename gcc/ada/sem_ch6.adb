@@ -2654,10 +2654,13 @@ package body Sem_Ch6 is
       --  If the type of the first formal of the current subprogram is a
       --  nongeneric tagged private type, mark the subprogram as being a
       --  private primitive. Ditto if this is a function with controlling
-      --  result, and the return type is currently private.
+      --  result, and the return type is currently private. In both cases,
+      --  the type of the controlling argument or result must be in the
+      --  current scope for the operation to be primitive.
 
       if Has_Controlling_Result (Designator)
         and then Is_Private_Type (Etype (Designator))
+        and then Scope (Etype (Designator)) = Current_Scope
         and then not Is_Generic_Actual_Type (Etype (Designator))
       then
          Set_Is_Private_Primitive (Designator);
@@ -2669,6 +2672,7 @@ package body Sem_Ch6 is
          begin
             Set_Is_Private_Primitive (Designator,
               Is_Tagged_Type (Formal_Typ)
+                and then Scope (Formal_Typ) = Current_Scope
                 and then Is_Private_Type (Formal_Typ)
                 and then not Is_Generic_Actual_Type (Formal_Typ));
          end;

@@ -39,12 +39,14 @@ package body System.Communication is
 
    function Last_Index
      (First : Ada.Streams.Stream_Element_Offset;
-      Count : C.int) return Ada.Streams.Stream_Element_Offset
+      Count : CRTL.size_t) return Ada.Streams.Stream_Element_Offset
    is
       use type Ada.Streams.Stream_Element_Offset;
+      use type System.CRTL.size_t;
    begin
       if First = SEO'First and then Count = 0 then
-         return SEO'Last;
+         raise Constraint_Error with
+           "last index out of range (no element transferred)";
       else
          return First + SEO (Count - 1);
       end if;

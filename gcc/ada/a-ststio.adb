@@ -29,9 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces.C_Streams; use Interfaces.C_Streams;
+with Interfaces.C_Streams;  use Interfaces.C_Streams;
 
 with System;               use System;
+with System.Communication; use System.Communication;
 with System.File_IO;
 with System.Soft_Links;
 with System.CRTL;
@@ -293,8 +294,8 @@ package body Ada.Streams.Stream_IO is
       end if;
 
       File.Index := File.Index + Count (Nread);
-      Last := Item'First + Stream_Element_Offset (Nread) - 1;
       File.Last_Op := Op_Read;
+      Last := Last_Index (Item'First, Nread);
    end Read;
 
    --  This version of Read is the primitive operation on the underlying
