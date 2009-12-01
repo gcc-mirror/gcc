@@ -156,15 +156,17 @@ package body System.OS_Primitives is
       --  Therefore, the elapsed time reported by GetSystemTime between both
       --  actions should be null.
 
-      Max_Elapsed    : constant := 0;
       epoch_1970     : constant := 16#19D_B1DE_D53E_8000#; -- win32 UTC epoch
       system_time_ns : constant := 100;                    -- 100 ns per tick
       Sec_Unit       : constant := 10#1#E9;
-      Test_Now       : aliased Long_Long_Integer;
-      Loc_Ticks      : aliased LARGE_INTEGER;
-      Loc_Time       : aliased Long_Long_Integer;
-      Elapsed        : Long_Long_Integer;
-      Current_Max    : Long_Long_Integer := Long_Long_Integer'Last;
+      Max_Elapsed    : constant LARGE_INTEGER :=
+                         LARGE_INTEGER (Tick_Frequency / 100_000);
+      --  Look for a precision of 0.01 ms
+
+      Loc_Ticks, Ctrl_Ticks : aliased LARGE_INTEGER;
+      Loc_Time, Ctrl_Time   : aliased Long_Long_Integer;
+      Elapsed               : LARGE_INTEGER;
+      Current_Max           : LARGE_INTEGER := LARGE_INTEGER'Last;
 
    begin
       --  Here we must be sure that both of these calls are done in a short
@@ -182,8 +184,6 @@ package body System.OS_Primitives is
       --  during the runs.
 
       for K in 1 .. 10 loop
-         GetSystemTimeAsFileTime (Loc_Time'Access);
-
          if QueryPerformanceCounter (Loc_Ticks'Access) = Win32.FALSE then
             pragma Assert
               (Standard.False,
@@ -191,17 +191,36 @@ package body System.OS_Primitives is
             null;
          end if;
 
-         GetSystemTimeAsFileTime (Test_Now'Access);
+         GetSystemTimeAsFileTime (Ctrl_Time'Access);
 
-         Elapsed := Test_Now - Loc_Time;
+         --  Scan for clock tick, will take upto 16ms/1ms depending on PC.
+         --  This cannot be an infinite loop or the system hardware is badly
+         --  dammaged.
+
+         loop
+            GetSystemTimeAsFileTime (Loc_Time'Access);
+            if QueryPerformanceCounter (Ctrl_Ticks'Access) = Win32.FALSE then
+               pragma Assert
+                 (Standard.False,
+                  "Could not query high performance counter in Clock");
+               null;
+            end if;
+            exit when Loc_Time /= Ctrl_Time;
+            Loc_Ticks := Ctrl_Ticks;
+         end loop;
+
+         --  Check elapsed Performance Counter between samples
+         --  to choose the best one.
+
+         Elapsed := Ctrl_Ticks - Loc_Ticks;
 
          if Elapsed < Current_Max then
             Base_Time   := Loc_Time;
             Base_Ticks  := Loc_Ticks;
             Current_Max := Elapsed;
+            --  Exit the loop when we have reached the expected precision
+            exit when Elapsed <= Max_Elapsed;
          end if;
-
-         exit when Elapsed = Max_Elapsed;
       end loop;
 
       Base_Clock := Duration
