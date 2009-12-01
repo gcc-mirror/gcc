@@ -1,5 +1,10 @@
 2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Add host-dependent
+	settings for LC_ALL and LANG.
+
+2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	* libstdc++-v3/acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Don't disable
 	on PE targets.
 	* libstdc++-v3/configure: Regenerate.
