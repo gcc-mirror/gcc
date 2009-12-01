@@ -29,14 +29,26 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef IN_GCC
+
+#if defined(IN_RTS)
+#include "tconfig.h"
+#include "tsystem.h"
+#elif defined(IN_GCC)
 #include "config.h"
 #include "system.h"
-#else
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+
+#include "adaint.h"
+
+#ifndef ISDIGIT
 #define ISDIGIT(c) isdigit(c)
+#endif
+
+#ifndef PARMS
 #define PARMS(ARGS) ARGS
 #endif
 
@@ -234,6 +246,21 @@ __gnat_decode (const char *coded_name, char *ada_name, int verbose)
       {
 	ada_name[len - 1 - n_digits - 1] = '\0';
 	overloaded = 1;
+      }
+  }
+
+  /* Check for nested subprogram ending in .nnnn and strip suffix. */
+  {
+    int last = strlen (ada_name) - 1;
+
+    while (ISDIGIT (ada_name[last]) && last > 0)
+      {
+        last--;
+      }
+
+    if (ada_name[last] == '.')
+      {
+        ada_name[last] = (char) 0;
       }
   }
 
