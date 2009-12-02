@@ -1,5 +1,10 @@
 2009-12-02  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer-out.c (pack_ts_decl_common_value_fields):
+	Do not pretend we have value exprs.
+
+2009-12-02  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/41491
 	* fold-const.c (try_move_mult_to_index): Do not leak
 	domain types into the IL.
