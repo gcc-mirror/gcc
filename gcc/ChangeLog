@@ -1,3 +1,9 @@
+2009-12-02  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/42215
+	* tree-loop-distribution.c (build_size_arg_loc): Tidy.
+	(generate_memset_zero): Convert to sizetype properly.  Tidy.
+
 2009-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-out.c (pack_ts_decl_common_value_fields):
