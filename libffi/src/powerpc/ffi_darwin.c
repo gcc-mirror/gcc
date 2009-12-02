@@ -132,11 +132,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	    *(double *)next_arg = double_tmp;
 	  else
 	    *fpr_base++ = double_tmp;
-#ifdef POWERPC64
 	  next_arg++;
-#else
-	  next_arg += 2;
-#endif
 	  fparg_count++;
 	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
 	  break;
@@ -147,7 +143,11 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	    *(double *)next_arg = double_tmp;
 	  else
 	    *fpr_base++ = double_tmp;
+#ifdef POWERPC64
+	  next_arg++;
+#else
 	  next_arg += 2;
+#endif
 	  fparg_count++;
 	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
 	  break;
@@ -157,7 +157,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	case FFI_TYPE_LONGDOUBLE:
 #ifdef POWERPC64
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS)
-	    *((long double *) fpr_base)++ = *(long double *) *p_argv;
+	    *(long double *) fpr_base++ = *(long double *) *p_argv;
 	  else
 	    *(long double *) next_arg = *(long double *) *p_argv;
 	  next_arg += 2;
@@ -238,9 +238,12 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	  break;
 
 	case FFI_TYPE_INT:
-	case FFI_TYPE_UINT32:
 	case FFI_TYPE_SINT32:
-	  gprvalue = *(unsigned *)*p_argv;
+	  gprvalue = *(signed int *) *p_argv;
+	  goto putgpr;
+
+	case FFI_TYPE_UINT32:
+	  gprvalue = *(unsigned int *) *p_argv;
 	putgpr:
 	  *next_arg++ = gprvalue;
 	  break;
@@ -457,11 +460,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     bytes += NUM_GPR_ARG_REGISTERS * sizeof(long);
 
   /* The stack space allocated needs to be a multiple of 16 bytes.  */
-#ifdef POWERPC64
-  bytes = (bytes + 31) & -0x1F;
-#else
   bytes = (bytes + 15) & ~0xF;
-#endif
 
   cif->flags = flags;
   cif->bytes = bytes;
@@ -690,17 +689,12 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
   void **          avalue;
   ffi_type **      arg_types;
   long             i, avn;
-  long             nf;   /* number of floating registers already used.  */
-  long             ng;   /* number of general registers already used.  */
   ffi_cif *        cif;
-  double           temp;
+  ffi_dblfl *end_pfr = pfr + NUM_FPR_ARG_REGISTERS;
   unsigned         size_al;
 
   cif = closure->cif;
   avalue = alloca(cif->nargs * sizeof(void *));
-
-  nf = 0;
-  ng = 0;
 
   /* Copy the caller's structure return value address so that the closure
      returns the data directly to the caller.  */
@@ -708,7 +702,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
     {
       rvalue = (void *) *pgr;
       pgr++;
-      ng++;
     }
 
   i = 0;
@@ -727,7 +720,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 #else
 	  avalue[i] = (char *) pgr + 3;
 #endif
-	  ng++;
 	  pgr++;
 	  break;
 
@@ -738,7 +730,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 #else
 	  avalue[i] = (char *) pgr + 2;
 #endif
-	  ng++;
 	  pgr++;
 	  break;
 
@@ -750,7 +741,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	case FFI_TYPE_POINTER:
 	  avalue[i] = pgr;
 #endif
-	  ng++;
 	  pgr++;
 	  break;
 
@@ -763,7 +753,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	    avalue[i] = (void *) pgr + 8 - size_al;
 	  else
 	    avalue[i] = (void *) pgr;
-	  ng += (size_al + 7) / 8;
 	  pgr += (size_al + 7) / 8;
 #else
 	  /* Structures that match the basic modes (QI 1 byte, HI 2 bytes,
@@ -777,7 +766,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	    avalue[i] = (void*) pgr + 4 - size_al;
 	  else
 	    avalue[i] = (void*) pgr;
-	  ng += (size_al + 3) / 4;
 	  pgr += (size_al + 3) / 4;
 #endif
 	  break;
@@ -787,13 +775,11 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 #ifdef POWERPC64
 	case FFI_TYPE_POINTER:
 	  avalue[i] = pgr;
-	  ng++;
 	  pgr++;
 	  break;
 #else
 	  /* Long long ints are passed in two gpr's.  */
 	  avalue[i] = pgr;
-	  ng += 2;
 	  pgr += 2;
 	  break;
 #endif
@@ -801,10 +787,10 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	case FFI_TYPE_FLOAT:
 	  /* A float value consumes a GPR.
 	     There are 13 64bit floating point registers.  */
-	  if (nf < NUM_FPR_ARG_REGISTERS)
+	  if (pfr < end_pfr)
 	    {
-	      temp = pfr->d;
-	      pfr->f = (float)temp;
+	      double temp = pfr->d;
+	      pfr->f = (float) temp;
 	      avalue[i] = pfr;
 	      pfr++;
 	    }
@@ -812,15 +798,13 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	    {
 	      avalue[i] = pgr;
 	    }
-	  nf++;
-	  ng++;
 	  pgr++;
 	  break;
 
 	case FFI_TYPE_DOUBLE:
 	  /* A double value consumes two GPRs.
 	     There are 13 64bit floating point registers.  */
-	  if (nf < NUM_FPR_ARG_REGISTERS)
+	  if (pfr < end_pfr)
 	    {
 	      avalue[i] = pfr;
 	      pfr++;
@@ -829,12 +813,9 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	    {
 	      avalue[i] = pgr;
 	    }
-	  nf++;
 #ifdef POWERPC64
-	  ng++;
 	  pgr++;
 #else
-	  ng += 2;
 	  pgr += 2;
 #endif
 	  break;
@@ -843,22 +824,25 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 
 	case FFI_TYPE_LONGDOUBLE:
 #ifdef POWERPC64
-	  if (nf < NUM_FPR_ARG_REGISTERS)
+	  if (pfr + 1 < end_pfr)
 	    {
 	      avalue[i] = pfr;
 	      pfr += 2;
 	    }
 	  else
 	    {
+	      if (pfr < end_pfr)
+		{
+		  *pgr = *(unsigned long *) pfr;
+		  pfr++;
+		}
 	      avalue[i] = pgr;
 	    }
-	  nf += 2;
-	  ng += 2;
 	  pgr += 2;
 #else  /* POWERPC64 */
 	  /* A long double value consumes four GPRs and two FPRs.
 	     There are 13 64bit floating point registers.  */
-	  if (nf < NUM_FPR_ARG_REGISTERS - 1)
+	  if (pfr + 1 < end_pfr)
 	    {
 	      avalue[i] = pfr;
 	      pfr += 2;
@@ -866,7 +850,7 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	  /* Here we have the situation where one part of the long double
 	     is stored in fpr13 and the other part is already on the stack.
 	     We use a union to pass the long double to avalue[i].  */
-	  else if (nf == NUM_FPR_ARG_REGISTERS - 1)
+	  else if (pfr + 1 == end_pfr)
 	    {
 	      union ldu temp_ld;
 	      memcpy (&temp_ld.lb[0], pfr, sizeof(ldbits));
@@ -877,8 +861,6 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	    {
 	      avalue[i] = pgr;
 	    }
-	  nf += 2;
-	  ng += 4;
 	  pgr += 4;
 #endif  /* POWERPC64 */
 	  break;
