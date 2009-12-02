@@ -21254,6 +21254,8 @@ enum ix86_builtins
   IX86_BUILTIN_LWPINS32,
   IX86_BUILTIN_LWPINS64,
 
+  IX86_BUILTIN_CLZS,
+
   IX86_BUILTIN_MAX
 };
 
@@ -21534,6 +21536,8 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpinshi3,   "__builtin_ia32_lwpins16", IX86_BUILTIN_LWPINS16,  UNKNOWN,     (int) UCHAR_FTYPE_USHORT_UINT_USHORT },
   { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpinssi3,   "__builtin_ia32_lwpins32", IX86_BUILTIN_LWPINS64,  UNKNOWN,     (int) UCHAR_FTYPE_UINT_UINT_UINT },
   { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_lwpinsdi3,   "__builtin_ia32_lwpins64", IX86_BUILTIN_LWPINS64,  UNKNOWN,     (int) UCHAR_FTYPE_UINT64_UINT_UINT },
+
+  { OPTION_MASK_ISA_ABM, CODE_FOR_clzhi2_abm,   "__builtin_clzs",   IX86_BUILTIN_CLZS,    UNKNOWN,     (int) UINT16_FTYPE_UINT16 },
 
 };
 
@@ -23359,6 +23363,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case FLOAT_FTYPE_FLOAT:
     case INT_FTYPE_INT:
     case UINT64_FTYPE_INT:
+    case UINT16_FTYPE_UINT16:
     case INT64_FTYPE_INT64:
     case INT64_FTYPE_V4SF:
     case INT64_FTYPE_V2DF:
