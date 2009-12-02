@@ -1,3 +1,15 @@
+2009-12-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR middle-end/42224
+	* tree.h (int_or_pointer_precision): Remove.
+	* tree.c (int_or_pointer_precision): Remove.
+	(integer_pow2p): Use TYPE_PRECISION instead.
+	(tree_log2): Likewise.
+	(tree_floor_log2): Likewise.
+	(signed_or_unsigned_type_for): Likewise.
+	* fold-const.c (fit_double_type): Likewise.
+	* varasm.c (initializer_constant_valid_p): Likewise.
+
 2009-12-02  Ira Rosen  <irar@il.ibm.com>
 
 	* doc/invoke.texi (-fdump-tree-slp): Document.

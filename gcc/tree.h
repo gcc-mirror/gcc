@@ -4710,7 +4710,6 @@ extern const char *get_name (tree);
 extern bool stdarg_p (tree);
 extern bool prototype_p (tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
-extern unsigned int int_or_pointer_precision (const_tree);
 extern tree build_low_bits_mask (tree, unsigned);
 extern tree tree_strip_nop_conversions (tree);
 extern tree tree_strip_sign_nop_conversions (tree);
