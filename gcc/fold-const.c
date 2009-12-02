@@ -881,22 +881,18 @@ div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
   HOST_WIDE_INT int1h, int2h;
   unsigned HOST_WIDE_INT quol, reml;
   HOST_WIDE_INT quoh, remh;
-  tree type = TREE_TYPE (arg1);
-  int uns = TYPE_UNSIGNED (type);
+  int uns;
+
+  /* The sign of the division is according to operand two, that
+     does the correct thing for POINTER_PLUS_EXPR where we want
+     a signed division.  */
+  uns = TYPE_UNSIGNED (TREE_TYPE (arg2));
+  if (TREE_CODE (TREE_TYPE (arg2)) == INTEGER_TYPE
+      && TYPE_IS_SIZETYPE (TREE_TYPE (arg2)))
+    uns = false;
 
   int1l = TREE_INT_CST_LOW (arg1);
   int1h = TREE_INT_CST_HIGH (arg1);
-  /* &obj[0] + -128 really should be compiled as &obj[-8] rather than
-     &obj[some_exotic_number].  */
-  if (POINTER_TYPE_P (type))
-    {
-      uns = false;
-      type = signed_type_for (type);
-      fit_double_type (int1l, int1h, &int1l, &int1h,
-		       type);
-    }
-  else
-    fit_double_type (int1l, int1h, &int1l, &int1h, type);
   int2l = TREE_INT_CST_LOW (arg2);
   int2h = TREE_INT_CST_HIGH (arg2);
 
@@ -905,7 +901,7 @@ div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
   if (remh != 0 || reml != 0)
     return NULL_TREE;
 
-  return build_int_cst_wide (type, quol, quoh);
+  return build_int_cst_wide (TREE_TYPE (arg1), quol, quoh);
 }
 
 /* This is nonzero if we should defer warnings about undefined

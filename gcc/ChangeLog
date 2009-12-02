@@ -1,3 +1,8 @@
+2009-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (div_if_zero_remainder): Honor that sizetypes
+	are sign-extending.  Simplify.
+
 2009-12-02  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/42215
