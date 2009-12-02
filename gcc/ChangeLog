@@ -1,5 +1,10 @@
 2009-12-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* config/i386/abmintrin.h (_mm_popcnt_u32): New.
+	(_mm_popcnt_u64): New.
+
+2009-12-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* config/i386/abmintrin.h: New.
 	* config/i386/i386-c.c (ix86_target_macros_internal): Defined __ABM__.
 	* config/i386/x86intrin.h: Include abmintrin.h when __ABM__ is defined.
