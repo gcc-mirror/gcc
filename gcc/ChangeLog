@@ -1,5 +1,15 @@
 2009-12-01  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* config/i386/abmintrin.h (__lzcnt16): New.
+	(__lzcnt): New.
+	(__lzcnt64): New.
+	* config/i386/i386-builtin-types.def (UINT16_FTYPE_UINT16): New.
+	* config/i386/i386.c (IX86_BUILTIN_CLZS): New.
+	(bdesc_special_args): Add __builtin_clzs.
+	(ix86_expand_args_builtin): Handle UINT16_FTYPE_UINT16.
+
+2009-12-01  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* config/i386/abmintrin.h (_mm_popcnt_u32): New.
 	(_mm_popcnt_u64): New.
 
