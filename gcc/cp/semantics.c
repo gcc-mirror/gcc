@@ -2386,9 +2386,6 @@ begin_class_definition (tree t, tree attributes)
       pushtag (make_anon_name (), t, /*tag_scope=*/ts_current);
     }
 
-  /* Update the location of the decl.  */
-  DECL_SOURCE_LOCATION (TYPE_NAME (t)) = input_location;
-
   if (TYPE_BEING_DEFINED (t))
     {
       t = make_class_type (TREE_CODE (t));
