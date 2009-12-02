@@ -1,3 +1,12 @@
+2009-12-01  Taras Glek  <taras@mozilla.com>
+
+	* parser.c (cp_parser_class_specifier): Set class location to that
+	of IDENTIFIER_NODE instead of '{' when possible.
+
+2009-12-01  Taras Glek  <taras@mozilla.com>
+
+	* semantics.c (begin_class_definition): Do not overide locations with less precise ones.
+
 2009-12-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41611
