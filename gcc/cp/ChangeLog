@@ -1,3 +1,8 @@
+2009-12-02  Taras Glek  <taras@mozilla.com>
+
+	* parser.c (cp_parser_class_specifier): Back out my previous change.
+	* semantics.c (begin_class_definition): Back out my previous change.
+
 2009-12-02  Paolo Bonzini  <bonzini@gnu.org>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 
