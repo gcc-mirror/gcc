@@ -57,7 +57,7 @@
 			 [(match_operand:SI 2 "s_register_operand" "r")
 			  (match_operand:SI 3 "const_int_operand" "M")]))
 		(match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_ARM"
+  "TARGET_THUMB2"
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
