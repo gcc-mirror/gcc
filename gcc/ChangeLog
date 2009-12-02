@@ -1,3 +1,9 @@
+2009-12-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42229
+	* cfgloopmanip.c (remove_path): Avoid cancelling loops
+	twice.
+
 2009-12-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR middle-end/42224

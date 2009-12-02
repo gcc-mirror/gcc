@@ -278,10 +278,9 @@ remove_path (edge e)
   edge ae;
   basic_block *rem_bbs, *bord_bbs, from, bb;
   VEC (basic_block, heap) *dom_bbs;
-  int i, nrem, n_bord_bbs, nreml;
+  int i, nrem, n_bord_bbs;
   sbitmap seen;
   bool irred_invalidated = false;
-  struct loop **deleted_loop;
 
   if (!can_remove_branch_p (e))
     return false;
@@ -342,15 +341,9 @@ remove_path (edge e)
   dom_bbs = NULL;
 
   /* Cancel loops contained in the path.  */
-  deleted_loop = XNEWVEC (struct loop *, nrem);
-  nreml = 0;
   for (i = 0; i < nrem; i++)
     if (rem_bbs[i]->loop_father->header == rem_bbs[i])
-      deleted_loop[nreml++] = rem_bbs[i]->loop_father;
-
-  for (i = 0; i < nreml; i++)
-    cancel_loop_tree (deleted_loop[i]);
-  free (deleted_loop);
+      cancel_loop_tree (rem_bbs[i]->loop_father);
 
   remove_bbs (rem_bbs, nrem);
   free (rem_bbs);
