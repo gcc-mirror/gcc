@@ -1,3 +1,32 @@
+2009-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++spec.c (lang_specific_driver): Remove unused saw_verbose_flag
+	variable.
+	* pt.c (tsubst_pack_expansion): Remove unused first_arg_pack variable.
+	* init.c (build_vec_init): Remove unused size variable.
+	* typeck2.c (check_narrowing): Remove unused was_decl variable.
+	* decl.c (poplevel): Remove unused tmp and real_functionbody
+	variables.
+	(decls_match): Remove unused tree_name variable.
+	(start_decl): Remove unused type variable.
+	* parser.c (cp_parser_type_parameter): Remove unused parameter_list
+	variable.
+	(cp_parser_template_id, cp_parser_explicit_instantiation,
+	cp_parser_declarator): Remove unused token variable.
+	(cp_parser_simple_type_specifier): Remove unused id variable.
+	(cp_parser_parameter_declaration): Remove unused
+	greater_than_is_operator_p variable.
+	(cp_parser_check_declarator_template_parameters): Remove unused
+	member variable.
+	(c_parse_file): Remove unused error_occurred variable.
+	* cp-gimplify.c (cp_gimplify_init_expr): Remove unused slot variable.
+	* typeck.c (cp_build_function_call_vec): Remove unused name variable.
+	* class.c (resolve_address_of_overloaded_function): Remove unused
+	is_reference variable.
+	(build_rtti_vtbl_entries): Remove unused basetype variable.
+	* mangle.c (write_template_param): Remove unused parm_level and
+	parm_type variables.
+
 2009-12-01  Taras Glek  <taras@mozilla.com>
 
 	* parser.c (cp_parser_class_specifier): Set class location to that

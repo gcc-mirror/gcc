@@ -655,13 +655,9 @@ check_narrowing (tree type, tree init)
   tree ftype = unlowered_expr_type (init);
   bool ok = true;
   REAL_VALUE_TYPE d;
-  bool was_decl = false;
 
   if (DECL_P (init))
-    {
-      was_decl = true;
-      init = decl_constant_value (init);
-    }
+    init = decl_constant_value (init);
 
   if (TREE_CODE (type) == INTEGER_TYPE
       && TREE_CODE (ftype) == REAL_TYPE)

@@ -429,17 +429,13 @@ cp_gimplify_init_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   tree from = TREE_OPERAND (*expr_p, 1);
   tree to = TREE_OPERAND (*expr_p, 0);
   tree t;
-  tree slot = NULL_TREE;
 
   /* What about code that pulls out the temp and uses it elsewhere?  I
      think that such code never uses the TARGET_EXPR as an initializer.  If
      I'm wrong, we'll abort because the temp won't have any RTL.  In that
      case, I guess we'll need to replace references somehow.  */
   if (TREE_CODE (from) == TARGET_EXPR)
-    {
-      slot = TARGET_EXPR_SLOT (from);
-      from = TARGET_EXPR_INITIAL (from);
-    }
+    from = TARGET_EXPR_INITIAL (from);
 
   /* Look through any COMPOUND_EXPRs, since build_compound_expr pushes them
      inside the TARGET_EXPR.  */
