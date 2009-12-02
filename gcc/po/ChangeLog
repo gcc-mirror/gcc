@@ -1,3 +1,7 @@
+2009-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2009-11-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* id.po: Update.
