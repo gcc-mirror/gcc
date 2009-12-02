@@ -20,6 +20,7 @@
 	* pt.c (tsubst): Likewise.
 	* typeck2.c (cp_build_unary_op): Wrap diagnostic into _().
 	* rtti.c (build_dynamic_cast_1): Likewise.
+	* Make-lang.in: Adjust.
 
 2009-12-02  Jakub Jelinek  <jakub@redhat.com>
 
