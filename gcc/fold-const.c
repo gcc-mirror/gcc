@@ -206,7 +206,7 @@ fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 {
   unsigned HOST_WIDE_INT low0 = l1;
   HOST_WIDE_INT high0 = h1;
-  unsigned int prec = int_or_pointer_precision (type);
+  unsigned int prec = TYPE_PRECISION (type);
   int sign_extended_type;
 
   /* Size types *are* sign extended.  */
