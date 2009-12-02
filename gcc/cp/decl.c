@@ -520,8 +520,6 @@ poplevel (int keep, int reverse, int functionbody)
   /* The chain of decls was accumulated in reverse order.
      Put it into forward order, just for cleanliness.  */
   tree decls;
-  int tmp = functionbody;
-  int real_functionbody;
   tree subblocks;
   tree block;
   tree decl;
@@ -535,8 +533,8 @@ poplevel (int keep, int reverse, int functionbody)
 
   gcc_assert (current_binding_level->kind != sk_class);
 
-  real_functionbody = (current_binding_level->kind == sk_cleanup
-		       ? ((functionbody = 0), tmp) : functionbody);
+  if (current_binding_level->kind == sk_cleanup)
+    functionbody = 0;
   subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
   gcc_assert (!VEC_length(cp_class_binding,
@@ -1035,8 +1033,6 @@ decls_match (tree newdecl, tree olddecl)
 void
 warn_extern_redeclared_static (tree newdecl, tree olddecl)
 {
-  tree name;
-
   if (TREE_CODE (newdecl) == TYPE_DECL
       || TREE_CODE (newdecl) == TEMPLATE_DECL
       || TREE_CODE (newdecl) == CONST_DECL
@@ -1059,7 +1055,6 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
       && DECL_ARTIFICIAL (olddecl))
     return;
 
-  name = DECL_ASSEMBLER_NAME (newdecl);
   permerror (input_location, "%qD was declared %<extern%> and later %<static%>", newdecl);
   permerror (input_location, "previous declaration of %q+D", olddecl);
 }
@@ -4071,7 +4066,6 @@ start_decl (const cp_declarator *declarator,
 	    tree *pushed_scope_p)
 {
   tree decl;
-  tree type;
   tree context;
   bool was_public;
   int flags;
@@ -4093,8 +4087,6 @@ start_decl (const cp_declarator *declarator,
   if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE
       || decl == error_mark_node)
     return error_mark_node;
-
-  type = TREE_TYPE (decl);
 
   context = DECL_CONTEXT (decl);
 

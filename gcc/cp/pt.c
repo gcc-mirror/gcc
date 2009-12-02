@@ -8007,7 +8007,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 {
   tree pattern;
   tree pack, packs = NULL_TREE, unsubstituted_packs = NULL_TREE;
-  tree first_arg_pack; int i, len = -1;
+  int i, len = -1;
   tree result;
   int incomplete = 0;
   bool very_local_specializations = false;
@@ -8091,10 +8091,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
             incomplete = 1;
 
           if (len < 0)
-            {
-              len = my_len;
-              first_arg_pack = arg_pack;
-            }
+	    len = my_len;
           else if (len != my_len)
             {
 	      if (incomplete)

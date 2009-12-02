@@ -10649,14 +10649,13 @@ cp_parser_type_parameter (cp_parser* parser, bool *is_parameter_pack)
 
     case RID_TEMPLATE:
       {
-	tree parameter_list;
 	tree identifier;
 	tree default_argument;
 
 	/* Look for the `<'.  */
 	cp_parser_require (parser, CPP_LESS, "%<<%>");
 	/* Parse the template-parameter-list.  */
-	parameter_list = cp_parser_template_parameter_list (parser);
+	cp_parser_template_parameter_list (parser);
 	/* Look for the `>'.  */
 	cp_parser_require (parser, CPP_GREATER, "%<>%>");
 	/* Look for the `class' keyword.  */
@@ -10790,7 +10789,7 @@ cp_parser_template_id (cp_parser *parser,
   cp_token_position start_of_id = 0;
   deferred_access_check *chk;
   VEC (deferred_access_check,gc) *access_check;
-  cp_token *next_token = NULL, *next_token_2 = NULL, *token = NULL;
+  cp_token *next_token = NULL, *next_token_2 = NULL;
   bool is_identifier;
 
   /* If the next token corresponds to a template-id, there is no need
@@ -10838,7 +10837,6 @@ cp_parser_template_id (cp_parser *parser,
 
   /* Parse the template-name.  */
   is_identifier = false;
-  token = cp_lexer_peek_token (parser->lexer);
   templ = cp_parser_template_name (parser, template_keyword_p,
 				   check_dependency_p,
 				   is_declaration,
@@ -11515,7 +11513,6 @@ cp_parser_explicit_instantiation (cp_parser* parser)
   int declares_class_or_enum;
   cp_decl_specifier_seq decl_specifiers;
   tree extension_specifier = NULL_TREE;
-  cp_token *token;
 
   /* Look for an (optional) storage-class-specifier or
      function-specifier.  */
@@ -11538,7 +11535,6 @@ cp_parser_explicit_instantiation (cp_parser* parser)
      control while processing explicit instantiation directives.  */
   push_deferring_access_checks (dk_no_check);
   /* Parse a decl-specifier-seq.  */
-  token = cp_lexer_peek_token (parser->lexer);
   cp_parser_decl_specifier_seq (parser,
 				CP_PARSER_FLAGS_OPTIONAL,
 				&decl_specifiers,
@@ -11995,8 +11991,6 @@ cp_parser_simple_type_specifier (cp_parser* parser,
   /* If the type-specifier was for a built-in type, we're done.  */
   if (type)
     {
-      tree id;
-
       /* Record the type.  */
       if (decl_specs
 	  && (token->keyword != RID_SIGNED
@@ -12011,7 +12005,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	decl_specs->any_specifiers_p = true;
 
       /* Consume the token.  */
-      id = cp_lexer_consume_token (parser->lexer)->u.value;
+      cp_lexer_consume_token (parser->lexer);
 
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user thought
@@ -13799,7 +13793,6 @@ cp_parser_declarator (cp_parser* parser,
 		      bool* parenthesized_p,
 		      bool member_p)
 {
-  cp_token *token;
   cp_declarator *declarator;
   enum tree_code code;
   cp_cv_quals cv_quals;
@@ -13813,9 +13806,6 @@ cp_parser_declarator (cp_parser* parser,
 
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_attributes_opt (parser);
-
-  /* Peek at the next token.  */
-  token = cp_lexer_peek_token (parser->lexer);
 
   /* Check for the ptr-operator production.  */
   cp_parser_parse_tentatively (parser);
@@ -15011,7 +15001,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
 				 bool *parenthesized_p)
 {
   int declares_class_or_enum;
-  bool greater_than_is_operator_p;
   cp_decl_specifier_seq decl_specifiers;
   cp_declarator *declarator;
   tree default_argument;
@@ -15026,7 +15015,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
      template-parameter, the first non-nested `>' is taken as the end
      of the template parameter-list rather than a greater-than
      operator.  */
-  greater_than_is_operator_p = !template_parm_p;
 
   /* Type definitions may not appear in parameter types.  */
   saved_message = parser->type_definition_forbidden_message;
@@ -18216,10 +18204,8 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
       if (declarator->u.id.qualifying_scope)
 	{
 	  tree scope;
-	  tree member;
 
 	  scope = declarator->u.id.qualifying_scope;
-	  member = declarator->u.id.unqualified_name;
 
 	  while (scope && CLASS_TYPE_P (scope))
 	    {
@@ -23118,7 +23104,6 @@ pragma_lex (tree *value)
 void
 c_parse_file (void)
 {
-  bool error_occurred;
   static bool already_called = false;
 
   if (already_called)
@@ -23131,7 +23116,7 @@ c_parse_file (void)
   the_parser = cp_parser_new ();
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
-  error_occurred = cp_parser_translation_unit (the_parser);
+  cp_parser_translation_unit (the_parser);
   the_parser = NULL;
 }
 

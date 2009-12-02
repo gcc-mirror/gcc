@@ -3021,7 +3021,6 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
 			    tsubst_flags_t complain)
 {
   tree fntype, fndecl;
-  tree name = NULL_TREE;
   int is_method;
   tree original = function;
   int nargs;
@@ -3044,8 +3043,6 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
 
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
-      name = DECL_NAME (function);
-
       mark_used (function);
       fndecl = function;
 

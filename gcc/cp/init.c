@@ -2666,7 +2666,6 @@ build_vec_init (tree base, tree maxindex, tree init,
 {
   tree rval;
   tree base2 = NULL_TREE;
-  tree size;
   tree itype = NULL_TREE;
   tree iterator;
   /* The type of BASE.  */
@@ -2724,7 +2723,6 @@ build_vec_init (tree base, tree maxindex, tree init,
     }
 
   maxindex = cp_convert (ptrdiff_type_node, maxindex);
-  size = size_in_bytes (type);
   if (TREE_CODE (atype) == ARRAY_TYPE)
     {
       ptype = build_pointer_type (type);
