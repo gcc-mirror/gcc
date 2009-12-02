@@ -236,6 +236,8 @@ ix86_target_macros_internal (int isa_flag,
     def_or_undef (parse_in, "__XOP__");
   if (isa_flag & OPTION_MASK_ISA_LWP)
     def_or_undef (parse_in, "__LWP__");
+  if (isa_flag & OPTION_MASK_ISA_ABM)
+    def_or_undef (parse_in, "__ABM__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))
