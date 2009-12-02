@@ -1336,7 +1336,7 @@ extern UHItype __stormy16_count_leading_zeros (UHItype);
 	{								\
 	  UHItype c;							\
 									\
-	  c = __stormy16_count_leading_zeros ((x) >> (size - 16));	\
+	  c = __clzhi2 ((x) >> (size - 16));				\
 	  (count) += c;							\
 	  if (c != 16)							\
 	    break;							\
