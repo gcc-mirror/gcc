@@ -1,6 +1,6 @@
 2009-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	* PR fortran/42131
+	PR fortran/42131
 	* trans-stmt.c (gfc_trans_do): Sign test using ternary operator.
 
 2009-11-30  Janus Weil  <janus@gcc.gnu.org>
