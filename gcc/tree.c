@@ -4923,7 +4923,8 @@ free_lang_data (void)
   unsigned i;
 
   /* If we are the LTO frontend we have freed lang-specific data already.  */
-  if (in_lto_p)
+  if (in_lto_p
+      || !flag_generate_lto)
     return 0;
 
   /* Allocate and assign alias sets to the standard integer types
@@ -4931,11 +4932,6 @@ free_lang_data (void)
   for (i = 0; i < itk_none; ++i)
     if (integer_types[i])
       TYPE_ALIAS_SET (integer_types[i]) = get_alias_set (integer_types[i]);
-
-  /* FIXME.  Remove after save_debug_info is working.  */
-  if (!(flag_generate_lto
-	|| (!flag_gtoggle && debug_info_level == DINFO_LEVEL_NONE)))
-    return 0;
 
   /* Traverse the IL resetting language specific information for
      operands, expressions, etc.  */
