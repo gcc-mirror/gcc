@@ -144,7 +144,7 @@ static tree build_java_interface_fn_ref (tree, tree);
 static tree convert_like_real (conversion *, tree, tree, int, int, bool,
 			       bool, tsubst_flags_t);
 static void op_error (enum tree_code, enum tree_code, tree, tree,
-		      tree, const char *);
+		      tree, bool);
 static VEC(tree,gc) *resolve_args (VEC(tree,gc) *);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int);
 static void print_z_candidate (const char *, struct z_candidate *);
@@ -3489,7 +3489,7 @@ build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
 
 static void
 op_error (enum tree_code code, enum tree_code code2,
-	  tree arg1, tree arg2, tree arg3, const char *problem)
+	  tree arg1, tree arg2, tree arg3, bool match)
 {
   const char *opname;
 
@@ -3501,31 +3501,58 @@ op_error (enum tree_code code, enum tree_code code2,
   switch (code)
     {
     case COND_EXPR:
-      error ("%s for ternary %<operator?:%> in %<%E ? %E : %E%>",
-	     problem, arg1, arg2, arg3);
+      if (match)
+        error ("ambiguous overload for ternary %<operator?:%> "
+               "in %<%E ? %E : %E%>", arg1, arg2, arg3);
+      else
+        error ("no match for ternary %<operator?:%> "
+               "in %<%E ? %E : %E%>", arg1, arg2, arg3);
       break;
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      error ("%s for %<operator%s%> in %<%E%s%>", problem, opname, arg1, opname);
+      if (match)
+        error ("ambiguous overload for %<operator%s%> in %<%E%s%>",
+               opname, arg1, opname);
+      else
+        error ("no match for %<operator%s%> in %<%E%s%>", 
+               opname, arg1, opname);
       break;
 
     case ARRAY_REF:
-      error ("%s for %<operator[]%> in %<%E[%E]%>", problem, arg1, arg2);
+      if (match)
+        error ("ambiguous overload for %<operator[]%> in %<%E[%E]%>", 
+               arg1, arg2);
+      else
+        error ("no match for %<operator[]%> in %<%E[%E]%>", 
+               arg1, arg2);
       break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      error ("%s for %qs in %<%s %E%>", problem, opname, opname, arg1);
+      if (match)
+        error ("ambiguous overload for %qs in %<%s %E%>", 
+               opname, opname, arg1);
+      else
+        error ("no match for %qs in %<%s %E%>",
+               opname, opname, arg1);
       break;
 
     default:
       if (arg2)
-	error ("%s for %<operator%s%> in %<%E %s %E%>",
-	       problem, opname, arg1, opname, arg2);
+        if (match)
+          error ("ambiguous overload for %<operator%s%> in %<%E %s %E%>",
+                  opname, arg1, opname, arg2);
+        else
+          error ("no match for %<operator%s%> in %<%E %s %E%>",
+                 opname, arg1, opname, arg2);
       else
-	error ("%s for %<operator%s%> in %<%s%E%>",
-	       problem, opname, opname, arg1);
+        if (match)
+          error ("ambiguous overload for %<operator%s%> in %<%s%E%>",
+                 opname, opname, arg1);
+        else
+          error ("no match for %<operator%s%> in %<%s%E%>",
+                 opname, opname, arg1);
       break;
     }
 }
@@ -3852,7 +3879,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 	{
           if (complain & tf_error)
             {
-              op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, "no match");
+              op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
               print_z_candidates (candidates);
             }
 	  return error_mark_node;
@@ -3862,7 +3889,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3,
 	{
           if (complain & tf_error)
             {
-              op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, "no match");
+              op_error (COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
               print_z_candidates (candidates);
             }
 	  return error_mark_node;
@@ -4330,7 +4357,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 		  {
 		    /* ... Otherwise, report the more generic
 		       "no matching operator found" error */
-		    op_error (code, code2, arg1, arg2, arg3, "no match");
+		    op_error (code, code2, arg1, arg2, arg3, FALSE);
 		    print_z_candidates (candidates);
 		  }
 	    }
@@ -4345,7 +4372,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	{
 	  if ((flags & LOOKUP_COMPLAIN) && (complain & tf_error))
 	    {
-	      op_error (code, code2, arg1, arg2, arg3, "ambiguous overload");
+	      op_error (code, code2, arg1, arg2, arg3, TRUE);
 	      print_z_candidates (candidates);
 	    }
 	  result = error_mark_node;

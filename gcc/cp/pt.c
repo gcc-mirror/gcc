@@ -10041,10 +10041,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      {
 		if (TREE_CODE (type) == VOID_TYPE)
 		  error ("forming reference to void");
-		else
-		  error ("forming %s to reference type %qT",
-			 (code == POINTER_TYPE) ? "pointer" : "reference",
-			 type);
+               else if (code == POINTER_TYPE)
+                 error ("forming pointer to reference type %qT", type);
+               else
+		  error ("forming reference to reference type %qT", type);
 		last_loc = input_location;
 	      }
 

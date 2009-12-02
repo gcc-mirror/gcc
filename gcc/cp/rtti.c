@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "intl.h"
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
@@ -525,18 +526,18 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
     case REFERENCE_TYPE:
       if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (type)))
 	{
-	  errstr = "target is not pointer or reference to class";
+	  errstr = _("target is not pointer or reference to class");
 	  goto fail;
 	}
       if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
 	{
-	  errstr = "target is not pointer or reference to complete type";
+	  errstr = _("target is not pointer or reference to complete type");
 	  goto fail;
 	}
       break;
 
     default:
-      errstr = "target is not pointer or reference";
+      errstr = _("target is not pointer or reference");
       goto fail;
     }
 
@@ -547,17 +548,17 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
       if (TREE_CODE (exprtype) != POINTER_TYPE)
 	{
-	  errstr = "source is not a pointer";
+	  errstr = _("source is not a pointer");
 	  goto fail;
 	}
       if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (exprtype)))
 	{
-	  errstr = "source is not a pointer to class";
+	  errstr = _("source is not a pointer to class");
 	  goto fail;
 	}
       if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (exprtype))))
 	{
-	  errstr = "source is a pointer to incomplete type";
+	  errstr = _("source is a pointer to incomplete type");
 	  goto fail;
 	}
     }
@@ -570,12 +571,12 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
       if (! MAYBE_CLASS_TYPE_P (TREE_TYPE (exprtype)))
 	{
-	  errstr = "source is not of class type";
+	  errstr = _("source is not of class type");
 	  goto fail;
 	}
       if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (exprtype))))
 	{
-	  errstr = "source is of incomplete class type";
+	  errstr = _("source is of incomplete class type");
 	  goto fail;
 	}
 
@@ -588,7 +589,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
   if (!at_least_as_qualified_p (TREE_TYPE (type),
 				TREE_TYPE (exprtype)))
     {
-      errstr = "conversion casts away constness";
+      errstr = _("conversion casts away constness");
       goto fail;
     }
 
@@ -748,7 +749,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 	}
     }
   else
-    errstr = "source type is not polymorphic";
+    errstr = _("source type is not polymorphic");
 
  fail:
   if (complain & tf_error)

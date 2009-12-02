@@ -1,3 +1,26 @@
+2009-12-02  Paolo Bonzini  <bonzini@gnu.org>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/29917
+	* call.c (op_error): Accept a boolean to indicate no match/ambiguous
+	match, instead of a string. Callers adjusted.
+
+	PR c++/34836
+	* cp-tree.h (readonly_error_kind): New type.
+	(readonly_error): Adjust prototype with new argument.
+	* typeck2.c (readonly_error): Accept readonly_error_kind as argument
+	and add macro ERROR_FOR_ASSIGNMENT to emit diagnostics.
+	* semantics.c (finish_asm_stmt): Adjust readonly_error call.
+	* typeck.c (cp_build_unary_op, cp_build_modify_expr): Likewise.
+
+	* decl.c (grokparms, grok_op_properties): Put the diagnostics in full
+	sentences for easy translation and wrap the diagnostics into G_() when
+	needed.
+	(create_array_type_for_decl): Likewise.
+	* pt.c (tsubst): Likewise.
+	* typeck2.c (cp_build_unary_op): Wrap diagnostic into _().
+	* rtti.c (build_dynamic_cast_1): Likewise.
+
 2009-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++spec.c (lang_specific_driver): Remove unused saw_verbose_flag
