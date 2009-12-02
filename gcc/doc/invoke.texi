@@ -5360,6 +5360,11 @@ file name.
 Dump each function after applying vectorization of loops.  The file name is
 made by appending @file{.vect} to the source file name.
 
+@item slp
+@opindex fdump-tree-slp
+Dump each function after applying vectorization of basic blocks.  The file name
+is made by appending @file{.slp} to the source file name.
+
 @item vrp
 @opindex fdump-tree-vrp
 Dump each function after Value Range Propagation (VRP).  The file name
@@ -5385,14 +5390,16 @@ inner-most, single-bb, single-entry/exit loops.  This is the same verbosity
 level that @option{-fdump-tree-vect-stats} uses.
 Higher verbosity levels mean either more information dumped for each
 reported loop, or same amount of information reported for more loops:
-If @var{n}=3, alignment related information is added to the reports.
-If @var{n}=4, data-references related information (e.g.@: memory dependences,
+if @var{n}=3, vectorizer cost model information is reported.
+If @var{n}=4, alignment related information is added to the reports.
+If @var{n}=5, data-references related information (e.g.@: memory dependences,
 memory access-patterns) is added to the reports.
-If @var{n}=5, the vectorizer reports also non-vectorized inner-most loops
+If @var{n}=6, the vectorizer reports also non-vectorized inner-most loops
 that did not pass the first analysis phase (i.e., may not be countable, or
 may have complicated control-flow).
-If @var{n}=6, the vectorizer reports also non-vectorized nested loops.
-For @var{n}=7, all the information the vectorizer generates during its
+If @var{n}=7, the vectorizer reports also non-vectorized nested loops.
+If @var{n}=8, SLP related information is added to the reports.
+For @var{n}=9, all the information the vectorizer generates during its
 analysis and transformation is reported.  This is the same verbosity level
 that @option{-fdump-tree-vect-details} uses.
 
@@ -6817,6 +6824,11 @@ enabled by default at @option{-O} and higher.
 @opindex ftree-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
 @option{-O3}.
+
+@item -ftree-slp-vectorize
+@opindex ftree-slp-vectorize
+Perform basic block vectorization on trees. This flag is enabled by default at
+@option{-O3} and when @option{-ftree-vectorize} is enabled.
 
 @item -ftree-vect-loop-version
 @opindex ftree-vect-loop-version

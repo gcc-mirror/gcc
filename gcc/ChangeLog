@@ -1,3 +1,9 @@
+2009-12-02  Ira Rosen  <irar@il.ibm.com>
+
+	* doc/invoke.texi (-fdump-tree-slp): Document.
+	(-ftree-vectorizer-verbose): Update.
+	(-ftree-slp-vectorize): Document.
+
 2009-12-02  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_conditional_register_usage): Do not warn if
