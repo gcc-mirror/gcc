@@ -1,3 +1,9 @@
+2009-12-02  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/ipa/iinline-1.C: Adjust.
+	* g++.dg/template/cond2.C: Likewise.
+	* g++.dg/template/pr35240.C: Likewise.
+
 2009-12-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR middle-end/42224

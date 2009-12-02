@@ -4,9 +4,9 @@
 
 template<int> struct A {};
 
-template<int N> A<sizeof(new int[N][N])> foo();	// { dg-message "unimplemented" }
+template<int N> A<sizeof(new int[N][N])> foo();
 
 void bar()
 {
-  foo<1>();
+  foo<1>(); // { dg-message "unimplemented" }
 }

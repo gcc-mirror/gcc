@@ -44,5 +44,5 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "String::funcOne\[^\\n\]*inline copy in main"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "String::funcOne\[^\\n\]*inline copy in int main"  "inline"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */
