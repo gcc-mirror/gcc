@@ -887,46 +887,25 @@ rx_conditional_register_usage (void)
 
       if (use_fixed_regs)
 	{
-	  unsigned int switched = 0;
 	  unsigned int r;
+
+	  memcpy (saved_fixed_regs, fixed_regs, sizeof fixed_regs);
+	  memcpy (saved_call_used_regs, call_used_regs, sizeof call_used_regs);
 
 	  /* This is for fast interrupt handlers.  Any register in
 	     the range r10 to r13 (inclusive) that is currently
-	     marked as fixed is now a viable, call-saved register.
-	     All other registers are fixed.  */
-	  memcpy (saved_fixed_regs, fixed_regs, sizeof fixed_regs);
-	  memcpy (saved_call_used_regs, call_used_regs, sizeof call_used_regs);
-	  
-	  for (r = 1; r < 10; r++)
-	    fixed_regs[r] = call_used_regs[r] = 1;
-	  
+	     marked as fixed is now a viable, call-used register.  */	  
 	  for (r = 10; r <= 13; r++)
 	    if (fixed_regs[r])
 	      {
 		fixed_regs[r] = 0;
 		call_used_regs[r] = 1;
-		++ switched;
-	      }
-	    else
-	      {
-		fixed_regs[r] = 1;
-		call_used_regs[r] = 1;
 	      }
 
-	  fixed_regs[14] = call_used_regs[14] = 1;
-	  fixed_regs[15] = call_used_regs[15] = 1;
-
-	  if (switched == 0)
-	    {
-	      static bool warned = false;
-
-	      if (! warned)
-		{
-		  warning (0, "no fixed registers available "
-			   "for use by fast interrupt handler");
-		  warned = true;
-		}
-	    }
+	  /* Mark r7 as fixed.  This is just a hack to avoid
+	     altering the reg_alloc_order array so that the newly
+	     freed r10-r13 registers are the preferred registers.  */
+	  fixed_regs[7] = call_used_regs[7] = 1;
 	}
       else
 	{
@@ -1017,6 +996,11 @@ bit_count (unsigned int x)
   return (x + (x >> 16)) & 0x3f;
 }
 
+#define MUST_SAVE_ACC_REGISTER			\
+  (TARGET_SAVE_ACC_REGISTER			\
+   && (is_interrupt_func (NULL_TREE)		\
+       || is_fast_interrupt_func (NULL_TREE)))
+
 /* Returns either the lowest numbered and highest numbered registers that
    occupy the call-saved area of the stack frame, if the registers are
    stored as a contiguous block, or else a bitmask of the individual
@@ -1040,15 +1024,10 @@ rx_get_stack_layout (unsigned int * lowest,
   unsigned int pushed_mask;
   unsigned int unneeded_pushes;
 
-  if (is_naked_func (NULL_TREE)
-      || is_fast_interrupt_func (NULL_TREE))
+  if (is_naked_func (NULL_TREE))
     {
       /* Naked functions do not create their own stack frame.
-	 Instead the programmer must do that for us.
-
-	 Fast interrupt handlers use fixed registers that have
-	 been epsecially released to the function, so they do
-	 not need or want a stack frame.  */
+	 Instead the programmer must do that for us.  */
       * lowest = 0;
       * highest = 0;
       * register_mask = 0;
@@ -1063,7 +1042,14 @@ rx_get_stack_layout (unsigned int * lowest,
 	  && (! call_used_regs[reg]
 	      /* Even call clobbered registered must
 		 be pushed inside interrupt handlers.  */
-	      || is_interrupt_func (NULL_TREE)))
+	      || is_interrupt_func (NULL_TREE)
+	      /* Likewise for fast interrupt handlers, except registers r10 -
+		 r13.  These are normally call-saved, but may have been set
+		 to call-used by rx_conditional_register_usage.  If so then
+		 they can be used in the fast interrupt handler without
+		 saving them on the stack.  */
+	      || (is_fast_interrupt_func (NULL_TREE)
+		  && ! IN_RANGE (reg, 10, 13))))
 	{
 	  if (low == 0)
 	    low = reg;
@@ -1076,6 +1062,18 @@ rx_get_stack_layout (unsigned int * lowest,
 	 after having found the low register.  */
       if (low != 0 && fixed_reg == 0 && fixed_regs [reg])
 	fixed_reg = reg;
+    }
+
+  /* If we have to save the accumulator register, make sure
+     that at least two registers are pushed into the frame.  */
+  if (MUST_SAVE_ACC_REGISTER
+      && bit_count (save_mask) < 2)
+    {
+      save_mask |= (1 << 13) | (1 << 14);
+      if (low == 0)
+	low = 13;
+      if (high == 0)
+	high = 14;
     }
 
   /* Decide if it would be faster fill in the call-saved area of the stack
@@ -1207,9 +1205,7 @@ rx_expand_prologue (void)
   rtx insn;
 
   /* Naked functions use their own, programmer provided prologues.  */
-  if (is_naked_func (NULL_TREE)
-      /* Fast interrupt functions never use the stack.  */
-      || is_fast_interrupt_func (NULL_TREE))
+  if (is_naked_func (NULL_TREE))
     return;
 
   rx_get_stack_layout (& low, & high, & mask, & frame_size, & stack_size);
@@ -1236,13 +1232,13 @@ rx_expand_prologue (void)
       mark_frame_related (insn);
     }
 
-  if (is_interrupt_func (NULL_TREE) && TARGET_SAVE_ACC_REGISTER)
+  if (MUST_SAVE_ACC_REGISTER)
     {
       unsigned int acc_high, acc_low;
 
       /* Interrupt handlers have to preserve the accumulator
 	 register if so requested by the user.  Use the first
-         two pushed register as intermediaries.  */
+         two pushed registers as intermediaries.  */
       if (mask)
 	{
 	  acc_low = acc_high = 0;
@@ -1510,7 +1506,7 @@ rx_expand_epilogue (bool is_sibcall)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       GEN_INT (total_size)));
 
-      if (is_interrupt_func (NULL_TREE) && TARGET_SAVE_ACC_REGISTER)
+      if (MUST_SAVE_ACC_REGISTER)
 	{
 	  unsigned int acc_low, acc_high;
 
@@ -1901,6 +1897,9 @@ rx_expand_builtin_mvfc (tree t_arg, rtx target)
   if (! CONST_INT_P (arg))
     return NULL_RTX;
 
+  if (target == NULL_RTX)
+    return NULL_RTX;
+
   if (! REG_P (target))
     target = force_reg (SImode, target);
 
@@ -2135,7 +2134,7 @@ rx_func_attr_inlinable (const_tree decl)
    a function_decl or NULL if this is an indirect call, using EXP  */
 
 static bool
-rx_function_ok_for_sibcall (tree decl, tree exp)
+rx_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
   /* Do not allow indirect tailcalls.  The
      sibcall patterns do not support them.  */

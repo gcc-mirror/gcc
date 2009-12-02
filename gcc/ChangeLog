@@ -1,3 +1,17 @@
+2009-12-02  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_conditional_register_usage): Do not warn if
+	no fixed registers are available for interrupt handlers.  Do not
+	fix normal registers.
+	(MUST_SAVE_ACC_REGISTER): New macro.
+	(rx_get_stack_layout): Create a stack frame for fast interrupt
+	handlers, if necessary.  Push extra registers if needed in order
+	to save the accumulator.
+	(rx_expand_prologue): Create a stack frame for fast interrupt
+	handlers, if necessary.
+	(rx_expand_builtin_mvfc): Handle the case where there is no
+	target.
+
 2009-12-01  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config/i386/abmintrin.h (__lzcnt16): New.
