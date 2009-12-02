@@ -105,11 +105,12 @@ ffi_closure_ASM:
 
 	/* 48  Bytes (Linkage Area) */
 	/* 64  Bytes (params) */
+	/* 16  Bytes (result) */
 	/* 104 Bytes (13*8 from FPR) */
-	/* 32  Bytes (result) */
-	/* 248 Bytes */
+	/* 8   Bytes (alignment) */
+	/* 240 Bytes */
 
-	stdu r1,-248(r1)	/* skip over caller save area
+	stdu r1,-240(r1)	/* skip over caller save area
 				   keep stack aligned to 16  */
 
 /* we want to build up an area for the parameters passed */
@@ -117,42 +118,42 @@ ffi_closure_ASM:
 
 	/* we store gpr 3 to gpr 10 (aligned to 4)
 	in the parents outgoing area  */
-	std   r3, (304+0*8)(r1)
-	std   r4, (304+1*8)(r1)
-	std   r5, (304+2*8)(r1)
-	std   r6, (304+3*8)(r1)
-	std   r7, (304+4*8)(r1)
-	std   r8, (304+5*8)(r1)
-	std   r9, (304+6*8)(r1)
-	std   r10, (304+7*8)(r1)
+	std   r3, 288+(0*8)(r1)
+	std   r4, 288+(1*8)(r1)
+	std   r5, 288+(2*8)(r1)
+	std   r6, 288+(3*8)(r1)
+	std   r7, 288+(4*8)(r1)
+	std   r8, 288+(5*8)(r1)
+	std   r9, 288+(6*8)(r1)
+	std   r10, 288+(7*8)(r1)
 
 	/* next save fpr 1 to fpr 13 (aligned to 8) */
-	stfd  f1, (112+0*8)(r1)
-	stfd  f2, (112+1*8)(r1)
-	stfd  f3, (112+2*8)(r1)
-	stfd  f4, (112+3*8)(r1)
-	stfd  f5, (112+4*8)(r1)
-	stfd  f6, (112+5*8)(r1)
-	stfd  f7, (112+6*8)(r1)
-	stfd  f8, (112+7*8)(r1)
-	stfd  f9, (112+8*8)(r1)
-	stfd  f10, (112+9*8)(r1)
-	stfd  f11, (112+10*8)(r1)
-	stfd  f12, (112+11*8)(r1)
-	stfd  f13, (112+12*8)(r1)
+	stfd  f1, 128+(0*8)(r1)
+	stfd  f2, 128+(1*8)(r1)
+	stfd  f3, 128+(2*8)(r1)
+	stfd  f4, 128+(3*8)(r1)
+	stfd  f5, 128+(4*8)(r1)
+	stfd  f6, 128+(5*8)(r1)
+	stfd  f7, 128+(6*8)(r1)
+	stfd  f8, 128+(7*8)(r1)
+	stfd  f9, 128+(8*8)(r1)
+	stfd  f10, 128+(9*8)(r1)
+	stfd  f11, 128+(10*8)(r1)
+	stfd  f12, 128+(11*8)(r1)
+	stfd  f13, 128+(12*8)(r1)
 
 	/* set up registers for the routine that actually does the work */
 	/* get the context pointer from the trampoline */
 	mr r3,r11
 
 	/* now load up the pointer to the result storage */
-	addi r4,r1,216
+	addi r4,r1,112
 
 	/* now load up the pointer to the saved gpr registers */
-	addi r5,r1,304
+	addi r5,r1,288
 
 	/* now load up the pointer to the saved fpr registers */
-	addi r6,r1,112
+	addi r6,r1,128
 
 	/* make the call */
 	bl .ffi_closure_helper_DARWIN
@@ -164,7 +165,7 @@ ffi_closure_ASM:
 
 	/* look up the proper starting point in table  */
 	/* by using return type as offset */
-	addi r5,r1,216		/* get pointer to results area */
+	addi r5,r1,112		/* get pointer to results area */
 	ld r4,LC..60(2)		/* get address of jump table */
 	sldi r3,r3,2		/* now multiply return type by 4 */
 	lwzx r3,r4,r3		/* get the contents of that table value */
@@ -243,7 +244,7 @@ L..58:
 
 /* case void / done	 */
 L..44:
-	addi r1,r1,248		/* restore stack pointer */
+	addi r1,r1,240		/* restore stack pointer */
 	ld r0,16(r1)		/* get return address */
 	mtlr r0			/* reset link register */
 	blr

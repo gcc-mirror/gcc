@@ -1,5 +1,20 @@
 2009-11-30  David Edelsohn  <edelsohn@gnu.org>
 
+	* src/powerpc/aix.S (ffi_call_AIX): Convert to more standard
+	register usage.  Call ffi_prep_args directly.  Add long double
+	return value support.
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Double arg increment
+	applies to FFI_TYPE_DOUBLE.  Correct fpr_base increment typo.
+	Separate FFI_TYPE_SINT32 and FFI_TYPE_UINT32 cases.
+	(ffi_prep_cif_machdep): Only 16 byte stack alignment in 64 bit
+	mode.
+	(ffi_closure_helper_DARWIN): Remove nf and ng counters.  Move temp
+	into case.
+	* src/powerpc/aix_closure.S: Maintain 16 byte stack alignment.
+	Allocate result area between params and FPRs.
+
+2009-11-30  David Edelsohn  <edelsohn@gnu.org>
+
 	PR target/35484
 	* src/powerpc/ffitarget.h (POWERPC64): Define for PPC64 Linux and
 	AIX64.
