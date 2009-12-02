@@ -1,5 +1,11 @@
 2009-12-02  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/41491
+	* fold-const.c (try_move_mult_to_index): Do not leak
+	domain types into the IL.
+
+2009-12-02  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42088
 	* tree.c (free_lang_data): Disable if not using LTO.
 

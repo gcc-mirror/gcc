@@ -7586,13 +7586,16 @@ try_move_mult_to_index (location_t loc, tree addr, tree op1)
     {
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
+	  tree domain;
+
 	  /* Remember if this was a multi-dimensional array.  */
 	  if (TREE_CODE (TREE_OPERAND (ref, 0)) == ARRAY_REF)
 	    mdim = true;
 
-	  itype = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
-	  if (! itype)
+	  domain = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (ref, 0)));
+	  if (! domain)
 	    continue;
+	  itype = TREE_TYPE (domain);
 
 	  step = array_ref_element_size (ref);
 	  if (TREE_CODE (step) != INTEGER_CST)
@@ -7619,18 +7622,17 @@ try_move_mult_to_index (location_t loc, tree addr, tree op1)
 	      tree tmp;
 
 	      if (TREE_CODE (TREE_OPERAND (ref, 1)) != INTEGER_CST
-		  || !INTEGRAL_TYPE_P (itype)
-		  || !TYPE_MAX_VALUE (itype)
-		  || TREE_CODE (TYPE_MAX_VALUE (itype)) != INTEGER_CST)
+		  || !TYPE_MAX_VALUE (domain)
+		  || TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST)
 		continue;
 
 	      tmp = fold_binary_loc (loc, PLUS_EXPR, itype,
-				 fold_convert_loc (loc, itype,
-						   TREE_OPERAND (ref, 1)),
-				 fold_convert_loc (loc, itype, delta));
+				     fold_convert_loc (loc, itype,
+						       TREE_OPERAND (ref, 1)),
+				     fold_convert_loc (loc, itype, delta));
 	      if (!tmp
 		  || TREE_CODE (tmp) != INTEGER_CST
-		  || tree_int_cst_lt (TYPE_MAX_VALUE (itype), tmp))
+		  || tree_int_cst_lt (TYPE_MAX_VALUE (domain), tmp))
 		continue;
 	    }
 
