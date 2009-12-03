@@ -3712,7 +3712,15 @@ expand_builtin_strcpy_args (tree fndecl, tree dest, tree src,
 {
   tree result = fold_builtin_strcpy (fndecl, dest, src, 0);
   if (result)
-    return expand_expr (result, target, mode, EXPAND_NORMAL);
+    {
+      while (TREE_CODE (result) == COMPOUND_EXPR)
+	{
+	  expand_expr (TREE_OPERAND (result, 0), const0_rtx, VOIDmode,
+		       EXPAND_NORMAL);
+	  result = TREE_OPERAND (result, 1);
+	}
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
+    }
   return expand_movstr (dest, src, target, /*endp=*/0);
 
 }
