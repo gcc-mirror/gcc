@@ -1,3 +1,8 @@
+2009-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42049
+	* gcc.c-torture/compile/pr42049.c: New test.
+
 2009-12-03  Quentin Ochem  <ochem@adacore.com>
 
 	* gnat.dg/controlled5.adb: New test.
