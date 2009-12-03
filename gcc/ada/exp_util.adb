@@ -3811,6 +3811,14 @@ package body Exp_Util is
       Set_Ekind (Equiv_Type, E_Record_Type);
       Set_Parent_Subtype (Equiv_Type, Constr_Root);
 
+      --  Set Is_Class_Wide_Equivalent_Type very early to trigger the special
+      --  treatment for this type. In particular, even though _parent's type
+      --  is a controlled type or contains controlled components, we do not
+      --  want to set Has_Controlled_Component on it to avoid making it gain
+      --  an unwanted _controller component.
+
+      Set_Is_Class_Wide_Equivalent_Type (Equiv_Type);
+
       if not Is_Interface (Root_Typ) then
          Append_To (Comp_List,
            Make_Component_Declaration (Loc,
@@ -4024,11 +4032,6 @@ package body Exp_Util is
 
             CW_Subtype := New_Class_Wide_Subtype (Unc_Typ, E);
             Set_Equivalent_Type (CW_Subtype, EQ_Typ);
-
-            if Present (EQ_Typ) then
-               Set_Is_Class_Wide_Equivalent_Type (EQ_Typ);
-            end if;
-
             Set_Cloned_Subtype (CW_Subtype, Base_Type (Unc_Typ));
 
             return New_Occurrence_Of (CW_Subtype, Loc);

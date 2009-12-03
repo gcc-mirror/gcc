@@ -2185,14 +2185,21 @@ package body Freeze is
 
             Comp := First_Component (Rec);
             while Present (Comp) loop
-               if Has_Controlled_Component (Etype (Comp))
-                 or else (Chars (Comp) /= Name_uParent
-                           and then Is_Controlled (Etype (Comp)))
-                 or else (Is_Protected_Type (Etype (Comp))
-                           and then Present
-                             (Corresponding_Record_Type (Etype (Comp)))
-                           and then Has_Controlled_Component
-                             (Corresponding_Record_Type (Etype (Comp))))
+
+               --  Do not set Has_Controlled_Component on a class-wide
+               --  equivalent type. See Make_CW_Equivalent_Type.
+
+               if not Is_Class_Wide_Equivalent_Type (Rec)
+                 and then (Has_Controlled_Component (Etype (Comp))
+                            or else (Chars (Comp) /= Name_uParent
+                                      and then Is_Controlled (Etype (Comp)))
+                            or else (Is_Protected_Type (Etype (Comp))
+                                      and then Present
+                                        (Corresponding_Record_Type
+                                          (Etype (Comp)))
+                                      and then Has_Controlled_Component
+                                        (Corresponding_Record_Type
+                                          (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
                   exit;

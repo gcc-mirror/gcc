@@ -1,3 +1,8 @@
+2009-12-03  Quentin Ochem  <ochem@adacore.com>
+
+	* gnat.dg/controlled5.adb: New test.
+	* gnat.dg/controlled5_pkg.ad[sb]: New helper.
+
 2009-12-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42217
