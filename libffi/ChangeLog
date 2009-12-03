@@ -1,4 +1,9 @@
-2009-11-30  David Edelsohn  <edelsohn@gnu.org>
+2009-12-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Fix typo in INT64
+	case.
+
+2009-12-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/aix.S (ffi_call_AIX): Convert to more standard
 	register usage.  Call ffi_prep_args directly.  Add long double
