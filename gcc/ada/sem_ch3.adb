@@ -18028,9 +18028,13 @@ package body Sem_Ch3 is
          if Ekind (Component) /= E_Component then
             null;
 
-         elsif Has_Controlled_Component (Etype (Component))
-           or else (Chars (Component) /= Name_uParent
-                     and then Is_Controlled (Etype (Component)))
+         --  Do not set Has_Controlled_Component on a class-wide equivalent
+         --  type. See Make_CW_Equivalent_Type.
+
+         elsif not Is_Class_Wide_Equivalent_Type (T)
+           and then (Has_Controlled_Component (Etype (Component))
+                      or else (Chars (Component) /= Name_uParent
+                                and then Is_Controlled (Etype (Component))))
          then
             Set_Has_Controlled_Component (T, True);
             Final_Storage_Only :=

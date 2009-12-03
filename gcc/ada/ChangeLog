@@ -1,3 +1,13 @@
+2009-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Make_CW_Equivalent_Type): Set the
+	Is_Class_Wide_Equivalent_Type flag here in lieu of...
+	(Make_Subtype_From_Expr): ...here.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Do not set
+	Has_Controlled_Component on class-wide equivalent types.
+	* freeze.adb (Freeze_Record_Type): Likewise.
+	* sem_ch3.adb (Record_Type_Definition): Likewise.
+
 2009-12-01  Pascal Obry  <obry@adacore.com>
 
 	* s-osprim-mingw.adb (Get_Base_Time): Make sure that the base time is
