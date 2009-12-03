@@ -1,3 +1,8 @@
+2009-12-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/linux-atomic.c (SYNC_LOCK_RELEASE): Place memory barrier
+	before the lock release.
+
 2009-12-03  Michael Matz  <matz@suse.de>
 
 	PR middle-end/38474

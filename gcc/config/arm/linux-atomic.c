@@ -266,8 +266,10 @@ SUBWORD_TEST_AND_SET (char,  1)
   void HIDDEN								\
   __sync_lock_release_##WIDTH (TYPE *ptr)				\
   {									\
-    *ptr = 0;								\
+    /* All writes before this point must be seen before we release	\
+       the lock itself.  */						\
     __kernel_dmb ();							\
+    *ptr = 0;								\
   }
 
 SYNC_LOCK_RELEASE (int,   4)
