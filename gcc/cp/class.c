@@ -4254,7 +4254,12 @@ remove_zero_width_bit_fields (tree t)
     {
       if (TREE_CODE (*fieldsp) == FIELD_DECL
 	  && DECL_C_BIT_FIELD (*fieldsp)
-	  && DECL_INITIAL (*fieldsp))
+          /* We should not be confused by the fact that grokbitfield
+	     temporarily sets the width of the bit field into
+	     DECL_INITIAL (*fieldsp).
+	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
+	     to that width.  */
+	  && integer_zerop (DECL_SIZE (*fieldsp)))
 	*fieldsp = TREE_CHAIN (*fieldsp);
       else
 	fieldsp = &TREE_CHAIN (*fieldsp);
