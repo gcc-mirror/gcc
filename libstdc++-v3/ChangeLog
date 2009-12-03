@@ -1,5 +1,17 @@
 2009-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/42261
+	* include/bits/basic_string.h (_S_construct_aux(_Integer, _Integer,
+	const _Alloc&, __true_type)): Cast the second argument to value_type.
+	* include/ext/sso_string_base.h (_M_construct_aux(_Integer, _Integer,
+	std::__true_type)): Likewise.
+	* include/ext/rc_string_base.h (_S_construct_aux(_Integer, _Integer,
+	const _Alloc&, std::__true_type)): Likewise.
+	* testsuite/21_strings/basic_string/cons/char/42261.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/42261.cc: Likewise.
+
+2009-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/20_util/bind/ref.cc: Add.
 	* testsuite/20_util/bind/all_bound.cc: Likewise.
 	* testsuite/20_util/bind/nested.cc: Likewise.
