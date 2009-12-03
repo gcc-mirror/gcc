@@ -1,3 +1,10 @@
+2009-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42256
+	* g++.dg/inherit/thunk11.C: New test.
+	* g++.dg/inherit/thunk11.h: New file.
+	* g++.dg/inherit/thunk11-aux.cc: New file.
+
 2009-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/ipa/iinline-1.C: Adjust.
