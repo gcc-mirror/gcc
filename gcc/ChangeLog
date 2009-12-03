@@ -1,3 +1,8 @@
+2009-12-03  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* ggc-page.c (struct free_object): Pull definition out ...
+	(struct globals): .. from here.
+
 2009-12-02  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (div_if_zero_remainder): Honor that sizetypes
