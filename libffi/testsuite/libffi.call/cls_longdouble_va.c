@@ -26,7 +26,7 @@ int main (void)
 	void* args[3];
 	ffi_type* arg_types[3];
 
-	char*		format	= "%L.1f\n";
+	char*		format	= "%.1Lf\n";
 	long double	ldArg	= 7;
 	ffi_arg		res		= 0;
 
