@@ -1,3 +1,8 @@
+2009-12-03  David Edelsohn  <edelsohn@gnu.org>
+
+	PR libffi/42243
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Remove extra parentheses.
+
 2009-12-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libffi.call/cls_longdouble_va.c (main): Fix format string.

@@ -90,13 +90,12 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 
   /* 'fpr_base' points at the space for fpr1, and grows upwards as
      we use FPR registers.  */
-  double *fpr_base = (double *) ((stacktop - ASM_NEEDS_REGISTERS)
-				 - NUM_FPR_ARG_REGISTERS);
+  double *fpr_base = (double *) (stacktop - ASM_NEEDS_REGISTERS) - NUM_FPR_ARG_REGISTERS;
   int fparg_count = 0;
 
 
   /* 'next_arg' grows up as we put parameters in it.  */
-  unsigned long *next_arg = (unsigned long *) stack + 6; /* 6 reserved positions.  */
+  unsigned long *next_arg = stack + 6; /* 6 reserved positions.  */
 
   int i;
   double double_tmp;
@@ -107,8 +106,8 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
   unsigned size_al = 0;
 
   /* Check that everything starts aligned properly.  */
-  FFI_ASSERT(((unsigned)(char *)stack & 0xF) == 0);
-  FFI_ASSERT(((unsigned)(char *)stacktop & 0xF) == 0);
+  FFI_ASSERT(((unsigned) (char *) stack & 0xF) == 0);
+  FFI_ASSERT(((unsigned) (char *) stacktop & 0xF) == 0);
   FFI_ASSERT((bytes & 0xF) == 0);
 
   /* Deal with return values that are actually pass-by-reference.
@@ -116,7 +115,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
      Return values are referenced by r3, so r4 is the first parameter.  */
 
   if (flags & FLAG_RETVAL_REFERENCE)
-    *next_arg++ = (unsigned long)(char *)ecif->rvalue;
+    *next_arg++ = (unsigned long) (char *) ecif->rvalue;
 
   /* Now for the arguments.  */
   for (i = ecif->cif->nargs; i > 0; i--, ptr++, p_argv++)
@@ -127,7 +126,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	   purpose registers are filled, the corresponding GPRs that match
 	   the size of the floating-point parameter are skipped.  */
 	case FFI_TYPE_FLOAT:
-	  double_tmp = *(float *)*p_argv;
+	  double_tmp = *(float *) *p_argv;
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
 	    *(double *)next_arg = double_tmp;
 	  else
@@ -138,7 +137,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	  break;
 
 	case FFI_TYPE_DOUBLE:
-	  double_tmp = *(double *)*p_argv;
+	  double_tmp = *(double *) *p_argv;
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
 	    *(double *)next_arg = double_tmp;
 	  else
@@ -163,7 +162,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	  next_arg += 2;
 	  fparg_count += 2;
 #else
-	  double_tmp = *((double *) *p_argv);
+	  double_tmp = ((double *) *p_argv)[0];
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS)
 	    *fpr_base++ = double_tmp;
 	  else
@@ -187,7 +186,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	  goto putgpr;
 #else
 	  *(long long *) next_arg = *(long long *) *p_argv;
-	  next_arg+=2;
+	  next_arg += 2;
 #endif
 	  break;
 	case FFI_TYPE_POINTER:
@@ -225,14 +224,13 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	     Structures with 3 byte in size are padded upwards.  */
 	  size_al = (*ptr)->size;
 	  /* If the first member of the struct is a double, then align
-	     the struct to double-word.
-	     Type 3 is defined in include/ffi.h. #define FFI_TYPE_DOUBLE 3.  */
-	  if ((*ptr)->elements[0]->type == 3)
+	     the struct to double-word.  */
+	  if ((*ptr)->elements[0]->type == FFI_TYPE_DOUBLE)
 	    size_al = ALIGN((*ptr)->size, 8);
 	  if (size_al < 3 && ecif->cif->abi == FFI_DARWIN)
 	    dest_cpy += 4 - size_al;
 
-	  memcpy((char *)dest_cpy, (char *)*p_argv, size_al);
+	  memcpy((char *) dest_cpy, (char *) *p_argv, size_al);
 	  next_arg += (size_al + 3) / 4;
 #endif
 	  break;
