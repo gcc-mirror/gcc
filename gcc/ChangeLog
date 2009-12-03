@@ -1,3 +1,14 @@
+2009-12-03  Ken Werner  <ken.werner@de.ibm.com>
+
+        * config/spu/spu-elf.h (STARTFILE_SPEC): Add support for gprof
+        startup files.
+        * config/spu/spu-protos.h (spu_function_profiler): Add prototype.
+        * config/spu/spu.c (spu_function_profiler): New function.
+        * config/spu/spu.h (FUNCTION_PROFILER): Invoke
+        spu_function_profiler.
+        (NO_PROFILE_COUNTERS): Define.
+        (PROFILE_BEFORE_PROLOGUE): Likewise.
+
 2009-12-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* ggc-page.c (struct free_object): Pull definition out ...
