@@ -7074,4 +7074,11 @@ spu_split_convert (rtx ops[])
     }
 }
 
+void
+spu_function_profiler (FILE * file, int labelno)
+{
+  fprintf (file, "# profile\n");
+  fprintf (file, "brsl $75,  _mcount\n");
+}
+
 #include "gt-spu.h"

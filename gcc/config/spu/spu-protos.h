@@ -85,6 +85,7 @@ extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
 extern void spu_init_expanders (void);
 extern void spu_split_convert (rtx *);
+extern void spu_function_profiler (FILE *, int);
 
 /* spu-c.c */
 extern tree spu_resolve_overloaded_builtin (location_t, tree fndecl,

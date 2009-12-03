@@ -48,8 +48,9 @@
    object constructed before entering `main'.  */
 
 #undef  STARTFILE_SPEC 
-#define STARTFILE_SPEC "%{mstdmain: crt2.o%s} %{!mstdmain: crt1.o%s} \
-			crti.o%s crtbegin.o%s"
+#define STARTFILE_SPEC "%{mstdmain: %{pg|p:gcrt2.o%s;:crt2.o%s}}\
+                        %{!mstdmain: %{pg|p:gcrt1.o%s;:crt1.o%s}}\
+                        crti.o%s crtbegin.o%s"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC   "crtend.o%s crtn.o%s"

@@ -393,9 +393,12 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 /* Profiling */
 
-/* Nothing, for now. */
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
-   fprintf (FILE, "\t\n")
+  spu_function_profiler ((FILE), (LABELNO));
+
+#define NO_PROFILE_COUNTERS 1
+
+#define PROFILE_BEFORE_PROLOGUE 1
 
 
 /* Trampolines */
