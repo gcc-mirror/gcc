@@ -1,3 +1,13 @@
+2009-12-03  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR middle-end/42202
+	* regrename.c (live_in_chains): New variable.
+	(verify_reg_tracked): New static function.
+	(scan_rtx_reg): Update live_in_chains.
+	(scan_rtx): Only promote sets in COND_EXEC to OP_INOUT if
+	we're already tracking the reg.
+	(build_def_use): Likewise.  Initialize live_in_chains.
+
 2009-12-03  Ken Werner  <ken.werner@de.ibm.com>
 
         * config/spu/spu-elf.h (STARTFILE_SPEC): Add support for gprof

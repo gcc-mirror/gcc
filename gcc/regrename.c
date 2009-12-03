@@ -440,6 +440,54 @@ static struct du_head *closed_chains;
 static bitmap_head open_chains_set;
 static HARD_REG_SET live_hard_regs;
 
+/* Record the registers being tracked in open_chains.  The intersection
+   between this and live_hard_regs is empty.  */
+static HARD_REG_SET live_in_chains;
+
+/* Return true if OP is a reg that is being tracked already in some form.
+   May set fail_current_block if it sees an unhandled case of overlap.  */
+
+static bool
+verify_reg_tracked (rtx op)
+{
+  unsigned regno, nregs;
+  bool all_live, all_dead;
+  if (!REG_P (op))
+    return false;
+
+  regno = REGNO (op);
+  nregs = hard_regno_nregs[regno][GET_MODE (op)];
+  all_live = all_dead = true;
+  while (nregs-- > 0)
+    if (TEST_HARD_REG_BIT (live_hard_regs, regno + nregs))
+      all_dead = false;
+    else
+      all_live = false;
+  if (!all_dead && !all_live)
+    {
+      fail_current_block = true;
+      return false;
+    }
+
+  if (all_live)
+    return true;
+
+  nregs = hard_regno_nregs[regno][GET_MODE (op)];
+  all_live = all_dead = true;
+  while (nregs-- > 0)
+    if (TEST_HARD_REG_BIT (live_in_chains, regno + nregs))
+      all_dead = false;
+    else
+      all_live = false;
+  if (!all_dead && !all_live)
+    {
+      fail_current_block = true;
+      return false;
+    }
+
+  return all_live;
+}
+
 /* Called through note_stores.  DATA points to a rtx_code, either SET or
    CLOBBER, which tells us which kind of rtx to look at.  If we have a
    match, record the set register in live_hard_regs and in the hard_conflicts
@@ -497,10 +545,14 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 	  mark_conflict (open_chains, head->id);
 
 	  /* Since we're tracking this as a chain now, remove it from the
-	     list of conflicting live hard registers.  */
+	     list of conflicting live hard registers and track it in
+	     live_in_chains instead.  */
 	  nregs = head->nregs;
 	  while (nregs-- > 0)
-	    CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+	    {
+	      SET_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+	      CLEAR_HARD_REG_BIT (live_hard_regs, head->regno + nregs);
+	    }
 
 	  COPY_HARD_REG_SET (head->hard_conflicts, live_hard_regs);
 	  bitmap_set_bit (&open_chains_set, head->id);
@@ -585,10 +637,17 @@ scan_rtx_reg (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
       if ((action == terminate_dead || action == terminate_write)
 	  && superset)
 	{
+	  unsigned nregs;
+
 	  head->terminated = 1;
 	  head->next_chain = closed_chains;
 	  closed_chains = head;
 	  bitmap_clear_bit (&open_chains_set, head->id);
+
+	  nregs = head->nregs;
+	  while (nregs-- > 0)
+	    CLEAR_HARD_REG_BIT (live_in_chains, head->regno + nregs);
+
 	  *p = next;
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -805,7 +864,8 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
     case SET:
       scan_rtx (insn, &SET_SRC (x), cl, action, OP_IN);
       scan_rtx (insn, &SET_DEST (x), cl, action,
-		GET_CODE (PATTERN (insn)) == COND_EXEC ? OP_INOUT : OP_OUT);
+		(GET_CODE (PATTERN (insn)) == COND_EXEC
+		 && verify_reg_tracked (SET_DEST (x))) ? OP_INOUT : OP_OUT);
       return;
 
     case STRICT_LOW_PART:
@@ -831,7 +891,8 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 
     case CLOBBER:
       scan_rtx (insn, &SET_DEST (x), cl, action,
-		GET_CODE (PATTERN (insn)) == COND_EXEC ? OP_INOUT : OP_OUT);
+		(GET_CODE (PATTERN (insn)) == COND_EXEC
+		 && verify_reg_tracked (SET_DEST (x))) ? OP_INOUT : OP_OUT);
       return;
 
     case EXPR_LIST:
@@ -964,6 +1025,7 @@ build_def_use (basic_block bb)
 
   current_id = 0;
   bitmap_initialize (&open_chains_set, &bitmap_default_obstack);
+  CLEAR_HARD_REG_SET (live_in_chains);
   REG_SET_TO_HARD_REG_SET (live_hard_regs, df_get_live_in (bb));
   for (def_rec = df_get_artificial_defs (bb->index); *def_rec; def_rec++)
     {
@@ -1017,8 +1079,10 @@ build_def_use (basic_block bb)
 	  n_ops = recog_data.n_operands;
 
 	  /* Simplify the code below by rewriting things to reflect
-	     matching constraints.  Also promote OP_OUT to OP_INOUT
-	     in predicated instructions.  */
+	     matching constraints.  Also promote OP_OUT to OP_INOUT in
+	     predicated instructions, but only for register operands
+	     that are already tracked, so that we can create a chain
+	     when the first SET makes a register live.  */
 
 	  predicated = GET_CODE (PATTERN (insn)) == COND_EXEC;
 	  for (i = 0; i < n_ops; ++i)
@@ -1027,7 +1091,8 @@ build_def_use (basic_block bb)
 	      if (matches >= 0)
 		recog_op_alt[i][alt].cl = recog_op_alt[matches][alt].cl;
 	      if (matches >= 0 || recog_op_alt[i][alt].matched >= 0
-	          || (predicated && recog_data.operand_type[i] == OP_OUT))
+	          || (predicated && recog_data.operand_type[i] == OP_OUT
+		      && verify_reg_tracked (recog_data.operand[i])))
 		{
 		  recog_data.operand_type[i] = OP_INOUT;
 		  if (matches >= 0
