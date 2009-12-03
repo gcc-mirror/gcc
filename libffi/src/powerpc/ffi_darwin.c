@@ -183,7 +183,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_SINT64:
 #ifdef POWERPC64
-	  gprvalue = *(long long *) p_argv;
+	  gprvalue = *(long long *) *p_argv;
 	  goto putgpr;
 #else
 	  *(long long *) next_arg = *(long long *) *p_argv;
