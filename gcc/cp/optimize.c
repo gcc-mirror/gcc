@@ -309,7 +309,6 @@ maybe_clone_body (tree fn)
 	      comdat_group = cdtor_comdat_group (fns[1], fns[0]);
 	      DECL_COMDAT_GROUP (fns[0]) = comdat_group;
 	    }
-	  emit_associated_thunks (clone);
 	}
 
       /* Build the delete destructor by calling complete destructor
@@ -383,7 +382,10 @@ maybe_clone_body (tree fn)
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
       if (alias)
-	expand_or_defer_fn_1 (clone);
+	{
+	  if (expand_or_defer_fn_1 (clone))
+	    emit_associated_thunks (clone);
+	}
       else
 	expand_or_defer_fn (clone);
       first = false;

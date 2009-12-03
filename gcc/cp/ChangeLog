@@ -1,3 +1,9 @@
+2009-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42256
+	* optimize.c (maybe_clone_body): Call emit_associated_thunks
+	after expand_or_defer_fn_1.
+
 2009-12-02  Taras Glek  <taras@mozilla.com>
 
 	* parser.c (cp_parser_class_specifier): Back out my previous change.
