@@ -1,3 +1,8 @@
+2009-12-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42217
+	* g++.dg/other/bitfield4.C: New test.
+
 2009-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42256
