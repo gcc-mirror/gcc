@@ -22,5 +22,5 @@
 
 #include <vector>
 
-// { dg-error "Cannot use -D_GLIBCXX_PROFILE with " "" { target *-*-* } 165 }
+// { dg-error "Cannot use -D_GLIBCXX_PROFILE with " "" { target *-*-* } 167 }
 // { dg-excess-errors "In file included from" }

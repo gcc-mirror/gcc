@@ -1,3 +1,8 @@
+2009-12-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/ext/profile/mutex_extensions.cc: Adjust dg-error line
+	number.
+
 2009-11-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Add host-dependent
