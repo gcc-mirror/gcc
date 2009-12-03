@@ -1321,7 +1321,7 @@ assemble_thunk (struct cgraph_node *node)
       DECL_RESULT (thunk_fndecl)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
 		      RESULT_DECL, 0, integer_type_node);
-      fnname = IDENTIFIER_POINTER (DECL_NAME (thunk_fndecl));
+      fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
 
       /* The back end expects DECL_INITIAL to contain a BLOCK, so we
 	 create one.  */

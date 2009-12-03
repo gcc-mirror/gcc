@@ -1,3 +1,8 @@
+2009-12-03  Richard Guenther  <rguenther@suse.de>
+
+	* cgraphunit.c (assemble_thunk): Use DECL_ASSEMBLER_NAME
+	instead of DECL_NAME for the entry point.
+
 2009-12-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/linux-atomic.c (SYNC_LOCK_RELEASE): Place memory barrier
