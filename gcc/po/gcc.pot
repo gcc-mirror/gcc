@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2009-12-02 14:22+0000\n"
+"POT-Creation-Date: 2009-12-03 21:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -335,7 +335,7 @@ msgstr ""
 msgid "initialization of a flexible array member"
 msgstr ""
 
-#: c-typeck.c:5735 cp/typeck2.c:755
+#: c-typeck.c:5735 cp/typeck2.c:851
 #, gcc-internal-format
 msgid "char-array initialized from wide string"
 msgstr ""
@@ -3037,7 +3037,7 @@ msgid "invalid const_double operand"
 msgstr ""
 
 #: config/cris/cris.c:528 config/moxie/moxie.c:91 c-typeck.c:5601
-#: c-typeck.c:5617 c-typeck.c:5634 final.c:3086 final.c:3088 fold-const.c:990
+#: c-typeck.c:5617 c-typeck.c:5634 final.c:3086 final.c:3088 fold-const.c:986
 #: gcc.c:5237 loop-iv.c:2968 loop-iv.c:2977 rtl-error.c:105 toplev.c:625
 #: tree-ssa-loop-niter.c:1885 tree-vrp.c:5724 cp/typeck.c:4912 java/expr.c:411
 #, gcc-internal-format
@@ -3856,11 +3856,11 @@ msgstr ""
 msgid "candidates are:"
 msgstr ""
 
-#: cp/call.c:7308
+#: cp/call.c:7335
 msgid "candidate 1:"
 msgstr ""
 
-#: cp/call.c:7309
+#: cp/call.c:7336
 msgid "candidate 2:"
 msgstr ""
 
@@ -4030,6 +4030,91 @@ msgstr ""
 #: cp/g++spec.c:261 java/jvspec.c:403
 #, c-format
 msgid "argument to '%s' missing\n"
+msgstr ""
+
+#: cp/rtti.c:529
+msgid "target is not pointer or reference to class"
+msgstr ""
+
+#: cp/rtti.c:534
+msgid "target is not pointer or reference to complete type"
+msgstr ""
+
+#: cp/rtti.c:540
+msgid "target is not pointer or reference"
+msgstr ""
+
+#: cp/rtti.c:551
+msgid "source is not a pointer"
+msgstr ""
+
+#: cp/rtti.c:556
+msgid "source is not a pointer to class"
+msgstr ""
+
+#: cp/rtti.c:561
+msgid "source is a pointer to incomplete type"
+msgstr ""
+
+#: cp/rtti.c:574
+msgid "source is not of class type"
+msgstr ""
+
+#: cp/rtti.c:579
+msgid "source is of incomplete class type"
+msgstr ""
+
+#: cp/rtti.c:592
+msgid "conversion casts away constness"
+msgstr ""
+
+#: cp/rtti.c:752
+msgid "source type is not polymorphic"
+msgstr ""
+
+#: cp/typeck.c:4465 c-typeck.c:3321
+#, gcc-internal-format
+msgid "wrong type argument to unary minus"
+msgstr ""
+
+#: cp/typeck.c:4466 c-typeck.c:3308
+#, gcc-internal-format
+msgid "wrong type argument to unary plus"
+msgstr ""
+
+#: cp/typeck.c:4489 c-typeck.c:3347
+#, gcc-internal-format
+msgid "wrong type argument to bit-complement"
+msgstr ""
+
+#: cp/typeck.c:4496 c-typeck.c:3355
+#, gcc-internal-format
+msgid "wrong type argument to abs"
+msgstr ""
+
+#: cp/typeck.c:4504 c-typeck.c:3367
+#, gcc-internal-format
+msgid "wrong type argument to conjugation"
+msgstr ""
+
+#: cp/typeck.c:4515
+msgid "in argument to unary !"
+msgstr ""
+
+#: cp/typeck.c:4576
+msgid "no pre-increment operator for type"
+msgstr ""
+
+#: cp/typeck.c:4578
+msgid "no post-increment operator for type"
+msgstr ""
+
+#: cp/typeck.c:4580
+msgid "no pre-decrement operator for type"
+msgstr ""
+
+#: cp/typeck.c:4582
+msgid "no post-decrement operator for type"
 msgstr ""
 
 #: fortran/arith.c:44
@@ -19263,7 +19348,7 @@ msgstr ""
 #: c-common.c:6814 c-common.c:6878 c-common.c:7006 c-common.c:7074
 #: c-common.c:7118 c-common.c:7166 c-common.c:7244 c-common.c:7268
 #: c-common.c:7554 c-common.c:7577 c-common.c:7616 c-common.c:7705
-#: c-common.c:7847 tree.c:5305 tree.c:5317 tree.c:5327 config/darwin.c:1437
+#: c-common.c:7847 tree.c:5301 tree.c:5313 tree.c:5323 config/darwin.c:1437
 #: config/arm/arm.c:4564 config/arm/arm.c:4592 config/arm/arm.c:4609
 #: config/avr/avr.c:4697 config/h8300/h8300.c:5362 config/h8300/h8300.c:5386
 #: config/i386/i386.c:4448 config/i386/i386.c:25933 config/ia64/ia64.c:635
@@ -19869,7 +19954,7 @@ msgstr ""
 msgid "GCC supports only %u nested scopes"
 msgstr ""
 
-#: c-decl.c:1102 cp/decl.c:356
+#: c-decl.c:1102 cp/decl.c:357
 #, gcc-internal-format
 msgid "label %q+D used but not defined"
 msgstr ""
@@ -19884,7 +19969,7 @@ msgstr ""
 msgid "inline function %q+D declared but never defined"
 msgstr ""
 
-#: c-decl.c:1174 cp/decl.c:599
+#: c-decl.c:1174 cp/decl.c:600
 #, gcc-internal-format
 msgid "unused variable %q+D"
 msgstr ""
@@ -20154,7 +20239,7 @@ msgstr ""
 msgid "for each function it appears in.)"
 msgstr ""
 
-#: c-decl.c:3001 cp/decl.c:2435
+#: c-decl.c:3001 cp/decl.c:2436
 #, gcc-internal-format
 msgid "label %qE referenced outside of any function"
 msgstr ""
@@ -20189,7 +20274,7 @@ msgstr ""
 msgid "duplicate label declaration %qE"
 msgstr ""
 
-#: c-decl.c:3212 cp/decl.c:2744
+#: c-decl.c:3212 cp/decl.c:2745
 #, gcc-internal-format
 msgid "duplicate label %qD"
 msgstr ""
@@ -20321,7 +20406,7 @@ msgstr ""
 msgid "variable %qD has initializer but incomplete type"
 msgstr ""
 
-#: c-decl.c:4046 cp/decl.c:4163 cp/decl.c:11685
+#: c-decl.c:4046 cp/decl.c:4164 cp/decl.c:11705
 #, gcc-internal-format
 msgid "inline function %q+D given attribute noinline"
 msgstr ""
@@ -20446,7 +20531,7 @@ msgstr ""
 msgid "variable length array %qE is used"
 msgstr ""
 
-#: c-decl.c:4684 cp/decl.c:7347
+#: c-decl.c:4684 cp/decl.c:7348
 #, gcc-internal-format
 msgid "variable length array is used"
 msgstr ""
@@ -20531,7 +20616,7 @@ msgstr ""
 msgid "storage class specified for unnamed parameter"
 msgstr ""
 
-#: c-decl.c:4987 cp/decl.c:8277
+#: c-decl.c:4987 cp/decl.c:8284
 #, gcc-internal-format
 msgid "storage class specified for typename"
 msgstr ""
@@ -20680,7 +20765,7 @@ msgstr ""
 msgid "function definition has qualified void return type"
 msgstr ""
 
-#: c-decl.c:5479 cp/decl.c:8383
+#: c-decl.c:5479 cp/decl.c:8390
 #, gcc-internal-format
 msgid "type qualifiers ignored on function return type"
 msgstr ""
@@ -20741,7 +20826,7 @@ msgstr ""
 msgid "a member of a structure or union cannot have a variably modified type"
 msgstr ""
 
-#: c-decl.c:5718 cp/decl.c:7563
+#: c-decl.c:5718 cp/decl.c:7570
 #, gcc-internal-format
 msgid "variable or field %qE declared void"
 msgstr ""
@@ -20910,7 +20995,7 @@ msgstr ""
 msgid "defining type in %qs expression is invalid in C++"
 msgstr ""
 
-#: c-decl.c:6558 cp/decl.c:3899
+#: c-decl.c:6558 cp/decl.c:3900
 #, gcc-internal-format
 msgid "declaration does not declare anything"
 msgstr ""
@@ -21141,7 +21226,7 @@ msgstr ""
 msgid "argument %qD doesn%'t match prototype"
 msgstr ""
 
-#: c-decl.c:8030 cp/decl.c:12531
+#: c-decl.c:8030 cp/decl.c:12551
 #, gcc-internal-format
 msgid "no return statement in function returning non-void"
 msgstr ""
@@ -21722,7 +21807,7 @@ msgstr ""
 msgid "invalid expression type for %<#pragma omp atomic%>"
 msgstr ""
 
-#: c-omp.c:260 cp/semantics.c:4475
+#: c-omp.c:260 cp/semantics.c:4478
 #, gcc-internal-format
 msgid "invalid type for iteration variable %qE"
 msgstr ""
@@ -21732,22 +21817,22 @@ msgstr ""
 msgid "%qE is not initialized"
 msgstr ""
 
-#: c-omp.c:290 cp/semantics.c:4390
+#: c-omp.c:290 cp/semantics.c:4393
 #, gcc-internal-format
 msgid "missing controlling predicate"
 msgstr ""
 
-#: c-omp.c:368 cp/semantics.c:4147
+#: c-omp.c:368 cp/semantics.c:4150
 #, gcc-internal-format
 msgid "invalid controlling predicate"
 msgstr ""
 
-#: c-omp.c:375 cp/semantics.c:4396
+#: c-omp.c:375 cp/semantics.c:4399
 #, gcc-internal-format
 msgid "missing increment expression"
 msgstr ""
 
-#: c-omp.c:444 cp/semantics.c:4252
+#: c-omp.c:444 cp/semantics.c:4255
 #, gcc-internal-format
 msgid "invalid increment expression"
 msgstr ""
@@ -22056,7 +22141,7 @@ msgstr ""
 msgid "wide string literal in %<asm%>"
 msgstr ""
 
-#: c-parser.c:2765 c-parser.c:7091 cp/parser.c:22951
+#: c-parser.c:2765 c-parser.c:7091 cp/parser.c:22949
 #, gcc-internal-format
 msgid "expected string literal"
 msgstr ""
@@ -22221,39 +22306,39 @@ msgstr ""
 msgid "extra semicolon in method definition specified"
 msgstr ""
 
-#: c-parser.c:6985 cp/parser.c:22995
+#: c-parser.c:6985 cp/parser.c:22993
 #, gcc-internal-format
 msgid "%<#pragma omp barrier%> may only be used in compound statements"
 msgstr ""
 
-#: c-parser.c:6996 cp/parser.c:23010
+#: c-parser.c:6996 cp/parser.c:23008
 #, gcc-internal-format
 msgid "%<#pragma omp flush%> may only be used in compound statements"
 msgstr ""
 
-#: c-parser.c:7007 cp/parser.c:23026
+#: c-parser.c:7007 cp/parser.c:23024
 #, gcc-internal-format
 msgid "%<#pragma omp taskwait%> may only be used in compound statements"
 msgstr ""
 
-#: c-parser.c:7020 cp/parser.c:23054
+#: c-parser.c:7020 cp/parser.c:23052
 #, gcc-internal-format
 msgid ""
 "%<#pragma omp section%> may only be used in %<#pragma omp sections%> "
 "construct"
 msgstr ""
 
-#: c-parser.c:7026 cp/parser.c:22985
+#: c-parser.c:7026 cp/parser.c:22983
 #, gcc-internal-format
 msgid "%<#pragma GCC pch_preprocess%> must be first"
 msgstr ""
 
-#: c-parser.c:7185 cp/parser.c:21274
+#: c-parser.c:7185 cp/parser.c:21272
 #, gcc-internal-format
 msgid "too many %qs clauses"
 msgstr ""
 
-#: c-parser.c:7287 cp/parser.c:21388
+#: c-parser.c:7287 cp/parser.c:21386
 #, gcc-internal-format
 msgid "collapse argument needs positive constant integer expression"
 msgstr ""
@@ -22283,12 +22368,12 @@ msgstr ""
 msgid "expected %<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%>, or %<||%>"
 msgstr ""
 
-#: c-parser.c:7627 cp/parser.c:21676
+#: c-parser.c:7627 cp/parser.c:21674
 #, gcc-internal-format
 msgid "schedule %<runtime%> does not take a %<chunk_size%> parameter"
 msgstr ""
 
-#: c-parser.c:7631 cp/parser.c:21679
+#: c-parser.c:7631 cp/parser.c:21677
 #, gcc-internal-format
 msgid "schedule %<auto%> does not take a %<chunk_size%> parameter"
 msgstr ""
@@ -22303,7 +22388,7 @@ msgstr ""
 msgid "expected %<#pragma omp%> clause"
 msgstr ""
 
-#: c-parser.c:7778 cp/parser.c:21827
+#: c-parser.c:7778 cp/parser.c:21825
 #, gcc-internal-format
 msgid "%qs is not valid for %qs"
 msgstr ""
@@ -22323,7 +22408,7 @@ msgstr ""
 msgid "for statement expected"
 msgstr ""
 
-#: c-parser.c:8049 cp/semantics.c:4380 cp/semantics.c:4450
+#: c-parser.c:8049 cp/semantics.c:4383 cp/semantics.c:4453
 #, gcc-internal-format
 msgid "expected iteration declaration or initialization"
 msgstr ""
@@ -22333,12 +22418,12 @@ msgstr ""
 msgid "not enough perfectly nested loops"
 msgstr ""
 
-#: c-parser.c:8182 cp/parser.c:22532
+#: c-parser.c:8182 cp/parser.c:22530
 #, gcc-internal-format
 msgid "collapsed loops not perfectly nested"
 msgstr ""
 
-#: c-parser.c:8220 cp/parser.c:22376 cp/parser.c:22414 cp/pt.c:11173
+#: c-parser.c:8220 cp/parser.c:22374 cp/parser.c:22412 cp/pt.c:11173
 #, gcc-internal-format
 msgid "iteration variable %qD should not be firstprivate"
 msgstr ""
@@ -22353,17 +22438,17 @@ msgstr ""
 msgid "%qD is not a variable"
 msgstr ""
 
-#: c-parser.c:8667 cp/semantics.c:4005
+#: c-parser.c:8667 cp/semantics.c:4008
 #, gcc-internal-format
 msgid "%qE declared %<threadprivate%> after first use"
 msgstr ""
 
-#: c-parser.c:8669 cp/semantics.c:4007
+#: c-parser.c:8669 cp/semantics.c:4010
 #, gcc-internal-format
 msgid "automatic variable %qE cannot be %<threadprivate%>"
 msgstr ""
 
-#: c-parser.c:8673 cp/semantics.c:4009
+#: c-parser.c:8673 cp/semantics.c:4012
 #, gcc-internal-format
 msgid "%<threadprivate%> %qE has incomplete type"
 msgstr ""
@@ -22961,34 +23046,9 @@ msgstr ""
 msgid "pointer to a function used in subtraction"
 msgstr ""
 
-#: c-typeck.c:3308
-#, gcc-internal-format
-msgid "wrong type argument to unary plus"
-msgstr ""
-
-#: c-typeck.c:3321
-#, gcc-internal-format
-msgid "wrong type argument to unary minus"
-msgstr ""
-
 #: c-typeck.c:3341
 #, gcc-internal-format
 msgid "ISO C does not support %<~%> for complex conjugation"
-msgstr ""
-
-#: c-typeck.c:3347
-#, gcc-internal-format
-msgid "wrong type argument to bit-complement"
-msgstr ""
-
-#: c-typeck.c:3355
-#, gcc-internal-format
-msgid "wrong type argument to abs"
-msgstr ""
-
-#: c-typeck.c:3367
-#, gcc-internal-format
-msgid "wrong type argument to conjugation"
 msgstr ""
 
 #: c-typeck.c:3380
@@ -23056,17 +23116,17 @@ msgstr ""
 msgid "read-only member %qD used as %<asm%> output"
 msgstr ""
 
-#: c-typeck.c:3757
+#: c-typeck.c:3757 cp/typeck2.c:141
 #, gcc-internal-format
 msgid "assignment of read-only variable %qD"
 msgstr ""
 
-#: c-typeck.c:3758
+#: c-typeck.c:3758 cp/typeck2.c:145
 #, gcc-internal-format
 msgid "increment of read-only variable %qD"
 msgstr ""
 
-#: c-typeck.c:3759
+#: c-typeck.c:3759 cp/typeck2.c:147
 #, gcc-internal-format
 msgid "decrement of read-only variable %qD"
 msgstr ""
@@ -23076,17 +23136,17 @@ msgstr ""
 msgid "read-only variable %qD used as %<asm%> output"
 msgstr ""
 
-#: c-typeck.c:3763 c-typeck.c:3779
+#: c-typeck.c:3763 c-typeck.c:3779 cp/typeck2.c:196
 #, gcc-internal-format
 msgid "assignment of read-only location %qE"
 msgstr ""
 
-#: c-typeck.c:3764 c-typeck.c:3782
+#: c-typeck.c:3764 c-typeck.c:3782 cp/typeck2.c:200
 #, gcc-internal-format
 msgid "increment of read-only location %qE"
 msgstr ""
 
-#: c-typeck.c:3765 c-typeck.c:3785
+#: c-typeck.c:3765 c-typeck.c:3785 cp/typeck2.c:202
 #, gcc-internal-format
 msgid "decrement of read-only location %qE"
 msgstr ""
@@ -23495,7 +23555,7 @@ msgstr ""
 msgid "(near initialization for %qs)"
 msgstr ""
 
-#: c-typeck.c:6240 cp/decl.c:5216
+#: c-typeck.c:6240 cp/decl.c:5217
 #, gcc-internal-format
 msgid "opaque vector types cannot be initialized"
 msgstr ""
@@ -23675,22 +23735,22 @@ msgstr ""
 msgid "used union type value where scalar is required"
 msgstr ""
 
-#: c-typeck.c:9999 cp/semantics.c:3888
+#: c-typeck.c:9999 cp/semantics.c:3891
 #, gcc-internal-format
 msgid "%qE has invalid type for %<reduction%>"
 msgstr ""
 
-#: c-typeck.c:10034 cp/semantics.c:3901
+#: c-typeck.c:10034 cp/semantics.c:3904
 #, gcc-internal-format
 msgid "%qE has invalid type for %<reduction(%s)%>"
 msgstr ""
 
-#: c-typeck.c:10051 cp/semantics.c:3911
+#: c-typeck.c:10051 cp/semantics.c:3914
 #, gcc-internal-format
 msgid "%qE must be %<threadprivate%> for %<copyin%>"
 msgstr ""
 
-#: c-typeck.c:10061 cp/semantics.c:3708
+#: c-typeck.c:10061 cp/semantics.c:3711
 #, gcc-internal-format
 msgid "%qE is not a variable in clause %qs"
 msgstr ""
@@ -23700,17 +23760,17 @@ msgstr ""
 msgid "%qE appears more than once in data clauses"
 msgstr ""
 
-#: c-typeck.c:10084 cp/semantics.c:3731
+#: c-typeck.c:10084 cp/semantics.c:3734
 #, gcc-internal-format
 msgid "%qE is not a variable in clause %<firstprivate%>"
 msgstr ""
 
-#: c-typeck.c:10106 cp/semantics.c:3753
+#: c-typeck.c:10106 cp/semantics.c:3756
 #, gcc-internal-format
 msgid "%qE is not a variable in clause %<lastprivate%>"
 msgstr ""
 
-#: c-typeck.c:10168 cp/semantics.c:3952
+#: c-typeck.c:10168 cp/semantics.c:3955
 #, gcc-internal-format
 msgid "%qE is predetermined %qs for %qs"
 msgstr ""
@@ -23725,17 +23785,12 @@ msgstr ""
 msgid "function call has aggregate value"
 msgstr ""
 
-#: cfgexpand.c:356
-#, gcc-internal-format
-msgid "program is too large to be compiled on this machine"
-msgstr ""
-
-#: cfgexpand.c:3589
+#: cfgexpand.c:3534
 #, gcc-internal-format
 msgid "not protecting local variables: variable length buffer"
 msgstr ""
 
-#: cfgexpand.c:3592
+#: cfgexpand.c:3537
 #, gcc-internal-format
 msgid "not protecting function: no buffer at least %d bytes long"
 msgstr ""
@@ -24600,50 +24655,50 @@ msgstr ""
 msgid "large fixed-point constant implicitly truncated to fixed-point type"
 msgstr ""
 
-#: fold-const.c:1360
+#: fold-const.c:1356
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when negating a division"
 msgstr ""
 
-#: fold-const.c:4274 fold-const.c:4286
+#: fold-const.c:4270 fold-const.c:4282
 #, gcc-internal-format
 msgid "comparison is always %d due to width of bit-field"
 msgstr ""
 
-#: fold-const.c:5626
+#: fold-const.c:5622
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying range test"
 msgstr ""
 
-#: fold-const.c:6021 fold-const.c:6036
+#: fold-const.c:6017 fold-const.c:6032
 #, gcc-internal-format
 msgid "comparison is always %d"
 msgstr ""
 
-#: fold-const.c:6171
+#: fold-const.c:6167
 #, gcc-internal-format
 msgid "%<or%> of unmatched not-equal tests is always 1"
 msgstr ""
 
-#: fold-const.c:6176
+#: fold-const.c:6172
 #, gcc-internal-format
 msgid "%<and%> of mutually exclusive equal-tests is always 0"
 msgstr ""
 
-#: fold-const.c:9142
+#: fold-const.c:9140
 #, gcc-internal-format
 msgid ""
 "assuming signed overflow does not occur when reducing constant in comparison"
 msgstr ""
 
-#: fold-const.c:9514
+#: fold-const.c:9512
 #, gcc-internal-format
 msgid ""
 "assuming signed overflow does not occur when combining constants around a "
 "comparison"
 msgstr ""
 
-#: fold-const.c:14215
+#: fold-const.c:14213
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
 msgstr ""
@@ -24812,7 +24867,7 @@ msgid "%s: %d basic blocks and %d registers"
 msgstr ""
 
 #: ggc-common.c:466 ggc-common.c:474 ggc-common.c:542 ggc-common.c:561
-#: ggc-page.c:2192 ggc-page.c:2223 ggc-page.c:2230 ggc-zone.c:2442
+#: ggc-page.c:2198 ggc-page.c:2229 ggc-page.c:2236 ggc-zone.c:2442
 #: ggc-zone.c:2453 ggc-zone.c:2457
 #, gcc-internal-format
 msgid "can't write PCH file: %m"
@@ -24829,7 +24884,7 @@ msgid "can't write padding to PCH file: %m"
 msgstr ""
 
 #: ggc-common.c:619 ggc-common.c:627 ggc-common.c:634 ggc-common.c:637
-#: ggc-common.c:647 ggc-common.c:650 ggc-page.c:2320 ggc-zone.c:2476
+#: ggc-common.c:647 ggc-common.c:650 ggc-page.c:2326 ggc-zone.c:2476
 #, gcc-internal-format
 msgid "can't read PCH file: %m"
 msgstr ""
@@ -24839,12 +24894,12 @@ msgstr ""
 msgid "had to relocate PCH"
 msgstr ""
 
-#: ggc-page.c:1518
+#: ggc-page.c:1524
 #, gcc-internal-format
 msgid "open /dev/zero: %m"
 msgstr ""
 
-#: ggc-page.c:2208 ggc-page.c:2214
+#: ggc-page.c:2214 ggc-page.c:2220
 #, gcc-internal-format
 msgid "can't write PCH file"
 msgstr ""
@@ -25021,22 +25076,22 @@ msgstr ""
 msgid "target specific builtin not available"
 msgstr ""
 
-#: lto-streamer-out.c:1171
+#: lto-streamer-out.c:1173
 #, gcc-internal-format
 msgid "gimple bytecode streams do not support the optimization attribute"
 msgstr ""
 
-#: lto-streamer-out.c:1174
+#: lto-streamer-out.c:1176
 #, gcc-internal-format
 msgid "gimple bytecode streams do not support the target attribute"
 msgstr ""
 
-#: lto-streamer-out.c:1192
+#: lto-streamer-out.c:1194
 #, gcc-internal-format
 msgid "tree code %qs is not supported in gimple streams"
 msgstr ""
 
-#: lto-streamer-out.c:1236
+#: lto-streamer-out.c:1238
 #, gcc-internal-format
 msgid ""
 "gimple bytecode streams do not support machine specific builtin functions on "
@@ -25131,7 +25186,7 @@ msgid ""
 "critical region may not be nested inside a critical region with the same name"
 msgstr ""
 
-#: omp-low.c:6750 cp/decl.c:2708 cp/parser.c:8399 cp/parser.c:8419
+#: omp-low.c:6750 cp/decl.c:2709 cp/parser.c:8399 cp/parser.c:8419
 #, gcc-internal-format
 msgid "invalid exit from OpenMP structured block"
 msgstr ""
@@ -26960,103 +27015,103 @@ msgstr ""
 msgid "ignoring attributes applied to %qT after definition"
 msgstr ""
 
-#: tree.c:5218
+#: tree.c:5214
 #, gcc-internal-format
 msgid "%q+D already declared with dllexport attribute: dllimport ignored"
 msgstr ""
 
-#: tree.c:5230
+#: tree.c:5226
 #, gcc-internal-format
 msgid ""
 "%q+D redeclared without dllimport attribute after being referenced with dll "
 "linkage"
 msgstr ""
 
-#: tree.c:5245
+#: tree.c:5241
 #, gcc-internal-format
 msgid "%q+D redeclared without dllimport attribute: previous dllimport ignored"
 msgstr ""
 
-#: tree.c:5345
+#: tree.c:5341
 #, gcc-internal-format
 msgid "inline function %q+D declared as  dllimport: attribute ignored"
 msgstr ""
 
-#: tree.c:5353
+#: tree.c:5349
 #, gcc-internal-format
 msgid "function %q+D definition is marked dllimport"
 msgstr ""
 
-#: tree.c:5361 config/sh/symbian-c.c:144 config/sh/symbian-cxx.c:576
+#: tree.c:5357 config/sh/symbian-c.c:144 config/sh/symbian-cxx.c:576
 #, gcc-internal-format
 msgid "variable %q+D definition is marked dllimport"
 msgstr ""
 
-#: tree.c:5388 config/sh/symbian-c.c:164 config/sh/symbian-cxx.c:651
+#: tree.c:5384 config/sh/symbian-c.c:164 config/sh/symbian-cxx.c:651
 #, gcc-internal-format
 msgid "external linkage required for symbol %q+D because of %qE attribute"
 msgstr ""
 
-#: tree.c:5402
+#: tree.c:5398
 #, gcc-internal-format
 msgid ""
 "%qE implies default visibility, but %qD has already been declared with a "
 "different visibility"
 msgstr ""
 
-#: tree.c:7002
+#: tree.c:6998
 #, gcc-internal-format
 msgid "arrays of functions are not meaningful"
 msgstr ""
 
-#: tree.c:7139
+#: tree.c:7135
 #, gcc-internal-format
 msgid "function return type cannot be function"
 msgstr ""
 
-#: tree.c:8351 tree.c:8436 tree.c:8497
+#: tree.c:8347 tree.c:8432 tree.c:8493
 #, gcc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8388
+#: tree.c:8384
 #, gcc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8401
+#: tree.c:8397
 #, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8450
+#: tree.c:8446
 #, gcc-internal-format
 msgid "tree check: did not expect class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8463
+#: tree.c:8459
 #, gcc-internal-format
 msgid "tree check: expected omp_clause %s, have %s in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8523
+#: tree.c:8519
 #, gcc-internal-format
 msgid ""
 "tree check: expected tree that contains %qs structure, have %qs in %s, at %s:"
 "%d"
 msgstr ""
 
-#: tree.c:8537
+#: tree.c:8533
 #, gcc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8550
+#: tree.c:8546
 #, gcc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr ""
 
-#: tree.c:8563
+#: tree.c:8559
 #, gcc-internal-format
 msgid ""
 "tree check: accessed operand %d of omp_clause %s with %d operands in %s, at %"
@@ -30388,323 +30443,353 @@ msgstr ""
 msgid "call of %<(%T) (%A)%> is ambiguous"
 msgstr ""
 
-#: cp/call.c:3504
+#: cp/call.c:3505
 #, gcc-internal-format
-msgid "%s for ternary %<operator?:%> in %<%E ? %E : %E%>"
+msgid "ambiguous overload for ternary %<operator?:%> in %<%E ? %E : %E%>"
 msgstr ""
 
-#: cp/call.c:3510
+#: cp/call.c:3508
 #, gcc-internal-format
-msgid "%s for %<operator%s%> in %<%E%s%>"
+msgid "no match for ternary %<operator?:%> in %<%E ? %E : %E%>"
 msgstr ""
 
-#: cp/call.c:3514
+#: cp/call.c:3515
 #, gcc-internal-format
-msgid "%s for %<operator[]%> in %<%E[%E]%>"
+msgid "ambiguous overload for %<operator%s%> in %<%E%s%>"
 msgstr ""
 
-#: cp/call.c:3519
+#: cp/call.c:3518
 #, gcc-internal-format
-msgid "%s for %qs in %<%s %E%>"
+msgid "no match for %<operator%s%> in %<%E%s%>"
 msgstr ""
 
 #: cp/call.c:3524
 #, gcc-internal-format
-msgid "%s for %<operator%s%> in %<%E %s %E%>"
+msgid "ambiguous overload for %<operator[]%> in %<%E[%E]%>"
 msgstr ""
 
 #: cp/call.c:3527
 #, gcc-internal-format
-msgid "%s for %<operator%s%> in %<%s%E%>"
+msgid "no match for %<operator[]%> in %<%E[%E]%>"
 msgstr ""
 
-#: cp/call.c:3622
+#: cp/call.c:3534
+#, gcc-internal-format
+msgid "ambiguous overload for %qs in %<%s %E%>"
+msgstr ""
+
+#: cp/call.c:3537
+#, gcc-internal-format
+msgid "no match for %qs in %<%s %E%>"
+msgstr ""
+
+#: cp/call.c:3544
+#, gcc-internal-format
+msgid "ambiguous overload for %<operator%s%> in %<%E %s %E%>"
+msgstr ""
+
+#: cp/call.c:3547
+#, gcc-internal-format
+msgid "no match for %<operator%s%> in %<%E %s %E%>"
+msgstr ""
+
+#: cp/call.c:3551
+#, gcc-internal-format
+msgid "ambiguous overload for %<operator%s%> in %<%s%E%>"
+msgstr ""
+
+#: cp/call.c:3554
+#, gcc-internal-format
+msgid "no match for %<operator%s%> in %<%s%E%>"
+msgstr ""
+
+#: cp/call.c:3649
 #, gcc-internal-format
 msgid "ISO C++ forbids omitting the middle term of a ?: expression"
 msgstr ""
 
-#: cp/call.c:3703
+#: cp/call.c:3730
 #, gcc-internal-format
 msgid ""
 "second operand to the conditional operator is of type %<void%>, but the "
 "third operand is neither a throw-expression nor of type %<void%>"
 msgstr ""
 
-#: cp/call.c:3708
+#: cp/call.c:3735
 #, gcc-internal-format
 msgid ""
 "third operand to the conditional operator is of type %<void%>, but the "
 "second operand is neither a throw-expression nor of type %<void%>"
 msgstr ""
 
-#: cp/call.c:3750 cp/call.c:3988
+#: cp/call.c:3777 cp/call.c:4015
 #, gcc-internal-format
 msgid "operands to ?: have different types %qT and %qT"
 msgstr ""
 
-#: cp/call.c:3935
+#: cp/call.c:3962
 #, gcc-internal-format
 msgid "enumeral mismatch in conditional expression: %qT vs %qT"
 msgstr ""
 
-#: cp/call.c:3946
+#: cp/call.c:3973
 #, gcc-internal-format
 msgid "enumeral and non-enumeral type in conditional expression"
 msgstr ""
 
-#: cp/call.c:4293
+#: cp/call.c:4320
 #, gcc-internal-format
 msgid "no %<%D(int)%> declared for postfix %qs, trying prefix operator instead"
 msgstr ""
 
-#: cp/call.c:4295
+#: cp/call.c:4322
 #, gcc-internal-format
 msgid "no %<%D(int)%> declared for postfix %qs"
 msgstr ""
 
-#: cp/call.c:4389
+#: cp/call.c:4416
 #, gcc-internal-format
 msgid "comparison between %q#T and %q#T"
 msgstr ""
 
-#: cp/call.c:4633
+#: cp/call.c:4660
 #, gcc-internal-format
 msgid "non-placement deallocation function %q+D"
 msgstr ""
 
-#: cp/call.c:4634
+#: cp/call.c:4661
 #, gcc-internal-format
 msgid "selected for placement delete"
 msgstr ""
 
-#: cp/call.c:4713
+#: cp/call.c:4740
 #, gcc-internal-format
 msgid "no corresponding deallocation function for %qD"
 msgstr ""
 
-#: cp/call.c:4718
+#: cp/call.c:4745
 #, gcc-internal-format
 msgid "no suitable %<operator %s%> for %qT"
 msgstr ""
 
-#: cp/call.c:4736
+#: cp/call.c:4763
 #, gcc-internal-format
 msgid "%q+#D is private"
 msgstr ""
 
-#: cp/call.c:4738
+#: cp/call.c:4765
 #, gcc-internal-format
 msgid "%q+#D is protected"
 msgstr ""
 
-#: cp/call.c:4740
+#: cp/call.c:4767
 #, gcc-internal-format
 msgid "%q+#D is inaccessible"
 msgstr ""
 
-#: cp/call.c:4741
+#: cp/call.c:4768
 #, gcc-internal-format
 msgid "within this context"
 msgstr ""
 
-#: cp/call.c:4788
+#: cp/call.c:4815
 #, gcc-internal-format
 msgid "passing NULL to non-pointer argument %P of %qD"
 msgstr ""
 
-#: cp/call.c:4791
+#: cp/call.c:4818
 #, gcc-internal-format
 msgid "converting to non-pointer type %qT from NULL"
 msgstr ""
 
-#: cp/call.c:4797
+#: cp/call.c:4824
 #, gcc-internal-format
 msgid "converting %<false%> to pointer type for argument %P of %qD"
 msgstr ""
 
-#: cp/call.c:4835
+#: cp/call.c:4862
 #, gcc-internal-format
 msgid "too many braces around initializer for %qT"
 msgstr ""
 
-#: cp/call.c:4857 cp/cvt.c:217
+#: cp/call.c:4884 cp/cvt.c:217
 #, gcc-internal-format
 msgid "invalid conversion from %qT to %qT"
 msgstr ""
 
-#: cp/call.c:4859
+#: cp/call.c:4886
 #, gcc-internal-format
 msgid "  initializing argument %P of %qD"
 msgstr ""
 
-#: cp/call.c:4883
+#: cp/call.c:4910
 #, gcc-internal-format
 msgid ""
 "converting to %qT from initializer list would use explicit constructor %qD"
 msgstr ""
 
-#: cp/call.c:5043
+#: cp/call.c:5070
 #, gcc-internal-format
 msgid "cannot bind %qT lvalue to %qT"
 msgstr ""
 
-#: cp/call.c:5046
+#: cp/call.c:5073
 #, gcc-internal-format
 msgid "  initializing argument %P of %q+D"
 msgstr ""
 
-#: cp/call.c:5073
+#: cp/call.c:5100
 #, gcc-internal-format
 msgid "cannot bind bitfield %qE to %qT"
 msgstr ""
 
-#: cp/call.c:5076 cp/call.c:5094
+#: cp/call.c:5103 cp/call.c:5121
 #, gcc-internal-format
 msgid "cannot bind packed field %qE to %qT"
 msgstr ""
 
-#: cp/call.c:5079
+#: cp/call.c:5106
 #, gcc-internal-format
 msgid "cannot bind rvalue %qE to %qT"
 msgstr ""
 
-#: cp/call.c:5198
+#: cp/call.c:5225
 #, gcc-internal-format
 msgid "cannot pass objects of non-trivially-copyable type %q#T through %<...%>"
 msgstr ""
 
 #. conditionally-supported behavior [expr.call] 5.2.2/7.
-#: cp/call.c:5225
+#: cp/call.c:5252
 #, gcc-internal-format
 msgid ""
 "cannot receive objects of non-trivially-copyable type %q#T through %<...%>; "
 msgstr ""
 
-#: cp/call.c:5271
+#: cp/call.c:5298
 #, gcc-internal-format
 msgid "the default argument for parameter %d of %qD has not yet been parsed"
 msgstr ""
 
-#: cp/call.c:5281
+#: cp/call.c:5308
 #, gcc-internal-format
 msgid "recursive evaluation of default argument for %q#D"
 msgstr ""
 
-#: cp/call.c:5398
+#: cp/call.c:5425
 #, gcc-internal-format
 msgid "argument of function call might be a candidate for a format attribute"
 msgstr ""
 
-#: cp/call.c:5582
+#: cp/call.c:5609
 #, gcc-internal-format
 msgid "passing %qT as %<this%> argument of %q#D discards qualifiers"
 msgstr ""
 
-#: cp/call.c:5604
+#: cp/call.c:5631
 #, gcc-internal-format
 msgid "%qT is not an accessible base of %qT"
 msgstr ""
 
-#: cp/call.c:5652
+#: cp/call.c:5679
 #, gcc-internal-format
 msgid "deducing %qT as %qT"
 msgstr ""
 
-#: cp/call.c:5655
+#: cp/call.c:5682
 #, gcc-internal-format
 msgid "  in call to %q+D"
 msgstr ""
 
-#: cp/call.c:5657
+#: cp/call.c:5684
 #, gcc-internal-format
 msgid "  (you can disable this with -fno-deduce-init-list)"
 msgstr ""
 
-#: cp/call.c:5930
+#: cp/call.c:5957
 #, gcc-internal-format
 msgid "could not find class$ field in java interface type %qT"
 msgstr ""
 
-#: cp/call.c:6189
+#: cp/call.c:6216
 #, gcc-internal-format
 msgid "call to non-function %qD"
 msgstr ""
 
-#: cp/call.c:6341
+#: cp/call.c:6368
 #, gcc-internal-format
 msgid "no matching function for call to %<%T::%s(%A)%#V%>"
 msgstr ""
 
-#: cp/call.c:6366
+#: cp/call.c:6393
 #, gcc-internal-format
 msgid "call of overloaded %<%s(%A)%> is ambiguous"
 msgstr ""
 
-#: cp/call.c:6395
+#: cp/call.c:6422
 #, gcc-internal-format
 msgid "cannot call member function %qD without object"
 msgstr ""
 
-#: cp/call.c:7081
+#: cp/call.c:7108
 #, gcc-internal-format
 msgid "passing %qT chooses %qT over %qT"
 msgstr ""
 
-#: cp/call.c:7083 cp/name-lookup.c:5036
+#: cp/call.c:7110 cp/name-lookup.c:5036
 #, gcc-internal-format
 msgid "  in call to %qD"
 msgstr ""
 
-#: cp/call.c:7140
+#: cp/call.c:7167
 #, gcc-internal-format
 msgid "choosing %qD over %qD"
 msgstr ""
 
-#: cp/call.c:7141
+#: cp/call.c:7168
 #, gcc-internal-format
 msgid "  for conversion from %qT to %qT"
 msgstr ""
 
-#: cp/call.c:7144
+#: cp/call.c:7171
 #, gcc-internal-format
 msgid "  because conversion sequence for the argument is better"
 msgstr ""
 
-#: cp/call.c:7262
+#: cp/call.c:7289
 #, gcc-internal-format
 msgid "default argument mismatch in overload resolution"
 msgstr ""
 
-#: cp/call.c:7265
+#: cp/call.c:7292
 #, gcc-internal-format
 msgid " candidate 1: %q+#F"
 msgstr ""
 
-#: cp/call.c:7267
+#: cp/call.c:7294
 #, gcc-internal-format
 msgid " candidate 2: %q+#F"
 msgstr ""
 
-#: cp/call.c:7305
+#: cp/call.c:7332
 #, gcc-internal-format
 msgid ""
 "ISO C++ says that these are ambiguous, even though the worst conversion for "
 "the first is better than the worst conversion for the second:"
 msgstr ""
 
-#: cp/call.c:7458
+#: cp/call.c:7485
 #, gcc-internal-format
 msgid "could not convert %qE to %qT"
 msgstr ""
 
-#: cp/call.c:7676
+#: cp/call.c:7703
 #, gcc-internal-format
 msgid ""
 "invalid initialization of non-const reference of type %qT from an rvalue of "
 "type %qT"
 msgstr ""
 
-#: cp/call.c:7680
+#: cp/call.c:7707
 #, gcc-internal-format
 msgid ""
 "invalid initialization of reference of type %qT from expression of type %qT"
@@ -30954,134 +31039,134 @@ msgstr ""
 msgid "initializer specified for non-virtual method %q+D"
 msgstr ""
 
-#: cp/class.c:4421
+#: cp/class.c:4426
 #, gcc-internal-format
 msgid "non-static reference %q+#D in class without a constructor"
 msgstr ""
 
-#: cp/class.c:4426
+#: cp/class.c:4431
 #, gcc-internal-format
 msgid "non-static const member %q+#D in class without a constructor"
 msgstr ""
 
 #. If the function is defaulted outside the class, we just
 #. give the synthesis error.
-#: cp/class.c:4452
+#: cp/class.c:4457
 #, gcc-internal-format
 msgid ""
 "%q+D declared to take const reference, but implicit declaration would take "
 "non-const"
 msgstr ""
 
-#: cp/class.c:4455
+#: cp/class.c:4460
 #, gcc-internal-format
 msgid ""
 "%q+D declared to take non-const reference cannot be defaulted in the class "
 "body"
 msgstr ""
 
-#: cp/class.c:4674
+#: cp/class.c:4679
 #, gcc-internal-format
 msgid ""
 "offset of virtual base %qT is not ABI-compliant and may change in a future "
 "version of GCC"
 msgstr ""
 
-#: cp/class.c:4775
+#: cp/class.c:4780
 #, gcc-internal-format
 msgid "direct base %qT inaccessible in %qT due to ambiguity"
 msgstr ""
 
-#: cp/class.c:4787
+#: cp/class.c:4792
 #, gcc-internal-format
 msgid "virtual base %qT inaccessible in %qT due to ambiguity"
 msgstr ""
 
-#: cp/class.c:4966
+#: cp/class.c:4971
 #, gcc-internal-format
 msgid ""
 "size assigned to %qT may not be ABI-compliant and may change in a future "
 "version of GCC"
 msgstr ""
 
-#: cp/class.c:5006
+#: cp/class.c:5011
 #, gcc-internal-format
 msgid ""
 "the offset of %qD may not be ABI-compliant and may change in a future "
 "version of GCC"
 msgstr ""
 
-#: cp/class.c:5034
+#: cp/class.c:5039
 #, gcc-internal-format
 msgid ""
 "offset of %q+D is not ABI-compliant and may change in a future version of GCC"
 msgstr ""
 
-#: cp/class.c:5043
+#: cp/class.c:5048
 #, gcc-internal-format
 msgid ""
 "%q+D contains empty classes which may cause base classes to be placed at "
 "different locations in a future version of GCC"
 msgstr ""
 
-#: cp/class.c:5131
+#: cp/class.c:5136
 #, gcc-internal-format
 msgid ""
 "layout of classes derived from empty class %qT may change in a future "
 "version of GCC"
 msgstr ""
 
-#: cp/class.c:5279 cp/parser.c:16346
+#: cp/class.c:5284 cp/parser.c:16346
 #, gcc-internal-format
 msgid "redefinition of %q#T"
 msgstr ""
 
-#: cp/class.c:5431
+#: cp/class.c:5436
 #, gcc-internal-format
 msgid "%q#T has virtual functions and accessible non-virtual destructor"
 msgstr ""
 
-#: cp/class.c:5536
+#: cp/class.c:5541
 #, gcc-internal-format
 msgid "trying to finish struct, but kicked out due to previous parse errors"
 msgstr ""
 
-#: cp/class.c:6000
+#: cp/class.c:6005
 #, gcc-internal-format
 msgid "language string %<\"%E\"%> not recognized"
 msgstr ""
 
-#: cp/class.c:6090
+#: cp/class.c:6095
 #, gcc-internal-format
 msgid "cannot resolve overloaded function %qD based on conversion to type %qT"
 msgstr ""
 
-#: cp/class.c:6214
+#: cp/class.c:6219
 #, gcc-internal-format
 msgid "no matches converting function %qD to type %q#T"
 msgstr ""
 
-#: cp/class.c:6244
+#: cp/class.c:6249
 #, gcc-internal-format
 msgid "converting overloaded function %qD to type %q#T is ambiguous"
 msgstr ""
 
-#: cp/class.c:6271
+#: cp/class.c:6276
 #, gcc-internal-format
 msgid "assuming pointer to member %qD"
 msgstr ""
 
-#: cp/class.c:6274
+#: cp/class.c:6279
 #, gcc-internal-format
 msgid "(a pointer to member can only be formed with %<&%E%>)"
 msgstr ""
 
-#: cp/class.c:6336 cp/class.c:6370
+#: cp/class.c:6341 cp/class.c:6375
 #, gcc-internal-format
 msgid "not enough type information"
 msgstr ""
 
-#: cp/class.c:6353
+#: cp/class.c:6358
 #, gcc-internal-format
 msgid "argument of type %qT does not match %qT"
 msgstr ""
@@ -31091,12 +31176,12 @@ msgstr ""
 #. A name N used in a class S shall refer to the same declaration
 #. in its context and when re-evaluated in the completed scope of
 #. S.
-#: cp/class.c:6655 cp/decl.c:1195 cp/name-lookup.c:525
+#: cp/class.c:6660 cp/decl.c:1196 cp/name-lookup.c:525
 #, gcc-internal-format
 msgid "declaration of %q#D"
 msgstr ""
 
-#: cp/class.c:6656
+#: cp/class.c:6661
 #, gcc-internal-format
 msgid "changes meaning of %qD from %q+#D"
 msgstr ""
@@ -31218,113 +31303,113 @@ msgstr ""
 msgid "  candidate conversions include %qD and %qD"
 msgstr ""
 
-#: cp/decl.c:1058
+#: cp/decl.c:1059
 #, gcc-internal-format
 msgid "%qD was declared %<extern%> and later %<static%>"
 msgstr ""
 
-#: cp/decl.c:1059 cp/decl.c:1607 objc/objc-act.c:2983 objc/objc-act.c:7598
+#: cp/decl.c:1060 cp/decl.c:1608 objc/objc-act.c:2983 objc/objc-act.c:7598
 #, gcc-internal-format
 msgid "previous declaration of %q+D"
 msgstr ""
 
-#: cp/decl.c:1092
+#: cp/decl.c:1093
 #, gcc-internal-format
 msgid "declaration of %qF throws different exceptions"
 msgstr ""
 
-#: cp/decl.c:1093
+#: cp/decl.c:1094
 #, gcc-internal-format
 msgid "from previous declaration %q+F"
 msgstr ""
 
-#: cp/decl.c:1149
+#: cp/decl.c:1150
 #, gcc-internal-format
 msgid "function %q+D redeclared as inline"
 msgstr ""
 
-#: cp/decl.c:1151
+#: cp/decl.c:1152
 #, gcc-internal-format
 msgid "previous declaration of %q+D with attribute noinline"
 msgstr ""
 
-#: cp/decl.c:1158
+#: cp/decl.c:1159
 #, gcc-internal-format
 msgid "function %q+D redeclared with attribute noinline"
 msgstr ""
 
-#: cp/decl.c:1160
+#: cp/decl.c:1161
 #, gcc-internal-format
 msgid "previous declaration of %q+D was inline"
 msgstr ""
 
-#: cp/decl.c:1182 cp/decl.c:1255
+#: cp/decl.c:1183 cp/decl.c:1256
 #, gcc-internal-format
 msgid "shadowing %s function %q#D"
 msgstr ""
 
-#: cp/decl.c:1191
+#: cp/decl.c:1192
 #, gcc-internal-format
 msgid "library function %q#D redeclared as non-function %q#D"
 msgstr ""
 
-#: cp/decl.c:1196
+#: cp/decl.c:1197
 #, gcc-internal-format
 msgid "conflicts with built-in declaration %q#D"
 msgstr ""
 
-#: cp/decl.c:1250 cp/decl.c:1376 cp/decl.c:1392
+#: cp/decl.c:1251 cp/decl.c:1377 cp/decl.c:1393
 #, gcc-internal-format
 msgid "new declaration %q#D"
 msgstr ""
 
-#: cp/decl.c:1251
+#: cp/decl.c:1252
 #, gcc-internal-format
 msgid "ambiguates built-in declaration %q#D"
 msgstr ""
 
-#: cp/decl.c:1340
+#: cp/decl.c:1341
 #, gcc-internal-format
 msgid "%q#D redeclared as different kind of symbol"
 msgstr ""
 
-#: cp/decl.c:1343
+#: cp/decl.c:1344
 #, gcc-internal-format
 msgid "previous declaration of %q+#D"
 msgstr ""
 
-#: cp/decl.c:1362
+#: cp/decl.c:1363
 #, gcc-internal-format
 msgid "declaration of template %q#D"
 msgstr ""
 
-#: cp/decl.c:1363 cp/name-lookup.c:526 cp/name-lookup.c:812
+#: cp/decl.c:1364 cp/name-lookup.c:526 cp/name-lookup.c:812
 #: cp/name-lookup.c:823
 #, gcc-internal-format
 msgid "conflicts with previous declaration %q+#D"
 msgstr ""
 
-#: cp/decl.c:1377 cp/decl.c:1393
+#: cp/decl.c:1378 cp/decl.c:1394
 #, gcc-internal-format
 msgid "ambiguates old declaration %q+#D"
 msgstr ""
 
-#: cp/decl.c:1385
+#: cp/decl.c:1386
 #, gcc-internal-format
 msgid "declaration of C function %q#D conflicts with"
 msgstr ""
 
-#: cp/decl.c:1387
+#: cp/decl.c:1388
 #, gcc-internal-format
 msgid "previous declaration %q+#D here"
 msgstr ""
 
-#: cp/decl.c:1401
+#: cp/decl.c:1402
 #, gcc-internal-format
 msgid "conflicting declaration %q#D"
 msgstr ""
 
-#: cp/decl.c:1402
+#: cp/decl.c:1403
 #, gcc-internal-format
 msgid "%q+D has a previous declaration as %q#D"
 msgstr ""
@@ -31336,63 +31421,63 @@ msgstr ""
 #. A namespace-name defined at global scope shall not be
 #. declared as the name of any other entity in any global scope
 #. of the program.
-#: cp/decl.c:1454
+#: cp/decl.c:1455
 #, gcc-internal-format
 msgid "declaration of namespace %qD conflicts with"
 msgstr ""
 
-#: cp/decl.c:1455
+#: cp/decl.c:1456
 #, gcc-internal-format
 msgid "previous declaration of namespace %q+D here"
 msgstr ""
 
-#: cp/decl.c:1466
+#: cp/decl.c:1467
 #, gcc-internal-format
 msgid "%q+#D previously defined here"
 msgstr ""
 
 #. Prototype decl follows defn w/o prototype.
-#: cp/decl.c:1476
+#: cp/decl.c:1477
 #, gcc-internal-format
 msgid "prototype for %q+#D"
 msgstr ""
 
-#: cp/decl.c:1478
+#: cp/decl.c:1479
 #, gcc-internal-format
 msgid "follows non-prototype definition here"
 msgstr ""
 
-#: cp/decl.c:1518
+#: cp/decl.c:1519
 #, gcc-internal-format
 msgid "previous declaration of %q+#D with %qL linkage"
 msgstr ""
 
-#: cp/decl.c:1520
+#: cp/decl.c:1521
 #, gcc-internal-format
 msgid "conflicts with new declaration with %qL linkage"
 msgstr ""
 
-#: cp/decl.c:1543 cp/decl.c:1549
+#: cp/decl.c:1544 cp/decl.c:1550
 #, gcc-internal-format
 msgid "default argument given for parameter %d of %q#D"
 msgstr ""
 
-#: cp/decl.c:1545 cp/decl.c:1551
+#: cp/decl.c:1546 cp/decl.c:1552
 #, gcc-internal-format
 msgid "after previous specification in %q+#D"
 msgstr ""
 
-#: cp/decl.c:1606
+#: cp/decl.c:1607
 #, gcc-internal-format
 msgid "redundant redeclaration of %qD in same scope"
 msgstr ""
 
-#: cp/decl.c:1612
+#: cp/decl.c:1613
 #, gcc-internal-format
 msgid "deleted definition of %qD"
 msgstr ""
 
-#: cp/decl.c:1613
+#: cp/decl.c:1614
 #, gcc-internal-format
 msgid "after previous declaration %q+D"
 msgstr ""
@@ -31405,329 +31490,329 @@ msgstr ""
 #. that specialization that would cause an implicit
 #. instantiation to take place, in every translation unit in
 #. which such a use occurs.
-#: cp/decl.c:1964
+#: cp/decl.c:1965
 #, gcc-internal-format
 msgid "explicit specialization of %qD after first use"
 msgstr ""
 
-#: cp/decl.c:2061
+#: cp/decl.c:2062
 #, gcc-internal-format
 msgid "%q+D: visibility attribute ignored because it"
 msgstr ""
 
-#: cp/decl.c:2063
+#: cp/decl.c:2064
 #, gcc-internal-format
 msgid "conflicts with previous declaration here"
 msgstr ""
 
-#: cp/decl.c:2503
+#: cp/decl.c:2504
 #, gcc-internal-format
 msgid "jump to label %qD"
 msgstr ""
 
-#: cp/decl.c:2505
+#: cp/decl.c:2506
 #, gcc-internal-format
 msgid "jump to case label"
 msgstr ""
 
-#: cp/decl.c:2507 cp/decl.c:2647 cp/decl.c:2688
+#: cp/decl.c:2508 cp/decl.c:2648 cp/decl.c:2689
 #, gcc-internal-format
 msgid "  from here"
 msgstr ""
 
-#: cp/decl.c:2526 cp/decl.c:2691
+#: cp/decl.c:2527 cp/decl.c:2692
 #, gcc-internal-format
 msgid "  exits OpenMP structured block"
 msgstr ""
 
-#: cp/decl.c:2547
+#: cp/decl.c:2548
 #, gcc-internal-format
 msgid "  crosses initialization of %q+#D"
 msgstr ""
 
-#: cp/decl.c:2549 cp/decl.c:2665
+#: cp/decl.c:2550 cp/decl.c:2666
 #, gcc-internal-format
 msgid "  enters scope of %q+#D which has non-trivial destructor"
 msgstr ""
 
-#: cp/decl.c:2563 cp/decl.c:2670
+#: cp/decl.c:2564 cp/decl.c:2671
 #, gcc-internal-format
 msgid "  enters try block"
 msgstr ""
 
 #. Can't skip init of __exception_info.
-#: cp/decl.c:2565 cp/decl.c:2659 cp/decl.c:2672
+#: cp/decl.c:2566 cp/decl.c:2660 cp/decl.c:2673
 #, gcc-internal-format
 msgid "  enters catch block"
 msgstr ""
 
-#: cp/decl.c:2575 cp/decl.c:2675
+#: cp/decl.c:2576 cp/decl.c:2676
 #, gcc-internal-format
 msgid "  enters OpenMP structured block"
 msgstr ""
 
-#: cp/decl.c:2646 cp/decl.c:2687
+#: cp/decl.c:2647 cp/decl.c:2688
 #, gcc-internal-format
 msgid "jump to label %q+D"
 msgstr ""
 
-#: cp/decl.c:2663
+#: cp/decl.c:2664
 #, gcc-internal-format
 msgid "  skips initialization of %q+#D"
 msgstr ""
 
-#: cp/decl.c:2740
+#: cp/decl.c:2741
 #, gcc-internal-format
 msgid "label named wchar_t"
 msgstr ""
 
-#: cp/decl.c:3011
+#: cp/decl.c:3012
 #, gcc-internal-format
 msgid "%qD is not a type"
 msgstr ""
 
-#: cp/decl.c:3017 cp/parser.c:4238
+#: cp/decl.c:3018 cp/parser.c:4238
 #, gcc-internal-format
 msgid "%qD used without template parameters"
 msgstr ""
 
-#: cp/decl.c:3026
+#: cp/decl.c:3027
 #, gcc-internal-format
 msgid "%q#T is not a class"
 msgstr ""
 
-#: cp/decl.c:3050 cp/decl.c:3137
+#: cp/decl.c:3051 cp/decl.c:3138
 #, gcc-internal-format
 msgid "no class template named %q#T in %q#T"
 msgstr ""
 
-#: cp/decl.c:3063
+#: cp/decl.c:3064
 #, gcc-internal-format
 msgid "lookup of %qT in %qT is ambiguous"
 msgstr ""
 
-#: cp/decl.c:3072
+#: cp/decl.c:3073
 #, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#T, which is not a class template"
 msgstr ""
 
-#: cp/decl.c:3079
+#: cp/decl.c:3080
 #, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#T, which is not a type"
 msgstr ""
 
-#: cp/decl.c:3146
+#: cp/decl.c:3147
 #, gcc-internal-format
 msgid "template parameters do not match template"
 msgstr ""
 
-#: cp/decl.c:3147 cp/friend.c:321 cp/friend.c:329
+#: cp/decl.c:3148 cp/friend.c:321 cp/friend.c:329
 #, gcc-internal-format
 msgid "%q+D declared here"
 msgstr ""
 
-#: cp/decl.c:3829
+#: cp/decl.c:3830
 #, gcc-internal-format
 msgid "an anonymous struct cannot have function members"
 msgstr ""
 
-#: cp/decl.c:3832
+#: cp/decl.c:3833
 #, gcc-internal-format
 msgid "an anonymous union cannot have function members"
 msgstr ""
 
-#: cp/decl.c:3850
+#: cp/decl.c:3851
 #, gcc-internal-format
 msgid "member %q+#D with constructor not allowed in anonymous aggregate"
 msgstr ""
 
-#: cp/decl.c:3853
+#: cp/decl.c:3854
 #, gcc-internal-format
 msgid "member %q+#D with destructor not allowed in anonymous aggregate"
 msgstr ""
 
-#: cp/decl.c:3856
+#: cp/decl.c:3857
 #, gcc-internal-format
 msgid ""
 "member %q+#D with copy assignment operator not allowed in anonymous aggregate"
 msgstr ""
 
-#: cp/decl.c:3881
+#: cp/decl.c:3882
 #, gcc-internal-format
 msgid "multiple types in one declaration"
 msgstr ""
 
-#: cp/decl.c:3885
+#: cp/decl.c:3886
 #, gcc-internal-format
 msgid "redeclaration of C++ built-in type %qT"
 msgstr ""
 
-#: cp/decl.c:3922
+#: cp/decl.c:3923
 #, gcc-internal-format
 msgid "missing type-name in typedef-declaration"
 msgstr ""
 
-#: cp/decl.c:3929
+#: cp/decl.c:3930
 #, gcc-internal-format
 msgid "ISO C++ prohibits anonymous structs"
 msgstr ""
 
-#: cp/decl.c:3936
+#: cp/decl.c:3937
 #, gcc-internal-format
 msgid "%qs can only be specified for functions"
 msgstr ""
 
-#: cp/decl.c:3942
+#: cp/decl.c:3943
 #, gcc-internal-format
 msgid "%<friend%> can only be specified inside a class"
 msgstr ""
 
-#: cp/decl.c:3944
+#: cp/decl.c:3945
 #, gcc-internal-format
 msgid "%<explicit%> can only be specified for constructors"
 msgstr ""
 
-#: cp/decl.c:3946
+#: cp/decl.c:3947
 #, gcc-internal-format
 msgid "a storage class can only be specified for objects and functions"
 msgstr ""
 
-#: cp/decl.c:3952
+#: cp/decl.c:3953
 #, gcc-internal-format
 msgid "qualifiers can only be specified for objects and functions"
 msgstr ""
 
-#: cp/decl.c:3955
+#: cp/decl.c:3956
 #, gcc-internal-format
 msgid "%<typedef%> was ignored in this declaration"
 msgstr ""
 
-#: cp/decl.c:3957
+#: cp/decl.c:3958
 #, gcc-internal-format
 msgid "%<constexpr> cannot be used for type declarations"
 msgstr ""
 
-#: cp/decl.c:3986
+#: cp/decl.c:3987
 #, gcc-internal-format
 msgid "attribute ignored in declaration of %q+#T"
 msgstr ""
 
-#: cp/decl.c:3987
+#: cp/decl.c:3988
 #, gcc-internal-format
 msgid "attribute for %q+#T must follow the %qs keyword"
 msgstr ""
 
-#: cp/decl.c:4032
+#: cp/decl.c:4033
 #, gcc-internal-format
 msgid "ignoring attributes applied to class type %qT outside of definition"
 msgstr ""
 
 #. A template type parameter or other dependent type.
-#: cp/decl.c:4036
+#: cp/decl.c:4037
 #, gcc-internal-format
 msgid ""
 "ignoring attributes applied to dependent type %qT without an associated "
 "declaration"
 msgstr ""
 
-#: cp/decl.c:4109 cp/decl2.c:792
+#: cp/decl.c:4110 cp/decl2.c:792
 #, gcc-internal-format
 msgid "typedef %qD is initialized (use decltype instead)"
 msgstr ""
 
-#: cp/decl.c:4127
+#: cp/decl.c:4128
 #, gcc-internal-format
 msgid "declaration of %q#D has %<extern%> and is initialized"
 msgstr ""
 
-#: cp/decl.c:4152
+#: cp/decl.c:4153
 #, gcc-internal-format
 msgid "definition of %q#D is marked %<dllimport%>"
 msgstr ""
 
-#: cp/decl.c:4171
+#: cp/decl.c:4172
 #, gcc-internal-format
 msgid "%q#D is not a static member of %q#T"
 msgstr ""
 
-#: cp/decl.c:4177
+#: cp/decl.c:4178
 #, gcc-internal-format
 msgid "ISO C++ does not permit %<%T::%D%> to be defined as %<%T::%D%>"
 msgstr ""
 
-#: cp/decl.c:4186
+#: cp/decl.c:4187
 #, gcc-internal-format
 msgid ""
 "template header not allowed in member definition of explicitly specialized "
 "class"
 msgstr ""
 
-#: cp/decl.c:4194
+#: cp/decl.c:4195
 #, gcc-internal-format
 msgid "duplicate initialization of %qD"
 msgstr ""
 
-#: cp/decl.c:4199
+#: cp/decl.c:4200
 #, gcc-internal-format
 msgid "%qD declared %<constexpr%> outside its class"
 msgstr ""
 
-#: cp/decl.c:4236
+#: cp/decl.c:4237
 #, gcc-internal-format
 msgid "declaration of %q#D outside of class is not definition"
 msgstr ""
 
-#: cp/decl.c:4334
+#: cp/decl.c:4335
 #, gcc-internal-format
 msgid "variable %q#D has initializer but incomplete type"
 msgstr ""
 
-#: cp/decl.c:4340 cp/decl.c:5091
+#: cp/decl.c:4341 cp/decl.c:5092
 #, gcc-internal-format
 msgid "elements of array %q#D have incomplete type"
 msgstr ""
 
-#: cp/decl.c:4347 cp/decl.c:5587
+#: cp/decl.c:4348 cp/decl.c:5588
 #, gcc-internal-format
 msgid "declaration of %q#D has no initializer"
 msgstr ""
 
-#: cp/decl.c:4349
+#: cp/decl.c:4350
 #, gcc-internal-format
 msgid "aggregate %q#D has incomplete type and cannot be defined"
 msgstr ""
 
-#: cp/decl.c:4385
+#: cp/decl.c:4386
 #, gcc-internal-format
 msgid "%qD declared as reference but not initialized"
 msgstr ""
 
-#: cp/decl.c:4410
+#: cp/decl.c:4411
 #, gcc-internal-format
 msgid "cannot initialize %qT from %qT"
 msgstr ""
 
-#: cp/decl.c:4474
+#: cp/decl.c:4475
 #, gcc-internal-format
 msgid "name used in a GNU-style designated initializer for an array"
 msgstr ""
 
-#: cp/decl.c:4479
+#: cp/decl.c:4480
 #, gcc-internal-format
 msgid "name %qD used in a GNU-style designated initializer for an array"
 msgstr ""
 
-#: cp/decl.c:4529
+#: cp/decl.c:4530
 #, gcc-internal-format
 msgid "initializer fails to determine size of %qD"
 msgstr ""
 
-#: cp/decl.c:4536
+#: cp/decl.c:4537
 #, gcc-internal-format
 msgid "array size missing in %qD"
 msgstr ""
 
-#: cp/decl.c:4548
+#: cp/decl.c:4549
 #, gcc-internal-format
 msgid "zero-size array %qD"
 msgstr ""
@@ -31735,274 +31820,274 @@ msgstr ""
 #. An automatic variable with an incomplete type: that is an error.
 #. Don't talk about array types here, since we took care of that
 #. message in grokdeclarator.
-#: cp/decl.c:4591
+#: cp/decl.c:4592
 #, gcc-internal-format
 msgid "storage size of %qD isn't known"
 msgstr ""
 
-#: cp/decl.c:4614
+#: cp/decl.c:4615
 #, gcc-internal-format
 msgid "storage size of %qD isn't constant"
 msgstr ""
 
-#: cp/decl.c:4660
+#: cp/decl.c:4661
 #, gcc-internal-format
 msgid ""
 "sorry: semantics of inline function static data %q+#D are wrong (you'll wind "
 "up with multiple copies)"
 msgstr ""
 
-#: cp/decl.c:4664
+#: cp/decl.c:4665
 #, gcc-internal-format
 msgid "  you can work around this by removing the initializer"
 msgstr ""
 
-#: cp/decl.c:4684
+#: cp/decl.c:4685
 #, gcc-internal-format
 msgid "missing initializer for constexpr %qD"
 msgstr ""
 
-#: cp/decl.c:4694
+#: cp/decl.c:4695
 #, gcc-internal-format
 msgid "uninitialized const %qD"
 msgstr ""
 
-#: cp/decl.c:4806
+#: cp/decl.c:4807
 #, gcc-internal-format
 msgid "invalid type %qT as initializer for a vector of type %qT"
 msgstr ""
 
-#: cp/decl.c:4848
+#: cp/decl.c:4849
 #, gcc-internal-format
 msgid "initializer for %qT must be brace-enclosed"
 msgstr ""
 
-#: cp/decl.c:4866
+#: cp/decl.c:4867
 #, gcc-internal-format
 msgid "%qT has no non-static data member named %qD"
 msgstr ""
 
-#: cp/decl.c:4925
+#: cp/decl.c:4926
 #, gcc-internal-format
 msgid "braces around scalar initializer for type %qT"
 msgstr ""
 
-#: cp/decl.c:5016
+#: cp/decl.c:5017
 #, gcc-internal-format
 msgid "missing braces around initializer for %qT"
 msgstr ""
 
-#: cp/decl.c:5073 cp/typeck2.c:921 cp/typeck2.c:1096 cp/typeck2.c:1119
-#: cp/typeck2.c:1162
+#: cp/decl.c:5074 cp/typeck2.c:1017 cp/typeck2.c:1192 cp/typeck2.c:1215
+#: cp/typeck2.c:1258
 #, gcc-internal-format
 msgid "too many initializers for %qT"
 msgstr ""
 
-#: cp/decl.c:5093
+#: cp/decl.c:5094
 #, gcc-internal-format
 msgid "elements of array %q#T have incomplete type"
 msgstr ""
 
-#: cp/decl.c:5102
+#: cp/decl.c:5103
 #, gcc-internal-format
 msgid "variable-sized object %qD may not be initialized"
 msgstr ""
 
-#: cp/decl.c:5104
+#: cp/decl.c:5105
 #, gcc-internal-format
 msgid "variable-sized compound literal"
 msgstr ""
 
-#: cp/decl.c:5158
+#: cp/decl.c:5159
 #, gcc-internal-format
 msgid "%qD has incomplete type"
 msgstr ""
 
-#: cp/decl.c:5178
+#: cp/decl.c:5179
 #, gcc-internal-format
 msgid "scalar object %qD requires one element in initializer"
 msgstr ""
 
-#: cp/decl.c:5209
+#: cp/decl.c:5210
 #, gcc-internal-format
 msgid "in C++98 %qD must be initialized by constructor, not by %<{...}%>"
 msgstr ""
 
-#: cp/decl.c:5241
+#: cp/decl.c:5242
 #, gcc-internal-format
 msgid "array %qD initialized by parenthesized string literal %qE"
 msgstr ""
 
-#: cp/decl.c:5255
+#: cp/decl.c:5256
 #, gcc-internal-format
 msgid "structure %qD with uninitialized const members"
 msgstr ""
 
-#: cp/decl.c:5257
+#: cp/decl.c:5258
 #, gcc-internal-format
 msgid "structure %qD with uninitialized reference members"
 msgstr ""
 
-#: cp/decl.c:5554
+#: cp/decl.c:5555
 #, gcc-internal-format
 msgid "assignment (not initialization) in declaration"
 msgstr ""
 
-#: cp/decl.c:5695
+#: cp/decl.c:5696
 #, gcc-internal-format
 msgid "shadowing previous type declaration of %q#D"
 msgstr ""
 
-#: cp/decl.c:5727
+#: cp/decl.c:5728
 #, gcc-internal-format
 msgid "%qD cannot be thread-local because it has non-trivial type %qT"
 msgstr ""
 
-#: cp/decl.c:5759
+#: cp/decl.c:5760
 #, gcc-internal-format
 msgid "Java object %qD not allocated with %<new%>"
 msgstr ""
 
-#: cp/decl.c:5776
+#: cp/decl.c:5777
 #, gcc-internal-format
 msgid "%qD is thread-local and so cannot be dynamically initialized"
 msgstr ""
 
-#: cp/decl.c:5794
+#: cp/decl.c:5795
 #, gcc-internal-format
 msgid ""
 "%qD cannot be initialized by a non-constant expression when being declared"
 msgstr ""
 
-#: cp/decl.c:5843
+#: cp/decl.c:5844
 #, gcc-internal-format
 msgid "non-static data member %qD has Java class type"
 msgstr ""
 
-#: cp/decl.c:5907
+#: cp/decl.c:5908
 #, gcc-internal-format
 msgid "function %q#D is initialized like a variable"
 msgstr ""
 
-#: cp/decl.c:6487
+#: cp/decl.c:6488
 #, gcc-internal-format
 msgid "destructor for alien class %qT cannot be a member"
 msgstr ""
 
-#: cp/decl.c:6489
+#: cp/decl.c:6490
 #, gcc-internal-format
 msgid "constructor for alien class %qT cannot be a member"
 msgstr ""
 
-#: cp/decl.c:6510
+#: cp/decl.c:6511
 #, gcc-internal-format
 msgid "%qD declared as a %<virtual%> %s"
 msgstr ""
 
-#: cp/decl.c:6512
+#: cp/decl.c:6513
 #, gcc-internal-format
 msgid "%qD declared as an %<inline%> %s"
 msgstr ""
 
-#: cp/decl.c:6514
+#: cp/decl.c:6515
 #, gcc-internal-format
 msgid ""
 "%<const%> and %<volatile%> function specifiers on %qD invalid in %s "
 "declaration"
 msgstr ""
 
-#: cp/decl.c:6518
+#: cp/decl.c:6519
 #, gcc-internal-format
 msgid "%q+D declared as a friend"
 msgstr ""
 
-#: cp/decl.c:6524
+#: cp/decl.c:6525
 #, gcc-internal-format
 msgid "%q+D declared with an exception specification"
 msgstr ""
 
-#: cp/decl.c:6558
+#: cp/decl.c:6559
 #, gcc-internal-format
 msgid "definition of %qD is not in namespace enclosing %qT"
 msgstr ""
 
-#: cp/decl.c:6679
+#: cp/decl.c:6680
 #, gcc-internal-format
 msgid "defining explicit specialization %qD in friend declaration"
 msgstr ""
 
 #. Something like `template <class T> friend void f<T>()'.
-#: cp/decl.c:6689
+#: cp/decl.c:6690
 #, gcc-internal-format
 msgid "invalid use of template-id %qD in declaration of primary template"
 msgstr ""
 
-#: cp/decl.c:6719
+#: cp/decl.c:6720
 #, gcc-internal-format
 msgid ""
 "default arguments are not allowed in declaration of friend template "
 "specialization %qD"
 msgstr ""
 
-#: cp/decl.c:6727
+#: cp/decl.c:6728
 #, gcc-internal-format
 msgid ""
 "%<inline%> is not allowed in declaration of friend template specialization %"
 "qD"
 msgstr ""
 
-#: cp/decl.c:6770
+#: cp/decl.c:6771
 #, gcc-internal-format
 msgid "cannot declare %<::main%> to be a template"
 msgstr ""
 
-#: cp/decl.c:6772
+#: cp/decl.c:6773
 #, gcc-internal-format
 msgid "cannot declare %<::main%> to be inline"
 msgstr ""
 
-#: cp/decl.c:6774
+#: cp/decl.c:6775
 #, gcc-internal-format
 msgid "cannot declare %<::main%> to be static"
 msgstr ""
 
-#: cp/decl.c:6802
+#: cp/decl.c:6803
 #, gcc-internal-format
 msgid "non-local function %q#D uses anonymous type"
 msgstr ""
 
-#: cp/decl.c:6805 cp/decl.c:7088 cp/decl2.c:3444
+#: cp/decl.c:6806 cp/decl.c:7089 cp/decl2.c:3444
 #, gcc-internal-format
 msgid ""
 "%q+#D does not refer to the unqualified type, so it is not used for linkage"
 msgstr ""
 
-#: cp/decl.c:6811
+#: cp/decl.c:6812
 #, gcc-internal-format
 msgid "non-local function %q#D uses local type %qT"
 msgstr ""
 
-#: cp/decl.c:6830
+#: cp/decl.c:6831
 #, gcc-internal-format
 msgid "static member function %qD cannot have cv-qualifier"
 msgstr ""
 
-#: cp/decl.c:6831
+#: cp/decl.c:6832
 #, gcc-internal-format
 msgid "non-member function %qD cannot have cv-qualifier"
 msgstr ""
 
-#: cp/decl.c:6876
+#: cp/decl.c:6877
 #, gcc-internal-format
 msgid "%<::main%> must return %<int%>"
 msgstr ""
 
-#: cp/decl.c:6916
+#: cp/decl.c:6917
 #, gcc-internal-format
 msgid "definition of implicitly-declared %qD"
 msgstr ""
 
-#: cp/decl.c:6933 cp/decl2.c:702
+#: cp/decl.c:6934 cp/decl2.c:702
 #, gcc-internal-format
 msgid "no %q#D member function declared in class %qT"
 msgstr ""
@@ -32011,651 +32096,681 @@ msgstr ""
 #. no linkage can only be used to declare extern "C"
 #. entities.  Since it's not always an error in the
 #. ISO C++ 90 Standard, we only issue a warning.
-#: cp/decl.c:7085
+#: cp/decl.c:7086
 #, gcc-internal-format
 msgid "non-local variable %q#D uses anonymous type"
 msgstr ""
 
-#: cp/decl.c:7094
+#: cp/decl.c:7095
 #, gcc-internal-format
 msgid "non-local variable %q#D uses local type %qT"
 msgstr ""
 
-#: cp/decl.c:7215
+#: cp/decl.c:7216
 #, gcc-internal-format
 msgid ""
 "invalid in-class initialization of static data member of non-integral type %"
 "qT"
 msgstr ""
 
-#: cp/decl.c:7225
+#: cp/decl.c:7226
 #, gcc-internal-format
 msgid "ISO C++ forbids in-class initialization of non-const static member %qD"
 msgstr ""
 
-#: cp/decl.c:7229
+#: cp/decl.c:7230
 #, gcc-internal-format
 msgid ""
 "ISO C++ forbids initialization of member constant %qD of non-integral type %"
 "qT"
 msgstr ""
 
-#: cp/decl.c:7254
+#: cp/decl.c:7255
 #, gcc-internal-format
 msgid "size of array %qD has non-integral type %qT"
 msgstr ""
 
-#: cp/decl.c:7256
+#: cp/decl.c:7257
 #, gcc-internal-format
 msgid "size of array has non-integral type %qT"
 msgstr ""
 
-#: cp/decl.c:7308
+#: cp/decl.c:7309
 #, gcc-internal-format
 msgid "size of array %qD is negative"
 msgstr ""
 
-#: cp/decl.c:7310
+#: cp/decl.c:7311
 #, gcc-internal-format
 msgid "size of array is negative"
 msgstr ""
 
-#: cp/decl.c:7318
+#: cp/decl.c:7319
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array %qD"
 msgstr ""
 
-#: cp/decl.c:7320
+#: cp/decl.c:7321
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array"
 msgstr ""
 
-#: cp/decl.c:7327
+#: cp/decl.c:7328
 #, gcc-internal-format
 msgid "size of array %qD is not an integral constant-expression"
 msgstr ""
 
-#: cp/decl.c:7330
+#: cp/decl.c:7331
 #, gcc-internal-format
 msgid "size of array is not an integral constant-expression"
 msgstr ""
 
-#: cp/decl.c:7336
+#: cp/decl.c:7337
 #, gcc-internal-format
 msgid "ISO C++ forbids variable length array %qD"
 msgstr ""
 
-#: cp/decl.c:7338
+#: cp/decl.c:7339
 #, gcc-internal-format
 msgid "ISO C++ forbids variable length array"
 msgstr ""
 
-#: cp/decl.c:7344
+#: cp/decl.c:7345
 #, gcc-internal-format
 msgid "variable length array %qD is used"
 msgstr ""
 
-#: cp/decl.c:7380
+#: cp/decl.c:7381
 #, gcc-internal-format
 msgid "overflow in array dimension"
 msgstr ""
 
-#: cp/decl.c:7461
+#: cp/decl.c:7441
 #, gcc-internal-format
-msgid "declaration of %qD as %s"
+msgid "declaration of %qD as array of void"
 msgstr ""
 
-#: cp/decl.c:7463
+#: cp/decl.c:7443
 #, gcc-internal-format
-msgid "creating %s"
+msgid "creating array of void"
 msgstr ""
 
-#: cp/decl.c:7475
+#: cp/decl.c:7449
+#, gcc-internal-format
+msgid "declaration of %qD as array of functions"
+msgstr ""
+
+#: cp/decl.c:7451
+#, gcc-internal-format
+msgid "creating array of functions"
+msgstr ""
+
+#: cp/decl.c:7457
+#, gcc-internal-format
+msgid "declaration of %qD as array of references"
+msgstr ""
+
+#: cp/decl.c:7459
+#, gcc-internal-format
+msgid "creating array of references"
+msgstr ""
+
+#: cp/decl.c:7465
+#, gcc-internal-format
+msgid "declaration of %qD as array of function members"
+msgstr ""
+
+#: cp/decl.c:7467
+#, gcc-internal-format
+msgid "creating array of function members"
+msgstr ""
+
+#: cp/decl.c:7482
 #, gcc-internal-format
 msgid ""
 "declaration of %qD as multidimensional array must have bounds for all "
 "dimensions except the first"
 msgstr ""
 
-#: cp/decl.c:7479
+#: cp/decl.c:7486
 #, gcc-internal-format
 msgid ""
 "multidimensional array must have bounds for all dimensions except the first"
 msgstr ""
 
-#: cp/decl.c:7514
+#: cp/decl.c:7521
 #, gcc-internal-format
 msgid "return type specification for constructor invalid"
 msgstr ""
 
-#: cp/decl.c:7524
+#: cp/decl.c:7531
 #, gcc-internal-format
 msgid "return type specification for destructor invalid"
 msgstr ""
 
-#: cp/decl.c:7537
+#: cp/decl.c:7544
 #, gcc-internal-format
 msgid "return type specified for %<operator %T%>"
 msgstr ""
 
-#: cp/decl.c:7559
+#: cp/decl.c:7566
 #, gcc-internal-format
 msgid "unnamed variable or field declared void"
 msgstr ""
 
-#: cp/decl.c:7566
+#: cp/decl.c:7573
 #, gcc-internal-format
 msgid "variable or field declared void"
 msgstr ""
 
-#: cp/decl.c:7745
+#: cp/decl.c:7752
 #, gcc-internal-format
 msgid "invalid use of qualified-name %<::%D%>"
 msgstr ""
 
-#: cp/decl.c:7748
+#: cp/decl.c:7755
 #, gcc-internal-format
 msgid "invalid use of qualified-name %<%T::%D%>"
 msgstr ""
 
-#: cp/decl.c:7751
+#: cp/decl.c:7758
 #, gcc-internal-format
 msgid "invalid use of qualified-name %<%D::%D%>"
 msgstr ""
 
-#: cp/decl.c:7763
+#: cp/decl.c:7770
 #, gcc-internal-format
 msgid "type %qT is not derived from type %qT"
 msgstr ""
 
-#: cp/decl.c:7779 cp/decl.c:7871 cp/decl.c:9138
+#: cp/decl.c:7786 cp/decl.c:7878 cp/decl.c:9145
 #, gcc-internal-format
 msgid "declaration of %qD as non-function"
 msgstr ""
 
-#: cp/decl.c:7785
+#: cp/decl.c:7792
 #, gcc-internal-format
 msgid "declaration of %qD as non-member"
 msgstr ""
 
-#: cp/decl.c:7816
+#: cp/decl.c:7823
 #, gcc-internal-format
 msgid "declarator-id missing; using reserved word %qD"
 msgstr ""
 
-#: cp/decl.c:7863
+#: cp/decl.c:7870
 #, gcc-internal-format
 msgid "function definition does not declare parameters"
 msgstr ""
 
-#: cp/decl.c:7905
+#: cp/decl.c:7912
 #, gcc-internal-format
 msgid "two or more data types in declaration of %qs"
 msgstr ""
 
-#: cp/decl.c:7911
+#: cp/decl.c:7918
 #, gcc-internal-format
 msgid "conflicting specifiers in declaration of %qs"
 msgstr ""
 
-#: cp/decl.c:7982 cp/decl.c:7985 cp/decl.c:7988
+#: cp/decl.c:7989 cp/decl.c:7992 cp/decl.c:7995
 #, gcc-internal-format
 msgid "ISO C++ forbids declaration of %qs with no type"
 msgstr ""
 
-#: cp/decl.c:8013 cp/decl.c:8031
+#: cp/decl.c:8020 cp/decl.c:8038
 #, gcc-internal-format
 msgid "%<signed%> or %<unsigned%> invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8015
+#: cp/decl.c:8022
 #, gcc-internal-format
 msgid "%<signed%> and %<unsigned%> specified together for %qs"
 msgstr ""
 
-#: cp/decl.c:8017
+#: cp/decl.c:8024
 #, gcc-internal-format
 msgid "%<long long%> invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8019
+#: cp/decl.c:8026
 #, gcc-internal-format
 msgid "%<long%> invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8021
+#: cp/decl.c:8028
 #, gcc-internal-format
 msgid "%<short%> invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8023
+#: cp/decl.c:8030
 #, gcc-internal-format
 msgid "%<long%> or %<short%> invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8025
+#: cp/decl.c:8032
 #, gcc-internal-format
 msgid "%<long%> or %<short%> specified with char for %qs"
 msgstr ""
 
-#: cp/decl.c:8027
+#: cp/decl.c:8034
 #, gcc-internal-format
 msgid "%<long%> and %<short%> specified together for %qs"
 msgstr ""
 
-#: cp/decl.c:8033
+#: cp/decl.c:8040
 #, gcc-internal-format
 msgid "%<short%> or %<long%> invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8041
+#: cp/decl.c:8048
 #, gcc-internal-format
 msgid "long, short, signed or unsigned used invalidly for %qs"
 msgstr ""
 
-#: cp/decl.c:8105
+#: cp/decl.c:8112
 #, gcc-internal-format
 msgid "complex invalid for %qs"
 msgstr ""
 
-#: cp/decl.c:8136
+#: cp/decl.c:8143
 #, gcc-internal-format
 msgid "both %<const%> and %<constexpr%> cannot be used here"
 msgstr ""
 
-#: cp/decl.c:8145
+#: cp/decl.c:8152
 #, gcc-internal-format
 msgid "qualifiers are not allowed on declaration of %<operator %T%>"
 msgstr ""
 
-#: cp/decl.c:8158 cp/typeck.c:7578
+#: cp/decl.c:8165 cp/typeck.c:7578
 #, gcc-internal-format
 msgid "ignoring %qV qualifiers added to function type %qT"
 msgstr ""
 
-#: cp/decl.c:8181
+#: cp/decl.c:8188
 #, gcc-internal-format
 msgid "member %qD cannot be declared both virtual and static"
 msgstr ""
 
-#: cp/decl.c:8189
+#: cp/decl.c:8196
 #, gcc-internal-format
 msgid "%<%T::%D%> is not a valid declarator"
 msgstr ""
 
-#: cp/decl.c:8198
+#: cp/decl.c:8205
 #, gcc-internal-format
 msgid "typedef declaration invalid in parameter declaration"
 msgstr ""
 
-#: cp/decl.c:8203
+#: cp/decl.c:8210
 #, gcc-internal-format
 msgid "storage class specified for template parameter %qs"
 msgstr ""
 
-#: cp/decl.c:8209
+#: cp/decl.c:8216
 #, gcc-internal-format
 msgid "storage class specifiers invalid in parameter declarations"
 msgstr ""
 
-#: cp/decl.c:8213
+#: cp/decl.c:8220
 #, gcc-internal-format
 msgid "parameter declared %<auto%>"
 msgstr ""
 
-#: cp/decl.c:8221
+#: cp/decl.c:8228
 #, gcc-internal-format
 msgid "a parameter cannot be declared %<constexpr%>"
 msgstr ""
 
-#: cp/decl.c:8230
+#: cp/decl.c:8237
 #, gcc-internal-format
 msgid "%<virtual%> outside class declaration"
 msgstr ""
 
-#: cp/decl.c:8248
+#: cp/decl.c:8255
 #, gcc-internal-format
 msgid "multiple storage classes in declaration of %qs"
 msgstr ""
 
-#: cp/decl.c:8271
+#: cp/decl.c:8278
 #, gcc-internal-format
 msgid "storage class specified for %qs"
 msgstr ""
 
-#: cp/decl.c:8275
+#: cp/decl.c:8282
 #, gcc-internal-format
 msgid "storage class specified for parameter %qs"
 msgstr ""
 
-#: cp/decl.c:8288
+#: cp/decl.c:8295
 #, gcc-internal-format
 msgid "nested function %qs declared %<extern%>"
 msgstr ""
 
-#: cp/decl.c:8292
+#: cp/decl.c:8299
 #, gcc-internal-format
 msgid "top-level declaration of %qs specifies %<auto%>"
 msgstr ""
 
-#: cp/decl.c:8298
+#: cp/decl.c:8305
 #, gcc-internal-format
 msgid "function-scope %qs implicitly auto and declared %<__thread%>"
 msgstr ""
 
-#: cp/decl.c:8305
+#: cp/decl.c:8312
 #, gcc-internal-format
 msgid "storage class specifiers invalid in friend function declarations"
 msgstr ""
 
-#: cp/decl.c:8399
+#: cp/decl.c:8406
 #, gcc-internal-format
 msgid "%qs declared as function returning a function"
 msgstr ""
 
-#: cp/decl.c:8404
+#: cp/decl.c:8411
 #, gcc-internal-format
 msgid "%qs declared as function returning an array"
 msgstr ""
 
-#: cp/decl.c:8425
+#: cp/decl.c:8432
 #, gcc-internal-format
 msgid "%qs function uses %<auto%> type specifier without late return type"
 msgstr ""
 
-#: cp/decl.c:8431
+#: cp/decl.c:8438
 #, gcc-internal-format
 msgid ""
 "%qs function with late return type has %qT as its type rather than plain %"
 "<auto%>"
 msgstr ""
 
-#: cp/decl.c:8439
+#: cp/decl.c:8446
 #, gcc-internal-format
 msgid ""
 "%qs function with late return type not declared with %<auto%> type specifier"
 msgstr ""
 
-#: cp/decl.c:8472
+#: cp/decl.c:8479
 #, gcc-internal-format
 msgid "destructor cannot be static member function"
 msgstr ""
 
-#: cp/decl.c:8477
+#: cp/decl.c:8484
 #, gcc-internal-format
 msgid "destructors may not be cv-qualified"
 msgstr ""
 
-#: cp/decl.c:8495
+#: cp/decl.c:8502
 #, gcc-internal-format
 msgid "constructors cannot be declared virtual"
 msgstr ""
 
-#: cp/decl.c:8508
+#: cp/decl.c:8515
 #, gcc-internal-format
 msgid "can't initialize friend function %qs"
 msgstr ""
 
 #. Cannot be both friend and virtual.
-#: cp/decl.c:8512
+#: cp/decl.c:8519
 #, gcc-internal-format
 msgid "virtual functions cannot be friends"
 msgstr ""
 
-#: cp/decl.c:8516
+#: cp/decl.c:8523
 #, gcc-internal-format
 msgid "friend declaration not in class definition"
 msgstr ""
 
-#: cp/decl.c:8518
+#: cp/decl.c:8525
 #, gcc-internal-format
 msgid "can't define friend function %qs in a local class definition"
 msgstr ""
 
-#: cp/decl.c:8536
+#: cp/decl.c:8543
 #, gcc-internal-format
 msgid ""
 "the %<constexpr%> specifier cannot be used in a function declaration that is "
 "not a definition"
 msgstr ""
 
-#: cp/decl.c:8554
+#: cp/decl.c:8561
 #, gcc-internal-format
 msgid "destructors may not have parameters"
 msgstr ""
 
-#: cp/decl.c:8573
+#: cp/decl.c:8580
 #, gcc-internal-format
 msgid "cannot declare pointer to %q#T"
 msgstr ""
 
-#: cp/decl.c:8586 cp/decl.c:8593
+#: cp/decl.c:8593 cp/decl.c:8600
 #, gcc-internal-format
 msgid "cannot declare reference to %q#T"
 msgstr ""
 
-#: cp/decl.c:8595
+#: cp/decl.c:8602
 #, gcc-internal-format
 msgid "cannot declare pointer to %q#T member"
 msgstr ""
 
-#: cp/decl.c:8615
+#: cp/decl.c:8622
 #, gcc-internal-format
 msgid "cannot declare %s to qualified function type %qT"
 msgstr ""
 
-#: cp/decl.c:8652
+#: cp/decl.c:8659
 #, gcc-internal-format
 msgid ""
 "cannot declare reference to %q#T, which is not a typedef or a template type "
 "argument"
 msgstr ""
 
-#: cp/decl.c:8696
+#: cp/decl.c:8703
 #, gcc-internal-format
 msgid "template-id %qD used as a declarator"
 msgstr ""
 
-#: cp/decl.c:8747
+#: cp/decl.c:8754
 #, gcc-internal-format
 msgid "member functions are implicitly friends of their class"
 msgstr ""
 
-#: cp/decl.c:8752
+#: cp/decl.c:8759
 #, gcc-internal-format
 msgid "extra qualification %<%T::%> on member %qs"
 msgstr ""
 
-#: cp/decl.c:8784
+#: cp/decl.c:8791
 #, gcc-internal-format
 msgid "cannot define member function %<%T::%s%> within %<%T%>"
 msgstr ""
 
-#: cp/decl.c:8793
+#: cp/decl.c:8800
 #, gcc-internal-format
 msgid "a constexpr function cannot be defined outside of its class"
 msgstr ""
 
-#: cp/decl.c:8807
+#: cp/decl.c:8814
 #, gcc-internal-format
 msgid "cannot declare member %<%T::%s%> within %qT"
 msgstr ""
 
-#: cp/decl.c:8830
+#: cp/decl.c:8837
 #, gcc-internal-format
 msgid "non-parameter %qs cannot be a parameter pack"
 msgstr ""
 
-#: cp/decl.c:8840
+#: cp/decl.c:8847
 #, gcc-internal-format
 msgid "size of array %qs is too large"
 msgstr ""
 
-#: cp/decl.c:8851
+#: cp/decl.c:8858
 #, gcc-internal-format
 msgid "data member may not have variably modified type %qT"
 msgstr ""
 
-#: cp/decl.c:8853
+#: cp/decl.c:8860
 #, gcc-internal-format
 msgid "parameter may not have variably modified type %qT"
 msgstr ""
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
-#: cp/decl.c:8861
+#: cp/decl.c:8868
 #, gcc-internal-format
 msgid "only declarations of constructors can be %<explicit%>"
 msgstr ""
 
-#: cp/decl.c:8869
+#: cp/decl.c:8876
 #, gcc-internal-format
 msgid "non-member %qs cannot be declared %<mutable%>"
 msgstr ""
 
-#: cp/decl.c:8874
+#: cp/decl.c:8881
 #, gcc-internal-format
 msgid "non-object member %qs cannot be declared %<mutable%>"
 msgstr ""
 
-#: cp/decl.c:8880
+#: cp/decl.c:8887
 #, gcc-internal-format
 msgid "function %qs cannot be declared %<mutable%>"
 msgstr ""
 
-#: cp/decl.c:8885
+#: cp/decl.c:8892
 #, gcc-internal-format
 msgid "static %qs cannot be declared %<mutable%>"
 msgstr ""
 
-#: cp/decl.c:8890
+#: cp/decl.c:8897
 #, gcc-internal-format
 msgid "const %qs cannot be declared %<mutable%>"
 msgstr ""
 
-#: cp/decl.c:8928
+#: cp/decl.c:8935
 #, gcc-internal-format
 msgid "typedef name may not be a nested-name-specifier"
 msgstr ""
 
-#: cp/decl.c:8946
+#: cp/decl.c:8953
 #, gcc-internal-format
 msgid "ISO C++ forbids nested type %qD with same name as enclosing class"
 msgstr ""
 
-#: cp/decl.c:9040
+#: cp/decl.c:9047
 #, gcc-internal-format
 msgid ""
 "qualified function types cannot be used to declare static member functions"
 msgstr ""
 
-#: cp/decl.c:9042
+#: cp/decl.c:9049
 #, gcc-internal-format
 msgid "qualified function types cannot be used to declare free functions"
 msgstr ""
 
-#: cp/decl.c:9068
+#: cp/decl.c:9075
 #, gcc-internal-format
 msgid "type qualifiers specified for friend class declaration"
 msgstr ""
 
-#: cp/decl.c:9073
+#: cp/decl.c:9080
 #, gcc-internal-format
 msgid "%<inline%> specified for friend class declaration"
 msgstr ""
 
-#: cp/decl.c:9081
+#: cp/decl.c:9088
 #, gcc-internal-format
 msgid "template parameters cannot be friends"
 msgstr ""
 
-#: cp/decl.c:9083
+#: cp/decl.c:9090
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend class %T::%D%>"
 msgstr ""
 
-#: cp/decl.c:9087
+#: cp/decl.c:9094
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend %#T%>"
 msgstr ""
 
-#: cp/decl.c:9100
+#: cp/decl.c:9107
 #, gcc-internal-format
 msgid "trying to make class %qT a friend of global scope"
 msgstr ""
 
-#: cp/decl.c:9118
+#: cp/decl.c:9125
 #, gcc-internal-format
 msgid "invalid qualifiers on non-member function type"
 msgstr ""
 
-#: cp/decl.c:9128
+#: cp/decl.c:9135
 #, gcc-internal-format
 msgid "abstract declarator %qT used as declaration"
 msgstr ""
 
-#: cp/decl.c:9157
+#: cp/decl.c:9164
 #, gcc-internal-format
 msgid "cannot use %<::%> in parameter declaration"
 msgstr ""
 
 #. Something like struct S { int N::j; };
-#: cp/decl.c:9203
+#: cp/decl.c:9210
 #, gcc-internal-format
 msgid "invalid use of %<::%>"
 msgstr ""
 
-#: cp/decl.c:9218
+#: cp/decl.c:9225
 #, gcc-internal-format
 msgid "can't make %qD into a method -- not in a class"
 msgstr ""
 
-#: cp/decl.c:9227
+#: cp/decl.c:9234
 #, gcc-internal-format
 msgid "function %qD declared virtual inside a union"
 msgstr ""
 
-#: cp/decl.c:9236
+#: cp/decl.c:9243
 #, gcc-internal-format
 msgid "%qD cannot be declared virtual, since it is always static"
 msgstr ""
 
-#: cp/decl.c:9254
+#: cp/decl.c:9261
 #, gcc-internal-format
 msgid "expected qualified name in friend declaration for destructor %qD"
 msgstr ""
 
-#: cp/decl.c:9261
+#: cp/decl.c:9268
 #, gcc-internal-format
 msgid "declaration of %qD as member of %qT"
 msgstr ""
 
-#: cp/decl.c:9266
+#: cp/decl.c:9273
 #, gcc-internal-format
 msgid "a destructor cannot be %<constexpr%>"
 msgstr ""
 
-#: cp/decl.c:9270
+#: cp/decl.c:9277
 #, gcc-internal-format
 msgid "expected qualified name in friend declaration for constructor %qD"
 msgstr ""
 
-#: cp/decl.c:9334
+#: cp/decl.c:9341
 #, gcc-internal-format
 msgid "field %qD has incomplete type"
 msgstr ""
 
-#: cp/decl.c:9336
+#: cp/decl.c:9343
 #, gcc-internal-format
 msgid "name %qT has incomplete type"
 msgstr ""
 
-#: cp/decl.c:9345
+#: cp/decl.c:9352
 #, gcc-internal-format
 msgid "  in instantiation of template %qT"
 msgstr ""
 
-#: cp/decl.c:9354
+#: cp/decl.c:9361
 #, gcc-internal-format
 msgid "%qE is neither function nor member function; cannot be declared friend"
 msgstr ""
@@ -32672,132 +32787,137 @@ msgstr ""
 #. the rest of the compiler does not correctly
 #. handle the initialization unless the member is
 #. static so we make it static below.
-#: cp/decl.c:9407
+#: cp/decl.c:9414
 #, gcc-internal-format
 msgid "ISO C++ forbids initialization of member %qD"
 msgstr ""
 
-#: cp/decl.c:9409
+#: cp/decl.c:9416
 #, gcc-internal-format
 msgid "making %qD static"
 msgstr ""
 
-#: cp/decl.c:9443
+#: cp/decl.c:9450
 #, gcc-internal-format
 msgid "non-static data member %qE declared %<constexpr%>"
 msgstr ""
 
-#: cp/decl.c:9478
+#: cp/decl.c:9485
 #, gcc-internal-format
 msgid "storage class %<auto%> invalid for function %qs"
 msgstr ""
 
-#: cp/decl.c:9480
+#: cp/decl.c:9487
 #, gcc-internal-format
 msgid "storage class %<register%> invalid for function %qs"
 msgstr ""
 
-#: cp/decl.c:9482
+#: cp/decl.c:9489
 #, gcc-internal-format
 msgid "storage class %<__thread%> invalid for function %qs"
 msgstr ""
 
-#: cp/decl.c:9494
+#: cp/decl.c:9501
 #, gcc-internal-format
 msgid ""
 "%<static%> specified invalid for function %qs declared out of global scope"
 msgstr ""
 
-#: cp/decl.c:9498
+#: cp/decl.c:9505
 #, gcc-internal-format
 msgid ""
 "%<inline%> specifier invalid for function %qs declared out of global scope"
 msgstr ""
 
-#: cp/decl.c:9505
+#: cp/decl.c:9512
 #, gcc-internal-format
 msgid "%q#T is not a class or a namespace"
 msgstr ""
 
-#: cp/decl.c:9513
+#: cp/decl.c:9520
 #, gcc-internal-format
 msgid "virtual non-class function %qs"
 msgstr ""
 
-#: cp/decl.c:9520
+#: cp/decl.c:9527
 #, gcc-internal-format
 msgid "%qs defined in a non-class scope"
 msgstr ""
 
-#: cp/decl.c:9553
+#: cp/decl.c:9560
 #, gcc-internal-format
 msgid "cannot declare member function %qD to have static linkage"
 msgstr ""
 
 #. FIXME need arm citation
-#: cp/decl.c:9560
+#: cp/decl.c:9567
 #, gcc-internal-format
 msgid "cannot declare static function inside another function"
 msgstr ""
 
-#: cp/decl.c:9590
+#: cp/decl.c:9597
 #, gcc-internal-format
 msgid ""
 "%<static%> may not be used when defining (as opposed to declaring) a static "
 "data member"
 msgstr ""
 
-#: cp/decl.c:9597
+#: cp/decl.c:9604
 #, gcc-internal-format
 msgid "static member %qD declared %<register%>"
 msgstr ""
 
-#: cp/decl.c:9603
+#: cp/decl.c:9610
 #, gcc-internal-format
 msgid "cannot explicitly declare member %q#D to have extern linkage"
 msgstr ""
 
-#: cp/decl.c:9617
+#: cp/decl.c:9624
 #, gcc-internal-format
 msgid "%qs initialized and declared %<extern%>"
 msgstr ""
 
-#: cp/decl.c:9621
+#: cp/decl.c:9628
 #, gcc-internal-format
 msgid "%qs has both %<extern%> and initializer"
 msgstr ""
 
-#: cp/decl.c:9748
+#: cp/decl.c:9755
 #, gcc-internal-format
 msgid "default argument for %q#D has type %qT"
 msgstr ""
 
-#: cp/decl.c:9751
+#: cp/decl.c:9758
 #, gcc-internal-format
 msgid "default argument for parameter of type %qT has type %qT"
 msgstr ""
 
-#: cp/decl.c:9767
+#: cp/decl.c:9774
 #, gcc-internal-format
 msgid "default argument %qE uses local variable %qD"
 msgstr ""
 
-#: cp/decl.c:9855
+#: cp/decl.c:9862
 #, gcc-internal-format
 msgid "parameter %qD has Java class type"
 msgstr ""
 
-#: cp/decl.c:9883
+#: cp/decl.c:9890
 #, gcc-internal-format
 msgid "parameter %qD invalidly declared method type"
 msgstr ""
 
-#: cp/decl.c:9907
+#: cp/decl.c:9915
 #, gcc-internal-format
-msgid "parameter %qD includes %s to array of unknown bound %qT"
+msgid "parameter %qD includes pointer to array of unknown bound %qT"
 msgstr ""
 
-#: cp/decl.c:9922
+#: cp/decl.c:9917
+#, gcc-internal-format
+msgid "parameter %qD includes reference to array of unknown bound %qT"
+msgstr ""
+
+#: cp/decl.c:9932
 #, gcc-internal-format
 msgid "parameter packs must be at the end of the parameter list"
 msgstr ""
@@ -32817,139 +32937,169 @@ msgstr ""
 #. or implicitly defined), there's no need to worry about their
 #. existence.  Theoretically, they should never even be
 #. instantiated, but that's hard to forestall.
-#: cp/decl.c:10145
+#: cp/decl.c:10155
 #, gcc-internal-format
 msgid "invalid constructor; you probably meant %<%T (const %T&)%>"
 msgstr ""
 
-#: cp/decl.c:10267
+#: cp/decl.c:10277
 #, gcc-internal-format
 msgid "%qD may not be declared within a namespace"
 msgstr ""
 
-#: cp/decl.c:10272
+#: cp/decl.c:10282
 #, gcc-internal-format
 msgid "%qD may not be declared as static"
 msgstr ""
 
-#: cp/decl.c:10302
+#: cp/decl.c:10312
 #, gcc-internal-format
 msgid "%qD must be a nonstatic member function"
 msgstr ""
 
-#: cp/decl.c:10312
+#: cp/decl.c:10322
 #, gcc-internal-format
 msgid ""
 "%qD must be either a non-static member function or a non-member function"
 msgstr ""
 
-#: cp/decl.c:10334
+#: cp/decl.c:10344
 #, gcc-internal-format
 msgid "%qD must have an argument of class or enumerated type"
 msgstr ""
 
+#: cp/decl.c:10373
+#, gcc-internal-format
+msgid ""
+"conversion to a reference to void will never use a type conversion operator"
+msgstr ""
+
 #: cp/decl.c:10375
 #, gcc-internal-format
-msgid "conversion to %s%s will never use a type conversion operator"
+msgid "conversion to void will never use a type conversion operator"
+msgstr ""
+
+#: cp/decl.c:10382
+#, gcc-internal-format
+msgid ""
+"conversion to a reference to the same type will never use a type conversion "
+"operator"
+msgstr ""
+
+#: cp/decl.c:10384
+#, gcc-internal-format
+msgid "conversion to the same type will never use a type conversion operator"
+msgstr ""
+
+#: cp/decl.c:10392
+#, gcc-internal-format
+msgid ""
+"conversion to a reference to a base class will never use a type conversion "
+"operator"
+msgstr ""
+
+#: cp/decl.c:10394
+#, gcc-internal-format
+msgid "conversion to a base class will never use a type conversion operator"
 msgstr ""
 
 #. 13.4.0.3
-#: cp/decl.c:10383
+#: cp/decl.c:10403
 #, gcc-internal-format
 msgid "ISO C++ prohibits overloading operator ?:"
 msgstr ""
 
-#: cp/decl.c:10388
+#: cp/decl.c:10408
 #, gcc-internal-format
 msgid "%qD must not have variable number of arguments"
 msgstr ""
 
-#: cp/decl.c:10439
+#: cp/decl.c:10459
 #, gcc-internal-format
 msgid "postfix %qD must take %<int%> as its argument"
 msgstr ""
 
-#: cp/decl.c:10442
+#: cp/decl.c:10462
 #, gcc-internal-format
 msgid "postfix %qD must take %<int%> as its second argument"
 msgstr ""
 
-#: cp/decl.c:10450
+#: cp/decl.c:10470
 #, gcc-internal-format
 msgid "%qD must take either zero or one argument"
 msgstr ""
 
-#: cp/decl.c:10452
+#: cp/decl.c:10472
 #, gcc-internal-format
 msgid "%qD must take either one or two arguments"
 msgstr ""
 
-#: cp/decl.c:10474
+#: cp/decl.c:10494
 #, gcc-internal-format
 msgid "prefix %qD should return %qT"
 msgstr ""
 
-#: cp/decl.c:10480
+#: cp/decl.c:10500
 #, gcc-internal-format
 msgid "postfix %qD should return %qT"
 msgstr ""
 
-#: cp/decl.c:10489
+#: cp/decl.c:10509
 #, gcc-internal-format
 msgid "%qD must take %<void%>"
 msgstr ""
 
-#: cp/decl.c:10491 cp/decl.c:10500
+#: cp/decl.c:10511 cp/decl.c:10520
 #, gcc-internal-format
 msgid "%qD must take exactly one argument"
 msgstr ""
 
-#: cp/decl.c:10502
+#: cp/decl.c:10522
 #, gcc-internal-format
 msgid "%qD must take exactly two arguments"
 msgstr ""
 
-#: cp/decl.c:10511
+#: cp/decl.c:10531
 #, gcc-internal-format
 msgid "user-defined %qD always evaluates both arguments"
 msgstr ""
 
-#: cp/decl.c:10525
+#: cp/decl.c:10545
 #, gcc-internal-format
 msgid "%qD should return by value"
 msgstr ""
 
-#: cp/decl.c:10536 cp/decl.c:10541
+#: cp/decl.c:10556 cp/decl.c:10561
 #, gcc-internal-format
 msgid "%qD cannot have default arguments"
 msgstr ""
 
-#: cp/decl.c:10599
+#: cp/decl.c:10619
 #, gcc-internal-format
 msgid "using template type parameter %qT after %qs"
 msgstr ""
 
-#: cp/decl.c:10615
+#: cp/decl.c:10635
 #, gcc-internal-format
 msgid "using typedef-name %qD after %qs"
 msgstr ""
 
-#: cp/decl.c:10616
+#: cp/decl.c:10636
 #, gcc-internal-format
 msgid "%q+D has a previous declaration here"
 msgstr ""
 
-#: cp/decl.c:10624
+#: cp/decl.c:10644
 #, gcc-internal-format
 msgid "%qT referred to as %qs"
 msgstr ""
 
-#: cp/decl.c:10625 cp/decl.c:10632
+#: cp/decl.c:10645 cp/decl.c:10652
 #, gcc-internal-format
 msgid "%q+T has a previous declaration here"
 msgstr ""
 
-#: cp/decl.c:10631
+#: cp/decl.c:10651
 #, gcc-internal-format
 msgid "%qT referred to as enum"
 msgstr ""
@@ -32961,78 +33111,78 @@ msgstr ""
 #. void f(class C);		// No template header here
 #.
 #. then the required template argument is missing.
-#: cp/decl.c:10646
+#: cp/decl.c:10666
 #, gcc-internal-format
 msgid "template argument required for %<%s %T%>"
 msgstr ""
 
-#: cp/decl.c:10694 cp/name-lookup.c:2823
+#: cp/decl.c:10714 cp/name-lookup.c:2823
 #, gcc-internal-format
 msgid "%qD has the same name as the class in which it is declared"
 msgstr ""
 
-#: cp/decl.c:10724 cp/name-lookup.c:2328 cp/name-lookup.c:3098
-#: cp/name-lookup.c:3142 cp/parser.c:4243 cp/parser.c:18101
+#: cp/decl.c:10744 cp/name-lookup.c:2328 cp/name-lookup.c:3098
+#: cp/name-lookup.c:3142 cp/parser.c:4243 cp/parser.c:18099
 #, gcc-internal-format
 msgid "reference to %qD is ambiguous"
 msgstr ""
 
-#: cp/decl.c:10838
+#: cp/decl.c:10858
 #, gcc-internal-format
 msgid "use of enum %q#D without previous declaration"
 msgstr ""
 
-#: cp/decl.c:10859
+#: cp/decl.c:10879
 #, gcc-internal-format
 msgid "redeclaration of %qT as a non-template"
 msgstr ""
 
-#: cp/decl.c:10860
+#: cp/decl.c:10880
 #, gcc-internal-format
 msgid "previous declaration %q+D"
 msgstr ""
 
-#: cp/decl.c:10974
+#: cp/decl.c:10994
 #, gcc-internal-format
 msgid "derived union %qT invalid"
 msgstr ""
 
-#: cp/decl.c:10983
+#: cp/decl.c:11003
 #, gcc-internal-format
 msgid "Java class %qT cannot have multiple bases"
 msgstr ""
 
-#: cp/decl.c:10994
+#: cp/decl.c:11014
 #, gcc-internal-format
 msgid "Java class %qT cannot have virtual bases"
 msgstr ""
 
-#: cp/decl.c:11014
+#: cp/decl.c:11034
 #, gcc-internal-format
 msgid "base type %qT fails to be a struct or class type"
 msgstr ""
 
-#: cp/decl.c:11047
+#: cp/decl.c:11067
 #, gcc-internal-format
 msgid "recursive type %qT undefined"
 msgstr ""
 
-#: cp/decl.c:11049
+#: cp/decl.c:11069
 #, gcc-internal-format
 msgid "duplicate base type %qT invalid"
 msgstr ""
 
-#: cp/decl.c:11133
+#: cp/decl.c:11153
 #, gcc-internal-format
 msgid "multiple definition of %q#T"
 msgstr ""
 
-#: cp/decl.c:11135
+#: cp/decl.c:11155
 #, gcc-internal-format
 msgid "previous definition here"
 msgstr ""
 
-#: cp/decl.c:11182
+#: cp/decl.c:11202
 #, gcc-internal-format
 msgid "underlying type %<%T%> of %<%T%> must be an integral type"
 msgstr ""
@@ -33041,67 +33191,67 @@ msgstr ""
 #.
 #. IF no integral type can represent all the enumerator values, the
 #. enumeration is ill-formed.
-#: cp/decl.c:11316
+#: cp/decl.c:11336
 #, gcc-internal-format
 msgid "no integral type can represent all of the enumerator values for %qT"
 msgstr ""
 
-#: cp/decl.c:11448
+#: cp/decl.c:11468
 #, gcc-internal-format
 msgid "enumerator value for %qD is not an integer constant"
 msgstr ""
 
-#: cp/decl.c:11480
+#: cp/decl.c:11500
 #, gcc-internal-format
 msgid "overflow in enumeration values at %qD"
 msgstr ""
 
-#: cp/decl.c:11500
+#: cp/decl.c:11520
 #, gcc-internal-format
 msgid "enumerator value %E is too large for underlying type %<%T%>"
 msgstr ""
 
-#: cp/decl.c:11601
+#: cp/decl.c:11621
 #, gcc-internal-format
 msgid "return type %q#T is incomplete"
 msgstr ""
 
-#: cp/decl.c:11603
+#: cp/decl.c:11623
 #, gcc-internal-format
 msgid "return type has Java class type %q#T"
 msgstr ""
 
-#: cp/decl.c:11731 cp/typeck.c:7253
+#: cp/decl.c:11751 cp/typeck.c:7253
 #, gcc-internal-format
 msgid "%<operator=%> should return a reference to %<*this%>"
 msgstr ""
 
-#: cp/decl.c:11826
+#: cp/decl.c:11846
 #, gcc-internal-format
 msgid "no previous declaration for %q+D"
 msgstr ""
 
-#: cp/decl.c:12047
+#: cp/decl.c:12067
 #, gcc-internal-format
 msgid "invalid function declaration"
 msgstr ""
 
-#: cp/decl.c:12131
+#: cp/decl.c:12151
 #, gcc-internal-format
 msgid "parameter %qD declared void"
 msgstr ""
 
-#: cp/decl.c:12630
+#: cp/decl.c:12650
 #, gcc-internal-format
 msgid "invalid member function declaration"
 msgstr ""
 
-#: cp/decl.c:12645
+#: cp/decl.c:12665
 #, gcc-internal-format
 msgid "%qD is already defined in class %qT"
 msgstr ""
 
-#: cp/decl.c:12856
+#: cp/decl.c:12876
 #, gcc-internal-format
 msgid "static member function %q#D declared with type qualifiers"
 msgstr ""
@@ -33633,7 +33783,7 @@ msgstr ""
 msgid "bad array initializer"
 msgstr ""
 
-#: cp/init.c:1456 cp/semantics.c:2597
+#: cp/init.c:1456 cp/semantics.c:2600
 #, gcc-internal-format
 msgid "%qT is not a class type"
 msgstr ""
@@ -34432,7 +34582,7 @@ msgstr ""
 msgid "ISO C++ forbids computed gotos"
 msgstr ""
 
-#: cp/parser.c:8600 cp/parser.c:16600
+#: cp/parser.c:8600 cp/parser.c:16598
 #, gcc-internal-format
 msgid "extra %<;%>"
 msgstr ""
@@ -34464,7 +34614,7 @@ msgstr ""
 msgid "class definition may not be declared a friend"
 msgstr ""
 
-#: cp/parser.c:9350 cp/parser.c:16924
+#: cp/parser.c:9350 cp/parser.c:16922
 #, gcc-internal-format
 msgid "templates may not be %<virtual%>"
 msgstr ""
@@ -34709,44 +34859,44 @@ msgstr ""
 msgid "previous definition of %q+#T"
 msgstr ""
 
-#: cp/parser.c:16619
+#: cp/parser.c:16617
 #, gcc-internal-format
 msgid "a class-key must be used when declaring a friend"
 msgstr ""
 
-#: cp/parser.c:16634
+#: cp/parser.c:16632
 #, gcc-internal-format
 msgid "friend declaration does not name a class or function"
 msgstr ""
 
-#: cp/parser.c:16816
+#: cp/parser.c:16814
 #, gcc-internal-format
 msgid "pure-specifier on function-definition"
 msgstr ""
 
-#: cp/parser.c:17129
+#: cp/parser.c:17127
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed outside of templates"
 msgstr ""
 
-#: cp/parser.c:17132
+#: cp/parser.c:17130
 #, gcc-internal-format
 msgid ""
 "keyword %<typename%> not allowed in this context (the base class is "
 "implicitly a type)"
 msgstr ""
 
-#: cp/parser.c:18288
+#: cp/parser.c:18286
 #, gcc-internal-format
 msgid "specializing member %<%T::%E%> requires %<template<>%> syntax"
 msgstr ""
 
-#: cp/parser.c:18293
+#: cp/parser.c:18291
 #, gcc-internal-format
 msgid "invalid declaration of %<%T::%E%>"
 msgstr ""
 
-#: cp/parser.c:18297
+#: cp/parser.c:18295
 #, gcc-internal-format
 msgid "too few template-parameter-lists"
 msgstr ""
@@ -34755,112 +34905,112 @@ msgstr ""
 #. something like:
 #.
 #. template <class T> template <class U> void S::f();
-#: cp/parser.c:18304
+#: cp/parser.c:18302
 #, gcc-internal-format
 msgid "too many template-parameter-lists"
 msgstr ""
 
-#: cp/parser.c:18592
+#: cp/parser.c:18590
 #, gcc-internal-format
 msgid "named return values are no longer supported"
 msgstr ""
 
-#: cp/parser.c:18672
+#: cp/parser.c:18670
 #, gcc-internal-format
 msgid "invalid declaration of member template in local class"
 msgstr ""
 
-#: cp/parser.c:18681
+#: cp/parser.c:18679
 #, gcc-internal-format
 msgid "template with C linkage"
 msgstr ""
 
-#: cp/parser.c:18829
+#: cp/parser.c:18827
 #, gcc-internal-format
 msgid "template declaration of %<typedef%>"
 msgstr ""
 
-#: cp/parser.c:18898
+#: cp/parser.c:18896
 #, gcc-internal-format
 msgid "explicit template specialization cannot have a storage class"
 msgstr ""
 
-#: cp/parser.c:19123
+#: cp/parser.c:19121
 #, gcc-internal-format
 msgid "%<>>%> should be %<> >%> within a nested template argument list"
 msgstr ""
 
-#: cp/parser.c:19136
+#: cp/parser.c:19134
 #, gcc-internal-format
 msgid "spurious %<>>%>, use %<>%> to terminate a template argument list"
 msgstr ""
 
-#: cp/parser.c:19479
+#: cp/parser.c:19477
 #, gcc-internal-format
 msgid "invalid use of %qD in linkage specification"
 msgstr ""
 
-#: cp/parser.c:19492
+#: cp/parser.c:19490
 #, gcc-internal-format
 msgid "%<__thread%> before %qD"
 msgstr ""
 
-#: cp/parser.c:19813
+#: cp/parser.c:19811
 #, gcc-internal-format
 msgid "%qs tag used in naming %q#T"
 msgstr ""
 
-#: cp/parser.c:19834
+#: cp/parser.c:19832
 #, gcc-internal-format
 msgid "%qD redeclared with different access"
 msgstr ""
 
-#: cp/parser.c:19853
+#: cp/parser.c:19851
 #, gcc-internal-format
 msgid "%<template%> (as a disambiguator) is only allowed within templates"
 msgstr ""
 
-#: cp/parser.c:20120 cp/parser.c:21048 cp/parser.c:21181
+#: cp/parser.c:20118 cp/parser.c:21046 cp/parser.c:21179
 #, gcc-internal-format
 msgid "misplaced %<@%D%> Objective-C++ construct"
 msgstr ""
 
-#: cp/parser.c:20265
+#: cp/parser.c:20263
 #, gcc-internal-format
 msgid "%<@encode%> must specify a type as an argument"
 msgstr ""
 
-#: cp/parser.c:20581
+#: cp/parser.c:20579
 #, gcc-internal-format
 msgid "invalid Objective-C++ selector name"
 msgstr ""
 
-#: cp/parser.c:20912
+#: cp/parser.c:20910
 #, gcc-internal-format
 msgid "identifier expected after %<@protocol%>"
 msgstr ""
 
-#: cp/parser.c:22251
+#: cp/parser.c:22249
 #, gcc-internal-format
 msgid "parenthesized initialization is not allowed in OpenMP %<for%> loop"
 msgstr ""
 
-#: cp/parser.c:22419 cp/pt.c:11176
+#: cp/parser.c:22417 cp/pt.c:11176
 #, gcc-internal-format
 msgid "iteration variable %qD should not be reduction"
 msgstr ""
 
-#: cp/parser.c:22486
+#: cp/parser.c:22484
 #, gcc-internal-format
 msgid "not enough collapsed for loops"
 msgstr ""
 
-#: cp/parser.c:22948
+#: cp/parser.c:22946
 #, gcc-internal-format
 msgid "junk at end of %<#pragma GCC pch_preprocess%>"
 msgstr ""
 
-#: cp/parser.c:23111
+#: cp/parser.c:23109
 #, gcc-internal-format
 msgid "inter-module optimizations not implemented for C++"
 msgstr ""
@@ -35501,7 +35651,12 @@ msgstr ""
 
 #: cp/pt.c:10045
 #, gcc-internal-format
-msgid "forming %s to reference type %qT"
+msgid "forming pointer to reference type %qT"
+msgstr ""
+
+#: cp/pt.c:10047
+#, gcc-internal-format
+msgid "forming reference to reference type %qT"
 msgstr ""
 
 #: cp/pt.c:10096
@@ -35750,34 +35905,34 @@ msgstr ""
 msgid "can't create repository information file %qs"
 msgstr ""
 
-#: cp/rtti.c:289
+#: cp/rtti.c:290
 #, gcc-internal-format
 msgid "cannot use typeid with -fno-rtti"
 msgstr ""
 
-#: cp/rtti.c:295
+#: cp/rtti.c:296
 #, gcc-internal-format
 msgid "must #include <typeinfo> before using typeid"
 msgstr ""
 
-#: cp/rtti.c:392
+#: cp/rtti.c:393
 #, gcc-internal-format
 msgid ""
 "cannot create type information for type %qT because it involves types of "
 "variable size"
 msgstr ""
 
-#: cp/rtti.c:650 cp/rtti.c:665
+#: cp/rtti.c:651 cp/rtti.c:666
 #, gcc-internal-format
 msgid "dynamic_cast of %q#D to %q#T can never succeed"
 msgstr ""
 
-#: cp/rtti.c:676
+#: cp/rtti.c:677
 #, gcc-internal-format
 msgid "%<dynamic_cast%> not permitted with -fno-rtti"
 msgstr ""
 
-#: cp/rtti.c:755
+#: cp/rtti.c:756
 #, gcc-internal-format
 msgid "cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)"
 msgstr ""
@@ -35955,211 +36110,211 @@ msgstr ""
 msgid "invalid definition of qualified type %qT"
 msgstr ""
 
-#: cp/semantics.c:2592
+#: cp/semantics.c:2595
 #, gcc-internal-format
 msgid "invalid base-class specification"
 msgstr ""
 
-#: cp/semantics.c:2604
+#: cp/semantics.c:2607
 #, gcc-internal-format
 msgid "base class %qT has cv qualifiers"
 msgstr ""
 
-#: cp/semantics.c:2629
+#: cp/semantics.c:2632
 #, gcc-internal-format
 msgid "incomplete type %qT used in nested name specifier"
 msgstr ""
 
-#: cp/semantics.c:2633
+#: cp/semantics.c:2636
 #, gcc-internal-format
 msgid "reference to %<%T::%D%> is ambiguous"
 msgstr ""
 
-#: cp/semantics.c:2638 cp/typeck.c:2040
+#: cp/semantics.c:2641 cp/typeck.c:2040
 #, gcc-internal-format
 msgid "%qD is not a member of %qT"
 msgstr ""
 
-#: cp/semantics.c:2641
+#: cp/semantics.c:2644
 #, gcc-internal-format
 msgid "%qD is not a member of %qD"
 msgstr ""
 
-#: cp/semantics.c:2643
+#: cp/semantics.c:2646
 #, gcc-internal-format
 msgid "%<::%D%> has not been declared"
 msgstr ""
 
-#: cp/semantics.c:2860 cp/semantics.c:5599
+#: cp/semantics.c:2863 cp/semantics.c:5602
 #, gcc-internal-format
 msgid "%qD is not captured"
 msgstr ""
 
-#: cp/semantics.c:2866
+#: cp/semantics.c:2869
 #, gcc-internal-format
 msgid "use of %<auto%> variable from containing function"
 msgstr ""
 
-#: cp/semantics.c:2868
+#: cp/semantics.c:2871
 #, gcc-internal-format
 msgid "  %q+#D declared here"
 msgstr ""
 
-#: cp/semantics.c:2906
+#: cp/semantics.c:2909
 #, gcc-internal-format
 msgid ""
 "template parameter %qD of type %qT is not allowed in an integral constant "
 "expression because it is not of integral or enumeration type"
 msgstr ""
 
-#: cp/semantics.c:3070
+#: cp/semantics.c:3073
 #, gcc-internal-format
 msgid "%qD cannot appear in a constant-expression"
 msgstr ""
 
-#: cp/semantics.c:3078
+#: cp/semantics.c:3081
 #, gcc-internal-format
 msgid "use of namespace %qD as expression"
 msgstr ""
 
-#: cp/semantics.c:3083
+#: cp/semantics.c:3086
 #, gcc-internal-format
 msgid "use of class template %qT as expression"
 msgstr ""
 
 #. Ambiguous reference to base members.
-#: cp/semantics.c:3089
+#: cp/semantics.c:3092
 #, gcc-internal-format
 msgid "request for member %qD is ambiguous in multiple inheritance lattice"
 msgstr ""
 
-#: cp/semantics.c:3211 cp/semantics.c:4984
+#: cp/semantics.c:3214 cp/semantics.c:4987
 #, gcc-internal-format
 msgid "type of %qE is unknown"
 msgstr ""
 
-#: cp/semantics.c:3226
+#: cp/semantics.c:3229
 #, gcc-internal-format
 msgid "cannot apply %<offsetof%> to destructor %<~%T%>"
 msgstr ""
 
-#: cp/semantics.c:3237
+#: cp/semantics.c:3240
 #, gcc-internal-format
 msgid "cannot apply %<offsetof%> to member function %qD"
 msgstr ""
 
-#: cp/semantics.c:3706
+#: cp/semantics.c:3709
 #, gcc-internal-format
 msgid "%qD is not a variable in clause %qs"
 msgstr ""
 
-#: cp/semantics.c:3715 cp/semantics.c:3737 cp/semantics.c:3759
+#: cp/semantics.c:3718 cp/semantics.c:3740 cp/semantics.c:3762
 #, gcc-internal-format
 msgid "%qD appears more than once in data clauses"
 msgstr ""
 
-#: cp/semantics.c:3729
+#: cp/semantics.c:3732
 #, gcc-internal-format
 msgid "%qD is not a variable in clause %<firstprivate%>"
 msgstr ""
 
-#: cp/semantics.c:3751
+#: cp/semantics.c:3754
 #, gcc-internal-format
 msgid "%qD is not a variable in clause %<lastprivate%>"
 msgstr ""
 
-#: cp/semantics.c:3781
+#: cp/semantics.c:3784
 #, gcc-internal-format
 msgid "num_threads expression must be integral"
 msgstr ""
 
-#: cp/semantics.c:3795
+#: cp/semantics.c:3798
 #, gcc-internal-format
 msgid "schedule chunk size expression must be integral"
 msgstr ""
 
-#: cp/semantics.c:3927
+#: cp/semantics.c:3930
 #, gcc-internal-format
 msgid "%qE has reference type for %qs"
 msgstr ""
 
-#: cp/semantics.c:3998
+#: cp/semantics.c:4001
 #, gcc-internal-format
 msgid "%<threadprivate%> %qD is not file, namespace or block scope variable"
 msgstr ""
 
-#: cp/semantics.c:4012
+#: cp/semantics.c:4015
 #, gcc-internal-format
 msgid "%<threadprivate%> %qE directive not in %qT definition"
 msgstr ""
 
-#: cp/semantics.c:4157
+#: cp/semantics.c:4160
 #, gcc-internal-format
 msgid "difference between %qE and %qD does not have integer type"
 msgstr ""
 
 #. Report the error.
-#: cp/semantics.c:4683
+#: cp/semantics.c:4686
 #, gcc-internal-format
 msgid "static assertion failed: %E"
 msgstr ""
 
-#: cp/semantics.c:4685
+#: cp/semantics.c:4688
 #, gcc-internal-format
 msgid "non-constant condition for static assertion"
 msgstr ""
 
-#: cp/semantics.c:4773 cp/semantics.c:4895
+#: cp/semantics.c:4776 cp/semantics.c:4898
 #, gcc-internal-format
 msgid "argument to decltype must be an expression"
 msgstr ""
 
-#: cp/semantics.c:4845
+#: cp/semantics.c:4848
 #, gcc-internal-format
 msgid "%qE refers to a set of overloaded functions"
 msgstr ""
 
-#: cp/semantics.c:4928
+#: cp/semantics.c:4931
 #, gcc-internal-format
 msgid "unable to determine the declared type of expression %<%E%>"
 msgstr ""
 
-#: cp/semantics.c:5189
+#: cp/semantics.c:5192
 #, gcc-internal-format
 msgid "__is_convertible_to"
 msgstr ""
 
-#: cp/semantics.c:5230 cp/semantics.c:5240
+#: cp/semantics.c:5233 cp/semantics.c:5243
 #, gcc-internal-format
 msgid "incomplete type %qT not allowed"
 msgstr ""
 
-#: cp/semantics.c:5303
+#: cp/semantics.c:5306
 #, gcc-internal-format
 msgid "the type %qT of constexpr variable %qD is not literal"
 msgstr ""
 
-#: cp/semantics.c:5338
+#: cp/semantics.c:5341
 #, gcc-internal-format
 msgid "parameter %q#D is not of literal type"
 msgstr ""
 
-#: cp/semantics.c:5351
+#: cp/semantics.c:5354
 #, gcc-internal-format
 msgid "return type %qT of function %qD is not a literal type"
 msgstr ""
 
-#: cp/semantics.c:5645
+#: cp/semantics.c:5648
 #, gcc-internal-format
 msgid "cannot capture %qE by reference"
 msgstr ""
 
-#: cp/semantics.c:5667
+#: cp/semantics.c:5670
 #, gcc-internal-format
 msgid "already captured %<this%> in lambda expression"
 msgstr ""
 
-#: cp/semantics.c:5786
+#: cp/semantics.c:5789
 #, gcc-internal-format
 msgid "%<this%> was not captured for this lambda function"
 msgstr ""
@@ -36879,213 +37034,338 @@ msgid ""
 "fcheck-new is in effect)"
 msgstr ""
 
-#: cp/typeck2.c:54
+#: cp/typeck2.c:55
 #, gcc-internal-format
 msgid "type %qT is not a base type for type %qT"
 msgstr ""
 
-#: cp/typeck2.c:97
-#, gcc-internal-format
-msgid "%s of read-only parameter %qD"
-msgstr ""
-
-#: cp/typeck2.c:102
-#, gcc-internal-format
-msgid "%s of read-only reference %qD"
-msgstr ""
-
-#: cp/typeck2.c:104
-#, gcc-internal-format
-msgid "%s of read-only named return value %qD"
-msgstr ""
-
 #: cp/typeck2.c:106
 #, gcc-internal-format
-msgid "%s of function %qD"
+msgid "assignment of data-member %qD in read-only structure"
 msgstr ""
 
 #: cp/typeck2.c:108
 #, gcc-internal-format
-msgid "%s of read-only location %qE"
+msgid "assignment (via 'asm' output) of data-member %qD in read-only structure"
 msgstr ""
 
-#: cp/typeck2.c:288
+#: cp/typeck2.c:110
+#, gcc-internal-format
+msgid "increment of data-member %qD in read-only structure"
+msgstr ""
+
+#: cp/typeck2.c:112
+#, gcc-internal-format
+msgid "decrement of data-member %qD in read-only structure"
+msgstr ""
+
+#: cp/typeck2.c:116
+#, gcc-internal-format
+msgid "assignment of read-only data-member %qD"
+msgstr ""
+
+#: cp/typeck2.c:118
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of read-only data-member %qD"
+msgstr ""
+
+#: cp/typeck2.c:120
+#, gcc-internal-format
+msgid "increment of read-only data-member %qD"
+msgstr ""
+
+#: cp/typeck2.c:122
+#, gcc-internal-format
+msgid "decrement of read-only data-member %qD"
+msgstr ""
+
+#: cp/typeck2.c:131
+#, gcc-internal-format
+msgid "assignment of constant field %qD"
+msgstr ""
+
+#: cp/typeck2.c:133
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of constant field %qD"
+msgstr ""
+
+#: cp/typeck2.c:135
+#, gcc-internal-format
+msgid "increment of constant field %qD"
+msgstr ""
+
+#: cp/typeck2.c:137
+#, gcc-internal-format
+msgid "decrement of constant field %qD"
+msgstr ""
+
+#: cp/typeck2.c:143
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of read-only variable %qD"
+msgstr ""
+
+#: cp/typeck2.c:153
+#, gcc-internal-format
+msgid "assignment of read-only parameter %qD"
+msgstr ""
+
+#: cp/typeck2.c:155
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of read-only parameter %qD"
+msgstr ""
+
+#: cp/typeck2.c:157
+#, gcc-internal-format
+msgid "increment of read-only parameter %qD"
+msgstr ""
+
+#: cp/typeck2.c:159
+#, gcc-internal-format
+msgid "decrement of read-only parameter %qD"
+msgstr ""
+
+#: cp/typeck2.c:166
+#, gcc-internal-format
+msgid "assignment of read-only reference %qD"
+msgstr ""
+
+#: cp/typeck2.c:168
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of read-only reference %qD"
+msgstr ""
+
+#: cp/typeck2.c:170
+#, gcc-internal-format
+msgid "increment of read-only reference %qD"
+msgstr ""
+
+#: cp/typeck2.c:172
+#, gcc-internal-format
+msgid "decrement of read-only reference %qD"
+msgstr ""
+
+#: cp/typeck2.c:176
+#, gcc-internal-format
+msgid "assignment of read-only named return value %qD"
+msgstr ""
+
+#: cp/typeck2.c:178
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of read-only named return value %qD"
+msgstr ""
+
+#: cp/typeck2.c:180
+#, gcc-internal-format
+msgid "increment of read-only named return value %qD"
+msgstr ""
+
+#: cp/typeck2.c:182
+#, gcc-internal-format
+msgid "decrement of read-only named return value %qD"
+msgstr ""
+
+#: cp/typeck2.c:186
+#, gcc-internal-format
+msgid "assignment of function %qD"
+msgstr ""
+
+#: cp/typeck2.c:188
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of function %qD"
+msgstr ""
+
+#: cp/typeck2.c:190
+#, gcc-internal-format
+msgid "increment of function %qD"
+msgstr ""
+
+#: cp/typeck2.c:192
+#, gcc-internal-format
+msgid "decrement of function %qD"
+msgstr ""
+
+#: cp/typeck2.c:198
+#, gcc-internal-format
+msgid "assignment (via 'asm' output) of read-only location %qE"
+msgstr ""
+
+#: cp/typeck2.c:384
 #, gcc-internal-format
 msgid "cannot declare variable %q+D to be of abstract type %qT"
 msgstr ""
 
-#: cp/typeck2.c:291
+#: cp/typeck2.c:387
 #, gcc-internal-format
 msgid "cannot declare parameter %q+D to be of abstract type %qT"
 msgstr ""
 
-#: cp/typeck2.c:294
+#: cp/typeck2.c:390
 #, gcc-internal-format
 msgid "cannot declare field %q+D to be of abstract type %qT"
 msgstr ""
 
-#: cp/typeck2.c:298
+#: cp/typeck2.c:394
 #, gcc-internal-format
 msgid "invalid abstract return type for member function %q+#D"
 msgstr ""
 
-#: cp/typeck2.c:300
+#: cp/typeck2.c:396
 #, gcc-internal-format
 msgid "invalid abstract return type for function %q+#D"
 msgstr ""
 
 #. Here we do not have location information.
-#: cp/typeck2.c:303
+#: cp/typeck2.c:399
 #, gcc-internal-format
 msgid "invalid abstract type %qT for %qE"
 msgstr ""
 
-#: cp/typeck2.c:305
+#: cp/typeck2.c:401
 #, gcc-internal-format
 msgid "invalid abstract type for %q+D"
 msgstr ""
 
-#: cp/typeck2.c:308
+#: cp/typeck2.c:404
 #, gcc-internal-format
 msgid "cannot allocate an object of abstract type %qT"
 msgstr ""
 
-#: cp/typeck2.c:317
+#: cp/typeck2.c:413
 #, gcc-internal-format
 msgid "  because the following virtual functions are pure within %qT:"
 msgstr ""
 
-#: cp/typeck2.c:321
+#: cp/typeck2.c:417
 #, gcc-internal-format
 msgid "\t%+#D"
 msgstr ""
 
-#: cp/typeck2.c:329
+#: cp/typeck2.c:425
 #, gcc-internal-format
 msgid "  since type %qT has pure virtual functions"
 msgstr ""
 
-#: cp/typeck2.c:609
+#: cp/typeck2.c:705
 #, gcc-internal-format
 msgid "constructor syntax used, but no constructor declared for type %qT"
 msgstr ""
 
-#: cp/typeck2.c:623
+#: cp/typeck2.c:719
 #, gcc-internal-format
 msgid "cannot initialize arrays using this syntax"
 msgstr ""
 
-#: cp/typeck2.c:705
+#: cp/typeck2.c:801
 #, gcc-internal-format
 msgid "narrowing conversion of %qE from %qT to %qT inside { }"
 msgstr ""
 
-#: cp/typeck2.c:763
+#: cp/typeck2.c:859
 #, gcc-internal-format
 msgid "int-array initialized from non-wide string"
 msgstr ""
 
-#: cp/typeck2.c:768
+#: cp/typeck2.c:864
 #, gcc-internal-format
 msgid "int-array initialized from incompatible wide string"
 msgstr ""
 
-#: cp/typeck2.c:783
+#: cp/typeck2.c:879
 #, gcc-internal-format
 msgid "initializer-string for array of chars is too long"
 msgstr ""
 
-#: cp/typeck2.c:829
+#: cp/typeck2.c:925
 #, gcc-internal-format
 msgid "cannot initialize aggregate of type %qT with a compound literal"
 msgstr ""
 
-#: cp/typeck2.c:844
+#: cp/typeck2.c:940
 #, gcc-internal-format
 msgid "array must be initialized with a brace-enclosed initializer"
 msgstr ""
 
-#: cp/typeck2.c:931 cp/typeck2.c:1039
+#: cp/typeck2.c:1027 cp/typeck2.c:1135
 #, gcc-internal-format
 msgid "non-trivial designated initializers not supported"
 msgstr ""
 
-#: cp/typeck2.c:1063 cp/typeck2.c:1077
+#: cp/typeck2.c:1159 cp/typeck2.c:1173
 #, gcc-internal-format
 msgid "missing initializer for member %qD"
 msgstr ""
 
-#: cp/typeck2.c:1068
+#: cp/typeck2.c:1164
 #, gcc-internal-format
 msgid "uninitialized const member %qD"
 msgstr ""
 
-#: cp/typeck2.c:1070
+#: cp/typeck2.c:1166
 #, gcc-internal-format
 msgid "member %qD with uninitialized const fields"
 msgstr ""
 
-#: cp/typeck2.c:1072
+#: cp/typeck2.c:1168
 #, gcc-internal-format
 msgid "member %qD is uninitialized reference"
 msgstr ""
 
-#: cp/typeck2.c:1140
+#: cp/typeck2.c:1236
 #, gcc-internal-format
 msgid "no field %qD found in union being initialized"
 msgstr ""
 
-#: cp/typeck2.c:1149
+#: cp/typeck2.c:1245
 #, gcc-internal-format
 msgid "index value instead of field name in union initializer"
 msgstr ""
 
-#: cp/typeck2.c:1308
+#: cp/typeck2.c:1404
 #, gcc-internal-format
 msgid "circular pointer delegation detected"
 msgstr ""
 
-#: cp/typeck2.c:1321
+#: cp/typeck2.c:1417
 #, gcc-internal-format
 msgid "base operand of %<->%> has non-pointer type %qT"
 msgstr ""
 
-#: cp/typeck2.c:1345
+#: cp/typeck2.c:1441
 #, gcc-internal-format
 msgid "result of %<operator->()%> yields non-pointer result"
 msgstr ""
 
-#: cp/typeck2.c:1347
+#: cp/typeck2.c:1443
 #, gcc-internal-format
 msgid "base operand of %<->%> is not a pointer"
 msgstr ""
 
-#: cp/typeck2.c:1369
+#: cp/typeck2.c:1465
 #, gcc-internal-format
 msgid "%qE cannot be used as a member pointer, since it is of type %qT"
 msgstr ""
 
-#: cp/typeck2.c:1378
+#: cp/typeck2.c:1474
 #, gcc-internal-format
 msgid "cannot apply member pointer %qE to %qE, which is of non-class type %qT"
 msgstr ""
 
-#: cp/typeck2.c:1400
+#: cp/typeck2.c:1496
 #, gcc-internal-format
 msgid "pointer to member type %qT incompatible with object type %qT"
 msgstr ""
 
-#: cp/typeck2.c:1461
+#: cp/typeck2.c:1557
 #, gcc-internal-format
 msgid "invalid value-initialization of reference types"
 msgstr ""
 
-#: cp/typeck2.c:1652
+#: cp/typeck2.c:1748
 #, gcc-internal-format
 msgid "call to function %qD which throws incomplete type %q#T"
 msgstr ""
 
-#: cp/typeck2.c:1655
+#: cp/typeck2.c:1751
 #, gcc-internal-format
 msgid "call to function which throws incomplete type %q#T"
 msgstr ""
