@@ -1,3 +1,21 @@
+2009-12-03  Michael Matz  <matz@suse.de>
+
+	PR middle-end/38474
+	* cfgexpand.c (struct stack_var): Add conflicts member.
+	(stack_vars_conflict, stack_vars_conflict_alloc,
+	n_stack_vars_conflict): Remove.
+	(add_stack_var): Initialize conflicts member.
+	(triangular_index, resize_stack_vars_conflict): Remove.
+	(add_stack_var_conflict, stack_var_conflict_p): Rewrite in
+	terms of new member.
+	(union_stack_vars): Only run over the conflicts.
+	(partition_stack_vars): Remove special case.
+	(expand_used_vars_for_block): Don't call resize_stack_vars_conflict,
+	don't create self-conflicts.
+	(account_used_vars_for_block): Don't create any conflicts.
+	(fini_vars_expansion): Free bitmaps, don't free or clear removed
+	globals.
+
 2009-12-03  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR middle-end/42202
@@ -10,14 +28,14 @@
 
 2009-12-03  Ken Werner  <ken.werner@de.ibm.com>
 
-        * config/spu/spu-elf.h (STARTFILE_SPEC): Add support for gprof
-        startup files.
-        * config/spu/spu-protos.h (spu_function_profiler): Add prototype.
-        * config/spu/spu.c (spu_function_profiler): New function.
-        * config/spu/spu.h (FUNCTION_PROFILER): Invoke
-        spu_function_profiler.
-        (NO_PROFILE_COUNTERS): Define.
-        (PROFILE_BEFORE_PROLOGUE): Likewise.
+	* config/spu/spu-elf.h (STARTFILE_SPEC): Add support for gprof
+	startup files.
+	* config/spu/spu-protos.h (spu_function_profiler): Add prototype.
+	* config/spu/spu.c (spu_function_profiler): New function.
+	* config/spu/spu.h (FUNCTION_PROFILER): Invoke
+	spu_function_profiler.
+	(NO_PROFILE_COUNTERS): Define.
+	(PROFILE_BEFORE_PROLOGUE): Likewise.
 
 2009-12-03  Dave Korn  <dave.korn.cygwin@gmail.com>
 

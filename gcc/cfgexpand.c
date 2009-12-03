@@ -200,6 +200,9 @@ struct stack_var
 
   /* The next stack variable in the partition, or EOC.  */
   size_t next;
+
+  /* The numbers of conflicting stack variables.  */
+  bitmap conflicts;
 };
 
 #define EOC  ((size_t)-1)
@@ -212,12 +215,6 @@ static size_t stack_vars_num;
 /* An array of indices such that stack_vars[stack_vars_sorted[i]].size
    is non-decreasing.  */
 static size_t *stack_vars_sorted;
-
-/* We have an interference graph between such objects.  This graph
-   is lower triangular.  */
-static bool *stack_vars_conflict;
-static size_t stack_vars_conflict_alloc;
-static size_t n_stack_vars_conflict;
 
 /* The phase of the stack frame.  This is the known misalignment of
    virtual_stack_vars_rtx from PREFERRED_STACK_BOUNDARY.  That is,
@@ -320,48 +317,13 @@ add_stack_var (tree decl)
   stack_vars[stack_vars_num].representative = stack_vars_num;
   stack_vars[stack_vars_num].next = EOC;
 
+  /* All variables initially conflict with no other.  */
+  stack_vars[stack_vars_num].conflicts = NULL;
+
   /* Ensure that this decl doesn't get put onto the list twice.  */
   set_rtl (decl, pc_rtx);
 
   stack_vars_num++;
-}
-
-/* Compute the linear index of a lower-triangular coordinate (I, J).  */
-
-static size_t
-triangular_index (size_t i, size_t j)
-{
-  if (i < j)
-    {
-      size_t t;
-      t = i, i = j, j = t;
-    }
-
-  if (i & 1)
-    return ((i + 1) / 2) * i + j;
-  else
-    return (i / 2) * (i + 1) + j;
-}
-
-/* Ensure that STACK_VARS_CONFLICT is large enough for N objects.  */
-
-static void
-resize_stack_vars_conflict (size_t n)
-{
-  size_t size = triangular_index (n-1, n-1) + 1;
-
-  if (size <= stack_vars_conflict_alloc)
-    {
-      if (n > n_stack_vars_conflict)
-	fatal_error ("program is too large to be compiled on this machine");
-      return;
-    }
-
-  stack_vars_conflict = XRESIZEVEC (bool, stack_vars_conflict, size);
-  memset (stack_vars_conflict + stack_vars_conflict_alloc, 0,
-	  (size - stack_vars_conflict_alloc) * sizeof (bool));
-  stack_vars_conflict_alloc = size;
-  n_stack_vars_conflict = n;
 }
 
 /* Make the decls associated with luid's X and Y conflict.  */
@@ -369,9 +331,14 @@ resize_stack_vars_conflict (size_t n)
 static void
 add_stack_var_conflict (size_t x, size_t y)
 {
-  size_t index = triangular_index (x, y);
-  gcc_assert (index < stack_vars_conflict_alloc);
-  stack_vars_conflict[index] = true;
+  struct stack_var *a = &stack_vars[x];
+  struct stack_var *b = &stack_vars[y];
+  if (!a->conflicts)
+    a->conflicts = BITMAP_ALLOC (NULL);
+  if (!b->conflicts)
+    b->conflicts = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (a->conflicts, y);
+  bitmap_set_bit (b->conflicts, x);
 }
 
 /* Check whether the decls associated with luid's X and Y conflict.  */
@@ -379,9 +346,11 @@ add_stack_var_conflict (size_t x, size_t y)
 static bool
 stack_var_conflict_p (size_t x, size_t y)
 {
-  size_t index = triangular_index (x, y);
-  gcc_assert (index < stack_vars_conflict_alloc);
-  return stack_vars_conflict[index];
+  struct stack_var *a = &stack_vars[x];
+  struct stack_var *b = &stack_vars[y];
+  if (!a->conflicts || !b->conflicts)
+    return false;
+  return bitmap_bit_p (a->conflicts, y);
 }
 
 /* Returns true if TYPE is or contains a union type.  */
@@ -626,6 +595,9 @@ static void
 union_stack_vars (size_t a, size_t b, HOST_WIDE_INT offset)
 {
   size_t i, last;
+  struct stack_var *vb = &stack_vars[b];
+  bitmap_iterator bi;
+  unsigned u;
 
   /* Update each element of partition B with the given offset,
      and merge them into partition A.  */
@@ -642,9 +614,12 @@ union_stack_vars (size_t a, size_t b, HOST_WIDE_INT offset)
     stack_vars[a].alignb = stack_vars[b].alignb;
 
   /* Update the interference graph and merge the conflicts.  */
-  for (last = stack_vars_num, i = 0; i < last; ++i)
-    if (stack_var_conflict_p (b, i))
-      add_stack_var_conflict (a, i);
+  if (vb->conflicts)
+    {
+      EXECUTE_IF_SET_IN_BITMAP (vb->conflicts, 0, u, bi)
+	add_stack_var_conflict (a, stack_vars[u].representative);
+      BITMAP_FREE (vb->conflicts);
+    }
 }
 
 /* A subroutine of expand_used_vars.  Binpack the variables into
@@ -678,15 +653,6 @@ partition_stack_vars (void)
     return;
 
   qsort (stack_vars_sorted, n, sizeof (size_t), stack_var_size_cmp);
-
-  /* Special case: detect when all variables conflict, and thus we can't
-     do anything during the partitioning loop.  It isn't uncommon (with
-     C code at least) to declare all variables at the top of the function,
-     and if we're not inlining, then all variables will be in the same scope.
-     Take advantage of very fast libc routines for this scan.  */
-  gcc_assert (sizeof(bool) == sizeof(char));
-  if (memchr (stack_vars_conflict, false, stack_vars_conflict_alloc) == NULL)
-    return;
 
   for (si = 0; si < n; ++si)
     {
@@ -1084,15 +1050,13 @@ expand_used_vars_for_block (tree block, bool toplevel)
   /* Since we do not track exact variable lifetimes (which is not even
      possible for variables whose address escapes), we mirror the block
      tree in the interference graph.  Here we cause all variables at this
-     level, and all sublevels, to conflict.  Do make certain that a
-     variable conflicts with itself.  */
+     level, and all sublevels, to conflict.  */
   if (old_sv_num < this_sv_num)
     {
       new_sv_num = stack_vars_num;
-      resize_stack_vars_conflict (new_sv_num);
 
       for (i = old_sv_num; i < new_sv_num; ++i)
-	for (j = i < this_sv_num ? i+1 : this_sv_num; j-- > old_sv_num ;)
+	for (j = i < this_sv_num ? i : this_sv_num; j-- > old_sv_num ;)
 	  add_stack_var_conflict (i, j);
     }
 }
@@ -1260,37 +1224,18 @@ create_stack_guard (void)
 static HOST_WIDE_INT
 account_used_vars_for_block (tree block, bool toplevel)
 {
-  size_t i, j, old_sv_num, this_sv_num, new_sv_num;
   tree t;
   HOST_WIDE_INT size = 0;
-
-  old_sv_num = toplevel ? 0 : stack_vars_num;
 
   /* Expand all variables at this level.  */
   for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
     if (TREE_USED (t))
       size += expand_one_var (t, toplevel, false);
 
-  this_sv_num = stack_vars_num;
-
   /* Expand all variables at containing levels.  */
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
     size += account_used_vars_for_block (t, false);
 
-  /* Since we do not track exact variable lifetimes (which is not even
-     possible for variables whose address escapes), we mirror the block
-     tree in the interference graph.  Here we cause all variables at this
-     level, and all sublevels, to conflict.  Do make certain that a
-     variable conflicts with itself.  */
-  if (old_sv_num < this_sv_num)
-    {
-      new_sv_num = stack_vars_num;
-      resize_stack_vars_conflict (new_sv_num);
-
-      for (i = old_sv_num; i < new_sv_num; ++i)
-	for (j = i < this_sv_num ? i+1 : this_sv_num; j-- > old_sv_num ;)
-	  add_stack_var_conflict (i, j);
-    }
   return size;
 }
 
@@ -1315,13 +1260,13 @@ init_vars_expansion (void)
 static void
 fini_vars_expansion (void)
 {
+  size_t i, n = stack_vars_num;
+  for (i = 0; i < n; i++)
+    BITMAP_FREE (stack_vars[i].conflicts);
   XDELETEVEC (stack_vars);
   XDELETEVEC (stack_vars_sorted);
-  XDELETEVEC (stack_vars_conflict);
   stack_vars = NULL;
   stack_vars_alloc = stack_vars_num = 0;
-  stack_vars_conflict = NULL;
-  stack_vars_conflict_alloc = 0;
 }
 
 /* Make a fair guess for the size of the stack frame of the current
