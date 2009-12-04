@@ -1,3 +1,12 @@
+2009-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (add_decl_expr): At toplevel, mark the
+	TYPE_ADA_SIZE field of records and unions.
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Length>: Set the
+	source location of the node onto the comparison expression if it
+	is not cached.
+
 2009-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.adb (Make_CW_Equivalent_Type): Set the
