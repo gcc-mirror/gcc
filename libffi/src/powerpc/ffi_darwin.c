@@ -167,6 +167,8 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	    *fpr_base++ = double_tmp;
 	  else
 	    *(double *) next_arg = double_tmp;
+	  next_arg += 2;
+	  fparg_count++;
 
 	  double_tmp = ((double *) *p_argv)[1];
 	  if (fparg_count < NUM_FPR_ARG_REGISTERS)
