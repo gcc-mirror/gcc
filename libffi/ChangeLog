@@ -1,3 +1,8 @@
+2009-12-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/powerpc/aix_closure.S: Reorganize 64-bit code to match
+        linux64_closure.S.
+	
 2009-12-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libffi/41908
