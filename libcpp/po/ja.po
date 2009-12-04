@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2009-04-22 16:32+0000\n"
+"POT-Creation-Date: 2009-12-02 14:22+0000\n"
 "PO-Revision-Date: 2001-12-05 22:47+0900\n"
 "Last-Translator: Daisuke Yamashita <yamad@mb.infoweb.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -30,678 +30,679 @@ msgstr ""
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr ""
 
-#: charset.c:773
+#: charset.c:781
 #, fuzzy, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "universal-character-name は `%c' を指示しましたが、基本的な文字集合の一部です"
 
-#: charset.c:790 charset.c:1398
+#: charset.c:798 charset.c:1457
 msgid "converting to execution character set"
 msgstr ""
 
-#: charset.c:796
+#: charset.c:804
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr ""
 
-#: charset.c:920
+#: charset.c:928
 #, c-format
 msgid "Character %x might not be NFKC"
 msgstr ""
 
-#: charset.c:980
+#: charset.c:994
 #, fuzzy
 msgid "universal character names are only valid in C++ and C99"
 msgstr "ユニバーサル文字名 `\\U%08x' は識別子の中では有効ではありません"
 
-#: charset.c:983
+#: charset.c:997
 #, fuzzy, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "'\\%c' の意味は -traditional をつけた場合と異なります"
 
-#: charset.c:992
+#: charset.c:1006
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr ""
 
-#: charset.c:1017
+#: charset.c:1031
 #, fuzzy, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "無効な ユニバーサル文字名"
 
-#: charset.c:1029
+#: charset.c:1046
 #, fuzzy, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "不適切なユニバーサルキャラクタ名"
 
-#: charset.c:1039 lex.c:486
+#: charset.c:1056 lex.c:486
 msgid "'$' in identifier or number"
 msgstr ""
 
-#: charset.c:1049
+#: charset.c:1066
 #, fuzzy, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "ユニバーサル文字名 `\\U%08x' は識別子の中では有効ではありません"
 
-#: charset.c:1053
+#: charset.c:1070
 #, fuzzy, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "ユニバーサル文字名 `\\U%08x' は識別子の中では有効ではありません"
 
-#: charset.c:1085 charset.c:1628
+#: charset.c:1102 charset.c:1687
 msgid "converting UCN to source character set"
 msgstr ""
 
-#: charset.c:1089
+#: charset.c:1106
 msgid "converting UCN to execution character set"
 msgstr ""
 
-#: charset.c:1161
+#: charset.c:1178
 #, fuzzy
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "`\\x' の意味は -traditional をつけた場合と異なります"
 
-#: charset.c:1178
+#: charset.c:1195
 msgid "\\x used with no following hex digits"
 msgstr "\\x に、それに続くはずの 16 進数がありません"
 
-#: charset.c:1185
+#: charset.c:1202
 msgid "hex escape sequence out of range"
 msgstr "16 進エスケープシーケンスが範囲外です"
 
-#: charset.c:1223
+#: charset.c:1240
 msgid "octal escape sequence out of range"
 msgstr "8 進エスケープシーケンスが範囲外です"
 
-#: charset.c:1289
+#: charset.c:1306
 #, fuzzy
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "'\\a' の意味は -traditional をつけた場合と異なります"
 
-#: charset.c:1296
+#: charset.c:1313
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "非 ISO 標準のエスケープシーケンス, '\\%c'"
 
-#: charset.c:1304
-#, c-format
-msgid "unknown escape sequence '\\%c'"
+#: charset.c:1321
+#, fuzzy, c-format
+msgid "unknown escape sequence: '\\%c'"
 msgstr "不明なエスケープシーケンス '\\%c'"
 
-#: charset.c:1312
+#: charset.c:1329
 #, fuzzy, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "不明なエスケープシーケンス '\\%c'"
 
-#: charset.c:1319
+#: charset.c:1336
 #, fuzzy
 msgid "converting escape sequence to execution character set"
 msgstr "文字に対するエスケープシーケンスが範囲を外れています"
 
-#: charset.c:1463 charset.c:1527
+#: charset.c:1522 charset.c:1586
 #, fuzzy
 msgid "character constant too long for its type"
 msgstr "文字定数が長すぎます"
 
-#: charset.c:1466
+#: charset.c:1525
 msgid "multi-character character constant"
 msgstr "複数文字からなる文字定数"
 
-#: charset.c:1566
+#: charset.c:1625
 msgid "empty character constant"
 msgstr "空の文字定数"
 
-#: charset.c:1675
+#: charset.c:1734
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr ""
 
-#: directives.c:216 directives.c:242
+#: directives.c:222 directives.c:248
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr "余分なトークンが #%s ディレクティブの終りにあります"
 
-#: directives.c:348
+#: directives.c:354
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s は GCC の拡張です"
 
-#: directives.c:352
+#: directives.c:358
 #, fuzzy, c-format
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s は GCC の拡張です"
 
-#: directives.c:366
+#: directives.c:372
 msgid "suggest not using #elif in traditional C"
 msgstr "古い C では #elif を使わない方がいいです"
 
-#: directives.c:369
+#: directives.c:375
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "古い C では、インデントされた # の #%s を無視します"
 
-#: directives.c:373
+#: directives.c:379
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "インデントされた # がある古い C からは #%s を隠すことをお勧めします"
 
-#: directives.c:399
+#: directives.c:405
 msgid "embedding a directive within macro arguments is not portable"
 msgstr ""
 
-#: directives.c:419
+#: directives.c:425
 #, fuzzy
 msgid "style of line directive is a GCC extension"
 msgstr "#%s は GCC の拡張です"
 
-#: directives.c:474
+#: directives.c:480
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "無効なプリプロセスディレクティヴ #%s"
 
-#: directives.c:542
+#: directives.c:548
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "\"defined\" をマクロ名としては使えません"
 
-#: directives.c:548
+#: directives.c:554
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "\"%s\" は C++ の演算子であり、マクロ名として使用することはできません"
 
-#: directives.c:551
+#: directives.c:557
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "マクロ名が #%s ディレクティブ中に与えられていません"
 
-#: directives.c:554
+#: directives.c:560
 msgid "macro names must be identifiers"
 msgstr "マクロ名は識別子でなくてはなりません"
 
-#: directives.c:603
+#: directives.c:609
 #, c-format
 msgid "undefining \"%s\""
 msgstr "\"%s\" を undef します"
 
-#: directives.c:658
+#: directives.c:664
 msgid "missing terminating > character"
 msgstr "終端文字 > を欠いています"
 
-#: directives.c:713
+#: directives.c:723
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s は \"ファイル名\" あるいは <ファイル名> を必要とします"
 
-#: directives.c:757
+#: directives.c:769
 #, fuzzy, c-format
 msgid "empty filename in #%s"
 msgstr "#%s でのファイル名が空です"
 
-#: directives.c:767
+#: directives.c:779
 msgid "#include nested too deeply"
 msgstr "#include のネストが深すぎます"
 
-#: directives.c:808
+#: directives.c:820
 msgid "#include_next in primary source file"
 msgstr "#include_next が主たるソースファイルにあります"
 
-#: directives.c:834
+#: directives.c:846
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "\"%s\" は line ディレクティブでは無効なフラグです"
 
-#: directives.c:894
+#: directives.c:906
 #, fuzzy
 msgid "unexpected end of file after #line"
 msgstr "予期されるメモリレイテンシを調整する"
 
-#: directives.c:897
+#: directives.c:909
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "#line の後ろの \"%s\" が正の整数ではありません"
 
-#: directives.c:903 directives.c:905
+#: directives.c:915 directives.c:917
 msgid "line number out of range"
 msgstr "行番号が範囲外です"
 
-#: directives.c:918 directives.c:998
+#: directives.c:930 directives.c:1010
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" は正常なファイル名ではありません"
 
-#: directives.c:958
+#: directives.c:970
 #, fuzzy, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "#line の後ろの \"%s\" が正の整数ではありません"
 
-#: directives.c:1042
+#: directives.c:1062
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1066
+#: directives.c:1086
 #, fuzzy, c-format
 msgid "invalid #%s directive"
 msgstr "未定義又は不正な # ディレクティブです"
 
-#: directives.c:1129
+#: directives.c:1149
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr ""
 
-#: directives.c:1138
+#: directives.c:1158
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr ""
 
-#: directives.c:1156
+#: directives.c:1176
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.c:1159
+#: directives.c:1179
 #, fuzzy, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "クラス `%s' は既に存在します"
 
-#: directives.c:1162
+#: directives.c:1182
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr ""
 
-#: directives.c:1192
+#: directives.c:1212
 msgid "registering pragma with NULL handler"
 msgstr ""
 
-#: directives.c:1402
+#: directives.c:1424
 msgid "#pragma once in main file"
 msgstr "#pragma once がメインファイルにあります"
 
-#: directives.c:1425
+#: directives.c:1444
+#, fuzzy
+msgid "invalid #pragma push_macro directive"
+msgstr "#pragma GCC 汚染ディレクティヴが無効です"
+
+#: directives.c:1483
+#, fuzzy
+msgid "invalid #pragma pop_macro directive"
+msgstr "#pragma GCC 汚染ディレクティヴが無効です"
+
+#: directives.c:1537
 msgid "invalid #pragma GCC poison directive"
 msgstr "#pragma GCC 汚染ディレクティヴが無効です"
 
-#: directives.c:1434
+#: directives.c:1546
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "既存のマクロ \"%s' を汚染します"
 
-#: directives.c:1453
+#: directives.c:1565
 msgid "#pragma system_header ignored outside include file"
 msgstr "include ファイル外の #pragma system_header は無視されました"
 
-#: directives.c:1477
+#: directives.c:1590
 #, fuzzy, c-format
 msgid "cannot find source file %s"
 msgstr "ソース %s が見つかりません"
 
-#: directives.c:1481
+#: directives.c:1594
 #, c-format
 msgid "current file is older than %s"
 msgstr "現在のファイルは %s より古いです"
 
-#: directives.c:1665
+#: directives.c:1779
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pramga が括弧で囲まれた文字列リテラルを受け取りました"
 
-#: directives.c:1766
+#: directives.c:1884
 msgid "#else without #if"
 msgstr "#else に #if がありません"
 
-#: directives.c:1771
+#: directives.c:1889
 msgid "#else after #else"
 msgstr "#else が #else の後ろにあります"
 
-#: directives.c:1773 directives.c:1806
+#: directives.c:1891 directives.c:1924
 msgid "the conditional began here"
 msgstr "その条件はここから始まります"
 
-#: directives.c:1799
+#: directives.c:1917
 msgid "#elif without #if"
 msgstr "#elif に #if がありません"
 
-#: directives.c:1804
+#: directives.c:1922
 msgid "#elif after #else"
 msgstr "#elif が #else の後ろにあります"
 
-#: directives.c:1842
+#: directives.c:1960
 msgid "#endif without #if"
 msgstr "#endif に #if がありません"
 
-#: directives.c:1919
+#: directives.c:2040
 msgid "missing '(' after predicate"
 msgstr "述語の後ろの '(' を欠いています"
 
-#: directives.c:1934
+#: directives.c:2055
 msgid "missing ')' to complete answer"
 msgstr "解を補完する ')' を欠いています"
 
-#: directives.c:1954
+#: directives.c:2075
 msgid "predicate's answer is empty"
 msgstr "述語の解が空です"
 
-#: directives.c:1981
+#: directives.c:2102
 msgid "assertion without predicate"
 msgstr "述語のないアサーションです"
 
-#: directives.c:1983
+#: directives.c:2105
 msgid "predicate must be an identifier"
 msgstr "述語は識別子でなければなりません"
 
-#: directives.c:2069
+#: directives.c:2191
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" が再アサートされました"
 
-#: directives.c:2375
+#: directives.c:2474
 #, c-format
 msgid "unterminated #%s"
 msgstr "終端のない #%s"
 
-#: directives-only.c:222 lex.c:1149 traditional.c:163
+#: directives-only.c:222 lex.c:1415 traditional.c:163
 msgid "unterminated comment"
 msgstr "終端されていないコメント"
 
-#: errors.c:118
-msgid "warning: "
-msgstr "警告: "
-
-#: errors.c:120
-msgid "internal error: "
-msgstr "内部エラー: "
-
-#: errors.c:122
-#, fuzzy
-msgid "error: "
-msgstr "内部エラー: "
-
-#: errors.c:195
+#: errors.c:93
 #, fuzzy
 msgid "stdout"
 msgstr "構造体"
 
-#: errors.c:197
+#: errors.c:95
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:261
+#: expr.c:279
 #, fuzzy
 msgid "too many decimal points in number"
 msgstr "`asm' 中の代替キーワードが多すぎます"
 
-#: expr.c:290 expr.c:365
+#: expr.c:308 expr.c:390
 msgid "fixed-point constants are a GCC extension"
 msgstr ""
 
-#: expr.c:303
+#: expr.c:321
 #, fuzzy, c-format
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "接尾辞 '%.*s' は整数定数には無効です"
 
-#: expr.c:305
+#: expr.c:323
 #, fuzzy, c-format
 msgid "invalid digit \"%c\" in octal constant"
 msgstr "無効な句読点 `%c' が制約内にあります"
 
-#: expr.c:313
+#: expr.c:331
 #, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "接尾辞 '%.*s' は整数定数には無効です"
 
-#: expr.c:319
+#: expr.c:337
 #, fuzzy
 msgid "use of C99 hexadecimal floating constant"
 msgstr "16 進浮動小数定数がべき乗を持ちません"
 
-#: expr.c:328
+#: expr.c:346
 #, fuzzy
 msgid "exponent has no digits"
 msgstr "浮動小数定数のべき数が、アラビア数字を持っていません"
 
-#: expr.c:335
+#: expr.c:353
 #, fuzzy
 msgid "hexadecimal floating constants require an exponent"
 msgstr "16 進浮動小数定数がべき乗を持ちません"
 
-#: expr.c:341
+#: expr.c:359
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "接尾辞 '%.*s' は整数定数には無効です"
 
-#: expr.c:351 expr.c:393
+#: expr.c:369 expr.c:418
 #, fuzzy, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "古い C では 'f' 接尾辞が拒否されます"
 
-#: expr.c:358
+#: expr.c:377
+msgid "suffix for double constant is a GCC extension"
+msgstr ""
+
+#: expr.c:383
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "接尾辞 '%.*s' は整数定数には無効です"
 
-#: expr.c:369
+#: expr.c:394
 #, fuzzy
 msgid "decimal float constants are a GCC extension"
 msgstr "16 進浮動小数定数がべき乗を持ちません"
 
-#: expr.c:379
+#: expr.c:404
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "接尾辞 '%.*s' は整数定数には無効です"
 
-#: expr.c:401
+#: expr.c:427
 #, fuzzy
-msgid "use of C99 long long integer constant"
+msgid "use of C++0x long long integer constant"
 msgstr "ISO C89 では long long 整数定数を禁じます"
 
-#: expr.c:409
+#: expr.c:436
 #, fuzzy
 msgid "imaginary constants are a GCC extension"
 msgstr "#if 式の中では文字列定数が使えません"
 
-#: expr.c:412
+#: expr.c:439
 #, fuzzy
 msgid "binary constants are a GCC extension"
 msgstr "#%s は GCC の拡張です"
 
-#: expr.c:505
+#: expr.c:532
 #, fuzzy
 msgid "integer constant is too large for its type"
 msgstr "整数定数が大きすぎるので unsigned になりました"
 
-#: expr.c:517
+#: expr.c:563
 msgid "integer constant is so large that it is unsigned"
 msgstr "整数定数が大きすぎるので unsigned になりました"
 
-#: expr.c:612
+#: expr.c:658
 msgid "missing ')' after \"defined\""
 msgstr "\"defined\" の後ろの ')' が欠けています"
 
-#: expr.c:619
+#: expr.c:665
 msgid "operator \"defined\" requires an identifier"
 msgstr "\"defined\" 演算子は識別子を要求します"
 
-#: expr.c:627
+#: expr.c:673
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "（C++ では \"%s\" が \"%s\" の代替トークンです）"
 
-#: expr.c:637
+#: expr.c:683
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.c:690
+#: expr.c:736
 #, fuzzy
 msgid "floating constant in preprocessor expression"
 msgstr "整数がプリプロセッサ式内でオーバーフローしました"
 
-#: expr.c:696
+#: expr.c:742
 #, fuzzy
 msgid "imaginary number in preprocessor expression"
 msgstr "整数がプリプロセッサ式内でオーバーフローしました"
 
-#: expr.c:743
+#: expr.c:789
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "\"%s\" は定義されていません"
 
-#: expr.c:755
+#: expr.c:801
 #, fuzzy
 msgid "assertions are a GCC extension"
 msgstr "#%s は GCC の拡張です"
 
-#: expr.c:758
+#: expr.c:804
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:891 expr.c:920
+#: expr.c:937 expr.c:966
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr ""
 
-#: expr.c:911
+#: expr.c:957
 #, fuzzy, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "整数がプリプロセッサ式内でオーバーフローしました"
 
-#: expr.c:928
+#: expr.c:974
 msgid "missing expression between '(' and ')'"
 msgstr ""
 
-#: expr.c:931
+#: expr.c:977
 #, fuzzy, c-format
 msgid "%s with no expression"
 msgstr "  throw された式の中"
 
-#: expr.c:934
+#: expr.c:980
 #, fuzzy, c-format
 msgid "operator '%s' has no right operand"
 msgstr "反復子 `%s' は非整数型です"
 
-#: expr.c:939
+#: expr.c:985
 #, fuzzy, c-format
 msgid "operator '%s' has no left operand"
 msgstr "仮引数 `%s' は不完全型です"
 
-#: expr.c:965
+#: expr.c:1011
 msgid " ':' without preceding '?'"
 msgstr ""
 
-#: expr.c:993
+#: expr.c:1039
 #, fuzzy, c-format
 msgid "unbalanced stack in %s"
 msgstr "スタック探索を有効にする"
 
-#: expr.c:1013
+#: expr.c:1059
 #, fuzzy, c-format
 msgid "impossible operator '%u'"
 msgstr "ありえない演算子 '%s'"
 
-#: expr.c:1114
+#: expr.c:1160
 #, fuzzy
 msgid "missing ')' in expression"
 msgstr "定数式が欠けているか無効です"
 
-#: expr.c:1143
+#: expr.c:1189
 msgid "'?' without following ':'"
 msgstr ""
 
-#: expr.c:1153
+#: expr.c:1199
 msgid "integer overflow in preprocessor expression"
 msgstr "整数がプリプロセッサ式内でオーバーフローしました"
 
-#: expr.c:1158
+#: expr.c:1204
 #, fuzzy
 msgid "missing '(' in expression"
 msgstr "定数式が欠けているか無効です"
 
-#: expr.c:1190
+#: expr.c:1236
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1195
+#: expr.c:1241
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.c:1454
+#: expr.c:1500
 msgid "traditional C rejects the unary plus operator"
 msgstr "古い C では単項プラス演算子を拒否します"
 
-#: expr.c:1537
+#: expr.c:1583
 msgid "comma operator in operand of #if"
 msgstr "カンマ演算子が #if 演算子の中にあります"
 
-#: expr.c:1669
+#: expr.c:1719
 msgid "division by zero in #if"
 msgstr "#if でゼロ除算が発生しました"
 
-#: files.c:457
+#: files.c:463
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.c:495
+#: files.c:500
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.c:498
+#: files.c:503
 msgid "use -Winvalid-pch for more information"
 msgstr ""
 
-#: files.c:588
+#: files.c:594
 #, c-format
 msgid "%s is a block device"
 msgstr "%s はブロックデバイスです"
 
-#: files.c:605
+#: files.c:611
 #, c-format
 msgid "%s is too large"
 msgstr "%s は大きすぎます"
 
-#: files.c:640
+#: files.c:646
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s が本来よりも短いです"
 
-#: files.c:875
+#: files.c:881
 #, fuzzy, c-format
 msgid "no include path in which to search for %s"
 msgstr "%s を見つけるためのインクルードパスがありません"
 
-#: files.c:1286
+#: files.c:1306
 msgid "Multiple include guards may be useful for:\n"
 msgstr "多重 include からの保護が有益となるでしょう:\n"
 
-#: init.c:452
+#: init.c:485
 #, fuzzy
 msgid "cppchar_t must be an unsigned type"
 msgstr "述語は識別子でなければなりません"
 
-#: init.c:456
+#: init.c:489
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr ""
 
-#: init.c:463
+#: init.c:496
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.c:466
+#: init.c:499
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.c:470
+#: init.c:503
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.c:474
+#: init.c:507
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.c:479
+#: init.c:512
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.c:483
+#: init.c:516
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
@@ -747,55 +748,60 @@ msgstr "\"%s\" は定義されていません"
 msgid "`%.*s' is not in NFC"
 msgstr "\"%s\" は定義されていません"
 
-#: lex.c:553
+#: lex.c:533 lex.c:610
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "汚染された '%s' 使おうとしています"
 
-#: lex.c:561
+#: lex.c:541 lex.c:618
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ は C99 可変引数マクロ拡張でのみ出現できます"
 
-#: lex.c:675
+#: lex.c:547 lex.c:624
+#, c-format
+msgid "identifier \"%s\" is a special operator name in C++"
+msgstr ""
+
+#: lex.c:739
+msgid "raw string delimiter longer than 16 characters"
+msgstr ""
+
+#: lex.c:742
+#, fuzzy, c-format
+msgid "invalid character '%c' in raw string delimiter"
+msgstr "無効な文字定数が #if にあります"
+
+#: lex.c:771 lex.c:818
+#, fuzzy
+msgid "unterminated raw string"
+msgstr "終端されていないフォーマット文字列"
+
+#: lex.c:831 lex.c:930
 msgid "null character(s) preserved in literal"
 msgstr "リテラル中で null 文字が確保されました"
 
-#: lex.c:678
+#: lex.c:933
 #, c-format
 msgid "missing terminating %c character"
 msgstr "%c 文字での終端を欠いています"
 
-#: lex.c:1160
+#: lex.c:1426
 #, fuzzy
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ スタイルのコメントは ISO C89 では許されません"
 
-#: lex.c:1162
+#: lex.c:1428
 msgid "(this will be reported only once per input file)"
 msgstr "(これは入力ファイルにつき一回だけ報告されます)"
 
-#: lex.c:1167
+#: lex.c:1433
 msgid "multi-line comment"
 msgstr "複数行のコメント"
 
-#: lex.c:1481
+#: lex.c:1753
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "綴れないトークン %s です"
-
-#: line-map.c:319
-#, c-format
-msgid "In file included from %s:%u"
-msgstr "%s:%u から include されたファイル中"
-
-#: line-map.c:337
-#, c-format
-msgid ""
-",\n"
-"                 from %s:%u"
-msgstr ""
-",\n"
-"                 %s:%u から"
 
 #: macro.c:87
 #, fuzzy, c-format
@@ -821,141 +827,141 @@ msgstr "依存関係の追跡のためのターゲット名が特定できませんでした"
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr ""
 
-#: macro.c:427
+#: macro.c:430
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "文字列リテラルが無効です、最後の '\\' を無視します"
 
-#: macro.c:487
+#: macro.c:490
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "\"%s\" と \"%s\" を貼付けましたが正常なプリプロセッサトークンとなりません"
 
-#: macro.c:562
+#: macro.c:565
 msgid "ISO C99 requires rest arguments to be used"
 msgstr "ISO C99 は使用されるべき残りのの引数を要求します"
 
-#: macro.c:567
+#: macro.c:570
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "マクロ \"%s\" は引数を %u 要求しますが、%u 個しか与えられていません"
 
-#: macro.c:572
+#: macro.c:575
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "マクロ \"%s\" に引数が %u 渡されましたが、%u しか受け取りません"
 
-#: macro.c:731 traditional.c:681
+#: macro.c:734 traditional.c:681
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "終端されていない引数リストがマクロ \"%s\" を起動しようとしました"
 
-#: macro.c:848
+#: macro.c:864
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "古い C では、関数的マクロ \"%s\" に引数が与えられねばなりません"
 
-#: macro.c:1016
+#: macro.c:1038
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
 msgstr ""
 
-#: macro.c:1479
+#: macro.c:1501
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "マクロ仮引数 \"%s\" が重複しています"
 
-#: macro.c:1525
+#: macro.c:1547
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 
-#: macro.c:1533
+#: macro.c:1555
 msgid "macro parameters must be comma-separated"
 msgstr "マクロ仮引数はカンマ区切りされなければなりません"
 
-#: macro.c:1550
+#: macro.c:1572
 msgid "parameter name missing"
 msgstr "仮引数名を欠いています"
 
-#: macro.c:1567
+#: macro.c:1589
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "無名可変引数マクロは C99 で採り入れられました"
 
-#: macro.c:1572
+#: macro.c:1594
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C では名前つき可変引数マクロを許しません"
 
-#: macro.c:1581
+#: macro.c:1603
 msgid "missing ')' in macro parameter list"
 msgstr "マクロ仮引数リストで、')' を欠いています"
 
-#: macro.c:1630
+#: macro.c:1652
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' はマクロ展開の両端には出現できません"
 
-#: macro.c:1664
+#: macro.c:1687
 #, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C ではマクロ名の後ろに空白を要求します"
 
-#: macro.c:1688
+#: macro.c:1711
 #, fuzzy
 msgid "missing whitespace after the macro name"
 msgstr "ISO C ではマクロ名の後ろに空白を要求します"
 
-#: macro.c:1718
+#: macro.c:1745
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' にマクロ仮引数名が続いていません"
 
-#: macro.c:1837
+#: macro.c:1900
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" が再定義されました"
 
-#: macro.c:1842
+#: macro.c:1905
 msgid "this is the location of the previous definition"
 msgstr "ここが以前の宣言がある位置です"
 
-#: macro.c:1903
+#: macro.c:1966
 #, fuzzy, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "マクロ引数 \"%s\" は -traditional をつけると文字列化された事でしょう"
 
-#: macro.c:1926
+#: macro.c:1989
 #, fuzzy, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "dump_definition に 無効なハッシュタイプ %d"
 
-#: pch.c:84 pch.c:332 pch.c:344 pch.c:362 pch.c:368 pch.c:377
+#: pch.c:86 pch.c:334 pch.c:346 pch.c:364 pch.c:370 pch.c:379 pch.c:386
 msgid "while writing precompiled header"
 msgstr ""
 
-#: pch.c:484
+#: pch.c:617
 #, c-format
 msgid "%s: not used because `%.*s' is poisoned"
 msgstr ""
 
-#: pch.c:506
+#: pch.c:639
 #, fuzzy, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr "ラベル `%s' が使われましたが定義されていません"
 
-#: pch.c:518
+#: pch.c:651
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr ""
 
-#: pch.c:559
+#: pch.c:692
 #, fuzzy, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr "`%s' が使われましたが未定義です"
 
-#: pch.c:579
+#: pch.c:712
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr ""
 
-#: pch.c:588 pch.c:758
+#: pch.c:721 pch.c:894
 msgid "while reading precompiled header"
 msgstr ""
 
@@ -2030,9 +2036,6 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 
 #~ msgid "format is a wide character string"
 #~ msgstr "フォーマットがワイド文字列です"
-
-#~ msgid "unterminated format string"
-#~ msgstr "終端されていないフォーマット文字列"
 
 #~ msgid "null format string"
 #~ msgstr "フォーマット文字列が null です"
@@ -6568,6 +6571,22 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 #~ msgid "Can't create cross-reference file `%s'"
 #~ msgstr "相互参照ファイル `%s' を作ることができません"
 
+#~ msgid "In file included from %s:%u"
+#~ msgstr "%s:%u から include されたファイル中"
+
+#~ msgid ""
+#~ ",\n"
+#~ "                 from %s:%u"
+#~ msgstr ""
+#~ ",\n"
+#~ "                 %s:%u から"
+
+#~ msgid "internal error: "
+#~ msgstr "内部エラー: "
+
+#~ msgid "warning: "
+#~ msgstr "警告: "
+
 #~ msgid "traditional C rejects the `U' suffix"
 #~ msgstr "古い C では `U' 接尾辞が拒絶されます"
 
@@ -9676,9 +9695,6 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 
 #~ msgid "Invalid number in #if expression"
 #~ msgstr "#if 式の中に無効な数値"
-
-#~ msgid "Invalid character constant in #if"
-#~ msgstr "無効な文字定数が #if にあります"
 
 #~ msgid "double quoted strings not allowed in #if expressions"
 #~ msgstr "二重にクォートされた文字列は #if 式内では使えません"
