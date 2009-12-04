@@ -1,3 +1,8 @@
+2009-12-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42218
+	* g++.dg/other/error33.C: New test.
+
 2009-12-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/guard2.C: Run on *-*-linux* rather than x86-*-*

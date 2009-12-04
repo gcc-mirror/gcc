@@ -1,3 +1,9 @@
+2009-12-04  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42218
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Print only innermost
+	template arguments.
+
 2009-12-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41611
