@@ -1,3 +1,8 @@
+2009-12-02  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_fixup_binary_operands): For FMA4, force
+	all operands into registers.
+
 2009-12-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config/i386/i386.c (ix86_expand_fma4_multiple_memory): Remove unused
