@@ -4777,7 +4777,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
       return error_mark_node;
     }
 
-  if (type_dependent_expression_p (expr))
+  if (type_dependent_expression_p (expr)
+      /* In a template, a COMPONENT_REF has an IDENTIFIER_NODE for op1 even
+	 if it isn't dependent, so that we can check access control at
+	 instantiation time, so defer the decltype as well (PR 42277).  */
+      || (id_expression_or_member_access_p
+	  && processing_template_decl
+	  && TREE_CODE (expr) == COMPONENT_REF))
     {
       if (id_expression_or_member_access_p)
 	{
