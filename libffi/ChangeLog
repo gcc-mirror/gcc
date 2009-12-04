@@ -1,5 +1,10 @@
 2009-12-03  David Edelsohn  <edelsohn@gnu.org>
 
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Increment next_arg and
+	fparg_count twice for long double.
+
+2009-12-03  David Edelsohn  <edelsohn@gnu.org>
+
 	PR libffi/42243
 	* src/powerpc/ffi_darwin.c (ffi_prep_args): Remove extra parentheses.
 
