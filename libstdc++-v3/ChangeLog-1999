@@ -31,7 +31,7 @@
 1999-12-21  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
 
 	* bits/c++config.h.in (__GLIBCPP__): 19991221.
-	* docs/index.html: Add correct information.	
+	* docs/index.html: Add correct information.
 
 	* config/irix: New directory.
 	* config/irix/ctype.cc: Add irix-6.5 info. Not tested.
@@ -40,14 +40,14 @@
 	* config/aix: New directory.
 	* config/aix/ctype.cc: Add aix-4.2 info. Not tested.
 	* config/aix/bits/ctype_base.h: And here.
-	
+
 1999-12-21  Philip Martin  <pm@corris.dircon.co.uk>
 
         * bits/basic_string.h: Add special case handling for integral
 	"iterators".
         * bits/std_string.h: include type_traits.h
 	* testsuite/21_strings/ctor_copy_dtor.cc: Tweak.
-	
+
 1999-12-21  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
 
 	* bits/fstream.tcc (seekoff): Output buffer based on _M_*_in and
@@ -57,7 +57,7 @@
 	* testsuite/27_io/filebuf-2.tst: Correct, remove weird character
 	at the end of the file.
 	* testsuite/27_io/filebuf-3.tst: Correct.
-	
+
 1999-12-21  Phil Edwards  <pedwards@jaj.com>
 
 	* docs/gentop/index:  Hold off on .7 announcement date.
@@ -85,11 +85,11 @@
 	* src/Makefile.in:  Regenerate.
 
 1999-12-20  Benjamin Kosnik  <bkoz@cygnus.com>
-	
+
 	* mkcheck (SRC_DIR): Now have to include config/* dir if "make
 	check" and not "make check-install." Temporarily hack in linux
 	support.
-	
+
 	* bits/std_streambuf.h: Tweaks.
 	* bits/streambuf.tcc (xsgetn): Tweaks.
 	* bits/std_fstream.h (sync): Make _M_really_overflow consistent.
@@ -117,25 +117,25 @@
 
 1999-12-19  Benjamin Kosnik  <bkoz@cygnus.com>
             Ulrich Drepper  <drepper@cygnus.com>
-	
+
 	* acconfig.h: Remove _GLIBCPP_USE_CTYPE_ISBIT.
 
 	* src/locale.cc: Take out platform-specific hacks.
 	* config/linux/ctype.cc: Put here.
 	* config/solaris/ctype.cc: Put here.
-	* config/default/ctype.cc: Put here.	
+	* config/default/ctype.cc: Put here.
 
 	* bits/locale_facets.h: Take out platform-specific hacks.
 	* config/linux/bits/ctype_base.h: Put here.
 	* config/solaris/bits/ctype_base.h: Put here.
-	* config/default/bits/ctype_base.h: Put here.	
+	* config/default/bits/ctype_base.h: Put here.
 
 	* configure.in: Bump version.
 	Add tests for top-level config directory.
 	* configure: Regenerated.
 	* src/Makefile.am (INCLUDES): Add platform-specific dir.
 	* src/Makefile: Regenerate.
-	
+
 1999-12-19  Benjamin Kosnik  <bkoz@cygnus.com>
 	    Ulrich Drepper  <drepper@cygnus.com>
 
@@ -151,7 +151,7 @@
 
 	* bits/c++config.h.in (__GLIBCPP__): Bump.
 	* docs/17_intro/RELEASE-NOTES: Update, Gaby please add your stuff.
-	* docs/17_intro/TODO: Update.	
+	* docs/17_intro/TODO: Update.
 
 	* bits/locale_facets.h: Touch this too.
 	* bits/localefwd.h: Add typedefs for loooooong vector names.
@@ -159,9 +159,9 @@
 	(has_facet): Simplify.
 	* src/locale-inst.cc: Add instantiations.
 	* src/locale.cc: Tweaks.
-	
-	* bits/std_streambuf.h: Move indeterminates into. . 
-	* bits/std_fstream.h: Here.	
+
+	* bits/std_streambuf.h: Move indeterminates into. .
+	* bits/std_fstream.h: Here.
 	* bits/fstream.tcc (underflow): Rewind just for ios_base::out
 	streams.
 	* bits/sstream.tcc: Very minor formatting tweaks.
@@ -171,7 +171,7 @@
 	* testsuite/27_io/istream_unformatted.cc (test05): More tweaks,
 	include fstream.
 	* testsuite/27_io/filebuf.cc: Tweaks.
-	
+
 1999-12-17  Phil Edwards  <pedwards@jaj.com>
 
 	* configure.in:  Add OPTLEVEL, -O2 for gcc 2.96+, nothing otherwise.
@@ -206,7 +206,7 @@
 
 	* mknumeric_limits (OUT_C): restart only if $OUT_C is present.
 
-	* bits/std_complex.h 
+	* bits/std_complex.h
 	(complex<float>::complex(const complex<double>&),
  	complex<float>::complex(const complex<long double>&)): Define.
 
@@ -223,7 +223,7 @@
 	(test05): Same for stringbufs.
 	* testsuite/27_io/istream_unformatted-2.tst: New file.
 	* testsuite/27_io/istream_unformatted-1.tst: New file.
-	* testsuite/27_io/istream_unformatted-1.txt: New file.	
+	* testsuite/27_io/istream_unformatted-1.txt: New file.
 	* testsuite/21_strings/inserters_extractors.cc (test05): Change
 	output file.
 
@@ -242,7 +242,7 @@
 	cannot be inlined, as I can see no real reason to disqualify it.
 	(__valarray_product(const _Tp*, const _Tp*)): Same here.
 	* bits/std_valarray.h (valarray::operator[](size_t)): Same here.
-	
+
 	* docs/17_intro/TODO: Update.
 
 1999-12-12  Benjamin Kosnik  <bkoz@gnu.org>
@@ -253,15 +253,15 @@
 	the resultant position.
 	* bits/fstream.tcc (seekoff): Explicitly set return value to
 	resultant external byte sequence position, not value returned from
-	_M_file->seekoff. Need to make 
+	_M_file->seekoff. Need to make
 	(seekpos): New definition.
-	
+
 	* bits/istream.tcc (seekg): As per Library Issues List 136, set to
 	just istream. Necessary, or else tellg will give an invalid stream
 	position, but seekg will return a valid stream position, which is
 	not groovy: see testcase addition.
 	* bits/ostream.tcc (seekp): Same.
-	
+
 	* bits/streambuf.tcc (_S_copy_streambufs): Simplify.
 	* bits/sstream.tcc: Tweaks.
 	* bits/locale_facets.tcc: Tweaks.
@@ -277,9 +277,9 @@
 	* bits/localefwd.h: And here.
 	* bits/std_ostream.h: Tweaks, sentry ctor can't be inlined.
 	* bits/ostream.tcc: Put here.
-	
-	Frank Ch. Eigler  <fche@cygnus.com> 
-	* src/Makefile.am: Adjust CXXFLAGS, add AM_CXXFLAGS. 
+
+	Frank Ch. Eigler  <fche@cygnus.com>
+	* src/Makefile.am: Adjust CXXFLAGS, add AM_CXXFLAGS.
 
 1999-12-08  Benjamin Kosnik  <bkoz@cygnus.com>
 
@@ -326,7 +326,7 @@
 
 1999-12-06  Mumit Khan  <khan@xraylith.wisc.edu>
 
-        * bits/istream.tcc (basic_istream::ignore): streamsize is not 
+        * bits/istream.tcc (basic_istream::ignore): streamsize is not
         necessarily an `int'.
 
 1999-12-06  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
@@ -349,7 +349,7 @@
 	worth doing correctly. Remove const designation on ios argument.
 	* testsuite/27_io/ios_manip_basefield.cc (test02): Add tests.
 	* testsuite/27_io/ostream_inserter_arith.cc (test03): Add tests.
-	
+
 1999-12-04  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/std_sstream.h (streambuf::underflow): Check for mode == in.
@@ -365,7 +365,7 @@
 	* bits/ostream.tcc (ostream::operator<<(const char*)): Stub out
 	unused argument.
 	(ostream::operator<<(_CharT)): Fix.
-	
+
 	* bits/std_sstream.h: Temporarily disable including sstream.tcc to
 	see if this will increase compile speed.
 	* bits/std_ostream.h: Likewise. . .
@@ -375,23 +375,23 @@
 	instantiation purposes.
 	* src/string-inst.cc: And here.
 	* testsuite/27_io/ostream_inserter_arith.cc: Add test case.
-	
+
 1999-12-02  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* testsuite/27_io/istream_unformatted.cc (test03): Add tests.
-	* bits/istream.tcc (get(streambuf)): More fixes. 
+	* bits/istream.tcc (get(streambuf)): More fixes.
 	(istream::ignore): Get specific about numeric_limits<int>::max()
 	requirements.
 
 	* bits/fstream.tcc (filebuf::open): Tweaks for _M_last_overflowed.
 	(filebuf::close): Same.
 	* testsuite/27_io/filebuf.cc: Add tests for ios_base::ate.
-	
+
 1999-12-01  Phil Edwards  <pedwards@jaj.com>
 
         * mkcheck:  Support for compilation/execution timing.
 	* testsuite/printnow.c: New file.
-	
+
 1999-12-01  Phil Edwards  <pedwards@jaj.com>
 
         * bits/std_cwchar.h:  Test for _GLIBCPP_USE_WCHAR_T.
@@ -411,7 +411,7 @@
 	* bits/std_istream.h: Same.
 	* bits/sstream.tcc (stringbuf::pbackfail): Fix.
 	* testsuite/27_io/stringbuf.cc: Tweak.
-	* testsuite/27_io/istream_unformatted.cc (test02): Mo' tests.	
+	* testsuite/27_io/istream_unformatted.cc (test02): Mo' tests.
 
 	* bits/ostream.tcc (ostream::operator<<(arith)): Set badbit, not
 	failbit on failure, as per 27.6.2.5.2.
@@ -423,12 +423,12 @@
 
         * configure.in: Fix checks for mbstate_t and WCHAR_MIN/MAX.
 	* configure: Regenerate.
-	
+
 1999-11-29  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/istream.tcc (get(streambuf, char)): Fix.
 	* testsuite/27_io/istream_unformatted.cc (test03): Add tests.
-	
+
 1999-11-29  Scott Snyder  <snyder@fnal.gov>
 
         * bits/basic_string.h (append(const _Char*, size_type)): The
@@ -450,12 +450,12 @@
         * bits/c++config.h.in (_GLIBC_USE_WCHAR_T): Move from here ...
         * acconfig.h (_GLIBC_USE_WCHAR_T): to here.
         * bits/string.tcc (wstring::_S_find): Guard wchar_t specialization.
-	
+
 1999-11-29  Mumit Khan  <khan@xraylith.wisc.edu>
 
         * acinclude.m4: Fix typo.
         * src/complex.cc: Fix macro line continuation.
-	
+
 1999-11-29  Petter Urkedal  <petter@matfys.lth.se>
 
         * src/Makefile.am (CXXFLAGS): Add -Wno-format to allow non-
@@ -466,7 +466,7 @@
 	* testsuite/27_io/istream_unformatted.cc (test03): Add tests.
 	* bits/istream.tcc (istream::get): Extract to argument minus one.
 	Various tweaks and fixes.
-	
+
 1999-11-22  Mumit Khan  <khan@xraylith.wisc.edu>
 
         * bits/locale_facets.tcc: Workaround for compiler crash on
@@ -505,7 +505,7 @@
         * bits/valarray_meta.h: Don't forget to define tanh
 
 1999-11-18  Philip Martin  <pm@corris.dircon.co.uk>
- 
+
        * src/stl-inst.cc: Use typedef to refer to iterator
        * stl/bits/stl_algobase.h: Add traits based dispatch for
        __normal_iterator in the copy()algorithm
@@ -527,7 +527,7 @@
 	* bits/std_sstream.h (stringbuf::_M_really_sync): Add __iend as a
 	parameter.
 	* bits/sstream.tcc: Adjust here too.
-	
+
 1999-11-17  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/sbuf_iter.h (istreambuf_iter::equal): Tweak.
@@ -543,7 +543,7 @@
 	* bits/std_sstream.h (_M_really_sync): Fix ibuffer positioning for
 	in|out bufs that are empty. . .
 	* testsuite/27_io/istream_extractor_arith.cc (test03): Add.
-	
+
 1999-11-16  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* testsuite/27_io/streambuf.cc (class testbuf): Don't set _M_buf_size.
@@ -592,8 +592,8 @@
 	* testsuite/27_io/filebuf.cc: Fix.
 	* testsuite/27_io/ostream_inserter_other.cc: Fix.
 	* testsuite/27_io/ostream_inserter_other-2.tst: New file.
-	* testsuite/27_io/stringbuf.cc: Tweak.	
-	* testsuite/27_io/streambuf.cc: Tweak.	
+	* testsuite/27_io/stringbuf.cc: Tweak.
+	* testsuite/27_io/streambuf.cc: Tweak.
 	* testsuite/27_io/istream_extractor_other.cc: Fix.
 
 1999-11-11  Matthias Klose  <doko@cs.tu-berlin.de>
@@ -634,15 +634,15 @@
 	(_S_istream_fcache): New function.
 	Move functions out-of-line.
 	* bits/istream.tcc: Put here.
-	
+
 	* bits/basic_ios.tcc (basic_ios::imbue): Tweaks, remove call to
 	_M_call_callbacks(), as ios_base::imbue does this already.
 	* src/ios.cc (register_callback): Clean.
 	(_M_call_callbacks): Same.
 	* bits/ios_base.h: Callback work.
 	* testsuite/27_io/ios_base_callbacks.cc (test01): New file.
-	
-1999-11-10  Benjamin Kosnik  <bkoz@cygnus.com>	
+
+1999-11-10  Benjamin Kosnik  <bkoz@cygnus.com>
 	    Matthias Klose  <doko@cs.tu-berlin.de>
 
 	* stl/ext/stl_rope.h: Fix initialization order.
@@ -657,7 +657,7 @@
 	* bits/istream.tcc: Re-order.
 	* bits/std_istream.h: Fix getline problems.
 	* testsuite/27_io/istream_unformatted.cc: New tests.
-	
+
 	Clean up regressions.
 	* bits/std_sstream.h: Set initial stringbufs correctly.
 
@@ -667,7 +667,7 @@
         vector::iterator.
 	* testsuite/23_containers/vector_modifiers.cc (test01): New file,
 	tests.
-	
+
 1999-11-09  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* src/Makefile.am (CXXFLAGS): Add -Winline.
@@ -677,12 +677,12 @@
 
 	* bits/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION): When
 	building meta-expressions don't forget to take the contained
-	closures. 
+	closures.
 
 1999-11-02  Benjamin Kosnik  <benjamin@cygnus.com>
 
 	* configure: Regenerate.
-	
+
 1999-11-02  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/valarray_meta.h (_Expr<>::sum): Tweak. Use copy-initialization
@@ -703,9 +703,9 @@
 	* bits/basic_string.h: Explicitly cast npos to unsigned type,
 	reported by Richard Atterer.
 	* bits/char_traits.h: For consistency's sake, here too.
-	
+
 	* configure.in: Bump version to 2.90.7.
-	
+
 1999-10-31  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* testsuite/27_io/ostream_inserter_char-1.tst: Check file output.
@@ -715,7 +715,7 @@
 	* bits/sstream.tcc (seekpos): Tricks, mostly: check _M_mode before
 	writing into buffer.
 	(seekoff): Same.
-	
+
 1999-10-29  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/valarray_array.h (__valarray_sum): New function.
@@ -723,17 +723,16 @@
 
 	* bits/std_valarray.h (valarray<T>::product): Comment out.
 	* bits/std_valarray.h (valarray<T>::sum): Use __valarray_sum
-	instead of accumulate. 
+	instead of accumulate.
 
 	* src/valarray-inst.cc: Remove explicit intantiation of
-	class multiplies<size_t>, accumulate, valarray<size_t>::product. 
+	class multiplies<size_t>, accumulate, valarray<size_t>::product.
 	* src/valarray-inst.cc (__valarray_product): Instantiate
-	explicitly. 
+	explicitly.
 	* src/valarray-inst.cc (__valarray_product(const
-	valarray<size_t>&)): New function.   
+	valarray<size_t>&)): New function.
 	* src/valarray-inst.cc (gslice::_Indexer::_Indexer): Don't use
 	valarray<size_t>::product. Use __valarray_product instead.
-	
 
 1999-10-25  Benjamin Kosnik  <bkoz@cygnus.com>
 
@@ -744,11 +743,11 @@
 	specialization that was commented out, as ostreams now have to
 	correctly deal with padding.
 	* testsuite/27_io/ostream_inserter_char.cc (main): Add tests.
-	
+
 	* testsuite/21_strings/ctor_copy_dtor.cc(test02): Add test case
 	from mailing list. This is a bug, and should be fixed.
 	* testsuite/21_strings/inserters_extractors.cc (main): Tweak, fix typo.
-	
+
 1999-10-22  Petter Urkedal  <petter@matfys.lth.se>
 
         * stl/bits/stl_numeric.h (__power): Replaced argument name `__opr'
@@ -759,9 +758,9 @@
 
 	* bits/ios_base.h: Change argument names.
 	* docs/17_intro/BADNAMES: Add __opr.
-	
+
 1999-10-20  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
-	
+
 	Work on compilation slowdowns from 10-5 to 10-12, which are
  	related to the _Callback_list inlining/merge-ifcation, which is
  	still a pending issue, but this stuff is necessary cleanup anyway.
@@ -771,7 +770,7 @@
 	* bits/basic_ios.tcc: Move out of line definitions here, move
  	small out-of-line definitions inline.
 	* bits/basic_ios.h: From here.
-	
+
 	* bits/streambuf.tcc (pbackfail, overflow): Move back inline.
 	* bits/std_streambuf.h: From here.
 
@@ -783,7 +782,7 @@
 	vestigial issspace hacks and use ctype::is instead.
 	(getline): Remove unnecessary loops, fortify and pasteurize.
 	(ws): Same.
-	
+
 1999-10-18  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/istream.tcc (operator>>): Tweak.
@@ -802,7 +801,7 @@
 	not allocated, size.
 	* testsuite/21_strings/inserters_extractors.cc (test06): Add test
 	case.
-	
+
 1999-10-17  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* testsuite/26_numerics/c_math.cc (test03): Tweak.
@@ -816,8 +815,8 @@
 	* bits/istream.tcc (istream::sentry::sentry()): Simplify, correct
 	as per issues list addition--set failbit, eof on empty buffers.
 	* testsuite/27_io/istream_sentry.cc: New file.
-	
-1999-10-12  Chris Prince <prince@wcug.wwu.edu> 
+
+1999-10-12  Chris Prince <prince@wcug.wwu.edu>
 
 	* bits/std_cstdio.h: Remove Solaris hacks.
 
@@ -858,14 +857,14 @@
 	* acconfig.h: Add _GLIBCPP_HAS_WCHAR_MIN_MAX.
 	* configure.in (LIBS): Plus checks for WCHAR_MIN, WCHAR_MAX.
 	* configure: Regenerate.
-	
+
 1999-10-06  Benjamin Kosnik  <bkoz@milou.cygnus.com>
 
 	* bits/streambuf.tcc (streambuf::xsgetn): Rewrite.
 	(streambuf::xsputn): Put in break.
 	Aiming for parity between these two (mostly) similar functions.
 	Need to re-write tests.
-	
+
 	* bits/ios_base.h (ios_base::_M_copy_base): Remove declaration.
 	Make data members protected, not private.
 	* src/ios.cc (ios_base::_M_copy_base): Move _Callback_list into
@@ -874,14 +873,14 @@
 	(basic_ios::clear): Throw ios_base::failure on occasion.
 	(basic_ios::exceptions): Fix.
 	* testsuite/27_io/ios_members.cc (test02): Add tests.
-	
+
 	* bits/fpos.h: Default initialize.
 	* testsuite/27_io/fpos.cc (test03): Add test.
 
-1999-10-04  Russell Davidson <russell@qed.econ.queensu.ca> 
+1999-10-04  Russell Davidson <russell@qed.econ.queensu.ca>
 
 	* src/basic_file.cc: Fix open modes.
-	
+
 1999-10-04  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/locale_facets.tcc (num_get<>::do_get): Fix typo.
@@ -902,9 +901,9 @@
 	_S_format_long: Use long, not int.
 	Add std_limits.h include, for numeric_limits.
 	* testsuite/27_io/istream.cc: Make instantiations work when using
-	-fhonor-std.  
+	-fhonor-std.
 	* testsuite/27_io/ostream.cc: Same.
-	
+
 1999-09-21  Benjamin Kosnik  <bkoz@milou.cygnus.com>
 
 	* bits/fpos.h (fpos::operator streamoff): Make const, don't return
@@ -943,7 +942,7 @@
 	* testsuite/27_io/ios_manip_basefield.cc: This.
 	* testsuite/27_io/stdios_fmtflags_manip: Change to
 	* testsuite/27_io/ios_manip_fmtflags.cc: This.
-	
+
 	* bits/fpos.h: Fix discarding qualifiers on this when
 	using _M_position with a const fpos.
 	* bits/std_iosfwd.h: Tweak.
@@ -955,7 +954,7 @@
 	* bits/ostream.tcc: Tweak.
 	* testsuite/21_strings/inserters_extractors.cc (test04, test05):
  	Add new regressions.
-	
+
 1999-09-16  Benjamin Kosnik  <bkoz@milou.cygnus.com>
 
 	* bits/basic_ios.h: Inline, tweak.
@@ -967,10 +966,10 @@
 
 1999-09-15  Vadim Egorov  <egorovv@1c.ru>
 
-        * bits/streambuf.tcc (basic_streambuf::xsputn): Add check for 
+        * bits/streambuf.tcc (basic_streambuf::xsputn): Add check for
 	zero count puts.
 	* testsuite/21_strings/inserters_extractors.cc (test01): Add test.
-	
+
 1999-09-08  Benjamin Kosnik  <bkoz@milou.cygnus.com>
 
 	* bits/c++config.h.in: Add emacs hints.
@@ -996,11 +995,11 @@
 	* bits/std_cmath.h: Add mess of defines.
 	* testsuite/26_numerics/modf_float.cc: Change to
 	* testsuite/26_numerics/c_math.cc: This.
-	
+
 	* src/locale.cc: Change.
 	* bits/locale_facets.h: Fix.
 	* testsuite/22_locale/ctype.cc: Add temporary tests.
-	
+
 1999-08-24  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/fpos.h: Test.
@@ -1019,9 +1018,9 @@
 	* bits/std_istream.h: Correct initialization.
 	* bits/std_ostream.h: Likewise.
 	* bits/std_sstream.h: Likewise.
-	* bits/std_fstream.h: Likewise. 
+	* bits/std_fstream.h: Likewise.
 	* testsuite/27_io/stringstream.cc: Add test case.
-	
+
 	* bits/std_sstream.h: Replace ____string_type with __string_type.
 	* bits/basic_ios.h (basic_ios::rdbuf(sb*): Call clear(), as required.
 	* bits/std_ostream.h: Tweak dtor.
@@ -1030,7 +1029,7 @@
 
 	* src/Makefile.am (CXXFLAGS): Add -O2.
 	* src/Makefile.in: Likewise.
-	
+
 	* src/gen-num-limits.cc: Conditionally allow wchar_t. See what
 	this breaks. . .
 	* mknumeric_limits (numeric_limits): Uglify.
@@ -1054,12 +1053,12 @@
 	* bits/sstream.tcc (stringbuf::overflow): Copy buffer into string
 	before overflow forces a resize.
 	* testsuite/27_io/ostream_inserter_char.cc: New file.
-	
+
 	* bits/std_fstream.h: Remove declaration.
 	* bits/fstream.tcc: Move uflow.
 	* bits/std_streambuf.h: To here.
 	* bits/streambuf.tcc: Make consistent.
-	
+
 	* src/Makefile.am (WERROR): Enable.
 	* src/Makefile.in: Regenerate.
 	* bits/sbuf_iter.h: Tweak.
@@ -1082,7 +1081,7 @@
 	expect.
 
 	* docs/index.html: Link Stroustrup's C++ page.
-	
+
 1999-08-12  Michael Cook  <cook@sightpath.com>
 
 	* bits/fstream.tcc: Fix signed/unsigned -Wall warning.
@@ -1093,11 +1092,11 @@
 	* src/Makefile.in: ditto.
 
 1999-08-12  Benjamin Kosnik  <bkoz@tintin.cygnus.com>
-	    Russell Davidson <russell@ehess.cnrs-mrs.fr> 
+	    Russell Davidson <russell@ehess.cnrs-mrs.fr>
 
 	* bits/locale_facets.tcc (_M_extract): Finish off patch from yesterday.
 	* src/Makefile.am (myinstallheaders): Tweak, remove PHONY.
-	
+
 1999-08-11  Benjamin Kosnik  <bkoz@tintin.cygnus.com>
 
 	* testsuite/27_io/istream_unformatted.cc: New file.
@@ -1107,7 +1106,7 @@
 
 	* testsuite/27_io/istream_extractor_other-1.txt: New file.
 	* testsuite/27_io/istream_extractor_other-1.tst: New file.
-	* testsuite/27_io/istream_extractor_other-2.tst: New file.	
+	* testsuite/27_io/istream_extractor_other-2.tst: New file.
 	* testsuite/27_io/istream_extractor_other.cc: Add tests.
 	* bits/istream.tcc: Fix operator>>(streambuf*).
 
@@ -1120,13 +1119,13 @@
 	* docs/17_intro/howto.html: Same here.
 
 	Russell Davidson <russell@ehess.cnrs-mrs.fr>
-	* stl/bits/stl_vector.h (_M_insert_aux): 
+	* stl/bits/stl_vector.h (_M_insert_aux):
 	* bits/locale_facets.tcc (_M_extract): Tweaks for preliminary
 	decimal/floating point support.
 	* bits/locale_facets.h: Change _M_extract prototype.
 	* bits/char_traits.h (char_traits::to_int_type): Cast to unsigned.
 	* bits/std_istream.h (istream::read(char_type, streamsize)): Fix.
-	
+
 1999-08-10  Michael Cook  <cook@sightpath.com>
 
 	* bits/fstream.tcc: Fix for unused variable warning (-Wall).
@@ -1139,17 +1138,17 @@
 	* src/locale.cc: ditto.
 	* src/localename.cc: ditto.
 
-1999-08-10  Kirat Singh  <singhki@jany.gs.com> 
+1999-08-10  Kirat Singh  <singhki@jany.gs.com>
 
 	* bits/std_iomanip.h: Inline.
-	
+
 1999-08-10  Alfred Minarik <a8601248@unet.univie.ac.at>
-	
+
 	* bits/std_streambuf.h: Correct member initialization order.
 	* src/ios.cc: Add definitions for ios_base data members.
-	
+
 1999-08-06  Phil Edwards  <pedwards@ball.com>
-	
+
 	* docs/index.html:  Seventh snapshot updates.  Minor tweaks.
 	* docs/faq/index.html: Ditto.  Removed bugs sections that have
 	been fixed for a long time...  Lots of "egcs" references still
@@ -1185,14 +1184,14 @@
 	($(generated_headers)): Same.
 	* src/gen-c++config.cc: Remove, rename to
 	* bits/c++config.h.in: New file. Bump version number.
-	* configure.in: Generate bits/c++config.h at configure time. 
+	* configure.in: Generate bits/c++config.h at configure time.
 	* math/mathconf.h: include bits/c++config.h, not config.h.
-	
+
 	* bits/std_cmath.h: Fix remaining link error for solaris shared
 	builds.  _GLIBCPP_HAS_BUILTIN_SINF has to be disabled for the time
 	being, as on Solaris this silently calls sinf, which does not
 	exist.
-	
+
 	* src/complex.cc: More tweaks.
 
 1999-08-03  Benjamin Kosnik  <bkoz@cygnus.com>
@@ -1204,7 +1203,7 @@
 	* configure.in (NEED_C_LOG10): Delete.
 	* configure: Regenerate.
 	* math/Makefile.am: Change.
-	
+
 1999-07-30  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* math/Makefile.am: Fix, for real.
@@ -1214,10 +1213,10 @@
 	* math/c_log10l.c (c_log10l): Change function name.
 	* math/c_log10f.c (c_log10f): Change function name.
 	* math/c_log10.c (c_log10): Change function name.
-	
+
 	* math/complex-stub.h: Change to c_log* variants.
-	* src/complex.cc: And here. 
-	
+	* src/complex.cc: And here.
+
 1999-07-29  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* testsuite/27_io/istream_extractor_other.cc: Correct last test.
@@ -1237,10 +1236,10 @@
 	* bits/std_istream.h: Fix char extractors.
 	* testsuite/27_io/istream_extractor_char.cc: Change.
 	* testsuite/27_io/istream_extractor_other.cc: Add tests.
-	
+
 1999-07-28  Benjamin Kosnik <bkoz@cygnus.com>
 
-	* bits/std_cctype.h: Fix for solaris2.6 builds. 
+	* bits/std_cctype.h: Fix for solaris2.6 builds.
 
 	* bits/istream.tcc: Fix, thanks Alfred.
 	* bits/std_istream.h: Formatting changes.
@@ -1248,7 +1247,7 @@
 	* libio/Makefile.am (libio_la_SOURCES): Remove cleanup.c, so that
 	_IO_cleanup will not be undefined.
 	* libio/*: Regenerate.
-	
+
 	* bits/basic_string.h: More namespace-safety stuff.
 	* testsuite/27_io/istream_extractor_char.cc: Fix.
 	* testsuite/27_io/istream_extractor_arith.cc: Fix.
@@ -1267,7 +1266,7 @@
 	* configure.in (use_builtin_sinf): Check for _ISBit using autoconf.
 
 	* aclocal.m4: Regenerate by running `aclocal -I m4.`
-	
+
 	* bits/istream.tcc: Fix.
 	* bits/std_istream.h: More changes to extractors.
 
@@ -1277,7 +1276,7 @@
 
 	* bits/std_istream.h: Partially revert.
 	* bits/std_ostream.h: Same.
-	* bits/std_sstream.h: Revert. 
+	* bits/std_sstream.h: Revert.
 
 1999-07-26  Benjamin Kosnik  <bkoz@cygnus.com>
 
@@ -1285,7 +1284,7 @@
 	* bits/std_ostream.h: Make default ctor/assign/operator= private.
 	* bits/std_istream.h: Same, also correct sentry args.
 	* bits/istream.tcc: Add correct sentry args.
-	
+
 	* testsuite/27_io/istream_extractor_char.cc: New file.
 	* testsuite/27_io/istream_extractor_arith.cc: New file, old file,
 	name changes making me dizzy.
@@ -1311,7 +1310,7 @@
 
 	* src/complex.cc: Tweak.  Remove dependency on complex::__value().
 	(sin, sinh, tan, than): Fix call to corresponding C9x function
-	syntax. 
+	syntax.
 
 1999-07-24  Benjamin Kosnik  <bkoz@fidel.cygnus.com>
 
@@ -1328,7 +1327,7 @@
 	the C functions are just plain functions.
 
 	* src/gen-num-limits.cc: Fix spelling inconsistencies.
-	
+
 1999-07-24  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* docs/18_support/howto.html: Start documentation.  Need to keep
@@ -1341,10 +1340,10 @@
 
 1999-07-23  Benjamin Kosnik  <bkoz@fidel.cygnus.com>
 
-	* bits/ios_base.h: Move state/exception functions into basic_ios. 
+	* bits/ios_base.h: Move state/exception functions into basic_ios.
 	* bits/basic_ios.h: Same.
 	* src/ios.cc: And here. Callbacks don't attempt to reset
-	state now.  
+	state now.
 
 	* bits/std_streambuf.h: Separate ios and streambuf locale data
 	members and cached facets. Using this convention: _M_locale_buf for
@@ -1361,15 +1360,15 @@
 	* testsuite/27_io/ios_ctor.cc: New file.
 	* src/ios.cc: Move _M_state init to basic_ios::init().
 	* bits/basic_ios.h: To here.
-	
+
 	Attempt for some consistency in naming for testsuite/27_io/*.cc.
 	* testsuite/27_io/boolfmt.cc: Rename to stdios_fmtflags_manip.cc
 	* testsuite/27_io/octfmt.cc: Rename to stdios_basefield_manip.cc
 	* testsuite/27_io/istream_manip.cc: Rename to istringstream_manip.cc.
 	* testsuite/27_io/ostream_manip.cc: Rename to ostringstream_manip.cc.
-	
+
 1999-07-22  Benjamin Kosnik  <bkoz@fidel.cygnus.com>
-	
+
 	* src/ios.cc: Tweak initializations of standard iostream
 	objects to closely match the standard. Tie cin/wcin, set flags on
 	cerr/wcerr
@@ -1395,12 +1394,12 @@
 	* testsuite/21_strings/find.cc (test01): Add tests to catch this
 	find bug. . .
 
-1999-07-20  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>	
+1999-07-20  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
 
 	* bits/basic_ios.h: Put into basic_ios namespace.
 	Tweak widen/narrow.
 
-1999-07-19  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>	
+1999-07-19  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
 
 	* bits/std_sstream.h (stringbuf::sync): Change to _M_really_sync,
  	adjust _M_*_cur pointers inside the function, so callee doesn't
@@ -1412,12 +1411,12 @@
 
 1999-07-18  Mumit Khan  <khan@xraylith.wisc.edu>
 
-        * configure.in: Check for float.h and underscored version of 
+        * configure.in: Check for float.h and underscored version of
         math functions.
         * acconfig.h: Add @BOTTOM@ section for handling underscored
         math functions.
         * configure: Regenerate.
-        * config.h.in: Regenerate. 
+        * config.h.in: Regenerate.
         * math/mathconf.h (float.h): Include conditionally.
         (M_PI): Define conditionally.
         (INFINITE_P): Define for Mingw.
@@ -1447,12 +1446,12 @@
 	_M_buf_size to initial _M_string.size(), even though for
 	ostringstreams it is pretty pointless. It's necessary for
 	istringstreams.
-	(stringbuf::str()): Adjust. 
+	(stringbuf::str()): Adjust.
 	(stringbuf::str()): Adjust, call _M_init_stringbuf.
 	* bits/streambuf.tcc (streambuf::xsgetn): Adjust return value for
 	overflow's possible success.
 	(streambuf::xsputn): Adjust.
-	
+
 	* testsuite/27_io/filebuf.cc: Adjust for the xsgetn re-write from
 	yesterday.
 	* testsuite/27_io/stringbuf.cc: Tweak.
@@ -1461,7 +1460,7 @@
 	* testsuite/23_containers/vector_cons.cc: Rename to be consistent
 	with other constructor tests to. . .
 	* testsuite/23_containers/vector_ctor.cc: New file.
-	
+
 1999-07-14  Alfred Minarik <a8601248@unet.univie.ac.at>
 
 	* testsuite/*: Changes to make the testsuit compilable with
@@ -1487,7 +1486,7 @@
         * bits/basic_string.h: In the three functions that return
 	an iterator set _M_state to -1 before return.
 	Also optimized two cases of operator+.
-	
+
 1999-07-12  Phil Edwards  <pedwards@ball.com>
 
         * docs/index.html:  Expand egcs-1.1.2 notes/links.
@@ -1497,7 +1496,7 @@
         * docs/21_strings/stringtok_h.txt:  Goodly spelling...
         * docs/23_containers/howto.html:  Stub for bitmasks.
 	* docs/27_io/howto.html: Add section on buffering, stub binary.
-	
+
 1999-07-12  Nathan Myers <ncm@cantrip.org>
 
 	* stl/bits/stl_tree.h (__black_count): Optimize.
@@ -1516,24 +1515,24 @@
 	* bits/fstream.tcc: Define, call from both ctors.
 	* bits/std_sstream.h (_M_init_stringbuf): New function.
 	* bits/sstream.tcc: Tweak.
-	
+
 	* docs/27_io/iostreams_hierarchy.pdf: New file.
-	
+
 	* docs/17_intro/CHECKLIST (basic_string<char>): Validation and
 	acceptance. Wooo-hoo!
 
 	* bits/char_traits.h: Change int_type for char_traits general
 	template, so that 21_strings/capacity.cc will compile.
 	* testsuite/21_strings/capacity.cc: Add operators.
-	
+
 	* bits/string.tcc (string::compare): Clean up, re-implement.
 	* testsuite/21_strings/compare.cc: Tweak.
-	
+
 	* bits/string.tcc (string:_M_mutate): Keep leaked value in
 	_M_state, which means that whenever begin() or end() has been
 	called, the string is unshareable, period. By doing this, insert
 	and erase member functions that return iterators can remain
-	footloose and fancy free. 
+	footloose and fancy free.
 	* testsuite/21_strings/invariants.cc: Update.
 
         * bits/basic_string.h (string::append): Fix self-referential
@@ -1586,7 +1585,7 @@
 	* bits/std_ostream.h: And here.
 	* bits/ostream.tcc: Same.
 	* src/misc-inst.cc: Add instantiations for ws.
-	
+
 	* src/string-inst.cc: Add instantiations for inserters and
 	extractors (operators << and >>, getline).
 
@@ -1599,12 +1598,12 @@
 
 	* testsuite/17_intro: header_[iosfwd, ios, iostream, iomanip,
 	istream, ostream, streambuf, fstream, sstream].cc: New files.
-	
+
 1999-06-30  Ryszard Kabatek <kabatek@chemie.uni-halle.de>
 
 	* bits/std_sstream.h (stringbuf::sync): Don't use string::begin()
 	and string::end().
-	
+
         * bits/basic_string.h (basic_string<>::_S_copy_chars): Add
 	specializations for _CharT*, iterator and const_iterator.
 	* src/string-inst.cc: Remove explicit instantiation, as
@@ -1616,26 +1615,26 @@
 	value of the new parameter to _M_length.  In reserve check
 	_M_state and use _M_clone instead of _M_mutate.
 
-1999-06-30  Benjamin Kosnik  <bkoz@happy.cygnus.com>	
+1999-06-30  Benjamin Kosnik  <bkoz@happy.cygnus.com>
 
 	* bits/basic_string.h: Fix _S_max_size.
 	* bits/string.tcc: Add def here.
 	* testsuite/21_strings/insert.cc: Fix.
-	
+
 	* bits/sbuf_iter.h: Remove detritus.
 	* testsuite/24_iterators/istreambuf_iterator.cc: Add tests.
 
 	* src/locale-inst.cc: Elaborate iterator/locale instantiations
 	to resolve alpha-osf4 build problems.
 
-1999-06-29  Benjamin Kosnik  <bkoz@happy.cygnus.com>	
+1999-06-29  Benjamin Kosnik  <bkoz@happy.cygnus.com>
 
 	* bits/string.tcc: Fix signed/unsigned issues in compares.
 	* stl/bits/stl_deque.h: And here.
 	* stl/bits/stl_string_fwd.h: Remove __get_c_string.
 
 1999-06-29  Ryszard Kabatek <kabatek@chemie.uni-halle.de>
- 
+
          * bits/string.tcc: New implementation and interface of _M_mutate.
            Adapt the change in all functions that call _M_mutate.
          * bits/basic_string.h: And here.
@@ -1647,12 +1646,12 @@
 1999-06-29  Phil Edwards  <pedwards@ball.com>
 
         * mknumeric_limits:  Exit script if gen-num-limits isn't built.
-	
-1999-06-29  Andreas Gruenbacher  <agruenba@pent224.infosys.tuwien.ac.at> 
+
+1999-06-29  Andreas Gruenbacher  <agruenba@pent224.infosys.tuwien.ac.at>
 
 	* stl/bits/stl_vector.h: Fix.
 	* testsuite/23_containers/vector_cons.cc: Add.
-	
+
 1999-06-29  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* mknumeric_limits (LDFLAGS): fix.
@@ -1676,11 +1675,11 @@
 	version of S_construct again.
 	* bits/string.tcc: Same.
 	* src/string-inst.cc: And add explicit instantiation here.
-	
+
 	* src/gen-c++config.cc (_GNU_SOURCE): Take out both _GNU_SOURCE
 	and __USE_GNU macro defines, as single __USE_GNU use leading to
 	confusion on glibc2.1 systems (ie, RedHat 6.0).
-	
+
 	* src/Makefile.am (headers): Add std_utility to installed headers.
 
 1999-06-25  John Potter  <jpotter@eagle.lhup.edu>
@@ -1697,17 +1696,17 @@
 	macros to include _GLIBCPP as a distinct namespace.
 	* bits/*: And here.
 	* src/*: And here.
-	
+
 	* stl/bits/std_stdexcept.h: Forward-declare __Named_exception ctor.
 	* bits/basic_string.h: Remove __get_c_string.
 	* src/stdexcept.cc: Define ctor here.
 	* bits/ios_base.h: And fix ios_base::failure as well.
-	* src/ios.cc: Define here. 
-	
+	* src/ios.cc: Define here.
+
 	* bits/std_streambuf.h: Add a private copy ctor and assignment
 	operator wrapped in _G_RESOLVE_LIB_DEFECTS.
 	* bits/ios_base.h: And here too.
-	
+
 	* bits/basic_string.h: Tweak.
 	* testsuite/21_strings/nonmember.cc: Add operator+ tests.
 
@@ -1715,7 +1714,7 @@
 	* src/valarray-inst.cc: This.
 	* src/Makefile.am (sources): Change here.
 	* src/Makefile.in: Regenerated.
-	
+
 1999-06-24  Vadim Egorov  <egorovv@1c.ru>
 
         * bits/string.tcc(basic_string<>::_Rep::_S_create): Fixed
@@ -1723,9 +1722,9 @@
 
 1999-06-24  Benjamin Kosnik  <bkoz@tintin.cygnus.com>
             Tom Tromey  <tromey@cygnus.com>
-	
+
 	* configure.in (use_glibc2): Eek, correct for non-glibc systems.
-	Use AM_CONDITIONAL to get us out of this jam. . 
+	Use AM_CONDITIONAL to get us out of this jam. .
 	* libio/Makefile.am: Same.
 	* */Makefile: Regenerated.
 
@@ -1734,7 +1733,7 @@
 
 	* stl/bits/stl_tree.h (insert_equal): Fix.
 	* testsuite/23_containers/multiset.cc: New file.
-	
+
 1999-06-23  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* configure.in (test for glibc2): Correct AC_TRY_COMPILE so that
@@ -1742,9 +1741,9 @@
 	simplified linking on these systems, and successful linking on Red
 	Hat 6.0 systems.
 	* configure, Makefile: Regenerate.
-	
-	* bits/std_cwctype.h: Add missing 'w' to _S_iswpunct_helper name. 
-	
+
+	* bits/std_cwctype.h: Add missing 'w' to _S_iswpunct_helper name.
+
 	* testsuite/ext: New directory.
 	* testsuite/ext/headers.cc: New file.
 
@@ -1773,7 +1772,7 @@
 
 1999-06-12  Benjamin Kosnik  <bkoz@cygnus.com>
 
-	* mkcheck (LOG_FILE): Correctly append errors. 
+	* mkcheck (LOG_FILE): Correctly append errors.
 
 	* stl/bits/stl_iterator.h: Revert previous, delirious, change.
 
@@ -1788,7 +1787,7 @@
 	* testsuite/21_strings/find.cc: New file.
 	* testsuite/21_strings/substr: New file.
 	* testsuite/21_strings/replace.cc: New file.
-	
+
 1999-06-11  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/valarray_array.h: __restrict__ify pointers.
@@ -1801,7 +1800,7 @@
 	* bits/gslice.h: Tweak.
 	(class gslice::_Indexer): new class.
 	(gslice::gslice(const gslice&)): implement copy-ctor to support
-	ref-counted index. 
+	ref-counted index.
 	(gslice::operator=(const gslice&)): support ref-counted index.
 	(gslice::_M_convert_to_index): delete.
 
@@ -1832,7 +1831,7 @@
 	c_str() as well.
 	* bits/string.tcc: Add static member definition here,
 	temporarily.
-	
+
 	* testsuite/21_strings/element_access.cc: Add tests.
 
 1999-06-08  Vadim Egorov  <egorovv@1c.ru>
@@ -1871,7 +1870,7 @@
 	* acconfig.h: Add macro for sinf here.
 	* configure.in (LIBS): Add test for builtin math function sinf.
 	* configure: Regenerated.
-	
+
 	* bits/basic_string.h: Fix _S_max_size.
 
 1999-06-06  Benjamin Kosnik  <bkoz@tintin.cygnus.com>
@@ -1880,7 +1879,7 @@
 	Remove _S_construct signature for forward_iterator_tag and
 	input_iterator_tag.
 	Clean _M_fold.
-	* src/string-inst.cc: Same, tweaks. 
+	* src/string-inst.cc: Same, tweaks.
 	* bits/string.tcc: Same, tweaks.
 
 	* testsuite/21_strings/ctor_copy_dtor.cc: Add/clarify tests.
@@ -1897,18 +1896,18 @@
         * docs/{23_containers,27_io}/howto.html:  Added sections.
 
 	* bits/std_fstream.h: Tweak.
-	
+
 1999-06-05  Benjamin Kosnik  <bkoz@tintin.cygnus.com>
 
 	* src/ios.cc: Same here.
 	* bits/std_iosfwd.h: More wchar_t defines.
 
-	* bits/basic_string.h: Tweaks. 
+	* bits/basic_string.h: Tweaks.
 	* bits/string.tcc: Tweak. Fix _S_construct to check for max_size
 	when doing error checking, as per LWG defect #83.
-	
+
 	* src/gen-c++config.cc: Fix comment.
-	
+
 	* testsuite/21_strings/ctor_copy_dtor.cc: New file, checks ctors,
 	assignments, dtors.
 	* testsuite/21_strings/element_access.cc: New file, checks for
@@ -1916,7 +1915,7 @@
 	* testsuite/21_strings/insert.cc: New file, tests string::insert.
 	* testsuite/21_strings/char_traits.cc: New file, tests
 	for char_traits<char>.
-	
+
 	* bits/utility.h: Remove, again.
 	* src/Makefile.am (std_headers): Remove utility.h.
 	* src/Makefile.in (std_headers): Regenerate.
@@ -1937,7 +1936,7 @@
         * bits/string.tcc (basic_string::_M_mutate): Fixed memory
         allocation error
 	* testsuite/21_strings/capacity.cc (test01): Test.
-	
+
 1999-06-03  Phil Edwards  <pedwards@ball.com>
 
         * bits/fstream.tcc:  Re-order inits to stop warnings.  Comment/move
@@ -1955,9 +1954,9 @@
 	* bits/locale_facets.h: Same.
 	* bits/locale_facets.tcc: Same.
 	* src/wstring-inst.cc: And here.
-	
+
 	* src/gen-c++config.cc: Comment _G_USE_WCHAR_T. Leading to
- 	problems on HPUX 10.20.  
+ 	problems on HPUX 10.20.
 	* your-build-directory-here/bits/c++config.h: Just kidding, do it
  	here as a temporary hack till the compiler/host problems get
  	worked out.
@@ -1988,7 +1987,7 @@
 
 	* src/Makefile.am ($(generated_headers)): Remove comment.
 	* Makefile*: Regenerate.
-	
+
 	* bits/std_locale.h: Remove detritus.
 	* bits/localefwd.h: Add <cctype> include to undefine the isspace
 	macro.
@@ -1998,7 +1997,7 @@
 	* src/gen-c++config.cc: New file. Making c++config.h at configure
 	time by catting this file (nee bits/config.h) with the build
 	directories config.h. This is not a complete or perfect solution
-	but is better than what was in place previously. 
+	but is better than what was in place previously.
 	* bits/c++config.h: Rename/move to above.
 	* src/Makefile.am (headers): Remove c++config.h.
 	(myinstallheaders). Add.
@@ -2009,7 +2008,7 @@
 	declared only if not present in the host's wchar.h.
 
 	* bits/locale_facets.tcc (std): Change _G_USE_STRTO* to HAVE_STRTO*.
-	
+
 	* bits/std_cmath.h: Define out, for the moment. Linux has no
 	__buitin_fsqrtl? Probably need some kind of configure trickery
 	here as well.
@@ -2018,7 +2017,7 @@
 	* bits/c++config.h: Add config.h include.
 
 	* bits/std_cwchar.h: Remove remaining #error guard.
-	
+
 	* acconfig.h: Add bits for HAVE_LC_MESSAGES.
 
 	* configure.in (LIBS): Replace previous effort for mbstate_t and
@@ -2033,7 +2032,7 @@
 
 	* bits/locale_facets.tcc (std): Eek: this left in. Autoconf bits
 	for determining mbstate_t differences across various hosts not
-	finished. 
+	finished.
 
 1999-05-26  Benjamin Kosnik  <bkoz@nabi.net>
 
@@ -2044,7 +2043,7 @@
 
 	* bits/std_istream.h: Add ws declaration.
 	* bits/istream.tcc: Stub out definition.
-	
+
 	* docs/index.html: Fix broken link for design.txt.
 
 	* configure.in: Test for mbstate_t. If wchar.h doesn't have it,
@@ -2057,7 +2056,7 @@
 
         * bits/std_sstream.h:
           basic_stringbuf<>::basic_stringbuf: fix.
-          basic_stringbuf<>::setbuf: 
+          basic_stringbuf<>::setbuf:
           remove the temporary __string_type object,
           remove the unnecessary dynymic_cast in the return value,
           change the type of the returned value from __streambuf_type*
@@ -2065,7 +2064,7 @@
 
 1999-05-25  Phil Edwards  <pedwards@ball.com>
 
-	* bits/std_streambuf.h (streambuf::setbuf): Always return streambuf*. 
+	* bits/std_streambuf.h (streambuf::setbuf): Always return streambuf*.
 
 1999-04-25  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
@@ -2075,18 +2074,18 @@
 1999-05-24  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* mknumeric_limits (LDFLAGS): set appropriate link flags.
-	
+
 1999-05-23  Phil Edwards  <pedwards@ball.com>
 
 	* docs/17_intro/howto.html:  Added links to text docs,
-	e.g., BUGS. 
+	e.g., BUGS.
 	* docs/21_strings/howto.html:  Updated sections and links.
 	* docs/21_strings/{gotw29a.txt,stringtok_h.txt}:  Added.
 	* docs/faq/index.html:  Updated what-works for sixth
 	snapshot. Also a number of "internal" links have been
 	fixed, now that the web pages are the docs directory...
 	* docs/faq/index.txt: Regenerated.
-	
+
 1999-05-21   Benjamin Kosnik  <bkoz@tintin.cygnus.com>
 
 	* bits/basic_string.h: Add Nathan's documentation on the string class.
@@ -2109,7 +2108,7 @@
 	* bits/istream.tcc: Same.
 
 	* src/locale-inst.cc: And here.
-	* src/locale.cc: Ditto. 
+	* src/locale.cc: Ditto.
 	* src/Makefile.am: Updated.
 	* src/Makefile.in: Rengenerated.
 
@@ -2123,7 +2122,7 @@
 	* bits/locfacets.h: Start separating this into a localeimp.h file.
 	* bits/loccore.h: Start separating this into a localefwd.h file.
 	Add std_climits for CHAR_BIT.
-	
+
 	* bits/ios_base.h (ios_base::sync_with_stdio): Stub in.
 
 	* bits/char_traits.h: Tweak.
@@ -2135,7 +2134,7 @@
 	* bits/std_streambuf.h: Same.
 	* bits/std_fstream.h: Same.
 	* bits/std_sstream.h: And here.
-	
+
 	* bits/std_iosfwd.h: Add _G_RESOLVE_LIB_DEFECTS here for streampos.
 	* bits/char_traits.h: Add include of std_cwchar.h for mbstate_t.
 	* bits/fpos.h: Tweak, format.
@@ -2147,18 +2146,18 @@
 	* src/Makefile.in: Regenerate.
 	* testsuite/17_intro/header_ciso646.cc: New file, disable
 	equivalance tests.
-	
+
 	* bits/fpos.h: Remove libio.h include.
 	* bits/basic_file.h: And here.
 	* bits/std_ios.h: Put here.
 
 	* src/ios.cc: Simplify includes, tweak.
-        * bits/std_ios.h: Simplify include order. 
+        * bits/std_ios.h: Simplify include order.
 	* bits/ios_base.h: Modify ios_base::failure.
 
 	* stl/bits/std_numeric.h: Change include from stl_iterator to
 	std_iterator.
-	
+
 1999-05-19  Benjamin Kosnik  <bkoz@tintin.cygnus.com>
 
 	* std/iostream: Remove static member __ioint.
@@ -2168,9 +2167,9 @@
 	* stl/bits/stl_algobase.h: Same.
 	* testsuite/27_io/iostream_objects.cc: Regression tests.
 	* testsuite/27_io/hello.cc: Remove, subset of above.
-	
+
 1999-05-19  Phil Edwards  <pedwards@ball.com>
-	
+
 	* docs/index.html: Tweak, update.
 
 1999-05-18  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
@@ -2194,7 +2193,7 @@
 	* docs/17_intro/RELEASE-NOTES: Update.
 	* docs/index.html: Correct link to mailing list help page, update News.
 	* docs/faq/index.html: Change fifth to sixth for snapshot.
-	
+
 	* src/Makefile.am (myinstallheaders): Bring over Gaby's changes to
  	install $(top_builddir)/bits/std_limits.h into
  	$(myincludepfx)/bits. This was mistakenly omitted from yesterday's
@@ -2216,10 +2215,10 @@
 	  27_io}/howto.html:  Created, with some initial entries.
 	* docs/faq/index.html:  Fixed some links.
 	* docs/faq/index.txt:  Regenerated.
-	
+
 1999-05-17  Benjamin Kosnik  <bkoz@unhappy.cygnus.com>
 
-	* src/Makefile.am (myinstallheaders): Missed removing missing.h. 
+	* src/Makefile.am (myinstallheaders): Missed removing missing.h.
 	* Makefile.in*: Regenerate.
 
 1999-05-17  Benjamin Kosnik  <bkoz@happy.cygnus.com>
@@ -2237,16 +2236,16 @@
 
 	* bits/c++config.h: Remove broken CCTYPE.
 	* bits/std_cctype.h: Tweak, remove de-macroization, enable
-	sequestered topper implementation.	
+	sequestered topper implementation.
 	* bits/std_cwctype.h: Same.
-	
+
 	* bits/missing.h: Remove.
 	* bits/std_locale.h: Remove missing.h include.
-	
+
 	* stl/bits/std_bitset.h (bitset::bitset(string): Tweak to compile.
-	
+
 	* src/Makefile.am (headers): Add bits/std_cwctype.h.
-	INCLUDES: Add top_builddir. 
+	INCLUDES: Add top_builddir.
 	* src/Makefile.in: Regenerate.
 
 	* Makefile.am: Add check and check-install as new targets.
@@ -2254,18 +2253,18 @@
 	* mkcheck: Here.
 	* configure.in: Tweak versions.
 	* mknumeric_limits: Set paths correctly.
-	
+
 1999-05-17  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
-	
+
 	* src/Makefile.in (myinstallheaders): add rule to install
-	std_limits.h. 
-	
+	std_limits.h.
+
 	* bits/slice.h (class slice): don't const-qualify data members
 	since the copy and assignment operator is implicitly used. The
 	valarray specification is definitively a bad one.
-	
+
 	* Makefile.in (generate-limits-sources): fix typo.
-	
+
 	* docs/text/TODO: update.
 	* docs/text/CHECKLIST: update.
 
@@ -2287,7 +2286,7 @@
 	where the generated std_limits.h is put; generate limitsMEMBERs.cc
 	directly under $(top_builddir)/src. Remains to put the appropriate
 	rule for installing std_limits.h.
-	
+
 	* src/Makefile.in (headers): remove bits/std_limits.h to this list.
 	(INCLUDES): add -I$(top_builddir) for bits/std_limits.h which is
 	now generated at build-time in the build directory
@@ -2300,13 +2299,13 @@
 	all but one empty entry.  Add links for HOWTOs, but no files yet.
 	(Corrected HOWTO links are for bkoz's new scheme.)
 	* docs/faq/index.txt: Regenerated.
-	
+
 1999-05-12  Benjamin Kosnik  <bkoz@happy.cygnus.com>
 
 	* testsuite/17_intro/headers.cc: New file.
 	* stl/bits/std_queue.h: Change stl_bvector.h include path.
 	* bits/std_cwctype.h: New file.
-	
+
 	* testsuite/27_io/filebuf.cc: Need to tweak directory structure.
 
 1999-05-11  Benjamin Kosnik  <bkoz@loony.cygnus.com>
@@ -2320,8 +2319,8 @@
 
 	* testsuite/make_check_libfree++: More tweaks.
 	* testsuite/21/capacity.cc: New file.
-	
-	* src/string.cc: Rename to be consistent with other inst files. 
+
+	* src/string.cc: Rename to be consistent with other inst files.
 	Rename to string-inst.cc.
 	* src/string*.cc: Change include.
 	* src/wstring.cc: Rename to wstring-inst.cc.
@@ -2346,21 +2345,21 @@
 	26_numerics, 27_io: Add.
 	* docs/17_intro/*: Populate with all the text files. . .
 	* docs/index.html: Construct.
-	
+
 	* testsuite/*: Update with same names as the docs subdir.
 	* testsuite/results: Where to stash conformance results for the
 	different snapshots, so that progress/size/speed issues can be
 	tracked over time.
-	
+
 1999-05-10  Benjamin Kosnik  <bkoz@loony.cygnus.com>
-	
+
 	* src/string.cc: Add _S_copy_chars instantiation, as well as
  	string::binary operators !=, ==, etc.
 
 	* src/Makefile.am (CXXFLAGS): Remove -fvtable-thunks.
 	* src/Makefile.in (CXXFLAGS): Same here.
 	* testsuite/make_check_libfree++ (CXX_FLAG): And here.
-	
+
 1999-05-07  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* src/string.cc:  Add missing member functions to instantiation list.
@@ -2382,14 +2381,14 @@
 	an iterator class.  Delineate pointer versus iterator differences
 	in implementation.
 	* 23/vector_capacity.cc: New file, tests for above.
-	
+
 1999-05-06 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* mknumeric_limits: Fix typo. 'unsigned lont' should read
 	'unsigned long'.
 	* src/Makefile.am (libstdc___la_SOURCES): add limitsMEMBERS.cc,
 	generated by mknumeric_limits to the list. Now std_limits.h is
-	basically working. 
+	basically working.
 	* src/Makefile.in (generate-numeric-limits): new target to handle
 	automatic generation of bits/std_limits.h and src/limitsMEMBERS.cc.
 	(all): add target generate-numeric-limits.
@@ -2404,12 +2403,12 @@
 	* bits/locfacts.h: Here.
 
 1999-05-05  Benjamin Kosnik  <bkoz@cygnus.com>
-	    Ulrich Drepper <drepper@cygnus.com> 
+	    Ulrich Drepper <drepper@cygnus.com>
 
 	Solaris build issues.
 	* bits/c++config.h: Define new macros, _G_USE_STRTOF and
  	_G_USE_STRTOLD.
-	
+
 	* bits/locfacets.tcc (num_get::do_get): Tweak long double and
  	float overloads to use the above macros. Account for the lack of
  	strtold on some systems, and revert back to using sscanf.
@@ -2432,7 +2431,7 @@
 	according to the standard. (see 8.5 p5 and 20.1.3).
 	* mknumeric_limits (OUT_C): Need this for x86 long
 	double extensions.
-	
+
 	* bits/basic_file.h: Include libio.h, not libioP.h.
 	* src/basic_file.cc: And add libioP.h include here, so that
 	_IO_init, et. al are well-declared.
@@ -2443,7 +2442,7 @@
 	* src/Makefile.am (headers): Add stl_range_errors.h, also adjust
 	for ext/*.  Also add basic_file.h.
 	* src/Makefile.in (headers): Same.
-	
+
 	* bits/std_string.h: Reduce dependencies for faster
 	pre-processing. Move istream and ostream specific defines into
 	istream.tcc and ostream.tcc respectively.
@@ -2466,7 +2465,7 @@
 
 	* stl/bits/*: Update to SGI STL 3.20.
 	* stl/ext/pthread_alloc: Delete this file.
-	
+
 1999-05-04 Phil Edwards <pedwards@ball.com>
 
 	* docs/faq/html/index.html: Add more entries
@@ -2486,7 +2485,7 @@
 	* bits/locfacets.h: And here too.
 
 	* doc: Remove.
-	
+
 1999-04-29  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* docs/: add a FAQ.
@@ -2494,11 +2493,11 @@
 	* docs/faq/html/: Likewise.
 	* docs/faq/text/: Likewise.
 	* docs/faq/html/index.html: New file.
-	* docs/faq/html/index.txt: Likewise. Generated from 
+	* docs/faq/html/index.txt: Likewise. Generated from
 	docs/faq/html/index.html by lynx.
 
 1999-04-28  Benjamin Kosnik  <bkoz@happy.cygnus.com>
-	    Ryszard Kabatek and Branko Cibej 
+	    Ryszard Kabatek and Branko Cibej
 
 	* bits/locfacets.tcc: Modify.
 
@@ -2508,21 +2507,21 @@
 	conformant to 14882, wrap non-standard extensions with
 	_G_RESOLVE_LIB_DEFECTS, remove detritus and cruft, rennovate.
 	* bits/locfacets.tcc (num_get::do_get(bool)): Return correct iterator.
-	
+
 	* testsuite/27/istringstream_formatted.cc: Add tests.
-	
+
 	* bits/locfacets.h: Remove cruft from _Format_cache, continue
 	commenting, simplify.
 	* bits/locfacets.tcc: Same.
 
 	1999-04-27  Ryszard Kabatek  <kabatek@chemie.uni-halle.de>
         * bits/locfacets.tcc (num_get::do_get):
-        Fix the sscanf format parameter 
+        Fix the sscanf format parameter
         for long long 'll' (as in C9X) instead of 'l'.
         Fix the order of sscanf format parameters: "%dl" --> "%ld".
         Change the type of the local variable '__conv' from 'string'
         to 'const char*' and adapt the change.
-	
+
 1999-04-26  Benjamin Kosnik  <bkoz@happy.cygnus.com>
 
 	* bits/locfacets.h: Document _Format_cache, and name data members
@@ -2534,7 +2533,7 @@
 	* bits/locfacets.h (num_get::_M_extract): Don't allow groupings to
  	stop parsing--store for later analysis.
 	* testsuite/27/istringstream_formatted.cc: Add cases.
-	
+
 1999-04-25  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/valarray_meta.h: tweak.
@@ -2543,10 +2542,10 @@
 	happy -- boggus warning.
 	* bits/std_valarray.h: Fix.
 	(valarray<T>::shift): Fix. Update comment.
-	(valarray<T>::cshift): Fix. 
+	(valarray<T>::cshift): Fix.
 
 1999-04-23  Benjamin Kosnik  <bkoz@cygnus.com>
-	
+
 	* testsuite/27filebuf-2.txt: Delete.
 	* testsuite/27/filebuf.cc: Put output files directly into the
 	correct subdirectory (27).
@@ -2569,17 +2568,17 @@
 	results file, please use this in the future to guarantee filebuf
 	positioning accuracy.
 	* testsuite/27/filebuf-2.tst: Same.
-	
+
 1999-04-21  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/fstream.tcc (filebuf::xsputn): Add.
 	* bits/std_fstream.h: Declare.
-	
+
 	* src/basic_file.cc (__basic_file::open): Add O_CREAT to open
 	calls using ios_base::trunc.
 
 	* bits/sstream.tcc (streambuf::overflow): Fix crasher.
-	
+
 	* testsuite/make_check_libfree++ (LOG_FILE): Ugh. Another fix.
 	* testsuite/27/27stringstream.cc: Same.
 	* testsuite/27/27stringbuf.cc: More tweaks.
@@ -2587,13 +2586,13 @@
 
 	* testsuite/27/27filebuf-1.tst: Append, to force byte size over
 	BUFSIZE so that overflows/underflow can be tested with default
-	buffer setting.  
+	buffer setting.
 	* testsuite/27/27filebuf-1.tst: Add.
 
 	* testsuite/*/*: Remove pre-pended chapter names, as they
 	duplicate the chapter info contained in the enclosing directory
 	anyway.
-	
+
 1999-04-20  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/streambuf.tcc (streambuf::xsputn): Re-implement to conform
@@ -2608,17 +2607,17 @@
 
 	* testsuite/make_check_libfree++ (LOG_FILE): More c-c-c-changes.
 	* testsuite/24/24iterator.cc: Add/Fixes for DEBUG_ASSERT.
-	* testsuite/27/27stringstream.cc: Same. 
+	* testsuite/27/27stringstream.cc: Same.
 	* testsuite/27/27stringbuf.cc: Same.
 	* testsuite/27/27istringstream_formatted.cc: Same.
 	* testsuite/27/27filebuf.cc: Same.
-	
+
 	* bits/locfacets.h: Remove specializations for messages<char> and
 	messages<wchar_t> ctors. Same for moneypunct. Not required, not used.
 	* src/locale.cc: Remove definitions for above.
-	* src/misc-inst.cc: Revert, take out iomanip.h include. 
+	* src/misc-inst.cc: Revert, take out iomanip.h include.
 	* bits/std_iomanip.h: Tweak, format.
-	
+
 1999-04-19  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/loccore.h: Format, move inline.
@@ -2636,7 +2635,7 @@
 	* bits/sstream.tcc: Tweak.
 
 	* std/iostream: Put __ioinit inside macro guards.
-	
+
 	* src/stlinst.cc: Delete and move to . . .
 	* src/stl-inst.cc: New file, plus wrapping in namespace std.
 	* src/Makefile.in: Change.
@@ -2646,16 +2645,16 @@
 	* testsuite/make_check_libfree++: Efficiently format for minimal
 	space. Enforce stricter execution tests by enabling
 	-DDEBUG_ASSERT.
-	
+
 1999-04-16  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* docs/text/RELEASE-NOTES: Fix include typo.
 
-	* src/Makefile.am (headers): Add istream.tcc. 
-	* src/Makefile.in (headers): Add istream.tcc. 
+	* src/Makefile.am (headers): Add istream.tcc.
+	* src/Makefile.in (headers): Add istream.tcc.
 
 	* ltconfig, ltmain.sh, libtool: Update to libtool-1.2g.
-	
+
 1999-04-16  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/locfacets.tcc (num_get::do_get(long)): Finish roughing in.
@@ -2681,17 +2680,17 @@
 
 	* C++STYLE: Add ChangeLog guidelines for member functions.
 
-	* doc/* : Delete.  
+	* doc/* : Delete.
 	* BADNAMES, BUGS, C++STYLE, CHECKLIST, COPYING,
 	DESIGN, HEADER_POLICY, PROBLEMS, RELEASE-NOTES, TODO: Moved into
 	docs/text and made less strident.
-	
+
 	* bits/fstream.tcc: Change non-standard ctor to match Sun's sematics.
 	* bits/std_fstream.h: Same.
 	* src/ios.cc: Same.
 
-	* bits/locfacets.h: Touch. 
-	
+	* bits/locfacets.h: Touch.
+
 1999-04-15  Ulrich Drepper  <drepper@cygnus.com>
 
 	* math/cexp.c (cexp): Use NAN instead of nan("").

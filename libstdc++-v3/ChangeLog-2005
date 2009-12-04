@@ -80,7 +80,7 @@
 	* testsuite/25_algorithms/unique_copy/check_type.cc (S2::S2,X2::X2):
 	Likewise.
 	* testsuite/22_locale/ctype/narrow/char/19955.cc (do_narrow): Likewise.
-	* testsuite/22_locale/ctype/is/char/9858.cc (Derived::do_is, 
+	* testsuite/22_locale/ctype/is/char/9858.cc (Derived::do_is,
 	Derived::do_scan_is, Derived::do_scan_not, Derived2::do_is,
 	Derived2::do_scan_is, Derived2::do_scan_not): Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc (TP::do_put):
@@ -106,7 +106,7 @@
 	to_int_type): Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/12206.cc (codecvt::do_out, do_in,
 	do_unshift, do_length): Likewise.
-	* testsuite/21_strings/basic_string/capacity/1.cc 
+	* testsuite/21_strings/basic_string/capacity/1.cc
 	(operator==(A<T>,A<T>), operator<(A<T>,A<T>),
 	char_traits::to_char_type, char_traits::to_int_type): Likewise
 	* testsuite/testsuite_character.h (ctype::do_is, ctype::do_scan_is,
@@ -146,7 +146,7 @@
 	* testsuite/27_io/basic_ostream/ends/wchar_t/1.cc (test01): Likewise.
 	* testsuite/27_io/basic_ostream/ends/char/1.cc (test01): Likewise.
 	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
-	assign/shared_ptr.cc (test01): Correct return type.	
+	assign/shared_ptr.cc (test01): Correct return type.
 	* testsuite/27_io/basic_filebuf/close/char/2.cc (test_02):
 	Add default value to close_num.
 
@@ -172,12 +172,12 @@
 	* include/bits/deque.tcc (erase(iterator)): Avoid troubles with ADL,
 	user defined operators and _Deque_iterator.
 	* testsuite/23_containers/deque/types/1.cc: Add.
-	
+
 	* include/bits/deque.tcc (_M_insert_aux(iterator, size_type,
 	const value_type&)): Qualify with std:: fill call.
 
 2005-12-18  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/bits/c++config: Add in revised namespace associations.
 	_GLIBCXX_BEGIN_NAMESPACE: New macro.
 	_GLIBCXX_END_NAMESPACE: Same.
@@ -188,7 +188,7 @@
 	* config.h.in: Same.
 	* config/abi/pre/gnu-versioned-namespace.ver: New.
 	* config/abi/pre/gnu.ver (GLIBCXX_3.4.7): Add exports for nested
-	debug mode items. 
+	debug mode items.
 	* include/Makefile.am (${host_builddir}/c++config.h): Fill in
 	values for __GLIBCXX__ and _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION.
 	* include/Makefile.in: Regnerate.
@@ -196,17 +196,17 @@
 	symbols from non-nested __gnu_debug.
 	* src/Makefile.am:  Add in ENABLE_SYMVERS_GNU_NAMESPACE.
 	* src/Makefile.in: Regenerate.
-	
+
 	* docs/html/debug_mode.html: Revise for nested design.
 	* docs/html/debug.html: Use debug qualifications instead of
 	__gnu_debug.
 	* docs/html/configopts.html: Revise documentation for
 	--enable-symvers.
-	
+
 	* include/debug/formatter: Simplify namespace qualifications for
 	current, nested-only reality. Add top-level namespace alias,
 	namespace debug, for debug-mode containers.
-	* include/debug/safe_iterator.h: Same.	
+	* include/debug/safe_iterator.h: Same.
 	* include/debug/set.h: Same.
 	* include/debug/hash_multimap.h: Same.
 	* include/debug/hash_set.h: Same.
@@ -225,7 +225,7 @@
 	* include/debug/macros.h: Same.
 	* include/debug/list
 	* include/debug/debug.h: Same.
-	* include/debug/multimap.h: Same.	
+	* include/debug/multimap.h: Same.
 	* src/debug.cc: Same.
 	* testsuite/23_containers/vector/invalidation/1.cc: Cleanups.
 	* testsuite/23_containers/vector/invalidation/2.cc: Same.
@@ -251,9 +251,9 @@
 	* testsuite/23_containers/map/invalidation/1.cc: Same.
 	* testsuite/23_containers/map/invalidation/2.cc: Same.
 	* testsuite/23_containers/map/insert/16813.cc: Same.
-	
+
 	* include/bits/basic_ios.h: Use _GLIBCXX_BEGIN_NAMESPACE(std) and
-	friends.	
+	friends.
 	* include/bits/stl_list.h: Same.
 	* include/bits/stl_map.h: Same.
 	* include/bits/stl_algobase.h: Same.
@@ -494,7 +494,7 @@
 	* config/cpu/s390/atomicity.h: Same.
 	* config/io/c_io_stdio.h: Same.
 	* config/io/basic_file_stdio.cc: Same.
-	* config/io/basic_file_stdio.h: Same.	
+	* config/io/basic_file_stdio.h: Same.
 	* src/misc-inst.cc: Same.
 	* src/concept-inst.cc: Same.
 	* src/ext-inst.cc: Same.
@@ -505,10 +505,10 @@
 	* libsupc++/exception: Same.
 	* libsupc++/vterminate.cc: Same.
 	* testsuite/ext/hash_map/1.cc: Explicitly qualify __gnu_cxx::hash_map.
-	* testsuite/ext/hash_map/14648.cc: Same.	
+	* testsuite/ext/hash_map/14648.cc: Same.
 
 	* libsupc++/eh_alloc.cc: Correct comment line spacing.
-		
+
 2005-12-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (__copy_normal::copy_n): Uglify
@@ -543,10 +543,10 @@
 
 	* config/abi/post: New.
 	* config/abi/*-linux-gnu: Move to..
-	* config/abi/post/*-linux-gnu: ... here.	
+	* config/abi/post/*-linux-gnu: ... here.
 	* config/abi/pre: New.
 	* config/linker-map.gnu: Move to ..
-	* config/abi/pre/gnu.ver: ... here.	
+	* config/abi/pre/gnu.ver: ... here.
 	* config/linker-map.dummy: Move to..
 	* config/abi/pre/none.ver: ... here.
 	* src/Makefile.am: Use ENABLE_SYMVERS_GNU,
@@ -560,17 +560,17 @@
 	* configure: Regnerate.
 	* config.h.in: Regnerate.
 	* src/compatibility.cc: Adjust macro usage.
-	
+
 2005-12-17  Benjamin Kosnik  <bkoz@redhat.com>
 
         * src/io-inst.cc: Separate instantiations into...
         * src/ios-inst.cc: .. this.
         * src/iostream-inst.cc: ... and this.
         * src/Makefile.am (sources): Update.
-        * src/Makefile.in: Regenerate.	
+        * src/Makefile.in: Regenerate.
 
 2005-12-17  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	PR libstdc++/25472
         * include/c_std/std_cstdlib.h: Fix for freestanding.
 
@@ -596,14 +596,14 @@
 	Use the above.
 	* include/bits/deque.tcc (deque<>::operator=, _M_assign_aux): Same.
 	(erase(iterator, iterator)): Likewise, clean-up.
-	(erase(iterator)): Tweak, don't call copy unnecessarily. 
+	(erase(iterator)): Tweak, don't call copy unnecessarily.
 	(_M_destroy_data_aux): Define.
 	* testsuite/23_containers/deque/modifiers/erase/1.cc: New.
 	* testsuite/23_containers/deque/modifiers/erase/2.cc: Likewise.
 
 2005-12-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	* include/bits/valarray_after.h (_Expr<>::operator[](slice)): 
+	* include/bits/valarray_after.h (_Expr<>::operator[](slice)):
 	Don't assume the closure implements general indexing, as a matter
 	of fact, most of them don't.
 	(_Expr<>::operator[](const gslice&)): Likewise.
@@ -766,7 +766,7 @@
 	Add non const version.
 	* include/ext/rc_string_base.h (__rc_string_base<>::_M_get_allocator):
 	Likewise.
-	
+
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_erase): Add.
 	* include/ext/rc_string_base.h (__rc_string_base<>::_M_erase): Likewise.
 	(_M_leak_hard): Use it.
@@ -846,7 +846,7 @@
 	* acinclude.m4: Include tls.m4.
 	* configure: Regenerate.
 	* config.h.in: Same.
-	
+
 2005-11-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/del_op.cc: Include c++config.h first.
@@ -897,7 +897,7 @@
 
 	* include/ext/rc_string_base.h (__rc_string_base<>::_Rep): Use
 	anonymous union together with _CharT to fix alignment issues,
-	rebind to _Rep and rename _Raw_alloc to _Rep_alloc_type.	
+	rebind to _Rep and rename _Raw_alloc to _Rep_alloc_type.
 	(__rc_string_base<>::_Rep::_S_create, _M_destroy): Adjust consistently.
 
 	* include/ext/vstring_util.h (__is_null_p): Move inside struct
@@ -1056,13 +1056,13 @@
 	new.
 	(GLIBCXX_ENABLE_PCH): Adjust message order.
 	* configure: Regenerate.
-	
+
 	* scripts/testsuite_flags.in (query): Correct print_usagex typo.
 
 	* include/bits/functexcept.h: Remove argument names.
 
 	* src/mt_allocator.cc: Adjust comment.
-	
+
 2005-11-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/18174
@@ -1089,7 +1089,7 @@
 	* libmath/Makefile.in: Likewise.
 	* libsupc++/Makefile.in: Likewise.
 	* po/Makefile.in: Likewise.
-	* src/Makefile.in: Likewise.	
+	* src/Makefile.in: Likewise.
 	* testsuite/Makefile.in: Likewise.
 
 2005-11-03  Paolo Carlini  <pcarlini@suse.de>
@@ -1375,7 +1375,7 @@
 	PR libstdc++/23978
 	* include/tr1/tuple_iterate.h (tuple): Add operator=(std::pair).
 	* testsuite/tr1/6_containers/tuple/creation_functions/23978.cc: New.
-	
+
 	* include/tr1/functional (ref, cref): Make inline.
 	* include/tr1/tuple_iterate.h (tie): Correct formatting.
 	(make_tuple): Make inline.
@@ -1400,7 +1400,7 @@
 	PR libstdc++/23956
 	* include/ext/mt_allocator.h: Remove excess
 	policy_type::_S_get_pool calls in constructors.
-	
+
 2005-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/23417 (cont)
@@ -1448,7 +1448,7 @@
 
 	PR libstdc++/21674
 	* testsuite/21_strings/basic_string/element_access/char/21674.cc: New.
-	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc: 
+	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc:
 	New.
 
 2005-09-12  David Edelsohn  <dje@gcc.gnu.org>
@@ -1458,13 +1458,13 @@
 	* include/Makefile.am (stamp-assoc): Install each subgroup
 	of headers separately.
 	* include/Makefile.in: Regenerate.
-	
+
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/mt_allocator/22309_thread.cc: Remove dg-do run.
 	* testsuite/lib/libstdc++.exp ( proc libstdc++_init): Enable
 	shared only for linux.
-	
+
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 	    David Edelsohn  <dje@gcc.gnu.org>
 
@@ -1474,7 +1474,7 @@
 	(install-headers): Use them.
 	(stamp-assoc): Same.
 	* include/Makefile.in: Regenerate.
-	
+
 2005-09-12  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/stl_algo.h (search_n): Delegate to specializations.
@@ -1519,12 +1519,12 @@
 	(__pool<true>::_M_initialize_once): Nothing fancy.
 	(__pool<true>::_M_once): Remove.
 	(__common_pool): New.
-	(__common_pool_base): New.	
+	(__common_pool_base): New.
 	(__per_type_pool): New.
 	(__per_type_pool_base): New.
 	* src/mt_allocator.cc: Same.
 	* config/linker-map.gnu (__pool<true>::_M_initialize()): Add.
-	
+
 2005-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/19265
@@ -1539,7 +1539,7 @@
 	Don't use _M_thread_freelist and _M_thread_freelist_initial
 	__pool<true> fields, instead use __gnu_internal::freelist fields, call
 	gthread_key_create just once.  Use
-	__gnu_internal::_M_destroy_thread_key as key destructor.	
+	__gnu_internal::_M_destroy_thread_key as key destructor.
 	(__gnu_cxx::__pool<true>::_M_get_thread_id): Store size_t id
 	rather than _Thread_record* in the thread specific value.  Don't
 	use _M_thread_freelist __pool<true> field, instead use
@@ -1550,7 +1550,7 @@
             Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/19265
-	PR libstdc++/22309	
+	PR libstdc++/22309
 	* testsuite/testsuite_shared.cc: New.
 	* testsuite/lib/dg-options.exp (dg-require-sharedlib): New.
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Look for shared
@@ -1606,7 +1606,7 @@
 	* src/locale_init.cc (locale_mutex): Same.
 	* src/mt_allocator.cc (freelist_mutex): Same.
 	* src/pool_allocator.cc (palloc_init_mutex): Same.
-	
+
 2005-09-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/6_containers/unordered/hashtable/23465.cc:
@@ -1619,7 +1619,7 @@
 
 2005-09-01  Benjamin Kosnik  <bkoz@redhat.com>
 	    Paolo Carlini  <pcarlini@suse.de>
-	
+
 	* testsuite/lib/libstdc++.exp (check_v3_target_cxa_atexit): Fix
 	comment.
 
@@ -1645,7 +1645,7 @@
 	* testsuite/ext/new_allocator/deallocate_local.cc: Same.
 
 2005-08-31  Paolo Carlini  <pcarlini@suse.de>
-	    Kaspar Fischer <fischerk@inf.ethz.ch> 
+	    Kaspar Fischer <fischerk@inf.ethz.ch>
 
 	PR libstdc++/23632
 	* include/bits/stl_bvector.h (_Bit_iterator::operator[],
@@ -1693,7 +1693,7 @@
 	* include/debug/macros.h: Remove __fancy_abort declaration,
 	_GLIBXX_DEBUG_ABORT definition.
 	* config/linker-map.gnu: Remove export.
-	
+
 2005-08-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/check_compile (UNIQUE_ID): New. Use to name output files.
@@ -1793,7 +1793,7 @@
 	PR libstdc++/22284
 	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Revert
 	the change to info.ttype_base.
-	
+
 2005-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* include/std/std_valarray.h: Fix grammar in comments.
@@ -1896,7 +1896,7 @@
 	the preferred base class. Two are provided: __rc_string_base,
 	which implements a behavior very similar to our standard string,
 	and __sso_string_base, not reference-counted and optimized for
-	short strings. 
+	short strings.
 	* include/ext/rc_string_base.h: New.
 	* include/ext/sso_string_base.h: Likewise.
 	* include/ext/vstring.h: Likewise.
@@ -1939,10 +1939,10 @@
 	type before shifting.
 
 2005-06-29  Paolo Carlini  <pcarlini@suse.de>
-	    
+
 	PR libstdc++/21244 (cont^2)
 	* include/ext/bitmap_allocator.h: Convert everywhere
-	bits_per_block to size_t.	
+	bits_per_block to size_t.
 
 2005-06-29  Jonathan Wakely  <redi@gcc.gnu.org>
 
@@ -2030,7 +2030,7 @@
 
 2005-06-27  Benjamin Kosnik  <bkoz@redhat.com>
 	    Ami Tavory  <pbassoc@gmail.com>
-	
+
 	* docs/html/documentation.html: Add link for policy based
 	associative containers docs.
 	* docs/html/ext/pb_assoc/Std_hash_set_impl.jpg: New.
@@ -2247,7 +2247,7 @@
 	* include/ext/pb_assoc/detail/basic_tree_assoc_cntnr/
 	  r_range_iteration_fn_imps.hpp: New.
 	* include/ext/pb_assoc/detail/basic_tree_assoc_cntnr/
-	  range_iteration_fn_imps.hpp: New.	
+	  range_iteration_fn_imps.hpp: New.
 	* include/ext/pb_assoc/detail/basic_tree_assoc_cntnr/
 	  split_join_fn_imps.hpp: New.
 	* include/ext/pb_assoc/detail/bin_search_tree_/
@@ -2524,7 +2524,7 @@
 	* testsuite/performance/23_containers/create_sort/list.cc: ...here.
 	* testsuite/performance/23_containers/set_insert_from_sorted.cc: Move.
 	* testsuite/performance/23_containers/insert_from_sorted/set.cc: here.
-	
+
 2005-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/22109
@@ -2559,7 +2559,7 @@
 	v3-symver before proceeding.
 	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Set v3-symvers
 	if _GLIBCXX_SYMVER.
-	
+
 2005-06-17  Paolo Carlini  <pcarlini@suse.de>
 
         Port from libstdcxx_so_7-branch:
@@ -2673,7 +2673,7 @@
 	PR libstdc++/21955
 	* include/std/std_sstream.h (basic_stringbuf::showmanyc): Add.
 	Remove unnecessary this->_M_mode decoration.
-	* include/bits/fstream.tcc: Adjust line spacing.	
+	* include/bits/fstream.tcc: Adjust line spacing.
 	* testsuite/27_io/basic_streambuf/in_avail/char/1.cc: New, test
 	base class behavior.
 	* testsuite/27_io/basic_streambuf/in_avail/wchar_t/1.cc: Same.
@@ -2685,7 +2685,7 @@
 	* testsuite/27_io/basic_stringbuf/str/char/1.cc: Same.
 	* testsuite/27_io/basic_streambuf/in_avail/char/9701-3.cc: Move...
 	* testsuite/27_io/basic_filebuf/in_avail/char/9701-3.cc: ...here.
-	
+
 2005-06-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_C99): Use C++ compiler for complex
@@ -2694,7 +2694,7 @@
 
 2005-06-07  Adrian Straetling  <straetling@de.ibm.com>
 
-	* config/cpu/s390/atomicity.h: (__exchange_and_add, 
+	* config/cpu/s390/atomicity.h: (__exchange_and_add,
 	__atomic_add): Use the builtins for atomic memory operations.
 
 2005-06-06  Paolo Carlini  <pcarlini@suse.de>
@@ -2874,10 +2874,10 @@
 	PR libstdc++/21674
 	* include/bits/c++config: Remove extern template use when in debug
 	mode, disable for non-weak systems.
-	
+
 2005-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/20534 
+	PR libstdc++/20534
 	* include/debug/debug.h: Forwarding header, that pulls in details
 	only if in debug mode.
 	* include/debug/macros.h: ...transfer all the internal macros here.
@@ -2893,7 +2893,7 @@
 	* include/ext/hash_map: Same.
 	* include/debug/hash_map: Fix included files to match actual files.
 	* include/debug/hash_set: Same.
-		
+
 2005-05-26  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13943
@@ -2915,7 +2915,7 @@
 	* configure.ac (libtool_VERSION): To 6:5:0.
 	* configure: Regenerate.
 	* testsuite/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.5.
-	
+
 2005-05-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (_Rep::_M_set_length_and_sharable):
@@ -2962,7 +2962,7 @@
 
 	* include/bits/stl_algo.h (replace_copy, replace_copy_if):
 	Don't assume that __new_value and *__first are convertible to
-	each other.	
+	each other.
 
 	* testsuite/25_algorithms/find/1.cc: New.
 	* testsuite/25_algorithms/find/check_type.cc: New.
@@ -2989,7 +2989,7 @@
         	    Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/ext/is_heap/check_type.cc: New.
-	
+
 	2005-02-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/ext/is_heap/1.cc: New.
@@ -3032,7 +3032,7 @@
 	* testsuite/25_algorithms/set_difference/1.cc: New.
 	* testsuite/25_algorithms/set_difference/check_type.cc: New.
 	* testsuite/25_algorithms/set_symmetric_difference/1.cc: New.
-	* testsuite/25_algorithms/set_symmetric_difference/check_type.cc: New.	
+	* testsuite/25_algorithms/set_symmetric_difference/check_type.cc: New.
 	* testsuite/25_algorithms/min_element/1.cc: New.
 	* testsuite/25_algorithms/min_element/check_type.cc: New.
 	* testsuite/25_algorithms/max_element/1.cc: New.
@@ -3093,14 +3093,14 @@
 
 	* testsuite/testsuite_iterators.h (WritableObject::WritableObject):
 	Add const.
-	
+
 	2005-02-01  Christopher Jefferson  <chris@bubblescope.net>
 
 	* testsuite/testsuite_iterators.h (random_access_iterator_wrapper::
 	operator--): Fix typo.
 	(OutputContainer::OutputContainer): Correct zeroing array.
 	(WritableObject::operator==): Fix typo.
-        (WritableObject::operator=): make operator= templated 
+        (WritableObject::operator=): make operator= templated
 	to allow differing types to be assigned.
 	(WritableObject::operator++): Fix checking if iterator is
 	written to multiple times.
@@ -3185,7 +3185,7 @@
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/4.cc: Likewise.
-	* testsuite/22_locale/codecvt/always_noconv/wchar_t/wrapped_env.cc: 
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/wrapped_env.cc:
 	Likewise.
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/wrapped_locale.cc:
 	Likewise.
@@ -3202,229 +3202,229 @@
 	* testsuite/22_locale/codecvt/in/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/codecvt/in/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/codecvt/in/wchar_t/4.cc: Likewise.
-	* testsuite/22_locale/codecvt/in/wchar_t/7.cc: Likewise. 
+	* testsuite/22_locale/codecvt/in/wchar_t/7.cc: Likewise.
 	* testsuite/22_locale/codecvt/in/wchar_t/8.cc: Likewise.
 	* testsuite/22_locale/codecvt/in/wchar_t/9.cc: Likewise.
-	* testsuite/22_locale/codecvt/in/wchar_t/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/codecvt/in/wchar_t/wrapped_locale.cc: Likewise.    
-	* testsuite/22_locale/codecvt/length/char/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/codecvt/length/char/wrapped_locale.cc: Likewise.    
-	* testsuite/22_locale/codecvt/length/wchar_t/2.cc: Likewise.   
-	* testsuite/22_locale/codecvt/length/wchar_t/3.cc: Likewise.   
-	* testsuite/22_locale/codecvt/length/wchar_t/4.cc: Likewise.   
-	* testsuite/22_locale/codecvt/length/wchar_t/7.cc: Likewise.   
-	* testsuite/22_locale/codecvt/length/wchar_t/wrapped_env.cc: Likewise.      
+	* testsuite/22_locale/codecvt/in/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/codecvt/length/wchar_t/wrapped_locale.cc:
 	Likewise.
 	* testsuite/22_locale/codecvt/max_length/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/codecvt/max_length/char/wrapped_locale.cc:
-	Likewise.  
-	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc: Likewise.    
-	* testsuite/22_locale/codecvt/max_length/wchar_t/3.cc: Likewise.    
-	* testsuite/22_locale/codecvt/max_length/wchar_t/4.cc: Likewise.    
+	Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/4.cc: Likewise.
 	* testsuite/22_locale/codecvt/max_length/wchar_t/wrapped_env.cc:
-	Likewise.  
+	Likewise.
 	* testsuite/22_locale/codecvt/max_length/wchar_t/wrapped_locale.cc:
 	Likewise.
-	* testsuite/22_locale/codecvt/out/char/wrapped_env.cc: Likewise.    
-	* testsuite/22_locale/codecvt/out/char/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/codecvt/out/wchar_t/2.cc: Likewise.  
-	* testsuite/22_locale/codecvt/out/wchar_t/3.cc: Likewise.  
-	* testsuite/22_locale/codecvt/out/wchar_t/4.cc: Likewise.  
-	* testsuite/22_locale/codecvt/out/wchar_t/7.cc: Likewise.  
-	* testsuite/22_locale/codecvt/out/wchar_t/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/codecvt/out/wchar_t/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/codecvt/unshift/char/wrapped_env.cc: Likewise.   
+	* testsuite/22_locale/codecvt/out/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/codecvt/unshift/char/wrapped_locale.cc: Likewise.
-	* testsuite/22_locale/codecvt/unshift/wchar_t/2.cc: Likewise.    
-	* testsuite/22_locale/codecvt/unshift/wchar_t/3.cc: Likewise.    
-	* testsuite/22_locale/codecvt/unshift/wchar_t/4.cc: Likewise.    
+	* testsuite/22_locale/codecvt/unshift/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/4.cc: Likewise.
 	* testsuite/22_locale/codecvt/unshift/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/codecvt/unshift/wchar_t/wrapped_locale.cc:
 	Likewise.
-	* testsuite/22_locale/collate/compare/char/1.cc: Likewise.  
-	* testsuite/22_locale/collate/compare/char/2.cc: Likewise.  
-	* testsuite/22_locale/collate/compare/char/3.cc: Likewise.  
-	* testsuite/22_locale/collate/compare/char/wrapped_env.cc: Likewise.        
-	* testsuite/22_locale/collate/compare/char/wrapped_locale.cc: Likewise.     
-	* testsuite/22_locale/collate/compare/wchar_t/1.cc: Likewise.     
-	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Likewise.     
-	* testsuite/22_locale/collate/compare/wchar_t/3.cc: Likewise.     
+	* testsuite/22_locale/collate/compare/char/1.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/3.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc:
-	Likewise.  
-	* testsuite/22_locale/collate/hash/char/2.cc: Likewise.     
-	* testsuite/22_locale/collate/hash/char/wrapped_env.cc: Likewise.   
-	* testsuite/22_locale/collate/hash/char/wrapped_locale.cc: Likewise.        
-	* testsuite/22_locale/collate/hash/wchar_t/2.cc: Likewise.  
+	Likewise.
+	* testsuite/22_locale/collate/hash/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc: Likewise.
-	* testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc: Likewise.     
-	* testsuite/22_locale/collate/transform/char/2.cc: Likewise.     
-	* testsuite/22_locale/collate/transform/char/3.cc: Likewise.     
-	* testsuite/22_locale/collate/transform/char/wrapped_env.cc: Likewise.      
+	* testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/3.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/collate/transform/char/wrapped_locale.cc:
 	Likewise.
-	* testsuite/22_locale/collate/transform/wchar_t/2.cc: Likewise. 
-	* testsuite/22_locale/collate/transform/wchar_t/3.cc: Likewise. 
+	* testsuite/22_locale/collate/transform/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc:
 	Likewise.
 	* testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
 	Likewise.
 	* testsuite/22_locale/collate_byname/named_equivalence.cc: Likewise.
-	* testsuite/22_locale/ctype/cons/char/wrapped_env.cc: Likewise.    
-	* testsuite/22_locale/ctype/cons/char/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/ctype/is/char/2.cc: Likewise. 
-	* testsuite/22_locale/ctype/is/char/wrapped_env.cc: Likewise.      
-	* testsuite/22_locale/ctype/is/char/wrapped_locale.cc: Likewise.  
-	* testsuite/22_locale/ctype/is/wchar_t/2.cc: Likewise.   
-	* testsuite/22_locale/ctype/is/wchar_t/wrapped_env.cc: Likewise.  
+	* testsuite/22_locale/ctype/cons/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/cons/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/ctype/is/wchar_t/wrapped_locale.cc: Likewise.
 	* testsuite/22_locale/ctype/narrow/char/wrapped_env.cc: Likewise.
-	* testsuite/22_locale/ctype/narrow/char/wrapped_locale.cc: Likewise.        
-	* testsuite/22_locale/ctype/narrow/wchar_t/3.cc: Likewise. 
-	* testsuite/22_locale/ctype/narrow/wchar_t/wrapped_env.cc: Likewise.        
+	* testsuite/22_locale/ctype/narrow/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/ctype/narrow/wchar_t/wrapped_locale.cc: Likewise.
-	* testsuite/22_locale/ctype/scan/char/wrapped_env.cc: Likewise.   
-	* testsuite/22_locale/ctype/scan/char/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_locale.cc: Likewise.       
-	* testsuite/22_locale/ctype/to/char/wrapped_env.cc: Likewise.       
-	* testsuite/22_locale/ctype/to/char/wrapped_locale.cc: Likewise.    
-	* testsuite/22_locale/ctype/to/wchar_t/wrapped_env.cc: Likewise.    
-	* testsuite/22_locale/ctype/to/wchar_t/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/ctype/widen/char/wrapped_env.cc: Likewise.    
-	* testsuite/22_locale/ctype/widen/char/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/ctype/widen/wchar_t/2.cc: Likewise.   
-	* testsuite/22_locale/ctype/widen/wchar_t/3.cc: Likewise.   
+	* testsuite/22_locale/ctype/scan/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/to/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/to/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/to/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/to/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/ctype/widen/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/ctype/widen/wchar_t/wrapped_locale.cc: Likewise.
 	* testsuite/22_locale/facet/2.cc: Likewise.
 	* testsuite/22_locale/locale/cons/12352.cc: Likewise.
 	* testsuite/22_locale/locale/cons/12438.cc: Likewise.
-	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise. 
-	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise. 
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
 	* testsuite/22_locale/locale/cons/2.cc: Likewise.
 	* testsuite/22_locale/locale/cons/4.cc: Likewise.
 	* testsuite/22_locale/locale/cons/5.cc: Likewise.
 	* testsuite/22_locale/locale/cons/7.cc: Likewise.
-	* testsuite/22_locale/locale/cons/7222-env.cc: Likewise.  
-	* testsuite/22_locale/locale/global_locale_objects/14071.cc: Likewise.  
+	* testsuite/22_locale/locale/cons/7222-env.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc: Likewise.
 	* testsuite/22_locale/locale/global_locale_objects/2.cc: Likewise.
 	* testsuite/22_locale/messages/members/char/1.cc: Likewise.
 	* testsuite/22_locale/messages/members/char/2.cc: Likewise.
 	* testsuite/22_locale/messages/members/char/3.cc: Likewise.
-	* testsuite/22_locale/messages/members/char/wrapped_env.cc: Likewise.   
+	* testsuite/22_locale/messages/members/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/messages/members/char/wrapped_locale.cc: Likewise.
-	* testsuite/22_locale/messages_byname/named_equivalence.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/1.cc: Likewise.    
-	* testsuite/22_locale/money_get/get/char/10.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/11.cc: Likewise.   
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/10.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/11.cc: Likewise.
 	* testsuite/22_locale/money_get/get/char/11528.cc: Likewise.
-	* testsuite/22_locale/money_get/get/char/12.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/13.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/15.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/16.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/17.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/18.cc: Likewise.   
-	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.    
-	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.    
-	* testsuite/22_locale/money_get/get/char/4.cc: Likewise.    
-	* testsuite/22_locale/money_get/get/char/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/money_get/get/char/wrapped_locale.cc: Likewise.  
-	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise. 
-	* testsuite/22_locale/money_get/get/wchar_t/10.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/11.cc: Likewise.      
+	* testsuite/22_locale/money_get/get/char/12.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/13.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/15.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/16.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/17.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/10.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/11.cc: Likewise.
 	* testsuite/22_locale/money_get/get/wchar_t/11528.cc: Likewise.
-	* testsuite/22_locale/money_get/get/wchar_t/12.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/13.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/15.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/16.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/17.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/18.cc: Likewise.      
-	* testsuite/22_locale/money_get/get/wchar_t/2.cc: Likewise. 
-	* testsuite/22_locale/money_get/get/wchar_t/3.cc: Likewise. 
-	* testsuite/22_locale/money_get/get/wchar_t/4.cc: Likewise. 
-	* testsuite/22_locale/money_get/get/wchar_t/wrapped_env.cc: Likewise.      
+	* testsuite/22_locale/money_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/13.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/15.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/16.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/17.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/money_get/get/wchar_t/wrapped_locale.cc: Likewise.
-	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.  
-	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.  
-	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.  
-	* testsuite/22_locale/money_put/put/char/9780-3.cc: Likewise.      
-	* testsuite/22_locale/money_put/put/char/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/money_put/put/char/wrapped_locale.cc: Likewise.  
-	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise. 
-	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise. 
-	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise. 
-	* testsuite/22_locale/money_put/put/wchar_t/wrapped_env.cc: Likewise.     
+	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/9780-3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/money_put/put/wchar_t/wrapped_locale.cc: Likewise.
 	* testsuite/22_locale/moneypunct/members/char/2.cc: Likewise.
-	* testsuite/22_locale/moneypunct/members/char/wrapped_env.cc: Likewise.    
+	* testsuite/22_locale/moneypunct/members/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/moneypunct/members/char/wrapped_locale.cc:
-	Likewise. 
-	* testsuite/22_locale/moneypunct/members/wchar_t/2.cc: Likewise.   
+	Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/moneypunct/members/wchar_t/wrapped_env.cc:
 	Likewise.
 	* testsuite/22_locale/moneypunct/members/wchar_t/wrapped_locale.cc:
 	Likewise.
 	* testsuite/22_locale/moneypunct_byname/named_equivalence.cc: Likewise.
-	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.   
-	* testsuite/22_locale/num_get/get/char/3.cc: Likewise.   
-	* testsuite/22_locale/num_get/get/char/5.cc: Likewise.   
-	* testsuite/22_locale/num_get/get/char/6.cc: Likewise.   
-	* testsuite/22_locale/num_get/get/char/9.cc: Likewise.   
+	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/3.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/6.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/9.cc: Likewise.
 	* testsuite/22_locale/num_get/get/char/wrapped_env.cc: Likewise.
-	* testsuite/22_locale/num_get/get/char/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.  
-	* testsuite/22_locale/num_get/get/wchar_t/3.cc: Likewise.  
-	* testsuite/22_locale/num_get/get/wchar_t/5.cc: Likewise.  
-	* testsuite/22_locale/num_get/get/wchar_t/6.cc: Likewise.  
-	* testsuite/22_locale/num_get/get/wchar_t/9.cc: Likewise.  
-	* testsuite/22_locale/num_get/get/wchar_t/wrapped_env.cc: Likewise. 
-	* testsuite/22_locale/num_get/get/wchar_t/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/num_put/put/char/1.cc: Likewise.      
-	* testsuite/22_locale/num_put/put/char/20909.cc: Likewise.  
-	* testsuite/22_locale/num_put/put/char/20914.cc: Likewise.  
-	* testsuite/22_locale/num_put/put/char/3.cc: Likewise.      
-	* testsuite/22_locale/num_put/put/char/5.cc: Likewise.      
-	* testsuite/22_locale/num_put/put/char/9780-2.cc: Likewise. 
-	* testsuite/22_locale/num_put/put/char/wrapped_env.cc: Likewise.    
-	* testsuite/22_locale/num_put/put/char/wrapped_locale.cc: Likewise. 
-	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise. 
-	* testsuite/22_locale/num_put/put/wchar_t/20909.cc: Likewise.   
-	* testsuite/22_locale/num_put/put/wchar_t/20914.cc: Likewise.   
-	* testsuite/22_locale/num_put/put/wchar_t/3.cc: Likewise. 
+	* testsuite/22_locale/num_get/get/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/9.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/20914.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/9780-2.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/20914.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/num_put/put/wchar_t/5.cc: Likewise.
 	* testsuite/22_locale/num_put/put/wchar_t/wrapped_env.cc: Likewise.
-	* testsuite/22_locale/num_put/put/wchar_t/wrapped_locale.cc: Likewise. 
+	* testsuite/22_locale/num_put/put/wchar_t/wrapped_locale.cc: Likewise.
 	* testsuite/22_locale/numpunct/members/char/2.cc: Likewise.
 	* testsuite/22_locale/numpunct/members/char/3.cc: Likewise.
-	* testsuite/22_locale/numpunct/members/char/wrapped_env.cc: Likewise.    
+	* testsuite/22_locale/numpunct/members/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/numpunct/members/char/wrapped_locale.cc: Likewise.
-	* testsuite/22_locale/numpunct/members/wchar_t/2.cc: Likewise.    
+	* testsuite/22_locale/numpunct/members/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/numpunct/members/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/numpunct/members/wchar_t/wrapped_locale.cc:
-	Likewise. 
-	* testsuite/22_locale/numpunct_byname/named_equivalence.cc: Likewise.       
-	* testsuite/22_locale/time_get/date_order/char/wrapped_env.cc: Likewise.    
+	Likewise.
+	* testsuite/22_locale/numpunct_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/time_get/date_order/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/time_get/date_order/char/wrapped_locale.cc:
-	Likewise. 
+	Likewise.
 	* testsuite/22_locale/time_get/date_order/wchar_t/wrapped_env.cc:
-	Likewise. 
+	Likewise.
 	* testsuite/22_locale/time_get/date_order/wchar_t/wrapped_locale.cc:
 	Likewise.
 	* testsuite/22_locale/time_get/get_date/char/12750.cc: Likewise.
-	* testsuite/22_locale/time_get/get_date/char/2.cc: Likewise.   
-	* testsuite/22_locale/time_get/get_date/char/wrapped_env.cc: Likewise.      
+	* testsuite/22_locale/time_get/get_date/char/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/time_get/get_date/char/wrapped_locale.cc:
 	Likewise.
-	* testsuite/22_locale/time_get/get_date/wchar_t/12750.cc: Likewise. 
-	* testsuite/22_locale/time_get/get_date/wchar_t/2.cc: Likewise.     
-	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Likewise.     
+	* testsuite/22_locale/time_get/get_date/wchar_t/12750.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Likewise.
 	* testsuite/22_locale/time_get/get_date/wchar_t/wrapped_env.cc:
-	Likewise.  
+	Likewise.
 	* testsuite/22_locale/time_get/get_date/wchar_t/wrapped_locale.cc:
 	Likewise.
-	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.  
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_monthname/char/wrapped_env.cc:
 	Likewise.
 	* testsuite/22_locale/time_get/get_monthname/char/wrapped_locale.cc:
@@ -3442,88 +3442,88 @@
 	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Likewise.
 	* testsuite/22_locale/time_get/get_time/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_time/wchar_t/wrapped_env.cc:
-	Likewise. 
+	Likewise.
 	* testsuite/22_locale/time_get/get_time/wchar_t/wrapped_locale.cc:
 	Likewise.
 	* testsuite/22_locale/time_get/get_weekday/char/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/char/wrapped_env.cc:
 	Likewise.
 	* testsuite/22_locale/time_get/get_weekday/char/wrapped_locale.cc:
-	Likewise. 
+	Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/wrapped_env.cc:
-	Likewise.    
+	Likewise.
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/wrapped_locale.cc:
-	Likewise. 
-	* testsuite/22_locale/time_put/put/char/17038.cc: Likewise. 
-	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.     
-	* testsuite/22_locale/time_put/put/char/3.cc: Likewise.     
-	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.     
-	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.     
-	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.     
-	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.     
-	* testsuite/22_locale/time_put/put/char/9780-1.cc: Likewise.       
+	Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/9780-1.cc: Likewise.
 	* testsuite/22_locale/time_put/put/char/wrapped_env.cc: Likewise.
-	* testsuite/22_locale/time_put/put/char/wrapped_locale.cc: Likewise.  
-	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.   
+	* testsuite/22_locale/time_put/put/char/wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Likewise.
-	* testsuite/22_locale/time_put/put/wchar_t/wrapped_env.cc: Likewise.     
+	* testsuite/22_locale/time_put/put/wchar_t/wrapped_env.cc: Likewise.
 	* testsuite/22_locale/time_put/put/wchar_t/wrapped_locale.cc: Likewise.
-	* testsuite/27_io/basic_filebuf/imbue/char/13007.cc: Likewise.  
+	* testsuite/27_io/basic_filebuf/imbue/char/13007.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/char/13171-1.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/char/13171-4.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/char/13582-2.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/char/14975-1.cc: Likewise.
-	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Likewise. 
-	* testsuite/27_io/basic_filebuf/imbue/char/9322.cc: Likewise.       
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/9322.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/imbue/wchar_t/12868.cc: Likewise.
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13007.cc: Likewise.   
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13171-3.cc: Likewise. 
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-2.cc: Likewise. 
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-3.cc: Likewise. 
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise. 
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Likewise.       
-	* testsuite/27_io/basic_filebuf/imbue/wchar_t/9322.cc: Likewise.    
-	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/1.cc: Likewise.    
-	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/2.cc: Likewise.    
-	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9874.cc: Likewise. 
-	* testsuite/27_io/basic_filebuf/underflow/wchar_t/1.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-1.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-2.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-3.cc: Likewise.  
-	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-4.cc: Likewise.  
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13007.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13171-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9874.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11389-4.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/underflow/wchar_t/2.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/underflow/wchar_t/3.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/underflow/wchar_t/4.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/underflow/wchar_t/5.cc: Likewise.
-	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9520.cc: Likewise.        
-	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.   
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9520.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/2.cc:
-	Likewise.   
+	Likewise.
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/2.cc:
 	Likewise.
 	* testsuite/27_io/basic_streambuf/imbue/char/13007-1.cc: Likewise.
 	* testsuite/27_io/basic_streambuf/imbue/char/13007-2.cc: Likewise.
-	* testsuite/27_io/basic_streambuf/imbue/char/9322.cc: Likewise.  
-	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-1.cc: Likewise.    
-	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-2.cc: Likewise.    
-	* testsuite/27_io/basic_streambuf/imbue/wchar_t/9322.cc: Likewise. 
-	* testsuite/27_io/basic_stringbuf/imbue/char/9322.cc: Likewise.    
+	* testsuite/27_io/basic_streambuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/13007-2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/char/9322.cc: Likewise.
 	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/9322.cc: Likewise.
-	* testsuite/27_io/objects/wchar_t/10.cc: Likewise. 
-	* testsuite/27_io/objects/wchar_t/11.cc: Likewise. 
-	* testsuite/27_io/objects/wchar_t/12.cc: Likewise. 
-	* testsuite/27_io/objects/wchar_t/13.cc: Likewise. 
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/11.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/13.cc: Likewise.
 	* testsuite/27_io/objects/wchar_t/9520.cc: Likewise.
 	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Likewise.
 
@@ -3547,7 +3547,7 @@
 2005-05-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/create_testsuite_files: Fix.
-	
+
 2005-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* testsuite/18_support/numeric_limits.cc (dg-options): Add
@@ -3559,7 +3559,7 @@
 
 2005-05-09  Paolo Carlini  <pcarlini@suse.de>
 	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
-	    
+
 	PR libstdc++/18604
 	* include/bits/deque.tcc: Fully qualify names from namespace std.
 	* include/bits/stl_bvector.h: Likewise.
@@ -3577,7 +3577,7 @@
 	* testsuite/23_containers/list/18604.cc: Likewise.
 	* testsuite/23_containers/map/18604.cc: Likewise.
 	* testsuite/23_containers/set/18604.cc: Likewise.
-	* testsuite/23_containers/vector/18604.cc: Likewise.	
+	* testsuite/23_containers/vector/18604.cc: Likewise.
 
 2005-05-09  Mike Stump  <mrs@apple.com>
 
@@ -3616,7 +3616,7 @@
 
 	* acinclude.m4: Remove testsuite_wchar_t and testsuite_thread.
 	* testsuite/Makefile.am: Same.
-	* scripts/create_testsuite_files: Same.	
+	* scripts/create_testsuite_files: Same.
 	* Makefile.in: Regenerate.
 	* configure: Same.
 	* include/Makefile.in: Same.
@@ -3632,7 +3632,7 @@
 	whether or not thread support is available.
 
 	* docs/html/test.html: Explain how to run the testsuite on an
-	installed directory. 
+	installed directory.
 
 2005-05-01  Paolo Carlini  <pcarlini@suse.de>
 
@@ -3763,7 +3763,7 @@
 	* testsuite/ext/bitmap_allocator/check_allocate_max_size.cpp: Add
 	explicit instantiations for systems without weak symbols.
 	* testsuite/ext/bitmap_allocator/check_deallocate_null.cc:
-	Likewise. 
+	Likewise.
 
 2005-04-18  Jonathan Wakely  <redi@gcc.gnu.org>
 
@@ -3854,7 +3854,7 @@
 	* testsuite/Makefile.am: Remove libv3test.a.
 	* testsuite/Makefile.in: Regenerate.
 	* testsuite/lib/libstdc++.exp (v3_target_compile): Fix comments.
-	
+
 2005-04-08  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/20909
@@ -3885,14 +3885,14 @@
 2005-04-08  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* linkage.m4 (GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1): Eliminate
-	a subshell and if test fails, test for same functions with 
+	a subshell and if test fails, test for same functions with
 	leading underscore.
 	(GLIBCXX_CHECK_MATH_SUPPORT): Eliminate seperate checks for _funcs.
 	* configure: Regenerate.
 
 2005-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
 	    Paolo Carlini  <pcarlini@suse.de>
-	    		
+
 	PR libstdc++/20806
 	* config/os/mingw32/os_defines.h: Define
 	_GLIBCXX_HAVE_DOS_BASED_FILESYSTEM.
@@ -3917,8 +3917,8 @@
 	Update comment on how to regenerate file.  Update minimum
 	automake version to 1.9.3.
 	* acconfig.h: Remove PACKAGE and VERSION.
-	* aclocal.m4, configure, Makefile.in, po/Makefile.in, 
-	src/Makefile.in, include/Makefile.in, libmath/Makefile.in, 
+	* aclocal.m4, configure, Makefile.in, po/Makefile.in,
+	src/Makefile.in, include/Makefile.in, libmath/Makefile.in,
 	testsuite/Makefile.in, config.h.in: Regenerate.
 
 2005-04-06  Benjamin Kosnik  <bkoz@redhat.com>
@@ -3961,13 +3961,13 @@
 	* testsuite/27_io/fpos/1.cc: Same.
 	* testsuite/ext/mt_allocator/tune-1.cc: Same.
 	* testsuite/ext/mt_allocator/tune-2.cc: Same.
-	* testsuite/ext/stdio_filebuf/char/1.cc: Same.	
+	* testsuite/ext/stdio_filebuf/char/1.cc: Same.
 	* testsuite/lib/libstdc++.exp (v3-build_support): Add
 	testsuite_character.cc.
 	* testsuite/Makefile.am (libv3test_a_SOURCES): Add
 	testsuite_character.cc.
 	* testsuite/Makefile.in: Regenerate.
-		
+
 	* configure.ac: Remove use of check_survey.
 	* configure: Regenerate.
 	* testsuite/Makefile.am: Remove check-script and
@@ -3991,15 +3991,15 @@
 	* acconfig.h: ... to eliminate them from here.
 	(_GLIBCXX_ASM_SYMVER): Move definition below @BOTTOM@.
 	* config.h.in, configure: Regenerate.
-	
+
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am (ACLOCAL_AMFLAGS): Define.
 	* crossconfig.m4: Wrap file into new GLIBCXX_CROSSCONFIG macro.
 	* configure.ac: Use it.
 	* acinclude.m4: Delete explicit m4_includes and sincludes.
-	* aclocal.m4, configure, Makefile.in, po/Makefile.in, 
-	src/Makefile.in, include/Makefile.in, libmath/Makefile.in, 
+	* aclocal.m4, configure, Makefile.in, po/Makefile.in,
+	src/Makefile.in, include/Makefile.in, libmath/Makefile.in,
 	testsuite/Makefile.in: Regenerate.
 
 2005-04-05  Jonathan Wakely  <redi@gcc.gnu.org>
@@ -4041,10 +4041,10 @@
 	* acconfig.h (ENABLE_NLS, HAVE_CATGETS): Remove.
 	(HAVE_GETTEXT, HAVE_STPCPY): Likewise.
 	* config.h.in: Regenerate.
-	
+
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* linkage.m4 (GLIBCXX_CHECK_BUILTIN_MATH_DEC): Use m4 translit macro 
+	* linkage.m4 (GLIBCXX_CHECK_BUILTIN_MATH_DEC): Use m4 translit macro
 	to convert to uppercase instead of shelling out to tr.
 	* acconfig.h: Remove now redundant HAVE__BUILTINS_*.
 	* configure, config.h.in: Regenerate.
@@ -4063,14 +4063,14 @@
 	* testsuite/libstdc++-abi/abi.exp: Build current_symbols.txt.
 
 2005-04-02  Douglas Gregor  <doug.gregor@gmail.com>
-	
+
 	* include/tr1/tuple_iterate.h (tuple_element): Use new macro
 	_GLIBCXX_T_NUM_ARGS_PLUS_1 because _T is a macro on Darwin.
 	* include/tr1/repeat.h (_GLIBCXX_T_NUM_ARGS_PLUS_1): Define for
 	each iteration.
 	* scripts/gen_includers.h: Define _GLIBCXX_T_NUM_ARGS_PLUS_1 for
 	each iteration.
-	
+
 2005-04-01  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* include/tr1/functional (_Maybe_wrap_member_pointer): Wrap up
@@ -4079,7 +4079,7 @@
 	* include/tr1/functional_iterator (bind): Reduce number of bind()
 	overloads to two to eliminate ambiguities. Use
 	_Maybe_wrap_member_pointer to handle member pointers gracefully.
-	
+
 2005-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/Makefile.am (noinst_PROGRAMS): Remove.
@@ -4139,8 +4139,8 @@
         * scripts/gen_includers.pl: Generate the repetitive part of
 	include/tr1/repeat.h.
 	* scripts/gen_bind_includers.pl: Generate the repetitive part of
-	include/tr1/bind_repeat.h. 
-	
+	include/tr1/bind_repeat.h.
+
 2005-03-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* testsuite/Makefile.am (CXX): Use ${SHELL}.
@@ -4152,7 +4152,7 @@
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Define LOCALEDIR
 	when testing an installed compiler.
-	
+
 	* testsuite/lib/libstdc++.exp (v3-build_support): Pass -w when
 	compiling support objects.
 
@@ -4168,7 +4168,7 @@
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/Makefile.am (all-local): Do not build testsuite_files.
-	* testsuite/Makefile.in: Regenerated. 
+	* testsuite/Makefile.in: Regenerated.
 
 2005-03-23  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -4177,7 +4177,7 @@
 	_GLIBCXX_USE_C99_WCHAR.
 	Remove GLIBCXX_ENABLE_C_MBCHAR, consolidate in GLIBCXX_ENABLE_C99
 	and GLIBCXX_ENABLE_WCHAR_T.
-	Take C99 bits from GLIBCXX_CHECK_WCHAR_T_SUPPORT and put in 
+	Take C99 bits from GLIBCXX_CHECK_WCHAR_T_SUPPORT and put in
 	GLIBCXX_ENABLE_C99.
 	Change remaining parts of GLIBCXX_CHECK_WCHAR_T_SUPPORT to
 	GLIBCXX_CHECK_ICONV_SUPPORT.

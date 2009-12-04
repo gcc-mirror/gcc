@@ -47,7 +47,7 @@
 	* libsupc++/tinfo.cc: Likewise.
 	* src/stdexcept.c (logic_error::~logic_error): Likewise.
 	(runtime_error::~runtime_error): Likewise.
-	
+
 2002-12-26  Phil Edwards  <pme@gcc.gnu.org>
 
 	* libsupc++/exception:  Add comment (mistakenly skipped).
@@ -112,7 +112,7 @@
 
  	* docs/html/documentation.html: Add link for debug.html.
 	* docs/html/debug.html: New.
-	
+
 2002-12-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* testsuite/23_containers/vector_capacity.cc (test03): Move ...
@@ -155,9 +155,9 @@
 	(GLIBCPP_ENABLE_DEBUG_FLAGS): New.
         * aclocal.m4: Regenerate.
 	* libio/Makefile.am: Remove DEBUG_FLAGS.
-	* libio/Makefile.in: Regenerate.	
+	* libio/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Remove DEBUG_FLAGS.
-	* libsupc++/Makefile.in: Regenerate.	
+	* libsupc++/Makefile.in: Regenerate.
 	* docs/html/configopts.html: Add docs for --enable-debug,
 	--enable-debug-flags.
 
@@ -171,7 +171,7 @@
 	* include/Makefile.in: Regenerate.
 	* src/Makefile.am (codecvt_members.cc): New rule.
 	(collate_members.cc): Same.
-	(ctype_members.cc): Same.	
+	(ctype_members.cc): Same.
 	(messages_members.cc): Same.
 	(monetary_members.cc): Same.
 	(numeric_members.cc): Same.
@@ -189,7 +189,7 @@
 	(CTIME_CC): Same.
 	(CLOCALE_CC): Same.
 	* aclocal.m4: Regenerate.
-	
+
 	* src/Makefile.am (libstdc___la_LIBADD): Use top_builddir
 	for convenience libraries.
 	(version_arg): Rename linker.map to libstdc++.ver.
