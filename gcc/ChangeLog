@@ -1,3 +1,10 @@
+2009-12-04  Matthias Klose  <doko@ubuntu.com>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/40134
+        * config.gcc (hppa*-*-linux*): Use config/t-slibgcc-libgcc.
+	* config/pa/pa-linux.h (LIB_SPEC): Remove.
+
 2009-12-03  Sebastian Pop  <sebastian.pop@amd.com>
 	    Richard Henderson  <rth@redhat.com>
 
