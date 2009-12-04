@@ -1,5 +1,13 @@
 2009-12-04  Richard Guenther  <rguenther@suse.de>
 
+	* lto-streamer-out.c (pack_ts_decl_common_value_fields):
+	Revert previous change.
+	(lto_output_ts_decl_common_tree_pointers): Stream DECL_VALUE_EXPR.
+	* lto-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
+	Likewise.
+
+2009-12-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
 	BUILT_IN_MALLOC.
 	(call_may_clobber_ref_p_1): Likewise.

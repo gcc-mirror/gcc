@@ -430,11 +430,9 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       || TREE_CODE (expr) == VAR_DECL)
     {
       bp_pack_value (bp, DECL_BY_REFERENCE (expr), 1);
-      /* DECL_HAS_VALUE_EXPR_P: Do not falsely pretend we have value
-         expressions, we do not stream those at the moment.  */
       if (TREE_CODE (expr) == VAR_DECL
 	  || TREE_CODE (expr) == PARM_DECL)
-	bp_pack_value (bp, false, 1);
+	bp_pack_value (bp, DECL_HAS_VALUE_EXPR_P (expr), 1);
       bp_pack_value (bp, DECL_RESTRICTED_P (expr), 1);
     }
 }
@@ -850,6 +848,11 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
 
   if (TREE_CODE (expr) == PARM_DECL)
     lto_output_chain (ob, TREE_CHAIN (expr), ref_p);
+
+  if ((TREE_CODE (expr) == VAR_DECL
+       || TREE_CODE (expr) == PARM_DECL)
+      && DECL_HAS_VALUE_EXPR_P (expr))
+    lto_output_tree_or_ref (ob, DECL_VALUE_EXPR (expr), ref_p);
 }
 
 
