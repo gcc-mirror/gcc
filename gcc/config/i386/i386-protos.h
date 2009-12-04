@@ -218,8 +218,7 @@ extern void ix86_expand_vector_set (bool, rtx, rtx, int);
 extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
 extern void ix86_expand_reduc_v4sf (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 
-extern bool ix86_fma4_valid_op_p (rtx [], rtx, int, bool, int, bool);
-extern void ix86_expand_fma4_multiple_memory (rtx [], enum machine_mode);
+extern bool ix86_expand_fma4_multiple_memory (rtx [], enum machine_mode);
 
 extern void ix86_expand_vec_extract_even_odd (rtx, rtx, rtx, unsigned);
 
