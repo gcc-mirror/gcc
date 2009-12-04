@@ -1,5 +1,7 @@
 2009-12-03  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/abi/guard2.C: Run on *-*-linux* rather than x86-*-*
+
 	PR c++/41611
 	* g++.dg/abi/guard2.C: New.
 
