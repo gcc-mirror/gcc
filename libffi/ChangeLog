@@ -1,3 +1,13 @@
+2009-12-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libffi/41908
+	* src/x86/ffi64.c (classify_argument): Update from
+	gcc/config/i386/i386.c.
+	(ffi_closure_unix64_inner): Do not use the address of two consecutive
+	SSE registers directly.
+	* testsuite/libffi.call/cls_dbls_struct.c (main): Remove xfail
+	for x86_64 linux targets.
+
 2009-12-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/ffi_darwin.c (ffi_closure_helper_DARWIN): Increment
