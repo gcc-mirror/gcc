@@ -1,3 +1,8 @@
+2009-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42277
+	* g++.dg/cpp0x/decltype20.C: New.
+
 2009-12-04  David Daney  <ddaney@caviumnetworks.com>
 
 	PR rtl-optimization/42164

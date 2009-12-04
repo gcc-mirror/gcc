@@ -1,3 +1,9 @@
+2009-12-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42277
+	* semantics.c (finish_decltype_type): Defer handling of decltype
+	of a non-dependent COMPONENT_REF in a template.
+
 2009-12-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42218
