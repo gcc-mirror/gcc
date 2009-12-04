@@ -1,3 +1,26 @@
+2009-12-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/40812
+	* libgfortran.h: typedef gfc_offset differently for MinGW.
+	* io/unix.h (struct stream): Change function pointers to use
+	gfc_offset instead of off_t.
+	(sseek): Change prototype to use gfc_offset instead of off_t.
+	(stell): Likewise.
+	(struncate): Likewise.
+	* io/unix.c: Redefine lseek() for mingw.
+	(raw_seek): Use gfc_offset instead of off_t.
+	(raw_tell): Likewise.
+	(buf_seek): Likewise.
+	(buf_tell): Likewise.
+	(buf_truncate): Likewise.
+	(mem_seek): Likewise.
+	(mem_tell): Likewise.
+	(mem_truncate): Likewise.
+	(fd_to_stream): Likewise.
+	(file_length): Likewise.
+	(raw_truncate): Use gfc_offset instead of off_t, add large file
+	capable implementation for MinGW.
+
 2009-11-30  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.map: Add _gfortran_is_extension_of.
