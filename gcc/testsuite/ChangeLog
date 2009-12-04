@@ -1,5 +1,8 @@
 2009-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41611
+	* g++.dg/abi/guard2.C: New.
+
 	PR c++/42266
 	* g++.dg/cpp0x/variadic97.C: New.
 

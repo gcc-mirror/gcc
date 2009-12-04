@@ -1,5 +1,8 @@
 2009-12-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41611
+	* decl2.c (get_guard): Don't use the same comdat group as the decl.
+
 	PR c++/42266
 	* cvt.c (convert_from_reference): Do nothing if TREE_TYPE is null.
 
