@@ -1,3 +1,15 @@
+2009-12-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/42261
+	* include/bits/basic_string.h (_S_construct_aux(_Integer, _Integer,
+	const _Alloc&, __true_type)): Cast the second argument to value_type.
+	* include/ext/sso_string_base.h (_M_construct_aux(_Integer, _Integer,
+	std::__true_type)): Likewise.
+	* include/ext/rc_string_base.h (_S_construct_aux(_Integer, _Integer,
+	const _Alloc&, std::__true_type)): Likewise.
+	* testsuite/21_strings/basic_string/cons/char/42261.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/42261.cc: Likewise.
+
 2009-11-19  Johannes Singler  <singler@kit.edu>
 
         * include/parallel/partition.h (__parallel_partition): Correctly
@@ -9,8 +21,8 @@
 
         PR libstdc++/40852
         * include/parallel/multiseq_selection.h
-        (multiseq_partition, multiseq_selection):  Avoid intermediate 
-        values exceeding the integer type range for very large inputs.
+        (multiseq_partition, multiseq_selection):  Avoid intermediate
+	values exceeding the integer type range for very large inputs.
 
 2009-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
