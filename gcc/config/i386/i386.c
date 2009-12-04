@@ -28962,12 +28962,11 @@ ix86_fma4_valid_op_p (rtx operands[], rtx insn ATTRIBUTE_UNUSED, int num,
 
 void
 ix86_expand_fma4_multiple_memory (rtx operands[],
-				  int num,
 				  enum machine_mode mode)
 {
   rtx op0 = operands[0];
-  if (num != 4
-      || memory_operand (op0, mode)
+
+  if (memory_operand (op0, mode)
       || reg_mentioned_p (op0, operands[1])
       || reg_mentioned_p (op0, operands[2])
       || reg_mentioned_p (op0, operands[3]))

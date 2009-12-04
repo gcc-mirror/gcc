@@ -1731,7 +1731,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fmadd<mode>4256 (operands[0], operands[1],
 				    operands[2], operands[3]));
   DONE;
@@ -1768,7 +1768,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fmsub<mode>4256 (operands[0], operands[1],
 				    operands[2], operands[3]));
   DONE;
@@ -1807,7 +1807,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fnmadd<mode>4256 (operands[0], operands[1],
 				     operands[2], operands[3]));
   DONE;
@@ -1847,7 +1847,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fnmsub<mode>4256 (operands[0], operands[1],
 				        operands[2], operands[3]));
   DONE;
@@ -1883,7 +1883,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fmadd<mode>4 (operands[0], operands[1],
 				    operands[2], operands[3]));
   DONE;
@@ -1939,7 +1939,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fmsub<mode>4 (operands[0], operands[1],
 				    operands[2], operands[3]));
   DONE;
@@ -1997,7 +1997,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fnmadd<mode>4 (operands[0], operands[1],
 				     operands[2], operands[3]));
   DONE;
@@ -2056,7 +2056,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, <MODE>mode);
+  ix86_expand_fma4_multiple_memory (operands, <MODE>mode);
   emit_insn (gen_fma4_fnmsub<mode>4 (operands[0], operands[1],
 				     operands[2], operands[3]));
   DONE;
@@ -10384,7 +10384,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, V8HImode);
+  ix86_expand_fma4_multiple_memory (operands, V8HImode);
   emit_insn (gen_xop_pmacsww (operands[0], operands[1], operands[2],
 			      operands[3]));
   DONE;
@@ -10436,7 +10436,7 @@
    && !reg_mentioned_p (operands[0], operands[3])"
   [(const_int 0)]
 {
-  ix86_expand_fma4_multiple_memory (operands, 4, V4SImode);
+  ix86_expand_fma4_multiple_memory (operands, V4SImode);
   emit_insn (gen_xop_pmacsdd (operands[0], operands[1], operands[2],
 			      operands[3]));
   DONE;
