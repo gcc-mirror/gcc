@@ -1624,6 +1624,16 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    else
 	      pa->length = gnu_result;
 	  }
+
+	/* Set the source location onto the predicate of the condition in the
+	   'Length case but do not do it if the expression is cached to avoid
+	   messing up the debug info.  */
+	else if ((attribute == Attr_Range_Length || attribute == Attr_Length)
+		 && TREE_CODE (gnu_result) == COND_EXPR
+		 && EXPR_P (TREE_OPERAND (gnu_result, 0)))
+	  set_expr_location_from_node (TREE_OPERAND (gnu_result, 0),
+				       gnat_node);
+
 	break;
       }
 
@@ -5578,7 +5588,6 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	 Note that walk_tree knows how to deal with TYPE_DECL, but neither
 	 VAR_DECL nor CONST_DECL.  This appears to be somewhat arbitrary.  */
       MARK_VISITED (gnu_stmt);
-
       if (TREE_CODE (gnu_decl) == VAR_DECL
 	  || TREE_CODE (gnu_decl) == CONST_DECL)
 	{
@@ -5586,6 +5595,13 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	  MARK_VISITED (DECL_SIZE_UNIT (gnu_decl));
 	  MARK_VISITED (DECL_INITIAL (gnu_decl));
 	}
+      /* In any case, we have to deal with our own TYPE_ADA_SIZE field.  */
+      else if (TREE_CODE (gnu_decl) == TYPE_DECL
+	       && ((TREE_CODE (type) == RECORD_TYPE
+		    && !TYPE_FAT_POINTER_P (type))
+		   || TREE_CODE (type) == UNION_TYPE
+		   || TREE_CODE (type) == QUAL_UNION_TYPE))
+	MARK_VISITED (TYPE_ADA_SIZE (type));
     }
   else
     add_stmt_with_node (gnu_stmt, gnat_entity);

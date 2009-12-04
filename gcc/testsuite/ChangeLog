@@ -1,3 +1,9 @@
+2009-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/size_attribute1.ads: New test.
+	* gnat.dg/specs/size_attribute1_pkg1.ad[sb]: New helper.
+	* gnat.dg/specs/size_attribute1_pkg2.ad[sb]: Likewise.
+
 2009-12-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42218
