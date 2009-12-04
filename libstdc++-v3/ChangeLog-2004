@@ -90,7 +90,7 @@
 	Add memory barriers to the double-checked locking used for static
 	initialization.
 	* libsupc++/guard.cc (__test_and_acquire): Define default.
-	(_GLIBCXX_GUARD_TEST_AND_ACQUIRE, __set_and_release) 
+	(_GLIBCXX_GUARD_TEST_AND_ACQUIRE, __set_and_release)
 	(_GLIBCXX_GUARD_SET_AND_RELEASE): Likewise.
 	(recursion_push, recursion_pop): New abstraction functions.
 	(__cxa_guard_acquire): Use _GLIBCXX_GUARD_TEST_AND_ACQUIRE.
@@ -99,7 +99,7 @@
 	from _GLIBCXX_GUARD_ACQUIRE and reverse sense.
 	(_GLIBCXX_GUARD_SET): Rename from _GLIBCXX_GUARD_RELEASE.
 	* config/cpu/arm/cxxabi_tweaks.h: Likewise.
-	* config/cpu/alpha/atomic_word.h (_GLIBCXX_READ_MEM_BARRIER) 
+	* config/cpu/alpha/atomic_word.h (_GLIBCXX_READ_MEM_BARRIER)
 	(_GLIBCXX_WRITE_MEM_BARRIER): Define.
 	* config/cpu/powerpc/atomic_word.h: Likewise.
 	* config/cpu/sparc/atomic_word.h: Likewise.
@@ -307,12 +307,12 @@
 	dummy return values.
 
 2004-12-19  Dhruv Matani  <dhruvbird@gmx.net>
-	
+
 	* include/ext/bitmap_allocator.h: Make doxygen style comments for
 	internal functions and classes.
 
 2004-12-19  Dhruv Matani  <dhruvbird@gmx.net>
-	
+
 	* docs/html/20_util/allocator.html: Correct link.
 	* docs/html/ext/ballocator_doc.txt: Remove.
 	* docs/html/ext/ballocator_doc.html: Add.
@@ -368,7 +368,7 @@
 2004-12-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_pointer, remove_pointer,
-	and add_pointer; reformat. 
+	and add_pointer; reformat.
 	(_DEFINE_PRIMARY_SPEC_HELPER, _DEFINE_PRIMARY_SPEC): Generalize
 	and rename to _DEFINE_SPEC_HELPER and _DEFINE_SPEC; update uses.
 	* testsuite/tr1/4_metaprogramming/pointer_modifications/
@@ -664,7 +664,7 @@
 
 2004-11-24  Chris Jefferson  <chris@bubblescope.net>
 
-	* include/tr1/tuple(operator!=): Change operator 
+	* include/tr1/tuple(operator!=): Change operator
 	definition to match (draft) technical report.
 	(operator>): Same.
 	(operator<=): Same.
@@ -726,7 +726,7 @@
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
 	* include/tr1/array: Add markup.
 	* include/tr1/tuple: Same.
-	
+
 	* docs/doxygen/run_doxygen: Print arguments.
 
 	* docs/doxygen/user.cfg.in: Tweaks.
@@ -868,7 +868,7 @@
 	end iterators.
 
 	* include/bits/locale_facets.tcc (time_get<>::_M_extract_name):
-	Minor tweak.	
+	Minor tweak.
 
 2004-11-08  Benjamin Kosnik  <bkoz@redhat.com>
 	    Doug Gregor  <dgregor@cs.indiana.edu>
@@ -951,7 +951,7 @@
 
 	* include/bits/stl_numeric.h (partial_sum, adjacent_difference):
 	Avoid dereferencing two times __first in the prologue.
- 
+
 2004-11-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_numeric.h: Trivial formatting fixes.
@@ -995,12 +995,12 @@
 
 2004-11-02  Benjamin Kosnik  <bkoz@redhat.com>
   	    Lothar Werzinger  <lothar@xcerla.com>
-	
+
 	PR libstdc++/17664
 	* src/debug.cc: Include concurrence, use mutexes.
-	(_Safe_iterator_base::_M_attach): Here.	
-	(_Safe_iterator_base::_M_detach): Here.	
-	
+	(_Safe_iterator_base::_M_attach): Here.
+	(_Safe_iterator_base::_M_detach): Here.
+
 2004-11-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/17922
@@ -1026,7 +1026,7 @@
 	* libsupc++/eh_globals.cc (get_globals_dtor): Delete unhandled
 	exceptions.
 	* testsuite/thread/18185.cc: New.
-	
+
 2004-11-01  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/18159
@@ -1157,7 +1157,7 @@
 	array object, use its size member function directly.
 	* testsuite/ext/array_allocator/3.cc: New.
 	* docs/html/20_util/allocator.html: Add docs.
-	
+
 2004-10-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.host (darwin*): Build libstdc++ single module
@@ -1179,7 +1179,7 @@
 	* scripts/testsuite_flags.in (build-includes): Remove redundant
 	search for libsupc++.
 	* fragment.am: Clean.
-	
+
 2004-10-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (tr1_headers): Add tuple.
@@ -1195,16 +1195,16 @@
 	* testsuite/tr1/6_containers/tuple/cons/assignment.cc: New.
 	* testsuite/tr1/6_containers/tuple/cons/big_tuples.cc: New.
 	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: New.
-	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc: 
+	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc:
 	New.
 	* testsuite/tr1/6_containers/tuple/creation_functions/tie.cc: New.
 	* testsuite/tr1/6_containers/tuple/element_access/get.cc: New.
 
 2004-10-25  Paolo Carlini  <pcarlini@suse.de>
-	
+
 	* include/bits/basic_string.h (_Rep::_M_is_safe): Move to
 	basic_string as _M_disjunct, adjust to take only __s.
-	* include/bits/basic_string.tcc: Adjust consistently callers. 
+	* include/bits/basic_string.tcc: Adjust consistently callers.
 
 2004-10-25  Paolo Carlini  <pcarlini@suse.de>
 
@@ -1272,9 +1272,9 @@
 	* testsuite/tr1/6_containers/array/comparison_operators/(equal.cc,
 	greater.cc, greater_or_equal.cc, less.cc, less_or_equal.cc,
 	not_equal): New.
-	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc: 
+	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc:
 	New.
-	* testsuite/tr1/6_containers/array/element_access/at_out_of_range.cc: 
+	* testsuite/tr1/6_containers/array/element_access/at_out_of_range.cc:
 	New.
 	* testsuite/tr1/6_containers/array/iterators/end_is_one_past.cc: New.
 	* testsuite/tr1/6_containers/array/requirements/(contiguous.cc,
@@ -1296,7 +1296,7 @@
 	_M_range_insert): Check at the outset that we are not trying
 	to exceed max_size, then deal properly with __len overflows.
 	* testsuite/23_containers/vector/modifiers/insert/1.cc: New.
-	
+
 	* testsuite/testsuite_allocator.h: Remove redundant include.
 
 2004-10-20  Paolo Carlini  <pcarlini@suse.de>
@@ -1337,10 +1337,10 @@
 	(__mt_alloc::allocate): Use it.
 	* src/mt_allocator.cc (__pool::_M_reclaim_block): Use it.
 	(__pool::_M_reserve_block): Simplify block allocation.
-	
+
 2004-10-17  Dhruv Matani  <dhruvbird@gmx.net>
 	    Paolo Carlini  <pcarlini@suse.de>
-		
+
 	* include/ext/bitmap_allocator.h: Change unsigned int -> size_t: this
 	makes the code 64-bit correct and also fixes (together with using at
 	the beginning a bitmap 2 * size_t bytes wide) alignment issues: now
@@ -1357,7 +1357,7 @@
 
 	* include/tr1/array (array::end const): Fix casting from iterator
 	to const_iterator.
-	
+
 2004-10-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h: Qualify ::operator delete.
@@ -1391,7 +1391,7 @@
 
 	* testsuite/testsuite_allocator.h (check_new): Add instance argument.
 	* testsuite/ext/array_allocator/check_new.cc: New.
-	
+
 2004-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h (bitmap_allocator::_Alloc_block):
@@ -1415,7 +1415,7 @@
 	* testsuite/ext/slist/check_construct_destroy.cc: ...here.
 	* testsuite/ext/slist_explicit_instantiation.cc: Move to...
 	* testsuite/ext/slist/instantiate.cc: ...here.
-	
+
 2004-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/mt_allocator.h: Tweaks.
@@ -1446,7 +1446,7 @@
 	PR libstdc++/17948
 	* include/bits/stl_tree.h (erase(iterator, iterator)): Revert
 	wrong commit of 2004-10-07.
-	
+
 2004-10-12  Scott Snyder  <snyder@fnal.gov>
 
 	PR libstdc++/17948
@@ -1469,7 +1469,7 @@
 	* config/linker-map.gnu: Tweak exports.
 	* docs/html/ext/mt_allocator.html: Update docs.
 	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Fix.
-	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Fix.	
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Fix.
 	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Fix.
 	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Fix.
 	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Fix.
@@ -1504,7 +1504,7 @@
 
 	* acinclude.m4 (GLIBCXX_ENABLE_THREADS): Tweak test.
 	* configure: Regenerate.
-	
+
 2004-10-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/monetary_members.cc (_S_construct_pattern):
@@ -1540,7 +1540,7 @@
 	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Same.
 	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Same.
 	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Same.
-	
+
 2004-10-07  Phil Edwards  <phil@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp:  Update list of undefined functions.
@@ -1600,7 +1600,7 @@
 	* testsuite/ext/mt_allocator/deallocate_global-1.cc: Move to...
 	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: ...here.
 	* testsuite/ext/mt_allocator/deallocate_global-3.cc: Move to...
-	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: ...here. 
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: ...here.
 	* testsuite/ext/mt_allocator/deallocate_local-1.cc: Move to...
 	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: ...here.
 	* testsuite/ext/mt_allocator/deallocate_local-3.cc: Move to...
@@ -1647,10 +1647,10 @@
 	(__pool_base::_Block_address): New.
 	(__pool_base): Rearrange data members.
 	(__pool::_M_reserve_memory): To _M_reserve_block.
-	(__pool::_M_reclaim_memory): To _M_reclaim_block.	
+	(__pool::_M_reclaim_memory): To _M_reclaim_block.
 	(__pool::_Bin_record): Add _Block_address data member.
 	(__pool<false>): Add _M_thread_freelist_initial.
-	(__pool::~__pool): Declare.	
+	(__pool::~__pool): Declare.
 	(__common_pool_policy): Move static data member to...
 	(__common_pool_policy::_S_get_pool): ...here, make static local.
 	(__per_type_pool_policy): Move static data member to...
@@ -1675,10 +1675,10 @@
 	* testsuite/ext/mt_allocator/deallocate_local-3.cc: New.
 	* testsuite/ext/mt_allocator/deallocate_local-4.cc: New.
 	* testsuite/ext/mt_allocator/deallocate.cc: New.
-	* testsuite/ext/malloc_allocator/deallocate.cc: New.	
+	* testsuite/ext/malloc_allocator/deallocate.cc: New.
 	* testsuite/ext/malloc_allocator/deallocate_global.cc: New.
 	* testsuite/ext/malloc_allocator/deallocate_local.cc: New.
-	
+
 2004-10-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* configure.host (abi_baseline_pair): Define for s390-*-linux* and
@@ -1776,7 +1776,7 @@
 
 2004-09-29  Paolo Carlini  <pcarlini@suse.de>
 	    Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/testsuite_io.h (class constraint_buf): New, extended
 	and templatized version of constraint_filebuf; add typedefs for
 	streambuf/stringbuf/filebuf and wchar_t counterparts.
@@ -1790,7 +1790,7 @@
 	* include/bits/basic_string.tcc (_S_construct, _M_destroy,
 	_M_leak_hard, _M_mutate): Likewise.
 	* acinclude.m4 (GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING): New.
-	* acconfig.h: Add corresponding undef. 	
+	* acconfig.h: Add corresponding undef.
 	* configure.ac: Use GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING.
 	* docs/html/configopts.html: Document --enable-fully-dynamic-string.
 	* configure: Regenerate.
@@ -1802,7 +1802,7 @@
 	* testsuite/21_strings/basic_string/operations/char/1.cc: New.
 	* testsuite/21_strings/basic_string/operations/wchar_t/1.cc: New.
 	* testsuite/21_strings/basic_string/element_access/char/empty.cc: New.
-	* testsuite/21_strings/basic_string/element_access/wchar_t/empty.cc: 
+	* testsuite/21_strings/basic_string/element_access/wchar_t/empty.cc:
 	New.
 
 2004-09-28  Paolo Carlini  <pcarlini@suse.de>
@@ -3812,10 +3812,12 @@
 	* testsuite/21_strings/char_traits/requirements/short/1.cc: Same.
 	* testsuite/27_io/basic_istream/seekg/char/exceptions_badbit_throw.cc:
 	Same.
-	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/exceptions_badbit_throw.cc: Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_badbit_throw.cc: Same.
 	* testsuite/27_io/basic_ostream/seekp/char/exceptions_badbit_throw.cc:
 	Same.
-	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/exceptions_failbit_throw.cc: Same.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_failbit_throw.cc: Same.
 	* testsuite/27_io/types/2.cc: Same.
 
 	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Fix temporary

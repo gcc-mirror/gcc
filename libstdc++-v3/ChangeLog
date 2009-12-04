@@ -586,8 +586,8 @@
 2009-10-28  Johannes Singler  <singler@kit.edu>
 
 	PR libstdc++/40852
-	* include/parallel/multiseq_selection.h 
-	(multiseq_partition, multiseq_selection):  Avoid intermediate 
+	* include/parallel/multiseq_selection.h
+	(multiseq_partition, multiseq_selection):  Avoid intermediate
 	values exceeding the integer type range for very large inputs.
 
 2009-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -782,7 +782,7 @@
 	Update link to bogus site with reference to unix.org.
 	* doc/xml/manual/ctype.xml: Ditto.
 	* doc/xml/manual/locale.xml: Ditto.
-                                             
+
 2009-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/numeric (__adjacent_difference_switch): Fix typo.

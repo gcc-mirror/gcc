@@ -20,7 +20,7 @@
 	Reported by  Brad Garcia  <bgarcia@laurelnetworks.com>
 	* src/string-inst.cc (_S_find): Use generic template.
 	* include/bits/string.tcc (_S_find): Remove specializations
-	
+
 2000-12-22  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	Attempt to make locale visible in gdb.
@@ -38,7 +38,7 @@
 	* src/codecvt.cc (codecvt<char...>): Remove locale::id definition.
 	(codecvt<wchar_t...>): Same.
 	* src/localename: And here.
-	
+
 	* include/bits/localefwd.h (_Count_ones): Change _S_count to _M_count.
 	Same for _M_halfcount.
 
@@ -52,7 +52,7 @@
 	* configure.in: Change GLIBCPP_ENABLE_SHADOW to
 	GLIBCPP_ENABLE_CHEADERS.
 	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Change to
-	ENABLE_CHEADERS.  C_INCLUDE_DIR defaults to c_std from c. 
+	ENABLE_CHEADERS.  C_INCLUDE_DIR defaults to c_std from c.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* include/c: Move to ...
@@ -61,7 +61,7 @@
 	* include/c_shadow: ...here.
 	* include/c: Repopulate, with simple headers.
 	* docs/html/configopts.html: Adjust docs.
-	
+
 2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* acinclude.m4, configure.in, mkcheck.in,
@@ -98,8 +98,8 @@
 	* libmath/sqrtf.c: Likewise.
 	* libmath/sqrtl.c: Likewise.
 	* libmath/mathconf.h: Remove <complex.h> and "complex-stub.h"
-	#inclusion. 
-	
+	#inclusion.
+
 	* include/bits/std_complex.h (sqrt<>): Define primary template.
 	(complex<>): Remove sqrt friend declarations.
 
@@ -132,7 +132,7 @@
 	(OPT_LDFLAGS): And here.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 2000-12-19  Curtis Janssen  <cljanss@ca.sandia.gov>
 
 	* src/ios.cc (ios_base::_M_grow_words(int ix)): Fix libstdc++/1089.
@@ -177,7 +177,7 @@
 2000-12-19  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/std_complex.h (complex<float>::operator-=): Fix
-	thinko. 
+	thinko.
 
 2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -213,7 +213,7 @@
 	(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT): Add it back here.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 2000-12-14  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	* configure.in (CXX): Exit out if mknumeric_limits fails.
@@ -231,7 +231,7 @@
 	* include/bits/locale_facets.h (ctype<char>): Remove throw specs not in
 	base class signature.
 	* config/os/*/bits/ctype_inline.h (is): Same.
-	
+
 2000-12-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/generic/bits/ctype_base.h (ctype_base): Consistency
@@ -262,7 +262,7 @@
 	ctype_base::mask type an integer type, not an enum.
 	* config/os/gnu-linux/bits/ctype_inline.h (is): Implement correctly.
 	* include/bits/locale_facets.h: Tweaks.
-	
+
 	* include/bits/ios_base.h: Formatting tweaks.
 
 	* docs/html/17_intro/C++STYLE: Add.
@@ -278,7 +278,7 @@
 	* aclocal.m4: Regnerate.
 	* acconfig.h: Add more defines.
 	* config.h.in: Regenerate.
-	
+
 2000-12-12  Angela Marie Thomas <angela@cygnus.com>
 
 	* configure.in: Fix case for host-x-linux
@@ -432,7 +432,7 @@
 	* libmath/complex-stub.h: Remove forward declaration of functions
 	mentioned above.
 
-	* include/bits/std_complex.h(tan, tanh): Define primary templates. 
+	* include/bits/std_complex.h(tan, tanh): Define primary templates.
 	(complex<>): Remove friend declarations for tan<> and tanh<>.
 	* src/complex.cc(tan, tanh): Remove specializations.
 
@@ -466,7 +466,7 @@
 	* config/os/aix/bits/ctype_noninline.h (ctype): Same.
 
 	* include/bits/locale_facets.h: Tweak.
-	
+
 2000-12-06  Benjamin Kosnik  <bkoz@kredhat.com>
 
 	* include/bits/locale_facets.h (ctype): Remove _Ctype_nois and
@@ -485,20 +485,20 @@
 	* config/os/bsd/netbsd/bits/ctype_noninline.h (ctype): Same.
 	* config/os/bsd/freebsd/bits/ctype_noninline.h (ctype): Same.
 	* src/locale-inst.cc: Clean instantiations.
-	* src/locale.cc (ctype<char>): Add definitions here. 
+	* src/locale.cc (ctype<char>): Add definitions here.
 	(ctype<wchar_t>::_M_wmask): Move definitions here.
-	
+
 	* config/os/generic/bits/ctype_inline.h (ctype<char>::is):
 	Implement in a generic way, with only "C" functionality and no
 	knowlege of the target os.
 	* config/os/generic/bits/os_defines.h: Change comments to C++ style.
 	* testsuite/22_locale/ctype_char_members.cc (test01): Add tests.
-	
+
 	* include/bits/codecvt.h (ctype_byname): Remove specializations,
 	as not required.
 	* include/bits/localefwd.h (codecvt_byname): And here.
 	* src/codecvt.cc: Remove codecvt_byname specializations.
-	
+
 	* include/c/bits/std_cstdio.h: Include c++config.h.
 
 2000-12-06  Phil Edwards  <pme@sources.redhat.com>
@@ -515,7 +515,7 @@
 
 2000-12-06  Richard Earnshaw  <rearnsha@arm.com>
 
-	* configure.target (*-*-freebsd, *-*-netbsd): Correct paths to 
+	* configure.target (*-*-freebsd, *-*-netbsd): Correct paths to
 	os_include_dir.
 
 2000-12-05  Jeffrey A Law  <law@cygnus.com>
@@ -530,7 +530,7 @@
 
 	* src/Makefile.am (libstdc++.INC): Revert for libjava builds.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-12-05  Benjamin Kosnik  <bkoz@haight.redhat.com>
 
 	* acinclude.m4 (EXTRA_CXX_FLAGS): And here.
@@ -541,7 +541,7 @@
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* config.h.in: Regenerate.
-	
+
 2000-12-05  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	* acinclude.m4: Change up to reflect new directory organization.
@@ -598,16 +598,16 @@
 2000-12-05  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/complex.cc (pow): Remove definitions for explicit
-	specializations. 
+	specializations.
 	* libmath/mathconf.h: Remove declarations for c_log, c_logf,
-	c_logl. 
+	c_logl.
 	* libmath/complex-stub.h: Remove declarations for cpow, cpowf,
-	cpowl. 
+	cpowl.
 	* libmath/cpow.c: Remove.
 	* libmath/cpowf.c: Remove.
 	* libmath/cpowl.c: Remove.
 	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove c_logl,
-	cpowl, 
+	cpowl,
 	(EXTRA_DIST): Remove c_log, c_logf, carg, cargf.
 	* libmath/Makefile.in: Regenarate.
 	* libmath/c_log.c: Remove
@@ -685,7 +685,7 @@
 	(c_shadow_headers): Split up, deal with conditional usage in a
 	sane manner.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-11-29  Phil Edwards  <pme@sources.redhat.com>
 
 	Sync with the documentation from wwwdocs.
@@ -753,7 +753,7 @@
 	* include/bits/c++config (__GLIBCPP__): Update.
 	* docs/17_intro/RELEASE-NOTES: Update.
 	* docs/status.html: Update, remove bogus autotools disinformation.
-	
+
 2000-11-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* tests_flags.in (LTCXX): Change CXX_FLAG to CXXFLAGS.
@@ -761,7 +761,7 @@
 	* testsuite/22_locale/ctor_copy_dtor.cc: Adjust formatting.
 	* testsuite/27_io/istream_extractor_arith.cc (test11): New
 	testcase, based on libstdc++/90.
-	
+
 2000-11-27  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
         * config/cpu/arm/bits/atomicity.h (__exchange_and_add): Add
@@ -770,7 +770,7 @@
         (__compare_and_swap): Likewise.
         (__always_swap): Likewise.
         (__test_and_set): Likewise.
-	
+
         * config/cpu/powerpc/bits/atomicity.h: Replace '__ATOMICITY_INLINE'
         with 'inline'.
         (__exchange_and_add): Add __volatile__ to asm.
@@ -778,7 +778,7 @@
         (__compare_and_swap): Likewise.
         (__always_swap): Likewise.
         (__test_and_set): Likewise.
-	
+
 2000-11-27  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* tests_flags.in: Update documentation to reflect the change
@@ -791,14 +791,14 @@
 
 2000-11-26  David Billinghurst  <David.Billinghurst@riotinto.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
-	
+
         * mkcheck.in: Add exe extension to printnow executable, abstract
 	out call to this with TIMER_COMMAND.
 	* configure.target (l_glibcpp_cxxflags): Add cygwin support.
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Correct paths.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 2000-11-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/istream_unformatted.cc (test05): Fixup.
@@ -809,17 +809,17 @@
 	configuring. More fixes for 'make clean'.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove cabsl.c 
+	* libmath/Makefile.am (EXTRA_LONG_DOUBLE_yes): Remove cabsl.c
 	* libmath/Makefile.in: Regenerate.
 	* libmath/cabs.c: Remove.
 	* libmath/cabsf.c: Likewise.
 	* libmath/cabsl.c: Likewise.
 	* libmath/complex-stub.h: Remove declarations for cabs*.
 
-	* acinclude.m4: Remove check for cabs*. 
+	* acinclude.m4: Remove check for cabs*.
 	* aclocal.m4: Regenerate.
 
 	* Makefile.in: Regenerate.
@@ -828,7 +828,7 @@
 
 	* tests_flags.in: New file. Split out of ...
 	* mkcheck.in: ... this. Move flags computation into
-	tests_flags.in. 
+	tests_flags.in.
 	* configure.in: Add support for tests_flags.
 	* confiigure: Regenerate.
 
@@ -842,12 +842,12 @@
 	libmath/mathconf.h: Change C9X references to refer to C99.
 
 2000-11-25  Benjamin Kosnik  <bkoz@redhat.com>
-            Richard Earnshaw  <rearnsha@arm.com> 
+            Richard Earnshaw  <rearnsha@arm.com>
 
 	* src/Makefile.am (INCLUDES): Remove unconditional use of
 	_GNU_SOURCE and _ISOC99_SOURCE macros.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-11-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/22_locale/codecvt_wchar_t_char.cc (main): Add
@@ -894,7 +894,7 @@
 2000-11-22  Richard Henderson  <rth@redhat.com>
 
 	* config/os/bsd/bits/ctype_inline.h (is): Fix order of expressions.
-	
+
 2000-11-22  Phil Edwards  <pme@sources.redhat.com>
 
 	* porting.texi:  Minor tweaks to vocabulary.
@@ -929,7 +929,7 @@
 	* src/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am (headers): Remove new.h
 	* libsupc++/Makefile.in: Regenerate.
-	* include/std/strstream: Remove.	
+	* include/std/strstream: Remove.
 	* include/backward/strstream.h: Replace with...
 	* include/bits/std_strstream.h: ...this. Move.
 	* include/backward/complex.h: Remove SGIisms.
@@ -955,7 +955,7 @@
         __off64_t and __ssize_t.
 	* config/os/solaris/solaris2.5/bits/os_defines.h: For now, use the
 	same configuration as above.
-	
+
 2000-11-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (AC_LC_MESSAGES): Check for locale.h.
@@ -988,7 +988,7 @@
 
 	* testsuite/23_containers/vector_ctor.cc (test02): Add test from
 	libstdc++/102.
-	
+
 2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* include/bits/c++config, include/bits/ios_base.h,
@@ -996,7 +996,7 @@
 
 2000-11-19  Mark Mitchell  <mark@codesourcery.com>
 
-	* libsupc++/exception_support.cc (__throw_bad_cast): Name it 
+	* libsupc++/exception_support.cc (__throw_bad_cast): Name it
 	__cxa_bad_cast under the new ABI.
 	(__throw_bad_typeid): Name it __cxa_bad_typeid under the new ABI.
 	* libsupc++/pure.cc (__pure_virtual): Name it __cxa_pure_virtual
@@ -1020,7 +1020,7 @@
 	to handle the case (const_iterator,iterator) and
 	(iterator,const_iterator), thus fixing libstdc++/737 and the like.
 	* testsuite/23_containers/map_operators.cc (test02): New tests.
-	
+
 2000-11-17  Loren J. Rittle  <ljrittle@acm.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Correct last patch
@@ -1048,7 +1048,7 @@
 
 2000-11-16  Mark Mitchell  <mark@codesourcery.com>
 
-	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Make 
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Make
 	--enable-cstdio=stdio the default.  Disable wide character support
 	in that event.
 	* configure.in: Move GLIBCPP_ENABLE_C_MBCHAR after
@@ -1062,7 +1062,7 @@
 	* libmath/Makefile.in: Likewise.
 	* libsupc++/Makefile.in: Likewise.
 	* src/Makefile.in: Likewise.
-	
+
 2000-11-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* config/c_io_stdio.h: Include stddef.h.
@@ -1086,7 +1086,7 @@
 	* libmath/Makefile.in: Likewise.
 	* libsupc++/Makefile.in: Likewise.
 	* src/Makfile.in: Likewise.
-	
+
 2000-11-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* mkcheckin.in: Move check for bash version 2 later in the file.
@@ -1097,7 +1097,7 @@
 	* include/bits/string.tcc (basic_string::_Rep::_S_max_size):
 	Likewise.
 	(basic_string::_Rep::_S_terminal): Likewise.
-	
+
 2000-11-15  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* mkcheck.in:  Add function size_command() for irix.
@@ -1111,7 +1111,7 @@
 	build issues.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 	* include/bits/c++config (__GLIBCPP__): Set release version for 2.91.
 
 2000-11-14  Phil Edwards  <pme@sources.redhat.com>
@@ -1153,7 +1153,7 @@
         * acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Add test for
         libiconv.a providing wchar_t support functions.
 	* aclocal.m4: Regenerate.
-	
+
 2000-11-12  Loren J. Rittle  <ljrittle@acm.org>
 
         * acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY): Handle FreeBSD.
@@ -1167,7 +1167,7 @@
 	CODESET from _C_legacy::CODESET if using shadow headers.
 	* src/Makefile.am: Add new files.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/c/bits/std_cmath.h (abs): Change extern "C" declaration
@@ -1293,14 +1293,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* testsuite/22_locale/codecvt_unicode_wchar_t.cc: Likewise.
 	* testsuite/22_locale/ctor_copy_dtor.cc: Likewise.
 	* testsuite/22_locale/ctype_wchar_t_members.cc: Likewise.
-	
+
 	* mkcheck.in: Fix echoing of -rpath option.
-	
+
 	* config/os/irix/bits/atomicity.h (_Atomic_word): Make it a
 	signed type.
 	(__exchange_aand_add): Adjust accordingly.
 	(__atomic_add): Likewise.
-	
+
 2000-11-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/locale.cc: Match orderings for static members.
@@ -1313,7 +1313,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(cos, cosh, sin, sinh): Define primary templates.
 
 	* src/complex.cc (cos<>, cosh<>, sin<>, sinh<>): Comment out
-	definitions. 
+	definitions.
 
 2000-11-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
@@ -1326,7 +1326,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/c_io_stdio.h: New file.
 	* config/c_io_stdio.cc: New file.
 	* docs/configopts.html: Modify documentation.
-	
+
 2000-10-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* include/c/bits/std_cwctype.h: Add more undefs.
@@ -1339,19 +1339,19 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(exp, log, log10): Define primary templates.
 
 	* src/complex.cc (exp<>, log<>, log10<>): Comment out
-	specializations. 
+	specializations.
 
 2000-10-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* include/bits/std_complex.h: Remove duplicate definition of conj.
 	* include/c/bits/std_cwctype.h: Consistent placement of undefs.
-	
+
 2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/complex.cc (arg, polar): Comment out specializations.
 
 	* include/bits/std_complex.h (complex<>): Remove arg<> friend
-	declaration. 
+	declaration.
 	(arg): Define primary template.
 	(polar): Likewise.
 	(conj): Likewise.
@@ -1362,7 +1362,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	macro definitions of iswxxx functions, which might be brought in
 	by <wctype.h>.  Those macro definitions prevent build on some
 	linux-based systems.
-	
+
 	* include/bits/std_complex.h (complex<>): Comment out friend
 	declarations of abs<> specializations.
 	(abs): Define primary template.
@@ -1407,7 +1407,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* include/c/bits/std_cerrno.h: Same.
 	* include/c/bits/std_cwchar.h: Same.
 	* include/c/bits/std_cassert.h: Same.
-	* include/c/bits/std_cctype.h: Same.	
+	* include/c/bits/std_cctype.h: Same.
 	* include/c/bits/std_cstddef.h: And here.
 	* include/c/bits/std_cstdlib.h: And here.
 	* include/c/bits/std_cstdio.h: Same.
@@ -1417,13 +1417,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	from here...
 	(_ISOC99_SOURCE): And this one....
 	* config/os/gnu-linux/bits/os_defines.h: ...to here.
-	
+
 	* include/bits/codecvt.h (codecvt<_InternT, _ExternT,
 	__enc_traits>::do_in): Don't cast to const, this is a bug in glibc
 	prior to 2.2.
 	(codecvt<_InternT, _ExternT, __enc_traits>::do_out): Same.
 	* include/c/bits/std_cwchar.h: Add using declarations for mbstate_t.
-	
+
 2000-10-30  Steven King  <sxking@uswest.net>
 
 	* include/bits/codecvt.h: Add cast.
@@ -1445,7 +1445,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-10-30  Mark Mitchell  <mark@codesourcery.com>
 
-        * acinclude.m4 (GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT): Check 
+        * acinclude.m4 (GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT): Check
         for cabs, cabsf, and cabsl, too.
         * aclocal.m4: Regenerated.
         * config.h.in: Likewise.
@@ -1479,7 +1479,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Ditto.
 	* libsupc++/Makefile.in: Regenerate.
-	
+
 2000-10-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Simplify use of AC_CACHE_SAVE.  Put linked files
@@ -1499,29 +1499,29 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-10-29  Mark Mitchell  <mark@codesourcery.com>
 
-	* config/c_io_libio.cc (basic_file<char>::__basic_file): 
+	* config/c_io_libio.cc (basic_file<char>::__basic_file):
 	Don't pass a NULL _IO_wide_data to _IO_no_init when
 	_GLIBCPP_USE_WCHAR_T is not defined.
-	* config/c_io_libio.h (_IO_codecvt): Don't declare when 
+	* config/c_io_libio.h (_IO_codecvt): Don't declare when
 	_GLIBCPP_USE_WCHAR_T is not defined.
-	* config/c_io_libio_codecvt.c: Don't compile it 
+	* config/c_io_libio_codecvt.c: Don't compile it
 	when _GLIBCPP_USE_WCHAR_T is not defined.
 	* include/bits/codecvt.h (codecvt<_InternT, _ExternT, __enc_traits):
-	Don't define this specialization when _GLIBCPP_USE_WCHAR_T 
+	Don't define this specialization when _GLIBCPP_USE_WCHAR_T
 	is not defined.
 	* include/bits/locale_facets.h (<bits/std_cwctype.h>): Don't
-	include it when _GLIBCPP_USE_WCHAR_T is not defined. 
+	include it when _GLIBCPP_USE_WCHAR_T is not defined.
 	* src/codecvt.cc (__enc_traits::_S_max_size): Don't define
 	when _GLIBCPP_USE_WCHAR_T is not defined.
 	* src/localename.cc (locale::_Impl::_M_construct_collate):
-	Don't call wide-character functions when _GLIBCPP_USE_WCHAR_T is 
+	Don't call wide-character functions when _GLIBCPP_USE_WCHAR_T is
 	not defined.
 	(locale::_Impl::_M_construct_ctype): Likewise.
 	(locale::_Impl::_M_construct_monetary): Likewise.
 	(locale::_Impl::_M_construct_numeric): Likewise.
 	(locale::_Impl::_M_construct_time): Likewise.
 	(locale::_Impl::_M_construct_messages): Likewise.
-	
+
 	* acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY): Handle IRIX.
 	* aclocal.m4: Regenerated.
 	* configure: Likewise.
@@ -1531,7 +1531,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(__off64_t): Likewise.
 	(__ssize_t): Likewise.
 	(_G_USING_THUNKS): Define to zero.
-	
+
 2000-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/string-inst.cc (basic_string<C>::npos): Explicitly
@@ -1546,16 +1546,16 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	GLIBCPP_CHECK_CTYPE_SUPPORT.
 	(GLIBCPP_CHECK_STDLIB_SUPPORT): Add.
 	* aclocal.m4: Regenerate.
-	* configure.in: And here. 
+	* configure.in: And here.
 	Add call to GLIBCPP_CHECK_STDLIB_SUPPORT.
 	* configure: Regenerate.
-	
+
 2000-10-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* acinclude.m4 (GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2): New macro.
 	(GLIBCPP_CHECK_MATH_SUPPORT): Use it to test for strtold.
-	
-2000-10-26  Phil Edwards  <pme@sources.redhat.com>  
+
+2000-10-26  Phil Edwards  <pme@sources.redhat.com>
 	    David Edelsohn  <dje@watson.ibm.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES): Comment out
@@ -1572,8 +1572,8 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* include/backward/streambuf.h: New file.
 
-2000-10-26  David Edelsohn  <dje@watson.ibm.com> 
-        
+2000-10-26  David Edelsohn  <dje@watson.ibm.com>
+
 	* config/os/aix/bits/ctype_inline.h (is): Use __OBJ_DATA directly.
         * config/os/aix/bits/ctype_noninline.h (do_tolower): Fix typo.
         * config/os/aix/bits/os_defines.h: Add AIX defines.
@@ -1613,7 +1613,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* mkcheck.in (top_srcdir): New variable.
 	(INC_PATH): Set the path to the backward and ext directories
 	correctly.
-	
+
 2000-10-25  Phil Edwards  <pme@sources.redhat.com>
 
         * configure.in:  Check for gconv.h.
@@ -1642,7 +1642,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	into the mix.
 
 	* mkcheck.in (MAX_MEM_USAGE): Bump up to 3072. Strangely enough,
-	this works. 
+	this works.
 
 2000-10-24  Levente Farkas  <lfarkas@mindmaker.hu>
 
@@ -1689,7 +1689,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* include/c_std/bits/std_cassert.h: Tweaks.
 
 	* mkcheck.in: Simplify.
-	
+
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): Simplify.
 	(GLIBCPP_ENABLE_LONG_LONG): Same.
 	* aclocal.m4: Regenerate.
@@ -1717,7 +1717,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* include/c_std/bits/std_cstdlib.h: abort, exit comment.
 	* include/c_std/stdlib.h: Same here.
-	
+
 2000-10-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/21_strings/compare.cc (test01): Add using declarations.
@@ -1726,7 +1726,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* include/c_std/bits/std_cassert.h: Tweaks.
 
 	* mkcheck.in: Simplify.
-	
+
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): Simplify.
 	(GLIBCPP_ENABLE_LONG_LONG): Same.
 	* aclocal.m4: Regenerate.
@@ -1754,7 +1754,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* include/c_std/bits/std_cstdlib.h: abort, exit comment.
 	* include/c_std/stdlib.h: Same here.
-	
+
 2000-10-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): New macro.
@@ -1765,7 +1765,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* include/c_std/bits/std_cmath.h: Fixup.
 	* include/c/bits/std_cmath.h: Fixup.
 	* docs/configopts.html: Add docs.
-	
+
 	* docs/links.html: Add links to defects list, standards FAQ.
 
 	* testsuite/21_strings/ctor_copy_dtor.cc (test01): Disable tests
@@ -1776,16 +1776,16 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-10-21  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
-    	* libsupc++/exception.cc: Use namespace std.
-    	* libsupc++/new: DITTO.
-    	* libsupc++/new_op.cc: DITTO.
-    	* libsupc++/new_opnt.cc: DITTO.
-    	* libsupc++/new_opv.cc: DITTO.
-    	* libsupc++/new_opvnt.cc: DITTO.
-    	* libsupc++/tinfo.cc: DITTO.
-    	* libsupc++/tinfo.h: DITTO.
-    	* libsupc++/vec.cc: DITTO.
-    	* libsupc++/Makefile.am: Blank lines removal.
+	* libsupc++/exception.cc: Use namespace std.
+	* libsupc++/new: DITTO.
+	* libsupc++/new_op.cc: DITTO.
+	* libsupc++/new_opnt.cc: DITTO.
+	* libsupc++/new_opv.cc: DITTO.
+	* libsupc++/new_opvnt.cc: DITTO.
+	* libsupc++/tinfo.cc: DITTO.
+	* libsupc++/tinfo.h: DITTO.
+	* libsupc++/vec.cc: DITTO.
+	* libsupc++/Makefile.am: Blank lines removal.
 
 2000-10-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -1816,7 +1816,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	size_t __refs, bool __has_name = false, string __name): Move
 	default argument...
 	* include/bits/localefwd.h: Here.
-	
+
 2000-10-18  Chip Salzenberg  <chip@valinux.com>
 
         * libio/libio.h (_IO_USER_LOCK): Define.
@@ -1832,7 +1832,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* src/Makefile.am: Remove bogus --tag CC.
 	* src/Makefile.in: Regenerate.
-	
+
 	* include/bits/locale_facets.tcc (use_facet): Simplify.
 	* include/bits/locale_facets.h (use_facet<ctype<char> >): Correct
 	use_facet declaration. Replace 'const ctype<T>' with ctype<T>.
@@ -1856,7 +1856,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* libsupc++/Makefile.in: Regenerate.
 	* src/Makefile.am: Duplicate code.
 	* src/Makefile.in: Regenerate.
-	
+
 	* acinclude.m4 (GLIBCPP_ENABLE_RELIBGCC): Take this out.
 	* aclocal.m4: Regenerate.
 	* configure.in: And here.
@@ -1899,10 +1899,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* libsupc++/Makefile.am: Same.
 	(glibcppinstalldir): Adjust.
 	* libsupc++/Makefile.in: Regenerate.
-	* Makefile.am: Remove gxx_include_dir. Remove INCLUDE. 
+	* Makefile.am: Remove gxx_include_dir. Remove INCLUDE.
 	* Makefile.in: Regenerate.
 	* docs/configopts.html: Add descriptions of flags.
-	
+
 2000-10-11  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* libsupc++/Makefile.am: Use it.
@@ -1927,7 +1927,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* shadow: Remove directory.
 	* shadow/*: De-populate.
-	
+
 2000-10-11  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Comment out
@@ -1943,24 +1943,24 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* libsupc++: Here.
 	* libsupc++/Makefile.am (glibcppinstall_HEADERS): Install headers.
 	(glibcppinstalldir): New.
-	
+
 	* src/Makefile.am (c_base_headers): New.
 	(c_shadow_headers): New
 	(c_headers): New.
 	(myinstallheaders): Correct install issues.
 	* src/Makefile.in: Regenerate.
-	
+
 	* Makefile.am (CSHADOW_INCLUDES): Simplify.
 	* Makefile.in: Regenerate.
 	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Add c_include_dir.
 	* aclocal.m4: Regenerate.
 	* mkcheck.in (SRC_DIR): Use it.
-	
+
 	* include/bits/std_stdexcept.h: And here.
 	* include/bits/std_ios.h: Change std_exception.h to exception.
 	* src/locale.cc: And here.
 	* src/locale-inst.cc: And here.
-	
+
 	* include/bits/valarray_array.h: And here.
 	* include/bits/stl_alloc.h: And here.
 	* include/bits/stl_algobase.h: And here.
@@ -1986,7 +1986,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* std/exception: Remove.
 
 	* libio/_G_config.h (__need_ptrdiff_t): Add.
-	
+
 	* libsupc++/include/new: Change stddef.h to cstddef.
 	* libsupc++/tinfo.h: Change limits.h to climits.
 	* libsupc++/pure.cc: Comment out _GNU_LIBRARY_ bits, as this
@@ -2023,7 +2023,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	Move GLIBCPP_INCLUDES, TOPLEVEL_INCLUDES, LIBMATH_INCLUDES,
 	LIBIO_INCLUDES, CSHADOW_INCLUDES up Makefile hierarchy.
 	* src/Makefile.in: Regenerate.
-	
+
 	* include/c: New directory.
 	* include/c/bits/(std_cassert.h, std_cctype.h, std_cerrno.h,
 	std_cfloat.h, std_climits.h, std_clocale.h, std_cmath.h,
@@ -2034,7 +2034,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* include/c_std: New directory.
 	* include/c_std/bits/*: Populate from...
 	* shadow: ...here. Remove directory.
-	
+
 2000-10-08   Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* libsupc++/Makefile.am (INCLUDES): Add toplevel include directory.
@@ -2044,7 +2044,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4 (GLIBCPP_CHECK_OS): Link to os_defines.h.
 	* aclocal.m4: Regenerate.
 	* config/os/*/bits/os_defines: Adjust copyright dates.
-	
+
 2000-10-08  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/c++config:  Include <bits/os_defines.h>
@@ -2058,16 +2058,16 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/os/solaris/solaris2.6/bits/os_defines.h:  Ditto.
 	* config/os/solaris/solaris2.7/bits/os_defines.h:  Ditto.
 
-2000-10-07  David Edelsohn  <dje@watson.ibm.com> 
-	
+2000-10-07  David Edelsohn  <dje@watson.ibm.com>
+
 	* config/os/aix/bits/atomicity.h: New file.
 
 2000-10-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
-        
+
         * acinclude.m4: Remove CPU_FLAGS
         * libio/Makefile.am: Here too.
         * Makefile.am: Here too.
-        
+
         * src/Makefile.am (CONFIG_INCLUDES): Remove.
         (INCLUDES): Remove CONFIG_INCLUDES.
         (cpu_headers): Remove.
@@ -2075,7 +2075,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         (generated_headers): Rename to build_headers.
         (build_headers): Add atomicity.h, ctype_base.h,
         ctype_specializations.h.
-        
+
         * config/os: New directory.
         * config/aix: Move to...
         * config/bsd: Move to...
@@ -2091,7 +2091,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4: Remove CPU_FLAGS
 	* libio/Makefile.am: Here too.
 	* Makefile.am: Here too.
-	
+
 	* src/Makefile.am (CONFIG_INCLUDES): Remove.
 	(INCLUDES): Remove CONFIG_INCLUDES.
 	(cpu_headers): Remove.
@@ -2109,7 +2109,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/newlib: Move to...
 	* config/solaris: Move to...
 	* config/os/*: Here.
-	
+
 2000-10-06  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/Makefile.am: Remove OPTIMIZE_CXXFLAGS, WARN_CXXFLAGS,
@@ -2123,7 +2123,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* libsupc++/Makefile.am: Use top-level OPTIMIZE_CXXFLAGS,
 	WARN_CXXFLAGS, CONFIG_CXXFLAGS as part of local AM_CXXFLAGS.
 	* libsupc++/Makefile.in: Regenerate.
-		
+
 	Change math to libmath.
 	* math: Move to libmath, delete.
 	* libmath: New directory.
@@ -2136,11 +2136,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* Makefile.am (SUBDIRS): Add libmath.
 	* Makefile.in: Regenerate.
 	* README (file): Change name.
-	
+
 2000-10-06  Benjamin Kosnik  <bkoz@cygnus.com>
             Richard Henderson  <rth@cygnus.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
-	
+
 	* libsupc++: New directory.
 	* libsupc++/*: Populate.
 	* libsupc++/Makefile.am (INCLUDES): Add -I../../gcc for
@@ -2153,7 +2153,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.in: Regenerate.
 	* libio/Makefile.am: Remove extraneous, confusing bits.
 	* libio/Makefile.in: Regenerate.
-	
+
 2000-10-05  Brent Verner  <brent@rcfile.org>
 
         * bits/istream.tcc [basic_istream::get(basic_streambuf&)]: Removed
@@ -2190,7 +2190,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits: Move to include/bits, delete.
 	* ext: Move to include/ext, delete.
 	* std: Move to include/std, delete.
-	
+
 	* src/complex.cc: Adjust include of mathconf.
 
 	* mkc++config (BASE_H): Add include.
@@ -2202,7 +2202,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* math/Makefile.in: Regenerate.
 	* libio/Makefile.am (INCLUDES): Add glibcpp_includedir.
 	* libio/Makefile.in: Regenerate.
-	
+
 2000-10-04  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* libio/_G_config.h : Re-guard the __mbstate_t declaration.
@@ -2214,15 +2214,15 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* docs/documentation.html: Rename links for clarity.
 
 	* src/Makefile.am (headers): Remove unistd.h, wrap_unistd.h. Add
-	fcntl.h, iolibio.h, libioP.h, pthread.h, iconv.h. 
+	fcntl.h, iolibio.h, libioP.h, pthread.h, iconv.h.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-10-02  Steven King  <sxking@uswest.net>
 
         * mkcshadow: Fixed script to output proper include guard.
         * bits/char_traits.h: Cleaned up types in char_traits<char> functions.
         * libio/_G_config.h: Hacked to make work with shadow heraders.
-        * shadow/*: Hacked to make shadow headers work. 
+        * shadow/*: Hacked to make shadow headers work.
 
 2000-10-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
@@ -2233,7 +2233,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): New macro.
 	* config/gnu-linux/bits/ctype_base.h (ctype_base): Use it.
 	* config/gnu-linux/ctype.cc (ctype): Use it.
-	
+
 	* src/localename.cc (locale::_Impl::_M_replace_categories): Remove
 	call to assert.
 	* src/locale.cc: Explicitly cast mbstate_t to void* in calls to
@@ -2261,19 +2261,19 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* shadow/bits/wrap_iconv.h: New file.
 	* shadow/unistd.h: Remove. Useless.
 	* shadow/bits/wrap_unistd.h: Remove.
-	
+
 	* src/Makefile.am: Take out machine-ansi.h, add fcntl.h unistd.h.
 	* src/Makefile.in: Regenerate.
-	
+
 	* config/c_io_libio.h (_IO_codecvt): Change to normal C++ decl.
-	
+
 	* shadow/libio.h: Fix.
 	* shadow/bits/wrap_libio.h: Fix.
 
 	* shadow/bits/std_clocale.h: Remove typedef struct construct,
 	which will not compile.
 	* shadow/bits/std_ctime.h: Same.
-	
+
 	* shadow/pthread.h: New file. Put pthreads types and functions
 	into global scope, which is probably not the correct long-term
 	solution but has to be done at the moment before libio wrappers
@@ -2287,7 +2287,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	tests for compiler features.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 	* config/c_io_libio.cc: Remove fcntl.h include, as SEEK_SET
 	redefined.
 	* libio/libioP.h: Comment out fcntl.h include.
@@ -2317,7 +2317,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	overloaded in the std namespace with the shadow headers.
 	* src/complexl.cc: Same.
 	* src/complex.cc: Same.
-	
+
 2000-09-25  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/documentation.html:  Add link to...
@@ -2333,10 +2333,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-09-25  Levente Farkas  <lfarkas@mindmaker.hu>
 
 	* ext/stl_hashtable.h (_M_copy_from): Change __copy to __local_copy.
-	
+
 2000-09-19  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
-	* src/localename.cc (locale::_Imp) : Remove typedefs.	
+	* src/localename.cc (locale::_Imp) : Remove typedefs.
 	* bits/localefwd.h (locale::locale(const locale& __other, _Facet*
 	__f): Consistency check, call _Imp ctor with reference argument
 	of 1.
@@ -2390,7 +2390,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	name, has_name values.
 	* testsuite/22_locale/ctor_copy_dtor.cc (test01): More tests.
 	* docs/22_locale/locale.html: New file, more unfinished docs...
-	
+
 2000-09-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/locale.cc (locale::name()): Implement.
@@ -2414,7 +2414,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         return type.
 
         * src/Makefile.an (headers): Also install backward/fstream.h.
-        * src/Makefile.in: Regenerate.	
+        * src/Makefile.in: Regenerate.
 
         * bits/char_traits.h (char_traits<_CharT>::get_state,
         char_traits<char>::get_state, char_traits<wchar_t>::get_state): Pass
@@ -2422,7 +2422,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(char_traits<*>::__eos): Uglify to _S_eos.
 	* bits/std_ostream.h (ends(basic_ostream<_CharT, _Traits>& __os)):
 	Change __eos to _S_eos.
-	
+
 2000-09-13  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/22_locale/static_members.cc: New file.
@@ -2443,7 +2443,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-09-11  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
-	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Remove test != "0". 
+	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Remove test != "0".
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 
@@ -2488,8 +2488,8 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4: Add bits.
 	* aclocal.m4: Regenerate.
 	* configure.in: Add defaults for GLIBCPP_ENABLE_DEBUG.
-	* configure: Regenerate.	
-	
+	* configure: Regenerate.
+
 2000-09-07  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/std_cwctype.h: Remove yesterday's hacks.
@@ -2498,9 +2498,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/stl_tree.h: Make operators !=, == type safe for map, set.
 	* testsuite/23_containers/set_operators.cc: New file. Should not
-	compile.  
+	compile.
 	* testsuite/23_containers/map_operators.cc: New file. Ditto.
-	
+
 2000-09-06  Richard Henderson  <rth@cygnus.com>
 	    Benjamin Kosnik  <bkoz@cygnus.com>
 
@@ -2510,12 +2510,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/cpu/ia64: New directory.
 	* config/cpu/ia64/bits: New directory.
 	* config/cpu/ia64/bits/atomicity.h: New file.
-	
+
 2000-09-06  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
-	
+
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Force glibc_satisfactory
 	to no, so that libstdc++-v3's libio will be built on glibc-2.2
-	systems. 
+	systems.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* */Makefile.in: Regenerate.
@@ -2541,11 +2541,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-08-31  Benjamin Kosnik  <bkoz@cygnus.com>
 
-	* bits/locale_facets.tcc (_S_build_float_format): Move ...	
-	* src/locale.cc: Here.		
+	* bits/locale_facets.tcc (_S_build_float_format): Move ...
+	* src/locale.cc: Here.
 	* bits/locale_facets.tcc (num_get::_M_extract): Clean up generic
 	definition. Move specialization to ...
-	* src/locale.cc: Here.	
+	* src/locale.cc: Here.
 	* bits/locale_facets.tcc: Move _Format_cache specializations to ...
 	* src/locale.cc: Here.
 	* bits/locale_facets.tcc: Move use_facet<ctype> specializations to ...
@@ -2568,7 +2568,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(money_base): Add _S_default_pattern, uglify.
 	* bits/localefwd.h: Add definitions for static members of _Count_ones.
 	* bits/locale_facets.h: Tweaks.
-	* bits/locale_facets.tcc: Tweaks.	
+	* bits/locale_facets.tcc: Tweaks.
 	* bits/string.tcc: Add definition for npos.
 	* bits/ios_base.h: Tweaks.
 	* bits/ios_base.h (ios_base::Init::_M_ios_base_init): Change to
@@ -2605,19 +2605,19 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/gnu-linux/bits/ctype_base.h (ctype_base): Remove mask
 	typedef, instead name enum.
 	* config/gnu-linux/bits/ctype_specializations.h: Tweak.
-	* config/gnu-linux/ctype.cc: Tweak.	
+	* config/gnu-linux/ctype.cc: Tweak.
 	* testsuite/22_locale/ctype.cc: Tweak.
-	
+
 	* bits/codecvt.h (__enc_traits): Uglify names.
-	
+
 2000-08-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
-	* docs/22_locale/codecvt.html: Add more bits, format. 
+	* docs/22_locale/codecvt.html: Add more bits, format.
 	* bits/codecvt.h: Add copy ctor, rename types.
 	* testsuite/22_locale/codecvt_unicode_char.cc: Tweak.
-	
+
 	* libio/iofwide.c: Tweak.
-	
+
 2000-08-28  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/configopts.html:  Mention new options.
@@ -2631,15 +2631,15 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* docs/22_locale/howto.html: Add notes on codecvt implementation.
 	* docs/22_locale/codecvt.html: New file. In progress.
-	
+
 2000-08-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acconfig.h: Revert.
 	* acinclude.m4: Revert.
 	* libio/_G_config.h: Revert.
 	* libio/libio.h: Revert.
-	
-2000-08-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>	
+
+2000-08-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/codecvt.h: Tweaks.
 	* testsuite/22_locale/codecvt_unicode_wchar_t.cc (test01): Fix up
@@ -2700,7 +2700,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.am (INCLUDES): Put $(CSHADOW_INCLUDES) before
 	$(top_srcdir)
 	* src/Makefile.in: Regenerate.
-	
+
 2000-08-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/codecvt.h: Implement codecvt<wchar_t, char, mbstate_t>. Fix
@@ -2714,7 +2714,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* testsuite/22_locale/codecvt_wchar_t_cc.cc: New file.
 	* testsuite/22_locale/codecvt_char_char.cc: New file.
 	* testsuite/22_locale/codecvt_unicode_char.cc: New file.
-	
+
 2000-08-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* bits/std_cmath.h (std::abs): Overload for int and long.
@@ -2736,14 +2736,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-08-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* bits/valarray_meta.h (_Expr<>::shift, _Expr::cshift,
-	_Expr<>::apply): Implement. 
+	_Expr<>::apply): Implement.
 
 2000-08-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* bits/valarray_meta.h (_Expr<>::min, _Expr<>::max): Implement.
 
 	* bits/valarray_array.h (__valarray_min, __valarray_max): New
-	function. 
+	function.
 
 2000-08-17  Mark Mitchell  <mark@codesourcery.com>
 
@@ -2796,7 +2796,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* libio/cleanup.c: Remove.
 	* libio/filedoalloc.c (_IO_file_doallocate): Don't call
 	_IO_cleanup_registration_needed, even if not libc.
-		
+
 	* testsuite/27_io/stringstream.cc (test02): Fix.
 
 2000-08-14  Brent Verner <brent@rcfile.org>
@@ -2816,7 +2816,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/std_sstream.h: Same for stringstream and wstringstream.
 	Same for stringbuf, wstringbuf, istringstream, wistringstream,
 	ostringstream, wostringstream.
-	
+
 	* testsuite/26_numerics/valarray.cc: Add test.
 
 2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
@@ -2846,7 +2846,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(_M_really_overflow): Same here.
 
 	* testsuite/21_strings/inserters_extractors.cc (test05): Tweaks.
-	
+
 2000-08-08  Benjamin Kosnik  <bkoz@cygnus.com>
 	    Ulrich Drepper  <drepper@cygnus.com>
 
@@ -2894,12 +2894,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* libio/libioP.h: Same.
 	* libio/wfiledoalloc.c: Same.
 	* libio/wgenops.c: Same.
-	
+
 2000-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4: Include ../libtool.m4.
         * aclocal.m4, configure: Rebuilt.
-	
+
 2000-07-26  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Test for GNU ld
@@ -2931,11 +2931,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4: Some cleanups...
 	* aclocal: Regenerated.
 	* configure: Regenerated.
-	
+
 	* src/Makefile.am (CXXLINK): Add -Wl,-01 to the link line for
 	optimizing/adapting the hash table using GNU ld.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-07-24  H.J. Lu  <hjl@gnu.org>
 
         * src/Makefile.am (LIBIO_INCLUDES): Set to -I$(top_srcdir)/libio
@@ -2983,13 +2983,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	directory...
 	(check-install): And here.
 	* Makefile.in: Regenerate.
-	
+
 2000-07-22  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	Line up with libstdc++-v2 version of valarray.
 	* bits/valarray_array.h (__valarray_product): Make inline.
 	* src/valarray-inst.cc (__valarray_product): Remove explicit
-	instantiation. 
+	instantiation.
 
 2000-07-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
@@ -3091,7 +3091,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/std_fstream.h: Same.
 
 	* bits/basic_string.h: Tweaks.
-	
+
 2000-07-19  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* docs/18_support/howto.html:  Update.
@@ -3101,10 +3101,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	Internal consistency checks.....
 	* bits/ios_base.h: Change _M_locale_ios to _M_ios_locale.
 	* src/ios.cc: Same.
-	
+
 	* bits/basic_ios.h: Change _M_fctype_ios to _M_ios_fctype.
 	* bits/basic_ios.tcc: Same.
-	
+
 	* bits/std_streambuf.h: Change _M_locale_buf to _M_buf_locale.
 	Change _M_fctype_buf to _M_buf_fctype.
 	* bits/fstream.tcc: Same.
@@ -3171,13 +3171,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	c++threads.h instead of copying.
 	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Do link here.
 	Tweaks.
-	
+
 	* config/c_io_libio.cc (__basic_file::_M_open_mode): Consolidate.
 	* bits/basic_file.h: Declare.
 
 	* mkcheck.in (TESTS_FILE): Use -v instead of --version.
 
-2000-07-07   brent verner  <brent@rcfile.org> 
+2000-07-07  brent verner  <brent@rcfile.org>
 
 	* testsuite/27_io/istream_unformatted.cc (test05): New test.
 
@@ -3197,7 +3197,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* docs/25_algorithms/howto.html:  Ditto.
 	* docs/26_numerics/howto.html:  Ditto.
 
-2000-07-05  brent verner  <brent@rcfile.org> 
+2000-07-05  brent verner  <brent@rcfile.org>
 
 	* testsuite/27_io/ifstream_members.cc (test01): Add tests.
 	* testsuite/27_io/ofstream_members.cc (test01): Add tests.
@@ -3205,7 +3205,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	~_IO_DELETE_DONT_CLOSE.
 
 2000-07-05  Zack Weinberg  <zack@wolery.cumb.org>
-	
+
         * bits/gslice_array.h, bits/indirect_array.h, bits/mask_array.h,
         bits/slice_array.h, bits/std_valarray.h, bits/valarray_meta.h:
         Do not paste anything after 'operator' keyword.
@@ -3217,7 +3217,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-07-03  Brendan Kehoe  <brendan@zen.org>
 
 	* bits/std_complex.h: Fix parens. Format.
-	
+
 2000-07-03  scott snyder  <snyder@fnal.gov>
 
         * bits/locale_facets.tcc (_M_extract): Only figure out the base
@@ -3238,7 +3238,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-07-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 	    Ulrich Drepper  <drepper@purist.soma.redhat.com>
 
-	Sync libio to glibc-2.2 current CVS. 
+	Sync libio to glibc-2.2 current CVS.
 	* libio/_G_config.h: New file.
 	* libio/wfileops.c: New file.
 	* libio/wfiledoalloc.c: New file.
@@ -3257,18 +3257,18 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.in: Regenerate.
 
 	* math/cargl.c: Remove underscores.
-	
+
 	* bits/locale_facets.h: Tweaks. Start adding iconv details
 	and notes.
 	* bits/locale_facets.tcc: Tweaks.
 	* bits/std_cwchar.h: Tweaks.
-	
+
 2000-06-29  scott snyder  <snyder@fnal.gov>
 
         * bits/concept_checks.h
         (__less_then_comparable_requirement_violation): Only check for <.
 	* testsuite/25_algorithms/lower_bound.cc: New file.
-	
+
 2000-06-29  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/27_io/ostream_manip.cc (test02): Add tests.
@@ -3342,7 +3342,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/concept_checks.h: New file.
 	* bits/container_concepts.h: New file.
 	* bits/sequence_concepts.h: New file.
-	
+
 2000-06-27  H.J. Lu  <hjl@gnu.org>
             Loren J. Rittle  <ljrittle@acm.org>
 
@@ -3357,11 +3357,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/string.tcc (string::rfind): Fix.
 	* testsuite/21_strings/rfind.cc: New file.
-	
+
 2000-06-26  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* testsuite/21_strings/ctor_copy_dtor.cc: Fixed logic error.
-	
+
 2000-06-26  Branko Cibej  <branko.cibej@hermes.si>
 
         * testsuite/27_io/filebuf_members.cc (test_01): Fixed typos.
@@ -3372,7 +3372,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * testsuite/27_io/ostream_inserter_arith.cc: Renamed
 	  __TEST_NUMPUT_VERBOSE to TEST_NUMPUT_VERBOSE.  Define
 	  TEST_NUMPUT_VERBOSE only if DEBUG_ASSERT.
-	
+
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/fstream.tcc (basic_filebuf::basic_filebuf(fd)): Use it.
@@ -3380,7 +3380,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/std_fstream.h (basic_filebuf): Remove default arguments for
 	filebuf ctor.
 	(basic_filebuf): Add _M_fileno_based data member.
-        As reported by brent verner <brent@rcfile.org> 
+        As reported by brent verner <brent@rcfile.org>
 	* testsuite/27_io/filebuf_members.cc: New file.
 	* testsuite/27_io/filebuf_members-1.tst: New file.
 
@@ -3392,7 +3392,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
             Ulrich Drepper  <drepper@cygnus.com>
-	
+
 	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Add -D_GNU_SOURCE, so
 	that all the freaky stuff like sincos will be around...
 
@@ -3444,7 +3444,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/string.tcc: Fix find.
 	* testsuite/21_strings/find.cc: Patch.
-	
+
 2000-06-20  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* docs/install.html: Update where to get automake, where to get
@@ -3462,14 +3462,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* configure: Regenerate.
 	* libio/Makefile.in: Regenerate.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-06-19  Russell Davidson  <russell@ehess.cnrs-mrs.fr>
 
 	* testsuite/27_io/istream_extractor_arith.cc: Patch.
 	* bits/locale_factets.tcc: Tweak.
-	
+
 2000-06-19  Raja R Harinath  <harinath@cs.umn.edu>
-	
+
 	* src/Makefile.am: change @WERROR@ to $(WERROR) so that this can
 	be overridden on the command line for individual files.
 
@@ -3504,15 +3504,15 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	New. Merge both old compiler bug checks for complex into this.
 
 2000-06-19  Anthony Williams  <anthony@anthonyw.cjb.net>
-	
+
 	* testsuite/21_strings/find.cc: Empty strings can be found at all
 	positions. Modified.
 
 2000-06-19  Branko Cibej  <branko.cibej@hermes.si>
 
-        * testsuite/20_utilities: New directory.	
+        * testsuite/20_utilities: New directory.
         * testsuite/20_utilities/auto_ptr.cc: New file.
-	
+
 2000-06-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
       	* src/Makefile.am (string_sources): Simplify, assuming that with
@@ -3523,7 +3523,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	-Wl,--gc-sections.
 	* src/string-inst.cc: Remove macro blocks.
 	* mkcheck.in (CXX_FLAG): Add bits here.
-	
+
 	* src/string-inst.cc: Remove iostream-related string instantiations.
 	* src/misc-inst.cc: Add here.
 
@@ -3532,7 +3532,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* aclocal.m4: Regenerate.
 	* configure.in: Change up.
 	* configure: Regenerate.
-	
+
 2000-06-13  Steven King  <sxking@uswest.net>
 
         * acinclude.m4:  Fixup some of the builtin math tests and add tests for
@@ -3546,7 +3546,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         (modf(float, float*)): Remove reference to _C_legacy.
 
 2000-06-13  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
        	* acinclude.m4 (enable_cshadow_headers): Change CSHADOWFLAGS to
 	_GNU_SOURCE instead of _ISOC9X_SOURCE, as _GNU_SOURCE is the
 	superset, and already defined at top level.
@@ -3554,7 +3554,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * configure: Regenerate.
 
 	* docs/17_intro/contribute.html: Plead with people to use -cp.
-	
+
 2000-06-13  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* testsuite/23_containers/bitset_ctor.cc: Qualify reverse wth std::.
@@ -3574,14 +3574,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	_M_position() - use implicit conversion to streamoff instead
 
 2000-06-13  Thomas Holenstein  <thomas@hex.ch>
- 
+
         * bits/stl_iterator.h: Added inline to operators == to >=.
 
 2000-06-13  Brent Verner <brent@rcfile.org>
 
 	* bits/streambuf.tcc: repaired _S_copy_streambufs()
 	* testsuite/27_io/ostream_inserter_other.cc (test03): Added testcase.
-	
+
 2000-06-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/locale_facets.h (ctype<wchar_t>): Remove unnecessary data
@@ -3641,15 +3641,15 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-06-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/locale_facets.h: Tweak.
-	* src/locale.cc (codecvt<wchar_t>): Tweak. 
-	
-	* bits/locale_facets.h (_Format_cache): _S_ecks -> _S_x. 
+	* src/locale.cc (codecvt<wchar_t>): Tweak.
+
+	* bits/locale_facets.h (_Format_cache): _S_ecks -> _S_x.
 	* bits/locale_facets.tcc (num_get<char>::_M_extract): Fix for hex.
 
 	* bits/basic_string.h: Move data member up.
 	* src/string-inst.cc: Fix instantiations.
 	* bits/string.tcc: Fix types.
-	
+
 2000-06-02  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* testsuite/21_strings/replace.cc (test01): Qualify find with std::.
@@ -3666,34 +3666,34 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acconfig.h: Remove _GLIBCPP_HAS_WCHAR_MIN_MAX.
 	* bits/limits_generic.h: Remove.
 	* src/gen-num-limits.cc: Same.
-	
+
 	* src/locale.cc: Tweaks.
 
 	* bits/char_traits.h: Tweaks.
 
-2000-05-31  Russell Davidson  <russell@ehess.cnrs-mrs.fr> 
+2000-05-31  Russell Davidson  <russell@ehess.cnrs-mrs.fr>
 
 	* bits/locale_facets.tcc (num_get<char>::_M_extract): Fix signage,
 	exponent, scientific formatting issues.
 	* testsuite/27_io/istream_extractor_arith.cc (test09): Add tests.
-	
+
 2000-05-31  Branko Cibej  <branko.cibej@hermes.si>
 
         * bits/limits_generic.h (numeric_limits<wchar_t>): Use WCHAR_MIN
         and WCHAR_MAX instead of WCHART_MIN and WCHART_MAX.
 
 2000-05-31  Nathan Myers  <ncm@cantrip.org>
- 
+
        * docs/thanks.html: edit own credits
 
 2000-05-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/generic_shadow.h: Remaining _C_Shadow -> _C_shadow fix.
-	
+
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Add strtoull checks...
 
 	* mkcheck.in (SH_FLAG): Add in -Wl,--rpath -Wl,$LIB_PATH. Tweaks.
-	
+
 2000-05-31 Steven King <sxking@uswest.net>
 
         * shadow/time.h: fix typo
@@ -3716,19 +3716,19 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* inclosure: Change to...
 	* mkinclosure: This.
-	Fix paths to bash.	
+	Fix paths to bash.
 	* mkcshadow: Fix paths to bash.
-	
+
 	* src/Makefile.am: Tweaks. Do cshadow header trickery at build time.
 	* src/Makefile.in: Regnerate.
 	* acinclude.m4 (GLIBCPP_COMPILER_VERSION): Fix typo.
 	(GLIBCPP_ENABLE_SHADOW): Do a less gross hack.
 	* aclocal.m4: Regenerate.
-	* mkcheck.in (INC_PATH): Tweak. 
-	
+	* mkcheck.in (INC_PATH): Tweak.
+
 	* configure.in: Enable long long by default.
 	* configure: Regenerate.
-	
+
 	* mkcheck.in (LIB_PATH): Revert.
 
 2000-05-24   Nathan "I don't write ChangeLog Entries" Myers  <ncm@cantrip.org>
@@ -3739,7 +3739,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/cpu/i386/bits/atomicity.h (__compare_and_swap): Delete
 	'cmpxchgl' asm.
 	* acinclude.m4 (GLIBCPP_CHECK_CPU): Enable i386.
-	
+
 2000-05-24  Loren J. Rittle  <ljrittle@acm.org>
 
         * backward/alloc.h (__default_alloc_template): Only expose
@@ -3769,20 +3769,20 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/c++config.h: Rename to ...
 	* bits/c++config: This.
 	* mkc++config: Adjust.
-	
+
 	* m4: Remove.
 	* m4/lc_message.m4: Merge into acinclude.m4.
 	* m4/mathfcts.m4: Same.
 	* m4/stringfcts.m4: Same.
 	* acinclude.m4: Add here.
 	* configure: Regnerate.
-	
+
 	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_VERSION): Remove
 	OPTLEVEL. Add FMTFLAGS.
 	* aclocal.m4: Regenerate.
 	* src/Makefile.am (AC_CXXFLAGS): Take out OPTLEVEL, as this has
 	been disabled due to higher-level Makefiles running amuck over
-	this bit, and add in FMTFLAGS so that formatting is clear. 
+	this bit, and add in FMTFLAGS so that formatting is clear.
 	* src/Makefile.in: Regenerate.
 	* configure: Regenerate.
 
@@ -3853,12 +3853,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	s/SWAMP/LEGACY/g
 	s/_Shadow/_shadow/g
 
-2000-05-18  Anthony Williams  <anthony@anthonyw.cjb.net> 
+2000-05-18  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* bits/locale_facets.tcc (num_get::_M_extract): Change char* to
 	const char*.
 	* src/string-inst.cc (string::_S_find): Same.
-	
+
 2000-05-18  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Change to
@@ -3868,7 +3868,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
 	* configure.in: Touch.
-	
+
 2000-05-17  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* mkcheck.in: Enable shared library testing.
@@ -3930,7 +3930,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	bits/std_ciso646.h
 
 2000-05-16  Nathan C. Myers  <ncm@cantrip.org>
-       
+
        * mkcshadow: fix typo s/_C_Swamp_/_C_Swamp/.
 
 2000-05-16  Phil Edwards  <pme@sourceware.cygnus.com>
@@ -3982,7 +3982,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/std_cmath.h: Tweaks.
 	* math/mathconf.h: Tweaks and fixes for HP-UX 11.
-	(sqrtf): Define away iff !builtin and !in <math.h>. 
+	(sqrtf): Define away iff !builtin and !in <math.h>.
 	(sinf): Same.
 	(cosf): Same.
 	(fabsf): Same.
@@ -4010,7 +4010,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4 (GLIBCPP_CHECK_CPU): Change powerpc bits to
 	-mcpu=powerpc.
 	* src/Makefile.am: Disable ENABLE_CXX_FLAGS stuff for the moment.
-	
+
 	* config/generic/bits/ctype_specializations.h (ctype<char>::is):
 	Make more generic.
 
@@ -4019,7 +4019,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/bsd/bits/ctype_base.h (ctype_base): New.
 	* config/bsd/bits/ctype_specializations.h: New.
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE): Add bsd tests.
-	
+
 2000-05-09  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4:  New macro, GLIBCPP_ENABLE_CXX_FLAGS.
@@ -4041,12 +4041,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-05-09  Vadim Egorov  <egorovv@mailandnews.com>
 	    Benjamin Kosnik  <bkoz@gnu.org>
 	    Nathan Myers  <ncm@cantrip.org>
-	    Dietmar Kuehl  <dietmar_kuehl@yahoo.com> 
+	    Dietmar Kuehl  <dietmar_kuehl@yahoo.com>
 
         * bits/streambuf.tcc (basic_streambuf::xsgetn): Fix uflow case.
 	(basic_streambuf::xsputn): Make consistent.
 	* testsuite/27_io/filebuf.cc: Add tests.
-	
+
 2000-05-08  Steven King  <sxking@uswest.net>
 
         * bits/char_traits.h: Use wchar_t utility functions for
@@ -4122,7 +4122,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * mkcheck.in: Rely on exit status instead of the presence of a
         core file.  Added comments on how/where to save core and exe
         files.  Move shell wildcards outside quotes and fix core path.
-	
+
 2000-04-27  scott snyder  <snyder@fnal.gov>
 
         * src/misc-inst.cc: Explicitly instantiate ifstream and ofstream
@@ -4149,12 +4149,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* math/Makefile.am (EXTRA_LONG_DOUBLE_yes): Add all the long
 	versions to this as copysignl is needed anyway for these targets.
 	* math/Makefile.in: Regenerate.
-	
+
 	* bits/streambuf.tcc (streambuf::xsgetn): Tweak.
 	* bits/fstream.tcc (underflow): Cast to libio types.
 	* bits/basic_file.h (seekoff): Fixes for alpha: use __c_streamoff.
 	* config/c_io_libio.cc (seekoff): And here.
-	
+
 2000-04-24  Loren J. Rittle  <ljrittle@acm.org>
 
         * mkcheck.in: Report compiler version used for test.  Find
@@ -4165,7 +4165,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * config/generic/ctype.cc (do_toupper): Remove dependence on
         non-portable/non-existent lookup table.
         (do_tolower): Same.
-	
+
 2000-04-24  Nathan Myers  <ncm@cantrip.org>
 
 	* src/string-inst.cc: More fixing.
@@ -4176,11 +4176,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/std_sstream.h: And here.
 	* bits/string.tcc: And here.
 
-2000-04-24  Felix Natter <fnatter@gmx.net> 
+2000-04-24  Felix Natter <fnatter@gmx.net>
 
 	* docs/17_intro/howto.html: Add bits.
 	* docs/17_intro/porting-howto.html: New file.
-	
+
 2000-04-24  Branko Cibej  <branko.cibej@hermes.si>
 
         * acinclude.m4(GLIBCPP_CHECK_WCHAR_T_SUPPORT): Expand
@@ -4204,7 +4204,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	initialization.
 	* testsuite/27_io/ios_manip_fmtflags.cc (test02): Add test for
 	bool formatting.
-	
+
 2000-04-19  Nathan Myers  <ncm@cantrip.org>
 
 	* src/string-inst: consolidate _S_create,
@@ -4218,13 +4218,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* src/Makefile.am (AC_CXXFLAGS): Activate debugging code, again.
 	Add flags for specialized rules dealing with instantiations.
-	
+
 	* src/string-inst.cc: Add instantiations missing from shared
 	libraries--see stringEQ, stringCONSC.
 	* src/Makefile.am (wstring_sources): Add.
 	(string_sources): Same.
 	* src/Makefile.in: Regenerate.
-	
+
 	* stl/*: Integrate contents of this directory into top-level
 	directories.
 	* ext/bvector hash_map hash_set rope ropeimpl.h slist
@@ -4249,12 +4249,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.am (sources): Take out stl directory.
 	* mkcheck.in (SRC_DIR): And here.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-04-18  Levente Farkas  <lfarkas@mindmaker.hu>
 
 	* stl/bits/stl_function.h: Add bits so that const and non-const
 	both work.
-	
+
 2000-04-18  scott snyder  <snyder@fnal.gov>
 
         * stl/bits/stl_map.h (class map): Fix default for _Alloc template
@@ -4314,10 +4314,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-04-18  Nathan Myers  <ncm@cantrip.org>
 
 	* bits/basic_string.h: Remove "inline" from member _S_find.
-	
+
 	* src/string-inst.cc: Rewrite to reflect non-inline template
 	instantiations in string.tcc.
-	
+
 	* src/stringADDCS.cc, stringADDPS.cc, stringADDSC.cc, stringADDSP.cc,
 	stringADDSS.cc, stringBIST.cc, stringBOST.cc, stringCHTR.cc,
 	stringEQPS.cc, stringEQSP.cc, stringEQSS.cc, stringEXTRA.cc,
@@ -4332,7 +4332,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	Benjamin Kosnik  <bkoz@haight.constant.com>
 	* src/Makefile.am: Modify to reflect above.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-04-17  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* docs/install.html (--enable-libstdcxx-v3): Clean up install docs.
@@ -4345,7 +4345,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/threads-posix.h: Consistency with stl_config.h.
 
 	* mkcheck.in (CXX_FLAG): Add DDEBUG_ASSERT back in.
-	
+
 2000-04-13  Loren J. Rittle  <ljrittle@acm.org>
 
         * mknumeric_limits: Rename generic type template parameter name
@@ -4368,7 +4368,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	GLIBCPP_ENABLE_RELIBGCC for --enable-libstdcxx-v3 flag.
 	* configure: Regenerate.
 	* mkcheck.in: Deal with NAMESPACES.
-	
+
 2000-04-05  Petter Urkedal  <petter@matfys.lth.se>
 
         * src/cmath.cc: New file...
@@ -4379,22 +4379,22 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         old definitions.
 
 2000-04-04  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* acinclude.m4 (GCC_OBJDIR): Tweaks
 
 2000-04-03  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* acinclude.m4 (GLIBCPP_CHECK_CPU): Add arm configure bits.
 	* config/cpu/arm: New directory.
 
 	Jesper Skov  <jskov@redhat.com>
 	* config/cpu/arm/atomicity.h: New file.
-	
+
 2000-03-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* stl/bits/stl_config.h: Make _STL_THREADS depend on _REENTRANT.
 	Remove unused bits. Clean.
-	
+
 2000-03-29  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* testsuite/25_algorithms: New directory.
@@ -4422,10 +4422,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	mistake.
 
 	* bits/std_fstream.h (filebuf::is_open): Check for _M_file before
-	attempting calls to it. 
+	attempting calls to it.
 	* bits/fstream.tcc (ctors): Don't call _M_init_filebuf in
 	ctors. Instead, call _M_init_filebuf ...
-	(open): Here, as suggested by 27.8.1.3.	
+	(open): Here, as suggested by 27.8.1.3.
 	* src/ios.cc (ios_base::Init::Init()): Clean up default filebufs
 	properly when initializing cout/cin/cerr.
 
@@ -4442,7 +4442,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/std_climits.h (_CPP_CLIMITS): Fix typo.
 
 2000-03-27  Chris Faylor  <cgf@cygnus.com>
-	
+
 	* configure.in: Remove setting of CXX if canadian cross.
 	* configure: Regenerate.
 
@@ -4451,7 +4451,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/sstream.tcc: Optimize.
 	* bits/basic_string.h(string::append): Don't inline.
 	* bits/string.tcc: Move out-of-line.
-	
+
 2000-03-27  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4:  (GLIBCPP_CHECK_COMPILER_VERSION)  When using <2.96,
@@ -4470,11 +4470,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	  not installed.
 	* docs/faq/index.txt:  Regenerate.
 
-2000-03-24  Alexandre Oliva  <oliva@lsd.ic.unicamp.br> 
+2000-03-24  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* src/Makefile.am (libio_headers_install): Fix.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-03-24  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* docs/17_intro/RELEASE-NOTES: Fix typos.
@@ -4500,13 +4500,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-03-22  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/sstream.tcc (seekoff): Fix for gptr() null cases.
-	Return newoff. 
+	Return newoff.
 	* bits/fstream.tcc (seekoff): Sync.
 	(seekpos): Sync.
 	* testsuite/27_io/ostream_unformatted.cc: New file.
 	* testsuite/27_io/stringbuf.cc: Fix.
 	* testsuite/27_io/istream_unformatted.cc (test04): Fix.
-	
+
 	* config/newlib/bits/ctype_base.h (ctype_base): Fix.
 	* config/newlib/ctype.cc (ctype): Change __ctype -> _ctype_.
 
@@ -4534,7 +4534,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	are compiling natively.
 
 	* libio/*: Update to CVS libio from egcs.
-	
+
 2000-03-21  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* docs/download.html:  Document use of -z9 for CVS.
@@ -4543,14 +4543,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-03-21  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/slice_array.h: Rename generic type template parameter name
-	'_T' to '_Tp'. 
+	'_T' to '_Tp'.
 	* bits/mask_array.h: Ditto
 
-2000-03-20  Benjamin Kosnik  <bkoz@cygnus.com>	
+2000-03-20  Benjamin Kosnik  <bkoz@cygnus.com>
 
         * *: Change copyright holder from "Cygnus Solutions" to "Free
 	Software Foundation, Inc."
-	
+
 	* docs/configopts.html: Explain what "hella versions" means.
 	* docs/install.html: Some tweaks--nice job on this Phil.
 	* docs/documentation.html: Add a direct link to configuration options.
@@ -4577,7 +4577,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-03-18  Petter Urkedal  <petter@matfys.lth.se>
             Benjamin Kosnik  <bkoz@gnu.org>
-	
+
         * acinclude.m4 (GLIBCPP_CHECK_COMPLEX_SUPPORT): Move code for main
         to the right place.
         * aclocal.m4: Regenerate.
@@ -4585,12 +4585,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-03-16  Benjamin Kosnik  <bkoz@cygnus.com>
             scott snyder  <sss@karma.fnal.gov>
-	
+
 	* config/c_io_libio.h: Add __c_lock.
 	* config/threads-no.h: Same here.
 	* config/threads-posix.h: Add __mutext_type typedef.
-        * config/c_io_libio.cc: basic_file ctor takes lock arg. 
-        * bits/basic_file.h: Ctor takes lock arg. 
+        * config/c_io_libio.cc: basic_file ctor takes lock arg.
+        * bits/basic_file.h: Ctor takes lock arg.
         * bits/std_fstream.h: Add _M_lock.
         * bits/fstream.tcc: Supply it to basic_file ctor.
 
@@ -4598,22 +4598,22 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* testsuite/27_io/ostream_inserter_char.cc (test06): Tweak.
 
-	* bits/locale_facets.h: Tweak.	
+	* bits/locale_facets.h: Tweak.
 
 	* stl/bits/stl_config.h: Fix defines.
-	
+
 2000-03-16  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* mkcheck.in (INC_PATH): Add paths from cpu_include_dir to find
 	atomicity.h
 	* configure: Regenerate.
 	* aclocal.m4: Regnerate.
-	
+
 2000-03-16  Nathan Myers  <ncm@zembu.com>
 
 	* bits/string.tcc: Add MT support.
 	* bits/basic_string.h: Same.
-	
+
 2000-03-16  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* configure.in:  Make --enable-namespaces and -libgcc-rebuild=../..
@@ -4654,7 +4654,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/cpu/sparc/sparc32: Populate.
 	* config/cpu/sparc/sparc64: Populate.
 	* config/cpu/sparc/sparc32/atomicity.h: New file.
-	* config/cpu/sparc/sparc64/atomicity.h: New file.	
+	* config/cpu/sparc/sparc64/atomicity.h: New file.
 
 	* src/Makefile.am (myinstallheaders): Add install routines.
 	* acinclude.m4 (GLIBCPP_CHECK_CPU):Add configuration for the
@@ -4664,7 +4664,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/default: Adopt glibc naming conventions, and so move to
 	* config/generic: Here.
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE): Modify default case to generic.
-	
+
 2000-03-15  Bill Thompson  <billt@toast.net>
 
 	* testsuite/27_io/ostream_inserter_char.cc (test06): Add test.
@@ -4679,7 +4679,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-03-13  scott snyder  <snyder@fnal.gov>
 	    Jason Merrill  <jason@cygnus.com>
-	
+
         * bits/locale_facets.h (class ctype, class ctype<char>, class
         ctype<wchar_t>): More mask fixes.
         * testsuite/22_locale/ctype.cc: Test for the problem.
@@ -4688,7 +4688,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* acconfig.h: Add bits.
 	* configure.in: Move AM_PROG_LIBTOOL up in file.
-	Tweak cross compiling info. 
+	Tweak cross compiling info.
 	* configure: Regenerate.
 
 	* mknumeric_limits (XCOMPILE): Echo compilation line for
@@ -4703,14 +4703,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-03-10  scott snyder  <snyder@fnal.gov>
 
-        * stl/bits/stl_vector.h (_M_assign_aux): Fix for __normal_iterator 
+        * stl/bits/stl_vector.h (_M_assign_aux): Fix for __normal_iterator
         conversions.
         * testsuite/23_containers/vector_modifiers.cc (test01): Add a
         regression test for the problem.
 
 2000-03-09  Benjamin Kosnik  <bkoz@fidel.cygnus.com>
-	
-	* testsuite/27_io/streambuf.cc (class testbuf): Same here.	
+
+	* testsuite/27_io/streambuf.cc (class testbuf): Same here.
 	* bits/fpos.h: And here.
 	* bits/std_ostream.h: Same here.
 	* bits/std_istream.h: Same here.
@@ -4719,7 +4719,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/sbuf_iter.h (std): Here too.
 	* bits/std_sstream.h: Make types public.
 
-	* src/misc-inst.cc: Use size_t instead of unsigned int. 
+	* src/misc-inst.cc: Use size_t instead of unsigned int.
 	* bits/locale_facets.tcc (_S_format): For now, cast to char. I
 	suppose this should be ctype::narrow... all the ctype<wchar_t>
 	stuff needs to be cleaned up.
@@ -4731,7 +4731,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-03-09  scott snyder  <snyder@fnal.gov>
 
         * bits/std_cmath.h (modf): Fix pointer overrun.
-        * testsuite/26_numerics/c_math.cc (test04, main): Add a regression 
+        * testsuite/26_numerics/c_math.cc (test04, main): Add a regression
         test for the problem.
 
 2000-03-09  Phil Edwards  <pme@sourceware.cygnus.com>
@@ -4760,12 +4760,12 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/gnu-linux/ctype.cc (ctype): Change char_type to wchar_t
 	as per char specialization.
 	* config/*/ctype.cc: Same.
-	
+
 2000-03-09  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/locale_facets.h (_Ctype<>::mask): Import from base class
 	_Ctype_nois<>.  Template base classes are never examinated in
-	first-phase name-lookup. 
+	first-phase name-lookup.
 
 2000-03-08  Benjamin Kosnik  <bkoz@gnu.org>
 
@@ -4776,7 +4776,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE): Add bits for solaris2.5.1.
 	* aclocal.m4: Regenerate.
 	* configure: Regenerate.
-	
+
 	* config/default/ctype.cc (ctype): Fixup.
 
 2000-03-07  Benjamin Kosnik  <bkoz@blues.cygnus.com>
@@ -4795,7 +4795,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	re-work initialization code.
 	(ctype<wchar_t>): Same.
 	Move _S_touppper to _M_toupper and initialize in ctor.
-	Move _S_tolower  to _M_tolower and initialize in ctor.	
+	Move _S_tolower  to _M_tolower and initialize in ctor.
 	Move _S_table to _M_ctable and initialize in ctor.
 	* bits/locale_facets.h (std): And here.
 	* src/locale.cc (std): Tweak.
@@ -4803,7 +4803,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/newlib/ctype.cc: And here.
 	* config/solaris/solaris2.7/ctype.cc: And here.
 	* config/solaris/solaris2.6/ctype.cc: And here.
-	
+
 	* bits/localefwd.h: Tweak.
 	* bits/std_streambuf.h: Tweak formatting.
 
@@ -4814,7 +4814,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * src/misc-inst.cc (basic_iostream<>):  Instantiate.
 
 2000-03-02  Phil Edwards  <pme@sourceware.cygnus.com>
-            Kevin Atkinson  <kevinatk@home.com> 
+            Kevin Atkinson  <kevinatk@home.com>
 
         Initial grab of SGI's strstream implementation with minor
         modifications.
@@ -4828,22 +4828,22 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-03-03 2000  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/valarray_meta.h: Fix typo.
-	
-2000-03-02  Alexandre Oliva  <oliva@lsd.ic.unicamp.br> 
+
+2000-03-02  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 	    Chip Salzenberg  <chip@valinux.com>
 	    Petter Urkedal  <petter@matfys.lth.se>
 
 	* src/Makefile.am (myinstallheaders): Hack to avoid
         `for i in ; do'.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-03-02  Chip Salzenberg  <chip@valinux.com>
 
         * libio/Makefile.an, math/Makefile.an, src/Makefile.am
         (LINK): Put quotes around "$(CC)" for libtool link mode,
         so libtool will use "-B" options during GCC bootstrap.
         * */Makefile.in: Regenerate.
-        
+
 2000-03-02  Petter Urkedal  <petter@matfys.lth.se>
 
         * config/c_io_libio.h: Enclose it all in ::std.
@@ -4857,7 +4857,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* math/cabs.c (__mycabs): Rename to cabs.
 
 2000-02-29  LLeweLLyn Reese  <llewelly@198.dsl.xmission.com>
- 
+
        * bits/basic_string.h: Move declarations of __out_of_range(),
        __length_error() and accompanying macros ...
        * bits/exception_support.h: here. (Newly created file).
@@ -4865,9 +4865,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
        * stl/bits/stl_vector.h: #include <bits/exception_support.h>
        * src/Makefile.am (headers): Add.
        * src/Makefile.in: Regenerate.
-	
+
 2000-02-29  Benjamin Kosnik  <bkoz@cygnus.com>
-	
+
 	* bits/cpp_type_traits.h: Rename structs so they don't clash with
 	type_traits.h.
 	* bits/valarray_array.h: Synch. Fix typos.
@@ -4890,7 +4890,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* bits/basic_file.h: Stub out or delete unused bits in this
 	interface.
-	(filepos_beg): Remove.	
+	(filepos_beg): Remove.
 	(filepos_cur): Remove.
 	(filepos_valid): Remove.
 	* config/c_io_libio.cc: Resynch with the changes to basic_file.
@@ -4902,10 +4902,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-02-29  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* bits/cpp_type_traits.h: New file.
-	
+
 	* bits/valarray_array.h: Tweak.  #include <bits/cpp_type_traits.h>
 	Improve array construction.
-	(_Array_default_ctor): New dispatcher class. 
+	(_Array_default_ctor): New dispatcher class.
 	(__valarray_default_construct): New function.
 	(_Array_copy_ctor): New dispatcher class.
 	(__valarray_copy_construct): New function.
@@ -4926,13 +4926,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	stdstreams.cc: Remove.
 	* libio/floatio.h, iolibio.h, iostdio.h, iostreamP.h: Remove.
 	* libio/iofflush_u.c: Remove.
-	
-	* libio/dbz: Remove.  
-	* libio/include: Remove.  
-	* libio/stdio: Remove.  
-	* libio/tests: Remove.  
+
+	* libio/dbz: Remove.
+	* libio/include: Remove.
+	* libio/stdio: Remove.
+	* libio/tests: Remove.
 	* libio/testsuite: Remove.
-	
+
 	* config/c_io_libio.cc: Add fcntl.h include for Solaris.
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Add bits.
@@ -4959,9 +4959,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* Makefile.in: Regenerate.
 	* math/Makefile.am (TOPLEVEL_INCLUDES): And here.
 	* libio/Makefile.am (TOPLEVEL_INCLUDES): And here.
-	
+
 	* bits/std_ios.h: Include <bits/c++io.h> instead of libio.
-	* bits/fpos.h: And here.	
+	* bits/fpos.h: And here.
 	* bits/basic_file.h (get_fileno): Move definition from ...
 	* src/basic_file.cc (std): To here.
 	* bits/fpos.h: Move types for streamoff, streampos to..
@@ -4972,9 +4972,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	UPPERCASE, ADJUSTFIELD, BASEFIELD, FLOATFIELD, BADBIT, EOFBIT,
 	FAILBIT, GOODBIT, APP, ATE, BINARY, IN, OUT, TRUNC): New macros to
 	abstract out bits in ios_base.
-	* bits/ios_base.h: Re-macrofy.	
+	* bits/ios_base.h: Re-macrofy.
 	* src/basic_file.cc : Rename, move to
-	* config/c_io_libio.cc: Here. 
+	* config/c_io_libio.cc: Here.
 	* config/c_io_libio.h: New file. Include libio.
 	* bits/c++config.h: Don't define _GLIBCPP_USE_LIBIO.
 	* configure.in (blddir): Add enabling bits for GLIBCPP_ENABLE_CSTDIO.
@@ -4985,14 +4985,14 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	underlying "C" io library.
 	* acinclude.m4 (GLIBCPP_CHECK_LIBIO): Roll functionality into
 	GLIBCPP_ENABLE_CSTDIO.
-	
+
 	* configure.in: Add configure bits for cross compiling non-newlib
 	targets. .
 	GLIBCPP_CHECK_COMPILER_VERSION: Take out this test for this
 	target, as we assume g++ support is not the limiting factor.
-	GLIBCPP_CHECK_LIBIO: Same, know we don't need libio.  
+	GLIBCPP_CHECK_LIBIO: Same, know we don't need libio.
 	* configure: Regenerate.
-	
+
 2000-02-22  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* Makefile.am (INTERFACE): Define.
@@ -5020,7 +5020,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* libio/gen-params (CONFIG_NM): Specifically add in nm as the
 	default CONFIG_NM.
-	
+
 2000-02-18  Benjamin Kosnik  <bkoz@haight.constant.com>
             Tom Tromey  <tromey@cygnus.com>
 
@@ -5032,10 +5032,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* Makefile.am (AM_MAKEFLAGS): Don't define MULTISUBDIR, instead
 	have configure hack it in.
 	* Makefile.in: Regenerate.
-	* acinclude.m4 (GLIBCPP_CXXFLAGS): Tweak wording. 
+	* acinclude.m4 (GLIBCPP_CXXFLAGS): Tweak wording.
 	Add enabling bits for native Cygwin ctypes, and other newlib-based
 	Oses.
-	
+
 2000-02-17  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
 
 	* mkc++config (OUT_H): Remove EOF in cygwin.
@@ -5046,13 +5046,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-02-17  Benjamin Kosnik  <bkoz@cygnus.com>
 
-	* src/Makefile.am: 
+	* src/Makefile.am:
 	(toolexeclib_LTLIBRARIES): Use this instead of lib_LTLIBRARIES.
 	Add USE_LIBDIR bits here, not...
 	* src/Makefile.in: Regenerate.
 	* Makefile.am: ...here.
 	* Makefile.in: Regenerate.
-	
+
 2000-02-17  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* acinclude.m4 (LIBS): Fix typos.
@@ -5067,7 +5067,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/complex_io.cc: Tweak.
 	* configure.in: _GLIBCPP_BUGGY_COMPLEX for crosses.
 	* configure: Regenerate.
-	
+
 	* config/newlib/ctype.cc: Tweaks.
 	* config/newlib/bits/ctype_base.h (ctype_base): Set mask to char,
 	not const char.
@@ -5105,17 +5105,17 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config/solaris/solaris2.7/bits/ctype_specializations.h: New file.
 	* src/Makefile.am (headers): Add ctype_specializations.h.
 	* src/Makefile.in: Regenerate.
-	
-	Aaron Weiss <weiss@clearway.com> 
+
+	Aaron Weiss <weiss@clearway.com>
 	* Makefile.am (AM_MAKEFLAGS): Add NM_FOR_BUILD, NM_FOR_TARGET, and
 	CONFIG_NM for Solaris builds.
 	* Makefile.in: Regenerate.
-	
+
 	* src/locale.cc: Tweak formatting.
 
 2000-02-15  Benjamin Kosnik  <bkoz@cygnus.com>
 
-	Jim Parsons  <parsons@clearway.com> 
+	Jim Parsons  <parsons@clearway.com>
 	* testsuite/27_io/istream_unformatted.cc (test06): Add test.
 	* bits/istream.tcc (read): Set failbit if !good(). Don't increment
 	gcount if eof.
@@ -5125,7 +5125,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* testsuite/27_io/streambuf.cc: Add test.
 	* bits/streambuf.tcc (xsgetn): Don't test for valid mode.
 	(xsputn): Same.
-	
+
 	* src/Makefile.am (AM_CXXFLAGS): Pass down AC_CXXFLAGS,
 	OPTIMIZE_CXXFLAGS, etc. So --enable-debug and --enable-namespaces
 	will work correctly, for instance.
@@ -5134,7 +5134,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/locale_facets.h: Fix merge error.
 	(num_put::put(unsigned long long): And here.
 	* mknumeric_limits (trait_name): Same.
-	
+
 2000-02-15  Chip Salzenberg  <chip@valinux.com>
 
         Support 'configure --enable-long-long'.
@@ -5184,7 +5184,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* ctype/config/linux/*: Rename, move to...
 	* ctype/config/gnu-linux/*: Here.
-	
+
 	Finish off multilib work.
 	* configure.in: Don't set CXX if not Canadian cross.
 	* configure: Regenerate.
@@ -5200,22 +5200,22 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* ltmain.sh: Remove.
 	* config.guess: Remove.
 	* config.sub: Remove.
-	
+
 2000-02-13  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* configure.in (glibcpp_basedir): Add glibcpp_basedir.
-	* Makefile.am: Move mutlilib stuff to src/Makefile.am. 
+	* Makefile.am: Move mutlilib stuff to src/Makefile.am.
 	* Makefile.in: Regenerate.
 	* src/Makefile.am: Add multilib bits.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-02-12  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* configure.in: Clean, add some multilib support.
 	* configure: Regenerate.
 	* configure.host: New file.
 
-	* acinclude.m4: GLIBCPP_CHECK_LIBIO. Take bits from configure.in and 
+	* acinclude.m4: GLIBCPP_CHECK_LIBIO. Take bits from configure.in and
 	roll a new function, checks for presence of libio.
 	GLIBCPP_CHECK_COMPILER_VERSION: Same.
 	GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT: Same.
@@ -5224,11 +5224,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	GLIBCPP_CHECK_LIBIO: Same.
 	GLIBCPP_CHECK_CTYPE: Same.
 	* aclocal.m4: Regenerate.
-	* config.h.in: Regenerate.	
+	* config.h.in: Regenerate.
 
 	* Makefile.am: Tweaks.
 	* Makefile.in: Regenerate.
-	
+
 2000-02-11  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* configure.in: Make outputing the libio/Makefile
@@ -5245,7 +5245,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	null library if it's not needed. At least we are being consistent,
 	if not as elegant as we could be.
 	* src/Makefile: Regenerate.
-	
+
 2000-02-10  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* Makefile.am (SUBDIRS): Add libio again.
@@ -5257,7 +5257,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	libio.la is referring back to the libio subdir again.
 	(LIBIO_INCLUDES): And here.
 	* src/Makefile.in: Regenerate.
-	
+
 2000-02-09  Benjamin Kosnik  <bkoz@decepticon.cygnus.com>
 
 	* math/complex-stub.h: Missed one. Change __mycabs* to cabs*.
@@ -5273,15 +5273,15 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(__valarray_destroy_elements): New function.
 
 	* bits/valarray_array.tcc (__valarray_copy_construct): New
-	functions. 
+	functions.
 
 	* bits/std_valarray.h (valarray<>::valarray): Use
 	__valarray_get_memory and __valarray_fill_construct,
 	__valarray_copy_construct, __valarray_default_construct to
-	properly construct valarrays.  
+	properly construct valarrays.
 	(valarray<>::~valarray): Use __valarray_destroy_elements to
 	destroy elements and __valarray_release_memory to return memory.
-	(valarray<>::shift): Tweak. 
+	(valarray<>::shift): Tweak.
 	(valarray<>::cshift): Likewise.
 	(valarray<>::resize): Robustify.
 
@@ -5289,7 +5289,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* mknumeric_limits (XCOMPILE): Add support for cross compiling.
 	* bits/limits_generic.h: New file, defaults.
-	* src/limits_generic.cc: New file, defaults.	
+	* src/limits_generic.cc: New file, defaults.
 	* configure.in (LIBS): Run mknumeric_limits at configure time.
 	* acconfig.h: Remove PACKAGE VERSION HAVE_COMPLEX
 	HAVE_LC_MESSAGES, tidy, clean, etc.
@@ -5308,7 +5308,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	(libmath_la_SOURCES): And here.
 	* math/(mycabs.c, mycabsf.c, mycabsl.c): Move to. . .
 	* math/(cabs.c, cabsf.c, cabsl.c): . . . Here.
-	* math/complex-stub.h: Move c_log declarations into. . . 
+	* math/complex-stub.h: Move c_log declarations into. . .
 	* math/mathconf.h: Here. This is because glibc's <complex.h>
 	declares cclog, not c_log. The case of the dueling standards. . .
 	* math/mathconf.h: Add _GLIBCPP_HAVE_* to macros.
@@ -5316,7 +5316,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* math/nan.c (nan): Change signature.
 	* math/mathconf.h (NAN): Same.
 	* math/complex-stub.h (nan): And here.
-	
+
 	* Makefile.am (rebuild-stamp): Remove libio and libio
 	dependencies.  Plan to take out libio subdir and just merge with
 	libio in top level gcc directory. Of course, this assumes there is
@@ -5327,7 +5327,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 2000-02-09  Chip Salzenberg  <chip@valinux.com>
 
         * localefwd.h (locale): Make public: facet, id, category.
-	
+
 2000-02-09  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* testsuite/26_numerics/buggy_complex.cc: Fix Origin:.
@@ -5345,7 +5345,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
         * configure.in: Use.
         * acconfig.h: New _GLIBCPP_BUGGY_COMPLEX macro.
         * bits/std_complex.h: Use.
-	
+
 2000-02-04  Philip Martin <pm@corris.dircon.co.uk>
 
        * stl/bits/stl_algobase.h: Add traits based dispatch for
@@ -5354,9 +5354,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
        base() function.
 
 2000-02-04  Mumit Khan  <khan@xraylith.wisc.edu>
-	
+
 	* src/gen-num-limits.cc (signal_handler): Work around signal
-	handling problem on Cygwin. 
+	handling problem on Cygwin.
 	Thanks to Chris Faylor <cgf@cygnus.com>.
 
 2000-02-03  Benjamin Kosnik  <bkoz@cygnus.com>
@@ -5370,10 +5370,10 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile: Regenerate.
 	* Makefile.am: Add support for cross compiles.
 	* Makefile.in: Regenerate.
-	
+
 2000-02-02  Benjamin Kosnik  <bkoz@cygnus.com>
 
-	* configure.in (LIBS): Remove unused subdirs.	
+	* configure.in (LIBS): Remove unused subdirs.
 	* configure: Regenerate.
 	* Makefile.am (SUBDIRS): And here.
 	* Makefile.in: Regenerate.
@@ -5392,7 +5392,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* config.guess: Same.
 
 2000-02-02  Benjamin Kosnik  <bkoz@cygnus.com>
-	    Alexandre Petit-Bianco  <apbianco@cygnus.com>    
+	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* mkc++config: New file. Put autoconf macros into _GLIBCPP_
 	namespace instead of polluting global namespace with duplicate
@@ -5414,7 +5414,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/complexl.cc: And here.
 	* math/mathconf.h: Change to include "config.h" instead of
 	bits/c++config.h.
-	
+
 2000-02-01  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* configure.in: Add support for threads. Try a model closer to
@@ -5425,11 +5425,11 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	is AC_DEFINE(-D_PTHREADS) etc. However, let's try something
 	new. . . and see if we arrive at a more elegant solution.
 	* configure: Regenerated.
-	* config/threads-no.h: New file. 
-	* config/threads-posix.h: New file. 
+	* config/threads-no.h: New file.
+	* config/threads-posix.h: New file.
 	* src/Makefile.am (myinstallheaders): Install c++threads.h.
 	* src/Makefile.in: Regenerated.
-	
+
 2000-01-31  Benjamin Kosnik  <bkoz@gnu.org>
 
 	META-QUESTION: Can we just make a "header.html" file and a
@@ -5457,23 +5457,23 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-01-31  Scott Snyder  <snyder@fnal.gov>
 
-        * bits/istream.tcc (operator>>(istream&, string&)): Set failbit if 
+        * bits/istream.tcc (operator>>(istream&, string&)): Set failbit if
         we don't extract any characters.
 	* testsuite/21_strings/inserters_extractors.cc (main): New tests.
-	
+
 2000-01-31  Anders Widell  <awl@hem.passagen.se>
 
         * stl/bits/std_bitset.h (_M_do_left_shift): Handle case when shift
         step is a multiple of the word size.
         (_M_do_right_shift): Same.
 	* testsuite/23_containers/bitset_shift.cc: New file.
-	
+
 2000-01-31  Nathan Myers  <ncm@zembu.com>
-	
+
 	* README (Documentation): Add path info, fix typos.
-	
+
 2000-01-26  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* bits/locale_facets.tcc (num_get::_M_extract): Add the freaking
 	crazy group checking for numpunct, for real this time. At some
 	point, the local variable __grp should probably get replaced a
@@ -5486,7 +5486,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	Jim Parsons  <parsons@clearway.com>
 	* testsuite/27_io/istream_extractor_arith.cc (test08): Add
 	more grouping tests, tweak, scold, wine.
-	
+
 2000-01-24  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* testsuite/27_io/istream_extractor_arith.cc (test07): Add
@@ -5508,7 +5508,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* testsuite/27_io/istream_extractor_arith.cc: Fix.
 	* bits/locale_facets.tcc (do_get(...void)): Change to strtoul.
 	* testsuite/27_io/istream_unformatted.cc (test04): Tweak.
-	
+
 2000-01-14  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* docs/README.html:  Reformat, more installation instructions.
@@ -5551,13 +5551,13 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	feedback from LWG 49.
 	* src/ios.cc: Move definition here.
 	* testsuite/27_io/ios_base_members_static.cc (test01): Add tests.
-	
+
 	* bits/std_sstream.h (_M_really_sync): Simplify argument list. Set
 	output part of internal buffer based on string size, so that
 	_M_out_end is set consistently with filebufs. Correct comments.
 	* bits/sstream.tcc (stringbuf::overflow): Update here too.
 	* testsuite/27_io/stringbuf.cc: Changes.
-	
+
 2000-01-11  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* bits/sstream.tcc (seekoff): Set based on end of written buffer,
@@ -5570,9 +5570,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* bits/locale_facets.tcc (_M_extract): Have consistency between
 	istream::sentry and extractors, where failbit | eofbit is
 	set. Don't change this, but instead change. . (do some formatting
-	tweaks.)  
+	tweaks.)
 	* bits/istream.tcc (istream::sentry): Only set eofbit.
-	
+
 2000-01-10  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* testsuite/27_io/istringstream_members.cc: New file.
@@ -5586,7 +5586,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.am (generated_headers): Remove bits/c++config.h so
 	that make clean will not delete it.
 	* src/Makefile: Regenerate.
-	
+
 2000-01-07  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* mkcheck.in:  Use host-specific invocation of size(1);
@@ -5610,7 +5610,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	and file ctype.cc. Probably doesn't work.
 	* config/solaris/solaris2.6: Same.
 	* config/solaris/solaris2.7: Same, as per specs via Phil Edwards.
-	
+
 	* Makefile.am: Change paths to mkcheck.
 	* Makefile: Regenerate.
 	* configure.in (AC_OUTPUT_COMMANDS): Build mkcheck here.
@@ -5618,7 +5618,7 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* src/Makefile.am (generated_headers): Add bits/c++config.h.
 
 	* mkcheck: Now autogenerated by configure and renamed. . .
-	* mkcheck.in (INC_PATH): Add glue for ctype_include_dir.	
+	* mkcheck.in (INC_PATH): Add glue for ctype_include_dir.
 	Have longer-style dates.
         Raja R Harinath  <harinath@cs.umn.edu>
 	* mkcheck: Change path to #!/usr/clocal/bin/bash.

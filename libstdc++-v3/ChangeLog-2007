@@ -81,7 +81,7 @@
 	    Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/tuple: New.
-	* include/tr1/tuple: New, adjust from tr1_impl/tuple code.	
+	* include/tr1/tuple: New, adjust from tr1_impl/tuple code.
 	* include/tr1_impl/tuple: Remove.
 	* include/Makefile.am: Update.
 	* include/Makefile.in: Regenerate.
@@ -250,14 +250,14 @@
 
 2007-12-15  Benjamin Kosnik  <bkoz@redhat.com>
 	    Paolo Carlini  <pcarlini@suse.de>
-	
-	* include/parallel/partial_sum.h: Include new. Fix for DR 402.	
+
+	* include/parallel/partial_sum.h: Include new. Fix for DR 402.
 	* include/parallel/multiway_merge.h:Fix for DR 402.
 	* include/parallel/losertree.h: Same.
 	* include/parallel/quicksort.h: Same.
 	* include/parallel/random_shuffle.h: Same.
 	* include/parallel/multiway_mergesort.h: Same.
-	
+
 2007-12-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/30127
@@ -267,7 +267,7 @@
 	* testsuite/22_locale/global_templates/user_facet_hierarchies.cc: New.
 	* testsuite/22_locale/global_templates/
 	standard_facet_hierarchies.cc: New.
-	
+
 2007-12-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/34015
@@ -438,7 +438,7 @@
 	(unordered_map<>::unordered_map(unordered_map&&),
 	operator=(unordered_map&&), clear, _M_invalidate_all,
 	unordered_multimap<>::unordered_multimap(unordered_multimap&&),
-	operator=(unordered_map&&), clear, _M_invalidate_all,	
+	operator=(unordered_map&&), clear, _M_invalidate_all,
 	swap(unordered_map<>&&, unordered_map<>&), swap(unordered_map<>&,
 	unordered_map<>&&), swap(unordered_multimap<>&&,
 	unordered_multimap<>&), swap(unordered_multimap<>&,
@@ -451,7 +451,7 @@
 	(unordered_set<>::unordered_set(unordered_set&&),
 	operator=(unordered_set&&), clear, _M_invalidate_all,
 	unordered_multiset<>::unordered_multiset(unordered_multiset&&),
-	operator=(unordered_set&&), clear, _M_invalidate_all,	
+	operator=(unordered_set&&), clear, _M_invalidate_all,
 	swap(unordered_set<>&&, unordered_set<>&), swap(unordered_set<>&,
 	unordered_set<>&&), swap(unordered_multiset<>&&,
 	unordered_multiset<>&), swap(unordered_multiset<>&,
@@ -477,18 +477,18 @@
 
 2007-11-28  Johannes Singler  <singler@ira.uka.de>
 
-        * include/parallel/multiway_merge.h: Destruct only elements that 
+        * include/parallel/multiway_merge.h: Destruct only elements that
         were have been constructed before. Code beautifying and formatting.
-        * include/parallel/losertree.h: (Copy) construct all loser tree 
+        * include/parallel/losertree.h: (Copy) construct all loser tree
         item keys, so they can be deconstructed all at once.
         * include/parallel/quicksort.h: Fix memory leak.
-        * include/parallel/random_shuffle.h: Use copy constructor instead 
+        * include/parallel/random_shuffle.h: Use copy constructor instead
         of assignment. Code beautifying and formatting.
-        * include/parallel/unique_copy.h: Use assignment instead of copy 
+        * include/parallel/unique_copy.h: Use assignment instead of copy
         constructor.
-        * include/parallel/multiway_mergesort.h: Use copy constructor 
+        * include/parallel/multiway_mergesort.h: Use copy constructor
         instead of assignment. Code beautifying and formatting.
-        * include/parallel/random_shuffle.h: Use copy constructor instead 
+        * include/parallel/random_shuffle.h: Use copy constructor instead
         of assignment. Code beautifying.
 
 2007-11-27  Kaz Kojima  <kkojima@gcc.gnu.org>
@@ -624,7 +624,7 @@
 	* include/debug/bitset (bitset<>::all): Add.
 	* testsuite/23_containers/bitset/all/1.cc: New.
 	* docs/html/ext/howto.html: Add an entry for DR 693.
-	
+
 	* include/std/bitset (bitset<0>::set, reset, flip, test): Remove,
 	not necessary anymore.
 
@@ -711,7 +711,7 @@
 	* docs/html/17_intro/api.html: Correct HTML.
 
 	* include/bits/stl_algobase.h: Adjust comment.
-	
+
 2007-11-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* testsuite/ext/throw_allocator/variadic_construct.cc: Add
@@ -876,10 +876,10 @@
 	* docs/html/faq/index.html: Same.
 	* docs/html/install.html: Same.
 	* docs/html/test.html: Same.
-	
+
 	* include/bits/c++config: Change _GLIBCXX_DEPRECATED to
 	_GLIBCXX_DEPRECATED_ATTR, _GLIBCXX_VISIBILITY to
-	_GLIBCXX_VISIBILITY_ATTR.	
+	_GLIBCXX_VISIBILITY_ATTR.
 	* include/backward/auto_ptr.h: Same.
 	* include/backward/binders.h: Same.
 	* include/bits/stl_function.h: Same.
@@ -986,7 +986,7 @@
 	* include/debug/multiset.h (multiset<>::operator=(multiset&&)):
 	Likewise.
 	* include/debug/deque (deque<>::operator=(deque&&)): Likewise.
-	* include/debug/list (list<>::operator=(list&&)): Likewise. 
+	* include/debug/list (list<>::operator=(list&&)): Likewise.
 	* include/debug/vector (vector<>::operator=(vector&&)): Likewise.
 	* testsuite/23_containers/multimap/moveable.cc: Adjust.
 	* testsuite/23_containers/multiset/moveable.cc: Likewise.
@@ -1170,7 +1170,7 @@
 2007-10-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small.html:
-	Correct filename.	
+	Correct filename.
 	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large.html: Same.
 	* docs/html/ext/pb_ds/
 	multimap_text_insert_mem_usage_test_small.html: Same.
@@ -1180,14 +1180,14 @@
 	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small.html: Same.
 
 2007-10-30  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* include/Makefile.am (PCHFLAGS): Remove -Wno-deprecated.
 	* include/Makefile.in: Regenerate.
 
-	* include/std/memory: Remove extraneous include.	
+	* include/std/memory: Remove extraneous include.
 
 2007-10-29  Benjamin Kosnik  <bkoz@redhat.com>
- 
+
 	* include/bits/c++config (_GLIBCXX_DEPRECATED,
 	_GLIBCXX_USE_DEPRECATED): New. Adjust comments.
 	* include/bits/stl_auto_ptr.h: Move...
@@ -1204,7 +1204,7 @@
 	* include/backward/backward_warning.h: Adjust for all new items.
 
 	* config/abi/pre/gnu.ver: Export basic_streambuf::stossc.
-	
+
 	* include/Makefile.am (backward_headers): Adjust.
 	* include/Makefile.in: Regenerate.
 	* configure: Regenerate.
@@ -1265,7 +1265,7 @@
 	construct<>(pointer, _Args&&...)): Add.
 	* include/ext/pool_allocator.h (__pool_alloc<>::
 	construct<>(pointer, _Args&&...)): Likewise.
-	(construct(pointer, const _Tp&)): Cast pointer to void*. 
+	(construct(pointer, const _Tp&)): Cast pointer to void*.
 	* include/ext/bitmap_allocator.h (bitmap_allocator<>::
 	construct<>(pointer, _Args&&...)): Add.
 	(construct(pointer, const _Tp&)): Cast pointer to void*.
@@ -1297,7 +1297,7 @@
 2007-10-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/unordered_map: Fix for parallel mode.
-	* include/std/unordered_set: Same.	
+	* include/std/unordered_set: Same.
 
 2007-10-25  Andreas Tobler  <a.tobler@schweiz.org>
 
@@ -1394,21 +1394,21 @@
 	* include/backward/hash_fun.h: ...here.
 	* include/ext/hashtable.h: To...
 	* include/backward/hashtable.h: ...here.
-	
+
 	* include/bits/c++config: Remove __gnu_cxx namespace from debug mode.
 	* include/debug/debug.h: Same.
-		
+
 	* include/debug/hash_map: Remove.
 	* include/debug/hash_multimap.h: Remove.
 	* include/debug/hash_set.h: Remove.
 	* include/debug/hash_set: Remove.
 	* include/debug/hash_multiset.h: Remove.
 	* include/debug/hash_map.h: Remove.
-	
+
 	* include/Makefile.am (ext_headers): Move hash_set, hash_map to
 	backward.
 	(debug_headers): Remove hash_map, hash_set, hash_map.h,
-	hash_map.h, hash_multiset.h, hash_multimap.h.	
+	hash_map.h, hash_multiset.h, hash_multimap.h.
 	* include/Makefile.in: Regenerate.
 
 	* docs/html/debug.html: Update.
@@ -1420,9 +1420,9 @@
 	* testsuite/backward/hash_map: ...here.
 	* testsuite/ext/hash_set: Move to...
 	* testsuite/backward/hash_set: ...here.
-	
+
 2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
-        
+
 	Removal of pre-ISO C++ items from include/backwards.
 	* include/Makefile.am (backward_headers): Remove all but strstream,
 	backward_warning.h.
@@ -1475,7 +1475,7 @@
 	PR libstdc++/30085
 	* include/debug/unordered_map: New.
 	* include/debug/unordered_set: New.
-	* include/debug/safe_association.h: New.	
+	* include/debug/safe_association.h: New.
 	* include/std/unordered_map: Include debug header if _GLIBCXX_DEBUG.
 	* include/std/unordered_set: Same.
 	* include/Makefile.am (debug_headers): Add unordered_map,
@@ -1489,7 +1489,7 @@
 	debug.cc: New.
 
 2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/util/native_type/assoc/native_hash_multimap.hpp: Remove
 	hash_map include.
 
@@ -1527,7 +1527,7 @@
 
 2007-10-16  Paolo Carlini  <pcarlini@suse.de>
 
-	* include/ext/vstring.h (__versa_string<>::front, 
+	* include/ext/vstring.h (__versa_string<>::front,
 	__versa_string<>::back): Add.
 	* testsuite/ext/vstring/element_access/char/front_back.cc: New.
 	* testsuite/ext/vstring/element_access/wchar_t/front_back.cc: Likewise.
@@ -1628,7 +1628,7 @@
 	Likewise.
 	* include/debug/map.h (map<>::cbegin, cend, crbegin, crend):
 	Likewise.
-	* include/debug/deque (deque<>::cbegin, cend, crbegin, crend): 
+	* include/debug/deque (deque<>::cbegin, cend, crbegin, crend):
 	Likewise.
 	* include/debug/list (list<>::cbegin, cend, crbegin, crend):
 	Likewise.
@@ -1654,7 +1654,7 @@
 	crend): Likewise.
 	* include/bits/stl_bvector.h (vector<bool>::cbegin, cend, crbegin,
 	crend): Likewise.
-	* include/tr1_impl/hashtable (_Hashtable<>::cbegin, cend): Add.	
+	* include/tr1_impl/hashtable (_Hashtable<>::cbegin, cend): Ad.
 
 	* testsuite/ext/vstring/requirements/citerators.cc: Add.
 	* testsuite/23_containers/unordered_map/requirements/citerators.cc:
@@ -1776,12 +1776,12 @@
 	* include/ext/hash_set: Same.
 
 	* testsuite/25_algorithms/headers/parallel_algorithm.cc: Move
-	inside algorithm directory.	
+	inside algorithm directory.
 	* testsuite/25_algorithms/headers/algorithm_parallel_mode.cc: Same.
 	* testsuite/25_algorithms/headers/parallel_algorithm_mixed1.cc: Same.
 	* testsuite/25_algorithms/headers/parallel_algorithm_mixed2.cc: Same.
 	* testsuite/25_algorithms/headers/algorithm/parallel_algorithm.cc:
-	To this.	
+	To this.
 	* testsuite/25_algorithms/headers/algorithm/
 	algorithm_parallel_mode.cc: Same.
 	* testsuite/25_algorithms/headers/algorithm/
@@ -1791,11 +1791,11 @@
 
 	* testsuite/21_strings/basic_string/requirements/
 	explicit_instantiation/debug.cc: Remove exception text.
-	
+
 	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
-	Fix for debug mode testing.	
+	Fix for debug mode testing.
 	* testsuite/23_containers/vector/bool/capacity/29134.cc: Same.
-	
+
 2007-10-12  Jesper Nilsson  <jesper.nilsson@axis.com>
 
        * testsuite/tr1/5_numerical_facilities/special_functions/
@@ -1835,7 +1835,7 @@
 	* testsuite/17_intro/headers/all_pedantic_errors.cc: Same.
 
 	* include/ext/pb_ds/detail/standard_policies.hpp: Format.
-	* testsuite/util/native_type/assoc/native_set.hpp: Same, 
+	* testsuite/util/native_type/assoc/native_set.hpp: Same,
 	update comment.
 	* testsuite/util/native_type/assoc/native_map.hpp: Same.
 	* testsuite/util/native_type/assoc/native_multimap.hpp: Same.
@@ -1868,7 +1868,7 @@
 
 	PR libstdc++/33578
 	* include/parallel/compatibility.h.  Use POSIX sched_yield on
-	__CYGWIN__ 
+	__CYGWIN__
 	(Sleep): Add prototype for __MINGW32__.
 
 2007-10-10  Jason Merrill  <jason@redhat.com>
@@ -1896,7 +1896,7 @@
 
 2007-10-10  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* include/parallel/losertree.h (loser_tree_traits_unguarded): To 
+	* include/parallel/losertree.h (loser_tree_traits_unguarded): To
 	loser_tree_unguarded_traits.
 	* include/parallel/multiway_merge.h (__gnu_parallel): Same.
 
@@ -1915,7 +1915,7 @@
 
 	PR libstdc++/33485 continued.
 	* include/parallel/multiway_mergesort.h: Use __builtin_alloca.
-	
+
 2007-10-09  Zhou Drangon  <drangon.mail@gmail.com>
 
 	PR libstdc++/33682
@@ -1924,7 +1924,7 @@
 
 2007-10-09  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/33489 continued.		
+	PR libstdc++/33489 continued.
 	* include/parallel/features.h (_GLIBCXX_LOSER_TREE): Set to zero.
 	(_GLIBCXX_LOSER_TREE_POINTER): Set to one.
 	(_GLIBCXX_LOSER_TREE_UNGUARDED): Set to zero.
@@ -1942,7 +1942,7 @@
 	(parallel_sort_mwms_pu): Same.
 	* include/parallel/quicksort.h (parallel_sort_qs_divide): Don't
 	use array form to construct pointer to value_type on stack,
-	instead use __builtin_alloca.	
+	instead use __builtin_alloca.
 	* include/parallel/random_shuffle.h (sequential_random_shuffle): Same,
 	but use operator new.
 	(parallel_random_shuffle_drs_pu): Same.
@@ -1952,8 +1952,8 @@
 	* include/parallel/settings.h: Format.
 
 	* include/parallel/multiway_merge.h: Move traits to....
-	* include/parallel/losertree.h: ... here.	
-	
+	* include/parallel/losertree.h: ... here.
+
 2007-10-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/type_traitsfwd.h (add_reference): Remove.
@@ -1985,10 +1985,10 @@
 
 2007-10-08  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/33489	
+	PR libstdc++/33489
 	* include/parallel/multiseq_selection.h: Remove default constructed
 	value_type.
-	* include/parallel/partition.h: 
+	* include/parallel/partition.h:
 	* include/parallel/partial_sum.h: Format.
 
 2007-10-08  Johannes Singler  <singler@ira.uka.de>
@@ -2054,14 +2054,14 @@
 
 	* include/bits/stl_algobase.h (_GLIBCXX_MOVE): Add.
 	(swap, __iter_swap): Use it.
-	* testsuite/25_algorithms/rotate/moveable.cc: Remove 
+	* testsuite/25_algorithms/rotate/moveable.cc: Remove
 	dg-require-rvalref.
 	* testsuite/25_algorithms/remove/moveable.cc: Likewise.
-	* testsuite/25_algorithms/partition/moveable.cc: Likewise. 
+	* testsuite/25_algorithms/partition/moveable.cc: Likewise.
 	* testsuite/25_algorithms/swap_ranges/moveable.cc: Likewise.
-	* testsuite/25_algorithms/reverse/moveable.cc: Likewise. 
-	* testsuite/25_algorithms/unique/moveable.cc: Likewise. 
-	* testsuite/25_algorithms/remove_if/moveable.cc: Likewise. 
+	* testsuite/25_algorithms/reverse/moveable.cc: Likewise.
+	* testsuite/25_algorithms/unique/moveable.cc: Likewise.
+	* testsuite/25_algorithms/remove_if/moveable.cc: Likewise.
 
 	* include/bits/stl_algobase.h (lexicographical_compare):
 	Clean up.
@@ -2080,7 +2080,7 @@
 
 2007-10-06  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/33678	
+	PR libstdc++/33678
 	* libsupc++/typeinfo (typeinfo): Revert ordering of virtual components.
 
 2007-10-06  Benjamin Kosnik  <bkoz@redhat.com>
@@ -2101,7 +2101,7 @@
 	conventions.
 
 	* include/parallel/search.h (calc_borders): Only use operator ==.
-	
+
 	* include/parallel/algorithmfwd.h: Move __gnu_sequential bits to...
 	* include/parallel/tags.h: ...here, and use a using directive.
 
@@ -2109,7 +2109,7 @@
 	uses of partial_num with __gnu_sequential.
 
 	* include/parallel/tree.h: Formatting.
-	
+
 2007-10-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Fixes for --disable-libstdcxx-pch.
@@ -2217,11 +2217,11 @@
 
 	* testsuite/23_containers/map/moveable.cc: Remove dg-require-rvalref.
 	* testsuite/23_containers/multimap/moveable.cc: Likewise.
-	* testsuite/23_containers/set/moveable.cc: Likewise. 
+	* testsuite/23_containers/set/moveable.cc: Likewise.
 	* testsuite/23_containers/multiset/moveable.cc: Likewise.
-	* testsuite/23_containers/deque/moveable.cc: Likewise. 
-	* testsuite/23_containers/list/moveable.cc: Likewise. 
-	* testsuite/23_containers/vector/moveable.cc: Likewise. 
+	* testsuite/23_containers/deque/moveable.cc: Likewise.
+	* testsuite/23_containers/list/moveable.cc: Likewise.
+	* testsuite/23_containers/vector/moveable.cc: Likewise.
 	* include/std/utility: Use _GLIBCXX_BEGIN_NAMESPACE.
 
 2007-10-05  Paolo Carlini  <pcarlini@suse.de>
@@ -2330,12 +2330,12 @@
 	(_Rb_tree<>::_Rb_tree(const _Compare&, const allocator_type&),
 	_Rb_tree(const _Rb_tree&)): Adjust.
 	* include/bits/stl_set.h (set<>::set(),
-	set(_InputIterator, _InputIterator)): Use _M_t default constructor. 
+	set(_InputIterator, _InputIterator)): Use _M_t default constructor.
 	* include/bits/stl_map.h (map<>::map(), set(_InputIterator,
-	_InputIterator)): Use _M_t default constructor. 
+	_InputIterator)): Use _M_t default constructor.
 	* include/bits/stl_multiset.h (multiset<>::multiset(),
 	multiset(_InputIterator, _InputIterator)): Use _M_t default
-	constructor. 
+	constructor.
 	* include/bits/stl_multimap.h (multimap<>::multimap(),
 	multimap(_InputIterator, _InputIterator)): Use _M_t default
 	constructor.
@@ -2343,7 +2343,7 @@
 2007-10-03  Chris Jefferson  <chris@bubblescope.net>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/20_util/pair/moveable.cc: New. Merge from 
+	* testsuite/20_util/pair/moveable.cc: New. Merge from
 	libstdcxx_so_7-branch.
 	* testsuite/23_containers/deque/capacity/moveable.cc: Same.
 	* testsuite/23_containers/deque/cons/moveable.cc: Same.
@@ -2380,13 +2380,13 @@
 	* testsuite/25_algorithms/partition/partition.cc: Move to...
 	* testsuite/25_algorithms/partition/1.cc: ...this.
 	* testsuite/25_algorithms/stable_partition/1.cc: ... and this.
-	
+
 	* testsuite/25_algorithms/search/1.cc: Update from merge.
 	* testsuite/25_algorithms/search/check_type.cc: Same.
 
 	* testsuite/lib/dg-options.exp (dg-require-rvalref): New.
 	* testsuite/lib/libstdc++.exp (check_v3_target_rvalref): New.
-	
+
 2007-10-03  Richard Sandiford  <richard@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_C99): Temporarily add
@@ -2438,7 +2438,7 @@
 
 2007-10-02  Chris Jefferson  <chris@bubblescope.net>
 
-	* testsuite/25_algorithms/search/1.cc: Merge from 
+	* testsuite/25_algorithms/search/1.cc: Merge from
 	libstdcxx_so_7-branch.
 	* testsuite/25_algorithms/search/check_type.cc: Same.
 	* testsuite/25_algorithms/sort/vectorbool.cc: Same.
@@ -2464,15 +2464,15 @@
 
 	* include/parallel/algorithmfwd.h: Spacing.
 	* include/parallel/tags.h: Correct comment.
-	
+
 	* testsuite/Makefile.am (AM_MAKEFLAGS, AM_RUNTESTFLAGS): Remove.
 	* testsuite/Makefile.in: Regenerate.
-	
+
 2007-09-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_hooks.cc (set_memory_limits): Adjust
 	x86_64 virtual memory setting for libgomp.
-	
+
 2007-09-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_algo.h: Add return type information to comments.
@@ -2487,12 +2487,12 @@
 
 	* testsuite/26_numerics/accumulate, adjacent_difference, inner_product,
 	partial_sum/requirements/explicit_instantiation/2.cc, pod.cc: New.
-	
+
 	* testsuite/26_numerics/numeric_arrays/*: Move contents into
 	testsuite/26_numerics.
 
 	* testsuite/26_numerics/numeric_operations: Same.
-	
+
 	* testsuite/23_containers/*/requirements/explicit_instantiation/2.cc:
 	Adjust includes from testsuite_eh.h to testsuite_api.h.
 
@@ -2506,12 +2506,12 @@
 	PR libstdc++/32819
 	PR libstdc++/32822
 	* docs/html/ext/pb_ds/hash_based_containers.html: Correct.
-	
+
 2007-09-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.host: Set atomic_flags on i486.
 
-	* include/Makefile.am: Remove parallel-mode pch.	
+	* include/Makefile.am: Remove parallel-mode pch.
 	* include/Makefile.in: Regenerate.
 
 	* testsuite/lib/libstdc++.exp: Set ld_library_flags for libgomp if
@@ -2558,15 +2558,15 @@
 	in the neat and general way.
 
 2007-09-14  Benjamin Kosnik  <bkoz@redhat.com>
-        
+
 	* include/parallel/base.h (__gnu_parallel::less<Tp>): Add partial
-        specialization for one argument. 
+        specialization for one argument.
 	(__gnu_parallel::less): Add operator.
 
-	* include/parallel/multiway_merge.h: Use __builtin_alloca. 
+	* include/parallel/multiway_merge.h: Use __builtin_alloca.
 	* include/parallel/partial_sum.h: Same.
-	* include/parallel/find.h: Same.	
-	
+	* include/parallel/find.h: Same.
+
 2007-09-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/tr1_impl/boost_shared_ptr.h: (__weak_ptr::lock()): Add
@@ -2600,7 +2600,7 @@
 	* testsuite/ext/pb_ds/*: Same.
 	* testsuite/performance/ext/pb_ds/*: Same.
 	* testsuite/util/*: Same.
-	
+
 2007-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/parallel/find.h: Doxygen fixups.
@@ -2680,7 +2680,7 @@
 	* include/Makefile.in: Same.
 	* src/Makefile.in: Same.
 	* po/Makefile.in: Same.
-	
+
 	* config/abi/pre/gnu.ver: Export parallel list bits.
 
 	* docs/html/parallel_mode.html: New.
@@ -2736,7 +2736,7 @@
 	parallel_numeric_mixed1.cc: New.
 	* testsuite/26_numerics/headers/numeric/
 	parallel_numeric_mixed2.cc: New.
-	
+
 2007-09-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Revert part of
@@ -2751,11 +2751,11 @@
 	types_std_c++0x.cc: Same.
 
 2007-09-09  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/25_algorithms/binary_search.cc: Move...
 	* testsuite/25_algorithms/binary_search/2.cc: ...here.
 
-	* testsuite/25_algorithms/sort.cc: Move...	
+	* testsuite/25_algorithms/sort.cc: Move...
 	* testsuite/25_algorithms/sort/1.cc: ...here.
 	* testsuite/25_algorithms/partial_sort_copy/2.cc: ...here.
 	* testsuite/25_algorithms/nth_element/3.cc: ...here.
@@ -2793,7 +2793,7 @@
 	* testsuite/Makefile.in: Same.
 	* config/abi/pre/gnu.ver: Add symbols.
 	* config/abi/pre/gnu-versioned-namespace.ver: Same, fix.
-	
+
 2007-09-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc:
@@ -2826,20 +2826,20 @@
 	* include/ext/rope: Same.
 	* include/bits/stl_function.h: Format.
 	* include/tr1_impl/array: Remove section number in doxygen markup.
-	* src/list.cc: Comment tweak.	
-	
+	* src/list.cc: Comment tweak.
+
 	* docs/doxygen/user.cfg.in: Update for include/tr1_impl.
-	
+
 	* testsuite/25_algorithms/search_n/iterator.cc: Add using declaration.
 	* testsuite/25_algorithms/nth_element/1.cc:  Same.
 	* testsuite/21_strings/char_traits/requirements/short/1.cc: Use
-	char_type typedef to the underlying character type.	
+	char_type typedef to the underlying character type.
 	* testsuite/21_strings/char_traits/requirements/wchar_t/typedefs.cc:
 	Remove -ansi -pedantic-errors.
 	* testsuite/21_strings/char_traits/requirements/char/typedefs.cc: Same.
 	* testsuite/tr1/6_containers/headers/functional/synopsis.cc:
 	Remove specializations.
-	
+
 2007-09-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_vector.h (_Vector_base<>::_M_allocate):
@@ -2847,7 +2847,7 @@
 	* testsuite/23_containers/vector/zero_sized_allocations.cc: New.
 
 2007-09-06  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	PR libstdc++/29367
 	* include/ext/pb_ds/detail/map_debug_base.hpp: From this..
 	* include/ext/pb_ds/detail/debug_map_base.hpp: ...to this.
@@ -2857,7 +2857,7 @@
 	* include/ext/pb_ds/*: Likewise.
 	* include/Makefile.am: Same.
 	* include/Makefile.in: Regenerate.
-	
+
 2007-09-06  Matthias Klose  <doko@debian.org>
 
 	* testsuite/27_io/headers/cstdlib: Remove empty directory.
@@ -2885,9 +2885,9 @@
 2007-08-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add ENODATA, ENOSR,
-	ENOSTR, ETIME for freebsd.	
+	ENOSTR, ETIME for freebsd.
 	* configure: Regenerate.
-	* include/std/system_error: Guard.	
+	* include/std/system_error: Guard.
 	* testsuite/19_diagnostics/headers/system_error/
 	types_std_c++0x.cc: Same.
 	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
@@ -2911,7 +2911,7 @@
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add ENOLINK, EPROTO
 	for netbsd.
 	* configure: Regenerate.
-	* include/std/system_error: Guard.	
+	* include/std/system_error: Guard.
 	* testsuite/19_diagnostics/headers/system_error/
 	types_std_c++0x.cc: Same.
 	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
@@ -2922,7 +2922,7 @@
 	* include/std/system_error: New file.
 	* src/system_error.cc: New file.
 	* src/Makefile.am (sources): Add.
-	* src/Makefile.in: Regenerate.	
+	* src/Makefile.in: Regenerate.
 	* include/Makefile.am (std_headers): Add system_error.
 	* include/Makefile.in: Regenerate.
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): New.
@@ -2930,7 +2930,7 @@
 	* config.h.in: Regenerate.
 	* include/bits/functional_hash.h: Add hash<error_code>.
  	* include/std/ostream: Add inserters for error_code.
-	
+
 	* docs/doxygen/user.cfg.in: Add system_error.
 
 	* config/abi/pre/gnu.ver(GLIBCXX_3.4.10): Add new symbols.
@@ -2969,7 +2969,7 @@
 	error_code.cc: Same.
 	* testsuite/tr1/6_containers/hash/operators: New.
 	* testsuite/tr1/6_containers/hash/operators/size_t.cc: Same.
-	
+
 	* testsuite/23_containers/hash: Move...
 	* testsuite/20_util/hash: ... here.
 	* testsuite/20_util/hash/operators: New.
@@ -2977,7 +2977,7 @@
 
 	* testsuite/20_util/function_objects/bad_function_call: Move...
 	* testsuite/20_util/bad_function_call: ...here.
-	
+
 2007-08-21  Benjamin Kosnik  <bkoz@montsouris.artheist.org>
 
 	* include/Makefile.am (install-data-local): Remove pch-install rules.
@@ -2985,14 +2985,14 @@
 	* include/Makefile.in: Regenerate.
 	* config.h.in: Same.
 
-	* scripts/check_compile: Remove space between outputs.	
-	* include/ext/throw_allocator.h: Correct doxygen markup.	
+	* scripts/check_compile: Remove space between outputs.
+	* include/ext/throw_allocator.h: Correct doxygen markup.
 	* include/bits/char_traits.h: Correct spacing.
 	* include/bits/stl_function.h: Same, for 80 column.
 	* include/std/valarray: Same.
-	* testsuite/util/testsuite_iterators.h: Same.	
+	* testsuite/util/testsuite_iterators.h: Same.
 	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Format.
-	
+
 2007-08-17  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR testsuite/31884
@@ -3134,7 +3134,7 @@
 	* testsuite/tr1/3_function_objects/bind/nested.cc: Ditto.
 	* testsuite/tr1/3_function_objects/bind/placeholders.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_multimap/requirements/
-	explicit_instantiation.cc: Ditto. 
+	explicit_instantiation.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_multimap/swap/1.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_multimap/swap/2.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_set/requirements/
@@ -3143,7 +3143,7 @@
 	* testsuite/tr1/6_containers/unordered_set/swap/2.cc: Ditto.
 	* testsuite/tr1/6_containers/utility/pair.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_map/requirements/
-	explicit_instantiation.cc: Ditto. 
+	explicit_instantiation.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_map/24064.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_map/swap/1.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_map/swap/2.cc: Ditto.
@@ -3153,7 +3153,7 @@
 	* testsuite/tr1/6_containers/tuple/tuple_element.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/tuple_size.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/comparison_operators/
-	comparisons.cc: Ditto. 
+	comparisons.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/element_access/get.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/creation_functions/23978.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/creation_functions/tie.cc: Ditto.
@@ -3165,11 +3165,11 @@
 	* testsuite/tr1/6_containers/unordered_multiset/swap/2.cc: Ditto.
 
 2007-07-10  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* configure.ac: Check if $atomicity_dir is cpu/generic/atomicity_mutex
 	instead of the non-existent cpu/generic/atomic_mutex.
 	* configure: Regenerate.
-	
+
 2007-07-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/utility (identity, move, forward): Add.
@@ -3183,7 +3183,7 @@
 	New.
 	* testsuite/20_util/forward/1.cc: New.
 	* testsuite/20_util/forward/1_neg.cc: New.
-	
+
 2007-07-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/ios_base/failure/what-1.cc: Include <stdexcept>.
@@ -3206,7 +3206,7 @@
 	PR libstdc++/31957
 	* include/Makefile.am: Work around an AIX sed oddity.
 	* include/Makefile.in: Regenerate.
-	
+
 2007-07-04  Jim Xochellis  <jimxoch@yahoo.gr>
 
 	* include/bits/stl_algo.h (search(_ForwardIterator1,
@@ -3215,7 +3215,7 @@
 	(search(_ForwardIterator1, _ForwardIterator1, _ForwardIterator2,
 	_ForwardIterator2, _BinaryPredicate)): Likewise; remove redundant
 	inner loop.
-	
+
 2007-07-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31518
@@ -3247,19 +3247,19 @@
 	* include/std/type_traits (__make_unsigned): Remove invalid
 	wchar_t specialization.
 	(__make_signed): Remove invalid wchar_t specialization.
-	
+
 2007-06-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc: Force
-	C++98 mode.  
+	C++98 mode.
 	* testsuite/18_support/headers/cstdint/std_c++0x_neg.cc: Ditto.
 	* testsuite/20_util/headers/type_traits/std_c++0x_neg.cc: Ditto.
 	* testsuite/23_containers/headers/array/std_c++0x_neg.cc: Ditto.
 	* testsuite/23_containers/headers/tuple/std_c++0x_neg.cc: Ditto.
 	* testsuite/23_containers/headers/unordered_map/std_c++0x_neg.cc:
-	Ditto. 
+	Ditto.
 	* testsuite/23_containers/headers/unordered_set/std_c++0x_neg.cc:
-	Ditto. 
+	Ditto.
 	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc: Ditto.
 	* testsuite/26_numerics/headers/cfenv/std_c++0x_neg.cc: Ditto.
 	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc: Ditto.
@@ -3305,8 +3305,8 @@
 	* testsuite/20_util/function_objects/bad_function_call: New.
 	* testsuite/20_util/function_objects/bad_function_call/
 	cons_virtual_derivation.cc: Same.
-	
-2007-06-26  Benjamin Kosnik  <bkoz@redhat.com>	
+
+2007-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/throw_allocator.h: Fixes for -fno-exceptions.
 	* testsuite/util/testsuite_shared.cc: Same.
@@ -3317,7 +3317,7 @@
 	clarify member access and public interface.
 	* libsupc++/exception: Less compressed comments.
 	* libsupc++/new: Same.
-	
+
 2007-06-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_list.h: Rename guard macro consistently with
@@ -3387,7 +3387,7 @@
 
 2007-06-06  Benjamin Kosnik  <bkoz@redhat.com>
 	    Frank Mori Hess  <frank.hess@nist.gov>
-	
+
 	* docs/html/debug.html: Correct link.
 
 2007-06-02  Paolo Carlini  <pcarlini@suse.de>
@@ -3448,7 +3448,7 @@
 	* configure: Regenerate.
 
 2007-06-01  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/19_diagnostics/logic_error/what-big.cc: New.
 	* testsuite/19_diagnostics/logic_error/what-3.cc: Same.
 	* testsuite/19_diagnostics/runtime_error/what-big.cc: Same.
@@ -3470,7 +3470,7 @@
 2007-06-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/throw_allocator.h (__throw_allocator::allocate):
-	Throw bad_alloc for out of memory conditions.	
+	Throw bad_alloc for out of memory conditions.
 	* testsuite/ext/throw_allocator/deallocate_global.cc: New.
 	* testsuite/ext/throw_allocator/check_delete.cc: Same.
 	* testsuite/ext/throw_allocator/check_allocate_max_size.cc: Same.
@@ -3585,7 +3585,7 @@
 	* include/c_global/cstdarg: Likewise.
 	* include/c_global/ctime: Likewise.
 	* include/c_global/climits: Likewise.
-	* include/c_global/cfloat: Likewise.	
+	* include/c_global/cfloat: Likewise.
 	* include/c_global/ccomplex: Likewise.
 	* include/c_global/cstdbool: Likewise.
 
@@ -3648,7 +3648,7 @@
 	* testsuite/20_util/is_unsigned/requirements/explicit_instantiation.cc:
 	Likewise.
 
-	* include/Makefile.am: Adjust.	
+	* include/Makefile.am: Adjust.
 	* include/Makefile.in: Regenerate.
 
 2007-05-31  Paolo Carlini  <pcarlini@suse.de>
@@ -3687,7 +3687,7 @@
 
 2007-05-28  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/31717 
+	PR libstdc++/31717
 	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Re-organize. Sanity check
 	gnu locale model requests to make sure it will work for the requested
 	target. Add checks for strxfrm_l, strerror_l when in gnu locale,
@@ -3695,7 +3695,7 @@
 	* aclocal.m4: Regenerated.
 	* configure: Regenerated.
 	* config.h.in: Regenerated.
-	
+
 2007-05-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/boost_shared_ptr.h
@@ -3707,7 +3707,7 @@
 	* include/c_global/cwchar: Do not include <ctime>.
 	* include/c_std/cwchar: Likewise.
 	* include/ext/throw_allocator.h: Do it here.
-	
+
 2007-05-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/c_locale.h (__convert_from_v): Fix typo.
@@ -3775,7 +3775,7 @@
 
 	* config/locale/gnu/c_locale.h: Do not include <libintl.h>.
 	* config/locale/gnu/messages_members.h: Do it here.
-	
+
 	* config/locale/gnu/c_locale.h: Do not include <cstdio>, use
 	the builtins.
 	* config/locale/generic/c_locale.h: Likewise.
@@ -3785,10 +3785,10 @@
 	* acinclude.m4 (GLIBCXX_CHECK_COMPILER_FEATURES): Add -g to
 	compile flags, move code to test to global scope.
 	* configure: Regenerate.
-	
+
 2007-05-17  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/21_strings/char_traits/requirements/wchar_t/typedefs.cc: 
+	* testsuite/21_strings/char_traits/requirements/wchar_t/typedefs.cc:
 	Fix dg bits.
 	* testsuite/21_strings/char_traits/requirements/char/typedefs.cc: Same.
 
@@ -3817,25 +3817,25 @@
 
 	* testsuite/22_locale/ctype/scan/wchar_t/1.cc: Remove
 	_GLIBCXX_USE_WCHAR_T guards as superfluous.
-	
+
 	* testsuite/20_util/make_signed/requirements/typedefs-1.cc: Add
-	_GLIBCXX_USE_WCHAR_T guards.	
+	_GLIBCXX_USE_WCHAR_T guards.
 	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Same.
 
-	* testsuite/21_strings/char_traits/requirements/wchar_t/typedefs.cc: 
+	* testsuite/21_strings/char_traits/requirements/wchar_t/typedefs.cc:
 	Add.
 	* testsuite/21_strings/char_traits/typedefs/char/1.cc: Move...
-	* testsuite/21_strings/char_traits/requirements/char/typedefs.cc: 
+	* testsuite/21_strings/char_traits/requirements/char/typedefs.cc:
 	...here.
 	* testsuite/21_strings/char_traits/typedefs: Remove.
 	* testsuite/21_strings/char_traits/typedefs/char: Remove.
-	
-2007-05-16  Benjamin Kosnik  <bkoz@redhat.com>	
+
+2007-05-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/abi.html: Update for gcc-4.1.2 and gcc-4.2.0.
-	
+
 2007-05-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* testsuite/tr1/5_numerical_facilities/special_functions/
@@ -3887,7 +3887,7 @@
 	* config/locale/generic/time_members.h: Likewise.
 	* config/os/gnu-linux/ctype_noninline.h: Likewise, avoid strdup.
 	* config/os/tpf/ctype_noninline.h: Likewise.
-	* config/locale/generic/codecvt_members.cc: Include <cstring>. 
+	* config/locale/generic/codecvt_members.cc: Include <cstring>.
 	* config/locale/generic/ctype_members.cc: Likewise.
 	* config/locale/generic/collate_members.cc: Likewise.
 	* config/locale/gnu/c++locale_internal.h: Likewise.
@@ -3900,7 +3900,7 @@
 	* testsuite/19_diagnostics/runtime_error/what-3.cc: Likewise.
 	* config/locale/gnu/messages_members.cc: Avoid strdup.
 	* config/locale/gnu/monetary_members.cc: Likewise.
-	* config/locale/gnu/time_members.cc: Likewise.	
+	* config/locale/gnu/time_members.cc: Likewise.
 	* config/locale/gnu/time_members.cc: Likewise.
 	* config/locale/generic/c_locale.cc: Likewise.
 
@@ -4008,7 +4008,7 @@
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Same.
-	
+
 2007-05-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: New.
@@ -4057,7 +4057,7 @@
 	* libsupc++/eh_personality.cc: A handler for abi::__forced_unwind
 	matches a forced unwind, and a handler for abi::__foreign_exception
 	matches a foreign exception.
-	
+
 	* include/bits/istream.tcc: Rethrow forced unwind.
 	* include/bits/ostream.tcc: Likewise.
 	* include/bits/ostream_insert.h: Likewise.
@@ -4111,7 +4111,7 @@
             Howard Hinnant  <hhinnant@apple.com>
 
 	* include/std/type_traits: (make_signed, make_unsigned): Adjust
-	for enum sizes.	
+	for enum sizes.
 	* testsuite/20_util/make_unsigned/requirements/typedefs.cc: Move to...
 	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: ...here.
 	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Add,
@@ -4123,7 +4123,7 @@
 
 	* testsuite/20_util/headers/type_traits/types_std_c++0x_neg.cc:
 	Add a temporary xfail to this test for all platforms.
-	
+
 2007-05-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/complex: Add missing extern template declarations.
@@ -4156,7 +4156,7 @@
 
 	* libsupc++/cxxabi.h (__cxa_atexit): Conditionalize exception
 	specification on #ifdef __cplusplus.
-	
+
 2007-05-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_memory.h: Rename to stl_auto_ptr.h.
@@ -4211,7 +4211,7 @@
 	* include/tr1/type_traits_fwd: Move to...
 	* include/tr1/type_traitsfwd: ... this, consistency with
 	ios/string/locale forward headers.
-	* include/tr1/type_traits: Adjust include.	
+	* include/tr1/type_traits: Adjust include.
 	* include/Makefile.am (tr1_headers): Change type_traits_fwd.h to
 	type_traitsfwd.h.
 	* include/Makefile.in: Regenerate.
@@ -4275,7 +4275,7 @@
 	explicit_instantiation.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs.cc: Same.
 	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
-	
+
 2007-05-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/31777
@@ -4283,23 +4283,23 @@
 	__pool_alloc<>::deallocate): Fix _S_force_new check.
 
 2007-05-01  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* 23_containers/requirements/sequences/dr438/deque/*: Move to...
 	* 23_containers/deque/requirements/dr438: ...here.
-	
+
 	* 23_containers/requirements/sequences/dr438/list/*: Move to...
 	* 23_containers/list/requirements/dr438: ...here.
-	
+
 	* 23_containers/requirements/sequences/dr438/vector/*: Move to...
 	* 23_containers/vector/requirements/dr438: ...here.
 
 2007-05-01  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/*/explicit_instantiations.cc: Change to...
 	* testsuite/*/explicit_instantiation.cc: ... this.
 
 2007-05-01  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/tr1/4_metaprogramming/*/explicit_instantiations.cc: Change
 	"basic_ofstream" in comment to type_traits.
 
@@ -4617,7 +4617,7 @@
 	explicit_instantiations.cc
 	* tr1/4_metaprogramming/remove_volatile/value.cc
 
-	Deleted in testsuite:	
+	Deleted in testsuite:
 	* tr1/4_metaprogramming/alignment_of/alignment_of.cc
 	* tr1/4_metaprogramming/alignment_of/typedefs.cc
 	* tr1/4_metaprogramming/array_modifications
@@ -5248,7 +5248,7 @@
 
 	* include/ext/pb_ds/detail/resize_policy/
 	cc_hash_max_collision_check_resize_trigger_imp.hpp: Qualify
-	namespace std members.	
+	namespace std members.
 	* include/ext/pb_ds/detail/list_update_policy/
 	counter_lu_metadata.hpp: Same.
 	* include/ext/throw_allocator.h: Same.
@@ -5257,10 +5257,10 @@
 	* libsupc++/del_op.cc: Same, simplify.
 
 	* include/bits/c++config: Adjust macro name.
-	
+
 	* include/c_global/cstring: Alphabetize.
 	* include/c_global/cwctype: Same.
-	
+
 2007-04-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cmath: Include <bits/stl_algobase.h> instead of
@@ -5385,7 +5385,7 @@
 	* include/ext/type_traits.h (__numeric_traits): Move...
 	* include/ext/numeric_traits.h: ... here.
 	* include/Makefile.am: Add.
-	* include/ext/pb_ds/detail/type_utils.hpp: Include 
+	* include/ext/pb_ds/detail/type_utils.hpp: Include
 	<ext/numeric_traits.h> too.
 	* include/tr1/random: Likewise.
 	* testsuite/ext/type_traits/numeric_traits.cc: Move...
@@ -5507,7 +5507,7 @@
 2007-03-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_compatibility/complex.h: Without
-	__GXX_EXPERIMENTAL_CXX0X__ include_next complex.h.	
+	__GXX_EXPERIMENTAL_CXX0X__ include_next complex.h.
 	* include/c_compatibility/fenv.h: Same.
 	* include/c_compatibility/inttypes.h: Same.
 	* include/c_compatibility/stdbool.h: Same.
@@ -5521,7 +5521,7 @@
 	* acinclude.m4 (GLIBCXX_ENABLE_C99): Add check for tgmath.h
 	* configure: Regenerate.
 	* config.h.in: Same.
-	
+
 2007-03-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional: Formatting fixes.
@@ -5557,7 +5557,7 @@
 	* testsuite/21_strings/headers/cwctype/types_std.cc: Same.
 	* testsuite/21_strings/headers/cwchar/functions_std.cc: Same.
 	* testsuite/21_strings/headers/cwchar/types_std.cc: Same.
-	
+
 	* include/Makefile.am (c_compatibility_headers): Add fenv.h.
 	* include/Makefile.in: Regenerate.
 	* configure.host: Update comment.
@@ -5573,7 +5573,7 @@
 2007-03-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/user.cfg.in: Update for new includes, macros.
-	
+
 2007-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/array_type_info.cc: Likewise.
@@ -5634,12 +5634,12 @@
 	explicit_instantiation.cc: Same.
 	* testsuite/20_util/weak_ptr/requirements/
 	explicit_instantiation.cc: Same.
-	
+
 2007-03-16  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* testsuite/lib/dg-options.exp (dg-require-c-std): New.
 	* testsuite/lib/libstdc++.exp (check_v3_target_c_std): New. Check to
-	see if _GLIBCXX_USE_C99_MATH is active. 
+	see if _GLIBCXX_USE_C99_MATH is active.
 	* testsuite/tr1/5_numerical_facilities/special_functions/
 	08_cyl_bessel_i/check_nan.cc: Use dg-require-c-std.
 	* testsuite/tr1/5_numerical_facilities/special_functions/
@@ -5695,7 +5695,7 @@
 	* docs/html/ext/tr1.html : Marked tr1 math special functions done.
 	* docs/html/faq/index.html : Ditto.
 	* include/Makefile.in : Added new special function header files.
-	* include/Makefile.am : Ditto.	
+	* include/Makefile.am : Ditto.
 	* include/tr1/common.h : Added type promotion routines for three
 	and four args.
 
@@ -5901,7 +5901,7 @@
 	23_sph_neumann/check_value.cc: New.
 	* testsuite/tr1/5_numerical_facilities/special_functions/
 	23_sph_neumann/ compile_2.cc: New.
-	
+
 2007-03-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/lib/libstdc++.exp (v3-build_support) <ar>: If it
@@ -6155,7 +6155,7 @@
 	* include/ext/stdio_sync_filebuf.h: Likewise.
 	* include/ext/rope: Include <bits/gthr.h> unconditionally.
 	* include/std/fstream: Do not include <bits/gthr.h>.
-	
+
 	* include/std/ios: Do not include <cstdio>.
 	* include/bits/ios_base.h: Do it here.
 	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust dg-error
@@ -6227,7 +6227,7 @@
 	* include/tr1/functional_iterate.h: Remove.
 	* include/tr1/repeat.h: Remove.
 	* include/Makefile.am: Don't install removed headers.
-	
+
 2007-03-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (partial)
@@ -6284,7 +6284,7 @@
 	"C" includes that are in the global namespace, with C++ includes
 	injecting into namespace std and no C++ "C" compatibility
 	includes.
- 
+
 2007-03-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config: Add _GLIBCXX_NAMEPACE_C.
@@ -6342,12 +6342,12 @@
 
 	* include/c_global/ccomplex: Add.
 	* include/c_global/cfenv: Add.
-	* include/c_global/cinttypes: Add. 
+	* include/c_global/cinttypes: Add.
 	* include/c_global/cstdbool: Add.
 	* include/c_global/cstdint: Add.
 	* include/c_global/ctgmath: Add.
 
-	* include/std/algorithm: Use C++0x features if -std=c++0x.	
+	* include/std/algorithm: Use C++0x features if -std=c++0x.
 	* include/std/bitset: Same.
 	* include/std/complex: Same.
 	* include/std/deque: Same.
@@ -6385,7 +6385,7 @@
 	* include/std/unordered_map: Add.
 	* include/std/unordered_set: Add.
 	* include/std/c++0x_warning.h: Add.
-	
+
 	* include/tr1/array: Switch namespaces based on _GLIBCXX_TR1.
 	* include/tr1/boost_shared_ptr.h: Same.
 	* include/tr1/cctype: Same.
@@ -6502,10 +6502,10 @@
 2007-03-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/debug/functions.h: Use cstddef.
-	
+
 	* testsuite/tr1/3_function_objects/headers/functional/
 	using_namespace_std_tr1_placeholders.cc: Fix include.
-	
+
 2007-03-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* crossconfig.m4 (djgpp): Correct builtin defines to HAVE___,
@@ -6633,7 +6633,7 @@
 	* include/std/bitset: Do not include <ios>, <iosfwd> is enough.
 	(operator>>(std::basic_istream<>&, bitset<>&)): Tweak, refer to
 	ios_base as a base of basic_istream.
-	* include/std/iomanip: Do not include <ios>, <iosfwd> + 
+	* include/std/iomanip: Do not include <ios>, <iosfwd> +
 	<bits/ios_base.h> is enough.
 	* include/std/iosfwd: Do not include <cctype> here...
 	* include/bits/locale_facets.h: ... do it here, when needed.
@@ -6697,7 +6697,7 @@
 	* testsuite/18_support/headers/cstdlib/macros.cc: Likewise.
 
 2007-02-23  Paolo Carlini  <pcarlini@suse.de>
-	
+
 	PR libstdc++/25896
 	* include/tr1/hashtable (_Hashtable<>::erase(const key_type&)):
 	Take care of &_M_extract((*__slot)->_M_v) == &__k.
@@ -6822,7 +6822,7 @@
 	* tr1/2_general_utilities/enable_shared_from_this
 	* tr1/2_general_utilities/shared_ptr
 	* tr1/2_general_utilities/weak_ptr
-	
+
 	Deleted in testsuite:
 	* 20_util/functional
 	* 20_util/functional/binders
@@ -6957,7 +6957,7 @@
 2007-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Revamp library API testing.
-	
+
 	Added in testsuite:
 	* 17_intro/headers
 	* 17_intro/headers/all_assert_neg.cc
@@ -7851,7 +7851,7 @@
 	* testsuite/24_iterators/reverse_iterator/2.cc: To just one
 	non-requirements test.
 	* testsuite/ext/headers.cc: Add new includes.
-	
+
 2007-02-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28080 (partial)
@@ -8005,7 +8005,7 @@
 
 	PR libstdc++/14493
 	* libsupc++/typeinfo (bad_cast::what, bad_typeid::what): Declare.
-	* libsupc++/tinfo.cc: Define.	
+	* libsupc++/tinfo.cc: Define.
 	* libsupc++/exception (bad_exception::what): Declare.
 	* libsupc++/eh_exception.cc: Define.
 	(exception::what): Adjust, don't use typeid.
@@ -8046,7 +8046,7 @@
 	tree_order_statistics_test.hpp: Same.
 	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Adjust line numbers.
 	* testsuite/17_intro/headers_c++_c++0x_compat.cc: New.
-	
+
 	* include/precompiled/extc++.h: Update to current list of ext files.
 
 2007-01-29  Paolo Carlini  <pcarlini@suse.de>
@@ -8138,7 +8138,7 @@
 	libsupc++ library directory.
 	* testsuite/abi/cxx_runtime_only_linkage.cc: Remove hard-coded
 	path specification.
-	
+
 2007-01-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* libsupc++/eh_personality.cc (parse_lsda_header, check_exception_spec,
@@ -8166,7 +8166,7 @@
 	const unsigned char&), fill_n(char*, _Size, char&)): Rename to
 	__*_aux.
 	(__fill_normal, __fill_n_normal): New, call the latter.
-	(fill, fill_n): Adjust, call the latter.	
+	(fill, fill_n): Adjust, call the latter.
 	* testsuite/25_algorithms/fill/4.cc: New.
 	* testsuite/25_algorithms/fill/5.cc: New.
 
