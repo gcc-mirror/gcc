@@ -1,3 +1,8 @@
+2009-12-04  David Daney  <ddaney@caviumnetworks.com>
+
+	PR rtl-optimization/42164
+	* gcc.c-torture/compile/pr42164.c: New test.
+
 2009-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/size_attribute1.ads: New test.

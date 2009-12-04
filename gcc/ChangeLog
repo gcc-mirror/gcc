@@ -1,3 +1,9 @@
+2009-12-04  David Daney  <ddaney@caviumnetworks.com>
+
+	PR rtl-optimization/42164
+	* combine.c (combine_simplify_rtx): Handle truncation of integer
+	constants.
+
 2009-12-04  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-out.c (pack_ts_decl_common_value_fields):
