@@ -51,6 +51,8 @@ extern int logical_immediate_p (rtx op, enum machine_mode mode);
 extern int iohl_immediate_p (rtx op, enum machine_mode mode);
 extern int arith_immediate_p (rtx op, enum machine_mode mode,
 			      HOST_WIDE_INT low, HOST_WIDE_INT high);
+extern bool exp2_immediate_p (rtx op, enum machine_mode mode, int low,
+			      int high);
 extern int spu_constant_address_p (rtx x);
 extern int spu_legitimate_constant_p (rtx x);
 extern int spu_legitimate_address (enum machine_mode mode, rtx x,
@@ -64,17 +66,16 @@ extern void spu_setup_incoming_varargs (int *cum, enum machine_mode mode,
 					tree type, int *pretend_size,
 					int no_rtl);
 extern void spu_conditional_register_usage (void);
-extern int aligned_mem_p (rtx mem);
 extern int spu_expand_mov (rtx * ops, enum machine_mode mode);
-extern void spu_split_load (rtx * ops);
-extern void spu_split_store (rtx * ops);
-extern int spu_valid_move (rtx * ops);
+extern int spu_split_load (rtx * ops);
+extern int spu_split_store (rtx * ops);
 extern int fsmbi_const_p (rtx x);
 extern int cpat_const_p (rtx x, enum machine_mode mode);
 extern rtx gen_cpat_const (rtx * ops);
 extern void constant_to_array (enum machine_mode mode, rtx x,
 			       unsigned char *arr);
 extern rtx array_to_constant (enum machine_mode mode, unsigned char *arr);
+extern rtx spu_gen_exp2 (enum machine_mode mode, rtx x);
 extern void spu_allocate_stack (rtx op0, rtx op1);
 extern void spu_restore_stack_nonlocal (rtx op0, rtx op1);
 extern void spu_restore_stack_block (rtx op0, rtx op1);
@@ -88,6 +89,7 @@ extern void spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
 extern void spu_init_expanders (void);
+extern void spu_split_convert (rtx *);
 
 /* spu-c.c */
 extern tree spu_resolve_overloaded_builtin (tree fndecl, tree fnargs);

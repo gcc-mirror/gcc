@@ -1,3 +1,12 @@
+2009-12-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Backport from mainline:
+
+	2009-04-27  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
+
+	Allow non-constant arguments to conversion intrinsics.
+	* gcc.target/spu/intrinsics-3.c: Update tests.
+
 2009-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/42049
