@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4.1\n"
+"Project-Id-Version: cpplib 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-02 14:22+0000\n"
-"PO-Revision-Date: 2009-07-23 20:58+0200\n"
+"PO-Revision-Date: 2009-12-04 22:41+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -122,9 +122,9 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "icke-ISO-standardspecialsekvens, \"\\%c\""
 
 #: charset.c:1321
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "okänd escape-sekvens \"\\%c\""
+msgstr "okänd escape-sekvens: \"\\%c\""
 
 #: charset.c:1329
 #, c-format
@@ -311,14 +311,12 @@ msgid "#pragma once in main file"
 msgstr "#pragma once i huvudfil"
 
 #: directives.c:1444
-#, fuzzy
 msgid "invalid #pragma push_macro directive"
-msgstr "ogiltigt direktiv #pragma GCC poison"
+msgstr "ogiltigt direktiv #pragma push_macro"
 
 #: directives.c:1483
-#, fuzzy
 msgid "invalid #pragma pop_macro directive"
-msgstr "ogiltigt direktiv #pragma GCC poison"
+msgstr "ogiltigt direktiv #pragma pop_macro"
 
 #: directives.c:1537
 msgid "invalid #pragma GCC poison directive"
@@ -459,9 +457,8 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionell C tillåter inte suffixet \"%.*s\""
 
 #: expr.c:377
-#, fuzzy
 msgid "suffix for double constant is a GCC extension"
-msgstr "fastdecimalskonstanter är en GCC-utvidgning"
+msgstr "suffix för double-konstanter är en GCC-utvidgning"
 
 #: expr.c:383
 #, c-format
@@ -478,9 +475,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ogiltig ändelse \"%.*s\" på heltalskonstant"
 
 #: expr.c:427
-#, fuzzy
 msgid "use of C++0x long long integer constant"
-msgstr "användning av long long heltalskonstant enligt C99"
+msgstr "användning av long long heltalskonstant enligt C++0x"
 
 #: expr.c:436
 msgid "imaginary constants are a GCC extension"
@@ -740,21 +736,20 @@ msgstr "__VA_ARGS__ kan endast dyka upp i expansionen av ett C99-makro med varia
 #: lex.c:547 lex.c:624
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "identifieraren \"%s\" är ett speciellt operatornamn i C++"
 
 #: lex.c:739
 msgid "raw string delimiter longer than 16 characters"
-msgstr ""
+msgstr "avgränsare för rå sträng längre än 16 tecken"
 
 #: lex.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "universellt tecken %.*s är inte giltigt i en identifierare"
+msgstr "ogiltigt tecken \"%c\" i avgränsare för rå sträng"
 
 #: lex.c:771 lex.c:818
-#, fuzzy
 msgid "unterminated raw string"
-msgstr "oavslutad #%s"
+msgstr "oavslutad rå sträng"
 
 #: lex.c:831 lex.c:930
 msgid "null character(s) preserved in literal"
@@ -948,22 +943,3 @@ msgstr "upptäckte rekursion vid under expansion av makrot \"%s\""
 #: traditional.c:969
 msgid "syntax error in macro parameter list"
 msgstr "syntaxfel i makroparameterlista"
-
-#~ msgid "warning: "
-#~ msgstr "varning: "
-
-#~ msgid "internal error: "
-#~ msgstr "internt fel: "
-
-#~ msgid "error: "
-#~ msgstr "fel: "
-
-#~ msgid "In file included from %s:%u"
-#~ msgstr "I fil inkluderad från %s:%u"
-
-#~ msgid ""
-#~ ",\n"
-#~ "                 from %s:%u"
-#~ msgstr ""
-#~ ",\n"
-#~ "                 från %s:%u"
