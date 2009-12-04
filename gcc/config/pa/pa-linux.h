@@ -31,12 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
 
-#undef	LIB_SPEC
-#define LIB_SPEC \
-  "%{pthread:-lpthread} \
-   %{shared:-lgcc -lc} \
-   %{!shared:%{mieee-fp:-lieee} %{shared-libgcc:-lgcc} %{profile:-lc_p}%{!profile:-lc}}"
-
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{v:-V} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
