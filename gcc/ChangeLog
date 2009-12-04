@@ -1,3 +1,14 @@
+2009-12-02  Sebastian Pop  <sebastian.pop@amd.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386-protos.h (ix86_fma4_valid_op_p): Removed.
+	* config/i386/i386.c (ix86_fma4_valid_op_p): Removed.
+	* config/i386/i386.md: Do not use ix86_fma4_valid_op_p.
+	* config/i386/sse.md (fma4_*): Remove alternative with operand 1
+	matching a memory access.  Do not use ix86_fma4_valid_op_p.
+	(xop_*): Same.
+	Do not use ix86_fma4_valid_op_p in FMA4 and XOP splitters.
+
 2009-12-02  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_fixup_binary_operands): For FMA4, force
