@@ -1,3 +1,8 @@
+2009-12-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/powerpc/ffi_darwin.c (ffi_closure_helper_DARWIN): Increment
+	pfr for long double split between fpr13 and stack.
+
 2009-12-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/ffi_darwin.c (ffi_prep_args): Increment next_arg and

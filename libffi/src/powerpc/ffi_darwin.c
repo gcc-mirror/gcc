@@ -690,7 +690,7 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
   ffi_type **      arg_types;
   long             i, avn;
   ffi_cif *        cif;
-  ffi_dblfl *end_pfr = pfr + NUM_FPR_ARG_REGISTERS;
+  ffi_dblfl *      end_pfr = pfr + NUM_FPR_ARG_REGISTERS;
   unsigned         size_al;
 
   cif = closure->cif;
@@ -856,6 +856,7 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
 	      memcpy (&temp_ld.lb[0], pfr, sizeof(ldbits));
 	      memcpy (&temp_ld.lb[1], pgr + 2, sizeof(ldbits));
 	      avalue[i] = &temp_ld.ld;
+	      pfr++;
 	    }
 	  else
 	    {
