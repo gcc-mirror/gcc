@@ -506,7 +506,8 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 tree
 convert_from_reference (tree val)
 {
-  if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
+  if (TREE_TYPE (val)
+      && TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
     {
       tree t = TREE_TYPE (TREE_TYPE (val));
       tree ref = build1 (INDIRECT_REF, t, val);

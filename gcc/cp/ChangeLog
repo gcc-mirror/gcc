@@ -1,3 +1,8 @@
+2009-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42266
+	* cvt.c (convert_from_reference): Do nothing if TREE_TYPE is null.
+
 2009-12-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42217
