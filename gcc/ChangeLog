@@ -1,3 +1,9 @@
+2009-12-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	BUILT_IN_MALLOC.
+	(call_may_clobber_ref_p_1): Likewise.
+
 2009-12-04  Matthias Klose  <doko@ubuntu.com>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 

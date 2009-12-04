@@ -963,6 +963,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	  }
 	/* The following builtins do not read from memory.  */
 	case BUILT_IN_FREE:
+	case BUILT_IN_MALLOC:
 	case BUILT_IN_MEMSET:
 	case BUILT_IN_FREXP:
 	case BUILT_IN_FREXPF:
@@ -1187,6 +1188,10 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 					   size);
 	    return refs_may_alias_p_1 (&dref, ref, false);
 	  }
+	/* Allocating memory does not have any side-effects apart from
+	   being the definition point for the pointer.  */
+	case BUILT_IN_MALLOC:
+	  return false;
 	/* Freeing memory kills the pointed-to memory.  More importantly
 	   the call has to serve as a barrier for moving loads and stores
 	   across it.  */
