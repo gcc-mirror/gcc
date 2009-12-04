@@ -56,7 +56,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+
+#ifdef __MINGW32__
+typedef off64_t gfc_offset;
+#else
 typedef off_t gfc_offset;
+#endif
 
 #ifndef NULL
 #define NULL (void *) 0
