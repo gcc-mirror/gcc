@@ -36,6 +36,11 @@
 // Use macro form of ctype functions to ensure __SB_masks is defined.
 #define _SB_CTYPE_MACROS 1
 
+// This would be defaulted in the main c++config header if we didn't
+// define it here, but it has to be defined before we can use the
+// namespace macros, so we have to define it to nothing here instead.
+#define _GLIBCXX_PSEUDO_VISIBILITY(V)
+
 /* HP-UX, for reasons unknown choose to use a different name for
    the string to [unsigned] long long conversion routines.
 
