@@ -546,8 +546,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %n`-mintel-syntax' is deprecated. Use `-masm=intel' instead.\n} \
 %{msse5:-mavx \
 %n'-msse5' was removed.\n} \
-%{mfused-madd:-mavx \
-%n'-mfused-madd' was removed.\n} \
 %{mno-intel-syntax:-masm=att \
 %n`-mno-intel-syntax' is deprecated. Use `-masm=att' instead.\n}"
 

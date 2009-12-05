@@ -1709,7 +1709,8 @@
 	  (match_operand:FMA4MODEF4 1 "register_operand" "%x,x")
 	  (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	 (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x")))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmadd<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1741,7 +1742,8 @@
 	  (match_operand:FMA4MODEF4 1 "register_operand" "%x,x")
 	  (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	 (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x")))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsub<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1775,7 +1777,8 @@
 	 (mult:FMA4MODEF4
 	  (match_operand:FMA4MODEF4 1 "register_operand" "%x,x")
 	  (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmadd<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1809,7 +1812,8 @@
 	   (match_operand:FMA4MODEF4 1 "register_operand" "%x,x"))
 	  (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	 (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x")))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmsub<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1843,7 +1847,8 @@
 	  (match_operand:SSEMODEF4 1 "register_operand" "%x,x")
 	  (match_operand:SSEMODEF4 2 "nonimmediate_operand" "x,m"))
 	 (match_operand:SSEMODEF4 3 "nonimmediate_operand" "xm,x")))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmadd<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1879,7 +1884,8 @@
 	  (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))
 	 (match_dup 0)
 	 (const_int 1)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmadd<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1893,7 +1899,8 @@
 	  (match_operand:SSEMODEF4 1 "register_operand" "%x,x")
 	  (match_operand:SSEMODEF4 2 "nonimmediate_operand" "x,m"))
 	 (match_operand:SSEMODEF4 3 "nonimmediate_operand" "xm,x")))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsub<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1929,7 +1936,8 @@
 	  (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))
 	 (match_dup 0)
 	 (const_int 1)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsub<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1945,7 +1953,8 @@
 	 (mult:SSEMODEF4
 	  (match_operand:SSEMODEF4 1 "register_operand" "%x,x")
 	  (match_operand:SSEMODEF4 2 "nonimmediate_operand" "x,m"))))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmadd<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1981,7 +1990,8 @@
 	   (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m")))
 	 (match_dup 0)
 	 (const_int 1)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmadd<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -1997,7 +2007,8 @@
 	   (match_operand:SSEMODEF4 1 "register_operand" "%x,x"))
 	  (match_operand:SSEMODEF4 2 "nonimmediate_operand" "x,m"))
 	 (match_operand:SSEMODEF4 3 "nonimmediate_operand" "xm,x")))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmsub<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2037,7 +2048,8 @@
 	  (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))
 	 (match_dup 0)
 	 (const_int 1)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmsub<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2053,7 +2065,8 @@
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmadd<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2067,7 +2080,8 @@
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsub<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2081,7 +2095,8 @@
 	    (match_operand:FMA4MODEF4 1 "register_operand" "%x,x")
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m")))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmadd<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2096,7 +2111,8 @@
 	    (match_operand:FMA4MODEF4 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:FMA4MODEF4 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmsub<fma4modesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2111,7 +2127,8 @@
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmadd<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2125,7 +2142,8 @@
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsub<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2139,7 +2157,8 @@
 	    (match_operand:SSEMODEF2P 1 "register_operand" "%x,x")
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m")))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmadd<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2154,7 +2173,8 @@
 	    (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "x,m"))
 	   (match_operand:SSEMODEF2P 3 "nonimmediate_operand" "xm,x"))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmsub<ssemodesuffixf4>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
@@ -2173,7 +2193,8 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmadd<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2190,7 +2211,8 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsub<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2207,7 +2229,8 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmadd<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2225,7 +2248,8 @@
 	   (match_dup 0)
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfnmsub<ssemodesuffixf2s>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<ssescalarmode>")])
@@ -2250,7 +2274,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 170)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8SF")])
@@ -2269,7 +2294,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 10)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4DF")])
@@ -2288,7 +2314,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 10)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4SF")])
@@ -2307,7 +2334,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 2)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V2DF")])
@@ -2326,7 +2354,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 85)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8SF")])
@@ -2345,7 +2374,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 5)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4DF")])
@@ -2364,7 +2394,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 5)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4SF")])
@@ -2383,7 +2414,8 @@
 	      (match_dup 2))
 	    (match_dup 3))
 	  (const_int 1)))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V2DF")])
@@ -2406,7 +2438,8 @@
 	     (match_dup 3))
 	   (const_int 170))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8SF")])
@@ -2427,7 +2460,8 @@
 	     (match_dup 3))
 	   (const_int 10))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4DF")])
@@ -2448,7 +2482,8 @@
 	     (match_dup 3))
 	   (const_int 10))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4SF")])
@@ -2469,7 +2504,8 @@
 	     (match_dup 3))
 	   (const_int 2))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmaddsubpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V2DF")])
@@ -2490,7 +2526,8 @@
 	     (match_dup 3))
 	   (const_int 85))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V8SF")])
@@ -2511,7 +2548,8 @@
 	     (match_dup 3))
 	   (const_int 5))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4DF")])
@@ -2532,7 +2570,8 @@
 	     (match_dup 3))
 	   (const_int 5))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V4SF")])
@@ -2553,7 +2592,8 @@
 	     (match_dup 3))
 	   (const_int 1))]
 	 UNSPEC_FMA4_INTRINSIC))]
-  "TARGET_FMA4 && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "TARGET_FMA4 && TARGET_FUSED_MADD
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vfmsubaddpd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "V2DF")])

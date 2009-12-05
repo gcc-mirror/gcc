@@ -1,3 +1,13 @@
+2009-12-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* config/i386/i386.c (TARGET_DEFAULT_TARGET_FLAGS): Add
+	MASK_FUSED_MADD.
+	* config/i386/i386.h (CC1_CPU_SPEC_1): Remove
+	"'-mfused-madd' was removed".
+	* config/i386/i386.opt (mfused-madd): New.
+	* config/i386/sse.md: Add TARGET_FUSED_MADD to FMA4 insns.
+	* doc/invoke.texi (-mfused-madd, -mno-fused-madd): Document.
+
 2009-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-hpux.h (LIB_SPEC): Handle -rdynamic.
