@@ -593,7 +593,7 @@ Objective-C and Objective-C++ Dialects}.
 -mincoming-stack-boundary=@var{num}
 -mcld -mcx16 -msahf -mmovbe -mcrc32 -mrecip @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
--maes -mpclmul @gol
+-maes -mpclmul -mfused-madd @gol
 -msse4a -m3dnow -mpopcnt -mabm -mfma4 -mxop -mlwp @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
@@ -12062,6 +12062,13 @@ supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
 
+@item -mfused-madd
+@itemx -mno-fused-madd
+@opindex mfused-madd
+@opindex mno-fused-madd
+Do (don't) generate code that uses the fused multiply/add or multiply/subtract
+instructions.  The default is to use these instructions.
+
 @item -mcld
 @opindex mcld
 This option instructs GCC to emit a @code{cld} instruction in the prologue
@@ -12397,7 +12404,7 @@ Do not generate inline code for sqrt.
 @opindex mfused-madd
 @opindex mno-fused-madd
 Do (don't) generate code that uses the fused multiply/add or multiply/subtract
-instructions.    The default is to use these instructions.
+instructions.  The default is to use these instructions.
 
 @item -mno-dwarf2-asm
 @itemx -mdwarf2-asm

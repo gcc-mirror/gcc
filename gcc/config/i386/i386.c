@@ -30307,7 +30307,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_DEFAULT_TARGET_FLAGS	\
   (TARGET_DEFAULT			\
    | TARGET_SUBTARGET_DEFAULT		\
-   | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT)
+   | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT \
+   | MASK_FUSED_MADD)
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION ix86_handle_option

@@ -244,6 +244,12 @@ mcld
 Target Report Mask(CLD) Save
 Generate cld instruction in the function prologue.
 
+mfused-madd
+Target Report Mask(FUSED_MADD) Save
+Enable automatic generation of fused floating point multiply-add instructions
+if the ISA supports such instructions.  The -mfused-madd option is on by
+default.
+
 ;; ISA support
 
 m32
