@@ -1,5 +1,9 @@
 2009-12-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42010
+	* cp-tree.h (DECL_DISCRIMINATOR_SET_P): New.
+	* mangle.c (discriminator_for_local_entity): Check it.
+
 	PR c++/42277
 	* semantics.c (finish_decltype_type): Defer handling of decltype
 	of a non-dependent COMPONENT_REF in a template.
