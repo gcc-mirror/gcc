@@ -124,11 +124,12 @@ ffi_call_AIX:
 
 	/* Call ffi_prep_args.  */
 	mr	r4, r1
-	bl .ffi_prep_args
+	bl	.ffi_prep_args
 
 	/* Now do the call.  */
 	ld	r0, 0(r29)
 	ld	r2, 8(r29)
+	ld	r11, 16(r29)
 	/* Set up cr1 with bits 4-7 of the flags.  */
 	mtcrf	0x40, r31
 	mtctr	r0
@@ -182,21 +183,21 @@ L(done_return_value):
 	/* Restore the registers we used and return.  */
 	mr	r1, r28
 	ld	r0, 16(r28)
-	ld	r28,-32(r1)
+	ld	r28, -32(r1)
 	mtlr	r0
-	ld	r29,-24(r1)
-	ld	r30,-16(r1)
-	ld	r31,-8(r1)
+	ld	r29, -24(r1)
+	ld	r30, -16(r1)
+	ld	r31, -8(r1)
 	blr
 
 L(fp_return_value):
-	bf	28,L(float_return_value)
-	stfd	f1,0(r30)
-	bf	31,L(done_return_value)
-	stfd	f2,8(r30)
+	bf	28, L(float_return_value)
+	stfd	f1, 0(r30)
+	bf	31, L(done_return_value)
+	stfd	f2, 8(r30)
 	b	L(done_return_value)
 L(float_return_value):
-	stfs	f1,0(r30)
+	stfs	f1, 0(r30)
 	b	L(done_return_value)
 
 #else /* ! __64BIT__ */
@@ -204,47 +205,35 @@ L(float_return_value):
 	.long .ffi_call_AIX, TOC[tc0], 0
 	.csect .text[PR]
 .ffi_call_AIX:
-	mr	r12,r8 // We only need r12 until the call, so it doesn't have to be saved...
-	/* Save the old stack pointer as AP.  */
-	mr	r8,r1
-
-	/* Allocate the stack space we need.  */
-	stwux	r1,r1,r4
-
 	/* Save registers we use.  */
-	mflr	r9
+	mflr	r0
 
-	stw	r28,-16(r8)
-	stw	r29,-12(r8)
-	stw	r30, -8(r8)
-	stw	r31, -4(r8)
+	stw	r28,-16(r1)
+	stw	r29,-12(r1)
+	stw	r30, -8(r1)
+	stw	r31, -4(r1)
 
-	stw	r9,  8(r8)
-	stw	r2, 20(r1)
+	stw	r0, 8(r1)
+	mr	r28, r1		/* out AP.  */
+	stwux	r1, r1, r4
 
 	/* Save arguments over call...  */
-	mr	r31,r5	/* flags, */
-	mr	r30,r6	/* rvalue, */
-	mr	r29,r7	/* function address, */
-	mr	r28,r8	/* our AP. */
+	mr	r31, r5	/* flags, */
+	mr	r30, r6	/* rvalue, */
+	mr	r29, r7	/* function address, */
+	stw	r2, 20(r1)
 
 	/* Call ffi_prep_args.  */
-	mr	r4,r1
-	li	r9,0
-
-	lwz	r2,4(r12)
-	lwz	r12,0(r12)
-	mtctr	r12 // r12 holds address of _ffi_prep_args
-	bctrl
-	lwz     r2,20(r1)
+	mr	r4, r1
+	bl	.ffi_prep_args
 
 	/* Now do the call.  */
-	lwz	r12,0(r29)
+	lwz	r0, 0(r29)
+	lwz	r2, 4(r29)
+	lwz	r11, 8(r29)
 	/* Set up cr1 with bits 4-7 of the flags.  */
-	mtcrf	0x40,r31
-	stw	r2,20(r1)
-	mtctr	r12
-	lwz	r2,4(r29)
+	mtcrf	0x40, r31
+	mtctr	r0
 	/* Load all those argument registers.  */
 	// We have set up a nice stack frame, just load it into registers.
 	lwz	r3, 20+(1*4)(r1)
@@ -280,36 +269,36 @@ L1:
 L2:
 	/* Make the call.  */
 	bctrl
-	lwz	r2,20(r1)
+	lwz	r2, 20(r1)
 
 	/* Now, deal with the return value.  */
-	mtcrf	0x01,r31
+	mtcrf	0x01, r31
 
-	bt	30,L(done_return_value)
-	bt	29,L(fp_return_value)
-	stw	r3,0(r30)
-	bf	28,L(done_return_value)
-	stw	r4,4(r30)
+	bt	30, L(done_return_value)
+	bt	29, L(fp_return_value)
+	stw	r3, 0(r30)
+	bf	28, L(done_return_value)
+	stw	r4, 4(r30)
 
 	/* Fall through...  */
 
 L(done_return_value):
 	/* Restore the registers we used and return.  */
-	lwz	r9,8(r28)
-	lwz	r31,-4(r28)
-	mtlr	r9
-	lwz	r30, -8(r28)
-	lwz	r29,-12(r28)
-	lwz	r28,-16(r28)
-	lwz	r1,0(r1)
+	mr	r1, r28
+	lwz	r0, 8(r28)
+	lwz	r28,-16(r1)
+	mtlr	r0
+	lwz	r29,-12(r1)
+	lwz	r30, -8(r1)
+	lwz	r31, -4(r1)
 	blr
 
 L(fp_return_value):
-	bf	28,L(float_return_value)
-	stfd	f1,0(r30)
+	bf	28, L(float_return_value)
+	stfd	f1, 0(r30)
 	b	L(done_return_value)
 L(float_return_value):
-	stfs	f1,0(r30)
+	stfs	f1, 0(r30)
 	b	L(done_return_value)
 #endif
 	.long 0
