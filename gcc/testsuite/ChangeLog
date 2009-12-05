@@ -1,5 +1,8 @@
 2009-12-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42010
+	* g++.dg/abi/local2.C: New.
+
 	PR c++/42277
 	* g++.dg/cpp0x/decltype20.C: New.
 

@@ -2052,6 +2052,10 @@ struct GTY(()) lang_decl {
 /* Discriminator for name mangling.  */
 #define DECL_DISCRIMINATOR(NODE) (LANG_DECL_U2_CHECK (NODE, 1)->discriminator)
 
+/* True iff DECL_DISCRIMINATOR is set for a DECL_DISCRIMINATOR_P decl.  */
+#define DECL_DISCRIMINATOR_SET_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE) && DECL_LANG_SPECIFIC (NODE)->u.base.u2sel == 1)
+
 /* The index of a user-declared parameter in its function, starting at 1.
    All artificial parameters will have index 0.  */
 #define DECL_PARM_INDEX(NODE) \

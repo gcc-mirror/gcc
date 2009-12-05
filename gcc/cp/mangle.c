@@ -1577,11 +1577,11 @@ discriminator_for_local_entity (tree entity)
 {
   if (DECL_DISCRIMINATOR_P (entity))
     {
-      if (DECL_LANG_SPECIFIC (entity))
+      if (DECL_DISCRIMINATOR_SET_P (entity))
 	return DECL_DISCRIMINATOR (entity);
       else
 	/* The first entity with a particular name doesn't get
-	   DECL_LANG_SPECIFIC/DECL_DISCRIMINATOR.  */
+	   DECL_DISCRIMINATOR set up.  */
 	return 0;
     }
   else if (TREE_CODE (entity) == TYPE_DECL)
