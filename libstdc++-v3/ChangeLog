@@ -1,3 +1,8 @@
+2009-12-05  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/os/hpux/os_defines.h (_GLIBCXX_PSEUDO_VISIBILITY): Provide
+	empty definition.
+
 2009-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/42261
