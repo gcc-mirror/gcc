@@ -1,5 +1,9 @@
 2009-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa64-hpux.h (LIB_SPEC): Handle -rdynamic.
+	* pa-hpux10.h (LIB_SPEC): Likewise.
+	* pa-hpux11.h (LIB_SPEC): Likewise.
+
 	PR ada/41912
 	* pa/linux-unwind.h (pa32_fallback_frame_state): Set fs->signal_frame
 	for signal frames.
