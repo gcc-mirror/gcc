@@ -1,3 +1,11 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2009-12-02  Ben Elliston  <bje@au.ibm.com>
 
 	* java/net/natVMURLConnection.cc (guessContentTypeFromBuffer):

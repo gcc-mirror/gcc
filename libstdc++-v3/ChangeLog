@@ -1,3 +1,15 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2009-12-05  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/os/hpux/os_defines.h (_GLIBCXX_PSEUDO_VISIBILITY): Provide

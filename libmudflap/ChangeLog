@@ -1,3 +1,9 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2009-09-22  Frank Ch. Eigler  <fche@redhat.com>
 
 	PR libmudflap/41433

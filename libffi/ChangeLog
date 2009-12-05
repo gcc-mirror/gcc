@@ -1,3 +1,11 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* man/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2009-12-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/aix_closure.S: Reorganize 64-bit code to match

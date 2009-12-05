@@ -1,3 +1,41 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* doc/api/Makefile.in: Regenerate.
+	* examples/Makefile.in: Regenerate.
+	* external/Makefile.in: Regenerate.
+	* external/jsr166/Makefile.in: Regenerate.
+	* external/relaxngDatatype/Makefile.in: Regenerate.
+	* external/sax/Makefile.in: Regenerate.
+	* external/w3c_dom/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* lib/Makefile.in: Regenerate.
+	* native/Makefile.in: Regenerate.
+	* native/fdlibm/Makefile.in: Regenerate.
+	* native/jawt/Makefile.in: Regenerate.
+	* native/jni/Makefile.in: Regenerate.
+	* native/jni/classpath/Makefile.in: Regenerate.
+	* native/jni/gconf-peer/Makefile.in: Regenerate.
+	* native/jni/gstreamer-peer/Makefile.in: Regenerate.
+	* native/jni/gtk-peer/Makefile.in: Regenerate.
+	* native/jni/java-io/Makefile.in: Regenerate.
+	* native/jni/java-lang/Makefile.in: Regenerate.
+	* native/jni/java-math/Makefile.in: Regenerate.
+	* native/jni/java-net/Makefile.in: Regenerate.
+	* native/jni/java-nio/Makefile.in: Regenerate.
+	* native/jni/java-util/Makefile.in: Regenerate.
+	* native/jni/midi-alsa/Makefile.in: Regenerate.
+	* native/jni/midi-dssi/Makefile.in: Regenerate.
+	* native/jni/native-lib/Makefile.in: Regenerate.
+	* native/jni/qt-peer/Makefile.in: Regenerate.
+	* native/jni/xmlj/Makefile.in: Regenerate.
+	* native/plugin/Makefile.in: Regenerate.
+	* resource/Makefile.in: Regenerate.
+	* scripts/Makefile.in: Regenerate.
+	* tools/Makefile.in: Regenerate.
+
 2009-10-22  Richard Guenther  <rguenther@suse.de>
 
 	PR cp-tools/39177

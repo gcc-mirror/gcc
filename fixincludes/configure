@@ -2156,7 +2156,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # libtool.m4 - Configure libtool for the host system. -*-Autoconf-*-
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
-#                 2006, 2007, 2008 Free Software Foundation, Inc.
+#                 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 #   Written by Gordon Matzigkeit, 1996
 #
 # This file is free software; the Free Software Foundation gives
@@ -2241,6 +2241,11 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # _LT_SETUP
 # ---------
 # _LT_SETUP
+
+
+# _LT_PREPARE_SED_QUOTE_VARS
+# --------------------------
+# Define a few sed substitution that help us do robust quoting.
 
 
 # _LT_PROG_LTMAIN
@@ -2359,7 +2364,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # embedded single quotes properly.  In configure, this macro expands
 # each variable declared with _LT_DECL (and _LT_TAGDECL) into:
 #
-#    <var>='`$ECHO "X$<var>" | $Xsed -e "$delay_single_quote_subst"`'
+#    <var>='`$ECHO "$<var>" | $SED "$delay_single_quote_subst"`'
 
 
 
@@ -2412,6 +2417,16 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # Initialize.
 
 
+# _LT_GENERATED_FILE_INIT(FILE, [COMMENT])
+# ------------------------------------
+# Generate a child script FILE with all initialization necessary to
+# reuse the environment learned by the parent script, and make the
+# file executable.  If COMMENT is supplied, it is inserted after the
+# `#!' sequence but before initialization text begins.  After this
+# macro, additional text can be appended to FILE to form the body of
+# the child script.  The macro ends with non-zero status if the
+# file could not be fully written (such as if the disk is full).
+# _LT_GENERATED_FILE_INIT
 
 # LT_OUTPUT
 # ---------
@@ -2535,6 +2550,25 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # about autoupdate's warning because that contains
 # information on what to do *after* running autoupdate.
 
+# This is what autoupdate's m4 run will expand.  It fires
+# the warning (with _au_warn_XXX), outputs it into the
+# updated configure.ac (with AC_DIAGNOSE), and then outputs
+# the replacement expansion.
+
+
+# This is an auxiliary macro that is also run when
+# autoupdate runs m4.  It simply calls m4_warning, but
+# we need a wrapper so that each warning is emitted only
+# once.  We break the quoting in m4_warning's argument in
+# order to expand this macro's arguments, not AU_DEFUN's.
+
+
+# Finally, this is the expansion that is picked up by
+# autoconf.  It tells the user to run autoupdate, and
+# then outputs the replacement expansion.  We do not care
+# about autoupdate's warning because that contains
+# information on what to do *after* running autoupdate.
+
 
 
 # _LT_TAG_COMPILER
@@ -2581,10 +2615,13 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # _LT_SHELL_INIT
 
 
+
 # _LT_PROG_ECHO_BACKSLASH
 # -----------------------
-# Add some code to the start of the generated configure script which
-# will find an echo command which doesn't interpret backslashes.
+# Find how we can fake an echo command that does not interpret backslash.
+# In particular, with Autoconf 2.60 or later we add some code to the start
+# of the generated configure script which will find a shell with a builtin
+# printf (which we can use as an echo command).
 # _LT_PROG_ECHO_BACKSLASH
 
 
@@ -2952,14 +2989,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # _LT_LANG_C_CONFIG
 
 
-# _LT_PROG_CXX
-# ------------
-# Since AC_PROG_CXX is broken, in that it returns g++ if there is no c++
-# compiler, we have our own version here.
-# _LT_PROG_CXX
-
-
-
 # _LT_LANG_CXX_CONFIG([TAG])
 # --------------------------
 # Ensure that the configuration variables for a C++ compiler are suitably
@@ -2977,28 +3006,12 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # _LT_SYS_HIDDEN_LIBDEPS
 
 
-# _LT_PROG_F77
-# ------------
-# Since AC_PROG_F77 is broken, in that it returns the empty string
-# if there is no fortran compiler, we have our own version here.
-# _LT_PROG_F77
-
-
-
 # _LT_LANG_F77_CONFIG([TAG])
 # --------------------------
 # Ensure that the configuration variables for a Fortran 77 compiler are
 # suitably defined.  These variables are subsequently used by _LT_CONFIG
 # to write the compiler configuration to `libtool'.
 # _LT_LANG_F77_CONFIG
-
-
-# _LT_PROG_FC
-# -----------
-# Since AC_PROG_FC is broken, in that it returns the empty string
-# if there is no fortran compiler, we have our own version here.
-# _LT_PROG_FC
-
 
 
 # _LT_LANG_FC_CONFIG([TAG])
