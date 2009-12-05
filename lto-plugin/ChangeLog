@@ -1,3 +1,8 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR bootstrap/42096

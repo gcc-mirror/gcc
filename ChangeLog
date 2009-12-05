@@ -1,3 +1,13 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR target/38384
+	PR bootstrap/40972
+	* libtool.m4: Sync from git Libtool.
+	* ltoptions.m4: Likewise.
+	* ltversion.m4: Likewise.
+	* lt~obsolete.m4: Likewise.
+	* ltmain.sh: Likewise.
+
 2009-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac: Update minimum MPC version to 0.8.

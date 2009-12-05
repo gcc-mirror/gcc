@@ -1,3 +1,7 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2009-12-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/thumb2.md (thumb2_mulsi_short_compare0): Use a low-register

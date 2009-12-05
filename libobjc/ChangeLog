@@ -1,3 +1,7 @@
+2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2009-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* sarray.c (sarray_free): Use old_buckets variable.

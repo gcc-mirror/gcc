@@ -181,7 +181,6 @@ libtool_VERSION = @libtool_VERSION@
 link_gomp = @link_gomp@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
