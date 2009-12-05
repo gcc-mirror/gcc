@@ -351,6 +351,7 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
 
       fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
       UPDATE_FS_FOR_PC (fs, DWARF_ALT_FRAME_RETURN_COLUMN);
+      fs->signal_frame = 1;
 
       return _URC_NO_REASON;
     }
