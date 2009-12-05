@@ -135,6 +135,7 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].loc.offset
     = (long) &sc->sc_iaoq[0] - new_cfa;
   fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
+  fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
 #endif /* inhibit_libc */
