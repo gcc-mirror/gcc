@@ -1310,7 +1310,7 @@
          (mult:SI (match_operand:SI 1 "register_operand" "%0")
 	          (match_operand:SI 2 "register_operand" "l"))
          (const_int 0)))
-   (clobber (match_scratch:SI 0 "=r"))]
+   (clobber (match_scratch:SI 0 "=l"))]
   "TARGET_THUMB2 && optimize_size"
   "muls\\t%0, %2, %0"
   [(set_attr "length" "2")

@@ -1,3 +1,8 @@
+2009-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/thumb2.md (thumb2_mulsi_short_compare0): Use a low-register
+	for the scratch.
+
 2009-12-04  David Daney  <ddaney@caviumnetworks.com>
 
 	PR rtl-optimization/42164
