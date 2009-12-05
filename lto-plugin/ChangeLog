@@ -1,7 +1,8 @@
-2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+2009-12-05  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* configure: Regenerate.
-	* Makefile.in: Regenerate.
+	PR bootstrap/42306
+	* configure: Regenerated.
+	* Makefile.in: Likewise.
 
 2009-11-19  Rafael Avila de Espindola  <espindola@google.com>
 
