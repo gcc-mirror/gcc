@@ -89,6 +89,7 @@ along with GCC; see the file COPYING3.  If not see
    %{!shared:%{pg:-L/lib/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
+   %{!shared:%{!static:%{rdynamic:-E}}}\
    -z %{mlinker-opt:-O} %{!shared:-u main}\
    %{static:-a archive} %{shared:-b}"
 #else
@@ -99,6 +100,7 @@ along with GCC; see the file COPYING3.  If not see
    %{!shared:%{pg:-L/lib/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
+   %{!shared:%{!static:%{rdynamic:-E}}}\
    -z %{mlinker-opt:-O} %{!shared:-u main}\
    %{static:-a archive} %{shared:-b}"
 #endif

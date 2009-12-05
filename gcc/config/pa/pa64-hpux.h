@@ -32,7 +32,8 @@ along with GCC; see the file COPYING3.  If not see
    %{!shared:%{pg:-L/lib/pa20_64/libp -L/usr/lib/pa20_64/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
-   %{mhp-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O}\
+   %{!shared:%{!static:%{rdynamic:-E}}}\
+   %{mhp-ld:+Accept TypeMismatch -z} %{mlinker-opt:-O}\
    %{!shared:-u main %{!nostdlib:%{!nodefaultlibs:-u __cxa_finalize}}}\
    %{static:-a archive} %{shared:%{mhp-ld:-b}%{!mhp-ld:-shared}}"
 #else
@@ -43,7 +44,8 @@ along with GCC; see the file COPYING3.  If not see
    %{!shared:%{pg:-L/lib/pa20_64/libp -L/usr/lib/pa20_64/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
-   %{!mgnu-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O}\
+   %{!shared:%{!static:%{rdynamic:-E}}}\
+   %{!mgnu-ld:+Accept TypeMismatch -z} %{mlinker-opt:-O}\
    %{!shared:-u main %{!nostdlib:%{!nodefaultlibs:-u __cxa_finalize}}}\
    %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}}"
 #endif
