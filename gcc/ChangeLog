@@ -1,3 +1,7 @@
+2009-12-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi: Document MPC is required.
+
 2009-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-md (g): Add HImode and QImode.
