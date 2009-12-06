@@ -321,6 +321,16 @@ default library search path.  See also @option{--with-mpfr-lib} and
 distribution is found in a subdirectory of your GCC sources named
 @file{mpfr}, it will be built together with GCC@.
 
+@item MPC Library version 0.8.0 (or later)
+
+Necessary to build GCC@.  It can be downloaded from
+@uref{http://www.multiprecision.org/}.  The @option{--with-mpc}
+configure option should be used if your MPC Library is not installed
+in your default library search path.  See also @option{--with-mpc-lib}
+and @option{--with-mpc-include}.  Alternatively, if an MPC source
+distribution is found in a subdirectory of your GCC sources named
+@file{mpc}, it will be built together with GCC@.
+
 @item Parma Polyhedra Library (PPL) version 0.10
 
 Necessary to build GCC with the Graphite loop optimizations.
@@ -343,18 +353,6 @@ not installed in your default library search path.
 @item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
 
 Necessary to build libgcj, the GCJ runtime.
-
-@item MPC Library version 0.8.0 (or later)
-
-Optional when building GCC@.  Having this library will enable
-additional optimizations on complex numbers.  It can be downloaded
-from @uref{http://www.multiprecision.org/mpc/}.  The
-@option{--with-mpc} configure option should be used if your MPC
-Library is not installed in your default library search path.  See
-also @option{--with-mpc-lib} and @option{--with-mpc-include}.
-Alternatively, if an MPC source distribution is found in a
-subdirectory of your GCC sources named @file{mpc}, it will be built
-together with GCC@.
 
 @item libelf version 0.8.12 (or later)
 

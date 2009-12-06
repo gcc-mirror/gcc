@@ -1228,12 +1228,9 @@ ENABLE_BUILD_WITH_CXX=$enableval,
 ENABLE_BUILD_WITH_CXX=no)
 
 # Check for GMP, MPFR and MPC
-gmplibs="-lmpfr -lgmp"
+gmplibs="-lmpc -lmpfr -lgmp"
 gmpinc=
 have_gmp=no
-mpclibs=-lmpc
-mpcinc=
-have_mpc=no
 
 # Specify a location for mpc
 # check for this first so it ends up on the link line before mpfr.
@@ -1245,23 +1242,23 @@ AC_ARG_WITH(mpc_include, [  --with-mpc-include=PATH
 AC_ARG_WITH(mpc_lib, [  --with-mpc-lib=PATH    specify directory for the installed MPC library])
 
 if test "x$with_mpc" != x; then
-  mpclibs="-L$with_mpc/lib -lmpc"
-  mpcinc="-I$with_mpc/include $mpcinc"
+  gmplibs="-L$with_mpc/lib $gmplibs"
+  gmpinc="-I$with_mpc/include $gmpinc"
 fi
 if test "x$with_mpc_include" != x; then
-  mpcinc="-I$with_mpc_include $mpcinc"
+  gmpinc="-I$with_mpc_include $gmpinc"
 fi
 if test "x$with_mpc_lib" != x; then
-  mpclibs="-L$with_mpc_lib -lmpc"
+  gmplibs="-L$with_mpc_lib $gmplibs"
 fi
 if test "x$with_mpc$with_mpc_include$with_mpc_lib" = x && test -d ${srcdir}/mpc; then
-  mpclibs='-L$$r/$(HOST_SUBDIR)/mpc/src/.libs -L$$r/$(HOST_SUBDIR)/mpc/src/_libs -lmpc'
-  mpcinc='-I$$s/mpc/src '"$mpcinc"
+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpc/src/.libs -L$$r/$(HOST_SUBDIR)/mpc/src/_libs '"$gmplibs"
+  gmpinc='-I$$s/mpc/src '"$gmpinc"
   # Do not test the mpc version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
   # hence making the test fail.
-  have_mpc=yes
+  have_gmp=yes
 fi
 
 # Specify a location for mpfr
@@ -1279,10 +1276,10 @@ AC_ARG_WITH(mpfr_lib, [  --with-mpfr-lib=PATH    specify directory for the insta
 
 if test "x$with_mpfr" != x; then
   gmplibs="-L$with_mpfr/lib $gmplibs"
-  gmpinc="-I$with_mpfr/include"
+  gmpinc="-I$with_mpfr/include $gmpinc"
 fi
 if test "x$with_mpfr_include" != x; then
-  gmpinc="-I$with_mpfr_include"
+  gmpinc="-I$with_mpfr_include $gmpinc"
 fi
 if test "x$with_mpfr_lib" != x; then
   gmplibs="-L$with_mpfr_lib $gmplibs"
@@ -1363,85 +1360,56 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   fi
 
   # Check for the MPC header version.
-  if test x"$have_mpc" != xyes ; then
-    CFLAGS="$CFLAGS $mpcinc"
+  if test x"$have_gmp" = xyes ; then
     AC_MSG_CHECKING([for the correct version of mpc.h])
     AC_TRY_COMPILE([#include <mpc.h>],[
     #if MPC_VERSION < MPC_VERSION_NUM (0,8,0)
     choke me
     #endif
-    ], [AC_MSG_RESULT([yes]); have_mpc=maybe],
-       [AC_MSG_RESULT([no]); have_mpc=no; mpclibs= ; mpcinc= ])
+    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
   fi
 
   # Now check the MPFR library.
   if test x"$have_gmp" = xyes; then
     saved_LIBS="$LIBS"
     LIBS="$LIBS $gmplibs"
-    AC_MSG_CHECKING([for the correct version of the gmp/mpfr libraries])
-    AC_TRY_LINK([#include <gmp.h>
-    #include <mpfr.h>],[
+    AC_MSG_CHECKING([for the correct version of the gmp/mpfr/mpc libraries])
+    AC_TRY_LINK([#include <mpc.h>],[
     mpfr_t n;
     mpfr_t x;
+    mpc_t c;
     int t;
     mpfr_init (n);
     mpfr_init (x);
     mpfr_atan2 (n, n, x, GMP_RNDN);
     mpfr_erfc (n, x, GMP_RNDN);
     mpfr_subnormalize (x, t, GMP_RNDN);
+    mpfr_clear(n);
+    mpfr_clear(x);
+    mpc_init2 (c, 53);
+    mpc_set_ui_ui (c, 1, 1, MPC_RNDNN);
+    mpc_cosh (c, c, MPC_RNDNN);
+    mpc_pow (c, c, c, MPC_RNDNN);
+    mpc_acosh (c, c, MPC_RNDNN);
+    mpc_clear (c);
     ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
-    LIBS="$saved_LIBS"
-  fi
-
-  if test x"$have_mpc" = xmaybe; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS $mpclibs $gmplibs"
-    AC_MSG_CHECKING([for the correct version of the mpc library])
-    AC_TRY_LINK([#include <mpc.h>],[
-    mpc_t n;
-    mpc_init2 (n, 53);
-    mpc_set_ui_ui (n, 1, 1, MPC_RNDNN);
-    mpc_sin (n, n, MPC_RNDNN);
-    mpc_cos (n, n, MPC_RNDNN);
-    mpc_tan (n, n, MPC_RNDNN);
-    mpc_sinh (n, n, MPC_RNDNN);
-    mpc_cosh (n, n, MPC_RNDNN);
-    mpc_tanh (n, n, MPC_RNDNN);
-    mpc_exp (n, n, MPC_RNDNN);
-    mpc_log (n, n, MPC_RNDNN);
-    mpc_sqrt (n, n, MPC_RNDNN);
-    mpc_proj (n, n, MPC_RNDNN);
-    mpc_neg (n, n, MPC_RNDNN);
-    mpc_sqr (n, n, MPC_RNDNN);
-    mpc_pow (n, n, n, MPC_RNDNN);
-    mpc_acosh (n, n, MPC_RNDNN);
-    mpc_clear (n);
-    ], [AC_MSG_RESULT([yes]); have_mpc=yes],
-       [AC_MSG_RESULT([no]); have_mpc=no; mpclibs= ; mpcinc= ])
     LIBS="$saved_LIBS"
   fi
 
   CFLAGS="$saved_CFLAGS"
 
   if test x$have_gmp != xyes; then
-    AC_MSG_ERROR([Building GCC requires GMP 4.2+ and MPFR 2.3.2+.
-Try the --with-gmp and/or --with-mpfr options to specify their locations.
-Copies of these libraries' source code can be found at their respective
-hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
-See also http://gcc.gnu.org/install/prerequisites.html for additional info.
-If you obtained GMP and/or MPFR from a vendor distribution package, make
-sure that you have installed both the libraries and the header files.
-They may be located in separate packages.])
+    AC_MSG_ERROR([Building GCC requires GMP 4.2+, MPFR 2.3.2+ and MPC 0.8.0+.
+Try the --with-gmp, --with-mpfr and/or --with-mpc options to specify
+their locations.  Source code for these libraries can be found at
+their respective hosting sites as well as at
+ftp://gcc.gnu.org/pub/gcc/infrastructure/.  See also
+http://gcc.gnu.org/install/prerequisites.html for additional info.  If
+you obtained GMP, MPFR and/or MPC from a vendor distribution package,
+make sure that you have installed both the libraries and the header
+files.  They may be located in separate packages.])
   fi
 fi
-
-if test x$have_mpc != xyes ; then
-  mpcinc=
-  mpclibs=
-fi
-
-gmpinc="$mpcinc $gmpinc"
-gmplibs="$mpclibs $gmplibs"
 
 # Flags needed for both GMP, MPFR and/or MPC.
 AC_SUBST(gmplibs)
