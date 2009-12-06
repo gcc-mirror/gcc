@@ -1,3 +1,30 @@
+2009-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-md (g): Add HImode and QImode.
+	(general_szext_operand): New mode attribute.
+	(*test<mode>_1): Macroize insn from *test{qi,hi,si}_1 using
+	SWI124 mode iterator.
+	(and<mode>3): Macroize expander from and{qi,hi,si,di}3 using
+	SWIM mode iterator.
+	(*and<mode>_2): Macroize insn from *and{qi,hi,si}_2 using
+	SWI124 mode iterator.
+	(ior<mode>3): Macroize expander from ior{qi,hi,si,di}3 using
+	SWIM mode iterator.
+	(*ior<mode>_1): Macroize insn from *ior{hi,si,di}_1 using
+	SWI248 mode iterator.
+	(*ior<mode>_2): Macroize insn from *ior{qi,hi,si,di}_2 using
+	SWI mode iterator.
+	(*ior<mode>_3): Macroize insn from *ior{qi,hi,si,di}_3 using
+	SWI mode iterator.
+	(xor<mode>3): Macroize expander from xor{qi,hi,si,di}3 using
+	SWIM mode iterator.
+	(*xor<mode>_1): Macroize insn from *xor{hi,si,di}_1 using
+	SWI248 mode iterator.
+	(*xor<mode>_2): Macroize insn from *xor{qi,hi,si,di}_2 using
+	SWI mode iterator.
+	(*xor<mode>_3): Macroize insn from *xor{qi,hi,si,di}_3 using
+	SWI mode iterator.
+
 2009-12-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config/i386/i386.c (TARGET_DEFAULT_TARGET_FLAGS): Add
