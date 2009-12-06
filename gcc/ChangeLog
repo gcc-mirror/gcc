@@ -1,3 +1,9 @@
+2009-12-06  Richard Henderson  <rth@redhat.com>
+
+	PR debug/42234
+	* tree-ssa-dom.c (degenerate_phi_result): Check for NULL phi
+	argument earlier.
+
 2009-12-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Document MPC is required.
