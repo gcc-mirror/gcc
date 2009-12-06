@@ -346,7 +346,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 
     case GFC_DTYPE_DERIVED_2:
       if (GFC_UNALIGNED_2(ret->data) || GFC_UNALIGNED_2(array->data)
-	  || GFC_UNALIGNED_2(vector->data))
+	  || (vector && GFC_UNALIGNED_2(vector->data)))
 	break;
       else
 	{
@@ -357,7 +357,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 
     case GFC_DTYPE_DERIVED_4:
       if (GFC_UNALIGNED_4(ret->data) || GFC_UNALIGNED_4(array->data)
-	  || GFC_UNALIGNED_4(vector->data))
+	  || (vector && GFC_UNALIGNED_4(vector->data)))
 	break;
       else
 	{
@@ -368,7 +368,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 
     case GFC_DTYPE_DERIVED_8:
       if (GFC_UNALIGNED_8(ret->data) || GFC_UNALIGNED_8(array->data)
-	  || GFC_UNALIGNED_8(vector->data))
+	  || (vector && GFC_UNALIGNED_8(vector->data)))
 	break;
       else
 	{
@@ -379,7 +379,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 #ifdef HAVE_GFC_INTEGER_16
     case GFC_DTYPE_DERIVED_16:
       if (GFC_UNALIGNED_16(ret->data) || GFC_UNALIGNED_16(array->data)
-	  || GFC_UNALIGNED_16(vector->data))
+	  || (vector && GFC_UNALIGNED_16(vector->data)))
 	break;
       else
 	{
