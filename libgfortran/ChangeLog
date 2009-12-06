@@ -1,3 +1,10 @@
+2009-12-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41478
+	PR fortran/42268
+	* intrinsics/pack_generic.c (pack): Add safety checks for the case that
+	'vector' is NULL.
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
