@@ -2738,11 +2738,11 @@ Inverse function: @ref{ACOSH}
 @table @asis
 @item @emph{Description}:
 
-@code{COUNT(MASK [, DIM [, KIND]])} counts the number of @code{.TRUE.}
-elements of @var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is
-omitted it is taken to be @code{1}.  @var{DIM} is a scalar of type
-@code{INTEGER} in the range of @math{1 \leq DIM \leq n)} where @math{n}
-is the rank of @var{MASK}.
+Counts the number of @code{.TRUE.} elements in a logical @var{MASK},
+or, if the @var{DIM} argument is supplied, counts the number of
+elements along each row of the array in the @var{DIM} direction.
+If the array has zero size, or all of the elements of @var{MASK} are
+@code{.FALSE.}, then the result is @code{0}.
 
 @item @emph{Standard}:
 Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
@@ -2751,7 +2751,7 @@ Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = COUNT(MASK [, DIM [, KIND]])}
+@code{RESULT = COUNT(MASK [, DIM, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2764,7 +2764,9 @@ expression indicating the kind parameter of the result.
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @var{KIND} is absent, the return value is of default integer kind.
-The result has a rank equal to that of @var{MASK}.
+If @var{DIM} is present, the result is an array with a rank one less
+than the rank of @var{ARRAY}, and a size corresponding to the shape
+of @var{ARRAY} with the @var{DIM} dimension removed.
 
 @item @emph{Example}:
 @smallexample
