@@ -2396,6 +2396,8 @@ degenerate_phi_result (gimple phi)
 
       if (arg == lhs)
 	continue;
+      else if (!arg)
+	break;
       else if (!val)
 	val = arg;
       else if (arg == val)
@@ -2403,7 +2405,7 @@ degenerate_phi_result (gimple phi)
       /* We bring in some of operand_equal_p not only to speed things
 	 up, but also to avoid crashing when dereferencing the type of
 	 a released SSA name.  */
-      else if (!arg || TREE_CODE (val) != TREE_CODE (arg)
+      else if (TREE_CODE (val) != TREE_CODE (arg)
 	       || TREE_CODE (val) == SSA_NAME
 	       || !operand_equal_p (arg, val, 0))
 	break;
