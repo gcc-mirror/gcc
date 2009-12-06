@@ -1,3 +1,8 @@
+2009-12-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/40904
+	* intrinsics.texi: Fixed description of COUNT.
+
 2009-12-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/42131
