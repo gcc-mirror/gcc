@@ -1,3 +1,18 @@
+2009-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* acinclude.m4: Regenerated to pick:
+	2007-06-22 Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
+
+	* libtool.m4 (AC_LIBTOOL_SYS_DYNAMIC_LINKER) [linux]:
+	Ignore lines in ld.so.conf starting with 'hwcap '.
+
+	* configure: Regenerated.
+
+	2009-11-24  Peter O'Gorman  <peter@pogma.com>
+
+	Backport of libltdl changes from the 2.2.6b release.
+	* ltdl.c: Backport changes.
+
 2009-09-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* ltdl.h (LT_SCOPE): Change conditional to avoid breaking
