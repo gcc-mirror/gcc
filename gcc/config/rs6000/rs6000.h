@@ -158,6 +158,7 @@
 %{mcpu=e300c2: -me300} \
 %{mcpu=e300c3: -me300} \
 %{mcpu=e500mc: -me500mc} \
+%{mcpu=e500mc64: -me500mc64} \
 %{maltivec: -maltivec} \
 -many"
 
@@ -341,6 +342,7 @@ enum processor_type
    PROCESSOR_PPCE300C2,
    PROCESSOR_PPCE300C3,
    PROCESSOR_PPCE500MC,
+   PROCESSOR_PPCE500MC64,
    PROCESSOR_POWER4,
    PROCESSOR_POWER5,
    PROCESSOR_POWER6,

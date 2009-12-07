@@ -327,7 +327,7 @@ powerpc*-*-*)
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h"
 	need_64bit_hwint=yes
 	case x$with_cpu in
-	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[34567]|xpower6x|xrs64a|xcell|xa2)
+	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[34567]|xpower6x|xrs64a|xcell|xa2|xe500mc64)
 		cpu_is_64bit=yes
 		;;
 	esac
@@ -3081,7 +3081,7 @@ case "${target}" in
 			| 401 | 403 | 405 | 405fp | 440 | 440fp | 464 | 464fp \
 			| 476 | 476fp | 505 | 601 | 602 | 603 | 603e | ec603e \
 			| 604 | 604e | 620 | 630 | 740 | 750 | 7400 | 7450 \
-			| a2 | e300c[23] | 854[08] | e500mc \
+			| a2 | e300c[23] | 854[08] | e500mc | e500mc64 \
 			| 801 | 821 | 823 | 860 | 970 | G3 | G4 | G5 | cell)
 				# OK
 				;;
