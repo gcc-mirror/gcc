@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4.1\n"
+"Project-Id-Version: cpplib 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-02 14:22+0000\n"
-"PO-Revision-Date: 2009-09-08 18:00+0700\n"
+"PO-Revision-Date: 2009-12-07 14:00+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -119,9 +119,9 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "bukan ISO standar escape sequence, '\\%c'"
 
 #: charset.c:1321
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "escape sequence '\\%c' tidak diketahui"
+msgstr "escape sequence: '\\%c' tidak diketahui"
 
 #: charset.c:1329
 #, c-format
@@ -308,14 +308,12 @@ msgid "#pragma once in main file"
 msgstr "#pragma sekali dalam berkas utama"
 
 #: directives.c:1444
-#, fuzzy
 msgid "invalid #pragma push_macro directive"
-msgstr "#pragma GCC tidak valid merusak direktif"
+msgstr "#pragma push_macro direktif tidak valid"
 
 #: directives.c:1483
-#, fuzzy
 msgid "invalid #pragma pop_macro directive"
-msgstr "#pragma GCC tidak valid merusak direktif"
+msgstr "#pragma pop_macro direktif tidak valid"
 
 #: directives.c:1537
 msgid "invalid #pragma GCC poison directive"
@@ -456,9 +454,8 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "tradisional C menolah akhiran \"%.*s\""
 
 #: expr.c:377
-#, fuzzy
 msgid "suffix for double constant is a GCC extension"
-msgstr "konstanta titik-tetap adalah sebuah ekstensi GCC"
+msgstr "akhiran untuk konstanta ganda adalah sebuah ekstensi GCC"
 
 #: expr.c:383
 #, c-format
@@ -475,9 +472,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "akhiran \"%.*s\" tidak valid dalam konstanta integer"
 
 #: expr.c:427
-#, fuzzy
 msgid "use of C++0x long long integer constant"
-msgstr "penggunaan dari konstanta integer long long C99"
+msgstr "penggunaan dari konstanta integer long long C++0x"
 
 #: expr.c:436
 msgid "imaginary constants are a GCC extension"
@@ -737,21 +733,20 @@ msgstr "__VA_ARGS__ hanya dapat muncul dalam ekspansi dari sebuah variadik makro
 #: lex.c:547 lex.c:624
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "pengidentifikasi \"%s\" adalah nama operator spesial dalam C++"
 
 #: lex.c:739
 msgid "raw string delimiter longer than 16 characters"
-msgstr ""
+msgstr "pembatas law string lebih panjang dari 16 karakter"
 
 #: lex.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "karakter universal %.*s tidak valid dalam sebuah pengidentifikasi"
+msgstr "karakter '%c' tidak valid dalam pembatas mentas string"
 
 #: lex.c:771 lex.c:818
-#, fuzzy
 msgid "unterminated raw string"
-msgstr "tidak terselesaikan #%s"
+msgstr "tidak terselesaikan raw string"
 
 #: lex.c:831 lex.c:930
 msgid "null character(s) preserved in literal"
