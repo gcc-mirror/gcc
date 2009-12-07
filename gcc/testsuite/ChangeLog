@@ -1,3 +1,9 @@
+2009-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/sse-12.c: Add -mabm to dg-options, mention
+	abmintrin.h is also tested.
+	* gcc.target/i386/sse-13.c: Likewise.
+
 2009-12-07  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/41940
@@ -19,7 +25,7 @@
 
 	* gcc.target/powerpc/ppc-eq0-1.c: Adjust testcase for isel
 	targets.
-	
+
 2009-12-06  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.c-torture/execute/vla-dealloc-1.c: Use lower loop count

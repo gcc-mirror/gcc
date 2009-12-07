@@ -1,3 +1,11 @@
+2009-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (bdesc_special_args): Move __builtin_clzs from
+	this array ...
+	(bdesc_args): ... here.
+	* config.gcc (i[34567]86-*-*): Include abmintrin.h.
+	(x86_64-*-*): Likewise.
+
 2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config.gcc (i[34567]86-*-*, x86_64-*-*): Add popcntintrin.h.
