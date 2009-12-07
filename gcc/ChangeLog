@@ -1,5 +1,10 @@
 2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add -mlwp to the
+	options when bit_LWP is set.
+
+2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* config/i386/cpuid.h (bit_ABM): New.
 	* config/i386/driver-i386.c (host_detect_local_cpu): Add -mabm to the
 	options when bit_ABM is set.
