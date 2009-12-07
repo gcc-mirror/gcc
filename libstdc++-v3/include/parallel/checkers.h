@@ -32,9 +32,9 @@
 #ifndef _GLIBCXX_PARALLEL_CHECKERS_H
 #define _GLIBCXX_PARALLEL_CHECKERS_H 1
 
-#include <functional>
 #include <cstdio>
 #include <bits/stl_algobase.h>
+#include <bits/stl_function.h>
 
 namespace __gnu_parallel
 {
