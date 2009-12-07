@@ -1,3 +1,8 @@
+2009-12-07  Edmar Wienskoski  <edmar@freescale.com>
+
+	* gcc.target/powerpc/ppc-eq0-1.c: Adjust testcase for isel
+	targets.
+	
 2009-12-06  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.c-torture/execute/vla-dealloc-1.c: Use lower loop count
