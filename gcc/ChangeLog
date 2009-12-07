@@ -1,5 +1,16 @@
 2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* config.gcc (i[34567]86-*-*, x86_64-*-*): Add popcntintrin.h.
+	* config/i386/abmintrin.h (_mm_popcnt_u32, _mm_popcnt_u64): Moved...
+	* config/i386/i386-c.c (__POPCNT__): Defined.
+	* config/i386/popcntintrin.h: ...here.  New file.
+	* config/i386/smmintrin.h (_mm_popcnt_u32, _mm_popcnt_u64): Moved...
+	Include popcntintrin.h.
+	* config/i386/x86intrin.h: Include popcntintrin.h when __POPCNT__
+	is defined.
+
+2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* config/i386/i386-protos.h (ix86_expand_fma4_multiple_memory):
 	Removed.
 	* config/i386/i386.c (ix86_expand_fma4_multiple_memory): Removed.
