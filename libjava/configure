@@ -23506,7 +23506,7 @@ esac
 # for now.  If you change this, you also must update natFile.cc.
 for ac_header in unistd.h bstring.h sys/time.h sys/types.h fcntl.h \
 		  sys/ioctl.h sys/filio.h sys/stat.h sys/select.h \
-		  sys/socket.h netinet/in.h arpa/inet.h netdb.h net/if.h \
+		  sys/socket.h netinet/in.h arpa/inet.h netdb.h \
 		  pwd.h sys/config.h stdint.h langinfo.h locale.h \
 		  dirent.h sys/rw_lock.h magic.h ifaddrs.h
 do :
@@ -23521,6 +23521,26 @@ _ACEOF
 fi
 
 done
+
+
+# sys/socket.h is a prerequisite for net/if.h on Solaris.
+for ac_header in net/if.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "net/if.h" "ac_cv_header_net_if_h" "
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
+"
+if test "x$ac_cv_header_net_if_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NET_IF_H 1
+_ACEOF
+
+fi
+
+done
+
 
 for ac_header in inttypes.h
 do :
