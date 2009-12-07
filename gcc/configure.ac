@@ -4259,10 +4259,6 @@ fi
 AC_ARG_VAR(GMPLIBS,[How to link GMP])
 AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
-case "${GMPLIBS}" in
-  *-lmpc*) AC_DEFINE(HAVE_mpc, 1, [Define if mpc is in use.]) ;;
-esac
-
 AC_ARG_VAR(PPLLIBS,[How to link PPL])
 AC_ARG_VAR(PPLINC,[How to find PPL include files])
 

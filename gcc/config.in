@@ -1477,12 +1477,6 @@
 #endif
 
 
-/* Define if mpc is in use. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_mpc
-#endif
-
-
 /* Define as const if the declaration of iconv() needs const. */
 #ifndef USED_FOR_TARGET
 #undef ICONV_CONST

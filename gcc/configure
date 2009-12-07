@@ -24951,12 +24951,6 @@ fi
 
 
 
-case "${GMPLIBS}" in
-  *-lmpc*)
-$as_echo "#define HAVE_mpc 1" >>confdefs.h
- ;;
-esac
-
 
 
 

@@ -1,6 +1,10 @@
 2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/40302
+	* configure.ac (HAVE_mpc): Don't define.
+	* config.in, configure: Regenerate.
+
+	PR other/40302
 	* builtins.c: Remove HAVE_mpc* checks throughout.
 	* fold-const.c: Likewise.
 	* real.h: Likewise.
