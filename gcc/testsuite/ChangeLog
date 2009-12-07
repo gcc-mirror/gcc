@@ -1,3 +1,8 @@
+2009-12-07  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/41940
+        * gfortran.dg/allocate_scalar_with_shape.f90: New.
+
 2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/40302

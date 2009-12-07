@@ -2502,6 +2502,12 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
+      if (gfc_peek_ascii_char () == '(' && !sym->attr.dimension)
+	{
+	  gfc_error ("Shape specification for allocatable scalar at %C");
+	  goto cleanup;
+	}
+
       if (gfc_match_char (',') != MATCH_YES)
 	break;
 
