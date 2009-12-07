@@ -1580,7 +1580,7 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:AVX256MODEF2P 0 "register_operand" "")
-	(plogic:AVX256MODEF2P
+	(any_logic:AVX256MODEF2P
 	  (match_operand:AVX256MODEF2P 1 "nonimmediate_operand" "")
 	  (match_operand:AVX256MODEF2P 2 "nonimmediate_operand" "")))]
   "AVX256_VEC_FLOAT_MODE_P (<MODE>mode)"
@@ -1588,19 +1588,19 @@
 
 (define_insn "*avx_<code><mode>3"
   [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
-	(plogic:AVXMODEF2P
+	(any_logic:AVXMODEF2P
 	  (match_operand:AVXMODEF2P 1 "nonimmediate_operand" "%x")
 	  (match_operand:AVXMODEF2P 2 "nonimmediate_operand" "xm")))]
   "AVX_VEC_FLOAT_MODE_P (<MODE>mode)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "v<plogicprefix>p<avxmodesuffixf2c>\t{%2, %1, %0|%0, %1, %2}"
+  "v<logicprefix>p<avxmodesuffixf2c>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<avxvecmode>")])
 
 (define_expand "<code><mode>3"
   [(set (match_operand:SSEMODEF2P 0 "register_operand" "")
-	(plogic:SSEMODEF2P
+	(any_logic:SSEMODEF2P
 	  (match_operand:SSEMODEF2P 1 "nonimmediate_operand" "")
 	  (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "")))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)"
@@ -1608,12 +1608,12 @@
 
 (define_insn "*<code><mode>3"
   [(set (match_operand:SSEMODEF2P 0 "register_operand" "=x")
-	(plogic:SSEMODEF2P
+	(any_logic:SSEMODEF2P
 	  (match_operand:SSEMODEF2P 1 "nonimmediate_operand" "%0")
 	  (match_operand:SSEMODEF2P 2 "nonimmediate_operand" "xm")))]
   "SSE_VEC_FLOAT_MODE_P (<MODE>mode)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "<plogicprefix>p<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
+  "<logicprefix>p<ssemodesuffixf2c>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "mode" "<MODE>")])
 
@@ -1665,22 +1665,22 @@
 
 (define_insn "*avx_<code><mode>3"
   [(set (match_operand:MODEF 0 "register_operand" "=x")
-	(plogic:MODEF
+	(any_logic:MODEF
 	  (match_operand:MODEF 1 "register_operand" "x")
 	  (match_operand:MODEF 2 "register_operand" "x")))]
   "AVX_FLOAT_MODE_P (<MODE>mode)"
-  "v<plogicprefix>p<ssemodefsuffix>\t{%2, %1, %0|%0, %1, %2}"
+  "v<logicprefix>p<ssemodefsuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<ssevecmode>")])
 
 (define_insn "*<code><mode>3"
   [(set (match_operand:MODEF 0 "register_operand" "=x")
-	(plogic:MODEF
+	(any_logic:MODEF
 	  (match_operand:MODEF 1 "register_operand" "0")
 	  (match_operand:MODEF 2 "register_operand" "x")))]
   "SSE_FLOAT_MODE_P (<MODE>mode)"
-  "<plogicprefix>p<ssemodefsuffix>\t{%2, %0|%0, %2}"
+  "<logicprefix>p<ssemodefsuffix>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "mode" "<ssevecmode>")])
 
@@ -6564,7 +6564,7 @@
 
 (define_expand "<code><mode>3"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
-	(plogic:SSEMODEI
+	(any_logic:SSEMODEI
 	  (match_operand:SSEMODEI 1 "nonimmediate_operand" "")
 	  (match_operand:SSEMODEI 2 "nonimmediate_operand" "")))]
   "TARGET_SSE"
@@ -6572,53 +6572,53 @@
 
 (define_insn "*avx_<code><mode>3"
   [(set (match_operand:AVX256MODEI 0 "register_operand" "=x")
-        (plogic:AVX256MODEI
+        (any_logic:AVX256MODEI
           (match_operand:AVX256MODEI 1 "nonimmediate_operand" "%x")
           (match_operand:AVX256MODEI 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "v<plogicprefix>ps\t{%2, %1, %0|%0, %1, %2}"
+  "v<logicprefix>ps\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<avxvecpsmode>")])
 
 (define_insn "*sse_<code><mode>3"
   [(set (match_operand:SSEMODEI 0 "register_operand" "=x")
-        (plogic:SSEMODEI
+        (any_logic:SSEMODEI
           (match_operand:SSEMODEI 1 "nonimmediate_operand" "%0")
           (match_operand:SSEMODEI 2 "nonimmediate_operand" "xm")))]
   "(TARGET_SSE && !TARGET_SSE2)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "<plogicprefix>ps\t{%2, %0|%0, %2}"
+  "<logicprefix>ps\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "mode" "V4SF")])
 
 (define_insn "*avx_<code><mode>3"
   [(set (match_operand:SSEMODEI 0 "register_operand" "=x")
-        (plogic:SSEMODEI
+        (any_logic:SSEMODEI
           (match_operand:SSEMODEI 1 "nonimmediate_operand" "%x")
           (match_operand:SSEMODEI 2 "nonimmediate_operand" "xm")))]
   "TARGET_AVX
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "vp<plogicprefix>\t{%2, %1, %0|%0, %1, %2}"
+  "vp<logicprefix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")
    (set_attr "mode" "TI")])
 
 (define_insn "*sse2_<code><mode>3"
   [(set (match_operand:SSEMODEI 0 "register_operand" "=x")
-	(plogic:SSEMODEI
+	(any_logic:SSEMODEI
 	  (match_operand:SSEMODEI 1 "nonimmediate_operand" "%0")
 	  (match_operand:SSEMODEI 2 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<plogicprefix>\t{%2, %0|%0, %2}"
+  "p<logicprefix>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
 (define_expand "<code>tf3"
   [(set (match_operand:TF 0 "register_operand" "")
-	(plogic:TF
+	(any_logic:TF
 	  (match_operand:TF 1 "nonimmediate_operand" "")
 	  (match_operand:TF 2 "nonimmediate_operand" "")))]
   "TARGET_SSE2"
@@ -6626,11 +6626,11 @@
 
 (define_insn "*<code>tf3"
   [(set (match_operand:TF 0 "register_operand" "=x")
-	(plogic:TF
+	(any_logic:TF
 	  (match_operand:TF 1 "nonimmediate_operand" "%0")
 	  (match_operand:TF 2 "nonimmediate_operand" "xm")))]
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, TFmode, operands)"
-  "p<plogicprefix>\t{%2, %0|%0, %2}"
+  "p<logicprefix>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
