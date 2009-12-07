@@ -98,9 +98,17 @@ along with GCC; see the file COPYING3.  If not see
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
-#define ASM_SPEC \
-  "%{V} %{v:%{!V:-V}} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
-   %{fpic|fPIC|fpie|fPIE:-K PIC} %(asm_cpu) %(asm_relax)"
+#define ASM_SPEC "\
+%{V} \
+%{v:%{!V:-V}} \
+%{!Qn:-Qy} \
+%{n} \
+%{T} \
+%{Ym,*} \
+%{Wa,*:%*} \
+-s \
+%{fpic|fPIC|fpie|fPIE|findirect-dispatch:-K PIC} \
+%(asm_cpu) %(asm_relax)"
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
