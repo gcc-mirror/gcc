@@ -1197,9 +1197,9 @@
 )
 
 (define_insn "*thumb2_addsi_short"
-  [(set (match_operand:SI 0 "low_register_operand" "=l")
-	(plus:SI (match_operand:SI 1 "low_register_operand" "l")
-		 (match_operand:SI 2 "low_reg_or_int_operand" "lIL")))
+  [(set (match_operand:SI 0 "low_register_operand" "=l,l")
+	(plus:SI (match_operand:SI 1 "low_register_operand" "l,0")
+		 (match_operand:SI 2 "low_reg_or_int_operand" "lPt,Ps")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed"
   "*
