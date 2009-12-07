@@ -1,3 +1,8 @@
+2009-12-07  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/constraints.md (Ps, Pt): New constraint letters.
+	* config/arm/thumb2.md (*thumb2_addsi_short): Tighten constraints.
+
 2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/40302
