@@ -1,5 +1,14 @@
 2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* config/i386/i386-protos.h (ix86_expand_fma4_multiple_memory):
+	Removed.
+	* config/i386/i386.c (ix86_expand_fma4_multiple_memory): Removed.
+	* config/i386/sse.md: Remove all XOP splitters.
+	Allow the second and fourth operands of XOP multiply-add insns
+	to be nonimmediate.
+
+2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* config/i386/sse.md: Remove all FMA4 splitters.
 	Allow the second operand of FMA4 insns to be a nonimmediate.
 	Fix comments punctuation.
