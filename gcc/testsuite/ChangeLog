@@ -1,3 +1,8 @@
+2009-12-06  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* gcc.c-torture/execute/vla-dealloc-1.c: Use lower loop count
+	for 16bit int targets.
+
 2009-12-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41478
