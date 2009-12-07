@@ -5,7 +5,6 @@
    Origin: Kaveh R. Ghazi,  August 13, 2009.  */
 
 /* { dg-do run } */
-/* { dg-require-effective-target mpc_pow } */
 /* { dg-add-options ieee } */
 
 extern void link_error(int);

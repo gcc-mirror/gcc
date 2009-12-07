@@ -1,5 +1,4 @@
 ! { dg-do link }
-! { dg-require-effective-target mpc_arc }
 !
 ! PR fortran/33197
 !

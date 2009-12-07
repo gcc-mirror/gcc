@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-require-effective-target mpc }
 ! { dg-options "-fdump-tree-original" }
 !
 ! PR fortran/33197

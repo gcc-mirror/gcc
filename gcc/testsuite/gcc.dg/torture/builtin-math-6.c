@@ -6,7 +6,6 @@
    Origin: Kaveh R. Ghazi,  January 28, 2009.  */
 
 /* { dg-do link } */
-/* { dg-require-effective-target mpc_arc } */
 
 /* All references to link_error should go away at compile-time.  The
    first number is the line number and the second is the value number
