@@ -1087,7 +1087,7 @@
 
 (define_expand "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "")
-	(plogic:MMXMODEI
+	(any_logic:MMXMODEI
 	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "")
 	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "")))]
   "TARGET_MMX"
@@ -1095,11 +1095,11 @@
 
 (define_insn "*mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y")
-        (plogic:MMXMODEI
+        (any_logic:MMXMODEI
 	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
 	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
   "TARGET_MMX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<plogicprefix>\t{%2, %0|%0, %2}"
+  "p<logicprefix>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 

@@ -1,5 +1,20 @@
 2009-12-07  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (any_or): New code iterator.
+	(any_logic): Rename from plogic code iterator.
+	(logicprefix): Rename from plogicprefix code attribute.
+	(<code><mode>3): Macroize expander from {ior,xor}<mode>3 using
+	any_or code iterator.
+	(*<code><mode>_1): Macroize insn from *{ior,xor}<mode>_1 using
+	any_or code iterator.
+	(*<code><mode>_2): Ditto from *{ior,xor}<mode>_2.
+	(*<code><mode>_3): Ditto from *{ior,xor}<mode>_3.
+	(ior and xor splitters): Ditto.
+	* config/i386/mmx.md: Updated for rename.
+	* config/i386/sse.md: Ditto.
+
+2009-12-07  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (float<SSEMODEI24:mode><X87MODEF:mode>2):
 	Remove quotes around condition logic code.
 
@@ -15,7 +30,7 @@
 
 2009-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386-md (g): Add HImode and QImode.
+	* config/i386/i386.md (g): Add HImode and QImode.
 	(general_szext_operand): New mode attribute.
 	(*test<mode>_1): Macroize insn from *test{qi,hi,si}_1 using
 	SWI124 mode iterator.
