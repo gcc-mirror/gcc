@@ -1,5 +1,10 @@
 2009-12-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/42244
+	* gcc.dg/debug/pr42244.c: New test.
+
+2009-12-07  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.target/i386/sse-12.c: Add -mabm to dg-options, mention
 	abmintrin.h is also tested.
 	* gcc.target/i386/sse-13.c: Likewise.
