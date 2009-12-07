@@ -28808,36 +28808,6 @@ ix86_expand_round (rtx operand0, rtx operand1)
 }
 
 
-/* Fixup an FMA4 or XOP instruction that has 2 memory input references
-   into a form the hardware will allow by using the destination
-   register to load one of the memory operations.  Presently this is
-   used by the multiply/add routines to allow 2 memory references.  */
-
-bool
-ix86_expand_fma4_multiple_memory (rtx operands[],
-				  enum machine_mode mode)
-{
-  rtx scratch = operands[0];
-
-  gcc_assert (register_operand (operands[0], mode));
-  gcc_assert (register_operand (operands[1], mode));
-  gcc_assert (MEM_P (operands[2]) && MEM_P (operands[3]));
-
-  if (reg_mentioned_p (scratch, operands[1]))
-    {
-      if (!can_create_pseudo_p ())
-	return false;
-      scratch = gen_reg_rtx (mode);
-    }
-
-  emit_move_insn (scratch, operands[3]);
-  if (rtx_equal_p (operands[2], operands[3]))
-    operands[2] = operands[3] = scratch;
-  else
-    operands[3] = scratch;
-  return true;
-}
-
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ix86_attribute_table[] =
 {

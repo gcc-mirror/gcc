@@ -10132,89 +10132,50 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; XOP parallel integer multiply/add instructions.
-;; Note the instruction does not allow the value being added to be a memory
-;; operation.  However by pretending via the nonimmediate_operand predicate
-;; that it does and splitting it later allows the following to be recognized:
-;;	a[i] = b[i] * c[i] + d[i];
+;; Note the XOP multiply/add instructions
+;;     a[i] = b[i] * c[i] + d[i];
+;; do not allow the value being added to be a memory operation.
 (define_insn "xop_pmacsww"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
         (plus:V8HI
 	 (mult:V8HI
-	  (match_operand:V8HI 1 "register_operand" "%x")
+	  (match_operand:V8HI 1 "nonimmediate_operand" "%x")
 	  (match_operand:V8HI 2 "nonimmediate_operand" "xm"))
-	 (match_operand:V8HI 3 "register_operand" "x")))]
+	 (match_operand:V8HI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsww\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "TI")])
 
-;; Split pmacsww with two memory operands into a load and the pmacsww.
-(define_split
-  [(set (match_operand:V8HI 0 "register_operand" "")
-	(plus:V8HI
-	 (mult:V8HI (match_operand:V8HI 1 "register_operand" "")
-		    (match_operand:V8HI 2 "memory_operand" ""))
-	 (match_operand:V8HI 3 "memory_operand" "")))]
-  "TARGET_XOP"
-  [(set (match_dup 0)
-        (plus:V8HI
-         (mult:V8HI (match_dup 1) (match_dup 2))
-         (match_dup 3)))]
-{
-  if (!ix86_expand_fma4_multiple_memory (operands, V8HImode))
-    FAIL;
-})
-
 (define_insn "xop_pmacssww"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
         (ss_plus:V8HI
-	 (mult:V8HI (match_operand:V8HI 1 "register_operand" "%x")
+	 (mult:V8HI (match_operand:V8HI 1 "nonimmediate_operand" "%x")
 		    (match_operand:V8HI 2 "nonimmediate_operand" "xm"))
-	 (match_operand:V8HI 3 "register_operand" "x")))]
+	 (match_operand:V8HI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacssww\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "TI")])
 
-;; Note the instruction does not allow the value being added to be a memory
-;; operation.  However by pretending via the nonimmediate_operand predicate
-;; that it does and splitting it later allows the following to be recognized:
-;;	a[i] = b[i] * c[i] + d[i];
 (define_insn "xop_pmacsdd"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
         (plus:V4SI
 	 (mult:V4SI
-	  (match_operand:V4SI 1 "register_operand" "%x")
+	  (match_operand:V4SI 1 "nonimmediate_operand" "%x")
 	  (match_operand:V4SI 2 "nonimmediate_operand" "xm"))
-	 (match_operand:V4SI 3 "register_operand" "x")))]
+	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsdd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "TI")])
 
-;; Split pmacsdd with two memory operands into a load and the pmacsdd.
-(define_split
-  [(set (match_operand:V4SI 0 "register_operand" "")
-	(plus:V4SI
-	 (mult:V4SI (match_operand:V4SI 1 "register_operand" "")
-		    (match_operand:V4SI 2 "memory_operand" ""))
-	 (match_operand:V4SI 3 "memory_operand" "")))]
-  "TARGET_XOP"
-  [(set (match_dup 0)
-        (plus:V4SI
-         (mult:V4SI (match_dup 1) (match_dup 2))
-         (match_dup 3)))]
-{
-  if (!ix86_expand_fma4_multiple_memory (operands, V4SImode))
-    FAIL;
-})
-
 (define_insn "xop_pmacssdd"
   [(set (match_operand:V4SI 0 "register_operand" "=x")
         (ss_plus:V4SI
-	 (mult:V4SI (match_operand:V4SI 1 "register_operand" "%x")
+	 (mult:V4SI (match_operand:V4SI 1 "nonimmediate_operand" "%x")
 		    (match_operand:V4SI 2 "nonimmediate_operand" "xm"))
-	 (match_operand:V4SI 3 "register_operand" "x")))]
+	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacssdd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -10226,14 +10187,14 @@
 	 (mult:V2DI
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "%x")
+	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
 	    (parallel [(const_int 1)
 		       (const_int 3)])))
 	  (vec_select:V2SI
 	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	   (parallel [(const_int 1)
 		      (const_int 3)])))
-	 (match_operand:V2DI 3 "register_operand" "x")))]
+	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacssdql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -10245,7 +10206,7 @@
 	 (mult:V2DI
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "%x")
+	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
 	    (parallel [(const_int 0)
 		       (const_int 2)])))
 	  (sign_extend:V2DI
@@ -10253,7 +10214,7 @@
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 2)]))))
-	 (match_operand:V2DI 3 "register_operand" "x")))]
+	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacssdqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -10265,7 +10226,7 @@
 	 (mult:V2DI
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "%x")
+	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
 	    (parallel [(const_int 1)
 		       (const_int 3)])))
 	  (sign_extend:V2DI
@@ -10273,46 +10234,11 @@
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 1)
 		       (const_int 3)]))))
-	 (match_operand:V2DI 3 "register_operand" "x")))]
+	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsdql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "TI")])
-
-(define_insn_and_split "*xop_pmacsdql_mem"
-  [(set (match_operand:V2DI 0 "register_operand" "=&x")
-	(plus:V2DI
-	 (mult:V2DI
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "%x")
-	    (parallel [(const_int 1)
-		       (const_int 3)])))
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	    (parallel [(const_int 1)
-		       (const_int 3)]))))
-	 (match_operand:V2DI 3 "memory_operand" "m")))]
-  "TARGET_XOP"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(match_dup 3))
-   (set (match_dup 0)
-	(plus:V2DI
-	 (mult:V2DI
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 1)
-	    (parallel [(const_int 1)
-		       (const_int 3)])))
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 2)
-	    (parallel [(const_int 1)
-		       (const_int 3)]))))
-	 (match_dup 0)))])
 
 ;; We don't have a straight 32-bit parallel multiply and extend on XOP, so
 ;; fake it with a multiply/add.  In general, we expect the define_split to
@@ -10362,7 +10288,7 @@
 	 (mult:V2DI
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "%x")
+	    (match_operand:V4SI 1 "nonimmediate_operand" "%x")
 	    (parallel [(const_int 0)
 		       (const_int 2)])))
 	  (sign_extend:V2DI
@@ -10370,46 +10296,11 @@
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 2)]))))
-	 (match_operand:V2DI 3 "register_operand" "x")))]
+	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsdqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "TI")])
-
-(define_insn_and_split "*xop_pmacsdqh_mem"
-  [(set (match_operand:V2DI 0 "register_operand" "=&x")
-	(plus:V2DI
-	 (mult:V2DI
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "%x")
-	    (parallel [(const_int 0)
-		       (const_int 2)])))
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
-	    (parallel [(const_int 0)
-		       (const_int 2)]))))
-	 (match_operand:V2DI 3 "memory_operand" "m")))]
-  "TARGET_XOP"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(match_dup 3))
-   (set (match_dup 0)
-	(plus:V2DI
-	 (mult:V2DI
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 1)
-	    (parallel [(const_int 0)
-		       (const_int 2)])))
-	  (sign_extend:V2DI
-	   (vec_select:V2SI
-	    (match_dup 2)
-	    (parallel [(const_int 0)
-		       (const_int 2)]))))
-	 (match_dup 0)))])
 
 ;; We don't have a straight 32-bit parallel multiply and extend on XOP, so
 ;; fake it with a multiply/add.  In general, we expect the define_split to
@@ -10460,7 +10351,7 @@
 	 (mult:V4SI
 	  (sign_extend:V4SI
 	   (vec_select:V4HI
-	    (match_operand:V8HI 1 "register_operand" "%x")
+	    (match_operand:V8HI 1 "nonimmediate_operand" "%x")
 	    (parallel [(const_int 1)
 		       (const_int 3)
 		       (const_int 5)
@@ -10472,7 +10363,7 @@
 		       (const_int 3)
 		       (const_int 5)
 		       (const_int 7)]))))
-	 (match_operand:V4SI 3 "register_operand" "x")))]
+	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacsswd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -10484,7 +10375,7 @@
 	 (mult:V4SI
 	  (sign_extend:V4SI
 	   (vec_select:V4HI
-	    (match_operand:V8HI 1 "register_operand" "%x")
+	    (match_operand:V8HI 1 "nonimmediate_operand" "%x")
 	    (parallel [(const_int 1)
 		       (const_int 3)
 		       (const_int 5)
@@ -10496,7 +10387,7 @@
 		       (const_int 3)
 		       (const_int 5)
 		       (const_int 7)]))))
-	 (match_operand:V4SI 3 "register_operand" "x")))]
+	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmacswd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -10509,7 +10400,7 @@
 	  (mult:V4SI
 	   (sign_extend:V4SI
 	    (vec_select:V4HI
-	     (match_operand:V8HI 1 "register_operand" "%x")
+	     (match_operand:V8HI 1 "nonimmediate_operand" "%x")
 	     (parallel [(const_int 0)
 			(const_int 2)
 			(const_int 4)
@@ -10536,7 +10427,7 @@
 			(const_int 3)
 			(const_int 5)
 			(const_int 7)])))))
-	 (match_operand:V4SI 3 "register_operand" "x")))]
+	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmadcsswd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -10549,7 +10440,7 @@
 	  (mult:V4SI
 	   (sign_extend:V4SI
 	    (vec_select:V4HI
-	     (match_operand:V8HI 1 "register_operand" "%x")
+	     (match_operand:V8HI 1 "nonimmediate_operand" "%x")
 	     (parallel [(const_int 0)
 			(const_int 2)
 			(const_int 4)
@@ -10576,7 +10467,7 @@
 			(const_int 3)
 			(const_int 5)
 			(const_int 7)])))))
-	 (match_operand:V4SI 3 "register_operand" "x")))]
+	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
   "TARGET_XOP"
   "vpmadcswd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
