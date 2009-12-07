@@ -32,12 +32,12 @@
 #ifndef _GLIBCXX_PARALLEL_BASE_H
 #define _GLIBCXX_PARALLEL_BASE_H 1
 
-#include <functional>
+#include <bits/c++config.h>
+#include <bits/stl_function.h>
 #include <omp.h>
 #include <parallel/features.h>
 #include <parallel/basic_iterator.h>
 #include <parallel/parallel.h>
-
 
 // Parallel mode namespaces.
 

@@ -1,3 +1,14 @@
+2009-12-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/42319
+	* include/parallel/losertree.h: Include bits/stl_function.h instead
+	of the whole <functional>.
+	* include/parallel/base.h: Likewise.
+	* include/parallel/numeric: Likewise.
+	* include/parallel/balanced_quicksort.h: Likewise.
+	* include/parallel/checkers.h: Likewise.
+	* testsuite/17_intro/headers/c++200x/42319.cc: New.
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.

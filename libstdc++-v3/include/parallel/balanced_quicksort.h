@@ -44,12 +44,12 @@
 
 #include <parallel/basic_iterator.h>
 #include <bits/stl_algo.h>
+#include <bits/stl_function.h>
 
 #include <parallel/settings.h>
 #include <parallel/partition.h>
 #include <parallel/random_number.h>
 #include <parallel/queue.h>
-#include <functional>
 
 #if _GLIBCXX_ASSERTIONS
 #include <parallel/checkers.h>

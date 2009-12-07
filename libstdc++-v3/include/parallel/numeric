@@ -39,7 +39,7 @@
 #define _GLIBCXX_PARALLEL_NUMERIC_H 1
 
 #include <numeric>
-#include <functional>
+#include <bits/stl_function.h>
 #include <parallel/numericfwd.h>
 #include <parallel/iterator.h>
 #include <parallel/for_each.h>
