@@ -156,12 +156,7 @@ free_expr0 (gfc_expr *e)
 	  break;
 
 	case BT_COMPLEX:
-#ifdef HAVE_mpc
 	  mpc_clear (e->value.complex);
-#else
-	  mpfr_clear (e->value.complex.r);
-	  mpfr_clear (e->value.complex.i);
-#endif
 	  break;
 
 	default:
@@ -473,15 +468,8 @@ gfc_copy_expr (gfc_expr *p)
 
 	case BT_COMPLEX:
 	  gfc_set_model_kind (q->ts.kind);
-#ifdef HAVE_mpc
 	  mpc_init2 (q->value.complex, mpfr_get_default_prec());
 	  mpc_set (q->value.complex, p->value.complex, GFC_MPC_RND_MODE);
-#else
-	  mpfr_init (q->value.complex.r);
-	  mpfr_init (q->value.complex.i);
-	  mpfr_set (q->value.complex.r, p->value.complex.r, GFC_RND_MODE);
-	  mpfr_set (q->value.complex.i, p->value.complex.i, GFC_RND_MODE);
-#endif
 	  break;
 
 	case BT_CHARACTER:

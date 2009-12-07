@@ -283,12 +283,7 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	    break;
 
 	  case BT_COMPLEX:
-#ifdef HAVE_mpc
 	    mpc_set_si (e->value.complex, init, GFC_MPC_RND_MODE);
-#else
-	    mpfr_set_si (e->value.complex.r, init, GFC_RND_MODE);
-	    mpfr_set_si (e->value.complex.i, 0, GFC_RND_MODE);
-#endif
 	    break;
 
 	  case BT_CHARACTER:
@@ -644,12 +639,7 @@ gfc_simplify_abs (gfc_expr *e)
 
       gfc_set_model_kind (e->ts.kind);
 
-#ifdef HAVE_mpc
       mpc_abs (result->value.real, e->value.complex, GFC_RND_MODE);
-#else
-      mpfr_hypot (result->value.real, e->value.complex.r, 
-		  e->value.complex.i, GFC_RND_MODE);
-#endif
       result = range_check (result, "CABS");
       break;
 
@@ -749,13 +739,9 @@ gfc_simplify_acos (gfc_expr *x)
 	mpfr_acos (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
-#ifdef HAVE_mpc_arc
 	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 	mpc_acos (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 	break;
-#else
-	return NULL;
-#endif
       default:
 	gfc_internal_error ("in gfc_simplify_acos(): Bad type");
     }
@@ -786,13 +772,9 @@ gfc_simplify_acosh (gfc_expr *x)
 	mpfr_acosh (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
-#ifdef HAVE_mpc_arc
 	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 	mpc_acosh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 	break;
-#else
-	return NULL;
-#endif
       default:
 	gfc_internal_error ("in gfc_simplify_acosh(): Bad type");
     }
@@ -1054,13 +1036,9 @@ gfc_simplify_asin (gfc_expr *x)
 	mpfr_asin (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
-#ifdef HAVE_mpc_arc
 	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 	mpc_asin (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 	break;
-#else
-	return NULL;
-#endif
       default:
 	gfc_internal_error ("in gfc_simplify_asin(): Bad type");
     }
@@ -1084,13 +1062,9 @@ gfc_simplify_asinh (gfc_expr *x)
 	mpfr_asinh (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
-#ifdef HAVE_mpc_arc
 	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 	mpc_asinh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 	break;
-#else
-	return NULL;
-#endif
       default:
 	gfc_internal_error ("in gfc_simplify_asinh(): Bad type");
     }
@@ -1114,13 +1088,9 @@ gfc_simplify_atan (gfc_expr *x)
 	mpfr_atan (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
-#ifdef HAVE_mpc_arc
 	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 	mpc_atan (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 	break;
-#else
-	return NULL;
-#endif
       default:
 	gfc_internal_error ("in gfc_simplify_atan(): Bad type");
     }
@@ -1152,13 +1122,9 @@ gfc_simplify_atanh (gfc_expr *x)
 	mpfr_atanh (result->value.real, x->value.real, GFC_RND_MODE);
 	break;
       case BT_COMPLEX:
-#ifdef HAVE_mpc_arc
 	result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 	mpc_atanh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
 	break;
-#else
-	return NULL;
-#endif
       default:
 	gfc_internal_error ("in gfc_simplify_atanh(): Bad type");
     }
@@ -1357,36 +1323,19 @@ simplify_cmplx (const char *name, gfc_expr *x, gfc_expr *y, int kind)
 
   result = gfc_constant_result (BT_COMPLEX, kind, &x->where);
 
-#ifndef HAVE_mpc
-  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-#endif
-
   switch (x->ts.type)
     {
     case BT_INTEGER:
       if (!x->is_boz)
-#ifdef HAVE_mpc
 	mpc_set_z (result->value.complex, x->value.integer, GFC_MPC_RND_MODE);
-#else
-	mpfr_set_z (result->value.complex.r, x->value.integer, GFC_RND_MODE);
-#endif
       break;
 
     case BT_REAL:
-#ifdef HAVE_mpc
       mpc_set_fr (result->value.complex, x->value.real, GFC_RND_MODE);
-#else
-      mpfr_set (result->value.complex.r, x->value.real, GFC_RND_MODE);
-#endif
       break;
 
     case BT_COMPLEX:
-#ifdef HAVE_mpc
       mpc_set (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-      mpfr_set (result->value.complex.r, x->value.complex.r, GFC_RND_MODE);
-      mpfr_set (result->value.complex.i, x->value.complex.i, GFC_RND_MODE);
-#endif
       break;
 
     default:
@@ -1517,12 +1466,7 @@ gfc_simplify_conjg (gfc_expr *e)
     return NULL;
 
   result = gfc_copy_expr (e);
-#ifdef HAVE_mpc
   mpc_conj (result->value.complex, result->value.complex, GFC_MPC_RND_MODE);
-#else
-  mpfr_neg (result->value.complex.i, result->value.complex.i, GFC_RND_MODE);
-#endif
-
   return range_check (result, "CONJG");
 }
 
@@ -1544,26 +1488,7 @@ gfc_simplify_cos (gfc_expr *x)
       break;
     case BT_COMPLEX:
       gfc_set_model_kind (x->ts.kind);
-#ifdef HAVE_mpc
       mpc_cos (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-    {
-      mpfr_t xp, xq;
-      mpfr_init (xp);
-      mpfr_init (xq);
-
-      mpfr_cos  (xp, x->value.complex.r, GFC_RND_MODE);
-      mpfr_cosh (xq, x->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (result->value.complex.r, xp, xq, GFC_RND_MODE);
-
-      mpfr_sin  (xp, x->value.complex.r, GFC_RND_MODE);
-      mpfr_sinh (xq, x->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (xp, xp, xq, GFC_RND_MODE);
-      mpfr_neg (result->value.complex.i, xp, GFC_RND_MODE );
-
-      mpfr_clears (xp, xq, NULL);
-    }
-#endif
       break;
     default:
       gfc_internal_error ("in gfc_simplify_cos(): Bad type");
@@ -1587,14 +1512,7 @@ gfc_simplify_cosh (gfc_expr *x)
   if (x->ts.type == BT_REAL)
     mpfr_cosh (result->value.real, x->value.real, GFC_RND_MODE);
   else if (x->ts.type == BT_COMPLEX)
-    {
-#if HAVE_mpc
-      mpc_cosh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-      gfc_free_expr (result);
-      return NULL;
-#endif
-    }
+    mpc_cosh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
   else
     gcc_unreachable ();
 
@@ -2000,21 +1918,7 @@ gfc_simplify_exp (gfc_expr *x)
 
     case BT_COMPLEX:
       gfc_set_model_kind (x->ts.kind);
-#ifdef HAVE_mpc
       mpc_exp (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-    {
-      mpfr_t xp, xq;
-      mpfr_init (xp);
-      mpfr_init (xq);
-      mpfr_exp (xq, x->value.complex.r, GFC_RND_MODE);
-      mpfr_cos (xp, x->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (result->value.complex.r, xq, xp, GFC_RND_MODE);
-      mpfr_sin (xp, x->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (result->value.complex.i, xq, xp, GFC_RND_MODE);
-      mpfr_clears (xp, xq, NULL);
-    }
-#endif
       break;
 
     default:
@@ -3393,26 +3297,7 @@ gfc_simplify_log (gfc_expr *x)
 	}
 
       gfc_set_model_kind (x->ts.kind);
-#ifdef HAVE_mpc
       mpc_log (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-    {
-      mpfr_t xr, xi;
-      mpfr_init (xr);
-      mpfr_init (xi);
-
-      mpfr_atan2 (result->value.complex.i, x->value.complex.i,
-		  x->value.complex.r, GFC_RND_MODE);
-
-      mpfr_mul (xr, x->value.complex.r, x->value.complex.r, GFC_RND_MODE);
-      mpfr_mul (xi, x->value.complex.i, x->value.complex.i, GFC_RND_MODE);
-      mpfr_add (xr, xr, xi, GFC_RND_MODE);
-      mpfr_sqrt (xr, xr, GFC_RND_MODE);
-      mpfr_log (result->value.complex.r, xr, GFC_RND_MODE);
-
-      mpfr_clears (xr, xi, NULL);
-    }
-#endif
       break;
 
     default:
@@ -4305,12 +4190,7 @@ gfc_simplify_realpart (gfc_expr *e)
     return NULL;
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
-#ifdef HAVE_mpc
   mpc_real (result->value.real, e->value.complex, GFC_RND_MODE);
-#else
-  mpfr_set (result->value.real, e->value.complex.r, GFC_RND_MODE);
-#endif
-
   return range_check (result, "REALPART");
 }
 
@@ -5089,25 +4969,7 @@ gfc_simplify_sin (gfc_expr *x)
 
     case BT_COMPLEX:
       gfc_set_model (x->value.real);
-#ifdef HAVE_mpc
       mpc_sin (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-    {
-      mpfr_t xp, xq;
-      mpfr_init (xp);
-      mpfr_init (xq);
-
-      mpfr_sin  (xp, x->value.complex.r, GFC_RND_MODE);
-      mpfr_cosh (xq, x->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (result->value.complex.r, xp, xq, GFC_RND_MODE);
-
-      mpfr_cos  (xp, x->value.complex.r, GFC_RND_MODE);
-      mpfr_sinh (xq, x->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (result->value.complex.i, xp, xq, GFC_RND_MODE);
-
-      mpfr_clears (xp, xq, NULL);
-    }
-#endif
       break;
 
     default:
@@ -5131,14 +4993,7 @@ gfc_simplify_sinh (gfc_expr *x)
   if (x->ts.type == BT_REAL)
     mpfr_sinh (result->value.real, x->value.real, GFC_RND_MODE);
   else if (x->ts.type == BT_COMPLEX)
-    {
-#if HAVE_mpc
-      mpc_sinh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-      gfc_free_expr (result);
-      return NULL;
-#endif
-    }
+    mpc_sinh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
   else
     gcc_unreachable ();
 
@@ -5329,87 +5184,7 @@ gfc_simplify_sqrt (gfc_expr *e)
 
     case BT_COMPLEX:
       gfc_set_model (e->value.real);
-#ifdef HAVE_mpc
       mpc_sqrt (result->value.complex, e->value.complex, GFC_MPC_RND_MODE);
-#else
-    {
-      /* Formula taken from Numerical Recipes to avoid over- and
-	 underflow.  */
-
-      mpfr_t ac, ad, s, t, w;
-      mpfr_init (ac);
-      mpfr_init (ad);
-      mpfr_init (s);
-      mpfr_init (t);
-      mpfr_init (w);
-
-      if (mpfr_cmp_ui (e->value.complex.r, 0) == 0
-	  && mpfr_cmp_ui (e->value.complex.i, 0) == 0)
-	{
-	  mpfr_set_ui (result->value.complex.r, 0, GFC_RND_MODE);
-	  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-	  break;
-	}
-
-      mpfr_abs (ac, e->value.complex.r, GFC_RND_MODE);
-      mpfr_abs (ad, e->value.complex.i, GFC_RND_MODE);
-
-      if (mpfr_cmp (ac, ad) >= 0)
-	{
-	  mpfr_div (t, e->value.complex.i, e->value.complex.r, GFC_RND_MODE);
-	  mpfr_mul (t, t, t, GFC_RND_MODE);
-	  mpfr_add_ui (t, t, 1, GFC_RND_MODE);
-	  mpfr_sqrt (t, t, GFC_RND_MODE);
-	  mpfr_add_ui (t, t, 1, GFC_RND_MODE);
-	  mpfr_div_ui (t, t, 2, GFC_RND_MODE);
-	  mpfr_sqrt (t, t, GFC_RND_MODE);
-	  mpfr_sqrt (s, ac, GFC_RND_MODE);
-	  mpfr_mul (w, s, t, GFC_RND_MODE);
-	}
-      else
-	{
-	  mpfr_div (s, e->value.complex.r, e->value.complex.i, GFC_RND_MODE);
-	  mpfr_mul (t, s, s, GFC_RND_MODE);
-	  mpfr_add_ui (t, t, 1, GFC_RND_MODE);
-	  mpfr_sqrt (t, t, GFC_RND_MODE);
-	  mpfr_abs (s, s, GFC_RND_MODE);
-	  mpfr_add (t, t, s, GFC_RND_MODE);
-	  mpfr_div_ui (t, t, 2, GFC_RND_MODE);
-	  mpfr_sqrt (t, t, GFC_RND_MODE);
-	  mpfr_sqrt (s, ad, GFC_RND_MODE);
-	  mpfr_mul (w, s, t, GFC_RND_MODE);
-	}
-
-      if (mpfr_cmp_ui (w, 0) != 0 && mpfr_cmp_ui (e->value.complex.r, 0) >= 0)
-	{
-	  mpfr_mul_ui (t, w, 2, GFC_RND_MODE);
-	  mpfr_div (result->value.complex.i, e->value.complex.i, t, GFC_RND_MODE);
-	  mpfr_set (result->value.complex.r, w, GFC_RND_MODE);
-	}
-      else if (mpfr_cmp_ui (w, 0) != 0
-	       && mpfr_cmp_ui (e->value.complex.r, 0) < 0
-	       && mpfr_cmp_ui (e->value.complex.i, 0) >= 0)
-	{
-	  mpfr_mul_ui (t, w, 2, GFC_RND_MODE);
-	  mpfr_div (result->value.complex.r, e->value.complex.i, t, GFC_RND_MODE);
-	  mpfr_set (result->value.complex.i, w, GFC_RND_MODE);
-	}
-      else if (mpfr_cmp_ui (w, 0) != 0
-	       && mpfr_cmp_ui (e->value.complex.r, 0) < 0
-	       && mpfr_cmp_ui (e->value.complex.i, 0) < 0)
-	{
-	  mpfr_mul_ui (t, w, 2, GFC_RND_MODE);
-	  mpfr_div (result->value.complex.r, ad, t, GFC_RND_MODE);
-	  mpfr_neg (w, w, GFC_RND_MODE);
-	  mpfr_set (result->value.complex.i, w, GFC_RND_MODE);
-	}
-      else
-	gfc_internal_error ("invalid complex argument of SQRT at %L",
-			    &e->where);
-
-      mpfr_clears (s, t, ac, ad, w, NULL);
-    }
-#endif
       break;
 
     default:
@@ -5462,14 +5237,7 @@ gfc_simplify_tan (gfc_expr *x)
   if (x->ts.type == BT_REAL)
     mpfr_tan (result->value.real, x->value.real, GFC_RND_MODE);
   else if (x->ts.type == BT_COMPLEX)
-    {
-#if HAVE_mpc
-      mpc_tan (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-      gfc_free_expr (result);
-      return NULL;
-#endif
-    }
+    mpc_tan (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
   else
     gcc_unreachable ();
 
@@ -5490,14 +5258,7 @@ gfc_simplify_tanh (gfc_expr *x)
   if (x->ts.type == BT_REAL)
     mpfr_tanh (result->value.real, x->value.real, GFC_RND_MODE);
   else if (x->ts.type == BT_COMPLEX)
-    {
-#if HAVE_mpc
-      mpc_tanh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
-#else
-      gfc_free_expr (result);
-      return NULL;
-#endif
-    }
+    mpc_tanh (result->value.complex, x->value.complex, GFC_MPC_RND_MODE);
   else
     gcc_unreachable ();
 
