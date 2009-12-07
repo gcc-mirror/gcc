@@ -38,10 +38,9 @@ program test
   print *, nearest(1.0,-1.0)**(-huge(0)) ! { dg-error "Arithmetic overflow" }
 
 !!!!!! COMPLEX BASE !!!!!!
-! Put these lines back in (and "no-" -> "dg-") prior to gcc-4.5.
-!  print *, (2.0,-4.3)**huge(0) ! { no-error "Arithmetic overflow" }
-!  print *, (2.0,-4.3)**huge(0_8) ! { no-error "Arithmetic overflow" }
-!  print *, (2.0,-4.3)**(-huge(0))
-!  print *, (2.0,-4.3)**(-huge(0_8))
+  print *, (2.0,-4.3)**huge(0) ! { dg-error "Arithmetic overflow" }
+  print *, (2.0,-4.3)**huge(0_8) ! { dg-error "Arithmetic overflow" }
+  print *, (2.0,-4.3)**(-huge(0))
+  print *, (2.0,-4.3)**(-huge(0_8))
 
 end program test

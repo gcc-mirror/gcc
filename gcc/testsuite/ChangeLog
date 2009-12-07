@@ -1,3 +1,15 @@
+2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/40302
+	* gcc.dg/torture/builtin-math-6.c: Assume we have MPC.
+	* gcc.dg/torture/builtin-math-7.c: Likewise.
+	* gfortran.dg/complex_intrinsic_7.f90: Likewise.
+	* gfortran.dg/complex_intrinsic_8.f90: Likewise.
+	* gfortran.dg/integer_exponentiation_4.f90: Re-enable some tests.
+	* lib/target-supports.exp (check_effective_target_mpc,
+	check_effective_target_mpc_pow, check_effective_target_mpc_arc):
+	Delete.
+
 2009-12-07  Edmar Wienskoski  <edmar@freescale.com>
 
 	* gcc.target/powerpc/ppc-eq0-1.c: Adjust testcase for isel
