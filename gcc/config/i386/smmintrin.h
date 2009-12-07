@@ -793,19 +793,8 @@ _mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
   return (__m128i) __builtin_ia32_pcmpgtq ((__v2di)__X, (__v2di)__Y);
 }
 
-/* Calculate a number of bits set to 1.  */
-extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_popcnt_u32 (unsigned int __X)
-{
-  return __builtin_popcount (__X);
-}
-
-#ifdef __x86_64__
-extern __inline long long  __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_popcnt_u64 (unsigned long long __X)
-{
-  return __builtin_popcountll (__X);
-}
+#ifdef __POPCNT__
+#include <popcntintrin.h>
 #endif
 
 /* Accumulate CRC32 (polynomial 0x11EDC6F41) value.  */

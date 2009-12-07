@@ -52,19 +52,4 @@ __lzcnt64 (unsigned long __X)
 }
 #endif
 
-/* Calculate a number of bits set to 1.  */
-extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_popcnt_u32 (unsigned int __X)
-{
-  return __builtin_popcount (__X);
-}
-
-#ifdef __x86_64__
-extern __inline long long  __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_popcnt_u64 (unsigned long long __X)
-{
-  return __builtin_popcountll (__X);
-}
-#endif
-
 #endif /* _ABMINTRIN_H_INCLUDED */
