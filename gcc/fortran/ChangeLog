@@ -1,3 +1,9 @@
+2009-12-07  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/41940
+        * match.c (gfc_match_allocate): Improved error message for
+        allocatable scalars that are allocated with a shape.
+
 2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR other/40302
