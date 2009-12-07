@@ -2491,6 +2491,8 @@ degenerate_phi_result (gimple phi)
 
       if (arg == lhs)
 	continue;
+      else if (!arg)
+	break;
       else if (!val)
 	val = arg;
       else if (!operand_equal_p (arg, val, 0))

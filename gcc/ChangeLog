@@ -1,3 +1,8 @@
+2009-12-06  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-dom.c (degenerate_phi_result): Check for NULL phi
+	argument earlier.
+
 2009-12-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Backport from mainline:
