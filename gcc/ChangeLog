@@ -1,3 +1,10 @@
+2009-12-07  Richard Henderson  <rth@redhat.com>
+
+	PR debug/42299
+	PR debug/42166
+	* tree-ssa.c (insert_debug_temp_for_var_def): Skip propagation
+	for ssa names already registered for update.
+
 2009-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42244
