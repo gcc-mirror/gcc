@@ -1,3 +1,35 @@
+2009-12-07  Edmar Wienskoski  <edmar@freescale.com>
+
+	* config.gcc (cpu_is_64bit): Add new core e500mc64.
+	(powerpc*-*-*): Add new core e500mc64.
+	* config/rs6000/e500mc64.md: New file.
+	* config/rs6000/rs6000.c (processor_costs): Add new costs for
+	e500mc64.
+	(rs6000_override_options): Add e500mc64 case to
+	processor_target_table. Altivec and Spe options not allowed with
+	e500mc64. Disable string instructions for e500mc64. Enable branch
+	targets alignment for both e500mc and e500mc64. Initialize
+	rs6000_cost for e500mc64.
+	(rs6000_emit_sISEL): New function.
+	(rs6000_emit_sCOND): Call rs6000_emit_sISEL for isel targets.
+	(rs6000_emit_int_cmove): Fix mode of 64 bit isel pattern
+	generation.
+	(rs6000_issue_rate): Set issue rate for e500mc64.
+	(rs6000_rtx_costs): Set more accurate cost for mfcr instruction
+	on architectures with isel.
+	* config/rs6000/rs6000-protos.h (rs6000_emit_sISEL): Declare.
+	* config/rs6000/rs6000.h (processor_type): Add
+	PROCESSOR_PPCE500MC64.
+	(ASM_CPU_SPEC): Add e500mc64.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Add ppce500mc64.
+	Include e500mc64.md.
+	(abssi2_isel): Expand pattern to handle DImode.
+	(nabs<mode>2_isel): New pattern.
+	(absdi2): Change pattern to handle 64 bit isel targets.
+	(absdi2_internal): Exclude ISEL targets.
+	(nabsdi2): Exclude ISEL targets.
+	* doc/invoke.texi: Add e500mc64 to list of cpus.
+
 2009-12-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (any_or): New code iterator.

@@ -759,6 +759,25 @@ struct processor_costs ppce500mc_cost = {
   1,			/* prefetch streams /*/
 };
 
+/* Instruction costs on PPCE500MC64 processors.  */
+static const
+struct processor_costs ppce500mc64_cost = {
+  COSTS_N_INSNS (4),    /* mulsi */
+  COSTS_N_INSNS (4),    /* mulsi_const */
+  COSTS_N_INSNS (4),    /* mulsi_const9 */
+  COSTS_N_INSNS (4),    /* muldi */
+  COSTS_N_INSNS (14),   /* divsi */
+  COSTS_N_INSNS (14),   /* divdi */
+  COSTS_N_INSNS (4),    /* fp */
+  COSTS_N_INSNS (10),   /* dmul */
+  COSTS_N_INSNS (36),   /* sdiv */
+  COSTS_N_INSNS (66),   /* ddiv */
+  64,			/* cache line size */
+  32,			/* l1 cache */
+  128,			/* l2 cache */
+  1,			/* prefetch streams /*/
+};
+
 /* Instruction costs on POWER4 and POWER5 processors.  */
 static const
 struct processor_costs power4_cost = {
@@ -2215,6 +2234,8 @@ rs6000_override_options (const char *default_cpu)
 	 {"e300c3", PROCESSOR_PPCE300C3, POWERPC_BASE_MASK},
 	 {"e500mc", PROCESSOR_PPCE500MC, POWERPC_BASE_MASK | MASK_PPC_GFXOPT
 	  | MASK_ISEL},
+	 {"e500mc64", PROCESSOR_PPCE500MC64, POWERPC_BASE_MASK | MASK_POWERPC64
+	  | MASK_PPC_GFXOPT | MASK_ISEL},
 	 {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"970", PROCESSOR_POWER4,
 	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
@@ -2343,7 +2364,7 @@ rs6000_override_options (const char *default_cpu)
     }
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
-      || rs6000_cpu == PROCESSOR_PPCE500MC)
+      || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64)
     {
       if (TARGET_ALTIVEC)
 	error ("AltiVec not supported in this target");
@@ -2535,7 +2556,8 @@ rs6000_override_options (const char *default_cpu)
   SUB3TARGET_OVERRIDE_OPTIONS;
 #endif
 
-  if (TARGET_E500 || rs6000_cpu == PROCESSOR_PPCE500MC)
+  if (TARGET_E500 || rs6000_cpu == PROCESSOR_PPCE500MC
+      || rs6000_cpu == PROCESSOR_PPCE500MC64)
     {
       /* The e500 and e500mc do not have string instructions, and we set
 	 MASK_STRING above when optimizing for size.  */
@@ -2572,7 +2594,9 @@ rs6000_override_options (const char *default_cpu)
   rs6000_align_branch_targets = (rs6000_cpu == PROCESSOR_POWER4
 				 || rs6000_cpu == PROCESSOR_POWER5
 				 || rs6000_cpu == PROCESSOR_POWER6
-				 || rs6000_cpu == PROCESSOR_POWER7);
+				 || rs6000_cpu == PROCESSOR_POWER7
+				 || rs6000_cpu == PROCESSOR_PPCE500MC
+				 || rs6000_cpu == PROCESSOR_PPCE500MC64);
 
   /* Allow debug switches to override the above settings.  */
   if (TARGET_ALWAYS_HINT > 0)
@@ -2772,6 +2796,10 @@ rs6000_override_options (const char *default_cpu)
 
       case PROCESSOR_PPCE500MC:
 	rs6000_cost = &ppce500mc_cost;
+	break;
+
+      case PROCESSOR_PPCE500MC64:
+	rs6000_cost = &ppce500mc64_cost;
 	break;
 
       case PROCESSOR_POWER4:
@@ -15375,12 +15403,65 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 /* Emit the RTL for an sCOND pattern.  */
 
 void
+rs6000_emit_sISEL (enum machine_mode mode, rtx operands[])
+{
+  rtx condition_rtx;
+  enum machine_mode op_mode;
+  enum rtx_code cond_code;
+  rtx result = operands[0];
+
+  condition_rtx = rs6000_generate_compare (operands[1], mode);
+  cond_code = GET_CODE (condition_rtx);
+
+  op_mode = GET_MODE (XEXP (operands[1], 0));
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (XEXP (operands[1], 1));
+
+  if (TARGET_POWERPC64 && GET_MODE (result) == DImode)
+    {
+      PUT_MODE (condition_rtx, DImode);
+      if (cond_code == GEU || cond_code == GTU || cond_code == LEU
+         || cond_code == LTU)
+       emit_insn (gen_isel_unsigned_di (result, condition_rtx,
+					force_reg (DImode, const1_rtx),
+					force_reg (DImode, const0_rtx),
+					XEXP (condition_rtx, 0)));
+      else
+       emit_insn (gen_isel_signed_di (result, condition_rtx,
+				      force_reg (DImode, const1_rtx),
+				      force_reg (DImode, const0_rtx),
+				      XEXP (condition_rtx, 0)));
+    }
+  else
+    {
+      PUT_MODE (condition_rtx, SImode);
+      if (cond_code == GEU || cond_code == GTU || cond_code == LEU
+	 || cond_code == LTU)
+       emit_insn (gen_isel_unsigned_si (result, condition_rtx,
+					force_reg (SImode, const1_rtx),
+					force_reg (SImode, const0_rtx),
+					XEXP (condition_rtx, 0)));
+      else
+       emit_insn (gen_isel_signed_si (result, condition_rtx,
+				      force_reg (SImode, const1_rtx),
+				      force_reg (SImode, const0_rtx),
+				      XEXP (condition_rtx, 0)));
+    }
+}
+
+void
 rs6000_emit_sCOND (enum machine_mode mode, rtx operands[])
 {
   rtx condition_rtx;
   enum machine_mode op_mode;
   enum rtx_code cond_code;
   rtx result = operands[0];
+
+  if (TARGET_ISEL && (mode == SImode || mode == DImode))
+    {
+      rs6000_emit_sISEL (mode, operands);
+      return;
+    }
 
   condition_rtx = rs6000_generate_compare (operands[1], mode);
   cond_code = GET_CODE (condition_rtx);
@@ -16031,7 +16112,7 @@ static int
 rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
 {
   rtx condition_rtx, cr;
-  enum machine_mode mode = GET_MODE (XEXP (op, 0));
+  enum machine_mode mode = GET_MODE (dest);
 
   if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
     return 0;
@@ -16039,7 +16120,7 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   /* We still have to do the compare, because isel doesn't do a
      compare, it just looks at the CRx bits set by a previous compare
      instruction.  */
-  condition_rtx = rs6000_generate_compare (op, SImode);
+  condition_rtx = rs6000_generate_compare (op, mode);
   cr = XEXP (condition_rtx, 0);
 
   if (mode == SImode)
@@ -21885,6 +21966,7 @@ rs6000_issue_rate (void)
   case CPU_PPCE300C2:
   case CPU_PPCE300C3:
   case CPU_PPCE500MC:
+  case CPU_PPCE500MC64:
     return 2;
   case CPU_RIOS2:
   case CPU_PPC476:
@@ -24698,7 +24780,10 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
 	{
 	  if (XEXP (x, 1) == const0_rtx)
 	    {
-	      *total = COSTS_N_INSNS (2);
+	      if (TARGET_ISEL && !TARGET_MFCRF)
+		*total = COSTS_N_INSNS (8);
+	      else
+		*total = COSTS_N_INSNS (2);
 	      return true;
 	    }
 	  else if (mode == Pmode)
@@ -24714,7 +24799,10 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total,
     case UNORDERED:
       if (outer_code == SET && (XEXP (x, 1) == const0_rtx))
 	{
-	  *total = COSTS_N_INSNS (2);
+	  if (TARGET_ISEL && !TARGET_MFCRF)
+	    *total = COSTS_N_INSNS (8);
+	  else
+	    *total = COSTS_N_INSNS (2);
 	  return true;
 	}
       /* CC COMPARE.  */
