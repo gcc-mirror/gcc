@@ -429,12 +429,7 @@ gfc_constant_result (bt type, int kind, locus *where)
 
     case BT_COMPLEX:
       gfc_set_model_kind (kind);
-#ifdef HAVE_mpc
       mpc_init2 (result->value.complex, mpfr_get_default_prec());
-#else
-      mpfr_init (result->value.complex.r);
-      mpfr_init (result->value.complex.i);
-#endif
       break;
 
     default:
@@ -639,12 +634,7 @@ gfc_arith_uminus (gfc_expr *op1, gfc_expr **resultp)
       break;
 
     case BT_COMPLEX:
-#ifdef HAVE_mpc
       mpc_neg (result->value.complex, op1->value.complex, GFC_MPC_RND_MODE);
-#else
-      mpfr_neg (result->value.complex.r, op1->value.complex.r, GFC_RND_MODE);
-      mpfr_neg (result->value.complex.i, op1->value.complex.i, GFC_RND_MODE);
-#endif
       break;
 
     default:
@@ -677,16 +667,8 @@ gfc_arith_plus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       break;
 
     case BT_COMPLEX:
-#ifdef HAVE_mpc
       mpc_add (result->value.complex, op1->value.complex, op2->value.complex,
 	       GFC_MPC_RND_MODE);
-#else
-      mpfr_add (result->value.complex.r, op1->value.complex.r,
-		op2->value.complex.r, GFC_RND_MODE);
-
-      mpfr_add (result->value.complex.i, op1->value.complex.i,
-		op2->value.complex.i, GFC_RND_MODE);
-#endif
       break;
 
     default:
@@ -719,16 +701,8 @@ gfc_arith_minus (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       break;
 
     case BT_COMPLEX:
-#ifdef HAVE_mpc
       mpc_sub (result->value.complex, op1->value.complex,
 	       op2->value.complex, GFC_MPC_RND_MODE);
-#else
-      mpfr_sub (result->value.complex.r, op1->value.complex.r,
-		op2->value.complex.r, GFC_RND_MODE);
-
-      mpfr_sub (result->value.complex.i, op1->value.complex.i,
-		op2->value.complex.i, GFC_RND_MODE);
-#endif
       break;
 
     default:
@@ -762,26 +736,8 @@ gfc_arith_times (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
     case BT_COMPLEX:
       gfc_set_model (mpc_realref (op1->value.complex));
-#ifdef HAVE_mpc
       mpc_mul (result->value.complex, op1->value.complex, op2->value.complex,
 	       GFC_MPC_RND_MODE);
-#else
-    {
-      mpfr_t x, y;
-      mpfr_init (x);
-      mpfr_init (y);
-
-      mpfr_mul (x, op1->value.complex.r, op2->value.complex.r, GFC_RND_MODE);
-      mpfr_mul (y, op1->value.complex.i, op2->value.complex.i, GFC_RND_MODE);
-      mpfr_sub (result->value.complex.r, x, y, GFC_RND_MODE);
-
-      mpfr_mul (x, op1->value.complex.r, op2->value.complex.i, GFC_RND_MODE);
-      mpfr_mul (y, op1->value.complex.i, op2->value.complex.r, GFC_RND_MODE);
-      mpfr_add (result->value.complex.i, x, y, GFC_RND_MODE);
-
-      mpfr_clears (x, y, NULL);
-    }
-#endif
       break;
 
     default:
@@ -829,13 +785,7 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       break;
 
     case BT_COMPLEX:
-      if (
-#ifdef HAVE_mpc
-	  mpc_cmp_si_si (op2->value.complex, 0, 0) == 0
-#else
-	  mpfr_sgn (op2->value.complex.r) == 0
-	  && mpfr_sgn (op2->value.complex.i) == 0
-#endif
+      if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0
 	  && gfc_option.flag_range_check == 1)
 	{
 	  rc = ARITH_DIV0;
@@ -843,8 +793,6 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	}
 
       gfc_set_model (mpc_realref (op1->value.complex));
-	  
-#ifdef HAVE_mpc
       if (mpc_cmp_si_si (op2->value.complex, 0, 0) == 0)
       {
 	/* In Fortran, return (NaN + NaN I) for any zero divisor.  See
@@ -855,32 +803,6 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
       else
 	mpc_div (result->value.complex, op1->value.complex, op2->value.complex,
 		 GFC_MPC_RND_MODE);
-#else
-    {
-      mpfr_t x, y, div;
-      mpfr_init (x);
-      mpfr_init (y);
-      mpfr_init (div);
-
-      mpfr_mul (x, op2->value.complex.r, op2->value.complex.r, GFC_RND_MODE);
-      mpfr_mul (y, op2->value.complex.i, op2->value.complex.i, GFC_RND_MODE);
-      mpfr_add (div, x, y, GFC_RND_MODE);
-
-      mpfr_mul (x, op1->value.complex.r, op2->value.complex.r, GFC_RND_MODE);
-      mpfr_mul (y, op1->value.complex.i, op2->value.complex.i, GFC_RND_MODE);
-      mpfr_add (result->value.complex.r, x, y, GFC_RND_MODE);
-      mpfr_div (result->value.complex.r, result->value.complex.r, div,
-		GFC_RND_MODE);
-
-      mpfr_mul (x, op1->value.complex.i, op2->value.complex.r, GFC_RND_MODE);
-      mpfr_mul (y, op1->value.complex.r, op2->value.complex.i, GFC_RND_MODE);
-      mpfr_sub (result->value.complex.i, x, y, GFC_RND_MODE);
-      mpfr_div (result->value.complex.i, result->value.complex.i, div,
-		GFC_RND_MODE);
-
-      mpfr_clears (x, y, div, NULL);
-    }
-#endif
       break;
 
     default:
@@ -892,107 +814,6 @@ gfc_arith_divide (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 
   return check_result (rc, op1, result, resultp);
 }
-
-
-/* Compute the reciprocal of a complex number (guaranteed nonzero).  */
-
-#if ! defined(HAVE_mpc_pow)
-static void
-complex_reciprocal (gfc_expr *op)
-{
-  gfc_set_model (mpc_realref (op->value.complex));
-#ifdef HAVE_mpc
-  mpc_ui_div (op->value.complex, 1, op->value.complex, GFC_MPC_RND_MODE);
-#else
-  {
-  mpfr_t mod, tmp;
-
-  mpfr_init (mod);
-  mpfr_init (tmp);
-
-  mpfr_mul (mod, op->value.complex.r, op->value.complex.r, GFC_RND_MODE);
-  mpfr_mul (tmp, op->value.complex.i, op->value.complex.i, GFC_RND_MODE);
-  mpfr_add (mod, mod, tmp, GFC_RND_MODE);
-
-  mpfr_div (op->value.complex.r, op->value.complex.r, mod, GFC_RND_MODE);
-
-  mpfr_neg (op->value.complex.i, op->value.complex.i, GFC_RND_MODE);
-  mpfr_div (op->value.complex.i, op->value.complex.i, mod, GFC_RND_MODE);
-
-  mpfr_clears (tmp, mod, NULL);
-  }
-#endif
-}
-#endif /* ! HAVE_mpc_pow */
-
-
-/* Raise a complex number to positive power (power > 0).
-   This function will modify the content of power.
-
-   Use Binary Method, which is not an optimal but a simple and reasonable
-   arithmetic. See section 4.6.3, "Evaluation of Powers" of Donald E. Knuth,
-   "Seminumerical Algorithms", Vol. 2, "The Art of Computer Programming",
-   3rd Edition, 1998.  */
-
-#if ! defined(HAVE_mpc_pow)
-static void
-complex_pow (gfc_expr *result, gfc_expr *base, mpz_t power)
-{
-  mpfr_t x_r, x_i, tmp, re, im;
-
-  gfc_set_model (mpc_realref (base->value.complex));
-  mpfr_init (x_r);
-  mpfr_init (x_i);
-  mpfr_init (tmp);
-  mpfr_init (re);
-  mpfr_init (im);
-
-  /* res = 1 */
-#ifdef HAVE_mpc
-  mpc_set_ui (result->value.complex, 1, GFC_MPC_RND_MODE);
-#else
-  mpfr_set_ui (result->value.complex.r, 1, GFC_RND_MODE);
-  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-#endif
-
-  /* x = base */
-  mpfr_set (x_r, mpc_realref (base->value.complex), GFC_RND_MODE);
-  mpfr_set (x_i, mpc_imagref (base->value.complex), GFC_RND_MODE);
-
-  /* Macro for complex multiplication. We have to take care that
-     res_r/res_i and a_r/a_i can (and will) be the same variable.  */
-#define CMULT(res_r,res_i,a_r,a_i,b_r,b_i) \
-    mpfr_mul (re, a_r, b_r, GFC_RND_MODE), \
-    mpfr_mul (tmp, a_i, b_i, GFC_RND_MODE), \
-    mpfr_sub (re, re, tmp, GFC_RND_MODE), \
-    \
-    mpfr_mul (im, a_r, b_i, GFC_RND_MODE), \
-    mpfr_mul (tmp, a_i, b_r, GFC_RND_MODE), \
-    mpfr_add (res_i, im, tmp, GFC_RND_MODE), \
-    mpfr_set (res_r, re, GFC_RND_MODE)
-  
-#define res_r mpc_realref (result->value.complex)
-#define res_i mpc_imagref (result->value.complex)
-
-  /* for (; power > 0; x *= x) */
-  for (; mpz_cmp_si (power, 0) > 0; CMULT(x_r,x_i,x_r,x_i,x_r,x_i))
-    {
-      /* if (power & 1) res = res * x; */
-      if (mpz_congruent_ui_p (power, 1, 2))
-	CMULT(res_r,res_i,res_r,res_i,x_r,x_i);
-
-      /* power /= 2; */
-      mpz_fdiv_q_ui (power, power, 2);
-    }
-
-#undef res_r
-#undef res_i
-#undef CMULT
-
-  mpfr_clears (x_r, x_i, tmp, re, im, NULL);
-}
-#endif /* ! HAVE_mpc_pow */
-
 
 /* Raise a number to a power.  */
 
@@ -1028,12 +849,7 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	      break;
 
 	    case BT_COMPLEX:
-#ifdef HAVE_mpc
 	      mpc_set_ui (result->value.complex, 1, GFC_MPC_RND_MODE);
-#else
-	      mpfr_set_ui (result->value.complex.r, 1, GFC_RND_MODE);
-	      mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-#endif
 	      break;
 
 	    default:
@@ -1110,32 +926,8 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	      break;
 
 	    case BT_COMPLEX:
-	      {
-#ifdef HAVE_mpc_pow_z
-		mpc_pow_z (result->value.complex, op1->value.complex,
-			   op2->value.integer, GFC_MPC_RND_MODE);
-#elif defined(HAVE_mpc_pow)
-		mpc_t apower;
-		gfc_set_model (mpc_realref (op1->value.complex));
-		mpc_init2 (apower, mpfr_get_default_prec());
-		mpc_set_z (apower, op2->value.integer, GFC_MPC_RND_MODE);
-		mpc_pow(result->value.complex, op1->value.complex, apower,
-			GFC_MPC_RND_MODE);
-		mpc_clear (apower);
-#else
-		mpz_t apower;
-
-		/* Compute op1**abs(op2)  */
-		mpz_init (apower);
-		mpz_abs (apower, op2->value.integer);
-		complex_pow (result, op1, apower);
-		mpz_clear (apower);
-
-		/* If (op2 < 0), compute the inverse.  */
-		if (power_sign < 0)
-		  complex_reciprocal (result);
-#endif /* HAVE_mpc_pow */
-	      }
+	      mpc_pow_z (result->value.complex, op1->value.complex,
+			 op2->value.integer, GFC_MPC_RND_MODE);
 	      break;
 
 	    default:
@@ -1176,63 +968,8 @@ arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 	      return ARITH_PROHIBIT;
 	  }
 
-#ifdef HAVE_mpc_pow
 	mpc_pow (result->value.complex, op1->value.complex,
 		 op2->value.complex, GFC_MPC_RND_MODE);
-#else
-	{
-	mpfr_t x, y, r, t;
-
-	gfc_set_model (mpc_realref (op1->value.complex));
-
-	mpfr_init (r);
-
-#ifdef HAVE_mpc
-	mpc_abs (r, op1->value.complex, GFC_RND_MODE);
-#else
-	mpfr_hypot (r, op1->value.complex.r, op1->value.complex.i,
-		    GFC_RND_MODE);
-#endif
-	if (mpfr_cmp_si (r, 0) == 0)
-	  {
-#ifdef HAVE_mpc
-	    mpc_set_ui (result->value.complex, 0, GFC_MPC_RND_MODE);
-#else
-	    mpfr_set_ui (result->value.complex.r, 0, GFC_RND_MODE);
-	    mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-#endif
-	    mpfr_clear (r);
-	    break;
-	  }
-	mpfr_log (r, r, GFC_RND_MODE);
-
-	mpfr_init (t);
-
-#ifdef HAVE_mpc
-	mpc_arg (t, op1->value.complex, GFC_RND_MODE);
-#else
-	mpfr_atan2 (t, op1->value.complex.i, op1->value.complex.r, 
-		    GFC_RND_MODE);
-#endif
-
-	mpfr_init (x);
-	mpfr_init (y);
-
-	mpfr_mul (x, mpc_realref (op2->value.complex), r, GFC_RND_MODE);
-	mpfr_mul (y, mpc_imagref (op2->value.complex), t, GFC_RND_MODE);
-	mpfr_sub (x, x, y, GFC_RND_MODE);
-	mpfr_exp (x, x, GFC_RND_MODE);
-
-	mpfr_mul (y, mpc_realref (op2->value.complex), t, GFC_RND_MODE);
-	mpfr_mul (t, mpc_imagref (op2->value.complex), r, GFC_RND_MODE);
-	mpfr_add (y, y, t, GFC_RND_MODE);
-	mpfr_cos (t, y, GFC_RND_MODE);
-	mpfr_sin (y, y, GFC_RND_MODE);
-	mpfr_mul (mpc_realref (result->value.complex), x, t, GFC_RND_MODE);
-	mpfr_mul (mpc_imagref (result->value.complex), x, y, GFC_RND_MODE);
-	mpfr_clears (r, t, x, y, NULL);
-	}
-#endif /* HAVE_mpc_pow */
       }
       break;
     default:
@@ -1350,12 +1087,7 @@ gfc_compare_expr (gfc_expr *op1, gfc_expr *op2, gfc_intrinsic_op op)
 static int
 compare_complex (gfc_expr *op1, gfc_expr *op2)
 {
-#ifdef HAVE_mpc
   return mpc_cmp (op1->value.complex, op2->value.complex) == 0;
-#else
-  return (mpfr_equal_p (op1->value.complex.r, op2->value.complex.r)
-	  && mpfr_equal_p (op1->value.complex.i, op2->value.complex.i));
-#endif
 }
 
 
@@ -2224,13 +1956,8 @@ gfc_convert_complex (gfc_expr *real, gfc_expr *imag, int kind)
   gfc_expr *e;
 
   e = gfc_constant_result (BT_COMPLEX, kind, &real->where);
-#ifdef HAVE_mpc
   mpc_set_fr_fr (e->value.complex, real->value.real, imag->value.real,
 		 GFC_MPC_RND_MODE);
-#else
-  mpfr_set (e->value.complex.r, real->value.real, GFC_RND_MODE);
-  mpfr_set (e->value.complex.i, imag->value.real, GFC_RND_MODE);
-#endif
 
   return e;
 }
@@ -2350,12 +2077,7 @@ gfc_int2complex (gfc_expr *src, int kind)
 
   result = gfc_constant_result (BT_COMPLEX, kind, &src->where);
 
-#ifdef HAVE_mpc
   mpc_set_z (result->value.complex, src->value.integer, GFC_MPC_RND_MODE);
-#else
-  mpfr_set_z (result->value.complex.r, src->value.integer, GFC_RND_MODE);
-  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-#endif
 
   if ((rc = gfc_check_real_range (mpc_realref (result->value.complex), kind))
       != ARITH_OK)
@@ -2433,12 +2155,7 @@ gfc_real2complex (gfc_expr *src, int kind)
 
   result = gfc_constant_result (BT_COMPLEX, kind, &src->where);
 
-#ifdef HAVE_mpc
   mpc_set_fr (result->value.complex, src->value.real, GFC_MPC_RND_MODE);
-#else
-  mpfr_set (result->value.complex.r, src->value.real, GFC_RND_MODE);
-  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-#endif
 
   rc = gfc_check_real_range (mpc_realref (result->value.complex), kind);
 
@@ -2493,11 +2210,7 @@ gfc_complex2real (gfc_expr *src, int kind)
 
   result = gfc_constant_result (BT_REAL, kind, &src->where);
 
-#ifdef HAVE_mpc
   mpc_real (result->value.real, src->value.complex, GFC_RND_MODE);
-#else
-  mpfr_set (result->value.real, src->value.complex.r, GFC_RND_MODE);
-#endif
 
   rc = gfc_check_real_range (result->value.real, kind);
 
@@ -2528,12 +2241,7 @@ gfc_complex2complex (gfc_expr *src, int kind)
 
   result = gfc_constant_result (BT_COMPLEX, kind, &src->where);
 
-#ifdef HAVE_mpc
   mpc_set (result->value.complex, src->value.complex, GFC_MPC_RND_MODE);
-#else
-  mpfr_set (result->value.complex.r, src->value.complex.r, GFC_RND_MODE);
-  mpfr_set (result->value.complex.i, src->value.complex.i, GFC_RND_MODE);
-#endif
 
   rc = gfc_check_real_range (mpc_realref (result->value.complex), kind);
 
@@ -2698,13 +2406,7 @@ gfc_hollerith2complex (gfc_expr *src, int kind)
 
   hollerith2representation (result, src);
   gfc_interpret_complex (kind, (unsigned char *) result->representation.string,
-			 result->representation.length,
-#ifdef HAVE_mpc
-			 result->value.complex
-#else
-			 result->value.complex.r, result->value.complex.i
-#endif
-			 );
+			 result->representation.length, result->value.complex);
 
   return result;
 }

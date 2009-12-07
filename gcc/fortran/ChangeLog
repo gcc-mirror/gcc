@@ -1,3 +1,14 @@
+2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/40302
+	* arith.c: Remove HAVE_mpc* checks throughout.
+	* expr.c: Likewise.
+	* gfortran.h: Likewise.
+	* resolve.c: Likewise.
+	* simplify.c: Likewise.
+	* target-memory.c: Likewise.
+	* target-memory.h: Likewise.
+
 2009-12-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/40904

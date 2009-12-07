@@ -164,28 +164,12 @@ encode_float (int kind, mpfr_t real, unsigned char *buffer, size_t buffer_size)
 
 
 static int
-encode_complex (int kind,
-#ifdef HAVE_mpc
-		mpc_t cmplx,
-#else
-		mpfr_t real, mpfr_t imaginary,
-#endif
+encode_complex (int kind, mpc_t cmplx,
 		unsigned char *buffer, size_t buffer_size)
 {
   int size;
-  size = encode_float (kind,
-#ifdef HAVE_mpc
-		       mpc_realref (cmplx),
-#else
-		       real,
-#endif
-		       &buffer[0], buffer_size);
-  size += encode_float (kind,
-#ifdef HAVE_mpc
-			mpc_imagref (cmplx),
-#else
-			imaginary,
-#endif
+  size = encode_float (kind, mpc_realref (cmplx), &buffer[0], buffer_size);
+  size += encode_float (kind, mpc_imagref (cmplx),
 			&buffer[size], buffer_size - size);
   return size;
 }
@@ -283,13 +267,7 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
       return encode_float (source->ts.kind, source->value.real, buffer,
 			   buffer_size);
     case BT_COMPLEX:
-      return encode_complex (source->ts.kind,
-#ifdef HAVE_mpc
-			     source->value.complex,
-#else
-			     source->value.complex.r,
-			     source->value.complex.i,
-#endif
+      return encode_complex (source->ts.kind, source->value.complex,
 			     buffer, buffer_size);
     case BT_LOGICAL:
       return encode_logical (source->ts.kind, source->value.logical, buffer,
@@ -391,28 +369,13 @@ gfc_interpret_float (int kind, unsigned char *buffer, size_t buffer_size,
 
 int
 gfc_interpret_complex (int kind, unsigned char *buffer, size_t buffer_size,
-#ifdef HAVE_mpc
-		       mpc_t complex
-#else
-		       mpfr_t real, mpfr_t imaginary
-#endif
-		       )
+		       mpc_t complex)
 {
   int size;
   size = gfc_interpret_float (kind, &buffer[0], buffer_size,
-#ifdef HAVE_mpc
-			      mpc_realref (complex)
-#else
-			      real
-#endif
-			      );
+			      mpc_realref (complex));
   size += gfc_interpret_float (kind, &buffer[size], buffer_size - size,
-#ifdef HAVE_mpc
-			       mpc_imagref (complex)
-#else
-			       imaginary
-#endif
-			       );
+			       mpc_imagref (complex));
   return size;
 }
 
@@ -559,13 +522,7 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
     case BT_COMPLEX:
       result->representation.length = 
         gfc_interpret_complex (result->ts.kind, buffer, buffer_size,
-#ifdef HAVE_mpc
-			       result->value.complex
-#else
-			       result->value.complex.r,
-			       result->value.complex.i
-#endif
-			       );
+			       result->value.complex);
       break;
 
     case BT_LOGICAL:
@@ -766,19 +723,9 @@ gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
     }
   else
     {
-#ifdef HAVE_mpc
       mpc_init2 (expr->value.complex, mpfr_get_default_prec());
-#else
-      mpfr_init (expr->value.complex.r);
-      mpfr_init (expr->value.complex.i);
-#endif
       gfc_interpret_complex (ts->kind, buffer, buffer_size,
-#ifdef HAVE_mpc
-			     expr->value.complex
-#else
-			     expr->value.complex.r, expr->value.complex.i
-#endif
-			     );
+			     expr->value.complex);
     }
   expr->is_boz = 0;  
   expr->ts.type = ts->type;
