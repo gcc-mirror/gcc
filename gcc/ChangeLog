@@ -1,3 +1,7 @@
+2009-12-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*iorqi_ext_2): Fix insn mnemonic typo.
+
 2009-12-06  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-dom.c (degenerate_phi_result): Check for NULL phi
