@@ -312,9 +312,13 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
   if (!MAY_HAVE_DEBUG_STMTS)
     return;
 
-  /* First of all, check whether there are debug stmts that reference
-     this variable and, if there are, decide whether we should use a
-     debug temp.  */
+  /* If this name has already been registered for replacement, do nothing
+     as anything that uses this name isn't in SSA form.  */
+  if (name_registered_for_update_p (var))
+    return;
+
+  /* Check whether there are debug stmts that reference this variable and,
+     if there are, decide whether we should use a debug temp.  */
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, var)
     {
       stmt = USE_STMT (use_p);
