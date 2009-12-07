@@ -1,3 +1,11 @@
+2009-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/40302
+	* builtins.c: Remove HAVE_mpc* checks throughout.
+	* fold-const.c: Likewise.
+	* real.h: Likewise.
+	* toplev.c: Likewise.
+
 2009-12-07  Edmar Wienskoski  <edmar@freescale.com>
 
 	* config.gcc (cpu_is_64bit): Add new core e500mc64.
