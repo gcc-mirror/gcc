@@ -1,3 +1,9 @@
+2009-12-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* config/i386/sse.md: Remove all FMA4 splitters.
+	Allow the second operand of FMA4 insns to be a nonimmediate.
+	Fix comments punctuation.
+
 2009-12-07  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/constraints.md (Ps, Pt): New constraint letters.
