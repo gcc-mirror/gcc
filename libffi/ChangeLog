@@ -1,8 +1,13 @@
+2009-12-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/powerpc/aix_closure.S (libffi_closure_ASM): Fix tablejump
+	typo.
+
 2009-12-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/aix.S: Update AIX32 code to be consistent with AIX64
 	code.
-	* src/powerpc/aix_closure.s: Same.
+	* src/powerpc/aix_closure.S: Same.
 	
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
