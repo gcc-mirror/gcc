@@ -340,6 +340,10 @@ EOF
 	can_unwind_signal=yes
 	DIVIDESPEC=-fuse-divide-subroutine
 	;;
+  sparc*-sun-solaris2.*)
+	slow_pthread_self=
+	can_unwind_signal=yes
+	;;
 esac
 
 case "${host}" in
