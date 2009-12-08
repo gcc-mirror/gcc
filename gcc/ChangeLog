@@ -1,3 +1,9 @@
+2009-12-07  DJ Delorie  <dj@redhat.com>
+
+	PR c/42312
+	* config/mep/mep.c (mep_expand_prologue): Set
+	really_need_stack_frame after frame_size is set.
+
 2009-12-07  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/42269
