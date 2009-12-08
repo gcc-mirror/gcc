@@ -1,3 +1,14 @@
+2009-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.host (sparc*-sun-solaris2.*): New case.
+	* include/dwarf2-signal.h (MAKE_THROW_FRAME, SPARC case): Make dummy.
+	* include/sparc-signal.h: Do not include ucontext.h.
+	(SIGNAL_HANDLER): Rename symbol.
+	(FLUSH_REGISTER_WINDOWS): Delete.
+	(MAKE_THROW_FRAME): Make dummy.
+	(INIT_SEGV): Adjust for above renaming.
+	(INIT_FPE): Likewise.
+
 2009-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (net/if.h check): Include sys/socket.h if present.
