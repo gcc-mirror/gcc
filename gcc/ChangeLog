@@ -1,3 +1,10 @@
+2009-12-08  Olga Golovanevsky  <olga@il.ibm.com>
+
+	PR middle-end/41843
+	* ipa-struct-reorg.c (compare_fields): New function.
+	(find_field_in_struct_1): Use compare_fields function.
+	(is_equal_types): Likewise.
+
 2009-12-07  DJ Delorie  <dj@redhat.com>
 
 	PR c/42312
