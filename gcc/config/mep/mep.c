@@ -2853,7 +2853,7 @@ mep_expand_prologue (void)
   int i, rss, sp_offset = 0;
   int reg_save_size;
   int frame_size;
-  int really_need_stack_frame = frame_size;
+  int really_need_stack_frame;
 
   /* We must not allow register renaming in interrupt functions,
      because that invalidates the correctness of the set of call-used
@@ -2867,6 +2867,7 @@ mep_expand_prologue (void)
 
   reg_save_size = mep_elimination_offset (ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM);
   frame_size = mep_elimination_offset (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM);
+  really_need_stack_frame = frame_size;
 
   really_need_stack_frame |= mep_assign_save_slots (reg_save_size);
 
