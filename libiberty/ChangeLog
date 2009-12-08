@@ -1,3 +1,7 @@
+2009-12-07  Doug Evans  <dje@google.com>
+
+	* pex-unix.c (pex_unix_exec_child): Save/restore environ.
+
 2009-11-26  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.ac (AC_CHECK_FUNCS): Sort into alphabetic order.
