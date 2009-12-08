@@ -340,7 +340,7 @@ L..finish:
 	lwz	r4, LC..60(2)	/* get address of jump table */
 	slwi	r3, r3, 4	/* now multiply return type by 4 */
 	lwz	r0, 176+8(r1)	/* load return address */
-	lwzx	r3, r4, r3	/* get the contents of that table value */
+	add	r3, r3, r4	/* add contents of table to table address */
 	mtctr	r3
 	bctr			/* jump to it */
 
