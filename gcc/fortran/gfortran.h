@@ -654,6 +654,11 @@ typedef struct
     dummy:1, result:1, assign:1, threadprivate:1, not_always_present:1,
     implied_index:1, subref_array_pointer:1, proc_pointer:1;
 
+  /* For CLASS containers, the pointer attribute is sometimes set internally
+     even though it was not directly specified.  In this case, keep the
+     "real" (original) value here.  */
+  unsigned class_pointer:1;
+
   ENUM_BITFIELD (save_state) save:2;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
