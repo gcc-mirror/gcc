@@ -1,3 +1,8 @@
+2009-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41711
+	* gfortran.dg/boz_15.f90: New test.
+
 2008-12-08  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/41177

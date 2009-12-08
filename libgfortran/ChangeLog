@@ -1,3 +1,9 @@
+2009-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41711
+	* io/read.c (set_integer): Support kind=10 for reading
+	real/complex BOZ.
+
 2009-12-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41478

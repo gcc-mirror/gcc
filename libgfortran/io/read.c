@@ -45,6 +45,8 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
   switch (length)
     {
 #ifdef HAVE_GFC_INTEGER_16
+/* length=10 comes about for kind=10 real/complex BOZ, cf. PR41711. */
+    case 10:
     case 16:
       {
 	GFC_INTEGER_16 tmp = value;
