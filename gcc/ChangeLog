@@ -1,3 +1,8 @@
+2009-12-08  Richard Henderson  <rth@redhat.com>
+
+	* combine.c (setup_incoming_promotions): Fix sign-extend of
+	zero-extend case; tidy conditions.
+
 2009-12-08  Michael Matz  <matz@suse.de>
 
 	PR middle-end/38474
