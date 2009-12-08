@@ -1,3 +1,15 @@
+2008-12-08  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/41177
+	* gfortran.h (struct symbol_attribute): New flag `class_pointer'.
+	* symbol.c (gfc_build_class_symbol): Set the new flag.
+	* resolve.c (update_compcall_arglist): Remove wrong check for
+	non-scalar base-object.
+	(check_typebound_baseobject): Add the correct version here as well
+	as some 'not implemented' message check in the old case.
+	(resolve_typebound_procedure): Check that the passed-object dummy
+	argument is scalar, non-pointer and non-allocatable as it should be.
+
 2009-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40961

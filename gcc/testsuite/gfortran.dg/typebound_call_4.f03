@@ -37,10 +37,6 @@ CONTAINS
     CALL arr(1)%myobj%proc ()
     WRITE (*,*) arr(2)%myobj%func ()
 
-    ! Base-object must be scalar.
-    CALL arr(:)%myobj%proc () ! { dg-error "scalar" }
-    WRITE (*,*) arr(:)%myobj%func () ! { dg-error "scalar" }
-
     ! Can't CALL a function or take the result of a SUBROUTINE.
     CALL arr(1)%myobj%func () ! { dg-error "SUBROUTINE" }
     WRITE (*,*) arr(2)%myobj%proc () ! { dg-error "FUNCTION" }

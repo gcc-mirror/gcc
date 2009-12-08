@@ -1,3 +1,9 @@
+2008-12-08  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/41177
+	* gfortran.dg/typebound_proc_4.f03: Remove check for wrong error.
+	* gfortran.dg/typebound_proc_13.f03: New test.
+
 2009-12-08  Olga Golovanevsky  <olga@il.ibm.com>
 	    Jakub Jelinek <jakub@redhat.com>	
 
