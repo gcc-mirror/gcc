@@ -400,6 +400,12 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
   volatile int sleep_interval;
   volatile int retries;
 
+  /* We vfork and then set environ in the child before calling execvp.
+     This clobbers the parent's environ so we need to restore it.
+     It would be nice to use one of the exec* functions that takes an
+     environment as a parameter, but that may have portability issues.  */
+  char **save_environ = environ;
+
   sleep_interval = 1;
   pid = -1;
   for (retries = 0; retries < 4; ++retries)
@@ -453,7 +459,12 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	}
 
       if (env)
-        environ = (char**) env;
+	{
+	  /* NOTE: In a standard vfork implementation this clobbers the
+	     parent's copy of environ "too" (in reality there's only one copy).
+	     This is ok as we restore it below.  */
+	  environ = (char**) env;
+	}
 
       if ((flags & PEX_SEARCH) != 0)
 	{
@@ -471,6 +482,14 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
     default:
       /* Parent process.  */
+
+      /* Restore environ.
+	 Note that the parent either doesn't run until the child execs/exits
+	 (standard vfork behaviour), or if it does run then vfork is behaving
+	 more like fork.  In either case we needn't worry about clobbering
+	 the child's copy of environ.  */
+      environ = save_environ;
+
       if (in != STDIN_FILE_NO)
 	{
 	  if (close (in) < 0)
