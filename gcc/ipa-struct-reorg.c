@@ -248,6 +248,32 @@ finalize_stmt_and_append (gimple_seq *stmts, gimple stmt)
   finalize_stmt (stmt);
 }
 
+/* This function returns true if two fields FIELD1 and FIELD2 are 
+   semantically equal, and false otherwise.  */
+
+static bool
+compare_fields (tree field1, tree field2)
+{
+  if (DECL_NAME (field1) && DECL_NAME (field2))
+    {
+      const char *name1 = IDENTIFIER_POINTER (DECL_NAME (field1));
+      const char *name2 = IDENTIFIER_POINTER (DECL_NAME (field2));
+
+      gcc_assert (name1 && name2);
+
+      if (strcmp (name1, name2))
+	return false;
+	
+    }
+  else if (DECL_NAME (field1) || DECL_NAME (field2))
+    return false;
+
+  if (!is_equal_types (TREE_TYPE (field1), TREE_TYPE (field2)))
+    return false;
+
+  return true;
+}
+
 /* Given structure type SRT_TYPE and field FIELD,
    this function is looking for a field with the same name
    and type as FIELD in STR_TYPE. It returns it if found,
@@ -264,24 +290,12 @@ find_field_in_struct_1 (tree str_type, tree field)
   for (str_field = TYPE_FIELDS (str_type); str_field;
        str_field = TREE_CHAIN (str_field))
     {
-      const char *str_field_name;
-      const char *field_name;
 
       if (!DECL_NAME (str_field))
 	continue;
 
-      str_field_name = IDENTIFIER_POINTER (DECL_NAME (str_field));
-      field_name = IDENTIFIER_POINTER (DECL_NAME (field));
-
-      gcc_assert (str_field_name);
-      gcc_assert (field_name);
-
-      if (!strcmp (str_field_name, field_name))
-	{
-	  /* Check field types.  */
-	  if (is_equal_types (TREE_TYPE (str_field), TREE_TYPE (field)))
-	    return str_field;
-	}
+      if (compare_fields (field, str_field))
+	return str_field;
     }
 
   return NULL_TREE;
@@ -1596,11 +1610,8 @@ is_equal_types (tree type1, tree type2)
   name1 = get_type_name (type1);
   name2 = get_type_name (type2);
 
-  if (name1 && name2 && !strcmp (name1, name2))
-    return true;
-
-  if (name1 && name2 && strcmp (name1, name2))
-    return false;
+  if (name1 && name2)
+    return strcmp (name1, name2) == 0;
 
   switch (TREE_CODE (type1))
     {
@@ -1616,16 +1627,20 @@ is_equal_types (tree type1, tree type2)
     case QUAL_UNION_TYPE:
     case ENUMERAL_TYPE:
       {
-	tree field1;
+	tree field1, field2;
+
 	/* Compare fields of structure.  */
-	for (field1 = TYPE_FIELDS (type1); field1;
-	     field1 = TREE_CHAIN (field1))
+	for (field1 = TYPE_FIELDS (type1), field2 = TYPE_FIELDS (type2);
+	     field1 && field2;
+	     field1 = TREE_CHAIN (field1), field2 = TREE_CHAIN (field2))
 	  {
-	    tree field2 = find_field_in_struct_1 (type2, field1);
-	    if (!field2)
+	    if (!compare_fields (field1, field2))
 	      return false;
 	  }
-	return true;
+	if (field1 || field2)
+	  return false;
+	else
+	  return true;
       }
       break;
 

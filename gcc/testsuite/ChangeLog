@@ -1,3 +1,9 @@
+2009-12-08  Olga Golovanevsky  <olga@il.ibm.com>
+	    Jakub Jelinek <jakub@redhat.com>	
+
+	PR midle-end/41843
+	* gcc.dg/struct/wo_prof_empty_str.c: New testcase.
+
 2009-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42244
