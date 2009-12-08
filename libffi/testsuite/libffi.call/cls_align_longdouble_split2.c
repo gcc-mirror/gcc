@@ -6,7 +6,7 @@
 */
 
 /* { dg-excess-errors "no long double format" { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* } } */
+/* { dg-do run { xfail arm*-*-* strongarm*-*-* } } */
 /* { dg-options -mlong-double-128 { target powerpc64*-*-* } } */
 /* { dg-output "" { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
 

@@ -6,7 +6,7 @@
    PR:			none.
    Originator:	Blake Chaffin	6/21/2007	*/
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-*  } } */
+/* { dg-do run { xfail arm*-*-* strongarm*-*-* xscale*-*-*  } } */
 #include "ffitest.h"
 
 typedef struct struct_72byte {

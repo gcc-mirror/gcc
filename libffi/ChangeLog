@@ -1,3 +1,12 @@
+2009-12-08  David Daney  <ddaney@caviumnetworks.com>
+
+	* testsuite/libffi.call/stret_medium.c: Remove xfail for mips*-*-*
+	* testsuite/libffi.call/cls_align_longdouble_split2.c: Same.
+	* testsuite/libffi.call/stret_large.c: Same.
+	* testsuite/libffi.call/cls_align_longdouble_split.c: Same.
+	* testsuite/libffi.call/stret_large2.c: Same.
+	* testsuite/libffi.call/stret_medium2.c: Same.
+
 2009-12-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/aix_closure.S (libffi_closure_ASM): Fix tablejump
@@ -8,7 +17,7 @@
 	* src/powerpc/aix.S: Update AIX32 code to be consistent with AIX64
 	code.
 	* src/powerpc/aix_closure.S: Same.
-	
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
@@ -21,7 +30,7 @@
 
 	* src/powerpc/aix_closure.S: Reorganize 64-bit code to match
         linux64_closure.S.
-	
+
 2009-12-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libffi/41908
