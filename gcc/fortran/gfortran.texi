@@ -1911,6 +1911,12 @@ all C features have a Fortran equivalent or vice versa. For instance,
 neither C's unsigned integers nor C's functions with variable number
 of arguments have an equivalent in Fortran.
 
+Note that array dimensions are reversely orded in C and that arrays in
+C always start with index 0 while in Fortran they start by default with
+1. Thus, an array declaration @code{A(n,m)} in Fortran matches
+@code{A[m][n]} in C and accessing the element @code{A(i,j)} matches
+@code{A[j-1][i-1]}. The element following @code{A(i,j)} (C: @code{A[j-1][i-1]};
+assuming @math{i < n}) in memory is @code{A(i+1,j)} (C: @code{A[j-1][i]}).
 
 @node Intrinsic Types
 @subsection Intrinsic Types
@@ -2191,6 +2197,7 @@ the same declaration part as the variable or procedure pointer.
 * _gfortran_set_convert:: Set endian conversion
 * _gfortran_set_record_marker:: Set length of record markers
 * _gfortran_set_max_subrecord_length:: Set subrecord length
+* _gfortran_set_fpe:: Set when a Floating Point Exception should be raised
 @end menu
 
 Even if you are doing mixed-language programming, it is very
@@ -2362,7 +2369,7 @@ int main (int argc, char *argv[])
 
 @table @asis
 @item @emph{Description}:
-@code{_gfortran_set_record_marker} set the length of record markers
+@code{_gfortran_set_record_marker} sets the length of record markers
 for unformatted files.
 
 @item @emph{Syntax}:
@@ -2381,6 +2388,44 @@ int main (int argc, char *argv[])
   /* Initialize libgfortran.  */
   _gfortran_set_args (argc, argv);
   _gfortran_set_record_marker (8);
+  return 0;
+@}
+@end smallexample
+@end table
+
+
+@node _gfortran_set_fpe
+@subsection @code{_gfortran_set_fpe} --- Set when a Floating Point Exception should be raised
+@fnindex _gfortran_set_fpe
+@cindex libgfortran initialization, set_fpe
+
+@table @asis
+@item @emph{Description}:
+@code{_gfortran_set_fpe} sets the IEEE exceptions for which a
+Floating Point Exception (FPE) should be raised. On most systems,
+this will result in a SIGFPE signal being sent and the program
+being interrupted.
+
+@item @emph{Syntax}:
+@code{void _gfortran_set_fpe (int val)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{option}[0] @tab IEEE exceptions. Possible values are
+(bitwise or-ed) zero (0, default) no trapping,
+@code{GFC_FPE_INVALID} (1), @code{GFC_FPE_DENORMAL} (2),
+@code{GFC_FPE_ZERO} (4), @code{GFC_FPE_OVERFLOW} (8),
+@code{GFC_FPE_UNDERFLOW} (16), and @code{GFC_FPE_PRECISION} (32).
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+int main (int argc, char *argv[])
+@{
+  /* Initialize libgfortran.  */
+  _gfortran_set_args (argc, argv);
+  /* FPE for invalid operations such as SQRT(-1.0).  */
+  _gfortran_set_fpe (1);
   return 0;
 @}
 @end smallexample
