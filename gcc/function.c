@@ -1164,17 +1164,24 @@ void
 free_temp_slots (void)
 {
   struct temp_slot *p, *next;
+  bool some_available = false;
 
   for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
     {
       next = p->next;
 
       if (!p->keep)
-	make_slot_available (p);
+	{
+	  make_slot_available (p);
+	  some_available = true;
+	}
     }
 
-  remove_unused_temp_slot_addresses ();
-  combine_temp_slots ();
+  if (some_available)
+    {
+      remove_unused_temp_slot_addresses ();
+      combine_temp_slots ();
+    }
 }
 
 /* Push deeper into the nesting level for stack temporaries.  */
@@ -1192,15 +1199,20 @@ void
 pop_temp_slots (void)
 {
   struct temp_slot *p, *next;
+  bool some_available = false;
 
   for (p = *temp_slots_at_level (temp_slot_level); p; p = next)
     {
       next = p->next;
       make_slot_available (p);
+      some_available = true;
     }
 
-  remove_unused_temp_slot_addresses ();
-  combine_temp_slots ();
+  if (some_available)
+    {
+      remove_unused_temp_slot_addresses ();
+      combine_temp_slots ();
+    }
 
   temp_slot_level--;
 }

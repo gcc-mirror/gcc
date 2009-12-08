@@ -1,3 +1,10 @@
+2009-12-08  Michael Matz  <matz@suse.de>
+
+	PR middle-end/38474
+	* function.c (free_temp_slots): Only walk the temp slot
+	addresses and combine slots if we actually changes something.
+	(pop_temp_slots): Ditto.
+
 2009-12-08  Olga Golovanevsky  <olga@il.ibm.com>
 
 	PR middle-end/41843
