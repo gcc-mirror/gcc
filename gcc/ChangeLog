@@ -1,3 +1,8 @@
+2009-12-09  Xinliang David Li  <davidxl@google.com>
+
+	PR tree-optimization/42337
+	* tree-ssa-pre.c (phi_translate_1): Push and Pop SEEN set.
+
 2009-12-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/vector.md (absv2sf2, negv2sf2, addv2sf3, subv2sf3,
