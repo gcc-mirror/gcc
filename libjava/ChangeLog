@@ -1,3 +1,12 @@
+2009-12-09  Bryce McKinlay  <bmckinlay@gmail.com>
+
+	PR java/41991  
+	* configure.ac (SYSTEMSPEC): Pass -allow_stack_execute to Darwin
+	linker.
+	* Makefile.am (gij_LDFLAGS): Remove extra_gij_ldflags.
+	* configure: Regenerate.  
+	* Makefile.in: Regenerate.
+
 2009-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.host (sparc*-sun-solaris2.*): New case.
