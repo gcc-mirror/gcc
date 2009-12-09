@@ -1,3 +1,7 @@
+2009-12-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("copysign<mode>3"): Pattern removed.
+
 2009-12-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*iorqi_ext_2): Fix insn mnemonic typo.
