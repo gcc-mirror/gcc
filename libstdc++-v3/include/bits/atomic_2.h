@@ -108,7 +108,7 @@ namespace __atomic2
 	{
 	  // write_mem_barrier();
 	  _M_i = __v;
-	  if (__m = memory_order_seq_cst)
+	  if (__m == memory_order_seq_cst)
 	    __sync_synchronize();
 	}
     }
@@ -299,7 +299,7 @@ namespace __atomic2
 	  {
 	    // write_mem_barrier();
 	    _M_i = __i;
-	    if (__m = memory_order_seq_cst)
+	    if (__m == memory_order_seq_cst)
 	      __sync_synchronize();
 	  }
       }

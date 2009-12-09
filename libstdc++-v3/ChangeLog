@@ -1,3 +1,8 @@
+2009-12-09  Roman Odaisky  <to.roma.from.bugcc@qwertty.com>
+
+	PR libstdc++/42273
+	* include/bits/atomic_2.h: Fix typo.
+
 2009-12-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/42319
