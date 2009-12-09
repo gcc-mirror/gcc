@@ -1,3 +1,14 @@
+2009-12-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/vector.md (absv2sf2, negv2sf2, addv2sf3, subv2sf3,
+	mulv2sf3, divv2sf3): New expanders.
+	* config/rs6000/spe.md (spe_evabs, spe_evand, spe_evaddw, spe_evsubfw,
+	spe_evdivws): Rename to use standard GCC names.
+	* config/rs6000/paired.md (negv2sf, absv2sf2, addv2sf3, subv2sf3,
+	mulv2sf3, divv2sf3): Rename to avoid conflict with the new expanders.
+	* config/rs6000/rs6000.c (bdesc_2arg, bdesc_1arg): Use new CODE_FOR_
+	names for renamed patterns.
+
 2009-12-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md ("copysign<mode>3"): Pattern removed.
