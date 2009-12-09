@@ -1490,10 +1490,17 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	      continue;
 	    else
 	      {
+                pre_expr leader, result;
+                bitmap temp = BITMAP_ALLOC (&grand_bitmap_obstack);
 		unsigned int op_val_id = VN_INFO (newnary.op[i])->value_id;
-		pre_expr leader = find_leader_in_sets (op_val_id, set1, set2);
-		pre_expr result = phi_translate_1 (leader, set1, set2,
+
+                bitmap_copy (temp, seen);
+		leader = find_leader_in_sets (op_val_id, set1, set2);
+                result = phi_translate_1 (leader, set1, set2,
 						   pred, phiblock, seen);
+                bitmap_copy (seen, temp);
+                BITMAP_FREE (temp);
+
 		if (result && result != leader)
 		  {
 		    tree name = get_representative_for (result);
