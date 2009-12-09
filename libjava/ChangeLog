@@ -1,3 +1,15 @@
+2009-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* include/pa-signal.h: Do not include ucontext.h.
+	(SIGNAL_HANDLER): Add __attribute__ ((unused)) to signal handler
+	arguments.
+	(MAKE_THROW_FRAME): Do not adjust program counter.
+	* include/hppa-signal.h: Do not include sys/types.h, sys/syscall.h and
+	unistd.h.
+	(MAKE_THROW_FRAME): Do not adjust program counter.
+	(HANDLE_FPE): Define.
+	(INIT_SEGV, INIT_FPE): Revise indentation.
+
 2009-12-09  Bryce McKinlay  <bmckinlay@gmail.com>
 
 	PR java/41991  
