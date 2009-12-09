@@ -1,3 +1,7 @@
+2009-12-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("copysign<mode>3"): Pattern removed.
+
 2009-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Compute ld_ver, ld_vers, ld_date, ld_vers_major,
