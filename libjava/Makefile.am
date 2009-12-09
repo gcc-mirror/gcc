@@ -1065,8 +1065,7 @@ gij_SOURCES =
 ## need this because we are explicitly using libtool to link using the
 ## `.la' file.
 gij_LDFLAGS = -rpath $(dbexecdir) -rpath $(toolexeclibdir) \
-	-shared-libgcc $(THREADLDFLAGS) $(extra_ldflags) \
-	$(extra_gij_ldflags) 
+	-shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
 gij_LINK = $(GCJLINK) $(gij_LDFLAGS)
 ## See jv_convert_LDADD.
 gij_LDADD = -L$(here)/.libs libgij.la

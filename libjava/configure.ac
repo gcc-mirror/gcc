@@ -889,6 +889,9 @@ case "${host}" in
         SYSTEMSPEC="-lunicows $SYSTEMSPEC"
       fi
     ;;
+    *-*-darwin[[912]]*)
+      SYSTEMSPEC="-allow_stack_execute"
+    ;;
     *)
       SYSTEMSPEC=
     ;;
@@ -919,9 +922,6 @@ case "${host}" in
     # on Darwin -single_module speeds up loading of the dynamic libraries.
     extra_ldflags_libjava=-Wl,-single_module
     ;;
-*-*-darwin[[912]]*)
-    extra_gij_ldflags=-Wl,-allow_stack_execute
-    ;;
 arm*linux*eabi)
     # Some of the ARM unwinder code is actually in libstdc++.  We
     # could in principle replicate it in libgcj, but it's better to
@@ -935,7 +935,6 @@ arm*linux*eabi)
     ;;
 esac
 AC_SUBST(extra_ldflags_libjava)
-AC_SUBST(extra_gij_ldflags)
 AC_SUBST(extra_ldflags)
 AC_SUBST(LIBSTDCXXSPEC)
 
