@@ -334,7 +334,6 @@ build_vendor = @build_vendor@
 datadir = @datadir@
 dbexecdir = @dbexecdir@
 exec_prefix = @exec_prefix@
-extra_gij_ldflags = @extra_gij_ldflags@
 extra_ldflags = @extra_ldflags@
 extra_ldflags_libjava = @extra_ldflags_libjava@
 gcc_suffix = @gcc_suffix@
