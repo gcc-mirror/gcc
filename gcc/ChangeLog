@@ -1,3 +1,10 @@
+2009-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Compute ld_ver, ld_vers, ld_date, ld_vers_major,
+	ld_vers_minor and ld_vers_path always, not just when gcc_cv_ld_hidden
+	isn't cached.
+	* configure: Regenerated.
+
 2009-12-08  Richard Henderson  <rth@redhat.com>
 
 	* combine.c (setup_incoming_promotions): Fix sign-extend of
