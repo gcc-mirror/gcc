@@ -944,3 +944,97 @@
 			(match_operand:VEC_I 2 "vint_operand" "")))]
   "TARGET_ALTIVEC"
   "")
+
+;;; Expanders for vector insn patterns shared between the SPE and TARGET_PAIRED systems.
+
+(define_expand "absv2sf2"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
+	(abs:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")))]
+  "TARGET_PAIRED_FLOAT || TARGET_SPE"
+  "")
+
+(define_expand "negv2sf2"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
+	(neg:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")))]
+  "TARGET_PAIRED_FLOAT || TARGET_SPE"
+  "")
+
+(define_expand "addv2sf3"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
+	(plus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
+		   (match_operand:V2SF 2 "gpc_reg_operand" "")))]
+  "TARGET_PAIRED_FLOAT || TARGET_SPE"
+  "
+{
+  if (TARGET_SPE)
+    {
+      /* We need to make a note that we clobber SPEFSCR.  */
+      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+
+      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+                                         gen_rtx_PLUS (V2SFmode, operands[1], operands[2]));
+      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
+      emit_insn (par);
+      DONE;
+    }
+}")
+
+(define_expand "subv2sf3"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
+	(minus:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
+		    (match_operand:V2SF 2 "gpc_reg_operand" "")))]
+  "TARGET_PAIRED_FLOAT || TARGET_SPE"
+  "
+{
+  if (TARGET_SPE)
+    {
+      /* We need to make a note that we clobber SPEFSCR.  */
+      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+
+      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+                                         gen_rtx_MINUS (V2SFmode, operands[1], operands[2]));
+      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
+      emit_insn (par);
+      DONE;
+    }
+}")
+
+(define_expand "mulv2sf3"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
+	(mult:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
+		   (match_operand:V2SF 2 "gpc_reg_operand" "")))]
+  "TARGET_PAIRED_FLOAT || TARGET_SPE"
+  "
+{
+  if (TARGET_SPE)
+    {
+      /* We need to make a note that we clobber SPEFSCR.  */
+      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+
+      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+                                         gen_rtx_MULT (V2SFmode, operands[1], operands[2]));
+      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
+      emit_insn (par);
+      DONE;
+    }
+}")
+
+(define_expand "divv2sf3"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "")
+	(div:V2SF (match_operand:V2SF 1 "gpc_reg_operand" "")
+		  (match_operand:V2SF 2 "gpc_reg_operand" "")))]
+  "TARGET_PAIRED_FLOAT || TARGET_SPE"
+  "
+{
+  if (TARGET_SPE)
+    {
+      /* We need to make a note that we clobber SPEFSCR.  */
+      rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+
+      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+                                         gen_rtx_DIV (V2SFmode, operands[1], operands[2]));
+      XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
+      emit_insn (par);
+      DONE;
+    }
+}")

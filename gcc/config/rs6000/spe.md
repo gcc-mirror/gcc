@@ -164,7 +164,7 @@
 
 ;; SPE SIMD instructions
 
-(define_insn "spe_evabs"
+(define_insn "absv2si2"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
 	(abs:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")))]
   "TARGET_SPE"
@@ -181,7 +181,7 @@
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evand"
+(define_insn "andv2si3"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (and:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
 		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
@@ -1898,7 +1898,7 @@
   [(set_attr "type" "veccomplex")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evaddw"
+(define_insn "addv2si3"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (plus:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
 		   (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
@@ -1967,7 +1967,7 @@
   [(set_attr "type" "veccomplex")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evsubfw"
+(define_insn "subv2si3"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (minus:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
 		    (match_operand:V2SI 2 "gpc_reg_operand" "r")))]
@@ -2028,7 +2028,7 @@
   [(set_attr "type" "veccomplex")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evdivws"
+(define_insn "divv2si3"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (div:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")
 		  (match_operand:V2SI 2 "gpc_reg_operand" "r")))
