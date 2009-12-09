@@ -1,3 +1,16 @@
+2009-12-08  Sebastian Pop  <sebpop@gmail.com>
+
+	PR middle-end/42285
+	* graphite-scop-detection.c (graphite_can_represent_init): Also
+	handle more complex MULT_EXPRs containing parameters by recursion
+	on the structure.
+
+	* testsuite/gfortran.dg/graphite/pr42285.f90: New.
+
+2009-12-01  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* testsuite/g++.dg/graphite/pr42130.C: Fix type.
+
 2009-11-29  Alexander Monakov <amonakov@gcc.gnu.org>
 
 	* testsuite/g++.dg/graphite/pr42130.C: Correct testcase.
