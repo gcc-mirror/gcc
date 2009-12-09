@@ -1,6 +1,6 @@
 // pa-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2009  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -12,29 +12,17 @@ details.  */
 #define JAVA_SIGNAL_H 1
 
 #include <signal.h>
-#include <ucontext.h>
 #include <sys/syscall.h>
 
 #define HANDLE_SEGV 1
 #define HANDLE_FPE 1
 
-#define SIGNAL_HANDLER(_name) 					\
-static void _Jv_##_name (int _dummy, siginfo_t *_info, void *arg)
+#define SIGNAL_HANDLER(_name)						\
+static void _Jv_##_name (int _dummy __attribute__ ((unused)),		\
+			 siginfo_t *_info __attribute__ ((__unused__)), \
+			 void *arg __attribute__ ((__unused__)))
 
-#define MAKE_THROW_FRAME(_exception)				\
-do								\
-{								\
-  struct ucontext *uc = (struct ucontext *)arg;			\
-  struct sigcontext *sc = &uc->uc_mcontext;			\
-  (void)_dummy;							\
-  (void)_info;							\
-  /* Advance the program counter so that it is after the start 	\
-     of the instruction:  the exception handler expects		\
-     the PC to point to the instruction after a call. */	\
-  sc->sc_iaoq[0] = sc->sc_iaoq[1];				\
-  sc->sc_iaoq[1] += 4;						\
-}								\
-while (0)
+#define MAKE_THROW_FRAME(_exception)
 
 #define INIT_SEGV						\
 do								\
