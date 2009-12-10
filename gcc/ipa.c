@@ -179,11 +179,21 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	          first = e->callee;
 	        }
 	    }
+	
+      /* We can freely remove inline clones even if they are cloned, however if
+	 function is clone of real clone, we must keep it around in order to
+	 make materialize_clones produce function body with the changes
+	 applied.  */
       while (node->clone_of && !node->clone_of->aux && !gimple_has_body_p (node->decl))
         {
+	  bool noninline = node->clone_of->decl != node->decl;
 	  node = node->clone_of;
-	  node->aux = first;
-	  first = node;
+	  if (noninline)
+	    {
+	      node->aux = first;
+	      first = node;
+	      break;
+	    }
 	}
     }
 
@@ -244,6 +254,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		    node->clone_of->clones = node->next_sibling_clone;
 		  if (node->next_sibling_clone)
 		    node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
+		  node->clone_of = NULL;
+		  node->next_sibling_clone = NULL;
+		  node->prev_sibling_clone = NULL;
 		}
 	      else
 		cgraph_remove_node (node);

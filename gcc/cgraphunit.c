@@ -749,6 +749,7 @@ verify_cgraph_node (struct cgraph_node *node)
 			  {
 			    error ("edge points to same body alias:");
 			    debug_tree (e->callee->decl);
+			    error_found = true;
 			  }
 			else if (!clone_of_p (cgraph_node (decl), e->callee)
 			         && !e->callee->global.inlined_to)
@@ -757,6 +758,7 @@ verify_cgraph_node (struct cgraph_node *node)
 			    debug_tree (e->callee->decl);
 			    fprintf (stderr," Instead of:");
 			    debug_tree (decl);
+			    error_found = true;
 			  }
 			e->aux = (void *)1;
 		      }
@@ -2248,6 +2250,9 @@ cgraph_materialize_all_clones (void)
 	    }
 	}
     }
+  for (node = cgraph_nodes; node; node = node->next)
+    if (!node->analyzed && node->callees)
+      cgraph_node_remove_callees (node);
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Updating call sites\n");
   for (node = cgraph_nodes; node; node = node->next)
