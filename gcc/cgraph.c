@@ -829,7 +829,8 @@ cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
 }
 
 /* Like cgraph_create_edge walk the clone tree and update all clones sharing
-   same function body.
+   same function body.  If clones already have edge for OLD_STMT; only
+   update the edge same way as cgraph_set_call_stmt_including_clones does.
 
    TODO: COUNT and LOOP_DEPTH should be properly distributed based on relative
    frequencies of the clones.  */
@@ -837,6 +838,7 @@ cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
 void
 cgraph_create_edge_including_clones (struct cgraph_node *orig,
 				     struct cgraph_node *callee,
+				     gimple old_stmt,
 				     gimple stmt, gcov_type count,
 				     int freq, int loop_depth,
 				     cgraph_inline_failed_t reason)
@@ -854,9 +856,15 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
   if (node)
     while (node != orig)
       {
-        /* It is possible that we already constant propagated into the clone
-	   and turned indirect call into dirrect call.  */
-        if (!cgraph_edge (node, stmt))
+	struct cgraph_edge *edge = cgraph_edge (node, old_stmt);
+
+        /* It is possible that clones already contain the edge while
+	   master didn't.  Either we promoted indirect call into direct
+	   call in the clone or we are processing clones of unreachable
+	   master where edges has been rmeoved.  */
+	if (edge)
+	  cgraph_set_call_stmt (edge, stmt);
+	else if (!cgraph_edge (node, stmt))
 	  {
 	    edge = cgraph_create_edge (node, callee, stmt, count,
 				       freq, loop_depth);
@@ -1337,11 +1345,15 @@ cgraph_remove_node (struct cgraph_node *node)
 	      = next_inline_clone->prev_sibling_clone;
 	  if (next_inline_clone->prev_sibling_clone)
 	    {
+	      gcc_assert (node->clones != next_inline_clone);
 	      next_inline_clone->prev_sibling_clone->next_sibling_clone
 	        = next_inline_clone->next_sibling_clone;
 	    }
 	  else
-	   node->clones = next_inline_clone->next_sibling_clone;
+	    {
+	      gcc_assert (node->clones == next_inline_clone);
+	      node->clones = next_inline_clone->next_sibling_clone;
+	    }
 
 	  new_clones = node->clones;
 	  node->clones = NULL;
@@ -1355,6 +1367,8 @@ cgraph_remove_node (struct cgraph_node *node)
 	  next_inline_clone->next_sibling_clone = NULL;
 	  if (node->clone_of)
 	    {
+	      if (node->clone_of->clones)
+	        node->clone_of->clones->prev_sibling_clone = next_inline_clone;
 	      next_inline_clone->next_sibling_clone = node->clone_of->clones;
 	      node->clone_of->clones = next_inline_clone;
 	    }
@@ -1389,8 +1403,6 @@ cgraph_remove_node (struct cgraph_node *node)
 	}
 
     }
-  else
-    gcc_assert (node->clone_of);
   if (node->prev_sibling_clone)
     node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
   else if (node->clone_of)
@@ -1399,15 +1411,33 @@ cgraph_remove_node (struct cgraph_node *node)
     node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
   if (node->clones)
     {
-      struct cgraph_node *n;
+      struct cgraph_node *n, *next;
 
-      for (n = node->clones; n->next_sibling_clone; n = n->next_sibling_clone)
-	n->clone_of = node->clone_of;
-      n->clone_of = node->clone_of;
-      n->next_sibling_clone = node->clone_of->clones;
-      if (node->clone_of->clones)
-	node->clone_of->clones->prev_sibling_clone = n;
-      node->clone_of->clones = node->clones;
+      if (node->clone_of)
+        {
+	  for (n = node->clones; n->next_sibling_clone; n = n->next_sibling_clone)
+	    n->clone_of = node->clone_of;
+	  n->clone_of = node->clone_of;
+	  n->next_sibling_clone = node->clone_of->clones;
+	  if (node->clone_of->clones)
+	    node->clone_of->clones->prev_sibling_clone = n;
+	  node->clone_of->clones = node->clones;
+	}
+      else
+        {
+	  /* We are removing node with clones.  this makes clones inconsistent,
+	     but assume they will be removed subsequently and just keep clone
+	     tree intact.  This can happen in unreachable function removal since
+	     we remove unreachable functions in random order, not by bottom-up
+	     walk of clone trees.  */
+	  for (n = node->clones; n; n = next)
+	    {
+	       next = n->next_sibling_clone;
+	       n->next_sibling_clone = NULL;
+	       n->prev_sibling_clone = NULL;
+	       n->clone_of = NULL;
+	    }
+	}
     }
 
   while (node->same_body)

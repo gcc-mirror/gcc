@@ -1694,13 +1694,15 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  	      || !id->src_node->analyzed);
 		  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
 		    cgraph_create_edge_including_clones
-		      (id->dst_node, dest, stmt, bb->count,
+		      (id->dst_node, dest, orig_stmt, stmt, bb->count,
 		       compute_call_stmt_bb_frequency (id->dst_node->decl,
 		       				       copy_basic_block),
 		       bb->loop_depth, CIF_ORIGINALLY_INDIRECT_CALL);
 		  else
 		    cgraph_create_edge (id->dst_node, dest, stmt,
-					bb->count, CGRAPH_FREQ_BASE,
+					bb->count,
+					compute_call_stmt_bb_frequency
+					  (id->dst_node->decl, copy_basic_block),
 					bb->loop_depth)->inline_failed
 		      = CIF_ORIGINALLY_INDIRECT_CALL;
 		  if (dump_file)

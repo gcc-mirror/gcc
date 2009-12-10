@@ -1,3 +1,8 @@
+2009-12-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/42110
+	* g++.dg/torture/pr42110.C: new file.
+
 2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
 
         PR fortran/34402

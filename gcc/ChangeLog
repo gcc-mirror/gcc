@@ -1,3 +1,19 @@
+2009-12-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/42228
+	PR middle-end/42110
+	* cgraph.c (cgraph_create_edge_including_clones): Add old_stmt parameter;
+	update edge if it already exists.
+	(cgraph_remove_node): Handle correctly cases where we are removing node having
+	clones.
+	* cgraph.h (cgraph_create_edge_including_clones): Declare.
+	(verify_cgraph_node): Add missing error_found = true code.
+	(cgraph_materialize_all_clones): Remove call edges of dead nodes.
+	* ipa.c (cgraph_remove_unreachable_nodes): Correctly look for master
+	clone; fix double linked list removal.
+	* tree-inline.c (copy_bb): Update cgraph_create_edge_including_clones call;
+	fix frequency of newly created edge.
+
 2009-12-10  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR rtl-opt/42216
