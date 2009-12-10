@@ -230,8 +230,8 @@ vectorize_loops (void)
 
   statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
   if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS)
-      || (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS)
-	  && num_vectorized_loops > 0))
+      || (num_vectorized_loops > 0
+	  && vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS)))
     fprintf (vect_dump, "vectorized %u loops in function.\n",
 	     num_vectorized_loops);
 

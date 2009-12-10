@@ -1,3 +1,9 @@
+2009-12-10  Richard Guenther  <rguenther@suse.de>
+	Allan Sandfeld Jensen  <linux@carewolf.com>
+
+	* tree-vectorizer.c (vectorize_loops): Properly guard
+	vectorizer verboseness.
+
 2009-12-10  Ben Elliston  <bje@au.ibm.com>
 
 	* fwprop.c (free_load_extend): Initialise `use'.
