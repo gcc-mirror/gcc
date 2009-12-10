@@ -106,8 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       template<typename _Integer>
         void
         _M_construct_aux(_Integer __beg, _Integer __end, std::__true_type)
-      { _M_construct(static_cast<size_type>(__beg),
-		     static_cast<value_type>(__end)); }
+	{ _M_construct(static_cast<size_type>(__beg), __end); }
 
       template<typename _InIterator>
         void

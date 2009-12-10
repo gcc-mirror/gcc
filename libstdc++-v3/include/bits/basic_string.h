@@ -1588,8 +1588,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         static _CharT*
         _S_construct_aux(_Integer __beg, _Integer __end,
 			 const _Alloc& __a, __true_type)
-        { return _S_construct(static_cast<size_type>(__beg),
-			      static_cast<value_type>(__end), __a); }
+        { return _S_construct(static_cast<size_type>(__beg), __end, __a); }
 
       template<class _InIterator>
         static _CharT*
