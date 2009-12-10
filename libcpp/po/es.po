@@ -1,14 +1,14 @@
-# Mensajes en español para cpplib-4.4.1
+# Mensajes en español para cpplib-4.5-b20091203
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4.1\n"
+"Project-Id-Version: cpplib 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-02 14:22+0000\n"
-"PO-Revision-Date: 2009-08-19 17:20-0500\n"
+"PO-Revision-Date: 2009-12-09 10:56-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -119,9 +119,9 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "secuencia de escape que no es estándard ISO, '\\%c'"
 
 #: charset.c:1321
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "secuencia de escape desconocida '\\%c'"
+msgstr "secuencia de escape desconocida: '\\%c'"
 
 #: charset.c:1329
 #, c-format
@@ -308,14 +308,12 @@ msgid "#pragma once in main file"
 msgstr "#pragma una vez en el fichero principal"
 
 #: directives.c:1444
-#, fuzzy
 msgid "invalid #pragma push_macro directive"
-msgstr "directiva #pragma de GCC envenenada inválida"
+msgstr "directiva #pragma push_macro inválida"
 
 #: directives.c:1483
-#, fuzzy
 msgid "invalid #pragma pop_macro directive"
-msgstr "directiva #pragma de GCC envenenada inválida"
+msgstr "directiva #pragma pop_macro inválida"
 
 #: directives.c:1537
 msgid "invalid #pragma GCC poison directive"
@@ -456,9 +454,8 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "C tradicional rechaza el sufijo \"%.*s\""
 
 #: expr.c:377
-#, fuzzy
 msgid "suffix for double constant is a GCC extension"
-msgstr "las constantes de coma fija son una extensión GCC"
+msgstr "el sufijo para una constante doble es una extensión GCC"
 
 #: expr.c:383
 #, c-format
@@ -475,9 +472,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "sufijo \"%.*s\" inválido en la constante entera"
 
 #: expr.c:427
-#, fuzzy
 msgid "use of C++0x long long integer constant"
-msgstr "uso de una constante entera long long C99"
+msgstr "uso de una constante entera long long C++0x"
 
 #: expr.c:436
 msgid "imaginary constants are a GCC extension"
@@ -737,21 +733,20 @@ msgstr "__VA_ARGS__ solamente puede aparecer en la expansión de una macro variad
 #: lex.c:547 lex.c:624
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "el identificador \"%s\" es un nombre de operador especial en C++"
 
 #: lex.c:739
 msgid "raw string delimiter longer than 16 characters"
-msgstr ""
+msgstr "el delimitador de cadena cruda es más largo que 16 caracteres"
 
 #: lex.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "el carácter universal %.*s no es válido en un identificador"
+msgstr "carácter inválido '%c' en un delimitador de cadena cruda"
 
 #: lex.c:771 lex.c:818
-#, fuzzy
 msgid "unterminated raw string"
-msgstr "#%s sin terminar"
+msgstr "cadena cruda sin terminar"
 
 #: lex.c:831 lex.c:930
 msgid "null character(s) preserved in literal"
