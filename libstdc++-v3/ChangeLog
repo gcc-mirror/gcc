@@ -1,5 +1,23 @@
 2009-12-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/42261 (take 2)
+	* include/bits/basic_string.h (_S_construct_aux_2(size_type, _CharT,
+	const _Alloc&)): Add.
+	(_S_construct_aux(_Integer, _Integer, const _Alloc&, __true_type)):
+	Call it.
+	* include/ext/sso_string_base.h (_M_construct_aux_2(size_type,
+	_CharT): Add.
+	(_M_construct_aux(_Integer, _Integer, std::__true_type)): Call it.
+	* include/ext/rc_string_base.h (_S_construct_aux_2(size_type, _CharT,
+	const _Alloc&)): Add.
+	(_S_construct_aux(_Integer, _Integer, const _Alloc&, __true_type)):
+	Call it.
+	* config/abi/pre/gnu.ver: Export basic_string::_S_construct_aux_2.
+	* testsuite/21_strings/basic_string/cons/char/42261.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/42261.cc: Likewise.
+
+2009-12-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	Revert:
         2009-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
