@@ -129,7 +129,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   PB_DS_HASH_EQ_FN_C_DEC(other),
   resize_base(other), ranged_hash_fn_base(other),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
-  m_entries(m_entries = s_entry_pointer_allocator.allocate(m_num_e))
+  m_entries(s_entry_pointer_allocator.allocate(m_num_e))
 {
   initialize();
   _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
