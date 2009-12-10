@@ -1,3 +1,8 @@
+2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/41369
+	* gfortran.dg/func_derived_5.f90: New.
+
 2009-12-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/42110

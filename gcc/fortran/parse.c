@@ -2340,7 +2340,7 @@ match_deferred_characteristics (gfc_typespec * ts)
     {
       ts->kind = 0;
 
-      if (!ts->u.derived || !ts->u.derived->components)
+      if (!ts->u.derived)
 	m = MATCH_ERROR;
     }
 
