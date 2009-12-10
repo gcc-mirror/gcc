@@ -1,3 +1,17 @@
+2009-12-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/profile/impl/profiler_container_size.h: Fix include
+	guard, formatting fixes.
+	* include/profile/impl/profiler_vector_size.h: Same.
+	* include/profile/impl/profiler_hash_func.h: Same.
+	* include/profile/impl/profiler_trace.h: Same.
+	* include/profile/impl/profiler_vector_to_list.h: Same.
+	* include/profile/impl/profiler.h: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Same.
+	* include/profile/impl/profiler_hashtable_size.h: Same.
+	* include/profile/impl/profiler_node.h: Same.
+
 2009-12-09  Roman Odaisky  <to.roma.from.bugcc@qwertty.com>
 
 	PR libstdc++/42273

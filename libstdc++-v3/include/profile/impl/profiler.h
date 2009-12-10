@@ -34,8 +34,8 @@
 
 // Written by Lixia Liu and Silvius Rus.
 
-#ifndef PROFCXX_PROFILER_H__
-#define PROFCXX_PROFILER_H__ 1
+#ifndef _GLIBCXX_PROFILE_PROFILER_H
+#define _GLIBCXX_PROFILE_PROFILER_H 1
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <cstddef>
@@ -311,4 +311,4 @@ namespace __gnu_profile
 #include "profile/impl/profiler_vector_size.h"
 #include "profile/impl/profiler_vector_to_list.h"
 
-#endif // PROFCXX_PROFILER_H__
+#endif // _GLIBCXX_PROFILE_PROFILER_H
