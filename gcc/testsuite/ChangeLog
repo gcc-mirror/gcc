@@ -1,3 +1,10 @@
+2009-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42317
+	* g++.dg/opt/dtor2.C: New test.
+	* g++.dg/opt/dtor2.h: New file.
+	* g++.dg/opt/dtor2-aux.cc: New file.
+
 2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/41369

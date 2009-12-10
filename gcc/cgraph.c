@@ -1443,6 +1443,20 @@ cgraph_remove_node (struct cgraph_node *node)
   while (node->same_body)
     cgraph_remove_same_body_alias (node->same_body);
 
+  if (node->same_comdat_group)
+    {
+      struct cgraph_node *prev;
+      for (prev = node->same_comdat_group;
+	   prev->same_comdat_group != node;
+	   prev = prev->same_comdat_group)
+	;
+      if (node->same_comdat_group == prev)
+	prev->same_comdat_group = NULL;
+      else
+	prev->same_comdat_group = node->same_comdat_group;
+      node->same_comdat_group = NULL;
+    }
+
   /* While all the clones are removed after being proceeded, the function
      itself is kept in the cgraph even after it is compiled.  Check whether
      we are done with this body and reclaim it proactively if this is the case.
@@ -2172,7 +2186,8 @@ bool
 cgraph_node_can_be_local_p (struct cgraph_node *node)
 {
   return (!node->needed
-  	  && (DECL_COMDAT (node->decl) || !node->local.externally_visible));
+	  && ((DECL_COMDAT (node->decl) && !node->same_comdat_group)
+	      || !node->local.externally_visible));
 }
 
 /* Bring NODE local.  */

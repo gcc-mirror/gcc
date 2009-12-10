@@ -1,3 +1,12 @@
+2009-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42317
+	* decl2.c (cp_write_global_declarations): Clear DECL_EXTERNAL
+	also on all other functions in the same comdat group.
+	* optimize.c (maybe_clone_body): Also optimize virtual implicit
+	dtors.  For virtual comdat dtors tell cgraph that base and deleting
+	dtor are in the same comdat group.
+
 2009-12-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42010

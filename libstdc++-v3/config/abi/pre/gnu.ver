@@ -72,13 +72,18 @@ GLIBCXX_3.4 {
       std::c[v-z]*;
 #     std::[d-g]*;
       std::d[a-d]*;
-      std::d[f-z]*;
+      std::d[f-n]*;
+      std::domain_error::d*;
+#     std::domain_error::~d*;
+      std::d[p-z]*;
       std::e[a-q]*;
       std::error[^_]*;
       std::e[s-z]*;
       std::gslice*;
       std::h[^a]*;
-      std::i[a-n]*;
+      std::i[a-m]*;
+      std::invalid_argument::i*;
+#     std::invalid_argument::~i*;
 #     std::ios_base::[A-Ha-z]*;
       std::ios_base::[A-Ha-f]*;
       std::ios_base::goodbit;
@@ -94,7 +99,8 @@ GLIBCXX_3.4 {
       std::istrstream*;
       std::i[t-z]*;
       std::[A-Zj-k]*;
-      std::length_error*;
+      std::length_error::l*;
+#     std::length_error::~l*;
       std::logic_error*;
       std::locale::[A-Za-e]*;
       std::locale::facet::[A-Za-z]*;
@@ -122,10 +128,14 @@ GLIBCXX_3.4 {
       std::nu[^m]*;
       std::num[^e]*;
       std::ostrstream*;
-      std::out_of_range*;
-      std::overflow_error*;
+      std::out_of_range::o*;
+#     std::out_of_range::~o*;
+      std::overflow_error::o*;
+#     std::overflow_error::~o*;
 #     std::[p-q]*;
-      std::r[^e]*;
+      std::r[^ae]*;
+      std::range_error::r*;
+#     std::range_error::~r*;
       std::re[^t]*;
 #     std::rethrow_exception
       std::set_new_handler*;
@@ -143,7 +153,8 @@ GLIBCXX_3.4 {
       std::tr1::h[^a]*;
       std::t[s-z]*;
 #     std::[A-Zu-z]*;
-      std::underflow_error*;
+      std::underflow_error::u*;
+#     std::underflow_error::~u*;
       std::uncaught_exception*;
       std::unexpected*;
       std::[A-Zv-z]*;
@@ -284,7 +295,8 @@ GLIBCXX_3.4 {
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EEaSERKS2_;
 
     # std::basic_stringbuf
-    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[CD]*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EED[^2]*;
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][a-r]*;
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]seek*;
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]set*;
@@ -639,6 +651,16 @@ GLIBCXX_3.4 {
     _ZGVNSt[^1]*;
     _ZGVNSt1[^7]*;
 
+    # complete and deleting destructors where base destructors should not
+    # be exported.
+    _ZNSt11range_errorD[01]Ev;
+    _ZNSt12domain_errorD[01]Ev;
+    _ZNSt12length_errorD[01]Ev;
+    _ZNSt12out_of_rangeD[01]Ev;
+    _ZNSt14overflow_errorD[01]Ev;
+    _ZNSt15underflow_errorD[01]Ev;
+    _ZNSt16invalid_argumentD[01]Ev;
+
     # virtual function thunks
     _ZThn8_NS*;
     _ZThn16_NS*;
@@ -891,7 +913,8 @@ GLIBCXX_3.4.10 {
     _ZNSt15basic_streambufI[cw]St11char_traitsI[cw]EE6stosscEv;
 
     _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE4syncEv;
-    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9CD]*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EE[5-9C]*;
+    _ZN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EED[^2]*;
 
 } GLIBCXX_3.4.9;
 

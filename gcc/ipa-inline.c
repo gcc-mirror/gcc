@@ -247,6 +247,10 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
 	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
+	  /* Don't reuse if more than one function shares a comdat group.
+	     If the other function(s) are needed, we need to emit even
+	     this function out of line.  */
+	  && !e->callee->same_comdat_group
 	  && !cgraph_new_nodes)
 	{
 	  gcc_assert (!e->callee->global.inlined_to);
@@ -311,7 +315,8 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
   e->callee->global.inlined = true;
 
   if (e->callee->callers->next_caller
-      || !cgraph_can_remove_if_no_direct_calls_p (e->callee))
+      || !cgraph_can_remove_if_no_direct_calls_p (e->callee)
+      || e->callee->same_comdat_group)
     duplicate = true;
   cgraph_clone_inlined_nodes (e, true, update_original);
 
