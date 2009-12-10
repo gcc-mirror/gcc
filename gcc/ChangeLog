@@ -1,3 +1,8 @@
+2009-12-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* builtins.c (do_mpc_ckconv): Pass the component type to
+	real_from_mpfr().
+	
 2009-12-09  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/42337

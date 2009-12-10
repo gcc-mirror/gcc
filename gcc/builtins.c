@@ -12726,8 +12726,8 @@ do_mpc_ckconv (mpc_srcptr m, tree type, int inexact, int force_convert)
     {
       REAL_VALUE_TYPE re, im;
 
-      real_from_mpfr (&re, mpc_realref (m), type, GMP_RNDN);
-      real_from_mpfr (&im, mpc_imagref (m), type, GMP_RNDN);
+      real_from_mpfr (&re, mpc_realref (m), TREE_TYPE (type), GMP_RNDN);
+      real_from_mpfr (&im, mpc_imagref (m), TREE_TYPE (type), GMP_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR values,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
 	 but the mpft_t is not, then we underflowed in the
