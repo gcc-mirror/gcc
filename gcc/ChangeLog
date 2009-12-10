@@ -1,3 +1,7 @@
+2009-12-10  Ben Elliston  <bje@au.ibm.com>
+
+	* fwprop.c (free_load_extend): Initialise `use'.
+
 2009-12-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* builtins.c (do_mpc_ckconv): Pass the component type to

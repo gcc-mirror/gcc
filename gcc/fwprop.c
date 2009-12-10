@@ -1039,7 +1039,7 @@ free_load_extend (rtx src, rtx insn)
 {
   rtx reg;
   df_ref *use_vec;
-  df_ref use, def;
+  df_ref use = 0, def;
 
   reg = XEXP (src, 0);
 #ifdef LOAD_EXTEND_OP
