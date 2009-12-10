@@ -5,11 +5,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.4-b20081121\n"
+"Project-Id-Version: gcc 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-03 21:28+0000\n"
-"PO-Revision-Date: 2009-04-01 13:53+0800\n"
-"Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
+"PO-Revision-Date: 2009-12-10 17:02+0800\n"
+"Last-Translator: Zuxy Meng <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -281,9 +281,8 @@ msgid "field precision"
 msgstr "字段精度"
 
 #: c-objc-common.c:164
-#, fuzzy
 msgid "({anonymous})"
-msgstr "<匿名>"
+msgstr "{{匿名}}"
 
 #: c-opts.c:1497 tree.c:3954 cp/error.c:1024 fortran/cpp.c:552
 msgid "<built-in>"
@@ -295,42 +294,40 @@ msgid "<command-line>"
 msgstr "<命令行>"
 
 #: c-pretty-print.c:324
-#, fuzzy
 msgid "<type-error>"
-msgstr "永久性错误："
+msgstr "<类型错误>"
 
 #: c-pretty-print.c:363
 msgid "<unnamed-unsigned:"
-msgstr ""
+msgstr "<匿名无符号："
 
 #: c-pretty-print.c:364
 msgid "<unnamed-signed:"
-msgstr ""
+msgstr "<匿名有符号："
 
 #: c-pretty-print.c:367
 msgid "<unnamed-float:"
-msgstr ""
+msgstr "<匿名浮点数："
 
 #: c-pretty-print.c:370
 msgid "<unnamed-fixed:"
-msgstr ""
+msgstr "<匿名定点数："
 
 #: c-pretty-print.c:385
 msgid "<typedef-error>"
-msgstr ""
+msgstr "<typedef 错误>"
 
 #: c-pretty-print.c:398
 msgid "<tag-error>"
-msgstr ""
+msgstr "<tag 错误>"
 
 #: c-pretty-print.c:1136
-#, fuzzy
 msgid "<erroneous-expression>"
-msgstr "常量表达式溢出"
+msgstr "<错误表达式>"
 
 #: c-pretty-print.c:1140 cp/cxx-pretty-print.c:154
 msgid "<return-value>"
-msgstr ""
+msgstr "<返回值>"
 
 #: c-typeck.c:5652
 msgid "array initialized from parenthesized string constant"
@@ -397,9 +394,8 @@ msgid "invalid initializer"
 msgstr "无效的初始值设定"
 
 #: c-typeck.c:6175
-#, fuzzy
 msgid "(anonymous)"
-msgstr "<匿名>"
+msgstr "(匿名)"
 
 #: c-typeck.c:6453
 msgid "extra brace group at end of initializer"
@@ -927,9 +923,8 @@ msgid "  --target-help            Display target specific command line options\n
 msgstr "  --target-help            显示目标机器特定的命令行选项\n"
 
 #: gcc.c:3377
-#, fuzzy
 msgid "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
-msgstr "  --help={target|optimizers|warnings|undocumented|params}[,{[^]joined|[^]separate}]\n"
+msgstr "  --help={target|optimizers|warnings|params|[^]{joined|separate|undocumented}}[,...]\n"
 
 #: gcc.c:3378
 msgid "                           Display specific types of command line options\n"
@@ -940,9 +935,8 @@ msgid "  (Use '-v --help' to display command line options of sub-processes)\n"
 msgstr "  (使用‘-v --help’显示子进程的命令行参数)\n"
 
 #: gcc.c:3381
-#, fuzzy
 msgid "  --version                Display compiler version information\n"
-msgstr "  --help                   显示此帮助说明\n"
+msgstr "  --version                显示编译器版本信息\n"
 
 #: gcc.c:3382
 msgid "  -dumpspecs               Display all of the built in spec strings\n"
@@ -1027,9 +1021,8 @@ msgid "  -save-temps              Do not delete intermediate files\n"
 msgstr "  -save-temps              不删除中间文件\n"
 
 #: gcc.c:3404
-#, fuzzy
 msgid "  -save-temps=<arg>        Do not delete intermediate files\n"
-msgstr "  -save-temps              不删除中间文件\n"
+msgstr "  -save-temps=<arg>        不删除中间文件\n"
 
 #: gcc.c:3405
 msgid ""
@@ -1376,9 +1369,9 @@ msgid "-fuse-linker-plugin, but liblto_plugin.so not found"
 msgstr ""
 
 #: gcc.c:7556
-#, fuzzy, c-format
+#, c-format
 msgid "could not find libgcc.a"
-msgstr "找不到可舍出的寄存器"
+msgstr "找不到 libgcc.a"
 
 #: gcc.c:7567
 #, c-format
@@ -2016,11 +2009,11 @@ msgstr "警告：--help= 选项的参数不可识别：%.*s\n"
 
 #: plugin.c:765
 msgid "Event"
-msgstr ""
+msgstr "事件"
 
 #: plugin.c:765
 msgid "Plugins"
-msgstr ""
+msgstr "插件"
 
 #: reload.c:3821
 msgid "unable to generate reloads for:"
@@ -3520,9 +3513,8 @@ msgid "-mvsx and -mpaired are incompatible"
 msgstr "-f%s 和 -msdata=%s 互不兼容"
 
 #: config/rs6000/rs6000.c:2408
-#, fuzzy
 msgid "-mvsx used with little endian code"
-msgstr "生成低位字节在前的代码"
+msgstr "-mvsx 和小端在前的代码一起使用"
 
 #: config/rs6000/rs6000.c:2410
 #, fuzzy
@@ -3653,7 +3645,7 @@ msgstr "创建和使用时使用了不同的 ABI"
 
 #: config/sh/sh.c:8936
 msgid "created and used with different endianness"
-msgstr "创建和使用时使用了不同的高/低位字节在前设定"
+msgstr "创建和使用时使用了不同的大小端设定"
 
 #: config/sparc/sparc.c:6987 config/sparc/sparc.c:6993
 #, c-format
@@ -3798,7 +3790,7 @@ msgstr "备选 2："
 
 #: cp/cxx-pretty-print.c:173 cp/error.c:948 objc/objc-act.c:7137
 msgid "<unnamed>"
-msgstr ""
+msgstr "<匿名>"
 
 #: cp/cxx-pretty-print.c:2066
 #, fuzzy
@@ -3841,11 +3833,11 @@ msgstr "<匿名>"
 #. A lambda's "type" is essentially its signature.
 #: cp/error.c:613
 msgid "<lambda"
-msgstr ""
+msgstr "<lambda"
 
 #: cp/error.c:739
 msgid "<typeprefixerror>"
-msgstr ""
+msgstr "<类型前缀错误>"
 
 #: cp/error.c:850
 #, fuzzy, c-format
@@ -3855,19 +3847,19 @@ msgstr "%qT的初始值设定项太多"
 #: cp/error.c:852
 #, c-format
 msgid "(static destructors for %s)"
-msgstr ""
+msgstr "(%s 的静态析构函数)"
 
 #: cp/error.c:923
 msgid "vtable for "
-msgstr ""
+msgstr "vtable for "
 
 #: cp/error.c:935
 msgid "<return value> "
-msgstr ""
+msgstr "<返回值>"
 
 #: cp/error.c:1063
 msgid "<enumerator>"
-msgstr ""
+msgstr "<枚举值>"
 
 #: cp/error.c:1103
 #, fuzzy
@@ -3876,7 +3868,7 @@ msgstr "%q#D的声明"
 
 #: cp/error.c:1343
 msgid "with"
-msgstr ""
+msgstr "with"
 
 #: cp/error.c:1511 cp/error.c:1531
 #, fuzzy
@@ -3897,11 +3889,11 @@ msgstr "  在抛出的表达式中"
 
 #: cp/error.c:2132
 msgid "<unparsed>"
-msgstr ""
+msgstr "<未解析>"
 
 #: cp/error.c:2281
 msgid "<expression error>"
-msgstr ""
+msgstr "<表达式错误>"
 
 #: cp/error.c:2295
 #, fuzzy
@@ -3920,7 +3912,7 @@ msgstr "未知源"
 
 #: cp/error.c:2604
 msgid "At global scope:"
-msgstr ""
+msgstr "在全局域："
 
 #: cp/error.c:2710
 #, fuzzy, c-format
@@ -3930,7 +3922,7 @@ msgstr "在成员函数%qs中"
 #: cp/error.c:2712
 #, c-format
 msgid "In copy constructor %qs"
-msgstr ""
+msgstr "在复制构造函数%qs"
 
 #: cp/error.c:2714
 #, fuzzy, c-format
@@ -3965,7 +3957,7 @@ msgstr "    内联自%qs"
 #: cp/error.c:2786
 #, c-format
 msgid "%s:%d:%d:   instantiated from here"
-msgstr ""
+msgstr "%s:%d:%d：从此处实例化"
 
 #: cp/error.c:2789
 #, c-format
@@ -11986,7 +11978,7 @@ msgstr "-mglibc 和 -muclibc 不能一起使用"
 
 #: config/mcore/mcore.h:54
 msgid "the m210 does not have little endian support"
-msgstr "m210 不支持低位字节在前"
+msgstr "m210 不支持小端在前"
 
 #: config/arc/arc.h:61 config/mips/mips.h:1230
 msgid "may not use both -EB and -EL"
@@ -12038,7 +12030,7 @@ msgstr "shared 和 mdll 互不兼容"
 
 #: config/sh/sh.h:463
 msgid "SH2a does not support little-endian"
-msgstr "SH2a 不支持低位字节在前"
+msgstr "SH2a 不支持小端在前"
 
 #: config/rs6000/darwin.h:95
 msgid " conflicting code gen style switches are used"
@@ -12103,7 +12095,7 @@ msgstr "不能同时使用 mshared 和 static"
 
 #: ada/gcc-interface/lang-specs.h:34
 msgid "-c or -S required for Ada"
-msgstr ""
+msgstr "Ada 需要指定 -c 或 -S"
 
 #: java/lang.opt:69
 msgid "Warn if deprecated empty statements are found"
@@ -12308,11 +12300,11 @@ msgstr ""
 
 #: fortran/lang.opt:173
 msgid "Use big-endian format for unformatted files"
-msgstr "为未格式化的文件使用高位字节在前的格式"
+msgstr "为未格式化的文件使用大端在前的格式"
 
 #: fortran/lang.opt:177
 msgid "Use little-endian format for unformatted files"
-msgstr "为未格式化的文件使用低位字节在前的格式"
+msgstr "为未格式化的文件使用小端在前的格式"
 
 #: fortran/lang.opt:181
 msgid "Use native format for unformatted files"
@@ -12902,11 +12894,11 @@ msgstr "生成 LP64 代码"
 
 #: config/ia64/ia64.opt:21
 msgid "Generate big endian code"
-msgstr "生成高位字节在前的代码"
+msgstr "生成大端在前的代码"
 
 #: config/ia64/ia64.opt:25
 msgid "Generate little endian code"
-msgstr "生成低位字节在前的代码"
+msgstr "生成小端在前的代码"
 
 #: config/ia64/ia64.opt:29
 msgid "Generate code for GNU as"
@@ -13050,9 +13042,8 @@ msgid "Don't generate checks for control speculation in selective scheduling"
 msgstr ""
 
 #: config/ia64/ia64.opt:183
-#, fuzzy
 msgid "Enable fused multiply/add and multiply/subtract instructions"
-msgstr "启用融合的乘加和乘减浮点指令"
+msgstr "启用融合的乘加和乘减指令"
 
 #: config/ia64/vms_symvec_libgcc_s.opt:3
 msgid "! It would be better to auto-generate this file."
@@ -13088,11 +13079,11 @@ msgstr "memreg 字节数(默认：16，范围：0..16)"
 
 #: config/sparc/little-endian.opt:23
 msgid "Generate code for little-endian"
-msgstr "生成低位字节在前的代码"
+msgstr "生成小端在前的代码"
 
 #: config/sparc/little-endian.opt:27
 msgid "Generate code for big-endian"
-msgstr "生成高位字节在前的代码"
+msgstr "生成大端在前的代码"
 
 #: config/sparc/sparc.opt:23 config/sparc/sparc.opt:27
 msgid "Use hardware FP"
@@ -13620,19 +13611,16 @@ msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code genera
 msgstr "支持 MMX、SSE、SSE2、SSE3 和 SSE4A 内建函数及代码生成"
 
 #: config/i386/i386.opt:315
-#, fuzzy
 msgid "Support FMA4 built-in functions and code generation "
-msgstr "支持 AES 内建函数及代码生成"
+msgstr "支持 FMA4 内建函数及代码生成"
 
 #: config/i386/i386.opt:319
-#, fuzzy
 msgid "Support XOP built-in functions and code generation "
-msgstr "支持 AES 内建函数及代码生成"
+msgstr "支持 XOP 内建函数及代码生成"
 
 #: config/i386/i386.opt:323
-#, fuzzy
 msgid "Support LWP built-in functions and code generation "
-msgstr "支持 AES 内建函数及代码生成"
+msgstr "支持 LWP 内建函数及代码生成"
 
 #: config/i386/i386.opt:327
 msgid "Support code generation of Advanced Bit Manipulation (ABM) instructions."
@@ -13651,14 +13639,12 @@ msgid "Support code generation of sahf instruction in 64bit x86-64 code."
 msgstr "支持在 x86-64 模式下生成 sahf 指令。"
 
 #: config/i386/i386.opt:343
-#, fuzzy
 msgid "Support code generation of movbe instruction."
-msgstr "支持生成 popcnt 指令。"
+msgstr "支持生成 movbe 指令。"
 
 #: config/i386/i386.opt:347
-#, fuzzy
 msgid "Support code generation of crc32 instruction."
-msgstr "支持生成 popcnt 指令。"
+msgstr "支持生成 crc32 指令。"
 
 #: config/i386/i386.opt:351
 msgid "Support AES built-in functions and code generation"
@@ -14021,11 +14007,11 @@ msgstr "生成运行时可重定位的代码"
 
 #: config/rs6000/sysv4.opt:53 config/rs6000/sysv4.opt:57
 msgid "Produce little endian code"
-msgstr "生成低位字节在前的代码"
+msgstr "生成小端在前的代码"
 
 #: config/rs6000/sysv4.opt:61 config/rs6000/sysv4.opt:65
 msgid "Produce big endian code"
-msgstr "生成高位字节在前的代码"
+msgstr "生成大端在前的代码"
 
 #: config/rs6000/sysv4.opt:70 config/rs6000/sysv4.opt:74
 #: config/rs6000/sysv4.opt:83 config/rs6000/sysv4.opt:125
@@ -14169,7 +14155,7 @@ msgstr "将函数强行对齐到 4 字节边界上"
 
 #: config/mcore/mcore.opt:35 config/score/score.opt:23
 msgid "Generate big-endian code"
-msgstr "生成高位字节在前的代码"
+msgstr "生成大端在前的代码"
 
 #: config/mcore/mcore.opt:39
 msgid "Emit call graph information"
@@ -14185,7 +14171,7 @@ msgstr "当常量可以为两个以下的指令生成时内联常量"
 
 #: config/mcore/mcore.opt:51 config/score/score.opt:27
 msgid "Generate little-endian code"
-msgstr "生成低位字节在前的代码"
+msgstr "生成小端在前的代码"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line"
@@ -14392,7 +14378,7 @@ msgstr "避免过度展开循环以免撇出目标寄存器，除非展开的收
 
 #: config/sh/sh.opt:209
 msgid "Generate code in big endian mode"
-msgstr "生成高位字节在前的代码"
+msgstr "生成大端在前的代码"
 
 #: config/sh/sh.opt:213
 msgid "Generate 32-bit offsets in switch tables"
@@ -14469,7 +14455,7 @@ msgstr "使用估算的地址标记汇编指令"
 
 #: config/sh/sh.opt:289
 msgid "Generate code in little endian mode"
-msgstr "生成低位字节在前的代码"
+msgstr "生成小端在前的代码"
 
 #: config/sh/sh.opt:293
 msgid "Mark MAC register as call-clobbered"
@@ -14492,7 +14478,6 @@ msgid "Shorten address references during linking"
 msgstr "在链接时缩短地址引用"
 
 #: config/sh/sh.opt:319
-#, fuzzy
 msgid "Deprecated.  Use -Os instead"
 msgstr "不建议使用。请改用 -Os"
 
@@ -14542,7 +14527,7 @@ msgstr "生成可重入的 PIC 代码"
 
 #: config/arm/arm.opt:56
 msgid "Assume target CPU is configured as big endian"
-msgstr "假定目标 CPU 被配置为高位字节在前"
+msgstr "假定目标 CPU 被配置为大端在前"
 
 #: config/arm/arm.opt:60
 msgid "Thumb: Assume non-static functions may be called from ARM code"
@@ -14579,7 +14564,7 @@ msgstr "-mfloat-abi=hard 的别名"
 
 #: config/arm/arm.opt:102
 msgid "Assume target CPU is configured as little endian"
-msgstr "假定目标 CPU 被配置为低位字节在前"
+msgstr "假定目标 CPU 被配置为小端在前"
 
 #: config/arm/arm.opt:106
 msgid "Generate call insns as indirect calls, if necessary"
@@ -14933,11 +14918,11 @@ msgstr "使用 MIPS-DSP REV 2指令"
 
 #: config/mips/mips.opt:89 config/mep/mep.opt:80
 msgid "Use big-endian byte order"
-msgstr "令高位字节在前"
+msgstr "令大端在前"
 
 #: config/mips/mips.opt:93 config/mep/mep.opt:84
 msgid "Use little-endian byte order"
-msgstr "令低位字节在前"
+msgstr "令小端在前"
 
 #: config/mips/mips.opt:97 config/iq2000/iq2000.opt:31
 msgid "Use ROM instead of RAM"
@@ -15700,7 +15685,7 @@ msgstr "禁用 bcnz 指令"
 
 #: config/mep/mep.opt:49
 msgid "Configuration name"
-msgstr ""
+msgstr "配置名"
 
 #: config/mep/mep.opt:53
 #, fuzzy
@@ -15732,7 +15717,7 @@ msgstr "使用除法指令"
 
 #: config/mep/mep.opt:88
 msgid "__io vars are volatile by default"
-msgstr ""
+msgstr "__io 变量默认为 volatile"
 
 #: config/mep/mep.opt:92
 msgid "All variables default to the far section"
@@ -15807,11 +15792,11 @@ msgstr ""
 
 #: config/rx/rx.opt:24
 msgid "Stores doubles in 32 bits."
-msgstr ""
+msgstr "将双精度数存储为 32 位。"
 
 #: config/rx/rx.opt:28
 msgid "Store doubles in 64 bits.  This is the default."
-msgstr ""
+msgstr "将双精度数存储为 64 位。这是默认值。"
 
 #: config/rx/rx.opt:32
 #, fuzzy
@@ -15835,11 +15820,11 @@ msgstr "--help=target 的别名"
 
 #: config/rx/rx.opt:52
 msgid "Data is stored in big-endian format."
-msgstr ""
+msgstr "数据被存储为大端在前的格式。"
 
 #: config/rx/rx.opt:56
 msgid "Data is stored in little-endian format.  (Default)."
-msgstr ""
+msgstr "数据被存储为小端在前的格式。(默认)"
 
 #: config/rx/rx.opt:62
 msgid "Maximum size of global and static variables which can be placed into the small data area."
@@ -18398,12 +18383,12 @@ msgstr "表达式中浮点复数溢出"
 #: c-common.c:1651
 #, gcc-internal-format
 msgid "logical %<or%> applied to non-boolean constant"
-msgstr ""
+msgstr "逻辑%<or%>被用在非布尔型常量上"
 
 #: c-common.c:1654
 #, gcc-internal-format
 msgid "logical %<and%> applied to non-boolean constant"
-msgstr ""
+msgstr "逻辑%<and%>被用在非布尔型常量上"
 
 #: c-common.c:1699
 #, fuzzy, gcc-internal-format
@@ -28722,12 +28707,12 @@ msgstr "Spe 在此目标机上不受支持"
 #: config/rs6000/rs6000.c:2378
 #, gcc-internal-format
 msgid "-mmultiple is not supported on little endian systems"
-msgstr "-mmultiple 在低位字节在前的系统上不受支持"
+msgstr "-mmultiple 在小端在前的系统上不受支持"
 
 #: config/rs6000/rs6000.c:2385
 #, gcc-internal-format
 msgid "-mstring is not supported on little endian systems"
-msgstr "-mstring 在低位字节在前的系统上不受支持"
+msgstr "-mstring 在小端在前的系统上不受支持"
 
 #: config/rs6000/rs6000.c:2439
 #, gcc-internal-format
@@ -29106,7 +29091,7 @@ msgstr "-fPIC 与 -mcall-%s 互不兼容"
 #: config/rs6000/sysv4.h:216
 #, gcc-internal-format
 msgid "-mcall-aixdesc must be big endian"
-msgstr "-mcall-aixdesc 必须是高位字节在前"
+msgstr "-mcall-aixdesc 必须是大端在前"
 
 #: config/rs6000/sysv4.h:221
 #, gcc-internal-format
