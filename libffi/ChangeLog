@@ -1,3 +1,9 @@
+2009-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/40700
+	* src/closures.c [X86_64 && __sun__ && __svr4__]
+	(FFI_MMAP_EXEC_WRIT): Define.
+
 2009-12-08  David Daney  <ddaney@caviumnetworks.com>
 
 	* testsuite/libffi.call/stret_medium.c: Remove xfail for mips*-*-*

@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
    closures.c - Copyright (c) 2007  Red Hat, Inc.
-   Copyright (C) 2007 Free Software Foundation, Inc
+   Copyright (C) 2007, 2009 Free Software Foundation, Inc
 
    Code to allocate and deallocate memory for closures.
 
@@ -48,6 +48,11 @@
 /* Windows systems may have Data Execution Protection (DEP) enabled, 
    which requires the use of VirtualMalloc/VirtualFree to alloc/free
    executable memory. */
+#  define FFI_MMAP_EXEC_WRIT 1
+# endif
+# if defined(X86_64) && defined(__sun__) && defined(__svr4__)
+/* The data segment on 64-bit Solaris/x86 isn't executable, so use mmap
+   instead.  */
 #  define FFI_MMAP_EXEC_WRIT 1
 # endif
 #endif
