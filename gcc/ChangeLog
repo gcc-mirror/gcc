@@ -1,3 +1,22 @@
+2009-12-10  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-opt/42216
+	* regrename.c: Error out if MAX_RECOG_OPERANDS is larger than
+	HOST_BITS_PER_WIDE_INT.
+	(verify_reg_in_set): New function, broken out of verify_reg_tracked.
+	(verify_reg_tracked): Use it.
+	(scan_rtx_reg): When seeing a use involving a superset of the
+	registers in an existing chain, enlarge that chain.  Otherwise,
+	allow subsets and set fail_current_block for all other kinds of
+	overlap.
+	(hide_operands): New argument UNTRACKED_OPERANDS; callers changed.
+	Do not modify operands when the bit with the corresponding number
+	is set in that bitmap.
+	(build_def_use): When we see matching operands with different
+	modes, don't set fail_current_block, but keep track of such
+	operands in a bitmap if their registers aren't already tracked
+	in an open chain.  Pass this bitmap to all hide_operands calls.
+
 2009-12-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42337
