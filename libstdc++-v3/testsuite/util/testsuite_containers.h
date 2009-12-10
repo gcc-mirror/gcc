@@ -149,9 +149,10 @@ namespace __gnu_test
     {
       populate(_Tp& container)
       {
-	typename _Tp::value_type v;
-	container.insert(container.begin(), v);
-	container.insert(container.begin(), v);
+	// Avoid uninitialized warnings, requires DefaultContructible.
+	typedef typename _Tp::value_type value_type;
+	container.insert(container.begin(), value_type());
+	container.insert(container.begin(), value_type());
       }
   };
 
