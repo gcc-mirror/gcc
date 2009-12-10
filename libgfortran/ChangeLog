@@ -1,3 +1,9 @@
+2009-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42268
+	* intrinsics/pack_generic.c (pack): Add safety checks for the case that
+	'vector' is NULL.
+
 2009-11-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/42090
