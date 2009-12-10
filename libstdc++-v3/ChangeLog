@@ -1,3 +1,9 @@
+2009-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42317
+	* config/abi/pre/gnu.ver: Don't export certain base dtors that
+	weren't previously exported.
+
 2009-12-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/42261 (take 2)

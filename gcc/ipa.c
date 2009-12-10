@@ -1,5 +1,5 @@
 /* Basic IPA optimizations and utilities.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation,
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation,
    Inc.
 
 This file is part of GCC.
@@ -179,7 +179,25 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	          first = e->callee;
 	        }
 	    }
-	
+
+      /* If any function in a comdat group is reachable, force
+	 all other functions in the same comdat group to be
+	 also reachable.  */
+      if (node->same_comdat_group
+	  && node->reachable
+	  && !node->global.inlined_to)
+	{
+	  for (next = node->same_comdat_group;
+	       next != node;
+	       next = next->same_comdat_group)
+	    if (!next->reachable)
+	      {
+		next->aux = first;
+		first = next;
+		next->reachable = true;
+	      }
+	}
+
       /* We can freely remove inline clones even if they are cloned, however if
 	 function is clone of real clone, we must keep it around in order to
 	 make materialize_clones produce function body with the changes
@@ -302,8 +320,24 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
   /* COMDAT functions must be shared only if they have address taken,
      otherwise we can produce our own private implementation with
      -fwhole-program.  */
-  if (DECL_COMDAT (node->decl) && (node->address_taken || !node->analyzed))
-    return true;
+  if (DECL_COMDAT (node->decl))
+    {
+      if (node->address_taken || !node->analyzed)
+	return true;
+      if (node->same_comdat_group)
+	{
+	  struct cgraph_node *next;
+
+	  /* If more than one function is in the same COMDAT group, it must
+	     be shared even if just one function in the comdat group has
+	     address taken.  */
+	  for (next = node->same_comdat_group;
+	       next != node;
+	       next = next->same_comdat_group)
+	    if (next->address_taken || !next->analyzed)
+	      return true;
+	}
+    }
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
     return true;
   if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))

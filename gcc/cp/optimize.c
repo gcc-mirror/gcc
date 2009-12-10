@@ -292,12 +292,7 @@ maybe_clone_body (tree fn)
 	  && (SUPPORTS_ONE_ONLY || !DECL_WEAK (fns[0]))
 	  && (!DECL_ONE_ONLY (fns[0])
 	      || (HAVE_COMDAT_GROUP
-		  && DECL_WEAK (fns[0])
-		  /* Don't optimize synthetized virtual dtors, because then
-		     the deleting and other dtors are emitted when needed
-		     and so it is not certain we would emit both
-		     deleting and complete/base dtors in the comdat group.  */
-		  && (fns[2] == NULL || !DECL_ARTIFICIAL (fn))))
+		  && DECL_WEAK (fns[0])))
 	  && cgraph_same_body_alias (clone, fns[0]))
 	{
 	  alias = true;
@@ -396,9 +391,18 @@ maybe_clone_body (tree fn)
     {
       DECL_COMDAT_GROUP (fns[1]) = comdat_group;
       if (fns[2])
-	/* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
-	   virtual, it goes into the same comdat group as well.  */
-	DECL_COMDAT_GROUP (fns[2]) = comdat_group;
+	{
+	  struct cgraph_node *base_dtor_node, *deleting_dtor_node;
+	  /* If *[CD][12]* dtors go into the *[CD]5* comdat group and dtor is
+	     virtual, it goes into the same comdat group as well.  */
+	  DECL_COMDAT_GROUP (fns[2]) = comdat_group;
+	  base_dtor_node = cgraph_node (fns[0]);
+	  deleting_dtor_node = cgraph_node (fns[2]);
+	  gcc_assert (base_dtor_node->same_comdat_group == NULL);
+	  gcc_assert (deleting_dtor_node->same_comdat_group == NULL);
+	  base_dtor_node->same_comdat_group = deleting_dtor_node;
+	  deleting_dtor_node->same_comdat_group = base_dtor_node;
+	}
     }
 
   /* We don't need to process the original function any further.  */

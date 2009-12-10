@@ -1,3 +1,29 @@
+2009-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42317
+	* cgraph.h (struct cgraph_node): Add same_comdat_group field.
+	* cgraph.c (cgraph_remove_node): Unchain node from same_comdat_group
+	circular list.
+	(cgraph_node_can_be_local_p): Return false for DECL_COMDAT with
+	node->same_comdat_group.
+	* ipa.c (cgraph_remove_unreachable_nodes): For any reachable node
+	mark all its same_comdat_group nodes as also reachable.
+	(cgraph_externally_visible_p): Return true even if any of
+	same_comdat_group nodes has address taken.
+	* lto-cgraph.c (lto_output_node): Stream out same_comdat_group.
+	(output_cgraph): Ensure other same_comdat_group nodes are also
+	included.
+	(input_node): Stream in same_comdat_group.
+	(input_cgraph_1): Fix up same_comdat_group fields from references
+	to pointers.
+	* cgraphunit.c (cgraph_analyze_functions): Mark all other
+	same_comdat_group nodes as reachable.
+	(cgraph_mark_functions_to_output): For each node->process process
+	also other same_comdat_group nodes.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Don't reuse nodes
+	with same_comdat_group non-NULL.
+	(cgraph_mark_inline_edge): Likewise.
+
 2009-12-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/42228
