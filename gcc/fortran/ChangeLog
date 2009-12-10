@@ -1,5 +1,11 @@
 2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/41369
+	* parse.c (match_deferred_characteristics): Removed check for empty
+	types in function return values.
+
+2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/34402
 	* expr.c (check_alloc_comp_init): New.
 	(check_init_expr): Verify that allocatable components
