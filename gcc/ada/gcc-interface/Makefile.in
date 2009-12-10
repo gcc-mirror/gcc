@@ -1797,7 +1797,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-linux.ads<s-linux.ads \
+  s-linux.ads<s-linux-sparc.ads \
   s-osinte.adb<s-osinte-posix.adb \
   s-osinte.ads<s-osinte-linux.ads \
   s-osprim.adb<s-osprim-posix.adb \
