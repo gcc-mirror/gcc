@@ -1,4 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
 /* { dg-options "-O2 -mpowerpc64" } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-final { scan-assembler-times "lwbrx" 2 } } */

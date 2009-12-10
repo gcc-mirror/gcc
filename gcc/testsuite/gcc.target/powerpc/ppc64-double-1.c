@@ -1,4 +1,5 @@
 // { dg-do compile }
+/* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
 // { dg-options "-O2 -mpowerpc64" }
 // { dg-final { scan-assembler-not "stfd"  }  }
 
