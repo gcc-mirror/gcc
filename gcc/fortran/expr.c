@@ -2034,6 +2034,32 @@ not_numeric:
   return FAILURE;
 }
 
+/* F2003, 7.1.7 (3): In init expression, allocatable components
+   must not be data-initialized.  */
+static gfc_try
+check_alloc_comp_init (gfc_expr *e)
+{
+  gfc_component *c;
+  gfc_constructor *ctor;
+
+  gcc_assert (e->expr_type == EXPR_STRUCTURE);
+  gcc_assert (e->ts.type == BT_DERIVED);
+
+  for (c = e->ts.u.derived->components, ctor = e->value.constructor;
+       c; c = c->next, ctor = ctor->next)
+    {
+      if (c->attr.allocatable
+          && ctor->expr->expr_type != EXPR_NULL)
+        {
+	  gfc_error("Invalid initialization expression for ALLOCATABLE "
+	            "component '%s' in structure constructor at %L",
+	            c->name, &ctor->expr->where);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
 
 static match
 check_init_expr_arguments (gfc_expr *e)
@@ -2383,10 +2409,18 @@ check_init_expr (gfc_expr *e)
       break;
 
     case EXPR_STRUCTURE:
-      if (e->ts.is_iso_c)
-	t = SUCCESS;
-      else
-	t = gfc_check_constructor (e, check_init_expr);
+      t = e->ts.is_iso_c ? SUCCESS : FAILURE;
+      if (t == SUCCESS)
+	break;
+
+      t = check_alloc_comp_init (e);
+      if (t == FAILURE)
+	break;
+
+      t = gfc_check_constructor (e, check_init_expr);
+      if (t == FAILURE)
+	break;
+
       break;
 
     case EXPR_ARRAY:

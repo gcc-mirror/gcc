@@ -1,3 +1,8 @@
+2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
+
+        PR fortran/34402
+	* gfortran.dg/alloc_comp_init_expr.f03: New.
+
 2009-12-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.target/powerpc/bswap64-4.c: Disable on AIX.

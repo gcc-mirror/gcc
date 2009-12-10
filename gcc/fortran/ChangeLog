@@ -1,3 +1,10 @@
+2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/34402
+	* expr.c (check_alloc_comp_init): New.
+	(check_init_expr): Verify that allocatable components
+	are not data-initalized.
+
 2008-12-08  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/41177
