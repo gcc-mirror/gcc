@@ -458,9 +458,6 @@ static tree prephitemp;
    cleaned up.  */
 static bitmap need_eh_cleanup;
 
-/* Which expressions have been seen during a given phi translation.  */
-static bitmap seen_during_translate;
-
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
 
@@ -1435,14 +1432,12 @@ get_representative_for (const pre_expr e)
 
 
 /* Translate EXPR using phis in PHIBLOCK, so that it has the values of
-   the phis in PRED.  SEEN is a bitmap saying which expression we have
-   translated since we started translation of the toplevel expression.
-   Return NULL if we can't find a leader for each part of the
-   translated expression.  */
+   the phis in PRED.  Return NULL if we can't find a leader for each part
+   of the translated expression.  */
 
 static pre_expr
-phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
-		 basic_block pred, basic_block phiblock, bitmap seen)
+phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
+	       basic_block pred, basic_block phiblock)
 {
   pre_expr oldexpr = expr;
   pre_expr phitrans;
@@ -1456,16 +1451,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
   phitrans = phi_trans_lookup (expr, pred);
   if (phitrans)
     return phitrans;
-
-  /* Prevent cycles when we have recursively dependent leaders.  This
-     can only happen when phi translating the maximal set.  */
-  if (seen)
-    {
-      unsigned int expr_id = get_expression_id (expr);
-      if (bitmap_bit_p (seen, expr_id))
-	return NULL;
-      bitmap_set_bit (seen, expr_id);
-    }
 
   switch (expr->kind)
     {
@@ -1491,16 +1476,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    else
 	      {
                 pre_expr leader, result;
-                bitmap temp = BITMAP_ALLOC (&grand_bitmap_obstack);
 		unsigned int op_val_id = VN_INFO (newnary.op[i])->value_id;
-
-                bitmap_copy (temp, seen);
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-                result = phi_translate_1 (leader, set1, set2,
-						   pred, phiblock, seen);
-                bitmap_copy (seen, temp);
-                BITMAP_FREE (temp);
-
+                result = phi_translate (leader, set1, set2, pred, phiblock);
 		if (result && result != leader)
 		  {
 		    tree name = get_representative_for (result);
@@ -1602,8 +1580,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	      {
 		unsigned int op_val_id = VN_INFO (op0)->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate_1 (leader, set1, set2,
-					    pred, phiblock, seen);
+		opresult = phi_translate (leader, set1, set2, pred, phiblock);
 		if (opresult && opresult != leader)
 		  {
 		    tree name = get_representative_for (opresult);
@@ -1620,8 +1597,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	      {
 		unsigned int op_val_id = VN_INFO (op1)->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate_1 (leader, set1, set2,
-					    pred, phiblock, seen);
+		opresult = phi_translate (leader, set1, set2, pred, phiblock);
 		if (opresult && opresult != leader)
 		  {
 		    tree name = get_representative_for (opresult);
@@ -1640,8 +1616,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	      {
 		unsigned int op_val_id = VN_INFO (op2)->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate_1 (leader, set1, set2,
-					    pred, phiblock, seen);
+		opresult = phi_translate (leader, set1, set2, pred, phiblock);
 		if (opresult && opresult != leader)
 		  {
 		    tree name = get_representative_for (opresult);
@@ -1795,20 +1770,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
     default:
       gcc_unreachable ();
     }
-}
-
-/* Translate EXPR using phis in PHIBLOCK, so that it has the values of
-   the phis in PRED.
-   Return NULL if we can't find a leader for each part of the
-   translated expression.  */
-
-static pre_expr
-phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
-	       basic_block pred, basic_block phiblock)
-{
-  bitmap_clear (seen_during_translate);
-  return phi_translate_1 (expr, set1, set2, pred, phiblock,
-			  seen_during_translate);
 }
 
 /* For each expression in SET, translate the values through phi nodes
@@ -4520,7 +4481,6 @@ init_pre (bool do_fre)
   expression_to_id = htab_create (num_ssa_names * 3,
 				  pre_expr_hash,
 				  pre_expr_eq, NULL);
-  seen_during_translate = BITMAP_ALLOC (&grand_bitmap_obstack);
   bitmap_set_pool = create_alloc_pool ("Bitmap sets",
 				       sizeof (struct bitmap_set), 30);
   pre_expr_pool = create_alloc_pool ("pre_expr nodes",
