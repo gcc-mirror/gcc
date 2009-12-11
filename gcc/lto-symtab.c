@@ -371,7 +371,10 @@ lto_symtab_resolve_replaceable_p (lto_symtab_entry_t e)
 static bool
 lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 {
-  if (!TREE_STATIC (e->decl))
+  /* The C++ frontend ends up neither setting TREE_STATIC nor
+     DECL_EXTERNAL on virtual methods but only TREE_PUBLIC.
+     So do not reject !TREE_STATIC here but only DECL_EXTERNAL.  */
+  if (DECL_EXTERNAL (e->decl))
     return false;
 
   /* For functions we need a non-discarded body.  */

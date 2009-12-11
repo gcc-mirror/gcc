@@ -1,3 +1,9 @@
+2009-12-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42320
+	* lto-symtab.c (lto_symtab_resolve_can_prevail_p): Properly
+	detect non-prevailing decls.
+
 2009-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42317
