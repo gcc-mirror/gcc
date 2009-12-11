@@ -460,8 +460,21 @@ make_pass_instance (struct opt_pass *pass, bool track_duplicates)
     {
       struct opt_pass *new_pass;
 
-      new_pass = XNEW (struct opt_pass);
-      memcpy (new_pass, pass, sizeof (*new_pass));
+      if (pass->type == GIMPLE_PASS
+          || pass->type == RTL_PASS
+          || pass->type == SIMPLE_IPA_PASS)
+        {
+          new_pass = XNEW (struct opt_pass);
+          memcpy (new_pass, pass, sizeof (struct opt_pass));
+        }
+      else if (pass->type == IPA_PASS)
+        {
+          new_pass = (struct opt_pass *)XNEW (struct ipa_opt_pass_d);
+          memcpy (new_pass, pass, sizeof (struct ipa_opt_pass_d));
+        }
+      else
+        gcc_unreachable ();
+
       new_pass->next = NULL;
 
       new_pass->todo_flags_start &= ~TODO_mark_first_instance;
