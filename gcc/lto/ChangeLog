@@ -1,3 +1,9 @@
+2009-12-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41915
+	* lto-lang.c (lto_init_options): Initialize flag_complex_method
+	to the C99 default.  Do not set flag_unit_at_a_time.
+
 2009-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-lang.c (handle_nonnull_attribute): Remove unused attr_arg_num
