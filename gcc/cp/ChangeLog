@@ -1,3 +1,10 @@
+2009-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42219
+	* typeck.c (error_type_p): New.
+	(ptr_reasonably_similar): Use it.
+	* cp-tree.h: Declare it.
+
 2009-12-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42225

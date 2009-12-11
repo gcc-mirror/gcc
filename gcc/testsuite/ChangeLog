@@ -1,3 +1,8 @@
+2009-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42219
+	* g++.dg/conversion/err-recover1.C: New.
+
 2009-12-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42335
