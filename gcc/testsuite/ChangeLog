@@ -1,3 +1,9 @@
+2009-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27425
+	PR c++/34274
+	* g++.dg/template/arg7.C: New.
+
 2009-12-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42268

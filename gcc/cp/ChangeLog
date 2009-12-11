@@ -1,3 +1,11 @@
+2009-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27425
+	PR c++/34274
+	PR c++/42301
+	* pt.c (expand_template_argument_pack): Handle null arg gracefully.
+	(convert_template_argument): Use %T for type.
+
 2009-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42061
