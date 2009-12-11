@@ -316,7 +316,7 @@ get_named_event_id (const char *name, enum insert_option insert)
       int i;
 
       event_tab = htab_create (150, htab_hash_string, htab_event_eq, NULL);
-      for (i = 0; i < PLUGIN_EVENT_FIRST_DYNAMIC; i++)
+      for (i = 0; i < event_last; i++)
 	{
 	  slot = htab_find_slot (event_tab, plugin_event_name[i], INSERT);
 	  gcc_assert (*slot == HTAB_EMPTY_ENTRY);

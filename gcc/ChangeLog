@@ -1,3 +1,8 @@
+2009-12-11  Joern Rennecke  <amylaar@spamcop.net>
+
+	* plugin.c (get_named_event_id): Fix hash table rebuild to include
+	dynamically allocated events.
+
 2009-12-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42320
