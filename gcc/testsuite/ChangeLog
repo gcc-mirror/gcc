@@ -1,3 +1,8 @@
+2009-12-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42251
+	* g++.dg/template/const3.C: New test.
+
 2009-12-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42320
