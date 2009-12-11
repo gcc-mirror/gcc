@@ -699,6 +699,14 @@ requirements of the license of GCC.
         input_iterator' value_type.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><ulink url="../ext/lwg-active.html#539">539</ulink>:
+        <emphasis>partial_sum and adjacent_difference should mention
+            requirements</emphasis>
+    </term>
+    <listitem><para>We were almost doing the right thing, just use std::move
+        in adjacent_difference.
+    </para></listitem></varlistentry>
+
     <varlistentry><term><ulink url="../ext/lwg-defects.html#541">541</ulink>:
         <emphasis>shared_ptr template assignment and void</emphasis>
     </term>

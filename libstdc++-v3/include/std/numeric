@@ -58,7 +58,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <cstddef>
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_numeric.h>
 
