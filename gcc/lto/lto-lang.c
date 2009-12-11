@@ -600,9 +600,11 @@ static unsigned int
 lto_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 		  const char **argv ATTRIBUTE_UNUSED)
 {
-  /* Always operate in unit-at-time mode so that we can defer
-     decisions about what to output.  */
-  flag_unit_at_a_time = 1;
+  /* By default, C99-like requirements for complex multiply and divide.
+     ???  Until the complex method is encoded in the IL this is the only
+     safe choice.  This will pessimize Fortran code with LTO unless
+     people specify a complex method manually or use -ffast-math.  */
+  flag_complex_method = 2;
 
   return CL_LTO;
 }
