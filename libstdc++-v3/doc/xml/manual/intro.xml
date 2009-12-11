@@ -628,7 +628,7 @@ requirements of the license of GCC.
     <listitem><para>Have <code>open</code> clear the error flags.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#431">431</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-closed.html#431">431</ulink>:
         <emphasis>Swapping containers with unequal allocators</emphasis>
     </term>
     <listitem><para>Implement Option 3, as per N1599.
@@ -729,7 +729,7 @@ requirements of the license of GCC.
     <listitem><para>Add the missing modes to fopen_mode.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#630">630</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#630">630</ulink>:
         <emphasis>arrays of valarray</emphasis>
     </term>
     <listitem><para>Implement the simple resolution.
@@ -760,7 +760,7 @@ requirements of the license of GCC.
     <listitem><para>Make the member functions table and classic_table public.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><ulink url="../ext/lwg-active.html#696">696</ulink>:
+    <varlistentry><term><ulink url="../ext/lwg-defects.html#696">696</ulink>:
         <emphasis>istream::operator&gt;&gt;(int&amp;) broken</emphasis>
     </term>
     <listitem><para>Implement the straightforward resolution.

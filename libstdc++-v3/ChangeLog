@@ -1,3 +1,10 @@
+2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/html/ext/lwg-active.html: Update to Revision R68.
+	* doc/html/ext/lwg-closed.html: Likewise.
+	* doc/html/ext/lwg-defects.html: Likewise.
+	* doc/xml/manual/intro.xml: Update status of issues 431, 630, and 696.
+
 2009-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42317
