@@ -7471,6 +7471,44 @@ comp_ptr_ttypes (tree to, tree from)
   return comp_ptr_ttypes_real (to, from, 1);
 }
 
+/* Returns true iff FNTYPE is a non-class type that involves
+   error_mark_node.  We can get FUNCTION_TYPE with buried error_mark_node
+   if a parameter type is ill-formed.  */
+
+bool
+error_type_p (const_tree type)
+{
+  tree t;
+
+  switch (TREE_CODE (type))
+    {
+    case ERROR_MARK:
+      return true;
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      return error_type_p (TREE_TYPE (type));
+
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      if (error_type_p (TREE_TYPE (type)))
+	return true;
+      for (t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
+	if (error_type_p (TREE_VALUE (t)))
+	  return true;
+      return false;
+
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (type))
+	return error_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type));
+      return false;
+
+    default:
+      return false;
+    }
+}
+
 /* Returns 1 if to and from are (possibly multi-level) pointers to the same
    type or inheritance-related types, regardless of cv-quals.  */
 
@@ -7480,9 +7518,10 @@ ptr_reasonably_similar (const_tree to, const_tree from)
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
       /* Any target type is similar enough to void.  */
-      if (TREE_CODE (to) == VOID_TYPE
-	  || TREE_CODE (from) == VOID_TYPE)
-	return 1;
+      if (TREE_CODE (to) == VOID_TYPE)
+	return !error_type_p (from);
+      if (TREE_CODE (from) == VOID_TYPE)
+	return !error_type_p (to);
 
       if (TREE_CODE (to) != TREE_CODE (from))
 	return 0;
@@ -7502,7 +7541,7 @@ ptr_reasonably_similar (const_tree to, const_tree from)
 	return 1;
 
       if (TREE_CODE (to) == FUNCTION_TYPE)
-	return 1;
+	return !error_type_p (to) && !error_type_p (from);
 
       if (TREE_CODE (to) != POINTER_TYPE)
 	return comptypes
