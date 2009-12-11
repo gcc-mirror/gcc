@@ -1,3 +1,8 @@
+2009-12-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42251
+	* pt.c (convert_template_argument): Avoid missing folding of SCOPE_REFs.
+
 2009-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42317

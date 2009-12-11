@@ -5526,13 +5526,6 @@ convert_template_argument (tree parm,
       if (TYPE_P (val))
 	val = strip_typedefs (val);
     }
-  else if (TREE_CODE (orig_arg) == SCOPE_REF)
-    {
-      /* Strip typedefs from the SCOPE_REF.  */
-      tree type = strip_typedefs (TREE_TYPE (orig_arg));
-      tree scope = strip_typedefs (TREE_OPERAND (orig_arg, 0));
-      val = build2 (SCOPE_REF, type, scope, TREE_OPERAND (orig_arg, 1));
-    }
   else
     {
       tree t = tsubst (TREE_TYPE (parm), args, complain, in_decl);
@@ -5571,6 +5564,15 @@ convert_template_argument (tree parm,
 	val = error_mark_node;
       else if (val == error_mark_node && (complain & tf_error))
 	error ("could not convert template argument %qE to %qT",  orig_arg, t);
+
+      if (TREE_CODE (val) == SCOPE_REF)
+	{
+	  /* Strip typedefs from the SCOPE_REF.  */
+	  tree type = strip_typedefs (TREE_TYPE (val));
+	  tree scope = strip_typedefs (TREE_OPERAND (val, 0));
+	  val = build_qualified_name (type, scope, TREE_OPERAND (val, 1),
+				      QUALIFIED_NAME_IS_TEMPLATE (val));
+	}
     }
 
   return val;
