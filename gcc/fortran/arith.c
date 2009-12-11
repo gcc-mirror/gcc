@@ -1577,7 +1577,7 @@ eval_intrinsic (gfc_intrinsic_op op,
       temp.value.op.op1 = op1;
       temp.value.op.op2 = op2;
 
-      gfc_type_convert_binary (&temp);
+      gfc_type_convert_binary (&temp, 0);
 
       if (op == INTRINSIC_EQ || op == INTRINSIC_NE
 	  || op == INTRINSIC_GE || op == INTRINSIC_GT

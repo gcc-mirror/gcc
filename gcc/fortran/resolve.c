@@ -3320,7 +3320,7 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_POWER:
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
-	  gfc_type_convert_binary (e);
+	  gfc_type_convert_binary (e, 1);
 	  break;
 	}
 
@@ -3407,7 +3407,7 @@ resolve_operator (gfc_expr *e)
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
 	{
-	  gfc_type_convert_binary (e);
+	  gfc_type_convert_binary (e, 1);
 
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;

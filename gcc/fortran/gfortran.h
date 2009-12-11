@@ -2588,7 +2588,7 @@ bool is_subref_array (gfc_expr *);
 void gfc_add_component_ref (gfc_expr *, const char *);
 gfc_expr *gfc_build_conversion (gfc_expr *);
 void gfc_free_ref_list (gfc_ref *);
-void gfc_type_convert_binary (gfc_expr *);
+void gfc_type_convert_binary (gfc_expr *, int);
 int gfc_is_constant_expr (gfc_expr *);
 gfc_try gfc_simplify_expr (gfc_expr *, int);
 int gfc_has_vector_index (gfc_expr *);
