@@ -6514,7 +6514,7 @@ build_self_reference (void)
   DECL_CONTEXT (value) = current_class_type;
   DECL_ARTIFICIAL (value) = 1;
   SET_DECL_SELF_REFERENCE_P (value);
-  set_underlying_type (value);
+  cp_set_underlying_type (value);
 
   if (processing_template_decl)
     value = push_template_decl (value);

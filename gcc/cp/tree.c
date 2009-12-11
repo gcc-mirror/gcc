@@ -1076,6 +1076,22 @@ typedef_variant_p (tree type)
   return is_typedef_decl (TYPE_NAME (type));
 }
 
+/* Setup a TYPE_DECL node as a typedef representation.
+   See comments of set_underlying_type in c-common.c.  */
+
+void
+cp_set_underlying_type (tree t)
+{
+  set_underlying_type (t);
+  /* If the typedef variant type is dependent, make it require
+     structural equality.
+     This is useful when comparing two dependent typedef variant types,
+     because it forces the comparison of the template parameters of their
+     decls for instance.  */
+  if (dependent_type_p (TREE_TYPE (t)))
+    SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (t));
+}
+
 
 /* Makes a copy of BINFO and TYPE, which is to be inherited into a
    graph dominated by T.  If BINFO is NULL, TYPE is a dependent base,

@@ -1,5 +1,17 @@
 2009-12-11  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/42225
+	* typeck.c (incompatible_dependent_typedefs_p): New function.
+	(structural_comptypes): Use it.
+	* cp-tree.h (cp_set_underlying_type): Declare ...
+	* tree.c (cp_set_underlying_type): ... new function.
+	* class.c (build_self_reference): Use cp_set_underlying_type
+	instead of set_underlying_type.
+	* decl2.c (grokfield): Likewise.
+	* name-lookup.c (pushdecl_maybe_friend): Likewise.
+
+2009-12-11  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/42251
 	* pt.c (convert_template_argument): Avoid missing folding of SCOPE_REFs.
 
