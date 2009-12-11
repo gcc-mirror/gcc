@@ -1,5 +1,11 @@
 2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	PR target/41196
+	2009-10-14  Daniel Gutson  <dgutson@codesourcery.com>
+	* testsuite/gcc.target/arm/neon/vfp-shift-a2t2.c: New test case.
+
+2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	2009-10-08  Doug Kwan  <dougkwan@google.com>
 
 	PR rtl-optimization/41574

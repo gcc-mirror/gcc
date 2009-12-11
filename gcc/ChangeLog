@@ -1,5 +1,14 @@
 2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	PR target/41196
+	2009-10-14  Daniel Gutson  <dgutson@codesourcery.com>
+	
+	* config/arm/neon.md (neon_vshll_n<mode>): Checking Bounds
+	fixed.
+
+
+2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	2009-10-05  Doug Kwan  <dougkwan@google.com>
 
 	PR rtl-optimization/41574
