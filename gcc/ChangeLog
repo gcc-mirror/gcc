@@ -1,3 +1,10 @@
+2009-12-11  Sebastian Andrzej Siewior  <bigeasy@linutronix.de>
+
+	PR target/36047
+
+	* config/m68k/linux.h: Remove LABELNO from the mcount statement. It is
+	not used by glibc/uclibc and does not work with large binaries.
+
 2009-12-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41662

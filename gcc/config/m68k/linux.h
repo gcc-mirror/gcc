@@ -142,11 +142,10 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
-
+#define NO_PROFILE_COUNTERS 1
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO) \
 {									\
-  asm_fprintf (FILE, "\tlea (%LLP%d,%Rpc),%Ra1\n", (LABELNO));		\
   if (flag_pic)								\
     fprintf (FILE, "\tbsr.l _mcount@PLTPC\n");				\
   else									\
