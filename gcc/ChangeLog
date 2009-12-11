@@ -1,6 +1,16 @@
 2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/42263
+	Backport from mainline
+
+	2009-12-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/linux-atomic.c (SYNC_LOCK_RELEASE): Place memory barrier
+	before the lock release.
+
+2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/42263
 	2009-08-11  Andrew Haley  <aph@redhat.com>
 	* config/arm/arm.c (arm_init_libfuncs): Add __sync_synchronize.
 
