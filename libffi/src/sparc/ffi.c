@@ -599,6 +599,11 @@ ffi_closure_sparc_inner_v9(ffi_closure *closure,
 	  /* Right-justify.  */
 	  argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 
+	  /* Align on a 16-byte boundary.  */
+#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
+	  if (arg_types[i]->type == FFI_TYPE_LONGDOUBLE && (argn % 2) != 0)
+	    argn++;
+#endif
 	  if (i < fp_slot_max
 	      && (arg_types[i]->type == FFI_TYPE_FLOAT
 		  || arg_types[i]->type == FFI_TYPE_DOUBLE
