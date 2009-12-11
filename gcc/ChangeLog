@@ -1,3 +1,12 @@
+2009-12-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41662
+	* lto-streamer-in.c (lto_init_eh): Move eh_initialized_p
+	handling here.
+	(input_eh_regions): Adjust.
+	(lto_input_ts_function_decl_tree_pointers): Initialize EH
+	if a non-NULL DECL_FUNCTION_PERSONALITY was read in.
+
 2009-12-11  Duncan Sands  <baldrick@free.fr>
 
 	* passes.c (make_pass_instance): Allocate and copy the right amount of

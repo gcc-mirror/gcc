@@ -578,6 +578,11 @@ fixup_eh_region_pointers (struct function *fn, HOST_WIDE_INT root_region)
 static void
 lto_init_eh (void)
 {
+  static bool eh_initialized_p = false;
+
+  if (eh_initialized_p)
+    return;
+
   /* Contrary to most other FEs, we only initialize EH support when at
      least one of the files in the set contains exception regions in
      it.  Since this happens much later than the call to init_eh in
@@ -593,6 +598,8 @@ lto_init_eh (void)
   if (dwarf2out_do_frame ())
     dwarf2out_frame_init ();
 #endif
+
+  eh_initialized_p = true;
 }
 
 
@@ -605,7 +612,6 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
 {
   HOST_WIDE_INT i, root_region, len;
   enum LTO_tags tag;
-  static bool eh_initialized_p = false;
 
   tag = input_record_start (ib);
   if (tag == LTO_null)
@@ -616,11 +622,7 @@ input_eh_regions (struct lto_input_block *ib, struct data_in *data_in,
   /* If the file contains EH regions, then it was compiled with
      -fexceptions.  In that case, initialize the backend EH
      machinery.  */
-  if (!eh_initialized_p)
-    {
-      lto_init_eh ();
-      eh_initialized_p = true;
-    }
+  lto_init_eh ();
 
   gcc_assert (fn->eh);
 
@@ -2121,6 +2123,12 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   DECL_FUNCTION_PERSONALITY (expr) = lto_input_tree (ib, data_in);
   DECL_FUNCTION_SPECIFIC_TARGET (expr) = lto_input_tree (ib, data_in);
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = lto_input_tree (ib, data_in);
+
+  /* If the file contains a function with an EH personality set,
+     then it was compiled with -fexceptions.  In that case, initialize
+     the backend EH machinery.  */
+  if (DECL_FUNCTION_PERSONALITY (expr))
+    lto_init_eh ();
 }
 
 
