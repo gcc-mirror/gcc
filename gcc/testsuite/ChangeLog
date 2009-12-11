@@ -1,3 +1,134 @@
+2009-12-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-12-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42225
+	* g++.dg/template/typedef24.C: New test.
+	* g++.dg/template/typedef25.C: New test.
+
+	2009-12-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42251
+	* g++.dg/template/const3.C: New test.
+
+	2009-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42317
+	* g++.dg/opt/dtor2.C: New test.
+	* g++.dg/opt/dtor2.h: New file.
+	* g++.dg/opt/dtor2-aux.cc: New file.
+
+	2009-12-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/42110
+	* g++.dg/torture/pr42110.C: new file.
+
+	2009-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/42244
+	* gcc.dg/debug/pr42244.c: New test.
+
+	2009-12-04  David Daney  <ddaney@caviumnetworks.com>
+
+	PR rtl-optimization/42164
+	* gcc.c-torture/compile/pr42164.c: New test.
+
+	2009-12-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41611
+	* g++.dg/abi/guard2.C: New.
+
+	2009-12-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42217
+	* g++.dg/other/bitfield4.C: New test.
+
+	2009-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42256
+	* g++.dg/inherit/thunk11.C: New test.
+	* g++.dg/inherit/thunk11.h: New file.
+	* g++.dg/inherit/thunk11-aux.cc: New file.
+
+	2009-12-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42237
+	* gcc.c-torture/compile/pr42237.c: New test.
+
+	2009-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42057
+	* g++.dg/parse/crash54.C: New.
+
+	2009-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42196
+	* gcc.c-torture/compile/pr42196-1.c: New test.
+	* gcc.c-torture/compile/pr42196-2.c: New test.
+	* gcc.c-torture/compile/pr42196-3.c: New test.
+
+	2009-11-30  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42069
+	* g++.dg/template/typedef23.C: New test.
+
+	2009-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/41961
+	* g++.dg/tree-ssa/pr41961.C: New.
+
+	2009-11-29  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/42193
+	* gcc.dg/vect/pr42193.c: New test.
+
+	2009-11-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42183
+	* g++.dg/torture/pr42183.C: New testcase.
+
+	2009-11-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42006
+	* gcc.c-torture/execute/pr42006.c: New test.
+
+	2009-11-27  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/42084
+	* gcc.dg/pr42084.c: New test.
+
+	2009-11-27  Michael Matz  <matz@suse.de>
+
+	PR c++/41906
+	* g++.dg/tree-ssa/pr41906.C: New testcase.
+
+	2009-11-26  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41905
+	* g++.dg/tree-ssa/pr41905.C: New testcase.
+
+	2009-11-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42142
+	* gcc.c-torture/execute/pr42142.c: New testcase.
+
+	2009-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42154
+	* gcc.c-torture/execute/pr42154.c: New test.
+
+	2009-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42025
+	* gcc.c-torture/compile/pr42025-1.c: New test.
+	* gcc.c-torture/compile/pr42025-2.c: New test.
+
+	2009-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42078
+	* gcc.dg/pr42078.c: New test.
+
 2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/41196
