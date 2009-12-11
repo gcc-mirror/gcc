@@ -1,3 +1,8 @@
+2009-12-11  Duncan Sands  <baldrick@free.fr>
+
+	* passes.c (make_pass_instance): Allocate and copy the right amount of
+	memory for ipa passes, which are not the same size as other passes.
+
 2009-12-11  Joern Rennecke  <amylaar@spamcop.net>
 
 	* plugin.c (get_named_event_id): Fix hash table rebuild to include
