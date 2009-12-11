@@ -1,5 +1,12 @@
 2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/42352
+	* include/bits/list.tcc (sort): Use _GLIBCXX_MOVE for list::splice
+	and list::merge calls.
+	* testsuite/23_containers/list/operations/42352.cc: New.
+
+2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/22634, DR 539 [Ready]
 	* include/bits/stl_numeric.h (adjacent_difference): Use std::move
 	at the end of the loop body, per the Ready resolution.
