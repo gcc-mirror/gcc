@@ -1,3 +1,10 @@
+2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	2009-10-08  Doug Kwan  <dougkwan@google.com>
+
+	PR rtl-optimization/41574
+	* gcc.dg/pr41574.c: New test.
+
 2009-11-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27425

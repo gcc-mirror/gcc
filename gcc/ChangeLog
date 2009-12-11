@@ -1,5 +1,13 @@
 2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	2009-10-05  Doug Kwan  <dougkwan@google.com>
+
+	PR rtl-optimization/41574
+	* combine.c (distribute_and_simplify_rtx): Quit if RTX mode is
+	floating point and we are not doing unsafe math optimizations.
+
+2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	
 	PR target/41939
 	Backport from mainline:
 	2009-06-05  Julian Brown  <julian@codesourcery.com>
