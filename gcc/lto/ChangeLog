@@ -1,5 +1,10 @@
 2009-12-11  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/42037
+	* lto.c (lto_resolution_read): Properly grow the vector.
+
+2009-12-11  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/41915
 	* lto-lang.c (lto_init_options): Initialize flag_complex_method
 	to the C99 default.  Do not set flag_unit_at_a_time.
