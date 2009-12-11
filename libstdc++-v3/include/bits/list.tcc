@@ -312,13 +312,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
         do
 	  {
-	    __carry.splice(__carry.begin(), *this, begin());
+	    __carry.splice(__carry.begin(), _GLIBCXX_MOVE(*this), begin());
 
 	    for(__counter = &__tmp[0];
 		__counter != __fill && !__counter->empty();
 		++__counter)
 	      {
-		__counter->merge(__carry);
+		__counter->merge(_GLIBCXX_MOVE(__carry));
 		__carry.swap(*__counter);
 	      }
 	    __carry.swap(*__counter);
@@ -328,7 +328,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	while ( !empty() );
 
         for (__counter = &__tmp[1]; __counter != __fill; ++__counter)
-          __counter->merge(*(__counter - 1));
+          __counter->merge(_GLIBCXX_MOVE(*(__counter - 1)));
         swap( *(__fill - 1) );
       }
     }
@@ -389,13 +389,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
 	    do
 	      {
-		__carry.splice(__carry.begin(), *this, begin());
+		__carry.splice(__carry.begin(), _GLIBCXX_MOVE(*this), begin());
 
 		for(__counter = &__tmp[0];
 		    __counter != __fill && !__counter->empty();
 		    ++__counter)
 		  {
-		    __counter->merge(__carry, __comp);
+		    __counter->merge(_GLIBCXX_MOVE(__carry), __comp);
 		    __carry.swap(*__counter);
 		  }
 		__carry.swap(*__counter);
@@ -405,7 +405,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	    while ( !empty() );
 
 	    for (__counter = &__tmp[1]; __counter != __fill; ++__counter)
-	      __counter->merge(*(__counter - 1), __comp);
+	      __counter->merge(_GLIBCXX_MOVE(*(__counter - 1)), __comp);
 	    swap(*(__fill - 1));
 	  }
       }
