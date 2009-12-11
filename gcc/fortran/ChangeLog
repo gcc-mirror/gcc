@@ -1,3 +1,9 @@
+2009-12-11 Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42335
+	* symbol.c (select_type_insert_tmp): Add an extra check for
+	error recovery.
+
 2009-12-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/40287

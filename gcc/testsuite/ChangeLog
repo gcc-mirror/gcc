@@ -1,3 +1,8 @@
+2009-12-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42335
+	* gfortran.dg/select_type_11.f03: New test.
+
 2009-12-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42225
