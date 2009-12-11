@@ -1,3 +1,8 @@
+2009-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/linux-unwind.h (MD_FROB_UPDATE_CONTEXT, 64-bit): Define.
+	(sparc64_frob_update_context): New function.
+
 2009-12-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41658

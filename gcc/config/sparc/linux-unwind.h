@@ -98,6 +98,23 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
   return _URC_NO_REASON;
 }
 
+#define MD_FROB_UPDATE_CONTEXT sparc64_frob_update_context
+
+static void
+sparc64_frob_update_context (struct _Unwind_Context *context,
+			     _Unwind_FrameState *fs)
+{
+  /* The column of %sp contains the old CFA, not the old value of %sp.
+     The CFA offset already comprises the stack bias so, when %sp is the
+     CFA register, we must avoid counting the stack bias twice.  Do not
+     do that for signal frames as the offset is artificial for them.  */
+  if (fs->regs.cfa_reg == __builtin_dwarf_sp_column ()
+      && fs->regs.cfa_how == CFA_REG_OFFSET
+      && fs->regs.cfa_offset != 0
+      && !fs->signal_frame)
+    context->cfa -= 2047;
+}
+
 #else
 
 /* 32-bit SPARC version */
