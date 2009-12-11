@@ -109,12 +109,11 @@ package System.Linux is
    SA_SIGINFO  : constant := 16#200#;
    SA_ONSTACK  : constant := 16#001#;
 
-   --  24 bytes for 32-bit and 40 bytes for 64-bit, aligned like 'long'
-
    type pthread_mutex_t is record
       L1, L2, L3, L4 : Interfaces.C.long;
       I1, I2 : Interfaces.C.int;
    end record;
    pragma Convention (C, pthread_mutex_t);
+   --  24 bytes for 32-bit and 40 bytes for 64-bit, aligned like 'long'
 
 end System.Linux;
