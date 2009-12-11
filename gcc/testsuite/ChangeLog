@@ -1,3 +1,8 @@
+2009-12-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42257
+	* gfortran.dg/extends_9.f03: New test.
+
 2009-12-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42219

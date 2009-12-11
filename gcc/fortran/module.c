@@ -4670,6 +4670,10 @@ write_equiv (void)
 static void
 write_dt_extensions (gfc_symtree *st)
 {
+  if (!gfc_check_access (st->n.sym->attr.access,
+			 st->n.sym->ns->default_access))
+    return;
+
   mio_lparen ();
   mio_pool_string (&st->n.sym->name);
   if (st->n.sym->module != NULL)
