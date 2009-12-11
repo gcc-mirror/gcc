@@ -1,3 +1,7 @@
+2009-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/libffi.call/ffitest.h: Define PRIuPTR on Solaris < 10.
+
 2009-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libffi/40700
