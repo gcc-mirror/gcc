@@ -358,7 +358,7 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
     case LTO_label_decl_ref:
       ix_u = lto_input_uleb128 (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
-      if (tag == LTO_global_decl_ref)
+      if (TREE_CODE (result) == VAR_DECL)
 	varpool_mark_needed_node (varpool_node (result));
       break;
 
