@@ -1,3 +1,11 @@
+2009-12-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41658
+	PR lto/41657
+	* lto-streamer-out.c (write_global_stream): Do not make decls
+	weak but resort to TREE_ASM_WRITTEN to avoid multiple definitions.
+	Make sure to mark all decls that we have written.
+
 2009-12-11  Sebastian Andrzej Siewior  <bigeasy@linutronix.de>
 
 	PR target/36047

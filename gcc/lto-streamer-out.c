@@ -2147,35 +2147,20 @@ write_global_stream (struct output_block *ob,
     {
       t = lto_tree_ref_encoder_get_tree (encoder, index);
       if (!lto_streamer_cache_lookup (ob->writer_cache, t, NULL))
+	lto_output_tree (ob, t, false);
+
+      if (flag_wpa)
 	{
-	  if (flag_wpa)
-	    {
-	      /* In WPA we should not emit multiple definitions of the
-		 same symbol to all the files in the link set.  If
-		 T had already been emitted as the pervailing definition
-		 in one file, emit it as an external reference in the
-		 others.  */
-	      /* FIXME lto.  We should check if T belongs to the
-		 file we are writing to.  */
-	      if (TREE_CODE (t) == VAR_DECL
-		  && TREE_PUBLIC (t)
-		  && !DECL_EXTERNAL (t))
-		{
-		  /* FIXME lto.  Make DECLS_ALREADY_EMITTED an argument
-		     to this function so it can be freed up afterwards.
-		     Alternately, assign global symbols to cgraph
-		     node sets.  */
-		  static struct pointer_set_t *decls_already_emitted = NULL;
-
-		  if (decls_already_emitted == NULL)
-		    decls_already_emitted = pointer_set_create ();
-
-		  if (pointer_set_insert (decls_already_emitted, t))
-		    make_decl_one_only (t, DECL_ASSEMBLER_NAME (t));
-		}
-	    }
-
-	  lto_output_tree (ob, t, false);
+	  /* In WPA we should not emit multiple definitions of the
+	     same symbol to all the files in the link set.  If
+	     T had already been emitted as the pervailing definition
+	     in one file, do not emit it in the others.  */
+	  /* FIXME lto.  We should check if T belongs to the
+	     file we are writing to.  */
+	  if (TREE_CODE (t) == VAR_DECL
+	      && TREE_PUBLIC (t)
+	      && !DECL_EXTERNAL (t))
+	    TREE_ASM_WRITTEN (t) = 1;
 	}
     }
 }
