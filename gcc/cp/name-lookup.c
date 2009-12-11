@@ -874,7 +874,7 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		     inlining.  */
 		  && (!TYPE_NAME (type)
 		      || TYPE_NAME (type) != DECL_ABSTRACT_ORIGIN (x))))
-	    set_underlying_type (x);
+	    cp_set_underlying_type (x);
 
 	  if (type != error_mark_node
 	      && TYPE_NAME (type)

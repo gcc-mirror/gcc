@@ -1073,6 +1073,47 @@ comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
   return true;
 }
 
+/* Subroutine of structural_comptypes.
+   Compare the template parameters of the
+   typedef decl of T1 and T2. 
+   Return TRUE if the template parameters of the typedef decls of T1 and T2 are
+   different, FALSE otherwise.  */
+
+static bool
+incompatible_dependent_typedefs_p (tree t1, tree t2)
+{
+  tree decl1, tinfo1,
+       decl2, tinfo2;
+
+  if (!typedef_variant_p (t1)
+      || !typedef_variant_p (t2)
+      || !dependent_type_p (t1)
+      || !dependent_type_p (t2))
+    return false;
+
+  decl1 = TYPE_NAME (t1);
+  decl2 = TYPE_NAME (t2);
+  if (decl1 == decl2)
+    return false ;
+
+  tinfo1 = get_template_info (decl1);
+  if (!tinfo1)
+    tinfo1 = get_template_info (DECL_CONTEXT (decl1));
+
+  tinfo2 = get_template_info (decl2);
+  if (!tinfo2)
+    tinfo2 = get_template_info (DECL_CONTEXT (decl2));
+
+  gcc_assert (tinfo1 != NULL_TREE
+	      && tinfo2 != NULL_TREE);
+
+  if (tinfo1 == tinfo2)
+    return false;
+
+  return !comp_template_parms (DECL_TEMPLATE_PARMS (TI_TEMPLATE (tinfo1)),
+			       DECL_TEMPLATE_PARMS (TI_TEMPLATE (tinfo2)));
+}
+
 /* Subroutine in comptypes.  */
 
 static bool
@@ -1119,6 +1160,9 @@ structural_comptypes (tree t1, tree t2, int strict)
   if (TREE_CODE (t1) != ARRAY_TYPE
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return true;
+
+  if (incompatible_dependent_typedefs_p (t1, t2))
+    return false;
 
   /* Compare the types.  Break out if they could be the same.  */
   switch (TREE_CODE (t1))

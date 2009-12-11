@@ -1,5 +1,11 @@
 2009-12-11  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/42225
+	* g++.dg/template/typedef24.C: New test.
+	* g++.dg/template/typedef25.C: New test.
+
+2009-12-11  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/42251
 	* g++.dg/template/const3.C: New test.
 
