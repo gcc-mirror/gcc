@@ -1,5 +1,10 @@
 2009-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* src/sparc/ffi.c (ffi_closure_sparc_inner_v9): Properly align 'long
+	double' arguments.
+
+2009-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* testsuite/libffi.call/ffitest.h: Define PRIuPTR on Solaris < 10.
 
 2009-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
