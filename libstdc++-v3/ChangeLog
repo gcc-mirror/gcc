@@ -1,5 +1,13 @@
 2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/22634, DR 539 [Ready]
+	* include/bits/stl_numeric.h (adjacent_difference): Use std::move
+	at the end of the loop body, per the Ready resolution.
+	* include/std/numeric: Do not include unnecessarily <cstddef>.
+	* doc/xml/manual/intro.xml: Add an entry for DR 539.
+
+2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* doc/html/ext/lwg-active.html: Update to Revision R68.
 	* doc/html/ext/lwg-closed.html: Likewise.
 	* doc/html/ext/lwg-defects.html: Likewise.

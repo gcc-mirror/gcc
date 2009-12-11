@@ -59,6 +59,7 @@
 
 #include <bits/concept_check.h>
 #include <debug/debug.h>
+#include <bits/move.h> // For _GLIBCXX_MOVE
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
@@ -302,6 +303,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last  End of input range.
    *  @param  result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
+   *
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 539. partial_sum and adjacent_difference should mention requirements
    */
   template<typename _InputIterator, typename _OutputIterator>
     _OutputIterator
@@ -324,7 +328,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 	{
 	  _ValueType __tmp = *__first;
 	  *++__result = __tmp - __value;
-	  __value = __tmp;
+	  __value = _GLIBCXX_MOVE(__tmp);
 	}
       return ++__result;
     }
@@ -340,6 +344,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last  End of input range.
    *  @param  result  Output to write sums to.
    *  @return  Iterator pointing just beyond the values written to result.
+   *
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 539. partial_sum and adjacent_difference should mention requirements
    */
   template<typename _InputIterator, typename _OutputIterator,
 	   typename _BinaryOperation>
@@ -363,7 +370,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 	{
 	  _ValueType __tmp = *__first;
 	  *++__result = __binary_op(__tmp, __value);
-	  __value = __tmp;
+	  __value = _GLIBCXX_MOVE(__tmp);
 	}
       return ++__result;
     }
