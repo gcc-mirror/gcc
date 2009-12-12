@@ -1,6 +1,31 @@
 2009-12-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
+	2009-12-07  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/42269
+	* gcc.c-torture/execute/pr42269-2.c: New.
+
+	2009-12-07  Richard Henderson  <rth@redhat.com>
+
+	PR debug/42299
+	PR debug/42166
+	* gcc.c-torture/compile/pr42299.c: New.
+	* gfortran.dg/pr42166.f90: Likewise.
+
+	2009-12-06  Richard Henderson  <rth@redhat.com>
+
+	PR debug/42234
+	* gcc.c-torture/compile/pr42234.c: New.
+
+	2009-12-02  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/42215
+	* gcc.dg/pr42215.c: New.
+
+2009-12-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
 	2009-12-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42225
