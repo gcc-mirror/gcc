@@ -17434,7 +17434,7 @@ dwarf2out_abstract_function (tree decl)
   dw_die_ref old_die;
   tree save_fn;
   tree context;
-  int was_abstract = DECL_ABSTRACT (decl);
+  int was_abstract;
   htab_t old_decl_loc_table;
 
   /* Make sure we have the actual abstract inline, not a clone.  */
@@ -17466,6 +17466,7 @@ dwarf2out_abstract_function (tree decl)
   current_function_decl = decl;
   push_cfun (DECL_STRUCT_FUNCTION (decl));
 
+  was_abstract = DECL_ABSTRACT (decl);
   set_decl_abstract_flags (decl, 1);
   dwarf2out_decl (decl);
   if (! was_abstract)
