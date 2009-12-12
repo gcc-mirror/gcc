@@ -1,3 +1,10 @@
+2009-12-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (need_assembler_name_p): Abstract decls do not need
+	an assembler name.
+	* dwarf2out.c (dwarf2out_abstract_function): Preserve
+	DECL_ABSTRACT properly.
+
 2009-12-11  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (lto_input_tree_ref): Do not register

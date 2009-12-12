@@ -4273,6 +4273,10 @@ need_assembler_name_p (tree decl)
       || DECL_ASSEMBLER_NAME_SET_P (decl))
     return false;
 
+  /* Abstract decls do not need an assembler name.  */
+  if (DECL_ABSTRACT (decl))
+    return false;
+
   /* For VAR_DECLs, only static, public and external symbols need an
      assembler name.  */
   if (TREE_CODE (decl) == VAR_DECL
