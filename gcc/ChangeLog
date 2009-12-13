@@ -1,3 +1,10 @@
+2009-12-13  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/42027
+	* dojump.c (do_jump <TRUTH_AND_EXPR, TRUTH_OR_EXPR>): Go to
+	TRUTH_ANDIF_EXPR resp. TRUTH_ORIF_EXPR expander, instead of
+	falling through.
+
 2009-12-13  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR target/23726
