@@ -207,6 +207,12 @@
 #       define GC_CLEAR_DEFINED
 #    endif /* ALPHA */
 #    ifdef ARM32
+#     define GC_TEST_AND_SET_DEFINED
+#     if (__GNUC__>4)||((__GNUC__==4)&&(__GNUC_MINOR__>=5)) && defined(__ARM_EABI__)
+#       define GC_CLEAR_DEFINED
+#       define GC_test_and_set(addr) __sync_lock_test_and_set (addr, 1)
+#       define GC_clear(addr) __sync_lock_release (addr)
+#     else
         inline static int GC_test_and_set(volatile unsigned int *addr) {
           int oldval;
           /* SWP on ARM is very similar to XCHG on x86.  Doesn't lock the
@@ -219,7 +225,7 @@
 			     : "memory");
           return oldval;
         }
-#       define GC_TEST_AND_SET_DEFINED
+#     endif
 #    endif /* ARM32 */
 #    ifdef CRIS
         inline static int GC_test_and_set(volatile unsigned int *addr) {
