@@ -1,4 +1,13 @@
 2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	PR libstdc++/40133
+	* acinclude.m4 ([GLIBCXX_ENABLE_ATOMIC_BUILTINS]): On *-*-linux*,
+	*-*-uclinux*, *-*-kfreebsd*-gnu | *-*-gnu* targets do link tests when
+	possible.
+	* configure: Regenerate.
+
+2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/parallel/numeric: Trivial formatting changes.
 

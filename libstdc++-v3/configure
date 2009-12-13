@@ -15052,14 +15052,220 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   old_CXXFLAGS="$CXXFLAGS"
 
+  # Do link tests if possible, instead asm tests, limited to some platforms
+  # see discussion in PR target/40134, PR libstdc++/40133 and the thread
+  # starting at http://gcc.gnu.org/ml/gcc-patches/2009-07/msg00322.html
+  atomic_builtins_link_tests=no
+  if test x$gcc_no_link != xyes; then
+    # Can do link tests. Limit to some tested platforms
+    case "$host" in
+      *-*-linux* | *-*-uclinux* | *-*-kfreebsd*-gnu | *-*-gnu*)
+	atomic_builtins_link_tests=yes
+        ;;
+    esac
+  fi
+
+  if test x$atomic_builtins_link_tests = xyes; then
+
+  # Do link tests.
+
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for bool" >&5
+$as_echo_n "checking for atomic builtins for bool... " >&6; }
+  if test "${glibcxx_cv_atomic_bool+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+typedef bool atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_atomic_bool=yes
+else
+  glibcxx_cv_atomic_bool=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+
+  if test $glibcxx_cv_atomic_bool = yes; then
+
+$as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_1 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_bool" >&5
+$as_echo "$glibcxx_cv_atomic_bool" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for short" >&5
+$as_echo_n "checking for atomic builtins for short... " >&6; }
+  if test "${glibcxx_cv_atomic_short+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+typedef short atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_atomic_short=yes
+else
+  glibcxx_cv_atomic_short=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+
+  if test $glibcxx_cv_atomic_short = yes; then
+
+$as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_2 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_short" >&5
+$as_echo "$glibcxx_cv_atomic_short" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for int" >&5
+$as_echo_n "checking for atomic builtins for int... " >&6; }
+  if test "${glibcxx_cv_atomic_int+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+typedef int atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_atomic_int=yes
+else
+  glibcxx_cv_atomic_int=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+
+  if test $glibcxx_cv_atomic_int = yes; then
+
+$as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_4 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_int" >&5
+$as_echo "$glibcxx_cv_atomic_int" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for atomic builtins for long long" >&5
+$as_echo_n "checking for atomic builtins for long long... " >&6; }
+  if test "${glibcxx_cv_atomic_long_long+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+typedef long long atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_atomic_long_long=yes
+else
+  glibcxx_cv_atomic_long_long=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+
+  if test $glibcxx_cv_atomic_long_long = yes; then
+
+$as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_8 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_long_long" >&5
+$as_echo "$glibcxx_cv_atomic_long_long" >&6; }
+
+  else
+
+  # Do asm tests.
+
   # Compile unoptimized.
   CXXFLAGS='-O0 -S'
 
-  # Fake what AC_TRY_COMPILE does, without linking as this is
-  # unnecessary for a builtins test.
+  # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15062 "configure"
+#line 15268 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15083,20 +15289,20 @@ $as_echo_n "checking for atomic builtins for bool... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsb=no
+        glibcxx_cv_atomic_bool=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_1 1" >>confdefs.h
 
-        enable_atomic_builtinsb=yes
+        glibcxx_cv_atomic_bool=yes
       fi
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_atomic_builtinsb" >&5
-$as_echo "$enable_atomic_builtinsb" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_bool" >&5
+$as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15099 "configure"
+#line 15305 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15120,20 +15326,20 @@ $as_echo_n "checking for atomic builtins for short... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinss=no
+        glibcxx_cv_atomic_short=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_2 1" >>confdefs.h
 
-        enable_atomic_builtinss=yes
+        glibcxx_cv_atomic_short=yes
       fi
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_atomic_builtinss" >&5
-$as_echo "$enable_atomic_builtinss" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_short" >&5
+$as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15136 "configure"
+#line 15342 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15158,20 +15364,20 @@ $as_echo_n "checking for atomic builtins for int... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsi=no
+        glibcxx_cv_atomic_int=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_4 1" >>confdefs.h
 
-        enable_atomic_builtinsi=yes
+        glibcxx_cv_atomic_int=yes
       fi
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_atomic_builtinsi" >&5
-$as_echo "$enable_atomic_builtinsi" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_int" >&5
+$as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15174 "configure"
+#line 15380 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15195,18 +15401,19 @@ $as_echo_n "checking for atomic builtins for long long... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsll=no
+        glibcxx_cv_atomic_long_long=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_8 1" >>confdefs.h
 
-        enable_atomic_builtinsll=yes
+        glibcxx_cv_atomic_long_long=yes
       fi
     fi
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_atomic_builtinsll" >&5
-$as_echo "$enable_atomic_builtinsll" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_long_long" >&5
+$as_echo "$glibcxx_cv_atomic_long_long" >&6; }
     rm -f conftest*
 
+  fi
 
   CXXFLAGS="$old_CXXFLAGS"
   ac_ext=c
@@ -15217,7 +15424,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   # Set atomicity_dir to builtins if either of above tests pass.
-  if test $enable_atomic_builtinsi = yes || test $enable_atomic_builtinsb = yes ; then
+  if test $glibcxx_cv_atomic_int = yes || test $glibcxx_cv_atomic_bool = yes ; then
     atomicity_dir=cpu/generic/atomicity_builtins
   fi
 
@@ -15246,7 +15453,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15249 "configure"
+#line 15456 "configure"
 int main()
 {
   _Decimal32 d1;

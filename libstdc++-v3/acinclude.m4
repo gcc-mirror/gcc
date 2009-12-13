@@ -2438,8 +2438,7 @@ dnl is intended to be an all-or-nothing switch, so all the atomic operations
 dnl that are used should be checked.
 dnl
 dnl Note:
-dnl libgomp and libgfortran do this with a link test, instead of an asm test.
-dnl see: CHECK_SYNC_FETCH_AND_ADD
+dnl libgomp and libgfortran use a link test, see CHECK_SYNC_FETCH_AND_ADD.
 dnl
 dnl Defines:
 dnl  _GLIBCXX_ATOMIC_BUILTINS_1 
@@ -2451,12 +2450,122 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
   old_CXXFLAGS="$CXXFLAGS"
-  
+
+  # Do link tests if possible, instead asm tests, limited to some platforms
+  # see discussion in PR target/40134, PR libstdc++/40133 and the thread
+  # starting at http://gcc.gnu.org/ml/gcc-patches/2009-07/msg00322.html
+  atomic_builtins_link_tests=no
+  if test x$gcc_no_link != xyes; then
+    # Can do link tests. Limit to some tested platforms
+    case "$host" in
+      *-*-linux* | *-*-uclinux* | *-*-kfreebsd*-gnu | *-*-gnu*)
+	atomic_builtins_link_tests=yes
+        ;;
+    esac
+  fi
+
+  if test x$atomic_builtins_link_tests = xyes; then
+
+  # Do link tests.
+
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+
+  AC_MSG_CHECKING([for atomic builtins for bool])
+  AC_CACHE_VAL(glibcxx_cv_atomic_bool, [
+    AC_TRY_LINK(
+      [ ],
+      [typedef bool atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();],
+      [glibcxx_cv_atomic_bool=yes],
+      [glibcxx_cv_atomic_bool=no])
+  ])    
+  if test $glibcxx_cv_atomic_bool = yes; then
+    AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_1, 1,
+      [Define if builtin atomic operations for bool are supported on this host.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_atomic_bool)
+
+  AC_MSG_CHECKING([for atomic builtins for short])
+  AC_CACHE_VAL(glibcxx_cv_atomic_short, [
+    AC_TRY_LINK(
+      [ ],
+      [typedef short atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();],
+      [glibcxx_cv_atomic_short=yes],
+      [glibcxx_cv_atomic_short=no])
+  ])    
+  if test $glibcxx_cv_atomic_short = yes; then
+    AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_2, 1,
+      [Define if builtin atomic operations for short are supported on this host.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_atomic_short)
+
+  AC_MSG_CHECKING([for atomic builtins for int])
+  AC_CACHE_VAL(glibcxx_cv_atomic_int, [
+    AC_TRY_LINK(
+      [ ],
+      [typedef int atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();],
+      [glibcxx_cv_atomic_int=yes],
+      [glibcxx_cv_atomic_int=no])
+  ])    
+  if test $glibcxx_cv_atomic_int = yes; then
+    AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_4, 1,
+      [Define if builtin atomic operations for int are supported on this host.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_atomic_int)
+
+  AC_MSG_CHECKING([for atomic builtins for long long])
+  AC_CACHE_VAL(glibcxx_cv_atomic_long_long, [
+    AC_TRY_LINK(
+      [ ],
+      [typedef long long atomic_type;
+       atomic_type c1;
+       atomic_type c2;
+       const atomic_type c3(0);
+       __sync_fetch_and_add(&c1, c2);
+       __sync_val_compare_and_swap(&c1, c3, c2);
+       __sync_lock_test_and_set(&c1, c3);
+       __sync_lock_release(&c1);
+       __sync_synchronize();],
+      [glibcxx_cv_atomic_long_long=yes],
+      [glibcxx_cv_atomic_long_long=no])
+  ])    
+  if test $glibcxx_cv_atomic_long_long = yes; then
+    AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_8, 1,
+      [Define if builtin atomic operations for long long are supported on this host.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_atomic_long_long)
+
+  else
+
+  # Do asm tests.
+
   # Compile unoptimized.
   CXXFLAGS='-O0 -S'
 
-  # Fake what AC_TRY_COMPILE does, without linking as this is
-  # unnecessary for a builtins test.
+  # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
@@ -2478,14 +2587,14 @@ EOF
     AC_MSG_CHECKING([for atomic builtins for bool])
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsb=no
+        glibcxx_cv_atomic_bool=no
       else
       AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_1, 1,
       [Define if builtin atomic operations for bool are supported on this host.])
-        enable_atomic_builtinsb=yes
+        glibcxx_cv_atomic_bool=yes
       fi
     fi
-    AC_MSG_RESULT($enable_atomic_builtinsb)
+    AC_MSG_RESULT($glibcxx_cv_atomic_bool)
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
@@ -2508,14 +2617,14 @@ EOF
     AC_MSG_CHECKING([for atomic builtins for short])
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinss=no
+        glibcxx_cv_atomic_short=no
       else
       AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_2, 1,
       [Define if builtin atomic operations for short are supported on this host.])
-        enable_atomic_builtinss=yes
+        glibcxx_cv_atomic_short=yes
       fi
     fi
-    AC_MSG_RESULT($enable_atomic_builtinss)
+    AC_MSG_RESULT($glibcxx_cv_atomic_short)
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
@@ -2539,14 +2648,14 @@ EOF
     AC_MSG_CHECKING([for atomic builtins for int])
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsi=no
+        glibcxx_cv_atomic_int=no
       else
       AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_4, 1,
         [Define if builtin atomic operations for int are supported on this host.])
-        enable_atomic_builtinsi=yes
+        glibcxx_cv_atomic_int=yes
       fi
     fi
-    AC_MSG_RESULT($enable_atomic_builtinsi)
+    AC_MSG_RESULT($glibcxx_cv_atomic_int)
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
@@ -2569,22 +2678,23 @@ EOF
     AC_MSG_CHECKING([for atomic builtins for long long])
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        enable_atomic_builtinsll=no
+        glibcxx_cv_atomic_long_long=no
       else
       AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS_8, 1,
       [Define if builtin atomic operations for long long are supported on this host.])
-        enable_atomic_builtinsll=yes
+        glibcxx_cv_atomic_long_long=yes
       fi
     fi
-    AC_MSG_RESULT($enable_atomic_builtinsll)
+    AC_MSG_RESULT($glibcxx_cv_atomic_long_long)
     rm -f conftest*
 
+  fi
 
   CXXFLAGS="$old_CXXFLAGS"
   AC_LANG_RESTORE
 
   # Set atomicity_dir to builtins if either of above tests pass.
-  if test $enable_atomic_builtinsi = yes || test $enable_atomic_builtinsb = yes ; then
+  if test $glibcxx_cv_atomic_int = yes || test $glibcxx_cv_atomic_bool = yes ; then
     atomicity_dir=cpu/generic/atomicity_builtins
   fi
 
