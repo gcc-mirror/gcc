@@ -2441,7 +2441,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	    {
 	      rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
-	      if (!is_gimple_reg (lhs))
+	      if (is_gimple_reg_type (TREE_TYPE (lhs))
+		  && TREE_CODE (lhs) != SSA_NAME)
 		force_gimple_rhs = true;
 	    }
 	}
