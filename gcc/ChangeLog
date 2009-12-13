@@ -1,3 +1,16 @@
+2009-12-13  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR target/23726
+	* config/avr/predicates.md (pseudo_register_operand): New predicate
+	for pseudos.
+	* config/avr/avr.md (divmodqi4): Replace with define_insn_and_split
+	to allow div/mod optimization.
+	(udivmodqi4): Ditto.
+	(divmodhi4): Ditto.
+	(udivmodhi4): Ditto.
+	(divmodsi4): Ditto.
+	(udivmodsi4): Ditto. 
+
 2009-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42357

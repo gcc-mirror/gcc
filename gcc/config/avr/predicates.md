@@ -110,3 +110,8 @@
   (and (match_code "mem")
        (ior (match_test "register_operand (XEXP (op, 0), mode)")
             (match_test "CONSTANT_ADDRESS_P (XEXP (op, 0))"))))
+
+;; True for register that is pseudo register.
+(define_predicate "pseudo_register_operand"
+  (and (match_code "reg")
+       (match_test "!HARD_REGISTER_P (op)")))
