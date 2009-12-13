@@ -458,6 +458,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
     case LTGT_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
+    other_code:
       do_jump_1 (code, TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
 		 if_false_label, if_true_label);
       break;
@@ -547,6 +548,8 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 		       false) >= 4
 	  || TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	goto normal;
+      code = TRUTH_ANDIF_EXPR;
+      goto other_code;
 
     case BIT_IOR_EXPR:
     case TRUTH_OR_EXPR:
@@ -556,6 +559,8 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       if (BRANCH_COST (optimize_insn_for_speed_p (), false)>= 4
 	  || TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	goto normal;
+      code = TRUTH_ORIF_EXPR;
+      goto other_code;
 
       /* Fall through and generate the normal code.  */
     default:
