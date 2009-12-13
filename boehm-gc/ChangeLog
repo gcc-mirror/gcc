@@ -1,3 +1,8 @@
+2009-12-09  Matthias Klose  <doko@ubuntu.com> 
+
+	* include/private/gc_locks.h: For __ARM_EABI__ define
+	GC_test_and_set  GC_clear to use the atomic builtins.
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
