@@ -1,3 +1,8 @@
+2009-12-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42357
+	* tree-sra.c (sra_modify_assign): Do not tear apart struct copies.
+
 2009-12-12  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (need_assembler_name_p): Abstract decls do not need
