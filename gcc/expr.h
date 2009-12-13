@@ -223,11 +223,6 @@ do {								\
 #define STACK_CHECK_PROBE_INTERVAL_EXP 12
 #endif
 
-/* The default is to do a store into the stack.  */
-#ifndef STACK_CHECK_PROBE_LOAD
-#define STACK_CHECK_PROBE_LOAD 0
-#endif
-
 /* The default is not to move the stack pointer.  */
 #ifndef STACK_CHECK_MOVING_SP
 #define STACK_CHECK_MOVING_SP 0
