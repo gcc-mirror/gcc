@@ -1366,9 +1366,6 @@ emit_stack_probe (rtx address)
     emit_insn (gen_probe_stack (memref));
   else
 #endif
-  if (STACK_CHECK_PROBE_LOAD)
-    emit_move_insn (gen_reg_rtx (word_mode), memref);
-  else
     emit_move_insn (memref, const0_rtx);
 }
 

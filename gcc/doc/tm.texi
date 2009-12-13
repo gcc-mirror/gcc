@@ -3564,12 +3564,6 @@ the ``guard pages'' at the end of a stack area.  The default value
 of 12 (4096-byte interval) is suitable for most systems.
 @end defmac
 
-@defmac STACK_CHECK_PROBE_LOAD
-An integer which is nonzero if GCC should perform the stack probe
-as a load instruction and zero if GCC should use a store instruction.
-The default is zero, which is the most efficient choice on most systems.
-@end defmac
-
 @defmac STACK_CHECK_MOVING_SP
 An integer which is nonzero if GCC should move the stack pointer page by page
 when doing probes.  This can be necessary on systems where the stack pointer

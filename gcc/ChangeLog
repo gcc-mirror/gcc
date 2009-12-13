@@ -1,3 +1,10 @@
+2009-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/tm.texi (STACK_CHECK_PROBE_LOAD): Delete.
+	* expr.h (STACK_CHECK_PROBE_LOAD): Likewise.
+	* explow.c (emit_stack_probe): Do not test STACK_CHECK_PROBE_LOAD.
+	* system.h (STACK_CHECK_PROBE_LOAD): Poison.
+
 2009-12-13  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/42027
