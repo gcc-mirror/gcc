@@ -1,3 +1,21 @@
+2009-12-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41473
+	* dwarf2out.c (add_var_loc_to_decl): Don't drop initial empty
+	locations.
+	(new_loc_list): Drop gensym arg.  Move generation of ll_symbol...
+	(gen_llsym): ... here.  New function.
+	(add_loc_descr_to_loc_list): Removed.
+	(loc_descriptor): Infer mode from CONST_DOUBLEs and CONST_VECTORs.
+	(single_element_loc_list): Removed.
+	(dw_loc_list): Don't create entries without a location.  Don't
+	special-case the first node of the list, only single nodes.
+	(single_element_loc_list_p): Simplify.
+	(loc_list_from_tree): Don't use DECL_RTL if loc_list is nonempty.
+	(add_location_or_const_value_attribute): Test var loc for NULL.
+	(convert_cfa_to_fb_loc_list): Adjust calls to new new_loc_list,
+	call gen_llsym if needed.
+
 2009-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* cgraph.h (cgraph_set_nothrow_flag, cgraph_set_readonly_flag,
