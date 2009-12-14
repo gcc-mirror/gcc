@@ -1,3 +1,8 @@
+2009-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* src/pa/ffi.c (ffi_closure_inner_pa32): Handle FFI_TYPE_LONGDOUBLE
+	type on HP-UX.
+
 2009-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* src/sparc/ffi.c (ffi_closure_sparc_inner_v9): Properly align 'long
