@@ -124,7 +124,7 @@
 	(divmodhi4): Ditto.
 	(udivmodhi4): Ditto.
 	(divmodsi4): Ditto.
-	(udivmodsi4): Ditto. 
+	(udivmodsi4): Ditto.
 
 2009-12-13  Richard Guenther  <rguenther@suse.de>
 
@@ -271,7 +271,7 @@
 
 	* builtins.c (do_mpc_ckconv): Pass the component type to
 	real_from_mpfr().
-	
+
 2009-12-09  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/42337

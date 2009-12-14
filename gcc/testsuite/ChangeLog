@@ -1,3 +1,10 @@
+2009-12-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/i386-2.C: Add -mpopcnt -mabm -mlwp to dg-options.
+	* g++.dg/other/i386-3.C: Ditto.
+	* g++.dg/other/i386-5.C: Remove duplicated test.
+	* g++.dg/other/i386-6.C: Ditto.
+
 2009-12-14  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/42354
@@ -109,7 +116,7 @@
 	* gfortran.dg/typebound_proc_13.f03: New test.
 
 2009-12-08  Olga Golovanevsky  <olga@il.ibm.com>
-	    Jakub Jelinek <jakub@redhat.com>	
+	    Jakub Jelinek <jakub@redhat.com>
 
 	PR midle-end/41843
 	* gcc.dg/struct/wo_prof_empty_str.c: New testcase.
@@ -253,7 +260,7 @@
 	PR c++/41611
 	* g++.dg/abi/guard1.C: New.
 
-2009-12-91  Uros Bizjak  <ubizjak@gmail.com>
+2009-12-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/vperm-v4sf-1.c (dg-options): Use -msse.
 
@@ -567,7 +574,7 @@
 	* gcc-dg/raw-string-2.c: Ditto.
 	* gcc-dg/utf-array-short-wchar.c: Ditto.
 	* gcc-dg/utf-array.c: Ditto.
-	* gcc-dg/utf8-2.c: Ditto. 
+	* gcc-dg/utf8-2.c: Ditto.
 
 2009-11-23  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
@@ -793,7 +800,7 @@
 	* gcc.misc-tests/linkage.exp: Also check -m32 for i*86-*-linux*.
 
 2009-11-18  Nick Clifton  <nickc@redhat.com>
-	
+
 	* g++.dg/lto/20091002-1_0.C: Replace -shared with -r -nostlib.
 	* g++.dg/lto/20081120-1_0.C: Likewise.
 	* g++.dg/lto/20091002-2_0.C: Likewise.
@@ -1208,7 +1215,7 @@
 	* g++.dg/other/i386-3.C: Ditto.
 	* g++.dg/other/i386-5.C: Ditto.
 	* g++.dg/other/i386-6.C: Ditto.
-	
+
 2009-11-04  Wei Guozhi  <carrot@google.com>
 
 	PR target/40835
