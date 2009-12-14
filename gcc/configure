@@ -757,6 +757,7 @@ REPORT_BUGS_TEXI
 REPORT_BUGS_TO
 PKGVERSION
 onestep
+CONFIGURE_SPECS
 CROSS_SYSTEM_HEADER_DIR
 TARGET_SYSTEM_ROOT_DEFINE
 TARGET_SYSTEM_ROOT
@@ -880,6 +881,7 @@ with_dwarf2
 enable_shared
 with_build_sysroot
 with_sysroot
+with_specs
 enable_intermodule
 with_pkgversion
 with_bugurl
@@ -1632,6 +1634,7 @@ Optional Packages:
   --with-build-sysroot=sysroot
                           use sysroot as the system root during the build
   --with-sysroot=DIR Search for usr/lib, usr/include, et al, within DIR.
+  --with-specs=SPECS      add SPECS to driver command-line processing
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
   --with-bugurl=URL       Direct users to URL to report a bug
   --with-multilib-list    Select multilibs (SH only)
@@ -6850,6 +6853,17 @@ else
 fi
 
 
+
+
+
+
+# Check whether --with-specs was given.
+if test "${with_specs+set}" = set; then :
+  withval=$with_specs; CONFIGURE_SPECS=$withval
+else
+  CONFIGURE_SPECS=
+
+fi
 
 
 
@@ -17023,7 +17037,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17026 "configure"
+#line 17040 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17129,7 +17143,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17132 "configure"
+#line 17146 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
