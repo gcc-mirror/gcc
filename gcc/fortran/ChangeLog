@@ -1,3 +1,8 @@
+2009-12-14  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/42354
+	* expr.c (check_init_expr): Do not check for specification functions.
+
 2009-12-11 Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42257

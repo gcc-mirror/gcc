@@ -5,6 +5,6 @@
 !
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>
 !
-real (bad_kind(0d0)) function foo () ! { dg-error "must be an intrinsic or" }
+real (bad_kind(0d0)) function foo () ! { dg-error "must be an intrinsic function" }
   foo = real (kind (foo))
 end function
