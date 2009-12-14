@@ -2208,4 +2208,53 @@ cgraph_make_node_local (struct cgraph_node *node)
     }
 }
 
+/* Set TREE_NOTHROW on NODE's decl and on same_body aliases of NODE
+   if any to NOTHROW.  */
+
+void
+cgraph_set_nothrow_flag (struct cgraph_node *node, bool nothrow)
+{
+  struct cgraph_node *alias;
+  TREE_NOTHROW (node->decl) = nothrow;
+  for (alias = node->same_body; alias; alias = alias->next)
+    TREE_NOTHROW (alias->decl) = nothrow;
+}
+
+/* Set TREE_READONLY on NODE's decl and on same_body aliases of NODE
+   if any to READONLY.  */
+
+void
+cgraph_set_readonly_flag (struct cgraph_node *node, bool readonly)
+{
+  struct cgraph_node *alias;
+  TREE_READONLY (node->decl) = readonly;
+  for (alias = node->same_body; alias; alias = alias->next)
+    TREE_READONLY (alias->decl) = readonly;
+}
+
+/* Set DECL_PURE_P on NODE's decl and on same_body aliases of NODE
+   if any to PURE.  */
+
+void
+cgraph_set_pure_flag (struct cgraph_node *node, bool pure)
+{
+  struct cgraph_node *alias;
+  DECL_PURE_P (node->decl) = pure;
+  for (alias = node->same_body; alias; alias = alias->next)
+    DECL_PURE_P (alias->decl) = pure;
+}
+
+/* Set DECL_LOOPING_CONST_OR_PURE_P on NODE's decl and on
+   same_body aliases of NODE if any to LOOPING_CONST_OR_PURE.  */
+
+void
+cgraph_set_looping_const_or_pure_flag (struct cgraph_node *node,
+				       bool looping_const_or_pure)
+{
+  struct cgraph_node *alias;
+  DECL_LOOPING_CONST_OR_PURE_P (node->decl) = looping_const_or_pure;
+  for (alias = node->same_body; alias; alias = alias->next)
+    DECL_LOOPING_CONST_OR_PURE_P (alias->decl) = looping_const_or_pure;
+}
+
 #include "gt-cgraph.h"

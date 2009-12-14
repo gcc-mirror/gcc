@@ -475,6 +475,11 @@ struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 			                          VEC(ipa_replace_map_p,gc)* tree_map,
 			                          bitmap args_to_skip);
 
+void cgraph_set_nothrow_flag (struct cgraph_node *, bool);
+void cgraph_set_readonly_flag (struct cgraph_node *, bool);
+void cgraph_set_pure_flag (struct cgraph_node *, bool);
+void cgraph_set_looping_const_or_pure_flag (struct cgraph_node *, bool);
+
 /* In cgraphunit.c  */
 void cgraph_finalize_function (tree, bool);
 void cgraph_mark_if_needed (tree);
