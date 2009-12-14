@@ -2186,7 +2186,11 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gimple stmt = gimple_build_assign (res, zero_dim_array);
   tree arg = gimple_phi_arg_def (phi, 0);
 
-  insert_out_of_ssa_copy (zero_dim_array, arg);
+  if (TREE_CODE (arg) == SSA_NAME)
+    insert_out_of_ssa_copy (zero_dim_array, arg);
+  else
+    insert_out_of_ssa_copy_on_edge (single_pred_edge (gimple_bb (phi)),
+				    zero_dim_array, arg);
 
   remove_phi_node (psi, false);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
@@ -2511,7 +2515,7 @@ follow_ssa_with_commutative_ops (tree arg, tree lhs)
 }
 
 /* Detect commutative and associative scalar reductions starting at
-   the STMT.  */
+   the STMT.  Return the phi node of the reduction cycle, or NULL.  */
 
 static gimple
 detect_commutative_reduction_arg (tree lhs, gimple stmt, tree arg,
@@ -2520,18 +2524,16 @@ detect_commutative_reduction_arg (tree lhs, gimple stmt, tree arg,
 {
   gimple phi = follow_ssa_with_commutative_ops (arg, lhs);
 
-  if (phi)
-    {
-      VEC_safe_push (gimple, heap, *in, stmt);
-      VEC_safe_push (gimple, heap, *out, stmt);
-      return phi;
-    }
+  if (!phi)
+    return NULL;
 
-  return NULL;
+  VEC_safe_push (gimple, heap, *in, stmt);
+  VEC_safe_push (gimple, heap, *out, stmt);
+  return phi;
 }
 
 /* Detect commutative and associative scalar reductions starting at
-   the STMT.  */
+   the STMT.  Return the phi node of the reduction cycle, or NULL.  */
 
 static gimple
 detect_commutative_reduction_assign (gimple stmt, VEC (gimple, heap) **in,
@@ -2619,7 +2621,8 @@ initial_value_for_loop_phi (gimple phi)
 }
 
 /* Detect commutative and associative scalar reductions starting at
-   the loop closed phi node CLOSE_PHI.  */
+   the loop closed phi node CLOSE_PHI.  Return the phi node of the
+   reduction cycle, or NULL.  */
 
 static gimple
 detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
@@ -2628,8 +2631,13 @@ detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
   if (scalar_close_phi_node_p (stmt))
     {
       tree arg = gimple_phi_arg_def (stmt, 0);
-      gimple def = SSA_NAME_DEF_STMT (arg);
-      gimple loop_phi = detect_commutative_reduction (def, in, out);
+      gimple def, loop_phi;
+
+      if (TREE_CODE (arg) != SSA_NAME)
+	return NULL;
+
+      def = SSA_NAME_DEF_STMT (arg);
+      loop_phi = detect_commutative_reduction (def, in, out);
 
       if (loop_phi)
 	{
