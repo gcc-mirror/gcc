@@ -1,3 +1,9 @@
+2009-12-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Remove code to un-precious-ize CC, CXX,
+	CXXFLAGS, CFLAGS, LDFLAGS.
+	* configure: Regenerate.
+
 2009-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* include/pa-signal.h: Do not include ucontext.h.
