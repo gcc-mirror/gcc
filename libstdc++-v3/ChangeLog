@@ -1,3 +1,24 @@
+2009-12-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_list.h (splice(iterator, list&), splice(iterator,
+	list&, iterator), splice(iterator, list&, iterator, iterator),
+	merge(list&), merge(list&, _StrictWeakOrdering)): Re-add in C++0x
+	mode for backward compatibility (see DR 1133).
+	(insert(iterator, size_type, const value_type&), insert(iterator,
+	_InputIterator, _InputIterator)): Adjust.
+	* include/bits/list.tcc (sort): Likewise.
+	* testsuite/23_containers/list/modifiers/1_c++0x.cc: Add.
+	* testsuite/23_containers/list/operations/2_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/operations/3_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2009-12-11  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Matthias Klose  <doko@ubuntu.com>
 
