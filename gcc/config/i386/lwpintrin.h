@@ -33,77 +33,68 @@
 #else
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__llwpcb16 (void *pcbAddress)
+__llwpcb (void *pcbAddress)
 {
-  __builtin_ia32_llwpcb16 (pcbAddress);
-}
-
-extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__llwpcb32 (void *pcbAddress)
-{
-  __builtin_ia32_llwpcb32 (pcbAddress);
-}
-
-extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__llwpcb64 (void *pcbAddress)
-{
-  __builtin_ia32_llwpcb64 (pcbAddress);
+  __builtin_ia32_llwpcb (pcbAddress);
 }
 
 extern __inline void * __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__slwpcb16 (void)
+__slwpcb (void)
 {
-  return __builtin_ia32_slwpcb16 ();
+  return __builtin_ia32_slwpcb ();
 }
 
-extern __inline void * __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__slwpcb32 (void)
-{
-  return __builtin_ia32_slwpcb32 ();
-}
-
-extern __inline void * __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__slwpcb64 (void)
-{
-  return __builtin_ia32_slwpcb64 ();
-}
-
-extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpval16 (unsigned short data2, unsigned int data1, unsigned short flags)
-{
-  __builtin_ia32_lwpval16 (data2, data1, flags);
-}
-/*
+#ifdef __OPTIMIZE__
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __lwpval32 (unsigned int data2, unsigned int data1, unsigned int flags)
 {
   __builtin_ia32_lwpval32 (data2, data1, flags);
 }
 
+#ifdef __x86_64__
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpval64 (unsigned __int64 data2, unsigned int data1, unsigned int flags)
+__lwpval64 (unsigned long long data2, unsigned int data1, unsigned int flags)
 {
   __builtin_ia32_lwpval64 (data2, data1, flags);
 }
+#endif
+#else
+#define __lwpval32(D2, D1, F) \
+  (__builtin_ia32_lwpval32 ((unsigned int) (D2), (unsigned int) (D1), \
+			    (unsigned int) (F)))
+#ifdef __x86_64__
+#define __lwpval64(D2, D1, F) \
+  (__builtin_ia32_lwpval64 ((unsigned long long) (D2), (unsigned int) (D1), \
+			    (unsigned int) (F)))
+#endif
+#endif
 
-extern __inline unsigned char __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpins16 (unsigned short data2, unsigned int data1, unsigned short flags)
-{
-  return __builtin_ia32_lwpins16 (data2, data1, flags);
-}
 
+#ifdef __OPTIMIZE__
 extern __inline unsigned char __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __lwpins32 (unsigned int data2, unsigned int data1, unsigned int flags)
 {
   return __builtin_ia32_lwpins32 (data2, data1, flags);
 }
 
+#ifdef __x86_64__
 extern __inline unsigned char __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpins64 (unsigned __int64 data2, unsigned int data1, unsigned int flags)
+__lwpins64 (unsigned long long data2, unsigned int data1, unsigned int flags)
 {
   return __builtin_ia32_lwpins64 (data2, data1, flags);
 }
-*/
+#endif
+#else
+#define __lwpins32(D2, D1, F) \
+  (__builtin_ia32_lwpins32 ((unsigned int) (D2), (unsigned int) (D1), \
+			    (unsigned int) (F)))
+#ifdef __x86_64__
+#define __lwpins64(D2, D1, F) \
+  (__builtin_ia32_lwpins64 ((unsigned long long) (D2), (unsigned int) (D1), \
+			    (unsigned int) (F)))
+#endif
+#endif
+
 #endif /* __LWP__ */
 
 #endif /* _LWPINTRIN_H_INCLUDED */
