@@ -7211,6 +7211,13 @@ AT_loc_list (dw_attr_ref a)
   return a->dw_attr_val.v.val_loc_list;
 }
 
+static inline dw_loc_list_ref *
+AT_loc_list_ptr (dw_attr_ref a)
+{
+  gcc_assert (a && AT_class (a) == dw_val_class_loc_list);
+  return &a->dw_attr_val.v.val_loc_list;
+}
+
 /* Add an address constant attribute value to a DIE.  */
 
 static inline void
@@ -20968,28 +20975,48 @@ resolve_addr (dw_die_ref die)
 {
   dw_die_ref c;
   dw_attr_ref a;
-  dw_loc_list_ref curr;
+  dw_loc_list_ref *curr;
   unsigned ix;
 
   for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
     switch (AT_class (a))
       {
       case dw_val_class_loc_list:
-	for (curr = AT_loc_list (a); curr != NULL; curr = curr->dw_loc_next)
-	  if (!resolve_addr_in_expr (curr->expr))
-	    curr->expr = NULL;
+	curr = AT_loc_list_ptr (a);
+	while (*curr)
+	  {
+	    if (!resolve_addr_in_expr ((*curr)->expr))
+	      {
+		dw_loc_list_ref next = (*curr)->dw_loc_next;
+		if (next && (*curr)->ll_symbol)
+		  {
+		    gcc_assert (!next->ll_symbol);
+		    next->ll_symbol = (*curr)->ll_symbol;
+		  }
+		*curr = next;
+	      }
+	    else
+	      curr = &(*curr)->dw_loc_next;
+	  }
+	if (!AT_loc_list (a))
+	  {
+	    remove_AT (die, a->dw_attr);
+	    ix--;
+	  }
 	break;
       case dw_val_class_loc:
 	if (!resolve_addr_in_expr (AT_loc (a)))
-	  a->dw_attr_val.v.val_loc = NULL;
+	  {
+	    remove_AT (die, a->dw_attr);
+	    ix--;
+	  }
 	break;
       case dw_val_class_addr:
 	if (a->dw_attr == DW_AT_const_value
 	    && resolve_one_addr (&a->dw_attr_val.v.val_addr, NULL))
 	  {
-	    a->dw_attr = DW_AT_location;
-	    a->dw_attr_val.val_class = dw_val_class_loc;
-	    a->dw_attr_val.v.val_loc = NULL;
+	    remove_AT (die, a->dw_attr);
+	    ix--;
 	  }
 	break;
       default:
