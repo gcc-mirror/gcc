@@ -1,3 +1,7 @@
+2009-12-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/boz_15.f90: Fix typos.
+
 2009-12-14  Jakub Jelinek  <jakub@redhat.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
