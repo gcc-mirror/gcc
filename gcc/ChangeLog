@@ -1,6 +1,10 @@
 2009-12-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41473
+	* dwarf2out.c (AT_loc_list_ptr): New.
+	(resolve_addr): Remove unresolved attributes and loc_list entries.
+
+	PR debug/41473
 	* dwarf2out.c (add_var_loc_to_decl): Don't drop initial empty
 	locations.
 	(new_loc_list): Drop gensym arg.  Move generation of ll_symbol...
