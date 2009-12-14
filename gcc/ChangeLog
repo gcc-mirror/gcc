@@ -1,3 +1,8 @@
+2009-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-builtin-types.def (PVOID_FTYPE_VOID): Use
+	DEF_FUNCTION_TYPE (PVOID) instead of DEF_FUNCTION_TYPE (PVOID, VOID).
+
 2009-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgexpand.c (expand_debug_expr) <INDIRECT_REF>: Remove overzealous
