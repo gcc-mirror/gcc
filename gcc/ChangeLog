@@ -1,5 +1,9 @@
 2009-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/42369
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Avoid
+	using switch with CODE_FOR_lwp_lwp* cases.
+
 	* config/i386/i386-builtin-types.def (PVOID_FTYPE_VOID): Use
 	DEF_FUNCTION_TYPE (PVOID) instead of DEF_FUNCTION_TYPE (PVOID, VOID).
 

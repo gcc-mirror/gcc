@@ -23836,19 +23836,16 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       if (last_arg_constant && (i + 1) == nargs)
 	{
 	  if (!match)
-	    switch (icode)
-	      {
-	      case CODE_FOR_lwp_lwpvalsi3:
-	      case CODE_FOR_lwp_lwpvaldi3:
-	      case CODE_FOR_lwp_lwpinssi3:
-	      case CODE_FOR_lwp_lwpinsdi3:
+	    {
+	      if (icode == CODE_FOR_lwp_lwpvalsi3
+		  || icode == CODE_FOR_lwp_lwpinssi3
+		  || icode == CODE_FOR_lwp_lwpvaldi3
+		  || icode == CODE_FOR_lwp_lwpinsdi3)
 		error ("the last argument must be a 32-bit immediate");
-		return const0_rtx;
-
-	      default:
+	      else
 		error ("the last argument must be an 8-bit immediate");
-		return const0_rtx;
-	      }
+	      return const0_rtx;
+	    }
 	}
       else
 	{
