@@ -3,10 +3,12 @@
 
 #include <mm_malloc.h>
 
-/* Test that the intrinsics compile with optimization.  All of them are
-   defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h, xopintrin.h and mm3dnow.h
-   that reference the proper builtin functions.  Defining away "extern" and
-   "__inline" results in all of them being compiled as proper functions.  */
+/* Test that the intrinsics compile with optimization.  All of them
+   are defined as inline functions in {,x,e,p,t,s,w,a}mmintrin.h,
+   xopintrin.h, lwpintrin.h, popcntintrin.h and mm3dnow.h that
+   reference the proper builtin functions.  Defining away "extern" and
+   "__inline" results in all of them being compiled as proper
+   functions.  */
 
 #define extern
 #define __inline
@@ -93,13 +95,52 @@
 #define __builtin_ia32_vec_ext_v4hi(A, N) __builtin_ia32_vec_ext_v4hi(A, 0)
 #define __builtin_ia32_shufps(A, B, N) __builtin_ia32_shufps(A, B, 0)
 
+/* immintrin.h */
+#define __builtin_ia32_blendpd256(X, Y, M) __builtin_ia32_blendpd256(X, Y, 1)
+#define __builtin_ia32_blendps256(X, Y, M) __builtin_ia32_blendps256(X, Y, 1)
+#define __builtin_ia32_dpps256(X, Y, M) __builtin_ia32_dpps256(X, Y, 1)
+#define __builtin_ia32_shufpd256(X, Y, M) __builtin_ia32_shufpd256(X, Y, 1)
+#define __builtin_ia32_shufps256(X, Y, M) __builtin_ia32_shufps256(X, Y, 1)
+#define __builtin_ia32_cmpsd(X, Y, O) __builtin_ia32_cmpsd(X, Y, 1)
+#define __builtin_ia32_cmpss(X, Y, O) __builtin_ia32_cmpss(X, Y, 1)
+#define __builtin_ia32_cmppd(X, Y, O) __builtin_ia32_cmppd(X, Y, 1)
+#define __builtin_ia32_cmpps(X, Y, O) __builtin_ia32_cmpps(X, Y, 1)
+#define __builtin_ia32_cmppd256(X, Y, O) __builtin_ia32_cmppd256(X, Y, 1)
+#define __builtin_ia32_cmpps256(X, Y, O) __builtin_ia32_cmpps256(X, Y, 1)
+#define __builtin_ia32_vextractf128_pd256(X, N) __builtin_ia32_vextractf128_pd256(X, 1)
+#define __builtin_ia32_vextractf128_ps256(X, N) __builtin_ia32_vextractf128_ps256(X, 1)
+#define __builtin_ia32_vextractf128_si256(X, N) __builtin_ia32_vextractf128_si256(X, 1)
+#define __builtin_ia32_vpermilpd(X, N) __builtin_ia32_vpermilpd(X, 1)
+#define __builtin_ia32_vpermilpd256(X, N) __builtin_ia32_vpermilpd256(X, 1)
+#define __builtin_ia32_vpermilps(X, N) __builtin_ia32_vpermilps(X, 1)
+#define __builtin_ia32_vpermilps256(X, N) __builtin_ia32_vpermilps256(X, 1)
+#define __builtin_ia32_vpermil2pd(X, Y, C, I) __builtin_ia32_vpermil2pd(X, Y, C, 1)
+#define __builtin_ia32_vpermil2pd256(X, Y, C, I) __builtin_ia32_vpermil2pd256(X, Y, C, 1)
+#define __builtin_ia32_vpermil2ps(X, Y, C, I) __builtin_ia32_vpermil2ps(X, Y, C, 1)
+#define __builtin_ia32_vpermil2ps256(X, Y, C, I) __builtin_ia32_vpermil2ps256(X, Y, C, 1)
+#define __builtin_ia32_vperm2f128_pd256(X, Y, C) __builtin_ia32_vperm2f128_pd256(X, Y, 1)
+#define __builtin_ia32_vperm2f128_ps256(X, Y, C) __builtin_ia32_vperm2f128_ps256(X, Y, 1)
+#define __builtin_ia32_vperm2f128_si256(X, Y, C) __builtin_ia32_vperm2f128_si256(X, Y, 1)
+#define __builtin_ia32_vinsertf128_pd256(X, Y, C) __builtin_ia32_vinsertf128_pd256(X, Y, 1)
+#define __builtin_ia32_vinsertf128_ps256(X, Y, C) __builtin_ia32_vinsertf128_ps256(X, Y, 1)
+#define __builtin_ia32_vinsertf128_si256(X, Y, C) __builtin_ia32_vinsertf128_si256(X, Y, 1)
+#define __builtin_ia32_roundpd256(V, M) __builtin_ia32_roundpd256(V, 1)
+#define __builtin_ia32_roundps256(V, M) __builtin_ia32_roundps256(V, 1)
+
 /* xopintrin.h */
 #define __builtin_ia32_vprotbi(A, B) __builtin_ia32_vprotbi(A,1)
 #define __builtin_ia32_vprotwi(A, B) __builtin_ia32_vprotwi(A,1)
 #define __builtin_ia32_vprotdi(A, B) __builtin_ia32_vprotdi(A,1)
 #define __builtin_ia32_vprotqi(A, B) __builtin_ia32_vprotqi(A,1)
 
-#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop")
+/* lwpintrin.h */
+#define __builtin_ia32_lwpval32(D2, D1, F) __builtin_ia32_lwpval32 (D2, D1, 1)
+#define __builtin_ia32_lwpval64(D2, D1, F) __builtin_ia32_lwpval64 (D2, D1, 1)
+#define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
+#define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
+
+#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop,abm,popcnt,lwp")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>
+#include <x86intrin.h>

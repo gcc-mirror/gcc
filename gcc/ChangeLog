@@ -1,3 +1,44 @@
+2009-12-14  Jakub Jelinek  <jakub@redhat.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* config/i386/i386-builtin-types.def (PVOID): Declared.
+	(VOID_FTYPE_PVOID): Declared.
+	(PVOID_FTYPE_VOID): Declared.
+	(UCHAR_FTYPE_USHORT_UINT_USHORT): Removed.
+	(VOID_FTYPE_USHORT_UINT_USHORT): Removed.
+	* config/i386/i386.c (IX86_BUILTIN_LLWPCB16, IX86_BUILTIN_LLWPCB32,
+	IX86_BUILTIN_LLWPCB64, IX86_BUILTIN_SLWPCB16, IX86_BUILTIN_SLWPCB32,
+	IX86_BUILTIN_SLWPCB64, IX86_BUILTIN_LWPVAL16, IX86_BUILTIN_LWPINS16):
+	Removed.
+	(IX86_BUILTIN_LLWPCB, IX86_BUILTIN_SLWPCB): New.
+	(bdesc_special_args): Adjust declaration of __builtin_ia32_llwpcb,
+	__builtin_ia32_slwpcb, __builtin_ia32_lwpval32,
+	__builtin_ia32_lwpval64, __builtin_ia32_lwpins32, and
+	__builtin_ia32_lwpins64.
+	(ix86_expand_special_args_builtin): Handle VOID_FTYPE_PVOID.
+	Do not handle VOID_FTYPE_USHORT_UINT_USHORT and
+	UCHAR_FTYPE_USHORT_UINT_USHORT.  Warn when the third operand is
+	not an immediate.  Also handle builtin functions with 3 arguments.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_LLWPCB and
+	IX86_BUILTIN_SLWPCB.
+	* config/i386/i386.md (UNSPEC_LLWP_INTRINSIC, UNSPEC_SLWP_INTRINSIC):
+	Renamed UNSPECV_LLWP_INTRINSIC and UNSPECV_SLWP_INTRINSIC.
+	(memory attribute): Handle lwp.
+	(lwp*): Rewrite all the insn patterns for LWP.
+	* config/i386/lwpintrin.h (__llwpcb16, __llwpcb32, __llwpcb64,
+	__slwpcb16, __slwpcb32, __slwpcb64, __lwpval16, __lwpins16): Removed.
+	(__llwpcb, __slwpcb): New.
+
+	testsuite/
+	* gcc.target/i386/sse-12.c: Add -mpopcnt and -mlwp.
+	* gcc.target/i386/sse-13.c: Same.
+	(__builtin_ia32_lwpval32, __builtin_ia32_lwpval64,
+	__builtin_ia32_lwpins32, __builtin_ia32_lwpins64): Added testcases.
+	* gcc.target/i386/sse-14.c: Add -mpopcnt -mabm -mlwp.
+	Added tests for __lwpval32, __lwpins32, __lwpval64, and __lwpins64.
+	* gcc.target/i386/sse-22.c: Added tests for popcnt, abm, and lwp.
+	* gcc.target/i386/sse-23.c: Same.
+
 2009-12-14  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	* dominance.c (set_immediate_dominator): Don't mark as inline.
