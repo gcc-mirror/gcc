@@ -1,3 +1,9 @@
+2009-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_debug_expr) <INDIRECT_REF>: Remove overzealous
+	assertion and useless code.
+	<TARGET_MEM_REF>: Likewise.
+
 2009-12-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41473
