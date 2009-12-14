@@ -1,3 +1,11 @@
+2009-12-14  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/42354
+	* gfortran.dg/iso_c_binding_init_expr.f03: New.
+	* gfortran.dg/intrinsic_std_1.f90: Fixed expected error message.
+	* gfortran.dg/function_kinds_5.f90: Likewise.
+	* gfortran.dg/selected_char_kind_3.f90: Likewise.
+
 2009-12-14  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/boz_15.f90: Fix typos.
