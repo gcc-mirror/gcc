@@ -1,6 +1,6 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -9,7 +9,7 @@
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without Pred the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
@@ -17,20 +17,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1378 }
-// { dg-excess-errors "" }
-
+#include "1.h"
 #include <list>
 
-struct A
+int main()
 {
-  explicit A(int) { }
-};
-
-void f()
-{
-  typedef std::list<A> list_type;
-  list_type l;
-  l.insert(l.begin(), 10, 1);
+  modifiers1<std::list<__gnu_test::copy_tracker> >();
+  return 0;
 }
