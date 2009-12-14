@@ -5035,21 +5035,20 @@ operations in addition to updating the stack pointer.
 
 @cindex @code{check_stack} instruction pattern
 @item @samp{check_stack}
-If stack checking cannot be done on your system by probing the stack with
-a load or store instruction (@pxref{Stack Checking}), define this pattern
-to perform the needed check and signal an error if the stack has overflowed.
-The single operand is the address in the stack furthest from the current
-stack pointer that you need to validate.  Normally, on machines where this
-pattern is needed, you would obtain the stack limit from a global or
-thread-specific variable or register.
+If stack checking (@pxref{Stack Checking}) cannot be done on your system by
+probing the stack, define this pattern to perform the needed check and signal
+an error if the stack has overflowed.  The single operand is the address in
+the stack farthest from the current stack pointer that you need to validate.
+Normally, on platforms where this pattern is needed, you would obtain the
+stack limit from a global or thread-specific variable or register.
 
 @cindex @code{probe_stack} instruction pattern
 @item @samp{probe_stack}
-If stack checking can be done on your system by probing the stack but doing
-it with a load or store instruction is not optimal (@pxref{Stack Checking}),
-define this pattern to do the probing differently and signal an error if
-the stack has overflowed.  The single operand is the memory location in the
-stack that needs to be probed.
+If stack checking (@pxref{Stack Checking}) can be done on your system by
+probing the stack but doing it with a ``store zero'' instruction is not valid
+or optimal, define this pattern to do the probing differently and signal an
+error if the stack has overflowed.  The single operand is the memory reference
+in the stack that needs to be probed.
 
 @cindex @code{nonlocal_goto} instruction pattern
 @item @samp{nonlocal_goto}

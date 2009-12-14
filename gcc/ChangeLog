@@ -1,3 +1,11 @@
+2009-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/tm.texi (STACK_CHECK_PROTECT): Document alternate default.
+	* doc/md.texi (check_stack): Clarify.
+	(probe_stack): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_PROBE_STACK): New constant.
+	(probe_stack): New insn.
+
 2009-12-14  Ben Elliston  <bje@au.ibm.com>
 
 	* lto-streamer-in.c (lto_get_builtin_tree): fclass can only be a
