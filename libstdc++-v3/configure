@@ -843,8 +843,15 @@ enable_version_specific_runtime_libs
       ac_precious_vars='build_alias
 host_alias
 target_alias
-CPP
+CC
+CFLAGS
+LDFLAGS
+LIBS
 CPPFLAGS
+CXX
+CXXFLAGS
+CCC
+CPP
 CXXCPP'
 
 
@@ -3485,25 +3492,8 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 
-# We're almost certainly being configured before anything else which uses
-# C++, so all of our AC_PROG_* discoveries will be cached.  It's vital that
-# we not cache the value of CXX that we "discover" here, because it's set
-# to something unique for us and libjava.  Other target libraries need to
-# find CXX for themselves.  We yank the rug out from under the normal AC_*
-# process by sneakily renaming the cache variable.  This also lets us debug
-# the value of "our" CXX in postmortems.
-#
-# We must also force CXX to /not/ be a precious variable, otherwise the
-# wrong (non-multilib-adjusted) value will be used in multilibs.  This
-# little trick also affects CPPFLAGS, CXXFLAGS, and LDFLAGS.  And as a side
-# effect, CXXFLAGS is no longer automagically subst'd, so we have to do
-# that ourselves.  Un-preciousing AC_PROG_CC also affects CC and CFLAGS.
-#
 # -fno-builtin must be present here so that a non-conflicting form of
 # std::exit can be guessed by AC_PROG_CXX, and used in later tests.
-
-
-
 
 save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -fno-builtin"
@@ -4317,11 +4307,11 @@ if test -z "$CXX"; then
 set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if test "${glibcxx_cv_prog_CXX+set}" = set; then :
+if test "${ac_cv_prog_CXX+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   if test -n "$CXX"; then
-  glibcxx_cv_prog_CXX="$CXX" # Let the user override the test.
+  ac_cv_prog_CXX="$CXX" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -4330,7 +4320,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    glibcxx_cv_prog_CXX="$ac_tool_prefix$ac_prog"
+    ac_cv_prog_CXX="$ac_tool_prefix$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -4340,7 +4330,7 @@ IFS=$as_save_IFS
 
 fi
 fi
-CXX=$glibcxx_cv_prog_CXX
+CXX=$ac_cv_prog_CXX
 if test -n "$CXX"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CXX" >&5
 $as_echo "$CXX" >&6; }
@@ -4559,9 +4549,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 CXXFLAGS="$save_CXXFLAGS"
-
-
-
 
 # Runs configure.host, and assorted other critical bits.  Sets
 # up critical shell variables.
@@ -11454,7 +11441,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11457 "configure"
+#line 11444 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11560,7 +11547,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11563 "configure"
+#line 11550 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14897,7 +14884,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14900 "configure"
+#line 14887 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15265,7 +15252,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15268 "configure"
+#line 15255 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15302,7 +15289,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15305 "configure"
+#line 15292 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15339,7 +15326,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15342 "configure"
+#line 15329 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15377,7 +15364,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15380 "configure"
+#line 15367 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15453,7 +15440,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15456 "configure"
+#line 15443 "configure"
 int main()
 {
   _Decimal32 d1;

@@ -961,8 +961,15 @@ with_jvm_jar_dir
       ac_precious_vars='build_alias
 host_alias
 target_alias
-CPP
+CC
+CFLAGS
+LDFLAGS
+LIBS
 CPPFLAGS
+CXX
+CXXFLAGS
+CCC
+CPP
 CXXCPP
 XMKMF'
 ac_subdirs_all='classpath libltdl'
@@ -3339,18 +3346,9 @@ fi
 # It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
 
 
-# (1) We use an abnormal CXX (without library references), so we
-# must cache it under a different name.
-# (2) CC, CFLAGS, CXX, CXXFLAGS, LDFLAGS must not be 'precious', or
-# the non-multilib-adjusted value will be used in multilibs.
-# (3) As a side effect, we must SUBST CXXFLAGS, CFLAGS, and LDFLAGS ourselves.
-# (4) As another side effect, automake doesn't automatically include them
-# in Makefile.in.
-# (5) For libstdc++-v3, -fno-builtin must be present here so that a
+# For libstdc++-v3, -fno-builtin must be present here so that a
 # non-conflicting form of std::exit can be guessed by AC_PROG_CXX, and
 # used in later tests.  This may not be necessary in libjava; I don't know.
-
-
 save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -fno-builtin"
 ac_ext=c
@@ -4405,10 +4403,6 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 CXXFLAGS="$save_CXXFLAGS"
-
-
-
-
 
 am__api_version='1.11'
 
@@ -13244,7 +13238,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13247 "configure"
+#line 13241 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13350,7 +13344,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13353 "configure"
+#line 13347 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19215,7 +19209,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19218 "configure"
+#line 19212 "configure"
 struct S { ~S(); };
 void bar();
 void foo()

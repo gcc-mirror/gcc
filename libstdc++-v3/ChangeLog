@@ -1,3 +1,9 @@
+2009-12-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Remove code to un-precious-ize CC, CXX,
+	CXXFLAGS, CFLAGS, LDFLAGS.
+	* configure: Regenerate.
+
 2009-12-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/queue/requirements/
