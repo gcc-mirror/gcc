@@ -1,3 +1,8 @@
+2009-12-14  Sebastian Pop  <sebpop@gmail.com>
+
+	PR middle-end/42284
+	* testsuite/gcc.dg/graphite/pr42284.c: New.
+
 2009-12-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42357
