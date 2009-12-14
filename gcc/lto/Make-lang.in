@@ -71,7 +71,7 @@ lto.stagefeedback:
 lto-warn = $(STRICT_WARN)
 
 $(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS) -lelf
 
 # Dependencies
