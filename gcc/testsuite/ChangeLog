@@ -1,3 +1,15 @@
+2009-12-14  Jakub Jelinek  <jakub@redhat.com>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.target/i386/sse-12.c: Add -mpopcnt and -mlwp.
+	* gcc.target/i386/sse-13.c: Same.
+	(__builtin_ia32_lwpval32, __builtin_ia32_lwpval64,
+	__builtin_ia32_lwpins32, __builtin_ia32_lwpins64): Added testcases.
+	* gcc.target/i386/sse-14.c: Add -mpopcnt -mabm -mlwp.
+	Added tests for __lwpval32, __lwpins32, __lwpval64, and __lwpins64.
+	* gcc.target/i386/sse-22.c: Added tests for popcnt, abm, and lwp.
+	* gcc.target/i386/sse-23.c: Same.
+
 2009-12-14  Sebastian Pop  <sebpop@gmail.com>
 
 	PR middle-end/42284
