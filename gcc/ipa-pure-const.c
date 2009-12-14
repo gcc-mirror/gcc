@@ -941,8 +941,8 @@ propagate (void)
 		fprintf (dump_file, "Function found to be %sconst: %s\n",
 			 this_looping ? "looping " : "",
 			 cgraph_node_name (w));
-	      TREE_READONLY (w->decl) = 1;
-	      DECL_LOOPING_CONST_OR_PURE_P (w->decl) = this_looping;
+	      cgraph_set_readonly_flag (w, true);
+	      cgraph_set_looping_const_or_pure_flag (w, this_looping);
 	      break;
 
 	    case IPA_PURE:
@@ -950,8 +950,8 @@ propagate (void)
 		fprintf (dump_file, "Function found to be %spure: %s\n",
 			 this_looping ? "looping " : "",
 			 cgraph_node_name (w));
-	      DECL_PURE_P (w->decl) = 1;
-	      DECL_LOOPING_CONST_OR_PURE_P (w->decl) = this_looping;
+	      cgraph_set_pure_flag (w, true);
+	      cgraph_set_looping_const_or_pure_flag (w, this_looping);
 	      break;
 
 	    default:
@@ -1032,7 +1032,7 @@ propagate (void)
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
 	      struct cgraph_edge *e;
-	      TREE_NOTHROW (w->decl) = true;
+	      cgraph_set_nothrow_flag (w, true);
 	      for (e = w->callers; e; e = e->next_caller)
 	        e->can_throw_external = false;
 	      if (dump_file)
@@ -1110,6 +1110,7 @@ local_pure_const (void)
 {
   bool changed = false;
   funct_state l;
+  struct cgraph_node *node;
 
   /* Because we do not schedule pass_fixup_cfg over whole program after early optimizations
      we must not promote functions that are called by already processed functions.  */
@@ -1120,23 +1121,23 @@ local_pure_const (void)
         fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
       return 0;
     }
-  if (cgraph_function_body_availability (cgraph_node (current_function_decl))
-      <= AVAIL_OVERWRITABLE)
+  node = cgraph_node (current_function_decl);
+  if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     {
       if (dump_file)
         fprintf (dump_file, "Function has wrong visibility; ignoring\n");
       return 0;
     }
 
-  l = analyze_function (cgraph_node (current_function_decl), false);
+  l = analyze_function (node, false);
 
   switch (l->pure_const_state)
     {
     case IPA_CONST:
       if (!TREE_READONLY (current_function_decl))
 	{
-	  TREE_READONLY (current_function_decl) = 1;
-	  DECL_LOOPING_CONST_OR_PURE_P (current_function_decl) = l->looping;
+	  cgraph_set_readonly_flag (node, true);
+	  cgraph_set_looping_const_or_pure_flag (node, l->looping);
 	  changed = true;
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be %sconst: %s\n",
@@ -1147,7 +1148,7 @@ local_pure_const (void)
       else if (DECL_LOOPING_CONST_OR_PURE_P (current_function_decl)
 	       && !l->looping)
 	{
-	  DECL_LOOPING_CONST_OR_PURE_P (current_function_decl) = false;
+	  cgraph_set_looping_const_or_pure_flag (node, false);
 	  changed = true;
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be non-looping: %s\n",
@@ -1159,8 +1160,8 @@ local_pure_const (void)
     case IPA_PURE:
       if (!TREE_READONLY (current_function_decl))
 	{
-	  DECL_PURE_P (current_function_decl) = 1;
-	  DECL_LOOPING_CONST_OR_PURE_P (current_function_decl) = l->looping;
+	  cgraph_set_pure_flag (node, true);
+	  cgraph_set_looping_const_or_pure_flag (node, l->looping);
 	  changed = true;
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be %spure: %s\n",
@@ -1171,7 +1172,7 @@ local_pure_const (void)
       else if (DECL_LOOPING_CONST_OR_PURE_P (current_function_decl)
 	       && !l->looping)
 	{
-	  DECL_LOOPING_CONST_OR_PURE_P (current_function_decl) = false;
+	  cgraph_set_looping_const_or_pure_flag (node, false);
 	  changed = true;
 	  if (dump_file)
 	    fprintf (dump_file, "Function found to be non-looping: %s\n",
@@ -1187,9 +1188,8 @@ local_pure_const (void)
     {
       struct cgraph_edge *e;
 
-      TREE_NOTHROW (current_function_decl) = true;
-      for (e = cgraph_node (current_function_decl)->callers;
-           e; e = e->next_caller)
+      cgraph_set_nothrow_flag (node, true);
+      for (e = node->callers; e; e = e->next_caller)
 	e->can_throw_external = false;
       changed = true;
       if (dump_file)

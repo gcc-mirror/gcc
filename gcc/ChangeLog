@@ -1,4 +1,20 @@
 2009-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cgraph.h (cgraph_set_nothrow_flag, cgraph_set_readonly_flag,
+	cgraph_set_pure_flag, cgraph_set_looping_const_or_pure_flag): New
+	prototypes.
+	* cgraph.c (cgraph_set_nothrow_flag, cgraph_set_readonly_flag,
+	cgraph_set_pure_flag, cgraph_set_looping_const_or_pure_flag): New
+	functions.
+	* except.h (set_nothrow_function_flags): Remove prototype.
+	* except.c (set_nothrow_function_flags): Use cgraph_set_nothrow_flag.
+	Make static.
+	* ipa-pure-const.c (propagate): Use cgraph_set_nothrow_flag,
+	cgraph_set_readonly_flag, cgraph_set_pure_flag
+	and cgraph_set_looping_const_or_pure_flag.
+	(local_pure_const): Likewise.
+
+2009-12-14  Jakub Jelinek  <jakub@redhat.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config/i386/i386-builtin-types.def (PVOID): Declared.

@@ -1835,7 +1835,7 @@ can_nonlocal_goto (const_rtx insn)
 
 /* Set TREE_NOTHROW and crtl->all_throwers_are_sibcalls.  */
 
-unsigned int
+static unsigned int
 set_nothrow_function_flags (void)
 {
   rtx insn;
@@ -1892,7 +1892,7 @@ set_nothrow_function_flags (void)
       struct cgraph_edge *e;
       for (e = node->callers; e; e = e->next_caller)
         e->can_throw_external = false;
-      TREE_NOTHROW (current_function_decl) = 1;
+      cgraph_set_nothrow_flag (node, true);
 
       if (dump_file)
 	fprintf (dump_file, "Marking function nothrow: %s\n\n",

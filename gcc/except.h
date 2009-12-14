@@ -228,9 +228,6 @@ extern int doing_eh (int);
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label (void (*) (rtx));
 
-/* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
-extern unsigned int set_nothrow_function_flags (void);
-
 extern void init_eh (void);
 extern void init_eh_for_function (void);
 
