@@ -1,3 +1,20 @@
+2009-12-12  Sebastian Pop  <sebpop@gmail.com>
+
+	PR middle-end/42284
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Call
+	insert_out_of_ssa_copy_on_edge for anything else than SSA_NAMEs.
+	(detect_commutative_reduction_arg): Simplified.
+	(detect_commutative_reduction): Early return when the argument of
+	the close phi is not of an SSA_NAME.
+
+	* testsuite/gcc.dg/graphite/pr42284.c: New.
+
+2009-12-11  Alexander Monakov  <amonakov@ispras.ru>
+
+	* dbgcnt.def (graphite_scop): New counter.
+	* graphite.c: Include dbgcnt.h
+	(graphite_transform_loops): Use new counter to limit transformations.
+
 2009-12-08  Sebastian Pop  <sebpop@gmail.com>
 
 	PR middle-end/42285
