@@ -1,3 +1,8 @@
+2009-12-14  Ben Elliston  <bje@au.ibm.com>
+
+	* lto-streamer-in.c (lto_get_builtin_tree): fclass can only be a
+	BUILT_IN_NORMAL or BUILT_IN_MD.
+
 2009-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/tm.texi (STACK_CHECK_PROBE_LOAD): Delete.

@@ -2591,6 +2591,8 @@ lto_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
       if (!result || result == error_mark_node)
 	fatal_error ("target specific builtin not available");
     }
+  else
+    gcc_unreachable ();
 
   asmname = input_string (data_in, ib);
   if (asmname)
