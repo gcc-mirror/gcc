@@ -711,7 +711,7 @@ get_immediate_dominator (enum cdi_direction dir, basic_block bb)
 
 /* Set the immediate dominator of the block possibly removing
    existing edge.  NULL can be used to remove any edge.  */
-inline void
+void
 set_immediate_dominator (enum cdi_direction dir, basic_block bb,
 			 basic_block dominated_by)
 {

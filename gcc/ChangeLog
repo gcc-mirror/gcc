@@ -1,3 +1,7 @@
+2009-12-14  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	* dominance.c (set_immediate_dominator): Don't mark as inline.
+
 2009-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/tm.texi (STACK_CHECK_PROTECT): Document alternate default.
