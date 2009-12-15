@@ -2162,6 +2162,7 @@ lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
     TYPE_BINFO (expr) = lto_input_tree (ib, data_in);
   TYPE_CONTEXT (expr) = lto_input_tree (ib, data_in);
   TYPE_CANONICAL (expr) = lto_input_tree (ib, data_in);
+  TYPE_STUB_DECL (expr) = lto_input_tree (ib, data_in);
 }
 
 

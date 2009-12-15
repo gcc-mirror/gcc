@@ -1376,7 +1376,7 @@ static void
 lto_fixup_field_decl (tree t, void *data)
 {
   lto_fixup_decl_common (t, data);
-  gcc_assert (no_fixup_p (DECL_FIELD_OFFSET (t)));
+  LTO_FIXUP_SUBTREE (DECL_FIELD_OFFSET (t));
   LTO_FIXUP_SUBTREE (DECL_BIT_FIELD_TYPE (t));
   LTO_FIXUP_SUBTREE (DECL_QUALIFIER (t));
   gcc_assert (no_fixup_p (DECL_FIELD_BIT_OFFSET (t)));

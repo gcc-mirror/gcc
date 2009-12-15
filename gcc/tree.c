@@ -4152,13 +4152,10 @@ free_lang_data_in_binfo (tree binfo)
 
   gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
 
-  BINFO_OFFSET (binfo) = NULL_TREE;
   BINFO_VTABLE (binfo) = NULL_TREE;
-  BINFO_VPTR_FIELD (binfo) = NULL_TREE;
   BINFO_BASE_ACCESSES (binfo) = NULL;
   BINFO_INHERITANCE_CHAIN (binfo) = NULL_TREE;
   BINFO_SUBVTT_INDEX (binfo) = NULL_TREE;
-  BINFO_VPTR_FIELD (binfo) = NULL_TREE;
 
   for (i = 0; VEC_iterate (tree, BINFO_BASE_BINFOS (binfo), i, t); i++)
     free_lang_data_in_binfo (t);
@@ -4253,7 +4250,8 @@ free_lang_data_in_type (tree type)
     }
 
   TYPE_CONTEXT (type) = NULL_TREE;
-  TYPE_STUB_DECL (type) = NULL_TREE;
+  if (debug_info_level < DINFO_LEVEL_TERSE)
+    TYPE_STUB_DECL (type) = NULL_TREE;
 }
 
 
@@ -4380,29 +4378,16 @@ free_lang_data_in_decl (tree decl)
        }
    }
 
-  if (TREE_CODE (decl) == PARM_DECL
-      || TREE_CODE (decl) == FIELD_DECL
-      || TREE_CODE (decl) == RESULT_DECL)
-    {
-      tree unit_size = DECL_SIZE_UNIT (decl);
-      tree size = DECL_SIZE (decl);
-      if ((unit_size && TREE_CODE (unit_size) != INTEGER_CST)
-	  || (size && TREE_CODE (size) != INTEGER_CST))
-	{
-	  DECL_SIZE_UNIT (decl) = NULL_TREE;
-	  DECL_SIZE (decl) = NULL_TREE;
-	}
+ /* ???  We could free non-constant DECL_SIZE, DECL_SIZE_UNIT
+    and DECL_FIELD_OFFSET.  But it's cheap enough to not do
+    that and refrain from adding workarounds to dwarf2out.c  */
 
-      if (TREE_CODE (decl) == FIELD_DECL
-	  && DECL_FIELD_OFFSET (decl)
-	  && TREE_CODE (DECL_FIELD_OFFSET (decl)) != INTEGER_CST)
-	DECL_FIELD_OFFSET (decl) = NULL_TREE;
+ /* DECL_FCONTEXT is only used for debug info generation.  */
+ if (TREE_CODE (decl) == FIELD_DECL
+     && debug_info_level < DINFO_LEVEL_TERSE)
+   DECL_FCONTEXT (decl) = NULL_TREE;
 
-      /* DECL_FCONTEXT is only used for debug info generation.  */
-      if (TREE_CODE (decl) == FIELD_DECL)
-	DECL_FCONTEXT (decl) = NULL_TREE;
-    }
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
+ if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (gimple_has_body_p (decl))
 	{
@@ -4976,13 +4961,6 @@ free_lang_data (void)
   diagnostic_starter (global_dc) = default_diagnostic_starter;
   diagnostic_finalizer (global_dc) = default_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = default_tree_printer;
-
-  /* FIXME. We remove sufficient language data that the debug
-     info writer gets completely confused.  Disable debug information
-     for now.  */
-  debug_info_level = DINFO_LEVEL_NONE;
-  write_symbols = NO_DEBUG;
-  debug_hooks = &do_nothing_debug_hooks;
 
   return 0;
 }

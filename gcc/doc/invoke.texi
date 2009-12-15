@@ -7321,6 +7321,10 @@ types of hosts.  The bytecode files are versioned and there is a
 strict version check, so bytecode files generated in one version of
 GCC will not work with an older/newer version of GCC.
 
+Link time optimization does not play well with generating debugging
+information.  Combining @option{-flto} or @option{-fwhopr} with
+@option{-g} is experimental.
+
 This option is disabled by default.
 
 @item -fwhopr
@@ -7336,6 +7340,8 @@ that otherwise would not fit in memory.  This option enables
 @option{-fwpa} and @option{-fltrans} automatically.
 
 Disabled by default.
+
+This option is experimental.
 
 @item -fwpa
 @opindex fwpa

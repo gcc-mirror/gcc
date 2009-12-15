@@ -1,3 +1,8 @@
+2009-12-15  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_field_decl): Fixup DECL_FIELD_OFFSET.
+	(lto_post_options): Do not disable debuginfo.
+
 2009-12-14  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	* Make-lang.in ($(LTO_EXE)): Use $(LINKER).

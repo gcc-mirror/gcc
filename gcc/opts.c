@@ -1129,10 +1129,6 @@ decode_options (unsigned int argc, const char **argv)
 	 Otherwise, symbols will be privatized too early, causing link
 	 errors later.  */
       flag_whole_program = 0;
-
-      /* FIXME lto.  Disable var-tracking until debug information
-	 is properly handled in free_lang_data.  */
-      flag_var_tracking = 0;
 #else
       error ("LTO support has not been enabled in this configuration");
 #endif

@@ -1,3 +1,27 @@
+2009-12-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (free_lang_data_in_binfo): Do not free BINFO_OFFSET
+	and BINFO_VPTR_FIELD.
+	(free_lang_data_in_type): Do not free TYPE_STUB_DECL if we
+	generate debug information.
+	(free_lang_data_in_decl): Do not free DECL_SIZE_UNIT,
+	DECL_SIZE, DECL_FIELD_OFFSET and DECL_FCONTEXT.
+	(free_lang_data): Do not disable debuginfo.
+	* lto-streamer-out.c (write_symbol_vec): Deal with
+	non-constant DECL_SIZE.
+	(pack_ts_base_value_fields): Write types with false
+	TREE_ASM_WRITTEN.
+	(lto_output_ts_type_tree_pointers): Stream TYPE_STUB_DECL.
+	* lto-streamer-in.c (lto_input_ts_type_tree_pointers): Stream
+	TYPE_STUB_DECL.
+	* dwarf2out.c (add_pure_or_virtual_attribute): Check for
+	DECL_CONTEXT.
+	(gen_type_die_for_member): Test for TYPE_STUB_DECL.
+	* opts.c (decode_options): Do not disable var-tracking for lto.
+	* doc/invoke.texi (-flto): Document -flto vs. -g experimental
+	status.
+	(-fwhopr): Document experimental status.
+
 2009-12-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR graphite/42185
