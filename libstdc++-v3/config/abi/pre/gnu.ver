@@ -1068,6 +1068,8 @@ GLIBCXX_3.4.14 {
     _ZNSs18_S_construct_aux_2*;
     _ZNSbIwSt11char_traitsIwESaIwEE18_S_construct_aux_2*;
 
+    _ZSt25__throw_bad_function_callv;
+
 } GLIBCXX_3.4.13;
 
 # Symbols in the support library (libsupc++) have their own tag.

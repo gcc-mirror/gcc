@@ -1571,8 +1571,8 @@ namespace std
 	}
 
 	static void
-	_M_init_functor(_Any_data& __functor, const _Functor& __f)
-	{ _M_init_functor(__functor, __f, _Local_storage()); }
+	_M_init_functor(_Any_data& __functor, _Functor&& __f)
+	{ _M_init_functor(__functor, std::move(__f), _Local_storage()); }
 	
 	template<typename _Signature>
 	  static bool
@@ -1595,13 +1595,13 @@ namespace std
 	  { return true; }
 
       private:
-	static void
-	_M_init_functor(_Any_data& __functor, const _Functor& __f, true_type)
-	{ new (__functor._M_access()) _Functor(__f); }
+        static void
+	_M_init_functor(_Any_data& __functor, _Functor&& __f, true_type)
+	{ new (__functor._M_access()) _Functor(std::move(__f)); }
 
 	static void
-	_M_init_functor(_Any_data& __functor, const _Functor& __f, false_type)
-	{ __functor._M_access<_Functor*>() = new _Functor(__f); }
+	_M_init_functor(_Any_data& __functor, _Functor&& __f, false_type)
+	{ __functor._M_access<_Functor*>() = new _Functor(std::move(__f)); }
       };
 
     template<typename _Functor>
@@ -1927,9 +1927,9 @@ namespace std
       template<typename _Functor>
         typename __gnu_cxx::__enable_if<!is_integral<_Functor>::value,
 	                                function&>::__type
-	operator=(_Functor __f)
+	operator=(_Functor&& __f)
 	{
-	  function(__f).swap(*this);
+	  function(std::forward<_Functor>(__f)).swap(*this);
 	  return *this;
 	}
 
@@ -1969,9 +1969,10 @@ namespace std
       /*
       template<typename _Functor, typename _Alloc>
         void
-        assign(_Functor __f, const _Alloc& __a)
+        assign(_Functor&& __f, const _Alloc& __a)
         {
-          function(__f, __a).swap(*this);
+          function(allocator_arg, __a,
+                   std::forward<_Functor>(__f)).swap(*this);
         }
       */
       
@@ -2066,7 +2067,7 @@ namespace std
 	  {
 	    _M_invoker = &_My_handler::_M_invoke;
 	    _M_manager = &_My_handler::_M_manager;
-	    _My_handler::_M_init_functor(_M_functor, __f);
+	    _My_handler::_M_init_functor(_M_functor, std::move(__f));
 	  }
       }
 
@@ -2076,13 +2077,7 @@ namespace std
     operator()(_ArgTypes... __args) const
     {
       if (_M_empty())
-        {
-#if __EXCEPTIONS
-          throw bad_function_call();
-#else
-          __builtin_abort();
-#endif
-        }
+        __throw_bad_function_call();
       return _M_invoker(_M_functor, std::forward<_ArgTypes>(__args)...);
     }
 
