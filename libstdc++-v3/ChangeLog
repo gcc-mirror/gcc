@@ -1,3 +1,14 @@
+2009-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (function::function): Move construct target.
+	(function::operator=): Use perfect forwarding for argument.
+	(function::operator()): Use new __throw_bad_function_call.
+	* include/bits/functexcept.h (__throw_bad_function_call): Declare.
+	* src/functexcept.cc (__throw_bad_function_call): Define.
+	* config/abi/pre/gnu.ver: Add new symbol.
+	* testsuite/20_util/function/cons/move_target.cc: New.
+	* testsuite/20_util/function/assign/move_target.cc: New.
+
 2009-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42379

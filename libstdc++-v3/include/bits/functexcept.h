@@ -91,6 +91,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   void
   __throw_future_error(int) __attribute__((__noreturn__));
 
+  // Helpers for exception objects in <functional>
+  void
+  __throw_bad_function_call() __attribute__((__noreturn__));
+
 _GLIBCXX_END_NAMESPACE
 
 #endif
