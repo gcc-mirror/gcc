@@ -1,4 +1,5 @@
 // Test lambda mangling
+// { dg-require-weak "" }
 // { dg-options "-std=c++0x -fno-inline" }
 
 template<typename F> int algo(F fn) { return fn(); }
@@ -10,7 +11,7 @@ inline void g(int n) {
   // The call operator of that type is _ZZ1giENKUlvE_clEv.
 
 // { dg-final { scan-assembler "_ZZ1giENUlvE_clEv" } }
-// { dg-final { scan-assembler "weak\[ \t\]*_?_ZZ1giENUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZ1giENUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
 
   algo([=]{return n+bef();});
   // The captured entities do not participate in <lambda-sig>
@@ -32,7 +33,7 @@ struct S {
 	 // Type: ZN1S1fEiiEd0_UlvE_
 	 // Operator: _ZZN1S1fEiiEd0_NKUlvE_clEv
 // { dg-final { scan-assembler "_ZZN1S1fEiiEd0_NUlvE_clEv" } }
-// { dg-final { scan-assembler "weak\[ \t\]*_?_ZZN1S1fEiiEd0_NUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZN1S1fEiiEd0_NUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
 	 []{return 1;}()
 	 // Type: ZN1S1fEiiEd0_UlvE0_
 	 // Operator: _ZZN1S1fEiiEd0_NKUlvE0_clEv
@@ -53,7 +54,7 @@ template int R<int>::x;
 // Type of lambda in intializer of R<int>::x: N1RIiE1xMUlvE_E
 // Corresponding operator(): _ZNK1RIiE1xMUlvE_clEv
 // { dg-final { scan-assembler "_ZN1RIiE1xMUlvE_clEv" } }
-// { dg-final { scan-assembler "weak\[ \t\]*_?_ZN1RIiE1xMUlvE_clEv" { target { ! { *-*-mingw* *-*-cygwin } } } } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZN1RIiE1xMUlvE_clEv" { target { ! { *-*-mingw* *-*-cygwin } } } } }
 
 void bar()
 {
