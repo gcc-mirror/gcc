@@ -1,3 +1,7 @@
+2009-12-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* testsuite/libffi.call/ffitest.h: Define PRIuPTR on PA HP-UX.
+
 2009-12-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* src/pa/ffi.c (ffi_closure_inner_pa32): Handle FFI_TYPE_LONGDOUBLE
