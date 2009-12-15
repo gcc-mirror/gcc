@@ -4921,6 +4921,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *
    *  Performs the assignment @c *i = @p gen() for each @c i in the range
    *  @p [first,first+n).
+   *
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 865. More algorithms that throw away information
   */
   template<typename _OutputIterator, typename _Size, typename _Generator>
     _OutputIterator

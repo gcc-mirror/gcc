@@ -236,13 +236,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void 
     fill(_FIter, _FIter, const _Tp&);
 
-/*
-  XXX NB: return type different from ISO C++.
-  template<typename _OIter, typename _Size, typename _Tp>
-    void 
-    fill_n(_OIter, _Size, const _Tp&);
-*/
-
   template<typename _OIter, typename _Size, typename _Tp>
     _OIter
     fill_n(_OIter, _Size, const _Tp&);
@@ -619,13 +612,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
   template<typename _FIter, typename _Generator>
     void 
     generate(_FIter, _FIter, _Generator);
-
-/*
-  XXX NB: return type different from ISO C++.
-  template<typename _OIter, typename _Size, typename _Tp>
-    void
-    generate_n(_OIter, _Size, _Generator);
-*/
 
   template<typename _OIter, typename _Size, typename _Generator>
     _OIter
