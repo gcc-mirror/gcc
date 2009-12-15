@@ -1,3 +1,10 @@
+2009-12-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR graphite/42185
+	* graphite-sese-to-poly.c (is_reduction_operation_p): Assert that
+	we are a GIMPLE_ASSIGN.  Do not calculate rhs code twice.
+	(follow_ssa_with_commutative_ops): Return NULL on non assignment.
+
 2009-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.md (probe_stack): Use an enclosing SET.
