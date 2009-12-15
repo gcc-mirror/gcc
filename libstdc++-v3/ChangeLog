@@ -1,6 +1,6 @@
 2009-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR libsdtc++/42381
+	PR libstdc++/42381
 	* include/bits/stl_deque.h (_GLIBCXX_DEQUE_BUF_SIZE): Add.
 	(__deque_buf_size(size_t)): Use it.
 	* testsuite/23_containers/deque/requirements/dr438/
