@@ -1,3 +1,12 @@
+2009-12-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/c-tree.texi (Expression trees): Use @itemx for all but
+	the first item for merged items.
+	* doc/extend.texi (Variable Attributes): Likewise.
+	* doc/install.texi (Configuration): Likewise.
+	* doc/invoke.texi (RS/6000 and PowerPC Options, RX Options):
+	Likewise.
+
 2009-12-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (free_lang_data_in_binfo): Do not free BINFO_OFFSET

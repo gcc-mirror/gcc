@@ -4235,8 +4235,8 @@ Three attributes are currently defined for the Blackfin.
 
 @table @code
 @item l1_data
-@item l1_data_A
-@item l1_data_B
+@itemx l1_data_A
+@itemx l1_data_B
 @cindex @code{l1_data} variable attribute
 @cindex @code{l1_data_A} variable attribute
 @cindex @code{l1_data_B} variable attribute
@@ -4308,7 +4308,7 @@ allows modules to make no assumptions about where variables might be
 stored.
 
 @item io
-@item io (@var{addr})
+@itemx io (@var{addr})
 Variables with the @code{io} attribute are used to address
 memory-mapped peripherals.  If an address is specified, the variable
 is assigned that address, else it is not assigned an address (it is
@@ -4319,7 +4319,7 @@ int timer_count __attribute__((io(0x123)));
 @end example
 
 @item cb
-@item cb (@var{addr})
+@itemx cb (@var{addr})
 Variables with the @code{cb} attribute are used to access the control
 bus, using special instructions.  @code{addr} indicates the control bus
 address.  Example:

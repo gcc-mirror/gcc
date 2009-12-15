@@ -1432,7 +1432,7 @@ increase the risk of undetected internal errors causing wrong code to be
 generated.
 
 @item --disable-stage1-checking
-@item --enable-stage1-checking
+@itemx --enable-stage1-checking
 @itemx --enable-stage1-checking=@var{list}
 If no @option{--enable-checking} option is specified the stage1
 compiler will be built with @samp{yes} checking enabled, otherwise
