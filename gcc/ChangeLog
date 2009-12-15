@@ -1,3 +1,7 @@
+2009-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/rs6000.md (probe_stack): Use an enclosing SET.
+
 2009-12-15  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.h (compare_field_offset): Declare.
