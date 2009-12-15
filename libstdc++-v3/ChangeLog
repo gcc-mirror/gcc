@@ -1,5 +1,19 @@
 2009-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/future (unique_future::get, promise::set_value): Remove
+	workaround for c++/34022.
+	(packaged_task::get_future, packaged_task::operator()): Use
+	__throw_bad_function_call.
+	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/shared_future/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/unique_future/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/unique_future/cons/copy_neg.cc: Likewise.
+
+2009-12-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/functional (function::function): Move construct target.
 	(function::operator=): Use perfect forwarding for argument.
 	(function::operator()): Use new __throw_bad_function_call.
