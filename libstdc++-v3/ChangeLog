@@ -1,3 +1,9 @@
+2009-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42379
+	* testsuite/23_containers/set/operators/1_neg.cc: Fix dg-error strings.
+	* testsuite/23_containers/map/operators/1_neg.cc: Likewise.
+
 2009-12-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/25304, DR 865 [Ready]
