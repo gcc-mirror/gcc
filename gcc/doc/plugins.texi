@@ -317,7 +317,7 @@ custom attributes.
 /* Attribute handler callback */
 static tree
 handle_user_attribute (tree *node, tree name, tree args,
-			int flags, bool *no_add_attrs)
+                       int flags, bool *no_add_attrs)
 @{
   return NULL_TREE;
 @}
