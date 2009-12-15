@@ -781,6 +781,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This function fills a range with copies of the same value.  For char
    *  types filling contiguous areas of memory, this becomes an inline call
    *  to @c memset or @ wmemset.
+   *
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 865. More algorithms that throw away information
   */
   template<typename _OI, typename _Size, typename _Tp>
     inline _OI

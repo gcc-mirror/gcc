@@ -1,3 +1,11 @@
+2009-12-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/25304, DR 865 [Ready]
+	* include/bits/stl_algobase.h (fill_n): Add comment about DR 865.
+	* include/bits/stl_algo.h (generate_n): Likewise.
+	* include/bits/algorithmfwd.h: Remove obsolete comment.
+	* doc/xml/manual/intro.xml: Add an entry for DR 865.
+
 2009-12-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Remove code to un-precious-ize CC, CXX,

@@ -815,6 +815,13 @@ requirements of the license of GCC.
     </term>
     <listitem><para>Update / add the signatures.
     </para></listitem></varlistentry>
+
+    <varlistentry><term><ulink url="../ext/lwg-active.html#865">865</ulink>:
+        <emphasis>More algorithms that throw away information</emphasis>
+    </term>
+    <listitem><para>The traditional HP / SGI return type and value is blessed
+                    by the resolution of the DR.
+    </para></listitem></varlistentry>
   </variablelist>
 
  </sect2>
