@@ -42,6 +42,7 @@
 #include <system_error>
 #include <exception>
 #include <cstdatomic>
+#include <bits/functexcept.h>
 
 namespace std
 {
@@ -172,7 +173,7 @@ namespace std
 	void
 	_M_set(_Res&& __res)
 	{
-	  ::new (_M_addr()) _Res(_Move_result<_Res>::_S_move(__res));
+	  ::new (_M_addr()) _Res(std::move(__res));
 	  _M_initialized = true;
 	}
 
@@ -181,27 +182,6 @@ namespace std
 
 	void* _M_addr() { return static_cast<void*>(&_M_storage); }
     };
-
-
-    /// Workaround for CWG issue 664 and c++/34022
-    template<typename _Res, bool = is_scalar<_Res>::value>
-      struct _Move_result;
-
-     /// Specialization for scalar types returns rvalue not rvalue-reference.
-    template<typename _Res>
-      struct _Move_result<_Res, true>
-      {
-	typedef _Res __rval_type;
-	static _Res _S_move(_Res __res) { return __res; }
-      };
-    
-    /// Specialization for non-scalar types returns rvalue-reference.
-    template<typename _Res>
-      struct _Move_result<_Res, false>
-      {
-	typedef _Res&& __rval_type;
-	static _Res&& _S_move(_Res& __res) { return std::move(__res); }
-      };
 
 
     // TODO: use template alias when available
@@ -426,7 +406,6 @@ namespace std
 
       typedef __basic_future<_Res> _Base_type;
       typedef typename _Base_type::__state_type __state_type;
-      typedef __future_base::_Move_result<_Res> _Mover;
 
       explicit
       unique_future(const __state_type& __state) : _Base_type(__state) { }
@@ -440,9 +419,9 @@ namespace std
       unique_future& operator=(const unique_future&) = delete;
 
       /// Retrieving the value
-      typename _Mover::__rval_type
+      _Res&&
       get()
-      { return _Mover::_S_move(this->_M_get_result()._M_value()); }
+      { return std::move(this->_M_get_result()._M_value()); }
     };
  
   /// Partial specialization for unique_future<R&>
@@ -586,7 +565,6 @@ namespace std
       template<typename> friend class packaged_task;
 
       typedef __future_base::_State 		_State;
-      typedef __future_base::_Move_result<_Res>	_Mover;
       typedef __future_base::_Result<_Res>	result_type;
       
       shared_ptr<_State>                        _M_future;
@@ -654,7 +632,7 @@ namespace std
       set_value(_Res&& __r)
       {
         if (!_M_satisfied())
-          _M_storage->_M_set(_Mover::_S_move(__r));
+          _M_storage->_M_set(std::move(__r));
         _M_future->_M_set_result(std::move(_M_storage));
       }
 
@@ -940,11 +918,9 @@ namespace std
         }
         __catch (const future_error& __e)
         {
-#ifdef __EXCEPTIONS
           if (__e.code() == future_errc::future_already_retrieved)
-	    throw std::bad_function_call();
-	  throw;
-#endif
+            __throw_bad_function_call();
+          __throw_exception_again;
         }
       }
 
@@ -953,13 +929,7 @@ namespace std
       operator()(_ArgTypes... __args)
       {
         if (!static_cast<bool>(_M_task) || _M_promise._M_satisfied())
-	  {
-#ifdef __EXCEPTIONS
-	    throw std::bad_function_call();
-#else
-	    __builtin_abort();
-#endif
-	  }
+          __throw_bad_function_call();
 
         __try
         {
