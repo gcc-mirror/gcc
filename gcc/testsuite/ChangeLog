@@ -1,3 +1,8 @@
+2009-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42373
+	* g++.dg/cpp0x/lambda/lambda-mangle.C: Adjust regexps for darwin.
+
 2009-12-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* ada/acats/norun.lst: Sort.
