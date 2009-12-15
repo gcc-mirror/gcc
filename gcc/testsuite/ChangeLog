@@ -1,3 +1,7 @@
+2009-12-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ada/acats/norun.lst: Sort.
+
 2009-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/41183
