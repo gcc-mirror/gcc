@@ -340,7 +340,11 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 					alias->thunk.alias);
 	    }
 	  else
-            lto_output_uleb128_stream (ob->main_stream, 0);
+	    {
+	      lto_output_uleb128_stream (ob->main_stream, 0);
+	      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
+					alias->thunk.alias);
+	    }
 	  alias = alias->previous;
 	}
       while (alias);
@@ -630,7 +634,12 @@ input_node (struct lto_file_decl_data *file_data,
       alias_decl = lto_file_decl_data_get_fn_decl (file_data, decl_index);
       type = lto_input_uleb128 (ib);
       if (!type)
-        cgraph_same_body_alias (alias_decl, fn_decl);
+	{
+	  tree real_alias;
+	  decl_index = lto_input_uleb128 (ib);
+	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
+	  cgraph_same_body_alias (alias_decl, real_alias);
+	}
       else
         {
 	  HOST_WIDE_INT fixed_offset = lto_input_uleb128 (ib);
