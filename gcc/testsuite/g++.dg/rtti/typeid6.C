@@ -7,5 +7,5 @@ namespace std
 
 template<int> void foo()
 {
-  !typeid(void); // { dg-error "!typeid\\(void\\)|candidates" }
+  !typeid(void); // { dg-error "!typeid\\(void\\)|candidate is" }
 }

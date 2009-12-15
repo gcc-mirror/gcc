@@ -12,7 +12,7 @@ class C
 class D
 {
    public:
-   void a(C& b); // { dg-message "candidates" }
+   void a(C& b); // { dg-message "candidate is" }
 };
 
 void C::test() const

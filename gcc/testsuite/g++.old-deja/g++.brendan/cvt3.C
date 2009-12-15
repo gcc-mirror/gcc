@@ -38,7 +38,7 @@ struct bar
 class nnyacc
 {
 public:
-      static void assign(void*& lval, void*& rval); // { dg-message "candidates" }
+      static void assign(void*& lval, void*& rval); // { dg-message "candidate is" }
 };
 
 void

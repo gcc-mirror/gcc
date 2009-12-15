@@ -1,3 +1,9 @@
+2009-12-15  Paolo Bonzini  <bonzini@gnu.org>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* intl.c (get_spaces): New.
+	* intl.h (get_spaces): New.
+
 2009-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/42369

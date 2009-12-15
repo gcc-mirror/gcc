@@ -19,7 +19,7 @@ struct B {
 };
 
 struct D : public B {
-  int f(struct B);		// { dg-message "candidates" } referred to below
+  int f(struct B);		// { dg-message "candidate is" } referred to below
 };
 
 void h(D* pd)

@@ -11,7 +11,7 @@ struct coperator_stack
 struct helper {};
 
 template<class F>
-void bla(F f) // { dg-message "candidates" }
+void bla(F f) // { dg-message "candidate is" }
 {
 }
 

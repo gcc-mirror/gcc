@@ -2730,6 +2730,7 @@ print_z_candidates (struct z_candidate *candidates)
   const char *str;
   struct z_candidate *cand1;
   struct z_candidate **cand2;
+  char *spaces;
 
   if (!candidates)
     return;
@@ -2770,25 +2771,14 @@ print_z_candidates (struct z_candidate *candidates)
 	}
     }
 
-  str = _("candidates are:");
-  print_z_candidate (str, candidates);
-  if (candidates->next)
+  str = candidates->next ? _("candidates are:") :  _("candidate is:");
+  spaces = NULL;
+  for (; candidates; candidates = candidates->next)
     {
-      /* Indent successive candidates by the width of the translation
-	 of the above string.  */
-      size_t len = gcc_gettext_width (str) + 1;
-      char *spaces = (char *) alloca (len);
-      memset (spaces, ' ', len-1);
-      spaces[len - 1] = '\0';
-
-      candidates = candidates->next;
-      do
-	{
-	  print_z_candidate (spaces, candidates);
-	  candidates = candidates->next;
-	}
-      while (candidates);
+      print_z_candidate (spaces ? spaces : str, candidates);
+      spaces = spaces ? spaces : get_spaces (str);
     }
+  free (spaces);
 }
 
 /* USER_SEQ is a user-defined conversion sequence, beginning with a

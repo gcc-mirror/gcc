@@ -2,7 +2,7 @@
 // PR C++/17867
 
 struct A
-{  // { dg-message "1:candidates are:" }
+{  // { dg-message "1:candidate is:" }
   A(int);
 };
 

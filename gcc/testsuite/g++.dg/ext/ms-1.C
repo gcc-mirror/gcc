@@ -10,7 +10,7 @@ struct X
 
 void Quux (void (X::*) ());
 
-void X::Foo (X *ptr)  // { dg-message "candidates" }
+void X::Foo (X *ptr)  // { dg-message "candidate" }
 {
   Quux (Foo); // { dg-error "no matches" }
   Quux (Bar);

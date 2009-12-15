@@ -1,3 +1,38 @@
+2009-12-15  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* g++.dg/other/error20.C: Adjust dg-message strings.
+	* g++.dg/other/error31.C: Likewise.
+	* g++.dg/rtti/typeid6.C: Likewise.
+	* g++.dg/ext/ms-1.C: Likewise.
+	* g++.dg/parse/error19.C: Likewise.
+	* g++.dg/parse/crash5.C: Likewise.
+	* g++.dg/cpp0x/explicit4.C: Likewise.
+	* g++.dg/template/ptrmem4.C: Likewise.
+	* g++.dg/template/crash37.C: Likewise.
+	* g++.dg/template/qualttp5.C: Likewise.
+	* g++.dg/template/local6.C: Likewise.
+	* g++.dg/template/instantiate5.C: Likewise.
+	* g++.old-deja/g++.brendan/overload1.C: Likewise.
+	* g++.old-deja/g++.brendan/cvt3.C: Likewise.
+	* g++.old-deja/g++.brendan/overload4.C: Likewise.
+	* g++.old-deja/g++.jason/conversion11.C: Likewise.
+	* g++.old-deja/g++.jason/scoping10.C: Likewise.
+	* g++.old-deja/g++.other/expr1.C: Likewise.
+	* g++.old-deja/g++.other/pmf3.C: Likewise.
+	* g++.old-deja/g++.other/crash24.C: Likewise.
+	* g++.old-deja/g++.niklas/t120.C: Likewise.
+	* g++.old-deja/g++.niklas/t121.C: Likewise.
+	* g++.old-deja/g++.law/operators9.C: Likewise.
+	* g++.old-deja/g++.law/arm9.C: Likewise.
+	* g++.old-deja/g++.law/enum4.C: Likewise.
+	* g++.old-deja/g++.law/arg11.C: Likewise.
+	* g++.old-deja/g++.benjamin/15800-1.C: Likewise.
+	* g++.old-deja/g++.mike/p2431.C: Likewise.
+	* g++.old-deja/g++.mike/p438.C: Likewise.
+	* g++.old-deja/g++.mike/p9068.C: Likewise.
+	* g++.old-deja/g++.mike/p11110.C: Likewise.
+	* g++.old-deja/g++.bugs/900330_02.C: Likewise.
+
 2009-12-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/other/i386-2.C: Add -mpopcnt -mabm -mlwp to dg-options.

@@ -7,7 +7,7 @@ class foo {
    friend class __iterator;
    typedef __iterator const_iterator;
    virtual ~foo() { }
-   __iterator begin();				// { dg-message "candidates" } 
+   __iterator begin();				// { dg-message "candidate is" } 
 };
 static void iteratorTest(const foo &x)
 {

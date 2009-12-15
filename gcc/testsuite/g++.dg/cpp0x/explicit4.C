@@ -2,7 +2,7 @@
 // { dg-options "-std=c++0x" }
 
 struct A {
-  A(const A&, int = 0);		// { dg-message "candidates" }
+  A(const A&, int = 0);		// { dg-message "candidate" }
 };
 struct B
 {

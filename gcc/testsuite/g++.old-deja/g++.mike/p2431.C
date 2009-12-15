@@ -3,7 +3,7 @@
 class A
 {
 	public:
-      A(A &); // { dg-message "candidates" }
+      A(A &); // { dg-message "candidate is" }
 };
 
 class B

@@ -3,7 +3,7 @@
 // Bug: g++ was crashing after giving errors.
 
 template<class T>
-  void connect_to_method( // { dg-message "candidates are" }
+  void connect_to_method( // { dg-message "candidate is" }
     T *receiver,
     void (T::*method)())
   {}
