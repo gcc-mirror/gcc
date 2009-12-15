@@ -15072,7 +15072,7 @@ stored, which means code that walks the stack frame across interrupts or
 signals may get corrupted data.
 
 @item -mavoid-indexed-addresses
-@item -mno-avoid-indexed-addresses
+@itemx -mno-avoid-indexed-addresses
 @opindex mavoid-indexed-addresses
 @opindex mno-avoid-indexed-addresses
 Generate code that tries to avoid (not avoid) the use of indexed load
@@ -15543,14 +15543,14 @@ experiment and discover whether this feature is of benefit to their
 program.
 
 @item -msim
-@item -mno-sim
+@itemx -mno-sim
 @opindex msim
 @opindex mno-sim
 Use the simulator runtime.  The default is to use the libgloss board
 specific runtime.
 
 @item -mas100-syntax
-@item -mno-as100-syntax
+@itemx -mno-as100-syntax
 @opindex mas100-syntax
 @opindex mno-as100-syntax
 When generating assembler output use a syntax that is compatible with

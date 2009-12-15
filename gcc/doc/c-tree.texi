@@ -2871,7 +2871,7 @@ chained together.  This facilitates adding new clauses during
 compilation.
 
 @item VEC_LSHIFT_EXPR
-@item VEC_RSHIFT_EXPR
+@itemx VEC_RSHIFT_EXPR
 These nodes represent whole vector left and right shifts, respectively.  
 The first operand is the vector to shift; it will always be of vector type.  
 The second operand is an expression for the number of bits by which to
@@ -2879,7 +2879,7 @@ shift.  Note that the result is undefined if the second operand is larger
 than or equal to the first operand's type size.
 
 @item VEC_WIDEN_MULT_HI_EXPR
-@item VEC_WIDEN_MULT_LO_EXPR
+@itemx VEC_WIDEN_MULT_LO_EXPR
 These nodes represent widening vector multiplication of the high and low
 parts of the two input vectors, respectively.  Their operands are vectors 
 that contain the same number of elements (@code{N}) of the same integral type.  
@@ -2891,7 +2891,7 @@ low @code{N/2} elements of the two vector are multiplied to produce the
 vector of @code{N/2} products.
 
 @item VEC_UNPACK_HI_EXPR
-@item VEC_UNPACK_LO_EXPR
+@itemx VEC_UNPACK_LO_EXPR
 These nodes represent unpacking of the high and low parts of the input vector,
 respectively.  The single operand is a vector that contains @code{N} elements 
 of the same integral or floating point type.  The result is a vector
@@ -2902,7 +2902,7 @@ In the case of @code{VEC_UNPACK_LO_EXPR} the low @code{N/2} elements of the
 vector are extracted and widened (promoted).
 
 @item VEC_UNPACK_FLOAT_HI_EXPR
-@item VEC_UNPACK_FLOAT_LO_EXPR
+@itemx VEC_UNPACK_FLOAT_LO_EXPR
 These nodes represent unpacking of the high and low parts of the input vector,
 where the values are converted from fixed point to floating point.  The
 single operand is a vector that contains @code{N} elements of the same
@@ -2938,13 +2938,13 @@ elements of the two vectors are merged (concatenated) to form the output
 vector.
 
 @item VEC_EXTRACT_EVEN_EXPR
-@item VEC_EXTRACT_ODD_EXPR
+@itemx VEC_EXTRACT_ODD_EXPR
 These nodes represent extracting of the even/odd elements of the two input 
 vectors, respectively. Their operands and result are vectors that contain the 
 same number of elements of the same type.
 
 @item VEC_INTERLEAVE_HIGH_EXPR
-@item VEC_INTERLEAVE_LOW_EXPR
+@itemx VEC_INTERLEAVE_LOW_EXPR
 These nodes represent merging and interleaving of the high/low elements of the
 two input vectors, respectively. The operands and the result are vectors that 
 contain the same number of elements (@code{N}) of the same type.
