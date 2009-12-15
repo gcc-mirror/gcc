@@ -5189,7 +5189,7 @@ A typical @code{ctrap} pattern looks like
 (define_insn "ctrapsi4"
   [(trap_if (match_operator 0 "trap_operator"
              [(match_operand 1 "register_operand")
-	      (match_operand 2 "immediate_operand")])
+              (match_operand 2 "immediate_operand")])
             (match_operand 3 "const_int_operand" "i"))]
   ""
   "@dots{}")

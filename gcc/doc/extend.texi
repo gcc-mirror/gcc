@@ -2550,14 +2550,14 @@ void __attribute__ ((interrupt, use_shadow_register_set)) v1 ();
 void __attribute__ ((interrupt, keep_interrupts_masked)) v2 ();
 void __attribute__ ((interrupt, use_debug_exception_return)) v3 ();
 void __attribute__ ((interrupt, use_shadow_register_set,
-		     keep_interrupts_masked)) v4 ();
+                     keep_interrupts_masked)) v4 ();
 void __attribute__ ((interrupt, use_shadow_register_set,
-		     use_debug_exception_return)) v5 ();
+                     use_debug_exception_return)) v5 ();
 void __attribute__ ((interrupt, keep_interrupts_masked,
-		     use_debug_exception_return)) v6 ();
+                     use_debug_exception_return)) v6 ();
 void __attribute__ ((interrupt, use_shadow_register_set,
-		     keep_interrupts_masked,
-		     use_debug_exception_return)) v7 ();
+                     keep_interrupts_masked,
+                     use_debug_exception_return)) v7 ();
 @end smallexample
 
 @item interrupt_handler
@@ -5434,9 +5434,9 @@ void doit(void)
   int i = 0;
   asm goto ("mfsr %%r1, 123; jmp %%r1;"
             ".pushsection doit_table;"
-	    ".long %l0, %l1, %l2, %l3;"
-	    ".popsection"
-	    : : : "r1" : label1, label2, label3, label4);
+            ".long %l0, %l1, %l2, %l3;"
+            ".popsection"
+            : : : "r1" : label1, label2, label3, label4);
   __builtin_unreachable ();
 
  label1:
