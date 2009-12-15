@@ -16473,7 +16473,8 @@ add_pure_or_virtual_attribute (dw_die_ref die, tree func_decl)
 				   0));
 
       /* GNU extension: Record what type this method came from originally.  */
-      if (debug_info_level > DINFO_LEVEL_TERSE)
+      if (debug_info_level > DINFO_LEVEL_TERSE
+	  && DECL_CONTEXT (func_decl))
 	add_AT_die_ref (die, DW_AT_containing_type,
 			lookup_type_die (DECL_CONTEXT (func_decl)));
     }
@@ -17393,7 +17394,8 @@ gen_type_die_for_member (tree type, tree member, dw_die_ref context_die)
 
   /* If we're trying to avoid duplicate debug info, we may not have
      emitted the member decl for this function.  Emit it now.  */
-  if (TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type))
+  if (TYPE_STUB_DECL (type)
+      && TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type))
       && ! lookup_decl_die (member))
     {
       dw_die_ref type_die;
