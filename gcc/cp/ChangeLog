@@ -1,3 +1,17 @@
+2009-12-15  Paolo Bonzini  <bonzini@gnu.org>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* Makefile.in (cp/pt.o): Depend on intl.h
+	* call.c (print_z_candidates): Make loop more compact,
+	choose head string depending on number of candidates,
+	extract creation of spaces string to intl.c.
+	* pt.c (print_overloaded_functions): Replace with...
+	(print_candidates_1): ... this rewrite.
+	(print_candidates): Rewrite to call print_candidates_1.
+	(most_specialized_class): Make loop more compact,
+	choose head string depending on number of candidates,
+	and size indents depending on translations.
+
 2009-12-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42219

@@ -9,7 +9,7 @@ public:
 class Bar : public Foo
 {
 public:
-      int f (int); // { dg-message "candidates" }
+      int f (int); // { dg-message "candidate is" }
 };
 
 int main ()

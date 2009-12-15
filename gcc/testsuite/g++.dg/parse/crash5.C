@@ -1,7 +1,7 @@
 // { dg-options "-w" }
 
 class QString { // { dg-error "previous definition" }
-  QString (const QString & a); // { dg-message "candidates" }
+  QString (const QString & a); // { dg-message "candidate is" }
 };
 
 class QString { }; // { dg-error "redefinition" }

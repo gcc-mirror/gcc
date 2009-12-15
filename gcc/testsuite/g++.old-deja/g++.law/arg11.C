@@ -9,7 +9,7 @@ struct String { String(const char*); };
 
 struct Ack { Ack(String); };
 
-struct S { void method(Ack); };	// { dg-message "candidates" } referenced below
+struct S { void method(Ack); };	// { dg-message "candidate is" } referenced below
 
 void function(Ack);
 

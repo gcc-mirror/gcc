@@ -292,7 +292,7 @@ cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(RTL_H) $(FLAGS_H) $(EXPR_H) \
   toplev.h except.h $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
   toplev.h $(RTL_H) except.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h \
-  vecprim.h
+  vecprim.h intl.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_H) \
   $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H)
 cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_H) \

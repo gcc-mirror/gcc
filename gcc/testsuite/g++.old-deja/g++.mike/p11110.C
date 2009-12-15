@@ -6,7 +6,7 @@ class data;
 class conatiner {
 public:
   virtual void* first    ();
-  virtual data* contents (void* i);     // { dg-message "candidates" }
+  virtual data* contents (void* i);     // { dg-message "candidate is" }
 };
 
 class user {

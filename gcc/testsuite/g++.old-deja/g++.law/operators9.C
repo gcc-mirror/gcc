@@ -10,7 +10,7 @@ class B
 {
 public:
       operator=(B &); // { dg-error "no type" }
-      // { dg-message "candidates" "note" { target *-*-* } 12 }
+      // { dg-message "candidate is" "note" { target *-*-* } 12 }
 };
 
 void

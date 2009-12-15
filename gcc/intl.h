@@ -54,6 +54,8 @@ extern size_t gcc_gettext_width (const char *);
 # define G_(gmsgid) gmsgid
 #endif
 
+extern char *get_spaces (const char *);
+
 extern const char *open_quote;
 extern const char *close_quote;
 extern const char *locale_encoding;

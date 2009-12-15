@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "obstack.h"
 #include "tree.h"
+#include "intl.h"
 #include "pointer-set.h"
 #include "flags.h"
 #include "c-common.h"
@@ -1646,19 +1647,52 @@ explicit_class_specialization_p (tree type)
   return !uses_template_parms (CLASSTYPE_TI_ARGS (type));
 }
 
-/* Print the list of overloaded FNS in an error message.   */
+/* Print the list of functions at FNS, going through all the overloads
+   for each element of the list.  Alternatively, FNS can not be a
+   TREE_LIST, in which case it will be printed together with all the
+   overloads.
+
+   MORE and *STR should respectively be FALSE and NULL when the function
+   is called from the outside.  They are used internally on recursive
+   calls.  print_candidates manages the two parameters and leaves NULL
+   in *STR when it ends.  */
 
 static void
-print_overloaded_functions (tree fns, const char **str)
+print_candidates_1 (tree fns, bool more, const char **str)
 {
-  tree fn;
+  tree fn, fn2;
+  char *spaces = NULL;
+
   for (fn = fns; fn; fn = OVL_NEXT (fn))
+    if (TREE_CODE (fn) == TREE_LIST)
+      {
+        gcc_assert (!OVL_NEXT (fn) && !is_overloaded_fn (fn));
+        for (fn2 = fn; fn2 != NULL_TREE; fn2 = TREE_CHAIN (fn2))
+          print_candidates_1 (TREE_VALUE (fn2),
+                              TREE_CHAIN (fn2) || more, str);
+      }
+    else
+      {
+        if (!*str)
+          {
+            /* Pick the prefix string.  */
+            if (!more && !OVL_NEXT (fns))
+              {
+                error ("candidate is: %+#D", OVL_CURRENT (fn));
+                continue;
+              }
+
+            *str = _("candidates are:");
+            spaces = get_spaces (*str);
+          }
+        error ("%s %+#D", *str, OVL_CURRENT (fn));
+        *str = spaces ? spaces : *str;
+      }
+
+  if (!more)
     {
-      if (TREE_CODE (fn) == TREE_LIST)
-	print_candidates (fn);
-      else
-	error ("%s %+#D", *str, OVL_CURRENT (fn));
-      *str = "               ";
+      free (spaces);
+      *str = NULL;
     }
 }
 
@@ -1667,16 +1701,9 @@ print_overloaded_functions (tree fns, const char **str)
 void
 print_candidates (tree fns)
 {
-  const char *str = "candidates are:";
-
-  if (is_overloaded_fn (fns))
-    print_overloaded_functions (fns, &str);
-  else
-    {
-      tree fn;
-      for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
-	print_overloaded_functions (TREE_VALUE (fn), &str);
-    }
+  const char *str = NULL;
+  print_candidates_1 (fns, false, &str);
+  gcc_assert (str == NULL);
 }
 
 /* Returns the template (one of the functions given by TEMPLATE_ID)
@@ -15753,13 +15780,16 @@ most_specialized_class (tree type, tree tmpl)
 
   if (ambiguous_p)
     {
-      const char *str = "candidates are:";
+      const char *str;
+      char *spaces = NULL;
       error ("ambiguous class template instantiation for %q#T", type);
+      str = TREE_CHAIN (list) ? _("candidates are:") : _("candidate is:");
       for (t = list; t; t = TREE_CHAIN (t))
-	{
-	  error ("%s %+#T", str, TREE_TYPE (t));
-	  str = "               ";
-	}
+        {
+          error ("%s %+#T", spaces ? spaces : str, TREE_TYPE (t));
+          spaces = spaces ? spaces : get_spaces (str);
+        }
+      free (spaces);
       return error_mark_node;
     }
 

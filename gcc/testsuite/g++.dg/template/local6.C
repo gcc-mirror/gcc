@@ -1,5 +1,5 @@
 template <class T> struct PCVector2
-{ // { dg-message "candidates" }
+{ // { dg-message "candidate is" }
     template <class T2> PCVector2(const PCVector2<T> &cv) ;
 
     PCVector2<T> operator- (const PCVector2<T> &ov) const 

@@ -11,7 +11,7 @@ enum Enum {enumerator1, enumerator2};
 struct Struct
 {
   int i;
-      int getI(Enum) {return i;} // { dg-message "candidates" }
+      int getI(Enum) {return i;} // { dg-message "candidate is" }
 };
 
 int funct (Enum)

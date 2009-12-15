@@ -5,7 +5,7 @@
 struct panama {
   panama();
   panama(panama &);
-  panama& operator=(panama&); // { dg-message "candidates" }
+  panama& operator=(panama&); // { dg-message "candidate is" }
 };
 
 extern panama dig();

@@ -13,7 +13,7 @@ int baz() { return A<0>::i; }
 
 struct B
 {
-  static void foo (int);	// { dg-message "candidates" }
+  static void foo (int);	// { dg-message "candidate is" }
 };
 
 template <typename T> struct C

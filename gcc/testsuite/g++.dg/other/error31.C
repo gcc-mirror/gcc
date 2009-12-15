@@ -3,7 +3,7 @@
 // { dg-options "" }
 // { dg-bogus "not supported by" "" { target *-*-* } 0 }
 
-struct A {};		// { dg-message "note: candidates are" }
+struct A {};		// { dg-message "note: candidate is" }
 
 void
 foo ()

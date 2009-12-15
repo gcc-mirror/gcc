@@ -14,7 +14,7 @@ public:
 
 class Something {
 public:
-  void DoSomething(Ding A);	// { dg-message "candidates" } referred to
+  void DoSomething(Ding A);	// { dg-message "candidate is" } referred to
 };
 
 void DoSomething(Ding A);

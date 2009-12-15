@@ -2,7 +2,7 @@
 // prms-id: 9068
 
 struct ostream {
-  void operator<< (int);	// { dg-message "candidates" } fn ref in err msg
+  void operator<< (int);	// { dg-message "candidate is" } fn ref in err msg
 };
 
 class C {

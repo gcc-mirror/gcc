@@ -3,7 +3,7 @@
 // Simplified from bug report by Trevor Taylor <ttaylor@powerup.com.au>
 
 struct T {
-  int operator()(int) { } // { dg-message "candidates" }
+  int operator()(int) { } // { dg-message "candidate is" }
 };
 
 int main() {

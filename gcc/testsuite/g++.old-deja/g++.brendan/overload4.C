@@ -5,7 +5,7 @@
   class B
   {
   public:
-	static void WantsNew (NewObject creator); // { dg-message "candidates" }
+	static void WantsNew (NewObject creator); // { dg-message "candidate is" }
   };
   
   class A

@@ -19,7 +19,7 @@ class B : public A {
 public:
     void set (f2 f);
 };
-void B::set (f2 f) { std::cout << "called B\n";} // { dg-message "candidates" }
+void B::set (f2 f) { std::cout << "called B\n";} // { dg-message "candidate is" }
 
 int main() {
     B b;

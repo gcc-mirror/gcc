@@ -4,7 +4,7 @@
 
 template <class U> struct A
 {
-	template <class T> class B {}; // { dg-message "candidates" }
+	template <class T> class B {}; // { dg-message "candidate is" }
 };
 
 template <template <class> class TT> void f()
