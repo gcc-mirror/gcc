@@ -1,3 +1,9 @@
+2009-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42364
+	* g++.dg/cpp0x/variadic31.C: Compile with -g.
+	* g++.dg/ext/attrib33.C: Likewise.
+
 2009-12-15  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* g++.dg/other/error20.C: Adjust dg-message strings.
