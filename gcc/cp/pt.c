@@ -2730,15 +2730,13 @@ get_function_template_decl (const_tree primary_func_tmpl_inst)
 bool
 function_parameter_expanded_from_pack_p (tree param_decl, tree pack)
 {
-    if (DECL_ARTIFICIAL (param_decl)
-	|| !function_parameter_pack_p (pack))
-      return false;
+  if (DECL_ARTIFICIAL (param_decl)
+      || !function_parameter_pack_p (pack))
+    return false;
 
-    gcc_assert (DECL_NAME (param_decl) && DECL_NAME (pack));
-
-    /* The parameter pack and its pack arguments have the same
-       DECL_PARM_INDEX.  */
-    return DECL_PARM_INDEX (pack) == DECL_PARM_INDEX (param_decl);
+  /* The parameter pack and its pack arguments have the same
+     DECL_PARM_INDEX.  */
+  return DECL_PARM_INDEX (pack) == DECL_PARM_INDEX (param_decl);
 }
 
 /* Determine whether ARGS describes a variadic template args list,
@@ -9273,7 +9271,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	/* Create a new node for the specialization we need.  */
 	r = copy_decl (t);
 	if (type == NULL_TREE)
-	  type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	  {
+	    if (is_typedef_decl (t))
+	      type = DECL_ORIGINAL_TYPE (t);
+	    else
+	      type = TREE_TYPE (t);
+	    type = tsubst (type, args, complain, in_decl);
+	  }
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
 	    /* Even if the original location is out of scope, the
@@ -9344,16 +9348,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      }
 	    determine_visibility (r);
 	  }
-	/* Preserve a typedef that names a type.  */
-	else if (TREE_CODE (r) == TYPE_DECL
-		 && DECL_ORIGINAL_TYPE (t)
-		 && type != error_mark_node)
-	  {
-	    DECL_ORIGINAL_TYPE (r) = tsubst (DECL_ORIGINAL_TYPE (t),
-					     args, complain, in_decl);
-	    TREE_TYPE (r) = type = build_variant_type_copy (type);
-	    TYPE_NAME (type) = r;
-	  }
 
 	if (!local_p)
 	  {
@@ -9391,6 +9385,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r),
 					(int) ATTR_FLAG_TYPE_IN_PLACE,
 					args, complain, in_decl);
+
+	/* Preserve a typedef that names a type.  */
+	if (is_typedef_decl (r))
+	  {
+	    DECL_ORIGINAL_TYPE (r) = NULL_TREE;
+	    set_underlying_type (r);
+	  }
+
 	layout_decl (r, 0);
       }
       break;

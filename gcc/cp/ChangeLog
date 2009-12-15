@@ -1,3 +1,10 @@
+2009-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42364
+	* pt.c (function_parameter_expanded_from_pack_p): Don't require
+	a pack to have a name.
+	(tsubst_decl): Do typedef magic after applying attributes.
+
 2009-12-15  Paolo Bonzini  <bonzini@gnu.org>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 

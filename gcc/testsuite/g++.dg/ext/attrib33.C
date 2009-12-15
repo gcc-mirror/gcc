@@ -1,5 +1,6 @@
 // PR c++/35546
 // { dg-do compile }
+// { dg-options "-g" }
 
 template <int N>
 struct T
