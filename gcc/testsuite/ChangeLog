@@ -1,3 +1,10 @@
+2009-12-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41235
+	* auto_char_len_1.f90: New test.
+	* auto_char_len_2.f90: New test.
+	* auto_char_len_4.f90: Correct test.
+
 2009-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42364

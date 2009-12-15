@@ -1,3 +1,13 @@
+2009-12-15  Tobias Burnus  <burnus@net-b.de>
+	    Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/41235
+	* resolve.c (resolve_global_procedure): Add check for
+	presence of an explicit interface for nonconstant,
+	nonassumed character-length functions.
+	(resolve_fl_procedure): Remove check for nonconstant
+	character-length functions.
+
 2009-12-14  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/42354
@@ -10,13 +20,13 @@
 
 2009-12-11  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/40290
-        * expr.c (gfc_type_convert_binary): Added warn-on-conversion flag,
-        passed on to gfc_convert_type_warn() instead of gfc_convert_type();
-        enabled warnings on all callers but ...
-        * arith.c (eval_intrinsic): Disabled warnings on implicit type
-        conversion.
-        * gfortran.h gfc_type_convert_binary): Adjusted prototype.
+	PR fortran/40290
+	* expr.c (gfc_type_convert_binary): Added warn-on-conversion flag,
+	passed on to gfc_convert_type_warn() instead of gfc_convert_type();
+	enabled warnings on all callers but ...
+	* arith.c (eval_intrinsic): Disabled warnings on implicit type
+	conversion.
+	* gfortran.h gfc_type_convert_binary): Adjusted prototype.
 
 2009-12-11 Janus Weil  <janus@gcc.gnu.org>
 
