@@ -921,6 +921,7 @@ extern bool is_gimple_call_addr (tree);
 extern tree get_call_expr_in (tree t);
 
 extern void recalculate_side_effects (tree);
+extern bool compare_field_offset (tree, tree);
 extern tree gimple_register_type (tree);
 extern void print_gimple_types_stats (void);
 extern void free_gimple_type_tables (void);

@@ -1,5 +1,11 @@
 2009-12-15  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.h (compare_field_offset): Declare.
+	* gimple.c (compare_field_offset): Export.
+	* lto-streamer-in.c (input_gimple_stmt): Use compare_field_offset.
+
+2009-12-15  Richard Guenther  <rguenther@suse.de>
+
 	* lto-cgraph.c (lto_output_node): Also stream the alias
 	for regular aliases.
 	(input_node): Likewise.
