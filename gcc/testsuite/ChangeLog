@@ -1,3 +1,8 @@
+2009-12-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42358
+	* g++.dg/cpp0x/variadic98.C: New.
+
 2009-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42373
