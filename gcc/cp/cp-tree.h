@@ -1026,7 +1026,8 @@ struct GTY(()) language_function {
    expression for `*this'.  */
 
 #define current_class_ptr \
-  (cfun ? cp_function_chain->x_current_class_ptr : NULL_TREE)
+  (cfun && cp_function_chain					\
+   ? cp_function_chain->x_current_class_ptr : NULL_TREE)
 #define current_class_ref \
   (cfun ? cp_function_chain->x_current_class_ref : NULL_TREE)
 

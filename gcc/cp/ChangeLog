@@ -1,3 +1,9 @@
+2009-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/41183
+	* cp-tree.h (current_class_ptr): Give NULL even when cfun
+	has NULL cfun->language.
+
 2009-12-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42364
