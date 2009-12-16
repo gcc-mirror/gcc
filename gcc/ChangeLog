@@ -1,3 +1,9 @@
+2009-12-16  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42392
+	* langhooks.c (lhd_begin_section): Make sure to switch back
+	to the text section, not some random one.
+
 2009-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-chrec.c (chrec_convert_1): Only fold (T2)(t +- x) to

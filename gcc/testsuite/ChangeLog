@@ -1,3 +1,8 @@
+2009-12-16  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42392
+	* gcc.dg/lto/20091216-1_0.c: New testcase.
+
 2009-12-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42387
