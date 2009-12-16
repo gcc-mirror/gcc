@@ -66,7 +66,7 @@ default_constructor()
     {
       m_p_c = new Cntnr;
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -110,7 +110,7 @@ copy_constructor()
       p_c = new Cntnr(*m_p_c);
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -139,7 +139,7 @@ assignment_operator()
       *p_c = *m_p_c;
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -180,7 +180,7 @@ it_constructor()
 
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -433,7 +433,7 @@ push()
         _GLIBCXX_THROW_IF(sz != m_p_c->size() - 1, sz, m_p_c, &m_native_c);
         m_native_c.push(test_traits::native_value(v));
       }
-    catch(__gnu_cxx::forced_exception_error& )
+    catch(__gnu_cxx::forced_error&)
       {
         done = false;
       }
@@ -475,7 +475,7 @@ modify()
 	  m_native_c.modify(native_v, new_native_v);
 	}
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
       _GLIBCXX_THROW_IF(true, "", m_p_c, &m_native_c);
@@ -517,7 +517,7 @@ pop()
 	  m_native_c.pop();
         }
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
       _GLIBCXX_THROW_IF(true, "", m_p_c, &m_native_c);
@@ -560,7 +560,7 @@ erase_if()
       _GLIBCXX_THROW_IF(ersd != native_ersd, ersd << " " << native_ersd,
 			m_p_c, &m_native_c);
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;      
       _GLIBCXX_THROW_IF(true, "", m_p_c, &m_native_c);
@@ -592,7 +592,7 @@ erase_it()
 	  m_p_c->erase(it);
 	}
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;      
       _GLIBCXX_THROW_IF(true, "", m_p_c, &m_native_c);
@@ -715,7 +715,7 @@ split_join()
       _GLIBCXX_THROW_IF(rhs.size() != 0, rhs.size(), m_p_c, &m_native_c);
       _GLIBCXX_THROW_IF(!rhs.empty(), rhs.size(), m_p_c, &m_native_c);
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;      
       const bool b = __gnu_pbds::container_traits<cntnr>::split_join_can_throw;

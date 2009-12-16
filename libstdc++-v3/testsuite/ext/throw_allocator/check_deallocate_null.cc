@@ -24,7 +24,7 @@
 int main()
 { 
   typedef int value_type;
-  typedef __gnu_cxx::throw_allocator<value_type> allocator_type;
+  typedef __gnu_cxx::throw_allocator_random<value_type> allocator_type;
   
   try { __gnu_test::check_deallocate_null<allocator_type>(); }
   catch (std::logic_error&)

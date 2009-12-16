@@ -21,4 +21,5 @@
 #include <cstdlib>
 #include <ext/throw_allocator.h>
 
-template class __gnu_cxx::throw_allocator<int>;
+template class __gnu_cxx::throw_allocator_random<int>;
+template class __gnu_cxx::throw_allocator_limit<int>;

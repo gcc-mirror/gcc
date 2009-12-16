@@ -80,7 +80,7 @@ namespace detail
     typedef typename test_traits::native_type 		native_type;
     typedef twister_rand_gen 				gen;
     typedef __gnu_pbds::container_traits<Cntnr> 	container_traits;
-    typedef __gnu_cxx::throw_allocator<char> 		alloc_t;
+    typedef __gnu_cxx::throw_allocator_random<char>    	alloc_t;
 
     enum op
       {

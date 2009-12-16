@@ -25,7 +25,7 @@
 
 typedef char char_t;
 typedef std::char_traits<char_t> traits_t;
-typedef __gnu_cxx::throw_allocator<char_t> allocator_t;
+typedef __gnu_cxx::throw_allocator_random<char_t> allocator_t;
 typedef std::basic_string<char_t, traits_t, allocator_t> string_t;  
 
 string_t s("bayou bend");

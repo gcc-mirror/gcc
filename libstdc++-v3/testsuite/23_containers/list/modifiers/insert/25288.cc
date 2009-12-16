@@ -23,7 +23,7 @@
 int main()
 {
   typedef int value_type;
-  typedef __gnu_cxx::throw_allocator<value_type> allocator_type;
+  typedef __gnu_cxx::throw_allocator_random<value_type> allocator_type;
   typedef std::list<value_type, allocator_type> list_type;
 
   insert1<list_type>();

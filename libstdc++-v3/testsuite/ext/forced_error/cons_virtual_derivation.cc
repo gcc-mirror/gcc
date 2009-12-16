@@ -24,7 +24,7 @@
 
 int main()
 {
-  typedef __gnu_cxx::forced_exception_error test_type;
+  typedef __gnu_cxx::forced_error test_type;
   __gnu_test::diamond_derivation<test_type, true>::test();
   return 0;
 }
