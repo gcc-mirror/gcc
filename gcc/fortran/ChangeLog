@@ -1,3 +1,8 @@
+2009-12-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gfc-internals.texi, gfortran.texi, invoke.texi: Fix typos.
+	Follow spelling conventions.
+
 2009-12-15  Tobias Burnus  <burnus@net-b.de>
 	    Daniel Franke  <franke.daniel@gmail.com>
 

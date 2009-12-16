@@ -425,7 +425,7 @@ the type, rank and, if applicable, shape of the whole expression or expression
 tree of which the current structure is the root.  @code{where} is the locus of
 this expression in the source code.
 
-Depending on the flavour of the expression being described by the object
+Depending on the flavor of the expression being described by the object
 (that is, the value of its @code{expr_type} member), the corresponding structure
 in the @code{value} union will usually contain additional data describing the
 expression's value in a type-specific manner.  The @code{ref} member is used to

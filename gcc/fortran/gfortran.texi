@@ -1911,7 +1911,7 @@ all C features have a Fortran equivalent or vice versa. For instance,
 neither C's unsigned integers nor C's functions with variable number
 of arguments have an equivalent in Fortran.
 
-Note that array dimensions are reversely orded in C and that arrays in
+Note that array dimensions are reversely ordered in C and that arrays in
 C always start with index 0 while in Fortran they start by default with
 1. Thus, an array declaration @code{A(n,m)} in Fortran matches
 @code{A[m][n]} in C and accessing the element @code{A(i,j)} matches
