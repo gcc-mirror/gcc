@@ -29,7 +29,7 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
   typedef std::pair<int, char> pair_type;
-  __gnu_cxx::throw_allocator<pair_type> alloc1;
+  __gnu_cxx::throw_allocator_random<pair_type> alloc1;
 
   pair_type* ptp1 = alloc1.allocate(1);
   alloc1.construct(ptp1, 3, 'a');

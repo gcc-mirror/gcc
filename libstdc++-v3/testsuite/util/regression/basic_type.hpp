@@ -46,7 +46,7 @@ namespace test
 {
 #define PB_DS_BASE_C_DEC \
   std::basic_string<char, std::char_traits<char>, \
-		    __gnu_cxx::throw_allocator<char> >
+		    __gnu_cxx::throw_allocator_random<char> >
 
   struct basic_type : public PB_DS_BASE_C_DEC
   {

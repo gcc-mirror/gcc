@@ -66,7 +66,7 @@ default_constructor()
     {
       m_p_c = new Cntnr;
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -107,7 +107,7 @@ copy_constructor()
       p_c = new Cntnr(*m_p_c);
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -134,7 +134,7 @@ assignment_operator()
       * p_c =* m_p_c;
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -210,7 +210,7 @@ it_constructor_imp(__gnu_pbds::cc_hash_tag)
         };
       std::swap(p_c, m_p_c);
     }
-  catch (__gnu_cxx::forced_exception_error&)
+  catch (__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -293,7 +293,7 @@ it_constructor_imp(__gnu_pbds::gp_hash_tag)
         };
       std::swap(p_c, m_p_c);
     }
-  catch (__gnu_cxx::forced_exception_error&)
+  catch (__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -329,7 +329,7 @@ it_constructor_imp(__gnu_pbds::tree_tag)
         };
       std::swap(p_c, m_p_c);
     }
-  catch (__gnu_cxx::forced_exception_error&)
+  catch (__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -354,7 +354,7 @@ it_constructor_imp(__gnu_pbds::list_update_tag)
       p_c = new Cntnr(m_p_c->begin(), m_p_c->end());
       std::swap(p_c, m_p_c);
     }
-  catch (__gnu_cxx::forced_exception_error&)
+  catch (__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -392,7 +392,7 @@ it_constructor_imp(__gnu_pbds::pat_trie_tag)
 
       std::swap(p_c, m_p_c);
     }
-  catch (__gnu_cxx::forced_exception_error&)
+  catch (__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -1088,7 +1088,7 @@ insert()
 	}
       m_native_c.insert(test_traits::native_value(v));
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -1139,7 +1139,7 @@ subscript_imp(__gnu_pbds::detail::false_type)
       m_native_c[test_traits::native_value(v).first] =
 	test_traits::native_value(v).second;
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -1164,7 +1164,7 @@ subscript_imp(__gnu_pbds::detail::true_type)
       (*m_p_c)[v] = __gnu_pbds::null_mapped_type();
       m_native_c.insert(test_traits::native_value(v));
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
     }
@@ -1213,7 +1213,7 @@ erase()
       PB_DS_THROW_IF_FAILED(m_p_c->find(k) == m_p_c->end(), "", 
 			    m_p_c, &m_native_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
 
@@ -1251,7 +1251,7 @@ erase_if()
       PB_DS_THROW_IF_FAILED(ersd == native_ersd,
 			    ersd << " " << native_ersd, m_p_c, &m_native_c);
     }
-  catch(__gnu_cxx::forced_exception_error&)
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
       PB_DS_THROW_IF_FAILED(container_traits::erase_can_throw, 
@@ -1329,7 +1329,7 @@ erase_it_imp(__gnu_pbds::detail::true_type)
       if (range_guarantee)
 	PB_DS_THROW_IF_FAILED(next_ers_it == next_it, "", m_p_c, &m_native_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
       PB_DS_THROW_IF_FAILED(container_traits::erase_can_throw, container_traits::erase_can_throw, m_p_c, &m_native_c);
@@ -1392,7 +1392,7 @@ erase_rev_it_imp(__gnu_pbds::detail::true_type)
       if (native_it != m_native_c.end())
 	m_native_c.erase(native_it);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;      
       PB_DS_THROW_IF_FAILED(container_traits::erase_can_throw, 
@@ -1763,7 +1763,7 @@ split_join_imp(__gnu_pbds::detail::true_type)
       PB_DS_THROW_IF_FAILED(rhs.empty(), rhs.size(), m_p_c, &m_native_c);
       m_p_c->swap(lhs);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_error&)
     {
       done = false;
       PB_DS_THROW_IF_FAILED(container_traits::split_join_can_throw, 

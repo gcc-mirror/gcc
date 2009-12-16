@@ -46,7 +46,7 @@ namespace __gnu_pbds
 {
 namespace test
 {
-  typedef __gnu_cxx::throw_allocator<basic_type> alloc_type;
+  typedef __gnu_cxx::throw_allocator_random<basic_type> alloc_type;
 
   struct hash
   {

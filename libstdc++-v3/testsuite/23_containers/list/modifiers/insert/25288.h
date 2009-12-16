@@ -47,7 +47,7 @@ void insert1()
 	    list1.insert(list1.begin(), 10, 99);
 	    VERIFY( false );
 	  }
-	catch (__gnu_cxx::forced_exception_error&)
+	catch (__gnu_cxx::forced_error&)
 	  {
 	    VERIFY( true );
 	  }
@@ -74,7 +74,7 @@ void insert1()
 	    list2.insert(list2.begin(), data, data + 10);
 	    VERIFY( false );
 	  }
-	catch (__gnu_cxx::forced_exception_error&)
+	catch (__gnu_cxx::forced_error&)
 	  {
 	    VERIFY( true );
 	  }

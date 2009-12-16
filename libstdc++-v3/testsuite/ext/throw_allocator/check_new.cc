@@ -24,7 +24,7 @@
 
 int main()
 { 
-  typedef __gnu_cxx::throw_allocator<unsigned int> allocator_type;
+  typedef __gnu_cxx::throw_allocator_random<unsigned int> allocator_type;
   __gnu_test::check_new<allocator_type, true>(); 
   return 0;
 }

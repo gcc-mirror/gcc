@@ -1,5 +1,6 @@
-//
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// { dg-options "-std=gnu++0x" }
+
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,15 +17,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-require-time "" }
-
-#include <cstdlib>
+#include <type_traits>
 #include <ext/throw_allocator.h>
-#include <replacement_memory_operators.h>
+
+void foo1()
+{ 
+  typedef __gnu_cxx::throw_value_limit value_type;
+  value_type v1;
+  value_type v2(v2);
+  value_type v3(value_type());
+}
+
+bool foo2()
+{ 
+  typedef __gnu_cxx::throw_value_limit value_type;
+  bool b = std::is_convertible<value_type, value_type>::value;
+  return b;
+}
 
 int main()
-{ 
-  typedef __gnu_cxx::throw_allocator_random<unsigned int> allocator_type;
-  __gnu_test::check_delete<allocator_type, true>(); 
+{
+  foo1();
+  foo2();
   return 0;
 }

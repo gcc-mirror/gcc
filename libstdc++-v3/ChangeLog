@@ -1,3 +1,39 @@
+2009-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/21772 part 1
+	* include/ext/throw_allocator.h: Rework.
+	(__gnu_cxx::throw_allocator): To...
+	(__gnu_cxx::throw_allocator_limit): ...this.
+	(__gnu_cxx::throw_allocator_random): ...and this.
+	(throw_value_base, throw_value_limit, throw_value_random): Add.
+	(condition_base, random_condition, limit_condition): Add.
+	(forced_exception_error): To...
+	(forced_error): ...this.
+	* testsuite/ext/throw_value: New.
+	* testsuite/ext/throw_value/cons.cc: New.
+	* testsuite/ext/throw_allocator/deallocate_global.cc: Adjust for
+	throw_allocator, forced_exception_error changes.
+	* testsuite/ext/throw_allocator/check_delete.cc: Same.
+	* testsuite/ext/throw_allocator/check_allocate_max_size.cc: Same.
+	* testsuite/ext/throw_allocator/check_deallocate_null.cc: Same.
+	* testsuite/ext/throw_allocator/explicit_instantiation.cc: Same.
+	* testsuite/ext/throw_allocator/check_new.cc: Same.
+	* testsuite/ext/throw_allocator/variadic_construct.cc: Same.
+	* testsuite/ext/throw_allocator/deallocate_local.cc: Same.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Same.
+	* testsuite/23_containers/list/modifiers/insert/25288.h: Same.
+	* testsuite/util/regression/common_type.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.tcc: Same.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.h: Same.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.tcc: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+
+	* testsuite/ext/forced_exception_error/cons_virtual_derivation.cc: To...
+	* testsuite/ext/forced_error/cons_virtual_derivation.cc: ...this, same.
+
 2009-12-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/42381
@@ -165,7 +201,7 @@
 2009-12-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
-        2009-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+	2009-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/42261
 	* include/bits/basic_string.h (_S_construct_aux(_Integer, _Integer,
@@ -295,21 +331,21 @@
 
 2009-11-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-        * include/tr1_impl/functional (function): Add rvalue support and
-        tweak doxygen markup.
-        * testsuite/20_util/function/assign/move.cc: New.
-        * testsuite/20_util/function/cons/move.cc: New.
-        * testsuite/20_util/function/invoke/move_only.cc: New.
-        * testsuite/20_util/function/cmp/cmp_neg.cc: New.
-        * testsuite/20_util/function/1.cc: Copy from testsuite/tr1/.
-        * testsuite/20_util/function/2.cc: Likewise.
-        * testsuite/20_util/function/3.cc: Likewise.
-        * testsuite/20_util/function/4.cc: Likewise.
-        * testsuite/20_util/function/5.cc: Likewise.
-        * testsuite/20_util/function/6.cc: Likewise.
-        * testsuite/20_util/function/7.cc: Likewise.
-        * testsuite/20_util/function/8.cc: Likewise.
-        * testsuite/20_util/function/9.cc: Likewise.
+	* include/tr1_impl/functional (function): Add rvalue support and
+	tweak doxygen markup.
+	* testsuite/20_util/function/assign/move.cc: New.
+	* testsuite/20_util/function/cons/move.cc: New.
+	* testsuite/20_util/function/invoke/move_only.cc: New.
+	* testsuite/20_util/function/cmp/cmp_neg.cc: New.
+	* testsuite/20_util/function/1.cc: Copy from testsuite/tr1/.
+	* testsuite/20_util/function/2.cc: Likewise.
+	* testsuite/20_util/function/3.cc: Likewise.
+	* testsuite/20_util/function/4.cc: Likewise.
+	* testsuite/20_util/function/5.cc: Likewise.
+	* testsuite/20_util/function/6.cc: Likewise.
+	* testsuite/20_util/function/7.cc: Likewise.
+	* testsuite/20_util/function/8.cc: Likewise.
+	* testsuite/20_util/function/9.cc: Likewise.
 
 2009-11-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -374,10 +410,10 @@
 
 2009-11-19  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/partition.h (__parallel_partition): Correctly
-        initialize chunk size.
-        (__parallel_nth_element): Respect nth_element_minimal_n.  Use
-        sequential nth_element as base case, instead of sequential sort.
+	* include/parallel/partition.h (__parallel_partition): Correctly
+	initialize chunk size.
+	(__parallel_nth_element): Respect nth_element_minimal_n.  Use
+	sequential nth_element as base case, instead of sequential sort.
 
 2009-11-17  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -848,26 +884,26 @@
 
 009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        PR libstdc++/41773
-        Revert:
-        2009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
+	PR libstdc++/41773
+	Revert:
+	2009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        * include/bits/basic_string.h (_S_construct(const _CharT*, size_type,
-        const _Alloc&)): New, declare.
-        (_S_construct(_CharT*, _CharT*, const _Alloc&),
-        _S_construct(const _CharT*, const _CharT*, const _Alloc&),
-        _S_construct(iterator, iterator, const _Alloc&),
-        _S_construct(const_iterator, const_iterator, const _Alloc&)): New,
-        forward to the latter.
-        * include/bits/basic_string.tcc (_S_construct(const _CharT*,
-        size_type, const _Alloc&)): Define.
-        (basic_string(const basic_string&, size_type, size_type),
-        basic_string(const basic_string&, size_type, size_type,
-        const _Alloc&), basic_string(const _CharT*, size_type,
-        const _Alloc&), basic_string(const _CharT*, const _Alloc&),
-        basic_string(initializer_list<>, const _Alloc&)): Call the latter.
-        * config/abi/pre/gnu.ver: Remove recently added exports.
-        * src/string-inst.cc: Remove instantiations.
+	* include/bits/basic_string.h (_S_construct(const _CharT*, size_type,
+	const _Alloc&)): New, declare.
+	(_S_construct(_CharT*, _CharT*, const _Alloc&),
+	_S_construct(const _CharT*, const _CharT*, const _Alloc&),
+	_S_construct(iterator, iterator, const _Alloc&),
+	_S_construct(const_iterator, const_iterator, const _Alloc&)): New,
+	forward to the latter.
+	* include/bits/basic_string.tcc (_S_construct(const _CharT*,
+	size_type, const _Alloc&)): Define.
+	(basic_string(const basic_string&, size_type, size_type),
+	basic_string(const basic_string&, size_type, size_type,
+	const _Alloc&), basic_string(const _CharT*, size_type,
+	const _Alloc&), basic_string(const _CharT*, const _Alloc&),
+	basic_string(initializer_list<>, const _Alloc&)): Call the latter.
+	* config/abi/pre/gnu.ver: Remove recently added exports.
+	* src/string-inst.cc: Remove instantiations.
 
 2009-10-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
