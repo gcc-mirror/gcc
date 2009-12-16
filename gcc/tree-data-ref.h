@@ -504,7 +504,6 @@ void dump_rdg_component (FILE *, struct graph *, int, bitmap);
 void debug_rdg_component (struct graph *, int);
 void dump_rdg (FILE *, struct graph *);
 void debug_rdg (struct graph *);
-void dot_rdg (struct graph *);
 int rdg_vertex_for_stmt (struct graph *, gimple);
 
 /* Data dependence type.  */
