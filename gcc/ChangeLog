@@ -1,3 +1,8 @@
+2009-12-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/invoke.texi, doc/options.texi, doc/plugins.texi,
+	doc/tm.texi: Fix typos.
+
 2009-12-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/extend.texi (Function Attributes, Extended Asm):
