@@ -761,7 +761,7 @@ check that the declared interfaces are consistent across program units.
 Warn if @command{gfortran} finds a procedure named like an intrinsic not
 available in the currently selected standard (with @option{-std}) and treats
 it as @code{EXTERNAL} procedure because of this.  @option{-fall-intrinsics} can
-be used to never trigger this behaviour and always link to the intrinsic
+be used to never trigger this behavior and always link to the intrinsic
 regardless of the selected standard.
 
 @item -Wsurprising
