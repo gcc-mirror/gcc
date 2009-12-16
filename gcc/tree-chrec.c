@@ -1293,6 +1293,8 @@ keep_cast:
   if (use_overflow_semantics
       && (TREE_CODE (chrec) == PLUS_EXPR
 	  || TREE_CODE (chrec) == MINUS_EXPR)
+      && TREE_CODE (type) == INTEGER_TYPE
+      && TREE_CODE (ct) == INTEGER_TYPE
       && TYPE_PRECISION (type) > TYPE_PRECISION (ct)
       && TYPE_OVERFLOW_UNDEFINED (ct))
     res = fold_build2 (TREE_CODE (chrec), type,
