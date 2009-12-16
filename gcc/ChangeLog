@@ -1,3 +1,8 @@
+2009-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-chrec.c (chrec_convert_1): Only fold (T2)(t +- x) to
+	(T2)t +- (T2)x if only integer types are involved.
+
 2009-12-16  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-data-ref.h (dot_rdg): Remove prototype.
