@@ -1,3 +1,8 @@
+2009-12-16  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-data-ref.h (dot_rdg): Remove prototype.
+	* tree-data-ref.c (dog_rdg_1, dot_rdg): Remove.
+
 2009-12-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/invoke.texi, doc/options.texi, doc/plugins.texi,
