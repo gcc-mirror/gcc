@@ -9933,7 +9933,7 @@ contained within the @var{superset} named address space.  Pointers to
 a named address space that is a subset of another named address space
 will be converted automatically without a cast if used together in
 arithmetic operations.  Pointers to a superset address space can be
-converted to pointers to a subset address space via explict casts.
+converted to pointers to a subset address space via explicit casts.
 @end deftypefn
 
 @deftypefn {Target Hook} {rtx} TARGET_ADDR_SPACE_CONVERT (rtx @var{op}, tree @var{from_type}, tree @var{to_type})
@@ -11038,7 +11038,7 @@ On some architectures it can take multiple instructions to synthesize
 a constant.  If there is another constant already in a register that
 is close enough in value then it is preferable that the new constant
 is computed from this register using immediate addition or
-substraction.  We accomplish this through CSE.  Besides the value of
+subtraction.  We accomplish this through CSE.  Besides the value of
 the constant we also add a lower and an upper constant anchor to the
 available expressions.  These are then queried when encountering new
 constants.  The anchors are computed by rounding the constant up and

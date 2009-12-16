@@ -85,7 +85,7 @@ configurations and yet the masks always need to be defined.
 @section Option properties
 
 The second field of an option record can specify any of the following
-properties.  When an option takes an argument, it is enlosed in parentheses
+properties.  When an option takes an argument, it is enclosed in parentheses
 following the option property name.  The parser that handles option files
 is quite simplistic, and will be tricked by any nested parentheses within
 the argument text itself; in this case, the entire option argument can

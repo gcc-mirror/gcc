@@ -15533,11 +15533,11 @@ held in @code{r13} are now pushed onto the stack.
 
 Note, common variables (variables which have not been initialised) and
 constants are not placed into the small data area as they are assigned
-to other sections in the output executeable.
+to other sections in the output executable.
 
 The default value is zero, which disables this feature.  Note, this
 feature is not enabled by default with higher optimization levels
-(@option{-O2} etc) because of the potentially deterimental effects of
+(@option{-O2} etc) because of the potentially detrimental effects of
 reserving register @code{r13}.  It is up to the programmer to
 experiment and discover whether this feature is of benefit to their
 program.
@@ -15562,7 +15562,7 @@ default option.
 @opindex mmax-constant-size
 Specifies the maxium size, in bytes, of a constant that can be used as
 an operand in a RX instruction.  Although the RX instruction set does
-allow consants of up to 4 bytes in length to be used in instructions,
+allow constants of up to 4 bytes in length to be used in instructions,
 a longer value equates to a longer instruction.  Thus in some
 circumstances it can be beneficial to restrict the size of constants
 that are used in instructions.  Constants that are too big are instead
@@ -16812,7 +16812,7 @@ that MinGW-specific thread support is to be used.
 @opindex municode
 This option is available for mingw-w64 targets.  It specifies
 that the UNICODE macro is getting pre-defined and that the
-unicode capable runtime startup code is choosen.
+unicode capable runtime startup code is chosen.
 
 @item -mwin32
 @opindex mwin32

@@ -399,7 +399,7 @@ When a pass is first added to one of the pass lists, the event
 @section Building GCC plugins
 
 If plugins are enabled, GCC installs the headers needed to build a
-plugin (somehwere in the installation tree, e.g. under
+plugin (somewhere in the installation tree, e.g. under
 @file{/usr/local}).  In particular a @file{plugin/include} directory
 is installed, containing all the header files needed to build plugins.
 
