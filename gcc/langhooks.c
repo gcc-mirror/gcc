@@ -604,6 +604,8 @@ lhd_begin_section (const char *name)
   /* Save the old section so we can restore it in lto_end_asm_section.  */
   gcc_assert (!saved_section);
   saved_section = in_section;
+  if (!saved_section)
+    saved_section = text_section;
 
   /* Create a new section and switch to it.  */
   section = get_section (name, SECTION_DEBUG, NULL);
