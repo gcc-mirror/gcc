@@ -1,3 +1,8 @@
+2009-12-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42387
+	* g++.dg/ext/vla8.C: New.
+
 2009-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20091215-1.c: New test.

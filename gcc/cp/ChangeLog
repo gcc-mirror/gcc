@@ -1,3 +1,8 @@
+2009-12-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42387
+	* decl.c (compute_array_index_type): Mark a VLA as dependent.
+
 2009-12-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42358
