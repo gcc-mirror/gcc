@@ -2107,7 +2107,7 @@ build_component_ref (location_t loc, tree datum, tree component)
    LOC is the location to use for the generated tree.  */
 
 tree
-build_indirect_ref (location_t loc, tree ptr, const char *errorstring)
+build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 {
   tree pointer = default_conversion (ptr);
   tree type = TREE_TYPE (pointer);
@@ -2165,8 +2165,26 @@ build_indirect_ref (location_t loc, tree ptr, const char *errorstring)
 	}
     }
   else if (TREE_CODE (pointer) != ERROR_MARK)
-    error_at (loc,
-	      "invalid type argument of %qs (have %qT)", errorstring, type);
+    switch (errstring)
+      {
+         case RO_ARRAY_INDEXING:
+           error_at (loc,
+                     "invalid type argument of array indexing (have %qT)",
+                     type);
+           break;
+         case RO_UNARY_STAR:
+           error_at (loc,
+                     "invalid type argument of unary %<*%> (have %qT)",
+                     type);
+           break;
+         case RO_ARROW:
+           error_at (loc,
+                     "invalid type argument of %<->%> (have %qT)",
+                     type);
+           break;
+         default:
+           gcc_unreachable ();
+      }
   return error_mark_node;
 }
 
@@ -2301,7 +2319,7 @@ build_array_ref (location_t loc, tree array, tree index)
 
       return build_indirect_ref
 	(loc, build_binary_op (loc, PLUS_EXPR, ar, index, 0),
-	 "array indexing");
+	 RO_ARRAY_INDEXING);
     }
 }
 

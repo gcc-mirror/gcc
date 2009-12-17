@@ -5628,7 +5628,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	{
 	case INDIRECT_REF:
 	  non_constant_p = "%<*%>";
-	  expression = build_x_indirect_ref (cast_expression, "unary *",
+	  expression = build_x_indirect_ref (cast_expression, RO_UNARY_STAR,
                                              tf_warning_or_error);
 	  break;
 

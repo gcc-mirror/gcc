@@ -1,3 +1,15 @@
+2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/40885
+	* c-common.h (ref_operator): New type.
+	(build_indirect_ref): Adjust prototype with new argument.
+	* c-typeck.c (build_indirect_ref): Accept ref_operator as argument and
+	emit the diagnostics for easy translation.
+	(build_array_ref): Update calls to build_indirect_ref.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+	* c-parser.c (c_parser_unary_expression,
+	c_parser_postfix_expression_after_primary): Likewise.
+
 2009-12-16  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42392

@@ -442,7 +442,7 @@ expand_start_catch_block (tree decl)
 		    fold_build1_loc (input_location,
 				 NEGATE_EXPR, sizetype,
 			 	 TYPE_SIZE_UNIT (TREE_TYPE (exp))));
-      exp = cp_build_indirect_ref (exp, NULL, tf_warning_or_error);
+      exp = cp_build_indirect_ref (exp, RO_NULL, tf_warning_or_error);
       initialize_handler_parm (decl, exp);
       return type;
     }
@@ -718,7 +718,7 @@ build_throw (tree exp)
       allocate_expr = get_target_expr (allocate_expr);
       ptr = TARGET_EXPR_SLOT (allocate_expr);
       object = build_nop (build_pointer_type (temp_type), ptr);
-      object = cp_build_indirect_ref (object, NULL, tf_warning_or_error);
+      object = cp_build_indirect_ref (object, RO_NULL, tf_warning_or_error);
 
       elided = (TREE_CODE (exp) == TARGET_EXPR);
 

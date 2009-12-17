@@ -11858,7 +11858,7 @@ tsubst_copy_and_build (tree t,
 	      r = convert_from_reference (r);
 	  }
 	else
-	  r = build_x_indirect_ref (r, "unary *", complain);
+	  r = build_x_indirect_ref (r, RO_UNARY_STAR, complain);
 	return r;
       }
 

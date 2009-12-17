@@ -5102,7 +5102,7 @@ c_parser_unary_expression (c_parser *parser)
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
       op = default_function_array_conversion (exp_loc, op);
-      ret.value = build_indirect_ref (op_loc, op.value, "unary *");
+      ret.value = build_indirect_ref (op_loc, op.value, RO_UNARY_STAR);
       return ret;
     case CPP_PLUS:
       if (!c_dialect_objc () && !in_system_header)
@@ -5947,7 +5947,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  expr.value = build_component_ref (op_loc,
 					    build_indirect_ref (op_loc,
 								expr.value,
-								"->"),
+								RO_ARROW),
 					    ident);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) != COMPONENT_REF)

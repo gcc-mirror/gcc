@@ -2092,7 +2092,7 @@ build_class_member_access_expr (tree object, tree member,
   {
     tree temp = unary_complex_lvalue (ADDR_EXPR, object);
     if (temp)
-      object = cp_build_indirect_ref (temp, NULL, complain);
+      object = cp_build_indirect_ref (temp, RO_NULL, complain);
   }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
@@ -2592,7 +2592,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
    Must also handle REFERENCE_TYPEs for C++.  */
 
 tree
-build_x_indirect_ref (tree expr, const char *errorstring, 
+build_x_indirect_ref (tree expr, ref_operator errorstring, 
                       tsubst_flags_t complain)
 {
   tree orig_expr = expr;
@@ -2623,13 +2623,13 @@ build_x_indirect_ref (tree expr, const char *errorstring,
 /* Helper function called from c-common.  */
 tree
 build_indirect_ref (location_t loc __attribute__ ((__unused__)),
-		    tree ptr, const char *errorstring)
+		    tree ptr, ref_operator errorstring)
 {
   return cp_build_indirect_ref (ptr, errorstring, tf_warning_or_error);
 }
 
 tree
-cp_build_indirect_ref (tree ptr, const char *errorstring, 
+cp_build_indirect_ref (tree ptr, ref_operator errorstring, 
                        tsubst_flags_t complain)
 {
   tree pointer, type;
@@ -2697,14 +2697,38 @@ cp_build_indirect_ref (tree ptr, const char *errorstring,
   /* `pointer' won't be an error_mark_node if we were given a
      pointer to member, so it's cool to check for this here.  */
   else if (TYPE_PTR_TO_MEMBER_P (type))
-    error ("invalid use of %qs on pointer to member", errorstring);
+    switch (errorstring)
+      {
+         case RO_ARRAY_INDEXING:
+           error ("invalid use of array indexing on pointer to member");
+           break;
+         case RO_UNARY_STAR:
+           error ("invalid use of unary %<*%> on pointer to member");
+           break;
+         case RO_IMPLICIT_CONVERSION:
+           error ("invalid use of implicit conversion on pointer to member");
+           break;
+         default:
+           gcc_unreachable ();
+      }
   else if (pointer != error_mark_node)
-    {
-      if (errorstring)
-	error ("invalid type argument of %qs", errorstring);
-      else
-	error ("invalid type argument");
-    }
+    switch (errorstring)
+      {
+         case RO_NULL:
+           error ("invalid type argument");
+           break;
+         case RO_ARRAY_INDEXING:
+           error ("invalid type argument of array indexing");
+           break;
+         case RO_UNARY_STAR:
+           error ("invalid type argument of unary %<*%>");
+           break;
+         case RO_IMPLICIT_CONVERSION:
+           error ("invalid type argument of implicit conversion");
+           break;
+         default:
+           gcc_unreachable ();
+      }
   return error_mark_node;
 }
 
@@ -2871,7 +2895,7 @@ build_array_ref (location_t loc, tree array, tree idx)
     ret = cp_build_indirect_ref (cp_build_binary_op (input_location,
 						     PLUS_EXPR, ar, ind,
 						     tf_warning_or_error),
-                                 "array indexing",
+                                 RO_ARRAY_INDEXING,
                                  tf_warning_or_error);
     protected_set_expr_location (ret, loc);
     return ret;
@@ -2980,7 +3004,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       /* Next extract the vtable pointer from the object.  */
       vtbl = build1 (NOP_EXPR, build_pointer_type (vtbl_ptr_type_node),
 		     instance_ptr);
-      vtbl = cp_build_indirect_ref (vtbl, NULL, tf_warning_or_error);
+      vtbl = cp_build_indirect_ref (vtbl, RO_NULL, tf_warning_or_error);
       /* If the object is not dynamic the access invokes undefined
 	 behavior.  As it is not executed in this case silence the
 	 spurious warnings it may provoke.  */
@@ -2990,7 +3014,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       e2 = fold_build2_loc (input_location,
 			POINTER_PLUS_EXPR, TREE_TYPE (vtbl), vtbl,
 			fold_convert (sizetype, idx));
-      e2 = cp_build_indirect_ref (e2, NULL, tf_warning_or_error);
+      e2 = cp_build_indirect_ref (e2, RO_NULL, tf_warning_or_error);
       TREE_CONSTANT (e2) = 1;
 
       /* When using function descriptors, the address of the

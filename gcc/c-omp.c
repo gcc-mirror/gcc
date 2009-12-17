@@ -145,7 +145,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code, tree lhs, tree rhs)
       DECL_CONTEXT (var) = current_function_decl;
       addr = build4 (TARGET_EXPR, TREE_TYPE (addr), var, addr, NULL, NULL);
     }
-  lhs = build_indirect_ref (loc, addr, NULL);
+  lhs = build_indirect_ref (loc, addr, RO_NULL);
 
   /* There are lots of warnings, errors, and conversions that need to happen
      in the course of interpreting a statement.  Use the normal mechanisms
