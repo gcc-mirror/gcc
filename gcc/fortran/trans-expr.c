@@ -1556,6 +1556,10 @@ select_class_proc (gfc_se *se, gfc_class_esym_list *elist,
       if (elist->derived == NULL)
 	goto free_elist;
 
+      /* Skip abstract base types.  */
+      if (elist->derived->attr.abstract)
+       goto free_elist;
+
       /* Run through the chain picking up all the cases that call the
 	 same procedure.  */
       tmp_elist = elist;
