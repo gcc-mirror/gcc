@@ -1,3 +1,9 @@
+2009-12-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/42372
+	* arm.md (pic_add_dot_plus_eight): Change output constraint from
+	update to write.
+
 2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
