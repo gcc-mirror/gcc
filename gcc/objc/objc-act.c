@@ -3115,7 +3115,7 @@ objc_substitute_decl (tree expr, tree oldexpr, tree newexpr)
       return build_indirect_ref (input_location,
 				 objc_substitute_decl (TREE_OPERAND (expr, 0),
 						       oldexpr,
-						       newexpr), "->");
+						       newexpr), RO_ARROW);
     default:
       return expr;
     }
@@ -6823,7 +6823,8 @@ build_ivar_reference (tree id)
     }
 
   return objc_build_component_ref (build_indirect_ref (input_location,
-						       self_decl, "->"), id);
+						       self_decl, RO_ARROW),
+				   id);
 }
 
 /* Compute a hash value for a given method SEL_NAME.  */
@@ -8841,7 +8842,7 @@ get_super_receiver (void)
 		      (input_location,
 		       build_c_cast (input_location,
 				     build_pointer_type (objc_class_type),
-				     super_class), "unary *");
+				     super_class), RO_UNARY_STAR);
 	    }
 	  else
 	    {
