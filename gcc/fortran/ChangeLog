@@ -1,3 +1,8 @@
+2009-12-17 Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42144
+	* trans-expr.c (select_class_proc): Skip abstract base types.
+
 2009-12-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gfc-internals.texi, gfortran.texi, invoke.texi: Fix typos.
