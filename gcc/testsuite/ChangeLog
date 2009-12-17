@@ -1,3 +1,12 @@
+2009-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/dwarf2/const-1.c: Don't expect DW_AT_const_value,
+	but instead DW_AT_location with DW_OP_addr+DW_OP_stack_value.  Add
+	-gno-strict-dwarf -fno-merge-debug-strings to dg-options.
+	* g++.dg/debug/dwarf2/const1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-3.C: Likewise.
+
 2009-12-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41679
