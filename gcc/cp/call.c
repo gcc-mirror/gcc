@@ -5826,7 +5826,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  t = convert (TREE_TYPE (arg0), t);
 	  if (test)
 	    t = build3 (COND_EXPR, TREE_TYPE (t), test, arg0, t);
-	  val = cp_build_indirect_ref (t, 0, complain);
+	  val = cp_build_indirect_ref (t, RO_NULL, complain);
           TREE_NO_WARNING (val) = 1;
 	}
 
@@ -5934,7 +5934,7 @@ build_java_interface_fn_ref (tree fn, tree instance)
 
   /* Look up the pointer to the runtime java.lang.Class object for `instance'.
      This is the first entry in the vtable.  */
-  klass_ref = build_vtbl_ref (cp_build_indirect_ref (instance, 0, 
+  klass_ref = build_vtbl_ref (cp_build_indirect_ref (instance, RO_NULL, 
                                                      tf_warning_or_error),
 			      integer_zero_node);
 

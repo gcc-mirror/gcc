@@ -1,5 +1,11 @@
 2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
 
+	* call.c (build_over_call, build_java_interface_fn_ref): Update
+	cp_build_indirect_ref calls.
+	* typeck2.c (build_m_component_ref): Likewise.
+
+2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
+
 	* typeck.c (build_indirect_ref): Update the argument.
 	(build_x_indirect_ref): Likewise.
 	(cp_build_indirect_ref): Update the argument and emit the diagnostics
