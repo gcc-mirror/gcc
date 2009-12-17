@@ -265,16 +265,91 @@ LSYM(Lend_fde):
 .endm
 #endif
 
-.macro ARM_LDIV0 name
+#ifdef __ARM_EABI__
+.macro ARM_LDIV0 name signed
+	cmp	r0, #0
+	.ifc	\signed, unsigned
+	movne	r0, #0xffffffff
+	.else
+	movgt	r0, #0x7fffffff
+	movlt	r0, #0x80000000
+	.endif
+	b	SYM (__aeabi_idiv0) __PLT__
+.endm
+#else
+.macro ARM_LDIV0 name signed
 	str	lr, [sp, #-8]!
 98:	cfi_push 98b - __\name, 0xe, -0x8, 0x8
 	bl	SYM (__div0) __PLT__
 	mov	r0, #0			@ About as wrong as it could be.
 	RETLDM	unwind=98b
 .endm
+#endif
 
 
-.macro THUMB_LDIV0 name
+#ifdef __ARM_EABI__
+.macro THUMB_LDIV0 name signed
+#if defined(__ARM_ARCH_6M__)
+	.ifc \signed, unsigned
+	cmp	r0, #0
+	beq	1f
+	mov	r0, #0
+	mvn	r0, r0		@ 0xffffffff
+1:
+	.else
+	cmp	r0, #0
+	beq	2f
+	blt	3f
+	mov	r0, #0
+	mvn	r0, r0
+	lsr	r0, r0, #1	@ 0x7fffffff
+	b	2f
+3:	mov	r0, #0x80
+	lsl	r0, r0, #24	@ 0x80000000
+2:
+	.endif
+	push	{r0, r1, r2}
+	ldr	r0, 4f
+	adr	r1, 4f
+	add	r0, r1
+	str	r0, [sp, #8]
+	@ We know we are not on armv4t, so pop pc is safe.
+	pop	{r0, r1, pc}
+	.align	2
+4:
+	.word	__aeabi_idiv0 - 4b
+#elif defined(__thumb2__)
+	.syntax unified
+	.ifc \signed, unsigned
+	cbz	r0, 1f
+	mov	r0, #0xffffffff
+1:
+	.else
+	cmp	r0, #0
+	do_it	gt
+	movgt	r0, #0x7fffffff
+	do_it	lt
+	movlt	r0, #0x80000000
+	.endif
+	b.w	SYM(__aeabi_idiv0) __PLT__
+#else
+	.align	2
+	bx	pc
+	nop
+	.arm
+	cmp	r0, #0
+	.ifc	\signed, unsigned
+	movne	r0, #0xffffffff
+	.else
+	movgt	r0, #0x7fffffff
+	movlt	r0, #0x80000000
+	.endif
+	b	SYM(__aeabi_idiv0) __PLT__
+	.thumb
+#endif
+.endm
+#else
+.macro THUMB_LDIV0 name signed
 	push	{ r1, lr }
 98:	cfi_push 98b - __\name, 0xe, -0x4, 0x8
 	bl	SYM (__div0)
@@ -286,18 +361,19 @@ LSYM(Lend_fde):
 	pop	{ r1, pc }
 #endif
 .endm
+#endif
 
 .macro FUNC_END name
 	SIZE (__\name)
 .endm
 
-.macro DIV_FUNC_END name
+.macro DIV_FUNC_END name signed
 	cfi_start	__\name, LSYM(Lend_div0)
 LSYM(Ldiv0):
 #ifdef __thumb__
-	THUMB_LDIV0 \name
+	THUMB_LDIV0 \name \signed
 #else
-	ARM_LDIV0 \name
+	ARM_LDIV0 \name \signed
 #endif
 	cfi_end	LSYM(Lend_div0)
 	FUNC_END \name
@@ -421,6 +497,12 @@ SYM (__\name):
 #define yyh r3
 #define yyl r2
 #endif	
+
+#ifdef __ARM_EABI__
+.macro	WEAK name
+	.weak SYM (__\name)
+.endm
+#endif
 
 #ifdef __thumb__
 /* Register aliases.  */
@@ -842,6 +924,7 @@ LSYM(Lgot_result):
 
 	cmp	divisor, #0
 	beq	LSYM(Ldiv0)
+LSYM(udivsi3_skip_div0_test):
 	mov	curbit, #1
 	mov	result, #0
 	
@@ -860,6 +943,9 @@ LSYM(Lgot_result):
 	ARM_FUNC_START udivsi3
 	ARM_FUNC_ALIAS aeabi_uidiv udivsi3
 
+	/* Note: if called via udivsi3_skip_div0_test, this will unnecessarily
+	   check for division-by-zero a second time.  */
+LSYM(udivsi3_skip_div0_test):
 	subs	r2, r1, #1
 	do_it	eq
 	RETc(eq)
@@ -886,20 +972,24 @@ LSYM(Lgot_result):
 
 #endif /* ARM version */
 
-	DIV_FUNC_END udivsi3
+	DIV_FUNC_END udivsi3 unsigned
 
 #if defined(__ARM_ARCH_6M__)
 FUNC_START aeabi_uidivmod
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
 	push	{r0, r1, lr}
-	bl	SYM(__udivsi3)
+	bl	LSYM(udivsi3_skip_div0_test)
 	POP	{r1, r2, r3}
 	mul	r2, r0
 	sub	r1, r1, r2
 	bx	r3
 #else
 ARM_FUNC_START aeabi_uidivmod
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
 	stmfd	sp!, { r0, r1, lr }
-	bl	SYM(__udivsi3)
+	bl	LSYM(udivsi3_skip_div0_test)
 	ldmfd	sp!, { r1, r2, lr }
 	mul	r3, r2, r0
 	sub	r1, r1, r3
@@ -946,7 +1036,7 @@ LSYM(Lover10):
 
 #endif /* ARM version.  */
 	
-	DIV_FUNC_END umodsi3
+	DIV_FUNC_END umodsi3 unsigned
 
 #endif /* L_umodsi3 */
 /* ------------------------------------------------------------------------ */
@@ -959,7 +1049,7 @@ LSYM(Lover10):
 
 	cmp	divisor, #0
 	beq	LSYM(Ldiv0)
-	
+LSYM(divsi3_skip_div0_test):
 	push	{ work }
 	mov	work, dividend
 	eor	work, divisor		@ Save the sign of the result.
@@ -994,8 +1084,9 @@ LSYM(Lover12):
 	ARM_FUNC_ALIAS aeabi_idiv divsi3
 
 	cmp	r1, #0
-	eor	ip, r0, r1			@ save the sign of the result.
 	beq	LSYM(Ldiv0)
+LSYM(divsi3_skip_div0_test):
+	eor	ip, r0, r1			@ save the sign of the result.
 	do_it	mi
 	rsbmi	r1, r1, #0			@ loops below use unsigned.
 	subs	r2, r1, #1			@ division by 1 or -1 ?
@@ -1037,20 +1128,24 @@ LSYM(Lover12):
 
 #endif /* ARM version */
 	
-	DIV_FUNC_END divsi3
+	DIV_FUNC_END divsi3 signed
 
 #if defined(__ARM_ARCH_6M__)
 FUNC_START aeabi_idivmod
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
 	push	{r0, r1, lr}
-	bl	SYM(__divsi3)
+	bl	LSYM(divsi3_skip_div0_test)
 	POP	{r1, r2, r3}
 	mul	r2, r0
 	sub	r1, r1, r2
 	bx	r3
 #else
 ARM_FUNC_START aeabi_idivmod
+	cmp	r1, #0
+	beq	LSYM(Ldiv0)
 	stmfd	sp!, { r0, r1, lr }
-	bl	SYM(__divsi3)
+	bl	LSYM(divsi3_skip_div0_test)
 	ldmfd	sp!, { r1, r2, lr }
 	mul	r3, r2, r0
 	sub	r1, r1, r3
@@ -1116,21 +1211,25 @@ LSYM(Lover12):
 
 #endif /* ARM version */
 	
-	DIV_FUNC_END modsi3
+	DIV_FUNC_END modsi3 signed
 
 #endif /* L_modsi3 */
 /* ------------------------------------------------------------------------ */
 #ifdef L_dvmd_tls
 
-	FUNC_START div0
-	FUNC_ALIAS aeabi_idiv0 div0
-	FUNC_ALIAS aeabi_ldiv0 div0
-
+#ifdef __ARM_EABI__
+	WEAK aeabi_idiv0
+	WEAK aeabi_ldiv0
+	FUNC_START aeabi_idiv0
+	FUNC_START aeabi_ldiv0
 	RET
-
 	FUNC_END aeabi_ldiv0
 	FUNC_END aeabi_idiv0
+#else
+	FUNC_START div0
+	RET
 	FUNC_END div0
+#endif
 	
 #endif /* L_divmodsi_tools */
 /* ------------------------------------------------------------------------ */
@@ -1140,14 +1239,26 @@ LSYM(Lover12):
 /* Constant taken from <asm/signal.h>.  */
 #define SIGFPE	8
 
+#ifdef __ARM_EABI__
+	WEAK aeabi_idiv0
+	WEAK aeabi_ldiv0
+	ARM_FUNC_START aeabi_idiv0
+	ARM_FUNC_START aeabi_ldiv0
+#else
 	ARM_FUNC_START div0
+#endif
 
 	do_push	{r1, lr}
 	mov	r0, #SIGFPE
 	bl	SYM(raise) __PLT__
 	RETLDM	r1
 
+#ifdef __ARM_EABI__
+	FUNC_END aeabi_ldiv0
+	FUNC_END aeabi_idiv0
+#else
 	FUNC_END div0
+#endif
 	
 #endif /* L_dvmd_lnx */
 #ifdef L_clear_cache
