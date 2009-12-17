@@ -1,3 +1,7 @@
+2009-12-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/rtl.texi (Vector Operations): Clarify vec_select result mode.
+
 2009-12-17  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/bpabi-v6m.S (test_div_by_zero): New macro.
