@@ -1,3 +1,8 @@
+2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Update build_indirect_ref calls.	
+
 2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (IMODE): Remove mode iterator.
