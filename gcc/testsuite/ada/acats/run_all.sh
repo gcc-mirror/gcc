@@ -129,6 +129,7 @@ sed -e "s,ACATS4GNATDIR,$dir,g" \
 
 cp $testdir/tests/cd/*.c $dir/support
 cp $testdir/tests/cxb/*.c $dir/support
+grep -v '^#' $testdir/norun.lst > $dir/support/norun.lst
 
 rm -rf $dir/run
 mv $dir/tests $dir/tests.$$ 2> /dev/null
@@ -206,7 +207,7 @@ for chapter in $chapters; do
 
    cd $dir/tests/$chapter
    ls *.a *.ada *.adt *.am *.dep 2> /dev/null | sed -e 's/\(.*\)\..*/\1/g' | \
-   cut -c1-7 | sort | uniq | comm -23 - $testdir/norun.lst \
+   cut -c1-7 | sort | uniq | comm -23 - $dir/support/norun.lst \
      > $dir/tests/$chapter/${chapter}.lst 
    countn=`wc -l < $dir/tests/$chapter/${chapter}.lst`
    glob_countn=`expr $glob_countn + $countn`
