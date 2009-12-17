@@ -1,3 +1,8 @@
+2009-12-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41679
+	* gcc.target/arm/pr41679.c: New.
+
 2009-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42386

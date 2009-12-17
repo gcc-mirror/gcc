@@ -1,3 +1,9 @@
+2009-12-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/41679
+	* var-tracking.c (add_stores): Avoid value mode mismatch for
+	promoted declarations.
+
 2009-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/42386
