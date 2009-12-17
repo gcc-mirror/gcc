@@ -1,3 +1,7 @@
+2009-12-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada/acats/run_all.sh: Strip comments from norun.lst
+
 2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32280
