@@ -4815,13 +4815,15 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	    }
 	  else
 	    {
+	      rtx xexpr = CONST_CAST_RTX (expr);
+
 	      if (SET_SRC (expr) != src)
-		expr = gen_rtx_SET (VOIDmode, loc, src);
+		xexpr = gen_rtx_SET (VOIDmode, loc, src);
 	      if (same_variable_part_p (src, REG_EXPR (loc), REG_OFFSET (loc)))
 		mo->type = MO_COPY;
 	      else
 		mo->type = MO_SET;
-	      mo->u.loc = CONST_CAST_RTX (expr);
+	      mo->u.loc = xexpr;
 	    }
 	}
       mo->insn = cui->insn;
@@ -4872,15 +4874,17 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	    }
 	  else
 	    {
+	      rtx xexpr = CONST_CAST_RTX (expr);
+
 	      if (SET_SRC (expr) != src)
-		expr = gen_rtx_SET (VOIDmode, loc, src);
-	      if (same_variable_part_p (SET_SRC (expr),
+		xexpr = gen_rtx_SET (VOIDmode, loc, src);
+	      if (same_variable_part_p (SET_SRC (xexpr),
 					MEM_EXPR (loc),
 					INT_MEM_OFFSET (loc)))
 		mo->type = MO_COPY;
 	      else
 		mo->type = MO_SET;
-	      mo->u.loc = CONST_CAST_RTX (expr);
+	      mo->u.loc = xexpr;
 	    }
 	}
       mo->insn = cui->insn;
@@ -4901,7 +4905,14 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 
   if (resolve && GET_CODE (mo->u.loc) == SET)
     {
-      nloc = replace_expr_with_values (SET_SRC (mo->u.loc));
+      nloc = replace_expr_with_values (SET_SRC (expr));
+
+      /* Avoid the mode mismatch between oexpr and expr.  */
+      if (!nloc && mode != mode2)
+	{
+	  nloc = SET_SRC (expr);
+	  gcc_assert (oloc == SET_DEST (expr));
+	}
 
       if (nloc)
 	oloc = gen_rtx_SET (GET_MODE (mo->u.loc), oloc, nloc);
@@ -4940,7 +4951,8 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 
      (concat (concat val dstv) (set dst src)): dst now holds val,
      copied from src.  dstv is a value-based representation of dst, if
-     it differs from dst.  If resolution is needed, src is a REG.
+     it differs from dst.  If resolution is needed, src is a REG, and
+     its mode is the same as that of val.
 
      (concat (concat val (set dstv srcv)) (set dst src)): src
      copied to dst, holding val.  dstv and srcv are value-based
