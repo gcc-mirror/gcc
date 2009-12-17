@@ -3365,7 +3365,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       stmt = build_unary_op (loc, ADDR_EXPR, stmt, 0);
       stmt = convert (innerptrtype, stmt);
       stmt = build_binary_op (loc, PLUS_EXPR, stmt, arg2, 1);
-      stmt = build_indirect_ref (loc, stmt, NULL);
+      stmt = build_indirect_ref (loc, stmt, RO_NULL);
 
       return stmt;
     }
@@ -3444,7 +3444,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       stmt = build_unary_op (loc, ADDR_EXPR, stmt, 0);
       stmt = convert (innerptrtype, stmt);
       stmt = build_binary_op (loc, PLUS_EXPR, stmt, arg2, 1);
-      stmt = build_indirect_ref (loc, stmt, NULL);
+      stmt = build_indirect_ref (loc, stmt, RO_NULL);
       stmt = build2 (MODIFY_EXPR, TREE_TYPE (stmt), stmt,
 		     convert (TREE_TYPE (stmt), arg0));
       stmt = build2 (COMPOUND_EXPR, arg1_type, stmt, decl);
