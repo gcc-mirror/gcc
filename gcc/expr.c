@@ -1194,6 +1194,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
     }
 
   align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
+  gcc_assert (align >= BITS_PER_UNIT);
 
   gcc_assert (MEM_P (x));
   gcc_assert (MEM_P (y));

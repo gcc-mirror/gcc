@@ -1,3 +1,11 @@
+2009-12-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42397
+	* builtins.c (get_object_alignment): Properly deal with
+	a CONST_DECL base.
+	* expr.c (emit_block_move_hints): Assert the alignment makes
+	sense.
+
 2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32280

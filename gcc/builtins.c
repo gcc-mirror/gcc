@@ -323,6 +323,8 @@ get_object_alignment (tree exp, unsigned int align, unsigned int max_align)
 	  offset = next_offset;
 	}
     }
+  if (TREE_CODE (exp) == CONST_DECL)
+    exp = DECL_INITIAL (exp);
   if (DECL_P (exp))
     align = MIN (inner, DECL_ALIGN (exp));
 #ifdef CONSTANT_ALIGNMENT
