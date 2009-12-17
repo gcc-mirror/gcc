@@ -1,5 +1,10 @@
 2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/32280
+	* gcc.target/i386/pr32280-1.c: New test.
+
+2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
 	* objc/execute/forward-1.x: XFAIL for -fgnu-runtime on
 	x86_64-*-darwin*, powerpc*-*-darwin* and alpha*-*-linux* targets.
 

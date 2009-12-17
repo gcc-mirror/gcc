@@ -1,3 +1,43 @@
+2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32280
+	* config/i386/i386-modes.def (V1TI): New vector mode.
+	* config/i386/i386.h (VALID_SSE_REG_MODE): Add V1TImode.
+	(SSE_REG_MODE_P): Ditto.
+	* config/i386/sse.md (SSEMODE16): New mode iterator.
+	(AVXMODE16): Ditto.
+	(avxvecmode): Handle V1TI mode.
+	(*avx_mov<mode>_internal): Use AVXMODE16 instead of AVXMODE.
+	(mov<mode>): Use SSEMODE16 instead of SSEMODE.
+	(*mov<mode>_internal): Ditto.
+	(push<mode>1): Ditto.
+	(movmisalign<mode>): Ditto.
+	(sse2_ashlv1ti): Rename from sse2_ashlti.
+	(sse2_lshrv1ti): Rename from sse2_lshrti.
+	(*avx_ashlv1ti): Rename from *avx_ashlti and move from i386.md.
+	(*avx_lshrv1ti): Rename from *avx_lshrti and move from i386.md.
+	(vec_shl_<mode>): Convert operands to V1TImode and use V1TI shift.
+	(vec_shr_<mode>): Ditto.
+	(*sse2_mulv4si3): Update for renamed sse2_ashlv1ti3.
+	(udot_prodv4si): Ditto.
+	* config/i386/i386.c (classify_argument): Handle V1TImode.
+	(function_arg_advance_32): Ditto.
+	(function_arg_32): Ditto.
+	(ix86_expand_sse4_unpack): Convert operands to V1TImode and update
+	for renamed gen_sse2_lshrv1ti3.
+	(ix86_expand_args_builtin) <V2DI_FTYPE_V2DI_INT_CONVERT>: Set rmode
+	to V1TImode.
+	(struct builtin_description) <__builtin_ia32_pslldqi128>: Update
+	for renamed sse2_ashlv1ti3.
+	<__builtin_ia32_psrldqi128>: Update for renamed sse2_lshrv1ti3.
+	
+	Revert:
+	2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32280
+	* config/i386/sse.md ("sse2_ashlti", "sse2_lshrti3"): Move ...
+	* config/i386/i386.md ("sse2_ashlti", "sse2_lshrti3"): ... to here.
+
 2009-12-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/42372

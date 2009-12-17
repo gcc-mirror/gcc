@@ -1013,7 +1013,8 @@ enum target_cpu_default
    || (MODE) == V2DImode || (MODE) == DFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
-  ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode		\
+  ((MODE) == V1TImode || (MODE) == TImode				\
+   || (MODE) == V4SFmode || (MODE) == V4SImode				\
    || (MODE) == SFmode || (MODE) == TFmode)
 
 #define VALID_MMX_REG_MODE_3DNOW(MODE) \
@@ -1051,11 +1052,11 @@ enum target_cpu_default
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\
-  ((MODE) == TImode || (MODE) == V16QImode || (MODE) == TFmode		\
-   || (MODE) == V8HImode || (MODE) == V2DFmode || (MODE) == V2DImode	\
-   || (MODE) == V4SFmode || (MODE) == V4SImode || (MODE) == V32QImode	\
-   || (MODE) == V16HImode || (MODE) == V8SImode || (MODE) == V4DImode	\
-   || (MODE) == V8SFmode || (MODE) == V4DFmode)
+  ((MODE) == V1TImode || (MODE) == TImode || (MODE) == V16QImode	\
+   || (MODE) == TFmode || (MODE) == V8HImode || (MODE) == V2DFmode	\
+   || (MODE) == V2DImode || (MODE) == V4SFmode || (MODE) == V4SImode	\
+   || (MODE) == V32QImode || (MODE) == V16HImode || (MODE) == V8SImode	\
+   || (MODE) == V4DImode || (MODE) == V8SFmode || (MODE) == V4DFmode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
