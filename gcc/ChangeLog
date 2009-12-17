@@ -1,3 +1,24 @@
+2009-12-17  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/bpabi-v6m.S (test_div_by_zero): New macro.
+	(aeabi_ldivmod, aeabi_uldivmod): Use above macro.
+	* config/arm/bpabi.S (test_div_by_zero): New macro.
+	(aeabi_ldivmod, aeabi_uldivmod): Use above macro.
+	* config/arm/lib1funcs.asm (ARM_LDIV0): Tail-call int div-by-zero
+	handler for EABI. Add signed/unsigned argument, pass correct value
+	to that handler.
+	(THUMB_LDIV0): Same, for Thumb.
+	(DIV_FUNC_END): Add signed argument.
+	(WEAK): New macro (for EABI).
+	(__udivsi3, __umodsi3): Add unsigned argument to DIV_FUNC_END. For
+	__udivsi3, add entry point which skips division-by-zero test.
+	(__divsi3, __modsi3): Add signed argument to DIV_FUNC_END.
+	(__aeabi_uidivmod, __aeabi_idivmod): Check for division by zero.
+	Call __udivsi3 or __divsi3 via entry points which skip
+	division-by-zero tests.
+	(__div0): Rename to __aeabi_idiv0, __aeabi_ldiv0 for EABI, and
+	declare those names weak.
+
 2009-12-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42397

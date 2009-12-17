@@ -69,9 +69,52 @@ FUNC_START aeabi_ulcmp
 
 #endif /* L_aeabi_ulcmp */
 
+.macro test_div_by_zero signed
+	cmp	yyh, #0
+	bne	7f
+	cmp	yyl, #0
+	bne	7f
+	cmp	xxh, #0
+	bne	2f
+	cmp	xxl, #0
+2:
+	.ifc	\signed, unsigned
+	beq	3f
+	mov	xxh, #0
+	mvn	xxh, xxh		@ 0xffffffff
+	mov	xxl, xxh
+3:
+	.else
+	beq	5f
+	blt	6f
+	mov	xxl, #0
+	mvn	xxl, xxl		@ 0xffffffff
+	lsr	xxh, xxl, #1		@ 0x7fffffff
+	b	5f
+6:	mov	xxh, #0x80
+	lsl	xxh, xxh, #24		@ 0x80000000
+	mov	xxl, #0
+5:
+	.endif
+	@ tailcalls are tricky on v6-m.
+	push	{r0, r1, r2}
+	ldr	r0, 1f
+	adr	r1, 1f
+	add	r0, r1
+	str	r0, [sp, #8]
+	@ We know we are not on armv4t, so pop pc is safe.
+	pop	{r0, r1, pc}
+	.align	2
+1:
+	.word	__aeabi_ldiv0 - 1b
+7:
+.endm
+
 #ifdef L_aeabi_ldivmod
 
 FUNC_START aeabi_ldivmod
+	test_div_by_zero signed
+
 	push {r0, r1}
 	mov r0, sp
 	push {r0, lr}
@@ -89,6 +132,8 @@ FUNC_START aeabi_ldivmod
 #ifdef L_aeabi_uldivmod
 
 FUNC_START aeabi_uldivmod
+	test_div_by_zero unsigned
+
 	push {r0, r1}
 	mov r0, sp
 	push {r0, lr}
