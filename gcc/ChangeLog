@@ -1,3 +1,9 @@
+2009-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/42386
+	* ipa.c (function_and_variable_visibility): Clear same_comdat_group
+	links of DECL_EXTERNAL nodes.
+
 2009-12-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/rtl.texi (Vector Operations): Clarify vec_select result mode.

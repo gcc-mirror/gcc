@@ -370,6 +370,23 @@ function_and_variable_visibility (bool whole_program)
 	 happy.  Clear the flag here to avoid confusion in middle-end.  */
       if (DECL_COMDAT (node->decl) && !TREE_PUBLIC (node->decl))
         DECL_COMDAT (node->decl) = 0;
+      /* For external decls stop tracking same_comdat_group, it doesn't matter
+	 what comdat group they are in when they won't be emitted in this TU,
+	 and simplifies later passes.  */
+      if (node->same_comdat_group && DECL_EXTERNAL (node->decl))
+	{
+	  struct cgraph_node *n = node, *next;
+	  do
+	    {
+	      /* If at least one of same comdat group functions is external,
+		 all of them have to be, otherwise it is a front-end bug.  */
+	      gcc_assert (DECL_EXTERNAL (n->decl));
+	      next = n->same_comdat_group;
+	      n->same_comdat_group = NULL;
+	      n = next;
+	    }
+	  while (n != node);
+	}
       gcc_assert ((!DECL_WEAK (node->decl) && !DECL_COMDAT (node->decl))
       	          || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
       if (cgraph_externally_visible_p (node, whole_program))
