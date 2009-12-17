@@ -1,3 +1,9 @@
+2009-12-17  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/42377
+	* config/abi/pre/gnu.ver: Adjust mangled function signatures to permit
+	LLP64 sizetypes throughout.
+
 2009-12-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/42198
