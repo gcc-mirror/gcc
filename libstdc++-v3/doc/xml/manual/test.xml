@@ -1,6 +1,6 @@
 <sect1 id="manual.intro.setup.test" xreflabel="Testing">
 <?dbhtml filename="test.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -48,7 +48,7 @@ regressions, ABI, and performance.
   that are packaged in a separate testing library.
 </para>
 
-<para> 
+<para>
   All test cases for functionality required by the runtime components
   of the C++ standard (ISO 14882) are files within the following
   directories.
@@ -65,6 +65,9 @@ regressions, ABI, and performance.
 25_algorithms
 26_numerics
 27_io
+28_regex
+29_atomics
+30_threads
    </programlisting>
 
    <para>
@@ -77,9 +80,8 @@ backward	  Tests for backwards compatibility and deprecated features.
 demangle	  Tests for __cxa_demangle, the IA 64 C++ ABI demangler
 ext		  Tests for extensions.
 performance	  Tests for performance analysis, and performance regressions.
-thread		  Tests for threads.
    </programlisting>
-   
+
    <para>
       Some directories don't have test files, but instead contain
       auxiliary information:
@@ -104,7 +106,7 @@ util		  Files for libtestc++, utilities and testing routines.
    </para>
    <programlisting>
 21_strings/find.cc
-   </programlisting>   
+   </programlisting>
    <para>
       However, that practice soon became a liability as the test cases
       became huge and unwieldy, and testing new or extended
@@ -123,11 +125,11 @@ util		  Files for libtestc++, utilities and testing routines.
 21_strings/basic_string/find/wchar_t/1.cc
 21_strings/basic_string/find/wchar_t/2.cc
 21_strings/basic_string/find/wchar_t/3.cc
-   </programlisting>   
+   </programlisting>
 
    <para>
       All new tests should be written with the policy of one test
-      case, one file in mind. 
+      case, one file in mind.
    </para>
 </sect3>
 
@@ -140,7 +142,7 @@ util		  Files for libtestc++, utilities and testing routines.
       used within the testsuite to designate particular kinds of
       tests.
    </para>
- 
+
 <itemizedlist>
 <listitem>
   <para>
@@ -151,10 +153,10 @@ util		  Files for libtestc++, utilities and testing routines.
       to finish or pass. At the moment, the interactive tests are not
       run by default. Instead, they are run by hand, like:
    </para>
-      <programlisting> 
+      <programlisting>
 g++ 27_io/objects/char/3_xin.cc
 cat 27_io/objects/char/3_xin.in | a.out
-     </programlisting> 
+     </programlisting>
 </listitem>
 <listitem>
    <para>
@@ -232,7 +234,7 @@ cat 27_io/objects/char/3_xin.in | a.out
 
   <sect3 id="test.run.basic">
     <title>Basic</title>
-   
+
     <para>
       You can check the status of the build without installing it
       using the dejagnu harness, much like the rest of the gcc
@@ -254,7 +256,7 @@ cat 27_io/objects/char/3_xin.in | a.out
        the exact command line passed to the compiler, the compiler
        output, and the executable output (if any).
      </para>
-     
+
      <para>
        Archives of test results for various versions and platforms are
        available on the GCC website in the <ulink
@@ -266,7 +268,7 @@ cat 27_io/objects/char/3_xin.in | a.out
        combination of source version, operating system, and host CPU.
      </para>
   </sect3>
-  
+
   <sect3 id="test.run.variations">
     <title>Variations</title>
     <para>
@@ -322,7 +324,7 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
 make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
 </programlisting>
 
-    <para> 
+    <para>
       Also, here is an example of how to run the libstdc++ testsuite
       for a multilibed build directory with different ABI settings:
     </para>
@@ -330,7 +332,7 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
  <programlisting>
 make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
 </programlisting>
- 
+
     <para>
       You can run the tests with a compiler and library that have
       already been installed.  Make sure that the compiler (e.g.,
@@ -354,7 +356,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       testsuites in parallel from the same directory.
     </para>
 
-    <para> 
+    <para>
       In addition, there are some testing options that are mostly of
       interest to library maintainers and system integrators. As such,
       these tests may not work on all cpu and host combinations, and
@@ -378,7 +380,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
        <para>
 	 <emphasis>testsuite_files</emphasis>
        </para>
-       <para> 
+       <para>
 	 This is a list of all the test cases that will be run. Each
 	 test case is on a separate line, given with an absolute path
 	 from the <emphasis>libsrcdir/testsuite</emphasis> directory.
@@ -389,7 +391,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
        <para>
 	 <emphasis>testsuite_files_interactive</emphasis>
        </para>
-       <para> 
+       <para>
 	 This is a list of all the interactive test cases, using the
 	 same format as the file list above. These tests are not run
 	 by default.
@@ -400,7 +402,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
        <para>
 	 <emphasis>testsuite_files_performance</emphasis>
        </para>
-       <para> 
+       <para>
 	 This is a list of all the performance test cases, using the
 	 same format as the file list above. These tests are not run
 	 by default.
@@ -411,7 +413,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
        <para>
 	 <emphasis>testsuite_thread</emphasis>
        </para>
-       <para> 
+       <para>
 	 This file indicates that the host system can run tests which
 	 involved multiple threads.
        </para>
@@ -421,7 +423,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
        <para>
 	 <emphasis>testsuite_wchar_t</emphasis>
        </para>
-       <para> 
+       <para>
 	 This file indicates that the host system can run the wchar_t
 	 tests, and corresponds to the macro definition <code>
 	 _GLIBCXX_USE_WCHAR_T</code> in the file c++config.h.
@@ -432,11 +434,11 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
    <programlisting>
    make check-abi
    </programlisting>
-   
+
    <para>
      The library ABI can be tested. This involves testing the shared
      library against an ABI-defining previous version of symbol
-     exports. 
+     exports.
    </para>
 
   <programlisting>
@@ -507,7 +509,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
    <para>
     The first step in making a new test case is to choose the correct
     directory and file name, given the organization as previously
-    described. 
+    described.
    </para>
 
    <para>
@@ -638,7 +640,7 @@ up in the normal.exp file.
 
 <sect3 id="test.harness.dejagnu">
 <title>Dejagnu Harness Details</title>
-  <para> 
+  <para>
     Underlying details of testing for conformance and regressions are
     abstracted via the GNU Dejagnu package. This is similar to the
     rest of GCC.
@@ -684,7 +686,7 @@ only default variables.
 
 <sect3 id="test.harness.utils">
 <title>Utilities</title>
-  <para> 
+  <para>
   </para>
   <para>
    The testsuite directory also contains some files that implement
@@ -709,11 +711,11 @@ only default variables.
        <emphasis>testsuite_abi_check.cc</emphasis>
        </para>
        <para>
-        Creates the executable <emphasis>abi_check</emphasis>.
-        Used to check correctness of symbol versioning, visibility of
-        exported symbols, and compatibility on symbols in the shared
-        library, for hosts that support this feature. More information
-        can be found in the ABI documentation <link linkend="appendix.porting.abi">here</link>
+	Creates the executable <emphasis>abi_check</emphasis>.
+	Used to check correctness of symbol versioning, visibility of
+	exported symbols, and compatibility on symbols in the shared
+	library, for hosts that support this feature. More information
+	can be found in the ABI documentation <link linkend="appendix.porting.abi">here</link>
        </para>
      </listitem>
      <listitem>
@@ -722,11 +724,11 @@ only default variables.
        <emphasis>testsuite_allocator.cc</emphasis>
        </para>
        <para>
-        Contains specialized allocators that keep track of construction
-        and destruction. Also, support for overriding global new and
-        delete operators, including verification that new and delete
-        are called during execution, and that allocation over max_size
-        fails.
+	Contains specialized allocators that keep track of construction
+	and destruction. Also, support for overriding global new and
+	delete operators, including verification that new and delete
+	are called during execution, and that allocation over max_size
+	fails.
        </para>
      </listitem>
      <listitem>
@@ -734,9 +736,9 @@ only default variables.
        <emphasis>testsuite_character.h</emphasis>
        </para>
        <para>
-        Contains <code>std::char_traits</code> and
-        <code>std::codecvt</code> specializations for a user-defined
-        POD.
+	Contains <code>std::char_traits</code> and
+	<code>std::codecvt</code> specializations for a user-defined
+	POD.
        </para>
      </listitem>
      <listitem>
@@ -748,20 +750,20 @@ only default variables.
        A large number of utilities, including:
        </para>
        <itemizedlist>
-         <listitem><para>VERIFY</para></listitem>
-         <listitem><para>set_memory_limits</para></listitem>
-         <listitem><para>verify_demangle</para></listitem>
-         <listitem><para>run_tests_wrapped_locale</para></listitem>
-         <listitem><para>run_tests_wrapped_env</para></listitem>
-         <listitem><para>try_named_locale</para></listitem>
-         <listitem><para>try_mkfifo</para></listitem>
-         <listitem><para>func_callback</para></listitem>
-         <listitem><para>counter</para></listitem>
-         <listitem><para>copy_tracker</para></listitem>
-         <listitem><para>copy_constructor</para></listitem>
-         <listitem><para>assignment_operator</para></listitem>
-         <listitem><para>destructor</para></listitem>
-         <listitem>
+	 <listitem><para>VERIFY</para></listitem>
+	 <listitem><para>set_memory_limits</para></listitem>
+	 <listitem><para>verify_demangle</para></listitem>
+	 <listitem><para>run_tests_wrapped_locale</para></listitem>
+	 <listitem><para>run_tests_wrapped_env</para></listitem>
+	 <listitem><para>try_named_locale</para></listitem>
+	 <listitem><para>try_mkfifo</para></listitem>
+	 <listitem><para>func_callback</para></listitem>
+	 <listitem><para>counter</para></listitem>
+	 <listitem><para>copy_tracker</para></listitem>
+	 <listitem><para>copy_constructor</para></listitem>
+	 <listitem><para>assignment_operator</para></listitem>
+	 <listitem><para>destructor</para></listitem>
+	 <listitem>
 	 <para>pod_char, pod_int and associated char_traits specializations</para>
 	 </listitem>
        </itemizedlist>
@@ -792,13 +794,239 @@ only default variables.
        reporting functions including:
        </para>
       <itemizedlist>
-         <listitem><para>time_counter</para></listitem>
-         <listitem><para>resource_counter</para></listitem>
-         <listitem><para>report_performance</para></listitem>
+	 <listitem><para>time_counter</para></listitem>
+	 <listitem><para>resource_counter</para></listitem>
+	 <listitem><para>report_performance</para></listitem>
       </itemizedlist>
      </listitem>
   </itemizedlist>
 </sect3>
 
 </sect2>
+
+<sect2 id="test.special">
+<title>Special Topics</title>
+
+<sect3 id="test.exception.safety">
+<title>
+  Qualifying Exception Safety Guarantees
+  <indexterm>
+    <primary>Test</primary>
+    <secondary>Exception Safety</secondary>
+  </indexterm>
+</title>
+
+<sect4 id="test.exception.safety.overview">
+<title>Overview</title>
+
+       <para>
+	 Testing is composed of running a particular test sequence,
+	 and looking at what happens to the surrounding code when
+	 exceptions are thrown. Each test is composed of measuring
+	 initial state, executing a particular sequence of code under
+	 some instrumented conditions, measuring a final state, and
+	 then examining the differences between the two states.
+       </para>
+
+       <para>
+	 Test sequences are composed of constructed code sequences
+	 that exercise a particular function or member function, and
+	 either confirm no exceptions were generated, or confirm the
+	 consistency/coherency of the test subject in the event of a
+	 thrown exception.
+       </para>
+
+       <para>
+	 Random code paths can be constructed using the the basic test
+	 sequences and instrumentation as above, only combined in a
+	 random or pseudo-random way.
+       </para>
+
+       <para> To compute the code paths that throw, test instruments
+	 are used that throw on allocation events
+	 (<classname>__gnu_cxx::throw_allocator_random</classname>
+	 and <classname>__gnu_cxx::throw_allocator_limit</classname>)
+	 and copy, assignment, comparison, increment, swap, and
+	 various operators
+	 (<classname>__gnu_cxx::throw_type_random</classname>
+	 and <classname>__gnu_cxx::throw_type_limit</classname>). Looping
+	 through a given test sequence and conditionally throwing in
+	 all instrumented places.  Then, when the test sequence
+	 completes without an exception being thrown, assume all
+	 potential error paths have been exercised in a sequential
+	 manner.
+       </para>
+</sect4>
+
+
+<sect4 id="test.exception.safety.status">
+<title>
+    Existing tests
+</title>
+
+  <itemizedlist>
+     <listitem>
+       <para>
+	 Ad Hoc
+       </para>
+       <para>
+	 For example,
+	 <filename>testsuite/23_containers/list/modifiers/3.cc</filename>.
+       </para>
+     </listitem>
+
+     <listitem>
+       <para>
+	 Policy Based Data Structures
+       </para>
+       <para>
+	 For example, take the test
+	 functor <classname>rand_reg_test</classname> in
+	 in <filename>testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc</filename>. This uses <classname>container_rand_regression_test</classname> in
+<filename>testsuite/util/regression/rand/assoc/container_rand_regression_test.h</filename>.
+
+       </para>
+
+       <para>
+	 Which has several tests for container member functions,
+Includes control and test container objects. Configuration includes
+random seed, iterations, number of distinct values, and the
+probability that and exception will be thrown. Assumes instantiating
+container uses an extension
+allocator, <classname>__gnu_cxx::throw_allocator_random</classname>,
+as the allocator type.
+       </para>
+     </listitem>
+
+     <listitem>
+       <para>
+	 C++0x Container Requirements.
+       </para>
+
+       <para>
+	 Coverage is currently limited to testing container
+	 requirements for exception safety,
+	 although <classname>__gnu_cxx::throw_type</classname> meets
+	 the additional type requirements for testing numeric data
+	 structures and instantiating algorithms.
+       </para>
+
+       <para>
+	 Of particular interest is extending testing to algorithms and
+	 then to parallel algorithms. Also io, and locales.
+       </para>
+     </listitem>
+  </itemizedlist>
+</sect4>
+
+
+<sect4 id="test.exception.safety.containers">
+<title>
+C++0x Requirements Test Sequence Descriptions
+</title>
+
+  <itemizedlist>
+     <listitem>
+       <para>
+	 Basic
+       </para>
+
+       <para>
+	 Basic consistency on exception propagation tests. For
+	 each container, an object of that container is constructed,
+	 a specific member function is exercised in
+	 a <literal>try</literal> block, and then any thrown
+	 exceptions lead to error checking in the appropriate
+	 <literal>catch</literal> block. The container's use of
+	 resources is compared to the container's use prior to the
+	 test block. Resource monitoring is limited to allocations
+	 made through the container's <type>allocator_type</type>,
+	 which should be sufficient for container data
+	 structures. Included in these tests are member functions
+	 are <type>iterator</type> and <type>const_iterator</type>
+	 operations, <function>pop_front</function>, <function>pop_back</function>, <function>push_front</function>, <function>push_back</function>, <function>insert</function>, <function>erase</function>, <function>swap</function>, <function>clear</function>,
+	 and <function>rehash</function>. The container in question is
+	 instantiated with two instrumented template arguments,
+	 with <classname>__gnu_cxx::throw_allocator_limit</classname>
+	 as the allocator type, and
+	 with <classname>__gnu_cxx::throw_type_limit</classname> as
+	 the value type. This allows the test to loop through
+	 conditional throw points.
+       </para>
+
+     <para>
+	 The general form is demonstrated in
+	 <filename>testsuite/23_containers/list/requirements/exception/basic.cc
+	 </filename>. The instantiating test object is <classname>__gnu_test::basic_safety</classname> and is detailed in <filename>testsuite/util/exception/safety.h</filename>.
+       </para>
+     </listitem>
+
+
+     <listitem>
+       <para>
+	 Generation Prohibited
+       </para>
+
+       <para>
+	 Exception generation tests. For each container, an object of
+	 that container is constructed and all member functions
+	 required to not throw exceptions are exercised. Included in
+	 these tests are member functions
+	 are <type>iterator</type> and <type>const_iterator</type> operations, <function>erase</function>, <function>pop_front</function>, <function>pop_back</function>, <function>swap</function>,
+	 and <function>clear</function>. The container in question is
+	 instantiated with two instrumented template arguments,
+	 with <classname>__gnu_cxx::throw_allocator_random</classname>
+	 as the allocator type, and
+	 with <classname>__gnu_cxx::throw_type_random</classname> as
+	 the value type. This test does not loop, an instead is sudden
+	 death: first error fails.
+       </para>
+       <para>
+	 The general form is demonstrated in
+	 <filename>testsuite/23_containers/list/requirements/exception/generation_prohibited.cc
+	 </filename>. The instantiating test object is <classname>__gnu_test::generation_prohibited</classname> and is detailed in <filename>testsuite/util/exception/safety.h</filename>.
+       </para>
+     </listitem>
+
+
+     <listitem>
+       <para>
+	 Propagation Consistent
+       </para>
+
+       <para>
+	 Container rollback on exception propagation tests. For
+	 each container, an object of that container is constructed,
+	 a specific member function that requires rollback to a previous
+	 known good state is exercised in
+	 a <literal>try</literal> block, and then any thrown
+	 exceptions lead to error checking in the appropriate
+	 <literal>catch</literal> block. The container is compared to
+	 the container's last known good state using such parameters
+	 as size, contents, and iterator references. Included in these
+	 tests are member functions
+	 are <function>push_front</function>, <function>push_back</function>, <function>insert</function>,
+	 and <function>rehash</function>. The container in question is
+	 instantiated with two instrumented template arguments,
+	 with <classname>__gnu_cxx::throw_allocator_limit</classname>
+	 as the allocator type, and
+	 with <classname>__gnu_cxx::throw_type_limit</classname> as
+	 the value type. This allows the test to loop through
+	 conditional throw points.
+       </para>
+
+       <para>
+	 The general form demonstrated in
+	 <filename>testsuite/23_containers/list/requirements/exception/propagation_coherent.cc
+	 </filename>. The instantiating test object is <classname>__gnu_test::propagation_coherent</classname> and is detailed in <filename>testsuite/util/exception/safety.h</filename>.
+       </para>
+     </listitem>
+  </itemizedlist>
+
+</sect4>
+
+</sect3>
+
+</sect2>
+
 </sect1>

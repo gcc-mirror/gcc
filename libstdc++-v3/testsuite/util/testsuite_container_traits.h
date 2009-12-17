@@ -24,8 +24,9 @@
 #include <ext/vstring.h>
 
 namespace __gnu_test
-{  
+{
   // Container traits.
+  // Base class with default false values for all traits.
   struct traits_base
   {
     // Type, nested type, and typedef related traits.
@@ -37,6 +38,11 @@ namespace __gnu_test
     typedef std::false_type	is_associative;
     typedef std::false_type	is_unordered;
     typedef std::false_type	is_mapped;
+
+    typedef std::false_type	has_erase;
+    typedef std::false_type	has_insert;
+    typedef std::false_type	has_push_pop;
+    typedef std::false_type	has_size_type_constructor;
   };
 
   // Primary template does nothing. Specialize on each type under
@@ -46,40 +52,68 @@ namespace __gnu_test
 
   // Specialize for each container.
   template<typename _Tp, size_t _Np>
-    struct traits<std::array<_Tp, _Np> > : public traits_base
+    struct traits<std::array<_Tp, _Np>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_reversible;
     };
 
-  template<typename _Tp>
-    struct traits<std::deque<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::deque<_Tp1, _Tp2>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_reversible;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
+
+      typedef std::true_type	has_erase;
+      typedef std::true_type	has_insert;
+      typedef std::true_type	has_push_pop;
+      typedef std::true_type	has_size_type_constructor;
     };
 
-  template<typename _Tp>
-    struct traits<std::forward_list<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::forward_list<_Tp1, _Tp2>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
+
+      typedef std::true_type	has_erase;
+      typedef std::true_type	has_insert;
+      typedef std::true_type	has_push_pop;
+      typedef std::true_type	has_size_type_constructor;
     };
 
-  template<typename _Tp>
-    struct traits<std::list<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::list<_Tp1, _Tp2>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_reversible;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
+
+      typedef std::true_type	has_erase;
+      typedef std::true_type	has_insert;
+      typedef std::true_type	has_push_pop;
+      typedef std::true_type	has_size_type_constructor;
     };
 
-  template<typename _Kp, typename _Tp>
-    struct traits<std::map<_Kp, _Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+    struct traits<std::map<_Tp1, _Tp2, _Tp3, _Tp4>> : public traits_base
+    {
+      typedef std::true_type	is_container;
+      typedef std::true_type	is_reversible;
+      typedef std::true_type	is_allocator_aware;
+      typedef std::true_type	is_pointer_aware;
+      typedef std::true_type	is_associative;
+      typedef std::true_type	is_mapped;
+
+      typedef std::true_type	has_insert;
+    };
+
+  template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+    struct traits<std::multimap<_Tp1, _Tp2, _Tp3, _Tp4>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_reversible;
@@ -89,119 +123,142 @@ namespace __gnu_test
       typedef std::true_type	is_mapped;
     };
 
-  template<typename _Kp, typename _Tp>
-    struct traits<std::multimap<_Kp, _Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3>
+    struct traits<std::multiset<_Tp1, _Tp2, _Tp3>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_reversible;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
       typedef std::true_type	is_associative;
-      typedef std::true_type	is_mapped;
+
+      typedef std::true_type	has_insert;
     };
 
-  template<typename _Tp>
-    struct traits<std::multiset<_Tp> > : public traits_base
-    {
-      typedef std::true_type	is_container;
-      typedef std::true_type	is_reversible;
-      typedef std::true_type	is_allocator_aware;
-      typedef std::true_type	is_pointer_aware;
-      typedef std::true_type	is_associative;
-    };
-
-  template<typename _Tp>
-    struct traits<std::priority_queue<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::priority_queue<_Tp1, _Tp2>> : public traits_base
     {
       typedef std::true_type	is_adaptor;
     };
 
-  template<typename _Tp>
-    struct traits<std::queue<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::queue<_Tp1, _Tp2>> : public traits_base
     {
       typedef std::true_type	is_adaptor;
     };
 
-  template<typename _Tp>
-    struct traits<std::set<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3>
+    struct traits<std::set<_Tp1, _Tp2, _Tp3>> : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_reversible;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
       typedef std::true_type	is_associative;
+
+      typedef std::true_type	has_insert;
     };
 
-  template<typename _Tp>
-    struct traits<std::stack<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::stack<_Tp1, _Tp2> > : public traits_base
     {
       typedef std::true_type	is_adaptor;
     };
 
-  template<typename _Kp, typename _Tp>
-    struct traits<std::unordered_map<_Kp, _Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3,
+	   typename _Tp4, typename _Tp5>
+    struct traits<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
+    : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
       typedef std::true_type	is_unordered;
       typedef std::true_type	is_mapped;
+
+      typedef std::true_type	has_size_type_constructor;
+      typedef std::true_type	has_insert;
     };
 
-  template<typename _Kp, typename _Tp>
-    struct traits<std::unordered_multimap<_Kp, _Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3,
+	   typename _Tp4, typename _Tp5>
+    struct traits<std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
+    : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
       typedef std::true_type	is_unordered;
       typedef std::true_type	is_mapped;
+
+      typedef std::true_type	has_size_type_constructor;
     };
 
-  template<typename _Tp>
-    struct traits<std::unordered_multiset<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+    struct traits<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
+    : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
       typedef std::true_type	is_unordered;
+
+      typedef std::true_type	has_insert;
     };
 
-  template<typename _Tp>
-    struct traits<std::unordered_set<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+    struct traits<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
+    : public traits_base
     {
       typedef std::true_type	is_container;
       typedef std::true_type	is_allocator_aware;
       typedef std::true_type	is_pointer_aware;
       typedef std::true_type	is_unordered;
+
+      typedef std::true_type	has_size_type_constructor;
+      typedef std::true_type	has_insert;
     };
 
-  template<typename _Tp>
-    struct traits<std::vector<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2>
+    struct traits<std::vector<_Tp1, _Tp2>> : public traits_base
     {
       typedef std::true_type    is_container;
       typedef std::true_type    is_reversible;
       typedef std::true_type    is_allocator_aware;
       typedef std::true_type    is_pointer_aware;
+
+      typedef std::true_type	has_erase;
+      typedef std::true_type	has_insert;
+      typedef std::true_type	has_size_type_constructor;
     };
 
-  template<typename _Tp>
-    struct traits<std::basic_string<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3>
+    struct traits<std::basic_string<_Tp1, _Tp2, _Tp3>> : public traits_base
     {
       typedef std::true_type    is_container;
       typedef std::true_type    is_reversible;
       typedef std::true_type    is_allocator_aware;
       typedef std::true_type    is_pointer_aware;
+
+      typedef std::true_type	has_erase;
+      typedef std::true_type	has_insert;
     };
 
-  template<typename _Tp>
-    struct traits<__gnu_cxx::__versa_string<_Tp> > : public traits_base
+  template<typename _Tp1, typename _Tp2, typename _Tp3,
+	   template <typename, typename, typename> class _Tp4>
+    struct traits<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
+    : public traits_base
     {
       typedef std::true_type    is_container;
       typedef std::true_type    is_reversible;
       typedef std::true_type    is_allocator_aware;
       typedef std::true_type    is_pointer_aware;
+
+      typedef std::true_type	has_erase;
+
+      // XXX no vstring<rc>::insert
+      //      typedef std::true_type	has_insert;
     };
 } // namespace __gnu_test
 
-#endif 
+#endif
