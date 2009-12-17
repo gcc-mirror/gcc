@@ -80,6 +80,7 @@ VECTOR_MODES (FLOAT, 8);      /*              V4HF V2SF */
 VECTOR_MODES (FLOAT, 16);     /*         V8HF V4SF V2DF */
 VECTOR_MODES (FLOAT, 32);     /*        V16HF V8SF V4DF */
 VECTOR_MODES (FLOAT, 64);     /*       V32HF V16SF V8DF */
+VECTOR_MODE (INT, TI, 1);     /*                   V1TI */
 VECTOR_MODE (INT, DI, 1);     /*                   V1DI */
 VECTOR_MODE (INT, SI, 1);     /*                   V1SI */
 VECTOR_MODE (INT, QI, 2);     /*                   V2QI */

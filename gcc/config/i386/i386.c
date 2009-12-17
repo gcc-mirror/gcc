@@ -5346,7 +5346,7 @@ classify_argument (enum machine_mode mode, const_tree type,
     }
 
   /* for V1xx modes, just use the base mode */
-  if (VECTOR_MODE_P (mode) && mode != V1DImode
+  if (VECTOR_MODE_P (mode) && mode != V1DImode && mode != V1TImode
       && GET_MODE_SIZE (GET_MODE_INNER (mode)) == bytes)
     mode = GET_MODE_INNER (mode);
 
@@ -5470,6 +5470,7 @@ classify_argument (enum machine_mode mode, const_tree type,
       classes[0] = X86_64_SSE_CLASS;
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;
+    case V1TImode:
     case V1DImode:
     case V2SFmode:
     case V2SImode:
@@ -5814,6 +5815,7 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     case V4HImode:
     case V2SImode:
     case V2SFmode:
+    case V1TImode:
     case V1DImode:
       if (!type || !AGGREGATE_TYPE_P (type))
 	{
@@ -6001,6 +6003,7 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     case V4HImode:
     case V2SImode:
     case V2SFmode:
+    case V1TImode:
     case V1DImode:
       if (!type || !AGGREGATE_TYPE_P (type))
 	{
@@ -16391,9 +16394,9 @@ ix86_expand_sse4_unpack (rtx operands[2], bool unsigned_p, bool high_p)
     {
       /* Shift higher 8 bytes to lower 8 bytes.  */
       src = gen_reg_rtx (imode);
-      emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, src),
-				   gen_lowpart (TImode, operands[1]),
-				   GEN_INT (64)));
+      emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, src),
+				     gen_lowpart (V1TImode, operands[1]),
+				     GEN_INT (64)));
     }
   else
     src = operands[1];
@@ -21886,7 +21889,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtsd2ss, "__builtin_ia32_cvtsd2ss", IX86_BUILTIN_CVTSD2SS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V2DF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_cvtss2sd, "__builtin_ia32_cvtss2sd", IX86_BUILTIN_CVTSS2SD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V4SF },
 
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_ashlti3, "__builtin_ia32_pslldqi128", IX86_BUILTIN_PSLLDQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_INT_CONVERT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_ashlv1ti3, "__builtin_ia32_pslldqi128", IX86_BUILTIN_PSLLDQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_INT_CONVERT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv8hi3, "__builtin_ia32_psllwi128", IX86_BUILTIN_PSLLWI128, UNKNOWN, (int) V8HI_FTYPE_V8HI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv4si3, "__builtin_ia32_pslldi128", IX86_BUILTIN_PSLLDI128, UNKNOWN, (int) V4SI_FTYPE_V4SI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv2di3, "__builtin_ia32_psllqi128", IX86_BUILTIN_PSLLQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_SI_COUNT },
@@ -21894,7 +21897,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv4si3, "__builtin_ia32_pslld128", IX86_BUILTIN_PSLLD128, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_ashlv2di3, "__builtin_ia32_psllq128", IX86_BUILTIN_PSLLQ128, UNKNOWN, (int) V2DI_FTYPE_V2DI_V2DI_COUNT },
 
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_lshrti3, "__builtin_ia32_psrldqi128", IX86_BUILTIN_PSRLDQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_INT_CONVERT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_lshrv1ti3, "__builtin_ia32_psrldqi128", IX86_BUILTIN_PSRLDQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_INT_CONVERT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_lshrv8hi3, "__builtin_ia32_psrlwi128", IX86_BUILTIN_PSRLWI128, UNKNOWN, (int) V8HI_FTYPE_V8HI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_lshrv4si3, "__builtin_ia32_psrldi128", IX86_BUILTIN_PSRLDI128, UNKNOWN, (int) V4SI_FTYPE_V4SI_SI_COUNT },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_lshrv2di3, "__builtin_ia32_psrlqi128", IX86_BUILTIN_PSRLQI128, UNKNOWN, (int) V2DI_FTYPE_V2DI_SI_COUNT },
@@ -23492,7 +23495,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       break;
     case V2DI_FTYPE_V2DI_INT_CONVERT:
       nargs = 2;
-      rmode = V2DImode;
+      rmode = V1TImode;
       nargs_constant = 1;
       break;
     case V8HI_FTYPE_V8HI_INT:

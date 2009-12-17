@@ -19,12 +19,12 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-;; 16 byte integral modes handled by SSE, minus TImode, which gets
-;; special-cased for TARGET_64BIT.
+;; 16 byte integral modes handled by SSE
 (define_mode_iterator SSEMODEI [V16QI V8HI V4SI V2DI])
 
 ;; All 16-byte vector modes handled by SSE
 (define_mode_iterator SSEMODE [V16QI V8HI V4SI V2DI V4SF V2DF])
+(define_mode_iterator SSEMODE16 [V16QI V8HI V4SI V2DI V1TI V4SF V2DF])
 
 ;; 32 byte integral vector modes handled by AVX
 (define_mode_iterator AVX256MODEI [V32QI V16HI V8SI V4DI])
@@ -39,7 +39,10 @@
 (define_mode_iterator AVXMODEDI [V4DI V2DI])
 
 ;; All vector modes handled by AVX
-(define_mode_iterator AVXMODE [V16QI V8HI V4SI V2DI V4SF V2DF V32QI V16HI V8SI V4DI V8SF V4DF])
+(define_mode_iterator AVXMODE
+  [V16QI V8HI V4SI V2DI V4SF V2DF V32QI V16HI V8SI V4DI V8SF V4DF])
+(define_mode_iterator AVXMODE16
+  [V16QI V8HI V4SI V2DI V1TI V4SF V2DF V32QI V16HI V8SI V4DI V8SF V4DF])
 
 ;; Mix-n-match
 (define_mode_iterator SSEMODE12 [V16QI V8HI])
@@ -121,9 +124,9 @@
 
 ;; Mapping for AVX
 (define_mode_attr avxvecmode
-  [(V16QI "TI") (V8HI "TI") (V4SI "TI") (V2DI "TI") (V4SF "V4SF")
-   (V2DF "V2DF") (V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI")
-   (V8SF "V8SF") (V4DF "V4DF")])
+  [(V16QI "TI") (V8HI "TI") (V4SI "TI") (V2DI "TI") (V1TI "TI")
+   (V4SF "V4SF") (V8SF "V8SF") (V2DF "V2DF") (V4DF "V4DF")
+   (V32QI "OI") (V16HI "OI") (V8SI "OI") (V4DI "OI")])
 (define_mode_attr avxvecpsmode
   [(V16QI "V4SF") (V8HI "V4SF") (V4SI "V4SF") (V2DI "V4SF")
    (V32QI "V8SF") (V16HI "V8SF") (V8SI "V8SF") (V4DI "V8SF")])
@@ -172,8 +175,8 @@
 })
 
 (define_insn "*avx_mov<mode>_internal"
-  [(set (match_operand:AVXMODE 0 "nonimmediate_operand" "=x,x ,m")
-	(match_operand:AVXMODE 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
+  [(set (match_operand:AVXMODE16 0 "nonimmediate_operand" "=x,x ,m")
+	(match_operand:AVXMODE16 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
   "TARGET_AVX
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -207,8 +210,8 @@
 ;; This is essential for maintaining stable calling conventions.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:SSEMODE 0 "nonimmediate_operand" "")
-	(match_operand:SSEMODE 1 "nonimmediate_operand" ""))]
+  [(set (match_operand:SSEMODE16 0 "nonimmediate_operand" "")
+	(match_operand:SSEMODE16 1 "nonimmediate_operand" ""))]
   "TARGET_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -216,8 +219,8 @@
 })
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:SSEMODE 0 "nonimmediate_operand" "=x,x ,m")
-	(match_operand:SSEMODE 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
+  [(set (match_operand:SSEMODE16 0 "nonimmediate_operand" "=x,x ,m")
+	(match_operand:SSEMODE16 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -326,7 +329,7 @@
 })
 
 (define_expand "push<mode>1"
-  [(match_operand:SSEMODE 0 "register_operand" "")]
+  [(match_operand:SSEMODE16 0 "register_operand" "")]
   "TARGET_SSE"
 {
   ix86_expand_push (<MODE>mode, operands[0]);
@@ -343,8 +346,8 @@
 })
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:SSEMODE 0 "nonimmediate_operand" "")
-	(match_operand:SSEMODE 1 "nonimmediate_operand" ""))]
+  [(set (match_operand:SSEMODE16 0 "nonimmediate_operand" "")
+	(match_operand:SSEMODE16 1 "nonimmediate_operand" ""))]
   "TARGET_SSE"
 {
   ix86_expand_vector_move_misalign (<MODE>mode, operands);
@@ -5537,12 +5540,12 @@
   /* Shift both input vectors down one element, so that elements 3
      and 1 are now in the slots for elements 2 and 0.  For K8, at
      least, this is faster than using a shuffle.  */
-  emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t2),
-			       gen_lowpart (TImode, op1),
-			       thirtytwo));
-  emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t3),
-			       gen_lowpart (TImode, op2),
-			       thirtytwo));
+  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, t2),
+				 gen_lowpart (V1TImode, op1),
+				 thirtytwo));
+  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, t3),
+				 gen_lowpart (V1TImode, op2),
+				 thirtytwo));
   /* Multiply elements 3 and 1.  */
   emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, t4),
 				     t2, t3));
@@ -5837,12 +5840,12 @@
 
   t2 = gen_reg_rtx (V4SImode);
   t3 = gen_reg_rtx (V4SImode);
-  emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t2),
-                               gen_lowpart (TImode, operands[1]),
-                               GEN_INT (32)));
-  emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t3),
-                               gen_lowpart (TImode, operands[2]),
-                               GEN_INT (32)));
+  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, t2),
+				 gen_lowpart (V1TImode, operands[1]),
+				 GEN_INT (32)));
+  emit_insn (gen_sse2_lshrv1ti3 (gen_lowpart (V1TImode, t3),
+				 gen_lowpart (V1TImode, operands[2]),
+				 GEN_INT (32)));
 
   t4 = gen_reg_rtx (V2DImode);
   emit_insn (gen_sse2_umulv2siv2di3 (t4, t2, t3));
@@ -5881,6 +5884,21 @@
        (const_string "0")))
    (set_attr "mode" "TI")])
 
+(define_insn "*avx_lshrv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand" "=x")
+ 	(lshiftrt:V1TI
+	 (match_operand:V1TI 1 "register_operand" "x")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n")))]
+  "TARGET_AVX"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
+  return "vpsrldq\t{%2, %1, %0|%0, %1, %2}";
+}
+  [(set_attr "type" "sseishft")
+   (set_attr "prefix" "vex")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
 (define_insn "*avx_lshr<mode>3"
   [(set (match_operand:SSEMODE248 0 "register_operand" "=x")
 	(lshiftrt:SSEMODE248
@@ -5894,6 +5912,21 @@
      (if_then_else (match_operand 2 "const_int_operand" "")
        (const_string "1")
        (const_string "0")))
+   (set_attr "mode" "TI")])
+
+(define_insn "sse2_lshrv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand" "=x")
+ 	(lshiftrt:V1TI
+	 (match_operand:V1TI 1 "register_operand" "0")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n")))]
+  "TARGET_SSE2"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
+  return "psrldq\t{%2, %0|%0, %2}";
+}
+  [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
+   (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "lshr<mode>3"
@@ -5911,6 +5944,20 @@
        (const_string "0")))
    (set_attr "mode" "TI")])
 
+(define_insn "*avx_ashlv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand" "=x")
+	(ashift:V1TI (match_operand:V1TI 1 "register_operand" "x")
+		     (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n")))]
+  "TARGET_AVX"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
+  return "vpslldq\t{%2, %1, %0|%0, %1, %2}";
+}
+  [(set_attr "type" "sseishft")
+   (set_attr "prefix" "vex")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
 (define_insn "*avx_ashl<mode>3"
   [(set (match_operand:SSEMODE248 0 "register_operand" "=x")
 	(ashift:SSEMODE248
@@ -5924,6 +5971,20 @@
      (if_then_else (match_operand 2 "const_int_operand" "")
        (const_string "1")
        (const_string "0")))
+   (set_attr "mode" "TI")])
+
+(define_insn "sse2_ashlv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand" "=x")
+	(ashift:V1TI (match_operand:V1TI 1 "register_operand" "0")
+		     (match_operand:SI 2 "const_0_to_255_mul_8_operand" "n")))]
+  "TARGET_SSE2"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
+  return "pslldq\t{%2, %0|%0, %2}";
+}
+  [(set_attr "type" "sseishft")
+   (set_attr "prefix_data16" "1")
+   (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
 (define_insn "ashl<mode>3"
@@ -5943,22 +6004,24 @@
 
 (define_expand "vec_shl_<mode>"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
-        (ashift:TI (match_operand:SSEMODEI 1 "register_operand" "")
-		   (match_operand:SI 2 "const_0_to_255_mul_8_operand" "")))]
+        (ashift:V1TI
+	 (match_operand:SSEMODEI 1 "register_operand" "")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "")))]
   "TARGET_SSE2"
 {
-  operands[0] = gen_lowpart (TImode, operands[0]);
-  operands[1] = gen_lowpart (TImode, operands[1]);
+  operands[0] = gen_lowpart (V1TImode, operands[0]);
+  operands[1] = gen_lowpart (V1TImode, operands[1]);
 })
 
 (define_expand "vec_shr_<mode>"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
-        (lshiftrt:TI (match_operand:SSEMODEI 1 "register_operand" "")
-		     (match_operand:SI 2 "const_0_to_255_mul_8_operand" "")))]
+        (lshiftrt:V1TI
+	 (match_operand:SSEMODEI 1 "register_operand" "")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand" "")))]
   "TARGET_SSE2"
 {
-  operands[0] = gen_lowpart (TImode, operands[0]);
-  operands[1] = gen_lowpart (TImode, operands[1]);
+  operands[0] = gen_lowpart (V1TImode, operands[0]);
+  operands[1] = gen_lowpart (V1TImode, operands[1]);
 })
 
 (define_insn "*avx_<code><mode>3"
