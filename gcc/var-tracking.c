@@ -4375,19 +4375,19 @@ replace_expr_with_values (rtx loc)
    MO_CLOBBER if no micro operation is to be generated.  */
 
 static enum micro_operation_type
-use_type (rtx *loc, struct count_use_info *cui, enum machine_mode *modep)
+use_type (rtx loc, struct count_use_info *cui, enum machine_mode *modep)
 {
   tree expr;
   cselib_val *val;
 
   if (cui && cui->sets)
     {
-      if (GET_CODE (*loc) == VAR_LOCATION)
+      if (GET_CODE (loc) == VAR_LOCATION)
 	{
-	  if (track_expr_p (PAT_VAR_LOCATION_DECL (*loc), false))
+	  if (track_expr_p (PAT_VAR_LOCATION_DECL (loc), false))
 	    {
-	      rtx ploc = PAT_VAR_LOCATION_LOC (*loc);
-	      cselib_val *val = cselib_lookup (ploc, GET_MODE (*loc), 1);
+	      rtx ploc = PAT_VAR_LOCATION_LOC (loc);
+	      cselib_val *val = cselib_lookup (ploc, GET_MODE (loc), 1);
 
 	      /* ??? flag_float_store and volatile mems are never
 		 given values, but we could in theory use them for
@@ -4399,15 +4399,15 @@ use_type (rtx *loc, struct count_use_info *cui, enum machine_mode *modep)
 	    return MO_CLOBBER;
 	}
 
-      if ((REG_P (*loc) || MEM_P (*loc))
-	  && (val = find_use_val (*loc, GET_MODE (*loc), cui)))
+      if ((REG_P (loc) || MEM_P (loc))
+	  && (val = find_use_val (loc, GET_MODE (loc), cui)))
 	{
 	  if (modep)
-	    *modep = GET_MODE (*loc);
+	    *modep = GET_MODE (loc);
 	  if (cui->store_p)
 	    {
-	      if (REG_P (*loc)
-		  || cselib_lookup (XEXP (*loc, 0), GET_MODE (*loc), 0))
+	      if (REG_P (loc)
+		  || cselib_lookup (XEXP (loc, 0), GET_MODE (loc), 0))
 		return MO_VAL_SET;
 	    }
 	  else if (!cselib_preserved_value_p (val))
@@ -4415,31 +4415,31 @@ use_type (rtx *loc, struct count_use_info *cui, enum machine_mode *modep)
 	}
     }
 
-  if (REG_P (*loc))
+  if (REG_P (loc))
     {
-      gcc_assert (REGNO (*loc) < FIRST_PSEUDO_REGISTER);
+      gcc_assert (REGNO (loc) < FIRST_PSEUDO_REGISTER);
 
-      expr = REG_EXPR (*loc);
+      expr = REG_EXPR (loc);
 
       if (!expr)
 	return MO_USE_NO_VAR;
       else if (target_for_debug_bind (var_debug_decl (expr)))
 	return MO_CLOBBER;
-      else if (track_loc_p (*loc, expr, REG_OFFSET (*loc),
+      else if (track_loc_p (loc, expr, REG_OFFSET (loc),
 			    false, modep, NULL))
 	return MO_USE;
       else
 	return MO_USE_NO_VAR;
     }
-  else if (MEM_P (*loc))
+  else if (MEM_P (loc))
     {
-      expr = MEM_EXPR (*loc);
+      expr = MEM_EXPR (loc);
 
       if (!expr)
 	return MO_CLOBBER;
       else if (target_for_debug_bind (var_debug_decl (expr)))
 	return MO_CLOBBER;
-      else if (track_loc_p (*loc, expr, INT_MEM_OFFSET (*loc),
+      else if (track_loc_p (loc, expr, INT_MEM_OFFSET (loc),
 			    false, modep, NULL))
 	return MO_USE;
       else
@@ -4467,37 +4467,38 @@ log_op_type (rtx x, basic_block bb, rtx insn,
    INSN is instruction which the LOC is part of.  */
 
 static int
-count_uses (rtx *loc, void *cuip)
+count_uses (rtx *ploc, void *cuip)
 {
+  rtx loc = *ploc;
   struct count_use_info *cui = (struct count_use_info *) cuip;
   enum micro_operation_type mopt = use_type (loc, cui, NULL);
 
   if (mopt != MO_CLOBBER)
     {
       cselib_val *val;
-      enum machine_mode mode = GET_MODE (*loc);
+      enum machine_mode mode = GET_MODE (loc);
 
       VTI (cui->bb)->n_mos++;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
-	log_op_type (*loc, cui->bb, cui->insn, mopt, dump_file);
+	log_op_type (loc, cui->bb, cui->insn, mopt, dump_file);
 
       switch (mopt)
 	{
 	case MO_VAL_LOC:
-	  loc = &PAT_VAR_LOCATION_LOC (*loc);
-	  if (VAR_LOC_UNKNOWN_P (*loc))
+	  loc = PAT_VAR_LOCATION_LOC (loc);
+	  if (VAR_LOC_UNKNOWN_P (loc))
 	    break;
 	  /* Fall through.  */
 
 	case MO_VAL_USE:
 	case MO_VAL_SET:
-	  if (MEM_P (*loc)
-	      && !REG_P (XEXP (*loc, 0)) && !MEM_P (XEXP (*loc, 0)))
+	  if (MEM_P (loc)
+	      && !REG_P (XEXP (loc, 0)) && !MEM_P (XEXP (loc, 0)))
 	    {
 	      enum machine_mode address_mode
-		= targetm.addr_space.address_mode (MEM_ADDR_SPACE (*loc));
-	      val = cselib_lookup (XEXP (*loc, 0), address_mode, false);
+		= targetm.addr_space.address_mode (MEM_ADDR_SPACE (loc));
+	      val = cselib_lookup (XEXP (loc, 0), address_mode, false);
 
 	      if (val && !cselib_preserved_value_p (val))
 		{
@@ -4506,7 +4507,7 @@ count_uses (rtx *loc, void *cuip)
 		}
 	    }
 
-	  val = find_use_val (*loc, mode, cui);
+	  val = find_use_val (loc, mode, cui);
 	  if (val)
 	    cselib_preserve_value (val);
 	  else
@@ -4590,8 +4591,9 @@ count_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
    to VTI (bb)->mos.  INSN is instruction which the LOC is part of.  */
 
 static int
-add_uses (rtx *loc, void *data)
+add_uses (rtx *ploc, void *data)
 {
+  rtx loc = *ploc;
   enum machine_mode mode = VOIDmode;
   struct count_use_info *cui = (struct count_use_info *)data;
   enum micro_operation_type type = use_type (loc, cui, &mode);
@@ -4602,12 +4604,12 @@ add_uses (rtx *loc, void *data)
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
       mo->type = type;
-      mo->u.loc = type == MO_USE ? var_lowpart (mode, *loc) : *loc;
+      mo->u.loc = type == MO_USE ? var_lowpart (mode, loc) : loc;
       mo->insn = cui->insn;
 
       if (type == MO_VAL_LOC)
 	{
-	  rtx oloc = *loc;
+	  rtx oloc = loc;
 	  rtx vloc = PAT_VAR_LOCATION_LOC (oloc);
 	  cselib_val *val;
 
@@ -4655,7 +4657,7 @@ add_uses (rtx *loc, void *data)
 
 	      oloc = gen_rtx_CONCAT (mode, val->val_rtx, oloc);
 
-	      type2 = use_type (&vloc, 0, &mode2);
+	      type2 = use_type (vloc, 0, &mode2);
 
 	      gcc_assert (type2 == MO_USE || type2 == MO_USE_NO_VAR
 			  || type2 == MO_CLOBBER);
@@ -4679,8 +4681,8 @@ add_uses (rtx *loc, void *data)
 	{
 	  enum machine_mode mode2 = VOIDmode;
 	  enum micro_operation_type type2;
-	  cselib_val *val = find_use_val (*loc, GET_MODE (*loc), cui);
-	  rtx vloc, oloc = *loc, nloc;
+	  cselib_val *val = find_use_val (loc, GET_MODE (loc), cui);
+	  rtx vloc, oloc = loc, nloc;
 
 	  gcc_assert (cui->sets);
 
@@ -4718,7 +4720,7 @@ add_uses (rtx *loc, void *data)
 		      || type2 == MO_CLOBBER);
 
 	  if (type2 == MO_USE)
-	    vloc = var_lowpart (mode2, *loc);
+	    vloc = var_lowpart (mode2, loc);
 	  else
 	    vloc = oloc;
 
@@ -4732,7 +4734,7 @@ add_uses (rtx *loc, void *data)
 
 	  */
 
-	  nloc = replace_expr_with_values (*loc);
+	  nloc = replace_expr_with_values (loc);
 	  if (!nloc)
 	    nloc = oloc;
 
@@ -4781,7 +4783,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   basic_block bb = cui->bb;
   micro_operation *mo;
   rtx oloc = loc, nloc, src = NULL;
-  enum micro_operation_type type = use_type (&loc, cui, &mode);
+  enum micro_operation_type type = use_type (loc, cui, &mode);
   bool track_p = false;
   cselib_val *v;
   bool resolve, preserve;
@@ -4796,7 +4798,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 
       if ((GET_CODE (expr) == CLOBBER && type != MO_VAL_SET)
-	  || !(track_p = use_type (&loc, NULL, &mode2) == MO_USE)
+	  || !(track_p = use_type (loc, NULL, &mode2) == MO_USE)
 	  || GET_CODE (expr) == CLOBBER)
 	{
 	  mo->type = MO_CLOBBER;
@@ -4829,7 +4831,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       mo->insn = cui->insn;
     }
   else if (MEM_P (loc)
-	   && ((track_p = use_type (&loc, NULL, &mode2) == MO_USE)
+	   && ((track_p = use_type (loc, NULL, &mode2) == MO_USE)
 	       || cui->sets))
     {
       mo = VTI (bb)->mos + VTI (bb)->n_mos++;
