@@ -18,13 +18,9 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_iterator IMODE [QI HI SI (DI "TARGET_64BIT")])
-(define_mode_attr modesuffix [(QI "b") (HI "w") (SI "l") (DI "q")])
-(define_mode_attr modeconstraint [(QI "q") (HI "r") (SI "r") (DI "r")])
-(define_mode_attr immconstraint [(QI "i") (HI "i") (SI "i") (DI "e")])
-
-(define_mode_iterator CASMODE [QI HI SI (DI "TARGET_64BIT || TARGET_CMPXCHG8B")
-			   (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
+(define_mode_iterator CASMODE
+  [QI HI SI (DI "TARGET_64BIT || TARGET_CMPXCHG8B")
+	    (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
 (define_mode_iterator DCASMODE
   [(DI "!TARGET_64BIT && TARGET_CMPXCHG8B && !flag_pic")
    (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
@@ -105,21 +101,21 @@
 })
 
 (define_insn "*sync_compare_and_swap<mode>"
-  [(set (match_operand:IMODE 0 "register_operand" "=a")
-	(match_operand:IMODE 1 "memory_operand" "+m"))
+  [(set (match_operand:SWI 0 "register_operand" "=a")
+	(match_operand:SWI 1 "memory_operand" "+m"))
    (set (match_dup 1)
-	(unspec_volatile:IMODE
+	(unspec_volatile:SWI
 	  [(match_dup 1)
-	   (match_operand:IMODE 2 "register_operand" "a")
-	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
+	   (match_operand:SWI 2 "register_operand" "a")
+	   (match_operand:SWI 3 "register_operand" "<r>")]
 	  UNSPECV_CMPXCHG))
    (set (reg:CCZ FLAGS_REG)
         (compare:CCZ
-          (unspec_volatile:IMODE
+          (unspec_volatile:SWI
             [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
           (match_dup 2)))]
   "TARGET_CMPXCHG"
-  "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
+  "lock{%;| }cmpxchg{<imodesuffix>}\t{%3, %1|%1, %3}")
 
 (define_insn "sync_double_compare_and_swap<mode>"
   [(set (match_operand:DCASMODE 0 "register_operand" "=A")
@@ -169,31 +165,31 @@
   "xchg{l}\t%%ebx, %3\;lock{%;| }cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
 
 (define_insn "sync_old_add<mode>"
-  [(set (match_operand:IMODE 0 "register_operand" "=<modeconstraint>")
-	(unspec_volatile:IMODE
-	  [(match_operand:IMODE 1 "memory_operand" "+m")] UNSPECV_XCHG))
+  [(set (match_operand:SWI 0 "register_operand" "=<r>")
+	(unspec_volatile:SWI
+	  [(match_operand:SWI 1 "memory_operand" "+m")] UNSPECV_XCHG))
    (set (match_dup 1)
-	(plus:IMODE (match_dup 1)
-		    (match_operand:IMODE 2 "register_operand" "0")))
+	(plus:SWI (match_dup 1)
+		  (match_operand:SWI 2 "register_operand" "0")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_XADD"
-  "lock{%;| }xadd{<modesuffix>}\t{%0, %1|%1, %0}")
+  "lock{%;| }xadd{<imodesuffix>}\t{%0, %1|%1, %0}")
 
 ;; Recall that xchg implicitly sets LOCK#, so adding it again wastes space.
 (define_insn "sync_lock_test_and_set<mode>"
-  [(set (match_operand:IMODE 0 "register_operand" "=<modeconstraint>")
-	(unspec_volatile:IMODE
-	  [(match_operand:IMODE 1 "memory_operand" "+m")] UNSPECV_XCHG))
+  [(set (match_operand:SWI 0 "register_operand" "=<r>")
+	(unspec_volatile:SWI
+	  [(match_operand:SWI 1 "memory_operand" "+m")] UNSPECV_XCHG))
    (set (match_dup 1)
-	(match_operand:IMODE 2 "register_operand" "0"))]
+	(match_operand:SWI 2 "register_operand" "0"))]
   ""
-  "xchg{<modesuffix>}\t{%1, %0|%0, %1}")
+  "xchg{<imodesuffix>}\t{%1, %0|%0, %1}")
 
 (define_insn "sync_add<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "+m")
-	(unspec_volatile:IMODE
-	  [(plus:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
+  [(set (match_operand:SWI 0 "memory_operand" "+m")
+	(unspec_volatile:SWI
+	  [(plus:SWI (match_dup 0)
+		     (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -201,19 +197,19 @@
   if (TARGET_USE_INCDEC)
     {
       if (operands[1] == const1_rtx)
-	return "lock{%;| }inc{<modesuffix>}\t%0";
+	return "lock{%;| }inc{<imodesuffix>}\t%0";
       if (operands[1] == constm1_rtx)
-	return "lock{%;| }dec{<modesuffix>}\t%0";
+	return "lock{%;| }dec{<imodesuffix>}\t%0";
     }
 
-  return "lock{%;| }add{<modesuffix>}\t{%1, %0|%0, %1}";
+  return "lock{%;| }add{<imodesuffix>}\t{%1, %0|%0, %1}";
 })
 
 (define_insn "sync_sub<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "+m")
-	(unspec_volatile:IMODE
-	  [(minus:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
+  [(set (match_operand:SWI 0 "memory_operand" "+m")
+	(unspec_volatile:SWI
+	  [(minus:SWI (match_dup 0)
+		      (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -221,40 +217,20 @@
   if (TARGET_USE_INCDEC)
     {
       if (operands[1] == const1_rtx)
-	return "lock{%;| }dec{<modesuffix>}\t%0";
+	return "lock{%;| }dec{<imodesuffix>}\t%0";
       if (operands[1] == constm1_rtx)
-	return "lock{%;| }inc{<modesuffix>}\t%0";
+	return "lock{%;| }inc{<imodesuffix>}\t%0";
     }
 
-  return "lock{%;| }sub{<modesuffix>}\t{%1, %0|%0, %1}";
+  return "lock{%;| }sub{<imodesuffix>}\t{%1, %0|%0, %1}";
 })
 
-(define_insn "sync_ior<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "+m")
-	(unspec_volatile:IMODE
-	  [(ior:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
+(define_insn "sync_<code><mode>"
+  [(set (match_operand:SWI 0 "memory_operand" "+m")
+	(unspec_volatile:SWI
+	  [(any_logic:SWI (match_dup 0)
+			  (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
-  "lock{%;| }or{<modesuffix>}\t{%1, %0|%0, %1}")
-
-(define_insn "sync_and<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "+m")
-	(unspec_volatile:IMODE
-	  [(and:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
-	  UNSPECV_LOCK))
-   (clobber (reg:CC FLAGS_REG))]
-  ""
-  "lock{%;| }and{<modesuffix>}\t{%1, %0|%0, %1}")
-
-(define_insn "sync_xor<mode>"
-  [(set (match_operand:IMODE 0 "memory_operand" "+m")
-	(unspec_volatile:IMODE
-	  [(xor:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
-	  UNSPECV_LOCK))
-   (clobber (reg:CC FLAGS_REG))]
-  ""
-  "lock{%;| }xor{<modesuffix>}\t{%1, %0|%0, %1}")
+  "lock{%;| }<logicprefix>{<imodesuffix>}\t{%1, %0|%0, %1}")

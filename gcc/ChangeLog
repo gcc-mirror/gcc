@@ -1,3 +1,24 @@
+2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (IMODE): Remove mode iterator.
+	(modesuffix): Remove mode attribute.
+	(modeconstraint): Ditto.
+	(immconstraint): Ditto.
+	(*sync_compare_and_swap<mode>): Use SWI mode iterator instead of
+	IMODE mode iterator, imodesuffix mode attribute instead of modesuffix,
+	<r> mode attribute instead of modeconstraint and <i> mode attribute
+	instead of immconstraint.
+	(sync_double_compare_and_swap<mode>): Ditto.
+	(sync_old_add<mode>): Ditto.
+	(sync_lock_test_and_set<mode>): Ditto.
+	(sync_add<mode>): Ditto.
+	(sync_sub<mode>): Ditto.
+	(sync_and<mode>): Ditto.
+	(sync_ior<mode>): Ditto.
+	(sync_xor<mode>): Ditto.
+	(sync_<code><mode>): Macroize insn pattern from
+	sync_{and,ior,xor}<mode> using any_logic code iterator.
+
 2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c/40885
