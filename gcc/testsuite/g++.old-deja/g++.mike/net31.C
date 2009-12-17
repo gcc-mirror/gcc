@@ -40,7 +40,7 @@ foo_b& foo_c<TP>::bug_func(int x) {
         static foo_b retval(m);
         retval.bar_a(m);
         for (register int i = 0; i < m; i++)
-	  retval(i) = (*(operator()(i)))(x);		// { dg-error "" } 
+	  retval(i) = (*(operator()(i)))(x);		// { dg-error "invalid use of unary '\\\*'" } 
         return retval;
 }
 

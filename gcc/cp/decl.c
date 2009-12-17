@@ -11916,7 +11916,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       gcc_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE);
 
       cp_function_chain->x_current_class_ref
-	= cp_build_indirect_ref (t, NULL, tf_warning_or_error);
+	= cp_build_indirect_ref (t, RO_NULL, tf_warning_or_error);
       cp_function_chain->x_current_class_ptr = t;
 
       /* Constructors and destructors need to know whether they're "in

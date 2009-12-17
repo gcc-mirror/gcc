@@ -1458,7 +1458,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     object = cp_build_indirect_ref (lambda_expr_this_capture
 				    (CLASSTYPE_LAMBDA_EXPR
 				     (TREE_TYPE (object))),
-                                    /*errorstring=*/"",
+                                    RO_NULL,
                                     /*complain=*/tf_warning_or_error);
 
   if (current_class_ptr)
@@ -5689,7 +5689,7 @@ thisify_lambda_field (tree decl)
 {
   tree context = lambda_function (DECL_CONTEXT (decl));
   tree object = cp_build_indirect_ref (DECL_ARGUMENTS (context),
-				       /*errorstring*/"",
+				       RO_NULL,
 				       tf_warning_or_error);
   return finish_non_static_data_member (decl, object,
 					/*qualifying_scope*/NULL_TREE);

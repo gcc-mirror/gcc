@@ -1434,7 +1434,7 @@ build_x_arrow (tree expr)
 	  return expr;
 	}
 
-      return cp_build_indirect_ref (last_rval, NULL, tf_warning_or_error);
+      return cp_build_indirect_ref (last_rval, RO_NULL, tf_warning_or_error);
     }
 
   if (types_memoized)

@@ -1,3 +1,10 @@
+2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* g++.old-deja/g++.mike/net31.C: Make expected dg-error strings
+	explicit.
+	* g++.old-deja/g++.bugs/900213_02.C: Likewise.
+	* g++.old-deja/g++.bugs/900215_02.C: Likewise.
+
 2009-12-16  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42392

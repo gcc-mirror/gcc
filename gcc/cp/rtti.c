@@ -188,7 +188,7 @@ build_headof (tree exp)
   index = build_int_cst (NULL_TREE,
 			 -2 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
 
-  offset = build_vtbl_ref (cp_build_indirect_ref (exp, NULL, 
+  offset = build_vtbl_ref (cp_build_indirect_ref (exp, RO_NULL, 
                                                   tf_warning_or_error), 
                            index);
 
@@ -277,7 +277,7 @@ get_tinfo_decl_dynamic (tree exp)
     /* Otherwise return the type_info for the static type of the expr.  */
     t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
 
-  return cp_build_indirect_ref (t, NULL, tf_warning_or_error);
+  return cp_build_indirect_ref (t, RO_NULL, tf_warning_or_error);
 }
 
 static bool
@@ -483,7 +483,7 @@ get_typeid (tree type)
   if (!type)
     return error_mark_node;
 
-  return cp_build_indirect_ref (get_tinfo_ptr (type), NULL, 
+  return cp_build_indirect_ref (get_tinfo_ptr (type), RO_NULL, 
                                 tf_warning_or_error);
 }
 

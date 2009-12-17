@@ -16,7 +16,7 @@ int struct0::*dmp;
 
 void global_function_0 ()
 {
-  i = *dmp;			// { dg-error "" } causes abort
+  i = *dmp;			// { dg-error "invalid use of unary '\\\*' on pointer to member" } causes abort
 }
 
 int main () { return 0; }

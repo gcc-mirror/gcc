@@ -2292,7 +2292,7 @@ tree
 build_dummy_object (tree type)
 {
   tree decl = build1 (NOP_EXPR, build_pointer_type (type), void_zero_node);
-  return cp_build_indirect_ref (decl, NULL, tf_warning_or_error);
+  return cp_build_indirect_ref (decl, RO_NULL, tf_warning_or_error);
 }
 
 /* We've gotten a reference to a member of TYPE.  Return *this if appropriate,
@@ -2956,7 +2956,7 @@ stabilize_expr (tree exp, tree* initp)
       exp = cp_build_unary_op (ADDR_EXPR, exp, 1, tf_warning_or_error);
       init_expr = get_target_expr (exp);
       exp = TARGET_EXPR_SLOT (init_expr);
-      exp = cp_build_indirect_ref (exp, 0, tf_warning_or_error);
+      exp = cp_build_indirect_ref (exp, RO_NULL, tf_warning_or_error);
     }
   *initp = init_expr;
 

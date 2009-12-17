@@ -834,7 +834,7 @@ emit_mem_initializers (tree mem_inits)
 	  base_addr = build_base_path (PLUS_EXPR, current_class_ptr,
 				       subobject, 1);
 	  expand_aggr_init_1 (subobject, NULL_TREE,
-			      cp_build_indirect_ref (base_addr, NULL,
+			      cp_build_indirect_ref (base_addr, RO_NULL,
                                                      tf_warning_or_error),
 			      arguments,
 			      LOOKUP_NORMAL,
@@ -918,7 +918,7 @@ expand_virtual_init (tree binfo, tree decl)
 		      TREE_TYPE (vtt_parm),
 		      vtt_parm,
 		      vtt_index);
-      vtbl2 = cp_build_indirect_ref (vtbl2, NULL, tf_warning_or_error);
+      vtbl2 = cp_build_indirect_ref (vtbl2, RO_NULL, tf_warning_or_error);
       vtbl2 = convert (TREE_TYPE (vtbl), vtbl2);
 
       /* The actual initializer is the VTT value only in the subobject
@@ -933,7 +933,7 @@ expand_virtual_init (tree binfo, tree decl)
     }
 
   /* Compute the location of the vtpr.  */
-  vtbl_ptr = build_vfield_ref (cp_build_indirect_ref (decl, NULL, 
+  vtbl_ptr = build_vfield_ref (cp_build_indirect_ref (decl, RO_NULL, 
                                                       tf_warning_or_error),
 			       TREE_TYPE (binfo));
   gcc_assert (vtbl_ptr != error_mark_node);
@@ -2055,7 +2055,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 				alloc_node, cookie_ptr);
       size_ptr_type = build_pointer_type (sizetype);
       cookie_ptr = fold_convert (size_ptr_type, cookie_ptr);
-      cookie = cp_build_indirect_ref (cookie_ptr, NULL, complain);
+      cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
 
       cookie_expr = build2 (MODIFY_EXPR, sizetype, cookie, nelts);
 
@@ -2067,7 +2067,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 					    NEGATE_EXPR, sizetype,
 					    size_in_bytes (sizetype)));
 
-	  cookie = cp_build_indirect_ref (cookie_ptr, NULL, complain);
+	  cookie = cp_build_indirect_ref (cookie_ptr, RO_NULL, complain);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
 			   size_in_bytes (elt_type));
 	  cookie_expr = build2 (COMPOUND_EXPR, TREE_TYPE (cookie_expr),
@@ -2154,7 +2154,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	}
       else
 	{
-	  init_expr = cp_build_indirect_ref (data_addr, NULL, complain);
+	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
 
 	  if (TYPE_NEEDS_CONSTRUCTING (type) && !explicit_value_init_p)
 	    {
@@ -2949,7 +2949,7 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       atype = build_pointer_type (atype);
       stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
-      stmt_expr = cp_build_indirect_ref (stmt_expr, NULL, complain);
+      stmt_expr = cp_build_indirect_ref (stmt_expr, RO_NULL, complain);
       TREE_NO_WARNING (stmt_expr) = 1;
     }
 
@@ -3144,7 +3144,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 				/*alloc_fn=*/NULL_TREE);
 	}
 
-      expr = build_dtor_call (cp_build_indirect_ref (addr, NULL, 
+      expr = build_dtor_call (cp_build_indirect_ref (addr, RO_NULL, 
                                                      tf_warning_or_error),
 			      auto_delete, flags);
       if (do_delete)
@@ -3298,7 +3298,7 @@ build_vec_delete (tree base, tree maxindex,
 			    size_ptr_type,
 			    fold_convert (size_ptr_type, base),
 			    cookie_addr);
-      maxindex = cp_build_indirect_ref (cookie_addr, NULL, tf_warning_or_error);
+      maxindex = cp_build_indirect_ref (cookie_addr, RO_NULL, tf_warning_or_error);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
