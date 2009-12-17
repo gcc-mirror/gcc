@@ -13775,10 +13775,10 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
       if (mode != VOIDmode && GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE
 	  && (dwarf_version >= 4 || !dwarf_strict))
 	{
-	  loc_result = new_loc_descr (DW_OP_implicit_value,
-				      DWARF2_ADDR_SIZE, 0);
-	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_addr;
-	  loc_result->dw_loc_oprnd2.v.val_addr = rtl;
+	  loc_result = new_loc_descr (DW_OP_addr, 0, 0);
+	  loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
+	  loc_result->dw_loc_oprnd1.v.val_addr = rtl;
+	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_stack_value, 0, 0));
 	  VEC_safe_push (rtx, gc, used_rtx_array, rtl);
 	}
       break;
@@ -15223,10 +15223,20 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       return true;
 
     case CONST_STRING:
-      resolve_one_addr (&rtl, NULL);
-      add_AT_addr (die, DW_AT_const_value, rtl);
-      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
-      return true;
+      if (dwarf_version >= 4 || !dwarf_strict)
+	{
+	  dw_loc_descr_ref loc_result;
+	  resolve_one_addr (&rtl, NULL);
+	rtl_addr:
+	  loc_result = new_loc_descr (DW_OP_addr, 0, 0);
+	  loc_result->dw_loc_oprnd1.val_class = dw_val_class_addr;
+	  loc_result->dw_loc_oprnd1.v.val_addr = rtl;
+	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_stack_value, 0, 0));
+	  add_AT_loc (die, DW_AT_location, loc_result);
+	  VEC_safe_push (rtx, gc, used_rtx_array, rtl);
+	  return true;
+	}
+      return false;
 
     case CONST:
       if (CONSTANT_P (XEXP (rtl, 0)))
@@ -15236,9 +15246,9 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       if (!const_ok_for_output (rtl))
 	return false;
     case LABEL_REF:
-      add_AT_addr (die, DW_AT_const_value, rtl);
-      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
-      return true;
+      if (dwarf_version >= 4 || !dwarf_strict)
+	goto rtl_addr;
+      return false;
 
     case PLUS:
       /* In cases where an inlined instance of an inline function is passed

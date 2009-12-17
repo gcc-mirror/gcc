@@ -1,3 +1,11 @@
+2009-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (loc_descriptor): For SYMBOL_REFs and LABEL_REFs
+	use DW_OP_addr+DW_OP_stack_value instead of DW_OP_implicit_value.
+	(add_const_value_attribute): For CONST_STRING, SYMBOL_REFs and
+	LABEL_REFs use DW_OP_addr+DW_OP_stack_value DW_AT_location instead of
+	DW_AT_const_value.
+
 2009-12-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41679
