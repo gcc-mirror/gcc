@@ -4509,7 +4509,28 @@ count_uses (rtx *ploc, void *cuip)
 
 	  val = find_use_val (loc, mode, cui);
 	  if (val)
-	    cselib_preserve_value (val);
+	    {
+	      if (mopt == MO_VAL_SET
+		  && GET_CODE (PATTERN (cui->insn)) == COND_EXEC
+		  && (REG_P (loc)
+		      || (MEM_P (loc)
+			  && (use_type (loc, NULL, NULL) == MO_USE
+			      || cui->sets))))
+		{
+		  cselib_val *oval = cselib_lookup (loc, GET_MODE (loc), 0);
+
+		  gcc_assert (oval != val);
+		  gcc_assert (REG_P (loc) || MEM_P (loc));
+
+		  if (!cselib_preserved_value_p (oval))
+		    {
+		      VTI (cui->bb)->n_mos++;
+		      cselib_preserve_value (oval);
+		    }
+		}
+
+	      cselib_preserve_value (val);
+	    }
 	  else
 	    gcc_assert (mopt == MO_VAL_LOC);
 
@@ -4905,7 +4926,32 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   if (nloc)
     oloc = nloc;
 
-  if (resolve && GET_CODE (mo->u.loc) == SET)
+  if (GET_CODE (PATTERN (cui->insn)) == COND_EXEC)
+    {
+      cselib_val *oval = cselib_lookup (oloc, GET_MODE (oloc), 0);
+
+      gcc_assert (oval != v);
+      gcc_assert (REG_P (oloc) || MEM_P (oloc));
+
+      if (!cselib_preserved_value_p (oval))
+	{
+	  micro_operation *nmo = VTI (bb)->mos + VTI (bb)->n_mos++;
+
+	  cselib_preserve_value (oval);
+
+	  nmo->type = MO_VAL_USE;
+	  nmo->u.loc = gen_rtx_CONCAT (mode, oval->val_rtx, oloc);
+	  VAL_NEEDS_RESOLUTION (nmo->u.loc) = 1;
+	  nmo->insn = mo->insn;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    log_op_type (nmo->u.loc, cui->bb, cui->insn,
+			 nmo->type, dump_file);
+	}
+
+      resolve = false;
+    }
+  else if (resolve && GET_CODE (mo->u.loc) == SET)
     {
       nloc = replace_expr_with_values (SET_SRC (expr));
 
