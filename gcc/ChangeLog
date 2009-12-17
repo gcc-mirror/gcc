@@ -1,6 +1,11 @@
 2009-12-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/41679
+	* var-tracking.c (count_uses): Count MO_VAL_USE of original
+	MO_VAL_SET value for COND_EXEC.
+	(add_stores): Handle conditional stores.
+
+	PR debug/41679
 	* var-tracking.c (use_type): Remove indirection from loc.
 	(count_uses): Dereference incoming loc early.
 	(add_uses): Dereference incoming loc early.
