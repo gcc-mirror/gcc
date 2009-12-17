@@ -1526,7 +1526,7 @@ build_m_component_ref (tree datum, tree component)
       datum = build2 (POINTER_PLUS_EXPR, ptype,
 		      fold_convert (ptype, datum),
 		      build_nop (sizetype, component));
-      return cp_build_indirect_ref (datum, 0, tf_warning_or_error);
+      return cp_build_indirect_ref (datum, RO_NULL, tf_warning_or_error);
     }
   else
     return build2 (OFFSET_REF, type, datum, component);
