@@ -1,5 +1,10 @@
 2009-12-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/28300
+	PR c++/42062
+	* pt.c (check_specialization_namespace): Complain about
+	specialization at non-namespace scope.
+
 	PR c++/42415
 	* call.c (build_new_method_call): Complain about calling the
 	constructor directly.

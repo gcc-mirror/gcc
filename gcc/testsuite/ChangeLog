@@ -1,5 +1,8 @@
 2009-12-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/28300
+	* g++.dg/template/spec37.C: New.
+
 	PR c++/42415
 	* g++.dg/tc1/dr147.C: Add test.
 
