@@ -742,6 +742,12 @@ check_specialization_namespace (tree tmpl)
      function, member class or static data member of a class template
      shall be declared in the namespace of which the class template is
      a member.  */
+  if (current_scope() != DECL_CONTEXT (tmpl)
+      && !at_namespace_scope_p ())
+    {
+      error ("specialization of %qD must appear at namespace scope", tmpl);
+      return false;
+    }
   if (is_associated_namespace (current_namespace, tpl_ns))
     /* Same or super-using namespace.  */
     return true;
