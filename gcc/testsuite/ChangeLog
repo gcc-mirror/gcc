@@ -1,3 +1,8 @@
+2009-12-18  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* g++.old-deja/g++.brendan/misc6.C: Make expected dg-error strings
+	explicit.
+
 2009-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/debug/dwarf2/const-1.c: Don't expect DW_AT_const_value,
