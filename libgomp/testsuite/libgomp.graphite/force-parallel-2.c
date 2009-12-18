@@ -3,7 +3,7 @@ void abort (void);
 void parloop (int N)
 {
   int i, j;
-  int x[10000][10000];
+  int x[500][500];
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -17,7 +17,7 @@ void parloop (int N)
 
 int main(void)
 {
-  parloop(10000);
+  parloop(500);
 
   return 0;
 }
