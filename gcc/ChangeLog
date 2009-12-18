@@ -1,3 +1,7 @@
+2009-12-17  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/cygwin.h (LINK_SPEC): Add -tsaware flag if !mno-cygwin.
+
 2009-12-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/42263
