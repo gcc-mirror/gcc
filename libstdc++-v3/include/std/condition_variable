@@ -50,9 +50,6 @@ namespace std
    * @{
    */
 
-  /// cv_status
-  enum class cv_status { no_timeout, timeout };
-  
   /// condition_variable
   class condition_variable
   {
@@ -87,13 +84,13 @@ namespace std
       }
 
     template<typename _Duration>
-      cv_status
+      bool
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<__clock_t, _Duration>& __atime)
       { return __wait_until_impl(__lock, __atime); }
 
     template<typename _Clock, typename _Duration>
-      cv_status
+      bool
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -113,14 +110,14 @@ namespace std
 		 _Predicate __p)
       {
 	while (!__p())
-	  if (wait_until(__lock, __atime) == cv_status::timeout)
+	  if (!wait_until(__lock, __atime))
 	    return __p();
 
 	return true;
       }
 
     template<typename _Rep, typename _Period>
-      cv_status
+      bool
       wait_for(unique_lock<mutex>& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime)
       { return wait_until(__lock, __clock_t::now() + __rtime); }
@@ -138,7 +135,7 @@ namespace std
 
   private:
     template<typename _Clock, typename _Duration>
-      cv_status
+      bool
       __wait_until_impl(unique_lock<mutex>& __lock,
 			const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -157,8 +154,7 @@ namespace std
 	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
 				 &__ts);
 
-	return (_Clock::now() < __atime
-		? cv_status::no_timeout : cv_status::timeout);
+	return _Clock::now() < __atime;
       }
   };
 
@@ -193,7 +189,7 @@ namespace std
       wait(_Lock& __lock, _Predicate __p);
 
     template<typename _Lock, typename _Clock, typename _Duration>
-      cv_status
+      bool
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime);
 
@@ -205,7 +201,7 @@ namespace std
 		 _Predicate __p);
 
     template<typename _Lock, typename _Rep, typename _Period>
-      cv_status
+      bool
       wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime);
 
     template<typename _Lock, typename _Rep,
