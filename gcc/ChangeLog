@@ -1,3 +1,11 @@
+2009-12-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (copy_nary): New function.
+	(copy_phis): Likewise.
+	(copy_references): Likewise.
+	(process_scc): Avoid last iteration by copying the
+	optimistic table to the valid table.
+
 2009-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (loc_descriptor): For SYMBOL_REFs and LABEL_REFs
