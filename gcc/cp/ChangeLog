@@ -1,3 +1,10 @@
+2009-12-18  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/31665
+	* decl.c (duplicate_decls, grokdeclarator): Put the diagnostics in
+	full sentences for easy translation and wrapped into G_().
+	* typeck.c (build_x_unary_op): Likewise.
+
 2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* call.c (build_over_call, build_java_interface_fn_ref): Update

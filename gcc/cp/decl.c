@@ -1180,9 +1180,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	     bad choice of name.  */
 	  if (! TREE_PUBLIC (newdecl))
 	    {
-	      warning (OPT_Wshadow, "shadowing %s function %q#D",
-		       DECL_BUILT_IN (olddecl) ? "built-in" : "library",
-		       olddecl);
+	      warning (OPT_Wshadow, 
+                       DECL_BUILT_IN (olddecl)
+                       ? G_("shadowing built-in function %q#D")
+                       : G_("shadowing library function %q#D"), olddecl);
 	      /* Discard the old built-in function.  */
 	      return NULL_TREE;
 	    }
@@ -1253,9 +1254,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 			   olddecl);
 		}
 	      else
-		warning (OPT_Wshadow, "shadowing %s function %q#D",
-			 DECL_BUILT_IN (olddecl) ? "built-in" : "library",
-			 olddecl);
+		warning (OPT_Wshadow, 
+                         DECL_BUILT_IN (olddecl)
+                         ? G_("shadowing built-in function %q#D")
+                         : G_("shadowing library function %q#D"), olddecl);
 	    }
 	  else
 	    /* Discard the old built-in function.  */
@@ -8616,8 +8618,9 @@ grokdeclarator (const cp_declarator *declarator,
 
 	  if (TREE_CODE (type) == FUNCTION_TYPE
 	      && cp_type_quals (type) != TYPE_UNQUALIFIED)
-	    error ("cannot declare %s to qualified function type %qT",
-		   declarator->kind == cdk_reference ? "reference" : "pointer",
+            error (declarator->kind == cdk_reference
+                   ? G_("cannot declare reference to qualified function type %qT")
+                   : G_("cannot declare pointer to qualified function type %qT"),
 		   type);
 
 	  if (declarator->kind == cdk_reference)

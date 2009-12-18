@@ -4361,9 +4361,10 @@ build_x_unary_op (enum tree_code code, tree xarg, tsubst_flags_t complain)
 	  tree fn = get_first_fn (xarg);
 	  if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
 	    {
-	      const char *type =
-		(DECL_CONSTRUCTOR_P (fn) ? "constructor" : "destructor");
-	      error ("taking address of %s %qE", type, xarg);
+	      error (DECL_CONSTRUCTOR_P (fn)
+                     ? G_("taking address of constructor %qE")
+                     : G_("taking address of destructor %qE"),
+                     xarg);
 	      return error_mark_node;
 	    }
 	}
