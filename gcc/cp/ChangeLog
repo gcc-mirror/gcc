@@ -1,3 +1,9 @@
+2009-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42415
+	* call.c (build_new_method_call): Complain about calling the
+	constructor directly.
+
 2009-12-18  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/31665

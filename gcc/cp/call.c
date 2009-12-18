@@ -6239,6 +6239,25 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
 	make_args_non_dependent (*args);
     }
 
+  user_args = args == NULL ? NULL : *args;
+  /* Under DR 147 A::A() is an invalid constructor call,
+     not a functional cast.  */
+  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
+    {
+      if (! (complain & tf_error))
+	return error_mark_node;
+
+      permerror (input_location,
+		 "cannot call constructor %<%T::%D%> directly",
+		 basetype, name);
+      inform (input_location, "for a function-style cast, remove the "
+	      "redundant %<::%D%>", name);
+      call = build_functional_cast (basetype, build_tree_list_vec (user_args),
+				    complain);
+      release_tree_vector (user_args);
+      return call;
+    }
+
   /* Figure out whether to skip the first argument for the error
      message we will display to users if an error occurs.  We don't
      want to display any compiler-generated arguments.  The "this"
@@ -6246,7 +6265,6 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
      pointer if this is a call to a base-class constructor or
      destructor.  */
   skip_first_for_error = false;
-  user_args = args == NULL ? NULL : *args;
   if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     {
       /* Callers should explicitly indicate whether they want to construct
