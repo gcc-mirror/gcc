@@ -40,8 +40,8 @@ int main()
       std::unique_lock<std::mutex> l(m);
 
       auto then = std::chrono::system_clock::now();
-      bool result = c1.wait_for(l, ms);
-      VERIFY( !result );
+      std::cv_status result = c1.wait_for(l, ms);
+      VERIFY( result == std::cv_status::timeout );
       VERIFY( (std::chrono::system_clock::now() - then) >= ms );
       VERIFY( l.owns_lock() );
     }
