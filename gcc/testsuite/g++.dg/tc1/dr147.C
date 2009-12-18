@@ -4,7 +4,7 @@
 
 namespace N1 {
 
-struct A { A(); };
+struct A { A(); void f(); };
 struct B: public A { B(); };
 
 A::A() { }
@@ -13,10 +13,15 @@ B::B() { }
 B::A ba;
 A::A a; // { dg-error "constructor" "the injected-class-name can never be found through qualified lookup" }
 
+void A::f()
+{
+  A::A();			// { dg-message "::A" "c++/42415" }
+}
+
 void f()
 {
   A::A a; // { dg-error "constructor" }
-} // { dg-error "" "" { target *-*-* } 18 } error cascade
+} // { dg-error "" "" { target *-*-* } 23 } error cascade
 }
 
 namespace N2 {
