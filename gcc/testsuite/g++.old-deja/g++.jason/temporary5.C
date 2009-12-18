@@ -14,6 +14,6 @@ int main ()
 {
   A a;
   a.A::A();			// { dg-error "" }
-  A::A();			// { dg-error "" }
+  A::A();			// { dg-message "" }
   return c;
 }
