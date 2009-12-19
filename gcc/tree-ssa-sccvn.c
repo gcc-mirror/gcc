@@ -984,6 +984,8 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
   return NULL_TREE;
 }
 
+static tree *last_vuse_ptr;
+
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
    with the current VUSE and performs the expression lookup.  */
 
@@ -993,6 +995,9 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
   vn_reference_t vr = (vn_reference_t)vr_;
   void **slot;
   hashval_t hash;
+
+  if (last_vuse_ptr)
+    *last_vuse_ptr = vuse;
 
   /* Fixup vuse and hash.  */
   vr->hashcode = vr->hashcode - iterative_hash_expr (vr->vuse, 0);
@@ -1160,6 +1165,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       if (ref->size != r.size)
 	return (void *)-1;
       *ref = r;
+
+      /* Do not update last seen VUSE after translating.  */
+      last_vuse_ptr = NULL;
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -1961,7 +1969,13 @@ static bool
 visit_reference_op_load (tree lhs, tree op, gimple stmt)
 {
   bool changed = false;
-  tree result = vn_reference_lookup (op, gimple_vuse (stmt), true, NULL);
+  tree last_vuse;
+  tree result;
+
+  last_vuse = gimple_vuse (stmt);
+  last_vuse_ptr = &last_vuse;
+  result = vn_reference_lookup (op, gimple_vuse (stmt), true, NULL);
+  last_vuse_ptr = NULL;
 
   /* If we have a VCE, try looking up its operand as it might be stored in
      a different type.  */
@@ -2045,7 +2059,7 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
   else
     {
       changed = set_ssa_val_to (lhs, lhs);
-      vn_reference_insert (op, lhs, gimple_vuse (stmt));
+      vn_reference_insert (op, lhs, last_vuse);
     }
 
   return changed;
