@@ -1,3 +1,13 @@
+2009-12-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42108
+	* tree-ssa-sccvn.c (last_vuse_ptr): New variable.
+	(vn_reference_lookup_2): Update last seen VUSE.
+	(vn_reference_lookup_3): Avoid updating last seen VUSE after
+	translating.
+	(visit_reference_op_load): Use last seen VUSE from the first
+	lookup when entering into the table.
+
 2009-12-19  Joern Rennecke  <amylaar@spamcop.net>
 
 	* Makefile.in (PLUGIN_HEADERS): Add more headers.
