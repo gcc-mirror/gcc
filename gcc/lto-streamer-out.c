@@ -638,7 +638,8 @@ tree_is_indexable (tree t)
 {
   if (TREE_CODE (t) == PARM_DECL)
     return false;
-  else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t))
+  else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
+	   && !TREE_STATIC (t))
     return false;
   else
     return (TYPE_P (t) || DECL_P (t) || TREE_CODE (t) == SSA_NAME);
@@ -694,7 +695,8 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
 
     case VAR_DECL:
     case DEBUG_EXPR_DECL:
-      gcc_assert (decl_function_context (expr) == NULL);
+      gcc_assert (decl_function_context (expr) == NULL
+		  || TREE_STATIC (expr));
       output_record_start (ob, LTO_global_decl_ref);
       lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
       break;
