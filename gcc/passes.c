@@ -337,6 +337,11 @@ struct rtl_opt_pass pass_postreload =
 struct opt_pass *all_passes, *all_small_ipa_passes, *all_lowering_passes,
   *all_regular_ipa_passes, *all_lto_gen_passes;
 
+/* This is used by plugins, and should also be used in register_pass.  */
+#define DEF_PASS_LIST(LIST) &LIST,
+struct opt_pass **gcc_pass_lists[] = { GCC_PASS_LISTS NULL };
+#undef DEF_PASS_LIST
+
 /* A map from static pass id to optimization pass.  */
 struct opt_pass **passes_by_id;
 int passes_by_id_size;

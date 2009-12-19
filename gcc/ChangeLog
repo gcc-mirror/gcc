@@ -1,3 +1,17 @@
+2009-12-19  Joern Rennecke  <amylaar@spamcop.net>
+
+	* Makefile.in (PLUGIN_HEADERS): Add more headers.
+
+	* tree-pass.h (GCC_PASS_LISTS): Define.
+	(PASS_LIST_NO_all_lowering_passes): New enumeration value.
+	(PASS_LIST_NO_all_small_ipa_passes): Likewise.
+	(PASS_LIST_NO_all_regular_ipa_passes): Likewise.
+	(PASS_LIST_NO_all_lto_gen_passes): Likewise.
+	(PASS_LIST_NO_all_passes): Likewise.
+	(PASS_LIST_NUM): Likewise.
+	(gcc_pass_lists): Declare.
+	* passes.c (gcc_pass_lists): Define.
+
 2009-12-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (copy_nary): New function.
