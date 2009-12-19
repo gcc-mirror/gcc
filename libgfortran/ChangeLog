@@ -1,3 +1,10 @@
+2009-12-19  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsics/system_clock.c: Fix library name in comment, move TCK
+	definition into functions.
+	(system_clock_4): Remove unused struct timezone.
+	(system_clock_8): Remove unused struct timezone, increase TCK.
+
 2009-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41711

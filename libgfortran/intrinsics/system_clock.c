@@ -1,7 +1,7 @@
 /* Implementation of the SYSTEM_CLOCK intrinsic.
    Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -28,7 +28,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
 #  include <sys/time.h>
-#  define TCK 1000
 #elif defined(HAVE_TIME_H)
 #  include <time.h>
 #  define TCK 1
@@ -57,13 +56,13 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
   GFC_INTEGER_4 mx;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
+#define TCK 1000
   struct timeval tp1;
-  struct timezone tzp;
 
   if (sizeof (tp1.tv_sec) < sizeof (GFC_INTEGER_4))
     internal_error (NULL, "tv_sec too small");
 
-  if (gettimeofday(&tp1, &tzp) == 0)
+  if (gettimeofday(&tp1, NULL) == 0)
     {
       GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) tp1.tv_sec * TCK;
       ucnt += (tp1.tv_usec + 500000 / TCK) / (1000000 / TCK);
@@ -118,13 +117,13 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
   GFC_INTEGER_8 mx;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
+#define TCK 1000000
   struct timeval tp1;
-  struct timezone tzp;
 
   if (sizeof (tp1.tv_sec) < sizeof (GFC_INTEGER_4))
     internal_error (NULL, "tv_sec too small");
 
-  if (gettimeofday(&tp1, &tzp) == 0)
+  if (gettimeofday(&tp1, NULL) == 0)
     {
       if (sizeof (tp1.tv_sec) < sizeof (GFC_INTEGER_8))
 	{
