@@ -1083,12 +1083,11 @@ void
 cp_set_underlying_type (tree t)
 {
   set_underlying_type (t);
-  /* If the typedef variant type is dependent, make it require
-     structural equality.
-     This is useful when comparing two dependent typedef variant types,
+  /* If T is a template type parm, make it require structural equality.
+     This is useful when comparing two template type parms,
      because it forces the comparison of the template parameters of their
-     decls for instance.  */
-  if (dependent_type_p (TREE_TYPE (t)))
+     decls.  */
+  if (TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
     SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (t));
 }
 

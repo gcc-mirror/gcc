@@ -1,3 +1,21 @@
+2009-12-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42225
+	* pt.c (push_template_decl_real): Set DECL_CONTEXT of template type parms
+	to their containing template decl.
+	* typeck.c (comp_template_parms_position): Split this from
+	structural_comptypes.
+	(incompatible_template_type_parms_p): Renamed
+	incompatible_dependent_typedefs_p into this. Change the function to
+	handle comparison between TEMPLATE_TYPE_PARMs only.
+	(structural_comptypes): Use comp_template_parms_position in
+	TEMPLATE_TEMPLATE_PARM and BOUND_TEMPLATE_TEMPLATE_PARM cases.
+	Use incompatible_template_type_parms_p in TEMPLATE_TYPE_PARM case.
+	* mangle.c (decl_mangling_context): Template type parms don't have
+	a mangling context.
+	* tree.c (cp_set_underlying_type): Set type structural equality
+	only for TEMPLATE_TYPE_PARMs.
+
 2009-12-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28300
