@@ -1,3 +1,9 @@
+2009-12-20  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/42027
+	* cfgexpand.c (expand_gimple_cond): Use jumpy sequence for &, &&, |
+	and || if jumps are cheap.
+
 2009-12-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42401

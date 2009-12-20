@@ -1606,13 +1606,35 @@ expand_gimple_cond (basic_block bb, gimple stmt)
       && bitmap_bit_p (SA.values, SSA_NAME_VERSION (op0)))
     {
       gimple second = SSA_NAME_DEF_STMT (op0);
-      if (gimple_code (second) == GIMPLE_ASSIGN
-	  && TREE_CODE_CLASS (gimple_assign_rhs_code (second))
-	     == tcc_comparison)
+      if (gimple_code (second) == GIMPLE_ASSIGN)
 	{
-	  code = gimple_assign_rhs_code (second);
-	  op0 = gimple_assign_rhs1 (second);
-	  op1 = gimple_assign_rhs2 (second);
+	  enum tree_code code2 = gimple_assign_rhs_code (second);
+	  if (TREE_CODE_CLASS (code2) == tcc_comparison)
+	    {
+	      code = code2;
+	      op0 = gimple_assign_rhs1 (second);
+	      op1 = gimple_assign_rhs2 (second);
+	    }
+	  /* If jumps are cheap turn some more codes into
+	     jumpy sequences.  */
+	  else if (BRANCH_COST (optimize_insn_for_speed_p (), false) < 4)
+	    {
+	      if ((code2 == BIT_AND_EXPR
+		   && TYPE_PRECISION (TREE_TYPE (op0)) == 1
+		   && TREE_CODE (gimple_assign_rhs2 (second)) != INTEGER_CST)
+		  || code2 == TRUTH_AND_EXPR)
+		{
+		  code = TRUTH_ANDIF_EXPR;
+		  op0 = gimple_assign_rhs1 (second);
+		  op1 = gimple_assign_rhs2 (second);
+		}
+	      else if (code2 == BIT_IOR_EXPR || code2 == TRUTH_OR_EXPR)
+		{
+		  code = TRUTH_ORIF_EXPR;
+		  op0 = gimple_assign_rhs1 (second);
+		  op1 = gimple_assign_rhs2 (second);
+		}
+	    }
 	}
     }
 
