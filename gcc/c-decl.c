@@ -8052,6 +8052,7 @@ finish_function (void)
     {
       if (!decl_function_context (fndecl))
 	{
+	  invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
 	  c_genericize (fndecl);
 
 	  /* ??? Objc emits functions after finalizing the compilation unit.

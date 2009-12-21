@@ -402,7 +402,7 @@ register_callback (const char *plugin_name,
       case PLUGIN_FINISH_TYPE:
       case PLUGIN_START_UNIT:
       case PLUGIN_FINISH_UNIT:
-      case PLUGIN_CXX_CP_PRE_GENERICIZE:
+      case PLUGIN_PRE_GENERICIZE:
       case PLUGIN_GGC_START:
       case PLUGIN_GGC_MARKING:
       case PLUGIN_GGC_END:
@@ -483,7 +483,7 @@ invoke_plugin_callbacks (int event, void *gcc_data)
       case PLUGIN_FINISH_TYPE:
       case PLUGIN_START_UNIT:
       case PLUGIN_FINISH_UNIT:
-      case PLUGIN_CXX_CP_PRE_GENERICIZE:
+      case PLUGIN_PRE_GENERICIZE:
       case PLUGIN_ATTRIBUTES:
       case PLUGIN_PRAGMAS:
       case PLUGIN_FINISH:
