@@ -329,24 +329,23 @@ mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 <entry><filename class="headerfile">csetjmp</filename></entry>
 <entry><filename class="headerfile">csignal</filename></entry>
 <entry><filename class="headerfile">cstdarg</filename></entry>
-<entry><filename class="headerfile">cstdatomic</filename></entry>
+<entry><filename class="headerfile">cstdbool</filename></entry>
 </row>
 <row>
-<entry><filename class="headerfile">cstdbool</filename></entry>
 <entry><filename class="headerfile">cstddef</filename></entry>
 <entry><filename class="headerfile">cstdint</filename></entry>
 <entry><filename class="headerfile">cstdlib</filename></entry>
 <entry><filename class="headerfile">cstdio</filename></entry>
+<entry><filename class="headerfile">cstring</filename></entry>
 </row>
 <row>
-<entry><filename class="headerfile">cstring</filename></entry>
 <entry><filename class="headerfile">ctgmath</filename></entry>
 <entry><filename class="headerfile">ctime</filename></entry>
 <entry><filename class="headerfile">cuchar</filename></entry>
 <entry><filename class="headerfile">cwchar</filename></entry>
+<entry><filename class="headerfile">cwctype</filename></entry>
 </row>
 <row>
-<entry><filename class="headerfile">cwctype</filename></entry>
 <entry><filename class="headerfile">stdatomic.h</filename></entry>
 </row>
 

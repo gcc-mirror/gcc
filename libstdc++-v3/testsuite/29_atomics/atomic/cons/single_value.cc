@@ -17,14 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-#include <cstdatomic>
+#include <atomic>
 #include <testsuite_common_types.h>
 
 int main()
 {
   __gnu_test::single_value_constructible test;
-  __gnu_cxx::typelist::apply_generator(test, __gnu_test::atomics_tl(), 
+  __gnu_cxx::typelist::apply_generator(test, __gnu_test::atomics_tl(),
 				       __gnu_test::integral_types::type());
   return 0;
 }

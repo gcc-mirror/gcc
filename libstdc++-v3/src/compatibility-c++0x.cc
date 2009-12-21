@@ -33,9 +33,23 @@
 
 namespace std
 {
+  // gcc-4.4.0
+  // <mutex> exported std::lock_error
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+  class lock_error : public exception
+  {
+  public:
+    virtual const char*
+    _GLIBCXX_CONST what() const throw();
+  };
+
+  const char*
+  lock_error::what() const throw()
+  { return "std::lock_error"; }
+#endif
+
   // We need these due to the symbols exported since GLIBCXX_3.4.10.
   // See libstdc++/41662 for details.
-
   template<typename _Tp>
     struct hash : public std::unary_function<_Tp, size_t>
     {

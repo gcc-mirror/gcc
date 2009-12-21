@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile } 
+// { dg-do compile }
 
 // Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
@@ -18,8 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-#include <cstdatomic>
+#include <atomic>
 
 int main()
 {

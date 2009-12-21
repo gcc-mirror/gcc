@@ -18,8 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-#include <cstdatomic>
+#include <atomic>
 
 void test01()
 {
@@ -28,5 +27,5 @@ void test01()
   test_type t1;
   test_type t2(t1);
 }
-// { dg-error "used here" "" { target *-*-* } 29 } 
-// { dg-excess-errors "deleted function" } 
+// { dg-error "used here" "" { target *-*-* } 28 }
+// { dg-excess-errors "deleted function" }

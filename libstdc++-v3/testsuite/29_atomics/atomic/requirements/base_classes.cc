@@ -18,14 +18,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdatomic>
+#include <atomic>
 #include <testsuite_common_types.h>
 
 void test01()
 {
   // Check for required base class.
   __gnu_test::has_required_base_class test;
-  __gnu_cxx::typelist::apply_generator(test, 
-				       __gnu_test::atomic_integrals::type(), 
-                                       __gnu_test::atomics_tl());
+  __gnu_cxx::typelist::apply_generator(test,
+				       __gnu_test::atomic_integrals::type(),
+				       __gnu_test::atomics_tl());
 }

@@ -44,7 +44,7 @@
 #include <tr1/unordered_set>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdatomic>
+#include <atomic>
 #include <type_traits>
 #endif
 

@@ -1,7 +1,7 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++98" }
+// { dg-options "-std=gnu++0x" }
+// { dg-do link { xfail *-*-* } }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,9 +18,22 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdatomic>  // { dg-excess-errors "In file included from" }
+#include <atomic>
 
-// { dg-error "upcoming ISO" "" { target *-*-* } 31 } 
+struct dwordp
+{
+  int* p1;
+  int* p2;
+};
 
+void atomics()
+{
+  std::atomic<dwordp> a;
+  bool b = a.is_lock_free(); // { dg-excess-errors "undefined reference to" }
+}
 
-
+int main()
+{
+  atomics();
+  return 0;
+}

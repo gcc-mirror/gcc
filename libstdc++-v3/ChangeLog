@@ -1,3 +1,86 @@
+2009-12-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/atomic: Update to N3000.
+	* include/bits/atomic_0.h: Same.
+	* include/bits/atomic_2.h: Same.
+	* include/c_global/cstdatomic: Move...
+	* include/bits/atomic_base.h: ...here.
+	* include/c_compatibility/stdatomic.h: Just include atomic_base.h.
+	* include/precompiled/stdc++.h: Adjust includes.
+	* include/Makefile.am: Adjust files.
+	* include/Makefile.in: Regenerate.
+	* include/std/future: Adjust.
+	* src/atomic.cc: Adjust, adjust exports for compatibility.
+	* src/compatibility.cc: Move C++0x stuff...
+	* src/compatibility-c++0x.cc: ...here.
+
+	* doc/xml/manual/using.xml: Update.
+	* doc/xml/manual/status_cxx200x.xml: Update.
+	* doc/doxygen/user.cfg.in: Update.
+
+	* testsuite/29_atomics/atomic_address/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/single_value.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic_address/cons/aggregate.cc: Same.
+	* testsuite/29_atomics/atomic_address/requirements/
+	standard_layout.cc: Same.
+	* testsuite/29_atomics/atomic_address/requirements/trivial.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/single_value.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/copy_list.cc: Same.
+	* testsuite/29_atomics/atomic_integral/cons/direct_list.cc: Same.
+	* testsuite/29_atomics/atomic_integral/requirements/
+	standard_layout.cc: Same.
+	* testsuite/29_atomics/atomic_integral/requirements/trivial.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/
+	integral_assignment.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/increment.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/bitwise.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/decrement.cc: Same.
+	* testsuite/29_atomics/atomic_integral/operators/
+	integral_conversion.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic_flag/cons/aggregate.cc: Same.
+	* testsuite/29_atomics/atomic_flag/requirements/
+	standard_layout.cc: Same.
+	* testsuite/29_atomics/atomic_flag/requirements/trivial.cc: Same.
+	* testsuite/29_atomics/atomic_flag/clear/1.cc: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.c
+	* testsuite/29_atomics/atomic_flag/test_and_set/explicit.cc: Same.
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.c
+	* testsuite/29_atomics/atomic_flag/test_and_set/implicit.cc: Same.
+	* testsuite/29_atomics/headers/stdatomic.h/functions.c
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/single_value.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Same.
+	* testsuite/29_atomics/atomic/cons/default.cc: Same.
+	* testsuite/29_atomics/atomic/cons/copy_list.cc: Same.
+	* testsuite/29_atomics/atomic/cons/direct_list.cc: Same.
+	* testsuite/29_atomics/atomic/requirements/explicit_instantiation/
+	1.cc: Same.
+	* testsuite/29_atomics/atomic/requirements/base_classes.cc: Same.
+	* testsuite/29_atomics/atomic/operators/integral_assignment.cc: Same.
+	* testsuite/29_atomics/atomic/operators/integral_conversion.cc: Same.
+	* testsuite/util/testsuite_common_types.h: Adjust.
+
+	* testsuite/29_atomics/headers/cstdatomic: Move and adjust...
+	* testsuite/29_atomics/headers/atomic: ...here.
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x.cc: Same.
+	* testsuite/29_atomics/headers/atomic/functions_std_c++0x.cc: Same.
+	* testsuite/29_atomics/headers/atomic/std_c++0x_neg.cc: Same.
+	* testsuite/29_atomics/headers/atomic/macros.cc: Same.
+
+	* testsuite/29_atomics/headers/atomic/types_std_c++0x_neg.cc: Add.
+	* testsuite/29_atomics/atomic/cons/user_pod.cc: Add.
+
 2009-12-18  Jimmy Guo  <jguo@yahoo-inc.com>
 
 	PR libstdc++/40088

@@ -18,24 +18,23 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-#include <cstdatomic>
+#include <atomic>
 #include <testsuite_common_types.h>
 
 int main()
 {
   __gnu_test::assignable test;
-  __gnu_cxx::typelist::apply_generator(test, 
+  __gnu_cxx::typelist::apply_generator(test,
 				       __gnu_test::atomic_integrals::type());
   return 0;
 }
 
 // { dg-error "used here" "" { target *-*-* } 521 }
-// { dg-excess-errors "deleted function" } 
-// { dg-excess-errors "deleted function" } 
-// { dg-error "instantiated from" "" { target *-*-* } 29 } 
-// { dg-error "instantiated from" "" { target *-*-* } 528 } 
-// { dg-error "instantiated from" "" { target *-*-* } 170 } 
+// { dg-excess-errors "deleted function" }
+// { dg-excess-errors "deleted function" }
+// { dg-error "instantiated from" "" { target *-*-* } 28 }
+// { dg-error "instantiated from" "" { target *-*-* } 528 }
+// { dg-error "instantiated from" "" { target *-*-* } 170 }
 // { dg-error "instantiated from" "" { target *-*-* } 399 }
-// { dg-error "instantiated from" "" { target *-*-* } 168 }  
+// { dg-error "instantiated from" "" { target *-*-* } 168 }
 // { dg-excess-errors "In member function" }

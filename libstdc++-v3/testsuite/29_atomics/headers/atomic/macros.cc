@@ -18,32 +18,28 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdatomic>
+#include <atomic>
 
 namespace gnu
 {
-  using std::atomic_flag_test_and_set;
-  using std::atomic_flag_test_and_set_explicit;
-  using std::atomic_flag_clear;
-  using std::atomic_flag_clear_explicit;
+#ifndef ATOMIC_INTEGRAL_LOCK_FREE
+# error "ATOMIC_INTEGRAL_LOCK_FREE must be a macro"
+#else
+# if ATOMIC_INTEGRAL_LOCK_FREE != 0 \
+    && ATOMIC_INTEGRAL_LOCK_FREE != 1 && ATOMIC_INTEGRAL_LOCK_FREE != 2
+# error "ATOMIC_INTEGRAL_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
 
-  using std::kill_dependency;
+#ifndef ATOMIC_ADDRESS_LOCK_FREE
+# error "ATOMIC_ADDRESS_LOCK_FREE must be a macro"
+# if ATOMIC_INTEGRAL_LOCK_FREE != 0 \
+    && ATOMIC_INTEGRAL_LOCK_FREE != 1 && ATOMIC_INTEGRAL_LOCK_FREE != 2
+# error "ATOMIC_INTEGRAL_LOCK_FREE must be 0, 1, or 2"
+# endif
+#endif
 
-  // Sloppy testing for integral types (en masse).
-  using std::atomic_is_lock_free;
-  using std::atomic_store;
-  using std::atomic_store_explicit;
-  using std::atomic_load;
-  using std::atomic_load_explicit;
-  using std::atomic_exchange;
-  using std::atomic_exchange_explicit;
-  using std::atomic_compare_exchange_weak;
-  using std::atomic_compare_exchange_strong;
-  using std::atomic_compare_exchange_weak_explicit;
-  using std::atomic_compare_exchange_strong_explicit;
-
-  using std::atomic_fetch_add;
-  using std::atomic_fetch_add_explicit;
-  using std::atomic_fetch_sub;
-  using std::atomic_fetch_sub_explicit;
+#ifndef ATOMIC_FLAG_INIT
+    #error "ATOMIC_FLAG_INIT_must_be_a_macro"
+#endif
 }

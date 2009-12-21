@@ -18,10 +18,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 // This file tests explicit instantiation of basic_string
 
-#include <cstdatomic>
+#include <atomic>
 #include <testsuite_character.h>
 
 template class std::atomic<__gnu_test::pod_char>;
