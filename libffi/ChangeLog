@@ -1,3 +1,8 @@
+2009-12-21  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Make i?86 build on FreeBSD and OpenBSD.
+	* configure: Regenerate.
+
 2009-12-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* testsuite/libffi.call/ffitest.h: Define PRIuPTR on PA HP-UX.
