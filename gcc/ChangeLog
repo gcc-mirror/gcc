@@ -1,3 +1,9 @@
+2009-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/42429
+	* reload.c (find_reloads_subreg_address): When adjusting mode of
+	MEM, update also MEM_SIZE if it is set.
+
 2009-12-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/42345

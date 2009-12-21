@@ -6149,6 +6149,9 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	      PUT_MODE (tem, GET_MODE (x));
 	      if (MEM_OFFSET (tem))
 		set_mem_offset (tem, plus_constant (MEM_OFFSET (tem), offset));
+	      if (MEM_SIZE (tem)
+		  && INTVAL (MEM_SIZE (tem)) != (HOST_WIDE_INT) outer_size)
+		set_mem_size (tem, GEN_INT (outer_size));
 
 	      /* If this was a paradoxical subreg that we replaced, the
 		 resulting memory must be sufficiently aligned to allow
