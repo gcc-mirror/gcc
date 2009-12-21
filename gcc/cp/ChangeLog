@@ -1,3 +1,7 @@
+2009-12-21  Brian Hackett  <bhackett1024@gmail.com>
+
+	* decl.c (finish_function): Rename pre-genericize event.
+
 2009-12-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42225

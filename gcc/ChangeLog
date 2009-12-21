@@ -1,3 +1,9 @@
+2009-12-21  Brian Hackett  <bhackett1024@gmail.com>
+
+	* plugin.def: Rename pre-genericize event.
+	* plugin.c (register_callback, invoke_plugin_callbacks): Same.
+	* c-decl.c (finish_function): Invoke callbacks on above event.
+
 2009-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/42429

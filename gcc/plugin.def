@@ -27,8 +27,8 @@ DEFEVENT (PLUGIN_FINISH_TYPE)
 /* Useful for summary processing.  */
 DEFEVENT (PLUGIN_FINISH_UNIT)
 
-/* Allows to see low level AST in C++ FE.  */
-DEFEVENT (PLUGIN_CXX_CP_PRE_GENERICIZE)
+/* Allows to see low level AST in C and C++ frontends. */
+DEFEVENT (PLUGIN_PRE_GENERICIZE)
 
 /* Called before GCC exits.  */
 DEFEVENT (PLUGIN_FINISH)
