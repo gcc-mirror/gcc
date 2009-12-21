@@ -442,6 +442,22 @@ AC_DEFUN([gcc_GAS_VERSION_GTE_IFELSE],
 ifelse([$1], elf, [_gcc_GAS_VERSION_GTE_IFELSE($@)],
                   [_gcc_GAS_VERSION_GTE_IFELSE(,$@)])])
 
+dnl # gcc_GAS_FLAGS
+dnl # Used by gcc_GAS_CHECK_FEATURE 
+dnl #
+AC_DEFUN([gcc_GAS_FLAGS],
+[AC_CACHE_CHECK([assembler flags], gcc_cv_as_flags,
+[ case "$target" in
+  i[[34567]]86-*-linux*)
+    dnl Always pass --32 to ia32 Linux assembler.
+    gcc_cv_as_flags="--32"
+    ;;
+  *)
+    gcc_cv_as_flags=" "
+    ;;
+  esac])
+])
+
 dnl gcc_GAS_CHECK_FEATURE(description, cv, [[elf,]major,minor,patchlevel],
 dnl [extra switches to as], [assembler input],
 dnl [extra testing logic], [command if feature available])
@@ -454,14 +470,15 @@ dnl if assembly succeeds.  If EXTRA TESTING LOGIC is not the empty string,
 dnl then it is run instead of simply setting CV to "yes" - it is responsible
 dnl for doing so, if appropriate.
 AC_DEFUN([gcc_GAS_CHECK_FEATURE],
-[AC_CACHE_CHECK([assembler for $1], [$2],
+[AC_REQUIRE([gcc_GAS_FLAGS])dnl
+AC_CACHE_CHECK([assembler for $1], [$2],
  [[$2]=no
   ifelse([$3],,,[dnl
   if test $in_tree_gas = yes; then
     gcc_GAS_VERSION_GTE_IFELSE($3, [[$2]=yes])
   el])if test x$gcc_cv_as != x; then
     echo ifelse(m4_substr([$5],0,1),[$], "[$5]", '[$5]') > conftest.s
-    if AC_TRY_COMMAND([$gcc_cv_as $4 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
+    if AC_TRY_COMMAND([$gcc_cv_as $gcc_cv_as_flags $4 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
     then
 	ifelse([$6],, [$2]=yes, [$6])
     else
