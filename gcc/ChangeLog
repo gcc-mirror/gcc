@@ -1,3 +1,9 @@
+2009-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/42429
+	* reload.c (find_reloads_subreg_address): When adjusting mode of
+	MEM, update also MEM_SIZE if it is set.
+
 2009-12-17  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/cygwin.h (LINK_SPEC): Add -tsaware flag if !mno-cygwin.
