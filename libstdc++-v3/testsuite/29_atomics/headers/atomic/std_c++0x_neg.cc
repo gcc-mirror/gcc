@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++98" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,11 +18,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <atomic>
-#include <testsuite_common_types.h>
+#include <atomic>  // { dg-excess-errors "In file included from" }
 
-void test01()
-{
-  __gnu_test::has_trivial_cons_dtor test;
-  test.operator()<std::atomic_address>();
-}
+// { dg-error "upcoming ISO" "" { target *-*-* } 31 } 
+
+
+

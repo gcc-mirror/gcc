@@ -580,6 +580,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          @srcdir@/libsupc++/typeinfo \
                          include/algorithm \
                          include/array \
+                         include/atomic \
                          include/bitset \
                          include/chrono \
                          include/complex \
@@ -635,7 +636,6 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/csetjmp \
                          include/csignal \
                          include/cstdarg \
-                         include/cstdatomic \
                          include/cstdbool \
                          include/cstddef \
                          include/cstdint \

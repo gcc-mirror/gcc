@@ -41,7 +41,7 @@
 #include <condition_variable>
 #include <system_error>
 #include <exception>
-#include <cstdatomic>
+#include <atomic>
 #include <bits/functexcept.h>
 
 namespace std

@@ -17,8 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-#include <cstdatomic>
+#include <atomic>
 #include <testsuite_common_types.h>
 
 int main()

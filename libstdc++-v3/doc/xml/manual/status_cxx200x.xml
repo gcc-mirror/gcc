@@ -2200,7 +2200,7 @@ particular release.
     </row>
     <row>
       <entry>29.2</entry>
-      <entry>Header <code>&lt;cstdatomic&gt;</code> synopsis</entry>
+      <entry>Header <code>&lt;atomic&gt;</code> synopsis</entry>
       <entry>Y</entry>
       <entry></entry>
     </row>

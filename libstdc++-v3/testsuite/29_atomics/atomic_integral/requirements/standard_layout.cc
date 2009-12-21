@@ -19,13 +19,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdatomic>
+#include <atomic>
 #include <testsuite_common_types.h>
 
 void test01()
 {
   // Check for standard layout requirements
   __gnu_test::standard_layout test;
-  __gnu_cxx::typelist::apply_generator(test, 
+  __gnu_cxx::typelist::apply_generator(test,
 				       __gnu_test::atomic_integrals::type());
 }

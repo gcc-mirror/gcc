@@ -22,8 +22,8 @@
 
 int main()
 {
-  volatile atomic_flag f;
-  volatile atomic_flag* p = &f;
+  atomic_flag f;
+  atomic_flag* p = &f;
   memory_order m = memory_order_relaxed;
 
   // For position only.
