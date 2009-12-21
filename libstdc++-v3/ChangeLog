@@ -1,3 +1,7 @@
+2009-12-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Update nested namespace exceptions.
+
 2009-12-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/atomic: Update to N3000.

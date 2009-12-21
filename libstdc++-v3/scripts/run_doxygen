@@ -283,6 +283,10 @@ for f in *__parallel_*; do
     newname=`echo $f | sed 's/__parallel_/__parallel::/'`
     mv $f $newname
 done
+for f in *__profile_*; do
+    newname=`echo $f | sed 's/__profile_/__profile::/'`
+    mv $f $newname
+done
 
 # Then, clean up other top-level namespaces.
 for f in std_tr1_*; do
@@ -303,6 +307,14 @@ for f in __gnu_debug_*; do
 done
 for f in __gnu_parallel_*; do
     newname=`echo $f | sed 's/^__gnu_parallel_/__gnu_parallel::/'`
+    mv $f $newname
+done
+for f in __gnu_profile_*; do
+    newname=`echo $f | sed 's/^__gnu_profile_/__gnu_profile::/'`
+    mv $f $newname
+done
+for f in __gnu_pbds_*; do
+    newname=`echo $f | sed 's/^__gnu_pbds_/__gnu_pbds::/'`
     mv $f $newname
 done
 for f in __atomic0_*; do
