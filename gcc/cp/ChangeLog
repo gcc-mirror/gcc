@@ -1,5 +1,9 @@
 2009-12-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42466
+	* pt.c (reduce_template_parm_level): Check the type before
+	returning cached TEMPLATE_PARM_INDEX.
+
 	PR c++/42331
 	* typeck.c (cp_build_modify_expr): Fix thinko.
 
