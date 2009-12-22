@@ -6455,15 +6455,15 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
     {
       int from_array;
 
-      if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
+      if (BRACE_ENCLOSED_INITIALIZER_P (newrhs))
 	{
-	  if (check_array_initializer (lhs, lhstype, rhs))
+	  if (check_array_initializer (lhs, lhstype, newrhs))
 	    return error_mark_node;
-	  rhs = digest_init (lhstype, rhs);
+	  newrhs = digest_init (lhstype, newrhs);
 	}
 
       else if (!same_or_base_type_p (TYPE_MAIN_VARIANT (lhstype),
-				     TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
+				     TYPE_MAIN_VARIANT (TREE_TYPE (newrhs))))
 	{
 	  if (complain & tf_error)
 	    error ("incompatible types in assignment of %qT to %qT",
