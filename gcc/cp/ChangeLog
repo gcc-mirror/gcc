@@ -1,3 +1,8 @@
+2009-12-21  Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_member_name): Move abi-version=1 code back to...
+	(write_expression): ...here.
+
 2009-12-21  Brian Hackett  <bhackett1024@gmail.com>
 
 	* decl.c (finish_function): Rename pre-genericize event.

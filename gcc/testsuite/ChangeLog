@@ -1,3 +1,7 @@
+2009-12-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle14.C: Add expected mangling.
+
 2009-12-21  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* gcc.dg/pr36901.h: AVR must support address zero.

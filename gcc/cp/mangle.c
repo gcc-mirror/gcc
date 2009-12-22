@@ -2299,12 +2299,7 @@ write_member_name (tree member)
   if (TREE_CODE (member) == IDENTIFIER_NODE)
     write_source_name (member);
   else if (DECL_P (member))
-    {
-      /* G++ 3.2 incorrectly put out both the "sr" code and
-	 the nested name of the qualified name.  */
-      G.need_abi_warning = 1;
-      write_unqualified_name (member);
-    }
+    write_unqualified_name (member);
   else if (TREE_CODE (member) == TEMPLATE_ID_EXPR)
     {
       tree name = TREE_OPERAND (member, 0);
@@ -2401,17 +2396,27 @@ write_expression (tree expr)
       write_string ("at");
       write_type (TREE_OPERAND (expr, 0));
     }
-  else if (abi_version_at_least (2) && TREE_CODE (expr) == SCOPE_REF)
+  else if (TREE_CODE (expr) == SCOPE_REF)
     {
       tree scope = TREE_OPERAND (expr, 0);
       tree member = TREE_OPERAND (expr, 1);
+
+      if (!abi_version_at_least (2))
+	{
+	  write_string ("sr");
+	  write_type (scope);
+	  /* G++ 3.2 incorrectly put out both the "sr" code and
+	     the nested name of the qualified name.  */
+	  G.need_abi_warning = 1;
+	  write_encoding (member);
+	}
 
       /* If the MEMBER is a real declaration, then the qualifying
 	 scope was not dependent.  Ideally, we would not have a
 	 SCOPE_REF in those cases, but sometimes we do.  If the second
 	 argument is a DECL, then the name must not have been
 	 dependent.  */
-      if (DECL_P (member))
+      else if (DECL_P (member))
 	write_expression (member);
       else
 	{
@@ -2574,12 +2579,6 @@ write_expression (tree expr)
 
 	case NEW_EXPR:
 	  sorry ("mangling new-expression");
-	  break;
-
-	/* Handle pointers-to-members specially.  */
-	case SCOPE_REF:
-	  write_type (TREE_OPERAND (expr, 0));
-	  write_member_name (TREE_OPERAND (expr, 1));
 	  break;
 
 	default:
