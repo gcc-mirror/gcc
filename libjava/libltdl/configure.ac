@@ -19,6 +19,10 @@
 
 AC_PREREQ(2.64)
 
+dnl Disable libtool 1.5 support for languages we don't use
+define([AC_LIBTOOL_LANG_CXX_CONFIG], [:])dnl
+define([AC_LIBTOOL_LANG_F77_CONFIG], [:])dnl
+define([AC_LIBTOOL_LANG_GCJ_CONFIG], [:])dnl
 
 ## ------------------------ ##
 ## Autoconf initialisation. ##
