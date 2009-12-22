@@ -1,3 +1,19 @@
+2009-12-21  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR testsuite/36903
+	* gcc.dg/tree-ssa/gen-vect-11.c : Disable for avr target. It will
+	not vectorize.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Ditto.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Ditto.
+	* gcc.dg/tree-ssa/pr23455.c: Test for 4 eliminations on avr target.
+	* gcc.dg/tree-ssa/ssa-fre-26.c: XFAIL test for avr.
+	* gcc.dg/tree-ssa/vrp47.c: Skip test for avr target due to low
+	branch cost.
+
 2009-12-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/PR42422

@@ -14,5 +14,6 @@ int foo (union U *p)
   return u.i;
 }
 
-/* { dg-final { scan-tree-dump "Replaced u.i with 0 in" "fre" } } */
+/* avr has 16 bit int and 32 bit float */
+/* { dg-final { scan-tree-dump "Replaced u.i with 0 in" "fre" {xfail avr-*-* } } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
