@@ -1,3 +1,11 @@
+2009-12-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Disable libtool support for unused languages,
+	to avoid precious FFLAGS recheck cache consistency failure.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2009-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* acinclude.m4: Regenerated to pick:
