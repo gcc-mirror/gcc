@@ -1,3 +1,7 @@
+2009-12-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle14.C: Add expected mangling.
+
 2009-12-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/PR42422
