@@ -18,7 +18,12 @@
 # this test. Or, hey, if we don't support this kind of symbol
 # versioning test: don't run it.
 
-set lib $blddir/src/.libs/libstdc++.so
+if { [string match "*-*-darwin*" $target_triplet] } {
+    set lib $blddir/src/.libs/libstdc++.dylib
+} else { 
+    set lib $blddir/src/.libs/libstdc++.so
+}
+
 set baseline_subdir "[eval exec $cxx --print-multi-dir]"
 
 # Build the support objects.

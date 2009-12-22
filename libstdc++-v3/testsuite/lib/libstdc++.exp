@@ -91,6 +91,8 @@ proc libstdc++_init { testfile } {
     global target_triplet
     global flags_file
     global tool_timeout
+    global DEFAULT_CXXFLAGS
+    global STATIC_LIBCXXFLAGS
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -106,6 +108,7 @@ proc libstdc++_init { testfile } {
 
     set blddir [lookfor_file [get_multilibs] libstdc++-v3]
     set flags_file "${blddir}/scripts/testsuite_flags"
+    set shlib_ext [get_shlib_extension]
     v3track flags_file 2
 
     # If a test doesn't have special options, use DEFAULT_CXXFLAGS.
@@ -114,7 +117,7 @@ proc libstdc++_init { testfile } {
     #   2) might need to be negated 
     # In particular, some tests have to be run without precompiled
     # headers, or without assertions.
-    global DEFAULT_CXXFLAGS
+
     if ![info exists DEFAULT_CXXFLAGS] then {
 	set DEFAULT_CXXFLAGS ""
 	# Host specific goo here.
@@ -145,7 +148,7 @@ proc libstdc++_init { testfile } {
 
     # Locate libgomp. This is only required for parallel mode.
     set v3-libgomp 0
-    set libgompdir [lookfor_file $blddir/../libgomp .libs/libgomp.so]
+    set libgompdir [lookfor_file $blddir/../libgomp .libs/libgomp.$shlib_ext]
     if {$libgompdir != ""} {
 	set v3-libgomp 1
         set libgompdir [file dirname $libgompdir]
@@ -156,7 +159,7 @@ proc libstdc++_init { testfile } {
 
     # Locate libstdc++ shared library. (ie libstdc++.so.)
     set v3-sharedlib 0
-    set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.so]
+    set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.$shlib_ext]
     if {$sharedlibdir != ""} {
 	if { [string match "*-*-linux*" $target_triplet] && [isnative] } {
 	    set v3-sharedlib 1
@@ -164,6 +167,15 @@ proc libstdc++_init { testfile } {
 	} 
     }
     v3track v3-sharedlib 3
+
+    set STATIC_LIBCXXFLAGS ""
+    set staticlibdir [lookfor_file $blddir src/.libs/libstdc++.a]
+    if {$staticlibdir != ""} {
+	set staticlibdir [file dirname $staticlibdir]
+	# Some targets use libstdc++.a%s in their specs, so they need a
+	# -B option for uninstalled testing.
+	set STATIC_LIBCXXFLAGS " -B${staticlibdir} "
+    }
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     if {$gccdir != ""} {
@@ -403,6 +415,7 @@ proc v3_target_compile { source dest type options } {
     global cxxflags
     global cxxldflags
     global includes
+    global STATIC_LIBCXXFLAGS
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -412,6 +425,7 @@ proc v3_target_compile { source dest type options } {
     set cxx_final $cxx
     set cxxlibglossflags  [libgloss_link_flags]
     set cxx_final [concat $cxx_final $cxxlibglossflags]
+    set cxx_final [concat $cxx_final $STATIC_LIBCXXFLAGS]
     set cxx_final [concat $cxx_final $cxxflags]
     set cxx_final [concat $cxx_final $includes]
 
@@ -443,6 +457,7 @@ proc v3_target_compile_as_c { source dest type options } {
     global blddir
     global cc
     global cxxflags
+    global STATIC_LIBCXXFLAGS
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -453,6 +468,7 @@ proc v3_target_compile_as_c { source dest type options } {
     set cc_final $cc
     set cxxlibglossflags [libgloss_link_flags]
     set cc_final [concat $cc_final $cxxlibglossflags]
+    set cc_final [concat $cc_final $STATIC_LIBCXXFLAGS]
     set cc_final [concat $cc_final $cxxflags]
     set cc_final [concat $cc_final $includes]
     regsub -all {\s[-]nostdinc[+][+]} $cc_final "" cc_final

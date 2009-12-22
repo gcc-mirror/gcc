@@ -1,3 +1,10 @@
+2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR target/41605
+	* testsuite/libstdc++-abi/abi.exp: Provide -B options to allow for
+	link spec %s substitutions for static libraries.
+	* testsuite/lib/libstdc++.exp: Ditto
+
 2009-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/mutex (call_once(once_flag&, _Callable, _Args&&...)):

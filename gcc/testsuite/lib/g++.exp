@@ -125,6 +125,9 @@ proc g++_link_flags { paths } {
       }
       if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
           append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+          # Some targets use libstdc++.a%s in their specs, so they need a
+          # -B option for uninstalled testing.
+          append flags " -B${gccpath}/libstdc++-v3/src/.libs "
           append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
       }
       # Look for libstdc++.${shlib_ext}.

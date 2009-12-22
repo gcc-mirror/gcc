@@ -130,6 +130,9 @@ proc libgomp_init { args } {
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
         lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/"
+        # targets that use libgomp.a%s in their specs need a -B option
+        # for uninstalled testing.
+        lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
         lappend ALWAYS_CFLAGS "additional_flags=-I${blddir}"
         lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/.libs"
     }
