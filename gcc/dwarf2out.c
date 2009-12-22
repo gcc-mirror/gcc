@@ -21218,10 +21218,11 @@ dwarf2out_finish (const char *filename)
       add_AT_addr (comp_unit_die, DW_AT_low_pc, const0_rtx);
       add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
 
-      add_AT_range_list (comp_unit_die, DW_AT_ranges,
-			 add_ranges_by_labels (text_section_label,
-					       text_end_label));
-      if (flag_reorder_blocks_and_partition)
+      if (text_section_used)
+	add_AT_range_list (comp_unit_die, DW_AT_ranges,
+			   add_ranges_by_labels (text_section_label,
+						 text_end_label));
+      if (flag_reorder_blocks_and_partition && cold_text_section_used)
 	add_ranges_by_labels (cold_text_section_label,
 			      cold_end_label);
 

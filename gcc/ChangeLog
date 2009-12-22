@@ -1,3 +1,9 @@
+2009-12-22  Cary Coutant  <ccoutant@google.com>
+
+	PR debug/42454
+	* dwarf2out.c (dwarf2out_finish): Don't output range for .text
+	section unless .text section was used.  Likewise for cold.
+
 2009-12-22  Brian Hackett  <bhackett1024@gmail.com>
 
 	* doc/plugins.texi: Rename pre-genericize event.
