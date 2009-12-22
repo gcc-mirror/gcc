@@ -78,15 +78,15 @@ namespace std
   {
     bool
     atomic_flag_test_and_set_explicit(__atomic_flag_base* __a,
-				      memory_order __m) throw ()
+				      memory_order __m) throw()
     {
       atomic_flag* d = static_cast<volatile atomic_flag*>(__a);
       return d->test_and_set(__m);
     }
 
     void
-    atomic_flag_clear_explicit(__atomic_flag_base* __a,
-			       memory_order __m) throw ()
+    atomic_flag_clear_explicit(__atomic_flag_base* __a, 
+			       memory_order __m) throw()
     {
       atomic_flag* d = static_cast<volatile atomic_flag*>(__a);
       return d->clear(__m);
@@ -94,14 +94,14 @@ namespace std
 
     void
     __atomic_flag_wait_explicit(__atomic_flag_base* __a,
-				memory_order __x) throw ()
+				memory_order __x) throw()
     {
       while (atomic_flag_test_and_set_explicit(__a, __x))
 	{ };
     }
 
     __atomic_flag_base*
-    __atomic_flag_for_address(const void* __z) throw ()
+    __atomic_flag_for_address(const void* __z) throw()
     {
       uintptr_t __u = reinterpret_cast<uintptr_t>(__z);
       __u += (__u >> 2) + (__u << 4);
@@ -126,12 +126,14 @@ namespace std
 // In the future, GLIBCXX_ABI > 6 should remove all uses of
 // _GLIBCXX_*_SYMVER macros in this file.
 
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
+
 #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
    asm (".symver " #cur "," #old "@@" #version);
 
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
 _GLIBCXX_ASM_SYMVER(_ZNSt9__atomic011atomic_flag5clearESt12memory_order, _ZNVSt9__atomic011atomic_flag5clearESt12memory_order, GLIBCXX_3.4.11)
 
 _GLIBCXX_ASM_SYMVER(_ZNSt9__atomic011atomic_flag12test_and_setESt12memory_order, _ZNVSt9__atomic011atomic_flag12test_and_setESt12memory_order, GLIBCXX_3.4.11)
+
 #endif

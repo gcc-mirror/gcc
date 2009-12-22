@@ -1050,6 +1050,10 @@ GLIBCXX_3.4.13 {
 
 GLIBCXX_3.4.14 {
 
+    # atomic
+    _ZNSt9__atomic011atomic_flag12test_and_setESt12memory_order;
+    _ZNSt9__atomic011atomic_flag5clearESt12memory_order;
+
     # future
     _ZSt15future_category;
     _ZNSt12future_errorD*;
