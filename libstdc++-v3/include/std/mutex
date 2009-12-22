@@ -722,12 +722,12 @@ namespace std
     call_once(once_flag& __once, _Callable __f, _Args&&... __args)
     {
 #ifdef _GLIBCXX_HAVE_TLS
-      auto __bound_functor = bind(__f, __args...);
+      auto __bound_functor = std::bind(__f, __args...);
       __once_callable = &__bound_functor;
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
       unique_lock<mutex> __functor_lock(__get_once_mutex());
-      __once_functor = bind(__f, __args...);
+      __once_functor = std::bind(__f, __args...);
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 
