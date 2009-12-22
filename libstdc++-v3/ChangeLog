@@ -1,3 +1,8 @@
+2009-12-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (call_once(once_flag&, _Callable, _Args&&...)):
+	Explicitly qualify with std:: bind calls.
+
 2009-12-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/42456
