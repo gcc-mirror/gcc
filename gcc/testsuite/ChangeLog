@@ -1,3 +1,9 @@
+2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR target/41605
+	* lib/g++.exp: Provide -B options to allow for link spec %s
+	substitutions for static libraries.
+
 2009-12-22  Brian Hackett  <bhackett1024@gmail.com>
 
 	* g++.dg/plugin/attribute_plugin.c: Rename pre-genericize event.
