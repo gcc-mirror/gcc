@@ -1,5 +1,11 @@
 2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
+	* testsuite/libgomp.fortran/crayptr2.f90: Remove forced static linkage
+	for darwin, protect the test with require-effective-target tls_runtime.
+	* testsuite/libgomp.fortran/pr32550.f90: Ditto.
+
+2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
+
 	PR target/41605
 	* testsuite/lib/libgomp.exp: Provide -B options to allow for
 	link spec %s substitutions for static libraries.
