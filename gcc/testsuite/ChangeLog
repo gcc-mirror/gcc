@@ -1,3 +1,8 @@
+2009-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42331
+	* g++.dg/cpp0x/initlist29.C: New.
+
 2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR target/41605
