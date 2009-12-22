@@ -1,6 +1,6 @@
 ! PR fortran/32550
 ! { dg-do run }
-! { dg-options "-static-libgcc" { target *-*-darwin* } }
+! { dg-require-effective-target tls_runtime }
 
       integer, pointer, save :: ptr
       integer, target :: targ
