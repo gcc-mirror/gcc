@@ -1,3 +1,8 @@
+2009-12-22  Brian Hackett  <bhackett1024@gmail.com>
+
+	* g++.dg/plugin/attribute_plugin.c: Rename pre-genericize event.
+	* g++.dg/plugin/dumb_plugin.c: Same.
+
 2009-12-21  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle14.C: Add expected mangling.

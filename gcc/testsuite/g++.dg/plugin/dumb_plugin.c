@@ -130,7 +130,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 
   register_callback (plugin_name, PLUGIN_FINISH_TYPE, handle_struct, NULL);
 
-  register_callback (plugin_name, PLUGIN_CXX_CP_PRE_GENERICIZE,
+  register_callback (plugin_name, PLUGIN_PRE_GENERICIZE,
                      handle_pre_generic, NULL);
 
   register_callback (plugin_name, PLUGIN_FINISH_UNIT,

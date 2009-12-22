@@ -1,3 +1,7 @@
+2009-12-22  Brian Hackett  <bhackett1024@gmail.com>
+
+	* doc/plugins.texi: Rename pre-genericize event.
+
 2009-12-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR driver/42463
