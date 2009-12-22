@@ -1,5 +1,9 @@
 2009-12-21  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	* gcc.dg/pr36901.h: AVR must support address zero.
+
+2009-12-21  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	PR testsuite/36903
 	* gcc.dg/tree-ssa/gen-vect-11.c : Disable for avr target. It will
 	not vectorize.
