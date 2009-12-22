@@ -1,5 +1,11 @@
 2009-12-21  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/42456
+	* src/atomic.cc: Move _GLIBCXX_ASM_SYMVER define within guard.
+	* config/abi/pre/gnu.ver: Add non-volatile exports.
+
+2009-12-21  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* scripts/run_doxygen: Update nested namespace exceptions.
 
 2009-12-20  Benjamin Kosnik  <bkoz@redhat.com>
