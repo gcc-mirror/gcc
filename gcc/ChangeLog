@@ -1,3 +1,11 @@
+2009-12-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR driver/42463
+	* params.def ([PARAM_PREDICTABLE_BRANCH_OUTCOME]): Fix typo in
+	help string.
+
+	* doc/invoke.texi: Fix typo.
+
 2009-12-22  Paul Brook <paul@codesourcery.com>
 
 	* doc/tm.texi (ARG_POINTER_CFA_OFFSET): Document new default.

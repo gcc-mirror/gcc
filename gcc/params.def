@@ -52,7 +52,7 @@ DEFPARAM (PARAM_STRUCT_REORG_COLD_STRUCT_RATIO,
    threshold (in percent), then it is considered well predictable. */
 DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 	  "predictable-branch-outcome",
-	  "Maximal esitmated outcome of branch considered predictable",
+	  "Maximal estimated outcome of branch considered predictable",
 	  2, 0, 50)
 
 /* The single function inlining limit. This is the maximum size
