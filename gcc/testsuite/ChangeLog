@@ -1,5 +1,8 @@
 2009-12-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42466
+	* g++.dg/template/nontype19.C: New.
+
 	PR c++/42331
 	* g++.dg/cpp0x/initlist29.C: New.
 
