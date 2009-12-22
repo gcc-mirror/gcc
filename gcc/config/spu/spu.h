@@ -272,7 +272,8 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (LINK_REGISTER_REGNUM)
 
-#define ARG_POINTER_CFA_OFFSET(FNDECL) (-STACK_POINTER_OFFSET)
+#define ARG_POINTER_CFA_OFFSET(FNDECL) \
+  (crtl->args.pretend_args_size - STACK_POINTER_OFFSET)
 
 
 /* Stack Checking */

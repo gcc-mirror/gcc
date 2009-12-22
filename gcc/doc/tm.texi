@@ -3340,7 +3340,8 @@ final value should coincide with that calculated by
 @code{INCOMING_FRAME_SP_OFFSET}.  Which is unfortunately not usable
 during virtual register instantiation.
 
-The default value for this macro is @code{FIRST_PARM_OFFSET (fundecl)},
+The default value for this macro is
+@code{FIRST_PARM_OFFSET (fundecl) + crtl->args.pretend_args_size},
 which is correct for most machines; in general, the arguments are found
 immediately before the stack frame.  Note that this is not the case on
 some targets that save registers into the caller's frame, such as SPARC

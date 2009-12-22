@@ -1086,7 +1086,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* On most machines, the CFA coincides with the first incoming parm.  */
 #ifndef ARG_POINTER_CFA_OFFSET
-#define ARG_POINTER_CFA_OFFSET(FNDECL) FIRST_PARM_OFFSET (FNDECL)
+#define ARG_POINTER_CFA_OFFSET(FNDECL) \
+  (FIRST_PARM_OFFSET (FNDECL) + crtl->args.pretend_args_size)
 #endif
 
 /* On most machines, we use the CFA as DW_AT_frame_base.  */

@@ -1,3 +1,9 @@
+2009-12-22  Paul Brook <paul@codesourcery.com>
+
+	* doc/tm.texi (ARG_POINTER_CFA_OFFSET): Document new default.
+	* defaults.h (ARG_POINTER_CFA_OFFSET): Add pretend_args_size.
+	* config/spu/spu.h (ARG_POINTER_CFA_OFFSET): Add pretend_args_size.
+
 2009-12-21  Brian Hackett  <bhackett1024@gmail.com>
 
 	* plugin.def: Rename pre-genericize event.
