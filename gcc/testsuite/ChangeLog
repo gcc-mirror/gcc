@@ -1,3 +1,8 @@
+2009-12-23  Ramana Radhakrishnan  <ramrad01@arm.com>
+
+	PR target/40670
+	* gcc.target/arm/pr40670.c: New test.
+	
 2009-12-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/alpha/20000715-1.c: Remove target selector.

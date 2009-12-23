@@ -1,3 +1,8 @@
+2009-12-23  Ramana Radhakrishnan  <ramrad01@arm.com>
+
+	PR target/40670
+	* config/arm/arm.md: Split for Thumb1 as well.
+
 2009-12-22  Cary Coutant  <ccoutant@google.com>
 
 	PR debug/42454
