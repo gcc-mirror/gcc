@@ -1,5 +1,10 @@
 2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42393
+	* testsuite/gfortran.dg/graphite/pr42393.f90: New.
+
+2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42186
 	* testsuite/gfortran.dg/graphite/pr42186.f90: New.
 
