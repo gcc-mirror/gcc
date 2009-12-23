@@ -1,3 +1,21 @@
+2009-12-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_deque.h (copy(_Deque_iterator, _Deque_iterator,
+	_Deque_iterator), move(_Deque_iterator, _Deque_iterator,
+	_Deque_iterator)): Declare.
+	* include/bits/deque.tcc: Implement the latter.
+	* testsuite/performance/25_algorithms/copy_deque_iterators.cc: New.
+	* testsuite/25_algorithms/move/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/5.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR target/41605
