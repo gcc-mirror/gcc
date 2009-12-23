@@ -837,7 +837,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     }
 
   // Overload for deque::iterators, exploiting the "segmented-iterator
-  // optimization".  NB: leave const_iterators alone!
+  // optimization".
   template<typename _Tp>
     void
     fill(const _Deque_iterator<_Tp, _Tp&, _Tp*>& __first,
@@ -857,6 +857,52 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       else
 	std::fill(__first._M_cur, __last._M_cur, __value);
     }
+
+  template<typename _Tp>
+    _Deque_iterator<_Tp, _Tp&, _Tp*>
+    copy(_Deque_iterator<_Tp, const _Tp&, const _Tp*> __first,
+	 _Deque_iterator<_Tp, const _Tp&, const _Tp*> __last,
+	 _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
+    {
+      typedef typename _Deque_iterator<_Tp, _Tp&, _Tp*>::_Self _Self;
+
+      typename _Self::difference_type __len = __last - __first;
+      while (__len > 0)
+	{
+	  typename _Self::difference_type __clen
+	    = std::min(__len, std::min(__first._M_last - __first._M_cur,
+				       __result._M_last - __result._M_cur));
+	  std::copy(__first._M_cur, __first._M_cur + __clen, __result._M_cur);
+	  __first += __clen;
+	  __result += __clen;
+	  __len -= __clen;
+	}
+      return __result;
+    }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    _Deque_iterator<_Tp, _Tp&, _Tp*>
+    move(_Deque_iterator<_Tp, const _Tp&, const _Tp*> __first,
+	 _Deque_iterator<_Tp, const _Tp&, const _Tp*> __last,
+	 _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
+    {
+      typedef typename _Deque_iterator<_Tp, _Tp&, _Tp*>::_Self _Self;
+
+      typename _Self::difference_type __len = __last - __first;
+      while (__len > 0)
+	{
+	  const typename _Self::difference_type __clen
+	    = std::min(__len, std::min(__first._M_last - __first._M_cur,
+				       __result._M_last - __result._M_cur));
+	  std::move(__first._M_cur, __first._M_cur + __clen, __result._M_cur);
+	  __first += __clen;
+	  __result += __clen;
+	  __len -= __clen;
+	}
+      return __result;
+    }
+#endif
 
 _GLIBCXX_END_NESTED_NAMESPACE
 
