@@ -213,15 +213,33 @@ graphite_can_represent_scev (tree scev, int outermost_loop)
   if (chrec_contains_undetermined (scev))
     return false;
 
-  if (TREE_CODE (scev) == POLYNOMIAL_CHREC
+  switch (TREE_CODE (scev))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      return graphite_can_represent_scev (TREE_OPERAND (scev, 0), outermost_loop)
+	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1), outermost_loop);
 
+    case MULT_EXPR:
+      return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
+	&& !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 1)))
+	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
+	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
+	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0), outermost_loop)
+	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1), outermost_loop);
+
+    case POLYNOMIAL_CHREC:
       /* Check for constant strides.  With a non constant stride of
-	 'n' we would have a value of 'iv * n'.  */
-      && (!evolution_function_right_is_integer_cst (scev)
+	 'n' we would have a value of 'iv * n'.  Also check that the
+	 initial value can represented: for example 'n * m' cannot be
+	 represented.  */
+      if (!evolution_function_right_is_integer_cst (scev)
+	  || !graphite_can_represent_init (scev))
+	return false;
 
-	  /* Check the initial value: 'n * m' cannot be represented.  */
-	  || !graphite_can_represent_init (scev)))
-    return false;
+    default:
+      break;
+    }
 
   /* Only affine functions can be represented.  */
   if (!scev_is_linear_expression (scev))
