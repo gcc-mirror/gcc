@@ -2450,6 +2450,9 @@ split_reduction_stmt (gimple stmt)
 
   split_block (bb, stmt);
 
+  if (gsi_one_before_end_p (gsi_start_bb (bb)))
+    return bb;
+
   gsi = gsi_last_bb (bb);
   gsi_prev (&gsi);
   e = split_block (bb, gsi_stmt (gsi));
