@@ -1196,7 +1196,9 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   if (!TYPE_HAS_CONVERSION (basetype))
     return NULL_TREE;
 
-  for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
+  for (conv = lookup_conversions (basetype, /*lookup_template_convs_p=*/true);
+       conv;
+       conv = TREE_CHAIN (conv))
     {
       int win = 0;
       tree candidate;
