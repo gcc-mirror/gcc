@@ -6073,7 +6073,7 @@
 (define_split
   [(set (match_operand:SF 0 "arm_general_register_operand" "")
 	(match_operand:SF 1 "immediate_operand" ""))]
-  "TARGET_32BIT
+  "TARGET_EITHER
    && reload_completed
    && GET_CODE (operands[1]) == CONST_DOUBLE"
   [(set (match_dup 2) (match_dup 3))]
