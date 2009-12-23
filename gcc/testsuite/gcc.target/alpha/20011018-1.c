@@ -1,4 +1,4 @@
-/* { dg-do compile { target alpha*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mieee" } */
 
 double foo (void);

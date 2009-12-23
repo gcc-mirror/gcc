@@ -1,5 +1,5 @@
 /* Test that the CIX isa builtins compile.  */
-/* { dg-do link { target alpha*-*-* } } */
+/* { dg-do link } */
 /* { dg-options "-mcpu=ev67" } */
 
 void test_CIX (long x)

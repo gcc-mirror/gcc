@@ -1,6 +1,6 @@
 /* Test float on alpha. */
 
-/* { dg-do run { target alpha*-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-mieee -O2" } */
 
 extern void abort(void);

@@ -1,3 +1,16 @@
+2009-12-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/alpha/20000715-1.c: Remove target selector.
+	* gcc.target/alpha/20011018-1.c: Ditto.
+	* gcc.target/alpha/980217-1.c: Ditto.
+	* gcc.target/alpha/asm-1.c: Ditto.
+	* gcc.target/alpha/base-1.c: Ditto.
+	* gcc.target/alpha/base-2.c: Ditto.
+	* gcc.target/alpha/cix-1.c: Ditto.
+	* gcc.target/alpha/cix-2.c: Ditto.
+	* gcc.target/alpha/max-1.c: Ditto.
+	* gcc.target/alpha/max-2.c: Ditto.
+
 2009-12-23  Sebastian Pop  <sebpop@gmail.com>
 
 	* g++.dg/graphite/id-1.C: New.
