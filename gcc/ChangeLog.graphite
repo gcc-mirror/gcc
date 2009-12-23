@@ -1,5 +1,10 @@
 2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42186
+	* testsuite/gfortran.dg/graphite/pr42186.f90: New.
+
+2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42205
 	* graphite-sese-to-poly.c (translate_scalar_reduction_to_array_for_stmt):
 	Insert the reduction copy in the same block as the phi node.
