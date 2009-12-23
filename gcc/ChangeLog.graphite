@@ -1,8 +1,22 @@
 2009-12-18  Sebastian Pop  <sebastian.pop@amd.com>
 
+	Revert patch fixing PR middle-end/42221.
+
+2009-12-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42180
+	* graphite-sese-to-poly.c (follow_ssa_with_commutative_ops): Handle
+	GIMPLE_CALL.
+
+	* testsuite/gfortran.dg/graphite/pr42180.f90: Add compile flags.
+
+2009-12-18  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42180
 	* graphite-sese-to-poly.c (split_reduction_stmt): Do not split blocks
 	that contain only one statement.
+
+	* testsuite/gfortran.dg/graphite/pr42180.f90: New.
 
 2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 
