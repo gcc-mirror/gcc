@@ -1,5 +1,12 @@
 2009-12-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/25_algorithms/copy/5.cc: Move...
+	* testsuite/25_algorithms/copy/deque_iterators/1.cc: ... here.
+	* testsuite/25_algorithms/move/2.cc: Move...
+	* testsuite/25_algorithms/move/deque_iterators/1.cc: ... here.
+
+2009-12-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_deque.h (copy(_Deque_iterator, _Deque_iterator,
 	_Deque_iterator), move(_Deque_iterator, _Deque_iterator,
 	_Deque_iterator)): Declare.
