@@ -6062,7 +6062,8 @@ static void add_arange (tree, dw_die_ref);
 static void output_aranges (void);
 static unsigned int add_ranges_num (int);
 static unsigned int add_ranges (const_tree);
-static unsigned int add_ranges_by_labels (const char *, const char *);
+static void add_ranges_by_labels (dw_die_ref, const char *, const char *,
+				  bool *);
 static void output_ranges (void);
 static void output_line_info (void);
 static void output_file_names (void);
@@ -11021,10 +11022,12 @@ add_ranges (const_tree block)
 /* Add a new entry to .debug_ranges corresponding to a pair of
    labels.  */
 
-static unsigned int
-add_ranges_by_labels (const char *begin, const char *end)
+static void
+add_ranges_by_labels (dw_die_ref die, const char *begin, const char *end,
+		      bool *added)
 {
   unsigned int in_use = ranges_by_label_in_use;
+  unsigned int offset;
 
   if (in_use == ranges_by_label_allocated)
     {
@@ -11041,7 +11044,12 @@ add_ranges_by_labels (const char *begin, const char *end)
   ranges_by_label[in_use].end = end;
   ranges_by_label_in_use = in_use + 1;
 
-  return add_ranges_num (-(int)in_use - 1);
+  offset = add_ranges_num (-(int)in_use - 1);
+  if (!*added)
+    {
+      add_AT_range_list (die, DW_AT_ranges, offset);
+      *added = true;
+    }
 }
 
 static void
@@ -21209,6 +21217,7 @@ dwarf2out_finish (const char *filename)
   else
     {
       unsigned fde_idx = 0;
+      bool range_list_added = false;
 
       /* We need to give .debug_loc and .debug_ranges an appropriate
 	 "base address".  Use zero so that these addresses become
@@ -21219,12 +21228,11 @@ dwarf2out_finish (const char *filename)
       add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
 
       if (text_section_used)
-	add_AT_range_list (comp_unit_die, DW_AT_ranges,
-			   add_ranges_by_labels (text_section_label,
-						 text_end_label));
+	add_ranges_by_labels (comp_unit_die, text_section_label,
+			      text_end_label, &range_list_added);
       if (flag_reorder_blocks_and_partition && cold_text_section_used)
-	add_ranges_by_labels (cold_text_section_label,
-			      cold_end_label);
+	add_ranges_by_labels (comp_unit_die, cold_text_section_label,
+			      cold_end_label, &range_list_added);
 
       for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
 	{
@@ -21233,18 +21241,23 @@ dwarf2out_finish (const char *filename)
 	  if (fde->dw_fde_switched_sections)
 	    {
 	      if (!fde->in_std_section)
-		add_ranges_by_labels (fde->dw_fde_hot_section_label,
-				      fde->dw_fde_hot_section_end_label);
+		add_ranges_by_labels (comp_unit_die,
+				      fde->dw_fde_hot_section_label,
+				      fde->dw_fde_hot_section_end_label,
+				      &range_list_added);
 	      if (!fde->cold_in_std_section)
-		add_ranges_by_labels (fde->dw_fde_unlikely_section_label,
-				      fde->dw_fde_unlikely_section_end_label);
+		add_ranges_by_labels (comp_unit_die,
+				      fde->dw_fde_unlikely_section_label,
+				      fde->dw_fde_unlikely_section_end_label,
+				      &range_list_added);
 	    }
 	  else if (!fde->in_std_section)
-	    add_ranges_by_labels (fde->dw_fde_begin,
-				  fde->dw_fde_end);
+	    add_ranges_by_labels (comp_unit_die, fde->dw_fde_begin,
+				  fde->dw_fde_end, &range_list_added);
 	}
 
-      add_ranges (NULL);
+      if (range_list_added)
+	add_ranges (NULL);
     }
 
   /* Output location list section if necessary.  */
