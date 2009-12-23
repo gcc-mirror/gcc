@@ -1,3 +1,49 @@
+2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42178
+	PR middle-end/42334
+	* graphite-interchange.c (lst_try_interchange): Do not modify OUTER
+	index.  Call lst_interchange_select_inner only once.
+	(lst_interchange_select_inner): Update use of lst_try_interchange.
+	(lst_interchange_select_outer): Update.
+
+2009-12-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42178
+	PR middle-end/42334
+	* graphite-interchange.c (lst_try_interchange): Do not increment the
+	the OUTER index when there is no AFTER kernel.  Do not increment the
+	OUTER index for after processing the AFTER kernel.
+	(lst_interchange_select_inner): Call lst_try_interchange only on loops.
+	(lst_interchange_select_outer): Do not pass in a pointer to the OUTER
+	index.  Do not pass to lst_interchange_select_inner the OUTER index.
+	(scop_do_interchange): Update use of lst_interchange_select_outer.
+
+	* testsuite/gfortran.dg/graphite/graphite.exp
+	(DEFAULT_FLAGS_GRAPHITE_IDENTITY): Remove -fdump-tree-graphite-all.
+	* testsuite/gfortran.dg/graphite/interchange-1.f: Add comment.  Clean
+	the graphite dump file.
+	* testsuite/gfortran.dg/graphite/interchange-2.f: Same.
+	* testsuite/gfortran.dg/graphite/pr42334-1.f: New.
+
+2009-12-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42178
+	PR middle-end/42334
+	* graphite-interchange.c (lst_perfect_nestify): Reset to NULL the LSTs
+	that are empty.
+	(lst_do_interchange_1): Renamed lst_interchange_select_inner.
+	(lst_try_interchange): Reimplemented.
+	(lst_interchange_select_inner): Same.
+	(lst_do_interchange): Renamed lst_interchange_select_outer.
+	Reimplemented.
+	(scop_do_interchange): Update use of lst_interchange_select_outer.
+
+	* testsuite/g++.dg/graphite/pr42130.C: Add -fgraphite-identity.
+	* testsuite/gcc.dg/graphite/block-0.c: Un-XFAILed.
+	* testsuite/gcc.dg/graphite/pr42211.c: New.
+	* testsuite/gfortran.dg/graphite/pr42334.f90: New.
+
 2009-12-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42181
