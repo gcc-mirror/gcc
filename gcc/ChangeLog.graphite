@@ -1,3 +1,9 @@
+2009-12-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42180
+	* graphite-sese-to-poly.c (split_reduction_stmt): Do not split blocks
+	that contain only one statement.
+
 2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42393
