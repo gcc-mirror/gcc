@@ -1,3 +1,7 @@
+2009-12-23  Sebastian Pop  <sebpop@gmail.com>
+
+	* testsuite/libgomp.graphite/pr4118.c: New.
+
 2009-12-22  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	* testsuite/libgomp.fortran/crayptr2.f90: Remove forced static linkage
