@@ -1,3 +1,9 @@
+2009-12-23  Jakub Jelinek  <jakub@redhat.com>
+	    Cary Coutant  <ccoutant@google.com>
+
+	PR debug/42454
+	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Add check for .debug_ranges.
+
 2009-12-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/42093
