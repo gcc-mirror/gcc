@@ -1,5 +1,23 @@
 2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42205
+	* graphite-sese-to-poly.c (translate_scalar_reduction_to_array_for_stmt):
+	Insert the reduction copy in the same block as the phi node.
+	(follow_ssa_with_commutative_ops): Handle GIMPLE_NOPs.
+
+	* testsuite/gcc.dg/graphite/pr42205-1.c: New.
+	* testsuite/gcc.dg/graphite/pr42205-2.c: New.
+
+2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42221
+	* sese.c (expand_scalar_variables_expr): Follow the SSA links into
+	the array indexing of ADDR_EXPRs.
+
+	* testsuite/gcc.dg/graphite/pr42221.c: New.
+
+2009-12-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42178
 	PR middle-end/42334
 	* graphite-interchange.c (lst_try_interchange): Do not modify OUTER
