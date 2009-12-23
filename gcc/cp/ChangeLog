@@ -1,3 +1,15 @@
+2009-12-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42260
+	* cp-tree.h (lookup_conversions): Add new bool parameter to
+	declaration.
+	* search.c (lookup_conversion): Use new bool parameter in
+	definition.
+	* call.c (add_builtin_candidates): Don't lookup template conversion
+	(convert_class_to_reference, build_user_type_conversion_1,
+	 build_op_call): Adjust.
+	* cvt.c (build_expr_type_conversion): Likewise
+
 2009-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42466

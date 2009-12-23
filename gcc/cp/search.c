@@ -2419,10 +2419,13 @@ lookup_conversions_r (tree binfo,
    functions in this node were selected.  This function is effectively
    performing a set of member lookups as lookup_fnfield does, but
    using the type being converted to as the unique key, rather than the
-   field name.  */
+   field name.
+   If LOOKUP_TEMPLATE_CONVS_P is TRUE, the returned TREE_LIST contains
+   the non-hidden user-defined template conversion functions too.  */
 
 tree
-lookup_conversions (tree type)
+lookup_conversions (tree type,
+		    bool lookup_template_convs_p)
 {
   tree convs, tpl_convs;
   tree list = NULL_TREE;
@@ -2448,6 +2451,9 @@ lookup_conversions (tree type)
 	  list = probe;
 	}
     }
+
+  if (lookup_template_convs_p == false)
+    tpl_convs = NULL_TREE;
 
   for (; tpl_convs; tpl_convs = TREE_CHAIN (tpl_convs))
     {

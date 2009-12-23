@@ -1,3 +1,8 @@
+2009-12-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42260
+	* conversion/cast2.C: New test.
+
 2009-12-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42466
