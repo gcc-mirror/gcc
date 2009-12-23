@@ -37,4 +37,9 @@
       end
 
 
+! We should be able to interchange this as the number of iterations is
+! known to be 4 in the inner two loops.  See interchange-2.f for the
+! kernel from bwaves.
+
 ! { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } }
+! { dg-final { cleanup-tree-dump "graphite" } }

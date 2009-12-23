@@ -32,7 +32,12 @@
                enddo
             enddo
          enddo
-      enddo          
+      enddo
       return
       end
 
+! This is the kernel extracted from bwaves: this cannot be interchanged
+! as the number of iterations for f4 is not known.
+
+! { dg-final { scan-tree-dump-times "will be interchanged" 0 "graphite" } }
+! { dg-final { cleanup-tree-dump "graphite" } }

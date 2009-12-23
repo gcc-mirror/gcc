@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-tree-ch" } */
+/* { dg-options "-O2 -fgraphite-identity -fno-tree-ch" } */
 #include <vector>
 
 using std::vector;
@@ -9,11 +9,11 @@ vector<unsigned> & __attribute__((noinline, noclone)) foo(unsigned n)
   return *vv;
 }
 
-
 int main()
 {
   foo(0);
   return 0;
 }
+
 /* { dg-do run  } */
 
