@@ -1,4 +1,10 @@
 2009-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/42475
+	* combine.c (make_compound_operation) <case SUBREG>: Use mode of
+	SUBREG_REG (x) instead of tem's mode.
+
+2009-12-23  Jakub Jelinek  <jakub@redhat.com>
 	    Cary Coutant  <ccoutant@google.com>
 
 	PR debug/42454

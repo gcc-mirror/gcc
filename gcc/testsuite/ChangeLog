@@ -1,4 +1,9 @@
 2009-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/42475
+	* gcc.dg/pr42475.c: New test.
+
+2009-12-23  Jakub Jelinek  <jakub@redhat.com>
 	    Cary Coutant  <ccoutant@google.com>
 
 	PR debug/42454
