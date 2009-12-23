@@ -1,3 +1,11 @@
+2009-12-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        PR target/42093
+        * config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Fix macro usage
+        to TARGET_THUMB1.
+        (CASE_VECTOR_SHORTEN_MODE): Allow signed offsets
+        only for TARGET_THUMB1.
+
 2009-12-23  Ramana Radhakrishnan  <ramrad01@arm.com>
 
 	PR target/40670

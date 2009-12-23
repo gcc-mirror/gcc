@@ -2118,11 +2118,11 @@ typedef struct
 #define CASE_VECTOR_MODE Pmode
 
 #define CASE_VECTOR_PC_RELATIVE (TARGET_THUMB2				\
-				 || (TARGET_THUMB			\
+				 || (TARGET_THUMB1			\
 				     && (optimize_size || flag_pic)))
 
 #define CASE_VECTOR_SHORTEN_MODE(min, max, body)			\
-  (TARGET_THUMB								\
+  (TARGET_THUMB1							\
    ? (min >= 0 && max < 512						\
       ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 1, QImode)	\
       : min >= -256 && max < 256					\
