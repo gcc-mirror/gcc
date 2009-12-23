@@ -1,3 +1,5 @@
+! { dg-options "-ffast-math -O2 -fgraphite-identity" }
+
 module mcc_m
   integer, parameter, private :: longreal = selected_real_kind(15,90)
 contains
