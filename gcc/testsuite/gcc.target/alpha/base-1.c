@@ -1,5 +1,5 @@
 /* Test that the base isa builtins compile.  */
-/* { dg-do link { target alpha*-*-* } } */
+/* { dg-do link } */
 /* { dg-options "-mcpu=ev4" } */
 
 void test_BASE (long x, long y)
