@@ -8,8 +8,9 @@
 	    Cary Coutant  <ccoutant@google.com>
 
 	PR debug/42454
-	* dwarf2out.c (add_ranges_by_labels_to_AT_range_list): New function.
-	(dwarf2out_finish): Call add_ranges_by_labels_to_AT_range_list.
+	* dwarf2out.c (add_ranges_by_labels): Conditionally Add DW_AT_ranges
+	attribute.
+	(dwarf2out_finish): Change calls to add_ranges_by_labels.
 
 2009-12-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
