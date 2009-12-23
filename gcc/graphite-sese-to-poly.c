@@ -2498,6 +2498,9 @@ follow_ssa_with_commutative_ops (tree arg, tree lhs)
 
   stmt = SSA_NAME_DEF_STMT (arg);
 
+  if (gimple_code (stmt) == GIMPLE_NOP)
+    return NULL;
+
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
       if (phi_contains_arg (stmt, lhs))
@@ -2674,13 +2677,13 @@ static void
 translate_scalar_reduction_to_array_for_stmt (tree red, gimple stmt,
 					      gimple loop_phi)
 {
-  basic_block bb = gimple_bb (stmt);
-  gimple_stmt_iterator insert_gsi = gsi_after_labels (bb);
+  gimple_stmt_iterator insert_gsi = gsi_after_labels (gimple_bb (loop_phi));
   tree res = gimple_phi_result (loop_phi);
   gimple assign = gimple_build_assign (res, red);
 
   gsi_insert_before (&insert_gsi, assign, GSI_SAME_STMT);
 
+  insert_gsi = gsi_after_labels (gimple_bb (stmt));
   assign = gimple_build_assign (red, gimple_assign_lhs (stmt));
   insert_gsi = gsi_for_stmt (stmt);
   gsi_insert_after (&insert_gsi, assign, GSI_SAME_STMT);
