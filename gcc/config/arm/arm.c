@@ -11772,11 +11772,14 @@ output_call (rtx *operands)
   return "";
 }
 
-/* Output a 'call' insn that is a reference in memory.  */
+/* Output a 'call' insn that is a reference in memory. This is
+   disabled for ARMv5 and we prefer a blx instead because otherwise
+   there's a significant performance overhead.  */
 const char *
 output_call_mem (rtx *operands)
 {
-  if (TARGET_INTERWORK && !arm_arch5)
+  gcc_assert (!arm_arch5);
+  if (TARGET_INTERWORK)
     {
       output_asm_insn ("ldr%?\t%|ip, %0", operands);
       output_asm_insn ("mov%?\t%|lr, %|pc", operands);
@@ -11788,16 +11791,11 @@ output_call_mem (rtx *operands)
 	 first instruction.  It's safe to use IP as the target of the
 	 load since the call will kill it anyway.  */
       output_asm_insn ("ldr%?\t%|ip, %0", operands);
-      if (arm_arch5)
-	output_asm_insn ("blx%?\t%|ip", operands);
+      output_asm_insn ("mov%?\t%|lr, %|pc", operands);
+      if (arm_arch4t)
+	output_asm_insn ("bx%?\t%|ip", operands);
       else
-	{
-	  output_asm_insn ("mov%?\t%|lr, %|pc", operands);
-	  if (arm_arch4t)
-	    output_asm_insn ("bx%?\t%|ip", operands);
-	  else
-	    output_asm_insn ("mov%?\t%|pc, %|ip", operands);
-	}
+	output_asm_insn ("mov%?\t%|pc, %|ip", operands);
     }
   else
     {

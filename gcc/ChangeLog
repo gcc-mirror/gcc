@@ -1,3 +1,11 @@
+2009-12-24  Julian Brown  <julian@codesourcery.com>
+            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        PR target/40887
+        * config/arm/arm.c (output_call_mem): Remove armv5 support.
+        * config/arm/arm.md (*call_mem): Disable for armv5. Add note.
+        (*call_value_mem): Likewise.
+
 2009-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/42475
