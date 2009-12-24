@@ -1,3 +1,13 @@
+2009-12-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset (bitset<>::bitset(const char*)): Add.
+
+2009-12-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* testsuite/23_containers/bitset/cons/2.cc: New.
+
 2009-12-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (bind): Avoid invalid instantiations
