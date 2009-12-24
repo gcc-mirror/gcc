@@ -1,3 +1,16 @@
+2009-12-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41305, DR 384
+	* name-lookup.c (arg_assoc_class): Split out arg_assoc_class_only
+	and arg_assoc_bases.
+	(friend_of_associated_class_p): Remove.
+	(arg_assoc_namespace): Don't call it.
+	(arg_assoc_template_arg): Use arg_assoc_class_only for member
+	template context.
+	(arg_assoc_type): Handle UNION_TYPE and ENUMERAL_TYPE properly.
+
+	* name-lookup.c (arg_assoc): Handle TEMPLATE_ID_EXPR properly.
+
 2009-12-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42260
