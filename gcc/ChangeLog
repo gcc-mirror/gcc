@@ -1,5 +1,16 @@
 2009-12-24  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
+	PR target/42457
+	* config/avr/avr.c (avr_extra_arch_macro): Remove static.
+	(avr_cpu_cpp_builtins): Remove.
+	* config/avr/avr.h (avr_extra_arch_macro): Add prototype.
+	* config/avr/avr-c.c: New File.
+	(avr_cpu_cpp_builtins) : Add.
+	* config/avr/t-avr: Add make information for avr-c.
+	* config.gcc (avr-*-*): Include avr-c.o as c and cpp object. 
+
+2009-12-24  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
 	PR target/35013, 27192
 	* config/avr/avr.c (print_operand_address): Print correct program
 	memory address.

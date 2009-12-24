@@ -105,7 +105,7 @@ static GTY(()) rtx zero_reg_rtx;
 static const char *const avr_regnames[] = REGISTER_NAMES;
 
 /* Preprocessor macros to define depending on MCU type.  */
-static const char *avr_extra_arch_macro;
+const char *avr_extra_arch_macro;
 
 /* Current architecture.  */
 const struct base_arch_s *avr_current_arch;
@@ -221,59 +221,6 @@ avr_override_options (void)
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 
   init_machine_status = avr_init_machine_status;
-}
-
-/* Worker function for TARGET_CPU_CPP_BUILTINS.  */
-
-void
-avr_cpu_cpp_builtins (struct cpp_reader *pfile)
-{
-  builtin_define_std ("AVR");
-
-  if (avr_current_arch->macro)
-    cpp_define (pfile, avr_current_arch->macro);
-  if (avr_extra_arch_macro)
-    cpp_define (pfile, avr_extra_arch_macro);
-  if (avr_current_arch->have_elpm)
-    cpp_define (pfile, "__AVR_HAVE_RAMPZ__");
-  if (avr_current_arch->have_elpm)
-    cpp_define (pfile, "__AVR_HAVE_ELPM__");
-  if (avr_current_arch->have_elpmx)
-    cpp_define (pfile, "__AVR_HAVE_ELPMX__");
-  if (avr_current_arch->have_movw_lpmx)
-    {
-      cpp_define (pfile, "__AVR_HAVE_MOVW__");
-      cpp_define (pfile, "__AVR_HAVE_LPMX__");
-    }
-  if (avr_current_arch->asm_only)
-    cpp_define (pfile, "__AVR_ASM_ONLY__");
-  if (avr_current_arch->have_mul)
-    {
-      cpp_define (pfile, "__AVR_ENHANCED__");
-      cpp_define (pfile, "__AVR_HAVE_MUL__");
-    }
-  if (avr_current_arch->have_jmp_call)
-    {
-      cpp_define (pfile, "__AVR_MEGA__");
-      cpp_define (pfile, "__AVR_HAVE_JMP_CALL__");
-    }
-  if (avr_current_arch->have_eijmp_eicall)
-    {
-      cpp_define (pfile, "__AVR_HAVE_EIJMP_EICALL__");
-      cpp_define (pfile, "__AVR_3_BYTE_PC__");
-    }
-  else
-    {
-      cpp_define (pfile, "__AVR_2_BYTE_PC__");
-    }
-
-  if (avr_current_device->short_sp)
-    cpp_define (pfile, "__AVR_HAVE_8BIT_SP__");
-  else
-    cpp_define (pfile, "__AVR_HAVE_16BIT_SP__");
-
-  if (TARGET_NO_INTERRUPTS)
-    cpp_define (pfile, "__NO_INTERRUPTS__");
 }
 
 /*  return register class from register number.  */

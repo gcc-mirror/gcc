@@ -24,6 +24,13 @@ driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
 avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	
+
+avr-c.o: $(srcdir)/config/avr/avr-c.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	
+
 
 LIB1ASMSRC = avr/libgcc.S
 LIB1ASMFUNCS = \
