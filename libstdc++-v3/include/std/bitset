@@ -798,6 +798,26 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  _M_copy_from_string(__s, __position, __n, __zero, __one);
 	}
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Construct from a string.
+       *  @param  str  A string of '0' and '1' characters.
+       *  @throw  std::invalid_argument  If a character appears in the string
+       *                                 which is neither '0' nor '1'.
+       */
+      explicit
+      bitset(const char* __str)
+      : _Base()
+      {
+	if (!__str)
+	  __throw_logic_error(__N("bitset::bitset(const char*)"));
+
+	const size_t __len = __builtin_strlen(__str);
+	_M_copy_from_ptr<char, std::char_traits<char>>(__str, __len, 0,
+						       __len, '0', '1');
+      }
+#endif
+
       // 23.3.5.2 bitset operations:
       //@{
       /**
