@@ -1130,6 +1130,16 @@ namespace std
       { return type(__pm); }
     };
 
+  // Specialization needed to prevent "forming reference to void" errors when
+  // bind<void>() is called, because argument deduction instantiates
+  // _Maybe_wrap_member_pointer<void> outside the immediate context where
+  // SFINAE applies.
+  template<>
+    struct _Maybe_wrap_member_pointer<void>
+    {
+      typedef void type;
+    };
+
   /// Type of the function object returned from bind().
   template<typename _Signature>
     struct _Bind;
@@ -1262,41 +1272,90 @@ namespace std
       _Functor _M_f;
       tuple<_Bound_args...> _M_bound_args;
 
+      // sfinae types
+      template<typename _Res>
+        struct __enable_if_void : enable_if<is_void<_Res>::value, int> { };
+      template<typename _Res>
+        struct __disable_if_void : enable_if<!is_void<_Res>::value, int> { };
+
       // Call unqualified
-      template<typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, int... _Indexes>
         _Result
-        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>)
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __disable_if_void<_Res>::type = 0)
         {
           return _M_f(_Mu<_Bound_args>()
+                      (get<_Indexes>(_M_bound_args), __args)...);
+        }
+
+      // Call unqualified, return void
+      template<typename _Res, typename... _Args, int... _Indexes>
+        void
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __enable_if_void<_Res>::type = 0)
+        {
+          _M_f(_Mu<_Bound_args>()
                       (get<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as const
-      template<typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, int... _Indexes>
         _Result
-        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>) const
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __disable_if_void<_Res>::type = 0) const
         {
           return _M_f(_Mu<_Bound_args>()
+                      (get<_Indexes>(_M_bound_args), __args)...);
+        }
+
+      // Call as const, return void
+      template<typename _Res, typename... _Args, int... _Indexes>
+        void
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __enable_if_void<_Res>::type = 0) const
+        {
+          _M_f(_Mu<_Bound_args>()
                       (get<_Indexes>(_M_bound_args), __args)...);
         }
 
       // Call as volatile
-      template<typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, int... _Indexes>
         _Result
-        __call(const tuple<_Args...>& __args, 
-               _Index_tuple<_Indexes...>) volatile
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __disable_if_void<_Res>::type = 0) volatile
         {
           return _M_f(_Mu<_Bound_args>()
                       (get<_Indexes>(_M_bound_args), __args)...);
         }
 
+      // Call as volatile, return void
+      template<typename _Res, typename... _Args, int... _Indexes>
+        void
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __enable_if_void<_Res>::type = 0) volatile
+        {
+          _M_f(_Mu<_Bound_args>()
+                      (get<_Indexes>(_M_bound_args), __args)...);
+        }
+
       // Call as const volatile
-      template<typename... _Args, int... _Indexes>
+      template<typename _Res, typename... _Args, int... _Indexes>
         _Result
-        __call(const tuple<_Args...>& __args, 
-               _Index_tuple<_Indexes...>) const volatile
+        __call(const tuple<_Args...>& __args, _Index_tuple<_Indexes...>,
+            typename __disable_if_void<_Res>::type = 0) const volatile
         {
           return _M_f(_Mu<_Bound_args>()
+                      (get<_Indexes>(_M_bound_args), __args)...);
+        }
+
+      // Call as const volatile, return void
+      template<typename _Res, typename... _Args, int... _Indexes>
+        void
+        __call(const tuple<_Args...>& __args, 
+               _Index_tuple<_Indexes...>,
+            typename __enable_if_void<_Res>::type = 0) const volatile
+        {
+          _M_f(_Mu<_Bound_args>()
                       (get<_Indexes>(_M_bound_args), __args)...);
         }
 
@@ -1312,7 +1371,7 @@ namespace std
         result_type
         operator()(_Args&... __args)
         {
-          return this->__call(tie(__args...), _Bound_indexes());
+          return this->__call<_Result>(tie(__args...), _Bound_indexes());
         }
 
       // Call as const
@@ -1320,7 +1379,7 @@ namespace std
         result_type
         operator()(_Args&... __args) const
         {
-          return this->__call(tie(__args...), _Bound_indexes());
+          return this->__call<_Result>(tie(__args...), _Bound_indexes());
         }
 
       // Call as volatile
@@ -1328,7 +1387,7 @@ namespace std
         result_type
         operator()(_Args&... __args) volatile
         {
-          return this->__call(tie(__args...), _Bound_indexes());
+          return this->__call<_Result>(tie(__args...), _Bound_indexes());
         }
 
       // Call as const volatile
@@ -1336,7 +1395,7 @@ namespace std
         result_type
         operator()(_Args&... __args) const volatile
         {
-          return this->__call(tie(__args...), _Bound_indexes());
+          return this->__call<_Result>(tie(__args...), _Bound_indexes());
         }
     };
 

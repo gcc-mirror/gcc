@@ -1,3 +1,9 @@
+2009-12-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (bind): Avoid invalid instantiations
+	for bind<void>.
+	* testsuite/20_util/bind/conv_result.cc: New.
+
 2009-12-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_deque.h (copy_backward(_Deque_iterator,
