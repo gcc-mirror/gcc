@@ -1067,6 +1067,8 @@ build_store_vectors (void)
 
   FOR_EACH_BB (bb)
     {
+      memset (regs_set_in_block, 0, sizeof (int) * max_gcse_regno);
+
       FOR_BB_INSNS (bb, insn)
 	if (INSN_P (insn))
 	  {
