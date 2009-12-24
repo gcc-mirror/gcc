@@ -1,6 +1,4 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation
+// 2009-24-12  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -9,7 +7,7 @@
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without Pred the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
@@ -17,19 +15,26 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1568 }
-// { dg-excess-errors "" }
-
 #include <deque>
+#include <testsuite_performance.h>
 
-struct A
+int main()
 {
-  explicit A(int) { }
-};
+  using namespace __gnu_test;
 
-void f()
-{
-  std::deque<A> d;
-  d.assign(10, 1);
+  time_counter time;
+  resource_counter resource;
+
+  const std::deque<int> data(3000, 3);
+
+  std::deque<int> d(3000, 1);
+
+  start_counters(time, resource);
+  for (int i = 0; i < 1000; ++i)
+    for (int j = 0; j < 3000; ++j)
+      std::copy_backward(data.begin(), data.begin() + j, d.end());
+  stop_counters(time, resource);
+  report_performance(__FILE__, "", time, resource);
+
+  return 0;
 }

@@ -865,16 +865,56 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	 _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
     {
       typedef typename _Deque_iterator<_Tp, _Tp&, _Tp*>::_Self _Self;
+      typedef typename _Self::difference_type difference_type;
 
-      typename _Self::difference_type __len = __last - __first;
+      difference_type __len = __last - __first;
       while (__len > 0)
 	{
-	  typename _Self::difference_type __clen
+	  const difference_type __clen
 	    = std::min(__len, std::min(__first._M_last - __first._M_cur,
 				       __result._M_last - __result._M_cur));
 	  std::copy(__first._M_cur, __first._M_cur + __clen, __result._M_cur);
 	  __first += __clen;
 	  __result += __clen;
+	  __len -= __clen;
+	}
+      return __result;
+    }
+
+  template<typename _Tp>
+    _Deque_iterator<_Tp, _Tp&, _Tp*>
+    copy_backward(_Deque_iterator<_Tp, const _Tp&, const _Tp*> __first,
+		  _Deque_iterator<_Tp, const _Tp&, const _Tp*> __last,
+		  _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
+    {
+      typedef typename _Deque_iterator<_Tp, _Tp&, _Tp*>::_Self _Self;
+      typedef typename _Self::difference_type difference_type;
+
+      difference_type __len = __last - __first;
+      while (__len > 0)
+	{
+	  difference_type __llen = __last._M_cur - __last._M_first;
+	  _Tp* __lend = __last._M_cur;
+
+	  difference_type __rlen = __result._M_cur - __result._M_first;
+	  _Tp* __rend = __result._M_cur;
+
+	  if (!__llen)
+	    {
+	      __llen = _Self::_S_buffer_size();
+	      __lend = *(__last._M_node - 1) + __llen;
+	    }
+	  if (!__rlen)
+	    {
+	      __rlen = _Self::_S_buffer_size();
+	      __rend = *(__result._M_node - 1) + __rlen;
+	    }
+
+	  const difference_type __clen = std::min(__len,
+						  std::min(__llen, __rlen));
+	  std::copy_backward(__lend - __clen, __lend, __rend);
+	  __last -= __clen;
+	  __result -= __clen;
 	  __len -= __clen;
 	}
       return __result;
@@ -888,16 +928,56 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	 _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
     {
       typedef typename _Deque_iterator<_Tp, _Tp&, _Tp*>::_Self _Self;
+      typedef typename _Self::difference_type difference_type;
 
-      typename _Self::difference_type __len = __last - __first;
+      difference_type __len = __last - __first;
       while (__len > 0)
 	{
-	  const typename _Self::difference_type __clen
+	  const difference_type __clen
 	    = std::min(__len, std::min(__first._M_last - __first._M_cur,
 				       __result._M_last - __result._M_cur));
 	  std::move(__first._M_cur, __first._M_cur + __clen, __result._M_cur);
 	  __first += __clen;
 	  __result += __clen;
+	  __len -= __clen;
+	}
+      return __result;
+    }
+
+  template<typename _Tp>
+    _Deque_iterator<_Tp, _Tp&, _Tp*>
+    move_backward(_Deque_iterator<_Tp, const _Tp&, const _Tp*> __first,
+		  _Deque_iterator<_Tp, const _Tp&, const _Tp*> __last,
+		  _Deque_iterator<_Tp, _Tp&, _Tp*> __result)
+    {
+      typedef typename _Deque_iterator<_Tp, _Tp&, _Tp*>::_Self _Self;
+      typedef typename _Self::difference_type difference_type;
+
+      difference_type __len = __last - __first;
+      while (__len > 0)
+	{
+	  difference_type __llen = __last._M_cur - __last._M_first;
+	  _Tp* __lend = __last._M_cur;
+
+	  difference_type __rlen = __result._M_cur - __result._M_first;
+	  _Tp* __rend = __result._M_cur;
+
+	  if (!__llen)
+	    {
+	      __llen = _Self::_S_buffer_size();
+	      __lend = *(__last._M_node - 1) + __llen;
+	    }
+	  if (!__rlen)
+	    {
+	      __rlen = _Self::_S_buffer_size();
+	      __rend = *(__result._M_node - 1) + __rlen;
+	    }
+
+	  const difference_type __clen = std::min(__len,
+						  std::min(__llen, __rlen));
+	  std::move_backward(__lend - __clen, __lend, __rend);
+	  __last -= __clen;
+	  __result -= __clen;
 	  __len -= __clen;
 	}
       return __result;
