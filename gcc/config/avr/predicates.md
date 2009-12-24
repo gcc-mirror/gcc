@@ -71,6 +71,29 @@
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
 
+;; Return true if OP is a text segment reference.
+;; This is needed for program memory address expressions.
+(define_predicate "text_segment_operand"
+  (match_code "code_label,label_ref,symbol_ref,plus,const")
+{
+  switch (GET_CODE (op))
+    {
+    case CODE_LABEL:
+      return true;
+    case LABEL_REF :
+      return true;
+    case SYMBOL_REF :
+      return SYMBOL_REF_FUNCTION_P (op);
+    case PLUS :
+      /* Assume canonical format of symbol + constant.
+	 Fall through.  */
+    case CONST :
+      return text_segment_operand (XEXP (op, 0), VOIDmode);
+    default :
+      return false;
+    }
+})
+
 ;; Return true if OP is a constant that contains only one 1 in its
 ;; binary representation.
 (define_predicate "single_one_operand"

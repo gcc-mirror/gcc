@@ -28,9 +28,11 @@
 ;;  D  Add 3.
 ;;  j  Branch condition.
 ;;  k  Reverse branch condition.
+;;..m..Constant Direct Data memory address.
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
 ;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)
+;;..x..Constant Direct Program memory address.
 ;;  ~  Output 'r' if not AVR_HAVE_JMP_CALL.
 ;;  !  Output 'e' if AVR_HAVE_EIJMP_EICALL.
 
@@ -2732,8 +2734,8 @@
   ""
   "*{
   if (AVR_HAVE_JMP_CALL && get_attr_length (insn) != 1)
-    return AS1 (jmp,%0);
-  return AS1 (rjmp,%0);
+    return AS1 (jmp,%x0);
+  return AS1 (rjmp,%x0);
 }"
   [(set (attr "length")
 	(if_then_else (match_operand 0 "symbol_ref_operand" "")	
@@ -2785,7 +2787,7 @@
 		\"%!icall\");
     }
   else if (which_alternative==2)
-    return AS1(%~call,%c0);
+    return AS1(%~call,%x0);
   return (AS2 (ldi,r30,lo8(%0)) CR_TAB
           AS2 (ldi,r31,hi8(%0)) CR_TAB
           \"%!icall\");
@@ -2822,7 +2824,7 @@
 		\"%!icall\");
     }
   else if (which_alternative==2)
-    return AS1(%~call,%c1);
+    return AS1(%~call,%x1);
   return (AS2 (ldi, r30, lo8(%1)) CR_TAB
           AS2 (ldi, r31, hi8(%1)) CR_TAB
           \"%!icall\");
@@ -2846,7 +2848,27 @@
    (set_attr "length" "1")])
 
 ; indirect jump
-(define_insn "indirect_jump"
+
+(define_expand "indirect_jump"
+  [(set (pc) (match_operand:HI 0 "nonmemory_operand" ""))]
+  ""
+  " if ((!AVR_HAVE_JMP_CALL) && !register_operand(operand0, HImode))
+    {
+      operands[0] = copy_to_mode_reg(HImode, operand0);
+    }"
+)
+
+; indirect jump
+(define_insn "*jcindirect_jump"
+  [(set (pc) (match_operand:HI 0 "immediate_operand" "i"))]
+  ""
+  "@
+  	%~jmp %x0"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
+
+;;
+(define_insn "*njcindirect_jump"
   [(set (pc) (match_operand:HI 0 "register_operand" "!z,*r"))]
   "!AVR_HAVE_EIJMP_EICALL"
   "@
@@ -2884,7 +2906,7 @@
    (use (label_ref (match_operand 1 "" "")))
    (clobber (match_dup 0))]
   "AVR_HAVE_JMP_CALL && TARGET_CALL_PROLOGUES"
-  "jmp __tablejump2__"
+  "%~jmp __tablejump2__"
   [(set_attr "length" "2")
    (set_attr "cc" "clobber")])
 
@@ -2967,7 +2989,7 @@
   "(optimize > 0)"
 {
   operands[2] = GEN_INT (exact_log2 (~INTVAL (operands[1]) & 0xff));
-  return AS2 (cbi,%0-0x20,%2);
+  return AS2 (cbi,%m0-0x20,%2);
 }
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
@@ -2979,7 +3001,7 @@
   "(optimize > 0)"
 {
   operands[2] = GEN_INT (exact_log2 (INTVAL (operands[1]) & 0xff));
-  return AS2 (sbi,%0-0x20,%2);
+  return AS2 (sbi,%m0-0x20,%2);
 }
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
