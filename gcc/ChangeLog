@@ -1,3 +1,8 @@
+2009-12-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* store-motion.c (build_store_vectors): Clear regs_set_in_block at
+	the start of a loop over basic blocks.
+
 2009-12-24  Julian Brown  <julian@codesourcery.com>
             Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
