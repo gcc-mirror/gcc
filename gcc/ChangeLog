@@ -1,3 +1,28 @@
+2009-12-24  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR target/35013, 27192
+	* config/avr/avr.c (print_operand_address): Print correct program
+	memory address.
+	Add warning for large device offset addresses.
+	(avr_assemble_integer): Ditto.
+	(print_operand): Add warnings for incorrect addressing.
+	(out_movqi_r_mr): Tag assembler with new address codes.
+	(out_movhi_r_mr): Ditto.
+	(out_movsi_r_mr): Ditto.
+	(out_movqi_mr_r): Ditto.
+	(out_movhi_mr_r): Ditto.
+	(out_movsi_mr_r): Ditto.
+	* config/avr/predicates.md (text_segment_operand): New predicate.
+	* config/avr/avr.md (jump): Tag assembler with new address codes.
+	(call_insn): Ditto.
+	(call_value_insn): Ditto.
+	(*tablejump_lib): Ditto.
+	(*cbi): Ditto.
+	(*sbi): Ditto.
+	(indirect_jump): New define_expand.
+	(jcindirect_jump): New pattern for constant expression jump.
+	(njcindirect_jump): Renamed old indirect_jump.
+
 2009-12-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* store-motion.c (build_store_vectors): Clear regs_set_in_block at
