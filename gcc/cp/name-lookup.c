@@ -4549,6 +4549,8 @@ static bool arg_assoc_args_vec (struct arg_lookup*, VEC(tree,gc) *);
 static bool arg_assoc_type (struct arg_lookup*, tree);
 static bool add_function (struct arg_lookup *, tree);
 static bool arg_assoc_namespace (struct arg_lookup *, tree);
+static bool arg_assoc_class_only (struct arg_lookup *, tree);
+static bool arg_assoc_bases (struct arg_lookup *, tree);
 static bool arg_assoc_class (struct arg_lookup *, tree);
 static bool arg_assoc_template_arg (struct arg_lookup*, tree);
 
@@ -4606,53 +4608,6 @@ is_associated_namespace (tree current, tree scope)
     }
 }
 
-/* Return whether FN is a friend of an associated class of ARG.  */
-
-static bool
-friend_of_associated_class_p (tree arg, tree fn)
-{
-  tree type;
-
-  if (TYPE_P (arg))
-    type = arg;
-  else if (type_unknown_p (arg))
-    return false;
-  else
-    type = TREE_TYPE (arg);
-
-  /* If TYPE is a class, the class itself and all base classes are
-     associated classes.  */
-  if (CLASS_TYPE_P (type))
-    {
-      if (is_friend (type, fn))
-	return true;
-
-      if (TYPE_BINFO (type))
-	{
-	  tree binfo, base_binfo;
-	  int i;
-
-	  for (binfo = TYPE_BINFO (type), i = 0;
-	       BINFO_BASE_ITERATE (binfo, i, base_binfo);
-	       i++)
-	    if (is_friend (BINFO_TYPE (base_binfo), fn))
-	      return true;
-	}
-    }
-
-  /* If TYPE is a class member, the class of which it is a member is
-     an associated class.  */
-  if ((CLASS_TYPE_P (type)
-       || TREE_CODE (type) == UNION_TYPE
-       || TREE_CODE (type) == ENUMERAL_TYPE)
-      && TYPE_CONTEXT (type)
-      && CLASS_TYPE_P (TYPE_CONTEXT (type))
-      && is_friend (TYPE_CONTEXT (type), fn))
-    return true;
-
-  return false;
-}
-
 /* Add functions of a namespace to the lookup structure.
    Returns true on error.  */
 
@@ -4686,18 +4641,9 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
     {
       /* We don't want to find arbitrary hidden functions via argument
 	 dependent lookup.  We only want to find friends of associated
-	 classes.  */
+	 classes, which we'll do via arg_assoc_class.  */
       if (hidden_name_p (OVL_CURRENT (value)))
-	{
-	  unsigned int ix;
-	  tree arg;
-
-	  for (ix = 0; VEC_iterate (tree, k->args, ix, arg); ++ix)
-	    if (friend_of_associated_class_p (arg, OVL_CURRENT (value)))
-	      break;
-	  if (ix >= VEC_length (tree, k->args))
-	    continue;
-	}
+	continue;
 
       if (add_function (k, OVL_CURRENT (value)))
 	return true;
@@ -4736,7 +4682,7 @@ arg_assoc_template_arg (struct arg_lookup *k, tree arg)
 	return arg_assoc_namespace (k, ctx);
       /* Otherwise, it must be member template.  */
       else
-	return arg_assoc_class (k, ctx);
+	return arg_assoc_class_only (k, ctx);
     }
   /* It's an argument pack; handle it recursively.  */
   else if (ARGUMENT_PACK_P (arg))
@@ -4758,40 +4704,24 @@ arg_assoc_template_arg (struct arg_lookup *k, tree arg)
     return false;
 }
 
-/* Adds everything associated with class to the lookup structure.
+/* Adds the class and its friends to the lookup structure.
    Returns true on error.  */
 
 static bool
-arg_assoc_class (struct arg_lookup *k, tree type)
+arg_assoc_class_only (struct arg_lookup *k, tree type)
 {
   tree list, friends, context;
-  int i;
 
-  /* Backend build structures, such as __builtin_va_list, aren't
+  /* Backend-built structures, such as __builtin_va_list, aren't
      affected by all this.  */
   if (!CLASS_TYPE_P (type))
     return false;
-
-  if (purpose_member (type, k->classes))
-    return false;
-  k->classes = tree_cons (type, NULL_TREE, k->classes);
 
   context = decl_namespace_context (type);
   if (arg_assoc_namespace (k, context))
     return true;
 
   complete_type (type);
-
-  if (TYPE_BINFO (type))
-    {
-      /* Process baseclasses.  */
-      tree binfo, base_binfo;
-
-      for (binfo = TYPE_BINFO (type), i = 0;
-	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	if (arg_assoc_class (k, BINFO_TYPE (base_binfo)))
-	  return true;
-    }
 
   /* Process friends.  */
   for (list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list;
@@ -4815,13 +4745,79 @@ arg_assoc_class (struct arg_lookup *k, tree type)
 	    return true;
 	}
 
+  return false;
+}
+
+/* Adds the class and its bases to the lookup structure.
+   Returns true on error.  */
+
+static bool
+arg_assoc_bases (struct arg_lookup *k, tree type)
+{
+  if (arg_assoc_class_only (k, type))
+    return true;
+
+  if (TYPE_BINFO (type))
+    {
+      /* Process baseclasses.  */
+      tree binfo, base_binfo;
+      int i;
+
+      for (binfo = TYPE_BINFO (type), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	if (arg_assoc_bases (k, BINFO_TYPE (base_binfo)))
+	  return true;
+    }
+
+  return false;
+}
+
+/* Adds everything associated with a class argument type to the lookup
+   structure.  Returns true on error.
+
+   If T is a class type (including unions), its associated classes are: the
+   class itself; the class of which it is a member, if any; and its direct
+   and indirect base classes. Its associated namespaces are the namespaces
+   of which its associated classes are members. Furthermore, if T is a
+   class template specialization, its associated namespaces and classes
+   also include: the namespaces and classes associated with the types of
+   the template arguments provided for template type parameters (excluding
+   template template parameters); the namespaces of which any template
+   template arguments are members; and the classes of which any member
+   templates used as template template arguments are members. [ Note:
+   non-type template arguments do not contribute to the set of associated
+   namespaces.  --end note] */
+
+static bool
+arg_assoc_class (struct arg_lookup *k, tree type)
+{
+  tree list;
+  int i;
+
+  /* Backend build structures, such as __builtin_va_list, aren't
+     affected by all this.  */
+  if (!CLASS_TYPE_P (type))
+    return false;
+
+  if (purpose_member (type, k->classes))
+    return false;
+  k->classes = tree_cons (type, NULL_TREE, k->classes);
+
+  if (TYPE_CLASS_SCOPE_P (type)
+      && arg_assoc_class_only (k, TYPE_CONTEXT (type)))
+    return true;
+
+  if (arg_assoc_bases (k, type))
+    return true;
+
   /* Process template arguments.  */
   if (CLASSTYPE_TEMPLATE_INFO (type)
       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
     {
       list = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
       for (i = 0; i < TREE_VEC_LENGTH (list); ++i)
-	arg_assoc_template_arg (k, TREE_VEC_ELT (list, i));
+	if (arg_assoc_template_arg (k, TREE_VEC_ELT (list, i)))
+	  return true;
     }
 
   return false;
@@ -4861,13 +4857,16 @@ arg_assoc_type (struct arg_lookup *k, tree type)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (type))
 	return arg_assoc_type (k, TYPE_PTRMEMFUNC_FN_TYPE (type));
+    case UNION_TYPE:
       return arg_assoc_class (k, type);
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case ARRAY_TYPE:
       return arg_assoc_type (k, TREE_TYPE (type));
-    case UNION_TYPE:
     case ENUMERAL_TYPE:
+      if (TYPE_CLASS_SCOPE_P (type)
+	  && arg_assoc_class_only (k, TYPE_CONTEXT (type)))
+	return true;
       return arg_assoc_namespace (k, decl_namespace_context (type));
     case METHOD_TYPE:
       /* The basetype is referenced in the first arg type, so just
@@ -4951,34 +4950,17 @@ arg_assoc (struct arg_lookup *k, tree n)
     return arg_assoc_type (k, TREE_TYPE (n));
   if (TREE_CODE (n) == TEMPLATE_ID_EXPR)
     {
-      /* [basic.lookup.koenig]
-
-	 If T is a template-id, its associated namespaces and classes
-	 are the namespace in which the template is defined; for
-	 member templates, the member template's class...  */
+      /* The working paper doesn't currently say how to handle template-id
+	 arguments.  The sensible thing would seem to be to handle the list
+	 of template candidates like a normal overload set, and handle the
+	 template arguments like we do for class template
+	 specializations.  */
       tree templ = TREE_OPERAND (n, 0);
       tree args = TREE_OPERAND (n, 1);
-      tree ctx;
       int ix;
 
-      if (TREE_CODE (templ) == COMPONENT_REF)
-	templ = TREE_OPERAND (templ, 1);
-
-      /* First, the template.  There may actually be more than one if
-	 this is an overloaded function template.  But, in that case,
-	 we only need the first; all the functions will be in the same
-	 namespace.  */
-      templ = OVL_CURRENT (templ);
-
-      ctx = CP_DECL_CONTEXT (templ);
-
-      if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	  if (arg_assoc_namespace (k, ctx) == 1)
-	    return true;
-	}
-      /* It must be a member template.  */
-      else if (arg_assoc_class (k, ctx) == 1)
+      /* First the templates.  */
+      if (arg_assoc (k, templ))
 	return true;
 
       /* Now the arguments.  */
