@@ -97,6 +97,8 @@ struct mcu_type_s {
   const char *const library_name; 
 };
 
+/* Preprocessor macros to define depending on MCU type.  */
+extern const char *avr_extra_arch_macro;
 extern const struct base_arch_s *avr_current_arch;
 extern const struct mcu_type_s *avr_current_device;
 extern const struct mcu_type_s avr_mcu_types[];

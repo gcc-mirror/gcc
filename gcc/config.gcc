@@ -266,6 +266,11 @@ arm*-*-*)
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	;;
+avr-*-*)
+	cpu_type=avr
+	c_target_objs="avr-c.o"
+	cxx_target_objs="avr-c.o"
+	;;
 bfin*-*)
 	cpu_type=bfin
 	;;
