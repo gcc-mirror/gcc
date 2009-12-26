@@ -185,6 +185,7 @@ ffi_prep_args_SYSV (extended_cif *ecif, unsigned *const stack)
 	    {
 	      *next_arg.f = (float) double_tmp;
 	      next_arg.u += 1;
+	      intarg_count++;
 	    }
 	  else
 	    *fpr_base.d++ = double_tmp;
@@ -1149,6 +1150,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 		pst++;
 	      avalue[i] = pst;
 	      pst += 2;
+	      ng = 8;
 	    }
 	  break;
 
@@ -1222,6 +1224,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 		{
 		  avalue[i] = pst;
 		  pst += 4;
+		  ng = 8;
 		}
 	      break;
 	    }
