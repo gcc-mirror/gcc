@@ -1,3 +1,11 @@
+2009-12-26  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* configure.ac: Define FFI_MMAP_EXEC_WRIT for the given targets.
+	* configure: Regenerate.
+	* fficonfig.h.in: Likewise.
+	* src/closures.c: Remove the FFI_MMAP_EXEC_WRIT definition for
+	Solaris/x86.
+
 2009-12-26  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Advance intarg_count

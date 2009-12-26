@@ -50,11 +50,6 @@
    executable memory. */
 #  define FFI_MMAP_EXEC_WRIT 1
 # endif
-# if defined(X86_64) && defined(__sun__) && defined(__svr4__)
-/* The data segment on 64-bit Solaris/x86 isn't executable, so use mmap
-   instead.  */
-#  define FFI_MMAP_EXEC_WRIT 1
-# endif
 #endif
 
 #if FFI_MMAP_EXEC_WRIT && !defined FFI_MMAP_EXEC_SELINUX
