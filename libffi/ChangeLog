@@ -1,3 +1,10 @@
+2009-12-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Advance intarg_count
+	when a float arguments is passed in memory.
+	(ffi_closure_helper_SYSV): Mark general registers as used up when
+	a 64bit or soft-float long double argument is passed in memory.
+
 2009-12-25  Matthias Klose  <doko@ubuntu.com>
 
 	* man/ffi_call.3: Fix #include in examples.
@@ -10,7 +17,7 @@
 	IRIX MIPSPro c99.
 	* include/ffi_common.h: Added '__sgi' define to non
 	'__attribute__((__mode__()))' integer typedefs.
-        * src/mips/ffi.c (ffi_call, ffi_closure_mips_inner_O32,
+	* src/mips/ffi.c (ffi_call, ffi_closure_mips_inner_O32,
 	ffi_closure_mips_inner_N32): Added 'defined(_MIPSEB)' to BE check.
 	(ffi_closure_mips_inner_O32, ffi_closure_mips_inner_N32): Added
 	FFI_LONGDOUBLE support and alignment(N32 only).
@@ -86,7 +93,7 @@
 2009-12-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/aix_closure.S: Reorganize 64-bit code to match
-        linux64_closure.S.
+	linux64_closure.S.
 
 2009-12-04  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -292,7 +299,7 @@
 
 	* testsuite/libffi.call/err_bad_typedef.c: xfail everywhere.
 	* testsuite/libffi.call/err_bad_abi.c: Likewise.
-	
+
 2009-06-12  Andrew Haley  <aph@redhat.com>
 
 	* Makefile.am: Remove info_TEXINFOS.
@@ -310,33 +317,33 @@
 2009-06-11  Timothy Wall  <twall@users.sf.net>
 
 	* Makefile.am,
-        configure.ac,
-        include/ffi.h.in,
-        include/ffi_common.h,
-        src/closures.c,
-        src/dlmalloc.c,
-        src/x86/ffi.c,
-        src/x86/ffitarget.h,
-        src/x86/win64.S (new),
+	configure.ac,
+	include/ffi.h.in,
+	include/ffi_common.h,
+	src/closures.c,
+	src/dlmalloc.c,
+	src/x86/ffi.c,
+	src/x86/ffitarget.h,
+	src/x86/win64.S (new),
 	README: Added win64 support (mingw or MSVC)
-        * Makefile.in,
-        include/Makefile.in,
-        man/Makefile.in,
-        testsuite/Makefile.in,
-        configure,
-        aclocal.m4: Regenerated
-        * ltcf-c.sh: properly escape cygwin/w32 path
-        * man/ffi_call.3: Clarify size requirements for return value.
-        * src/x86/ffi64.c: Fix filename in comment.
-        * src/x86/win32.S: Remove unused extern.
+	* Makefile.in,
+	include/Makefile.in,
+	man/Makefile.in,
+	testsuite/Makefile.in,
+	configure,
+	aclocal.m4: Regenerated
+	* ltcf-c.sh: properly escape cygwin/w32 path
+	* man/ffi_call.3: Clarify size requirements for return value.
+	* src/x86/ffi64.c: Fix filename in comment.
+	* src/x86/win32.S: Remove unused extern.
 
-        * testsuite/libffi.call/closure_fn0.c,
-        testsuite/libffi.call/closure_fn1.c,
-        testsuite/libffi.call/closure_fn2.c,
-        testsuite/libffi.call/closure_fn3.c,
-        testsuite/libffi.call/closure_fn4.c,
-        testsuite/libffi.call/closure_fn5.c,
-        testsuite/libffi.call/closure_fn6.c,
+	* testsuite/libffi.call/closure_fn0.c,
+	testsuite/libffi.call/closure_fn1.c,
+	testsuite/libffi.call/closure_fn2.c,
+	testsuite/libffi.call/closure_fn3.c,
+	testsuite/libffi.call/closure_fn4.c,
+	testsuite/libffi.call/closure_fn5.c,
+	testsuite/libffi.call/closure_fn6.c,
 	testsuite/libffi.call/closure_stdcall.c,
 	testsuite/libffi.call/cls_12byte.c,
 	testsuite/libffi.call/cls_16byte.c,
@@ -417,8 +424,8 @@
  	testsuite/libffi.call/stret_large2.c,
  	testsuite/libffi.call/stret_medium.c,
  	testsuite/libffi.call/stret_medium2.c,
-        testsuite/libffi.special/unwindtest.cc: use ffi_closure_alloc instead
-        of checking for MMAP.  Use intptr_t instead of long casts.
+	testsuite/libffi.special/unwindtest.cc: use ffi_closure_alloc instead
+	of checking for MMAP.  Use intptr_t instead of long casts.
 
 2009-06-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -471,59 +478,59 @@
 
 2008-12-26  Timothy Wall  <twall@users.sf.net>
 
-        * testsuite/libffi.call/cls_longdouble.c,
-        testsuite/libffi.call/cls_longdouble_va.c,
-        testsuite/libffi.call/cls_align_longdouble.c,
-        testsuite/libffi.call/cls_align_longdouble_split.c,
-        testsuite/libffi.call/cls_align_longdouble_split2.c: mark expected
-        failures on x86_64 cygwin/mingw.
+	* testsuite/libffi.call/cls_longdouble.c,
+	testsuite/libffi.call/cls_longdouble_va.c,
+	testsuite/libffi.call/cls_align_longdouble.c,
+	testsuite/libffi.call/cls_align_longdouble_split.c,
+	testsuite/libffi.call/cls_align_longdouble_split2.c: mark expected
+	failures on x86_64 cygwin/mingw.
 
 2008-12-22  Timothy Wall  <twall@users.sf.net>
 
-        * testsuite/libffi.call/closure_fn0.c,
-        testsuite/libffi.call/closure_fn1.c,
-        testsuite/libffi.call/closure_fn2.c,
-        testsuite/libffi.call/closure_fn3.c,
-        testsuite/libffi.call/closure_fn4.c,
-        testsuite/libffi.call/closure_fn5.c,
-        testsuite/libffi.call/closure_fn6.c,
-        testsuite/libffi.call/closure_loc_fn0.c,
-        testsuite/libffi.call/closure_stdcall.c,
-        testsuite/libffi.call/cls_align_pointer.c,
-        testsuite/libffi.call/cls_pointer.c,
-        testsuite/libffi.call/cls_pointer_stack.c: use portable cast from
-        pointer to integer (intptr_t).
-        * testsuite/libffi.call/cls_longdouble.c: disable for win64.
+	* testsuite/libffi.call/closure_fn0.c,
+	testsuite/libffi.call/closure_fn1.c,
+	testsuite/libffi.call/closure_fn2.c,
+	testsuite/libffi.call/closure_fn3.c,
+	testsuite/libffi.call/closure_fn4.c,
+	testsuite/libffi.call/closure_fn5.c,
+	testsuite/libffi.call/closure_fn6.c,
+	testsuite/libffi.call/closure_loc_fn0.c,
+	testsuite/libffi.call/closure_stdcall.c,
+	testsuite/libffi.call/cls_align_pointer.c,
+	testsuite/libffi.call/cls_pointer.c,
+	testsuite/libffi.call/cls_pointer_stack.c: use portable cast from
+	pointer to integer (intptr_t).
+	* testsuite/libffi.call/cls_longdouble.c: disable for win64.
 
 2008-07-24  Anthony Green  <green@redhat.com>
 
-        * testsuite/libffi.call/cls_dbls_struct.c,
-        testsuite/libffi.call/cls_double_va.c,
-        testsuite/libffi.call/cls_longdouble.c,
-        testsuite/libffi.call/cls_longdouble_va.c,
-        testsuite/libffi.call/cls_pointer.c,
-        testsuite/libffi.call/cls_pointer_stack.c,
-        testsuite/libffi.call/err_bad_abi.c: Clean up failures from
-        compiler warnings.
+	* testsuite/libffi.call/cls_dbls_struct.c,
+	testsuite/libffi.call/cls_double_va.c,
+	testsuite/libffi.call/cls_longdouble.c,
+	testsuite/libffi.call/cls_longdouble_va.c,
+	testsuite/libffi.call/cls_pointer.c,
+	testsuite/libffi.call/cls_pointer_stack.c,
+	testsuite/libffi.call/err_bad_abi.c: Clean up failures from
+	compiler warnings.
 
 2008-03-04  Anthony Green  <green@redhat.com>
-            Blake Chaffin
-            hos@tamanegi.org
+	    Blake Chaffin
+	    hos@tamanegi.org
 
-        * testsuite/libffi.call/cls_align_longdouble_split2.c
-          testsuite/libffi.call/cls_align_longdouble_split.c
-          testsuite/libffi.call/cls_dbls_struct.c
-          testsuite/libffi.call/cls_double_va.c
-          testsuite/libffi.call/cls_longdouble.c
-          testsuite/libffi.call/cls_longdouble_va.c
-          testsuite/libffi.call/cls_pointer.c
-          testsuite/libffi.call/cls_pointer_stack.c
-          testsuite/libffi.call/err_bad_abi.c
-          testsuite/libffi.call/err_bad_typedef.c
-          testsuite/libffi.call/stret_large2.c
-          testsuite/libffi.call/stret_large.c
-          testsuite/libffi.call/stret_medium2.c
-          testsuite/libffi.call/stret_medium.c: New tests from Apple.
+	* testsuite/libffi.call/cls_align_longdouble_split2.c
+	  testsuite/libffi.call/cls_align_longdouble_split.c
+	  testsuite/libffi.call/cls_dbls_struct.c
+	  testsuite/libffi.call/cls_double_va.c
+	  testsuite/libffi.call/cls_longdouble.c
+	  testsuite/libffi.call/cls_longdouble_va.c
+	  testsuite/libffi.call/cls_pointer.c
+	  testsuite/libffi.call/cls_pointer_stack.c
+	  testsuite/libffi.call/err_bad_abi.c
+	  testsuite/libffi.call/err_bad_typedef.c
+	  testsuite/libffi.call/stret_large2.c
+	  testsuite/libffi.call/stret_large.c
+	  testsuite/libffi.call/stret_medium2.c
+	  testsuite/libffi.call/stret_medium.c: New tests from Apple.
 
 2009-06-05  Andrew Haley  <aph@redhat.com>
 
@@ -536,24 +543,24 @@
 	stdcall changes.
 
 2008-02-26  Anthony Green  <green@redhat.com>
-            Thomas Heller  <theller@ctypes.org>
+	    Thomas Heller  <theller@ctypes.org>
 
-        * src/x86/ffi.c (ffi_closure_SYSV_inner): Change C++ comment to C
-        comment.
+	* src/x86/ffi.c (ffi_closure_SYSV_inner): Change C++ comment to C
+	comment.
 
 2008-02-03  Timothy Wall  <twall@users.sf.net>
 
-        * src/x86/ffi.c (FFI_INIT_TRAMPOLINE_STDCALL): Calculate jump return
-          offset based on code pointer, not data pointer.
+	* src/x86/ffi.c (FFI_INIT_TRAMPOLINE_STDCALL): Calculate jump return
+	  offset based on code pointer, not data pointer.
 
 2008-01-31  Timothy Wall <twall@users.sf.net>
 
-        * testsuite/libffi.call/closure_stdcall.c: Add test for stdcall
-        closures.
-        * src/x86/ffitarget.h: Increase size of trampoline for stdcall
-        closures.
-        * src/x86/win32.S: Add assembly for stdcall closure.
-        * src/x86/ffi.c: Initialize stdcall closure trampoline.
+	* testsuite/libffi.call/closure_stdcall.c: Add test for stdcall
+	closures.
+	* src/x86/ffitarget.h: Increase size of trampoline for stdcall
+	closures.
+	* src/x86/win32.S: Add assembly for stdcall closure.
+	* src/x86/ffi.c: Initialize stdcall closure trampoline.
 
 2009-06-04  Andrew Haley  <aph@redhat.com>
 
@@ -586,10 +593,10 @@
 
 2008-02-15  David Daney  <ddaney@avtrex.com>
 
-        * src/mips/ffi.c (USE__BUILTIN___CLEAR_CACHE):
-        Define (conditionally), and use it to include cachectl.h.
-        (ffi_prep_closure_loc): Fix cache flushing.
-        * src/mips/ffitarget.h (_ABIN32, _ABI64, _ABIO32): Define.
+	* src/mips/ffi.c (USE__BUILTIN___CLEAR_CACHE):
+	Define (conditionally), and use it to include cachectl.h.
+	(ffi_prep_closure_loc): Fix cache flushing.
+	* src/mips/ffitarget.h (_ABIN32, _ABI64, _ABIO32): Define.
 
 2009-06-04  Andrew Haley  <aph@redhat.com>
 
@@ -698,7 +705,7 @@
 	(ffi_closure_v8): Likewise.
 
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
-            Steve Ellcey  <sje@cup.hp.com>
+	    Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate for new libtool.
 	* Makefile.in: Ditto.
@@ -820,7 +827,7 @@
 
 2007-12-08  David Daney  <ddaney@avtrex.com>
 
-	* src/mips/n32.S (ffi_call_N32):  Replace dadd with ADDU, dsub with 
+	* src/mips/n32.S (ffi_call_N32):  Replace dadd with ADDU, dsub with
 	SUBU, add with ADDU and use smaller code sequences.
 
 2007-12-07  David Daney  <ddaney@avtrex.com>
@@ -846,7 +853,7 @@
 	sizeof(ffi_java_raw) for alignment calculations.
 	(ffi_java_ptrarray_to_raw): Same.
 	(ffi_java_rvalue_to_raw): Add special handling for FFI_TYPE_POINTER
-        if FFI_SIZEOF_JAVA_RAW == 4.
+	if FFI_SIZEOF_JAVA_RAW == 4.
 	(ffi_java_raw_to_rvalue): Same.
 	(ffi_java_raw_call): Change type of raw to ffi_java_raw.
 	(ffi_java_translate_args): Same.
@@ -856,7 +863,7 @@
 
 2007-12-06  David Daney  <ddaney@avtrex.com>
 
-	* src/mips/n32.S (ffi_closure_N32): Use 64-bit add instruction on 
+	* src/mips/n32.S (ffi_closure_N32): Use 64-bit add instruction on
 	pointer values.
 
 2007-12-01  Andreas Tobler  <a.tobler@schweiz.org>
@@ -910,7 +917,7 @@
 
 2007-08-05  Steven Newbury  <s_j_newbury@yahoo.co.uk>
 
-	* src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Use __clear_cache instead of 
+	* src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Use __clear_cache instead of
 	directly using the sys_cacheflush syscall.
 
 2007-07-27  Andrew Haley  <aph@redhat.com>
@@ -1089,7 +1096,7 @@
 
 	* testsuite/libffi.call/return_ul.c (main): Define return type as
 	ffi_arg.  Use proper printf conversion specifier.
-	
+
 2007-07-30  Andrew Haley  <aph@redhat.com>
 
 	PR testsuite/32843
@@ -1126,84 +1133,84 @@
 
 2005-12-31  Phil Blundell  <pb@reciva.com>
 
-	* src/arm/ffi.c (ffi_prep_incoming_args_SYSV, 
-        ffi_closure_SYSV_inner, ffi_prep_closure): New, add closure support.
+	* src/arm/ffi.c (ffi_prep_incoming_args_SYSV,
+	ffi_closure_SYSV_inner, ffi_prep_closure): New, add closure support.
 	* src/arm/sysv.S(ffi_closure_SYSV): Likewise.
 	* src/arm/ffitarget.h (FFI_TRAMPOLINE_SIZE): Likewise.
 	(FFI_CLOSURES): Enable closure support.
 
 2007-07-03  Andrew Haley  <aph@hedges.billgatliff.com>
 
-        * testsuite/libffi.call/cls_multi_ushort.c,
-        testsuite/libffi.call/cls_align_uint16.c,
-        testsuite/libffi.call/nested_struct1.c,
-        testsuite/libffi.call/nested_struct3.c,
-        testsuite/libffi.call/cls_7_1_byte.c,
-        testsuite/libffi.call/cls_double.c,
-        testsuite/libffi.call/nested_struct5.c,
-        testsuite/libffi.call/nested_struct7.c,
-        testsuite/libffi.call/cls_sint.c,
-        testsuite/libffi.call/nested_struct9.c,
-        testsuite/libffi.call/cls_20byte1.c,
-        testsuite/libffi.call/cls_multi_sshortchar.c,
-        testsuite/libffi.call/cls_align_sint64.c,
-        testsuite/libffi.call/cls_3byte2.c,
-        testsuite/libffi.call/cls_multi_schar.c,
-        testsuite/libffi.call/cls_multi_uchar.c,
-        testsuite/libffi.call/cls_19byte.c,
-        testsuite/libffi.call/cls_9byte1.c,
-        testsuite/libffi.call/cls_align_float.c,
-        testsuite/libffi.call/closure_fn1.c,
-        testsuite/libffi.call/problem1.c,
-        testsuite/libffi.call/closure_fn3.c,
-        testsuite/libffi.call/cls_sshort.c,
-        testsuite/libffi.call/closure_fn5.c,
-        testsuite/libffi.call/cls_align_double.c,
-        testsuite/libffi.call/cls_2byte.c,
-        testsuite/libffi.call/nested_struct.c,
-        testsuite/libffi.call/nested_struct10.c,
-        testsuite/libffi.call/cls_4byte.c,
-        testsuite/libffi.call/cls_6byte.c,
-        testsuite/libffi.call/cls_8byte.c,
-        testsuite/libffi.call/cls_multi_sshort.c,
-        testsuite/libffi.call/cls_align_uint32.c,
-        testsuite/libffi.call/cls_align_sint16.c,
-        testsuite/libffi.call/cls_float.c,
-        testsuite/libffi.call/cls_20byte.c,
-        testsuite/libffi.call/cls_5_1_byte.c,
-        testsuite/libffi.call/nested_struct2.c,
-        testsuite/libffi.call/cls_24byte.c,
-        testsuite/libffi.call/nested_struct4.c,
-        testsuite/libffi.call/nested_struct6.c,
-        testsuite/libffi.call/cls_64byte.c,
-        testsuite/libffi.call/nested_struct8.c,
-        testsuite/libffi.call/cls_uint.c,
-        testsuite/libffi.call/cls_multi_ushortchar.c,
-        testsuite/libffi.call/cls_schar.c,
-        testsuite/libffi.call/cls_uchar.c,
-        testsuite/libffi.call/cls_align_uint64.c,
-        testsuite/libffi.call/cls_ulonglong.c,
-        testsuite/libffi.call/cls_align_longdouble.c,
-        testsuite/libffi.call/cls_1_1byte.c,
-        testsuite/libffi.call/cls_12byte.c,
-        testsuite/libffi.call/cls_3_1byte.c,
-        testsuite/libffi.call/cls_3byte1.c,
-        testsuite/libffi.call/cls_4_1byte.c,
-        testsuite/libffi.call/cls_6_1_byte.c,
-        testsuite/libffi.call/cls_16byte.c,
-        testsuite/libffi.call/cls_18byte.c,
-        testsuite/libffi.call/closure_fn0.c,
-        testsuite/libffi.call/cls_9byte2.c,
-        testsuite/libffi.call/closure_fn2.c,
-        testsuite/libffi.call/closure_fn4.c,
-        testsuite/libffi.call/cls_ushort.c,
-        testsuite/libffi.call/closure_fn6.c,
-        testsuite/libffi.call/cls_5byte.c,
-        testsuite/libffi.call/cls_align_pointer.c,
-        testsuite/libffi.call/cls_7byte.c,
-        testsuite/libffi.call/cls_align_sint32.c,
-        testsuite/libffi.special/unwindtest_ffi_call.cc,
-        testsuite/libffi.special/unwindtest.cc: Enable for ARM.
+	* testsuite/libffi.call/cls_multi_ushort.c,
+	testsuite/libffi.call/cls_align_uint16.c,
+	testsuite/libffi.call/nested_struct1.c,
+	testsuite/libffi.call/nested_struct3.c,
+	testsuite/libffi.call/cls_7_1_byte.c,
+	testsuite/libffi.call/cls_double.c,
+	testsuite/libffi.call/nested_struct5.c,
+	testsuite/libffi.call/nested_struct7.c,
+	testsuite/libffi.call/cls_sint.c,
+	testsuite/libffi.call/nested_struct9.c,
+	testsuite/libffi.call/cls_20byte1.c,
+	testsuite/libffi.call/cls_multi_sshortchar.c,
+	testsuite/libffi.call/cls_align_sint64.c,
+	testsuite/libffi.call/cls_3byte2.c,
+	testsuite/libffi.call/cls_multi_schar.c,
+	testsuite/libffi.call/cls_multi_uchar.c,
+	testsuite/libffi.call/cls_19byte.c,
+	testsuite/libffi.call/cls_9byte1.c,
+	testsuite/libffi.call/cls_align_float.c,
+	testsuite/libffi.call/closure_fn1.c,
+	testsuite/libffi.call/problem1.c,
+	testsuite/libffi.call/closure_fn3.c,
+	testsuite/libffi.call/cls_sshort.c,
+	testsuite/libffi.call/closure_fn5.c,
+	testsuite/libffi.call/cls_align_double.c,
+	testsuite/libffi.call/cls_2byte.c,
+	testsuite/libffi.call/nested_struct.c,
+	testsuite/libffi.call/nested_struct10.c,
+	testsuite/libffi.call/cls_4byte.c,
+	testsuite/libffi.call/cls_6byte.c,
+	testsuite/libffi.call/cls_8byte.c,
+	testsuite/libffi.call/cls_multi_sshort.c,
+	testsuite/libffi.call/cls_align_uint32.c,
+	testsuite/libffi.call/cls_align_sint16.c,
+	testsuite/libffi.call/cls_float.c,
+	testsuite/libffi.call/cls_20byte.c,
+	testsuite/libffi.call/cls_5_1_byte.c,
+	testsuite/libffi.call/nested_struct2.c,
+	testsuite/libffi.call/cls_24byte.c,
+	testsuite/libffi.call/nested_struct4.c,
+	testsuite/libffi.call/nested_struct6.c,
+	testsuite/libffi.call/cls_64byte.c,
+	testsuite/libffi.call/nested_struct8.c,
+	testsuite/libffi.call/cls_uint.c,
+	testsuite/libffi.call/cls_multi_ushortchar.c,
+	testsuite/libffi.call/cls_schar.c,
+	testsuite/libffi.call/cls_uchar.c,
+	testsuite/libffi.call/cls_align_uint64.c,
+	testsuite/libffi.call/cls_ulonglong.c,
+	testsuite/libffi.call/cls_align_longdouble.c,
+	testsuite/libffi.call/cls_1_1byte.c,
+	testsuite/libffi.call/cls_12byte.c,
+	testsuite/libffi.call/cls_3_1byte.c,
+	testsuite/libffi.call/cls_3byte1.c,
+	testsuite/libffi.call/cls_4_1byte.c,
+	testsuite/libffi.call/cls_6_1_byte.c,
+	testsuite/libffi.call/cls_16byte.c,
+	testsuite/libffi.call/cls_18byte.c,
+	testsuite/libffi.call/closure_fn0.c,
+	testsuite/libffi.call/cls_9byte2.c,
+	testsuite/libffi.call/closure_fn2.c,
+	testsuite/libffi.call/closure_fn4.c,
+	testsuite/libffi.call/cls_ushort.c,
+	testsuite/libffi.call/closure_fn6.c,
+	testsuite/libffi.call/cls_5byte.c,
+	testsuite/libffi.call/cls_align_pointer.c,
+	testsuite/libffi.call/cls_7byte.c,
+	testsuite/libffi.call/cls_align_sint32.c,
+	testsuite/libffi.special/unwindtest_ffi_call.cc,
+	testsuite/libffi.special/unwindtest.cc: Enable for ARM.
 
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1295,7 +1302,7 @@
 	* testsuite/libffi.call/return_fl2.c (return_fl): Mark as static.
 	Use 'volatile float sum' to create sum of floats to avoid false
 	negative due to excess precision on ix86 targets.
-	(main): Ditto. 
+	(main): Ditto.
 
 2007-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1410,7 +1417,7 @@
 2006-10-10  Paolo Bonzini  <bonzini@gnu.org>
 	    Sandro Tolaini  <tolaini@libero.it>
 
-	* configure.ac [i*86-*-darwin*]: Set X86_DARWIN symbol and 
+	* configure.ac [i*86-*-darwin*]: Set X86_DARWIN symbol and
 	conditional.
 	* configure: Regenerated.
 	* Makefile.am (nodist_libffi_la_SOURCES) [X86_DARWIN]: New case.
@@ -1745,7 +1752,7 @@
 	* src/sh/ffi.c (ffi_closure_helper_SYSV): Remove unused variable
 	and cast integer to void * if needed.  Update the pointer to
 	the FP register saved area correctly.
-	
+
 2006-02-17  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libffi.call/nested_struct6.c: XFAIL this test until PR25630
@@ -1937,7 +1944,7 @@
 
 	* configure.ac: Treat i*86-*-solaris2.10 and up as X86_64.
 	* configure: Regenerate.
-	
+
 2005-06-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Don't use JUMPTARGET
@@ -1951,7 +1958,7 @@
 	* Makefile.am (ACLOCAL_AMFLAGS): Remove -I ../config.
 	* aclocal.m4, configure, fficonfig.h.in, Makefile.in,
 	include/Makefile.in, testsuite/Makefile.in: Regenerate.
-	
+
 2005-05-09  Mike Stump  <mrs@apple.com>
 
 	* configure: Regenerate.
@@ -1983,7 +1990,7 @@
 	* testsuite/lib/libffi-dg.exp (libffi-dg-test-1): In regsub use,
 	have Tcl8.3-compatible intermediate variable.
 
-2005-04-18  Simon Posnjak <simon.posnjak@siol.net> 
+2005-04-18  Simon Posnjak <simon.posnjak@siol.net>
 	    Hans-Peter Nilsson  <hp@axis.com>
 
 	* Makefile.am: Add CRIS support.
@@ -2004,7 +2011,7 @@
 2005-03-30  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* src/ia64/ffitarget.h (ffi_arg): Use long long instead of DI.
-	
+
 2005-03-30  Steve Ellcey  <sje@cup.hp.com>
 
 	* src/ia64/ffitarget.h (ffi_arg) ADD DI attribute.
