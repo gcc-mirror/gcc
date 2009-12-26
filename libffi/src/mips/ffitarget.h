@@ -28,7 +28,10 @@
 #define LIBFFI_TARGET_H
 
 #ifdef linux
-#include <asm/sgidefs.h>
+# include <asm/sgidefs.h>
+#else
+# include <sgidefs.h>
+#endif
 #  ifndef _ABIN32
 #    define _ABIN32 _MIPS_SIM_NABI32
 #  endif
@@ -38,7 +41,6 @@
 #  ifndef _ABIO32
 #    define _ABIO32 _MIPS_SIM_ABI32
 #  endif
-#endif
 
 #if !defined(_MIPS_SIM)
 -- something is very wrong --
@@ -154,7 +156,8 @@
 # endif /* _MIPS_SIM==_ABI64 */
 #endif /* !FFI_MIPS_O32 */
 #else /* !LIBFFI_ASM */
-#ifdef FFI_MIPS_O32
+# ifdef __GNUC__
+#  ifdef FFI_MIPS_O32
 /* O32 stack frames have 32bit integer args */
 typedef unsigned int     ffi_arg __attribute__((__mode__(__SI__)));
 typedef signed   int     ffi_sarg __attribute__((__mode__(__SI__)));
@@ -162,7 +165,18 @@ typedef signed   int     ffi_sarg __attribute__((__mode__(__SI__)));
 /* N32 and N64 frames have 64bit integer args */
 typedef unsigned int     ffi_arg __attribute__((__mode__(__DI__)));
 typedef signed   int     ffi_sarg __attribute__((__mode__(__DI__)));
-#endif
+#  endif
+# else
+#  ifdef FFI_MIPS_O32
+/* O32 stack frames have 32bit integer args */
+typedef __uint32_t ffi_arg;
+typedef __int32_t ffi_sarg;
+#  else
+/* N32 and N64 frames have 64bit integer args */
+typedef __uint64_t ffi_arg;
+typedef __int64_t ffi_sarg;
+#  endif
+# endif /* __GNUC__ */
 
 typedef enum ffi_abi {
   FFI_FIRST_ABI = 0,

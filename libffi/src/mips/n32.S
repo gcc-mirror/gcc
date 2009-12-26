@@ -40,7 +40,9 @@
 
 #define SIZEOF_FRAME	( 8 * FFI_SIZEOF_ARG )
 
+#ifdef linux
 	.abicalls
+#endif
 	.text
 	.align	2
 	.globl	ffi_call_N32
@@ -527,6 +529,7 @@ cls_epilogue:
 .LFE2:	
 	.end	ffi_closure_N32
 
+#ifdef linux
         .section        .eh_frame,"aw",@progbits
 .Lframe1:
         .4byte  .LECIE1-.LSCIE1		# length
@@ -583,5 +586,6 @@ cls_epilogue:
 	.uleb128 (SIZEOF_FRAME2 - RA_OFF2)/4
 	.align	EH_FRAME_ALIGN
 .LEFDE3:
+#endif /* linux */	
 	
 #endif
