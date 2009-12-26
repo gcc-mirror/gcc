@@ -12405,6 +12405,14 @@ $as_echo "#define HAVE_AS_X86_PCREL 1" >>confdefs.h
     fi
 fi
 
+case "$target" in
+     *-apple-darwin10* | *-*-freebsd* | *-*-openbsd* | *-pc-solaris*)
+
+$as_echo "#define FFI_MMAP_EXEC_WRIT 1" >>confdefs.h
+
+     ;;
+esac
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether .eh_frame section should be read-only" >&5
 $as_echo_n "checking whether .eh_frame section should be read-only... " >&6; }
 if test "${libffi_cv_ro_eh_frame+set}" = set; then :
