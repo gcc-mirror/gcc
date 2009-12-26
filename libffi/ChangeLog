@@ -1,4 +1,4 @@
-2009-10-11  Matthias Klose  <doko@ubuntu.com>
+2009-12-25  Matthias Klose  <doko@ubuntu.com>
 
 	* man/ffi_call.3: Fix #include in examples.
 	* doc/libffi.texi: Add dircategory.
