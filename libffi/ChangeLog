@@ -1,3 +1,19 @@
+2009-12-25  Frank Everdij <f.p.x.everdij@tudelft.nl>
+
+	* include/ffi.h.in: Placed '__GNUC__' ifdef around
+	'__attribute__((aligned(8)))' in ffi_closure, fixes compile for
+	IRIX MIPSPro c99.
+	* include/ffi_common.h: Added '__sgi' define to non
+	'__attribute__((__mode__()))' integer typedefs.
+        * src/mips/ffi.c (ffi_call, ffi_closure_mips_inner_O32,
+	ffi_closure_mips_inner_N32): Added 'defined(_MIPSEB)' to BE check.
+	(ffi_closure_mips_inner_O32, ffi_closure_mips_inner_N32): Added
+	FFI_LONGDOUBLE support and alignment(N32 only).
+	* src/mips/ffitarget.h: Corrected '#include <sgidefs.h>' for IRIX and
+	fixed non '__attribute__((__mode__()))' integer typedefs.
+	* src/mips/n32.S: Put '#ifdef linux' around '.abicalls' and '.eh_frame'
+	since they are Linux/GNU Assembler specific.
+
 2009-12-25  Bradley Smith  <brad@brad-smith.co.uk>
 
 	* configure.ac, Makefile.am, src/avr32/ffi.c,

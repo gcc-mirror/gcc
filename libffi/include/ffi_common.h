@@ -84,15 +84,21 @@ typedef struct
 } extended_cif;
 
 /* Terse sized type definitions.  */
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__sgi)
 typedef unsigned char UINT8;
 typedef signed char   SINT8;
 typedef unsigned short UINT16;
 typedef signed short   SINT16;
 typedef unsigned int UINT32;
 typedef signed int   SINT32;
+# ifdef _MSC_VER
 typedef unsigned __int64 UINT64;
 typedef signed __int64   SINT64;
+# else
+# include <inttypes.h>
+typedef uint64_t UINT64;
+typedef int64_t  SINT64;
+# endif
 #else
 typedef unsigned int UINT8  __attribute__((__mode__(__QI__)));
 typedef signed int   SINT8  __attribute__((__mode__(__QI__)));

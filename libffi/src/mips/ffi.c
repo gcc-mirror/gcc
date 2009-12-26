@@ -625,7 +625,7 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 	  {
 	    rvalue_copy = alloca (8);
 	    copy_rvalue = 1;
-#ifdef __MIPSEB__
+#if defined(__MIPSEB__) || defined(_MIPSEB)
 	    copy_offset = 4;
 #endif
 	  }
@@ -772,9 +772,10 @@ ffi_closure_mips_inner_O32 (ffi_closure *closure,
     {
       if (i < 2 && !seen_int &&
 	  (arg_types[i]->type == FFI_TYPE_FLOAT ||
-	   arg_types[i]->type == FFI_TYPE_DOUBLE))
+	   arg_types[i]->type == FFI_TYPE_DOUBLE ||
+	   arg_types[i]->type == FFI_TYPE_LONGDOUBLE))
 	{
-#ifdef __MIPSEB__
+#if defined(__MIPSEB__) || defined(_MIPSEB)
 	  if (arg_types[i]->type == FFI_TYPE_FLOAT)
 	    avaluep[i] = ((char *) &fpr[i]) + sizeof (float);
 	  else
@@ -931,10 +932,16 @@ ffi_closure_mips_inner_N32 (ffi_closure *closure,
   while (i < avn)
     {
       if (arg_types[i]->type == FFI_TYPE_FLOAT
-	  || arg_types[i]->type == FFI_TYPE_DOUBLE)
+	  || arg_types[i]->type == FFI_TYPE_DOUBLE
+	  || arg_types[i]->type == FFI_TYPE_LONGDOUBLE)
         {
           argp = (argn >= 8 || soft_float) ? ar + argn : fpr + argn;
-#ifdef __MIPSEB__
+          if ((arg_types[i]->type == FFI_TYPE_LONGDOUBLE) && ((unsigned)argp & (arg_types[i]->alignment-1)))
+            {
+              argp=(ffi_arg*)ALIGN(argp,arg_types[i]->alignment);
+              argn++;
+            }
+#if defined(__MIPSEB__) || defined(_MIPSEB)
           if (arg_types[i]->type == FFI_TYPE_FLOAT && argn < 8)
             avaluep[i] = ((char *) argp) + sizeof (float);
           else
