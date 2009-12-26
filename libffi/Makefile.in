@@ -51,14 +51,15 @@ target_triplet = @target@
 @POWERPC_DARWIN_TRUE@am__append_14 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 @POWERPC_FREEBSD_TRUE@am__append_15 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
 @ARM_TRUE@am__append_16 = src/arm/sysv.S src/arm/ffi.c
-@LIBFFI_CRIS_TRUE@am__append_17 = src/cris/sysv.S src/cris/ffi.c
-@FRV_TRUE@am__append_18 = src/frv/eabi.S src/frv/ffi.c
-@S390_TRUE@am__append_19 = src/s390/sysv.S src/s390/ffi.c
-@X86_64_TRUE@am__append_20 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
-@SH_TRUE@am__append_21 = src/sh/sysv.S src/sh/ffi.c
-@SH64_TRUE@am__append_22 = src/sh64/sysv.S src/sh64/ffi.c
-@PA_LINUX_TRUE@am__append_23 = src/pa/linux.S src/pa/ffi.c
-@PA_HPUX_TRUE@am__append_24 = src/pa/hpux32.S src/pa/ffi.c
+@AVR32_TRUE@am__append_17 = src/avr32/sysv.S src/avr32/ffi.c
+@LIBFFI_CRIS_TRUE@am__append_18 = src/cris/sysv.S src/cris/ffi.c
+@FRV_TRUE@am__append_19 = src/frv/eabi.S src/frv/ffi.c
+@S390_TRUE@am__append_20 = src/s390/sysv.S src/s390/ffi.c
+@X86_64_TRUE@am__append_21 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
+@SH_TRUE@am__append_22 = src/sh/sysv.S src/sh/ffi.c
+@SH64_TRUE@am__append_23 = src/sh64/sysv.S src/sh64/ffi.c
+@PA_LINUX_TRUE@am__append_24 = src/pa/linux.S src/pa/ffi.c
+@PA_HPUX_TRUE@am__append_25 = src/pa/hpux32.S src/pa/ffi.c
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
@@ -139,15 +140,16 @@ am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/sysv.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/ppc_closure.lo
 @ARM_TRUE@am__objects_16 = src/arm/sysv.lo src/arm/ffi.lo
-@LIBFFI_CRIS_TRUE@am__objects_17 = src/cris/sysv.lo src/cris/ffi.lo
-@FRV_TRUE@am__objects_18 = src/frv/eabi.lo src/frv/ffi.lo
-@S390_TRUE@am__objects_19 = src/s390/sysv.lo src/s390/ffi.lo
-@X86_64_TRUE@am__objects_20 = src/x86/ffi64.lo src/x86/unix64.lo \
+@AVR32_TRUE@am__objects_17 = src/avr32/sysv.lo src/avr32/ffi.lo
+@LIBFFI_CRIS_TRUE@am__objects_18 = src/cris/sysv.lo src/cris/ffi.lo
+@FRV_TRUE@am__objects_19 = src/frv/eabi.lo src/frv/ffi.lo
+@S390_TRUE@am__objects_20 = src/s390/sysv.lo src/s390/ffi.lo
+@X86_64_TRUE@am__objects_21 = src/x86/ffi64.lo src/x86/unix64.lo \
 @X86_64_TRUE@	src/x86/ffi.lo src/x86/sysv.lo
-@SH_TRUE@am__objects_21 = src/sh/sysv.lo src/sh/ffi.lo
-@SH64_TRUE@am__objects_22 = src/sh64/sysv.lo src/sh64/ffi.lo
-@PA_LINUX_TRUE@am__objects_23 = src/pa/linux.lo src/pa/ffi.lo
-@PA_HPUX_TRUE@am__objects_24 = src/pa/hpux32.lo src/pa/ffi.lo
+@SH_TRUE@am__objects_22 = src/sh/sysv.lo src/sh/ffi.lo
+@SH64_TRUE@am__objects_23 = src/sh64/sysv.lo src/sh64/ffi.lo
+@PA_LINUX_TRUE@am__objects_24 = src/pa/linux.lo src/pa/ffi.lo
+@PA_HPUX_TRUE@am__objects_25 = src/pa/hpux32.lo src/pa/ffi.lo
 nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
@@ -156,25 +158,26 @@ nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_15) $(am__objects_16) $(am__objects_17) \
 	$(am__objects_18) $(am__objects_19) $(am__objects_20) \
 	$(am__objects_21) $(am__objects_22) $(am__objects_23) \
-	$(am__objects_24)
+	$(am__objects_24) $(am__objects_25)
 libffi_la_OBJECTS = $(am_libffi_la_OBJECTS) \
 	$(nodist_libffi_la_OBJECTS)
 libffi_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libffi_la_LDFLAGS) $(LDFLAGS) -o $@
 libffi_convenience_la_LIBADD =
-am__objects_25 = src/debug.lo src/prep_cif.lo src/types.lo \
+am__objects_26 = src/debug.lo src/prep_cif.lo src/types.lo \
 	src/raw_api.lo src/java_raw_api.lo src/closures.lo
-am_libffi_convenience_la_OBJECTS = $(am__objects_25)
-am__objects_26 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
+am_libffi_convenience_la_OBJECTS = $(am__objects_26)
+am__objects_27 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
 	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
 	$(am__objects_19) $(am__objects_20) $(am__objects_21) \
-	$(am__objects_22) $(am__objects_23) $(am__objects_24)
-nodist_libffi_convenience_la_OBJECTS = $(am__objects_26)
+	$(am__objects_22) $(am__objects_23) $(am__objects_24) \
+	$(am__objects_25)
+nodist_libffi_convenience_la_OBJECTS = $(am__objects_27)
 libffi_convenience_la_OBJECTS = $(am_libffi_convenience_la_OBJECTS) \
 	$(nodist_libffi_convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -388,6 +391,7 @@ SUBDIRS = include testsuite man
 EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
+	src/avr32/ffi.c src/avr32/sysv.S src/avr32/ffitarget.h \
 	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \
 	src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h \
 	src/ia64/unix.S \
@@ -463,7 +467,7 @@ nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
 	$(am__append_18) $(am__append_19) $(am__append_20) \
 	$(am__append_21) $(am__append_22) $(am__append_23) \
-	$(am__append_24)
+	$(am__append_24) $(am__append_25)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 AM_CFLAGS = -Wall -g -fexceptions
@@ -701,6 +705,16 @@ src/arm/sysv.lo: src/arm/$(am__dirstamp) \
 	src/arm/$(DEPDIR)/$(am__dirstamp)
 src/arm/ffi.lo: src/arm/$(am__dirstamp) \
 	src/arm/$(DEPDIR)/$(am__dirstamp)
+src/avr32/$(am__dirstamp):
+	@$(MKDIR_P) src/avr32
+	@: > src/avr32/$(am__dirstamp)
+src/avr32/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/avr32/$(DEPDIR)
+	@: > src/avr32/$(DEPDIR)/$(am__dirstamp)
+src/avr32/sysv.lo: src/avr32/$(am__dirstamp) \
+	src/avr32/$(DEPDIR)/$(am__dirstamp)
+src/avr32/ffi.lo: src/avr32/$(am__dirstamp) \
+	src/avr32/$(DEPDIR)/$(am__dirstamp)
 src/cris/$(am__dirstamp):
 	@$(MKDIR_P) src/cris
 	@: > src/cris/$(am__dirstamp)
@@ -778,6 +792,10 @@ mostlyclean-compile:
 	-rm -f src/arm/ffi.lo
 	-rm -f src/arm/sysv.$(OBJEXT)
 	-rm -f src/arm/sysv.lo
+	-rm -f src/avr32/ffi.$(OBJEXT)
+	-rm -f src/avr32/ffi.lo
+	-rm -f src/avr32/sysv.$(OBJEXT)
+	-rm -f src/avr32/sysv.lo
 	-rm -f src/closures.$(OBJEXT)
 	-rm -f src/closures.lo
 	-rm -f src/cris/ffi.$(OBJEXT)
@@ -892,6 +910,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/alpha/$(DEPDIR)/osf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/arm/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/arm/$(DEPDIR)/sysv.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/avr32/$(DEPDIR)/ffi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/avr32/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/cris/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/cris/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/frv/$(DEPDIR)/eabi.Plo@am__quote@
@@ -993,6 +1013,7 @@ clean-libtool:
 	-rm -rf src/.libs src/_libs
 	-rm -rf src/alpha/.libs src/alpha/_libs
 	-rm -rf src/arm/.libs src/arm/_libs
+	-rm -rf src/avr32/.libs src/avr32/_libs
 	-rm -rf src/cris/.libs src/cris/_libs
 	-rm -rf src/frv/.libs src/frv/_libs
 	-rm -rf src/ia64/.libs src/ia64/_libs
@@ -1371,6 +1392,8 @@ distclean-generic:
 	-rm -f src/alpha/$(am__dirstamp)
 	-rm -f src/arm/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/arm/$(am__dirstamp)
+	-rm -f src/avr32/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/avr32/$(am__dirstamp)
 	-rm -f src/cris/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/cris/$(am__dirstamp)
 	-rm -f src/frv/$(DEPDIR)/$(am__dirstamp)
@@ -1408,7 +1431,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/x86/$(DEPDIR)
+	-rm -rf src/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/x86/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -1456,7 +1479,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/x86/$(DEPDIR)
+	-rm -rf src/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/x86/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
