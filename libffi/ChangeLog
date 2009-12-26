@@ -1,3 +1,8 @@
+2009-10-11  Matthias Klose  <doko@ubuntu.com>
+
+	* man/ffi_call.3: Fix #include in examples.
+	* doc/libffi.texi: Add dircategory.
+
 2009-12-25  Frank Everdij <f.p.x.everdij@tudelft.nl>
 
 	* include/ffi.h.in: Placed '__GNUC__' ifdef around
