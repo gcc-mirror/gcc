@@ -628,6 +628,8 @@ FRV_FALSE
 FRV_TRUE
 LIBFFI_CRIS_FALSE
 LIBFFI_CRIS_TRUE
+AVR32_FALSE
+AVR32_TRUE
 ARM_FALSE
 ARM_TRUE
 POWERPC_FREEBSD_FALSE
@@ -10771,7 +10773,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10774 "configure"
+#line 10776 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10877,7 +10879,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10880 "configure"
+#line 10882 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11329,6 +11331,10 @@ case "$host" in
 	TARGET=X86_64; TARGETDIR=x86
 	;;
 
+  avr32*-*-*)
+	TARGET=AVR32; TARGETDIR=avr32
+	;;
+
   cris-*-*)
 	TARGET=LIBFFI_CRIS; TARGETDIR=cris
 	;;
@@ -11561,6 +11567,14 @@ fi
 else
   ARM_TRUE='#'
   ARM_FALSE=
+fi
+
+ if test x$TARGET = xAVR32; then
+  AVR32_TRUE=
+  AVR32_FALSE='#'
+else
+  AVR32_TRUE='#'
+  AVR32_FALSE=
 fi
 
  if test x$TARGET = xLIBFFI_CRIS; then
@@ -12721,6 +12735,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARM_TRUE}" && test -z "${ARM_FALSE}"; then
   as_fn_error "conditional \"ARM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${AVR32_TRUE}" && test -z "${AVR32_FALSE}"; then
+  as_fn_error "conditional \"AVR32\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBFFI_CRIS_TRUE}" && test -z "${LIBFFI_CRIS_FALSE}"; then

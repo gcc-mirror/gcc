@@ -1,3 +1,10 @@
+2009-12-25  Bradley Smith  <brad@brad-smith.co.uk>
+
+	* configure.ac, Makefile.am, src/avr32/ffi.c,
+	src/avr32/ffitarget.h,
+	src/avr32/sysv.S: Add AVR32 port.
+	* configure, Makefile.in: Rebuilt.
+
 2009-12-21  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* configure.ac: Make i?86 build on FreeBSD and OpenBSD.

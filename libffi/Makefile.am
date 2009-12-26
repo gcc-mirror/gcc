@@ -8,6 +8,7 @@ SUBDIRS = include testsuite man
 EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
+	src/avr32/ffi.c src/avr32/sysv.S src/avr32/ffitarget.h \
 	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \
 	src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h \
 	src/ia64/unix.S \
@@ -131,6 +132,9 @@ nodist_libffi_la_SOURCES += src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc
 endif
 if ARM
 nodist_libffi_la_SOURCES += src/arm/sysv.S src/arm/ffi.c
+endif
+if AVR32
+nodist_libffi_la_SOURCES += src/avr32/sysv.S src/avr32/ffi.c
 endif
 if LIBFFI_CRIS
 nodist_libffi_la_SOURCES += src/cris/sysv.S src/cris/ffi.c
