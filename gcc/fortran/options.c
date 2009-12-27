@@ -561,6 +561,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.warn_implicit_interface = value;
       break;
 
+    case OPT_Wimplicit_procedure:
+      gfc_option.warn_implicit_procedure = value;
+      break;
+
     case OPT_Wline_truncation:
       gfc_option.warn_line_truncation = value;
       break;
