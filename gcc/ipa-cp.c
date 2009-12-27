@@ -191,10 +191,32 @@ ipcp_analyze_node (struct cgraph_node *node)
 static void
 ipcp_update_cloned_node (struct cgraph_node *new_node)
 {
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+
   /* We might've introduced new direct calls.  */
   push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
   current_function_decl = new_node->decl;
-  rebuild_cgraph_edges ();
+
+  FOR_EACH_BB (bb)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple stmt = gsi_stmt (gsi);
+	tree decl;
+
+	if (is_gimple_call (stmt)
+	    && (decl = gimple_call_fndecl (stmt))
+	    && !cgraph_edge (new_node, stmt))
+	  {
+	    struct cgraph_edge *new_edge;
+
+	    new_edge = cgraph_create_edge (new_node, cgraph_node (decl), stmt,
+					   bb->count,
+					   compute_call_stmt_bb_frequency (bb),
+					   bb->loop_depth);
+	    new_edge->indirect_call = 1;
+	  }
+      }
 
   /* Indirect inlinng rely on fact that we've already analyzed
      the body..  */
@@ -960,7 +982,9 @@ ipcp_update_callgraph (void)
 	for (cs = node->callers; cs; cs = next)
 	  {
 	    next = cs->next_caller;
-	    if (ipcp_node_is_clone (cs->caller) || !ipcp_need_redirect_p (cs))
+	    if (!cs->indirect_call
+		&& (ipcp_node_is_clone (cs->caller)
+		    || !ipcp_need_redirect_p (cs)))
 	      {
 		gimple new_stmt;
 		gimple_stmt_iterator gsi;

@@ -1,3 +1,11 @@
+2009-12-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42231
+	* ipa-cp.c (ipcp_update_cloned_node): Add missing edges manually
+	instead of relying on rebuild_cgraph_edges and mark them as
+	indirect calls.
+	(ipcp_update_callgraph): Always redirect indirect edges.
+
 2009-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/42475
