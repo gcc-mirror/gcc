@@ -137,9 +137,9 @@ and warnings}.
 @gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -Wall  -Waliasing  -Wampersand  -Warray-bounds -Wcharacter-truncation @gol
--Wconversion -Wimplicit-interface  -Wline-truncation  -Wintrinsics-std @gol
--Wsurprising -Wno-tabs  -Wunderflow -Wunused-parameter -Wintrinsics-shadow @gol
--Wno-align-commons}
+-Wconversion -Wimplicit-interface  -Wimplicit-procedure  -Wline-truncation @gol
+-Wintrinsics-std  -Wsurprising  -Wno-tabs  -Wunderflow  -Wunused-parameter @gol
+-Wintrinsics-shadow  -Wno-align-commons}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
@@ -753,6 +753,12 @@ Warn about implicit conversions between different types.
 Warn if a procedure is called without an explicit interface.
 Note this only checks that an explicit interface is present.  It does not
 check that the declared interfaces are consistent across program units.
+
+@item -Wimplicit-procedure
+@opindex @code{Wimplicit-procedure}
+@cindex warnings, implicit procedure
+Warn if a procedure is called that has neither an explicit interface
+nor has been declared as @code{EXTERNAL}.
 
 @item -Wintrinsics-std
 @opindex @code{Wintrinsics-std}

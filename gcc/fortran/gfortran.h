@@ -2103,6 +2103,7 @@ typedef struct
   int warn_ampersand;
   int warn_conversion;
   int warn_implicit_interface;
+  int warn_implicit_procedure;
   int warn_line_truncation;
   int warn_surprising;
   int warn_tabs;

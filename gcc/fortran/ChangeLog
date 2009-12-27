@@ -1,3 +1,14 @@
+2009-12-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Daniel Kraft  <d@domob.eu>
+
+	PR fortran/22552
+	* lang.opt (Wimplicit-procedure): New option.
+	* gfortran.h (struct gfc_option_t): New member `warn_implicit_procedure'
+	* options.c (gfc_handle_option): Handle -Wimplicit-procedure.
+	* interface.c (gfc_procedure_use): Warn about procedure never
+	explicitly declared if requested by the new flag.
+	* invoke.texi: Document new flag -Wimplicit-procedure.
+
 2009-12-17 Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42144

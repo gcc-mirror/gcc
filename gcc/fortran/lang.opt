@@ -96,6 +96,10 @@ Wimplicit-interface
 Fortran Warning
 Warn about calls with implicit interface
 
+Wimplicit-procedure
+Fortran Warning
+Warn about called procedures not explicitly declared
+
 Wline-truncation
 Fortran Warning
 Warn about truncated source lines
