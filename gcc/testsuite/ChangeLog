@@ -1,5 +1,6 @@
 2009-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR middle-end/41344
 	* gfortran.dg/gomp/pr41344.f: New.
 
 2009-12-27  Martin Jambor  <mjambor@suse.cz>
