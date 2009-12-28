@@ -1,6 +1,16 @@
 2009-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
+	2009-12-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41305
+	* g++.dg/lookup/koenig10.C: New test.
+	* g++.dg/lookup/koenig11.C: New test.
+	* g++.dg/lookup/koenig12.C: New test.
+
+2009-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
 	2009-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/41344
