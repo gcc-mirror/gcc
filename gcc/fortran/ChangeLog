@@ -1,3 +1,8 @@
+2009-12-28 Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42353
+	* symbol.c (gfc_find_derived_vtab): Make vtabs and vtypes private.
+
 2009-12-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Daniel Kraft  <d@domob.eu>
 
