@@ -4748,6 +4748,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	  vtab->attr.target = 1;
 	  vtab->attr.save = SAVE_EXPLICIT;
 	  vtab->attr.vtab = 1;
+	  vtab->attr.access = ACCESS_PRIVATE;
 	  vtab->refs++;
 	  gfc_set_sym_referenced (vtab);
 	  sprintf (name, "vtype$%s", derived->name);
@@ -4764,6 +4765,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		return NULL;
 	      vtype->refs++;
 	      gfc_set_sym_referenced (vtype);
+	      vtype->attr.access = ACCESS_PRIVATE;
 
 	      /* Add component '$hash'.  */
 	      if (gfc_add_component (vtype, "$hash", &c) == FAILURE)
