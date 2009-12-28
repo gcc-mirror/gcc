@@ -1,3 +1,10 @@
+2009-12-28  David Edelsohn  <edelsohn@gnu.org>
+
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Copy abi and nargs to
+	local variables.
+	(aix_adjust_aggregate_sizes): New function.
+	(ffi_prep_cif_machdep): Call it.
+
 2009-12-26  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* configure.ac: Define FFI_MMAP_EXEC_WRIT for the given targets.

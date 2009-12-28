@@ -32,7 +32,7 @@
 
 #include <stdlib.h>
 
-extern void ffi_closure_ASM(void);
+extern void ffi_closure_ASM (void);
 
 enum {
   /* The assembly depends on these exact flags.  */
@@ -80,10 +80,13 @@ enum { ASM_NEEDS_REGISTERS = 4 };
 
    */
 
-void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
+void
+ffi_prep_args (extended_cif *ecif, unsigned long *const stack)
 {
   const unsigned bytes = ecif->cif->bytes;
   const unsigned flags = ecif->cif->flags;
+  const unsigned nargs = ecif->cif->nargs;
+  const ffi_abi abi = ecif->cif->abi;
 
   /* 'stacktop' points at the previous backchain pointer.  */
   unsigned long *const stacktop = stack + (bytes / sizeof(unsigned long));
@@ -118,7 +121,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
     *next_arg++ = (unsigned long) (char *) ecif->rvalue;
 
   /* Now for the arguments.  */
-  for (i = ecif->cif->nargs; i > 0; i--, ptr++, p_argv++)
+  for (i = nargs; i > 0; i--, ptr++, p_argv++)
     {
       switch ((*ptr)->type)
 	{
@@ -213,7 +216,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	  size_al = (*ptr)->size;
 	  if ((*ptr)->elements[0]->type == 3)
 	    size_al = ALIGN((*ptr)->size, 8);
-	  if (size_al < 3 && ecif->cif->abi == FFI_DARWIN)
+	  if (size_al < 3 && abi == FFI_DARWIN)
 	    dest_cpy += 4 - size_al;
 
 	  memcpy ((char *) dest_cpy, (char *) *p_argv, size_al);
@@ -229,7 +232,7 @@ void ffi_prep_args(extended_cif *ecif, unsigned long *const stack)
 	     the struct to double-word.  */
 	  if ((*ptr)->elements[0]->type == FFI_TYPE_DOUBLE)
 	    size_al = ALIGN((*ptr)->size, 8);
-	  if (size_al < 3 && ecif->cif->abi == FFI_DARWIN)
+	  if (size_al < 3 && abi == FFI_DARWIN)
 	    dest_cpy += 4 - size_al;
 
 	  memcpy((char *) dest_cpy, (char *) *p_argv, size_al);
@@ -301,8 +304,44 @@ darwin_adjust_aggregate_sizes (ffi_type *s)
   /* Do not add additional tail padding.  */
 }
 
+/* Adjust the size of S to be correct for AIX.
+   Word-align double unless it is the first member of a structure.  */
+
+static void
+aix_adjust_aggregate_sizes (ffi_type *s)
+{
+  int i;
+
+  if (s->type != FFI_TYPE_STRUCT)
+    return;
+
+  s->size = 0;
+  for (i = 0; s->elements[i] != NULL; i++)
+    {
+      ffi_type *p;
+      int align;
+      
+      p = s->elements[i];
+      aix_adjust_aggregate_sizes (p);
+      align = p->alignment;
+      if (i != 0 && p->type == FFI_TYPE_DOUBLE)
+	align = 4;
+      s->size = ALIGN(s->size, align) + p->size;
+    }
+  
+  s->size = ALIGN(s->size, s->alignment);
+  
+  if (s->elements[0]->type == FFI_TYPE_UINT64
+      || s->elements[0]->type == FFI_TYPE_SINT64
+      || s->elements[0]->type == FFI_TYPE_DOUBLE
+      || s->elements[0]->alignment == 8)
+    s->alignment = s->alignment > 8 ? s->alignment : 8;
+  /* Do not add additional tail padding.  */
+}
+
 /* Perform machine dependent cif processing.  */
-ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
+ffi_status
+ffi_prep_cif_machdep (ffi_cif *cif)
 {
   /* All this is for the DARWIN ABI.  */
   int i;
@@ -321,6 +360,13 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       darwin_adjust_aggregate_sizes (cif->rtype);
       for (i = 0; i < cif->nargs; i++)
 	darwin_adjust_aggregate_sizes (cif->arg_types[i]);
+    }
+
+  if (cif->abi == FFI_AIX)
+    {
+      aix_adjust_aggregate_sizes (cif->rtype);
+      for (i = 0; i < cif->nargs; i++)
+	aix_adjust_aggregate_sizes (cif->arg_types[i]);
     }
 
   /* Space for the frame pointer, callee's LR, CR, etc, and for
@@ -473,7 +519,8 @@ extern void ffi_call_AIX(extended_cif *, long, unsigned, unsigned *,
 extern void ffi_call_DARWIN(extended_cif *, long, unsigned, unsigned *,
 			    void (*fn)(void), void (*fn2)(void));
 
-void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
+void
+ffi_call (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -486,7 +533,7 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
   if ((rvalue == NULL) &&
       (cif->rtype->type == FFI_TYPE_STRUCT))
     {
-      ecif.rvalue = alloca(cif->rtype->size);
+      ecif.rvalue = alloca (cif->rtype->size);
     }
   else
     ecif.rvalue = rvalue;
@@ -661,8 +708,9 @@ typedef union
   double d;
 } ffi_dblfl;
 
-int ffi_closure_helper_DARWIN (ffi_closure*, void*,
-			       unsigned long*, ffi_dblfl*);
+int
+ffi_closure_helper_DARWIN (ffi_closure *, void *,
+			   unsigned long *, ffi_dblfl *);
 
 /* Basically the trampoline invokes ffi_closure_ASM, and on
    entry, r11 holds the address of the closure.
@@ -671,8 +719,9 @@ int ffi_closure_helper_DARWIN (ffi_closure*, void*,
    up space for a return value, ffi_closure_ASM invokes the
    following helper function to do most of the work.  */
 
-int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
-			       unsigned long * pgr, ffi_dblfl * pfr)
+int
+ffi_closure_helper_DARWIN (ffi_closure *closure, void *rvalue,
+			   unsigned long *pgr, ffi_dblfl *pfr)
 {
   /* rvalue is the pointer to space for return value in closure assembly
      pgr is the pointer to where r3-r10 are stored in ffi_closure_ASM
@@ -694,7 +743,7 @@ int ffi_closure_helper_DARWIN (ffi_closure* closure, void * rvalue,
   unsigned         size_al;
 
   cif = closure->cif;
-  avalue = alloca(cif->nargs * sizeof(void *));
+  avalue = alloca (cif->nargs * sizeof(void *));
 
   /* Copy the caller's structure return value address so that the closure
      returns the data directly to the caller.  */
