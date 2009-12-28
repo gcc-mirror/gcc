@@ -6858,6 +6858,27 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
       wi->info = context;
       break;
 
+    case GIMPLE_COND:
+	{
+	  tree lab = gimple_cond_true_label (stmt);
+	  if (lab)
+	    {
+	      n = splay_tree_lookup (all_labels,
+				     (splay_tree_key) lab);
+	      diagnose_sb_0 (gsi_p, context,
+			     n ? (gimple) n->value : NULL);
+	    }
+	  lab = gimple_cond_false_label (stmt);
+	  if (lab)
+	    {
+	      n = splay_tree_lookup (all_labels,
+				     (splay_tree_key) lab);
+	      diagnose_sb_0 (gsi_p, context,
+			     n ? (gimple) n->value : NULL);
+	    }
+	}
+      break;
+
     case GIMPLE_GOTO:
       {
 	tree lab = gimple_goto_dest (stmt);

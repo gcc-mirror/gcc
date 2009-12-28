@@ -1,3 +1,8 @@
+2009-12-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/41344
+	* omp-low.c (diagnose_sb_2): Handle GIMPLE_COND.
+
 2009-12-24  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR target/42457
@@ -40,12 +45,12 @@
 	the start of a loop over basic blocks.
 
 2009-12-24  Julian Brown  <julian@codesourcery.com>
-            Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/40887
-        * config/arm/arm.c (output_call_mem): Remove armv5 support.
-        * config/arm/arm.md (*call_mem): Disable for armv5. Add note.
-        (*call_value_mem): Likewise.
+	PR target/40887
+	* config/arm/arm.c (output_call_mem): Remove armv5 support.
+	* config/arm/arm.md (*call_mem): Disable for armv5. Add note.
+	(*call_value_mem): Likewise.
 
 2009-12-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -63,11 +68,11 @@
 
 2009-12-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/42093
-        * config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Fix macro usage
-        to TARGET_THUMB1.
-        (CASE_VECTOR_SHORTEN_MODE): Allow signed offsets
-        only for TARGET_THUMB1.
+	PR target/42093
+	* config/arm/arm.h (CASE_VECTOR_PC_RELATIVE): Fix macro usage
+	to TARGET_THUMB1.
+	(CASE_VECTOR_SHORTEN_MODE): Allow signed offsets
+	only for TARGET_THUMB1.
 
 2009-12-23  Ramana Radhakrishnan  <ramrad01@arm.com>
 
