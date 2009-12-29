@@ -1553,6 +1553,13 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       val = iterative_hash_object (code, val);
       return iterative_hash_template_arg (TREE_OPERAND (arg, 2), val);
 
+    case ARRAY_TYPE:
+      /* layout_type sets structural equality for arrays of
+	 incomplete type, so we can't rely on the canonical type
+	 for hashing.  */
+      val = iterative_hash_template_arg (TREE_TYPE (arg), val);
+      return iterative_hash_template_arg (TYPE_DOMAIN (arg), val);
+
     default:
       switch (tclass)
 	{

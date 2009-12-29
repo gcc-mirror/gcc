@@ -1,3 +1,8 @@
+2009-12-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42447
+	* g++.dg/template/array21.C: New.
+
 2009-12-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42353
