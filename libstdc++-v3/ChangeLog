@@ -1,3 +1,11 @@
+2009-12-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset (bitset<>::to_ullong, _M_do_to_ullong): Add.
+	(_Base_bitset<>::_M_do_to_ullong): Add.
+	* include/debug/bitset (bitset<>): Add using _Base::to_ullong.
+	* include/profile/bitset (bitset<>): Likewise.
+	* testsuite/23_containers/bitset/to_ullong/1.cc: New.
+
 2009-12-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/bitset (bitset<>::bitset(const char*)): Add.

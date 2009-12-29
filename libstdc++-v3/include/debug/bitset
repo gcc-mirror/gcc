@@ -251,6 +251,9 @@ namespace __debug
       }
 
       using _Base::to_ulong;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      using _Base::to_ullong;
+#endif
 
       template <typename _CharT, typename _Traits, typename _Alloc>
         std::basic_string<_CharT, _Traits, _Alloc>

@@ -199,6 +199,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unsigned long
       _M_do_to_ulong() const;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      unsigned long long
+      _M_do_to_ullong() const;
+#endif
+
       // find first "on" bit
       size_t
       _M_do_find_first(size_t __not_found) const;
@@ -271,6 +276,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  __throw_overflow_error(__N("_Base_bitset::_M_do_to_ulong"));
       return _M_w[0];
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<size_t _Nw>
+    unsigned long long
+    _Base_bitset<_Nw>::_M_do_to_ullong() const
+    {
+      const bool __dw = sizeof(unsigned long long) > sizeof(unsigned long);
+      for (size_t __i = 1 + __dw; __i < _Nw; ++__i)
+	if (_M_w[__i])
+	  __throw_overflow_error(__N("_Base_bitset::_M_do_to_ullong"));
+
+      if (__dw)
+	return _M_w[0] + (static_cast<unsigned long long>(_M_w[1])
+			  << _GLIBCXX_BITSET_BITS_PER_WORD);
+      return _M_w[0];
+    }
+#endif
 
   template<size_t _Nw>
     size_t
@@ -425,6 +447,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_do_to_ulong() const
       { return _M_w; }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      unsigned long long
+      _M_do_to_ullong() const
+      { return _M_w; }
+#endif
+
       size_t
       _M_do_find_first(size_t __not_found) const
       {
@@ -554,6 +582,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unsigned long
       _M_do_to_ulong() const
       { return 0; }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      unsigned long long
+      _M_do_to_ullong() const
+      { return 0; }
+#endif
 
       // Normally "not found" is the size, but that could also be
       // misinterpreted as an index in this corner case.  Oh well.
@@ -1038,6 +1072,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unsigned long
       to_ulong() const
       { return this->_M_do_to_ulong(); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      unsigned long long
+      to_ullong() const
+      { return this->_M_do_to_ullong(); }
+#endif
 
       /**
        *  @brief Returns a character interpretation of the %bitset.
