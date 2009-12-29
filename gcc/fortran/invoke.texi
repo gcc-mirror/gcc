@@ -1257,6 +1257,8 @@ Enable generation of run-time checks for pointers and allocatables.
 @item @samp{recursion}
 Enable generation of run-time checks for recursively called subroutines and
 functions which are not marked as recursive. See also @option{-frecursive}.
+Note: This check does not work for OpenMP programs and is disabled if used
+together with @option{-fopenmp}.
 @end table
 
 

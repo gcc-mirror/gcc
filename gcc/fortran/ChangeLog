@@ -1,4 +1,12 @@
-2009-12-28 Janus Weil  <janus@gcc.gnu.org>
+2009-12-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42517
+	* invoke.texi: Document the interference of
+	-fcheck=recursion and -fopenmp.
+	* trans-decl.c (gfc_generate_function_code): Disable -fcheck=recursion
+	when used with -fopenmp.
+
+2009-12-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42353
 	* symbol.c (gfc_find_derived_vtab): Make vtabs and vtypes private.
@@ -14,7 +22,7 @@
 	explicitly declared if requested by the new flag.
 	* invoke.texi: Document new flag -Wimplicit-procedure.
 
-2009-12-17 Janus Weil  <janus@gcc.gnu.org>
+2009-12-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42144
 	* trans-expr.c (select_class_proc): Skip abstract base types.
@@ -39,7 +47,7 @@
 	PR fortran/42354
 	* expr.c (check_init_expr): Do not check for specification functions.
 
-2009-12-11 Janus Weil  <janus@gcc.gnu.org>
+2009-12-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42257
 	* module.c (write_dt_extensions): Check for accessibility.
@@ -54,7 +62,7 @@
 	conversion.
 	* gfortran.h gfc_type_convert_binary): Adjusted prototype.
 
-2009-12-11 Janus Weil  <janus@gcc.gnu.org>
+2009-12-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42335
 	* symbol.c (select_type_insert_tmp): Add an extra check for
