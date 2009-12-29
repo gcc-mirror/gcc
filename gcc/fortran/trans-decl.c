@@ -4318,7 +4318,8 @@ gfc_generate_function_code (gfc_namespace * ns)
    is_recursive = sym->attr.recursive
 		  || (sym->attr.entry_master
 		      && sym->ns->entries->sym->attr.recursive);
-   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
+   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive
+       && !gfc_option.flag_openmp)
      {
        char * msg;
 
@@ -4395,7 +4396,8 @@ gfc_generate_function_code (gfc_namespace * ns)
       gfc_add_expr_to_block (&block, tmp);
 
       /* Reset recursion-check variable.  */
-      if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
+      if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive
+	  && !gfc_option.flag_openmp)
 	{
 	  gfc_add_modify (&block, recurcheckvar, boolean_false_node);
 	  recurcheckvar = NULL;
@@ -4426,7 +4428,8 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       gfc_add_expr_to_block (&block, tmp);
       /* Reset recursion-check variable.  */
-      if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
+      if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive
+	  && !gfc_option.flag_openmp)
       {
 	gfc_add_modify (&block, recurcheckvar, boolean_false_node);
 	recurcheckvar = NULL;
