@@ -1,3 +1,15 @@
+2009-12-29  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+  2009-10-06 Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR objective-c++/41595
+	* config/darwin.c (darwin_label_is_anonymous_local_objc_name):
+	New function to recognize objective c/c++ internal symbols,
+	including mangled ones.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Use
+	darwin_label_is_anonymous_local_objc_name to detect both
+	mangled and clear ObjC internal symbols.
+
 2009-12-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/41344
