@@ -1,6 +1,10 @@
+2009-12-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_expand_int_vcond): Reformat.
+
 2009-12-29  Dave Korn  <dave.korn.cygwin@gmail.com>
 
-  2009-10-06 Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+	2009-10-06 Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR objective-c++/41595
 	* config/darwin.c (darwin_label_is_anonymous_local_objc_name):
