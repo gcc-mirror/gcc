@@ -26,7 +26,7 @@ procedure Warn5 is
 
   function Pointer (Pos : Natural; List : List_Type) return Pointer_Type is
   begin
-    return To_Ptr(List.A(Pos)'Address); -- { dg-warning "source alignment" "" { target alpha*-*-* hppa*-*-* ia64-*-* mips*-*-* sparc*-*-* } }
+    return To_Ptr(List.A(Pos)'Address); -- { dg-warning "source alignment" "" { target alpha*-*-* arm*-*-* hppa*-*-* ia64-*-* mips*-*-* sparc*-*-* } }
   end;
 
 begin
