@@ -144,6 +144,11 @@ namespace __debug
 
       bitset(const _Base& __x) : _Base(__x), _Safe_base() { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit
+      bitset(const char* __str) : _Base(__str) { }
+#endif
+
       // 23.3.5.2 bitset operations:
       bitset<_Nb>&
       operator&=(const bitset<_Nb>& __rhs)
