@@ -647,7 +647,11 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 /* Wrap new method names in quotes so the assembler doesn't gag.
-   Make Objective-C internal symbols local.  */
+   Make Objective-C internal symbols local and in doing this, we need 
+   to accommodate the name mangling done by c++ on file scope locals.  */
+
+
+int darwin_label_is_anonymous_local_objc_name (const char *name);
 
 #undef	ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)					     \
@@ -673,7 +677,7 @@ extern GTY(()) int darwin_ms_struct;
 	 }								     \
        else if (xname[0] == '+' || xname[0] == '-')			     \
          fprintf (FILE, "\"%s\"", xname);				     \
-       else if (!strncmp (xname, "_OBJC_", 6))				     \
+       else if (darwin_label_is_anonymous_local_objc_name (xname))				     \
          fprintf (FILE, "L%s", xname);					     \
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \
