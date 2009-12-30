@@ -1,3 +1,9 @@
+2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42549
+	* gcc.target/i386/mmx-3dnow-check.h: New file.
+	* gcc.target/i386/pr42549.c: New test.
+
 2009-12-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/PR42422

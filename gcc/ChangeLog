@@ -1,3 +1,9 @@
+2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42549
+	* config/i386/mmx.md (*mmx_subv2sf3): Fix insn operand number for
+	alternative 1.
+
 2009-12-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*iorqi_ext_2): Fix insn mnemonic typo.
