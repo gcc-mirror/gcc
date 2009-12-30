@@ -4570,14 +4570,26 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
 
   /* Detect and ignore out of range field width and process valid
      field widths.  */
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (*width))
-      || TREE_CODE (*width) != INTEGER_CST)
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (*width)))
     {
       error ("bit-field %qs width not an integer constant", name);
       *width = integer_one_node;
     }
   else
     {
+      if (TREE_CODE (*width) != INTEGER_CST)
+	{
+	  *width = c_fully_fold (*width, false, NULL);
+	  if (TREE_CODE (*width) == INTEGER_CST)
+	    pedwarn (input_location, OPT_pedantic,
+		     "bit-field %qs width not an integer constant expression",
+		     name);
+	}
+      if (TREE_CODE (*width) != INTEGER_CST)
+	{
+	  error ("bit-field %qs width not an integer constant", name);
+	  *width = integer_one_node;
+	}
       constant_expression_warning (*width);
       if (tree_int_cst_sgn (*width) < 0)
 	{
