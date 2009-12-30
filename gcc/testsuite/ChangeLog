@@ -1,3 +1,9 @@
+2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42549
+	* gcc.target/i386/mmx-3dnow-check.h: New file.
+	* gcc.target/i386/pr42549.c: New test.
+
 2009-12-29  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/42099
@@ -32,7 +38,7 @@
 
 	PR tree-optimization/42231
 	* gcc.c-torture/execute/pr42231.c: New test.
-	
+
 2009-12-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Daniel Kraft  <d@domob.eu>
 
@@ -73,7 +79,7 @@
 
 	PR target/40670
 	* gcc.target/arm/pr40670.c: New test.
-	
+
 2009-12-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/alpha/20000715-1.c: Remove target selector.

@@ -1,3 +1,9 @@
+2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42549
+	* config/i386/mmx.md ("*mmx_subv2sf3): Fix insn operand number for
+	alternative 1.
+
 2009-12-30  Robert Millan  <rmh.gcc@aybabtu.com>
 
 	PR other/42537
@@ -16,8 +22,7 @@
 	* config/i386/i386.c (ix86_expand_int_vcond): Reformat.
 
 2009-12-29  Dave Korn  <dave.korn.cygwin@gmail.com>
-
-	2009-10-06 Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR objective-c++/41595
 	* config/darwin.c (darwin_label_is_anonymous_local_objc_name):
@@ -160,8 +165,7 @@
 2009-12-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42401
-	* lto-streamer-out.c (tree_is_indexable): Local statics
-	are indexable.
+	* lto-streamer-out.c (tree_is_indexable): Local statics are indexable.
 	(lto_output_tree_ref): Adjust assert.
 
 2009-12-19  Richard Guenther  <rguenther@suse.de>
@@ -256,8 +260,7 @@
 	PR middle-end/42397
 	* builtins.c (get_object_alignment): Properly deal with
 	a CONST_DECL base.
-	* expr.c (emit_block_move_hints): Assert the alignment makes
-	sense.
+	* expr.c (emit_block_move_hints): Assert the alignment makes sense.
 
 2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -291,7 +294,7 @@
 	(struct builtin_description) <__builtin_ia32_pslldqi128>: Update
 	for renamed sse2_ashlv1ti3.
 	<__builtin_ia32_psrldqi128>: Update for renamed sse2_lshrv1ti3.
-	
+
 	Revert:
 	2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -308,7 +311,7 @@
 2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
-	Update build_indirect_ref calls.	
+	Update build_indirect_ref calls.
 
 2009-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
