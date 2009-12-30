@@ -796,6 +796,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 {
   int i = 0, j, prev = -1, next, k;
   bool supported;
+  sbitmap load_index;
 
   /* FORNOW: permutations are only supported in SLP.  */
   if (!slp_instn)
@@ -816,6 +817,8 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
     return false;
 
   supported = true;
+  load_index = sbitmap_alloc (group_size);
+  sbitmap_zero (load_index);
   for (j = 0; j < group_size; j++)
     {
       for (i = j * group_size, k = 0;
@@ -830,7 +833,17 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
          prev = next;
        }
+
+      if (TEST_BIT (load_index, prev))
+        {
+          supported = false;
+          break;
+        }
+
+      SET_BIT (load_index, prev);
     }
+  
+  sbitmap_free (load_index);
 
   if (supported && i == group_size * group_size
       && vect_supported_slp_permutation_p (slp_instn))

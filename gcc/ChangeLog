@@ -1,3 +1,9 @@
+2009-12-30  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/41956
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Add check that 
+	the load indices differ.
+
 2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42549
