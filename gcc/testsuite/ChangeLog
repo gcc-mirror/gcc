@@ -1,3 +1,8 @@
+2009-12-29  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/42099
+	* gcc.c-torture/execute/20091229-1.c: New test.
+
 2009-12-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42517
