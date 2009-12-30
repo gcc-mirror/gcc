@@ -21,7 +21,7 @@ Butterfly_3 (__m64 * D, __m64 SC)
   D[1] = _m_pfsub (T1, T);
 }
 
-void
+static void
 mmx_3dnow_test (void)
 {
   vec_t D[2] = { { .f = { 2.0f, 3.0f } },
