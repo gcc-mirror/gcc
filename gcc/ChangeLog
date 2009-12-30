@@ -1,3 +1,8 @@
+2009-12-30  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/42516
+	* config/m68k/m68k.md (rotlsi_16): New insn.
+
 2009-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/42439
@@ -8,7 +13,7 @@
 2009-12-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/41956
-	* tree-vect-slp.c (vect_supported_load_permutation_p): Add check that 
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Add check that
 	the load indices differ.
 
 2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
