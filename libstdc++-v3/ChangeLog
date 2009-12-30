@@ -1,3 +1,31 @@
+2009-12-30  Daniel Frey  <d.frey@gmx.de>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (is_explicitly_convertible,
+	is_constructible): Add.
+	* testsuite/util/testsuite_tr1.h (ExplicitClass): Add.
+	* testsuite/20_util/is_explicitly_convertible/value.cc: New.
+	* testsuite/20_util/is_constructible/value.cc: Likewise.
+
+2009-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_tr1.h (test_relationship): Add
+	variadic version.
+	* testsuite/20_util/is_explicitly_convertible/requirements/
+	typedefs.cc: New.
+	* testsuite/20_util/is_explicitly_convertible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_constructible/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/is_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_convertible/value.cc: Extend.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
 2009-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_iterator.h.: Fix typo in comment.
