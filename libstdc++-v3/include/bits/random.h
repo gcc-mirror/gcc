@@ -3753,8 +3753,8 @@ namespace std
    * @brief A weibull_distribution random number distribution.
    *
    * The formula for the normal probability density function is
-   * @f$ p(x|\alpha,\beta) = \frac{a}{b} (frac{x}{b})^{a-1}
-   *                         \exp{(-(frac{x}{b})^a)} @f$.
+   * @f$ p(x|\alpha,\beta) = \frac{\alpha}{\beta} (\frac{x}{\beta})^{\alpha-1}
+   *                         \exp{(-(\frac{x}{\beta})^\alpha)} @f$.
    */
   template<typename _RealType = double>
     class weibull_distribution
