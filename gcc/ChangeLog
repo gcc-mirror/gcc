@@ -1,7 +1,7 @@
 2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42549
-	* config/i386/mmx.md ("*mmx_subv2sf3): Fix insn operand number for
+	* config/i386/mmx.md (*mmx_subv2sf3): Fix insn operand number for
 	alternative 1.
 
 2009-12-30  Robert Millan  <rmh.gcc@aybabtu.com>
