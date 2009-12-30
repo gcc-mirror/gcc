@@ -1784,6 +1784,8 @@ produce_asm (struct output_block *ob, tree fn)
   if (section_type == LTO_section_function_body)
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fn));
+      if (name[0] == '*')
+	name++;
       section_name = lto_get_section_name (section_type, name);
     }
   else
@@ -2007,11 +2009,16 @@ copy_function (struct cgraph_node *node)
   const char *data;
   size_t len;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
-  char *section_name =
-    lto_get_section_name (LTO_section_function_body, name);
+  char *section_name;
   size_t i, j;
   struct lto_in_decl_state *in_state;
-  struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
+  struct lto_out_decl_state *out_state;
+
+  if (name[0] == '*')
+    name++;
+  section_name =
+    lto_get_section_name (LTO_section_function_body, name);
+  out_state = lto_get_out_decl_state ();
 
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);

@@ -1,3 +1,10 @@
+2009-12-30  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42531
+	* lto-streamer-out.c (produce_asm): Skip any leading asterisk when
+	using DECL_ASSEMBLER_NAME to generate a section name.
+	(copy_function): Likewise.
+
 2009-12-30  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/42516
