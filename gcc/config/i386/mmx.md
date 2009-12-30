@@ -351,7 +351,7 @@
   "TARGET_3DNOW && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    pfsub\t{%2, %0|%0, %2}
-   pfsubr\t{%2, %0|%0, %2}"
+   pfsubr\t{%1, %0|%0, %1}"
   [(set_attr "type" "mmxadd")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
