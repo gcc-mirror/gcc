@@ -1,3 +1,9 @@
+2009-12-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/42439
+	* gcc.dg/bitfld-19.c, gcc.dg/bitfld-20.c, gcc.dg/bitfld-21.c: New
+	tests.
+
 2009-12-30  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/41956
