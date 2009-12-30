@@ -1,3 +1,7 @@
+2009-12-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/random.h: Fix equation in comment of Weibull distro.
+
 2009-12-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/bitset (bitset<>::to_ullong, _M_do_to_ullong): Add.
