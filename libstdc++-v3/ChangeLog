@@ -1,3 +1,7 @@
+2009-12-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits: Fix minor formatting nit.
+
 2009-12-30  Daniel Frey  <d.frey@gmx.de>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

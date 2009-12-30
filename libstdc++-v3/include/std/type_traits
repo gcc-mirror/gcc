@@ -300,7 +300,7 @@ namespace std
     {
     private:
       template<typename _To1, typename _From1>
-        static decltype( static_cast<_To1>(declval<_From1>()), __one())
+        static decltype(static_cast<_To1>(declval<_From1>()), __one())
 	__test(int);
 
       template<typename, typename>
