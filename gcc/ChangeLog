@@ -1,3 +1,9 @@
+2009-12-30  Ian Lance Taylor  <iant@google.com>
+
+	PR middle-end/42099
+	* expmed.c (expand_divmod): Don't shift HOST_WIDE_INT value more
+	than HOST_BITS_PER_WIDE_INT.
+
 2009-12-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42549
