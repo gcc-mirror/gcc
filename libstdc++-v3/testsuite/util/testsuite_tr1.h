@@ -67,6 +67,18 @@ namespace __gnu_test
       return ret;
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<template<typename...> class Relationship,
+           typename... Types>
+    bool
+    test_relationship(bool value)
+    {
+      bool ret = true;
+      ret &= Relationship<Types...>::value == value;
+      ret &= Relationship<Types...>::type::value == value;
+      return ret;
+    }
+#else
   template<template<typename, typename> class Relationship,
            typename Type1, typename Type2>
     bool
@@ -77,6 +89,7 @@ namespace __gnu_test
       ret &= Relationship<Type1, Type2>::type::value == value;
       return ret;
     }
+#endif
 
   // Test types.
   class ClassType { };
@@ -111,6 +124,12 @@ namespace __gnu_test
   union UnionType { };
 
   class IncompleteClass;
+
+  struct ExplicitClass
+  {
+    ExplicitClass(double&);
+    explicit ExplicitClass(int&);
+  };
 
   int truncate_float(float x) { return (int)x; }
   long truncate_double(double x) { return (long)x; }

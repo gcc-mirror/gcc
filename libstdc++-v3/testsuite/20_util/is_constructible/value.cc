@@ -1,7 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-// { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
-//
+
 // Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -19,13 +17,32 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 636 }
-// { dg-error "instantiated from here" "" { target *-*-* } 30 }
-// { dg-excess-errors "In function" }
-
-#include <utility>
+#include <type_traits>
+#include <testsuite_hooks.h>
+#include <testsuite_tr1.h>
 
 void test01()
 {
-  std::declval<int>();
+  bool test __attribute__((unused)) = true;
+  using std::is_constructible;
+  using namespace __gnu_test;
+
+  // Positive tests.
+  VERIFY( (test_relationship<is_constructible, ExplicitClass,
+	   double&>(true)) );
+  VERIFY( (test_relationship<is_constructible, ExplicitClass,
+	   int&>(true)) );
+
+  // Negative tests.
+  VERIFY( (test_relationship<is_constructible, ExplicitClass,
+	   void*>(false)) );
+  VERIFY( (test_relationship<is_constructible, ExplicitClass>(false)) );
+  VERIFY( (test_relationship<is_constructible, ExplicitClass,
+	   int, double>(false)) );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }

@@ -272,6 +272,55 @@ namespace std
 			       __is_convertible_helper<_From, _To>::__value>
     { };
 
+  template<typename _To, typename... _From>
+    struct __is_constructible_helper
+    : public __sfinae_types
+    {
+    private:
+      template<typename _To1, typename... _From1>
+        static decltype(_To1(declval<_From1>()...), __one()) __test(int);
+
+      template<typename, typename...>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_To, _From...>(0)) == 1;
+    };
+
+  template<typename _To, typename... _From>
+    struct is_constructible
+    : public integral_constant<bool,
+			       __is_constructible_helper<_To,
+							 _From...>::__value>
+    { };
+
+  template<typename _To, typename _From>
+    struct __is_constructible_helper1
+    : public __sfinae_types
+    {
+    private:
+      template<typename _To1, typename _From1>
+        static decltype( static_cast<_To1>(declval<_From1>()), __one())
+	__test(int);
+
+      template<typename, typename>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_To, _From>(0)) == 1;
+    };
+
+  template<typename _To, typename _From>
+    struct is_constructible<_To, _From>
+    : public integral_constant<bool,
+			       __is_constructible_helper1<_To, _From>::__value>
+    { };
+
+  template<typename _From, typename _To>
+    struct is_explicitly_convertible
+    : public is_constructible<_To, _From>
+    { };
+
   template<std::size_t _Len>
     struct __aligned_storage_msa
     { 

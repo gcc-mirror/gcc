@@ -56,6 +56,7 @@ void test01()
   VERIFY( (test_relationship<is_convertible, void, void>(true)) );
   VERIFY( (test_relationship<is_convertible, const void, void>(true)) );
   VERIFY( (test_relationship<is_convertible, void, volatile void>(true)) );
+  VERIFY( (test_relationship<is_convertible, double&, ExplicitClass>(true)) );
 
   // Negative tests.
   VERIFY( (test_relationship<is_convertible, const int*, int*>(false)) );
@@ -93,6 +94,9 @@ void test01()
   VERIFY( (test_relationship<is_convertible, volatile int,
 	                                     volatile int&>(false)) );
   VERIFY( (test_relationship<is_convertible, int(int), int(&)(int)>(false)) );
+
+  VERIFY( (test_relationship<is_convertible, int&, ExplicitClass>(false)) );
+  VERIFY( (test_relationship<is_convertible, void*, ExplicitClass>(false)) );
 }
 
 int main()
