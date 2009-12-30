@@ -4241,7 +4241,7 @@ Tue Oct 22 19:07:03 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* real.c (sticky_rshift_significand): Return inexact, don't
 	or it in immediately.
-	(sub_significands): Accept incomming carry.
+	(sub_significands): Accept incoming carry.
 	(div_significands, rtd_divmod): Update for sub_significands change.
 	(round_for_format): Update for sticky_rshift_significand change.
 	(do_add): Don't involve the inexact bit in addition, do give the
@@ -27738,7 +27738,7 @@ objc:
 	(INIT_CUMULATIVE_ARGS, INIT_CUMULATIVE_INCOMING_ARGS): Update.
 	* config/ia64/ia64.c (ia64_function_arg_advance): Set int_regs.
 	(ia64_expand_prologue): Look at int_regs, not words, for number
-	of incomming int regs.
+	of incoming int regs.
 
 2002-03-22  Andrew MacLeod  <amacleod@redhat.com>
 

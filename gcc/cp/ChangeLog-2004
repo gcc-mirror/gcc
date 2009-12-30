@@ -4031,7 +4031,7 @@
 	dfs_accumulate_vtbls_inits, build_vbase_offset_vtbl_entries,
 	build_vcall_offset_vtbl_entries, add_vcall_offset_vtbl_entries_r,
 	add_vcall_offset_vtbl_entries_1): Likewise.
-	* decl.c (xref_basetypes): Incomming virtual base indicated by
+	* decl.c (xref_basetypes): Incoming virtual base indicated by
 	TREE_TYPE. Adjust.
 	* dump.c (cp_dump_tree): Use BINFO_VIRTUAL_P.
 	* init.c (finish_init_stmts, sort_mem_initializers,

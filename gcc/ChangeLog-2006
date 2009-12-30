@@ -21081,7 +21081,7 @@
 
 	PR tree-opt/25315
 	PR tree-opt/25857
-	* tree-ssa-pre.c (insert_extra_phis): If an incomming edge is abnormal
+	* tree-ssa-pre.c (insert_extra_phis): If an incoming edge is abnormal
 	return from the function.
 
 2006-01-22  Zack Weinberg  <zackw@panix.com>

@@ -2245,7 +2245,7 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
 	 |  end_2
 	 | end_1
 
-	 whereas inserting the copy on the incomming edge is correct
+	 whereas inserting the copy on the incoming edge is correct
 
 	 | a = ...
 	 | loop_1

@@ -1,3 +1,8 @@
+2009-12-30  Robert Millan  <rmh.gcc@aybabtu.com>
+
+	PR other/42537
+	* classpath/java/rmi/activation/Activatable.java: Fix typos in comment.
+
 2009-12-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Remove code to un-precious-ize CC, CXX,
@@ -18,11 +23,11 @@
 
 2009-12-09  Bryce McKinlay  <bmckinlay@gmail.com>
 
-	PR java/41991  
+	PR java/41991
 	* configure.ac (SYSTEMSPEC): Pass -allow_stack_execute to Darwin
 	linker.
 	* Makefile.am (gij_LDFLAGS): Remove extra_gij_ldflags.
-	* configure: Regenerate.  
+	* configure: Regenerate.
 	* Makefile.in: Regenerate.
 
 2009-12-08  Eric Botcazou  <ebotcazou@adacore.com>
@@ -262,7 +267,7 @@
 	(PrintStream(File, String)): Likewise.
 	(PrintStream(String)): Likewise.
 	(PrintStream(String, String)): Likewise.
-	
+
 2009-07-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc: New Win32

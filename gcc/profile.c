@@ -343,7 +343,7 @@ is_inconsistent (void)
         {
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, "BB %i count does not match sum of incomming edges "
+	      fprintf (dump_file, "BB %i count does not match sum of incoming edges "
 		       HOST_WIDEST_INT_PRINT_DEC" should be " HOST_WIDEST_INT_PRINT_DEC,
 		       bb->index,
 		       bb->count,
