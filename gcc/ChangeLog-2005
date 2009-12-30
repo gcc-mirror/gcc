@@ -6100,7 +6100,7 @@
 
 	PR 23706
 	* mode-switching.c (optimize_mode_switching): Clear transp bit
-	for block with incomming abnormal edges.
+	for block with incoming abnormal edges.
 
 	* config/sh/sh.c (fpscr_values, emit_fpu_switch): New.
 	(fpscr_set_from_mem): Use them.

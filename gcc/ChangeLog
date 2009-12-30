@@ -1,3 +1,10 @@
+2009-12-30  Robert Millan  <rmh.gcc@aybabtu.com>
+
+	PR other/42537
+	* errors.c: Fix typo in comment.
+	* graphite-sese-to-poly.c: Likewise.
+	* profile.c (is_inconsistent): Fix typo in string.
+
 2009-12-29  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/42099
@@ -34,7 +41,7 @@
 	* config/avr/avr-c.c: New File.
 	(avr_cpu_cpp_builtins) : Add.
 	* config/avr/t-avr: Add make information for avr-c.
-	* config.gcc (avr-*-*): Include avr-c.o as c and cpp object. 
+	* config.gcc (avr-*-*): Include avr-c.o as c and cpp object.
 
 2009-12-24  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
