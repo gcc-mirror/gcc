@@ -74,7 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 24.4.1 Reverse iterators
   /**
-   *  'Bidirectional and random access iterators have corresponding reverse
+   *  Bidirectional and random access iterators have corresponding reverse
    *  %iterator adaptors that iterate through the data structure in the
    *  opposite direction.  They have the same signatures as the corresponding
    *  iterators.  The fundamental relation between a reverse %iterator and its
