@@ -28,16 +28,13 @@ void test01()
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_relationship<is_constructible, ExplicitClass,
-	   double&>(true)) );
-  VERIFY( (test_relationship<is_constructible, ExplicitClass,
-	   int&>(true)) );
+  VERIFY( (test_property<is_constructible, ExplicitClass, double&>(true)) );
+  VERIFY( (test_property<is_constructible, ExplicitClass, int&>(true)) );
 
   // Negative tests.
-  VERIFY( (test_relationship<is_constructible, ExplicitClass,
-	   void*>(false)) );
-  VERIFY( (test_relationship<is_constructible, ExplicitClass>(false)) );
-  VERIFY( (test_relationship<is_constructible, ExplicitClass,
+  VERIFY( (test_property<is_constructible, ExplicitClass, void*>(false)) );
+  VERIFY( (test_property<is_constructible, ExplicitClass>(false)) );
+  VERIFY( (test_property<is_constructible, ExplicitClass,
 	   int, double>(false)) );
 }
 
