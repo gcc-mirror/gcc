@@ -31,9 +31,10 @@ along with GCC; see the file COPYING3.  If not see
     %{A} %{e*} %{m} %{r} %{x} \
     %{o*}%{!o:-o a.out} \
     %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
-    %{L*} %{fopenmp:%:include(libgomp.spec)%(link_gomp)}   \
-    %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
-    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %G %L}} \
+    %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate|coverage:-lgcov} \
+    %{fopenmp|ftree-parallelize-loops=*: \
+      %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
+    %{!nostdlib:%{!nodefaultlibs:  %(link_ssp) %G %L }} \
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}\n\
 %{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm: \

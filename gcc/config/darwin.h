@@ -272,9 +272,10 @@ extern GTY(()) int darwin_ms_struct;
     %{A} %{e*} %{m} %{r} %{x} \
     %{o*}%{!o:-o a.out} \
     %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
-    %{L*} %{fopenmp:%:include(libgomp.spec)%(link_gomp)}   \
-    %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
-    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %G %L}} \
+    %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate|coverage:-lgcov} \
+    %{fopenmp|ftree-parallelize-loops=*: \
+      %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
+    %{!nostdlib:%{!nodefaultlibs: %(link_ssp) %G %L }} \
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}\n\
 %{!fdump=*:%{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
     %{.c|.cc|.C|.cpp|.cp|.c++|.cxx|.CPP|.m|.mm: \
@@ -293,8 +294,12 @@ extern GTY(()) int darwin_ms_struct;
    so put a * after their names so all of them get passed.  */
 #define LINK_SPEC  \
   "%{static}%{!static:-dynamic} \
-   %{fgnu-runtime:%:replace-outfile(-lobjc -lobjc-gnu)}\
-   %{static|static-libgfortran:%:replace-outfile(-lgfortran libgfortran.a%s)}\
+   %{fgnu-runtime: %{static|static-libgcc: \
+                     %:replace-outfile(-lobjc libobjc-gnu.a%s); \
+                    :%:replace-outfile(-lobjc -lobjc-gnu ) } }\
+   %{static|static-libgcc|static-libgfortran:%:replace-outfile(-lgfortran libgfortran.a%s)}\
+   %{static|static-libgcc|static-libstdc++|static-libgfortran:%:replace-outfile(-lgomp libgomp.a%s)}\
+   %{static|static-libgcc|static-libstdc++:%:replace-outfile(-lstdc++ libstdc++.a%s)}\
    %{!Zdynamiclib: \
      %{Zforce_cpusubtype_ALL:-arch %(darwin_arch) -force_cpusubtype_ALL} \
      %{!Zforce_cpusubtype_ALL:-arch %(darwin_subarch)} \
