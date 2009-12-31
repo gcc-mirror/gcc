@@ -1,3 +1,16 @@
+2009-12-31  Kay Tietz  <ktietz70@googlemail.com>
+
+	* testsuite/libffi.call/ffitest.h,
+	testsuite/libffi.special/ffitestcxx.h (PRIdLL, PRuLL): Fix
+	definitions.
+
+2009-12-31  Carlo Bramini  <carlo.bramix@libero.it>
+
+	* configure.ac (AM_LTLDFLAGS): Define for windows hosts.
+	* Makefile.am (libffi_la_LDFLAGS): Add AM_LTLDFLAGS.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+
 2009-12-31  Anthony Green  <green@redhat.com>
 	    Blake Chaffin.
 
