@@ -1,3 +1,7 @@
+2009-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-dump.c (dump_options): Don't set TDF_NOUID for all.
+
 2009-12-31  Dave Korn  <dave.korn.cygwin@gmail.com>
 	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
 
