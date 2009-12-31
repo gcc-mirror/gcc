@@ -1,3 +1,14 @@
+2009-12-31  Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR target/41605
+	* config/darwin.h (LINK_COMMAND_SPEC): Resolve fopenmp specifically
+	for target.
+	(LINK_SPEC): Replace dynamic libraries by static equivalents where
+	necessary.
+	* config/darwin9.h (LINK_COMMAND_SPEC): Resolve fopenmp specifically
+	for target.
+
 2009-12-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR lto/42531
