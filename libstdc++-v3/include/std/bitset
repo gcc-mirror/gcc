@@ -76,10 +76,18 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _Base_bitset()
       { _M_do_reset(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Base_bitset(unsigned long long __val)
+#else
       _Base_bitset(unsigned long __val)
+#endif
       {
 	_M_do_reset();
 	_M_w[0] = __val;
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	if (sizeof(unsigned long long) > sizeof(unsigned long))
+	  _M_w[1] = __val >> _GLIBCXX_BITSET_BITS_PER_WORD;
+#endif
       }
 
       static size_t
@@ -359,7 +367,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _M_w(0)
       { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Base_bitset(unsigned long long __val)
+#else
       _Base_bitset(unsigned long __val)
+#endif
       : _M_w(__val)
       { }
 
@@ -491,7 +503,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _Base_bitset()
       { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Base_bitset(unsigned long long)
+#else
       _Base_bitset(unsigned long)
+#endif
       { }
 
       static size_t
@@ -771,7 +787,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { }
 
       /// Initial bits bitwise-copied from a single word (others set to zero).
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      bitset(unsigned long long __val)
+#else
       bitset(unsigned long __val)
+#endif
       : _Base(__val)
       { _M_do_sanitize(); }
 
