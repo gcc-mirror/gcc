@@ -56,8 +56,7 @@ namespace __gnu_test
   // For testing tr1/type_traits/extent, which has a second template
   // parameter.
   template<template<typename, unsigned> class Property,
-           typename Type,
-	   unsigned Uint>
+           typename Type, unsigned Uint>
     bool
     test_property(typename Property<Type, Uint>::value_type value)
     {
@@ -68,17 +67,17 @@ namespace __gnu_test
     }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<template<typename...> class Relationship,
-           typename... Types>
+  template<template<typename...> class Property, typename... Types>
     bool
-    test_relationship(bool value)
+    test_property(typename Property<Types...>::value_type value)
     {
       bool ret = true;
-      ret &= Relationship<Types...>::value == value;
-      ret &= Relationship<Types...>::type::value == value;
+      ret &= Property<Types...>::value == value;
+      ret &= Property<Types...>::type::value == value;
       return ret;
     }
-#else
+#endif
+
   template<template<typename, typename> class Relationship,
            typename Type1, typename Type2>
     bool
@@ -89,7 +88,6 @@ namespace __gnu_test
       ret &= Relationship<Type1, Type2>::type::value == value;
       return ret;
     }
-#endif
 
   // Test types.
   class ClassType { };

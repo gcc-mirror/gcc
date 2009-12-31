@@ -173,6 +173,18 @@ namespace std
 
   // Member introspection.
 
+  /// is_trivial
+  template<typename _Tp>
+    struct is_trivial
+    : public integral_constant<bool, __is_trivial(_Tp)>
+    { };
+
+  /// is_standard_layout
+  template<typename _Tp>
+    struct is_standard_layout
+    : public integral_constant<bool, __is_standard_layout(_Tp)>
+    { };
+
   /// is_pod
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
@@ -180,10 +192,46 @@ namespace std
     : public integral_constant<bool, __is_pod(_Tp)>
     { };
 
-  /// is_standard_layout
   template<typename _Tp>
-    struct is_standard_layout
-    : public integral_constant<bool, __is_standard_layout(_Tp)>
+    typename add_rvalue_reference<_Tp>::type declval();
+
+  template<typename _Tp, typename... _Args>
+    class __is_constructible_helper
+    : public __sfinae_types
+    {
+      template<typename _Tp1, typename... __Args1>
+        static decltype(_Tp1(declval<__Args1>()...), __one()) __test(int);
+
+      template<typename, typename...>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_Tp, _Args...>(0)) == 1;
+    };
+
+  template<typename _Tp, typename _Arg>
+    class __is_constructible_helper<_Tp, _Arg>
+    : public __sfinae_types
+    {
+      template<typename _Tp1, typename _Arg1>
+        static decltype(static_cast<_Tp1>(declval<_Arg1>()), __one())
+	__test(int);
+
+      template<typename, typename>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_Tp, _Arg>(0)) == 1;
+    };
+
+  /// is_constructible
+  // XXX FIXME
+  // The C++0x specifications require front-end support, see N2255.
+  template<typename _Tp, typename... _Args>
+    struct is_constructible
+    : public integral_constant<bool,
+			       __is_constructible_helper<_Tp,
+							 _Args...>::__value>
     { };
 
   /// has_trivial_default_constructor
@@ -210,12 +258,6 @@ namespace std
     : public integral_constant<bool, __has_trivial_destructor(_Tp)>
     { };
 
-  /// is_trivial
-  template<typename _Tp>
-    struct is_trivial
-    : public integral_constant<bool, __is_trivial(_Tp)>
-    { };
-
   /// has_nothrow_default_constructor
   template<typename _Tp>
     struct has_nothrow_default_constructor
@@ -234,16 +276,14 @@ namespace std
     : public integral_constant<bool, __has_nothrow_assign(_Tp)>
     { };
 
+  // Relationships between types.
+
   /// is_base_of
   template<typename _Base, typename _Derived>
     struct is_base_of
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
     { };
 
-  template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval();
-
-  // Relationships between types.
   template<typename _From, typename _To,
 	   bool = (is_void<_From>::value || is_void<_To>::value
 		   || is_function<_To>::value || is_array<_To>::value)>
@@ -252,10 +292,9 @@ namespace std
 				   && is_void<_To>::value); };
 
   template<typename _From, typename _To>
-    struct __is_convertible_helper<_From, _To, false>
+    class __is_convertible_helper<_From, _To, false>
     : public __sfinae_types
     {
-    private:
       static __one __test(_To);
       static __two __test(...);
 
@@ -263,59 +302,16 @@ namespace std
       static const bool __value = sizeof(__test(declval<_From>())) == 1;
     };
 
+  /// is_convertible
   // XXX FIXME
   // The C++0x specifications require front-end support, see N2255.
-  /// is_convertible
   template<typename _From, typename _To>
     struct is_convertible
     : public integral_constant<bool,
 			       __is_convertible_helper<_From, _To>::__value>
     { };
 
-  template<typename _To, typename... _From>
-    struct __is_constructible_helper
-    : public __sfinae_types
-    {
-    private:
-      template<typename _To1, typename... _From1>
-        static decltype(_To1(declval<_From1>()...), __one()) __test(int);
-
-      template<typename, typename...>
-        static __two __test(...);
-
-    public:
-      static const bool __value = sizeof(__test<_To, _From...>(0)) == 1;
-    };
-
-  template<typename _To, typename... _From>
-    struct is_constructible
-    : public integral_constant<bool,
-			       __is_constructible_helper<_To,
-							 _From...>::__value>
-    { };
-
-  template<typename _To, typename _From>
-    struct __is_constructible_helper1
-    : public __sfinae_types
-    {
-    private:
-      template<typename _To1, typename _From1>
-        static decltype(static_cast<_To1>(declval<_From1>()), __one())
-	__test(int);
-
-      template<typename, typename>
-        static __two __test(...);
-
-    public:
-      static const bool __value = sizeof(__test<_To, _From>(0)) == 1;
-    };
-
-  template<typename _To, typename _From>
-    struct is_constructible<_To, _From>
-    : public integral_constant<bool,
-			       __is_constructible_helper1<_To, _From>::__value>
-    { };
-
+  /// is_explicitly_convertible
   template<typename _From, typename _To>
     struct is_explicitly_convertible
     : public is_constructible<_To, _From>
@@ -401,9 +397,8 @@ namespace std
 
   /// decay
   template<typename _Tp> 
-    struct decay 
+    class decay 
     { 
-    private:
       typedef typename remove_reference<_Tp>::type __remove_type;
 
     public:
@@ -434,9 +429,8 @@ namespace std
   template<typename _Qualified, typename _Unqualified,
 	   bool _IsConst = is_const<_Qualified>::value,
 	   bool _IsVol = is_volatile<_Qualified>::value>
-    struct __match_cv_qualifiers
+    class __match_cv_qualifiers
     {
-    private:
       typedef __cv_selector<_Unqualified, _IsConst, _IsVol> __match;
 
     public:
@@ -478,12 +472,11 @@ namespace std
   template<typename _Tp, 
 	   bool _IsInt = is_integral<_Tp>::value,
 	   bool _IsEnum = is_enum<_Tp>::value>
-    struct __make_unsigned_selector;
-  
+    class __make_unsigned_selector;
+
   template<typename _Tp>
-    struct __make_unsigned_selector<_Tp, true, false>
+    class __make_unsigned_selector<_Tp, true, false>
     {
-    private:
       typedef __make_unsigned<typename remove_cv<_Tp>::type> __unsignedt;
       typedef typename __unsignedt::__type __unsigned_type;
       typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
@@ -493,9 +486,8 @@ namespace std
     };
 
   template<typename _Tp>
-    struct __make_unsigned_selector<_Tp, false, true>
+    class __make_unsigned_selector<_Tp, false, true>
     {
-    private:
       // With -fshort-enums, an enum may be as small as a char.
       typedef unsigned char __smallest;
       static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
@@ -557,12 +549,11 @@ namespace std
   template<typename _Tp, 
 	   bool _IsInt = is_integral<_Tp>::value,
 	   bool _IsEnum = is_enum<_Tp>::value>
-    struct __make_signed_selector;
-  
+    class __make_signed_selector;
+
   template<typename _Tp>
-    struct __make_signed_selector<_Tp, true, false>
+    class __make_signed_selector<_Tp, true, false>
     {
-    private:
       typedef __make_signed<typename remove_cv<_Tp>::type> __signedt;
       typedef typename __signedt::__type __signed_type;
       typedef __match_cv_qualifiers<_Tp, __signed_type> __cv_signed;
@@ -572,9 +563,8 @@ namespace std
     };
 
   template<typename _Tp>
-    struct __make_signed_selector<_Tp, false, true>
+    class __make_signed_selector<_Tp, false, true>
     {
-    private:
       // With -fshort-enums, an enum may be as small as a char.
       typedef signed char __smallest;
       static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
