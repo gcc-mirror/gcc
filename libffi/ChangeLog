@@ -1,3 +1,9 @@
+2009-12-31  Anthony Green  <green@redhat.com>
+	    Blake Chaffin.
+
+	* testsuite/libffi.call/huge_struct.c: New test case from Blake
+	Chaffin @ Apple.
+
 2009-12-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/ffi_darwin.c (ffi_prep_args): Copy abi and nargs to
