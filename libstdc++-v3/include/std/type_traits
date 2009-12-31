@@ -199,8 +199,8 @@ namespace std
     class __is_constructible_helper
     : public __sfinae_types
     {
-      template<typename _Tp1, typename... __Args1>
-        static decltype(_Tp1(declval<__Args1>()...), __one()) __test(int);
+      template<typename _Tp1, typename... _Args1>
+        static decltype(_Tp1(declval<_Args1>()...), __one()) __test(int);
 
       template<typename, typename...>
         static __two __test(...);
