@@ -46,9 +46,9 @@
 #endif
 
 /* MinGW kludge.  */
-#ifdef WIN64
-#define PRIdLL "PRId64"
-#define PRIuLL "PRIu64"
+#ifdef _WIN64
+#define PRIdLL "I64d"
+#define PRIuLL "I64u"
 #else
 #define PRIdLL "lld"
 #define PRIuLL "llu"
