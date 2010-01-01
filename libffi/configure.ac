@@ -51,7 +51,7 @@ case "$host" in
 	TARGET=ARM; TARGETDIR=arm
 	;;
 
-  amd64-*-freebsd*)
+  amd64-*-freebsd* | amd64-*-openbsd*)
 	TARGET=X86_64; TARGETDIR=x86
 	;;
 
