@@ -6,7 +6,14 @@
 
 /* { dg-do run } */
 #include "ffitestcxx.h"
+
+#if defined HAVE_STDINT_H
 #include <stdint.h>
+#endif
+
+#if defined HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 void
 closure_test_fn(ffi_cif* cif __UNUSED__, void* resp __UNUSED__,

@@ -1,5 +1,11 @@
 2009-12-26  Andreas Tobler  <a.tobler@schweiz.org>
 
+	* testsuite/libffi.call/ffitest.h: Conditionally include stdint.h
+	and inttypes.h.
+	* testsuite/libffi.special/unwindtest.cc: Ditto.
+
+2009-12-26  Andreas Tobler  <a.tobler@schweiz.org>
+
 	* configure.ac: Add amd64-*-openbsd*.
 	* configure: Rebuilt.
 	* testsuite/lib/libffi-dg.exp (libffi_target_compile): Link
