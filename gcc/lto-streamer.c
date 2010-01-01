@@ -1,7 +1,7 @@
 /* Miscellaneous utilities for GIMPLE streaming.  Things that are used
    in both input and output are here.
 
-   Copyright 2009 Free Software Foundation, Inc.
+   Copyright 2009, 2010 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.
@@ -143,6 +143,9 @@ lto_get_section_name (int section_type, const char *name)
   switch (section_type)
     {
     case LTO_section_function_body:
+      gcc_assert (name != NULL);
+      if (name[0] == '*')
+	name++;
       return concat (LTO_SECTION_NAME_PREFIX, name, NULL);
 
     case LTO_section_static_initializer:
