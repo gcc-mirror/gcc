@@ -1,5 +1,68 @@
 2009-12-31  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/21772 part 3
+	* include/ext/throw_allocator.h: Add _GLIBCXX_IS_AGGREGATE.
+	* testsuite/util/testsuite_container_traits.h (traits<std::map>):
+	Add has_insert.
+	(traits<std::multimap>): Add has_insert.
+	(traits<std::multiset>): Add has_size_type_constructor.
+	* testsuite/23_containers/array/requirements/exception/
+	generation_prohibited.cc: New.
+	* testsuite/21_strings/basic_string/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/ext/vstring/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/multimap/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/set/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/forward_list/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/vector/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/deque/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/multiset/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/unordered_multiset/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+	* testsuite/23_containers/map/requirements/exception/
+	basic.cc: New.
+	generation_prohibited.cc: New.
+	propagation_consistent.cc: New.
+
+2009-12-31  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/xml/manual/intro.xml: Order TR's at the end of status.
 	* doc/xml/manual/abi.xml: Update.
 	* doc/xml/manual/evolution.xml: Put in stubs.
