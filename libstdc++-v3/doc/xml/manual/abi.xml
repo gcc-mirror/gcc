@@ -18,6 +18,9 @@
     <keyword>
       shared
     </keyword>
+    <keyword>
+      compatibility
+    </keyword>
   </keywordset>
 </sect1info>
 
@@ -176,7 +179,7 @@ compatible.
     <listitem><para>gcc-3.3.1: libgcc_s.so.1</para></listitem>
     <listitem><para>gcc-3.3.2: libgcc_s.so.1</para></listitem>
     <listitem><para>gcc-3.3.3: libgcc_s.so.1</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-3].x: on m68k-linux and
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: on m68k-linux and
     hppa-linux this is either libgcc_s.so.1 (when configuring
     <code>--with-sjlj-exceptions</code>) or libgcc_s.so.2. For all
     others, this is libgcc_s.so.1.  </para>
@@ -266,7 +269,11 @@ compatible.
     <listitem><para>gcc-4.3.1: libstdc++.so.6.0.10</para></listitem>
     <listitem><para>gcc-4.3.2: libstdc++.so.6.0.10</para></listitem>
     <listitem><para>gcc-4.3.3: libstdc++.so.6.0.10</para></listitem>
+    <listitem><para>gcc-4.3.4: libstdc++.so.6.0.10</para></listitem>
     <listitem><para>gcc-4.4.0: libstdc++.so.6.0.11</para></listitem>
+    <listitem><para>gcc-4.4.1: libstdc++.so.6.0.12</para></listitem>
+    <listitem><para>gcc-4.4.2: libstdc++.so.6.0.13</para></listitem>
+    <listitem><para>gcc-4.5.0: libstdc++.so.6.0.14</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -324,6 +331,9 @@ compatible.
     <listitem><para>gcc-4.2.0: GLIBCXX_3.4.9</para></listitem>
     <listitem><para>gcc-4.3.0: GLIBCXX_3.4.10, CXXABI_1.3.2</para></listitem>
     <listitem><para>gcc-4.4.0: GLIBCXX_3.4.11, CXXABI_1.3.3</para></listitem>
+    <listitem><para>gcc-4.4.1: GLIBCXX_3.4.12, CXXABI_1.3.3</para></listitem>
+    <listitem><para>gcc-4.4.2: GLIBCXX_3.4.13, CXXABI_1.3.3</para></listitem>
+    <listitem><para>gcc-4.5.0: GLIBCXX_3.4.14, CXXABI_1.3.4</para></listitem>
     </itemizedlist>
     </listitem>
   
@@ -350,9 +360,9 @@ compatible.
     <listitem><para>gcc-3.1.x: 100 (Error, should be 101)</para></listitem>
     <listitem><para>gcc-3.2.x: 102</para></listitem>
     <listitem><para>gcc-3.3.x: 102</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-3].x: 102 (when n=1)</para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-3].x: 1000 + n (when n&gt;1) </para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-3].x: 999999 (when n=0)</para></listitem>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: 102 (when n=1)</para></listitem>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: 1000 + n (when n&gt;1) </para></listitem>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: 999999 (when n=0)</para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>
@@ -369,7 +379,7 @@ compatible.
     <listitem><para>gcc-3.1.x: (Error, not versioned) </para></listitem>
     <listitem><para>gcc-3.2.x: <code>-fabi-version=1</code></para></listitem>
     <listitem><para>gcc-3.3.x: <code>-fabi-version=1</code></para></listitem>
-    <listitem><para>gcc-3.4.x, gcc-4.[0-3].x: <code>-fabi-version=2</code> <emphasis>(Incompatible with previous)</emphasis></para></listitem>
+    <listitem><para>gcc-3.4.x, gcc-4.[0-5].x: <code>-fabi-version=2</code> <emphasis>(Incompatible with previous)</emphasis></para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>
@@ -432,6 +442,8 @@ compatible.
     <listitem><para>gcc-4.3.2: 20080827</para></listitem>
     <listitem><para>gcc-4.3.3: 20090124</para></listitem>
     <listitem><para>gcc-4.4.0: 20090421</para></listitem>
+    <listitem><para>gcc-4.4.1: 20090722</para></listitem>
+    <listitem><para>gcc-4.4.2: 20091015</para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>
@@ -472,7 +484,7 @@ compatible.
     <listitem><para>gcc-3.3.2: "3.3.2"</para></listitem>
     <listitem><para>gcc-3.3.3: "3.3.3"</para></listitem>
     <listitem><para>gcc-3.4.x: "version-unused"</para></listitem>
-    <listitem><para>gcc-4.[0-3].x: "version-unused"</para></listitem>
+    <listitem><para>gcc-4.[0-5].x: "version-unused"</para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>
@@ -531,7 +543,11 @@ compatible.
     <listitem><para>gcc-4.3.0: include/c++/4.3.0</para></listitem>
     <listitem><para>gcc-4.3.1: include/c++/4.3.1</para></listitem>
     <listitem><para>gcc-4.3.3: include/c++/4.3.3</para></listitem>
+    <listitem><para>gcc-4.3.4: include/c++/4.3.4</para></listitem>
     <listitem><para>gcc-4.4.0: include/c++/4.4.0</para></listitem>
+    <listitem><para>gcc-4.4.1: include/c++/4.4.1</para></listitem>
+    <listitem><para>gcc-4.4.2: include/c++/4.4.2</para></listitem>
+    <listitem><para>gcc-4.5.0: include/c++/4.5.0</para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>

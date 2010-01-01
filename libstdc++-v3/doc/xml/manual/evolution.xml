@@ -449,4 +449,28 @@ Namespace pb_ds moved to __gnu_pb_ds.
 
 </sect2>
 
+
+<sect2 id="api.rel_440">
+<title><constant>4.4</constant></title>
+  <para>
+  </para>
+<para> Extensions added: <filename class="headerfile">ext/typelist.h</filename>
+and <filename class="headerfile">ext/throw_allocator.h</filename>.
+</para>
+</sect2>
+
+<sect2 id="api.rel_450">
+<title><constant>4.5</constant></title>
+  <para>
+  </para>
+
+<para> Extensions added: <filename class="headerfile">ext/typelist.h</filename>
+and <filename class="headerfile">ext/throw_allocator.h</filename>.
+</para>
+
+<para>
+Profile mode first appears.
+</para>
+</sect2>
+
 </sect1>
