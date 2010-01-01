@@ -1,3 +1,19 @@
+2010-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/21_strings/basic_string/requirements/exception/
+	propagation_consistent.cc: Remove, cannot instantiate basic_string
+	for non-PODs (21/1).
+	* testsuite/21_strings/basic_string/requirements/exception/
+	basic.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/exception/
+	generation_prohibited.cc: Likewise.
+	* testsuite/ext/vstring/requirements/exception/
+	propagation_consistent.cc: Likewise.
+	* testsuite/ext/vstring/requirements/exception/basic.cc:
+	Likewise.
+	* testsuite/ext/vstring/requirements/exception/
+	generation_prohibited.cc: Likewise.
+
 2009-12-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/21772 part 3
