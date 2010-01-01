@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -1885,45 +1885,50 @@ propagate_all_subaccesses (void)
 static bool
 analyze_all_variable_accesses (void)
 {
-  tree var;
-  referenced_var_iterator rvi;
   int res = 0;
+  bitmap tmp = BITMAP_ALLOC (NULL);
+  bitmap_iterator bi;
+  unsigned i;
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    if (bitmap_bit_p (candidate_bitmap, DECL_UID (var)))
-      {
-	struct access *access;
+  bitmap_copy (tmp, candidate_bitmap);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      tree var = referenced_var (i);
+      struct access *access;
 
-	access = sort_and_splice_var_accesses (var);
-	if (access)
-	  build_access_trees (access);
-	else
-	  disqualify_candidate (var,
-				"No or inhibitingly overlapping accesses.");
-      }
+      access = sort_and_splice_var_accesses (var);
+      if (access)
+	build_access_trees (access);
+      else
+	disqualify_candidate (var,
+			      "No or inhibitingly overlapping accesses.");
+    }
 
   propagate_all_subaccesses ();
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    if (bitmap_bit_p (candidate_bitmap, DECL_UID (var)))
-      {
-	struct access *access = get_first_repr_for_decl (var);
+  bitmap_copy (tmp, candidate_bitmap);
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      tree var = referenced_var (i);
+      struct access *access = get_first_repr_for_decl (var);
 
-	if (analyze_access_trees (access))
-	  {
-	    res++;
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      {
-		fprintf (dump_file, "\nAccess trees for ");
-		print_generic_expr (dump_file, var, 0);
-		fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
-		dump_access_tree (dump_file, access);
-		fprintf (dump_file, "\n");
-	      }
-	  }
-	else
-	  disqualify_candidate (var, "No scalar replacements to be created.");
-      }
+      if (analyze_access_trees (access))
+	{
+	  res++;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nAccess trees for ");
+	      print_generic_expr (dump_file, var, 0);
+	      fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+	      dump_access_tree (dump_file, access);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+      else
+	disqualify_candidate (var, "No scalar replacements to be created.");
+    }
+
+  BITMAP_FREE (tmp);
 
   if (res)
     {
