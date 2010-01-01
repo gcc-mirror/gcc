@@ -2,10 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
-#include <stdint.h>
-#include <inttypes.h>
 #include <ffi.h>
 #include "fficonfig.h"
+
+#if defined HAVE_STDINT_H
+#include <stdint.h>
+#endif
+
+#if defined HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
 
 #define MAX_ARGS 256
 
