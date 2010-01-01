@@ -1,6 +1,6 @@
 /* Parse C expressions for cpplib.
    Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
-   2002, 2004, 2008, 2009 Free Software Foundation.
+   2002, 2004, 2008, 2009, 2010 Free Software Foundation.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it
@@ -229,6 +229,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
   const uchar *limit;
   unsigned int max_digit, result, radix;
   enum {NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON} float_flag;
+  bool seen_digit;
 
   /* If the lexer has done its job, length one can only be a single
      digit.  Fast-path this very common case.  */
@@ -239,6 +240,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
   float_flag = NOT_FLOAT;
   max_digit = 0;
   radix = 10;
+  seen_digit = false;
 
   /* First, interpret the radix.  */
   if (*str == '0')
@@ -267,6 +269,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 
       if (ISDIGIT (c) || (ISXDIGIT (c) && radix == 16))
 	{
+	  seen_digit = true;
 	  c = hex_value (c);
 	  if (c > max_digit)
 	    max_digit = c;
@@ -331,6 +334,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 		     "invalid prefix \"0b\" for floating constant");
 	  return CPP_N_INVALID;
 	}
+
+      if (radix == 16 && !seen_digit)
+	SYNTAX_ERROR ("no digits in hexadecimal floating constant");
 
       if (radix == 16 && CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, c99))
 	cpp_error (pfile, CPP_DL_PEDWARN,
