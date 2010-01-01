@@ -35,15 +35,15 @@
 		parse="xml" href="status_cxx1998.xml">
     </xi:include>
 
-    <!-- Section 01.2 : Status C++ TR1 -->
-    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
-		parse="xml" href="status_cxxtr1.xml">
-    </xi:include>
-
-    <!-- Section 01.3 : Status C++ 200x -->
+    <!-- Section 01.2 : Status C++ 200x -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 		parse="xml" href="status_cxx200x.xml">
     </xi:include>    
+
+    <!-- Section 01.3 : Status C++ TR1 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+		parse="xml" href="status_cxxtr1.xml">
+    </xi:include>
 
     <!-- Section 01.4 : Status C++ TR24733 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
