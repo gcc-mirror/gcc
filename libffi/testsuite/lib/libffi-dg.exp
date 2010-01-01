@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2005, 2009 Free Software Foundation, Inc.
+#   Copyright (C) 2003, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -201,6 +201,10 @@ proc libffi_target_compile { source dest type options } {
     # to just make the linker find libgcc using -L options.
     if { [string match "*-*-darwin*" $target_triplet] } {
 	lappend options "libs= -shared-libgcc"
+    }
+
+    if { [string match "*-*-openbsd*" $target_triplet] } {
+	lappend options "libs= -lpthread"
     }
 
     lappend options "libs= -lffi"
