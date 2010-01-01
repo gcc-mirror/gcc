@@ -1,3 +1,7 @@
+2009-12-31  Anthony Green  <green@redhat.com>
+
+	* README: Update for libffi 3.0.9.
+
 2009-12-27  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac (HAVE_LONG_DOUBLE): Define for mips when
