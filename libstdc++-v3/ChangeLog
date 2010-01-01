@@ -1,5 +1,9 @@
 2010-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	Revert last change, reinstantiate basic_string and vstring tests.
+
+2010-01-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/21_strings/basic_string/requirements/exception/
 	propagation_consistent.cc: Remove, cannot instantiate basic_string
 	for non-PODs (21/1).
