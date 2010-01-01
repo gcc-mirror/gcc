@@ -1,5 +1,11 @@
 2010-01-01  Richard Guenther  <rguenther@suse.de>
 
+	PR debug/42455
+	* tree-sra.c (analyze_all_variable_accesses): Work in DECL_UID
+	order.
+
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
 	PR c/42570
 	* c-decl.c (grokdeclarator): For zero-size arrays force
 	structural equality checks as layout_type does.
