@@ -1,5 +1,9 @@
 2010-01-01  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* builtins.c: Update copyright to 2010.
+
+2010-01-01  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR lto/42531
 	* lto-streamer-out.c (produce_asm): Revert the last change.
 	(copy_function): Likewise.
