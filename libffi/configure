@@ -11388,6 +11388,8 @@ case "$host" in
 	TARGET=MIPS; TARGETDIR=mips
 	;;
   mips*-*-linux*)
+	# Support 128-bit long double for NewABI.
+	HAVE_LONG_DOUBLE='defined(__mips64)'
 	TARGET=MIPS; TARGETDIR=mips
 	;;
 
