@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -5394,6 +5394,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		    gcc_assert (itype);
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
+		    SET_TYPE_STRUCTURAL_EQUALITY (type);
 		  }
 		if (array_parm_vla_unspec_p)
 		  {
@@ -5401,6 +5402,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		    /* The type is complete.  C99 6.7.5.2p4  */
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
+		    SET_TYPE_STRUCTURAL_EQUALITY (type);
 		  }
 	      }
 

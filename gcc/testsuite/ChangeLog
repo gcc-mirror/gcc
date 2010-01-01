@@ -1,5 +1,10 @@
 2010-01-01  Richard Guenther  <rguenther@suse.de>
 
+	PR c/42570
+	* gcc.c-torture/execute/pr42570.c: New testcase.
+
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42559
 	* gcc.c-torture/compile/pr42559.c: New testcase.
 

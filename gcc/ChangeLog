@@ -1,3 +1,9 @@
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR c/42570
+	* c-decl.c (grokdeclarator): For zero-size arrays force
+	structural equality checks as layout_type does.
+
 2010-01-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* builtins.c: Update copyright to 2010.
