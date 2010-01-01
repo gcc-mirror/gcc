@@ -1,3 +1,18 @@
+2009-12-26  Anthony Green  <green@redhat.com>
+
+	* testsuite/libffi.call/cls_double_va.c,
+	testsuite/libffi.call/cls_longdouble.c,
+	testsuite/libffi.call/cls_longdouble_va.c,
+	testsuite/libffi.call/cls_pointer.c,
+	testsuite/libffi.call/cls_pointer_stack.c: Remove xfail for
+	mips*-*-* and arm*-*-*.
+	* testsuite/libffi.call/cls_align_longdouble_split.c,
+	testsuite/libffi.call/cls_align_longdouble_split2.c,
+	testsuite/libffi.call/stret_medium2.c,
+	testsuite/libffi.call/stret_medium.c,
+	testsuite/libffi.call/stret_large.c,
+	testsuite/libffi.call/stret_large2.c: Remove xfail for arm*-*-*.
+
 2009-12-31  Kay Tietz  <ktietz70@googlemail.com>
 
 	* testsuite/libffi.call/ffitest.h,
