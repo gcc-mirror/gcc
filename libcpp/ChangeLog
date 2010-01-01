@@ -1,3 +1,9 @@
+2010-01-01  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/41947
+	* expr.c (cpp_classify_number): Give error for hexadecimal
+	floating-point constant with no digits before or after point.
+
 2009-11-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* macro.c (enter_macro_context): Call cb.used callback if defined.
