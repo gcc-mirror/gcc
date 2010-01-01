@@ -1,3 +1,9 @@
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42559
+	* builtins.c (get_object_alignment): Do not use DECL_ALIGN
+	for LABEL_DECLs.
+
 2009-12-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-dump.c (dump_options): Don't set TDF_NOUID for all.
