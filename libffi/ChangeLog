@@ -1,3 +1,9 @@
+2009-12-26  Anthony Green  <green@redhat.com>
+
+	* testsuite/libffi.call/cls_longdouble_va.c: Mark as xfail for
+	avr32*-*-*.
+	* testsuite/libffi.call/cls_double_va.c: Ditto.
+
 2009-12-26  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/libffi.call/ffitest.h: Conditionally include stdint.h
