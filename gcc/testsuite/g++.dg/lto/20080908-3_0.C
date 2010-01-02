@@ -1,8 +1,10 @@
 /* { dg-lto-do run }  */
 
+volatile double bar;
+
 int foo()
 {
- double bar, baz = -__builtin_huge_val();
+ double baz = -__builtin_huge_val();
  return baz <= -bar;
 }
 

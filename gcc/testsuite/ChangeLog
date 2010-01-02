@@ -1,3 +1,8 @@
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/41651
+	* g++.dg/lto/20080908-3_0.C: Avoid uninitialized vars.
+
 2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42448
