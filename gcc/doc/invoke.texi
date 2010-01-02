@@ -5666,8 +5666,9 @@ each of them.
 Not all optimizations are controlled directly by a flag.  Only
 optimizations that have a flag are listed in this section.
 
-Most of the optimizations are not enabled if a @option{-O} level is not set on
-the command line, even if individual optimization flags are specified.
+Most optimizations are only enabled if an @option{-O} level is set on
+the command line.  Otherwise they are disabled, even if individual             
+optimization flags are specified.
 
 Depending on the target and how GCC was configured, a slightly different
 set of optimizations may be enabled at each @option{-O} level than
