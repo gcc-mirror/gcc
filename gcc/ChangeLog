@@ -1,3 +1,8 @@
+2010-01-02  Gerald Pfeifer  <gerald@pfeifer.com>
+            Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/invoke.texi (Optimize Options): Reword introduction a bit.
+
 2010-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42577
