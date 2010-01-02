@@ -1,3 +1,11 @@
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-12-09  Xinliang David Li  <davidxl@google.com>
+
+	PR tree-optimization/42337
+	* g++.dg/tree-ssa/pr42337.C: New test.
+
 2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42448
