@@ -1,7 +1,7 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
@@ -2634,8 +2634,8 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
              the LTO objects list if found.  */
           for (p = buf; (ch = *p) != '\0' && ch != '\n'; p++)
             if (ch == ' '
-		&& (strncmp (p +1 , "gnu_lto_v1", 10) == 0)
-		&& ISSPACE( p[11]))
+		&& (strncmp (p + 1, "__gnu_lto_v1", 12) == 0)
+		&& ISSPACE (p[13]))
               {
                 add_lto_object (&lto_objects, prog_name);
 
