@@ -1,7 +1,16 @@
+2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42448
+	* config/alpha/predicates.md (aligned_memory_operand): Return false
+	for CQImode.
+	(unaligned_memory_operand): Return true for CQImode.
+	* config/alpha/alpha.c (get_aligned_mem): Assert that location
+	doesn not cross aligned SImode word boundary.
+
 2010-01-02  Anatoly Sokolov  <aesok@post.ru>
 
-	* config/avr/avr.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
-	XEXP_) : Remove.
+	* config/avr/avr.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P, XEXP_):
+	Remove.
 	* config/avr/avr-protos.h (avr_init_once, avr_optimization_options,
 	avr_change_section, avr_reg_class_from_letter) : Remove declaration.
 
@@ -15,8 +24,7 @@
 2010-01-01  Richard Guenther  <rguenther@suse.de>
 
 	PR debug/42455
-	* tree-sra.c (analyze_all_variable_accesses): Work in DECL_UID
-	order.
+	* tree-sra.c (analyze_all_variable_accesses): Work in DECL_UID order.
 
 2010-01-01  Richard Guenther  <rguenther@suse.de>
 

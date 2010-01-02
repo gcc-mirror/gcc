@@ -442,6 +442,10 @@
 
   if (MEM_ALIGN (op) >= 32)
     return 1;
+
+  if (mode == CQImode)
+    return 0;
+
   op = XEXP (op, 0);
 
   /* LEGITIMIZE_RELOAD_ADDRESS creates (plus (plus reg const_hi) const_lo)
@@ -470,6 +474,10 @@
 
   if (MEM_ALIGN (op) >= 32)
     return 0;
+
+  if (mode == CQImode)
+    return 1;
+
   op = XEXP (op, 0);
 
   /* LEGITIMIZE_RELOAD_ADDRESS creates (plus (plus reg const_hi) const_lo)

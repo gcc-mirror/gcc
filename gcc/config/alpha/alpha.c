@@ -1475,6 +1475,10 @@ get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
   else
     offset = disp & 3;
 
+  /* The location should not cross aligned word boundary.  */
+  gcc_assert (offset + GET_MODE_SIZE (GET_MODE (ref))
+	      <= GET_MODE_SIZE (SImode));
+
   /* Access the entire aligned word.  */
   *paligned_mem = widen_memory_access (ref, SImode, -offset);
 
