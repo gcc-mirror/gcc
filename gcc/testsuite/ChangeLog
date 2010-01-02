@@ -1,3 +1,9 @@
+2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42448
+	* gcc.target/alpha/pr42448-1.c: New test.
+	* gcc.target/alpha/pr42448-2.c: Ditto.
+
 2010-01-01  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/41947
