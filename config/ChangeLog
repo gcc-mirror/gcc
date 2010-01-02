@@ -1,3 +1,8 @@
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41529
+	* elf.m4: New file.
+
 2009-11-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* largefile.m4 (ACX_LARGEFILE): Require AC_CANONICAL_HOST and

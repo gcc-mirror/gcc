@@ -5889,6 +5889,35 @@ else
 fi
 
 
+
+
+
+target_elf=no
+case $target in
+  *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
+  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
+  alpha*-dec-osf* | *-interix*)
+    target_elf=no
+    ;;
+  *)
+    target_elf=yes
+    ;;
+esac
+
+if test $target_elf = yes; then :
+
+else
+  if test x"$default_enable_lto" = x"yes" ; then
+  enable_lto=no
+else
+  if test x"$enable_lto" = x"yes"; then
+    as_fn_error "LTO support requires an ELF target." "$LINENO" 5
+  fi
+fi
+default_enable_lto=no
+fi
+
+
 if test x"$enable_lto" = x"yes" ; then
   # Make sure that libelf.h and gelf.h are available.
 

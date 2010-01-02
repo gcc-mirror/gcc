@@ -1,3 +1,10 @@
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41529
+	* configure.ac: Include config/elf.m4.  Disable LTO if not
+	builting for an elf target.
+	* configure: Regenerate.
+
 2009-12-27  Christopher Faylor  <me+cygwin@cgf.cx>
 
 	* MAINTAINERS: Change my email address.
