@@ -1,5 +1,7 @@
 2010-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* config/pa/t-slibgcc-dwarf-ver (SHLIB_SOVERSION): Bump by two.
+
 	* collect2.c (scan_libraries): Add missing argument in call to
 	scan_prog_file.
 
