@@ -1,3 +1,10 @@
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42577
+	* tree-vrp.c (check_all_array_refs): Skip non-excutable blocks.
+	(simplify_switch_using_ranges): Mark to be removed edges
+	as non-executable.
+
 2010-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/t-slibgcc-dwarf-ver (SHLIB_SOVERSION): Bump by two.
