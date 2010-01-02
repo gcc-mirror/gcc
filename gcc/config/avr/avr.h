@@ -1,7 +1,8 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
-   2008, 2009 Free Software Foundation, Inc.
+   2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
 This file is part of GCC.
@@ -413,16 +414,6 @@ extern int avr_reg_order[];
   (REGNO (X) >= FIRST_PSEUDO_REGISTER || REG_OK_FOR_BASE_STRICT_P(X))
 
 #define REG_OK_FOR_BASE_STRICT_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#ifdef REG_OK_STRICT
-#  define REG_OK_FOR_BASE_P(X) REG_OK_FOR_BASE_STRICT_P (X)
-#else
-#  define REG_OK_FOR_BASE_P(X) REG_OK_FOR_BASE_NOSTRICT_P (X)
-#endif
-
-#define REG_OK_FOR_INDEX_P(X) 0
-
-#define XEXP_(X,Y) (X)
 
 /* LEGITIMIZE_RELOAD_ADDRESS will allow register R26/27 to be used, where it
    is no worse than normal base pointers R28/29 and R30/31. For example:

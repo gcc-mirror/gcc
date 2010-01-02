@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
@@ -22,15 +22,11 @@
 
 
 extern int function_arg_regno_p (int r);
-extern void avr_init_once (void);
 extern void avr_override_options (void);
 extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
-extern void avr_optimization_options (int level, int size);
-extern char *avr_change_section (char *sect_name);
 extern int avr_ret_register (void);
 extern bool class_likely_spilled_p (int c);
 extern enum reg_class avr_regno_reg_class (int r);
-extern enum reg_class avr_reg_class_from_letter (int c);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_asm_declare_function_name (FILE *, const char *, tree);
 extern void order_regs_for_local_alloc (void);
