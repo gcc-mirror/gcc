@@ -1,3 +1,67 @@
+2010-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* collect2.c (scan_libraries): Add missing argument in call to
+	scan_prog_file.
+
+2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42448
+	* config/alpha/predicates.md (aligned_memory_operand): Return false
+	for CQImode.
+	(unaligned_memory_operand): Return true for CQImode.
+	* config/alpha/alpha.c (get_aligned_mem): Assert that location
+	doesn not cross aligned SImode word boundary.
+
+2010-01-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P, XEXP_):
+	Remove.
+	* config/avr/avr-protos.h (avr_init_once, avr_optimization_options,
+	avr_change_section, avr_reg_class_from_letter) : Remove declaration.
+
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41597
+	* toplev.c (compile_file): Emit LTO marker properly.  Change
+	it to __gnu_lto_v1.
+	* collect2.c (scan_prog_file): Adjust for changed LTO marker.
+
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR debug/42455
+	* tree-sra.c (analyze_all_variable_accesses): Work in DECL_UID order.
+
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR c/42570
+	* c-decl.c (grokdeclarator): For zero-size arrays force
+	structural equality checks as layout_type does.
+
+2010-01-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* builtins.c: Update copyright to 2010.
+
+2010-01-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/42531
+	* lto-streamer-out.c (produce_asm): Revert the last change.
+	(copy_function): Likewise.
+
+	* lto-streamer.c (lto_get_section_name): Skip any leading
+	asterisk in name.
+
+2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42559
+	* builtins.c (get_object_alignment): Do not use DECL_ALIGN
+	for LABEL_DECLs.
+
+
+Copyright (C) 2010 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
 2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42448
