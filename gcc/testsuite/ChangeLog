@@ -1,3 +1,9 @@
+2010-01-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42448
+	* gcc.target/alpha/pr42448-1.c: New test.
+	* gcc.target/alpha/pr42448-2.c: Ditto.
+
 2009-12-30  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/42099
