@@ -1,3 +1,10 @@
+2010-01-02  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41597
+	* toplev.c (compile_file): Emit LTO marker properly.  Change
+	it to __gnu_lto_v1.
+	* collect2.c (scan_prog_file): Adjust for changed LTO marker.
+
 2010-01-01  Richard Guenther  <rguenther@suse.de>
 
 	PR debug/42455
