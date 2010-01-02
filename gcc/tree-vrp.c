@@ -5122,36 +5122,16 @@ check_all_array_refs (void)
 
   FOR_EACH_BB (bb)
     {
-      /* Skip bb's that are clearly unreachable.  */
-      if (single_pred_p (bb))
-      {
-	int i;
-	bool reachable = true;
-	edge e2;
-	edge e = EDGE_PRED (bb, 0);
-	basic_block pred_bb = e->src;
-	gimple ls = NULL;
+      edge_iterator ei;
+      edge e;
+      bool executable = false;
 
-	for (i = 0; VEC_iterate (edge, to_remove_edges, i, e2); ++i)
-	  if (e == e2)
-	    {
-	      reachable = false;
-	      break;
-	    }
+      /* Skip blocks that were found to be unreachable.  */
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	executable |= !!(e->flags & EDGE_EXECUTABLE);
+      if (!executable)
+	continue;
 
-	if (!reachable)
-	  continue;
-
-	if (!gsi_end_p (gsi_last_bb (pred_bb)))
-	  ls = gsi_stmt (gsi_last_bb (pred_bb));
-
-	if (ls && gimple_code (ls) == GIMPLE_COND
-	    && ((gimple_cond_false_p (ls)
-		 && (EDGE_PRED (bb, 0)->flags & EDGE_TRUE_VALUE))
-		|| (gimple_cond_true_p (ls)
-		    && (EDGE_PRED (bb, 0)->flags & EDGE_FALSE_VALUE))))
-	  continue;
-      }
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
 	  gimple stmt = gsi_stmt (si);
@@ -6926,6 +6906,7 @@ simplify_switch_using_ranges (gimple stmt)
 	  fprintf (dump_file, "removing unreachable case label\n");
 	}
       VEC_safe_push (edge, heap, to_remove_edges, e);
+      e->flags &= ~EDGE_EXECUTABLE;
     }
 
   /* And queue an update for the stmt.  */
@@ -7255,7 +7236,7 @@ vrp_finalize (void)
   substitute_and_fold (single_val_range, vrp_fold_stmt);
 
   if (warn_array_bounds)
-      check_all_array_refs ();
+    check_all_array_refs ();
 
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
