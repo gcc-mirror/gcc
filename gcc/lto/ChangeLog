@@ -1,3 +1,9 @@
+2010-01-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/42580
+	* lto-elf.c (lto_elf_file_open): Stop if the command line
+	option file is missing.
+
 2009-12-15  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (lto_fixup_field_decl): Fixup DECL_FIELD_OFFSET.
