@@ -22,6 +22,7 @@
 m4_include(config/acx.m4)
 m4_include(config/override.m4)
 m4_include(config/proginstall.m4)
+m4_include(config/elf.m4)
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.64)
@@ -1600,6 +1601,16 @@ AC_ARG_ENABLE(lto,
 [  --enable-lto            enable link time optimization support],
 enable_lto=$enableval,
 enable_lto=yes; default_enable_lto=yes)
+
+ACX_ELF_TARGET_IFELSE([],
+if test x"$default_enable_lto" = x"yes" ; then
+  enable_lto=no
+else
+  if test x"$enable_lto" = x"yes"; then
+    AC_MSG_ERROR([LTO support requires an ELF target.])
+  fi
+fi
+default_enable_lto=no)
 
 if test x"$enable_lto" = x"yes" ; then
   # Make sure that libelf.h and gelf.h are available.
