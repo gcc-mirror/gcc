@@ -556,6 +556,12 @@ lto_elf_file_open (const char *filename, bool writable)
     }
   else
     {
+      /* The file started with '@' is a file containing command line
+	 options.  Stop if it doesn't exist.  */
+      if (offset_p == filename)
+	fatal_error ("command line option file '%s' does not exist",
+		     filename);
+
       fname = (char *) xmalloc (offset_p - filename + 1);
       memcpy (fname, filename, offset_p - filename);
       fname[offset_p - filename] = '\0';
