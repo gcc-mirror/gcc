@@ -1,3 +1,9 @@
+2010-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42589
+	* tree-ssa-math-opts.c (execute_optimize_bswap): Allow
+	double-word expansion of bswap32.
+
 2010-01-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* postreload-gcse.c (insert_expr_in_table): Replace BLOCK_NUM

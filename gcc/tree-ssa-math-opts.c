@@ -1111,8 +1111,9 @@ execute_optimize_bswap (void)
 	       && optab_handler (bswap_optab, SImode)->insn_code !=
 	       CODE_FOR_nothing);
   bswap64_p = (built_in_decls[BUILT_IN_BSWAP64]
-	       && optab_handler (bswap_optab, DImode)->insn_code !=
-	       CODE_FOR_nothing);
+	       && (optab_handler (bswap_optab, DImode)->insn_code !=
+		   CODE_FOR_nothing
+		   || (bswap32_p && word_mode == SImode)));
 
   if (!bswap32_p && !bswap64_p)
     return 0;
