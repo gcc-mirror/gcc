@@ -382,11 +382,14 @@ typedef struct bb_bitmap_sets
   bitmap expr_dies;
 
   /* True if we have visited this block during ANTIC calculation.  */
-  unsigned int visited:1;
+  unsigned int visited : 1;
 
   /* True we have deferred processing this block during ANTIC
      calculation until its successor is processed.  */
   unsigned int deferred : 1;
+
+  /* True when the block contains a call that might not return.  */
+  unsigned int contains_may_not_return_call : 1;
 } *bb_value_sets_t;
 
 #define EXP_GEN(BB)	((bb_value_sets_t) ((BB)->aux))->exp_gen
@@ -399,6 +402,7 @@ typedef struct bb_bitmap_sets
 #define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
 #define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
 #define BB_DEFERRED(BB) ((bb_value_sets_t) ((BB)->aux))->deferred
+#define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
 
 
 /* Basic block list in postorder.  */
@@ -2032,6 +2036,13 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 		  return false;
 	      }
 	  }
+	/* If the NARY may trap make sure the block does not contain
+	   a possible exit point.
+	   ???  This is overly conservative if we translate AVAIL_OUT
+	   as the available expression might be after the exit point.  */
+	if (BB_MAY_NOTRETURN (block)
+	    && vn_nary_may_trap (nary))
+	  return false;
 	return true;
       }
       break;
@@ -2469,6 +2480,7 @@ compute_antic (void)
 
       BB_VISITED (block) = 0;
       BB_DEFERRED (block) = 0;
+
       /* While we are here, give empty ANTIC_IN sets to each block.  */
       ANTIC_IN (block) = bitmap_set_new ();
       PA_IN (block) = bitmap_set_new ();
@@ -3187,16 +3199,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	}
     }
 
-  /* Make sure we are not inserting trapping expressions.  */
-  FOR_EACH_EDGE (pred, ei, block->preds)
-    {
-      bprime = pred->src;
-      eprime = avail[bprime->index];
-      if (eprime->kind == NARY
-	  && vn_nary_may_trap (PRE_EXPR_NARY (eprime)))
-	return false;
-    }
-
   /* Make the necessary insertions.  */
   FOR_EACH_EDGE (pred, ei, block->preds)
     {
@@ -3804,6 +3806,8 @@ compute_avail (void)
       for (gsi = gsi_start_phis (block); !gsi_end_p (gsi); gsi_next (&gsi))
 	make_values_for_phi (gsi_stmt (gsi), block);
 
+      BB_MAY_NOTRETURN (block) = 0;
+
       /* Now compute value numbers and populate value sets with all
 	 the expressions computed in BLOCK.  */
       for (gsi = gsi_start_bb (block); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3813,6 +3817,23 @@ compute_avail (void)
 
 	  stmt = gsi_stmt (gsi);
 	  gimple_set_uid (stmt, stmt_uid++);
+
+	  /* Cache whether the basic-block has any non-visible side-effect
+	     or control flow.
+	     If this isn't a call or it is the last stmt in the
+	     basic-block then the CFG represents things correctly.  */
+	  if (is_gimple_call (stmt)
+	      && !stmt_ends_bb_p (stmt))
+	    {
+	      /* Non-looping const functions always return normally.
+		 Otherwise the call might not return or have side-effects
+		 that forbids hoisting possibly trapping expressions
+		 before it.  */
+	      int flags = gimple_call_flags (stmt);
+	      if (!(flags & ECF_CONST)
+		  || (flags & ECF_LOOPING_CONST_OR_PURE))
+		BB_MAY_NOTRETURN (block) = 1;
+	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	    {

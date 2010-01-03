@@ -1,3 +1,15 @@
+2010-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42438
+	* tree-ssa-pre.c (struct bb_bitmap_sets): Add
+	contains_may_not_return_call flag.
+	(BB_MAY_NOTRETURN): New.
+	(valid_in_sets): Trapping nary operations are not valid
+	in blocks that may not return.
+	(insert_into_preds_of_block): Remove check for trapping
+	expressions.
+	(compute_avail): Compute also BB_MAY_NOTRETURN.
+
 2010-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi: Add 2010 to copyright years.
