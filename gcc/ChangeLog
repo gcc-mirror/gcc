@@ -1,3 +1,7 @@
+2010-01-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi: Add 2010 to copyright years.
+
 2010-01-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c: Fix formatting nits.
