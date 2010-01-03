@@ -1,1 +1,14 @@
+2010-01-03  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/42420
+	* io/unix.c: Defines for MINGW stat and fstat.
+	(gfstat_t): New typedef.
+	(id_from_fd): Use gfstat_t instead of struct stat.
+	(fd_to_stream): Likewise.
+	(compare_file_filename): Likewise.
+	(find_file): Likewise.
+	(file_exists): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
 

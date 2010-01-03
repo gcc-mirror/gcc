@@ -42,13 +42,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* For mingw, we don't identify files by their inode number, but by a
    64-bit identifier created from a BY_HANDLE_FILE_INFORMATION. */
-#if defined(__MINGW32__) && !HAVE_WORKING_STAT
+#ifdef __MINGW32__
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #define lseek _lseeki64
+#define fstat _fstati64
+#define stat _stati64
+typedef struct _stati64 gfstat_t;
 
+#ifndef HAVE_WORKING_STAT
 static uint64_t
 id_from_handle (HANDLE hFile)
 {
@@ -90,6 +94,10 @@ id_from_fd (const int fd)
   return id_from_handle ((HANDLE) _get_osfhandle (fd));
 }
 
+#endif
+
+#else
+typedef struct stat gfstat_t;
 #endif
 
 #ifndef PATH_MAX
@@ -781,7 +789,7 @@ open_internal (char *base, int length, gfc_offset offset)
 static stream *
 fd_to_stream (int fd, int prot)
 {
-  struct stat statbuf;
+  gfstat_t statbuf;
   unix_stream *s;
 
   s = get_mem (sizeof (unix_stream));
@@ -1220,9 +1228,9 @@ int
 compare_file_filename (gfc_unit *u, const char *name, int len)
 {
   char path[PATH_MAX + 1];
-  struct stat st1;
+  gfstat_t st1;
 #ifdef HAVE_WORKING_STAT
-  struct stat st2;
+  gfstat_t st2;
 #else
 # ifdef __MINGW32__
   uint64_t id1, id2;
@@ -1261,7 +1269,7 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
 
 
 #ifdef HAVE_WORKING_STAT
-# define FIND_FILE0_DECL struct stat *st
+# define FIND_FILE0_DECL gfstat_t *st
 # define FIND_FILE0_ARGS st
 #else
 # define FIND_FILE0_DECL uint64_t id, const char *file, gfc_charlen_type file_len
@@ -1318,7 +1326,7 @@ gfc_unit *
 find_file (const char *file, gfc_charlen_type file_len)
 {
   char path[PATH_MAX + 1];
-  struct stat st[2];
+  gfstat_t st[2];
   gfc_unit *u;
 #if defined(__MINGW32__) && !HAVE_WORKING_STAT
   uint64_t id = 0ULL;
@@ -1455,7 +1463,7 @@ int
 file_exists (const char *file, gfc_charlen_type file_len)
 {
   char path[PATH_MAX + 1];
-  struct stat statbuf;
+  gfstat_t statbuf;
 
   if (unpack_filename (path, file, file_len))
     return 0;
@@ -1478,7 +1486,7 @@ const char *
 inquire_sequential (const char *string, int len)
 {
   char path[PATH_MAX + 1];
-  struct stat statbuf;
+  gfstat_t statbuf;
 
   if (string == NULL ||
       unpack_filename (path, string, len) || stat (path, &statbuf) < 0)
@@ -1502,7 +1510,7 @@ const char *
 inquire_direct (const char *string, int len)
 {
   char path[PATH_MAX + 1];
-  struct stat statbuf;
+  gfstat_t statbuf;
 
   if (string == NULL ||
       unpack_filename (path, string, len) || stat (path, &statbuf) < 0)
@@ -1526,7 +1534,7 @@ const char *
 inquire_formatted (const char *string, int len)
 {
   char path[PATH_MAX + 1];
-  struct stat statbuf;
+  gfstat_t statbuf;
 
   if (string == NULL ||
       unpack_filename (path, string, len) || stat (path, &statbuf) < 0)
