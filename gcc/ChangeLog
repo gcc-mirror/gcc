@@ -1,3 +1,17 @@
+2010-01-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* postreload-gcse.c (insert_expr_in_table): Replace BLOCK_NUM
+	with BLOCK_FOR_INSN.
+	* auto-inc-dec.c (attempt_change, get_next_ref, find_inc): Likewise.
+	* ifcvt.c (noce_get_alt_condition, noce_try_abs,
+	noce_process_if_block): Likewise.
+	* gcse.c (compute_local_properties, insert_expr_in_table,
+	insert_set_in_table, canon_list_insert, find_avail_set,
+	pre_insert_copy_insn): Likewise.
+
+	* basic-block.h (BLOCK_NUM): Move from here...
+	* sched-int.h (BLOCK_NUM): ... to here to localize it in the scheduler.
+
 2010-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42438

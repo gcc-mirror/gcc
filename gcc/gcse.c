@@ -730,7 +730,7 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  if (antloc)
 	    for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 	      {
-		SET_BIT (antloc[BLOCK_NUM (occr->insn)], indx);
+		SET_BIT (antloc[BLOCK_FOR_INSN (occr->insn)->index], indx);
 
 		/* While we're scanning the table, this is a good place to
 		   initialize this.  */
@@ -742,7 +742,7 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  if (comp)
 	    for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
 	      {
-		SET_BIT (comp[BLOCK_NUM (occr->insn)], indx);
+		SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
 
 		/* While we're scanning the table, this is a good place to
 		   initialize this.  */
@@ -1162,7 +1162,8 @@ insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
     {
       antic_occr = cur_expr->antic_occr;
 
-      if (antic_occr && BLOCK_NUM (antic_occr->insn) != BLOCK_NUM (insn))
+      if (antic_occr
+	  && BLOCK_FOR_INSN (antic_occr->insn) != BLOCK_FOR_INSN (insn))
 	antic_occr = NULL;
 
       if (antic_occr)
@@ -1186,7 +1187,8 @@ insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
     {
       avail_occr = cur_expr->avail_occr;
 
-      if (avail_occr && BLOCK_NUM (avail_occr->insn) == BLOCK_NUM (insn))
+      if (avail_occr
+	  && BLOCK_FOR_INSN (avail_occr->insn) == BLOCK_FOR_INSN (insn))
 	{
 	  /* Found another instance of the expression in the same basic block.
 	     Prefer this occurrence to the currently recorded one.  We want
@@ -1259,7 +1261,8 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
   /* Now record the occurrence.  */
   cur_occr = cur_expr->avail_occr;
 
-  if (cur_occr && BLOCK_NUM (cur_occr->insn) == BLOCK_NUM (insn))
+  if (cur_occr
+      && BLOCK_FOR_INSN (cur_occr->insn) == BLOCK_FOR_INSN (insn))
     {
       /* Found another instance of the expression in the same basic block.
 	 Prefer this occurrence to the currently recorded one.  We want
@@ -1592,7 +1595,7 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx unused1 ATTRIBUTE_UNUSED
   dest_addr = get_addr (XEXP (dest, 0));
   dest_addr = canon_rtx (dest_addr);
   insn = (rtx) v_insn;
-  bb = BLOCK_NUM (insn);
+  bb = BLOCK_FOR_INSN (insn)->index;
 
   canon_modify_mem_list[bb] =
     alloc_EXPR_LIST (VOIDmode, dest_addr, canon_modify_mem_list[bb]);
@@ -1607,7 +1610,7 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx unused1 ATTRIBUTE_UNUSED
 static void
 record_last_mem_set_info (rtx insn)
 {
-  int bb = BLOCK_NUM (insn);
+  int bb = BLOCK_FOR_INSN (insn)->index;
 
   /* load_killed_in_block_p will handle the case of calls clobbering
      everything.  */
@@ -2335,7 +2338,8 @@ find_avail_set (int regno, rtx insn)
 	 which contains INSN.  */
       while (set)
 	{
-	  if (TEST_BIT (cprop_avin[BLOCK_NUM (insn)], set->bitmap_index))
+	  if (TEST_BIT (cprop_avin[BLOCK_FOR_INSN (insn)->index],
+			set->bitmap_index))
 	    break;
 	  set = next_set (regno, set);
 	}
@@ -3728,7 +3732,7 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
   if (dump_file)
     fprintf (dump_file,
 	     "PRE: bb %d, insn %d, copy expression %d in insn %d to reg %d\n",
-	      BLOCK_NUM (insn), INSN_UID (new_insn), indx,
+	      BLOCK_FOR_INSN (insn)->index, INSN_UID (new_insn), indx,
 	      INSN_UID (insn), regno);
 }
 
