@@ -90,20 +90,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       // DR 811.
       template<class _U1, class = typename
-	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
+	       std::enable_if<std::is_constructible<_T1, _U1&&>::value>::type>
         pair(_U1&& __x, const _T2& __y)
 	: first(std::forward<_U1>(__x)),
 	  second(__y) { }
 
       template<class _U2, class = typename
-	       std::enable_if<std::is_convertible<_U2, _T2>::value>::type>
+	       std::enable_if<std::is_constructible<_T2, _U2&&>::value>::type>
         pair(const _T1& __x, _U2&& __y)
 	: first(__x),
 	  second(std::forward<_U2>(__y)) { }
 
       template<class _U1, class _U2, class = typename
-	       std::enable_if<std::is_convertible<_U1, _T1>::value
-			      && std::is_convertible<_U2, _T2>::value>::type>
+	       std::enable_if<std::is_constructible<_T1, _U1&&>::value
+			    && std::is_constructible<_T2, _U2&&>::value>::type>
         pair(_U1&& __x, _U2&& __y)
 	: first(std::forward<_U1>(__x)),
 	  second(std::forward<_U2>(__y)) { }
