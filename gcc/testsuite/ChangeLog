@@ -1,3 +1,8 @@
+2010-01-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42438
+	* gcc.dg/tree-ssa/ssa-pre-27.c: New testcase.
+
 2010-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/41651
