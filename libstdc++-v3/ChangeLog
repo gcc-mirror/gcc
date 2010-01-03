@@ -1,5 +1,12 @@
 2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/profile/bitset (bitset<>::bitset(unsigned long long)): Add
+	in C++0x mode.
+	* include/debug/bitset (bitset<>::bitset(unsigned long long)):
+	Likewise.
+
+2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/tr1_impl/hashtable (_Hashtable<>): Remove insert_return_type
 	typedef.
 	* include/profile/unordered_map (unordered_map<>::insert(const
