@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -252,6 +252,10 @@ Common Joined
 dumpbase
 Common Separate
 -dumpbase <file>	Set the file basename to be used for dumps
+
+dumpdir
+Common Separate
+-dumpdir <dir>		Set the directory name to be used for dumps
 
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;

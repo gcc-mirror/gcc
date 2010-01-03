@@ -1,3 +1,10 @@
+2010-01-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/41564
+	* lto.c (DUMPBASE_SUFFIX): New.
+	(lto_execute_ltrans): Append a sequence number to -dumpbase
+	for LTRANS.
+
 2010-01-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/42580

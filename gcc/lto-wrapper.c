@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -258,7 +258,7 @@ run_gcc (unsigned argc, char *argv[])
   const char **argv_ptr;
   char *list_option_full = NULL;
 
-  new_argc += 8;
+  new_argc += 12;
   new_argv = (const char **) xcalloc (sizeof (char *), new_argc);
 
   argv_ptr = new_argv;
@@ -316,7 +316,31 @@ run_gcc (unsigned argc, char *argv[])
 	     temporary file for the LTO output.  The `-o' option
 	     will be interpreted by the linker.  */
 	  if (s[2] == '\0')
-	    i++;
+	    {
+	      char *output_dir, *base, *name;
+
+	      i++;
+	      output_dir = xstrdup (argv[i]);
+	      base = output_dir;
+	      for (name = base; *name; name++)
+		if (IS_DIR_SEPARATOR (*name))
+		  base = name + 1;
+	      *base = '\0';
+
+	      *argv_ptr++ = "-dumpbase";
+	      if (*output_dir == '\0')
+		{
+		  static char current_dir[] =
+		    { '.', DIR_SEPARATOR, '\0' };
+		  output_dir = current_dir;
+		  *argv_ptr++ = argv[i];
+		}
+	      else
+		*argv_ptr++ = &argv[i][base - output_dir];
+
+	      *argv_ptr++ = "-dumpdir";
+	      *argv_ptr++ = output_dir;
+	    }
 	}
       else
 	/* Pass the option or argument to LTO.  */

@@ -152,6 +152,10 @@ struct line_maps *line_table;
 
 const char *dump_base_name;
 
+/* Directory used for dump output files.  */
+
+const char *dump_dir_name;
+
 /* Name to use as a base for auxiliary output files.  */
 
 const char *aux_base_name;
@@ -1388,6 +1392,7 @@ print_switch_values (print_switch_fn_type print_fn)
 	  /* Ignore these.  */
 	  if (strcmp (*p, "-o") == 0
 	      || strcmp (*p, "-dumpbase") == 0
+	      || strcmp (*p, "-dumpdir") == 0
 	      || strcmp (*p, "-auxbase") == 0)
 	    {
 	      if (p[1] != NULL)
