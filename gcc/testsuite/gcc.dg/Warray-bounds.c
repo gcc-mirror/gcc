@@ -56,13 +56,13 @@ int* f(void) {
     g(&a[8]);
     g(&a[9]);
     g(&a[10]);
-    g(&a[11]);             /* { dg-warning "array subscript" "" { xfail *-*-* } } */
+    g(&a[11]);             /* { dg-warning "array subscript" } */
     g(&a[-30]+10);             /* { dg-warning "array subscript" } */
     g(&a[-30]+30);
 
     g(&b[10]);
     g(&c.c[10]);
-    g(&b[11]);             /* { dg-warning "array subscript" "" { xfail *-*-* } } */
+    g(&b[11]);             /* { dg-warning "array subscript" } */
     g(&c.c[11]);           /* { dg-warning "array subscript" } */
 
     g(&a[0]);

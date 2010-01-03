@@ -1,5 +1,11 @@
 2010-01-03  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/Warray-bounds.c: Remove XFAILs.
+	* gcc.dg/uninit-6.c: Likewise.
+	* gcc.dg/struct/wo_prof_array_through_pointer.c: Likewise.
+
+2010-01-03  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42589
 	* gcc.target/i386/pr42589.c: New testcase.
 
