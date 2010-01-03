@@ -1,6 +1,6 @@
 // Debugging multiset implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -212,6 +212,15 @@ namespace __debug
       { _Base::insert(__l); }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      erase(iterator __position)
+      {
+	__glibcxx_check_erase(__position);
+	__position._M_invalidate();
+	return iterator(_Base::erase(__position.base()), this);
+      }
+#else
       void
       erase(iterator __position)
       {
@@ -219,6 +228,7 @@ namespace __debug
 	__position._M_invalidate();
 	_Base::erase(__position.base());
       }
+#endif
 
       size_type
       erase(const key_type& __x)
@@ -235,6 +245,18 @@ namespace __debug
 	return __count;
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      erase(iterator __first, iterator __last)
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 151. can't currently clear() empty container
+	__glibcxx_check_erase_range(__first, __last);
+	while (__first != __last)
+	  this->erase(__first++);
+	return __last;
+      }
+#else
       void
       erase(iterator __first, iterator __last)
       {
@@ -242,8 +264,9 @@ namespace __debug
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
 	while (__first != __last)
-	this->erase(__first++);
+	  this->erase(__first++);
       }
+#endif
 
       void
       swap(multiset& __x)

@@ -1,6 +1,6 @@
 // Debugging list implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -395,6 +395,12 @@ namespace __debug
 	this->splice(__position, _GLIBCXX_MOVE(__x), __x.begin(), __x.end());
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      splice(iterator __position, list& __x)
+      { splice(__position, std::move(__x)); }
+#endif
+
       void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       splice(iterator __position, list&& __x, iterator __i)
@@ -420,6 +426,12 @@ namespace __debug
 	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
 		      __i.base());
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      splice(iterator __position, list& __x, iterator __i)
+      { splice(__position, std::move(__x), __i); }
+#endif
 
       void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -456,6 +468,12 @@ namespace __debug
 	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
 		      __first.base(), __last.base());
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      splice(iterator __position, list& __x, iterator __first, iterator __last)
+      { splice(__position, std::move(__x), __first, __last); }
+#endif
 
       void
       remove(const _Tp& __value)
@@ -541,6 +559,12 @@ namespace __debug
 	  }
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      merge(list& __x)
+      { merge(std::move(__x)); }
+#endif
+
       template<class _Compare>
         void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -565,6 +589,13 @@ namespace __debug
 	      _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
 	    }
 	}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Compare>
+        void
+        merge(list& __x, _Compare __comp)
+        { merge(std::move(__x), __comp); }
+#endif
 
       void
       sort() { _Base::sort(); }

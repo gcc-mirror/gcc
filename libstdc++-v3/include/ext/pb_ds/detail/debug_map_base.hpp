@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -153,9 +154,10 @@ namespace __gnu_pbds
     insert_new(const_key_reference r_key)
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      __gnu_cxx::throw_allocator<char> alloc;
-      const double orig_throw_prob = alloc.get_probability();
-      alloc.set_probability(0);
+      // XXX FIXME: Adapt for __gnu_cxx::throw_allocator_random.
+      //__gnu_cxx::throw_allocator<char> alloc;
+      // const double orig_throw_prob = alloc.get_probability();
+      // alloc.set_probability(0);
       if (find(r_key) != m_key_set.end())
 	{
 	  std::cerr << "insert_new" << r_key << std::endl;
@@ -171,7 +173,7 @@ namespace __gnu_pbds
 	  std::cerr << "insert_new" << r_key << std::endl;
 	  std::abort();
 	}
-      alloc.set_probability(orig_throw_prob);
+      // alloc.set_probability(orig_throw_prob);
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
@@ -314,9 +316,10 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     split(const_key_reference r_key, Cmp_Fn cmp_fn, PB_DS_CLASS_C_DEC& other)
     {
-      __gnu_cxx::throw_allocator<char> alloc;
-      const double orig_throw_prob = alloc.get_probability();
-      alloc.set_probability(0);
+      // XXX FIXME: Adapt for __gnu_cxx::throw_allocator_random.
+      // __gnu_cxx::throw_allocator<char> alloc;
+      // const double orig_throw_prob = alloc.get_probability();
+      // alloc.set_probability(0);
       other.clear();
       key_set_iterator it = m_key_set.begin();
       while (it != m_key_set.end())
@@ -327,7 +330,7 @@ namespace __gnu_pbds
 	  }
         else
 	  ++it;
-      alloc.set_probability(orig_throw_prob);
+      // alloc.set_probability(orig_throw_prob);
     }
 
     PB_DS_CLASS_T_DEC
@@ -335,9 +338,10 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     join(PB_DS_CLASS_C_DEC& other)
     {
-      __gnu_cxx::throw_allocator<char> alloc;
-      const double orig_throw_prob = alloc.get_probability();
-      alloc.set_probability(0);
+      // XXX FIXME: Adapt for __gnu_cxx::throw_allocator_random.
+      // __gnu_cxx::throw_allocator<char> alloc;
+      // const double orig_throw_prob = alloc.get_probability();
+      // alloc.set_probability(0);
       key_set_iterator it = other.m_key_set.begin();
       while (it != other.m_key_set.end())
 	{
@@ -345,7 +349,7 @@ namespace __gnu_pbds
 	  it = other.m_key_set.erase(it);
 	}
       _GLIBCXX_DEBUG_ASSERT(other.m_key_set.empty());
-      alloc.set_probability(orig_throw_prob);
+      // alloc.set_probability(orig_throw_prob);
     }
 
 #undef PB_DS_CLASS_T_DEC

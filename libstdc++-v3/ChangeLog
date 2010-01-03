@@ -1,5 +1,22 @@
 2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/debug/set.h: Implement DR 130 here too.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/profile/set.h: Implement DR 130 fully.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* include/debug/list: Implement DR 1133 here too.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Comment out for
+	now uses of __gnu_cxx::throw_allocator.
+	* testsuite/21_strings/basic_string/40160.cc: Don't pass
+	explicitly -D_GLIBCXX_DEBUG, doesn't play well with profile-mode
+	testing.
+
+2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/profile/bitset (bitset<>::bitset(unsigned long long)): Add
 	in C++0x mode.
 	* include/debug/bitset (bitset<>::bitset(unsigned long long)):
