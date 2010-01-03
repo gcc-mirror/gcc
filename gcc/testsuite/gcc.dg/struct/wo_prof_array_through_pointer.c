@@ -35,7 +35,5 @@ main ()
   return 0;
 }
 
-/*--------------------------------------------------------------------------*/
-/* Currently str_t escapes due to incorrect ipa-type-escape analysis.  */
-/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" { xfail *-*-* } } } */
+/* { dg-final { scan-ipa-dump "Number of structures to transform is 1" "ipa_struct_reorg" } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */
