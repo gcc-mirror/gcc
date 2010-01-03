@@ -1,6 +1,6 @@
 // Profiling set implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -209,15 +209,11 @@ namespace __profile
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
       erase(iterator __position)
-      {
-        return _Base::erase(__position);
-      }
+      { return _Base::erase(__position); }
 #else
       void
       erase(iterator __position)
-      {
-	_Base::erase(__position);
-      }
+      { _Base::erase(__position); }
 #endif
 
       size_type
@@ -233,14 +229,26 @@ namespace __profile
         }
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      iterator
+      erase(iterator __first, iterator __last)
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 151. can't currently clear() empty container
+	while (__first != __last)
+	  this->erase(__first++);
+	return __last;
+      }
+#else
       void
       erase(iterator __first, iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	while (__first != __last)
-        this->erase(__first++);
+	  this->erase(__first++);
       }
+#endif
 
       void
       swap(set& __x)
