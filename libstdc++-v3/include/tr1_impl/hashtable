@@ -1,6 +1,6 @@
 // Internal header for TR1 unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -409,9 +409,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _M_erase_node(_Node*, _Node**);
 
     public:				
-      // Expose insert_return_type for profiling mode.
-      typedef _Insert_Return_Type insert_return_type;
-
       // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v) 
