@@ -470,7 +470,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
      passes are for.  The two cases where we have an inc insn will be
      handled mov free.  */
 
-  basic_block bb = BASIC_BLOCK (BLOCK_NUM (mem_insn.insn));
+  basic_block bb = BLOCK_FOR_INSN (mem_insn.insn);
   rtx mov_insn = NULL;
   int regno;
   rtx mem = *mem_insn.mem_loc;
@@ -746,7 +746,7 @@ get_next_ref (int regno, basic_block bb, rtx *next_array)
   rtx insn = next_array[regno];
 
   /* Lazy about cleaning out the next_arrays.  */
-  if (insn && BASIC_BLOCK (BLOCK_NUM (insn)) != bb)
+  if (insn && BLOCK_FOR_INSN (insn) != bb)
     {
       next_array[regno] = NULL;
       insn = NULL;
@@ -969,7 +969,7 @@ static bool
 find_inc (bool first_try)
 {
   rtx insn;
-  basic_block bb = BASIC_BLOCK (BLOCK_NUM (mem_insn.insn));
+  basic_block bb = BLOCK_FOR_INSN (mem_insn.insn);
   rtx other_insn;
   df_ref *def_rec;
 
@@ -986,7 +986,7 @@ find_inc (bool first_try)
 
   /* Find the next use that is an inc.  */
   insn = get_next_ref (REGNO (mem_insn.reg0),
-		       BASIC_BLOCK (BLOCK_NUM (mem_insn.insn)),
+		       BLOCK_FOR_INSN (mem_insn.insn),
 		       reg_next_inc_use);
   if (!insn)
     return false;
@@ -1042,7 +1042,7 @@ find_inc (bool first_try)
       /* Make sure that there is no insn that assigns to inc_insn.res
 	 between the mem_insn and the inc_insn.  */
       rtx other_insn = get_next_ref (REGNO (inc_insn.reg_res),
-				     BASIC_BLOCK (BLOCK_NUM (mem_insn.insn)),
+				     BLOCK_FOR_INSN (mem_insn.insn),
 				     reg_next_def);
       if (other_insn != inc_insn.insn)
 	{
@@ -1053,7 +1053,7 @@ find_inc (bool first_try)
 	}
 
       other_insn = get_next_ref (REGNO (inc_insn.reg_res),
-				 BASIC_BLOCK (BLOCK_NUM (mem_insn.insn)),
+				 BLOCK_FOR_INSN (mem_insn.insn),
 				 reg_next_use);
       if (other_insn
 	  && (other_insn != inc_insn.insn)

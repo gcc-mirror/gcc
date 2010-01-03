@@ -1296,6 +1296,11 @@ extern int *rgn_bb_table;
 extern int *block_to_bb;
 extern int *containing_rgn;
 
+/* Often used short-hand in the scheduler.  The rest of the compiler uses
+   BLOCK_FOR_INSN(INSN) and an indirect reference to get the basic block
+   number ("index").  For historical reasons, the scheduler does not.  */
+#define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
+
 #define RGN_NR_BLOCKS(rgn) (rgn_table[rgn].rgn_nr_blocks)
 #define RGN_BLOCKS(rgn) (rgn_table[rgn].rgn_blocks)
 #define RGN_DONT_CALC_DEPS(rgn) (rgn_table[rgn].dont_calc_deps)
