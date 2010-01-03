@@ -1,6 +1,6 @@
 // Profiling bitset implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -97,7 +97,12 @@ namespace __profile
       // 23.3.5.1 constructors:
       bitset() : _Base() { }
 
-      bitset(unsigned long __val) : _Base(__val) { }
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      bitset(unsigned long long __val)
+#else
+      bitset(unsigned long __val)
+#endif
+      : _Base(__val) { }
 
       template<typename _CharT, typename _Traits, typename _Alloc>
         explicit
