@@ -398,7 +398,7 @@ store_killed_in_insn (const_rtx x, const_rtx x_regs, const_rtx insn, int after)
 {
   const_rtx reg, base, note, pat;
 
-  if (!INSN_P (insn))
+  if (! NONDEBUG_INSN_P (insn))
     return false;
 
   if (CALL_P (insn))
@@ -667,7 +667,7 @@ compute_store_table (void)
       FOR_BB_INSNS (bb, insn)
 	{
 
-	  if (! INSN_P (insn))
+	  if (! NONDEBUG_INSN_P (insn))
 	    continue;
 
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
@@ -678,7 +678,7 @@ compute_store_table (void)
       memset (already_set, 0, sizeof (int) * max_gcse_regno);
       FOR_BB_INSNS (bb, insn)
 	{
-	  if (! INSN_P (insn))
+	  if (! NONDEBUG_INSN_P (insn))
 	    continue;
 
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
@@ -897,7 +897,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
 	last = NEXT_INSN (BB_END (bb));
 
       for (insn = BB_HEAD (bb); insn != last; insn = NEXT_INSN (insn))
-	if (INSN_P (insn))
+	if (NONDEBUG_INSN_P (insn))
 	  {
 	    note = find_reg_equal_equiv_note (insn);
 	    if (!note || !exp_equiv_p (XEXP (note, 0), mem, 0, true))
@@ -963,7 +963,7 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct st_expr *smexpr)
      they are no longer accurate provided that they are reached by this
      definition, so drop them.  */
   for (; insn != NEXT_INSN (BB_END (bb)); insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       {
 	set = single_set (insn);
 	if (!set)
@@ -1070,7 +1070,7 @@ build_store_vectors (void)
       memset (regs_set_in_block, 0, sizeof (int) * max_gcse_regno);
 
       FOR_BB_INSNS (bb, insn)
-	if (INSN_P (insn))
+	if (NONDEBUG_INSN_P (insn))
 	  {
 	    df_ref *def_rec;
 	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)

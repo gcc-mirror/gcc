@@ -1,3 +1,10 @@
+2009-01-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/41862
+	* store-motion.c (store_killed_in_insn, compute_store_table,
+	remove_reachable_equiv_notes, replace_store_insn,
+	build_store_vectors): Ignore all DEBUG_INSNs.
+
 2010-01-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/41564
