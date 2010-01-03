@@ -1,6 +1,6 @@
 // Profiling unordered_map/unordered_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,8 +72,6 @@ namespace __profile
       typedef typename _Base::reference       reference;
       typedef typename _Base::const_reference const_reference;
       typedef typename _Base::mapped_type      mapped_type;
-      typedef std::pair<typename _Base::iterator, bool> pair_type;
-      typedef typename _Base::insert_return_type insert_return_type;
 
       typedef typename _Base::iterator iterator;
       typedef typename _Base::const_iterator const_iterator;
@@ -148,7 +146,8 @@ namespace __profile
 
       ~unordered_map()
       {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), _Base::size());
+        __profcxx_hashtable_destruct(this, _Base::bucket_count(),
+				     _Base::size());
         _M_profile_destruct();
       }
 
@@ -162,7 +161,8 @@ namespace __profile
       void
       clear()
       {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), _Base::size());
+        __profcxx_hashtable_destruct(this, _Base::bucket_count(),
+				     _Base::size());
         _M_profile_destruct();
         _Base::clear();
       }
@@ -175,14 +175,15 @@ namespace __profile
         _M_profile_resize(__old_size, _Base::bucket_count()); 
       }
 
-       insert_return_type
+      std::pair<iterator, bool>
       insert(const value_type& __obj)
       {
         size_type __old_size =  _Base::bucket_count();
-        insert_return_type __res = _Base::insert(__obj);
+        std::pair<iterator, bool> __res = _Base::insert(__obj);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
       }
+
       iterator
       insert(iterator __iter, const value_type& __v)
       { 
@@ -301,8 +302,6 @@ namespace __profile
       typedef typename _Base::difference_type difference_type;
       typedef typename _Base::reference       reference;
       typedef typename _Base::const_reference const_reference;
-      typedef std::pair<typename _Base::iterator, bool> pair_type;
-      typedef typename _Base::insert_return_type insert_return_type;
 
       typedef typename _Base::iterator iterator;
       typedef typename _Base::const_iterator const_iterator;
@@ -401,14 +400,15 @@ namespace __profile
         _M_profile_resize(__old_size, _Base::bucket_count());
       }
 
-      insert_return_type
+      iterator
       insert(const value_type& __obj)
       {
         size_type __old_size =  _Base::bucket_count();
-        insert_return_type __res = _Base::insert(__obj);
+        iterator __res = _Base::insert(__obj);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
         return __res;
       }
+
       iterator
       insert(iterator __iter, const value_type& __v)
       { 

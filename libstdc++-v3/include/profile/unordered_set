@@ -1,6 +1,6 @@
 // Profiling unordered_set/unordered_multiset implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,7 +71,6 @@ namespace __profile
       typedef typename _Base::difference_type difference_type;
       typedef typename _Base::reference       reference;
       typedef typename _Base::const_reference const_reference;
-      typedef typename _Base::insert_return_type insert_return_type;
 
       typedef typename _Base::iterator iterator;
       typedef typename _Base::const_iterator const_iterator;
@@ -165,6 +164,7 @@ namespace __profile
         _M_profile_destruct();
         _Base::clear();
       }
+
       void
       insert(std::initializer_list<value_type> __l)
       { 
@@ -172,13 +172,16 @@ namespace __profile
         _Base::insert(__l); 
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
       }
-      insert_return_type insert(const value_type& __obj)
+
+      std::pair<iterator, bool>
+      insert(const value_type& __obj)
       {
         size_type __old_size =  _Base::bucket_count();
-        insert_return_type __res = _Base::insert(__obj);
+        std::pair<iterator, bool> __res = _Base::insert(__obj);
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
         return __res;
       }
+
       iterator
       insert(iterator __iter, const value_type& __v)
       { 
@@ -220,6 +223,7 @@ namespace __profile
         _Base::rehash(__n);
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
       }
+
     private:
       _Base&
       _M_base()       { return *this; }
@@ -285,7 +289,6 @@ namespace __profile
       typedef typename _Base::difference_type difference_type;
       typedef typename _Base::reference       reference;
       typedef typename _Base::const_reference const_reference;
-      typedef typename _Base::insert_return_type insert_return_type;
 
       typedef typename _Base::iterator iterator;
       typedef typename _Base::const_iterator const_iterator;
@@ -375,6 +378,7 @@ namespace __profile
         _M_profile_destruct();
         _Base::clear();
       }
+
       void
       insert(std::initializer_list<value_type> __l)
       { 
@@ -382,13 +386,16 @@ namespace __profile
         _Base::insert(__l); 
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
       }
-      insert_return_type insert(const value_type& __obj)
+
+      iterator
+      insert(const value_type& __obj)
       {
         size_type __old_size =  _Base::bucket_count();
-        insert_return_type __res = _Base::insert(__obj);
+        iterator __res = _Base::insert(__obj);
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
         return __res;
       }
+
       iterator
       insert(iterator __iter, const value_type& __v)
       { 
@@ -430,6 +437,7 @@ namespace __profile
         _Base::rehash(__n);
         _M_profile_resize(__old_size,  _Base::bucket_count()); 
       }
+
     private:
       _Base&
       _M_base()       { return *this; }

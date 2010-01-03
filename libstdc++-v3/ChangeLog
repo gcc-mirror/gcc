@@ -1,5 +1,15 @@
 2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/tr1_impl/hashtable (_Hashtable<>): Remove insert_return_type
+	typedef.
+	* include/profile/unordered_map (unordered_map<>::insert(const
+	value_type&), unordered_multimap<>::insert(const value_type&)): Adjust.
+	* include/profile/unordered_set (unordered_set<>::insert(const
+	value_type&), unordered_multimap<>::insert(const value_type&)):
+	Likewise.
+
+2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_pair.h (pair<>::pair(_U1&&, const _T2&),
 	pair<>::pair(const _T1&, _U2&&), pair<>::pair(_U1&&, _U2&&)):
 	Use std::is_constructible instead of std::is_convertible.
