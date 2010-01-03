@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -971,24 +971,31 @@ decode_options (unsigned int argc, const char **argv)
 
   handle_options (argc, argv, lang_mask);
 
-  /* Make DUMP_BASE_NAME relative to the AUX_BASE_NAME directory,
-     typically the directory to contain the object file.  */
-  if (aux_base_name && ! IS_ABSOLUTE_PATH (dump_base_name))
+  if (dump_base_name && ! IS_ABSOLUTE_PATH (dump_base_name))
     {
-      const char *aux_base;
-
-      base_of_path (aux_base_name, &aux_base);
-      if (aux_base_name != aux_base)
+      /* First try to make DUMP_BASE_NAME relative to the DUMP_DIR_NAME
+	 directory.  Then try to make DUMP_BASE_NAME relative to the
+	 AUX_BASE_NAME directory, typically the directory to contain
+	 the object file.  */
+      if (dump_dir_name)
+	dump_base_name = concat (dump_dir_name, dump_base_name, NULL);
+      else if (aux_base_name)
 	{
-	  int dir_len = aux_base - aux_base_name;
-	  char *new_dump_base_name =
-	    XNEWVEC (char, strlen(dump_base_name) + dir_len + 1);
+	  const char *aux_base;
 
-	  /* Copy directory component from AUX_BASE_NAME.  */
-	  memcpy (new_dump_base_name, aux_base_name, dir_len);
-	  /* Append existing DUMP_BASE_NAME.  */
-	  strcpy (new_dump_base_name + dir_len, dump_base_name);
-	  dump_base_name = new_dump_base_name;
+	  base_of_path (aux_base_name, &aux_base);
+	  if (aux_base_name != aux_base)
+	    {
+	      int dir_len = aux_base - aux_base_name;
+	      char *new_dump_base_name =
+		XNEWVEC (char, strlen(dump_base_name) + dir_len + 1);
+
+	      /* Copy directory component from AUX_BASE_NAME.  */
+	      memcpy (new_dump_base_name, aux_base_name, dir_len);
+	      /* Append existing DUMP_BASE_NAME.  */
+	      strcpy (new_dump_base_name + dir_len, dump_base_name);
+	      dump_base_name = new_dump_base_name;
+	    }
 	}
     }
 
@@ -1699,6 +1706,10 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_dumpbase:
       dump_base_name = arg;
+      break;
+
+    case OPT_dumpdir:
+      dump_dir_name = arg;
       break;
 
     case OPT_falign_functions_:

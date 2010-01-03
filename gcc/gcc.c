@@ -1,6 +1,7 @@
 /* Compiler driver program that can handle many languages.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -891,7 +892,7 @@ static const char *cpp_debug_options = "%{d*}";
 /* NB: This is shared amongst all front-ends, except for Ada.  */
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
- %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
+ %1 %{!Q:-quiet} %{!dumpbase:-dumpbase %B} %{d*} %{m*} %{a*}\
  %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b)} \
  %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}} \
  %{g*} %{O*} %{W*&pedantic*} %{w} %{std*&ansi&trigraphs}\
@@ -1188,6 +1189,7 @@ static const struct option_map option_map[] =
    {"--dependencies", "-M", 0},
    {"--dump", "-d", "a"},
    {"--dumpbase", "-dumpbase", "a"},
+   {"--dumpdir", "-dumpdir", "a"},
    {"--encoding", "-fencoding=", "aj"},
    {"--entry", "-e", 0},
    {"--extra-warnings", "-W", 0},

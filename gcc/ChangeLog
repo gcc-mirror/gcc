@@ -1,3 +1,25 @@
+2010-01-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/41564
+	* common.opt: Add dumpdir.
+
+	* gcc.c (cc1_options): Add "-dumpbase %B" only if -dumpbase
+	isn't specified.
+	(option_map): Add --dumpdir.
+
+	* gcc.h (DEFAULT_WORD_SWITCH_TAKES_ARG): Add dumpdir.
+
+	* lto-wrapper.c (run_gcc): Add -dumpbase and -dumpdir for -o.
+
+	* opts.c (decode_options): Try dump_dir_name first if
+	dump_base_name isn't an absolute path.
+	(common_handle_option): Handle OPT_dumpdir.
+
+	* toplev.c (dump_dir_name): New.
+	(print_switch_values): Also ignore -dumpdir.
+
+	* toplev.h (dump_dir_name): New.
+
 2010-01-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42589
