@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,4 +26,7 @@
 
 typedef __gnu_test::NonDefaultConstructible      inst_type;
 typedef __gnu_test::NonDefaultConstructible_hash hash_type;
-template class std::unordered_map<inst_type, inst_type, hash_type>;
+
+// N.B. We cannot instantiate with mapped_type == NonDefaultConstructible
+// because of 23.5.1.2.
+template class std::unordered_map<inst_type, double, hash_type>;

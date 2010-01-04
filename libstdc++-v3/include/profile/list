@@ -1,6 +1,6 @@
 // Profiling list implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,7 +73,6 @@ namespace __profile
       : _Base(__first, __last, __a)
       { }
 
-
       list(const list& __x)
       : _Base(__x) { }
 
@@ -118,23 +117,17 @@ namespace __profile
 
       void
       assign(initializer_list<value_type> __l)
-      {
-	_Base::assign(__l);
-      }
+      { _Base::assign(__l); }
 #endif
 
       template<class _InputIterator>
         void
         assign(_InputIterator __first, _InputIterator __last)
-        {
-	  _Base::assign(__first, __last);
-	}
+        { _Base::assign(__first, __last); }
 
       void
       assign(size_type __n, const _Tp& __t)
-      {
-	_Base::assign(__n, __t);
-      }
+      { _Base::assign(__n, __t); }
 
       using _Base::get_allocator;
 
@@ -196,34 +189,24 @@ namespace __profile
 
       void
       resize(size_type __sz, _Tp __c = _Tp())
-      {
-        _Base::resize(__sz, __c);
-      }
+      { _Base::resize(__sz, __c); }
 
       // element access:
       reference
       front()
-      {
-	return _Base::front();
-      }
+      { return _Base::front(); }
 
       const_reference
       front() const
-      {
-	return _Base::front();
-      }
+      { return _Base::front(); }
 
       reference
       back()
-      {
-	return _Base::back();
-      }
+      { return _Base::back(); }
 
       const_reference
       back() const
-      {
-	return _Base::back();
-      }
+      { return _Base::back(); }
 
       // 23.2.2.3 modifiers:
       using _Base::push_front;
@@ -265,9 +248,7 @@ namespace __profile
 
       iterator
       insert(iterator __position, const _Tp& __x)
-      {
-	return iterator(_Base::insert(__position, __x));
-      }
+      { return iterator(_Base::insert(__position, __x)); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       iterator
@@ -276,30 +257,22 @@ namespace __profile
 
       void
       insert(iterator __p, initializer_list<value_type> __l)
-      {
-	_Base::insert(__p, __l);
-      }
+      { _Base::insert(__p, __l); }
 #endif
 
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
-      {
-	_Base::insert(__position, __n, __x);
-      }
+      { _Base::insert(__position, __n, __x); }
 
       template<class _InputIterator>
         void
         insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
-        {
-	  _Base::insert(__position, __first, __last);
-	}
+        { _Base::insert(__position, __first, __last); }
 
       iterator
       erase(iterator __position)
-      {
-	return iterator(_Base::erase(__position));
-      }
+      { return iterator(_Base::erase(__position)); }
 
       iterator
       erase(iterator __position, iterator __last)
@@ -311,15 +284,11 @@ namespace __profile
 
       void
       swap(list& __x)
-      {
-	_Base::swap(__x);
-      }
+      { _Base::swap(__x); }
 
       void
       clear()
-      {
-	_Base::clear();
-      }
+      { _Base::clear(); }
 
       // 23.2.2.4 list operations:
       void
@@ -328,9 +297,13 @@ namespace __profile
 #else
       splice(iterator __position, list& __x)
 #endif
-      {
-	this->splice(__position, _GLIBCXX_MOVE(__x), __x.begin(), __x.end());
-      }
+      { this->splice(__position, _GLIBCXX_MOVE(__x), __x.begin(), __x.end()); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      splice(iterator __position, list& __x)
+      { this->splice(__position, std::move(__x)); }
+#endif
 
       void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -347,6 +320,12 @@ namespace __profile
 		      __i);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      splice(iterator __position, list& __x, iterator __i)
+      { this->splice(__position, std::move(__x), __i); }
+#endif
+
       void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       splice(iterator __position, list&& __x, iterator __first,
@@ -362,6 +341,12 @@ namespace __profile
 	_Base::splice(__position, _GLIBCXX_MOVE(__x._M_base()),
 		      __first, __last);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      splice(iterator __position, list& __x, iterator __first, iterator __last)
+      { this->splice(__position, std::move(__x), __first, __last); }
+#endif
 
       void
       remove(const _Tp& __value)
@@ -435,11 +420,15 @@ namespace __profile
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 300. list::merge() specification incomplete
 	if (this != &__x)
-	  {
-	    _Base::merge(_GLIBCXX_MOVE(__x._M_base()));
-	  }
+	  _Base::merge(_GLIBCXX_MOVE(__x._M_base()));
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      merge(list& __x)
+      { this->merge(std::move(__x)); }
+#endif
+ 
       template<class _Compare>
         void
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -451,10 +440,15 @@ namespace __profile
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 300. list::merge() specification incomplete
 	  if (this != &__x)
-	    {
-	      _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
-	    }
+	    _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
 	}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _Compare>
+        void
+        merge(list& __x, _Compare __comp)
+        { this->merge(std::move(__x), __comp); }
+#endif
 
       void
       sort() { _Base::sort(); }

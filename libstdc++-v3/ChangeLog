@@ -1,5 +1,49 @@
 2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/profile/list: Implement DR 1133 here too.
+
+	* testsuite/25_algorithms/set_intersection/34730.cc: Do not force
+	debug-mode, leads to spurious failures in profile-mode.
+	* testsuite/25_algorithms/upper_bound/33613.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/33613.cc: Likewise.
+	* testsuite/25_algorithms/set_difference/35541.cc: Likewise.
+	* testsuite/21_strings/basic_string/40160.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_real_distribution/
+	cons/parms_neg.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/
+	cons/parms_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/debug_mode.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/14340.cc: Likewise.
+	* testsuite/23_containers/bitset/18604.cc: Likewise.
+	* testsuite/23_containers/set/14340.cc: Likewise.
+	* testsuite/23_containers/set/18604.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	debug_mode.cc: Likewise.
+	* testsuite/23_containers/vector/
+	debug_mode_requires_reallocation-1.cc: Likewise.
+	* testsuite/23_containers/vector/
+	debug_mode_requires_reallocation-2.cc: Likewise.
+	* testsuite/23_containers/vector/14340.cc: Likewise.
+	* testsuite/23_containers/vector/15523.cc: Likewise.
+	* testsuite/23_containers/vector/18604.cc: Likewise.
+	* testsuite/23_containers/deque/14340.cc: Likewise.
+	* testsuite/23_containers/deque/18604.cc: Likewise.
+	* testsuite/23_containers/multiset/14340.cc: Likewise.
+	* testsuite/23_containers/list/operations/35969.cc: Likewise.
+	* testsuite/23_containers/list/14340.cc: Likewise.
+	* testsuite/23_containers/list/18604.cc: Likewise.
+	* testsuite/23_containers/map/14340.cc: Likewise.
+	* testsuite/23_containers/map/18604.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/uniform_int/
+	cons/range_neg.cc: Likewise.
+
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/2.cc: Do not instantiate for
+	non-defaultconstructible mapped_type.
+
+2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/debug/set.h: Implement DR 130 here too.
 	* include/debug/multiset.h: Likewise.
 	* include/debug/map.h: Likewise.

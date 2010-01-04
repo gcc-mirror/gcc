@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// NB: This issue affected only debug-mode.
+
 // { dg-options "-fno-rtti" }
 // { dg-do compile }
 
