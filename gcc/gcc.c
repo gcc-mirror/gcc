@@ -786,6 +786,8 @@ proper position among the other output files.  */
     %{O*:-plugin-opt=-O%*} \
     %{w:-plugin-opt=-w} \
     %{f*:-plugin-opt=-f%*} \
+    %{m*:-plugin-opt=-m%*} \
+    %{v:-plugin-opt=-v} \
     } \
     %{flto} %{fwhopr} %l " LINK_PIE_SPEC \
    "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\

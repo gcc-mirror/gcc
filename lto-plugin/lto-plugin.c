@@ -369,7 +369,7 @@ add_output_files (FILE *f)
 static void
 exec_lto_wrapper (char *argv[])
 {
-  int t;
+  int t, i;
   int status;
   char *at_args;
   FILE *args;
@@ -394,13 +394,24 @@ exec_lto_wrapper (char *argv[])
   at_args = concat ("@", arguments_file_name, NULL);
   check (at_args, LDPL_FATAL, "could not allocate");
 
+  for (i = 1; argv[i]; i++)
+    {
+      char *a = argv[i];
+      if (a[0] == '-' && a[1] == 'v' && a[2] == '\0')
+	{
+	  for (i = 0; argv[i]; i++)
+	    fprintf (stderr, "%s ", argv[i]);
+	  fprintf (stderr, "\n");
+	  break;
+	}
+    }
+
   new_argv[0] = argv[0];
   new_argv[1] = at_args;
   new_argv[2] = NULL;
 
   if (debug)
     {
-      int i;
       for (i = 0; new_argv[i]; i++)
 	fprintf (stderr, "%s ", new_argv[i]);
       fprintf (stderr, "\n");
