@@ -1,3 +1,9 @@
+2010-01-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/42581
+	* collect2.c (main): Turn on trace in collect2 if -v is passed
+	to gcc with LTO.
+
 2010-01-03  Jerry Quinn  <jlquinn@optonline.net>
 
 	* doc/c-tree.texi (RETURN_STMT): Change to RETURN_EXPR.  Update
