@@ -5658,7 +5658,7 @@ finish_label_address_expr (tree label, location_t loc)
     {
       TREE_USED (label) = 1;
       result = build1 (ADDR_EXPR, ptr_type_node, label);
-      /* The current function in not necessarily uninlinable.
+      /* The current function is not necessarily uninlinable.
 	 Computed gotos are incompatible with inlining, but the value
 	 here could be used only in a diagnostic, for example.  */
       protected_set_expr_location (result, loc);
