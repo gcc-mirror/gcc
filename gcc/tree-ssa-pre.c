@@ -204,7 +204,7 @@ pre_expr_eq (const void *p1, const void *p2)
       return vn_reference_eq (PRE_EXPR_REFERENCE (e1),
 			      PRE_EXPR_REFERENCE (e2));
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
 
@@ -217,13 +217,13 @@ pre_expr_hash (const void *p1)
     case CONSTANT:
       return vn_hash_constant_with_type (PRE_EXPR_CONSTANT (e));
     case NAME:
-      return iterative_hash_hashval_t (SSA_NAME_VERSION (PRE_EXPR_NAME (e)), 0);
+      return SSA_NAME_VERSION (PRE_EXPR_NAME (e));
     case NARY:
       return PRE_EXPR_NARY (e)->hashcode;
     case REFERENCE:
       return PRE_EXPR_REFERENCE (e)->hashcode;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -436,7 +436,8 @@ static void bitmap_value_replace_in_set (bitmap_set_t, pre_expr);
 static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
-static void bitmap_insert_into_set_1 (bitmap_set_t, pre_expr, bool);
+static void bitmap_insert_into_set_1 (bitmap_set_t, pre_expr,
+				      unsigned int, bool);
 static bitmap_set_t bitmap_set_new (void);
 static tree create_expression_by_pieces (basic_block, pre_expr, gimple_seq *,
 					 gimple, tree);
@@ -580,7 +581,7 @@ add_to_value (unsigned int v, pre_expr e)
       VEC_replace (bitmap_set_t, value_expressions, v, set);
     }
 
-  bitmap_insert_into_set_1 (set, e, true);
+  bitmap_insert_into_set_1 (set, e, v, true);
 }
 
 /* Create a new bitmap set and return it.  */
@@ -638,9 +639,8 @@ bitmap_remove_from_set (bitmap_set_t set, pre_expr expr)
 
 static void
 bitmap_insert_into_set_1 (bitmap_set_t set, pre_expr expr,
-			  bool allow_constants)
+			  unsigned int val, bool allow_constants)
 {
-  unsigned int val  = get_expr_value_id (expr);
   if (allow_constants || !value_id_constant_p (val))
     {
       /* We specifically expect this and only this function to be able to
@@ -655,7 +655,7 @@ bitmap_insert_into_set_1 (bitmap_set_t set, pre_expr expr,
 static void
 bitmap_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
-  bitmap_insert_into_set_1 (set, expr, false);
+  bitmap_insert_into_set_1 (set, expr, get_expr_value_id (expr), false);
 }
 
 /* Copy a bitmapped set ORIG, into bitmapped set DEST.  */
@@ -863,11 +863,8 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
 
-  if (value_id_constant_p (val))
-    return;
-
   if (!bitmap_set_contains_value (set, val))
-    bitmap_insert_into_set (set, expr);
+    bitmap_insert_into_set_1 (set, expr, val, false);
 }
 
 /* Print out EXPR to outfile.  */

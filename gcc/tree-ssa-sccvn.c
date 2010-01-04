@@ -401,15 +401,15 @@ vn_reference_op_eq (const void *p1, const void *p2)
 /* Compute the hash for a reference operand VRO1.  */
 
 static hashval_t
-vn_reference_op_compute_hash (const vn_reference_op_t vro1)
+vn_reference_op_compute_hash (const vn_reference_op_t vro1, hashval_t result)
 {
-  hashval_t result = 0;
+  result = iterative_hash_hashval_t (vro1->opcode, result);
   if (vro1->op0)
-    result += iterative_hash_expr (vro1->op0, vro1->opcode);
+    result = iterative_hash_expr (vro1->op0, result);
   if (vro1->op1)
-    result += iterative_hash_expr (vro1->op1, vro1->opcode);
+    result = iterative_hash_expr (vro1->op1, result);
   if (vro1->op2)
-    result += iterative_hash_expr (vro1->op2, vro1->opcode);
+    result = iterative_hash_expr (vro1->op2, result);
   return result;
 }
 
@@ -427,13 +427,14 @@ vn_reference_hash (const void *p1)
 hashval_t
 vn_reference_compute_hash (const vn_reference_t vr1)
 {
-  hashval_t result;
+  hashval_t result = 0;
   int i;
   vn_reference_op_t vro;
 
-  result = iterative_hash_expr (vr1->vuse, 0);
   for (i = 0; VEC_iterate (vn_reference_op_s, vr1->operands, i, vro); i++)
-    result += vn_reference_op_compute_hash (vro);
+    result = vn_reference_op_compute_hash (vro, result);
+  if (vr1->vuse)
+    result += SSA_NAME_VERSION (vr1->vuse);
 
   return result;
 }
@@ -1000,9 +1001,11 @@ vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
     *last_vuse_ptr = vuse;
 
   /* Fixup vuse and hash.  */
-  vr->hashcode = vr->hashcode - iterative_hash_expr (vr->vuse, 0);
+  if (vr->vuse)
+    vr->hashcode = vr->hashcode - SSA_NAME_VERSION (vr->vuse);
   vr->vuse = SSA_VAL (vuse);
-  vr->hashcode = vr->hashcode + iterative_hash_expr (vr->vuse, 0);
+  if (vr->vuse)
+    vr->hashcode = vr->hashcode + SSA_NAME_VERSION (vr->vuse);
 
   hash = vr->hashcode;
   slot = htab_find_slot_with_hash (current_info->references, vr,
@@ -1360,7 +1363,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
 hashval_t
 vn_nary_op_compute_hash (const vn_nary_op_t vno1)
 {
-  hashval_t hash = 0;
+  hashval_t hash;
   unsigned i;
 
   for (i = 0; i < vno1->length; ++i)
@@ -1376,8 +1379,9 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
       vno1->op[1] = temp;
     }
 
+  hash = iterative_hash_hashval_t (vno1->opcode, 0);
   for (i = 0; i < vno1->length; ++i)
-    hash += iterative_hash_expr (vno1->op[i], vno1->opcode);
+    hash = iterative_hash_expr (vno1->op[i], hash);
 
   return hash;
 }
@@ -1629,7 +1633,7 @@ vn_nary_op_insert_stmt (gimple stmt, tree result)
 static inline hashval_t
 vn_phi_compute_hash (vn_phi_t vp1)
 {
-  hashval_t result = 0;
+  hashval_t result;
   int i;
   tree phi1op;
   tree type;
@@ -1647,7 +1651,7 @@ vn_phi_compute_hash (vn_phi_t vp1)
     {
       if (phi1op == VN_TOP)
 	continue;
-      result += iterative_hash_expr (phi1op, result);
+      result = iterative_hash_expr (phi1op, result);
     }
 
   return result;
@@ -3309,23 +3313,6 @@ expressions_equal_p (tree e1, tree e2)
   /* If only one of them is null, they cannot be equal.  */
   if (!e1 || !e2)
     return false;
-
-  /* Recurse on elements of lists.  */
-  if (TREE_CODE (e1) == TREE_LIST && TREE_CODE (e2) == TREE_LIST)
-    {
-      tree lop1 = e1;
-      tree lop2 = e2;
-      for (lop1 = e1, lop2 = e2;
-	   lop1 || lop2;
-	   lop1 = TREE_CHAIN (lop1), lop2 = TREE_CHAIN (lop2))
-	{
-	  if (!lop1 || !lop2)
-	    return false;
-	  if (!expressions_equal_p (TREE_VALUE (lop1), TREE_VALUE (lop2)))
-	    return false;
-	}
-      return true;
-    }
 
   /* Now perform the actual comparison.  */
   if (TREE_CODE (e1) == TREE_CODE (e2)

@@ -1,3 +1,20 @@
+2010-01-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_op_compute_hash): Use
+	iterative_hash_* as intended.
+	(vn_reference_compute_hash): Likewise.  Simplify hashing
+	SSA names.
+	(vn_reference_lookup_2): Likewise.
+	(vn_nary_op_compute_hash): Likewise.
+	(vn_phi_compute_hash): Likewise.
+	(expressions_equal_p): Remove strange code.
+	* tree-ssa-pre.c (pre_expr_eq): Use gcc_unreachable ().
+	(pre_expr_hash): Likewise.  Simplify hashing SSA names.
+	(bitmap_insert_into_set_1): Take value-id as parameter.
+	(add_to_value): Pass it.
+	(bitmap_insert_into_set): Likewise.
+	(bitmap_value_insert_into_set): Likewise.  Remove redundant check.
+
 2010-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/42442
