@@ -1,3 +1,8 @@
+2010-01-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42567
+	* g++.dg/cpp0x/auto17.C: New.
+
 2010-01-04  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc.dg/lto/20100104_0.c: New.
