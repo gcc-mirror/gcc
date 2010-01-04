@@ -1,3 +1,20 @@
+2010-01-03  Andrew Jenner  <andrew@codesourcery.com>
+
+	* configure.ac: Add install-html to target_list for Make-hooks.
+	* configure: Regenerate.
+	* fortran/Make-lang.in (F95_HTMLFILES): New.
+	(fortran.html): Use it.
+	(fortran.install-html): New.
+	* Makefile.in (install-html): Add lang.install-html.
+	* java/Make-lang.in (JAVA_HTMLFILES): New.
+	(java.html): Use it.
+	(java.install-html): New.
+	* objc/Make-lang.in (objc.install-html): New.
+	* objcp/Make-lang.in (obj-c++.install-html): New.
+	* cp/Make-lang.in (c++.install-html): New.
+	* ada/gcc-interface/Make-lang.in (ada.install-html): New.
+	* lto/Make-lang.in (lto.install-html): New.
+
 2010-01-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/42520
