@@ -217,6 +217,7 @@ if [[ "${shared}" = "yes" ]]; then
 			  * ) PICFLAG=-fPIC ;;
 			esac ;;
     s390*-*-*)		PICFLAG=-fpic ;;
+    sh*-*-*)		PICFLAG=-fPIC ;;
   esac
 fi
 AC_SUBST(PICFLAG)
