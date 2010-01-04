@@ -1,5 +1,13 @@
 2010-01-04  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/42398
+	* tree-sra.c (struct access): Removed flag grp_different_types.
+	(dump_access): Do not dump the removed flag.
+	(sort_and_splice_var_accesses): Do not set the removed flag.
+	(sra_modify_expr): Check for type compatibility directly.
+
+2010-01-04  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/42366
 	* ipa-cp.c (ipcp_init_stage): Always call ipa_compute_jump_functions on
 	edges with variable number of parameters.
