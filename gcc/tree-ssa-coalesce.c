@@ -256,7 +256,7 @@ delete_coalesce_list (coalesce_list_p cl)
 static coalesce_pair_p
 find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
 {
-  struct coalesce_pair p, *pair;
+  struct coalesce_pair p;
   void **slot;
   unsigned int hash;
 
@@ -272,22 +272,23 @@ find_coalesce_pair (coalesce_list_p cl, int p1, int p2, bool create)
       p.second_element = p2;
     }
 
-
   hash = coalesce_pair_map_hash (&p);
-  pair = (struct coalesce_pair *) htab_find_with_hash (cl->list, &p, hash);
+  slot = htab_find_slot_with_hash (cl->list, &p, hash,
+				   create ? INSERT : NO_INSERT);
+  if (!slot)
+    return NULL;
 
-  if (create && !pair)
+  if (!*slot)
     {
+      struct coalesce_pair * pair = XNEW (struct coalesce_pair);
       gcc_assert (cl->sorted == NULL);
-      pair = XNEW (struct coalesce_pair);
       pair->first_element = p.first_element;
       pair->second_element = p.second_element;
       pair->cost = 0;
-      slot = htab_find_slot_with_hash (cl->list, pair, hash, INSERT);
-      *(struct coalesce_pair **)slot = pair;
+      *slot = (void *)pair;
     }
 
-  return pair;
+  return (struct coalesce_pair *) *slot;
 }
 
 static inline void

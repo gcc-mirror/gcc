@@ -357,21 +357,23 @@ unsigned int
 get_or_alloc_constant_value_id (tree constant)
 {
   void **slot;
-  vn_constant_t vc = XNEW (struct vn_constant_s);
+  struct vn_constant_s vc;
+  vn_constant_t vcp;
 
-  vc->hashcode = vn_hash_constant_with_type (constant);
-  vc->constant = constant;
-  slot = htab_find_slot_with_hash (constant_to_value_id, vc,
-				   vc->hashcode, INSERT);
+  vc.hashcode = vn_hash_constant_with_type (constant);
+  vc.constant = constant;
+  slot = htab_find_slot_with_hash (constant_to_value_id, &vc,
+				   vc.hashcode, INSERT);
   if (*slot)
-    {
-      free (vc);
-      return ((vn_constant_t)*slot)->value_id;
-    }
-  vc->value_id = get_next_value_id ();
-  *slot = vc;
-  bitmap_set_bit (constant_value_ids, vc->value_id);
-  return vc->value_id;
+    return ((vn_constant_t)*slot)->value_id;
+
+  vcp = XNEW (struct vn_constant_s);
+  vcp->hashcode = vc.hashcode;
+  vcp->constant = constant;
+  vcp->value_id = get_next_value_id ();
+  *slot = (void *) vcp;
+  bitmap_set_bit (constant_value_ids, vcp->value_id);
+  return vcp->value_id;
 }
 
 /* Return true if V is a value id for a constant.  */
