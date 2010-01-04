@@ -1,3 +1,14 @@
+2010-01-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (get_or_alloc_constant_value_id): Allocate
+	a new entry only if needed.
+	* tree-ssa-dom.c (lookup_avail_expr): Likewise.
+	* tree-ssa-coalesce.c (find_coalesce_pair): Avoid one
+	hashtable lookup.
+	* tree-ssa-pre.c (sorted_array_from_bitmap_set): Pre-allocate
+	the result array.
+	(phi_translate): Handle CONSTANTs early.
+
 2010-01-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42398

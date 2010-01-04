@@ -684,7 +684,10 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
 {
   unsigned int i, j;
   bitmap_iterator bi, bj;
-  VEC(pre_expr, heap) *result = NULL;
+  VEC(pre_expr, heap) *result;
+
+  /* Pre-allocate roughly enough space for the array.  */
+  result = VEC_alloc (pre_expr, heap, bitmap_count_bits (set->values));
 
   FOR_EACH_VALUE_ID_IN_SET (set, i, bi)
     {
@@ -1446,6 +1449,10 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
   if (!expr)
     return NULL;
 
+  /* Constants contain no values that need translation.  */
+  if (expr->kind == CONSTANT)
+    return expr;
+
   if (value_id_constant_p (get_expr_value_id (expr)))
     return expr;
 
@@ -1455,10 +1462,6 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 
   switch (expr->kind)
     {
-      /* Constants contain no values that need translation.  */
-    case CONSTANT:
-      return expr;
-
     case NARY:
       {
 	unsigned int i;

@@ -2229,50 +2229,47 @@ lookup_avail_expr (gimple stmt, bool insert)
   void **slot;
   tree lhs;
   tree temp;
-  struct expr_hash_elt *element = XNEW (struct expr_hash_elt);
+  struct expr_hash_elt element;
 
   /* Get LHS of assignment or call, else NULL_TREE.  */
   lhs = gimple_get_lhs (stmt);
 
-  initialize_hash_element (stmt, lhs, element);
+  initialize_hash_element (stmt, lhs, &element);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "LKUP ");
-      print_expr_hash_elt (dump_file, element);
+      print_expr_hash_elt (dump_file, &element);
     }
 
   /* Don't bother remembering constant assignments and copy operations.
      Constants and copy operations are handled by the constant/copy propagator
      in optimize_stmt.  */
-  if (element->expr.kind == EXPR_SINGLE
-      && (TREE_CODE (element->expr.ops.single.rhs) == SSA_NAME
-          || is_gimple_min_invariant (element->expr.ops.single.rhs)))
-    {
-      free (element);
-      return NULL_TREE;
-    }
+  if (element.expr.kind == EXPR_SINGLE
+      && (TREE_CODE (element.expr.ops.single.rhs) == SSA_NAME
+          || is_gimple_min_invariant (element.expr.ops.single.rhs)))
+    return NULL_TREE;
 
   /* Finally try to find the expression in the main expression hash table.  */
-  slot = htab_find_slot_with_hash (avail_exprs, element, element->hash,
+  slot = htab_find_slot_with_hash (avail_exprs, &element, element.hash,
 				   (insert ? INSERT : NO_INSERT));
   if (slot == NULL)
-    {
-      free (element);
-      return NULL_TREE;
-    }
+    return NULL_TREE;
 
   if (*slot == NULL)
     {
-      *slot = (void *) element;
+      struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
+      *element2 = element;
+      element2->stamp = element2;
+      *slot = (void *) element2;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
         {
           fprintf (dump_file, "2>>> ");
-          print_expr_hash_elt (dump_file, element);
+          print_expr_hash_elt (dump_file, element2);
         }
 
-      VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, element);
+      VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, element2);
       return NULL_TREE;
     }
 
@@ -2288,8 +2285,6 @@ lookup_avail_expr (gimple stmt, bool insert)
       if (temp)
 	lhs = temp;
     }
-
-  free (element);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
