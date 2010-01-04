@@ -1974,7 +1974,12 @@ output_unreferenced_globals (cgraph_node_set set)
       tree var = vnode->decl;
 
       if (TREE_CODE (var) == VAR_DECL && TREE_PUBLIC (var))
-	lto_output_tree_ref (ob, var);
+        {
+          /* Outputting just the reference will not output the object itself
+             or references it might have.*/
+          lto_output_tree (ob, var, true);
+          lto_output_tree_ref (ob, var);
+        }
     }
 
   output_zero (ob);
