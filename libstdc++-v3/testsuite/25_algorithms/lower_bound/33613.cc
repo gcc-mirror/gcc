@@ -1,6 +1,6 @@
 // 2007-10-02  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-D_GLIBCXX_DEBUG" }
+// NB: This issue affected only debug-mode.
+
 // { dg-do compile }
 
 // libstdc++/33613
