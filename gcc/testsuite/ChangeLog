@@ -1,3 +1,7 @@
+2010-01-04  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc.dg/lto/20100104_0.c: New.
+
 2010-01-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/42542
