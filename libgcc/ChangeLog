@@ -1,3 +1,10 @@
+2010-01-04  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/crti.asm, config/moxie/crtn.asm,
+	config/moxie/t-moxie-softfp, config/moxie/sfp-machine.h,
+	config/moxie/t-moxie: New files.
+	* config.host: Add t-moxie-softfp reference.
+
 2009-11-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR other/39888

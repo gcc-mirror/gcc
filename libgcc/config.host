@@ -1,6 +1,6 @@
 # libgcc host-specific configuration file.
 # Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008, 2009 Free Software Foundation, Inc.
+# 2008, 2009, 2010 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -436,7 +436,7 @@ mmix-knuth-mmixware)
 mn10300-*-*)
 	;;
 moxie-*-*)
-	tmake_file=${cpu_type}/t-moxie
+	tmake_file="moxie/t-moxie moxie/t-moxie-softfp"
 	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	;;
 pdp11-*-*)
