@@ -537,7 +537,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	 gfortran would typically put them in either the BSS or
 	 initialized data segments, and only mark them as common if
 	 they were part of common blocks.  However, if they are not put
-	 into common space, then C cannot initialize global fortran
+	 into common space, then C cannot initialize global Fortran
 	 variables that it interoperates with and the draft says that
 	 either Fortran or C should be able to initialize it (but not
 	 both, of course.) (J3/04-007, section 15.3).  */
@@ -3188,7 +3188,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	       || (sym->ts.type == BT_CLASS
 		   && sym->ts.u.derived->components->attr.allocatable))
 	{
-	  /* Nullify and automatic deallocatation of allocatable scalars.  */
+	  /* Nullify and automatic deallocation of allocatable scalars.  */
 	  tree tmp;
 	  gfc_expr *e;
 	  gfc_se se;
