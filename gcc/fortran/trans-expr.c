@@ -3413,7 +3413,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
      something like
         x = f()
      where f is pointer valued, we have to dereference the result.  */
-  if (!se->want_pointer && !byref && sym->attr.pointer
+  if (!se->want_pointer && !byref
+      && (sym->attr.pointer || sym->attr.allocatable)
       && !gfc_is_proc_ptr_comp (expr, NULL))
     se->expr = build_fold_indirect_ref_loc (input_location,
 					se->expr);

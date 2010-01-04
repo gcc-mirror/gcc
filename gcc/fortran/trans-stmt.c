@@ -4059,7 +4059,32 @@ gfc_trans_allocate (gfc_code * code)
 	  if (expr->ts.type == BT_CHARACTER && memsz == NULL_TREE)
 	    memsz = se.string_length;
 
-	  tmp = gfc_allocate_with_status (&se.pre, memsz, pstat);
+	  /* Allocate - for non-pointers with re-alloc checking.  */
+	  {
+	    gfc_ref *ref;
+	    bool allocatable;
+
+	    ref = expr->ref;
+
+	    /* Find the last reference in the chain.  */
+	    while (ref && ref->next != NULL)
+	      {
+	        gcc_assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT);
+	        ref = ref->next;
+	      }
+
+	    if (!ref)
+	      allocatable = expr->symtree->n.sym->attr.allocatable;
+	    else
+	      allocatable = ref->u.c.component->attr.allocatable;
+
+	    if (allocatable)
+	      tmp = gfc_allocate_array_with_status (&se.pre, se.expr, memsz,
+						    pstat, expr);
+	    else
+	      tmp = gfc_allocate_with_status (&se.pre, memsz, pstat);
+	  }
+
 	  tmp = fold_build2 (MODIFY_EXPR, void_type_node, se.expr,
 			     fold_convert (TREE_TYPE (se.expr), tmp));
 	  gfc_add_expr_to_block (&se.pre, tmp);
