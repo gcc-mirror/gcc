@@ -1,4 +1,12 @@
 2010-01-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36161
+	* error.c (error_printf, gfc_warning, gfc_notify_std,
+	gfc_warning_now, gfc_error, gfc_error_now,
+	gfc_fatal_error): Change argument name from nocmsgid to
+	gmsgid to enable (x)gettext's % checking.
+
+2010-01-04  Tobias Burnus  <burnus@net-b.de>
 	
 	* trans-decl.c (gfc_trans_deferred_vars): Fix spelling.
 
