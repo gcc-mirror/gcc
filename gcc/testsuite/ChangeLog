@@ -1,3 +1,15 @@
+2010-01-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/42542
+	* gcc.target/i386/pr42542-1.c: New.
+	* gcc.target/i386/pr42542-1a.c: Likewise.
+	* gcc.target/i386/pr42542-1b.c: Likewise.
+	* gcc.target/i386/pr42542-2.c: Likewise.
+	* gcc.target/i386/pr42542-2a.c: Likewise.
+	* gcc.target/i386/pr42542-2b.c: Likewise.
+	* gcc.target/i386/pr42542-3.c: Likewise.
+	* gcc.target/i386/pr42542-3a.c: Likewise.
+
 2009-01-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41872

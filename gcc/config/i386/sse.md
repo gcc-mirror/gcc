@@ -1,5 +1,5 @@
 ;; GCC machine description for SSE instructions
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -6138,7 +6138,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "")
 	(umax:V4SI (match_operand:V4SI 1 "register_operand" "")
 		   (match_operand:V4SI 2 "register_operand" "")))]
-  "TARGET_SSE2"
+  "TARGET_SSE4_1 || TARGET_XOP"
 {
   if (TARGET_SSE4_1)
     ix86_fixup_binary_operands_no_copy (UMAX, V4SImode, operands);
@@ -6195,14 +6195,39 @@
     }
 })
 
-(define_expand "umin<mode>3"
-  [(set (match_operand:SSEMODE24 0 "register_operand" "")
-	(umin:SSEMODE24 (match_operand:SSEMODE24 1 "register_operand" "")
-			(match_operand:SSEMODE24 2 "register_operand" "")))]
+(define_expand "uminv8hi3"
+  [(set (match_operand:V8HI 0 "register_operand" "")
+	(umin:V8HI (match_operand:V8HI 1 "register_operand" "")
+		   (match_operand:V8HI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
   if (TARGET_SSE4_1)
-    ix86_fixup_binary_operands_no_copy (UMIN, <MODE>mode, operands);
+    ix86_fixup_binary_operands_no_copy (UMIN, V8HImode, operands);
+  else
+    {
+      rtx xops[6];
+      bool ok;
+
+      xops[0] = operands[0];
+      xops[1] = operands[2];
+      xops[2] = operands[1];
+      xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
+      xops[4] = operands[1];
+      xops[5] = operands[2];
+      ok = ix86_expand_int_vcond (xops);
+      gcc_assert (ok);
+      DONE;
+    }
+})
+
+(define_expand "uminv4si3"
+  [(set (match_operand:V4SI 0 "register_operand" "")
+	(umin:V4SI (match_operand:V4SI 1 "register_operand" "")
+		   (match_operand:V4SI 2 "register_operand" "")))]
+  "TARGET_SSE4_1 || TARGET_XOP"
+{
+  if (TARGET_SSE4_1)
+    ix86_fixup_binary_operands_no_copy (UMIN, V4SImode, operands);
   else
     {
       rtx xops[6];

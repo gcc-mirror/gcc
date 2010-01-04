@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -16252,37 +16252,6 @@ ix86_expand_int_vcond (rtx operands[])
 
 	  switch (mode)
 	    {
-	    case V4SImode:
-	    case V2DImode:
-		{
-		  rtx t1, t2, mask;
-
-		  /* Perform a parallel modulo subtraction.  */
-		  t1 = gen_reg_rtx (mode);
-		  emit_insn ((mode == V4SImode
-			      ? gen_subv4si3
-			      : gen_subv2di3) (t1, cop0, cop1));
-
-		  /* Extract the original sign bit of op0.  */
-		  mask = ix86_build_signbit_mask (GET_MODE_INNER (mode),
-						  true, false);
-		  t2 = gen_reg_rtx (mode);
-		  emit_insn ((mode == V4SImode
-			      ? gen_andv4si3
-			      : gen_andv2di3) (t2, cop0, mask));
-
-		  /* XOR it back into the result of the subtraction.
-		     This results in the sign bit set iff we saw
-		     unsigned underflow.  */
-		  x = gen_reg_rtx (mode);
-		  emit_insn ((mode == V4SImode
-			      ? gen_xorv4si3
-			      : gen_xorv2di3) (x, t1, t2));
-
-		  code = GT;
-		}
-	      break;
-
 	    case V16QImode:
 	    case V8HImode:
 	      /* Perform a parallel unsigned saturating subtraction.  */
