@@ -1,3 +1,12 @@
+2010-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/42442
+	* gcc.c (SWITCH_IGNORE_PERMANENTLY): Define.
+	(do_self_spec): For switches with SWITCH_IGNORE set set also
+	SWITCH_IGNORE_PERMANENTLY.
+	(check_live_switch): Check SWITCH_IGNORE_PERMANENTLY instead
+	of SWITCH_IGNORE.
+
 2010-01-04  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-streamer-out.c (output_unreferenced_globals): Output the full
