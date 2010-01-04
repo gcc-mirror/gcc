@@ -4690,10 +4690,8 @@ finish_static_assert (tree condition, tree message, location_t location,
     }
 }
 
-/* Returns decltype((EXPR)) for cases where we can drop the decltype and
-   just return the type even though EXPR is a type-dependent expression.
-   The ABI specifies which cases this applies to, which is a subset of the
-   possible cases.  */
+/* Returns the type of EXPR for cases where we can determine it even though
+   EXPR is a type-dependent expression.  */
 
 tree
 describable_type (tree expr)
@@ -4717,8 +4715,7 @@ describable_type (tree expr)
     case PARM_DECL:
     case RESULT_DECL:
     case FUNCTION_DECL:
-      /* Named rvalue reference becomes lvalue.  */
-      type = build_reference_type (non_reference (TREE_TYPE (expr)));
+      return TREE_TYPE (expr);
       break;
 
     case NEW_EXPR:
