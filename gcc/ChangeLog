@@ -1,3 +1,12 @@
+2010-01-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42366
+	* ipa-cp.c (ipcp_init_stage): Always call ipa_compute_jump_functions on
+	edges with variable number of parameters.
+	* ipa-prop.c (ipa_write_node_info): Stream out uses_analysis_done
+	flag instead of asserting it.
+	(ipa_read_node_info): Read uses_analysis_done flag.
+
 2010-01-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_op_compute_hash): Use

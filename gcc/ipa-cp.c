@@ -633,15 +633,8 @@ ipcp_init_stage (void)
 	  ipa_count_arguments (cs);
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
-	    {
-	      /* Handle cases of functions with
-	         a variable number of parameters.  */
-	      ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
-	      if (flag_indirect_inlining)
-	        ipa_compute_jump_functions (cs);
-	    }
-	  else
-	    ipa_compute_jump_functions (cs);
+	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
+	  ipa_compute_jump_functions (cs);
 	}
     }
 }
