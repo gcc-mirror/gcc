@@ -1802,11 +1802,13 @@ statement can be obtained with the @code{LABEL_EXPR_LABEL} macro.  The
 @code{IDENTIFIER_NODE} giving the name of the label can be obtained from
 the @code{LABEL_DECL} with @code{DECL_NAME}.
 
-@item RETURN_STMT
+@item RETURN_EXPR
 
-Used to represent a @code{return} statement.  The @code{RETURN_EXPR} is
-the expression returned; it will be @code{NULL_TREE} if the statement
-was just
+Used to represent a @code{return} statement.  Operand 0 represents the
+value to return.  It should either be the @code{RESULT_DECL} for the
+containing function, or a @code{MODIFY_EXPR} or @code{INIT_EXPR}
+setting the function's @code{RESULT_DECL}.  It will be
+@code{NULL_TREE} if the statement was just
 @smallexample
 return;
 @end smallexample
