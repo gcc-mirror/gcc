@@ -1,4 +1,8 @@
 2010-01-04  Tobias Burnus  <burnus@net-b.de>
+	
+	* trans-decl.c (gfc_trans_deferred_vars): Fix spelling.
+
+2010-01-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41872
 	* trans-expr.c (gfc_conv_procedure_call): Add indirect ref
