@@ -1,3 +1,8 @@
+2010-01-03  Jerry Quinn  <jlquinn@optonline.net>
+
+	* doc/c-tree.texi (RETURN_STMT): Change to RETURN_EXPR.  Update
+	description of expression operand.
+
 2010-01-03  Andrew Jenner  <andrew@codesourcery.com>
 
 	* configure.ac: Add install-html to target_list for Make-hooks.
