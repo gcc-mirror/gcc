@@ -711,6 +711,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 	}
 	else
 	  runtime_error ("Attempting to allocate already allocated array");
+      }
     }
     
     expr must be set to the original expression being allocated for its locus

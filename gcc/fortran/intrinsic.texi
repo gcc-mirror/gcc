@@ -11350,8 +11350,8 @@ C_INT_LEAST128_T, C_INT_FAST128_T}.
 @item @code{CHARACTER}@tab @code{C_CHAR}        @tab @code{char}
 @end multitable
 
-Additionally, the following @code{(CHARACTER(KIND=C_CHAR))} are
-defined.
+Additionally, the following parameters of type @code{CHARACTER(KIND=C_CHAR)}
+are defined.
 
 @multitable @columnfractions .20 .45 .15
 @item Name                     @tab C definition    @tab Value

@@ -5491,9 +5491,9 @@ gfc_use_module (void)
 
 	  if (strcmp (atom_string, MOD_VERSION))
 	    {
-	      gfc_fatal_error ("Wrong module version '%s' (expected '"
-			       MOD_VERSION "') for file '%s' opened"
-			       " at %C", atom_string, filename);
+	      gfc_fatal_error ("Wrong module version '%s' (expected '%s') "
+			       "for file '%s' opened at %C", atom_string,
+			       MOD_VERSION, filename);
 	    }
 	}
 

@@ -3188,7 +3188,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	       || (sym->ts.type == BT_CLASS
 		   && sym->ts.u.derived->components->attr.allocatable))
 	{
-	  /* Automatic deallocatation of allocatable scalars.  */
+	  /* Nullify and automatic deallocatation of allocatable scalars.  */
 	  tree tmp;
 	  gfc_expr *e;
 	  gfc_se se;
@@ -3203,10 +3203,13 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  gfc_conv_expr (&se, e);
 	  gfc_free_expr (e);
 
+	  /* Nullify when entering the scope.  */
 	  gfc_start_block (&block);
+	  gfc_add_modify (&block, se.expr, fold_convert (TREE_TYPE (se.expr),
+							 null_pointer_node));
 	  gfc_add_expr_to_block (&block, fnbody);
 
-	  /* Note: Nullifying is not needed.  */
+	  /* Deallocate when leaving the scope. Nullifying is not needed.  */
 	  tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true, NULL);
 	  gfc_add_expr_to_block (&block, tmp);
 	  fnbody = gfc_finish_block (&block);
@@ -4319,7 +4322,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 		  || (sym->attr.entry_master
 		      && sym->ns->entries->sym->attr.recursive);
    if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive
-       && !gfc_option.flag_openmp)
+       && !gfc_option.flag_recursive)
      {
        char * msg;
 
@@ -4384,13 +4387,18 @@ gfc_generate_function_code (gfc_namespace * ns)
 	result = sym->result->backend_decl;
 
       if (result != NULL_TREE && sym->attr.function
-	    && sym->ts.type == BT_DERIVED
-	    && sym->ts.u.derived->attr.alloc_comp
-	    && !sym->attr.pointer)
+	  && !sym->attr.pointer)
 	{
-	  rank = sym->as ? sym->as->rank : 0;
-	  tmp2 = gfc_nullify_alloc_comp (sym->ts.u.derived, result, rank);
-	  gfc_add_expr_to_block (&block, tmp2);
+	  if (sym->ts.type == BT_DERIVED
+	      && sym->ts.u.derived->attr.alloc_comp)
+	    {
+	      rank = sym->as ? sym->as->rank : 0;
+	      tmp2 = gfc_nullify_alloc_comp (sym->ts.u.derived, result, rank);
+	      gfc_add_expr_to_block (&block, tmp2);
+	    }
+	  else if (sym->attr.allocatable && sym->attr.dimension == 0)
+	    gfc_add_modify (&block, result, fold_convert (TREE_TYPE (result),
+							  null_pointer_node));
 	}
 
       gfc_add_expr_to_block (&block, tmp);
