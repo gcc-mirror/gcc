@@ -2494,3 +2494,9 @@
 	* io/unit.c (get_internal_unit): Set default BLANK= status to NULL for
 	internal units.
 
+
+Copyright (C) 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -2523,3 +2523,10 @@
 	array is finished.
 	(next_record_r):  Use the new flag to next_array_record().
 	(next_record_w):  Likewise.
+
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

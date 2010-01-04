@@ -540,3 +540,10 @@
 
 	* (*.m4) Move to m4/.
 	* intrinsics/string.c (_gfor_string_index): New Function.
+
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
