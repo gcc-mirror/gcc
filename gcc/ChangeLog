@@ -1,3 +1,21 @@
+2010-01-04  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR target/42503
+
+	Backport from mainline:
+
+	2009-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/t-slibgcc-elf-ver (SHLIB_MAKE_SOLINK, SHLIB_INSTALL_SOLINK):
+	New variables.
+	(SHLIB_LINK, SHLIB_INSTALL): Use them.
+	* config/t-slibgcc-libgcc: New file.
+
+	2009-10-19  Matthias Klose  <doko@ubuntu.com>
+
+	PR target/40134
+	* config.gcc (arm*-*-linux-*eabi): Use config/t-slibgcc-libgcc.
+
 2010-01-04  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/41956
