@@ -9400,7 +9400,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	TREE_CHAIN (r) = NULL_TREE;
 
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r),
-					(int) ATTR_FLAG_TYPE_IN_PLACE,
+					/*flags=*/0,
 					args, complain, in_decl);
 
 	/* Preserve a typedef that names a type.  */
