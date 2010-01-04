@@ -20,6 +20,7 @@ contains
 
   subroutine sub (n)
     integer :: n
+!$omp atomic
     s = s + n
     print '(A,i3)',"loop =",n
   end subroutine
