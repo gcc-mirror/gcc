@@ -3233,12 +3233,15 @@ See %s for instructions.",
    SWITCH_LIVE to indicate this switch is true in a conditional spec.
    SWITCH_FALSE to indicate this switch is overridden by a later switch.
    SWITCH_IGNORE to indicate this switch should be ignored (used in %<S).
+   SWITCH_IGNORE_PERMANENTLY to indicate this switch should be ignored
+   in all do_spec calls afterwards.  Used for %<S from self specs.
    The `validated' field is nonzero if any spec has looked at this switch;
    if it remains zero at the end of the run, it must be meaningless.  */
 
-#define SWITCH_LIVE    0x1
-#define SWITCH_FALSE   0x2
-#define SWITCH_IGNORE  0x4
+#define SWITCH_LIVE    			0x1
+#define SWITCH_FALSE   			0x2
+#define SWITCH_IGNORE			0x4
+#define SWITCH_IGNORE_PERMANENTLY	0x8
 
 struct switchstr
 {
@@ -4928,13 +4931,20 @@ do_option_spec (const char *name, const char *spec)
 static void
 do_self_spec (const char *spec)
 {
+  int i;
+
   do_spec_2 (spec);
   do_spec_1 (" ", 0, NULL);
 
+  /* Mark %<S switches processed by do_self_spec to be ignored permanently.
+     do_self_specs adds the replacements to switches array, so it shouldn't
+     be processed afterwards.  */
+  for (i = 0; i < n_switches; i++)
+    if ((switches[i].live_cond & SWITCH_IGNORE))
+      switches[i].live_cond |= SWITCH_IGNORE_PERMANENTLY;
+
   if (argbuf_index > 0)
     {
-      int i;
-
       switches = XRESIZEVEC (struct switchstr, switches,
 			     n_switches + argbuf_index + 1);
 
@@ -6448,7 +6458,8 @@ check_live_switch (int switchnum, int prefix_length)
   if (switches[switchnum].live_cond != 0)
     return ((switches[switchnum].live_cond & SWITCH_LIVE) != 0
 	    && (switches[switchnum].live_cond & SWITCH_FALSE) == 0
-	    && (switches[switchnum].live_cond & SWITCH_IGNORE) == 0);
+	    && (switches[switchnum].live_cond & SWITCH_IGNORE_PERMANENTLY)
+	       == 0);
 
   /* In the common case of {<at-most-one-letter>*}, a negating
      switch would always match, so ignore that case.  We will just
