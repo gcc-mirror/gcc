@@ -1,3 +1,9 @@
+2010-01-04  Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+
+	PR target/42316
+	* configure.ac (PICFLAG): Use -fPIC on SH hosts.
+	* configure: Regenerate.
+
 2009-12-07  Doug Evans  <dje@google.com>
 
 	* pex-unix.c (pex_unix_exec_child): Save/restore environ.
