@@ -1,3 +1,8 @@
+2010-01-04  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/41956
+	* gcc.dg/vect/pr41956.c: New test.
+
 2010-01-02  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

@@ -1,3 +1,9 @@
+2010-01-04  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/41956
+	* tree-vect-analyze.c (vect_supported_load_permutation_p): Add check
+	that the load indices differ.
+
 2010-01-02  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
