@@ -1174,6 +1174,8 @@ main (int argc, char **argv)
   int num_c_args;
   char **old_argv;
 
+  bool use_verbose = false;
+
   old_argv = argv;
   expandargv (&argc, &argv);
   if (argv != old_argv)
@@ -1228,12 +1230,19 @@ main (int argc, char **argv)
 	if (! strcmp (argv[i], "-debug"))
 	  debug = 1;
         else if (! strcmp (argv[i], "-flto") && ! use_plugin)
-          lto_mode = LTO_MODE_LTO;
+	  {
+	    use_verbose = true;
+	    lto_mode = LTO_MODE_LTO;
+	  }
         else if (! strcmp (argv[i], "-fwhopr") && ! use_plugin)
-          lto_mode = LTO_MODE_WHOPR;
+	  {
+	    use_verbose = true;
+	    lto_mode = LTO_MODE_WHOPR;
+	  }
         else if (! strcmp (argv[i], "-plugin"))
 	  {
 	    use_plugin = true;
+	    use_verbose = true;
 	    lto_mode = LTO_MODE_NONE;
 	  }
 #ifdef COLLECT_EXPORT_LIST
@@ -1445,6 +1454,11 @@ main (int argc, char **argv)
 	      q = extract_string (&p);
 	      *c_ptr++ = xstrdup (q);
 	    }
+	}
+      if (use_verbose && *q == '-' && q[1] == 'v' && q[2] == 0)
+	{
+	  /* Turn on trace in collect2 if needed.  */
+	  vflag = 1;
 	}
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
