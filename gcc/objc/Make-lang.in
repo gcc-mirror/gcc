@@ -24,7 +24,7 @@
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
-# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.install-html, foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -95,6 +95,7 @@ objc.dvi:
 objc.pdf:
 objc.install-pdf:
 objc.html:
+objc.install-html:
 objc.man:
 objc.srcinfo:
 objc.srcman:

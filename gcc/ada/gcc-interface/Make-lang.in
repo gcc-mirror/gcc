@@ -23,7 +23,7 @@
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
-# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.install-html, foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -625,6 +625,8 @@ ada.install-pdf: $(ADA_PDFFILES)
 	done
 
 ada.html:
+
+ada.install-html:
 
 doc/gnat_ugn.dvi: doc/gnat_ugn.texi $(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi

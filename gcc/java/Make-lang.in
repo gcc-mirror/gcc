@@ -28,7 +28,7 @@
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
-# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.install-html, foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -138,7 +138,9 @@ JAVA_PDFFILES = doc/gcj.pdf
 
 java.pdf: $(JAVA_PDFFILES)
 
-java.html: $(build_htmldir)/java/index.html
+JAVA_HTMLFILES = $(build_htmldir)/java
+
+java.html: $(JAVA_HTMLFILES)/index.html
 
 JAVA_MANFILES = doc/gcj.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 \
@@ -205,6 +207,22 @@ java.install-pdf: $(JAVA_PDFFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
+java.install-html: $(JAVA_HTMLFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@list='$(JAVA_HTMLFILES)'; for p in $$list; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
 #
 # Clean hooks:
 # A lot of the ancillary files are deleted by the main makefile.

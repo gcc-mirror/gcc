@@ -4061,8 +4061,7 @@ doc/gccinstall.pdf: $(TEXI_GCCINSTALL_FILES)
 
 # List the directories or single hmtl files which are installed by
 # install-html. The lang.html file triggers language fragments to build
-# html documentation. Installing language fragment documentation is not
-# yet supported.
+# html documentation.
 HTMLS_INSTALL=$(build_htmldir)/cpp $(build_htmldir)/gcc \
        $(build_htmldir)/gccinstall $(build_htmldir)/gccint \
        $(build_htmldir)/cppinternals
@@ -4401,7 +4400,7 @@ install-pdf: $(PDFFILES) lang.install-pdf
 
 html__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 
-install-html: $(HTMLS_BUILD)
+install-html: $(HTMLS_BUILD) lang.install-html
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
 	@list='$(HTMLS_INSTALL)'; for p in $$list; do \

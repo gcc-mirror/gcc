@@ -44,6 +44,7 @@ lto.dvi:
 lto.pdf:
 lto.install-pdf:
 lto.html:
+lto.install-html:
 lto.uninstall:
 lto.info:
 lto.man:

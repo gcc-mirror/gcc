@@ -24,7 +24,7 @@
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
 # foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
-# foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.install-html, foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -104,6 +104,7 @@ obj-c++.dvi:
 obj-c++.pdf:
 obj-c++.install-pdf:
 obj-c++.html:
+obj-c++.install-html:
 obj-c++.srcinfo:
 obj-c++.srcextra:
 obj-c++.man:
