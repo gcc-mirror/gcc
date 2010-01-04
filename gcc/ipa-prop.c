@@ -2018,9 +2018,9 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
 
   bp = bitpack_create ();
   bp_pack_value (bp, info->called_with_var_arguments, 1);
+  bp_pack_value (bp, info->uses_analysis_done, 1);
   gcc_assert (info->modification_analysis_done
 	      || ipa_get_param_count (info) == 0);
-  gcc_assert (info->uses_analysis_done || ipa_get_param_count (info) == 0);
   gcc_assert (!info->node_enqueued);
   gcc_assert (!info->ipcp_orig_node);
   for (j = 0; j < ipa_get_param_count (info); j++)
@@ -2063,6 +2063,7 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
 
   bp = lto_input_bitpack (ib);
   info->called_with_var_arguments = bp_unpack_value (bp, 1);
+  info->uses_analysis_done = bp_unpack_value (bp, 1);
   if (ipa_get_param_count (info) != 0)
     {
       info->modification_analysis_done = true;
