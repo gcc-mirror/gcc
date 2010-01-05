@@ -6134,6 +6134,26 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
+(define_expand "smaxv2di3"
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(smax:V2DI (match_operand:V2DI 1 "register_operand" "")
+		   (match_operand:V2DI 2 "register_operand" "")))]
+  "TARGET_SSE4_2"
+{
+  rtx xops[6];
+  bool ok;
+
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "umaxv4si3"
   [(set (match_operand:V4SI 0 "register_operand" "")
 	(umax:V4SI (match_operand:V4SI 1 "register_operand" "")
@@ -6170,6 +6190,26 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
+(define_expand "umaxv2di3"
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(umax:V2DI (match_operand:V2DI 1 "register_operand" "")
+		   (match_operand:V2DI 2 "register_operand" "")))]
+  "TARGET_SSE4_2"
+{
+  rtx xops[6];
+  bool ok;
+
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "smin<mode>3"
   [(set (match_operand:SSEMODE14 0 "register_operand" "")
 	(smin:SSEMODE14 (match_operand:SSEMODE14 1 "register_operand" "")
@@ -6195,6 +6235,26 @@
     }
 })
 
+(define_expand "sminv2di3"
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(smin:V2DI (match_operand:V2DI 1 "register_operand" "")
+		   (match_operand:V2DI 2 "register_operand" "")))]
+  "TARGET_SSE4_2"
+{
+  rtx xops[6];
+  bool ok;
+
+  xops[0] = operands[0];
+  xops[1] = operands[2];
+  xops[2] = operands[1];
+  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
+})
+
 (define_expand "umin<mode>3"
   [(set (match_operand:SSEMODE24 0 "register_operand" "")
 	(umin:SSEMODE24 (match_operand:SSEMODE24 1 "register_operand" "")
@@ -6218,6 +6278,26 @@
       gcc_assert (ok);
       DONE;
     }
+})
+
+(define_expand "uminv2di3"
+  [(set (match_operand:V2DI 0 "register_operand" "")
+	(umin:V2DI (match_operand:V2DI 1 "register_operand" "")
+		   (match_operand:V2DI 2 "register_operand" "")))]
+  "TARGET_SSE4_2"
+{
+  rtx xops[6];
+  bool ok;
+
+  xops[0] = operands[0];
+  xops[1] = operands[2];
+  xops[2] = operands[1];
+  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

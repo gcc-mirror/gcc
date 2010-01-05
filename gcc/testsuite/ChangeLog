@@ -1,3 +1,11 @@
+2010-01-05  H.J. Lu  <hongjiu.lu@intel.com>
+ 
+	PR target/42542
+	* gcc.target/i386/pr42542-4.c: New.
+	* gcc.target/i386/pr42542-4a.c: Likewise.
+	* gcc.target/i386/pr42542-5.c: Likewise.
+	* gcc.target/i386/pr42542-5a.c: Likewise.
+
 2010-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/tls/opt-15.c: New test.
