@@ -1,3 +1,18 @@
+2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/38081
+	* include/bits/locale_facets_nonio.h (time_get<>::
+	_M_extract_wday_or_month): New, declare.
+	* include/bits/locale_facets_nonio.tcc (time_get<>::
+	_M_extract_wday_or_month): Define.
+	(time_get<>::do_get_weekday, time_get<>::do_get_monthname): Use it.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* doc/xml/manual/prerequisites.xml: Add ru_RU.UTF-8 and
+	ru_RU.ISO-8859-5.
+	* testsuite/lib/libstdc++.exp: Adjust.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-1.cc: New.
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc: Likewise.
+
 2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure: Regenerate.

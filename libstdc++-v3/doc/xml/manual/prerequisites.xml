@@ -86,6 +86,8 @@ fr_FR@euro          ISO-8859-15
 is_IS               UTF-8
 it_IT               ISO-8859-1
 ja_JP.eucjp         EUC-JP
+ru_RU.ISO-8859-5    ISO-8859-5
+ru_RU.UTF-8         UTF-8
 se_NO.UTF-8         UTF-8
 ta_IN               UTF-8
 zh_TW               BIG5

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -652,12 +652,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		     int __min, int __max, size_t __len,
 		     ios_base& __io, ios_base::iostate& __err) const;
 
-      // Extract day or month name, or any unique array of string
-      // literals in a const _CharT* array.
+      // Extract any unique array of string literals in a const _CharT* array.
       iter_type
       _M_extract_name(iter_type __beg, iter_type __end, int& __member,
 		      const _CharT** __names, size_t __indexlen,
 		      ios_base& __io, ios_base::iostate& __err) const;
+
+      // Extract day or month name in a const _CharT* array.
+      iter_type
+      _M_extract_wday_or_month(iter_type __beg, iter_type __end, int& __member,
+			       const _CharT** __names, size_t __indexlen,
+			       ios_base& __io, ios_base::iostate& __err) const;
 
       // Extract on a component-by-component basis, via __format argument.
       iter_type

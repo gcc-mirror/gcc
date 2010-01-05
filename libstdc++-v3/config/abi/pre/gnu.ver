@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+## Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
@@ -149,7 +149,7 @@ GLIBCXX_3.4 {
       std::th[a-h]*;
       std::th[j-q]*;
       std::th[s-z]*;
-      std::t[i-n]*;
+#     std::t[i-n]*;
       std::tr1::h[^a]*;
       std::t[s-z]*;
 #     std::[A-Zu-z]*;
@@ -458,6 +458,21 @@ GLIBCXX_3.4 {
 
     # std::money_put
     _ZNKSt9money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE*;
+
+    # std::time_get
+    _ZNSt8time_get*;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[0-9]*;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1[0-9]*;
+
+    # std::time_get_byname
+    _ZNSt15time_get_byname*;
+    
+    # std::time_put
+    _ZNSt8time_put*;
+    _ZNKSt8time_put*;
+
+    # std::time_put_byname
+    _ZNSt15time_put_byname*;
 
     # std::numeric_limits
     _ZNSt14numeric_limitsI[^g]E*;
@@ -1080,6 +1095,9 @@ GLIBCXX_3.4.14 {
     _ZNSbIwSt11char_traitsIwESaIwEE18_S_construct_aux_2*;
 
     _ZSt25__throw_bad_function_callv;
+
+    # std::time_get::_M_extract_wday_or_month
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE24_M_extract_wday_or_month*;
 
 } GLIBCXX_3.4.13;
 
