@@ -1,3 +1,8 @@
+2010-01-05  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (unify_pack_expansion): Handle deduction from init-list.
+	* call.c (build_over_call): Don't complain about it.
+
 2010-01-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42555

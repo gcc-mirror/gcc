@@ -5665,8 +5665,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  tree tmpl = TI_TEMPLATE (cand->template_decl);
 	  tree realparm = chain_index (j, DECL_ARGUMENTS (cand->fn));
 	  tree patparm = get_pattern_parm (realparm, tmpl);
+	  tree pattype = TREE_TYPE (patparm);
+	  if (PACK_EXPANSION_P (pattype))
+	    pattype = PACK_EXPANSION_PATTERN (pattype);
+	  pattype = non_reference (pattype);
 
-	  if (!is_std_init_list (non_reference (TREE_TYPE (patparm))))
+	  if (!is_std_init_list (pattype))
 	    {
 	      pedwarn (input_location, 0, "deducing %qT as %qT",
 		       non_reference (TREE_TYPE (patparm)),
