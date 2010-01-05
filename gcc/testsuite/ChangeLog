@@ -1,3 +1,7 @@
+2010-01-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr42542-1.c (res): Make it 8 elements.
+
 2010-01-05  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42462
