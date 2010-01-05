@@ -867,8 +867,17 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
 
-  if (!bitmap_set_contains_value (set, val))
-    bitmap_insert_into_set_1 (set, expr, val, false);
+#ifdef ENABLE_CHECKING
+  gcc_assert (expr->id == get_or_alloc_expression_id (expr));
+#endif
+
+  /* Constant values are always considered to be part of the set.  */
+  if (value_id_constant_p (val))
+    return;
+
+  /* If the value membership changed, add the expression.  */
+  if (bitmap_set_bit (set->values, val))
+    bitmap_set_bit (set->expressions, expr->id);
 }
 
 /* Print out EXPR to outfile.  */
