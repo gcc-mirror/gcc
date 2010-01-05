@@ -6,7 +6,7 @@
 # The resulting file can be used with test result comparison scripts for
 # results from tests that were run in parallel.  See usage() below.
 
-# Copyright (C) 2008, 2009 Free Software Foundation
+# Copyright (C) 2008, 2009, 2010 Free Software Foundation
 # Contributed by Janis Johnson <janis187@us.ibm.com>
 #
 # This file is part of GCC.
@@ -418,6 +418,6 @@ cat ${TMP}/var-* | $AWK -f $TOTAL_AWK
 # This is ugly, but if there's version output from the compiler under test
 # at the end of the file, we want it.  The other thing that might be there
 # is the final summary counts.
-tail -n 2 $FIRST_SUM | grep -q '^#' || tail -n 2 $FIRST_SUM
+tail -2 $FIRST_SUM | grep -q '^#' || tail -2 $FIRST_SUM
 
 exit 0
