@@ -1,3 +1,11 @@
+2010-01-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/42542
+	* config/i386/sse.md (smaxv2di3): New.
+	(umaxv2di3): Likewise.
+	(sminv2di3): Likewise.
+	(uminv2di3): Likewise.
+
 2010-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/42564
