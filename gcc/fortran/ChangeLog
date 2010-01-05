@@ -1,3 +1,9 @@
+2010-01-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41872
+	* trans-expr.c (gfc_conv_procedure_call): Nullify
+	return value for allocatable-scalar character functions.
+
 2010-01-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36161
