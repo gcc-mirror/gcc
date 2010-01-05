@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -1297,7 +1297,7 @@ walk_gimple_asm (gimple stmt, walk_tree_fn callback_op,
    The return value is that returned by the last call to walk_tree, or
    NULL_TREE if no CALLBACK_OP is specified.  */
 
-inline tree
+tree
 walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 		struct walk_stmt_info *wi)
 {

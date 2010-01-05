@@ -1,6 +1,6 @@
 /* Compilation switch flag definitions for GCC.
    Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "coretypes.h"
 #include "options.h"
-#include "real.h"
 
 enum debug_info_type
 {
@@ -333,32 +332,6 @@ extern enum stack_check_type flag_stack_check;
 /* Return whether the function should be excluded from
    instrumentation.  */
 extern bool flag_instrument_functions_exclude_p (tree fndecl);
-
-/* True if the given mode has a NaN representation and the treatment of
-   NaN operands is important.  Certain optimizations, such as folding
-   x * 0 into 0, are not correct for NaN operands, and are normally
-   disabled for modes with NaNs.  The user can ask for them to be
-   done anyway using the -funsafe-math-optimizations switch.  */
-#define HONOR_NANS(MODE) \
-  (MODE_HAS_NANS (MODE) && !flag_finite_math_only)
-
-/* Like HONOR_NANs, but true if we honor signaling NaNs (or sNaNs).  */
-#define HONOR_SNANS(MODE) (flag_signaling_nans && HONOR_NANS (MODE))
-
-/* As for HONOR_NANS, but true if the mode can represent infinity and
-   the treatment of infinite values is important.  */
-#define HONOR_INFINITIES(MODE) \
-  (MODE_HAS_INFINITIES (MODE) && !flag_finite_math_only)
-
-/* Like HONOR_NANS, but true if the given mode distinguishes between
-   positive and negative zero, and the sign of zero is important.  */
-#define HONOR_SIGNED_ZEROS(MODE) \
-  (MODE_HAS_SIGNED_ZEROS (MODE) && flag_signed_zeros)
-
-/* Like HONOR_NANS, but true if given mode supports sign-dependent rounding,
-   and the rounding mode is important.  */
-#define HONOR_SIGN_DEPENDENT_ROUNDING(MODE) \
-  (MODE_HAS_SIGN_DEPENDENT_ROUNDING (MODE) && flag_rounding_math)
 
 /* True if overflow wraps around for the given integral type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
