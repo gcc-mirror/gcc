@@ -1,3 +1,9 @@
+2010-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42614
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing):
+	Compute SMT aliases before symbol aliases.
+
 2010-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/42611

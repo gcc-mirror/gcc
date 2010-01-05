@@ -2335,6 +2335,61 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
   size_t i;
 
   timevar_push (TV_FLOW_INSENSITIVE);
+
+  /* Since this analysis is based exclusively on symbols, it fails to
+     handle cases where two pointers P and Q have different memory
+     tags with conflicting alias set numbers but no aliased symbols in
+     common.
+
+     For example, suppose that we have two memory tags SMT.1 and SMT.2
+     such that
+     
+     		may-aliases (SMT.1) = { a }
+		may-aliases (SMT.2) = { b }
+
+     and the alias set number of SMT.1 conflicts with that of SMT.2.
+     Since they don't have symbols in common, loads and stores from
+     SMT.1 and SMT.2 will seem independent of each other, which will
+     lead to the optimizers making invalid transformations (see
+     testsuite/gcc.c-torture/execute/pr15262-[12].c).
+
+     To avoid this problem, we do a final traversal of AI->POINTERS
+     looking for pairs of pointers that have no aliased symbols in
+     common and yet have conflicting alias set numbers.
+
+     Note this has to be done first as we only can avoid adding
+     aliases for common memory tag aliases, not for common symbol
+     aliases as they might get pruned by the operand scanner later.  */
+  for (i = 0; i < ai->num_pointers; i++)
+    {
+      size_t j;
+      struct alias_map_d *p_map1 = ai->pointers[i];
+      tree tag1 = symbol_mem_tag (p_map1->var);
+      bitmap may_aliases1 = MTAG_ALIASES (tag1);
+
+      for (j = 0; j < ai->num_pointers; j++)
+	{
+	  struct alias_map_d *p_map2 = ai->pointers[j];
+	  tree tag2 = symbol_mem_tag (p_map2->var);
+	  bitmap may_aliases2 = may_aliases (tag2);
+
+	  /* By convention tags don't alias themselves.  */
+	  if (tag1 == tag2)
+	    continue;
+
+	  /* If the pointers may not point to each other, do nothing.  */
+	  if (!may_alias_p (p_map1->var, p_map1->set, tag2, p_map2->set, true))
+	    continue;
+
+	  /* The two pointers may alias each other.  If they already have
+	     symbols in common, do nothing.  */
+	  if (have_common_aliases_p (may_aliases1, may_aliases2))
+	    continue;
+
+	  add_may_alias (tag1, tag2);
+	}
+    }
+
   /* For every pointer P, determine which addressable variables may alias
      with P's symbol memory tag.  */
   for (i = 0; i < ai->num_pointers; i++)
@@ -2365,56 +2420,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	      /* Add VAR to TAG's may-aliases set.  */
 	      add_may_alias (tag, var);
 	    }
-	}
-    }
-
-  /* Since this analysis is based exclusively on symbols, it fails to
-     handle cases where two pointers P and Q have different memory
-     tags with conflicting alias set numbers but no aliased symbols in
-     common.
-
-     For example, suppose that we have two memory tags SMT.1 and SMT.2
-     such that
-     
-     		may-aliases (SMT.1) = { a }
-		may-aliases (SMT.2) = { b }
-
-     and the alias set number of SMT.1 conflicts with that of SMT.2.
-     Since they don't have symbols in common, loads and stores from
-     SMT.1 and SMT.2 will seem independent of each other, which will
-     lead to the optimizers making invalid transformations (see
-     testsuite/gcc.c-torture/execute/pr15262-[12].c).
-
-     To avoid this problem, we do a final traversal of AI->POINTERS
-     looking for pairs of pointers that have no aliased symbols in
-     common and yet have conflicting alias set numbers.  */
-  for (i = 0; i < ai->num_pointers; i++)
-    {
-      size_t j;
-      struct alias_map_d *p_map1 = ai->pointers[i];
-      tree tag1 = symbol_mem_tag (p_map1->var);
-      bitmap may_aliases1 = MTAG_ALIASES (tag1);
-
-      for (j = 0; j < ai->num_pointers; j++)
-	{
-	  struct alias_map_d *p_map2 = ai->pointers[j];
-	  tree tag2 = symbol_mem_tag (p_map2->var);
-	  bitmap may_aliases2 = may_aliases (tag2);
-
-	  /* By convention tags don't alias themselves.  */
-	  if (tag1 == tag2)
-	    continue;
-
-	  /* If the pointers may not point to each other, do nothing.  */
-	  if (!may_alias_p (p_map1->var, p_map1->set, tag2, p_map2->set, true))
-	    continue;
-
-	  /* The two pointers may alias each other.  If they already have
-	     symbols in common, do nothing.  */
-	  if (have_common_aliases_p (may_aliases1, may_aliases2))
-	    continue;
-
-	  add_may_alias (tag1, tag2);
 	}
     }
 
