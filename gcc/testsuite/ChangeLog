@@ -1,3 +1,7 @@
+2010-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tls/opt-15.c: New test.
+
 2009-12-30  Ian Lance Taylor  <iant@google.com>
 
 	PR middle-end/42099
@@ -6647,7 +6651,7 @@
 	PR c++/30659
 	* g++.dg/template/crash71.C: New.
 
-2007-10-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-28  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/32147
 	* gfortran.dg/module_md5_1.f90: Update hash-value.
@@ -7106,7 +7110,7 @@
 
 	* gfortran.dg/bounds_check_10.f90: Fix testcase.
 
-2007-10-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-13  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33254
@@ -7248,7 +7252,7 @@
 	PR tree-optimization/33572
 	* g++.dg/torture/pr33572.C: Replace with complete test.
 
-2007-10-08  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-08  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33689
 	* gfortran.dg/spec_expr_5.f90: New.
@@ -7280,7 +7284,7 @@
 	PR libfortran/33683
 	* gfortran.dg/gamma_5.f90:  New test case
 
-2007-10-07  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-07  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/20851
 	* initialization_1.f90: Fix dg-error annotations.
@@ -7317,7 +7321,7 @@
 	PR tree-optimization/33572
 	* g++.dg/torture/pr33572.C: New.
 
-2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-06  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/25076
 	* gfortran.dg/forall_11.f90: New.
@@ -7377,7 +7381,7 @@
 	PR tree-optimization/33627
 	* g++.dg/torture/pr33627.C: New testcase.
 
-2007-10-04  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-04  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33626
 	* gfortran.dg/parens_6.f90: New.
@@ -7417,7 +7421,7 @@
 	* gfortran.dg/default_format_1.f90: XFAIL on ppc-darwin.
 	* gfortran.dg/default_format_2.f90: XFAIL on ppc-darwin.
 
-2007-10-03  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-03  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33198
 	* gfortran.dg/common_errors_1.f90: New.
@@ -7538,7 +7542,7 @@
 	* gcc.target/i386/sse5-convert.c: Fix target selector and rename to...
 	* gcc.target/i386/pr33524.c: ...this.
 
-2007-09-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-28  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33354
 	* gfortran.dg/minmaxloc_4.f90: New.
@@ -7580,7 +7584,7 @@
 	PR middle-end/7003
 	* gcc.target/powerpc/gcse-1.c: New test.
 
-2007-09-27  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-27  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/array_initializer_3.f90: Adapt error annotations for
 	fixed capitalizations.
@@ -7682,7 +7686,7 @@
 	PR c++/14688
 	* g++.dg/inherit/override_attribs.C: New file.
 
-2007-09-23  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-23  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/33269
 	* io.c (check_format_string): Move NULL and constant checks into
@@ -8108,7 +8112,7 @@
 	* gcc.dg/sibcall-4.c: As for gcc.dg/sibcall-3.c.
 	* gcc.dg/tree-ssa/ssa-fre-3.c: Require !mips64.
 
-2007-09-20  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-09-20  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/g77/19981216-0.f: Remove dg-warning annotation.
 	* gfortran.dg/io_constraints_1.f90: Make a -std=f95 test.  Add
@@ -9280,7 +9284,7 @@
 	* gcc.target/cris/builtin_clz_v0.c: New testcase.
 	* gcc.target/cris/builtin_clz_v3.c: New testcase.
 
-2007-09-02  Tobias Schlüuter  <tobi@gcc.gnu.org>
+2007-09-02  Tobias Schlï¿½uter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/substr_6.f90: New test.
 
@@ -10944,7 +10948,7 @@
 	PR fortran/30814
 	* gfortran.dg/pack_bounds_1.f90:  New test case.
 
-2007-07-23  Daniel Franke  <franke.daniel@gmail.com>
+2007-07-23 ï¿½Daniel Franke ï¿½<franke.daniel@gmail.com>
 
 	PR fortran/31639
 	* gfortran.dg/initialization_9.f90: New test.
@@ -11497,7 +11501,7 @@
 	* gcc.target/m68k/interrupt_thread-2.c: Likewise.
 	* gcc.target/m68k/interrupt_thread-3.c: Likewise.
 
-2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
+2007-07-12 ï¿½Daniel Franke ï¿½<franke.daniel@gmail.com>
 
 	PR fortran/31639
 	* gfortran.dg/func_decl_4.f90: New test.
@@ -13029,7 +13033,7 @@
 
 	* gcc.dg/tree-ssa/prefetch-6.c: New test.
 
-2007-05-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-05-29  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/sizeof.f90: New.
 
@@ -13862,7 +13866,7 @@
 	PR tree-optimization/31885
 	* gcc.dg/tree-ssa/loop-29.c: New test.
 
-2007-05-10 Dominique d'Humières <dominiq@lps.ens.fr>
+2007-05-10 Dominique d'Humiï¿½res <dominiq@lps.ens.fr>
 
 	* assumed_dummy_1.f90: Fix dg directive.
 	* char_initialiser_actual.f90: Likewise.
@@ -14536,7 +14540,7 @@
 
 	* gcc.dg/cpp/_Pragma6.c: Skip on fido-*-* and m68k-*-*.
 
-2007-04-17  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-17  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31144
 	* gfortran.dg/module_naming_1.f90: New.
@@ -14639,7 +14643,7 @@
 	PR fortran/31550
 	* gfortran.dg/used_types_16.f90: New test.
 
-2007-04-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-13  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/18937
 	* gfortran.dg/goto_2.f90: New.
@@ -14669,7 +14673,7 @@
 	* gfortran.dg/c_by_val.c: Use GCC extensions instead of including
 	<complex.h>.
 
-2007-04-12  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-04-12  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/31250
 	* gfortran.dg/char_length_2.f90: New.
@@ -15237,7 +15241,7 @@
 	PR fortran/31193
 	* gfortran.dg/transfer_array_intrinsic_3.f90: New test.
 
-2007-03-22  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-03-22  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/20897
 	* gfortran.dg/derived_name_1.f90: New.
@@ -16401,7 +16405,7 @@
 	* gcc.target/ia64/builtin-popcount-1.c: New test case.
 	* gcc.target/ia64/builtin-popcount-2.c: Likewise.
 
-2007-02-11  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-02-11  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	PR fortran/30478
 	* gfortran.dg/enum_4.f90: Update error message checks.
@@ -17655,7 +17659,7 @@
 	PR target/29248
 	* gcc.dg/rs6000-leaf.c: New.
 
-2006-12-20  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-12-20  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25392
 	* gfortran.dg/f2c_8.f90: New test.
@@ -17978,7 +17982,7 @@
 	* gcc.c-torture/compile/vector-2.c: New test.
 	* gcc.c-torture/compile/vector-3.c: New test.
 
-2006-12-12  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-12-12  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* lib/fortran-torture.exp: Update copyright years.  Remove
 	obsolete comment.  Test -ftree-vectorize where it makes sense.
@@ -21774,7 +21778,7 @@
 
 	* gnat.dg/string_slice.adb: New test.
 
-2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-07-01  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19259
 	* gfortran.dg/semicolon_fixed.c: New.
@@ -23053,7 +23057,7 @@
 	PR tree-optimization/27409
 	* gcc.dg/torture/pr27409.c: New testcase.
 
-2006-05-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-05-07  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/27457
 	* gfortran.dg/select_6.f90: New.
@@ -24602,7 +24606,7 @@
 	PR fortran/25045
 	* optional_dim.f90: New test.
 
-2006-02-14  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-14  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/26277
 	* gfortran.dg/label_4.f90: New.
@@ -24692,7 +24696,7 @@
 
 	gfortran.dg/null_1.f90: New test.
 
-2006-02-10  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-10  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14771
 	* gfortran.dg/parens_4.f90: New.
@@ -24702,7 +24706,7 @@
 
 	* gcc.dg/pr23372-1.c: Remove empty file.
 
-2006-02-09  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-09  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/14771
@@ -24796,7 +24800,7 @@
 	* gcc.dg/gomp/critical-3.c: Call cleanup-tree-dump.
 	* gcc.dg/tree-ssa/pr23382.c: Ditto.
 
-2006-02-07  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-02-07  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/25577
 	* gfortran.dg/mvbits_1.f90: New.
@@ -25216,7 +25220,7 @@
 	* gcc.target/i386/20060125-1.c: New test case.
 	* gcc.target/i386/20060125-2.c: New test case.
 
-2006-01-25  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+2006-01-25  Tobias Schlï¿½ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18540
 	* gfortran.dg/goto_1.f: New.
