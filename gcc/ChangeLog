@@ -1,3 +1,9 @@
+2010-01-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42462
+	* ipa-inline.c (compute_inline_parameters): Pass node->decl instead of
+	current_function_decl to helper functions and macros.
+
 2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/41771
