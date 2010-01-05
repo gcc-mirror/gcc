@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>bitmap_allocator</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      allocator&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="ext_allocators.html" title="Chapter 33. Allocators" /><link rel="prev" href="ext_allocators.html" title="Chapter 33. Allocators" /><link rel="next" href="ext_containers.html" title="Chapter 34. Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">bitmap_allocator</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_allocators.html">Prev</a> </td><th width="60%" align="center">Chapter 33. Allocators</th><td width="20%" align="right"> <a accesskey="n" href="ext_containers.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.allocator.bitmap"></a>bitmap_allocator</h2></div></div></div><p>
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.bitmap.design"></a>Design</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>bitmap_allocator</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      allocator&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="ext_allocators.html" title="Chapter 33. Allocators" /><link rel="prev" href="ext_allocators.html" title="Chapter 33. Allocators" /><link rel="next" href="ext_containers.html" title="Chapter 34. Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">bitmap_allocator</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_allocators.html">Prev</a> </td><th width="60%" align="center">Chapter 33. Allocators</th><td width="20%" align="right"> <a accesskey="n" href="ext_containers.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="bitmap_allocator"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.allocator.bitmap"></a>bitmap_allocator</h2></div></div></div><p>
+</p><div class="sect2" title="Design"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.bitmap.design"></a>Design</h3></div></div></div><p>
     As this name suggests, this allocator uses a bit-map to keep track
     of the used and unused memory locations for it's book-keeping
     purposes.
@@ -27,7 +27,7 @@
     Mutex Protection around every allocation/deallocation. The state
     of the macro is picked up automatically from the gthr abstraction
     layer.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.bitmap.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.free_list_store"></a>Free List Store</h4></div></div></div><p>
+  </p></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.bitmap.impl"></a>Implementation</h3></div></div></div><div class="sect3" title="Free List Store"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.free_list_store"></a>Free List Store</h4></div></div></div><p>
     The Free List Store (referred to as FLS for the remaining part of this
     document) is the Global memory pool that is shared by all instances of
     the bitmapped allocator instantiated for any type. This maintains a
@@ -65,17 +65,17 @@
     this internal fragmentation has to be decided by this function. I
     can see 3 possibilities right now. Please add more as and when you
     find better strategies.
-  </p><div class="orderedlist"><ol type="1"><li><p>Equal size check. Return true only when the 2 blocks are of equal
-size.</p></li><li><p>Difference Threshold: Return true only when the _block_size is
+  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Equal size check. Return true only when the 2 blocks are of equal
+size.</p></li><li class="listitem"><p>Difference Threshold: Return true only when the _block_size is
 greater than or equal to the _required_size, and if the _BS is &gt; _RS
 by a difference of less than some THRESHOLD value, then return true,
-else return false. </p></li><li><p>Percentage Threshold. Return true only when the _block_size is
+else return false. </p></li><li class="listitem"><p>Percentage Threshold. Return true only when the _block_size is
 greater than or equal to the _required_size, and if the _BS is &gt; _RS
 by a percentage of less than some THRESHOLD value, then return true,
 else return false.</p></li></ol></div><p>
     Currently, (3) is being used with a value of 36% Maximum wastage per
     Super Block.
-  </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.super_block"></a>Super Block</h4></div></div></div><p>
+  </p></div><div class="sect3" title="Super Block"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.super_block"></a>Super Block</h4></div></div></div><p>
     A super block is the block of memory acquired from the FLS from
     which the bitmap allocator carves out memory for single objects
     and satisfies the user's requests. These super blocks come in
@@ -90,7 +90,7 @@ else return false.</p></li></ol></div><p>
     The super block is contained in the FLS, and the FLS is responsible for
     getting / returning Super Bocks to and from the OS using operator new
     as defined by the C++ standard.
-  </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.super_block_data"></a>Super Block Data Layout</h4></div></div></div><p>
+  </p></div><div class="sect3" title="Super Block Data Layout"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.super_block_data"></a>Super Block Data Layout</h4></div></div></div><p>
     Each Super Block will be of some size that is a multiple of the
     number of Bits Per Block. Typically, this value is chosen as
     Bits_Per_Byte x sizeof(size_t). On an x86 system, this gives the
@@ -103,7 +103,7 @@ else return false.</p></li></ol></div><p>
   </p><p>
     Consider a block of size 64 ints. In memory, it would look like this:
     (assume a 32-bit system where, size_t is a 32-bit entity).
-  </p><div class="table"><a id="id730908"></a><p class="title"><b>Table 33.1. Bitmap Allocator Memory Map</b></p><div class="table-contents"><table summary="Bitmap Allocator Memory Map" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><tbody><tr><td align="left">268</td><td align="left">0</td><td align="left">4294967295</td><td align="left">4294967295</td><td align="left">Data -&gt; Space for 64 ints</td></tr></tbody></table></div></div><br class="table-break" /><p>
+  </p><div class="table"><a id="id530373"></a><p class="title"><b>Table 33.1. Bitmap Allocator Memory Map</b></p><div class="table-contents"><table summary="Bitmap Allocator Memory Map" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><tbody><tr><td align="left">268</td><td align="left">0</td><td align="left">4294967295</td><td align="left">4294967295</td><td align="left">Data -&gt; Space for 64 ints</td></tr></tbody></table></div></div><br class="table-break" /><p>
     The first Column(268) represents the size of the Block in bytes as
     seen by the Bitmap Allocator. Internally, a global free list is
     used to keep track of the free blocks used and given back by the
@@ -130,7 +130,7 @@ else return false.</p></li></ol></div><p>
     The 3rd 4x2 is size of the bitmap itself, which is the size of 32-bits
     x 2,
     which is 8-bytes, or 2 x sizeof(size_t).
-  </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.max_wasted"></a>Maximum Wasted Percentage</h4></div></div></div><p>
+  </p></div><div class="sect3" title="Maximum Wasted Percentage"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.max_wasted"></a>Maximum Wasted Percentage</h4></div></div></div><p>
     This has nothing to do with the algorithm per-se,
     only with some vales that must be chosen correctly to ensure that the
     allocator performs well in a real word scenario, and maintains a good
@@ -155,29 +155,29 @@ For map/multimap: k = 12, and c = 4 (int and double), we get: 37.524%
   </p><p>
     Thus, knowing these values, and based on the sizeof(value_type), we may
     create a function that returns the Max_Wastage_Percentage for us to use.
-  </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.allocate"></a><code class="function">allocate</code></h4></div></div></div><p>
+  </p></div><div class="sect3" title="allocate"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.allocate"></a><code class="function">allocate</code></h4></div></div></div><p>
     The allocate function is specialized for single object allocation
     ONLY.  Thus, ONLY if n == 1, will the bitmap_allocator's
     specialized algorithm be used. Otherwise, the request is satisfied
     directly by calling operator new.
   </p><p>
     Suppose n == 1, then the allocator does the following:
-  </p><div class="orderedlist"><ol type="1"><li><p>
+  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
 	Checks to see whether a free block exists somewhere in a region
 	of memory close to the last satisfied request. If so, then that
 	block is marked as allocated in the bit map and given to the
 	user. If not, then (2) is executed.
-    </p></li><li><p>
+    </p></li><li class="listitem"><p>
 	Is there a free block anywhere after the current block right
 	up to the end of the memory that we have? If so, that block is
 	found, and the same procedure is applied as above, and
 	returned to the user. If not, then (3) is executed.
-    </p></li><li><p>
+    </p></li><li class="listitem"><p>
 	Is there any block in whatever region of memory that we own
 	free?  This is done by checking
-      </p><div class="itemizedlist"><ul type="disc"><li><p>
+      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	The use count for each super block, and if that fails then
-	</p></li><li><p>
+	</p></li><li class="listitem"><p>
 	  The individual bit-maps for each super block.
 	</p></li></ul></div><p>
 	Note: Here we are never touching any of the memory that the
@@ -186,21 +186,21 @@ For map/multimap: k = 12, and c = 4 (int and double), we get: 37.524%
 	misses. If this succeeds then we apply the same procedure on
 	that bit-map as (1), and return that block of memory to the
 	user. However, if this process fails, then we resort to (4).
-	</p></li><li><p>
+	</p></li><li class="listitem"><p>
 	This process involves Refilling the internal exponentially
 	growing memory pool. The said effect is achieved by calling
 	_S_refill_pool which does the following:
-      </p><div class="itemizedlist"><ul type="disc"><li><p>
+      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	    Gets more memory from the Global Free List of the Required
 	    size.  
-	  </p></li><li><p>
+	  </p></li><li class="listitem"><p>
       Adjusts the size for the next call to itself. 
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
       Writes the appropriate headers in the bit-maps.
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
 	Sets the use count for that super-block just allocated to 0
 	(zero).  
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
 	  All of the above accounts to maintaining the basic invariant
 	  for the allocator. If the invariant is maintained, we are
 	  sure that all is well. Now, the same process is applied on
@@ -210,13 +210,13 @@ For map/multimap: k = 12, and c = 4 (int and double), we get: 37.524%
 Thus, you can clearly see that the allocate function is nothing but a
 combination of the next-fit and first-fit algorithm optimized ONLY for
 single object allocations.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.deallocate"></a><code class="function">deallocate</code></h4></div></div></div><p>
+</p></div><div class="sect3" title="deallocate"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.deallocate"></a><code class="function">deallocate</code></h4></div></div></div><p>
     The deallocate function again is specialized for single objects ONLY.
     For all n belonging to &gt; 1, the operator delete is called without
     further ado, and the deallocate function returns.
   </p><p>
     However for n == 1, a series of steps are performed:
-  </p><div class="orderedlist"><ol type="1"><li><p>
+  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
       We first need to locate that super-block which holds the memory
       location given to us by the user. For that purpose, we maintain
       a static variable _S_last_dealloc_index, which holds the index
@@ -227,7 +227,7 @@ single object allocations.
       the check for belongs_to succeeds, then we determine the bit-map
       for the given pointer, and locate the index into that bit-map,
       and mark that bit as free by setting it.
-    </p></li><li><p>
+    </p></li><li class="listitem"><p>
       If the _S_last_dealloc_index does not point to the memory block
       that we're looking for, then we do a linear search on the block
       stored in the vector of Block Pairs. This vector in code is
@@ -241,7 +241,7 @@ single object allocations.
     the vector.  While doing this, we also make sure that the basic
     invariant is maintained by making sure that _S_last_request and
     _S_last_dealloc_index point to valid locations within the vector.
-  </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.questions"></a>Questions</h4></div></div></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="bitmap.impl.question.1"></a>1</h5></div></div></div><p>
+  </p></div><div class="sect3" title="Questions"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.questions"></a>Questions</h4></div></div></div><div class="sect4" title="1"><div class="titlepage"><div><div><h5 class="title"><a id="bitmap.impl.question.1"></a>1</h5></div></div></div><p>
 Q1) The "Data Layout" section is
 cryptic. I have no idea of what you are trying to say. Layout of what?
 The free-list? Each bitmap? The Super Block?
@@ -251,7 +251,7 @@ size. In the example, a super block of size 32 x 1 is taken. The
 general formula for calculating the size of a super block is
 32 x sizeof(value_type) x 2^n, where n ranges from 0 to 32 for 32-bit
 systems.
-    </p></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="bitmap.impl.question.2"></a>2</h5></div></div></div><p>
+    </p></div><div class="sect4" title="2"><div class="titlepage"><div><div><h5 class="title"><a id="bitmap.impl.question.2"></a>2</h5></div></div></div><p>
       And since I just mentioned the
 term `each bitmap', what in the world is meant by it? What does each
 bitmap manage? How does it relate to the super block? Is the Super
@@ -268,7 +268,7 @@ Block a bitmap as well?
       blocks' status. Each bit-map is made up of a number of size_t,
       whose exact number for a super-block of a given size I have just
       mentioned.
-    </p></div><div class="sect4" lang="en" xml:lang="en"><div class="titlepage"><div><div><h5 class="title"><a id="bitmap.impl.question.3"></a>3</h5></div></div></div><p>
+    </p></div><div class="sect4" title="3"><div class="titlepage"><div><div><h5 class="title"><a id="bitmap.impl.question.3"></a>3</h5></div></div></div><p>
       How do the allocate and deallocate functions work in regard to
       bitmaps?
     </p><p>
@@ -297,15 +297,15 @@ Block a bitmap as well?
     </p><p>
       The bit-map now looks like this:
       1111111111111111111111111111111111111111111111111111111111111110
-    </p></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.locality"></a>Locality</h4></div></div></div><p>
+    </p></div></div><div class="sect3" title="Locality"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.locality"></a>Locality</h4></div></div></div><p>
     Another issue would be whether to keep the all bitmaps in a
     separate area in memory, or to keep them near the actual blocks
     that will be given out or allocated for the client. After some
     testing, I've decided to keep these bitmaps close to the actual
     blocks. This will help in 2 ways.
-  </p><div class="orderedlist"><ol type="1"><li><p>Constant time access for the bitmap themselves, since no kind of
+  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Constant time access for the bitmap themselves, since no kind of
 look up will be needed to find the correct bitmap list or it's
-equivalent.</p></li><li><p>And also this would preserve the cache as far as possible.</p></li></ol></div><p>
+equivalent.</p></li><li class="listitem"><p>And also this would preserve the cache as far as possible.</p></li></ol></div><p>
     So in effect, this kind of an allocator might prove beneficial from a
     purely cache point of view. But this allocator has been made to try and
     roll out the defects of the node_allocator, wherein the nodes get
@@ -314,7 +314,7 @@ equivalent.</p></li><li><p>And also this would preserve the cache as far as poss
     new_allocator's book keeping overhead is too much for small objects and
     single object allocations, though it preserves the locality of blocks
     very well when they are returned back to the allocator.
-  </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.grow_policy"></a>Overhead and Grow Policy</h4></div></div></div><p>
+  </p></div><div class="sect3" title="Overhead and Grow Policy"><div class="titlepage"><div><div><h4 class="title"><a id="bitmap.impl.grow_policy"></a>Overhead and Grow Policy</h4></div></div></div><p>
     Expected overhead per block would be 1 bit in memory. Also, once
     the address of the free list has been found, the cost for
     allocation/deallocation would be negligible, and is supposed to be

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 17. Associative</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="containers.html" title="Part VII.  Containers" /><link rel="prev" href="vector.html" title="vector" /><link rel="next" href="bitset.html" title="bitset" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 17. Associative</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="vector.html">Prev</a> </td><th width="60%" align="center">Part VII. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 17. Associative</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="containers.html" title="Part VII.  Containers" /><link rel="prev" href="vector.html" title="vector" /><link rel="next" href="bitset.html" title="bitset" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 17. Associative</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="vector.html">Prev</a> </td><th width="60%" align="center">Part VII. 
   Containers
   
-</th><td width="20%" align="right"> <a accesskey="n" href="bitset.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.containers.associative"></a>Chapter 17. Associative</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="associative.html#containers.associative.insert_hints">Insertion Hints</a></span></dt><dt><span class="sect1"><a href="bitset.html">bitset</a></span></dt><dd><dl><dt><span class="sect2"><a href="bitset.html#associative.bitset.size_variable">Size Variable</a></span></dt><dt><span class="sect2"><a href="bitset.html#associative.bitset.type_string">Type String</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.associative.insert_hints"></a>Insertion Hints</h2></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="bitset.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 17. Associative"><div class="titlepage"><div><div><h2 class="title"><a id="manual.containers.associative"></a>Chapter 17. Associative</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="associative.html#containers.associative.insert_hints">Insertion Hints</a></span></dt><dt><span class="sect1"><a href="bitset.html">bitset</a></span></dt><dd><dl><dt><span class="sect2"><a href="bitset.html#associative.bitset.size_variable">Size Variable</a></span></dt><dt><span class="sect2"><a href="bitset.html#associative.bitset.type_string">Type String</a></span></dt></dl></dd></dl></div><div class="sect1" title="Insertion Hints"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.associative.insert_hints"></a>Insertion Hints</h2></div></div></div><p>
      Section [23.1.2], Table 69, of the C++ standard lists this
      function for all of the associative containers (map, set, etc):
    </p><pre class="programlisting">
       a.insert(p,t);
    </pre><p>
      where 'p' is an iterator into the container 'a', and 't' is the
-     item to insert.  The standard says that “<span class="quote"><code class="code">t</code> is
+     item to insert.  The standard says that <span class="quote">“<span class="quote"><code class="code">t</code> is
      inserted as close as possible to the position just prior to
-     <code class="code">p</code>.</span>” (Library DR #233 addresses this topic,
+     <code class="code">p</code>.</span>”</span> (Library DR #233 addresses this topic,
      referring to <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html" target="_top">N1780</a>.
      Since version 4.2 GCC implements the resolution to DR 233, so
      that insertions happen as close as possible to the hint. For
@@ -31,25 +31,25 @@
      than</em></span> and <span class="emphasis"><em>less than</em></span> refer to the
      results of the strict weak ordering imposed on the container by
      its comparison object, which defaults to (basically)
-     “<span class="quote">&lt;</span>”.  Using those phrases is semantically sloppy,
+     <span class="quote">“<span class="quote">&lt;</span>”</span>.  Using those phrases is semantically sloppy,
      but I didn't want to get bogged down in syntax.  I assume that if
      you are intelligent enough to use your own comparison objects,
-     you are also intelligent enough to assign “<span class="quote">greater</span>”
-     and “<span class="quote">lesser</span>” their new meanings in the next
+     you are also intelligent enough to assign <span class="quote">“<span class="quote">greater</span>”</span>
+     and <span class="quote">“<span class="quote">lesser</span>”</span> their new meanings in the next
      paragraph.  *grin*
    </p><p>
      If the <code class="code">hint</code> parameter ('p' above) is equivalent to:
-   </p><div class="itemizedlist"><ul type="disc"><li><p>
+   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	  <code class="code">begin()</code>, then the item being inserted should
 	  have a key less than all the other keys in the container.
 	  The item will be inserted at the beginning of the container,
 	  becoming the new entry at <code class="code">begin()</code>.
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
 	  <code class="code">end()</code>, then the item being inserted should have
 	  a key greater than all the other keys in the container.  The
 	  item will be inserted at the end of the container, becoming
 	  the new entry at <code class="code">end()</code>.  
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
 	  neither <code class="code">begin()</code> nor <code class="code">end()</code>, then:
 	  Let <code class="code">h</code> be the entry in the container pointed to
 	  by <code class="code">hint</code>, that is, <code class="code">h = *hint</code>.  Then
@@ -59,10 +59,10 @@
 	  <code class="code">h</code> and <code class="code">h</code>'s predecessor.
 	  </p></li></ul></div><p>
      For <code class="code">multimap</code> and <code class="code">multiset</code>, the
-     restrictions are slightly looser: “<span class="quote">greater than</span>”
-     should be replaced by “<span class="quote">not less than</span>”and “<span class="quote">less
-     than</span>” should be replaced by “<span class="quote">not greater
-     than.</span>” (Why not replace greater with
+     restrictions are slightly looser: <span class="quote">“<span class="quote">greater than</span>”</span>
+     should be replaced by <span class="quote">“<span class="quote">not less than</span>”</span>and <span class="quote">“<span class="quote">less
+     than</span>”</span> should be replaced by <span class="quote">“<span class="quote">not greater
+     than.</span>”</span> (Why not replace greater with
      greater-than-or-equal-to?  You probably could in your head, but
      the mathematicians will tell you that it isn't the same thing.)
    </p><p>

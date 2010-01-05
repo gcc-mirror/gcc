@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 11. Memory</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="utilities.html" title="Part IV.  Utilities" /><link rel="prev" href="pairs.html" title="Chapter 10. Pairs" /><link rel="next" href="auto_ptr.html" title="auto_ptr" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 11. Memory</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pairs.html">Prev</a> </td><th width="60%" align="center">Part IV. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 11. Memory</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="utilities.html" title="Part IV.  Utilities" /><link rel="prev" href="pairs.html" title="Chapter 10. Pairs" /><link rel="next" href="auto_ptr.html" title="auto_ptr" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 11. Memory</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pairs.html">Prev</a> </td><th width="60%" align="center">Part IV. 
   Utilities
   
-</th><td width="20%" align="right"> <a accesskey="n" href="auto_ptr.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.util.memory"></a>Chapter 11. Memory</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="memory.html#manual.util.memory.allocator">Allocators</a></span></dt><dd><dl><dt><span class="sect2"><a href="memory.html#allocator.req">Requirements</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.design_issues">Design Issues</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.using">Using a Specific Allocator</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.custom">Custom Allocators</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.ext">Extension Allocators</a></span></dt></dl></dd><dt><span class="sect1"><a href="auto_ptr.html">auto_ptr</a></span></dt><dd><dl><dt><span class="sect2"><a href="auto_ptr.html#auto_ptr.limitations">Limitations</a></span></dt><dt><span class="sect2"><a href="auto_ptr.html#auto_ptr.using">Use in Containers</a></span></dt></dl></dd><dt><span class="sect1"><a href="shared_ptr.html">shared_ptr</a></span></dt><dd><dl><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.req">Requirements</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.design_issues">Design Issues</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.using">Use</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.ack">Acknowledgments</a></span></dt></dl></dd></dl></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="auto_ptr.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 11. Memory"><div class="titlepage"><div><div><h2 class="title"><a id="manual.util.memory"></a>Chapter 11. Memory</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="memory.html#manual.util.memory.allocator">Allocators</a></span></dt><dd><dl><dt><span class="sect2"><a href="memory.html#allocator.req">Requirements</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.design_issues">Design Issues</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.using">Using a Specific Allocator</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.custom">Custom Allocators</a></span></dt><dt><span class="sect2"><a href="memory.html#allocator.ext">Extension Allocators</a></span></dt></dl></dd><dt><span class="sect1"><a href="auto_ptr.html">auto_ptr</a></span></dt><dd><dl><dt><span class="sect2"><a href="auto_ptr.html#auto_ptr.limitations">Limitations</a></span></dt><dt><span class="sect2"><a href="auto_ptr.html#auto_ptr.using">Use in Containers</a></span></dt></dl></dd><dt><span class="sect1"><a href="shared_ptr.html">shared_ptr</a></span></dt><dd><dl><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.req">Requirements</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.design_issues">Design Issues</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.using">Use</a></span></dt><dt><span class="sect2"><a href="shared_ptr.html#shared_ptr.ack">Acknowledgments</a></span></dt></dl></dd></dl></div><p>
     Memory contains three general areas. First, function and operator
     calls via <code class="function">new</code> and <code class="function">delete</code>
     operator or member function calls.  Second, allocation via
     <code class="classname">allocator</code>. And finally, smart pointer and
     intelligent pointer abstractions.
-  </p><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.util.memory.allocator"></a>Allocators</h2></div></div></div><p>
+  </p><div class="sect1" title="Allocators"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.util.memory.allocator"></a>Allocators</h2></div></div></div><p>
  Memory management for Standard Library entities is encapsulated in a
  class template called <code class="classname">allocator</code>. The
  <code class="classname">allocator</code> abstraction is used throughout the
  library in <code class="classname">string</code>, container classes,
  algorithms, and parts of iostreams. This class, and base classes of
- it, are the superset of available free store (“<span class="quote">heap</span>”)
+ it, are the superset of available free store (<span class="quote">“<span class="quote">heap</span>”</span>)
  management classes.
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.req"></a>Requirements</h3></div></div></div><p>
+</p><div class="sect2" title="Requirements"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.req"></a>Requirements</h3></div></div></div><p>
     The C++ standard only gives a few directives in this area:
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
        When you add elements to a container, and the container must
        allocate more memory to hold them, the container makes the
        request via its <span class="type">Allocator</span> template
@@ -27,10 +27,10 @@
        <span class="type">allocator_type</span>.  This includes adding chars
        to the string class, which acts as a regular STL container in
        this respect.
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
        The default <span class="type">Allocator</span> argument of every
        container-of-T is <code class="classname">allocator&lt;T&gt;</code>.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
        The interface of the <code class="classname">allocator&lt;T&gt;</code> class is
          extremely simple.  It has about 20 public declarations (nested
          typedefs, member functions, etc), but the two which concern us most
@@ -44,7 +44,7 @@
 	 <span class="type">T</span>'s to allocate space for, <span class="emphasis"><em>not their
 	 total size</em></span>.
 	 (This is a simplification; the real signatures use nested typedefs.)  
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
 	 The storage is obtained by calling <code class="function">::operator
 	 new</code>, but it is unspecified when or how
 	 often this function is called.  The use of the 
@@ -54,7 +54,7 @@
        </p></li></ul></div><p> 
      Complete details cam be found in the C++ standard, look in
      <code class="constant">[20.4 Memory]</code>.
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.design_issues"></a>Design Issues</h3></div></div></div><p>
+   </p></div><div class="sect2" title="Design Issues"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.design_issues"></a>Design Issues</h3></div></div></div><p>
     The easiest way of fulfilling the requirements is to call
     <code class="function">operator new</code> each time a container needs
     memory, and to call <code class="function">operator delete</code> each time
@@ -93,7 +93,7 @@
     or loading and unloading shared objects in memory. As such, using
     caching allocators on systems that do not support
     <code class="function">abi::__cxa_atexit</code> is not recommended.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id712986"></a>Interface Design</h4></div></div></div><p>
+  </p></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.impl"></a>Implementation</h3></div></div></div><div class="sect3" title="Interface Design"><div class="titlepage"><div><div><h4 class="title"><a id="id481448"></a>Interface Design</h4></div></div></div><p>
      The only allocator interface that
      is support is the standard C++ interface. As such, all STL
      containers have been adjusted, and all external allocators have
@@ -106,7 +106,7 @@
    </p><p> 
      The base class that <code class="classname">allocator</code> is derived from
      may not be user-configurable.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id629278"></a>Selecting Default Allocation Policy</h4></div></div></div><p> 
+</p></div><div class="sect3" title="Selecting Default Allocation Policy"><div class="titlepage"><div><div><h4 class="title"><a id="id522854"></a>Selecting Default Allocation Policy</h4></div></div></div><p> 
      It's difficult to pick an allocation strategy that will provide
    maximum utility, without excessively penalizing some behavior. In
    fact, it's difficult just deciding which typical actions to measure
@@ -114,7 +114,7 @@
    </p><p> 
      Three synthetic benchmarks have been created that provide data
      that is used to compare different C++ allocators. These tests are:
-   </p><div class="orderedlist"><ol type="1"><li><p>
+   </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
        Insertion. 
        </p><p>
        Over multiple iterations, various STL container
@@ -123,7 +123,7 @@
      Test source for <a class="ulink" href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/sequence.cc?view=markup" target="_top">sequence</a>
      and <a class="ulink" href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert/associative.cc?view=markup" target="_top">associative</a>
      containers.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
        Insertion and erasure in a multi-threaded environment.
        </p><p>
        This test shows the ability of the allocator to reclaim memory
@@ -131,7 +131,7 @@
      for memory resources. 
      Test source 
     <a class="ulink" href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert_erase/associative.cc?view=markup" target="_top">here</a>.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
 	 A threaded producer/consumer model.
        </p><p>
        Test source for
@@ -143,7 +143,7 @@
      The current default choice for
      <code class="classname">allocator</code> is
      <code class="classname">__gnu_cxx::new_allocator</code>.
-   </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="id711751"></a>Disabling Memory Caching</h4></div></div></div><p> 
+   </p></div><div class="sect3" title="Disabling Memory Caching"><div class="titlepage"><div><div><h4 class="title"><a id="id496610"></a>Disabling Memory Caching</h4></div></div></div><p> 
       In use, <code class="classname">allocator</code> may allocate and
       deallocate using implementation-specified strategies and
       heuristics. Because of this, every call to an allocator object's
@@ -179,7 +179,7 @@
      environment, it likely means that you linked against objects
      built against the older library (objects which might still using the
      cached allocations...).
-  </p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.using"></a>Using a Specific Allocator</h3></div></div></div><p>
+  </p></div></div><div class="sect2" title="Using a Specific Allocator"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.using"></a>Using a Specific Allocator</h3></div></div></div><p>
      You can specify different memory management schemes on a
      per-container basis, by overriding the default
      <span class="type">Allocator</span> template parameter.  For example, an easy
@@ -190,7 +190,7 @@
       Likewise, a debugging form of whichever allocator is currently in use:
     </p><pre class="programlisting">
     std::deque &lt;int, __gnu_cxx::debug_allocator&lt;std::allocator&lt;int&gt; &gt; &gt;  debug_deque;
-      </pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.custom"></a>Custom Allocators</h3></div></div></div><p> 
+      </pre></div><div class="sect2" title="Custom Allocators"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.custom"></a>Custom Allocators</h3></div></div></div><p> 
     Writing a portable C++ allocator would dictate that the interface
     would look much like the one specified for
     <code class="classname">allocator</code>. Additional member functions, but
@@ -199,7 +199,7 @@
      Probably the best place to start would be to copy one of the
    extension allocators: say a simple one like 
    <code class="classname">new_allocator</code>.
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.ext"></a>Extension Allocators</h3></div></div></div><p> 
+   </p></div><div class="sect2" title="Extension Allocators"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.ext"></a>Extension Allocators</h3></div></div></div><p> 
     Several other allocators are provided as part of this
     implementation.  The location of the extension allocators and their
     names have changed, but in all cases, functionality is
@@ -209,12 +209,12 @@
     chart to track the changes.
   </p><p>
     More details on each of these extension allocators follows.
-  </p><div class="orderedlist"><ol type="1"><li><p>
+  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
        <code class="classname">new_allocator</code>
        </p><p>
 	 Simply wraps <code class="function">::operator new</code>
 	 and <code class="function">::operator delete</code>.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
        <code class="classname">malloc_allocator</code>
        </p><p>
 	 Simply wraps <code class="function">malloc</code> and
@@ -222,7 +222,7 @@
 	 out-of-memory handler (for
 	 <code class="function">new</code>/<code class="function">delete</code> this is
 	 taken care of elsewhere).
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
        <code class="classname">array_allocator</code>
        </p><p>
 	 Allows allocations of known and fixed sizes using existing
@@ -235,7 +235,7 @@
 	 allows the use of STL abstractions without runtime
 	 complications or overhead, even in situations such as program
 	 startup. For usage examples, please consult the testsuite.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
        <code class="classname">debug_allocator</code>
        </p><p> 
 	 A wrapper around an arbitrary allocator A.  It passes on
@@ -244,13 +244,13 @@
 	 to <code class="function">deallocate()</code>, the stored size is
 	 checked, and <code class="function">assert()</code> is used to
 	 guarantee they match.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
 	<code class="classname">throw_allocator</code>
 	</p><p> 
 	  Includes memory tracking and marking abilities as well as hooks for
 	  throwing exceptions at configurable intervals (including random,
 	  all, none). 
-	</p></li><li><p>
+	</p></li><li class="listitem"><p>
        <code class="classname">__pool_alloc</code>
        </p><p> 
 	 A high-performance, single pool allocator.  The reusable
@@ -296,23 +296,23 @@
      (Note that the GCC thread abstraction layer allows us to provide
      safe zero-overhead stubs for the threading routines, if threads
      were disabled at configuration time.)
-   </p></li><li><p>
+   </p></li><li class="listitem"><p>
        <code class="classname">__mt_alloc</code>
        </p><p>
 	 A high-performance fixed-size allocator with
 	 exponentially-increasing allocations. It has its own
 	 documentation, found <a class="link" href="ext_allocators.html#manual.ext.allocator.mt" title="mt_allocator">here</a>.
-       </p></li><li><p>
+       </p></li><li class="listitem"><p>
        <code class="classname">bitmap_allocator</code>
        </p><p>
 	 A high-performance allocator that uses a bit-map to keep track
 	 of the used and unused memory locations. It has its own
 	 documentation, found <a class="link" href="bitmap_allocator.html" title="bitmap_allocator">here</a>.
-       </p></li></ol></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id710951"></a><p><span class="title"><i>
+       </p></li></ol></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="allocator.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="ISO/IEC 14882:1998 Programming languages - C++"><a id="id431127"></a><p><span class="title"><i>
     ISO/IEC 14882:1998 Programming languages - C++  
     </i>. </span>
       isoc++_1998
-    <span class="pagenums">20.4 Memory. </span></p></div><div class="biblioentry"><a id="id710966"></a><p><span class="title"><i>The Standard Librarian: What Are Allocators Good
+    <span class="pagenums">20.4 Memory. </span></p></div><div class="biblioentry" title="The Standard Librarian: What Are Allocators Good"><a id="id431142"></a><p><span class="title"><i>The Standard Librarian: What Are Allocators Good
     </i>. </span>
       austernm
     <span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
@@ -320,28 +320,28 @@
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://www.cuj.com/documents/s=8000/cujcexp1812austern/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id644430"></a><p><span class="title"><i>The Hoard Memory Allocator</i>. </span>
+    . </span></p></div><div class="biblioentry" title="The Hoard Memory Allocator"><a id="id413862"></a><p><span class="title"><i>The Hoard Memory Allocator</i>. </span>
       emeryb
     <span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.cs.umass.edu/~emery/hoard/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id689922"></a><p><span class="title"><i>Reconsidering Custom Memory Allocation</i>. </span>
+    . </span></p></div><div class="biblioentry" title="Reconsidering Custom Memory Allocation"><a id="id499755"></a><p><span class="title"><i>Reconsidering Custom Memory Allocation</i>. </span>
       bergerzorn
     <span class="author"><span class="firstname">Emery</span> <span class="surname">Berger</span>. </span><span class="author"><span class="firstname">Ben</span> <span class="surname">Zorn</span>. </span><span class="author"><span class="firstname">Kathryn</span> <span class="surname">McKinley</span>. </span><span class="copyright">Copyright © 2002 OOPSLA. </span><span class="biblioid">
       <a class="ulink" href="http://www.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id709355"></a><p><span class="title"><i>Allocator Types</i>. </span>
+    . </span></p></div><div class="biblioentry" title="Allocator Types"><a id="id434571"></a><p><span class="title"><i>Allocator Types</i>. </span>
       kreftlanger
     <span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="publisher"><span class="publishername">
 	C/C++ Users Journal	
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://www.langer.camelot.de/Articles/C++Report/Allocators/Allocators.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id642689"></a><p><span class="title"><i>The C++ Programming Language</i>. </span>
+    . </span></p></div><div class="biblioentry" title="The C++ Programming Language"><a id="id477417"></a><p><span class="title"><i>The C++ Programming Language</i>. </span>
       tcpl
     <span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 . </span><span class="pagenums">19.4 Allocators. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="id614194"></a><p><span class="title"><i>Yalloc: A Recycling C++ Allocator</i>. </span>
+      . </span></span></p></div><div class="biblioentry" title="Yalloc: A Recycling C++ Allocator"><a id="id425118"></a><p><span class="title"><i>Yalloc: A Recycling C++ Allocator</i>. </span>
       yenf
     <span class="author"><span class="firstname">Felix</span> <span class="surname">Yen</span>. </span><span class="copyright">Copyright ©  . </span><span class="biblioid">
       <a class="ulink" href="http://home.earthlink.net/~brimar/yalloc/" target="_top">

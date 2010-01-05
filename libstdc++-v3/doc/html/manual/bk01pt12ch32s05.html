@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Implementation Issues</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="profile_mode.html" title="Chapter 32. Profile Mode" /><link rel="prev" href="bk01pt12ch32s04.html" title="Empirical Cost Model" /><link rel="next" href="bk01pt12ch32s06.html" title="Developer Information" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Implementation Issues</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch32s04.html">Prev</a> </td><th width="60%" align="center">Chapter 32. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch32s06.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.implementation"></a>Implementation Issues</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.stack"></a>Stack Traces</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Implementation Issues</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="profile_mode.html" title="Chapter 32. Profile Mode" /><link rel="prev" href="bk01pt12ch32s04.html" title="Empirical Cost Model" /><link rel="next" href="bk01pt12ch32s06.html" title="Developer Information" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Implementation Issues</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch32s04.html">Prev</a> </td><th width="60%" align="center">Chapter 32. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch32s06.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Implementation Issues"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.implementation"></a>Implementation Issues</h2></div></div></div><div class="sect2" title="Stack Traces"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.stack"></a>Stack Traces</h3></div></div></div><p>
   Accurate stack traces are needed during profiling since we group events by
   call context and dynamic instance.  Without accurate traces, diagnostics
   may be hard to interpret.  For instance, when giving advice to the user
@@ -11,24 +11,24 @@
   <code class="code">_GLIBCXX_PROFILE_STACK_DEPTH</code> can be set
   to 0 if you are willing to give up call context information, or to a small
   positive value to reduce run time overhead.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.symbols"></a>Symbolization of Instruction Addresses</h3></div></div></div><p>
+  </p></div><div class="sect2" title="Symbolization of Instruction Addresses"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.symbols"></a>Symbolization of Instruction Addresses</h3></div></div></div><p>
   The profiling and analysis phases use only instruction addresses.
   An external utility such as addr2line is needed to postprocess the result.
   We do not plan to add symbolization support in the profile extension.
   This would require access to symbol tables, debug information tables,
   external programs or libraries and other system dependent information.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.concurrency"></a>Concurrency</h3></div></div></div><p>
+  </p></div><div class="sect2" title="Concurrency"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.concurrency"></a>Concurrency</h3></div></div></div><p>
   Our current model is simplistic, but precise.
   We cannot afford to approximate because some of our diagnostics require
   precise matching of operations to container instance and call context.
   During profiling, we keep a single information table per diagnostic.
   There is a single lock per information table.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.stdlib-in-proflib"></a>Using the Standard Library in the Instrumentation Implementation</h3></div></div></div><p>
+  </p></div><div class="sect2" title="Using the Standard Library in the Instrumentation Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.stdlib-in-proflib"></a>Using the Standard Library in the Instrumentation Implementation</h3></div></div></div><p>
   As much as we would like to avoid uses of stdlibc++ within our 
   instrumentation library, containers such as unordered_map are very 
   appealing.  We plan to use them as long as they are named properly 
   to avoid ambiguity.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.malloc-hooks"></a>Malloc Hooks</h3></div></div></div><p>
+  </p></div><div class="sect2" title="Malloc Hooks"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.malloc-hooks"></a>Malloc Hooks</h3></div></div></div><p>
   User applications/libraries can provide malloc hooks.
   When the implementation of the malloc hooks uses stdlibc++, there can
   be an infinite cycle between the profile mode instrumentation and the
@@ -42,7 +42,7 @@
   uses non-recursive locks.
   XXX: A definitive solution to this problem would be for the profile extension
   to use a custom allocator internally, and perhaps not to use libstdc++.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.construction-destruction"></a>Construction and Destruction of Global Objects</h3></div></div></div><p>
+  </p></div><div class="sect2" title="Construction and Destruction of Global Objects"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.implementation.construction-destruction"></a>Construction and Destruction of Global Objects</h3></div></div></div><p>
   The profiling library state is initialized at the first call to a profiling
   method.  This allows us to record the construction of all global objects.
   However, we cannot do the same at destruction time.  The trace is written

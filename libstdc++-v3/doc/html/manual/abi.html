@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="test.html" title="Test" /><link rel="next" href="api.html" title="API Evolution and Deprecation History" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    , &#10;      compatibility&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="test.html" title="Test" /><link rel="next" href="api.html" title="API Evolution and Deprecation History" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="test.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
-</th><td width="20%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.abi"></a>ABI Policy and Guidelines</h2></div></div></div><p>
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.cxx_interface"></a>The C++ Interface</h3></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="ABI Policy and Guidelines"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.abi"></a>ABI Policy and Guidelines</h2></div></div></div><p>
+</p><div class="sect2" title="The C++ Interface"><div class="titlepage"><div><div><h3 class="title"><a id="abi.cxx_interface"></a>The C++ Interface</h3></div></div></div><p>
   C++ applications often dependent on specific language support
   routines, say for throwing exceptions, or catching exceptions, and
   perhaps also dependent on features in the C++ Standard Library.
@@ -42,9 +42,9 @@
 library ABI, which is the compilation of a given library API by a
 given compiler ABI. In a nutshell:
 </p><p>
-  “<span class="quote">
+  <span class="quote">“<span class="quote">
     library API + compiler ABI = library ABI
-  </span>”
+  </span>”</span>
 </p><p>
  The library ABI is mostly of interest for end-users who have
  unresolved symbols and are linking dynamically to the C++ Standard
@@ -58,10 +58,10 @@ given compiler ABI. In a nutshell:
   To use a specific version of the C++ ABI, one must use a
   corresponding GNU C++ toolchain (i.e., g++ and libstdc++) that
   implements the C++ ABI in question.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.versioning"></a>Versioning</h3></div></div></div><p> The C++ interface has evolved throughout the history of the GNU
+</p></div><div class="sect2" title="Versioning"><div class="titlepage"><div><div><h3 class="title"><a id="abi.versioning"></a>Versioning</h3></div></div></div><p> The C++ interface has evolved throughout the history of the GNU
 C++ toolchain. With each release, various details have been changed so
 as to give distinct versions to the C++ interface.
-</p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.goals"></a>Goals</h4></div></div></div><p>Extending existing, stable ABIs. Versioning gives subsequent
+</p><div class="sect3" title="Goals"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.goals"></a>Goals</h4></div></div></div><p>Extending existing, stable ABIs. Versioning gives subsequent
 releases of library binaries the ability to add new symbols and add
 functionality, all the while retaining compatibility with the previous
 releases in the series. Thus, program binaries linked with the initial
@@ -75,7 +75,7 @@ binary in a release series (with additional symbols added), substitute
 in the initial release of the library binary, and remain link
 compatible.
 </p><p>Allows multiple, incompatible ABIs to coexist at the same time.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.history"></a>History</h4></div></div></div><p>
+</p></div><div class="sect3" title="History"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.history"></a>History</h4></div></div></div><p>
  How can this complexity be managed? What does C++ versioning mean?
   Because library and compiler changes often make binaries compiled
   with one version of the GNU tools incompatible with binaries
@@ -84,17 +84,17 @@ compatible.
   easier.
 </p><p>
   The following techniques are used:
-</p><div class="orderedlist"><ol type="1"><li><p>Release versioning on the libgcc_s.so binary. </p><p>This is implemented via file names and the ELF
+</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Release versioning on the libgcc_s.so binary. </p><p>This is implemented via file names and the ELF
     <code class="constant">DT_SONAME</code> mechanism (at least on ELF
     systems). It is versioned as follows:
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: libgcc_s.so.1</p></li><li><p>gcc-3.0.1: libgcc_s.so.1</p></li><li><p>gcc-3.0.2: libgcc_s.so.1</p></li><li><p>gcc-3.0.3: libgcc_s.so.1</p></li><li><p>gcc-3.0.4: libgcc_s.so.1</p></li><li><p>gcc-3.1.0: libgcc_s.so.1</p></li><li><p>gcc-3.1.1: libgcc_s.so.1</p></li><li><p>gcc-3.2.0: libgcc_s.so.1</p></li><li><p>gcc-3.2.1: libgcc_s.so.1</p></li><li><p>gcc-3.2.2: libgcc_s.so.1</p></li><li><p>gcc-3.2.3: libgcc_s.so.1</p></li><li><p>gcc-3.3.0: libgcc_s.so.1</p></li><li><p>gcc-3.3.1: libgcc_s.so.1</p></li><li><p>gcc-3.3.2: libgcc_s.so.1</p></li><li><p>gcc-3.3.3: libgcc_s.so.1</p></li><li><p>gcc-3.4.x, gcc-4.[0-3].x: on m68k-linux and
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.0.1: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.0.2: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.0.3: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.0.4: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.1.0: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.1.1: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.2.0: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.2.1: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.2.2: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.2.3: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.3.0: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.3.1: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.3.2: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.3.3: libgcc_s.so.1</p></li><li class="listitem"><p>gcc-3.4.x, gcc-4.[0-5].x: on m68k-linux and
     hppa-linux this is either libgcc_s.so.1 (when configuring
     <code class="code">--with-sjlj-exceptions</code>) or libgcc_s.so.2. For all
-    others, this is libgcc_s.so.1.  </p></li></ul></div></li><li><p>Symbol versioning on the libgcc_s.so binary.</p><p>It is versioned with the following labels and version
+    others, this is libgcc_s.so.1.  </p></li></ul></div></li><li class="listitem"><p>Symbol versioning on the libgcc_s.so binary.</p><p>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
    particular release. Labels are cumulative. If a particular release
    is not listed, it has the same version labels as the preceding
-   release.</p><p>This corresponds to the mapfile: gcc/libgcc-std.ver</p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: GCC_3.0</p></li><li><p>gcc-3.3.0: GCC_3.3</p></li><li><p>gcc-3.3.1: GCC_3.3.1</p></li><li><p>gcc-3.3.2: GCC_3.3.2</p></li><li><p>gcc-3.3.4: GCC_3.3.4</p></li><li><p>gcc-3.4.0: GCC_3.4</p></li><li><p>gcc-3.4.2: GCC_3.4.2</p></li><li><p>gcc-3.4.4: GCC_3.4.4</p></li><li><p>gcc-4.0.0: GCC_4.0.0</p></li><li><p>gcc-4.1.0: GCC_4.1.0</p></li><li><p>gcc-4.2.0: GCC_4.2.0</p></li><li><p>gcc-4.3.0: GCC_4.3.0</p></li><li><p>gcc-4.4.0: GCC_4.4.0</p></li></ul></div></li><li><p>
+   release.</p><p>This corresponds to the mapfile: gcc/libgcc-std.ver</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: GCC_3.0</p></li><li class="listitem"><p>gcc-3.3.0: GCC_3.3</p></li><li class="listitem"><p>gcc-3.3.1: GCC_3.3.1</p></li><li class="listitem"><p>gcc-3.3.2: GCC_3.3.2</p></li><li class="listitem"><p>gcc-3.3.4: GCC_3.3.4</p></li><li class="listitem"><p>gcc-3.4.0: GCC_3.4</p></li><li class="listitem"><p>gcc-3.4.2: GCC_3.4.2</p></li><li class="listitem"><p>gcc-3.4.4: GCC_3.4.4</p></li><li class="listitem"><p>gcc-4.0.0: GCC_4.0.0</p></li><li class="listitem"><p>gcc-4.1.0: GCC_4.1.0</p></li><li class="listitem"><p>gcc-4.2.0: GCC_4.2.0</p></li><li class="listitem"><p>gcc-4.3.0: GCC_4.3.0</p></li><li class="listitem"><p>gcc-4.4.0: GCC_4.4.0</p></li></ul></div></li><li class="listitem"><p>
 	Release versioning on the libstdc++.so binary, implemented in
 	the same was as the libgcc_s.so binary above. Listed is the
 	filename: <code class="constant">DT_SONAME</code> can be deduced from
@@ -106,7 +106,7 @@ compatible.
 	the table below, releases incompatible with the previous
 	one are explicitly noted.
       </p><p>It is versioned as follows:
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: libstdc++.so.3.0.0</p></li><li><p>gcc-3.0.1: libstdc++.so.3.0.1</p></li><li><p>gcc-3.0.2: libstdc++.so.3.0.2</p></li><li><p>gcc-3.0.3: libstdc++.so.3.0.2 (See Note 1)</p></li><li><p>gcc-3.0.4: libstdc++.so.3.0.4</p></li><li><p>gcc-3.1.0: libstdc++.so.4.0.0 <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li><li><p>gcc-3.1.1: libstdc++.so.4.0.1</p></li><li><p>gcc-3.2.0: libstdc++.so.5.0.0 <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li><li><p>gcc-3.2.1: libstdc++.so.5.0.1</p></li><li><p>gcc-3.2.2: libstdc++.so.5.0.2</p></li><li><p>gcc-3.2.3: libstdc++.so.5.0.3 (See Note 2)</p></li><li><p>gcc-3.3.0: libstdc++.so.5.0.4</p></li><li><p>gcc-3.3.1: libstdc++.so.5.0.5</p></li><li><p>gcc-3.3.2: libstdc++.so.5.0.5</p></li><li><p>gcc-3.3.3: libstdc++.so.5.0.5</p></li><li><p>gcc-3.4.0: libstdc++.so.6.0.0 <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li><li><p>gcc-3.4.1: libstdc++.so.6.0.1</p></li><li><p>gcc-3.4.2: libstdc++.so.6.0.2</p></li><li><p>gcc-3.4.3: libstdc++.so.6.0.3</p></li><li><p>gcc-3.4.4: libstdc++.so.6.0.3</p></li><li><p>gcc-3.4.5: libstdc++.so.6.0.3</p></li><li><p>gcc-3.4.6: libstdc++.so.6.0.3</p></li><li><p>gcc-4.0.0: libstdc++.so.6.0.4</p></li><li><p>gcc-4.0.1: libstdc++.so.6.0.5</p></li><li><p>gcc-4.0.2: libstdc++.so.6.0.6</p></li><li><p>gcc-4.0.3: libstdc++.so.6.0.7</p></li><li><p>gcc-4.1.0: libstdc++.so.6.0.7</p></li><li><p>gcc-4.1.1: libstdc++.so.6.0.8</p></li><li><p>gcc-4.1.2: libstdc++.so.6.0.8</p></li><li><p>gcc-4.2.0: libstdc++.so.6.0.9</p></li><li><p>gcc-4.2.1: libstdc++.so.6.0.9 (See Note 3)</p></li><li><p>gcc-4.2.2: libstdc++.so.6.0.9</p></li><li><p>gcc-4.2.3: libstdc++.so.6.0.9</p></li><li><p>gcc-4.2.4: libstdc++.so.6.0.9</p></li><li><p>gcc-4.3.0: libstdc++.so.6.0.10</p></li><li><p>gcc-4.3.1: libstdc++.so.6.0.10</p></li><li><p>gcc-4.3.2: libstdc++.so.6.0.10</p></li><li><p>gcc-4.3.3: libstdc++.so.6.0.10</p></li><li><p>gcc-4.4.0: libstdc++.so.6.0.11</p></li></ul></div><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: libstdc++.so.3.0.0</p></li><li class="listitem"><p>gcc-3.0.1: libstdc++.so.3.0.1</p></li><li class="listitem"><p>gcc-3.0.2: libstdc++.so.3.0.2</p></li><li class="listitem"><p>gcc-3.0.3: libstdc++.so.3.0.2 (See Note 1)</p></li><li class="listitem"><p>gcc-3.0.4: libstdc++.so.3.0.4</p></li><li class="listitem"><p>gcc-3.1.0: libstdc++.so.4.0.0 <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li><li class="listitem"><p>gcc-3.1.1: libstdc++.so.4.0.1</p></li><li class="listitem"><p>gcc-3.2.0: libstdc++.so.5.0.0 <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li><li class="listitem"><p>gcc-3.2.1: libstdc++.so.5.0.1</p></li><li class="listitem"><p>gcc-3.2.2: libstdc++.so.5.0.2</p></li><li class="listitem"><p>gcc-3.2.3: libstdc++.so.5.0.3 (See Note 2)</p></li><li class="listitem"><p>gcc-3.3.0: libstdc++.so.5.0.4</p></li><li class="listitem"><p>gcc-3.3.1: libstdc++.so.5.0.5</p></li><li class="listitem"><p>gcc-3.3.2: libstdc++.so.5.0.5</p></li><li class="listitem"><p>gcc-3.3.3: libstdc++.so.5.0.5</p></li><li class="listitem"><p>gcc-3.4.0: libstdc++.so.6.0.0 <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li><li class="listitem"><p>gcc-3.4.1: libstdc++.so.6.0.1</p></li><li class="listitem"><p>gcc-3.4.2: libstdc++.so.6.0.2</p></li><li class="listitem"><p>gcc-3.4.3: libstdc++.so.6.0.3</p></li><li class="listitem"><p>gcc-3.4.4: libstdc++.so.6.0.3</p></li><li class="listitem"><p>gcc-3.4.5: libstdc++.so.6.0.3</p></li><li class="listitem"><p>gcc-3.4.6: libstdc++.so.6.0.3</p></li><li class="listitem"><p>gcc-4.0.0: libstdc++.so.6.0.4</p></li><li class="listitem"><p>gcc-4.0.1: libstdc++.so.6.0.5</p></li><li class="listitem"><p>gcc-4.0.2: libstdc++.so.6.0.6</p></li><li class="listitem"><p>gcc-4.0.3: libstdc++.so.6.0.7</p></li><li class="listitem"><p>gcc-4.1.0: libstdc++.so.6.0.7</p></li><li class="listitem"><p>gcc-4.1.1: libstdc++.so.6.0.8</p></li><li class="listitem"><p>gcc-4.1.2: libstdc++.so.6.0.8</p></li><li class="listitem"><p>gcc-4.2.0: libstdc++.so.6.0.9</p></li><li class="listitem"><p>gcc-4.2.1: libstdc++.so.6.0.9 (See Note 3)</p></li><li class="listitem"><p>gcc-4.2.2: libstdc++.so.6.0.9</p></li><li class="listitem"><p>gcc-4.2.3: libstdc++.so.6.0.9</p></li><li class="listitem"><p>gcc-4.2.4: libstdc++.so.6.0.9</p></li><li class="listitem"><p>gcc-4.3.0: libstdc++.so.6.0.10</p></li><li class="listitem"><p>gcc-4.3.1: libstdc++.so.6.0.10</p></li><li class="listitem"><p>gcc-4.3.2: libstdc++.so.6.0.10</p></li><li class="listitem"><p>gcc-4.3.3: libstdc++.so.6.0.10</p></li><li class="listitem"><p>gcc-4.3.4: libstdc++.so.6.0.10</p></li><li class="listitem"><p>gcc-4.4.0: libstdc++.so.6.0.11</p></li><li class="listitem"><p>gcc-4.4.1: libstdc++.so.6.0.12</p></li><li class="listitem"><p>gcc-4.4.2: libstdc++.so.6.0.13</p></li><li class="listitem"><p>gcc-4.5.0: libstdc++.so.6.0.14</p></li></ul></div><p>
       Note 1: Error should be libstdc++.so.3.0.3.
     </p><p>
       Note 2: Not strictly required.
@@ -114,7 +114,7 @@ compatible.
       Note 3: This release (but not previous or subsequent) has one
       known incompatibility, see <a class="ulink" href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33678" target="_top">33678</a>
       in the GCC bug database.
-    </p></li><li><p>Symbol versioning on the libstdc++.so binary.</p><p>mapfile: libstdc++/config/linker-map.gnu</p><p>It is versioned with the following labels and version
+    </p></li><li class="listitem"><p>Symbol versioning on the libstdc++.so binary.</p><p>mapfile: libstdc++/config/linker-map.gnu</p><p>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
    particular release. Note, only symbol which are newly introduced
    will use the maximum version definition. Thus, for release series
@@ -124,7 +124,7 @@ compatible.
    GLIBCPP_3.2 for symbols that were introduced in the gcc-3.2.0
    release.) If a particular release is not listed, it has the same
    version labels as the preceding release.
-   </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: (Error, not versioned)</p></li><li><p>gcc-3.0.1: (Error, not versioned)</p></li><li><p>gcc-3.0.2: (Error, not versioned)</p></li><li><p>gcc-3.0.3: (Error, not versioned)</p></li><li><p>gcc-3.0.4: (Error, not versioned)</p></li><li><p>gcc-3.1.0: GLIBCPP_3.1, CXXABI_1</p></li><li><p>gcc-3.1.1: GLIBCPP_3.1, CXXABI_1</p></li><li><p>gcc-3.2.0: GLIBCPP_3.2, CXXABI_1.2</p></li><li><p>gcc-3.2.1: GLIBCPP_3.2.1, CXXABI_1.2</p></li><li><p>gcc-3.2.2: GLIBCPP_3.2.2, CXXABI_1.2</p></li><li><p>gcc-3.2.3: GLIBCPP_3.2.2, CXXABI_1.2</p></li><li><p>gcc-3.3.0: GLIBCPP_3.2.2, CXXABI_1.2.1</p></li><li><p>gcc-3.3.1: GLIBCPP_3.2.3, CXXABI_1.2.1</p></li><li><p>gcc-3.3.2: GLIBCPP_3.2.3, CXXABI_1.2.1</p></li><li><p>gcc-3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</p></li><li><p>gcc-3.4.0: GLIBCXX_3.4, CXXABI_1.3</p></li><li><p>gcc-3.4.1: GLIBCXX_3.4.1, CXXABI_1.3</p></li><li><p>gcc-3.4.2: GLIBCXX_3.4.2</p></li><li><p>gcc-3.4.3: GLIBCXX_3.4.3</p></li><li><p>gcc-4.0.0: GLIBCXX_3.4.4, CXXABI_1.3.1</p></li><li><p>gcc-4.0.1: GLIBCXX_3.4.5</p></li><li><p>gcc-4.0.2: GLIBCXX_3.4.6</p></li><li><p>gcc-4.0.3: GLIBCXX_3.4.7</p></li><li><p>gcc-4.1.1: GLIBCXX_3.4.8</p></li><li><p>gcc-4.2.0: GLIBCXX_3.4.9</p></li><li><p>gcc-4.3.0: GLIBCXX_3.4.10, CXXABI_1.3.2</p></li><li><p>gcc-4.4.0: GLIBCXX_3.4.11, CXXABI_1.3.3</p></li></ul></div></li><li><p>Incremental bumping of a compiler pre-defined macro,
+   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: (Error, not versioned)</p></li><li class="listitem"><p>gcc-3.0.1: (Error, not versioned)</p></li><li class="listitem"><p>gcc-3.0.2: (Error, not versioned)</p></li><li class="listitem"><p>gcc-3.0.3: (Error, not versioned)</p></li><li class="listitem"><p>gcc-3.0.4: (Error, not versioned)</p></li><li class="listitem"><p>gcc-3.1.0: GLIBCPP_3.1, CXXABI_1</p></li><li class="listitem"><p>gcc-3.1.1: GLIBCPP_3.1, CXXABI_1</p></li><li class="listitem"><p>gcc-3.2.0: GLIBCPP_3.2, CXXABI_1.2</p></li><li class="listitem"><p>gcc-3.2.1: GLIBCPP_3.2.1, CXXABI_1.2</p></li><li class="listitem"><p>gcc-3.2.2: GLIBCPP_3.2.2, CXXABI_1.2</p></li><li class="listitem"><p>gcc-3.2.3: GLIBCPP_3.2.2, CXXABI_1.2</p></li><li class="listitem"><p>gcc-3.3.0: GLIBCPP_3.2.2, CXXABI_1.2.1</p></li><li class="listitem"><p>gcc-3.3.1: GLIBCPP_3.2.3, CXXABI_1.2.1</p></li><li class="listitem"><p>gcc-3.3.2: GLIBCPP_3.2.3, CXXABI_1.2.1</p></li><li class="listitem"><p>gcc-3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</p></li><li class="listitem"><p>gcc-3.4.0: GLIBCXX_3.4, CXXABI_1.3</p></li><li class="listitem"><p>gcc-3.4.1: GLIBCXX_3.4.1, CXXABI_1.3</p></li><li class="listitem"><p>gcc-3.4.2: GLIBCXX_3.4.2</p></li><li class="listitem"><p>gcc-3.4.3: GLIBCXX_3.4.3</p></li><li class="listitem"><p>gcc-4.0.0: GLIBCXX_3.4.4, CXXABI_1.3.1</p></li><li class="listitem"><p>gcc-4.0.1: GLIBCXX_3.4.5</p></li><li class="listitem"><p>gcc-4.0.2: GLIBCXX_3.4.6</p></li><li class="listitem"><p>gcc-4.0.3: GLIBCXX_3.4.7</p></li><li class="listitem"><p>gcc-4.1.1: GLIBCXX_3.4.8</p></li><li class="listitem"><p>gcc-4.2.0: GLIBCXX_3.4.9</p></li><li class="listitem"><p>gcc-4.3.0: GLIBCXX_3.4.10, CXXABI_1.3.2</p></li><li class="listitem"><p>gcc-4.4.0: GLIBCXX_3.4.11, CXXABI_1.3.3</p></li><li class="listitem"><p>gcc-4.4.1: GLIBCXX_3.4.12, CXXABI_1.3.3</p></li><li class="listitem"><p>gcc-4.4.2: GLIBCXX_3.4.13, CXXABI_1.3.3</p></li><li class="listitem"><p>gcc-4.5.0: GLIBCXX_3.4.14, CXXABI_1.3.4</p></li></ul></div></li><li class="listitem"><p>Incremental bumping of a compiler pre-defined macro,
     __GXX_ABI_VERSION. This macro is defined as the version of the
     compiler v3 ABI, with g++ 3.0.x being version 100. This macro will
     be automatically defined whenever g++ is used (the curious can
@@ -136,11 +136,11 @@ compatible.
     '-fabi-version' command line option.
     </p><p>
     It is versioned as follows, where 'n' is given by '-fabi-version=n':
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.x: 100</p></li><li><p>gcc-3.1.x: 100 (Error, should be 101)</p></li><li><p>gcc-3.2.x: 102</p></li><li><p>gcc-3.3.x: 102</p></li><li><p>gcc-3.4.x, gcc-4.[0-3].x: 102 (when n=1)</p></li><li><p>gcc-3.4.x, gcc-4.[0-3].x: 1000 + n (when n&gt;1) </p></li><li><p>gcc-3.4.x, gcc-4.[0-3].x: 999999 (when n=0)</p></li></ul></div><p></p></li><li><p>Changes to the default compiler option for
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.x: 100</p></li><li class="listitem"><p>gcc-3.1.x: 100 (Error, should be 101)</p></li><li class="listitem"><p>gcc-3.2.x: 102</p></li><li class="listitem"><p>gcc-3.3.x: 102</p></li><li class="listitem"><p>gcc-3.4.x, gcc-4.[0-5].x: 102 (when n=1)</p></li><li class="listitem"><p>gcc-3.4.x, gcc-4.[0-5].x: 1000 + n (when n&gt;1) </p></li><li class="listitem"><p>gcc-3.4.x, gcc-4.[0-5].x: 999999 (when n=0)</p></li></ul></div><p></p></li><li class="listitem"><p>Changes to the default compiler option for
     <code class="code">-fabi-version</code>.
     </p><p>
     It is versioned as follows:
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.x: (Error, not versioned) </p></li><li><p>gcc-3.1.x: (Error, not versioned) </p></li><li><p>gcc-3.2.x: <code class="code">-fabi-version=1</code></p></li><li><p>gcc-3.3.x: <code class="code">-fabi-version=1</code></p></li><li><p>gcc-3.4.x, gcc-4.[0-3].x: <code class="code">-fabi-version=2</code> <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li></ul></div><p></p></li><li><p>Incremental bumping of a library pre-defined macro. For releases
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.x: (Error, not versioned) </p></li><li class="listitem"><p>gcc-3.1.x: (Error, not versioned) </p></li><li class="listitem"><p>gcc-3.2.x: <code class="code">-fabi-version=1</code></p></li><li class="listitem"><p>gcc-3.3.x: <code class="code">-fabi-version=1</code></p></li><li class="listitem"><p>gcc-3.4.x, gcc-4.[0-5].x: <code class="code">-fabi-version=2</code> <span class="emphasis"><em>(Incompatible with previous)</em></span></p></li></ul></div><p></p></li><li class="listitem"><p>Incremental bumping of a library pre-defined macro. For releases
     before 3.4.0, the macro is __GLIBCPP__. For later releases, it's
     __GLIBCXX__. (The libstdc++ project generously changed from CPP to
     CXX throughout its source to allow the "C" pre-processor the CPP
@@ -153,7 +153,7 @@ compatible.
     the same value as gcc/DATESTAMP.)
     </p><p>
     It is versioned as follows:
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: 20010615</p></li><li><p>gcc-3.0.1: 20010819</p></li><li><p>gcc-3.0.2: 20011023</p></li><li><p>gcc-3.0.3: 20011220</p></li><li><p>gcc-3.0.4: 20020220</p></li><li><p>gcc-3.1.0: 20020514</p></li><li><p>gcc-3.1.1: 20020725</p></li><li><p>gcc-3.2.0: 20020814</p></li><li><p>gcc-3.2.1: 20021119</p></li><li><p>gcc-3.2.2: 20030205</p></li><li><p>gcc-3.2.3: 20030422</p></li><li><p>gcc-3.3.0: 20030513</p></li><li><p>gcc-3.3.1: 20030804</p></li><li><p>gcc-3.3.2: 20031016</p></li><li><p>gcc-3.3.3: 20040214</p></li><li><p>gcc-3.4.0: 20040419</p></li><li><p>gcc-3.4.1: 20040701</p></li><li><p>gcc-3.4.2: 20040906</p></li><li><p>gcc-3.4.3: 20041105</p></li><li><p>gcc-3.4.4: 20050519</p></li><li><p>gcc-3.4.5: 20051201</p></li><li><p>gcc-3.4.6: 20060306</p></li><li><p>gcc-4.0.0: 20050421</p></li><li><p>gcc-4.0.1: 20050707</p></li><li><p>gcc-4.0.2: 20050921</p></li><li><p>gcc-4.0.3: 20060309</p></li><li><p>gcc-4.1.0: 20060228</p></li><li><p>gcc-4.1.1: 20060524</p></li><li><p>gcc-4.1.2: 20070214</p></li><li><p>gcc-4.2.0: 20070514</p></li><li><p>gcc-4.2.1: 20070719</p></li><li><p>gcc-4.2.2: 20071007</p></li><li><p>gcc-4.2.3: 20080201</p></li><li><p>gcc-4.2.4: 20080519</p></li><li><p>gcc-4.3.0: 20080306</p></li><li><p>gcc-4.3.1: 20080606</p></li><li><p>gcc-4.3.2: 20080827</p></li><li><p>gcc-4.3.3: 20090124</p></li><li><p>gcc-4.4.0: 20090421</p></li></ul></div><p></p></li><li><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: 20010615</p></li><li class="listitem"><p>gcc-3.0.1: 20010819</p></li><li class="listitem"><p>gcc-3.0.2: 20011023</p></li><li class="listitem"><p>gcc-3.0.3: 20011220</p></li><li class="listitem"><p>gcc-3.0.4: 20020220</p></li><li class="listitem"><p>gcc-3.1.0: 20020514</p></li><li class="listitem"><p>gcc-3.1.1: 20020725</p></li><li class="listitem"><p>gcc-3.2.0: 20020814</p></li><li class="listitem"><p>gcc-3.2.1: 20021119</p></li><li class="listitem"><p>gcc-3.2.2: 20030205</p></li><li class="listitem"><p>gcc-3.2.3: 20030422</p></li><li class="listitem"><p>gcc-3.3.0: 20030513</p></li><li class="listitem"><p>gcc-3.3.1: 20030804</p></li><li class="listitem"><p>gcc-3.3.2: 20031016</p></li><li class="listitem"><p>gcc-3.3.3: 20040214</p></li><li class="listitem"><p>gcc-3.4.0: 20040419</p></li><li class="listitem"><p>gcc-3.4.1: 20040701</p></li><li class="listitem"><p>gcc-3.4.2: 20040906</p></li><li class="listitem"><p>gcc-3.4.3: 20041105</p></li><li class="listitem"><p>gcc-3.4.4: 20050519</p></li><li class="listitem"><p>gcc-3.4.5: 20051201</p></li><li class="listitem"><p>gcc-3.4.6: 20060306</p></li><li class="listitem"><p>gcc-4.0.0: 20050421</p></li><li class="listitem"><p>gcc-4.0.1: 20050707</p></li><li class="listitem"><p>gcc-4.0.2: 20050921</p></li><li class="listitem"><p>gcc-4.0.3: 20060309</p></li><li class="listitem"><p>gcc-4.1.0: 20060228</p></li><li class="listitem"><p>gcc-4.1.1: 20060524</p></li><li class="listitem"><p>gcc-4.1.2: 20070214</p></li><li class="listitem"><p>gcc-4.2.0: 20070514</p></li><li class="listitem"><p>gcc-4.2.1: 20070719</p></li><li class="listitem"><p>gcc-4.2.2: 20071007</p></li><li class="listitem"><p>gcc-4.2.3: 20080201</p></li><li class="listitem"><p>gcc-4.2.4: 20080519</p></li><li class="listitem"><p>gcc-4.3.0: 20080306</p></li><li class="listitem"><p>gcc-4.3.1: 20080606</p></li><li class="listitem"><p>gcc-4.3.2: 20080827</p></li><li class="listitem"><p>gcc-4.3.3: 20090124</p></li><li class="listitem"><p>gcc-4.4.0: 20090421</p></li><li class="listitem"><p>gcc-4.4.1: 20090722</p></li><li class="listitem"><p>gcc-4.4.2: 20091015</p></li></ul></div><p></p></li><li class="listitem"><p>
     Incremental bumping of a library pre-defined macro,
     _GLIBCPP_VERSION. This macro is defined as the released version of
     the library, as a string literal. This is only implemented in
@@ -166,7 +166,7 @@ compatible.
     of config.h.
     </p><p>
     It is versioned as follows:
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: "3.0.0"</p></li><li><p>gcc-3.0.1: "3.0.0" (Error, should be "3.0.1")</p></li><li><p>gcc-3.0.2: "3.0.0" (Error, should be "3.0.2")</p></li><li><p>gcc-3.0.3: "3.0.0" (Error, should be "3.0.3")</p></li><li><p>gcc-3.0.4: "3.0.0" (Error, should be "3.0.4")</p></li><li><p>gcc-3.1.0: "3.1.0"</p></li><li><p>gcc-3.1.1: "3.1.1"</p></li><li><p>gcc-3.2.0: "3.2"</p></li><li><p>gcc-3.2.1: "3.2.1"</p></li><li><p>gcc-3.2.2: "3.2.2"</p></li><li><p>gcc-3.2.3: "3.2.3"</p></li><li><p>gcc-3.3.0: "3.3"</p></li><li><p>gcc-3.3.1: "3.3.1"</p></li><li><p>gcc-3.3.2: "3.3.2"</p></li><li><p>gcc-3.3.3: "3.3.3"</p></li><li><p>gcc-3.4.x: "version-unused"</p></li><li><p>gcc-4.[0-3].x: "version-unused"</p></li></ul></div><p></p></li><li><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: "3.0.0"</p></li><li class="listitem"><p>gcc-3.0.1: "3.0.0" (Error, should be "3.0.1")</p></li><li class="listitem"><p>gcc-3.0.2: "3.0.0" (Error, should be "3.0.2")</p></li><li class="listitem"><p>gcc-3.0.3: "3.0.0" (Error, should be "3.0.3")</p></li><li class="listitem"><p>gcc-3.0.4: "3.0.0" (Error, should be "3.0.4")</p></li><li class="listitem"><p>gcc-3.1.0: "3.1.0"</p></li><li class="listitem"><p>gcc-3.1.1: "3.1.1"</p></li><li class="listitem"><p>gcc-3.2.0: "3.2"</p></li><li class="listitem"><p>gcc-3.2.1: "3.2.1"</p></li><li class="listitem"><p>gcc-3.2.2: "3.2.2"</p></li><li class="listitem"><p>gcc-3.2.3: "3.2.3"</p></li><li class="listitem"><p>gcc-3.3.0: "3.3"</p></li><li class="listitem"><p>gcc-3.3.1: "3.3.1"</p></li><li class="listitem"><p>gcc-3.3.2: "3.3.2"</p></li><li class="listitem"><p>gcc-3.3.3: "3.3.3"</p></li><li class="listitem"><p>gcc-3.4.x: "version-unused"</p></li><li class="listitem"><p>gcc-4.[0-5].x: "version-unused"</p></li></ul></div><p></p></li><li class="listitem"><p>
     Matching each specific C++ compiler release to a specific set of
     C++ include files. This is only implemented in gcc-3.1.1 releases
     and higher.
@@ -178,13 +178,13 @@ compatible.
     file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before gcc-3.4.0).
     </p><p>
     C++ includes are versioned as follows:
-    </p><div class="itemizedlist"><ul type="disc"><li><p>gcc-3.0.0: include/g++-v3</p></li><li><p>gcc-3.0.1: include/g++-v3</p></li><li><p>gcc-3.0.2: include/g++-v3</p></li><li><p>gcc-3.0.3: include/g++-v3</p></li><li><p>gcc-3.0.4: include/g++-v3</p></li><li><p>gcc-3.1.0: include/g++-v3</p></li><li><p>gcc-3.1.1: include/c++/3.1.1</p></li><li><p>gcc-3.2.0: include/c++/3.2</p></li><li><p>gcc-3.2.1: include/c++/3.2.1</p></li><li><p>gcc-3.2.2: include/c++/3.2.2</p></li><li><p>gcc-3.2.3: include/c++/3.2.3</p></li><li><p>gcc-3.3.0: include/c++/3.3</p></li><li><p>gcc-3.3.1: include/c++/3.3.1</p></li><li><p>gcc-3.3.2: include/c++/3.3.2</p></li><li><p>gcc-3.3.3: include/c++/3.3.3</p></li><li><p>gcc-3.4.0: include/c++/3.4.0</p></li><li><p>gcc-3.4.1: include/c++/3.4.1</p></li><li><p>gcc-3.4.2: include/c++/3.4.2</p></li><li><p>gcc-3.4.3: include/c++/3.4.3</p></li><li><p>gcc-3.4.4: include/c++/3.4.4</p></li><li><p>gcc-3.4.5: include/c++/3.4.5</p></li><li><p>gcc-3.4.6: include/c++/3.4.6</p></li><li><p>gcc-4.0.0: include/c++/4.0.0</p></li><li><p>gcc-4.0.1: include/c++/4.0.1</p></li><li><p>gcc-4.0.2: include/c++/4.0.2</p></li><li><p>gcc-4.0.3: include/c++/4.0.3</p></li><li><p>gcc-4.1.0: include/c++/4.1.0</p></li><li><p>gcc-4.1.1: include/c++/4.1.1</p></li><li><p>gcc-4.1.2: include/c++/4.1.2</p></li><li><p>gcc-4.2.0: include/c++/4.2.0</p></li><li><p>gcc-4.2.1: include/c++/4.2.1</p></li><li><p>gcc-4.2.2: include/c++/4.2.2</p></li><li><p>gcc-4.2.3: include/c++/4.2.3</p></li><li><p>gcc-4.2.4: include/c++/4.2.4</p></li><li><p>gcc-4.3.0: include/c++/4.3.0</p></li><li><p>gcc-4.3.1: include/c++/4.3.1</p></li><li><p>gcc-4.3.3: include/c++/4.3.3</p></li><li><p>gcc-4.4.0: include/c++/4.4.0</p></li></ul></div><p></p></li></ol></div><p>
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: include/g++-v3</p></li><li class="listitem"><p>gcc-3.0.1: include/g++-v3</p></li><li class="listitem"><p>gcc-3.0.2: include/g++-v3</p></li><li class="listitem"><p>gcc-3.0.3: include/g++-v3</p></li><li class="listitem"><p>gcc-3.0.4: include/g++-v3</p></li><li class="listitem"><p>gcc-3.1.0: include/g++-v3</p></li><li class="listitem"><p>gcc-3.1.1: include/c++/3.1.1</p></li><li class="listitem"><p>gcc-3.2.0: include/c++/3.2</p></li><li class="listitem"><p>gcc-3.2.1: include/c++/3.2.1</p></li><li class="listitem"><p>gcc-3.2.2: include/c++/3.2.2</p></li><li class="listitem"><p>gcc-3.2.3: include/c++/3.2.3</p></li><li class="listitem"><p>gcc-3.3.0: include/c++/3.3</p></li><li class="listitem"><p>gcc-3.3.1: include/c++/3.3.1</p></li><li class="listitem"><p>gcc-3.3.2: include/c++/3.3.2</p></li><li class="listitem"><p>gcc-3.3.3: include/c++/3.3.3</p></li><li class="listitem"><p>gcc-3.4.0: include/c++/3.4.0</p></li><li class="listitem"><p>gcc-3.4.1: include/c++/3.4.1</p></li><li class="listitem"><p>gcc-3.4.2: include/c++/3.4.2</p></li><li class="listitem"><p>gcc-3.4.3: include/c++/3.4.3</p></li><li class="listitem"><p>gcc-3.4.4: include/c++/3.4.4</p></li><li class="listitem"><p>gcc-3.4.5: include/c++/3.4.5</p></li><li class="listitem"><p>gcc-3.4.6: include/c++/3.4.6</p></li><li class="listitem"><p>gcc-4.0.0: include/c++/4.0.0</p></li><li class="listitem"><p>gcc-4.0.1: include/c++/4.0.1</p></li><li class="listitem"><p>gcc-4.0.2: include/c++/4.0.2</p></li><li class="listitem"><p>gcc-4.0.3: include/c++/4.0.3</p></li><li class="listitem"><p>gcc-4.1.0: include/c++/4.1.0</p></li><li class="listitem"><p>gcc-4.1.1: include/c++/4.1.1</p></li><li class="listitem"><p>gcc-4.1.2: include/c++/4.1.2</p></li><li class="listitem"><p>gcc-4.2.0: include/c++/4.2.0</p></li><li class="listitem"><p>gcc-4.2.1: include/c++/4.2.1</p></li><li class="listitem"><p>gcc-4.2.2: include/c++/4.2.2</p></li><li class="listitem"><p>gcc-4.2.3: include/c++/4.2.3</p></li><li class="listitem"><p>gcc-4.2.4: include/c++/4.2.4</p></li><li class="listitem"><p>gcc-4.3.0: include/c++/4.3.0</p></li><li class="listitem"><p>gcc-4.3.1: include/c++/4.3.1</p></li><li class="listitem"><p>gcc-4.3.3: include/c++/4.3.3</p></li><li class="listitem"><p>gcc-4.3.4: include/c++/4.3.4</p></li><li class="listitem"><p>gcc-4.4.0: include/c++/4.4.0</p></li><li class="listitem"><p>gcc-4.4.1: include/c++/4.4.1</p></li><li class="listitem"><p>gcc-4.4.2: include/c++/4.4.2</p></li><li class="listitem"><p>gcc-4.5.0: include/c++/4.5.0</p></li></ul></div><p></p></li></ol></div><p>
   Taken together, these techniques can accurately specify interface
   and implementation changes in the GNU C++ tools themselves. Used
   properly, they allow both the GNU C++ tools implementation, and
   programs using them, an evolving yet controlled development that
   maintains backward compatibility.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.prereq"></a>Prerequisites</h4></div></div></div><p>
+</p></div><div class="sect3" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.prereq"></a>Prerequisites</h4></div></div></div><p>
       Minimum environment that supports a versioned ABI: A supported
       dynamic linker, a GNU linker of sufficient vintage to understand
       demangled C++ name globbing (ld), a shared executable compiled
@@ -198,7 +198,7 @@ compatible.
       Most modern Linux and BSD versions, particularly ones using
       gcc-3.1.x tools and more recent vintages, will meet the
       requirements above.
-    </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.config"></a>Configuring</h4></div></div></div><p>
+    </p></div><div class="sect3" title="Configuring"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.config"></a>Configuring</h4></div></div></div><p>
       It turns out that most of the configure options that change
       default behavior will impact the mangled names of exported
       symbols, and thus impact versioning and compatibility.
@@ -216,7 +216,7 @@ compatible.
       attempts to make sure that all the requirement for symbol
       versioning are in place. For more information, please consult
       acinclude.m4.
-    </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.active"></a>Checking Active</h4></div></div></div><p>
+    </p></div><div class="sect3" title="Checking Active"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.active"></a>Checking Active</h4></div></div></div><p>
       When the GNU C++ library is being built with symbol versioning
       on, you should see the following at configure time for
       libstdc++:
@@ -252,29 +252,29 @@ If you see symbols in the resulting output with "GLIBCXX_3" as part
 of the name, then the executable is versioned. Here's an example:
 </p><p>
    <code class="code">U _ZNSt8ios_base4InitC1Ev@@GLIBCXX_3.4</code>
-</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.changes_allowed"></a>Allowed Changes</h3></div></div></div><p>
+</p></div></div><div class="sect2" title="Allowed Changes"><div class="titlepage"><div><div><h3 class="title"><a id="abi.changes_allowed"></a>Allowed Changes</h3></div></div></div><p>
 The following will cause the library minor version number to
 increase, say from "libstdc++.so.3.0.4" to "libstdc++.so.3.0.5".
-</p><div class="orderedlist"><ol type="1"><li><p>Adding an exported global or static data member</p></li><li><p>Adding an exported function, static or non-virtual member function</p></li><li><p>Adding an exported symbol or symbols by additional instantiations</p></li></ol></div><p>
+</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Adding an exported global or static data member</p></li><li class="listitem"><p>Adding an exported function, static or non-virtual member function</p></li><li class="listitem"><p>Adding an exported symbol or symbols by additional instantiations</p></li></ol></div><p>
 Other allowed changes are possible.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.changes_no"></a>Prohibited Changes</h3></div></div></div><p>
+</p></div><div class="sect2" title="Prohibited Changes"><div class="titlepage"><div><div><h3 class="title"><a id="abi.changes_no"></a>Prohibited Changes</h3></div></div></div><p>
 The following non-exhaustive list will cause the library major version
 number to increase, say from "libstdc++.so.3.0.4" to
 "libstdc++.so.4.0.0".
-</p><div class="orderedlist"><ol type="1"><li><p>Changes in the gcc/g++ compiler ABI</p></li><li><p>Changing size of an exported symbol</p></li><li><p>Changing alignment of an exported symbol</p></li><li><p>Changing the layout of an exported symbol</p></li><li><p>Changing mangling on an exported symbol</p></li><li><p>Deleting an exported symbol</p></li><li><p>Changing the inheritance properties of a type by adding or removing
-    base classes</p></li><li><p>
+</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Changes in the gcc/g++ compiler ABI</p></li><li class="listitem"><p>Changing size of an exported symbol</p></li><li class="listitem"><p>Changing alignment of an exported symbol</p></li><li class="listitem"><p>Changing the layout of an exported symbol</p></li><li class="listitem"><p>Changing mangling on an exported symbol</p></li><li class="listitem"><p>Deleting an exported symbol</p></li><li class="listitem"><p>Changing the inheritance properties of a type by adding or removing
+    base classes</p></li><li class="listitem"><p>
   Changing the size, alignment, or layout of types
   specified in the C++ standard. These may not necessarily be
   instantiated or otherwise exported in the library binary, and
   include all the required locale facets, as well as things like
   std::basic_streambuf, et al.
-</p></li><li><p> Adding an explicit copy constructor or destructor to a
+</p></li><li class="listitem"><p> Adding an explicit copy constructor or destructor to a
 class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of being passing instances of this
 class in registers, the compiler will be forced to use memory. See <a class="ulink" href="http://www.codesourcery.com/cxx-abi/abi.html#calls" target="_top"> this part</a>
  of the C++ ABI documentation for further details. 
- </p></li></ol></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol type="1"><li><p>
+ </p></li></ol></div></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
      Separation of interface and implementation
    </p><p>
      This is accomplished by two techniques that separate the API from
@@ -301,7 +301,7 @@ class in registers, the compiler will be forced to use memory. See <a class="uli
      </p></dd></dl></div><p> 
    In addition, these techniques have the additional benefit that they
    reduce binary size, which can increase runtime performance.
- </p></li><li><p>
+ </p></li><li class="listitem"><p>
      Namespaces linking symbol definitions to export mapfiles
    </p><p>
      All symbols in the shared library binary are processed by a
@@ -320,9 +320,9 @@ class in registers, the compiler will be forced to use memory. See <a class="uli
 exceptional symbols are allowed to be visible.</p></dd><dt><span class="term"><code class="code">namespace __gnu_cxx</code></span></dt><dd><p> Defaults to not exporting any symbols in label
 <code class="code">GLIBCXX</code>, select items are allowed to be visible.</p></dd><dt><span class="term"><code class="code">namespace __gnu_internal</code></span></dt><dd><p> Defaults to not exported, no items are allowed to be visible.</p></dd><dt><span class="term"><code class="code">namespace __cxxabiv1</code>, aliased to <code class="code"> namespace abi</code></span></dt><dd><p> Defaults to not exporting any symbols in label
 <code class="code">CXXABI</code>, select items are allowed to be visible.</p></dd></dl></div><p>
-</p></li><li><p>Freezing the API</p><p>Disallowed changes, as above, are not made on a stable release
+</p></li><li class="listitem"><p>Freezing the API</p><p>Disallowed changes, as above, are not made on a stable release
 branch. Enforcement tends to be less strict with GNU extensions that
-standard includes.</p></li></ol></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.testing"></a>Testing</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.testing.single"></a>Single ABI Testing</h4></div></div></div><p>
+standard includes.</p></li></ol></div></div><div class="sect2" title="Testing"><div class="titlepage"><div><div><h3 class="title"><a id="abi.testing"></a>Testing</h3></div></div></div><div class="sect3" title="Single ABI Testing"><div class="titlepage"><div><div><h4 class="title"><a id="abi.testing.single"></a>Single ABI Testing</h4></div></div></div><p>
       Testing for GNU C++ ABI changes is composed of two distinct
       areas: testing the C++ compiler (g++) for compiler changes, and
       testing the C++ library (libstdc++) for library changes.
@@ -388,7 +388,7 @@ and other detailed data is not displayed with this flag.
 </p><p>
 Perhaps there are other C++ ABI checkers. If so, please notify
 us. We'd like to know about them!
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="abi.testing.multi"></a>Multiple ABI Testing</h4></div></div></div><p>
+</p></div><div class="sect3" title="Multiple ABI Testing"><div class="titlepage"><div><div><h4 class="title"><a id="abi.testing.multi"></a>Multiple ABI Testing</h4></div></div></div><p>
 A "C" application, dynamically linked to two shared libraries, liba,
 libb. The dependent library liba is C++ shared library compiled with
 gcc-3.3.x, and uses io, exceptions, locale, etc. The dependent library
@@ -451,7 +451,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   This resulting binary, when executed, will be able to safely use
   code from both liba, and the dependent libstdc++.so.6, and libb,
   with the dependent libstdc++.so.5.
-</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.issues"></a>Outstanding Issues</h3></div></div></div><p> 
+</p></div></div><div class="sect2" title="Outstanding Issues"><div class="titlepage"><div><div><h3 class="title"><a id="abi.issues"></a>Outstanding Issues</h3></div></div></div><p> 
   Some features in the C++ language make versioning especially
   difficult. In particular, compiler generated constructs such as
   implicit instantiations for templates, typeinfo information, and
@@ -464,56 +464,56 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <a class="ulink" href="http://gcc.gnu.org/PR24660" target="_top">24660: versioning weak symbols in libstdc++</a>
 </p><p>
 <a class="ulink" href="http://gcc.gnu.org/PR19664" target="_top">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
-</p></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id658186"></a><p><span class="title"><i>
+</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="ABIcheck, a vague idea of checking ABI compatibility"><a id="id442262"></a><p><span class="title"><i>
       ABIcheck, a vague idea of checking ABI compatibility
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://abicheck.sourceforge.net/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id658203"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="C++ ABI Reference"><a id="id442280"></a><p><span class="title"><i>
       C++ ABI Reference
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.codesourcery.com/public/cxx-abi/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id658220"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Intel® Compilers for Linux* -Compatibility with the GNU Compilers"><a id="id442297"></a><p><span class="title"><i>
       Intel® Compilers for Linux* -Compatibility with the GNU Compilers
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id658238"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)"><a id="id442314"></a><p><span class="title"><i>
       Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/app/docs/doc/817-1984" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id658254"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)"><a id="id442331"></a><p><span class="title"><i>
       Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/app/docs/doc/819-5266" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id658272"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="How to Write Shared Libraries"><a id="id442348"></a><p><span class="title"><i>
       How to Write Shared Libraries
     </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="biblioid">
       <a class="ulink" href="http://people.redhat.com/drepper/dsohowto.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id675905"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="C++ ABI for the ARM Architecture"><a id="id442376"></a><p><span class="title"><i>
       C++ ABI for the ARM Architecture
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.arm.com/miscPDFs/8033.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id675922"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Dynamic Shared Objects: Survey and Issues"><a id="id442393"></a><p><span class="title"><i>
       Dynamic Shared Objects: Survey and Issues
     </i>. </span><span class="subtitle">
       ISO C++ J16/06-0046
     . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id675954"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Versioning With Namespaces"><a id="id461984"></a><p><span class="title"><i>
       Versioning With Namespaces
     </i>. </span><span class="subtitle">
       ISO C++ J16/06-0083
     . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id675987"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems"><a id="id462017"></a><p><span class="title"><i>
       Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems
     </i>. </span><span class="subtitle">
 SYRCoSE 2009

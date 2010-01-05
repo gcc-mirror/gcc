@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Exceptions</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      exception&#10;    , &#10;      error&#10;    , &#10;      exception neutrality&#10;    , &#10;      exception safety&#10;    , &#10;      exception propagation&#10;    , &#10;      -fno-exceptions&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_concurrency.html" title="Concurrency" /><link rel="next" href="debug.html" title="Debugging Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Exceptions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.exceptions"></a>Exceptions</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Exceptions</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      exception&#10;    , &#10;      error&#10;    , &#10;      exception neutrality&#10;    , &#10;      exception safety&#10;    , &#10;      exception propagation&#10;    , &#10;      -fno-exceptions&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_concurrency.html" title="Concurrency" /><link rel="next" href="debug.html" title="Debugging Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Exceptions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_concurrency.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="debug.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Exceptions"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.exceptions"></a>Exceptions</h2></div></div></div><p>
 The C++ language provides language support for stack unwinding
 with <code class="literal">try</code> and <code class="literal">catch</code> blocks and
 the <code class="literal">throw</code> keyword.
@@ -12,7 +12,7 @@ exceptional circumstances.
 </p><p>
 Two general topics of discussion follow:
 exception neutrality and exception safety.
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.safety"></a>Exception Safety</h3></div></div></div><p> 
+</p><div class="sect2" title="Exception Safety"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.safety"></a>Exception Safety</h3></div></div></div><p> 
     What is exception-safe code? 
   </p><p>
     Will define this as reasonable and well-defined behavior by classes
@@ -27,7 +27,7 @@ exception neutrality and exception safety.
     Using the layered approach from Abrahams, can classify library
     components as providing set levels of safety. These will be called
     exception guarantees, and can be divided into three categories.
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
     One. Don't throw.
   </p><p>
     As specified in 23.2.1 general container requirements. Applicable
@@ -36,14 +36,14 @@ exception neutrality and exception safety.
     Member
     functions <code class="function">erase</code>, <code class="function">pop_back</code>, <code class="function">pop_front</code>, <code class="function">swap</code>, <code class="function">clear</code>. And <span class="type">iterator</span>
     copy constructor and assignment operator.
-  </p></li><li><p>
+  </p></li><li class="listitem"><p>
     Two. Don't leak resources when exceptions are thrown. This is
-    also referred to as the “<span class="quote">basic</span>” exception safety guarantee.
+    also referred to as the <span class="quote">“<span class="quote">basic</span>”</span> exception safety guarantee.
   </p><p>
     This applicable throughout the standard library.
-  </p></li><li><p>
+  </p></li><li class="listitem"><p>
     Three. Commit-or-rollback semantics.  This is
-    referred to as “<span class="quote">strong</span>” exception safety guarantee.
+    referred to as <span class="quote">“<span class="quote">strong</span>”</span> exception safety guarantee.
   </p><p>
     As specified in 23.2.1 general container requirements. Applicable
     to container and string classes.
@@ -51,7 +51,7 @@ exception neutrality and exception safety.
     Member functions <code class="function">insert</code> of a single
     element, <code class="function">push_back</code>, <code class="function">push_front</code>,
     and <code class="function">rehash</code>.
-  </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.propagating"></a>Exception Neutrality</h3></div></div></div><p>
+  </p></li></ul></div></div><div class="sect2" title="Exception Neutrality"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.propagating"></a>Exception Neutrality</h3></div></div></div><p>
     Simply put, once thrown an exception object should continue in
     flight unless handled explicitly. In practice, this means
     propagating exceptions should not be swallowed in
@@ -75,7 +75,7 @@ exception neutrality and exception safety.
     Unfortunately, this tends to be more of a guideline than a strict
     rule as applied to the standard library. As such, the following is
     a list of known problem areas where exceptions are not propagated.
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
       Input/Output
     </p><p>
     The destructor <code class="function">ios_base::Init::~Init()</code>
@@ -95,13 +95,13 @@ exception neutrality and exception safety.
     When closing the underlying
     file, <code class="function">basic_filebuf::close</code> will swallow
     (non-cancellation) exceptions thrown and return <code class="literal">NULL</code>.
-  </p></li><li><p>
+  </p></li><li class="listitem"><p>
       Thread
     </p><p>
       The constructors of <code class="classname">thread</code> that take a
       callable function argument swallow all exceptions resulting from
       executing the function argument.
-    </p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.no"></a>Doing without</h3></div></div></div><p>
+    </p></li></ul></div></div><div class="sect2" title="Doing without"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.no"></a>Doing without</h3></div></div></div><p>
     C++ is a language that strives to be as efficient as is possible
     in delivering features. As such, considerable care is used by both
     language implementer and designers to make sure unused features
@@ -220,7 +220,7 @@ exception neutrality and exception safety.
   substitution of the C language keyword
   <code class="literal">const</code> with the uglified
   doppelganger <code class="literal">__const</code>.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.compat"></a>Compatibility</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="using.exception.compat.c"></a>With <code class="literal">C</code></h4></div></div></div><p> 
+</p></div><div class="sect2" title="Compatibility"><div class="titlepage"><div><div><h3 class="title"><a id="intro.using.exception.compat"></a>Compatibility</h3></div></div></div><div class="sect3" title="With C"><div class="titlepage"><div><div><h4 class="title"><a id="using.exception.compat.c"></a>With <code class="literal">C</code></h4></div></div></div><p> 
   C language code that is expecting to interoperate with C++ should be
   compiled with <code class="literal">-fexceptions</code>. This will make
   debugging a C language function called as part of C++-induced stack
@@ -235,7 +235,7 @@ is called.
   getting these details right. For GNU systems, all appropriate parts
   of the GNU C library are already compiled
   with <code class="literal">-fexceptions</code>.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="using.exception.compat.posix"></a>With <code class="literal">POSIX</code> thread cancellation</h4></div></div></div><p> 
+</p></div><div class="sect3" title="With POSIX thread cancellation"><div class="titlepage"><div><div><h4 class="title"><a id="using.exception.compat.posix"></a>With <code class="literal">POSIX</code> thread cancellation</h4></div></div></div><p> 
   GNU systems re-use some of the exception handling mechanisms to
   track control flow for <code class="literal">POSIX</code> thread cancellation.
 </p><p>
@@ -266,7 +266,7 @@ is called.
   }
   catch(...)
   { this-&gt;_M_setstate(ios_base::badbit); }
-</pre></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="using.exceptions.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id618326"></a><p><span class="title"><i>
+</pre></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="using.exceptions.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)"><a id="id434234"></a><p><span class="title"><i>
       System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
     </i>. </span><span class="pagenums">
       2.9.5 Thread Cancellation
@@ -274,44 +274,44 @@ is called.
       The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span><span class="biblioid">
       <a class="ulink" href="http://www.opengroup.org/austin/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id627763"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Error and Exception Handling"><a id="id522815"></a><p><span class="title"><i>
       Error and Exception Handling
     </i>. </span><span class="author"><span class="firstname">David</span> <span class="surname">Abrahams </span>. </span><span class="publisher"><span class="publishername">
 	Boost
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://www.boost.org/community/error_handling.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id633982"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Exception-Safety in Generic Components"><a id="id410550"></a><p><span class="title"><i>
       Exception-Safety in Generic Components
     </i>. </span><span class="author"><span class="firstname">David</span> <span class="surname">Abrahams</span>. </span><span class="publisher"><span class="publishername">
 	Boost
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://www.boost.org/community/exception_safety.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id634268"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Standard Library Exception Policy"><a id="id475188"></a><p><span class="title"><i>
       Standard Library Exception Policy
     </i>. </span><span class="author"><span class="firstname">Matt</span> <span class="surname">Austern</span>. </span><span class="publisher"><span class="publishername">
 	WG21 N1077
       . </span></span><span class="biblioid">
       <a class="ulink" href="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id642510"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="ia64 c++ abi exception handling"><a id="id470841"></a><p><span class="title"><i>
       ia64 c++ abi exception handling
     </i>. </span><span class="author"><span class="firstname">Richard</span> <span class="surname">Henderson</span>. </span><span class="publisher"><span class="publishername">
 	GNU
       . </span></span><span class="biblioid">
       <a class="ulink" href="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id636666"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Appendix E: Standard-Library Exception Safety"><a id="id425773"></a><p><span class="title"><i>
       Appendix E: Standard-Library Exception Safety
     </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.research.att.com/~bs/3rd_safe.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id707620"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Exceptional C++"><a id="id437463"></a><p><span class="title"><i>
       Exceptional C++
     </i>. </span><span class="pagenums">
       Exception-Safety Issues and Techniques
-    . </span><span class="author"><span class="firstname">Herb</span> <span class="surname">Sutter</span>. </span></p></div><div class="biblioentry"><a id="id652939"></a><p><span class="title"><i>
+    . </span><span class="author"><span class="firstname">Herb</span> <span class="surname">Sutter</span>. </span></p></div><div class="biblioentry" title="exception_defines.h #defines try/catch"><a id="id478152"></a><p><span class="title"><i>
       exception_defines.h #defines try/catch
     </i>. </span><span class="subtitle">
       GCC Bug <a class="ulink" href="http://gcc.gnu.org/PR25191" target="_top">25191</a>

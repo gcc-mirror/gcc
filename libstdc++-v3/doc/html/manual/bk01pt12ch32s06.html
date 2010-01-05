@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Developer Information</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="profile_mode.html" title="Chapter 32. Profile Mode" /><link rel="prev" href="bk01pt12ch32s05.html" title="Implementation Issues" /><link rel="next" href="bk01pt12ch32s07.html" title="Diagnostics" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Developer Information</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch32s05.html">Prev</a> </td><th width="60%" align="center">Chapter 32. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch32s07.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.developer"></a>Developer Information</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.developer.bigpic"></a>Big Picture</h3></div></div></div><p>The profile mode headers are included with
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Developer Information</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="profile_mode.html" title="Chapter 32. Profile Mode" /><link rel="prev" href="bk01pt12ch32s05.html" title="Implementation Issues" /><link rel="next" href="bk01pt12ch32s07.html" title="Diagnostics" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Developer Information</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch32s05.html">Prev</a> </td><th width="60%" align="center">Chapter 32. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch32s07.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Developer Information"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.developer"></a>Developer Information</h2></div></div></div><div class="sect2" title="Big Picture"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.developer.bigpic"></a>Big Picture</h3></div></div></div><p>The profile mode headers are included with
    <code class="code">-D_GLIBCXX_PROFILE</code> through preprocessor directives in 
    <code class="code">include/std/*</code>.
   </p><p>Instrumented implementations are provided in 
@@ -14,7 +14,7 @@
    must ensure (1) that the call is guarded against reentrance and 
    (2) that the call can be turned off at compile time using a
    <code class="code">-D_GLIBCXX_PROFILE_...</code> compiler option.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.developer.howto"></a>How To Add A Diagnostic</h3></div></div></div><p>Let's say the diagnostic name is "magic".
+  </p></div><div class="sect2" title="How To Add A Diagnostic"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.developer.howto"></a>How To Add A Diagnostic</h3></div></div></div><p>Let's say the diagnostic name is "magic".
   </p><p>If you need to instrument a header not already under 
    <code class="code">include/profile/*</code>, first edit the corresponding header
    under <code class="code">include/std/</code> and add a preprocessor directive such
@@ -36,15 +36,15 @@
    Hook names must start with <code class="code">__profcxx_</code>.
    Make sure they transform
    in no code with <code class="code">-D_NO_GLBICXX_PROFILE_MAGIC</code>.
-   Make sure all calls to any method in namespace <code class="code">__cxxprof_impl</code>
+   Make sure all calls to any method in namespace <code class="code">__gnu_profile</code>
    is protected against reentrance using macro
-   <code class="code">_GLIBCXX_PROFILE_IMPL_REENTRANCE_GUARD</code>.
-   All names of methods in namespace <code class="code">__cxxprof_impl</code> called from
+   <code class="code">_GLIBCXX_PROFILE_REENTRANCE_GUARD</code>.
+   All names of methods in namespace <code class="code">__gnu_profile</code> called from
    <code class="code">profiler.h</code> must start with <code class="code">__trace_magic_</code>.
   </p><p>Add the implementation of the diagnostic.
-   </p><div class="itemizedlist"><ul type="disc"><li><p>
+   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
       Create new file <code class="code">include/profile/impl/profiler_magic.h</code>.
-     </p></li><li><p>
+     </p></li><li class="listitem"><p>
       Define class <code class="code">__magic_info: public __object_info_base</code>.
       This is the representation of a line in the object table.
       The <code class="code">__merge</code> method is used to aggregate information
@@ -53,10 +53,10 @@
       as a number of small operations, e.g., number of words copied.
       The <code class="code">__write</code> method is used to produce the raw trace.
       The <code class="code">__advice</code> method is used to produce the advice string.
-     </p></li><li><p>
+     </p></li><li class="listitem"><p>
       Define class <code class="code">__magic_stack_info: public __magic_info</code>.
       This defines the content of a line in the stack table.
-     </p></li><li><p>
+     </p></li><li class="listitem"><p>
       Define class <code class="code">__trace_magic: public __trace_base&lt;__magic_info, 
       __magic_stack_info&gt;</code>.
       It defines the content of the trace associated with this diagnostic.

@@ -1,3 +1,8 @@
+2010-01-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Update for 4.4 and 4.5 releases.
+	* doc/html: Regenerate.
+
 2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/38081

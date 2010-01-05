@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Porting to New Hardware or Operating Systems</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      internals&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="next" href="test.html" title="Test" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Porting to New Hardware or Operating Systems</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Porting to New Hardware or Operating Systems</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      internals&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="next" href="test.html" title="Test" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Porting to New Hardware or Operating Systems</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="appendix_porting.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
-</th><td width="20%" align="right"> <a accesskey="n" href="test.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.internals"></a>Porting to New Hardware or Operating Systems</h2></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="test.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Porting to New Hardware or Operating Systems"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.internals"></a>Porting to New Hardware or Operating Systems</h2></div></div></div><p>
 </p><p>This document explains how to port libstdc++ (the GNU C++ library) to
 a new target.
 </p><p>In order to make the GNU C++ library (libstdc++) work with a new
@@ -20,7 +20,7 @@ works.  It is difficult to test the C++ compiler without a working
 library, but you should at least try some minimal test cases.
    </p><p>(Note that what we think of as a "target," the library refers to as
 a "host."  The comment at the top of <code class="code">configure.ac</code> explains why.)
-   </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.os"></a>Operating System</h3></div></div></div><p>If you are porting to a new operating system (as opposed to a new chip
+   </p><div class="sect2" title="Operating System"><div class="titlepage"><div><div><h3 class="title"><a id="internals.os"></a>Operating System</h3></div></div></div><p>If you are porting to a new operating system (as opposed to a new chip
 using an existing operating system), you will need to create a new
 directory in the <code class="code">config/os</code> hierarchy.  For example, the IRIX
 configuration files are all in <code class="code">config/os/irix</code>.  There is no set
@@ -99,7 +99,7 @@ this:
 #endif
 </pre><p>We recommend copying an existing <code class="code">os_defines.h</code> to use as a
 starting point.
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.cpu"></a>CPU</h3></div></div></div><p>If you are porting to a new chip (as opposed to a new operating system
+   </p></div><div class="sect2" title="CPU"><div class="titlepage"><div><div><h3 class="title"><a id="internals.cpu"></a>CPU</h3></div></div></div><p>If you are porting to a new chip (as opposed to a new operating system
 running on an existing chip), you will need to create a new directory in the
 <code class="code">config/cpu</code> hierarchy.  Much like the <a class="link" href="internals.html#internals.os" title="Operating System">Operating system</a> setup,
 there are no strict rules on how to organize the CPU configuration
@@ -117,7 +117,7 @@ example, <code class="code">alpha</code>, <code class="code">alphaev5</code>, an
    </p><p>The <code class="code">cpu_include_dir</code> sets default locations for the files controlling
 <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">Thread safety</a> and <a class="link" href="internals.html#internals.numeric_limits" title="Numeric Limits">Numeric limits</a>, if the defaults are not
 appropriate for your chip.
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.char_types"></a>Character Types</h3></div></div></div><p>The library requires that you provide three header files to implement
+   </p></div><div class="sect2" title="Character Types"><div class="titlepage"><div><div><h3 class="title"><a id="internals.char_types"></a>Character Types</h3></div></div></div><p>The library requires that you provide three header files to implement
 character classification, analogous to that provided by the C libraries
 <code class="code">&lt;ctype.h&gt;</code> header.  You can model these on the files provided in
 <code class="code">config/os/generic</code>.  However, these files will almost
@@ -279,7 +279,7 @@ from <code class="code">__low</code> up until <code class="code">__high</code> i
          ++__low;
        return __low;
      }
-</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.thread_safety"></a>Thread Safety</h3></div></div></div><p>The C++ library string functionality requires a couple of atomic
+</pre></div><div class="sect2" title="Thread Safety"><div class="titlepage"><div><div><h3 class="title"><a id="internals.thread_safety"></a>Thread Safety</h3></div></div></div><p>The C++ library string functionality requires a couple of atomic
 operations to provide thread-safety.  If you don't take any special
 action, the library will use stub versions of these functions that are
 not thread-safe.  They will work fine, unless your applications are
@@ -334,7 +334,7 @@ must be equivalent to those provided here, but using atomic operations:
      {
        *__mem += __val;
      }
-</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.numeric_limits"></a>Numeric Limits</h3></div></div></div><p>The C++ library requires information about the fundamental data types,
+</pre></div><div class="sect2" title="Numeric Limits"><div class="titlepage"><div><div><h3 class="title"><a id="internals.numeric_limits"></a>Numeric Limits</h3></div></div></div><p>The C++ library requires information about the fundamental data types,
 such as the minimum and maximum representable values of each type. 
 You can define each of these values individually, but it is usually
 easiest just to indicate how many bits are used in each of the data
@@ -346,7 +346,7 @@ same values, you can provide a CPU-specific file instead so that you
 do not have to provide the same definitions for each operating system. 
 To take that approach, create a new file called <code class="code">cpu_limits.h</code> in
 your CPU configuration directory (see <a class="link" href="internals.html#internals.cpu" title="CPU">CPU</a>).
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="internals.libtool"></a>Libtool</h3></div></div></div><p>The C++ library is compiled, archived and linked with libtool. 
+   </p></div><div class="sect2" title="Libtool"><div class="titlepage"><div><div><h3 class="title"><a id="internals.libtool"></a>Libtool</h3></div></div></div><p>The C++ library is compiled, archived and linked with libtool. 
 Explaining the full workings of libtool is beyond the scope of this
 document, but there are a few, particular bits that are necessary for
 porting.

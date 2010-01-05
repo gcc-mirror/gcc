@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Appendix B.  Porting and Maintenance</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="spine.html" title="The GNU C++ Library" /><link rel="prev" href="source_design_notes.html" title="Design Notes" /><link rel="next" href="internals.html" title="Porting to New Hardware or Operating Systems" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Appendix B. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Appendix B.  Porting and Maintenance</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="spine.html" title="The GNU C++ Library" /><link rel="prev" href="source_design_notes.html" title="Design Notes" /><link rel="next" href="internals.html" title="Porting to New Hardware or Operating Systems" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Appendix B. 
   Porting and Maintenance
   
-</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="source_design_notes.html">Prev</a> </td><th width="60%" align="center">The GNU C++ Library</th><td width="20%" align="right"> <a accesskey="n" href="internals.html">Next</a></td></tr></table><hr /></div><div class="appendix" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="appendix.porting"></a>Appendix B. 
+</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="source_design_notes.html">Prev</a> </td><th width="60%" align="center">The GNU C++ Library</th><td width="20%" align="right"> <a accesskey="n" href="internals.html">Next</a></td></tr></table><hr /></div><div class="appendix" title="Appendix B.  Porting and Maintenance"><div class="titlepage"><div><div><h2 class="title"><a id="appendix.porting"></a>Appendix B. 
   Porting and Maintenance
-  <a id="id744430" class="indexterm"></a>
-</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="appendix_porting.html#appendix.porting.build_hacking">Configure and Build Hacking</a></span></dt><dd><dl><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.prereq">Prerequisites</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.map">Overview: What Comes from Where</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.scripts">Storing Information in non-AC files (like configure.host)</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.conventions">Coding and Commenting Conventions</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.acinclude">The acinclude.m4 layout</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.enable">GLIBCXX_ENABLE, the --enable maker</a></span></dt></dl></dd><dt><span class="sect1"><a href="internals.html">Porting to New Hardware or Operating Systems</a></span></dt><dd><dl><dt><span class="sect2"><a href="internals.html#internals.os">Operating System</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.cpu">CPU</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.char_types">Character Types</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.thread_safety">Thread Safety</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.numeric_limits">Numeric Limits</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.libtool">Libtool</a></span></dt></dl></dd><dt><span class="sect1"><a href="test.html">Test</a></span></dt><dd><dl><dt><span class="sect2"><a href="test.html#test.organization">Organization</a></span></dt><dt><span class="sect2"><a href="test.html#test.run">Running the Testsuite</a></span></dt><dt><span class="sect2"><a href="test.html#test.new_tests">Writing a new test case</a></span></dt><dt><span class="sect2"><a href="test.html#test.harness">Test Harness and Utilities</a></span></dt></dl></dd><dt><span class="sect1"><a href="abi.html">ABI Policy and Guidelines</a></span></dt><dd><dl><dt><span class="sect2"><a href="abi.html#abi.cxx_interface">The C++ Interface</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.versioning">Versioning</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.changes_allowed">Allowed Changes</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.changes_no">Prohibited Changes</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.testing">Testing</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.issues">Outstanding Issues</a></span></dt></dl></dd><dt><span class="sect1"><a href="api.html">API Evolution and Deprecation History</a></span></dt><dd><dl><dt><span class="sect2"><a href="api.html#api.rel_300">3.0</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_310">3.1</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_320">3.2</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_330">3.3</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_340">3.4</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_400">4.0</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_410">4.1</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_420">4.2</a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_430">4.3</a></span></dt></dl></dd><dt><span class="sect1"><a href="backwards.html">Backwards Compatibility</a></span></dt><dd><dl><dt><span class="sect2"><a href="backwards.html#backwards.first">First</a></span></dt><dt><span class="sect2"><a href="backwards.html#backwards.second">Second</a></span></dt><dt><span class="sect2"><a href="backwards.html#backwards.third">Third</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.build_hacking"></a>Configure and Build Hacking</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.prereq"></a>Prerequisites</h3></div></div></div><p> 
+  <a id="id407464" class="indexterm"></a>
+</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="appendix_porting.html#appendix.porting.build_hacking">Configure and Build Hacking</a></span></dt><dd><dl><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.prereq">Prerequisites</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.map">Overview: What Comes from Where</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.scripts">Storing Information in non-AC files (like configure.host)</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.conventions">Coding and Commenting Conventions</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.acinclude">The acinclude.m4 layout</a></span></dt><dt><span class="sect2"><a href="appendix_porting.html#build_hacking.enable"><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</a></span></dt></dl></dd><dt><span class="sect1"><a href="internals.html">Porting to New Hardware or Operating Systems</a></span></dt><dd><dl><dt><span class="sect2"><a href="internals.html#internals.os">Operating System</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.cpu">CPU</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.char_types">Character Types</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.thread_safety">Thread Safety</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.numeric_limits">Numeric Limits</a></span></dt><dt><span class="sect2"><a href="internals.html#internals.libtool">Libtool</a></span></dt></dl></dd><dt><span class="sect1"><a href="test.html">Test</a></span></dt><dd><dl><dt><span class="sect2"><a href="test.html#test.organization">Organization</a></span></dt><dt><span class="sect2"><a href="test.html#test.run">Running the Testsuite</a></span></dt><dt><span class="sect2"><a href="test.html#test.new_tests">Writing a new test case</a></span></dt><dt><span class="sect2"><a href="test.html#test.harness">Test Harness and Utilities</a></span></dt><dt><span class="sect2"><a href="test.html#test.special">Special Topics</a></span></dt></dl></dd><dt><span class="sect1"><a href="abi.html">ABI Policy and Guidelines</a></span></dt><dd><dl><dt><span class="sect2"><a href="abi.html#abi.cxx_interface">The C++ Interface</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.versioning">Versioning</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.changes_allowed">Allowed Changes</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.changes_no">Prohibited Changes</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.testing">Testing</a></span></dt><dt><span class="sect2"><a href="abi.html#abi.issues">Outstanding Issues</a></span></dt></dl></dd><dt><span class="sect1"><a href="api.html">API Evolution and Deprecation History</a></span></dt><dd><dl><dt><span class="sect2"><a href="api.html#api.rel_300"><code class="constant">3.0</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_310"><code class="constant">3.1</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_320"><code class="constant">3.2</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_330"><code class="constant">3.3</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_340"><code class="constant">3.4</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_400"><code class="constant">4.0</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_410"><code class="constant">4.1</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_420"><code class="constant">4.2</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_430"><code class="constant">4.3</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_440"><code class="constant">4.4</code></a></span></dt><dt><span class="sect2"><a href="api.html#api.rel_450"><code class="constant">4.5</code></a></span></dt></dl></dd><dt><span class="sect1"><a href="backwards.html">Backwards Compatibility</a></span></dt><dd><dl><dt><span class="sect2"><a href="backwards.html#backwards.first">First</a></span></dt><dt><span class="sect2"><a href="backwards.html#backwards.second">Second</a></span></dt><dt><span class="sect2"><a href="backwards.html#backwards.third">Third</a></span></dt></dl></dd></dl></div><div class="sect1" title="Configure and Build Hacking"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.build_hacking"></a>Configure and Build Hacking</h2></div></div></div><div class="sect2" title="Prerequisites"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.prereq"></a>Prerequisites</h3></div></div></div><p> 
     As noted <a class="ulink" href="http://gcc.gnu.org/install/prerequisites.html" target="_top">previously</a>,
     certain other tools are necessary for hacking on files that
     control configure (<code class="code">configure.ac</code>,
@@ -17,7 +17,7 @@
     in GCC try to stay in sync with each other in terms of versions of
     the auto-tools used, so please try to play nicely with the
     neighbors.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.map"></a>Overview: What Comes from Where</h3></div></div></div><pre class="screen">
+  </p></div><div class="sect2" title="Overview: What Comes from Where"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.map"></a>Overview: What Comes from Where</h3></div></div></div><pre class="screen">
   <img src="../images/confdeps.png" alt="Dependency Graph Configure to Build Files" />
   </pre><p>
     Regenerate all generated files by using the command sequence
@@ -29,7 +29,7 @@
     <a class="ulink" href="http://gcc.gnu.org/install/prerequisites.html" target="_top">the
     current requirements</a> and your vendor's choice of
     installation names.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.scripts"></a>Storing Information in non-AC files (like configure.host)</h3></div></div></div><p>
+  </p></div><div class="sect2" title="Storing Information in non-AC files (like configure.host)"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.scripts"></a>Storing Information in non-AC files (like configure.host)</h3></div></div></div><p>
     Until that glorious day when we can use AC_TRY_LINK with a
     cross-compiler, we have to hardcode the results of what the tests
     would have shown if they could be run.  So we have an inflexible
@@ -51,7 +51,7 @@
     for instance, but then we would need arguments to aclocal/autoconf
     to properly find them all when generating configure.  I would
     discourage that.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.conventions"></a>Coding and Commenting Conventions</h3></div></div></div><p>
+</p></div><div class="sect2" title="Coding and Commenting Conventions"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.conventions"></a>Coding and Commenting Conventions</h3></div></div></div><p>
     Most comments should use {octothorpes, shibboleths, hash marks,
     pound signs, whatever} rather than "dnl".  Nearly all comments in
     configure.ac should.  Comments inside macros written in ancilliary
@@ -68,7 +68,7 @@
     Do not use any <code class="code">$target*</code> variables, such as
     <code class="code">$target_alias</code>.  The single exception is in
     configure.ac, for automake+dejagnu's sake.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.acinclude"></a>The acinclude.m4 layout</h3></div></div></div><p>
+  </p></div><div class="sect2" title="The acinclude.m4 layout"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.acinclude"></a>The acinclude.m4 layout</h3></div></div></div><p>
     The nice thing about acinclude.m4/aclocal.m4 is that macros aren't
     actually performed/called/expanded/whatever here, just loaded.  So
     we can arrange the contents however we like.  As of this writing,
@@ -139,14 +139,14 @@
 </pre><p>
   Things which we don't seem to use directly, but just has to be
   present otherwise stuff magically goes wonky.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.enable"></a><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</h3></div></div></div><p>
+</p></div><div class="sect2" title="GLIBCXX_ENABLE, the --enable maker"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.enable"></a><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</h3></div></div></div><p>
     All the GLIBCXX_ENABLE_FOO macros use a common helper,
     GLIBCXX_ENABLE.  (You don't have to use it, but it's easy.)  The
     helper does two things for us:
-  </p><div class="orderedlist"><ol type="1"><li><p>
+  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
      Builds the call to the AC_ARG_ENABLE macro, with --help text
      properly quoted and aligned.  (Death to changequote!)
-   </p></li><li><p>
+   </p></li><li class="listitem"><p>
      Checks the result against a list of allowed possibilities, and
      signals a fatal error if there's no match.  This means that the
      rest of the GLIBCXX_ENABLE_FOO macro doesn't need to test for
@@ -168,13 +168,13 @@
     GLIBCXX_ENABLE (FEATURE, DEFAULT, HELP-ARG, HELP-STRING)
     GLIBCXX_ENABLE (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, permit a|b|c)
     GLIBCXX_ENABLE (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, SHELL-CODE-HANDLER)
-</pre><div class="itemizedlist"><ul type="disc"><li><p>
+</pre><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
      FEATURE is the string that follows --enable.  The results of the
      test (such as it is) will be in the variable $enable_FEATURE,
      where FEATURE has been squashed.  Example:
      <code class="code">[extra-foo]</code>, controlled by the --enable-extra-foo
      option and stored in $enable_extra_foo.
-   </p></li><li><p>
+   </p></li><li class="listitem"><p>
      DEFAULT is the value to store in $enable_FEATURE if the user does
      not pass --enable/--disable.  It should be one of the permitted
      values passed later.  Examples: <code class="code">[yes]</code>, or
@@ -185,7 +185,7 @@
      For cases where we need to probe for particular models of things,
      it is useful to have an undocumented "auto" value here (see
      GLIBCXX_ENABLE_CLOCALE for an example).
-   </p></li><li><p>
+   </p></li><li class="listitem"><p>
      HELP-ARG is any text to append to the option string itself in the
      --help output.  Examples: <code class="code">[]</code> (i.e., an empty string,
      which appends nothing), <code class="code">[=BAR]</code>, which produces
@@ -198,7 +198,7 @@
      that's how you embed autoconf special characters in output text.
      They're called <a class="ulink" href="http://www.gnu.org/software/autoconf/manual/autoconf.html#Quadrigraphs" target="_top"><span class="emphasis"><em>quadrigraphs</em></span></a>
      and you should use them whenever necessary.
- </p></li><li><p>HELP-STRING is what you think it is.  Do not include the
+ </p></li><li class="listitem"><p>HELP-STRING is what you think it is.  Do not include the
    "default" text like we used to do; it will be done for you by
    GLIBCXX_ENABLE.  By convention, these are not full English
    sentences.  Example: [turn on extra foo]

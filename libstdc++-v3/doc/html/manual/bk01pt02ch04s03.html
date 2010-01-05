@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>NULL</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="fundamental_types.html" title="Chapter 4. Types" /><link rel="prev" href="bk01pt02ch04s02.html" title="Numeric Properties" /><link rel="next" href="dynamic_memory.html" title="Chapter 5. Dynamic Memory" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">NULL</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt02ch04s02.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Types</th><td width="20%" align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.support.types.null"></a>NULL</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>NULL</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="fundamental_types.html" title="Chapter 4. Types" /><link rel="prev" href="bk01pt02ch04s02.html" title="Numeric Properties" /><link rel="next" href="dynamic_memory.html" title="Chapter 5. Dynamic Memory" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">NULL</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt02ch04s02.html">Prev</a> </td><th width="60%" align="center">Chapter 4. Types</th><td width="20%" align="right"> <a accesskey="n" href="dynamic_memory.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="NULL"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.support.types.null"></a>NULL</h2></div></div></div><p>
      The only change that might affect people is the type of
      <code class="constant">NULL</code>: while it is required to be a macro,
      the definition of that macro is <span class="emphasis"><em>not</em></span> allowed
@@ -12,7 +12,7 @@
      <span class="command"><strong>g++</strong></span>.
     </p><p>
      The biggest problem of #defining <code class="constant">NULL</code> to be
-     something like “<span class="quote">0L</span>” is that the compiler will view
+     something like <span class="quote">“<span class="quote">0L</span>”</span> is that the compiler will view
      that as a long integer before it views it as a pointer, so
      overloading won't do what you expect. (This is why
      <span class="command"><strong>g++</strong></span> has a magic extension, so that
