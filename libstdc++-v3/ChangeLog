@@ -1,3 +1,7 @@
+2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
 2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/22_locale/time_get/get_monthname/char/6.cc: New.

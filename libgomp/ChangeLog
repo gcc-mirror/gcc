@@ -1,3 +1,7 @@
+2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
 2010-01-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgomp/42602

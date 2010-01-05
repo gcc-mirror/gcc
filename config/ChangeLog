@@ -1,3 +1,8 @@
+2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* stdint.m4 (GCC_HEADER_STDINT): Don't typedef uint8_t etc. if
+	corresponding macros already exist.
+
 2010-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41529
