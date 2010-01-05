@@ -1,3 +1,7 @@
+2010-01-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (bitmap_value_insert_into_set): Optimize.
+
 2010-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/42611
