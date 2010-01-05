@@ -1760,7 +1760,6 @@ static void
 remove_bb (basic_block bb)
 {
   gimple_stmt_iterator i;
-  source_location loc = UNKNOWN_LOCATION;
 
   if (dump_file)
     {
@@ -1830,23 +1829,8 @@ remove_bb (basic_block bb)
 	    i = gsi_last_bb (bb);
 	  else
 	    gsi_prev (&i);
-
-	  /* Don't warn for removed gotos.  Gotos are often removed due to
-	     jump threading, thus resulting in bogus warnings.  Not great,
-	     since this way we lose warnings for gotos in the original
-	     program that are indeed unreachable.  */
-	  if (gimple_code (stmt) != GIMPLE_GOTO
-	      && gimple_has_location (stmt))
-	    loc = gimple_location (stmt);
 	}
     }
-
-  /* If requested, give a warning that the first statement in the
-     block is unreachable.  We walk statements backwards in the
-     loop above, so the last statement we process is the first statement
-     in the block.  */
-  if (loc > BUILTINS_LOCATION && LOCATION_LINE (loc) > 0)
-    warning_at (loc, OPT_Wunreachable_code, "will never be executed");
 
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
   bb->il.gimple = NULL;

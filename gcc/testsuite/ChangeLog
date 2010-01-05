@@ -1,3 +1,17 @@
+2010-01-05  Eric Fisher  <joefoxreal@gmail.com>
+
+	* gcc.dg/pr12603.c: Remove -Wunreachable-code from dg-options.
+	* gcc.dg/Wunreachable-1.c: Remove the testcase of
+	-Wunreachable-code.
+	* gcc.dg/Wunreachable-2.c: Likewise.
+	* gcc.dg/Wunreachable-3.c: Likewise.
+	* gcc.dg/Wunreachable-4.c: Likewise.
+	* gcc.dg/Wunreachable-5.c: Likewise.
+	* gcc.dg/Wunreachable-6.c: Likewise.
+	* gcc.dg/Wunreachable-7.c: Likewise.
+	* gcc.dg/Wunreachable-8.c: Likewise.
+	* gcc.dg/20041231-1.c: Likewise.
+
 2010-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/42611
