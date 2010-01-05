@@ -1,3 +1,9 @@
+2010-01-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_get_stack_layout): Fix allocation of second
+	register to push into the stack frame when the accumulator has to
+	be saved during interrupts.
+
 2010-01-05  Eric Fisher  <joefoxreal@gmail.com>
 
 	* doc/invoke.texi: Remove the documentation about option
