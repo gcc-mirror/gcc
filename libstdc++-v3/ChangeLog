@@ -1,3 +1,10 @@
+2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/22_locale/time_get/get_monthname/char/6.cc: New.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/6.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/6.cc: Likewise.
+
 2010-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/profile/list: Implement DR 1133 here too.
