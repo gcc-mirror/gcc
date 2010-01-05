@@ -1,3 +1,7 @@
+2010-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tls/opt-15.c: New test.
+
 2010-01-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr42542-1.c (res): Make it 8 elements.
