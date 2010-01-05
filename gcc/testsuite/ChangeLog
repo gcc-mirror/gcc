@@ -1,3 +1,7 @@
+2010-01-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tls/opt-15.c: New test.
+
 2010-01-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42614
