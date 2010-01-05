@@ -1,5 +1,5 @@
 /* Callgraph based interprocedural optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -2323,20 +2323,9 @@ cgraph_materialize_all_clones (void)
 		gimple new_stmt;
 		gimple_stmt_iterator gsi;
 
-		if (e->callee->same_body)
-		  {
-		    struct cgraph_node *alias;
-
-		    for (alias = e->callee->same_body;
-			 alias;
-			 alias = alias->next)
-		      if (decl == alias->decl)
-			break;
-		    /* Don't update call from same body alias to the real
-		       function.  */
-		    if (alias)
-		      continue;
-		  }
+		if (cgraph_get_node (decl) == cgraph_get_node (e->callee->decl))
+		  /* Don't update call from same body alias to the real function.  */
+		  continue;
 
 		if (cgraph_dump_file)
 		  {
