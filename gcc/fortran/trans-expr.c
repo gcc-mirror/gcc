@@ -3351,6 +3351,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    {
 	      var = gfc_create_var (type, "pstr");
 
+	      if ((!comp && sym->attr.allocatable)
+		  || (comp && comp->attr.allocatable))
+		gfc_add_modify (&se->pre, var,
+				fold_convert (TREE_TYPE (var),
+					      null_pointer_node));
+
 	      /* Provide an address expression for the function arguments.  */
 	      var = gfc_build_addr_expr (NULL_TREE, var);
 	    }
