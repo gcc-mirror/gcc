@@ -1,3 +1,8 @@
+2010-01-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42614
+	* gcc.c-torture/execute/pr42614.c: New testcase.
+
 2010-01-05  Eric Fisher  <joefoxreal@gmail.com>
 
 	* gcc.dg/pr12603.c: Remove -Wunreachable-code from dg-options.
