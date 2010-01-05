@@ -308,20 +308,21 @@ static alloc_pool pre_expr_pool;
 static pre_expr
 get_or_alloc_expr_for_name (tree name)
 {
-  pre_expr result = (pre_expr) pool_alloc (pre_expr_pool);
+  struct pre_expr_d expr;
+  pre_expr result;
   unsigned int result_id;
 
-  result->kind = NAME;
-  result->id = 0;
-  PRE_EXPR_NAME (result) = name;
-  result_id = lookup_expression_id (result);
+  expr.kind = NAME;
+  expr.id = 0;
+  PRE_EXPR_NAME (&expr) = name;
+  result_id = lookup_expression_id (&expr);
   if (result_id != 0)
-    {
-      pool_free (pre_expr_pool, result);
-      result = expression_for_id (result_id);
-      return result;
-    }
-  get_or_alloc_expression_id (result);
+    return expression_for_id (result_id);
+
+  result = (pre_expr) pool_alloc (pre_expr_pool);
+  result->kind = NAME;
+  PRE_EXPR_NAME (result) = name;
+  alloc_expression_id (result);
   return result;
 }
 
@@ -1023,18 +1024,20 @@ get_or_alloc_expr_for_constant (tree constant)
 {
   unsigned int result_id;
   unsigned int value_id;
-  pre_expr newexpr = (pre_expr) pool_alloc (pre_expr_pool);
+  struct pre_expr_d expr;
+  pre_expr newexpr;
+
+  expr.kind = CONSTANT;
+  PRE_EXPR_CONSTANT (&expr) = constant;
+  result_id = lookup_expression_id (&expr);
+  if (result_id != 0)
+    return expression_for_id (result_id);
+
+  newexpr = (pre_expr) pool_alloc (pre_expr_pool);
   newexpr->kind = CONSTANT;
   PRE_EXPR_CONSTANT (newexpr) = constant;
-  result_id = lookup_expression_id (newexpr);
-  if (result_id != 0)
-    {
-      pool_free (pre_expr_pool, newexpr);
-      newexpr = expression_for_id (result_id);
-      return newexpr;
-    }
+  alloc_expression_id (newexpr);
   value_id = get_or_alloc_constant_value_id (constant);
-  get_or_alloc_expression_id (newexpr);
   add_to_value (value_id, newexpr);
   return newexpr;
 }
@@ -1499,6 +1502,7 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	if (changed)
 	  {
 	    pre_expr constant;
+	    unsigned int new_val_id;
 
 	    tree result = vn_nary_op_lookup_pieces (newnary.length,
 						    newnary.opcode,
@@ -1508,15 +1512,12 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						    newnary.op[2],
 						    newnary.op[3],
 						    &nary);
-	    unsigned int new_val_id;
+	    if (result && is_gimple_min_invariant (result))
+	      return get_or_alloc_expr_for_constant (result);
 
 	    expr = (pre_expr) pool_alloc (pre_expr_pool);
 	    expr->kind = NARY;
 	    expr->id = 0;
-	    if (result && is_gimple_min_invariant (result))
-	      return get_or_alloc_expr_for_constant (result);
-
-
 	    if (nary)
 	      {
 		PRE_EXPR_NARY (expr) = nary;

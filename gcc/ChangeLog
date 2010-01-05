@@ -1,3 +1,10 @@
+2010-01-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Avoid redundant
+	allocation and lookup.
+	(get_or_alloc_expr_for_constant): Likewise.
+	(phi_translate): Sink allocation.
+
 2010-01-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (get_or_alloc_constant_value_id): Allocate
