@@ -1,3 +1,14 @@
+2010-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42508
+	* tree-sra.c (convert_callers): Check for recursive call
+	by comparing cgraph nodes instead of decls.
+	(modify_function): Call ipa_modify_formal_parameters also
+	on all same_body aliases.
+
+	* cgraphunit.c (cgraph_materialize_all_clones): Compare
+	cgraph nodes when checking for same_body aliases.
+
 2010-01-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Avoid redundant

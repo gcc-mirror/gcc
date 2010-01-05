@@ -3800,8 +3800,11 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
       for (gsi = gsi_start_bb (this_block); !gsi_end_p (gsi); gsi_next (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
-	  if (gimple_code (stmt) == GIMPLE_CALL
-	      && gimple_call_fndecl (stmt) == node->decl)
+	  tree call_fndecl;
+	  if (gimple_code (stmt) != GIMPLE_CALL)
+	    continue;
+	  call_fndecl = gimple_call_fndecl (stmt);
+	  if (call_fndecl && cgraph_get_node (call_fndecl) == node)
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "Adjusting recursive call");
@@ -3819,6 +3822,11 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 static void
 modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 {
+  struct cgraph_node *alias;
+  for (alias = node->same_body; alias; alias = alias->next)
+    ipa_modify_formal_parameters (alias->decl, adjustments, "ISRA");
+  /* current_function_decl must be handled last, after same_body aliases,
+     as following functions will use what it computed.  */
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   scan_function (sra_ipa_modify_expr, sra_ipa_modify_assign,
 		 replace_removed_params_ssa_names, false, adjustments);
