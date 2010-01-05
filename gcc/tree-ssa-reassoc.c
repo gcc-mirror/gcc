@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "timevar.h"
 #include "tree-iterator.h"
+#include "real.h"
 #include "tree-pass.h"
 #include "alloc-pool.h"
 #include "vec.h"

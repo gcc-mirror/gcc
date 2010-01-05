@@ -1,3 +1,17 @@
+2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/41771
+	* flags.h: Don't include real.h.
+	(HONOR_NANS, HONOR_SNANS, HONOR_INFINITIES, HONOR_SIGNED_ZEROS,
+	HONOR_SIGN_DEPENDENT_ROUNDING): Move ...
+	* real.h (HONOR_NANS, HONOR_SNANS, HONOR_INFINITIES,
+	HONOR_SIGNED_ZEROS, HONOR_SIGN_DEPENDENT_ROUNDING): ... here.
+	* dominance.c: Update copyright.
+	* gimple.c (walk_gimple_op): Remove inline.
+	* tree-ssa-reassoc.c: Include real.h.
+	* Makefile.in (FLAGS_H): Remove $(REAL_H).
+	(tree-ssa-reassoc.o): Depend on $(REAL_H).
+
 2010-01-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_get_stack_layout): Fix allocation of second
