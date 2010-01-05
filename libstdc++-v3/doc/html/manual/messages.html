@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>messages</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      messages&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="facets.html" title="Chapter 15. Facets aka Categories" /><link rel="prev" href="codecvt.html" title="codecvt" /><link rel="next" href="containers.html" title="Part VII.  Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">messages</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="codecvt.html">Prev</a> </td><th width="60%" align="center">Chapter 15. Facets aka Categories</th><td width="20%" align="right"> <a accesskey="n" href="containers.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.facet.messages"></a>messages</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>messages</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      messages&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="facets.html" title="Chapter 15. Facets aka Categories" /><link rel="prev" href="codecvt.html" title="codecvt" /><link rel="next" href="containers.html" title="Part VII.  Containers" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">messages</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="codecvt.html">Prev</a> </td><th width="60%" align="center">Chapter 15. Facets aka Categories</th><td width="20%" align="right"> <a accesskey="n" href="containers.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="messages"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.facet.messages"></a>messages</h2></div></div></div><p>
 The std::messages facet implements message retrieval functionality
 equivalent to Java's java.text.MessageFormat .using either GNU gettext
 or IEEE 1003.1-200 functions.
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.req"></a>Requirements</h3></div></div></div><p>
+</p><div class="sect2" title="Requirements"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.req"></a>Requirements</h3></div></div></div><p>
 The std::messages facet is probably the most vaguely defined facet in
 the standard library. It's assumed that this facility was built into
 the standard library in order to convert string literals from one
@@ -53,7 +53,7 @@ be found, returns dfault.
 -6- Effects: Releases unspecified resources associated with cat. 
 -7- Notes: The limit on such resources, if any, is implementation-defined. 
 </em></span>
-</p></blockquote></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.design"></a>Design</h3></div></div></div><p>
+</p></blockquote></div></div><div class="sect2" title="Design"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.design"></a>Design</h3></div></div></div><p>
 A couple of notes on the standard. 
 </p><p>
 First, why is <code class="code">messages_base::catalog</code> specified as a typedef
@@ -85,7 +85,7 @@ It is implicitly assumed that the locale for the default message
 string in 'get' is in the "C" locale. Thus, all source code is assumed
 to be written in English, so translations are always from "en_US" to
 other, explicitly named locales.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="messages.impl.models"></a>Models</h4></div></div></div><p>
+</p></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.impl"></a>Implementation</h3></div></div></div><div class="sect3" title="Models"><div class="titlepage"><div><div><h4 class="title"><a id="messages.impl.models"></a>Models</h4></div></div></div><p>
     This is a relatively simple class, on the face of it. The standard
     specifies very little in concrete terms, so generic
     implementations that are conforming yet do very little are the
@@ -96,11 +96,11 @@ other, explicitly named locales.
   </p><p>
     Three different mechanisms have been provided, selectable via
     configure flags:
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
        generic
      </p><p>
        This model does very little, and is what is used by default.   
-     </p></li><li><p> 
+     </p></li><li class="listitem"><p> 
        gnu
      </p><p>
        The gnu model is complete and fully tested. It's based on the
@@ -110,7 +110,7 @@ other, explicitly named locales.
        relatively straight-forward process and is lightly documented
        below, and fully documented in gettext's distributed
        documentation.
-     </p></li><li><p> 
+     </p></li><li class="listitem"><p> 
        ieee_1003.1-200x
      </p><p>
        This is a complete, though untested, implementation based on
@@ -126,7 +126,7 @@ A new, standards-conformant non-virtual member function signature was
 added for 'open' so that a directory could be specified with a given
 message catalog. This simplifies calling conventions for the gnu
 model.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="messages.impl.gnu"></a>The GNU Model</h4></div></div></div><p>
+</p></div><div class="sect3" title="The GNU Model"><div class="titlepage"><div><div><h4 class="title"><a id="messages.impl.gnu"></a>The GNU Model</h4></div></div></div><p>
     The messages facet, because it is retrieving and converting
     between characters sets, depends on the ctype and perhaps the
     codecvt facet in a given locale. In addition, underlying "C"
@@ -138,38 +138,38 @@ model.
     Making the message catalogs can be initially tricky, but become
     quite simple with practice. For complete info, see the gettext
     documentation. Here's an idea of what is required:
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
        Make a source file with the required string literals that need
        to be translated. See <code class="code">intl/string_literals.cc</code> for
        an example.
-     </p></li><li><p> 
+     </p></li><li class="listitem"><p> 
        Make initial catalog (see "4 Making the PO Template File" from
        the gettext docs).</p><p>
    <code class="code"> xgettext --c++ --debug string_literals.cc -o libstdc++.pot </code>
-   </p></li><li><p>Make language and country-specific locale catalogs.</p><p>
+   </p></li><li class="listitem"><p>Make language and country-specific locale catalogs.</p><p>
    <code class="code">cp libstdc++.pot fr_FR.po</code>
    </p><p>
    <code class="code">cp libstdc++.pot de_DE.po</code>
-   </p></li><li><p>
+   </p></li><li class="listitem"><p>
        Edit localized catalogs in emacs so that strings are
        translated.
      </p><p>
    <code class="code">emacs fr_FR.po</code>
-   </p></li><li><p>Make the binary mo files.</p><p>
+   </p></li><li class="listitem"><p>Make the binary mo files.</p><p>
    <code class="code">msgfmt fr_FR.po -o fr_FR.mo</code>
    </p><p>
    <code class="code">msgfmt de_DE.po -o de_DE.mo</code>
-   </p></li><li><p>Copy the binary files into the correct directory structure.</p><p>
+   </p></li><li class="listitem"><p>Copy the binary files into the correct directory structure.</p><p>
    <code class="code">cp fr_FR.mo (dir)/fr_FR/LC_MESSAGES/libstdc++.mo</code>
    </p><p>
    <code class="code">cp de_DE.mo (dir)/de_DE/LC_MESSAGES/libstdc++.mo</code>
-   </p></li><li><p>Use the new message catalogs.</p><p>
+   </p></li><li class="listitem"><p>Use the new message catalogs.</p><p>
    <code class="code">locale loc_de("de_DE");</code>
    </p><p>
    <code class="code">
    use_facet&lt;messages&lt;char&gt; &gt;(loc_de).open("libstdc++", locale(), dir);
    </code>
-   </p></li></ul></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.use"></a>Use</h3></div></div></div><p>
+   </p></li></ul></div></div></div><div class="sect2" title="Use"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.use"></a>Use</h3></div></div></div><p>
    A simple example using the GNU model of message conversion.
  </p><pre class="programlisting">
 #include &lt;iostream&gt;
@@ -191,9 +191,9 @@ void test01()
   cout &lt;&lt; "thank you in german:" &lt;&lt; s02 &lt;&lt; '\n';
   mssg_de.close(cat_de);
 }
-</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>
+</pre></div><div class="sect2" title="Future"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
     Things that are sketchy, or remain unimplemented:
-  </p><div class="itemizedlist"><ul type="circle"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
 	  _M_convert_from_char, _M_convert_to_char are in flux,
 	  depending on how the library ends up doing character set
 	  conversions. It might not be possible to do a real character
@@ -201,13 +201,13 @@ void test01()
 	  parameter for messages is not enough to instantiate the
 	  codecvt facet (1 supplied, need at least 2 but would prefer
 	  3).
-	</p></li><li><p> 
+	</p></li><li class="listitem"><p> 
 	  There are issues with gettext needing the global locale set
 	  to extract a message. This dependence on the global locale
 	  makes the current "gnu" model non MT-safe. Future versions
 	  of glibc, i.e. glibc 2.3.x will fix this, and the C++ library
 	  bits are already in place.
-	</p></li></ul></div></li><li><p>  
+	</p></li></ul></div></li><li class="listitem"><p>  
     Development versions of the GNU "C" library, glibc 2.3 will allow
     a more efficient, MT implementation of std::messages, and will
     allow the removal of the _M_name_messages data member. If this is
@@ -216,7 +216,7 @@ void test01()
     version of the "C" library is released, the marked parts of the
     messages implementation can be switched over to the new "C"
     library functionality.
-  </p></li><li><p>
+  </p></li><li class="listitem"><p>
     At some point in the near future, std::numpunct will probably use
     std::messages facilities to implement truename/falsename
     correctly. This is currently not done, but entries in
@@ -225,7 +225,7 @@ void test01()
     configure/make hassles to make the installed library search its
     own catalog. Currently the libstdc++.mo catalog is only searched
     for the testsuite cases involving messages members.
-  </p></li><li><p> The following member functions:</p><p>
+  </p></li><li class="listitem"><p> The following member functions:</p><p>
    <code class="code">
         catalog 
         open(const basic_string&lt;char&gt;&amp; __s, const locale&amp; __loc) const
@@ -241,38 +241,38 @@ void test01()
    model. As of this writing, it is unknown how to query to see
    if a specified message catalog exists using the gettext
    package.
-   </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id699687"></a><p><span class="title"><i>
+   </p></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="facet.messages.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="The GNU C Library"><a id="id420938"></a><p><span class="title"><i>
       The GNU C Library
     </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling, and 7 Locales and Internationalization
-    . </span></p></div><div class="biblioentry"><a id="id622574"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="Correspondence"><a id="id500134"></a><p><span class="title"><i>
       Correspondence
-    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="id630269"></a><p><span class="title"><i>
+    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry" title="ISO/IEC 14882:1998 Programming languages - C++"><a id="id504300"></a><p><span class="title"><i>
       ISO/IEC 14882:1998 Programming languages - C++
-    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="id630287"></a><p><span class="title"><i>
+    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry" title="ISO/IEC 9899:1999 Programming languages - C"><a id="id504319"></a><p><span class="title"><i>
       ISO/IEC 9899:1999 Programming languages - C
-    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="id630306"></a><p><span class="title"><i>
+    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry" title="System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)"><a id="id504337"></a><p><span class="title"><i>
       System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
     </i>. </span><span class="copyright">Copyright © 1999 
       The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span><span class="biblioid">
       <a class="ulink" href="http://www.opengroup.org/austin/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id567615"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="The C++ Programming Language, Special Edition"><a id="id431617"></a><p><span class="title"><i>
       The C++ Programming Language, Special Edition
     </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="id621555"></a><p><span class="title"><i>
+      . </span></span></p></div><div class="biblioentry" title="Standard C++ IOStreams and Locales"><a id="id413449"></a><p><span class="title"><i>
       Standard C++ IOStreams and Locales
     </i>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div><div class="biblioentry"><a id="id646611"></a><p><span class="title"><i>
+      . </span></span></p></div><div class="biblioentry" title="Java 2 Platform, Standard Edition, v 1.3.1 API Specification"><a id="id507891"></a><p><span class="title"><i>
       Java 2 Platform, Standard Edition, v 1.3.1 API Specification
     </i>. </span><span class="pagenums">java.util.Properties, java.text.MessageFormat,
 java.util.Locale, java.util.ResourceBundle. </span><span class="biblioid">
       <a class="ulink" href="http://java.sun.com/reference/api/index.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id682026"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="GNU gettext tools, version 0.10.38, Native Language Support Library and Tools."><a id="id507912"></a><p><span class="title"><i>
        GNU gettext tools, version 0.10.38, Native Language Support
 Library and Tools.
     </i>. </span><span class="biblioid">

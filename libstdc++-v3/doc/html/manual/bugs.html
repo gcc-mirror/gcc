@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Bugs</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="status.html" title="Chapter 1. Status" /><link rel="prev" href="license.html" title="License" /><link rel="next" href="setup.html" title="Chapter 2. Setup" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bugs</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Status</th><td width="20%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.status.bugs"></a>Bugs</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.impl"></a>Implementation Bugs</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Bugs</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="status.html" title="Chapter 1. Status" /><link rel="prev" href="license.html" title="License" /><link rel="next" href="setup.html" title="Chapter 2. Setup" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bugs</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Status</th><td width="20%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Bugs"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.status.bugs"></a>Bugs</h2></div></div></div><div class="sect2" title="Implementation Bugs"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.impl"></a>Implementation Bugs</h3></div></div></div><p>
       Information on known bugs, details on efforts to fix them, and
-      fixed bugs are all available as part of the GCC bug tracking
-      system, <a class="ulink" href="http://gcc.gnu.org/bugzilla" target="_top">bugzilla</a>, with the
-      category set to <code class="literal">libstdc++</code>.
-    </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.iso"></a>Standard Bugs</h3></div></div></div><p>
+      fixed bugs are all available as part of the <a class="ulink" href="http://gcc.gnu.org/bugs/" target="_top">GCC bug tracking system</a>,
+      with the category set to <code class="literal">libstdc++</code>.
+    </p></div><div class="sect2" title="Standard Bugs"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.iso"></a>Standard Bugs</h3></div></div></div><p>
 	Everybody's got issues.  Even the C++ Standard Library.
       </p><p>
 	The Library Working Group, or LWG, is the ISO subcommittee responsible
@@ -248,7 +247,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#409" target="_top">409</a>:
         <span class="emphasis"><em>Closing an fstream should clear the error state</em></span>
     </span></dt><dd><p>Have <code class="code">open</code> clear the error flags.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#431" target="_top">431</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-closed.html#431" target="_top">431</a>:
         <span class="emphasis"><em>Swapping containers with unequal allocators</em></span>
     </span></dt><dd><p>Implement Option 3, as per N1599.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#432" target="_top">432</a>:
@@ -286,6 +285,11 @@
 	    and Assignable?</em></span>
     </span></dt><dd><p>In case of input_iterator/output_iterator rely on Assignability of
         input_iterator' value_type.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#539" target="_top">539</a>:
+        <span class="emphasis"><em>partial_sum and adjacent_difference should mention
+            requirements</em></span>
+    </span></dt><dd><p>We were almost doing the right thing, just use std::move
+        in adjacent_difference.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#541" target="_top">541</a>:
         <span class="emphasis"><em>shared_ptr template assignment and void</em></span>
     </span></dt><dd><p>Add an auto_ptr&lt;void&gt; specialization.
@@ -301,7 +305,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#596" target="_top">596</a>:
         <span class="emphasis"><em>27.8.1.3 Table 112 omits "a+" and "a+b" modes</em></span>
     </span></dt><dd><p>Add the missing modes to fopen_mode.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#630" target="_top">630</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#630" target="_top">630</a>:
         <span class="emphasis"><em>arrays of valarray</em></span>
     </span></dt><dd><p>Implement the simple resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#660" target="_top">660</a>:
@@ -317,7 +321,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#695" target="_top">695</a>:
         <span class="emphasis"><em>ctype&lt;char&gt;::classic_table() not accessible</em></span>
     </span></dt><dd><p>Make the member functions table and classic_table public.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#696" target="_top">696</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#696" target="_top">696</a>:
         <span class="emphasis"><em>istream::operator&gt;&gt;(int&amp;) broken</em></span>
     </span></dt><dd><p>Implement the straightforward resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#761" target="_top">761</a>:
@@ -341,4 +345,8 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#853" target="_top">853</a>:
         <span class="emphasis"><em>to_string needs updating with zero and one</em></span>
     </span></dt><dd><p>Update / add the signatures.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#865" target="_top">865</a>:
+        <span class="emphasis"><em>More algorithms that throw away information</em></span>
+    </span></dt><dd><p>The traditional HP / SGI return type and value is blessed
+                    by the resolution of the DR.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="license.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="status.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="setup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>

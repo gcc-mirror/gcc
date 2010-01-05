@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 41. Concurrency</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="extensions.html" title="Part XII.  Extensions" /><link rel="prev" href="ext_demangling.html" title="Chapter 40. Demangling" /><link rel="next" href="bk01pt12ch41s02.html" title="Implementation" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 41. Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_demangling.html">Prev</a> </td><th width="60%" align="center">Part XII. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 41. Concurrency</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="extensions.html" title="Part XII.  Extensions" /><link rel="prev" href="ext_demangling.html" title="Chapter 40. Demangling" /><link rel="next" href="bk01pt12ch41s02.html" title="Implementation" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 41. Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_demangling.html">Prev</a> </td><th width="60%" align="center">Part XII. 
   Extensions
   
-</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch41s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.concurrency"></a>Chapter 41. Concurrency</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ext_concurrency.html#manual.ext.concurrency.design">Design</a></span></dt><dd><dl><dt><span class="sect2"><a href="ext_concurrency.html#manual.ext.concurrency.design.threads">Interface to Locks and Mutexes</a></span></dt><dt><span class="sect2"><a href="ext_concurrency.html#manual.ext.concurrency.design.atomics">Interface to Atomic Functions</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt12ch41s02.html">Implementation</a></span></dt><dd><dl><dt><span class="sect2"><a href="bk01pt12ch41s02.html#manual.ext.concurrency.impl.atomic_fallbacks">Using Builtin Atomic Functions</a></span></dt><dt><span class="sect2"><a href="bk01pt12ch41s02.html#manual.ext.concurrency.impl.thread">Thread Abstraction</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt12ch41s03.html">Use</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.concurrency.design"></a>Design</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.design.threads"></a>Interface to Locks and Mutexes</h3></div></div></div><p>The file &lt;ext/concurrence.h&gt; contains all the higher-level
+</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch41s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 41. Concurrency"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.concurrency"></a>Chapter 41. Concurrency</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ext_concurrency.html#manual.ext.concurrency.design">Design</a></span></dt><dd><dl><dt><span class="sect2"><a href="ext_concurrency.html#manual.ext.concurrency.design.threads">Interface to Locks and Mutexes</a></span></dt><dt><span class="sect2"><a href="ext_concurrency.html#manual.ext.concurrency.design.atomics">Interface to Atomic Functions</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt12ch41s02.html">Implementation</a></span></dt><dd><dl><dt><span class="sect2"><a href="bk01pt12ch41s02.html#manual.ext.concurrency.impl.atomic_fallbacks">Using Builtin Atomic Functions</a></span></dt><dt><span class="sect2"><a href="bk01pt12ch41s02.html#manual.ext.concurrency.impl.thread">Thread Abstraction</a></span></dt></dl></dd><dt><span class="sect1"><a href="bk01pt12ch41s03.html">Use</a></span></dt></dl></div><div class="sect1" title="Design"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.concurrency.design"></a>Design</h2></div></div></div><div class="sect2" title="Interface to Locks and Mutexes"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.design.threads"></a>Interface to Locks and Mutexes</h3></div></div></div><p>The file &lt;ext/concurrence.h&gt; contains all the higher-level
 constructs for playing with threads. In contrast to the atomics layer,
 the concurrence layer consists largely of types. All types are defined within <code class="code">namespace __gnu_cxx</code>.
 </p><p>
@@ -16,9 +16,9 @@ that support multiple threads.)
 available locking
 policies: <code class="code">_S_single</code>, <code class="code">_S_mutex</code>,
 and <code class="code">_S_atomic</code>.
-</p><div class="itemizedlist"><ul type="disc"><li><p><code class="code">_S_single</code></p><p>Indicates single-threaded code that does not need locking.
-</p></li><li><p><code class="code">_S_mutex</code></p><p>Indicates multi-threaded code using thread-layer abstractions.
-</p></li><li><p><code class="code">_S_atomic</code></p><p>Indicates multi-threaded code using atomic operations.
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><code class="code">_S_single</code></p><p>Indicates single-threaded code that does not need locking.
+</p></li><li class="listitem"><p><code class="code">_S_mutex</code></p><p>Indicates multi-threaded code using thread-layer abstractions.
+</p></li><li class="listitem"><p><code class="code">_S_atomic</code></p><p>Indicates multi-threaded code using atomic operations.
 </p></li></ul></div><p>The compile-time constant <code class="code">__default_lock_policy</code> is set
 to one of the three values above, depending on characteristics of the
 host environment and the current compilation flags.
@@ -30,7 +30,7 @@ community. This version takes a <code class="code">__mutex</code> reference, and
 locks it during construction of <code class="code">__scoped_locke</code> and
 unlocks it during destruction. This is an efficient way of locking
 critical sections, while retaining exception-safety.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.design.atomics"></a>Interface to Atomic Functions</h3></div></div></div><p>
+</p></div><div class="sect2" title="Interface to Atomic Functions"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.design.atomics"></a>Interface to Atomic Functions</h3></div></div></div><p>
 Two functions and one type form the base of atomic support. 
 </p><p>The type <code class="code">_Atomic_word</code> is a signed integral type
 supporting atomic operations.
@@ -44,12 +44,12 @@ void
 __atomic_add_dispatch(volatile _Atomic_word*, int);
 </pre><p>Both of these functions are declared in the header file
 &lt;ext/atomicity.h&gt;, and are in <code class="code">namespace __gnu_cxx</code>.
-</p><div class="itemizedlist"><ul type="disc"><li><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 <code class="code">
 __exchange_and_add_dispatch
 </code>
 </p><p>Adds the second argument's value to the first argument. Returns the old value.
-</p></li><li><p>
+</p></li><li class="listitem"><p>
 <code class="code">
 __atomic_add_dispatch
 </code>
@@ -63,11 +63,11 @@ __exchange_and_add_dispatch
 </code>
 </p><p>
 Calls through to either of:
-</p><div class="itemizedlist"><ul type="disc"><li><p><code class="code">__exchange_and_add</code>
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><code class="code">__exchange_and_add</code>
 </p><p>Multi-thread version. Inlined if compiler-generated builtin atomics
 can be used, otherwise resolved at link time to a non-builtin code
 sequence.
-</p></li><li><p><code class="code">__exchange_and_add_single</code> 
+</p></li><li class="listitem"><p><code class="code">__exchange_and_add_single</code> 
 </p><p>Single threaded version. Inlined.</p></li></ul></div><p>However, only <code class="code">__exchange_and_add_dispatch</code>
 and <code class="code">__atomic_add_dispatch</code> should be used. These functions
 can be used in a portable manner, regardless of the specific

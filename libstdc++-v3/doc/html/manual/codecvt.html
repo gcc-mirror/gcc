@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>codecvt</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      codecvt&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="facets.html" title="Chapter 15. Facets aka Categories" /><link rel="prev" href="facets.html" title="Chapter 15. Facets aka Categories" /><link rel="next" href="messages.html" title="messages" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">codecvt</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="facets.html">Prev</a> </td><th width="60%" align="center">Chapter 15. Facets aka Categories</th><td width="20%" align="right"> <a accesskey="n" href="messages.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.facet.codecvt"></a>codecvt</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>codecvt</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      codecvt&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="facets.html" title="Chapter 15. Facets aka Categories" /><link rel="prev" href="facets.html" title="Chapter 15. Facets aka Categories" /><link rel="next" href="messages.html" title="messages" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">codecvt</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="facets.html">Prev</a> </td><th width="60%" align="center">Chapter 15. Facets aka Categories</th><td width="20%" align="right"> <a accesskey="n" href="messages.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="codecvt"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.facet.codecvt"></a>codecvt</h2></div></div></div><p>
 The standard class codecvt attempts to address conversions between
 different character encoding schemes. In particular, the standard
 attempts to detail conversions between the implementation-defined wide
 characters (hereafter referred to as wchar_t) and the standard type
-char that is so beloved in classic “<span class="quote">C</span>” (which can now be
+char that is so beloved in classic <span class="quote">“<span class="quote">C</span>”</span> (which can now be
 referred to as narrow characters.)  This document attempts to describe
 how the GNU libstdc++ implementation deals with the conversion between
 wide and narrow characters, and also presents a framework for dealing
@@ -14,7 +14,7 @@ including Unicode and UTF8. Design issues and requirements are
 addressed, and examples of correct usage for both the required
 specializations for wide and narrow characters and the
 implementation-provided extended functionality are given.
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.req"></a>Requirements</h3></div></div></div><p>
+</p><div class="sect2" title="Requirements"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.req"></a>Requirements</h3></div></div></div><p>
 Around page 425 of the C++ Standard, this charming heading comes into view:
 </p><div class="blockquote"><blockquote class="blockquote"><p>
 22.2.1.5 - Template class codecvt
@@ -60,7 +60,7 @@ third template parameter, stateT.</p><p>
 Two: The required conversions, by specifying mbstate_t as the third
 template parameter, imply an implementation strategy that is mostly
 (or wholly) based on the underlying C library, and the functions
-mcsrtombs and wcsrtombs in particular.</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.design"></a>Design</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="codecvt.design.wchar_t_size"></a><span class="type">wchar_t</span> Size</h4></div></div></div><p>
+mcsrtombs and wcsrtombs in particular.</p></div><div class="sect2" title="Design"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.design"></a>Design</h3></div></div></div><div class="sect3" title="wchar_t Size"><div class="titlepage"><div><div><h4 class="title"><a id="codecvt.design.wchar_t_size"></a><span class="type">wchar_t</span> Size</h4></div></div></div><p>
       The simple implementation detail of wchar_t's size seems to
       repeatedly confound people. Many systems use a two byte,
       unsigned integral type to represent wide characters, and use an
@@ -72,7 +72,7 @@ mcsrtombs and wcsrtombs in particular.</p></div><div class="sect2" lang="en" xml
       size for the type wchar_t.
     </p><p>
       Thus, portable C++ code cannot assume a byte size (or endianness) either.
-    </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="codecvt.design.unicode"></a>Support for Unicode</h4></div></div></div><p>
+    </p></div><div class="sect3" title="Support for Unicode"><div class="titlepage"><div><div><h4 class="title"><a id="codecvt.design.unicode"></a>Support for Unicode</h4></div></div></div><p>
     Probably the most frequently asked question about code conversion
     is: "So dudes, what's the deal with Unicode strings?"
     The dude part is optional, but apparently the usefulness of
@@ -89,7 +89,7 @@ mcsrtombs and wcsrtombs in particular.</p></div><div class="sect2" lang="en" xml
     needed is some kind of generalized type that accounts for the
     issues that abstract encodings will need. The minimum information
     that is required includes:
-  </p><div class="itemizedlist"><ul type="disc"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	Identifiers for each of the codesets involved in the
 	conversion. For example, using the iconv family of functions
 	from the Single Unix Specification (what used to be called
@@ -115,32 +115,32 @@ encodings (i.e. "UCS-2" and "UTF-8") are necessary,
 although for other,
 non-iconv implementations a table of enumerated values or some other
 mechanism may be required.
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Maximum length of the identifying string literal.
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Some encodings require explicit endian-ness. As such, some kind
   of endian marker or other byte-order marker will be necessary. See
   "Footnotes for C/C++ developers" in Haible for more information on
   UCS-2/Unicode endian issues. (Summary: big endian seems most likely,
   however implementations, most notably Microsoft, vary.)
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Types representing the conversion state, for conversions involving
   the machinery in the "C" library, or the conversion descriptor, for
   conversions using iconv (such as the type iconv_t.)  Note that the
   conversion descriptor encodes more information than a simple encoding
   state type.
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Conversion descriptors for both directions of encoding. (i.e., both
   UCS-2 to UTF-8 and UTF-8 to UCS-2.)
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Something to indicate if the conversion requested if valid.
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Something to represent if the conversion descriptors are valid.
-</p></li><li><p>
+</p></li><li class="listitem"><p>
  Some way to enforce strict type checking on the internal and
   external types. As part of this, the size of the internal and
   external types will need to be known.
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="codecvt.design.issues"></a>Other Issues</h4></div></div></div><p>
+</p></li></ul></div></div><div class="sect3" title="Other Issues"><div class="titlepage"><div><div><h4 class="title"><a id="codecvt.design.issues"></a>Other Issues</h4></div></div></div><p>
 In addition, multi-threaded and multi-locale environments also impact
 the design and requirements for code conversions. In particular, they
 affect the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt;
@@ -172,7 +172,7 @@ For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
 LC_CTYPE category implements.
-</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.impl"></a>Implementation</h3></div></div></div><p>
+</p></div></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.impl"></a>Implementation</h3></div></div></div><p>
 The two required specializations are implemented as follows:
 </p><p>
 <code class="code">
@@ -274,7 +274,7 @@ Definitions for all the required codecvt member functions are provided
 for this specialization, and usage of codecvt&lt;internal character type,
 external character type, encoding_state&gt; is consistent with other
 codecvt usage.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.use"></a>Use</h3></div></div></div><p>A conversions involving string literal.</p><pre class="programlisting">
+</p></div><div class="sect2" title="Use"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.use"></a>Use</h3></div></div></div><p>A conversions involving string literal.</p><pre class="programlisting">
   typedef codecvt_base::result                  result;
   typedef unsigned short                        unicode_t;
   typedef unicode_t                             int_type;
@@ -311,67 +311,67 @@ codecvt usage.
   VERIFY( !int_traits::compare(i_arr, i_lit, size) ); 
   VERIFY( efrom_next == e_lit + size );
   VERIFY( ito_next == i_arr + size );
-</pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>
+</pre></div><div class="sect2" title="Future"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
    a. things that are sketchy, or remain unimplemented:
       do_encoding, max_length and length member functions
       are only weakly implemented. I have no idea how to do
       this correctly, and in a generic manner.  Nathan?
-</p></li><li><p>
+</p></li><li class="listitem"><p>
    b. conversions involving std::string
-  </p><div class="itemizedlist"><ul type="circle"><li><p>
+  </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
       how should operators != and == work for string of
       different/same encoding?
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
       what is equal? A byte by byte comparison or an
       encoding then byte comparison?
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
       conversions between narrow, wide, and unicode strings
-      </p></li></ul></div></li><li><p>
+      </p></li></ul></div></li><li class="listitem"><p>
    c. conversions involving std::filebuf and std::ostream
-</p><div class="itemizedlist"><ul type="circle"><li><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
       how to initialize the state object in a
       standards-conformant manner?
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
       how to synchronize the "C" and "C++"
       conversion information?
-      </p></li><li><p>
+      </p></li><li class="listitem"><p>
       wchar_t/char internal buffers and conversions between
       internal/external buffers?
-      </p></li></ul></div></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id703118"></a><p><span class="title"><i>
+      </p></li></ul></div></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="facet.codecvt.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="The GNU C Library"><a id="id450608"></a><p><span class="title"><i>
       The GNU C Library
-    </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="id644322"></a><p><span class="title"><i>
+    </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry" title="Correspondence"><a id="id463298"></a><p><span class="title"><i>
       Correspondence
-    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="id644350"></a><p><span class="title"><i>
+    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry" title="ISO/IEC 14882:1998 Programming languages - C++"><a id="id463327"></a><p><span class="title"><i>
       ISO/IEC 14882:1998 Programming languages - C++
-    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="id660838"></a><p><span class="title"><i>
+    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry" title="ISO/IEC 9899:1999 Programming languages - C"><a id="id476050"></a><p><span class="title"><i>
       ISO/IEC 9899:1999 Programming languages - C
-    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="id660857"></a><p><span class="title"><i>
+    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry" title="The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)"><a id="id476068"></a><p><span class="title"><i>
       The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
     </i>. </span><span class="copyright">Copyright © 1999 
       The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span><span class="biblioid">
       <a class="ulink" href="http://www.unix.org/version3/ieee_std.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id686728"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="The C++ Programming Language, Special Edition"><a id="id509125"></a><p><span class="title"><i>
       The C++ Programming Language, Special Edition
     </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="id720408"></a><p><span class="title"><i>
+      . </span></span></p></div><div class="biblioentry" title="Standard C++ IOStreams and Locales"><a id="id409160"></a><p><span class="title"><i>
       Standard C++ IOStreams and Locales
     </i>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
     . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
 	Addison Wesley Longman
-      . </span></span></p></div><div class="biblioentry"><a id="id692630"></a><p><span class="title"><i>
+      . </span></span></p></div><div class="biblioentry" title="A brief description of Normative Addendum 1"><a id="id521729"></a><p><span class="title"><i>
       A brief description of Normative Addendum 1
     </i>. </span><span class="author"><span class="firstname">Clive</span> <span class="surname">Feather</span>. </span><span class="pagenums">Extended Character Sets. </span><span class="biblioid">
       <a class="ulink" href="http://www.lysator.liu.se/c/na1.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id617963"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="The Unicode HOWTO"><a id="id510891"></a><p><span class="title"><i>
       The Unicode HOWTO
     </i>. </span><span class="author"><span class="firstname">Bruno</span> <span class="surname">Haible</span>. </span><span class="biblioid">
       <a class="ulink" href="ftp://ftp.ilog.fr/pub/Users/haible/utf8/Unicode-HOWTO.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id681295"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="UTF-8 and Unicode FAQ for Unix/Linux"><a id="id510919"></a><p><span class="title"><i>
       UTF-8 and Unicode FAQ for Unix/Linux
     </i>. </span><span class="author"><span class="firstname">Markus</span> <span class="surname">Khun</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.cl.cam.ac.uk/~mgk25/unicode.html" target="_top">

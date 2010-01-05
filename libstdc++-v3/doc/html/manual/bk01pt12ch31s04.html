@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      parallel&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="parallel_mode.html" title="Chapter 31. Parallel Mode" /><link rel="prev" href="bk01pt12ch31s03.html" title="Using" /><link rel="next" href="bk01pt12ch31s05.html" title="Testing" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch31s03.html">Prev</a> </td><th width="60%" align="center">Chapter 31. Parallel Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch31s05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.parallel_mode.design"></a>Design</h2></div></div></div><p>
-  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.intro"></a>Interface Basics</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      parallel&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="parallel_mode.html" title="Chapter 31. Parallel Mode" /><link rel="prev" href="bk01pt12ch31s03.html" title="Using" /><link rel="next" href="bk01pt12ch31s05.html" title="Testing" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch31s03.html">Prev</a> </td><th width="60%" align="center">Chapter 31. Parallel Mode</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt12ch31s05.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Design"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.parallel_mode.design"></a>Design</h2></div></div></div><p>
+  </p><div class="sect2" title="Interface Basics"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.intro"></a>Interface Basics</h3></div></div></div><p>
 All parallel algorithms are intended to have signatures that are
 equivalent to the ISO C++ algorithms replaced. For instance, the
 <code class="function">std::adjacent_find</code> function is declared as:
@@ -36,13 +36,13 @@ function, if no parallel functions are deemed worthy), based on either
 compile-time or run-time conditions.
 </p><p> The available signature options are specific for the different
 algorithms/algorithm classes.</p><p> The general view of overloads for the parallel algorithms look like this:
-</p><div class="itemizedlist"><ul type="disc"><li><p>ISO C++ signature</p></li><li><p>ISO C++ signature + sequential_tag argument</p></li><li><p>ISO C++ signature + algorithm-specific tag type
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>ISO C++ signature</p></li><li class="listitem"><p>ISO C++ signature + sequential_tag argument</p></li><li class="listitem"><p>ISO C++ signature + algorithm-specific tag type
     (several signatures)</p></li></ul></div><p> Please note that the implementation may use additional functions
 (designated with the <code class="code">_switch</code> suffix) to dispatch from the
 ISO C++ signature to the correct parallel version. Also, some of the
 algorithms do not have support for run-time conditions, so the last
 overload is therefore missing.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.tuning"></a>Configuration and Tuning</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.omp"></a>Setting up the OpenMP Environment</h4></div></div></div><p>
+</p></div><div class="sect2" title="Configuration and Tuning"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.tuning"></a>Configuration and Tuning</h3></div></div></div><div class="sect3" title="Setting up the OpenMP Environment"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.omp"></a>Setting up the OpenMP Environment</h4></div></div></div><p>
 Several aspects of the overall runtime environment can be manipulated
 by standard OpenMP function calls.
 </p><p>
@@ -72,7 +72,7 @@ Other parts of the runtime environment able to be manipulated include
 nested parallelism (<code class="function">omp_set_nested</code>), schedule kind
 (<code class="function">omp_set_schedule</code>), and others. See the OpenMP
 documentation for more information.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.compile"></a>Compile Time Switches</h4></div></div></div><p>
+</p></div><div class="sect3" title="Compile Time Switches"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.compile"></a>Compile Time Switches</h4></div></div></div><p>
 To force an algorithm to execute sequentially, even though parallelism
 is switched on in general via the macro <code class="constant">_GLIBCXX_PARALLEL</code>,
 add <code class="classname">__gnu_parallel::sequential_tag()</code> to the end
@@ -126,7 +126,7 @@ several additional choices, namely
 <code class="code">__gnu_parallel::balanced_quicksort_tag</code>.
 Multiway mergesort comes with the two splitting strategies for multi-way
 merging. The quicksort options cannot be used for <code class="code">stable_sort</code>.
-</p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.settings"></a>Run Time Settings and Defaults</h4></div></div></div><p>
+</p></div><div class="sect3" title="Run Time Settings and Defaults"><div class="titlepage"><div><div><h4 class="title"><a id="parallel_mode.design.tuning.settings"></a>Run Time Settings and Defaults</h4></div></div></div><p>
 The default parallelization strategy, the choice of specific algorithm
 strategy, the minimum threshold limits for individual parallel
 algorithms, and aspects of the underlying hardware can be specified as
@@ -194,7 +194,7 @@ int main()
 
   return 0;
 }
-</pre></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contain versions of code that are always
+</pre></div></div><div class="sect2" title="Implementation Namespaces"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contain versions of code that are always
 explicitly sequential:
 <code class="code">__gnu_serial</code>.
 </p><p> Two namespaces contain the parallel mode:

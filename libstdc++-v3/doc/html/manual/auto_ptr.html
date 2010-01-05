@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>auto_ptr</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      auto_ptr&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="memory.html" title="Chapter 11. Memory" /><link rel="prev" href="memory.html" title="Chapter 11. Memory" /><link rel="next" href="shared_ptr.html" title="shared_ptr" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">auto_ptr</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="memory.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Memory</th><td width="20%" align="right"> <a accesskey="n" href="shared_ptr.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.util.memory.auto_ptr"></a>auto_ptr</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="auto_ptr.limitations"></a>Limitations</h3></div></div></div><p>Explaining all of the fun and delicious things that can
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>auto_ptr</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      auto_ptr&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="memory.html" title="Chapter 11. Memory" /><link rel="prev" href="memory.html" title="Chapter 11. Memory" /><link rel="next" href="shared_ptr.html" title="shared_ptr" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">auto_ptr</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="memory.html">Prev</a> </td><th width="60%" align="center">Chapter 11. Memory</th><td width="20%" align="right"> <a accesskey="n" href="shared_ptr.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="auto_ptr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.util.memory.auto_ptr"></a>auto_ptr</h2></div></div></div><div class="sect2" title="Limitations"><div class="titlepage"><div><div><h3 class="title"><a id="auto_ptr.limitations"></a>Limitations</h3></div></div></div><p>Explaining all of the fun and delicious things that can
    happen with misuse of the <code class="classname">auto_ptr</code> class
    template (called <acronym class="acronym">AP</acronym> here) would take some
    time. Suffice it to say that the use of <acronym class="acronym">AP</acronym>
@@ -51,7 +51,7 @@
       to die.  AP is trivial to write, however, so you could write your
       own <code class="code">auto_array_ptr</code> for that situation (in fact, this has
       been done many times; check the mailing lists, Usenet, Boost, etc).
-   </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="auto_ptr.using"></a>Use in Containers</h3></div></div></div><p>
+   </p></div><div class="sect2" title="Use in Containers"><div class="titlepage"><div><div><h3 class="title"><a id="auto_ptr.using"></a>Use in Containers</h3></div></div></div><p>
   </p><p>All of the <a class="link" href="containers.html" title="Part VII.  Containers">containers</a>
       described in the standard library require their contained types
       to have, among other things, a copy constructor like this:
@@ -70,7 +70,7 @@
    </p><p>
      The resulting rule is simple: <span class="emphasis"><em>Never ever use a
      container of auto_ptr objects</em></span>. The standard says that
-     “<span class="quote">undefined</span>” behavior is the result, but it is
+     <span class="quote">“<span class="quote">undefined</span>”</span> behavior is the result, but it is
      guaranteed to be messy.
    </p><p>
      To prevent you from doing this to yourself, the

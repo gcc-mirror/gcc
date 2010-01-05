@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 2. Setup</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="intro.html" title="Part I.  Introduction" /><link rel="prev" href="bugs.html" title="Bugs" /><link rel="next" href="configure.html" title="Configure" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 2. Setup</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bugs.html">Prev</a> </td><th width="60%" align="center">Part I. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 2. Setup</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="intro.html" title="Part I.  Introduction" /><link rel="prev" href="bugs.html" title="Bugs" /><link rel="next" href="configure.html" title="Configure" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 2. Setup</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bugs.html">Prev</a> </td><th width="60%" align="center">Part I. 
   Introduction
   
-</th><td width="20%" align="right"> <a accesskey="n" href="configure.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.setup"></a>Chapter 2. Setup</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="setup.html#manual.intro.setup.prereq">Prerequisites</a></span></dt><dt><span class="sect1"><a href="configure.html">Configure</a></span></dt><dt><span class="sect1"><a href="make.html">Make</a></span></dt></dl></div><p>To transform libstdc++ sources into installed include files
+</th><td width="20%" align="right"> <a accesskey="n" href="configure.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 2. Setup"><div class="titlepage"><div><div><h2 class="title"><a id="manual.intro.setup"></a>Chapter 2. Setup</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="setup.html#manual.intro.setup.prereq">Prerequisites</a></span></dt><dt><span class="sect1"><a href="configure.html">Configure</a></span></dt><dt><span class="sect1"><a href="make.html">Make</a></span></dt></dl></div><p>To transform libstdc++ sources into installed include files
    and properly built binaries useful for linking to other software is
    a multi-step process. Steps include getting the sources,
    configuring and building the sources, testing, and installation.
@@ -19,7 +19,7 @@
    make install
    </pre><p>
      Each step is described in more detail in the following sections.
-   </p><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.setup.prereq"></a>Prerequisites</h2></div></div></div><p>
+   </p><div class="sect1" title="Prerequisites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.setup.prereq"></a>Prerequisites</h2></div></div></div><p>
   Because libstdc++ is part of GCC, the primary source for
    installation instructions is
    <a class="ulink" href="http://gcc.gnu.org/install/" target="_top">the GCC install page</a>.
@@ -73,6 +73,8 @@ fr_FR@euro          ISO-8859-15
 is_IS               UTF-8
 it_IT               ISO-8859-1
 ja_JP.eucjp         EUC-JP
+ru_RU.ISO-8859-5    ISO-8859-5
+ru_RU.UTF-8         UTF-8
 se_NO.UTF-8         UTF-8
 ta_IN               UTF-8
 zh_TW               BIG5
@@ -86,16 +88,16 @@ zh_TW               BIG5
       necessary.
       </p><p>
 	To install support for locales, do only one of the following:
-      </p><div class="itemizedlist"><ul type="disc"><li><p>install all locales</p><div class="itemizedlist"><ul type="circle"><li><p>with RedHat Linux:
+      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>install all locales</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>with RedHat Linux:
 	      </p><p> <code class="code"> export LC_ALL=C </code> 
 	      </p><p> <code class="code"> rpm -e glibc-common --nodeps </code> 
 	      </p><p> 
 		<code class="code"> rpm -i --define "_install_langs all"
 		 glibc-common-2.2.5-34.i386.rpm 
 		</code> 
-	      </p></li><li><p>
+	      </p></li><li class="listitem"><p>
 	       Instructions for other operating systems solicited.
-	     </p></li></ul></div></li><li><p>install just the necessary locales</p><div class="itemizedlist"><ul type="circle"><li><p>with Debian Linux:</p><p> Add the above list, as shown, to the file
-	      <code class="code">/etc/locale.gen</code> </p><p> run <code class="code">/usr/sbin/locale-gen</code> </p></li><li><p>on most Unix-like operating systems:</p><p><code class="code"> localedef -i de_DE -f ISO-8859-1 de_DE </code></p><p>(repeat for each entry in the above list) </p></li><li><p>
+	     </p></li></ul></div></li><li class="listitem"><p>install just the necessary locales</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>with Debian Linux:</p><p> Add the above list, as shown, to the file
+	      <code class="code">/etc/locale.gen</code> </p><p> run <code class="code">/usr/sbin/locale-gen</code> </p></li><li class="listitem"><p>on most Unix-like operating systems:</p><p><code class="code"> localedef -i de_DE -f ISO-8859-1 de_DE </code></p><p>(repeat for each entry in the above list) </p></li><li class="listitem"><p>
 	       Instructions for other operating systems solicited.
 	    </p></li></ul></div></li></ul></div></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bugs.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="intro.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="configure.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Bugs </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Configure</td></tr></table></div></body></html>

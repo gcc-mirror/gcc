@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Diagnostics</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="profile_mode.html" title="Chapter 32. Profile Mode" /><link rel="prev" href="bk01pt12ch32s06.html" title="Developer Information" /><link rel="next" href="ext_allocators.html" title="Chapter 33. Allocators" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Diagnostics</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch32s06.html">Prev</a> </td><th width="60%" align="center">Chapter 32. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="ext_allocators.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.diagnostics"></a>Diagnostics</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Diagnostics</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      library&#10;    , &#10;      profile&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="profile_mode.html" title="Chapter 32. Profile Mode" /><link rel="prev" href="bk01pt12ch32s06.html" title="Developer Information" /><link rel="next" href="ext_allocators.html" title="Chapter 33. Allocators" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Diagnostics</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch32s06.html">Prev</a> </td><th width="60%" align="center">Chapter 32. Profile Mode</th><td width="20%" align="right"> <a accesskey="n" href="ext_allocators.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Diagnostics"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.profile_mode.diagnostics"></a>Diagnostics</h2></div></div></div><p>
   The table below presents all the diagnostics we intend to implement.
   Each diagnostic has a corresponding compile time switch
   <code class="code">-D_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
@@ -18,7 +18,7 @@
   A high accuracy means that the diagnostic is unlikely to be wrong.
   These grades are not perfect.  They are just meant to guide users with
   specific needs or time budgets.
-  </p><div class="table"><a id="id521055"></a><p class="title"><b>Table 32.2. Diagnostics</b></p><div class="table-contents"><table summary="Diagnostics" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Group</th><th align="left">Flag</th><th align="left">Benefit</th><th align="left">Cost</th><th align="left">Freq.</th><th align="left">Implemented</th></tr></thead><tbody><tr><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.containers" target="_top">
+  </p><div class="table"><a id="id447842"></a><p class="title"><b>Table 32.2. Diagnostics</b></p><div class="table-contents"><table summary="Diagnostics" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Group</th><th align="left">Flag</th><th align="left">Benefit</th><th align="left">Cost</th><th align="left">Freq.</th><th align="left">Implemented</th></tr></thead><tbody><tr><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.containers" target="_top">
     CONTAINERS</a></td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.hashtable_too_small" target="_top">
     HASHTABLE_TOO_SMALL</a></td><td align="left">10</td><td align="left">1</td><td align="left"> </td><td align="left">10</td><td align="left">yes</td></tr><tr><td align="left"> </td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.hashtable_too_large" target="_top">
     HASHTABLE_TOO_LARGE</a></td><td align="left">5</td><td align="left">1</td><td align="left"> </td><td align="left">10</td><td align="left">yes</td></tr><tr><td align="left"> </td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.inefficient_hash" target="_top">
@@ -35,44 +35,44 @@
     LOCALITY</a></td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.locality.sw_prefetch" target="_top">
     SOFTWARE_PREFETCH</a></td><td align="left">8</td><td align="left">8</td><td align="left"> </td><td align="left">5</td><td align="left">no</td></tr><tr><td align="left"> </td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.locality.linked" target="_top">
     RBTREE_LOCALITY</a></td><td align="left">4</td><td align="left">8</td><td align="left"> </td><td align="left">5</td><td align="left">no</td></tr><tr><td align="left"> </td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.mthread.false_share" target="_top">
-    FALSE_SHARING</a></td><td align="left">8</td><td align="left">10</td><td align="left"> </td><td align="left">10</td><td align="left">no</td></tr></tbody></table></div></div><br class="table-break" /><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.template"></a>Diagnostic Template</h3></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+    FALSE_SHARING</a></td><td align="left">8</td><td align="left">10</td><td align="left"> </td><td align="left">10</td><td align="left">no</td></tr></tbody></table></div></div><br class="table-break" /><div class="sect2" title="Diagnostic Template"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.template"></a>Diagnostic Template</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span>  What problem will it diagnose?
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>.
-  What is the fundamental reason why this is a problem</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>  What problem will it diagnose?
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>.
+  What is the fundamental reason why this is a problem</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>
   Percentage reduction in execution time.  When reduction is more than
   a constant factor, describe the reduction rate formula.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>
-  What would the advise look like?</p></li><li><p><span class="emphasis"><em>To instrument:</em></span>
-  What stdlibc++ components need to be instrumented?</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
-  How do we decide when to issue the advice?</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  How do we measure benefits?  Math goes here.</p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>
+  What would the advise look like?</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span>
+  What stdlibc++ components need to be instrumented?</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
+  How do we decide when to issue the advice?</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  How do we measure benefits?  Math goes here.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 program code
 ...
 advice sample
 </pre><p>
-</p></li></ul></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.containers"></a>Containers</h3></div></div></div><p>
+</p></li></ul></div></div><div class="sect2" title="Containers"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.containers"></a>Containers</h3></div></div></div><p>
 <span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_CONTAINERS</code>.
-</p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_small"></a>Hashtable Too Small</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p><div class="sect3" title="Hashtable Too Small"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_small"></a>Hashtable Too Small</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_HASHTABLE_TOO_SMALL</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables with many 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables with many 
   rehash operations, small construction size and large destruction size.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span> Rehash is very expensive.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span> Rehash is very expensive.
   Read content, follow chains within bucket, evaluate hash function, place at
-  new location in different order.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span> 36%.
+  new location in different order.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span> 36%.
   Code similar to example below.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> 
   Set initial size to N at construction site S.
-  </p></li><li><p><span class="emphasis"><em>To instrument:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> 
   <code class="code">unordered_set, unordered_map</code> constructor, destructor, rehash.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">unordered_[multi]set|map</code>,
   record initial size and call context of the constructor.
   Record size increase, if any, after each relevant operation such as insert.
-  Record the estimated rehash cost.</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Number of individual rehash operations * cost per rehash.</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  Record the estimated rehash cost.</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Number of individual rehash operations * cost per rehash.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1 unordered_set&lt;int&gt; us;
 2 for (int k = 0; k &lt; 1000000; ++k) {
@@ -81,24 +81,24 @@ advice sample
 
 foo.cc:1: advice: Changing initial unordered_set size from 10 to 1000000 saves 1025530 rehash operations.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_large"></a>Hashtable Too Large</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Hashtable Too Large"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_too_large"></a>Hashtable Too Large</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_HASHTABLE_TOO_LARGE</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables which are
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables which are
   never filled up because fewer elements than reserved are ever
   inserted.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span> Save memory, which
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span> Save memory, which
   is good in itself and may also improve memory reference performance through
-  fewer cache and TLB misses.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span> unknown.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> 
+  fewer cache and TLB misses.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span> unknown.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> 
   Set initial size to N at construction site S.
-  </p></li><li><p><span class="emphasis"><em>To instrument:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> 
   <code class="code">unordered_set, unordered_map</code> constructor, destructor, rehash.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">unordered_[multi]set|map</code>,
   record initial size and call context of the constructor, and correlate it
   with its size at destruction time.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Number of iteration operations + memory saved.</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Number of iteration operations + memory saved.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1 vector&lt;unordered_set&lt;int&gt;&gt; v(100000, unordered_set&lt;int&gt;(100)) ;
 2 for (int k = 0; k &lt; 100000; ++k) {
@@ -110,25 +110,25 @@ foo.cc:1: advice: Changing initial unordered_set size from 10 to 1000000 saves 1
 foo.cc:1: advice: Changing initial unordered_set size from 100 to 10 saves N
 bytes of memory and M iteration steps.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.inefficient_hash"></a>Inefficient Hash</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Inefficient Hash"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.inefficient_hash"></a>Inefficient Hash</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_INEFFICIENT_HASH</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables with polarized
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect hashtables with polarized
   distribution.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span> A non-uniform 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span> A non-uniform 
   distribution may lead to long chains, thus possibly increasing complexity
   by a factor up to the number of elements.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span> factor up
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span> factor up
    to container size.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> Change hash function
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> Change hash function
   for container built at site S.  Distribution score = N.  Access score = S.
   Longest chain = C, in bucket B.
-  </p></li><li><p><span class="emphasis"><em>To instrument:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span>
   <code class="code">unordered_set, unordered_map</code> constructor, destructor, [],
   insert, iterator.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   Count the exact number of link traversals.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Total number of links traversed.</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Total number of links traversed.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 class dumb_hash {
  public:
@@ -141,22 +141,22 @@ class dumb_hash {
     hs.find(i);
   }
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_small"></a>Vector Too Small</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Vector Too Small"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_small"></a>Vector Too Small</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TOO_SMALL</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span>Detect vectors with many 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>Detect vectors with many 
   resize operations, small construction size and large destruction size..
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>Resizing can be expensive.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>Resizing can be expensive.
   Copying large amounts of data takes time.  Resizing many small vectors may
-  have allocation overhead and affect locality.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>
-  Set initial size to N at construction site S.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  have allocation overhead and affect locality.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>
+  Set initial size to N at construction site S.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">vector</code>,
   record initial size and call context of the constructor.
   Record size increase, if any, after each relevant operation such as 
   <code class="code">push_back</code>.  Record the estimated resize cost.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Total number of words copied * time to copy a word.</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Total number of words copied * time to copy a word.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1 vector&lt;int&gt; v;
 2 for (int k = 0; k &lt; 1000000; ++k) {
@@ -166,21 +166,21 @@ class dumb_hash {
 foo.cc:1: advice: Changing initial vector size from 10 to 1000000 saves 
 copying 4000000 bytes and 20 memory allocations and deallocations.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_large"></a>Vector Too Large</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Vector Too Large"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_too_large"></a>Vector Too Large</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TOO_LARGE</code>
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span>Detect vectors which are
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>Detect vectors which are
   never filled up because fewer elements than reserved are ever
   inserted.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>Save memory, which
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>Save memory, which
   is good in itself and may also improve memory reference performance through
-  fewer cache and TLB misses.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>
-  Set initial size to N at construction site S.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  fewer cache and TLB misses.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>
+  Set initial size to N at construction site S.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">vector</code>,
   record initial size and call context of the constructor, and correlate it
-  with its size at destruction time.</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Total amount of memory saved.</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  with its size at destruction time.</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Total amount of memory saved.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1 vector&lt;vector&lt;int&gt;&gt; v(100000, vector&lt;int&gt;(100)) ;
 2 for (int k = 0; k &lt; 100000; ++k) {
@@ -192,27 +192,27 @@ copying 4000000 bytes and 20 memory allocations and deallocations.
 foo.cc:1: advice: Changing initial vector size from 100 to 10 saves N
 bytes of memory and may reduce the number of cache and TLB misses.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_hashtable"></a>Vector to Hashtable</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Vector to Hashtable"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_hashtable"></a>Vector to Hashtable</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TO_HASHTABLE</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect uses of 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect uses of 
   <code class="code">vector</code> that can be substituted with <code class="code">unordered_set</code>
   to reduce execution time.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   Linear search in a vector is very expensive, whereas searching in a hashtable
-  is very quick.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>factor up
+  is very quick.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>factor up
    to container size.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>Replace 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>Replace 
   <code class="code">vector</code> with <code class="code">unordered_set</code> at site S.
-  </p></li><li><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>
-  operations and access methods.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>
+  operations and access methods.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">vector</code>,
   record call context of the constructor.  Issue the advice only if the
   only methods called on this <code class="code">vector</code> are <code class="code">push_back</code>, 
   <code class="code">insert</code> and <code class="code">find</code>.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
   Cost(vector::push_back) + cost(vector::insert) + cost(find, vector) -
   cost(unordered_set::insert) + cost(unordered_set::find).
-  </p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 1  vector&lt;int&gt; v;
 ...
@@ -223,24 +223,24 @@ bytes of memory and may reduce the number of cache and TLB misses.
 foo.cc:1: advice: Changing "vector" to "unordered_set" will save about 500,000
 comparisons.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_to_vector"></a>Hashtable to Vector</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Hashtable to Vector"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.hashtable_to_vector"></a>Hashtable to Vector</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_HASHTABLE_TO_VECTOR</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect uses of 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect uses of 
   <code class="code">unordered_set</code> that can be substituted with <code class="code">vector</code>
   to reduce execution time.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
-  Hashtable iterator is slower than vector iterator.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>95%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>Replace 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
+  Hashtable iterator is slower than vector iterator.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>95%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>Replace 
   <code class="code">unordered_set</code> with <code class="code">vector</code> at site S.
-  </p></li><li><p><span class="emphasis"><em>To instrument:</em></span><code class="code">unordered_set</code>
-  operations and access methods.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">unordered_set</code>
+  operations and access methods.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">unordered_set</code>,
   record call context of the constructor.  Issue the advice only if the
   number of <code class="code">find</code>, <code class="code">insert</code> and <code class="code">[]</code> 
   operations on this <code class="code">unordered_set</code> are small relative to the
   number of elements, and methods <code class="code">begin</code> or <code class="code">end</code>
-  are invoked (suggesting iteration).</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Number of .</p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  are invoked (suggesting iteration).</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Number of .</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 1  unordered_set&lt;int&gt; us;
 ...
@@ -252,27 +252,27 @@ comparisons.
 foo.cc:1: advice: Changing "unordered_set" to "vector" will save about N
 indirections and may achieve better data locality.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_list"></a>Vector to List</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Vector to List"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.vector_to_list"></a>Vector to List</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_VECTOR_TO_LIST</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect cases where 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect cases where 
   <code class="code">vector</code> could be substituted with <code class="code">list</code> for
   better performance.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   Inserting in the middle of a vector is expensive compared to inserting in a 
   list.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>factor up to
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>factor up to
    container size.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>Replace vector with list
-  at site S.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>
-  operations and access methods.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>Replace vector with list
+  at site S.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>
+  operations and access methods.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   For each dynamic instance of <code class="code">vector</code>,
   record the call context of the constructor.  Record the overhead of each
   <code class="code">insert</code> operation based on current size and insert position.
   Report instance with high insertion overhead.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
   (Sum(cost(vector::method)) - Sum(cost(list::method)), for
   method in [push_back, insert, erase])
-  + (Cost(iterate vector) - Cost(iterate list))</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  + (Cost(iterate vector) - Cost(iterate list))</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1  vector&lt;int&gt; v;
 2  for (int i = 0; i &lt; 10000; ++i) {
@@ -282,22 +282,22 @@ indirections and may achieve better data locality.
 foo.cc:1: advice: Changing "vector" to "list" will save about 5,000,000 
 operations.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_vector"></a>List to Vector</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="List to Vector"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_vector"></a>List to Vector</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_LIST_TO_VECTOR</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect cases where 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect cases where 
   <code class="code">list</code> could be substituted with <code class="code">vector</code> for
   better performance.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   Iterating through a vector is faster than through a list.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>64%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>Replace list with vector
-  at site S.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>
-  operations and access methods.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>64%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>Replace list with vector
+  at site S.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">vector</code>
+  operations and access methods.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   Issue the advice if there are no <code class="code">insert</code> operations.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
     (Sum(cost(vector::method)) - Sum(cost(list::method)), for
   method in [push_back, insert, erase])
-  + (Cost(iterate vector) - Cost(iterate list))</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  + (Cost(iterate vector) - Cost(iterate list))</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1  list&lt;int&gt; l;
 ...
@@ -309,23 +309,23 @@ operations.
 foo.cc:1: advice: Changing "list" to "vector" will save about 1000000 indirect
 memory references.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"></a>Ordered to Unordered Associative Container</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Ordered to Unordered Associative Container"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"></a>Ordered to Unordered Associative Container</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_ORDERED_TO_UNORDERED</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span>  Detect cases where ordered
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span>  Detect cases where ordered
   associative containers can be replaced with unordered ones.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   Insert and search are quicker in a hashtable than in 
-  a red-black tree.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>52%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>
-  Replace set with unordered_set at site S.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span>
+  a red-black tree.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>52%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>
+  Replace set with unordered_set at site S.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span>
   <code class="code">set</code>, <code class="code">multiset</code>, <code class="code">map</code>,
-  <code class="code">multimap</code> methods.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  <code class="code">multimap</code> methods.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   Issue the advice only if we are not using operator <code class="code">++</code> on any
   iterator on a particular <code class="code">[multi]set|map</code>.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
   (Sum(cost(hashtable::method)) - Sum(cost(rbtree::method)), for
   method in [insert, erase, find])
-  + (Cost(iterate hashtable) - Cost(iterate rbtree))</p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  + (Cost(iterate hashtable) - Cost(iterate rbtree))</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 1  set&lt;int&gt; s;
 2  for (int i = 0; i &lt; 100000; ++i) {
@@ -336,43 +336,43 @@ memory references.
 7    sum += *s.find(i);
 8  }
 </pre><p>
-</p></li></ul></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.algorithms"></a>Algorithms</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div></div><div class="sect2" title="Algorithms"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.algorithms"></a>Algorithms</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_ALGORITHMS</code>.
-  </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.algorithms.sort"></a>Sort Algorithm Performance</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+  </p><div class="sect3" title="Sort Algorithm Performance"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.algorithms.sort"></a>Sort Algorithm Performance</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_SORT</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Give measure of sort algorithm
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Give measure of sort algorithm
   performance based on actual input.  For instance, advise Radix Sort over
   Quick Sort for a particular call context.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   See papers: 
   <a class="ulink" href="http://portal.acm.org/citation.cfm?doid=1065944.1065981" target="_top">
   A framework for adaptive algorithm selection in STAPL</a> and 
   <a class="ulink" href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227" target="_top">
   Optimizing Sorting with Machine Learning Algorithms</a>.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>60%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> Change sort algorithm
-  at site S from X Sort to Y Sort.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span> <code class="code">sort</code>
-  algorithm.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>60%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> Change sort algorithm
+  at site S from X Sort to Y Sort.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> <code class="code">sort</code>
+  algorithm.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   Issue the advice if the cost model tells us that another sort algorithm
   would do better on this input.  Requires us to know what algorithm we 
-  are using in our sort implementation in release mode.</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Runtime(algo) for algo in [radix, quick, merge, ...]</p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  are using in our sort implementation in release mode.</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Runtime(algo) for algo in [radix, quick, merge, ...]</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 </pre><p>
-</p></li></ul></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.locality"></a>Data Locality</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div></div><div class="sect2" title="Data Locality"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.locality"></a>Data Locality</h3></div></div></div><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_LOCALITY</code>.
-  </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.sw_prefetch"></a>Need Software Prefetch</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+  </p><div class="sect3" title="Need Software Prefetch"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.sw_prefetch"></a>Need Software Prefetch</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_SOFTWARE_PREFETCH</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Discover sequences of indirect
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Discover sequences of indirect
   memory accesses that are not regular, thus cannot be predicted by
   hardware prefetchers.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   Indirect references are hard to predict and are very expensive when they
-  miss in caches.</p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>25%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> Insert prefetch 
-  instruction.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span> Vector iterator and
+  miss in caches.</p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>25%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> Insert prefetch 
+  instruction.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> Vector iterator and
   access operator [].
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   First, get cache line size and page size from system.
   Then record iterator dereference sequences for which the value is a pointer.
   For each sequence within a container, issue a warning if successive pointer 
@@ -389,9 +389,9 @@ memory references.
   created by understanding the capability of the hardware prefetcher.
   This model could be trained automatically by running a set of synthetic 
   cases.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
   Total distance between pointer values of successive elements in vectors
-  of pointers.</p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  of pointers.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1 int zero = 0;
 2 vector&lt;int*&gt; v(10000000, &amp;zero);
@@ -404,28 +404,28 @@ memory references.
 
 foo.cc:7: advice: Insert prefetch instruction.
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.linked"></a>Linked Structure Locality</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="Linked Structure Locality"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.locality.linked"></a>Linked Structure Locality</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_RBTREE_LOCALITY</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Give measure of locality of
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Give measure of locality of
   objects stored in linked structures (lists, red-black trees and hashtables)
   with respect to their actual traversal patterns.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>Allocation can be tuned
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>Allocation can be tuned
   to a specific traversal pattern, to result in better data locality.
   See paper: 
   <a class="ulink" href="http://www.springerlink.com/content/8085744l00x72662/" target="_top">
   Custom Memory Allocation for Free</a>.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>30%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>30%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>
   High scatter score N for container built at site S.
   Consider changing allocation sequence or choosing a structure conscious
-  allocator.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span> Methods of all 
-  containers using linked structures.</p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  allocator.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> Methods of all 
+  containers using linked structures.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   First, get cache line size and page size from system.
   Then record the number of successive elements that are on different line
   or page, for each traversal method such as <code class="code">find</code>.  Give advice
   only if the ratio between this number and the number of total node hops
-  is above a threshold.</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
-  Sum(same_cache_line(this,previous))</p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  is above a threshold.</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Sum(same_cache_line(this,previous))</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
  1  set&lt;int&gt; s;
  2  for (int i = 0; i &lt; 10000000; ++i) {
@@ -449,58 +449,58 @@ foo.cc:7: advice: Insert prefetch instruction.
 foo.cc:5: advice: High scatter score NNN for set built here.  Consider changing
 the allocation sequence or switching to a structure conscious allocator.
 </pre><p>
-</p></li></ul></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.mthread"></a>Multithreaded Data Access</h3></div></div></div><p>
+</p></li></ul></div></div></div><div class="sect2" title="Multithreaded Data Access"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.mthread"></a>Multithreaded Data Access</h3></div></div></div><p>
   The diagnostics in this group are not meant to be implemented short term.
   They require compiler support to know when container elements are written
   to.  Instrumentation can only tell us when elements are referenced.
   </p><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_MULTITHREADED</code>.
-  </p><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.ddtest"></a>Data Dependence Violations at Container Level</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+  </p><div class="sect3" title="Data Dependence Violations at Container Level"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.ddtest"></a>Data Dependence Violations at Container Level</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_DDTEST</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect container elements
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect container elements
   that are referenced from multiple threads in the parallel region or
   across parallel regions.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
   Sharing data between threads requires communication and perhaps locking,
   which may be expensive.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>?%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> Change data
-  distribution or parallel algorithm.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span> Container access methods
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>?%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> Change data
+  distribution or parallel algorithm.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> Container access methods
   and iterators.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   Keep a shadow for each container.  Record iterator dereferences and
   container member accesses.  Issue advice for elements referenced by
   multiple threads.
   See paper: <a class="ulink" href="http://portal.acm.org/citation.cfm?id=207110.207148" target="_top">
   The LRPD test: speculative run-time parallelization of loops with 
   privatization and reduction parallelization</a>.
-  </p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
   Number of accesses to elements referenced from multiple threads
-  </p></li><li><p><span class="emphasis"><em>Example:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span>
 </p><pre class="programlisting">
 </pre><p>
-</p></li></ul></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.false_share"></a>False Sharing</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><span class="emphasis"><em>Switch:</em></span>
+</p></li></ul></div></div><div class="sect3" title="False Sharing"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.mthread.false_share"></a>False Sharing</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_FALSE_SHARING</code>.
-  </p></li><li><p><span class="emphasis"><em>Goal:</em></span> Detect elements in the
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect elements in the
   same container which share a cache line, are written by at least one 
   thread, and accessed by different threads.
-  </p></li><li><p><span class="emphasis"><em>Fundamentals:</em></span> Under these assumptions,
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span> Under these assumptions,
   cache protocols require
   communication to invalidate lines, which may be expensive.
-  </p></li><li><p><span class="emphasis"><em>Sample runtime reduction:</em></span>68%.
-  </p></li><li><p><span class="emphasis"><em>Recommendation:</em></span> Reorganize container
-  or use padding to avoid false sharing.</p></li><li><p><span class="emphasis"><em>To instrument:</em></span> Container access methods
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>68%.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span> Reorganize container
+  or use padding to avoid false sharing.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span> Container access methods
   and iterators.
-  </p></li><li><p><span class="emphasis"><em>Analysis:</em></span>
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
   First, get the cache line size.
   For each shared container, record all the associated iterator dereferences 
   and member access methods with the thread id.  Compare the address lists
   across threads to detect references in two different threads to the same 
   cache line.  Issue a warning only if the ratio to total references is 
   significant.  Do the same for iterator dereference values if they are 
-  pointers.</p></li><li><p><span class="emphasis"><em>Cost model:</em></span>
+  pointers.</p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
   Number of accesses to same cache line from different threads.
-  </p></li><li><p><span class="emphasis"><em>Example:</em></span> 
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
 </p><pre class="programlisting">
 1     vector&lt;int&gt; v(2, 0);
 2 #pragma omp parallel for shared(v, SIZE) schedule(static, 1)
@@ -512,7 +512,7 @@ OMP_NUM_THREADS=2 ./a.out
 foo.cc:1: advice: Change container structure or padding to avoid false 
 sharing in multithreaded access at foo.cc:4.  Detected N shared cache lines.
 </pre><p>
-</p></li></ul></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.statistics"></a>Statistics</h3></div></div></div><p>
+</p></li></ul></div></div></div><div class="sect2" title="Statistics"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.profile_mode.analysis.statistics"></a>Statistics</h3></div></div></div><p>
 <span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_STATISTICS</code>.
 </p><p>

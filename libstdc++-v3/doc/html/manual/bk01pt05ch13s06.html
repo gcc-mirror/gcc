@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CString (MFC)</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt05ch13.html" title="Chapter 13. String Classes" /><link rel="prev" href="bk01pt05ch13s05.html" title="Shrink to Fit" /><link rel="next" href="localization.html" title="Part VI.  Localization" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">CString (MFC)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt05ch13s05.html">Prev</a> </td><th width="60%" align="center">Chapter 13. String Classes</th><td width="20%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="strings.string.Cstring"></a>CString (MFC)</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CString (MFC)</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt05ch13.html" title="Chapter 13. String Classes" /><link rel="prev" href="bk01pt05ch13s05.html" title="Shrink to Fit" /><link rel="next" href="localization.html" title="Part VI.  Localization" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">CString (MFC)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt05ch13s05.html">Prev</a> </td><th width="60%" align="center">Chapter 13. String Classes</th><td width="20%" align="right"> <a accesskey="n" href="localization.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="CString (MFC)"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="strings.string.Cstring"></a>CString (MFC)</h2></div></div></div><p>
     </p><p>A common lament seen in various newsgroups deals with the Standard
       string class as opposed to the Microsoft Foundation Class called
       CString.  Often programmers realize that a standard portable
@@ -10,12 +10,12 @@
    </p><p>Things are not as bad as they seem.  In
       <a class="ulink" href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html" target="_top">this
       message</a>, Joe Buck points out a few very important things:
-   </p><div class="itemizedlist"><ul type="disc"><li><p>The Standard <code class="code">string</code> supports all the operations
+   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>The Standard <code class="code">string</code> supports all the operations
              that CString does, with three exceptions.
-         </p></li><li><p>Two of those exceptions (whitespace trimming and case 
+         </p></li><li class="listitem"><p>Two of those exceptions (whitespace trimming and case 
              conversion) are trivial to implement.  In fact, we do so
              on this page.
-         </p></li><li><p>The third is <code class="code">CString::Format</code>, which allows formatting
+         </p></li><li class="listitem"><p>The third is <code class="code">CString::Format</code>, which allows formatting
              in the style of <code class="code">sprintf</code>.  This deserves some mention:
          </p></li></ul></div><p>
       The old libg++ library had a function called form(), which did much
@@ -68,18 +68,18 @@
    performance is O(n).
    </pre><p>Joe Buck also pointed out some other things to keep in mind when
       comparing CString and the Standard string class:
-   </p><div class="itemizedlist"><ul type="disc"><li><p>CString permits access to its internal representation; coders
+   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>CString permits access to its internal representation; coders
              who exploited that may have problems moving to <code class="code">string</code>.
-         </p></li><li><p>Microsoft ships the source to CString (in the files
+         </p></li><li class="listitem"><p>Microsoft ships the source to CString (in the files
              MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation
              bug and rebuild your MFC libraries.
              <span class="emphasis"><em><span class="emphasis"><em>Note:</em></span> It looks like the CString shipped
              with VC++6.0 has fixed this, although it may in fact have been
              one of the VC++ SPs that did it.</em></span>
-         </p></li><li><p><code class="code">string</code> operations like this have O(n) complexity
+         </p></li><li class="listitem"><p><code class="code">string</code> operations like this have O(n) complexity
              <span class="emphasis"><em>if the implementors do it correctly</em></span>.  The libstdc++
              implementors did it correctly.  Other vendors might not.
-         </p></li><li><p>While parts of the SGI STL are used in libstdc++, their
+         </p></li><li class="listitem"><p>While parts of the SGI STL are used in libstdc++, their
              string class is not.  The SGI <code class="code">string</code> is essentially
              <code class="code">vector&lt;char&gt;</code> and does not do any reference
              counting like libstdc++'s does.  (It is O(n), though.)

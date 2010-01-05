@@ -372,7 +372,8 @@ and <filename class="headerfile">ext/throw_allocator.h</filename>.
 C++0X features first appear.
 </para>
 
-<para>TR1 <filename class="headerfile">regex</filename> and <filename class="headerfile">cmath</filename>'s mathematical special function added.</para>
+<para>TR1 <filename class="headerfile">regex</filename> and <filename class="headerfile">cmath</filename>'s mathematical special function added.
+</para>
 
 <para>
 Backward include edit.
@@ -454,8 +455,108 @@ Namespace pb_ds moved to __gnu_pb_ds.
 <title><constant>4.4</constant></title>
   <para>
   </para>
-<para> Extensions added: <filename class="headerfile">ext/typelist.h</filename>
-and <filename class="headerfile">ext/throw_allocator.h</filename>.
+
+<para>
+C++0X features.
+</para>
+
+<itemizedlist>
+<listitem>
+  <para>
+    Added.
+  </para>
+  <para>
+    <filename class="headerfile">atomic</filename>,
+    <filename class="headerfile">chrono</filename>,
+    <filename class="headerfile">condition_variable</filename>,
+    <filename class="headerfile">forward_list</filename>,
+    <filename class="headerfile">initializer_list</filename>,
+    <filename class="headerfile">mutex</filename>,
+    <filename class="headerfile">ratio</filename>,
+    <filename class="headerfile">thread</filename>
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Updated and improved.
+  </para>
+  <para>
+    <filename class="headerfile">algorithm</filename>,
+    <filename class="headerfile">system_error</filename>,
+    <filename class="headerfile">type_traits</filename>
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Use of the GNU extension namespace association converted to inline namespaces.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Preliminary support for <classname>initializer_list</classname>
+    and defaulted and deleted constructors in container classes.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    <classname>unique_ptr</classname>.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Support for new character types <type>char16_t</type>
+    and <type>char32_t</type> added
+    to <classname>char_traits</classname>, <classname>basic_string</classname>, <classname>numeric_limits</classname>,
+    and assorted compile-time type traits.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Support for string conversions <function>to_string</function>
+    and <function>to_wstring</function>.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Member functions taking string arguments were added to iostreams
+    including <classname>basic_filebuf</classname>, <classname>basic_ofstream</classname>,
+    and <classname>basic_ifstream</classname>.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Exception propagation support,
+    including <classname>exception_ptr</classname>, <function>current_exception</function>, <function>copy_exception</function>,
+    and <function>rethrow_exception</function>.
+  </para>
+</listitem>
+</itemizedlist>
+
+
+  <para>
+Uglification of <literal>try</literal> to <literal>__try</literal>
+and <literal>catch</literal> to <literal>__catch</literal>.
+  </para>
+
+  <para>
+Audit of internal mutex usage, conversion to funtions returning static
+local mutex.
+  </para>
+
+<para> Extensions
+added: <filename class="headerfile">ext/pointer.h</filename>
+and <filename class="headerfile">ext/extptr_allocator.h</filename>. Support
+for non-standard pointer types has been added
+to <classname>vector</classname>
+and <classname>forward_list</classname>.
 </para>
 </sect2>
 
@@ -464,12 +565,56 @@ and <filename class="headerfile">ext/throw_allocator.h</filename>.
   <para>
   </para>
 
-<para> Extensions added: <filename class="headerfile">ext/typelist.h</filename>
-and <filename class="headerfile">ext/throw_allocator.h</filename>.
+<para>
+C++0X features.
 </para>
+
+<itemizedlist>
+<listitem>
+  <para>
+    Added.
+  </para>
+  <para>
+    <filename class="headerfile">future</filename>,
+    <filename class="headerfile">random</filename>
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Updated and improved.
+  </para>
+  <para>
+    <filename class="headerfile">atomic</filename>,
+    <filename class="headerfile">system_error</filename>,
+    <filename class="headerfile">type_traits</filename>
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Add support for explicit operators and standard layout types.
+  </para>
+</listitem>
+</itemizedlist>
 
 <para>
 Profile mode first appears.
+</para>
+
+<para>
+Support for decimal floating-point arithmetic, including <classname>decimal32</classname>, <classname>decimal64</classname>, and <classname>decimal128</classname>. 
+</para>
+
+<para>
+Python pretty-printers are added for use with appropriately-advanced versions of <command>gdb</command>.
+</para>
+
+<para>
+Audit for application of function attributes notrow, const, pure, and noreturn.
+</para>
+
+<para> Extensions modified: <filename class="headerfile">ext/throw_allocator.h</filename>. In addition, experimental support was added for <filename class="headerfile">random</filename> serialization operators.
 </para>
 </sect2>
 

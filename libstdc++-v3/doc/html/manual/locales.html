@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 14. Locales</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.3" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="localization.html" title="Part VI.  Localization" /><link rel="prev" href="localization.html" title="Part VI.  Localization" /><link rel="next" href="facets.html" title="Chapter 15. Facets aka Categories" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 14. Locales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><th width="60%" align="center">Part VI. 
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 14. Locales</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="localization.html" title="Part VI.  Localization" /><link rel="prev" href="localization.html" title="Part VI.  Localization" /><link rel="next" href="facets.html" title="Chapter 15. Facets aka Categories" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 14. Locales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><th width="60%" align="center">Part VI. 
   Localization
   
-</th><td width="20%" align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.localization.locales"></a>Chapter 14. Locales</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="locales.html#manual.localization.locales.locale">locale</a></span></dt><dd><dl><dt><span class="sect2"><a href="locales.html#locales.locale.req">Requirements</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.design">Design</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.future">Future</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.locales.locale"></a>locale</h2></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr></table><hr /></div><div class="chapter" title="Chapter 14. Locales"><div class="titlepage"><div><div><h2 class="title"><a id="manual.localization.locales"></a>Chapter 14. Locales</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="locales.html#manual.localization.locales.locale">locale</a></span></dt><dd><dl><dt><span class="sect2"><a href="locales.html#locales.locale.req">Requirements</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.design">Design</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.future">Future</a></span></dt></dl></dd></dl></div><div class="sect1" title="locale"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.locales.locale"></a>locale</h2></div></div></div><p>
 Describes the basic locale object, including nested
 classes id, facet, and the reference-counted implementation object,
 class _Impl.
-</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.req"></a>Requirements</h3></div></div></div><p>
+</p><div class="sect2" title="Requirements"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.req"></a>Requirements</h3></div></div></div><p>
 Class locale is non-templatized and has two distinct types nested
 inside of it:
 </p><div class="blockquote"><blockquote class="blockquote"><p>
@@ -21,11 +21,11 @@ called numpunct is the data objects that can be used to query for the
 thousands separator is in the German locale.
 </p><p>
 Literally, a facet is strictly defined:
-</p><div class="itemizedlist"><ul type="disc"><li><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
       Containing the following public data member:
     </p><p>
       <code class="code">static locale::id id;</code>
-    </p></li><li><p>
+    </p></li><li class="listitem"><p>
       Derived from another facet:
     </p><p>
       <code class="code">class gnu_codecvt: public std::ctype&lt;user-defined-type&gt;</code>
@@ -43,14 +43,14 @@ class id
 </em></span>
 </p></blockquote></div><p>
 Provides an index for looking up specific facets.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.design"></a>Design</h3></div></div></div><p>
+</p></div><div class="sect2" title="Design"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.design"></a>Design</h3></div></div></div><p>
 The major design challenge is fitting an object-orientated and
 non-global locale design on top of POSIX and other relevant standards,
 which include the Single Unix (nee X/Open.)
 </p><p>
 Because C and earlier versions of POSIX fall down so completely,
 portability is an issue.
-</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="locale.impl.c"></a>Interacting with "C" locales</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p> 
+</p></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.impl"></a>Implementation</h3></div></div></div><div class="sect3" title="Interacting with &quot;C&quot; locales"><div class="titlepage"><div><div><h4 class="title"><a id="locale.impl.c"></a>Interacting with "C" locales</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p> 
        <code class="code">`locale -a`</code> displays available locales. 
      </p><div class="blockquote"><blockquote class="blockquote"><pre class="programlisting">
 af_ZA
@@ -351,7 +351,7 @@ zh_HK.utf8
 zh_TW
 zh_TW.euctw
 zh_TW.utf8
-</pre></blockquote></div></li><li><p> 
+</pre></blockquote></div></li><li class="listitem"><p> 
        <code class="code">`locale`</code> displays environmental variables that
        impact how locale("") will be deduced.
      </p><div class="blockquote"><blockquote class="blockquote"><pre class="programlisting">
@@ -380,43 +380,43 @@ global locale" (emphasis Paolo), that is:
   particular on the working of locale(""), which constructs the locale
   object from the environment of the running program, that is, in
   practice, the set of LC_ALL, LANG, etc. variable of the shell.
-</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>
+</p></div></div><div class="sect2" title="Future"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
        Locale initialization: at what point does _S_classic, _S_global
        get initialized? Can named locales assume this initialization
        has already taken place? 
-     </p></li><li><p> 
+     </p></li><li class="listitem"><p> 
        Document how named locales error check when filling data
        members. I.e., a fr_FR locale that doesn't have
        numpunct::truename(): does it use "true"? Or is it a blank
        string? What's the convention? 
-   </p></li><li><p> 
+   </p></li><li class="listitem"><p> 
        Explain how locale aliasing happens. When does "de_DE" use "de"
        information? What is the rule for locales composed of just an
        ISO language code (say, "de") and locales with both an ISO
        language code and ISO country code (say, "de_DE"). 
-     </p></li><li><p> 
+     </p></li><li class="listitem"><p> 
        What should non-required facet instantiations do?  If the
        generic implementation is provided, then how to end-users
        provide specializations? 
-   </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id658666"></a><p><span class="title"><i>
+   </p></li></ul></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="The GNU C Library"><a id="id508650"></a><p><span class="title"><i>
       The GNU C Library
-    </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="id679103"></a><p><span class="title"><i>
+    </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry" title="Correspondence"><a id="id448472"></a><p><span class="title"><i>
       Correspondence
-    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="id635262"></a><p><span class="title"><i>
+    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry" title="ISO/IEC 14882:1998 Programming languages - C++"><a id="id429400"></a><p><span class="title"><i>
       ISO/IEC 14882:1998 Programming languages - C++
-    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="id709948"></a><p><span class="title"><i>
+    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry" title="ISO/IEC 9899:1999 Programming languages - C"><a id="id429418"></a><p><span class="title"><i>
       ISO/IEC 9899:1999 Programming languages - C
-    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="id709967"></a><p><span class="title"><i>
+    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry" title="The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)"><a id="id474897"></a><p><span class="title"><i>
       The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
     </i>. </span><span class="copyright">Copyright © 1999 
       The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span><span class="biblioid">
       <a class="ulink" href="http://www.unix.org/version3/ieee_std.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id618881"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry" title="The C++ Programming Language, Special Edition"><a id="id474924"></a><p><span class="title"><i>
       The C++ Programming Language, Special Edition
     </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
 	Addison Wesley
-      . </span></span></p></div><div class="biblioentry"><a id="id641063"></a><p><span class="title"><i>
+      . </span></span></p></div><div class="biblioentry" title="Standard C++ IOStreams and Locales"><a id="id436766"></a><p><span class="title"><i>
       Standard C++ IOStreams and Locales
     </i>. </span><span class="subtitle">
       Advanced Programmer's Guide and Reference
