@@ -16252,6 +16252,30 @@ ix86_expand_int_vcond (rtx operands[])
 
 	  switch (mode)
 	    {
+	    case V4SImode:
+	    case V2DImode:
+		{
+		  rtx t1, t2, mask;
+		  rtx (*gen_sub3) (rtx, rtx, rtx);
+
+		  /* Subtract (-(INT MAX) - 1) from both operands to make
+		     them signed.  */
+		  mask = ix86_build_signbit_mask (GET_MODE_INNER (mode),
+						  true, false);
+		  gen_sub3 = (mode == V4SImode
+			      ? gen_subv4si3 : gen_subv2di3);
+		  t1 = gen_reg_rtx (mode);
+		  emit_insn (gen_sub3 (t1, cop0, mask));
+
+		  t2 = gen_reg_rtx (mode);
+		  emit_insn (gen_sub3 (t2, cop1, mask));
+
+		  cop0 = t1;
+		  cop1 = t2;
+		  code = GT;
+		}
+	      break;
+
 	    case V16QImode:
 	    case V8HImode:
 	      /* Perform a parallel unsigned saturating subtraction.  */
@@ -16259,6 +16283,8 @@ ix86_expand_int_vcond (rtx operands[])
 	      emit_insn (gen_rtx_SET (VOIDmode, x,
 				      gen_rtx_US_MINUS (mode, cop0, cop1)));
 
+	      cop0 = x;
+	      cop1 = CONST0_RTX (mode);
 	      code = EQ;
 	      negate = !negate;
 	      break;
@@ -16266,9 +16292,6 @@ ix86_expand_int_vcond (rtx operands[])
 	    default:
 	      gcc_unreachable ();
 	    }
-
-	  cop0 = x;
-	  cop1 = CONST0_RTX (mode);
 	}
     }
 

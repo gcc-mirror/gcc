@@ -34,7 +34,7 @@ unsigned int min[] =
   3, 6, 7, 8
 };
 
-unsigned int res[16] __attribute__ ((aligned(16)));
+unsigned int res[8] __attribute__ ((aligned(16)));
 
 extern void abort (void);
 
