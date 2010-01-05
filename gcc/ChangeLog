@@ -1,5 +1,8 @@
 2010-01-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/42611
+	* cfgexpand.c (expand_one_var): Diagnose too large variables.
+
 	PR tree-optimization/42508
 	* tree-sra.c (convert_callers): Check for recursive call
 	by comparing cgraph nodes instead of decls.
