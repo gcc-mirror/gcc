@@ -1,3 +1,7 @@
+2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Don't use tail -n.
+
 2009-10-03  H.J. Lu  <hongjiu.lu@intel.com>
 	    Richard Guenther  <rguenther@suse.de>
 
