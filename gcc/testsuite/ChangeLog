@@ -1,3 +1,8 @@
+2010-01-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42462
+	* gcc/testsuite/g++.dg/torture/pr42462.C: New test.
+
 2010-01-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist30.C: New test.
