@@ -1072,8 +1072,8 @@ rx_get_stack_layout (unsigned int * lowest,
       save_mask |= (1 << 13) | (1 << 14);
       if (low == 0)
 	low = 13;
-      if (high == 0)
-	high = 14;
+      if (high == 0 || low == high)
+	high = low + 1;
     }
 
   /* Decide if it would be faster fill in the call-saved area of the stack
