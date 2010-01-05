@@ -1,5 +1,11 @@
 2010-01-05  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/42517
+	* options.c (gfc_post_options): Set -frecursion
+	when -fopenmp is used.
+
+2010-01-05  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/41872
 	* trans-expr.c (gfc_conv_procedure_call): Nullify
 	return value for allocatable-scalar character functions.
