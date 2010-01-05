@@ -1,3 +1,8 @@
+2010-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/42611
+	* cfgexpand.c (expand_one_var): Diagnose too large variables.
+
 2010-01-04  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR target/42503
