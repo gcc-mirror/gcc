@@ -2131,6 +2131,7 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_fforce_addr:
     case OPT_ftree_salias:
     case OPT_ftree_store_ccp:
+    case OPT_Wunreachable_code:
       /* These are no-ops, preserved for backward compatibility.  */
       break;
 

@@ -259,7 +259,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
 -Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
--Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
+-Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-parameter -Wno-unused-result -Wunused-value  -Wunused-variable @gol
 -Wvariadic-macros -Wvla @gol
@@ -4191,29 +4191,6 @@ cases where multiple declaration is valid and changes nothing.
 @opindex Wnested-externs
 @opindex Wno-nested-externs
 Warn if an @code{extern} declaration is encountered within a function.
-
-@item -Wunreachable-code
-@opindex Wunreachable-code
-@opindex Wno-unreachable-code
-Warn if the compiler detects that code will never be executed.
-
-This option is intended to warn when the compiler detects that at
-least a whole line of source code will never be executed, because
-some condition is never satisfied or because it is after a
-procedure that never returns.
-
-It is possible for this option to produce a warning even though there
-are circumstances under which part of the affected line can be executed,
-so care should be taken when removing apparently-unreachable code.
-
-For instance, when a function is inlined, a warning may mean that the
-line is unreachable in only one inlined copy of the function.
-
-This option is not made part of @option{-Wall} because in a debugging
-version of a program there is often substantial code which checks
-correct functioning of the program and is, hopefully, unreachable
-because the program does work.  Another common use of unreachable
-code is to provide behavior which is selectable at compile-time.
 
 @item -Winline
 @opindex Winline

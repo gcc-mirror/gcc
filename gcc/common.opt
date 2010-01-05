@@ -201,8 +201,8 @@ Common Var(warn_uninitialized) Init(-1) Warning
 Warn about uninitialized automatic variables
 
 Wunreachable-code
-Common Var(warn_notreached) Warning
-Warn about code that will never be executed
+Common
+Does nothing. Preserved for backward compatibility.
 
 Wunused
 Common Var(warn_unused) Init(0) Warning

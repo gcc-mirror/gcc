@@ -1,3 +1,13 @@
+2010-01-05  Eric Fisher  <joefoxreal@gmail.com>
+
+	* doc/invoke.texi: Remove the documentation about option
+	-Wunreachable-code.
+	* common.opt (Wunreachable-code):  Preserved for backward
+	compatibility.
+	* tree-cfg.c: Remove the implementation of -Wunreachable-code.
+	* opts.c (common_handle_option): Add OPT_Wunreachable_code to
+	the backward compatibility flag section.
+
 2010-01-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (bitmap_value_insert_into_set): Optimize.
