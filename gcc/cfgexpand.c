@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1010,6 +1010,14 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
     {
       if (really_expand)
         expand_one_register_var (origvar);
+    }
+  else if (!host_integerp (DECL_SIZE_UNIT (var), 1))
+    {
+      if (really_expand)
+	{
+	  error ("size of variable %q+D is too large", var);
+	  expand_one_error_var (var);
+	}
     }
   else if (defer_stack_allocation (var, toplevel))
     add_stack_var (origvar);
