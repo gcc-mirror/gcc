@@ -353,17 +353,21 @@ gfc_post_options (const char **pfilename)
 		     "implied by -fopenmp", 
 		     gfc_option.flag_max_stack_var_size);
 
-  /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
-  if (gfc_option.flag_max_stack_var_size == -2 && gfc_option.flag_openmp)
+  /* Implement -frecursive as -fmax-stack-var-size=-1.  */
+  if (gfc_option.flag_recursive)
     gfc_option.flag_max_stack_var_size = -1;
+
+  /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
+  if (gfc_option.flag_max_stack_var_size == -2 && gfc_option.flag_openmp
+      && gfc_option.flag_automatic)
+    {
+      gfc_option.flag_recursive = 1;
+      gfc_option.flag_max_stack_var_size = -1;
+    }
 
   /* Set default.  */
   if (gfc_option.flag_max_stack_var_size == -2)
     gfc_option.flag_max_stack_var_size = 32768;
-
-  /* Implement -frecursive as -fmax-stack-var-size=-1.  */
-  if (gfc_option.flag_recursive)
-    gfc_option.flag_max_stack_var_size = -1;
 
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!gfc_option.flag_automatic)
