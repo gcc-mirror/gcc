@@ -32,7 +32,7 @@ SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc \
          -Wl,--rpath -Wl,$BUILD_DIR/src/.libs"
 ST_FLAG="-static"
 LINK=$SH_FLAG
-CXX="$COMPILER $INCLUDES $FLAGS $CXXFLAGS $LINK"
+CXX="$COMPILER $INCLUDES $FLAGS -std=gnu++0x $CXXFLAGS $LINK"
 LIBS="./libtestc++.a"
 TESTS_FILE="testsuite_files_performance"
 
