@@ -1,3 +1,8 @@
+2010-01-06  Richard Guenther  <rguenther@suse.de>
+
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Do
+	not inline regular functions into always-inline functions.
+
 2010-01-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.h (enum rx_cpu_type): Add RX200.
