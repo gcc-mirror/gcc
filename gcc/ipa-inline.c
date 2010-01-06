@@ -1506,7 +1506,10 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
       }
 
   /* Now do the automatic inlining.  */
-  if (mode != INLINE_ALL && mode != INLINE_ALWAYS_INLINE)
+  if (mode != INLINE_ALL && mode != INLINE_ALWAYS_INLINE
+      /* Never inline regular functions into always-inline functions
+	 during incremental inlining.  */
+      && !node->local.disregard_inline_limits)
     for (e = node->callees; e; e = e->next_callee)
       {
         int allowed_growth = 0;
