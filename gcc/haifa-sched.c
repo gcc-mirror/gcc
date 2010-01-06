@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -1803,88 +1803,86 @@ schedule_insn (rtx insn)
 
 /* Functions for handling of notes.  */
 
-/* Insert the INSN note at the end of the notes list.  */
-static void
-add_to_note_list (rtx insn, rtx *note_list_end_p)
-{
-  PREV_INSN (insn) = *note_list_end_p;
-  if (*note_list_end_p)
-    NEXT_INSN (*note_list_end_p) = insn;
-  *note_list_end_p = insn;
-}
-
 /* Add note list that ends on FROM_END to the end of TO_ENDP.  */
 void
 concat_note_lists (rtx from_end, rtx *to_endp)
 {
   rtx from_start;
 
+  /* It's easy when have nothing to concat.  */
   if (from_end == NULL)
-    /* It's easy when have nothing to concat.  */
     return;
 
+  /* It's also easy when destination is empty.  */
   if (*to_endp == NULL)
-    /* It's also easy when destination is empty.  */
     {
       *to_endp = from_end;
       return;
     }
 
   from_start = from_end;
-  /* A note list should be traversed via PREV_INSN.  */
   while (PREV_INSN (from_start) != NULL)
     from_start = PREV_INSN (from_start);
 
-  add_to_note_list (from_start, to_endp);
+  PREV_INSN (from_start) = *to_endp;
+  NEXT_INSN (*to_endp) = from_start;
   *to_endp = from_end;
 }
 
-/* Delete notes beginning with INSN and put them in the chain
-   of notes ended by NOTE_LIST.
-   Returns the insn following the notes.  */
-static rtx
-unlink_other_notes (rtx insn, rtx tail)
+/* Delete notes between HEAD and TAIL and put them in the chain
+   of notes ended by NOTE_LIST.  */
+void
+remove_notes (rtx head, rtx tail)
 {
-  rtx prev = PREV_INSN (insn);
+  rtx next_tail, prev, insn, next;
 
-  while (insn != tail && NOTE_NOT_BB_P (insn))
+  note_list = 0;
+  if (head == tail && !INSN_P (head))
+    return;
+
+  next_tail = NEXT_INSN (tail);
+  prev = PREV_INSN (head);
+  for (insn = head; insn != next_tail; insn = next)
     {
-      rtx next = NEXT_INSN (insn);
-      basic_block bb = BLOCK_FOR_INSN (insn);
+      next = NEXT_INSN (insn);
+      if (!NOTE_P (insn))
+	{
+	  prev = insn;
+	  continue;
+	}
 
-      /* Delete the note from its current position.  */
-      if (prev)
-	NEXT_INSN (prev) = next;
-      if (next)
-	PREV_INSN (next) = prev;
+      switch (NOTE_KIND (insn))
+	{
+	case NOTE_INSN_BASIC_BLOCK:
+	  prev = insn;
+	  continue;
 
-      if (bb)
-        {
-          /* Basic block can begin with either LABEL or
-             NOTE_INSN_BASIC_BLOCK.  */
-          gcc_assert (BB_HEAD (bb) != insn);
+	case NOTE_INSN_EPILOGUE_BEG:
+	  if (insn != tail)
+	    {
+	      remove_insn (insn);
+	      add_reg_note (next, REG_SAVE_NOTE,
+			    GEN_INT (NOTE_INSN_EPILOGUE_BEG));
+	      break;
+	    }
+	  /* FALLTHRU */
 
-          /* Check if we are removing last insn in the BB.  */
-          if (BB_END (bb) == insn)
-            BB_END (bb) = prev;
-        }
+	default:
+	  remove_insn (insn);
 
-      /* See sched_analyze to see how these are handled.  */
-      if (NOTE_KIND (insn) != NOTE_INSN_EH_REGION_BEG
-	  && NOTE_KIND (insn) != NOTE_INSN_EH_REGION_END)
-        add_to_note_list (insn, &note_list);
+	  /* Add the note to list that ends at NOTE_LIST.  */
+	  PREV_INSN (insn) = note_list;
+	  NEXT_INSN (insn) = NULL_RTX;
+	  if (note_list)
+	    NEXT_INSN (note_list) = insn;
+	  note_list = insn;
+	  break;
+	}
 
-      insn = next;
+      gcc_assert ((sel_sched_p () || insn != tail) && insn != head);
     }
-
-  if (insn == tail)
-    {
-      gcc_assert (sel_sched_p ());
-      return prev;
-    }
-
-  return insn;
 }
+
 
 /* Return the head and tail pointers of ebb starting at BEG and ending
    at END.  */
@@ -1937,62 +1935,6 @@ no_real_insns_p (const_rtx head, const_rtx tail)
       head = NEXT_INSN (head);
     }
   return 1;
-}
-
-/* Delete notes between HEAD and TAIL and put them in the chain
-   of notes ended by NOTE_LIST.  */
-static void
-rm_other_notes (rtx head, rtx tail)
-{
-  rtx next_tail;
-  rtx insn;
-
-  note_list = 0;
-  if (head == tail && (! INSN_P (head)))
-    return;
-
-  next_tail = NEXT_INSN (tail);
-  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
-    {
-      rtx prev;
-
-      /* Farm out notes, and maybe save them in NOTE_LIST.
-         This is needed to keep the debugger from
-         getting completely deranged.  */
-      if (NOTE_NOT_BB_P (insn))
-	{
-	  prev = insn;
-	  insn = unlink_other_notes (insn, next_tail);
-
-	  gcc_assert ((sel_sched_p ()
-		       || prev != tail) && prev != head && insn != next_tail);
-	}
-    }
-}
-
-/* Same as above, but also process REG_SAVE_NOTEs of HEAD.  */
-void
-remove_notes (rtx head, rtx tail)
-{
-  /* rm_other_notes only removes notes which are _inside_ the
-     block---that is, it won't remove notes before the first real insn
-     or after the last real insn of the block.  So if the first insn
-     has a REG_SAVE_NOTE which would otherwise be emitted before the
-     insn, it is redundant with the note before the start of the
-     block, and so we have to take it out.  */
-  if (INSN_P (head))
-    {
-      rtx note;
-
-      for (note = REG_NOTES (head); note; note = XEXP (note, 1))
-	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
-	  remove_note (head, note);
-    }
-
-  /* Remove remaining note insns from the block, save them in
-     note_list.  These notes are restored at the end of
-     schedule_block ().  */
-  rm_other_notes (head, tail);
 }
 
 /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
@@ -2315,11 +2257,9 @@ debug_ready_list (struct ready_list *ready)
   fprintf (sched_dump, "\n");
 }
 
-/* Search INSN for REG_SAVE_NOTE note pairs for
-   NOTE_INSN_EHREGION_{BEG,END}; and convert them back into
-   NOTEs.  The REG_SAVE_NOTE note following first one is contains the
-   saved value for NOTE_BLOCK_NUMBER which is useful for
-   NOTE_INSN_EH_REGION_{BEG,END} NOTEs.  */
+/* Search INSN for REG_SAVE_NOTE notes and convert them back into insn
+   NOTEs.  This is used for NOTE_INSN_EPILOGUE_BEG, so that sched-ebb
+   replaces the epilogue note in the correct basic block.  */
 void
 reemit_notes (rtx insn)
 {
