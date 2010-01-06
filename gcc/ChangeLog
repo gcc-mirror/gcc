@@ -1,3 +1,21 @@
+2010-01-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (enum rx_cpu_type): Add RX200.
+	(CC1_SPEC): Issue an error message if -mcpu=rx200 and -fpu are
+	used together.
+	(OVERRIDE_OPTIONS): Delete.
+	(OPTIMIZATION_OPTIONS): Define.
+	(ALLOW_RX_FPU_INSNS): Define only in terms of -fpu option.
+	* config/rx/rx.c (rx_handle_option): Issue an error message if
+	-mcpu=rx200 and -fpu are used together.
+	(rx_set_optimization_options): New function.  Issue an error
+	message if an optimization attribute attempts to reset the FPU/
+	math optimization pairing.
+	* config/rx/rx-protos.h (rx_set_optimization_options): Prototype.
+	* config/rx/rx.opt: Set the default to 32-bit doubles.
+	* config/rx/t-rx: Add multilibs for -nofpu option.
+	* doc/invoke.texi: Update documentation of RX options.
+
 2010-01-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (name_to_id): New global.

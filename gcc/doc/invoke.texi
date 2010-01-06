@@ -15453,41 +15453,49 @@ This option sets flags for both the preprocessor and linker.
 @subsection RX Options
 @cindex RX Options
 
-These @option{-m} options are defined for RX implementations:
+These command line options are defined for RX targets:
 
 @table @gcctabopt
 @item -m64bit-doubles
 @itemx -m32bit-doubles
-@itemx -fpu
-@itemx -nofpu
 @opindex m64bit-doubles
 @opindex m32bit-doubles
-@opindex fpu
-@opindex nofpu
 Make the @code{double} data type be 64-bits (@option{-m64bit-doubles})
 or 32-bits (@option{-m32bit-doubles}) in size.  The default is
-@option{-m64bit-doubles}.  @emph{Note} the RX's hardware floating
-point instructions are only used for 32-bit floating point values, and
-then only if @option{-ffast-math} has been specified on the command
-line.  This is because the RX FPU instructions do not properly support
-denormal (or sub-normal) values.
+@option{-m32bit-doubles}.  @emph{Note} RX floating point hardware only
+works on 32-bit values, which is why the default is
+@option{-m32bit-doubles}.
 
-The options @option{-fpu} and @option{-nofpu} have been provided at
-the request of Rensas for compatibility with their toolchain.  The
-@option{-mfpu} option enables the use of RX FPU instructions by
-selecting 32-bit doubles and enabling unsafe math optimizations.  The
-@option{-mnofpu} option disables the use of RX FPU instructions, even
-if @option{-m32bit-doubles} is active and unsafe math optimizations
-have been enabled.
+@item -fpu
+@itemx -nofpu
+@opindex fpu
+@opindex nofpu
+Enables (@option{-fpu}) or disables (@option{-nofpu}) the use of RX
+floating point hardware.  The default is enabled for the @var{RX600}
+series and disabled for the @var{RX200} series.
+
+Floating point instructions will only be generated for 32-bit floating
+point values however, so if the @option{-m64bit-doubles} option is in
+use then the FPU hardware will not be used for doubles.
+
+@emph{Note} If the @option{-fpu} option is enabled then
+@option{-funsafe-math-optimizations} is also enabled automatically.
+This is because the RX FPU instructions are themselves unsafe.
 
 @item -mcpu=@var{name}
 @itemx -patch=@var{name}
 @opindex -mcpu
 @opindex -patch
-Selects the type of RX CPU to be targeted.  Currently on two types are
-supported, the generic @var{RX600} and the specific @var{RX610}.  The
-only difference between them is that the @var{RX610} does not support
-the @code{MVTIPL} instruction.
+Selects the type of RX CPU to be targeted.  Currently three types are
+supported, the generic @var{RX600} and @var{RX200} series hardware and
+the specific @var{RX610} cpu.  The default is @var{RX600}.
+
+The only difference between @var{RX600} and @var{RX610} is that the
+@var{RX610} does not support the @code{MVTIPL} instruction.
+
+The @var{RX200} series does not have a hardware floating point unit
+and so @option{-nofpu} is enabled by default when this type is
+selected.
 
 @item -mbig-endian-data
 @itemx -mlittle-endian-data

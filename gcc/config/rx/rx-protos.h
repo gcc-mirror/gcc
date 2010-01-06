@@ -1,5 +1,5 @@
 /* Exported function prototypes from the Renesas RX backend.
-   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -28,6 +28,7 @@
 extern void		rx_conditional_register_usage (void);
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
+extern void		rx_set_optimization_options (void);
 
 #ifdef RTX_CODE
 extern void             rx_emit_stack_popm (rtx *, bool);
