@@ -1,3 +1,5 @@
+// { dg-require-namedlocale "" }
+
 // 2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 // Copyright (C) 2010 Free Software Foundation
