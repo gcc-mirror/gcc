@@ -236,6 +236,7 @@ DEF_VEC_P (pre_expr);
 DEF_VEC_ALLOC_P (pre_expr, heap);
 static VEC(pre_expr, heap) *expressions;
 static htab_t expression_to_id;
+static VEC(unsigned, heap) *name_to_id;
 
 /* Allocate an expression id for EXPR.  */
 
@@ -247,9 +248,23 @@ alloc_expression_id (pre_expr expr)
   gcc_assert (next_expression_id + 1 > next_expression_id);
   expr->id = next_expression_id++;
   VEC_safe_push (pre_expr, heap, expressions, expr);
-  slot = htab_find_slot (expression_to_id, expr, INSERT);
-  gcc_assert (!*slot);
-  *slot = expr;
+  if (expr->kind == NAME)
+    {
+      unsigned version = SSA_NAME_VERSION (PRE_EXPR_NAME (expr));
+      /* VEC_safe_grow_cleared allocates no headroom.  Avoid frequent
+	 re-allocations by using VEC_reserve upfront.  There is no
+	 VEC_quick_grow_cleared unfortunately.  */
+      VEC_reserve (unsigned, heap, name_to_id, num_ssa_names);
+      VEC_safe_grow_cleared (unsigned, heap, name_to_id, num_ssa_names);
+      gcc_assert (VEC_index (unsigned, name_to_id, version) == 0);
+      VEC_replace (unsigned, name_to_id, version, expr->id);
+    }
+  else
+    {
+      slot = htab_find_slot (expression_to_id, expr, INSERT);
+      gcc_assert (!*slot);
+      *slot = expr;
+    }
   return next_expression_id - 1;
 }
 
@@ -266,10 +281,20 @@ lookup_expression_id (const pre_expr expr)
 {
   void **slot;
 
-  slot = htab_find_slot (expression_to_id, expr, NO_INSERT);
-  if (!slot)
-    return 0;
-  return ((pre_expr)*slot)->id;
+  if (expr->kind == NAME)
+    {
+      unsigned version = SSA_NAME_VERSION (PRE_EXPR_NAME (expr));
+      if (VEC_length (unsigned, name_to_id) <= version)
+	return 0;
+      return VEC_index (unsigned, name_to_id, version);
+    }
+  else
+    {
+      slot = htab_find_slot (expression_to_id, expr, NO_INSERT);
+      if (!slot)
+	return 0;
+      return ((pre_expr)*slot)->id;
+    }
 }
 
 /* Return the existing expression id for EXPR, or create one if one
@@ -4483,6 +4508,7 @@ init_pre (bool do_fre)
   value_expressions = VEC_alloc (bitmap_set_t, heap, get_max_value_id () + 1);
   VEC_safe_grow_cleared (bitmap_set_t, heap, value_expressions,
 			 get_max_value_id() + 1);
+  name_to_id = NULL;
 
   in_fre = do_fre;
 
@@ -4544,6 +4570,7 @@ fini_pre (bool do_fre)
   free_alloc_pool (pre_expr_pool);
   htab_delete (phi_translate_table);
   htab_delete (expression_to_id);
+  VEC_free (unsigned, heap, name_to_id);
 
   FOR_ALL_BB (bb)
     {
