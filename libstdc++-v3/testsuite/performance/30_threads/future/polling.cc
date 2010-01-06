@@ -28,6 +28,10 @@ void poll(std::shared_future<void> f)
 
 int main()
 {
+#ifdef TEST_T1
+#define thread_type true
+#endif 
+
   using namespace __gnu_test;
   time_counter time;
   resource_counter resource;
