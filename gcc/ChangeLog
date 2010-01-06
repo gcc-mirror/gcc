@@ -35,9 +35,16 @@
 	for V4SI and V2DI by subtracting (-(INT MAX) - 1) from both
 	operands to make them signed.
 
-	* config/i386/sse.md (umaxv4si3): Revert the last change.
-	(umin<mode>3): Likewise.
-	(uminv8hi3): Removed.
+	Revert:
+	2010-01-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/42542
+	* config/i386/i386.c (ix86_expand_int_vcond): Don't convert
+	GTU to GT for V4SI and V2DI.
+
+	* config/i386/sse.md (umaxv4si3): Enabled for SSE4.1 and XOP.
+	(umin<mode>3): Removed.
+	(uminv8hi3): New.
 	(uminv4si3): Likewise.
 
 2010-01-05  Martin Jambor  <mjambor@suse.cz>
