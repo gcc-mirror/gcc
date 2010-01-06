@@ -1,3 +1,8 @@
+2010-01-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/22_locale/time_get/get_weekday/char/38081-2.cc:
+	Add dg-require-namedlocale.
+
 2010-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/manual/evolution.xml: Update for 4.4 and 4.5 releases.
