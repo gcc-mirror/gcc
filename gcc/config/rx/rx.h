@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RX processor.
-   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -34,10 +34,10 @@
       else					\
 	builtin_define ("__RX_LITTLE_ENDIAN__");\
       						\
-      if (TARGET_32BIT_DOUBLES)			\
-	builtin_define ("__RX_32BIT_DOUBLES__");\
-      else					\
+      if (TARGET_64BIT_DOUBLES)			\
 	builtin_define ("__RX_64BIT_DOUBLES__");\
+      else					\
+	builtin_define ("__RX_32BIT_DOUBLES__");\
       						\
       if (ALLOW_RX_FPU_INSNS)			\
 	builtin_define ("__RX_FPU_INSNS__");	\
@@ -52,13 +52,16 @@
 enum rx_cpu_types
 {
   RX600,
-  RX610
+  RX610,
+  RX200
 };
 
 extern enum rx_cpu_types  rx_cpu_type;
 
 #undef  CC1_SPEC
-#define CC1_SPEC "%{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}}"
+#define CC1_SPEC "\
+  %{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}} \
+  %{mcpu=rx200:%{fpu:%erx200 cpu does not have FPU hardware}}"
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s} crtbegin.o%s"
@@ -69,8 +72,8 @@ extern enum rx_cpu_types  rx_cpu_type;
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{mbig-endian-data:-mbig-endian-data} \
-%{m32bit-doubles:-m32bit-doubles} \
-%{!m32bit-doubles:-m64bit-doubles} \
+%{m64bit-doubles:-m64bit-doubles} \
+%{!m64bit-doubles:-m32bit-doubles} \
 %{msmall-data-limit*:-msmall-data-limit} \
 %{mrelax:-relax} \
 "
@@ -106,7 +109,7 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define LONG_LONG_TYPE_SIZE		64
 
 #define FLOAT_TYPE_SIZE 		32
-#define DOUBLE_TYPE_SIZE 		(TARGET_32BIT_DOUBLES ? 32 : 64)
+#define DOUBLE_TYPE_SIZE 		(TARGET_64BIT_DOUBLES ? 64 : 32)
 #define LONG_DOUBLE_TYPE_SIZE		DOUBLE_TYPE_SIZE
 
 #ifdef __RX_32BIT_DOUBLES__
@@ -636,24 +639,14 @@ extern int rx_float_compare_mode;
 #define ARG_POINTER_CFA_OFFSET(FNDECL)		4
 #define FRAME_POINTER_CFA_OFFSET(FNDECL)	4
 
-extern int rx_enable_fpu;
+/* Translate -nofpu into -mnofpu so that it gets passed from gcc to cc1.  */
+#define TARGET_OPTION_TRANSLATE_TABLE \
+  {"-nofpu", "-mnofpu" }
 
-/* For some unknown reason LTO compression is not working, at
-   least on my local system.  So set the default compression
-   level to none, for now.
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) \
+  rx_set_optimization_options ()
 
-   For an explanation of rx_flag_no_fpu see rx_handle_option().  */
-#define OVERRIDE_OPTIONS			\
-  do						\
-    {						\
-      if (flag_lto_compression_level == -1)	\
-        flag_lto_compression_level = 0;		\
-						\
-      if (rx_enable_fpu == 1)			\
-	set_fast_math_flags (true);		\
-    }						\
-  while (0)
+#define TARGET_USE_FPU		(! TARGET_NO_USE_FPU)
 
 /* This macro is used to decide when RX FPU instructions can be used.  */
-#define ALLOW_RX_FPU_INSNS	((rx_enable_fpu != -1) \
-				 && flag_unsafe_math_optimizations)
+#define ALLOW_RX_FPU_INSNS	(TARGET_USE_FPU)

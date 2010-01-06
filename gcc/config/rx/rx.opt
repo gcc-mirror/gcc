@@ -1,5 +1,5 @@
 ; Command line options for the Renesas RX port of GCC.
-; Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+; Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 ; Contributed by Red Hat.
 ;
 ; This file is part of GCC.
@@ -19,26 +19,31 @@
 ; <http://www.gnu.org/licenses/>.
 ;---------------------------------------------------
 
-m32bit-doubles
-Target RejectNegative Mask(32BIT_DOUBLES)
-Stores doubles in 32 bits.
+; The default is -fpu -m32bit-doubles.
 
 m64bit-doubles
-Target RejectNegative InverseMask(32BIT_DOUBLES)
-Store doubles in 64 bits.  This is the default.
+Target RejectNegative Mask(64BIT_DOUBLES) Report
+Store doubles in 64 bits.
 
-fpu
-Target RejectNegative Mask(32BIT_DOUBLES) MaskExists
-Enable the use of RX FPU instructions.
+m32bit-doubles
+Target RejectNegative InverseMask(64BIT_DOUBLES) Report
+Stores doubles in 32 bits.  This is the default.
 
 nofpu
-Target RejectNegative InverseMask(32BIT_DOUBLES) MaskExists
-Disable the use of RX FPU instructions.
+Target RejectNegative Mask(NO_USE_FPU) Report
+Disable the use of RX FPU instructions.  
+
+mnofpu
+Target RejectNegative Mask(NO_USE_FPU) MaskExists Undocumented
+
+fpu
+Target RejectNegative InverseMask(NO_USE_FPU) Report
+Enable the use of RX FPU instructions.  This is the default.
 
 ;---------------------------------------------------
 
 mcpu=
-Target RejectNegative Joined Var(rx_cpu_name)
+Target RejectNegative Joined Var(rx_cpu_name) Report
 Specify the target RX cpu type.
 
 patch=
@@ -48,11 +53,11 @@ Alias for -mcpu.
 ;---------------------------------------------------
 
 mbig-endian-data
-Target RejectNegative Mask(BIG_ENDIAN_DATA)
+Target RejectNegative Mask(BIG_ENDIAN_DATA) Report
 Data is stored in big-endian format.
 
 mlittle-endian-data
-Target RejectNegative InverseMask(BIG_ENDIAN_DATA)
+Target RejectNegative InverseMask(BIG_ENDIAN_DATA) Report
 Data is stored in little-endian format.  (Default).
 
 ;---------------------------------------------------
@@ -70,7 +75,7 @@ Use the simulator runtime.
 ;---------------------------------------------------
 
 mas100-syntax
-Target Mask(AS100_SYNTAX)
+Target Mask(AS100_SYNTAX) Report
 Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatable syntax.
 
 ;---------------------------------------------------

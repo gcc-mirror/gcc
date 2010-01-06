@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -422,7 +422,10 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	case 0xb: fprintf (file, "fintv"); break;
 	case 0xc: fprintf (file, "intb"); break;
 	default:
-	  gcc_unreachable ();
+	  warning (0, "unreocgnized control register number: %d - using 'psw'",
+		   INTVAL (op));
+	  fprintf (file, "psw");
+	  break;
 	}
       break;
 
@@ -2115,6 +2118,101 @@ const struct attribute_spec rx_attribute_table[] =
   { NULL,             0, 0, false, false, false, NULL }
 };
 
+/* Extra processing for target specific command line options.  */
+
+static bool
+rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
+{
+  switch (code)
+    {
+    case OPT_mint_register_:
+      switch (value)
+	{
+	case 4:
+	  fixed_regs[10] = call_used_regs [10] = 1;
+	  /* Fall through.  */
+	case 3:
+	  fixed_regs[11] = call_used_regs [11] = 1;
+	  /* Fall through.  */
+	case 2:
+	  fixed_regs[12] = call_used_regs [12] = 1;
+	  /* Fall through.  */
+	case 1:
+	  fixed_regs[13] = call_used_regs [13] = 1;
+	  /* Fall through.  */
+	case 0:
+	  return true;
+	default:
+	  return false;
+	}
+      break;
+
+    case OPT_mmax_constant_size_:
+      /* Make sure that the -mmax-constant_size option is in range.  */
+      return value >= 0 && value <= 4;
+
+    case OPT_mcpu_:
+    case OPT_patch_:
+      if (strcasecmp (arg, "RX610") == 0)
+	rx_cpu_type = RX610;
+      else if (strcasecmp (arg, "RX200") == 0)
+	{
+	  target_flags |= MASK_NO_USE_FPU;
+	  rx_cpu_type = RX200;
+	}
+      else if (strcasecmp (arg, "RX600") != 0)
+	warning (0, "unrecognized argument '%s' to -mcpu= option", arg);
+      break;
+      
+    case OPT_fpu:
+      if (rx_cpu_type == RX200)
+	error ("The RX200 cpu does not have FPU hardware");
+      break;
+
+    default:
+      break;
+    }
+
+  return true;
+}
+
+void
+rx_set_optimization_options (void)
+{
+  static bool first_time = TRUE;
+  static bool saved_allow_rx_fpu = TRUE;
+
+  if (first_time)
+    {
+      /* If this is the first time through and the user has not disabled
+	 the use of RX FPU hardware then enable unsafe math optimizations,
+	 since the FPU instructions themselves are unsafe.  */
+      if (TARGET_USE_FPU)
+	set_fast_math_flags (true);
+
+      /* FIXME: For some unknown reason LTO compression is not working,
+	 at least on my local system.  So set the default compression
+	 level to none, for now.  */
+      if (flag_lto_compression_level == -1)
+        flag_lto_compression_level = 0;
+
+      saved_allow_rx_fpu = ALLOW_RX_FPU_INSNS;
+      first_time = FALSE;
+    }
+  else
+    {
+      /* Alert the user if they are changing the optimization options
+	 to use IEEE compliant floating point arithmetic with RX FPU insns.  */
+      if (TARGET_USE_FPU
+	  && ! fast_math_flags_set_p ())
+	warning (0, "RX FPU instructions are not IEEE compliant");
+
+      if (saved_allow_rx_fpu != ALLOW_RX_FPU_INSNS)
+	error ("Changing the FPU insns/math optimizations pairing is not supported");
+    }
+}
+
+
 static bool
 rx_allocate_stack_slots_for_args (void)
 {
@@ -2266,88 +2364,6 @@ rx_is_legitimate_constant (rtx x)
      of bytes that can be used to hold a signed value.  */
   return IN_RANGE (val, (-1 << (rx_max_constant_size * 8)),
 		        ( 1 << (rx_max_constant_size * 8)));
-}
-
-/* This is a tri-state variable.  The default value of 0 means that the user
-   has specified neither -mfpu nor -mnofpu on the command line.  In this case
-   the selection of RX FPU instructions is entirely based upon the size of
-   the floating point object and whether unsafe math optimizations were
-   enabled.  If 32-bit doubles have been enabled then both floats and doubles
-   can make use of FPU instructions, otherwise only floats may do so.
-
-   If the value is 1 then the user has specified -mfpu and the FPU
-   instructions should be used.  Unsafe math optimizations will automatically
-   be enabled and doubles set to 32-bits.  If the value is -1 then -mnofpu
-   has been specified and FPU instructions will not be used, even if unsafe
-   math optimizations have been enabled.  */
-int rx_enable_fpu = 0;
-
-/* Extra processing for target specific command line options.  */
-
-static bool
-rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
-{
-  switch (code)
-    {
-      /* -mfpu enables the use of RX FPU instructions.  This implies the use
-	 of 32-bit doubles and also the enabling of fast math optimizations.
-	 (Since the RX FPU instructions are not IEEE compliant).  The -mnofpu
-	 option disables the use of RX FPU instructions, but does not make
-	 place any constraints on the size of doubles or the use of fast math
-	 optimizations.
-
-	 The selection of 32-bit vs 64-bit doubles is handled by the setting
-	 of the 32BIT_DOUBLES mask in the rx.opt file.  Enabling fast math
-	 optimizations is performed in OVERRIDE_OPTIONS since if it was done
-	 here it could be overridden by a -fno-fast-math option specified
-	 *earlier* on the command line.  (Target specific options are
-	 processed before generic ones).  */
-    case OPT_fpu:
-      rx_enable_fpu = 1;
-      break;
-
-    case OPT_nofpu:
-      rx_enable_fpu = -1;
-      break;
-
-    case OPT_mint_register_:
-      switch (value)
-	{
-	case 4:
-	  fixed_regs[10] = call_used_regs [10] = 1;
-	  /* Fall through.  */
-	case 3:
-	  fixed_regs[11] = call_used_regs [11] = 1;
-	  /* Fall through.  */
-	case 2:
-	  fixed_regs[12] = call_used_regs [12] = 1;
-	  /* Fall through.  */
-	case 1:
-	  fixed_regs[13] = call_used_regs [13] = 1;
-	  /* Fall through.  */
-	case 0:
-	  return true;
-	default:
-	  return false;
-	}
-      break;
-
-    case OPT_mmax_constant_size_:
-      /* Make sure that the -mmax-constant_size option is in range.  */
-      return IN_RANGE (value, 0, 4);
-
-    case OPT_mcpu_:
-    case OPT_patch_:
-      if (strcasecmp (arg, "RX610") == 0)
-	rx_cpu_type = RX610;
-      /* FIXME: Should we check for non-RX cpu names here ?  */
-      break;
-      
-    default:
-      break;
-    }
-
-  return true;
 }
 
 static int

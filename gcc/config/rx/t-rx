@@ -1,5 +1,5 @@
 # Makefile fragment for building GCC for the Renesas RX target.
-# Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -20,9 +20,11 @@
 
 # Enable multilibs:
 
-MULTILIB_OPTIONS    = m32bit-doubles mbig-endian-data
-MULTILIB_DIRNAMES   = 32fp           big-endian-data
-MULTILIB_MATCHES    = m32bit-doubles=fpu
+MULTILIB_OPTIONS    = m64bit-doubles  nofpu        mbig-endian-data 
+MULTILIB_DIRNAMES   =  64-bit-double  no-fpu-libs   big-endian-data 
+
+MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200  nofpu=mcpu?RX200
+
 MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS = 
 
