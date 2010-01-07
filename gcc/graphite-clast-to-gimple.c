@@ -117,7 +117,12 @@ save_clast_name_index (htab_t index_table, const char *name, int index)
   slot = htab_find_slot (index_table, &tmp, INSERT);
 
   if (slot)
-    *slot = new_clast_name_index (name, index);
+    {
+      if (*slot)
+	free (*slot);
+
+      *slot = new_clast_name_index (name, index);
+    }
 }
 
 /* Print to stderr the element ELT.  */
@@ -629,7 +634,7 @@ copy_renames (void **slot, void *s)
   tmp.old_name = old_name;
   x = htab_find_slot (res, &tmp, INSERT);
 
-  if (!*x)
+  if (x && !*x)
     *x = new_rename_map_elt (old_name, expr);
 
   return 1;
@@ -660,7 +665,7 @@ mark_bb_with_pbb (poly_bb_p pbb, basic_block bb, htab_t bb_pbb_mapping)
   tmp.bb = bb;
   x = htab_find_slot (bb_pbb_mapping, &tmp, INSERT);
 
-  if (!*x)
+  if (x && !*x)
     *x = new_bb_pbb_def (bb, pbb);
 }
 
@@ -1026,7 +1031,7 @@ compute_cloog_iv_types_1 (poly_bb_p pbb, struct clast_user_stmt *user_stmt)
 
       slot = htab_find_slot (GBB_CLOOG_IV_TYPES (gbb), &tmp, INSERT);
 
-      if (!*slot)
+      if (slot && !*slot)
 	{
 	  tree oldiv = pbb_to_depth_to_oldiv (pbb, index);
 	  tree type = oldiv ? TREE_TYPE (oldiv) : integer_type_node;

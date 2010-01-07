@@ -587,11 +587,20 @@ lst_perfect_nestify (lst_p loop1, lst_p loop2, lst_p *before,
   lst_remove_all_before_excluding_pbb (*nest, last, false);
 
   if (lst_empty_p (*before))
-    *before = NULL;
+    {
+      free_lst (*before);
+      *before = NULL;
+    }
   if (lst_empty_p (*after))
-    *after = NULL;
+    {
+      free_lst (*after);
+      *after = NULL;
+    }
   if (lst_empty_p (*nest))
-    *nest = NULL;
+    {
+      free_lst (*nest);
+      *nest = NULL;
+    }
 }
 
 /* Try to interchange LOOP1 with LOOP2 for all the statements of the
@@ -646,6 +655,9 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
     }
 
   /* Undo the transform.  */
+  free_lst (before);
+  free_lst (nest);
+  free_lst (after);
   lst_apply_interchange (loop2, depth2, depth1);
   return false;
 }
