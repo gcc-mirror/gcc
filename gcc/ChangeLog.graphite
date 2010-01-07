@@ -1,3 +1,14 @@
+2010-01-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (save_clast_name_index): Free slot
+	before allocating a new one.
+	(copy_renames): Check that slot is not NULL.
+	(mark_bb_with_pbb): Same.
+	(compute_cloog_iv_types_1): Same.
+	* graphite-interchange.c (lst_perfect_nestify): Free the before,
+	nest, and after LSTs.
+	(lst_try_interchange_loops): Same.
+
 2010-01-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42178
