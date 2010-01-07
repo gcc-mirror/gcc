@@ -44,15 +44,6 @@ gimple_referenced_vars (const struct function *fun)
   return fun->gimple_df->referenced_vars;
 }
 
-/* Artificial variable used to model the effects of nonlocal
-   variables.  */
-static inline tree
-gimple_nonlocal_all (const struct function *fun)
-{
-  gcc_assert (fun && fun->gimple_df);
-  return fun->gimple_df->nonlocal_all;
-}
-
 /* Artificial variable used for the virtual operand FUD chain.  */
 static inline tree
 gimple_vop (const struct function *fun)
@@ -133,18 +124,6 @@ static inline tree
 next_referenced_var (referenced_var_iterator *iter)
 {
   return (tree) next_htab_element (&iter->hti);
-}
-
-/* Fill up VEC with the variables in the referenced vars hashtable.  */
-
-static inline void
-fill_referenced_var_vec (VEC (tree, heap) **vec)
-{
-  referenced_var_iterator rvi;
-  tree var;
-  *vec = NULL;
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    VEC_safe_push (tree, heap, *vec, var);
 }
 
 /* Return the variable annotation for T, which must be a _DECL node.
@@ -312,8 +291,6 @@ end_readonly_imm_use_p (const imm_use_iterator *imm)
 static inline use_operand_p
 first_readonly_imm_use (imm_use_iterator *imm, tree var)
 {
-  gcc_assert (TREE_CODE (var) == SSA_NAME);
-
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
 #ifdef ENABLE_CHECKING
@@ -573,9 +550,9 @@ phi_arg_index_from_use (use_operand_p use)
 #ifdef ENABLE_CHECKING
   /* Make sure the calculation doesn't have any leftover bytes.  If it does,
      then imm_use is likely not the first element in phi_arg_d.  */
-  gcc_assert (
-	  (((char *)element - (char *)root) % sizeof (struct phi_arg_d)) == 0);
-  gcc_assert (index < gimple_phi_capacity (phi));
+  gcc_assert ((((char *)element - (char *)root)
+	       % sizeof (struct phi_arg_d)) == 0
+	      && index < gimple_phi_capacity (phi));
 #endif
 
  return index;
@@ -1013,7 +990,9 @@ static inline use_operand_p
 move_use_after_head (use_operand_p use_p, use_operand_p head,
 		      use_operand_p last_p)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (USE_FROM_PTR (use_p) == USE_FROM_PTR (head));
+#endif
   /* Skip head when we find it.  */
   if (use_p != head)
     {
@@ -1078,8 +1057,6 @@ link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
 static inline gimple
 first_imm_use_stmt (imm_use_iterator *imm, tree var)
 {
-  gcc_assert (TREE_CODE (var) == SSA_NAME);
-
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
   imm->next_imm_name = NULL_USE_OPERAND_P;

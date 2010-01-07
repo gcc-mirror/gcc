@@ -1,5 +1,51 @@
 2010-01-07  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.h (gss_for_code): Wrap gcc_assert in ENABLE_CHECKING.
+	(gimple_op): Likewise.
+	(gimple_op_ptr): Likewise.
+	(gimple_assign_set_lhs): Remove gcc_assert.
+	(gimple_assign_set_rhs1): Likewise.
+	(gimple_assign_set_rhs2): Likewise.
+	(gimple_call_set_lhs): Likewise.
+	(gimple_call_set_fn): Likewise.
+	(gimple_call_set_fndecl): Likewise.
+	(gimple_call_fndecl): Likewise.
+	(gimple_call_return_type): Likewise.
+	(gimple_call_set_chain): Likewise.
+	(gimple_call_num_args): Likewise.
+	(gimple_call_set_arg): Likewise.
+	(gimple_cond_set_code): Likewise.
+	(gimple_cond_set_lhs): Likewise.
+	(gimple_cond_set_rhs): Likewise.
+	(gimple_cond_set_true_label): Likewise.
+	(gimple_cond_set_false_label): Likewise.
+	(gimple_label_set_label): Likewise.
+	(gimple_goto_set_dest): Likewise.
+	(gimple_debug_bind_get_var): Wrap gcc_assert in ENABLE_CHECKING.
+	(gimple_debug_bind_get_value): Likewise.
+	(gimple_debug_bind_get_value_ptr): Likewise.
+	(gimple_debug_bind_set_var): Likewise.
+	(gimple_debug_bind_set_value): Likewise.
+	(gimple_debug_bind_reset_value): Likewise.
+	(gimple_debug_bind_has_value_p): Likewise.
+	(gimple_return_retval_ptr): Remove gcc_assert.
+	(gimple_return_retval): Likewise.
+	(gimple_return_set_retval): Likewise.
+	* tree-flow.h (struct gimple_df): Remove nonlocal_all member.
+	(safe_referenced_var_iterator): Remove.
+	(FOR_EACH_REFERENCED_VAR_SAFE): Likewise.
+	* tree-flow-inline.h (gimple_nonlocal_all): Remove.
+	(fill_referenced_var_vec): Remove.
+	(first_readonly_imm_use): Remove redundant gcc_assert.
+	(phi_arg_index_from_use): Combine gcc_asserts.
+	(move_use_after_head): Wrap gcc_assert in ENABLE_CHECKING.
+	(first_imm_use_stmt): Remove redundant gcc_assert.
+	* tree-cfg.c (verify_gimple_call): Verify function and chain
+	operands.  Verify arguments.
+	(verify_types_in_gimple_stmt): Verify condition code and labels.
+
+2010-01-07  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42641
 	* sese.c (rename_map_elt_info): Use the SSA name version, do
 	not hash pointers.

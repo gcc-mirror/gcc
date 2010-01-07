@@ -53,10 +53,6 @@ struct GTY(()) gimple_df {
   /* Artificial variable used for the virtual operand FUD chain.  */
   tree vop;
 
-  /* Artificial variable used to model the effects of nonlocal
-     variables.  */
-  tree nonlocal_all;
-
   /* The PTA solution for the ESCAPED artificial variable.  */
   struct pt_solution escaped;
 
@@ -339,7 +335,6 @@ typedef struct
   htab_iterator hti;
 } referenced_var_iterator;
 
-
 /* This macro loops over all the referenced vars, one at a time, putting the
    current var in VAR.  Note:  You are not allowed to add referenced variables
    to the hashtable while using this macro.  Doing so may cause it to behave
@@ -349,25 +344,6 @@ typedef struct
   for ((VAR) = first_referenced_var (&(ITER)); \
        !end_referenced_vars_p (&(ITER)); \
        (VAR) = next_referenced_var (&(ITER)))
-
-
-typedef struct
-{
-  int i;
-} safe_referenced_var_iterator;
-
-/* This macro loops over all the referenced vars, one at a time, putting the
-   current var in VAR.  You are allowed to add referenced variables during the
-   execution of this macro, however, the macro will not iterate over them.  It
-   requires a temporary vector of trees, VEC, whose lifetime is controlled by
-   the caller.  The purpose of the vector is to temporarily store the
-   referenced_variables hashtable so that adding referenced variables does not
-   affect the hashtable.  */
-
-#define FOR_EACH_REFERENCED_VAR_SAFE(VAR, VEC, ITER) \
-  for ((ITER).i = 0, fill_referenced_var_vec (&(VEC)); \
-       VEC_iterate (tree, (VEC), (ITER).i, (VAR)); \
-       (ITER).i++)
 
 extern tree referenced_var_lookup (unsigned int);
 extern bool referenced_var_check_and_insert (tree);
