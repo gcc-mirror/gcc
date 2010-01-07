@@ -2937,6 +2937,15 @@ verify_gimple_call (gimple stmt)
 {
   tree fn = gimple_call_fn (stmt);
   tree fntype;
+  unsigned i;
+
+  if (TREE_CODE (fn) != OBJ_TYPE_REF
+      && !is_gimple_val (fn))
+    {
+      error ("invalid function in gimple call");
+      debug_generic_stmt (fn);
+      return true;
+    }
 
   if (!POINTER_TYPE_P (TREE_TYPE  (fn))
       || (TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != FUNCTION_TYPE
@@ -2972,6 +2981,14 @@ verify_gimple_call (gimple stmt)
       return true;
     }
 
+  if (gimple_call_chain (stmt)
+      && !is_gimple_val (gimple_call_chain (stmt)))
+    {
+      error ("invalid static chain in gimple call");
+      debug_generic_stmt (gimple_call_chain (stmt));
+      return true;
+    }
+
   /* If there is a static chain argument, this should not be an indirect
      call, and the decl should have DECL_STATIC_CHAIN set.  */
   if (gimple_call_chain (stmt))
@@ -2993,8 +3010,18 @@ verify_gimple_call (gimple stmt)
 
   /* ???  The C frontend passes unpromoted arguments in case it
      didn't see a function declaration before the call.  So for now
-     leave the call arguments unverified.  Once we gimplify
+     leave the call arguments mostly unverified.  Once we gimplify
      unit-at-a-time we have a chance to fix this.  */
+
+  for (i = 0; i < gimple_call_num_args (stmt); ++i)
+    {
+      tree arg = gimple_call_arg (stmt, i);
+      if (!is_gimple_operand (arg))
+	{
+	  error ("invalid argument to gimple call");
+	  debug_generic_expr (arg);
+	}
+    }
 
   return false;
 }
@@ -3744,6 +3771,20 @@ verify_types_in_gimple_stmt (gimple stmt)
       return verify_gimple_call (stmt);
 
     case GIMPLE_COND:
+      if (TREE_CODE_CLASS (gimple_cond_code (stmt)) != tcc_comparison)
+	{
+	  error ("invalid comparison code in gimple cond");
+	  return true;
+	}
+      if (!(!gimple_cond_true_label (stmt)
+	    || TREE_CODE (gimple_cond_true_label (stmt)) == LABEL_DECL)
+	  || !(!gimple_cond_false_label (stmt)
+	       || TREE_CODE (gimple_cond_false_label (stmt)) == LABEL_DECL))
+	{
+	  error ("invalid labels in gimple cond");
+	  return true;
+	}
+	  
       return verify_gimple_comparison (boolean_type_node,
 				       gimple_cond_lhs (stmt),
 				       gimple_cond_rhs (stmt));
