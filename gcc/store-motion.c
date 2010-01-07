@@ -1237,7 +1237,6 @@ static unsigned int
 execute_rtl_store_motion (void)
 {
   delete_unreachable_blocks ();
-  df_note_add_problem ();
   df_analyze ();
   flag_rerun_cse_after_global_opts |= one_store_motion_pass ();
   return 0;
