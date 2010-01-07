@@ -3188,31 +3188,38 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	       || (sym->ts.type == BT_CLASS
 		   && sym->ts.u.derived->components->attr.allocatable))
 	{
-	  /* Nullify and automatic deallocation of allocatable scalars.  */
-	  tree tmp;
-	  gfc_expr *e;
-	  gfc_se se;
-	  stmtblock_t block;
+	  if (!sym->attr.save)
+	    {
+	      /* Nullify and automatic deallocation of allocatable
+		 scalars.  */
+	      tree tmp;
+	      gfc_expr *e;
+	      gfc_se se;
+	      stmtblock_t block;
 
-	  e = gfc_lval_expr_from_sym (sym);
-	  if (sym->ts.type == BT_CLASS)
-	    gfc_add_component_ref (e, "$data");
+	      e = gfc_lval_expr_from_sym (sym);
+	      if (sym->ts.type == BT_CLASS)
+		gfc_add_component_ref (e, "$data");
 
-	  gfc_init_se (&se, NULL);
-	  se.want_pointer = 1;
-	  gfc_conv_expr (&se, e);
-	  gfc_free_expr (e);
+	      gfc_init_se (&se, NULL);
+	      se.want_pointer = 1;
+	      gfc_conv_expr (&se, e);
+	      gfc_free_expr (e);
 
-	  /* Nullify when entering the scope.  */
-	  gfc_start_block (&block);
-	  gfc_add_modify (&block, se.expr, fold_convert (TREE_TYPE (se.expr),
-							 null_pointer_node));
-	  gfc_add_expr_to_block (&block, fnbody);
+	      /* Nullify when entering the scope.  */
+	      gfc_start_block (&block);
+	      gfc_add_modify (&block, se.expr,
+			      fold_convert (TREE_TYPE (se.expr),
+					    null_pointer_node));
+	      gfc_add_expr_to_block (&block, fnbody);
 
-	  /* Deallocate when leaving the scope. Nullifying is not needed.  */
-	  tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true, NULL);
-	  gfc_add_expr_to_block (&block, tmp);
-	  fnbody = gfc_finish_block (&block);
+	      /* Deallocate when leaving the scope. Nullifying is not
+		 needed.  */
+	      tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true,
+						NULL);
+	      gfc_add_expr_to_block (&block, tmp);
+	      fnbody = gfc_finish_block (&block);
+	    }
 	}
       else if (sym->ts.type == BT_CHARACTER)
 	{
