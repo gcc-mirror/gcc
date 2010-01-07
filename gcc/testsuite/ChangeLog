@@ -1,5 +1,52 @@
 2010-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	Backport from mainline:
+	2010-01-06  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/compile/pr42632.c: New testcase.
+
+	2010-01-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42462
+	* g++.dg/torture/pr42462.C: New test.
+
+	2010-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42508
+	* g++.dg/opt/pr42508.C: New test.
+
+	2010-01-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42398
+	* gcc.c-torture/compile/pr42398.c: New test.
+
+	2010-01-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42555
+	* g++.dg/ext/attrib35.C: New.
+
+	2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR c/42570
+	* gcc.c-torture/execute/pr42570.c: New testcase.
+
+	2010-01-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42559
+	* gcc.c-torture/compile/pr42559.c: New testcase.
+
+	2009-12-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/42439
+	* gcc.dg/bitfld-19.c: New test.
+
+	2009-12-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42447
+	* g++.dg/template/array21.C: New.
+
+2010-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	Backport from mainline
 	2010-01-05  H.J. Lu  <hongjiu.lu@intel.com>
 
