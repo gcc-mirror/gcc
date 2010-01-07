@@ -20,4 +20,5 @@ void test (void)
         A[i][j] = B[i][k] * C[k][j];
 }
 
+/* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

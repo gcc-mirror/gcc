@@ -1,3 +1,21 @@
+2010-01-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42641
+	* sese.c (rename_map_elt_info): Use the SSA name version, do
+	not hash pointers.
+
+2010-01-06  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-blocking.c (scop_do_block): Print "SCoP will be loop
+	blocked" only when both the strip mine and the interchange have
+	been applied.
+
+	* testsuite/gcc.dg/graphite/block-2.c: Removed.
+	* testsuite/gcc.dg/graphite/block-3.c: Add scan pattern.
+	* testsuite/gcc.dg/graphite/block-4.c: Same.
+	* testsuite/gcc.dg/graphite/block-5.c: Same.
+	* testsuite/gcc.dg/graphite/block-6.c: Same.
+
 2010-01-06  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (save_clast_name_index): Free slot

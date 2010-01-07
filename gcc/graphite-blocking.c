@@ -285,25 +285,27 @@ scop_do_strip_mine (scop_p scop)
 bool
 scop_do_block (scop_p scop)
 {
-  bool transform_done = false;
+  bool strip_mined = false;
+  bool interchanged = false;
 
   store_scattering (scop);
 
-  lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
-  transform_done = scop_do_interchange (scop);
+  strip_mined = lst_do_strip_mine (SCOP_TRANSFORMED_SCHEDULE (scop));
+  interchanged = scop_do_interchange (scop);
 
   /* If we don't interchange loops, then the strip mine is not
      profitable, and the transform is not a loop blocking.  */
-  if (!transform_done
+  if (!interchanged
       || !graphite_legal_transform (scop))
     {
       restore_scattering (scop);
       return false;
     }
-  else if (dump_file && (dump_flags & TDF_DETAILS))
+  else if (strip_mined && interchanged
+	   && dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "SCoP will be loop blocked.\n");
 
-  return transform_done;
+  return strip_mined || interchanged;
 }
 
 #endif
