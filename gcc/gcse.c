@@ -5078,7 +5078,6 @@ static unsigned int
 execute_rtl_cprop (void)
 {
   delete_unreachable_blocks ();
-  df_note_add_problem ();
   df_set_flags (DF_LR_RUN_DCE);
   df_analyze ();
   flag_rerun_cse_after_global_opts |= one_cprop_pass ();
@@ -5098,7 +5097,6 @@ static unsigned int
 execute_rtl_pre (void)
 {
   delete_unreachable_blocks ();
-  df_note_add_problem ();
   df_analyze ();
   flag_rerun_cse_after_global_opts |= one_pre_gcse_pass ();
   return 0;
@@ -5120,7 +5118,6 @@ static unsigned int
 execute_rtl_hoist (void)
 {
   delete_unreachable_blocks ();
-  df_note_add_problem ();
   df_analyze ();
   flag_rerun_cse_after_global_opts |= one_code_hoisting_pass ();
   return 0;

@@ -1,3 +1,9 @@
+2009-01-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcse.c (execute_rtl_cprop, execute_rtl_pre, execute_rtl_hoist):
+	Do not add the DF_NOTE problem.
+	* store-motion.c (execute_rtl_store_motion): Likewise.
+
 2010-01-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42157
