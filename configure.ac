@@ -23,6 +23,11 @@ m4_include(config/acx.m4)
 m4_include(config/override.m4)
 m4_include(config/proginstall.m4)
 m4_include(config/elf.m4)
+m4_include([libtool.m4])
+m4_include([ltoptions.m4])
+m4_include([ltsugar.m4])
+m4_include([ltversion.m4])
+m4_include([lt~obsolete.m4])
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.64)
@@ -1228,6 +1233,9 @@ AC_ARG_ENABLE(build-with-cxx,
 ENABLE_BUILD_WITH_CXX=$enableval,
 ENABLE_BUILD_WITH_CXX=no)
 
+# Used for setting $lt_cv_objdir
+_LT_CHECK_OBJDIR
+
 # Check for GMP, MPFR and MPC
 gmplibs="-lmpc -lmpfr -lgmp"
 gmpinc=
@@ -1253,7 +1261,7 @@ if test "x$with_mpc_lib" != x; then
   gmplibs="-L$with_mpc_lib $gmplibs"
 fi
 if test "x$with_mpc$with_mpc_include$with_mpc_lib" = x && test -d ${srcdir}/mpc; then
-  gmplibs='-L$$r/$(HOST_SUBDIR)/mpc/src/.libs -L$$r/$(HOST_SUBDIR)/mpc/src/_libs '"$gmplibs"
+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpc/src/'"$lt_cv_objdir $gmplibs"
   gmpinc='-I$$s/mpc/src '"$gmpinc"
   # Do not test the mpc version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
@@ -1286,9 +1294,9 @@ if test "x$with_mpfr_lib" != x; then
   gmplibs="-L$with_mpfr_lib $gmplibs"
 fi
 if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
-  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/.libs -L$$r/$(HOST_SUBDIR)/mpfr/_libs '"$gmplibs"
+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir $gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
-  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr'
+  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir"
   # Do not test the mpfr version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -1319,10 +1327,10 @@ if test "x$with_gmp_lib" != x; then
   gmplibs="-L$with_gmp_lib $gmplibs"
 fi
 if test "x$with_gmp$with_gmp_include$with_gmp_lib" = x && test -d ${srcdir}/gmp; then
-  gmplibs='-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/gmp/_libs '"$gmplibs"
+  gmplibs='-L$$r/$(HOST_SUBDIR)/gmp/'"$lt_cv_objdir $gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/gmp -I$$s/gmp '"$gmpinc"
   extra_mpfr_configure_flags='--with-gmp-build=$$r/$(HOST_SUBDIR)/gmp'
-  extra_mpc_gmp_configure_flags='--with-gmp-include=$$r/$(HOST_SUBDIR)/gmp'
+  extra_mpc_gmp_configure_flags='--with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-gmp-lib=$$r/$(HOST_SUBDIR)/gmp/'"$lt_cv_objdir"
   # Do not test the gmp version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -1510,7 +1518,7 @@ if test "x$with_ppl_lib" != x; then
   ppllibs="-L$with_ppl_lib -lppl_c -lppl -lgmpxx"
 fi
 if test "x$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl; then
-  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/.libs -L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/_libs -L$$r/$(HOST_SUBDIR)/ppl/src/.libs -L$$r/$(HOST_SUBDIR)/ppl/src/_libs -lppl_c -lppl -lgmpxx '
+  ppllibs='-L$$r/$(HOST_SUBDIR)/ppl/interfaces/C/'"$lt_cv_objdir"' -L$$r/$(HOST_SUBDIR)/ppl/src/'"$lt_cv_objdir"' -lppl_c -lppl -lgmpxx '
   pplinc='-I$$r/$(HOST_SUBDIR)/ppl/src -I$$r/$(HOST_SUBDIR)/ppl/interfaces/C '
   enable_ppl_version_check=no
 fi
@@ -1570,7 +1578,7 @@ if test "x$with_cloog_lib" != x; then
   clooglibs="-L$with_cloog_lib -lcloog"
 fi
 if test "x$with_cloog$with_cloog_include$with_cloog_lib" = x && test -d ${srcdir}/cloog; then
-  clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/.libs -L$$r/$(HOST_SUBDIR)/cloog/_libs -lcloog '
+  clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' -lcloog '
   clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -DCLOOG_PPL_BACKEND '
   enable_cloog_version_check=no
 fi
