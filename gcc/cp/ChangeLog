@@ -1,3 +1,9 @@
+2010-01-07  Dodji Seketeli  <dodji@redhat.com>
+
+	c++/40155
+	* pt.c (unify_pack_expansion): In non-deduced contexts, re-use template
+	arguments that were previously deduced.
+
 2010-01-05  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (unify_pack_expansion): Handle deduction from init-list.
