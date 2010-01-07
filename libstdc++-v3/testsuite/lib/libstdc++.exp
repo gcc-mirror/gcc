@@ -869,6 +869,7 @@ proc check_v3_target_namedlocale { } {
 	puts $f "     locale(\"de_DE\");"
 	puts $f "     locale(\"de_DE.ISO-8859-15@euro\");"
 	puts $f "     locale(\"de_DE@euro\");"
+	puts $f "     locale(\"en_GB\");"
 	puts $f "     locale(\"en_HK\");"
 	puts $f "     locale(\"en_PH\");"
 	puts $f "     locale(\"en_US\");"
