@@ -1,3 +1,10 @@
+2010-01-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/41818
+	* Makefile.tpl (BASE_TARGET_EXPORTS): Only add TARGET_LIB_PATH
+	to $(RPATH_ENVVAR) if bootstrapping.  Fix typo in comment.
+	* Makefile.in: Regenerate.
+
 2010-01-02  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41529
