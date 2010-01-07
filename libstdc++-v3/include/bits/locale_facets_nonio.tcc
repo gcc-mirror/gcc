@@ -778,16 +778,16 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		  break;
 		case 'y':
 		case 'C': // C99
-		  // Two digit year. [tm_year]
-		  __beg = _M_extract_num(__beg, __end, __tm->tm_year, 0, 99, 2,
-					 __io, __tmperr);
-		  break;
+		  // Two digit year.
 		case 'Y':
-		  // Year [1900). [tm_year]
+		  // Year [1900).
+		  // NB: We parse either two digits, implicitly years since
+		  // 1900, or 4 digits, full year.  In both cases we can 
+		  // reconstruct [tm_year].  See also libstdc++/26701.
 		  __beg = _M_extract_num(__beg, __end, __mem, 0, 9999, 4,
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_year = __mem - 1900;
+		    __tm->tm_year = __mem < 0 ? __mem + 100 : __mem - 1900;
 		  break;
 		case 'Z':
 		  // Timezone info.
@@ -865,6 +865,9 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	}
       if (__i == __len)
 	__member = __value;
+      // Special encoding for do_get_year, 'y', and 'Y' above.
+      else if (__len == 4 && __i == 2)
+	__member = __value - 100;
       else
 	__err |= ios_base::failbit;
 
@@ -1116,19 +1119,13 @@ _GLIBCXX_END_LDBL_NAMESPACE
     {
       const locale& __loc = __io._M_getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+      int __tmpyear;
+      ios_base::iostate __tmperr = ios_base::goodbit;
 
-      size_t __i = 0;
-      int __value = 0;
-      for (; __beg != __end && __i < 4; ++__beg, ++__i)
-	{
-	  const char __c = __ctype.narrow(*__beg, '*');
-	  if (__c >= '0' && __c <= '9')
-	    __value = __value * 10 + (__c - '0');
-	  else
-	    break;
-	}
-      if (__i == 2 || __i == 4)
-	__tm->tm_year = __i == 2 ? __value : __value - 1900;
+      __beg = _M_extract_num(__beg, __end, __tmpyear, 0, 9999, 4,
+			     __io, __tmperr);
+      if (!__tmperr)
+	__tm->tm_year = __tmpyear < 0 ? __tmpyear + 100 : __tmpyear - 1900;
       else
 	__err |= ios_base::failbit;
 
