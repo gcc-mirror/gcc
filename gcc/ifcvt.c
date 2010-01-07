@@ -4087,7 +4087,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	  if (! note)
 	    continue;
 	  set = single_set (insn);
-	  if (!set || !function_invariant_p (SET_SRC (set)))
+	  if (!set || !function_invariant_p (SET_SRC (set))
+	      || !function_invariant_p (XEXP (note, 0)))
 	    remove_note (insn, note);
 	} while (insn != end && (insn = NEXT_INSN (insn)));
 

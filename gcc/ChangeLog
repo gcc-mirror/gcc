@@ -1,3 +1,9 @@
+2010-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42511
+	* ifcvt.c (dead_or_predicable): Also remove REG_EQUAL note when
+	note itself is not function_invariant_p.
+
 2009-01-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (execute_rtl_cprop, execute_rtl_pre, execute_rtl_hoist):
@@ -84,7 +90,7 @@
 	and adjust call to legitimize_pic_address.
 	(sparc_output_mi_thunk): Likewise.
 
-2010-01-05  Paolo Bonzini  <bonzinI@gnu.rg>
+2010-01-05  Paolo Bonzini  <bonzini@gnu.rg>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/42542
