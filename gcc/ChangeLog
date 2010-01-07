@@ -1,3 +1,7 @@
+2010-01-07  Duncan Sands  <baldrick@free.fr>
+
+	* Makefile.in (PLUGIN_HEADERS): Add version.h.
+
 2010-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42511
