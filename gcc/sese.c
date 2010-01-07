@@ -78,7 +78,7 @@ debug_rename_map (htab_t map)
 hashval_t
 rename_map_elt_info (const void *elt)
 {
-  return htab_hash_pointer (((const struct rename_map_elt_s *) elt)->old_name);
+  return SSA_NAME_VERSION (((const struct rename_map_elt_s *) elt)->old_name);
 }
 
 /* Compares database elements E1 and E2.  */
