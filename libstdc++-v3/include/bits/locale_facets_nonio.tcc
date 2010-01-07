@@ -1182,8 +1182,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
       // NB: This size is arbitrary. Should this be a data member,
       // initialized at construction?
       const size_t __maxlen = 128;
-      char_type* __res = 
-       static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * __maxlen));
+      char_type __res[__maxlen];
 
       // NB: In IEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one
