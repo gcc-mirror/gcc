@@ -1,3 +1,14 @@
+2010-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-01-05  Paolo Bonzini  <bonzinI@gnu.rg>
+		    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/42542
+	* config/i386/i386.c (ix86_expand_int_vcond): Convert GTU to GT
+	for V4SI and V2DI by subtracting (-(INT MAX) - 1) from both
+	operands to make them signed.
+
 2010-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* ifcvt.c (if_convert): Output slim multiple dumps with TDF_SLIM.
