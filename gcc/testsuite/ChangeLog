@@ -1,9 +1,14 @@
+2010-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41872
+	* gfortran.dg/allocatable_scalar_7.f90: New test.
+
 2010-01-06  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/compile/pr42632.c: New testcase.
 
 2010-01-05  H.J. Lu  <hongjiu.lu@intel.com>
- 
+
 	PR target/42542
 	* gcc.target/i386/pr42542-4.c: New.
 	* gcc.target/i386/pr42542-4a.c: Likewise.

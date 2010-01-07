@@ -1,3 +1,9 @@
+2010-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41872
+	* trans-decl.c (gfc_trans_deferred_vars): Don't initialize
+	allocatable scalars with SAVE attribute.
+
 2010-01-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42517
