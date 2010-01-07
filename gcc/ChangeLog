@@ -1,3 +1,9 @@
+2010-01-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42641
+	* sese.c (rename_map_elt_info): Use the SSA name version, do
+	not hash pointers.
+
 2010-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/42625
