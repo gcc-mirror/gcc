@@ -547,7 +547,7 @@ and <literal>catch</literal> to <literal>__catch</literal>.
   </para>
 
   <para>
-Audit of internal mutex usage, conversion to funtions returning static
+Audit of internal mutex usage, conversion to functions returning static
 local mutex.
   </para>
 
@@ -575,6 +575,7 @@ C++0X features.
     Added.
   </para>
   <para>
+    <filename class="headerfile">functional</filename>,
     <filename class="headerfile">future</filename>,
     <filename class="headerfile">random</filename>
   </para>
@@ -614,7 +615,7 @@ Python pretty-printers are added for use with appropriately-advanced versions of
 Audit for application of function attributes notrow, const, pure, and noreturn.
 </para>
 
-<para> Extensions modified: <filename class="headerfile">ext/throw_allocator.h</filename>. In addition, experimental support was added for <filename class="headerfile">random</filename> serialization operators.
+<para> Extensions modified: <filename class="headerfile">ext/throw_allocator.h</filename>.
 </para>
 </sect2>
 
