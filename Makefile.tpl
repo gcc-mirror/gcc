@@ -262,7 +262,7 @@ TARGET_SUBDIR = @target_subdir@
 # directories built for the target.
 TARGET_CONFIGARGS = @target_configargs@ --with-target-subdir="$(TARGET_SUBDIR)"
 # This is the list of variables to export in the environment when
-# configuring subdirectories for the host system.
+# configuring subdirectories for the target system.
 BASE_TARGET_EXPORTS = \
 	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_TARGET)"; export AR; \
@@ -284,7 +284,10 @@ BASE_TARGET_EXPORTS = \
 	STRIP="$(STRIP_FOR_TARGET)"; export STRIP; \
 	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
 	WINDMC="$(WINDMC_FOR_TARGET)"; export WINDMC; \
-	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
+@if gcc-bootstrap
+	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
+@endif gcc-bootstrap
+	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 RAW_CXX_TARGET_EXPORTS = \
 	$(BASE_TARGET_EXPORTS) \
