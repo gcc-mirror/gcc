@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -2197,11 +2197,20 @@ cgraph_make_node_local (struct cgraph_node *node)
   gcc_assert (cgraph_node_can_be_local_p (node));
   if (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
     {
+      struct cgraph_node *alias;
       DECL_COMDAT (node->decl) = 0;
       DECL_COMDAT_GROUP (node->decl) = 0;
       TREE_PUBLIC (node->decl) = 0;
       DECL_WEAK (node->decl) = 0;
       DECL_EXTERNAL (node->decl) = 0;
+      for (alias = node->same_body; alias; alias = alias->next)
+	{
+	  DECL_COMDAT (alias->decl) = 0;
+	  DECL_COMDAT_GROUP (alias->decl) = 0;
+	  TREE_PUBLIC (alias->decl) = 0;
+	  DECL_WEAK (alias->decl) = 0;
+	  DECL_EXTERNAL (alias->decl) = 0;
+	}
       node->local.externally_visible = false;
       node->local.local = true;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
