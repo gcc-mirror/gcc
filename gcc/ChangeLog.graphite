@@ -1,3 +1,14 @@
+2010-01-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42178
+	* graphite-interchange.c (lst_try_interchange_loops): Do not return
+	the before, nest, and after LSTs.
+	(lst_try_interchange): Removed.
+	(lst_interchange_select_inner): Do not iterate over the LSTs if they
+	were modified.
+	(lst_interchange_select_outer): Apply interchange on the outer loop
+	until there are no more changes in the inner loops.
+
 2009-12-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	Revert patch fixing PR middle-end/42221.
