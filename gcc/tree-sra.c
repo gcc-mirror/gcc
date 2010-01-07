@@ -1110,8 +1110,10 @@ compare_access_positions (const void *a, const void *b)
 
   if (f1->size == f2->size)
     {
+      if (f1->type == f2->type)
+	return 0;
       /* Put any non-aggregate type before any aggregate type.  */
-      if (!is_gimple_reg_type (f1->type)
+      else if (!is_gimple_reg_type (f1->type)
 	  && is_gimple_reg_type (f2->type))
 	return 1;
       else if (is_gimple_reg_type (f1->type)
@@ -1131,7 +1133,7 @@ compare_access_positions (const void *a, const void *b)
       /* Put the integral type with the bigger precision first.  */
       else if (INTEGRAL_TYPE_P (f1->type)
 	       && INTEGRAL_TYPE_P (f2->type))
-	return TYPE_PRECISION (f1->type) > TYPE_PRECISION (f2->type) ? -1 : 1;
+	return TYPE_PRECISION (f2->type) - TYPE_PRECISION (f1->type);
       /* Put any integral type with non-full precision last.  */
       else if (INTEGRAL_TYPE_P (f1->type)
 	       && (TREE_INT_CST_LOW (TYPE_SIZE (f1->type))
