@@ -1,5 +1,11 @@
 2010-01-07  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/42597
+	* trans-decl.c (get_proc_pointer_decl): Fix call to
+	gfc_conv_initializer for array-valued proc-pointer funcs.
+
+2010-01-07  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/41872
 	* trans-decl.c (gfc_trans_deferred_vars): Don't initialize
 	allocatable scalars with SAVE attribute.

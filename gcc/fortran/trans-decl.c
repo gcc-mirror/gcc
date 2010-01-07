@@ -1349,7 +1349,9 @@ get_proc_pointer_decl (gfc_symbol *sym)
     {
       /* Add static initializer.  */
       DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
-	  TREE_TYPE (decl), sym->attr.dimension, sym->attr.proc_pointer);
+	  TREE_TYPE (decl),
+	  sym->attr.proc_pointer ? false : sym->attr.dimension,
+	  sym->attr.proc_pointer);
     }
 
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
