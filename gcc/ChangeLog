@@ -1,3 +1,11 @@
+2010-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ifcvt.c (if_convert): Output slim multiple dumps with TDF_SLIM.
+
+	PR target/42511
+	* ifcvt.c (dead_or_predicable): Also remove REG_EQUAL note when
+	note itself is not function_invariant_p.
+
 2010-01-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/42564
