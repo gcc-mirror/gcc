@@ -1,3 +1,10 @@
+2010-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42625
+	* g++.dg/opt/dtor4.C: New test.
+	* g++.dg/opt/dtor4.h: New.
+	* g++.dg/opt/dtor4-aux.cc: New.
+
 2010-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42597

@@ -1,3 +1,10 @@
+2010-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42625
+	* cgraph.c (cgraph_make_node_local): Clear DECL_COMDAT*,
+	TREE_PUBLIC, DECL_WEAK and DECL_EXTERNAL also for same_body
+	aliases.
+
 2010-01-07  Duncan Sands  <baldrick@free.fr>
 
 	* Makefile.in (PLUGIN_HEADERS): Add version.h.
