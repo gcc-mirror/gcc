@@ -1,3 +1,17 @@
+2010-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/40701
+	* testsuite/libffi.call/ffitest.h [__alpha__ && __osf__] (PRIdLL,
+	PRIuLL, PRId64, PRIu64, PRIuPTR): Define.
+	* testsuite/libffi.call/cls_align_sint64.c: Add -Wno-format on
+	alpha*-dec-osf*.
+	* testsuite/libffi.call/cls_align_uint64.c: Likewise.
+	* testsuite/libffi.call/cls_ulonglong.c: Likewise.
+	* testsuite/libffi.call/return_ll1.c: Likewise.
+	* testsuite/libffi.call/stret_medium2.c: Likewise.
+	* testsuite/libffi.special/ffitestcxx.h (allocate_mmap): Cast
+	MAP_FAILED to char *.
+
 2010-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* src/mips/n32.S: Use .abicalls and .eh_frame with __GNUC__.
