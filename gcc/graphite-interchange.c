@@ -596,35 +596,31 @@ lst_perfect_nestify (lst_p loop1, lst_p loop2, lst_p *before,
 
 /* Try to interchange LOOP1 with LOOP2 for all the statements of the
    body of LOOP2.  LOOP1 contains LOOP2.  Return true if it did the
-   interchange.  CREATED_LOOP_BEFORE/CREATED_LOOP_AFTER are set to
-   true if the loop distribution created a loop before/after LOOP1.  */
+   interchange.  */
 
 static bool
-lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2,
-			   lst_p *before, lst_p *nest, lst_p *after)
+lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
 {
   int depth1 = lst_depth (loop1);
   int depth2 = lst_depth (loop2);
   lst_p transformed;
 
-  *before = NULL;
-  *after = NULL;
-  *nest = NULL;
+  lst_p before = NULL, nest = NULL, after = NULL;
 
   if (!lst_interchange_profitable_p (loop2, depth1, depth2))
     return false;
 
   if (!lst_perfectly_nested_p (loop1, loop2))
-    lst_perfect_nestify (loop1, loop2, before, nest, after);
+    lst_perfect_nestify (loop1, loop2, &before, &nest, &after);
 
   lst_apply_interchange (loop2, depth1, depth2);
 
   /* Sync the transformed LST information and the PBB scatterings
      before using the scatterings in the data dependence analysis.  */
-  if (*before || *nest || *after)
+  if (before || nest || after)
     {
       transformed = lst_substitute_3 (SCOP_TRANSFORMED_SCHEDULE (scop), loop1,
-				      *before, *nest, *after);
+				      before, nest, after);
       lst_update_scattering (transformed);
       free_lst (transformed);
     }
@@ -637,12 +633,12 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2,
 		 depth1, depth2);
 
       /* Transform the SCOP_TRANSFORMED_SCHEDULE of the SCOP.  */
-      lst_insert_in_sequence (*before, loop1, true);
-      lst_insert_in_sequence (*after, loop1, false);
+      lst_insert_in_sequence (before, loop1, true);
+      lst_insert_in_sequence (after, loop1, false);
 
-      if (*nest)
+      if (nest)
 	{
-	  lst_replace (loop1, *nest);
+	  lst_replace (loop1, nest);
 	  free_lst (loop1);
 	}
 
@@ -651,39 +647,7 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2,
 
   /* Undo the transform.  */
   lst_apply_interchange (loop2, depth2, depth1);
-  *before = NULL;
-  *after = NULL;
-  *nest = NULL;
   return false;
-}
-
-static bool lst_interchange_select_inner (scop_p, lst_p, int, lst_p);
-
-/* Try to interchange loop OUTER of LST_SEQ (OUTER_FATHER) with all
-   the loop INNER and with all the loops contained in the body of
-   INNER.  Return true if it did interchanged some loops.  */
-
-static bool
-lst_try_interchange (scop_p scop, lst_p outer_father, int outer, lst_p inner)
-{
-  lst_p before, nest, after;
-  bool res;
-  lst_p loop1 = VEC_index (lst_p, LST_SEQ (outer_father), outer);
-  lst_p loop2 = inner;
-
-  gcc_assert (LST_LOOP_P (loop1)
-	      && LST_LOOP_P (loop2));
-
-  res = lst_try_interchange_loops (scop, loop1, loop2, &before, &nest, &after);
-
-  if (before)
-    res |= lst_interchange_select_inner (scop, outer_father, outer, before);
-  else if (nest)
-    res |= lst_interchange_select_inner (scop, outer_father, outer, nest);
-  else
-    res |= lst_interchange_select_inner (scop, outer_father, outer, loop2);
-
-  return res;
 }
 
 /* Selects the inner loop in LST_SEQ (INNER_FATHER) to be interchanged
@@ -693,9 +657,8 @@ static bool
 lst_interchange_select_inner (scop_p scop, lst_p outer_father, int outer,
 			      lst_p inner_father)
 {
-  lst_p l;
-  bool res = false;
   int inner;
+  lst_p loop1, loop2;
 
   gcc_assert (outer_father
 	      && LST_LOOP_P (outer_father)
@@ -703,11 +666,15 @@ lst_interchange_select_inner (scop_p scop, lst_p outer_father, int outer,
 	      && inner_father
 	      && LST_LOOP_P (inner_father));
 
-  for (inner = 0; VEC_iterate (lst_p, LST_SEQ (inner_father), inner, l); inner++)
-    if (LST_LOOP_P (l))
-      res |= lst_try_interchange (scop, outer_father, outer, l);
+  loop1 = VEC_index (lst_p, LST_SEQ (outer_father), outer);
 
-  return res;
+  for (inner = 0; VEC_iterate (lst_p, LST_SEQ (inner_father), inner, loop2); inner++)
+    if (LST_LOOP_P (loop2)
+	&& (lst_try_interchange_loops (scop, loop1, loop2)
+	    || lst_interchange_select_inner (scop, outer_father, outer, loop2)))
+      return true;
+
+  return false;
 }
 
 /* Interchanges all the loops of LOOP and the loops of its body that
@@ -729,12 +696,11 @@ lst_interchange_select_outer (scop_p scop, lst_p loop, int outer)
   father = LST_LOOP_FATHER (loop);
   if (father)
     {
-      res = lst_interchange_select_inner (scop, father, outer, loop);
-
-      if (VEC_length (lst_p, LST_SEQ (father)) <= (unsigned) outer)
-	return res;
-
-      loop = VEC_index (lst_p, LST_SEQ (father), outer);
+      while (lst_interchange_select_inner (scop, father, outer, loop))
+	{
+	  res = true;
+	  loop = VEC_index (lst_p, LST_SEQ (father), outer);
+	}
     }
 
   if (LST_LOOP_P (loop))
