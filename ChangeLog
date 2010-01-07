@@ -1,3 +1,14 @@
+2010-01-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+            Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR bootstrap/42424
+	* configure.ac: Include libtool m4 files.
+        (_LT_CHECK_OBJDIR): Call it.
+	(extra_mpc_mpfr_configure_flags, extra_mpc_gmp_configure_flags,
+	gmplibs, ppllibs, clooglibs): Use $lt_cv_objdir.
+	
+	* configure: Regenerate.
+
 2010-01-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/41818
