@@ -1,5 +1,10 @@
 2010-01-07  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/42597
+	* gfortran.dg/proc_ptr_26.f90: New test.
+
+2010-01-07  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/41872
 	* gfortran.dg/allocatable_scalar_7.f90: New test.
 
