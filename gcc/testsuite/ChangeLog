@@ -1,5 +1,9 @@
 2010-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* g++.dg/opt/pr42508.C: Removed.
+
+2010-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	Backport from mainline:
 	2010-01-06  Richard Guenther  <rguenther@suse.de>
 
