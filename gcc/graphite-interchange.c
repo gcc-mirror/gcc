@@ -196,7 +196,7 @@ build_partial_difference (ppl_Pointset_Powerset_C_Polyhedron_t *p,
    the loop at DEPTH.  */
 
 static void
-memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
+pdr_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
 {
   ppl_dimension_type time_depth;
   ppl_Linear_Expression_t le, lma;
@@ -329,11 +329,12 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
   ppl_delete_Linear_Expression (le);
 }
 
+
 /* Sets STRIDES to the sum of all the strides of the data references
    accessed in LOOP at DEPTH.  */
 
 static void
-memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
+memory_strides_in_loop_1 (lst_p loop, graphite_dim_t depth, Value strides)
 {
   int i, j;
   lst_p l;
@@ -345,11 +346,11 @@ memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
 
   for (j = 0; VEC_iterate (lst_p, LST_SEQ (loop), j, l); j++)
     if (LST_LOOP_P (l))
-      memory_strides_in_loop (l, depth, strides);
+      memory_strides_in_loop_1 (l, depth, strides);
     else
       for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (LST_PBB (l)), i, pdr); i++)
 	{
-	  memory_stride_in_loop (s, depth, pdr);
+	  pdr_stride_in_loop (s, depth, pdr);
 	  value_set_si (n, PDR_NB_REFS (pdr));
 	  value_multiply (s, s, n);
 	  value_addto (strides, strides, s);
@@ -357,6 +358,21 @@ memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
 
   value_clear (s);
   value_clear (n);
+}
+
+/* Sets STRIDES to the sum of all the strides of the data references
+   accessed in LOOP at DEPTH.  */
+
+static void
+memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
+{
+  if (value_mone_p (loop->memory_strides))
+    {
+      value_set_si (strides, 0);
+      memory_strides_in_loop_1 (loop, depth, strides);
+    }
+  else
+    value_assign (strides, loop->memory_strides);
 }
 
 /* Return true when the interchange of loops LOOP1 and LOOP2 is
@@ -452,8 +468,6 @@ lst_interchange_profitable_p (lst_p loop1, lst_p loop2)
 
   value_init (d1);
   value_init (d2);
-  value_set_si (d1, 0);
-  value_set_si (d2, 0);
 
   memory_strides_in_loop (loop1, lst_depth (loop1), d1);
   memory_strides_in_loop (loop2, lst_depth (loop2), d2);
