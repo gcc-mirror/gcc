@@ -1,3 +1,10 @@
+2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	Revert patch 2009-11-23  Tobias Grosser  <grosser@fim.uni-passau.de>
+	* graphite-clast-to-gimple.c (try_mark_loop_parallel): New.
+	(translate_clast_for, translate_clast_guard, translate_clast, gloog):
+	Remove context_loop and level.
+
 2010-01-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42641
