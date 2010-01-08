@@ -17,7 +17,7 @@ end function f2
 
 subroutine f3()
   implicit none
-  dimension f3(3) ! { dg-error "PROCEDURE attribute conflicts with DIMENSION attribute" }
+  dimension f3(3) ! { dg-error "SUBROUTINE attribute conflicts with DIMENSION attribute" }
 end subroutine f3
 
 subroutine f4(b)

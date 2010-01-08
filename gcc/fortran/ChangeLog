@@ -1,3 +1,21 @@
+2010-01-08  Tobias Burnus  <burnus@net-b.de
+
+	PR/fortran 25829
+	* symbol.c (check_conflict, gfc_copy_attr): Add
+	ASYNCHRONOUS support.
+	(gfc_add_asynchronous): New function.
+	* decl.c (match_attr_spec): Add ASYNCHRONOUS support.
+	(gfc_match_asynchronous): New function.
+	* dump-parse-tree.c (show_attr): Add ASYNCHRONOUS support.
+	* gfortran.h (symbol_attribute): New ASYNCHRONOUS bit.
+	(gfc_add_asynchronous): New Prototype.
+	* module.c (ab_attribute, mio_symbol_attribute): Add
+	ASYNCHRONOUS support.
+	* resolve.c (was_declared): Ditto.
+	* match.h (gfc_match_asynchronous): New prototype.
+	* parse.c (decode_specification_statement,decode_statement):
+	Add ASYNCHRONOUS support.
+
 2010-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42597

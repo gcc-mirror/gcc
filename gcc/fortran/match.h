@@ -162,6 +162,7 @@ void gfc_set_constant_character_len (int, gfc_expr *, int);
 
 /* Matchers for attribute declarations.  */
 match gfc_match_allocatable (void);
+match gfc_match_asynchronous (void);
 match gfc_match_dimension (void);
 match gfc_match_external (void);
 match gfc_match_gcc_attributes (void);
