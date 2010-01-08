@@ -1,5 +1,18 @@
 2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (memory_stride_in_loop): Renamed
+	pdr_stride_in_loop.
+	(memory_strides_in_loop): Renamed memory_strides_in_loop_1.
+	(memory_strides_in_loop): Memoize the memory strides per loop.
+	(lst_interchange_profitable_p): Do not initialize to zero the memory
+	strides.
+	* graphite-poly.h (struct lst): Add a field memory_strides.
+	(LST_LOOP_MEMORY_STRIDES): New.
+	(new_lst_loop): Initialize LST_LOOP_MEMORY_STRIDES to -1.
+	(free_lst): Clear LST_LOOP_MEMORY_STRIDES.
+
+2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (memory_strides_in_loop_depth): Renamed
 	memory_strides_in_loop.  Gather memory strides on a whole loop.
 	(pbb_interchange_profitable_p): Renamed lst_interchange_profitable_p.
