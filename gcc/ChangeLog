@@ -1,3 +1,8 @@
+2010-01-08  DJ Delorie  <dj@redhat.com>
+
+	* config/sh/sh.c (sh_expand_epilogue): Fix interrupt handler
+	register popping order.
+
 2010-01-08  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42528
