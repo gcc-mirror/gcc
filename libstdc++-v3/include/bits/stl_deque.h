@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1104,6 +1104,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	else
 	  insert(this->_M_impl._M_finish, __new_size - __len, __x);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**  A non-binding request to reduce memory use.  */
+      void
+      shrink_to_fit()
+      { std::__shrink_to_fit<deque>::_S_do_it(*this); }
+#endif
 
       /**
        *  Returns true if the %deque is empty.  (Thus begin() would

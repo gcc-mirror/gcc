@@ -1,6 +1,6 @@
 // Debugging string implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2006, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -202,6 +202,10 @@ namespace __gnu_debug
     void
     resize(size_type __n)
     { this->resize(__n, _CharT()); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    using _Base::shrink_to_fit;
+#endif
 
     using _Base::capacity;
     using _Base::reserve;

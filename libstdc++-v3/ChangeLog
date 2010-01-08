@@ -1,3 +1,43 @@
+2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/42573
+	* include/bits/allocator.h (struct __shrink_to_fit): Add.
+	* include/bits/stl_deque.h (deque<>::shrink_to_fit): Add.
+	* include/bits/stl_vector.h (vector<>::shrink_to_fit): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>::shrink_to_fit): Likewise.
+	* include/bits/basic_string.h (basic_string<>::shrink_to_fit):
+	Likewise.
+	* include/ext/vstring.h (__versa_string<>::shrink_to_fit): Likewise.
+	* include/debug/deque: Add corresponding using declaration.
+	* include/debug/vector: Likewise.
+	* include/debug/string: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/vector: Likewise.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* testsuite/23_containers/deque/capacity/shrink_to_fit.cc: New.
+	* testsuite/23_containers/vector/capacity/shrink_to_fit.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/ext/vstring/capacity/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2010-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/manual/evolution.xml: Fix typos, update.

@@ -1094,6 +1094,10 @@ GLIBCXX_3.4.14 {
     _ZNSs18_S_construct_aux_2*;
     _ZNSbIwSt11char_traitsIwESaIwEE18_S_construct_aux_2*;
 
+    # string|wstring shrink_to_fit member function
+    _ZNSs13shrink_to_fitEv;
+    _ZNSbIwSt11char_traitsIwESaIwEE13shrink_to_fitEv;
+
     _ZSt25__throw_bad_function_callv;
 
     # std::time_get::_M_extract_wday_or_month

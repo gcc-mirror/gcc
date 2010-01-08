@@ -670,7 +670,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       length() const
       { return _M_rep()->_M_length; }
 
-      /// Returns the size() of the largest possible %string.
+      ///  Returns the size() of the largest possible %string.
       size_type
       max_size() const
       { return _Rep::_S_max_size; }
@@ -701,6 +701,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       resize(size_type __n)
       { this->resize(__n, _CharT()); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      ///  A non-binding request to reduce capacity() to size().
+      void
+      shrink_to_fit()
+      {
+	try
+	  { reserve(0); }
+	catch(...)
+	  { }
+      }
+#endif
 
       /**
        *  Returns the total number of characters that the %string can hold
