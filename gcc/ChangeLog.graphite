@@ -1,3 +1,9 @@
+2010-01-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-scop-detection.c (exclude_component_ref): Removed.
+	(is_simple_operand): Removed.
+	(stmt_simple_for_scop_p): Remove use of is_simple_operand.
+
 2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42221

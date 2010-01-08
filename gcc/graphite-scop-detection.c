@@ -297,41 +297,6 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop, gimple stmt)
   return res;
 }
 
-/* Return false if the TREE_CODE of the operand OP or any of its operands
-   is a COMPONENT_REF.  */
-
-static bool
-exclude_component_ref (tree op)
-{
-  int i;
-  int len;
-
-  if (!op)
-    return true;
-
-  if (TREE_CODE (op) == COMPONENT_REF)
-    return false;
-
-  len = TREE_OPERAND_LENGTH (op);
-  for (i = 0; i < len; ++i)
-    if (!exclude_component_ref (TREE_OPERAND (op, i)))
-      return false;
-
-  return true;
-}
-
-/* Return true if the operand OP used in STMT is simple in regards to
-   OUTERMOST_LOOP.  */
-
-static inline bool
-is_simple_operand (tree op)
-{
-  /* It is not a simple operand when it is a declaration or a
-     structure.  */
-  return !DECL_P (op) && !AGGREGATE_TYPE_P (TREE_TYPE (op))
-    && exclude_component_ref (op);
-}
-
 /* Return true only when STMT is simple enough for being handled by
    Graphite.  This depends on SCOP_ENTRY, as the parameters are
    initialized relatively to this basic block, the linear functions
@@ -395,42 +360,8 @@ stmt_simple_for_scop_p (basic_block scop_entry, loop_p outermost_loop,
       }
 
     case GIMPLE_ASSIGN:
-      {
-	enum tree_code code = gimple_assign_rhs_code (stmt);
-
-	switch (get_gimple_rhs_class (code))
-	  {
-	  case GIMPLE_UNARY_RHS:
-	  case GIMPLE_SINGLE_RHS:
-	    return (is_simple_operand (gimple_assign_lhs (stmt))
-		    && is_simple_operand (gimple_assign_rhs1 (stmt)));
-
-	  case GIMPLE_BINARY_RHS:
-	    return (is_simple_operand (gimple_assign_lhs (stmt))
-		    && is_simple_operand (gimple_assign_rhs1 (stmt))
-		    && is_simple_operand (gimple_assign_rhs2 (stmt)));
-
-	  case GIMPLE_INVALID_RHS:
-	  default:
-	    gcc_unreachable ();
-	  }
-      }
-
     case GIMPLE_CALL:
-      {
-	size_t i;
-	size_t n = gimple_call_num_args (stmt);
-	tree lhs = gimple_call_lhs (stmt);
-
-	if (lhs && !is_simple_operand (lhs))
-	  return false;
-
-	for (i = 0; i < n; i++)
-	  if (!is_simple_operand (gimple_call_arg (stmt, i)))
-	    return false;
-
-	return true;
-      }
+      return true;
 
     default:
       /* These nodes cut a new scope.  */
