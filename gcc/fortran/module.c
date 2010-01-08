@@ -1671,13 +1671,14 @@ typedef enum
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
-  AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER
+  AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS
 }
 ab_attribute;
 
 static const mstring attr_bits[] =
 {
     minit ("ALLOCATABLE", AB_ALLOCATABLE),
+    minit ("ASYNCHRONOUS", AB_ASYNCHRONOUS),
     minit ("DIMENSION", AB_DIMENSION),
     minit ("EXTERNAL", AB_EXTERNAL),
     minit ("INTRINSIC", AB_INTRINSIC),
@@ -1792,6 +1793,8 @@ mio_symbol_attribute (symbol_attribute *attr)
     {
       if (attr->allocatable)
 	MIO_NAME (ab_attribute) (AB_ALLOCATABLE, attr_bits);
+      if (attr->asynchronous)
+	MIO_NAME (ab_attribute) (AB_ASYNCHRONOUS, attr_bits);
       if (attr->dimension)
 	MIO_NAME (ab_attribute) (AB_DIMENSION, attr_bits);
       if (attr->external)
@@ -1886,6 +1889,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    {
 	    case AB_ALLOCATABLE:
 	      attr->allocatable = 1;
+	      break;
+	    case AB_ASYNCHRONOUS:
+	      attr->asynchronous = 1;
 	      break;
 	    case AB_DIMENSION:
 	      attr->dimension = 1;

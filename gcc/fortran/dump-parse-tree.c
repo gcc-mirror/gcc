@@ -589,6 +589,8 @@ show_attr (symbol_attribute *attr)
 
   if (attr->allocatable)
     fputs (" ALLOCATABLE", dumpfile);
+  if (attr->asynchronous)
+    fputs (" ASYNCHRONOUS", dumpfile);
   if (attr->dimension)
     fputs (" DIMENSION", dumpfile);
   if (attr->external)
