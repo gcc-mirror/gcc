@@ -329,34 +329,38 @@ memory_stride_in_loop (Value stride, graphite_dim_t depth, poly_dr_p pdr)
   ppl_delete_Linear_Expression (le);
 }
 
-/* Sets STRIDES to the sum of all the strides of the data references accessed   */
+/* Sets STRIDES to the sum of all the strides of the data references
+   accessed in LOOP at DEPTH.  */
 
 static void
-memory_strides_in_loop_depth (poly_bb_p pbb, graphite_dim_t depth, Value strides)
+memory_strides_in_loop (lst_p loop, graphite_dim_t depth, Value strides)
 {
-  int i;
+  int i, j;
+  lst_p l;
   poly_dr_p pdr;
   Value s, n;
 
-  value_set_si (strides, 0);
   value_init (s);
   value_init (n);
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
-    {
-      value_set_si (n, PDR_NB_REFS (pdr));
-
-      memory_stride_in_loop (s, depth, pdr);
-      value_multiply (s, s, n);
-      value_addto (strides, strides, s);
-    }
+  for (j = 0; VEC_iterate (lst_p, LST_SEQ (loop), j, l); j++)
+    if (LST_LOOP_P (l))
+      memory_strides_in_loop (l, depth, strides);
+    else
+      for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (LST_PBB (l)), i, pdr); i++)
+	{
+	  memory_stride_in_loop (s, depth, pdr);
+	  value_set_si (n, PDR_NB_REFS (pdr));
+	  value_multiply (s, s, n);
+	  value_addto (strides, strides, s);
+	}
 
   value_clear (s);
   value_clear (n);
 }
 
-/* Returns true when it is profitable to interchange time dimensions DEPTH1
-   and DEPTH2 with DEPTH1 < DEPTH2 for PBB.
+/* Return true when the interchange of loops LOOP1 and LOOP2 is
+   profitable.
 
    Example:
 
@@ -437,19 +441,22 @@ memory_strides_in_loop_depth (poly_bb_p pbb, graphite_dim_t depth, Value strides
    profitable to interchange the loops at DEPTH1 and DEPTH2.  */
 
 static bool
-pbb_interchange_profitable_p (graphite_dim_t depth1, graphite_dim_t depth2,
-			      poly_bb_p pbb)
+lst_interchange_profitable_p (lst_p loop1, lst_p loop2)
 {
   Value d1, d2;
   bool res;
 
-  gcc_assert (depth1 < depth2);
+  gcc_assert (loop1 && loop2
+	      && LST_LOOP_P (loop1) && LST_LOOP_P (loop2)
+	      && lst_depth (loop1) < lst_depth (loop2));
 
   value_init (d1);
   value_init (d2);
+  value_set_si (d1, 0);
+  value_set_si (d2, 0);
 
-  memory_strides_in_loop_depth (pbb, depth1, d1);
-  memory_strides_in_loop_depth (pbb, depth2, d2);
+  memory_strides_in_loop (loop1, lst_depth (loop1), d1);
+  memory_strides_in_loop (loop2, lst_depth (loop2), d2);
 
   res = value_lt (d1, d2);
 
@@ -505,40 +512,6 @@ lst_apply_interchange (lst_p lst, int depth1, int depth2)
     }
   else
     pbb_interchange_loop_depths (depth1, depth2, LST_PBB (lst));
-}
-
-/* Return true when the interchange of loops at depths DEPTH1 and
-   DEPTH2 to all the statements below LST is profitable.  */
-
-static bool
-lst_interchange_profitable_p (lst_p lst, int depth1, int depth2)
-{
-  if (!lst)
-    return false;
-
-  if (LST_LOOP_P (lst))
-    {
-      int i;
-      lst_p l;
-      bool res = false;
-
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-	{
-	  bool profitable = lst_interchange_profitable_p (l, depth1, depth2);
-
-	  if (profitable && !LST_LOOP_P (lst)
-	      && dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "Interchanging loops at depths %d and %d is profitable for stmt_%d.\n",
-		     depth1, depth2, pbb_index (LST_PBB (lst)));
-
-	  res |= profitable;
-	}
-
-      return res;
-    }
-  else
-    return pbb_interchange_profitable_p (depth1, depth2, LST_PBB (lst));
 }
 
 /* Return true when the nest starting at LOOP1 and ending on LOOP2 is
@@ -616,7 +589,7 @@ lst_try_interchange_loops (scop_p scop, lst_p loop1, lst_p loop2)
 
   lst_p before = NULL, nest = NULL, after = NULL;
 
-  if (!lst_interchange_profitable_p (loop2, depth1, depth2))
+  if (!lst_interchange_profitable_p (loop1, loop2))
     return false;
 
   if (!lst_perfectly_nested_p (loop1, loop2))
