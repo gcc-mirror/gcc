@@ -1,3 +1,9 @@
+2010-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ada/41929
+	* gnat.dg/null_pointer_deref1.adb: Don't run on
+	sparc*-sun-solaris2.11.
+
 2010-01-08  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42528
