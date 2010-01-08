@@ -4218,6 +4218,142 @@ lshrsi3_out (rtx insn, rtx operands[], int *len)
   return "";
 }
 
+/* Create RTL split patterns for byte sized rotate expressions.  This
+  produces a series of move instructions and considers overlap situations.
+  Overlapping non-HImode operands need a scratch register.  */
+
+bool
+avr_rotate_bytes (rtx operands[])
+{
+    int i, j;
+    enum machine_mode mode = GET_MODE (operands[0]);
+    bool overlapped = reg_overlap_mentioned_p (operands[0], operands[1]);
+    bool same_reg = rtx_equal_p (operands[0], operands[1]);
+    int num = INTVAL (operands[2]);
+    rtx scratch = operands[3];
+    /* Work out if byte or word move is needed.  Odd byte rotates need QImode.
+       Word move if no scratch is needed, otherwise use size of scratch.  */
+    enum machine_mode move_mode = QImode;
+    if (num & 0xf)
+      move_mode = QImode;
+    else if ((mode == SImode && !same_reg) || !overlapped)
+      move_mode = HImode;
+    else
+      move_mode = GET_MODE (scratch);
+
+    /* Force DI rotate to use QI moves since other DI moves are currently split
+       into QI moves so forward propagation works better.  */
+    if (mode == DImode)
+      move_mode = QImode;
+    /* Make scratch smaller if needed.  */
+    if (GET_MODE (scratch) == HImode && move_mode == QImode)
+      scratch = simplify_gen_subreg (move_mode, scratch, HImode, 0); 
+
+    int move_size = GET_MODE_SIZE (move_mode);
+    /* Number of bytes/words to rotate.  */
+    int offset = (num  >> 3) / move_size;
+    /* Number of moves needed.  */
+    int size = GET_MODE_SIZE (mode) / move_size;
+    /* Himode byte swap is special case to avoid a scratch register.  */
+    if (mode == HImode && same_reg)
+      {
+	/* HImode byte swap, using xor.  This is as quick as using scratch.  */
+	rtx src, dst;
+	src = simplify_gen_subreg (move_mode, operands[1], mode, 0);
+	dst = simplify_gen_subreg (move_mode, operands[0], mode, 1);
+	if (!rtx_equal_p (dst, src))
+	  {
+	     emit_move_insn (dst, gen_rtx_XOR (QImode, dst, src));
+	     emit_move_insn (src, gen_rtx_XOR (QImode, src, dst));
+	     emit_move_insn (dst, gen_rtx_XOR (QImode, dst, src));
+	  }
+      }    
+    else  
+      {
+	/* Create linked list of moves to determine move order.  */
+	struct {
+	  rtx src, dst;
+	  int links;
+	} move[size + 8];
+
+	/* Generate list of subreg moves.  */
+	for (i = 0; i < size; i++)
+	  {
+	    int from = i;
+	    int to = (from + offset) % size;          
+	    move[i].src = simplify_gen_subreg (move_mode, operands[1],
+						mode, from * move_size);
+	    move[i].dst = simplify_gen_subreg (move_mode, operands[0],
+						mode, to   * move_size);
+	    move[i].links = -1;
+	   }
+	/* Mark dependence where a dst of one move is the src of another move.
+	   The first move is a conflict as it must wait until second is
+	   performed.  We ignore moves to self - we catch this later.  */
+	if (overlapped)
+	  for (i = 0; i < size; i++)
+	    if (reg_overlap_mentioned_p (move[i].dst, operands[1]))
+	      for (j = 0; j < size; j++)
+		if (j != i && rtx_equal_p (move[j].src, move[i].dst))
+		  {
+		    /* The dst of move i is the src of move j.  */
+		    move[i].links = j;
+		    break;
+		  }
+
+	int blocked = -1;
+	int moves = 0;
+	/* Go through move list and perform non-conflicting moves.  As each
+	   non-overlapping move is made, it may remove other conflicts
+	   so the process is repeated until no conflicts remain.  */
+	do
+	  {
+	    blocked = -1;
+	    moves = 0;
+	    /* Emit move where dst is not also a src or we have used that
+	       src already.  */
+	    for (i = 0; i < size; i++)
+	      if (move[i].src != NULL_RTX)
+		if  (move[i].links == -1 || move[move[i].links].src == NULL_RTX)
+		  {
+		    moves++;
+		    /* Ignore NOP moves to self.  */
+		    if (!rtx_equal_p (move[i].dst, move[i].src))
+		      emit_move_insn (move[i].dst, move[i].src);
+
+		    /* Remove  conflict from list.  */
+		    move[i].src = NULL_RTX;
+		  }
+		else
+		  blocked = i;
+
+	    /* Check for deadlock. This is when no moves occurred and we have
+	       at least one blocked move.  */
+	    if (moves == 0 && blocked != -1)
+	      {
+		/* Need to use scratch register to break deadlock.
+		   Add move to put dst of blocked move into scratch.
+		   When this move occurs, it will break chain deadlock.
+		   The scratch register is substituted for real move.  */
+
+		move[size].src = move[blocked].dst;
+		move[size].dst =  scratch;
+		/* Scratch move is never blocked.  */
+		move[size].links = -1; 
+		/* Make sure we have valid link.  */
+		gcc_assert (move[blocked].links != -1);
+		/* Replace src of  blocking move with scratch reg.  */
+		move[move[blocked].links].src = scratch;
+		/* Make dependent on scratch move occuring.  */
+		move[blocked].links = size; 
+		size=size+1;
+	      }
+	  }
+	while (blocked != -1);
+      }
+    return true;
+}
+
 /* Modifies the length assigned to instruction INSN
  LEN is the initially computed length of the insn.  */
 
