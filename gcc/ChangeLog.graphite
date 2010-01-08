@@ -1,5 +1,14 @@
 2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42521
+	* graphite.c (graphite_finalize): Call scev_reset.
+	(graphite_transform_loops): Do not call scev_reset between the code
+	generation of scops.
+
+	* testsuite/gcc.dg/graphite/pr42521.c: New.
+
+2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (memory_stride_in_loop): Renamed
 	pdr_stride_in_loop.
 	(memory_strides_in_loop): Renamed memory_strides_in_loop_1.

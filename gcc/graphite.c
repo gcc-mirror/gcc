@@ -228,6 +228,7 @@ graphite_finalize (bool need_cfg_cleanup_p)
 {
   if (need_cfg_cleanup_p)
     {
+      scev_reset ();
       cleanup_tree_cfg ();
       profile_status = PROFILE_ABSENT;
       release_recorded_exits ();
@@ -279,10 +280,7 @@ graphite_transform_loops (void)
 	check_poly_representation (scop);
 
       if (transform_done)
-	{
-	  scev_reset ();
-	  need_cfg_cleanup_p = true;
-	}
+	need_cfg_cleanup_p = true;
     }
 
   htab_delete (bb_pbb_mapping);
