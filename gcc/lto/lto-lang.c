@@ -632,6 +632,14 @@ lto_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       warn_psabi = value;
       break;
 
+    case OPT_fsigned_char:
+      flag_signed_char = value;
+      break;
+
+    case OPT_funsigned_char:
+      flag_signed_char = !value;
+      break;
+
     default:
       break;
     }
@@ -1036,8 +1044,11 @@ lto_init (void)
   /* Share char_type_node with whatever would be the default for the target.
      char_type_node will be used for internal types such as
      va_list_type_node but will not be present in the lto stream.  */
+  /* ???  This breaks the more common case of consistent but non-standard
+     setting of flag_signed_char, so share according to flag_signed_char.
+     See PR42528.  */
   char_type_node
-    = DEFAULT_SIGNED_CHAR ? signed_char_type_node : unsigned_char_type_node;
+    = flag_signed_char ? signed_char_type_node : unsigned_char_type_node;
 
   /* Tell the middle end what type to use for the size of objects.  */
   if (strcmp (SIZE_TYPE, "unsigned int") == 0)

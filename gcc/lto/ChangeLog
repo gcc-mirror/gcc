@@ -1,3 +1,10 @@
+2010-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42528
+	* lto-lang.c (lto_handle_option): Handle -f[un]signed-char.
+	(lto_init): Do not init char_type_node in a standard way
+	but according to flag_signed_char.
+
 2010-01-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/41564

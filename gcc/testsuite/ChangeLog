@@ -1,3 +1,9 @@
+2010-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42528
+	* gcc.dg/lto/20100103-1_0.c: New testcase.
+	* gcc.dg/lto/20100103-2_0.c: Likewise.
+
 2010-01-08  Tobias Burnus  <burnus@net-b.de
 
 	PR/fortran 25829
