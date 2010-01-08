@@ -1,6 +1,6 @@
 // Profiling deque implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -199,6 +199,10 @@ namespace __profile
       {
 	_Base::resize(__sz, __c);
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      using _Base::shrink_to_fit;
+#endif
 
       using _Base::empty;
 

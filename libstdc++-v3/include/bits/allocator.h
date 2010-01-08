@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -175,6 +175,31 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _S_do_it(const _Alloc& __one, const _Alloc& __two)
       { return __one != __two; }
     };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+   // A very basic implementation for now.  In general we have to wait for
+   // the availability of the infrastructure described in N2983:  we should
+   // try when either T has a move constructor which cannot throw or T is
+   // CopyContructible.
+   // NB: This code doesn't properly belong here, we should find a more
+   // suited place common to std::vector and std::deque.
+   template<typename _Tp,
+	    bool = __has_trivial_copy(typename _Tp::value_type)>
+     struct __shrink_to_fit
+     { static void _S_do_it(_Tp&) { } };
+
+   template<typename _Tp>
+     struct __shrink_to_fit<_Tp, true>
+     {
+       static void
+       _S_do_it(_Tp& __v)
+       {
+	 try
+	   { _Tp(__v).swap(__v); }
+	 catch(...) { }
+       }
+     };
+#endif
 
 _GLIBCXX_END_NAMESPACE
 

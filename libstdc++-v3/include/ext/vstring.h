@@ -1,6 +1,7 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     class __versa_string
     : private _Base<_CharT, _Traits, _Alloc>
     {
-      typedef _Base<_CharT, _Traits, _Alloc>                __vstring_base;      
+      typedef _Base<_CharT, _Traits, _Alloc>                __vstring_base;    
       typedef typename __vstring_base::_CharT_alloc_type    _CharT_alloc_type;
 
       // Types:
@@ -454,6 +455,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       void
       resize(size_type __n)
       { this->resize(__n, _CharT()); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /// A non-binding request to reduce capacity() to size().
+      void
+      shrink_to_fit()
+      {
+	try
+	  { this->reserve(0); }
+	catch(...)
+	  { }
+      }
+#endif
 
       /**
        *  Returns the total number of characters that the %string can
