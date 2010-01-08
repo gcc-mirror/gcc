@@ -874,7 +874,20 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
     return expand_scalar_variables_ssa_name (op0, bb, region, map, gsi);
 
   if (code == ADDR_EXPR)
-    return op0;
+    {
+      tree op00 = TREE_OPERAND (op0, 0);
+
+      if (handled_component_p (op00)
+	  && TREE_CODE (op00) == ARRAY_REF)
+	{
+	  tree e = expand_scalar_variables_expr (TREE_TYPE (op00), op00,
+						 TREE_CODE (op00),
+						 NULL, bb, region, map, gsi);
+	  return fold_build1 (code, TREE_TYPE (op0), e);
+	}
+
+      return op0;
+    }
 
   gcc_unreachable ();
   return NULL;

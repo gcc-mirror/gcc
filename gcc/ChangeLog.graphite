@@ -1,5 +1,13 @@
 2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42221
+	* sese.c (expand_scalar_variables_expr): Follow the SSA links into
+	the array indexing of ADDR_EXPRs.
+
+	* testsuite/gcc.dg/graphite/pr42221.c: New.
+
+2010-01-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42521
 	* graphite.c (graphite_finalize): Call scev_reset.
 	(graphite_transform_loops): Do not call scev_reset between the code
