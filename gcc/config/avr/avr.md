@@ -121,6 +121,8 @@
 ;; Define mode iterator
 (define_mode_iterator QISI [(QI "") (HI "") (SI "")])
 (define_mode_iterator QIDI [(QI "") (HI "") (SI "") (DI "")])
+(define_mode_iterator HIDI [(HI "") (SI "") (DI "")])
+(define_mode_iterator HISI [(HI "") (SI "")])
 
 ;;========================================================================
 ;; The following is used by nonlocal_goto and setjmp.
@@ -1485,7 +1487,7 @@
   ""
   "
 {
-  if (INTVAL (operands[2]) != 4)
+  if (!CONST_INT_P (operands[2]) || (INTVAL (operands[2]) != 4))
     FAIL;
 }")
 
@@ -1498,185 +1500,74 @@
   [(set_attr "length" "1")
    (set_attr "cc" "none")])
 
-(define_expand "rotlhi3"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(rotate:HI (match_operand:HI 1 "register_operand" "")
-		   (match_operand:HI 2 "const_int_operand" "")))]
+;; Split all rotates of HI,SI and DImode registers where rotation is by
+;; a whole number of bytes.  The split creates the appropriate moves and
+;; considers all overlap situations.  DImode is split before reload.
+
+;; HImode does not need scratch.  Use attribute for this constraint.
+;; Use QI scratch for DI mode as this is often split into byte sized operands.
+
+(define_mode_attr rotx [(DI "&r,&r,X") (SI "&r,&r,X") (HI "X,X,X")])
+(define_mode_attr rotsmode [(DI "QI") (SI "HI") (HI "QI")])
+
+(define_expand "rotl<mode>3"
+  [(parallel [(set (match_operand:HIDI 0 "register_operand" "")
+		   (rotate:HIDI (match_operand:HIDI 1 "register_operand" "")
+				(match_operand:VOID 2 "const_int_operand" "")))
+		(clobber (match_operand 3 ""))])]
   ""
   "
 {
-  if (INTVAL (operands[2]) != 8)
+  if (CONST_INT_P (operands[2]) && 0 == (INTVAL (operands[2]) % 8))
+  {
+  if (AVR_HAVE_MOVW && 0 == INTVAL (operands[2]) % 16)
+    operands[3] = gen_reg_rtx (<rotsmode>mode);
+  else
+    operands[3] = gen_reg_rtx (QImode);
+  }
+  else
     FAIL;
 }")
 
-(define_insn_and_split "*rotlhi3_8"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(rotate:HI (match_operand:HI 1 "register_operand" "r")
-		   (const_int 8)))]
-  ""
-  "mov __tmp_reg__,%A0
-	mov %A0,%B0
-	mov %B0, __tmp_reg__"
-  "reload_completed
-   && REGNO (operands[0]) != REGNO (operands[1])"
-  [(set (match_dup 2) (match_dup 5))
-   (set (match_dup 3) (match_dup 4))]
-  "operands[2] = gen_lowpart (QImode, operands[0]);
-   operands[3] = gen_highpart (QImode, operands[0]);
 
-   operands[4] = gen_lowpart (QImode, operands[1]);
-   operands[5] = gen_highpart (QImode, operands[1]);"
-   [(set_attr "length" "3")
-   (set_attr "cc" "none")])
+;; Overlapping non-HImode registers often (but not always) need a scratch.
+;; The best we can do is use early clobber alternative "#&r" so that
+;; completely non-overlapping operands dont get a scratch but # so register
+;; allocation does not prefer non-overlapping.
 
-(define_expand "rotlsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(rotate:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "const_int_operand" "")))]
-  ""
-  "
-{
-  if (INTVAL (operands[2]) != 8
-      || INTVAL (operands[2]) != 16
-      || INTVAL (operands[2]) != 24)
-    FAIL;
-}")
 
-(define_insn_and_split "*rotlsi3_16"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(rotate:SI (match_operand:SI 1 "register_operand" "r")
-		   (const_int 16)))]
-  ""
-  "{mov __tmp_reg__,%A1\;mov %A0,%C1\;mov %C0, __tmp_reg__\;mov __tmp_reg__,%B1\;mov %B0,%D1\;mov %D0, __tmp_reg__|movw __tmp_reg__,%A1\;movw %A0,%C1\;movw %C0, __tmp_reg__\;clr __zero_reg__}"
-  "reload_completed
-   && REGNO (operands[0]) != REGNO (operands[1])"
-  [(set (match_dup 2) (match_dup 5))
-   (set (match_dup 3) (match_dup 4))]
-  "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
-   unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
-
-   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, si_lo_off);
-   operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
-
-   operands[4] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
-   operands[5] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);
-
-   if (REGNO (operands[0]) == REGNO(operands[1]) + 2)
-     {
-       emit_move_insn (operands[3], operands[4]);
-       DONE;
-     }
-   else if (REGNO (operands[0]) == REGNO(operands[1]) - 2)
-     {
-       emit_move_insn (operands[2], operands[5]);
-       DONE;
-     }"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_have_movw" "yes")
-				      (const_int 4)
-				      (const_int 6)))
-   (set (attr "cc") (if_then_else (eq_attr "mcu_have_movw" "yes")
-				  (const_string "clobber")
-				  (const_string "none")))])
-
-(define_insn_and_split "*rotlsi3_8"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(rotate:SI (match_operand:SI 1 "register_operand" "r")
-		   (const_int 8)))]
-  ""
-  "mov __tmp_reg__,%D1
-	mov %D0,%C1
-	mov %C0,%B1
-	mov %B0,%A1
-	mov %A0, __tmp_reg__"
-  "reload_completed
-   && REGNO (operands[0]) != REGNO (operands[1])"
+; Split word aligned rotates using scratch that is mode dependent.
+(define_insn_and_split "*rotw<mode>"
+  [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
+	(rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
+		     (match_operand 2 "immediate_operand" "n,n,n")))
+   (clobber (match_operand:<rotsmode> 3 "register_operand"  "=<rotx>" ))]
+  "(CONST_INT_P (operands[2]) &&
+     (0 == (INTVAL (operands[2]) % 16) && AVR_HAVE_MOVW))"
+  "#"
+  "&& (reload_completed || <MODE>mode == DImode)"
   [(const_int 0)]
-  "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
-   unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
-   unsigned int hi_lo_off = subreg_lowpart_offset (QImode, HImode);
-   unsigned int hi_hi_off = subreg_highpart_offset (QImode, HImode);
+  "avr_rotate_bytes (operands);
+  DONE;"
+)
 
-   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, si_lo_off);
-   operands[4] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
-   operands[3] = simplify_gen_subreg (QImode, operands[2], HImode, hi_hi_off);
-   operands[2] = simplify_gen_subreg (QImode, operands[2], HImode, hi_lo_off);
-   operands[5] = simplify_gen_subreg (QImode, operands[4], HImode, hi_hi_off);
-   operands[4] = simplify_gen_subreg (QImode, operands[4], HImode, hi_lo_off);
 
-   operands[6] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
-   operands[8] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);
-   operands[7] = simplify_gen_subreg (QImode, operands[6], HImode, hi_hi_off);
-   operands[6] = simplify_gen_subreg (QImode, operands[6], HImode, hi_lo_off);
-   operands[9] = simplify_gen_subreg (QImode, operands[8], HImode, hi_hi_off);
-   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);
- 
-   if (REGNO (operands[0]) < REGNO(operands[1]))
-     {
-       emit_move_insn (operands[2], operands[9]);
-       emit_move_insn (operands[3], operands[6]);
-       emit_move_insn (operands[4], operands[7]);
-       emit_move_insn (operands[5], operands[8]);
-     }
-   else
-     {
-       emit_move_insn (operands[5], operands[8]);
-       emit_move_insn (operands[2], operands[9]);
-       emit_move_insn (operands[4], operands[7]);
-       emit_move_insn (operands[3], operands[6]);
-     }
-   DONE;"
-   [(set_attr "length" "5")
-   (set_attr "cc" "none")])
-
-(define_insn_and_split "*rotlsi3_24"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(rotate:SI (match_operand:SI 1 "register_operand" "r")
-		   (const_int 24)))]
-  ""
-  "mov __tmp_reg__,%A1
-	mov %A0,%B1
-	mov %B0,%C1
-	mov %C0,%D1
-	mov %D0, __tmp_reg__"
-  "reload_completed
-   && REGNO (operands[0]) != REGNO (operands[1])"
+; Split byte aligned rotates using scratch that is always QI mode.
+(define_insn_and_split "*rotb<mode>"
+  [(set (match_operand:HIDI 0 "register_operand" "=r,r,#&r")
+	(rotate:HIDI (match_operand:HIDI 1 "register_operand" "0,r,r")
+		     (match_operand 2 "immediate_operand" "n,n,n")))
+   (clobber (match_operand:QI 3 "register_operand" "=<rotx>" ))]
+  "(CONST_INT_P (operands[2]) &&
+     (8 == (INTVAL (operands[2]) % 16)
+     	|| (!AVR_HAVE_MOVW && 0 == (INTVAL (operands[2]) % 16))))"
+  "#"
+  "&& (reload_completed || <MODE>mode == DImode)"
   [(const_int 0)]
-  "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
-   unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
-   unsigned int hi_lo_off = subreg_lowpart_offset (QImode, HImode);
-   unsigned int hi_hi_off = subreg_highpart_offset (QImode, HImode);
+  "avr_rotate_bytes (operands);
+  DONE;"
+)
 
-   operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, si_lo_off);
-   operands[4] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
-   operands[3] = simplify_gen_subreg (QImode, operands[2], HImode, hi_hi_off);
-   operands[2] = simplify_gen_subreg (QImode, operands[2], HImode, hi_lo_off);
-   operands[5] = simplify_gen_subreg (QImode, operands[4], HImode, hi_hi_off);
-   operands[4] = simplify_gen_subreg (QImode, operands[4], HImode, hi_lo_off);
-
-   operands[6] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
-   operands[8] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);
-   operands[7] = simplify_gen_subreg (QImode, operands[6], HImode, hi_hi_off);
-   operands[6] = simplify_gen_subreg (QImode, operands[6], HImode, hi_lo_off);
-   operands[9] = simplify_gen_subreg (QImode, operands[8], HImode, hi_hi_off);
-   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);
-
-   if (REGNO (operands[0]) < REGNO(operands[1]))
-     {
-       emit_move_insn (operands[2], operands[7]);
-       emit_move_insn (operands[5], operands[6]);
-       emit_move_insn (operands[3], operands[8]);
-       emit_move_insn (operands[4], operands[9]);
-     }
-   else
-     {
-       emit_move_insn (operands[5], operands[6]);
-       emit_move_insn (operands[4], operands[9]);
-       emit_move_insn (operands[3], operands[8]);
-       emit_move_insn (operands[2], operands[7]);
-     }
-   DONE;"
-   [(set_attr "length" "5")
-   (set_attr "cc" "none")])
 
 ;;<< << << << << << << << << << << << << << << << << << << << << << << << << <<
 ;; arithmetic shift left

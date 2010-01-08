@@ -82,6 +82,7 @@ extern const char *ashrsi3_out (rtx insn, rtx operands[], int *len);
 extern const char *lshrqi3_out (rtx insn, rtx operands[], int *len);
 extern const char *lshrhi3_out (rtx insn, rtx operands[], int *len);
 extern const char *lshrsi3_out (rtx insn, rtx operands[], int *len);
+extern bool avr_rotate_bytes (rtx operands[]);
 
 extern void expand_prologue (void);
 extern void expand_epilogue (void);

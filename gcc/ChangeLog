@@ -1,3 +1,19 @@
+2010-01-08  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	PR target/41885
+	* avr.md (rotlqi3): Add CONST_INT_P check.
+	(rotlhi3): Delete.
+	(rotlhi3_8): Delete.
+	(rotlsi3): Delete.
+	(rotlsi3_8): Delete.
+	(rotlsi3_16): Delete.
+	(rotlsi3_24): Delete.
+	(rotl<mode>3): New.
+	(*rotw<mode>3): New.
+	(*rotb<mode>3): New.
+	* avr.c (avr_rotate_bytes): New function.
+	* avr-proto.h (avr_rotate_bytes): New function. 
+
 2010-01-08  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/37454
