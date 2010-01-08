@@ -1,3 +1,9 @@
+2010-01-08  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/37454
+	* configure.ac: Modify -rdynamic check.
+	* configure: Regenerate.
+
 2010-01-08  DJ Delorie  <dj@redhat.com>
 
 	* config/sh/sh.c (sh_expand_epilogue): Fix interrupt handler
