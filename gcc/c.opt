@@ -769,7 +769,7 @@ C ObjC C++ ObjC++
 When \"signed\" or \"unsigned\" is not given make the bitfield signed
 
 fsigned-char
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ LTO
 Make \"char\" signed by default
 
 fsquangle
@@ -802,7 +802,7 @@ C ObjC C++ ObjC++
 When \"signed\" or \"unsigned\" is not given make the bitfield unsigned
 
 funsigned-char
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ LTO
 Make \"char\" unsigned by default
 
 fuse-cxa-atexit

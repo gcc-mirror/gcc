@@ -1,3 +1,9 @@
+2010-01-08  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42528
+	* c.opt (fsigned-char): Also let LTO handle this option.
+	(funsigned-char): Likewise.
+
 2010-01-07  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.h (gss_for_code): Wrap gcc_assert in ENABLE_CHECKING.
