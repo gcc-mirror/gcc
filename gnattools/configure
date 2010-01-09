@@ -2103,7 +2103,7 @@ case "${target}" in
     indepsw.adb<indepsw-mingw.adb"
     EXTRA_GNATTOOLS='../../gnatdll$(exeext)'
     ;;
-  powerpc-*-darwin* | *86-*-darwin*)
+  *-*-darwin*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-darwin.adb"
     ;;
   *-*-lynxos)
