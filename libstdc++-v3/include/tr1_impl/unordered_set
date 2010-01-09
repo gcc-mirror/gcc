@@ -222,12 +222,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       unordered_set&
       operator=(unordered_set&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  } 
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;	
       }
 
@@ -305,12 +303,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       unordered_multiset&
       operator=(unordered_multiset&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  } 
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;	
       }
 

@@ -260,11 +260,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __versa_string&
       operator=(__versa_string&& __str)
       {
-	if (this != &__str)
-	  {
-	    this->clear();
-	    this->swap(__str);
-	  }
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__str);
 	return *this;
       }
 

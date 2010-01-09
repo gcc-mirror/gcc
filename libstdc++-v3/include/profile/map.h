@@ -121,12 +121,10 @@ namespace __profile
       map&
       operator=(map&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  }
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;
       }
 
