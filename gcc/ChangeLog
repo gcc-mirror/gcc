@@ -1,5 +1,10 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	* vec.h (DEF_VEC_ALLOC_FUNC_O_STACK): Drop excess paren.
+	(DEF_VEC_ALLOC_FUNC_I_STACK): Likewise.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	* config/i386/i386.c (ix86_vectorize_builtin_vec_perm): Silence
 	bogus uninitialized warning.
 
