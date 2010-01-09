@@ -1,5 +1,14 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/42631
+	* web.c (union_defs): Add used argument, to combine uses of
+	uninitialized regs.
+	(entry_register): Adjust type and tests of used argument.
+	(web_main): Widen used for new use.  Pass it to union_defs.
+	* df.h (union_defs): Adjust prototype.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/42630
 	* loop-unroll.c (referenced_in_one_insn_in_loop_p): Count debug
 	uses in new incoming argument.  Free body.
