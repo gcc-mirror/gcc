@@ -1115,8 +1115,8 @@ struct web_entry
 
 extern struct web_entry *unionfind_root (struct web_entry *);
 extern bool unionfind_union (struct web_entry *, struct web_entry *);
-extern void union_defs (df_ref,
-                        struct web_entry *, struct web_entry *,
+extern void union_defs (df_ref, struct web_entry *,
+			unsigned int *used, struct web_entry *,
 			bool (*fun) (struct web_entry *, struct web_entry *));
 
 #endif /* GCC_DF_H */
