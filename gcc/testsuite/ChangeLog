@@ -1,7 +1,7 @@
 2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32489
-	* gfortran.dg/array_constructor_33.f90: New test.
+	* gfortran.dg/array_constructor_34.f90: New test.
 
 2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
