@@ -4407,7 +4407,8 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       /* Since the RHS is a CALL_EXPR, we need to create a GIMPLE_CALL
 	 instead of a GIMPLE_ASSIGN.  */
       assign = gimple_build_call_from_tree (*from_p);
-      gimple_call_set_lhs (assign, *to_p);
+      if (!gimple_call_noreturn_p (assign))
+	gimple_call_set_lhs (assign, *to_p);
     }
   else
     {
