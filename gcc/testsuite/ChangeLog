@@ -1,3 +1,9 @@
+2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32489
+	* gfortran.dg/array_constructor_33.f90: New test.
+	gfortran.dg/array_function_5.f90: Add credit.
+
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42631
