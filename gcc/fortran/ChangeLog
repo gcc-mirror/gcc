@@ -1,3 +1,13 @@
+2010-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41298
+	* trans-expr.c (gfc_trans_structure_assign): Handle
+	c_null_(fun)ptr.
+	* symbol.c (gen_special_c_interop_ptr): Add NULL_EXPR
+	to the constructor for c_null_(fun)ptr.
+	* resolve.c (resolve_structure_cons): Add special case
+	for c_null_(fun)ptr.
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortranspec.c (lang_specific_driver): Update copyright notice

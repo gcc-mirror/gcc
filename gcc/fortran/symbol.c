@@ -1,6 +1,6 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -3690,10 +3690,10 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
   tmp_sym->value->expr_type = EXPR_STRUCTURE;
   tmp_sym->value->ts.type = BT_DERIVED;
   tmp_sym->value->ts.u.derived = tmp_sym->ts.u.derived;
-  /* Create a constructor with no expr, that way we can recognize if the user
-     tries to call the structure constructor for one of the iso_c_binding
-     derived types during resolution (resolve_structure_cons).  */
   tmp_sym->value->value.constructor = gfc_get_constructor ();
+  tmp_sym->value->value.constructor->expr = gfc_get_expr ();
+  tmp_sym->value->value.constructor->expr->expr_type = EXPR_NULL;
+  tmp_sym->value->value.constructor->expr->ts.is_iso_c = 1;
   /* Must declare c_null_ptr and c_null_funptr as having the
      PARAMETER attribute so they can be used in init expressions.  */
   tmp_sym->attr.flavor = FL_PARAMETER;
