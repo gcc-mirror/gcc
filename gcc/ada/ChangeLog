@@ -1,7 +1,8 @@
 2010-01-09  Simon Wright  <simon@pushface.org>
 
 	PR ada/42626
-	* Makefile.in (gnatlib-shared-darwin): Add missing end-quote.
+	* gcc-interface/Makefile.in (gnatlib-shared-darwin): Add missing
+	end-quote.
 
 
 
