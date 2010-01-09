@@ -1,5 +1,10 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR middle-end/42363
+	* gcc.dg/torture/pr42363.c: New.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/42604
 	PR debug/42395
 	* gcc.dg/vect/pr42604.c: New.
