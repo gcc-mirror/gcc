@@ -1,14 +1,14 @@
 # Dutch messages for cpplib.
-# Copyright (C) 1999, 2000, 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2002, 2003, 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Tim Van Holder <tim.van.holder@telenet.be>, 2008, 2009.
+# Tim Van Holder <tim.van.holder@telenet.be>, 2008, 2009, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4.1\n"
+"Project-Id-Version: cpplib 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-02 14:22+0000\n"
-"PO-Revision-Date: 2009-07-25 13:30+0200\n"
+"PO-Revision-Date: 2010-01-09 14:45+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
@@ -122,14 +122,14 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "escape sequence '\\%c' is niet ISO-standaard"
 
 #: charset.c:1321
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "onbekende escape sequence '\\%c'"
+msgstr "onbekende escape sequence: '\\%c'"
 
 #: charset.c:1329
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
-msgstr "onbekende escape sequence '\\%s'"
+msgstr "onbekende escape sequence: '\\%s'"
 
 #: charset.c:1336
 msgid "converting escape sequence to execution character set"
@@ -319,14 +319,12 @@ msgid "#pragma once in main file"
 msgstr "#pragma once in hoofdbestand"
 
 #: directives.c:1444
-#, fuzzy
 msgid "invalid #pragma push_macro directive"
-msgstr "ongeldig #pragma GCC poison commando"
+msgstr "ongeldig #pragma push_macro commando"
 
 #: directives.c:1483
-#, fuzzy
 msgid "invalid #pragma pop_macro directive"
-msgstr "ongeldig #pragma GCC poison commando"
+msgstr "ongeldig #pragma pop_macro commando"
 
 #: directives.c:1537
 msgid "invalid #pragma GCC poison directive"
@@ -473,9 +471,8 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionele C aanvaardt de \"%.*s\" suffix niet"
 
 #: expr.c:377
-#, fuzzy
 msgid "suffix for double constant is a GCC extension"
-msgstr "fixed-point constantes zijn een uitbreiding van GCC"
+msgstr "het gebruik van een suffix voor double constantes is een uitbreiding van GCC"
 
 #: expr.c:383
 #, c-format
@@ -492,9 +489,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ongeldige suffix \"%.*s\" aan integerconstante"
 
 #: expr.c:427
-#, fuzzy
 msgid "use of C++0x long long integer constant"
-msgstr "gebruik van C99 long long integerconstantes"
+msgstr "gebruik van C++0x long long integerconstante"
 
 #: expr.c:436
 msgid "imaginary constants are a GCC extension"
@@ -753,25 +749,25 @@ msgstr "poging tot gebruik van 'vergiftigde' \"%s\""
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ mag enkel voorkomen in de expansie van een C99 variadische macro"
 
+# "identifier" is lastig te vertalen; ik neem meestal 'naam', maar hier klinkt dat niet...
 #: lex.c:547 lex.c:624
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "de aanduiding \"%s\" is een speciale operatornaam in C++"
 
+# betere vertaling voor "raw string delimiter"?
 #: lex.c:739
 msgid "raw string delimiter longer than 16 characters"
-msgstr ""
+msgstr "rauwe stringscheiding is langer dan 16 tekens"
 
-# "identifier" is een verdomd rottig woord om te vertalen...
 #: lex.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "universeel teken %.*s is niet geldig in een naam"
+msgstr "ongeldig teken '%c' in rauwe stringscheiding"
 
 #: lex.c:771 lex.c:818
-#, fuzzy
 msgid "unterminated raw string"
-msgstr "niet-beëindigde #%s"
+msgstr "niet-beëindigde rauwe string"
 
 #: lex.c:831 lex.c:930
 msgid "null character(s) preserved in literal"
@@ -969,23 +965,3 @@ msgstr "recursie gedetecteerd bij uitbreiden van macro \"%s\""
 #: traditional.c:969
 msgid "syntax error in macro parameter list"
 msgstr "syntaxfout in lijst van macro-parameters"
-
-# Dit zou misschien beter 'warning' blijven
-#~ msgid "warning: "
-#~ msgstr "let op: "
-
-#~ msgid "internal error: "
-#~ msgstr "interne fout: "
-
-#~ msgid "error: "
-#~ msgstr "fout: "
-
-#~ msgid "In file included from %s:%u"
-#~ msgstr "In bestand ingevoegd vanuit %s:%u"
-
-#~ msgid ""
-#~ ",\n"
-#~ "                 from %s:%u"
-#~ msgstr ""
-#~ ",\n"
-#~ "                     vanuit %s:%u"
