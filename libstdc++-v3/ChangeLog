@@ -1,5 +1,116 @@
 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/debug/set.h: Protect move assignment operator vs self
+	assignment.
+	* include/debug/unordered_map: Likewise.
+ 	* include/debug/multiset.h: Likewise.
+ 	* include/debug/vector: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/tr1_impl/unordered_map: Likewise.
+	* include/tr1_impl/unordered_set: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/ext/vstring.h: Use clear().
+	* testsuite/ext/vstring/cons/self_move_assign.cc: New.
+	* testsuite/23_containers/unordered_map/cons/self_move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/set/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/
+	self_move_assign.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/self_move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/self_move_assign.cc:
+	Likewise.
+ 	* testsuite/23_containers/vector/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/deque/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/list/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/
+	self_move_assign.cc: Likewise.
+	* testsuite/23_containers/map/cons/self_move_assign.cc: Likewise.
+
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+ 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+ 	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+	* testsuite/ext/vstring/moveable.cc: Move to...
+	* testsuite/ext/vstring/cons/moveable.cc: ... here.
+	* testsuite/23_containers/unordered_map/moveable.cc: Move to...
+	* testsuite/23_containers/unordered_map/cons/moveable.cc ... here.
+	* testsuite/23_containers/multimap/moveable.cc: Move to...
+	* testsuite/23_containers/multimap/cons/moveable.cc: ... here.
+	* testsuite/23_containers/set/moveable.cc: Move to...
+	* testsuite/23_containers/set/cons/moveable.cc: ... here.
+	* testsuite/23_containers/unordered_multimap/moveable.cc: Move to...
+	* testsuite/23_containers/unordered_multimap/cons/moveable.cc:
+	... here.
+	* testsuite/23_containers/forward_list/moveable.cc: Move to...
+	* testsuite/23_containers/forward_list/cons/moveable.cc: ... here.
+	* testsuite/23_containers/unordered_set/moveable.cc Move to...
+	* testsuite/23_containers/unordered_set/moveable.cc: ... here.
+	* testsuite/23_containers/vector/cons/moveable.cc Move to...
+	* testsuite/23_containers/vector/cons/moveable2.cc: ... this.
+	* testsuite/23_containers/deque/cons/moveable.cc Move to...
+	* testsuite/23_containers/deque/cons/moveable2.cc: ... this.
+	* testsuite/23_containers/multiset/moveable.cc Move to...
+	* testsuite/23_containers/multiset/cons/moveable.cc: ... here.
+	* testsuite/23_containers/list/moveable.h Move to...
+	* testsuite/23_containers/list/cons/moveable.h: ... here.
+	* testsuite/23_containers/list/moveable.cc Move to...
+	* testsuite/23_containers/list/cons/moveable.cc: ... here.
+	* testsuite/23_containers/unordered_multiset/moveable.cc Move to...
+	* testsuite/23_containers/unordered_multiset/cons/moveable.cc:
+	... here.
+	* testsuite/23_containers/map/moveable.cc Move to...
+	* testsuite/23_containers/map/cons/moveable.cc: ... here.
+	* testsuite/23_containers/vector/moveable.cc: Move to...
+	* testsuite/23_containers/vector/cons/moveable.cc: ... here.
+	* testsuite/23_containers/deque/moveable.cc: Move to...
+	* testsuite/23_containers/deque/cons/moveable.cc: ... here.
+
+2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/42573
 	* include/bits/allocator.h (struct __shrink_to_fit): Add.
 	* include/bits/stl_deque.h (deque<>::shrink_to_fit): Add.

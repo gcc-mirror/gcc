@@ -1,6 +1,6 @@
 // Debugging unordered_map/unordered_multimap implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -115,9 +115,12 @@ namespace __debug
       unordered_map&
       operator=(unordered_map&& __x)
       {
-        // NB: DR 675.
-	clear();
-	swap(__x);
+   	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    clear();
+	    swap(__x);
+	  }
 	return *this;
       }
 
@@ -388,9 +391,12 @@ namespace __debug
       unordered_multimap&
       operator=(unordered_multimap&& __x)
       {
-        // NB: DR 675.
-	clear();
-	swap(__x);
+	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    clear();
+	    swap(__x);
+	  }
 	return *this;
       }
 

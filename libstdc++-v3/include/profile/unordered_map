@@ -130,9 +130,12 @@ namespace __profile
       unordered_map&
       operator=(unordered_map&& __x)
       {
-        // NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    this->clear();
+	    this->swap(__x);
+	  }
 	return *this;
       }
 
@@ -355,9 +358,12 @@ namespace __profile
       unordered_multimap&
       operator=(unordered_multimap&& __x)
       {
-        // NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    this->clear();
+	    this->swap(__x);
+	  }
 	return *this;
       }
 

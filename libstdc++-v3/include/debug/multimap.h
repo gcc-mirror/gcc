@@ -116,9 +116,12 @@ namespace __debug
       multimap&
       operator=(multimap&& __x)
       {
-        // NB: DR 675.
-	clear();
-	swap(__x);
+	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    clear();
+	    swap(__x);
+	  }
 	return *this;
       }
 

@@ -1,6 +1,6 @@
 // Profiling multimap implementation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -106,9 +106,12 @@ namespace __profile
       multimap&
       operator=(multimap&& __x)
       {
-        // NB: DR 675.
-	this->clear();
-	this->swap(__x);
+	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    this->clear();
+	    this->swap(__x);
+	  }
 	return *this;
       }
 
