@@ -1,3 +1,21 @@
+2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/20923
+	PR fortran/32489
+	* trans-array.c (gfc_conv_array_initializer): Change call to
+	gfc_error_now to call to gfc_fatal_error.
+	* array.c (count_elements): Whitespace. (extract_element): Whitespace.
+	(is_constant_element): Changed name from constant_element.
+	(gfc_constant_ac): Only use expand_construuctor for expression
+	types of EXPR_ARRAY.  If expression type is EXPR_CONSTANT, no need to
+	call gfc_is_constant_expr.
+	* expr.c (gfc_reduce_init_expr): Adjust conditionals and delete error
+	message.
+	* resolve.c (gfc_is_expandable_expr): New function that determiners if
+	array expressions should have their constructors expanded.
+	(gfc_resolve_expr): Use new function to determine whether or not to call
+	gfc_expand_constructor.
+
 2010-01-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41298
