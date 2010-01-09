@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
@@ -448,7 +448,7 @@ __mf_usage ()
 
   fprintf (stderr,
            "This is a %s%sGCC \"mudflap\" memory-checked binary.\n"
-           "Mudflap is Copyright (C) 2002-2009 Free Software Foundation, Inc.\n"
+           "Mudflap is Copyright (C) 2002-2010 Free Software Foundation, Inc.\n"
            "\n"
            "Unless setuid, a program's mudflap options be set by an environment variable:\n"
            "\n"

@@ -1,4 +1,9 @@
-2010-01-08  Tobias Burnus  <burnus@net-b.de
+2010-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.c (lang_specific_driver): Update copyright notice
+	dates.
+
+2010-01-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR/fortran 25829
 	* symbol.c (check_conflict, gfc_copy_attr): Add
