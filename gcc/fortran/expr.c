@@ -2460,18 +2460,12 @@ gfc_reduce_init_expr (gfc_expr *expr)
   if (t == FAILURE)
     return FAILURE;
 
-  if (expr->expr_type == EXPR_ARRAY
-      && (gfc_check_constructor_type (expr) == FAILURE
-      || gfc_expand_constructor (expr) == FAILURE))
-    return FAILURE;
-
-  /* Not all inquiry functions are simplified to constant expressions
-     so it is necessary to call check_inquiry again.  */ 
-  if (!gfc_is_constant_expr (expr) && check_inquiry (expr, 1) != MATCH_YES
-      && !gfc_in_match_data ())
+  if (expr->expr_type == EXPR_ARRAY)
     {
-      gfc_error ("Initialization expression didn't reduce %C");
-      return FAILURE;
+      if (gfc_check_constructor_type (expr) == FAILURE)
+	return FAILURE;
+      if (gfc_expand_constructor (expr) == FAILURE)
+	return FAILURE;
     }
 
   return SUCCESS;
