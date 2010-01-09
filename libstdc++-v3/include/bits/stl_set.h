@@ -241,13 +241,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       set&
       operator=(set&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  } 
-	return *this;
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
+      	return *this;
       }
 
       /**

@@ -554,12 +554,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       forward_list&
       operator=(forward_list&& __list)
       {
-        if (&__list != this)
-          {
-            this->clear();
-            this->swap(__list);
-          }
-        return *this;
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__list);
+	return *this;
       }
 
       /**

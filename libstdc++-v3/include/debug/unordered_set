@@ -115,12 +115,10 @@ namespace __debug
       unordered_set&
       operator=(unordered_set&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    clear();
-	    swap(__x);
-	  }
+	// NB: DR 1204.
+	// NB: DR 675.
+	clear();
+	swap(__x);
 	return *this;
       }
 
@@ -389,6 +387,7 @@ namespace __debug
       unordered_multiset&
       operator=(unordered_multiset&& __x)
       {
+	// NB: DR 1204.
         // NB: DR 675.
 	clear();
 	swap(__x);

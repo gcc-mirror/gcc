@@ -129,12 +129,10 @@ namespace __profile
       unordered_set&
       operator=(unordered_set&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  }
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;
       }
 
@@ -346,12 +344,10 @@ namespace __profile
       unordered_multiset&
       operator=(unordered_multiset&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  }
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;
       }
 

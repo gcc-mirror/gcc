@@ -1,3 +1,90 @@
+2010-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/set.h: Revert last change, per DR 1204 [Ready];
+	mention the latter in comment.
+	* include/debug/unordered_map: Likewise.
+ 	* include/debug/multiset.h: Likewise.
+ 	* include/debug/vector: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/tr1_impl/unordered_map: Likewise.
+	* include/tr1_impl/unordered_set: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+
+	* include/bits/forward_list.h: Remove pre-existing check.
+	* include/ext/vstring.h: Likewise.
+
+	* testsuite/ext/vstring/cons/self_move_assign.cc: Remove.
+	* testsuite/23_containers/unordered_map/cons/self_move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/set/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/
+	self_move_assign.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/self_move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/self_move_assign.cc:
+	Likewise.
+ 	* testsuite/23_containers/vector/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/deque/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/list/cons/self_move_assign.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/
+	self_move_assign.cc: Likewise.
+	* testsuite/23_containers/map/cons/self_move_assign.cc: Likewise.
+
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+ 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+ 	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/set.h: Protect move assignment operator vs self

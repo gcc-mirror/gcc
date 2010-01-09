@@ -229,12 +229,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       unordered_map&
       operator=(unordered_map&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  } 
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;	
       }
 
@@ -315,12 +313,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       unordered_multimap&
       operator=(unordered_multimap&& __x)
       {
-	if (this != &__x)
-	  {
-	    // NB: DR 675.
-	    this->clear();
-	    this->swap(__x);
-	  } 
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
 	return *this;	
       }
 
