@@ -1,5 +1,15 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/42630
+	* loop-unroll.c (referenced_in_one_insn_in_loop_p): Count debug
+	uses in new incoming argument.  Free body.
+	(reset_debug_uses_in_loop): New.
+	(analyze_insn_to_expand_var): Call the latter if the former found
+	anything.  Fix whitespace.  Reject invalid dest overlaps before
+	going through all insns in the loop.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/42629
 	* haifa-sched.c (dying_use_p): Debug insns don't count.
 
