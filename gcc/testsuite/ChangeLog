@@ -1,5 +1,10 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/42630
+	* gcc.dg/pr42630.c: New.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/42629
 	* gcc.dg/pr42629.c: New.
 

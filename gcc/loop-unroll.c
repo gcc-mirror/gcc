@@ -1,5 +1,5 @@
 /* Loop unrolling and peeling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -142,7 +142,7 @@ static void opt_info_start_duplication (struct opt_info *);
 static void apply_opt_in_copies (struct opt_info *, unsigned, bool, bool);
 static void free_opt_info (struct opt_info *);
 static struct var_to_expand *analyze_insn_to_expand_var (struct loop*, rtx);
-static bool referenced_in_one_insn_in_loop_p (struct loop *, rtx);
+static bool referenced_in_one_insn_in_loop_p (struct loop *, rtx, int *);
 static struct iv_to_split *analyze_iv_to_split_insn (rtx);
 static void expand_var_during_unrolling (struct var_to_expand *, rtx);
 static void insert_var_expansion_initialization (struct var_to_expand *,
@@ -1525,10 +1525,13 @@ ve_info_eq (const void *ivts1, const void *ivts2)
   return i1->insn == i2->insn;
 }
 
-/* Returns true if REG is referenced in one insn in LOOP.  */
+/* Returns true if REG is referenced in one nondebug insn in LOOP.
+   Set *DEBUG_USES to the number of debug insns that reference the
+   variable.  */
 
 bool
-referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg)
+referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg,
+				  int *debug_uses)
 {
   basic_block *body, bb;
   unsigned i;
@@ -1541,12 +1544,43 @@ referenced_in_one_insn_in_loop_p (struct loop *loop, rtx reg)
       bb = body[i];
 
       FOR_BB_INSNS (bb, insn)
-      {
-        if (rtx_referenced_p (reg, insn))
-          count_ref++;
-      }
+	if (!rtx_referenced_p (reg, insn))
+	  continue;
+	else if (DEBUG_INSN_P (insn))
+	  ++*debug_uses;
+	else if (++count_ref > 1)
+	  break;
     }
+  free (body);
   return (count_ref  == 1);
+}
+
+/* Reset the DEBUG_USES debug insns in LOOP that reference REG.  */
+
+static void
+reset_debug_uses_in_loop (struct loop *loop, rtx reg, int debug_uses)
+{
+  basic_block *body, bb;
+  unsigned i;
+  rtx insn;
+
+  body = get_loop_body (loop);
+  for (i = 0; debug_uses && i < loop->num_nodes; i++)
+    {
+      bb = body[i];
+
+      FOR_BB_INSNS (bb, insn)
+	if (!DEBUG_INSN_P (insn) || !rtx_referenced_p (reg, insn))
+	  continue;
+	else
+	  {
+	    validate_change (insn, &INSN_VAR_LOCATION_LOC (insn),
+			     gen_rtx_UNKNOWN_VAR_LOC (), 0);
+	    if (!--debug_uses)
+	      break;
+	  }
+    }
+  free (body);
 }
 
 /* Determine whether INSN contains an accumulator
@@ -1579,6 +1613,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   struct var_to_expand *ves;
   enum machine_mode mode1, mode2;
   unsigned accum_pos;
+  int debug_uses = 0;
 
   set = single_set (insn);
   if (!set)
@@ -1624,15 +1659,15 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
      the expansions at the end of the computation will yield wrong results
      for (x = something - x) thus avoid using it in that case.  */
   if (accum_pos == 1
-    && GET_CODE (src) == MINUS)
+      && GET_CODE (src) == MINUS)
    return NULL;
 
-  something = (accum_pos == 0)? op2 : op1;
-
-  if (!referenced_in_one_insn_in_loop_p (loop, dest))
-    return NULL;
+  something = (accum_pos == 0) ? op2 : op1;
 
   if (rtx_referenced_p (dest, something))
+    return NULL;
+
+  if (!referenced_in_one_insn_in_loop_p (loop, dest, &debug_uses))
     return NULL;
 
   mode1 = GET_MODE (dest);
@@ -1649,6 +1684,17 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
     print_rtl (dump_file, dest);
     fprintf (dump_file, "\n");
   }
+
+  if (debug_uses)
+    /* Instead of resetting the debug insns, we could replace each
+       debug use in the loop with the sum or product of all expanded
+       accummulators.  Since we'll only know of all expansions at the
+       end, we'd have to keep track of which vars_to_expand a debug
+       insn in the loop references, take note of each copy of the
+       debug insn during unrolling, and when it's all done, compute
+       the sum or product of each variable and adjust the original
+       debug insn and each copy thereof.  What a pain!  */
+    reset_debug_uses_in_loop (loop, dest, debug_uses);
 
   /* Record the accumulator to expand.  */
   ves = XNEW (struct var_to_expand);
