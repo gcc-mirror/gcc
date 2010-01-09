@@ -1,3 +1,11 @@
+2010-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov.c (print_version): Likewise.
+	* gcov-dump.c (print_version): Likewise.
+	* mips-tfile.c (main): Likewise.
+	* mips-tdump.c (main): Likewise.
+
 2010-01-08  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR target/41885

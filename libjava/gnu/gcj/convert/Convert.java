@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2002, 2005, 2006, 2007, 2008, 2009
+/* Copyright (C) 1999, 2002, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation
 
    This file is part of libgcj.
@@ -46,7 +46,7 @@ public class Convert
 		       + ") "
 		       + System.getProperty("java.vm.version"));
     System.out.println();
-    System.out.println("Copyright (C) 2009 Free Software Foundation, Inc.");
+    System.out.println("Copyright (C) 2010 Free Software Foundation, Inc.");
     System.out.println("This is free software; see the source for copying conditions.  There is NO");
     System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
     System.exit(0);
