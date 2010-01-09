@@ -1642,6 +1642,23 @@ interpret_loop_phi (struct loop *loop, gimple loop_phi_node)
   init_cond = analyze_initial_condition (loop_phi_node);
   res = analyze_evolution_in_loop (loop_phi_node, init_cond);
 
+  /* Verify we maintained the correct initial condition throughout
+     possible conversions in the SSA chain.  */
+  if (res != chrec_dont_know)
+    {
+      tree new_init = res;
+      if (CONVERT_EXPR_P (res)
+	  && TREE_CODE (TREE_OPERAND (res, 0)) == POLYNOMIAL_CHREC)
+	new_init = fold_convert (TREE_TYPE (res),
+				 CHREC_LEFT (TREE_OPERAND (res, 0)));
+      else if (TREE_CODE (res) == POLYNOMIAL_CHREC)
+	new_init = CHREC_LEFT (res);
+      STRIP_USELESS_TYPE_CONVERSION (new_init);
+      gcc_assert (TREE_CODE (new_init) != POLYNOMIAL_CHREC);
+      if (!operand_equal_p (init_cond, new_init, 0))
+	return chrec_dont_know;
+    }
+
   return res;
 }
 

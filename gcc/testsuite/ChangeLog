@@ -1,3 +1,8 @@
+2010-01-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42512
+	* gcc.c-torture/execute/pr42512.c: New testcase.
+
 2010-01-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41298
