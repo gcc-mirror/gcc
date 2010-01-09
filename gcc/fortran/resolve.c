@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -842,12 +842,19 @@ resolve_structure_cons (gfc_expr *expr)
   /* See if the user is trying to invoke a structure constructor for one of
      the iso_c_binding derived types.  */
   if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
-      && expr->ts.u.derived->ts.is_iso_c && cons && cons->expr != NULL)
+      && expr->ts.u.derived->ts.is_iso_c && cons
+      && (cons->expr == NULL || cons->expr->expr_type != EXPR_NULL))
     {
       gfc_error ("Components of structure constructor '%s' at %L are PRIVATE",
 		 expr->ts.u.derived->name, &(expr->where));
       return FAILURE;
     }
+
+  /* Return if structure constructor is c_null_(fun)prt.  */
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived
+      && expr->ts.u.derived->ts.is_iso_c && cons
+      && cons->expr && cons->expr->expr_type == EXPR_NULL)
+    return SUCCESS;
 
   for (; comp; comp = comp->next, cons = cons->next)
     {

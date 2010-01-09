@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -4213,6 +4213,19 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr)
       /* Skip absent members in default initializers.  */
       if (!c->expr)
 	continue;
+
+      /* Handle c_null_(fun)ptr.  */
+      if (c && c->expr && c->expr->ts.is_iso_c)
+	{
+	  field = cm->backend_decl;
+	  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
+			     dest, field, NULL_TREE);
+	  tmp = fold_build2 (MODIFY_EXPR, TREE_TYPE (tmp), tmp,
+			     fold_convert (TREE_TYPE (tmp),
+					   null_pointer_node));
+	  gfc_add_expr_to_block (&block, tmp);
+	  continue;
+	}
 
       field = cm->backend_decl;
       tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
