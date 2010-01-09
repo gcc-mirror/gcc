@@ -1,5 +1,10 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/42629
+	* haifa-sched.c (dying_use_p): Debug insns don't count.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR middle-end/42363
 	* gimplify.c (gimplify_modify_expr): Drop lhs on noreturn calls.
 	* tree-cfg.c (is_ctrl_altering_stmt): Don't compute flags twice.

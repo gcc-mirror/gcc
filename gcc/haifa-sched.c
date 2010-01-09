@@ -766,7 +766,8 @@ dying_use_p (struct reg_use_data *use)
   struct reg_use_data *next;
 
   for (next = use->next_regno_use; next != use; next = next->next_regno_use)
-    if (QUEUE_INDEX (next->insn) != QUEUE_SCHEDULED)
+    if (NONDEBUG_INSN_P (next->insn)
+	&& QUEUE_INDEX (next->insn) != QUEUE_SCHEDULED)
       return false;
   return true;
 }
