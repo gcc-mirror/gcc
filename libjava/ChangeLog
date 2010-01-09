@@ -1,3 +1,9 @@
+2010-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnu/gcj/convert/Convert.java (version): Update copyright notice
+	dates.
+	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Likewise.
+
 2009-12-09  Bryce McKinlay  <bmckinlay@gmail.com>
 
 	PR java/41991
