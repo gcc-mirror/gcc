@@ -1,3 +1,10 @@
+2010-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Shorten
+	sequence for DImode constants >= 0x80000000UL <= 0xFFFFFFFFUL by
+	1 insn.
+	(num_insns_constant_wide): Adjust for that change.
+
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42631
