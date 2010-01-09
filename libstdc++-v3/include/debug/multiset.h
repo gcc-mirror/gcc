@@ -113,9 +113,12 @@ namespace __debug
       multiset&
       operator=(multiset&& __x)
       {
-        // NB: DR 675.
-	clear();
-	swap(__x);
+	if (this != &__x)
+	  {
+	    // NB: DR 675.
+	    clear();
+	    swap(__x);
+	  }
 	return *this;
       }
 

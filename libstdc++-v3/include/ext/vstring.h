@@ -261,7 +261,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       operator=(__versa_string&& __str)
       {
 	if (this != &__str)
-	  this->swap(__str);
+	  {
+	    this->clear();
+	    this->swap(__str);
+	  }
 	return *this;
       }
 

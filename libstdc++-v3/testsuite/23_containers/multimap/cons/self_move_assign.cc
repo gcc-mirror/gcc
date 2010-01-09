@@ -1,6 +1,8 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+// 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,26 +19,26 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
-// NOTE: This makes use of the fact that we know how moveable
-// is implemented on deque (via swap). If the implementation changed
-// this test may begin to fail.
-
-#include <deque>
-#include <utility>
+#include <map>
 #include <testsuite_hooks.h>
 
-int main()
+void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::deque<int> a,b;
-  a.push_back(1);
-  b = std::move(a);
-  VERIFY( b.size() == 1 && b[0] == 1 && a.size() == 0 );
+  typedef std::multimap<int, int>    mmap_type;
+  typedef mmap_type::value_type     value_type;
 
-  std::deque<int> c(std::move(b));
-  VERIFY( c.size() == 1 && c[0] == 1 );
-  VERIFY( b.size() == 0 );
+  mmap_type mm0{ value_type(1, 1), value_type(2, 2), value_type(3, 3) };
+
+  const mmap_type mm1(mm0);
+  mm0 = std::move(mm0);
+  VERIFY( mm0.size() == 3 );
+  VERIFY( mm0 == mm1 );
+}
+
+int main()
+{
+  test01();
   return 0;
 }

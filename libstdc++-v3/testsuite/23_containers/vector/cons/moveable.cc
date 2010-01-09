@@ -1,4 +1,3 @@
-// { dg-do compile } 
 // { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
@@ -19,37 +18,45 @@
 // <http://www.gnu.org/licenses/>.
 
 
+// NOTE: This makes use of the fact that we know how moveable
+// is implemented on vector (via swap). If the implementation changed
+// this test may begin to fail.
+
 #include <vector>
-#include <iterator>
-#include <testsuite_iterators.h>
-#include <testsuite_rvalref.h>
+#include <utility>
+#include <testsuite_hooks.h>
 
-using namespace __gnu_test;
-typedef std::vector<rvalstruct> test_type;
+void test01()
+{
+  bool test __attribute__((unused)) = true;
 
-// Empty constructor doesn't require a copy constructor
-void
-test01()
-{ test_type d; }
+  std::vector<int> a,b;
+  a.push_back(1);
+  b = std::move(a);
+  VERIFY( b.size() == 1 && b[0] == 1 && a.size() == 0 );
 
-// Constructing from a range that returns rvalue references doesn't
-// require a copy constructor.
-void
-test02(rvalstruct* begin, rvalstruct* end)
-{ 
-  test_type d(std::make_move_iterator(begin), std::make_move_iterator(end));
+  std::vector<int> c(std::move(b));
+  VERIFY( c.size() == 1 && c[0] == 1 );
+  VERIFY( b.size() == 0 );
 }
 
-// Constructing from a input iterator range that returns rvalue
-// references doesn't require a copy constructor either.
-void
-test03(input_iterator_wrapper<rvalstruct> begin,
-       input_iterator_wrapper<rvalstruct> end)
-{ 
-  test_type d(std::make_move_iterator(begin), std::make_move_iterator(end));
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+  
+  std::vector<bool> a,b;
+  a.push_back(1);
+  b = std::move(a);
+  VERIFY( b.size() == 1 && b[0] == 1 && a.size() == 0 );
+
+  std::vector<bool> c(std::move(b));
+  VERIFY( c.size() == 1 && c[0] == 1 );
+  VERIFY( b.size() == 0 );
 }
 
-// Neither does destroying one.
-void
-test04(test_type* d)
-{ delete d; }
+int main(void)
+{
+  test01();
+  test02();
+  return 0;
+}

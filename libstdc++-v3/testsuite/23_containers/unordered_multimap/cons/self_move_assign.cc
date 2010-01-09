@@ -1,6 +1,8 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation
+// 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,13 +19,26 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 997 }
-// { dg-excess-errors "" }
+#include <unordered_map>
+#include <testsuite_hooks.h>
 
-#include <vector>
-
-void f()
+void test01()
 {
-  std::vector<std::vector<int> > v(10, 1);
+  bool test __attribute__((unused)) = true;
+
+  typedef std::unordered_multimap<int, int>  ummap_type;
+  typedef ummap_type::value_type             value_type;
+
+  ummap_type umm0{ value_type(1, 1), value_type(2, 2), value_type(3, 3) };
+
+  const ummap_type umm1(umm0);
+  umm0 = std::move(umm0);
+  VERIFY( umm0.size() == 3 );
+  // VERIFY( umm0 == umm1 );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }
