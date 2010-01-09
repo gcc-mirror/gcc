@@ -1,5 +1,19 @@
 2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/42604
+	PR debug/42395
+	* tree-vect-loop-manip.c (adjust_info): New type.
+	(adjust_vec): New pointer to vector.
+	(adjust_debug_stmts_now, adjust_vec_debug_stmts): New.
+	(adjust_debug_stmts, adjust_phi_and_debug_stmts): New.
+	(slpeel_update_phis_for_duplicate_loop): Use them.
+	(slpeel_update_phi_nodes_for_guard1): Likewise.
+	(slpeel_update_phi_nodes_for_guard2): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+
+2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
 	* vec.h (DEF_VEC_ALLOC_FUNC_O_STACK): Drop excess paren.
 	(DEF_VEC_ALLOC_FUNC_I_STACK): Likewise.
 
