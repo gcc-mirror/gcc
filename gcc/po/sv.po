@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-03 21:28+0000\n"
-"PO-Revision-Date: 2010-01-03 11:14+0100\n"
+"PO-Revision-Date: 2010-01-09 12:45+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -16243,18 +16243,16 @@ msgid "Warn about unrecognized pragmas"
 msgstr "Varna för okända pragman"
 
 #: c.opt:485
-#, fuzzy
 msgid "Warn about unsuffixed float constants"
-msgstr "icke-standardsuffix på flyttalskonstant"
+msgstr "Varna för flyttalskonstanter utan suffix"
 
 #: c.opt:489
 msgid "Warn about macros defined in the main file that are not used"
 msgstr "Varna för makron definierade i huvudfilen som inte används"
 
 #: c.opt:493
-#, fuzzy
 msgid "Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value"
-msgstr "%Hignorerar returvärdet av funktion deklarerad med attributet warn_unused_result"
+msgstr "Varna om anroparen av en funktion, deklarerad med attributet warn_unused_result, inte använder dess returvärde"
 
 #: c.opt:497
 msgid "Do not warn about using variadic macros when -pedantic"
@@ -17067,9 +17065,8 @@ msgid "Suppress output of instruction numbers, line number notes and addresses i
 msgstr "Undertryck utskrift av instruktionsantal, radnummernoteringar och -adresser i felsökningsutskrifter"
 
 #: common.opt:475
-#, fuzzy
 msgid "Suppress output of previous and next insn numbers in debugging dumps"
-msgstr "Undertryck utskrift av adresser i felsökningsutskrifter"
+msgstr "Undertryck utskrift föregående och nästa instruktionsnummer i felsökningsutskrifter"
 
 #: common.opt:479
 msgid "Enable CFI tables via GAS assembler directives."
@@ -17084,9 +17081,8 @@ msgid "Perform DWARF2 duplicate elimination"
 msgstr "Utför dubletteliminering i DWARF2"
 
 #: common.opt:491
-#, fuzzy
 msgid "Perform interprocedural reduction of aggregates"
-msgstr "Utför konstantpropagering mellan procedurer"
+msgstr "Utför interprocedurell reduktion av aggregat"
 
 #: common.opt:495 common.opt:499
 msgid "Perform unused type elimination in debug info"
@@ -17097,9 +17093,8 @@ msgid "Do not suppress C++ class debug information."
 msgstr "Undertryck inte felsökningsinformation för C++-klasser."
 
 #: common.opt:507
-#, fuzzy
 msgid "Generate debug information to support Identical Code Folding (ICF)"
-msgstr "Generera felsökningsinformation i utökat XCOFF-format"
+msgstr "Generera felsökningsinformation för att stödja Identical Code Folding (ICF)"
 
 #: common.opt:511
 msgid "Enable exception handling"
@@ -17110,9 +17105,8 @@ msgid "Perform a number of minor, expensive optimizations"
 msgstr "Utför ett antal smärre, dyra optimeringar"
 
 #: common.opt:519
-#, fuzzy
 msgid "Specify handling of excess floating-point precision"
-msgstr "Ange namnet på målets flyttalshårdvara/-format"
+msgstr "Ange hantering av överskjutande precision på flyttal"
 
 #: common.opt:526
 msgid "Assume no NaNs or infinities are generated"
@@ -17321,18 +17315,16 @@ msgid "Give external symbols a leading underscore"
 msgstr "Ge externa symboler ett inledande understrykningstecken"
 
 #: common.opt:763
-#, fuzzy
 msgid "Enable link-time optimization."
-msgstr "Aktivera länkningsoptimeringar"
+msgstr "Aktivera länkningsoptimeringar."
 
 #: common.opt:768
 msgid "-flto-compression-level=<number> Use zlib compression level <number> for IL"
 msgstr "-flto-compression-level=<nummer> Använd zlib-komprimering på nivå <nummer> för IL"
 
 #: common.opt:772
-#, fuzzy
 msgid "Report various link-time optimization statistics"
-msgstr "Utför ett optimeringspass med registernamnbyten"
+msgstr "Rapoortera diverse optimeringsstatistik från länkningen"
 
 #: common.opt:776
 msgid "Set errno after built-in math functions"
@@ -17455,9 +17447,8 @@ msgid "Generate position-independent code for executables if possible (small mod
 msgstr "Generera positionsoberoende kod för körbara program om möjligt (litet läge)"
 
 #: common.opt:903
-#, fuzzy
 msgid "Specify a plugin to load"
-msgstr "Ange flaggor till GNAT"
+msgstr "Ange en instickmodul att läsa in"
 
 #: common.opt:907
 msgid "-fplugin-arg-<name>-<key>[=<value>] Specify argument <key>=<value> for plugin <name>"
@@ -17620,9 +17611,8 @@ msgid "Set dependence distance checking in premature scheduling of queued insns"
 msgstr "Sätt beroendeavståndet som kontrolleras i förtida schemaläggning av köade instruktioner"
 
 #: common.opt:1094
-#, fuzzy
 msgid "Enable the group heuristic in the scheduler"
-msgstr "Ange hur mångordig schemaläggaren skall vara"
+msgstr "Aktivera gruppheuristiken i schemaläggaren"
 
 #: common.opt:1098
 msgid "Enable the critical path heuristic in the scheduler"
@@ -17633,9 +17623,8 @@ msgid "Enable the speculative instruction heuristic in the scheduler"
 msgstr "Aktivera den spekulativa instruktionsheuristiken i schemaläggaren"
 
 #: common.opt:1106
-#, fuzzy
 msgid "Enable the rank heuristic in the scheduler"
-msgstr "Ange hur mångordig schemaläggaren skall vara"
+msgstr "Aktivera ordningsheuristiken i schemaläggaren"
 
 #: common.opt:1110
 msgid "Enable the last instruction heuristic in the scheduler"
@@ -17650,9 +17639,8 @@ msgid "Access data in the same section from shared anchor points"
 msgstr "Nå data i samma sektion från delade förankringspunkter"
 
 #: common.opt:1126
-#, fuzzy
 msgid "Show column numbers in diagnostics, when available.  Default on"
-msgstr "Visa kolumnnummer i felmeddelanden, när de är tillgängliga.  Normalt av"
+msgstr "Visa kolumnnummer i felmeddelanden, när de är tillgängliga.  Normalt på"
 
 #: common.opt:1130
 msgid "Disable optimizations observable by IEEE signaling NaNs"
@@ -17783,9 +17771,8 @@ msgid "Enable dead store elimination"
 msgstr "Aktivera eliminering av död lagring"
 
 #: common.opt:1280
-#, fuzzy
 msgid "Enable forward propagation on trees"
-msgstr "Aktivera kopiepropagering i träd"
+msgstr "Aktivera framåtpropagering på träd"
 
 #: common.opt:1284
 msgid "Enable Full Redundancy Elimination (FRE) on trees"
@@ -17801,7 +17788,7 @@ msgstr "Aktivera förflyttning av slingoberoende delar i träd"
 
 #: common.opt:1296
 msgid "Enable linear loop transforms on trees"
-msgstr "Aktivera linjära slingtransformationer på träd"
+msgstr "Aktivera linjära slingtransformationer i träd"
 
 #: common.opt:1300
 msgid "Create canonical induction variables in loops"
@@ -17816,18 +17803,16 @@ msgid "Enable automatic parallelization of loops"
 msgstr "Aktivera automatisk parallellisering av slingor"
 
 #: common.opt:1312
-#, fuzzy
 msgid "Enable hoisting loads from conditional pointers."
-msgstr "Aktivera villkorliga flyttningar"
+msgstr "Aktivera lyftningslast från villkorliga pekare."
 
 #: common.opt:1316
 msgid "Enable SSA-PRE optimization on trees"
 msgstr "Aktivera SSA-PRE-optimeringar i träd"
 
 #: common.opt:1320
-#, fuzzy
 msgid "Perform function-local points-to analysis on trees."
-msgstr "Utför pekar-på-analyser mellan procedurer"
+msgstr "Utför funktionslokala pekar-på-analyser i träd"
 
 #: common.opt:1324
 msgid "Enable reassociation on tree level"
@@ -17896,9 +17881,8 @@ msgid "Perform variable tracking"
 msgstr "Utför variabelspårning"
 
 #: common.opt:1403
-#, fuzzy
 msgid "Perform variable tracking by annotating assignments"
-msgstr "Utför variabelspårning"
+msgstr "Utför variabelspårning genom att annotera tilldelningar"
 
 #: common.opt:1407
 msgid "Toggle -fvar-tracking-assignments"
@@ -17913,9 +17897,8 @@ msgid "Enable loop vectorization on trees"
 msgstr "Aktivera slingvektorisering i träd"
 
 #: common.opt:1419
-#, fuzzy
 msgid "Enable basic block vectorization (SLP) on trees"
-msgstr "Aktivera slingvektorisering i träd"
+msgstr "Aktivera grundblocksvektorisering (SLP) i träd"
 
 #: common.opt:1423
 msgid "Enable use of cost model in vectorization"
@@ -17950,9 +17933,8 @@ msgid "Construct webs and split unrelated uses of single variable"
 msgstr "Konstruera nät och dela orelaterade användningar av en enskild variabel"
 
 #: common.opt:1462
-#, fuzzy
 msgid "Enable partitioned link-time optimization."
-msgstr "Aktivera länkningsoptimeringar"
+msgstr "Aktivera partitionerade länkningsoptimeringar"
 
 #: common.opt:1466
 msgid "Enable conditional dead code elimination for builtin calls"
@@ -17979,9 +17961,8 @@ msgid "Generate debug information in COFF format"
 msgstr "Generera felsökningsinformation i COFF-format"
 
 #: common.opt:1490
-#, fuzzy
 msgid "Generate debug information in DWARF v2 (or later) format"
-msgstr "Generera felsökningsinformation i DWARF v2-format"
+msgstr "Generera felsökningsinformation i DWARF v2-format (eller senare)"
 
 #: common.opt:1494
 msgid "Generate debug information in default extended format"
@@ -18004,9 +17985,8 @@ msgid "Don't emit DWARF additions beyond selected version"
 msgstr "Mata inte ut DWARF-tillägg utöver vald version"
 
 #: common.opt:1514
-#, fuzzy
 msgid "Toggle debug information generation"
-msgstr "Generera felsökningsinformation i VMS-format"
+msgstr "Växla generering av felsökningsinformation"
 
 #: common.opt:1518
 msgid "Generate debug information in VMS format"
@@ -18057,24 +18037,24 @@ msgid "Create a position independent executable"
 msgstr "Skapa ett positionsoberoende körbart program"
 
 #: attribs.c:293
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute directive ignored"
-msgstr "attributdirektivet %qs ignorerat"
+msgstr "attributdirektivet %qE ignorerat"
 
 #: attribs.c:301
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of arguments specified for %qE attribute"
-msgstr "fel antal argument angivet för attributet %qs"
+msgstr "fel antal argument angivet för attributet %qE"
 
 #: attribs.c:319
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute does not apply to types"
-msgstr "attributet %qs är inte applicerbart på typer"
+msgstr "attributet %qE är inte applicerbart på typer"
 
 #: attribs.c:370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to function types"
-msgstr "attributet %qs är bara tillämpligt på funktionstyper"
+msgstr "attributet %qE är bara tillämpligt på funktionstyper"
 
 #: attribs.c:380
 #, gcc-internal-format
@@ -18327,14 +18307,14 @@ msgid "logical %<and%> applied to non-boolean constant"
 msgstr "logiskt %<and%> använt på en icke-boolesk konstant"
 
 #: c-common.c:1699
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "logical %<or%> of collectively exhaustive tests is always true"
-msgstr "%<and%> mellan ömsesidigt uteslutande likhetstester är alltid 0"
+msgstr "logiskt %<or%> av tillsammans uttömmande tester är alltid sant"
 
 #: c-common.c:1703
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "logical %<and%> of mutually exclusive tests is always false"
-msgstr "%<and%> mellan ömsesidigt uteslutande likhetstester är alltid 0"
+msgstr "logiskt %<and%> mellan ömsesidigt uteslutande tester är alltid falskt"
 
 #: c-common.c:1738
 #, gcc-internal-format
@@ -18552,9 +18532,9 @@ msgid "duplicate (or overlapping) case value"
 msgstr "dubbla (eller överlappande) case-värden"
 
 #: c-common.c:5424
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "this is the first entry overlapping that value"
-msgstr "%Jdetta är det första fallet som överlappar det värdet"
+msgstr "detta är det första fallet som överlappar det värdet"
 
 #: c-common.c:5428
 #, gcc-internal-format
@@ -18562,9 +18542,9 @@ msgid "duplicate case value"
 msgstr "upprepat case-värde"
 
 #: c-common.c:5429
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previously used here"
-msgstr "%Jtidigare använd här"
+msgstr "tidigare använt här"
 
 #: c-common.c:5433
 #, gcc-internal-format
@@ -18572,29 +18552,29 @@ msgid "multiple default labels in one switch"
 msgstr "flera default-etiketter i en switch"
 
 #: c-common.c:5435
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "this is the first default label"
-msgstr "%Jdetta är den första default-etiketten"
+msgstr "detta är den första default-etiketten"
 
 #: c-common.c:5487
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case value %qs not in enumerated type"
-msgstr "%Jcase-värde %qs är inte i en uppräkningstyp"
+msgstr "case-värde %qs är inte i en uppräkningstyp"
 
 #: c-common.c:5492
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case value %qs not in enumerated type %qT"
-msgstr "%Jcase-värde %qs är inte i uppräkningstyp %qT"
+msgstr "case-värde %qs är inte i uppräkningstypen %qT"
 
 #: c-common.c:5551
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "switch missing default case"
-msgstr "%Hswitch saknar default-fall"
+msgstr "switch saknar default-fall"
 
 #: c-common.c:5623
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enumeration value %qE not handled in switch"
-msgstr "%Huppräkningsvärdet för %qE hanteras inte i switch"
+msgstr "uppräkningsvärdet %qE hanteras inte i switch"
 
 #: c-common.c:5649
 #, gcc-internal-format
@@ -18666,9 +18646,9 @@ msgid "constructor priorities must be integers from 0 to %d inclusive"
 msgstr "konstruerarprioriteter måste vara heltal från 0 till och med %d"
 
 #: c-common.c:6433
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown machine mode %qE"
-msgstr "okänt maskinläge %qs"
+msgstr "okänt maskinläge %qE"
 
 #: c-common.c:6462
 #, gcc-internal-format
@@ -18711,9 +18691,9 @@ msgid "mode %qs applied to inappropriate type"
 msgstr "läge %qs applicerat på olämplig typ"
 
 #: c-common.c:6582
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "section attribute cannot be specified for local variables"
-msgstr "%Jattributet \"section\" kan inte anges för lokala variabler"
+msgstr "attributet \"section\" kan inte anges för lokala variabler"
 
 #: c-common.c:6593 config/bfin/bfin.c:5647 config/bfin/bfin.c:5698
 #: config/bfin/bfin.c:5725 config/bfin/bfin.c:5738
@@ -18732,9 +18712,9 @@ msgid "section attribute not allowed for %q+D"
 msgstr "attributet \"section\" är inte tillåten för %q+D"
 
 #: c-common.c:6616
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "section attributes are not supported for this target"
-msgstr "%Jattributet \"section\" stöds inte för denna målarkitektur"
+msgstr "attributet \"section\" stöds inte för denna målarkitektur"
 
 #: c-common.c:6648
 #, gcc-internal-format
@@ -18782,9 +18762,9 @@ msgid "alias argument not a string"
 msgstr "aliasargumentet är inte en sträng"
 
 #: c-common.c:6836
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weakref attribute must appear before alias attribute"
-msgstr "%Jattributet weakref måste vara före attributet alias"
+msgstr "attributet weakref måste vara före attributet alias"
 
 #: c-common.c:6865
 #, gcc-internal-format
@@ -18832,14 +18812,14 @@ msgid "tls_model argument must be one of \"local-exec\", \"initial-exec\", \"loc
 msgstr "tls_model-argument måste vara ett av \"local-exec\", \"initial-exec\", \"local-dynamic\" eller \"global-dynamic\""
 
 #: c-common.c:7047 c-common.c:7139 config/m32c/m32c.c:2853
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute applies only to functions"
-msgstr "%Jattributet %qE fungerar bara på funktioner"
+msgstr "attributet %qE är bara tillämpligt på funktioner"
 
 #: c-common.c:7053 c-common.c:7145
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t set %qE attribute after definition"
-msgstr "%Jkan inte sätta attributet %qE efter definitionen"
+msgstr "kan inte sätta attributet %qE efter definitionen"
 
 #: c-common.c:7099
 #, gcc-internal-format
@@ -18847,9 +18827,9 @@ msgid "alloc_size parameter outside range"
 msgstr "alloc_size-parameter utanför giltigt intervall"
 
 #: c-common.c:7202
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deprecated message is not a string"
-msgstr "versionsattributet är inte en sträng"
+msgstr "deprecated-meddelande är inte en sträng"
 
 #: c-common.c:7242
 #, gcc-internal-format
@@ -18990,9 +18970,9 @@ msgid "cannot apply %<offsetof%> when %<operator[]%> is overloaded"
 msgstr "går inte att applicera %<offsetof%> när %<operator[]%> är överlagrad"
 
 #: c-common.c:8363
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot apply %<offsetof%> to a non constant address"
-msgstr "det går inte att använda %<offsetof%> på medlemsfunktion %qD"
+msgstr "det går inte att använda %<offsetof%> på en icke-konstant adress"
 
 #: c-common.c:8376 cp/typeck.c:4877
 #, gcc-internal-format
@@ -19236,9 +19216,9 @@ msgid "type of array %q+D completed incompatibly with implicit initialization"
 msgstr "den kompletterade typen på vektor %q+D är okompatibel med implicit initiering"
 
 #: c-decl.c:1462 c-decl.c:5672 c-decl.c:6450 c-decl.c:7051
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "originally defined here"
-msgstr "%Jursprunglig definition fanns här"
+msgstr "ursprungligen definierad här"
 
 #: c-decl.c:1533
 #, gcc-internal-format
@@ -19321,19 +19301,19 @@ msgid "conflicting types for %q+D"
 msgstr "motstridiga typer på %q+D"
 
 #: c-decl.c:1759
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting named address spaces (generic vs %s) for %q+D"
-msgstr "motstridiga typattribut angivna för %q+#D"
+msgstr "motstridiga namngivna adressrymder (generisk respektive %s) för %q+D"
 
 #: c-decl.c:1763
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting named address spaces (%s vs generic) for %q+D"
-msgstr "motstridiga typattribut angivna för %q+#D"
+msgstr "motstridiga namngivna adressrymder (%s repektive generisk) för %q+D"
 
 #: c-decl.c:1767
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting named address spaces (%s vs %s) for %q+D"
-msgstr "motstridiga typattribut angivna för %q+#D"
+msgstr "motstridiga namngivna adressrymder (%s respektive %s) för %q+D"
 
 #: c-decl.c:1776
 #, gcc-internal-format
@@ -19367,9 +19347,9 @@ msgid "%<gnu_inline%> attribute present on %q+D"
 msgstr "attribut %<gnu_inline%> finns på %q+D"
 
 #: c-decl.c:1920
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "but not here"
-msgstr "%Jmen inte här"
+msgstr "men inte här"
 
 #: c-decl.c:1938
 #, gcc-internal-format
@@ -19444,9 +19424,9 @@ msgstr "deklaration av %q+D skuggar en tidigare lokal deklaration"
 
 #: c-decl.c:2519 cp/name-lookup.c:1050 cp/name-lookup.c:1083
 #: cp/name-lookup.c:1092
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowed declaration is here"
-msgstr "%Jskuggad deklaration är här"
+msgstr "skuggad deklaration är här"
 
 #: c-decl.c:2646
 #, gcc-internal-format
@@ -19469,24 +19449,24 @@ msgid "incompatible implicit declaration of function %qD"
 msgstr "inkompatibel implicit deklaration av funktionen %qD"
 
 #: c-decl.c:2942
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE undeclared here (not in a function)"
-msgstr "%H%qE är odeklarerad här (inte i en funktion)"
+msgstr "%qE är odeklarerad här (inte i en funktion)"
 
 #: c-decl.c:2947
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE undeclared (first use in this function)"
-msgstr "%H%qE är odeklarerad (första förekomsten i denna funktion)"
+msgstr "%qE är odeklarerad (första förekomsten i denna funktion)"
 
 #: c-decl.c:2951
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "(Each undeclared identifier is reported only once"
-msgstr "%H(Varje odeklarerad identifierare rapporteras bara en gång"
+msgstr "(Varje odeklarerad identifierare rapporteras bara en gång"
 
 #: c-decl.c:2952
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "for each function it appears in.)"
-msgstr "%Hför varje funktion den finns i.)"
+msgstr "för varje funktion den finns i.)"
 
 #: c-decl.c:3001 cp/decl.c:2436
 #, gcc-internal-format
@@ -19499,19 +19479,19 @@ msgid "jump into scope of identifier with variably modified type"
 msgstr "hopp in i räckvidd för identifierare med variabel typ"
 
 #: c-decl.c:3040
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump skips variable initialization"
-msgstr "  hoppar över initiering av %q+#D"
+msgstr "hoppar över variabelinitiering"
 
 #: c-decl.c:3041 c-decl.c:3097 c-decl.c:3182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "label %qD defined here"
-msgstr "etikett %q+D är definierad men inte använd"
+msgstr "etikett %qD är definierad här"
 
 #: c-decl.c:3042 c-decl.c:3306
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared here"
-msgstr "%q+D är deklarerad här"
+msgstr "%qD är deklarerad här"
 
 #: c-decl.c:3096 c-decl.c:3181
 #, gcc-internal-format
@@ -19529,9 +19509,9 @@ msgid "duplicate label %qD"
 msgstr "dubblerad etikett %qD"
 
 #: c-decl.c:3243
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "traditional C lacks a separate namespace for labels, identifier %qE conflicts"
-msgstr "%Htraditionell C saknar en separat namnrymd för etiketter, identifierare %qE står i konflikt"
+msgstr "traditionell C saknar en separat namnrymd för etiketter, identifierare %qE står i konflikt"
 
 #: c-decl.c:3304
 #, gcc-internal-format
@@ -19544,14 +19524,14 @@ msgid "switch starts here"
 msgstr "switch börjar här"
 
 #: c-decl.c:3315
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "switch jumps into statement expression"
-msgstr "hopp in i satsuttryck"
+msgstr "switch hoppar in i satsuttryck"
 
 #: c-decl.c:3386
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE defined as wrong kind of tag"
-msgstr "%H%qE definierad som fel sorts tagg"
+msgstr "%qE definierad som fel sorts tagg"
 
 #: c-decl.c:3618
 #, gcc-internal-format
@@ -19693,9 +19673,9 @@ msgid "cannot put object with volatile field into register"
 msgstr "kan inte lägga objekt med volatile-fält i register"
 
 #: c-decl.c:4391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "uninitialized const %qD is invalid in C++"
-msgstr "oinitierade const %qD"
+msgstr "oinitierad const %qD är ogiltig i C++"
 
 #: c-decl.c:4437
 #, gcc-internal-format
@@ -19743,9 +19723,9 @@ msgid "%qs is narrower than values of its type"
 msgstr "%qs är smalare än värdena av sin typ"
 
 #: c-decl.c:4647
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 forbids array %qE whose size can%'t be evaluated"
-msgstr "ISO C90 förbjuder vektor %qs vars storlek inte kan beräknas"
+msgstr "ISO C90 förbjuder vektor %qE vars storlek inte kan beräknas"
 
 #: c-decl.c:4651
 #, gcc-internal-format
@@ -19753,9 +19733,9 @@ msgid "ISO C90 forbids array whose size can%'t be evaluated"
 msgstr "ISO C90 förbjuder vektorer vars storlek inte kan beräknas"
 
 #: c-decl.c:4658
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 forbids variable length array %qE"
-msgstr "ISO C90 förbjuder vektor %qs med variabel längd"
+msgstr "ISO C90 förbjuder vektor %qE med variabel längd"
 
 #: c-decl.c:4661
 #, gcc-internal-format
