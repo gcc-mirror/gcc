@@ -1,14 +1,33 @@
+2010-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h (basic_string<>::
+	basic_string(basic_string&&), operator=(basic_string&&),
+	assign(basic_string&&)): Add.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/ext/vstring.h (__versa_string<>::assign(__versa_string&&)):
+	Add.
+	(operator=(__versa_string&&)): Don't call clear unnecessarily.
+	* include/ext/rc_string_base.h (__rc_string_base<>::
+	__rc_string_base(__rc_string_base&&)): Simplify a tad.
+	* testsuite/21_strings/basic_string/cons/char/moveable.cc: New.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable.cc: Likewise.
+	* testsuite/ext/vstring/assign/move_assign.cc: Likewise.
+	* testsuite/21_strings/basic_string/assign/char/move_assign.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/assign/wchar_t/move_assign.cc:
+	Likewise.
+
 2010-01-10  Silvius Rus  <rus@google.com>
 
 	* configure.ac: Add detection of execinfo.h.
-	* configure: Same.
-	* config.h.in: Same.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
 	* doc/xml/manual/profile_mode.xml: Add list_to_slist manual.
 	Also, correct user interface mistakes.
-	* include/Makefile.in: Add references to new include files.
 	* include/Makefile.am: Add references to new include files.
+	* include/Makefile.in: Regenerate.
 	* include/backward/hash_map: Remove profile include.
-	* include/backward/hash_set: Remove profile include.
+	* include/backward/hash_set: Likewise.
 	* include/profile/hashtable.h: Delete file.
 	* include/profile/iterator_tracker.h: New file.
 	* include/profile/vector: Add instrumentation for tracked iterator.

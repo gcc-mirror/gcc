@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-string-conversions "" }
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 // NOTE: This makes use of the fact that we know how moveable
 // is implemented on vstring (via swap). If the implementation changes
 // this test may begin to fail.
@@ -31,28 +30,20 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  __gnu_cxx::__sso_string a,b;
+  __gnu_cxx::__sso_string a, b;
   a.push_back('1');
-  b = std::move(a);
+  b.assign(std::move(a));
   VERIFY( b.size() == 1 && b[0] == '1' && a.size() == 0 );
-
-  __gnu_cxx::__sso_string c(std::move(b));
-  VERIFY( c.size() == 1 && c[0] == '1' );
-  VERIFY( b.size() == 0 );
 }
 
 void test02()
 {
   bool test __attribute__((unused)) = true;
 
-  __gnu_cxx::__rc_string a,b;
+  __gnu_cxx::__rc_string a, b;
   a.push_back('1');
-  b = std::move(a);
+  b.assign(std::move(a));
   VERIFY( b.size() == 1 && b[0] == '1' && a.size() == 0 );
-
-  __gnu_cxx::__rc_string c(std::move(b));
-  VERIFY( c.size() == 1 && c[0] == '1' );
-  VERIFY( b.size() == 0 );
 }
 
 int main()

@@ -1098,6 +1098,15 @@ GLIBCXX_3.4.14 {
     _ZNSs13shrink_to_fitEv;
     _ZNSbIwSt11char_traitsIwESaIwEE13shrink_to_fitEv;
 
+    # string|wstring move contructor, move assignment operator and
+    # move assign.
+    _ZNSsC1EOSs;
+    _ZNSbIwSt11char_traitsIwESaIwEEC1EOS2_;
+    _ZNSsaSEOSs;
+    _ZNSbIwSt11char_traitsIwESaIwEEC1EOS2_;
+    _ZNSs6assignEOSs;
+    _ZNSbIwSt11char_traitsIwESaIwEE6assignEOS2_;
+
     _ZSt25__throw_bad_function_callv;
 
     # std::time_get::_M_extract_wday_or_month
