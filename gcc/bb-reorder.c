@@ -1981,7 +1981,9 @@ gate_duplicate_computed_gotos (void)
 {
   if (targetm.cannot_modify_jumps_p ())
     return false;
-  return (optimize > 0 && flag_expensive_optimizations);
+  return (optimize > 0
+	  && flag_expensive_optimizations
+	  && ! optimize_function_for_size_p (cfun));
 }
 
 
@@ -2070,9 +2072,6 @@ duplicate_computed_gotos (void)
 	  || single_succ (bb) == EXIT_BLOCK_PTR
 	  || single_succ (bb) == bb->next_bb
 	  || single_pred_p (single_succ (bb)))
-	continue;
-
-      if (!optimize_bb_for_size_p (bb))
 	continue;
 
       /* The successor block has to be a duplication candidate.  */

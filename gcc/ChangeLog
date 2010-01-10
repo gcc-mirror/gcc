@@ -1,3 +1,10 @@
+2010-01-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/42621
+	* bb-reorder.c (gate_duplicated_computed_gotos): Only run if not
+	optimizing for size.
+	(duplicate_computed_gotos): Remove now-redundant check.
+
 2010-01-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/37454
