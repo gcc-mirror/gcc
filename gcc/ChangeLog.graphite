@@ -1,5 +1,19 @@
 2010-01-08  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42393
+	* graphite-clast-to-gimple.c: Fix formatting.
+	* sese.c (defined_in_loop_p): Renamed name_defined_in_loop_p.
+	(expr_defined_in_loop_p): New.
+	(add_loop_exit_phis): Also handle full expressions: remove from
+	the rename_map the expressions defined in the loop that we're closing.
+
+	* testsuite/gfortran.dg/graphite/pr42393-1.f90: New.
+	* testsuite/gfortran.dg/graphite/pr42393.f90: Add new flags
+	-fno-loop-block -fno-loop-interchange -fno-loop-strip-mine to also
+	make this testcase useful in the Graphite branch.
+
+2010-01-08  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-scop-detection.c (exclude_component_ref): Removed.
 	(is_simple_operand): Removed.
 	(stmt_simple_for_scop_p): Remove use of is_simple_operand.

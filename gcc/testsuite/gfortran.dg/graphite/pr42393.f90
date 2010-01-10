@@ -1,4 +1,4 @@
-! { dg-options "-fgraphite-identity -O2" }
+! { dg-options "-O2 -fgraphite-identity -fno-loop-block -fno-loop-interchange -fno-loop-strip-mine" }
 
 MODULE beta_gamma_psi
   INTEGER, PARAMETER :: dp=KIND(0.0D0)

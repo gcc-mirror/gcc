@@ -1037,11 +1037,39 @@ get_false_edge_from_guard_bb (basic_block bb)
 /* Returns true when NAME is defined in LOOP.  */
 
 static bool
-defined_in_loop_p (tree name, loop_p loop)
+name_defined_in_loop_p (tree name, loop_p loop)
 {
   gimple stmt = SSA_NAME_DEF_STMT (name);
 
   return (gimple_bb (stmt)->loop_father == loop);
+}
+
+/* Returns true when EXPR contains SSA_NAMEs defined in LOOP.  */
+
+static bool
+expr_defined_in_loop_p (tree expr, loop_p loop)
+{
+  switch (TREE_CODE_LENGTH (TREE_CODE (expr)))
+    {
+    case 3:
+      return expr_defined_in_loop_p (TREE_OPERAND (expr, 0), loop)
+	|| expr_defined_in_loop_p (TREE_OPERAND (expr, 1), loop)
+	|| expr_defined_in_loop_p (TREE_OPERAND (expr, 2), loop);
+
+    case 2:
+      return expr_defined_in_loop_p (TREE_OPERAND (expr, 0), loop)
+	|| expr_defined_in_loop_p (TREE_OPERAND (expr, 1), loop);
+
+    case 1:
+      return expr_defined_in_loop_p (TREE_OPERAND (expr, 0), loop);
+
+    case 0:
+      return TREE_CODE (expr) == SSA_NAME
+	&& name_defined_in_loop_p (expr, loop);
+
+    default:
+      return false;
+    }
 }
 
 /* Returns the gimple statement that uses NAME outside the loop it is
@@ -1100,26 +1128,34 @@ add_loop_exit_phis (void **slot, void *data)
   struct rename_map_elt_s *entry;
   alep_p a;
   loop_p loop;
-  tree expr, new_name;
+  tree expr, new_name, old_name;
   bool def_in_loop_p, used_outside_p, need_close_phi_p;
   gimple old_close_phi;
 
-  if (!slot || !data)
+  if (!slot || !*slot || !data)
     return 1;
 
   entry = (struct rename_map_elt_s *) *slot;
   a = (alep_p) data;
   loop = a->loop;
-  expr = entry->expr;
+  new_name = expr = entry->expr;
+  old_name = entry->old_name;
+
+  def_in_loop_p = expr_defined_in_loop_p (expr, loop);
+  if (!def_in_loop_p)
+    return 1;
+
+  /* Remove the old rename from the map when the expression is defined
+     in the loop that we're closing.  */
+  free (*slot);
+  *slot = NULL;
 
   if (TREE_CODE (expr) != SSA_NAME)
     return 1;
 
-  new_name = expr;
-  def_in_loop_p = defined_in_loop_p (new_name, loop);
-  old_close_phi = alive_after_loop (entry->old_name);
+  old_close_phi = alive_after_loop (old_name);
   used_outside_p = (old_close_phi != NULL);
-  need_close_phi_p = (def_in_loop_p && used_outside_p
+  need_close_phi_p = (used_outside_p
 		      && close_phi_not_yet_inserted_p (loop, new_name));
 
   /* Insert a loop close phi node.  */
@@ -1134,13 +1170,6 @@ add_loop_exit_phis (void **slot, void *data)
       VEC_safe_push (rename_map_elt, heap, a->new_renames,
 		     new_rename_map_elt (gimple_phi_result (old_close_phi),
 					 new_res));
-    }
-
-  /* Remove the old rename from the map.  */
-  if (def_in_loop_p && *slot)
-    {
-      free (*slot);
-      *slot = NULL;
     }
 
   return 1;
