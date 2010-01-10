@@ -4777,7 +4777,7 @@ d_demangle (const char *mangled, int options, size_t *palc)
       return NULL;
     }
 
-  *palc = dgs.allocation_failure ? 1 : 0;
+  *palc = dgs.allocation_failure ? 1 : dgs.alc;
   return dgs.buf;
 }
 
