@@ -261,8 +261,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       operator=(__versa_string&& __str)
       {
 	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
 	this->swap(__str);
 	return *this;
       }
@@ -783,6 +781,23 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	this->_M_assign(__str);
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Set value to contents of another string.
+       *  @param  __str  Source string to use.
+       *  @return  Reference to this string.
+       *
+       *  This function sets this string to the exact contents of @a __str.
+       *  @a __str is a valid, but unspecified string.
+       */
+      __versa_string&
+      assign(__versa_string&& __str)
+      {
+	this->swap(__str);
+	return *this;
+      }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
        *  @brief  Set value to a substring of a string.

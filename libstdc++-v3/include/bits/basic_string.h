@@ -1,7 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -419,8 +419,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Default constructor creates an empty string.
        */
-      inline
-      basic_string();
+      basic_string()
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
+#else
+      : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()){ }
+#endif
 
       /**
        *  @brief  Construct an empty string using allocator @a a.
@@ -479,6 +483,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
+       *  @brief  Move construct string.
+       *  @param  str  Source string.
+       *
+       *  The newly-created string contains the exact contents of @a str.
+       *  @a str is a valid, but unspecified string.
+       **/
+      basic_string(basic_string&& __str)
+      : _M_dataplus(__str._M_dataplus)
+      {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING	
+	__str._M_data(_S_empty_rep()._M_refdata());
+#else
+	__str._M_data(_S_construct(size_type(), _CharT(), get_allocator()));
+#endif
+      }
+
+      /**
        *  @brief  Construct string from an initializer list.
        *  @param  l  std::initializer_list of characters.
        *  @param  a  Allocator to use (default is default allocator).
@@ -533,6 +554,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Move assign the value of @a str to this string.
+       *  @param  str  Source string.
+       *
+       *  The contents of @a str are moved into this string (without copying).
+       *  @a str is a valid, but unspecified string.
+       **/
+      basic_string&
+      operator=(basic_string&& __str)
+      {
+	// NB: DR 1204.
+	this->swap(__str);
+	return *this;
+      }
+
       /**
        *  @brief  Set value to string constructed from initializer list.
        *  @param  l  std::initializer_list.
@@ -975,6 +1011,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        */
       basic_string&
       assign(const basic_string& __str);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Set value to contents of another string.
+       *  @param  str  Source string to use.
+       *  @return  Reference to this string.
+       *
+       *  This function sets this string to the exact contents of @a str.
+       *  @a str is a valid, but unspecified string.
+       */
+      basic_string&
+      assign(basic_string&& __str)
+      {
+	this->swap(__str);
+	return *this;
+      }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
       /**
        *  @brief  Set value to a substring of a string.
@@ -2195,15 +2248,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
   };
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    inline basic_string<_CharT, _Traits, _Alloc>::
-    basic_string()
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
-    : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
-#else
-    : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()) { }
-#endif
 
   // operator+
   /**
