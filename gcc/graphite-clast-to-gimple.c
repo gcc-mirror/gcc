@@ -812,10 +812,11 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
-translate_clast_for_loop (sese region, loop_p context_loop, struct clast_for *stmt, edge next_e,
-		     htab_t rename_map, VEC (tree, heap) **newivs,
-		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
-		     htab_t params_index)
+translate_clast_for_loop (sese region, loop_p context_loop,
+			  struct clast_for *stmt, edge next_e,
+			  htab_t rename_map, VEC (tree, heap) **newivs,
+			  htab_t newivs_index, htab_t bb_pbb_mapping,
+			  int level, htab_t params_index)
 {
   struct loop *loop = graphite_create_new_loop (region, next_e, stmt,
  						context_loop, newivs,
@@ -858,8 +859,8 @@ translate_clast_for_loop (sese region, loop_p context_loop, struct clast_for *st
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
-translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt, edge next_e,
-		     htab_t rename_map, VEC (tree, heap) **newivs,
+translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
+		     edge next_e, htab_t rename_map, VEC (tree, heap) **newivs,
 		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		     htab_t params_index)
 {
@@ -875,7 +876,8 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt, e
 				     eq_rename_map_elts, free);
   htab_traverse (rename_map, copy_renames, before_guard);
 
-  next_e = translate_clast_for_loop (region, context_loop, stmt, true_e, rename_map, newivs,
+  next_e = translate_clast_for_loop (region, context_loop, stmt, true_e,
+				     rename_map, newivs,
 				     newivs_index, bb_pbb_mapping, level,
 				     params_index);
 
