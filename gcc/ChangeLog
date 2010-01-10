@@ -1,3 +1,9 @@
+2010-01-10  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/37454
+	* configure.ac: Save and restore LDFLAGS and LIBS
+	* configure: Regenerate.
+
 2010-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42667

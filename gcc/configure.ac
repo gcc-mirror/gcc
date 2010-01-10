@@ -4314,12 +4314,15 @@ if test x"$enable_plugin" = x"yes"; then
   fi
 
   # Check -ldl
+  saved_LIBS="$LIBS"
   AC_SEARCH_LIBS([dlopen], [dl])
   if test x"$ac_cv_search_dlopen" = x"-ldl"; then
     pluginlibs="$pluginlibs -ldl"
   fi
+  LIBS="$saved_LIBS"
 
   # Check that we can build shared objects with -fPIC -shared
+  saved_LDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS -fPIC -shared"
   AC_MSG_CHECKING([for -fPIC -shared])
   AC_TRY_LINK(
@@ -4330,6 +4333,7 @@ if test x"$enable_plugin" = x"yes"; then
     pluginlibs=
     enable_plugin=no
   fi
+  LDFLAGS="$saved_LDFLAGS"
 
   # If plugin support had been requested but not available, fail.
   if test x"$enable_plugin" = x"no" ; then
