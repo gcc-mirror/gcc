@@ -793,7 +793,7 @@ profile_headers = \
 	${profile_srcdir}/multiset.h \
 	${profile_srcdir}/set \
 	${profile_srcdir}/set.h \
-	${profile_srcdir}/hashtable.h
+	${profile_srcdir}/iterator_tracker.h
 profile_impl_srcdir = ${glibcxx_srcdir}/include/profile/impl
 profile_impl_builddir = ./profile/impl
 profile_impl_headers = \
@@ -806,7 +806,9 @@ profile_impl_headers = \
 	${profile_impl_srcdir}/profiler_state.h \
 	${profile_impl_srcdir}/profiler_trace.h \
 	${profile_impl_srcdir}/profiler_vector_size.h \
-	${profile_impl_srcdir}/profiler_vector_to_list.h
+	${profile_impl_srcdir}/profiler_vector_to_list.h \
+	${profile_impl_srcdir}/profiler_list_to_vector.h \
+	${profile_impl_srcdir}/profiler_list_to_slist.h
 
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.

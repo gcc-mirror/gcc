@@ -54,57 +54,54 @@
 
 namespace __gnu_profile
 {
-  /** @brief Hashtable size instrumentation trace producer.  */
-  class __trace_hashtable_size : public __trace_container_size
-  {
-  public:
-    __trace_hashtable_size() : __trace_container_size()
-    { __id = "hashtable-size"; }
-  };
 
-  // Initialization and report.
-  inline void
-  __trace_hashtable_size_init()
-  { __tables<0>::_S_hashtable_size = new __trace_hashtable_size(); }
-
-  inline void
-  __trace_hashtable_size_report(FILE* __f, __warning_vector_t& __warnings)
+/** @brief Hashtable size instrumentation trace producer.  */
+class __trace_hashtable_size : public __trace_container_size
+{
+ public:
+  __trace_hashtable_size() : __trace_container_size()
   {
-    if (__tables<0>::_S_hashtable_size)
-      {
-	__tables<0>::_S_hashtable_size->__collect_warnings(__warnings);
-	__tables<0>::_S_hashtable_size->__write(__f);
-      }
+    __id = "hashtable-size";
   }
+};
 
-  // Implementations of instrumentation hooks.
-  inline void
-  __trace_hashtable_size_construct(const void* __obj, size_t __num)
-  {
-    if (!__profcxx_init())
-      return;
+inline void __trace_hashtable_size_init()
+{
+  _GLIBCXX_PROFILE_DATA(_S_hashtable_size) = new __trace_hashtable_size();
+}
 
-    __tables<0>::_S_hashtable_size->__insert(__obj, __get_stack(), __num);
+inline void __trace_hashtable_size_report(FILE* __f, 
+                                          __warning_vector_t& __warnings)
+{
+  if (_GLIBCXX_PROFILE_DATA(_S_hashtable_size)) {
+    _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__collect_warnings(__warnings);
+    _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__write(__f);
   }
+}
 
-  inline void
-  __trace_hashtable_size_destruct(const void* __obj, size_t __num,
-				  size_t __inum)
-  {
-    if (!__profcxx_init())
-      return;
+inline void __trace_hashtable_size_construct(const void* __obj, size_t __num)
+{
+  if (!__profcxx_init()) return;
+  
+  _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__insert(__obj, __get_stack(),
+                                                     __num);
+}
 
-    __tables<0>::_S_hashtable_size->__destruct(__obj, __num, __inum);
-  }
+inline void __trace_hashtable_size_destruct(const void* __obj, size_t __num, 
+                                            size_t __inum)
+{
+  if (!__profcxx_init()) return;
 
-  inline void
-  __trace_hashtable_size_resize(const void* __obj, size_t __from, size_t __to)
-  {
-    if (!__profcxx_init())
-      return;
+  _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__destruct(__obj, __num, __inum);
+}
 
-    __tables<0>::_S_hashtable_size->__resize(__obj, __from, __to);
-  }
+inline void __trace_hashtable_size_resize(const void* __obj, size_t __from, 
+                                          size_t __to)
+{
+  if (!__profcxx_init()) return;
+
+  _GLIBCXX_PROFILE_DATA(_S_hashtable_size)->__resize(__obj, __from, __to);
+}
 
 } // namespace __gnu_profile
 
