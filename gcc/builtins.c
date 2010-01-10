@@ -135,7 +135,7 @@ static rtx expand_builtin_expect (tree, rtx);
 static tree fold_builtin_constant_p (tree);
 static tree fold_builtin_expect (location_t, tree, tree);
 static tree fold_builtin_classify_type (tree);
-static tree fold_builtin_strlen (location_t, tree);
+static tree fold_builtin_strlen (location_t, tree, tree);
 static tree fold_builtin_inf (location_t, tree, int);
 static tree fold_builtin_nan (tree, tree, int);
 static tree rewrite_call_expr (location_t, tree, int, tree, int, ...);
@@ -6617,7 +6617,7 @@ fold_builtin_classify_type (tree arg)
 /* Fold a call to __builtin_strlen with argument ARG.  */
 
 static tree
-fold_builtin_strlen (location_t loc, tree arg)
+fold_builtin_strlen (location_t loc, tree type, tree arg)
 {
   if (!validate_arg (arg, POINTER_TYPE))
     return NULL_TREE;
@@ -6626,12 +6626,7 @@ fold_builtin_strlen (location_t loc, tree arg)
       tree len = c_strlen (arg, 0);
 
       if (len)
-	{
-	  /* Convert from the internal "sizetype" type to "size_t".  */
-	  if (size_type_node)
-	    len = fold_convert_loc (loc, size_type_node, len);
-	  return len;
-	}
+	return fold_convert_loc (loc, type, len);
 
       return NULL_TREE;
     }
@@ -9659,7 +9654,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
       return fold_builtin_classify_type (arg0);
 
     case BUILT_IN_STRLEN:
-      return fold_builtin_strlen (loc, arg0);
+      return fold_builtin_strlen (loc, type, arg0);
 
     CASE_FLT_FN (BUILT_IN_FABS):
       return fold_builtin_fabs (loc, arg0, type);
