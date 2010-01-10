@@ -112,7 +112,12 @@ namespace __gnu_debug
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-    basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc())
+    basic_string(basic_string&& __str)
+    : _Base(std::forward<_Base>(__str))
+    { }
+
+    basic_string(std::initializer_list<_CharT> __l,
+		 const _Allocator& __a = _Allocator())
     : _Base(__l, __a)
     { }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
@@ -146,7 +151,15 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     basic_string&
-    operator=(initializer_list<_CharT> __l)
+    operator=(basic_string&& __str)
+    {
+      *static_cast<_Base*>(this) = std::forward<_Base>(__str);
+      this->_M_invalidate_all();
+      return *this;
+    }
+
+    basic_string&
+    operator=(std::initializer_list<_CharT> __l)
     {
       *static_cast<_Base*>(this) = __l;
       this->_M_invalidate_all();
@@ -277,7 +290,7 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     basic_string&
-    operator+=(initializer_list<_CharT> __l)
+    operator+=(std::initializer_list<_CharT> __l)
     {
       _M_base() += __l;
       this->_M_invalidate_all();
@@ -354,6 +367,16 @@ namespace __gnu_debug
       return *this;
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    basic_string&
+    assign(basic_string&& __x)
+    {
+      _Base::assign(std::forward<_Base>(__x));
+      this->_M_invalidate_all();
+      return *this;
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
     basic_string&
     assign(const basic_string& __str, size_type __pos, size_type __n)
     {
@@ -400,7 +423,7 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     basic_string&
-    assign(initializer_list<_CharT> __l)
+    assign(std::initializer_list<_CharT> __l)
     {
       _Base::assign(__l);
       this->_M_invalidate_all();
@@ -479,7 +502,7 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     void
-    insert(iterator __p, initializer_list<_CharT> __l)
+    insert(iterator __p, std::initializer_list<_CharT> __l)
     {
       _Base::insert(__p, __l);
       this->_M_invalidate_all();
@@ -611,7 +634,7 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       basic_string& replace(iterator __i1, iterator __i2,
-			    initializer_list<_CharT> __l)
+			    std::initializer_list<_CharT> __l)
       {
 	__glibcxx_check_erase_range(__i1, __i2);
 	_Base::replace(__i1.base(), __i2.base(), __l);

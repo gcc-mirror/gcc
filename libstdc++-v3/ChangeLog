@@ -1,5 +1,13 @@
 2010-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/debug/string (basic_string<>::basic_string(basic_string&&),
+	operator=(basic_string&&), assign(basic_string&&)): Add.
+
+	* include/debug/string: Fully qualify initializer_list with std; fix
+	_Allocator misspellings as _Alloc.
+
+2010-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/basic_string.h (basic_string<>::
 	basic_string(basic_string&&), operator=(basic_string&&),
 	assign(basic_string&&)): Add.
