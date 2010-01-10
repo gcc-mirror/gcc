@@ -134,7 +134,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   </itemizedlist>
   </para>
 
-  <para>Two files are generated.  <code>libstdcxx-profile.txt</code>
+  <para>Three files are generated.  <code>libstdcxx-profile.txt</code>
    contains human readable advice.  <code>libstdcxx-profile.raw</code>
    contains implementation specific data about each diagnostic.
    Their format is not documented.  They are sufficient to generate
@@ -142,6 +142,9 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    of keeping this raw format is that traces from multiple executions can
    be aggregated simply by concatenating the raw traces.  We intend to
    offer an external utility program that can issue advice from a trace.
+   <code>libstdcxx-profile.conf.out</code> lists the actual diagnostic
+   parameters used.  To alter parameters, edit this file and rename it to
+   <code>libstdcxx-profile.conf</code>.
   </para>
 
   <para>Advice is given regardless whether the transformation is valid.
@@ -163,19 +166,19 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    in the environment where the program is run, before starting execution.
   <itemizedlist>
   <listitem><para>
-   <code>[NO]_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>:
-   enable/disable specific diagnostics.
+   <code>_GLIBCXX_PROFILE_NO_&lt;diagnostic&gt;</code>:
+   disable specific diagnostics.
    See section Diagnostics for possible values.
    (Environment variables not supported.)
    </para></listitem>
   <listitem><para>
-   <code>GLIBCXX_PROFILE_TRACE_PATH_ROOT</code>: set an alternative root
+   <code>_GLIBCXX_PROFILE_TRACE_PATH_ROOT</code>: set an alternative root
    path for the output files.
    </para></listitem>
-  <listitem><para>GLIBCXX_PROFILE_MAX_WARN_COUNT: set it to the maximum
+  <listitem><para>_GLIBCXX_PROFILE_MAX_WARN_COUNT: set it to the maximum
    number of warnings desired.  The default value is 10.</para></listitem>
   <listitem><para>
-   <code>GLIBCXX_PROFILE_MAX_STACK_DEPTH</code>: if set to 0, 
+   <code>_GLIBCXX_PROFILE_MAX_STACK_DEPTH</code>: if set to 0, 
    the advice will
    be collected and reported for the program as a whole, and not for each
    call context.
@@ -184,7 +187,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    The default value is 32.
    </para></listitem>
   <listitem><para>
-   <code>GLIBCXX_PROFILE_MEM_PER_DIAGNOSTIC</code>:
+   <code>_GLIBCXX_PROFILE_MEM_PER_DIAGNOSTIC</code>:
    set a limit on how much memory to use for the accounting tables for each
    diagnostic type.  When this limit is reached, new events are ignored
    until the memory usage decreases under the limit.  Generally, this means
@@ -192,16 +195,16 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    live containers are deleted.  The default is 128 MB.
    </para></listitem>
   <listitem><para>
-   <code>GLIBCXX_PROFILE_NOTHREADS</code>:
-   Make the library not use threads.  Otherwise, pthread mutexes are used
-   to protect access to internal data structures.  This should be useful
-   only if the program is single threaded and you want to avoid the overhead
-   of aquiring/releasing locks unnecessarily.
+   <code>_GLIBCXX_PROFILE_NO_THREADS</code>:
+   Make the library not use threads.  If thread local storage (TLS) is not 
+   available, you will get a preprocessor error asking you to set
+   -D_GLIBCXX_PROFILE_NO_THREADS if your program is single-threaded.
+   Multithreded execution without TLS is not supported.
    (Environment variable not supported.)
    </para></listitem>
   <listitem><para>
-   <code>HAVE_EXECINFO_H</code>:
-   This name should be defined at library configuration time.
+   <code>_GLIBCXX_HAVE_EXECINFO_H</code>:
+   This name should be defined automatically at library configuration time.
    If your library was configured without <code>execinfo.h</code>, but
    you have it in your include path, you can define it explicitly.  Without
    it, advice is collected for the program as a whole, and not for each
@@ -1315,6 +1318,52 @@ operations.
 
 foo.cc:1: advice: Changing "list" to "vector" will save about 1000000 indirect
 memory references.
+</programlisting>
+</para></listitem>
+</itemizedlist>
+</sect3>
+
+<sect3 id="manual.ext.profile_mode.analysis.list_to_slist"
+ xreflabel="List to Forward List">
+<title>List to Forward List (Slist)</title>
+<itemizedlist>
+  <listitem><para><emphasis>Switch:</emphasis>
+  <code>_GLIBCXX_PROFILE_LIST_TO_SLIST</code>.
+  </para></listitem>
+  <listitem><para><emphasis>Goal:</emphasis> Detect cases where 
+  <code>list</code> could be substituted with <code>forward_list</code> for
+  better performance.
+  </para></listitem>
+  <listitem><para><emphasis>Fundamentals:</emphasis>
+  The memory footprint of a forward_list is smaller than that of a list.
+  This has beneficial effects on memory subsystem, e.g., fewer cache misses.
+  </para></listitem>
+  <listitem><para><emphasis>Sample runtime reduction:</emphasis>40%.
+  Note that the reduction is only noticeable if the size of the forward_list
+  node is in fact larger than that of the list node.  For memory allocators
+  with size classes, you will only notice an effect when the two node sizes
+  belong to different allocator size classes.
+  </para></listitem>
+  <listitem><para><emphasis>Recommendation:</emphasis>Replace list with
+  forward_list at site S.</para></listitem>
+  <listitem><para><emphasis>To instrument:</emphasis><code>list</code>
+  operations and iteration methods.</para></listitem>
+  <listitem><para><emphasis>Analysis:</emphasis>
+  Issue the advice if there are no <code>backwards</code> traversals
+  or insertion before a given node.
+  </para></listitem>
+  <listitem><para><emphasis>Cost model:</emphasis>
+  Always true.</para></listitem>
+  <listitem><para><emphasis>Example:</emphasis> 
+<programlisting>
+1  list&lt;int&gt; l;
+...
+2  int sum = 0;
+3  for (list&lt;int&gt;::iterator it = l.begin(); it != l.end(); ++it) {
+4    sum += *it;
+5  }
+
+foo.cc:1: advice: Change "list" to "forward_list".
 </programlisting>
 </para></listitem>
 </itemizedlist>

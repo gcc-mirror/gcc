@@ -54,49 +54,51 @@
 
 namespace __gnu_profile
 {
-  /** @brief Hashtable size instrumentation trace producer.  */
-  class __trace_vector_size : public __trace_container_size
-  {
-  public:
-    __trace_vector_size() : __trace_container_size() { __id = "vector-size"; }
-  };
 
-  // Initialization and report.
-  inline void 
-  __trace_vector_size_init()
-  { __tables<0>::_S_vector_size = new __trace_vector_size(); }
+/** @brief Hashtable size instrumentation trace producer.  */
+class __trace_vector_size : public __trace_container_size
+{
+ public:
+  __trace_vector_size() : __trace_container_size() { __id = "vector-size"; }
+};
 
-  inline void 
-  __trace_vector_size_report(FILE* __f, __warning_vector_t& __warnings)
-  {
-    if (__tables<0>::_S_vector_size) 
-      {
-	__tables<0>::_S_vector_size->__collect_warnings(__warnings);
-	__tables<0>::_S_vector_size->__write(__f);
-      }
+inline void __trace_vector_size_init()
+{
+  _GLIBCXX_PROFILE_DATA(_S_vector_size) = new __trace_vector_size();
+}
+
+inline void __trace_vector_size_report(FILE* __f, 
+                                       __warning_vector_t& __warnings)
+{
+  if (_GLIBCXX_PROFILE_DATA(_S_vector_size)) {
+    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__collect_warnings(__warnings);
+    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__write(__f);
   }
+}
 
-  // Implementations of instrumentation hooks.
-  inline void 
-  __trace_vector_size_construct(const void* __obj, size_t __num)
-  {
-    if (!__profcxx_init()) return;
-    __tables<0>::_S_vector_size->__insert(__obj, __get_stack(), __num);
-  }
+inline void __trace_vector_size_construct(const void* __obj, size_t __num)
+{
+  if (!__profcxx_init()) return;
 
-  inline void 
-  __trace_vector_size_destruct(const void* __obj, size_t __num, size_t __inum)
-  {
-    if (!__profcxx_init()) return;
-    __tables<0>::_S_vector_size->__destruct(__obj, __num, __inum);
-  }
+  _GLIBCXX_PROFILE_DATA(_S_vector_size)->__insert(__obj, __get_stack(), __num);
+}
 
-  inline void
-  __trace_vector_size_resize(const void* __obj, size_t __from, size_t __to)
-  {
-    if (!__profcxx_init()) return;
-    __tables<0>::_S_vector_size->__resize(__obj, __from, __to);
-  }
+inline void __trace_vector_size_destruct(const void* __obj, size_t __num,
+                                         size_t __inum)
+{
+  if (!__profcxx_init()) return;
+
+  _GLIBCXX_PROFILE_DATA(_S_vector_size)->__destruct(__obj, __num, __inum);
+}
+
+inline void __trace_vector_size_resize(const void* __obj, size_t __from,
+                                       size_t __to)
+{
+  if (!__profcxx_init()) return;
+
+  _GLIBCXX_PROFILE_DATA(_S_vector_size)->__resize(__obj, __from, __to);
+}
+
 } // namespace __gnu_profile
 
 #endif /* _GLIBCXX_PROFILE_PROFILER_VECTOR_SIZE_H */

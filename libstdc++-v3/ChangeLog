@@ -1,3 +1,37 @@
+2010-01-10  Silvius Rus  <rus@google.com>
+
+	* configure.ac: Add detection of execinfo.h.
+	* configure: Same.
+	* config.h.in: Same.
+	* doc/xml/manual/profile_mode.xml: Add list_to_slist manual.
+	Also, correct user interface mistakes.
+	* include/Makefile.in: Add references to new include files.
+	* include/Makefile.am: Add references to new include files.
+	* include/backward/hash_map: Remove profile include.
+	* include/backward/hash_set: Remove profile include.
+	* include/profile/hashtable.h: Delete file.
+	* include/profile/iterator_tracker.h: New file.
+	* include/profile/vector: Add instrumentation for tracked iterator.
+	* include/profile/list: Same.
+	* include/profile/impl/profiler_list_to_slist.h: New file.
+	* include/profile/impl/profiler_list_to_vector.h: Same.
+	* include/profile/impl/profiler.h: Add list_to_slist and
+	list_to_vector instrumentation hook interfaces.  Fixed broken
+	diagnostic disabling mechanism.
+	(_GLIBCXX_PROFILE_DEFINE_DATA,_GLIBCXX_PROFILE_DATA) New macros.
+	(__reentrance_guard) Fix bug.
+	* include/profile/impl/profiler_trace.h: Replace dummy templates
+	with _GLIBCXX_PROFILE_DEFINE_DATA.
+	* include/profile/impl/profiler_container_size.h: Same.
+	* include/profile/impl/profiler_vector_size.h: Same.
+	* include/profile/impl/profiler_hash_func.h: Same.
+	* include/profile/impl/profiler_vector_to_list.h: Same.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Same.
+	* include/profile/impl/profiler_hashtable_size.h: Same.
+	* include/profile/impl/profiler_node.h: Same.
+	* include/profile/impl/profiler_state.h: Same.  Also, remove
+	class __state. Also, use __sync_val_compare_and_swap to set state.
+
 2010-01-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/42230
