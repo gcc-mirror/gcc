@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fprefetch-loop-arrays" } */
+/* { dg-options "-O -fprefetch-loop-arrays -w" } */
+/* { dg-options "-O -fprefetch-loop-arrays -march=i686 -msse -w" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 void foo(int);
 void bar(int n)

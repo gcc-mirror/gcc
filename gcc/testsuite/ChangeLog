@@ -1,3 +1,8 @@
+2010-01-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/graphite/pr40281.c (dg-options): Add -w.
+	Add -march=i686 -msse for 32bit x86 targets.
+
 2010-01-10  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42667
