@@ -17,6 +17,8 @@
 	* testsuite/21_strings/basic_string/assign/wchar_t/move_assign.cc:
 	Likewise.
 
+	* testsuite/ext/vstring/cons/moveable.cc: Fix comment nit.
+
 2010-01-10  Silvius Rus  <rus@google.com>
 
 	* configure.ac: Add detection of execinfo.h.
