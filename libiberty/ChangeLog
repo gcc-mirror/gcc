@@ -1,3 +1,8 @@
+2010-01-09  Ian Lance Taylor  <iant@google.com>
+
+	PR other/42230
+	* cp-demangle.c (d_demangle): Return dgs.alc on success.
+
 2010-01-04  Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
 	PR target/42316

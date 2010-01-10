@@ -1,10 +1,15 @@
+2010-01-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/42230
+	* testsuite/abi/pr42230.cc: New.
+
 2010-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/set.h: Revert last change, per DR 1204 [Ready];
 	mention the latter in comment.
 	* include/debug/unordered_map: Likewise.
- 	* include/debug/multiset.h: Likewise.
- 	* include/debug/vector: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/vector: Likewise.
 	* include/debug/unordered_set: Likewise.
 	* include/debug/deque: Likewise.
 	* include/debug/map.h: Likewise.
