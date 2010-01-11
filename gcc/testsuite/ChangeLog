@@ -1,3 +1,9 @@
+2010-01-11  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/42416
+	* gcc.target/powerpc/warn-1.c: New test.
+	* gcc.target/powerpc/warn-2.c: New test.
+
 2010-01-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/x86_64/abi/avx/asm-support.S (snapshot_ret): Preserve
