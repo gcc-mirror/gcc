@@ -795,9 +795,6 @@ mmcu=*:-mmcu=%*}"
 /* This is the default without any -mmcu=* option (AT90S*).  */
 #define MULTILIB_DEFAULTS { "mmcu=avr2" }
 
-/* This is undefined macro for collect2 disabling */
-#define LINKER_NAME "ld"
-
 #define TEST_HARD_REG_CLASS(CLASS, REGNO) \
   TEST_HARD_REG_BIT (reg_class_contents[ (int) (CLASS)], REGNO)
 
