@@ -1,4 +1,8 @@
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 	    
 	PR translation/42467
