@@ -1,3 +1,9 @@
+2010-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41569
+	* Makefile.am: Disable dependencies.
+	* Makefile.in: Regenerated.
+
 2010-01-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/42520
