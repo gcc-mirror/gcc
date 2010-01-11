@@ -1,8 +1,9 @@
 # Finnish translation of GNU Compiler Collection
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright © 2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GCC package.
 # Ville Koskinen <ville.koskinen@iki.fi>, 2005.
-# Lauri Nurmi <lanurmi@iki.fi>, 2007-2009.
+# Jorma Karvonen <karvonen.jorma@gmail.com>, 2009.
+# Lauri Nurmi <lanurmi@iki.fi>, 2007-2010.
 #
 # Joitakin termejä, joille voi miettiä (parempaa) suomennosta:
 #
@@ -26,7 +27,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-03 21:28+0000\n"
-"PO-Revision-Date: 2009-12-12 12:32+0200\n"
+"PO-Revision-Date: 2010-01-11 22:13+0200\n"
 "Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -309,21 +310,20 @@ msgid "<command-line>"
 msgstr "<komentorivi>"
 
 #: c-pretty-print.c:324
-#, fuzzy
 msgid "<type-error>"
-msgstr "virhe: "
+msgstr "<tyyppivirhe>"
 
 #: c-pretty-print.c:363
 msgid "<unnamed-unsigned:"
-msgstr ""
+msgstr "<nimetön-etumerkitön:"
 
 #: c-pretty-print.c:364
 msgid "<unnamed-signed:"
-msgstr ""
+msgstr "<nimetön etumerkillinen:"
 
 #: c-pretty-print.c:367
 msgid "<unnamed-float:"
-msgstr ""
+msgstr "<nimetön-liukuluku:"
 
 #: c-pretty-print.c:370
 msgid "<unnamed-fixed:"
@@ -331,21 +331,19 @@ msgstr ""
 
 #: c-pretty-print.c:385
 msgid "<typedef-error>"
-msgstr ""
+msgstr "<typedef-virhe>"
 
 #: c-pretty-print.c:398
-#, fuzzy
 msgid "<tag-error>"
-msgstr "syntaksivirhe"
+msgstr "<tunnistevirhe>"
 
 #: c-pretty-print.c:1136
-#, fuzzy
 msgid "<erroneous-expression>"
-msgstr "kokonaislukuylivuoto lausekkeessa"
+msgstr "<virheellinen-lauseke>"
 
 #: c-pretty-print.c:1140 cp/cxx-pretty-print.c:154
 msgid "<return-value>"
-msgstr ""
+msgstr "<paluuarvo>"
 
 #: c-typeck.c:5652
 msgid "array initialized from parenthesized string constant"
@@ -353,7 +351,7 @@ msgstr "taulukko alustetaan suluilla ympäröidystä merkkijonovakiosta"
 
 #: c-typeck.c:5725 c-typeck.c:6596
 msgid "initialization of a flexible array member"
-msgstr ""
+msgstr "joustavan taulukkojäsenen alustus"
 
 #: c-typeck.c:5735 cp/typeck2.c:851
 #, gcc-internal-format
@@ -389,9 +387,8 @@ msgid "initializer element is not constant"
 msgstr "alustusalkio ei ole vakio"
 
 #: c-typeck.c:5907 c-typeck.c:5953 c-typeck.c:7405
-#, fuzzy
 msgid "initializer element is not a constant expression"
-msgstr "alustusalkio ei ole vakio"
+msgstr "alustinalkio ei ole vakiolauseke"
 
 #: c-typeck.c:5948 c-typeck.c:7400
 #, gcc-internal-format
@@ -412,9 +409,8 @@ msgid "invalid initializer"
 msgstr "epäkelpo alustin"
 
 #: c-typeck.c:6175
-#, fuzzy
 msgid "(anonymous)"
-msgstr "<nimetön>"
+msgstr "(nimetön)"
 
 #: c-typeck.c:6453
 msgid "extra brace group at end of initializer"
@@ -442,7 +438,7 @@ msgstr "tyhjä skalaarialustin"
 
 #: c-typeck.c:6651
 msgid "extra elements in scalar initializer"
-msgstr ""
+msgstr "skalaarialustimessa ylimääräisiä alkioita"
 
 #: c-typeck.c:6759 c-typeck.c:6837
 msgid "array index in non-array initializer"
@@ -463,11 +459,11 @@ msgstr "taulukon koko ei ole kokonaislukutyyppinen vakiolauseke"
 
 #: c-typeck.c:6833 c-typeck.c:6835
 msgid "nonconstant array index in initializer"
-msgstr ""
+msgstr "ei-vakio taulukon indeksi alustimessa"
 
 #: c-typeck.c:6839 c-typeck.c:6842
 msgid "array index in initializer exceeds array bounds"
-msgstr ""
+msgstr "taulukon indeksi alustimessa ylittää taulukon rajat"
 
 #: c-typeck.c:6856
 msgid "empty index range in initializer"
@@ -552,7 +548,7 @@ msgstr "liikaa syötetiedostoja"
 #: collect2.c:1288
 #, c-format
 msgid "no arguments"
-msgstr ""
+msgstr "ei argumentteja"
 
 #: collect2.c:1687 collect2.c:1849 collect2.c:1884
 #, c-format
@@ -655,7 +651,7 @@ msgstr ""
 #: collect2.c:2804
 #, c-format
 msgid "can't open ldd output"
-msgstr ""
+msgstr "ei voida avata ldd-tulostetta"
 
 #: collect2.c:2807
 #, c-format
@@ -663,6 +659,8 @@ msgid ""
 "\n"
 "ldd output with constructors/destructors.\n"
 msgstr ""
+"\n"
+"ldd-tuloste muodostimilla/hajottimilla.\n"
 
 #: collect2.c:2822
 #, c-format
@@ -672,7 +670,7 @@ msgstr "dynaamista riippuvuutta %s ei löytynyt"
 #: collect2.c:2834
 #, c-format
 msgid "unable to open dynamic dependency '%s'"
-msgstr ""
+msgstr "ei voida avata dynaamista riippuvuutta ”%s”"
 
 #: collect2.c:2995
 #, c-format
@@ -869,12 +867,12 @@ msgstr "%s\n"
 #: gcc.c:2902
 #, c-format
 msgid "system path '%s' is not absolute"
-msgstr ""
+msgstr "järjestelmäpolku ”%s” ei ole absoluuttinen"
 
 #: gcc.c:2974
 #, c-format
 msgid "-pipe not supported"
-msgstr ""
+msgstr "-pipe ei ole tuettu"
 
 #: gcc.c:3036
 #, c-format
@@ -1307,7 +1305,7 @@ msgstr "kirjastot: %s\n"
 #: gcc.c:7195
 #, c-format
 msgid "not configured with sysroot headers suffix"
-msgstr ""
+msgstr "ei konfiguroitu sysroot-otsakkeiden loppuliitteellä"
 
 #: gcc.c:7204
 #, c-format
@@ -1334,6 +1332,9 @@ msgid ""
 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 "\n"
 msgstr ""
+"Tämä ohjelma on vapaaohjelmisto; Katsokaa kopiointiehdot lähdekoodista.\n"
+"Tällä ohjelmistolla EI OLE TAKUUTA; ei edes KAUPALLISESTI HYVÄKSYTTÄVÄSTÄ\n"
+"LAADUSTA tai SOPIVUUDESTA TIETTYYN TARKOITUKSEEN.\n"
 
 #: gcc.c:7241
 #, c-format
@@ -1592,11 +1593,12 @@ msgstr ""
 "Tämä ohjelma on vapaaohjelmisto; Katsokaa kopiointiehdot lähdekoodista.\n"
 "Tällä ohjelmistolla EI OLE TAKUUTA; ei edes KAUPALLISESTI HYVÄKSYTTÄVÄSTÄ\n"
 "LAADUSTA tai SOPIVUUDESTA TIETTYYN TARKOITUKSEEN.\n"
+"\n"
 
 #: gcov.c:528
 #, c-format
 msgid "%s:no functions found\n"
-msgstr ""
+msgstr "%s:funktioita ei löytynyt\n"
 
 # Hmm...
 #: gcov.c:560 gcov.c:588
@@ -1607,17 +1609,17 @@ msgstr "\n"
 #: gcov.c:575
 #, c-format
 msgid "%s:creating '%s'\n"
-msgstr ""
+msgstr "%s:luodaan ”%s”\n"
 
 #: gcov.c:579
 #, c-format
 msgid "%s:error writing output file '%s'\n"
-msgstr ""
+msgstr "%s:virhe kirjoitettaessa tulostetiedostoa ”%s”\n"
 
 #: gcov.c:584
 #, c-format
 msgid "%s:could not open output file '%s'\n"
-msgstr ""
+msgstr "%s: ei voitu avata tulostetiedostoa ”%s”\n"
 
 #: gcov.c:733
 #, c-format
@@ -1712,12 +1714,12 @@ msgstr ""
 #: gcov.c:1441
 #, c-format
 msgid "%s '%s'\n"
-msgstr ""
+msgstr "%s ”%s”\n"
 
 #: gcov.c:1444
 #, c-format
 msgid "Lines executed:%s of %d\n"
-msgstr ""
+msgstr "Rivejä suoritettu:%s/%d\n"
 
 #: gcov.c:1448
 #, c-format
@@ -1727,7 +1729,7 @@ msgstr "Ei suoritettavia rivejä\n"
 #: gcov.c:1454
 #, c-format
 msgid "Branches executed:%s of %d\n"
-msgstr ""
+msgstr "Haaroja suoritettu:%s/%d\n"
 
 #: gcov.c:1458
 #, c-format
@@ -1737,12 +1739,12 @@ msgstr ""
 #: gcov.c:1464
 #, c-format
 msgid "No branches\n"
-msgstr ""
+msgstr "Ei haaroja\n"
 
 #: gcov.c:1466
 #, c-format
 msgid "Calls executed:%s of %d\n"
-msgstr ""
+msgstr "Kutsuja suoritettu:%s/%d\n"
 
 #: gcov.c:1470
 #, c-format
@@ -2041,7 +2043,7 @@ msgstr ""
 
 #: rtl-error.c:120
 msgid "unrecognizable insn:"
-msgstr ""
+msgstr "tunnistamaton käsky:"
 
 #: rtl-error.c:122
 msgid "insn does not satisfy its constraints:"
@@ -2052,11 +2054,13 @@ msgid ""
 "\n"
 "Execution times (seconds)\n"
 msgstr ""
+"\n"
+"Suoritusajat (sekuntia)\n"
 
 #. Print total time.
 #: timevar.c:469
 msgid " TOTAL                 :"
-msgstr ""
+msgstr " YHTEENSÄ              :"
 
 #: timevar.c:502
 #, c-format
@@ -2071,12 +2075,12 @@ msgstr ""
 #: tlink.c:477
 #, c-format
 msgid "removing .rpo file"
-msgstr ""
+msgstr "poistetaan .rpo-tiedosto"
 
 #: tlink.c:479
 #, c-format
 msgid "renaming .rpo file"
-msgstr ""
+msgstr "nimetään uudelleen .rpo-tiedosto"
 
 #: tlink.c:533
 #, c-format
@@ -2104,21 +2108,23 @@ msgid ""
 "%s%s%s %sversion %s (%s)\n"
 "%s\tcompiled by GNU C version %s, "
 msgstr ""
+"%s%s%s %sversio %s (%s)\n"
+"%s\tkäännetty GNU C:n versiolla %s, "
 
 #: toplev.c:1198
 #, c-format
 msgid "%s%s%s %sversion %s (%s) compiled by CC, "
-msgstr ""
+msgstr "%s%s%s %sversio %s (%s) käännetty CC:llä, "
 
 #: toplev.c:1203
-#, fuzzy, c-format
+#, c-format
 msgid "GMP version %s, MPFR version %s, MPC version %s\n"
-msgstr "GMP-versio %s, MPFR-versio %s.\n"
+msgstr "GMP-versio %s, MPFR-versio %s, MPC-versio %s\n"
 
 #: toplev.c:1206
-#, fuzzy, c-format
+#, c-format
 msgid "GMP version %s, MPFR version %s\n"
-msgstr "GMP-versio %s, MPFR-versio %s.\n"
+msgstr "GMP-versio %s, MPFR-versio %s\n"
 
 #: toplev.c:1209
 #, c-format
@@ -2816,7 +2822,7 @@ msgstr ""
 #: config/rs6000/rs6000.c:14910 config/spu/spu.c:1695
 #, c-format
 msgid "invalid %%xn code"
-msgstr ""
+msgstr "virheellinen %%xn-koodi"
 
 #: config/arc/arc.c:1724 config/m32r/m32r.c:1980
 #, c-format
@@ -3028,7 +3034,7 @@ msgstr ""
 
 #: config/cris/cris.c:1147 config/cris/cris.c:1157
 msgid "unrecognized address"
-msgstr ""
+msgstr "tunnistamaton osoite"
 
 #: config/cris/cris.c:2265
 msgid "unrecognized supposed constant"
@@ -3269,14 +3275,14 @@ msgid "environment variable DJGPP points to corrupt file '%s'"
 msgstr "DJGPP-ympäristömuuttuja viittaa turmeltuneeseen tiedostoon ”%s”"
 
 #: config/ia64/ia64.c:4864
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%G mode"
-msgstr "virheellinen %%G-arvo"
+msgstr "virheellinen %%G-tila"
 
 #: config/ia64/ia64.c:5034
 #, c-format
 msgid "ia64_print_operand: unknown code"
-msgstr ""
+msgstr "ia64_print_operand: tuntematon koodi"
 
 #: config/ia64/ia64.c:10579
 msgid "invalid conversion from %<__fpreg%>"
@@ -3395,7 +3401,7 @@ msgstr ""
 
 #: config/m68hc11/m68hc11.c:3806
 msgid "invalid rotate insn"
-msgstr ""
+msgstr "virheellinen rotate-käsky"
 
 #: config/m68hc11/m68hc11.c:4234
 msgid "registers IX, IY and Z used in the same INSN"
@@ -3407,12 +3413,12 @@ msgstr ""
 
 #: config/m68hc11/m68hc11.c:4930
 msgid "invalid Z register replacement for insn"
-msgstr ""
+msgstr "virheellinen Z-rekisterikorvaus käskylle"
 
 #: config/mep/mep.c:3414
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%L code"
-msgstr "virheellinen %%L-arvo"
+msgstr "virheellinen %%L-koodi"
 
 #: config/mips/mips.c:7424 config/mips/mips.c:7445 config/mips/mips.c:7557
 #, fuzzy, c-format
@@ -3518,9 +3524,9 @@ msgid "bad move"
 msgstr ""
 
 #: config/rs6000/rs6000.c:14284
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%c value"
-msgstr "virheellinen %%H-arvo"
+msgstr "virheellinen %%c-arvo"
 
 #: config/rs6000/rs6000.c:14312
 #, c-format
@@ -3540,12 +3546,12 @@ msgstr "virheellinen %%G-arvo"
 #: config/rs6000/rs6000.c:14365
 #, c-format
 msgid "invalid %%j code"
-msgstr ""
+msgstr "virheellinen %%j-koodi"
 
 #: config/rs6000/rs6000.c:14375
 #, c-format
 msgid "invalid %%J code"
-msgstr ""
+msgstr "virheellinen %%J-koodi"
 
 #: config/rs6000/rs6000.c:14385
 #, c-format
@@ -3598,9 +3604,8 @@ msgid "invalid %%y value, try using the 'Z' constraint"
 msgstr ""
 
 #: config/rs6000/rs6000.c:25549
-#, fuzzy
 msgid "AltiVec argument passed to unprototyped function"
-msgstr "puhdistusargumentti ei ole funktio"
+msgstr "AltiVec-argumentti välitetty funktiolle, jolla ei ole prototyyppiä"
 
 #: config/s390/s390.c:4947
 #, c-format
@@ -3702,7 +3707,7 @@ msgstr ""
 #: config/stormy16/stormy16.c:1840
 #, c-format
 msgid "xstormy16_print_operand: unknown code"
-msgstr ""
+msgstr "xstormy16_print_operand: tuntematon koodi"
 
 #: config/v850/v850.c:408
 msgid "const_double_split got a bad insn:"
@@ -3748,7 +3753,7 @@ msgstr ""
 #: config/xtensa/xtensa.c:2267
 #, c-format
 msgid "invalid %%d value"
-msgstr ""
+msgstr "virheellinen %%d-arvo"
 
 #: config/xtensa/xtensa.c:2288 config/xtensa/xtensa.c:2298
 #, c-format
@@ -3769,36 +3774,35 @@ msgstr ""
 
 #: cp/call.c:2773
 msgid "candidates are:"
-msgstr ""
+msgstr "ehdokkaat ovat:"
 
 #: cp/call.c:7335
 msgid "candidate 1:"
-msgstr ""
+msgstr "ehdokas 1:"
 
 #: cp/call.c:7336
 msgid "candidate 2:"
-msgstr ""
+msgstr "ehdokas 2:"
 
 #: cp/cxx-pretty-print.c:173 cp/error.c:948 objc/objc-act.c:7137
 msgid "<unnamed>"
-msgstr ""
+msgstr "<nimetön>"
 
 #: cp/cxx-pretty-print.c:2066
-#, fuzzy
 msgid "template-parameter-"
-msgstr "%Juseita parametreja nimellä %qD"
+msgstr ""
 
 #: cp/decl2.c:693
 msgid "candidates are: %+#D"
-msgstr ""
+msgstr "ehdokkaat ovat: %+#D"
 
 #: cp/decl2.c:695
 msgid "candidate is: %+#D"
-msgstr ""
+msgstr "ehdokas on: %+#D"
 
 #: cp/error.c:322
 msgid "<missing>"
-msgstr ""
+msgstr "<puuttuva>"
 
 #: cp/error.c:363
 #, fuzzy
@@ -3811,9 +3815,8 @@ msgid "<unresolved overloaded function type>"
 msgstr "liian paljon argumentteja funktiolle %qs"
 
 #: cp/error.c:508
-#, fuzzy
 msgid "<type error>"
-msgstr "virhe: "
+msgstr "<tyyppivirhe>"
 
 #: cp/error.c:608
 #, fuzzy, c-format
@@ -3823,7 +3826,7 @@ msgstr "<nimetön>"
 #. A lambda's "type" is essentially its signature.
 #: cp/error.c:613
 msgid "<lambda"
-msgstr ""
+msgstr "<lambda"
 
 #: cp/error.c:739
 msgid "<typeprefixerror>"
@@ -3845,16 +3848,15 @@ msgstr ""
 
 #: cp/error.c:935
 msgid "<return value> "
-msgstr ""
+msgstr "<paluuarvo> "
 
 #: cp/error.c:1063
 msgid "<enumerator>"
 msgstr ""
 
 #: cp/error.c:1103
-#, fuzzy
 msgid "<declaration error>"
-msgstr "%J%qD esitelty turhaan uudestaan"
+msgstr "<esittelyvirhe>"
 
 #: cp/error.c:1343
 msgid "with"
@@ -3873,27 +3875,27 @@ msgstr ""
 #. __cxa_allocate_exception, __cxa_throw, and the like.
 #: cp/error.c:1686
 msgid "<throw-expression>"
-msgstr ""
+msgstr "<throw-lauseke>"
 
 #: cp/error.c:2132
 msgid "<unparsed>"
-msgstr ""
+msgstr "<jäsentämätön>"
 
 #: cp/error.c:2281
 msgid "<expression error>"
-msgstr ""
+msgstr "<lausekevirhe>"
 
 #: cp/error.c:2295
 msgid "<unknown operator>"
-msgstr ""
+msgstr "<tuntematon operaattori>"
 
 #: cp/error.c:2502
 msgid "<unknown>"
-msgstr ""
+msgstr "<tuntematon>"
 
 #: cp/error.c:2522
 msgid "{unknown}"
-msgstr ""
+msgstr "{tuntematon}"
 
 #: cp/error.c:2604
 msgid "At global scope:"
@@ -4748,7 +4750,7 @@ msgstr ""
 #: fortran/decl.c:821
 #, no-c-format
 msgid "Name '%s' at %C is already defined as a generic interface at %L"
-msgstr ""
+msgstr "Nimi ”%s” kohdassa %C on jo määritelty geneerisenä rajapintana kohdassa %L"
 
 #: fortran/decl.c:834
 #, no-c-format
@@ -4941,9 +4943,9 @@ msgid "Expected scalar initialization expression at %C"
 msgstr ""
 
 #: fortran/decl.c:1998
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Kind %d not supported for type %s at %C"
-msgstr "ISO C kieltää sisäkkäiset funktiot"
+msgstr ""
 
 #: fortran/decl.c:2011
 #, no-c-format
@@ -4951,9 +4953,9 @@ msgid "C kind type parameter is for type %s but type at %L is %s"
 msgstr ""
 
 #: fortran/decl.c:2020
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing right parenthesis or comma at %C"
-msgstr "polku puuttuu option %qs jälkeen"
+msgstr ""
 
 #: fortran/decl.c:2093
 #, no-c-format
@@ -4983,7 +4985,7 @@ msgstr ""
 #: fortran/decl.c:2387
 #, no-c-format
 msgid "Fortran 2003: CLASS statement at %C"
-msgstr ""
+msgstr "Fortran 2003: CLASS-lause kohdassa %C"
 
 #: fortran/decl.c:2410 fortran/decl.c:2419 fortran/decl.c:2732
 #: fortran/decl.c:2740
@@ -5451,12 +5453,12 @@ msgstr ""
 #: fortran/decl.c:5790
 #, no-c-format
 msgid "Expected \",\" at %C"
-msgstr ""
+msgstr "Odotettiin merkkiä ”,” kohdassa %C"
 
 #: fortran/decl.c:5853
 #, no-c-format
 msgid "Expected \")\" at %C"
-msgstr ""
+msgstr "Odotettiin merkkiä ”)” kohdassa %C"
 
 #: fortran/decl.c:5865
 #, fuzzy, no-c-format
@@ -6449,9 +6451,9 @@ msgid "'%s' at %L is not a module procedure"
 msgstr ""
 
 #: fortran/interface.c:1409
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid procedure argument at %L"
-msgstr "epäkelpo osoitintila %qs"
+msgstr "Virheellinen proseduuriargumentti kohdassa %L"
 
 #: fortran/interface.c:1417
 #, no-c-format
@@ -11762,12 +11764,12 @@ msgstr ""
 #: java/jcf-dump.c:1090
 #, c-format
 msgid "error while parsing fields\n"
-msgstr ""
+msgstr "virhe jäsennettäessä kenttiä\n"
 
 #: java/jcf-dump.c:1096
 #, c-format
 msgid "error while parsing methods\n"
-msgstr ""
+msgstr "virhe jäsennettäessä metodeja\n"
 
 #: java/jcf-dump.c:1102
 #, c-format
@@ -11775,9 +11777,9 @@ msgid "error while parsing final attributes\n"
 msgstr ""
 
 #: java/jcf-dump.c:1139
-#, fuzzy, c-format
+#, c-format
 msgid "Try 'jcf-dump --help' for more information.\n"
-msgstr "käytä -Winvalid-pch saadaksesi lisätietoja"
+msgstr "Lisätietoja ”jcf-dump --help”-komennolla.\n"
 
 #: java/jcf-dump.c:1146
 #, c-format
@@ -11810,7 +11812,7 @@ msgstr "  --help                   Näytä tämä ohje\n"
 #: java/jcf-dump.c:1151
 #, c-format
 msgid "  --classpath PATH        Set path to find .class files\n"
-msgstr ""
+msgstr "  --classpath POLKU       Aseta polku .class-tiedostojen löytämiseksi\n"
 
 #: java/jcf-dump.c:1152
 #, c-format
@@ -11848,12 +11850,11 @@ msgid "  -v, --verbose           Print extra information while running\n"
 msgstr "  -v, --version                   Näytä versionumero ja poistu\n"
 
 #: java/jcf-dump.c:1161
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "For bug reporting instructions, please see:\n"
 "%s.\n"
 msgstr ""
-"\n"
 "Katso ohjeet vikailmoitusten tekemiseen osoitteesta:\n"
 "%s.\n"
 
@@ -11878,21 +11879,19 @@ msgid "Bad byte codes.\n"
 msgstr ""
 
 #: java/jvgenmain.c:47
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"
-msgstr ""
-"Käyttö: gcov [VALITSIN]... LÄHDETIEDOSTO\n"
-"\n"
+msgstr "Käyttö: %s [VALITSIMET]... LUOKKANIMImain [TULOSTETIEDOSTO]\n"
 
 #: java/jvgenmain.c:109
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Cannot open output file: %s\n"
-msgstr "syötetiedoston avaaminen ei onnistu: %s"
+msgstr "%s: Ei voi avata tulostetiedostoa: %s\n"
 
 #: java/jvgenmain.c:151
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Failed to close output file %s\n"
-msgstr "%qs ei ole kelpo tulostetiedosto"
+msgstr "%s: Tulostetiedoston %s sulkeminen epäonnistui\n"
 
 #: java/jvspec.c:406
 #, c-format
@@ -11931,19 +11930,19 @@ msgstr ""
 
 #: config/vax/vax.h:50 config/vax/vax.h:51
 msgid "profiling not supported with -mg\n"
-msgstr ""
+msgstr "profilointia ei tueta valitsimen -mg kanssa\n"
 
 #: config/i386/linux-unwind.h:186
 msgid "ax ; {int $0x80 | syscall"
-msgstr ""
+msgstr "ax ; {int $0x80 | syscall"
 
 #: config/darwin.h:306
 msgid "-current_version only allowed with -dynamiclib"
-msgstr ""
+msgstr "-current_version on sallittu vain valitsimen -dynamiclib kanssa"
 
 #: config/darwin.h:308
 msgid "-install_name only allowed with -dynamiclib"
-msgstr ""
+msgstr "-install_name on sallittu vain valitsimen -dynamiclib kanssa"
 
 #: config/darwin.h:313
 msgid "-bundle not allowed with -dynamiclib"
@@ -12005,7 +12004,7 @@ msgstr ""
 #: config/sparc/linux64.h:165 config/sparc/linux64.h:176
 #: config/sparc/netbsd-elf.h:125 config/sparc/netbsd-elf.h:144
 msgid "may not use both -m32 and -m64"
-msgstr ""
+msgstr "ei voi käyttää sekä valitsinta -m32 että -m64"
 
 #: gcc.c:865
 msgid "GCC does not support -C or -CC without -E"
@@ -12082,9 +12081,8 @@ msgid "the -shared option is not currently supported for VAX ELF"
 msgstr ""
 
 #: fortran/lang-specs.h:55 fortran/lang-specs.h:69
-#, fuzzy
 msgid "gfortran does not support -E without -cpp"
-msgstr "kohdemuoto ei tue äärettömyyttä"
+msgstr "gfortran ei tue valitsinta -E ilman valitsinta -cpp"
 
 #: config/lynx.h:70
 msgid "cannot use mthreads and mlegacy-threads together"
@@ -12492,20 +12490,19 @@ msgstr ""
 
 #: fortran/lang.opt:409
 msgid "Conform to the ISO Fortran 2003 standard"
-msgstr ""
+msgstr "Noudata ISO Fortran 2003 -standardia"
 
 #: fortran/lang.opt:413
-#, fuzzy
 msgid "Conform to the ISO Fortran 2008 standard"
-msgstr "Noudata ISO 1990 C -standardia"
+msgstr "Noudata ISO Fortran 2009 -standardia"
 
 #: fortran/lang.opt:417
 msgid "Conform to the ISO Fortran 95 standard"
-msgstr ""
+msgstr "Noudata ISO Fortran 95 -standardia"
 
 #: fortran/lang.opt:421
 msgid "Conform to nothing in particular"
-msgstr ""
+msgstr "Älä noudata mitään erityisesti"
 
 #: fortran/lang.opt:425
 msgid "Accept extensions to support legacy code"
@@ -12763,7 +12760,7 @@ msgstr ""
 
 #: config/frv/frv.opt:177 config/pa/pa.opt:104
 msgid "Use software floating point"
-msgstr ""
+msgstr "Käytä ohjelmistoliukulukuja"
 
 #: config/frv/frv.opt:181
 msgid "Assume a large TLS segment"
@@ -14027,11 +14024,11 @@ msgstr ""
 
 #: config/rs6000/sysv4.opt:53 config/rs6000/sysv4.opt:57
 msgid "Produce little endian code"
-msgstr ""
+msgstr "Tuota little-endian-koodia"
 
 #: config/rs6000/sysv4.opt:61 config/rs6000/sysv4.opt:65
 msgid "Produce big endian code"
-msgstr ""
+msgstr "Tuota big-endian-koodia"
 
 #: config/rs6000/sysv4.opt:70 config/rs6000/sysv4.opt:74
 #: config/rs6000/sysv4.opt:83 config/rs6000/sysv4.opt:125
@@ -14045,7 +14042,7 @@ msgstr ""
 
 #: config/rs6000/sysv4.opt:87
 msgid "Use EABI"
-msgstr ""
+msgstr "Käytä EABI:a"
 
 #: config/rs6000/sysv4.opt:91
 msgid "Allow bit-fields to cross word boundaries"
@@ -16052,7 +16049,7 @@ msgstr "Varoita Effective C++ -tyylisääntöjen rikkomuksista"
 
 #: c.opt:200
 msgid "Warn about an empty body in an if or else statement"
-msgstr ""
+msgstr "Varoita tyhjästä rungosta if-tai else-lauseissa"
 
 #: c.opt:204
 msgid "Warn about stray tokens after #elif and #endif"
@@ -16080,7 +16077,7 @@ msgstr ""
 
 #: c.opt:232
 msgid "Warn about format strings that are not literals"
-msgstr ""
+msgstr "Varoita muotoilumerkkijonoista, jotka eivät ole literaaleja"
 
 #: c.opt:236
 msgid "Warn about format strings that contain NUL bytes"
@@ -16222,7 +16219,7 @@ msgstr ""
 
 #: c.opt:381
 msgid "Warn about packed bit-fields whose offset changed in GCC 4.4"
-msgstr ""
+msgstr "Varoita pakatuista bittikentistä, joiden siirrososoite vaihtui GCC 4.4:ssä"
 
 #: c.opt:385
 msgid "Warn about possibly missing parentheses"
@@ -16251,15 +16248,15 @@ msgstr "Varoita perittyjen metodien puuttuvista toteutuksista"
 
 #: c.opt:409
 msgid "Warn about multiple declarations of the same object"
-msgstr ""
+msgstr "Varoita saman objektin useista esittelyistä"
 
 #: c.opt:413
 msgid "Warn when the compiler reorders code"
-msgstr ""
+msgstr "Varoita kun kääntäjä järjestää koodia uudelleen"
 
 #: c.opt:417
 msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)"
-msgstr "Varoita kun funktion paluutyypiksi jää \"int\" (C), tai kun paluutyypit ovat ristiriitaiset (C++)"
+msgstr "Varoita kun funktion paluutyypiksi jää ”int” (C), tai kun paluutyypit ovat ristiriitaiset (C++)"
 
 #: c.opt:421
 msgid "Warn if a selector has multiple methods"
@@ -16322,9 +16319,8 @@ msgid "Warn about unrecognized pragmas"
 msgstr "Varoita tuntemattomista pragmoista"
 
 #: c.opt:485
-#, fuzzy
 msgid "Warn about unsuffixed float constants"
-msgstr "Varoita monimerkkisistä merkkivakioista"
+msgstr "Varoita loppuliitteettömistä liukulukuvakioista"
 
 #: c.opt:489
 msgid "Warn about macros defined in the main file that are not used"
@@ -16387,7 +16383,7 @@ msgstr "Tarkista new’n paluuarvo"
 
 #: c.opt:551
 msgid "Allow the arguments of the '?' operator to have different types"
-msgstr ""
+msgstr "Salli ”?”-operaattorin argumenttien olla eri tyyppiä"
 
 #: c.opt:555
 msgid "Reduce the size of object files"
@@ -16516,7 +16512,6 @@ msgid "Enable OpenMP (implies -frecursive in Fortran)"
 msgstr ""
 
 #: c.opt:718
-#, fuzzy
 msgid "Recognize C++ keywords like \"compl\" and \"xor\""
 msgstr "Tunnista C++:n avainsanat kuten ”compl” ja ”xor”"
 
@@ -16586,7 +16581,7 @@ msgstr ""
 
 #: c.opt:798
 msgid "Do not generate thread-safe code for initializing local statics"
-msgstr ""
+msgstr "Älä luo säieturvallista koodia paikallisten staattisten muuttujien alustamiseksi"
 
 #: c.opt:802
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
@@ -16674,7 +16669,7 @@ msgstr ""
 
 #: c.opt:886
 msgid "Specify <path> as a prefix for next two options"
-msgstr ""
+msgstr "Määrittele <polku> etuliitteeksi seuraaville kahdelle valitsimelle"
 
 #: c.opt:890
 msgid "Set <dir> to be the system root directory"
@@ -16702,7 +16697,7 @@ msgstr ""
 
 #: c.opt:940
 msgid "Print a checksum of the executable for PCH validity checking, and stop"
-msgstr ""
+msgstr "Tulosta suoritettavan tiedoston tarkistussumma PCH-kelpoisuuden tarkistamiseksi, ja lopeta"
 
 #: c.opt:944
 msgid "Remap file names when including files"
@@ -16712,7 +16707,7 @@ msgstr ""
 msgid "Conform to the ISO 1998 C++ standard"
 msgstr "Noudata ISO 1998 C++ -standardia"
 
-# Viesti ei jatku englanniksikaan pidemmälle. 
+# Viesti ei jatku englanniksikaan pidemmälle.
 #: c.opt:952
 msgid "Conform to the ISO 1998 C++ standard, with extensions that are likely to"
 msgstr "Noudata ISO 1998 C++ -standardia laajennoksineen, jotka todennäköisesti"
@@ -16811,7 +16806,7 @@ msgstr ""
 
 #: common.opt:66
 msgid "Set optimization level to <number>"
-msgstr ""
+msgstr "Aseta optimointitasoksi <luku>"
 
 #: common.opt:70
 msgid "Optimize for space rather than speed"
@@ -16886,9 +16881,8 @@ msgid "Warn about constructs not instrumented by -fmudflap"
 msgstr ""
 
 #: common.opt:145
-#, fuzzy
 msgid "Warn about overflow in arithmetic expressions"
-msgstr "liukulukuylivuoto lausekkeessa"
+msgstr "Varoita ylivuodosta aritmeettisissa lausekkeissa"
 
 #: common.opt:149
 msgid "Warn when the packed attribute has no effect on struct layout"
@@ -16952,7 +16946,7 @@ msgstr "Varoita käyttämättömistä funktioista"
 
 #: common.opt:217
 msgid "Warn when a label is unused"
-msgstr ""
+msgstr "Varoita kun nimiö on käyttämätön"
 
 #: common.opt:221
 msgid "Warn when a function parameter is unused"
@@ -17296,7 +17290,7 @@ msgstr ""
 
 #: common.opt:641
 msgid "Pay attention to the \"inline\" keyword"
-msgstr ""
+msgstr "Kiinnitä huomiota ”inline”-avainsanaan"
 
 #: common.opt:645
 #, fuzzy
@@ -18384,14 +18378,14 @@ msgid "vector overflow in expression"
 msgstr "vektoriylivuoto lausekkeessa"
 
 #: c-common.c:1605
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "complex integer overflow in expression"
-msgstr "kokonaislukuylivuoto lausekkeessa"
+msgstr "kompleksikokonaislukuylivuoto lausekkeessa"
 
 #: c-common.c:1608
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "complex floating point overflow in expression"
-msgstr "liukulukuylivuoto lausekkeessa"
+msgstr "kompleksiliukulukuylivuoto lausekkeessa"
 
 #: c-common.c:1651
 #, gcc-internal-format
@@ -18429,19 +18423,19 @@ msgid "dereferencing type-punned pointer might break strict-aliasing rules"
 msgstr ""
 
 #: c-common.c:1809
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "first argument of %q+D should be %<int%>"
-msgstr "%Jensimmäisen argumentin %qD:lle pitäisi olla %<int%>"
+msgstr "%q+D:n ensimmäisen argumentin pitäisi olla %<int%>"
 
 #: c-common.c:1818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "second argument of %q+D should be %<char **%>"
-msgstr "%Jtoisen argumentin %qD:lle pitäisi olla %<char **%>"
+msgstr "%q+D:n toisen argumentin pitäisi olla %<char **%>"
 
 #: c-common.c:1827
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "third argument of %q+D should probably be %<char **%>"
-msgstr "%Jkolmannen argumentin %qD:lle pisäisi ehkä olla %<char **%>"
+msgstr "%q+D:n kolmannen argumentin pitäisi todennäköisesti olla %<char **%>"
 
 #: c-common.c:1837
 #, fuzzy, gcc-internal-format
@@ -18494,9 +18488,9 @@ msgid "overflow in implicit constant conversion"
 msgstr "ylivuoto implisiittisessä vakiomuunnoksessa"
 
 #: c-common.c:2438
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "operation on %qE may be undefined"
-msgstr "operaatio %qs:lle voi olla määrittelemätön"
+msgstr "operaatio %qE:lle voi olla määrittelemätön"
 
 #: c-common.c:2746
 #, gcc-internal-format
@@ -18649,19 +18643,19 @@ msgid "multiple default labels in one switch"
 msgstr "useita default-nimikkeitä samassa switch-lauseessa"
 
 #: c-common.c:5435
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "this is the first default label"
-msgstr "%Jtämä on ensimmäinen default-nimike"
+msgstr "tämä on ensimmäinen default-nimiö"
 
 #: c-common.c:5487
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case value %qs not in enumerated type"
-msgstr "%Jcase-arvo %qs ei ole luetellussa tyypissä"
+msgstr "case-arvo %qs ei ole luetellussa tyypissä"
 
 #: c-common.c:5492
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case value %qs not in enumerated type %qT"
-msgstr "%Jcase-arvo %qs ei ole luetellussa tyypissä %qT"
+msgstr "case-arvo %qs ei ole luetellussa tyypissä %qT"
 
 #: c-common.c:5551
 #, gcc-internal-format
@@ -18906,7 +18900,7 @@ msgstr "tls_model-argumentti ei ole merkkijono"
 #: c-common.c:7027
 #, gcc-internal-format
 msgid "tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-msgstr "tls_model-argumentin pitää olla \"local-exec\", \"initial-exec\", \"local-dynamic\" tai \"global-dynamic\""
+msgstr "tls_model-argumentin pitää olla ”local-exec”, ”initial-exec”, ”local-dynamic” tai ”global-dynamic”"
 
 #: c-common.c:7047 c-common.c:7139 config/m32c/m32c.c:2853
 #, fuzzy, gcc-internal-format
@@ -19352,19 +19346,19 @@ msgid "prototype for %q+D follows non-prototype definition"
 msgstr "%Jfunktion %qD protyyppi seuraa ei-prototyypin määrittelyä"
 
 #: c-decl.c:1624
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous definition of %q+D was here"
-msgstr "%J%qD:n edellinen määrittely oli täällä"
+msgstr "%q+D:n edellinen määrittely oli täällä"
 
 #: c-decl.c:1626
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous implicit declaration of %q+D was here"
-msgstr "%J%qD:n edellinen, implisiittinen esittely oli täällä"
+msgstr "%q+D:n edellinen, implisiittinen esittely oli täällä"
 
 #: c-decl.c:1628
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %q+D was here"
-msgstr "%J%qD:n edellinen esittely oli täällä"
+msgstr "%q+D:n edellinen esittely oli täällä"
 
 #: c-decl.c:1668
 #, gcc-internal-format
@@ -19374,7 +19368,7 @@ msgstr "%q+D esitelty uudelleen erityyppisenä symbolina"
 #: c-decl.c:1672
 #, gcc-internal-format
 msgid "built-in function %q+D declared as non-function"
-msgstr "sisäinen funktio %qD esitelty ei-funktiona"
+msgstr "sisäinen funktio %q+D esitelty ei-funktiona"
 
 #: c-decl.c:1675 c-decl.c:1822 c-decl.c:2510
 #, gcc-internal-format
@@ -19448,7 +19442,7 @@ msgstr ""
 #: c-decl.c:1920
 #, gcc-internal-format
 msgid "but not here"
-msgstr ""
+msgstr "mutta ei täällä"
 
 #: c-decl.c:1938
 #, fuzzy, gcc-internal-format
@@ -19577,19 +19571,19 @@ msgid "jump into scope of identifier with variably modified type"
 msgstr ""
 
 #: c-decl.c:3040
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump skips variable initialization"
-msgstr "(%qs:n alustuksen lähistöllä)"
+msgstr "hyppy ohittaa muuttujan alustuksen"
 
 #: c-decl.c:3041 c-decl.c:3097 c-decl.c:3182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "label %qD defined here"
-msgstr "nimike %q+D määritelty mutta käytettämättä"
+msgstr "nimiö %qD määritelty täällä"
 
 #: c-decl.c:3042 c-decl.c:3306
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD declared here"
-msgstr "%J%qD esitelty ei-parametrina"
+msgstr "%qD esitelty täällä"
 
 #: c-decl.c:3096 c-decl.c:3181
 #, fuzzy, gcc-internal-format
@@ -19822,9 +19816,9 @@ msgid "%qs is narrower than values of its type"
 msgstr "%qs on kapeampi kuin tyyppisensä arvot"
 
 #: c-decl.c:4647
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 forbids array %qE whose size can%'t be evaluated"
-msgstr "ISO C90 kieltää taulukon %qs, jonka kokoa ei voida määrittää"
+msgstr "ISO C90 kieltää taulukon %qE, jonka kokoa ei voida määrittää"
 
 #: c-decl.c:4651
 #, gcc-internal-format
@@ -19832,9 +19826,9 @@ msgid "ISO C90 forbids array whose size can%'t be evaluated"
 msgstr "ISO C90 kieltää taulukot, joiden kokoa ei voida määrittää"
 
 #: c-decl.c:4658
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C90 forbids variable length array %qE"
-msgstr "ISO C90 kieltää muuttuvakokoisen taulukon %qs"
+msgstr "ISO C90 kieltää muuttuvakokoisen taulukon %qE"
 
 #: c-decl.c:4661
 #, gcc-internal-format
@@ -19842,9 +19836,9 @@ msgid "ISO C90 forbids variable length array"
 msgstr "ISO C90 kieltää muuttuvakokoisen taulukon"
 
 #: c-decl.c:4670
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the size of array %qE can%'t be evaluated"
-msgstr "taulukon %qs kokoa ei voida määrittää"
+msgstr "taulukon %qE kokoa ei voida määrittää"
 
 #: c-decl.c:4674
 #, gcc-internal-format
@@ -20011,29 +20005,29 @@ msgid "invalid use of structure with flexible array member"
 msgstr "joustavan taulukkojäsenen sisältävän tietueen epäkelpo käyttö"
 
 #: c-decl.c:5165
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of array %qE has non-integer type"
-msgstr "taulukon %qs koko ei ole kokonaislukutyyppiä"
+msgstr "taulukon %qE koko ei ole kokonaislukutyyppiä"
 
 #: c-decl.c:5169
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of unnamed array has non-integer type"
-msgstr "taulukon %qs koko ei ole kokonaislukutyyppiä"
+msgstr "nimettömän taulukon koko ei ole kokonaislukutyyppiä"
 
 #: c-decl.c:5179
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids zero-size array %qE"
-msgstr "ISO C kieltää nollakokoisen taulukon %qs"
+msgstr "ISO C kieltää nollan kokoisen taulukon %qE"
 
 #: c-decl.c:5182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids zero-size array"
-msgstr "ISO C++ kieltää nollan kokoiset taulukot"
+msgstr "ISO C kieltää nollan kokoisen taulukon"
 
 #: c-decl.c:5191
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of array %qE is negative"
-msgstr "taulukon %qs koko on negatiivinen"
+msgstr "taulukon %qE koko on negatiivinen"
 
 #: c-decl.c:5193
 #, fuzzy, gcc-internal-format
@@ -20559,24 +20553,24 @@ msgstr "ei palautuslausetta funktiossa, joka palauttaa ei-tyhjän"
 #. the C99 for loop scope.  This doesn't make much sense, so don't
 #. allow it.
 #: c-decl.c:8102
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<for%> loop initial declarations are only allowed in C99 mode"
-msgstr "%<for%>-silmukan alkuesittelyä käytetty C99-tilan ulkopuolella"
+msgstr "%<for%>-silmukan alkuesittelyt ovat sallittuja vain C99-tilassa"
 
 #: c-decl.c:8107
 #, gcc-internal-format
 msgid "use option -std=c99 or -std=gnu99 to compile your code"
-msgstr ""
+msgstr "käytä valitsinta -std=c99 tai -std=gnu99 koodisi kääntämiseen"
 
 #: c-decl.c:8141
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of static variable %qD in %<for%> loop initial declaration"
-msgstr "%Jstaattisen muuttujan %qD esittely %<for%>-silmukan alkuesittelyssä"
+msgstr "staattisen muuttujan %qD esittely %<for%>-silmukan alkuesittelyssä"
 
 #: c-decl.c:8145
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %<extern%> variable %qD in %<for%> loop initial declaration"
-msgstr "%J%<extern%>-muuttujan %qD esittely %<for%>-silmukan alkuesittelyssä"
+msgstr "%<extern%>-muuttujan %qD esittely %<for%>-silmukan alkuesittelyssä"
 
 # XXX: alkuesittely
 #: c-decl.c:8152
@@ -20595,9 +20589,9 @@ msgid "%<enum %E%> declared in %<for%> loop initial declaration"
 msgstr "%<enum %E%> esitelty %<for%>-silmukan alkuesittelyssä"
 
 #: c-decl.c:8165
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of non-variable %qD in %<for%> loop initial declaration"
-msgstr "%Jei-muuttujan %qD esittely %<for%>-silmukan alkuesittelyssä"
+msgstr "ei-muuttujan %qD esittely %<for%>-silmukan alkuesittelyssä"
 
 #: c-decl.c:8416
 #, gcc-internal-format
@@ -21328,7 +21322,7 @@ msgstr ""
 #: c-opts.c:1601
 #, gcc-internal-format
 msgid "too late for # directive to set debug directory"
-msgstr "#-opastimen on myöhäistä asettaa debug-hakemisto"
+msgstr "#-opastimen on myöhäistä asettaa debug-hakemistoa"
 
 #: c-parser.c:232
 #, gcc-internal-format
@@ -21575,7 +21569,7 @@ msgstr "ehdotetaan aaltosulkeita tyhjän lohkon ympärille %<do%>-lauseessa"
 #: c-parser.c:4305
 #, gcc-internal-format
 msgid "%E qualifier ignored on asm"
-msgstr "%E-tarkenne jätetty huomiotta asm-lauseessa"
+msgstr "%E-määre jätetty huomiotta asm-lauseessa"
 
 #: c-parser.c:4656
 #, gcc-internal-format
@@ -21758,9 +21752,9 @@ msgid "expected %<#pragma omp section%> or %<}%>"
 msgstr "%qs määrittää %<auto%>:n tiedostoalue-esittelyssä"
 
 #: c-parser.c:8665
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable"
-msgstr "%J%qD on tavallisesti ei-staattinen funktio"
+msgstr "%qD ei ole muuttuja"
 
 #: c-parser.c:8667 cp/semantics.c:4008
 #, gcc-internal-format
@@ -21838,9 +21832,9 @@ msgid "#pragma pack (pop) encountered without matching #pragma pack (push)"
 msgstr "#pragma pack (pop) kohdattu ilman vastaavaa ilmaisua #pragma pack (push)"
 
 #: c-pragma.c:115
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma pack(pop, %E) encountered without matching #pragma pack(push, %E)"
-msgstr "#pragma pack(pop, %s) kohdattu ilman vastaavaa ilmaisua #pragma pack(push, %s)"
+msgstr "#pragma pack(pop, %E) kohdattu ilman vastaavaa ilmaisua #pragma pack(push, %E)"
 
 #: c-pragma.c:129
 #, gcc-internal-format
@@ -22040,7 +22034,7 @@ msgstr "#pragma GCC diagnostic ei ole sallittu funktion sisällä"
 #: c-pragma.c:820
 #, gcc-internal-format
 msgid "%<#pragma GCC optimize%> is not a string or number"
-msgstr ""
+msgstr "%<#pragma GCC optimize%> ei ole merkkijono eikä luku"
 
 #: c-pragma.c:846
 #, gcc-internal-format
@@ -22115,7 +22109,7 @@ msgstr ""
 #: c-pragma.c:1115
 #, fuzzy, gcc-internal-format
 msgid "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported on this target"
-msgstr "#pragma extern_prefix ei ole tuettu tällä kohteella"
+msgstr "%<#pragma STDC FLOAT_CONST_DECIMAL64%> ei ole tuettu tällä kohteella"
 
 #: c-pragma.c:1121
 #, gcc-internal-format
@@ -22123,9 +22117,9 @@ msgid "ISO C does not support %<#pragma STDC FLOAT_CONST_DECIMAL64%>"
 msgstr ""
 
 #: c-typeck.c:215
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD has an incomplete type"
-msgstr "%qs on vaillinaista tyyppiä"
+msgstr "%qD on vaillinaista tyyppiä"
 
 #: c-typeck.c:236 cp/call.c:3097
 #, gcc-internal-format
@@ -22220,9 +22214,9 @@ msgid "dereferencing %<void *%> pointer"
 msgstr ""
 
 #: c-typeck.c:2169
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of %qs (have %qT)"
-msgstr "funktiolle %2$qE annettu argumentin %1$d tyyppi on yhteensopimaton"
+msgstr "virheellinen %qs-tyyppiargumentti (pitäisi olla %qT)"
 
 #: c-typeck.c:2200 cp/typeck.c:2816
 #, gcc-internal-format
@@ -22460,7 +22454,7 @@ msgstr "kirjoitussuojatun sijainnin vähennys"
 #: c-typeck.c:3766
 #, gcc-internal-format
 msgid "read-only location %qE used as %<asm%> output"
-msgstr ""
+msgstr "kirjoitussuojattua sijaintia %qE käytetään %<asm%>-tulosteena"
 
 #: c-typeck.c:3825
 #, gcc-internal-format
@@ -22911,9 +22905,9 @@ msgid "%<long%> switch expression not converted to %<int%> in ISO C"
 msgstr ""
 
 #: c-typeck.c:8463 c-typeck.c:8471
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label is not an integer constant expression"
-msgstr "taulukon koko ei ole kokonaislukutyyppinen vakiolauseke"
+msgstr "case-nimiö ei ole kokonaislukutyyppinen vakiolauseke"
 
 #: c-typeck.c:8477 cp/parser.c:7750
 #, gcc-internal-format
@@ -22928,7 +22922,7 @@ msgstr ""
 #: c-typeck.c:8562 cp/parser.c:8041
 #, gcc-internal-format
 msgid "suggest explicit braces to avoid ambiguous %<else%>"
-msgstr "ehdotetaan aaltosulkeita epäselveän %<else%>n välttämiseksi"
+msgstr "ehdotetaan aaltosulkeita epäselvän %<else%>n välttämiseksi"
 
 #: c-typeck.c:8671 cp/cp-gimplify.c:92 cp/parser.c:8391
 #, gcc-internal-format
@@ -23113,12 +23107,12 @@ msgstr ""
 #: cfghooks.c:139
 #, gcc-internal-format
 msgid "verify_flow_info: Block %i lacks loop_father"
-msgstr ""
+msgstr "verify_flow_info: Lohkosta %i puuttuu loop_father"
 
 #: cfghooks.c:145
 #, gcc-internal-format
 msgid "verify_flow_info: Wrong count of block %i %i"
-msgstr ""
+msgstr "verify_flow_info: Väärä lohkolukumäärä %i %i"
 
 #: cfghooks.c:151
 #, gcc-internal-format
@@ -25804,12 +25798,12 @@ msgstr ""
 #: tree-cfg.c:4233
 #, gcc-internal-format
 msgid "nonlocal label "
-msgstr ""
+msgstr "ei-paikallinen nimiö "
 
 #: tree-cfg.c:4242 tree-cfg.c:4251 tree-cfg.c:4276
 #, gcc-internal-format
 msgid "label "
-msgstr ""
+msgstr "nimiö "
 
 #: tree-cfg.c:4266
 #, gcc-internal-format
@@ -25942,14 +25936,14 @@ msgid "BB %i has incorrect fallthru edge"
 msgstr ""
 
 #: tree-inline.c:2773
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+F can never be copied because it receives a non-local goto"
-msgstr "%Jfunktio %qF ei voi koskaan olla avoin, koska ne on poistettu käytöstä -fno-inline:lla"
+msgstr "funktiota %q+F ei voi koskaan kopioida, koska se vastaanottaa ei-paikallisen goton"
 
 #: tree-inline.c:2790
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+F can never be copied because it saves address of local label in a static variable"
-msgstr "%Jfunktio %qF ei voi koskaan olla avoin, koska se käyttää avoimille funktioille sopimattomia attribuutteja"
+msgstr "funktiota %q+F ei voi koskaan kopioida, koska se tallentaa paikallisen nimiön osoitteen staattiseen muuttujaan"
 
 #: tree-inline.c:2800
 #, fuzzy, gcc-internal-format
@@ -26070,7 +26064,7 @@ msgstr ""
 #: tree-ssa.c:595
 #, gcc-internal-format
 msgid "found a virtual definition for a GIMPLE register"
-msgstr ""
+msgstr "löytyi virtuaalimäärittely GIMPLE-rekisterille"
 
 #: tree-ssa.c:601
 #, gcc-internal-format
@@ -26098,9 +26092,9 @@ msgid "SSA_NAME_DEF_STMT is wrong"
 msgstr ""
 
 #: tree-ssa.c:703
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing definition"
-msgstr "lopetusalkio puuttuu funktiokutsusta"
+msgstr "puuttuva määrittely"
 
 #: tree-ssa.c:709
 #, gcc-internal-format
@@ -26188,9 +26182,9 @@ msgid "verify_ssa failed"
 msgstr ""
 
 #: tree-ssa.c:1673
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD was declared here"
-msgstr "%J%qD esitelty ei-parametrina"
+msgstr "%qD esiteltiin täällä"
 
 #: tree-ssa.c:1745
 #, fuzzy, gcc-internal-format
@@ -26228,12 +26222,12 @@ msgid "assuming signed overflow does not occur when simplifying conditional"
 msgstr ""
 
 #: tree-vrp.c:5756
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison always false due to limited range of data type"
 msgstr "vertailu on aina epätosi johtuen tietotyypin rajallisesta arvoalueesta"
 
 #: tree-vrp.c:5758
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison always true due to limited range of data type"
 msgstr "vertailu on aina tosi johtuen tietotyypin rajallisesta arvoalueesta"
 
@@ -26358,9 +26352,9 @@ msgid "Histogram value statement does not correspond to the statement it is asso
 msgstr ""
 
 #: value-prof.c:420
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "verify_histograms failed"
-msgstr "verify_flow_info epäonnistui"
+msgstr "verify_histograms epäonnistui"
 
 #: value-prof.c:467
 #, gcc-internal-format
@@ -26478,9 +26472,9 @@ msgid "only weak aliases are supported in this configuration"
 msgstr ""
 
 #: varasm.c:5470
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "weakref is not supported in this configuration"
-msgstr "#pragma redefine_extname ei ole tuettu tällä kohteella"
+msgstr "weakref ei ole tuettu tässä konfiguraatiossa"
 
 #: varasm.c:5584
 #, gcc-internal-format
@@ -26557,12 +26551,12 @@ msgstr ""
 #: config/darwin-c.c:137
 #, gcc-internal-format
 msgid "missing '(' after '#pragma unused', ignoring"
-msgstr ""
+msgstr "puuttuva ”(” pragman ”#pragma unused” jälkeen, jätetään huomiotta"
 
 #: config/darwin-c.c:155
 #, gcc-internal-format
 msgid "missing ')' after '#pragma unused', ignoring"
-msgstr ""
+msgstr "puuttuva ”)” pragman ”#pragma unused” jälkeen, jätetään huomiotta"
 
 #: config/darwin-c.c:158
 #, gcc-internal-format
@@ -26570,14 +26564,14 @@ msgid "junk at end of '#pragma unused'"
 msgstr ""
 
 #: config/darwin-c.c:169
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma ms_struct', ignoring"
-msgstr "väärinmuodostettu #pragma weak, jätetään huomiotta"
+msgstr "väärinmuodostettu ”#pragma ms_struct”, jätetään huomiotta"
 
 #: config/darwin-c.c:177
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma ms_struct {on|off|reset}', ignoring"
-msgstr "väärinmuodostettu #pragma extern_prefix, jätetään huomiotta"
+msgstr "väärinmuodostettu ”#pragma ms_struct {on|off|reset}”, jätetään huomiotta"
 
 #: config/darwin-c.c:180
 #, fuzzy, gcc-internal-format
@@ -26592,7 +26586,7 @@ msgstr ""
 #: config/darwin-c.c:589
 #, gcc-internal-format
 msgid "Unknown value %qs of -mmacosx-version-min"
-msgstr ""
+msgstr "Tuntematon -mmacosx-version-min-arvo %qs"
 
 #: config/darwin.c:1410
 #, gcc-internal-format
@@ -26839,12 +26833,12 @@ msgstr ""
 #: config/arm/arm.c:1525
 #, gcc-internal-format
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
-msgstr ""
+msgstr "-mapcs-stack-check on yhteensopimaton valitsimen -mno-apcs-frame kanssa"
 
 #: config/arm/arm.c:1533
 #, gcc-internal-format
 msgid "-fpic and -mapcs-reent are incompatible"
-msgstr ""
+msgstr "-fpic ja -mapcs-reent ovat yhteensopimattomat"
 
 #: config/arm/arm.c:1536
 #, gcc-internal-format
@@ -26892,14 +26886,14 @@ msgid "FPA is unsupported in the AAPCS"
 msgstr ""
 
 #: config/arm/arm.c:1693
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "AAPCS does not support -mcaller-super-interworking"
-msgstr "ISO C ei tue kompleksikokonaiskulutyyppejä"
+msgstr "AAPCS ei tue valitsinta -mcaller-super-interworking"
 
 #: config/arm/arm.c:1696
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "AAPCS does not support -mcallee-super-interworking"
-msgstr "ISO C ei tue kompleksikokonaiskulutyyppejä"
+msgstr "AAPCS ei tue valitsinta -mcallee-super-interworking"
 
 #: config/arm/arm.c:1703
 #, gcc-internal-format
@@ -26909,7 +26903,7 @@ msgstr ""
 #: config/arm/arm.c:1707
 #, gcc-internal-format
 msgid "Thumb-2 iWMMXt"
-msgstr ""
+msgstr "Thumb-2 iWMMXt"
 
 #: config/arm/arm.c:1711
 #, gcc-internal-format
@@ -27165,12 +27159,12 @@ msgstr ""
 #: config/cris/cris.c:1615
 #, gcc-internal-format
 msgid "internal error: sideeffect-insn affecting main effect"
-msgstr ""
+msgstr "sisäinen virhe: sivuvaikutuskäsky vaikuttaa päävaikutukseen"
 
 #: config/cris/cris.c:1712
 #, gcc-internal-format
 msgid "unknown cc_attr value"
-msgstr ""
+msgstr "tuntematon cc_attr-arvo"
 
 #. If we get here, the caller got its initial tests wrong.
 #: config/cris/cris.c:2096
@@ -27305,7 +27299,7 @@ msgstr ""
 #: config/frv/frv.c:8825
 #, gcc-internal-format
 msgid "invalid IACC argument"
-msgstr ""
+msgstr "virheellinen IACC-argumentti"
 
 #: config/frv/frv.c:8848
 #, gcc-internal-format
@@ -27398,9 +27392,9 @@ msgid "unknown ABI (%s) for %sabi=%s %s"
 msgstr ""
 
 #: config/i386/i386.c:2911
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "code model %s does not support PIC mode"
-msgstr "ISO C ei tue kompleksikokonaiskulutyyppejä"
+msgstr "koodimalli %s ei tue PIC-tilaa"
 
 #: config/i386/i386.c:2917
 #, gcc-internal-format
@@ -27753,29 +27747,29 @@ msgid "vector permutation requires vector constant"
 msgstr ""
 
 #: config/i386/i386.c:30077
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid vector permutation constant"
-msgstr "epäkelvot operandit binääriselle %s-operaatiolle"
+msgstr "virheellinen vektoripermutaatiovakio"
 
 #: config/i386/i386.c:30125
 #, gcc-internal-format
 msgid "vector permutation (%d %d)"
-msgstr ""
+msgstr "vektoripermutaatio (%d %d)"
 
 #: config/i386/i386.c:30128
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d)"
-msgstr ""
+msgstr "vektoripermutaatio (%d %d %d %d)"
 
 #: config/i386/i386.c:30132
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d %d %d %d %d)"
-msgstr ""
+msgstr "vektoripermutaatio (%d %d %d %d %d %d %d %d)"
 
 #: config/i386/i386.c:30137
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
-msgstr ""
+msgstr "vektoripermutaatio (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
 
 #: config/i386/winnt.c:81
 #, fuzzy, gcc-internal-format
@@ -30655,17 +30649,17 @@ msgstr "%J%qD:n lohko on ristiriidassa edellisen esittelyn kanssa"
 #: cp/decl.c:2504
 #, gcc-internal-format
 msgid "jump to label %qD"
-msgstr ""
+msgstr "hyppy nimiöön %qD"
 
 #: cp/decl.c:2506
 #, gcc-internal-format
 msgid "jump to case label"
-msgstr ""
+msgstr "hyppy case-nimiöön"
 
 #: cp/decl.c:2508 cp/decl.c:2648 cp/decl.c:2689
 #, gcc-internal-format
 msgid "  from here"
-msgstr ""
+msgstr "  täältä"
 
 #: cp/decl.c:2527 cp/decl.c:2692
 #, gcc-internal-format
@@ -30699,9 +30693,9 @@ msgid "  enters OpenMP structured block"
 msgstr ""
 
 #: cp/decl.c:2647 cp/decl.c:2688
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump to label %q+D"
-msgstr "%Hnimikkeen %qD kaksoiskappale"
+msgstr "hyppy nimiöön %q+D"
 
 #: cp/decl.c:2664
 #, fuzzy, gcc-internal-format
@@ -30726,7 +30720,7 @@ msgstr ""
 #: cp/decl.c:3027
 #, gcc-internal-format
 msgid "%q#T is not a class"
-msgstr ""
+msgstr "%q#T ei ole luokka"
 
 #: cp/decl.c:3051 cp/decl.c:3138
 #, gcc-internal-format
@@ -30756,17 +30750,17 @@ msgstr ""
 #: cp/decl.c:3148 cp/friend.c:321 cp/friend.c:329
 #, gcc-internal-format
 msgid "%q+D declared here"
-msgstr ""
+msgstr "%q+D esitelty täällä"
 
 #: cp/decl.c:3830
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "an anonymous struct cannot have function members"
-msgstr "%Janonyymillä structilla ei voi olla funktiojäseniä"
+msgstr "anonyymillä structilla ei voi olla funktiojäseniä"
 
 #: cp/decl.c:3833
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "an anonymous union cannot have function members"
-msgstr "%Janonyymillä unionilla ei voi olla funktiojäseniä"
+msgstr "anonyymillä unionilla ei voi olla funktiojäseniä"
 
 #: cp/decl.c:3851
 #, gcc-internal-format
@@ -30927,7 +30921,7 @@ msgstr ""
 #: cp/decl.c:4386
 #, gcc-internal-format
 msgid "%qD declared as reference but not initialized"
-msgstr ""
+msgstr "%qD esitelty viitteenä, mutta ei ole alustettu"
 
 #: cp/decl.c:4411
 #, gcc-internal-format
@@ -31071,7 +31065,7 @@ msgstr ""
 #: cp/decl.c:5555
 #, gcc-internal-format
 msgid "assignment (not initialization) in declaration"
-msgstr ""
+msgstr "sijoitus (ei alustus) esittelyssä"
 
 #: cp/decl.c:5696
 #, gcc-internal-format
@@ -31281,7 +31275,7 @@ msgstr "ISO C++ kieltää nollan kokoisen taulukon %qD"
 #: cp/decl.c:7321
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array"
-msgstr "ISO C++ kieltää nollan kokoiset taulukot"
+msgstr "ISO C++ kieltää nollan kokoisen taulukon"
 
 #: cp/decl.c:7328
 #, gcc-internal-format
@@ -31411,12 +31405,12 @@ msgstr "tyyppi %qT ei periydy %qT-tyypistä"
 #: cp/decl.c:7786 cp/decl.c:7878 cp/decl.c:9145
 #, gcc-internal-format
 msgid "declaration of %qD as non-function"
-msgstr ""
+msgstr "%qD:n esittely ei-funktiona"
 
 #: cp/decl.c:7792
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD as non-member"
-msgstr "%J%qD:n esittely varjostaa parametria"
+msgstr "%qD:n esittely ei-jäsenenä"
 
 #: cp/decl.c:7823
 #, gcc-internal-format
@@ -32585,7 +32579,7 @@ msgstr "%qD esitelty extern-avainsanalla sisäkkäin"
 #: cp/decl2.c:3958
 #, gcc-internal-format
 msgid "used here"
-msgstr ""
+msgstr "käytetty täällä"
 
 #: cp/error.c:2899
 #, gcc-internal-format
@@ -33802,14 +33796,14 @@ msgid "attributes ignored on elaborated-type-specifier that is not a forward dec
 msgstr ""
 
 #: cp/parser.c:12824
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a namespace-name"
-msgstr "%J%qD on tavallisesti ei-staattinen funktio"
+msgstr "%qD ei ole nimiavaruuden nimi"
 
 #: cp/parser.c:12951
 #, gcc-internal-format
 msgid "%<namespace%> definition is not allowed here"
-msgstr ""
+msgstr "%<namespace%>-määrittely ei ole sallittu täällä"
 
 #: cp/parser.c:13092
 #, gcc-internal-format
@@ -34538,7 +34532,7 @@ msgstr ""
 #: cp/pt.c:5447
 #, gcc-internal-format
 msgid "  expected a constant of type %qT, got %qT"
-msgstr ""
+msgstr "  odotettiin %qT-tyyppistä vakiota, saatiin %qT"
 
 #: cp/pt.c:5451
 #, gcc-internal-format
@@ -34548,12 +34542,12 @@ msgstr ""
 #: cp/pt.c:5453
 #, gcc-internal-format
 msgid "  expected a type, got %qE"
-msgstr ""
+msgstr "  odotettiin tyyppiä, saatiin %qE"
 
 #: cp/pt.c:5466
 #, gcc-internal-format
 msgid "  expected a type, got %qT"
-msgstr ""
+msgstr "  odotettiin tyyppiä, saatiin %qT"
 
 #: cp/pt.c:5468
 #, gcc-internal-format
@@ -34658,12 +34652,12 @@ msgstr "muuttujalla %qD on funktiotyyppi"
 #: cp/pt.c:9437
 #, gcc-internal-format
 msgid "invalid parameter type %qT"
-msgstr ""
+msgstr "virheellinen parametrityyppi %qT"
 
 #: cp/pt.c:9439
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in declaration %q+D"
-msgstr "%J%qD esitelty turhaan uudestaan"
+msgstr "esittelyssä %q+D"
 
 #: cp/pt.c:9516
 #, gcc-internal-format
@@ -34783,12 +34777,12 @@ msgstr ""
 #: cp/pt.c:12393
 #, gcc-internal-format
 msgid "%qT is not a class or namespace"
-msgstr "%qT ei ole luokka tai nimiavaruus"
+msgstr "%qT ei ole luokka eikä nimiavaruus"
 
 #: cp/pt.c:12396
 #, gcc-internal-format
 msgid "%qD is not a class or namespace"
-msgstr "%qD ei ole luokka tai nimiavaruus"
+msgstr "%qD ei ole luokka eikä nimiavaruus"
 
 #: cp/pt.c:12657
 #, fuzzy, gcc-internal-format
@@ -35107,7 +35101,7 @@ msgstr ""
 #: cp/semantics.c:2178
 #, gcc-internal-format
 msgid "%qE is not of type %qT"
-msgstr ""
+msgstr "%qE ei ole tyyppiä %qT"
 
 #: cp/semantics.c:2222
 #, fuzzy, gcc-internal-format
@@ -35322,9 +35316,9 @@ msgid "the type %qT of constexpr variable %qD is not literal"
 msgstr ""
 
 #: cp/semantics.c:5341
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %q#D is not of literal type"
-msgstr "parametrin %q+D tyyppi on vaillinainen"
+msgstr "parametri %q#D ei ole literaalityyppiä"
 
 #: cp/semantics.c:5354
 #, fuzzy, gcc-internal-format
@@ -35479,7 +35473,7 @@ msgstr ""
 #: cp/typeck.c:1619
 #, gcc-internal-format
 msgid "invalid use of non-static member function"
-msgstr ""
+msgstr "virheellinen ei-staattisen jäsenfunktion käyttö"
 
 #: cp/typeck.c:1886
 #, gcc-internal-format
@@ -36374,12 +36368,12 @@ msgstr ""
 #: fortran/f95-lang.c:214
 #, gcc-internal-format
 msgid "Unexpected type in truthvalue_conversion"
-msgstr ""
+msgstr "Odottamaton tyyppi kohteessa truthvalue_conversion"
 
 #: fortran/f95-lang.c:273
 #, gcc-internal-format
 msgid "can't open input file: %s"
-msgstr "syötetiedoston avaaminen ei onnistu: %s"
+msgstr "ei voi avata syötetiedostoa: %s"
 
 #: fortran/options.c:238
 #, gcc-internal-format
@@ -36661,7 +36655,7 @@ msgstr ""
 #: java/jcf-parse.c:1607
 #, gcc-internal-format
 msgid "missing Code attribute"
-msgstr ""
+msgstr "puuttuva Code-attribuutti"
 
 #: java/jcf-parse.c:1853
 #, gcc-internal-format
@@ -36671,7 +36665,7 @@ msgstr ""
 #: java/jcf-parse.c:1888
 #, gcc-internal-format
 msgid "can't close input file %s: %m"
-msgstr ""
+msgstr "ei voida sulkea syötetiedostoa %s: %m"
 
 #: java/jcf-parse.c:1933
 #, gcc-internal-format
@@ -36754,17 +36748,17 @@ msgstr "yli yksi tietotyyppi esittelymääritteissä"
 #: lto/lto-elf.c:243
 #, gcc-internal-format
 msgid "elf32_getshdr() failed: %s"
-msgstr ""
+msgstr "elf32_getshdr() epäonnistui: %s"
 
 #: lto/lto-elf.c:245
 #, gcc-internal-format
 msgid "elf64_getshdr() failed: %s"
-msgstr ""
+msgstr "elf64_getshdr() epäonnistui: %s"
 
 #: lto/lto-elf.c:279
 #, gcc-internal-format
 msgid "could not create a new ELF section: %s"
-msgstr ""
+msgstr "ei voitu luoda uutta ELF-lohkoa: %s"
 
 #: lto/lto-elf.c:333
 #, gcc-internal-format
@@ -36941,9 +36935,9 @@ msgid "writing to LTRANS output list %s: %m"
 msgstr "kirjoitettaessa tulostetta tiedostoon %s: %m"
 
 #: lto/lto.c:1196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pex_init failed: %s"
-msgstr "verify_flow_info epäonnistui"
+msgstr "pex_init epäonnistui: %s"
 
 #: lto/lto.c:1204
 #, gcc-internal-format
@@ -37028,7 +37022,7 @@ msgstr ""
 #: objc/objc-act.c:1455
 #, gcc-internal-format
 msgid "protocol %qE has circular dependency"
-msgstr ""
+msgstr "protokollalla %qE on kehäriippuvuus"
 
 #: objc/objc-act.c:1480 objc/objc-act.c:6677
 #, fuzzy, gcc-internal-format
@@ -37143,9 +37137,9 @@ msgid "type %q+D does not have a known size"
 msgstr ""
 
 #: objc/objc-act.c:5026
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s %qs"
-msgstr "%s: %s"
+msgstr "%s %qs"
 
 #: objc/objc-act.c:5049 objc/objc-act.c:5068
 #, gcc-internal-format
@@ -37173,14 +37167,14 @@ msgid "multiple selectors named %<%c%E%> found"
 msgstr "%Juseita parametreja nimellä %qD"
 
 #: objc/objc-act.c:6174
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "found %<%c%s%>"
-msgstr "%J%s %<%c%s%>"
+msgstr "löytyi %<%c%s%>"
 
 #: objc/objc-act.c:6183
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "also found %<%c%s%>"
-msgstr "%J%s %<%c%s%>"
+msgstr "löytyi myös %<%c%s%>"
 
 #: objc/objc-act.c:6397
 #, gcc-internal-format
@@ -37291,12 +37285,12 @@ msgstr "%Jei-staattisen paikallismuuttujan %qD asm-määrittäjä jätetään hu
 #: objc/objc-act.c:7207
 #, gcc-internal-format
 msgid "type %qE has a user-defined constructor"
-msgstr ""
+msgstr "tyypillä %qE on käyttäjän määrittelemä muodostin"
 
 #: objc/objc-act.c:7209
 #, gcc-internal-format
 msgid "type %qE has a user-defined destructor"
-msgstr ""
+msgstr "tyypillä %qE on käyttäjän määrittelemä hajotin"
 
 #: objc/objc-act.c:7213
 #, gcc-internal-format
