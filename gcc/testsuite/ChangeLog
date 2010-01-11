@@ -1,3 +1,8 @@
+2010-01-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/x86_64/abi/avx/asm-support.S (snapshot_ret): Preserve
+	stack alignment.
+
 2010-01-10  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc.dg/lto/20100108_0.c: New.
