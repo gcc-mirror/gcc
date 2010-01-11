@@ -115,7 +115,7 @@ Exit on the first error occurred
 
 Wframe-larger-than=
 Common RejectNegative Joined UInteger
--Wframe-larger-than=<number> Warn if a function's stack frame requires more than <number> bytes
+-Wframe-larger-than=<number>	Warn if a function's stack frame requires more than <number> bytes
 
 Winline
 Common Var(warn_inline) Warning
@@ -386,7 +386,7 @@ Do not put uninitialized globals in the common section
 
 fcompare-debug=
 Common JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
--fcompare-debug[=<opts>] Compile with and without e.g. -gtoggle, and compare the final-insns dump
+-fcompare-debug[=<opts>]	Compile with and without e.g. -gtoggle, and compare the final-insns dump
 
 fcompare-debug-second
 Common RejectNegative Var(flag_compare_debug)
@@ -430,7 +430,7 @@ List all available debugging counters with their limits and counts.
 
 fdbg-cnt=
 Common RejectNegative Joined
--fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]    Set the debug counter limit.   
+-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]	Set the debug counter limit.   
 
 fdebug-prefix-map=
 Common Joined RejectNegative
@@ -736,7 +736,7 @@ Share stack slots for spilled pseudo-registers.
 
 fira-verbose=
 Common RejectNegative Joined UInteger
--fira-verbose=<number> Control IRA's level of diagnostic messages.
+-fira-verbose=<number>	Control IRA's level of diagnostic messages.
 
 fivopts
 Common Report Var(flag_ivopts) Init(1) Optimization
@@ -769,7 +769,7 @@ Enable link-time optimization.
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
 Common Joined UInteger Var(flag_lto_compression_level) Init(-1)
--flto-compression-level=<number> Use zlib compression level <number> for IL
+-flto-compression-level=<number>	Use zlib compression level <number> for IL
 
 flto-report
 Common Report Var(flag_lto_report) Init(0) Optimization
@@ -908,7 +908,7 @@ Specify a plugin to load
 
 fplugin-arg-
 Common Joined RejectNegative
--fplugin-arg-<name>-<key>[=<value>] Specify argument <key>=<value> for plugin <name>
+-fplugin-arg-<name>-<key>[=<value>]	Specify argument <key>=<value> for plugin <name>
 
 fpredictive-commoning
 Common Report Var(flag_predictive_commoning) Optimization

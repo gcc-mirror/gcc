@@ -197,7 +197,6 @@ echo "scanning option files..." >&2
 	} else {
 	    if (field == 2) {
 		line = $0
-		gsub(".*\t", "", line)
 		printf("#line %d \"%s\"\n", lineno, file)
 		printf("_(\"%s\")\n", line)
 	    }

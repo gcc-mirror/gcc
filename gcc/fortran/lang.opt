@@ -166,7 +166,7 @@ Produce a backtrace when a runtime error is encountered
 
 fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger
--fblas-matmul-limit=<n>        Size of the smallest matrix for which matmul will use BLAS
+-fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS
 
 fcheck-array-temporaries
 Fortran
@@ -270,11 +270,11 @@ Specify that no implicit typing is allowed, unless overridden by explicit IMPLIC
 
 finit-character=
 Fortran RejectNegative Joined UInteger
--finit-character=<n> Initialize local character variables to ASCII value n
+-finit-character=<n>	Initialize local character variables to ASCII value n
 
 finit-integer=
 Fortran RejectNegative Joined
--finit-integer=<n> Initialize local integer variables to n
+-finit-integer=<n>	Initialize local integer variables to n
 
 finit-local-zero
 Fortran
@@ -282,15 +282,15 @@ Initialize local variables to zero (from g77)
 
 finit-logical=
 Fortran RejectNegative Joined
--finit-logical=<true|false> Initialize local logical variables
+-finit-logical=<true|false>	Initialize local logical variables
 
 finit-real=
 Fortran RejectNegative Joined
--finit-real=<zero|nan|inf|-inf> Initialize local real variables
+-finit-real=<zero|nan|inf|-inf>	Initialize local real variables
 
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger
--fmax-array-constructor=<n>        Maximum number of objects in an array constructor
+-fmax-array-constructor=<n>	Maximum number of objects in an array constructor
 
 fmax-errors=
 Fortran RejectNegative Joined UInteger

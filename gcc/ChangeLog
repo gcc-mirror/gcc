@@ -1,3 +1,12 @@
+2010-01-11  Joseph Myers  <joseph@codesourcery.com>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+	
+	PR translation/42469
+	* common.opt (Wframe-larger-than=, fcompare-debug=, fdbg-cnt=,
+	fira-verbose=, flto-compression-level=, fplugin-arg-): Use tab
+	character between option name and help text.
+	* c.opt (imultilib): Likewise.
+
 2010-01-10  Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-streamer-out.c (output_unreferenced_globals): Output static

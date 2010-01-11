@@ -875,7 +875,7 @@ C ObjC C++ ObjC++ Joined Separate
 
 imultilib
 C ObjC C++ ObjC++ Joined Separate
--imultilib <dir> Set <dir> to be the multilib include subdirectory
+-imultilib <dir>	Set <dir> to be the multilib include subdirectory
 
 include
 C ObjC C++ ObjC++ Joined Separate
