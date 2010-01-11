@@ -352,7 +352,7 @@ dependencies = { module=all-fixincludes; on=all-libiberty; };
 
 dependencies = { module=all-gnattools; on=all-target-libada; };
 
-dependencies = { module=all-lto-plugin; on=all-libiberty; };
+dependencies = { module=all-lto-plugin; on=all-gcc; };
 
 dependencies = { module=configure-mpfr; on=all-gmp; };
 dependencies = { module=configure-mpc; on=all-mpfr; };

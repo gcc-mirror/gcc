@@ -57407,14 +57407,14 @@ all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
 all-fixincludes: maybe-all-libiberty
 all-gnattools: maybe-all-target-libada
-all-lto-plugin: maybe-all-libiberty
+all-lto-plugin: maybe-all-gcc
 
-all-stage1-lto-plugin: maybe-all-stage1-libiberty
-all-stage2-lto-plugin: maybe-all-stage2-libiberty
-all-stage3-lto-plugin: maybe-all-stage3-libiberty
-all-stage4-lto-plugin: maybe-all-stage4-libiberty
-all-stageprofile-lto-plugin: maybe-all-stageprofile-libiberty
-all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty
+all-stage1-lto-plugin: maybe-all-stage1-gcc
+all-stage2-lto-plugin: maybe-all-stage2-gcc
+all-stage3-lto-plugin: maybe-all-stage3-gcc
+all-stage4-lto-plugin: maybe-all-stage4-gcc
+all-stageprofile-lto-plugin: maybe-all-stageprofile-gcc
+all-stagefeedback-lto-plugin: maybe-all-stagefeedback-gcc
 configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp

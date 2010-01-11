@@ -1,3 +1,9 @@
+2010-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41569
+	* Makefile.def (all-lto-plugin): Depend on all-gcc.
+	* Makefile.in: Regenerated.
+
 2010-01-11  Andreas Tobler  <andreast@fgznet.ch>
 
 	* configure.ac: Enable libjava build on x86_64-*freebsd*.
