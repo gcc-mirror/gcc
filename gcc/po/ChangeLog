@@ -1,3 +1,10 @@
+2010-01-11  Joseph Myers  <joseph@codesourcery.com>
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+	    
+	PR translation/42467
+	* exgettext: Keep the text before tab character in the option help
+	string at *.opt file.
+
 2010-01-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

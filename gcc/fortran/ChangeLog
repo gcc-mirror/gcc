@@ -1,3 +1,11 @@
+2010-01-11  Joseph Myers  <joseph@codesourcery.com>  
+	    Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR translation/42469
+	* lang.opt (fblas-matmul-limit=, finit-character=, finit-integer=,
+	finit-logical=, finit-real=, fmax-array-constructor=): Use tab
+	character between option name and help text.
+
 2010-01-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/20923
