@@ -29,6 +29,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "lto-streamer.h"
 
+/* Handle opening elf files on hosts, such as Windows, that may use 
+   text file handling that will break binary access.  */
+
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
+
 
 /* Initialize FILE, an LTO file object for FILENAME.  */
 static void
@@ -580,7 +587,8 @@ lto_elf_file_open (const char *filename, bool writable)
   elf_file->fd = -1;
 
   /* Open the file.  */
-  elf_file->fd = open (fname, writable ? O_WRONLY|O_CREAT : O_RDONLY, 0666);
+  elf_file->fd = open (fname, writable ? O_WRONLY|O_CREAT|O_BINARY 
+				       : O_RDONLY|O_BINARY, 0666);
   if (elf_file->fd == -1)
     {
       error ("could not open file %s", fname);

@@ -1,3 +1,10 @@
+2010-01-11  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* lto.c (O_BINARY): Define.
+	(lto_read_section_data): Open file in binary mode.
+	* lto-elf.c (O_BINARY): Define.
+	(lto_elf_file_open): Open file in binary mode. 
+
 2010-01-08  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42528

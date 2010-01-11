@@ -50,6 +50,14 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/mman.h>
 #endif
 
+/* Handle opening elf files on hosts, such as Windows, that may use 
+   text file handling that will break binary access.  */
+
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
+
+
 DEF_VEC_P(bitmap);
 DEF_VEC_ALLOC_P(bitmap,heap);
 
@@ -421,7 +429,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
   if (fd == -1)
     {
       fd_name = xstrdup (file_data->file_name);
-      fd = open (file_data->file_name, O_RDONLY);
+      fd = open (file_data->file_name, O_RDONLY|O_BINARY);
       if (fd == -1)
 	return NULL;
     }
