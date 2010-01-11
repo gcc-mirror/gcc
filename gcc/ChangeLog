@@ -1,3 +1,7 @@
+2010-01-11  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
+
+	* config/avr/avr.h (LINKER_NAME): Remove. 
+
 2010-01-11  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/42416
@@ -118,7 +122,7 @@
 2010-01-08  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	PR target/41885
-	* avr.md (rotlqi3): Add CONST_INT_P check.
+	* config/avr/avr.md (rotlqi3): Add CONST_INT_P check.
 	(rotlhi3): Delete.
 	(rotlhi3_8): Delete.
 	(rotlsi3): Delete.
@@ -128,8 +132,8 @@
 	(rotl<mode>3): New.
 	(*rotw<mode>3): New.
 	(*rotb<mode>3): New.
-	* avr.c (avr_rotate_bytes): New function.
-	* avr-proto.h (avr_rotate_bytes): New function. 
+	* config/avr/avr.c (avr_rotate_bytes): New function.
+	* config/avr/avr-proto.h (avr_rotate_bytes): New function. 
 
 2010-01-08  Steve Ellcey  <sje@cup.hp.com>
 
