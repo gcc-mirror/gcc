@@ -1,3 +1,7 @@
+2010-01-11  Tristan Gingold  <gingold@adacore.com>
+
+	* demangle.h (ada_demangle): Add prototype.
+
 2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/41771
