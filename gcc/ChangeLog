@@ -1,3 +1,8 @@
+2010-01-10  Rafael Avila de Espindola  <espindola@google.com>
+
+	* lto-streamer-out.c (output_unreferenced_globals): Output static
+	variables.
+
 2010-01-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/42621

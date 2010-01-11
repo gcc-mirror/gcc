@@ -1,3 +1,7 @@
+2010-01-10  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc.dg/lto/20100108_0.c: New.
+
 2010-01-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/graphite/pr40281.c (dg-options): Add -w.
