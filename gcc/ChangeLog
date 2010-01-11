@@ -1,3 +1,10 @@
+2010-01-11  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/42416
+	* config/rs6000/rs6000.c (rs6000_override_options): On targets
+	that support VSX, warn for -mno-altivec if vsx is not disabled,
+	and disable vsx.
+
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 	
