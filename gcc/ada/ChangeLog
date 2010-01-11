@@ -1,3 +1,8 @@
+2010-01-11  Mikael Pettersson  <mikpe@it.uu.se>
+
+	* gcc-interface/Makefile.in: Add arm*-*-linux-gnueabi.
+	* system-linux-armeb.ads, system-linux-armel.ads: New files.
+
 2010-01-09  Simon Wright  <simon@pushface.org>
 
 	PR ada/42626
