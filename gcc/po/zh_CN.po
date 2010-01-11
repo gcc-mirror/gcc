@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5-b20091203\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2009-12-03 21:28+0000\n"
-"PO-Revision-Date: 2009-12-29 15:41+0800\n"
+"PO-Revision-Date: 2010-01-11 10:18+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -491,7 +491,7 @@ msgstr "数组初始值设定项中有多余的元素"
 
 #: c-typeck.c:7984
 msgid "excess elements in vector initializer"
-msgstr "矢量初始值设定项中有多余元素"
+msgstr "向量初始值设定项中有多余元素"
 
 #: c-typeck.c:8015
 msgid "excess elements in scalar initializer"
@@ -2022,7 +2022,7 @@ msgstr "这是指令："
 #. It's the compiler's fault.
 #: reload1.c:5661
 msgid "could not find a spill register"
-msgstr "找不到可舍出的寄存器"
+msgstr "找不到可溢出的寄存器"
 
 #. It's the compiler's fault.
 #: reload1.c:7646
@@ -2324,7 +2324,7 @@ msgstr "如果使用了 -fvariable-expansion-in-unroller，即指单个变量在
 
 #: params.def:130
 msgid "If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization"
-msgstr "使用 -ftree-vectorize 时考虑进行矢量化的循环次数下限"
+msgstr "使用 -ftree-vectorize 时考虑进行向量化的循环次数下限"
 
 #: params.def:141
 msgid "The maximum number of instructions to consider to fill a delay slot"
@@ -2364,11 +2364,11 @@ msgstr "对单个调用进行的早期内联所导致的函数体代码膨胀的
 
 #: params.def:191
 msgid "The size of stack frame to be considered large"
-msgstr "超过这个大小的堆栈框架被认为是大的"
+msgstr "超过这个大小的栈帧被认为是大的"
 
 #: params.def:195
 msgid "Maximal stack frame growth due to inlining (in percent)"
-msgstr "内联造成的堆栈框架膨胀的上限(以百分数的形式给出)"
+msgstr "内联造成的栈帧膨胀的上限(以百分数的形式给出)"
 
 #: params.def:202
 msgid "The maximum amount of memory to be allocated by GCSE"
@@ -2560,11 +2560,11 @@ msgstr "设为 1 时，使用昂贵的方法来消除所有冗余的约束"
 
 #: params.def:475
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alignment check"
-msgstr "矢量循环版本化插入的运行时对齐检查次数的上限"
+msgstr "向量循环版本化插入的运行时对齐检查次数的上限"
 
 #: params.def:480
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check"
-msgstr "矢量循环版本化插入的运行时别名检查次数的上限"
+msgstr "向量循环版本化插入的运行时别名检查次数的上限"
 
 #: params.def:485
 msgid "The maximum memory locations recorded by cselib"
@@ -2712,7 +2712,7 @@ msgstr "用作循环不变量转移的循环中基本块的最大数量"
 
 #: params.def:753
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
-msgstr "考虑进行基本块矢量化的基本块能包含的指令数上限"
+msgstr "考虑进行基本块向量化的基本块能包含的指令数上限"
 
 #: params.def:758
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count"
@@ -4134,7 +4134,7 @@ msgstr "变量‘%s’在%L处上下文中必须是常量"
 #: fortran/array.c:307
 #, no-c-format
 msgid "Expected expression in array specification at %C"
-msgstr "%C处指定数组时需要表达式"
+msgstr "%C处数组规格中需要表达式"
 
 #: fortran/array.c:389
 #, no-c-format
@@ -4164,12 +4164,12 @@ msgstr "%C处数组声明需要另外一维"
 #: fortran/array.c:432
 #, no-c-format
 msgid "Array specification at %C has more than %d dimensions"
-msgstr "%C处数组指定了多于 %d 的维数"
+msgstr "%C处数组规格中有多于 %d 的维数"
 
 #: fortran/array.c:438
 #, no-c-format
 msgid "Fortran 2008: Array specification at %C with more than 7 dimensions"
-msgstr "Fortran 2008：%C处多于 7 维的数组"
+msgstr "Fortran 2008：%C处多于 7 维的数组规格"
 
 #: fortran/array.c:645
 #, no-c-format
@@ -4194,7 +4194,7 @@ msgstr "Fortran 2003：%C处 [...] 风格的数组构造"
 #: fortran/array.c:916
 #, no-c-format
 msgid "Fortran 2003: Array constructor including type specification at %C"
-msgstr "Fortran 2003：%C处包含指定类型的数组构造"
+msgstr "Fortran 2003：%C处包含类型规格的数组构造"
 
 #: fortran/array.c:931
 #, no-c-format
@@ -4212,9 +4212,9 @@ msgid "Iterator step at %L cannot be zero"
 msgstr "%L处游标步进不能为零"
 
 #: fortran/array.c:1649
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Different CHARACTER lengths (%d/%d) in array constructor at %L"
-msgstr "在 %3$L 处数组构造器中不同 CHARACTER 的长度(%1$d/%2$d)"
+msgstr "%3$L处数组构造函数中不同 CHARACTER 长度(%1$d/%2$d)"
 
 #: fortran/check.c:44
 #, no-c-format
@@ -4302,9 +4302,9 @@ msgid "'dim' argument of '%s' intrinsic at %L is not a valid dimension index"
 msgstr "%2$L处‘%1$s’内建函数的‘dim’实参不是一个有效的维数索引"
 
 #: fortran/check.c:434
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unequal character lengths (%ld/%ld) in %s at %L"
-msgstr "%3$L 处不等字符长度 (%1$ld/%2$ld)"
+msgstr "%4$L处 %3$s 中字符长度不相等 (%1$ld/%2$ld)"
 
 #: fortran/check.c:543 fortran/check.c:2137 fortran/check.c:2149
 #, no-c-format
@@ -4340,7 +4340,7 @@ msgstr "%3$L处内建函数‘%2$s’的实参‘%1$s’必须是一个 POINTER 
 #: fortran/check.c:653
 #, no-c-format
 msgid "Array section with a vector subscript at %L shall not be the target of a pointer"
-msgstr "%L处由矢量下标选择的部分数组不应是指针的目标"
+msgstr "%L处由向量下标选择的部分数组不应是指针的目标"
 
 #: fortran/check.c:664
 #, no-c-format
@@ -4370,9 +4370,9 @@ msgid "'%s' argument of '%s' intrinsic at %L has invalid shape in dimension %d (
 msgstr "%3$L处‘%2$s’内建函数的实参‘%1$s’在维数 %4$d (%5$ld/%6$ld)上外形无效"
 
 #: fortran/check.c:946 fortran/check.c:1152 fortran/check.c:1180
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of intrinsic '%s' at %L of must have rank %d or be a scalar"
-msgstr "%3$L处内建函数‘%2$s’的实参‘%1$s’必须为整数型或实数型"
+msgstr "%3$L处内建函数‘%2$s’的实参‘%1$s’必须有 %4$d 的秩或者是一个标量"
 
 #: fortran/check.c:1047 fortran/check.c:1909 fortran/check.c:1917
 #, no-c-format
@@ -4440,9 +4440,9 @@ msgid "'a1' argument of '%s' intrinsic at %L must be INTEGER, REAL or CHARACTER"
 msgstr "%2$L处‘%1$s’内建函数的‘a1’实参必须是 INTEGER、REAL 或 CHARACTER"
 
 #: fortran/check.c:1926
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument types of '%s' intrinsic at %L must match (%s/%s)"
-msgstr "%2$L 处内建“%1$s”的参数必须匹配(%3$s/%4$s)"
+msgstr "%2$L处内建‘%1$s’的参数必须匹配(%3$s/%4$s)"
 
 #: fortran/check.c:1940
 #, no-c-format
@@ -4535,9 +4535,9 @@ msgid "'%s' argument of '%s' intrinsic at %L has invalid permutation of dimensio
 msgstr "%3$L处‘%2$s’内建函数的‘%1$s’实参维数置换无效(维数%4$d重复)"
 
 #: fortran/check.c:2627
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Without padding, there are not enough elements in the intrinsic RESHAPE source at %L to match the shape"
-msgstr "没有填充，在 %L 处内在的 ESHAPE 源中没有足够的元素去与外形匹配"
+msgstr "若没有填充，%L处内建 ESHAPE 源中没有足够的元素去与外形匹配"
 
 #: fortran/check.c:2645 fortran/check.c:2661
 #, no-c-format
@@ -4630,9 +4630,9 @@ msgid "non-constant array in DATA statement %L"
 msgstr "%L处 DATA 语句中有非常量数组"
 
 #: fortran/data.c:190
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "failure to simplify substring reference in DATA statement at %L"
-msgstr "%L 处的 DATA 语句中简化子串引用时失败"
+msgstr "%L处 DATA 语句简化子串引用时失败"
 
 #: fortran/data.c:215
 #, no-c-format
@@ -4660,9 +4660,9 @@ msgid "Extension: re-initialization of '%s' at %L"
 msgstr "扩展：‘%s’重初始化于 %L"
 
 #: fortran/decl.c:259
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Host associated variable '%s' may not be in the DATA statement at %C"
-msgstr "与变量“%s”相关的主机不能在 %C 处的 DATA 语句中"
+msgstr "%2$C处主机相关的变量‘%1$s’不能出现在 DATA 语句中"
 
 #: fortran/decl.c:266
 #, no-c-format
@@ -4692,7 +4692,7 @@ msgstr "DATA 语句不允许出现在%C处的 PURE 过程中"
 #: fortran/decl.c:587
 #, no-c-format
 msgid "Bad INTENT specification at %C"
-msgstr "%C处错误地指定 INTENT"
+msgstr "%C处错误的 INTENT 规格"
 
 #: fortran/decl.c:634
 #, no-c-format
@@ -4707,7 +4707,7 @@ msgstr "已过时：%C处的旧式字符长度"
 #: fortran/decl.c:690
 #, no-c-format
 msgid "Syntax error in character length specification at %C"
-msgstr "%C处指定字符长度时语法错误"
+msgstr "%C处字符长度规格语法错误"
 
 #: fortran/decl.c:813
 #, no-c-format
@@ -4715,64 +4715,64 @@ msgid "Procedure '%s' at %C is already defined at %L"
 msgstr "%2$C处的过程‘%1$s’已经在%3$L处被定义"
 
 #: fortran/decl.c:821
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Name '%s' at %C is already defined as a generic interface at %L"
-msgstr "%2$C 处的名字“%1$s”已经在 %3$L 处被定义为一般接口"
+msgstr "%2$C 处的名字‘%1$s’已经在 %3$L 处被定义为一般接口"
 
 #: fortran/decl.c:834
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Procedure '%s' at %C has an explicit interface and must not have attributes declared at %L"
-msgstr "程序“%s”在 %C 处具有显式接口，而且必须在 %L 处不具有已宣告的属性"
+msgstr "过程‘%s’在%C处具有显式接口，因此不能有在%L处声明的属性"
 
 #: fortran/decl.c:906
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Procedure '%s' at %L must have the BIND(C) attribute to be C interoperable"
-msgstr "在 %2$L 处的程“%1$s”必须有与 C 可互操作的 BIND(C) 属性"
+msgstr "%2$L处的过程‘%1$s’必须有属性才能与 C 互操作"
 
 #: fortran/decl.c:936
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type '%s' at %L is a parameter to the BIND(C)  procedure '%s' but is not C interoperable because derived type '%s' is not C interoperable"
-msgstr "%2$L 处类型“%1$s”是去到 BIND(C) 过程“%3$s”的参数，但不能与 C 互操作，因为派生类型“%4$s”不是与 C 可互操作的"
+msgstr "%2$L处类型‘%1$s’是 BIND(C) 过程‘%3$s’的参数，但它不能与 C 互操作，因为派生类型‘%4$s’不能与 C 互操作"
 
 #: fortran/decl.c:943
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L is a parameter to the BIND(C) procedure '%s' but may not be C interoperable"
-msgstr "%2$L 处变量“%1$s”是去到 BIND(C) 过程“%3$s”的参数，但不能与 C 互操作"
+msgstr "%2$L处变量‘%1$s’是 BIND(C) 过程‘%3$s’的参数，但它不能与 C 互操作"
 
 #: fortran/decl.c:958
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character argument '%s' at %L must be length 1 because procedure '%s' is BIND(C)"
-msgstr "%2$L 处字符参数“%1$s”长度必须为 1，因为过程“%3$s”是 BIND(C)"
+msgstr "%2$L处字符参数‘%1$s’长度必须为 1，因为过程‘%3$s’是 BIND(C)"
 
 #: fortran/decl.c:972
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have the ALLOCATABLE attribute because procedure '%s' is BIND(C)"
-msgstr "%2$L 处变量“%1$s”不能有 ALLOCATABLE 属性，因为过程“%3$s”是 BIND(C)"
+msgstr "%2$L处变量‘%1$s’不能有 ALLOCATABLE 属性，因为过程‘%3$s’是 BIND(C)"
 
 #: fortran/decl.c:981
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have the POINTER attribute because procedure '%s' is BIND(C)"
-msgstr "%2$L 处变量“%1$s”不能有 POINTER 属性，因为过程“%3$s”是 BIND(C)"
+msgstr "%2$L处变量‘%1$s’不能有 POINTER 属性，因为过程‘%3$s’是 BIND(C)"
 
 #: fortran/decl.c:990
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have the OPTIONAL attribute because procedure '%s' is BIND(C)"
-msgstr "%2$L 处变量“%1$s”不能有 OPTIONAL 属性，因为过程“%3$s”是 BIND(C)"
+msgstr "%2$L处变量‘%1$s’不能有 OPTIONAL 属性，因为过程‘%3$s’是 BIND(C)"
 
 #: fortran/decl.c:1003
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assumed-shape array '%s' at %L cannot be an argument to the procedure '%s' at %L because the procedure is BIND(C)"
-msgstr "%2$L 处假定成形数组“%1$s”不能是去到 %4$L 处过程“%3$s”的参数，因为该过程是 BIND(C)"
+msgstr "%2$L处假定外形数组‘%1$s’不能是%4$L处过程‘%3$s’的参数，因为该过程是 BIND(C)"
 
 #: fortran/decl.c:1013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deferred-shape array '%s' at %L cannot be an argument to the procedure '%s' at %L because the procedure is BIND(C)"
-msgstr "%2$L 处推迟成形数组“%1$s”不能是去到 %4$L 处过程“%3$s”的参数，因为该过程是 BIND(C)"
+msgstr "%2$L处延迟外形数组‘%1$s’不能是%4$L处过程‘%3$s’的参数，因为该过程是 BIND(C)"
 
 #: fortran/decl.c:1090
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' in common block '%s' at %C must be declared with a C interoperable kind since common block '%s' is BIND(C)"
-msgstr "在 %3$C 处公共块“%2$s”中的变量“%1$s”必须被声明为与 C 可互操作的类因为公共块“%4$s”是 BIND(C)"
+msgstr "%3$C处公共块‘%2$s’中的变量‘%1$s’必须被声明为与 C 可互操作的种别，因为公共块‘%4$s’是 BIND(C)"
 
 #: fortran/decl.c:1137
 #, no-c-format
@@ -4780,9 +4780,9 @@ msgid "CHARACTER expression at %L is being truncated (%d/%d)"
 msgstr "CHARACTER 表达式在%L处被截断(%d/%d)"
 
 #: fortran/decl.c:1144
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The CHARACTER elements of the array constructor at %L must have the same length (%d/%d)"
-msgstr "%L处的数组构建器的 CHARACTER 元素必须有相同的长度 %d/%d"
+msgstr "%L处的数组构造函数的 CHARACTER 元素必须有相同的长度(%d/%d)"
 
 #: fortran/decl.c:1234
 #, no-c-format
@@ -4795,9 +4795,9 @@ msgid "PARAMETER at %L is missing an initializer"
 msgstr "%L处 PARAMETER 缺少初始值设定"
 
 #: fortran/decl.c:1254
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %C with an initializer already appears in a DATA statement"
-msgstr "在 %2$C 处具有一个初始化器的变量“%1$s”已经出现在一个 DATA 语句中"
+msgstr "%2$C处有初始值设定的变量‘%1$s’已经出现在一个 DATA 语句中"
 
 #: fortran/decl.c:1406
 #, no-c-format
@@ -4805,14 +4805,14 @@ msgid "Component at %C must have the POINTER attribute"
 msgstr "%C处的组件必须有 POINTER 属性"
 
 #: fortran/decl.c:1414
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array component of structure at %C must have explicit or deferred shape"
-msgstr "%C 处的数组组件必须有显式或延迟的外形"
+msgstr "%C处结构的数组组件必须有显式或延迟的外形"
 
 #: fortran/decl.c:1489
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pointer array component of structure at %C must have a deferred shape"
-msgstr "%C 处结构的指针数组组件必须有延迟的外形"
+msgstr "%C处结构的指针数组组件必须有延迟的外形"
 
 #: fortran/decl.c:1498
 #, no-c-format
@@ -4820,9 +4820,9 @@ msgid "Allocatable component of structure at %C must have a deferred shape"
 msgstr "%C处可分配的组件必须有延迟的外形"
 
 #: fortran/decl.c:1507
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array component of structure at %C must have an explicit shape"
-msgstr "%C 处结构的组件必须有显式的外形"
+msgstr "%C处结构的数组组件必须有显式的外形"
 
 #: fortran/decl.c:1537
 #, no-c-format
@@ -4835,9 +4835,9 @@ msgid "Duplicate array spec for Cray pointee at %C"
 msgstr "%C处 Cray 指针重复指定了数组"
 
 #: fortran/decl.c:1725
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "the type of '%s' at %C has not been declared within the interface"
-msgstr "%2$C 处的“%1$s”类型在接口中尚未被声明"
+msgstr "%2$C 处的‘%1$s’类型在接口中尚未被声明"
 
 #: fortran/decl.c:1741
 #, no-c-format
@@ -4880,9 +4880,9 @@ msgid "Initialization of variable at %C is not allowed in a PURE procedure"
 msgstr "%C处对变量的初始化不允许出现在 PURE 过程中"
 
 #: fortran/decl.c:1827
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization of allocatable component at %C is not allowed"
-msgstr "%C 处可分配组件的初始化不被允许"
+msgstr "不允许在%C处初始化可分配的组件"
 
 #: fortran/decl.c:1881 fortran/decl.c:1890
 #, no-c-format
@@ -4915,9 +4915,9 @@ msgid "Kind %d not supported for type %s at %C"
 msgstr "种别 %d 在%C处不为类型 %s 所支持"
 
 #: fortran/decl.c:2011
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "C kind type parameter is for type %s but type at %L is %s"
-msgstr "%L 处指针赋值时不同类型的参数"
+msgstr "C 种别类型参数对应类型 %s 但%L处的类型却是 %s"
 
 #: fortran/decl.c:2020
 #, no-c-format
@@ -4986,19 +4986,19 @@ msgid "Fortran 2003: IMPORT statement at %C"
 msgstr "Fortran 2003：%C处的 IMPORT 语句"
 
 #: fortran/decl.c:2718
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expecting list of named entities at %C"
-msgstr "%C 处期待命名实体列表"
+msgstr "%C处需要有名实体列表"
 
 #: fortran/decl.c:2746
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot IMPORT '%s' from host scoping unit at %C - does not exist."
-msgstr "不能从 %C 处主机作用域单元够 IMPORT“%s”- 不存在。"
+msgstr "不能从%2$C处主机作用域单元 IMPORT‘%1$s’- 不存在。"
 
 #: fortran/decl.c:2753
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' is already IMPORTed from host scoping unit at %C."
-msgstr "“%s”已经从 %C 处主机域单元导入。"
+msgstr "‘%s’已经从%C处主机作用域单元导入。"
 
 #: fortran/decl.c:2782
 #, no-c-format
@@ -5008,7 +5008,7 @@ msgstr "%C处的 IMPORT 语句语法错误"
 #: fortran/decl.c:3031
 #, no-c-format
 msgid "Missing dimension specification at %C"
-msgstr "%C处没有指定维数"
+msgstr "%C处没有维数规格"
 
 #: fortran/decl.c:3105
 #, no-c-format
@@ -5031,14 +5031,14 @@ msgid "Fortran 2003: Attribute %s at %L in a TYPE definition"
 msgstr "Fortran 2003：属性 %s 在%L处出现在 TYPE 定义中"
 
 #: fortran/decl.c:3163
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s attribute at %L is not allowed outside of the specification part of a module"
-msgstr "在 %L 处的 %s 属性不允许出现在模块规格说明以外"
+msgstr "%2$L处的 %1$s 属性不允许出现在模块规格说明以外"
 
 #: fortran/decl.c:3215 fortran/decl.c:6086
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PROTECTED at %C only allowed in specification part of a module"
-msgstr "在 %C 处的 PROTECTED 仅允许出现在模块规格说明部分内"
+msgstr "%C处的 PROTECTED 仅允许出现在模块规格说明部分内"
 
 #: fortran/decl.c:3221
 #, no-c-format
@@ -5061,19 +5061,19 @@ msgid "Multiple identifiers provided with single NAME= specifier at %C"
 msgstr "%C处为单个 NAME= 指定了多个标识符"
 
 #: fortran/decl.c:3398
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Implicitly declared BIND(C) function '%s' at %L may not be C interoperable"
-msgstr "%2$L 处隐式声明的 BIND(C) 函数“%1$s”不能与 C 互操作"
+msgstr "%2$L处隐式声明的 BIND(C) 函数‘%1$s’不能与 C 互操作"
 
 #: fortran/decl.c:3419
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' in common block '%s' at %L may not be a C interoperable kind though common block '%s' is BIND(C)"
-msgstr "%3$L 处的公共块变量“%2$s”中的变量“%1$s”不可能是 C 互操作类即使公共块“%4$s”是 BIND(C)"
+msgstr "%3$L处的公共块‘%2$s’中的变量‘%1$s’可能不是 C 互操作种别，即使公共块‘%4$s’是 BIND(C)"
 
 #: fortran/decl.c:3428
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type declaration '%s' at %L is not C interoperable but it is BIND(C)"
-msgstr "%2$L 处的类型声明“%1$s”不是与 C 可互操作的，但它是个 BIND(C)"
+msgstr "%2$L处的类型声明‘%1$s’不是与 C 可互操作的，但它是个 BIND(C)"
 
 #: fortran/decl.c:3432
 #, no-c-format
@@ -5081,19 +5081,19 @@ msgid "Variable '%s' at %L may not be a C interoperable kind but it is bind(c)"
 msgstr "%2$L处的变量‘%1$s’无法与 C 互操作但被声明为 BIND(C)"
 
 #: fortran/decl.c:3444
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' in common block '%s' at %L cannot be declared with BIND(C) since it is not a global"
-msgstr "在 %3$L 处的公共块“%2$s”中的变量“%1$s”必须被声明为 BIND(C)，因为它不是全局的"
+msgstr "%3$L处的公共块‘%2$s’中的变量‘%1$s’不能被声明为 BIND(C)，因为它不是全局的"
 
 #: fortran/decl.c:3458
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have both the POINTER and BIND(C) attributes"
-msgstr "%2$L 处变量“%1$s”POINTER 和 BIND(C) 属性两者都不能有"
+msgstr "%2$L处变量‘%1$s’不能既有 POINTER 又有 BIND(C) 属性"
 
 #: fortran/decl.c:3466
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' at %L cannot have both the ALLOCATABLE and BIND(C) attributes"
-msgstr "%2$L 处变量“%1$s”ALLOCATABLE 属性和 BIND(C) 两者都不能有"
+msgstr "%2$L处变量‘%1$s’不能既有 ALLOCATABLE 又有 BIND(C) 属性"
 
 #: fortran/decl.c:3478
 #, no-c-format
@@ -5108,26 +5108,26 @@ msgstr "%2$L处的BIND(C) 函数‘%1$s’不能返回一个字符串"
 #. Use gfc_warning_now because we won't say that the symbol fails
 #. just because of this.
 #: fortran/decl.c:3497
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' at %L is marked PRIVATE but has been given the binding label '%s'"
-msgstr "在 %2$L 处符号“%1$s”标记为 PRIVATE 但是已经给定捆绑的标记“%s”"
+msgstr "%2$L处符号‘%1$s’被标记为 PRIVATE 但是已经给定绑定标号‘%3$s’"
 
 #: fortran/decl.c:3572
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Need either entity or common block name for attribute specification statement at %C"
-msgstr "%C 处的属性规格说明语句需要实体或公共块名"
+msgstr "%C处的属性规格说明语句需要实体或公共块名"
 
 #: fortran/decl.c:3619
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing entity or common block name for attribute specification statement at %C"
-msgstr "%C 处的属性规格说明语句缺少实体或公共块名"
+msgstr "%C处的属性规格说明语句缺少实体或公共块名"
 
 #. Now we have an error, which we signal, and then fix up
 #. because the knock-on is plain and simple confusing.
 #: fortran/decl.c:3728
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type at %C has not been previously defined and so cannot appear in a derived type definition"
-msgstr "%C 处的派生类型以前尚未被定义，因此不能出现在派生类型定义中"
+msgstr "%C处的派生类型以前尚未被定义，因此不能出现在派生类型定义中"
 
 #: fortran/decl.c:3760
 #, no-c-format
@@ -5242,9 +5242,9 @@ msgstr "函数定义在%C处需要形参列表"
 #: fortran/decl.c:4708 fortran/decl.c:4712 fortran/decl.c:4911
 #: fortran/decl.c:4915 fortran/decl.c:5097 fortran/decl.c:5101
 #: fortran/symbol.c:1490
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "BIND(C) attribute at %L can only be used for variables or common blocks"
-msgstr "在 %L 处 BIND(C) 属性只能用于变量或公共块"
+msgstr "%L处的 BIND(C) 属性只能用于变量或公共块"
 
 #: fortran/decl.c:4833
 #, no-c-format
@@ -5314,7 +5314,7 @@ msgstr "%C 处 BIND(C) 前缺少要求的括号"
 #: fortran/decl.c:5199 fortran/decl.c:5215
 #, no-c-format
 msgid "Syntax error in NAME= specifier for binding label at %C"
-msgstr "%C绑定标号的 NAME= 指定符语法错误"
+msgstr "%C绑定标号的 NAME= 限定符语法错误"
 
 #: fortran/decl.c:5230
 #, no-c-format
@@ -5380,17 +5380,17 @@ msgstr "需要标号‘%s’，为 %s 语句，于 %C"
 #: fortran/decl.c:5599
 #, no-c-format
 msgid "Missing array specification at %L in DIMENSION statement"
-msgstr "%L处的 DIMENSION 语句缺少数组指定"
+msgstr "%L处的 DIMENSION 语句缺少数组规格"
 
 #: fortran/decl.c:5607
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dimensions specified for %s at %L after its initialisation"
-msgstr "在它的初始化后在 %L 处为 %s 规定大小"
+msgstr "%2$L处在初始化后为 %1$s 指定了维数"
 
 #: fortran/decl.c:5616
 #, no-c-format
 msgid "Array specification must be deferred at %L"
-msgstr "%L处数组指定必须延迟"
+msgstr "%L处数组规格必须延迟"
 
 #: fortran/decl.c:5713
 #, no-c-format
@@ -5448,14 +5448,14 @@ msgid "Cray pointer declaration at %C requires -fcray-pointer flag"
 msgstr "%C处的 Cray 指针声明需要 -fcray-pointer 标记"
 
 #: fortran/decl.c:6037
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Access specification of the %s operator at %C has already been specified"
-msgstr "%C 处的 %s 操作数的访问规格说明已经被指定"
+msgstr "%2$C处的 %1$s 运算符的访问规格说明已经被指定"
 
 #: fortran/decl.c:6054
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Access specification of the .%s. operator at %C has already been specified"
-msgstr "%C 处的 .%s. 操作数的访问规格说明已经被指定"
+msgstr "%2$C处的 .%1$s. 运算符的访问规格说明已经被指定"
 
 #: fortran/decl.c:6092
 #, no-c-format
@@ -5468,14 +5468,14 @@ msgid "Syntax error in PROTECTED statement at %C"
 msgstr "%C处 PROTECTED 语句语法错误"
 
 #: fortran/decl.c:6156
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PRIVATE statement at %C is only allowed in the specification part of a module"
-msgstr "在 %C 处的 PRIVATE 语句仅允许出现在模块规格说明部分内"
+msgstr "%C处的 PRIVATE 语句仅允许出现在模块规格说明部分内"
 
 #: fortran/decl.c:6193
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PUBLIC statement at %C is only allowed in the specification part of a module"
-msgstr "在 %C 处的 PUBLIC 语句只不允许出现在模块规格说明部分内"
+msgstr "%C处的 PUBLIC 语句只不允许出现在模块规格说明部分内"
 
 #: fortran/decl.c:6221
 #, no-c-format
@@ -5608,9 +5608,9 @@ msgid "Derived type name '%s' at %C already has a basic type of %s"
 msgstr "%2$C处的派生类型名“%1$s”已经有一个基本类型 %3$s"
 
 #: fortran/decl.c:6823
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type definition of '%s' at %C has already been defined"
-msgstr "%2$C 处的“%1$s”派生类型定义已经被定义"
+msgstr "%2$C处的派生类型‘%1$s’定义已经被定义"
 
 #. Since the extension field is 8 bit wide, we can only have
 #. up to 255 extension levels.
@@ -5682,7 +5682,7 @@ msgstr "%C处重复的 DEFERRED 语句"
 #: fortran/decl.c:7299
 #, no-c-format
 msgid "Expected access-specifier at %C"
-msgstr "%C 期待访问指定符"
+msgstr "%C需要访问限定符"
 
 #: fortran/decl.c:7301
 #, no-c-format
@@ -5755,9 +5755,9 @@ msgid "There's already a procedure with binding name '%s' for the derived type '
 msgstr "%3$C处已经有一个过程对派生类型‘%2$s’使用绑定名‘%1$s’"
 
 #: fortran/decl.c:7522
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "GENERIC at %C must be inside a derived-type CONTAINS"
-msgstr "%C 处的 GENERIC 限定必须是在派生类型 CONTAINS 内"
+msgstr "%C处的 GENERIC 必须是在派生类型 CONTAINS 内"
 
 #: fortran/decl.c:7539
 #, no-c-format
@@ -5765,9 +5765,9 @@ msgid "Expected '::' at %C"
 msgstr "在%C处需要‘::’"
 
 #: fortran/decl.c:7551
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected generic name or operator descriptor at %C"
-msgstr "在%C处需要泛型名"
+msgstr "%C处需要泛型名或运算符描述子"
 
 #: fortran/decl.c:7577
 #, no-c-format
@@ -5775,9 +5775,9 @@ msgid "Expected '=>' at %C"
 msgstr "%C 处需要“=>”"
 
 #: fortran/decl.c:7619
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "There's already a non-generic procedure with binding name '%s' for the derived type '%s' at %C"
-msgstr "在 %3$C 处对于派生类型“%2$s”已经有一个非普通的过程用限定名“%1$s”"
+msgstr "%3$C处派生类型‘%2$s’已经有一个绑定名为‘%1$s’的非泛型过程"
 
 #: fortran/decl.c:7627
 #, fuzzy, no-c-format
@@ -5805,9 +5805,9 @@ msgid "FINAL declaration at %C must be inside a derived type CONTAINS section"
 msgstr "%C 处的 FINAL 声明必须是在派生类型 CONTAINS 节内"
 
 #: fortran/decl.c:7738
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type declaration with FINAL at %C must be in the specification part of a MODULE"
-msgstr "在 %C 处与 FINAL 一起的派生类型声明必须在 MODULE 的规格说明部分内"
+msgstr "%C处带有 FINAL 的派生类型声明必须在 MODULE 的规格说明部分内"
 
 #: fortran/decl.c:7760
 #, no-c-format
@@ -5913,9 +5913,9 @@ msgid "index in dimension %d is out of bounds at %L"
 msgstr "%2$L处第 %1$d 维下标越界"
 
 #: fortran/expr.c:1923
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "elemental function arguments at %C are not compliant"
-msgstr "在 %C 处基本的函数参数不是服从的"
+msgstr "%C处基本函数的实参不兼容"
 
 #: fortran/expr.c:1967
 #, fuzzy, no-c-format
@@ -5973,9 +5973,9 @@ msgid "Function '%s' in initialization expression at %L must be an intrinsic or 
 msgstr "%2$L处初始化表达式中函数‘%1$s’必须是内建的或是一个规格说明函数"
 
 #: fortran/expr.c:2295
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic function '%s' at %L is not permitted in an initialization expression"
-msgstr "在 %2$L 处的内建函数“%1$s”在初始化表达式中不被允许"
+msgstr "%2$L处内建函数‘%1$s’不允许出现在在初始化表达式中"
 
 #: fortran/expr.c:2327
 #, fuzzy, no-c-format
@@ -5993,9 +5993,9 @@ msgid "Assumed shape array '%s' at %L is not permitted in an initialization expr
 msgstr "%2$L处假定外形数组‘%1$s’不能用在初始化表达式中"
 
 #: fortran/expr.c:2359
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Deferred array '%s' at %L is not permitted in an initialization expression"
-msgstr "在 %L 处的推迟数组“%1$s”在初始化表达式中不被允许"
+msgstr "%2$L处的延迟数组‘%1$s’不允许出现在初始化表达式中"
 
 #: fortran/expr.c:2365
 #, fuzzy, no-c-format
@@ -6015,22 +6015,22 @@ msgstr "初始化表达式不能归约 %C"
 #: fortran/expr.c:2530
 #, no-c-format
 msgid "Specification function '%s' at %L cannot be a statement function"
-msgstr "指定函数‘%s’(位于 %L)不能是一个语句函数"
+msgstr "%2$L处规格函数‘%1$s’不能是一个语句函数"
 
 #: fortran/expr.c:2537
 #, no-c-format
 msgid "Specification function '%s' at %L cannot be an internal function"
-msgstr "指定函数‘%s’(位于 %L)不能是一个内部函数"
+msgstr "%2$L处规格函数‘%1$s’不能是一个内部函数"
 
 #: fortran/expr.c:2544
 #, no-c-format
 msgid "Specification function '%s' at %L must be PURE"
-msgstr "指定函数‘%s’(位于 %L)必须为 PURE"
+msgstr "%2$L处规格函数‘%1$s’必须为 PURE"
 
 #: fortran/expr.c:2551
 #, no-c-format
 msgid "Specification function '%s' at %L cannot be RECURSIVE"
-msgstr "指定函数‘%s’(位于 %L)不能是 RECURSIVE"
+msgstr "%2$L处规格函数‘%1$s’不能是 RECURSIVE"
 
 #: fortran/expr.c:2685
 #, no-c-format
@@ -6103,9 +6103,9 @@ msgid "NULL appears on right-hand side in assignment at %L"
 msgstr "%L处赋值右手边出现 NULL"
 
 #: fortran/expr.c:2982
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Vector assignment to assumed-size Cray Pointee at %L is illegal"
-msgstr "在 %L 处给假定大小的 Cray 指针赋值是非法的"
+msgstr "%L处给假定大小的 Cray 指针赋值是非法的"
 
 #: fortran/expr.c:2991
 #, no-c-format
@@ -6117,34 +6117,34 @@ msgid "array assignment"
 msgstr "数组赋值"
 
 #: fortran/expr.c:3001
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BOZ literal at %L used to initialize non-integer variable '%s'"
-msgstr "扩展：在 %L 处 BOZ 文字被用来初始化非整数变量“%s”"
+msgstr "扩展：%L处 BOZ 字面值被用来初始化非整数变量‘%s’"
 
 #: fortran/expr.c:3007 fortran/resolve.c:7754
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: BOZ literal at %L outside a DATA statement and outside INT/REAL/DBLE/CMPLX"
-msgstr "扩展：在 %L 处的 BOZ 文字在一个 DATA 语句外面并且在 INT/REAL/DBLE/CMPLX 外面"
+msgstr "扩展：在 %L处的 BOZ 字面值在一个 DATA 语句之外并且也在 INT/REAL/DBLE/CMPLX 之外"
 
 #: fortran/expr.c:3017 fortran/resolve.c:7764
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "BOZ literal at %L is bitwise transferred non-integer symbol '%s'"
-msgstr "在 %L 处 BOZ 是字面上按位传输的非整数符号“%s”"
+msgstr "%L处 BOZ 字面值按位转换后是非整数符号‘%s’"
 
 #: fortran/expr.c:3025 fortran/resolve.c:7773
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic underflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "%L 处位智能传输 BOZ 的算术下溢时。这一检查可用 -fno-range-check 选项禁用"
+msgstr "%L处按位转换 BOZ 时算术下溢。这一检查可用 -fno-range-check 选项禁用"
 
 #: fortran/expr.c:3029 fortran/resolve.c:7777
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic overflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "%L 处位智能传输 BOZ 的算术上溢时。这一检查可用 -fno-range-check 选项禁用"
+msgstr "%L处按位转换 BOZ 时算术上溢。这一检查可用 -fno-range-check 选项禁用"
 
 #: fortran/expr.c:3033 fortran/resolve.c:7781
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Arithmetic NaN of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
-msgstr "%L 处位智能传输 BOZ 的算术 NaN。这一检查可用 -fno-range-check 选项禁用"
+msgstr "%L处按位转换 BOZ 时产生算术 NaN。这一检查可用 -fno-range-check 选项禁用"
 
 #: fortran/expr.c:3055
 #, fuzzy, no-c-format
@@ -6164,12 +6164,12 @@ msgstr "在 %2$L 处指针赋值中的“%1$s”不能是一个值因为它是�
 #: fortran/expr.c:3131
 #, no-c-format
 msgid "Expected bounds specification for '%s' at %L"
-msgstr "%2$L处‘%1$s’需要指定边界"
+msgstr "%2$L处‘%1$s’需要边界规格"
 
 #: fortran/expr.c:3136
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Bounds specification for '%s' in pointer assignment at %L"
-msgstr "Fortran 2003：在 %L 处指针赋值语句中“%s”的界限规格说明"
+msgstr "Fortran 2003：%2$L处指针赋值语句中‘%1$s’的边界规格"
 
 #: fortran/expr.c:3142
 #, fuzzy, no-c-format
@@ -6209,7 +6209,7 @@ msgstr "内部过程‘%s’在%L处的过程指针赋值中是非法的"
 #: fortran/expr.c:3241
 #, no-c-format
 msgid "Mismatch in the procedure pointer assignment at %L: mismatch in the calling convention"
-msgstr ""
+msgstr "%L处过程指针赋值不匹配：调用约定不匹配"
 
 #: fortran/expr.c:3272
 #, no-c-format
@@ -6237,14 +6237,14 @@ msgid "Pointer assignment target is neither TARGET nor POINTER at %L"
 msgstr "%L 处指针赋值的目标既不是 TARGET 也不是 POINTER"
 
 #: fortran/expr.c:3326
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad target in pointer assignment in PURE procedure at %L"
-msgstr "%L 处 PURE 过程中有的指针赋值里坏的目标"
+msgstr "%L处 PURE 过程中指针赋值目标错误"
 
 #: fortran/expr.c:3332
 #, no-c-format
 msgid "Pointer assignment with vector subscript on rhs at %L"
-msgstr "%L处指针赋值的右手边带有矢量下标"
+msgstr "%L处指针赋值的右手边带有向量下标"
 
 #: fortran/expr.c:3340
 #, fuzzy, no-c-format
@@ -6293,7 +6293,7 @@ msgstr "驱动："
 #: fortran/interface.c:174
 #, no-c-format
 msgid "Syntax error in generic specification at %C"
-msgstr "%C 泛型指定语法错误"
+msgstr "%C处泛型规格语法错误"
 
 #: fortran/interface.c:201
 #, no-c-format
@@ -6441,9 +6441,9 @@ msgid "Rank mismatch in argument '%s' at %L (%d and %d)"
 msgstr "%2$L处实参‘%1$s’秩不匹配(%3$d 和 %4$d)"
 
 #: fortran/interface.c:1486
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Scalar CHARACTER actual argument with array dummy argument '%s' at %L"
-msgstr "Fortran 2003：在 %2$L 处标量 CHARACTER 实参带有数组哑参数“%2$s”"
+msgstr "Fortran 2003：%2$L处标量 CHARACTER 实参带有数组哑参数‘%1$s’"
 
 #: fortran/interface.c:1511
 #, fuzzy, no-c-format
@@ -6536,9 +6536,9 @@ msgid "Actual argument at %L is use-associated with PROTECTED attribute and dumm
 msgstr "在 %1$L 处实际参数是使用相关的 PROTECTED 属性并且假参数“%2$s”是 INTENT = OUT/INOUT"
 
 #: fortran/interface.c:2023
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT) or VOLATILE attribute of the dummy argument '%s'"
-msgstr "数组节实际的参数与在 %L 处矢量子脚本一起是与假参数“%s”的 INTENT(OUT)、INTENT(INOUT) 或 VOLATILE 属性不可兼容的"
+msgstr "%L处带有向量下标的数组节实际参数与哑实参‘%s’的 INTENT(OUT)、INTENT(INOUT) 或 VOLATILE 属性不兼容"
 
 #: fortran/interface.c:2040
 #, fuzzy, no-c-format
@@ -6601,9 +6601,9 @@ msgid "Keyword argument requires explicit interface for procedure pointer compon
 msgstr "%2$L处过程指针组件‘%1$s’的关键字实参需要显式接口"
 
 #: fortran/interface.c:2920
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Entity '%s' at %C is already present in the interface"
-msgstr "%2$C 处的实体“%1$s”已经出示在接口中"
+msgstr "%2$C处实体‘%1$s’已经出现在接口中"
 
 #: fortran/intrinsic.c:961
 #, fuzzy, no-c-format
@@ -6641,9 +6641,9 @@ msgid "ALTERNATE RETURN not permitted at %L"
 msgstr "%L 不允许有 ALTERNATIVE RETURN"
 
 #: fortran/intrinsic.c:3352
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Type of argument '%s' in call to '%s' at %L should be %s, not %s"
-msgstr "%3$L 处对“%2$s”的调用中参数“%1$s”的类型应该是“%1$s”，而非“%1$s”"
+msgstr "%3$L处对‘%2$s’的调用中参数‘%1$s’的类型应该是‘%4$s’，而非‘%5$s’"
 
 #: fortran/intrinsic.c:3717
 #, no-c-format
@@ -6703,12 +6703,12 @@ msgstr "扩展：%C处格式中的制表符"
 #: fortran/io.c:452
 #, no-c-format
 msgid "Fortran 2003: DP format specifier not allowed at %C"
-msgstr "Fortran 2003：不允许在%C处使用 DP 格式指定符"
+msgstr "Fortran 2003：不允许在%C处使用 DP 格式限定符"
 
 #: fortran/io.c:459
 #, no-c-format
 msgid "Fortran 2003: DC format specifier not allowed at %C"
-msgstr "Fortran 2003：不允许在%C处使用 DC 格式指定符"
+msgstr "Fortran 2003：不允许在%C处使用 DC 格式限定符"
 
 #: fortran/io.c:548
 msgid "Positive width required"
@@ -6736,7 +6736,7 @@ msgstr "缺少前导左括号"
 
 #: fortran/io.c:602
 msgid "Left parenthesis required after '*'"
-msgstr "‘'*’后需要左括号"
+msgstr "‘*’后需要左括号"
 
 #: fortran/io.c:633
 msgid "Expected P edit descriptor"
@@ -6782,7 +6782,7 @@ msgstr "Fortran 2008：%L处格式中的‘G0’"
 
 #: fortran/io.c:843
 msgid "E specifier not allowed with g0 descriptor"
-msgstr "g0 描述符不允许有 E 指定符"
+msgstr "g0 描述符不允许有 E 限定符"
 
 #: fortran/io.c:853
 #, no-c-format
@@ -6810,7 +6810,7 @@ msgstr "%L处的格式限定符需要句号"
 #: fortran/io.c:970
 #, no-c-format
 msgid "The H format specifier at %L is a Fortran 95 deleted feature"
-msgstr "%L处的 H 格式指定符已在 Fortran 95 中被删除"
+msgstr "%L处的 H 格式限定符已在 Fortran 95 中被删除"
 
 #: fortran/io.c:1058 fortran/io.c:1121
 #, no-c-format
@@ -6823,9 +6823,9 @@ msgid "%s in format string at %L"
 msgstr "%s 出现在%L处的格式字符串中"
 
 #: fortran/io.c:1185
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Format statement in module main block at %C"
-msgstr "在 %C 处的 main 模块中的格式语句"
+msgstr "%C处模块主块中的格式语句"
 
 #: fortran/io.c:1191
 #, no-c-format
@@ -6833,29 +6833,29 @@ msgid "Missing format label at %C"
 msgstr "%C处缺少格式标号"
 
 #: fortran/io.c:1251 fortran/io.c:1282 fortran/io.c:1344
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid value for %s specification at %C"
-msgstr "%2$C 处“%1$s”规格说明的非法值"
+msgstr "%2$C处‘%1$s’规格无效"
 
 #: fortran/io.c:1257 fortran/io.c:1288
 #, no-c-format
 msgid "Duplicate %s specification at %C"
-msgstr "重复 %s 指定，于 %C"
+msgstr "%2$C处重复的 %1$s 规格"
 
 #: fortran/io.c:1295
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable %s cannot be INTENT(IN) at %C"
-msgstr "%C 处的变量 %1$s 不能是 INTENT(IN)"
+msgstr "%2$C处的变量 %1$s 不能是 INTENT(IN)"
 
 #: fortran/io.c:1302
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable %s cannot be assigned in PURE procedure at %C"
-msgstr "变量 %1$s 在 %C 处的 PURE 过程中不能被赋值"
+msgstr "变量 %s 在%C处的 PURE 过程中不能被赋值"
 
 #: fortran/io.c:1350
 #, no-c-format
 msgid "Duplicate %s label specification at %C"
-msgstr "重复的 %s 标号指定，位于 %C"
+msgstr "%2$C处重复的 %1$s 标号规格"
 
 #: fortran/io.c:1370
 #, no-c-format
@@ -6863,9 +6863,9 @@ msgid "Constant expression in FORMAT tag at %L must be of type default CHARACTER
 msgstr "%L处 FORMAT 标记中的常量表达式默认类型必须为 CHARACTER"
 
 #: fortran/io.c:1386
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "FORMAT tag at %L must be of type CHARACTER or INTEGER"
-msgstr "%s 标记在 %L 处必须具有类型 %s 或 %s"
+msgstr "%L处 FORMAT 标记必须具有类型 CHARACTER 或 INTEGER"
 
 #: fortran/io.c:1392
 #, no-c-format
@@ -6955,7 +6955,7 @@ msgstr "不能为%C处的 NEWUNIT 指定 UNIT"
 #: fortran/io.c:1808
 #, no-c-format
 msgid "NEWUNIT specifier must have FILE= or STATUS='scratch' at %C"
-msgstr "%C处的 NEWUNIT 指定符必须有 FILE= 或 STATUS='scratch'"
+msgstr "%C处的 NEWUNIT 限定符必须有 FILE= 或 STATUS='scratch'"
 
 #: fortran/io.c:1842
 #, no-c-format
@@ -7020,12 +7020,12 @@ msgstr "Fortran 2003：%C处的 FLUSH 语句"
 #: fortran/io.c:2463
 #, no-c-format
 msgid "Duplicate UNIT specification at %C"
-msgstr "%C处重复的 UNIT 指定"
+msgstr "%C处重复的 UNIT 规格"
 
 #: fortran/io.c:2523
 #, no-c-format
 msgid "Duplicate format specification at %C"
-msgstr "%C处重复的格式指定"
+msgstr "%C处重复的格式规格"
 
 #: fortran/io.c:2540
 #, no-c-format
@@ -7035,7 +7035,7 @@ msgstr "符号‘%s’在名字列表‘%s’是 INTENT(IN)，位于 %C"
 #: fortran/io.c:2576
 #, no-c-format
 msgid "Duplicate NML specification at %C"
-msgstr "%C处重复的 NML 指定"
+msgstr "%C处重复的 NML 规格"
 
 #: fortran/io.c:2585
 #, fuzzy, no-c-format
@@ -7055,7 +7055,7 @@ msgstr "%L没有指定 UNIT"
 #: fortran/io.c:2733
 #, no-c-format
 msgid "UNIT specification at %L must be an INTEGER expression or a CHARACTER variable"
-msgstr "%L处指定的 UNIT 必须是 INTEGER 表达式或一个 CHARACTER 变量"
+msgstr "%L处的 UNIT 规格必须是 INTEGER 表达式或一个 CHARACTER 变量"
 
 #: fortran/io.c:2758
 #, fuzzy, no-c-format
@@ -7065,7 +7065,7 @@ msgstr "%L 处 WRITE 语句的非法形式，要求 UNIT"
 #: fortran/io.c:2769
 #, no-c-format
 msgid "Internal unit with vector subscript at %L"
-msgstr "%L处内部单位带矢量下标"
+msgstr "%L处内部单位带向量下标"
 
 #: fortran/io.c:2776
 #, no-c-format
@@ -7073,9 +7073,9 @@ msgid "External IO UNIT cannot be an array at %L"
 msgstr "%L处的外部 IO UNIT 不能是数组"
 
 #: fortran/io.c:2788
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Comma before i/o item list at %L"
-msgstr "扩展：%L 处 i/o 项目列表前的逗号"
+msgstr "扩展：%L处 i/o 项目列表前的逗号"
 
 #: fortran/io.c:2798
 #, no-c-format
@@ -7174,14 +7174,14 @@ msgid "INQUIRE statement not allowed in PURE procedure at %C"
 msgstr "INQUIRE 语句不允许出现在%C处的 PURE 过程中"
 
 #: fortran/io.c:3909
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "IOLENGTH tag invalid in INQUIRE statement at %C"
-msgstr "%C 处的 INQUIRE 语句中 IOLENGTH 标记非法"
+msgstr "%C处的 INQUIRE 语句中 IOLENGTH 标记无效"
 
 #: fortran/io.c:3919 fortran/trans-io.c:1181
 #, no-c-format
 msgid "INQUIRE statement at %L cannot contain both FILE and UNIT specifiers"
-msgstr "%L处的 INQUIRE 语句不能包含 FILE 和 UNIT 指定符"
+msgstr "%L处的 INQUIRE 语句不能包含 FILE 和 UNIT 限定符"
 
 #: fortran/io.c:3926
 #, no-c-format
@@ -7259,9 +7259,9 @@ msgid "Invalid C name in NAME= specifier at %C"
 msgstr "%C处 NAME= 限定符中 C 名字无效"
 
 #: fortran/match.c:646
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Embedded space in NAME= specifier at %C"
-msgstr "%C 处 NAME= 限定符中嵌入的空白"
+msgstr "%C处 NAME= 限定符中嵌入了空白"
 
 #: fortran/match.c:971
 #, no-c-format
@@ -7329,9 +7329,9 @@ msgid "Unexpected junk after ELSE statement at %C"
 msgstr "%C处 ELSE 语句后有非预期的垃圾字符"
 
 #: fortran/match.c:1641 fortran/match.c:1676
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Label '%s' at %C doesn't match IF label '%s'"
-msgstr "%1$C 处标号“%1$s”与 IF 标号“%3$s”不匹配"
+msgstr "%2$C处标号‘%1$s’与 IF 标号‘%3$s’不匹配"
 
 #: fortran/match.c:1670
 #, no-c-format
@@ -7427,12 +7427,12 @@ msgstr "成员指针类型%qT与对象类型%qT不兼容"
 #: fortran/match.c:2473
 #, no-c-format
 msgid "Kind type parameter for entity at %L differs from the kind type parameter of the typespec"
-msgstr ""
+msgstr "%L实体的种别类型参数与类型限定中的种别类型参数不同"
 
 #: fortran/match.c:2500 fortran/match.c:2755
 #, no-c-format
 msgid "Allocate-object at %C is not a nonprocedure pointer or an allocatable variable"
-msgstr ""
+msgstr "%C处的分配对象不是一个非过程指针或可分配的变量"
 
 #: fortran/match.c:2518 fortran/match.c:2772
 #, no-c-format
@@ -7467,12 +7467,12 @@ msgstr "%L处的 SOURCE 标记与%L处的类型指定冲突"
 #: fortran/match.c:2581
 #, no-c-format
 msgid "SOURCE tag at %L requires only a single entity in the allocation-list"
-msgstr ""
+msgstr "%L处的 SOURCE 标记在分配列表中只需要一个单独的实体"
 
 #: fortran/match.c:2653
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Illegal variable in NULLIFY at %C for a PURE procedure"
-msgstr "PURE 过程 %C 处的 NULLIFY 中非法的变量"
+msgstr "%C处PURE 过程 NULLIFY 中非法的变量"
 
 #: fortran/match.c:2739
 #, no-c-format
@@ -7548,9 +7548,9 @@ msgid "Initialized symbol '%s' at %C can only be COMMON in BLOCK DATA"
 msgstr "在 %C 处初始化的符号“%s”仅可以是在 BLOCK DATA 中的 COMMON"
 
 #: fortran/match.c:3296
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array specification for symbol '%s' in COMMON at %C must be explicit"
-msgstr "在 %C 处 COMMON 中符号“%s”必须是显式的"
+msgstr "%2$C处 COMMON 中符号‘%1$s’的数组规格必须是显式的"
 
 #: fortran/match.c:3306
 #, fuzzy, no-c-format
@@ -7593,9 +7593,9 @@ msgid "Array reference in EQUIVALENCE at %C cannot be an array section"
 msgstr "%C 处 EQUIVALENCE 中的数组引用不能是个数组部分"
 
 #: fortran/match.c:3651
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "EQUIVALENCE at %C requires two or more objects"
-msgstr "在 %C 处的 EQUIVALENCE需要两个或较更多的对象"
+msgstr "%C处的 EQUIVALENCE 需要两个或更多的对象"
 
 #: fortran/match.c:3665
 #, fuzzy, no-c-format
@@ -7630,7 +7630,7 @@ msgstr "%C处 SELECT 构造中需要块名‘%s’"
 #: fortran/match.c:4039
 #, no-c-format
 msgid "Selector in SELECT TYPE at %C is not a named variable; use associate-name=>"
-msgstr ""
+msgstr "%C处 SELECT TYPE 中的选择子不是一个有名变量；请使用 associate-name=>"
 
 #: fortran/match.c:4047
 #, no-c-format
@@ -7645,7 +7645,7 @@ msgstr "%C处非预期的 CASE 语句"
 #: fortran/match.c:4127
 #, no-c-format
 msgid "Syntax error in CASE specification at %C"
-msgstr "%C处 CASE 指定语法错误"
+msgstr "%C处 CASE 规格语法错误"
 
 #: fortran/match.c:4145
 #, no-c-format
@@ -7655,12 +7655,12 @@ msgstr "%C处非预期的 TYPE IS 语句"
 #: fortran/match.c:4178
 #, no-c-format
 msgid "Syntax error in TYPE IS specification at %C"
-msgstr "%C处指定 TYPE IS 语法错误"
+msgstr "%C处 TYPE IS 规格语法错误"
 
 #: fortran/match.c:4250
 #, no-c-format
 msgid "Syntax error in CLASS IS specification at %C"
-msgstr "%C处指定 CLASS IS 语法错误"
+msgstr "%C处 CLASS IS 规格语法错误"
 
 #: fortran/match.c:4372
 #, no-c-format
@@ -7683,9 +7683,9 @@ msgid "Syntax error in expression at %C"
 msgstr "%C 表达式语法错误"
 
 #: fortran/matchexp.c:72
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Bad character '%c' in OPERATOR name at %C"
-msgstr "%2$C 处 OPERATOR 名字中坏字符“%1$c”"
+msgstr "%2$C 处 OPERATOR 名字中有错误的字符‘%1$c’"
 
 #: fortran/matchexp.c:80
 #, no-c-format
@@ -7736,12 +7736,12 @@ msgstr "Fortran 2003：%C处的“USE :: module”"
 #: fortran/module.c:607
 #, no-c-format
 msgid "Missing generic specification in USE statement at %C"
-msgstr "%C处的 USE 语句缺少泛型指定"
+msgstr "%C处的 USE 语句缺少泛型规格"
 
 #: fortran/module.c:615
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Renaming operators in USE statements at %C"
-msgstr "Fortran 2003：%C 处的 USE 语句中更名操作数"
+msgstr "Fortran 2003：%C处的 USE 语句中更名运算符"
 
 #: fortran/module.c:657
 #, fuzzy, no-c-format
@@ -7990,9 +7990,9 @@ msgid "%s is not INTRINSIC procedure name at %C"
 msgstr "%2$C 处 %1$s 不是 INTRINSIC 过程名"
 
 #: fortran/openmp.c:404
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COLLAPSE clause argument not constant positive integer at %C"
-msgstr "%C 处的 COLLAPSE 分句参数不是不变的正整数"
+msgstr "%C处的 COLLAPSE 分句参数不是正整数常量"
 
 #: fortran/openmp.c:542
 #, no-c-format
@@ -8005,19 +8005,19 @@ msgid "Syntax error in !$OMP THREADPRIVATE list at %C"
 msgstr "%C处 !$OMP THREADPRIVATE 列表语法错误"
 
 #: fortran/openmp.c:760 fortran/resolve.c:7646 fortran/resolve.c:8036
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "IF clause at %L requires a scalar LOGICAL expression"
-msgstr "%L 处的 IF 分句需要一个标量 LOGICAL 表达式"
+msgstr "%L处的 IF 分句需要一个标量 LOGICAL 表达式"
 
 #: fortran/openmp.c:768
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "NUM_THREADS clause at %L requires a scalar INTEGER expression"
-msgstr "%L 处的 NUM_THREADS 分句需要一个标量 INTEGER 表达式"
+msgstr "%L处的 NUM_THREADS 分句需要一个标量 INTEGER 表达式"
 
 #: fortran/openmp.c:776
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "SCHEDULE clause's chunk_size at %L requires a scalar INTEGER expression"
-msgstr "%L 处的 SCHEDULE 分句的 chunk_size 需要一个标量 INTEGER 表达式"
+msgstr "%L处的 SCHEDULE 分句的 chunk_size 需要一个标量 INTEGER 表达式"
 
 #: fortran/openmp.c:816
 #, no-c-format
@@ -8412,14 +8412,14 @@ msgid "Derived-type '%s' with BIND(C) must not have a CONTAINS section at %C"
 msgstr "有 BIND(C) 的派生类“%1$s”必须没有 %C 处的 CONTAINS 段"
 
 #: fortran/parse.c:1840
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Components in TYPE at %C must precede CONTAINS"
-msgstr "%C 处 TYPE 中的组件必须先于 CONTAINS"
+msgstr "%C处 TYPE 中的组件必须先于 CONTAINS"
 
 #: fortran/parse.c:1845
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003:  Type-bound procedure at %C"
-msgstr "Fortran 2003：%C 处的类型限定过程"
+msgstr "Fortran 2003：%C处的类型限定过程"
 
 #: fortran/parse.c:1854
 #, no-c-format
@@ -8497,9 +8497,9 @@ msgid "Fortran 2003:  CONTAINS block in derived type definition at %C"
 msgstr "Fortran 2003：%C处的派生类型定义中的 CONTAINS 块"
 
 #: fortran/parse.c:2135
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ENUM declaration at %C has no ENUMERATORS"
-msgstr "%C 处的 ENUM 声明没有 ENUMERATORS"
+msgstr "%C处的 ENUM 声明没有 ENUMERATORS"
 
 #: fortran/parse.c:2221
 #, no-c-format
@@ -8542,9 +8542,9 @@ msgid "%s statement must appear in a MODULE"
 msgstr "%s 语句必须出现在 MODULE 中"
 
 #: fortran/parse.c:2524
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s statement at %C follows another accessibility specification"
-msgstr "在 %C 处 %s 语句跟随别的可访问规格说明"
+msgstr "%2$C处 %1$s 语句出现在其他访问规格之后"
 
 #: fortran/parse.c:2574
 #, no-c-format
@@ -8627,14 +8627,14 @@ msgid "Name after !$omp critical and !$omp end critical does not match at %C"
 msgstr "%C处 !$omp critical 和 !$omp end critical 后的名字不匹配"
 
 #: fortran/parse.c:3478
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s statement at %C cannot terminate a non-block DO loop"
-msgstr "在 %2$C 处 %1$s 语句不能终止一个非块的 DO 循环"
+msgstr "%2$C处的 %1$s 语句不能终止一个不成块的 DO 循环"
 
 #: fortran/parse.c:3668
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Contained procedure '%s' at %C is already ambiguous"
-msgstr "%2$C 处的包含过程“%1$s”已经有歧义"
+msgstr "%2$C处包含的过程‘%1$s’已经有歧义"
 
 #: fortran/parse.c:3718
 #, no-c-format
@@ -8642,19 +8642,19 @@ msgid "Unexpected %s statement in CONTAINS section at %C"
 msgstr "非预期的 %s 语句出现在%C处的 CONTAINS 段中"
 
 #: fortran/parse.c:3742
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2008: CONTAINS statement without FUNCTION or SUBROUTINE statement at %C"
-msgstr "Fortran 2008：%C 处 CONTAINS 语句没有 FUNCTION 或 SUBROUTINE 语句"
+msgstr "Fortran 2008：%C处 CONTAINS 语句没有 FUNCTION 或 SUBROUTINE 语句"
 
 #: fortran/parse.c:3819
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "CONTAINS statement at %C is already in a contained program unit"
-msgstr "%C 处的 CONTAINS 语句已经在包含的程序单元中"
+msgstr "%C处的 CONTAINS 语句已经在包含的程序单元中"
 
 #: fortran/parse.c:3868
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Global name '%s' at %L is already being used as a %s at %L"
-msgstr "%2$L 处的名字“%1$s”已经在 %4$L 处被用作 %3$s"
+msgstr "%2$L处的名字‘%1$s’已经在%4$L处被用作 %3$s"
 
 #: fortran/parse.c:3889
 #, fuzzy, no-c-format
@@ -8710,9 +8710,9 @@ msgid "Invalid Hollerith constant: Integer kind at %L should be default"
 msgstr "无效的荷勒瑞斯常量：%L处的整数种别应当是默认的"
 
 #: fortran/primary.c:289
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Invalid Hollerith constant at %L contains a wide character"
-msgstr "在 %L 处无效的荷勒瑞斯常量包含一个宽字符"
+msgstr "%L处无效的荷勒瑞斯常量包含一个宽字符"
 
 #: fortran/primary.c:370
 #, no-c-format
@@ -8772,7 +8772,7 @@ msgstr "%C处实常数下溢其种别"
 #: fortran/primary.c:726
 #, no-c-format
 msgid "Syntax error in SUBSTRING specification at %C"
-msgstr "%C SUBSTRING 指定语法错误"
+msgstr "%C处 SUBSTRING 规格语法错误"
 
 #: fortran/primary.c:938
 #, no-c-format
@@ -8795,19 +8795,19 @@ msgid "Bad kind for logical constant at %C"
 msgstr "%C处逻辑常量的种别错误"
 
 #: fortran/primary.c:1122
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected PARAMETER symbol in complex constant at %C"
-msgstr "%C 处复数常量中期待的 PARAMETER 符号"
+msgstr "%C处复数常量中需要 PARAMETER 符号"
 
 #: fortran/primary.c:1128
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Numeric PARAMETER required in complex constant at %C"
-msgstr "%C 处数值 PARAMETER 要求复数常量"
+msgstr "%C处数值 PARAMETER 要求复数常量"
 
 #: fortran/primary.c:1134
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Scalar PARAMETER required in complex constant at %C"
-msgstr "%C 处标量 PARAMETER 要求复数常量"
+msgstr "%C处标量 PARAMETER 要求复数常量"
 
 #: fortran/primary.c:1138
 #, no-c-format
@@ -8840,9 +8840,9 @@ msgid "Expected alternate return label at %C"
 msgstr "%C处需要替代的返回标号"
 
 #: fortran/primary.c:1652
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing keyword name in actual argument list at %C"
-msgstr "%C 处的实参数列中缺少关键词名"
+msgstr "%C处的实参数列中缺少关键字名"
 
 #: fortran/primary.c:1697
 #, no-c-format
@@ -8860,9 +8860,9 @@ msgid "Expected argument list at %C"
 msgstr "%C处需要实参列表"
 
 #: fortran/primary.c:2196
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Structure constructor with missing optional arguments at %C"
-msgstr "Fortran 2003：%2$C 处的结构构建器丢失可选的参数"
+msgstr "Fortran 2003：%C处的结构构造函数丢失可选的参数"
 
 #: fortran/primary.c:2204
 #, fuzzy, no-c-format
@@ -8875,9 +8875,9 @@ msgid "Can't construct ABSTRACT type '%s' at %C"
 msgstr "%2$C处无法构建 ABSTRACT 类型‘%1$s’"
 
 #: fortran/primary.c:2288
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: Structure constructor with named arguments at %C"
-msgstr "Fortran 2003：%2$C 处的结构构建器有命名的参数"
+msgstr "Fortran 2003：%C处的结构构造函数有有名的参数"
 
 #: fortran/primary.c:2303
 #, fuzzy, no-c-format
@@ -8885,14 +8885,14 @@ msgid "Component initializer without name after component named %s at %C!"
 msgstr "在 %C 处组件指名的 %s后组件初始化器没有名字！"
 
 #: fortran/primary.c:2306
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Too many components in structure constructor at %C!"
-msgstr "%C 处结构构造器中组件太多！"
+msgstr "%C处结构构造函数中组件太多！"
 
 #: fortran/primary.c:2339
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Component '%s' is initialized twice in the structure constructor at %C!"
-msgstr "%2$C 处结构构造器中组件“%1$s”被初始化两次"
+msgstr "%2$C处结构构造函数中组件‘%1$s’被初始化两次！"
 
 #: fortran/primary.c:2395
 #, fuzzy, no-c-format
@@ -8905,9 +8905,9 @@ msgid "Syntax error in structure constructor at %C"
 msgstr "%C 结构构造语法错误"
 
 #: fortran/primary.c:2534
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %C is the name of a recursive function and so refers to the result variable. Use an explicit RESULT variable for direct recursion (12.5.2.1)"
-msgstr "在 %2$C 处的“%1$s”是一个递归函数的名字并且是这样提供结果变量的。为了直接递归使用一个显式的 RESULT 变量(12.5.2.1)"
+msgstr "%2$C处的‘%1$s’是一个递归函数的名字同时也是返回值变量。请为直接递归使用一个显式的 RESULT 变量(12.5.2.1)"
 
 #: fortran/primary.c:2653
 #, no-c-format
@@ -8990,9 +8990,9 @@ msgid "Unable to find a specific INTRINSIC procedure for the reference '%s' at %
 msgstr "在 %2$L 处对“%1$s”的引用不能找到特定的 INTRINSIC 过程"
 
 #: fortran/resolve.c:249
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument '%s' of pure function '%s' at %L must be INTENT(IN)"
-msgstr "%3$L 处纯函数“%2$s”的引数“%1$s”必须是 INTENT(IN)"
+msgstr "%3$L处纯函数‘%2$s’的实参‘%1$s’必须是 INTENT(IN)"
 
 #: fortran/resolve.c:254
 #, fuzzy, no-c-format
@@ -9048,9 +9048,9 @@ msgid "Character-valued %s '%s' at %L must not be assumed length"
 msgstr "语句函数‘%s’在%L处不允许用作实参"
 
 #: fortran/resolve.c:559
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Function %s at %L has entries with mismatched array specifications"
-msgstr "%2$L 处函数“%1$s”有不匹配的数组规格说明"
+msgstr "%2$L处函数‘%1$s’有不匹配的数组规格说明"
 
 #: fortran/resolve.c:576
 #, fuzzy, no-c-format
@@ -9118,24 +9118,24 @@ msgid "COMMON block '%s' at %L is used as PARAMETER at %L"
 msgstr "%2$L处的 COMMON 块‘%1$s’在%3$L处被用作 PARAMETER"
 
 #: fortran/resolve.c:776
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "COMMON block '%s' at %L is also an intrinsic procedure"
-msgstr "%2$L 处的 COMMON 块“%s”也是一个内建过程"
+msgstr "%2$L处的 COMMON 块‘%s’也是一个内建过程"
 
 #: fortran/resolve.c:780
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: COMMON block '%s' at %L that is also a function result"
-msgstr "%2$L 处的 COMMON 块“%s”也是一个内建过程"
+msgstr "Fortran 2003：%2$L处的 COMMON 块‘%1$s’也是一个函数返回值"
 
 #: fortran/resolve.c:785
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: COMMON block '%s' at %L that is also a global procedure"
-msgstr "%2$L 处的 COMMON 块“%s”也是一个内建过程"
+msgstr "Fortran 2003：%2$L处的 COMMON 块‘%1$s’也是一个全局过程"
 
 #: fortran/resolve.c:847
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Components of structure constructor '%s' at %L are PRIVATE"
-msgstr "%2$L 处结构构造器“%1$s”的组件时 PRIVATE"
+msgstr "%2$L处结构构造函数‘%1$s’的组件为 PRIVATE"
 
 #: fortran/resolve.c:869
 #, no-c-format
@@ -9143,9 +9143,9 @@ msgid "The rank of the element in the derived type constructor at %L does not ma
 msgstr "%L处的派生类型构造函数中元素的秩与该组件(%d/%d)的不匹配"
 
 #: fortran/resolve.c:882
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The element in the derived type constructor at %L, for pointer component '%s', is %s but should be %s"
-msgstr "%L 处的派生类型构建器中的元素，对指针组件“%s”而言是个 %s 但应该是 %s"
+msgstr "%L处指针组件‘%s’的派生类型构造函数中的元素是 %s 但应该是 %s"
 
 #: fortran/resolve.c:899
 #, no-c-format
@@ -9153,9 +9153,9 @@ msgid "The NULL in the derived type constructor at %L is being applied to compon
 msgstr "%L处派生类型构造函数中的 NULL 被用在既不是一个指针也不是 ALLOCATABLE 的组件‘%s’上"
 
 #: fortran/resolve.c:913
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The element in the derived type constructor at %L, for pointer component '%s' should be a POINTER or a TARGET"
-msgstr "%L 处的派生类型构建器中的元素，对指针组件“%s”而言应该是个 POINTER 或 TARGET"
+msgstr "%L处指针组件‘%s’的派生类型构造函数中的元素应该是 POINTER 或 TARGET"
 
 #: fortran/resolve.c:1034
 #, fuzzy, no-c-format
@@ -9178,9 +9178,9 @@ msgid "Type specified for intrinsic function '%s' at %L is ignored"
 msgstr "在 %2$L 处内建函数“%1$s”中类型指定符被忽略"
 
 #: fortran/resolve.c:1215
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Intrinsic subroutine '%s' at %L shall not have a type specifier"
-msgstr "在 %2$L 处的内建子例程“%1$s”不应该有类型指定符"
+msgstr "%2$L处的内建子例程‘%1$s’不应该有类型限定符"
 
 #: fortran/resolve.c:1226
 #, no-c-format
@@ -9264,7 +9264,7 @@ msgstr "在 %1$L 处 ELEMENTAL 子程序“%4$s”的 INTENT(%2$s) 假“%3$s”
 #: fortran/resolve.c:1830
 #, no-c-format
 msgid "The reference to function '%s' at %L either needs an explicit INTERFACE or the rank is incorrect"
-msgstr ""
+msgstr "%2$L处对函数‘%1$s’的引用或者需要一个显式的 INTERFACE 或者秩不正确"
 
 #: fortran/resolve.c:1930
 #, no-c-format
@@ -9641,14 +9641,14 @@ msgid "Two or more part references with nonzero rank must not be specified at %L
 msgstr "%L 处具有非零行列部分引用的两个或多个部分不必指定"
 
 #: fortran/resolve.c:4494
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s', used in a specification expression, is referenced at %L before the ENTRY statement in which it is a parameter"
-msgstr "用在一个规格说明表达式中的变量“%s”是在 %L 处 ENTRY 语句以前被引用的，在 ENTRY 语句中该变量是一个参数"
+msgstr "用在一个规格说明表达式中的变量‘%s’在%L处的引用出现在该变量是其参数的 ENTRY 语句之前"
 
 #: fortran/resolve.c:4499
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Variable '%s' is used at %L before the ENTRY statement in which it is a parameter"
-msgstr "在 %L 处使用变量“%s”，用在它是一个参数的 ENTRY 语句以前"
+msgstr "变量‘%s’在%L处的使用出现在该变量是其参数的 ENTRY 语句之前"
 
 #: fortran/resolve.c:4786 fortran/resolve.c:4858
 #, no-c-format
@@ -9658,7 +9658,7 @@ msgstr "%L处传递的对象必须是标量"
 #: fortran/resolve.c:4887
 #, no-c-format
 msgid "Base object for type-bound procedure call at %L is of ABSTRACT type '%s'"
-msgstr ""
+msgstr "%L处类型限定过程调用的基类型是 ABSTRACT 类型‘%s’"
 
 #. Nothing matching found!
 #: fortran/resolve.c:4989
@@ -9739,9 +9739,9 @@ msgid "FORALL stride expression at %L cannot be zero"
 msgstr "%L处 FORALL 间隔表达式不能是零"
 
 #: fortran/resolve.c:5800
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "FORALL index '%s' may not appear in triplet specification at %L"
-msgstr "FORALL 索引“%s”不能出现在 %L 处的三元组规格说明中"
+msgstr "FORALL 索引‘%s’不能出现在%L处的三元组规格说明中"
 
 #: fortran/resolve.c:5900 fortran/resolve.c:6115
 #, no-c-format
@@ -9756,27 +9756,27 @@ msgstr "不能在%2$L处释放 INTENT(IN)变量‘%1$s’"
 #: fortran/resolve.c:5979
 #, no-c-format
 msgid "Source-expr at %L must be scalar or have the same rank as the allocate-object at %L"
-msgstr ""
+msgstr "%L处的源表达式必须是标量或者与%L处的分配对象有相同的秩"
 
 #: fortran/resolve.c:6007
 #, no-c-format
 msgid "Source-expr at %L and allocate-object at %L must have the same shape"
-msgstr ""
+msgstr "%L处的源表达式和%L处的分配对象必须有相同的外形"
 
 #: fortran/resolve.c:6126
 #, no-c-format
 msgid "Type of entity at %L is type incompatible with source-expr at %L"
-msgstr ""
+msgstr "%L处实体的类型与%L处的源表达式类型不兼容"
 
 #: fortran/resolve.c:6139
 #, no-c-format
 msgid "The allocate-object at %L and the source-expr at %L shall have the same kind type parameter"
-msgstr ""
+msgstr "%L处的分配对象和%L处的源表达式应该有相同的种别类型参数"
 
 #: fortran/resolve.c:6148
 #, no-c-format
 msgid "Allocating %s of ABSTRACT base type at %L requires a type-spec or SOURCE="
-msgstr ""
+msgstr "%2$L处分配具有 ABSTRACT 基类型的 %1$s 需要一个类型指定或 SOURCE="
 
 #: fortran/resolve.c:6155
 #, no-c-format
@@ -9784,19 +9784,19 @@ msgid "Cannot allocate INTENT(IN) variable '%s' at %L"
 msgstr "不能在%2$L处分配 INTENT(IN)变量‘%1$s’"
 
 #: fortran/resolve.c:6167
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Array specification required in ALLOCATE statement at %L"
-msgstr "%L 处的 ALLOCATE 语句中要求的数组规格说明"
+msgstr "%L处的 ALLOCATE 语句中需要数组规格说明"
 
 #: fortran/resolve.c:6197
 #, no-c-format
 msgid "Bad array specification in ALLOCATE statement at %L"
-msgstr "%L处的 ALLOCATE 语句指定了错误的数组"
+msgstr "%L处的 ALLOCATE 语句中有错误的数组规格"
 
 #: fortran/resolve.c:6217
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' must not appear in the array specification at %L in the same ALLOCATE statement where it is itself allocated"
-msgstr "“%s”必须不出现在 %L 处在它自己分配的相同的 ALLOCATE 语句中的数组规格说明中"
+msgstr "‘%s’不能出现在%L处其自身被分配的 ALLOCATE 语句的数组规格说明中"
 
 #: fortran/resolve.c:6242
 #, no-c-format
@@ -9903,9 +9903,9 @@ msgid "constant logical value in CASE statement is repeated at %L"
 msgstr "%L处 CASE 语句中的常量逻辑值重复"
 
 #: fortran/resolve.c:6736
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Range specification at %L can never be matched"
-msgstr "%L 处范围规格说明决不能匹配"
+msgstr "%L处范围规格无法匹配"
 
 #: fortran/resolve.c:6839
 #, fuzzy, no-c-format
@@ -9928,24 +9928,24 @@ msgid "Double CLASS IS block in SELECT TYPE statement at %L"
 msgstr "%L处 SELECT TYPE 语句中有双重的 CLASS IS 块"
 
 #: fortran/resolve.c:7135
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Data transfer element at %L cannot have POINTER components"
-msgstr "%2$L 处数据传输元素不能有 PRIVATE 组件"
+msgstr "%L处数据传输元素不能有 POINTER 组件"
 
 #: fortran/resolve.c:7142
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Data transfer element at %L cannot have ALLOCATABLE components"
-msgstr "%L 处的数据传输元素没有 ALLOCATABLE 组件"
+msgstr "%L处数据传输元素不能有 ALLOCATABLE 组件"
 
 #: fortran/resolve.c:7149
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Data transfer element at %L cannot have PRIVATE components"
-msgstr "%2$L 处数据传输元素不能有 PRIVATE 组件"
+msgstr "%L处数据传输元素不能有 PRIVATE 组件"
 
 #: fortran/resolve.c:7158
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Data transfer element at %L cannot be a full reference to an assumed-size array"
-msgstr "%2$L 处数据传输元素不能是对一个假定大小数组的全引用"
+msgstr "%L处数据传输元素不能是对一个假定大小数组的全引用"
 
 #: fortran/resolve.c:7220
 #, fuzzy, no-c-format
@@ -9966,14 +9966,14 @@ msgid "Label at %L is not in the same block as the GOTO statement at %L"
 msgstr "在 %L 处标记不在 %L 处 GOTO 语句同样的块中"
 
 #: fortran/resolve.c:7332
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "WHERE mask at %L has inconsistent shape"
-msgstr "在 %L 处的 WHERE 有不一致的外形"
+msgstr "%L处的 WHERE 掩码外形不一致"
 
 #: fortran/resolve.c:7348
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "WHERE assignment target at %L has inconsistent shape"
-msgstr "在 %L 处 WHERE 赋值目标有不一致的外形"
+msgstr "%L处 WHERE 赋值目标外形不一致"
 
 #: fortran/resolve.c:7356 fortran/resolve.c:7443
 #, fuzzy, no-c-format
@@ -10394,7 +10394,7 @@ msgstr "在 %3$L 处的“%2$s”的“%1$s”应该命名为与被跨越过程�
 #: fortran/resolve.c:9593
 #, no-c-format
 msgid "Types mismatch for dummy argument '%s' of '%s' %L in respect to the overridden procedure"
-msgstr ""
+msgstr "%3$L处‘%2$s’的哑元实参‘%1$s’相对于覆盖过程类型不匹配"
 
 #: fortran/resolve.c:9603
 #, fuzzy, no-c-format
@@ -10444,7 +10444,7 @@ msgstr "在 %L 处 GENERIC“%s”无法盖写与特殊相同名字捆绑"
 #: fortran/resolve.c:9830
 #, no-c-format
 msgid "Type-bound operator at %L can't be NOPASS"
-msgstr ""
+msgstr "%L处类型限定的操作数不能是 NOPASS"
 
 #: fortran/resolve.c:9993
 #, fuzzy, no-c-format
@@ -10484,7 +10484,7 @@ msgstr "在 %2$L 处过程“%1$s”有与“%3$s”继承组件名相同的名�
 #: fortran/resolve.c:10187
 #, no-c-format
 msgid "Derived-type '%s' declared at %L must be ABSTRACT because '%s' is DEFERRED and not overridden"
-msgstr ""
+msgstr "%2$L处声明的派生类型‘%1$s’必须是 ABSTRACT，因为‘%3$s’是 DEFERRED 且没有被覆盖"
 
 #: fortran/resolve.c:10248
 #, fuzzy, no-c-format
@@ -10537,9 +10537,9 @@ msgid "Component '%s' of '%s' at %L has the same name as an inherited type-bound
 msgstr "在 %3$L 处的“%2$s”的组件“%1$s”有与继承的界限类型过程同的名字"
 
 #: fortran/resolve.c:10451
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Character length of component '%s' needs to be a constant specification expression at %L"
-msgstr "%2$L 处常量规格说明表达式需要的成分“%1$s”的字符长度"
+msgstr "%2$L处组件‘%1$s’的字符长度必须是一个常量规格表达式"
 
 #: fortran/resolve.c:10466
 #, fuzzy, no-c-format
@@ -10704,7 +10704,7 @@ msgstr "在 %L 处的 DATA 数组“%s”必须在一个先前的声明中规定
 #: fortran/resolve.c:11255
 #, no-c-format
 msgid "DATA element '%s' at %L is a pointer and so must be a full array"
-msgstr ""
+msgstr "%2$L处的 DATA 元素‘%1$s’是一个指针所以必须是一个完全的数组"
 
 #: fortran/resolve.c:11301
 #, fuzzy, no-c-format
@@ -10889,7 +10889,7 @@ msgstr "%s:%d：文件 %s 被留下但未进入"
 #: fortran/scanner.c:1751
 #, no-c-format
 msgid "%s:%d: Illegal preprocessor directive"
-msgstr "%s:%d：无效的预包含指示"
+msgstr "%s:%d：无效的预处理指令"
 
 #: fortran/scanner.c:1869
 #, no-c-format
@@ -11032,9 +11032,9 @@ msgid "Invalid second argument of ISHFT at %L"
 msgstr "%L处 ISHFT 的第二个参数无效"
 
 #: fortran/simplify.c:2804
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Magnitude of second argument of ISHFT exceeds bit size at %L"
-msgstr "%L 处 ISHFTC 的第二个参数大小超过比特的大小"
+msgstr "%L处 ISHFT 的第二个参数大小超过位大小"
 
 #: fortran/simplify.c:2868
 #, no-c-format
@@ -11047,19 +11047,19 @@ msgid "Invalid third argument of ISHFTC at %L"
 msgstr "%L处 ISHFTC 的第三个参数无效"
 
 #: fortran/simplify.c:2888
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Magnitude of third argument of ISHFTC exceeds BIT_SIZE of first argument at %L"
-msgstr "ISHFTC 的第三参数大小超过 %L 处第一参数的 BIT_SIZE"
+msgstr "%L处 ISHFTC 的第三个参数大小超过第一个实参的 BIT_SIZE"
 
 #: fortran/simplify.c:2904
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Magnitude of second argument of ISHFTC exceeds third argument at %L"
-msgstr "%L 处 ISHFTC 的第二个参数大小超过第三参数"
+msgstr "%L处 ISHFTC 的第二个参数大小超过第三个实参"
 
 #: fortran/simplify.c:2907
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Magnitude of second argument of ISHFTC exceeds BIT_SIZE of first argument at %L"
-msgstr "%L 处 ISHFTC 的第二个参数大小超过第一参数的 BIT_SIZE"
+msgstr "%L处 ISHFTC 的第二个参数大小超过第一个实参的 BIT_SIZE"
 
 #: fortran/simplify.c:2978
 #, no-c-format
@@ -11157,9 +11157,9 @@ msgid "Letter '%c' already set in IMPLICIT statement at %C"
 msgstr "字母‘%c’已在%C处的隐式语句中被设定"
 
 #: fortran/symbol.c:195
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot specify IMPLICIT at %C after IMPLICIT NONE"
-msgstr "在 IMPLICIT NONE 后不能在 %C 处指定 IMPLICIT"
+msgstr "在 IMPLICIT NONE 后不能在%C处指定 IMPLICIT"
 
 #: fortran/symbol.c:205
 #, no-c-format
@@ -11300,9 +11300,9 @@ msgid "INTENT (%s) conflicts with INTENT(%s) at %L"
 msgstr "INTENT (%s) 与 INTENT(%s) 在 %L 冲突"
 
 #: fortran/symbol.c:1476
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "ACCESS specification at %L was already specified"
-msgstr "%L 处的规格说明已经被指定"
+msgstr "%L处的 ACCESS 规格已经被指定"
 
 #: fortran/symbol.c:1493
 #, no-c-format
@@ -11335,9 +11335,9 @@ msgid "'%s' at %L has attributes specified outside its INTERFACE body"
 msgstr "在 %L 处的“%s”有在它的 INTERFACE 主体外面规定的属性"
 
 #: fortran/symbol.c:1583
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Symbol '%s' at %L already has basic type of %s"
-msgstr "符号‘%s’在 %L 处已经有了基本类型 %s"
+msgstr "符号‘%s’在%L处已经有了基本类型 %s"
 
 #: fortran/symbol.c:1590
 #, no-c-format
@@ -11355,9 +11355,9 @@ msgid "Component '%s' at %C already declared at %L"
 msgstr "%2$C处的组件‘%1$s’已于 %3$L处被声明"
 
 #: fortran/symbol.c:1776
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Component '%s' at %C already in the parent type at %L"
-msgstr "%3$L 处的组件“%1$s”已在父类中"
+msgstr "%2$C处的组件‘%1$s’已在%3$L处的父类中"
 
 #: fortran/symbol.c:1852
 #, no-c-format
@@ -11365,9 +11365,9 @@ msgid "Symbol '%s' at %C is ambiguous"
 msgstr "符号‘%s’在%C处有歧义"
 
 #: fortran/symbol.c:1884
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Derived type '%s' at %C is being used before it is defined"
-msgstr "%2$C 处的“%1$s”派生类型定义在被定义前使用"
+msgstr "%2$C处的派生类型‘%1$s’在定义前使用"
 
 #: fortran/symbol.c:1925
 #, no-c-format
@@ -11380,9 +11380,9 @@ msgid "Component '%s' at %C is a PRIVATE component of '%s'"
 msgstr "组件‘%s’在%C处是‘%s’的 PRIVATE 组件"
 
 #: fortran/symbol.c:1943
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "All components of '%s' are PRIVATE in structure constructor at %C"
-msgstr "%2$C 处结构构造器中全部“%1$s”的组件是 PRIVATE"
+msgstr "%2$C处结构构造器中‘%1$s’所有的组件都是 PRIVATE"
 
 #: fortran/symbol.c:2079
 #, no-c-format
@@ -11514,9 +11514,9 @@ msgid "The number of elements in the array constructor at %L requires an increas
 msgstr "在 %L 处数组构造成员中的元素数需要一个容许 %d 上限的增加。   见 -fmax-array-constructor 选项"
 
 #: fortran/trans-array.c:5577
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Creating array temporary at %L for argument '%s'"
-msgstr "在 %L 处为变量“%s”建立临时数组"
+msgstr "%L处为变量‘%s’建立临时数组"
 
 #: fortran/trans-common.c:400
 #, fuzzy, no-c-format
@@ -11615,19 +11615,19 @@ msgid "Unused parameter '%s' declared at %L"
 msgstr "%2$L处声明了未使用的参数‘%1$s’"
 
 #: fortran/trans-decl.c:3855
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Return value '%s' of function '%s' declared at %L not set"
-msgstr "%2$L 处声明的的函数“%2$s”的返回值没有设置"
+msgstr "%3$L处声明的的函数‘%2$s’的返回值‘%1$s’没有设置"
 
 #: fortran/trans-decl.c:3963
-#, fuzzy, c-format
+#, c-format
 msgid "Actual string length does not match the declared one for dummy argument '%s' (%ld/%ld)"
-msgstr "参数‘%s’在%L处缺少实参"
+msgstr "字符串的实际长度不匹配其哑元实参声明‘%s’(%ld/%ld)"
 
 #: fortran/trans-decl.c:3971
-#, fuzzy, c-format
+#, c-format
 msgid "Actual string length is shorter than the declared one for dummy argument '%s' (%ld/%ld)"
-msgstr "参数‘%s’在%L处缺少实参"
+msgstr "字符串的实际长度短于其哑元实参声明‘%s’(%ld/%ld)"
 
 #: fortran/trans-expr.c:1616
 msgid "internal error: bad hash value in dynamic dispatch"
@@ -12407,9 +12407,8 @@ msgid "Allocate local variables on the stack to allow indirect recursion"
 msgstr "在堆栈上分配局部变量以允许间接递归"
 
 #: fortran/lang.opt:341
-#, fuzzy
 msgid "Copy array sections into a contiguous block on procedure entry"
-msgstr "把数组节复制进过程表项上的一个连续块"
+msgstr "在过程入口处将数组节复制到一个连续的块中"
 
 #: fortran/lang.opt:345
 msgid "Specify which runtime checks are to be performed"
@@ -12769,7 +12768,7 @@ msgstr "为给定的 CPU 生成代码"
 
 #: config/s390/s390.opt:35
 msgid "Maintain backchain pointer"
-msgstr "维护链回上层堆栈框架的指针"
+msgstr "维护链回上层栈帧的指针"
 
 #: config/s390/s390.opt:39
 msgid "Additional debug prints"
@@ -12804,9 +12803,8 @@ msgid "Disable hardware floating point"
 msgstr "禁用硬件浮点单元"
 
 #: config/s390/s390.opt:79
-#, fuzzy
 msgid "Set the max. number of bytes which has to be left to stack size before a trap instruction is triggered"
-msgstr "设置最大。在一 trap 指令被触发以前堆栈大小左边的字节数"
+msgstr "设置在陷阱指令被触发前留在堆栈中最大字节数"
 
 #: config/s390/s390.opt:83
 msgid "Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit"
@@ -12979,9 +12977,8 @@ msgid "Assume that floating-point stores and loads are not likely to cause confl
 msgstr "假定浮点存储和装载放在一个指令组时不太会引起冲突"
 
 #: config/ia64/ia64.opt:171
-#, fuzzy
 msgid "Soft limit on number of memory insns per instruction group, giving lower priority to subsequent memory insns attempting to schedule in the same insn group. Frequently useful to prevent cache bank conflicts.  Default value is 1"
-msgstr "软件限定每指令组内存 insns 数，给后来的试图在相同的 insn 组中去调度的内存 insns 低的优先数 。防止高速缓存银行冲突常常是有用的。  默认值是 1"
+msgstr "一个指令组中内存指令数目的软性限制，同一指令组中后续的内存指令将在调度时被调低优先级。经常被用于防止缓存组冲突。默认值为 1"
 
 #: config/ia64/ia64.opt:175
 msgid "Disallow more than `msched-max-memory-insns' in instruction group. Otherwise, limit is `soft' (prefer non-memory operations when limit is reached)"
@@ -13490,7 +13487,7 @@ msgstr "生成遵循给定 ABI 的代码"
 
 #: config/i386/i386.opt:237
 msgid "Vector library ABI to use"
-msgstr "指定要使用的矢量库 ABI"
+msgstr "指定要使用的向量库 ABI"
 
 #: config/i386/i386.opt:241
 msgid "Generate reciprocals instead of divss and sqrtss."
@@ -13758,7 +13755,7 @@ msgstr "使用 PowerPC V2.06 popcntd 指令"
 
 #: config/rs6000/rs6000.opt:120
 msgid "Use vector/scalar (VSX) instructions"
-msgstr "使用矢量/标量(VSX)指令"
+msgstr "使用向量/标量(VSX)指令"
 
 #: config/rs6000/rs6000.opt:160
 msgid "Do not generate load/store with update instructions"
@@ -13935,9 +13932,8 @@ msgid "Support message passing with the Parallel Environment"
 msgstr "支持并行环境下的消息传送"
 
 #: config/rs6000/linux64.opt:24
-#, fuzzy
 msgid "Call mcount for profiling before a function prologue"
-msgstr "在一个函数序言以前为程序概要分析调用 mcount"
+msgstr "为取样在函数前言中调用 mcount"
 
 #: config/rs6000/sysv4.opt:24
 msgid "Select ABI calling convention"
@@ -14430,9 +14426,8 @@ msgid "Cost to assume for a multiply insn"
 msgstr "为乘法指令设定的开销"
 
 #: config/sh/sh.opt:327
-#, fuzzy
 msgid "Don't generate privileged-mode only code; implies -mno-inline-ic_invalidate if the inline code would not work in user mode."
-msgstr "不产生仅特权方式的代码；如果在用户方式中直接插入的代码不工作则包含 -mno-inline-ic_invalidate。"
+msgstr "不生成仅特权模式的代码；如果在用户模式中内联代码不工作则包含 -mno-inline-ic_invalidate。"
 
 #: config/sh/sh.opt:333
 msgid "Pretend a branch-around-a-move is a conditional move."
@@ -14464,7 +14459,7 @@ msgstr "在浮点寄存器中传递浮点参数"
 
 #: config/arm/arm.opt:38
 msgid "Generate APCS conformant stack frames"
-msgstr "生成与 APCS 相容的堆栈框架"
+msgstr "生成与 APCS 相容的栈帧"
 
 #: config/arm/arm.opt:42
 msgid "Generate re-entrant, PIC code"
@@ -14552,11 +14547,11 @@ msgstr "指定如何访问线程指针"
 
 #: config/arm/arm.opt:146
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
-msgstr "Thumb：即使不需要也生成(非叶)堆栈框架"
+msgstr "Thumb：即使不需要也生成(非叶)栈帧"
 
 #: config/arm/arm.opt:150
 msgid "Thumb: Generate (leaf) stack frames even if not needed"
-msgstr "Thumb：即使不需要也生成(叶)堆栈框架"
+msgstr "Thumb：即使不需要也生成(叶)栈帧"
 
 #: config/arm/arm.opt:154
 msgid "Tune code for the given processor"
@@ -14568,16 +14563,15 @@ msgstr "假定高位字节在前，低位字在前"
 
 #: config/arm/arm.opt:162
 msgid "Use Neon quad-word (rather than double-word) registers for vectorization"
-msgstr "使用 Neon 四字(而非双字)寄存器来进行矢量化"
+msgstr "使用 Neon 四字(而非双字)寄存器来进行向量化"
 
 #: config/arm/arm.opt:166
 msgid "Only generate absolute relocations on word sized values."
 msgstr "对字大小的值仅产生绝对重定位。"
 
 #: config/arm/arm.opt:170
-#, fuzzy
 msgid "Avoid overlapping destination and address registers on LDRD instructions"
-msgstr "避免重迭目标和于 LDRD 指令的地址寄存器 "
+msgstr "在 LDRD 指令中避免重叠的目标和地址寄存器"
 
 #: config/arm/pe.opt:23
 msgid "Ignore dllimport attribute for functions"
@@ -14794,9 +14788,8 @@ msgid "Automatically align branch targets to reduce branch penalties"
 msgstr "自动对齐跳转目标以减少分支开销"
 
 #: config/xtensa/xtensa.opt:39
-#, fuzzy
 msgid "Intersperse literal pools with code in the text section"
-msgstr "用在文本节中的代码点缀字面的共享池"
+msgstr "在文本节中的代码节中点缀字面值的共享池"
 
 #: config/xtensa/xtensa.opt:43
 msgid "Do not serialize volatile memory references with MEMW instructions"
@@ -15236,7 +15229,7 @@ msgstr "为指定的芯片或 CPU 版本调整对齐"
 
 #: config/cris/cris.opt:173
 msgid "Warn when a stackframe is larger than the specified size"
-msgstr "当堆栈框架大于指定值时给出警告"
+msgstr "当栈帧大于指定值时给出警告"
 
 #: config/h8300/h8300.opt:23
 msgid "Generate H8S code"
@@ -15696,7 +15689,7 @@ msgstr "使用 sdram 版本的运行时"
 
 #: config/mep/mep.opt:142
 msgid "Use simulator runtime without vectors"
-msgstr "使用不带矢量的仿真器运行时"
+msgstr "使用不带向量的仿真器运行时"
 
 #: config/mep/mep.opt:146
 msgid "All functions default to the far section"
@@ -16360,7 +16353,7 @@ msgstr "将友元函数声明视作包含它的命名空间中的有效声明"
 
 #: c.opt:661
 msgid "Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types."
-msgstr "允许具有不同元素数量和/或元素类型的矢量间的转换"
+msgstr "允许具有不同元素数量和/或元素类型的向量间的转换"
 
 #: c.opt:665
 msgid "Don't warn about uses of Microsoft extensions"
@@ -16744,7 +16737,7 @@ msgstr "发现第一个错误时即退出"
 
 #: common.opt:118
 msgid "-Wframe-larger-than=<number> Warn if a function's stack frame requires more than <number> bytes"
-msgstr "-Wframe-larger-than=<N>          当一个函数的堆栈框架需要多于 <N> 字节的内存时给出警告"
+msgstr "-Wframe-larger-than=<N>          当一个函数的栈帧需要多于 <N> 字节的内存时给出警告"
 
 #: common.opt:122
 msgid "Warn when an inlined function cannot be inlined"
@@ -17006,7 +16999,7 @@ msgstr "延迟将函数实参弹栈"
 
 #: common.opt:443
 msgid "Attempt to fill delay slots of branch instructions"
-msgstr "试图利用延迟转移指令后"
+msgstr "尝试填充分支指令的延迟槽"
 
 #: common.opt:447
 msgid "Delete useless null pointer checks"
@@ -17108,23 +17101,23 @@ msgstr "将每个函数分别放在它们各自的节中"
 
 #: common.opt:557
 msgid "Perform global common subexpression elimination"
-msgstr "进行全局公因式消去"
+msgstr "进行全局公共子表达式消除"
 
 #: common.opt:561
 msgid "Perform enhanced load motion during global common subexpression elimination"
-msgstr "在全局公因式消去中进行增强的读转移优化"
+msgstr "在全局公共子表达式消除中进行增强的读转移优化"
 
 #: common.opt:565
 msgid "Perform store motion after global common subexpression elimination"
-msgstr "在全局公因式消去后进行存储转移"
+msgstr "在全局公共子表达式消除后进行存储转移"
 
 #: common.opt:569
 msgid "Perform redundant load after store elimination in global common subexpression"
-msgstr "在全局公因式消去中进行冗余的写后读消除"
+msgstr "在全局公共子表达式消除中进行冗余的写后读消除"
 
 #: common.opt:574
 msgid "Perform global common subexpression elimination after register allocation"
-msgstr "在分配寄存器后进行全局公因式消去"
+msgstr "在分配寄存器后进行全局公共子表达式消除"
 
 #: common.opt:580
 msgid "Enable in and out of Graphite representation"
@@ -17168,7 +17161,7 @@ msgstr "将条件跳转替换为条件执行"
 
 #: common.opt:628
 msgid "Do not generate .size directives"
-msgstr "不生成 .size 指令"
+msgstr "不生成 .size 伪指令"
 
 #: common.opt:632
 msgid "Perform indirect inlining"
@@ -17364,7 +17357,7 @@ msgstr "支持同步非调用异常"
 
 #: common.opt:843
 msgid "When possible do not generate stack frames"
-msgstr "尽可能不生成堆栈框架"
+msgstr "尽可能不生成栈帧"
 
 #: common.opt:847
 msgid "Do the full register move optimization pass"
@@ -17505,7 +17498,7 @@ msgstr "函数重新排序以改善代码布局"
 
 #: common.opt:997
 msgid "Add a common subexpression elimination pass after loop optimizations"
-msgstr "在循环优化结束后增加一趟公因式消去"
+msgstr "在循环优化结束后增加一趟公共子表达式消除"
 
 #: common.opt:1005
 msgid "Disable optimizations that assume default FP rounding behavior"
@@ -17540,9 +17533,8 @@ msgid "If scheduling post reload, do superblock scheduling"
 msgstr "在重载后调度中使用跨基本块调度"
 
 #: common.opt:1037
-#, fuzzy
 msgid "If scheduling post reload, do trace scheduling"
-msgstr "如果调度后载，则跟踪调度"
+msgstr "如果在重新载入之后调度，则进行调度追踪"
 
 #: common.opt:1041
 msgid "Reschedule instructions before register allocation"
@@ -17569,23 +17561,20 @@ msgid "Perform software pipelining of outer loops during selective scheduling"
 msgstr "在选择性调度中对外层循环进行软件流水化"
 
 #: common.opt:1068
-#, fuzzy
 msgid "Reschedule pipelined regions without pipelining"
-msgstr "Reschedule 管道线区域没有管道线"
+msgstr "重新调度没有被流水线化的流水线区域"
 
 #: common.opt:1074
 msgid "Allow premature scheduling of queued insns"
 msgstr "允许对队列中的指令进行早调度"
 
 #: common.opt:1078
-#, fuzzy
 msgid "Set number of queued insns that can be prematurely scheduled"
-msgstr "指定最多能被不按时调度的指令队列数"
+msgstr "指定能被早期调度的在排队中的指令的最大数量"
 
 #: common.opt:1086 common.opt:1090
-#, fuzzy
 msgid "Set dependence distance checking in premature scheduling of queued insns"
-msgstr "设置检录队列指令的进行早调度的依赖距离"
+msgstr "设置排队中指令的进行早调度的依赖距离检查"
 
 #: common.opt:1094
 msgid "Enable the group heuristic in the scheduler"
@@ -17869,23 +17858,23 @@ msgstr "进行变量追踪并且标记未被初始化的变量"
 
 #: common.opt:1415
 msgid "Enable loop vectorization on trees"
-msgstr "在树上进行循环矢量化"
+msgstr "在树上进行循环向量化"
 
 #: common.opt:1419
 msgid "Enable basic block vectorization (SLP) on trees"
-msgstr "在树上进行基本块矢量化(SLP)"
+msgstr "在树上进行基本块向量化(SLP)"
 
 #: common.opt:1423
 msgid "Enable use of cost model in vectorization"
-msgstr "启用矢量化开销模型"
+msgstr "启用向量化开销模型"
 
 #: common.opt:1427
 msgid "Enable loop versioning when doing loop vectorization on trees"
-msgstr "在树上进行循环矢量化时启用多版本循环"
+msgstr "在树上进行循环向量化时启用多版本循环"
 
 #: common.opt:1431
 msgid "Set the verbosity level of the vectorizer"
-msgstr "设置矢量化器输出的冗余程度"
+msgstr "设置向量化器输出的冗余程度"
 
 #: common.opt:1435
 msgid "Enable copy propagation of scalar-evolution information."
@@ -18259,7 +18248,7 @@ msgstr "表达式中定点溢出"
 #: c-common.c:1599
 #, gcc-internal-format
 msgid "vector overflow in expression"
-msgstr "矢量浮点溢出"
+msgstr "向量浮点溢出"
 
 #: c-common.c:1605
 #, gcc-internal-format
@@ -18329,7 +18318,7 @@ msgstr "%q+D只带零或两个参数"
 #: c-common.c:1886
 #, gcc-internal-format
 msgid "use -flax-vector-conversions to permit conversions between vectors with differing element types or numbers of subparts"
-msgstr "使用 -flax-vector-conversions 以允许元素类型或数量不同的矢量间的转换"
+msgstr "使用 -flax-vector-conversions 以允许元素类型或数量不同的向量间的转换"
 
 #: c-common.c:2041
 #, gcc-internal-format
@@ -18628,7 +18617,7 @@ msgstr "未知的机器模式%qE"
 #: c-common.c:6462
 #, gcc-internal-format
 msgid "specifying vector types with __attribute__ ((mode)) is deprecated"
-msgstr "不建议在指定矢量类型时使用 __attribute__ ((mode))"
+msgstr "不建议在指定向量类型时使用 __attribute__ ((mode))"
 
 #: c-common.c:6465
 #, gcc-internal-format
@@ -18814,25 +18803,25 @@ msgstr "%qE属性为%qE所忽略"
 #: c-common.c:7302
 #, gcc-internal-format
 msgid "invalid vector type for attribute %qE"
-msgstr "属性%qE的矢量类型无效"
+msgstr "属性%qE的向量类型无效"
 
 #: c-common.c:7308 ada/gcc-interface/utils.c:5479
 #: ada/gcc-interface/utils.c:5573
 #, gcc-internal-format
 msgid "vector size not an integral multiple of component size"
-msgstr "矢量大小不是组件大小的整数倍"
+msgstr "向量大小不是组件大小的整数倍"
 
 #: c-common.c:7314 ada/gcc-interface/utils.c:5485
 #: ada/gcc-interface/utils.c:5579
 #, gcc-internal-format
 msgid "zero vector size"
-msgstr "矢量大小为 0"
+msgstr "向量大小为 0"
 
 #: c-common.c:7322 ada/gcc-interface/utils.c:5493
 #: ada/gcc-interface/utils.c:5586
 #, gcc-internal-format
 msgid "number of components of the vector not a power of two"
-msgstr "矢量中分量数不是 2 的某次方"
+msgstr "向量中分量数不是 2 的某次方"
 
 #: c-common.c:7350 ada/gcc-interface/utils.c:5233
 #, gcc-internal-format
@@ -22035,7 +22024,7 @@ msgstr "函数类型与 ISO C 不完全兼容"
 #: c-typeck.c:739
 #, gcc-internal-format
 msgid "can%'t mix operands of decimal float and vector types"
-msgstr "十进制浮点和矢量类型不能同时作操作数"
+msgstr "十进制浮点和向量类型不能同时作操作数"
 
 #: c-typeck.c:744
 #, gcc-internal-format
@@ -22726,7 +22715,7 @@ msgstr "(在%qs的初始化附近)"
 #: c-typeck.c:6240 cp/decl.c:5217
 #, gcc-internal-format
 msgid "opaque vector types cannot be initialized"
-msgstr "不透明的矢量类型不能被初始化"
+msgstr "不透明的向量类型不能被初始化"
 
 #: c-typeck.c:6905
 #, gcc-internal-format
@@ -23146,17 +23135,17 @@ msgstr "循环 %d 的头并非只有 2 个入口"
 #: cfgloop.c:1382
 #, gcc-internal-format
 msgid "loop %d's latch does not have exactly 1 successor"
-msgstr "循环 %d 的锁存并非只有一个后继"
+msgstr "循环 %d 的回边并非只有一个后继"
 
 #: cfgloop.c:1387
 #, gcc-internal-format
 msgid "loop %d's latch does not have header as successor"
-msgstr "循环 %d 的锁存的后继不是头"
+msgstr "循环 %d 的回边的后继不是头"
 
 #: cfgloop.c:1392
 #, gcc-internal-format
 msgid "loop %d's latch does not belong directly to it"
-msgstr "循环 %d 的锁存并非直接属于该循环"
+msgstr "循环 %d 的回边并非直接属于该循环"
 
 #: cfgloop.c:1398
 #, gcc-internal-format
@@ -23166,7 +23155,7 @@ msgstr "循环 %d 的头并非直接属于该循环 "
 #: cfgloop.c:1404
 #, gcc-internal-format
 msgid "loop %d's latch is marked as part of irreducible region"
-msgstr "循环 %d 的锁存被标记为属于一个不可归约区域"
+msgstr "循环 %d 的回边被标记为属于一个不可归约区域"
 
 #: cfgloop.c:1437
 #, gcc-internal-format
@@ -23194,9 +23183,9 @@ msgid "corrupted head of the exits list of loop %d"
 msgstr "循环 %d的退出列表头部被破坏"
 
 #: cfgloop.c:1491
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "corrupted exits list of loop %d"
-msgstr "被破坏的循环 %d 退出列表"
+msgstr "循环 %d 的出口列表已损坏"
 
 #: cfgloop.c:1500
 #, fuzzy, gcc-internal-format
@@ -23329,9 +23318,9 @@ msgid "end insn %d for block %d not found in the insn stream"
 msgstr "结束 insn %d 于块 %d 在 insn 流中找不到"
 
 #: cfgrtl.c:2086
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "insn %d is in multiple basic blocks (%d and %d)"
-msgstr "指令 %d 在多个基本块 %d 内 (%d 和 %d)"
+msgstr "指令 %d 在多个基本块内(%d 和 %d)"
 
 #: cfgrtl.c:2098
 #, fuzzy, gcc-internal-format
@@ -23556,7 +23545,7 @@ msgstr "转换为不完全类型"
 #: convert.c:829 convert.c:905
 #, gcc-internal-format
 msgid "can't convert between vector values of different size"
-msgstr "不能在不同大小的矢量类型间进行转换"
+msgstr "不能在不同大小的向量类型间进行转换"
 
 #: convert.c:835
 #, gcc-internal-format
@@ -23576,7 +23565,7 @@ msgstr "需要复数时使用了聚合值"
 #: convert.c:911
 #, gcc-internal-format
 msgid "can't convert value to a vector"
-msgstr "不能将值转换为矢量"
+msgstr "不能将值转换为向量"
 
 #: convert.c:950
 #, gcc-internal-format
@@ -23691,7 +23680,7 @@ msgstr "%d 的主导者应该为 %d，而不是 %d"
 #: dwarf2out.c:4014
 #, gcc-internal-format
 msgid "Multiple EH personalities are supported only with assemblers supporting .cfi.personality directive."
-msgstr ""
+msgstr "多个 EH 个性需要汇编器支持 .cfi.personality 指示。"
 
 #: dwarf2out.c:5392
 #, gcc-internal-format
@@ -23739,9 +23728,9 @@ msgid "__builtin_eh_return not supported on this target"
 msgstr "__builtin_eh_return 在此目标机上不受支持"
 
 #: except.c:3334 except.c:3359
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "region_array is corrupted for region %i"
-msgstr "区域 %i 的 region_array 被破坏"
+msgstr "区域 %i 的 region_array 已损坏"
 
 #: except.c:3347 except.c:3378
 #, gcc-internal-format
@@ -23754,9 +23743,9 @@ msgid "outer block of region %i is wrong"
 msgstr "区域 %i 的外围块错误"
 
 #: except.c:3369
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "negative nesting depth of region %i"
-msgstr "区域 %i 的负嵌套深度"
+msgstr "区域 %i 的嵌套深度为负"
 
 #: except.c:3383
 #, gcc-internal-format
@@ -23764,7 +23753,7 @@ msgid "region of lp %i is wrong"
 msgstr "区域 %i 的 lp 错误"
 
 #: except.c:3410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree list ends on depth %i"
 msgstr "树列表结束于深度 %i"
 
@@ -23804,7 +23793,7 @@ msgstr "-fdebug-prefix-map 的参数%qs无效"
 #: final.c:1574
 #, gcc-internal-format
 msgid "the frame size of %wd bytes is larger than %wd bytes"
-msgstr "堆栈框架有 %wd 字节，超过了 %wd 字节"
+msgstr "栈帧有 %wd 字节，超过了 %wd 字节"
 
 #: final.c:4367 toplev.c:1921
 #, gcc-internal-format
@@ -23950,9 +23939,9 @@ msgid "spec failure: unrecognized spec option '%c'"
 msgstr "spec 错误：无法识别的 spec 选项‘%c’"
 
 #: gcc.c:6673
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: could not determine length of compare-debug file %s"
-msgstr "无法写入响应文件 %s"
+msgstr "%s：无法确定比较调试文件 %s 的长度"
 
 #: gcc.c:6684
 #, gcc-internal-format
@@ -24690,24 +24679,24 @@ msgid "output operand %d must use %<&%> constraint"
 msgstr "输出操作数 %d 必须使用%<&%>约束"
 
 #: regcprop.c:978
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "validate_value_data: [%u] Bad next_regno for empty chain (%u)"
-msgstr "validate_value_data: [%u] 坏的 next_regno 对于空链(%u)"
+msgstr "validate_value_data：[%u]  空链(%u) 的 next_regno 错误"
 
 #: regcprop.c:990
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "validate_value_data: Loop in regno chain (%u)"
-msgstr "validate_value_data:  在 regno 链(%u)中的循环"
+msgstr "validate_value_data：在 regno 链(%u)中的循环"
 
 #: regcprop.c:993
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "validate_value_data: [%u] Bad oldest_regno (%u)"
-msgstr "validate_value_data: [%u] 坏的 oldest_regno (%u)"
+msgstr "validate_value_data：[%u] 错误的 oldest_regno (%u)"
 
 #: regcprop.c:1005
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "validate_value_data: [%u] Non-empty reg in chain (%s %u %i)"
-msgstr "validate_value_data: [%u] 非空 reg 在链(%s %u %i)中"
+msgstr "validate_value_data：[%u] 链(%s %u %i)中的非空 reg"
 
 #: reginfo.c:819
 #, gcc-internal-format
@@ -24779,7 +24768,7 @@ msgstr "重新加载%<asm%>时在类%qs中找不到寄存器"
 #: reload1.c:2133
 #, gcc-internal-format
 msgid "unable to find a register to spill in class %qs"
-msgstr "在类%qs中找不到可舍出的寄存器"
+msgstr "在类%qs中找不到可溢出的寄存器"
 
 #: reload1.c:4284
 #, gcc-internal-format
@@ -24799,7 +24788,7 @@ msgstr "%<asm%>的输出操作数是常量"
 #: rtl.c:635
 #, fuzzy, gcc-internal-format
 msgid "RTL check: access of elt %d of '%s' with last elt %d in %s, at %s:%d"
-msgstr "RTL 检查：在 %5$s:%6$d 处，%4$s 中与最后的 elt %3$d 一起的矢量的“%2$s”的 elt %1$d访问"
+msgstr "RTL 检查：在 %5$s:%6$d 处，%4$s 中与最后的 elt %3$d 一起的向量的“%2$s”的 elt %1$d访问"
 
 #: rtl.c:645
 #, fuzzy, gcc-internal-format
@@ -24829,7 +24818,7 @@ msgstr "RTL 检查：在 %2$s:%3$d 处，试图把非块符号处理为 %1$s 中
 #: rtl.c:711
 #, fuzzy, gcc-internal-format
 msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr "RTL 检查：在 %4$s:%5$d 处，%4$s 中与最后的 elt %2$d 一起的矢量的 elt %1$d 的访问"
+msgstr "RTL 检查：在 %4$s:%5$d 处，%4$s 中与最后的 elt %2$d 一起的向量的 elt %1$d 的访问"
 
 #: rtl.c:722
 #, fuzzy, gcc-internal-format
@@ -25249,7 +25238,7 @@ msgstr "-fstack-protector 在此目标机上不受支持"
 #: toplev.c:2132
 #, gcc-internal-format
 msgid "unwind tables currently require a frame pointer for correctness"
-msgstr "解绕表目前需要堆栈框架指针来保证正确性"
+msgstr "解绕表目前需要栈帧指针来保证正确性"
 
 #: toplev.c:2353
 #, gcc-internal-format
@@ -25277,7 +25266,7 @@ msgid "Indirect reference's operand is not a register or a constant."
 msgstr "间接引用的操作数不是寄存器或常量。"
 
 #: tree-cfg.c:2553
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ASSERT_EXPR with an always-false condition"
 msgstr "ASSERT_EXPR 具有一个总是假的条件"
 
@@ -25419,7 +25408,7 @@ msgstr "间接 gimple 调用中有静态调用链"
 #: tree-cfg.c:3005
 #, gcc-internal-format
 msgid "static chain with function that doesn't use one"
-msgstr ""
+msgstr "静态调用链中有不使用静态调用的函数"
 
 #: tree-cfg.c:3029
 #, gcc-internal-format
@@ -25494,17 +25483,17 @@ msgstr "移位表达式类型不匹配"
 #: tree-cfg.c:3304
 #, gcc-internal-format
 msgid "type mismatch in vector shift expression"
-msgstr "矢量移位表达式类型不匹配"
+msgstr "向量移位表达式类型不匹配"
 
 #: tree-cfg.c:3317
 #, gcc-internal-format
 msgid "non-element sized vector shift of floating point vector"
-msgstr ""
+msgstr "对浮点向量的非元素大小的向量移位"
 
 #: tree-cfg.c:3335
 #, gcc-internal-format
 msgid "invalid non-vector operands to vector valued plus"
-msgstr "矢量值的加法中有无效的非矢量操作数"
+msgstr "向量值的加法中有无效的非向量操作数"
 
 #: tree-cfg.c:3359
 #, gcc-internal-format
@@ -25672,9 +25661,9 @@ msgid "EXIT_BLOCK has IL associated with it"
 msgstr "EXIT_BLOCK 有与之关联的 IL"
 
 #: tree-cfg.c:4209
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fallthru to exit from bb %d"
-msgstr "fallthru 从 bb %d 退出"
+msgstr "直通边从基本块 %d 退出"
 
 #: tree-cfg.c:4233
 #, gcc-internal-format
@@ -25692,14 +25681,14 @@ msgid "control flow in the middle of basic block %d"
 msgstr "基本块 %d 中出现流程控制"
 
 #: tree-cfg.c:4299
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fallthru edge after a control statement in bb %d"
-msgstr "在 bb %d 中控制语句后的直通边"
+msgstr "在基本块 %d 中控制语句后的直通边"
 
 #: tree-cfg.c:4312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "true/false edge after a non-GIMPLE_COND in bb %d"
-msgstr "在 bb %d 中非 GIMPLE_COND 后的真假边"
+msgstr "基本块 %d 中非 GIMPLE_COND 后的真假边"
 
 #: tree-cfg.c:4335 tree-cfg.c:4357 tree-cfg.c:4370 tree-cfg.c:4439
 #, fuzzy, gcc-internal-format
@@ -25717,9 +25706,9 @@ msgid "return edge does not point to exit in bb %d"
 msgstr "基本块 %d 中，返回边并不指向退出"
 
 #: tree-cfg.c:4405
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "found default case not at the start of case vector"
-msgstr "寻找没有出现在 case 矢量的开始处的默认 case "
+msgstr "默认 case 不在 case 向量的开头"
 
 #: tree-cfg.c:4413
 #, gcc-internal-format
@@ -25747,9 +25736,9 @@ msgid "control reaches end of non-void function"
 msgstr "在有返回值的函数中，控制流程到达函数尾"
 
 #: tree-cfg.c:7241
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function might be possible candidate for attribute %<noreturn%>"
-msgstr "函数可能是%qsformat 属性的备选"
+msgstr "函数可能是%<noreturn%>属性的备选"
 
 #: tree-cfg.c:7312
 #, gcc-internal-format
@@ -25950,7 +25939,7 @@ msgstr "为一个 GIMPLE 寄存器找到一个虚拟定义"
 #: tree-ssa.c:601
 #, gcc-internal-format
 msgid "virtual SSA name for non-VOP decl"
-msgstr ""
+msgstr "非 VOP 声明有虚拟 SSA 名"
 
 #: tree-ssa.c:607
 #, gcc-internal-format
@@ -25988,9 +25977,9 @@ msgid "definition in block %i follows the use"
 msgstr "块 %i 的定义在使用之后"
 
 #: tree-ssa.c:724
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "SSA_NAME_OCCURS_IN_ABNORMAL_PHI should be set"
-msgstr "应该设 SSA_NAME_OCCURS_IN_ABNORMAL_PHI"
+msgstr "应该设置 SSA_NAME_OCCURS_IN_ABNORMAL_PHI"
 
 #: tree-ssa.c:732
 #, gcc-internal-format
@@ -26003,9 +25992,9 @@ msgid "wrong immediate use list"
 msgstr "错误的 immediate use 列表"
 
 #: tree-ssa.c:778
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incoming edge count does not match number of PHI arguments"
-msgstr "引入的边缘计数不匹配  PHI 参数数目"
+msgstr "引入边计数不匹配 PHI 参数数目"
 
 #: tree-ssa.c:792
 #, gcc-internal-format
@@ -26013,9 +26002,9 @@ msgid "PHI argument is missing for edge %d->%d"
 msgstr "边 %d->%d 缺少 PHI 参数"
 
 #: tree-ssa.c:801
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PHI argument is not SSA_NAME, or invariant"
-msgstr "PHI 参数不是SSA_NAME 或不变量"
+msgstr "PHI 参数不是 SSA_NAME 或不变量"
 
 #: tree-ssa.c:829
 #, gcc-internal-format
@@ -26028,12 +26017,12 @@ msgid "AUX pointer initialized for edge %d->%d"
 msgstr "为边 %d->%d 初始化 AUX 指针"
 
 #: tree-ssa.c:936
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stmt (%p) marked modified after optimization pass: "
-msgstr "stmt (%p) 在优化遍以后标记为修改的: "
+msgstr "stmt (%p) 在优化以后标记为修改的："
 
 #: tree-ssa.c:955
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "statement makes a memory store, but has no VDEFS"
 msgstr "语句做了一个内存存储，但并无 VDEFS"
 
@@ -26208,9 +26197,9 @@ msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at
 msgstr "树检查：需要包含%qs结构的树，得到%qs在 %s，于 %s:%d"
 
 #: tree.c:8533
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
-msgstr "树检查：在 %4$s:%5$d 处，%3$s 中 %d 个 elts 访问了 tree_vec 的 elt %1$d"
+msgstr "树检查：访问了 %3$s 中有 %2$d 个 elt  的 tree_vec 的 elt %1$d，于 %4$s:%5$d"
 
 #: tree.c:8546
 #, gcc-internal-format
@@ -26400,7 +26389,7 @@ msgstr "虚拟数组 %s 下溢，在 %s 中，于 %s:%d"
 #: vec.c:523
 #, gcc-internal-format
 msgid "vector %s %s domain error, in %s at %s:%u"
-msgstr "矢量 %s %s 域错误，在 %s 于 %s:%u"
+msgstr "向量 %s %s 域错误，在 %s 于 %s:%u"
 
 #. Print an error message for unrecognized stab codes.
 #: xcoffout.c:187
@@ -27091,7 +27080,7 @@ msgstr "未知目标"
 #: config/cris/cris.c:3060
 #, gcc-internal-format
 msgid "stackframe too big: %d bytes"
-msgstr "堆栈框架太大：%d 字节"
+msgstr "栈帧太大：%d 字节"
 
 #: config/cris/cris.c:3554 config/cris/cris.c:3582
 #, gcc-internal-format
@@ -27390,7 +27379,7 @@ msgstr "%2$sfpmath=%3$s %4$s的值(%1$s)错误"
 #: config/i386/i386.c:3361
 #, gcc-internal-format
 msgid "unknown vectorization library ABI type (%s) for %sveclibabi=%s %s"
-msgstr "%2$sveclibabi=%3$s %4$s矢量库 ABI 类型(%1$s)未知"
+msgstr "%2$sveclibabi=%3$s %4$s向量库 ABI 类型(%1$s)未知"
 
 #: config/i386/i386.c:3381
 #, gcc-internal-format
@@ -27470,7 +27459,7 @@ msgstr "ms_abi 属性需要 -maccumulate-outgoing-args 或隐含它的子目标�
 #: config/i386/i386.c:5024
 #, gcc-internal-format
 msgid "AVX vector argument without AVX enabled changes the ABI"
-msgstr "没有启用 AVX，却出现了 AVX 矢量实参，这改变了 ABI"
+msgstr "没有启用 AVX，却出现了 AVX 向量实参，这改变了 ABI"
 
 #: config/i386/i386.c:5206
 #, gcc-internal-format
@@ -27505,22 +27494,22 @@ msgstr "已禁用 x87 却在 x87 寄存器中返回"
 #: config/i386/i386.c:5973
 #, gcc-internal-format
 msgid "SSE vector argument without SSE enabled changes the ABI"
-msgstr "没有启用 SSE，却出现了 SSE 矢量实参，这改变了 ABI"
+msgstr "没有启用 SSE，却出现了 SSE 向量实参，这改变了 ABI"
 
 #: config/i386/i386.c:6010
 #, gcc-internal-format
 msgid "MMX vector argument without MMX enabled changes the ABI"
-msgstr "没有启用 MMX，却出现了 MMX 矢量实参，这改变了 ABI"
+msgstr "没有启用 MMX，却出现了 MMX 向量实参，这改变了 ABI"
 
 #: config/i386/i386.c:6612
 #, gcc-internal-format
 msgid "SSE vector return without SSE enabled changes the ABI"
-msgstr "没有启用 SSE，却有 SSE 矢量返回值，这改变了 ABI"
+msgstr "没有启用 SSE，却有 SSE 向量返回值，这改变了 ABI"
 
 #: config/i386/i386.c:6622
 #, gcc-internal-format
 msgid "MMX vector return without MMX enabled changes the ABI"
-msgstr "没有启用 MMX却返回 MMX 矢量，这改变了 ABI"
+msgstr "没有启用 MMX却返回 MMX 向量，这改变了 ABI"
 
 #: config/i386/i386.c:11192
 #, gcc-internal-format
@@ -27625,32 +27614,32 @@ msgstr "ms_hook_prologue 需要汇编器支持 .s 后缀"
 #: config/i386/i386.c:30067
 #, gcc-internal-format
 msgid "vector permutation requires vector constant"
-msgstr "矢量置换需要矢量常量"
+msgstr "向量置换需要向量常量"
 
 #: config/i386/i386.c:30077
 #, gcc-internal-format
 msgid "invalid vector permutation constant"
-msgstr "无效的矢量置换常量"
+msgstr "无效的向量置换常量"
 
 #: config/i386/i386.c:30125
 #, gcc-internal-format
 msgid "vector permutation (%d %d)"
-msgstr "矢量置换(%d %d)"
+msgstr "向量置换(%d %d)"
 
 #: config/i386/i386.c:30128
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d)"
-msgstr "矢量置换(%d %d %d %d)"
+msgstr "向量置换(%d %d %d %d)"
 
 #: config/i386/i386.c:30132
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d %d %d %d %d)"
-msgstr "矢量置换(%d %d %d %d %d %d %d %d)"
+msgstr "向量置换(%d %d %d %d %d %d %d %d)"
 
 #: config/i386/i386.c:30137
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
-msgstr "矢量置换(%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
+msgstr "向量置换(%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
 
 #: config/i386/winnt.c:81
 #, gcc-internal-format
@@ -28357,12 +28346,12 @@ msgstr "MMIX 内部错误：mmix_print_operand 缺少%qc类型"
 #: config/mmix/mmix.c:1920
 #, gcc-internal-format
 msgid "stack frame not a multiple of 8 bytes: %wd"
-msgstr "堆栈框架大小不是 8 字节的倍数：%wd"
+msgstr "栈帧大小不是 8 字节的倍数：%wd"
 
 #: config/mmix/mmix.c:2156
 #, gcc-internal-format
 msgid "stack frame not a multiple of octabyte: %wd"
-msgstr "堆栈框架大小不是 8 字节的倍数：%wd"
+msgstr "栈帧大小不是 8 字节的倍数：%wd"
 
 #: config/mmix/mmix.c:2440 config/mmix/mmix.c:2504
 #, gcc-internal-format
@@ -28405,9 +28394,9 @@ msgid "invalid AE type specified (%s)\n"
 msgstr "指定了无效的 AE 类型(%s)\n"
 
 #: config/picochip/picochip.c:406
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Invalid mul type specified (%s) - expected mac, mul or none"
-msgstr "指定了无效的 mul 类型(%s) - 期待的是 mac、mul 或 none"
+msgstr "指定了无效的 mul 类型(%s) - 需要 mac、mul 或 none"
 
 #: config/picochip/picochip.c:638
 #, fuzzy, gcc-internal-format
@@ -28415,9 +28404,9 @@ msgid "unexpected mode %s encountered in picochip_emit_save_register\n"
 msgstr "在 picochip_emit_save_register 中遇到意外的方式 %s\n"
 
 #: config/picochip/picochip.c:805
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Defaulting to stack for %s register creation\n"
-msgstr "对于 %s 寄存器创建默认为堆栈\n"
+msgstr "默认在堆栈上创建 %s 寄存器\n"
 
 #: config/picochip/picochip.c:1342
 #, gcc-internal-format
@@ -28455,12 +28444,12 @@ msgid "Unknown long branch in %s (type %d)\n"
 msgstr "%s 中的长跳转未知(类型 %d)\n"
 
 #: config/picochip/picochip.c:2257 config/picochip/picochip.c:2325
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PUT uses port array index %d, which is out of range [%d..%d)"
-msgstr "PUT 使用端口数组索引 %d，该索引是在范围[%d..%d)之外"
+msgstr "PUT 使用端口数组索引 %d，而该索引在范围[%d..%d)之外"
 
 #: config/picochip/picochip.c:2291
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "GET uses port array index %d, which is out of range [%d..%d)"
 msgstr "GET 使用端口数组索引 %d，而该索引在范围 [%d..%d)之外"
 
@@ -28697,22 +28686,22 @@ msgstr "-msimple-fpu 选项被忽略"
 #: config/rs6000/rs6000.c:6705
 #, gcc-internal-format
 msgid "GCC vector returned by reference: non-standard ABI extension with no compatibility guarantee"
-msgstr "GCC 返回矢量引用：非标准的 ABI 扩展，不保证兼容性"
+msgstr "GCC 返回向量引用：非标准的 ABI 扩展，不保证兼容性"
 
 #: config/rs6000/rs6000.c:6778
 #, gcc-internal-format
 msgid "cannot return value in vector register because altivec instructions are disabled, use -maltivec to enable them"
-msgstr "不能在矢量寄存器中返回值，因为 altivec 指令集已被禁用，使用 -maltivec 启用"
+msgstr "不能在向量寄存器中返回值，因为 altivec 指令集已被禁用，使用 -maltivec 启用"
 
 #: config/rs6000/rs6000.c:7037
 #, gcc-internal-format
 msgid "cannot pass argument in vector register because altivec instructions are disabled, use -maltivec to enable them"
-msgstr "不能在矢量寄存器中传递参数，因为 altivec 指令集已被禁用，使用 -maltivec 启用"
+msgstr "不能在向量寄存器中传递参数，因为 altivec 指令集已被禁用，使用 -maltivec 启用"
 
 #: config/rs6000/rs6000.c:7939
 #, gcc-internal-format
 msgid "GCC vector passed by reference: non-standard ABI extension with no compatibility guarantee"
-msgstr "GCC 传递矢量引用：非标准的 ABI 扩展，不保证兼容性"
+msgstr "GCC 传递向量引用：非标准的 ABI 扩展，不保证兼容性"
 
 #: config/rs6000/rs6000.c:8521
 #, gcc-internal-format
@@ -28807,12 +28796,12 @@ msgstr "内部错误：内建函数 %s 的第 %d 个参数有非预期的参数�
 #: config/rs6000/rs6000.c:17854
 #, gcc-internal-format
 msgid "stack frame too large"
-msgstr "堆栈框架太大"
+msgstr "栈帧太大"
 
 #: config/rs6000/rs6000.c:18250
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Out-of-line save/restore routines not supported on Darwin"
-msgstr "target 属性在此目标机上不受支持"
+msgstr "Darwin 不支持不恰当的存储/恢复例程"
 
 #: config/rs6000/rs6000.c:21145
 #, gcc-internal-format
@@ -30865,7 +30854,7 @@ msgstr "未初始化的常量%qD"
 #: cp/decl.c:4807
 #, gcc-internal-format
 msgid "invalid type %qT as initializer for a vector of type %qT"
-msgstr "无效类型%qT被用作类型为%qT的矢量的初始化设定"
+msgstr "无效类型%qT被用作类型为%qT的向量的初始化设定"
 
 #: cp/decl.c:4849
 #, gcc-internal-format
@@ -32866,7 +32855,7 @@ msgstr "delete 时数组大小未知"
 #: cp/init.c:3319
 #, gcc-internal-format
 msgid "type to vector delete is neither pointer or array type"
-msgstr "矢量 delete 的实参类型既非指针也非数组"
+msgstr "向量 delete 的实参类型既非指针也非数组"
 
 #: cp/lex.c:321
 #, gcc-internal-format
@@ -37300,7 +37289,7 @@ msgstr "%qs属性只能用于带可变参数函数"
 #: ada/gcc-interface/utils.c:5472
 #, gcc-internal-format
 msgid "invalid vector type for attribute %qs"
-msgstr "属性%qs的矢量类型无效"
+msgstr "属性%qs的向量类型无效"
 
 #: ada/gcc-interface/utils.c:5535
 #, gcc-internal-format
