@@ -160,6 +160,9 @@ java_demangle_v3_callback (const char *mangled,
 extern char*
 java_demangle_v3 (const char *mangled);
 
+char *
+ada_demangle (const char *mangled, int options);
+
 enum gnu_v3_ctor_kinds {
   gnu_v3_complete_object_ctor = 1,
   gnu_v3_base_object_ctor,

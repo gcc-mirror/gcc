@@ -1,3 +1,11 @@
+2010-01-11  Tristan Gingold  <gingold@adacore.com>
+
+	* cplus-dem.c (ada_demangle): Remove prototype.
+	(grow_vect): Removed.
+	(ada_demangle): Rewritten.
+	(cplus_demangle): Fix indentation.
+	* testsuite/demangle-expected: Add tests for Ada.
+
 2010-01-09  Ian Lance Taylor  <iant@google.com>
 
 	PR other/42230

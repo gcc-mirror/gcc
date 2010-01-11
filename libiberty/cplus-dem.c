@@ -62,8 +62,6 @@ void * realloc ();
 
 #include "libiberty.h"
 
-static char *ada_demangle (const char *, int);
-
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
 /* A value at least one greater than the maximum number of characters
@@ -478,8 +476,6 @@ demangle_arm_hp_template (struct work_stuff *, const char **, int, string *);
 static void
 recursively_demangle (struct work_stuff *, const char **, string *, int);
 
-static void grow_vect (char **, size_t *, size_t, int);
-
 /* Translate count to integer, consuming tokens in the process.
    Conversion terminates on the first non-digit character.
 
@@ -872,129 +868,194 @@ cplus_demangle (const char *mangled, int options)
     }
 
   if (GNAT_DEMANGLING)
-    return ada_demangle(mangled,options);
+    return ada_demangle (mangled, options);
 
   ret = internal_cplus_demangle (work, mangled);
   squangle_mop_up (work);
   return (ret);
 }
 
+/* Demangle ada names.  The encoding is documented in gcc/ada/exp_dbug.ads.  */
 
-/* Assuming *OLD_VECT points to an array of *SIZE objects of size
-   ELEMENT_SIZE, grow it to contain at least MIN_SIZE objects,
-   updating *OLD_VECT and *SIZE as necessary.  */
-
-static void
-grow_vect (char **old_vect, size_t *size, size_t min_size, int element_size)
-{
-  if (*size < min_size)
-    {
-      *size *= 2;
-      if (*size < min_size)
-	*size = min_size;
-      *old_vect = XRESIZEVAR (char, *old_vect, *size * element_size);
-    }
-}
-
-/* Demangle ada names:
-   1. Discard final __{DIGIT}+ or ${DIGIT}+
-   2. Convert other instances of embedded "__" to `.'.
-   3. Discard leading _ada_.
-   4. Remove everything after first ___ if it is followed by 'X'.
-   5. Put symbols that should be suppressed in <...> brackets.
-   The resulting string is valid until the next call of ada_demangle.  */
-
-static char *
+char *
 ada_demangle (const char *mangled, int option ATTRIBUTE_UNUSED)
 {
-  int i, j;
   int len0;
   const char* p;
-  char *demangled = NULL;
-  int changed;
-  size_t demangled_size = 0;
+  char *d;
+  char *demangled;
   
-  changed = 0;
-
+  /* Discard leading _ada_, which is used for library level subprograms.  */
   if (strncmp (mangled, "_ada_", 5) == 0)
-    {
-      mangled += 5;
-      changed = 1;
-    }
-  
-  if (mangled[0] == '_' || mangled[0] == '<')
-    goto Suppress;
-  
-  p = strstr (mangled, "___");
-  if (p == NULL)
-    len0 = strlen (mangled);
-  else
-    {
-      if (p[3] == 'X')
-	{
-	  len0 = p - mangled;
-	  changed = 1;
-	}
-      else
-	goto Suppress;
-    }
-  
-  /* Make demangled big enough for possible expansion by operator name.  */
-  grow_vect (&demangled,
-	     &demangled_size,  2 * len0 + 1,
-	     sizeof (char));
-  
-  if (ISDIGIT ((unsigned char) mangled[len0 - 1])) {
-    for (i = len0 - 2; i >= 0 && ISDIGIT ((unsigned char) mangled[i]); i -= 1)
-      ;
-    if (i > 1 && mangled[i] == '_' && mangled[i - 1] == '_')
-      {
-	len0 = i - 1;
-	changed = 1;
-      }
-    else if (mangled[i] == '$')
-      {
-	len0 = i;
-	changed = 1;
-      }
-  }
-  
-  for (i = 0, j = 0; i < len0 && ! ISALPHA ((unsigned char)mangled[i]);
-       i += 1, j += 1)
-    demangled[j] = mangled[i];
-  
-  while (i < len0)
-    {
-      if (i < len0 - 2 && mangled[i] == '_' && mangled[i + 1] == '_')
-	{
-	  demangled[j] = '.';
-	  changed = 1;
-	  i += 2; j += 1;
-	}
-      else
-	{
-	  demangled[j] = mangled[i];
-	  i += 1;  j += 1;
-	}
-    }
-  demangled[j] = '\000';
-  
-  for (i = 0; demangled[i] != '\0'; i += 1)
-    if (ISUPPER ((unsigned char)demangled[i]) || demangled[i] == ' ')
-      goto Suppress;
+    mangled += 5;
 
-  if (! changed)
-    {
-      free (demangled);
-      return NULL;
-    }
-  else
-    return demangled;
+  /* All ada unit names are lower-case.  */
+  if (!ISLOWER (mangled[0]))
+    goto unknown;
+
+  /* Most of the demangling will trivially remove chars.  Operator names
+     may add one char but because they are always preceeded by '__' which is
+     replaced by '.', they eventually never expand the size.  '___elabs' and
+     '___elabb' add only 2 chars, but they occur only once.  */
+  len0 = strlen (mangled) + 2 + 1;
+  demangled = XNEWVEC (char, len0);
   
- Suppress:
-  grow_vect (&demangled,
-	     &demangled_size,  strlen (mangled) + 3,
-	     sizeof (char));
+  d = demangled;
+  p = mangled;
+  while (1)
+    {
+      /* Convert name, which is always lower-case.  */
+      if (ISLOWER (*p))
+        {
+          do
+            *d++ = *p++;
+          while (ISLOWER(*p) || ISDIGIT (*p)
+                 || (p[0] == '_' && (ISLOWER (p[1]) || ISDIGIT (p[1]))));
+        }
+      else if (p[0] == 'O')
+        {
+          static const char * const operators[][2] =
+            {{"Oabs", "abs"},  {"Oand", "and"},    {"Omod", "mod"},
+             {"Onot", "not"},  {"Oor", "or"},      {"Orem", "rem"},
+             {"Oxor", "xor"},  {"Oeq", "="},       {"One", "/="},
+             {"Olt", "<"},     {"Ole", "<="},      {"Ogt", ">"},
+             {"Oge", ">="},    {"Oadd", "+"},      {"Osubtract", "-"},
+             {"Oconcat", "&"}, {"Omultiply", "*"}, {"Odivide", "/"},
+             {"Oexpon", "**"}, {NULL, NULL}};
+          int k;
+
+          for (k = 0; operators[k][0]; k++)
+            {
+              int l = strlen (operators[k][0]);
+              if (!strncmp (p, operators[k][0], l))
+                {
+                  p += l;
+                  l = strlen (operators[k][1]);
+                  *d++ = '"';
+                  memcpy (d, operators[k][1], l);
+                  d += l;
+                  *d++ = '"';
+                  break;
+                }
+            }
+          /* Operator not found.  */
+          if (!operators[k][0])
+            goto unknown;
+        }
+      else
+        {
+          /* Not a GNAT encoding.  */
+          goto unknown;
+        }
+
+      if (p[0] == '_')
+        {
+          /* Separator.  */
+          if (p[1] == '_')
+            {
+              /* Standard separator.  Handled first.  */
+              p += 2;
+              if (ISDIGIT (*p))
+                {
+                  /* Overloading.  */
+                  do
+                    p++;
+                  while (ISDIGIT (*p) || (p[0] == '_' && ISDIGIT (p[1])));
+                }
+              else if (*p == '_' && !strcmp (p + 1, "elabb"))
+                {
+                  memcpy (d, "'Elab_Body", 10);
+                  d += 10;
+                  break;
+                }
+              else if (*p == '_' && !strcmp (p + 1, "elabs"))
+                {
+                  memcpy (d, "'Elab_Spec", 10);
+                  d += 10;
+                  break;
+                }
+              else
+                {
+                  *d++ = '.';
+                  continue;
+                }
+            }
+          else if (p[1] == 'B' || p[1] == 'E')
+            {
+              /* Entry Body or barrier Evaluation.  */
+              p += 2;
+              while (ISDIGIT (*p))
+                p++;
+              if (p[0] == 's' && p[1] == 0)
+                break;
+              else
+                goto unknown;
+            }
+          else
+            goto unknown;
+        }
+
+      if (p[0] == 'T' && p[1] == 'K')
+        {
+          if (p[2] == 'B' && p[3] == 0)
+            {
+              /* Subprogram for task body.  */
+              break;
+            }
+          else if (p[2] == '_' && p[3] == '_')
+            {
+              /* Inner declarations in a task.  */
+              p += 4;
+              *d++ = '.';
+              continue;
+            }
+          else
+            goto unknown;
+        }
+      if ((p[0] == 'P' || p[0] == 'N') && p[1] == 0)
+        {
+          /* Protected type subprogram.  */
+          break;
+        }
+      if (p[0] == 'E' && p[1] == 0)
+        {
+          /* Exception name.  */
+          goto unknown;
+        }
+      if (*p == 'N' || *p == 'S')
+        {
+          /* Enumerated type name table.  */
+          goto unknown;
+        }
+      if (p[0] == 'X')
+        {
+          /* Body nested.  */
+          if (p[1] == 'n' || p[1] == 'b')
+            p += 2;
+          else if (p[1] == 0)
+            p++;
+        }
+      if (p[0] == '.' && ISDIGIT (p[1]))
+        {
+          /* Nested subprogram.  */
+          p += 2;
+          while (ISDIGIT (*p))
+            p++;
+        }
+      if (*p == 0)
+        {
+          /* End of mangled name.  */
+          break;
+        }
+      else
+        goto unknown;
+    }
+  *d = 0;
+  return demangled;
+
+ unknown:
+  len0 = strlen (mangled);
+  demangled = XNEWVEC (char, len0 + 3);
 
   if (mangled[0] == '<')
      strcpy (demangled, mangled);
