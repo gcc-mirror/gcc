@@ -1,3 +1,8 @@
+2010-01-11  Andreas Tobler  <andreast@fgznet.ch>
+
+	* configure.ac: Enable libjava build on x86_64-*freebsd*.
+	* configure: Regenerate.
+
 2010-01-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
             Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
