@@ -1,3 +1,9 @@
+2010-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/42699
+	* cse.c (cse_insn): Optimize lhs ZERO_EXTRACT if only CONST_INTs are
+	involved.
+
 2010-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h (SUBTARGET_DONT_WARN_UNUSED_SPEC,
