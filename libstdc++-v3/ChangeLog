@@ -1,3 +1,27 @@
+2010-01-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Do not run
+	in parallel-mode.
+	* testsuite/25_algorithms/inplace_merge/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/rotate/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/stable_partition/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/remove/moveable.c: Likewiwse.
+	* testsuite/25_algorithms/random_shuffle/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/nth_element/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/partial_sort/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/next_permutation/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/partition/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/stable_sort/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/stable_sort/moveable2.cc: Likewiwse.
+	* testsuite/25_algorithms/sort/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/prev_permutation/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/unique/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/remove_if/moveable.cc: Likewiwse.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewiwse.
+
+	* testsuite/25_algorithms/search_n/iterator.cc: Reduce iteration #
+	in parallel-mode.
+
 2010-01-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/ext/profile/all.cc: Pass -D_GLIBCXX_PROFILE_NO_THREADS

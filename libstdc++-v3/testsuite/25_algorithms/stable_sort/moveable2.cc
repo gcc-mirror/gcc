@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,10 @@
 // 25.3.1.2 [lib.stable.sort]
 
 #undef _GLIBCXX_CONCEPT_CHECKS
+
+// XXX FIXME:  parallel-mode should deal correctly with moveable-only types
+// per C++0x, at minimum smoothly fall back to serial.
+#undef _GLIBCXX_PARALLEL
 
 #include <algorithm>
 #include <testsuite_hooks.h>

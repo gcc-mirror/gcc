@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 
+// Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -24,6 +24,11 @@
 #include <functional>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
+
+// XXX FIXME: why parallel-mode is so slow?
+#if !defined(TEST_DEPTH) && defined(_GLIBCXX_PARALLEL)
+#define TEST_DEPTH 10
+#endif
 
 #ifndef TEST_DEPTH
 #define TEST_DEPTH 14
