@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  IRIX version 6.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008
+   2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -102,14 +102,6 @@ along with GCC; see the file COPYING3.  If not see
          %{!pg:%{p:/usr/lib64/mips3/mcrt1.o /usr/lib64/mips3/libprof1.a} \
            %{!p:/usr/lib64/mips3/crt1.o}}}}} \
   irix-crti.o%s crtbegin.o%s"
-
-#ifdef IRIX_USING_GNU_LD
-#define SUBTARGET_DONT_WARN_UNUSED_SPEC ""
-#define SUBTARGET_WARN_UNUSED_SPEC ""
-#else
-#define SUBTARGET_DONT_WARN_UNUSED_SPEC "-dont_warn_unused"
-#define SUBTARGET_WARN_UNUSED_SPEC "-warn_unused"
-#endif
 
 #undef LIB_SPEC
 #define LIB_SPEC \

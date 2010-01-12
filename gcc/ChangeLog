@@ -1,3 +1,11 @@
+2010-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h (SUBTARGET_DONT_WARN_UNUSED_SPEC,
+	SUBTARGET_WARN_UNUSED_SPEC): Move ...
+	config/mips/iris.h (SUBTARGET_DONT_WARN_UNUSED_SPEC,
+	SUBTARGET_WARN_UNUSED_SPEC): ... here
+	* config/mips/iris5.h (LIBGCC_SPEC): Define.
+
 2010-01-12  Julian Brown  <julian@codesourcery.com>
 
         * config/arm/neon-schedgen.ml (Utils): Don't try to
