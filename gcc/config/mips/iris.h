@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.  Generic IRIX version.
    Copyright (C) 1993, 1995, 1996, 1998, 2000,
-   2001, 2002, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -144,6 +145,14 @@ along with GCC; see the file COPYING3.  If not see
 #define IRIX_NO_UNRESOLVED ""
 #else
 #define IRIX_NO_UNRESOLVED "-no_unresolved"
+#endif
+
+#ifdef IRIX_USING_GNU_LD
+#define SUBTARGET_DONT_WARN_UNUSED_SPEC ""
+#define SUBTARGET_WARN_UNUSED_SPEC ""
+#else
+#define SUBTARGET_DONT_WARN_UNUSED_SPEC "-dont_warn_unused"
+#define SUBTARGET_WARN_UNUSED_SPEC "-warn_unused"
 #endif
 
 /* Generic part of the LINK_SPEC.  */
