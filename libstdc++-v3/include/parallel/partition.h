@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -367,7 +367,7 @@ namespace __gnu_parallel
           // __gnu_parallel::_Lexicographic<S, int,
 	  //                                __gnu_parallel::_Less<S, S> >
           // __pivot_pos == std::pair<S, int>*
-          __gnu_parallel::binder2nd<_Compare, _ValueType, _ValueType, bool>
+          __gnu_parallel::__binder2nd<_Compare, _ValueType, _ValueType, bool>
             __pred(__comp, *__pivot_pos);
 
           // Divide, leave pivot unchanged in last place.

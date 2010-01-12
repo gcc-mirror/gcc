@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -84,7 +84,7 @@ namespace __gnu_parallel
       {
         _CASable __former_borders = _M_borders;
         int __former_front, __former_back;
-        decode2(__former_borders, __former_front, __former_back);
+        __decode2(__former_borders, __former_front, __former_back);
         *(_M_base + __former_front % _M_max_size) = __t;
 #if _GLIBCXX_ASSERTIONS
         // Otherwise: front - back > _M_max_size eventually.
@@ -101,7 +101,7 @@ namespace __gnu_parallel
       {
         int __former_front, __former_back;
 #pragma omp flush
-        decode2(_M_borders, __former_front, __former_back);
+        __decode2(_M_borders, __former_front, __former_back);
         while (__former_front > __former_back)
           {
             // Chance.
@@ -116,7 +116,7 @@ namespace __gnu_parallel
                 return true;
               }
 #pragma omp flush
-            decode2(_M_borders, __former_front, __former_back);
+            __decode2(_M_borders, __former_front, __former_back);
           }
         return false;
       }
@@ -128,7 +128,7 @@ namespace __gnu_parallel
       {
         int __former_front, __former_back;
 #pragma omp flush
-        decode2(_M_borders, __former_front, __former_back);
+        __decode2(_M_borders, __former_front, __former_back);
         while (__former_front > __former_back)
           {
             // Chance.
@@ -143,7 +143,7 @@ namespace __gnu_parallel
                 return true;
               }
 #pragma omp flush
-            decode2(_M_borders, __former_front, __former_back);
+            __decode2(_M_borders, __former_front, __former_back);
           }
         return false;
       }
