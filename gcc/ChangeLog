@@ -1,3 +1,12 @@
+2010-01-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* Backport from mainline
+	2010-01-12  Julian Brown  <julian@codesourcery.com>
+	
+        * config/arm/neon-schedgen.ml (Utils): Don't try to
+	open missing module.
+        (find_with_result): New.
+
 2010-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42662
