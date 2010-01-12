@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
@@ -171,6 +171,12 @@ insert_debug_decl_map (copy_body_data *id, tree key, tree value)
   *pointer_map_insert (id->debug_map, key) = value;
 }
 
+/* If nonzero, we're remapping the contents of inlined debug
+   statements.  If negative, an error has occurred, such as a
+   reference to a variable that isn't available in the inlined
+   context.  */
+static int processing_debug_stmt = 0;
+
 /* Construct new SSA name for old NAME. ID is the inline context.  */
 
 static tree
@@ -184,6 +190,12 @@ remap_ssa_name (tree name, copy_body_data *id)
   n = (tree *) pointer_map_contains (id->decl_map, name);
   if (n)
     return unshare_expr (*n);
+
+  if (processing_debug_stmt)
+    {
+      processing_debug_stmt = -1;
+      return name;
+    }
 
   /* Do not set DEF_STMT yet as statement is not copied yet. We do that
      in copy_bb.  */
@@ -243,12 +255,6 @@ remap_ssa_name (tree name, copy_body_data *id)
     insert_decl_map (id, name, new_tree);
   return new_tree;
 }
-
-/* If nonzero, we're remapping the contents of inlined debug
-   statements.  If negative, an error has occurred, such as a
-   reference to a variable that isn't available in the inlined
-   context.  */
-int processing_debug_stmt = 0;
 
 /* Remap DECL during the copying of the BLOCK tree for the function.  */
 
