@@ -222,9 +222,9 @@
     }
    </programlisting>
    <para>Try it yourself!  More examples can be found in 3.1.x code, in
-      <code>include/ext/*_filebuf.h</code>, and on
-      <ulink url="http://www.informatik.uni-konstanz.de/~kuehl/c++/iostream/">Dietmar
-      K&uuml;hl's IOStreams page</ulink>.
+      <code>include/ext/*_filebuf.h</code>, and in this article by James Kanze:
+      <ulink url="http://kanze.james.neuf.fr/articles/fltrsbf1.html">Filtering
+      Streambufs</ulink>.
    </para>
 
   </sect1>

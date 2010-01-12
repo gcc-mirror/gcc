@@ -857,7 +857,7 @@ namespace gtk
 	are set based on autoconf-tests to either &quot;&quot; or i.e. <code>using
 	  std::string;</code> (depending on whether the system has
 	libstdc++ in <code>std::</code> or not).  (ideas from
-	<email>llewelly@dbritsch.dsl.xmission.com</email>, Karl Nelson <email>kenelson@ece.ucdavis.edu</email>)
+	Llewelly and Karl Nelson)
 </para>
 
 

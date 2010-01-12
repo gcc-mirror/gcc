@@ -913,7 +913,14 @@ as the allocator type.
 
        <para>
 	 Of particular interest is extending testing to algorithms and
-	 then to parallel algorithms. Also io, and locales.
+	 then to parallel algorithms. Also io and locales.
+       </para>
+
+       <para>
+	 The test instrumentation should also be extended to add
+	 instrumentation to <classname>iterator</classname>
+	 and <classname>const_iterator</classname> types that throw
+	 conditionally on iterator operations.
        </para>
      </listitem>
   </itemizedlist>

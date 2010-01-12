@@ -77,7 +77,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   the message contains numeric advice, e.g., the suggested initial size
   of the hashtable.
   </p></li></ul></div><p>
-  </p><p>Two files are generated.  <code class="code">libstdcxx-profile.txt</code>
+  </p><p>Three files are generated.  <code class="code">libstdcxx-profile.txt</code>
    contains human readable advice.  <code class="code">libstdcxx-profile.raw</code>
    contains implementation specific data about each diagnostic.
    Their format is not documented.  They are sufficient to generate
@@ -85,6 +85,9 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    of keeping this raw format is that traces from multiple executions can
    be aggregated simply by concatenating the raw traces.  We intend to
    offer an external utility program that can issue advice from a trace.
+   <code class="code">libstdcxx-profile.conf.out</code> lists the actual diagnostic
+   parameters used.  To alter parameters, edit this file and rename it to
+   <code class="code">libstdcxx-profile.conf</code>.
   </p><p>Advice is given regardless whether the transformation is valid.
   For instance, we advise changing a map to an unordered_map even if the
   application semantics require that data be ordered.
@@ -96,16 +99,16 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    using -D_&lt;name&gt; or by setting variable &lt;name&gt;
    in the environment where the program is run, before starting execution.
   </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
-   <code class="code">[NO]_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>:
-   enable/disable specific diagnostics.
+   <code class="code">_GLIBCXX_PROFILE_NO_&lt;diagnostic&gt;</code>:
+   disable specific diagnostics.
    See section Diagnostics for possible values.
    (Environment variables not supported.)
    </p></li><li class="listitem"><p>
-   <code class="code">GLIBCXX_PROFILE_TRACE_PATH_ROOT</code>: set an alternative root
+   <code class="code">_GLIBCXX_PROFILE_TRACE_PATH_ROOT</code>: set an alternative root
    path for the output files.
-   </p></li><li class="listitem"><p>GLIBCXX_PROFILE_MAX_WARN_COUNT: set it to the maximum
+   </p></li><li class="listitem"><p>_GLIBCXX_PROFILE_MAX_WARN_COUNT: set it to the maximum
    number of warnings desired.  The default value is 10.</p></li><li class="listitem"><p>
-   <code class="code">GLIBCXX_PROFILE_MAX_STACK_DEPTH</code>: if set to 0, 
+   <code class="code">_GLIBCXX_PROFILE_MAX_STACK_DEPTH</code>: if set to 0, 
    the advice will
    be collected and reported for the program as a whole, and not for each
    call context.
@@ -113,29 +116,29 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    just need to know whether there is a regression or not.
    The default value is 32.
    </p></li><li class="listitem"><p>
-   <code class="code">GLIBCXX_PROFILE_MEM_PER_DIAGNOSTIC</code>:
+   <code class="code">_GLIBCXX_PROFILE_MEM_PER_DIAGNOSTIC</code>:
    set a limit on how much memory to use for the accounting tables for each
    diagnostic type.  When this limit is reached, new events are ignored
    until the memory usage decreases under the limit.  Generally, this means
    that newly created containers will not be instrumented until some
    live containers are deleted.  The default is 128 MB.
    </p></li><li class="listitem"><p>
-   <code class="code">GLIBCXX_PROFILE_NOTHREADS</code>:
-   Make the library not use threads.  Otherwise, pthread mutexes are used
-   to protect access to internal data structures.  This should be useful
-   only if the program is single threaded and you want to avoid the overhead
-   of aquiring/releasing locks unnecessarily.
+   <code class="code">_GLIBCXX_PROFILE_NO_THREADS</code>:
+   Make the library not use threads.  If thread local storage (TLS) is not 
+   available, you will get a preprocessor error asking you to set
+   -D_GLIBCXX_PROFILE_NO_THREADS if your program is single-threaded.
+   Multithreded execution without TLS is not supported.
    (Environment variable not supported.)
    </p></li><li class="listitem"><p>
-   <code class="code">HAVE_EXECINFO_H</code>:
-   This name should be defined at library configuration time.
+   <code class="code">_GLIBCXX_HAVE_EXECINFO_H</code>:
+   This name should be defined automatically at library configuration time.
    If your library was configured without <code class="code">execinfo.h</code>, but
    you have it in your include path, you can define it explicitly.  Without
    it, advice is collected for the program as a whole, and not for each
    call context.
    (Environment variable not supported.)
    </p></li></ul></div><p>
-  </p></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="profile_mode.biblio"></a>Bibliography</h2></div></div></div><div class="biblioentry" title="Perflint: A Context Sensitive Performance Advisor for C++ Programs"><a id="id447328"></a><p><span class="title"><i>
+  </p></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="profile_mode.biblio"></a>Bibliography</h2></div></div></div><div class="biblioentry" title="Perflint: A Context Sensitive Performance Advisor for C++ Programs"><a id="id536302"></a><p><span class="title"><i>
       Perflint: A Context Sensitive Performance Advisor for C++ Programs
     </i>. </span><span class="author"><span class="firstname">Lixia</span> <span class="surname">Liu</span>. </span><span class="author"><span class="firstname">Silvius</span> <span class="surname">Rus</span>. </span><span class="copyright">Copyright © 2009 . </span><span class="publisher"><span class="publishername">
 	Proceedings of the 2009 International Symposium on Code Generation

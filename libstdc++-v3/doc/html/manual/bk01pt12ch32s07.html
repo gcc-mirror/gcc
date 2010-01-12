@@ -18,7 +18,7 @@
   A high accuracy means that the diagnostic is unlikely to be wrong.
   These grades are not perfect.  They are just meant to guide users with
   specific needs or time budgets.
-  </p><div class="table"><a id="id447842"></a><p class="title"><b>Table 32.2. Diagnostics</b></p><div class="table-contents"><table summary="Diagnostics" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Group</th><th align="left">Flag</th><th align="left">Benefit</th><th align="left">Cost</th><th align="left">Freq.</th><th align="left">Implemented</th></tr></thead><tbody><tr><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.containers" target="_top">
+  </p><div class="table"><a id="id535845"></a><p class="title"><b>Table 32.2. Diagnostics</b></p><div class="table-contents"><table summary="Diagnostics" border="1"><colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Group</th><th align="left">Flag</th><th align="left">Benefit</th><th align="left">Cost</th><th align="left">Freq.</th><th align="left">Implemented</th></tr></thead><tbody><tr><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.containers" target="_top">
     CONTAINERS</a></td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.hashtable_too_small" target="_top">
     HASHTABLE_TOO_SMALL</a></td><td align="left">10</td><td align="left">1</td><td align="left"> </td><td align="left">10</td><td align="left">yes</td></tr><tr><td align="left"> </td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.hashtable_too_large" target="_top">
     HASHTABLE_TOO_LARGE</a></td><td align="left">5</td><td align="left">1</td><td align="left"> </td><td align="left">10</td><td align="left">yes</td></tr><tr><td align="left"> </td><td align="left"><a class="ulink" href="#manual.ext.profile_mode.analysis.inefficient_hash" target="_top">
@@ -308,6 +308,36 @@ operations.
 
 foo.cc:1: advice: Changing "list" to "vector" will save about 1000000 indirect
 memory references.
+</pre><p>
+</p></li></ul></div></div><div class="sect3" title="List to Forward List (Slist)"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.list_to_slist"></a>List to Forward List (Slist)</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
+  <code class="code">_GLIBCXX_PROFILE_LIST_TO_SLIST</code>.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Goal:</em></span> Detect cases where 
+  <code class="code">list</code> could be substituted with <code class="code">forward_list</code> for
+  better performance.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Fundamentals:</em></span>
+  The memory footprint of a forward_list is smaller than that of a list.
+  This has beneficial effects on memory subsystem, e.g., fewer cache misses.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Sample runtime reduction:</em></span>40%.
+  Note that the reduction is only noticeable if the size of the forward_list
+  node is in fact larger than that of the list node.  For memory allocators
+  with size classes, you will only notice an effect when the two node sizes
+  belong to different allocator size classes.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Recommendation:</em></span>Replace list with
+  forward_list at site S.</p></li><li class="listitem"><p><span class="emphasis"><em>To instrument:</em></span><code class="code">list</code>
+  operations and iteration methods.</p></li><li class="listitem"><p><span class="emphasis"><em>Analysis:</em></span>
+  Issue the advice if there are no <code class="code">backwards</code> traversals
+  or insertion before a given node.
+  </p></li><li class="listitem"><p><span class="emphasis"><em>Cost model:</em></span>
+  Always true.</p></li><li class="listitem"><p><span class="emphasis"><em>Example:</em></span> 
+</p><pre class="programlisting">
+1  list&lt;int&gt; l;
+...
+2  int sum = 0;
+3  for (list&lt;int&gt;::iterator it = l.begin(); it != l.end(); ++it) {
+4    sum += *it;
+5  }
+
+foo.cc:1: advice: Change "list" to "forward_list".
 </pre><p>
 </p></li></ul></div></div><div class="sect3" title="Ordered to Unordered Associative Container"><div class="titlepage"><div><div><h4 class="title"><a id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"></a>Ordered to Unordered Associative Container</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="emphasis"><em>Switch:</em></span>
   <code class="code">_GLIBCXX_PROFILE_ORDERED_TO_UNORDERED</code>.

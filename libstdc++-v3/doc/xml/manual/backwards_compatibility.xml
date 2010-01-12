@@ -825,7 +825,7 @@ No <code>stream::attach(int fd)</code>
 <para>
       An extension is available that implements this.
       <filename class="headerfile">ext/stdio_filebuf.h</filename> contains a derived class called
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00063.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
       This class can be constructed from a C <code>FILE*</code> or a file
       descriptor, and provides the <code>fd()</code> function.
     </para>

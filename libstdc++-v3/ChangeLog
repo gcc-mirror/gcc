@@ -1,3 +1,29 @@
+2010-01-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Correct nested scope on the man pages.
+	* doc/xml/faq.xml: Edits, linkcheck, doxygen link reassociate.
+	* doc/xml/manual/mt_allocator.xml: Same.
+	* doc/xml/manual/allocator.xml: Same.
+	* doc/xml/manual/codecvt.xml: Same.
+	* doc/xml/manual/backwards_compatibility.xml: Same.
+	* doc/xml/manual/concurrency.xml: Same.
+	* doc/xml/manual/parallel_mode.xml: Same.
+	* doc/xml/manual/io.xml: Same.
+	* doc/xml/manual/support.xml: Same.
+	* doc/xml/manual/evolution.xml: Same.
+	* doc/xml/manual/using.xml: Same.
+	* doc/xml/manual/extensions.xml: Same.
+	* doc/xml/manual/appendix_contributing.xml: Same.
+	* doc/xml/manual/prerequisites.xml: Same.
+	* doc/xml/manual/diagnostics.xml: Same.
+	* doc/xml/manual/spine.xml: Same.
+	* doc/xml/manual/status_cxx200x.xml: Same.
+	* doc/xml/manual/test.xml: Same.
+	* doc/xml/spine.xml: Same.
+	* doc/html/*: Regenerate.
+
+	* include/profile/impl/profiler.h: Remove duplicate markup.
+
 2010-01-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/24803

@@ -493,7 +493,7 @@ only default variables.
        reporting functions including:
        </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>time_counter</p></li><li class="listitem"><p>resource_counter</p></li><li class="listitem"><p>report_performance</p></li></ul></div></li></ul></div></div></div><div class="sect2" title="Special Topics"><div class="titlepage"><div><div><h3 class="title"><a id="test.special"></a>Special Topics</h3></div></div></div><div class="sect3" title="Qualifying Exception Safety Guarantees"><div class="titlepage"><div><div><h4 class="title"><a id="test.exception.safety"></a>
   Qualifying Exception Safety Guarantees
-  <a id="id461124" class="indexterm"></a>
+  <a id="id519860" class="indexterm"></a>
 </h4></div></div></div><div class="sect4" title="Overview"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.overview"></a>Overview</h5></div></div></div><p>
 	 Testing is composed of running a particular test sequence,
 	 and looking at what happens to the surrounding code when
@@ -557,7 +557,12 @@ as the allocator type.
 	 structures and instantiating algorithms.
        </p><p>
 	 Of particular interest is extending testing to algorithms and
-	 then to parallel algorithms. Also io, and locales.
+	 then to parallel algorithms. Also io and locales.
+       </p><p>
+	 The test instrumentation should also be extended to add
+	 instrumentation to <code class="classname">iterator</code>
+	 and <code class="classname">const_iterator</code> types that throw
+	 conditionally on iterator operations.
        </p></li></ul></div></div><div class="sect4" title="C++0x Requirements Test Sequence Descriptions"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.containers"></a>
 C++0x Requirements Test Sequence Descriptions
 </h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
