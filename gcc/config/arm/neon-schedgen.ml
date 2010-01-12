@@ -48,7 +48,14 @@
      and at present we do not emit specific guards.)
 *)
 
-open Utils
+let find_with_result fn lst =
+  let rec scan = function
+      [] -> raise Not_found
+    | l::ls -> 
+      match fn l with
+          Some result -> result
+       | _ -> scan ls in
+    scan lst
 
 let n1 = 1 and n2 = 2 and n3 = 3 and n4 = 4 and n5 = 5 and n6 = 6
     and n7 = 7 and n8 = 8 and n9 = 9
