@@ -1,3 +1,14 @@
+2010-01-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (decode2): Rename to __decode2.
+	(binder2nd): Likewise to __binder2nd.
+	* include/parallel/quicksort.h: Adjust callers.
+	* include/parallel/balanced_quicksort.h: Likewise.
+	* include/parallel/partition.h: Likewise.
+	* include/parallel/queue.h: Likewise.
+
+	* include/parallel/algo.h: Qualify with std:: binder2nd use.
+
 2010-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/string (basic_string<>::basic_string(basic_string&&),

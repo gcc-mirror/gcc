@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -113,7 +113,7 @@ namespace __gnu_parallel
    *  @param __b Second integer, to be encoded in the least-significant
    *  @c _CASable_bits/2 bits.
    *  @return value encoding @c __a and @c __b.
-   *  @see decode2
+   *  @see __decode2
    */
   inline _CASable
   __encode2(int __a, int __b)     //must all be non-negative, actually
@@ -130,7 +130,7 @@ namespace __gnu_parallel
    *  @see __encode2
    */
   inline void
-  decode2(_CASable __x, int& __a, int& __b)
+  __decode2(_CASable __x, int& __a, int& __b)
   {
     __a = (int)((__x >> (_CASable_bits / 2)) & _CASable_mask);
     __b = (int)((__x >>               0 ) & _CASable_mask);
@@ -217,7 +217,7 @@ namespace __gnu_parallel
    */
   template<typename _Operation, typename _FirstArgumentType,
 	   typename _SecondArgumentType, typename _ResultType>
-    class binder2nd
+    class __binder2nd
     : public std::unary_function<_FirstArgumentType, _ResultType>
     {
     protected:
@@ -225,7 +225,7 @@ namespace __gnu_parallel
       _SecondArgumentType _M_value;
 
     public:
-      binder2nd(const _Operation& __x, const _SecondArgumentType& __y)
+      __binder2nd(const _Operation& __x, const _SecondArgumentType& __y)
       : _M_op(__x), _M_value(__y) { }
 
       _ResultType
