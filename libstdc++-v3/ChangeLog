@@ -1,4 +1,4 @@
-2010-01-07  Benjamin Kosnik  <bkoz@redhat.com>
+2010-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/run_doxygen: Correct nested scope on the man pages.
 	* doc/xml/faq.xml: Edits, linkcheck, doxygen link reassociate.
