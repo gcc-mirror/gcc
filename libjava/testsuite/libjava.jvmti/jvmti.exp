@@ -16,6 +16,10 @@ proc gcj_jvmti_compile_cxx_to_o {file {options {}}} {
   lappend options "additional_flags=-I$srcdir/.."
   # Find jvmti.h, jvmti_md.h, jvmti-int.h, jvm.h requirements
   lappend options "additional_flags=-I$srcdir/../include -I$srcdir/../classpath/include -I$objdir/../include -I$objdir/../../boehm-gc/include "
+  # ARM C++ emits an ABI warning for varargs.
+  if { [istarget "arm*"] } {
+      lappend options "additional_flags=-Wno-abi"
+  }
 
   set x [libjava_prune_warnings \
 	   [target_compile $file $oname object $options]]
