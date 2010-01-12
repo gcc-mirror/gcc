@@ -1,6 +1,6 @@
 // <mutex> -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -722,12 +722,12 @@ namespace std
     call_once(once_flag& __once, _Callable __f, _Args&&... __args)
     {
 #ifdef _GLIBCXX_HAVE_TLS
-      auto __bound_functor = std::bind(__f, __args...);
+      auto __bound_functor = std::bind<void>(__f, __args...);
       __once_callable = &__bound_functor;
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
       unique_lock<mutex> __functor_lock(__get_once_mutex());
-      __once_functor = std::bind(__f, __args...);
+      __once_functor = std::bind<void>(__f, __args...);
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 
