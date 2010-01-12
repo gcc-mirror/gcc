@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -52,11 +52,6 @@
 #define _GLIBCXX_PROFILE_DATA(__name) \
   __get_##__name()
 
-/**
- * @namespace std::__cxxprof_guard
- * @brief Mechanism to protect all __gnu_profile operations against
- * multithreaded and exception reentrance.
- */
 namespace __gnu_profile
 {
   /** @brief Reentrance guard.
@@ -97,65 +92,58 @@ namespace __gnu_profile
       __x;                                                      \
     }                                                           \
   }
-}
 
-/**
- * @namespace std::__gnu_profile
- * @brief Implementation of profile extension.
- */
-namespace __gnu_profile
-{
-// Forward declarations of implementation functions.
-// Don't use any __gnu_profile:: in user code.
-// Instead, use the __profcxx... macros, which offer guarded access.
-bool __turn_on();
-bool __turn_off();
-bool __is_invalid();
-bool __is_on();
-bool __is_off();
-void __report(void);
-void __trace_hashtable_size_resize(const void*, size_t, size_t);
-void __trace_hashtable_size_destruct(const void*, size_t, size_t);
-void __trace_hashtable_size_construct(const void*, size_t);
-void __trace_vector_size_resize(const void*, size_t, size_t);
-void __trace_vector_size_destruct(const void*, size_t, size_t);
-void __trace_vector_size_construct(const void*, size_t);
-void __trace_hash_func_destruct(const void*, size_t, size_t, size_t);
-void __trace_hash_func_construct(const void*);
-void __trace_vector_to_list_destruct(const void*);
-void __trace_vector_to_list_construct(const void*);
-void __trace_vector_to_list_insert(const void*, size_t, size_t);
-void __trace_vector_to_list_iterate(const void*, size_t);
-void __trace_vector_to_list_invalid_operator(const void*);
-void __trace_vector_to_list_resize(const void*, size_t, size_t);
-void __trace_vector_to_list_find(const void*, size_t);
+  // Forward declarations of implementation functions.
+  // Don't use any __gnu_profile:: in user code.
+  // Instead, use the __profcxx... macros, which offer guarded access.
+  bool __turn_on();
+  bool __turn_off();
+  bool __is_invalid();
+  bool __is_on();
+  bool __is_off();
+  void __report(void);
+  void __trace_hashtable_size_resize(const void*, size_t, size_t);
+  void __trace_hashtable_size_destruct(const void*, size_t, size_t);
+  void __trace_hashtable_size_construct(const void*, size_t);
+  void __trace_vector_size_resize(const void*, size_t, size_t);
+  void __trace_vector_size_destruct(const void*, size_t, size_t);
+  void __trace_vector_size_construct(const void*, size_t);
+  void __trace_hash_func_destruct(const void*, size_t, size_t, size_t);
+  void __trace_hash_func_construct(const void*);
+  void __trace_vector_to_list_destruct(const void*);
+  void __trace_vector_to_list_construct(const void*);
+  void __trace_vector_to_list_insert(const void*, size_t, size_t);
+  void __trace_vector_to_list_iterate(const void*, size_t);
+  void __trace_vector_to_list_invalid_operator(const void*);
+  void __trace_vector_to_list_resize(const void*, size_t, size_t);
+  void __trace_vector_to_list_find(const void*, size_t);
 
-void __trace_list_to_slist_destruct(const void*);
-void __trace_list_to_slist_construct(const void*);
-void __trace_list_to_slist_rewind(const void*); 
-void __trace_list_to_slist_operation(const void*);
+  void __trace_list_to_slist_destruct(const void*);
+  void __trace_list_to_slist_construct(const void*);
+  void __trace_list_to_slist_rewind(const void*); 
+  void __trace_list_to_slist_operation(const void*);
 
-void __trace_list_to_vector_destruct(const void*);
-void __trace_list_to_vector_construct(const void*);
-void __trace_list_to_vector_insert(const void*, size_t, size_t); 
-void __trace_list_to_vector_iterate(const void*, size_t);
-void __trace_list_to_vector_invalid_operator(const void*);
-void __trace_list_to_vector_resize(const void*, size_t, size_t); 
+  void __trace_list_to_vector_destruct(const void*);
+  void __trace_list_to_vector_construct(const void*);
+  void __trace_list_to_vector_insert(const void*, size_t, size_t); 
+  void __trace_list_to_vector_iterate(const void*, size_t);
+  void __trace_list_to_vector_invalid_operator(const void*);
+  void __trace_list_to_vector_resize(const void*, size_t, size_t); 
 
-void __trace_list_to_set_destruct(const void*);
-void __trace_list_to_set_construct(const void*);
-void __trace_list_to_set_insert(const void*, size_t, size_t); 
-void __trace_list_to_set_iterate(const void*, size_t);
-void __trace_list_to_set_invalid_operator(const void*);
-void __trace_list_to_set_find(const void*, size_t); 
+  void __trace_list_to_set_destruct(const void*);
+  void __trace_list_to_set_construct(const void*);
+  void __trace_list_to_set_insert(const void*, size_t, size_t); 
+  void __trace_list_to_set_iterate(const void*, size_t);
+  void __trace_list_to_set_invalid_operator(const void*);
+  void __trace_list_to_set_find(const void*, size_t); 
 
-void __trace_map_to_unordered_map_construct(const void*);
-void __trace_map_to_unordered_map_invalidate(const void*);
-void __trace_map_to_unordered_map_insert(const void*, size_t, size_t);
-void __trace_map_to_unordered_map_erase(const void*, size_t, size_t);
-void __trace_map_to_unordered_map_iterate(const void*, size_t);
-void __trace_map_to_unordered_map_find(const void*, size_t);
-void __trace_map_to_unordered_map_destruct(const void*);
+  void __trace_map_to_unordered_map_construct(const void*);
+  void __trace_map_to_unordered_map_invalidate(const void*);
+  void __trace_map_to_unordered_map_insert(const void*, size_t, size_t);
+  void __trace_map_to_unordered_map_erase(const void*, size_t, size_t);
+  void __trace_map_to_unordered_map_iterate(const void*, size_t);
+  void __trace_map_to_unordered_map_find(const void*, size_t);
+  void __trace_map_to_unordered_map_destruct(const void*);
 } // namespace __gnu_profile
 
 // Master switch turns on all diagnostics that are not explicitly turned off.

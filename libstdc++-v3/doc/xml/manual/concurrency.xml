@@ -276,7 +276,7 @@ the current host. In libstdc++ implementation files,
 </para>
 
 <para>Within libstdc++ sources, all calls to underlying thread functionality
-use this layer. More detail as to the specific interface can be found in the source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01195.html">documentation</ulink>.
+use this layer. More detail as to the specific interface can be found in the source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00883_source.html">documentation</ulink>.
 </para>
 
 <para>By design, the gthread layer is interoperable with the types,

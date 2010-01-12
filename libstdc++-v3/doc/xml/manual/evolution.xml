@@ -615,6 +615,12 @@ Python pretty-printers are added for use with appropriately-advanced versions of
 Audit for application of function attributes notrow, const, pure, and noreturn.
 </para>
 
+<para>
+The default behavior for comparing typeinfo names changed, so
+in <filename class="headerfile">typeinfo</filename>, <literal>__GXX_MERGED_TYPEINFO_NAMES</literal>
+now defaults to zero.
+</para>
+
 <para> Extensions modified: <filename class="headerfile">ext/throw_allocator.h</filename>.
 </para>
 </sect2>

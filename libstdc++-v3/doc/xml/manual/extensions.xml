@@ -483,7 +483,7 @@ get_temporary_buffer(5, (int*)0);
          the <code>fd()</code> function were removed from the standard
          filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
          a derived class called
-         <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00063.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+         <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
          This class can be constructed from a C <code>FILE*</code> or a file
          descriptor, and provides the <code>fd()</code> function.
      </para></listitem>
@@ -510,7 +510,7 @@ get_temporary_buffer(5, (int*)0);
   </para>
   <para>
     If you have read the <ulink
-    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaceabi.html">source
+    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01115.html">source
     documentation for <code>namespace abi</code></ulink> then you are
     aware of the cross-vendor C++ ABI in use by GCC.  One of the
     exposed functions is used for demangling,
