@@ -4436,6 +4436,7 @@ cse_insn (rtx insn)
 
   for (i = 0; i < n_sets; i++)
     {
+      bool repeat = false;
       rtx src, dest;
       rtx src_folded;
       struct table_elt *elt = 0, *p;
@@ -5029,6 +5030,77 @@ cse_insn (rtx insn)
 		break;
 	    }
 
+	  /* Try to optimize
+	     (set (reg:M N) (const_int A))
+	     (set (reg:M2 O) (const_int B))
+	     (set (zero_extract:M2 (reg:M N) (const_int C) (const_int D))
+		  (reg:M2 O)).  */
+	  if (GET_CODE (SET_DEST (sets[i].rtl)) == ZERO_EXTRACT
+	      && CONST_INT_P (trial)
+	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 1))
+	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 2))
+	      && REG_P (XEXP (SET_DEST (sets[i].rtl), 0))
+	      && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (sets[i].rtl)))
+		  >= INTVAL (XEXP (SET_DEST (sets[i].rtl), 1)))
+	      && ((unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))
+		  + (unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 2))
+		  <= HOST_BITS_PER_WIDE_INT))
+	    {
+	      rtx dest_reg = XEXP (SET_DEST (sets[i].rtl), 0);
+	      rtx width = XEXP (SET_DEST (sets[i].rtl), 1);
+	      rtx pos = XEXP (SET_DEST (sets[i].rtl), 2);
+	      unsigned int dest_hash = HASH (dest_reg, GET_MODE (dest_reg));
+	      struct table_elt *dest_elt
+		= lookup (dest_reg, dest_hash, GET_MODE (dest_reg));
+	      rtx dest_cst = NULL;
+
+	      if (dest_elt)
+		for (p = dest_elt->first_same_value; p; p = p->next_same_value)
+		  if (p->is_const && CONST_INT_P (p->exp))
+		    {
+		      dest_cst = p->exp;
+		      break;
+		    }
+	      if (dest_cst)
+		{
+		  HOST_WIDE_INT val = INTVAL (dest_cst);
+		  HOST_WIDE_INT mask;
+		  unsigned int shift;
+		  if (BITS_BIG_ENDIAN)
+		    shift = GET_MODE_BITSIZE (GET_MODE (dest_reg))
+			    - INTVAL (pos) - INTVAL (width);
+		  else
+		    shift = INTVAL (pos);
+		  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
+		    mask = ~(HOST_WIDE_INT) 0;
+		  else
+		    mask = ((HOST_WIDE_INT) 1 << INTVAL (width)) - 1;
+		  val &= ~(mask << shift);
+		  val |= (INTVAL (trial) & mask) << shift;
+		  val = trunc_int_for_mode (val, GET_MODE (dest_reg));
+		  validate_unshare_change (insn, &SET_DEST (sets[i].rtl),
+					   dest_reg, 1);
+		  validate_unshare_change (insn, &SET_SRC (sets[i].rtl),
+					   GEN_INT (val), 1);
+		  if (apply_change_group ())
+		    {
+		      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+		      if (note)
+			{
+			  remove_note (insn, note);
+			  df_notes_rescan (insn);
+			}
+		      src_eqv = NULL_RTX;
+		      src_eqv_elt = NULL;
+		      src_eqv_volatile = 0;
+		      src_eqv_in_memory = 0;
+		      src_eqv_hash = 0;
+		      repeat = true;
+		      break;
+		    }
+		}
+	    }
+
 	  /* We don't normally have an insn matching (set (pc) (pc)), so
 	     check for this separately here.  We will delete such an
 	     insn below.
@@ -5102,6 +5174,13 @@ cse_insn (rtx insn)
 	      src_folded_cost = constant_pool_entries_cost;
 	      src_folded_regcost = constant_pool_entries_regcost;
 	    }
+	}
+
+      /* If we changed the insn too much, handle this set from scratch.  */
+      if (repeat)
+	{
+	  i--;
+	  continue;
 	}
 
       src = SET_SRC (sets[i].rtl);
