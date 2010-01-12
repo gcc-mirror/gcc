@@ -4429,10 +4429,14 @@ build_c_cast (location_t loc, tree type, tree expr)
       if (field)
 	{
 	  tree t;
+	  bool maybe_const = true;
 
 	  pedwarn (loc, OPT_pedantic, "ISO C forbids casts to union type");
-	  t = digest_init (loc, type,
-			   build_constructor_single (type, field, value),
+	  t = c_fully_fold (value, false, &maybe_const);
+	  t = build_constructor_single (type, field, t);
+	  if (!maybe_const)
+	    t = c_wrap_maybe_const (t, true);
+	  t = digest_init (loc, type, t,
 			   NULL_TREE, false, true, 0);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
 	  return t;
