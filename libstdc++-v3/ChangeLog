@@ -1,3 +1,8 @@
+2010-01-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/ext/profile/all.cc: Pass -D_GLIBCXX_PROFILE_NO_THREADS
+	for non-tls_native targets.
+
 2010-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/run_doxygen: Correct nested scope on the man pages.
