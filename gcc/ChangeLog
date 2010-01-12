@@ -1,5 +1,9 @@
 2010-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/42662
+	* simplify-rtx.c (simplify_relational_operation_1): Avoid invalid rtx
+	sharing when canonicalizing ({lt,ge}u (plus a b) b).
+
 	PR tree-optimization/42645
 	* tree-inline.c (processing_debug_stmt): Move earlier.  Make static.
 	(remap_ssa_name): If processing_debug_stmt and name wasn't found in
