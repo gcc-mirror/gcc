@@ -1,3 +1,10 @@
+2010-01-13  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/pr42542
+	* config/ia64/ia64.c (ia64_expand_vecint_compare): Convert GTU to GT
+	for V2SI by subtracting (-(INT MAX) - 1) from both operands to make
+	them signed.
+
 2010-01-13  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/libgcc-bfin.ver: Regenerate based on current
