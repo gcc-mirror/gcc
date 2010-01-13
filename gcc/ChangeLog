@@ -1,3 +1,9 @@
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42730
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Add shortcut for
+	offset zero.
+
 2010-01-13  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/pr42542
