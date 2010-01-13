@@ -1659,7 +1659,13 @@ analyze_access_subtree (struct access *root, bool allow_replacements,
 
   if (allow_replacements && scalar && !root->first_child
       && (root->grp_hint
-	  || (direct_read && root->grp_write)))
+	  || (direct_read && root->grp_write))
+      /* We must not ICE later on when trying to build an access to the
+	 original data within the aggregate even when it is impossible to do in
+	 a defined way like in the PR 42703 testcase.  Therefore we check
+	 pre-emptively here that we will be able to do that.  */
+      && build_ref_for_offset (NULL, TREE_TYPE (root->base), root->offset,
+			       root->type, false))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
