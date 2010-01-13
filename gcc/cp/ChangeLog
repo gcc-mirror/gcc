@@ -1,3 +1,12 @@
+2010-01-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42634
+	* error.c (dump_template_parms): Use innermost template
+	arguments before calling count_non_default_template_args.
+	(count_non_default_template_args): We are being called with
+	template innermost arguments now. There is no need to ensure
+	that again.
+
 2010-01-07  Dodji Seketeli  <dodji@redhat.com>
 
 	c++/40155

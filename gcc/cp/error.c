@@ -165,8 +165,7 @@ dump_template_argument (tree arg, int flags)
 static int
 count_non_default_template_args (tree args, tree params, int flags)
 {
-  tree inner_args = INNERMOST_TEMPLATE_ARGS (args);
-  int n = TREE_VEC_LENGTH (inner_args);
+  int n = TREE_VEC_LENGTH (args);
   int last;
 
   if (params == NULL_TREE
@@ -195,7 +194,7 @@ count_non_default_template_args (tree args, tree params, int flags)
 				       NULL_TREE, false, true);
 	  --processing_template_decl;
 	}
-      if (!cp_tree_equal (TREE_VEC_ELT (inner_args, last), def))
+      if (!cp_tree_equal (TREE_VEC_ELT (args, last), def))
         break;
     }
 
@@ -1492,9 +1491,9 @@ dump_template_parms (tree info, int primary, int flags)
 		     ? DECL_INNERMOST_TEMPLATE_PARMS (TI_TEMPLATE (info))
 		     : NULL_TREE);
 
+      args = INNERMOST_TEMPLATE_ARGS (args);
       len = count_non_default_template_args (args, params, flags);
 
-      args = INNERMOST_TEMPLATE_ARGS (args);
       for (ix = 0; ix != len; ix++)
 	{
 	  tree arg = TREE_VEC_ELT (args, ix);
