@@ -1,3 +1,8 @@
+2010-01-13  Joel Brobecker  <brobecker@adacore.com>
+
+	Add new DW_AT_use_GNAT_descriptive_type CU attribute.
+	* dwarf2.h (dwarf_attribute): Add DW_AT_use_GNAT_descriptive_type.
+
 2010-01-11  Tristan Gingold  <gingold@adacore.com>
 
 	* demangle.h (ada_demangle): Add prototype.

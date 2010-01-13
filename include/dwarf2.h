@@ -428,6 +428,7 @@ enum dwarf_attribute
     /* GNAT extensions.  */
     /* GNAT descriptive type.
        See http://gcc.gnu.org/wiki/DW_AT_GNAT_descriptive_type .  */
+    DW_AT_use_GNAT_descriptive_type = 0x2301,
     DW_AT_GNAT_descriptive_type	= 0x2302,
     /* UPC extension.  */
     DW_AT_upc_threads_scaled = 0x3210,
