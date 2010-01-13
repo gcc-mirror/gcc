@@ -728,7 +728,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_refactor_eh);
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
-  NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_build_cgraph_edges);
@@ -943,6 +942,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
     }
+  NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_cleanup_eh);
   NEXT_PASS (pass_lower_resx);
   NEXT_PASS (pass_nrv);
@@ -1883,6 +1883,8 @@ dump_properties (FILE *dump, unsigned int props)
     fprintf (dump, "PROP_rtl\n");
   if (props & PROP_gimple_lomp)
     fprintf (dump, "PROP_gimple_lomp\n");
+  if (props & PROP_gimple_lcx)
+    fprintf (dump, "PROP_gimple_lcx\n");
 }
 
 void

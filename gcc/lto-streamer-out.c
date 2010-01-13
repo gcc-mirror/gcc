@@ -1872,6 +1872,9 @@ output_function (struct cgraph_node *node)
   lto_output_bitpack (ob->main_stream, bp);
   bitpack_delete (bp);
 
+  /* Output current IL state of the function.  */
+  output_uleb128 (ob, fn->curr_properties);
+
   /* Output the static chain and non-local goto save area.  */
   lto_output_tree_ref (ob, fn->static_chain_decl);
   lto_output_tree_ref (ob, fn->nonlocal_goto_save_area);
