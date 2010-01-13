@@ -1,3 +1,8 @@
+2010-01-13  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/s390.c (override_options): Set
+	default of max-pending-list-length to 256
+
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42678
