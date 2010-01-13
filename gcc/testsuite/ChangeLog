@@ -1,3 +1,8 @@
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42730
+	* gcc.c-torture/compile/pr42730.c: New testcase.
+
 2010-01-13  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/pr42542

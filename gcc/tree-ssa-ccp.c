@@ -2120,6 +2120,10 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 	  && is_gimple_min_invariant (DECL_INITIAL (base)))
 	return DECL_INITIAL (base);
 
+      /* If there is no offset involved simply return the folded base.  */
+      if (integer_zerop (offset))
+	return base;
+
       /* Try folding *(&B+O) to B.X.  */
       t = maybe_fold_offset_to_reference (loc, base_addr, offset,
 					  TREE_TYPE (expr));
