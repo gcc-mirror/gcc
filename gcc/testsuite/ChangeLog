@@ -1,3 +1,8 @@
+2010-01-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42634
+	* g++.dg/template/error45.C: New test.
+
 2010-01-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42704
