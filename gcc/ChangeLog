@@ -1,3 +1,9 @@
+2010-01-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/40281
+	* tree-scalar-evolution.c (instantiate_scev_1): Base and stride
+	evolutions should not variate in inner loops.
+
 2010-01-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* Backport from mainline

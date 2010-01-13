@@ -1,3 +1,8 @@
+2010-01-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/40281
+	* gcc.dg/graphite/pr40281.c: New.
+
 2010-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42662
