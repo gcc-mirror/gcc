@@ -1,3 +1,21 @@
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42678
+	* tree-pass.h (PROP_gimple_lcx): New.
+	* cfgexpand.c (pass_expand): Require PROP_gimple_lcx.
+	* passes.c (init_optimization_passes): Move pass_lower_complex_O0
+	before the final cleanup_eh.
+	(dump_properties): Dump PROP_gimple_lcx.
+	* tree-complex.c (pass_lower_complex): Provide PROP_gimple_lcx.
+	(tree_lower_complex_O0): Remove.
+	(gate_no_optimization): Run if PROP_gimple_lcx is not set.
+	(pass_lower_complex_O0): Provide PROP_gimple_lcx.  Run
+	tree_lower_complex, schedule TODO_update_ssa.
+	* lto-streamer-out.c (output_function): Stream the functions
+	properties.
+	* lto-streamer-in.c (input_function): Likewise.
+	(lto_read_body): Do not override them here.
+
 2010-01-12  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/42708

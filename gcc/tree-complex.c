@@ -1622,7 +1622,7 @@ struct gimple_opt_pass pass_lower_complex =
   0,					/* static_pass_number */
   TV_NONE,				/* tv_id */
   PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
+  PROP_gimple_lcx,			/* properties_provided */
   0,                       		/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func
@@ -1633,32 +1633,12 @@ struct gimple_opt_pass pass_lower_complex =
 };
 
 
-/* Entry point for complex operation lowering without optimization.  */
-
-static unsigned int
-tree_lower_complex_O0 (void)
-{
-  int old_last_basic_block = last_basic_block;
-  gimple_stmt_iterator gsi;
-  basic_block bb;
-
-  FOR_EACH_BB (bb)
-    {
-      if (bb->index >= old_last_basic_block)
-	continue;
-
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	expand_complex_operations_1 (&gsi);
-    }
-  return 0;
-}
-
 static bool
 gate_no_optimization (void)
 {
   /* With errors, normal optimization passes are not run.  If we don't
      lower complex operations at all, rtl expansion will abort.  */
-  return optimize == 0 || sorrycount || errorcount;
+  return !(cfun->curr_properties & PROP_gimple_lcx);
 }
 
 struct gimple_opt_pass pass_lower_complex_O0 =
@@ -1667,16 +1647,18 @@ struct gimple_opt_pass pass_lower_complex_O0 =
   GIMPLE_PASS,
   "cplxlower0",				/* name */
   gate_no_optimization,			/* gate */
-  tree_lower_complex_O0,		/* execute */
+  tree_lower_complex,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_NONE,				/* tv_id */
   PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
+  PROP_gimple_lcx,			/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func | TODO_ggc_collect
-    | TODO_verify_stmts,		/* todo_flags_finish */
+  TODO_dump_func
+    | TODO_ggc_collect
+    | TODO_update_ssa
+    | TODO_verify_stmts	 		/* todo_flags_finish */
  }
 };
