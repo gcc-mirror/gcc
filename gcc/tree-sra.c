@@ -2533,7 +2533,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 	{
 	  if (access_has_children_p (racc))
 	    {
-	      if (!racc->grp_unscalarized_data)
+	      if (!racc->grp_unscalarized_data
+		  /* Do not remove SSA name definitions (PR 42704).  */
+		  && TREE_CODE (lhs) != SSA_NAME)
 		{
 		  generate_subtree_copies (racc->first_child, lhs,
 					   racc->offset, 0, 0, gsi,
