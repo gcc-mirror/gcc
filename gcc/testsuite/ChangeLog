@@ -1,5 +1,10 @@
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/42716
+	* gcc.c-torture/compile/pr42716.c: New testcase.
+
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/42678
 	* gfortran.dg/lto/20100110-1_0.f90: New testcase.
 
