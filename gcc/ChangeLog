@@ -1,3 +1,9 @@
+2010-01-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42703
+	* tree-sra.c (analyze_access_subtree): Check that we can build a
+	reference to the original data within the aggregate.
+
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42705
