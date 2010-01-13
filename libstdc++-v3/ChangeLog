@@ -1,3 +1,7 @@
+2010-01-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/profile/iterator_tracker.h: Add copyright.
+
 2010-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/Makefile.am (check-debug): Add.
