@@ -4,6 +4,9 @@
 	libgcc-std.ver.  Add entries for ___smulsi3_highpart and
 	___umulsi3_highpart.
 
+	* config/bfin/bfin.c (bfin_reorg): Call run_selective_scheduling
+	rather than schedule_insns if the pass is enabled.
+
 2010-01-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42704
