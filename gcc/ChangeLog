@@ -1,3 +1,9 @@
+2010-01-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/libgcc-bfin.ver: Regenerate based on current
+	libgcc-std.ver.  Add entries for ___smulsi3_highpart and
+	___umulsi3_highpart.
+
 2010-01-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42704
