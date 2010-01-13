@@ -66,9 +66,6 @@
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
 
-/* Define to 1 if you have the <execinfo.h> header file. */
-#undef HAVE_EXECINFO_H
-
 /* Define if ENODATA exists. */
 #undef HAVE_ENODATA
 
@@ -101,6 +98,9 @@
 
 /* Define if ETXTBSY exists. */
 #undef HAVE_ETXTBSY
+
+/* Define to 1 if you have the <execinfo.h> header file. */
+#undef HAVE_EXECINFO_H
 
 /* Define to 1 if you have the `expf' function. */
 #undef HAVE_EXPF

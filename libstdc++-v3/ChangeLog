@@ -1,3 +1,9 @@
+2010-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/Makefile.am (check-debug): Add.
+	* testsuite/Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+
 2010-01-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Do not run

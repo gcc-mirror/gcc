@@ -289,6 +289,9 @@ compile_script = ${glibcxx_srcdir}/scripts/check_compile
 # XXX Need to add dependency on libtestc++.a
 check_performance_script = ${glibcxx_srcdir}/scripts/check_performance
 
+# Runs the testsuite in debug mode.
+debug_flags = "unix/-D_GLIBCXX_DEBUG"
+
 # Runs the testsuite in parallel mode.
 libgomp_dir = ${glibcxx_builddir}/../libgomp
 libgomp_flags = -B${glibcxx_builddir}/../libgomp \
@@ -626,6 +629,15 @@ check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${check_performance_script}; \
 	  ${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
+check-debug: site.exp
+	outputdir=debug; export outputdir; \
+	if test ! -d $${outputdir}; then \
+	  mkdir $${outputdir}; \
+	fi; \
+	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
+	EXPECT=$(EXPECT); export EXPECT; \
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(debug_flags)" check-DEJAGNU;
+
 check-parallel: site.exp
 	-@(if test ! -d $${libgomp_dir}; then \
 	  echo "Testing parallel mode failed as libgomp not present."; \
@@ -658,7 +670,7 @@ check-profile: site.exp
 
 # To remove directories.
 clean-local:
-	rm -rf parallel profile
+	rm -rf debug parallel profile
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
