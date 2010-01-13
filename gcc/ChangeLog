@@ -1,3 +1,8 @@
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42716
+	* fold-const.c (fold_unary_loc): Fold INDIRECT_REFs.
+
 2010-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/41371
