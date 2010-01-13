@@ -1,3 +1,8 @@
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42705
+	* gcc.c-torture/compile/pr42705.c: New testcase.
+
 2010-01-13  Jie Zhang  <jie.zhang@analog.com>
 
 	* gcc.target/bfin/l2.c: New test.

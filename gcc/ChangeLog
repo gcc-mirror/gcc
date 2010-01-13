@@ -1,5 +1,11 @@
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/42705
+	* tree-ssa-reassoc.c (build_and_add_sum): Insert stmts after
+	labels.
+
+2010-01-13  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42716
 	* fold-const.c (fold_unary_loc): Fold INDIRECT_REFs.
 
