@@ -1,4 +1,4 @@
-# Copyright (C) 2007 Free Software Foundation, Inc.
+# Copyright (C) 2007, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,6 +51,30 @@ proc dg-bfin-options {args} {
     } else {
 	set do_what [list [lindex $do_what 0] "N" "P"]
     }
+}
+
+# dg-bfin-processors can be used to specify the processors which can
+# run the test case.
+proc dg-bfin-processors {args} {
+    upvar dg-extra-tool-flags extra_tool_flags
+    upvar dg-do-what do_what
+
+    set multilib_cpu ""
+    set cpu ""
+
+    foreach flag [target_info multilib_flags] {
+	regexp "^-mcpu=([^-]*)" $flag dummy multilib_cpu
+    }
+
+    set cpus [lindex $args 1]
+
+    foreach cpu $cpus {
+	if {$multilib_cpu == $cpu} {
+	    return
+	}
+    }
+
+    set do_what [list [lindex $do_what 0] "N" "P"]
 }
 
 # Initialize `dg'.

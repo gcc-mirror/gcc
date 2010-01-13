@@ -1,3 +1,8 @@
+2010-01-13  Jie Zhang  <jie.zhang@analog.com>
+
+	* gcc.target/bfin/l2.c: New test.
+	* gcc.target/bfin/bfin.exp (dg-bfin-processors): New.
+
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42716
