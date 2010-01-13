@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -2252,12 +2252,18 @@ dv_changed_p (decl_or_value dv)
 	  : DECL_CHANGED (dv_as_decl (dv)));
 }
 
-/* Return a location list node whose loc is rtx_equal to LOC, in the
+/* Vector of VALUEs that should have VALUE_RECURSED_INTO bit cleared
+   at the end of find_loc_in_1pdv.  Not a static variable in find_loc_in_1pdv
+   to avoid constant allocation/freeing of it.  */
+static VEC(rtx, heap) *values_to_unmark;
+
+/* Helper function for find_loc_in_1pdv.
+   Return a location list node whose loc is rtx_equal to LOC, in the
    location list of a one-part variable or value VAR, or in that of
    any values recursively mentioned in the location lists.  */
 
 static location_chain
-find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
+find_loc_in_1pdv_1 (rtx loc, variable var, htab_t vars)
 {
   location_chain node;
 
@@ -2285,16 +2291,31 @@ find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
 	  {
 	    location_chain where;
 	    VALUE_RECURSED_INTO (node->loc) = true;
-	    if ((where = find_loc_in_1pdv (loc, var, vars)))
-	      {
-		VALUE_RECURSED_INTO (node->loc) = false;
-		return where;
-	      }
-	    VALUE_RECURSED_INTO (node->loc) = false;
+	    VEC_safe_push (rtx, heap, values_to_unmark, node->loc);
+	    if ((where = find_loc_in_1pdv_1 (loc, var, vars)))
+	      return where;
 	  }
       }
 
   return NULL;
+}
+
+/* Return a location list node whose loc is rtx_equal to LOC, in the
+   location list of a one-part variable or value VAR, or in that of
+   any values recursively mentioned in the location lists.  */
+
+static location_chain
+find_loc_in_1pdv (rtx loc, variable var, htab_t vars)
+{
+  location_chain ret;
+  unsigned int i;
+  rtx value;
+
+  ret = find_loc_in_1pdv_1 (loc, var, vars);
+  for (i = 0; VEC_iterate (rtx, values_to_unmark, i, value); i++)
+    VALUE_RECURSED_INTO (value) = false;
+  VEC_truncate (rtx, values_to_unmark, 0);
+  return ret;
 }
 
 /* Hash table iteration argument passed to variable_merge.  */
@@ -5648,6 +5669,7 @@ vt_find_locations (void)
     FOR_EACH_BB (bb)
       gcc_assert (VTI (bb)->flooded);
 
+  VEC_free (rtx, heap, values_to_unmark);
   free (bb_order);
   fibheap_delete (worklist);
   fibheap_delete (pending);
