@@ -6256,11 +6256,10 @@ build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
       permerror (input_location,
 		 "cannot call constructor %<%T::%D%> directly",
 		 basetype, name);
-      inform (input_location, "for a function-style cast, remove the "
-	      "redundant %<::%D%>", name);
+      permerror (input_location, "  for a function-style cast, remove the "
+		 "redundant %<::%D%>", name);
       call = build_functional_cast (basetype, build_tree_list_vec (user_args),
 				    complain);
-      release_tree_vector (user_args);
       return call;
     }
 
