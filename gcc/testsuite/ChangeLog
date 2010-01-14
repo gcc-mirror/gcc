@@ -1,5 +1,10 @@
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR rtl-optimization/42246
+	* gfortran.dg/pr42246-2.f: New.
+
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
 	PR rtl-optimization/42389
 	* gcc.dg/pr42389.c: New.
 

@@ -1,5 +1,11 @@
 2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/42246
+	* sel-sched-ir.h (get_all_loop_exits): Include exits from inner
+	loops.
+
+2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
+
 	* sel-sched.c (compute_av_set_at_bb_end): Do not test that number of
 	all successors is the same as number of successors in current region.
 

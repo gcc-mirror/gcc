@@ -1147,7 +1147,8 @@ get_all_loop_exits (basic_block bb)
 
       /* Traverse all loop headers.  */
       for (i = 0; VEC_iterate (edge, exits, i, e); i++)
-	if (in_current_region_p (e->dest))
+	if (in_current_region_p (e->dest)
+	    || inner_loop_header_p (e->dest))
 	  {
 	    VEC(edge, heap) *next_exits = get_all_loop_exits (e->dest);
 
