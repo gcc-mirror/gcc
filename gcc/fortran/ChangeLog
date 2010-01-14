@@ -1,5 +1,30 @@
 2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
+        PR fortran/41478
+        * trans-array.c (duplicate_allocatable):  Static version of
+	gfc_duplicate_allocatable with provision to handle scalar
+	components. New boolean argument to switch off call to malloc
+	if true.
+	(gfc_duplicate_allocatable): New function to call above with
+	new argument false.
+	(gfc_copy_allocatable_data): New function to call above with
+	new argument true.
+	(structure_alloc_comps): Do not apply indirect reference to
+	scalar pointers. Add new section to copy allocatable components
+	of arrays. Extend copying of allocatable components to include
+	scalars.
+	(gfc_copy_only_alloc_comp): New function to copy allocatable
+	component derived types, without allocating the base structure.
+	* trans-array.h : Add primitive for gfc_copy_allocatable_data.
+	Add primitive for gfc_copy_only_alloc_comp.
+	* trans-expr.c (gfc_conv_procedure_call): After calls to
+	transformational functions with results that are derived types
+	with allocatable components, copy the components in the result.
+	(gfc_trans_arrayfunc_assign): Deallocate allocatable components
+	of lhs derived types before allocation.
+	
+2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/42481
 	* module.c (load_generic_interfaces): If a procedure that is
 	use associated but not generic is given an interface that

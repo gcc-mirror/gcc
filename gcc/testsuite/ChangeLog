@@ -1,5 +1,11 @@
 2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
+        PR fortran/41478
+        * gfortran.dg/alloc_comp_scalar_1.f90: New test.
+        * gfortran.dg/alloc_comp_transformational_1.f90: New test.
+
+2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/42481
 	* gfortran.dg/generic_19.f90 : New test.
 
