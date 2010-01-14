@@ -3503,9 +3503,36 @@ verify_backedges (void)
 
 /* Functions to work with control flow.  */
 
+/* Recompute BLOCK_TO_BB and BB_FOR_BLOCK for current region so that blocks
+   are sorted in topological order (it might have been invalidated by
+   redirecting an edge).  */
+static void
+sel_recompute_toporder (void)
+{
+  int i, n, rgn;
+  int *postorder, n_blocks;
+
+  postorder = XALLOCAVEC (int, n_basic_blocks);
+  n_blocks = post_order_compute (postorder, false, false);
+
+  rgn = CONTAINING_RGN (BB_TO_BLOCK (0));
+  for (n = 0, i = n_blocks - 1; i >= 0; i--)
+    if (CONTAINING_RGN (postorder[i]) == rgn)
+      {
+	BLOCK_TO_BB (postorder[i]) = n;
+	BB_TO_BLOCK (n) = postorder[i];
+	n++;
+      }
+
+  /* Assert that we updated info for all blocks.  We may miss some blocks if
+     this function is called when redirecting an edge made a block
+     unreachable, but that block is not deleted yet.  */
+  gcc_assert (n == RGN_NR_BLOCKS (rgn));
+}
+
 /* Tidy the possibly empty block BB.  */
-bool
-maybe_tidy_empty_bb (basic_block bb)
+static bool
+maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
 {
   basic_block succ_bb, pred_bb;
   edge e;
@@ -3552,7 +3579,7 @@ maybe_tidy_empty_bb (basic_block bb)
 
           if (!(e->flags & EDGE_FALLTHRU))
             {
-              sel_redirect_edge_and_branch (e, succ_bb);
+              recompute_toporder_p |= sel_redirect_edge_and_branch (e, succ_bb);
               rescan_p = true;
               break;
             }
@@ -3572,6 +3599,9 @@ maybe_tidy_empty_bb (basic_block bb)
       remove_empty_bb (bb, true);
     }
 
+  if (recompute_toporder_p)
+    sel_recompute_toporder ();
+
 #ifdef ENABLE_CHECKING
   verify_backedges ();
 #endif
@@ -3589,7 +3619,7 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
   insn_t first, last;
 
   /* First check whether XBB is empty.  */
-  changed = maybe_tidy_empty_bb (xbb);
+  changed = maybe_tidy_empty_bb (xbb, false);
   if (changed || !full_tidying)
     return changed;
 
@@ -3640,20 +3670,43 @@ tidy_control_flow (basic_block xbb, bool full_tidying)
       /* Also this jump is not at the scheduling boundary.  */
       && !IN_CURRENT_FENCE_P (BB_END (xbb->prev_bb)))
     {
+      bool recompute_toporder_p;
       /* Clear data structures of jump - jump itself will be removed
          by sel_redirect_edge_and_branch.  */
       clear_expr (INSN_EXPR (BB_END (xbb->prev_bb)));
-      sel_redirect_edge_and_branch (EDGE_SUCC (xbb->prev_bb, 0), xbb);
+      recompute_toporder_p
+        = sel_redirect_edge_and_branch (EDGE_SUCC (xbb->prev_bb, 0), xbb);
+
       gcc_assert (EDGE_SUCC (xbb->prev_bb, 0)->flags & EDGE_FALLTHRU);
 
       /* It can turn out that after removing unused jump, basic block
          that contained that jump, becomes empty too.  In such case
          remove it too.  */
       if (sel_bb_empty_p (xbb->prev_bb))
-        changed = maybe_tidy_empty_bb (xbb->prev_bb);
+        changed = maybe_tidy_empty_bb (xbb->prev_bb, recompute_toporder_p);
+      else if (recompute_toporder_p)
+	sel_recompute_toporder ();
     }
 
   return changed;
+}
+
+/* Purge meaningless empty blocks in the middle of a region.  */
+void
+purge_empty_blocks (void)
+{
+  /* Do not attempt to delete preheader.  */
+  int i = sel_is_loop_preheader_p (BASIC_BLOCK (BB_TO_BLOCK (0))) ? 1 : 0;
+
+  while (i < current_nr_blocks)
+    {
+      basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
+
+      if (maybe_tidy_empty_bb (b, false))
+	continue;
+
+      i++;
+    }
 }
 
 /* Rip-off INSN from the insn stream.  When ONLY_DISCONNECT is true,
@@ -5355,8 +5408,9 @@ sel_redirect_edge_and_branch_force (edge e, basic_block to)
     sel_init_new_insn (jump, INSN_INIT_TODO_LUID | INSN_INIT_TODO_SIMPLEJUMP);
 }
 
-/* A wrapper for redirect_edge_and_branch.  */
-void
+/* A wrapper for redirect_edge_and_branch.  Return TRUE if blocks connected by
+   redirected edge are in reverse topological order.  */
+bool
 sel_redirect_edge_and_branch (edge e, basic_block to)
 {
   bool latch_edge_p;
@@ -5364,6 +5418,7 @@ sel_redirect_edge_and_branch (edge e, basic_block to)
   int prev_max_uid;
   rtx jump;
   edge redirected;
+  bool recompute_toporder_p = false;
 
   latch_edge_p = (pipelining_p
                   && current_loop_nest
@@ -5383,9 +5438,18 @@ sel_redirect_edge_and_branch (edge e, basic_block to)
       gcc_assert (loop_latch_edge (current_loop_nest));
     }
 
+  /* In rare situations, the topological relation between the blocks connected
+     by the redirected edge can change (see PR42245 for an example).  Update
+     block_to_bb/bb_to_block.  */
+  if (CONTAINING_RGN (e->src->index) == CONTAINING_RGN (to->index)
+      && BLOCK_TO_BB (e->src->index) > BLOCK_TO_BB (to->index))
+    recompute_toporder_p = true;
+
   jump = find_new_jump (src, NULL, prev_max_uid);
   if (jump)
     sel_init_new_insn (jump, INSN_INIT_TODO_LUID | INSN_INIT_TODO_SIMPLEJUMP);
+
+  return recompute_toporder_p;
 }
 
 /* This variable holds the cfg hooks used by the selective scheduler.  */
