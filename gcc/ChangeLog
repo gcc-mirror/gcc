@@ -1,5 +1,12 @@
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
+	PR rtl-optimization/42294
+	* sel-sched-ir.h (struct _sel_insn_data): Update comment.
+	* sel-sched.c (move_exprs_to_boundary): Transitively add all
+	originators' originators.
+
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
 	PR rtl-optimization/39453
 	PR rtl-optimization/42246
 	* sel-sched-ir.c (considered_for_pipelining_p): Do not test
