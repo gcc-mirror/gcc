@@ -1,3 +1,12 @@
+2010-01-14  Andrey Belevantsev <abel@ispras.ru>
+
+	PR rtl-optimization/42294
+	* sel-sched.c (try_replace_dest_reg): When chosen register
+	and original register is the same, do not bail out early, but
+	still check all original insns for validity of replacing destination
+	register.  Set EXPR_TARGET_AVAILABLE to 1 before leaving function
+	in this case.
+
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/42721

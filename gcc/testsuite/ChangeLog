@@ -1,3 +1,8 @@
+2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+
+        PR rtl-optimization/42294
+        * gcc.dg/pr42249.c: New.
+
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/42721
