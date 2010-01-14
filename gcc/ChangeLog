@@ -1,3 +1,9 @@
+2010-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42665
+	* gimple.c (iterative_hash_gimple_type): Avoid hashing
+	error_mark_node.
+
 2010-01-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/42709

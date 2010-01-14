@@ -3707,8 +3707,12 @@ iterative_hash_gimple_type (tree type, hashval_t val,
   /* For integer types hash the types min/max values and the string flag.  */
   if (TREE_CODE (type) == INTEGER_TYPE)
     {
-      v = iterative_hash_expr (TYPE_MIN_VALUE (type), v);
-      v = iterative_hash_expr (TYPE_MAX_VALUE (type), v);
+      /* OMP lowering can introduce error_mark_node in place of
+	 random local decls in types.  */
+      if (TYPE_MIN_VALUE (type) != error_mark_node)
+	v = iterative_hash_expr (TYPE_MIN_VALUE (type), v);
+      if (TYPE_MAX_VALUE (type) != error_mark_node)
+	v = iterative_hash_expr (TYPE_MAX_VALUE (type), v);
       v = iterative_hash_hashval_t (TYPE_STRING_FLAG (type), v);
     }
 
