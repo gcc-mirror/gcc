@@ -5883,7 +5883,7 @@ considered_for_pipelining_p (struct loop *loop)
      latch.  We can't use header here, because this header could be
      just removed preheader and it will give us the wrong region number.
      Latch can't be used because it could be in the inner loop too.  */
-  if (LOOP_MARKED_FOR_PIPELINING_P (loop) && pipelining_p)
+  if (LOOP_MARKED_FOR_PIPELINING_P (loop))
     {
       int rgn = CONTAINING_RGN (loop->latch->index);
 
@@ -6032,7 +6032,10 @@ sel_add_loop_preheaders (void)
   for (i = 0;
        VEC_iterate (basic_block, preheader_blocks, i, bb);
        i++)
+    {
+      VEC_safe_push (basic_block, heap, last_added_blocks, bb);
       sel_add_bb (bb);
+    }
 
   VEC_free (basic_block, heap, preheader_blocks);
 }

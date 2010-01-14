@@ -1,3 +1,11 @@
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/39453
+	PR rtl-optimization/42246
+	* sel-sched-ir.c (considered_for_pipelining_p): Do not test
+	for pipelining_p.
+	(sel_add_loop_preheaders): Add preheader to last_added_blocks.
+
 2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 	    Alexander Monakov  <amonakov@ispras.ru>
 
