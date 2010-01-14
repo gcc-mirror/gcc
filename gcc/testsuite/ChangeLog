@@ -33,8 +33,8 @@
 
 2010-01-14  Alexander Monakov <amonakov@ispras.ru>
 
-        PR rtl-optimization/42249
-        * gcc.dg/pr42249.c: New.
+	PR rtl-optimization/42249
+	* gcc.dg/pr42249.c: New.
 
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
@@ -48,9 +48,9 @@
 
 2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/41478
-        * gfortran.dg/alloc_comp_scalar_1.f90: New test.
-        * gfortran.dg/alloc_comp_transformational_1.f90: New test.
+	PR fortran/41478
+	* gfortran.dg/alloc_comp_scalar_1.f90: New test.
+	* gfortran.dg/alloc_comp_transformational_1.f90: New test.
 
 2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
 

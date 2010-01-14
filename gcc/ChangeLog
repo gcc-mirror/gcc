@@ -1,3 +1,26 @@
+2010-01-14  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/drivers-i386.c (detect_caches_intel):
+	Add l2sizekb parameter and fill in.
+	(host_detect_local_cpu): Add l2sizekb, fill in.
+	Add Atom small cache heuristic.
+
+2010-01-14  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/drivers-i386.c (detect_caches_cpuid4):
+	Add level3 parameter and fill in.
+	(detect_caches_intel): Handle level3 cache.
+
+2010-01-14  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/drivers-i386.c (host_detect_local_cpu):
+	Fix core duo detection.
+
+2010-01-14  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/drivers-i386.c (host_detect_local_cpu):
+	Fix Atom detection.
+
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/rs6000/rs6000.c (rs6000_variable_issue): Rename to...
@@ -6,8 +29,9 @@
 
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
-	* sel-sched-ir.c (sel_restore_other_notes): Rename to sel_restore_notes.
-	Update all callers.  Call reemit_notes for all insns.
+	* sel-sched-ir.c (sel_restore_other_notes): Rename to
+	sel_restore_notes.  Update all callers.  Call reemit_notes
+	for all insns.
 
 2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 
@@ -110,11 +134,10 @@
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/42721
-	Port from no-undefined-overflow branch
+	Port from no-undefined-overflow branch:
 	2009-03-09  Richard Guenther  <rguenther@suse.de>
 
-	* fold-const.c (add_double_with_sign): Fix unsigned overflow
-	detection.
+	* fold-const.c (add_double_with_sign): Fix unsigned overflow detection.
 
 2010-01-14  Richard Guenther  <rguenther@suse.de>
 
@@ -241,9 +264,9 @@
 
 2010-01-12  Julian Brown  <julian@codesourcery.com>
 
-        * config/arm/neon-schedgen.ml (Utils): Don't try to
+	* config/arm/neon-schedgen.ml (Utils): Don't try to
 	open missing module.
-        (find_with_result): New.
+	(find_with_result): New.
 
 2010-01-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -264,7 +287,7 @@
 
 2010-01-11  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
-	* config/avr/avr.h (LINKER_NAME): Remove. 
+	* config/avr/avr.h (LINKER_NAME): Remove.
 
 2010-01-11  Janis Johnson  <janis187@us.ibm.com>
 
@@ -275,7 +298,7 @@
 
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
-	
+
 	PR translation/42469
 	* common.opt (Wframe-larger-than=, fcompare-debug=, fdbg-cnt=,
 	fira-verbose=, flto-compression-level=, fplugin-arg-): Use tab
@@ -397,7 +420,7 @@
 	(*rotw<mode>3): New.
 	(*rotb<mode>3): New.
 	* config/avr/avr.c (avr_rotate_bytes): New function.
-	* config/avr/avr-proto.h (avr_rotate_bytes): New function. 
+	* config/avr/avr-proto.h (avr_rotate_bytes): New function.
 
 2010-01-08  Steve Ellcey  <sje@cup.hp.com>
 
@@ -505,7 +528,7 @@
 	(concat_note_lists): ... here, and ...
 	(unlink_other_notes, rm_other_notes): Merge into...
 	(remove_notes): ... here.  Create REG_SAVE_NOTEs for
-	NOTE_INSN_EPILOGUE_BEG.  
+	NOTE_INSN_EPILOGUE_BEG.
 
 2010-01-06  Richard Guenther  <rguenther@suse.de>
 
