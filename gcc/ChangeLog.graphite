@@ -1,3 +1,19 @@
+2010-01-14  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42732
+	* graphite-clast-to-gimple.c (gloog): Call scev_reset_htab and
+	rename_nb_iterations.
+	* sese.c (rename_variables_in_operand): New.
+	(rename_variables_in_expr): New.
+	(rename_nb_iterations): New.
+	(sese_adjust_liveout_phis): Update the rename_map.
+	* sese.h (rename_nb_iterations): Declared.
+	* tree-scalar-evolution.c (scev_reset_htab): New.
+	(scev_reset): Call scev_reset_htab.
+	* tree-scalar-evolution.h (scev_reset_htab): Declared.
+
+	* testsuite/gfortran.dg/graphite/pr42732.f: New.
+
 2010-01-08  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42393

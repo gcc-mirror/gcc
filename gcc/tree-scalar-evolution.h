@@ -27,6 +27,7 @@ extern gimple get_loop_exit_condition (const struct loop *);
 
 extern void scev_initialize (void);
 extern void scev_reset (void);
+extern void scev_reset_htab (void);
 extern void scev_finalize (void);
 extern tree analyze_scalar_evolution (struct loop *, tree);
 extern tree instantiate_scev (basic_block, struct loop *, tree);

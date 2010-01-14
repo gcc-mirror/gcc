@@ -1400,8 +1400,8 @@ debug_generated_program (scop_p scop)
   print_generated_program (stderr, scop);
 }
 
-/* Add CLooG names to parameter index.  The index is used to translate back from
- * CLooG names to GCC trees.  */
+/* Add CLooG names to parameter index.  The index is used to translate
+   back from CLooG names to GCC trees.  */
 
 static void
 create_params_index (htab_t index_table, CloogProgram *prog) {
@@ -1471,6 +1471,8 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 			    if_region->region->exit->src,
 			    if_region->false_region->exit,
 			    if_region->true_region->exit);
+  scev_reset_htab ();
+  rename_nb_iterations (rename_map);
   recompute_all_dominators ();
   graphite_verify ();
 

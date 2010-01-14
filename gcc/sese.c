@@ -486,7 +486,7 @@ sese_adjust_vphi (sese region, gimple phi, edge true_e)
       }
 }
 
-/* Returns the name associated to OLD_NAME in MAP.  */
+/* Returns the expression associated to OLD_NAME in MAP.  */
 
 static tree
 get_rename (htab_t map, tree old_name)
@@ -503,7 +503,7 @@ get_rename (htab_t map, tree old_name)
   return old_name;
 }
 
-/* Register in MAP the rename tuple (old_name, expr).  */
+/* Register in MAP the rename tuple (OLD_NAME, EXPR).  */
 
 void
 set_rename (htab_t map, tree old_name, tree expr)
@@ -524,6 +524,67 @@ set_rename (htab_t map, tree old_name, tree expr)
     free (*slot);
 
   *slot = new_rename_map_elt (old_name, expr);
+}
+
+static void rename_variables_in_expr (htab_t, tree);
+
+/* Renames the operand OP of expression T following the tuples
+   (OLD_NAME, EXPR) in RENAME_MAP.  */
+
+static void
+rename_variables_in_operand (htab_t rename_map, tree t, int op)
+{
+  tree operand = TREE_OPERAND (t, op);
+
+  if (TREE_CODE (operand) == SSA_NAME)
+    {
+      tree new_name = get_rename (rename_map, operand);
+
+      if (new_name != operand)
+	TREE_OPERAND (t, op) = new_name;
+    }
+  else
+    rename_variables_in_expr (rename_map, operand);
+}
+
+/* Renames the expression T following the tuples (OLD_NAME, EXPR) in
+   RENAME_MAP.  */
+
+static void
+rename_variables_in_expr (htab_t rename_map, tree t)
+{
+  if (!t)
+    return;
+
+  switch (TREE_CODE_LENGTH (TREE_CODE (t)))
+    {
+    case 3:
+      rename_variables_in_operand (rename_map, t, 2);
+
+    case 2:
+      rename_variables_in_operand (rename_map, t, 1);
+
+    case 1:
+      rename_variables_in_operand (rename_map, t, 0);
+
+    default:
+      return;
+    }
+}
+
+/* Renames all the loop->nb_iterations expressions following the
+   tuples (OLD_NAME, EXPR) in RENAME_MAP.  */
+
+void
+rename_nb_iterations (htab_t rename_map)
+{
+  loop_iterator li;
+  struct loop *loop;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      rename_variables_in_expr (rename_map, loop->nb_iterations);
+    }
 }
 
 /* Adjusts the phi nodes in the block BB for variables defined in
@@ -550,8 +611,9 @@ sese_adjust_liveout_phis (sese region, htab_t rename_map, basic_block bb,
       unsigned i;
       unsigned false_i = 0;
       gimple phi = gsi_stmt (si);
+      tree res = gimple_phi_result (phi);
 
-      if (!is_gimple_reg (PHI_RESULT (phi)))
+      if (!is_gimple_reg (res))
 	{
 	  sese_adjust_vphi (region, phi, true_e);
 	  continue;
@@ -585,6 +647,7 @@ sese_adjust_liveout_phis (sese region, htab_t rename_map, basic_block bb,
 	      }
 
 	    SET_PHI_ARG_DEF (phi, i, expr);
+	    set_rename (rename_map, old_name, res);
 	  }
     }
 }
