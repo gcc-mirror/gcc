@@ -1,3 +1,9 @@
+2010-01-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/42709
+	* tree-vect-slp.c (vect_get_constant_vectors): Use constant's type
+	as scalar type in creation of constant vector operand.
+
 2010-01-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR testsuite/42414

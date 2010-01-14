@@ -1421,7 +1421,6 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
   VEC (gimple, heap) *stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   gimple stmt = VEC_index (gimple, stmts, 0);
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
   int nunits;
   tree vec_cst;
   tree t = NULL_TREE;
@@ -1446,16 +1445,12 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
     }
 
   if (CONSTANT_CLASS_P (op))
-    {
-      vector_type = vectype;
-      constant_p = true;
-    }
+    constant_p = true;
   else
-    {
-      vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-      gcc_assert (vector_type);
-      constant_p = false;
-    }
+    constant_p = false;
+
+  vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+  gcc_assert (vector_type);
 
   nunits = TYPE_VECTOR_SUBPARTS (vector_type);
 
