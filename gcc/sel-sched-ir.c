@@ -262,7 +262,7 @@ static void
 flist_add (flist_t *lp, insn_t insn, state_t state, deps_t dc, void *tc,
            insn_t last_scheduled_insn, VEC(rtx,gc) *executing_insns,
            int *ready_ticks, int ready_ticks_size, insn_t sched_next,
-           int cycle, int cycle_issued_insns,
+           int cycle, int cycle_issued_insns, int issue_more,
            bool starts_cycle_p, bool after_stall_p)
 {
   fence_t f;
@@ -287,6 +287,7 @@ flist_add (flist_t *lp, insn_t insn, state_t state, deps_t dc, void *tc,
   FENCE_TC (f) = tc;
 
   FENCE_LAST_SCHEDULED_INSN (f) = last_scheduled_insn;
+  FENCE_ISSUE_MORE (f) = issue_more;
   FENCE_EXECUTING_INSNS (f) = executing_insns;
   FENCE_READY_TICKS (f) = ready_ticks;
   FENCE_READY_TICKS_SIZE (f) = ready_ticks_size;
@@ -618,6 +619,7 @@ init_fences (insn_t old_fence)
                  ready_ticks_size,
                  NULL_RTX /* sched_next */,
 		 1 /* cycle */, 0 /* cycle_issued_insns */,
+		 issue_rate, /* issue_more */
 		 1 /* starts_cycle_p */, 0 /* after_stall_p */);
     }
 }
@@ -629,14 +631,14 @@ init_fences (insn_t old_fence)
    3) all other fields are set to corresponding constant values.
 
    INSN, STATE, DC, TC, LAST_SCHEDULED_INSN, EXECUTING_INSNS,
-   READY_TICKS, READY_TICKS_SIZE, SCHED_NEXT, CYCLE and AFTER_STALL_P
-   are the corresponding fields of the second fence.  */
+   READY_TICKS, READY_TICKS_SIZE, SCHED_NEXT, CYCLE, ISSUE_MORE
+   and AFTER_STALL_P are the corresponding fields of the second fence.  */
 static void
 merge_fences (fence_t f, insn_t insn,
 	      state_t state, deps_t dc, void *tc,
               rtx last_scheduled_insn, VEC(rtx, gc) *executing_insns,
               int *ready_ticks, int ready_ticks_size,
-	      rtx sched_next, int cycle, bool after_stall_p)
+	      rtx sched_next, int cycle, int issue_more, bool after_stall_p)
 {
   insn_t last_scheduled_insn_old = FENCE_LAST_SCHEDULED_INSN (f);
 
@@ -666,6 +668,7 @@ merge_fences (fence_t f, insn_t insn,
         FENCE_CYCLE (f) = cycle;
 
       FENCE_LAST_SCHEDULED_INSN (f) = NULL;
+      FENCE_ISSUE_MORE (f) = issue_rate;
       VEC_free (rtx, gc, executing_insns);
       free (ready_ticks);
       if (FENCE_EXECUTING_INSNS (f))
@@ -697,6 +700,7 @@ merge_fences (fence_t f, insn_t insn,
           delete_target_context (tc);
 
           FENCE_LAST_SCHEDULED_INSN (f) = NULL;
+	  FENCE_ISSUE_MORE (f) = issue_rate;
         }
       else
         if (candidate->src == BLOCK_FOR_INSN (last_scheduled_insn))
@@ -713,6 +717,7 @@ merge_fences (fence_t f, insn_t insn,
             FENCE_TC (f) = tc;
 
             FENCE_LAST_SCHEDULED_INSN (f) = last_scheduled_insn;
+	    FENCE_ISSUE_MORE (f) = issue_more;
           }
         else
           {
@@ -799,7 +804,8 @@ add_to_fences (flist_tail_t new_fences, insn_t insn,
                state_t state, deps_t dc, void *tc, rtx last_scheduled_insn,
                VEC(rtx, gc) *executing_insns, int *ready_ticks,
                int ready_ticks_size, rtx sched_next, int cycle,
-               int cycle_issued_insns, bool starts_cycle_p, bool after_stall_p)
+               int cycle_issued_insns, int issue_rate,
+	       bool starts_cycle_p, bool after_stall_p)
 {
   fence_t f = flist_lookup (FLIST_TAIL_HEAD (new_fences), insn);
 
@@ -808,7 +814,7 @@ add_to_fences (flist_tail_t new_fences, insn_t insn,
       flist_add (FLIST_TAIL_TAILP (new_fences), insn, state, dc, tc,
 		 last_scheduled_insn, executing_insns, ready_ticks,
                  ready_ticks_size, sched_next, cycle, cycle_issued_insns,
-		 starts_cycle_p, after_stall_p);
+		 issue_rate, starts_cycle_p, after_stall_p);
 
       FLIST_TAIL_TAILP (new_fences)
 	= &FLIST_NEXT (*FLIST_TAIL_TAILP (new_fences));
@@ -817,7 +823,7 @@ add_to_fences (flist_tail_t new_fences, insn_t insn,
     {
       merge_fences (f, insn, state, dc, tc, last_scheduled_insn,
                     executing_insns, ready_ticks, ready_ticks_size,
-                    sched_next, cycle, after_stall_p);
+                    sched_next, cycle, issue_rate, after_stall_p);
     }
 }
 
@@ -836,7 +842,7 @@ move_fence_to_fences (flist_t old_fences, flist_tail_t new_fences)
       merge_fences (f, old->insn, old->state, old->dc, old->tc,
                     old->last_scheduled_insn, old->executing_insns,
                     old->ready_ticks, old->ready_ticks_size,
-                    old->sched_next, old->cycle,
+                    old->sched_next, old->cycle, old->issue_more,
                     old->after_stall_p);
     }
   else
@@ -862,7 +868,7 @@ add_clean_fence_to_fences (flist_tail_t new_fences, insn_t succ, fence_t fence)
                  NULL_RTX, NULL,
                  XCNEWVEC (int, ready_ticks_size), ready_ticks_size,
                  NULL_RTX, FENCE_CYCLE (fence) + 1,
-                 0, 1, FENCE_AFTER_STALL_P (fence));
+                 0, issue_rate, 1, FENCE_AFTER_STALL_P (fence));
 }
 
 /* Add a new fence to NEW_FENCES list and initialize all of its data
@@ -886,6 +892,7 @@ add_dirty_fence_to_fences (flist_tail_t new_fences, insn_t succ, fence_t fence)
                  FENCE_SCHED_NEXT (fence),
                  FENCE_CYCLE (fence),
                  FENCE_ISSUED_INSNS (fence),
+		 FENCE_ISSUE_MORE (fence),
                  FENCE_STARTS_CYCLE_P (fence),
                  FENCE_AFTER_STALL_P (fence));
 }

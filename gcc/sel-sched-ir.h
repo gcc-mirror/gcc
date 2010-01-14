@@ -296,6 +296,9 @@ struct _fence
   /* Insn, which has been scheduled last on this fence.  */
   rtx last_scheduled_insn;
 
+  /* The last value of can_issue_more variable on this fence.  */
+  int issue_more;
+
   /* If non-NULL force the next scheduled insn to be SCHED_NEXT.  */
   rtx sched_next;
 
@@ -325,6 +328,7 @@ typedef struct _fence *fence_t;
 #define FENCE_DC(F) ((F)->dc)
 #define FENCE_TC(F) ((F)->tc)
 #define FENCE_LAST_SCHEDULED_INSN(F) ((F)->last_scheduled_insn)
+#define FENCE_ISSUE_MORE(F) ((F)->issue_more)
 #define FENCE_EXECUTING_INSNS(F) ((F)->executing_insns)
 #define FENCE_READY_TICKS(F) ((F)->ready_ticks)
 #define FENCE_READY_TICKS_SIZE(F) ((F)->ready_ticks_size)
