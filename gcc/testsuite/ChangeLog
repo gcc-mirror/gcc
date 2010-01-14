@@ -1,3 +1,8 @@
+2010-01-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42655
+	* g++.dg/overload/rvalue1.C: New.
+
 2010-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42706
