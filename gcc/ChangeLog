@@ -1,3 +1,9 @@
+2010-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42714
+	* tree-sra.c (sra_ipa_modify_assign): Handle incompatible-type
+	constructors specially.
+
 2010-01-14  Andi Kleen  <ak@linux.intel.com>
 
 	* config/i386/drivers-i386.c (detect_caches_intel):

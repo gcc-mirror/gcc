@@ -1,3 +1,8 @@
+2010-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42714
+	* gcc/testsuite/g++.dg/torture/pr42714.C: New test.
+
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/42246
