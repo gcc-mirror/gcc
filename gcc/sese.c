@@ -1558,6 +1558,34 @@ move_sese_in_condition (sese region)
   return if_region;
 }
 
+/* Replaces the condition of the IF_REGION with CONDITION:
+   | if (CONDITION)
+   |   true_region;
+   | else
+   |   false_region;
+*/
+
+void
+set_ifsese_condition (ifsese if_region, tree condition)
+{
+  sese region = if_region->region;
+  edge entry = region->entry;
+  basic_block bb = entry->dest;
+  gimple last = last_stmt (bb);
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gimple cond_stmt;
+
+  gcc_assert (gimple_code (last) == GIMPLE_COND);
+
+  gsi_remove (&gsi, true);
+  gsi = gsi_last_bb (bb);
+  condition = force_gimple_operand_gsi (&gsi, condition, true, NULL,
+					false, GSI_NEW_STMT);
+  cond_stmt = gimple_build_cond_from_tree (condition, NULL_TREE, NULL_TREE);
+  gsi = gsi_last_bb (bb);
+  gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
+}
+
 /* Returns the scalar evolution of T in REGION.  Every variable that
    is not defined in the REGION is considered a parameter.  */
 
