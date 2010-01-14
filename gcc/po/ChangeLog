@@ -1,3 +1,9 @@
+2010-01-14  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR translation/39521
+	* exgettext: Extracted all specs %n strings and the %e strings that %e
+	is at the start of a line.
+
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* fi.po: Update.
