@@ -1,5 +1,9 @@
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
+	* sel-sched.c (choose_best_reg_1):  Loop over all regs for mode.
+
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
 	* sel-sched.c (mark_unavailable_hard_regs): Do not try to search
 	available registers when failed to discover LHS register class.
 	Fix indentation.  Update comment.

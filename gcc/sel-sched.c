@@ -1429,6 +1429,16 @@ choose_best_reg_1 (HARD_REG_SET hard_regs_used,
                                   0, cur_reg, hrsi)
     if (! TEST_HARD_REG_BIT (hard_regs_used, cur_reg))
       {
+	/* Check that all hard regs for mode are available.  */
+	for (i = 1, n = hard_regno_nregs[cur_reg][mode]; i < n; i++)
+	  if (TEST_HARD_REG_BIT (hard_regs_used, cur_reg + i)
+	      || !TEST_HARD_REG_BIT (reg_rename_p->available_for_renaming,
+				     cur_reg + i))
+	    break;
+
+	if (i < n)
+	  continue;
+
         /* All hard registers are available.  */
         if (best_new_reg < 0
             || reg_rename_tick[cur_reg] < reg_rename_tick[best_new_reg])
@@ -1460,6 +1470,7 @@ choose_best_reg (HARD_REG_SET hard_regs_used, struct reg_rename *reg_rename_p,
   rtx best_reg = choose_best_reg_1 (hard_regs_used, reg_rename_p,
                                     original_insns, is_orig_reg_p_ptr);
 
+  /* FIXME loop over hard_regno_nregs here.  */
   gcc_assert (best_reg == NULL_RTX
 	      || TEST_HARD_REG_BIT (sel_hrd.regs_ever_used, REGNO (best_reg)));
 
