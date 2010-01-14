@@ -3033,7 +3033,20 @@ scev_initialize (void)
     }
 }
 
-/* Cleans up the information cached by the scalar evolutions analysis.  */
+/* Cleans up the information cached by the scalar evolutions analysis
+   in the hash table.  */
+
+void
+scev_reset_htab (void)
+{
+  if (!scalar_evolution_info)
+    return;
+
+  htab_empty (scalar_evolution_info);
+}
+
+/* Cleans up the information cached by the scalar evolutions analysis
+   in the hash table and in the loop->nb_iterations.  */
 
 void
 scev_reset (void)
@@ -3041,10 +3054,11 @@ scev_reset (void)
   loop_iterator li;
   struct loop *loop;
 
-  if (!scalar_evolution_info || !current_loops)
+  scev_reset_htab ();
+
+  if (!current_loops)
     return;
 
-  htab_empty (scalar_evolution_info);
   FOR_EACH_LOOP (li, loop, 0)
     {
       loop->nb_iterations = NULL_TREE;
