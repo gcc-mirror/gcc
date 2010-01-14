@@ -4417,11 +4417,12 @@ sel_init_bbs (bb_vec_t bbs, basic_block bb)
   sched_scan (&ssi, bbs, bb, new_insns, NULL);
 }
 
-/* Restore other notes for the whole region.  */
+/* Restore notes for the whole region.  */
 static void
-sel_restore_other_notes (void)
+sel_restore_notes (void)
 {
   int bb;
+  insn_t insn;
 
   for (bb = 0; bb < current_nr_blocks; bb++)
     {
@@ -4436,6 +4437,10 @@ sel_restore_other_notes (void)
 	  restore_other_notes (NULL, first);
 	  BB_NOTE_LIST (first) = NULL_RTX;
 
+	  FOR_BB_INSNS (first, insn)
+	    if (NONDEBUG_INSN_P (insn))
+	      reemit_notes (insn);
+
           first = first->next_bb;
 	}
       while (first != last);
@@ -4446,7 +4451,7 @@ sel_restore_other_notes (void)
 void
 sel_finish_bbs (void)
 {
-  sel_restore_other_notes ();
+  sel_restore_notes ();
 
   /* Remove current loop preheader from this loop.  */
   if (current_loop_nest)

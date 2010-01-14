@@ -1,3 +1,8 @@
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched-ir.c (sel_restore_other_notes): Rename to sel_restore_notes.
+	Update all callers.  Call reemit_notes for all insns.
+
 2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/42246
