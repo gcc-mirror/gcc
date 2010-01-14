@@ -1,6 +1,7 @@
 /* Handle modules, which amounts to loading and saving symbols and
    their attendant structures.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -3750,8 +3751,9 @@ load_generic_interfaces (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
-  gfc_interface *generic = NULL;
+  gfc_interface *generic = NULL, *gen = NULL;
   int n, i, renamed;
+  bool ambiguous_set = false;
 
   mio_lparen ();
 
@@ -3836,9 +3838,13 @@ load_generic_interfaces (void)
 	      sym = st->n.sym;
 
 	      if (st && !sym->attr.generic
+		     && !st->ambiguous
 		     && sym->module
 		     && strcmp(module, sym->module))
-		st->ambiguous = 1;
+		{
+		  ambiguous_set = true;
+		  st->ambiguous = 1;
+		}
 	    }
 
 	  sym->attr.use_only = only_flag;
@@ -3854,6 +3860,26 @@ load_generic_interfaces (void)
 	      sym->generic = generic;
 	      sym->attr.generic_copy = 1;
 	    }
+
+	  /* If a procedure that is not generic has generic interfaces
+	     that include itself, it is generic! We need to take care
+	     to retain symbols ambiguous that were already so.  */
+	  if (sym->attr.use_assoc
+		&& !sym->attr.generic
+		&& sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      for (gen = generic; gen; gen = gen->next)
+		{
+		  if (gen->sym == sym)
+		    {
+		      sym->attr.generic = 1;
+		      if (ambiguous_set)
+		        st->ambiguous = 0;
+		      break;
+		    }
+		}
+	    }
+
 	}
     }
 
