@@ -2160,6 +2160,12 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
       gcc_assert (TREE_CODE (*n) == VAR_DECL);
       t = *n;
     }
+  else if (TREE_CODE (t) == VAR_DECL
+	   && !TREE_STATIC (t)
+	   && gimple_in_ssa_p (cfun)
+	   && !pointer_map_contains (id->decl_map, t)
+	   && !var_ann (t))
+    /* T is a non-localized variable.  */;
   else
     walk_tree (&t, remap_gimple_op_r, &wi, NULL);
 

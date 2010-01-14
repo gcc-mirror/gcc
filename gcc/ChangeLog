@@ -1,3 +1,9 @@
+2010-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/42657
+	* tree-inline.c (copy_debug_stmt): Don't reset debug stmt just
+	because its first operand is a non-localized variable.
+
 2010-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42706
