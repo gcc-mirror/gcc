@@ -75,12 +75,12 @@ pottmp=$pwd/$T/tmp.pot
 # Then generate keyword options for xgettext, by scanning for declarations
 # of functions whose parameter names end in "msgid".
 #
-# Finally, generate a source file containing all %e strings from
+# Finally, generate a source file containing all %e and %n strings from
 # driver specs, so those can be translated too.
 #
 # All in one huge awk script.
 
-echo "scanning for keywords and %e strings..." >&2
+echo "scanning for keywords, %e and %n strings..." >&2
 
 ( cd $srcdir
   lang_subdirs=`echo */config-lang.in */*/config-lang.in | sed -e 's|config-lang\.in||g'`
@@ -132,24 +132,34 @@ function keyword_option(line) {
 }
 
 function spec_error_string (line) {
-    while ((percent_index = index(line, "%e")) != 0) {
-	escape = substr(line, percent_index - 1, 1)
+    if (index(line, "%e") != 0 && index(line, "%n") != 0) return
+    while ((percent_index = index(line, "%e")) != 0 || 
+	   (percent_index = index(line, "%n")) != 0) {
 	line = substr(line, percent_index + 2)
-	if (escape == "%") continue
 
 	bracket_index = index(line, "}")
+	newline_index = index(line, "\\n")
+		
 	quote_index = index(line, "\"")
-	if (bracket_index == 0) return
-	if (quote_index != 0 && bracket_index > quote_index) return
+	if (bracket_index == 0 && newline_index == 0) return
 
-	msgid = substr(line, 1, bracket_index - 1)
-	line = substr(line, bracket_index + 1)
+	if (bracket_index != 0) {
+	  if (quote_index != 0 && bracket_index > quote_index) return
+	  msgid = substr(line, 1, bracket_index - 1)
+	  line = substr(line, bracket_index + 1)
+	}
+	else if (newline_index != 0) {
+	  if (quote_index != 0 && quote_index > newline_index) return
+	  msgid = substr(line, 1, newline_index - 1)
+	  line = substr(line, newline_index + 1)
+	}
 
 	if (index(msgid, "%") != 0) continue
 
+	if ((newline_index = index(msgid, "\\n")) != 0)
+	  msgid = substr(msgid, 1, newline_index - 1)
 	printf("#line %d \"%s\"\n", lineno, file) > emsg
 	printf("_(\"%s\")\n", msgid) > emsg
-
     }
 }
 
@@ -174,7 +184,7 @@ END {
 	while (getline < file) {
 	    if (/^(#[ 	]*define[ 	]*)?[A-Za-z_].*\(.*msgid[,\)]/) {
 		keyword_option($0)
-	    } else if (/%e/) {
+	    } else if (/%e/ || /%n/) {
 		spec_error_string($0)
 	    }
 	    lineno++

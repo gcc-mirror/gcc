@@ -1,3 +1,9 @@
+2010-01-14  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR translation/39521
+	* gcc.c (do_spec_1): Wrapped the error and notice messages of specs
+	strings with _().
+
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42730

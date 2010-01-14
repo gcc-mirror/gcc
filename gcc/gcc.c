@@ -5248,7 +5248,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      error ("%s", buf);
+	      error ("%s", _(buf));
 	      return -1;
 	    }
 	    break;
@@ -5262,7 +5262,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      buf = (char *) alloca (p - q + 1);
 	      strncpy (buf, q, p - q);
 	      buf[p - q] = 0;
-	      notice ("%s\n", buf);
+	      notice ("%s\n", _(buf));
 	      if (*p)
 		p++;
 	    }
