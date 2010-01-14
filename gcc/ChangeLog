@@ -1,5 +1,11 @@
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
+	* config/rs6000/rs6000.c (rs6000_variable_issue): Rename to...
+	(rs6000_variable_issue_1): this.  Use...
+	(rs6000_variable_issue): here.  Reimplement.  Print debug info.
+
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
 	* sel-sched-ir.c (sel_restore_other_notes): Rename to sel_restore_notes.
 	Update all callers.  Call reemit_notes for all insns.
 
