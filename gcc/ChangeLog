@@ -1,3 +1,10 @@
+2010-01-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR testsuite/42414
+	* Makefile.in ($(TESTSUITEDIR)/site.exp, check-%)
+	(check-parallel-%): Match `testsuite' directory component only
+	at the end.
+
 2010-01-14  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR translation/39521

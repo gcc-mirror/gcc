@@ -4669,7 +4669,7 @@ TESTSUITEDIR = testsuite
 $(TESTSUITEDIR)/site.exp: site.exp
 	-test -d $(TESTSUITEDIR) || mkdir $(TESTSUITEDIR)
 	-rm -f $@
-	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)|' < site.exp > $@
+	sed '/set tmpdir/ s|testsuite$$|$(TESTSUITEDIR)|' < site.exp > $@
 
 # This is only used for check-% targets that aren't parallelized.
 $(filter-out $(lang_checks_parallelized),$(lang_checks)): check-% : site.exp
@@ -4679,7 +4679,7 @@ $(filter-out $(lang_checks_parallelized),$(lang_checks)): check-% : site.exp
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	cd $(TESTSUITEDIR)/$*; \
 	rm -f tmp-site.exp; \
-	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)/$*|' \
+	sed '/set tmpdir/ s|testsuite$$|$(TESTSUITEDIR)/$*|' \
 		< ../../site.exp > tmp-site.exp; \
 	$(SHELL) $${srcdir}/../move-if-change tmp-site.exp site.exp; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
@@ -4766,7 +4766,7 @@ check-parallel-% : site.exp
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	cd $(TESTSUITEDIR)/$(check_p_subdir); \
 	rm -f tmp-site.exp; \
-	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)/$(check_p_subdir)|' \
+	sed '/set tmpdir/ s|testsuite$$|$(TESTSUITEDIR)/$(check_p_subdir)|' \
 		< ../../site.exp > tmp-site.exp; \
 	$(SHELL) $${srcdir}/../move-if-change tmp-site.exp site.exp; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
