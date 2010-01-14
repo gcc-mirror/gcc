@@ -2337,13 +2337,15 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
   /* We want to output annotation for weak and external symbols at
      very last to check if they are references or not.  */
 
-  if (SUPPORTS_WEAK && DECL_WEAK (decl)
+  if (SUPPORTS_WEAK
+      && DECL_WEAK (decl)
       /* TREE_STATIC is a weird and abused creature which is not
 	 generally the right test for whether an entity has been
 	 locally emitted, inlined or otherwise not-really-extern, but
 	 for declarations that can be weak, it happens to be
 	 match.  */
       && !TREE_STATIC (decl)
+      && lookup_attribute ("weak", DECL_ATTRIBUTES (decl))
       && value_member (decl, weak_decls) == NULL_TREE)
     weak_decls = tree_cons (NULL, decl, weak_decls);
 
@@ -5227,6 +5229,9 @@ declare_weak (tree decl)
     warning (0, "weak declaration of %q+D not supported", decl);
 
   mark_weak (decl);
+  if (!lookup_attribute ("weak", DECL_ATTRIBUTES (decl)))
+    DECL_ATTRIBUTES (decl)
+      = tree_cons (get_identifier ("weak"), NULL, DECL_ATTRIBUTES (decl));
 }
 
 static void
