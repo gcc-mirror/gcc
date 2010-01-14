@@ -715,7 +715,8 @@ struct _sel_insn_data
   bitmap found_deps;
 
   /* An INSN_UID bit is set when this is a bookkeeping insn generated from
-     a parent with this uid.  */
+     a parent with this uid.  If a parent is a bookkeeping copy, all its
+     originators are transitively included in this set.  */
   bitmap originators;
 
   /* A hashtable caching the result of insn transformations through this one.  */

@@ -5208,12 +5208,21 @@ move_exprs_to_boundary (bnd_t bnd, expr_t expr_vliw,
 
   EXECUTE_IF_SET_IN_BITMAP (current_copies, 0, book_uid, bi)
     {
+      unsigned uid;
+      bitmap_iterator bi;
+
       /* We allocate these bitmaps lazily.  */
       if (! INSN_ORIGINATORS_BY_UID (book_uid))
         INSN_ORIGINATORS_BY_UID (book_uid) = BITMAP_ALLOC (NULL);
 
       bitmap_copy (INSN_ORIGINATORS_BY_UID (book_uid),
                    current_originators);
+
+      /* Transitively add all originators' originators.  */
+      EXECUTE_IF_SET_IN_BITMAP (current_originators, 0, uid, bi)
+       if (INSN_ORIGINATORS_BY_UID (uid))
+	 bitmap_ior_into (INSN_ORIGINATORS_BY_UID (book_uid),
+			  INSN_ORIGINATORS_BY_UID (uid));
     }
 
   return should_move;
