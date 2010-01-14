@@ -1,5 +1,13 @@
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/42608
+	* varasm.c (declare_weak): Add weak attribute to decl if it
+	doesn't have one already.
+	(assemble_external): Only add decls to weak_decls if they also
+	have weak attribute.
+
+2010-01-14  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/42721
 	Port from no-undefined-overflow branch
 	2009-03-09  Richard Guenther  <rguenther@suse.de>
