@@ -5823,14 +5823,19 @@ maybe_emit_renaming_copy (rtx insn,
                           moveop_static_params_p params)
 {
   bool insn_emitted  = false;
-  rtx cur_reg = expr_dest_reg (params->c_expr);
+  rtx cur_reg;
 
-  gcc_assert (!cur_reg || (params->dest && REG_P (params->dest)));
+  /* Bail out early when expression can not be renamed at all.  */
+  if (!EXPR_SEPARABLE_P (params->c_expr))
+    return false;
+
+  cur_reg = expr_dest_reg (params->c_expr);
+  gcc_assert (cur_reg && params->dest && REG_P (params->dest));
 
   /* If original operation has expr and the register chosen for
      that expr is not original operation's dest reg, substitute
      operation's right hand side with the register chosen.  */
-  if (cur_reg != NULL_RTX && REGNO (params->dest) != REGNO (cur_reg))
+  if (REGNO (params->dest) != REGNO (cur_reg))
     {
       insn_t reg_move_insn, reg_move_insn_rtx;
 

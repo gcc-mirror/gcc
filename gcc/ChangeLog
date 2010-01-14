@@ -1,5 +1,10 @@
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
+	* sel-sched.c (maybe_emit_renaming_copy): Exit early when expression
+	to rename is not separable.  Otherwise check that its LHS is not NULL.
+
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
 	* sel-sched.c (choose_best_reg_1):  Loop over all regs for mode.
 
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
