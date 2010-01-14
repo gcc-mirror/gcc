@@ -3540,12 +3540,15 @@ maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
   bool rescan_p;
 
   /* Keep empty bb only if this block immediately precedes EXIT and
-     has incoming non-fallthrough edge.  Otherwise remove it.  */
+     has incoming non-fallthrough edge, or it has no predecessors or
+     successors.  Otherwise remove it.  */
   if (!sel_bb_empty_p (bb)
       || (single_succ_p (bb)
           && single_succ (bb) == EXIT_BLOCK_PTR
           && (!single_pred_p (bb)
-              || !(single_pred_edge (bb)->flags & EDGE_FALLTHRU))))
+              || !(single_pred_edge (bb)->flags & EDGE_FALLTHRU)))
+      || EDGE_COUNT (bb->preds) == 0
+      || EDGE_COUNT (bb->succs) == 0)
     return false;
 
   /* Do not attempt to redirect complex edges.  */
@@ -3595,7 +3598,8 @@ maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
     {
       gcc_assert (pred_bb != NULL);
 
-      move_bb_info (pred_bb, bb);
+      if (in_current_region_p (pred_bb))
+	move_bb_info (pred_bb, bb);
       remove_empty_bb (bb, true);
     }
 

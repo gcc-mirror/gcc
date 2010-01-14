@@ -1,3 +1,10 @@
+2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/42388
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Do not delete empty blocks
+	that have no predecessors nor successors.  Do not call move_bb_info
+	for empty blocks outside of current region.
+
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/42294
