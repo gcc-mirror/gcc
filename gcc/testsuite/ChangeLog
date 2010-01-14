@@ -1,12 +1,15 @@
 2010-01-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42701
+	* g++.dg/overload/error3.C: New.
+
 	PR c++/42655
 	* g++.dg/overload/rvalue1.C: New.
 
 2010-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42706
-	* gcc.dg/ipa/pr42706.c: New testcase.	
+	* gcc.dg/ipa/pr42706.c: New testcase.
 
 2010-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 

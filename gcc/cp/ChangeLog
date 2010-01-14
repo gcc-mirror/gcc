@@ -1,5 +1,8 @@
 2010-01-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42701
+	* call.c (build_new_method_call): Don't free the vec here.
+
 	PR c++/42655
 	* call.c (convert_like_real): Do full decay_conversion for ck_rvalue.
 
