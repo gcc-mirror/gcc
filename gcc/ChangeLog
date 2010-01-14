@@ -1,3 +1,19 @@
+2010-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42706
+	* tree-sra.c (encountered_recursive_call): New variable.
+	(encountered_unchangable_recursive_call): Likewise.
+	(sra_initialize): Initialize both new variables.
+	(callsite_has_enough_arguments_p): New function.
+	(scan_function): Call decl and flags check only for IPA-SRA, check
+	whether there is a recursive call and whether it has enough arguments.
+	(all_callers_have_enough_arguments_p): New function.
+	(convert_callers): Look for recursive calls only when
+	encountered_recursive_call is set.
+	(ipa_early_sra): Bail out either if
+	!all_callers_have_enough_arguments_p or
+	encountered_unchangable_recursive_call.
+
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sel-sched.c: Add 2010 to copyright years.
