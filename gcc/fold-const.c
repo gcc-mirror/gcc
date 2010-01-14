@@ -326,13 +326,17 @@ add_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
   HOST_WIDE_INT h;
 
   l = l1 + l2;
-  h = h1 + h2 + (l < l1);
+  h = (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT) h1
+		       + (unsigned HOST_WIDE_INT) h2
+		       + (l < l1));
 
   *lv = l;
   *hv = h;
 
   if (unsigned_p)
-    return (unsigned HOST_WIDE_INT) h < (unsigned HOST_WIDE_INT) h1;
+    return ((unsigned HOST_WIDE_INT) h < (unsigned HOST_WIDE_INT) h1
+	    || (h == h1
+		&& l < l1));
   else
     return OVERFLOW_SUM_SIGN (h1, h2, h);
 }

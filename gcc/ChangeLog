@@ -1,3 +1,12 @@
+2010-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/42721
+	Port from no-undefined-overflow branch
+	2009-03-09  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (add_double_with_sign): Fix unsigned overflow
+	detection.
+
 2010-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42665
