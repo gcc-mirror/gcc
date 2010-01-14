@@ -1,3 +1,8 @@
+2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sel-sched.c (compute_av_set_at_bb_end): Do not test that number of
+	all successors is the same as number of successors in current region.
+
 2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sel-sched.c (maybe_emit_renaming_copy): Exit early when expression
