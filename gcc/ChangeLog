@@ -1,6 +1,23 @@
+2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
+
+	PR middle-end/42245
+	* sel-sched-ir.c (sel_recompute_toporder): New.  Use it...
+	(maybe_tidy_empty_bb): ... here.  Make static.  Add new
+	argument.  Update all callers.
+	(tidy_control_flow): ... and here.  Recompute topological order
+	of basic blocks in region if necessary.
+	(sel_redirect_edge_and_branch): Change return type.  Return true
+	if topological order might have been invalidated.
+	(purge_empty_blocks): Export and move from...
+	* sel-sched.c (purge_empty_blocks): ... here.
+	* sel-sched-ir.h (sel_redirect_edge_and_branch): Update prototype.
+        (maybe_tidy_empty_bb): Delete prototype.
+	(purge_empty_blocks): Declare.
+
 2010-01-14  Andrey Belevantsev <abel@ispras.ru>
 
-	PR rtl-optimization/42294
+	PR rtl-optimization/42249
 	* sel-sched.c (try_replace_dest_reg): When chosen register
 	and original register is the same, do not bail out early, but
 	still check all original insns for validity of replacing destination

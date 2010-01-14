@@ -6765,24 +6765,6 @@ setup_current_loop_nest (int rgn)
   gcc_assert (LOOP_MARKED_FOR_PIPELINING_P (current_loop_nest));
 }
 
-/* Purge meaningless empty blocks in the middle of a region.  */
-static void
-purge_empty_blocks (void)
-{
-  /* Do not attempt to delete preheader.  */
-  int i = sel_is_loop_preheader_p (BASIC_BLOCK (BB_TO_BLOCK (0))) ? 1 : 0;
-
-  while (i < current_nr_blocks)
-    {
-      basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
-
-      if (maybe_tidy_empty_bb (b))
-	continue;
-
-      i++;
-    }
-}
-
 /* Compute instruction priorities for current region.  */
 static void
 sel_compute_priorities (int rgn)
