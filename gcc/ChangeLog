@@ -1,3 +1,9 @@
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched.c (mark_unavailable_hard_regs): Do not try to search
+	available registers when failed to discover LHS register class.
+	Fix indentation.  Update comment.
+
 2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 	    Alexander Monakov  <amonakov@ispras.ru>
 

@@ -1229,19 +1229,19 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
   if (!reload_completed && !HARD_REGISTER_NUM_P (regno))
     return;
 
-  mode = GET_MODE (orig_dest);
+  if (reload_completed)
+    cl = get_reg_class (def->orig_insn);
 
-  /* Stop when mode is not supported for renaming.  Also can't proceed
-     if the original register is one of the fixed_regs, global_regs or
-     frame pointer.  */
+  /* Stop if the original register is one of the fixed_regs, global_regs or
+     frame pointer, or we could not discover its class.  */
   if (fixed_regs[regno]
       || global_regs[regno]
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	|| (frame_pointer_needed && regno == HARD_FRAME_POINTER_REGNUM)
+      || (frame_pointer_needed && regno == HARD_FRAME_POINTER_REGNUM)
 #else
-	|| (frame_pointer_needed && regno == FRAME_POINTER_REGNUM)
+      || (frame_pointer_needed && regno == FRAME_POINTER_REGNUM)
 #endif
-      )
+      || (reload_completed && cl == NO_REGS))
     {
       SET_HARD_REG_SET (reg_rename_p->unavailable_hard_regs);
 
@@ -1296,10 +1296,10 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
   /* Leave regs as 'available' only from the current
      register class.  */
-  cl = get_reg_class (def->orig_insn);
-  gcc_assert (cl != NO_REGS);
   COPY_HARD_REG_SET (reg_rename_p->available_for_renaming,
                      reg_class_contents[cl]);
+
+  mode = GET_MODE (orig_dest);
 
   /* Leave only registers available for this mode.  */
   if (!sel_hrd.regs_for_mode_ok[mode])
