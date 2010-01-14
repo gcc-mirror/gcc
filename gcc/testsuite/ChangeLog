@@ -1,5 +1,12 @@
 2010-01-14  Alexander Monakov <amonakov@ispras.ru>
 
+	PR rtl-optimization/39453
+	PR rtl-optimization/42246
+	* gcc.dg/pr39453.c: New.
+	* gcc.dg/pr42246.c: New.
+
+2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+
 	PR middle-end/42245
 	* gcc.dg/pr42245.c: New.
 	* gcc.dg/pr42245-2.c: New.
