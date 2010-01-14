@@ -1,5 +1,20 @@
 2010-01-14  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42681
+	* graphite-clast-to-gimple.c (gloog_error): New static variable.
+	(clast_to_gcc_expression): Do not build MULT_EXPR of POINTER_TYPE_P.
+	Set gloog_error when such an expression failed to be built.
+	(translate_clast): Early return when gloog_error is set.
+	(gloog): Clear gloog_error.  When gloog_error is set, call
+	set_ifsese_condition to enable the original code.  Return the status
+	of the code generation based on gloog_error.
+	* sese.c (set_ifsese_condition): New.
+	* sese.h (set_ifsese_condition): Declared.
+
+	* testsuite/g++.dg/graphite/pr42681.C: New.
+
+2010-01-14  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42732
 	* graphite-clast-to-gimple.c (gloog): Call scev_reset_htab and
 	rename_nb_iterations.
