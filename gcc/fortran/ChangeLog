@@ -1,3 +1,10 @@
+2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42481
+	* module.c (load_generic_interfaces): If a procedure that is
+	use associated but not generic is given an interface that
+	includes itself, then make it generic.
+
 2010-01-11  Joseph Myers  <joseph@codesourcery.com>  
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 
