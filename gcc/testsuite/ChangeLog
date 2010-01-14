@@ -1,3 +1,7 @@
+2010-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/graphite/pr42681.C (size_t): Use __SIZE_TYPE__.
+
 2010-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42714
