@@ -2752,8 +2752,7 @@ compute_av_set_at_bb_end (insn_t insn, ilist_t p, int ws)
                                VEC_index (int, sinfo->probs_ok, is),
                                sinfo->all_prob);
 
-      if (sinfo->all_succs_n > 1
-          && sinfo->all_succs_n == sinfo->succs_ok_n)
+      if (sinfo->all_succs_n > 1)
 	{
           /* Find EXPR'es that came from *all* successors and save them
              into expr_in_all_succ_branches.  This set will be used later
