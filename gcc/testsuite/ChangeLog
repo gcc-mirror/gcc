@@ -1,5 +1,8 @@
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/42674
+	* c-c++-common/pr42674.c: New test.
+
 	PR c++/42608
 	* g++.dg/template/instantiate11.C: New test.
 
