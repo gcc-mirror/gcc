@@ -1,5 +1,9 @@
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/42674
+	* c-decl.c (finish_function): Don't emit -Wreturn-type warnings in
+	functions with noreturn attribute.
+
 	PR c++/42608
 	* varasm.c (declare_weak): Add weak attribute to decl if it
 	doesn't have one already.
