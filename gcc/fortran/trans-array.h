@@ -45,13 +45,17 @@ tree gfc_trans_g77_array (gfc_symbol *, tree);
 /* Generate code to deallocate an array, if it is allocated.  */
 tree gfc_trans_dealloc_allocated (tree);
 
-tree gfc_duplicate_allocatable(tree dest, tree src, tree type, int rank);
+tree gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank);
+
+tree gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank);
 
 tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int);
 
 tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int);
 
 tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int);
+
+tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
 
 /* Add initialization for deferred arrays.  */
 tree gfc_trans_deferred_array (gfc_symbol *, tree);

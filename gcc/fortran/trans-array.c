@@ -5711,10 +5711,12 @@ get_full_array_size (stmtblock_t *block, tree decl, int rank)
 }
 
 
-/* Allocate dest to the same size as src, and copy src -> dest.  */
+/* Allocate dest to the same size as src, and copy src -> dest.
+   If no_malloc is set, only the copy is done.  */
 
-tree
-gfc_duplicate_allocatable(tree dest, tree src, tree type, int rank)
+static tree
+duplicate_allocatable(tree dest, tree src, tree type, int rank,
+		      bool no_malloc)
 {
   tree tmp;
   tree size;
@@ -5723,35 +5725,66 @@ gfc_duplicate_allocatable(tree dest, tree src, tree type, int rank)
   tree null_data;
   stmtblock_t block;
 
-  /* If the source is null, set the destination to null.  */
-  gfc_init_block (&block);
-  gfc_conv_descriptor_data_set (&block, dest, null_pointer_node);
-  null_data = gfc_finish_block (&block);
-
+  /* If the source is null, set the destination to null.  Then,
+     allocate memory to the destination.  */
   gfc_init_block (&block);
 
-  nelems = get_full_array_size (&block, src, rank);
-  size = fold_build2 (MULT_EXPR, gfc_array_index_type, nelems,
-		      fold_convert (gfc_array_index_type,
-				    TYPE_SIZE_UNIT (gfc_get_element_type (type))));
+  if (rank == 0)
+    {
+      tmp = null_pointer_node;
+      tmp = fold_build2 (MODIFY_EXPR, type, dest, tmp);
+      gfc_add_expr_to_block (&block, tmp);
+      null_data = gfc_finish_block (&block);
 
-  /* Allocate memory to the destination.  */
-  tmp = gfc_call_malloc (&block, TREE_TYPE (gfc_conv_descriptor_data_get (src)),
-			 size);
-  gfc_conv_descriptor_data_set (&block, dest, tmp);
+      gfc_init_block (&block);
+      size = TYPE_SIZE_UNIT (type);
+      if (!no_malloc)
+	{
+	  tmp = gfc_call_malloc (&block, type, size);
+	  tmp = fold_build2 (MODIFY_EXPR, void_type_node, dest,
+			     fold_convert (type, tmp));
+	  gfc_add_expr_to_block (&block, tmp);
+	}
 
-  /* We know the temporary and the value will be the same length,
-     so can use memcpy.  */
-  tmp = built_in_decls[BUILT_IN_MEMCPY];
-  tmp = build_call_expr_loc (input_location,
-			 tmp, 3, gfc_conv_descriptor_data_get (dest),
-  			 gfc_conv_descriptor_data_get (src), size);
+      tmp = built_in_decls[BUILT_IN_MEMCPY];
+      tmp = build_call_expr_loc (input_location, tmp, 3,
+				 dest, src, size);
+    }
+  else
+    {
+      gfc_conv_descriptor_data_set (&block, dest, null_pointer_node);
+      null_data = gfc_finish_block (&block);
+
+      gfc_init_block (&block);
+      nelems = get_full_array_size (&block, src, rank);
+      tmp = fold_convert (gfc_array_index_type,
+			  TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+      size = fold_build2 (MULT_EXPR, gfc_array_index_type, nelems, tmp);
+      if (!no_malloc)
+	{
+	  tmp = TREE_TYPE (gfc_conv_descriptor_data_get (src));
+	  tmp = gfc_call_malloc (&block, tmp, size);
+	  gfc_conv_descriptor_data_set (&block, dest, tmp);
+	}
+
+      /* We know the temporary and the value will be the same length,
+	 so can use memcpy.  */
+      tmp = built_in_decls[BUILT_IN_MEMCPY];
+      tmp = build_call_expr_loc (input_location,
+			tmp, 3, gfc_conv_descriptor_data_get (dest),
+			gfc_conv_descriptor_data_get (src), size);
+    }
+
   gfc_add_expr_to_block (&block, tmp);
   tmp = gfc_finish_block (&block);
 
   /* Null the destination if the source is null; otherwise do
      the allocate and copy.  */
-  null_cond = gfc_conv_descriptor_data_get (src);
+  if (rank == 0)
+    null_cond = src;
+  else
+    null_cond = gfc_conv_descriptor_data_get (src);
+
   null_cond = convert (pvoid_type_node, null_cond);
   null_cond = fold_build2 (NE_EXPR, boolean_type_node,
 			   null_cond, null_pointer_node);
@@ -5759,11 +5792,30 @@ gfc_duplicate_allocatable(tree dest, tree src, tree type, int rank)
 }
 
 
+/* Allocate dest to the same size as src, and copy data src -> dest.  */
+
+tree
+gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank)
+{
+  return duplicate_allocatable(dest, src, type, rank, false);
+}
+
+
+/* Copy data src -> dest.  */
+
+tree
+gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank)
+{
+  return duplicate_allocatable(dest, src, type, rank, true);
+}
+
+
 /* Recursively traverse an object of derived type, generating code to
    deallocate, nullify or copy allocatable components.  This is the work horse
    function for the functions named in this enum.  */
 
-enum {DEALLOCATE_ALLOC_COMP = 1, NULLIFY_ALLOC_COMP, COPY_ALLOC_COMP};
+enum {DEALLOCATE_ALLOC_COMP = 1, NULLIFY_ALLOC_COMP, COPY_ALLOC_COMP,
+      COPY_ONLY_ALLOC_COMP};
 
 static tree
 structure_alloc_comps (gfc_symbol * der_type, tree decl,
@@ -5786,7 +5838,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
   gfc_init_block (&fnblock);
 
-  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+  if (POINTER_TYPE_P (TREE_TYPE (decl)) && rank != 0)
     decl = build_fold_indirect_ref_loc (input_location,
 				    decl);
 
@@ -5840,6 +5892,14 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 					 gfc_conv_array_data (dest));
 	  dref = gfc_build_array_ref (tmp, index, NULL);
 	  tmp = structure_alloc_comps (der_type, vref, dref, rank, purpose);
+	}
+      else if (purpose == COPY_ONLY_ALLOC_COMP)
+        {
+	  tmp = build_fold_indirect_ref_loc (input_location,
+					 gfc_conv_array_data (dest));
+	  dref = gfc_build_array_ref (tmp, index, NULL);
+	  tmp = structure_alloc_comps (der_type, vref, dref, rank,
+				       COPY_ALLOC_COMP);
 	}
       else
         tmp = structure_alloc_comps (der_type, vref, NULL_TREE, rank, purpose);
@@ -5978,7 +6038,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  if (c->attr.allocatable && !cmp_has_alloc_comps)
 	    {
-	      tmp = gfc_duplicate_allocatable(dcmp, comp, ctype, c->as->rank);
+	      rank = c->as ? c->as->rank : 0;
+	      tmp = gfc_duplicate_allocatable(dcmp, comp, ctype, rank);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 
@@ -6025,12 +6086,22 @@ gfc_deallocate_alloc_comp (gfc_symbol * der_type, tree decl, int rank)
 
 
 /* Recursively traverse an object of derived type, generating code to
-   copy its allocatable components.  */
+   copy it and its allocatable components.  */
 
 tree
 gfc_copy_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 {
   return structure_alloc_comps (der_type, decl, dest, rank, COPY_ALLOC_COMP);
+}
+
+
+/* Recursively traverse an object of derived type, generating code to
+   copy only its allocatable components.  */
+
+tree
+gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
+{
+  return structure_alloc_comps (der_type, decl, dest, rank, COPY_ONLY_ALLOC_COMP);
 }
 
 

@@ -2757,6 +2757,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   tree var;
   tree len;
   tree stringargs;
+  tree result = NULL;
   gfc_formal_arglist *formal;
   int has_alternate_specifier = 0;
   bool need_interface_mapping;
@@ -3288,6 +3289,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    se->expr = build_fold_indirect_ref_loc (input_location,
 						se->expr);
 
+	  result = build_fold_indirect_ref_loc (input_location,
+						se->expr);
 	  retargs = gfc_chainon_list (retargs, se->expr);
 	}
       else if (comp && comp->attr.dimension)
@@ -3310,8 +3313,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				       callee_alloc, &se->ss->expr->where);
 
 	  /* Pass the temporary as the first argument.  */
-	  tmp = info->descriptor;
-	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	  result = info->descriptor;
+	  tmp = gfc_build_addr_expr (NULL_TREE, result);
 	  retargs = gfc_chainon_list (retargs, tmp);
 	}
       else if (!comp && sym->result->attr.dimension)
@@ -3334,8 +3337,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				       callee_alloc, &se->ss->expr->where);
 
 	  /* Pass the temporary as the first argument.  */
-	  tmp = info->descriptor;
-	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	  result = info->descriptor;
+	  tmp = gfc_build_addr_expr (NULL_TREE, result);
 	  retargs = gfc_chainon_list (retargs, tmp);
 	}
       else if (ts.type == BT_CHARACTER)
@@ -3487,7 +3490,36 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   /* Follow the function call with the argument post block.  */
   if (byref)
-    gfc_add_block_to_block (&se->pre, &post);
+    {
+      gfc_add_block_to_block (&se->pre, &post);
+
+      /* Transformational functions of derived types with allocatable
+         components must have the result allocatable components copied.  */
+      arg = expr->value.function.actual;
+      if (result && arg && expr->rank
+	    && expr->value.function.isym
+	    && expr->value.function.isym->transformational
+	    && arg->expr->ts.type == BT_DERIVED
+	    && arg->expr->ts.u.derived->attr.alloc_comp)
+	{
+	  tree tmp2;
+	  /* Copy the allocatable components.  We have to use a
+	     temporary here to prevent source allocatable components
+	     from being corrupted.  */
+	  tmp2 = gfc_evaluate_now (result, &se->pre);
+	  tmp = gfc_copy_alloc_comp (arg->expr->ts.u.derived,
+				     result, tmp2, expr->rank);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	  tmp = gfc_copy_allocatable_data (result, tmp2, TREE_TYPE(tmp2),
+				           expr->rank);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+
+	  /* Finally free the temporary's data field.  */
+	  tmp = gfc_conv_descriptor_data_get (tmp2);
+	  tmp = gfc_deallocate_with_status (tmp, NULL_TREE, true, NULL);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
+    }
   else
     gfc_add_block_to_block (&se->post, &post);
 
@@ -4905,6 +4937,15 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   se.want_pointer = 1;
 
   gfc_conv_array_parameter (&se, expr1, ss, 0, NULL, NULL, NULL);
+
+  if (expr1->ts.type == BT_DERIVED
+	&& expr1->ts.u.derived->attr.alloc_comp)
+    {
+      tree tmp;
+      tmp = gfc_deallocate_alloc_comp (expr1->ts.u.derived, se.expr,
+				       expr1->rank);
+      gfc_add_expr_to_block (&se.pre, tmp);
+    }
 
   se.direct_byref = 1;
   se.ss = gfc_walk_expr (expr2);
