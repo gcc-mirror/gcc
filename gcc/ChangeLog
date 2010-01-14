@@ -1,3 +1,9 @@
+2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched.c: Add 2010 to copyright years.
+	* sel-sched-ir.c: Likewise.
+	* sel-sched-ir.h: Likewise.
+
 2010-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42714
@@ -125,7 +131,7 @@
 	(purge_empty_blocks): Export and move from...
 	* sel-sched.c (purge_empty_blocks): ... here.
 	* sel-sched-ir.h (sel_redirect_edge_and_branch): Update prototype.
-        (maybe_tidy_empty_bb): Delete prototype.
+	(maybe_tidy_empty_bb): Delete prototype.
 	(purge_empty_blocks): Declare.
 
 2010-01-14  Andrey Belevantsev <abel@ispras.ru>
