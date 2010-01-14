@@ -1401,14 +1401,15 @@ var_reg_delete_and_set (dataflow_set *set, rtx loc, bool modify,
   var_reg_set (set, loc, initialized, set_src);
 }
 
-/* Delete current content of register LOC in dataflow set SET.  If
-   CLOBBER is true, also delete any other live copies of the same
-   variable part.  */
+/* Delete the association of register LOC in dataflow set SET with any
+   variables that aren't onepart.  If CLOBBER is true, also delete any
+   other live copies of the same variable part, and delete the
+   association with onepart dvs too.  */
 
 static void
 var_reg_delete (dataflow_set *set, rtx loc, bool clobber)
 {
-  attrs *reg = &set->regs[REGNO (loc)];
+  attrs *nextp = &set->regs[REGNO (loc)];
   attrs node, next;
 
   if (clobber)
@@ -1421,13 +1422,18 @@ var_reg_delete (dataflow_set *set, rtx loc, bool clobber)
       clobber_variable_part (set, NULL, dv_from_decl (decl), offset, NULL);
     }
 
-  for (node = *reg; node; node = next)
+  for (node = *nextp; node; node = next)
     {
       next = node->next;
-      delete_variable_part (set, node->loc, node->dv, node->offset);
-      pool_free (attrs_pool, node);
+      if (clobber || !dv_onepart_p (node->dv))
+	{
+	  delete_variable_part (set, node->loc, node->dv, node->offset);
+	  pool_free (attrs_pool, node);
+	  *nextp = next;
+	}
+      else
+	nextp = &node->next;
     }
-  *reg = NULL;
 }
 
 /* Delete content of register with number REGNO in dataflow set SET.  */

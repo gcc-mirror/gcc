@@ -1,3 +1,9 @@
+2010-01-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* var-tracking.c (var_reg_delete): Don't delete the association
+	between REGs and values or one-part variables if the register
+	isn't clobbered.
+
 2010-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42657
