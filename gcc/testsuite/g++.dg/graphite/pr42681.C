@@ -1,6 +1,6 @@
 /* { dg-options "-O1 -fgraphite-identity -fno-loop-block -fno-loop-interchange -fno-loop-strip-mine" } */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 inline void* operator new(size_t, void* __p) throw() { return __p; }
 
 struct A {
