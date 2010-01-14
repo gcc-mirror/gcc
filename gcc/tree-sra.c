@@ -3712,8 +3712,20 @@ sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi, void *data)
       tree new_rhs = NULL_TREE;
 
       if (!useless_type_conversion_p (TREE_TYPE (*lhs_p), TREE_TYPE (*rhs_p)))
-	new_rhs = fold_build1_loc (gimple_location (stmt), VIEW_CONVERT_EXPR,
-				   TREE_TYPE (*lhs_p), *rhs_p);
+	{
+	  if (TREE_CODE (*rhs_p) == CONSTRUCTOR)
+	    {
+	      /* V_C_Es of constructors can cause trouble (PR 42714).  */
+	      if (is_gimple_reg_type (TREE_TYPE (*lhs_p)))
+		*rhs_p = fold_convert (TREE_TYPE (*lhs_p), integer_zero_node);
+	      else
+		*rhs_p = build_constructor (TREE_TYPE (*lhs_p), 0);
+	    }
+	  else
+	    new_rhs = fold_build1_loc (gimple_location (stmt),
+				       VIEW_CONVERT_EXPR, TREE_TYPE (*lhs_p),
+				       *rhs_p);
+	}
       else if (REFERENCE_CLASS_P (*rhs_p)
 	       && is_gimple_reg_type (TREE_TYPE (*lhs_p))
 	       && !is_gimple_reg (*lhs_p))
