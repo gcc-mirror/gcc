@@ -264,7 +264,8 @@ enum cache_type
 };
 
 static void
-detect_caches_cpuid4 (struct cache_desc *level1, struct cache_desc *level2)
+detect_caches_cpuid4 (struct cache_desc *level1, struct cache_desc *level2,
+		      struct cache_desc *level3)
 {
   struct cache_desc *cache;
 
@@ -289,6 +290,9 @@ detect_caches_cpuid4 (struct cache_desc *level1, struct cache_desc *level2)
 	      case 2:
 		cache = level2;
 		break;
+	      case 3:
+		cache = level3;
+		break;
 	      default:
 		cache = NULL;
 	      }
@@ -303,7 +307,7 @@ detect_caches_cpuid4 (struct cache_desc *level1, struct cache_desc *level2)
 
 		cache->sizekb = (cache->assoc * part
 				 * cache->line * sets) / 1024;
-	      }	       
+	      }
 	  }
 	default:
 	  break;
@@ -314,12 +318,13 @@ detect_caches_cpuid4 (struct cache_desc *level1, struct cache_desc *level2)
 /* Returns the description of caches for an Intel processor.  */
 
 static const char *
-detect_caches_intel (bool xeon_mp, unsigned max_level, unsigned max_ext_level)
+detect_caches_intel (bool xeon_mp, unsigned max_level,
+		     unsigned max_ext_level, unsigned *l2sizekb)
 {
-  struct cache_desc level1 = {0, 0, 0}, level2 = {0, 0, 0};
+  struct cache_desc level1 = {0, 0, 0}, level2 = {0, 0, 0}, level3 = {0, 0, 0};
 
   if (max_level >= 4)
-    detect_caches_cpuid4 (&level1, &level2);
+    detect_caches_cpuid4 (&level1, &level2, &level3);
   else if (max_level >= 2)
     detect_caches_cpuid2 (xeon_mp, &level1, &level2);
   else
@@ -328,10 +333,17 @@ detect_caches_intel (bool xeon_mp, unsigned max_level, unsigned max_ext_level)
   if (level1.sizekb == 0)
     return "";
 
+  /* Let the L3 replace the L2. This assumes inclusive caches
+     and single threaded program for now. */
+  if (level3.sizekb)
+    level2 = level3;
+
   /* Intel CPUs are equipped with AMD style L2 cache info.  Try this
      method if other methods fail to provide L2 cache parameters.  */
   if (level2.sizekb == 0 && max_ext_level >= 0x80000006)
     detect_l2_cache (&level2);
+
+  *l2sizekb = level2.sizekb;
 
   return describe_cache (level1, level2);
 }
@@ -386,6 +398,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
 
   bool arch;
+
+  unsigned int l2sizekb = 0;
 
   if (argc < 1)
     return NULL;
@@ -459,7 +473,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       else if (vendor == SIG_INTEL)
 	{
 	  bool xeon_mp = (family == 15 && model == 6);
-	  cache = detect_caches_intel (xeon_mp, max_level, ext_level);
+	  cache = detect_caches_intel (xeon_mp, max_level,
+				       ext_level, &l2sizekb);
 	}
     }
 
@@ -523,14 +538,18 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	cpu = "pentium";
       break;
     case PROCESSOR_PENTIUMPRO:
-      if (has_longmode)
-	/* It is Core 2 or Atom.  */
-	cpu = (model == 28) ? "atom" : "core2";
+      if (model == 28)
+	cpu = "atom";
+      else if (model >= 28 && l2sizekb < 2048)
+	/* Assume it's a small core if there's less than 2MB cache */
+	cpu = "atom";
+      else if (has_longmode)
+	cpu = "core2";
       else if (arch)
 	{
 	  if (has_sse3)
 	    /* It is Core Duo.  */
-	    cpu = "prescott";
+	    cpu = "pentium-m";
 	  else if (has_sse2)
 	    /* It is Pentium M.  */
 	    cpu = "pentium-m";
