@@ -1,5 +1,6 @@
 2010-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/42742
 	* io/format.c (parse_format): Set limit on size of format strings that
 	will be cached.
 
