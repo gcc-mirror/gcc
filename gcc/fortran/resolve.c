@@ -9712,7 +9712,7 @@ check_generic_tbp_ambiguity (gfc_tbp_generic* t1, gfc_tbp_generic* t2,
     }
 
   /* Compare the interfaces.  */
-  if (gfc_compare_interfaces (sym1, sym2, NULL, 1, 0, NULL, 0))
+  if (gfc_compare_interfaces (sym1, sym2, sym2->name, 1, 0, NULL, 0))
     {
       gfc_error ("'%s' and '%s' for GENERIC '%s' at %L are ambiguous",
 		 sym1->name, sym2->name, generic_name, &where);

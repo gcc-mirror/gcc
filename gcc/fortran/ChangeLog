@@ -1,3 +1,12 @@
+2010-01-14 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42684
+	* interface.c (check_interface1): Pass symbol name rather than NULL to
+	gfc_compare_interfaces.	(gfc_compare_interfaces): Add assert to
+	trap MULL.
+	* resolve.c (check_generic_tbp_ambiguity): Pass symbol name rather
+	than NULL to gfc_compare_interfaces.
+
 2010-01-14  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/41478

@@ -955,6 +955,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 {
   gfc_formal_arglist *f1, *f2;
 
+  gcc_assert (name2 != NULL);
+
   if (s1->attr.function && (s2->attr.subroutine
       || (!s2->attr.function && s2->ts.type == BT_UNKNOWN
 	  && gfc_get_default_type (name2, s2->ns)->type == BT_UNKNOWN)))
@@ -1126,7 +1128,7 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
-	if (gfc_compare_interfaces (p->sym, q->sym, NULL, generic_flag, 0,
+	if (gfc_compare_interfaces (p->sym, q->sym, q->sym->name, generic_flag, 0,
 				    NULL, 0))
 	  {
 	    if (referenced)
