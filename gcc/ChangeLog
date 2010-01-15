@@ -1,3 +1,7 @@
+2010-01-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/sse.md (avx_vperm2f128<mode>3): Fix typo.
+
 2010-01-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42739
