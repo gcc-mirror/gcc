@@ -1,3 +1,8 @@
+2010-01-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42739
+	* g++.dg/torture/pr42739.C: New testcase.
+
 2010-01-15  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/template/error45.C: Revert as part of reverting changes
