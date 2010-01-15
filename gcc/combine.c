@@ -2663,10 +2663,16 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  i2dest = SET_DEST (temp);
 	  i2dest_killed = dead_or_set_p (i2, i2dest);
 
+	  /* Replace the source in I2 with the new constant and make the
+	     resulting insn the new pattern for I3.  Then skip to where we
+	     validate the pattern.  Everything was set up above.  */
 	  SUBST (SET_SRC (temp),
 		 immed_double_const (olo, ohi, GET_MODE (SET_DEST (temp))));
 
 	  newpat = PATTERN (i2);
+
+          /* The dest of I3 has been replaced with the dest of I2.  */
+          changed_i3_dest = 1;
 	  goto validate_replacement;
 	}
     }
@@ -3038,8 +3044,6 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	}
     }
 
-  /* We come here when we are replacing a destination in I2 with the
-     destination of I3.  */
  validate_replacement:
 
   /* Note which hard regs this insn has as inputs.  */
