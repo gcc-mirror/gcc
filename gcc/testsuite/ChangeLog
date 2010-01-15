@@ -1,3 +1,8 @@
+2010-01-14 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42684
+	* gfortran.dg/interface_31.f90: New test.
+
 2010-01-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr42747.c: New file.
