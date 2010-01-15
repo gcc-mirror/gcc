@@ -1,3 +1,10 @@
+2010-01-15  Phil Muldoon  <pmuldoon@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdStringPrinter.__init__):
+	Remove encoding argument.
+	(StdStringPrinter.to_string): Do not compute or pass encoding.
+	Use lazy_string over string function.
+
 2010-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/c_std/cstring (memchr): Forward to the builtin.

@@ -1,6 +1,6 @@
 # Pretty-printers for libstc++.
 
-# Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -529,18 +529,10 @@ class StdDequeIteratorPrinter:
 class StdStringPrinter:
     "Print a std::basic_string of some kind"
 
-    def __init__(self, encoding, val):
-        self.encoding = encoding
+    def __init__(self, val):
         self.val = val
 
     def to_string(self):
-        # Look up the target encoding as late as possible.
-        encoding = self.encoding
-        if encoding == 0:
-            encoding = gdb.parameter('target-charset')
-        elif encoding == 1:
-            encoding = gdb.parameter('target-wide-charset')
-
         # Make sure &string works, too.
         type = self.val.type
         if type.code == gdb.TYPE_CODE_REF:
@@ -554,7 +546,7 @@ class StdStringPrinter:
         reptype = gdb.lookup_type (str (realtype) + '::_Rep').pointer ()
         header = ptr.cast(reptype) - 1
         len = header.dereference ()['_M_length']
-        return self.val['_M_dataplus']['_M_p'].string (encoding, length = len)
+        return self.val['_M_dataplus']['_M_p'].lazy_string (length = len)
 
     def display_hint (self):
         return 'string'
@@ -687,10 +679,7 @@ def build_libstdcxx_dictionary ():
     # libstdc++ objects requiring pretty-printing.
     # In order from:
     # http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01847.html
-    pretty_printers_dict[re.compile('^std::basic_string<char(,.*)?>$')] = lambda val: StdStringPrinter(0, val)
-    pretty_printers_dict[re.compile('^std::basic_string<wchar_t(,.*)?>$')] = lambda val: StdStringPrinter(1, val)
-    pretty_printers_dict[re.compile('^std::basic_string<char16_t(,.*)?>$')] = lambda val: StdStringPrinter('UTF-16', val)
-    pretty_printers_dict[re.compile('^std::basic_string<char32_t(,.*)?>$')] = lambda val: StdStringPrinter('UTF-32', val)
+    pretty_printers_dict[re.compile('^std::basic_string<.*>$')] = lambda val: StdStringPrinter(val)
     pretty_printers_dict[re.compile('^std::bitset<.*>$')] = lambda val: StdBitsetPrinter("std::bitset", val)
     pretty_printers_dict[re.compile('^std::deque<.*>$')] = lambda val: StdDequePrinter("std::deque", val)
     pretty_printers_dict[re.compile('^std::list<.*>$')] = lambda val: StdListPrinter("std::list", val)
