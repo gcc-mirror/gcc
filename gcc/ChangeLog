@@ -1,5 +1,13 @@
 2010-01-15  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/42739
+	* tree-cfgcleanup.c (remove_forwarder_block): Move destination
+	labels of computed or non-local gotos to the destination.
+	* tree-cfg.c (gimple_verify_flow_info): Verify that a EH
+	landing pad label is the first label.
+
+2010-01-15  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (gen_lsm_tmp_name): Fix bogus fallthru.
 
 2010-01-14  Michael Meissner  <meissner@linux.vnet.ibm.com>

@@ -1,0 +1,16 @@
+/* { dg-do compile } */
+
+struct s { ~s() { s(); } };
+
+int f()
+{
+  M:
+    s o = s();
+    f();
+    f();
+
+  L:
+    goto *(f() ? &&L : &&M);
+
+    return 0;
+}

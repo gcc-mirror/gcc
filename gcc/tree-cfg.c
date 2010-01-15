@@ -4268,6 +4268,15 @@ gimple_verify_flow_info (void)
 	      err = 1;
 	    }
 
+	  if (prev_stmt && EH_LANDING_PAD_NR (label) != 0)
+	    {
+	      error ("EH landing pad label ");
+	      print_generic_expr (stderr, label, 0);
+	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
+		       bb->index);
+	      err = 1;
+	    }
+
 	  if (label_to_block (label) != bb)
 	    {
 	      error ("label ");

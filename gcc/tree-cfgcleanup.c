@@ -338,7 +338,6 @@ remove_forwarder_block (basic_block bb)
   gimple label;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
-  bool seen_abnormal_edge = false;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
      However it may happen that the infinite loop is created
@@ -365,14 +364,10 @@ remove_forwarder_block (basic_block bb)
 
      So if there is an abnormal edge to BB, proceed only if there is
      no abnormal edge to DEST and there are no phi nodes in DEST.  */
-  if (has_abnormal_incoming_edge_p (bb))
-    {
-      seen_abnormal_edge = true;
-
-      if (has_abnormal_incoming_edge_p (dest)
-	  || !gimple_seq_empty_p (phi_nodes (dest)))
-	return false;
-    }
+  if (has_abnormal_incoming_edge_p (bb)
+      && (has_abnormal_incoming_edge_p (dest)
+	  || !gimple_seq_empty_p (phi_nodes (dest))))
+    return false;
 
   /* If there are phi nodes in DEST, and some of the blocks that are
      predecessors of BB are also predecessors of DEST, check that the
@@ -419,16 +414,40 @@ remove_forwarder_block (basic_block bb)
 	}
     }
 
-  if (seen_abnormal_edge)
+  /* Move nonlocal labels and computed goto targets as well as user
+     defined labels and labels with an EH landing pad number to the
+     new block, so that the redirection of the abnormal edges works,
+     jump targets end up in a sane place and debug information for
+     labels is retained.  */
+  gsi_to = gsi_start_bb (dest);
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      /* Move the labels to the new block, so that the redirection of
-	 the abnormal edges works.  */
-      gsi_to = gsi_start_bb (dest);
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+      tree decl;
+      label = gsi_stmt (gsi);
+      if (is_gimple_debug (label))
+	break;
+      decl = gimple_label_label (label);
+      if (EH_LANDING_PAD_NR (decl) != 0
+	  || DECL_NONLOCAL (decl)
+	  || FORCED_LABEL (decl)
+	  || !DECL_ARTIFICIAL (decl))
 	{
-	  label = gsi_stmt (gsi);
-	  gcc_assert (gimple_code (label) == GIMPLE_LABEL
-		      || is_gimple_debug (label));
+	  gsi_remove (&gsi, false);
+	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
+	}
+      else
+	gsi_next (&gsi);
+    }
+
+  /* Move debug statements if the destination has just a single
+     predecessor.  */
+  if (single_pred_p (dest))
+    {
+      gsi_to = gsi_after_labels (dest);
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
+	{
+	  if (!is_gimple_debug (gsi_stmt (gsi)))
+	    break;
 	  gsi_remove (&gsi, false);
 	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
 	}
