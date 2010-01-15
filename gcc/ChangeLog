@@ -1,3 +1,7 @@
+2010-01-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (gen_lsm_tmp_name): Fix bogus fallthru.
+
 2010-01-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/42747
