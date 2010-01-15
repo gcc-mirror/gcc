@@ -11935,7 +11935,7 @@
 	  UNSPEC_VPERMIL2F128))]
   "TARGET_AVX"
 {
-  int mask = INTVAL (operands[2]);
+  int mask = INTVAL (operands[3]);
   if ((mask & 0x88) == 0)
     {
       rtx perm[<ssescalarnum>], t1, t2;
