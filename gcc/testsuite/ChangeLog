@@ -1,3 +1,8 @@
+2010-01-15  Jing Yu  <jingyu@google.com>
+
+	PR rtl-optimization/42691
+	* gcc.c-torture/execute/pr42691.c: New.
+
 2010-01-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42739
