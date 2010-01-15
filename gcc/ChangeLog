@@ -1,9 +1,3 @@
-2010-01-15  Jing Yu  <jingyu@google.com>
-
-	PR rtl-optimization/42691
-	* combine.c (try_combine): Set changed_i3_dest to 1 when I2 and I3 set
-	a pseudo to a constant and are merged, and adjust comments.
-
 2010-01-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/sse.md (avx_vperm2f128<mode>3): Fix typo.
