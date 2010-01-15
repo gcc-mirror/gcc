@@ -1212,13 +1212,18 @@ revert (st_parameter_dt *dtp)
 
 /* parse_format()-- Parse a format string.  */
 
+#define FORMAT_CACHE_STRING_LIMIT 256
+
 void
 parse_format (st_parameter_dt *dtp)
 {
   format_data *fmt;
   bool format_cache_ok;
 
-  format_cache_ok = !is_internal_unit (dtp);
+  /* Don't cache for internal units and set an arbitrary limit on the size of
+     format strings we will cache.  (Avoids memory issues.)  */
+  format_cache_ok = !is_internal_unit (dtp)
+		    && (dtp->format_len < FORMAT_CACHE_STRING_LIMIT );
 
   /* Lookup format string to see if it has already been parsed.  */
   if (format_cache_ok)
