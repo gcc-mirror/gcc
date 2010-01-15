@@ -1776,8 +1776,8 @@ gen_lsm_tmp_name (tree ref)
       name = get_name (TREE_OPERAND (ref, 1));
       if (!name)
 	name = "F";
-      lsm_tmp_name_add ("_");
       lsm_tmp_name_add (name);
+      break;
 
     case ARRAY_REF:
       gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
