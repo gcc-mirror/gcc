@@ -4722,7 +4722,7 @@ java_lang_header_files = $(filter-out java/lang/Object.h java/lang/Class.h,$(pat
 
 java/lang.list: $(java_lang_source_files)
 	@$(mkinstalldirs) $(dir $@)
-	echo $(srcdir)/classpath/lib/java/lang/*.class | tr ' ' '\n' | fgrep -v Object.class | fgrep -v Class.class | egrep -v '(Ecos|Posix|Win32)Process' > java/lang.list
+	echo $(srcdir)/classpath/lib/java/lang/*.class | tr ' ' '\012' | fgrep -v Object.class | fgrep -v Class.class | egrep -v '(Ecos|Posix|Win32)Process' > java/lang.list
 
 -include java/lang.deps
 

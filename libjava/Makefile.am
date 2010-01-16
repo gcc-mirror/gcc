@@ -26,7 +26,7 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 	     echo $$i; i=`expr $$i + $(write_entries_to_file_split)`; done), \
 	  $(shell echo $(wordlist $(range), \
 			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1)) \
-	     | tr ' ' '\n' >> $(2)))
+	     | tr ' ' '\012' >> $(2)))
 
 ## ################################################################
 

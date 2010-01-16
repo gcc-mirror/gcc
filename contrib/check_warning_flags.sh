@@ -3,7 +3,7 @@
 # Check that the warning flags documented in invoke.texi match up
 # with what the compiler accepts.
 #
-# Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 # Written by Ralf Wildenhues <Ralf.Wildenhues@gmx.de>.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -147,7 +147,7 @@ remove_problematic_help_flags='
   /-$/d
   /=/d'
 help_flags=`
-  $CC --help -v 2>/dev/null | tr ' ' '\n' |
+  $CC --help -v 2>/dev/null | tr ' ' '\012' |
     sed -n '
       b a
       :a

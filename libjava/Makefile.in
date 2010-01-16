@@ -893,7 +893,7 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) \
 	     echo $$i; i=`expr $$i + $(write_entries_to_file_split)`; done), \
 	  $(shell echo $(wordlist $(range), \
 			  $(shell expr $(range) + $(write_entries_to_file_split) - 1), $(1)) \
-	     | tr ' ' '\n' >> $(2)))
+	     | tr ' ' '\012' >> $(2)))
 
 
 # This is required by TL_AC_GXX_INCLUDE_DIR.
@@ -11946,7 +11946,7 @@ java/io.list: $(java_io_source_files)
 
 java/lang.list: $(java_lang_source_files)
 	@$(mkinstalldirs) $(dir $@)
-	echo $(srcdir)/classpath/lib/java/lang/*.class | tr ' ' '\n' | fgrep -v Object.class | fgrep -v Class.class | egrep -v '(Ecos|Posix|Win32)Process' > java/lang.list
+	echo $(srcdir)/classpath/lib/java/lang/*.class | tr ' ' '\012' | fgrep -v Object.class | fgrep -v Class.class | egrep -v '(Ecos|Posix|Win32)Process' > java/lang.list
 
 -include java/lang.deps
 
