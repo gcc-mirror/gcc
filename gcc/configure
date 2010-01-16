@@ -23630,6 +23630,50 @@ if test $gcc_cv_as_powerpc_tls_markers = yes; then
 $as_echo "#define HAVE_AS_TLS_MARKERS 1" >>confdefs.h
 
 fi
+
+    case $target in
+      *-*-aix*)
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .ref support" >&5
+$as_echo_n "checking assembler for .ref support... " >&6; }
+if test "${gcc_cv_as_aix_ref+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_aix_ref=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2.21.0 \* 1000 \) + gcc_cv_as_aix_ref=yes \) \* 1000 + `
+  then :
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.csect stuff[rw]
+	     stuff:
+		.long 1
+		.extern sym
+		.ref sym
+	  ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_aix_ref=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_aix_ref" >&5
+$as_echo "$gcc_cv_as_aix_ref" >&6; }
+if test $gcc_cv_as_aix_ref = yes; then
+
+$as_echo "#define HAVE_AS_REF 1" >>confdefs.h
+
+fi
+	;;
+    esac
     ;;
 
   mips*-*-*)

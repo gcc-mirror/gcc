@@ -1677,8 +1677,11 @@ main (int argc, char **argv)
        control whether we need a first pass link later on or not, and what
        will remain to be scanned there.  */
 
-    scanfilter this_filter
-      = shared_obj ? ld1_filter : (ld1_filter & ~SCAN_DWEH);
+    scanfilter this_filter = ld1_filter;
+#if HAVE_AS_REF
+    if (!shared_obj)
+      this_filter &= ~SCAN_DWEH;
+#endif
 
     while (export_object_lst < object)
       scan_prog_file (*export_object_lst++, PASS_OBJ, this_filter);

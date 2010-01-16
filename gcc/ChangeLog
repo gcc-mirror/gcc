@@ -1,3 +1,13 @@
+2010-01-16  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* configure.ac (HAVE_AS_REF): New C macro.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* collect2.c (main): Only postpone SCAN_DWEH to the second pass
+	if HAVE_AS_REF.
+	* config/rs6000/aix.h (ASM_OUTPUT_DWARF_TABLE_REF): Only define
+	if HAVE_AS_REF.
+
 2010-01-16  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_USE_BLOCKS_FOR_CONSTANT_P): Fix argument types.

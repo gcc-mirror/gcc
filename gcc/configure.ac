@@ -3326,6 +3326,21 @@ LCF0:
       [ bl __tls_get_addr(x@tlsgd)],,
       [AC_DEFINE(HAVE_AS_TLS_MARKERS, 1,
 	  [Define if your assembler supports arg info for __tls_get_addr.])])
+
+    case $target in
+      *-*-aix*)
+	gcc_GAS_CHECK_FEATURE([.ref support],
+	  gcc_cv_as_aix_ref, [2.21.0],,
+	  [	.csect stuff[[rw]]
+	     stuff:
+		.long 1
+		.extern sym
+		.ref sym
+	  ],,
+	  [AC_DEFINE(HAVE_AS_REF, 1,
+	    [Define if your assembler supports .ref])])
+	;;
+    esac
     ;;
 
   mips*-*-*)
