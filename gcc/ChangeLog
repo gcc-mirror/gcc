@@ -1,3 +1,57 @@
+2010-01-16  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi (TARGET_USE_BLOCKS_FOR_CONSTANT_P): Fix argument types.
+
+	(TARGET_SUPPORT_VECTOR_MISALIGNMENT): Fix argument types.
+
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Fix argument types.
+
+	(TARGET_SCHED_ALLOC_SCHED_CONTEXT): Put 'void *' in braces.
+
+	(TARGET_IN_SMALL_DATA_P): Fix argument type.
+
+	(TARGET_BINDS_LOCAL_P): Fix argument type.
+
+	(TARGET_ASM_FILE_END): Use prototype.
+
+	(TARGET_ASM_RECORD_GCC_SWITCHES): Don't put 'int' in braces.
+
+	(TARGET_DWARF_CALLING_CONVENTION): Fix argument type.
+
+	(TARGET_COMP_TYPE_ATTRIBUTES): Fix argument types.
+
+	(TARGET_VALID_DLLIMPORT_ATTRIBUTE_P): Fix argument type.
+
+	(TARGET_EMUTLS_VAR_ALIGN_FIXED): Don't put 'bool' in braces.
+	(TARGET_EMUTLS_DEBUG_FORM_TLS_ADDRESS): Likewise.
+
+	(TARGET_PCH_VALID_P): Put 'const char *' in braces.
+	(TARGET_CHECK_PCH_TARGET_FLAGS): Likewise.
+
+	(TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P): Don't put 'bool' in braces.
+	(TARGET_ADDR_SPACE_SUBSET_P): Likewise.
+	(TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS): Don't put 'rtx' in braces.
+	(TARGET_ADDR_SPACE_CONVERT): Likewise.
+
+	(TARGET_CASE_VALUES_THRESHOLD): Put 'unsigned int' in braces.
+
+	(TARGET_MACHINE_DEPENDENT_REORG: Use prototype.
+
+	(TARGET_INIT_BUILTINS): Use prototype.
+
+	(TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN):
+	Put 'const char *' in braces.  Fix parameter types.
+	(TARGET_INVALID_CONVERSION): Fix parameter types.
+	(TARGET_INVALID_UNARY_OP, TARGET_INVALID_BINARY_OP): Likewise.
+	(TARGET_INVALID_PARAMETER_TYPE, TARGET_INVALID_RETURN_TYPE): Likewise.
+
+	(TARGET_PROMOTED_TYPE): Remove braces around 'tree'.
+	Fix argument type.
+
+	(TARGET_CONVERT_TO_TYPE): Remove braces around 'tree'.
+
+	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Remove braces around 'bool'.
+
 2010-01-15  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_HELP): Fix return type.
