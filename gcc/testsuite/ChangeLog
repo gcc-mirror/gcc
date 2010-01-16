@@ -1,3 +1,8 @@
+2010-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42761
+	* g++.dg/cpp0x/decltype22.C: New.
+
 2010-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/42760

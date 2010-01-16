@@ -1,3 +1,9 @@
+2010-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42761
+	* semantics.c (finish_decltype_type): Within a template, treat
+	unresolved CALL_EXPR as dependent.
+
 2010-01-15  Dodji Seketeli  <dodji@redhat.com>
 
 	* error.c (dump_template_parms,count_non_default_template_args):
