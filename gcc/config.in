@@ -393,6 +393,12 @@
 #endif
 
 
+/* Define if your assembler supports .ref */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_REF
+#endif
+
+
 /* Define if your assembler supports .register. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_REGISTER_PSEUDO_OP
