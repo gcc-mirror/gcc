@@ -1,3 +1,52 @@
+2010-01-15  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi (TARGET_HELP): Fix return type.
+
+	(TARGET_PROMOTE_FUNCTION_MODE): Put 'enum machine_mode'
+	in braces.  Fix argument types.
+
+	(TARGET_LIBGCC_CMP_RETURN_MODE): Use prototype.
+
+	(TARGET_LIBGCC_SHIFT_COUNT_MODE): Use prototype.
+
+	(TARGET_MS_BITFIELD_LAYOUT_P): Fix argument type.
+
+	(TARGET_DECIMAL_FLOAT_SUPPORTED_P): Don't put 'bool' in braces.
+	(TARGET_FIXED_POINT_SUPPORTED_P): Likewise.
+
+	(TARGET_MANGLE_TYPE): Fix argument types.
+
+	(TARGET_IRA_COVER_CLASSES): Use prototype.
+
+	(TARGET_BUILTIN_SETJMP_FRAME_VALUE): Fix return type.  Use prototype.
+
+	(TARGET_CAN_ELIMINATE): Use identifiers for argument names.
+
+	(TARGET_PROMOTE_PROTOTYPES): Fix argument type.
+
+	(TARGET_MUST_PASS_IN_STACK): Fix argument type.
+
+	(TARGET_CALLEE_COPIES): Fix argument types.
+
+	(TARGET_SPLIT_COMPLEX_ARG): Fix argument type.
+
+	(TARGET_GIMPLIFY_VA_ARG_EXPR): Fix argument types.
+
+	(TARGET_FUNCTION_VALUE): Fix argument types.
+
+	(TARGET_RETURN_IN_MSB): Fix argument type.
+
+	(TARGET_RETURN_IN_MEMORY): Fix argument types.
+
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): Fix argument types.
+
+	(TARGET_EXTRA_LIVE_ON_ENTRY): Fix argument type.
+
+	(TARGET_STRICT_ARGUMENT_NAMING): Make literal in text
+	agree with return type.
+
+	(TARGET_PRETEND_OUTGOING_VARARGS_NAMED): Add Prototype.
+
 2010-01-15  Jing Yu  <jingyu@google.com>
 
 	PR rtl-optimization/42691

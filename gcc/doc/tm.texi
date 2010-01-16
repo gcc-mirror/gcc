@@ -858,7 +858,7 @@ this macro!} The debugging options are not supposed to alter the
 generated code.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_HELP (void)
+@deftypefn {Target Hook} void TARGET_HELP (void)
 This hook is called in response to the user invoking
 @option{--target-help} on the command line.  It gives the target a
 chance to display extra information on the target specific command
@@ -1054,7 +1054,7 @@ sign-extend the result to 64 bits.  On such machines, set
 Do not define this macro if it would never modify @var{m}.
 @end defmac
 
-@deftypefn {Target Hook} enum machine_mode TARGET_PROMOTE_FUNCTION_MODE (tree @var{type}, enum machine_mode @var{mode}, int *@var{punsignedp}, tree @var{funtype}, int @var{for_return})
+@deftypefn {Target Hook} {enum machine_mode} TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, enum machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
 function return values.  The target hook should return the new mode
 and possibly change @code{*@var{punsignedp}} if the promotion should
@@ -1409,14 +1409,14 @@ You would most commonly define this macro if the @code{allocate_stack}
 pattern needs to support both a 32- and a 64-bit mode.
 @end defmac
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_CMP_RETURN_MODE ()
+@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_CMP_RETURN_MODE (void)
 This target hook should return the mode to be used for the return value
 of compare instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_SHIFT_COUNT_MODE ()
+@deftypefn {Target Hook} {enum machine_mode} TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
 This target hook should return the mode to be used for the shift count operand
 of shift instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
@@ -1444,7 +1444,7 @@ floating-point arithmetic.
 The default definition of this macro returns false for all sizes.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (tree @var{record_type})
+@deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (const_tree @var{record_type})
 This target hook returns @code{true} if bit-fields in the given
 @var{record_type} are to be laid out following the rules of Microsoft
 Visual C/C++, namely: (i) a bit-field won't share the same storage
@@ -1472,11 +1472,11 @@ precedence for that field, but the alignment of the rest of the structure
 may affect its placement.
 @end deftypefn
 
-@deftypefn {Target Hook} {bool} TARGET_DECIMAL_FLOAT_SUPPORTED_P (void)
+@deftypefn {Target Hook} bool TARGET_DECIMAL_FLOAT_SUPPORTED_P (void)
 Returns true if the target supports decimal floating point.
 @end deftypefn
 
-@deftypefn {Target Hook} {bool} TARGET_FIXED_POINT_SUPPORTED_P (void)
+@deftypefn {Target Hook} bool TARGET_FIXED_POINT_SUPPORTED_P (void)
 Returns true if the target supports fixed-point arithmetic.
 @end deftypefn
 
@@ -1494,7 +1494,7 @@ This hook allows the backend to perform additional instantiations on rtl
 that are not actually in any insns yet, but will be later.
 @end deftypefn
 
-@deftypefn {Target Hook} {const char *} TARGET_MANGLE_TYPE (tree @var{type})
+@deftypefn {Target Hook} {const char *} TARGET_MANGLE_TYPE (const_tree @var{type})
 If your target defines any fundamental types, or any types your target
 uses should be mangled differently from the default, define this hook
 to return the appropriate encoding for these types as part of a C++
@@ -2922,7 +2922,7 @@ as below:
 @end smallexample
 @end defmac
 
-@deftypefn {Target Hook} {const enum reg_class *} TARGET_IRA_COVER_CLASSES ()
+@deftypefn {Target Hook} {const enum reg_class *} TARGET_IRA_COVER_CLASSES (void)
 Return an array of cover classes for the Integrated Register Allocator
 (@acronym{IRA}).  Cover classes are a set of non-intersecting register
 classes covering all hard registers used for register allocation
@@ -3239,7 +3239,7 @@ before we can access arbitrary stack frames.  You will seldom need to
 define this macro.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_BUILTIN_SETJMP_FRAME_VALUE ()
+@deftypefn {Target Hook} rtx TARGET_BUILTIN_SETJMP_FRAME_VALUE (void)
 This target hook should return an rtx that is used to store
 the address of the current frame into the built in @code{setjmp} buffer.
 The default value, @code{virtual_stack_vars_rtx}, is correct for most
@@ -3841,10 +3841,10 @@ Note that the elimination of the argument pointer with the stack pointer is
 specified first since that is the preferred elimination.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_CAN_ELIMINATE (const int @var{from-reg}, const int @var{to-reg})
+@deftypefn {Target Hook} bool TARGET_CAN_ELIMINATE (const int @var{from_reg}, const int @var{to_reg})
 This target hook should returns @code{true} if the compiler is allowed to
-try to replace register number @var{from-reg} with register number
-@var{to-reg}.  This target hook need only be defined if @code{ELIMINABLE_REGS}
+try to replace register number @var{from_reg} with register number
+@var{to_reg}.  This target hook need only be defined if @code{ELIMINABLE_REGS}
 is defined, and will usually be @code{true}, since most of the cases
 preventing register elimination are things that the compiler already
 knows about.
@@ -3868,7 +3868,7 @@ The macros in this section control how arguments are passed
 on the stack.  See the following section for other macros that
 control passing certain arguments in registers.
 
-@deftypefn {Target Hook} bool TARGET_PROMOTE_PROTOTYPES (tree @var{fntype})
+@deftypefn {Target Hook} bool TARGET_PROMOTE_PROTOTYPES (const_tree @var{fntype})
 This target hook returns @code{true} if an argument declared in a
 prototype as an integral type smaller than @code{int} should actually be
 passed as an @code{int}.  In addition to avoiding errors in certain
@@ -4083,7 +4083,7 @@ defined, the argument will be computed in the stack and then loaded into
 a register.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (enum machine_mode @var{mode}, tree @var{type})
+@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (enum machine_mode @var{mode}, const_tree @var{type})
 This target hook should return @code{true} if we should not pass @var{type}
 solely in registers.  The file @file{expr.h} defines a
 definition that is usually appropriate, refer to @file{expr.h} for additional
@@ -4136,7 +4136,7 @@ The pointer is passed in whatever way is appropriate for passing a pointer
 to that type.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
+@deftypefn {Target Hook} bool TARGET_CALLEE_COPIES (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, const_tree @var{type}, bool @var{named})
 The function argument described by the parameters to this hook is
 known to be passed by reference.  The hook should return true if the
 function argument should be copied by the callee instead of copied
@@ -4285,7 +4285,7 @@ used for this purpose since all function arguments are pushed on the
 stack.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_SPLIT_COMPLEX_ARG (tree @var{type})
+@deftypefn {Target Hook} bool TARGET_SPLIT_COMPLEX_ARG (const_tree @var{type})
 This hook should return true if parameter of type @var{type} are passed
 as two scalar parameters.  By default, GCC will attempt to pack complex
 arguments into the target's word size.  Some ABIs require complex arguments
@@ -4315,7 +4315,7 @@ type of @var{type}. If @var{type} is not a valid va_list type, it returns
 @code{NULL_TREE}.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_GIMPLIFY_VA_ARG_EXPR (tree @var{valist}, tree @var{type}, tree *@var{pre_p}, tree *@var{post_p})
+@deftypefn {Target Hook} tree TARGET_GIMPLIFY_VA_ARG_EXPR (tree @var{valist}, tree @var{type}, gimple_seq *@var{pre_p}, gimple_seq *@var{post_p})
 This hook performs target-specific gimplification of
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the
 arguments to @code{va_arg}; the latter two are as in
@@ -4355,7 +4355,7 @@ must have move patterns for this mode.
 This section discusses the macros that control returning scalars as
 values---values that can fit in registers.
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_VALUE (tree @var{ret_type}, tree @var{fn_decl_or_type}, bool @var{outgoing})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_VALUE (const_tree @var{ret_type}, const_tree @var{fn_decl_or_type}, bool @var{outgoing})
 
 Define this to return an RTX representing the place where a function
 returns or receives a value of data type @var{ret_type}, a tree node
@@ -4469,7 +4469,7 @@ need more space than is implied by @code{FUNCTION_VALUE_REGNO_P} for
 saving and restoring an arbitrary return value.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_RETURN_IN_MSB (tree @var{type})
+@deftypefn {Target Hook} bool TARGET_RETURN_IN_MSB (const_tree @var{type})
 This hook should return true if values of type @var{type} are returned
 at the most significant end of a register (in other words, if they are
 padded at the least significant end).  You can assume that @var{type}
@@ -4499,7 +4499,7 @@ address}.
 This section describes how to control returning structure values in
 memory.
 
-@deftypefn {Target Hook} bool TARGET_RETURN_IN_MEMORY (tree @var{type}, tree @var{fntype})
+@deftypefn {Target Hook} bool TARGET_RETURN_IN_MEMORY (const_tree @var{type}, const_tree @var{fntype})
 This target hook should return a nonzero value to say to return the
 function value in memory, just as large structures are always returned.
 Here @var{type} will be the data type of the value, and @var{fntype}
@@ -4840,7 +4840,7 @@ front end will generate a less efficient heavyweight thunk that calls
 not support varargs.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ASM_CAN_OUTPUT_MI_THUNK (tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, HOST_WIDE_INT @var{vcall_offset}, tree @var{function})
+@deftypefn {Target Hook} bool TARGET_ASM_CAN_OUTPUT_MI_THUNK (const_tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, HOST_WIDE_INT @var{vcall_offset}, const_tree @var{function})
 A function that returns true if TARGET_ASM_OUTPUT_MI_THUNK would be able
 to output the assembler code for the thunk function specified by the
 arguments it is passed, and false otherwise.  In the latter case, the
@@ -4906,7 +4906,7 @@ as the @code{sibcall} md pattern can not fail, or fall over to a
 may vary greatly between different architectures.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_EXTRA_LIVE_ON_ENTRY (bitmap *@var{regs})
+@deftypefn {Target Hook} void TARGET_EXTRA_LIVE_ON_ENTRY (bitmap @var{regs})
 Add any hard registers to @var{regs} that are live on entry to the
 function.  This hook only needs to be defined to provide registers that
 cannot be found by examination of FUNCTION_ARG_REGNO_P, the callee saved
@@ -5087,10 +5087,10 @@ but @code{TARGET_PRETEND_OUTGOING_VARARGS_NAMED} returns @code{true},
 then all arguments are treated as named.  Otherwise, all named arguments
 except the last are treated as named.
 
-You need not define this hook if it always returns zero.
+You need not define this hook if it always returns @code{false}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_PRETEND_OUTGOING_VARARGS_NAMED
+@deftypefn {Target Hook} bool TARGET_PRETEND_OUTGOING_VARARGS_NAMED (CUMULATIVE_ARGS *@var{ca})
 If you need to conditionally change ABIs so that one works with
 @code{TARGET_SETUP_INCOMING_VARARGS}, but the other works like neither
 @code{TARGET_SETUP_INCOMING_VARARGS} nor @code{TARGET_STRICT_ARGUMENT_NAMING} was
