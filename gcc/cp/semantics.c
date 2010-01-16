@@ -4803,6 +4803,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
       if (type && !type_uses_auto (type))
 	return type;
 
+    treat_as_dependent:
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type)
@@ -4930,6 +4931,11 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
                   && (TREE_CODE (TREE_TYPE (target_type)) == FUNCTION_TYPE
                       || TREE_CODE (TREE_TYPE (target_type)) == METHOD_TYPE))
                 type = TREE_TYPE (TREE_TYPE (target_type));
+	      else if (processing_template_decl)
+		/* Within a template finish_call_expr doesn't resolve
+		   CALL_EXPR_FN, so even though this decltype isn't really
+		   dependent let's defer resolving it.  */
+		goto treat_as_dependent;
               else
                 sorry ("unable to determine the declared type of expression %<%E%>",
                        expr);
