@@ -1,3 +1,11 @@
+2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (write_entries_to_file): Use \012 instead of \n
+	with tr.
+	* scripts/makemake.tcl: Likewise.
+	* sources.am: Regenerate.
+	* Makefile.in: Regenerate.
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice

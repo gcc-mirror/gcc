@@ -1,3 +1,9 @@
+2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR gcc/42525
+	* Makefile.in (write_entries_to_file, install-plugin):
+	Use \012 instead of \n with tr.
+
 2010-01-16  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* configure.ac (HAVE_AS_REF): New C macro.
