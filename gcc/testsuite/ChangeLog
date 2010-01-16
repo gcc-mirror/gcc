@@ -1,3 +1,8 @@
+2010-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42760
+	* g++.dg/torture/pr42760.C: New test.
+
 2010-01-15  Jing Yu  <jingyu@google.com>
 
 	PR rtl-optimization/42691
