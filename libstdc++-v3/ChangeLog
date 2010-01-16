@@ -1,3 +1,9 @@
+2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libstdc++/35942
+	* configure.ac: Remove -lstdc++ from libtool's postdeps_CXX.
+	* configure: Regenerate.
+
 2010-01-15  Phil Muldoon  <pmuldoon@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdStringPrinter.__init__):

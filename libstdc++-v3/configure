@@ -14815,6 +14815,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# Eliminate -lstdc++ addition to postdeps for cross compiles.
+postdeps_CXX=`echo " $postdeps_CXX " | sed 's, -lstdc++ ,,g'`
+
 # Possibly disable most of the library.
 ## TODO: Consider skipping unncessary tests altogether in this case, rather
 ## than just ignoring the results.  Faster /and/ more correct, win win.
@@ -14884,7 +14887,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14887 "configure"
+#line 14890 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15252,7 +15255,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15255 "configure"
+#line 15258 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15289,7 +15292,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15292 "configure"
+#line 15295 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15326,7 +15329,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15329 "configure"
+#line 15332 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15364,7 +15367,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15367 "configure"
+#line 15370 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15440,7 +15443,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15443 "configure"
+#line 15446 "configure"
 int main()
 {
   _Decimal32 d1;
