@@ -1,3 +1,9 @@
+2010-01-16  Harsha Jagasia  <harsha.jagasia@amd.com>
+
+	PR target/42664
+	* config/i386/i386.c (ix86_fixup_binary_operands):
+	Revert FMA4 fixup of operands.
+
 2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR gcc/42525
