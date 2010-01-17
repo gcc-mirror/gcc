@@ -13438,12 +13438,21 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       /* In theory, we could implement the above.  */
       /* DWARF cannot represent the unsigned compare operations
 	 natively.  */
-    case SS_TRUNCATE:
-    case US_TRUNCATE:
     case SS_MULT:
     case US_MULT:
     case SS_DIV:
     case US_DIV:
+    case SS_PLUS:
+    case US_PLUS:
+    case SS_MINUS:
+    case US_MINUS:
+    case SS_NEG:
+    case US_NEG:
+    case SS_ABS:
+    case SS_ASHIFT:
+    case US_ASHIFT:
+    case SS_TRUNCATE:
+    case US_TRUNCATE:
     case UDIV:
     case UMOD:
     case UNORDERED:
