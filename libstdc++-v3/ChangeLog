@@ -1,3 +1,17 @@
+2010-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional (_Bind<_Functor(_Bound_args...)>::__call):
+	Rename const version to __call_c and remove _Sfinae template
+	parameter.
+	(_Bind<_Functor(_Bound_args...)>::operator()): Adjust.
+
+	* include/std/functional: Pass everywhere temporary tuple<_Args...>
+	arguments by rvalue reference.
+
+	* testsuite/20_util/bind/cv_quals.cc: New.
+
+	* testsuite/20_util/bind/ref2.cc: Add missing test variables.
+
 2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libstdc++/35942
