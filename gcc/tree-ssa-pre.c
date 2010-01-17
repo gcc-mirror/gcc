@@ -1823,7 +1823,7 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
   pre_expr expr;
   int i;
 
-  if (!phi_nodes (phiblock))
+  if (gimple_seq_empty_p (phi_nodes (phiblock)))
     {
       bitmap_set_copy (dest, set);
       return;
@@ -2269,14 +2269,14 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	  goto maybe_dump_sets;
 	}
 
-      if (phi_nodes (first))
+      if (!gimple_seq_empty_p (phi_nodes (first)))
 	phi_translate_set (ANTIC_OUT, ANTIC_IN (first), block, first);
       else
 	bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
 
       for (i = 0; VEC_iterate (basic_block, worklist, i, bprime); i++)
 	{
-	  if (phi_nodes (bprime))
+	  if (!gimple_seq_empty_p (phi_nodes (bprime)))
 	    {
 	      bitmap_set_t tmp = bitmap_set_new ();
 	      phi_translate_set (tmp, ANTIC_IN (bprime), block, bprime);
@@ -2426,7 +2426,7 @@ compute_partial_antic_aux (basic_block block,
 	      FOR_EACH_EXPR_ID_IN_SET (ANTIC_IN (bprime), i, bi)
 		bitmap_value_insert_into_set (PA_OUT,
 					      expression_for_id (i));
-	      if (phi_nodes (bprime))
+	      if (!gimple_seq_empty_p (phi_nodes (bprime)))
 		{
 		  bitmap_set_t pa_in = bitmap_set_new ();
 		  phi_translate_set (pa_in, PA_IN (bprime), block, bprime);
