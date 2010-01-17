@@ -1,5 +1,16 @@
 2010-01-17  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/42248
+	* function.c (split_complex_args): Take a VEC to modify.
+	(assign_parms_augmented_arg_list): Build a VEC instead of
+	a chain of PARM_DECLs.
+	(assign_parms_unsplit_complex): Take a VEC of arguments.
+	Do not fixup unmodified parms.
+	(assign_parms): Deal with the VEC.
+	(gimplify_parameters): Likewise.
+
+2010-01-17  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-uncprop.c (uncprop_into_successor_phis): Fix PHI
 	node existence check.
 	* tree-vect-loop.c (vect_analyze_loop_form): Likewise.

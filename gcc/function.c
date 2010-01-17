@@ -2082,25 +2082,13 @@ assign_parms_initialize_all (struct assign_parm_data_all *all)
    entries of the component type.  Return a new list of substitutions are
    needed, else the old list.  */
 
-static tree
-split_complex_args (tree args)
+static void
+split_complex_args (VEC(tree, heap) **args)
 {
+  unsigned i;
   tree p;
 
-  /* Before allocating memory, check for the common case of no complex.  */
-  for (p = args; p; p = TREE_CHAIN (p))
-    {
-      tree type = TREE_TYPE (p);
-      if (TREE_CODE (type) == COMPLEX_TYPE
-	  && targetm.calls.split_complex_arg (type))
-        goto found;
-    }
-  return args;
-
- found:
-  args = copy_list (args);
-
-  for (p = args; p; p = TREE_CHAIN (p))
+  for (i = 0; VEC_iterate (tree, *args, i, p); ++i)
     {
       tree type = TREE_TYPE (p);
       if (TREE_CODE (type) == COMPLEX_TYPE
@@ -2111,6 +2099,7 @@ split_complex_args (tree args)
 	  bool addressable = TREE_ADDRESSABLE (p);
 
 	  /* Rewrite the PARM_DECL's type with its component.  */
+	  p = copy_node (p);
 	  TREE_TYPE (p) = subtype;
 	  DECL_ARG_TYPE (p) = TREE_TYPE (DECL_ARG_TYPE (p));
 	  DECL_MODE (p) = VOIDmode;
@@ -2124,6 +2113,7 @@ split_complex_args (tree args)
 	  DECL_IGNORED_P (p) = addressable;
 	  TREE_ADDRESSABLE (p) = 0;
 	  layout_decl (p, 0);
+	  VEC_replace (tree, *args, i, p);
 
 	  /* Build a second synthetic decl.  */
 	  decl = build_decl (EXPR_LOCATION (p),
@@ -2132,27 +2122,27 @@ split_complex_args (tree args)
 	  DECL_ARTIFICIAL (decl) = addressable;
 	  DECL_IGNORED_P (decl) = addressable;
 	  layout_decl (decl, 0);
-
-	  /* Splice it in; skip the new decl.  */
-	  TREE_CHAIN (decl) = TREE_CHAIN (p);
-	  TREE_CHAIN (p) = decl;
-	  p = decl;
+	  VEC_safe_insert (tree, heap, *args, ++i, decl);
 	}
     }
-
-  return args;
 }
 
 /* A subroutine of assign_parms.  Adjust the parameter list to incorporate
    the hidden struct return argument, and (abi willing) complex args.
    Return the new parameter list.  */
 
-static tree
+static VEC(tree, heap) *
 assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
 {
   tree fndecl = current_function_decl;
   tree fntype = TREE_TYPE (fndecl);
-  tree fnargs = DECL_ARGUMENTS (fndecl);
+  VEC(tree, heap) *fnargs = NULL;
+  tree arg;
+
+  for (arg = DECL_ARGUMENTS (fndecl); arg; arg = TREE_CHAIN (arg))
+    VEC_safe_push (tree, heap, fnargs, arg);
+
+  all->orig_fnargs = DECL_ARGUMENTS (fndecl);
 
   /* If struct value address is treated as the first argument, make it so.  */
   if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
@@ -2168,16 +2158,16 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
 
-      TREE_CHAIN (decl) = fnargs;
-      fnargs = decl;
+      TREE_CHAIN (decl) = all->orig_fnargs;
+      all->orig_fnargs = decl;
+      VEC_safe_insert (tree, heap, fnargs, 0, decl);
+
       all->function_result_decl = decl;
     }
 
-  all->orig_fnargs = fnargs;
-
   /* If the target wants to split complex arguments into scalars, do so.  */
   if (targetm.calls.split_complex_arg)
-    fnargs = split_complex_args (fnargs);
+    split_complex_args (&fnargs);
 
   return fnargs;
 }
@@ -3065,12 +3055,14 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
    undo the frobbing that we did in assign_parms_augmented_arg_list.  */
 
 static void
-assign_parms_unsplit_complex (struct assign_parm_data_all *all, tree fnargs)
+assign_parms_unsplit_complex (struct assign_parm_data_all *all,
+			      VEC(tree, heap) *fnargs)
 {
   tree parm;
   tree orig_fnargs = all->orig_fnargs;
+  unsigned i = 0;
 
-  for (parm = orig_fnargs; parm; parm = TREE_CHAIN (parm))
+  for (parm = orig_fnargs; parm; parm = TREE_CHAIN (parm), ++i)
     {
       if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE
 	  && targetm.calls.split_complex_arg (TREE_TYPE (parm)))
@@ -3078,8 +3070,8 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all, tree fnargs)
 	  rtx tmp, real, imag;
 	  enum machine_mode inner = GET_MODE_INNER (DECL_MODE (parm));
 
-	  real = DECL_RTL (fnargs);
-	  imag = DECL_RTL (TREE_CHAIN (fnargs));
+	  real = DECL_RTL (VEC_index (tree, fnargs, i));
+	  imag = DECL_RTL (VEC_index (tree, fnargs, i + 1));
 	  if (inner != GET_MODE (real))
 	    {
 	      real = gen_lowpart_SUBREG (inner, real);
@@ -3112,8 +3104,8 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all, tree fnargs)
 	    tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
 	  SET_DECL_RTL (parm, tmp);
 
-	  real = DECL_INCOMING_RTL (fnargs);
-	  imag = DECL_INCOMING_RTL (TREE_CHAIN (fnargs));
+	  real = DECL_INCOMING_RTL (VEC_index (tree, fnargs, i));
+	  imag = DECL_INCOMING_RTL (VEC_index (tree, fnargs, i + 1));
 	  if (inner != GET_MODE (real))
 	    {
 	      real = gen_lowpart_SUBREG (inner, real);
@@ -3121,20 +3113,8 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all, tree fnargs)
 	    }
 	  tmp = gen_rtx_CONCAT (DECL_MODE (parm), real, imag);
 	  set_decl_incoming_rtl (parm, tmp, false);
-	  fnargs = TREE_CHAIN (fnargs);
+	  i++;
 	}
-      else
-	{
-	  SET_DECL_RTL (parm, DECL_RTL (fnargs));
-	  set_decl_incoming_rtl (parm, DECL_INCOMING_RTL (fnargs), false);
-
-	  /* Set MEM_EXPR to the original decl, i.e. to PARM,
-	     instead of the copy of decl, i.e. FNARGS.  */
-	  if (DECL_INCOMING_RTL (parm) && MEM_P (DECL_INCOMING_RTL (parm)))
-	    set_mem_expr (DECL_INCOMING_RTL (parm), parm);
-	}
-
-      fnargs = TREE_CHAIN (fnargs);
     }
 }
 
@@ -3145,7 +3125,9 @@ static void
 assign_parms (tree fndecl)
 {
   struct assign_parm_data_all all;
-  tree fnargs, parm;
+  tree parm;
+  VEC(tree, heap) *fnargs;
+  unsigned i;
 
   crtl->args.internal_arg_pointer
     = targetm.calls.internal_arg_pointer ();
@@ -3153,7 +3135,7 @@ assign_parms (tree fndecl)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
-  for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
+  for (i = 0; VEC_iterate (tree, fnargs, i, parm); ++i)
     {
       struct assign_parm_data_one data;
 
@@ -3216,8 +3198,10 @@ assign_parms (tree fndecl)
 	assign_parm_setup_stack (&all, parm, &data);
     }
 
-  if (targetm.calls.split_complex_arg && fnargs != all.orig_fnargs)
+  if (targetm.calls.split_complex_arg)
     assign_parms_unsplit_complex (&all, fnargs);
+
+  VEC_free (tree, heap, fnargs);
 
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
@@ -3370,13 +3354,15 @@ gimple_seq
 gimplify_parameters (void)
 {
   struct assign_parm_data_all all;
-  tree fnargs, parm;
+  tree parm;
   gimple_seq stmts = NULL;
+  VEC(tree, heap) *fnargs;
+  unsigned i;
 
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
-  for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
+  for (i = 0; VEC_iterate (tree, fnargs, i, parm); ++i)
     {
       struct assign_parm_data_one data;
 
@@ -3453,6 +3439,8 @@ gimplify_parameters (void)
 	    }
 	}
     }
+
+  VEC_free (tree, heap, fnargs);
 
   return stmts;
 }
