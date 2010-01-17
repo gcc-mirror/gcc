@@ -96,6 +96,9 @@
 	(TARGET_GET_DRAP_RTX): Note that this is a hook.
 	Clarify language.
 
+	(TARGET_BUILTIN_RECIPROCAL): Fix argument types.
+	Rename argument tm_fn to md_fn.
+
 2010-01-16  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR target/42664
