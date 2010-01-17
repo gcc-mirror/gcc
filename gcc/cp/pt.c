@@ -8825,7 +8825,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       specialize R.  */
 	    gen_tmpl = most_general_template (DECL_TI_TEMPLATE (t));
 	    argvec = tsubst_template_args (DECL_TI_ARGS
-					   (DECL_TEMPLATE_RESULT (gen_tmpl)),
+					   (DECL_TEMPLATE_RESULT
+						  (DECL_TI_TEMPLATE (t))),
 					   args, complain, in_decl);
 
 	    /* Check to see if we already have this specialization.  */
