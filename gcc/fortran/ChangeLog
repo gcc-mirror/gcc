@@ -1,3 +1,15 @@
+2010-01-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42677
+	* gfortran.h (symbol_attribute): Remove 'ambiguous_interfaces'.
+	* interface.c (check_interface1): Move a warning message here from
+	resolve_fl_procedure.
+	(check_sym_interfaces): Removed 'attr.ambiguous_interfaces'.
+	* module.c (read_module): Remove call to gfc_check_interfaces, since
+	this comes too early here.
+	* resolve.c (resolve_fl_procedure): Move warning message to
+	check_interface1.
+
 2010-01-14 Jerry DeLisle <jvdelisle@gcc.gnu.org>
 
 	PR fortran/42684

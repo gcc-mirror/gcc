@@ -4482,8 +4482,6 @@ read_module (void)
 		 module_name);
     }
 
-  gfc_check_interfaces (gfc_current_ns);
-
   /* Now we should be in a position to fill f2k_derived with derived type
      extensions, since everything has been loaded.  */
   set_module_locus (&extensions);
