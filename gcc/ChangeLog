@@ -105,6 +105,8 @@
 	(TARGET_BUILTIN_RECIPROCAL): Fix argument types.
 	Rename argument tm_fn to md_fn.
 
+	(TARGET_OPTION_PRINT): Fix argument list.
+
 2010-01-16  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR target/42664
