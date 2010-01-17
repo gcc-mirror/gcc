@@ -6937,7 +6937,7 @@ gimple_execute_on_growing_pred (edge e)
 {
   basic_block bb = e->dest;
 
-  if (phi_nodes (bb))
+  if (!gimple_seq_empty_p (phi_nodes (bb)))
     reserve_phi_args_for_new_edge (bb);
 }
 
@@ -6947,7 +6947,7 @@ gimple_execute_on_growing_pred (edge e)
 static void
 gimple_execute_on_shrinking_pred (edge e)
 {
-  if (phi_nodes (e->dest))
+  if (!gimple_seq_empty_p (phi_nodes (e->dest)))
     remove_phi_args (e);
 }
 

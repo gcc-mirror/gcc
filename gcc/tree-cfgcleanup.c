@@ -875,7 +875,7 @@ merge_phi_nodes (void)
 
       /* We have to feed into another basic block with PHI
 	 nodes.  */
-      if (!phi_nodes (dest)
+      if (gimple_seq_empty_p (phi_nodes (dest))
 	  /* We don't want to deal with a basic block with
 	     abnormal edges.  */
 	  || has_abnormal_incoming_edge_p (bb))

@@ -456,7 +456,7 @@ uncprop_into_successor_phis (basic_block bb)
 
       /* If there are no PHI nodes in this destination, then there is
 	 no sense in recording any equivalences.  */
-      if (!phis)
+      if (gimple_seq_empty_p (phis))
 	continue;
 
       /* Record any equivalency associated with E.  */
