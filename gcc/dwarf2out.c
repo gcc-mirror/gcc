@@ -1,6 +1,6 @@
 /* Output Dwarf2 format symbol table information from GCC.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -13438,6 +13438,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       /* In theory, we could implement the above.  */
       /* DWARF cannot represent the unsigned compare operations
 	 natively.  */
+    case SS_TRUNCATE:
+    case US_TRUNCATE:
     case SS_MULT:
     case US_MULT:
     case SS_DIV:
