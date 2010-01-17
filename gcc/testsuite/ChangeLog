@@ -1,3 +1,13 @@
+2010-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2010-01-13  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/42542
+	* gcc.target/ia64/pr42542-1.c: New.
+	* gcc.target/ia64/pr42542-2.c: New.
+	* gcc.target/ia64/pr42542-3.c: New.
+
 2010-01-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42773
