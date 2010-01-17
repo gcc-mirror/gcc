@@ -1,6 +1,11 @@
 2010-01-17  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42697
+	*pt.c (tsubst_decl):  Revert commit for PR c++/42697.
+
+2010-01-17  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42697
 	*pt.c (tsubst_decl): Get the arguments of a specialization from
 	the specialization template, not from the most general template.
 
