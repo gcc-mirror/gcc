@@ -1,3 +1,7 @@
+2010-01-17  Laurent GUERBY  <laurent@guerby.net>
+
+	* gcc-interface/Makefile.in: Fix typo in arm*-*-linux-gnueabi.
+
 2010-01-11  Mikael Pettersson  <mikpe@it.uu.se>
 
 	* gcc-interface/Makefile.in: Add arm*-*-linux-gnueabi.
