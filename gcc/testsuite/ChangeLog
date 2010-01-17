@@ -1,3 +1,8 @@
+2010-01-17  Jie Zhang  <jie.zhang@analog.com>
+
+	PR debug/42767
+	* gcc.dg/debug/pr42767.c: New.
+
 2010-01-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42761
