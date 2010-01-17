@@ -22,42 +22,33 @@
 #include <functional>
 #include <testsuite_hooks.h>
 
-using namespace std::placeholders;
-
-int inc(int& i) { return ++i; }
+struct X
+{
+  int operator()() { return 0; }
+  int operator()() const { return 1; }
+  // int operator()() volatile { return 2; }
+  // int operator()() const volatile { return 3; }
+};
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  int counter = 0;
-  std::bind(&inc, _1)(counter);
-  VERIFY(counter == 1 );
-  std::bind(&inc, std::ref(counter))();
-  VERIFY(counter == 2 );
-}
+  auto b0 = std::bind(X());
+  VERIFY( b0() == 0 );
 
-struct Inc
-{
-  int operator()(int& i) const { return ++i; }
-  void operator()(int&&) const { }
+  const auto b1 = std::bind(X());
+  VERIFY( b1() == 1 );
 
-  int f(int& i) const { return ++i; }
-};
+  // volatile auto b2 = std::bind(X());
+  // VERIFY( b2() == 2 );
 
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  int counter = 0;
-  std::bind(Inc(), _1)(counter);
-  VERIFY(counter == 1 );
-  std::bind(&Inc::f, Inc(), std::ref(counter))();
-  VERIFY(counter == 2 );
+  // const volatile auto b3 = std::bind(X());
+  // VERIFY( b3() == 3 );
 }
 
 int main()
 {
   test01();
-  test02();
+  return 0;
 }

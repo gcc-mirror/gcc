@@ -1,6 +1,6 @@
 // <functional> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -112,8 +112,7 @@ namespace std
   template<typename _Functor>
     struct _Weak_result_type_impl
     : _Maybe_get_result_type<_Has_result_type<_Functor>::value, _Functor>
-    {
-    };
+    { };
 
   /// Retrieve the result type for a function type.
   template<typename _Res, typename... _ArgTypes> 
@@ -171,8 +170,7 @@ namespace std
   template<typename _Functor>
     struct _Weak_result_type
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
-    {
-    };
+    { };
 
   template<typename _Signature>
     class result_of;
@@ -859,8 +857,7 @@ namespace std
     struct _Build_index_tuple<_Num, _Index_tuple<_Indexes...> >
     : _Build_index_tuple<_Num - 1, 
                          _Index_tuple<_Indexes..., sizeof...(_Indexes)> >
-    {
-    };
+    { };
 
   template<int... _Indexes>
     struct _Build_index_tuple<0, _Index_tuple<_Indexes...> >
@@ -902,8 +899,7 @@ namespace std
    struct _Safe_tuple_element
    : _Safe_tuple_element_impl<__i, _Tuple, 
                               (__i >= 0 && __i < tuple_size<_Tuple>::value)>
-   {
-   };
+   { };
 
   /**
    *  Maps an argument to bind() into an actual argument to the bound
@@ -937,7 +933,7 @@ namespace std
        */
       template<typename _CVRef, typename _Tuple>
         result_type
-        operator()(_CVRef& __arg, const _Tuple&) const volatile
+        operator()(_CVRef& __arg, _Tuple&&) const volatile
         { return __arg.get(); }
     };
 
@@ -962,12 +958,12 @@ namespace std
       template<typename _CVArg, typename... _Args>
         typename result_of<_CVArg(_Args...)>::type
         operator()(_CVArg& __arg,
-		   tuple<_Args...>& __tuple) const volatile
+		   tuple<_Args...>&& __tuple) const volatile
         {
 	  // Construct an index tuple and forward to __call
 	  typedef typename _Build_index_tuple<sizeof...(_Args)>::__type
 	    _Indexes;
-	  return this->__call(__arg, __tuple, _Indexes());
+	  return this->__call(__arg, std::move(__tuple), _Indexes());
 	}
 
     private:
@@ -975,7 +971,7 @@ namespace std
       // of the arguments in the tuple. 
       template<typename _CVArg, typename... _Args, int... _Indexes>
         typename result_of<_CVArg(_Args...)>::type
-        __call(_CVArg& __arg, tuple<_Args...>& __tuple,
+        __call(_CVArg& __arg, tuple<_Args...>&& __tuple,
 	       const _Index_tuple<_Indexes...>&) const volatile
         {
 	  return __arg(std::forward<_Args>(get<_Indexes>(__tuple))...);
@@ -1009,7 +1005,7 @@ namespace std
 
       template<typename _Tuple>
         typename result<_Mu(_Arg, _Tuple)>::type
-        operator()(const volatile _Arg&, _Tuple& __tuple) const volatile
+        operator()(const volatile _Arg&, _Tuple&& __tuple) const volatile
         {
 	  return std::forward<typename result<_Mu(_Arg, _Tuple)>::type>(
               ::std::get<(is_placeholder<_Arg>::value - 1)>(__tuple));
@@ -1036,7 +1032,7 @@ namespace std
       // Pick up the cv-qualifiers of the argument
       template<typename _CVArg, typename _Tuple>
         _CVArg&&
-        operator()(_CVArg&& __arg, const _Tuple&) const volatile
+        operator()(_CVArg&& __arg, _Tuple&&) const volatile
         { return std::forward<_CVArg>(__arg); }
     };
 
@@ -1096,137 +1092,114 @@ namespace std
       tuple<_Bound_args...> _M_bound_args;
 
       // Call unqualified
-      template<typename... _Args, int... _Indexes, typename _Sfinae
-        = decltype( std::declval<_Functor>()(
-              _Mu<_Bound_args>()( std::declval<_Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args, int... _Indexes>
         typename result_of<
                    _Functor(typename result_of<_Mu<_Bound_args> 
-                            (_Bound_args&, tuple<_Args...>&)>::type...)
+                            (_Bound_args&, tuple<_Args...>&&)>::type...)
                  >::type
         __call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as const
-      template<typename... _Args, int... _Indexes, typename _Sfinae
-        = decltype( std::declval<const _Functor>()(
-              _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args, int... _Indexes>
         typename result_of<
                    const _Functor(typename result_of<_Mu<_Bound_args> 
-                                    (const _Bound_args&, tuple<_Args...>&)
+                                    (const _Bound_args&, tuple<_Args...>&&)
                                   >::type...)>::type
-        __call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
+        __call_c(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
 #if 0
       // Call as volatile
-      template<typename... _Args, int... _Indexes, typename _Sfinae
-        = decltype( std::declval<volatile _Functor>()(
-              _Mu<_Bound_args>()( std::declval<volatile _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args, int... _Indexes>
         typename result_of<
                    volatile _Functor(typename result_of<_Mu<_Bound_args> 
-                                    (volatile _Bound_args&, tuple<_Args...>&)
+                                    (volatile _Bound_args&, tuple<_Args...>&&)
                                   >::type...)>::type
-        __call(tuple<_Args...>&& __args, 
-               _Index_tuple<_Indexes...>) volatile
+        __call_v(tuple<_Args...>&& __args, 
+		 _Index_tuple<_Indexes...>) volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as const volatile
-      template<typename... _Args, int... _Indexes, typename _Sfinae
-        = decltype( std::declval<const volatile _Functor>()(
-              _Mu<_Bound_args>()( std::declval<const volatile _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
+      template<typename... _Args, int... _Indexes>
         typename result_of<
                    const volatile _Functor(typename result_of<_Mu<_Bound_args> 
                                     (const volatile _Bound_args&, 
-                                     tuple<_Args...>&)
+                                     tuple<_Args...>&&)
                                   >::type...)>::type
-        __call(tuple<_Args...>&& __args, 
-               _Index_tuple<_Indexes...>) const volatile
+        __call_c_v(tuple<_Args...>&& __args, 
+		   _Index_tuple<_Indexes...>) const volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 #endif
 
      public:
       explicit _Bind(_Functor __f, _Bound_args... __bound_args)
       : _M_f(std::forward<_Functor>(__f)),
-      _M_bound_args(std::forward<_Bound_args>(__bound_args)...)
+	_M_bound_args(std::forward<_Bound_args>(__bound_args)...)
       { }
 
       // Call unqualified
-      template<typename... _Args, typename _Sfinae
+      template<typename... _Args, typename _Result
         = decltype( std::declval<_Functor>()(
               _Mu<_Bound_args>()( std::declval<_Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
-        typename result_of<
-                   _Functor(typename result_of<_Mu<_Bound_args> 
-                            (_Bound_args&, tuple<_Args...>&)>::type...)
-                 >::type
+				  std::declval<tuple<_Args...>&&>() )... ) )>
+        _Result
         operator()(_Args&&... __args)
         {
           return this->__call(tuple<_Args...>(std::forward<_Args>(__args)...),
-                              _Bound_indexes());
+			      _Bound_indexes());
         }
 
       // Call as const
-      template<typename... _Args, typename _Sfinae
+      template<typename... _Args, typename _Result
         = decltype( std::declval<const _Functor>()(
-              _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
-        typename result_of<
-                   const _Functor(typename result_of<_Mu<_Bound_args> 
-                            (const _Bound_args&, tuple<_Args...>&)>::type...)
-                 >::type
+	      _Mu<_Bound_args>()( std::declval<const _Bound_args&>(),
+				  std::declval<tuple<_Args...>&&>() )... ) )>
+        _Result
         operator()(_Args&&... __args) const
         {
-          return this->__call(tuple<_Args...>(std::forward<_Args>(__args)...),
-                              _Bound_indexes());
+          return this->__call_c(tuple<_Args...>
+				(std::forward<_Args>(__args)...),
+				_Bound_indexes());
         }
 
 #if 0
       // Call as volatile
-      template<typename... _Args, typename _Sfinae
+      template<typename... _Args, typename _Result
         = decltype( std::declval<volatile _Functor>()(
               _Mu<_Bound_args>()( std::declval<volatile _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
-        typename result_of<
-                   volatile _Functor(typename result_of<_Mu<_Bound_args> 
-                            (volatile _Bound_args&, tuple<_Args...>&)>::type...)
-                 >::type
+                                  std::declval<tuple<_Args...>&&>() )... ) )>
+        _Result
         operator()(_Args&&... __args) volatile
         {
-          return this->__call(tuple<_Args...>(std::forward<_Args>(__args)...),
-                              _Bound_indexes());
+          return this->__call_v(tuple<_Args...>
+				(std::forward<_Args>(__args)...),
+				_Bound_indexes());
         }
 
-
       // Call as const volatile
-      template<typename... _Args, typename _Sfinae
+      template<typename... _Args, typename _Result
         = decltype( std::declval<const volatile _Functor>()(
               _Mu<_Bound_args>()( std::declval<const volatile _Bound_args&>(),
-                                  std::declval<tuple<_Args...>&>() )... ) )>
-        typename result_of<
-                   const volatile _Functor(typename result_of<_Mu<_Bound_args> 
-                            (const volatile _Bound_args&, 
-                             tuple<_Args...>&)>::type...)
-                 >::type
+                                  std::declval<tuple<_Args...>&&>() )... ) )>
+        _Result
         operator()(_Args&&... __args) const volatile
         {
-          return this->__call(tuple<_Args...>(std::forward<_Args>(__args)...),
-                              _Bound_indexes());
+          return this->__call_c_v(tuple<_Args...>
+				  (std::forward<_Args>(__args)...),
+				  _Bound_indexes());
         }
 #endif
     };
@@ -1258,7 +1231,7 @@ namespace std
             typename __disable_if_void<_Res>::type = 0)
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call unqualified, return void
@@ -1268,7 +1241,7 @@ namespace std
             typename __enable_if_void<_Res>::type = 0)
         {
           _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+	       (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as const
@@ -1278,7 +1251,7 @@ namespace std
             typename __disable_if_void<_Res>::type = 0) const
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as const, return void
@@ -1288,7 +1261,7 @@ namespace std
             typename __enable_if_void<_Res>::type = 0) const
         {
           _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+	       (get<_Indexes>(_M_bound_args),  std::move(__args))...);
         }
 
       // Call as volatile
@@ -1298,7 +1271,7 @@ namespace std
             typename __disable_if_void<_Res>::type = 0) volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as volatile, return void
@@ -1308,7 +1281,7 @@ namespace std
             typename __enable_if_void<_Res>::type = 0) volatile
         {
           _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+	       (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as const volatile
@@ -1318,7 +1291,7 @@ namespace std
             typename __disable_if_void<_Res>::type = 0) const volatile
         {
           return _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+                      (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
       // Call as const volatile, return void
@@ -1329,7 +1302,7 @@ namespace std
             typename __enable_if_void<_Res>::type = 0) const volatile
         {
           _M_f(_Mu<_Bound_args>()
-                      (get<_Indexes>(_M_bound_args), __args)...);
+	       (get<_Indexes>(_M_bound_args), std::move(__args))...);
         }
 
     public:
@@ -1338,7 +1311,7 @@ namespace std
       explicit
       _Bind_result(_Functor __f, _Bound_args... __bound_args)
       : _M_f(std::forward<_Functor>(__f)),
-      _M_bound_args(std::forward<_Bound_args>(__bound_args)...)
+	_M_bound_args(std::forward<_Bound_args>(__bound_args)...)
       { }
 
       // Call unqualified
@@ -1447,11 +1420,9 @@ namespace std
    */
   template<typename _Tp>
     struct __is_location_invariant
-    : integral_constant<bool,
-                        (is_pointer<_Tp>::value
-                         || is_member_pointer<_Tp>::value)>
-    {
-    };
+    : integral_constant<bool, (is_pointer<_Tp>::value
+			       || is_member_pointer<_Tp>::value)>
+    { };
 
   class _Undefined_class;
 
@@ -1503,8 +1474,7 @@ namespace std
   template<typename _Tp>
     struct __is_location_invariant<_Simple_type_wrapper<_Tp> >
     : __is_location_invariant<_Tp>
-    {
-    };
+    { };
 
   // Converts a reference to a function object into a callable
   // function object.
