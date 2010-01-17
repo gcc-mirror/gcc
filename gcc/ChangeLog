@@ -1,5 +1,15 @@
 2010-01-17  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-uncprop.c (uncprop_into_successor_phis): Fix PHI
+	node existence check.
+	* tree-vect-loop.c (vect_analyze_loop_form): Likewise.
+	* tree-cfgcleanup.c (merge_phi_nodes): Likewise.
+	* tree-ssa-dce.c (forward_edge_to_pdom): Likewise.
+	* tree-cfg.c (gimple_execute_on_growing_pred): Likewise.
+	(gimple_execute_on_growing_pred): Likewise.
+
+2010-01-17  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42773
 	* tree-ssa-pre.c (phi_translate_set): Fix check for PHI node existence.
 	(compute_antic_aux): Likewise.

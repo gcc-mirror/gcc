@@ -958,7 +958,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
   if (e2 != e)
     return e2;
 
-  if (phi_nodes (post_dom_bb))
+  if (!gimple_seq_empty_p (phi_nodes (post_dom_bb)))
     {
       /* We are sure that for every live PHI we are seeing control dependent BB.
          This means that we can look up the end of control dependent path leading
