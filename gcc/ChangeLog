@@ -1,3 +1,101 @@
+2010-01-17  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi (TARGET_INIT_LIBFUNCS): Put @findex entries in order of
+	appearance.
+
+	(TARGET_LEGITIMATE_ADDRESS_P): Add return type.
+	Fix markup for strict argument.
+
+	(TARGET_SCHED_REORDER2): Fix argument types.
+
+	(TARGET_SCHED_DFA_PRE_CYCLE_INSN): Fix return type.
+	(TARGET_SCHED_DFA_POST_CYCLE_INSN): Likewise.
+
+	(TARGET_SCHED_DFA_PRE_ADVANCE_CYCLE): Fix name.
+	(TARGET_SCHED_DFA_POST_ADVANCE_CYCLE): Likewise.
+
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD):
+	Add argument name.
+
+	(TARGET_SCHED_ALLOC_SCHED_CONTEXT): Remove duplicate documentation.
+	(TARGET_SCHED_INIT_SCHED_CONTEXT): Likewise.
+	(TARGET_SCHED_SET_SCHED_CONTEXT): Likewise.
+	(TARGET_SCHED_CLEAR_SCHED_CONTEXT): Likewise.
+	(TARGET_SCHED_FREE_SCHED_CONTEXT): Likewise.
+
+	(TARGET_SCHED_SET_SCHED_CONTEXT): Fix typo.
+
+	(TARGET_SCHED_GEN_SPEC_CHECK): Fix name.
+
+	(TARGET_ASM_RELOC_RW_MASK): Add return type.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): Fix return type.
+
+	(TARGET_STRIP_NAME_ENCODING): Fix markup of return type and parameter.
+
+	(TARGET_ASM_FILE_START): Put @findex before paragraph start.
+	Use prototype.
+
+	(TARGET_ASM_NAMED_SECTION): Fix argument list.
+
+	(TARGET_HAVE_NAMED_SECTIONS): Use @deftypevr.
+	(TARGET_HAVE_SWITCHABLE_BSS_SECTIONS): Likewise.
+
+	(TARGET_ASM_RECORD_GCC_SWITCHES_SECTION): Use @deftypevr.
+
+	(TARGET_ASM_ASSEMBLE_VISIBILITY): Fix argument types.
+
+	(TARGET_ASM_MARK_DECL_PRESERVED): Fix argument and markup
+	referring to it.  Fix language.
+
+	(TARGET_HAVE_CTORS_DTORS): Use @deftypevr.
+
+	(TARGET_ASM_FINAL_POSTSCAN_INSN): Adjust name of first argument.
+
+	(TARGET_ASM_EMIT_UNWIND_LABEL): Add argument types.
+
+	(TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL): Add type to argument.
+
+	(TARGET_UNWIND_EMIT): Remove space between 'FILE *' and
+	'@var{stream}.  Remove stray 'and'.
+
+	(TARGET_ARM_EABI_UNWINDER): Use @deftypevr.
+
+	(TARGET_ASM_OUTPUT_DWARF_DTPREL): Adjust name of first argument.
+
+	(TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Add missing article.
+
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Fix name, it was 
+	misspelled as TARGET_VALID_OPTION_ATTRIBUTE_P.
+
+	(TARGET_GET_PCH_VALIDITY): Put 'void *' in braces.
+	Fix description of return value.
+	Rename argument "sz" to "len."
+
+	(TARGET_CXX_GUARD_MASK_BIT): Add missing article.
+	Clarify meaning of 'true' return value.
+
+	(TARGET_SHIFT_TRUNCATION_MASK): Fix return type.
+
+	(TARGET_MODE_REP_EXTENDED): Fix two inconsisent uses of
+	rep_mode versus mode_rep.
+
+	(TARGET_HANDLE_PRAGMA_EXTERN_PREFIX): Document.
+
+	(TARGET_BUILTIN_DECL): Fix name.
+
+	(TARGET_COMMUTATIVE_P): Fix type of first argument.
+
+	(TARGET_SET_CURRENT_FUNCTION): Mention possibility of cfun being NULL.
+
+	(TARGET_BRANCH_TARGET_REGISTER_CLASS): Fix return type.
+
+	(TARGET_USE_LOCAL_THUNK_ALIAS_P): Document as macro instead of hook.
+
+	(TARGET_RELAXED_ORDERING): Use @deftypevr.
+
+	(TARGET_GET_DRAP_RTX): Note that this is a hook.
+	Clarify language.
+
 2010-01-16  Harsha Jagasia  <harsha.jagasia@amd.com>
 
 	PR target/42664
