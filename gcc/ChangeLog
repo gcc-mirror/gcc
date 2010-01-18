@@ -1,3 +1,16 @@
+2010-01-18  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi (TARGET_ASM_FUNCTION_EPILOGUE): Update text on where to
+	find number of popped argument bytes.
+
+	(TARGET_INVALID_WITHIN_DOLOOP): Put return value in braces.
+	Fix the text that describes the return value for invalid insns.
+
+	(TARGET_SCHED_NEEDS_BLOCK_P): Fix return type.  Fix argument list.
+
+	(TARGET_SCHED_IS_COSTLY_DEPENDENCE): Fix argument types.
+	Clarify what 'cost of the -dependence' is.  Fix quoting.
+
 2010-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Don't ICE on

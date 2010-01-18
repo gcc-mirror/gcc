@@ -4698,11 +4698,9 @@ number of arguments.
 @findex current_function_pops_args
 Your definition of the macro @code{RETURN_POPS_ARGS} decides which
 functions pop their own arguments.  @code{TARGET_ASM_FUNCTION_EPILOGUE}
-needs to know what was decided.  The variable that is called
-@code{current_function_pops_args} is the number of bytes of its
-arguments that a function should pop.  @xref{Scalar Return}.
-@c what is the "its arguments" in the above sentence referring to, pray
-@c tell?  --mew 5feb93
+needs to know what was decided.  The number of bytes of the current
+function's arguments that this function should pop is available in
+@code{crtl->args.pops_args}.  @xref{Scalar Return}.
 @end deftypefn
 
 @itemize @bullet
@@ -6567,13 +6565,13 @@ correspondingly processor cycle on which the previous insn has been
 issued and the current processor cycle.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (struct dep_def *@var{_dep}, int @var{cost}, int @var{distance})
+@deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (struct _dep *@var{_dep}, int @var{cost}, int @var{distance})
 This hook is used to define which dependences are considered costly by
 the target, so costly that it is not advisable to schedule the insns that
 are involved in the dependence too close to one another.  The parameters
 to this hook are as follows:  The first parameter @var{_dep} is the dependence
 being evaluated.  The second parameter @var{cost} is the cost of the
-dependence, and the third
+dependence as estimated by the scheduler, and the third
 parameter @var{distance} is the distance in cycles between the two insns.
 The hook returns @code{true} if considering the distance between the two
 insns the dependence between them is considered costly by the target,
@@ -6585,7 +6583,7 @@ delays, however: (b) there's a better chance to predict the actual grouping
 that will be formed, and (c) correctly emulating the grouping can be very
 important.  In such targets one may want to allow issuing dependent insns
 closer to one another---i.e., closer than the dependence distance;  however,
-not in cases of "costly dependences", which this hooks allows to define.
+not in cases of ``costly dependences'', which this hooks allows to define.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_H_I_D_EXTENDED (void)
@@ -6628,10 +6626,10 @@ speculation.  If the return value equals 1 then @var{new_pat} is assigned
 the generated speculative pattern.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_NEEDS_BLOCK_P (rtx @var{insn})
+@deftypefn {Target Hook} bool TARGET_SCHED_NEEDS_BLOCK_P (int @var{dep_status})
 This hook is called by the insn scheduler during generation of recovery code
-for @var{insn}.  It should return nonzero, if the corresponding check
-instruction should branch to recovery code, or zero otherwise.
+for @var{insn}.  It should return @code{true}, if the corresponding check
+instruction should branch to recovery code, or @code{false} otherwise.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, int @var{mutate_p})
@@ -10679,10 +10677,11 @@ simplified expression for the call's result.  If @var{ignore} is true
 the value will be ignored.
 @end deftypefn
 
-@deftypefn {Target Hook} const char * TARGET_INVALID_WITHIN_DOLOOP (rtx @var{insn})
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_WITHIN_DOLOOP (const_rtx @var{insn})
 
 Take an instruction in @var{insn} and return NULL if it is valid within a
-low-overhead loop, otherwise return a string why doloop could not be applied.
+low-overhead loop, otherwise return a string explaining why doloop
+could not be applied.
 
 Many targets use special registers for low-overhead looping. For any
 instruction that clobbers these this function should return a string indicating
