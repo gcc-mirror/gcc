@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1385,8 +1385,9 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   /* At the global level, an initializer requiring code to be generated
      produces elaboration statements.  Check that such statements are allowed,
      that is, not violating a No_Elaboration_Code restriction.  */
-  if (global_bindings_p () && var_init != 0 && ! init_const)
+  if (global_bindings_p () && var_init != 0 && !init_const)
     Check_Elaboration_Code_Allowed (gnat_node);
+
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
   DECL_EXTERNAL (var_decl) = extern_flag;
@@ -1401,7 +1402,7 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
      go in DATA instead, thus increasing the size of the executable.  */
   if (!flag_no_common
       && TREE_CODE (var_decl) == VAR_DECL
-      && TREE_PUBLIC   (var_decl)
+      && TREE_PUBLIC (var_decl)
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
 

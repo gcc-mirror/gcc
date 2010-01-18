@@ -1,3 +1,7 @@
+2010-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (create_var_decl_1): Fix formatting nits.
+
 2010-01-18  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/42068
