@@ -11,6 +11,9 @@
 	(TARGET_SCHED_IS_COSTLY_DEPENDENCE): Fix argument types.
 	Clarify what 'cost of the -dependence' is.  Fix quoting.
 
+	* toplev.c (default_get_pch_validity): Rename argument to "sz".
+	* doc/tm.texi (TARGET_GET_PCH_VALIDITY): Likewise.
+
 2010-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Don't ICE on

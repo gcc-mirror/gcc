@@ -1512,20 +1512,20 @@ option_affects_pch_p (int option, struct cl_option_state *state)
    most targets, but completely right for very few.  */
 
 void *
-default_get_pch_validity (size_t *len)
+default_get_pch_validity (size_t *sz)
 {
   struct cl_option_state state;
   size_t i;
   char *result, *r;
 
-  *len = 2;
+  *sz = 2;
   if (targetm.check_pch_target_flags)
-    *len += sizeof (target_flags);
+    *sz += sizeof (target_flags);
   for (i = 0; i < cl_options_count; i++)
     if (option_affects_pch_p (i, &state))
-      *len += state.size;
+      *sz += state.size;
 
-  result = r = XNEWVEC (char, *len);
+  result = r = XNEWVEC (char, *sz);
   r[0] = flag_pic;
   r[1] = flag_pie;
   r += 2;
