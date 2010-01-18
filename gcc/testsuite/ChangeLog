@@ -1,3 +1,8 @@
+2010-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42774
+	* gcc.target/alpha/pr42774.c: New test.
+
 2010-01-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42781
