@@ -1,3 +1,7 @@
+2010-01-18  Johannes Singler  <singler@kit.edu>
+
+	* include/parallel/base.h (__unary_negate): Correct comment.
+
 2010-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/functional (_Bind<_Functor(_Bound_args...)>::__call):
