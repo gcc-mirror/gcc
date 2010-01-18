@@ -1,3 +1,9 @@
+2010-01-18  Daniel Frey  <d.frey@gmx.de>
+
+	* include/std/functional (_Bind<_Functor(_Bound_args...)>::
+	operator()): "Pass" _Result to __call*.
+	(_Bind<_Functor(_Bound_args...)>::__call*): Adjust, simplify.
+
 2010-01-18  Johannes Singler  <singler@kit.edu>
 
 	* include/parallel/base.h (__unary_negate): Correct comment.
