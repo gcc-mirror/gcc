@@ -4776,18 +4776,19 @@ set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
 /* Compute the points-to solution *PT for the variable VI.  */
 
 static void
-find_what_var_points_to (varinfo_t vi, struct pt_solution *pt)
+find_what_var_points_to (varinfo_t orig_vi, struct pt_solution *pt)
 {
   unsigned int i;
   bitmap_iterator bi;
   bitmap finished_solution;
   bitmap result;
+  varinfo_t vi;
 
   memset (pt, 0, sizeof (struct pt_solution));
 
   /* This variable may have been collapsed, let's get the real
      variable.  */
-  vi = get_varinfo (find (vi->id));
+  vi = get_varinfo (find (orig_vi->id));
 
   /* Translate artificial variables into SSA_NAME_PTR_INFO
      attributes.  */
@@ -4822,7 +4823,7 @@ find_what_var_points_to (varinfo_t vi, struct pt_solution *pt)
   /* Instead of doing extra work, simply do not create
      elaborate points-to information for pt_anything pointers.  */
   if (pt->anything
-      && (vi->is_artificial_var
+      && (orig_vi->is_artificial_var
 	  || !pt->vars_contains_restrict))
     return;
 
