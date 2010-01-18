@@ -1,3 +1,8 @@
+2010-01-19  Dodji Seketeli  <dodji@redhat.com>
+
+	* error.c (dump_template_parms, count_non_default_template_args):
+	Revert fix of PR c++/42634.
+
 2010-01-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42634
