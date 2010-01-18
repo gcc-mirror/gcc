@@ -1387,15 +1387,6 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
      that is, not violating a No_Elaboration_Code restriction.  */
   if (global_bindings_p () && var_init != 0 && ! init_const)
     Check_Elaboration_Code_Allowed (gnat_node);
-
-  /* Ada doesn't feature Fortran-like COMMON variables so we shouldn't
-     try to fiddle with DECL_COMMON.  However, on platforms that don't
-     support global BSS sections, uninitialized global variables would
-     go in DATA instead, thus increasing the size of the executable.  */
-  if (!flag_no_common
-      && TREE_CODE (var_decl) == VAR_DECL
-      && !have_global_bss_p ())
-    DECL_COMMON (var_decl) = 1;
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
   DECL_EXTERNAL (var_decl) = extern_flag;
@@ -1403,6 +1394,16 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   TREE_CONSTANT (var_decl) = constant_p;
   TREE_THIS_VOLATILE (var_decl) = TREE_SIDE_EFFECTS (var_decl)
     = TYPE_VOLATILE (type);
+
+  /* Ada doesn't feature Fortran-like COMMON variables so we shouldn't
+     try to fiddle with DECL_COMMON.  However, on platforms that don't
+     support global BSS sections, uninitialized global variables would
+     go in DATA instead, thus increasing the size of the executable.  */
+  if (!flag_no_common
+      && TREE_CODE (var_decl) == VAR_DECL
+      && TREE_PUBLIC   (var_decl)
+      && !have_global_bss_p ())
+    DECL_COMMON (var_decl) = 1;
 
   /* If it's public and not external, always allocate storage for it.
      At the global binding level we need to allocate static storage for the
