@@ -1,5 +1,11 @@
 2010-01-18  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/39954
+	* cfgexpand.c (expand_call_stmt): TER pointer arguments in
+	builtin calls.
+
+2010-01-18  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42781
 	* tree-ssa-structalias.c (find_what_var_points_to): Skip
 	restrict processing only if the original variable was
