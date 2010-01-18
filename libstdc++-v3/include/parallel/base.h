@@ -167,7 +167,7 @@ namespace __gnu_parallel
     };
 
 
-  /** @brief Similar to std::binder1st,
+  /** @brief Similar to std::unary_negate,
    *  but giving the argument types explicitly. */
   template<typename _Predicate, typename argument_type>
     class __unary_negate
