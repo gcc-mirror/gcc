@@ -1092,11 +1092,8 @@ namespace std
       tuple<_Bound_args...> _M_bound_args;
 
       // Call unqualified
-      template<typename... _Args, int... _Indexes>
-        typename result_of<
-                   _Functor(typename result_of<_Mu<_Bound_args> 
-                            (_Bound_args&, tuple<_Args...>&&)>::type...)
-                 >::type
+      template<typename _Result, typename... _Args, int... _Indexes>
+        _Result
         __call(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>)
         {
           return _M_f(_Mu<_Bound_args>()
@@ -1104,11 +1101,8 @@ namespace std
         }
 
       // Call as const
-      template<typename... _Args, int... _Indexes>
-        typename result_of<
-                   const _Functor(typename result_of<_Mu<_Bound_args> 
-                                    (const _Bound_args&, tuple<_Args...>&&)
-                                  >::type...)>::type
+      template<typename _Result, typename... _Args, int... _Indexes>
+        _Result
         __call_c(tuple<_Args...>&& __args, _Index_tuple<_Indexes...>) const
         {
           return _M_f(_Mu<_Bound_args>()
@@ -1117,11 +1111,8 @@ namespace std
 
 #if 0
       // Call as volatile
-      template<typename... _Args, int... _Indexes>
-        typename result_of<
-                   volatile _Functor(typename result_of<_Mu<_Bound_args> 
-                                    (volatile _Bound_args&, tuple<_Args...>&&)
-                                  >::type...)>::type
+      template<typename _Result, typename... _Args, int... _Indexes>
+        _Result
         __call_v(tuple<_Args...>&& __args, 
 		 _Index_tuple<_Indexes...>) volatile
         {
@@ -1130,12 +1121,8 @@ namespace std
         }
 
       // Call as const volatile
-      template<typename... _Args, int... _Indexes>
-        typename result_of<
-                   const volatile _Functor(typename result_of<_Mu<_Bound_args> 
-                                    (const volatile _Bound_args&, 
-                                     tuple<_Args...>&&)
-                                  >::type...)>::type
+      template<typename _Result, typename... _Args, int... _Indexes>
+        _Result
         __call_c_v(tuple<_Args...>&& __args, 
 		   _Index_tuple<_Indexes...>) const volatile
         {
@@ -1158,8 +1145,9 @@ namespace std
         _Result
         operator()(_Args&&... __args)
         {
-          return this->__call(tuple<_Args...>(std::forward<_Args>(__args)...),
-			      _Bound_indexes());
+          return this->__call<_Result>(tuple<_Args...>
+				       (std::forward<_Args>(__args)...),
+                                       _Bound_indexes());
         }
 
       // Call as const
@@ -1170,9 +1158,9 @@ namespace std
         _Result
         operator()(_Args&&... __args) const
         {
-          return this->__call_c(tuple<_Args...>
-				(std::forward<_Args>(__args)...),
-				_Bound_indexes());
+          return this->__call_c<_Result>(tuple<_Args...>
+                                         (std::forward<_Args>(__args)...),
+                                         _Bound_indexes());
         }
 
 #if 0
@@ -1184,9 +1172,9 @@ namespace std
         _Result
         operator()(_Args&&... __args) volatile
         {
-          return this->__call_v(tuple<_Args...>
-				(std::forward<_Args>(__args)...),
-				_Bound_indexes());
+          return this->__call_v<_Result>(tuple<_Args...>
+                                         (std::forward<_Args>(__args)...),
+                                         _Bound_indexes());
         }
 
       // Call as const volatile
@@ -1197,9 +1185,9 @@ namespace std
         _Result
         operator()(_Args&&... __args) const volatile
         {
-          return this->__call_c_v(tuple<_Args...>
-				  (std::forward<_Args>(__args)...),
-				  _Bound_indexes());
+          return this->__call_c_v<_Result>(tuple<_Args...>
+                                           (std::forward<_Args>(__args)...),
+                                           _Bound_indexes());
         }
 #endif
     };
