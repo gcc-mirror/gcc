@@ -1,3 +1,10 @@
+2010-01-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42781
+	* tree-ssa-structalias.c (find_what_var_points_to): Skip
+	restrict processing only if the original variable was
+	artificial.
+
 2010-01-18  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_ASM_FUNCTION_EPILOGUE): Update text on where to
