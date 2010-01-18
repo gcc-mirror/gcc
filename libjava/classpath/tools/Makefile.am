@@ -277,12 +277,10 @@ gjdoc_resources = $(gnu_classpath_tools_gjdoc_jar_CSS) $(gnu_classpath_tools_gjd
 	$(gnu_classpath_tools_gjdoc_jar_XHTML) $(gnu_classpath_tools_gjdoc_jar_XSLS)
 
 if !CREATE_GJDOC
-GJDOC_EX = -path '*gnu/classpath/tools/gjdoc' -prune -o \
-	-path '*gnu/classpath/tools/doclets' -prune -o \
-	-path '*gnu/classpath/tools/taglets' -prune -o \
-	-path '*com/sun/javadoc' -prune -o \
-	-path '*com/sun/tools/doclets' -prune -o \
-	-path '*com/sun/tools/javadoc' -prune -o
+GJDOC_EX = -name gjdoc -prune -o \
+	-name doclets -prune -o \
+	-name taglets -prune -o \
+	-name javadoc -prune -o
 endif
 
 # The zip files with classes we want to produce.
