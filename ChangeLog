@@ -1,3 +1,7 @@
+2010-01-18  Thierry Lafage  <thierry.lafage@inria.fr>
+
+	* MAINTAINERS: reindented my entry with tabs instead of spaces.
+
 2010-01-15  Thierry Lafage  <thierry.lafage@inria.fr>
 
 	* MAINTAINERS (Write After Approval): Add myself.
@@ -25,7 +29,7 @@
         (_LT_CHECK_OBJDIR): Call it.
 	(extra_mpc_mpfr_configure_flags, extra_mpc_gmp_configure_flags,
 	gmplibs, ppllibs, clooglibs): Use $lt_cv_objdir.
-	
+
 	* configure: Regenerate.
 
 2010-01-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
