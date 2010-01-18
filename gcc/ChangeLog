@@ -1,3 +1,11 @@
+2010-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42774
+	* config/alpha/predicates.md (aligned_memory_operand): Return 0 for
+	memory references with unaligned offsets.  Remove CQImode handling.
+	(unaligned_memory_operand): Return 1 for memory references with
+	unaligned offsets.  Remove CQImode handling.
+
 2010-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
@@ -11,7 +19,7 @@
 2010-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
-	2010-01-05  Paolo Bonzini  <bonzinI@gnu.rg>
+	2010-01-05  Paolo Bonzini  <bonzini@gnu.org>
 		    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/42542
