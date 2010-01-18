@@ -9695,10 +9695,10 @@ Default: empty.
 @section Parameters for Precompiled Header Validity Checking
 @cindex parameters, precompiled headers
 
-@deftypefn {Target Hook} {void *} TARGET_GET_PCH_VALIDITY (size_t *@var{len})
+@deftypefn {Target Hook} {void *} TARGET_GET_PCH_VALIDITY (size_t *@var{sz})
 This hook returns a pointer to the data needed by
 @code{TARGET_PCH_VALID_P} and sets
-@samp{*@var{len}} to the size of the data in bytes.
+@samp{*@var{sz}} to the size of the data in bytes.
 @end deftypefn
 
 @deftypefn {Target Hook} {const char *} TARGET_PCH_VALID_P (const void *@var{data}, size_t @var{sz})
