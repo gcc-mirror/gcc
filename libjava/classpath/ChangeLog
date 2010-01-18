@@ -1,3 +1,8 @@
+2010-01-18  Andreas Tobler  <andreast@fgznet.ch>
+
+	* tools/Makefile.am (GJDOC_EX): Use find -name pattern -prune -o.
+	* tools/Makefile.in: Regenerate.
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.
