@@ -1,3 +1,11 @@
+2010-01-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42545
+	* gfortran.dg/extends_6.f03: Modified an error message.
+	* gfortran.dg/extends_10.f03: New test.
+	* gfortran.dg/private_type_6.f03: Modified an error message.
+	* gfortran.dg/structure_constructor_8.f03: Ditto.
+
 2010-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/42719
