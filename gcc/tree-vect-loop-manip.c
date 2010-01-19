@@ -1961,7 +1961,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
    use TYPE_VECTOR_SUBPARTS.  */
 
 static tree
-vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
+vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
+				 tree *wide_prolog_niters)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2045,6 +2046,19 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   add_referenced_var (var);
   stmts = NULL;
   iters_name = force_gimple_operand (iters, &stmts, false, var);
+  if (types_compatible_p (sizetype, niters_type))
+    *wide_prolog_niters = iters_name;
+  else
+    {
+      gimple_seq seq = NULL;
+      tree wide_iters = fold_convert (sizetype, iters);
+      var = create_tmp_var (sizetype, "prolog_loop_niters");
+      add_referenced_var (var);
+      *wide_prolog_niters = force_gimple_operand (wide_iters, &seq, false,
+						  var);
+      if (seq)
+	gimple_seq_add_seq (&stmts, seq);
+    }
 
   /* Insert stmt on loop preheader edge.  */
   if (stmts)
@@ -2115,6 +2129,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree niters_of_prolog_loop, ni_name;
   tree n_iters;
+  tree wide_prolog_niters;
   struct loop *new_loop;
   unsigned int th = 0;
   int min_profitable_iters;
@@ -2125,7 +2140,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   initialize_original_copy_tables ();
 
   ni_name = vect_build_loop_niters (loop_vinfo, NULL);
-  niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name);
+  niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name,
+							   &wide_prolog_niters);
 
 
   /* Get profitability threshold for vectorized loop.  */
@@ -2150,7 +2166,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
 		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
 
   /* Update the init conditions of the access functions of all data refs.  */
-  vect_update_inits_of_drs (loop_vinfo, niters_of_prolog_loop);
+  vect_update_inits_of_drs (loop_vinfo, wide_prolog_niters);
 
   /* After peeling we have to reset scalar evolution analyzer.  */
   scev_reset ();

@@ -1,10 +1,29 @@
+2010-01-19  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41783
+	* tree-data-ref.c (toplevel): Include flags.h.
+	(dump_data_dependence_relation):  Also dump the inputs if the
+	result will be unknown.
+	(split_constant_offset_1): Look through some conversions.
+	* tree-predcom.c (determine_roots_comp): Restart a new chain if
+	the offset from last element is too large.
+	(ref_at_iteration): Deal also with MISALIGNED_INDIRECT_REF.
+	(reassociate_to_the_same_stmt): Handle vector registers.
+	* tree-vect-data-refs.c (vect_equal_offsets): Handle unary operations
+	(e.g. conversions).
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop): Add 
+	wide_prolog_niters argument, emit widening instructions.
+	(vect_do_peeling_for_alignment): Adjust caller, use widened
+	variant of the iteration cound.
+	* Makefile.in (tree-data-ref.o): Add $(FLAGS_H).
+
 2010-01-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       PR target/38697
-       * config/arm/neon-testgen.m (emit_automatics): New parameter
+	PR target/38697
+	* config/arm/neon-testgen.m (emit_automatics): New parameter
 	features. Adjust for Fixed_return_reg feature.
 	(test_intrinsic): Call emit_automatics with new feature.
-       * config/arm/neon.ml: Update copyright years.
+	* config/arm/neon.ml: Update copyright years.
 	(features): New Fixed_return_reg feature.
 	(ops): Update feature for Vget_low.
 

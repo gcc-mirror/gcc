@@ -1180,6 +1180,7 @@ determine_roots_comp (struct loop *loop,
   unsigned i;
   dref a;
   chain_p chain = NULL;
+  double_int last_ofs = double_int_zero;
 
   /* Invariants are handled specially.  */
   if (comp->comp_step == RS_INVARIANT)
@@ -1194,13 +1195,20 @@ determine_roots_comp (struct loop *loop,
 
   for (i = 0; VEC_iterate (dref, comp->refs, i, a); i++)
     {
-      if (!chain || !DR_IS_READ (a->ref))
+      if (!chain || !DR_IS_READ (a->ref)
+	  || double_int_ucmp (uhwi_to_double_int (MAX_DISTANCE),
+			      double_int_add (a->offset,
+					      double_int_neg (last_ofs))) <= 0)
 	{
 	  if (nontrivial_chain_p (chain))
-	    VEC_safe_push (chain_p, heap, *chains, chain);
+	    {
+	      add_looparound_copies (loop, chain);
+	      VEC_safe_push (chain_p, heap, *chains, chain);
+	    }
 	  else
 	    release_chain (chain);
 	  chain = make_rooted_chain (a);
+	  last_ofs = a->offset;
 	  continue;
 	}
 
@@ -1338,9 +1346,11 @@ ref_at_iteration (struct loop *loop, tree ref, int iter)
   else if (!INDIRECT_REF_P (ref))
     return unshare_expr (ref);
 
-  if (TREE_CODE (ref) == INDIRECT_REF)
+  if (INDIRECT_REF_P (ref))
     {
-      ret = build1 (INDIRECT_REF, TREE_TYPE (ref), NULL_TREE);
+      /* Take care for INDIRECT_REF and MISALIGNED_INDIRECT_REF at
+         the same time.  */
+      ret = copy_node (ref);
       idx = TREE_OPERAND (ref, 0);
       idx_p = &TREE_OPERAND (ret, 0);
     }
@@ -2205,11 +2215,17 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   /* Insert the new statement combining NAME1 and NAME2 before S1, and
      combine it with the rhs of S1.  */
   var = create_tmp_var (type, "predreastmp");
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (var) = 1;
   add_referenced_var (var);
   new_name = make_ssa_name (var, NULL);
   new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
 
   var = create_tmp_var (type, "predreastmp");
+  if (TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (var) = 1;
   add_referenced_var (var);
   tmp_name = make_ssa_name (var, NULL);
 
