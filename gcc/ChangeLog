@@ -1,3 +1,9 @@
+2010-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/42728
+	* fwprop.c (all_uses_available_at): Return false if def_set dest
+	is a REG that is used in def_insn.
+
 2010-01-19  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_FIXED_CONDITION_CODE_REGS): Add argument names.
