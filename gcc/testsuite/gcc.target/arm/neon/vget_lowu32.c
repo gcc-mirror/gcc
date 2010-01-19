@@ -9,7 +9,7 @@
 
 void test_vget_lowu32 (void)
 {
-  uint32x2_t out_uint32x2_t;
+  register uint32x2_t out_uint32x2_t asm ("d18");
   uint32x4_t arg0_uint32x4_t;
 
   out_uint32x2_t = vget_low_u32 (arg0_uint32x4_t);
