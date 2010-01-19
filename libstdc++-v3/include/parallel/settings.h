@@ -269,6 +269,9 @@ namespace __gnu_parallel
     /// The number of stolen ranges in load-balanced quicksort.
     _SequenceIndex              qsb_steals;
 
+    /// Minimal input size for search and search_n.
+    _SequenceIndex              search_minimal_n;
+
     /// Get the global settings.
     _GLIBCXX_CONST static const _Settings&
     get() throw();
@@ -327,7 +330,8 @@ namespace __gnu_parallel
             L2_cache_size(256 << 10),
             TLB_size(128),
             cache_line_size(64),
-            qsb_steals(0)
+            qsb_steals(0),
+            search_minimal_n(1000)
     { }
   };
 }

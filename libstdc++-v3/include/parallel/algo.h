@@ -1043,7 +1043,9 @@ namespace __parallel
       typedef std::iterator_traits<_RAIter2> _Iterator2Traits;
       typedef typename _Iterator2Traits::value_type _ValueType2;
 
-      if (_GLIBCXX_PARALLEL_CONDITION(true))
+      if (_GLIBCXX_PARALLEL_CONDITION(
+                static_cast<__gnu_parallel::_SequenceIndex>(__end1 - __begin1)
+            >= __gnu_parallel::_Settings::get().search_minimal_n))
         return __gnu_parallel::
           __search_template(
             __begin1, __end1, __begin2, __end2,
@@ -1097,7 +1099,9 @@ namespace __parallel
                   _BinaryPredicate __pred,
                   random_access_iterator_tag, random_access_iterator_tag)
     {
-      if (_GLIBCXX_PARALLEL_CONDITION(true))
+      if (_GLIBCXX_PARALLEL_CONDITION(
+                static_cast<__gnu_parallel::_SequenceIndex>(__end1 - __begin1)
+            >= __gnu_parallel::_Settings::get().search_minimal_n))
         return __gnu_parallel::__search_template(__begin1, __end1,
                                                __begin2, __end2, __pred);
       else
@@ -1168,15 +1172,17 @@ namespace __parallel
                       const _Tp& __val, _BinaryPredicate __binary_pred,
                       random_access_iterator_tag)
     {
-      if (_GLIBCXX_PARALLEL_CONDITION(true))
+      if (_GLIBCXX_PARALLEL_CONDITION(
+                static_cast<__gnu_parallel::_SequenceIndex>(__end - __begin)
+            >= __gnu_parallel::_Settings::get().search_minimal_n))
         {
           __gnu_parallel::_PseudoSequence<_Tp, _Integer> __ps(__val, __count);
           return __gnu_parallel::__search_template(
                    __begin, __end, __ps.begin(), __ps.end(), __binary_pred);
         }
       else
-        return std::__search_n(__begin, __end, __count, __val,
-                               __binary_pred, random_access_iterator_tag());
+        return _GLIBCXX_STD_P::search_n(__begin, __end, __count, __val,
+                                        __binary_pred);
     }
 
   // Sequential fallback for input iterator case.
@@ -1186,8 +1192,8 @@ namespace __parallel
     __search_n_switch(_FIterator __begin, _FIterator __end, _Integer __count,
                       const _Tp& __val, _BinaryPredicate __binary_pred,
                       _IteratorTag)
-    { return __search_n(__begin, __end, __count, __val, __binary_pred,
-                        _IteratorTag()); }
+    { return _GLIBCXX_STD_P::search_n(__begin, __end, __count, __val,
+                                      __binary_pred); }
 
   // Public interface.
   template<typename _FIterator, typename _Integer, typename _Tp,

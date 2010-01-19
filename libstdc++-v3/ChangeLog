@@ -1,3 +1,14 @@
+2010-01-19  Johannes Singler  <singler@kit.edu>
+
+	PR libstdc++/42712
+	* include/parallel/settings.h (_Settings): Add search_minimal_n.
+	* include/parallel/algo.h (__search_switch):
+	Add serial fallback for too small inputs.
+	(__search_n_switch): Likewise.  Call serial fallback on higher level
+	to gain special treatment for __count 0 or 1.
+	* testsuite/25_algorithms/search_n/iterator.cc:
+	Reenable full test depth for parallel mode.
+
 2010-01-18  Daniel Frey  <d.frey@gmx.de>
 
 	* include/std/functional (_Bind<_Functor(_Bound_args...)>::
