@@ -1,3 +1,8 @@
+2010-01-19  Matthias Klose  <doko@ubuntu.com>
+
+	* Regenerate .class files.
+	* classpath/lib/java/security/VMSecureRandom*.class: Remove.
+
 2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (write_entries_to_file): Use \012 instead of \n
