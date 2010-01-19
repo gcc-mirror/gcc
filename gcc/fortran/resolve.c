@@ -10494,6 +10494,12 @@ resolve_fl_derived (gfc_symbol *sym)
 	  && resolve_typespec_used (&c->ts, &c->loc, c->name) == FAILURE)
 	return FAILURE;
 
+      /* If this type is an extension, set the accessibility of the parent
+	 component.  */
+      if (super_type && c == sym->components
+	  && strcmp (super_type->name, c->name) == 0)
+	c->attr.access = super_type->attr.access;
+      
       /* If this type is an extension, see if this component has the same name
 	 as an inherited type-bound procedure.  */
       if (super_type

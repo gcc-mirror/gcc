@@ -1,3 +1,11 @@
+2010-01-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42545
+	* resolve.c (resolve_fl_derived): Set the accessibility of the parent
+	component for extended types.
+	* symbol.c (gfc_find_component): Remove a wrongly-worded error message
+	and take care of parent component accessibility.
+
 2010-01-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42677

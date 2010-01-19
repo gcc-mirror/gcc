@@ -51,7 +51,7 @@ PROGRAM test
   struct1 = haspriv_t (b = 2, a = 1) ! { dg-error "is a PRIVATE component" }
 
   ! This should fail as all components are private
-  struct2 = allpriv_t (5) ! { dg-error "of 'allpriv_t' are PRIVATE" }
+  struct2 = allpriv_t (5) ! { dg-error "is a PRIVATE component" }
 
   ! This should fail as the type itself is private, and the expression should
   ! be deduced as call to an undefined function.

@@ -1958,21 +1958,15 @@ gfc_find_component (gfc_symbol *sym, const char *name,
 
   else if (sym->attr.use_assoc && !noaccess)
     {
-      if (p->attr.access == ACCESS_PRIVATE)
+      bool is_parent_comp = sym->attr.extension && (p == sym->components);
+      if (p->attr.access == ACCESS_PRIVATE ||
+	  (p->attr.access != ACCESS_PUBLIC
+	   && sym->component_access == ACCESS_PRIVATE
+	   && !is_parent_comp))
 	{
 	  if (!silent)
 	    gfc_error ("Component '%s' at %C is a PRIVATE component of '%s'",
 		       name, sym->name);
-	  return NULL;
-	}
-	
-      /* If there were components given and all components are private, error
-	 out at this place.  */
-      if (p->attr.access != ACCESS_PUBLIC && sym->component_access == ACCESS_PRIVATE)
-	{
-	  if (!silent)
-	    gfc_error ("All components of '%s' are PRIVATE in structure"
-		       " constructor at %C", sym->name);
 	  return NULL;
 	}
     }

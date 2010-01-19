@@ -30,7 +30,7 @@ end module m
   end type two
 
   o_dt%day = 5  ! VALID but failed in first version of EXTENDS patch
-  o_dt%yr  = 5  ! { dg-error "All components of 'date' are PRIVATE" }
+  o_dt%yr  = 5  ! { dg-error "is a PRIVATE component of" }
 
   t = two(one = one(4), i = 5, r=4.4) ! { dg-error "has already been set" }
 
