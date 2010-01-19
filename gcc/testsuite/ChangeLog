@@ -1,3 +1,8 @@
+2010-01-19  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/41783
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: New.
+
 2010-01-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/38697.

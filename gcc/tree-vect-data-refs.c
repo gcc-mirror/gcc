@@ -294,7 +294,7 @@ vect_update_interleaving_chain (struct data_reference *drb,
 static bool
 vect_equal_offsets (tree offset1, tree offset2)
 {
-  bool res0, res1;
+  bool res;
 
   STRIP_NOPS (offset1);
   STRIP_NOPS (offset2);
@@ -303,16 +303,19 @@ vect_equal_offsets (tree offset1, tree offset2)
     return true;
 
   if (TREE_CODE (offset1) != TREE_CODE (offset2)
-      || !BINARY_CLASS_P (offset1)
-      || !BINARY_CLASS_P (offset2))
+      || (!BINARY_CLASS_P (offset1) && !UNARY_CLASS_P (offset1)))
     return false;
 
-  res0 = vect_equal_offsets (TREE_OPERAND (offset1, 0),
-			     TREE_OPERAND (offset2, 0));
-  res1 = vect_equal_offsets (TREE_OPERAND (offset1, 1),
-			     TREE_OPERAND (offset2, 1));
+  res = vect_equal_offsets (TREE_OPERAND (offset1, 0),
+			    TREE_OPERAND (offset2, 0));
 
-  return (res0 && res1);
+  if (!res || !BINARY_CLASS_P (offset1))
+    return res;
+
+  res = vect_equal_offsets (TREE_OPERAND (offset1, 1),
+			    TREE_OPERAND (offset2, 1));
+
+  return res;
 }
 
 
