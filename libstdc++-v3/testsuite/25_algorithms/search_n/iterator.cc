@@ -25,11 +25,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
-// XXX FIXME: why parallel-mode is so slow?
-#if !defined(TEST_DEPTH) && defined(_GLIBCXX_PARALLEL)
-#define TEST_DEPTH 10
-#endif
-
 #ifndef TEST_DEPTH
 #define TEST_DEPTH 14
 #endif
