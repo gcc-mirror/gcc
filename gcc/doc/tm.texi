@@ -5998,7 +5998,7 @@ like:
 @end smallexample
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_FIXED_CONDITION_CODE_REGS (unsigned int *, unsigned int *)
+@deftypefn {Target Hook} bool TARGET_FIXED_CONDITION_CODE_REGS (unsigned int *@var{p1}, unsigned int *@var{p2})
 On targets which do not use @code{(cc0)}, and which use a hard
 register rather than a pseudo-register to hold condition codes, the
 regular CSE passes are often not able to identify cases in which the
@@ -6007,13 +6007,13 @@ small pass which optimizes such cases.  This hook should return true
 to enable this pass, and it should set the integers to which its
 arguments point to the hard register numbers used for condition codes.
 When there is only one such register, as is true on most systems, the
-integer pointed to by the second argument should be set to
+integer pointed to by @var{p2} should be set to
 @code{INVALID_REGNUM}.
 
 The default version of this hook returns false.
 @end deftypefn
 
-@deftypefn {Target Hook} enum machine_mode TARGET_CC_MODES_COMPATIBLE (enum machine_mode, enum machine_mode)
+@deftypefn {Target Hook} {enum machine_mode} TARGET_CC_MODES_COMPATIBLE (enum machine_mode @var{m1}, enum machine_mode @var{m2})
 On targets which use multiple condition code modes in class
 @code{MODE_CC}, it is sometimes the case that a comparison can be
 validly done in more than one mode.  On such a system, define this
@@ -6599,8 +6599,7 @@ Return a pointer to a store large enough to hold target scheduling context.
 @deftypefn {Target Hook} void TARGET_SCHED_INIT_SCHED_CONTEXT (void *@var{tc}, bool @var{clean_p})
 Initialize store pointed to by @var{tc} to hold target scheduling context.
 It @var{clean_p} is true then initialize @var{tc} as if scheduler is at the
-beginning of the block.  Otherwise, make a copy of the current context in
-@var{tc}.
+beginning of the block.  Otherwise, copy the current context into @var{tc}.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_SET_SCHED_CONTEXT (void *@var{tc})
