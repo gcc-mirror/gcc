@@ -1,5 +1,8 @@
 2010-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/42719
+	* gcc.dg/pr42719.c: New test.
+
 	PR debug/42728
 	* gcc.dg/pr42728.c: New test.
 

@@ -956,6 +956,8 @@ trivially_conflicts_p (basic_block bb, tree result, tree arg)
   FOR_EACH_IMM_USE_FAST (use, imm_iter, result)
     {
       gimple use_stmt = USE_STMT (use);
+      if (is_gimple_debug (use_stmt))
+	continue;
       /* Now, if there's a use of RESULT that lies outside this basic block,
 	 then there surely is a conflict with ARG.  */
       if (gimple_bb (use_stmt) != bb)

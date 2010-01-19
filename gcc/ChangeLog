@@ -1,5 +1,9 @@
 2010-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/42719
+	* tree-outof-ssa.c (trivially_conflicts_p): Don't consider debug
+	stmt uses.
+
 	PR debug/42728
 	* fwprop.c (all_uses_available_at): Return false if def_set dest
 	is a REG that is used in def_insn.
