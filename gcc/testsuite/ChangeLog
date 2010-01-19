@@ -1,3 +1,8 @@
+2010-01-18  Anthony Green  <green@moxielogic.com>
+
+	* gcc.dg/tree-ssa/asm-3.c (REGISTER): Pick an appropriate register
+	for moxie.
+
 2010-01-19  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/template/error45.C: reverted as part of reverting the
