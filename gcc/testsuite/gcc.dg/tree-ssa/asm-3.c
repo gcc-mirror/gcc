@@ -5,7 +5,11 @@
 #ifdef __hppa__
 #define REGISTER "1"
 #else
+#ifdef __moxie__
+#define REGISTER "8"
+#else
 #define REGISTER "0"
+#endif
 #endif
 
 static inline int source(void)
