@@ -1,3 +1,11 @@
+2010-01-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42804
+	* resolve.c (extract_compcall_passed_object): Set locus for
+	passed-object argument.
+	(extract_ppc_passed_object): Set locus and correctly remove PPC
+	reference.
+
 2010-01-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/42783

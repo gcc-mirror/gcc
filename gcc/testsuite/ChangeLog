@@ -1,3 +1,9 @@
+2010-01-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42804
+	* gfortran.dg/proc_ptr_comp_pass_6.f90: New test.
+	* gfortran.dg/typebound_call_12.f03: New test.
+
 2010-01-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/42783
