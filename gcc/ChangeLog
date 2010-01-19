@@ -7,6 +7,9 @@
 
 	(TARGET_SCHED_INIT_SCHED_CONTEXT): Clarify language.
 
+	* target.h (struct gcc_target) <secondary_reload>: Change type
+	of last argument to secondary_reload_info *.
+
 2010-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42774
