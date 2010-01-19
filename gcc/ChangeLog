@@ -1,3 +1,13 @@
+2010-01-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+       PR target/38697
+       * config/arm/neon-testgen.m (emit_automatics): New parameter
+	features. Adjust for Fixed_return_reg feature.
+	(test_intrinsic): Call emit_automatics with new feature.
+       * config/arm/neon.ml: Update copyright years.
+	(features): New Fixed_return_reg feature.
+	(ops): Update feature for Vget_low.
+
 2010-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/42719

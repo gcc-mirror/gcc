@@ -1,3 +1,18 @@
+2010-01-19  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/38697.
+	* gcc.target/arm/neon/vget_lowf32.c: Regenerate.
+	* gcc.target/arm/neon/vget_lowp16.c: Likewise.
+	* gcc.target/arm/neon/vget_lowp8.c:  Likewise.
+	* gcc.target/arm/neon/vget_lows16.c: Likewise.
+	* gcc.target/arm/neon/vget_lows32.c: Likewise.
+	* gcc.target/arm/neon/vget_lows64.c: Likewise.
+	* gcc.target/arm/neon/vget_lows8.c: Likewise.
+	* gcc.target/arm/neon/vget_lowu16.c: Likewise.
+	* gcc.target/arm/neon/vget_lowu32.c: Likewise.
+	* gcc.target/arm/neon/vget_lowu64.c: Likewise.
+	* gcc.target/arm/neon/vget_lowu8.c: Likewise.
+
 2010-01-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42545

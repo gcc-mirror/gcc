@@ -15,5 +15,4 @@ void test_vget_lowu64 (void)
   out_uint64x1_t = vget_low_u64 (arg0_uint64x2_t);
 }
 
-/* { dg-final { scan-assembler "vmov\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

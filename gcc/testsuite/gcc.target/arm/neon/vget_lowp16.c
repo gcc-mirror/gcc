@@ -9,7 +9,7 @@
 
 void test_vget_lowp16 (void)
 {
-  poly16x4_t out_poly16x4_t;
+  register poly16x4_t out_poly16x4_t asm ("d18");
   poly16x8_t arg0_poly16x8_t;
 
   out_poly16x4_t = vget_low_p16 (arg0_poly16x8_t);

@@ -9,7 +9,7 @@
 
 void test_vget_lows8 (void)
 {
-  int8x8_t out_int8x8_t;
+  register int8x8_t out_int8x8_t asm ("d18");
   int8x16_t arg0_int8x16_t;
 
   out_int8x8_t = vget_low_s8 (arg0_int8x16_t);

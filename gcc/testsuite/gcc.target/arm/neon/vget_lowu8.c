@@ -9,7 +9,7 @@
 
 void test_vget_lowu8 (void)
 {
-  uint8x8_t out_uint8x8_t;
+  register uint8x8_t out_uint8x8_t asm ("d18");
   uint8x16_t arg0_uint8x16_t;
 
   out_uint8x8_t = vget_low_u8 (arg0_uint8x16_t);

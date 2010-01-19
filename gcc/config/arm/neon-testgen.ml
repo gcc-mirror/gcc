@@ -1,5 +1,5 @@
 (* Auto-generate ARM Neon intrinsics tests.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -58,7 +58,7 @@ let emit_prologue chan test_name =
 
 (* Emit declarations of local variables that are going to be passed
    to an intrinsic, together with one to take a returned value if needed.  *)
-let emit_automatics chan c_types =
+let emit_automatics chan c_types features =
   let emit () =
     ignore (
       List.fold_left (fun arg_number -> fun (flags, ty) ->
@@ -75,11 +75,17 @@ let emit_automatics chan c_types =
   in
     match c_types with
       (_, return_ty) :: tys ->
-        if return_ty <> "void" then
-          (* The intrinsic returns a value.  *)
-          (Printf.fprintf chan "  %s out_%s;\n" return_ty return_ty;
-           emit ())
-        else
+        if return_ty <> "void" then begin
+          (* The intrinsic returns a value.  We need to do explict register
+             allocation for vget_low tests or they fail because of copy
+             elimination.  *)
+          ((if List.mem Fixed_return_reg features then
+              Printf.fprintf chan "  register %s out_%s asm (\"d18\");\n"
+                             return_ty return_ty
+            else
+              Printf.fprintf chan "  %s out_%s;\n" return_ty return_ty);
+	   emit ())
+        end else
           (* The intrinsic does not return a value.  *)
           emit ()
     | _ -> assert false
@@ -257,7 +263,7 @@ let test_intrinsic dir opcode features shape name munge elt_ty =
     (* Emit file and function prologues.  *)
     emit_prologue chan test_name;
     (* Emit local variable declarations.  *)
-    emit_automatics chan c_types;
+    emit_automatics chan c_types features;
     Printf.fprintf chan "\n";
     (* Emit the call to the intrinsic.  *)
     emit_call chan const_valuator c_types name elt_ty;
