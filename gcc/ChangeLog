@@ -1,3 +1,12 @@
+2010-01-19  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi (TARGET_FIXED_CONDITION_CODE_REGS): Add argument names.
+
+	(TARGET_CC_MODES_COMPATIBLE): Put return value in braces.
+	Add argument names.
+
+	(TARGET_SCHED_INIT_SCHED_CONTEXT): Clarify language.
+
 2010-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42774
