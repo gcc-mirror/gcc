@@ -4777,6 +4777,7 @@ extract_compcall_passed_object (gfc_expr* e)
       po->expr_type = EXPR_VARIABLE;
       po->symtree = e->symtree;
       po->ref = gfc_copy_ref (e->ref);
+      po->where = e->where;
     }
 
   if (gfc_resolve_expr (po) == FAILURE)
@@ -4831,11 +4832,12 @@ extract_ppc_passed_object (gfc_expr *e)
   po->expr_type = EXPR_VARIABLE;
   po->symtree = e->symtree;
   po->ref = gfc_copy_ref (e->ref);
+  po->where = e->where;
 
   /* Remove PPC reference.  */
   ref = &po->ref;
   while ((*ref)->next)
-    (*ref) = (*ref)->next;
+    ref = &(*ref)->next;
   gfc_free_ref_list (*ref);
   *ref = NULL;
 
