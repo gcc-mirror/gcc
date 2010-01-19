@@ -1,3 +1,7 @@
+2010-01-19  Anthony Green  <green@moxielogic.com>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Expect this test to pass.
+
 2010-01-18  Anthony Green  <green@moxielogic.com>
 
 	* gcc.dg/tree-ssa/asm-3.c (REGISTER): Pick an appropriate register
