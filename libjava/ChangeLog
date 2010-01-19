@@ -1,3 +1,7 @@
+2010-01-19  Matthias Klose  <doko@ubuntu.com>
+
+	* Regenerate .class files.
+
 2010-01-12  Matthias Klose  <doko@ubuntu.com>
 
 	PR libjava/40859, backported from:
