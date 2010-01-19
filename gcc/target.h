@@ -1021,7 +1021,7 @@ struct gcc_target
   /* Return the class for a secondary reload, and fill in extra information.  */
   enum reg_class (*secondary_reload) (bool, rtx, enum reg_class,
 				      enum machine_mode,
-				      struct secondary_reload_info *);
+				      secondary_reload_info *);
 
   /* This target hook allows the backend to perform additional
      processing while initializing for variable expansion.  */
