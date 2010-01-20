@@ -1,3 +1,14 @@
+2010-01-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42782
+	* var-tracking.c: Include tree-flow.h.
+	(mem_dies_at_call): New.
+	(dataflow_set_preserve_mem_locs): Use it.
+	(dataflow_set_remove_mem_locs): Likewise.
+	(dump_var): Renamed from dump_variable.  Adjust all callers.
+	(dump_var_slot): Renamed from dump_variable_slot.  Likewise.
+	* Makefile.in (var-tracking.o): Adjust deps.
+
 2010-01-20  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_SCHED_SET_SCHED_FLAGS): Fix argument list.
