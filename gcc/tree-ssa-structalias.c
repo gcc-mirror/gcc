@@ -2803,7 +2803,7 @@ static void
 get_constraint_for_ptr_offset (tree ptr, tree offset,
 			       VEC (ce_s, heap) **results)
 {
-  struct constraint_expr *c;
+  struct constraint_expr c;
   unsigned int j, n;
   unsigned HOST_WIDE_INT rhsunitoffset, rhsoffset;
 
@@ -2854,13 +2854,13 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   for (j = 0; j < n; j++)
     {
       varinfo_t curr;
-      c = VEC_index (ce_s, *results, j);
-      curr = get_varinfo (c->var);
+      c = *VEC_index (ce_s, *results, j);
+      curr = get_varinfo (c.var);
 
-      if (c->type == ADDRESSOF
+      if (c.type == ADDRESSOF
 	  && !curr->is_full_var)
 	{
-	  varinfo_t temp, curr = get_varinfo (c->var);
+	  varinfo_t temp, curr = get_varinfo (c.var);
 
 	  /* Search the sub-field which overlaps with the
 	     pointed-to offset.  As we deal with positive offsets
@@ -2896,15 +2896,17 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	      c2.offset = 0;
 	      VEC_safe_push (ce_s, heap, *results, &c2);
 	    }
-	  c->var = temp->id;
-	  c->offset = 0;
+	  c.var = temp->id;
+	  c.offset = 0;
 	}
-      else if (c->type == ADDRESSOF
+      else if (c.type == ADDRESSOF
 	       /* If this varinfo represents a full variable just use it.  */
 	       && curr->is_full_var)
-	c->offset = 0;
+	c.offset = 0;
       else
-	c->offset = rhsoffset;
+	c.offset = rhsoffset;
+
+      VEC_replace (ce_s, *results, j, &c);
     }
 }
 
