@@ -1,3 +1,7 @@
+2010-01-20  Joern Rennecke  <amylaar@spamcop.net>
+
+	* lang.c (java_post_options): Constify variable "dot".
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.
