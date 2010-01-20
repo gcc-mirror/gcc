@@ -5216,6 +5216,11 @@ layout_class_type (tree t, tree *virtuals_p)
 		 build_decl (input_location,
 			     FIELD_DECL, NULL_TREE, char_type_node));
 
+  /* If this is a non-POD, declaring it packed makes a difference to how it
+     can be used as a field; don't let finalize_record_size undo it.  */
+  if (TYPE_PACKED (t) && !layout_pod_type_p (t))
+    rli->packed_maybe_necessary = true;
+
   /* Let the back end lay out the type.  */
   finish_record_layout (rli, /*free_p=*/true);
 

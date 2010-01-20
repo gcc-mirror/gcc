@@ -1,5 +1,9 @@
 2010-01-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41788
+	* class.c (layout_class_type): Set packed_maybe_necessary for packed
+	non-PODs.
+
 	PR c++/41920
 	* semantics.c (build_lambda_object): Call mark_used on captured
 	variables.
