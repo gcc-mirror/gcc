@@ -3,6 +3,9 @@
 	* gcc.dg/cleanup-13.c: Expect DW_OP_mod to do unsigned modulo instead
 	of signed, add a few new tests.
 
+	PR middle-end/42803
+	* g++.dg/parse/limits-initializer1.C: New test.
+
 2010-01-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42804
