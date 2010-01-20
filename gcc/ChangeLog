@@ -1,3 +1,7 @@
+2010-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* tree.def (PLACEHOLDER_EXPR): Fix comment.
+
 2010-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Use DW_OP_mod for UMOD instead
