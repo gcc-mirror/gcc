@@ -1,3 +1,11 @@
+2010-01-20  Anthony Green  <green@moxielogic.com>
+
+	* gcc.dg/cpp/_Pragma6.c: Skip this test for moxie-*-* (no
+	pack(push) pragma).
+	* gcc.dg/pr19340.c: Skip this test for moxie-*-* (no scheduling).
+	* gcc.dg/20020312-2.c: Port this to the moxie core.
+	* gcc.dg/weak/typeof-2.c: Ditto.
+
 2010-01-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42717
