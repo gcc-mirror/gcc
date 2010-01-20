@@ -1,3 +1,11 @@
+2010-01-20  Janis Johnson  <janis187@us.ibm.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/21769
+	* testsuite/lib/dg-options.exp (add_options_for_no_pch): Add.
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Use it.
+
 2010-01-19  Johannes Singler  <singler@kit.edu>
 
 	PR libstdc++/42712
