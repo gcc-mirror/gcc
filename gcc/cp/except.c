@@ -1,6 +1,6 @@
 /* Handle exceptional things in C++.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
@@ -417,7 +417,7 @@ tree
 expand_start_catch_block (tree decl)
 {
   tree exp;
-  tree type;
+  tree type, init;
 
   if (! doing_eh (1))
     return NULL_TREE;
@@ -450,10 +450,12 @@ expand_start_catch_block (tree decl)
   /* Call __cxa_end_catch at the end of processing the exception.  */
   push_eh_cleanup (type);
 
+  init = do_begin_catch ();
+
   /* If there's no decl at all, then all we need to do is make sure
      to tell the runtime that we've begun handling the exception.  */
-  if (decl == NULL || decl == error_mark_node)
-    finish_expr_stmt (do_begin_catch ());
+  if (decl == NULL || decl == error_mark_node || init == error_mark_node)
+    finish_expr_stmt (init);
 
   /* If the C++ object needs constructing, we need to do that before
      calling __cxa_begin_catch, so that std::uncaught_exception gets
@@ -463,7 +465,7 @@ expand_start_catch_block (tree decl)
     {
       exp = do_get_exception_ptr ();
       initialize_handler_parm (decl, exp);
-      finish_expr_stmt (do_begin_catch ());
+      finish_expr_stmt (init);
     }
 
   /* Otherwise the type uses a bitwise copy, and we don't have to worry
@@ -471,7 +473,6 @@ expand_start_catch_block (tree decl)
      copy with the return value of __cxa_end_catch instead.  */
   else
     {
-      tree init = do_begin_catch ();
       tree init_type = type;
 
       /* Pointers are passed by values, everything else by reference.  */

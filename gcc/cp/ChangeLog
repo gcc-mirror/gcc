@@ -1,3 +1,9 @@
+2010-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42038
+	* except.c (expand_start_catch_block): Deal correctly with
+	do_begin_catch returning error_mark_node.
+
 2010-01-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41788
