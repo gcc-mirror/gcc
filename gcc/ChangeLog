@@ -1,3 +1,10 @@
+2010-01-20  Felyza Wishbringer  <fwishbringer@gmail.com>
+
+	PR bootstrap/42786
+	* config.gcc (i[34567]86-*-*): Fix handling of athlon64 and athlon-fx
+	cpu types.  Add support for *-sse3 cpu types.
+	(x86_64-*-*): Ditto.
+
 2010-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/42803
