@@ -6,6 +6,8 @@
 	(load_class): Constify variable "separator".
 	Use get_identifier_with_length.
 
+	* jvspec.c (lang_specific_driver): Constify two variables named "p".
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.

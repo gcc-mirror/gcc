@@ -542,14 +542,14 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
       if (! strncmp (argv[i], "-fCLASSPATH=", 12)
 	  || ! strncmp (argv[i], "-fclasspath=", 12))
 	{
-	  char *p = strchr (argv[i], '=');
+	  const char *p = strchr (argv[i], '=');
 	  jcf_path_classpath_arg (p + 1);
 	  --j;
 	  continue;
 	}
       if (! strncmp (argv[i], "-fbootclasspath=", 16))
 	{
-	  char *p = strchr (argv[i], '=');
+	  const char *p = strchr (argv[i], '=');
 	  jcf_path_bootclasspath_arg (p + 1);
 	  --j;
 	  continue;
