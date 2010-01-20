@@ -83,7 +83,7 @@ static int h8300_interrupt_function_p (tree);
 static int h8300_saveall_function_p (tree);
 static int h8300_monitor_function_p (tree);
 static int h8300_os_task_function_p (tree);
-static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT);
+static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT, bool);
 static HOST_WIDE_INT round_frame_size (HOST_WIDE_INT);
 static unsigned int compute_saved_regs (void);
 static void push (int);
@@ -509,9 +509,10 @@ byte_reg (rtx x, int b)
 
 /* We use this to wrap all emitted insns in the prologue.  */
 static rtx
-F (rtx x)
+F (rtx x, bool set_it)
 {
-  RTX_FRAME_RELATED_P (x) = 1;
+  if (set_it)
+    RTX_FRAME_RELATED_P (x) = 1;
   return x;
 }
 
@@ -528,7 +529,7 @@ Fpa (rtx par)
   int i;
 
   for (i = 0; i < len; i++)
-    F (XVECEXP (par, 0, i));
+    F (XVECEXP (par, 0, i), true);
 
   return par;
 }
@@ -537,7 +538,7 @@ Fpa (rtx par)
    SIZE to adjust the stack pointer.  */
 
 static void
-h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size)
+h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size, bool in_prologue)
 {
   /* If the frame size is 0, we don't have anything to do.  */
   if (size == 0)
@@ -552,9 +553,9 @@ h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size)
       && !(cfun->static_chain_decl != NULL && sign < 0))
     {
       rtx r3 = gen_rtx_REG (Pmode, 3);
-      F (emit_insn (gen_movhi (r3, GEN_INT (sign * size))));
+      F (emit_insn (gen_movhi (r3, GEN_INT (sign * size))), in_prologue);
       F (emit_insn (gen_addhi3 (stack_pointer_rtx,
-				stack_pointer_rtx, r3)));
+				stack_pointer_rtx, r3)), in_prologue);
     }
   else
     {
@@ -568,11 +569,11 @@ h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size)
 	  rtx x = emit_insn (gen_addhi3 (stack_pointer_rtx,
 					 stack_pointer_rtx, GEN_INT (sign * size)));
 	  if (size < 4)
-	    F (x);
+	    F (x, in_prologue);
 	}
       else
 	F (emit_insn (gen_addsi3 (stack_pointer_rtx,
-				  stack_pointer_rtx, GEN_INT (sign * size))));
+				  stack_pointer_rtx, GEN_INT (sign * size))), in_prologue);
     }
 }
 
@@ -622,7 +623,7 @@ push (int rn)
     x = gen_push_h8300hs_advanced (reg);
   else
     x = gen_push_h8300hs_normal (reg);
-  x = F (emit_insn (x));
+  x = F (emit_insn (x), 1);
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, 0);
 }
 
@@ -854,7 +855,7 @@ h8300_expand_prologue (void)
     {
       /* Push fp.  */
       push (HARD_FRAME_POINTER_REGNUM);
-      F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
+      F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx), 1);
     }
 
   /* Push the rest of the registers in ascending order.  */
@@ -885,7 +886,7 @@ h8300_expand_prologue (void)
     }
 
   /* Leave room for locals.  */
-  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()));
+  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()), true);
 }
 
 /* Return nonzero if we can use "rts" for the function currently being
@@ -920,7 +921,7 @@ h8300_expand_epilogue (void)
   returned_p = false;
 
   /* Deallocate locals.  */
-  h8300_emit_stack_adjustment (1, frame_size);
+  h8300_emit_stack_adjustment (1, frame_size, false);
 
   /* Pop the saved registers in descending order.  */
   saved_regs = compute_saved_regs ();
