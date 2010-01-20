@@ -917,27 +917,6 @@ remove_dead_phis (basic_block bb)
   return something_changed;
 }
 
-/* Find first live post dominator of BB.  */
-
-static basic_block
-get_live_post_dom (basic_block bb)
-{
-  basic_block post_dom_bb;
-
-
-  /* The post dominance info has to be up-to-date.  */
-  gcc_assert (dom_info_state (CDI_POST_DOMINATORS) == DOM_OK);
-
-  /* Get the immediate post dominator of bb.  */
-  post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
-  /* And look for first live one.  */
-  while (post_dom_bb != EXIT_BLOCK_PTR
-	 && !TEST_BIT (bb_contains_live_stmts, post_dom_bb->index))
-    post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, post_dom_bb);
-
-  return post_dom_bb;
-}
-
 /* Forward edge E to respective POST_DOM_BB and update PHIs.  */
 
 static edge
@@ -961,10 +940,9 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
   if (!gimple_seq_empty_p (phi_nodes (post_dom_bb)))
     {
       /* We are sure that for every live PHI we are seeing control dependent BB.
-         This means that we can look up the end of control dependent path leading
-         to the PHI itself.  */
+         This means that we can pick any edge to duplicate PHI args from.  */
       FOR_EACH_EDGE (e2, ei, post_dom_bb->preds)
-	if (e2 != e && dominated_by_p (CDI_POST_DOMINATORS, e->src, e2->src))
+	if (e2 != e)
 	  break;
       for (gsi = gsi_start_phis (post_dom_bb); !gsi_end_p (gsi);)
 	{
@@ -972,40 +950,27 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 	  tree op;
 	  source_location locus;
 
-	  /* Dead PHI do not imply control dependency.  */
-          if (!gimple_plf (phi, STMT_NECESSARY)
-	      && is_gimple_reg (gimple_phi_result (phi)))
-	    {
-	      gsi_next (&gsi);
-	      continue;
-	    }
-	  if (gimple_phi_arg_def (phi, e->dest_idx))
-	    {
-	      gsi_next (&gsi);
-	      continue;
-	    }
-
-	  /* We didn't find edge to update.  This can happen for PHIs on virtuals
-	     since there is no control dependency relation on them.  We are lost
-	     here and must force renaming of the symbol.  */
+	  /* PHIs for virtuals have no control dependency relation on them.
+	     We are lost here and must force renaming of the symbol.  */
 	  if (!is_gimple_reg (gimple_phi_result (phi)))
 	    {
 	      mark_virtual_phi_result_for_renaming (phi);
 	      remove_phi_node (&gsi, true);
 	      continue;
 	    }
-	  if (!e2)
+
+	  /* Dead PHI do not imply control dependency.  */
+          if (!gimple_plf (phi, STMT_NECESSARY))
 	    {
-	      op = gimple_phi_arg_def (phi, e->dest_idx == 0 ? 1 : 0);
-	      locus = gimple_phi_arg_location (phi, e->dest_idx == 0 ? 1 : 0);
+	      gsi_next (&gsi);
+	      continue;
 	    }
-	  else
-	    {
-	      op = gimple_phi_arg_def (phi, e2->dest_idx);
-	      locus = gimple_phi_arg_location (phi, e2->dest_idx);
-	    }
+
+	  op = gimple_phi_arg_def (phi, e2->dest_idx);
+	  locus = gimple_phi_arg_location (phi, e2->dest_idx);
 	  add_phi_arg (phi, op, e, locus);
-	  gcc_assert (e2 || degenerate_phi_p (phi));
+	  /* The resulting PHI if not dead can only be degenerate.  */
+	  gcc_assert (degenerate_phi_p (phi));
 	  gsi_next (&gsi);
 	}
     }
@@ -1041,7 +1006,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
       edge e, e2;
       edge_iterator ei;
 
-      post_dom_bb = get_live_post_dom (bb);
+      post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
       e = find_edge (bb, post_dom_bb);
 
