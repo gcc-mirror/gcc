@@ -1,3 +1,13 @@
+2010-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42803
+	* varasm.c (narrowing_initializer_constant_valid_p): Add CACHE
+	argument, call initializer_constant_valid_p_1 instead of
+	initializer_constant_valid_p, pass CACHE to it, return NULL
+	immediately if first call returns NULL.
+	(initializer_constant_valid_p_1): New function.
+	(initializer_constant_valid_p): Use it.
+
 2010-01-20  Thomas Quinot  <quinot@adacore.com>
 
 	* tree.def (PLACEHOLDER_EXPR): Fix comment.

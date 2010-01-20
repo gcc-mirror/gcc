@@ -1,7 +1,7 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4093,6 +4093,9 @@ constructor_static_from_elts_p (const_tree ctor)
 	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (ctor)));
 }
 
+static tree initializer_constant_valid_p_1 (tree value, tree endtype,
+					    tree *cache);
+
 /* A subroutine of initializer_constant_valid_p.  VALUE is a MINUS_EXPR,
    PLUS_EXPR or POINTER_PLUS_EXPR.  This looks for cases of VALUE
    which are valid when ENDTYPE is an integer of any size; in
@@ -4102,7 +4105,7 @@ constructor_static_from_elts_p (const_tree ctor)
    returns NULL.  */
 
 static tree
-narrowing_initializer_constant_valid_p (tree value, tree endtype)
+narrowing_initializer_constant_valid_p (tree value, tree endtype, tree *cache)
 {
   tree op0, op1;
 
@@ -4141,11 +4144,14 @@ narrowing_initializer_constant_valid_p (tree value, tree endtype)
       op1 = inner;
     }
 
-  op0 = initializer_constant_valid_p (op0, endtype);
-  op1 = initializer_constant_valid_p (op1, endtype);
+  op0 = initializer_constant_valid_p_1 (op0, endtype, cache);
+  if (!op0)
+    return NULL_TREE;
 
+  op1 = initializer_constant_valid_p_1 (op1, endtype,
+					cache ? cache + 2 : NULL);
   /* Both initializers must be known.  */
-  if (op0 && op1)
+  if (op1)
     {
       if (op0 == op1
 	  && (op0 == null_pointer_node
@@ -4166,7 +4172,8 @@ narrowing_initializer_constant_valid_p (tree value, tree endtype)
   return NULL_TREE;
 }
 
-/* Return nonzero if VALUE is a valid constant-valued expression
+/* Helper function of initializer_constant_valid_p.
+   Return nonzero if VALUE is a valid constant-valued expression
    for use in initializing a static variable; one that can be an
    element of a "constant" initializer.
 
@@ -4174,10 +4181,12 @@ narrowing_initializer_constant_valid_p (tree value, tree endtype)
    if it is relocatable, return the variable that determines the relocation.
    We assume that VALUE has been folded as much as possible;
    therefore, we do not need to check for such things as
-   arithmetic-combinations of integers.  */
+   arithmetic-combinations of integers.
 
-tree
-initializer_constant_valid_p (tree value, tree endtype)
+   Use CACHE (pointer to 2 tree values) for caching if non-NULL.  */
+
+static tree
+initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
 {
   tree ret;
 
@@ -4190,18 +4199,33 @@ initializer_constant_valid_p (tree value, tree endtype)
 	  tree elt;
 	  bool absolute = true;
 
+	  if (cache && cache[0] == value)
+	    return cache[1];
 	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (value), idx, elt)
 	    {
 	      tree reloc;
-	      reloc = initializer_constant_valid_p (elt, TREE_TYPE (elt));
+	      reloc = initializer_constant_valid_p_1 (elt, TREE_TYPE (elt),
+						      NULL);
 	      if (!reloc)
-		return NULL_TREE;
+		{
+		  if (cache)
+		    {
+		      cache[0] = value;
+		      cache[1] = NULL_TREE;
+		    }
+		  return NULL_TREE;
+		}
 	      if (reloc != null_pointer_node)
 		absolute = false;
 	    }
 	  /* For a non-absolute relocation, there is no single
 	     variable that can be "the variable that determines the
 	     relocation."  */
+	  if (cache)
+	    {
+	      cache[0] = value;
+	      cache[1] = absolute ? null_pointer_node : error_mark_node;
+	    }
 	  return absolute ? null_pointer_node : error_mark_node;
 	}
 
@@ -4241,7 +4265,8 @@ initializer_constant_valid_p (tree value, tree endtype)
       }
 
     case NON_LVALUE_EXPR:
-      return initializer_constant_valid_p (TREE_OPERAND (value, 0), endtype);
+      return initializer_constant_valid_p_1 (TREE_OPERAND (value, 0),
+					     endtype, cache);
 
     case VIEW_CONVERT_EXPR:
       {
@@ -4256,13 +4281,13 @@ initializer_constant_valid_p (tree value, tree endtype)
 	if (AGGREGATE_TYPE_P (src_type) && !AGGREGATE_TYPE_P (dest_type))
 	  {
 	    if (TYPE_MODE (endtype) == TYPE_MODE (dest_type))
-	      return initializer_constant_valid_p (src, endtype);
+	      return initializer_constant_valid_p_1 (src, endtype, cache);
 	    else
 	      return NULL_TREE;
 	  }
 
 	/* Allow all other kinds of view-conversion.  */
-	return initializer_constant_valid_p (src, endtype);
+	return initializer_constant_valid_p_1 (src, endtype, cache);
       }
 
     CASE_CONVERT:
@@ -4277,18 +4302,18 @@ initializer_constant_valid_p (tree value, tree endtype)
 	    || (FLOAT_TYPE_P (dest_type) && FLOAT_TYPE_P (src_type))
 	    || (TREE_CODE (dest_type) == OFFSET_TYPE
 		&& TREE_CODE (src_type) == OFFSET_TYPE))
-	  return initializer_constant_valid_p (src, endtype);
+	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
 	/* Allow length-preserving conversions between integer types.  */
 	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type)
 	    && (TYPE_PRECISION (dest_type) == TYPE_PRECISION (src_type)))
-	  return initializer_constant_valid_p (src, endtype);
+	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
 	/* Allow conversions between other integer types only if
 	   explicit value.  */
 	if (INTEGRAL_TYPE_P (dest_type) && INTEGRAL_TYPE_P (src_type))
 	  {
-	    tree inner = initializer_constant_valid_p (src, endtype);
+	    tree inner = initializer_constant_valid_p_1 (src, endtype, cache);
 	    if (inner == null_pointer_node)
 	      return null_pointer_node;
 	    break;
@@ -4297,7 +4322,7 @@ initializer_constant_valid_p (tree value, tree endtype)
 	/* Allow (int) &foo provided int is as wide as a pointer.  */
 	if (INTEGRAL_TYPE_P (dest_type) && POINTER_TYPE_P (src_type)
 	    && (TYPE_PRECISION (dest_type) >= TYPE_PRECISION (src_type)))
-	  return initializer_constant_valid_p (src, endtype);
+	  return initializer_constant_valid_p_1 (src, endtype, cache);
 
 	/* Likewise conversions from int to pointers, but also allow
 	   conversions from 0.  */
@@ -4311,14 +4336,14 @@ initializer_constant_valid_p (tree value, tree endtype)
 	    if (integer_zerop (src))
 	      return null_pointer_node;
 	    else if (TYPE_PRECISION (dest_type) <= TYPE_PRECISION (src_type))
-	      return initializer_constant_valid_p (src, endtype);
+	      return initializer_constant_valid_p_1 (src, endtype, cache);
 	  }
 
 	/* Allow conversions to struct or union types if the value
 	   inside is okay.  */
 	if (TREE_CODE (dest_type) == RECORD_TYPE
 	    || TREE_CODE (dest_type) == UNION_TYPE)
-	  return initializer_constant_valid_p (src, endtype);
+	  return initializer_constant_valid_p_1 (src, endtype, cache);
       }
       break;
 
@@ -4328,66 +4353,102 @@ initializer_constant_valid_p (tree value, tree endtype)
 	 with -frounding-math we hit this with addition of two constants.  */
       if (TREE_CODE (endtype) == REAL_TYPE)
 	return NULL_TREE;
+      if (cache && cache[0] == value)
+	return cache[1];
       if (! INTEGRAL_TYPE_P (endtype)
 	  || TYPE_PRECISION (endtype) >= TYPE_PRECISION (TREE_TYPE (value)))
 	{
-	  tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
-						      endtype);
-	  tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
-						      endtype);
+	  tree ncache[4] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
+	  tree valid0
+	    = initializer_constant_valid_p_1 (TREE_OPERAND (value, 0),
+					      endtype, ncache);
+	  tree valid1
+	    = initializer_constant_valid_p_1 (TREE_OPERAND (value, 1),
+					      endtype, ncache + 2);
 	  /* If either term is absolute, use the other term's relocation.  */
 	  if (valid0 == null_pointer_node)
-	    return valid1;
-	  if (valid1 == null_pointer_node)
-	    return valid0;
+	    ret = valid1;
+	  else if (valid1 == null_pointer_node)
+	    ret = valid0;
+	  /* Support narrowing pointer differences.  */
+	  else
+	    ret = narrowing_initializer_constant_valid_p (value, endtype,
+							  ncache);
 	}
-
+      else
       /* Support narrowing pointer differences.  */
-      ret = narrowing_initializer_constant_valid_p (value, endtype);
-      if (ret != NULL_TREE)
-	return ret;
-
-      break;
+	ret = narrowing_initializer_constant_valid_p (value, endtype, NULL);
+      if (cache)
+	{
+	  cache[0] = value;
+	  cache[1] = ret;
+	}
+      return ret;
 
     case MINUS_EXPR:
       if (TREE_CODE (endtype) == REAL_TYPE)
 	return NULL_TREE;
+      if (cache && cache[0] == value)
+	return cache[1];
       if (! INTEGRAL_TYPE_P (endtype)
 	  || TYPE_PRECISION (endtype) >= TYPE_PRECISION (TREE_TYPE (value)))
 	{
-	  tree valid0 = initializer_constant_valid_p (TREE_OPERAND (value, 0),
-						      endtype);
-	  tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
-						      endtype);
+	  tree ncache[4] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
+	  tree valid0
+	    = initializer_constant_valid_p_1 (TREE_OPERAND (value, 0),
+					      endtype, ncache);
+	  tree valid1
+	    = initializer_constant_valid_p_1 (TREE_OPERAND (value, 1),
+					      endtype, ncache + 2);
 	  /* Win if second argument is absolute.  */
 	  if (valid1 == null_pointer_node)
-	    return valid0;
+	    ret = valid0;
 	  /* Win if both arguments have the same relocation.
 	     Then the value is absolute.  */
-	  if (valid0 == valid1 && valid0 != 0)
-	    return null_pointer_node;
-
+	  else if (valid0 == valid1 && valid0 != 0)
+	    ret = null_pointer_node;
 	  /* Since GCC guarantees that string constants are unique in the
 	     generated code, a subtraction between two copies of the same
 	     constant string is absolute.  */
-	  if (valid0 && TREE_CODE (valid0) == STRING_CST
-	      && valid1 && TREE_CODE (valid1) == STRING_CST
-	      && operand_equal_p (valid0, valid1, 1))
-	    return null_pointer_node;
+	  else if (valid0 && TREE_CODE (valid0) == STRING_CST
+		   && valid1 && TREE_CODE (valid1) == STRING_CST
+		   && operand_equal_p (valid0, valid1, 1))
+	    ret = null_pointer_node;
+	  /* Support narrowing differences.  */
+	  else
+	    ret = narrowing_initializer_constant_valid_p (value, endtype,
+							  ncache);
 	}
-
-      /* Support narrowing differences.  */
-      ret = narrowing_initializer_constant_valid_p (value, endtype);
-      if (ret != NULL_TREE)
-	return ret;
-
-      break;
+      else
+	/* Support narrowing differences.  */
+	ret = narrowing_initializer_constant_valid_p (value, endtype, NULL);
+      if (cache)
+	{
+	  cache[0] = value;
+	  cache[1] = ret;
+	}
+      return ret;
 
     default:
       break;
     }
 
-  return 0;
+  return NULL_TREE;
+}
+
+/* Return nonzero if VALUE is a valid constant-valued expression
+   for use in initializing a static variable; one that can be an
+   element of a "constant" initializer.
+
+   Return null_pointer_node if the value is absolute;
+   if it is relocatable, return the variable that determines the relocation.
+   We assume that VALUE has been folded as much as possible;
+   therefore, we do not need to check for such things as
+   arithmetic-combinations of integers.  */
+tree
+initializer_constant_valid_p (tree value, tree endtype)
+{
+  return initializer_constant_valid_p_1 (value, endtype, NULL);
 }
 
 /* Return true if VALUE is a valid constant-valued expression
