@@ -1889,7 +1889,6 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
 {
   gimple stmt, phi;
   imm_use_iterator iter;
-  edge e;
 
   SSA_NAME_VAR (name) = var;
 
@@ -1907,11 +1906,6 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
 	}
       if (!phi)
 	return;
-
-      if (gimple_bb (phi) == loop->header)
-	e = loop_latch_edge (loop);
-      else
-	e = single_pred_edge (gimple_bb (stmt));
 
       name = PHI_RESULT (phi);
       SSA_NAME_VAR (name) = var;
