@@ -1,5 +1,8 @@
 2010-01-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41788
+	* g++.dg/abi/packed1.C: New.
+
 	PR c++/41920
 	* g++.dg/cpp0x/lambda/lambda-warn1.C: New.
 
