@@ -1,3 +1,8 @@
+2010-01-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42782
+	* gcc.dg/guality/pr42782.c: New.
+
 2010-01-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41788

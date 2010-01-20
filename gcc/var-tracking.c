@@ -106,6 +106,7 @@
 #include "expr.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "tree-flow.h"
 #include "cselib.h"
 #include "target.h"
 
@@ -446,8 +447,8 @@ static bool compute_bb_dataflow (basic_block);
 static void vt_find_locations (void);
 
 static void dump_attrs_list (attrs);
-static int dump_variable_slot (void **, void *);
-static void dump_variable (variable);
+static int dump_var_slot (void **, void *);
+static void dump_var (variable);
 static void dump_vars (htab_t);
 static void dump_dataflow_set (dataflow_set *);
 static void dump_dataflow_sets (void);
@@ -3716,13 +3717,32 @@ find_mem_expr_in_1pdv (tree expr, rtx val, htab_t vars)
   return where;
 }
 
+/* Return TRUE if the value of MEM may vary across a call.  */
+
+static bool
+mem_dies_at_call (rtx mem)
+{
+  tree expr = MEM_EXPR (mem);
+  tree decl;
+
+  if (!expr)
+    return true;
+
+  decl = get_base_address (expr);
+
+  if (!decl)
+    return true;
+
+  if (!DECL_P (decl))
+    return true;
+
+  return (may_be_aliased (decl)
+	  || (!TREE_READONLY (decl) && is_global_var (decl)));
+}
+
 /* Remove all MEMs from the location list of a hash table entry for a
    one-part variable, except those whose MEM attributes map back to
-   the variable itself, directly or within a VALUE.
-
-   ??? We could also preserve MEMs that reference stack slots that are
-   annotated as not addressable.  This is arguably even more reliable
-   than the current heuristic.  */
+   the variable itself, directly or within a VALUE.  */
 
 static int
 dataflow_set_preserve_mem_locs (void **slot, void *data)
@@ -3744,16 +3764,18 @@ dataflow_set_preserve_mem_locs (void **slot, void *data)
 	{
 	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
 	    {
-	      /* We want to remove a MEM that doesn't refer to DECL.  */
+	      /* We want to remove dying MEMs that doesn't refer to
+		 DECL.  */
 	      if (GET_CODE (loc->loc) == MEM
 		  && (MEM_EXPR (loc->loc) != decl
-		      || MEM_OFFSET (loc->loc)))
+		      || MEM_OFFSET (loc->loc))
+		  && !mem_dies_at_call (loc->loc))
 		break;
-	      /* We want to move here a MEM that does refer to DECL.  */
+	      /* We want to move here MEMs that do refer to DECL.  */
 	      else if (GET_CODE (loc->loc) == VALUE
 		       && find_mem_expr_in_1pdv (decl, loc->loc,
 						 shared_hash_htab (set->vars)))
-	      break;
+		break;
 	    }
 
 	  if (!loc)
@@ -3790,7 +3812,8 @@ dataflow_set_preserve_mem_locs (void **slot, void *data)
 
 	  if (GET_CODE (loc->loc) != MEM
 	      || (MEM_EXPR (loc->loc) == decl
-		  && MEM_OFFSET (loc->loc) == 0))
+		  && MEM_OFFSET (loc->loc) == 0)
+	      || !mem_dies_at_call (loc->loc))
 	    {
 	      if (old_loc != loc->loc && emit_notes)
 		{
@@ -3838,7 +3861,8 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
       if (var->refcount > 1 || shared_hash_shared (set->vars))
 	{
 	  for (loc = var->var_part[0].loc_chain; loc; loc = loc->next)
-	    if (GET_CODE (loc->loc) == MEM)
+	    if (GET_CODE (loc->loc) == MEM
+		&& mem_dies_at_call (loc->loc))
 	      break;
 
 	  if (!loc)
@@ -3852,7 +3876,8 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
       for (locp = &var->var_part[0].loc_chain, loc = *locp;
 	   loc; loc = *locp)
 	{
-	  if (GET_CODE (loc->loc) != MEM)
+	  if (GET_CODE (loc->loc) != MEM
+	      || !mem_dies_at_call (loc->loc))
 	    {
 	      locp = &loc->next;
 	      continue;
@@ -4034,7 +4059,7 @@ dataflow_set_different_1 (void **slot, void *data)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "dataflow difference found: removal of:\n");
-	  dump_variable (var1);
+	  dump_var (var1);
 	}
 
       /* Stop traversing the hash table.  */
@@ -4048,8 +4073,8 @@ dataflow_set_different_1 (void **slot, void *data)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "dataflow difference found: old and new follow:\n");
-	  dump_variable (var1);
-	  dump_variable (var2);
+	  dump_var (var1);
+	  dump_var (var2);
 	}
 
       /* Stop traversing the hash table.  */
@@ -5703,11 +5728,11 @@ dump_attrs_list (attrs list)
 /* Print the information about variable *SLOT to dump file.  */
 
 static int
-dump_variable_slot (void **slot, void *data ATTRIBUTE_UNUSED)
+dump_var_slot (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   variable var = (variable) *slot;
 
-  dump_variable (var);
+  dump_var (var);
 
   /* Continue traversing the hash table.  */
   return 1;
@@ -5716,7 +5741,7 @@ dump_variable_slot (void **slot, void *data ATTRIBUTE_UNUSED)
 /* Print the information about variable VAR to dump file.  */
 
 static void
-dump_variable (variable var)
+dump_var (variable var)
 {
   int i;
   location_chain node;
@@ -5763,7 +5788,7 @@ dump_vars (htab_t vars)
   if (htab_elements (vars) > 0)
     {
       fprintf (dump_file, "Variables:\n");
-      htab_traverse (vars, dump_variable_slot, NULL);
+      htab_traverse (vars, dump_var_slot, NULL);
     }
 }
 
