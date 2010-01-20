@@ -1,5 +1,9 @@
 2010-01-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41920
+	* semantics.c (build_lambda_object): Call mark_used on captured
+	variables.
+
 	PR c++/40750
 	* decl.c (grokdeclarator): Clear type_quals for a member function
 	declared using a typedef.  Don't complain about adding cv-quals
