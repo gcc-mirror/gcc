@@ -1,3 +1,8 @@
+2010-01-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42717
+	* gcc.c-torture/compile/pr42717.c: New testcase.
+
 2010-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cleanup-13.c: Expect DW_OP_mod to do unsigned modulo instead

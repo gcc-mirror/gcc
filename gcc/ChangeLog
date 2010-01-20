@@ -1,5 +1,14 @@
 2010-01-20  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/42717
+	* tree-ssa-dce.c (get_live_post_dom): Remove.
+	(forward_edge_to_pdom): Take an arbitrary edge to copy
+	degenerate PHI args from.
+	(remove_dead_stmt): Use the first post-dominator even if it
+	does not contain live statements as redirection destination.
+
+2010-01-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree-inline.c (estimate_num_insns): Handle EH builtins.
 
 2010-01-20  Jakub Jelinek  <jakub@redhat.com>
