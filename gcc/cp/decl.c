@@ -8149,7 +8149,7 @@ grokdeclarator (const cp_declarator *declarator,
       /* This was an error in C++98 (cv-qualifiers cannot be added to
 	 a function type), but DR 295 makes the code well-formed by
 	 dropping the extra qualifiers. */
-      if (pedantic)
+      if (pedantic && cxx_dialect == cxx98)
 	{
 	  tree bad_type = build_qualified_type (type, type_quals);
 	  pedwarn (input_location, OPT_pedantic, 
@@ -9046,6 +9046,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  /* The qualifiers on the function type become the qualifiers on
 	     the non-static member function. */
 	  memfn_quals |= cp_type_quals (type);
+	  type_quals = TYPE_UNQUALIFIED;
 	}
     }
 
