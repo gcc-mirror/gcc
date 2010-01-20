@@ -1430,7 +1430,6 @@ create_params_index (htab_t index_table, CloogProgram *prog) {
 bool
 gloog (scop_p scop, htab_t bb_pbb_mapping)
 {
-  edge new_scop_exit_edge = NULL;
   VEC (tree, heap) *newivs = VEC_alloc (tree, heap, 10);
   loop_p context_loop;
   sese region = SCOP_REGION (scop);
@@ -1471,10 +1470,10 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 
   create_params_index (params_index, pc.prog);
 
-  new_scop_exit_edge = translate_clast (region, context_loop, pc.stmt,
-					if_region->true_region->entry,
-					rename_map, &newivs, newivs_index,
-					bb_pbb_mapping, 1, params_index);
+  translate_clast (region, context_loop, pc.stmt,
+		   if_region->true_region->entry,
+		   rename_map, &newivs, newivs_index,
+		   bb_pbb_mapping, 1, params_index);
   graphite_verify ();
   sese_adjust_liveout_phis (region, rename_map,
 			    if_region->region->exit->src,

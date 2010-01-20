@@ -1866,14 +1866,13 @@ create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
   if (recovery_block != NULL)
     {
       rtx twin_rtx;
-      insn_t twin;
 
       twin_rtx = copy_rtx (PATTERN (EXPR_INSN_RTX (c_expr)));
       twin_rtx = create_insn_rtx_from_pattern (twin_rtx, NULL_RTX);
-      twin = sel_gen_recovery_insn_from_rtx_after (twin_rtx,
-						   INSN_EXPR (orig_insn),
-						   INSN_SEQNO (insn),
-						   bb_note (recovery_block));
+      sel_gen_recovery_insn_from_rtx_after (twin_rtx,
+					    INSN_EXPR (orig_insn),
+					    INSN_SEQNO (insn),
+					    bb_note (recovery_block));
     }
 
   /* If we've generated a data speculation check, make sure
@@ -2411,10 +2410,6 @@ try_transformation_cache (expr_t expr, insn_t insn,
         EXPR_TARGET_AVAILABLE (expr) = false;
       if (pti->type == TRANS_SPECULATION)
         {
-          ds_t ds;
-
-          ds = EXPR_SPEC_DONE_DS (expr);
-
           EXPR_SPEC_DONE_DS (expr) = pti->ds;
           EXPR_NEEDS_SPEC_CHECK_P (expr) |= pti->needs_check;
         }
@@ -4216,7 +4211,6 @@ static int
 calculate_privileged_insns (void)
 {
   expr_t cur_expr, min_spec_expr = NULL;
-  insn_t cur_insn, min_spec_insn;
   int privileged_n = 0, i;
 
   for (i = 0; i < ready.n_ready; i++)
@@ -4225,12 +4219,8 @@ calculate_privileged_insns (void)
         continue;
 
       if (! min_spec_expr)
-        {
-          min_spec_insn = ready_element (&ready, i);
-          min_spec_expr = find_expr_for_ready (i, true);
-        }
+	min_spec_expr = find_expr_for_ready (i, true);
 
-      cur_insn = ready_element (&ready, i);
       cur_expr = find_expr_for_ready (i, true);
 
       if (EXPR_SPEC (cur_expr) > EXPR_SPEC (min_spec_expr))
@@ -4384,7 +4374,7 @@ find_best_expr (av_set_t *av_vliw_ptr, blist_t bnds, fence_t fence,
   best = fill_ready_list (av_vliw_ptr, bnds, fence, pneed_stall);
   if (best == NULL && ready.n_ready > 0)
     {
-      int privileged_n, index, avail_n;
+      int privileged_n, index;
 
       can_issue_more = invoke_reorder_hooks (fence);
       if (can_issue_more > 0)
@@ -4393,7 +4383,7 @@ find_best_expr (av_set_t *av_vliw_ptr, blist_t bnds, fence_t fence,
              scheduled due to liveness restrictions on its destination register.
              In the future, we'd like to choose once and then just probe insns
              in the order of their priority.  */
-          avail_n = invoke_dfa_lookahead_guard ();
+          invoke_dfa_lookahead_guard ();
           privileged_n = calculate_privileged_insns ();
           can_issue_more = choose_best_insn (fence, privileged_n, &index);
           if (can_issue_more)

@@ -1,3 +1,19 @@
+2010-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* sel-sched.c (create_speculation_check): Remove set but not used
+	variable twin.
+	(try_transformation_cache): Remove set but not used variable ds.
+	(calculate_privileged_insns): Remove set but not used variables
+	cur_insn and min_spec_insn.
+	(find_best_expr): Remove set but not used variable avail_n.
+	* tree-predcom.c (base_names_in_chain_on): Remove set but not used
+	variable e.
+	* cgraphunit.c (assemble_thunk): Remove set but not used variable
+	false_label.
+	* haifa-sched.c (remove_notes): Remove set but not used variable prev.
+	* graphite-clast-to-gimple.c (gloog): Remove set but not used variable
+	new_scop_exit_edge.
+
 2010-01-20  Felyza Wishbringer  <fwishbringer@gmail.com>
 
 	PR bootstrap/42786

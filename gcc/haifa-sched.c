@@ -1835,27 +1835,22 @@ concat_note_lists (rtx from_end, rtx *to_endp)
 void
 remove_notes (rtx head, rtx tail)
 {
-  rtx next_tail, prev, insn, next;
+  rtx next_tail, insn, next;
 
   note_list = 0;
   if (head == tail && !INSN_P (head))
     return;
 
   next_tail = NEXT_INSN (tail);
-  prev = PREV_INSN (head);
   for (insn = head; insn != next_tail; insn = next)
     {
       next = NEXT_INSN (insn);
       if (!NOTE_P (insn))
-	{
-	  prev = insn;
-	  continue;
-	}
+	continue;
 
       switch (NOTE_KIND (insn))
 	{
 	case NOTE_INSN_BASIC_BLOCK:
-	  prev = insn;
 	  continue;
 
 	case NOTE_INSN_EPILOGUE_BEG:

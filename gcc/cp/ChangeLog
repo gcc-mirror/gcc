@@ -1,3 +1,8 @@
+2010-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (create_array_type_for_decl): Remove set but not used
+	variable error_msg.  Remove break stmts after return stmts.
+
 2010-01-19  Dodji Seketeli  <dodji@redhat.com>
 
 	* error.c (dump_template_parms, count_non_default_template_args):

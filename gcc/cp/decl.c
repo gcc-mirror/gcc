@@ -7422,14 +7422,10 @@ static tree
 create_array_type_for_decl (tree name, tree type, tree size)
 {
   tree itype = NULL_TREE;
-  const char* error_msg;
 
   /* If things have already gone awry, bail now.  */
   if (type == error_mark_node || size == error_mark_node)
     return error_mark_node;
-
-  /* Assume that everything will go OK.  */
-  error_msg = NULL;
 
   /* If there are some types which cannot be array elements,
      issue an error-message and return.  */
@@ -7441,7 +7437,6 @@ create_array_type_for_decl (tree name, tree type, tree size)
       else
         error ("creating array of void");
       return error_mark_node;
-      break;
 
     case FUNCTION_TYPE:
       if (name)
@@ -7449,7 +7444,6 @@ create_array_type_for_decl (tree name, tree type, tree size)
       else
         error ("creating array of functions");
       return error_mark_node;
-      break;
 
     case REFERENCE_TYPE:
       if (name)
@@ -7457,7 +7451,6 @@ create_array_type_for_decl (tree name, tree type, tree size)
       else
         error ("creating array of references");
       return error_mark_node;
-      break;
 
     case METHOD_TYPE:
       if (name)
@@ -7465,7 +7458,6 @@ create_array_type_for_decl (tree name, tree type, tree size)
       else
         error ("creating array of function members");
       return error_mark_node;
-      break;
 
     default:
       break;
