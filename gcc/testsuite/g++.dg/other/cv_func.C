@@ -4,7 +4,6 @@ typedef int FIC(int) const;
 typedef int FI(int);
 
 FIC f; // { dg-error "qualified" }
-// { dg-error "ignoring" "ignoring" { target *-*-* } 6 }
 struct S {
   FIC f; // OK
 
@@ -15,7 +14,7 @@ struct S {
 };
 FIC S::*pm = &S::f;
 const FI S::*pm2 = &S::f; // { dg-error "qualifier" }
-// { dg-error "cannot convert" "cannot convert" { target *-*-* } 17 }
+// { dg-error "cannot convert" "cannot convert" { target *-*-* } 16 }
 const FIC S::*pm3 = &S::f; // { dg-error "qualifier" }
 
 int S::f(int) const

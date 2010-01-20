@@ -1,3 +1,9 @@
+2010-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40750
+	* g++.dg/parse/fn-typedef1.C: New.
+	* g++.dg/other/cv_quals.C: Adjust.
+
 2010-01-20  Anthony Green  <green@moxielogic.com>
 
 	* gcc.dg/cpp/_Pragma6.c: Skip this test for moxie-*-* (no
