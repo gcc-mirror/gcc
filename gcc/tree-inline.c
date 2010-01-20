@@ -3310,6 +3310,12 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	      cost = weights->target_builtin_call_cost;
 	      break;
 
+	    /* Exception state returns or moves registers around.  */
+	    case BUILT_IN_EH_FILTER:
+	    case BUILT_IN_EH_POINTER:
+	    case BUILT_IN_EH_COPY_VALUES:
+	      return 0;
+
 	    default:
 	      break;
 	    }

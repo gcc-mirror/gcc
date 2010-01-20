@@ -1,3 +1,7 @@
+2010-01-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_num_insns): Handle EH builtins.
+
 2010-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* sel-sched.c (create_speculation_check): Remove set but not used
