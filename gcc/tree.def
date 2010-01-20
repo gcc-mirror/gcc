@@ -567,11 +567,11 @@ DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", tcc_expression, 1)
    BLKmode, because it will not be forced out of memory.  */
 DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", tcc_expression, 1)
 
-/* The following two codes are used in languages that have types where
-   some field in an object of the type contains a value that is used in
-   the computation of another field's offset or size and/or the size of
-   the type.  The positions and/or sizes of fields can vary from object
-   to object of the same type or even for one and the same object within
+/* The following code is used in languages that have types where some
+   field in an object of the type contains a value that is used in the
+   computation of another field's offset or size and/or the size of the
+   type.  The positions and/or sizes of fields can vary from object to
+   object of the same type or even for one and the same object within
    its scope.
 
    Record types with discriminants in Ada or schema types in Pascal are
