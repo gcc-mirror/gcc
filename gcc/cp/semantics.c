@@ -5408,6 +5408,9 @@ build_lambda_object (tree lambda_expr)
       tree field = TREE_PURPOSE (node);
       tree val = TREE_VALUE (node);
 
+      if (DECL_P (val))
+	mark_used (val);
+
       /* Mere mortals can't copy arrays with aggregate initialization, so
 	 do some magic to make it work here.  */
       if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
