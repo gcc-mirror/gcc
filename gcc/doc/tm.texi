@@ -6653,14 +6653,10 @@ the hook is used to cancel data speculative insns when the ALAT table
 is nearly full.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_SET_SCHED_FLAGS (unsigned int *@var{flags}, spec_info_t @var{spec_info})
+@deftypefn {Target Hook} void TARGET_SCHED_SET_SCHED_FLAGS (struct spec_info_def *@var{spec_info})
 This hook is used by the insn scheduler to find out what features should be
-enabled/used.  @var{flags} initially may have either the SCHED_RGN or SCHED_EBB
-bit set.  This denotes the scheduler pass for which the data should be
-provided.  The target backend should modify @var{flags} by modifying
-the bits corresponding to the following features: USE_DEPS_LIST, USE_GLAT,
-DETACH_LIFE_INFO, and DO_SPECULATION@.  For the DO_SPECULATION feature
-an additional structure @var{spec_info} should be filled by the target.
+enabled/used.
+The structure *@var{spec_info} should be filled in by the target.
 The structure describes speculation types that can be used in the scheduler.
 @end deftypefn
 
