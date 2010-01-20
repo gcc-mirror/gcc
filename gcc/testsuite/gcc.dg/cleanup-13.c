@@ -210,9 +210,22 @@ OP_const1s(-123) OP_abs OP_const1u(123) OP_eq ASSERT_TOS_NON0		\
 OP_lit3 OP_lit6 OP_and OP_lit2 OP_eq ASSERT_TOS_NON0			\
 OP_lit3 OP_lit6 OP_or OP_lit7 OP_eq ASSERT_TOS_NON0			\
 OP_lit17 OP_lit2 OP_minus OP_lit15 OP_eq ASSERT_TOS_NON0		\
+/* Divide is signed truncating toward zero.  */				\
 OP_const1s(-6) OP_const1s(-2) OP_div OP_lit3 OP_eq ASSERT_TOS_NON0	\
-OP_const1s(-6) OP_const1s(-4) OP_mod OP_const1s(-2)			\
+OP_const1s(-7) OP_const1s(3) OP_div OP_const1s(-2)			\
   OP_eq ASSERT_TOS_NON0							\
+/* Modulo is unsigned.  */						\
+OP_const1s(-6) OP_const1s(-4) OP_mod OP_const1s(-6)			\
+  OP_eq ASSERT_TOS_NON0							\
+OP_const1s(-6) OP_lit4 OP_mod OP_lit2 OP_eq ASSERT_TOS_NON0		\
+OP_lit6 OP_const1s(-4) OP_mod OP_lit6 OP_eq ASSERT_TOS_NON0		\
+/* Signed modulo can be implemented using "over over div mul minus".  */\
+OP_const1s(-6) OP_const1s(-4) OP_over OP_over OP_div OP_mul OP_minus	\
+  OP_const1s(-2) OP_eq ASSERT_TOS_NON0					\
+OP_const1s(-7) OP_lit3 OP_over OP_over OP_div OP_mul OP_minus		\
+  OP_const1s(-1) OP_eq ASSERT_TOS_NON0					\
+OP_lit7 OP_const1s(-3) OP_over OP_over OP_div OP_mul OP_minus		\
+  OP_lit1 OP_eq ASSERT_TOS_NON0						\
 OP_lit16 OP_lit31 OP_plus_uconst(1) OP_mul OP_const2u(512)		\
   OP_eq ASSERT_TOS_NON0							\
 OP_lit5 OP_not OP_lit31 OP_and OP_lit26 OP_eq ASSERT_TOS_NON0		\

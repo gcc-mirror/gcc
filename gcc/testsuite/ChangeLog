@@ -1,3 +1,8 @@
+2010-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cleanup-13.c: Expect DW_OP_mod to do unsigned modulo instead
+	of signed, add a few new tests.
+
 2010-01-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42804
