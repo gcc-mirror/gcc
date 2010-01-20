@@ -1,6 +1,7 @@
 /* Output Dwarf2 format symbol table information from GCC.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -10640,6 +10641,8 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case TRUNC_DIV_EXPR:
+      if (TYPE_UNSIGNED (TREE_TYPE (loc)))
+	return 0;
       op = DW_OP_div;
       goto do_binop;
 
@@ -10651,8 +10654,23 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
     case CEIL_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      op = DW_OP_mod;
-      goto do_binop;
+      if (TYPE_UNSIGNED (TREE_TYPE (loc)))
+	{
+	  op = DW_OP_mod;
+	  goto do_binop;
+	}
+      ret = loc_descriptor_from_tree_1 (TREE_OPERAND (loc, 0), 0);
+      ret1 = loc_descriptor_from_tree_1 (TREE_OPERAND (loc, 1), 0);
+      if (ret == 0 || ret1 == 0)
+	return 0;
+
+      add_loc_descr (&ret, ret1);
+      add_loc_descr (&ret, new_loc_descr (DW_OP_over, 0, 0));
+      add_loc_descr (&ret, new_loc_descr (DW_OP_over, 0, 0));
+      add_loc_descr (&ret, new_loc_descr (DW_OP_div, 0, 0));
+      add_loc_descr (&ret, new_loc_descr (DW_OP_mul, 0, 0));
+      add_loc_descr (&ret, new_loc_descr (DW_OP_minus, 0, 0));
+      break;
 
     case MULT_EXPR:
       op = DW_OP_mul;
