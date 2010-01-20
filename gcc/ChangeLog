@@ -1,3 +1,12 @@
+2010-01-20  DJ Delorie  <dj@redhat.com>
+
+	* config/h8300/h8300.c (F): Add "in_epilogue" flag.
+	(Fpa): Pass it
+	(h8300_emit_stack_adjustment): Propogate it.
+	(push): Pass it.
+	(h8300_expand_prologue): Likewise.
+	(h8300_expand_epilogue): Likewise.
+
 2010-01-19  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/41783
