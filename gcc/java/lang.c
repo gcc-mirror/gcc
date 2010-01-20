@@ -587,7 +587,7 @@ java_post_options (const char **pfilename)
     {
       if (dependency_tracking)
 	{
-	  char *dot;
+	  const char *dot;
 
 	  /* If the target is set and the output filename is set, then
 	     there's no processing to do here.  Otherwise we must
