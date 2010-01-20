@@ -1372,8 +1372,9 @@ typedef struct gfc_namespace
   /* Set to 1 if namespace is an interface body with "IMPORT" used.  */
   unsigned has_import_set:1;
 
-  /* Set to 1 if resolved has been called for this namespace.  */
-  unsigned resolved:1;
+  /* Set to 1 if resolved has been called for this namespace.
+     Holds -1 during resolution.  */
+  signed resolved:2;
 
   /* Set to 1 if code has been generated for this namespace.  */
   unsigned translated:1;

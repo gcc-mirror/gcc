@@ -3,6 +3,10 @@
 	* module.c (mio_f2k_derived): Use enumerator as initializer of
 	enum variable.
 
+	PR bootstrap/42812
+	* gfortran.h  (struct gfc_namespace) <resolved>: Change to signed
+	bitfield of width 2.
+
 2010-01-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42804
