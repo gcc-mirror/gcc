@@ -1,3 +1,12 @@
+2010-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Use DW_OP_mod for UMOD instead
+	of MOD, handle MOD using DW_OP_{over,over,div,mul,minus}.
+	(loc_list_from_tree): Don't handle unsigned division.  Handle
+	signed modulo using DW_OP_{over,over,div,mul,minus}.
+	* unwind-dw2.c (execute_stack_op): Handle DW_OP_mod using unsigned
+	modulo instead of signed.
+
 2010-01-20  DJ Delorie  <dj@redhat.com>
 
 	* config/h8300/h8300.c (F): Add "in_epilogue" flag.
