@@ -2,6 +2,10 @@
 
 	* lang.c (java_post_options): Constify variable "dot".
 
+	* jcf-parse.c (set_source_filename): Constify variable "dot".
+	(load_class): Constify variable "separator".
+	Use get_identifier_with_length.
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.

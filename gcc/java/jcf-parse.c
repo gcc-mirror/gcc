@@ -333,7 +333,7 @@ set_source_filename (JCF *jcf, int index)
     {
       const char *class_name
 	= IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class)));
-      char *dot = strrchr (class_name, '.');
+      const char *dot = strrchr (class_name, '.');
       if (dot != NULL)
 	{
 	  /* Length of prefix, not counting final dot. */
@@ -1355,7 +1355,7 @@ load_class (tree class_or_name, int verbose)
     {
       while (1)
 	{
-	  char *separator;
+	  const char *separator;
 
 	  /* We've already loaded it.  */
 	  if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE)
@@ -1372,12 +1372,9 @@ load_class (tree class_or_name, int verbose)
 	     for an inner class.  */
 	  if ((separator = strrchr (IDENTIFIER_POINTER (name), '$'))
 	      || (separator = strrchr (IDENTIFIER_POINTER (name), '.')))
-	    {
-	      int c = *separator;
-	      *separator = '\0';
-	      name = get_identifier (IDENTIFIER_POINTER (name));
-	      *separator = c;
-	    }
+	    name = get_identifier_with_length (IDENTIFIER_POINTER (name),
+					       (separator
+						- IDENTIFIER_POINTER (name)));
 	  /* Otherwise, we failed, we bail. */
 	  else
 	    break;
