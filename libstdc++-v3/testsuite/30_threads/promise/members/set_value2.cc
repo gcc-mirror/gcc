@@ -32,7 +32,7 @@ void test01()
   bool test = false;
 
   std::promise<int> p1;
-  std::unique_future<int> f1 = p1.get_future();
+  std::future<int> f1 = p1.get_future();
 
   p1.set_value(1);
 
@@ -48,7 +48,7 @@ void test01()
     test = true;
   }
 
-  VERIFY( f1.has_value() );
+  VERIFY( f1.wait_for(std::chrono::milliseconds(1)) );
   VERIFY( f1.get() == 1 );
   VERIFY( test );
 }
@@ -58,7 +58,7 @@ void test02()
   bool test = false;
 
   std::promise<int> p1;
-  std::unique_future<int> f1 = p1.get_future();
+  std::future<int> f1 = p1.get_future();
 
   p1.set_value(3);
 
@@ -74,8 +74,7 @@ void test02()
     test = true;
   }
 
-  VERIFY( f1.has_value() );
-  VERIFY( !f1.has_exception() );
+  VERIFY( f1.wait_for(std::chrono::milliseconds(1)) );
   VERIFY( f1.get() == 3 );
   VERIFY( test );
 }

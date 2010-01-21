@@ -41,8 +41,9 @@ void test01()
   {
     p1(4);
   }
-  catch (std::bad_function_call&)
+  catch (const std::future_error& e)
   {
+    VERIFY( e.code() == std::future_errc::promise_already_satisfied );
     test = true;
   }
 

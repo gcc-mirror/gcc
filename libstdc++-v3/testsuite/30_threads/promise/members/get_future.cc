@@ -32,9 +32,9 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::promise<int&> p1;
-  std::unique_future<int&> f1 = p1.get_future();
+  std::future<int&> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
 
   int i1 = 0;
 

@@ -1,10 +1,9 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,18 +22,26 @@
 
 
 #include <future>
+#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  using std::shared_future;
+  using std::future;
   using namespace __gnu_test;
 
-  shared_future<int> p1;            // { dg-error "22: error: no match" }
-  shared_future<int&> p2;           // { dg-error "23: error: no match" }
-  shared_future<void> p3;           // { dg-error "23: error: no match" }
-  shared_future<ClassType> p4;      // { dg-error "28: error: no match" }
-  shared_future<AbstractClass&> p5; // { dg-error "33: error: no match" }
+  bool __attribute__((unused)) test = true;
+
+  future<int> p1;
+  VERIFY( !p1.valid() );
+  future<int&> p2;
+  VERIFY( !p2.valid() );
+  future<void> p3;
+  VERIFY( !p3.valid() );
+  future<ClassType> p4;
+  VERIFY( !p4.valid() );
+  future<AbstractClass&> p5;
+  VERIFY( !p5.valid() );
 }
 
 int main()
@@ -42,4 +49,3 @@ int main()
   test01();
   return 0;
 }
-// { dg-excess-errors "note" }

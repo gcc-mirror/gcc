@@ -41,33 +41,33 @@ struct tester
 };
 
 std::promise<tester> pglobal;
-std::unique_future<tester> fglobal = pglobal.get_future();
+std::future<tester> fglobal = pglobal.get_future();
 
 tester::tester(int)
 {
   bool test __attribute__((unused)) = true;
-  VERIFY (!fglobal.is_ready());
+  VERIFY (!fglobal.wait_for(std::chrono::milliseconds(1)));
 }
 
 tester::tester(const tester&)
 {
   bool test __attribute__((unused)) = true;
   // if this copy happens while a mutex is locked next line could deadlock:
-  VERIFY (!fglobal.is_ready());
+  VERIFY (!fglobal.wait_for(std::chrono::milliseconds(1)));
 }
 
 tester& tester::operator=(const tester&)
 {
   bool test __attribute__((unused)) = true;
   // if this copy happens while a mutex is locked next line could deadlock:
-  VERIFY (!fglobal.is_ready());
+  VERIFY (!fglobal.wait_for(std::chrono::milliseconds(1)));
   return *this;
 }
 
 tester::~tester()
 {
   bool test __attribute__((unused)) = true;
-  VERIFY (fglobal.is_ready());
+  VERIFY (fglobal.wait_for(std::chrono::milliseconds(1)));
 }
 
 void test01()
@@ -76,7 +76,7 @@ void test01()
 
   pglobal.set_value( tester(1) );
 
-  VERIFY( fglobal.is_ready() );
+  VERIFY( fglobal.wait_for(std::chrono::milliseconds(1)) );
 }
 
 int main()

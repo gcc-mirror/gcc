@@ -34,12 +34,12 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::packaged_task<int()> p1(zero);
-  std::unique_future<int> f1 = p1.get_future();
+  std::future<int> f1 = p1.get_future();
 
   p1();
 
   VERIFY( static_cast<bool>(p1) );
-  VERIFY( f1.has_value() );
+  VERIFY( f1.get() == 0 );
 }
 
 int main()

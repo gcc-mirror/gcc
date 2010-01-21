@@ -29,17 +29,25 @@
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = false;
 
   std::promise<int> p1;
-  std::unique_future<int> f1 = p1.get_future();
+  std::future<int> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
 
   p1.set_exception(std::copy_exception(0));
 
-  VERIFY( f1.has_exception() );
-  VERIFY( !f1.has_value() );
+  try
+  {
+    f1.get();
+  }
+  catch (int)
+  {
+    test = true;
+  }
+  VERIFY( test );
+  VERIFY( !f1.valid() );
 }
 
 int main()

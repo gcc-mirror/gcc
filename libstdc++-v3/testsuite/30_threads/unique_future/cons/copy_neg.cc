@@ -24,14 +24,14 @@
 
 #include <future>
 
-extern std::unique_future<int>& get();
+extern std::future<int>& get();
 
 void test01()
 {
   // copy
-  std::unique_future<int>& p1 = get();
-  std::unique_future<int> p2(p1);
+  std::future<int>& p1 = get();
+  std::future<int> p2(p1);
 }
 
 // { dg-error "used here" "" { target *-*-* } 33 }
-// { dg-error "deleted function" "" { target *-*-* } 418 }
+// { dg-error "deleted function" "" { target *-*-* } 577 }

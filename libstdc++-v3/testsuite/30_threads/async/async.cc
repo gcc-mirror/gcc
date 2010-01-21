@@ -6,7 +6,7 @@
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,44 +27,31 @@
 #include <future>
 #include <testsuite_hooks.h>
 
+using namespace std;
+
+struct work {
+  typedef void result_type;
+  void operator()(mutex& m, condition_variable& cv)
+  {
+    unique_lock<mutex> l(m);
+    cv.notify_one();
+  }
+};
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::promise<int> p1;
-  std::shared_future<int> f1(p1.get_future());
-  std::shared_future<int> f2(f1);
-
-  VERIFY( !f1.has_exception() );
-  VERIFY( !f2.has_exception() );
-
-  p1.set_exception(std::copy_exception(1));
-
-  VERIFY( f1.has_exception() );
-  VERIFY( f2.has_exception() );
-}
-
-void test02()
-{
-  std::promise<int> p1;
-  bool test __attribute__((unused)) = true;
-
-  std::shared_future<int> f1(p1.get_future());
-  std::shared_future<int> f2(f1);
-
-  VERIFY( !f1.has_exception() );
-  VERIFY( !f2.has_exception() );
-
-  p1.set_value(1);
-
-  VERIFY( !f1.has_exception() );
-  VERIFY( !f2.has_exception() );
+  mutex m;
+  condition_variable cv;
+  unique_lock<mutex> l(m);
+  future<void> f1 = async(launch::async, work(), ref(m), ref(cv));
+  cv.wait(l);
+  f1.get();
 }
 
 int main()
 {
   test01();
-  test02();
-
   return 0;
 }
