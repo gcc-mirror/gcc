@@ -1,3 +1,48 @@
+2010-01-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* g++.dg/compat/decimal/compat-common.h: New file.
+	* g++.dg/compat/decimal/decimal-dummy.h: New file.
+	* g++.dg/compat/decimal/pass_x.h: New file.
+	* g++.dg/compat/decimal/pass_y.h: New file.
+	* g++.dg/compat/decimal/pass-1_main.C: New file.
+	* g++.dg/compat/decimal/pass-1_x.C: New file.
+	* g++.dg/compat/decimal/pass-1_y.C: New file.
+	* g++.dg/compat/decimal/pass-2_main.C: New file.
+	* g++.dg/compat/decimal/pass-2_x.C: New file.
+	* g++.dg/compat/decimal/pass-2_y.C: New file.
+	* g++.dg/compat/decimal/pass-3_main.C: New file.
+	* g++.dg/compat/decimal/pass-3_x.C: New file.
+	* g++.dg/compat/decimal/pass-3_y.C: New file.
+	* g++.dg/compat/decimal/pass-4_main.C: New file.
+	* g++.dg/compat/decimal/pass-4_x.C: New file.
+	* g++.dg/compat/decimal/pass-4_y.C: New file.
+	* g++.dg/compat/decimal/pass-5_main.C: New file.
+	* g++.dg/compat/decimal/pass-5_x.C: New file.
+	* g++.dg/compat/decimal/pass-5_y.C: New file.
+	* g++.dg/compat/decimal/pass-6_main.C: New file.
+	* g++.dg/compat/decimal/pass-6_x.C: New file.
+	* g++.dg/compat/decimal/pass-6_y.C: New file.
+	* g++.dg/compat/decimal/return_x.h: New file.
+	* g++.dg/compat/decimal/return_y.h: New file.
+	* g++.dg/compat/decimal/return-1_main.C: New file.
+	* g++.dg/compat/decimal/return-1_x.C: New file.
+	* g++.dg/compat/decimal/return-1_y.C: New file.
+	* g++.dg/compat/decimal/return-2_main.C: New file.
+	* g++.dg/compat/decimal/return-2_x.C: New file.
+	* g++.dg/compat/decimal/return-2_y.C: New file.
+	* g++.dg/compat/decimal/return-3_main.C: New file.
+	* g++.dg/compat/decimal/return-3_x.C: New file.
+	* g++.dg/compat/decimal/return-3_y.C: New file.
+	* g++.dg/compat/decimal/return-4_main.C: New file.
+	* g++.dg/compat/decimal/return-4_x.C: New file.
+	* g++.dg/compat/decimal/return-4_y.C: New file.
+	* g++.dg/compat/decimal/return-5_main.C: New file.
+	* g++.dg/compat/decimal/return-5_x.C: New file.
+	* g++.dg/compat/decimal/return-5_y.C: New file.
+	* g++.dg/compat/decimal/return-6_main.C: New file.
+	* g++.dg/compat/decimal/return-6_x.C: New file.
+	* g++.dg/compat/decimal/return-6_y.C: New file.
+
 2010-01-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42715

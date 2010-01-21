@@ -605,8 +605,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       /* The transparent-union flag is used for different things in
 	 different nodes.  */
-      if (code == UNION_TYPE && TYPE_TRANSPARENT_UNION (node))
-	fputs (" transparent-union", file);
+      if ((code == UNION_TYPE || code == RECORD_TYPE)
+	  && TYPE_TRANSPARENT_AGGR (node))
+	fputs (" transparent-aggr", file);
       else if (code == ARRAY_TYPE
 	       && TYPE_NONALIASED_COMPONENT (node))
 	fputs (" nonaliased-component", file);

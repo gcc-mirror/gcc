@@ -1890,6 +1890,11 @@ aggregate_value_p (const_tree exp, const_tree fntype)
   if (TREE_CODE (type) == VOID_TYPE)
     return 0;
 
+  /* If a record should be passed the same as its first (and only) member
+     don't pass it as an aggregate.  */
+  if (TREE_CODE (type) == RECORD_TYPE && TYPE_TRANSPARENT_AGGR (type))
+    return aggregate_value_p (first_field (type), fntype);
+
   /* If the front end has decided that this needs to be passed by
      reference, do so.  */
   if ((TREE_CODE (exp) == PARM_DECL || TREE_CODE (exp) == RESULT_DECL)
@@ -2004,6 +2009,14 @@ pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode mode,
       /* GCC post 3.4 passes *all* variable sized types by reference.  */
       if (!TYPE_SIZE (type) || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	return true;
+
+      /* If a record type should be passed the same as its first (and only)
+	 member, use the type and mode of that member.  */
+      if (TREE_CODE (type) == RECORD_TYPE && TYPE_TRANSPARENT_AGGR (type))
+	{
+	  type = TREE_TYPE (first_field (type));
+	  mode = TYPE_MODE (type);
+	}
     }
 
   return targetm.calls.pass_by_reference (ca, mode, type, named_arg);
@@ -2218,12 +2231,13 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   passed_mode = TYPE_MODE (passed_type);
   nominal_mode = TYPE_MODE (nominal_type);
 
-  /* If the parm is to be passed as a transparent union, use the type of
-     the first field for the tests below.  We have already verified that
-     the modes are the same.  */
-  if (TREE_CODE (passed_type) == UNION_TYPE
-      && TYPE_TRANSPARENT_UNION (passed_type))
-    passed_type = TREE_TYPE (TYPE_FIELDS (passed_type));
+  /* If the parm is to be passed as a transparent union or record, use the
+     type of the first field for the tests below.  We have already verified
+     that the modes are the same.  */
+  if ((TREE_CODE (passed_type) == UNION_TYPE
+       || TREE_CODE (passed_type) == RECORD_TYPE)
+      && TYPE_TRANSPARENT_AGGR (passed_type))
+    passed_type = TREE_TYPE (first_field (passed_type));
 
   /* See if this arg was passed by invisible reference.  */
   if (pass_by_reference (&all->args_so_far, passed_mode,

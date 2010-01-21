@@ -1622,7 +1622,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	     and  wait (union wait *)  to be compatible.  */
 	  if (TREE_CODE (a1) == UNION_TYPE
 	      && (TYPE_NAME (a1) == 0
-		  || TYPE_TRANSPARENT_UNION (a1))
+		  || TYPE_TRANSPARENT_AGGR (a1))
 	      && TREE_CODE (TYPE_SIZE (a1)) == INTEGER_CST
 	      && tree_int_cst_equal (TYPE_SIZE (a1),
 				     TYPE_SIZE (a2)))
@@ -1643,7 +1643,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	    }
 	  else if (TREE_CODE (a2) == UNION_TYPE
 		   && (TYPE_NAME (a2) == 0
-		       || TYPE_TRANSPARENT_UNION (a2))
+		       || TYPE_TRANSPARENT_AGGR (a2))
 		   && TREE_CODE (TYPE_SIZE (a2)) == INTEGER_CST
 		   && tree_int_cst_equal (TYPE_SIZE (a2),
 					  TYPE_SIZE (a1)))
@@ -5014,9 +5014,10 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       && comptypes (type, rhstype))
     return convert_and_check (type, rhs);
 
-  /* Conversion to a transparent union from its member types.
+  /* Conversion to a transparent union or record from its member types.
      This applies only to function arguments.  */
-  if (codel == UNION_TYPE && TYPE_TRANSPARENT_UNION (type)
+  if (((codel == UNION_TYPE || codel == RECORD_TYPE)
+      && TYPE_TRANSPARENT_AGGR (type))
       && errtype == ic_argpass)
     {
       tree memb, marginal_memb = NULL_TREE;

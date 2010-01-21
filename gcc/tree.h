@@ -2251,16 +2251,18 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_NEEDS_CONSTRUCTING(NODE) \
   (TYPE_CHECK (NODE)->type.needs_constructing_flag)
 
-/* Indicates that objects of this type (a UNION_TYPE), should be passed
-   the same way that the first union alternative would be passed.  */
-#define TYPE_TRANSPARENT_UNION(NODE)  \
-  (UNION_TYPE_CHECK (NODE)->type.transparent_union_flag)
+/* Indicates that a UNION_TYPE object should be passed the same way that
+   the first union alternative would be passed, or that a RECORD_TYPE
+   object should be passed the same way that the first (and only) member
+   would be passed.  */
+#define TYPE_TRANSPARENT_AGGR(NODE) \
+  (RECORD_OR_UNION_CHECK (NODE)->type.transparent_aggr_flag)
 
 /* For an ARRAY_TYPE, indicates that it is not permitted to take the
    address of a component of the type.  This is the counterpart of
    DECL_NONADDRESSABLE_P for arrays, see the definition of this flag.  */
 #define TYPE_NONALIASED_COMPONENT(NODE) \
-  (ARRAY_TYPE_CHECK (NODE)->type.transparent_union_flag)
+  (ARRAY_TYPE_CHECK (NODE)->type.transparent_aggr_flag)
 
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
@@ -2285,7 +2287,7 @@ struct GTY(()) tree_type {
   unsigned int precision : 10;
   unsigned no_force_blk_flag : 1;
   unsigned needs_constructing_flag : 1;
-  unsigned transparent_union_flag : 1;
+  unsigned transparent_aggr_flag : 1;
   unsigned restrict_flag : 1;
   unsigned contains_placeholder_bits : 2;
 
@@ -4359,6 +4361,10 @@ extern int list_length (const_tree);
 /* Returns the number of FIELD_DECLs in a type.  */
 
 extern int fields_length (const_tree);
+
+/* Returns the first FIELD_DECL in a type.  */
+
+extern tree first_field (const_tree);
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
    aggregate of zeros.  Otherwise return FALSE.  */
