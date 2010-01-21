@@ -1,3 +1,10 @@
+2010-01-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42736
+	* trans-stmt.c (gfc_conv_elemental_dependencies): If temporary
+	is required, turn any trailing array elements after a range
+	into ranges so that offsets can be calculated.
+
 2010-01-20  Joern Rennecke  <amylaar@spamcop.net>
 
 	* module.c (mio_f2k_derived): Use enumerator as initializer of
