@@ -1732,6 +1732,12 @@ write_type (tree type)
   if (find_substitution (type))
     return;
 
+  /* According to the C++ ABI, some library classes are passed the
+     same as the scalar type of their single member and use the same
+     mangling.  */
+  if (TREE_CODE (type) == RECORD_TYPE && TYPE_TRANSPARENT_AGGR (type))
+    type = TREE_TYPE (first_field (type));
+
   if (write_CV_qualifiers_for_type (type) > 0)
     /* If TYPE was CV-qualified, we just wrote the qualifiers; now
        mangle the unqualified type.  The recursive call is needed here

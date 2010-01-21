@@ -1,3 +1,10 @@
+2010-01-20  Janis Johnson  <janis187@us.ibm.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* mangle.c (write_type): Mangle transparent record as member type.
+	* semantics.c (begin_class_definition): Recognize decimal classes
+	and set TYPE_TRANSPARENT_AGGR.
+
 2010-01-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42338

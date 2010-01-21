@@ -1010,11 +1010,12 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       if (type == error_mark_node || !COMPLETE_TYPE_P (type))
 	args[i].tree_value = integer_zero_node, type = integer_type_node;
 
-      /* If TYPE is a transparent union, pass things the way we would
-	 pass the first field of the union.  We have already verified that
-	 the modes are the same.  */
-      if (TREE_CODE (type) == UNION_TYPE && TYPE_TRANSPARENT_UNION (type))
-	type = TREE_TYPE (TYPE_FIELDS (type));
+      /* If TYPE is a transparent union or record, pass things the way
+	 we would pass the first field of the union or record.  We have
+	 already verified that the modes are the same.  */
+      if ((TREE_CODE (type) == UNION_TYPE || TREE_CODE (type) == RECORD_TYPE)
+	   && TYPE_TRANSPARENT_AGGR (type))
+	type = TREE_TYPE (first_field (type));
 
       /* Decide where to pass this arg.
 

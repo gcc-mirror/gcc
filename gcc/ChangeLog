@@ -1,3 +1,21 @@
+2010-01-20  Janis Johnson  <janis187@us.ibm.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* tree.h (TYPE_TRANSPARENT_UNION): Replace with ...
+	(TYPE_TRANSPARENT_AGGR): this, for union and record.
+	* calls.c (initialize argument_information): Handle it.
+	* c-common.c (handle_transparent_union_attribute): Use new name.
+	* c-decl.c (finish_struct): Ditto.
+	* c-typeck.c (type_lists_compatible_p): Ditto.
+	(convert_for_assignment): Use new name and also handle record.
+	* function.c (aggregate_value_p): Handle it.
+	(pass_by_reference): Ditto.
+	(assign_parm_data_types): Ditto.
+	* print-tree.c (print_node): Ditto.
+	* lto-streamer-in.c (unpack_ts_type_value_fields): Ditto.
+	* lto-streamer-out.c (pack_ts_type_value_fields): Ditto.
+	* tree.c (first_field): New fn.
+
 2010-01-21  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/42818

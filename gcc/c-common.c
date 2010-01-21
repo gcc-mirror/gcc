@@ -6247,7 +6247,7 @@ handle_transparent_union_attribute (tree *node, tree name,
 	  *node = type = build_duplicate_type (type);
 	}
 
-      TYPE_TRANSPARENT_UNION (type) = 1;
+      TYPE_TRANSPARENT_AGGR (type) = 1;
       return NULL_TREE;
     }
 
