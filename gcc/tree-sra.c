@@ -1288,7 +1288,12 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
 	      if (!tr_size || !host_integerp (tr_size, 1))
 		continue;
 	      size = tree_low_cst (tr_size, 1);
-	      if (pos > offset || (pos + size) <= offset)
+	      if (size == 0)
+		{
+		  if (pos != offset)
+		    continue;
+		}
+	      else if (pos > offset || (pos + size) <= offset)
 		continue;
 
 	      if (res)

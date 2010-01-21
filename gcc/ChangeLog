@@ -1,3 +1,7 @@
+2010-01-21  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (build_ref_for_offset_1): Allow for zero size fields.
+
 2010-01-21  Andrew Haley  <aph@redhat.com>
 
         * gcc.c (process_command): Move lang_specific_driver before
