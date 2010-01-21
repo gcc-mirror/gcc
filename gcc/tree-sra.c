@@ -166,6 +166,10 @@ struct access
   /* Is this particular access write access? */
   unsigned write : 1;
 
+  /* Is this access an artificial one created to scalarize some record
+     entirely? */
+  unsigned total_scalarization : 1;
+
   /* Is this access currently in the work queue?  */
   unsigned grp_queued : 1;
 
@@ -243,6 +247,10 @@ static struct pointer_map_t *base_access_vec;
 
 /* Bitmap of candidates.  */
 static bitmap candidate_bitmap;
+
+/* Bitmap of candidates which we should try to entirely scalarize away and
+   those which cannot be (because they are and need be used as a whole).  */
+static bitmap should_scalarize_away_bitmap, cannot_scalarize_away_bitmap;
 
 /* Obstack for creation of fancy names.  */
 static struct obstack name_obstack;
@@ -343,18 +351,22 @@ dump_access (FILE *f, struct access *access, bool grp)
   fprintf (f, ", type = ");
   print_generic_expr (f, access->type, 0);
   if (grp)
-    fprintf (f, ", grp_write = %d, grp_read = %d, grp_hint = %d, "
+    fprintf (f, ", grp_write = %d, total_scalarization = %d, "
+	     "grp_read = %d, grp_hint = %d, "
 	     "grp_covered = %d, grp_unscalarizable_region = %d, "
 	     "grp_unscalarized_data = %d, grp_partial_lhs = %d, "
 	     "grp_to_be_replaced = %d, grp_maybe_modified = %d, "
 	     "grp_not_necessarilly_dereferenced = %d\n",
-	     access->grp_write, access->grp_read, access->grp_hint,
+	     access->grp_write, access->total_scalarization,
+	     access->grp_read, access->grp_hint,
 	     access->grp_covered, access->grp_unscalarizable_region,
 	     access->grp_unscalarized_data, access->grp_partial_lhs,
 	     access->grp_to_be_replaced, access->grp_maybe_modified,
 	     access->grp_not_necessarilly_dereferenced);
   else
-    fprintf (f, ", write = %d, grp_partial_lhs = %d\n", access->write,
+    fprintf (f, ", write = %d, total_scalarization = %d, "
+	     "grp_partial_lhs = %d\n",
+	     access->write, access->total_scalarization,
 	     access->grp_partial_lhs);
 }
 
@@ -546,6 +558,8 @@ static void
 sra_initialize (void)
 {
   candidate_bitmap = BITMAP_ALLOC (NULL);
+  should_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
+  cannot_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   gcc_obstack_init (&name_obstack);
   access_pool = create_alloc_pool ("SRA accesses", sizeof (struct access), 16);
   link_pool = create_alloc_pool ("SRA links", sizeof (struct assign_link), 16);
@@ -575,6 +589,8 @@ static void
 sra_deinitialize (void)
 {
   BITMAP_FREE (candidate_bitmap);
+  BITMAP_FREE (should_scalarize_away_bitmap);
+  BITMAP_FREE (cannot_scalarize_away_bitmap);
   free_alloc_pool (access_pool);
   free_alloc_pool (link_pool);
   obstack_free (&name_obstack, NULL);
@@ -685,6 +701,37 @@ mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple stmt)
     bb_dereferences[idx] = dist;
 }
 
+/* Allocate an access structure for BASE, OFFSET and SIZE, clear it, fill in
+   the three fields.  Also add it to the vector of accesses corresponding to
+   the base.  Finally, return the new access.  */
+
+static struct access *
+create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
+{
+  VEC (access_p, heap) *vec;
+  struct access *access;
+  void **slot;
+
+  access = (struct access *) pool_alloc (access_pool);
+  memset (access, 0, sizeof (struct access));
+  access->base = base;
+  access->offset = offset;
+  access->size = size;
+
+  slot = pointer_map_contains (base_access_vec, base);
+  if (slot)
+    vec = (VEC (access_p, heap) *) *slot;
+  else
+    vec = VEC_alloc (access_p, heap, 32);
+
+  VEC_safe_push (access_p, heap, vec, access);
+
+  *((struct VEC (access_p,heap) **)
+	pointer_map_insert (base_access_vec, base)) = vec;
+
+  return access;
+}
+
 /* Create and insert access for EXPR. Return created access, or NULL if it is
    not possible.  */
 
@@ -692,8 +739,6 @@ static struct access *
 create_access (tree expr, gimple stmt, bool write)
 {
   struct access *access;
-  void **slot;
-  VEC (access_p,heap) *vec;
   HOST_WIDE_INT offset, size, max_size;
   tree base = expr;
   bool ptr, unscalarizable_region = false;
@@ -744,30 +789,79 @@ create_access (tree expr, gimple stmt, bool write)
 	}
     }
 
-  access = (struct access *) pool_alloc (access_pool);
-  memset (access, 0, sizeof (struct access));
-
-  access->base = base;
-  access->offset = offset;
-  access->size = size;
+  access = create_access_1 (base, offset, size);
   access->expr = expr;
   access->type = TREE_TYPE (expr);
   access->write = write;
   access->grp_unscalarizable_region = unscalarizable_region;
   access->stmt = stmt;
 
-  slot = pointer_map_contains (base_access_vec, base);
-  if (slot)
-    vec = (VEC (access_p, heap) *) *slot;
-  else
-    vec = VEC_alloc (access_p, heap, 32);
-
-  VEC_safe_push (access_p, heap, vec, access);
-
-  *((struct VEC (access_p,heap) **)
-	pointer_map_insert (base_access_vec, base)) = vec;
-
   return access;
+}
+
+
+/* Return true iff TYPE is a RECORD_TYPE with fields that are either of gimple
+   register types or (recursively) records with only these two kinds of
+   fields.  */
+
+static bool
+type_consists_of_records_p (tree type)
+{
+  tree fld;
+
+  if (TREE_CODE (type) != RECORD_TYPE)
+    return false;
+
+  for (fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+    if (TREE_CODE (fld) == FIELD_DECL)
+      {
+	tree ft = TREE_TYPE (fld);
+
+	if (!is_gimple_reg_type (ft)
+	    && !type_consists_of_records_p (ft))
+	  return false;
+      }
+  return true;
+}
+
+/* Create total_scalarization accesses for all scalar type fields in DECL that
+   must be of a RECORD_TYPE conforming to type_consists_of_records_p.  BASE
+   must be the top-most VAR_DECL representing the variable, OFFSET must be the
+   offset of DECL within BASE.  */
+
+static void
+completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset)
+{
+  tree fld, decl_type = TREE_TYPE (decl);
+
+  for (fld = TYPE_FIELDS (decl_type); fld; fld = TREE_CHAIN (fld))
+    if (TREE_CODE (fld) == FIELD_DECL)
+      {
+	HOST_WIDE_INT pos = offset + int_bit_position (fld);
+	tree ft = TREE_TYPE (fld);
+
+	if (is_gimple_reg_type (ft))
+	  {
+	    struct access *access;
+	    HOST_WIDE_INT size;
+	    tree expr;
+	    bool ok;
+
+	    size = tree_low_cst (DECL_SIZE (fld), 1);
+	    expr = base;
+	    ok = build_ref_for_offset (&expr, TREE_TYPE (base), pos,
+				       ft, false);
+	    gcc_assert (ok);
+
+	    access = create_access_1 (base, pos, size);
+	    access->expr = expr;
+	    access->type = ft;
+	    access->total_scalarization = 1;
+	    /* Accesses for intraprocedural SRA can have their stmt NULL.  */
+	  }
+	else
+	  completely_scalarize_record (base, fld, pos);
+      }
 }
 
 
@@ -860,7 +954,19 @@ build_access_from_expr (tree *expr_ptr,
 			gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED, bool write,
 			void *data ATTRIBUTE_UNUSED)
 {
-  return build_access_from_expr_1 (expr_ptr, gsi_stmt (*gsi), write) != NULL;
+  struct access *access;
+
+  access = build_access_from_expr_1 (expr_ptr, gsi_stmt (*gsi), write);
+  if (access)
+    {
+      /* This means the aggregate is accesses as a whole in a way other than an
+	 assign statement and thus cannot be removed even if we had a scalar
+	 replacement for everything.  */
+      if (cannot_scalarize_away_bitmap)
+	bitmap_set_bit (cannot_scalarize_away_bitmap, DECL_UID (access->base));
+      return true;
+    }
+  return false;
 }
 
 /* Disqualify LHS and RHS for scalarization if STMT must end its basic block in
@@ -915,6 +1021,9 @@ build_accesses_from_assign (gimple *stmt_ptr,
 
   racc = build_access_from_expr_1 (rhs_ptr, stmt, false);
   lacc = build_access_from_expr_1 (lhs_ptr, stmt, true);
+
+  if (should_scalarize_away_bitmap && racc && !is_gimple_reg_type (racc->type))
+    bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
 
   if (lacc && racc
       && (sra_mode == SRA_MODE_EARLY_INTRA || sra_mode == SRA_MODE_INTRA)
@@ -1460,6 +1569,7 @@ sort_and_splice_var_accesses (tree var)
       bool grp_write = access->write;
       bool grp_read = !access->write;
       bool multiple_reads = false;
+      bool total_scalarization = access->total_scalarization;
       bool grp_partial_lhs = access->grp_partial_lhs;
       bool first_scalar = is_gimple_reg_type (access->type);
       bool unscalarizable_region = access->grp_unscalarizable_region;
@@ -1493,6 +1603,7 @@ sort_and_splice_var_accesses (tree var)
 	    }
 	  grp_partial_lhs |= ac2->grp_partial_lhs;
 	  unscalarizable_region |= ac2->grp_unscalarizable_region;
+	  total_scalarization |= ac2->total_scalarization;
 	  relink_to_new_repr (access, ac2);
 
 	  /* If there are both aggregate-type and scalar-type accesses with
@@ -1508,7 +1619,7 @@ sort_and_splice_var_accesses (tree var)
       access->group_representative = access;
       access->grp_write = grp_write;
       access->grp_read = grp_read;
-      access->grp_hint = multiple_reads;
+      access->grp_hint = multiple_reads || total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
       if (access->first_link)
@@ -1918,7 +2029,31 @@ analyze_all_variable_accesses (void)
   int res = 0;
   bitmap tmp = BITMAP_ALLOC (NULL);
   bitmap_iterator bi;
-  unsigned i;
+  unsigned i, max_total_scalarization_size;
+
+  max_total_scalarization_size = UNITS_PER_WORD * BITS_PER_UNIT
+    * MOVE_RATIO (optimize_function_for_speed_p (cfun));
+
+  EXECUTE_IF_SET_IN_BITMAP (candidate_bitmap, 0, i, bi)
+    if (bitmap_bit_p (should_scalarize_away_bitmap, i)
+	&& !bitmap_bit_p (cannot_scalarize_away_bitmap, i))
+      {
+	tree var = referenced_var (i);
+
+	if (TREE_CODE (var) == VAR_DECL
+	    && ((unsigned) tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1)
+		<= max_total_scalarization_size)
+	    && type_consists_of_records_p (TREE_TYPE (var)))
+	  {
+	    completely_scalarize_record (var, var, 0);
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		fprintf (dump_file, "Will attempt to totally scalarize ");
+		print_generic_expr (dump_file, var, 0);
+		fprintf (dump_file, " (UID: %u): \n", DECL_UID (var));
+	      }
+	  }
+      }
 
   bitmap_copy (tmp, candidate_bitmap);
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
