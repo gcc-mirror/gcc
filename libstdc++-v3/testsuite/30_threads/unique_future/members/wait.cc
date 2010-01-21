@@ -31,7 +31,7 @@
 #include <testsuite_hooks.h>
 
 
-void wait(std::unique_future<void>& f)
+void wait(std::future<void>& f)
 {
   f.wait();
 }
@@ -39,7 +39,7 @@ void wait(std::unique_future<void>& f)
 void test01()
 {
   std::promise<void> p1;
-  std::unique_future<void> f1(p1.get_future());
+  std::future<void> f1(p1.get_future());
 
   std::thread t1(wait, std::ref(f1));
 

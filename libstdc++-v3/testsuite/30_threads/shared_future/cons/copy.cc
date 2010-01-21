@@ -25,7 +25,7 @@
 #include <future>
 #include <testsuite_hooks.h>
 
-extern std::unique_future<int>&& get();
+extern std::future<int>&& get();
 
 void test01()
 {

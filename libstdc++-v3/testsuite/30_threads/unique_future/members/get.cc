@@ -34,10 +34,11 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
+  std::future<int> f1(p1.get_future());
 
   p1.set_value(value);
   VERIFY( f1.get() == value );
+  VERIFY( !f1.valid() );
 }
 
 void test02()
@@ -45,19 +46,21 @@ void test02()
   bool test __attribute__((unused)) = true;
 
   std::promise<int&> p1;
-  std::unique_future<int&> f1(p1.get_future());
+  std::future<int&> f1(p1.get_future());
 
   p1.set_value(value);
   VERIFY( &f1.get() == &value );
+  VERIFY( !f1.valid() );
 }
 
 void test03()
 {
   std::promise<void> p1;
-  std::unique_future<void> f1(p1.get_future());
+  std::future<void> f1(p1.get_future());
 
   p1.set_value();
   f1.get();
+  VERIFY( !f1.valid() );
 }
 
 int main()

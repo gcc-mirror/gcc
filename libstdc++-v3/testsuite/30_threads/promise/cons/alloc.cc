@@ -1,4 +1,4 @@
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
+// { dg-do compile { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
 // { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
 // { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
 // { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
@@ -6,7 +6,7 @@
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,25 +23,21 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <future>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
+  using std::promise;
+  using std::allocator_arg;
+  using __gnu_test::uneq_allocator;
 
-  std::promise<int> p1;
-  std::shared_future<int> f1(p1.get_future());
-  std::shared_future<int> f2(f1);
+  uneq_allocator<char> alloc(99);
 
-  VERIFY( !f1.is_ready() );
-  VERIFY( !f2.is_ready() );
-
-  p1.set_value(1);
-
-  VERIFY( f1.is_ready() );
-  VERIFY( f2.is_ready() );
+  promise<int> p1(allocator_arg, alloc); // { dg-excess-errors "" }
+  p1.set_value(5);
+  VERIFY( p1.get_future().get() == 5 );
 }
 
 int main()

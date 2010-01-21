@@ -36,15 +36,13 @@ void test01()
   using namespace std;
 
   packaged_task<int()> p1(zero);
-  unique_future<int> f1 = p1.get_future();
+  future<int> f1 = p1.get_future();
 
   p1.reset();
   VERIFY( static_cast<bool>(p1) );
 
-  unique_future<int> f2 = p1.get_future();
-  VERIFY( !f2.is_ready() );
+  future<int> f2 = p1.get_future();
 
-  VERIFY( f1.has_exception() );
   try
   {
     f1.get();

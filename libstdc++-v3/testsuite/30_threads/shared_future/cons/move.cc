@@ -28,9 +28,9 @@
 
 void test01()
 {
-  // construct from rvalue unique_future
+  // construct from rvalue future
   std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
+  std::future<int> f1(p1.get_future());
   std::shared_future<int> f2(std::move(f1));
 }
 

@@ -1,10 +1,9 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,18 +22,18 @@
 
 
 #include <future>
-#include <testsuite_tr1.h>
+#include <testsuite_hooks.h>
+
+std::future<int> get() { return std::promise<int>().get_future(); }
 
 void test01()
 {
-  using std::unique_future;
-  using namespace __gnu_test;
-
-  unique_future<int> p1;            // { dg-error "22: error: no match" }
-  unique_future<int&> p2;           // { dg-error "23: error: no match" }
-  unique_future<void> p3;           // { dg-error "23: error: no match" }
-  unique_future<ClassType> p4;      // { dg-error "28: error: no match" }
-  unique_future<AbstractClass&> p5; // { dg-error "33: error: no match" }
+  // assign
+  std::shared_future<int> p1;
+  std::shared_future<int> p2 = get();
+  p1 = p2;
+  VERIFY( p1.valid() );
+  VERIFY( p2.valid() );
 }
 
 int main()
@@ -42,4 +41,4 @@ int main()
   test01();
   return 0;
 }
-// { dg-excess-errors "note" }
+

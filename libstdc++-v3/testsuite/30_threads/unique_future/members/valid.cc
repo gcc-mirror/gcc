@@ -6,7 +6,7 @@
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,25 +25,28 @@
 
 
 #include <future>
-#include <chrono>
 #include <testsuite_hooks.h>
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
 
+  std::future<int> f0;
+  VERIFY( !f0.valid() );
+
   std::promise<int> p1;
   std::future<int> f1(p1.get_future());
 
-  std::chrono::milliseconds delay(100);
-
-  VERIFY( !f1.wait_for(delay) );
+  VERIFY( f1.valid() );
 
   p1.set_value(1);
 
-  auto before = std::chrono::system_clock::now();
-  VERIFY( f1.wait_for(delay) );
-  VERIFY( std::chrono::system_clock::now() < (before + delay) );
+  VERIFY( f1.valid() );
+
+  f1 = std::move(f0);
+
+  VERIFY( !f1.valid() );
+  VERIFY( !f0.valid() );
 }
 
 int main()

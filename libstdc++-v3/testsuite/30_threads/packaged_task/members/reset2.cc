@@ -27,23 +27,24 @@
 #include <future>
 #include <testsuite_hooks.h>
 
-int zero() { return 0; }
+int iota() { static int i = 0; return i++; }
 
 void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::packaged_task<int()> p1(zero);
-  std::unique_future<int> f1 = p1.get_future();
+  std::packaged_task<int()> p1(iota);
+  std::future<int> f1 = p1.get_future();
 
   p1();
   p1.reset();
 
   VERIFY( static_cast<bool>(p1) );
-  VERIFY( f1.has_value() );
+  VERIFY( f1.get() == 0 );
 
-  std::unique_future<int> f2 = p1.get_future();
-  VERIFY( !f2.is_ready() );
+  std::future<int> f2 = p1.get_future();
+  p1();
+  VERIFY( f2.get() == 1 );
 }
 
 int main()

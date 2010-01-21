@@ -42,8 +42,9 @@ void test01()
     p1.get_future();
     VERIFY( false );
   }
-  catch (std::bad_function_call&)
+  catch (const std::future_error& e)
   {
+    VERIFY( e.code() == std::future_errc::future_already_retrieved );
     test = true;
   }
 

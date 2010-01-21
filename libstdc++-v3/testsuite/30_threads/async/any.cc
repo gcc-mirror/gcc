@@ -6,7 +6,7 @@
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,44 +27,32 @@
 #include <future>
 #include <testsuite_hooks.h>
 
+struct sum {
+  typedef int result_type;
+  int operator()(int i, int& j, const int& k) { return i + j + k; }
+};
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::promise<int> p1;
-  std::shared_future<int> f1(p1.get_future());
-  std::shared_future<int> f2(f1);
+  using namespace std;
 
-  VERIFY( !f1.has_value() );
-  VERIFY( !f2.has_value() );
+  int a = 1;
+  int b = 10;
+  int c = 100;
+  future<int> f1 = async(launch::any, sum(), a, ref(b), cref(c));
+  future<int> f2 = async(sum(), a, ref(b), cref(c));
 
-  p1.set_value(1);
-
-  VERIFY( f1.has_value() );
-  VERIFY( f2.has_value() );
-}
-
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::promise<int> p1;
-  std::shared_future<int> f1(p1.get_future());
-  std::shared_future<int> f2(f1);
-
-  VERIFY( !f1.has_value() );
-  VERIFY( !f2.has_value() );
-
-  p1.set_exception(std::copy_exception(1));
-
-  VERIFY( !f1.has_value() );
-  VERIFY( !f2.has_value() );
+  VERIFY( f1.valid() );
+  VERIFY( f2.valid() );
+  int r1 = f1.get();
+  int r2 = f2.get();
+  VERIFY( r1 == r2 );
 }
 
 int main()
 {
   test01();
-  test02();
-
   return 0;
 }

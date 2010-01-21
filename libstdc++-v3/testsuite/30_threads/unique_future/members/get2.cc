@@ -35,7 +35,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
+  std::future<int> f1(p1.get_future());
 
   p1.set_exception(std::copy_exception(value));
   try
@@ -47,6 +47,7 @@ void test01()
   {
     VERIFY( e == value );
   }
+  VERIFY( !f1.valid() );
 }
 
 void test02()
@@ -54,7 +55,7 @@ void test02()
   bool test __attribute__((unused)) = true;
 
   std::promise<int&> p1;
-  std::unique_future<int&> f1(p1.get_future());
+  std::future<int&> f1(p1.get_future());
 
   p1.set_exception(std::copy_exception(value));
   try
@@ -66,6 +67,7 @@ void test02()
   {
     VERIFY( e == value );
   }
+  VERIFY( !f1.valid() );
 }
 
 void test03()
@@ -73,7 +75,7 @@ void test03()
   bool test __attribute__((unused)) = true;
 
   std::promise<void> p1;
-  std::unique_future<void> f1(p1.get_future());
+  std::future<void> f1(p1.get_future());
 
   p1.set_exception(std::copy_exception(value));
   try
@@ -85,6 +87,7 @@ void test03()
   {
     VERIFY( e == value );
   }
+  VERIFY( !f1.valid() );
 }
 
 int main()

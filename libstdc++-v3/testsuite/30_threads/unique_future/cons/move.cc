@@ -30,8 +30,8 @@ void test01()
 {
   // move
   std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
-  std::unique_future<int> f2(std::move(f1));
+  std::future<int> f1(p1.get_future());
+  std::future<int> f2(std::move(f1));
 }
 
 int main()

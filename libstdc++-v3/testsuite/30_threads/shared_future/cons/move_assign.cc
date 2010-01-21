@@ -1,10 +1,9 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,16 +22,22 @@
 
 
 #include <future>
+#include <testsuite_hooks.h>
 
-extern std::shared_future<int>& get();
+std::future<int> get() { return std::promise<int>().get_future(); }
 
 void test01()
 {
   // assign
-  std::shared_future<int>& p1 = get();
-  std::shared_future<int>& p2 = get();
-  p1 = p2;
+  std::shared_future<int> p1;
+  std::shared_future<int> p2 = get();
+  p1 = std::move(p2);
+  VERIFY( p1.valid() );
+  VERIFY( !p2.valid() );
 }
 
-// { dg-error "used here" "" { target *-*-* } 34 }
-// { dg-error "deleted function" "" { target *-*-* } 493 }
+int main()
+{
+  test01();
+  return 0;
+}

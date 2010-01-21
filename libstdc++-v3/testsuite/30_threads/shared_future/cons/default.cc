@@ -1,12 +1,9 @@
-// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* mips-sgi-irix6* } }
-// { dg-options " -std=gnu++0x -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* mips-sgi-irix6* } }
-// { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
-// { dg-options " -std=gnu++0x " { target *-*-cygwin *-*-darwin* } }
+// { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,40 +23,29 @@
 
 #include <future>
 #include <testsuite_hooks.h>
+#include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
+  using std::shared_future;
+  using namespace __gnu_test;
 
-  std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
+  bool __attribute__((unused)) test = true;
 
-  VERIFY( !f1.has_value() );
-
-  p1.set_value(1);
-
-  VERIFY( f1.has_value() );
-}
-
-void test02()
-{
-  bool test __attribute__((unused)) = true;
-
-  std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
-
-  VERIFY( !f1.has_value() );
-
-  p1.set_exception(std::copy_exception(1));
-
-  VERIFY( !f1.has_value() );
+  shared_future<int> p1;
+  VERIFY( !p1.valid() );
+  shared_future<int&> p2;
+  VERIFY( !p2.valid() );
+  shared_future<void> p3;
+  VERIFY( !p3.valid() );
+  shared_future<ClassType> p4;
+  VERIFY( !p4.valid() );
+  shared_future<AbstractClass&> p5;
+  VERIFY( !p5.valid() );
 }
 
 int main()
 {
   test01();
-  test02();
-
   return 0;
 }
-

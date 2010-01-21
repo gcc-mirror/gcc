@@ -31,9 +31,9 @@ void test01()
 
   typedef std::future_error error_t;
 
-  typedef std::unique_future<int> uniq_t;
-  typedef std::unique_future<int&> uniqr_t;
-  typedef std::unique_future<void> uniqv_t;
+  typedef std::future<int> uniq_t;
+  typedef std::future<int&> uniqr_t;
+  typedef std::future<void> uniqv_t;
 
   typedef std::shared_future<int> shar_t;
   typedef std::shared_future<int&> sharr_t;
@@ -46,4 +46,6 @@ void test01()
   typedef std::packaged_task<int> ptask_t;
   typedef std::packaged_task<int&> ptaskr_t;
   typedef std::packaged_task<void> ptaskv_t;
+
+  using std::async;
 }

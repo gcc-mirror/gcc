@@ -31,14 +31,19 @@ void thrower() { throw 0; }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
+  bool test = false;
 
   std::packaged_task<void()> p1(thrower);
-  std::unique_future<void> f1 = p1.get_future();
+  std::future<void> f1 = p1.get_future();
 
   p1();
 
-  VERIFY( f1.has_exception() );
+  try {
+    f1.get();
+  } catch (int) {
+    test = true;
+  }
+  VERIFY( test );
 }
 
 int main()

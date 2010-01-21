@@ -1,3 +1,64 @@
+2010-01-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+        PR libstdc++/42201
+	* include/std/future: Update to latest WP.
+	* src/functexcept.cc (__throw_future_error): Use make_error_code.
+	* testsuite/30_threads/async/any.cc: New.
+	* testsuite/30_threads/async/async.cc: New.
+	* testsuite/30_threads/async/sync.cc: New.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: New.
+	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/copy_neg.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/get_future.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/get_future2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/invoke2.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/invoke3.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/invoke4.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/reset.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: Adjust.
+	* testsuite/30_threads/shared_future/cons/assign_neg.cc: Remove.
+	* testsuite/30_threads/shared_future/cons/default_neg.cc: Remove.
+	* testsuite/30_threads/shared_future/cons/default.cc: New.
+	* testsuite/30_threads/shared_future/cons/assign.cc: New.
+	* testsuite/30_threads/shared_future/cons/copy.cc: Adjust.
+	* testsuite/30_threads/shared_future/cons/move.cc: Adjust.
+	* testsuite/30_threads/shared_future/cons/move_assign.cc: New.
+	* testsuite/30_threads/shared_future/members/is_ready.cc: Remove.
+	* testsuite/30_threads/shared_future/members/has_value.cc: Remove.
+	* testsuite/30_threads/shared_future/members/has_exception.cc: Remove.
+	* testsuite/30_threads/shared_future/members/valid.cc: New.
+	* testsuite/30_threads/unique_future/cons/default_neg.cc: Remove.
+	* testsuite/30_threads/unique_future/cons/default.cc: New.
+	* testsuite/30_threads/unique_future/cons/move_assign.cc: New.
+	* testsuite/30_threads/unique_future/cons/assign_neg.cc: Adjust.
+	* testsuite/30_threads/unique_future/cons/copy_neg.cc: Adjust.
+	* testsuite/30_threads/unique_future/cons/move.cc: Adjust.
+	* testsuite/30_threads/unique_future/requirements/
+        explicit_instantiation.cc: Adjust.
+	* testsuite/30_threads/unique_future/members/is_ready.cc: Remove.
+	* testsuite/30_threads/unique_future/members/has_value.cc: Remove.
+	* testsuite/30_threads/unique_future/members/has_exception.cc: Remove.
+	* testsuite/30_threads/unique_future/members/valid.cc: New.
+	* testsuite/30_threads/unique_future/members/get.cc: Adjust.
+	* testsuite/30_threads/unique_future/members/get2.cc: Adjust.
+	* testsuite/30_threads/unique_future/members/wait.cc: Adjust.
+	* testsuite/30_threads/unique_future/members/wait_for.cc: Adjust.
+	* testsuite/30_threads/unique_future/members/wait_until.cc: Adjust.
+	* testsuite/30_threads/headers/future/types_std_c++0x.cc: Adjust.
+	* testsuite/30_threads/promise/cons/alloc.cc: New.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: Adjust.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: Adjust.
+	* testsuite/30_threads/promise/cons/move.cc: Adjust.
+	* testsuite/30_threads/promise/cons/move_assign.cc: Adjust.
+	* testsuite/30_threads/promise/members/get_future.cc: Adjust.
+	* testsuite/30_threads/promise/members/set_value.cc: Adjust.
+	* testsuite/30_threads/promise/members/set_exception.cc: Adjust.
+	* testsuite/30_threads/promise/members/set_exception2.cc: Adjust.
+	* testsuite/30_threads/promise/members/set_value2.cc: Adjust.
+	* testsuite/30_threads/promise/members/set_value3.cc: Adjust.
+	* testsuite/30_threads/promise/members/swap.cc: Adjust.
+
 2010-01-20  Janis Johnson  <janis187@us.ibm.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

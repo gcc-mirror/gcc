@@ -34,9 +34,10 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::packaged_task<int&(int&)> p1(inc);
-  std::unique_future<int&> f1 = p1.get_future();
+  std::future<int&> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
+  VERIFY( !f1.wait_for(std::chrono::milliseconds(1)) );
 
   int i1 = 0;
 

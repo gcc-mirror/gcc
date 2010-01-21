@@ -44,7 +44,7 @@ void test01()
   }
   catch (std::future_error& e)
   {
-    VERIFY(e.code() == make_error_code(future_errc::future_already_retrieved));
+    VERIFY(e.code() == make_error_code(future_errc::no_state));
   }
 }
 

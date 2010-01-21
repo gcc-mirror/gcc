@@ -33,9 +33,9 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::promise<int> p1;
-  std::unique_future<int> f1 = p1.get_future();
+  std::future<int> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
 
   p1.set_value(0);
 
@@ -50,15 +50,15 @@ void test02()
   using __gnu_test::rvalstruct;
 
   std::promise<rvalstruct> p1;
-  std::unique_future<rvalstruct> f1 = p1.get_future();
+  std::future<rvalstruct> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
 
   p1.set_value(rvalstruct(1));
 
   rvalstruct r1(f1.get());
 
-  VERIFY( r1.valid );
+  VERIFY( !f1.valid() );
   VERIFY( r1.val == 1 );
 }
 
@@ -68,14 +68,15 @@ void test03()
   bool test __attribute__((unused)) = true;
 
   std::promise<int&> p1;
-  std::unique_future<int&> f1 = p1.get_future();
+  std::future<int&> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
 
   int i1 = 0;
   p1.set_value(i1);
   int& i2 = f1.get();
 
+  VERIFY( !f1.valid() );
   VERIFY( &i1 == &i2 );
 }
 
@@ -84,14 +85,14 @@ void test04()
   bool test __attribute__((unused)) = true;
 
   std::promise<void> p1;
-  std::unique_future<void> f1 = p1.get_future();
+  std::future<void> f1 = p1.get_future();
 
-  VERIFY( !f1.is_ready() );
+  VERIFY( f1.valid() );
 
   p1.set_value();
   f1.get();
 
-  VERIFY( f1.is_ready() );
+  VERIFY( !f1.valid() );
 }
 
 int main()

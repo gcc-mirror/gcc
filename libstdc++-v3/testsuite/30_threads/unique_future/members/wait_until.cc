@@ -38,7 +38,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::promise<int> p1;
-  std::unique_future<int> f1(p1.get_future());
+  std::future<int> f1(p1.get_future());
 
   auto when = make_time(10);
   VERIFY( !f1.wait_until(when) );
