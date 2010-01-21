@@ -87,7 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* To implement C++ function replacement we always wrap the cxx
    malloc-like operators.  See N2800 #17.6.4.6 [replacement.functions] */
-#define CXX_WRAP_SPEC_LIST "%{!static: %{!static-libstdc++: \
+#define CXX_WRAP_SPEC_LIST " \
   --wrap _Znwj \
   --wrap _Znaj \
   --wrap _ZdlPv \
@@ -96,7 +96,7 @@ along with GCC; see the file COPYING3.  If not see
   --wrap _ZnajRKSt9nothrow_t \
   --wrap _ZdlPvRKSt9nothrow_t \
   --wrap _ZdaPvRKSt9nothrow_t \
-  }}"
+"
 
 #if defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)
 
