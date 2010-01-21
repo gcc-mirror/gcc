@@ -1,3 +1,9 @@
+2010-01-21  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/42818
+	* config/i386/cygwin.h (CXX_WRAP_SPEC_LIST): Always apply wrappers,
+	even when linking statically, for now.
+
 2010-01-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42715
