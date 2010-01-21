@@ -4426,7 +4426,6 @@ static enum micro_operation_type
 use_type (rtx loc, struct count_use_info *cui, enum machine_mode *modep)
 {
   tree expr;
-  cselib_val *val;
 
   if (cui && cui->sets)
     {
@@ -4447,19 +4446,24 @@ use_type (rtx loc, struct count_use_info *cui, enum machine_mode *modep)
 	    return MO_CLOBBER;
 	}
 
-      if ((REG_P (loc) || MEM_P (loc))
-	  && (val = find_use_val (loc, GET_MODE (loc), cui)))
+      if (REG_P (loc) || MEM_P (loc))
 	{
 	  if (modep)
 	    *modep = GET_MODE (loc);
 	  if (cui->store_p)
 	    {
 	      if (REG_P (loc)
-		  || cselib_lookup (XEXP (loc, 0), GET_MODE (loc), 0))
+		  || (find_use_val (loc, GET_MODE (loc), cui)
+		      && cselib_lookup (XEXP (loc, 0), GET_MODE (loc), 0)))
 		return MO_VAL_SET;
 	    }
-	  else if (!cselib_preserved_value_p (val))
-	    return MO_VAL_USE;
+	  else
+	    {
+	      cselib_val *val = find_use_val (loc, GET_MODE (loc), cui);
+
+	      if (val && !cselib_preserved_value_p (val))
+		return MO_VAL_USE;
+	    }
 	}
     }
 
@@ -4580,7 +4584,8 @@ count_uses (rtx *ploc, void *cuip)
 	      cselib_preserve_value (val);
 	    }
 	  else
-	    gcc_assert (mopt == MO_VAL_LOC);
+	    gcc_assert (mopt == MO_VAL_LOC
+			|| (mopt == MO_VAL_SET && cui->store_p));
 
 	  break;
 
@@ -4967,6 +4972,9 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
     goto log_and_return;
 
   v = find_use_val (oloc, mode, cui);
+
+  if (!v)
+    goto log_and_return;
 
   resolve = preserve = !cselib_preserved_value_p (v);
 
