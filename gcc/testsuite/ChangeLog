@@ -1,3 +1,8 @@
+2010-01-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/19988
+	* gcc.dg/pr19988.c: New testcase.
+
 2010-01-20  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/compat/decimal/compat-common.h: New file.

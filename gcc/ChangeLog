@@ -1,3 +1,9 @@
+2010-01-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/19988
+	* fold-const.c (negate_expr_p): Pretend only negative
+	real constants are easily negatable.
+
 2010-01-20  Janis Johnson  <janis187@us.ibm.com>
 	    Jason Merrill  <jason@redhat.com>
 
