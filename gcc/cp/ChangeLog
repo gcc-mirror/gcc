@@ -1,3 +1,9 @@
+2010-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42338
+	* mangle.c (write_expression): Handle tree codes that have extra
+	arguments in the middle-end.
+
 2010-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42038

@@ -4037,9 +4037,18 @@ d_print_comp (struct d_print_info *dpi,
 	d_append_char (dpi, '(');
 
       d_print_subexpr (dpi, d_left (d_right (dc)));
-      if (strcmp (d_left (dc)->u.s_operator.op->code, "cl") != 0)
-	d_print_expr_op (dpi, d_left (dc));
-      d_print_subexpr (dpi, d_right (d_right (dc)));
+      if (strcmp (d_left (dc)->u.s_operator.op->code, "ix") == 0)
+	{
+	  d_append_char (dpi, '[');
+	  d_print_comp (dpi, d_right (d_right (dc)));
+	  d_append_char (dpi, ']');
+	}
+      else
+	{
+	  if (strcmp (d_left (dc)->u.s_operator.op->code, "cl") != 0)
+	    d_print_expr_op (dpi, d_left (dc));
+	  d_print_subexpr (dpi, d_right (d_right (dc)));
+	}
 
       if (d_left (dc)->type == DEMANGLE_COMPONENT_OPERATOR
 	  && d_left (dc)->u.s_operator.op->len == 1
