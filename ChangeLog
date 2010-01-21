@@ -2,6 +2,10 @@
 
 	* MAINTAINERS: Adjust my details.
 
+2010-01-20  Eric B. Weddington  <eric.weddington@atmel.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself for avr port.
+
 2010-01-18  Thierry Lafage  <thierry.lafage@inria.fr>
 
 	* MAINTAINERS: reindented my entry with tabs instead of spaces.
