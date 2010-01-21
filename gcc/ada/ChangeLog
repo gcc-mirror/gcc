@@ -1,3 +1,7 @@
+2010-01-21  Release Manager
+
+	* GCC 4.4.3 released.
+
 2009-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* raise-gcc (db_region_for): Use _Unwind_GetIPInfo instead of
