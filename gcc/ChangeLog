@@ -1,5 +1,25 @@
 2010-01-21  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/42585
+	* tree-sra.c (struct access): New field grp_total_scalarization.
+	(dump_access): Dump the new field.
+	(should_scalarize_away_bitmap): New variable.
+	(cannot_scalarize_away_bitmap): Likewise.
+	(sra_initialize): Allocate new bitmaps.
+	(sra_deinitialize): Free new bitmaps.
+	(create_access_1): New function.
+	(create_access): Parts moved to create_access_1.
+	(type_consists_of_records_p): New function.
+	(completely_scalarize_record): Likewise.
+	(build_access_from_expr): Set bit in cannot_scalarize_away_bitmap.
+	(build_accesses_from_assign): Set bits in should_scalarize_away_bitmap.
+	(sort_and_splice_var_accesses): Hint groups with a total_scalarization
+	access.
+	(analyze_all_variable_accesses): Completely scalarize small eligible
+	records.
+
+2010-01-21  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-sra.c (build_ref_for_offset_1): Allow for zero size fields.
 
 2010-01-21  Andrew Haley  <aph@redhat.com>
