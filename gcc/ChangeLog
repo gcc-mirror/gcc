@@ -1,3 +1,10 @@
+2010-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (check_value_val): Add a compile time assertion.
+	(dv_is_decl_p): Simplify.
+	(dv_as_decl, dv_as_value, dv_from_decl, dv_from_value): Only use
+	gcc_assert if ENABLE_CHECKING.
+
 2010-01-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42782

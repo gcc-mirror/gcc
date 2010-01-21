@@ -110,6 +110,13 @@
 #include "cselib.h"
 #include "target.h"
 
+/* var-tracking.c assumes that tree code with the same value as VALUE rtx code
+   has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
+   Currently the value is the same as IDENTIFIER_NODE, which has such
+   a property.  If this compile time assertion ever fails, make sure that
+   the new tree code that equals (int) VALUE has the same property.  */
+extern char check_value_val[(int) VALUE == (int) IDENTIFIER_NODE ? 1 : -1];
+
 /* Type of micro operation.  */
 enum micro_operation_type
 {
@@ -723,26 +730,7 @@ adjust_stack_reference (rtx mem, HOST_WIDE_INT adjustment)
 static inline bool
 dv_is_decl_p (decl_or_value dv)
 {
-  if (!dv)
-    return true;
-
-  /* Make sure relevant codes don't overlap.  */
-  switch ((int)TREE_CODE ((tree)dv))
-    {
-    case (int)VAR_DECL:
-    case (int)PARM_DECL:
-    case (int)RESULT_DECL:
-    case (int)FUNCTION_DECL:
-    case (int)DEBUG_EXPR_DECL:
-    case (int)COMPONENT_REF:
-      return true;
-
-    case (int)VALUE:
-      return false;
-
-    default:
-      gcc_unreachable ();
-    }
+  return !dv || (int) TREE_CODE ((tree) dv) != (int) VALUE;
 }
 
 /* Return true if a decl_or_value is a VALUE rtl.  */
@@ -756,7 +744,9 @@ dv_is_value_p (decl_or_value dv)
 static inline tree
 dv_as_decl (decl_or_value dv)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (dv_is_decl_p (dv));
+#endif
   return (tree) dv;
 }
 
@@ -764,7 +754,9 @@ dv_as_decl (decl_or_value dv)
 static inline rtx
 dv_as_value (decl_or_value dv)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (dv_is_value_p (dv));
+#endif
   return (rtx)dv;
 }
 
@@ -810,7 +802,9 @@ dv_from_decl (tree decl)
 {
   decl_or_value dv;
   dv = decl;
+#ifdef ENABLE_CHECKING
   gcc_assert (dv_is_decl_p (dv));
+#endif
   return dv;
 }
 
@@ -820,7 +814,9 @@ dv_from_value (rtx value)
 {
   decl_or_value dv;
   dv = value;
+#ifdef ENABLE_CHECKING
   gcc_assert (dv_is_value_p (dv));
+#endif
   return dv;
 }
 
