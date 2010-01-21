@@ -196,6 +196,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
   gfc_ss *ss;
   gfc_ss_info *info;
   gfc_symbol *fsym;
+  gfc_ref *ref;
   int n;
   tree data;
   tree offset;
@@ -251,6 +252,34 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  /* Obtain the argument descriptor for unpacking.  */
 	  gfc_init_se (&parmse, NULL);
 	  parmse.want_pointer = 1;
+
+	  /* The scalarizer introduces some specific peculiarities when
+	     handling elemental subroutines; the stride can be needed up to
+	     the dim_array - 1, rather than dim_loop - 1 to calculate
+	     offsets outside the loop.  For this reason, we make sure that
+	     the descriptor has the dimensionality of the array by converting
+	     trailing elements into ranges with end = start.  */
+	  for (ref = e->ref; ref; ref = ref->next)
+	    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
+	      break;
+
+	  if (ref)
+	    {
+	      bool seen_range = false;
+	      for (n = 0; n < ref->u.ar.dimen; n++)
+		{
+		  if (ref->u.ar.dimen_type[n] == DIMEN_RANGE)
+		    seen_range = true;
+
+		  if (!seen_range
+			|| ref->u.ar.dimen_type[n] != DIMEN_ELEMENT)
+		    continue;
+
+		  ref->u.ar.end[n] = gfc_copy_expr (ref->u.ar.start[n]);
+		  ref->u.ar.dimen_type[n] = DIMEN_RANGE;
+		}
+	    }
+
 	  gfc_conv_expr_descriptor (&parmse, e, gfc_walk_expr (e));
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 
