@@ -2481,7 +2481,7 @@ write_expression (tree expr)
     }
   else
     {
-      int i;
+      int i, len;
       const char *name;
 
       /* When we bind a variable or function to a non-type template
@@ -2582,7 +2582,27 @@ write_expression (tree expr)
 	  break;
 
 	default:
-	  for (i = 0; i < TREE_OPERAND_LENGTH (expr); ++i)
+	  /* In the middle-end, some expressions have more operands than
+	     they do in templates (and mangling).  */
+	  switch (code)
+	    {
+	    case PREINCREMENT_EXPR:
+	    case PREDECREMENT_EXPR:
+	    case POSTINCREMENT_EXPR:
+	    case POSTDECREMENT_EXPR:
+	      len = 1;
+	      break;
+
+	    case ARRAY_REF:
+	      len = 2;
+	      break;
+
+	    default:
+	      len = TREE_OPERAND_LENGTH (expr);
+	      break;
+	    }
+
+	  for (i = 0; i < len; ++i)
 	    {
 	      tree operand = TREE_OPERAND (expr, i);
 	      /* As a GNU extension, the middle operand of a

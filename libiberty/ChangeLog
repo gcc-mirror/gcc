@@ -1,3 +1,8 @@
+2010-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42338
+	* cp-demangle.c (d_print_comp): Fix array index printing.
+
 2010-01-11  Tristan Gingold  <gingold@adacore.com>
 
 	* cplus-dem.c (ada_demangle): Remove prototype.
