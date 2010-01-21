@@ -1,3 +1,8 @@
+2010-01-21  Andrew Haley  <aph@redhat.com>
+
+        * gcc.c (process_command): Move lang_specific_driver before
+        setting cc_libexec_prefix.
+
 2010-01-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/19988
