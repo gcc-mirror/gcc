@@ -1129,9 +1129,13 @@ negate_expr_p (tree t)
 	      && TYPE_OVERFLOW_WRAPS (type));
 
     case FIXED_CST:
-    case REAL_CST:
     case NEGATE_EXPR:
       return true;
+
+    case REAL_CST:
+      /* We want to canonicalize to positive real constants.  Pretend
+         that only negative ones can be easily negated.  */
+      return REAL_VALUE_NEGATIVE (TREE_REAL_CST (t));
 
     case COMPLEX_CST:
       return negate_expr_p (TREE_REALPART (t))
