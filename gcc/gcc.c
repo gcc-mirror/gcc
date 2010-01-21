@@ -3606,12 +3606,6 @@ process_command (int argc, const char **argv)
 		     CONST_CAST2 (const char *const **, const char ***,
 				  &argv));
 
-  /* Do language-specific adjustment/addition of flags.  */
-  lang_specific_driver (&argc,
-			CONST_CAST2 (const char *const **, const char ***,
-				     &argv),
-			&added_libraries);
-
   /* Handle any -no-canonical-prefixes flag early, to assign the function
      that builds relative prefixes.  This function creates default search
      paths that are needed later in normal option handling.  */
@@ -3666,6 +3660,12 @@ process_command (int argc, const char **argv)
   /* From this point onward, gcc_exec_prefix is non-null if the toolchain
      is relocated. The toolchain was either relocated using GCC_EXEC_PREFIX
      or an automatically created GCC_EXEC_PREFIX from argv[0].  */
+
+  /* Do language-specific adjustment/addition of flags.  */
+  lang_specific_driver (&argc,
+			CONST_CAST2 (const char *const **, const char ***,
+				     &argv),
+			&added_libraries);
 
   if (gcc_exec_prefix)
     {
