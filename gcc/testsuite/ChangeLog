@@ -1,3 +1,8 @@
+2010-01-22  Michael Matz  <matz@suse.de>
+
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Limit to x86, add
+	-msse2.
+
 2010-01-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/42736
