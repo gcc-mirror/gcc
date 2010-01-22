@@ -1,3 +1,8 @@
+2010-01-22  Daniel Frey  <d.frey@gmx.de>
+
+	* include/std/functional (_Index_tuple, _Build_index_tuple):
+	Simplify and speed-up.
+
 2010-01-22  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR libstdc++/36101, PR libstdc++/42813
