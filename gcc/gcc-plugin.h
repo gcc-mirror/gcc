@@ -96,10 +96,16 @@ extern bool plugin_default_version_check (struct plugin_gcc_version *,
 typedef int (*plugin_init_func) (struct plugin_name_args *plugin_info,
                                  struct plugin_gcc_version *version);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* Declaration for "plugin_init" function so that it doesn't need to be
    duplicated in every plugin.  */
 extern int plugin_init (struct plugin_name_args *plugin_info,
                         struct plugin_gcc_version *version);
+#ifdef __cplusplus
+}
+#endif
 
 /* Function type for a plugin callback routine.
 

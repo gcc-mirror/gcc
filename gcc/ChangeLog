@@ -14,6 +14,8 @@
 
 	* doc/tm.texi (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): Fix return type.
 
+	* gcc-plugin.h (plugin_init): Use "C" likage for c++.
+
 2010-01-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/42585
