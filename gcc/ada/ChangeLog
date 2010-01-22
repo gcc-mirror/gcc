@@ -1,3 +1,8 @@
+2010-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-armel.ads (Stack_Check_Probes): Set to True.
+	* system-linux-armeb.ads (Stack_Check_Probes): Likewise.
+
 2010-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (create_var_decl_1): Fix formatting nits.
