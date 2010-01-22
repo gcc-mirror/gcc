@@ -1,3 +1,8 @@
+2010-01-22  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* exgettext: Handle the functions and the macro definitions that the
+	arguments are broken into more than one line.
+
 2010-01-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* zh_CN.po: Update.

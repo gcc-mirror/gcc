@@ -184,6 +184,18 @@ END {
 	while (getline < file) {
 	    if (/^(#[ 	]*define[ 	]*)?[A-Za-z_].*\(.*msgid[,\)]/) {
 		keyword_option($0)
+	    } else if (/^(#[   ]*define[       ]*)?[A-Za-z_].*(\(|\(.*,)$/) {
+		name_line = $0
+		while (getline < file) {
+		  lineno++
+		  if (/msgid[,\)]/){
+		    keyword_option(name_line $0)
+		    break
+		  } else if (/,$/) {
+		      name_line = name_line $0
+		      continue
+		  } else break
+		}
 	    } else if (/%e/ || /%n/) {
 		spec_error_string($0)
 	    }
