@@ -847,22 +847,22 @@ namespace std
    * in a tuple. 
    */
   template<int... _Indexes>
-    struct _Index_tuple { };
+    struct _Index_tuple
+    {
+      typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
+    };
 
   /// Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
-  template<std::size_t _Num, typename _Tuple = _Index_tuple<> >
-    struct _Build_index_tuple;
- 
-  template<std::size_t _Num, int... _Indexes> 
-    struct _Build_index_tuple<_Num, _Index_tuple<_Indexes...> >
-    : _Build_index_tuple<_Num - 1, 
-                         _Index_tuple<_Indexes..., sizeof...(_Indexes)> >
-    { };
-
-  template<int... _Indexes>
-    struct _Build_index_tuple<0, _Index_tuple<_Indexes...> >
+  template<std::size_t _Num>
+    struct _Build_index_tuple
     {
-      typedef _Index_tuple<_Indexes...> __type;
+      typedef typename _Build_index_tuple<_Num-1>::__type::__next __type;
+    };
+
+  template<>
+    struct _Build_index_tuple<0>
+    {
+      typedef _Index_tuple<> __type;
     };
 
   /** 
