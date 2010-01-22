@@ -1,3 +1,8 @@
+2010-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-into-ssa.c (maybe_register_def): If stmt ends the bb,
+	insert the debug stmt on the single non-EH edge from the stmt.
+
 2010-01-22  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/42833

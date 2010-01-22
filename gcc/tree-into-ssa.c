@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -1858,7 +1858,27 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
 	  if (tracked_var)
 	    {
 	      gimple note = gimple_build_debug_bind (tracked_var, def, stmt);
-	      gsi_insert_after (&gsi, note, GSI_SAME_STMT);
+	      /* If stmt ends the bb, insert the debug stmt on the single
+		 non-EH edge from the stmt.  */
+	      if (gsi_one_before_end_p (gsi) && stmt_ends_bb_p (stmt))
+		{
+		  basic_block bb = gsi_bb (gsi);
+		  edge_iterator ei;
+		  edge e, ef = NULL;
+		  FOR_EACH_EDGE (e, ei, bb->succs)
+		    if (!(e->flags & EDGE_EH))
+		      {
+			gcc_assert (!ef);
+			ef = e;
+		      }
+		  gcc_assert (ef
+			      && single_pred_p (ef->dest)
+			      && !phi_nodes (ef->dest)
+			      && ef->dest != EXIT_BLOCK_PTR);
+		  gsi_insert_on_edge_immediate (ef, note);
+		}
+	      else
+		gsi_insert_after (&gsi, note, GSI_SAME_STMT);
 	    }
 	}
 
