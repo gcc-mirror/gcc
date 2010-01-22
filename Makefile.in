@@ -173,6 +173,7 @@ EXTRA_BUILD_FLAGS = \
 
 # This is the list of directories to built for the host system.
 SUBDIRS = @configdirs@
+TARGET_CONFIGDIRS = @target_configdirs@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the host system.
 HOST_CONFIGARGS = @host_configargs@
@@ -284,7 +285,8 @@ BASE_TARGET_EXPORTS = \
 @if gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
 @endif gcc-bootstrap
-	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
+	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
+	TARGET_CONFIGDIRS="$(TARGET_CONFIGDIRS)"; export TARGET_CONFIGDIRS;
 
 RAW_CXX_TARGET_EXPORTS = \
 	$(BASE_TARGET_EXPORTS) \
@@ -1120,7 +1122,9 @@ all-target: maybe-all-target-boehm-gc
 all-target: maybe-all-target-qthreads
 all-target: maybe-all-target-rda
 all-target: maybe-all-target-libada
+@if target-libgomp-no-bootstrap
 all-target: maybe-all-target-libgomp
+@endif target-libgomp-no-bootstrap
 
 # Do a target for all the subdirectories.  A ``make do-X'' will do a
 # ``make X'' in all subdirectories (because, in general, there is a
@@ -54629,7 +54633,6 @@ configure-target-libgomp: stage_current
 @if target-libgomp
 maybe-configure-target-libgomp: configure-target-libgomp
 configure-target-libgomp: 
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	echo "Checking multilib configuration for libgomp..."; \
@@ -54666,6 +54669,276 @@ configure-target-libgomp:
 
 
 
+.PHONY: configure-stage1-target-libgomp maybe-configure-stage1-target-libgomp
+maybe-configure-stage1-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-configure-stage1-target-libgomp: configure-stage1-target-libgomp
+configure-stage1-target-libgomp:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(TARGET_SUBDIR)/libgomp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	cd $(TARGET_SUBDIR)/libgomp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif target-libgomp-bootstrap
+
+.PHONY: configure-stage2-target-libgomp maybe-configure-stage2-target-libgomp
+maybe-configure-stage2-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-configure-stage2-target-libgomp: configure-stage2-target-libgomp
+configure-stage2-target-libgomp:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(TARGET_SUBDIR)/libgomp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	cd $(TARGET_SUBDIR)/libgomp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif target-libgomp-bootstrap
+
+.PHONY: configure-stage3-target-libgomp maybe-configure-stage3-target-libgomp
+maybe-configure-stage3-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-configure-stage3-target-libgomp: configure-stage3-target-libgomp
+configure-stage3-target-libgomp:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(TARGET_SUBDIR)/libgomp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	cd $(TARGET_SUBDIR)/libgomp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif target-libgomp-bootstrap
+
+.PHONY: configure-stage4-target-libgomp maybe-configure-stage4-target-libgomp
+maybe-configure-stage4-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-configure-stage4-target-libgomp: configure-stage4-target-libgomp
+configure-stage4-target-libgomp:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(TARGET_SUBDIR)/libgomp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	cd $(TARGET_SUBDIR)/libgomp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif target-libgomp-bootstrap
+
+.PHONY: configure-stageprofile-target-libgomp maybe-configure-stageprofile-target-libgomp
+maybe-configure-stageprofile-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-configure-stageprofile-target-libgomp: configure-stageprofile-target-libgomp
+configure-stageprofile-target-libgomp:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(TARGET_SUBDIR)/libgomp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	cd $(TARGET_SUBDIR)/libgomp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif target-libgomp-bootstrap
+
+.PHONY: configure-stagefeedback-target-libgomp maybe-configure-stagefeedback-target-libgomp
+maybe-configure-stagefeedback-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-configure-stagefeedback-target-libgomp: configure-stagefeedback-target-libgomp
+configure-stagefeedback-target-libgomp:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	echo "Checking multilib configuration for libgomp..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgomp/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgomp/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgomp/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgomp/multilib.tmp $(TARGET_SUBDIR)/libgomp/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgomp/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(TARGET_SUBDIR)/libgomp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgomp ; \
+	cd $(TARGET_SUBDIR)/libgomp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgomp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgomp"; \
+	libsrcdir="$$s/libgomp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif target-libgomp-bootstrap
+
+
+
 
 
 .PHONY: all-target-libgomp maybe-all-target-libgomp
@@ -54677,7 +54950,6 @@ all-target-libgomp: stage_current
 TARGET-target-libgomp=all
 maybe-all-target-libgomp: all-target-libgomp
 all-target-libgomp: configure-target-libgomp
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
@@ -54685,6 +54957,264 @@ all-target-libgomp: configure-target-libgomp
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
 		$(TARGET-target-libgomp))
 @endif target-libgomp
+
+
+
+.PHONY: all-stage1-target-libgomp maybe-all-stage1-target-libgomp
+.PHONY: clean-stage1-target-libgomp maybe-clean-stage1-target-libgomp
+maybe-all-stage1-target-libgomp:
+maybe-clean-stage1-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-all-stage1-target-libgomp: all-stage1-target-libgomp
+all-stage1: all-stage1-target-libgomp
+TARGET-stage1-target-libgomp = $(TARGET-target-libgomp)
+all-stage1-target-libgomp: configure-stage1-target-libgomp
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-target-libgomp)
+
+maybe-clean-stage1-target-libgomp: clean-stage1-target-libgomp
+clean-stage1: clean-stage1-target-libgomp
+clean-stage1-target-libgomp:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage1-libgomp/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		 clean
+@endif target-libgomp-bootstrap
+
+
+.PHONY: all-stage2-target-libgomp maybe-all-stage2-target-libgomp
+.PHONY: clean-stage2-target-libgomp maybe-clean-stage2-target-libgomp
+maybe-all-stage2-target-libgomp:
+maybe-clean-stage2-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-all-stage2-target-libgomp: all-stage2-target-libgomp
+all-stage2: all-stage2-target-libgomp
+TARGET-stage2-target-libgomp = $(TARGET-target-libgomp)
+all-stage2-target-libgomp: configure-stage2-target-libgomp
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-target-libgomp)
+
+maybe-clean-stage2-target-libgomp: clean-stage2-target-libgomp
+clean-stage2: clean-stage2-target-libgomp
+clean-stage2-target-libgomp:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage2-libgomp/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libgomp-bootstrap
+
+
+.PHONY: all-stage3-target-libgomp maybe-all-stage3-target-libgomp
+.PHONY: clean-stage3-target-libgomp maybe-clean-stage3-target-libgomp
+maybe-all-stage3-target-libgomp:
+maybe-clean-stage3-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-all-stage3-target-libgomp: all-stage3-target-libgomp
+all-stage3: all-stage3-target-libgomp
+TARGET-stage3-target-libgomp = $(TARGET-target-libgomp)
+all-stage3-target-libgomp: configure-stage3-target-libgomp
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-target-libgomp)
+
+maybe-clean-stage3-target-libgomp: clean-stage3-target-libgomp
+clean-stage3: clean-stage3-target-libgomp
+clean-stage3-target-libgomp:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage3-libgomp/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libgomp-bootstrap
+
+
+.PHONY: all-stage4-target-libgomp maybe-all-stage4-target-libgomp
+.PHONY: clean-stage4-target-libgomp maybe-clean-stage4-target-libgomp
+maybe-all-stage4-target-libgomp:
+maybe-clean-stage4-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-all-stage4-target-libgomp: all-stage4-target-libgomp
+all-stage4: all-stage4-target-libgomp
+TARGET-stage4-target-libgomp = $(TARGET-target-libgomp)
+all-stage4-target-libgomp: configure-stage4-target-libgomp
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-target-libgomp)
+
+maybe-clean-stage4-target-libgomp: clean-stage4-target-libgomp
+clean-stage4: clean-stage4-target-libgomp
+clean-stage4-target-libgomp:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage4-libgomp/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libgomp-bootstrap
+
+
+.PHONY: all-stageprofile-target-libgomp maybe-all-stageprofile-target-libgomp
+.PHONY: clean-stageprofile-target-libgomp maybe-clean-stageprofile-target-libgomp
+maybe-all-stageprofile-target-libgomp:
+maybe-clean-stageprofile-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-all-stageprofile-target-libgomp: all-stageprofile-target-libgomp
+all-stageprofile: all-stageprofile-target-libgomp
+TARGET-stageprofile-target-libgomp = $(TARGET-target-libgomp)
+all-stageprofile-target-libgomp: configure-stageprofile-target-libgomp
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-target-libgomp)
+
+maybe-clean-stageprofile-target-libgomp: clean-stageprofile-target-libgomp
+clean-stageprofile: clean-stageprofile-target-libgomp
+clean-stageprofile-target-libgomp:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageprofile-libgomp/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libgomp-bootstrap
+
+
+.PHONY: all-stagefeedback-target-libgomp maybe-all-stagefeedback-target-libgomp
+.PHONY: clean-stagefeedback-target-libgomp maybe-clean-stagefeedback-target-libgomp
+maybe-all-stagefeedback-target-libgomp:
+maybe-clean-stagefeedback-target-libgomp:
+@if target-libgomp-bootstrap
+maybe-all-stagefeedback-target-libgomp: all-stagefeedback-target-libgomp
+all-stagefeedback: all-stagefeedback-target-libgomp
+TARGET-stagefeedback-target-libgomp = $(TARGET-target-libgomp)
+all-stagefeedback-target-libgomp: configure-stagefeedback-target-libgomp
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-target-libgomp)
+
+maybe-clean-stagefeedback-target-libgomp: clean-stagefeedback-target-libgomp
+clean-stagefeedback: clean-stagefeedback-target-libgomp
+clean-stagefeedback-target-libgomp:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stagefeedback-libgomp/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgomp && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+		  \
+		 clean
+@endif target-libgomp-bootstrap
+
 
 
 
@@ -57133,7 +57663,12 @@ configure-target-boehm-gc: stage_last
 configure-target-qthreads: stage_last
 configure-target-rda: stage_last
 configure-target-libada: stage_last
-configure-target-libgomp: stage_last
+configure-stage1-target-libgomp: maybe-all-stage1-gcc
+configure-stage2-target-libgomp: maybe-all-stage2-gcc
+configure-stage3-target-libgomp: maybe-all-stage3-gcc
+configure-stage4-target-libgomp: maybe-all-stage4-gcc
+configure-stageprofile-target-libgomp: maybe-all-stageprofile-gcc
+configure-stagefeedback-target-libgomp: maybe-all-stagefeedback-gcc
 @endif gcc-bootstrap
 
 @if gcc-no-bootstrap
@@ -57874,6 +58409,21 @@ all-target-libobjc: maybe-all-target-libiberty
 all-target-libobjc: maybe-all-target-boehm-gc
 all-target-libstdc++-v3: maybe-all-target-libiberty
 configure-target-libstdc++-v3: maybe-configure-target-libgomp
+
+configure-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
+configure-stage2-target-libstdc++-v3: maybe-configure-stage2-target-libgomp
+configure-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
+configure-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
+configure-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
+configure-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
+all-target-libstdc++-v3: maybe-configure-target-libgomp
+
+all-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
+all-stage2-target-libstdc++-v3: maybe-configure-stage2-target-libgomp
+all-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
+all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
+all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
+all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
 all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libiberty
 all-target-winsup: maybe-all-target-libtermcap
@@ -57895,6 +58445,12 @@ configure-stage3-target-libstdc++-v3: maybe-all-stage3-target-libgcc
 configure-stage4-target-libstdc++-v3: maybe-all-stage4-target-libgcc
 configure-stageprofile-target-libstdc++-v3: maybe-all-stageprofile-target-libgcc
 configure-stagefeedback-target-libstdc++-v3: maybe-all-stagefeedback-target-libgcc
+configure-stage1-target-libgomp: maybe-all-stage1-target-libgcc
+configure-stage2-target-libgomp: maybe-all-stage2-target-libgcc
+configure-stage3-target-libgomp: maybe-all-stage3-target-libgcc
+configure-stage4-target-libgomp: maybe-all-stage4-target-libgcc
+configure-stageprofile-target-libgomp: maybe-all-stageprofile-target-libgcc
+configure-stagefeedback-target-libgomp: maybe-all-stagefeedback-target-libgcc
 @endif gcc-bootstrap
 
 @if gcc-no-bootstrap

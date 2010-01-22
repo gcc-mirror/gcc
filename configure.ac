@@ -3086,6 +3086,7 @@ AC_SUBST(build_configdirs)
 # Host module lists & subconfigure args.
 AC_SUBST(host_configargs)
 AC_SUBST(configdirs)
+AC_SUBST(target_configdirs)
 
 # Target module lists & subconfigure args.
 AC_SUBST(target_configargs)
