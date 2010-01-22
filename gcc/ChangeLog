@@ -1,3 +1,8 @@
+2010-01-22  Steve Ellcey  <sje@cup.hp.com>
+
+	* Makefile.in (tree-sra.o): Add $(EXPR_H) dependency.
+	* tree-sra.c: Add include of expr.h.
+
 2010-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-into-ssa.c (maybe_register_def): If stmt ends the bb,

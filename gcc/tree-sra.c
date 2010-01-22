@@ -77,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "tm.h"
 #include "tree.h"
+#include "expr.h"
 #include "gimple.h"
 #include "cgraph.h"
 #include "tree-flow.h"
