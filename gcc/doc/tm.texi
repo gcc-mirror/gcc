@@ -10024,7 +10024,7 @@ point number to a signed fixed point number also convert validly to an
 unsigned one.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_MIN_DIVISIONS_FOR_RECIP_MUL (enum machine_mode @var{mode})
+@deftypefn {Target Hook} {unsigned int} TARGET_MIN_DIVISIONS_FOR_RECIP_MUL (enum machine_mode @var{mode})
 When @option{-ffast-math} is in effect, GCC tries to optimize
 divisions by the same divisor, by turning them into multiplications by
 the reciprocal.  This target hook specifies the minimum number of divisions
