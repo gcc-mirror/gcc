@@ -1,3 +1,10 @@
+2010-01-22  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/42833
+	* tree-sra.c (sra_modify_assign): Delay re-gimplification of
+	the RHS until after generate_subtree_copies has insertted its
+	code before the current statement.
+
 2010-01-22  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_MIN_DIVISIONS_FOR_RECIP_MUL): Fix return type.

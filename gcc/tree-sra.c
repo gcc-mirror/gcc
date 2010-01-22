@@ -2533,6 +2533,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
   bool modify_this_stmt = false;
   bool force_gimple_rhs = false;
   location_t loc = gimple_location (*stmt);
+  gimple_stmt_iterator orig_gsi = *gsi;
 
   if (!gimple_assign_single_p (*stmt))
     return SRA_SA_NONE;
@@ -2610,15 +2611,6 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 		  && TREE_CODE (lhs) != SSA_NAME)
 		force_gimple_rhs = true;
 	    }
-	}
-
-      if (force_gimple_rhs)
-	rhs = force_gimple_operand_gsi (gsi, rhs, true, NULL_TREE,
-					true, GSI_SAME_STMT);
-      if (gimple_assign_rhs1 (*stmt) != rhs)
-	{
-	  gimple_assign_set_rhs_from_tree (gsi, rhs);
-	  gcc_assert (*stmt == gsi_stmt (*gsi));
 	}
     }
 
@@ -2721,6 +2713,18 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 				     0, 0, gsi, true, true);
 	}
     }
+
+  /* This gimplification must be done after generate_subtree_copies, lest we
+     insert the subtree copies in the middle of the gimplified sequence.  */
+  if (force_gimple_rhs)
+    rhs = force_gimple_operand_gsi (&orig_gsi, rhs, true, NULL_TREE,
+				    true, GSI_SAME_STMT);
+  if (gimple_assign_rhs1 (*stmt) != rhs)
+    {
+      gimple_assign_set_rhs_from_tree (&orig_gsi, rhs);
+      gcc_assert (*stmt == gsi_stmt (orig_gsi));
+    }
+
   return modify_this_stmt ? SRA_SA_PROCESSED : SRA_SA_NONE;
 }
 
