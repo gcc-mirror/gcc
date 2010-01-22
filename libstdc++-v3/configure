@@ -17056,11 +17056,11 @@ $as_echo "$enable_libstdcxx_debug" >&6; }
 
   # See if configured libgomp/omp.h exists. (libgomp may be in
   # noconfigdirs but not explicitly disabled.)
-  if test -f $glibcxx_builddir/../libgomp/omp.h; then
+  if echo " ${TARGET_CONFIGDIRS} " | grep " libgomp " > /dev/null 2>&1 ; then
     enable_parallel=yes;
   else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: $glibcxx_builddir/../libgomp/omp.h not found" >&5
-$as_echo "$as_me: $glibcxx_builddir/../libgomp/omp.h not found" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: target-libgomp not built" >&5
+$as_echo "$as_me: target-libgomp not built" >&6;}
   fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for parallel mode support" >&5
