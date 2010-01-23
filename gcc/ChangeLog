@@ -1,3 +1,7 @@
+2010-01-23  Toon Moene  <toon@moene.org>
+
+	* tree-predcom.c (combine_chains): Return NULL, not false.
+
 2010-01-23  Joern Rennecke  <amylaar@spamcop.net>
 
 	* tree-loop-distribution.c (distribute_loop): Fix declaration and

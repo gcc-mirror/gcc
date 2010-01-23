@@ -2277,7 +2277,7 @@ combine_chains (chain_p ch1, chain_p ch2)
   tree rslt_type = NULL_TREE;
 
   if (ch1 == ch2)
-    return false;
+    return NULL;
   if (ch1->length != ch2->length)
     return NULL;
 
