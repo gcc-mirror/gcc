@@ -1,3 +1,8 @@
+2010-01-23  Joern Rennecke  <amylaar@spamcop.net>
+
+	* tree-loop-distribution.c (distribute_loop): Fix declaration and
+	initialization of variable res to agree with return type.
+
 2010-01-22  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefile.in (tree-sra.o): Add $(EXPR_H) dependency.

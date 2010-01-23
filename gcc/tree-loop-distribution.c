@@ -1120,7 +1120,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 static int
 distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
 {
-  bool res = false;
+  int res = 0;
   struct graph *rdg;
   gimple s;
   unsigned i;
