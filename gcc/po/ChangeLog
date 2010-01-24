@@ -1,3 +1,7 @@
+2010-01-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
 2010-01-22  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* exgettext: Handle the functions and the macro definitions that the
