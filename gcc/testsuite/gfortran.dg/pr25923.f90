@@ -10,7 +10,7 @@ implicit none
 
 contains
 
-  function baz(arg) result(res) ! { dg-warning "res.yr' may be" "" { xfail *-*-* } }
+  function baz(arg) result(res) ! { dg-warning "res.yr' may be" }
     type(bar), intent(in) :: arg
     type(bar) :: res
     logical, external:: some_func

@@ -1,3 +1,13 @@
+2010-01-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41044
+	* gfortran.dg/parameter_array_ref_2.f90 : New test.
+
+	PR fortran/41167
+	* gfortran.dg/char_array_arg_1.f90 : New test.
+
+	* gfortran.dg/pr25923.f90 : Remove XFAIL.
+
 2010-01-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39304
