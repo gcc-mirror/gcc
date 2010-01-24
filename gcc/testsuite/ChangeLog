@@ -1,3 +1,8 @@
+2010-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39304
+	* gfortran.dg/generic_20.f90: New test.
+
 2010-01-22  Michael Matz  <matz@suse.de>
 
 	* gfortran.dg/vect/fast-math-mgrid-resid.f: Limit to x86, add

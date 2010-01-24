@@ -1,3 +1,9 @@
+2010-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39304
+	* array.c (gfc_array_dimen_size): Use correct specific
+	function in the check.
+
 2010-01-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/42736

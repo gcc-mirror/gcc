@@ -2053,7 +2053,15 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
 	  return SUCCESS;
 	}
 
-      if (spec_dimen_size (array->symtree->n.sym->as, dimen, result) == FAILURE)
+      if (array->symtree->n.sym->attr.generic
+	  && !array->symtree->n.sym->attr.intrinsic)
+	{
+	  if (spec_dimen_size (array->value.function.esym->as, dimen, result)
+	      == FAILURE)
+	    return FAILURE;
+	}
+      else if (spec_dimen_size (array->symtree->n.sym->as, dimen, result)
+	       == FAILURE)
 	return FAILURE;
 
       break;
