@@ -1,3 +1,16 @@
+2010-01-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41044
+	PR fortran/41167
+	* expr.c (remove_subobject_ref): If the constructor is NULL use
+	the expression as the source.
+	(simplify_const_ref): Change the type of expression if
+	there are component references.  Allow for substring to be at
+	the end of an arbitrarily long chain of references.  If an
+	element is found that is not in an EXPR_ARRAY, assume that this
+	is scalar initialization of array. Call remove_subobject_ref in
+	this case with NULL second argument.
+
 2010-01-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39304
