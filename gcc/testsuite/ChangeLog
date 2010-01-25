@@ -1,3 +1,7 @@
+2010-01-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/array_bounds_test.adb: New test.
+
 2010-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42858
