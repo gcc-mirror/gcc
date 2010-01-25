@@ -1,4 +1,5 @@
 /* PR tree-optimization/38789 */
+/* { dg-do compile } */
 
 void
 baz (int v)
