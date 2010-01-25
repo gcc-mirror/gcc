@@ -5101,9 +5101,10 @@ package body Exp_Ch4 is
          Cnode := Left_Opnd (Cnode);
       end loop;
 
-      --  Now Opnd is the deepest Opnd, and its parents are the concatenation
-      --  nodes above, so now we process bottom up, doing the operations. We
-      --  gather a string that is as long as possible up to five operands
+      --  Now Cnode is the deepest concatenation, and its parents are the
+      --  concatenation nodes above, so now we process bottom up, doing the
+      --  operations. We gather a string that is as long as possible up to five
+      --  operands.
 
       --  The outer loop runs more than once if more than one concatenation
       --  type is involved.

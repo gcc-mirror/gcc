@@ -1,3 +1,7 @@
+2010-01-25  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb, exp_aggr.adb: Minor comment fixes and code clean up.
+
 2010-01-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads (Current_Year): Update.

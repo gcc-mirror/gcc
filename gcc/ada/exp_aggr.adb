@@ -2578,7 +2578,7 @@ package body Exp_Aggr is
                Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
                Set_Assignment_OK (Ref);
 
-               if not Is_Abstract_Type (Init_Typ) then
+               if not Is_Interface (Init_Typ) then
                   Append_List_To (L,
                     Build_Initialization_Call (Loc,
                       Id_Ref            => Ref,
@@ -3681,7 +3681,7 @@ package body Exp_Aggr is
       --  total number of components is safe enough to expand.
 
       function Is_Flat (N : Node_Id; Dims : Int) return Boolean;
-      --  Return True iff the array N is flat (which is not rivial in the case
+      --  Return True iff the array N is flat (which is not trivial in the case
       --  of multidimensionsl aggregates).
 
       -----------------------------
@@ -3919,7 +3919,7 @@ package body Exp_Aggr is
                      end if;
                   end if;
 
-                  --  Range cases merge with Lo,Hi said
+                  --  Range cases merge with Lo,Hi set
 
                   if not Compile_Time_Known_Value (Lo)
                        or else
