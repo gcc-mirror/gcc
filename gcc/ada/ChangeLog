@@ -1,3 +1,7 @@
+2010-01-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatvsn.ads (Current_Year): Update.
+
 2010-01-25  Florian Villoing  <villoing@adacore.com>
 
 	* gnat_ugn.texi: Fix typo.
