@@ -1,3 +1,14 @@
+2010-01-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): If the bounds in a choice
+	have errors, do not continue resolution of the aggregate.
+	* sem_eval.adb (Eval_Indexed_Component): Do not attempt to evaluate if
+	the array type indicates an error.
+
+2010-01-25  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Minor comment fixes.
+
 2010-01-25  Bob Duff  <duff@adacore.com>
 
 	* exp_ch4.adb, exp_aggr.adb: Minor comment fixes and code clean up.
