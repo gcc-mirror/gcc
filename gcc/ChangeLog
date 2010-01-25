@@ -1,3 +1,9 @@
+2010-01-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/42748
+	* config/arm/arm.c (arm_mangle_type): Do not warn about changes to
+	mangling of va_list in system headers.
+
 2010-01-23  Toon Moene  <toon@moene.org>
 
 	* tree-predcom.c (combine_chains): Return NULL, not false.
