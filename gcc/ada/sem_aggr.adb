@@ -2173,6 +2173,16 @@ package body Sem_Aggr is
          end if;
       end if;
 
+      --  If the aggregate already has bounds attached to it, it means this is
+      --  a positional aggregate created as an optimization by
+      --  Exp_Aggr.Convert_To_Positional, so we don't want to change those
+      --  bounds.
+
+      if Present (Aggregate_Bounds (N)) and then not Others_Allowed then
+         Aggr_Low := Low_Bound (Aggregate_Bounds (N));
+         Aggr_High := High_Bound (Aggregate_Bounds (N));
+      end if;
+
       Set_Aggregate_Bounds
         (N, Make_Range (Loc, Low_Bound => Aggr_Low, High_Bound => Aggr_High));
 

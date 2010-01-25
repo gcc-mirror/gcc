@@ -4506,14 +4506,12 @@ package body Exp_Ch6 is
             --  Create protected operation as well. Even though the operation
             --  is only accessible within the body, it is possible to make it
             --  available outside of the protected object by using 'Access to
-            --  provide a callback, so we build the protected version in all
-            --  cases.
+            --  provide a callback, so build protected version in all cases.
 
             Prot_Decl :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Protected_Sub_Specification
-                      (N, Scop, Protected_Mode));
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Build_Protected_Sub_Specification (N, Scop, Protected_Mode));
             Insert_Before (Prot_Bod, Prot_Decl);
             Analyze (Prot_Decl);
 

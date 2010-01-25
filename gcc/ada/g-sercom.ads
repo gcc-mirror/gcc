@@ -92,8 +92,8 @@ package GNAT.Serial_Communications is
       Last   : out Ada.Streams.Stream_Element_Offset);
    --  Read a set of bytes, put result into Buffer and set Last accordingly.
    --  Last is set to Buffer'First - 1 if no byte has been read, unless
-   --  Buffer'First = Stream_Element_Offset'First, in which case
-   --  Constraint_Error raised instead.
+   --  Buffer'First = Stream_Element_Offset'First, in which case the exception
+   --  Constraint_Error is raised instead.
 
    overriding procedure Write
      (Port   : in out Serial_Port;

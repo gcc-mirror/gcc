@@ -310,8 +310,7 @@ __gnat_adjust_context_for_raise (int signo, void *ucontext)
 }
 
 static void
-__gnat_error_handler
-  (int sig, siginfo_t *sip, struct sigcontext *context)
+__gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
@@ -582,7 +581,11 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
   mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
 
-  /* On the i386 and x86-64 architectures, stack checking is performed by
+  /* On the i386 and x86-64 architectures, we specifically detect calls to
+     the null address and entirely fold the not-yet-fully-established frame
+     to prevent it from stopping the unwinding.
+
+     On the i386 and x86-64 architectures, stack checking is performed by
      means of probes with moving stack pointer, that is to say the probed
      address is always the value of the stack pointer.  Upon hitting the
      guard page, the stack pointer therefore points to an inaccessible
@@ -602,13 +605,25 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #if defined (i386)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_EIP];
+  /* The call insn pushes the return address onto the stack.  Pop it.  */
+  if (pc == NULL)
+    {
+      mcontext->gregs[REG_EIP] = *(unsigned long *)mcontext->gregs[REG_ESP];
+      mcontext->gregs[REG_ESP] += 4;
+    }
   /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
-  if (signo == SIGSEGV && pc && *pc == 0x00240c83)
+  else if (signo == SIGSEGV && *pc == 0x00240c83)
     mcontext->gregs[REG_ESP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__x86_64__)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_RIP];
+  /* The call insn pushes the return address onto the stack.  Pop it.  */
+  if (pc == NULL)
+    {
+      mcontext->gregs[REG_RIP] = *(unsigned long *)mcontext->gregs[REG_RSP];
+      mcontext->gregs[REG_RSP] += 8;
+    }
   /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
-  if (signo == SIGSEGV && pc && (*pc & 0xffffffffff) == 0x00240c8348)
+  else if (signo == SIGSEGV && (*pc & 0xffffffffff) == 0x00240c8348)
     mcontext->gregs[REG_RSP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__ia64__)
   /* ??? The IA-64 unwinder doesn't compensate for signals.  */
@@ -624,8 +639,12 @@ __gnat_error_handler (int sig,
                       void *ucontext)
 {
   struct Exception_Data *exception;
-  const char *msg;
   static int recurse = 0;
+  const char *msg;
+
+  /* Adjusting is required for every fault context, so adjust for this one
+     now, before we possibly trigger a recursive fault below.  */
+  __gnat_adjust_context_for_raise (sig, ucontext);
 
   switch (sig)
     {
@@ -682,14 +701,8 @@ __gnat_error_handler (int sig,
       exception = &program_error;
       msg = "unhandled signal";
     }
+
   recurse = 0;
-
-  /* We adjust the interrupted context here (and not in the fallback
-     unwinding routine) because recent versions of the Native POSIX
-     Thread Library (NPTL) are compiled with unwind information, so
-     the fallback routine is never executed for signal frames.  */
-  __gnat_adjust_context_for_raise (sig, ucontext);
-
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -997,28 +1010,55 @@ __gnat_install_handler(void)
 /* Likewise regarding how the "instruction pointer" register slot can
    be identified in signal machine contexts.  We have either "REG_PC"
    or "PC" at hand, depending on the target CPU and Solaris version.  */
-
 #if !defined (REG_PC)
 #define REG_PC PC
 #endif
 
-static void __gnat_error_handler (int, siginfo_t *, ucontext_t *);
+static void __gnat_error_handler (int, siginfo_t *, void *);
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+  unsigned long *pc = (unsigned long *)mcontext->gregs[REG_PC];
+
+  /* We specifically detect calls to the null address and entirely fold
+     the not-yet-fully-established frame to prevent it from stopping the
+     unwinding.  */
+  if (pc == NULL)
+#if defined (__sparc)
+    /* The call insn moves the return address into %o7.  Move it back.  */
+    mcontext->gregs[REG_PC] = mcontext->gregs[REG_O7];
+#elif defined (i386)
+    {
+      /* The call insn pushes the return address onto the stack.  Pop it.  */
+      mcontext->gregs[REG_PC] = *(unsigned long *)mcontext->gregs[UESP];
+      mcontext->gregs[UESP] += 4;
+    }
+#elif defined (__x86_64__)
+    {
+      /* The call insn pushes the return address onto the stack.  Pop it.  */
+      mcontext->gregs[REG_PC] = *(unsigned long *)mcontext->gregs[REG_RSP];
+      mcontext->gregs[REG_RSP] += 8;
+    }
+#else
+#error architecture not supported on Solaris
+#endif
+}
 
 static void
-__gnat_error_handler (int sig, siginfo_t *sip, ucontext_t *cx ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, siginfo_t *sip, void *ucontext)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
   const char *msg;
 
-  /* If this was an explicit signal from a "kill", just resignal it.  */
-  if (SI_FROMUSER (sip))
-    {
-      signal (sig, SIG_DFL);
-      kill (getpid(), sig);
-    }
+  /* Adjusting is required for every fault context, so adjust for this one
+     now, before we possibly trigger a recursive fault below.  */
+  __gnat_adjust_context_for_raise (sig, ucontext);
 
-  /* Otherwise, treat it as something we handle.  */
   switch (sig)
     {
     case SIGSEGV:
@@ -1030,6 +1070,7 @@ __gnat_error_handler (int sig, siginfo_t *sip, ucontext_t *cx ATTRIBUTE_UNUSED)
 	 much too hard to do anything else and we're just determining
 	 which exception to raise.  */
       if (sip->si_code == SEGV_ACCERR
+	  || (long) sip->si_addr == 0
 	  || (((long) sip->si_addr) & 3) != 0
 	  || recurse)
 	{
@@ -1066,7 +1107,6 @@ __gnat_error_handler (int sig, siginfo_t *sip, ucontext_t *cx ATTRIBUTE_UNUSED)
     }
 
   recurse = 0;
-
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -1816,6 +1856,20 @@ __gnat_map_signal (int sig)
       msg = "SIGFPE";
       break;
 #ifdef VTHREADS
+#ifdef __VXWORKSMILS__
+    case SIGILL:
+      exception = &storage_error;
+      msg = "SIGILL: possible stack overflow";
+      break;
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "SIGSEGV";
+      break;
+    case SIGBUS:
+      exception = &program_error;
+      msg = "SIGBUS";
+      break;
+#else
     case SIGILL:
       exception = &constraint_error;
       msg = "Floating point exception or SIGILL";
@@ -1828,6 +1882,7 @@ __gnat_map_signal (int sig)
       exception = &storage_error;
       msg = "SIGBUS: possible stack overflow";
       break;
+#endif
 #elif (_WRS_VXWORKS_MAJOR == 6)
     case SIGILL:
       exception = &constraint_error;

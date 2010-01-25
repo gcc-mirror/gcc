@@ -2602,13 +2602,12 @@ package body Exp_Ch9 is
       else
          New_Spec :=
            Make_Function_Specification (Loc,
-              Defining_Unit_Name       =>
-                Make_Defining_Identifier (Sloc (Body_Id),
-                  Chars => Chars (Body_Id)),
-              Parameter_Specifications =>
-                Plist,
-              Result_Definition        =>
-                New_Occurrence_Of (Etype (Body_Id), Loc));
+             Defining_Unit_Name       =>
+               Make_Defining_Identifier (Sloc (Body_Id),
+                 Chars => Chars (Body_Id)),
+             Parameter_Specifications => Plist,
+             Result_Definition        =>
+               New_Occurrence_Of (Etype (Body_Id), Loc));
       end if;
 
       Decl := Make_Subprogram_Declaration (Loc, Specification => New_Spec);
