@@ -54,7 +54,7 @@ void test01()
   const wchar_t* awdays[7] = { L"Sun", L"Mon", L"Tue", L"Wed",
 			       L"Thu", L"Fri", L"Sat" };
 
-  for (unsigned i = 0; i < 7; ++i)
+  for (int i = 0; i < 7; ++i)
     {
       iss.str(awdays[i]);
       iterator_type is_it01(iss);
@@ -69,7 +69,7 @@ void test01()
   const wchar_t* wdays[7] = { L"Sunday", L"Monday", L"Tuesday", L"Wednesday",
 			      L"Thursday", L"Friday", L"Saturday" };
 
-  for (unsigned i = 0; i < 7; ++i)
+  for (int i = 0; i < 7; ++i)
     {
       iss.str(wdays[i]);
       iterator_type is_it01(iss);

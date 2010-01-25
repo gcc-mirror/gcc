@@ -52,7 +52,7 @@ void test01()
 
   const char* awdays[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
-  for (unsigned i = 0; i < 7; ++i)
+  for (int i = 0; i < 7; ++i)
     {
       iss.str(awdays[i]);
       iterator_type is_it01(iss);
@@ -67,7 +67,7 @@ void test01()
   const char* wdays[7] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
 			   "Friday", "Saturday" };
 
-  for (unsigned i = 0; i < 7; ++i)
+  for (int i = 0; i < 7; ++i)
     {
       iss.str(wdays[i]);
       iterator_type is_it01(iss);
