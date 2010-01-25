@@ -69,7 +69,6 @@ void test01()
 
   ::get_seventeen get_sev;
   ::X x;
-  ::X* xp = &x;
 
   const float pi = 3.14;
 

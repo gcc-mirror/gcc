@@ -53,7 +53,7 @@ void test01()
   const char* amname[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 			     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-  for (unsigned i = 0; i < 12; ++i)
+  for (int i = 0; i < 12; ++i)
     {
       iss.str(amname[i]);
       iterator_type is_it01(iss);
@@ -69,7 +69,7 @@ void test01()
 			    "May", "June", "July", "August",
 			    "September", "October", "November", "December" };
 
-  for (unsigned i = 0; i < 12; ++i)
+  for (int i = 0; i < 12; ++i)
     {
       iss.str(mname[i]);
       iterator_type is_it01(iss);

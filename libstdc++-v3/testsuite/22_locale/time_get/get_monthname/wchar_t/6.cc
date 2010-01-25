@@ -55,7 +55,7 @@ void test01()
 				L"May", L"Jun", L"Jul", L"Aug",
 				L"Sep", L"Oct", L"Nov", L"Dec" };
 
-  for (unsigned i = 0; i < 12; ++i)
+  for (int i = 0; i < 12; ++i)
     {
       iss.str(amname[i]);
       iterator_type is_it01(iss);
@@ -72,7 +72,7 @@ void test01()
 			       L"July", L"August", L"September",
 			       L"October", L"November", L"December" };
 
-  for (unsigned i = 0; i < 12; ++i)
+  for (int i = 0; i < 12; ++i)
     {
       iss.str(mname[i]);
       iterator_type is_it01(iss);
