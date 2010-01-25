@@ -1,3 +1,8 @@
+2010-01-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/41522
+	* gcc.c-torture/compile/pr38789.c: Change to dg-do compile.
+
 2010-01-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/42748
