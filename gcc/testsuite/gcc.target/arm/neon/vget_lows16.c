@@ -9,7 +9,7 @@
 
 void test_vget_lows16 (void)
 {
-  int16x4_t out_int16x4_t;
+  register int16x4_t out_int16x4_t asm ("d18");
   int16x8_t arg0_int16x8_t;
 
   out_int16x4_t = vget_low_s16 (arg0_int16x8_t);
