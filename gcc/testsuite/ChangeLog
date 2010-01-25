@@ -1,3 +1,9 @@
+2010-01-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/42748
+	* g++.dg/abi/arm_va_list2.C: New test.
+	* g++.dg/abi/arm_va_list2.h: Companion header file.
+
 2010-01-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41044

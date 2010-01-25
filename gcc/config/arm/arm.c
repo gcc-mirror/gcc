@@ -21372,7 +21372,7 @@ arm_mangle_type (const_tree type)
       && lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
     {
       static bool warned;
-      if (!warned && warn_psabi)
+      if (!warned && warn_psabi && !in_system_header)
 	{
 	  warned = true;
 	  inform (input_location,
