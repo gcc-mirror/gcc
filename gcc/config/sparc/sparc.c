@@ -368,7 +368,7 @@ static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
-#ifdef OBJECT_FORMAT_ELF
+#if defined (OBJECT_FORMAT_ELF) && !defined (HAVE_GNU_AS)
 static void sparc_elf_asm_named_section (const char *, unsigned int, tree);
 #endif
 
@@ -7986,19 +7986,11 @@ sparc_profile_hook (int labelno)
     }
 }
 
-#ifdef OBJECT_FORMAT_ELF
+#if defined (OBJECT_FORMAT_ELF) && !defined (HAVE_GNU_AS)
 static void
 sparc_elf_asm_named_section (const char *name, unsigned int flags,
 			     tree decl)
 {
-  if (flags & SECTION_MERGE)
-    {
-      /* entsize cannot be expressed in this section attributes
-	 encoding style.  */
-      default_elf_asm_named_section (name, flags, decl);
-      return;
-    }
-
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 
   if (!(flags & SECTION_DEBUG))
