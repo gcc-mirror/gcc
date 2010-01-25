@@ -426,12 +426,12 @@ namespace __gnu_test
 	{
 	  void __constraint()
 	  {
-	    _Tp a;
-	    _Tp b;
 	    a |= b; // set
 	    a &= ~b; // clear
 	    a ^= b;
 	  }
+	  _Tp a;
+	  _Tp b;
 	};
 
 	void (_Concept::*__x)() __attribute__((unused))
