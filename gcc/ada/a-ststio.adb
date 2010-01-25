@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces.C_Streams;  use Interfaces.C_Streams;
+with Interfaces.C_Streams; use Interfaces.C_Streams;
 
 with System;               use System;
 with System.Communication; use System.Communication;

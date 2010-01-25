@@ -48,7 +48,7 @@ package body System.Communication is
          raise Constraint_Error with
            "last index out of range (no element transferred)";
       else
-         return First + SEO (Count - 1);
+         return First + SEO (Count) - 1;
       end if;
    end Last_Index;
 

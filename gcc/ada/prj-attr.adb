@@ -112,6 +112,7 @@ package body Prj.Attr is
 
    "SVdefault_language#" &
    "LVrun_path_option#" &
+   "SVrun_path_origin_supported#" &
    "SVseparate_run_path_options#" &
    "Satoolchain_version#" &
    "Satoolchain_description#" &

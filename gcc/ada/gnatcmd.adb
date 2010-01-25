@@ -579,7 +579,7 @@ procedure GNATCmd is
                         Add_Char_To_Name_Buffer ('"');
                         Add_Str_To_Name_Buffer
                           (Get_Name_String
-                             (Unit.File_Names (Kind).Path.Display_Name));
+                            (Unit.File_Names (Kind).Path.Display_Name));
                         Add_Char_To_Name_Buffer ('"');
 
                         if FD /= Invalid_FD then

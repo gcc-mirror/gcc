@@ -1130,6 +1130,7 @@ package Snames is
    Name_Roots                            : constant Name_Id := N + $; --  GPR
    Name_Required_Switches                : constant Name_Id := N + $;
    Name_Run_Path_Option                  : constant Name_Id := N + $;
+   Name_Run_Path_Origin_Supported        : constant Name_Id := N + $;
    Name_Separate_Run_Path_Options        : constant Name_Id := N + $;
    Name_Shared_Library_Minimum_Switches  : constant Name_Id := N + $;
    Name_Shared_Library_Prefix            : constant Name_Id := N + $;
