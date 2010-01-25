@@ -1,5 +1,10 @@
 2010-01-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/util/testsuite_common_types.h (has_bitwise_operators):
+	Avoid -Wall warnings.
+
+2010-01-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/22_locale/time_get/get_monthname/char/6.cc: Use an int
 	as loop variable, to avoid -Wall warnings.
 	* testsuite/22_locale/time_get/get_monthname/wchar_t/6.cc: Likewise.
