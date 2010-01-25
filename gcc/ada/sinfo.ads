@@ -576,15 +576,9 @@ package Sinfo is
    --    issues. Used to inhibit multiple redundant messages.
 
    --  Aggregate_Bounds (Node3-Sem)
-   --    Present in array N_Aggregate nodes. If the aggregate contains
-   --    component associations this field points to an N_Range node whose
-   --    bounds give the lowest and highest discrete choice values. If the
-   --    named aggregate contains a dynamic or null choice this field is empty.
-   --    If the aggregate contains positional elements this field points to an
-   --    N_Integer_Literal node giving the number of positional elements. Note
-   --    that if the aggregate contains positional elements and an other choice
-   --    the N_Integer_Literal only accounts for the number of positional
-   --    elements.
+   --    Present in array N_Aggregate nodes. If the bounds of the aggregate are
+   --    known at compile time, this field points to an N_Range node with those
+   --    bounds. Otherwise Empty.
 
    --  All_Others (Flag11-Sem)
    --    Present in an N_Others_Choice node. This flag is set for an others
@@ -3302,10 +3296,10 @@ package Sinfo is
       --  are not met, then the front end must translate the aggregate into
       --  an appropriate set of assignments into a temporary.
 
-      --  Note: for the record aggregate case, gigi/gcc can handle all cases
-      --  of record aggregates, including those for packed, and rep-claused
+      --  Note: for the record aggregate case, gigi/gcc can handle all cases of
+      --  record aggregates, including those for packed, and rep-claused
       --  records, and also variant records, providing that there are no
-      --  variable length fields whose size is not known at runtime, and
+      --  variable length fields whose size is not known at compile time, and
       --  providing that the aggregate is presented in fully named form.
 
       ----------------------------------------------

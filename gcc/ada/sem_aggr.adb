@@ -1936,6 +1936,16 @@ package body Sem_Aggr is
                     and then Compile_Time_Known_Value (Choices_Low)
                     and then Compile_Time_Known_Value (Choices_High)
                   then
+
+                     --  If the bounds have semantic errors, do not attempt
+                     --  further resolution to prevent cascaded errors..
+
+                     if Error_Posted (Choices_Low)
+                       or else Error_Posted (Choices_High)
+                     then
+                        return False;
+                     end if;
+
                      declare
                         ALo : constant Node_Id := Expr_Value_E (Aggr_Low);
                         AHi : constant Node_Id := Expr_Value_E (Aggr_High);
