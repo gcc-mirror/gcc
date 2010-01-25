@@ -2578,19 +2578,21 @@ package body Exp_Aggr is
                Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
                Set_Assignment_OK (Ref);
 
-               Append_List_To (L,
-                 Build_Initialization_Call (Loc,
-                   Id_Ref            => Ref,
-                   Typ               => Init_Typ,
-                   In_Init_Proc      => Within_Init_Proc,
-                   With_Default_Init => Has_Default_Init_Comps (N)
-                                          or else
-                                        Has_Task (Base_Type (Init_Typ))));
+               if not Is_Abstract_Type (Init_Typ) then
+                  Append_List_To (L,
+                    Build_Initialization_Call (Loc,
+                      Id_Ref            => Ref,
+                      Typ               => Init_Typ,
+                      In_Init_Proc      => Within_Init_Proc,
+                      With_Default_Init => Has_Default_Init_Comps (N)
+                                             or else
+                                           Has_Task (Base_Type (Init_Typ))));
 
-               if Is_Constrained (Entity (A))
-                 and then Has_Discriminants (Entity (A))
-               then
-                  Check_Ancestor_Discriminants (Entity (A));
+                  if Is_Constrained (Entity (A))
+                    and then Has_Discriminants (Entity (A))
+                  then
+                     Check_Ancestor_Discriminants (Entity (A));
+                  end if;
                end if;
 
             --  Handle calls to C++ constructors

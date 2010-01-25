@@ -71,6 +71,9 @@
 /*  separate_run_path_options is set to 1 when separate "rpath" arguments   */
 /*  must be passed to the linker for each directory in the rpath.           */
 
+/*  default_libgcc_subdir is the subdirectory name (from the installation   */
+/*  root) where we may find a shared libgcc to use by default.              */
+
 /*  RESPONSE FILE & GNU LINKER                                              */
 /*  --------------------------                                              */
 /*  objlist_file_supported and using_gnu_link used together tell gnatlink   */
@@ -96,6 +99,7 @@ char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (sgi)
 const char *__gnat_object_file_option = "-Wl,-objectlist,";
@@ -108,6 +112,15 @@ unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
 
+/* The libgcc_s locations have changed in GCC 4.  The n32 version used
+   to be in "lib", it moved to "lib32" and "lib" became the home of
+   the o32 version.  We are targetting n32 by default, so ... */
+#if __GNUC__ < 4
+const char *__gnat_default_libgcc_subdir = "lib";
+#else
+const char *__gnat_default_libgcc_subdir = "lib32";
+#endif
+
 #elif defined (__WIN32)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "";
@@ -118,6 +131,7 @@ char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (__hpux__)
 const char *__gnat_object_file_option = "-Wl,-c,";
@@ -129,6 +143,7 @@ char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (_AIX)
 const char *__gnat_object_file_option = "-Wl,-f,";
@@ -140,6 +155,7 @@ char __gnat_shared_libgcc_default = STATIC;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (VMS)
 const char *__gnat_object_file_option = "";
@@ -151,6 +167,7 @@ unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".olb";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (sun)
 const char *__gnat_object_file_option = "";
@@ -162,6 +179,13 @@ unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+#if defined (__sparc_v9__) || defined (__sparcv9)
+const char *__gnat_default_libgcc_subdir = "lib/sparcv9";
+#elif defined (__x86_64)
+const char *__gnat_default_libgcc_subdir = "lib/amd64";
+#else
+const char *__gnat_default_libgcc_subdir = "lib";
+#endif
 
 #elif defined (__FreeBSD__)
 const char *__gnat_object_file_option = "";
@@ -173,6 +197,7 @@ unsigned char __gnat_objlist_file_supported = 1;
 unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (__APPLE__)
 const char *__gnat_object_file_option = "-Wl,-filelist,";
@@ -184,6 +209,7 @@ unsigned char __gnat_objlist_file_supported = 1;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 1;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #elif defined (linux) || defined(__GLIBC__)
 const char *__gnat_object_file_option = "";
@@ -195,6 +221,11 @@ unsigned char __gnat_objlist_file_supported = 1;
 unsigned char __gnat_using_gnu_linker = 1;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+#if defined (__x86_64)
+const char *__gnat_default_libgcc_subdir = "lib64";
+#else
+const char *__gnat_default_libgcc_subdir = "lib";
+#endif
 
 #elif defined (__svr4__) && defined (i386)
 const char *__gnat_object_file_option = "";
@@ -206,6 +237,7 @@ unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 
 #else
 
@@ -220,4 +252,5 @@ unsigned char __gnat_objlist_file_supported = 0;
 unsigned char __gnat_using_gnu_linker = 0;
 const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 0;
+const char *__gnat_default_libgcc_subdir = "lib";
 #endif

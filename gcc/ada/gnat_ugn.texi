@@ -1,4 +1,4 @@
-f\input texinfo   @c -*-texinfo-*-
+\input texinfo   @c -*-texinfo-*-
 @c %**start of header
 
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo

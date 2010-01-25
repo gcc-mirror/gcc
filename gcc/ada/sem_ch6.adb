@@ -8352,10 +8352,15 @@ package body Sem_Ch6 is
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements => Plist)));
 
-            --  If this is a procedure, set the Postcondition_Proc attribute
+            --  If this is a procedure, set the Postcondition_Proc attribute on
+            --  the proper defining entity for the subprogram.
 
             if Etype (Subp) = Standard_Void_Type then
-               Set_Postcondition_Proc (Spec_Id, Post_Proc);
+               if Present (Spec_Id) then
+                  Set_Postcondition_Proc (Spec_Id, Post_Proc);
+               else
+                  Set_Postcondition_Proc (Body_Id, Post_Proc);
+               end if;
             end if;
          end;
 
