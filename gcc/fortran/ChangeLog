@@ -1,3 +1,9 @@
+2010-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42858
+	* array.c (gfc_array_dimen_size): Fix intrinsic procedure
+	check.
+
 2010-01-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41044
