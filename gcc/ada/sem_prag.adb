@@ -5265,8 +5265,19 @@ package body Sem_Prag is
                      if Is_Entity_Name (Exp) then
                         null;
 
+                     --  Determine the string type from the presence
+                     --  Wide (_Wide) characters.
+
                      elsif Nkind (Exp) = N_String_Literal then
-                        Resolve (Exp, Standard_String);
+                        if Has_Wide_Wide_Character (Exp) then
+                           Resolve (Exp, Standard_Wide_Wide_String);
+
+                        elsif Has_Wide_Character (Exp) then
+                           Resolve (Exp, Standard_Wide_String);
+
+                        else
+                           Resolve (Exp, Standard_String);
+                        end if;
 
                      elsif Is_Overloaded (Exp) then
                            Error_Pragma_Arg

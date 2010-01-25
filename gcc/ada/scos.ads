@@ -115,6 +115,9 @@ package SCOs is
    --        expression (if present) or to the return_subtype_indication (if
    --        no expression)
 
+   --    and any pragma that occurs at a place where a statement or declaration
+   --    is allowed.
+
    --  Statement lines
 
    --    These lines correspond to one or more successive statements (in the
@@ -123,7 +126,9 @@ package SCOs is
 
    --    Entry points to such sequences are:
 
-   --      the first statement of any sequence_of_statements
+   --      the first declaration of any declarative_part
+   --      the first statement of any sequence_of_statements that is not in a
+   --        body or block statement that has a non-empty declarative part
    --      the first statement after a compound statement
    --      the first statement after an EXIT, RAISE or GOTO statement
    --      any statement with a label
@@ -147,21 +152,23 @@ package SCOs is
    --      i  generic instantiation
    --      C  CASE statement
    --      F  FOR loop statement
+   --      P  PRAGMA
    --      R  extended RETURN statement
 
    --    and is omitted for all other cases.
 
    --  Decisions
 
-   --    Note: in the following description, logical operator includes the
-   --    short circuited forms (so can be any of AND, OR, XOR, NOT, AND THEN,
-   --    or OR ELSE).
+   --    Note: in the following description, logical operator includes only the
+   --    short circuited forms (so can be only of NOT, AND THEN, or OR ELSE).
 
    --    Decisions are either simple or complex. A simple decision is a boolean
    --    expresssion that occurs in the context of a control structure in the
-   --    source program, including WHILE, IF, EXIT WHEN. Note that a boolean
-   --    expression in any other context, for example, on the right side of an
-   --    assignment, is not considered to be a simple decision.
+   --    source program, including WHILE, IF, EXIT WHEN, or in an Assert,
+   --    Check, Pre_Condition or Post_Condition pragma. For pragmas, decision
+   --    SCOs are generated only if the corresponding pragma is enabled. Note
+   --    that a boolean expression in any other context, for example as right
+   --    hand side of an assignment, is not considered to be a simple decision.
 
    --    A complex decision is an occurrence of a logical operator which is not
    --    itself an operand of some other logical operator. If any operand of
@@ -191,11 +198,12 @@ package SCOs is
 
    --      I  decision in IF statement or conditional expression
    --      E  decision in EXIT WHEN statement
+   --      P  decision in pragma Assert/Check/Pre_Condition/Post_Condition
    --      W  decision in WHILE iteration scheme
    --      X  decision appearing in some other expression context
 
-   --    For I, E, W, sloc is the source location of the IF, EXIT or WHILE
-   --    token.
+   --    For I, E, P, W, sloc is the source location of the IF, EXIT, PRAGMA or
+   --    WHILE token.
 
    --    For X, sloc is omitted.
 
@@ -206,7 +214,6 @@ package SCOs is
    --      expression ::= term             (if expr is not logical operator)
    --      expression ::= &sloc term term  (if expr is AND or AND THEN)
    --      expression ::= |sloc term term  (if expr is OR or OR ELSE)
-   --      expression ::= ^sloc term term  (if expr is XOR)
    --      expression ::= !sloc term       (if expr is NOT)
 
    --      In the last four cases, sloc is the source location of the AND, OR,
@@ -226,18 +233,14 @@ package SCOs is
    --      where t/f are used to mark a condition that has been recognized by
    --      the compiler as always being true or false.
 
-   --    & indicates either AND or AND THEN connecting two conditions. In the
-   --    context of Couverture we only permit AND THEN in the source in any
-   --    case, so & can always be understood to be AND THEN.
+   --    & indicates AND THEN connecting two conditions.
 
-   --    | indicates either OR or OR ELSE connection two conditions. In the
-   --    context of Couverture we only permit OR ELSE in the source in any
-   --    case, so | can always be understood to be OR ELSE.
-
-   --    ^ indicates XOR connecting two conditions. In the context of
-   --    Couverture, we do not permit XOR, so this will never appear.
+   --    | indicates OR ELSE connecting two conditions.
 
    --    ! indicates NOT applied to the expression.
+
+   --    In the context of Couverture, the No_Direct_Boolean_Opeartors
+   --    restriction is assumed, and no other operator can appear.
 
    ---------------------------------------------------------------------
    -- Internal table used to store Source Coverage Obligations (SCOs) --
@@ -269,8 +272,9 @@ package SCOs is
 
    --    Statements
    --      C1   = 'S' for entry point, 's' otherwise
-   --      C2   = 't', 's', 'o', 'r', 'i', 'C', 'F', 'R', ' '
-   --             (type/subtype/object/renaming/instantiation/CASE/FOR/RETURN)
+   --      C2   = 't', 's', 'o', 'r', 'i', 'C', 'F', 'P', 'R', ' '
+   --             (type/subtype/object/renaming/instantiation/
+   --              CASE/FOR/PRAGMA/RETURN/other)
    --      From = starting source location
    --      To   = ending source location
    --      Last = False for all but the last entry, True for last entry
@@ -282,9 +286,10 @@ package SCOs is
    --    statements on a single CS line.
 
    --    Decision
-   --      C1   = 'I', 'E', 'W', 'X' (if/exit/while/expression)
+   --      C1   = 'I', 'E', 'P', 'W', 'X' (if/exit/pragma/while/expression)
    --      C2   = ' '
-   --      From = location of IF/EXIT/WHILE token, No_Source_Location for X
+   --      From = location of IF/EXIT/PRAGMA/WHILE token,
+   --             No_Source_Location for X
    --      To   = No_Source_Location
    --      Last = unused
 

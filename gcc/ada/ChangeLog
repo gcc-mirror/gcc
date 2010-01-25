@@ -1,3 +1,35 @@
+2010-01-25  Florian Villoing  <villoing@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2010-01-25  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads: Update specification.
+
+2010-01-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_PPCs): If a postcondition is present and the
+	enclosing subprogram has no previous spec, attach postcondition
+	procedure to the defining entity for the body.
+
+2010-01-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code); Do not generate call to
+	initialization procedure of the ancestor part of an extension aggregate
+	if it is an interface type.
+
+2010-01-25  Vincent Celier  <celier@adacore.com>
+
+	* gnatlink.adb (Process_Binder_File): The directory for the shared
+	version of libgcc in the run path options is found in the subdirectory
+	indicated by __gnat_default_libgcc_subdir.
+	* link.c: Declare new const char * __gnat_default_libgcc_subdir for
+	each platform.
+
+2010-01-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: More flexible pragma Annotate.
+
 2010-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-linux-armel.ads (Stack_Check_Probes): Set to True.
