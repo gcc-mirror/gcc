@@ -1,3 +1,10 @@
+2010-01-25  Joern Rennecke  <amylaar@spamcop.net>
+
+	PR libstdc++/36101, PR libstdc++/42813
+	* configure.ac (bootstrap_target_libs): Make inclusion of
+	target-libgomp conditional on libgomb being in target_configdirs.
+	* configure: Regenerate.
+
 2010-01-23  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR libstdc++/36101, PR libstdc++/42813

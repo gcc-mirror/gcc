@@ -6545,7 +6545,7 @@ fi
 stage1_languages=,c,
 
 # Target libraries that we bootstrap.
-bootstrap_target_libs=,target-libgcc,target-libgomp,
+bootstrap_target_libs=,target-libgcc,
 
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use
@@ -7393,6 +7393,11 @@ fi
 # build configuration in Makefile.
 target_configdirs=`echo "${target_configdirs}" | sed -e 's/target-//g'`
 build_configdirs=`echo "${build_configdirs}" | sed -e 's/build-//g'`
+
+# If we are building libgomp, bootstrap it.
+if echo " ${target_configdirs} " | grep " libgomp " > /dev/null 2>&1 ; then
+  bootstrap_target_libs=${bootstrap_target_libs}target-libgomp,
+fi
 
 # Determine whether gdb needs tk/tcl or not.
 # Use 'maybe' since enable_gdbtk might be true even if tk isn't available
