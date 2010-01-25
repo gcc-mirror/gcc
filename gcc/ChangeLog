@@ -1,3 +1,11 @@
+2010-01-24  David S. Miller  <davem@davemloft.net>
+
+	* gcc/config/sparc/sysv4.h (TARGET_ASM_NAMED_SECTION): Only
+	define if not using GAS.
+	* gcc/config/sparc/sparc.c (sparc_elf_asm_named_section):
+	Likewise.  Delete SECTION_MERGE code, which is only applicable
+	when using GAS.
+
 2010-01-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/42748
