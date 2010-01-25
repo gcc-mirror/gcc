@@ -1,3 +1,34 @@
+2010-01-25  Bob Duff  <duff@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Check for the case where this
+	is an internally-generated positional aggregate, and the bounds are
+	already correctly set. We don't want to overwrite those bounds with
+	bounds determined by context.
+
+2010-01-25  Robert Dewar  <dewar@adacore.com>
+
+	* g-sercom.ads, gnatcmd.adb, gnatlink.adb, a-ststio.adb, exp_ch6.adb,
+	exp_ch9.adb, g-sechas.ads: Minor reformatting.
+
+2010-01-25  Thomas Quinot  <quinot@adacore.com>
+
+	* s-commun.adb (Last_Index): Count must be converted to SEO (a signed
+	integer type) before subtracting 1, otherwise the computation may wrap
+	(because size_t is modular) and cause the conversion to fail.
+
+2010-01-25  Ed Falis  <falis@adacore.com>
+
+	* sysdep.c, init.c: Adapt to support full run-time on VxWorks MILS.
+
+2010-01-25  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New attribute Run_Path_Origin_Required
+	* prj-nmsc.adb (Process_Project_Level_Simple_Attributes): Process new
+	attribute Run_Path_Origin_Required.
+	* prj.ads (Project_Configuration): New component
+	Run_Path_Origin_Supported.
+	* snames.ads-tmpl: New standard name Run_Path_Origin_Required
+
 2010-01-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): If the bounds in a choice
