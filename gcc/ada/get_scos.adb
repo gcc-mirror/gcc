@@ -39,6 +39,11 @@ procedure Get_SCOs is
    use ASCII;
    --  For CR/LF
 
+   function At_EOL return Boolean;
+   --  Skips any spaces, then checks if we are the end of a line. If so,
+   --  returns True (but does not skip over the EOL sequence). If not,
+   --  then returns False.
+
    procedure Check (C : Character);
    --  Checks that file is positioned at given character, and if so skips past
    --  it, If not, raises Data_Error.
@@ -62,6 +67,16 @@ procedure Get_SCOs is
    procedure Skip_Spaces;
    --  Skips zero or more spaces at the current position, leaving the file
    --  positioned at the first non-blank character (or Types.EOF).
+
+   ------------
+   -- At_EOL --
+   ------------
+
+   function At_EOL return Boolean is
+   begin
+      Skip_Spaces;
+      return Nextc = CR or else Nextc = LF;
+   end At_EOL;
 
    -----------
    -- Check --
@@ -236,8 +251,36 @@ begin
          --  Statement entry
 
          when 'S' =>
-            Get_Sloc_Range (Loc1, Loc2);
-            Add_SCO (C1 => 'S', From => Loc1, To => Loc2);
+            declare
+               Typ : Character;
+               Key : Character;
+
+            begin
+               Skip_Spaces;
+               Key := 'S';
+
+               loop
+                  Typ := Nextc;
+
+                  if Typ in '1' .. '9' then
+                     Typ := ' ';
+                  else
+                     Skipc;
+                  end if;
+
+                  Get_Sloc_Range (Loc1, Loc2);
+
+                  Add_SCO
+                    (C1   => Key,
+                     C2   => C,
+                     From => Loc1,
+                     To   => Loc2,
+                     Last => At_EOL);
+
+                  exit when At_EOL;
+                  Key := 's';
+               end loop;
+            end;
 
          --  Exit entry
 

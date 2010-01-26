@@ -1,5 +1,15 @@
 2010-01-26  Robert Dewar  <dewar@adacore.com>
 
+	* get_scos.adb (Get_SCOs): Implement new form of CS entries (multiple
+	entries per line, one for each statement in the sequence).
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Increase array
+	size from 100 to 10_000 for SC_Array to avoid any real possibility of
+	overflow. Output decisions in for loops.
+	Exclude labels from CS lines.
+	* scos.ads: Clarify that label is not included in the entry point
+
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
 	* par_sco.adb (Traverse_Declarations_Or_Statments): Implement new
 	format of statement sequence SCO entries (one location/statement).
 	* put_scos.adb (Put_SCOs): Implement new format of CS lines

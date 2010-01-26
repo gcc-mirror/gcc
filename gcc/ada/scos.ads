@@ -127,7 +127,8 @@ package SCOs is
    --        body or block statement that has a non-empty declarative part
    --      the first statement after a compound statement
    --      the first statement after an EXIT, RAISE or GOTO statement
-   --      any statement with a label
+   --      any statement with a label (the label itself is not part of the
+   --       entry point that is recorded).
 
    --    Each entry point must appear as the first entry on a CS line.
    --    The idea is that if any simple statement on a CS line is known to have
