@@ -4663,7 +4663,7 @@ expand_omp_sections (struct omp_region *region)
   l2_bb = region->exit;
   if (exit_reachable)
     {
-      if (single_pred (l2_bb) == l0_bb)
+      if (single_pred_p (l2_bb) && single_pred (l2_bb) == l0_bb)
 	l2 = gimple_block_label (l2_bb);
       else
 	{
