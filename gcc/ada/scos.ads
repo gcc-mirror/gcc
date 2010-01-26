@@ -160,7 +160,12 @@ package SCOs is
    --  Decisions
 
    --    Note: in the following description, logical operator includes only the
-   --    short circuited forms (so can be only of NOT, AND THEN, or OR ELSE).
+   --    short circuited forms and NOT (so can be only NOT, AND THEN, OR ELSE).
+   --    The reason that we can exclude AND/OR/XOR is that we expect SCO's to
+   --    be generated using the restriction No_Direct_Boolean_Operators, which
+   --    does not permit the use of AND/OR/XOR on boolean operands. These are
+   --    permitted on modular integer types, but such operations do not count
+   --    as decisions in any case
 
    --    Decisions are either simple or complex. A simple decision is a boolean
    --    expresssion that occurs in the context of a control structure in the
@@ -217,7 +222,7 @@ package SCOs is
    --      expression ::= !sloc term       (if expr is NOT)
 
    --      In the last four cases, sloc is the source location of the AND, OR,
-   --      XOR or NOT token, respectively.
+   --      or NOT token, respectively.
 
    --      term ::= element
    --      term ::= expression
@@ -296,7 +301,7 @@ package SCOs is
    --    Operator
    --      C1   = '!', '^', '&', '|'
    --      C2   = ' '
-   --      From = location of NOT/XOR/AND/OR token
+   --      From = location of NOT/AND/OR token
    --      To   = No_Source_Location
    --      Last = False
 
