@@ -172,7 +172,7 @@
       <listitem>
 	<para> 
 	  A ChangeLog entry as plain text; see the various
-	  ChangeLog files for format and content. If using you are
+	  ChangeLog files for format and content. If you are
 	  using emacs as your editor, simply position the insertion
 	  point at the beginning of your change and hit CX-4a to bring
 	  up the appropriate ChangeLog entry. See--magic! Similar
