@@ -37,7 +37,7 @@
 #if ! defined (__VXWORKSMILS__)
 #include "dosFsLib.h"
 #endif
-#if ! defined (__RTP__) && ! defined (VTHREADS)
+#if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
 # include "nfsLib.h"
 #endif
 #include "selectLib.h"
@@ -990,7 +990,7 @@ __gnat_is_file_not_found_error (int errno_val) {
 #if ! defined (__VXWORKSMILS__)
       case S_dosFsLib_FILE_NOT_FOUND:
 #endif
-#if ! defined (__RTP__) && ! defined (VTHREADS)
+#if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
       case S_nfsLib_NFSERR_NOENT:
 #endif
 #endif

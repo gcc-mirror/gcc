@@ -4015,6 +4015,10 @@ package body Sem_Ch10 is
                   --  a with_clause on the same unit as a private with-clause
                   --  on a parent, in which case child unit is visible.
 
+                  ----------------
+                  -- In_Context --
+                  ----------------
+
                   function In_Context return Boolean is
                   begin
                      Clause :=

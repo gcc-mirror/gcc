@@ -29,9 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version of this package.
+--  This is the verson for VxWorks 5 and VxWorks MILS
+
 --  This file should be kept synchronized with the general implementation
---  provided by s-stchop.adb. This version is for VxWorks 5 and VxWorks MILS.
+--  provided by s-stchop.adb.
 
 pragma Restrictions (No_Elaboration_Code);
 --  We want to guarantee the absence of elaboration code because the

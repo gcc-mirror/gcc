@@ -536,7 +536,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 endif
 
-# vxworksae / vxworks 653
+# vxworks 653
 ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   # target pairs for vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
@@ -599,8 +599,59 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   endif
 endif
 
-# vxworksae / vxworks 653 for x86 (vxsim)
-ifeq ($(strip $(filter-out %86 wrs vxworksae,$(targ))),)
+# vxworks MILS
+ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(targ))),)
+  # target pairs for vthreads runtime
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  a-numaux.ads<a-numaux-vxworks.ads \
+  g-io.adb<g-io-vxworks-ppc-cert.adb \
+  g-io.ads<g-io-vxworks-ppc-cert.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-hwint.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-ae653.ads \
+  s-parame.adb<s-parame-vxworks.adb \
+  s-stchop.adb<s-stchop-vxworks.adb \
+  s-stchop.ads<s-stchop-limit.ads \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-tasinf.ads<s-tasinf-vxworks.ads \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-thread.adb<s-thread-ae653.adb \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-ppc.ads \
+  g-trasym.ads<g-trasym-unimplemented.ads \
+  g-trasym.adb<g-trasym-unimplemented.adb \
+  system.ads<system-vxworks-ppc.ads \
+  $(DUMMY_SOCKETS_TARGET_PAIRS)
+
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o s-vxwexc.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
+
+  EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
+  EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
+  GNATRTL_SOCKETS_OBJS =
+
+  ifeq ($(strip $(filter-out yes,$(TRACE))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-traces.adb<s-traces-default.adb \
+    s-trafor.adb<s-trafor-default.adb \
+    s-trafor.ads<s-trafor-default.ads \
+    s-tratas.adb<s-tratas-default.adb \
+    s-tfsetr.adb<s-tfsetr-vxworks.adb
+  endif
+endif
+
+# vxworksae / vxworks 653 for x86 (vxsim) - ?? vxworksmils not implemented
+ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
   # target pairs for kernel + vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
@@ -623,7 +674,6 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(targ))),)
   s-taprop.adb<s-taprop-vxworks.adb \
   s-tasinf.ads<s-tasinf-vxworks.ads \
   s-taspri.ads<s-taspri-vxworks.ads \
-  s-thread.adb<s-thread-ae653.adb \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwext.adb<s-vxwext-noints.adb \
   s-vxwext.ads<s-vxwext-vthreads.ads \

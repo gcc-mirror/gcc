@@ -1,3 +1,20 @@
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
+	* s-commun.ads, s-osprim-mingw.adb, s-stchop-vxworks.adb, sem_aggr.adb,
+	s-vxwext.adb, sem_ch10.adb, sem_eval.adb, sem_prag.adb: Minor
+	reformatting.
+
+2010-01-26  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* g-regist.adb, g-regist.ads (For_Every_Key): New generic procedure
+	that allows to iterate over all subkeys of a key.
+
+2010-01-26  Ed Falis  <falis@adacore.com>
+
+	* sysdep.c: enable NFS for VxWorks MILS
+	* env.c: enable __gnat_environ for VxWorks MILS
+	* gcc-interface/Makefile.in: Add VxWorks MILS target pairs.
+
 2010-01-25  Bob Duff  <duff@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): Check for the case where this

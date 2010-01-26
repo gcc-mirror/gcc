@@ -1915,9 +1915,7 @@ package body Sem_Eval is
             --  are error cases where this is not the case), then see if we
             --  can do a constant evaluation of the array reference.
 
-            if Is_Array_Type (Atyp)
-              and then Atyp /= Any_Composite
-            then
+            if Is_Array_Type (Atyp) and then Atyp /= Any_Composite then
                if Ekind (Atyp) = E_String_Literal_Subtype then
                   Lbd := String_Literal_Low_Bound (Atyp);
                else

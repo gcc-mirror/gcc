@@ -199,12 +199,14 @@ package body System.OS_Primitives is
 
          loop
             GetSystemTimeAsFileTime (Loc_Time'Access);
+
             if QueryPerformanceCounter (Ctrl_Ticks'Access) = Win32.FALSE then
                pragma Assert
                  (Standard.False,
                   "Could not query high performance counter in Clock");
                null;
             end if;
+
             exit when Loc_Time /= Ctrl_Time;
             Loc_Ticks := Ctrl_Ticks;
          end loop;
@@ -218,7 +220,9 @@ package body System.OS_Primitives is
             Base_Time   := Loc_Time;
             Base_Ticks  := Loc_Ticks;
             Current_Max := Elapsed;
+
             --  Exit the loop when we have reached the expected precision
+
             exit when Elapsed <= Max_Elapsed;
          end if;
       end loop;
