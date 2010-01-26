@@ -568,7 +568,7 @@ package body Freeze is
       procedure Set_Small_Size (T : Entity_Id; S : Uint);
       --  Sets the compile time known size (32 bits or less) in the Esize
       --  field, of T checking for a size clause that was given which attempts
-      --  to give a smaller size.
+      --  to give a smaller size, and also checking for an alignment clause.
 
       function Size_Known (T : Entity_Id) return Boolean;
       --  Recursive function that does all the work
@@ -588,6 +588,15 @@ package body Freeze is
       begin
          if S > 32 then
             return;
+
+         --  Don't bother if alignment clause with a value other than 1 is
+         --  present, because size may be padded up to meet back end alignment
+         --  requirements, and only the back end knows the rules!
+
+         elsif Known_Alignment (T) and then Alignment (T) /= 1 then
+            return;
+
+         --  Check for bad size clause given
 
          elsif Has_Size_Clause (T) then
             if RM_Size (T) < S then
@@ -890,12 +899,12 @@ package body Freeze is
 
                      if Is_Elementary_Type (Ctyp)
                        or else (Is_Array_Type (Ctyp)
-                                and then Present (Packed_Array_Type (Ctyp))
-                                and then Is_Modular_Integer_Type
-                                           (Packed_Array_Type (Ctyp)))
+                                 and then Present (Packed_Array_Type (Ctyp))
+                                 and then Is_Modular_Integer_Type
+                                            (Packed_Array_Type (Ctyp)))
                      then
-                        --  If RM_Size is known and static, then we can
-                        --  keep accumulating the packed size.
+                        --  If RM_Size is known and static, then we can keep
+                        --  accumulating the packed size.
 
                         if Known_Static_RM_Size (Ctyp) then
 
