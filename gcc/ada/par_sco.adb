@@ -757,14 +757,41 @@ package body Par_SCO is
 
    procedure Traverse_Declarations_Or_Statements (L : List_Id) is
       N     : Node_Id;
-      Start : Source_Ptr;
       Dummy : Source_Ptr;
-      Stop  : Source_Ptr;
 
-      procedure Extend_Statement_Sequence (N : Node_Id);
-      --  Extend the current statement sequence to encompass the node N
+      type SC_Entry is record
+         From : Source_Ptr;
+         To   : Source_Ptr;
+         Typ  : Character;
+      end record;
+      --  Used to store a single entry in the following array
 
-      procedure Extend_Statement_Sequence (From : Node_Id; To : Node_Id);
+      SC_Array : array (Nat range 1 .. 100) of SC_Entry;
+      SC_Last  : Nat;
+      --  Used to store statement components for a CS entry to be output
+      --  as a result of the call to this procedure. SC_Last is the last
+      --  entry stored, so the current statement sequence is represented
+      --  by SC_Array (1 .. SC_Last). Extend_Statement_Sequence adds an
+      --  entry to this array, and Set_Statement_Entry clears it, copying
+      --  the entries to the main SCO output table. The reason that we do
+      --  the temporary caching of results in this array is that we want
+      --  the SCO table entries for a given CS line to be contiguous, and
+      --  the processing may output intermediate entries such as decision
+      --  entries. Note that the limit of 100 here is arbitrary, but does
+      --  not cause any trouble, if we encounter more than 100 statements
+      --  we simply break the current CS sequence at that point, which is
+      --  harmless, since this is only used for back annotation and it is
+      --  not critical that back annotation always work in all cases.
+
+      procedure Extend_Statement_Sequence (N : Node_Id; Typ : Character);
+      --  Extend the current statement sequence to encompass the node N. Typ
+      --  is the letter that identifies the type of statement/declaration that
+      --  is being added to the sequence.
+
+      procedure Extend_Statement_Sequence
+        (From : Node_Id;
+         To   : Node_Id;
+         Typ  : Character);
       --  This version extends the current statement sequence with an entry
       --  that starts with the first token of From, and ends with the last
       --  token of To. It is used for example in a CASE statement to cover
@@ -782,11 +809,26 @@ package body Par_SCO is
       -------------------------
 
       procedure Set_Statement_Entry is
+         C1   : Character;
+
       begin
-         if Start /= No_Location then
-            Set_Table_Entry ('S', ' ', Start, Stop, False);
-            Start := No_Location;
-            Stop  := No_Location;
+         if SC_Last /= 0 then
+            for J in 1 .. SC_Last loop
+               if J = 1 then
+                  C1 := 'S';
+               else
+                  C1 := 's';
+               end if;
+
+               Set_Table_Entry
+                 (C1   => C1,
+                  C2   => SC_Array (J).Typ,
+                  From => SC_Array (J).From,
+                  To   => SC_Array (J).To,
+                  Last => (J = SC_Last));
+            end loop;
+
+            SC_Last := 0;
          end if;
       end Set_Statement_Entry;
 
@@ -794,33 +836,53 @@ package body Par_SCO is
       -- Extend_Statement_Sequence --
       -------------------------------
 
-      procedure Extend_Statement_Sequence (N : Node_Id) is
+      procedure Extend_Statement_Sequence (N : Node_Id; Typ : Character) is
       begin
-         if Start = No_Location then
-            Sloc_Range (N, Start, Stop);
+         --  Clear out statement sequence if array full
+
+         if SC_Last = SC_Array'Last then
+            Set_Statement_Entry;
          else
-            Sloc_Range (N, Dummy, Stop);
+            SC_Last := SC_Last + 1;
          end if;
+
+         --  Record new entry
+
+         Sloc_Range
+           (N, SC_Array (SC_Last).From, SC_Array (SC_Last).To);
+         SC_Array (SC_Last).Typ := Typ;
       end Extend_Statement_Sequence;
 
-      procedure Extend_Statement_Sequence (From : Node_Id; To : Node_Id) is
+      procedure Extend_Statement_Sequence
+        (From : Node_Id;
+         To   : Node_Id;
+         Typ  : Character)
+      is
       begin
-         if Start = No_Location then
-            Sloc_Range (From, Start, Dummy);
+         --  Clear out statement sequence if array full
+
+         if SC_Last = SC_Array'Last then
+            Set_Statement_Entry;
+         else
+            SC_Last := SC_Last + 1;
          end if;
 
-         Sloc_Range (To, Dummy, Stop);
+         --  Make new entry
+
+         Sloc_Range (From, SC_Array (SC_Last).From, Dummy);
+         Sloc_Range (To, Dummy, SC_Array (SC_Last).To);
+         SC_Array (SC_Last).Typ := Typ;
       end Extend_Statement_Sequence;
 
    --  Start of processing for Traverse_Declarations_Or_Statements
 
    begin
       if Is_Non_Empty_List (L) then
-         N := First (L);
-         Start := No_Location;
+         SC_Last := 0;
 
          --  Loop through statements or declarations
 
+         N := First (L);
          while Present (N) loop
 
             --  Initialize or extend current statement sequence. Note that for
@@ -875,7 +937,7 @@ package body Par_SCO is
                --  any decisions in the exit statement expression.
 
                when N_Exit_Statement =>
-                  Extend_Statement_Sequence (N);
+                  Extend_Statement_Sequence (N, ' ');
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'E');
 
@@ -884,7 +946,7 @@ package body Par_SCO is
 
                when N_Label =>
                   Set_Statement_Entry;
-                  Extend_Statement_Sequence (N);
+                  Extend_Statement_Sequence (N, ' ');
 
                --  Block statement, which breaks the current statement seqeunce
                --  it probably does not need to, but for now it does.
@@ -899,7 +961,7 @@ package body Par_SCO is
                --  but we include the condition in the current sequence.
 
                when N_If_Statement =>
-                  Extend_Statement_Sequence (N, Condition (N));
+                  Extend_Statement_Sequence (N, Condition (N), 'I');
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'I');
                   Traverse_Declarations_Or_Statements (Then_Statements (N));
@@ -923,8 +985,7 @@ package body Par_SCO is
                --  but we include the expression in the current sequence.
 
                when N_Case_Statement =>
-
-                  Extend_Statement_Sequence (N, Expression (N));
+                  Extend_Statement_Sequence (N, Expression (N), 'C');
                   Set_Statement_Entry;
                   Process_Decisions (Expression (N), 'X');
 
@@ -947,23 +1008,31 @@ package body Par_SCO is
                when N_Requeue_Statement |
                     N_Goto_Statement    |
                     N_Raise_Statement   =>
-                  Extend_Statement_Sequence (N);
+                  Extend_Statement_Sequence (N, ' ');
                   Set_Statement_Entry;
 
                --  Simple return statement. which is an exit point, but we
                --  have to process the return expression for decisions.
 
                when N_Simple_Return_Statement =>
-                  Extend_Statement_Sequence (N);
+                  Extend_Statement_Sequence (N, ' ');
                   Set_Statement_Entry;
                   Process_Decisions (Expression (N), 'X');
 
                --  Extended return statement
 
                when N_Extended_Return_Statement =>
-                  Set_Statement_Entry;
-                  Traverse_Declarations_Or_Statements
-                    (Return_Object_Declarations (N));
+                  declare
+                     Odecl : constant Node_Id :=
+                               First (Return_Object_Declarations (N));
+                  begin
+                     if Present (Expression (Odecl)) then
+                        Extend_Statement_Sequence
+                          (N, Expression (Odecl), 'R');
+                        Process_Decisions (Expression (Odecl), 'X');
+                     end if;
+                  end;
+
                   Traverse_Handled_Statement_Sequence
                     (Handled_Statement_Sequence (N));
 
@@ -974,9 +1043,8 @@ package body Par_SCO is
 
                when N_Loop_Statement =>
                   if Present (Iteration_Scheme (N)) then
-                     Extend_Statement_Sequence (N, Iteration_Scheme (N));
-                     Process_Decisions
-                       (Condition (Iteration_Scheme (N)), 'W');
+                     Extend_Statement_Sequence (N, Iteration_Scheme (N), 'F');
+                     Process_Decisions (Condition (Iteration_Scheme (N)), 'W');
                   end if;
 
                   Set_Statement_Entry;
@@ -986,7 +1054,43 @@ package body Par_SCO is
                --  but do not terminate it, even if they have nested decisions.
 
                when others =>
-                  Extend_Statement_Sequence (N);
+
+                  --  Determine required type character code
+
+                  declare
+                     Typ : Character;
+
+                  begin
+                     case Nkind (N) is
+                        when N_Full_Type_Declaration         |
+                             N_Incomplete_Type_Declaration   |
+                             N_Private_Type_Declaration      |
+                             N_Private_Extension_Declaration =>
+                           Typ := 't';
+
+                        when N_Subtype_Declaration           =>
+                           Typ := 's';
+
+                        when N_Object_Declaration            =>
+                           Typ := 'o';
+
+                        when N_Renaming_Declaration          =>
+                           Typ := 'r';
+
+                        when N_Generic_Instantiation         =>
+                           Typ := 'i';
+
+                        when N_Pragma                        =>
+                           Typ := 'P';
+
+                        when others                          =>
+                           Typ := ' ';
+                     end case;
+
+                     Extend_Statement_Sequence (N, Typ);
+                  end;
+
+                  --  Process any embedded decisions
 
                   if Has_Decision (N) then
                      Process_Decisions (N, 'X');
