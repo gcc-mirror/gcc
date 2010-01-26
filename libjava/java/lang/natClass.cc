@@ -689,9 +689,12 @@ void
 _Jv_ClosureList::registerClosure (jclass klass, void *ptr)
 {
   _Jv_ClosureList **closures = klass->engine->get_closure_list (klass);
-  this->ptr = ptr;
-  this->next = *closures;
-  *closures = this;
+  if (closures)
+    {
+      this->ptr = ptr;
+      this->next = *closures;
+      *closures = this;
+    }
 }
 #endif
 
