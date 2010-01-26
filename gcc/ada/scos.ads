@@ -162,10 +162,12 @@ package SCOs is
    --    Note: in the following description, logical operator includes only the
    --    short circuited forms and NOT (so can be only NOT, AND THEN, OR ELSE).
    --    The reason that we can exclude AND/OR/XOR is that we expect SCO's to
-   --    be generated using the restriction No_Direct_Boolean_Operators, which
-   --    does not permit the use of AND/OR/XOR on boolean operands. These are
-   --    permitted on modular integer types, but such operations do not count
-   --    as decisions in any case
+   --    be generated using the restriction No_Direct_Boolean_Operators if we
+   --    are interested in decision coverage, which does not permit the use of
+   --    AND/OR/XOR on boolean operands. These are permitted on modular integer
+   --    types, but such operations do not count as decisions in any case. If
+   --    we are generating SCO's only for simple coverage, then we are not
+   --    interested in decisions in any case.
 
    --    Decisions are either simple or complex. A simple decision is a boolean
    --    expresssion that occurs in the context of a control structure in the

@@ -95,8 +95,9 @@ package body Par_SCO is
 
    function Is_Logical_Operator (N : Node_Id) return Boolean;
    --  N is the node for a subexpression. This procedure just tests N to see
-   --  if it is a logical operator (including short circuit conditions) and
-   --  returns True if so, False otherwise, it does no other processing.
+   --  if it is a logical operator (including short circuit conditions, but
+   --  excluding OR and AND) and returns True if so, False otherwise, it does
+   --  no other processing.
 
    procedure Process_Decisions (N : Node_Id; T : Character);
    --  If N is Empty, has no effect. Otherwise scans the tree for the node N,
@@ -297,9 +298,7 @@ package body Par_SCO is
 
    function Is_Logical_Operator (N : Node_Id) return Boolean is
    begin
-      return Nkind_In (N, N_Op_And,
-                          N_Op_Or,
-                          N_Op_Xor,
+      return Nkind_In (N, N_Op_Xor,
                           N_Op_Not,
                           N_And_Then,
                           N_Or_Else);
@@ -436,15 +435,11 @@ package body Par_SCO is
       begin
          case Nkind (N) is
 
-               --  Logical operators and short circuit forms, output table
-               --  entries and then process operands recursively to deal with
-               --  nested conditions.
+               --  Logical operators, output table entries and then process
+               --  operands recursively to deal with nested conditions.
 
             when N_And_Then                    |
                  N_Or_Else                     |
-                 N_Op_And                      |
-                 N_Op_Or                       |
-                 N_Op_Xor                      |
                  N_Op_Not                      =>
 
                declare
