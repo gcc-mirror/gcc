@@ -35,6 +35,7 @@ with Put_SCOs;
 with SCOs;     use SCOs;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with Snames;   use Snames;
 with Table;
 
 with GNAT.HTable;      use GNAT.HTable;
@@ -101,10 +102,10 @@ package body Par_SCO is
 
    procedure Process_Decisions (N : Node_Id; T : Character);
    --  If N is Empty, has no effect. Otherwise scans the tree for the node N,
-   --  to output any decisions it contains. T is one of IEWX (for context of
-   --  expresion: if/while/when-exit/expression). If T is other than X, then
-   --  the node is always a decision a decision is always present (at the very
-   --  least a simple decision is present at the top level).
+   --  to output any decisions it contains. T is one of IEPWX (for context of
+   --  expresion: if/exit when/pragma/while/expression). If T is other than X,
+   --  then a decision is always present (at the very least a simple decision
+   --  is present at the top level).
 
    procedure Process_Decisions (L : List_Id; T : Character);
    --  Calls above procedure for each element of the list L
@@ -938,7 +939,7 @@ package body Par_SCO is
                --  any decisions in the exit statement expression.
 
                when N_Exit_Statement =>
-                  Extend_Statement_Sequence (N, 'E');
+                  Extend_Statement_Sequence (N, ' ');
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'E');
 
@@ -1071,6 +1072,48 @@ package body Par_SCO is
                   Set_Statement_Entry;
                   Traverse_Declarations_Or_Statements (Statements (N));
 
+               --  Pragma
+
+               when N_Pragma =>
+                  Extend_Statement_Sequence (N, 'P');
+
+                  --  For pragmas Assert, Check, Precondition, and
+                  --  Postcondition, we generate decision entries for the
+                  --  condition only if the pragma is enabled. For now, we just
+                  --  check Assertions_Enabled, which will be set to reflect
+                  --  the presence of -gnata.
+
+                  --  Later we should move processing of the relevant pragmas
+                  --  to Par_Prag, and properly set the flag Pragma_Enabled at
+                  --  parse time, so that we can check this flag instead ???
+
+                  --  For all other pragmas, we always generate decision
+                  --  entries for any embedded expressions.
+
+                  declare
+                     Nam : constant Name_Id :=
+                             Chars (Pragma_Identifier (N));
+                     Arg : Node_Id := First (Pragma_Argument_Associations (N));
+                  begin
+                     case Nam is
+                        when Name_Assert        |
+                             Name_Check         |
+                             Name_Precondition  |
+                             Name_Postcondition =>
+
+                           if Nam = Name_Check then
+                              Next (Arg);
+                           end if;
+
+                           if Assertions_Enabled then
+                              Process_Decisions (Expression (Arg), 'P');
+                           end if;
+
+                        when others =>
+                           Process_Decisions (N, 'X');
+                     end case;
+                  end;
+
                --  All other cases, which extend the current statement sequence
                --  but do not terminate it, even if they have nested decisions.
 
@@ -1100,9 +1143,6 @@ package body Par_SCO is
 
                         when N_Generic_Instantiation         =>
                            Typ := 'i';
-
-                        when N_Pragma                        =>
-                           Typ := 'P';
 
                         when others                          =>
                            Typ := ' ';

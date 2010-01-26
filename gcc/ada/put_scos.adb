@@ -115,7 +115,7 @@ begin
 
                   --  Decision
 
-                  when 'I' | 'E' | 'W' | 'X' =>
+                  when 'I' | 'E' | 'P' | 'W' | 'X' =>
                      if T.C2 = ' ' then
                         Start := Start + 1;
                      end if;

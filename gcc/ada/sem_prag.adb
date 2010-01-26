@@ -1420,7 +1420,7 @@ package body Sem_Prag is
 
          --  Record whether pragma is enabled
 
-         Set_PPC_Enabled (N, Check_Enabled (Pname));
+         Set_Pragma_Enabled (N, Check_Enabled (Pname));
 
          --  If we are within an inlined body, the legality of the pragma
          --  has been checked already.
@@ -5789,6 +5789,7 @@ package body Sem_Prag is
 
             Check_Arg_Is_Identifier (Arg1);
             Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
+            Set_Pragma_Enabled (N, Check_On);
 
             --  If expansion is active and the check is not enabled then we
             --  rewrite the Check as:
