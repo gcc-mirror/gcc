@@ -136,6 +136,7 @@ Fortran			Paul Brook		paul@codesourcery.com
 c++			Jason Merrill		jason@redhat.com
 c++			Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
+go			Ian Lance Taylor	ian@airs.com
 java			Per Bothner		per@bothner.com
 java			Andrew Haley		aph@redhat.com
 java			Tom Tromey		tromey@redhat.com
