@@ -105,8 +105,9 @@ package SCOs is
    --    and the following regions of the syntax tree:
 
    --      the part of a case_statement from CASE up to the expression
-   --      the part of a FOR iteration scheme from FOR up to the
+   --      the part of a FOR loop iteration scheme from FOR up to the
    --        loop_parameter_specification
+   --      the part of a WHILE loop up to the condition
    --      the part of an extended_return_statement from RETURN up to the
    --        expression (if present) or to the return_subtype_indication (if
    --        no expression)
@@ -148,11 +149,13 @@ package SCOs is
    --      r  renaming declaration
    --      i  generic instantiation
    --      C  CASE statement (includes only the expression)
-   --      F  FOR/WHILE loop statement (includes only the iteration scheme)
+   --      E  EXIT statement
+   --      F  FOR loop statement (includes only the iteration scheme)
    --      I  IF statement (includes only the condition [in the RM sense, which
    --         is a decision in the SCO sense])
    --      P  PRAGMA
    --      R  extended RETURN statement
+   --      W  WHILE loop statement (includes only the condition)
 
    --    and is omitted for all other cases.
 
@@ -278,9 +281,10 @@ package SCOs is
 
    --    Statements
    --      C1   = 'S' for entry point, 's' otherwise
-   --      C2   = 't', 's', 'o', 'r', 'i', 'C', 'F', 'I', 'P', 'R', ' '
+   --      C2   = 't', 's', 'o', 'r', 'i',
+   --             'C', 'E', 'F', 'I', 'P', 'R', 'W', ' '
    --             (type/subtype/object/renaming/instantiation/
-   --              CASE/FOR or WHILE/IF/PRAGMA/RETURN/other)
+   --              CASE/EXIT/FOR/IF/PRAGMA/RETURN/WHILE/other)
    --      From = starting source location
    --      To   = ending source location
    --      Last = False for all but the last entry, True for last entry
