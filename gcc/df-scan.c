@@ -285,7 +285,6 @@ static void
 df_scan_set_bb_info (unsigned int index,
 		     struct df_scan_bb_info *bb_info)
 {
-  gcc_assert (df_scan);
   df_grow_bb_info (df_scan);
   df_scan->block_info[index] = (void *) bb_info;
 }
@@ -1321,8 +1320,8 @@ df_insn_rescan_debug_internal (rtx insn)
   unsigned int uid = INSN_UID (insn);
   struct df_insn_info *insn_info;
 
-  gcc_assert (DEBUG_INSN_P (insn));
-  gcc_assert (VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)));
+  gcc_assert (DEBUG_INSN_P (insn)
+	      && VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)));
 
   if (!df)
     return false;
@@ -2603,8 +2602,8 @@ df_install_ref (df_ref this_ref,
       df->hard_regs_live_count[regno]++;
     }
 
-  gcc_assert (DF_REF_NEXT_REG (this_ref) == NULL);
-  gcc_assert (DF_REF_PREV_REG (this_ref) == NULL);
+  gcc_assert (DF_REF_NEXT_REG (this_ref) == NULL
+	      && DF_REF_PREV_REG (this_ref) == NULL);
 
   DF_REF_NEXT_REG (this_ref) = head;
 
@@ -3851,13 +3850,13 @@ df_mark_reg (rtx reg, void *vset)
 
   gcc_assert (GET_MODE (reg) != BLKmode);
 
-  bitmap_set_bit (set, regno);
   if (regno < FIRST_PSEUDO_REGISTER)
     {
       int n = hard_regno_nregs[regno][GET_MODE (reg)];
-      while (--n > 0)
-	bitmap_set_bit  (set, regno + n);
+      bitmap_set_range (set, regno, n);
     }
+  else
+    bitmap_set_bit (set, regno);
 }
 
 
@@ -4257,7 +4256,6 @@ df_update_entry_exit_and_calls (void)
 bool
 df_hard_reg_used_p (unsigned int reg)
 {
-  gcc_assert (df);
   return df->hard_regs_live_count[reg] != 0;
 }
 
@@ -4272,7 +4270,6 @@ df_hard_reg_used_p (unsigned int reg)
 unsigned int
 df_hard_reg_used_count (unsigned int reg)
 {
-  gcc_assert (df);
   return df->hard_regs_live_count[reg];
 }
 
