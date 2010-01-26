@@ -390,8 +390,8 @@ GNAT Project Manager
 
 The Cross-Referencing Tools gnatxref and gnatfind
 
-* gnatxref Switches::
-* gnatfind Switches::
+* Switches for gnatxref::
+* Switches for gnatfind::
 * Project Files for gnatxref and gnatfind::
 * Regular Expressions in gnatfind and gnatxref::
 * Examples of gnatxref Usage::
@@ -4595,6 +4595,10 @@ as warning mode modifiers (see description of @option{-gnatw}).
 Once a ``V'' appears in the string (that is a use of the @option{-gnatV}
 switch), then all further characters in the switch are interpreted
 as validity checking options (@pxref{Validity Checking}).
+
+@item
+Option ``em'', ``ec'', ``ep'', ``l='' and ``R'' must be the last options in
+a combined list of options.
 @end ifclear
 @end itemize
 
@@ -15377,15 +15381,15 @@ Note: to invoke @code{gnatxref} or @code{gnatfind} with a project file,
 use the @code{gnat} driver (see @ref{The GNAT Driver and Project Files}).
 
 @menu
-* gnatxref Switches::
-* gnatfind Switches::
+* Switches for gnatxref::
+* Switches for gnatfind::
 * Project Files for gnatxref and gnatfind::
 * Regular Expressions in gnatfind and gnatxref::
 * Examples of gnatxref Usage::
 * Examples of gnatfind Usage::
 @end menu
 
-@node gnatxref Switches
+@node Switches for gnatxref
 @section @code{gnatxref} Switches
 
 @noindent
@@ -15516,7 +15520,7 @@ appear after the file names. They need not be separated by spaces, thus
 you can say @samp{gnatxref ^-ag^/ALL_FILES/IGNORE_LOCALS^} instead of
 @samp{gnatxref ^-a -g^/ALL_FILES /IGNORE_LOCALS^}.
 
-@node gnatfind Switches
+@node Switches for gnatfind
 @section @code{gnatfind} Switches
 
 @noindent

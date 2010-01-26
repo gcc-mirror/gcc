@@ -226,9 +226,18 @@ package body System.Tasking.Protected_Objects.Entries is
          raise Program_Error;
       end if;
 
-      Initialization.Defer_Abort (Self_ID);
+      --  If a PO is created from a controlled operation, abort is already
+      --  deferred at this point, so we need to use Defer_Abort_Nestable
+      --  In some cases, the below assertion can be useful to spot
+      --  inconsistencies, outside the above scenario involving controlled
+      --  types:
+
+      --  pragma Assert (Self_Id.Deferral_Level = 0);
+      --  Why is this commented out Assert here ???
+
+      Initialization.Defer_Abort_Nestable (Self_ID);
       Initialize_Lock (Init_Priority, Object.L'Access);
-      Initialization.Undefer_Abort (Self_ID);
+      Initialization.Undefer_Abort_Nestable (Self_ID);
 
       Object.Ceiling          := System.Any_Priority (Init_Priority);
       Object.New_Ceiling      := System.Any_Priority (Init_Priority);
