@@ -1,3 +1,9 @@
+2010-01-26  Daniel Frey  <d.frey@gmx.de>
+
+	* include/std/functional: Use enable_if instead of __enable_if
+	throughout, do not include ext/type_traits.h.
+	(is_placeholder, is_bind_expression): Use integral_constant.
+
 2010-01-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_common_types.h (has_bitwise_operators):
