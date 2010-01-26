@@ -1,3 +1,8 @@
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb (Is_Logical_Operator): Exclude AND/OR/XOR
+	* scos.ads: Clarify handling of logical operators
+
 2010-01-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-tpoben.adb: Update comments.
