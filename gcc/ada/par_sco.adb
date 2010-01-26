@@ -887,7 +887,32 @@ package body Par_SCO is
 
                   Traverse_Declarations_Or_Statements (Else_Statements (N));
 
-                  --  Unconditional exit points
+               --  Case statement
+
+               when N_Case_Statement =>
+
+                  --  We include the expression, but not any of the case
+                  --  branches in the generated statement sequence that
+                  --  includes this case statement.
+
+                  Sloc_Range (Expression (N), Dummy, Stop);
+                  Set_Statement_Entry;
+                  Process_Decisions (Expression (N), 'X');
+
+                  --  Process case branches
+
+                  declare
+                     Alt : Node_Id;
+
+                  begin
+                     Alt := First (Alternatives (N));
+                     while Present (Alt) loop
+                        Traverse_Declarations_Or_Statements (Statements (Alt));
+                        Next (Alt);
+                     end loop;
+                  end;
+
+               --  Unconditional exit points
 
                when N_Requeue_Statement |
                     N_Goto_Statement    |
