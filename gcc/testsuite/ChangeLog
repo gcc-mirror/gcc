@@ -1,5 +1,10 @@
 2010-01-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/42806
+	* g++.dg/other/pr42806.C: New testcase.
+
+2010-01-26  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42250
 	* gcc.dg/pr42250.c: New testcase.
 

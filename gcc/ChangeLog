@@ -1,5 +1,10 @@
 2010-01-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/42806
+	* tree-eh.c (unsplit_eh): Skip debug insns.
+
+2010-01-26  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42250
 	* ipa-type-escape.c (type_escape_execute): Do not analyze clones.
 
