@@ -11459,7 +11459,11 @@ case `echo $GFORTRAN` in
   -* | no* )
     FC=no ;;
   *)
-    FC="$GFORTRAN" ;;
+    if test -x "$GFORTRAN"; then
+      FC="$GFORTRAN"
+    else
+      FC=no
+    fi ;;
 esac
 ac_ext=${ac_fc_srcext-f}
 ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
