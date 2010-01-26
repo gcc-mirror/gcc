@@ -38,8 +38,8 @@ class facet
 
 <para>
 Facets actually implement locale functionality. For instance, a facet
-called numpunct is the data objects that can be used to query for the
-thousands separator is in the German locale.
+called numpunct is the data object that can be used to query for the
+thousands separator in the locale.
 </para>
 
 <para>

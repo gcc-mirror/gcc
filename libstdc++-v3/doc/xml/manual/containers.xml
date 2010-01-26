@@ -170,7 +170,7 @@
 	  <code>end()</code>, then the item being inserted should have
 	  a key greater than all the other keys in the container.  The
 	  item will be inserted at the end of the container, becoming
-	  the new entry at <code>end()</code>.  
+	  the new entry before <code>end()</code>.  
       </para>
       </listitem>
       <listitem>
@@ -286,7 +286,7 @@
    </para>
    <para>
      The problem is that <code>vector&lt;bool&gt;</code> doesn't
-     behave like a normal vector anymore.  There have been recent
+     behave like a normal vector anymore.  There have been
      journal articles which discuss the problems (the ones by Herb
      Sutter in the May and July/August 1999 issues of C++ Report cover
      it well).  Future revisions of the ISO C++ Standard will change

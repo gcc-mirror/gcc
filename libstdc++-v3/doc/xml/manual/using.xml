@@ -655,7 +655,7 @@ same translation unit:
 	(&lt;math.h&gt; in this case), the symbols will be available
 	in the global namespace and perhaps in
 	namespace <code>std::</code> (but this is no longer a firm
-	requirement.) One the other hand, including the C++-style
+	requirement.) On the other hand, including the C++-style
 	header (&lt;cmath&gt;) guarantees that the entities will be
 	found in namespace std and perhaps in the global namespace.
       </para>
@@ -808,7 +808,7 @@ and <code>__gnu_pbds</code>.
 std::string;</code>) This approach works well for individual source files, but
 should not be used in a global context, like header files.
 	  </para></listitem> <listitem><para>use a <emphasis>fully
-qualified name</emphasis>for each library symbol
+qualified name</emphasis> for each library symbol
 (i.e. <code>std::string</code>, <code>std::cout</code>) Always can be
 used, and usually enhanced, by strategic use of typedefs. (In the
 cases where the qualified verbiage becomes unwieldy.)

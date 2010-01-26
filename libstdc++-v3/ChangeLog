@@ -1,3 +1,11 @@
+2010-01-26  François Dumont  <francois.cppdevs@free.fr>
+
+	* doc/xml/manual/allocator.xml: Minor updates and fixes.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/locale.xml: Likewise.
+	* doc/xml/manual/appendix_contributing.xml: Likewise.
+
 2010-01-26  Daniel Frey  <d.frey@gmx.de>
 
 	* include/std/functional: Use enable_if instead of __enable_if
@@ -35,7 +43,7 @@
 
 2010-01-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-        PR libstdc++/42201
+	PR libstdc++/42201
 	* include/std/future: Update to latest WP.
 	* src/functexcept.cc (__throw_future_error): Use make_error_code.
 	* testsuite/30_threads/async/any.cc: New.
@@ -70,7 +78,7 @@
 	* testsuite/30_threads/unique_future/cons/copy_neg.cc: Adjust.
 	* testsuite/30_threads/unique_future/cons/move.cc: Adjust.
 	* testsuite/30_threads/unique_future/requirements/
-        explicit_instantiation.cc: Adjust.
+	explicit_instantiation.cc: Adjust.
 	* testsuite/30_threads/unique_future/members/is_ready.cc: Remove.
 	* testsuite/30_threads/unique_future/members/has_value.cc: Remove.
 	* testsuite/30_threads/unique_future/members/has_exception.cc: Remove.

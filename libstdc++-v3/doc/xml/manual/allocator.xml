@@ -81,7 +81,7 @@
    </itemizedlist>
 
    <para> 
-     Complete details cam be found in the C++ standard, look in
+     Complete details can be found in the C++ standard, look in
      <constant>[20.4 Memory]</constant>.
    </para>
 
@@ -146,7 +146,7 @@
 
    <para>
      The only allocator interface that
-     is support is the standard C++ interface. As such, all STL
+     is supported is the standard C++ interface. As such, all STL
      containers have been adjusted, and all external allocators have
      been modified to support this change.   
    </para>
@@ -202,7 +202,7 @@
        </para>
        <para>
        This test shows the ability of the allocator to reclaim memory
-     on a pre-thread basis, as well as measuring thread contention
+     on a per-thread basis, as well as measuring thread contention
      for memory resources. 
      Test source 
     <ulink url="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/performance/23_containers/insert_erase/associative.cc?view=markup">here</ulink>.
@@ -447,8 +447,8 @@
    <para>The <varname>thr</varname> boolean determines whether the
    pool should be manipulated atomically or not.  When
    <varname>thr</varname> = <constant>true</constant>, the allocator
-   is is thread-safe, while <varname>thr</varname> =
-   <constant>false</constant>, and is slightly faster but unsafe for
+   is thread-safe, while <varname>thr</varname> =
+   <constant>false</constant>, is slightly faster but unsafe for
    multiple threads.
    </para>
 
