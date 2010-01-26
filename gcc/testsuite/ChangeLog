@@ -1,3 +1,13 @@
+2010-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* ada/acats/run_all.sh: Make sure norun.lst is sorted using the
+	current collation.
+
+	Backport from mainline:
+	2009-12-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* ada/acats/run_all.sh: Strip comments from norun.lst.
+
 2010-01-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	Backport from mainline.
