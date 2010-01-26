@@ -56,7 +56,6 @@
 #include <tuple>
 #include <type_traits>
 #include <bits/functional_hash.h>
-#include <ext/type_traits.h>
 
 namespace std
 {
@@ -234,12 +233,12 @@ namespace std
    */
   template<typename _Functor, typename... _Args>
     inline
-    typename __gnu_cxx::__enable_if<
+    typename enable_if<
              (!is_member_pointer<_Functor>::value
               && !is_function<_Functor>::value
               && !is_function<typename remove_pointer<_Functor>::type>::value),
              typename result_of<_Functor(_Args...)>::type
-           >::__type
+           >::type
     __invoke(_Functor& __f, _Args&&... __args)
     {
       return __f(std::forward<_Args>(__args)...);
@@ -248,11 +247,11 @@ namespace std
   // To pick up function references (that will become function pointers)
   template<typename _Functor, typename... _Args>
     inline
-    typename __gnu_cxx::__enable_if<
+    typename enable_if<
              (is_pointer<_Functor>::value
               && is_function<typename remove_pointer<_Functor>::type>::value),
              typename result_of<_Functor(_Args...)>::type
-           >::__type
+           >::type
     __invoke(_Functor __f, _Args&&... __args)
     {
       return __f(std::forward<_Args>(__args)...);
@@ -769,10 +768,7 @@ namespace std
    */
   template<typename _Tp>
     struct is_bind_expression
-    { static const bool value = false; };
-
-  template<typename _Tp>
-    const bool is_bind_expression<_Tp>::value;
+    : public false_type { };
 
   /**
    *  @brief Determines if the given type _Tp is a placeholder in a
@@ -780,10 +776,8 @@ namespace std
    */
   template<typename _Tp>
     struct is_placeholder
-    { static const int value = 0; };
-
-  template<typename _Tp>
-    const int is_placeholder<_Tp>::value;
+    : public integral_constant<int, 0>
+    { };
 
   /// The type of placeholder objects defined by libstdc++.
   template<int _Num> struct _Placeholder { };
@@ -837,10 +831,8 @@ namespace std
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
-    { static const int value = _Num; };
-
-  template<int _Num>
-    const int is_placeholder<_Placeholder<_Num> >::value;
+    : public integral_constant<int, _Num>
+    { };
 
   /**
    * Stores a tuple of indices. Used by bind() to extract the elements
@@ -1346,18 +1338,12 @@ namespace std
   /// Class template _Bind is always a bind expression.
   template<typename _Signature>
     struct is_bind_expression<_Bind<_Signature> >
-    { static const bool value = true; };
-
-  template<typename _Signature>
-    const bool is_bind_expression<_Bind<_Signature> >::value;
+    : public true_type { };
 
   /// Class template _Bind_result is always a bind expression.
   template<typename _Result, typename _Signature>
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
-    { static const bool value = true; };
-
-  template<typename _Result, typename _Signature>
-    const bool is_bind_expression<_Bind_result<_Result, _Signature> >::value;
+    : public true_type { };
 
   /// bind
   template<typename _Functor, typename... _ArgTypes>
@@ -1850,8 +1836,8 @@ namespace std
        */
       template<typename _Functor>
         function(_Functor __f,
-                 typename __gnu_cxx::__enable_if<
-                           !is_integral<_Functor>::value, _Useless>::__type
+                 typename enable_if<
+                           !is_integral<_Functor>::value, _Useless>::type
                    = _Useless());
 
       /**
@@ -1927,8 +1913,7 @@ namespace std
        *  reference_wrapper<F>, this function will not throw.
        */
       template<typename _Functor>
-        typename __gnu_cxx::__enable_if<!is_integral<_Functor>::value,
-	                                function&>::__type
+        typename enable_if<!is_integral<_Functor>::value, function&>::type
 	operator=(_Functor&& __f)
 	{
 	  function(std::forward<_Functor>(__f)).swap(*this);
@@ -1937,8 +1922,7 @@ namespace std
 
       /// @overload
       template<typename _Functor>
-        typename __gnu_cxx::__enable_if<!is_integral<_Functor>::value,
-	                                function&>::__type
+        typename enable_if<!is_integral<_Functor>::value, function&>::type
 	operator=(reference_wrapper<_Functor> __f)
 	{
 	  function(__f).swap(*this);
@@ -2059,8 +2043,8 @@ namespace std
     template<typename _Functor>
       function<_Res(_ArgTypes...)>::
       function(_Functor __f,
-	       typename __gnu_cxx::__enable_if<
-                       !is_integral<_Functor>::value, _Useless>::__type)
+	       typename enable_if<
+	                !is_integral<_Functor>::value, _Useless>::type)
       : _Function_base()
       {
 	typedef _Function_handler<_Signature_type, _Functor> _My_handler;
