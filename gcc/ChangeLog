@@ -1,3 +1,9 @@
+2010-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/42866
+	* omp-low.c (expand_omp_sections): Only use single_pred if
+	l2_bb is single_pred_p.
+
 2010-01-25  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/42841
