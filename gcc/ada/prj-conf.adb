@@ -516,6 +516,8 @@ package body Prj.Conf is
          Count    : Natural;
          Result   : Argument_List_Access;
 
+         Check_Default : Boolean;
+
       begin
          Prj_Iter := Project_Tree.Projects;
          while Prj_Iter /= null loop
@@ -530,9 +532,23 @@ package body Prj.Conf is
                  or else Variable.Default
                then
                   --  Languages is not declared. If it is not an extending
-                  --  project, check for Default_Language
+                  --  project, or if it extends a project with no Languages,
+                  --  check for Default_Language.
 
-                  if Prj_Iter.Project.Extends = No_Project then
+                  Check_Default := Prj_Iter.Project.Extends = No_Project;
+
+                  if not Check_Default then
+                     Variable :=
+                       Value_Of
+                         (Name_Languages,
+                          Prj_Iter.Project.Extends.Decl.Attributes,
+                          Project_Tree);
+                     Check_Default :=
+                       Variable /= Nil_Variable_Value
+                         and then Variable.Values = Nil_String;
+                  end if;
+
+                  if Check_Default then
                      Variable :=
                        Value_Of
                          (Name_Default_Language,
@@ -548,7 +564,7 @@ package body Prj.Conf is
                         Language_Htable.Set (Lang, Lang);
 
                      else
-                        --  If no language is declared, default to Ada
+                        --  If no default language is declared, default to Ada
 
                         Language_Htable.Set (Name_Ada, Name_Ada);
                      end if;

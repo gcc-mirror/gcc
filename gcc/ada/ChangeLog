@@ -1,5 +1,22 @@
 2010-01-26  Vincent Celier  <celier@adacore.com>
 
+	* gnat_ugn.texi: Complete documentation on the restrictions for
+	combined options in -gnatxxx switches.
+	Fix typo.
+
+2010-01-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tpoben.adb (Initialize_Protection_Entries): If a PO is created from
+	a controlled operation, abort is already deferred at this point, so we
+	need to use Defer_Abort_Nestable.
+
+2010-01-26  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Config_Switches): Check for a default language for
+	a project extending a project with no languages.
+
+2010-01-26  Vincent Celier  <celier@adacore.com>
+
 	* switch-c.adb (Scan_Front_End_Switches): Take into account options
 	that follow -gnatef.
 	Allow -gnateG to be followed by other options.
