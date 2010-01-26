@@ -1,5 +1,18 @@
 2010-01-26  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Only generate
+	decisions for pragmas Assert, Check, Precondition, Postcondition if
+	-gnata set.
+	* scos.ads: Update comments.
+	* get_scos.adb, put_scos.adb: Minor fix to code reading statement SCOs.
+	Also remove obsolete code for CT (exit point) SCOs.
+
+2010-01-26  Thomas Quinot  <quinot@adacore.com>
+
+	* switch-c.adb: Fix handling of -gnatz*
+
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
 	* par_sco.adb (Traverse_Declarations_Or_Statements): Separate F/W
 	qualifiers for FOR/WHILE loops
 	* scos.ads: Use separate type letters F/W for for/while loops

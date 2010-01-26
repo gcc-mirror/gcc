@@ -933,10 +933,23 @@ package body Switch.C is
             --  Processing for z switch
 
             when 'z' =>
+               --  -gnatz must be the first and only switch in Switch_Chars,
+               --  and is a two-letter switch.
+
+               if Ptr /= Switch_Chars'First + 5
+                 or else (Max - Ptr + 1) > 2
+               then
+                  Osint.Fail
+                    ("-gnatz* may not be combined with other switches");
+               end if;
+
+               if Ptr = Max then
+                  Bad_Switch ("-gnatz");
+               end if;
+
                Ptr := Ptr + 1;
 
-               --  Allowed for compiler only if this is the only
-               --  -z switch, we do not allow multiple occurrences
+               --  Only one occurrence of -gnat* is permitted
 
                if Distribution_Stub_Mode = No_Stubs then
                   case Switch_Chars (Ptr) is
@@ -951,6 +964,9 @@ package body Switch.C is
                   end case;
 
                   Ptr := Ptr + 1;
+
+               else
+                  Osint.Fail ("only one -gnatz* switch allowed");
                end if;
 
             --  Processing for Z switch

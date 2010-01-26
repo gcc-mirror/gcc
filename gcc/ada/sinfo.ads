@@ -1526,10 +1526,11 @@ package Sinfo is
    --    package specification. This field is Empty for library bodies (the
    --    parent spec in this case can be found from the corresponding spec).
 
-   --  PPC_Enabled (Flag5-Sem)
-   --    Present in N_Pragma nodes. This flag is relevant only for precondition
-   --    and postcondition nodes. It is true if the check corresponding to the
-   --    pragma type is enabled at the point where the pragma appears.
+   --  Pragma_Enabled (Flag5-Sem)
+   --    Present in N_Pragma nodes. This flag is relevant only for pragmas
+   --    Assert, Check, Precondition, and Postcondition. It is true if the
+   --    check corresponding to the pragma type is enabled at the point where
+   --    the pragma appears.
 
    --  Present_Expr (Uint3-Sem)
    --    Present in an N_Variant node. This has a meaningful value only after
@@ -1979,7 +1980,7 @@ package Sinfo is
       --  Debug_Statement (Node3) (set to Empty if not Debug, Assert)
       --  Pragma_Identifier (Node4)
       --  Next_Rep_Item (Node5-Sem)
-      --  PPC_Enabled (Flag5-Sem)
+      --  Pragma_Enabled (Flag5-Sem)
 
       --  Note: we should have a section on what pragmas are passed on to
       --  the back end to be processed. This section should note that pragma
@@ -8311,14 +8312,14 @@ package Sinfo is
    function Parent_Spec
      (N : Node_Id) return Node_Id;    -- Node4
 
-   function PPC_Enabled
-     (N : Node_Id) return Boolean;    -- Flag5
-
    function Position
      (N : Node_Id) return Node_Id;    -- Node2
 
    function Pragma_Argument_Associations
      (N : Node_Id) return List_Id;    -- List2
+
+   function Pragma_Enabled
+     (N : Node_Id) return Boolean;    -- Flag5
 
    function Pragma_Identifier
      (N : Node_Id) return Node_Id;    -- Node4
@@ -9229,14 +9230,14 @@ package Sinfo is
    procedure Set_Parent_Spec
      (N : Node_Id; Val : Node_Id);            -- Node4
 
-   procedure Set_PPC_Enabled
-     (N : Node_Id; Val : Boolean := True);    -- Flag5
-
    procedure Set_Position
      (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Pragma_Argument_Associations
      (N : Node_Id; Val : List_Id);            -- List2
+
+   procedure Set_Pragma_Enabled
+     (N : Node_Id; Val : Boolean := True);    -- Flag5
 
    procedure Set_Pragma_Identifier
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11370,9 +11371,9 @@ package Sinfo is
    pragma Inline (Parameter_List_Truncated);
    pragma Inline (Parameter_Type);
    pragma Inline (Parent_Spec);
-   pragma Inline (PPC_Enabled);
    pragma Inline (Position);
    pragma Inline (Pragma_Argument_Associations);
+   pragma Inline (Pragma_Enabled);
    pragma Inline (Pragma_Identifier);
    pragma Inline (Pragmas_After);
    pragma Inline (Pragmas_Before);
@@ -11673,9 +11674,9 @@ package Sinfo is
    pragma Inline (Set_Parameter_List_Truncated);
    pragma Inline (Set_Parameter_Type);
    pragma Inline (Set_Parent_Spec);
-   pragma Inline (Set_PPC_Enabled);
    pragma Inline (Set_Position);
    pragma Inline (Set_Pragma_Argument_Associations);
+   pragma Inline (Set_Pragma_Enabled);
    pragma Inline (Set_Pragma_Identifier);
    pragma Inline (Set_Pragmas_After);
    pragma Inline (Set_Pragmas_Before);

@@ -8218,7 +8218,7 @@ package body Sem_Ch6 is
          Prag := Spec_PPC_List (Spec_Id);
          while Present (Prag) loop
             if Pragma_Name (Prag) = Name_Precondition
-              and then PPC_Enabled (Prag)
+              and then Pragma_Enabled (Prag)
             then
                --  Add pragma Check at the start of the declarations of N.
                --  Note that this processing reverses the order of the list,
@@ -8297,7 +8297,7 @@ package body Sem_Ch6 is
          Prag := Spec_PPC_List (Spec_Id);
          while Present (Prag) loop
             if Pragma_Name (Prag) = Name_Postcondition
-              and then PPC_Enabled (Prag)
+              and then Pragma_Enabled (Prag)
             then
                if Plist = No_List then
                   Plist := Empty_List;

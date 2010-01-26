@@ -272,7 +272,7 @@ begin
 
                   Add_SCO
                     (C1   => Key,
-                     C2   => C,
+                     C2   => Typ,
                      From => Loc1,
                      To   => Loc2,
                      Last => At_EOL);
@@ -282,15 +282,9 @@ begin
                end loop;
             end;
 
-         --  Exit entry
-
-         when 'T' =>
-            Get_Sloc_Range (Loc1, Loc2);
-            Add_SCO (C1 => 'T', From => Loc1, To => Loc2);
-
          --  Decision entry
 
-         when 'I' | 'E' | 'W' | 'X' =>
+         when 'I' | 'E' | 'P' | 'W' | 'X' =>
             Dtyp := C;
             Skip_Spaces;
             C := Getc;
