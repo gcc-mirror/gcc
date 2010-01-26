@@ -4019,5 +4019,8 @@ prot.lock.update
 --format=gnat
 prot__lock__update_E6s
 prot.lock.update
-
-
+#
+# Used to crash the demangler.
+--format=gnu-v3
+DFA
+DFA

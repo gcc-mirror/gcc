@@ -1,5 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
@@ -2193,6 +2193,8 @@ cplus_demangle_type (struct d_info *di)
 	    /* For demangling we don't care about the bits.  */
 	    d_number (di);
 	  ret->u.s_fixed.length = cplus_demangle_type (di);
+	  if (ret->u.s_fixed.length == NULL)
+	    return NULL;
 	  d_number (di);
 	  peek = d_next_char (di);
 	  ret->u.s_fixed.sat = (peek == 's');
