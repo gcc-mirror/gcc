@@ -1,3 +1,8 @@
+2010-01-26  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (registerClosure): Make sure closures is
+	non NULL.
+
 2010-01-19  Matthias Klose  <doko@ubuntu.com>
 
 	* Regenerate .class files.
