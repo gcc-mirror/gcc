@@ -766,7 +766,7 @@ package body Par_SCO is
       end record;
       --  Used to store a single entry in the following array
 
-      SC_Array : array (Nat range 1 .. 100) of SC_Entry;
+      SC_Array : array (Nat range 1 .. 10_000) of SC_Entry;
       SC_Last  : Nat;
       --  Used to store statement components for a CS entry to be output
       --  as a result of the call to this procedure. SC_Last is the last
@@ -777,11 +777,12 @@ package body Par_SCO is
       --  the temporary caching of results in this array is that we want
       --  the SCO table entries for a given CS line to be contiguous, and
       --  the processing may output intermediate entries such as decision
-      --  entries. Note that the limit of 100 here is arbitrary, but does
-      --  not cause any trouble, if we encounter more than 100 statements
+      --  entries. Note that the limit of 10_000 here is arbitrary, but does
+      --  not cause any trouble, if we encounter more than 10_000 statements
       --  we simply break the current CS sequence at that point, which is
       --  harmless, since this is only used for back annotation and it is
-      --  not critical that back annotation always work in all cases.
+      --  not critical that back annotation always work in all cases. Anyway
+      --  exceeding 10,000 statements in a basic block is very unlikely.
 
       procedure Extend_Statement_Sequence (N : Node_Id; Typ : Character);
       --  Extend the current statement sequence to encompass the node N. Typ
@@ -941,15 +942,14 @@ package body Par_SCO is
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'E');
 
-               --  Label, which breaks the current statement sequence, and then
-               --  we include the label in the subsequent statement sequence.
+               --  Label, which breaks the current statement sequence, but the
+               --  label itself is not included in the next statement sequence,
+               --  since it generates no code.
 
                when N_Label =>
                   Set_Statement_Entry;
-                  Extend_Statement_Sequence (N, ' ');
 
-               --  Block statement, which breaks the current statement seqeunce
-               --  it probably does not need to, but for now it does.
+               --  Block statement, which breaks the current statement sequence
 
                when N_Block_Statement =>
                   Set_Statement_Entry;
@@ -1043,8 +1043,20 @@ package body Par_SCO is
 
                when N_Loop_Statement =>
                   if Present (Iteration_Scheme (N)) then
-                     Extend_Statement_Sequence (N, Iteration_Scheme (N), 'F');
-                     Process_Decisions (Condition (Iteration_Scheme (N)), 'W');
+                     declare
+                        ISC : constant Node_Id := Iteration_Scheme (N);
+
+                     begin
+                        Extend_Statement_Sequence (N, ISC, 'F');
+
+                        if Present (Condition (ISC)) then
+                           Process_Decisions
+                             (Condition (ISC), 'W');
+                        else
+                           Process_Decisions
+                             (Loop_Parameter_Specification (ISC), 'X');
+                        end if;
+                     end;
                   end if;
 
                   Set_Statement_Entry;
