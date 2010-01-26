@@ -1,5 +1,14 @@
 2010-01-26  Richard Guenther  <rguenther@suse.de>
 
+	* df-scan.c (df_scan_set_bb_info): Remove assert.
+	(df_insn_rescan_debug_internal): Merge asserts.
+	(df_install_ref): Likewise.
+	(df_mark_reg): Use bitmap_set_range.
+	(df_hard_reg_used_p): Remove assert.
+	(df_hard_reg_used_count): Likewise.
+
+2010-01-26  Richard Guenther  <rguenther@suse.de>
+
 	PR rtl-optimization/42685
 	* web.c (web_main): Ignore DEBUG_INSNs.
 
