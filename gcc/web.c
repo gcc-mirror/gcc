@@ -298,7 +298,7 @@ web_main (void)
     FOR_BB_INSNS (bb, insn)
     {
       unsigned int uid = INSN_UID (insn);
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	{
 	  df_ref *use_rec;
 	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
@@ -326,7 +326,7 @@ web_main (void)
     FOR_BB_INSNS (bb, insn)
     {
       unsigned int uid = INSN_UID (insn);
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	{
 	  df_ref *use_rec;
 	  for (use_rec = DF_INSN_UID_USES (uid); *use_rec; use_rec++)
@@ -350,7 +350,7 @@ web_main (void)
     FOR_BB_INSNS (bb, insn)
     {
       unsigned int uid = INSN_UID (insn);
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	{
 	  df_ref *use_rec;
 	  df_ref *def_rec;

@@ -1,3 +1,8 @@
+2010-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/42685
+	* web.c (web_main): Ignore DEBUG_INSNs.
+
 2010-01-26  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi (TARGET_HANDLE_C_OPTION): Explain arguments.
