@@ -1,3 +1,8 @@
+2010-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42250
+	* ipa-type-escape.c (type_escape_execute): Do not analyze clones.
+
 2010-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/42866
