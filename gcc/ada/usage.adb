@@ -563,10 +563,15 @@ begin
    Write_Switch_Char ("yN");
    Write_Line ("Cancel all previously set style checks");
 
-   --  Lines for -gnatz switch
+   --  Lines for -gnatzc switch
 
-   Write_Switch_Char ("z");
-   Write_Line ("Distribution stub generation (r/c for receiver/caller stubs)");
+   Write_Switch_Char ("zc");
+   Write_Line ("Distribution stub generation for caller stubs");
+
+   --  Lines for -gnatzr switch
+
+   Write_Switch_Char ("zr");
+   Write_Line ("Distribution stub generation for receiver stubs");
 
    --  Line for -gnat83 switch
 

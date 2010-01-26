@@ -2093,21 +2093,21 @@ package body Prj.Nmsc is
                           In_Tree   => Data.Tree);
                   end if;
 
-               elsif Attribute.Name = Name_Run_Path_Origin_Supported then
-                  declare
-                     pragma Unsuppress (All_Checks);
-                  begin
-                     Project.Config.Run_Path_Origin_Supported :=
-                       Boolean'Value (Get_Name_String (Attribute.Value.Value));
-                  exception
-                     when Constraint_Error =>
-                        Error_Msg
-                          (Data.Flags,
-                           "invalid value """ &
-                           Get_Name_String (Attribute.Value.Value) &
-                           """ for Run_Path_Origin_Supported",
-                           Attribute.Value.Location, Project);
-                  end;
+               elsif Attribute.Name = Name_Run_Path_Origin then
+                  Get_Name_String (Attribute.Value.Value);
+
+                  if Name_Len = 0 then
+                     Error_Msg
+                       (Data.Flags,
+                        "run path origin cannot be empty",
+                        Attribute.Value.Location, Project);
+                  end if;
+
+                  Project.Config.Run_Path_Origin := Attribute.Value.Value;
+
+               elsif Attribute.Name = Name_Library_Install_Name_Option then
+                  Project.Config.Library_Install_Name_Option :=
+                    Attribute.Value.Value;
 
                elsif Attribute.Name = Name_Separate_Run_Path_Options then
                   declare

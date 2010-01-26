@@ -906,9 +906,14 @@ package Prj is
       --  The option to use when linking to specify the path where to look for
       --  libraries.
 
-      Run_Path_Origin_Supported : Boolean := False;
-      --  Specify if the run path option support $ORIGIN to indicate paths
-      --  reative to the directory of the executable.
+      Run_Path_Origin : Name_Id := No_Name;
+      --  Specify the string (such as "$ORIGIN") to indicate paths relative to
+      --  the directory of the executable in the run path option.
+
+      Library_Install_Name_Option : Name_Id := No_Name;
+      --  When this is not an empty list, this option, followed by the single
+      --  name of the shared library file is used when linking a shared
+      --  library.
 
       Separate_Run_Path_Options : Boolean := False;
       --  True if each directory needs to be specified in a separate run path
@@ -1021,7 +1026,8 @@ package Prj is
    Default_Project_Config : constant Project_Configuration :=
                               (Target                        => No_Name,
                                Run_Path_Option               => No_Name_List,
-                               Run_Path_Origin_Supported     => False,
+                               Run_Path_Origin               => No_Name,
+                               Library_Install_Name_Option   => No_Name,
                                Separate_Run_Path_Options     => False,
                                Executable_Suffix             => No_Name,
                                Linker                        => No_Path,

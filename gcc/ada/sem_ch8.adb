@@ -7162,7 +7162,11 @@ package body Sem_Ch8 is
                --  we compare the scope depth of its scope with that of the
                --  current instance. However, a generic actual of a subprogram
                --  instance is declared in the wrapper package but will not be
-               --  hidden by a use-visible entity.
+               --  hidden by a use-visible entity. Similarly, a generic actual
+               --  will not be hidden by an entity declared in another generic
+               --  actual, which can only have been use-visible in the generic.
+               --  Is this condition complete, and can the following complex
+               --  test be simplified ???
 
                --  If Id is called Standard, the predefined package with the
                --  same name is in the homonym chain. It has to be ignored
@@ -7177,9 +7181,17 @@ package body Sem_Ch8 is
                  and then (Scope (Prev) /= Standard_Standard
                             or else Sloc (Prev) > Standard_Location)
                then
-                  Set_Is_Potentially_Use_Visible (Id);
-                  Set_Is_Immediately_Visible (Prev, False);
-                  Append_Elmt (Prev, Hidden_By_Use_Clause (N));
+                  if Ekind (Prev) = E_Package
+                    and then Present (Associated_Formal_Package (Prev))
+                    and then Present (Associated_Formal_Package (P))
+                  then
+                     null;
+
+                  else
+                     Set_Is_Potentially_Use_Visible (Id);
+                     Set_Is_Immediately_Visible (Prev, False);
+                     Append_Elmt (Prev, Hidden_By_Use_Clause (N));
+                  end if;
                end if;
 
             --  A user-defined operator is not use-visible if the predefined

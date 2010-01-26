@@ -1080,6 +1080,7 @@ package Snames is
    Name_Library_Builder                  : constant Name_Id := N + $;
    Name_Library_Dir                      : constant Name_Id := N + $;
    Name_Library_GCC                      : constant Name_Id := N + $;
+   Name_Library_Install_Name_Option      : constant Name_Id := N + $;
    Name_Library_Interface                : constant Name_Id := N + $;
    Name_Library_Kind                     : constant Name_Id := N + $;
    Name_Library_Name                     : constant Name_Id := N + $;
@@ -1130,7 +1131,7 @@ package Snames is
    Name_Roots                            : constant Name_Id := N + $; --  GPR
    Name_Required_Switches                : constant Name_Id := N + $;
    Name_Run_Path_Option                  : constant Name_Id := N + $;
-   Name_Run_Path_Origin_Supported        : constant Name_Id := N + $;
+   Name_Run_Path_Origin                  : constant Name_Id := N + $;
    Name_Separate_Run_Path_Options        : constant Name_Id := N + $;
    Name_Shared_Library_Minimum_Switches  : constant Name_Id := N + $;
    Name_Shared_Library_Prefix            : constant Name_Id := N + $;

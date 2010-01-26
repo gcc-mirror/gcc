@@ -1,3 +1,26 @@
+2010-01-26  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_ugn.texi: Adjust documentation of -gnatz switches.
+	* usage.adb: Replace line for -gnatz with two lines for -gnatzc and
+	-gnatzr.
+
+2010-01-26  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add new attribute Library_Install_Name_Option
+	Replace attribute Run_Path_Origin_Supported with Run_Path_Origin
+	* prj-nmsc.adb (Process_Project_Level_Simple_Attributes): Process
+	attributes Run_Path_Option and Library_Install_Name_Option.
+	* prj.ads (Project_Configuration): Replace component
+	Run_Path_Origin_Supported with component Run_Path_Origin. Add new
+	component Library_Install_Name_Option.
+	* snames.ads-tmpl: Add new standard name Library_Install_Name_Option
+	Replace Run_Path_Origin_Supported with Run_Path_Origin
+
+2010-01-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Package): Within an instance, an actual package
+	is not hidden by a homograph declared in another actual package.
+
 2010-01-26  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb (Traverse_Declarations_Or_Statements): Only generate
