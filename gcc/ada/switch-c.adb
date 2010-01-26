@@ -403,15 +403,10 @@ package body Switch.C is
                      Store_Switch := False;
                      Ptr := Ptr + 1;
                      Full_Path_Name_For_Brief_Errors := True;
-                     return;
 
                   --  -gnateG (save preprocessor output)
 
                   when 'G' =>
-                     if Ptr < Max then
-                        Bad_Switch (Switch_Chars);
-                     end if;
-
                      Generate_Processed_File := True;
                      Ptr := Ptr + 1;
 
