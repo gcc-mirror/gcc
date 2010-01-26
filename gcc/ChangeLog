@@ -1,3 +1,10 @@
+2010-01-26  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi (TARGET_HANDLE_C_OPTION): Explain arguments.
+
+	(TARGET_RESOLVE_OVERLOADED_BUILTIN): Add loc parameter.
+	Fix types of fndecl and arglist parameters.
+
 2010-01-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42806
