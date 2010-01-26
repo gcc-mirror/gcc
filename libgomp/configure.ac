@@ -146,7 +146,8 @@ case `echo $GFORTRAN` in
   -* | no* )
     FC=no ;;
   *)
-    if test -x "$GFORTRAN"; then
+    set dummy $GFORTRAN; ac_word=$2
+    if test -x "$ac_word"; then
       FC="$GFORTRAN"
     else
       FC=no
