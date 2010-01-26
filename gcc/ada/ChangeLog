@@ -1,5 +1,13 @@
 2010-01-26  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.adb (Traverse_Declarations_Or_Statments): Implement new
+	format of statement sequence SCO entries (one location/statement).
+	* put_scos.adb (Put_SCOs): Implement new format of CS lines
+	* scos.ads: Update comments.
+	* sem_eval.adb: Minor reformatting.
+
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
 	* par_sco.ads, par_sco.adb (Set_Statement_Entry): New handling of exits
 	(Extend_Statement_Sequence): New procedures
 	(Traverse_Declarations_Or_Statements): New handling for exits.
