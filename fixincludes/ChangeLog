@@ -1,3 +1,56 @@
+2010-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (aix_stdint_1): Add stdint-aix.h to files.
+	(aix_stdint_2): Likewise.
+	(aix_stdint_3): Likewise.
+	(aix_stdint_4): Likewise.
+	(aix_stdint_5): Likewise.
+	(darwin_stdint_1): Add stdint-darwin.h to files.
+	(darwin_stdint_2): Likewise.
+	(darwin_stdint_3): Likewise.
+	(darwin_stdint_4): Likewise.
+	(darwin_stdint_5): Likewise.
+	(darwin_stdint_6): Likewise.
+	(darwin_stdint_7): Likewise.
+	(hpux_c99_intptr): Add stdint-hpux11.h to files.
+	(hpux_c99_inttypes): Likewise.
+	(hpux_c99_inttypes2): Likewise.
+	(hpux_stdint_least_fast): Likewise.
+	(irix_stdint_c99): Renamed to irix_stdint_c99_mode.
+	(irix_stdint_c99_types): New fix.
+	(irix_stdint_c99_macros): New fix.
+	(newlib_stdint_1): Add stdint-newlib.h to files.
+	(newlib_stdint_2): Likewise.
+	fixincl.x: Regenerate.
+	tests/base/stdint-aix.h: New file.
+	tests/base/stdint.h [AIX_STDINT_1_CHECK, AIX_STDINT_2_CHECK,
+	AIX_STDINT_3_CHECK, AIX_STDINT_4_CHECK, AIX_STDINT_5_CHECK]: Moved ...
+	tests/base/stdint-aix.h: ... here.
+	[AIX_STDINT_3_CHECK]: Updated to match aix_stdint_3 fix.
+	[AIX_STDINT_4_CHECK]: Updated to match aix_stdint_4 fix.
+	[AIX_STDINT_5_CHECK]: Updated to match aix_stdint_5 fix.
+	tests/base/stdint-darwin.h: New file.
+	tests/base/stdint.h [DARWIN_STDINT_1_CHECK, DARWIN_STDINT_2_CHECK,
+	DARWIN_STDINT_3_CHECK, DARWIN_STDINT_4_CHECK,
+	DARWIN_STDINT_5_CHECK, DARWIN_STDINT_6_CHECK]: Moved ...
+	tests/base/stdint-darwin.h: ... here.
+	[DARWIN_STDINT_1_CHECK]: Updated to match darwin_stdint_1 fix.
+	[DARWIN_STDINT_4_CHECK]: Updated to match darwin_stdint_4 fix.
+	[DARWIN_STDINT_6_CHECK]: Updated to match darwin_stdint_6 fix.
+	tests/base/stdint-hpux11.h: New file.
+	tests/base/stdint.h [HPUX_C99_INTPTR_CHECK,
+	HPUX_C99_INTTYPES2_CHECK, HPUX_STDINT_LEAST_FAST_CHECK]: Moved ...
+	tests/base/stdint-hpux11.h: ... here.
+	[HPUX_C99_INTPTR_CHECK]: Updated to match hpux_c99_intptr fix.
+	[HPUX_C99_INTTYPES2_CHECK]: Updated to match hpux_c99_inttypes2 fix.
+	tests/base/stdint.h [IRIX_STDINT_C99_CHECK]: Renamed guard to
+	IRIX_STDINT_C99_MODE_CHECK.
+	tests/base/stdint-irix65.h: New file.
+	tests/base/stdint-newlib.h: New file.
+	tests/base/stdint.h [NEWLIB_STDINT_1_CHECK,
+	NEWLIB_STDINT_2_CHECK]: Moved ...
+	tests/base/stdint-newlib.h: ... here.
+
 2009-12-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

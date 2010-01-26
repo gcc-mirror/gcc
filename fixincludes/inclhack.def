@@ -391,7 +391,7 @@ fix = {
 fix = {
     hackname  = aix_stdint_1;
     mach      = "*-*-aix*";
-    files     = stdint.h;
+    files     = stdint-aix.h, stdint.h;
     select    = "#define[ \t]UINT8_MAX[ \t]\\(255U\\)\n"
 		"#define[ \t]UINT16_MAX[ \t]\\(65535U\\)";
     c_fix     = format;
@@ -405,7 +405,7 @@ fix = {
 fix = {
     hackname  = aix_stdint_2;
     mach      = "*-*-aix*";
-    files     = stdint.h;
+    files     = stdint-aix.h, stdint.h;
     select    = "#define[ \t]INTPTR_MIN[ \t]INT64_MIN\n"
 		"#define[ \t]INTPTR_MAX[ \t]INT64_MAX\n"
 		"#define[ \t]UINTPTR_MAX[ \t]UINT64_MAX\n"
@@ -434,7 +434,7 @@ fix = {
 fix = {
     hackname  = aix_stdint_3;
     mach      = "*-*-aix*";
-    files     = stdint.h;
+    files     = stdint-aix.h, stdint.h;
     select    = "#define[ \t]PTRDIFF_MIN[ \t]INT64_MIN\n"
 		"#define[ \t]PTRDIFF_MAX[ \t]INT64_MAX\n"
 		"#else\n"
@@ -457,7 +457,7 @@ fix = {
 fix = {
     hackname  = aix_stdint_4;
     mach      = "*-*-aix*";
-    files     = stdint.h;
+    files     = stdint-aix.h, stdint.h;
     select    = "#define[ \t]SIZE_MAX[ \t]UINT64_MAX\n"
 		"#else\n"
 		"#define[ \t]SIZE_MAX[ \t]*UINT32_MAX";
@@ -474,7 +474,7 @@ fix = {
 fix = {
     hackname  = aix_stdint_5;
     mach      = "*-*-aix*";
-    files     = stdint.h;
+    files     = stdint-aix.h, stdint.h;
     select    = "#define[ \t]UINT8_C\\(c\\)[ \t]__CONCAT__\\(c,U\\)\n"
 		"#define[ \t]UINT16_C\\(c\\)[ \t]__CONCAT__\\(c,U\\)";
     c_fix     = format;
@@ -1144,7 +1144,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_1;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#define UINT8_C(v)\tv\n#define UINT16_C(v)\tv";
     select    = "#define UINT8_C\\(v\\)[ \t]+\\(v ## U\\)\n"
@@ -1161,7 +1161,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_2;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#if __WORDSIZE == 64\n"
 		"#define INTPTR_MAX 9223372036854775807L\n"
@@ -1193,7 +1193,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_3;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#if __WORDSIZE == 64\n"
 		"#define UINTPTR_MAX 18446744073709551615UL\n"
@@ -1219,7 +1219,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_4;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#if __WORDSIZE == 64\n"
 		"#define SIZE_MAX 18446744073709551615UL\n"
@@ -1246,7 +1246,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_5;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#if __WORDSIZE == 64\n"
 		"#define INTMAX_MIN   (-9223372036854775807L - 1)\n"
@@ -1275,7 +1275,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_6;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#if __WORDSIZE == 64\n"
 		"#define PTRDIFF_MIN (-9223372036854775807L - 1)\n"
@@ -1308,7 +1308,7 @@ fix = {
 fix = {
     hackname  = darwin_stdint_7;
     mach      = "*-*-darwin*";
-    files     = stdint.h;
+    files     = stdint-darwin.h, stdint.h;
     c_fix     = format;
     c_fix_arg = "#if __WORDSIZE == 64\n"
 		"#define INTMAX_C(v)  (v ## L)\n"
@@ -2158,7 +2158,7 @@ fix = {
 fix = {
     hackname  = hpux_c99_intptr;
     mach      = "*-hp-hpux11.3*";
-    files     = stdint.h;
+    files     = stdint-hpux11.h, stdint.h;
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MAX[ \t]*INT32_MAX[ \t]*$@#define PTRDIFF_MAX (2147483647l)@";
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MIN[ \t]*INT32_MIN[ \t]*$@#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)@";
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MAX[ \t]*INT32_MAX[ \t]*$@#define INTPTR_MAX (2147483647l)@";
@@ -2181,7 +2181,7 @@ fix = {
     hackname  = hpux_c99_inttypes;
     mach      = "*-hp-hpux11.[23]*";
     files     = inttypes.h;
-    files     = stdint.h;
+    files     = stdint-hpux11.h, stdint.h;
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*__CONCAT_U__(__c)[ \t]*$@#define UINT8_C(__c) (__c)@";
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*__CONCAT_U__(__c)[ \t]*$@#define UINT16_C(__c) (__c)@";
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT32_C(__c)[ \t]*__CONCAT__(__c,l)[ \t]*$@#define INT32_C(__c) (__c)@";
@@ -2195,7 +2195,7 @@ fix = {
 fix = {
     hackname  = hpux_c99_inttypes2;
     mach      = "*-hp-hpux11.2*";
-    files     = stdint.h;
+    files     = stdint-hpux11.h, stdint.h;
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT8_C(__c)[ \t]*((signed char)(__c))[ \t]*$@#define INT8_C(__c) (__c)@";
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*((unsigned char)(__c))[ \t]*$@#define UINT8_C(__c) (__c)@";
     sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT16_C(__c)[ \t]*((short)(__c))[ \t]*$@#define INT16_C(__c) (__c)@";
@@ -2209,7 +2209,7 @@ fix = {
 fix = {
     hackname  = hpux_stdint_least_fast;
     mach      = "*-hp-hpux11.2*";
-    files     = stdint.h;
+    files     = stdint-hpux11.h, stdint.h;
     select    =
         "^[ \t]*#[ \t]*define[ \t]+UINT_(LEAST|FAST)64_MAX[ \t]+ULLONG_MAX";
     c_fix     = format;
@@ -2511,7 +2511,7 @@ fix = {
  *  otherwise.
  */
 fix = {
-    hackname  = irix_stdint_c99;
+    hackname  = irix_stdint_c99_mode;
     files     = stdint.h;
     select = "(#ifndef __c99\n)(#error This header file is to be used only for c99 mode compilations)";
 
@@ -2521,6 +2521,87 @@ fix = {
 	        "%2";
     test_text =
     "#ifndef __c99\n#error This header file is to be used only for c99 mode compilations\n#else";
+};
+
+
+/*
+ *  IRIX 6.5 <stdint.h> has some *_MIN/MAX constants whose types don't
+ *  match the corresponding types, as required by ISO C99.
+ */
+fix = {
+    hackname  = irix_stdint_c99_types;
+    files     = stdint-irix65.h, stdint.h;
+    mach      = "mips-sgi-irix6.5";
+    sed       = "s@^#define INT64_MIN.*(-0x7fffffffffffffff - 1)$@"
+                "#define INT64_MIN               (-0x7fffffffffffffffLL - 1)@";
+    sed       = "s@^#define INT64_MAX.*0x7fffffffffffffff$@"
+                "#define INT64_MAX               0x7fffffffffffffffLL@";
+    sed       = "s@^#define UINT32_MAX.*0xffffffff$@"
+                "#define UINT32_MAX              0xffffffffU@";
+    sed       = "s@^#define UINT64_MAX.*0xffffffffffffffff$@"
+                "#define UINT64_MAX              0xffffffffffffffffULL@";
+    sed       = "s@^#define INTPTR_MIN.*INT32_MIN$@"
+                "#define INTPTR_MIN              (-0x7fffffffL - 1)@";
+    sed       = "s@^#define INTPTR_MAX.*INT32_MAX$@"
+                "#define INTPTR_MAX              0x7fffffffL@";
+    sed       = "s@^#define UINTPTR_MAX.*UINT32_MAX$@"
+                "#define UINTPTR_MAX             0xffffffffUL@";
+    sed       = "s@^#define INTPTR_MIN.*INT64_MIN@"
+                "#define INTPTR_MIN              (-0x7fffffffffffffffL - 1)@";
+    sed       = "s@^#define INTPTR_MAX.*INT64_MAX$@"
+                "#define INTPTR_MAX              0x7fffffffffffffffL@";
+    sed       = "s@^#define UINTPTR_MAX.*UINT64_MAX$@"
+                "#define UINTPTR_MAX             0xffffffffffffffffUL@";
+    sed       = "s@^#define PTRDIFF_MIN.*INT64_MIN$@"
+                "#define PTRDIFF_MIN             (-0x7fffffffffffffffL - 1)@";
+    sed       = "s@^#define PTRDIFF_MAX.*INT64_MAX$@"
+                "#define PTRDIFF_MAX             0x7fffffffffffffffL@";
+    sed       = "s@^#define SIZE_MAX.*UINT64_MAX$@"
+                "#define SIZE_MAX                0xffffffffffffffffUL@";
+    test_text = "#define INT64_MIN               (-0x7fffffffffffffff - 1)\n"
+                "#define INT64_MAX               0x7fffffffffffffff\n"
+                "#define UINT32_MAX              0xffffffff\n"
+                "#define UINT64_MAX              0xffffffffffffffff\n"
+                "#define INTPTR_MIN              INT32_MIN\n"
+                "#define INTPTR_MAX              INT32_MAX\n"
+                "#define UINTPTR_MAX             UINT32_MAX\n"
+                "#define INTPTR_MIN              INT64_MIN\n"
+                "#define INTPTR_MAX              INT64_MAX\n"
+                "#define UINTPTR_MAX             UINT64_MAX\n"
+                "#define PTRDIFF_MIN             INT64_MIN\n"
+                "#define PTRDIFF_MAX             INT64_MAX\n"
+                "#define SIZE_MAX                UINT64_MAX";
+};
+
+
+/*
+ *  IRIX 6.5 <stdint.h> uses casts in some macros which cannot thus be used
+ *  in preprocessor tests, although ISO C99 requires this.
+ */
+fix = {
+    hackname  = irix_stdint_c99_macros;
+    files     = stdint-irix65.h, stdint.h;
+    mach      = "mips-sgi-irix6.5";
+    sed       = "s@^#define INT8_C(x).*int.*_t.*$@#define INT8_C(x)               (x)@";
+    sed       = "s@^#define INT16_C(x).*int.*_t.*$@#define INT16_C(x)              (x)@";
+    sed       = "s@^#define INT32_C(x).*int.*_t.*$@#define INT32_C(x)              (x)@";
+    sed       = "s@^#define INT64_C(x).*int.*_t.*$@#define INT64_C(x)              (x ## LL)@";
+    sed       = "s@^#define UINT8_C(x).*int.*_t.*$@#define UINT8_C(x)              (x)@";
+    sed       = "s@^#define UINT16_C(x).*int.*_t.*$@#define UINT16_C(x)             (x)@";
+    sed       = "s@^#define UINT32_C(x).*int.*_t.*$@#define UINT32_C(x)             (x ## U)@";
+    sed       = "s@^#define UINT64_C(x).*int.*_t.*$@#define UINT64_C(x)             (x ## ULL)@";
+    sed       = "s@^#define INTMAX_C(x).*int.*_t.*$@#define INTMAX_C(x)             (x ## LL)@";
+    sed       = "s@^#define UINTMAX_C(x).*int.*_t.*$@#define UINTMAX_C(x)            (x ## ULL)@";
+    test_text = "#define INT8_C(x)               (int_least8_t)(x)\n"
+                "#define INT16_C(x)              (int_least16_t)(x)\n"
+                "#define INT32_C(x)              (int_least32_t)(x)\n"
+                "#define INT64_C(x)              (int_least64_t)(x)\n"
+                "#define UINT8_C(x)              (uint_least8_t)(x)\n"
+                "#define UINT16_C(x)             (uint_least16_t)(x)\n"
+                "#define UINT32_C(x)             (uint_least32_t)(x)\n"
+                "#define UINT64_C(x)             (uint_least64_t)(x)\n"
+                "#define INTMAX_C(x)             (intmax_t)(x)\n"
+                "#define UINTMAX_C(x)            (uintmax_t)(x)";
 };
 
 
@@ -2813,7 +2894,7 @@ fix = {
    versions.  */
 fix = {
     hackname  = newlib_stdint_1;
-    files     = stdint.h;
+    files     = stdint-newlib.h, stdint.h;
     select    = "@todo - Add support for wint_t types";
     sed       = "s@#define INT32_MIN.*@#define INT32_MIN (-INT32_MAX - 1)@";
     sed       = "s@#define INT32_MAX.*@#define INT32_MAX __INT32_MAX__@";
@@ -2849,7 +2930,7 @@ fix = {
 
 fix = {
     hackname  = newlib_stdint_2;
-    files     = stdint.h;
+    files     = stdint-newlib.h, stdint.h;
     select    = "@todo - Add support for wint_t types";
     c_fix     = format;
     c_fix_arg = "#define INTMAX_MAX __INTMAX_MAX__\n"
