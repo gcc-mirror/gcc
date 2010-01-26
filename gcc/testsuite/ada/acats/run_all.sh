@@ -129,7 +129,7 @@ sed -e "s,ACATS4GNATDIR,$dir,g" \
 
 cp $testdir/tests/cd/*.c $dir/support
 cp $testdir/tests/cxb/*.c $dir/support
-grep -v '^#' $testdir/norun.lst > $dir/support/norun.lst
+grep -v '^#' $testdir/norun.lst | sort > $dir/support/norun.lst
 
 rm -rf $dir/run
 mv $dir/tests $dir/tests.$$ 2> /dev/null
