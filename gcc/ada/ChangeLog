@@ -1,5 +1,11 @@
 2010-01-26  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.ads, par_sco.adb (Set_Statement_Entry): New handling of exits
+	(Extend_Statement_Sequence): New procedures
+	(Traverse_Declarations_Or_Statements): New handling for exits.
+
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
 	* par_sco.adb (Traverse_Declarations_Or_Statements): Add processing for
 	Case.
 
