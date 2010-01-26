@@ -112,7 +112,7 @@ package body Prj.Attr is
 
    "SVdefault_language#" &
    "LVrun_path_option#" &
-   "SVrun_path_origin_supported#" &
+   "SVrun_path_origin#" &
    "SVseparate_run_path_options#" &
    "Satoolchain_version#" &
    "Satoolchain_description#" &
@@ -142,6 +142,7 @@ package body Prj.Attr is
    "SVlibrary_auto_init_supported#" &
    "LVshared_library_minimum_switches#" &
    "LVlibrary_version_switches#" &
+   "SVlibrary_install_name_option#" &
    "Saruntime_library_dir#" &
    "Saruntime_source_dir#" &
 

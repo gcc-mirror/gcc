@@ -4572,8 +4572,9 @@ first in the string.
 
 @item
 The switches
-@option{^-gnatz^/DISTRIBUTION_STUBS^}, @option{-gnatzc}, and @option{-gnatzr}
-may not be combined with any other switches.
+^^@option{/DISTRIBUTION_STUBS=},^
+@option{-gnatzc} and @option{-gnatzr} may not be combined with any other
+switches, and only one of them may appear in the command line.
 
 @ifclear vms
 @item
