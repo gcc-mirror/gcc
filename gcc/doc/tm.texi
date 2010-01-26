@@ -781,7 +781,8 @@ This target hook is called whenever the user specifies one of the
 target-specific C language family options described by the @file{.opt}
 definition files(@pxref{Options}).  It has the opportunity to do some
 option-specific processing and should return true if the option is
-valid.  The default definition does nothing but return false.
+valid.  The arguments are like for @code{TARGET_HANDLE_OPTION}.  The
+default definition does nothing but return false.
 
 In general, you should use @code{TARGET_HANDLE_OPTION} to handle
 options.  However, if processing an option requires routines that are
@@ -10650,7 +10651,7 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_RESOLVE_OVERLOADED_BUILTIN (tree @var{fndecl}, tree @var{arglist})
+@deftypefn {Target Hook} tree TARGET_RESOLVE_OVERLOADED_BUILTIN (unsigned int @var{loc}, tree @var{fndecl}, void *@var{arglist})
 
 Select a replacement for a machine specific built-in function that
 was set up by @samp{TARGET_INIT_BUILTINS}.  This is done
@@ -10660,6 +10661,7 @@ declaration of the built-in function.  @var{arglist} is the list of
 arguments passed to the built-in function.  The result is a
 complete expression that implements the operation, usually
 another @code{CALL_EXPR}.
+@var{arglist} really has type @samp{VEC(tree,gc)*}
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{fndecl}, tree @var{arglist}, bool @var{ignore})
