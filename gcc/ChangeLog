@@ -1,3 +1,10 @@
+2010-01-25  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/42841
+	* config/sh/sh.c (find_barrier): Increase length for non delayed
+	conditional branches.
+	(sh_insn_length_adjustment): Use JUMP_TABLE_DATA_P.
+
 2010-01-24  David S. Miller  <davem@davemloft.net>
 
 	* gcc/config/sparc/sysv4.h (TARGET_ASM_NAMED_SECTION): Only
