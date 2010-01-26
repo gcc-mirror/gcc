@@ -1984,7 +1984,7 @@ type_escape_execute (void)
      they may cause a type variable to escape.
   */
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed)
+    if (node->analyzed && !node->clone_of)
       analyze_function (node);
 
 

@@ -1,3 +1,8 @@
+2010-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42250
+	* gcc.dg/pr42250.c: New testcase.
+
 2010-01-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/array_bounds_test.adb: New test.
