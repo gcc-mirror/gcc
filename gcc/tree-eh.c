@@ -3350,8 +3350,11 @@ unsplit_eh (eh_landing_pad lp)
   if ((e_in->flags & EDGE_EH) == 0 || (e_out->flags & EDGE_EH) != 0)
     return false;
 
-  /* The block must be empty except for the labels.  */
-  if (!gsi_end_p (gsi_after_labels (bb)))
+  /* The block must be empty except for the labels and debug insns.  */
+  gsi = gsi_after_labels (bb);
+  if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+    gsi_next_nondebug (&gsi);
+  if (!gsi_end_p (gsi))
     return false;
 
   /* The destination block must not already have a landing pad
