@@ -760,11 +760,15 @@ package body Par_SCO is
       Start : Source_Ptr;
       Dummy : Source_Ptr;
       Stop  : Source_Ptr;
-      From  : Source_Ptr;
-      To    : Source_Ptr;
 
-      Term  : Boolean;
-      --  Set False if current entity terminates statement list
+      procedure Extend_Statement_Sequence (N : Node_Id);
+      --  Extend the current statement sequence to encompass the node N
+
+      procedure Extend_Statement_Sequence (From : Node_Id; To : Node_Id);
+      --  This version extends the current statement sequence with an entry
+      --  that starts with the first token of From, and ends with the last
+      --  token of To. It is used for example in a CASE statement to cover
+      --  the range from the CASE token to the last token of the expression.
 
       procedure Set_Statement_Entry;
       --  If Start is No_Location, does nothing, otherwise outputs a SCO_Table
@@ -779,14 +783,34 @@ package body Par_SCO is
 
       procedure Set_Statement_Entry is
       begin
-         Term := True;
-
          if Start /= No_Location then
             Set_Table_Entry ('S', ' ', Start, Stop, False);
             Start := No_Location;
             Stop  := No_Location;
          end if;
       end Set_Statement_Entry;
+
+      -------------------------------
+      -- Extend_Statement_Sequence --
+      -------------------------------
+
+      procedure Extend_Statement_Sequence (N : Node_Id) is
+      begin
+         if Start = No_Location then
+            Sloc_Range (N, Start, Stop);
+         else
+            Sloc_Range (N, Dummy, Stop);
+         end if;
+      end Extend_Statement_Sequence;
+
+      procedure Extend_Statement_Sequence (From : Node_Id; To : Node_Id) is
+      begin
+         if Start = No_Location then
+            Sloc_Range (From, Start, Dummy);
+         end if;
+
+         Sloc_Range (To, Dummy, Stop);
+      end Extend_Statement_Sequence;
 
    --  Start of processing for Traverse_Declarations_Or_Statements
 
@@ -798,7 +822,11 @@ package body Par_SCO is
          --  Loop through statements or declarations
 
          while Present (N) loop
-            Term := False;
+
+            --  Initialize or extend current statement sequence. Note that for
+            --  special cases such as IF and Case statements we will modify
+            --  the range to exclude internal statements that should not be
+            --  counted as part of the current statement sequence.
 
             case Nkind (N) is
 
@@ -841,23 +869,25 @@ package body Par_SCO is
                   Set_Statement_Entry;
                   Traverse_Subprogram_Body (N);
 
-               --  Exit statement
+               --  Exit statement, which is an exit statement in the SCO sense,
+               --  so it is included in the current statement sequence, but
+               --  then it terminates this sequence. We also have to process
+               --  any decisions in the exit statement expression.
 
                when N_Exit_Statement =>
+                  Extend_Statement_Sequence (N);
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'E');
 
-                  --  This is an exit point
-
-                  Sloc_Range (N, From, To);
-                  Set_Table_Entry ('T', ' ', From, To, False);
-
-               --  Label (breaks statement sequence)
+               --  Label, which breaks the current statement sequence, and then
+               --  we include the label in the subsequent statement sequence.
 
                when N_Label =>
                   Set_Statement_Entry;
+                  Extend_Statement_Sequence (N);
 
-               --  Block statement
+               --  Block statement, which breaks the current statement seqeunce
+               --  it probably does not need to, but for now it does.
 
                when N_Block_Statement =>
                   Set_Statement_Entry;
@@ -865,9 +895,11 @@ package body Par_SCO is
                   Traverse_Handled_Statement_Sequence
                     (Handled_Statement_Sequence (N));
 
-               --  If statement
+               --  If statement, which breaks the current statement sequence,
+               --  but we include the condition in the current sequence.
 
                when N_If_Statement =>
+                  Extend_Statement_Sequence (N, Condition (N));
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'I');
                   Traverse_Declarations_Or_Statements (Then_Statements (N));
@@ -887,15 +919,12 @@ package body Par_SCO is
 
                   Traverse_Declarations_Or_Statements (Else_Statements (N));
 
-               --  Case statement
+               --  Case statement, which breaks the current statement sequence,
+               --  but we include the expression in the current sequence.
 
                when N_Case_Statement =>
 
-                  --  We include the expression, but not any of the case
-                  --  branches in the generated statement sequence that
-                  --  includes this case statement.
-
-                  Sloc_Range (Expression (N), Dummy, Stop);
+                  Extend_Statement_Sequence (N, Expression (N));
                   Set_Statement_Entry;
                   Process_Decisions (Expression (N), 'X');
 
@@ -912,28 +941,22 @@ package body Par_SCO is
                      end loop;
                   end;
 
-               --  Unconditional exit points
+               --  Unconditional exit points, which are included in the current
+               --  statement sequence, but then terminate it
 
                when N_Requeue_Statement |
                     N_Goto_Statement    |
                     N_Raise_Statement   =>
+                  Extend_Statement_Sequence (N);
                   Set_Statement_Entry;
-                  Sloc_Range (N, From, To);
-                  Set_Table_Entry ('T', ' ', From, To, False);
 
-               --  Simple return statement
+               --  Simple return statement. which is an exit point, but we
+               --  have to process the return expression for decisions.
 
                when N_Simple_Return_Statement =>
+                  Extend_Statement_Sequence (N);
                   Set_Statement_Entry;
-
-                  --  Process possible return expression
-
                   Process_Decisions (Expression (N), 'X');
-
-                  --  Return is an exit point
-
-                  Sloc_Range (N, From, To);
-                  Set_Table_Entry ('T', ' ', From, To, False);
 
                --  Extended return statement
 
@@ -944,45 +967,31 @@ package body Par_SCO is
                   Traverse_Handled_Statement_Sequence
                     (Handled_Statement_Sequence (N));
 
-                  --  Return is an exit point
-
-                  Sloc_Range (N, From, To);
-                  Set_Table_Entry ('T', ' ', From, To, False);
-
-               --  Loop
+               --  Loop ends the current statement sequence, but we include
+               --  the iteration scheme if present in the current sequence.
+               --  But the body of the loop starts a new sequence, since it
+               --  may not be executed as part of the current sequence.
 
                when N_Loop_Statement =>
-
-                  --  Even if not a while loop, we want a new statement seq
-
-                  Set_Statement_Entry;
-
                   if Present (Iteration_Scheme (N)) then
+                     Extend_Statement_Sequence (N, Iteration_Scheme (N));
                      Process_Decisions
                        (Condition (Iteration_Scheme (N)), 'W');
                   end if;
 
+                  Set_Statement_Entry;
                   Traverse_Declarations_Or_Statements (Statements (N));
 
-               --  All other cases
+               --  All other cases, which extend the current statement sequence
+               --  but do not terminate it, even if they have nested decisions.
 
                when others =>
+                  Extend_Statement_Sequence (N);
+
                   if Has_Decision (N) then
-                     Set_Statement_Entry;
                      Process_Decisions (N, 'X');
                   end if;
             end case;
-
-            --  If that element did not terminate the current sequence of
-            --  statements, then establish or extend this sequence.
-
-            if not Term then
-               if Start = No_Location then
-                  Sloc_Range (N, Start, Stop);
-               else
-                  Sloc_Range (N, Dummy, Stop);
-               end if;
-            end if;
 
             Next (N);
          end loop;

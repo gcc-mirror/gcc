@@ -79,11 +79,6 @@ package Par_SCO is
    --      renaming_declaration
    --      generic_instantiation
 
-   --      ??? is this list complete ???
-
-   --    ??? what is the exact story on complex statements such as blocks ???
-   --    ??? are the simple statements inside sufficient ???
-
    --  Statement lines
 
    --    These lines correspond to a sequence of one or more statements which
@@ -156,9 +151,8 @@ package Par_SCO is
    --    The following is a grammar showing the structure of expression:
 
    --      expression ::= term             (if expr is not logical operator)
-   --      expression ::= & term term      (if expr is AND or AND THEN)
-   --      expression ::= | term term      (if expr is OR or OR ELSE)
-   --      expression ::= ^ term term      (if expr is XOR)
+   --      expression ::= & term term      (if expr is AND THEN)
+   --      expression ::= | term term      (if expr is OR ELSE)
    --      expression ::= !term            (if expr is NOT)
 
    --      term ::= element
@@ -175,18 +169,11 @@ package Par_SCO is
    --      where t/f are used to mark a condition that has been recognized by
    --      the compiler as always being true or false.
 
-   --    & indicates either AND or AND THEN connecting two conditions. In the
-   --    context of couverture we only permit AND THEN in the source in any
-   --    case, so & can always be understood to be AND THEN.
+   --    & indicates either AND THEN connecting two conditions
 
-   --    | indicates either OR or OR ELSE connection two conditions. In the
-   --    context of couverture we only permit OR ELSE in the source in any
-   --    case, so | can always be understood to be OR ELSE.
+   --    | indicates either OR ELSE connection two conditions
 
-   --    ^ indicates XOR connecting two conditions. In the context of
-   --    couverture, we do not permit XOR, so this will never appear.
-
-   --    ! indicates NOT applied to the expression.
+   --    ! indicates NOT applied to the expression
 
    -----------------
    -- Subprograms --
