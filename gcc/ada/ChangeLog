@@ -1,5 +1,11 @@
 2010-01-26  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Separate F/W
+	qualifiers for FOR/WHILE loops
+	* scos.ads: Use separate type letters F/W for for/while loops
+
+2010-01-26  Robert Dewar  <dewar@adacore.com>
+
 	* get_scos.adb (Get_SCOs): Implement new form of CS entries (multiple
 	entries per line, one for each statement in the sequence).
 	* par_sco.adb (Traverse_Declarations_Or_Statements): Increase array

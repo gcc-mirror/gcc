@@ -938,7 +938,7 @@ package body Par_SCO is
                --  any decisions in the exit statement expression.
 
                when N_Exit_Statement =>
-                  Extend_Statement_Sequence (N, ' ');
+                  Extend_Statement_Sequence (N, 'E');
                   Set_Statement_Entry;
                   Process_Decisions (Condition (N), 'E');
 
@@ -1043,16 +1043,25 @@ package body Par_SCO is
 
                when N_Loop_Statement =>
                   if Present (Iteration_Scheme (N)) then
+
+                     --  If iteration scheme present, extend the current
+                     --  statement sequence to include the iteration scheme
+                     --  and process any decisions it contains.
+
                      declare
                         ISC : constant Node_Id := Iteration_Scheme (N);
 
                      begin
-                        Extend_Statement_Sequence (N, ISC, 'F');
+                        --  While statement
 
                         if Present (Condition (ISC)) then
-                           Process_Decisions
-                             (Condition (ISC), 'W');
+                           Extend_Statement_Sequence (N, ISC, 'W');
+                           Process_Decisions (Condition (ISC), 'W');
+
+                        --  For statement
+
                         else
+                           Extend_Statement_Sequence (N, ISC, 'F');
                            Process_Decisions
                              (Loop_Parameter_Specification (ISC), 'X');
                         end if;
