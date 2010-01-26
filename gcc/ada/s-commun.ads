@@ -41,6 +41,7 @@ package System.Communication is
       Count : CRTL.size_t) return Ada.Streams.Stream_Element_Offset;
    --  Compute the Last OUT parameter for the various Read / Receive
    --  subprograms: returns First + Count - 1.
+   --
    --  When First = Stream_Element_Offset'First and Res = 0, Constraint_Error
    --  is raised. This is consistent with the semantics of stream operations
    --  as clarified in AI95-227.

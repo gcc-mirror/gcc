@@ -110,6 +110,19 @@ package GNAT.Registry is
 
    generic
       with procedure Action
+        (Index    : Positive;
+         Key      : HKEY;
+         Key_Name : String;
+         Quit     : in out Boolean);
+   procedure For_Every_Key (From_Key : HKEY; Recursive : Boolean := False);
+   --  Iterates over all the keys registered under From_Key, recursively if
+   --  Recursive is set to True. Index will be set to 1 for the first key and
+   --  will be incremented by one in each iteration. The current key of an
+   --  iteration is set in Key, and its name - in Key_Name. Quit can be set
+   --  to True to stop iteration; its initial value is False.
+
+   generic
+      with procedure Action
         (Index   : Positive;
          Sub_Key : String;
          Value   : String;
@@ -126,6 +139,9 @@ package GNAT.Registry is
    --  with this case. Furthermore, if Expand is set to True and the Sub_Key
    --  is a REG_EXPAND_SZ the returned value will have the %name% variables
    --  replaced by the corresponding environment variable value.
+   --
+   --  This iterator can be used in conjunction with For_Every_Key in
+   --  order to analyze all subkeys and values of a given registry key.
 
 private
 

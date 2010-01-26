@@ -5265,16 +5265,15 @@ package body Sem_Prag is
                      if Is_Entity_Name (Exp) then
                         null;
 
-                     --  Determine the string type from the presence
-                     --  Wide (_Wide) characters.
+                     --  For string literals, we assume Standard_String as the
+                     --  type, unless the string contains wide or wide_wide
+                     --  characters.
 
                      elsif Nkind (Exp) = N_String_Literal then
                         if Has_Wide_Wide_Character (Exp) then
                            Resolve (Exp, Standard_Wide_Wide_String);
-
                         elsif Has_Wide_Character (Exp) then
                            Resolve (Exp, Standard_Wide_String);
-
                         else
                            Resolve (Exp, Standard_String);
                         end if;

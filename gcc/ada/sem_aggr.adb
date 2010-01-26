@@ -1936,9 +1936,8 @@ package body Sem_Aggr is
                     and then Compile_Time_Known_Value (Choices_Low)
                     and then Compile_Time_Known_Value (Choices_High)
                   then
-
                      --  If the bounds have semantic errors, do not attempt
-                     --  further resolution to prevent cascaded errors..
+                     --  further resolution to prevent cascaded errors.
 
                      if Error_Posted (Choices_Low)
                        or else Error_Posted (Choices_High)
@@ -1955,7 +1954,7 @@ package body Sem_Aggr is
                         Ent : Entity_Id;
 
                      begin
-                        --  Warning case one, missing values at start/end. Only
+                        --  Warning case 1, missing values at start/end. Only
                         --  do the check if the number of entries is too small.
 
                         if (Enumeration_Pos (CHi) - Enumeration_Pos (CLo))
@@ -2067,14 +2066,14 @@ package body Sem_Aggr is
                Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
             end if;
 
-            --  Ada 2005 (AI-287): In case of default initialized component
+            --  Ada 2005 (AI-287): In case of default initialized component,
             --  we delay the resolution to the expansion phase.
 
             if Box_Present (Assoc) then
 
-               --  Ada 2005 (AI-287): In case of default initialization
-               --  of a component the expander will generate calls to
-               --  the corresponding initialization subprogram.
+               --  Ada 2005 (AI-287): In case of default initialization of a
+               --  component the expander will generate calls to the
+               --  corresponding initialization subprogram.
 
                null;
 
@@ -2162,7 +2161,7 @@ package body Sem_Aggr is
 
       --  Do not duplicate Aggr_High if Aggr_High = Aggr_Low + Nb_Elements
       --  since the addition node returned by Add is not yet analyzed. Attach
-      --  to tree and analyze first. Reset analyzed flag to insure it will get
+      --  to tree and analyze first. Reset analyzed flag to ensure it will get
       --  analyzed when it is a literal bound whose type must be properly set.
 
       if Others_Present or else Nb_Discrete_Choices > 0 then
@@ -2179,7 +2178,7 @@ package body Sem_Aggr is
       --  bounds.
 
       if Present (Aggregate_Bounds (N)) and then not Others_Allowed then
-         Aggr_Low := Low_Bound (Aggregate_Bounds (N));
+         Aggr_Low  := Low_Bound  (Aggregate_Bounds (N));
          Aggr_High := High_Bound (Aggregate_Bounds (N));
       end if;
 
@@ -2208,20 +2207,20 @@ package body Sem_Aggr is
 
    --  There are two cases to consider:
 
-   --  a) If the ancestor part is a type mark, the components needed are
-   --  the difference between the components of the expected type and the
+   --  a) If the ancestor part is a type mark, the components needed are the
+   --  difference between the components of the expected type and the
    --  components of the given type mark.
 
-   --  b) If the ancestor part is an expression, it must be unambiguous,
-   --  and once we have its type we can also compute the needed  components
-   --  as in the previous case. In both cases, if the ancestor type is not
-   --  the immediate ancestor, we have to build this ancestor recursively.
+   --  b) If the ancestor part is an expression, it must be unambiguous, and
+   --  once we have its type we can also compute the needed  components as in
+   --  the previous case. In both cases, if the ancestor type is not the
+   --  immediate ancestor, we have to build this ancestor recursively.
 
-   --  In both cases discriminants of the ancestor type do not play a
-   --  role in the resolution of the needed components, because inherited
-   --  discriminants cannot be used in a type extension. As a result we can
-   --  compute independently the list of components of the ancestor type and
-   --  of the expected type.
+   --  In both cases discriminants of the ancestor type do not play a role in
+   --  the resolution of the needed components, because inherited discriminants
+   --  cannot be used in a type extension. As a result we can compute
+   --  independently the list of components of the ancestor type and of the
+   --  expected type.
 
    procedure Resolve_Extension_Aggregate (N : Node_Id; Typ : Entity_Id) is
       A      : constant Node_Id := Ancestor_Part (N);
@@ -2231,8 +2230,8 @@ package body Sem_Aggr is
 
       function Valid_Limited_Ancestor (Anc : Node_Id) return Boolean;
       --  If the type is limited, verify that the ancestor part is a legal
-      --  expression (aggregate or function call, including 'Input)) that
-      --  does not require a copy, as specified in 7.5 (2).
+      --  expression (aggregate or function call, including 'Input)) that does
+      --  not require a copy, as specified in 7.5(2).
 
       function Valid_Ancestor_Type return Boolean;
       --  Verify that the type of the ancestor part is a non-private ancestor
@@ -2257,9 +2256,7 @@ package body Sem_Aggr is
          then
             return True;
 
-         elsif
-           Nkind (Anc) = N_Qualified_Expression
-         then
+         elsif Nkind (Anc) = N_Qualified_Expression then
             return Valid_Limited_Ancestor (Expression (Anc));
 
          else
@@ -2281,9 +2278,9 @@ package body Sem_Aggr is
                return True;
 
             --  The base type of the parent type may appear as  a private
-            --  extension if it is declared as such in a parent unit of
-            --  the current one. For consistency of the subsequent analysis
-            --  use the partial view for the ancestor part.
+            --  extension if it is declared as such in a parent unit of the
+            --  current one. For consistency of the subsequent analysis use
+            --  the partial view for the ancestor part.
 
             elsif Is_Private_Type (Etype (Imm_Type))
               and then Present (Full_View (Etype (Imm_Type)))
@@ -2305,8 +2302,8 @@ package body Sem_Aggr is
    --  Start of processing for Resolve_Extension_Aggregate
 
    begin
-      --  Analyze the ancestor part and account for the case where it's
-      --  a parameterless function call.
+      --  Analyze the ancestor part and account for the case where it is a
+      --  parameterless function call.
 
       Analyze (A);
       Check_Parameterless_Call (A);
@@ -2410,14 +2407,14 @@ package body Sem_Aggr is
               and then Nkind (Original_Node (A)) = N_Function_Call
             then
                --  If the ancestor part is a dispatching call, it appears
-               --  statically to be a legal ancestor, but it yields any
-               --  member of the class, and it is not possible to determine
-               --  whether it is an ancestor of the extension aggregate (much
-               --  less which ancestor). It is not possible to determine the
-               --  required components of the extension part.
+               --  statically to be a legal ancestor, but it yields any member
+               --  of the class, and it is not possible to determine whether
+               --  it is an ancestor of the extension aggregate (much less
+               --  which ancestor). It is not possible to determine the
+               --  components of the extension part.
 
-               --  This check implements AI-306, which in fact was motivated
-               --  by an ACT query to the ARG after this test was added.
+               --  This check implements AI-306, which in fact was motivated by
+               --  an AdaCore query to the ARG after this test was added.
 
                Error_Msg_N ("ancestor part must be statically tagged", A);
             else
@@ -2444,16 +2441,16 @@ package body Sem_Aggr is
       Component_Elmt  : Elmt_Id;
 
       Components : constant Elist_Id := New_Elmt_List;
-      --  Components is the list of the record components whose value must
-      --  be provided in the aggregate. This list does include discriminants.
+      --  Components is the list of the record components whose value must be
+      --  provided in the aggregate. This list does include discriminants.
 
       New_Assoc_List : constant List_Id := New_List;
       New_Assoc      : Node_Id;
       --  New_Assoc_List is the newly built list of N_Component_Association
       --  nodes. New_Assoc is one such N_Component_Association node in it.
-      --  Please note that while Assoc and New_Assoc contain the same
-      --  kind of nodes, they are used to iterate over two different
-      --  N_Component_Association lists.
+      --  Note that while Assoc and New_Assoc contain the same kind of nodes,
+      --  they are used to iterate over two different N_Component_Association
+      --  lists.
 
       Others_Etype : Entity_Id := Empty;
       --  This variable is used to save the Etype of the last record component
@@ -2464,7 +2461,7 @@ package body Sem_Aggr is
       --    (b) make sure the type of all the components whose value is
       --        subsumed by the others choice are the same.
       --
-      --  This variable is updated as a side effect of function Get_Value
+      --  This variable is updated as a side effect of function Get_Value.
 
       Is_Box_Present : Boolean := False;
       Others_Box     : Boolean := False;
@@ -2480,40 +2477,43 @@ package body Sem_Aggr is
          Expr           : Node_Id;
          Assoc_List     : List_Id;
          Is_Box_Present : Boolean := False);
-      --  Builds a new N_Component_Association node which associates
-      --  Component to expression Expr and adds it to the association
-      --  list being built, either New_Assoc_List, or the association
-      --  being built for an inner aggregate.
+      --  Builds a new N_Component_Association node which associates Component
+      --  to expression Expr and adds it to the association list being built,
+      --  either New_Assoc_List, or the association being built for an inner
+      --  aggregate.
 
       function Discr_Present (Discr : Entity_Id) return Boolean;
       --  If aggregate N is a regular aggregate this routine will return True.
       --  Otherwise, if N is an extension aggregate, Discr is a discriminant
-      --  whose value may already have been specified by N's ancestor part,
-      --  this routine checks whether this is indeed the case and if so
-      --  returns False, signaling that no value for Discr should appear in the
-      --  N's aggregate part. Also, in this case, the routine appends to
+      --  whose value may already have been specified by N's ancestor part.
+      --  This routine checks whether this is indeed the case and if so returns
+      --  False, signaling that no value for Discr should appear in N's
+      --  aggregate part. Also, in this case, the routine appends
       --  New_Assoc_List Discr the discriminant value specified in the ancestor
       --  part.
+      --  Can't parse previous sentence, appends what where???
 
       function Get_Value
         (Compon                 : Node_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False)
          return                   Node_Id;
-      --  Given a record component stored in parameter Compon, the
-      --  following function returns its value as it appears in the list
-      --  From, which is a list of N_Component_Association nodes. If no
-      --  component association has a choice for the searched component,
-      --  the value provided by the others choice is returned, if there
-      --  is  one and Consider_Others_Choice is set to true. Otherwise
-      --  Empty is returned. If there is more than one component association
-      --  giving a value for the searched record component, an error message
-      --  is emitted and the first found value is returned.
+      --  Given a record component stored in parameter Compon, the following
+      --  function returns its value as it appears in the list From, which is
+      --  a list of N_Component_Association nodes.
+      --  What is this referring to??? There is no "following function" in
+      --  sight???
+      --  If no component association has a choice for the searched component,
+      --  the value provided by the others choice is returned, if there is one,
+      --  and Consider_Others_Choice is set to true. Otherwise Empty is
+      --  returned. If there is more than one component association giving a
+      --  value for the searched record component, an error message is emitted
+      --  and the first found value is returned.
       --
       --  If Consider_Others_Choice is set and the returned expression comes
       --  from the others choice, then Others_Etype is set as a side effect.
-      --  An error message is emitted if the components taking their value
-      --  from the others choice do not have same type.
+      --  An error message is emitted if the components taking their value from
+      --  the others choice do not have same type.
 
       procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id);
       --  Analyzes and resolves expression Expr against the Etype of the
@@ -2613,7 +2613,7 @@ package body Sem_Aggr is
          D := First_Discriminant (Ancestor_Typ);
          while Present (D) loop
 
-            --  If Ancestor has already specified Disc value than insert its
+            --  If Ancestor has already specified Disc value then insert its
             --  value in the final aggregate.
 
             if Original_Record_Component (D) = Orig_Discr then
