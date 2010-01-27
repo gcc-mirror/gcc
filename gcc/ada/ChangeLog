@@ -1,3 +1,17 @@
+2010-01-27  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* g-regist.adb (For_Every_Key): Fix previous change.
+	Minor reformatting.
+
+2010-01-27  Thomas Quinot  <quinot@adacore.com>
+
+	* lib-writ.ads: Current version of spec for new N (note) ALI lines
+
+2010-01-27  Yannick Moy  <moy@adacore.com>
+
+	* a-cdlili.adb (Insert): Correct exception message when cursor
+	designates wrong list.
+
 2010-01-27  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb: When there is only one main specified, the package

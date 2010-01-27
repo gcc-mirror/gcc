@@ -621,7 +621,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       if Before.Container /= null then
          if Before.Container /= Container'Unrestricted_Access then
             raise Program_Error with
-              "attempt to tamper with elements (list is busy)";
+              "Before cursor designates wrong list";
          end if;
 
          pragma Assert (Vet (Before), "bad cursor in Insert");
