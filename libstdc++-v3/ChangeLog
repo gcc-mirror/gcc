@@ -41,8 +41,8 @@
 2010-01-22  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR libstdc++/36101, PR libstdc++/42813
-	* acinclude.m4: (enable_parallel): Test ${TARGET_CONFIGDIRS} instead of
-	loking for omp.h .
+	* acinclude.m4 (enable_parallel): Test ${TARGET_CONFIGDIRS} instead of
+	looking for omp.h.
 	* configure: Regenerate.
 
 2010-01-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
