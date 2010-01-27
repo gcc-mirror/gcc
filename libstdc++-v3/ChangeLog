@@ -1,3 +1,11 @@
+2010-01-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR c++/42346
+	* testsuite/23_containers/unordered_map/requirements/exception/: Remove
+	-O1 workaround.
+	* testsuite/23_containers/multimap/requirements/exception/: Same.
+	* testsuite/23_containers/map/requirements/exception: Same.
+
 2010-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR libstdc++/42832
