@@ -243,7 +243,7 @@ package body GNAT.Registry is
    -------------------
 
    procedure For_Every_Key
-     (From_Key : HKEY;
+     (From_Key  : HKEY;
       Recursive : Boolean := False)
    is
       procedure Recursive_For_Every_Key
@@ -251,12 +251,15 @@ package body GNAT.Registry is
          Recursive : Boolean := False;
          Quit      : in out Boolean);
 
+      -----------------------------
+      -- Recursive_For_Every_Key --
+      -----------------------------
+
       procedure Recursive_For_Every_Key
         (From_Key : HKEY;
          Recursive : Boolean := False;
          Quit      : in out Boolean)
       is
-
          use type LONG;
          use type ULONG;
 
@@ -271,10 +274,16 @@ package body GNAT.Registry is
 
          function Current_Name return String;
 
+         ------------------
+         -- Current_Name --
+         ------------------
+
          function Current_Name return String is
          begin
             return Interfaces.C.To_Ada (Sub_Key);
          end Current_Name;
+
+      --  Start of processing for Recursive_For_Every_Key
 
       begin
          loop
@@ -286,15 +295,15 @@ package body GNAT.Registry is
 
             exit when not (Result = ERROR_SUCCESS);
 
-            Action (Natural (Index) + 1, From_Key, Current_Name, Quit);
+            Sub_Hkey := Open_Key (From_Key, Interfaces.C.To_Ada (Sub_Key));
 
-            exit when Quit;
+            Action (Natural (Index) + 1, Sub_Hkey, Current_Name, Quit);
 
-            if Recursive then
-               Sub_Hkey := Open_Key (From_Key, Interfaces.C.To_Ada (Sub_Key));
+            if not Quit and then Recursive then
                Recursive_For_Every_Key (Sub_Hkey, True, Quit);
-               Close_Key (Sub_Hkey);
             end if;
+
+            Close_Key (Sub_Hkey);
 
             exit when Quit;
 
@@ -302,7 +311,12 @@ package body GNAT.Registry is
          end loop;
       end Recursive_For_Every_Key;
 
+      --  Local Variables
+
       Quit : Boolean := False;
+
+   --  Start of processing for For_Every_Key
+
    begin
       Recursive_For_Every_Key (From_Key, Recursive, Quit);
    end For_Every_Key;
