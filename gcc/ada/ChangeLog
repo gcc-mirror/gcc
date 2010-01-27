@@ -1,3 +1,7 @@
+2010-01-27  Pascal Obry  <obry@adacore.com>
+
+	* g-awk.adb: ensure that an AWK session is reusable.
+
 2010-01-27  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* g-regist.adb (For_Every_Key): Fix previous change.
