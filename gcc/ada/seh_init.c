@@ -248,7 +248,7 @@ void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
   /* Get the end of the text section.  */
   extern char etext[] asm("etext");
   /* Get the base of the module.  */
-  extern char _ImageBase[];
+  extern char __ImageBase[];
 
   /* Current version is always 1 and we are registering an
      exception handler.  */
@@ -261,15 +261,15 @@ void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 
   /* Add the exception handler.  */
   unwind_info[0].AddressOfExceptionHandler =
-    (DWORD)((char *)__gnat_SEH_error_handler - _ImageBase);
+    (DWORD)((char *)__gnat_SEH_error_handler - __ImageBase);
 
   /* Set its scope to the entire program.  */
   Table[0].BeginAddress = 0;
-  Table[0].EndAddress = (DWORD)(etext - _ImageBase);
-  Table[0].UnwindData = (DWORD)((char *)unwind_info - _ImageBase);
+  Table[0].EndAddress = (DWORD)(etext - __ImageBase);
+  Table[0].UnwindData = (DWORD)((char *)unwind_info - __ImageBase);
 
   /* Register the unwind information.  */
-  RtlAddFunctionTable (Table, 1, (DWORD64)_ImageBase);
+  RtlAddFunctionTable (Table, 1, (DWORD64)__ImageBase);
 }
 
 #else /* defined (_WIN64) */
