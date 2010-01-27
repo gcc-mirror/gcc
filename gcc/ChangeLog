@@ -1,5 +1,8 @@
 2010-01-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000.c (TARGET_DELEGITIMIZE_ADDRESS): Redefine.
+	(rs6000_delegitimize_address): New function.
+
 	* config/s390/s390.c (s390_delegitimize_address): Call
 	delegitimize_mem_from_attrs.
 
