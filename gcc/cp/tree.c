@@ -1612,7 +1612,7 @@ no_linkage_check (tree t, bool relaxed_p)
       /* Fall through.  */
     case ENUMERAL_TYPE:
       /* Only treat anonymous types as having no linkage if they're at
-	 namespace scope.  This doesn't have a core issue number yet.  */
+	 namespace scope.  This is core issue 966.  */
       if (TYPE_ANONYMOUS_P (t) && TYPE_NAMESPACE_SCOPE_P (t))
 	return t;
 
