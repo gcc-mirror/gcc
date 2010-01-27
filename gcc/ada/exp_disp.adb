@@ -1447,26 +1447,22 @@ package body Exp_Disp is
       Actuals         : constant List_Id    := New_List;
       Decl            : constant List_Id    := New_List;
       Formals         : constant List_Id    := New_List;
+      Target          : constant Entity_Id  := Ultimate_Alias (Prim);
 
       Controlling_Typ : Entity_Id;
       Decl_1          : Node_Id;
       Decl_2          : Node_Id;
+      Expr            : Node_Id;
       Formal          : Node_Id;
+      Ftyp            : Entity_Id;
+      Iface_Formal    : Node_Id;
       New_Arg         : Node_Id;
       Offset_To_Top   : Node_Id;
-      Target          : Entity_Id;
       Target_Formal   : Entity_Id;
 
    begin
       Thunk_Id   := Empty;
       Thunk_Code := Empty;
-
-      --  Traverse the list of alias to find the final target
-
-      Target := Prim;
-      while Present (Alias (Target)) loop
-         Target := Alias (Target);
-      end loop;
 
       --  In case of primitives that are functions without formals and
       --  a controlling result there is no need to build the thunk.
@@ -1477,10 +1473,38 @@ package body Exp_Disp is
          return;
       end if;
 
-      --  Duplicate the formals
+      --  Duplicate the formals of the Target primitive. In the thunk, the type
+      --  of the controlling formal is the covered interface type (instead of
+      --  the target tagged type). Done to avoid problems with discriminated
+      --  tagged types because, if the controlling type has discriminants with
+      --  default values, then the type conversions done inside the body of the
+      --  thunk (after the displacement of the pointer to the base of the
+      --  actual object) generate code that modify its contents.
+
+      --  Note: This special management is not done for predefined primitives
+      --  because???
+
+      if not Is_Predefined_Dispatching_Operation (Prim) then
+         Iface_Formal := First_Formal (Interface_Alias (Prim));
+      end if;
 
       Formal := First_Formal (Target);
       while Present (Formal) loop
+         Ftyp := Etype (Formal);
+
+         --  Use the interface type as the type of the controlling formal (see
+         --  comment above)
+
+         if not Is_Controlling_Formal (Formal)
+           or else Is_Predefined_Dispatching_Operation (Prim)
+         then
+            Ftyp := Etype (Formal);
+            Expr := New_Copy_Tree (Expression (Parent (Formal)));
+         else
+            Ftyp := Etype (Iface_Formal);
+            Expr := Empty;
+         end if;
+
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
@@ -1488,9 +1512,12 @@ package body Exp_Disp is
                  Chars => Chars (Formal)),
              In_Present => In_Present (Parent (Formal)),
              Out_Present => Out_Present (Parent (Formal)),
-             Parameter_Type =>
-               New_Reference_To (Etype (Formal), Loc),
-             Expression => New_Copy_Tree (Expression (Parent (Formal)))));
+             Parameter_Type => New_Reference_To (Ftyp, Loc),
+             Expression => Expr));
+
+         if not Is_Predefined_Dispatching_Operation (Prim) then
+            Next_Formal (Iface_Formal);
+         end if;
 
          Next_Formal (Formal);
       end loop;
@@ -1500,10 +1527,24 @@ package body Exp_Disp is
       Target_Formal := First_Formal (Target);
       Formal        := First (Formals);
       while Present (Formal) loop
+
+         --  Handle concurrent types
+
          if Ekind (Target_Formal) = E_In_Parameter
            and then Ekind (Etype (Target_Formal)) = E_Anonymous_Access_Type
-           and then Directly_Designated_Type (Etype (Target_Formal))
-                     = Controlling_Typ
+         then
+            Ftyp := Directly_Designated_Type (Etype (Target_Formal));
+         else
+            Ftyp := Etype (Target_Formal);
+         end if;
+
+         if Is_Concurrent_Type (Ftyp) then
+            Ftyp := Corresponding_Record_Type (Ftyp);
+         end if;
+
+         if Ekind (Target_Formal) = E_In_Parameter
+           and then Ekind (Etype (Target_Formal)) = E_Anonymous_Access_Type
+           and then Ftyp = Controlling_Typ
          then
             --  Generate:
 
@@ -1522,9 +1563,7 @@ package body Exp_Disp is
                     Null_Exclusion_Present => False,
                     Constant_Present       => False,
                     Subtype_Indication     =>
-                      New_Reference_To
-                        (Directly_Designated_Type
-                          (Etype (Target_Formal)), Loc)));
+                      New_Reference_To (Ftyp, Loc)));
 
             New_Arg :=
               Unchecked_Convert_To (RTE (RE_Address),
@@ -1568,7 +1607,7 @@ package body Exp_Disp is
                 (Defining_Identifier (Decl_2),
                  New_Reference_To (Defining_Identifier (Decl_1), Loc)));
 
-         elsif Etype (Target_Formal) = Controlling_Typ then
+         elsif Ftyp = Controlling_Typ then
             --  Generate:
 
             --     S1 : Storage_Offset := Storage_Offset!(Formal'Address)
@@ -1630,8 +1669,7 @@ package body Exp_Disp is
             --    Target_Formal (S2.all)
 
             Append_To (Actuals,
-              Unchecked_Convert_To
-                (Etype (Target_Formal),
+              Unchecked_Convert_To (Ftyp,
                  Make_Explicit_Dereference (Loc,
                    New_Reference_To (Defining_Identifier (Decl_2), Loc))));
 

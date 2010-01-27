@@ -1,3 +1,13 @@
+2010-01-27  Tristan Gingold  <gingold@adacore.com>
+
+	* seh_init.c: Use __ImageBase instead of _ImageBase.
+
+2010-01-27  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.ads, exp_disp.adb (Expand_Interface_Thunk): Modify the
+	profile of interface thunks. The type of the controlling formal is now
+	the covered interface type (instead of the target tagged type).
+
 2010-01-27  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_rm.texi, gnat_ugn.texi: Update gnatcheck doc.
