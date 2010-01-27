@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2008, AdaCore                     --
+--                     Copyright (C) 2000-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -294,6 +294,10 @@ package body GNAT.AWK is
       --  We release the session data only if it is not the default session
 
       if Session.Data /= Get_Def then
+         --  Release separators
+
+         Free (Session.Data.Separators);
+
          Free (Session.Data);
 
          --  Since we have closed the current session, set it to point now to
@@ -485,11 +489,10 @@ package body GNAT.AWK is
       procedure Current_Line (S : Separator; Session : Session_Type) is
          Line   : constant String := To_String (Session.Data.Current_Line);
          Fields : Field_Table.Instance renames Session.Data.Fields;
+         Seps   : constant Maps.Character_Set := Maps.To_Set (S.Separators);
 
-         Start : Natural;
-         Stop  : Natural;
-
-         Seps  : constant Maps.Character_Set := Maps.To_Set (S.Separators);
+         Start  : Natural;
+         Stop   : Natural;
 
       begin
          --  First field start here
@@ -506,8 +509,8 @@ package body GNAT.AWK is
             --  Look for next separator
 
             Stop := Fixed.Index
-              (Source  => Line (Start .. Line'Last),
-               Set     => Seps);
+              (Source => Line (Start .. Line'Last),
+               Set    => Seps);
 
             exit when Stop = 0;
 
@@ -526,6 +529,7 @@ package body GNAT.AWK is
                if Start = 0 then
                   Start := Stop + 1;
                end if;
+
             else
                Start := Stop + 1;
             end if;
@@ -706,10 +710,6 @@ package body GNAT.AWK is
       if Text_IO.Is_Open (Session.Data.Current_File) then
          Text_IO.Close (Session.Data.Current_File);
       end if;
-
-      --  Release separators
-
-      Free (Session.Data.Separators);
 
       --  Release Filters table
 
