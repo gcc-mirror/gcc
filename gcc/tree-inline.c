@@ -311,17 +311,7 @@ remap_decl (tree decl, copy_body_data *id)
 	  && (TREE_CODE (t) == VAR_DECL
 	      || TREE_CODE (t) == RESULT_DECL || TREE_CODE (t) == PARM_DECL))
 	{
-          tree def = gimple_default_def (id->src_cfun, decl);
 	  get_var_ann (t);
-	  if (TREE_CODE (decl) != PARM_DECL && def)
-	    {
-	      tree map = remap_ssa_name (def, id);
-	      /* Watch out RESULT_DECLs whose SSA names map directly
-		 to them.  */
-	      if (TREE_CODE (map) == SSA_NAME
-		  && gimple_nop_p (SSA_NAME_DEF_STMT (map)))
-	        set_default_def (t, map);
-	    }
 	  add_referenced_var (t);
 	}
       return t;
