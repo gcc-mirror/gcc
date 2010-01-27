@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -O1" } // XXX -O1 via PR42346
+// { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
 // 2009-09-09  Benjamin Kosnik  <benjamin@redhat.com>
