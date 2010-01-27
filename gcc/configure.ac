@@ -3567,9 +3567,9 @@ Valid choices are 'yes' and 'no'.]) ;;
    [.type foo, @gnu_unique_object],,
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
    [if test x$host = x$build -a x$host = x$target &&
-       glibcver=`ldd --version 2>/dev/null`; then
-      glibcmajor=`expr "$glibcver" : "ldd (GNU libc) \([[0-9]]*\)"`
-      glibcminor=`expr "$glibcver" : "ldd (GNU libc) [[0-9]]*\.\([[0-9]]*\)"`
+       glibcver=`ldd --version 2>/dev/null | sed 's/.* //;q'`; then
+      glibcmajor=`expr "$glibcver" : "\([0-9]*\)"`
+      glibcminor=`expr "$glibcver" : "[2-9]*\.\([0-9]*\)"`
       glibcnum=`expr $glibcmajor \* 1000 + $glibcminor`
       if test "$glibcnum" -ge 2011 ; then
         enable_gnu_unique_object=yes
