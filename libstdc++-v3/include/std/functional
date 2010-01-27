@@ -1940,9 +1940,16 @@ namespace std
        */
       void swap(function& __x)
       {
-	_Any_data __old_functor = _M_functor;
-	_M_functor = __x._M_functor;
-	__x._M_functor = __old_functor;
+	/* We cannot perform direct assignments of the _M_functor
+	   parts as they are of type _Any_data and have a different
+	   dynamic type.  Doing so would violate type-based aliasing
+	   rules and lead to spurious miscompilations.
+	   Instead perform a bytewise exchange of the memory of
+	   both POD objects.
+	   ???  A wordwise exchange honoring alignment of _M_functor
+	   would be more efficient.  See PR42845.  */
+	for (unsigned i = 0; i < sizeof (_M_functor._M_pod_data); ++i)
+	  std::swap (_M_functor._M_pod_data[i], __x._M_functor._M_pod_data[i]);
 	_Manager_type __old_manager = _M_manager;
 	_M_manager = __x._M_manager;
 	__x._M_manager = __old_manager;
