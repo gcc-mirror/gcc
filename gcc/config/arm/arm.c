@@ -1,6 +1,6 @@
 /* Output routines for GCC for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -5150,7 +5150,8 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 	    }
 
 	  emit_insn (gen_pic_load_addr_thumb2 (pic_reg, pic_rtx));
-	  emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
+	  emit_insn (gen_pic_load_dot_plus_four (pic_tmp, labelno));
+	  emit_insn (gen_addsi3 (pic_reg, pic_reg, pic_tmp));
 	}
       else /* TARGET_THUMB1 */
 	{
