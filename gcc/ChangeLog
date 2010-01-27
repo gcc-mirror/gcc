@@ -1,3 +1,10 @@
+2010-01-27  Christian Bruel  <christian.bruel@st.com>
+
+	Revert:
+	PR target/42841
+	* config/sh/sh.c (find_barrier): Increase length for non delayed
+	conditional branches.
+	
 2010-01-27  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac (gnu-unique-object): Fix ldd version check.

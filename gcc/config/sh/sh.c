@@ -4567,13 +4567,6 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	       && ! TARGET_SMALLCODE)
 	new_align = 4;
 
-      /* There is a possibility that a bf is transformed into a bf/s by the
-	 delay slot scheduler.  */
-      if (JUMP_P (from) && !JUMP_TABLE_DATA_P (from) 
-	  && get_attr_type (from) == TYPE_CBRANCH
-	  && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (from)))) != SEQUENCE)
-	inc += 2;
-
       if (found_si)
 	{
 	  count_si += inc;
