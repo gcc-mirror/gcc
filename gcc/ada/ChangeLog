@@ -1,3 +1,8 @@
+2010-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* sinput.ads, sinput.adb (Sloc_Range): Applies to all nodes, formal
+	changed from Expr to N.
+
 2010-01-26  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_ugn.texi: Adjust documentation of -gnatz switches.

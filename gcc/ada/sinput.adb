@@ -693,10 +693,10 @@ package body Sinput is
    -- Sloc_Range --
    ----------------
 
-   procedure Sloc_Range (Expr : Node_Id; Min, Max : out Source_Ptr) is
+   procedure Sloc_Range (N : Node_Id; Min, Max : out Source_Ptr) is
 
       function Process (N : Node_Id) return Traverse_Result;
-      --  Process function for traversing the expression tree
+      --  Process function for traversing the node tree
 
       procedure Traverse is new Traverse_Proc (Process);
 
@@ -722,9 +722,9 @@ package body Sinput is
    --  Start of processing for Sloc_Range
 
    begin
-      Min := Sloc (Expr);
-      Max := Sloc (Expr);
-      Traverse (Expr);
+      Min := Sloc (N);
+      Max := Sloc (N);
+      Traverse (N);
    end Sloc_Range;
 
    -------------------
