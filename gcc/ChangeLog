@@ -1,3 +1,8 @@
+2010-01-27  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (gnu-unique-object): Fix ldd version check.
+	* configure: Regenerate.
+
 2010-01-27  Wei Guozhi  <carrot@google.com>
 
         PR target/42671
