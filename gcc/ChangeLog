@@ -1,3 +1,9 @@
+2010-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42878
+	* tree-inline.c (remap_decl): Delay remapping of SSA name
+	default definitions until we need them.
+
 2010-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (TARGET_DELEGITIMIZE_ADDRESS): Redefine.

@@ -1,3 +1,9 @@
+2010-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42878
+	* gcc.dg/torture/pr42878-1.c: New testcase.
+	* gcc.dg/torture/pr42878-2.c: Likewise.
+
 2010-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/42874
