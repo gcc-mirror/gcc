@@ -1443,11 +1443,11 @@ package body Exp_Disp is
       Thunk_Id   : out Entity_Id;
       Thunk_Code : out Node_Id)
    is
-      Loc             : constant Source_Ptr := Sloc (Prim);
-      Actuals         : constant List_Id    := New_List;
-      Decl            : constant List_Id    := New_List;
-      Formals         : constant List_Id    := New_List;
-      Target          : constant Entity_Id  := Ultimate_Alias (Prim);
+      Loc     : constant Source_Ptr := Sloc (Prim);
+      Actuals : constant List_Id    := New_List;
+      Decl    : constant List_Id    := New_List;
+      Formals : constant List_Id    := New_List;
+      Target  : constant Entity_Id  := Ultimate_Alias (Prim);
 
       Controlling_Typ : Entity_Id;
       Decl_1          : Node_Id;
@@ -1464,8 +1464,8 @@ package body Exp_Disp is
       Thunk_Id   := Empty;
       Thunk_Code := Empty;
 
-      --  In case of primitives that are functions without formals and
-      --  a controlling result there is no need to build the thunk.
+      --  In case of primitives that are functions without formals and a
+      --  controlling result there is no need to build the thunk.
 
       if not Present (First_Formal (Target)) then
          pragma Assert (Ekind (Target) = E_Function
@@ -1477,8 +1477,8 @@ package body Exp_Disp is
       --  of the controlling formal is the covered interface type (instead of
       --  the target tagged type). Done to avoid problems with discriminated
       --  tagged types because, if the controlling type has discriminants with
-      --  default values, then the type conversions done inside the body of the
-      --  thunk (after the displacement of the pointer to the base of the
+      --  default values, then the type conversions done inside the body of
+      --  the thunk (after the displacement of the pointer to the base of the
       --  actual object) generate code that modify its contents.
 
       --  Note: This special management is not done for predefined primitives
@@ -1493,7 +1493,7 @@ package body Exp_Disp is
          Ftyp := Etype (Formal);
 
          --  Use the interface type as the type of the controlling formal (see
-         --  comment above)
+         --  comment above).
 
          if not Is_Controlling_Formal (Formal)
            or else Is_Predefined_Dispatching_Operation (Prim)
@@ -1547,7 +1547,6 @@ package body Exp_Disp is
            and then Ftyp = Controlling_Typ
          then
             --  Generate:
-
             --     type T is access all <<type of the target formal>>
             --     S : Storage_Offset := Storage_Offset!(Formal)
             --                            - Offset_To_Top (address!(Formal))
@@ -1608,8 +1607,8 @@ package body Exp_Disp is
                  New_Reference_To (Defining_Identifier (Decl_1), Loc)));
 
          elsif Ftyp = Controlling_Typ then
-            --  Generate:
 
+            --  Generate:
             --     S1 : Storage_Offset := Storage_Offset!(Formal'Address)
             --                             - Offset_To_Top (Formal'Address)
             --     S2 : Addr_Ptr := Addr_Ptr!(S1)
@@ -1690,6 +1689,8 @@ package body Exp_Disp is
 
       Set_Is_Thunk (Thunk_Id);
 
+      --  Procedure case
+
       if Ekind (Target) = E_Procedure then
          Thunk_Code :=
            Make_Subprogram_Body (Loc,
@@ -1705,8 +1706,9 @@ package body Exp_Disp is
                       Name => New_Occurrence_Of (Target, Loc),
                       Parameter_Associations => Actuals))));
 
-      else pragma Assert (Ekind (Target) = E_Function);
+      --  Function case
 
+      else pragma Assert (Ekind (Target) = E_Function);
          Thunk_Code :=
            Make_Subprogram_Body (Loc,
               Specification =>

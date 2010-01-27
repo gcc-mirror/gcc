@@ -1,3 +1,15 @@
+2010-01-27  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: When there is only one main specified, the package
+	support Switches (<main>) and attribute Switches is specified for the
+	main, use these switches, instead of Default_Switches ("Ada").
+
+2010-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb, par-prag.adb, snames.ads-tmpl: pragma Dimension initial
+	implementation.
+	* exp_disp.adb: Minor reformatting
+
 2010-01-27  Tristan Gingold  <gingold@adacore.com>
 
 	* seh_init.c: Use __ImageBase instead of _ImageBase.

@@ -1081,6 +1081,7 @@ begin
            Pragma_Convention                    |
            Pragma_Debug_Policy                  |
            Pragma_Detect_Blocking               |
+           Pragma_Dimension                     |
            Pragma_Discard_Names                 |
            Pragma_Eliminate                     |
            Pragma_Elaborate                     |

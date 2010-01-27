@@ -6490,6 +6490,24 @@ package body Sem_Prag is
             Check_Valid_Configuration_Pragma;
             Detect_Blocking := True;
 
+         ---------------
+         -- Dimension --
+         ---------------
+
+         when Pragma_Dimension =>
+            GNAT_Pragma;
+            Check_Arg_Count (4);
+            Check_No_Identifiers;
+            Check_Arg_Is_Local_Name (Arg1);
+
+            if not Is_Type (Arg1) then
+               Error_Pragma ("first argument for pragma% must be subtype");
+            end if;
+
+            Check_Arg_Is_Static_Expression (Arg2, Standard_Integer);
+            Check_Arg_Is_Static_Expression (Arg3, Standard_Integer);
+            Check_Arg_Is_Static_Expression (Arg4, Standard_Integer);
+
          -------------------
          -- Discard_Names --
          -------------------
@@ -12450,14 +12468,13 @@ package body Sem_Prag is
    -----------------------------------------
 
    --  This function makes use of the following static table which indicates
-   --  whether a given pragma is significant. A value of -1 in this table
-   --  indicates that the reference is significant. A value of zero indicates
-   --  than appearance as any argument is insignificant, a positive value
-   --  indicates that appearance in that parameter position is significant.
+   --  whether a given pragma is significant.
 
-   --  A value of 99 flags a special case requiring a special check (this is
-   --  used for cases not covered by this standard encoding, e.g. pragma Check
-   --  where the first argument is not significant, but the others are).
+   --  -1  indicates that references in any argument position are significant
+   --  0   indicates that appearence in any argument is not significant
+   --  +n  indicates that appearence as argument n is significant, but all
+   --      other arguments are not significant
+   --  99  special processing required (e.g. for pragma Check)
 
    Sig_Flags : constant array (Pragma_Id) of Int :=
      (Pragma_AST_Entry                     => -1,
@@ -12498,6 +12515,7 @@ package body Sem_Prag is
       Pragma_Debug                         => -1,
       Pragma_Debug_Policy                  =>  0,
       Pragma_Detect_Blocking               => -1,
+      Pragma_Dimension                     => -1,
       Pragma_Discard_Names                 =>  0,
       Pragma_Elaborate                     => -1,
       Pragma_Elaborate_All                 => -1,
