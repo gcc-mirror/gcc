@@ -16454,7 +16454,7 @@ package_spec ::=
 package_identifier ::=
   @code{Naming} | @code{Builder} | @code{Compiler} | @code{Binder} |
   @code{Linker} | @code{Finder}  | @code{Cross_Reference} |
-  @code{gnatls} | @code{IDE}     | @code{Pretty_Printer}
+  @code{gnatls} | @code{IDE}     | @code{Pretty_Printer} | @code{Check}
 @end smallexample
 
 @subsection Package Naming
@@ -16773,6 +16773,25 @@ options to be used when calling @command{gnatfind} on the named main source.
 If a source is not specified in the Switches attribute, @command{gnatfind} will
 be called with the options specified by Default_Switches of its language,
 if defined.
+@end table
+
+@subsection package Check
+
+@noindent
+The attributes of package @code{Check}
+specify the checking rule options to be used
+when invoking the checking tool @command{gnatcheck}.
+The following attributes apply to package @code{Check}:
+
+@table @code
+@item     Default_switches
+This is an associative array attribute. Its
+domain is a set of language names. Its range is a string list that
+specifies options to be used when calling @command{gnatcheck} on a source
+written in that language. The first string in the range should always be
+@code{"-rules"} to specify that all the other options belong to the
+@code{-rules} section of the parameters of @command{gnatcheck} call.
+
 @end table
 
 @subsection package Pretty_Printer
