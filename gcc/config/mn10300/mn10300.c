@@ -88,6 +88,8 @@ static void mn10300_asm_trampoline_template (FILE *);
 static void mn10300_trampoline_init (rtx, tree, rtx);
 static rtx mn10300_function_value (const_tree, const_tree, bool);
 static rtx mn10300_libcall_value (enum machine_mode, const_rtx);
+static void mn10300_asm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
+static bool mn10300_can_output_mi_thunk (const_tree, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -145,6 +147,11 @@ static rtx mn10300_libcall_value (enum machine_mode, const_rtx);
 #define TARGET_FUNCTION_VALUE mn10300_function_value
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE mn10300_libcall_value
+
+#undef  TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK      mn10300_asm_output_mi_thunk
+#undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK  mn10300_can_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1536,13 +1543,13 @@ mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 }
 
 /* Return an RTX to represent where a value with mode MODE will be returned
-   from a function.  If the result is 0, the argument is pushed.  */
+   from a function.  If the result is NULL_RTX, the argument is pushed.  */
 
 rtx
 function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      tree type, int named ATTRIBUTE_UNUSED)
 {
-  rtx result = 0;
+  rtx result = NULL_RTX;
   int size, align;
 
   /* We only support using 2 data registers as argument registers.  */
@@ -1562,24 +1569,24 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   /* Don't pass this arg via a register if all the argument registers
      are used up.  */
   if (cum->nbytes > nregs * UNITS_PER_WORD)
-    return 0;
+    return result;
 
   /* Don't pass this arg via a register if it would be split between
      registers and memory.  */
   if (type == NULL_TREE
       && cum->nbytes + size > nregs * UNITS_PER_WORD)
-    return 0;
+    return result;
 
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx_REG (mode, 0);
+      result = gen_rtx_REG (mode, FIRST_ARGUMENT_REGNUM);
       break;
     case 1:
-      result = gen_rtx_REG (mode, 1);
+      result = gen_rtx_REG (mode, FIRST_ARGUMENT_REGNUM + 1);
       break;
     default:
-      result = 0;
+      break;
     }
 
   return result;
@@ -2230,4 +2237,62 @@ mn10300_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_move_insn (mem, chain_value);
   mem = adjust_address (m_tramp, SImode, 0x18);
   emit_move_insn (mem, fnaddr);
+}
+
+/* Output the assembler code for a C++ thunk function.
+   THUNK_DECL is the declaration for the thunk function itself, FUNCTION
+   is the decl for the target function.  DELTA is an immediate constant
+   offset to be added to the THIS parameter.  If VCALL_OFFSET is nonzero
+   the word at the adjusted address *(*THIS' + VCALL_OFFSET) should be
+   additionally added to THIS.  Finally jump to the entry point of
+   FUNCTION.  */
+
+static void
+mn10300_asm_output_mi_thunk (FILE *        file,
+			     tree          thunk_fndecl ATTRIBUTE_UNUSED,
+			     HOST_WIDE_INT delta,
+			     HOST_WIDE_INT vcall_offset,
+			     tree          function)
+{
+  const char * _this;
+
+  /* Get the register holding the THIS parameter.  Handle the case
+     where there is a hidden first argument for a returned structure.  */
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
+    _this = reg_names [FIRST_ARGUMENT_REGNUM + 1];
+  else
+    _this = reg_names [FIRST_ARGUMENT_REGNUM];
+
+  fprintf (file, "\t%s Thunk Entry Point:\n", ASM_COMMENT_START);
+
+  if (delta)
+    fprintf (file, "\tadd %d, %s\n", (int) delta, _this);
+
+  if (vcall_offset)
+    {
+      const char * scratch = reg_names [FIRST_ADDRESS_REGNUM + 1];
+
+      fprintf (file, "\tmov %s, %s\n", _this, scratch);
+      fprintf (file, "\tmov (%s), %s\n", scratch, scratch);
+      fprintf (file, "\tadd %d, %s\n", (int) vcall_offset, scratch);
+      fprintf (file, "\tmov (%s), %s\n", scratch, scratch);
+      fprintf (file, "\tadd %s, %s\n", scratch, _this);
+    }
+
+  fputs ("\tjmp ", file);
+  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+  putc ('\n', file);
+}
+
+/* Return true if mn10300_output_mi_thunk would be able to output the
+   assembler code for the thunk function specified by the arguments
+   it is passed, and false otherwise.  */
+
+static bool
+mn10300_can_output_mi_thunk (const_tree    thunk_fndecl ATTRIBUTE_UNUSED,
+			     HOST_WIDE_INT delta        ATTRIBUTE_UNUSED,
+			     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+			     const_tree    function     ATTRIBUTE_UNUSED)
+{
+  return true;
 }

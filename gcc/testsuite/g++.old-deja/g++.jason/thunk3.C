@@ -1,4 +1,4 @@
-// { dg-do run { xfail rs6000-*-* powerpc-*-eabi mn10300-*-* v850-*-* sh-*-* sh64-*-* h8*-*-* xtensa*-*-* m32r*-*-* lm32-*-* } }
+// { dg-do run { xfail rs6000-*-* powerpc-*-eabi v850-*-* sh-*-* sh64-*-* h8*-*-* xtensa*-*-* m32r*-*-* lm32-*-* } }
 // Test that variadic function calls using thunks work right.
 // Note that this will break on any target that uses the generic thunk
 //  support, because it doesn't support variadic functions.
