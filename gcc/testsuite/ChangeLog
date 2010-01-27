@@ -1,3 +1,8 @@
+2010-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42874
+	* gcc.dg/vla-22.c: New test.
+
 2010-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* ada/acats/run_all.sh: Make sure norun.lst is sorted using the

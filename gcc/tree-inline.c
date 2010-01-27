@@ -2730,39 +2730,6 @@ has_label_address_in_static_1 (tree *nodep, int *walk_subtrees, void *fnp)
   return NULL_TREE;
 }
 
-/* Callback through walk_tree.  Determine if we've got an aggregate
-   type that we can't support; return non-null if so.  */
-
-static tree
-cannot_copy_type_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
-                    void *data ATTRIBUTE_UNUSED)
-{
-  tree t, node = *nodep;
-
-  if (TREE_CODE (node) == RECORD_TYPE || TREE_CODE (node) == UNION_TYPE)
-    {
-      /* We cannot inline a function of the form
-
-	   void F (int i) { struct S { int ar[i]; } s; }
-
-	 Attempting to do so produces a catch-22.
-	 If walk_tree examines the TYPE_FIELDS chain of RECORD_TYPE/
-	 UNION_TYPE nodes, then it goes into infinite recursion on a
-	 structure containing a pointer to its own type.  If it doesn't,
-	 then the type node for S doesn't get adjusted properly when
-	 F is inlined.
-
-	 ??? This is likely no longer true, but it's too late in the 4.0
-	 cycle to try to find out.  This should be checked for 4.1.  */
-      for (t = TYPE_FIELDS (node); t; t = TREE_CHAIN (t))
-	if (variably_modified_type_p (TREE_TYPE (t), NULL))
-	  return node;
-    }
-
-  return NULL_TREE;
-}
-
-
 /* Determine if the function can be copied.  If so return NULL.  If
    not return a string describng the reason for failure.  */
 
@@ -2803,16 +2770,6 @@ copy_forbidden (struct function *fun, tree fndecl)
 	{
 	  reason = G_("function %q+F can never be copied because it saves "
 		      "address of local label in a static variable");
-	  goto fail;
-	}
-
-      if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl)
-	  && variably_modified_type_p (TREE_TYPE (decl), NULL)
-	  && walk_tree_without_duplicates (&TREE_TYPE (decl),
-					   cannot_copy_type_1, NULL))
-	{
-	  reason = G_("function %q+F can never be copied "
-		      "because it uses variable sized variables");
 	  goto fail;
 	}
     }
