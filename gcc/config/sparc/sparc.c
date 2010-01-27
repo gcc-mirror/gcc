@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -371,7 +371,7 @@ static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
-#if defined (OBJECT_FORMAT_ELF) && !defined (HAVE_GNU_AS)
+#if defined (OBJECT_FORMAT_ELF) && !HAVE_GNU_AS
 static void sparc_elf_asm_named_section (const char *, unsigned int, tree);
 #endif
 
@@ -7786,7 +7786,7 @@ sparc_profile_hook (int labelno)
   emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
 }
 
-#if defined (OBJECT_FORMAT_ELF) && !defined (HAVE_GNU_AS)
+#if defined (OBJECT_FORMAT_ELF) && !HAVE_GNU_AS
 static void
 sparc_elf_asm_named_section (const char *name, unsigned int flags,
 			     tree decl)
