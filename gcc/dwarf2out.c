@@ -12991,6 +12991,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	mem_loc_result = tls_mem_loc_descriptor (rtl);
       if (mem_loc_result != 0)
 	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
+      else
+	{
+	  rtx new_rtl = avoid_constant_pool_reference (rtl);
+	  if (new_rtl != rtl)
+	    return mem_loc_descriptor (new_rtl, mode, initialized);
+	}
       break;
 
     case LO_SUM:
@@ -13004,34 +13010,6 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	 pool.  */
     case CONST:
     case SYMBOL_REF:
-      /* Alternatively, the symbol in the constant pool might be referenced
-	 by a different symbol.  */
-      if (GET_CODE (rtl) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (rtl))
-	{
-	  bool marked;
-	  rtx tmp = get_pool_constant_mark (rtl, &marked);
-
-	  if (GET_CODE (tmp) == SYMBOL_REF)
-	    {
-	      rtl = tmp;
-	      if (CONSTANT_POOL_ADDRESS_P (tmp))
-		get_pool_constant_mark (tmp, &marked);
-	      else
-		marked = true;
-	    }
-
-	  /* If all references to this pool constant were optimized away,
-	     it was not output and thus we can't represent it.
-	     FIXME: might try to use DW_OP_const_value here, though
-	     DW_OP_piece complicates it.  */
-	  if (!marked)
-	    {
-	      expansion_failed (NULL_TREE, rtl,
-				"Constant was removed from constant pool.\n");
-	      return 0;
-	    }
-	}
-
       if (GET_CODE (rtl) == SYMBOL_REF
 	  && SYMBOL_REF_TLS_MODEL (rtl) != TLS_MODEL_NONE)
 	{
@@ -13623,6 +13601,12 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 				       initialized);
       if (loc_result == NULL)
 	loc_result = tls_mem_loc_descriptor (rtl);
+      if (loc_result == NULL)
+	{
+	  rtx new_rtl = avoid_constant_pool_reference (rtl);
+	  if (new_rtl != rtl)
+	    loc_result = loc_descriptor (new_rtl, mode, initialized);
+	}
       break;
 
     case CONCAT:
@@ -13897,10 +13881,19 @@ dw_loc_list_1 (tree loc, rtx varloc, int want_address,
 	  mode = GET_MODE (varloc);
 	  if (MEM_P (varloc))
 	    {
-	      varloc = XEXP (varloc, 0);
-	      have_address = 1;
+	      rtx addr = XEXP (varloc, 0);
+	      descr = mem_loc_descriptor (addr, mode, initialized);
+	      if (descr)
+		have_address = 1;
+	      else
+		{
+		  rtx x = avoid_constant_pool_reference (varloc);
+		  if (x != varloc)
+		    descr = mem_loc_descriptor (x, mode, initialized);
+		}
 	    }
-	  descr = mem_loc_descriptor (varloc, mode, initialized);
+	  else
+	    descr = mem_loc_descriptor (varloc, mode, initialized);
 	}
       else
 	return 0;

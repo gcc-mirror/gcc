@@ -1,3 +1,16 @@
+2010-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Remove special casing of
+	CONSTANT_POOL_ADDRESS_P SYMBOL_REFs.  If for MEM recursive call
+	on MEM's address failed, try avoid_constant_pool_reference and
+	recurse if it returned something different.
+	(loc_descriptor): If for MEM mem_loc_descriptor failed on the
+	address, try avoid_constant_pool_reference and recurse if it
+	returned something different.
+	(dw_loc_list_1): If for MEM mem_loc_descriptor failed on the
+	address and avoid_constant_pool_reference returned something
+	different, don't set have_address.
+
 2010-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42861
