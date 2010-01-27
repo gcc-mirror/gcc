@@ -1,3 +1,10 @@
+2010-01-27  Richard Guenther  <rguenther@suse.de>
+
+	PR libstdc++/42832
+	* include/std/functional (function<>::swap): Perform bytewise
+	swap of _M_functor.
+	* include/tr1/functional (function<>::swap): Likewise.
+
 2010-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/abi/pre/gnu.ver: Avoid time_get pattern conflicts.
