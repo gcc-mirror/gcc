@@ -1,5 +1,8 @@
 2010-01-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/s390/s390.c (s390_delegitimize_address): Call
+	delegitimize_mem_from_attrs.
+
 	PR middle-end/42874
 	* tree-inline.c (cannot_copy_type_1): Removed.
 	(copy_forbidden): Don't forbid copying of functions containing

@@ -4762,8 +4762,10 @@ s390_mangle_type (const_tree type)
 static rtx
 s390_delegitimize_address (rtx orig_x)
 {
-  rtx x = orig_x, y;
+  rtx x, y;
 
+  orig_x = delegitimize_mem_from_attrs (orig_x);
+  x = orig_x;
   if (GET_CODE (x) != MEM)
     return orig_x;
 
