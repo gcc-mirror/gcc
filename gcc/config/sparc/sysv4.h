@@ -127,7 +127,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    "\t.section\t\".dtors\",#alloc,#write"
 
-#ifndef HAVE_GNU_AS
+#if !HAVE_GNU_AS
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  sparc_elf_asm_named_section

@@ -368,7 +368,7 @@ static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
-#if defined (OBJECT_FORMAT_ELF) && !defined (HAVE_GNU_AS)
+#if defined (OBJECT_FORMAT_ELF) && !HAVE_GNU_AS
 static void sparc_elf_asm_named_section (const char *, unsigned int, tree);
 #endif
 
@@ -7986,7 +7986,7 @@ sparc_profile_hook (int labelno)
     }
 }
 
-#if defined (OBJECT_FORMAT_ELF) && !defined (HAVE_GNU_AS)
+#if defined (OBJECT_FORMAT_ELF) && !HAVE_GNU_AS
 static void
 sparc_elf_asm_named_section (const char *name, unsigned int flags,
 			     tree decl)

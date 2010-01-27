@@ -1,5 +1,12 @@
 2010-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/sparc/sparc.c (sparc_elf_asm_named_section): Test for
+	HAVE_GNU_AS value.
+	* config/sparc/sysv4.h [HAVE_GNU_AS] (TARGET_ASM_NAMED_SECTION):
+	Test for HAVE_GNU_AS value.
+
+2010-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (mips-sgi-irix[56]*): Set use_gcc_stdint.
 	* config/mips/iris.h (INT8_TYPE, INT16_TYPE, INT32_TYPE,
 	INT64_TYPE): Define.
@@ -62,9 +69,9 @@
 
 2010-01-24  David S. Miller  <davem@davemloft.net>
 
-	* gcc/config/sparc/sysv4.h (TARGET_ASM_NAMED_SECTION): Only
+	* config/sparc/sysv4.h (TARGET_ASM_NAMED_SECTION): Only
 	define if not using GAS.
-	* gcc/config/sparc/sparc.c (sparc_elf_asm_named_section):
+	* config/sparc/sparc.c (sparc_elf_asm_named_section):
 	Likewise.  Delete SECTION_MERGE code, which is only applicable
 	when using GAS.
 
@@ -276,7 +283,7 @@
 	(reassociate_to_the_same_stmt): Handle vector registers.
 	* tree-vect-data-refs.c (vect_equal_offsets): Handle unary operations
 	(e.g. conversions).
-	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop): Add 
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop): Add
 	wide_prolog_niters argument, emit widening instructions.
 	(vect_do_peeling_for_alignment): Adjust caller, use widened
 	variant of the iteration cound.
@@ -456,7 +463,7 @@
 
 	(TARGET_SET_DEFAULT_TYPE_ATTRIBUTES): Add missing article.
 
-	(TARGET_OPTION_VALID_ATTRIBUTE_P): Fix name, it was 
+	(TARGET_OPTION_VALID_ATTRIBUTE_P): Fix name, it was
 	misspelled as TARGET_VALID_OPTION_ATTRIBUTE_P.
 
 	(TARGET_GET_PCH_VALIDITY): Put 'void *' in braces.
