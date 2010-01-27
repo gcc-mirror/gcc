@@ -1,3 +1,13 @@
+2010-01-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42861
+	* var-tracking.c (val_store): Add modified argument, obey it.
+	Adjust callers.
+	(count_uses): Move down logging of main.
+	(compute_bb_dataflow): Use val_store for MO_VAL_USEs that
+	don't need resolution.
+	(emit_notes_in_bb): Likewise.
+
 2010-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42878
