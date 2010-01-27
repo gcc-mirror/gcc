@@ -1807,11 +1807,13 @@ begin
 
             Element : Package_Element;
 
-            Default_Switches_Array : Array_Element_Id;
+            Switches_Array : Array_Element_Id;
 
             The_Switches : Prj.Variable_Value;
             Current      : Prj.String_List_Id;
             The_String   : String_Element;
+
+            Main : String_Access := null;
 
          begin
             if Pkg /= No_Package then
@@ -1838,8 +1840,37 @@ begin
                --  name of the programming language.
 
                else
+                  --  First check if there is a single main
+
+                  for J in 1 .. Last_Switches.Last loop
+                     if Last_Switches.Table (J) (1) /= '-' then
+                        if Main = null then
+                           Main := Last_Switches.Table (J);
+
+                        else
+                           Main := null;
+                           exit;
+                        end if;
+                     end if;
+                  end loop;
+
+                  if Main /= null then
+                     Switches_Array :=
+                       Prj.Util.Value_Of
+                         (Name      => Name_Switches,
+                          In_Arrays => Element.Decl.Arrays,
+                          In_Tree   => Project_Tree);
+                     Name_Len := 0;
+                     Add_Str_To_Name_Buffer (Main.all);
+                     The_Switches := Prj.Util.Value_Of
+                       (Index     => Name_Find,
+                        Src_Index => 0,
+                        In_Array  => Switches_Array,
+                        In_Tree   => Project_Tree);
+                  end if;
+
                   if The_Switches.Kind = Prj.Undefined then
-                     Default_Switches_Array :=
+                     Switches_Array :=
                        Prj.Util.Value_Of
                          (Name      => Name_Default_Switches,
                           In_Arrays => Element.Decl.Arrays,
@@ -1847,7 +1878,7 @@ begin
                      The_Switches := Prj.Util.Value_Of
                        (Index     => Name_Ada,
                         Src_Index => 0,
-                        In_Array  => Default_Switches_Array,
+                        In_Array  => Switches_Array,
                         In_Tree   => Project_Tree);
                   end if;
                end if;
