@@ -595,10 +595,10 @@ package Sinput is
    --  makes sure that the lines table for the current source file has an
    --  appropriate entry for the start of the new physical line.
 
-   procedure Sloc_Range (Expr : Node_Id; Min, Max : out Source_Ptr);
-   --  Given a node for a subexpression, returns the minimum and maximum source
-   --  locations of any node in the expression subtree. This is not quite the
-   --  same as the locations of the first and last token in the expresion
+   procedure Sloc_Range (N : Node_Id; Min, Max : out Source_Ptr);
+   --  Given a node, returns the minimum and maximum source locations of any
+   --  node in the syntactic subtree for the node. This is not quite the same
+   --  as the locations of the first and last token in the node construct
    --  because parentheses at the outer level do not have a recorded Sloc.
    --
    --  Note: if the tree for the expression contains no "real" Sloc values,
