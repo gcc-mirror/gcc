@@ -1,3 +1,7 @@
+2010-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/abi/pre/gnu.ver: Avoid time_get pattern conflicts.
+
 2010-01-26  François Dumont  <francois.cppdevs@free.fr>
 
 	* doc/xml/manual/allocator.xml: Minor updates and fixes.
