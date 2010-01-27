@@ -461,8 +461,9 @@ GLIBCXX_3.4 {
 
     # std::time_get
     _ZNSt8time_get*;
-    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[0-9]*;
-    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1[0-9]*;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1*;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE8*;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*;
 
     # std::time_get_byname
     _ZNSt15time_get_byname*;
