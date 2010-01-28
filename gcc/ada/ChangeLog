@@ -1,3 +1,7 @@
+2010-01-28  Pascal Obry  <obry@adacore.com>
+
+	* s-win32.ads: Add some missing constants.
+
 2010-01-28  Vincent Celier  <celier@adacore.com>
 
 	* prj-attr-pm.adb (Add_Attribute): Do nothing if To_Package is
