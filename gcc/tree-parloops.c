@@ -1329,7 +1329,6 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
 
   for (n = 0; bbs[n] != loop->latch; n++)
     continue;
-  n--;
   nbbs = XNEWVEC (basic_block, n);
   ok = gimple_duplicate_sese_tail (single_succ_edge (loop->header), exit,
 				   bbs + 1, n, nbbs);
@@ -1884,9 +1883,13 @@ parallelize_loops (void)
   struct tree_niter_desc niter_desc;
   loop_iterator li;
   htab_t reduction_list;
-
+  HOST_WIDE_INT estimated;
+  LOC loop_loc;
+  
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (parallelized_function_p (cfun->decl))
+    return false;
+  if (cfun->has_nonlocal_label)
     return false;
 
   reduction_list = htab_create (10, reduction_info_hash,
@@ -1926,15 +1929,16 @@ parallelize_loops (void)
       if (/* And of course, the loop must be parallelizable.  */
 	  !can_duplicate_loop_p (loop)
 	  || loop_has_blocks_with_irreducible_flag (loop)
+	  || (loop_preheader_edge (loop)->src->flags & BB_IRREDUCIBLE_LOOP)
 	  /* FIXME: the check for vector phi nodes could be removed.  */
 	  || loop_has_vector_phi_nodes (loop))
 	continue;
-
+      estimated = estimated_loop_iterations_int (loop, false);
       /* FIXME: Bypass this check as graphite doesn't update the
       count and frequency correctly now.  */
       if (!flag_loop_parallelize_all
-	  && ((estimated_loop_iterations_int (loop, false)
-	       <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
+	  && ((estimated !=-1 
+	     && estimated <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
 	      /* Do not bother with loops in cold areas.  */
 	      || optimize_loop_nest_for_size_p (loop)))
 	continue;
@@ -1951,11 +1955,14 @@ parallelize_loops (void)
       changed = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
       {
-        fprintf (dump_file, "parallelizing ");
 	if (loop->inner)
-	  fprintf (dump_file, "outer loop\n");
+	  fprintf (dump_file, "parallelizing outer loop %d\n",loop->header->index);
 	else
-	  fprintf (dump_file, "inner loop\n");
+	  fprintf (dump_file, "parallelizing inner loop %d\n",loop->header->index);
+	loop_loc = find_loop_location (loop);
+	if (loop_loc != UNKNOWN_LOC)
+	  fprintf (dump_file, "\nloop at %s:%d: ",
+		   LOC_FILE (loop_loc), LOC_LINE (loop_loc));
       }
       gen_parallel_loop (loop, reduction_list,
 			 n_threads, &niter_desc);
