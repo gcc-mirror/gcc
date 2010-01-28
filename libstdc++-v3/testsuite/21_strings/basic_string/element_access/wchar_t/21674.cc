@@ -1,8 +1,8 @@
-// { dg-do run { xfail { ! { *-*-darwin* } } } }
+// { dg-do run { xfail *-*-* } }
 // { dg-require-debug-mode "" }
 // { dg-options "-O0 -D_GLIBCXX_DEBUG" }
 
-// Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
