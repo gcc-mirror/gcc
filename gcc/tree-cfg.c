@@ -4927,31 +4927,6 @@ gimple_duplicate_bb (basic_block bb)
   return new_bb;
 }
 
-/* Add phi arguments to the phi nodes in E_COPY->dest according to
-   the phi arguments coming from the equivalent edge at
-   the phi nodes of DEST.  */
-
-static void
-add_phi_args_after_redirect (edge e_copy, edge orig_e)
-{
-   gimple_stmt_iterator psi, psi_copy;
-   gimple phi, phi_copy;
-   tree def;
-
-    for (psi = gsi_start_phis (orig_e->dest),
-       psi_copy = gsi_start_phis (e_copy->dest);
-       !gsi_end_p (psi);
-       gsi_next (&psi), gsi_next (&psi_copy))
-    {
-
-      phi = gsi_stmt (psi);
-      phi_copy = gsi_stmt (psi_copy);
-      def = PHI_ARG_DEF_FROM_EDGE (phi, orig_e);
-      add_phi_arg (phi_copy, def, e_copy,
-                   gimple_phi_arg_location_from_edge (phi, orig_e));
-    }
-}
-
 /* Adds phi node arguments for edge E_COPY after basic block duplication.  */
 
 static void
@@ -5235,12 +5210,13 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   edge exits[2], nexits[2], e;
   gimple_stmt_iterator gsi,gsi1;
   gimple cond_stmt;
-  edge sorig, snew, orig_e;
+  edge sorig, snew;
   basic_block exit_bb;
-  edge_iterator ei;
-  VEC (edge, heap) *redirect_edges;
-  basic_block iters_bb, orig_src;
+  basic_block iters_bb;
   tree new_rhs;
+  gimple_stmt_iterator psi;
+  gimple phi;
+  tree def;
 
   gcc_assert (EDGE_COUNT (exit->src->succs) == 2);
   exits[0] = exit;
@@ -5248,17 +5224,6 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
-
-  /* Some sanity checking.  Note that we do not check for all possible
-     missuses of the functions.  I.e. if you ask to copy something weird
-     (e.g., in the example, if there is a jump from inside to the middle
-     of some_code, or come_code defines some of the values used in cond)
-     it will work, but the resulting code will not be correct.  */
-  for (i = 0; i < n_region; i++)
-    {
-      if (region[i] == orig_loop->latch)
-	return false;
-    }
 
   initialize_original_copy_tables ();
   set_loop_copy (orig_loop, loop);
@@ -5377,72 +5342,30 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   e = redirect_edge_and_branch (exits[0], exits[1]->dest);
   PENDING_STMT (e) = NULL;
 
-  /* If the block consisting of the exit condition has the latch as
-     successor, then the body of the loop is executed before
-     the exit condition is tested.
-
-     { body  }
-     { cond  } (exit[0])  -> { latch }
-        |
-	V (exit[1])
-
-     { exit_bb }
-
-
-     In such case, the equivalent copied edge nexits[1]
-     (for the peeled iteration) needs to be redirected to exit_bb.
-
-     Otherwise,
-
-     { cond  } (exit[0])  -> { body }
-        |
-	V (exit[1])
-
-     { exit_bb }
-
-
-     exit[0] is pointing to the body of the loop,
-     and the equivalent nexits[0] needs to be redirected to
-     the copied body (of the peeled iteration).  */
-
-  if (exits[1]->dest == orig_loop->latch)
-    e = redirect_edge_and_branch (nexits[1], nexits[0]->dest);
-  else
-    e = redirect_edge_and_branch (nexits[0], nexits[1]->dest);
+  /* The latch of ORIG_LOOP was copied, and so was the backedge 
+     to the original header.  We redirect this backedge to EXIT_BB.  */
+  for (i = 0; i < n_region; i++)
+    if (get_bb_original (region_copy[i]) == orig_loop->latch)
+      {
+	gcc_assert (single_succ_edge (region_copy[i]));
+	e = redirect_edge_and_branch (single_succ_edge (region_copy[i]), exit_bb);
+	PENDING_STMT (e) = NULL;
+	for (psi = gsi_start_phis (exit_bb);
+	     !gsi_end_p (psi);
+	     gsi_next (&psi))
+	  {
+	    phi = gsi_stmt (psi);
+	    def = PHI_ARG_DEF (phi, nexits[0]->dest_idx);
+	    add_phi_arg (phi, def, e, gimple_phi_arg_location_from_edge (phi, e));
+	  }
+      }
+  e = redirect_edge_and_branch (nexits[0], nexits[1]->dest);
   PENDING_STMT (e) = NULL;
-
-  redirect_edges = VEC_alloc (edge, heap, 10);
-
-  for (i = 0; i < n_region; i++)
-    region_copy[i]->flags |= BB_DUPLICATED;
-
-  /* Iterate all incoming edges to latch.  All those coming from
-     copied bbs will be redirected to exit_bb.  */
-  FOR_EACH_EDGE (e, ei, orig_loop->latch->preds)
-    {
-      if (e->src->flags & BB_DUPLICATED)
-        VEC_safe_push (edge, heap, redirect_edges, e);
-    }
-
-  for (i = 0; i < n_region; i++)
-    region_copy[i]->flags &= ~BB_DUPLICATED;
-
-  for (i = 0; VEC_iterate (edge, redirect_edges, i, e); ++i)
-    {
-      e = redirect_edge_and_branch (e, exit_bb);
-      PENDING_STMT (e) = NULL;
-      orig_src = get_bb_original (e->src);
-      orig_e = find_edge (orig_src, orig_loop->latch);
-      add_phi_args_after_redirect (e, orig_e);
-    }
-
-  VEC_free (edge, heap, redirect_edges);
-
+  
   /* Anything that is outside of the region, but was dominated by something
      inside needs to update dominance info.  */
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
   VEC_free (basic_block, heap, doms);
-
   /* Update the SSA web.  */
   update_ssa (TODO_update_ssa);
 
