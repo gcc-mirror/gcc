@@ -1836,10 +1836,18 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
       translated = phi_translate (expr, set, NULL, pred, phiblock);
 
       /* Don't add empty translations to the cache  */
-      if (translated)
-	phi_trans_add (expr, translated, pred);
+      if (!translated)
+	continue;
 
-      if (translated != NULL)
+      phi_trans_add (expr, translated, pred);
+
+      /* We might end up with multiple expressions from SET being
+	 translated to the same value.  In this case we do not want
+	 to retain the NARY or REFERENCE expression but prefer a NAME
+	 which would be the leader.  */
+      if (translated->kind == NAME)
+	bitmap_value_replace_in_set (dest, translated);
+      else
 	bitmap_value_insert_into_set (dest, translated);
     }
   VEC_free (pre_expr, heap, exprs);

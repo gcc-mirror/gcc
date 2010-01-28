@@ -1,5 +1,10 @@
 2010-01-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/42871
+	* g++.dg/torture/pr42871.C: New testcase.
+
+2010-01-28  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/Wobjsize-1.h: New testcase.
 	* gcc.dg/Wobjsize-1.c: Likewise.
 
