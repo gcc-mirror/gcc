@@ -1,4 +1,10 @@
-28-01-2010  Razya Ladelsky  <razya@il.ibm.com>
+2010-01-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42883
+	* tree-cfgcleanup.c (remove_forwarder_block): Do not remove
+	the forwarder if the destination is an EH landing pad.
+
+2010-01-28  Razya Ladelsky  <razya@il.ibm.com>
 
 	* tree-parloops.c (transform_to_exit_first_loop): Update the basic 
 	block list passed to gimple_duplicate_sese_tail.
@@ -7,7 +13,7 @@
 	Avoid parallelization when the preheader is IRREDUCIBLE.
 	Try to optimize when estimated_loop_iterations_int is unresolved.
 	Add the loop's location to the dump file.
-	* tree-cfg.c(add_phi_args_after_redirect): Remove.
+	* tree-cfg.c (add_phi_args_after_redirect): Remove.
 	(gimple_duplicate_sese_tail): Remove the check for the latch.
 	Redirect nexits to the exit block.
 	Remove handling of the incoming edges to the latch.

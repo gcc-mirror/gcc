@@ -1,3 +1,8 @@
+2010-01-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42883
+	* g++.dg/torture/pr42883.C: New testcase.
+
 2010-01-28  Michael Matz  <matz@suse.de>
 
 	* gcc.target/i386/pr42881.c: New test.
