@@ -1,3 +1,7 @@
+2010-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr42881.c: Use SSE2.
+
 2010-01-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42891
