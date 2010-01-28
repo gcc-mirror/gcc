@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -259,42 +259,36 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
 
+  // If _Iterator has a base returns it otherwise _Iterator is returned
+  // untouched
+  template<typename _Iterator, bool _HasBase>
+    struct __iter_base
+    {
+      static _Iterator
+      __b(_Iterator __it)
+      { return __it; }
+    };
+
+  template<typename _Iterator>
+    struct __iter_base<_Iterator, true>
+    {
+      static typename _Iterator::iterator_type
+      __b(_Iterator __it)
+      { return __it.base(); }
+    };
+
   // If _Iterator is a __normal_iterator return its base (a plain pointer,
   // normally) otherwise return it untouched.  See copy, fill, ... 
-  template<typename _Iterator,
-	   bool _IsNormal = __is_normal_iterator<_Iterator>::__value>
-    struct __niter_base
-    {
-      static _Iterator
-      __b(_Iterator __it)
-      { return __it; }
-    };
-
   template<typename _Iterator>
-    struct __niter_base<_Iterator, true>
-    {
-      static typename _Iterator::iterator_type
-      __b(_Iterator __it)
-      { return __it.base(); }
-    };
+    struct __niter_base
+    : __iter_base<_Iterator, __is_normal_iterator<_Iterator>::__value>
+    { };
 
   // Likewise, for move_iterator.
-  template<typename _Iterator,
-	   bool _IsMove = __is_move_iterator<_Iterator>::__value>
-    struct __miter_base
-    {
-      static _Iterator
-      __b(_Iterator __it)
-      { return __it; }
-    };
-
   template<typename _Iterator>
-    struct __miter_base<_Iterator, true>
-    {
-      static typename _Iterator::iterator_type
-      __b(_Iterator __it)
-      { return __it.base(); }
-    };
+    struct __miter_base
+    : __iter_base<_Iterator, __is_move_iterator<_Iterator>::__value>
+    { };
 
   // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
