@@ -1,5 +1,11 @@
 2010-01-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/42871
+	* tree-ssa-pre.c (phi_translate_set): Make sure to retain
+	leaders.
+
+2010-01-28  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-ccp.c (ccp_fold_stmt): Fold calls and propagate
 	into call arguments.
 
