@@ -1,3 +1,7 @@
+2010-01-28  Michael Matz  <matz@suse.de>
+
+	* gcc.target/i386/pr42881.c: New test.
+
 2010-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.misc-tests/linkage.exp: Remove mips-sgi-irix6*o32 support.
@@ -12,7 +16,7 @@
 
 2010-01-27  Stephen Thomas  <stephen.thomas@arm.com>
 
-        * testsuite/gcc.dg/optimize-bswap*.c: Add ARM target
+	* testsuite/gcc.dg/optimize-bswap*.c: Add ARM target
 
 2010-01-27  Richard Guenther  <rguenther@suse.de>
 
