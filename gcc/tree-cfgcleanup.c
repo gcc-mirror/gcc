@@ -345,12 +345,13 @@ remove_forwarder_block (basic_block bb)
   if (dest == bb)
     return false;
 
-  /* If the destination block consists of a nonlocal label, do not merge
-     it.  */
+  /* If the destination block consists of a nonlocal label or is a
+     EH landing pad, do not merge it.  */
   label = first_stmt (dest);
   if (label
       && gimple_code (label) == GIMPLE_LABEL
-      && DECL_NONLOCAL (gimple_label_label (label)))
+      && (DECL_NONLOCAL (gimple_label_label (label))
+	  || EH_LANDING_PAD_NR (gimple_label_label (label)) != 0))
     return false;
 
   /* If there is an abnormal edge to basic block BB, but not into
