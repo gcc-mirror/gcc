@@ -1,3 +1,9 @@
+2010-01-28  Michael Matz  <matz@suse.de>
+
+	PR target/42881
+	* config/i386/i386.c (ix86_expand_vector_init_duplicate):
+	Wrap force_reg into a sequence, emit it before user.
+
 2010-01-28  Stephen Thomas  <stephen.thomas@arm.com>
 
 	* config/arm/arm.md (bswapsi2): Add support for bswapsi2.
