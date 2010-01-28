@@ -1,3 +1,10 @@
+2010-01-28  Stephen Thomas  <stephen.thomas@arm.com>
+
+	* config/arm/arm.md (bswapsi2): Add support for bswapsi2.
+	(arm_rev): New.
+	(arm_legacy_rev): Likewise.
+	(thumb_legacy_rev): Likewise.
+
 2010-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Remove special casing of
