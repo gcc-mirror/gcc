@@ -1,5 +1,10 @@
 2010-01-28  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-ccp.c (ccp_fold_stmt): Fold calls and propagate
+	into call arguments.
+
+2010-01-28  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42883
 	* tree-cfgcleanup.c (remove_forwarder_block): Do not remove
 	the forwarder if the destination is an EH landing pad.
