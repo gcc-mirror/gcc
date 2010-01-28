@@ -1,3 +1,9 @@
+2010-01-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42891
+	* config/i386/i386.c (ix86_expand_int_movcc): Convert tmp to SImode
+	in the call to gen_x86_movsicc_0_m1.
+
 2010-01-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42871
@@ -17,7 +23,7 @@
 
 2010-01-28  Razya Ladelsky  <razya@il.ibm.com>
 
-	* tree-parloops.c (transform_to_exit_first_loop): Update the basic 
+	* tree-parloops.c (transform_to_exit_first_loop): Update the basic
 	block list passed to gimple_duplicate_sese_tail.
 	(parallelize_loops): Avoid parallelization when the function
 	has_nonlocal_label.
@@ -91,7 +97,7 @@
 	PR target/42841
 	* config/sh/sh.c (find_barrier): Increase length for non delayed
 	conditional branches.
-	
+
 2010-01-27  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac (gnu-unique-object): Fix ldd version check.
@@ -238,8 +244,8 @@
 
 2010-01-21  Andrew Haley  <aph@redhat.com>
 
-        * gcc.c (process_command): Move lang_specific_driver before
-        setting cc_libexec_prefix.
+	* gcc.c (process_command): Move lang_specific_driver before
+	setting cc_libexec_prefix.
 
 2010-01-21  Richard Guenther  <rguenther@suse.de>
 
