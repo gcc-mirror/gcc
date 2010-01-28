@@ -1096,65 +1096,75 @@ comp_template_parms_position (tree t1, tree t2)
       return true;
 }
 
+/* Subroutine of incompatible_dependent_types_p.
+   Return the template parameter of the dependent type T.
+   If T is a typedef, return the template parameters of
+   the _decl_ of the typedef. T must be a dependent type.  */
+
+static tree
+get_template_parms_of_dependent_type (tree t)
+{
+  tree tinfo = NULL_TREE, tparms = NULL_TREE;
+
+  /* If T1 is a typedef or whatever has a template info associated
+     to its context, get the template parameters from that context.  */
+  if (typedef_variant_p (t)
+      && DECL_CONTEXT (TYPE_NAME (t))
+      && !NAMESPACE_SCOPE_P (TYPE_NAME (t)))
+    tinfo = get_template_info (DECL_CONTEXT (TYPE_NAME (t)));
+  else if (TYPE_CONTEXT (t)
+	   && !NAMESPACE_SCOPE_P (t))
+    tinfo = get_template_info (TYPE_CONTEXT (t));
+
+  if (tinfo)
+    tparms = DECL_TEMPLATE_PARMS (TI_TEMPLATE (tinfo));
+  /* If T is a template type parameter, get the template parameter
+     set it is part of.  */
+  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+	   && DECL_CONTEXT (TYPE_NAME (t)))
+    tparms = DECL_TEMPLATE_PARMS (DECL_CONTEXT (TYPE_NAME (t)));
+  /* If T is a TYPENAME_TYPE which context is a template type
+     parameter, get the template parameters from that context.  */
+  else if (TYPE_CONTEXT (t)
+	   && TREE_CODE (TYPE_CONTEXT (t)) == TEMPLATE_TYPE_PARM)
+    tparms = get_template_parms_of_dependent_type (TYPE_CONTEXT (t));
+
+  return tparms;
+}
+
 /* Subroutine of structural_comptypes.
-   Compare the template type parameters T1 and T2.
-   Return TRUE if we are sure they can't be equal, FALSE otherwise.  */
+   Compare the dependent types T1 and T2.
+   Return TRUE if we are sure they can't be equal, FALSE otherwise.
+   The whole point of this function is to support cases where either T1 or
+   T2 is a typedef. In those cases, we need to compare the template parameters
+   of the _decl_ of the typedef. If those don't match then we know T1
+   and T2 cannot be equal.  */
 
 static bool
-incompatible_template_type_parms_p (tree t1, tree t2)
+incompatible_dependent_types_p (tree t1, tree t2)
 {
-  tree decl1, tparms1 = NULL_TREE,
-       decl2, tparms2 = NULL_TREE;
+  tree tparms1 = NULL_TREE, tparms2 = NULL_TREE;
 
-  gcc_assert (t1 && TREE_CODE (t1) == TEMPLATE_TYPE_PARM
-	      && t2 && TREE_CODE (t2) == TEMPLATE_TYPE_PARM);
-
-  /* If T1 and T2 don't have the same relative position in their
-     template parameters set, they can't be equal.  */
-  if (!comp_template_parms_position (t1, t2))
-    return true;
-
-  if (!typedef_variant_p (t1) && !typedef_variant_p (t2))
-    /* If neither T1 nor T2 is a typedef we cannot know more
-       about their incompatibility than what comp_template_parms_position
-       told us above. If we try to keep going nonetheless, the call to
-       comp_template_parms at the end of this function might lead to an
-       infinite recursion.  */
+  if (!uses_template_parms (t1) || !uses_template_parms (t2))
     return false;
 
-  decl1 = TYPE_NAME (t1);
-  decl2 = TYPE_NAME (t2);
-  if (decl1 == NULL_TREE || decl2 == NULL_TREE || decl1 == decl2)
-    return false ;
+  if (TREE_CODE (t1) == TEMPLATE_TYPE_PARM)
+    {
+      /* If T1 and T2 don't have the same relative position in their
+	 template parameters set, they can't be equal.  */
+      if (!comp_template_parms_position (t1, t2))
+	return true;
+    }
+
+  /* Either T1 or T2 must be a typedef.  */
+  if (!typedef_variant_p (t1) && !typedef_variant_p (t2))
+    return false;
 
   /* So if we reach this point, it means either T1 or T2 is a typedef variant.
      Let's compare their template parameters.  */
 
-  /* If T1 is not a typedef, there possibly is a delay between the
-     creation of DECL1 and the setting of DECL_CONTEXT (DECL1) to its
-     template decl so DECL_CONTEXT (DECL1) can be empty for
-     a little while.  */
-  if (DECL_CONTEXT (decl1))
-    {
-      if (TREE_CODE (DECL_CONTEXT (decl1)) == TEMPLATE_DECL)
-	tparms1 = DECL_TEMPLATE_PARMS (DECL_CONTEXT (decl1));
-      else
-	/* T1 is a typedef variant type. Get the parms of its context.  */
-	tparms1 =
-	  DECL_TEMPLATE_PARMS (TI_TEMPLATE
-				 (get_template_info (DECL_CONTEXT (decl1))));
-    }
-
-  /* Do the same thing for DECL2.  */
-  if (DECL_CONTEXT (decl2))
-    {
-      if (TREE_CODE (DECL_CONTEXT (decl2)) == TEMPLATE_DECL)
-	tparms2 = DECL_TEMPLATE_PARMS (DECL_CONTEXT (decl2));
-      else
-	tparms2 =
-	  DECL_TEMPLATE_PARMS (TI_TEMPLATE
-				(get_template_info (DECL_CONTEXT (decl2))));
-    }
+  tparms1 = get_template_parms_of_dependent_type (t1);
+  tparms2 = get_template_parms_of_dependent_type (t2);
 
   if (tparms1 == NULL_TREE
       || tparms2 == NULL_TREE
@@ -1211,6 +1221,12 @@ structural_comptypes (tree t1, tree t2, int strict)
   if (TREE_CODE (t1) != ARRAY_TYPE
       && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return true;
+
+  /* If T1 and T2 are dependent typedefs then check upfront that
+     the template parameters of their typedef DECLs match before
+     going down checking their subtypes.  */
+  if (incompatible_dependent_types_p (t1, t2))
+    return false;
 
   /* Compare the types.  Break out if they could be the same.  */
   switch (TREE_CODE (t1))
@@ -1303,8 +1319,8 @@ structural_comptypes (tree t1, tree t2, int strict)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      if (incompatible_template_type_parms_p (t1, t2))
-	return false;
+      /* If incompatible_dependent_types_p called earlier didn't decide
+         T1 and T2 were different, they might be equal.  */
       break;
 
     case TYPENAME_TYPE:
