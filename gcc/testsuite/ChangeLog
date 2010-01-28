@@ -1,5 +1,10 @@
 2010-01-28  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/Wobjsize-1.h: New testcase.
+	* gcc.dg/Wobjsize-1.c: Likewise.
+
+2010-01-28  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42883
 	* g++.dg/torture/pr42883.C: New testcase.
 

@@ -1480,25 +1480,79 @@ static bool
 ccp_fold_stmt (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
-  prop_value_t val;
 
-  if (gimple_code (stmt) != GIMPLE_COND)
-    return false;
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_COND:
+      {
+	prop_value_t val;
+	/* Statement evaluation will handle type mismatches in constants
+	   more gracefully than the final propagation.  This allows us to
+	   fold more conditionals here.  */
+	val = evaluate_stmt (stmt);
+	if (val.lattice_val != CONSTANT
+	    || TREE_CODE (val.value) != INTEGER_CST)
+	  return false;
 
-  /* Statement evaluation will handle type mismatches in constants
-     more gracefully than the final propagation.  This allows us to
-     fold more conditionals here.  */
-  val = evaluate_stmt (stmt);
-  if (val.lattice_val != CONSTANT
-      || TREE_CODE (val.value) != INTEGER_CST)
-    return false;
+	if (integer_zerop (val.value))
+	  gimple_cond_make_false (stmt);
+	else
+	  gimple_cond_make_true (stmt);
 
-  if (integer_zerop (val.value))
-    gimple_cond_make_false (stmt);
-  else
-    gimple_cond_make_true (stmt);
+	return true;
+      }
 
-  return true;
+    case GIMPLE_CALL:
+      {
+	tree lhs = gimple_call_lhs (stmt);
+	prop_value_t *val;
+	tree argt;
+	bool changed = false;
+	unsigned i;
+
+	/* If the call was folded into a constant make sure it goes
+	   away even if we cannot propagate into all uses because of
+	   type issues.  */
+	if (lhs
+	    && TREE_CODE (lhs) == SSA_NAME
+	    && (val = get_value (lhs))
+	    && val->lattice_val == CONSTANT)
+	  {
+	    tree new_rhs = val->value;
+	    if (!useless_type_conversion_p (TREE_TYPE (lhs),
+					    TREE_TYPE (new_rhs)))
+	      new_rhs = fold_convert (TREE_TYPE (lhs), new_rhs);
+	    update_call_from_tree (gsi, new_rhs);
+	    return true;
+	  }
+
+	/* Propagate into the call arguments.  Compared to replace_uses_in
+	   this can use the argument slot types for type verification
+	   instead of the current argument type.  We also can safely
+	   drop qualifiers here as we are dealing with constants anyway.  */
+	argt = TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (gimple_call_fn (stmt))));
+	for (i = 0; i < gimple_call_num_args (stmt) && argt;
+	     ++i, argt = TREE_CHAIN (argt))
+	  {
+	    tree arg = gimple_call_arg (stmt, i);
+	    if (TREE_CODE (arg) == SSA_NAME
+		&& (val = get_value (arg))
+		&& val->lattice_val == CONSTANT
+		&& useless_type_conversion_p
+		     (TYPE_MAIN_VARIANT (TREE_VALUE (argt)),
+		      TYPE_MAIN_VARIANT (TREE_TYPE (val->value))))
+	      {
+		gimple_call_set_arg (stmt, i, val->value);
+		changed = true;
+	      }
+	  }
+
+	return changed;
+      }
+
+    default:
+      return false;
+    }
 }
 
 /* Visit the assignment statement STMT.  Set the value of its LHS to the
