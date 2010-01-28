@@ -1,3 +1,10 @@
+2010-01-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42713
+	PR c++/42820
+	* g++.dg/template/typedef27.C: New test case.
+	* g++.dg/template/typedef28.C: New test case.
+
 2010-01-27  Stephen Thomas  <stephen.thomas@arm.com>
 
         * testsuite/gcc.dg/optimize-bswap*.c: Add ARM target

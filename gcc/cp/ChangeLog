@@ -1,3 +1,16 @@
+2010-01-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42713
+	PR c++/42820
+	* typeck.c (get_template_parms_of_dependent_type): Factorized
+	this out of incompatible_template_type_parms_p
+	(incompatible_dependent_types_p): Renamed
+	incompatible_template_type_parms_p into this. Make it detect
+	two incompatible dependent typedefs too.
+	(structural_comptypes): Use incompatible_dependent_types_p.
+	* pt.c (get_template_info):
+	Handle BOUND_TEMPLATE_TEMPLATE_PARAM.
+
 2010-01-20  Janis Johnson  <janis187@us.ibm.com>
 	    Jason Merrill  <jason@redhat.com>
 

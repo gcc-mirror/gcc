@@ -317,6 +317,8 @@ get_template_info (const_tree t)
 
   if (TAGGED_TYPE_P (t))
     tinfo = TYPE_TEMPLATE_INFO (t);
+  else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
+    tinfo = TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t);
 
   return tinfo;
 }
