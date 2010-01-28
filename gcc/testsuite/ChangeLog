@@ -1,3 +1,8 @@
+2010-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.misc-tests/linkage.exp: Remove mips-sgi-irix6*o32 support.
+	Add i?86-*-solaris2* support.
+
 2010-01-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42713
