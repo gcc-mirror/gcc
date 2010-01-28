@@ -2371,13 +2371,20 @@ begin_class_definition (tree t, tree attributes)
 
   /* According to the C++ ABI, decimal classes defined in ISO/IEC TR 24733
      are passed the same as decimal scalar types.  */
-  if (TREE_CODE (t) == RECORD_TYPE)
+  if (TREE_CODE (t) == RECORD_TYPE
+      && !processing_template_decl)
     {
-      const char *n = type_as_string (t, TFF_CLASS_KEY_OR_ENUM);
-      if ((strcmp (n, "class std::decimal::decimal32") == 0)
-	  || (strcmp (n, "class std::decimal::decimal64") == 0)
-	  || (strcmp (n, "class std::decimal::decimal128") == 0))
-	TYPE_TRANSPARENT_AGGR (t) = 1;
+      tree ns = TYPE_CONTEXT (t);
+      if (ns && TREE_CODE (ns) == NAMESPACE_DECL
+	  && DECL_CONTEXT (ns) == std_node
+	  && !strcmp (IDENTIFIER_POINTER (DECL_NAME (ns)), "decimal"))
+	{
+	  const char *n = TYPE_NAME_STRING (t);
+	  if ((strcmp (n, "decimal32") == 0)
+	      || (strcmp (n, "decimal64") == 0)
+	      || (strcmp (n, "decimal128") == 0))
+	    TYPE_TRANSPARENT_AGGR (t) = 1;
+	}
     }
 
   /* A non-implicit typename comes from code like:
