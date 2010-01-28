@@ -4307,7 +4307,7 @@ name for the spec or for the body.
 The optional Index argument should be used when a file contains multiple
 units, and when you do not want to use @code{gnatchop} to separate then
 into multiple files (which is the recommended procedure to limit the
-number of recompilation that are needed when some sources change).
+number of recompilations that are needed when some sources change).
 For instance, if the source file @file{source.ada} contains
 
 @smallexample @c ada
