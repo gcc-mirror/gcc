@@ -1,3 +1,7 @@
+2010-01-27  Stephen Thomas  <stephen.thomas@arm.com>
+
+        * testsuite/gcc.dg/optimize-bswap*.c: Add ARM target
+
 2010-01-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42878

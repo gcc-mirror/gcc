@@ -11194,6 +11194,107 @@
    (set_attr "length" "4")]
 )
 
+(define_insn "arm_rev"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(bswap:SI (match_operand:SI 1 "s_register_operand" "r")))]
+  "TARGET_EITHER && arm_arch6"
+  "rev\t%0, %1"
+  [(set (attr "length")
+        (if_then_else (eq_attr "is_thumb" "yes")
+		      (const_int 2)
+		      (const_int 4)))]
+)
+
+(define_expand "arm_legacy_rev"
+  [(set (match_operand:SI 2 "s_register_operand" "")
+	(xor:SI (rotatert:SI (match_operand:SI 1 "s_register_operand" "")
+			     (const_int 16))
+		(match_dup 1)))
+   (set (match_dup 2)
+	(lshiftrt:SI (match_dup 2)
+		     (const_int 8)))
+   (set (match_operand:SI 3 "s_register_operand" "")
+	(rotatert:SI (match_dup 1)
+		     (const_int 8)))
+   (set (match_dup 2)
+	(and:SI (match_dup 2)
+		(const_int -65281)))
+   (set (match_operand:SI 0 "s_register_operand" "")
+	(xor:SI (match_dup 3)
+		(match_dup 2)))]
+  "TARGET_32BIT"
+  ""
+)
+
+;; Reuse temporaries to keep register pressure down.
+(define_expand "thumb_legacy_rev"
+  [(set (match_operand:SI 2 "s_register_operand" "")
+     (ashift:SI (match_operand:SI 1 "s_register_operand" "")
+                (const_int 24)))
+   (set (match_operand:SI 3 "s_register_operand" "")
+     (lshiftrt:SI (match_dup 1)
+		  (const_int 24)))
+   (set (match_dup 3)
+     (ior:SI (match_dup 3)
+	     (match_dup 2)))
+   (set (match_operand:SI 4 "s_register_operand" "")
+     (const_int 16))
+   (set (match_operand:SI 5 "s_register_operand" "")
+     (rotatert:SI (match_dup 1)
+		  (match_dup 4)))
+   (set (match_dup 2)
+     (ashift:SI (match_dup 5)
+                (const_int 24)))
+   (set (match_dup 5)
+     (lshiftrt:SI (match_dup 5)
+		  (const_int 24)))
+   (set (match_dup 5)
+     (ior:SI (match_dup 5)
+	     (match_dup 2)))
+   (set (match_dup 5)
+     (rotatert:SI (match_dup 5)
+		  (match_dup 4)))
+   (set (match_operand:SI 0 "s_register_operand" "")
+     (ior:SI (match_dup 5)
+             (match_dup 3)))]
+  "TARGET_THUMB"
+  ""
+)
+
+(define_expand "bswapsi2"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  	(bswap:SI (match_operand:SI 1 "s_register_operand" "r")))]
+"TARGET_EITHER"
+"
+  if (!arm_arch6)
+    {
+      if (!optimize_size)
+	{
+	  rtx op2 = gen_reg_rtx (SImode);
+	  rtx op3 = gen_reg_rtx (SImode);
+
+	  if (TARGET_THUMB)
+	    {
+	      rtx op4 = gen_reg_rtx (SImode);
+	      rtx op5 = gen_reg_rtx (SImode);
+
+	      emit_insn (gen_thumb_legacy_rev (operands[0], operands[1],
+					       op2, op3, op4, op5));
+	    }
+	  else
+	    {
+	      emit_insn (gen_arm_legacy_rev (operands[0], operands[1],
+					     op2, op3));
+	    }
+
+	  DONE;
+	}
+      else
+	FAIL;
+    }
+  "
+)
+
 ;; Load the FPA co-processor patterns
 (include "fpa.md")
 ;; Load the Maverick co-processor patterns
