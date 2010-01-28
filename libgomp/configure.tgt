@@ -97,9 +97,19 @@ fi
 # Other system configury
 case "${target}" in
 
-  *-*-hpux11*)
-	# HPUX v11.x requires -lrt to resolve sem_init in libgomp.la
-	XLDFLAGS="${XLDFLAGS} -lrt"
+  *-*-hpux*)
+	case "${target}" in
+	  *-*-hpux11*)
+	     # HPUX v11.x requires -lrt to resolve sem_init in libgomp.la
+	     XLDFLAGS="${XLDFLAGS} -lrt"
+	     ;;
+	esac
+	case "${target}" in
+	  hppa[12]*-*-hpux*)
+	    # PA 32 HP-UX needs -frandom-seed for bootstrap compare.
+	    XCFLAGS="${XCFLAGS} -frandom-seed=fixed-seed"
+	    ;;
+	esac
 	;;
 
   *-*-mingw32*)

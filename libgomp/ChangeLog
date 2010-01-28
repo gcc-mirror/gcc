@@ -1,3 +1,7 @@
+2010-01-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* configure.tgt (*-*-hpux*): Add -frandom-seed flag.
+
 2010-01-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Test for executability of _the first word_ of GFORTRAN.
