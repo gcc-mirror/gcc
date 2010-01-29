@@ -1,3 +1,8 @@
+2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.c (sparc_elf_asm_named_section): Declare decl
+	unused.
+
 2010-01-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (ccp_fold_stmt): Unshare values we substitute.

@@ -7989,7 +7989,7 @@ sparc_profile_hook (int labelno)
 #if defined (OBJECT_FORMAT_ELF) && !HAVE_GNU_AS
 static void
 sparc_elf_asm_named_section (const char *name, unsigned int flags,
-			     tree decl)
+			     tree decl ATTRIBUTE_UNUSED)
 {
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 
