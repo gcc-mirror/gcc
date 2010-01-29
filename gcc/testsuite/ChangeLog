@@ -1,3 +1,10 @@
+2010-01-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR testsuite/41701
+	* gcc.dg/builtins-58.c: Add -fno-ident to the options to prevent
+	the string 'pow' in the pathname of the compiler from generating a
+	test failure.
+
 2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.mike/eh16.C: Rename err to e.
