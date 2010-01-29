@@ -1,3 +1,11 @@
+2010-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/42889
+	* df.h (df_set_bb_dirty_nonlr): New prototype.
+	* df-core.c (df_set_bb_dirty_nonlr): New function.
+	* df-scan.c (df_insn_rescan): Call it instead of
+	df_set_bb_dirty for DEBUG_INSNs.
+
 2010-01-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/37448

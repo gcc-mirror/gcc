@@ -912,6 +912,7 @@ extern void df_simple_dataflow (enum df_flow_dir, df_init_function,
 extern void df_mark_solutions_dirty (void);
 extern bool df_get_bb_dirty (basic_block);
 extern void df_set_bb_dirty (basic_block);
+extern void df_set_bb_dirty_nonlr (basic_block);
 extern void df_compact_blocks (void);
 extern void df_bb_replace (int, basic_block);
 extern void df_bb_delete (int);
