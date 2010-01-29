@@ -2210,7 +2210,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       if (same_type_p (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	return NULL;
       else
-	return "redefinition of %q#D";
+	return G_("redefinition of %q#D");
     }
   else if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
@@ -2226,7 +2226,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       if (DECL_NAMESPACE_SCOPE_P (olddecl)
 	  && DECL_CONTEXT (olddecl) != DECL_CONTEXT (newdecl)
 	  && ! decls_match (olddecl, newdecl))
-	return "%qD conflicts with used function";
+	return G_("%qD conflicts with used function");
 
       /* We'll complain about linkage mismatches in
 	 warn_extern_redeclared_static.  */
@@ -2236,10 +2236,10 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	  && DECL_INITIAL (newdecl) != NULL_TREE)
 	{
 	  if (DECL_NAME (olddecl) == NULL_TREE)
-	    return "%q#D not declared in class";
+	    return G_("%q#D not declared in class");
 	  else if (!GNU_INLINE_P (olddecl)
 		   || GNU_INLINE_P (newdecl))
-	    return "redefinition of %q#D";
+	    return G_("redefinition of %q#D");
 	}
 
       if (DECL_DECLARED_INLINE_P (olddecl) && DECL_DECLARED_INLINE_P (newdecl))
@@ -2250,9 +2250,11 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	  if (olda != newa)
 	    {
 	      if (newa)
-		return "%q+D redeclared inline with %<gnu_inline%> attribute";
+		return G_("%q+D redeclared inline with "
+			  "%<gnu_inline%> attribute");
 	      else
-		return "%q+D redeclared inline without %<gnu_inline%> attribute";
+		return G_("%q+D redeclared inline without "
+			  "%<gnu_inline%> attribute");
 	    }
 	}
 
@@ -2266,7 +2268,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	{
 	  if (COMPLETE_TYPE_P (TREE_TYPE (newdecl))
 	      && COMPLETE_TYPE_P (TREE_TYPE (olddecl)))
-	    return "redefinition of %q#D";
+	    return G_("redefinition of %q#D");
 	  return NULL;
 	}
 
@@ -2283,7 +2285,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	ot = DECL_TEMPLATE_RESULT (template_for_substitution (ot));
       if (DECL_INITIAL (nt) && DECL_INITIAL (ot)
 	  && (!GNU_INLINE_P (ot) || GNU_INLINE_P (nt)))
-	return "redefinition of %q#D";
+	return G_("redefinition of %q#D");
 
       if (DECL_DECLARED_INLINE_P (ot) && DECL_DECLARED_INLINE_P (nt))
 	{
@@ -2293,9 +2295,11 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	  if (olda != newa)
 	    {
 	      if (newa)
-		return "%q+D redeclared inline with %<gnu_inline%> attribute";
+		return G_("%q+D redeclared inline with "
+			  "%<gnu_inline%> attribute");
 	      else
-		return "%q+D redeclared inline without %<gnu_inline%> attribute";
+		return G_("%q+D redeclared inline without "
+		     	  "%<gnu_inline%> attribute");
 	    }
 	}
 
@@ -2310,7 +2314,8 @@ redeclaration_error_message (tree newdecl, tree olddecl)
           && !check_default_tmpl_args (nt, DECL_TEMPLATE_PARMS (newdecl), 
                                        /*is_primary=*/1, /*is_partial=*/0,
                                        /*is_friend_decl=*/2))
-        return "redeclaration of friend %q#D may not have default template arguments";
+        return G_("redeclaration of friend %q#D "
+	 	  "may not have default template arguments");
 
       return NULL;
     }
@@ -2323,11 +2328,11 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       /* Only variables can be thread-local, and all declarations must
 	 agree on this property.  */
       if (DECL_THREAD_LOCAL_P (newdecl))
-	return "thread-local declaration of %q#D follows "
-	       "non-thread-local declaration";
+	return G_("thread-local declaration of %q#D follows "
+	          "non-thread-local declaration");
       else
-	return "non-thread-local declaration of %q#D follows "
-	       "thread-local declaration";
+	return G_("non-thread-local declaration of %q#D follows "
+	          "thread-local declaration");
     }
   else if (toplevel_bindings_p () || DECL_NAMESPACE_SCOPE_P (newdecl))
     {
@@ -2341,7 +2346,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	   is invalid.  */
       if ((TREE_CODE (newdecl) == VAR_DECL && DECL_ANON_UNION_VAR_P (newdecl))
 	  || (TREE_CODE (olddecl) == VAR_DECL && DECL_ANON_UNION_VAR_P (olddecl)))
-	return "redeclaration of %q#D";
+	return G_("redeclaration of %q#D");
       /* If at least one declaration is a reference, there is no
 	 conflict.  For example:
 
@@ -2352,7 +2357,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
 	return NULL;
       /* Reject two definitions.  */
-      return "redefinition of %q#D";
+      return G_("redefinition of %q#D");
     }
   else
     {
@@ -2360,7 +2365,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       /* Reject two definitions, and reject a definition
 	 together with an external reference.  */
       if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)))
-	return "redeclaration of %q#D";
+	return G_("redeclaration of %q#D");
       return NULL;
     }
 }
