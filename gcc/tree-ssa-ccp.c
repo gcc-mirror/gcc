@@ -1518,11 +1518,13 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	    && (val = get_value (lhs))
 	    && val->lattice_val == CONSTANT)
 	  {
-	    tree new_rhs = val->value;
+	    tree new_rhs = unshare_expr (val->value);
+	    bool res;
 	    if (!useless_type_conversion_p (TREE_TYPE (lhs),
 					    TREE_TYPE (new_rhs)))
 	      new_rhs = fold_convert (TREE_TYPE (lhs), new_rhs);
-	    update_call_from_tree (gsi, new_rhs);
+	    res = update_call_from_tree (gsi, new_rhs);
+	    gcc_assert (res);
 	    return true;
 	  }
 
@@ -1542,7 +1544,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 		     (TYPE_MAIN_VARIANT (TREE_VALUE (argt)),
 		      TYPE_MAIN_VARIANT (TREE_TYPE (val->value))))
 	      {
-		gimple_call_set_arg (stmt, i, val->value);
+		gimple_call_set_arg (stmt, i, unshare_expr (val->value));
 		changed = true;
 	      }
 	  }
