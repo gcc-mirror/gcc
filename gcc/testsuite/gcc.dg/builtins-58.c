@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -ffast-math -std=c99" } */
+/* { dg-options "-O -ffast-math -std=c99 -fno-ident" } */
 
 #include "builtins-config.h"
 
