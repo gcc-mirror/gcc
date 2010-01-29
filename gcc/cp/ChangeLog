@@ -1,3 +1,8 @@
+2010-01-29  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* decl.c (redeclaration_error_message): Wrap the return messages into
+	G_() for easy translation.
+
 2010-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42880
