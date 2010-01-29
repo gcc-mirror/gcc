@@ -11246,6 +11246,9 @@ cp_parser_template_argument_list (cp_parser* parser)
   parser->non_integral_constant_expression_p = saved_non_ice_p;
   parser->integral_constant_expression_p = saved_ice_p;
   parser->in_template_argument_list_p = saved_in_template_argument_list_p;
+#ifdef ENABLE_CHECKING
+  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (vec, TREE_VEC_LENGTH (vec));
+#endif
   return vec;
 }
 

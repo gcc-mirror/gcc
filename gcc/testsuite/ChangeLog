@@ -1,3 +1,15 @@
+2010-01-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42758
+	PR c++/42634
+	PR c++/42336
+	PR c++/42797
+	PR c++/42880
+	* g++.dg/other/crash-5.C: New test.
+	* g++.dg/other/crash-6.C: New test.
+	* g++.dg/other/crash-7.C: New test.
+	* g++.dg/other/crash-8.C: New test.
+
 2010-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/42889

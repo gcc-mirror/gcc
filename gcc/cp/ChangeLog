@@ -1,3 +1,29 @@
+2010-01-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42758
+	PR c++/42634
+	PR c++/42336
+	PR c++/42797
+	PR c++/42880
+	* cp-tree.h (NON_DEFAULT_TEMPLATE_ARGS_COUNT,
+	SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT,
+	GET_NON_DEFAULT_TEMPLATE_ARGS_COUNT): New accessor macros.
+	* pt.c (coerce_template_parms, type_unification_real,
+	expand_template_argument_pack, coerce_template_parameter_pack):
+	Set the non default template args count.
+	(current_template_args): Always set non defaulted
+	template args count when compiled with --enable-checking
+	(tsubst_template_args, type_unification_real): Propagate the non
+	defaulted template args count.
+	* error.c (get_non_default_template_args_count): Renamed
+	count_non_default_template_args into this. Don't calculate the
+	non default template argument count anymore. Use the new
+	accessor macros above to get it.
+	(dump_template_argument_list, dump_type, dump_decl,
+	dump_template_parms): Adjust.
+	* parser.c (cp_parser_template_argument_list): Always set defaulted
+	template args count when compiled with --enable-checking.
+
 2010-01-29  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* decl.c (redeclaration_error_message): Wrap the return messages into
