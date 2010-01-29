@@ -1,7 +1,7 @@
 // { dg-do run  }
 // prms-id: 5571
 
-int err = 0;
+int e = 0;
 void *vp = 0;
 
 class ParentOne {
@@ -36,7 +36,7 @@ struct Student : public Child {
     else
       {
 	if (vp != (void *)this)
-	  ++err;
+	  ++e;
       }
   }
   void LocalPrintThis() {
@@ -45,7 +45,7 @@ struct Student : public Child {
     else
       {
 	if (vp != (void *)this)
-	  ++err;
+	  ++e;
       }
     PrintThis();
   }
@@ -55,7 +55,7 @@ struct Student : public Child {
     else
       {
 	if (vp != (void *)this)
-	  ++err;
+	  ++e;
       }
     Student::PrintThis();
   }
@@ -67,5 +67,5 @@ int main() {
   o.ForcedPrintThis();
   Child* pX = &o;
   pX->PrintThis();
-  return err;
+  return e;
 }
