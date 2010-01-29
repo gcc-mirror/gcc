@@ -1113,6 +1113,10 @@ GLIBCXX_3.4.14 {
     # std::time_get::_M_extract_wday_or_month
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE24_M_extract_wday_or_month*;
 
+    # condition_variable_any::notify_*
+    _ZNSt22condition_variable_any10notify_allEv;
+    _ZNSt22condition_variable_any10notify_oneEv;    
+
 } GLIBCXX_3.4.13;
 
 # Symbols in the support library (libsupc++) have their own tag.

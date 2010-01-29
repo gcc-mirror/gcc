@@ -1,3 +1,27 @@
+2010-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/condition_variable (enum class cv_status): Add and
+	use it throughout, per N3000.
+	(condition_variable_any::wait<>(_Lock&), wait<>(_Lock&, _Predicate),
+	wait_until<>(_Lock&, const chrono::time_point<>&, _Predicate)):
+	Provide definitions.
+	* src/condition_variable.cc (condition_variable_any::notify_one,
+	condition_variable_any::notify_all): Likewise.
+	* config/abi/pre/gnu.ver: Export.
+	* testsuite/30_threads/condition_variable_any/requirements/
+	typedefs.cc: New.
+	* testsuite/30_threads/condition_variable_any/requirements/
+	standard_layout.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/1.cc: Adjust.
+	* testsuite/30_threads/condition_variable/members/2.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/assign_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/30_threads/condition_variable/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/assign_neg.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/copy_neg.cc:
+	Likewise.
+
 2010-01-28  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/bits/stl_algobase.h (struct __iter_base): Add.
