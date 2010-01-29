@@ -1,11 +1,11 @@
 // { dg-do run { xfail sparc64-*-elf arm-*-pe } }
 // { dg-options "-fexceptions" }
 
-int err = 1;
+int e = 1;
 
 struct A {
   ~A() {
-    --err;
+    --e;
   }
 };
 
@@ -20,7 +20,7 @@ main() {
   try {
     B b;
   } catch (...) {
-    return err;
+    return e;
   }
   return 1;
 }
