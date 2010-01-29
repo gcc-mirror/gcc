@@ -1,3 +1,8 @@
+2010-01-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (ccp_fold_stmt): Unshare values we substitute.
+	Assert we successfully updated the call.
+
 2010-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/42889
