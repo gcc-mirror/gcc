@@ -1,3 +1,9 @@
+2010-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-alias.c (same_type_for_tbaa): Return -1 if the types have
+	the same alias set and their sizes different constantness.
+	(aliasing_component_refs_p): Revert 2009-10-24 change.
+
 2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sparc.c (sparc_elf_asm_named_section): Declare decl
