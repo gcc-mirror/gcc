@@ -1,3 +1,8 @@
+2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.c++/task-1.C: Renamed err to e.
+	* testsuite/libgomp.c++/task-6.C: Likewise.
+
 2010-01-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* configure.tgt (*-*-hpux*): Add -frandom-seed flag.
