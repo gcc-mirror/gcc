@@ -1,6 +1,6 @@
 // <condition_variable> -*- C++ -*-
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,6 +50,9 @@ namespace std
    * @{
    */
 
+  /// cv_status
+  enum class cv_status { no_timeout, timeout };
+  
   /// condition_variable
   class condition_variable
   {
@@ -84,13 +87,13 @@ namespace std
       }
 
     template<typename _Duration>
-      bool
+      cv_status
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<__clock_t, _Duration>& __atime)
       { return __wait_until_impl(__lock, __atime); }
 
     template<typename _Clock, typename _Duration>
-      bool
+      cv_status
       wait_until(unique_lock<mutex>& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -110,14 +113,13 @@ namespace std
 		 _Predicate __p)
       {
 	while (!__p())
-	  if (!wait_until(__lock, __atime))
+	  if (wait_until(__lock, __atime) == cv_status::timeout)
 	    return __p();
-
 	return true;
       }
 
     template<typename _Rep, typename _Period>
-      bool
+      cv_status
       wait_for(unique_lock<mutex>& __lock,
 	       const chrono::duration<_Rep, _Period>& __rtime)
       { return wait_until(__lock, __clock_t::now() + __rtime); }
@@ -135,7 +137,7 @@ namespace std
 
   private:
     template<typename _Clock, typename _Duration>
-      bool
+      cv_status
       __wait_until_impl(unique_lock<mutex>& __lock,
 			const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -154,7 +156,8 @@ namespace std
 	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
 				 &__ts);
 
-	return _Clock::now() < __atime;
+	return (_Clock::now() < __atime
+		? cv_status::no_timeout : cv_status::timeout);
       }
   };
 
@@ -182,14 +185,24 @@ namespace std
 
     template<typename _Lock>
       void
-      wait(_Lock& __lock);
+      wait(_Lock& __lock)
+      {
+	int __e = __gthread_cond_wait(&_M_cond,
+				      __lock.mutex()->native_handle());
+	if (__e)
+	  __throw_system_error(__e);
+      }
 
     template<typename _Lock, typename _Predicate>
       void
-      wait(_Lock& __lock, _Predicate __p);
+      wait(_Lock& __lock, _Predicate __p)
+      {
+	while (!__p())
+	  wait(__lock);
+      }
 
     template<typename _Lock, typename _Clock, typename _Duration>
-      bool
+      cv_status
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime);
 
@@ -198,10 +211,16 @@ namespace std
       bool
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime,
-		 _Predicate __p);
+		 _Predicate __p)
+      {
+	while (!__p())
+	  if (wait_until(__lock, __atime) == cv_status::timeout)
+	    return __p();
+	return true;
+      }
 
     template<typename _Lock, typename _Rep, typename _Period>
-      bool
+      cv_status
       wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime);
 
     template<typename _Lock, typename _Rep,
