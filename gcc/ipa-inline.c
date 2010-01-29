@@ -1510,97 +1510,106 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
       /* Never inline regular functions into always-inline functions
 	 during incremental inlining.  */
       && !node->local.disregard_inline_limits)
-    for (e = node->callees; e; e = e->next_callee)
-      {
-        int allowed_growth = 0;
-	if (!e->callee->local.inlinable
-	    || !e->inline_failed
-	    || e->callee->local.disregard_inline_limits)
-	  continue;
-	if (dump_file)
-	  fprintf (dump_file, "Considering inline candidate %s.\n",
-		   cgraph_node_name (e->callee));
-	if (cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed))
-	  {
-	    if (dump_file)
-	      {
-		indent_to (dump_file, depth);
-		fprintf (dump_file, "Not inlining: recursive call.\n");
-	      }
+    {
+      bitmap visited = BITMAP_ALLOC (NULL);
+      for (e = node->callees; e; e = e->next_callee)
+	{
+	  int allowed_growth = 0;
+	  if (!e->callee->local.inlinable
+	      || !e->inline_failed
+	      || e->callee->local.disregard_inline_limits)
 	    continue;
-	  }
-	if (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
-	    != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
-	  {
-	    if (dump_file)
-	      {
-		indent_to (dump_file, depth);
-		fprintf (dump_file, "Not inlining: SSA form does not match.\n");
-	      }
+	  /* We are inlining a function to all call-sites in node
+	     or to none.  So visit each candidate only once.  */
+	  if (!bitmap_set_bit (visited, e->callee->uid))
 	    continue;
-	  }
+	  if (dump_file)
+	    fprintf (dump_file, "Considering inline candidate %s.\n",
+		     cgraph_node_name (e->callee));
+	  if (cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed))
+	    {
+	      if (dump_file)
+		{
+		  indent_to (dump_file, depth);
+		  fprintf (dump_file, "Not inlining: recursive call.\n");
+		}
+	      continue;
+	    }
+	  if (gimple_in_ssa_p (DECL_STRUCT_FUNCTION (node->decl))
+	      != gimple_in_ssa_p (DECL_STRUCT_FUNCTION (e->callee->decl)))
+	    {
+	      if (dump_file)
+		{
+		  indent_to (dump_file, depth);
+		  fprintf (dump_file,
+			   "Not inlining: SSA form does not match.\n");
+		}
+	      continue;
+	    }
 
-	if (cgraph_maybe_hot_edge_p (e) && leaf_node_p (e->callee)
-	    && optimize_function_for_speed_p (cfun))
-	  allowed_growth = PARAM_VALUE (PARAM_EARLY_INLINING_INSNS);
+	  if (cgraph_maybe_hot_edge_p (e) && leaf_node_p (e->callee)
+	      && optimize_function_for_speed_p (cfun))
+	    allowed_growth = PARAM_VALUE (PARAM_EARLY_INLINING_INSNS);
 
-	/* When the function body would grow and inlining the function won't
-	   eliminate the need for offline copy of the function, don't inline.
-	 */
-	if (((mode == INLINE_SIZE || mode == INLINE_SIZE_NORECURSIVE)
-	     || (!flag_inline_functions
-		 && !DECL_DECLARED_INLINE_P (e->callee->decl)))
-	    && (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
-		> e->caller->global.size + allowed_growth)
-	    && cgraph_estimate_growth (e->callee) > allowed_growth)
-	  {
-	    if (dump_file)
-	      {
-		indent_to (dump_file, depth);
-		fprintf (dump_file,
-			 "Not inlining: code size would grow by %i.\n",
-			 cgraph_estimate_size_after_inlining (1, e->caller,
-							      e->callee)
-			 - e->caller->global.size);
-	      }
-	    continue;
-	  }
-	if (!cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
-				         false)
-	    || e->call_stmt_cannot_inline_p)
-	  {
-	    if (dump_file)
-	      {
-		indent_to (dump_file, depth);
-		fprintf (dump_file, "Not inlining: %s.\n",
-			 cgraph_inline_failed_string (e->inline_failed));
-	      }
-	    continue;
-	  }
-	if (!e->callee->analyzed)
-	  {
-	    if (dump_file)
-	      {
-		indent_to (dump_file, depth);
-		fprintf (dump_file,
-			 "Not inlining: Function body no longer available.\n");
-	      }
-	    continue;
-	  }
-	if (!tree_can_inline_p (e))
-	  {
-	    if (dump_file)
-	      {
-		indent_to (dump_file, depth);
-		fprintf (dump_file,
-			 "Not inlining: %s.",
-                         cgraph_inline_failed_string (e->inline_failed));
-	      }
-	    continue;
-	  }
-	if (cgraph_default_inline_p (e->callee, &failed_reason))
-	  inlined |= try_inline (e, mode, depth);
-      }
+	  /* When the function body would grow and inlining the function
+	     won't eliminate the need for offline copy of the function,
+	     don't inline.  */
+	  if (((mode == INLINE_SIZE || mode == INLINE_SIZE_NORECURSIVE)
+	       || (!flag_inline_functions
+		   && !DECL_DECLARED_INLINE_P (e->callee->decl)))
+	      && (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
+		  > e->caller->global.size + allowed_growth)
+	      && cgraph_estimate_growth (e->callee) > allowed_growth)
+	    {
+	      if (dump_file)
+		{
+		  indent_to (dump_file, depth);
+		  fprintf (dump_file,
+			   "Not inlining: code size would grow by %i.\n",
+			   cgraph_estimate_size_after_inlining (1, e->caller,
+								e->callee)
+			   - e->caller->global.size);
+		}
+	      continue;
+	    }
+	  if (!cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
+					   false)
+	      || e->call_stmt_cannot_inline_p)
+	    {
+	      if (dump_file)
+		{
+		  indent_to (dump_file, depth);
+		  fprintf (dump_file, "Not inlining: %s.\n",
+			   cgraph_inline_failed_string (e->inline_failed));
+		}
+	      continue;
+	    }
+	  if (!e->callee->analyzed)
+	    {
+	      if (dump_file)
+		{
+		  indent_to (dump_file, depth);
+		  fprintf (dump_file,
+			   "Not inlining: Function body no longer available.\n");
+		}
+	      continue;
+	    }
+	  if (!tree_can_inline_p (e))
+	    {
+	      if (dump_file)
+		{
+		  indent_to (dump_file, depth);
+		  fprintf (dump_file,
+			   "Not inlining: %s.",
+			   cgraph_inline_failed_string (e->inline_failed));
+		}
+	      continue;
+	    }
+	  if (cgraph_default_inline_p (e->callee, &failed_reason))
+	    inlined |= try_inline (e, mode, depth);
+	}
+      BITMAP_FREE (visited);
+    }
   node->aux = (void *)(size_t) old_mode;
   return inlined;
 }

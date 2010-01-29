@@ -1,3 +1,9 @@
+2010-01-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/37448
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Avoid
+	quadratic behavior in most cases.
+
 2010-01-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42891
