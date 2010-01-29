@@ -3522,22 +3522,21 @@ fix = {
 
 
 /*
- * Sun Solaris 10 has a version of sys/int_const.h that defines
+ * Sun Solaris 2 has a version of sys/int_const.h that defines
  * UINT8_C and UINT16_C to unsigned constants.
  */
 fix = {
     hackname  = solaris_int_const;
-    select    = '@\(#\)int_const.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
     files     = sys/int_const.h;
+    mach      = '*-*-solaris2*';
     c_fix     = format;
     c_fix_arg = "#define\tUINT8_C(c)\t(c)\n"
                 "%1\n"
                 "#define\tUINT16_C(c)\t(c)";
-    c_fix_arg = "^#define[ \t]+UINT8_C\\(c\\)[ \t]+__CONCAT__.*\n"
+    select    = "^#define[ \t]+UINT8_C\\(c\\)[ \t]+__CONCAT__.*\n"
                 "(/\*.*\*/)\n"
                 "#define[ \t]+UINT16_C\\(c\\)[ \t]+__CONCAT__.*";
     test_text =
-    '#pragma ident	"@(#)int_const.h	1.5	04/09/28 SMI"'"\n"
     "#define	UINT8_C(c)	__CONCAT__(c,u)\n"
     "/* CSTYLED */\n"
     "#define	UINT16_C(c)	__CONCAT__(c,u)";
@@ -3545,41 +3544,55 @@ fix = {
 
 
 /*
- * Sun Solaris 10 has a version of sys/int_limits.h that defines
+ * Sun Solaris 2 has a version of sys/int_limits.h that defines
  * UINT8_MAX and UINT16_MAX to unsigned constants.
  */
 fix = {
     hackname  = solaris_int_limits_1;
-    select    = '@\(#\)int_limits.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
     files     = sys/int_limits.h;
+    mach      = '*-*-solaris2*';
     c_fix     = format;
     c_fix_arg = "#define\tUINT8_MAX\t(255)\n"
                 "#define\tUINT16_MAX\t(65535)";
-    c_fix_arg = "^#define[ \t]+UINT8_MAX[ \t]+\\(255U\\)\n"
+    select    = "^#define[ \t]+UINT8_MAX[ \t]+\\(255U\\)\n"
                 "#define[ \t]+UINT16_MAX[ \t]+\\(65535U\\)";
     test_text =
-    '#pragma ident	"@(#)int_limits.h	1.9	04/09/28 SMI"'"\n"
     "#define	UINT8_MAX	(255U)\n"
     "#define	UINT16_MAX	(65535U)";
 };
 
 
 /*
- * Sun Solaris 10 has a version of sys/int_limits.h that defines
+ * Sun Solaris 2 has a version of sys/int_limits.h that defines
  * INT_FAST16 limits to wrong values for sys/int_types.h.
  */
 fix = {
     hackname  = solaris_int_limits_2;
-    select    = '@\(#\)int_limits.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
     files     = sys/int_limits.h;
+    mach      = '*-*-solaris2*';
     c_fix     = format;
     c_fix_arg = "#define\t%1_FAST16_%2 %132_%2";
-    c_fix_arg = "^#define[ \t]+(INT|UINT)_FAST16_(MAX|MIN)[ \t](INT|UINT)16.*";
+    select    = "^#define[ \t]+(INT|UINT)_FAST16_(MAX|MIN)[ \t](INT|UINT)16.*";
     test_text =
-    '#pragma ident	"@(#)int_limits.h	1.9	04/09/28 SMI"'"\n"
     "#define	INT_FAST16_MAX INT16_MAX\n"
     "#define	UINT_FAST16_MAX UINT16_MAX\n"
     "#define	INT_FAST16_MIN	INT16_MIN";
+};
+
+
+/*
+ * Sun Solaris 2 has a version of sys/int_limits.h that defines
+ * SIZE_MAX as unsigned long.
+ */
+fix = {
+    hackname  = solaris_int_limits_3;
+    files     = sys/int_limits.h;
+    mach      = '*-*-solaris2*';
+    c_fix     = format;
+    c_fix_arg = "#define\tSIZE_MAX\t4294967295U";
+    select    = "^#define[ \t]+SIZE_MAX[ \t]+4294967295UL";
+    test_text =
+    "#define	SIZE_MAX	4294967295UL";
 };
 
 

@@ -10,7 +10,6 @@
 
 
 #if defined( SOLARIS_INT_CONST_CHECK )
-#pragma ident	"@(#)int_const.h	1.5	04/09/28 SMI"
 #define	UINT8_C(c)	(c)
 /* CSTYLED */
 #define	UINT16_C(c)	(c)

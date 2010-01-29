@@ -1,3 +1,22 @@
+2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_int_limits_3): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/int_limits.h [SOLARIS_INT_LIMITS_3_CHECK]: New
+	test.
+
+	* inclhack.def (solaris_int_const, solaris_int_limits_1,
+	solaris_int_limits_2 ): Applies to Solaris 2 in general.
+	Remove select.
+	Add mach for *-*-solaris2*.
+	Change second c_fix_arg to select.
+	Remove #pragma ident from test_text.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/int_const.h [SOLARIS_INT_CONST_CHECK]: Remove
+	#pragma trigger text.
+	* tests/base/sys/int_limits.h [SOLARIS_INT_LIMITS_1_CHECK,
+	SOLARIS_INT_LIMITS_2_CHECK]: Likewise.
+
 2010-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (aix_stdint_1): Add stdint-aix.h to files.
