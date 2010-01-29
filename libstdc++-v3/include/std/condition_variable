@@ -98,10 +98,10 @@ namespace std
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
 	// DR 887 - Sync unknown clock to known clock.
-	typename _Clock::time_point __c_entry = _Clock::now();
-	__clock_t::time_point __s_entry = __clock_t::now();
-	chrono::nanoseconds __delta = __atime - __c_entry;
-	__clock_t::time_point __s_atime = __s_entry + __delta;
+	const typename _Clock::time_point __c_entry = _Clock::now();
+	const __clock_t::time_point __s_entry = __clock_t::now();
+	const chrono::nanoseconds __delta = __atime - __c_entry;
+	const __clock_t::time_point __s_atime = __s_entry + __delta;
 
 	return __wait_until_impl(__lock, __s_atime);
       }
@@ -165,6 +165,7 @@ namespace std
   // Like above, only mutex may not have try_lock.
   class condition_variable_any
   {
+    typedef chrono::system_clock	__clock_t;
     typedef __gthread_cond_t		__native_type;
     __native_type			_M_cond;
 
@@ -201,10 +202,25 @@ namespace std
 	  wait(__lock);
       }
 
+    template<typename _Lock, typename _Duration>
+      cv_status
+      wait_until(_Lock& __lock,
+		 const chrono::time_point<__clock_t, _Duration>& __atime)
+      { return __wait_until_impl(__lock, __atime); }
+
     template<typename _Lock, typename _Clock, typename _Duration>
       cv_status
       wait_until(_Lock& __lock,
-		 const chrono::time_point<_Clock, _Duration>& __atime);
+		 const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+	// DR 887 - Sync unknown clock to known clock.
+	const typename _Clock::time_point __c_entry = _Clock::now();
+	const __clock_t::time_point __s_entry = __clock_t::now();
+	const chrono::nanoseconds __delta = __atime - __c_entry;
+	const __clock_t::time_point __s_atime = __s_entry + __delta;
+
+	return __wait_until_impl(__lock, __s_atime);
+      }
 
     template<typename _Lock, typename _Clock,
 	     typename _Duration, typename _Predicate>
@@ -232,6 +248,31 @@ namespace std
     native_handle_type
     native_handle()
     { return &_M_cond; }
+
+  private:
+    template<typename _Lock, typename _Clock, typename _Duration>
+      cv_status
+      __wait_until_impl(_Lock& __lock,
+			const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+	chrono::time_point<__clock_t, chrono::seconds> __s =
+	  chrono::time_point_cast<chrono::seconds>(__atime);
+
+	chrono::nanoseconds __ns =
+	  chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	__gthread_time_t __ts =
+	  {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
+				 &__ts);
+
+	return (_Clock::now() < __atime
+		? cv_status::no_timeout : cv_status::timeout);
+      }
   };
 
   // @} group condition_variables

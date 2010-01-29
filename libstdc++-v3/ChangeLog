@@ -1,5 +1,20 @@
 2010-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/condition_variable (condition_variable_any::
+	__wait_until_impl): Add.
+	(condition_variable_any::wait_until): Provide definitions.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: New.
+	* testsuite/30_threads/condition_variable_any/cons/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/30_threads/condition_variable_any/cons/copy_neg.cc:
+	Likewise.
+
+	* testsuite/30_threads/condition_variable/members/1.cc: Minor
+	stylistic changes.
+	* testsuite/30_threads/condition_variable/members/1.cc: Likewise.
+
+2010-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/condition_variable (enum class cv_status): Add and
 	use it throughout, per N3000.
 	(condition_variable_any::wait<>(_Lock&), wait<>(_Lock&, _Predicate),

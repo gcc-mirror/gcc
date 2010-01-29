@@ -34,14 +34,14 @@ void test01()
   try 
     {
       std::chrono::microseconds ms(500);
-      std::condition_variable c1;
+      std::condition_variable_any c1;
       std::mutex m;
       std::unique_lock<std::mutex> l(m);
 
-      auto then = std::chrono::system_clock::now();
-      std::cv_status result = c1.wait_for(l, ms);
+      auto then = std::chrono::monotonic_clock::now();
+      std::cv_status result = c1.wait_until(l, then + ms);
       VERIFY( result == std::cv_status::timeout );
-      VERIFY( (std::chrono::system_clock::now() - then) >= ms );
+      VERIFY( (std::chrono::monotonic_clock::now() - then) >= ms );
       VERIFY( l.owns_lock() );
     }
   catch (const std::system_error& e)
