@@ -1,3 +1,9 @@
+2010-01-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* g++.dg/tree-ssa/inline-1.C: New.
+	* g++.dg/tree-ssa/inline-2.C: New.
+	* g++.dg/tree-ssa/inline-3.C: New.
+
 2010-01-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR testsuite/41701
