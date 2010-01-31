@@ -1,3 +1,11 @@
+2010-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/42850
+	Revert:
+	2010-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/t-slibgcc-dwarf-ver (SHLIB_SOVERSION): Bump by two.
+
 2010-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Update recommended GMP/MPFR/MPC versions.
