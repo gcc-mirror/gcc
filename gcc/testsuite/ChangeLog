@@ -1,5 +1,9 @@
 2010-01-31  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/torture/pr42898.c: Skip -O0.
+
+2010-01-31  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42898
 	* gcc.dg/torture/pr42898.c: New testcase.
 

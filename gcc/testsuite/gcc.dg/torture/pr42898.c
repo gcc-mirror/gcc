@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 /* { dg-options "-fdump-tree-optimized" } */
 
 struct hardware {
