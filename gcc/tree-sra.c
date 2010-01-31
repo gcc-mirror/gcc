@@ -2904,42 +2904,51 @@ ptr_parm_has_direct_uses (tree parm)
 
   FOR_EACH_IMM_USE_STMT (stmt, ui, name)
     {
+      int uses_ok = 0;
+      use_operand_p use_p;
+
+      if (is_gimple_debug (stmt))
+	continue;
+
+      /* Valid uses include dereferences on the lhs and the rhs.  */
+      if (gimple_has_lhs (stmt))
+	{
+	  tree lhs = gimple_get_lhs (stmt);
+	  while (handled_component_p (lhs))
+	    lhs = TREE_OPERAND (lhs, 0);
+	  if (INDIRECT_REF_P (lhs)
+	      && TREE_OPERAND (lhs, 0) == name)
+	    uses_ok++;
+	}
       if (gimple_assign_single_p (stmt))
 	{
 	  tree rhs = gimple_assign_rhs1 (stmt);
-	  if (rhs == name)
-	    ret = true;
-	  else if (TREE_CODE (rhs) == ADDR_EXPR)
-	    {
-	      do
-		{
-		  rhs = TREE_OPERAND (rhs, 0);
-		}
-	      while (handled_component_p (rhs));
-	      if (INDIRECT_REF_P (rhs) && TREE_OPERAND (rhs, 0) == name)
-		ret = true;
-	    }
-	}
-      else if (gimple_code (stmt) == GIMPLE_RETURN)
-	{
-	  tree t = gimple_return_retval (stmt);
-	  if (t == name)
-	    ret = true;
+	  while (handled_component_p (rhs))
+	    rhs = TREE_OPERAND (rhs, 0);
+	  if (INDIRECT_REF_P (rhs)
+	      && TREE_OPERAND (rhs, 0) == name)
+	    uses_ok++;
 	}
       else if (is_gimple_call (stmt))
 	{
 	  unsigned i;
-	  for (i = 0; i < gimple_call_num_args (stmt); i++)
+	  for (i = 0; i < gimple_call_num_args (stmt); ++i)
 	    {
 	      tree arg = gimple_call_arg (stmt, i);
-	      if (arg == name)
-		{
-		  ret = true;
-		  break;
-		}
+	      while (handled_component_p (arg))
+		arg = TREE_OPERAND (arg, 0);
+	      if (INDIRECT_REF_P (arg)
+		  && TREE_OPERAND (arg, 0) == name)
+		uses_ok++;
 	    }
 	}
-      else if (!is_gimple_debug (stmt))
+
+      /* If the number of valid uses does not match the number of
+         uses in this stmt there is an unhandled use.  */
+      FOR_EACH_IMM_USE_ON_STMT (use_p, ui)
+	--uses_ok;
+
+      if (uses_ok != 0)
 	ret = true;
 
       if (ret)
