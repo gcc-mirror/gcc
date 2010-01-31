@@ -5467,18 +5467,38 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   have_gmp=yes
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $gmpinc"
-  # Check GMP actually works
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for correct version of gmp.h" >&5
-$as_echo_n "checking for correct version of gmp.h... " >&6; }
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  # Check for the recommended and required versions of GMP.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of gmp.h" >&5
+$as_echo_n "checking for the correct version of gmp.h... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "gmp.h"
 int
 main ()
 {
 
-  #if __GNU_MP_VERSION < 4 || (__GNU_MP_VERSION == 4 && __GNU_MP_VERSION_MINOR < 2)
+  #define GCC_GMP_VERSION_NUM(a,b,c) (((a) << 16L) | ((b) << 8) | (c))
+  #define GCC_GMP_VERSION GCC_GMP_VERSION_NUM(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL)
+  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,0)
+  choke me
+  #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <gmp.h>
+int
+main ()
+{
+
+  #define GCC_GMP_VERSION_NUM(a,b,c) (((a) << 16L) | ((b) << 8) | (c))
+  #define GCC_GMP_VERSION GCC_GMP_VERSION_NUM(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL)
+  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,3,2)
   choke me
   #endif
 
@@ -5490,6 +5510,11 @@ if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: buggy but acceptable" >&5
+$as_echo "buggy but acceptable" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }; have_gmp=no
 fi
@@ -5497,8 +5522,9 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
   # If we have GMP, check the MPFR version.
   if test x"$have_gmp" = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for correct version of mpfr.h" >&5
-$as_echo_n "checking for correct version of mpfr.h... " >&6; }
+    # Check for the recommended and required versions of MPFR.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of mpfr.h" >&5
+$as_echo_n "checking for the correct version of mpfr.h... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <gmp.h>
@@ -5524,7 +5550,7 @@ int
 main ()
 {
 
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,2)
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,4,2)
     choke me
     #endif
 
@@ -5549,6 +5575,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
   # Check for the MPC header version.
   if test x"$have_gmp" = xyes ; then
+    # Check for the recommended and required versions of MPC.
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of mpc.h" >&5
 $as_echo_n "checking for the correct version of mpc.h... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -5558,7 +5585,23 @@ int
 main ()
 {
 
-    #if MPC_VERSION < MPC_VERSION_NUM (0,8,0)
+    #if MPC_VERSION < MPC_VERSION_NUM(0,8,0)
+    choke me
+    #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <mpc.h>
+int
+main ()
+{
+
+    #if MPC_VERSION < MPC_VERSION_NUM(0,8,1)
     choke me
     #endif
 
@@ -5569,6 +5612,11 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: buggy but acceptable" >&5
+$as_echo "buggy but acceptable" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }; have_gmp=no
@@ -5625,8 +5673,10 @@ rm -f core conftest.err conftest.$ac_objext \
 
   CFLAGS="$saved_CFLAGS"
 
+# The library versions listed in the error message below should match
+# the HARD-minimums enforced above.
   if test x$have_gmp != xyes; then
-    as_fn_error "Building GCC requires GMP 4.2+, MPFR 2.3.2+ and MPC 0.8.0+.
+    as_fn_error "Building GCC requires GMP 4.2+, MPFR 2.3.1+ and MPC 0.8.0+.
 Try the --with-gmp, --with-mpfr and/or --with-mpc options to specify
 their locations.  Source code for these libraries can be found at
 their respective hosting sites as well as at
