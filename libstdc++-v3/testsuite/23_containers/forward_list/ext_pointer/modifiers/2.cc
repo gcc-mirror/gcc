@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,9 @@ test01()
   std::forward_list<int, _ExtPtr_allocator<int> > fl(
     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
-  fl.insert_after(fl.before_begin(), 42);
+  std::forward_list<int, _ExtPtr_allocator<int> >::iterator ret
+    = fl.insert_after(fl.before_begin(), 42);
+  VERIFY(ret == fl.begin());
   VERIFY(fl.front() == 42);
 }
 
@@ -49,15 +51,17 @@ test02()
   std::forward_list<int, _ExtPtr_allocator<int> > fl(
     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
-  std::forward_list<int, _ExtPtr_allocator<int> >::const_iterator 
-    pos = fl.cbegin();
+  std::forward_list<int, _ExtPtr_allocator<int> >::const_iterator pos
+    = fl.cbegin();
 
   ++pos;
   VERIFY(*pos == 1);
 
   // Note: Calling l.insert_after(pos, 5, 42); without the long five
   // gets resolved to the iterator range version and fails to compile!
-  fl.insert_after(pos, 5, 42);
+  std::forward_list<int, _ExtPtr_allocator<int> >::iterator ret
+    = fl.insert_after(pos, 5, 42);
+  VERIFY(ret == pos);
   VERIFY(*pos == 1);
 
   ++pos;
@@ -76,14 +80,16 @@ test03()
   std::forward_list<int, _ExtPtr_allocator<int> > fl(
     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 
-  std::forward_list<int, _ExtPtr_allocator<int> >::const_iterator 
-    pos = fl.cbegin();
+  std::forward_list<int, _ExtPtr_allocator<int> >::const_iterator pos
+    = fl.cbegin();
 
   ++pos;
   VERIFY(*pos == 1);
 
   int i[3] = {666, 777, 888};
-  fl.insert_after(pos, i, i+3);
+  std::forward_list<int, _ExtPtr_allocator<int> >::iterator ret
+    = fl.insert_after(pos, i, i + 3);
+  VERIFY(ret == pos);
   VERIFY(*pos == 1);
 
   ++pos;
@@ -107,7 +113,9 @@ test04()
   ++pos;
   VERIFY(*pos == 1);
 
-  fl.insert_after(pos, {-1, -2, -3, -4, -5});
+  std::forward_list<int, _ExtPtr_allocator<int> >::iterator ret
+    = fl.insert_after(pos, {-1, -2, -3, -4, -5});
+  VERIFY(ret == pos);
   VERIFY(*pos == 1);
 
   ++pos;
@@ -123,16 +131,18 @@ test05()
   std::forward_list<std::string, _ExtPtr_allocator<std::string> > fl(
     {"AAA", "BBB", "CCC"});
 
-  std::forward_list<std::string, _ExtPtr_allocator<std::string> >::const_iterator 
-    pos = fl.cbegin();
+  std::forward_list<std::string, _ExtPtr_allocator<std::string> >::
+    const_iterator pos = fl.cbegin();
 
   ++pos;
   VERIFY(*pos == "BBB");
 
   std::string x( "XXX" );
-  fl.insert_after(pos, std::move(x));
+  std::forward_list<std::string, _ExtPtr_allocator<std::string> >::iterator ret
+    = fl.insert_after(pos, std::move(x));
   VERIFY(*pos == "BBB");
   ++pos;
+  VERIFY(ret == pos);
   VERIFY(*pos == "XXX");
   ++pos;
   VERIFY(*pos == "CCC");
