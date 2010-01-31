@@ -1,3 +1,8 @@
+2010-01-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-sra.c (ptr_parm_has_direct_uses): Rewrite to be
+	conservatively correct.
+
 2010-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/42850
