@@ -3853,7 +3853,9 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
     case "$target" in
        *-*-linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
       if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
-	if test "x$with_sysroot" = x; then
+	if test "x$with_headers" != x; then
+	  glibc_header_dir=$with_headers
+	elif test "x$with_sysroot" = x; then
 	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
 	elif test "x$with_build_sysroot" != "x"; then
 	  glibc_header_dir="${with_build_sysroot}/usr/include"
