@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -135,7 +135,7 @@ namespace __gnu_test
       typedef std::true_type    is_pointer_aware;
 
       typedef std::true_type	has_erase;
-      //typedef std::true_type	has_insert;  XXX no vstring<rc>::insert
+      typedef std::true_type	has_insert;
     };
 
   template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>

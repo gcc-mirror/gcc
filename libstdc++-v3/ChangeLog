@@ -1,5 +1,32 @@
 2010-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/23_containers/array/requirements/exception/
+	generation_prohibited.c: Remove, swap can indeed throw (DR 774).
+
+	* testsuite/util/exception/safety.h (insert_base<__versa_string>): Fix.
+	* testsuite/util/testsuite_container_traits.h
+	(traits<__versa_string>): Enable insert tests.
+
+2010-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h (forward_list<>::insert_after
+	(const_iterator, size_type, const _Tp&), insert_after(const_iterator,
+	_InputIterator, _InputIterator), insert_after(const_iterator,
+	std::initializer_list<>)): Fix return type per N3000.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/2.cc:
+	Adjust.
+	* testsuite/23_containers/forward_list/modifiers/2.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	Revert last changes. Also revert, among the previous changes:
 	* include/std/condition_variable (condition_variable_any::
 	wait<>(_Lock&)): Provide definition.

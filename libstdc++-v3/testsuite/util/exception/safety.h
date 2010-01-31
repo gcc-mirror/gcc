@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -512,10 +512,12 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
-    template<typename _Tp1, typename _Tp2, typename _Tp3>
-      struct insert_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3>>
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     template <typename, typename, typename> class _Tp4>
+      struct insert_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
       {
-	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3> container_type;
+	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::value_type 	value_type;
 
