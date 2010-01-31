@@ -1,3 +1,15 @@
+2010-01-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42888
+	* resolve.c (resolve_allocate_expr): Move default initialization code
+	here from gfc_trans_allocate.
+	* trans.c (gfc_trans_code): Call gfc_trans_class_assign also for
+	EXEC_INIT_ASSIGN.
+	* trans-expr.c (gfc_trans_class_assign): Handle default initialization
+	of CLASS variables via memcpy.
+	* trans-stmt.c (gfc_trans_allocate): Move default initialization code
+	to resolve_allocate_expr.
+
 2010-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/38324

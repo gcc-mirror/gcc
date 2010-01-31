@@ -4018,7 +4018,7 @@ tree
 gfc_trans_allocate (gfc_code * code)
 {
   gfc_alloc *al;
-  gfc_expr *expr, *init_e;
+  gfc_expr *expr;
   gfc_se se;
   tree tmp;
   tree parm;
@@ -4160,28 +4160,6 @@ gfc_trans_allocate (gfc_code * code)
 	    tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
 					rhs, false);
 	  gfc_free_expr (rhs);
-	  gfc_add_expr_to_block (&block, tmp);
-	}
-      /* Default initializer for CLASS variables.  */
-      else if (al->expr->ts.type == BT_CLASS
-	       && code->ext.alloc.ts.type == BT_DERIVED
-	       && (init_e = gfc_default_initializer (&code->ext.alloc.ts)))
-	{
-	  gfc_se dst,src;
-	  gfc_init_se (&dst, NULL);
-	  gfc_init_se (&src, NULL);
-	  gfc_conv_expr (&dst, expr);
-	  gfc_conv_expr (&src, init_e);
-	  gfc_add_block_to_block (&block, &src.pre);
-	  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
-	  gfc_add_expr_to_block (&block, tmp);
-	}
-      /* Add default initializer for those derived types that need them.  */
-      else if (expr->ts.type == BT_DERIVED
-	       && (init_e = gfc_default_initializer (&expr->ts)))
-	{
-	  tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
-				      init_e, true);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 

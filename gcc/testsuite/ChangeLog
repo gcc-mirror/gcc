@@ -1,3 +1,8 @@
+2010-01-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42888
+	* gfortran.dg/allocate_derived_2.f90: New test.
+
 2010-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/42898
