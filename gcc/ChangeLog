@@ -1,3 +1,7 @@
+2010-01-31  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc: Adjust order of makefile fragments for mingw targets.
+
 2010-01-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42898
