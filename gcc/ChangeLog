@@ -1,3 +1,12 @@
+2010-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/42898
+	Backport from mainline:
+	2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs) <VAR_DECL>: Do not do a direct
+	assignment from the constructor either if the target is volatile.
+
 2010-01-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42898
