@@ -838,7 +838,6 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   gfc_se argse;
   gfc_ss *ss;
   gfc_array_spec * as;
-  gfc_ref *ref;
 
   arg = expr->value.function.actual;
   arg2 = arg->next;
@@ -907,42 +906,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   ubound = gfc_conv_descriptor_ubound_get (desc, bound);
   lbound = gfc_conv_descriptor_lbound_get (desc, bound);
   
-  /* Follow any component references.  */
-  if (arg->expr->expr_type == EXPR_VARIABLE
-      || arg->expr->expr_type == EXPR_CONSTANT)
-    {
-      as = arg->expr->symtree->n.sym->as;
-      for (ref = arg->expr->ref; ref; ref = ref->next)
-	{
-	  switch (ref->type)
-	    {
-	    case REF_COMPONENT:
-	      as = ref->u.c.component->as;
-	      continue;
-
-	    case REF_SUBSTRING:
-	      continue;
-
-	    case REF_ARRAY:
-	      {
-		switch (ref->u.ar.type)
-		  {
-		  case AR_ELEMENT:
-		  case AR_SECTION:
-		  case AR_UNKNOWN:
-		    as = NULL;
-		    continue;
-
-		  case AR_FULL:
-		    break;
-		  }
-		break;
-	      }
-	    }
-	}
-    }
-  else
-    as = NULL;
+  as = gfc_get_full_arrayspec_from_expr (arg->expr);
 
   /* 13.14.53: Result value for LBOUND
 
