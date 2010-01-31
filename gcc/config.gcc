@@ -1335,7 +1335,6 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	case ${target} in
 		*-w64-*)
 			tm_file="${tm_file} i386/mingw-w64.h"
-			tmake_file="${tmake_file} i386/t-mingw-w64"
 			if test x$enable_targets = xall; then
 				tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 				case X"${with_cpu}" in
@@ -1355,7 +1354,6 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			fi
 			;;
 		*)
-			tmake_file="${tmake_file} i386/t-mingw32"
 			;;
 	esac
 	tm_file="${tm_file} i386/mingw-stdint.h"
@@ -1366,6 +1364,14 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 		tmake_eh_file="i386/t-sjlj-eh"
 	fi
 	tmake_file="${tmake_file} ${tmake_eh_file} i386/t-cygming"
+        case ${target} in
+               *-w64-*)
+               		tmake_file="${tmake_file} i386/t-mingw-w64"
+			;;
+               *)
+               		tmake_file="${tmake_file} i386/t-mingw32"
+                     	;;
+	esac
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/mingw.opt"
 	case ${target} in
