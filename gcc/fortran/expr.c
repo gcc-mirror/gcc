@@ -3489,6 +3489,58 @@ gfc_get_variable_expr (gfc_symtree *var)
 }
 
 
+/* Returns the array_spec of a full array expression.  A NULL is
+   returned otherwise.  */
+gfc_array_spec *
+gfc_get_full_arrayspec_from_expr (gfc_expr *expr)
+{
+  gfc_array_spec *as;
+  gfc_ref *ref;
+
+  if (expr->rank == 0)
+    return NULL;
+
+  /* Follow any component references.  */
+  if (expr->expr_type == EXPR_VARIABLE
+      || expr->expr_type == EXPR_CONSTANT)
+    {
+      as = expr->symtree->n.sym->as;
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  switch (ref->type)
+	    {
+	    case REF_COMPONENT:
+	      as = ref->u.c.component->as;
+	      continue;
+
+	    case REF_SUBSTRING:
+	      continue;
+
+	    case REF_ARRAY:
+	      {
+		switch (ref->u.ar.type)
+		  {
+		  case AR_ELEMENT:
+		  case AR_SECTION:
+		  case AR_UNKNOWN:
+		    as = NULL;
+		    continue;
+
+		  case AR_FULL:
+		    break;
+		  }
+		break;
+	      }
+	    }
+	}
+    }
+  else
+    as = NULL;
+
+  return as;
+}
+
+
 /* General expression traversal function.  */
 
 bool
