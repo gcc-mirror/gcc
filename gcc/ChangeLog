@@ -1,3 +1,9 @@
+2010-01-31  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Fix __stack_chk_fail check for cross builds configured
+	--with-headers
+	* configure: Regenerate.
+
 2010-01-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-alias.c (same_type_for_tbaa): Return -1 if the types have
