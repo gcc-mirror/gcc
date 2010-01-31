@@ -6099,6 +6099,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   gfc_symbol *sym;
   gfc_alloc *a;
   gfc_component *c;
+  gfc_expr *init_e;
 
   /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
   check_intent_in = 1;
@@ -6222,6 +6223,36 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       gfc_error ("Cannot allocate INTENT(IN) variable '%s' at %L",
 		 sym->name, &e->where);
       return FAILURE;
+    }
+    
+  if (!code->expr3)
+    {
+      /* Add default initializer for those derived types that need them.  */
+      if (e->ts.type == BT_DERIVED
+	  && (init_e = gfc_default_initializer (&e->ts)))
+	{
+	  gfc_code *init_st = gfc_get_code ();
+	  init_st->loc = code->loc;
+	  init_st->op = EXEC_INIT_ASSIGN;
+	  init_st->expr1 = gfc_expr_to_initialize (e);
+	  init_st->expr2 = init_e;
+	  init_st->next = code->next;
+	  code->next = init_st;
+	}
+      else if (e->ts.type == BT_CLASS
+	       && ((code->ext.alloc.ts.type == BT_UNKNOWN
+		    && (init_e = gfc_default_initializer (&e->ts.u.derived->components->ts)))
+		   || (code->ext.alloc.ts.type == BT_DERIVED
+		       && (init_e = gfc_default_initializer (&code->ext.alloc.ts)))))
+	{
+	  gfc_code *init_st = gfc_get_code ();
+	  init_st->loc = code->loc;
+	  init_st->op = EXEC_INIT_ASSIGN;
+	  init_st->expr1 = gfc_expr_to_initialize (e);
+	  init_st->expr2 = init_e;
+	  init_st->next = code->next;
+	  code->next = init_st;
+	}
     }
 
   if (pointer || dimension == 0)
