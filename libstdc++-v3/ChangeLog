@@ -1,5 +1,29 @@
 2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/42408
+	* include/bits/random.h (linear_congruential_engine<>::
+	linear_congruential_engine(seed_seq&),
+	linear_congruential_engine<>::seed(seed_seq&),
+	mersenne_twister<>::mersenne_twister(seed_seq&),
+	mersenne_twister<>::seed(seed_seq&),
+	subtract_with_carry_engine<>::subtract_with_carry_engine(seed_seq&),
+	subtract_with_carry_engine<>::seed(seed_seq&),
+	discard_block_engine<>::discard_block_engine(seed_seq&),
+	discard_block_engine<>::seed(seed_seq&),
+	independent_bits_engine<>::independent_bits_engine(seed_seq&),
+	independent_bits_engine<>::seed(seed_seq&),
+	shuffle_order_engine<>::shuffle_order_engine(seed_seq&),
+	shuffle_order_engine<>::seed(seed_seq&)): Templatize.
+	* include/bits/random.tcc: Adjust.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed_seq.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	seed_seq.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	cons/seed_seq.cc: Likewise.
+
+2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/forward_list.h (forward_list<>::resize(size_type),
 	forward_list(size_type)): Only declare.
 	* include/bits/forward_list.tcc (forward_list<>::resize(size_type),
