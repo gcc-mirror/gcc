@@ -442,17 +442,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { }
 
       /**
-       *  @brief  Creates a %forward_list with copies of the default element
-       *          type.
+       *  @brief  Creates a %forward_list with default constructed elements.
        *  @param  n  The number of elements to initially create.
        *
-       *  This constructor fills the %forward_list with @a n copies of
-       *  the default value.
+       *  This constructor creates the %forward_list with @a n default
+       *  constructed elements.
        */
       explicit
-      forward_list(size_type __n)
-      : _Base()
-      { _M_fill_initialize(__n, value_type()); }
+      forward_list(size_type __n);
 
       /**
        *  @brief  Creates a %forward_list with copies of an exemplar element.
@@ -497,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  object used by @a list.
        */
       forward_list(const forward_list& __list)
-      : _Base(__list.get_allocator())
+      : _Base(__list._M_get_Node_allocator())
       { _M_initialize_dispatch(__list.begin(), __list.end(), __false_type()); }
 
       /**
@@ -870,7 +867,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       iterator
       insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
       {
-        forward_list __tmp(__n, __val, this->get_allocator());
+        forward_list __tmp(__n, __val, this->_M_get_Node_allocator());
         splice_after(__pos, std::move(__tmp));
 	return iterator(__const_pointer_cast<typename _Node_base::_Pointer>
 			(__pos._M_node));
@@ -895,7 +892,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         insert_after(const_iterator __pos,
                      _InputIterator __first, _InputIterator __last)
         {
-          forward_list __tmp(__first, __last, this->get_allocator());
+          forward_list __tmp(__first, __last, this->_M_get_Node_allocator());
           splice_after(__pos, std::move(__tmp));
 	  return iterator(__const_pointer_cast<typename _Node_base::_Pointer>
 			  (__pos._M_node));
@@ -918,7 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       iterator
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
       {
-        forward_list __tmp(__il, this->get_allocator());
+        forward_list __tmp(__il, this->_M_get_Node_allocator());
         splice_after(__pos, std::move(__tmp));
 	return iterator(__const_pointer_cast<typename _Node_base::_Pointer>
 			(__pos._M_node));
@@ -993,12 +990,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  This function will %resize the %forward_list to the specified
        *  number of elements.  If the number is smaller than the
        *  %forward_list's current size the %forward_list is truncated,
-       *  otherwise the %forward_list is extended and new elements are
-       *  populated with given data.
+       *  otherwise the %forward_list is extended and the new elements
+       *  are default constructed.
        */
       void
-      resize(size_type __sz)
-      { resize(__sz, _Tp()); }
+      resize(size_type __sz);
 
       /**
        *  @brief Resizes the %forward_list to the specified number of

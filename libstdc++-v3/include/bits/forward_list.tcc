@@ -1,6 +1,6 @@
 // <forward_list.tcc> -*- C++ -*-
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -175,6 +175,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _Tp, typename _Alloc>
+    forward_list<_Tp, _Alloc>::
+    forward_list(size_type __n)
+    : _Base()
+    {
+      typename _Node_base::_Pointer __to = &this->_M_impl._M_head;
+      for (; __n > 0; --__n)
+        {
+          __to->_M_next = this->_M_create_node();
+          __to = __to->_M_next;
+        }
+    }
+
+  template<typename _Tp, typename _Alloc>
     forward_list<_Tp, _Alloc>&
     forward_list<_Tp, _Alloc>::
     operator=(const forward_list& __list)
@@ -199,6 +212,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
             insert_after(__prev1, __first2, __last2);
         }
       return *this;
+    }
+
+  template<typename _Tp, typename _Alloc>
+    void
+    forward_list<_Tp, _Alloc>::
+    resize(size_type __sz)
+    {
+      iterator __k = before_begin();
+
+      size_type __len = 0;
+      while (__k._M_next() != end() && __len < __sz)
+        {
+          ++__k;
+          ++__len;
+        }
+      if (__len == __sz)
+        erase_after(__k, end());
+      else
+	{
+	  forward_list __tmp(__sz - __len);
+	  splice_after(__k, std::move(__tmp));
+	}
     }
 
   template<typename _Tp, typename _Alloc>

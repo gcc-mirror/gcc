@@ -1,9 +1,8 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
-// { dg-error "no matching" "" { target *-*-* } 1201 }
-// { dg-excess-errors "" }
 
-// Copyright (C) 2009, 2010 Free Software Foundation
+// 2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,10 +20,31 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <forward_list>
-#include <utility>
+#include <testsuite_hooks.h>
 
-void f()
+struct NoCopyConstructor
 {
-  typedef std::forward_list<std::forward_list<std::pair<char, char> > > test_type;
-  test_type l('a', 'b');
+  NoCopyConstructor() : num(-1) { }
+  NoCopyConstructor(const NoCopyConstructor&) = delete;
+
+  operator int() { return num; }
+
+private:
+  int num;
+};
+
+void test01()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::forward_list<NoCopyConstructor> fl(5);
+  VERIFY( std::distance(fl.begin(), fl.end()) == 5 );
+  for(auto it = fl.begin(); it != fl.end(); ++it)
+    VERIFY( *it == -1 );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }
