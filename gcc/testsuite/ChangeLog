@@ -1,3 +1,8 @@
+2010-02-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42922
+	* gfortran.dg/pure_initializer_3.f90: News test.
+
 2010-01-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42888
@@ -15,9 +20,9 @@
 
 2010-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/38324
-        * gfortran.dg/alloc_comp_basics_1.f90: Remove option -O2.
-        * gfortran.dg/alloc_comp_bounds_1.f90: New test.
+	PR fortran/38324
+	* gfortran.dg/alloc_comp_basics_1.f90: Remove option -O2.
+	* gfortran.dg/alloc_comp_bounds_1.f90: New test.
 
 2010-01-30  Paolo Bonzini  <bonzini@gnu.org>
 

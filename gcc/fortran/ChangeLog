@@ -1,3 +1,9 @@
+2010-02-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42922
+	* decl.c (variable_decl): Allow default initializer in
+	TYPE declarations in PURE functions.
+
 2010-01-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42888
@@ -12,10 +18,10 @@
 
 2010-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/38324
+	PR fortran/38324
 	* expr.c (gfc_get_full_arrayspec_from_expr): New function.
 	* gfortran.h : Add prototype for above.
-        * trans-expr.c (gfc_trans_alloc_subarray_assign): New function.
+	* trans-expr.c (gfc_trans_alloc_subarray_assign): New function.
 	(gfc_trans_subcomponent_assign): Call new function to replace
 	the code to deal with allocatable components.
 	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Call
