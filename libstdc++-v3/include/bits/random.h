@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +49,6 @@ namespace std
 	   typename _UniformRandomNumberGenerator>
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
-
-  class seed_seq;
 
   /*
    * Implementation-space details.
@@ -179,7 +177,7 @@ namespace std
        */
       explicit
       linear_congruential_engine(result_type __s = default_seed)
-      { this->seed(__s); }
+      { seed(__s); }
 
       /**
        * @brief Constructs a %linear_congruential_engine random number
@@ -187,9 +185,11 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      explicit
-      linear_congruential_engine(seed_seq& __q)
-      { this->seed(__q); }
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        explicit
+        linear_congruential_engine(_Sseq& __q)
+        { seed<_Sseq>(__q); }
 
       /**
        * @brief Reseeds the %linear_congruential_engine random number generator
@@ -207,8 +207,10 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      void
-      seed(seed_seq& __q);
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        void
+        seed(_Sseq& __q);
 
       /**
        * @brief Gets the smallest possible value in the output range.
@@ -398,15 +400,19 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      explicit
-      mersenne_twister_engine(seed_seq& __q)
-      { seed(__q); }
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        explicit
+        mersenne_twister_engine(_Sseq& __q)
+        { seed<_Sseq>(__q); }
 
       void
       seed(result_type __sd = default_seed);
 
-      void
-      seed(seed_seq& __q);
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        void
+        seed(_Sseq& __q);
 
       /**
        * @brief Gets the smallest possible value in the output range.
@@ -557,7 +563,7 @@ namespace std
        */
       explicit
       subtract_with_carry_engine(result_type __sd = default_seed)
-      { this->seed(__sd); }
+      { seed(__sd); }
 
       /**
        * @brief Constructs a %subtract_with_carry_engine random number engine
@@ -565,9 +571,11 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      explicit
-      subtract_with_carry_engine(seed_seq& __q)
-      { this->seed(__q); }
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        explicit
+        subtract_with_carry_engine(_Sseq& __q)
+        { seed<_Sseq>(__q); }
 
       /**
        * @brief Seeds the initial state @f$ x_0 @f$ of the random number
@@ -588,8 +596,10 @@ namespace std
        * @brief Seeds the initial state @f$ x_0 @f$ of the
        * % subtract_with_carry_engine random number generator.
        */
-      void
-      seed(seed_seq& __q);
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        void
+        seed(_Sseq& __q);
 
       /**
        * @brief Gets the inclusive minimum value of the range of random
@@ -670,7 +680,8 @@ namespace std
        *        @p __is.
        *
        * @param __is An input stream.
-       * @param __x  A % subtract_with_carry_engine random number generator engine.
+       * @param __x  A % subtract_with_carry_engine random number generator
+       *             engine.
        *
        * @returns The input stream with the state of @p __x extracted or in
        * an error state.
@@ -751,10 +762,14 @@ namespace std
        *
        * @param __q A seed sequence.
        */
-      explicit
-      discard_block_engine(seed_seq& __q)
-      : _M_b(__q), _M_n(0)
-      { }
+      template<typename _Sseq, typename
+        = typename std::enable_if<std::is_class<_Sseq>::value
+				  && !std::is_same<_Sseq, _RandomNumberEngine>
+				  ::value>::type>
+        explicit
+        discard_block_engine(_Sseq& __q)
+	: _M_b(__q), _M_n(0)
+        { }
 
       /**
        * @brief Reseeds the %discard_block_engine object with the default
@@ -783,12 +798,14 @@ namespace std
        *        sequence.
        * @param __q A seed generator function.
        */
-      void
-      seed(seed_seq& __q)
-      {
-        _M_b.seed(__q);
-        _M_n = 0;
-      }
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        void
+        seed(_Sseq& __q)
+        {
+	  _M_b.seed<_Sseq>(__q);
+	  _M_n = 0;
+	}
 
       /**
        * @brief Gets a const reference to the underlying generator engine
@@ -949,10 +966,14 @@ namespace std
        *
        * @param __q A seed sequence.
        */
-      explicit
-      independent_bits_engine(seed_seq& __q)
-      : _M_b(__q)
-      { }
+      template<typename _Sseq, typename
+        = typename std::enable_if<std::is_class<_Sseq>::value
+				  && !std::is_same<_Sseq, _RandomNumberEngine>
+				  ::value>::type>
+        explicit
+        independent_bits_engine(_Sseq& __q)
+        : _M_b(__q)
+        { }
 
       /**
        * @brief Reseeds the %independent_bits_engine object with the default
@@ -975,9 +996,11 @@ namespace std
        *        seed sequence.
        * @param __q A seed generator function.
        */
-      void
-      seed(seed_seq& __q)
-      { _M_b.seed(__q); }
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        void
+        seed(_Sseq& __q)
+        { _M_b.seed<_Sseq>(__q); }
 
       /**
        * @brief Gets a const reference to the underlying generator engine
@@ -1150,10 +1173,14 @@ namespace std
        *
        * @param __q A seed sequence.
        */
-      explicit
-      shuffle_order_engine(seed_seq& __q)
-      : _M_b(__q)
-      { _M_initialize(); }
+      template<typename _Sseq, typename
+        = typename std::enable_if<std::is_class<_Sseq>::value
+				  && !std::is_same<_Sseq, _RandomNumberEngine>
+				  ::value>::type>
+        explicit
+        shuffle_order_engine(_Sseq& __q)
+        : _M_b(__q)
+        { _M_initialize(); }
 
       /**
        * @brief Reseeds the %shuffle_order_engine object with the default seed
@@ -1182,12 +1209,14 @@ namespace std
        *        sequence.
        * @param __q A seed generator function.
        */
-      void
-      seed(seed_seq& __q)
-      {
-        _M_b.seed(__q);
-        _M_initialize();
-      }
+      template<typename _Sseq, typename
+	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+        void
+        seed(_Sseq& __q)
+        {
+	  _M_b.seed<_Sseq>(__q);
+	  _M_initialize();
+	}
 
       /**
        * Gets a const reference to the underlying generator engine object.
