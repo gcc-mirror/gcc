@@ -1809,7 +1809,8 @@ variable_decl (int elem)
 	      m = MATCH_ERROR;
 	    }
 
-	  if (current_attr.flavor != FL_PARAMETER && gfc_pure (NULL))
+	  if (current_attr.flavor != FL_PARAMETER && gfc_pure (NULL)
+	      && gfc_state_stack->state != COMP_DERIVED)
 	    {
 	      gfc_error ("Initialization of variable at %C is not allowed in "
 			 "a PURE procedure");
