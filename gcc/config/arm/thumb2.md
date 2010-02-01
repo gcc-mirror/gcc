@@ -243,37 +243,19 @@
    (set_attr "neg_pool_range" "*,*,*,*,0,*")]
 )
 
-;; ??? We can probably do better with thumb2
-(define_insn "pic_load_addr_thumb2"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "" "mX")] UNSPEC_PIC_SYM))]
-  "TARGET_THUMB2 && flag_pic"
-  "ldr%?\\t%0, %1"
-  [(set_attr "type" "load1")
-   (set_attr "pool_range" "4096")
-   (set_attr "neg_pool_range" "0")]
-)
-
-;; Set reg to the address of this instruction plus four.  The low two
-;; bits of the PC are always read as zero, so ensure the instructions is
-;; word aligned.
-(define_insn "pic_load_dot_plus_four"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(const_int 4)
-		    (match_operand 1 "" "")]
-		   UNSPEC_PIC_BASE))]
+(define_insn "tls_load_dot_plus_four"
+  [(set (match_operand:SI 0 "register_operand" "=l,r")
+	(mem:SI (unspec:SI [(match_operand:SI 1 "register_operand" "+l,r")
+			    (const_int 4)
+			    (match_operand 2 "" "")]
+			   UNSPEC_PIC_BASE)))]
   "TARGET_THUMB2"
   "*
-  assemble_align(BITS_PER_WORD);
   (*targetm.asm_out.internal_label) (asm_out_file, \"LPIC\",
-			     INTVAL (operands[1]));
-  /* We use adr because some buggy gas assemble add r8, pc, #0
-     to add.w r8, pc, #0, not addw r8, pc, #0.  */
-  asm_fprintf (asm_out_file, \"\\tadr\\t%r, %LLPIC%d + 4\\n\",
-	       REGNO(operands[0]), (int)INTVAL (operands[1]));
-  return \"\";
+			     INTVAL (operands[2]));
+  return \"add\\t%1, %|pc\;ldr%?\\t%0, [%1]\";
   "
-  [(set_attr "length" "6")]
+  [(set_attr "length" "4,6")]
 )
 
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot

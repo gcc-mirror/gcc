@@ -1,3 +1,17 @@
+2010-02-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (FL_FOR_ARCH_7A): is also a superset of ARMv6K.
+	(arm_override_options): Allow automatic selection of the thread
+	pointer register if thumb2.
+	(legitimize_pic_address): Improve code sequences for Thumb2.
+	(arm_call_tls_get_addr): Likewise.
+	(legitimize_tls_address): Likewise.
+	* arm.md (pic_load_addr_arm): Delete.  Replace with ...
+	(pic_load_addr_32bit): ... this.  New named pattern.
+	* thumb2.md (pic_load_addr_thumb2): Delete.
+	(pic_load_dot_plus_four): Delete.
+	(tls_load_dot_plus_four): New named pattern.
+
 2010-02-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgomp/29986
