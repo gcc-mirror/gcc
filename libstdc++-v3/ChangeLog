@@ -1,3 +1,22 @@
+2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h (forward_list<>::resize(size_type),
+	forward_list(size_type)): Only declare.
+	* include/bits/forward_list.tcc (forward_list<>::resize(size_type),
+	forward_list(size_type)): Define, don't assume CopyConstructible.
+	* testsuite/23_containers/forward_list/cons/10.cc: New.
+	* testsuite/23_containers/forward_list/modifiers/6.cc: Likewis.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+	* include/bits/forward_list.h: Use _M_get_Node_allocator throughout.
+
 2010-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/array/requirements/exception/
