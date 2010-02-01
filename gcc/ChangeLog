@@ -1,3 +1,9 @@
+2010-02-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/41399
+	* sched-deps.c (sched_analyze_insn): Ignore fixed registers for
+	implicitly set registers.
+
 2010-02-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (FL_FOR_ARCH_7A): is also a superset of ARMv6K.
