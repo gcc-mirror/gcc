@@ -2944,6 +2944,8 @@ information are.
 @item
 @uref{#sparc-sun-solaris27,,sparc-sun-solaris2.7}
 @item
+@uref{#sparc-sun-solaris210,,sparc-sun-solaris2.10}
+@item
 @uref{#sparc-x-linux,,sparc-*-linux*}
 @item
 @uref{#sparc64-x-solaris2,,sparc64-*-solaris2*}
@@ -4263,6 +4265,21 @@ ld: fatal: relocation error: R_SPARC_DISP32:
 @end smallexample
 
 This bug has been fixed in more recent revisions of the assembler.
+
+@html
+<hr />
+@end html
+@heading @anchor{sparc-sun-solaris210}sparc-sun-solaris2.10
+
+There is a bug in older versions of the Sun assembler which breaks
+thread-local storage (TLS).  A typical error message is
+
+@smallexample
+ld: fatal: relocation error: R_SPARC_TLS_LE_HIX22: file /var/tmp//ccamPA1v.o:
+  symbol <unknown>: bad symbol type SECT: symbol type must be TLS
+@end smallexample
+
+This bug is fixed in Sun patch 118683-03 or later.
 
 @html
 <hr />
