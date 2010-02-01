@@ -601,7 +601,7 @@ static int thumb_call_reg_needed;
 #define FL_FOR_ARCH6T2	(FL_FOR_ARCH6 | FL_THUMB2)
 #define FL_FOR_ARCH6M	(FL_FOR_ARCH6 & ~FL_NOTM)
 #define FL_FOR_ARCH7	(FL_FOR_ARCH6T2 &~ FL_NOTM)
-#define FL_FOR_ARCH7A	(FL_FOR_ARCH7 | FL_NOTM)
+#define FL_FOR_ARCH7A	(FL_FOR_ARCH7 | FL_NOTM | FL_ARCH6K)
 #define FL_FOR_ARCH7R	(FL_FOR_ARCH7A | FL_DIV)
 #define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_DIV)
 #define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
@@ -1758,7 +1758,7 @@ arm_override_options (void)
   /* Use the cp15 method if it is available.  */
   if (target_thread_pointer == TP_AUTO)
     {
-      if (arm_arch6k && !TARGET_THUMB)
+      if (arm_arch6k && !TARGET_THUMB1)
 	target_thread_pointer = TP_CP15;
       else
 	target_thread_pointer = TP_SOFT;
@@ -4926,10 +4926,8 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
       else
 	address = reg;
 
-      if (TARGET_ARM)
-	emit_insn (gen_pic_load_addr_arm (address, orig));
-      else if (TARGET_THUMB2)
-	emit_insn (gen_pic_load_addr_thumb2 (address, orig));
+      if (TARGET_32BIT)
+	emit_insn (gen_pic_load_addr_32bit (address, orig));
       else /* TARGET_THUMB1 */
 	emit_insn (gen_pic_load_addr_thumb1 (address, orig));
 
@@ -5106,7 +5104,7 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
     {
       pic_rtx = gen_rtx_SYMBOL_REF (Pmode, VXWORKS_GOTT_BASE);
       pic_rtx = gen_rtx_CONST (Pmode, pic_rtx);
-      emit_insn (gen_pic_load_addr_arm (pic_reg, pic_rtx));
+      emit_insn (gen_pic_load_addr_32bit (pic_reg, pic_rtx));
 
       emit_insn (gen_rtx_SET (Pmode, pic_reg, gen_rtx_MEM (Pmode, pic_reg)));
 
@@ -5129,29 +5127,13 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 				UNSPEC_GOTSYM_OFF);
       pic_rtx = gen_rtx_CONST (Pmode, pic_rtx);
 
-      if (TARGET_ARM)
+      if (TARGET_32BIT)
 	{
-	  emit_insn (gen_pic_load_addr_arm (pic_reg, pic_rtx));
-	  emit_insn (gen_pic_add_dot_plus_eight (pic_reg, pic_reg, labelno));
-	}
-      else if (TARGET_THUMB2)
-	{
-	  /* Thumb-2 only allows very limited access to the PC.  Calculate the
-	     address in a temporary register.  */
-	  if (arm_pic_register != INVALID_REGNUM)
-	    {
-	      pic_tmp = gen_rtx_REG (SImode,
-				     thumb_find_work_register (saved_regs));
-	    }
+	  emit_insn (gen_pic_load_addr_32bit (pic_reg, pic_rtx));
+	  if (TARGET_ARM)
+	    emit_insn (gen_pic_add_dot_plus_eight (pic_reg, pic_reg, labelno));
 	  else
-	    {
-	      gcc_assert (can_create_pseudo_p ());
-	      pic_tmp = gen_reg_rtx (Pmode);
-	    }
-
-	  emit_insn (gen_pic_load_addr_thumb2 (pic_reg, pic_rtx));
-	  emit_insn (gen_pic_load_dot_plus_four (pic_tmp, labelno));
-	  emit_insn (gen_addsi3 (pic_reg, pic_reg, pic_tmp));
+	    emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
 	}
       else /* TARGET_THUMB1 */
 	{
@@ -5808,14 +5790,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
   if (TARGET_ARM)
     emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
   else if (TARGET_THUMB2)
-    {
-      rtx tmp;
-      /* Thumb-2 only allows very limited access to the PC.  Calculate
-	 the address in a temporary register.  */
-      tmp = gen_reg_rtx (SImode);
-      emit_insn (gen_pic_load_dot_plus_four (tmp, labelno));
-      emit_insn (gen_addsi3(reg, reg, tmp));
-    }
+    emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
   else /* TARGET_THUMB1 */
     emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
 
@@ -5871,15 +5846,7 @@ legitimize_tls_address (rtx x, rtx reg)
       if (TARGET_ARM)
 	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, labelno));
       else if (TARGET_THUMB2)
-	{
-	  rtx tmp;
-	  /* Thumb-2 only allows very limited access to the PC.  Calculate
-	     the address in a temporary register.  */
-	  tmp = gen_reg_rtx (SImode);
-	  emit_insn (gen_pic_load_dot_plus_four (tmp, labelno));
-	  emit_insn (gen_addsi3(reg, reg, tmp));
-	  emit_move_insn (reg, gen_const_mem (SImode, reg));
-	}
+	emit_insn (gen_tls_load_dot_plus_four (reg, reg, labelno));
       else
 	{
 	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
