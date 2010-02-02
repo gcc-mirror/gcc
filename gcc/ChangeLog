@@ -1,3 +1,10 @@
+2010-02-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR java/41991
+	* unwind-dw2-fde-darwin.c: Re-export _Unwind_FindEnclosingFunction()
+	as _darwin10_Unwind_FindEnclosingFunction().
+	* libgcc-libsystem.ver: New.
+
 2010-02-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/41399
