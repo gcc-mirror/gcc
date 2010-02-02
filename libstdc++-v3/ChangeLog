@@ -1,5 +1,9 @@
 2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/30_threads/unique_future: Rename to /future.
+
+2010-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/42408
 	* include/bits/random.h (linear_congruential_engine<>::
 	linear_congruential_engine(seed_seq&),
