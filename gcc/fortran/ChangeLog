@@ -1,3 +1,8 @@
+2010-02-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42650
+	* parse.c (decode_specification_statement): Use sym->result not sym.
+
 2010-02-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42922
