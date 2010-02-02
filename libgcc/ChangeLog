@@ -1,3 +1,9 @@
+2010-02-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR java/41991
+	* config/t-slibgcc-darwin: Add libgcc-libsystem.ver to
+	SHLIB_MAPFILES.
+
 2010-01-04  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/crti.asm, config/moxie/crtn.asm,

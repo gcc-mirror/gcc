@@ -24,7 +24,7 @@ SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
 
 SHLIB_MKMAP = $(gcc_srcdir)/mkmap-flat.awk
 SHLIB_MKMAP_OPTS = -v leading_underscore=1
-SHLIB_MAPFILES += $(gcc_srcdir)/libgcc-std.ver
+SHLIB_MAPFILES += $(gcc_srcdir)/libgcc-std.ver $(gcc_srcdir)/libgcc-libsystem.ver
 
 # we're only going to build the stubs if the target slib is /usr/lib
 # there is no other case in which they're useful in a live system.
