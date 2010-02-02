@@ -2345,7 +2345,7 @@ rx_is_legitimate_constant (rtx x)
     case SYMBOL_REF:
       return true;
     case CONST_DOUBLE:
-      return rx_max_constant_size == 0;
+      return (rx_max_constant_size == 0 || rx_max_constant_size == 4);
     case CONST_VECTOR:
       return false;
     default:
@@ -2353,7 +2353,7 @@ rx_is_legitimate_constant (rtx x)
       break;
     }
 
-  if (rx_max_constant_size == 0)
+  if (rx_max_constant_size == 0  || rx_max_constant_size == 4)
     /* If there is no constraint on the size of constants
        used as operands, then any value is legitimate.  */
     return true;
