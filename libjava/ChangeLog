@@ -1,3 +1,8 @@
+2010-02-02  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR java/41991
+	* include/posix.h: Redefine _Unwind_FindEnclosingFunction.
+
 2010-01-26  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClass.cc (registerClosure): Make sure closures is
