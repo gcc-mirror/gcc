@@ -1,3 +1,10 @@
+2010-02-02  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_is_legitimate_constant): Treat a maximum
+	constant size of 4 as being the same as 0.
+	* doc/invoke.texi (RX Options): Document that -mmax-constant-size
+	can take values in the range 0..4.
+
 2010-02-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR java/41991

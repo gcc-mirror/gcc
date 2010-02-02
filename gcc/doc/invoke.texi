@@ -15554,8 +15554,8 @@ circumstances it can be beneficial to restrict the size of constants
 that are used in instructions.  Constants that are too big are instead
 placed into a constant pool and referenced via register indirection.
 
-The value @var{N} can be between 0 and 3.  A value of 0, the default,
-means that constants of any size are allowed.
+The value @var{N} can be between 0 and 4.  A value of 0 (the default)
+or 4 means that constants of any size are allowed.
 
 @item -mrelax
 @opindex mrelax
