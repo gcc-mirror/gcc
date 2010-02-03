@@ -389,6 +389,8 @@ d_class_enum_type (struct d_info *);
 
 static struct demangle_component *d_array_type (struct d_info *);
 
+static struct demangle_component *d_vector_type (struct d_info *);
+
 static struct demangle_component *
 d_pointer_to_member_type (struct d_info *);
 
@@ -796,6 +798,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_LITERAL:
     case DEMANGLE_COMPONENT_LITERAL_NEG:
     case DEMANGLE_COMPONENT_COMPOUND_NAME:
+    case DEMANGLE_COMPONENT_VECTOR_TYPE:
       if (left == NULL || right == NULL)
 	return NULL;
       break;
@@ -1440,6 +1443,20 @@ d_number (struct d_info *di)
       d_advance (di, 1);
       peek = d_peek_char (di);
     }
+}
+
+/* Like d_number, but returns a demangle_component.  */
+
+static struct demangle_component *
+d_number_component (struct d_info *di)
+{
+  struct demangle_component *ret = d_make_empty (di);
+  if (ret)
+    {
+      ret->type = DEMANGLE_COMPONENT_NUMBER;
+      ret->u.s_number.number = d_number (di);
+    }
+  return ret;
 }
 
 /* identifier ::= <(unqualified source code identifier)>  */
@@ -2200,6 +2217,10 @@ cplus_demangle_type (struct d_info *di)
 	  ret->u.s_fixed.sat = (peek == 's');
 	  break;
 
+	case 'v':
+	  ret = d_vector_type (di);
+	  break;
+
 	default:
 	  return NULL;
 	}
@@ -2415,6 +2436,34 @@ d_array_type (struct d_info *di)
     return NULL;
 
   return d_make_comp (di, DEMANGLE_COMPONENT_ARRAY_TYPE, dim,
+		      cplus_demangle_type (di));
+}
+
+/* <vector-type> ::= Dv <number> _ <type>
+                 ::= Dv _ <expression> _ <type> */
+
+static struct demangle_component *
+d_vector_type (struct d_info *di)
+{
+  char peek;
+  struct demangle_component *dim;
+
+  peek = d_peek_char (di);
+  if (peek == '_')
+    {
+      d_advance (di, 1);
+      dim = d_expression (di);
+    }
+  else
+    dim = d_number_component (di);
+
+  if (dim == NULL)
+    return NULL;
+
+  if (! d_check_char (di, '_'))
+    return NULL;
+
+  return d_make_comp (di, DEMANGLE_COMPONENT_VECTOR_TYPE, dim,
 		      cplus_demangle_type (di));
 }
 
@@ -3930,6 +3979,7 @@ d_print_comp (struct d_print_info *dpi,
       }
 
     case DEMANGLE_COMPONENT_PTRMEM_TYPE:
+    case DEMANGLE_COMPONENT_VECTOR_TYPE:
       {
 	struct d_print_mod dpm;
 
@@ -3944,11 +3994,7 @@ d_print_comp (struct d_print_info *dpi,
 	/* If the modifier didn't get printed by the type, print it
 	   now.  */
 	if (! dpm.printed)
-	  {
-	    d_append_char (dpi, ' ');
-	    d_print_comp (dpi, d_left (dc));
-	    d_append_string (dpi, "::*");
-	  }
+	  d_print_mod (dpi, dc);
 
 	dpi->modifiers = dpm.next;
 
@@ -4166,6 +4212,10 @@ d_print_comp (struct d_print_info *dpi,
 	if (tp == D_PRINT_FLOAT)
 	  d_append_char (dpi, ']');
       }
+      return;
+
+    case DEMANGLE_COMPONENT_NUMBER:
+      d_append_num (dpi, dc->u.s_number.number);
       return;
 
     case DEMANGLE_COMPONENT_JAVA_RESOURCE:
@@ -4440,6 +4490,12 @@ d_print_mod (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_TYPED_NAME:
       d_print_comp (dpi, d_left (mod));
       return;
+    case DEMANGLE_COMPONENT_VECTOR_TYPE:
+      d_append_string (dpi, " vector[");
+      d_print_comp (dpi, d_left (mod));
+      d_append_char (dpi, ']');
+      return;
+
     default:
       /* Otherwise, we have something that won't go back on the
 	 modifier stack, so we can just print it.  */

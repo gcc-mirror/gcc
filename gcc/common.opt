@@ -266,7 +266,13 @@ Common Separate
 ;
 ; 1: The version of the ABI first used in G++ 3.2.
 ;
-; 2: The version of the ABI first used in G++ 3.4.
+; 2: The version of the ABI first used in G++ 3.4 (and current default).
+;
+; 3: The version of the ABI that fixes the missing underscore
+;    in template non-type arguments of pointer type.
+;
+; 4: The version of the ABI that introduces unambiguous mangling of
+;    vector types.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.

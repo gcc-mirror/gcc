@@ -3926,6 +3926,12 @@ S<int>::x::{lambda()#3}::operator()() const
 --format=gnu-v3
 _Z1fN1SUt_E
 f(S::{unnamed type#1})
+--format=gnu-v3
+_Z1fDv32_f
+f(float vector[32])
+--format=gnu-v3
+_Z1fIfLi4EEvDv_T0__T_
+void f<float, 4>(float vector[4])
 #
 # Ada (GNAT) tests.
 #
