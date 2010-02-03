@@ -1,5 +1,8 @@
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/12909
+	* g++.dg/abi/mangle36.C: New.
+
 	PR c++/35652
 	* g++.dg/warn/string1.C: New.
 

@@ -1850,7 +1850,16 @@ write_type (tree type)
 	      break;
 
 	    case VECTOR_TYPE:
-	      write_string ("U8__vector");
+	      if (abi_version_at_least (4))
+		{
+		  write_string ("Dv");
+		  /* Non-constant vector size would be encoded with
+		     _ expression, but we don't support that yet.  */
+		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type));
+		  write_char ('_');
+		}
+	      else
+		write_string ("U8__vector");
 	      write_type (TREE_TYPE (type));
 	      break;
 
