@@ -1,3 +1,9 @@
+2010-02-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Reenable check for obsolete targets.
+	Obsolete alpha*-dec-osf4*, alpha*-dec-osf5.0*, mips-sgi-irix5*,
+	mips-sgi-irix6.[0-4]*.
+
 2010-02-02  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_is_legitimate_constant): Treat a maximum
