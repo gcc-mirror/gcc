@@ -1,5 +1,10 @@
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4926
+	PR c++/38600
+	* g++.dg/abi/mangle35.C: New.
+	* g++.dg/abi/mangle37.C: New.
+
 	PR c++/12909
 	* g++.dg/abi/mangle36.C: New.
 

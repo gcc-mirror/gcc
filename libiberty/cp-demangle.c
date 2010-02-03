@@ -2722,11 +2722,18 @@ d_expression (struct d_info *di)
 
       return d_make_function_param (di, index);
     }
-  else if (IS_DIGIT (peek))
+  else if (IS_DIGIT (peek)
+	   || (peek == 'o' && d_peek_next_char (di) == 'n'))
     {
       /* We can get an unqualified name as an expression in the case of
-         a dependent member access, i.e. decltype(T().i).  */
-      struct demangle_component *name = d_unqualified_name (di);
+         a dependent function call, i.e. decltype(f(t)).  */
+      struct demangle_component *name;
+
+      if (peek == 'o')
+	/* operator-function-id, i.e. operator+(t).  */
+	d_advance (di, 2);
+
+      name = d_unqualified_name (di);
       if (name == NULL)
 	return NULL;
       if (d_peek_char (di) == 'I')
@@ -2784,10 +2791,18 @@ d_expression (struct d_info *di)
 	  {
 	    struct demangle_component *left;
 	    struct demangle_component *right;
+	    const char *code = op->u.s_operator.op->code;
 
 	    left = d_expression (di);
-	    if (!strcmp (op->u.s_operator.op->code, "cl"))
+	    if (!strcmp (code, "cl"))
 	      right = d_exprlist (di);
+	    else if (!strcmp (code, "dt") || !strcmp (code, "pt"))
+	      {
+		right = d_unqualified_name (di);
+		if (d_peek_char (di) == 'I')
+		  right = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE,
+				       right, d_template_args (di));
+	      }
 	    else
 	      right = d_expression (di);
 
