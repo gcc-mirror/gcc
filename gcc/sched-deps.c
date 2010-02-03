@@ -2033,8 +2033,8 @@ setup_insn_reg_pressure_info (rtx insn)
   len = sizeof (struct reg_pressure_data) * ira_reg_class_cover_size;
   pressure_info
     = INSN_REG_PRESSURE (insn) = (struct reg_pressure_data *) xmalloc (len);
-  INSN_MAX_REG_PRESSURE (insn) = (int *) xmalloc (ira_reg_class_cover_size
-						  * sizeof (int));
+  INSN_MAX_REG_PRESSURE (insn) = (int *) xcalloc (ira_reg_class_cover_size
+						  * sizeof (int), 1);
   for (i = 0; i < ira_reg_class_cover_size; i++)
     {
       cl = ira_reg_class_cover[i];
