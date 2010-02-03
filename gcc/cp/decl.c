@@ -5743,7 +5743,18 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (DECL_FUNCTION_SCOPE_P (decl)
 	  && TREE_STATIC (decl)
 	  && !DECL_ARTIFICIAL (decl))
-	push_local_name (decl);
+	{
+	  push_local_name (decl);
+	  if (DECL_CONSTRUCTOR_P (current_function_decl)
+	      || DECL_DESTRUCTOR_P (current_function_decl))
+	    /* Normally local_decls is populated during GIMPLE lowering,
+	       but [cd]tors are never actually compiled directly.  We need
+	       to put statics on the list so we can deal with the label
+	       address extension.  */
+	    cfun->local_decls = tree_cons (NULL_TREE, decl,
+					   cfun->local_decls);
+	}
+
       /* Convert the initializer to the type of DECL, if we have not
 	 already initialized DECL.  */
       if (!DECL_INITIALIZED_P (decl)
