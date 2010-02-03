@@ -1,3 +1,9 @@
+2010-02-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42936
+	* interface.c (compare_parameter): Disable rank-checking
+	for NULL().
+
 2010-02-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42650
