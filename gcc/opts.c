@@ -898,7 +898,7 @@ decode_options (unsigned int argc, const char **argv)
   flag_tree_vrp = opt2;
   flag_tree_builtin_call_dce = opt2;
   flag_tree_pre = opt2;
-  flag_tree_switch_conversion = 1;
+  flag_tree_switch_conversion = opt2;
   flag_ipa_cp = opt2;
   flag_ipa_sra = opt2;
 

@@ -171,20 +171,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "target.h"
 
-/* Propagate flow information through back edges and thus enable PRE's
-   moving loop invariant calculations out of loops.
-
-   Originally this tended to create worse overall code, but several
-   improvements during the development of PRE seem to have made following
-   back edges generally a win.
-
-   Note much of the loop invariant code motion done here would normally
-   be done by loop.c, which has more heuristics for when to move invariants
-   out of loops.  At some point we might need to move some of those
-   heuristics into gcse.c.  */
-
 /* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
-   are a superset of those done by GCSE.
+   are a superset of those done by classic GCSE.
 
    We perform the following steps:
 
@@ -199,8 +187,6 @@ along with GCC; see the file COPYING3.  If not see
       conditional jumps if the condition can be computed from a value of
       an incoming edge.
 
-   5) Perform store motion.
-
    Two passes of copy/constant propagation are done because the first one
    enables more GCSE and the second one helps to clean up the copies that
    GCSE creates.  This is needed more for PRE than for Classic because Classic
@@ -212,17 +198,13 @@ along with GCC; see the file COPYING3.  If not see
    (set (pseudo-reg) (expression)).
    Function want_to_gcse_p says what these are.
 
-   In addition, expressions in REG_EQUAL notes are candidates for GXSE-ing.
+   In addition, expressions in REG_EQUAL notes are candidates for GCSE-ing.
    This allows PRE to hoist expressions that are expressed in multiple insns,
-   such as comprex address calculations (e.g. for PIC code, or loads with a
-   high part and as lowe part).
+   such as complex address calculations (e.g. for PIC code, or loads with a
+   high part and a low part).
 
    PRE handles moving invariant expressions out of loops (by treating them as
    partially redundant).
-
-   Eventually it would be nice to replace cse.c/gcse.c with SSA (static single
-   assignment) based GVN (global value numbering).  L. T. Simpson's paper
-   (Rice University) on value numbering is a useful reference for this.
 
    **********************
 
@@ -271,7 +253,7 @@ along with GCC; see the file COPYING3.  If not see
    argue it is not.  The number of iterations for the algorithm to converge
    is typically 2-4 so I don't view it as that expensive (relatively speaking).
 
-   PRE GCSE depends heavily on the second CSE pass to clean up the copies
+   PRE GCSE depends heavily on the second CPROP pass to clean up the copies
    we create.  To make an expression reach the place where it's redundant,
    the result of the expression is copied to a new register, and the redundant
    expression is deleted by replacing it with this new register.  Classic GCSE
