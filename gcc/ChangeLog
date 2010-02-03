@@ -1,3 +1,8 @@
+2010-02-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42927
+	* tree-cfg.c (verify_gimple_assign_binary): Fix shift verification.
+
 2010-02-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Reenable check for obsolete targets.
