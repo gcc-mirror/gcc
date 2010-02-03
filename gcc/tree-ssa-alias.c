@@ -963,6 +963,7 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
 	/* The following builtins do not read from memory.  */
 	case BUILT_IN_FREE:
 	case BUILT_IN_MALLOC:
+	case BUILT_IN_CALLOC:
 	case BUILT_IN_MEMSET:
 	case BUILT_IN_FREXP:
 	case BUILT_IN_FREXPF:
@@ -1190,6 +1191,21 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	/* Allocating memory does not have any side-effects apart from
 	   being the definition point for the pointer.  */
 	case BUILT_IN_MALLOC:
+	case BUILT_IN_CALLOC:
+	  /* Unix98 specifies that errno is set on allocation failure.
+	     Until we properly can track the errno location assume it
+	     is not a plain decl but anonymous storage in a different
+	     translation unit.  */
+	  if (flag_errno_math)
+	    {
+	      struct ptr_info_def *pi;
+	      if (DECL_P (base))
+		return false;
+	      if (INDIRECT_REF_P (base)
+		  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+		  && (pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0))))
+		return pi->pt.anything || pi->pt.nonlocal;
+	    }
 	  return false;
 	/* Freeing memory kills the pointed-to memory.  More importantly
 	   the call has to serve as a barrier for moving loads and stores

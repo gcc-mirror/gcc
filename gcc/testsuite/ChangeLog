@@ -1,5 +1,10 @@
 2010-02-03  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/42944
+	* gcc.dg/errno-1.c: New testcase.
+
+2010-02-03  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/42927
 	* gcc.c-torture/compile/pr42927.c: New testcase.
 

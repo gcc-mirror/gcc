@@ -1,3 +1,11 @@
+2010-02-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42944
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
+	calloc.
+	(call_may_clobber_ref_p_1): Likewise.  Properly handle
+	malloc and calloc clobbering errno.
+
 2010-02-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/invoke.texi: Fix name of sched1 dump.
