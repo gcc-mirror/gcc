@@ -1,3 +1,9 @@
+2010-02-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimizations/42941
+	* sched-deps.c (setup_insn_reg_pressure_info): Use xcalloc instead
+	of xmalloc.
+
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35652
