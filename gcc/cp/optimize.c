@@ -104,6 +104,21 @@ clone_body (tree clone, tree fn, void *arg_map)
 
   stmts = DECL_SAVED_TREE (fn);
   walk_tree (&stmts, copy_tree_body_r, &id, NULL);
+
+  /* Also remap the initializer of any static variables so that they (in
+     particular, any label addresses) correspond to the base variant rather
+     than the abstract one.  */
+  if (DECL_NAME (clone) == base_dtor_identifier
+      || DECL_NAME (clone) == base_ctor_identifier)
+    {
+      tree decls = DECL_STRUCT_FUNCTION (fn)->local_decls;
+      for (; decls; decls = TREE_CHAIN (decls))
+	{
+	  tree decl = TREE_VALUE (decls);
+	  walk_tree (&DECL_INITIAL (decl), copy_tree_body_r, &id, NULL);
+	}
+    }
+
   append_to_statement_list_force (stmts, &DECL_SAVED_TREE (clone));
 }
 
@@ -195,6 +210,7 @@ maybe_clone_body (tree fn)
   bool first = true;
   bool in_charge_parm_used;
   int idx;
+  bool need_alias = false;
 
   /* We only clone constructors and destructors.  */
   if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
@@ -222,6 +238,11 @@ maybe_clone_body (tree fn)
       fns[2] = clone;
     else
       gcc_unreachable ();
+
+  /* Remember if we can't have multiple clones for some reason.  We need to
+     check this before we remap local static initializers in clone_body.  */
+  if (!tree_versionable_function_p (fn))
+    need_alias = true;
 
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
@@ -314,6 +335,17 @@ maybe_clone_body (tree fn)
 	/* No need to populate body.  */ ;
       else
 	{
+	  /* If we can't have multiple copies of FN (say, because there's a
+	     static local initialized with the address of a label), we need
+	     to use an alias for the complete variant.  */
+	  if (idx == 1 && need_alias)
+	    {
+	      if (DECL_STRUCT_FUNCTION (fn)->cannot_be_copied_set)
+		sorry (DECL_STRUCT_FUNCTION (fn)->cannot_be_copied_reason, fn);
+	      else
+		sorry ("making multiple clones of %qD", fn);
+	    }
+
           /* Remap the parameters.  */
           decl_map = pointer_map_create ();
           for (parmno = 0,

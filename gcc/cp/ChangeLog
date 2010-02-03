@@ -1,3 +1,11 @@
+2010-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41090
+	* decl.c (cp_finish_decl): Add local statics to cfun->local_decls.
+	* optimize.c (clone_body): Remap their initializers when making base
+	variants.
+	(maybe_clone_body): Complain if multiple clones aren't safe.
+
 2010-01-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42758
