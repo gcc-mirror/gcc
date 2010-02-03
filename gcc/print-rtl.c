@@ -316,7 +316,7 @@ print_rtx (const_rtx in_rtx)
 #ifndef GENERATOR_FILE
 	    cselib_val *val = CSELIB_VAL_PTR (in_rtx);
 
-	    fprintf (outfile, " %i", val->value);
+	    fprintf (outfile, " %u:%u", val->uid, val->hash);
 	    dump_addr (outfile, " @", in_rtx);
 	    dump_addr (outfile, "/", (void*)val);
 #endif

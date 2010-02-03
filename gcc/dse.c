@@ -1199,8 +1199,8 @@ canon_address (rtx mem,
       return false;
     }
   if (dump_file)
-    fprintf (dump_file, "  varying cselib base=%d offset = %d\n",
-	     (*base)->value, (int)*offset);
+    fprintf (dump_file, "  varying cselib base=%u:%u offset = %d\n",
+	     (*base)->uid, (*base)->hash, (int)*offset);
   return true;
 }
 

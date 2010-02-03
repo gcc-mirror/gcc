@@ -1,6 +1,7 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,7 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Describe a value.  */
 typedef struct GTY(()) cselib_val_struct {
   /* The hash value.  */
-  unsigned int value;
+  unsigned int hash;
+
+  /* A unique id assigned to values.  */
+  int uid;
 
   /* A VALUE rtx that points back to this structure.  */
   rtx val_rtx;
@@ -81,8 +85,8 @@ extern rtx cselib_expand_value_rtx_cb (rtx, bitmap, int,
 extern rtx cselib_subst_to_values (rtx);
 extern void cselib_invalidate_rtx (rtx);
 
-extern void cselib_reset_table_with_next_value (unsigned int);
-extern unsigned int cselib_get_next_unknown_value (void);
+extern void cselib_reset_table (unsigned int);
+extern unsigned int cselib_get_next_uid (void);
 extern void cselib_preserve_value (cselib_val *);
 extern bool cselib_preserved_value_p (cselib_val *);
 extern void cselib_preserve_only_values (bool);
