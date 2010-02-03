@@ -5397,7 +5397,7 @@ On targets that use instruction scheduling, this option controls the
 amount of debugging output the scheduler prints.  This information is
 written to standard error, unless @option{-fdump-rtl-sched1} or
 @option{-fdump-rtl-sched2} is specified, in which case it is output
-to the usual dump listing file, @file{.sched} or @file{.sched2}
+to the usual dump listing file, @file{.sched1} or @file{.sched2}
 respectively.  However for @var{n} greater than nine, the output is
 always printed to standard error.
 

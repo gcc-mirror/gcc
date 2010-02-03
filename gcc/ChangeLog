@@ -1,3 +1,12 @@
+2010-02-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/invoke.texi: Fix name of sched1 dump.
+
+	* opts.c (decode_options): Set flag_tree_switch_conversion
+	only conditionally on optimize >= 2.
+
+	* gcse.c: Assorted comment fixes in pass description.
+
 2010-02-03  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.c (moxie_asm_trampoline_template): Introduce
