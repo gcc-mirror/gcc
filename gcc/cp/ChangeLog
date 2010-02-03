@@ -1,5 +1,13 @@
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4926
+	PR c++/38600
+	* mangle.c (write_unqualified_id): Split out from write_expression.
+	(write_unqualified_name): Call it.
+	(write_member_name): Likewise.
+	(write_expression): Support TEMPLATE_ID_EXPR.
+	Disambiguate operator names.
+
 	PR c++/12909
 	* mangle.c (write_type) [VECTOR_TYPE]: Change mangling with
 	-fabi-version=4.

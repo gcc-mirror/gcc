@@ -1,5 +1,7 @@
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
+	* cp-demangle.c (d_expression): Handle dependent operator name.
+
 	PR c++/12909
 	* cp-demangle.c (d_number_component, d_vector_type): New.
 	(cplus_demangle_type, d_print_comp, d_print_mod): Handle vectors.
