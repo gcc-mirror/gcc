@@ -89,8 +89,8 @@ static htab_t cselib_hash_table;
    It is used in new_elt_loc_list to set SETTING_INSN.  */
 static rtx cselib_current_insn;
 
-/* Every new unknown value gets a unique number.  */
-static unsigned int next_unknown_value;
+/* The unique id that the next create value will take.  */
+static unsigned int next_uid;
 
 /* The number of registers we had when the varrays were last resized.  */
 static unsigned int cselib_nregs;
@@ -227,14 +227,14 @@ unchain_one_value (cselib_val *v)
 void
 cselib_clear_table (void)
 {
-  cselib_reset_table_with_next_value (0);
+  cselib_reset_table (1);
 }
 
 /* Remove all entries from the hash table, arranging for the next
    value to be numbered NUM.  */
 
 void
-cselib_reset_table_with_next_value (unsigned int num)
+cselib_reset_table (unsigned int num)
 {
   unsigned int i;
 
@@ -250,7 +250,7 @@ cselib_reset_table_with_next_value (unsigned int num)
 
   n_useless_values = 0;
 
-  next_unknown_value = num;
+  next_uid = num;
 
   first_containing_mem = &dummy_val;
 }
@@ -258,9 +258,9 @@ cselib_reset_table_with_next_value (unsigned int num)
 /* Return the number of the next value that will be generated.  */
 
 unsigned int
-cselib_get_next_unknown_value (void)
+cselib_get_next_uid (void)
 {
-  return next_unknown_value;
+  return next_uid;
 }
 
 /* The equality test for our hash table.  The first argument ENTRY is a table
@@ -306,7 +306,7 @@ static hashval_t
 get_value_hash (const void *entry)
 {
   const cselib_val *const v = (const cselib_val *) entry;
-  return v->value;
+  return v->hash;
 }
 
 /* Return true if X contains a VALUE rtx.  If ONLY_USELESS is set, we
@@ -715,7 +715,7 @@ cselib_hash_rtx (rtx x, int create)
       if (! e)
 	return 0;
 
-      return e->value;
+      return e->hash;
 
     case DEBUG_EXPR:
       hash += ((unsigned) DEBUG_EXPR << 7)
@@ -866,13 +866,15 @@ cselib_hash_rtx (rtx x, int create)
    value is MODE.  */
 
 static inline cselib_val *
-new_cselib_val (unsigned int value, enum machine_mode mode, rtx x)
+new_cselib_val (unsigned int hash, enum machine_mode mode, rtx x)
 {
   cselib_val *e = (cselib_val *) pool_alloc (cselib_val_pool);
 
-  gcc_assert (value);
+  gcc_assert (hash);
+  gcc_assert (next_uid);
 
-  e->value = value;
+  e->hash = hash;
+  e->uid = next_uid++;
   /* We use an alloc pool to allocate this RTL construct because it
      accounts for about 8% of the overall memory usage.  We know
      precisely when we can have VALUE RTXen (when cselib is active)
@@ -889,7 +891,7 @@ new_cselib_val (unsigned int value, enum machine_mode mode, rtx x)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "cselib value %u ", value);
+      fprintf (dump_file, "cselib value %u:%u ", e->uid, hash);
       if (flag_dump_noaddr || flag_dump_unnumbered)
 	fputs ("# ", dump_file);
       else
@@ -957,10 +959,10 @@ cselib_lookup_mem (rtx x, int create)
   if (! create)
     return 0;
 
-  mem_elt = new_cselib_val (++next_unknown_value, mode, x);
+  mem_elt = new_cselib_val (next_uid, mode, x);
   add_mem_for_addr (addr, mem_elt, x);
   slot = htab_find_slot_with_hash (cselib_hash_table, wrap_constant (mode, x),
-				   mem_elt->value, INSERT);
+				   mem_elt->hash, INSERT);
   *slot = mem_elt;
   return mem_elt;
 }
@@ -1393,7 +1395,7 @@ cselib_subst_to_values (rtx x)
 	{
 	  /* This happens for autoincrements.  Assign a value that doesn't
 	     match any other.  */
-	  e = new_cselib_val (++next_unknown_value, GET_MODE (x), x);
+	  e = new_cselib_val (next_uid, GET_MODE (x), x);
 	}
       return e->val_rtx;
 
@@ -1409,7 +1411,7 @@ cselib_subst_to_values (rtx x)
     case PRE_DEC:
     case POST_MODIFY:
     case PRE_MODIFY:
-      e = new_cselib_val (++next_unknown_value, GET_MODE (x), x);
+      e = new_cselib_val (next_uid, GET_MODE (x), x);
       return e->val_rtx;
 
     default:
@@ -1463,7 +1465,9 @@ cselib_log_lookup (rtx x, cselib_val *ret)
     {
       fputs ("cselib lookup ", dump_file);
       print_inline_rtx (dump_file, x, 2);
-      fprintf (dump_file, " => %u\n", ret ? ret->value : 0);
+      fprintf (dump_file, " => %u:%u\n",
+	       ret ? ret->uid : 0,
+	       ret ? ret->hash : 0);
     }
 
   return ret;
@@ -1510,7 +1514,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
 	    max_value_regs = n;
 	}
 
-      e = new_cselib_val (++next_unknown_value, GET_MODE (x), x);
+      e = new_cselib_val (next_uid, GET_MODE (x), x);
       e->locs = new_elt_loc_list (e->locs, x);
       if (REG_VALUES (i) == 0)
 	{
@@ -1521,7 +1525,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
 	  REG_VALUES (i) = new_elt_list (REG_VALUES (i), NULL);
 	}
       REG_VALUES (i)->next = new_elt_list (REG_VALUES (i)->next, e);
-      slot = htab_find_slot_with_hash (cselib_hash_table, x, e->value, INSERT);
+      slot = htab_find_slot_with_hash (cselib_hash_table, x, e->hash, INSERT);
       *slot = e;
       return cselib_log_lookup (x, e);
     }
@@ -1961,7 +1965,7 @@ cselib_process_insn (rtx insn)
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
-      cselib_reset_table_with_next_value (next_unknown_value);
+      cselib_reset_table (next_uid);
       return;
     }
 
@@ -2057,6 +2061,7 @@ cselib_init (bool record_memory)
   n_used_regs = 0;
   cselib_hash_table = htab_create (31, get_value_hash,
 				   entry_and_rtx_equal_p, NULL);
+  next_uid = 1;
 }
 
 /* Called when the current user is done with cselib.  */
@@ -2075,7 +2080,7 @@ cselib_finish (void)
   used_regs = 0;
   cselib_hash_table = 0;
   n_useless_values = 0;
-  next_unknown_value = 0;
+  next_uid = 0;
 }
 
 /* Dump the cselib_val *X to FILE *info.  */
@@ -2163,7 +2168,7 @@ dump_cselib_table (FILE *out)
       print_inline_rtx (out, first_containing_mem->val_rtx, 2);
       fputc ('\n', out);
     }
-  fprintf (out, "last unknown value %i\n", next_unknown_value);
+  fprintf (out, "next uid %i\n", next_uid);
 }
 
 #include "gt-cselib.h"

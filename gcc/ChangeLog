@@ -1,3 +1,44 @@
+2010-02-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42896
+	* cselib.h (struct cselib_val_struct): Add uid.  Rename value to
+	hash.
+	(cselib_reset_table): Renamed from...
+	(cselib_reset_table_with_next_value): ... this.
+	(cselib_get_next_uid): Renamed from...
+	(cselib_get_next_unknown_value): ... this.
+	* cselib.c (next_uid): Renamed from...
+	(next_unknown_value): ... this.
+	(cselib_clear_table): Adjust.
+	(cselib_reset_table): Adjust.  Renamed from...
+	(cselib_reset_table_with_next_value): ... this.
+	(cselib_get_next_uid): Adjust.  Renamed from...
+	(cselib_get_next_unknown_value): ... this.
+	(get_value_hash): Use hash.
+	(cselib_hash_rtx): Likewise.
+	(new_cselib_val): Adjust.  Set and dump uid.
+	(cselib_lookup_mem): Pass next_uid as hash.
+	(cselib_subst_to_values): Likewise.
+	(cselib_log_lookup): Dump uid.
+	(cselib_lookup): Pass next_uid as hash.  Adjust.
+	(cselib_process_insn): Adjust.
+	(cselib_init): Initialize next_uid.
+	(cselib_finish): Adjust.
+	(dump_cselib_table): Likewise.
+	* dse.c (canon_address): Dump value uid.
+	* print-rtl.c (print_rtx): Print value uid.
+	* var-tracking.c (VARIABLE_HASH_VAL): Dropped.
+	(dvuid): New type.
+	(dv_uid): New function, sort of renamed from...
+	(dv_htab_hash): ... this, reimplemented in terms of it and...
+	(dv_uid2hash): ... this.  New.
+	(variable_htab_eq): Drop excess assertions.
+	(tie_break_pointers): Removed.
+	(canon_value_cmp): Compare uids.
+	(variable_post_merge_New_vals): Print uids.
+	(vt_add_function_parameters): Adjust.
+	(vt_initialize): Reset table.  Adjust.
+
 2010-02-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42944
