@@ -162,14 +162,15 @@ namespace std
   };
 
   /// condition_variable_any
-  // Like above, only mutex may not have try_lock.
+  // Like above, but mutex is not required to have try_lock.
   class condition_variable_any
   {
-    typedef __gthread_cond_t		__native_type;
-    __native_type			_M_cond;
+    typedef chrono::system_clock	__clock_t;
+    condition_variable			_M_cond;
+    mutex				_M_mutex;
 
   public:
-    typedef __native_type* 		native_handle_type;
+    typedef condition_variable::native_handle_type	native_handle_type;
 
     condition_variable_any() throw ();
     ~condition_variable_any() throw ();
@@ -178,14 +179,29 @@ namespace std
     condition_variable_any& operator=(const condition_variable_any&) = delete;
 
     void
-    notify_one();
+    notify_one()
+    {
+      lock_guard<mutex> __lock(_M_mutex);
+      _M_cond.notify_one();
+    }
 
     void
-    notify_all();
+    notify_all()
+    {
+      lock_guard<mutex> __lock(_M_mutex);
+      _M_cond.notify_all();
+    }
 
     template<typename _Lock>
       void
-      wait(_Lock& __lock);
+      wait(_Lock& __lock)
+      {
+        unique_lock<mutex> __my_lock(_M_mutex);
+        __lock.unlock();
+        _M_cond.wait(__my_lock);
+        __lock.lock();
+      }
+      
 
     template<typename _Lock, typename _Predicate>
       void
@@ -198,7 +214,14 @@ namespace std
     template<typename _Lock, typename _Clock, typename _Duration>
       cv_status
       wait_until(_Lock& __lock,
-		 const chrono::time_point<_Clock, _Duration>& __atime);
+		 const chrono::time_point<_Clock, _Duration>& __atime)
+      {
+        unique_lock<mutex> __my_lock(_M_mutex);
+        __lock.unlock();
+        cv_status __status = _M_cond.wait_until(__my_lock, __atime);
+        __lock.lock();
+        return __status;
+      }
 
     template<typename _Lock, typename _Clock,
 	     typename _Duration, typename _Predicate>
@@ -215,17 +238,19 @@ namespace std
 
     template<typename _Lock, typename _Rep, typename _Period>
       cv_status
-      wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime);
+      wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime)
+      { return wait_until(__lock, __clock_t::now() + __rtime); }
 
     template<typename _Lock, typename _Rep,
 	     typename _Period, typename _Predicate>
       bool
       wait_for(_Lock& __lock,
-	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p);
+	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p)
+      { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
 
     native_handle_type
     native_handle()
-    { return &_M_cond; }
+    { return _M_cond.native_handle(); }
   };
 
   // @} group condition_variables
