@@ -461,9 +461,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       void
       shrink_to_fit()
       {
-	try
+	__try
 	  { this->reserve(0); }
-	catch(...)
+	__catch(...)
 	  { }
       }
 #endif
