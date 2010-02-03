@@ -3287,13 +3287,13 @@ verify_gimple_assign_binary (gimple stmt)
 	if ((!INTEGRAL_TYPE_P (rhs1_type)
 	     && !FIXED_POINT_TYPE_P (rhs1_type)
 	     && !(TREE_CODE (rhs1_type) == VECTOR_TYPE
-		  && TREE_CODE (TREE_TYPE (rhs1_type)) == INTEGER_TYPE))
+		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))))
 	    || (!INTEGRAL_TYPE_P (rhs2_type)
 		/* Vector shifts of vectors are also ok.  */
 		&& !(TREE_CODE (rhs1_type) == VECTOR_TYPE
-		     && TREE_CODE (TREE_TYPE (rhs1_type)) == INTEGER_TYPE
+		     && INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
 		     && TREE_CODE (rhs2_type) == VECTOR_TYPE
-		     && TREE_CODE (TREE_TYPE (rhs2_type)) == INTEGER_TYPE))
+		     && INTEGRAL_TYPE_P (TREE_TYPE (rhs2_type))))
 	    || !useless_type_conversion_p (lhs_type, rhs1_type))
 	  {
 	    error ("type mismatch in shift expression");
