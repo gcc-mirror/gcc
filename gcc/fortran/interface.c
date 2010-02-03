@@ -1449,9 +1449,11 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
   rank_check = where != NULL && !is_elemental && formal->as
 	       && (formal->as->type == AS_ASSUMED_SHAPE
-		   || formal->as->type == AS_DEFERRED);
+		   || formal->as->type == AS_DEFERRED)
+	       && actual->expr_type != EXPR_NULL;
 
-  if (rank_check || ranks_must_agree || formal->attr.pointer
+  if (rank_check || ranks_must_agree
+      || (formal->attr.pointer && actual->expr_type != EXPR_NULL)
       || (actual->rank != 0 && !(is_elemental || formal->attr.dimension))
       || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE))
     {
@@ -1493,7 +1495,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       else
 	return 1;
     }
-  else if (ref == NULL)
+  else if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
       if (where)
 	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
