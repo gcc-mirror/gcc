@@ -1,3 +1,8 @@
+2010-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35652
+	* builtins.c (c_strlen): Use EXPR_LOCATION in diagnostics.
+
 2010-02-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/42896

@@ -433,6 +433,7 @@ c_strlen (tree src, int only_value)
   HOST_WIDE_INT offset;
   int max;
   const char *ptr;
+  location_t loc;
 
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
@@ -449,6 +450,11 @@ c_strlen (tree src, int only_value)
   if (TREE_CODE (src) == COMPOUND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
     return c_strlen (TREE_OPERAND (src, 1), only_value);
+
+  if (EXPR_HAS_LOCATION (src))
+    loc = EXPR_LOCATION (src);
+  else
+    loc = input_location;
 
   src = string_constant (src, &offset_node);
   if (src == 0)
@@ -475,7 +481,7 @@ c_strlen (tree src, int only_value)
 	 and return that.  This would perhaps not be valid if we were dealing
 	 with named arrays in addition to literal string constants.  */
 
-      return size_diffop_loc (input_location, size_int (max), offset_node);
+      return size_diffop_loc (loc, size_int (max), offset_node);
     }
 
   /* We have a known offset into the string.  Start searching there for
@@ -494,7 +500,7 @@ c_strlen (tree src, int only_value)
      /* Suppress multiple warnings for propagated constant strings.  */
       if (! TREE_NO_WARNING (src))
         {
-          warning (0, "offset outside bounds of constant string");
+          warning_at (loc, 0, "offset outside bounds of constant string");
           TREE_NO_WARNING (src) = 1;
         }
       return NULL_TREE;
