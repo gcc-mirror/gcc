@@ -743,9 +743,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       shrink_to_fit()
       {
-	try
+	__try
 	  { reserve(0); }
-	catch(...)
+	__catch(...)
 	  { }
       }
 #endif

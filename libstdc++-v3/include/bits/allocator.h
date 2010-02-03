@@ -194,9 +194,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        static void
        _S_do_it(_Tp& __v)
        {
-	 try
+	 __try
 	   { _Tp(__v).swap(__v); }
-	 catch(...) { }
+	 __catch(...) { }
        }
      };
 #endif
