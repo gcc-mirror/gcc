@@ -3165,7 +3165,9 @@ int
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
   /* If either is ERROR_MARK, they aren't equal.  */
-  if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
+  if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK
+      || TREE_TYPE (arg0) == error_mark_node
+      || TREE_TYPE (arg1) == error_mark_node)
     return 0;
 
   /* Check equality of integer constants before bailing out due to

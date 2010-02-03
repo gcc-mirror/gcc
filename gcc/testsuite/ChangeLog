@@ -1,5 +1,8 @@
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/40138
+	* g++.dg/ext/builtin11.C: New.
+
 	PR c++/4926
 	PR c++/38600
 	* g++.dg/abi/mangle35.C: New.
