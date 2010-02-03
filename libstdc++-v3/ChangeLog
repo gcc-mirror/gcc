@@ -1,3 +1,21 @@
+2010-02-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/condition_variable (condition_variable_any): Provide
+	definitions for all members.
+	* src/condition_variable.cc (condition_variable_any): Adjust
+	definitions.
+	* config/abi/pre/gnu.ver: Adjust exports for condition_variable_any.
+	* testsuite/30_threads/condition_variable_any/cons/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/30_threads/condition_variable_any/cons/copy_neg.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/members/1.cc: New.
+	* testsuite/30_threads/condition_variable_any/members/2.cc: New.
+	* testsuite/30_threads/condition_variable_any/requirements/
+	standard_layout.cc: Remove.
+	* testsuite/30_threads/condition_variable_any/native_handle/
+	typesizes.cc: Remove.
+
 2010-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/vstring.h (__versa_string::shrink_to_fit): Fix

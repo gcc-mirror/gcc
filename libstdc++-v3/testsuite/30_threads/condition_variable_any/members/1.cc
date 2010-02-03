@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,12 +22,64 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <chrono>
 #include <condition_variable>
-#include <thread/all.h>
+#include <system_error>
+#include <testsuite_hooks.h>
+
+struct Mutex
+{
+  Mutex() : locked(false) { }
+
+  void lock()
+  {
+    if (locked)
+      throw locked;
+    mtx.lock();
+    locked = true;
+  }
+
+  void unlock()
+  {
+    if (!locked)
+      throw locked;
+    mtx.unlock();
+    locked = false;
+  }
+
+  std::mutex mtx;
+  bool locked;
+};
+
+void test01()
+{
+  bool test __attribute__((unused)) = true;
+
+  try 
+    {
+      std::chrono::microseconds ms(500);
+      std::condition_variable_any c1;
+      Mutex m;
+      m.lock();
+
+      auto then = std::chrono::system_clock::now();
+      std::cv_status result = c1.wait_for(m, ms);
+      VERIFY( result == std::cv_status::timeout );
+      VERIFY( (std::chrono::system_clock::now() - then) >= ms );
+      VERIFY( m.locked );
+    }
+  catch (const std::system_error& e)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+}
 
 int main()
 {
-  typedef std::condition_variable_any test_type;
-  __gnu_test::compare_type_to_native_type<test_type>();
+  test01();
   return 0;
 }
