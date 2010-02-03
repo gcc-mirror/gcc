@@ -1,3 +1,14 @@
+2010-02-03  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.c (moxie_asm_trampoline_template): Introduce
+	nop padding in order to maintain alignment of storage location of
+	target function address.
+	(moxie_trampoline_init): Store target function address at newly
+	aligned location.
+	* config/moxie/moxie.h (TRAMPOLINE_ALIGNMENT): Increase alignment
+	to 32.
+	(TRAMPOLINE_SIZE): Increase size by 2 bytes for alignment padding.
+
 2010-02-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42927

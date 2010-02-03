@@ -1,5 +1,5 @@
 /* Target Definitions for moxie.
-   Copyright (C) 2008, 2009  Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010  Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -386,10 +386,10 @@ enum reg_class
 #define FUNCTION_PROFILER(FILE,LABELNO) (abort (), 0)
 
 /* Trampolines for Nested Functions.  */
-#define TRAMPOLINE_SIZE (2 + 6 + 6 + 2 + 6)
+#define TRAMPOLINE_SIZE (2 + 6 + 6 + 2 + 2 + 6)
 
 /* Alignment required for trampolines, in bits.  */
-#define TRAMPOLINE_ALIGNMENT 16
+#define TRAMPOLINE_ALIGNMENT 32
 
 /* An alias for the machine mode for pointers.  */
 #define Pmode         SImode
