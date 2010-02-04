@@ -3932,6 +3932,7 @@ f(float vector[32])
 --format=gnu-v3
 _Z1fIfLi4EEvDv_T0__T_
 void f<float, 4>(float vector[4])
+--format=gnu-v3
 _Z1fI1AEDTclonplfp_fp_EET_
 decltype ((operator+)({parm#1}, {parm#1})) f<A>(A)
 --format=gnu-v3
