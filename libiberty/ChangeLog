@@ -1,3 +1,7 @@
+2010-02-04  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/demangle-expected: Add missing --format=gnu-v3.
+
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_expression): Handle dependent operator name.
