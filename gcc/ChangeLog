@@ -3,13 +3,13 @@
 	PR c++/40138
 	* fold-const.c (operand_equal_p): Handle erroneous types.
 
-2010-02-01  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
+2010-02-03  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* config/h8300/h8300.md (can_delay): Fix attibute condition.
 
 2010-02-03  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimizations/42941
+	PR rtl-optimization/42941
 	* sched-deps.c (setup_insn_reg_pressure_info): Use xcalloc instead
 	of xmalloc.
 
