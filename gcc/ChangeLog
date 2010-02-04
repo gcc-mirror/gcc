@@ -1,3 +1,8 @@
+2010-02-04  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/42952
+	* dse.c (const_or_frame_p): Remove MEM handling.
+
 2010-02-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (TARGET_ASM_OUTPUT_MI_THUNK): Define.
