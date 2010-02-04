@@ -1,7 +1,7 @@
 // The template and inlines for the numeric_limits classes. -*- C++ -*- 
 
 // Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-// 2008, 2009  Free Software Foundation, Inc.
+// 2008, 2009, 2010  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -200,12 +200,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /** True if the type is signed.  */
     static const bool is_signed = false;
     /** True if the type is integer.
-     *  Is this supposed to be "if the type is integral"?
+     *  Is this supposed to be <em>if the type is integral?</em>
     */
     static const bool is_integer = false;
-    /** True if the type uses an exact representation.  'All integer types are
+    /** True if the type uses an exact representation. <em>All integer types are
         exact, but not all exact types are integer.  For example, rational and
-        fixed-exponent representations are exact but not integer.'
+        fixed-exponent representations are exact but not integer.</em>
         [18.2.1.2]/15  */
     static const bool is_exact = false;
     /** For integer types, specifies the base of the representation.  For
@@ -229,23 +229,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /** True if the type has a representation for positive infinity.  */
     static const bool has_infinity = false;
     /** True if the type has a representation for a quiet (non-signaling)
-        'Not a Number.'  */
+        <em>Not a Number</em>.  */
     static const bool has_quiet_NaN = false;
     /** True if the type has a representation for a signaling
-        'Not a Number.'  */
+        <em>Not a Number</em>.  */
     static const bool has_signaling_NaN = false;
     /** See std::float_denorm_style for more information.  */
     static const float_denorm_style has_denorm = denorm_absent;
-    /** 'True if loss of accuracy is detected as a denormalization loss,
-        rather than as an inexact result.' [18.2.1.2]/42  */
+    /** <em>True if loss of accuracy is detected as a denormalization loss,
+        rather than as an inexact result.</em> [18.2.1.2]/42  */
     static const bool has_denorm_loss = false;
 
     /** True if-and-only-if the type adheres to the IEC 559 standard, also
         known as IEEE 754.  (Only makes sense for floating point types.)  */
     static const bool is_iec559 = false;
-    /** 'True if the set of values representable by the type is finite.   All
-        built-in types are bounded, this member would be false for arbitrary
-	precision types.' [18.2.1.2]/54  */
+    /** <em>True if the set of values representable by the type is
+        finite.  All built-in types are bounded, this member would be
+        false for arbitrary precision types.</em> [18.2.1.2]/54  */
     static const bool is_bounded = false;
     /** True if the type is @e modulo, that is, if it is possible to add two
         positive numbers and have a result that wraps around to a third number
@@ -289,9 +289,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       static _Tp round_error() throw() { return static_cast<_Tp>(0); }
       /** The representation of positive infinity, if @c has_infinity.  */
       static _Tp infinity() throw()  { return static_cast<_Tp>(0); }
-      /** The representation of a quiet "Not a Number," if @c has_quiet_NaN. */
+
+      /** The representation of a quiet <em>Not a Number</em>, 
+	  if @c has_quiet_NaN. */
       static _Tp quiet_NaN() throw() { return static_cast<_Tp>(0); }
-      /** The representation of a signaling "Not a Number," if
+      /** The representation of a signaling <em>Not a Number</em>, if
           @c has_signaling_NaN. */
       static _Tp signaling_NaN() throw() { return static_cast<_Tp>(0); }
       /** The minimum positive denormalized value.  For types where

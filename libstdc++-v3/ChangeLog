@@ -1,3 +1,113 @@
+2010-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/42460
+	* doc/doxygen/user.cfg.in: Update file list.
+	* include/debug/safe_sequence.h: Doxygen markup fixes for '' and "".
+	* include/debug/safe_base.h: Same.
+	* include/debug/macros.h: Same.
+	* include/tr1_impl/regex: Same.
+	* include/std/iostream: Same.
+	* include/std/streambuf: Same.
+	* include/std/bitset: Same.
+	* include/std/iosfwd: Same.
+	* include/std/limits: Same.
+	* include/std/fstream: Same.
+	* include/std/istream: Same.
+	* include/std/ostream: Same.
+	* include/std/sstream: Same.
+	* include/parallel/multiway_merge.h: Same.
+	* include/parallel/for_each.h: Same.
+	* include/parallel/workstealing.h: Same.
+	* include/parallel/omp_loop_static.h: Same.
+	* include/parallel/omp_loop.h: Same.
+	* include/c_std/csignal: Same.
+	* include/c_std/cstdlib: Same.
+	* include/c_std/cstdio: Same.
+	* include/c_std/cstdarg: Same.
+	* include/c_std/cctype: Same.
+	* include/c_std/cerrno: Same.
+	* include/c_std/cmath: Same.
+	* include/c_std/ciso646: Same.
+	* include/c_std/ctime: Same.
+	* include/c_std/clocale: Same.
+	* include/c_std/climits: Same.
+	* include/c_std/cassert: Same.
+	* include/c_std/csetjmp: Same.
+	* include/c_std/cwchar: Same.
+	* include/c_std/cfloat: Same.
+	* include/c_std/cstring: Same.
+	* include/c_std/cstddef: Same.
+	* include/c_std/cwctype: Same.
+	* include/profile/iterator_tracker.h: Same.
+	* include/profile/impl/profiler_trace.h: Same.
+	* include/ext/vstring.h: Same.
+	* include/ext/algorithm: Same.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.h.pp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.h.pp: Same.
+	* include/ext/pb_ds/detail/type_utils.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_tree_.hpp: Same
+	* include/ext/pb_ds/detail/rb_tree_map_/rb_tree_.hpp: Same.
+	* include/ext/rc_string_base.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/ext/functional: Same.
+	* include/ext/mt_allocator.h: Same.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/stl_stack.h: Same.
+	* include/bits/stl_iterator_base_types.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_iterator_base_funcs.h: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/random.tcc: Same.
+	* include/bits/stl_function.h: Same.
+	* include/bits/cpp_type_traits.h: Same.
+	* include/bits/random.h: Same.
+	* include/bits/allocator.h: Same.
+	* include/bits/locale_facets_nonio.h: Same.
+	* include/c_global/csignal: Same.
+	* include/c_global/cstdlib: Same.
+	* include/c_global/cstdio: Same.
+	* include/c_global/cstdarg: Same.
+	* include/c_global/cctype: Same.
+	* include/c_global/cerrno: Same.
+	* include/c_global/cmath: Same.
+	* include/c_global/ciso646: Same.
+	* include/c_global/ctime: Same.
+	* include/c_global/clocale: Same.
+	* include/c_global/climits: Same.
+	* include/c_global/cassert: Same.
+	* include/c_global/csetjmp: Same.
+	* include/c_global/cwchar: Same.
+	* include/c_global/cfloat: Same.
+	* include/c_global/cstring: Same.
+	* include/c_global/cstddef: Same.
+	* include/c_global/cwctype: Same.
+	* include/tr1/hypergeometric.tcc: Same.
+	* include/tr1/random.tcc: Same.
+	* include/tr1/functional: Same.
+	* include/tr1/random.h: Same.
+	* include/backward/auto_ptr.h: Same.
+	* include/backward/binders.h: Same.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Same.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Same.
+
 2010-02-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/condition_variable (condition_variable_any): Provide

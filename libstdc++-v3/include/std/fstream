@@ -1,7 +1,7 @@
 // File based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -119,9 +119,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       bool			_M_buf_allocated;
 
       /**
-       *  _M_reading == false && _M_writing == false for 'uncommitted' mode;
-       *  _M_reading == true for 'read' mode;
-       *  _M_writing == true for 'write' mode;
+       *  _M_reading == false && _M_writing == false for @b uncommitted mode;
+       *  _M_reading == true for @b read mode;
+       *  _M_writing == true for @b write mode;
        *
        *  NB: _M_reading == true && _M_writing == true is unused.
        */
@@ -240,25 +240,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  | ios_base Flag combination            stdio equivalent   |
        *  |binary  in  out  trunc  app                              |
        *  +---------------------------------------------------------+
-       *  |             +                        "w"                |
-       *  |             +           +            "a"                |
-       *  |                         +            "a"                |
-       *  |             +     +                  "w"                |
-       *  |         +                            "r"                |
-       *  |         +   +                        "r+"               |
-       *  |         +   +     +                  "w+"               |
-       *  |         +   +           +            "a+"               |
-       *  |         +               +            "a+"               |
+       *  |             +                        w                  |
+       *  |             +           +            a                  |
+       *  |                         +            a                  |
+       *  |             +     +                  w                  |
+       *  |         +                            r                  |
+       *  |         +   +                        r+                 |
+       *  |         +   +     +                  w+                 |
+       *  |         +   +           +            a+                 |
+       *  |         +               +            a+                 |
        *  +---------------------------------------------------------+
-       *  |   +         +                        "wb"               |
-       *  |   +         +           +            "ab"               |
-       *  |   +                     +            "ab"               |
-       *  |   +         +     +                  "wb"               |
-       *  |   +     +                            "rb"               |
-       *  |   +     +   +                        "r+b"              |
-       *  |   +     +   +     +                  "w+b"              |
-       *  |   +     +   +           +            "a+b"              |
-       *  |   +     +               +            "a+b"              |
+       *  |   +         +                        wb                 |
+       *  |   +         +           +            ab                 |
+       *  |   +                     +            ab                 |
+       *  |   +         +     +                  wb                 |
+       *  |   +     +                            rb                 |
+       *  |   +     +   +                        r+b                |
+       *  |   +     +   +     +                  w+b                |
+       *  |   +     +   +           +            a+b                |
+       *  |   +     +               +            a+b                |
        *  +---------------------------------------------------------+
        */
       __filebuf_type*
@@ -282,8 +282,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  If no file is currently open, this function immediately fails.
        *
-       *  If a "put buffer area" exists, @c overflow(eof) is called to flush
-       *  all the characters.  The file is then closed.
+       *  If a <em>put buffer area</em> exists, @c overflow(eof) is
+       *  called to flush all the characters.  The file is then
+       *  closed.
        *
        *  If any operations fail, this function also fails.
        */
@@ -374,9 +375,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  This function sets the pointers of the internal buffer, both get
        *  and put areas. Typically:
        *
-       *   __off == egptr() - eback() upon underflow/uflow ('read' mode);
-       *   __off == 0 upon overflow ('write' mode);
-       *   __off == -1 upon open, setbuf, seekoff/pos ('uncommitted' mode).
+       *   __off == egptr() - eback() upon underflow/uflow (@b read mode);
+       *   __off == 0 upon overflow (@b write mode);
+       *   __off == -1 upon open, setbuf, seekoff/pos (@b uncommitted mode).
        *
        *  NB: epptr() - pbase() == _M_buf_size - 1, since _M_buf_size
        *  reflects the actual allocated memory and the last cell is reserved

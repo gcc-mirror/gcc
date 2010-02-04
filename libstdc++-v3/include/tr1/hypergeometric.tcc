@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009
+// Copyright (C) 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,9 +64,10 @@ namespace tr1
      *                      \frac{x^n}{n!}
      *   @f]
      * 
-     *   If a and b are integers and a < 0 and either b > 0 or b < a then the
-     *   series is a polynomial with a finite number of terms.  If b is an integer
-     *   and b <= 0 the confluent hypergeometric function is undefined.
+     *   If a and b are integers and a < 0 and either b > 0 or b < a
+     *   then the series is a polynomial with a finite number of
+     *   terms.  If b is an integer and b <= 0 the confluent
+     *   hypergeometric function is undefined.
      *
      *   @param  __a  The "numerator" parameter.
      *   @param  __c  The "denominator" parameter.
@@ -212,8 +213,8 @@ namespace tr1
      * 
      *   @todo  Handle b == nonpositive integer blowup - return NaN.
      *
-     *   @param  __a  The "numerator" parameter.
-     *   @param  __c  The "denominator" parameter.
+     *   @param  __a  The @a numerator parameter.
+     *   @param  __c  The @a denominator parameter.
      *   @param  __x  The argument of the confluent hypergeometric function.
      *   @return  The confluent hypergeometric function.
      */
@@ -255,9 +256,9 @@ namespace tr1
      * 
      *   This works and it's pretty fast.
      *
-     *   @param  __a  The first "numerator" parameter.
-     *   @param  __a  The second "numerator" parameter.
-     *   @param  __c  The "denominator" parameter.
+     *   @param  __a  The first @a numerator parameter.
+     *   @param  __a  The second @a numerator parameter.
+     *   @param  __c  The @a denominator parameter.
      *   @param  __x  The argument of the confluent hypergeometric function.
      *   @return  The confluent hypergeometric function.
      */
@@ -401,10 +402,11 @@ namespace tr1
 
 
     /**
-     *  @brief  Return the hypogeometric function @f$ _2F_1(a,b;c;x) @f$ by the reflection
-     *          formulae in Abramowitz & Stegun formula 15.3.6 for d = c - a - b not integral
-     *          and formula 15.3.11 for d = c - a - b integral.
-     *          This assumes a, b, c != negative integer.
+     *  @brief  Return the hypogeometric function @f$ _2F_1(a,b;c;x) @f$ 
+     *  by the reflection formulae in Abramowitz & Stegun formula
+     *  15.3.6 for d = c - a - b not integral and formula 15.3.11 for
+     *  d = c - a - b integral.  This assumes a, b, c != negative
+     *  integer.
      *
      *   The hypogeometric function is defined by
      *   @f[
@@ -504,8 +506,8 @@ namespace tr1
                     }
 
                   if (__ln_pre1 > __log_max)
-                    std::__throw_runtime_error(__N("Overflow of gamma functions "
-                                                   "in __hyperg_luke."));
+                    std::__throw_runtime_error(__N("Overflow of gamma functions"
+                                                   " in __hyperg_luke."));
                   else
                     __F1 = std::exp(__ln_pre1) * __sum1;
                 }
@@ -551,7 +553,8 @@ namespace tr1
               int __j;
               for (__j = 1; __j < __maxiter; ++__j)
                 {
-                  //  Values for psi functions use recurrence; Abramowitz & Stegun 6.3.5
+                  //  Values for psi functions use recurrence;
+                  //  Abramowitz & Stegun 6.3.5
                   const _Tp __term1 = _Tp(1) / _Tp(__j)
                                     + _Tp(1) / (__ad + __j);
                   const _Tp __term2 = _Tp(1) / (__a + __d1 + _Tp(__j - 1))
@@ -713,9 +716,9 @@ namespace tr1
      *                      \frac{x^n}{n!}
      *   @f]
      *
-     *   @param  __a  The first "numerator" parameter.
-     *   @param  __a  The second "numerator" parameter.
-     *   @param  __c  The "denominator" parameter.
+     *   @param  __a  The first @a numerator parameter.
+     *   @param  __a  The second @a numerator parameter.
+     *   @param  __c  The @a denominator parameter.
      *   @param  __x  The argument of the confluent hypergeometric function.
      *   @return  The confluent hypergeometric function.
      */
@@ -748,7 +751,8 @@ namespace tr1
         return __hyperg_series(__a, __b, __c, __x);
       else if (std::abs(__a) < _Tp(10) && std::abs(__b) < _Tp(10))
         {
-          //  For integer a and b the hypergeometric function is a finite polynomial.
+          //  For integer a and b the hypergeometric function is a
+          //  finite polynomial.
           if (__a < _Tp(0)  &&  std::abs(__a - __a_nint) < __toler)
             return __hyperg_series(__a_nint, __b, __c, __x);
           else if (__b < _Tp(0)  &&  std::abs(__b - __b_nint) < __toler)

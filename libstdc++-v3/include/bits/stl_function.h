@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  templates and used in place of a function pointer.  Not only is the
    *  resulting expressiveness of the library increased, but the generated
    *  code can be more efficient than what you might write by hand.  When we
-   *  refer to "functors," then, generally we include function pointers in
+   *  refer to @a functors, then, generally we include function pointers in
    *  the description as well.
    *
    *  Often, functors are only created as temporaries passed to algorithm
@@ -333,7 +333,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  std::find_if (v.begin(), v.end(), not1(IntGreaterThanThree()));
    *  \endcode
    *  The call to @c find_if will locate the first index (i) of @c v for which
-   *  "!(v[i] > 3)" is true.
+   *  <code>!(v[i] > 3)</code> is true.
    *
    *  The not1/unary_negate combination works on predicates taking a single
    *  argument.  The not2/binary_negate combination works on predicates which

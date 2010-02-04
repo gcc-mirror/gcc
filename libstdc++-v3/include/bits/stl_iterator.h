@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -83,9 +83,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *      &*(reverse_iterator(i)) == &*(i - 1)
    *  @endcode
    *
-   *  This mapping is dictated by the fact that while there is always a
+   *  <em>This mapping is dictated by the fact that while there is always a
    *  pointer past the end of an array, there might not be a valid pointer
-   *  before the beginning of an array.' [24.4.1]/1,2
+   *  before the beginning of an array.</em> [24.4.1]/1,2
    *
    *  Reverse iterators can be tricky and surprising at first.  Their
    *  semantics make sense, however, and the trickiness is a side effect of
@@ -411,7 +411,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
        *
-       *  This kind of %iterator doesn't really have a "position" in the
+       *  This kind of %iterator doesn't really have a @a position in the
        *  container (you can think of the position as being permanently at
        *  the end, if you like).  Assigning a value to the %iterator will
        *  always append the value to the end of the container.
@@ -437,12 +437,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator*()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
       back_insert_iterator&
       operator++()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
       back_insert_iterator
       operator++(int)
       { return *this; }
@@ -494,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
        *
-       *  This kind of %iterator doesn't really have a "position" in the
+       *  This kind of %iterator doesn't really have a @a position in the
        *  container (you can think of the position as being permanently at
        *  the front, if you like).  Assigning a value to the %iterator will
        *  always prepend the value to the front of the container.
@@ -520,12 +520,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator*()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
       front_insert_iterator&
       operator++()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
       front_insert_iterator
       operator++(int)
       { return *this; }
@@ -626,12 +626,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator*()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
       insert_iterator&
       operator++()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
       insert_iterator&
       operator++(int)
       { return *this; }
@@ -662,7 +662,7 @@ _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  // This iterator adapter is 'normal' in the sense that it does not
+  // This iterator adapter is @a normal in the sense that it does not
   // change the semantics of any of the operators of its iterator
   // parameter.  Its primary purpose is to convert an iterator that is
   // not a class, e.g. a pointer, into an iterator that is a class.

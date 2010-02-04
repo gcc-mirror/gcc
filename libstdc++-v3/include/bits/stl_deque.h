@@ -69,12 +69,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  @param  size  The size of an element.
    *  @return   The number (not byte size) of elements per node.
    *
-   *  This function started off as a compiler kludge from SGI, but seems to
-   *  be a useful wrapper around a repeated constant expression.  The '512' is
-   *  tunable (and no other code needs to change), but no investigation has
-   *  been done since inheriting the SGI code.  Touch _GLIBCXX_DEQUE_BUF_SIZE
-   *  only if you know what you are doing, however: changing it breaks the
-   *  binary compatibility!!
+   *  This function started off as a compiler kludge from SGI, but
+   *  seems to be a useful wrapper around a repeated constant
+   *  expression.  The @b 512 is tunable (and no other code needs to
+   *  change), but no investigation has been done since inheriting the
+   *  SGI code.  Touch _GLIBCXX_DEQUE_BUF_SIZE only if you know what
+   *  you are doing, however: changing it breaks the binary
+   *  compatibility!!
   */
 
 #ifndef _GLIBCXX_DEQUE_BUF_SIZE
@@ -650,14 +651,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  - iterator    _M_start, _M_finish
    *
    *  map_size is at least 8.  %map is an array of map_size
-   *  pointers-to-"nodes".  (The name %map has nothing to do with the
-   *  std::map class, and "nodes" should not be confused with
-   *  std::list's usage of "node".)
+   *  pointers-to-@anodes.  (The name %map has nothing to do with the
+   *  std::map class, and @b nodes should not be confused with
+   *  std::list's usage of @a node.)
    *
-   *  A "node" has no specific type name as such, but it is referred
-   *  to as "node" in this file.  It is a simple array-of-Tp.  If Tp
+   *  A @a node has no specific type name as such, but it is referred
+   *  to as @a node in this file.  It is a simple array-of-Tp.  If Tp
    *  is very large, there will be one Tp element per node (i.e., an
-   *  "array" of one).  For non-huge Tp's, node size is inversely
+   *  @a array of one).  For non-huge Tp's, node size is inversely
    *  related to Tp size: the larger the Tp, the fewer Tp's will fit
    *  in a node.  The goal here is to keep the total size of a node
    *  relatively small and constant over different Tp's, to improve
@@ -669,7 +670,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  will be unused.  This same situation will arise as the %map
    *  grows: available %map pointers, if any, will be on the ends.  As
    *  new nodes are created, only a subset of the %map's pointers need
-   *  to be copied "outward".
+   *  to be copied @a outward.
    *
    *  Class invariants:
    * - For any nonsingular iterator i:
@@ -699,11 +700,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *   node if and only if the pointer is in the range
    *   [start.node, finish.node].
    *
-   *  Here's the magic:  nothing in deque is "aware" of the discontiguous
+   *  Here's the magic:  nothing in deque is @b aware of the discontiguous
    *  storage!
    *
    *  The memory setup and layout occurs in the parent, _Base, and the iterator
-   *  class is entirely responsible for "leaping" from one node to the next.
+   *  class is entirely responsible for @a leaping from one node to the next.
    *  All the implementation routines for deque itself work only through the
    *  start and finish iterators.  This keeps the routines simple and sane,
    *  and we can use other standard algorithms as well.
@@ -1392,7 +1393,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        *  This function will insert copies of the data in the
        *  initializer_list @a l into the %deque before the location
-       *  specified by @a p.  This is known as "list insert."
+       *  specified by @a p.  This is known as <em>list insert</em>.
        */
       void
       insert(iterator __p, initializer_list<value_type> __l)
@@ -1420,7 +1421,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        *  This function will insert copies of the data in the range
        *  [first,last) into the %deque before the location specified
-       *  by @a pos.  This is known as "range insert."
+       *  by @a pos.  This is known as <em>range insert</em>.
        */
       template<typename _InputIterator>
         void

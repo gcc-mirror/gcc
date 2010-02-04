@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file profile/literator_tracker.h
+/** @file profile/iterator_tracker.h
  *  This file is a GNU profile extension to the Standard C++ Library.
  */
 

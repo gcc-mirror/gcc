@@ -1,6 +1,6 @@
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -136,8 +136,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   // Thirteen specializations (yes there are eleven standard integer
-  // types; 'long long' and 'unsigned long long' are supported as
-  // extensions)
+  // types; <em>long long</em> and <em>unsigned long long</em> are
+  // supported as extensions)
   template<>
     struct __is_integer<bool>
     {

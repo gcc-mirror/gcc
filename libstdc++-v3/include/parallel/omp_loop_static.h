@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,9 +47,9 @@ namespace __gnu_parallel
    *  @param __end End iterator of element sequence.
    *  @param __o User-supplied functor (comparator, predicate, adding
    *  functor, ...).
-   *  @param __f Functor to "process" an element with __op (depends on
+   *  @param __f Functor to @a process an element with __op (depends on
    *  desired functionality, e. g. for std::for_each(), ...).
-   *  @param __r Functor to "add" a single __result to the already processed
+   *  @param __r Functor to @a add a single __result to the already processed
    *  __elements (depends on functionality).
    *  @param __base Base value for reduction.
    *  @param __output Pointer to position where final result is written to

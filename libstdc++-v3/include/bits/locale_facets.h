@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1680,7 +1680,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param  cloc  The "C" locale.
+       *  @param  cloc  The C locale.
        *  @param  refs  Refcount to pass to the base class.
        */
       explicit

@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -646,16 +646,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  the high-order bits in the highest word.)  It is a class invariant
    *  that those unused bits are always zero.
    *
-   *  If you think of %bitset as "a simple array of bits," be aware that
-   *  your mental picture is reversed:  a %bitset behaves the same way as
-   *  bits in integers do, with the bit at index 0 in the "least significant
-   *  / right-hand" position, and the bit at index Nb-1 in the "most
-   *  significant / left-hand" position.  Thus, unlike other containers, a
-   *  %bitset's index "counts from right to left," to put it very loosely.
+   *  If you think of %bitset as <em>a simple array of bits</em>, be
+   *  aware that your mental picture is reversed: a %bitset behaves
+   *  the same way as bits in integers do, with the bit at index 0 in
+   *  the <em>least significant / right-hand</em> position, and the bit at
+   *  index Nb-1 in the <em>most significant / left-hand</em> position.
+   *  Thus, unlike other containers, a %bitset's index <em>counts from
+   *  right to left</em>, to put it very loosely.
    *
    *  This behavior is preserved when translating to and from strings.  For
    *  example, the first line of the following program probably prints
-   *  "b('a') is 0001100001" on a modern ASCII system.
+   *  <em>b(&apos;a&apos;) is 0001100001</em> on a modern ASCII system.
    *
    *  @code
    *     #include <bitset>
@@ -717,8 +718,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  to and from bool are automatic and should be transparent.  Overloaded
        *  operators help to preserve the illusion.
        *
-       *  (On a typical system, this "bit %reference" is 64 times the size of
-       *  an actual bit.  Ha.)
+       *  (On a typical system, this <em>bit %reference</em> is 64
+       *  times the size of an actual bit.  Ha.)
        */
       class reference
       {
@@ -797,12 +798,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
       /**
        *  @brief  Use a subset of a string.
-       *  @param  s  A string of '0' and '1' characters.
+       *  @param  s  A string of @a 0 and @a 1 characters.
        *  @param  position  Index of the first character in @a s to use;
        *                    defaults to zero.
        *  @throw  std::out_of_range  If @a pos is bigger the size of @a s.
        *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither '0' nor '1'.
+       *                                 which is neither @a 0 nor @a 1.
        */
       template<class _CharT, class _Traits, class _Alloc>
 	explicit
@@ -820,12 +821,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
       /**
        *  @brief  Use a subset of a string.
-       *  @param  s  A string of '0' and '1' characters.
+       *  @param  s  A string of @a 0 and @a 1 characters.
        *  @param  position  Index of the first character in @a s to use.
        *  @param  n    The number of characters to copy.
        *  @throw  std::out_of_range  If @a pos is bigger the size of @a s.
        *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither '0' nor '1'.
+       *                                 which is neither @a 0 nor @a 1.
        */
       template<class _CharT, class _Traits, class _Alloc>
 	bitset(const std::basic_string<_CharT, _Traits, _Alloc>& __s,
@@ -855,9 +856,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       /**
        *  @brief  Construct from a string.
-       *  @param  str  A string of '0' and '1' characters.
+       *  @param  str  A string of @a 0 and @a 1 characters.
        *  @throw  std::invalid_argument  If a character appears in the string
-       *                                 which is neither '0' nor '1'.
+       *                                 which is neither @a 0 nor @a 1.
        */
       explicit
       bitset(const char* __str)
@@ -1063,7 +1064,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /**
        *  @brief  Array-indexing support.
        *  @param  position  Index into the %bitset.
-       *  @return  A bool for a 'const %bitset'.  For non-const bitsets, an
+       *  @return  A bool for a <em>const %bitset</em>.  For non-const bitsets, an
        *           instance of the reference proxy class.
        *  @note  These operators do no range checking and throw no exceptions,
        *         as required by DR 11 to the standard.
@@ -1377,7 +1378,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  @brief Global I/O operators for bitsets.
    *
    *  Direct I/O between streams and bitsets is supported.  Output is
-   *  straightforward.  Input will skip whitespace, only accept '0' and '1'
+   *  straightforward.  Input will skip whitespace, only accept @a 0 and @a 1
    *  characters, and will only extract as many digits as the %bitset will
    *  hold.
   */

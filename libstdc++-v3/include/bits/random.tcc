@@ -1140,7 +1140,7 @@ namespace std
    * is defined.
    *
    * Reference:
-   * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
+   * Devroye, L. Non-Uniform Random Variates Generation. Springer-Verlag,
    * New York, 1986, Ch. X, Sects. 3.3 & 3.4 (+ Errata!).
    */
   template<typename _IntType>
@@ -1372,7 +1372,7 @@ namespace std
    * is defined.
    *
    * Reference:
-   * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
+   * Devroye, L. Non-Uniform Random Variates Generation. Springer-Verlag,
    * New York, 1986, Ch. X, Sect. 4 (+ Errata!).
    */
   template<typename _IntType>
@@ -1589,7 +1589,7 @@ namespace std
   /**
    * Polar method due to Marsaglia.
    *
-   * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
+   * Devroye, L. Non-Uniform Random Variates Generation. Springer-Verlag,
    * New York, 1986, Ch. V, Sect. 4.4.
    */
   template<typename _RealType>

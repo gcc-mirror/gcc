@@ -38,7 +38,7 @@
  * Contains an implementation class for splay_tree_.
  */
 /*
- * This implementation uses an idea from the SGI STL (using a "header" node
+ * This implementation uses an idea from the SGI STL (using a @a header node
  *    which is needed for efficient iteration). Following is the SGI STL
  *    copyright.
  *

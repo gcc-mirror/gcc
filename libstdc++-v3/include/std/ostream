@@ -1,7 +1,7 @@
 // Output streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -370,8 +370,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @brief  Performs setup work for output streams.
    *
    *  Objects of this class are created before all of the standard
-   *  inserters are run.  It is responsible for "exception-safe prefix and
-   *  suffix operations." 
+   *  inserters are run.  It is responsible for <em>exception-safe prefix and
+   *  suffix operations</em>.
   */
   template <typename _CharT, typename _Traits>
     class basic_ostream<_CharT, _Traits>::sentry
@@ -390,7 +390,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  is called to synchronize the output sequences.
        *
        *  If the stream state is still good, then the sentry state becomes
-       *  true ("okay").
+       *  true (@a okay).
       */
       explicit
       sentry(basic_ostream<_CharT, _Traits>& __os);
@@ -544,7 +544,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  Write a null character into the output sequence.
    *
-   *  "Null character" is @c CharT() by definition.  For CharT of @c char,
+   *  <em>Null character</em> is @c CharT() by definition.  For CharT of @c char,
    *  this correctly writes the ASCII @c NUL character string terminator.
   */
   template<typename _CharT, typename _Traits>

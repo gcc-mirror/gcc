@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  This approach has the enormous advantage that a string object
    *  requires only one allocation.  All the ugliness is confined
    *  within a single pair of inline functions, which each compile to
-   *  a single "add" instruction: _Rep::_M_refdata(), and
+   *  a single @a add instruction: _Rep::_M_refdata(), and
    *  __rc_string_base::_M_rep(); and the allocation function which gets a
    *  block of raw bytes and with room enough and constructs a _Rep
    *  object at the front.
@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  string length.)
    *
    *  Note that the _Rep object is a POD so that you can have a
-   *  static "empty string" _Rep object already "constructed" before
+   *  static <em>empty string</em> _Rep object already @a constructed before
    *  static constructors have run.  The reference-count encoding is
    *  chosen so that a 0 indicates one reference, so you never try to
    *  destroy the empty-string _Rep object.

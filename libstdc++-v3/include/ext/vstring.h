@@ -505,7 +505,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { this->_M_clear(); }
 
       /**
-       *  Returns true if the %string is empty.  Equivalent to *this == "".
+       *  Returns true if the %string is empty.  Equivalent to 
+       *  <code>*this == ""</code>.
        */
       bool
       empty() const
@@ -2027,7 +2028,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  the comparison is nonzero returns it, otherwise the shorter
        *  one is ordered first.
        *
-       *  NB: s must have at least n2 characters, '\\0' has no special
+       *  NB: s must have at least n2 characters, <em>\\0</em> has no special
        *  meaning.
       */
       int
@@ -2432,12 +2433,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param __str  Buffer to store into.
    *  @return  Reference to the input stream.
    *
-   *  Stores characters from is into @a __str until '\n' is found, the
-   *  end of the stream is encountered, or str.max_size() is reached.
-   *  If is.width() is non-zero, that is the limit on the number of
-   *  characters stored into @a __str.  Any previous contents of @a
-   *  __str are erased.  If end of line was encountered, it is
-   *  extracted but not stored into @a __str.
+   *  Stores characters from is into @a __str until &apos;\n&apos; is
+   *  found, the end of the stream is encountered, or str.max_size()
+   *  is reached.  If is.width() is non-zero, that is the limit on the
+   *  number of characters stored into @a __str.  Any previous
+   *  contents of @a __str are erased.  If end of line was
+   *  encountered, it is extracted but not stored into @a __str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc,
            template <typename, typename, typename> class _Base>

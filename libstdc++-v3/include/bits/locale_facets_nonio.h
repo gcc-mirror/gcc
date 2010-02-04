@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param cloc  The "C" locale.
+       *  @param cloc  The C locale.
        *  @param s  The name of a locale.
        *  @param refs  Passed to the base facet class.
       */
@@ -387,8 +387,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Return preferred order of month, day, and year.
        *
        *  This function returns an enum from timebase::dateorder giving the
-       *  preferred ordering if the format "x" given to time_put::put() only
-       *  uses month, day, and year.  If the format "x" for the associated
+       *  preferred ordering if the format @a x given to time_put::put() only
+       *  uses month, day, and year.  If the format @a x for the associated
        *  locale uses other fields, this function returns
        *  timebase::dateorder::noorder.
        *
@@ -403,11 +403,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Parse input time string.
        *
-       *  This function parses a time according to the format "x" and puts the
+       *  This function parses a time according to the format @a x and puts the
        *  results into a user-supplied struct tm.  The result is returned by
        *  calling time_get::do_get_time().
        *
-       *  If there is a valid time string according to format "x", @a tm will
+       *  If there is a valid time string according to format @a x, @a tm will
        *  be filled in accordingly and the returned iterator will point to the
        *  first character beyond the time string.  If an error occurs before
        *  the end, err |= ios_base::failbit.  If parsing reads all the
@@ -428,11 +428,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Parse input date string.
        *
-       *  This function parses a date according to the format "X" and puts the
+       *  This function parses a date according to the format @a X and puts the
        *  results into a user-supplied struct tm.  The result is returned by
        *  calling time_get::do_get_date().
        *
-       *  If there is a valid date string according to format "X", @a tm will
+       *  If there is a valid date string according to format @a X, @a tm will
        *  be filled in accordingly and the returned iterator will point to the
        *  first character beyond the date string.  If an error occurs before
        *  the end, err |= ios_base::failbit.  If parsing reads all the
@@ -542,7 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Return preferred order of month, day, and year.
        *
        *  This function returns an enum from timebase::dateorder giving the
-       *  preferred ordering if the format "x" given to time_put::put() only
+       *  preferred ordering if the format @a x given to time_put::put() only
        *  uses month, day, and year.  This function is a hook for derived
        *  classes to change the value returned.
        *
@@ -554,7 +554,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Parse input time string.
        *
-       *  This function parses a time according to the format "x" and puts the
+       *  This function parses a time according to the format @a x and puts the
        *  results into a user-supplied struct tm.  This function is a hook for
        *  derived classes to change the value returned.  @see get_time() for
        *  details.
@@ -573,7 +573,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Parse input date string.
        *
-       *  This function parses a date according to the format "X" and puts the
+       *  This function parses a date according to the format @a X and puts the
        *  results into a user-supplied struct tm.  This function is a hook for
        *  derived classes to change the value returned.  @see get_date() for
        *  details.
@@ -972,7 +972,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param cloc  The "C" locale.
+       *  @param cloc  The C locale.
        *  @param s  The name of a locale.
        *  @param refs  Passed to the base facet class.
       */
@@ -1022,10 +1022,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  string are required to group a number, the last char is used
        *  repeatedly.
        *
-       *  For example, if the grouping() returns "\003\002" and is applied to
-       *  the number 123456789, this corresponds to 12,34,56,789.  Note that
-       *  if the string was "32", this would put more than 50 digits into the
-       *  least significant group if the character set is ASCII.
+       *  For example, if the grouping() returns <code>\003\002</code>
+       *  and is applied to the number 123456789, this corresponds to
+       *  12,34,56,789.  Note that if the string was <code>32</code>, this would
+       *  put more than 50 digits into the least significant group if
+       *  the character set is ASCII.
        *
        *  The string is returned by calling
        *  moneypunct<char_type>::do_grouping().
@@ -1124,9 +1125,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  present.
        *
        *  For example, for the US locale and pos_format() pattern
-       *  {symbol,sign,value,none}, curr_symbol() == '$' positive_sign() ==
-       *  '+', and value 10.01, and options set to force the symbol, the
-       *  corresponding string is "$+10.01".
+       *  {symbol,sign,value,none}, curr_symbol() == &apos;$&apos;
+       *  positive_sign() == &apos;+&apos;, and value 10.01, and
+       *  options set to force the symbol, the corresponding string is
+       *  <code>$+10.01</code>.
        *
        *  @return  Pattern for money values.
       */
@@ -1412,10 +1414,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       /**
        *  @brief  Read and parse a monetary value.
        *
-       *  This function reads characters from @a s, interprets them as a
-       *  monetary value according to moneypunct and ctype facets retrieved
-       *  from io.getloc(), and returns the result in @a digits.  For example,
-       *  the string $10.01 in a US locale would store "1001" in @a digits.
+       *  This function reads characters from @a s, interprets them as
+       *  a monetary value according to moneypunct and ctype facets
+       *  retrieved from io.getloc(), and returns the result in @a
+       *  digits.  For example, the string $10.01 in a US locale would
+       *  store <code>1001</code> in @a digits.
        *
        *  Any characters not part of a valid money amount are not consumed.
        *
@@ -1531,7 +1534,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
        *  This function formats @a units as a monetary value according to
        *  moneypunct and ctype facets retrieved from io.getloc(), and writes
        *  the resulting characters to @a s.  For example, the value 1001 in a
-       *  US locale would write "$10.01" to @a s.
+       *  US locale would write <code>$10.01</code> to @a s.
        *
        *  This function works by returning the result of do_put().
        *
@@ -1550,10 +1553,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       /**
        *  @brief  Format and output a monetary value.
        *
-       *  This function formats @a digits as a monetary value according to
-       *  moneypunct and ctype facets retrieved from io.getloc(), and writes
-       *  the resulting characters to @a s.  For example, the string "1001" in
-       *  a US locale would write "$10.01" to @a s.
+       *  This function formats @a digits as a monetary value
+       *  according to moneypunct and ctype facets retrieved from
+       *  io.getloc(), and writes the resulting characters to @a s.
+       *  For example, the string <code>1001</code> in a US locale
+       *  would write <code>$10.01</code> to @a s.
        *
        *  This function works by returning the result of do_put().
        *
@@ -1580,7 +1584,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
        *  This function formats @a units as a monetary value according to
        *  moneypunct and ctype facets retrieved from io.getloc(), and writes
        *  the resulting characters to @a s.  For example, the value 1001 in a
-       *  US locale would write "$10.01" to @a s.
+       *  US locale would write <code>$10.01</code> to @a s.
        *
        *  This function is a hook for derived classes to change the value
        *  returned.  @see put().
@@ -1606,10 +1610,11 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       /**
        *  @brief  Format and output a monetary value.
        *
-       *  This function formats @a digits as a monetary value according to
-       *  moneypunct and ctype facets retrieved from io.getloc(), and writes
-       *  the resulting characters to @a s.  For example, the string "1001" in
-       *  a US locale would write "$10.01" to @a s.
+       *  This function formats @a digits as a monetary value
+       *  according to moneypunct and ctype facets retrieved from
+       *  io.getloc(), and writes the resulting characters to @a s.
+       *  For example, the string <code>1001</code> in a US locale
+       *  would write <code>$10.01</code> to @a s.
        *
        *  This function is a hook for derived classes to change the value
        *  returned.  @see put().
@@ -1709,7 +1714,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param  cloc  The "C" locale.
+       *  @param  cloc  The C locale.
        *  @param  s  The name of a locale.
        *  @param  refs  Refcount to pass to the base class.
        */

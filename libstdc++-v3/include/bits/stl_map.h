@@ -532,7 +532,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        *  See
        *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
-       *  for more on "hinting".
+       *  for more on @a hinting.
        *
        *  Insertion requires logarithmic time (if the hint is not taken).
        */

@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -683,8 +683,8 @@ namespace tr1
    * The classic Mersenne Twister.
    *
    * Reference:
-   * M. Matsumoto and T. Nishimura, "Mersenne Twister: A 623-Dimensionally
-   * Equidistributed Uniform Pseudo-Random Number Generator", ACM Transactions
+   * M. Matsumoto and T. Nishimura, Mersenne Twister: A 623-Dimensionally
+   * Equidistributed Uniform Pseudo-Random Number Generator, ACM Transactions
    * on Modeling and Computer Simulation, Vol. 8, No. 1, January 1998, pp 3-30.
    */
   typedef mersenne_twister<
@@ -708,8 +708,8 @@ namespace tr1
    * The size of the state is @f$ r @f$
    * and the maximum period of the generator is @f$ m^r - m^s -1 @f$.
    *
-   * N1688[4.13] says "the template parameter _IntType shall denote an integral
-   * type large enough to store values up to m."
+   * N1688[4.13] says <em>the template parameter _IntType shall denote
+   * an integral type large enough to store values up to m</em>.
    *
    * @var _M_x     The state of the generator.  This is a ring buffer.
    * @var _M_carry The carry.

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -468,7 +468,7 @@ inline FILE* __open_output_file(const char* extension)
   }
 }
 
-/** @brief Final report method, registered with "atexit".
+/** @brief Final report method, registered with @b atexit.
  *
  * This can also be called directly by user code, including signal handlers.
  * It is protected against deadlocks by the reentrance guard in profiler.h.

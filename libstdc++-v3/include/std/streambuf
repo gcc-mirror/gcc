@@ -1,7 +1,7 @@
 // Stream buffer classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *     represents, at any moment, a (sub)sequence of characters from the
    *     sequence.  Operations performed on a sequence alter the values
    *     stored in these pointers, perform reads and writes directly to or
-   *     from associated sequences, and alter "the stream position" and
+   *     from associated sequences, and alter <em>the stream position</em> and
    *     conversion state as needed to maintain this subsequence relationship.
    *     The three pointers are:
    *     - the <em>beginning pointer</em>, or lowest element address in the
@@ -340,9 +340,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  c  The character to push back.
        *  @return  The previous character, if possible.
        *
-       *  Similar to sungetc(), but @a c is pushed onto the stream instead
-       *  of 'the previous character.'  If successful, the next character
-       *  fetched from the input stream will be @a c.
+       *  Similar to sungetc(), but @a c is pushed onto the stream
+       *  instead of <em>the previous character.</em> If successful,
+       *  the next character fetched from the input stream will be @a
+       *  c.
       */
       int_type 
       sputbackc(char_type __c)
@@ -364,10 +365,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Moving backwards in the input stream.
        *  @return  The previous character, if possible.
        *
-       *  If a putback position is available, this function decrements the
-       *  input pointer and returns that character.  Otherwise, calls and
-       *  returns pbackfail().  The effect is to 'unget' the last character
-       *  'gotten.'
+       *  If a putback position is available, this function decrements
+       *  the input pointer and returns that character.  Otherwise,
+       *  calls and returns pbackfail().  The effect is to @a unget
+       *  the last character @a gotten.
       */
       int_type 
       sungetc()
@@ -540,11 +541,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Changes translations.
        *  @param  loc  A new locale.
        *
-       *  Translations done during I/O which depend on the current locale
-       *  are changed by this call.  The standard adds, 'Between invocations
-       *  of this function a class derived from streambuf can safely cache
-       *  results of calls to locale functions and to members of facets
-       *  so obtained.'
+       *  Translations done during I/O which depend on the current
+       *  locale are changed by this call.  The standard adds,
+       *  <em>Between invocations of this function a class derived
+       *  from streambuf can safely cache results of calls to locale
+       *  functions and to members of facets so obtained.</em>
        *
        *  @note  Base class version does nothing.
       */
@@ -596,7 +597,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @return  -1 on failure.
        *
        *  Each derived class provides its own appropriate behavior,
-       *  including the definition of "failure".
+       *  including the definition of @a failure.
        *  @note  Base class version does nothing, returns zero.
       */
       virtual int 
@@ -608,18 +609,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @return  An estimate of the number of characters available in the
        *           input sequence, or -1.
        *
-       *  'If it returns a positive value, then successive calls to
-       *  @c underflow() will not return @c traits::eof() until at least that
-       *  number of characters have been supplied.  If @c showmanyc()
-       *  returns -1, then calls to @c underflow() or @c uflow() will fail.'
-       *  [27.5.2.4.3]/1
+       *  <em>If it returns a positive value, then successive calls to
+       *  @c underflow() will not return @c traits::eof() until at
+       *  least that number of characters have been supplied.  If @c
+       *  showmanyc() returns -1, then calls to @c underflow() or @c
+       *  uflow() will fail.</em> [27.5.2.4.3]/1
        *
        *  @note  Base class version does nothing, returns zero.
-       *  @note  The standard adds that 'the intention is not only that the
+       *  @note  The standard adds that <em>the intention is not only that the
        *         calls [to underflow or uflow] will not return @c eof() but
-       *         that they will return immediately.'
-       *  @note  The standard adds that 'the morphemes of @c showmanyc are
-       *         'es-how-many-see', not 'show-manic'.'
+       *         that they will return immediately.</em>
+       *  @note  The standard adds that <em>the morphemes of @c showmanyc are
+       *         @b es-how-many-see, not @b show-manic.</em>
       */
       virtual streamsize 
       showmanyc() { return 0; }
@@ -646,7 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Informally, this function is called when the input buffer is
        *  exhausted (or does not exist, as buffering need not actually be
-       *  done).  If a buffer exists, it is 'refilled'.  In either case, the
+       *  done).  If a buffer exists, it is @a refilled.  In either case, the
        *  next available character is returned, or @c traits::eof() to
        *  indicate a null pending sequence.
        *
@@ -690,7 +691,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Tries to back up the input sequence.
        *  @param  c  The character to be inserted back into the sequence.
-       *  @return  eof() on failure, 'some other value' on success
+       *  @return  eof() on failure, <em>some other value</em> on success
        *  @post  The constraints of @c gptr(), @c eback(), and @c pptr()
        *         are the same as for @c underflow().
        *
@@ -724,11 +725,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @return  eof() to indicate failure, something else (usually
        *           @a c, or not_eof())
        *
-       *  Informally, this function is called when the output buffer is full
-       *  (or does not exist, as buffering need not actually be done).  If a
-       *  buffer exists, it is 'consumed', with 'some effect' on the
-       *  controlled sequence.  (Typically, the buffer is written out to the
-       *  sequence verbatim.)  In either case, the character @a c is also
+       *  Informally, this function is called when the output buffer
+       *  is full (or does not exist, as buffering need not actually
+       *  be done).  If a buffer exists, it is @a consumed, with
+       *  <em>some effect</em> on the controlled sequence.
+       *  (Typically, the buffer is written out to the sequence
+       *  verbatim.)  In either case, the character @a c is also
        *  written out, if @a c is not @c eof().
        *
        *  For a formal definition of this function, see a good text

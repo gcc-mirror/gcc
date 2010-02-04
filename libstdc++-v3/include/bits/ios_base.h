@@ -1,7 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -238,7 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /**
      *  @brief This is a bitmask type.
      *
-     *  @c "_Ios_Fmtflags" is implementation-defined, but it is valid to
+     *  @c @a _Ios_Fmtflags is implementation-defined, but it is valid to
      *  perform bitwise operations on these values and expect the Right
      *  Thing to happen.  Defined objects of type fmtflags are:
      *  - boolalpha
@@ -327,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /**
      *  @brief This is a bitmask type.
      *
-     *  @c "_Ios_Iostate" is implementation-defined, but it is valid to
+     *  @c @a _Ios_Iostate is implementation-defined, but it is valid to
      *  perform bitwise operations on these values and expect the Right
      *  Thing to happen.  Defined objects of type iostate are:
      *  - badbit
@@ -356,7 +356,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /**
      *  @brief This is a bitmask type.
      *
-     *  @c "_Ios_Openmode" is implementation-defined, but it is valid to
+     *  @c @a _Ios_Openmode is implementation-defined, but it is valid to
      *  perform bitwise operations on these values and expect the Right
      *  Thing to happen.  Defined objects of type openmode are:
      *  - app
@@ -392,7 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     /**
      *  @brief This is an enumerated type.
      *
-     *  @c "_Ios_Seekdir" is implementation-defined.  Defined values
+     *  @c @a _Ios_Seekdir is implementation-defined.  Defined values
      *  of type seekdir are:
      *  - beg
      *  - cur, equivalent to @c SEEK_CUR in the C standard library.
@@ -618,7 +618,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  @brief  Flags access.
      *  @return  The precision to generate on certain output operations.
      *
-     *  Be careful if you try to give a definition of "precision" here; see
+     *  Be careful if you try to give a definition of @a precision here; see
      *  DR 189.
     */
     streamsize
@@ -642,7 +642,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  @brief  Flags access.
      *  @return  The minimum field width to generate on output operations.
      *
-     *  "Minimum field width" refers to the number of characters.
+     *  <em>Minimum field width</em> refers to the number of characters.
     */
     streamsize
     width() const

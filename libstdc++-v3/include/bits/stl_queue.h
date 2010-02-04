@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  that supports @c front, @c back, @c push_back, and @c pop_front,
    *  such as std::list or an appropriate user-defined type.
    *
-   *  Members not found in "normal" containers are @c container_type,
+   *  Members not found in @a normal containers are @c container_type,
    *  which is a typedef for the second Sequence parameter, and @c push and
    *  @c pop, which are standard %queue/FIFO operations.
   */
@@ -340,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  priority comparisons.  It defaults to @c less<value_type> but
    *  can be anything defining a strict weak ordering.
    *
-   *  Members not found in "normal" containers are @c container_type,
+   *  Members not found in @a normal containers are @c container_type,
    *  which is a typedef for the second Sequence parameter, and @c
    *  push, @c pop, and @c top, which are standard %queue operations.
    *
