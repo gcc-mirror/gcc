@@ -1,3 +1,10 @@
+2010-02-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/42901
+	* io/list_read.c (nml_get_obj_data): Add new qualifier flag, clean up
+	code, and adjust logic to set namelist info pointer correctly for array
+	qualifiers of derived type components.
+
 2010-01-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/42742
