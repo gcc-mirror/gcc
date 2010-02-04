@@ -36,7 +36,7 @@
 /**
  * @file type_utils.hpp
  * Contains utilities for handnling types. All of these classes are based on
- *    "Modern C++" by Andrei Alxandrescu.
+ * Modern C++ by Andrei Alxandrescu.
  */
 
 #ifndef PB_DS_TYPE_UTILS_HPP

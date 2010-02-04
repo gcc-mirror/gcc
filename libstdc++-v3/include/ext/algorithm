@@ -1,6 +1,6 @@
 // Algorithm extensions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -189,8 +189,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  @return   An int, as with @c memcmp.
    *
    *  The return value will be less than zero if the first range is
-   *  "lexigraphically less than" the second, greater than zero if the second
-   *  range is "lexigraphically less than" the first, and zero otherwise.
+   *  <em>lexigraphically less than</em> the second, greater than zero
+   *  if the second range is <em>lexigraphically less than</em> the
+   *  first, and zero otherwise.
    *  This is an SGI extension.
    *  @ingroup SGIextensions
   */

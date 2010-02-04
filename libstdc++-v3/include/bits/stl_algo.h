@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -2460,8 +2460,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  first   An iterator.
    *  @param  last    Another iterator.
    *  @param  val     The search term.
-   *  @return         An iterator pointing to the first element "not less
-   *                  than" @a val, or end() if every element is less than 
+   *  @return         An iterator pointing to the first element <em>not less
+   *                  than</em> @a val, or end() if every element is less than 
    *                  @a val.
    *  @ingroup binary_search_algorithms
   */
@@ -2509,8 +2509,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  last    Another iterator.
    *  @param  val     The search term.
    *  @param  comp    A functor to use for comparisons.
-   *  @return  An iterator pointing to the first element "not less than" @a val,
-   *           or end() if every element is less than @a val.
+   *  @return An iterator pointing to the first element <em>not less
+   *           than</em> @a val, or end() if every element is less
+   *           than @a val.
    *  @ingroup binary_search_algorithms
    *
    *  The comparison function should have the same effects on ordering as
@@ -3633,13 +3634,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // max_element
 
   /**
-   *  @brief  Permute range into the next "dictionary" ordering.
+   *  @brief  Permute range into the next @a dictionary ordering.
    *  @ingroup sorting_algorithms
    *  @param  first  Start of range.
    *  @param  last   End of range.
    *  @return  False if wrapped to first permutation, true otherwise.
    *
-   *  Treats all permutations of the range as a set of "dictionary" sorted
+   *  Treats all permutations of the range as a set of @a dictionary sorted
    *  sequences.  Permutes the current sequence into the next one of this set.
    *  Returns true if there are more sequences to generate.  If the sequence
    *  is the largest of the set, the smallest is generated and false returned.
@@ -3687,7 +3688,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief  Permute range into the next "dictionary" ordering using
+   *  @brief  Permute range into the next @a dictionary ordering using
    *          comparison functor.
    *  @ingroup sorting_algorithms
    *  @param  first  Start of range.
@@ -3696,7 +3697,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @return  False if wrapped to first permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
-   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
+   *  @a dictionary sorted sequences ordered by @a comp.  Permutes the current
    *  sequence into the next one of this set.  Returns true if there are more
    *  sequences to generate.  If the sequence is the largest of the set, the
    *  smallest is generated and false returned.
@@ -3745,13 +3746,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief  Permute range into the previous "dictionary" ordering.
+   *  @brief  Permute range into the previous @a dictionary ordering.
    *  @ingroup sorting_algorithms
    *  @param  first  Start of range.
    *  @param  last   End of range.
    *  @return  False if wrapped to last permutation, true otherwise.
    *
-   *  Treats all permutations of the range as a set of "dictionary" sorted
+   *  Treats all permutations of the range as a set of @a dictionary sorted
    *  sequences.  Permutes the current sequence into the previous one of this
    *  set.  Returns true if there are more sequences to generate.  If the
    *  sequence is the smallest of the set, the largest is generated and false
@@ -3800,7 +3801,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief  Permute range into the previous "dictionary" ordering using
+   *  @brief  Permute range into the previous @a dictionary ordering using
    *          comparison functor.
    *  @ingroup sorting_algorithms
    *  @param  first  Start of range.
@@ -3809,7 +3810,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @return  False if wrapped to last permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
-   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
+   *  @a dictionary sorted sequences ordered by @a comp.  Permutes the current
    *  sequence into the previous one of this set.  Returns true if there are
    *  more sequences to generate.  If the sequence is the smallest of the set,
    *  the largest is generated and false returned.
@@ -5347,8 +5348,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  last1   Another iterator.
    *  @param  last2   Another iterator.
    *  @param  result  An iterator pointing to the end of the merged range.
-   *  @return         An iterator pointing to the first element "not less
-   *                  than" @a val.
+   *  @return         An iterator pointing to the first element <em>not less
+   *                  than</em> @a val.
    *
    *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
    *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges

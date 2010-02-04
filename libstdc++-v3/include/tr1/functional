@@ -1,6 +1,7 @@
 // TR1 functional header -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1383,7 +1384,7 @@ namespace tr1
   struct _M_clear_type;
 
   /**
-   *  Trait identifying "location-invariant" types, meaning that the
+   *  Trait identifying @a location-invariant types, meaning that the
    *  address of the object (or any of its members) will not escape.
    *  Also implies a trivial copy constructor and assignment operator.
    */

@@ -1,6 +1,6 @@
 // Safe sequence implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -78,11 +78,11 @@ namespace __gnu_debug
     };
 
   /**
-   * @brief Base class for constructing a "safe" sequence type that
+   * @brief Base class for constructing a @a safe sequence type that
    * tracks iterators that reference it.
    *
    * The class template %_Safe_sequence simplifies the construction of
-   * "safe" sequences that track the iterators that reference the
+   * @a safe sequences that track the iterators that reference the
    * sequence, so that the iterators are notified of changes in the
    * sequence that may affect their operation, e.g., if the container
    * invalidates its iterators or is destructed. This class template

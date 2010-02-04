@@ -1,6 +1,6 @@
 // Safe sequence/iterator base implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -36,7 +36,7 @@ namespace __gnu_debug
 {
   class _Safe_sequence_base;
 
-  /** \brief Basic functionality for a "safe" iterator.
+  /** \brief Basic functionality for a @a safe iterator.
    *
    *  The %_Safe_iterator_base base class implements the functionality
    *  of a safe iterator that is not specific to a particular iterator
@@ -153,7 +153,7 @@ namespace __gnu_debug
    * invalidation of all iterators that reference the container.
    *
    * This class must ensure that no operation on it may throw an
-   * exception, otherwise "safe" sequences may fail to provide the
+   * exception, otherwise @a safe sequences may fail to provide the
    * exception-safety guarantees required by the C++ standard.
    */
   class _Safe_sequence_base

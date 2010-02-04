@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,7 +47,7 @@ namespace __gnu_parallel
    *  @param __end End iterator of input sequence.
    *  @param __user_op A user-specified functor (comparator, predicate,
    *  associative operator,...)
-   *  @param __functionality functor to "process" an element with
+   *  @param __functionality functor to @a process an element with
    *  __user_op (depends on desired functionality, e. g. accumulate,
    *  for_each,...
    *  @param __reduction Reduction functor.

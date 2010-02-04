@@ -1,7 +1,7 @@
 // Forwarding declarations -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009
+// 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  should not do it yourself.  Instead, include the &lt;iosfwd&gt;
    *  header, which contains only declarations of all the I/O classes as
    *  well as the typedefs.  Trying to forward-declare the typedefs
-   *  themselves (e.g., "class ostream;") is not valid ISO C++.
+   *  themselves (e.g., <code>class ostream;</code>) is not valid ISO C++.
    *
    *  For more specific declarations, see
    *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html

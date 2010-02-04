@@ -40,8 +40,8 @@
 
 /**
  * This implementation loosely borrows ideas from:
- * 1) "Fast Mergeable Integer Maps", Okasaki, Gill 1998
- * 2) "Ptset: Sets of integers implemented as Patricia trees",
+ * 1) Fast Mergeable Integer Maps, Okasaki, Gill 1998
+ * 2) Ptset: Sets of integers implemented as Patricia trees,
  *    Jean-Christophe Filliatr, 2000
  **/
 

@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -63,15 +63,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /** @defgroup binders Binder Classes
    * @ingroup functors
    *
-   *  Binders turn functions/functors with two arguments into functors with
-   *  a single argument, storing an argument to be applied later.  For
-   *  example, a variable @c B of type @c binder1st is constructed from a
-   *  functor @c f and an argument @c x.  Later, B's @c operator() is called
-   *  with a single argument @c y.  The return value is the value of @c f(x,y).
-   *  @c B can be "called" with various arguments (y1, y2, ...) and will in
-   *  turn call @c f(x,y1), @c f(x,y2), ...
+   *  Binders turn functions/functors with two arguments into functors
+   *  with a single argument, storing an argument to be applied later.
+   *  For example, a variable @c B of type @c binder1st is constructed
+   *  from a functor @c f and an argument @c x. Later, B's @c
+   *  operator() is called with a single argument @c y. The return
+   *  value is the value of @c f(x,y). @c B can be @a called with
+   *  various arguments (y1, y2, ...) and will in turn call @c
+   *  f(x,y1), @c f(x,y2), ...
    *
-   *  The function @c bind1st is provided to save some typing.  It takes the
+   *  The function @c bind1st is provided to save some typing. It takes the
    *  function and an argument as parameters, and returns an instance of
    *  @c binder1st.
    *
@@ -79,11 +80,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  thing, but the stored argument is passed as the second parameter instead
    *  of the first, e.g., @c bind2nd(std::minus<float>,1.3) will create a
    *  functor whose @c operator() accepts a floating-point number, subtracts
-   *  1.3 from it, and returns the result.  (If @c bind1st had been used,
-   *  the functor would perform "1.3 - x" instead.
+   *  1.3 from it, and returns the result. (If @c bind1st had been used,
+   *  the functor would perform <em>1.3 - x</em> instead.
    *
    *  Creator-wrapper functions like @c bind1st are intended to be used in
-   *  calling algorithms.  Their return values will be temporary objects.
+   *  calling algorithms. Their return values will be temporary objects.
    *  (The goal is to not require you to type names like
    *  @c std::binder1st<std::plus<int>> for declaring a variable to hold the
    *  return value from @c bind1st(std::plus<int>,5).

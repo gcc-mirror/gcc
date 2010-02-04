@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -210,7 +210,7 @@ namespace __gnu_parallel
    *
    * This works well for merging up to 4 sequences.
    *
-   * Note that making the merging stable does <em>not</em> come at a
+   * Note that making the merging stable does @a not come at a
    * performance hit.
    *
    * Whether the merging is done guarded or unguarded is selected by the
@@ -329,7 +329,7 @@ namespace __gnu_parallel
    *
    * This works well for merging up to 4 sequences.
    *
-   * Note that making the merging stable does <em>not</em> come at a
+   * Note that making the merging stable does @a not come at a
    * performance hit.
    *
    * Whether the merging is done guarded or unguarded is selected by the

@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,7 +34,7 @@
  * Macros used by the implementation to verify certain
  * properties. These macros may only be used directly by the debug
  * wrappers. Note that these are macros (instead of the more obviously
- * "correct" choice of making them functions) because we need line and
+ * @a correct choice of making them functions) because we need line and
  * file information at the call site, to minimize the distance between
  * the user error and where the error is reported.
  *

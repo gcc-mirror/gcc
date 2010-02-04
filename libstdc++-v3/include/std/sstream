@@ -1,7 +1,7 @@
 // String based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2008, 2009 Free Software Foundation, Inc.
+// 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -112,9 +112,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  Copying out the string buffer.
        *  @return  A copy of one of the underlying sequences.
        *
-       *  'If the buffer is only created in input mode, the underlying
+       *  <em>If the buffer is only created in input mode, the underlying
        *  character sequence is equal to the input sequence; otherwise, it
-       *  is equal to the output sequence.' [27.7.1.2]/1
+       *  is equal to the output sequence.</em> [27.7.1.2]/1
       */
       __string_type
       str() const

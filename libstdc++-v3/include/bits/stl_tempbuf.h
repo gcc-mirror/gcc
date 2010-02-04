@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -72,9 +72,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  This function tries to obtain storage for @c len adjacent Tp
    *  objects.  The objects themselves are not constructed, of course.
-   *  A pair<> is returned containing 'the buffer s address and
+   *  A pair<> is returned containing <em>the buffer s address and
    *  capacity (in the units of sizeof(Tp)), or a pair of 0 values if
-   *  no storage can be obtained.'  Note that the capacity obtained
+   *  no storage can be obtained.</em>  Note that the capacity obtained
    *  may be less than that requested if the memory is unavailable;
    *  you should compare len with the .second return value.
    *

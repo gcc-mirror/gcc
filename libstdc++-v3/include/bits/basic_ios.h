@@ -1,7 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @brief  The quick-and-easy status check.
        *
        *  This allows you to write constructs such as
-       *  "if (!a_stream) ..." and "while (a_stream) ..."
+       *  <code>if (!a_stream) ...</code> and <code>while (a_stream) ...</code>
       */
       operator void*() const
       { return this->fail() ? 0 : const_cast<basic_ios*>(this); }
@@ -351,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       copyfmt(const basic_ios& __rhs);
 
       /**
-       *  @brief  Retrieves the "empty" character.
+       *  @brief  Retrieves the @a empty character.
        *  @return  The current fill character.
        *
        *  It defaults to a space (' ') in the current locale.
@@ -368,7 +368,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       /**
-       *  @brief  Sets a new "empty" character.
+       *  @brief  Sets a new @a empty character.
        *  @param  ch  The new character.
        *  @return  The previous fill character.
        *

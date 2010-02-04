@@ -412,7 +412,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  cause no gains in efficiency.
        *
        *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
-       *  for more on "hinting".
+       *  for more on @a hinting.
        *
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
@@ -421,7 +421,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_t._M_insert_equal_(__position, __x); }
 
       /**
-       *  @brief A template function that attempts to insert a range of elements.
+       *  @brief A template function that tries to insert a range of elements.
        *  @param  first  Iterator pointing to the start of the range to be
        *                 inserted.
        *  @param  last  Iterator pointing to the end of the range.

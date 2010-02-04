@@ -1340,8 +1340,8 @@ namespace std
    * The classic Mersenne Twister.
    *
    * Reference:
-   * M. Matsumoto and T. Nishimura, "Mersenne Twister: A 623-Dimensionally
-   * Equidistributed Uniform Pseudo-Random Number Generator", ACM Transactions
+   * M. Matsumoto and T. Nishimura, Mersenne Twister: A 623-Dimensionally
+   * Equidistributed Uniform Pseudo-Random Number Generator, ACM Transactions
    * on Modeling and Computer Simulation, Vol. 8, No. 1, January 1998, pp 3-30.
    */
   typedef mersenne_twister_engine<

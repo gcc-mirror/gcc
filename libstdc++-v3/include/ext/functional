@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  @c operator()s
    *  take a @c std::pair as an argument, and return either the first member
    *  or the second member, respectively.  They can be used (especially with
-   *  the composition functors) to "strip" data from a sequence before
+   *  the composition functors) to @a strip data from a sequence before
    *  performing the remainder of an algorithm.
    *
    *  @addtogroup SGIextensions
@@ -288,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  - @c constant_binary_fun's @c operator() takes two arguments (ignored)
    *
    *  The helper creator functions @c constant0, @c constant1, and
-   *  @c constant2 each take a "result" argument and construct variables of
+   *  @c constant2 each take a @a result argument and construct variables of
    *  the appropriate functor type.
    *
    *  @addtogroup SGIextensions

@@ -76,7 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /**
-   * @brief  The "standard" allocator, as per [20.4].
+   * @brief  The @a standard allocator, as per [20.4].
    * @ingroup allocators
    *
    *  Further details:
