@@ -1,3 +1,14 @@
+2010-02-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (TARGET_ASM_OUTPUT_MI_THUNK): Define.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): Define.
+	(function_arg): Use NULL_RTX and FIRST_ARGUMENT_REGNUM.
+	(mn10300_asm_output_mi_thunk): New function.
+	(mn10300_can_output_mu_thunk): New function.
+	* config/mn10300/mn10300.h (FIRST_ARGUMENT_REGNUM): Define.
+	(FUNCTION_ARG_REGNO_P): Fix comment.  Accept d0 and d1.
+	(FUNCTION_ARG): Delete incorrect comment.
+
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40138
