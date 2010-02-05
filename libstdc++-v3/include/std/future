@@ -1,6 +1,6 @@
 // <future> -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -799,17 +799,20 @@ namespace std
 
   // Now we can define the protected __basic_future constructors.
   template<typename _Res>
-    __basic_future<_Res>::__basic_future(const shared_future<_Res>& __sf)
+    inline __basic_future<_Res>::
+    __basic_future(const shared_future<_Res>& __sf)
     : _M_state(__sf._M_state)
     { }
 
   template<typename _Res>
-    __basic_future<_Res>::__basic_future(shared_future<_Res>&& __sf)
+    inline __basic_future<_Res>::
+    __basic_future(shared_future<_Res>&& __sf)
     : _M_state(std::move(__sf._M_state))
     { }
 
   template<typename _Res>
-    __basic_future<_Res>::__basic_future(future<_Res>&& __uf)
+    inline __basic_future<_Res>::
+    __basic_future(future<_Res>&& __uf)
     : _M_state(std::move(__uf._M_state))
     { }
 
@@ -828,12 +831,13 @@ namespace std
 
     public:
       promise()
-      : _M_future(std::make_shared<_State>()), _M_storage(new _Res_type())
+      : _M_future(std::make_shared<_State>()),
+	_M_storage(new _Res_type())
       { }
 
       promise(promise&& __rhs)
       : _M_future(std::move(__rhs._M_future)),
-      _M_storage(std::move(__rhs._M_storage))
+	_M_storage(std::move(__rhs._M_storage))
       { }
 
       // TODO: needs allocator_arg_t
@@ -898,6 +902,11 @@ namespace std
       }
     };
 
+  template<typename _Res>
+    inline void
+    swap(promise<_Res>& __x, promise<_Res>& __y)
+    { __x.swap(__y); }
+
   /// Partial specialization for promise<R&>
   template<typename _Res>
     class promise<_Res&>
@@ -912,7 +921,8 @@ namespace std
 
     public:
       promise()
-      : _M_future(std::make_shared<_State>()), _M_storage(new _Res_type())
+      : _M_future(std::make_shared<_State>()),
+	_M_storage(new _Res_type())
       { }
 
       promise(promise&& __rhs)
@@ -995,7 +1005,7 @@ namespace std
 
       promise(promise&& __rhs)
       : _M_future(std::move(__rhs._M_future)),
-      _M_storage(std::move(__rhs._M_storage))
+	_M_storage(std::move(__rhs._M_storage))
       { }
 
 
@@ -1087,11 +1097,14 @@ namespace std
     {
       typename _StateT::_Ptr_type operator()()
       {
-        __try {
-          _M_state->_M_result->_M_set(_M_fn());
-        } __catch(...) {
-          _M_state->_M_result->_M_error = current_exception();
-        }
+        __try
+	  {
+	    _M_state->_M_result->_M_set(_M_fn());
+	  }
+	__catch(...)
+	  {
+	    _M_state->_M_result->_M_error = current_exception();
+	  }
         return std::move(_M_state->_M_result);
       }
       _StateT*                  _M_state;
@@ -1103,12 +1116,15 @@ namespace std
     {
       typename _StateT::_Ptr_type operator()()
       {
-        __try {
-          _M_fn();
-        } __catch(...) {
-          _M_state->_M_result->_M_error = current_exception();
-        }
-        return std::move(_M_state->_M_result);
+        __try
+	  {
+	    _M_fn();
+	  }
+	__catch(...)
+	  {
+	    _M_state->_M_result->_M_error = current_exception();
+	  }
+	return std::move(_M_state->_M_result);
       }
       _StateT*                  _M_state;
       std::function<void()>     _M_fn;
@@ -1245,6 +1261,12 @@ namespace std
       }
     };
 
+  template<typename _Res, typename... _ArgTypes>
+    void inline
+    swap(packaged_task<_Res(_ArgTypes...)>& __x,
+	 packaged_task<_Res(_ArgTypes...)>& __y)
+    { __x.swap(__y); }
+ 
   template<typename _Res>
     class __future_base::_Deferred_state : public __future_base::_State
     {
@@ -1280,7 +1302,7 @@ namespace std
       explicit 
       _Async_state(std::function<_Res()>&& __fn)
       : _M_result(new _Result<_Res>()), _M_fn(std::move(__fn)),
-      _M_thread(mem_fn(&_Async_state::_M_do_run), this)
+	_M_thread(mem_fn(&_Async_state::_M_do_run), this)
       { }
 
       ~_Async_state() { _M_thread.join(); }
@@ -1306,17 +1328,17 @@ namespace std
       typedef typename _Fn::result_type result_type;
       std::shared_ptr<__future_base::_State> __state;
       if (__policy == launch::async)
-      {
-        typedef typename __future_base::_Async_state<result_type> _State;
-        __state = std::make_shared<_State>(std::bind<result_type>(
+	{
+	  typedef typename __future_base::_Async_state<result_type> _State;
+	  __state = std::make_shared<_State>(std::bind<result_type>(
               std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
-      }
+	}
       else
-      {
-        typedef typename __future_base::_Deferred_state<result_type> _State;
-        __state = std::make_shared<_State>(std::bind<result_type>(
+	{
+	  typedef typename __future_base::_Deferred_state<result_type> _State;
+	  __state = std::make_shared<_State>(std::bind<result_type>(
               std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
-      }
+	}
       return future<result_type>(__state);
     }
 
@@ -1325,7 +1347,7 @@ namespace std
     async(_Fn&& __fn, _Args&&... __args)
     {
       return async(launch::any, std::forward<_Fn>(__fn),
-          std::forward<_Args>(__args)...);
+		   std::forward<_Args>(__args)...);
     }
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
