@@ -1800,7 +1800,7 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
   if (old_sym->attr.dimension)
     {
       gfc_init_se (&tse, NULL);
-      gfc_conv_subref_array_arg (&tse, e, 0, INTENT_IN);
+      gfc_conv_subref_array_arg (&tse, e, 0, INTENT_IN, false);
       gfc_add_block_to_block (pre, &tse.pre);
       gfc_add_block_to_block (post, &tse.post);
       tse.expr = build_fold_indirect_ref_loc (input_location, tse.expr);
