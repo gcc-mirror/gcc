@@ -1,5 +1,15 @@
 2010-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/future (swap(packaged_task<>&, packaged_task<>&),
+	swap(promise<>&, promise<>&)): Add; minor formatting fixes.
+	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/30_threads/packaged_task/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/promise/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/promise/cons/copy_neg.cc: Likewise.
+
+2010-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_algobase.h (struct __iter_base): Rename to
 	_Iter_base; add iterator_type typedef.
 	(struct __miter_base): Rename to _Miter_base.
