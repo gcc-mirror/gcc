@@ -361,6 +361,7 @@ do {						\
     {									\
       const char *alias							\
 	= IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
+      i386_pe_maybe_record_exported_symbol (DECL, alias, 0);		\
       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
 	i386_pe_declare_function_type (STREAM, alias,			\
 				       TREE_PUBLIC (DECL));		\
