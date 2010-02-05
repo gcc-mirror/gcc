@@ -167,6 +167,7 @@ static enum machine_mode pa_promote_function_mode (const_tree,
 static void pa_asm_trampoline_template (FILE *);
 static void pa_trampoline_init (rtx, tree, rtx);
 static rtx pa_trampoline_adjust_address (rtx);
+static rtx pa_delegitimize_address (rtx);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -339,6 +340,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_TRAMPOLINE_INIT pa_trampoline_init
 #undef TARGET_TRAMPOLINE_ADJUST_ADDRESS
 #define TARGET_TRAMPOLINE_ADJUST_ADDRESS pa_trampoline_adjust_address
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS pa_delegitimize_address
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9993,6 +9996,18 @@ pa_trampoline_adjust_address (rtx addr)
   if (!TARGET_64BIT)
     addr = memory_address (Pmode, plus_constant (addr, 46));
   return addr;
+}
+
+static rtx
+pa_delegitimize_address (rtx orig_x)
+{
+  rtx x = delegitimize_mem_from_attrs (orig_x);
+
+  if (GET_CODE (x) == LO_SUM
+      && GET_CODE (XEXP (x, 1)) == UNSPEC
+      && XINT (XEXP (x, 1), 1) == UNSPEC_DLTIND14R)
+    return gen_const_mem (Pmode, XVECEXP (XEXP (x, 1), 0, 0));
+  return x;
 }
 
 #include "gt-pa.h"

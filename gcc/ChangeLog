@@ -1,3 +1,9 @@
+2010-02-05  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/42924
+	* config/pa/pa.c (TARGET_DELEGITIMIZE_ADDRESS): Redefine.
+	(pa_delegitimize_address): New function.
+
 2010-02-05  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* config/i386/msformat-c.c (ms_printf_length_specs): Set the
