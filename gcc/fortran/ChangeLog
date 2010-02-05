@@ -1,3 +1,16 @@
+2010-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42309
+	* trans-expr.c (gfc_conv_subref_array_arg): Add new argument
+	'formal_ptr'. If this is true, give returned descriptor unity
+	lbounds, in all dimensions, and the appropriate offset.
+	(gfc_conv_procedure_call); If formal is a pointer, set the last
+	argument of gfc_conv_subref_array_arg to true.
+	* trans.h : Add last argument for gfc_conv_subref_array_arg.
+	* trans-io.c (set_internal_unit, gfc_trans_transfer): Set the
+	new arg of gfc_conv_subref_array_arg to false.
+	* trans-stmt.c (forall_make_variable_temp): The same.
+
 2010-02-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42936

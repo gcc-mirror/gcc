@@ -741,7 +741,7 @@ set_internal_unit (stmtblock_t * block, stmtblock_t * post_block,
 	  /* Use a temporary for components of arrays of derived types
 	     or substring array references.  */
 	  gfc_conv_subref_array_arg (&se, e, 0,
-		last_dt == READ ? INTENT_IN : INTENT_OUT);
+		last_dt == READ ? INTENT_IN : INTENT_OUT, false);
 	  tmp = build_fold_indirect_ref_loc (input_location,
 					 se.expr);
 	  se.expr = gfc_build_addr_expr (pchar_type_node, tmp);
@@ -2211,7 +2211,7 @@ gfc_trans_transfer (gfc_code * code)
 	  if (seen_vector && last_dt == READ)
 	    {
 	      /* Create a temp, read to that and copy it back.  */
-	      gfc_conv_subref_array_arg (&se, expr, 0, INTENT_OUT);
+	      gfc_conv_subref_array_arg (&se, expr, 0, INTENT_OUT, false);
 	      tmp =  se.expr;
 	    }
 	  else
