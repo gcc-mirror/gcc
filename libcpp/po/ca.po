@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib-4.0.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2009-12-02 14:22+0000\n"
+"POT-Creation-Date: 2010-01-11 11:42+0000\n"
 "PO-Revision-Date: 2005-11-25 22:56+0100\n"
 "Last-Translator: Mateu Gilles <gilles@mateu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -415,211 +415,216 @@ msgstr "stdout"
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: expr.c:279
+#: expr.c:282
 msgid "too many decimal points in number"
 msgstr "nombre amb massa punts decimals"
 
-#: expr.c:308 expr.c:390
+#: expr.c:311 expr.c:396
 #, fuzzy
 msgid "fixed-point constants are a GCC extension"
 msgstr "les constants imaginàries són una extensió d'el GCC"
 
-#: expr.c:321
+#: expr.c:324
 #, fuzzy, c-format
 msgid "invalid digit \"%c\" in binary constant"
 msgstr "dígit \"%c\" invàlid en la constant octal"
 
-#: expr.c:323
+#: expr.c:326
 #, c-format
 msgid "invalid digit \"%c\" in octal constant"
 msgstr "dígit \"%c\" invàlid en la constant octal"
 
-#: expr.c:331
+#: expr.c:334
 #, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "sufix \"%.*s\" invàlid en la constant de coma flotant"
 
-#: expr.c:337
+#: expr.c:339
+#, fuzzy
+msgid "no digits in hexadecimal floating constant"
+msgstr "ús d'una constant de coma flotant hexadecimal C99"
+
+#: expr.c:343
 msgid "use of C99 hexadecimal floating constant"
 msgstr "ús d'una constant de coma flotant hexadecimal C99"
 
-#: expr.c:346
+#: expr.c:352
 msgid "exponent has no digits"
 msgstr "exponent no té dígits"
 
-#: expr.c:353
+#: expr.c:359
 msgid "hexadecimal floating constants require an exponent"
 msgstr "la constant de coma flotant hexadecimal requereix un exponent"
 
-#: expr.c:359
+#: expr.c:365
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "sufix \"%.*s\" invàlid en la constant de coma flotant"
 
-#: expr.c:369 expr.c:418
+#: expr.c:375 expr.c:424
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "el C tradicional rebutja el sufix \"%.*s\""
 
-#: expr.c:377
+#: expr.c:383
 #, fuzzy
 msgid "suffix for double constant is a GCC extension"
 msgstr "les constants imaginàries són una extensió d'el GCC"
 
-#: expr.c:383
+#: expr.c:389
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "sufix \"%.*s\" invàlid en la constant de coma flotant"
 
-#: expr.c:394
+#: expr.c:400
 #, fuzzy
 msgid "decimal float constants are a GCC extension"
 msgstr "les constants imaginàries són una extensió d'el GCC"
 
-#: expr.c:404
+#: expr.c:410
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "sufix \"%.*s\" invàlid en constant entera"
 
-#: expr.c:427
+#: expr.c:433
 #, fuzzy
 msgid "use of C++0x long long integer constant"
 msgstr "ús d'una constant entera long long C99"
 
-#: expr.c:436
+#: expr.c:442
 msgid "imaginary constants are a GCC extension"
 msgstr "les constants imaginàries són una extensió d'el GCC"
 
-#: expr.c:439
+#: expr.c:445
 #, fuzzy
 msgid "binary constants are a GCC extension"
 msgstr "les constants imaginàries són una extensió d'el GCC"
 
-#: expr.c:532
+#: expr.c:538
 msgid "integer constant is too large for its type"
 msgstr "la constant entera és massa gran pel seu tipus"
 
-#: expr.c:563
+#: expr.c:569
 msgid "integer constant is so large that it is unsigned"
 msgstr "la constant entera és tan gran que és unsigned"
 
-#: expr.c:658
+#: expr.c:664
 msgid "missing ')' after \"defined\""
 msgstr "\")\" faltant després de \"defined\""
 
-#: expr.c:665
+#: expr.c:671
 msgid "operator \"defined\" requires an identifier"
 msgstr "l'operador \"defined\" requereix un identificador"
 
-#: expr.c:673
+#: expr.c:679
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(\"%s\" és un element alternatiu per a  \"%s\" en C++)"
 
-#: expr.c:683
+#: expr.c:689
 msgid "this use of \"defined\" may not be portable"
 msgstr "aquest ùs de \"defined\" podria no ser portable"
 
-#: expr.c:736
+#: expr.c:742
 msgid "floating constant in preprocessor expression"
 msgstr "constant de coma flotant en l'expressió del preprocessador"
 
-#: expr.c:742
+#: expr.c:748
 msgid "imaginary number in preprocessor expression"
 msgstr "nombre imaginari en l'expressió del preprocessador"
 
-#: expr.c:789
+#: expr.c:795
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "\"%s\" no és definit"
 
-#: expr.c:801
+#: expr.c:807
 #, fuzzy
 msgid "assertions are a GCC extension"
 msgstr "#%s és una extenció del GCC"
 
-#: expr.c:804
+#: expr.c:810
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.c:937 expr.c:966
+#: expr.c:943 expr.c:972
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr "operador binari faltant abans de l'element \"%s\""
 
-#: expr.c:957
+#: expr.c:963
 #, c-format
 msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "l'element \"%s\" no és vàlid en les expressions del preprocesador"
 
-#: expr.c:974
+#: expr.c:980
 msgid "missing expression between '(' and ')'"
 msgstr "expressión faltant entre \"(\" i \")\""
 
-#: expr.c:977
+#: expr.c:983
 #, fuzzy, c-format
 msgid "%s with no expression"
 msgstr "#if sense expressió"
 
-#: expr.c:980
+#: expr.c:986
 #, c-format
 msgid "operator '%s' has no right operand"
 msgstr "l'operador \"%s\" no té operant de dreta"
 
-#: expr.c:985
+#: expr.c:991
 #, c-format
 msgid "operator '%s' has no left operand"
 msgstr "l'operador \"%s\" no té operant d'esquera"
 
-#: expr.c:1011
+#: expr.c:1017
 msgid " ':' without preceding '?'"
 msgstr " \":\" sense \"?\" precedent"
 
-#: expr.c:1039
+#: expr.c:1045
 #, fuzzy, c-format
 msgid "unbalanced stack in %s"
 msgstr "pila desequilibrada en #if"
 
-#: expr.c:1059
+#: expr.c:1065
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "operador \"%u\" impossible"
 
-#: expr.c:1160
+#: expr.c:1166
 msgid "missing ')' in expression"
 msgstr "\")\" faltant en l'expressió"
 
-#: expr.c:1189
+#: expr.c:1195
 msgid "'?' without following ':'"
 msgstr " \"?\" sense el \":\" següent"
 
-#: expr.c:1199
+#: expr.c:1205
 msgid "integer overflow in preprocessor expression"
 msgstr "desbordament d'enter en l'expressió del preprocessador"
 
-#: expr.c:1204
+#: expr.c:1210
 msgid "missing '(' in expression"
 msgstr "\"(\" faltant en l'expressió"
 
-#: expr.c:1236
+#: expr.c:1242
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "l'operant esquera de \"%s\" canvia el signe quan és promogut"
 
-#: expr.c:1241
+#: expr.c:1247
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "l'operant dreta de \"%s\" canvia el signe quan és promogut"
 
-#: expr.c:1500
+#: expr.c:1506
 msgid "traditional C rejects the unary plus operator"
 msgstr "C tradicional rebutja l'operador unari més"
 
-#: expr.c:1583
+#: expr.c:1589
 msgid "comma operator in operand of #if"
 msgstr "operador coma en operant de #if"
 
-#: expr.c:1719
+#: expr.c:1725
 msgid "division by zero in #if"
 msgstr "divisió per zero en #if"
 
