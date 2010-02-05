@@ -1262,7 +1262,7 @@ namespace std
     };
 
   template<typename _Res, typename... _ArgTypes>
-    void inline
+    inline void
     swap(packaged_task<_Res(_ArgTypes...)>& __x,
 	 packaged_task<_Res(_ArgTypes...)>& __y)
     { __x.swap(__y); }
