@@ -1,5 +1,10 @@
 2010-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/future (swap(packaged_task<>&, packaged_task<>&)): Fix
+	typo in last commit.
+
+2010-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/future (swap(packaged_task<>&, packaged_task<>&),
 	swap(promise<>&, promise<>&)): Add; minor formatting fixes.
 	* testsuite/30_threads/packaged_task/cons/assign_neg.cc: Adjust
