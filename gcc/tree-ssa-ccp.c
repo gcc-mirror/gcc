@@ -283,7 +283,7 @@ get_symbol_constant_value (tree sym)
       tree val = DECL_INITIAL (sym);
       if (val)
 	{
-	  STRIP_USELESS_TYPE_CONVERSION (val);
+	  STRIP_NOPS (val);
 	  if (is_gimple_min_invariant (val))
 	    {
 	      if (TREE_CODE (val) == ADDR_EXPR)
@@ -1297,7 +1297,7 @@ fold_const_aggregate_ref (tree t)
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
 	if (tree_int_cst_equal (cfield, idx))
 	  {
-	    STRIP_USELESS_TYPE_CONVERSION (cval);
+	    STRIP_NOPS (cval);
 	    if (TREE_CODE (cval) == ADDR_EXPR)
 	      {
 		tree base = get_base_address (TREE_OPERAND (cval, 0));
@@ -1346,7 +1346,7 @@ fold_const_aggregate_ref (tree t)
 	    /* FIXME: Handle bit-fields.  */
 	    && ! DECL_BIT_FIELD (cfield))
 	  {
-	    STRIP_USELESS_TYPE_CONVERSION (cval);
+	    STRIP_NOPS (cval);
 	    if (TREE_CODE (cval) == ADDR_EXPR)
 	      {
 		tree base = get_base_address (TREE_OPERAND (cval, 0));
@@ -1550,6 +1550,28 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	  }
 
 	return changed;
+      }
+
+    case GIMPLE_ASSIGN:
+      {
+	tree lhs = gimple_assign_lhs (stmt);
+	prop_value_t *val;
+
+	/* If we have a load that turned out to be constant replace it
+	   as we cannot propagate into all uses in all cases.  */
+	if (gimple_assign_single_p (stmt)
+	    && TREE_CODE (lhs) == SSA_NAME
+	    && (val = get_value (lhs))
+	    && val->lattice_val == CONSTANT)
+	  {
+	    tree rhs = unshare_expr (val->value);
+	    if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
+	      rhs = fold_convert (TREE_TYPE (lhs), rhs);
+	    gimple_assign_set_rhs_from_tree (gsi, rhs);
+	    return true;
+	  }
+
+	return false;
       }
 
     default:
@@ -2412,9 +2434,10 @@ maybe_fold_reference (tree expr, bool is_lhs)
 	   && DECL_P (*t))
     {
       tree tem = get_symbol_constant_value (*t);
-      if (tem)
+      if (tem
+	  && useless_type_conversion_p (TREE_TYPE (*t), TREE_TYPE (tem)))
 	{
-	  *t = tem;
+	  *t = unshare_expr (tem);
 	  tem = maybe_fold_reference (expr, is_lhs);
 	  if (tem)
 	    return tem;
@@ -2824,7 +2847,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	  }
 
 	else if (DECL_P (rhs))
-	  return get_symbol_constant_value (rhs);
+	  return unshare_expr (get_symbol_constant_value (rhs));
 
         /* If we couldn't fold the RHS, hand over to the generic
            fold routines.  */
@@ -3035,7 +3058,12 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
       {
 	unsigned old_num_ops = gimple_num_ops (stmt);
 	tree new_rhs = fold_gimple_assign (gsi);
-	if (new_rhs != NULL_TREE
+	tree lhs = gimple_assign_lhs (stmt);
+	if (new_rhs
+	    && !useless_type_conversion_p (TREE_TYPE (lhs),
+					   TREE_TYPE (new_rhs)))
+	  new_rhs = fold_convert (TREE_TYPE (lhs), new_rhs);
+	if (new_rhs
 	    && (!inplace
 		|| get_gimple_rhs_num_ops (TREE_CODE (new_rhs)) < old_num_ops))
 	  {

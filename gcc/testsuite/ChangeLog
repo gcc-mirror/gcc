@@ -1,3 +1,7 @@
+2010-02-05  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-28.c: New testcase.
+
 2010-02-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42915
