@@ -1,5 +1,11 @@
 2010-02-05  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/42762
+	* lto-streamer-in.c (get_resolution): Deal with references
+	to undefined functions.
+
+2010-02-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-ccp.c (get_symbol_constant_value): Strip all
 	conversions.
 	(fold_const_aggregate_ref): Likewise.
