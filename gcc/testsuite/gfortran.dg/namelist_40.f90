@@ -47,7 +47,7 @@ subroutine writenml (astring)
 end subroutine writenml
 
 end program namelist_40
-! { dg-output "Multiple sub-objects with non-zero rank in namelist object x(\n|\r\n|\r)" }
+! { dg-output "Multiple sub-objects with non-zero rank in namelist object x%m%ch(\n|\r\n|\r)" }
 ! { dg-output "Missing colon in substring qualifier for namelist variable x%m%ch(\n|\r\n|\r)" }
 ! { dg-output "Substring out of range for namelist variable x%m%ch(\n|\r\n|\r)" }
 ! { dg-output "Bad character in substring qualifier for namelist variable x%m%ch(\n|\r\n|\r)" }
