@@ -1,3 +1,9 @@
+2010-02-05  Richard Guenther  <rguenther@suse.de>
+
+	* Make-lang.in (cp/cp-lang.o): Depend on gt-cp-cp-lang.h.
+	* cp-lang.c: Include gt-cp-cp-lang.h.
+	* config-lang.in (gtfiles): Add cp/cp-lang.c.
+
 2010-02-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42915
