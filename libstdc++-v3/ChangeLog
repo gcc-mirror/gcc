@@ -1,3 +1,11 @@
+2010-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (struct __iter_base): Rename to
+	_Iter_base; add iterator_type typedef.
+	(struct __miter_base): Rename to _Miter_base.
+	(struct __niter_base): Rename to _Niter_base.
+	(__miter_base, __niter_base): Add, use the latter; adjust everywhere.
+
 2010-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/42460
