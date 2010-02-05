@@ -297,10 +297,10 @@ static void
 eat_line (st_parameter_dt *dtp)
 {
   char c;
-  if (!is_internal_unit (dtp))
-    do
-      c = next_char (dtp);
-    while (c != '\n');
+
+  do
+    c = next_char (dtp);
+  while (c != '\n');
 }
 
 
@@ -2522,7 +2522,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
   namelist_info * first_nl = NULL;
   namelist_info * root_nl = NULL;
   int dim, parsed_rank;
-  int component_flag;
+  int component_flag, qualifier_flag;
   index_type clow, chigh;
   int non_zero_rank_count;
 
@@ -2571,11 +2571,12 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
       break;
     }
 
-  /* Untouch all nodes of the namelist and reset the flag that is set for
+  /* Untouch all nodes of the namelist and reset the flags that are set for
      derived type components.  */
 
   nml_untouch_nodes (dtp);
   component_flag = 0;
+  qualifier_flag = 0;
   non_zero_rank_count = 0;
 
   /* Get the object name - should '!' and '\n' be permitted separators?  */
@@ -2657,9 +2658,10 @@ get_name:
 		    " for namelist variable %s", nl->var_name);
 	  goto nml_err_ret;
 	}
-
       if (parsed_rank > 0)
 	non_zero_rank_count++;
+
+      qualifier_flag = 1;
 
       c = next_char (dtp);
       unget_char (dtp, c);
@@ -2685,6 +2687,7 @@ get_name:
 
       root_nl = nl;
       component_flag = 1;
+
       c = next_char (dtp);
       goto get_name;
     }
@@ -2724,15 +2727,6 @@ get_name:
       c = next_char (dtp);
       unget_char (dtp, c);
     }
-
-  /* If a derived type touch its components and restore the root
-     namelist_info if we have parsed a qualified derived type
-     component.  */
-
-  if (nl->type == GFC_DTYPE_DERIVED)
-    nml_touch_nodes (nl);
-  if (component_flag && nl->var_rank > 0)
-    nl = first_nl;
 
   /* Make sure no extraneous qualifiers are there.  */
 
@@ -2779,8 +2773,23 @@ get_name:
       goto nml_err_ret;
     }
 
-  if (first_nl != NULL && first_nl->var_rank > 0)
-    nl = first_nl;
+  /* If a derived type, touch its components and restore the root
+     namelist_info if we have parsed a qualified derived type
+     component.  */
+
+  if (nl->type == GFC_DTYPE_DERIVED)
+    nml_touch_nodes (nl);
+
+  if (first_nl)
+    {
+      if (first_nl->var_rank == 0)
+	{
+	  if (component_flag && qualifier_flag)
+	    nl = first_nl;
+	}
+      else
+	nl = first_nl;
+    }
 
   if (nml_read_obj (dtp, nl, 0, pprev_nl, nml_err_msg, nml_err_msg_size,
 		    clow, chigh) == FAILURE)
