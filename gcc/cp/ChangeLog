@@ -1,3 +1,9 @@
+2010-02-05  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42915
+	* typeck.c (get_template_parms_of_dependent_type): Try getting
+	the template parameters fromt the type itself first.
+
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/4926
