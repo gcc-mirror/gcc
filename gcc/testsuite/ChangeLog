@@ -1,3 +1,8 @@
+2010-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42870
+	* g++.dg/ext/dllexport3.C: New.
+
 2010-02-05  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* gcc.dg/format/ms-format3.c: New test for specific MS types.

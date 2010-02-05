@@ -1,3 +1,9 @@
+2010-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42870
+	* config/i386/cygming.h (ASM_OUTPUT_DEF_FROM_DECLS): Call
+	i386_pe_maybe_record_exported_symbol.
+
 2010-02-05  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/42924
