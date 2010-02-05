@@ -1,3 +1,8 @@
+2010-02-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Invert check
+	for rs6000_gen_cell_microcode.
+
 2010-02-04  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/42952

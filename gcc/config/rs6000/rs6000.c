@@ -2382,10 +2382,10 @@ rs6000_override_options (const char *default_cpu)
     rs6000_gen_cell_microcode = !(rs6000_cpu == PROCESSOR_CELL
                                   && !optimize_size);
 
-  /* If we are optimizing big endian systems for space, use the load/store
-     multiple and string instructions unless we are not generating
-     Cell microcode.  */
-  if (BYTES_BIG_ENDIAN && optimize_size && !rs6000_gen_cell_microcode)
+  /* If we are optimizing big endian systems for space and it's OK to
+     use instructions that would be microcoded on the Cell, use the
+     load/store multiple and string instructions.  */
+  if (BYTES_BIG_ENDIAN && optimize_size && rs6000_gen_cell_microcode)
     target_flags |= ~target_flags_explicit & (MASK_MULTIPLE | MASK_STRING);
 
   /* Don't allow -mmultiple or -mstring on little endian systems
