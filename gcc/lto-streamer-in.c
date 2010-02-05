@@ -1515,12 +1515,15 @@ get_resolution (struct data_in *data_in, unsigned index)
   if (data_in->globals_resolution)
     {
       ld_plugin_symbol_resolution_t ret;
-      gcc_assert (index < VEC_length (ld_plugin_symbol_resolution_t,
-				      data_in->globals_resolution));
+      /* We can have references to not emitted functions in
+	 DECL_FUNCTION_PERSONALITY at least.  So we can and have
+	 to indeed return LDPR_UNKNOWN in some cases.   */
+      if (VEC_length (ld_plugin_symbol_resolution_t,
+		      data_in->globals_resolution) <= index)
+	return LDPR_UNKNOWN;
       ret = VEC_index (ld_plugin_symbol_resolution_t,
 		       data_in->globals_resolution,
 		       index);
-      gcc_assert (ret != LDPR_UNKNOWN);
       return ret;
     }
   else
