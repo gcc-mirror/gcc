@@ -1,3 +1,15 @@
+2010-02-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (get_symbol_constant_value): Strip all
+	conversions.
+	(fold_const_aggregate_ref): Likewise.
+	(ccp_fold_stmt): Substitute loads.
+	(maybe_fold_reference): Verify types before substituting.
+	Unshare properly.
+	(fold_gimple_assign): Unshare properly.
+	(fold_stmt_1): Insert conversion if necessary before replacing
+	the RHS.
+
 2010-02-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Invert check
