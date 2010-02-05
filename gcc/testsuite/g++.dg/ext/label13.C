@@ -5,13 +5,15 @@
 int i;
 struct C
 {
-  C()
-  {
-    static void *labelref = &&label;
-    goto *labelref;
-  label: i = 1;
-  }
+  C();
 };
+
+C::C()
+{
+  static void *labelref = &&label;
+  goto *labelref;
+ label: i = 1;
+}
 
 int main()
 {
