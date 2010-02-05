@@ -1106,9 +1106,13 @@ get_template_parms_of_dependent_type (tree t)
 {
   tree tinfo = NULL_TREE, tparms = NULL_TREE;
 
+  /* First, try the obvious case of getting the
+     template info from T itself.  */
+  if ((tinfo = get_template_info (t)))
+    ;
   /* If T1 is a typedef or whatever has a template info associated
      to its context, get the template parameters from that context.  */
-  if (typedef_variant_p (t)
+  else if (typedef_variant_p (t)
       && DECL_CONTEXT (TYPE_NAME (t))
       && !NAMESPACE_SCOPE_P (TYPE_NAME (t)))
     tinfo = get_template_info (DECL_CONTEXT (TYPE_NAME (t)));
