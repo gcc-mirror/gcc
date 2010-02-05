@@ -1,3 +1,8 @@
+2010-02-05  Ozkan Sezer  <sezeroz@gmail.com>
+
+	* config/i386/msformat-c.c (ms_printf_length_specs): Set the
+	scalar_identity_flag for the size_t/ptrdiff_t %Id and %Iu specs.
+
 2010-02-05  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42762
