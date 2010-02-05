@@ -1,17 +1,17 @@
 # This file is distributed under the same license as the gcc package.
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5-b20091203\n"
+"Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2009-12-04 22:41+0100\n"
+"PO-Revision-Date: 2010-02-05 21:39+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -435,9 +435,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ogiltigt prefix \"0b\" på flyttalskonstant"
 
 #: expr.c:339
-#, fuzzy
 msgid "no digits in hexadecimal floating constant"
-msgstr "användning av hexadecimal flyttalskonstant enligt C99"
+msgstr "inga siffror i hexadecimal flyttalskonstant"
 
 #: expr.c:343
 msgid "use of C99 hexadecimal floating constant"
