@@ -40,7 +40,7 @@ static format_length_info ms_printf_length_specs[] =
   { "l", FMT_LEN_l, STD_C89, NULL, FMT_LEN_none, STD_C89, 0 },
   { "I32", FMT_LEN_l, STD_EXT, NULL, FMT_LEN_none, STD_C89, 1 },
   { "I64", FMT_LEN_ll, STD_EXT, NULL, FMT_LEN_none, STD_C89, 1 },
-  { "I", FMT_LEN_L, STD_EXT, NULL, FMT_LEN_none, STD_C89, 0 },
+  { "I", FMT_LEN_L, STD_EXT, NULL, FMT_LEN_none, STD_C89, 1 },
   { NULL, FMT_LEN_none, STD_C89, NULL, FMT_LEN_none, STD_C89, 0 }
 };
 
