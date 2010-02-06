@@ -1104,7 +1104,7 @@ GLIBCXX_3.4.14 {
     _ZNSsC1EOSs;
     _ZNSbIwSt11char_traitsIwESaIwEEC1EOS2_;
     _ZNSsaSEOSs;
-    _ZNSbIwSt11char_traitsIwESaIwEEC1EOS2_;
+    _ZNSbIwSt11char_traitsIwESaIwEEaSEOS2_;
     _ZNSs6assignEOSs;
     _ZNSbIwSt11char_traitsIwESaIwEE6assignEOS2_;
 
