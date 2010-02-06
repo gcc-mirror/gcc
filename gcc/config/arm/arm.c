@@ -1639,8 +1639,12 @@ arm_override_options (void)
 	  break;
 	}
     }
+
   if (!arm_fpu_desc)
-    error ("invalid floating point option: -mfpu=%s", target_fpu_name);
+    {
+      error ("invalid floating point option: -mfpu=%s", target_fpu_name);
+      return;
+    }
 
   switch (arm_fpu_desc->model)
     {
