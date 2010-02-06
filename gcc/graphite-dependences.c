@@ -216,11 +216,16 @@ dr_equality_constraints (graphite_dim_t dim,
   return res;
 }
 
-/* Builds scheduling equality constraints.  */
+/* Builds scheduling inequality constraints: when DIRECTION is
+   1 builds a GE constraint,
+   0 builds an EQ constraint,
+   -1 builds a LE constraint.  */
 
 static ppl_Pointset_Powerset_C_Polyhedron_t
-build_pairwise_scheduling_equality (graphite_dim_t dim,
-		                    graphite_dim_t pos, graphite_dim_t offset)
+build_pairwise_scheduling (graphite_dim_t dim,
+			   graphite_dim_t pos,
+			   graphite_dim_t offset,
+			   int direction)
 {
   ppl_Pointset_Powerset_C_Polyhedron_t res;
   ppl_Polyhedron_t equalities;
@@ -228,36 +233,26 @@ build_pairwise_scheduling_equality (graphite_dim_t dim,
 
   ppl_new_C_Polyhedron_from_space_dimension (&equalities, dim, 0);
 
-  cstr = ppl_build_relation (dim, pos, pos + offset, 0,
-			     PPL_CONSTRAINT_TYPE_EQUAL);
-  ppl_Polyhedron_add_constraint (equalities, cstr);
-  ppl_delete_Constraint (cstr);
+  switch (direction)
+    {
+    case -1:
+      cstr = ppl_build_relation (dim, pos, pos + offset, 1,
+				 PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
+      break;
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&res, equalities);
-  ppl_delete_Polyhedron (equalities);
-  return res;
-}
+    case 0:
+      cstr = ppl_build_relation (dim, pos, pos + offset, 0,
+				 PPL_CONSTRAINT_TYPE_EQUAL);
+      break;
 
-/* Builds scheduling inequality constraints.  */
+    case 1:
+      cstr = ppl_build_relation (dim, pos, pos + offset, -1,
+				 PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
+      break;
 
-static ppl_Pointset_Powerset_C_Polyhedron_t
-build_pairwise_scheduling_inequality (graphite_dim_t dim,
-				      graphite_dim_t pos,
-				      graphite_dim_t offset,
-				      bool direction)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t res;
-  ppl_Polyhedron_t equalities;
-  ppl_Constraint_t cstr;
-
-  ppl_new_C_Polyhedron_from_space_dimension (&equalities, dim, 0);
-
-  if (direction)
-    cstr = ppl_build_relation (dim, pos, pos + offset, -1,
-			       PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-  else
-    cstr = ppl_build_relation (dim, pos, pos + offset, 1,
-			       PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
+    default:
+      gcc_unreachable ();
+    }
 
   ppl_Polyhedron_add_constraint (equalities, cstr);
   ppl_delete_Constraint (cstr);
@@ -274,13 +269,12 @@ static bool
 lexicographically_gt_p (ppl_Pointset_Powerset_C_Polyhedron_t res,
 			graphite_dim_t dim,
 			graphite_dim_t offset,
-			bool direction, graphite_dim_t i)
+			int direction, graphite_dim_t i)
 {
   ppl_Pointset_Powerset_C_Polyhedron_t ineq;
   bool empty_p;
 
-  ineq = build_pairwise_scheduling_inequality (dim, i, offset,
-					       direction);
+  ineq = build_pairwise_scheduling (dim, i, offset, direction);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (ineq, res);
   empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (ineq);
   if (!empty_p)
@@ -298,7 +292,7 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
 				       graphite_dim_t dim,
 				       graphite_dim_t tdim1,
 				       graphite_dim_t offset,
-				       bool direction)
+				       int direction)
 {
   graphite_dim_t i;
 
@@ -309,7 +303,7 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
     {
       ppl_Pointset_Powerset_C_Polyhedron_t sceq;
 
-      sceq = build_pairwise_scheduling_equality (dim, i, offset);
+      sceq = build_pairwise_scheduling (dim, i, offset, 0);
       ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, sceq);
       ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
 
@@ -341,7 +335,7 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
 		         ppl_Pointset_Powerset_C_Polyhedron_t d2,
 		         poly_dr_p pdr1, poly_dr_p pdr2,
 	                 ppl_Polyhedron_t s1, ppl_Polyhedron_t s2,
-		         bool direction,
+		         int direction,
 		         bool original_scattering_p)
 {
   scop_p scop = PBB_SCOP (pbb1);
@@ -419,7 +413,7 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
 		       ppl_Pointset_Powerset_C_Polyhedron_t d2,
 		       poly_dr_p pdr1, poly_dr_p pdr2,
 	               ppl_Polyhedron_t s1, ppl_Polyhedron_t s2,
-		       bool direction,
+		       int direction,
 		       bool original_scattering_p)
 {
   PTR *x = NULL;
@@ -470,7 +464,7 @@ pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
     return NULL;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-				true, true);
+				1, true);
   if (pddr_is_empty (pddr))
     return NULL;
 
@@ -497,7 +491,7 @@ pddr_transformed_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
     return NULL;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
-				true, false);
+				1, false);
   if (pddr_is_empty (pddr))
     return NULL;
 
@@ -585,7 +579,7 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, po);
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
-				false, false);
+				-1, false);
   pt = PDDR_DDP (pddr);
 
   /* Extend PO and PT to have the same dimensions.  */
@@ -755,14 +749,14 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
     return false;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-				true, false);
+				1, false);
 
   if (pddr_is_empty (pddr))
     return false;
 
   po = PDDR_DDP (pddr);
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &dim);
-  eqpp = build_pairwise_scheduling_inequality (dim, level, tdim1 + ddim1, 1);
+  eqpp = build_pairwise_scheduling (dim, level, tdim1 + ddim1, 1);
 
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (eqpp, po);
   empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (eqpp);

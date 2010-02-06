@@ -1,5 +1,18 @@
 2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (build_pairwise_scheduling_equality): Removed.
+	(build_pairwise_scheduling_inequality): Renamed build_pairwise_scheduling.
+	(lexicographically_gt_p): Change type of direction to int.
+	(build_lexicographically_gt_constraint): Same.
+	(dependence_polyhedron_1): Same.
+	(dependence_polyhedron): Same.
+	(pddr_original_scattering): Use integers for direction.
+	(pddr_transformed_scattering): Same.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+
+2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (build_pairwise_constraint): Renamed
 	ppl_build_relation.  Moved...
 	(dr_equality_constraints): Use ppl_build_relation.
