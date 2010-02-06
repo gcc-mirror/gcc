@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- internal _Meta class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2009  Free Software Foundation, Inc.
+// 2006, 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -419,128 +419,128 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #undef _DEFINE_EXPR_BINARY_OPERATOR
 
-#define _DEFINE_EXPR_UNARY_FUNCTION(_Name)                               \
+#define _DEFINE_EXPR_UNARY_FUNCTION(_Name, _UName)                       \
   template<class _Dom>                                                   \
-    inline _Expr<_UnClos<__##_Name, _Expr, _Dom>,                        \
+    inline _Expr<_UnClos<_UName, _Expr, _Dom>,                           \
                  typename _Dom::value_type>                              \
     _Name(const _Expr<_Dom, typename _Dom::value_type>& __e)             \
     {                                                                    \
       typedef typename _Dom::value_type _Tp;                             \
-      typedef _UnClos<__##_Name, _Expr, _Dom> _Closure;                  \
+      typedef _UnClos<_UName, _Expr, _Dom> _Closure;                     \
       return _Expr<_Closure, _Tp>(_Closure(__e()));                      \
     }                                                                    \
                                                                          \
   template<typename _Tp>                                                 \
-    inline _Expr<_UnClos<__##_Name, _ValArray, _Tp>, _Tp>                \
+    inline _Expr<_UnClos<_UName, _ValArray, _Tp>, _Tp>                   \
     _Name(const valarray<_Tp>& __v)                                      \
     {                                                                    \
-      typedef _UnClos<__##_Name, _ValArray, _Tp> _Closure;               \
+      typedef _UnClos<_UName, _ValArray, _Tp> _Closure;                  \
       return _Expr<_Closure, _Tp>(_Closure(__v));                        \
     }
 
-    _DEFINE_EXPR_UNARY_FUNCTION(abs)
-    _DEFINE_EXPR_UNARY_FUNCTION(cos)
-    _DEFINE_EXPR_UNARY_FUNCTION(acos)
-    _DEFINE_EXPR_UNARY_FUNCTION(cosh)
-    _DEFINE_EXPR_UNARY_FUNCTION(sin)
-    _DEFINE_EXPR_UNARY_FUNCTION(asin)
-    _DEFINE_EXPR_UNARY_FUNCTION(sinh)
-    _DEFINE_EXPR_UNARY_FUNCTION(tan)
-    _DEFINE_EXPR_UNARY_FUNCTION(tanh)
-    _DEFINE_EXPR_UNARY_FUNCTION(atan)
-    _DEFINE_EXPR_UNARY_FUNCTION(exp)
-    _DEFINE_EXPR_UNARY_FUNCTION(log)
-    _DEFINE_EXPR_UNARY_FUNCTION(log10)
-    _DEFINE_EXPR_UNARY_FUNCTION(sqrt)
+    _DEFINE_EXPR_UNARY_FUNCTION(abs, _Abs)
+    _DEFINE_EXPR_UNARY_FUNCTION(cos, _Cos)
+    _DEFINE_EXPR_UNARY_FUNCTION(acos, _Acos)
+    _DEFINE_EXPR_UNARY_FUNCTION(cosh, _Cosh)
+    _DEFINE_EXPR_UNARY_FUNCTION(sin, _Sin)
+    _DEFINE_EXPR_UNARY_FUNCTION(asin, _Asin)
+    _DEFINE_EXPR_UNARY_FUNCTION(sinh, _Sinh)
+    _DEFINE_EXPR_UNARY_FUNCTION(tan, _Tan)
+    _DEFINE_EXPR_UNARY_FUNCTION(tanh, _Tanh)
+    _DEFINE_EXPR_UNARY_FUNCTION(atan, _Atan)
+    _DEFINE_EXPR_UNARY_FUNCTION(exp, _Exp)
+    _DEFINE_EXPR_UNARY_FUNCTION(log, _Log)
+    _DEFINE_EXPR_UNARY_FUNCTION(log10, _Log10)
+    _DEFINE_EXPR_UNARY_FUNCTION(sqrt, _Sqrt)
 
 #undef _DEFINE_EXPR_UNARY_FUNCTION
 
-#define _DEFINE_EXPR_BINARY_FUNCTION(_Fun)                             \
+#define _DEFINE_EXPR_BINARY_FUNCTION(_Fun, _UFun)		       \
   template<class _Dom1, class _Dom2>                                   \
-    inline _Expr<_BinClos<__##_Fun, _Expr, _Expr, _Dom1, _Dom2>,       \
+    inline _Expr<_BinClos<_UFun, _Expr, _Expr, _Dom1, _Dom2>,          \
 		 typename _Dom1::value_type>                           \
     _Fun(const _Expr<_Dom1, typename _Dom1::value_type>& __e1,         \
-	  const _Expr<_Dom2, typename _Dom2::value_type>& __e2)        \
+	 const _Expr<_Dom2, typename _Dom2::value_type>& __e2)	       \
     {                                                                  \
       typedef typename _Dom1::value_type _Tp;                          \
-      typedef _BinClos<__##_Fun, _Expr, _Expr, _Dom1, _Dom2> _Closure; \
+      typedef _BinClos<_UFun, _Expr, _Expr, _Dom1, _Dom2> _Closure;    \
       return _Expr<_Closure, _Tp>(_Closure(__e1(), __e2()));           \
     }                                                                  \
                                                                        \
   template<class _Dom>                                                 \
-    inline _Expr<_BinClos<__##_Fun, _Expr, _ValArray, _Dom,            \
+    inline _Expr<_BinClos<_UFun, _Expr, _ValArray, _Dom,               \
 			  typename _Dom::value_type>,                  \
 		 typename _Dom::value_type>                            \
     _Fun(const _Expr<_Dom, typename _Dom::value_type>& __e,            \
 	 const valarray<typename _Dom::value_type>& __v)               \
     {                                                                  \
       typedef typename _Dom::value_type _Tp;                           \
-      typedef _BinClos<__##_Fun, _Expr, _ValArray, _Dom, _Tp> _Closure; \
+      typedef _BinClos<_UFun, _Expr, _ValArray, _Dom, _Tp> _Closure;   \
       return _Expr<_Closure, _Tp>(_Closure(__e(), __v));               \
     }                                                                  \
                                                                        \
   template<class _Dom>                                                 \
-    inline _Expr<_BinClos<__##_Fun, _ValArray, _Expr,                  \
+    inline _Expr<_BinClos<_UFun, _ValArray, _Expr,                     \
 			  typename _Dom::value_type, _Dom>,            \
 		 typename _Dom::value_type>                            \
     _Fun(const valarray<typename _Dom::valarray>& __v,                 \
 	 const _Expr<_Dom, typename _Dom::value_type>& __e)            \
     {                                                                  \
       typedef typename _Dom::value_type _Tp;                           \
-      typedef _BinClos<__##_Fun, _ValArray, _Expr, _Tp, _Dom> _Closure; \
+      typedef _BinClos<_UFun, _ValArray, _Expr, _Tp, _Dom> _Closure;   \
       return _Expr<_Closure, _Tp>(_Closure(__v, __e()));               \
     }                                                                  \
                                                                        \
   template<class _Dom>                                                 \
-    inline _Expr<_BinClos<__##_Fun, _Expr, _Constant, _Dom,            \
+    inline _Expr<_BinClos<_UFun, _Expr, _Constant, _Dom,               \
 			  typename _Dom::value_type>,                  \
 		 typename _Dom::value_type>                            \
     _Fun(const _Expr<_Dom, typename _Dom::value_type>& __e,            \
 	 const typename _Dom::value_type& __t)                         \
     {                                                                  \
       typedef typename _Dom::value_type _Tp;                           \
-      typedef _BinClos<__##_Fun, _Expr, _Constant, _Dom, _Tp> _Closure;\
+      typedef _BinClos<_UFun, _Expr, _Constant, _Dom, _Tp> _Closure;   \
       return _Expr<_Closure, _Tp>(_Closure(__e(), __t));               \
     }                                                                  \
                                                                        \
   template<class _Dom>                                                 \
-    inline _Expr<_BinClos<__##_Fun, _Constant, _Expr,                  \
+    inline _Expr<_BinClos<_UFun, _Constant, _Expr,                     \
 			  typename _Dom::value_type, _Dom>,            \
 		 typename _Dom::value_type>                            \
     _Fun(const typename _Dom::value_type& __t,                         \
 	 const _Expr<_Dom, typename _Dom::value_type>& __e)            \
     {                                                                  \
       typedef typename _Dom::value_type _Tp;                           \
-      typedef _BinClos<__##_Fun, _Constant, _Expr, _Tp, _Dom> _Closure; \
+      typedef _BinClos<_UFun, _Constant, _Expr, _Tp, _Dom> _Closure;   \
       return _Expr<_Closure, _Tp>(_Closure(__t, __e()));               \
     }                                                                  \
                                                                        \
   template<typename _Tp>                                               \
-    inline _Expr<_BinClos<__##_Fun, _ValArray, _ValArray, _Tp, _Tp>, _Tp> \
+    inline _Expr<_BinClos<_UFun, _ValArray, _ValArray, _Tp, _Tp>, _Tp> \
     _Fun(const valarray<_Tp>& __v, const valarray<_Tp>& __w)           \
     {                                                                  \
-      typedef _BinClos<__##_Fun, _ValArray, _ValArray, _Tp, _Tp> _Closure; \
+      typedef _BinClos<_UFun, _ValArray, _ValArray, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__v, __w));                 \
     }                                                                  \
                                                                        \
   template<typename _Tp>                                               \
-    inline _Expr<_BinClos<__##_Fun, _ValArray, _Constant, _Tp, _Tp>, _Tp> \
+    inline _Expr<_BinClos<_UFun, _ValArray, _Constant, _Tp, _Tp>, _Tp> \
     _Fun(const valarray<_Tp>& __v, const _Tp& __t)                     \
     {                                                                  \
-      typedef _BinClos<__##_Fun, _ValArray, _Constant, _Tp, _Tp> _Closure; \
+      typedef _BinClos<_UFun, _ValArray, _Constant, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__v, __t));                 \
     }                                                                  \
 								       \
   template<typename _Tp>                                               \
-    inline _Expr<_BinClos<__##_Fun, _Constant, _ValArray, _Tp, _Tp>, _Tp> \
+    inline _Expr<_BinClos<_UFun, _Constant, _ValArray, _Tp, _Tp>, _Tp> \
     _Fun(const _Tp& __t, const valarray<_Tp>& __v)                     \
     {                                                                  \
-      typedef _BinClos<__##_Fun, _Constant, _ValArray, _Tp, _Tp> _Closure; \
+      typedef _BinClos<_UFun, _Constant, _ValArray, _Tp, _Tp> _Closure;\
       return _Expr<_Closure, _Tp>(_Closure(__t, __v));                 \
     }
 
-_DEFINE_EXPR_BINARY_FUNCTION(atan2)
-_DEFINE_EXPR_BINARY_FUNCTION(pow)
+_DEFINE_EXPR_BINARY_FUNCTION(atan2, _Atan2)
+_DEFINE_EXPR_BINARY_FUNCTION(pow, _Pow)
 
 #undef _DEFINE_EXPR_BINARY_FUNCTION
 
