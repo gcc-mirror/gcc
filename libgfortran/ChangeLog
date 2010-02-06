@@ -1,3 +1,9 @@
+2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran
+	* io/transfer.c (read_sf): Handle EOR and EOF conditions for
+	ADVANCE="no" with PAD="yes" or PAD="no".
+
 2010-02-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/42901
