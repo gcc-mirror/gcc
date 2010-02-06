@@ -1,7 +1,7 @@
 // The template and inlines for the -*- C++ -*- internal _Meta class.
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2009  Free Software Foundation, Inc.
+// 2006, 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,98 +59,98 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   //    2) efficiency -- object functions can be easily inlined
   //    3) be Koenig-lookup-friendly
 
-  struct __abs
+  struct _Abs
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return abs(__t); }
   };
 
-  struct __cos
+  struct _Cos
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return cos(__t); }
   };
 
-  struct __acos
+  struct _Acos
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return acos(__t); }
   };
 
-  struct __cosh
+  struct _Cosh
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return cosh(__t); }
   };
 
-  struct __sin
+  struct _Sin
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return sin(__t); }
   };
 
-  struct __asin
+  struct _Asin
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return asin(__t); }
   };
 
-  struct __sinh
+  struct _Sinh
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return sinh(__t); }
   };
 
-  struct __tan
+  struct _Tan
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return tan(__t); }
   };
 
-  struct __atan
+  struct _Atan
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return atan(__t); }
   };
 
-  struct __tanh
+  struct _Tanh
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return tanh(__t); }
   };
 
-  struct __exp
+  struct _Exp
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return exp(__t); }
   };
 
-  struct __log
+  struct _Log
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return log(__t); }
   };
 
-  struct __log10
+  struct _Log10
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
       { return log10(__t); }
   };
 
-  struct __sqrt
+  struct _Sqrt
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __t) const
@@ -269,7 +269,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   struct __logical_not
   {
     template<typename _Tp>
-      bool operator()(const _Tp& __x) const { return !__x; }
+      bool operator()(const _Tp& __x) const
+      { return !__x; }
   };
 
   struct __equal_to
@@ -315,14 +316,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   };
 
   // The few binary functions we miss.
-  struct __atan2
+  struct _Atan2
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __x, const _Tp& __y) const
       { return atan2(__x, __y); }
   };
 
-  struct __pow
+  struct _Pow
   {
     template<typename _Tp>
       _Tp operator()(const _Tp& __x, const _Tp& __y) const

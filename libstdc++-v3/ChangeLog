@@ -1,3 +1,10 @@
+2010-02-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/27340
+	* include/bits/valarray_before.h: Uglify the structs wrapping
+	cmath functions differently, eg, _Cos instead of __cos.
+	* include/bits/valarray_after.h: Adjust.
+
 2010-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/future (swap(packaged_task<>&, packaged_task<>&)): Fix
