@@ -1,3 +1,14 @@
+2010-01-22  Ramakrishna Upadrasta <Ramakrishna.Upadrasta@inria.fr>
+
+	* graphite-scop-detection.c (dot_all_scops): Make calls to dot run in
+	  background.
+
+2010-01-22  Ramakrishna Upadrasta <Ramakrishna.Upadrasta@inria.fr>
+
+	* common.opt: Add -fgraphite-cloog-opts.
+	* graphite-clast-to-gimple.c (set_cloog_options): Same.
+	* opts.c (decode_options): Same.
+
 2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/gcc.dg/graphite/id-17.c: New.
