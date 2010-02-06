@@ -1,3 +1,9 @@
+2010-02-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/42957
+	* arm.c (arm_override_options): Just return if the user has specified
+	an invalid fpu name.
+
 2010-02-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42870
