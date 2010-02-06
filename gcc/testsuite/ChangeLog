@@ -1,3 +1,7 @@
+2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/read_no_eor.f90: New test.
+
 2010-02-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/ext/label13.C: Move constructor body out of class.
