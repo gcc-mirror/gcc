@@ -344,6 +344,8 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
    | S1 and S2 the subscripts
    | G the global parameters.
 
+   D1 and D2 are the iteration domains of PDR1 and PDR2.
+
    SCAT1 and SCAT2 are the scattering polyhedra for PDR1 and PDR2.
    When ORIGINAL_SCATTERING_P is true, then the scattering polyhedra
    SCAT1 and SCAT2 correspond to the original scattering of the
@@ -430,6 +432,8 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
    If possible use already cached information.
 
+   D1 and D2 are the iteration domains of PDR1 and PDR2.
+
    SCAT1 and SCAT2 are the scattering polyhedra for PDR1 and PDR2.
    When ORIGINAL_SCATTERING_P is true, then the scattering polyhedra
    SCAT1 and SCAT2 correspond to the original scattering of the
@@ -472,63 +476,37 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
   return res;
 }
 
-static bool
-poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2);
-
-/* Returns the PDDR corresponding to the original schedule, or NULL if
-   the dependence relation is empty or unknown (cannot judge dependency
-   under polyhedral model).  */
+/* Returns the Polyhedral Data Dependence Relation (PDDR) between PDR1
+   contained in PBB1 and PDR2 contained in PBB2.  When
+   ORIGINAL_SCATTERING_P is true, return the PDDR corresponding to the
+   original scattering, or NULL if the dependence relation is empty.
+   When ORIGINAL_SCATTERING_P is false, return the PDDR corresponding
+   to the transformed scattering.  */
 
 static poly_ddr_p
-pddr_original_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
-			  poly_dr_p pdr1, poly_dr_p pdr2)
+build_pddr (poly_bb_p pbb1, poly_bb_p pbb2, poly_dr_p pdr1, poly_dr_p pdr2,
+	    bool original_scattering_p)
 {
   poly_ddr_p pddr;
   ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
   ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
-  ppl_Polyhedron_t so1 = PBB_ORIGINAL_SCATTERING (pbb1);
-  ppl_Polyhedron_t so2 = PBB_ORIGINAL_SCATTERING (pbb2);
+  ppl_Polyhedron_t scat1 = original_scattering_p ?
+    PBB_ORIGINAL_SCATTERING (pbb1) : PBB_TRANSFORMED_SCATTERING (pbb1);
+  ppl_Polyhedron_t scat2 = original_scattering_p ?
+    PBB_ORIGINAL_SCATTERING (pbb2) : PBB_TRANSFORMED_SCATTERING (pbb2);
 
   if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
       || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
       || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
     return NULL;
 
-  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-				1, true);
+  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, scat1, scat2,
+				1, original_scattering_p);
   if (pddr_is_empty (pddr))
     return NULL;
 
   return pddr;
 }
-
-/* Returns the PDDR corresponding to the transformed schedule, or NULL if
-   the dependence relation is empty or unknown (cannot judge dependency
-   under polyhedral model).  */
-
-static poly_ddr_p
-pddr_transformed_scattering (poly_bb_p pbb1, poly_bb_p pbb2,
-			     poly_dr_p pdr1, poly_dr_p pdr2)
-{
-  poly_ddr_p pddr;
-  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
-  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
-  ppl_Polyhedron_t st1 = PBB_ORIGINAL_SCATTERING (pbb1);
-  ppl_Polyhedron_t st2 = PBB_ORIGINAL_SCATTERING (pbb2);
-
-  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
-      || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
-      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
-    return NULL;
-
-  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
-				1, false);
-  if (pddr_is_empty (pddr))
-    return NULL;
-
-  return pddr;
-}
-
 
 /* Return true when the data dependence relation between the data
    references PDR1 belonging to PBB1 and PDR2 is part of a
@@ -585,7 +563,7 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   if (reduction_dr_p (pbb1, pbb2, pdr1, pdr2))
     return true;
 
-  pddr = pddr_original_scattering (pbb1, pbb2, pdr1, pdr2);
+  pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, true);
   if (!pddr)
     return true;
 
@@ -833,7 +811,7 @@ dot_original_deps_stmt_1 (FILE *file, scop_p scop)
       {
 	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	    if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
+	    if (build_pddr (pbb1, pbb2, pdr1, pdr2, true))
 	      {
 		fprintf (file, "OS%d -> OS%d\n",
 			 pbb_index (pbb1), pbb_index (pbb2));
@@ -852,16 +830,18 @@ dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
+  poly_ddr_p pddr;
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       {
 	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	    if (pddr_transformed_scattering (pbb1, pbb2, pdr1, pdr2))
+	    if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, false)))
 	      {
 		fprintf (file, "TS%d -> TS%d\n",
 			 pbb_index (pbb1), pbb_index (pbb2));
+		free_poly_ddr (pddr);
 		goto done;
 	      }
       done:;
@@ -897,7 +877,7 @@ dot_original_deps (FILE *file, scop_p scop)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if (pddr_original_scattering (pbb1, pbb2, pdr1, pdr2))
+	  if (build_pddr (pbb1, pbb2, pdr1, pdr2, true))
 	    fprintf (file, "OS%d_D%d -> OS%d_D%d\n",
 		     pbb_index (pbb1), PDR_ID (pdr1),
 		     pbb_index (pbb2), PDR_ID (pdr2));
@@ -912,15 +892,19 @@ dot_transformed_deps (FILE *file, scop_p scop)
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
+  poly_ddr_p pddr;
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if (pddr_transformed_scattering (pbb1, pbb2, pdr1, pdr2))
-	    fprintf (file, "TS%d_D%d -> TS%d_D%d\n",
-		     pbb_index (pbb1), PDR_ID (pdr1),
-		     pbb_index (pbb2), PDR_ID (pdr2));
+	  if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, false)))
+	    {
+	      fprintf (file, "TS%d_D%d -> TS%d_D%d\n",
+		       pbb_index (pbb1), PDR_ID (pdr1),
+		       pbb_index (pbb2), PDR_ID (pdr2));
+	      free_poly_ddr (pddr);
+	    }
 }
 
 /* Pretty print to FILE all the data dependences of SCoP in DOT

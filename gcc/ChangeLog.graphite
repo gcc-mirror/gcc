@@ -1,5 +1,15 @@
 2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (pddr_original_scattering): Renamed build_pddr.
+	(pddr_transformed_scattering): Removed.
+	(graphite_legal_transform_dr): Use build_pddr.
+	(dot_original_deps_stmt_1): Same.
+	(dot_transformed_deps_stmt_1): Same.
+	(dot_original_deps): Same.
+	(dot_transformed_deps): Same.
+
+2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (lexicographically_gt_p): Add comments.
 	(build_lexicographically_gt_constraint): Same.
 	(dependence_polyhedron_1): Same.
