@@ -1497,7 +1497,7 @@ dot_all_scops (VEC (scop_p, heap) *scops)
   dot_all_scops_1 (stream, scops);
   fclose (stream);
 
-  x = system ("dotty /tmp/allscops.dot");
+  x = system ("dotty /tmp/allscops.dot &");
 #else
   dot_all_scops_1 (stderr, scops);
 #endif
@@ -1523,7 +1523,7 @@ dot_scop (scop_p scop)
 
     dot_all_scops_1 (stream, scops);
     fclose (stream);
-    x = system ("dotty /tmp/allscops.dot");
+    x = system ("dotty /tmp/allscops.dot &");
   }
 #else
   dot_all_scops_1 (stderr, scops);
