@@ -262,8 +262,13 @@ build_pairwise_scheduling (graphite_dim_t dim,
   return res;
 }
 
-/* Returns true when adding the lexicographical constraints at level I
-   to the RES dependence polyhedron returns an empty polyhedron.  */
+/* Returns true when adding to the RES dependence polyhedron the
+   lexicographical constraint: "DIM compared to DIM + OFFSET" returns
+   an empty polyhedron.  The comparison depends on DIRECTION as: if
+   DIRECTION is equal to -1, the first dimension DIM to be compared
+   comes before the second dimension DIM + OFFSET, equal to 0 when DIM
+   and DIM + OFFSET are equal, and DIRECTION is set to 1 when DIM
+   comes after DIM + OFFSET.  */
 
 static bool
 lexicographically_gt_p (ppl_Pointset_Powerset_C_Polyhedron_t res,
@@ -284,13 +289,21 @@ lexicographically_gt_p (ppl_Pointset_Powerset_C_Polyhedron_t res,
   return !empty_p;
 }
 
-/* Build the precedence constraints for the lexicographical comparison
-   of time vectors RES following the lexicographical order.  */
+/* Add to a non empty polyhedron RES the precedence constraints for
+   the lexicographical comparison of time vectors in RES following the
+   lexicographical order.  DIM is the dimension of the polyhedron RES.
+   TDIM is the number of loops common to the two statements that are
+   compared lexicographically, i.e. the number of loops containing
+   both statements.  OFFSET is the number of dimensions needed to
+   represent the first statement, i.e. dimT1 + dimI1 in the layout of
+   the RES polyhedron: T1|I1|T2|I2|S1|S2|G.  DIRECTION is equal to 1
+   when statement 1 is after statement 2, equal to -1 when statement 1
+   is before statement 2.  */
 
 static void
 build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res,
 				       graphite_dim_t dim,
-				       graphite_dim_t tdim1,
+				       graphite_dim_t tdim,
 				       graphite_dim_t offset,
 				       int direction)
 {
@@ -299,19 +312,21 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
   if (lexicographically_gt_p (*res, dim, offset, direction, 0))
     return;
 
-  for (i = 0; i < tdim1 - 1; i++)
+  for (i = 0; i < tdim - 1; i++)
     {
       ppl_Pointset_Powerset_C_Polyhedron_t sceq;
 
+      /* All the dimensions up to I are equal, ...  */
       sceq = build_pairwise_scheduling (dim, i, offset, 0);
       ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, sceq);
       ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
 
+      /* ... and at depth I+1 they are not equal anymore.  */
       if (lexicographically_gt_p (*res, dim, offset, direction, i + 1))
 	return;
     }
 
-  if (i == tdim1 - 1)
+  if (i == tdim - 1)
     {
       ppl_delete_Pointset_Powerset_C_Polyhedron (*res);
       ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (res, dim, 1);
@@ -327,14 +342,22 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
    | T1 and T2 the scattering dimensions for PDR1 and PDR2
    | I1 and I2 the iteration domains
    | S1 and S2 the subscripts
-   | G the global parameters.  */
+   | G the global parameters.
+
+   SCAT1 and SCAT2 are the scattering polyhedra for PDR1 and PDR2.
+   When ORIGINAL_SCATTERING_P is true, then the scattering polyhedra
+   SCAT1 and SCAT2 correspond to the original scattering of the
+   program, otherwise they correspond to the transformed scattering.
+
+   DIRECTION is equal to 1 when statement 1 is after statement 2,
+   equal to -1 when statement 1 is before statement 2.  */
 
 static poly_ddr_p
 dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
 		         ppl_Pointset_Powerset_C_Polyhedron_t d1,
 		         ppl_Pointset_Powerset_C_Polyhedron_t d2,
 		         poly_dr_p pdr1, poly_dr_p pdr2,
-	                 ppl_Polyhedron_t s1, ppl_Polyhedron_t s2,
+	                 ppl_Polyhedron_t scat1, ppl_Polyhedron_t scat2,
 		         int direction,
 		         bool original_scattering_p)
 {
@@ -361,8 +384,8 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
     (&context, SCOP_CONTEXT (scop));
   ppl_insert_dimensions_pointset (context, 0, dim - gdim);
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc1, s1);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc2, s2);
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc1, scat1);
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&sc2, scat2);
 
   id1 = map_into_dep_poly (dim, gdim, d1, ddim1, tdim1);
   id2 = map_into_dep_poly (dim, gdim, d2, ddim2, tdim1 + ddim1 + tdim2);
@@ -405,14 +428,22 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
 }
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
-   If possible use already cached information.  */
+   If possible use already cached information.
+
+   SCAT1 and SCAT2 are the scattering polyhedra for PDR1 and PDR2.
+   When ORIGINAL_SCATTERING_P is true, then the scattering polyhedra
+   SCAT1 and SCAT2 correspond to the original scattering of the
+   program, otherwise they correspond to the transformed scattering.
+
+   DIRECTION is equal to 1 when statement 1 is after statement 2,
+   equal to -1 when statement 1 is before statement 2.  */
 
 static poly_ddr_p
 dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
 		       ppl_Pointset_Powerset_C_Polyhedron_t d1,
 		       ppl_Pointset_Powerset_C_Polyhedron_t d2,
 		       poly_dr_p pdr1, poly_dr_p pdr2,
-	               ppl_Polyhedron_t s1, ppl_Polyhedron_t s2,
+	               ppl_Polyhedron_t scat1, ppl_Polyhedron_t scat2,
 		       int direction,
 		       bool original_scattering_p)
 {
@@ -433,7 +464,7 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
     }
 
   res = dependence_polyhedron_1 (pbb1, pbb2, d1, d2, pdr1, pdr2,
-                                 s1, s2, direction, original_scattering_p);
+                                 scat1, scat2, direction, original_scattering_p);
 
   if (original_scattering_p)
     *x = res;
