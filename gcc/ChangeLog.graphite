@@ -1,5 +1,16 @@
 2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* testsuite/gcc.dg/graphite/interchange-mvt.c: Un-XFAILed.
+	* testsuite/gcc.dg/graphite/scop-0.c: Fix spaces.
+	* testsuite/gfortran.dg/graphite/block-1.f90: Rewrite expected output.
+	* testsuite/gfortran.dg/graphite/block-2.f: Same.
+	* testsuite/gfortran.dg/graphite/block-3.f90: Same.
+	* testsuite/gfortran.dg/graphite/block-4.f90: Same.
+	* testsuite/gfortran.dg/graphite/interchange-1.f: Un-XFAILed.
+	* testsuite/gfortran.dg/graphite/interchange-3.f90: Un-XFAILed.
+
+2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (new_poly_ddr): Initialize PDDR_KIND and
 	PDDR_ORIGINAL_SCATTERING_P.
 	(pddr_is_empty): Rewritten.

@@ -52,6 +52,6 @@ main (void)
   return res != 199900000;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */ 
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
 
