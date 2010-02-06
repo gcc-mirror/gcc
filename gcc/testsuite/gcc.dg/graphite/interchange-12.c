@@ -1,8 +1,16 @@
-#define N 1000
+/* { dg-require-effective-target size32plus } */
 
-float A[N][N], B[N][N], C[N][N];
+#define DEBUG 0
+#if DEBUG
+#include <stdio.h>
+#endif
 
-void matmult ()
+#define N 200
+
+int A[N][N], B[N][N], C[N][N];
+
+static int __attribute__((noinline))
+matmult (void)
 {
   int i, j, k;
 
@@ -13,6 +21,30 @@ void matmult ()
         for (k = 0; k < N; k++)
           A[i][j] += B[i][k] * C[k][j];
       }
+
+  return A[0][0] + A[N-1][N-1];
+}
+
+int
+main (void)
+{
+  int i, j, res;
+
+  for (i = 0; i < N; i++)
+    for (j = 0; j < N; j++)
+      {
+	A[i][j] = 0;
+	B[i][j] = i - j;
+	C[i][j] = i + j;
+      }
+
+  res = matmult ();
+
+#if DEBUG
+  fprintf (stderr, "res = %d \n", res);
+#endif
+
+  return res != 2626800;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */

@@ -1,11 +1,16 @@
-#define N 1000
+#define DEBUG 0
+#if DEBUG
+#include <stdio.h>
+#endif
 
-int toto()
+#define N 1000
+int a[N];
+
+static int __attribute__((noinline))
+foo (void)
 {
   int j;
   int i;
-  int a[N];
-  int b[N];
 
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
@@ -16,7 +21,18 @@ int toto()
 
 main()
 {
-  return toto();
+  int i, res;
+
+  for (i = 0; i < N; i++)
+    a[i] = i;
+
+  res = foo ();
+
+#if DEBUG
+  fprintf (stderr, "res = %d \n", res);
+#endif
+
+  return res != 1999;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" } } */
