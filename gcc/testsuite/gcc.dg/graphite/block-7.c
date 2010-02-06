@@ -44,11 +44,8 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  /* Avoid runtime check for this testcase, as it is miscompiled by
-     Graphite for the moment.  */
-  return 0;
   return res != 529340000;
 }
 
-/* { dg-final { scan-tree-dump-times "SCoP will be loop blocked" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */

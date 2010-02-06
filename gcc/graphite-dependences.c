@@ -412,58 +412,56 @@ build_pairwise_scheduling (graphite_dim_t dim,
   return res;
 }
 
-/* Add to a non empty polyhedron RES the precedence constraints for
-   the lexicographical comparison of time vectors in RES following the
-   lexicographical order.  DIM is the dimension of the polyhedron RES.
+/* Add to a non empty polyhedron BAG the precedence constraints for
+   the lexicographical comparison of time vectors in BAG following the
+   lexicographical order.  DIM is the dimension of the polyhedron BAG.
    TDIM is the number of loops common to the two statements that are
    compared lexicographically, i.e. the number of loops containing
    both statements.  OFFSET is the number of dimensions needed to
    represent the first statement, i.e. dimT1 + dimI1 in the layout of
-   the RES polyhedron: T1|I1|T2|I2|S1|S2|G.  When DIRECTION is set to
+   the BAG polyhedron: T1|I1|T2|I2|S1|S2|G.  When DIRECTION is set to
    1, compute the direct dependence from PDR1 to PDR2, and when
    DIRECTION is -1, compute the reversed dependence relation, from
    PDR2 to PDR1.  */
 
-static void
-build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res,
+static ppl_Pointset_Powerset_C_Polyhedron_t
+build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
 				  graphite_dim_t dim,
 				  graphite_dim_t tdim,
 				  graphite_dim_t offset,
 				  int direction)
 {
   graphite_dim_t i;
+  ppl_Pointset_Powerset_C_Polyhedron_t res, lex;
 
-  for (i = 0; i < tdim - 1; i+=2)
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&res, dim, 1);
+
+  lex = build_pairwise_scheduling (dim, 0, offset, direction);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);
+
+  if (!ppl_Pointset_Powerset_C_Polyhedron_is_empty (lex))
+    ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (res, lex);
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (lex);
+
+  for (i = 0; i < tdim - 1; i++)
     {
-      ppl_Pointset_Powerset_C_Polyhedron_t ineq;
-      bool empty_p;
+      ppl_Pointset_Powerset_C_Polyhedron_t sceq;
 
-      /* Identify the static schedule dimensions.  */
-      ineq = build_pairwise_scheduling (dim, i, offset, 0);
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (ineq, *res);
-      empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (ineq);
+      sceq = build_pairwise_scheduling (dim, i, offset, 0);
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (bag, sceq);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
 
-      if (empty_p)
-	{
-	  /* Add the lexicographical dynamic schedule dimension.  */
-	  if (i > 0)
-	    ineq = build_pairwise_scheduling (dim, i - 1, offset, direction);
+      lex = build_pairwise_scheduling (dim, i + 1, offset, direction);
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);
 
-	  return;
-	}
+      if (!ppl_Pointset_Powerset_C_Polyhedron_is_empty (lex))
+	ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (res, lex);
 
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, ineq);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (ineq);
-
-      /* Identify the dynamic schedule dimensions.  */
-      ineq = build_pairwise_scheduling (dim, i + 1, offset, 0);
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, ineq);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (ineq);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (lex);
     }
 
-  /* There is no dependence.  */
-  ppl_delete_Pointset_Powerset_C_Polyhedron (*res);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (res, dim, 1);
+  return res;
 }
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
@@ -553,8 +551,13 @@ dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_delete_Pointset_Powerset_C_Polyhedron (dreq);
 
   if (!ppl_Pointset_Powerset_C_Polyhedron_is_empty (res))
-    build_lexicographical_constraint (&res, dim, MIN (tdim1, tdim2),
-				      tdim1 + ddim1, direction);
+    {
+      ppl_Pointset_Powerset_C_Polyhedron_t lex =
+	build_lexicographical_constraint (res, dim, MIN (tdim1, tdim2),
+					  tdim1 + ddim1, direction);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (res);
+      res = lex;
+    }
 
   return res;
 }
