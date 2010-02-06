@@ -1,5 +1,12 @@
 2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* testsuite/gcc.dg/graphite/id-17.c: New.
+	* testsuite/gcc.dg/graphite/pr41888.c: New.
+	* testsuite/gcc.dg/graphite/scop-22.c: New.
+	* testsuite/gfortran.dg/graphite/pr40982.f90: New.
+
+2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c: Clarify comments.
 	(build_pddr): Add an extra parameter direction.
 	(graphite_legal_transform_dr): Use build_pddr.
