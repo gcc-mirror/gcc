@@ -1,8 +1,11 @@
 /* { dg-require-effective-target size32plus } */
 
-#define MAX 8192
+#define DEBUG 0
+#if DEBUG
+#include <stdio.h>
+#endif
 
-void bar (void);
+#define MAX 100
 
 int main()
 {
@@ -10,8 +13,6 @@ int main()
   int sum = 0;
   int A[MAX * MAX];
   int B[MAX * MAX];
-
-  bar ();
 
   for (i = 0; i < MAX; i++)
     for (j = 0; j < MAX; j++)
@@ -24,13 +25,15 @@ int main()
     for (j = 0; j < MAX; j++)
       A[i*MAX + j] += B[j*MAX + i];
 
-  bar ();
-
   for(i = 0; i < MAX; i++)
     for(j = 0; j < MAX; j++)
       sum += A[i*MAX + j];
 
-  return sum;
+#if DEBUG
+  fprintf (stderr, "sum = %d \n", sum);
+#endif
+
+  return sum != 990000;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 2 "graphite" { xfail *-*-* } } } */ 

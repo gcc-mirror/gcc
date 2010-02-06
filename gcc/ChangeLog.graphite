@@ -1,3 +1,31 @@
+2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/g++.dg/graphite/graphite.exp: Rewritten.
+	* testsuite/gcc.dg/graphite/graphite.exp: Rewritten.
+	* testsuite/gfortran.dg/graphite/graphite.exp: Rewritten.
+	* gcc/testsuite/gcc.dg/graphite/block-0.c: Added runtime test.
+	* testsuite/gcc.dg/graphite/block-1.c: Same.
+	* testsuite/gcc.dg/graphite/block-3.c: Same.
+	* testsuite/gcc.dg/graphite/block-4.c: Same.
+	* testsuite/gcc.dg/graphite/block-5.c: Same.
+	* testsuite/gcc.dg/graphite/block-6.c: Same.
+	* testsuite/gcc.dg/graphite/block-7.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-0.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-1.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-10.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-11.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-12.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-2.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-3.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-4.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-5.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-6.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-7.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-8.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-9.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-mvt.c: Same.
+	* testsuite/gcc.dg/graphite/run-id-2.c: Remove useless dg-do run.
+
 2010-01-22  Ramakrishna Upadrasta <Ramakrishna.Upadrasta@inria.fr>
 
 	* graphite-scop-detection.c (dot_all_scops): Make calls to dot run in

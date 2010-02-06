@@ -1,11 +1,17 @@
 /* { dg-require-effective-target size32plus } */
 
+#define DEBUG 0
+#if DEBUG
+#include <stdio.h>
+#endif
+
 #define N 24
 #define M 1000
 
-float A[1000][1000], B[1000][1000], C[1000][1000];
+int A[M][M], B[M][M], C[M][M];
 
-void test (void)
+static int __attribute__((noinline))
+foo (void)
 {
   int i, j, k;
 
@@ -14,10 +20,33 @@ void test (void)
       for (k = 0; k < 24; k++)
         A[i][j] = B[i][k] * C[k][j];
 
-  for (i = 0; i < 1000; i++)
-    for (j = 0; j < 1000; j++)
-      for (k = 0; k < 1000; k++)
+  for (i = 0; i < M; i++)
+    for (j = 0; j < M; j++)
+      for (k = 0; k < M; k++)
         A[i][j] = B[i][k] * C[k][j];
+
+  return A[0][0] + A[M-1][M-1];
+}
+
+int
+main (void)
+{
+  int i, j, res;
+
+  for (i = 0; i < M; i++)
+    for (j = 0; j < M; j++)
+      {
+	B[i][j] = i;
+	C[i][j] = j;
+      }
+
+  res = foo ();
+
+#if DEBUG
+  fprintf (stderr, "res = %d \n", res);
+#endif
+
+  return res != 998001;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" } } */
