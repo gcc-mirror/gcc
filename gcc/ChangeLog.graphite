@@ -1,3 +1,20 @@
+2010-02-05  Sebastian Pop  <sebastian.pop@amd.com>
+	    Konrad Trifunovic  <konrad.trifunovic@inria.fr>
+
+	PR middle-end/42637
+	* graphite-dependences.c (build_lexicographical_constraint): Return
+	a union of dependence polyhedra.
+	(dependence_polyhedron_1): Adapt for build_lexicographical_constraint.
+
+	* testsuite/gcc.dg/graphite/block-0.c: Enable runtime check.  XFAILed.
+	* testsuite/gcc.dg/graphite/block-4.c: Same.
+	* testsuite/gcc.dg/graphite/block-7.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-12.c: Same.
+	* testsuite/gcc.dg/graphite/interchange-mvt.c: Same.
+	* testsuite/gfortran.dg/graphite/interchange-1.f: XFAILed.
+	* testsuite/gfortran.dg/graphite/interchange-3.f90: XFAILed.
+	* testsuite/gfortran.dg/graphite/run-id-1.f: New testcase for PR42637.
+
 2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/gcc.dg/graphite/interchange-12.c: Return 0 to avoid

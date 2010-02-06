@@ -44,11 +44,8 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  /* Avoid runtime check for this testcase, as it is miscompiled by
-     Graphite for the moment.  */
-  return 0;
   return res != 2626800;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
