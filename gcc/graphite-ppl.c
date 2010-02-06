@@ -700,5 +700,45 @@ ppl_min_for_le_polyhedron (ppl_Polyhedron_t pol,
   ppl_delete_Coefficient (denom);
 }
 
+/* Builds a constraint in dimension DIM relating dimensions POS1 to
+   POS2 as "POS1 - POS2 CSTR_TYPE C" */
+
+ppl_Constraint_t
+ppl_build_relation (int dim, int pos1, int pos2, int c,
+		    enum ppl_enum_Constraint_Type cstr_type)
+{
+  ppl_Linear_Expression_t expr;
+  ppl_Constraint_t cstr;
+  ppl_Coefficient_t coef;
+  Value v, v_op, v_c;
+
+  value_init (v);
+  value_init (v_op);
+  value_init (v_c);
+
+  value_set_si (v, 1);
+  value_set_si (v_op, -1);
+  value_set_si (v_c, c);
+
+  ppl_new_Coefficient (&coef);
+  ppl_new_Linear_Expression_with_dimension (&expr, dim);
+
+  ppl_assign_Coefficient_from_mpz_t (coef, v);
+  ppl_Linear_Expression_add_to_coefficient (expr, pos1, coef);
+  ppl_assign_Coefficient_from_mpz_t (coef, v_op);
+  ppl_Linear_Expression_add_to_coefficient (expr, pos2, coef);
+  ppl_assign_Coefficient_from_mpz_t (coef, v_c);
+  ppl_Linear_Expression_add_to_inhomogeneous (expr, coef);
+
+  ppl_new_Constraint (&cstr, expr, cstr_type);
+
+  ppl_delete_Linear_Expression (expr);
+  ppl_delete_Coefficient (coef);
+  value_clear (v);
+  value_clear (v_op);
+  value_clear (v_c);
+
+  return cstr;
+}
 
 #endif
