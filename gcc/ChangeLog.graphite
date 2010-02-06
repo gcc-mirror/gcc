@@ -1,5 +1,12 @@
 2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (lexicographically_gt_p): Add comments.
+	(build_lexicographically_gt_constraint): Same.
+	(dependence_polyhedron_1): Same.
+	(dependence_polyhedron): Same.
+
+2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (build_pairwise_scheduling_equality): Removed.
 	(build_pairwise_scheduling_inequality): Renamed build_pairwise_scheduling.
 	(lexicographically_gt_p): Change type of direction to int.
