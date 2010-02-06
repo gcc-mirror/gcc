@@ -1,5 +1,39 @@
 2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (new_poly_ddr): Initialize PDDR_KIND and
+	PDDR_ORIGINAL_SCATTERING_P.
+	(pddr_is_empty): Rewritten.
+	(print_dependence_polyhedron_layout): New.
+	(print_pddr): New.
+	(debug_pddr): New.
+	(build_alias_set_powerset): Moved up.
+	(poly_drs_may_alias_p): Moved up.
+	(lexicographically_gt_p): Removed.
+	(build_lexicographically_gt_constraint): Renamed
+	build_lexicographical_constraint, reimplemented.
+	(dependence_polyhedron_1): Simplified parameters.
+	(dependence_polyhedron): Same.  Keep along empty PDDRs
+	to make efficient use of the cache.
+	(reduction_dr_p): Compute the PBBs don't pass them as parameters.
+	(graphite_legal_transform_dr): Rewritten.
+	(graphite_legal_transform_bb): Pass fewer arguments to
+	graphite_legal_transform_dr.
+	(graphite_carried_dependence_level_k): Simplified implementation.
+	(dot_original_deps_stmt_1): Call dependence_polyhedron.
+	(dot_transformed_deps_stmt_1): Same.
+	(dot_original_deps): Same.
+	(dot_transformed_deps): Same.
+	* graphite-dependences.h (struct poly_ddr): Added a new field
+	original_scattering_p.
+	(PDDR_ORIGINAL_SCATTERING_P): New.
+	(print_pddr): Declared.
+	(debug_pddr): Declared.
+	* graphite-ppl.c: Clarify comment.
+	* sese.h (print_gimple_bb): Removed unused declaration.
+	(debug_gbb): Same.
+
+2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* testsuite/g++.dg/graphite/graphite.exp: Rewritten.
 	* testsuite/gcc.dg/graphite/graphite.exp: Rewritten.
 	* testsuite/gfortran.dg/graphite/graphite.exp: Rewritten.

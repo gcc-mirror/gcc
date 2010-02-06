@@ -701,7 +701,7 @@ ppl_min_for_le_polyhedron (ppl_Polyhedron_t pol,
 }
 
 /* Builds a constraint in dimension DIM relating dimensions POS1 to
-   POS2 as "POS1 - POS2 CSTR_TYPE C" */
+   POS2 as "POS1 - POS2 + C CSTR_TYPE 0" */
 
 ppl_Constraint_t
 ppl_build_relation (int dim, int pos1, int pos2, int c,

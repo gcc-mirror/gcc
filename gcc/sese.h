@@ -390,7 +390,4 @@ nb_common_loops (sese region, gimple_bb_p gbb1, gimple_bb_p gbb2)
   return sese_loop_depth (region, common);
 }
 
-extern void print_gimple_bb (FILE *, gimple_bb_p, int, int);
-extern void debug_gbb (gimple_bb_p, int);
-
 #endif
