@@ -296,9 +296,10 @@ lexicographically_gt_p (ppl_Pointset_Powerset_C_Polyhedron_t res,
    compared lexicographically, i.e. the number of loops containing
    both statements.  OFFSET is the number of dimensions needed to
    represent the first statement, i.e. dimT1 + dimI1 in the layout of
-   the RES polyhedron: T1|I1|T2|I2|S1|S2|G.  DIRECTION is equal to 1
-   when statement 1 is after statement 2, equal to -1 when statement 1
-   is before statement 2.  */
+   the RES polyhedron: T1|I1|T2|I2|S1|S2|G.  When DIRECTION is set to
+   1, compute the direct dependence from PDR1 to PDR2, and when
+   DIRECTION is -1, compute the reversed dependence relation, from
+   PDR2 to PDR1.  */
 
 static void
 build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res,
@@ -351,8 +352,9 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
    SCAT1 and SCAT2 correspond to the original scattering of the
    program, otherwise they correspond to the transformed scattering.
 
-   DIRECTION is equal to 1 when statement 1 is after statement 2,
-   equal to -1 when statement 1 is before statement 2.  */
+   When DIRECTION is set to 1, compute the direct dependence from PDR1
+   to PDR2, and when DIRECTION is -1, compute the reversed dependence
+   relation, from PDR2 to PDR1.  */
 
 static poly_ddr_p
 dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
@@ -439,8 +441,9 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
    SCAT1 and SCAT2 correspond to the original scattering of the
    program, otherwise they correspond to the transformed scattering.
 
-   DIRECTION is equal to 1 when statement 1 is after statement 2,
-   equal to -1 when statement 1 is before statement 2.  */
+   When DIRECTION is set to 1, compute the direct dependence from PDR1
+   to PDR2, and when DIRECTION is -1, compute the reversed dependence
+   relation, from PDR2 to PDR1.  */
 
 static poly_ddr_p
 dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
@@ -481,11 +484,13 @@ dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
    ORIGINAL_SCATTERING_P is true, return the PDDR corresponding to the
    original scattering, or NULL if the dependence relation is empty.
    When ORIGINAL_SCATTERING_P is false, return the PDDR corresponding
-   to the transformed scattering.  */
+   to the transformed scattering.  When DIRECTION is set to 1, compute
+   the direct dependence from PDR1 to PDR2, and when DIRECTION is -1,
+   compute the reversed dependence relation, from PDR2 to PDR1.  */
 
 static poly_ddr_p
 build_pddr (poly_bb_p pbb1, poly_bb_p pbb2, poly_dr_p pdr1, poly_dr_p pdr2,
-	    bool original_scattering_p)
+	    int direction, bool original_scattering_p)
 {
   poly_ddr_p pddr;
   ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
@@ -501,7 +506,7 @@ build_pddr (poly_bb_p pbb1, poly_bb_p pbb2, poly_dr_p pdr1, poly_dr_p pdr2,
     return NULL;
 
   pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, scat1, scat2,
-				1, original_scattering_p);
+				direction, original_scattering_p);
   if (pddr_is_empty (pddr))
     return NULL;
 
@@ -557,14 +562,14 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_dimension_type pdim;
   bool is_empty_p;
   poly_ddr_p pddr;
-  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
-  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
 
   if (reduction_dr_p (pbb1, pbb2, pdr1, pdr2))
     return true;
 
-  pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, true);
+  pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, 1, true);
   if (!pddr)
+    /* There are no dependences between PDR1 and PDR2 in the original
+       version of the program, so the transform is legal.  */
     return true;
 
   po = PDDR_DDP (pddr);
@@ -587,8 +592,17 @@ graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&temp, pdim, 0);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, po);
 
-  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, st1, st2,
-				-1, false);
+  /* We build the reverse dependence relation for the transformed
+     scattering, such that when we intersect it with the original PO,
+     we get an empty intersection when the transform is legal:
+     i.e. the transform should reverse no dependences, and so PT, the
+     reversed transformed PDDR, should have no constraint from PO.  */
+  pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, -1, false);
+  if (!pddr)
+    /* There are no dependences after the transform, so the transform
+       is legal.  */
+    return true;
+
   pt = PDDR_DDP (pddr);
 
   /* Extend PO and PT to have the same dimensions.  */
@@ -811,7 +825,7 @@ dot_original_deps_stmt_1 (FILE *file, scop_p scop)
       {
 	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	    if (build_pddr (pbb1, pbb2, pdr1, pdr2, true))
+	    if (build_pddr (pbb1, pbb2, pdr1, pdr2, 1, true))
 	      {
 		fprintf (file, "OS%d -> OS%d\n",
 			 pbb_index (pbb1), pbb_index (pbb2));
@@ -837,7 +851,7 @@ dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
       {
 	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	    if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, false)))
+	    if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, 1, false)))
 	      {
 		fprintf (file, "TS%d -> TS%d\n",
 			 pbb_index (pbb1), pbb_index (pbb2));
@@ -877,7 +891,7 @@ dot_original_deps (FILE *file, scop_p scop)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if (build_pddr (pbb1, pbb2, pdr1, pdr2, true))
+	  if (build_pddr (pbb1, pbb2, pdr1, pdr2, 1, true))
 	    fprintf (file, "OS%d_D%d -> OS%d_D%d\n",
 		     pbb_index (pbb1), PDR_ID (pdr1),
 		     pbb_index (pbb2), PDR_ID (pdr2));
@@ -898,7 +912,7 @@ dot_transformed_deps (FILE *file, scop_p scop)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, false)))
+	  if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, 1, false)))
 	    {
 	      fprintf (file, "TS%d_D%d -> TS%d_D%d\n",
 		       pbb_index (pbb1), PDR_ID (pdr1),
