@@ -51,20 +51,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-dependences.h"
 
 /* Returns a new polyhedral Data Dependence Relation (DDR).  SOURCE is
-   the source data reference, SINK is the sink data reference.  SOURCE
-   and SINK define an edge in the Data Dependence Graph (DDG).  */
+   the source data reference, SINK is the sink data reference.  When
+   the Data Dependence Polyhedron DDP is not NULL or not empty, SOURCE
+   and SINK are in dependence as described by DDP.  */
 
 static poly_ddr_p
 new_poly_ddr (poly_dr_p source, poly_dr_p sink,
-	      ppl_Pointset_Powerset_C_Polyhedron_t ddp)
+	      ppl_Pointset_Powerset_C_Polyhedron_t ddp,
+	      bool original_scattering_p)
 {
-  poly_ddr_p pddr;
+  poly_ddr_p pddr = XNEW (struct poly_ddr);
 
-  pddr = XNEW (struct poly_ddr);
   PDDR_SOURCE (pddr) = source;
   PDDR_SINK (pddr) = sink;
   PDDR_DDP (pddr) = ddp;
-  PDDR_KIND (pddr) = unknown_dependence;
+  PDDR_ORIGINAL_SCATTERING_P (pddr) = original_scattering_p;
+
+  if (!ddp || ppl_Pointset_Powerset_C_Polyhedron_is_empty (ddp))
+    PDDR_KIND (pddr) = no_dependence;
+  else
+    PDDR_KIND (pddr) = has_dependence;
 
   return pddr;
 }
@@ -106,17 +112,161 @@ hash_poly_ddr_p (const void *pddr)
 static bool
 pddr_is_empty (poly_ddr_p pddr)
 {
-  if (PDDR_KIND (pddr) != unknown_dependence)
-    return PDDR_KIND (pddr) == no_dependence ? true : false;
+  if (!pddr)
+    return true;
 
-  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (PDDR_DDP (pddr)))
+  gcc_assert (PDDR_KIND (pddr) != unknown_dependence);
+
+  return PDDR_KIND (pddr) == no_dependence ? true : false;
+}
+
+/* Prints to FILE the layout of the dependence polyhedron of PDDR:
+
+   T1|I1|T2|I2|S1|S2|G
+
+   with
+   | T1 and T2 the scattering dimensions for PDDR_SOURCE and PDDR_SINK
+   | I1 and I2 the iteration domains
+   | S1 and S2 the subscripts
+   | G the global parameters.  */
+
+static void
+print_dependence_polyhedron_layout (FILE *file, poly_ddr_p pddr)
+{
+  poly_dr_p pdr1 = PDDR_SOURCE (pddr);
+  poly_dr_p pdr2 = PDDR_SINK (pddr);
+  poly_bb_p pbb1 = PDR_PBB (pdr1);
+  poly_bb_p pbb2 = PDR_PBB (pdr2);
+
+  graphite_dim_t i;
+  graphite_dim_t tdim1 = PDDR_ORIGINAL_SCATTERING_P (pddr) ?
+    pbb_nb_scattering_orig (pbb1) : pbb_nb_scattering_transform (pbb1);
+  graphite_dim_t tdim2 = PDDR_ORIGINAL_SCATTERING_P (pddr) ?
+    pbb_nb_scattering_orig (pbb2) : pbb_nb_scattering_transform (pbb2);
+  graphite_dim_t idim1 = pbb_dim_iter_domain (pbb1);
+  graphite_dim_t idim2 = pbb_dim_iter_domain (pbb2);
+  graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
+  graphite_dim_t sdim2 = PDR_NB_SUBSCRIPTS (pdr2) + 1;
+  graphite_dim_t gdim = scop_nb_params (PBB_SCOP (pbb1));
+
+  fprintf (file, "#  eq");
+
+  for (i = 0; i < tdim1; i++)
+    fprintf (file, "   t1_%d", (int) i);
+  for (i = 0; i < idim1; i++)
+    fprintf (file, "   i1_%d", (int) i);
+  for (i = 0; i < tdim2; i++)
+    fprintf (file, "   t2_%d", (int) i);
+  for (i = 0; i < idim2; i++)
+    fprintf (file, "   i2_%d", (int) i);
+  for (i = 0; i < sdim1; i++)
+    fprintf (file, "   s1_%d", (int) i);
+  for (i = 0; i < sdim2; i++)
+    fprintf (file, "   s2_%d", (int) i);
+  for (i = 0; i < gdim; i++)
+    fprintf (file, "    g_%d", (int) i);
+
+  fprintf (file, "    cst\n");
+}
+
+/* Prints to FILE the poly_ddr_p PDDR.  */
+
+void
+print_pddr (FILE *file, poly_ddr_p pddr)
+{
+  fprintf (file, "pddr (kind: ");
+
+  if (PDDR_KIND (pddr) == unknown_dependence)
+    fprintf (file, "unknown_dependence");
+  else if (PDDR_KIND (pddr) == no_dependence)
+    fprintf (file, "no_dependence");
+  else if (PDDR_KIND (pddr) == has_dependence)
+    fprintf (file, "has_dependence");
+
+  fprintf (file, "\n  source ");
+  print_pdr (file, PDDR_SOURCE (pddr));
+
+  fprintf (file, "\n  sink ");
+  print_pdr (file, PDDR_SINK (pddr));
+
+  if (PDDR_KIND (pddr) == has_dependence)
     {
-      PDDR_KIND (pddr) = no_dependence;
-      return true;
+      fprintf (file, "\n  dependence polyhedron (\n");
+      print_dependence_polyhedron_layout (file, pddr);
+      ppl_print_powerset_matrix (file, PDDR_DDP (pddr));
+      fprintf (file, ")\n");
     }
 
-  PDDR_KIND (pddr) = has_dependence;
-  return false;
+  fprintf (file, ")\n");
+}
+
+/* Prints to STDERR the poly_ddr_p PDDR.  */
+
+void
+debug_pddr (poly_ddr_p pddr)
+{
+  print_pddr (stderr, pddr);
+}
+
+
+/* Remove all the dimensions except alias information at dimension
+   ALIAS_DIM.  */
+
+static void
+build_alias_set_powerset (ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset,
+			  ppl_dimension_type alias_dim)
+{
+  ppl_dimension_type *ds;
+  ppl_dimension_type access_dim;
+  unsigned i, pos = 0;
+
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (alias_powerset,
+						      &access_dim);
+  ds = XNEWVEC (ppl_dimension_type, access_dim-1);
+  for (i = 0; i < access_dim; i++)
+    {
+      if (i == alias_dim)
+	continue;
+
+      ds[pos] = i;
+      pos++;
+    }
+
+  ppl_Pointset_Powerset_C_Polyhedron_remove_space_dimensions (alias_powerset,
+							      ds,
+							      access_dim - 1);
+  free (ds);
+}
+
+/* Return true when PDR1 and PDR2 may alias.  */
+
+static bool
+poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2)
+{
+  ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset1, alias_powerset2;
+  ppl_Pointset_Powerset_C_Polyhedron_t accesses1 = PDR_ACCESSES (pdr1);
+  ppl_Pointset_Powerset_C_Polyhedron_t accesses2 = PDR_ACCESSES (pdr2);
+  ppl_dimension_type alias_dim1 = pdr_alias_set_dim (pdr1);
+  ppl_dimension_type alias_dim2 = pdr_alias_set_dim (pdr2);
+  int empty_p;
+
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+    (&alias_powerset1, accesses1);
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+    (&alias_powerset2, accesses2);
+
+  build_alias_set_powerset (alias_powerset1, alias_dim1);
+  build_alias_set_powerset (alias_powerset2, alias_dim2);
+
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
+    (alias_powerset1, alias_powerset2);
+
+  empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (alias_powerset1);
+
+  ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset1);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset2);
+
+  return !empty_p;
 }
 
 /* Returns a polyhedron of dimension DIM.
@@ -262,33 +412,6 @@ build_pairwise_scheduling (graphite_dim_t dim,
   return res;
 }
 
-/* Returns true when adding to the RES dependence polyhedron the
-   lexicographical constraint: "DIM compared to DIM + OFFSET" returns
-   an empty polyhedron.  The comparison depends on DIRECTION as: if
-   DIRECTION is equal to -1, the first dimension DIM to be compared
-   comes before the second dimension DIM + OFFSET, equal to 0 when DIM
-   and DIM + OFFSET are equal, and DIRECTION is set to 1 when DIM
-   comes after DIM + OFFSET.  */
-
-static bool
-lexicographically_gt_p (ppl_Pointset_Powerset_C_Polyhedron_t res,
-			graphite_dim_t dim,
-			graphite_dim_t offset,
-			int direction, graphite_dim_t i)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t ineq;
-  bool empty_p;
-
-  ineq = build_pairwise_scheduling (dim, i, offset, direction);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (ineq, res);
-  empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (ineq);
-  if (!empty_p)
-    ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (res, ineq);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (ineq);
-
-  return !empty_p;
-}
-
 /* Add to a non empty polyhedron RES the precedence constraints for
    the lexicographical comparison of time vectors in RES following the
    lexicographical order.  DIM is the dimension of the polyhedron RES.
@@ -302,36 +425,45 @@ lexicographically_gt_p (ppl_Pointset_Powerset_C_Polyhedron_t res,
    PDR2 to PDR1.  */
 
 static void
-build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res,
-				       graphite_dim_t dim,
-				       graphite_dim_t tdim,
-				       graphite_dim_t offset,
-				       int direction)
+build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res,
+				  graphite_dim_t dim,
+				  graphite_dim_t tdim,
+				  graphite_dim_t offset,
+				  int direction)
 {
   graphite_dim_t i;
 
-  if (lexicographically_gt_p (*res, dim, offset, direction, 0))
-    return;
-
-  for (i = 0; i < tdim - 1; i++)
+  for (i = 0; i < tdim - 1; i+=2)
     {
-      ppl_Pointset_Powerset_C_Polyhedron_t sceq;
+      ppl_Pointset_Powerset_C_Polyhedron_t ineq;
+      bool empty_p;
 
-      /* All the dimensions up to I are equal, ...  */
-      sceq = build_pairwise_scheduling (dim, i, offset, 0);
-      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, sceq);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
+      /* Identify the static schedule dimensions.  */
+      ineq = build_pairwise_scheduling (dim, i, offset, 0);
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (ineq, *res);
+      empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (ineq);
 
-      /* ... and at depth I+1 they are not equal anymore.  */
-      if (lexicographically_gt_p (*res, dim, offset, direction, i + 1))
-	return;
+      if (empty_p)
+	{
+	  /* Add the lexicographical dynamic schedule dimension.  */
+	  if (i > 0)
+	    ineq = build_pairwise_scheduling (dim, i - 1, offset, direction);
+
+	  return;
+	}
+
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, ineq);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (ineq);
+
+      /* Identify the dynamic schedule dimensions.  */
+      ineq = build_pairwise_scheduling (dim, i + 1, offset, 0);
+      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, ineq);
+      ppl_delete_Pointset_Powerset_C_Polyhedron (ineq);
     }
 
-  if (i == tdim - 1)
-    {
-      ppl_delete_Pointset_Powerset_C_Polyhedron (*res);
-      ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (res, dim, 1);
-    }
+  /* There is no dependence.  */
+  ppl_delete_Pointset_Powerset_C_Polyhedron (*res);
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (res, dim, 1);
 }
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
@@ -345,31 +477,27 @@ build_lexicographically_gt_constraint (ppl_Pointset_Powerset_C_Polyhedron_t *res
    | S1 and S2 the subscripts
    | G the global parameters.
 
-   D1 and D2 are the iteration domains of PDR1 and PDR2.
-
-   SCAT1 and SCAT2 are the scattering polyhedra for PDR1 and PDR2.
-   When ORIGINAL_SCATTERING_P is true, then the scattering polyhedra
-   SCAT1 and SCAT2 correspond to the original scattering of the
-   program, otherwise they correspond to the transformed scattering.
-
    When DIRECTION is set to 1, compute the direct dependence from PDR1
    to PDR2, and when DIRECTION is -1, compute the reversed dependence
    relation, from PDR2 to PDR1.  */
 
-static poly_ddr_p
-dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
-		         ppl_Pointset_Powerset_C_Polyhedron_t d1,
-		         ppl_Pointset_Powerset_C_Polyhedron_t d2,
-		         poly_dr_p pdr1, poly_dr_p pdr2,
-	                 ppl_Polyhedron_t scat1, ppl_Polyhedron_t scat2,
-		         int direction,
-		         bool original_scattering_p)
+static ppl_Pointset_Powerset_C_Polyhedron_t
+dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
+		         int direction, bool original_scattering_p)
 {
+  poly_bb_p pbb1 = PDR_PBB (pdr1);
+  poly_bb_p pbb2 = PDR_PBB (pdr2);
   scop_p scop = PBB_SCOP (pbb1);
+  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
+  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
   graphite_dim_t tdim1 = original_scattering_p ?
     pbb_nb_scattering_orig (pbb1) : pbb_nb_scattering_transform (pbb1);
   graphite_dim_t tdim2 = original_scattering_p ?
     pbb_nb_scattering_orig (pbb2) : pbb_nb_scattering_transform (pbb2);
+  ppl_Polyhedron_t scat1 = original_scattering_p ?
+    PBB_ORIGINAL_SCATTERING (pbb1) : PBB_TRANSFORMED_SCATTERING (pbb1);
+  ppl_Polyhedron_t scat2 = original_scattering_p ?
+    PBB_ORIGINAL_SCATTERING (pbb2) : PBB_TRANSFORMED_SCATTERING (pbb2);
   graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
   graphite_dim_t ddim2 = pbb_dim_iter_domain (pbb2);
   graphite_dim_t sdim1 = PDR_NB_SUBSCRIPTS (pdr1) + 1;
@@ -425,92 +553,57 @@ dependence_polyhedron_1 (poly_bb_p pbb1, poly_bb_p pbb2,
   ppl_delete_Pointset_Powerset_C_Polyhedron (dreq);
 
   if (!ppl_Pointset_Powerset_C_Polyhedron_is_empty (res))
-    build_lexicographically_gt_constraint (&res, dim, MIN (tdim1, tdim2),
-					   tdim1 + ddim1, direction);
+    build_lexicographical_constraint (&res, dim, MIN (tdim1, tdim2),
+				      tdim1 + ddim1, direction);
 
-  return new_poly_ddr (pdr1, pdr2, res);
+  return res;
 }
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
    If possible use already cached information.
-
-   D1 and D2 are the iteration domains of PDR1 and PDR2.
-
-   SCAT1 and SCAT2 are the scattering polyhedra for PDR1 and PDR2.
-   When ORIGINAL_SCATTERING_P is true, then the scattering polyhedra
-   SCAT1 and SCAT2 correspond to the original scattering of the
-   program, otherwise they correspond to the transformed scattering.
 
    When DIRECTION is set to 1, compute the direct dependence from PDR1
    to PDR2, and when DIRECTION is -1, compute the reversed dependence
    relation, from PDR2 to PDR1.  */
 
 static poly_ddr_p
-dependence_polyhedron (poly_bb_p pbb1, poly_bb_p pbb2,
-		       ppl_Pointset_Powerset_C_Polyhedron_t d1,
-		       ppl_Pointset_Powerset_C_Polyhedron_t d2,
-		       poly_dr_p pdr1, poly_dr_p pdr2,
-	               ppl_Polyhedron_t scat1, ppl_Polyhedron_t scat2,
-		       int direction,
-		       bool original_scattering_p)
+dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
+		       int direction, bool original_scattering_p)
 {
   PTR *x = NULL;
   poly_ddr_p res;
+  ppl_Pointset_Powerset_C_Polyhedron_t ddp;
 
+  /* Return the PDDR from the cache if it already has been computed.  */
   if (original_scattering_p)
     {
       struct poly_ddr tmp;
+      scop_p scop = PBB_SCOP (PDR_PBB (pdr1));
 
       tmp.source = pdr1;
       tmp.sink = pdr2;
-      x = htab_find_slot (SCOP_ORIGINAL_PDDRS (PBB_SCOP (pbb1)),
+      x = htab_find_slot (SCOP_ORIGINAL_PDDRS (scop),
                           &tmp, INSERT);
 
       if (x && *x)
 	return (poly_ddr_p) *x;
     }
 
-  res = dependence_polyhedron_1 (pbb1, pbb2, d1, d2, pdr1, pdr2,
-                                 scat1, scat2, direction, original_scattering_p);
+  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
+      || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
+      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2)
+      || !poly_drs_may_alias_p (pdr1, pdr2))
+    ddp = NULL;
+  else
+    ddp = dependence_polyhedron_1 (pdr1, pdr2, direction,
+				   original_scattering_p);
+
+  res = new_poly_ddr (pdr1, pdr2, ddp, original_scattering_p);
 
   if (original_scattering_p)
     *x = res;
 
   return res;
-}
-
-/* Returns the Polyhedral Data Dependence Relation (PDDR) between PDR1
-   contained in PBB1 and PDR2 contained in PBB2.  When
-   ORIGINAL_SCATTERING_P is true, return the PDDR corresponding to the
-   original scattering, or NULL if the dependence relation is empty.
-   When ORIGINAL_SCATTERING_P is false, return the PDDR corresponding
-   to the transformed scattering.  When DIRECTION is set to 1, compute
-   the direct dependence from PDR1 to PDR2, and when DIRECTION is -1,
-   compute the reversed dependence relation, from PDR2 to PDR1.  */
-
-static poly_ddr_p
-build_pddr (poly_bb_p pbb1, poly_bb_p pbb2, poly_dr_p pdr1, poly_dr_p pdr2,
-	    int direction, bool original_scattering_p)
-{
-  poly_ddr_p pddr;
-  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
-  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
-  ppl_Polyhedron_t scat1 = original_scattering_p ?
-    PBB_ORIGINAL_SCATTERING (pbb1) : PBB_TRANSFORMED_SCATTERING (pbb1);
-  ppl_Polyhedron_t scat2 = original_scattering_p ?
-    PBB_ORIGINAL_SCATTERING (pbb2) : PBB_TRANSFORMED_SCATTERING (pbb2);
-
-  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
-      || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
-      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
-    return NULL;
-
-  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, scat1, scat2,
-				direction, original_scattering_p);
-  if (pddr_is_empty (pddr))
-    return NULL;
-
-  return pddr;
 }
 
 /* Return true when the data dependence relation between the data
@@ -535,9 +628,11 @@ reduction_dr_1 (poly_bb_p pbb1, poly_dr_p pdr1, poly_dr_p pdr2)
    part of a reduction.  */
 
 static inline bool
-reduction_dr_p (poly_bb_p pbb1, poly_bb_p pbb2,
-		poly_dr_p pdr1, poly_dr_p pdr2)
+reduction_dr_p (poly_dr_p pdr1, poly_dr_p pdr2)
 {
+  poly_bb_p pbb1 = PDR_PBB (pdr1);
+  poly_bb_p pbb2 = PDR_PBB (pdr2);
+
   if (PBB_IS_REDUCTION (pbb1))
     return reduction_dr_1 (pbb1, pdr1, pdr2);
 
@@ -552,70 +647,71 @@ reduction_dr_p (poly_bb_p pbb1, poly_bb_p pbb2,
    functions.  */
 
 static bool
-graphite_legal_transform_dr (poly_bb_p pbb1, poly_bb_p pbb2,
-			     poly_dr_p pdr1, poly_dr_p pdr2)
+graphite_legal_transform_dr (poly_dr_p pdr1, poly_dr_p pdr2)
 {
-  ppl_Polyhedron_t st1, st2;
   ppl_Pointset_Powerset_C_Polyhedron_t po, pt;
   graphite_dim_t ddim1, otdim1, otdim2, ttdim1, ttdim2;
-  ppl_Pointset_Powerset_C_Polyhedron_t temp;
+  ppl_Pointset_Powerset_C_Polyhedron_t po_temp;
   ppl_dimension_type pdim;
   bool is_empty_p;
-  poly_ddr_p pddr;
+  poly_ddr_p opddr, tpddr;
+  poly_bb_p pbb1, pbb2;
 
-  if (reduction_dr_p (pbb1, pbb2, pdr1, pdr2))
+  if (reduction_dr_p (pdr1, pdr2))
     return true;
-
-  pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, 1, true);
-  if (!pddr)
-    /* There are no dependences between PDR1 and PDR2 in the original
-       version of the program, so the transform is legal.  */
-    return true;
-
-  po = PDDR_DDP (pddr);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nloop carries dependency.\n");
-
-  st1 = PBB_TRANSFORMED_SCATTERING (pbb1);
-  st2 = PBB_TRANSFORMED_SCATTERING (pbb2);
-  ddim1 = pbb_dim_iter_domain (pbb1);
-  otdim1 = pbb_nb_scattering_orig (pbb1);
-  otdim2 = pbb_nb_scattering_orig (pbb2);
-  ttdim1 = pbb_nb_scattering_transform (pbb1);
-  ttdim2 = pbb_nb_scattering_transform (pbb2);
-
-  /* Copy the PO polyhedron into the TEMP, so it is not destroyed.
-     Keep in mind, that PO polyhedron might be restored from the cache
-     and should not be modified!  */
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &pdim);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&temp, pdim, 0);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, po);
 
   /* We build the reverse dependence relation for the transformed
      scattering, such that when we intersect it with the original PO,
      we get an empty intersection when the transform is legal:
      i.e. the transform should reverse no dependences, and so PT, the
      reversed transformed PDDR, should have no constraint from PO.  */
-  pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, -1, false);
-  if (!pddr)
-    /* There are no dependences after the transform, so the transform
-       is legal.  */
+  opddr = dependence_polyhedron (pdr1, pdr2, 1, true);
+  tpddr = dependence_polyhedron (pdr1, pdr2, -1, false);
+
+    /* There are no dependences between PDR1 and PDR2 in the original
+       version of the program, or after the transform, so the
+       transform is legal.  */
+  if (pddr_is_empty (opddr))
     return true;
 
-  pt = PDDR_DDP (pddr);
+  if (pddr_is_empty (tpddr))
+    {
+      free_poly_ddr (tpddr);
+      return true;
+    }
+
+  po = PDDR_DDP (opddr);
+  pt = PDDR_DDP (tpddr);
+
+  /* Copy PO into PO_TEMP, such that PO is not destroyed.  PO is
+     stored in a cache and should not be modified or freed.  */
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &pdim);
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension (&po_temp,
+							       pdim, 0);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (po_temp, po);
 
   /* Extend PO and PT to have the same dimensions.  */
-  ppl_insert_dimensions_pointset (temp, otdim1, ttdim1);
-  ppl_insert_dimensions_pointset (temp, otdim1 + ttdim1 + ddim1 + otdim2, ttdim2);
+  pbb1 = PDR_PBB (pdr1);
+  pbb2 = PDR_PBB (pdr2);
+  ddim1 = pbb_dim_iter_domain (pbb1);
+  otdim1 = pbb_nb_scattering_orig (pbb1);
+  otdim2 = pbb_nb_scattering_orig (pbb2);
+  ttdim1 = pbb_nb_scattering_transform (pbb1);
+  ttdim2 = pbb_nb_scattering_transform (pbb2);
+  ppl_insert_dimensions_pointset (po_temp, otdim1, ttdim1);
+  ppl_insert_dimensions_pointset (po_temp, otdim1 + ttdim1 + ddim1 + otdim2,
+				  ttdim2);
   ppl_insert_dimensions_pointset (pt, 0, otdim1);
   ppl_insert_dimensions_pointset (pt, otdim1 + ttdim1 + ddim1, otdim2);
 
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (temp, pt);
-  is_empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (temp);
+  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (po_temp, pt);
+  is_empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (po_temp);
 
-  ppl_delete_Pointset_Powerset_C_Polyhedron (temp);
-  free_poly_ddr (pddr);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (po_temp);
+  free_poly_ddr (tpddr);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\nloop carries dependency.\n");
 
   return is_empty_p;
 }
@@ -649,7 +745,7 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
 
   for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)
     for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
-      if (!graphite_legal_transform_dr (pbb1, pbb2, pdr1, pdr2))
+      if (!graphite_legal_transform_dr (pdr1, pdr2))
 	return false;
 
   return true;
@@ -678,66 +774,6 @@ graphite_legal_transform (scop_p scop)
   return true;
 }
 
-/* Remove all the dimensions except alias information at dimension
-   ALIAS_DIM.  */
-
-static void
-build_alias_set_powerset (ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset,
-			  ppl_dimension_type alias_dim)
-{
-  ppl_dimension_type *ds;
-  ppl_dimension_type access_dim;
-  unsigned i, pos = 0;
-
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (alias_powerset,
-						      &access_dim);
-  ds = XNEWVEC (ppl_dimension_type, access_dim-1);
-  for (i = 0; i < access_dim; i++)
-    {
-      if (i == alias_dim)
-	continue;
-
-      ds[pos] = i;
-      pos++;
-    }
-
-  ppl_Pointset_Powerset_C_Polyhedron_remove_space_dimensions (alias_powerset,
-							      ds,
-							      access_dim - 1);
-  free (ds);
-}
-
-/* Return true when PDR1 and PDR2 may alias.  */
-
-static bool
-poly_drs_may_alias_p (poly_dr_p pdr1, poly_dr_p pdr2)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t alias_powerset1, alias_powerset2;
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses1 = PDR_ACCESSES (pdr1);
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses2 = PDR_ACCESSES (pdr2);
-  ppl_dimension_type alias_dim1 = pdr_alias_set_dim (pdr1);
-  ppl_dimension_type alias_dim2 = pdr_alias_set_dim (pdr2);
-  int empty_p;
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&alias_powerset1, accesses1);
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&alias_powerset2, accesses2);
-
-  build_alias_set_powerset (alias_powerset1, alias_dim1);
-  build_alias_set_powerset (alias_powerset2, alias_dim2);
-
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
-    (alias_powerset1, alias_powerset2);
-
-  empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (alias_powerset1);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset1);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (alias_powerset2);
-
-  return !empty_p;
-}
-
 /* Returns TRUE when the dependence polyhedron between PDR1 and
    PDR2 represents a loop carried dependence at level LEVEL.  */
 
@@ -745,37 +781,19 @@ static bool
 graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
 				     int level)
 {
-  poly_bb_p pbb1 = PDR_PBB (pdr1);
-  poly_bb_p pbb2 = PDR_PBB (pdr2);
-  ppl_Pointset_Powerset_C_Polyhedron_t d1 = PBB_DOMAIN (pbb1);
-  ppl_Pointset_Powerset_C_Polyhedron_t d2 = PBB_DOMAIN (pbb2);
-  ppl_Polyhedron_t so1 = PBB_TRANSFORMED_SCATTERING (pbb1);
-  ppl_Polyhedron_t so2 = PBB_TRANSFORMED_SCATTERING (pbb2);
   ppl_Pointset_Powerset_C_Polyhedron_t po;
   ppl_Pointset_Powerset_C_Polyhedron_t eqpp;
-  graphite_dim_t tdim1 = pbb_nb_scattering_transform (pbb1);
-  graphite_dim_t ddim1 = pbb_dim_iter_domain (pbb1);
+  graphite_dim_t tdim1 = pbb_nb_scattering_transform (PDR_PBB (pdr1));
+  graphite_dim_t ddim1 = pbb_dim_iter_domain (PDR_PBB (pdr1));
   ppl_dimension_type dim;
   bool empty_p;
-  poly_ddr_p pddr;
-  int obj_base_set1 = PDR_BASE_OBJECT_SET (pdr1);
-  int obj_base_set2 = PDR_BASE_OBJECT_SET (pdr2);
-
-  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
-      || !poly_drs_may_alias_p (pdr1, pdr2))
-    return false;
-
-  if (obj_base_set1 != obj_base_set2)
-    return true;
-
-  if (PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2))
-    return false;
-
-  pddr = dependence_polyhedron (pbb1, pbb2, d1, d2, pdr1, pdr2, so1, so2,
-				1, false);
+  poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
 
   if (pddr_is_empty (pddr))
-    return false;
+    {
+      free_poly_ddr (pddr);
+      return false;
+    }
 
   po = PDDR_DDP (pddr);
   ppl_Pointset_Powerset_C_Polyhedron_space_dimension (po, &dim);
@@ -785,6 +803,8 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   empty_p = ppl_Pointset_Powerset_C_Polyhedron_is_empty (eqpp);
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (eqpp);
+  free_poly_ddr (pddr);
+
   return !empty_p;
 }
 
@@ -825,7 +845,7 @@ dot_original_deps_stmt_1 (FILE *file, scop_p scop)
       {
 	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	    if (build_pddr (pbb1, pbb2, pdr1, pdr2, 1, true))
+	    if (!pddr_is_empty (dependence_polyhedron (pdr1, pdr2, 1, true)))
 	      {
 		fprintf (file, "OS%d -> OS%d\n",
 			 pbb_index (pbb1), pbb_index (pbb2));
@@ -844,20 +864,26 @@ dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
-  poly_ddr_p pddr;
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       {
 	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	    if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, 1, false)))
-	      {
-		fprintf (file, "TS%d -> TS%d\n",
-			 pbb_index (pbb1), pbb_index (pbb2));
-		free_poly_ddr (pddr);
-		goto done;
-	      }
+	    {
+	      poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
+
+	      if (!pddr_is_empty (pddr))
+		{
+		  fprintf (file, "TS%d -> TS%d\n",
+			   pbb_index (pbb1), pbb_index (pbb2));
+
+		  free_poly_ddr (pddr);
+		  goto done;
+		}
+
+	      free_poly_ddr (pddr);
+	    }
       done:;
       }
 }
@@ -891,7 +917,7 @@ dot_original_deps (FILE *file, scop_p scop)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if (build_pddr (pbb1, pbb2, pdr1, pdr2, 1, true))
+	  if (!pddr_is_empty (dependence_polyhedron (pdr1, pdr2, 1, true)))
 	    fprintf (file, "OS%d_D%d -> OS%d_D%d\n",
 		     pbb_index (pbb1), PDR_ID (pdr1),
 		     pbb_index (pbb2), PDR_ID (pdr2));
@@ -906,19 +932,21 @@ dot_transformed_deps (FILE *file, scop_p scop)
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
-  poly_ddr_p pddr;
 
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
     for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
       for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
 	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
-	  if ((pddr = build_pddr (pbb1, pbb2, pdr1, pdr2, 1, false)))
-	    {
+	  {
+	    poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
+
+	    if (!pddr_is_empty (pddr))
 	      fprintf (file, "TS%d_D%d -> TS%d_D%d\n",
 		       pbb_index (pbb1), PDR_ID (pdr1),
 		       pbb_index (pbb2), PDR_ID (pdr2));
-	      free_poly_ddr (pddr);
-	    }
+
+	    free_poly_ddr (pddr);
+	  }
 }
 
 /* Pretty print to FILE all the data dependences of SCoP in DOT

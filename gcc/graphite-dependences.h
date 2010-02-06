@@ -30,6 +30,8 @@ enum poly_dependence_kind {
   has_dependence
 };
 
+/* Represents a Polyhedral Data Dependence Relation.  */
+
 typedef struct poly_ddr
 {
   /* Source and sink data references of the dependence.  */
@@ -40,17 +42,23 @@ typedef struct poly_ddr
 
   enum poly_dependence_kind kind;
 
+  /* True when the dependence relation is for the original scattering.  */
+  bool original_scattering_p;
+
 } *poly_ddr_p;
 
 #define PDDR_SOURCE(PDDR) (PDDR->source)
 #define PDDR_SINK(PDDR) (PDDR->sink)
 #define PDDR_DDP(PDDR) (PDDR->ddp)
 #define PDDR_KIND(PDDR) (PDDR->kind)
+#define PDDR_ORIGINAL_SCATTERING_P(PDDR) (PDDR->original_scattering_p)
 
 extern int eq_poly_ddr_p (const void *, const void *);
 extern hashval_t hash_poly_ddr_p (const void *);
 extern void free_poly_ddr (void *);
 extern void dot_deps (scop_p);
 extern void dot_deps_stmt (scop_p);
+extern void print_pddr (FILE *, poly_ddr_p);
+extern void debug_pddr (poly_ddr_p);
 
 #endif
