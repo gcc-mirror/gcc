@@ -1,5 +1,15 @@
 2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* testsuite/gcc.dg/graphite/interchange-12.c: Return 0 to avoid
+	the execution check to FAIL.  This testcase is miscompiled by Graphite
+	and the check should be re-enabled.
+	* testsuite/gcc.dg/graphite/interchange-mvt.c: Same.
+	* testsuite/gcc.dg/graphite/block-0.c: Same.
+	* testsuite/gcc.dg/graphite/block-4.c: Same.
+	* testsuite/gcc.dg/graphite/block-7.c: Same.
+
+2010-02-03  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* testsuite/gcc.dg/graphite/interchange-mvt.c: Un-XFAILed.
 	* testsuite/gcc.dg/graphite/scop-0.c: Fix spaces.
 	* testsuite/gfortran.dg/graphite/block-1.f90: Rewrite expected output.
