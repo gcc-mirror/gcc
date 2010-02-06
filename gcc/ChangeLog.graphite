@@ -1,3 +1,13 @@
+2010-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_pairwise_constraint): Renamed
+	ppl_build_relation.  Moved...
+	(dr_equality_constraints): Use ppl_build_relation.
+	(build_pairwise_scheduling_equality): Same.
+	(build_pairwise_scheduling_inequality): Same.
+	* graphite-ppl.c (ppl_build_relation): ...here.
+	* graphite-ppl.h (ppl_build_relation): Declared.
+
 2010-01-14  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42681

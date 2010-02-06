@@ -190,93 +190,29 @@ map_dr_into_dep_poly (graphite_dim_t dim,
   return res;
 }
 
-/* Builds a constraints of the form "POS1 - POS2 CSTR_TYPE C" */
-
-static ppl_Constraint_t
-build_pairwise_constraint (graphite_dim_t dim,
-		           graphite_dim_t pos1, graphite_dim_t pos2,
-			   int c, enum ppl_enum_Constraint_Type cstr_type)
-{
-  ppl_Linear_Expression_t expr;
-  ppl_Constraint_t cstr;
-  ppl_Coefficient_t coef;
-  Value v, v_op, v_c;
-
-  value_init (v);
-  value_init (v_op);
-  value_init (v_c);
-
-  value_set_si (v, 1);
-  value_set_si (v_op, -1);
-  value_set_si (v_c, c);
-
-  ppl_new_Coefficient (&coef);
-  ppl_new_Linear_Expression_with_dimension (&expr, dim);
-
-  ppl_assign_Coefficient_from_mpz_t (coef, v);
-  ppl_Linear_Expression_add_to_coefficient (expr, pos1, coef);
-  ppl_assign_Coefficient_from_mpz_t (coef, v_op);
-  ppl_Linear_Expression_add_to_coefficient (expr, pos2, coef);
-  ppl_assign_Coefficient_from_mpz_t (coef, v_c);
-  ppl_Linear_Expression_add_to_inhomogeneous (expr, coef);
-
-  ppl_new_Constraint (&cstr, expr, cstr_type);
-
-  ppl_delete_Linear_Expression (expr);
-  ppl_delete_Coefficient (coef);
-  value_clear (v);
-  value_clear (v_op);
-  value_clear (v_c);
-
-  return cstr;
-}
-
 /* Builds subscript equality constraints.  */
 
 static ppl_Pointset_Powerset_C_Polyhedron_t
 dr_equality_constraints (graphite_dim_t dim,
 		         graphite_dim_t pos, graphite_dim_t nb_subscripts)
 {
-  ppl_Polyhedron_t subscript_equalities;
+  ppl_Polyhedron_t eqs;
   ppl_Pointset_Powerset_C_Polyhedron_t res;
-  Value v, v_op;
   graphite_dim_t i;
 
-  value_init (v);
-  value_init (v_op);
-  value_set_si (v, 1);
-  value_set_si (v_op, -1);
+  ppl_new_C_Polyhedron_from_space_dimension (&eqs, dim, 0);
 
-  ppl_new_C_Polyhedron_from_space_dimension (&subscript_equalities, dim, 0);
   for (i = 0; i < nb_subscripts; i++)
     {
-      ppl_Linear_Expression_t expr;
-      ppl_Constraint_t cstr;
-      ppl_Coefficient_t coef;
-
-      ppl_new_Coefficient (&coef);
-      ppl_new_Linear_Expression_with_dimension (&expr, dim);
-
-      ppl_assign_Coefficient_from_mpz_t (coef, v);
-      ppl_Linear_Expression_add_to_coefficient (expr, pos + i, coef);
-      ppl_assign_Coefficient_from_mpz_t (coef, v_op);
-      ppl_Linear_Expression_add_to_coefficient (expr, pos + i + nb_subscripts,
-						coef);
-
-      ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
-      ppl_Polyhedron_add_constraint (subscript_equalities, cstr);
-
-      ppl_delete_Linear_Expression (expr);
+      ppl_Constraint_t cstr
+	= ppl_build_relation (dim, pos + i, pos + i + nb_subscripts,
+			      0, PPL_CONSTRAINT_TYPE_EQUAL);
+      ppl_Polyhedron_add_constraint (eqs, cstr);
       ppl_delete_Constraint (cstr);
-      ppl_delete_Coefficient (coef);
     }
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-    (&res, subscript_equalities);
-  value_clear (v);
-  value_clear (v_op);
-  ppl_delete_Polyhedron (subscript_equalities);
-
+  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&res, eqs);
+  ppl_delete_Polyhedron (eqs);
   return res;
 }
 
@@ -292,8 +228,8 @@ build_pairwise_scheduling_equality (graphite_dim_t dim,
 
   ppl_new_C_Polyhedron_from_space_dimension (&equalities, dim, 0);
 
-  cstr = build_pairwise_constraint (dim, pos, pos + offset, 0,
-				    PPL_CONSTRAINT_TYPE_EQUAL);
+  cstr = ppl_build_relation (dim, pos, pos + offset, 0,
+			     PPL_CONSTRAINT_TYPE_EQUAL);
   ppl_Polyhedron_add_constraint (equalities, cstr);
   ppl_delete_Constraint (cstr);
 
@@ -317,11 +253,11 @@ build_pairwise_scheduling_inequality (graphite_dim_t dim,
   ppl_new_C_Polyhedron_from_space_dimension (&equalities, dim, 0);
 
   if (direction)
-    cstr = build_pairwise_constraint (dim, pos, pos + offset, -1,
-				      PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
+    cstr = ppl_build_relation (dim, pos, pos + offset, -1,
+			       PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
   else
-    cstr = build_pairwise_constraint (dim, pos, pos + offset, 1,
-				      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
+    cstr = ppl_build_relation (dim, pos, pos + offset, 1,
+			       PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
 
   ppl_Polyhedron_add_constraint (equalities, cstr);
   ppl_delete_Constraint (cstr);
