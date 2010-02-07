@@ -1,14 +1,14 @@
-# Mensajes en español para cpplib-4.5-b20091203
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+# Mensajes en español para cpplib-4.5-b20100204
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009.
+# Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5-b20091203\n"
+"Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2009-12-09 10:56-0600\n"
+"PO-Revision-Date: 2010-02-05 13:16-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -432,9 +432,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "prefijo \"0b\" inválido en la constante de coma flotante"
 
 #: expr.c:339
-#, fuzzy
 msgid "no digits in hexadecimal floating constant"
-msgstr "uso de una constante de coma flotante hexadecimal C99"
+msgstr "no hay dígitos en la constante de coma flotante hexadecimal"
 
 #: expr.c:343
 msgid "use of C99 hexadecimal floating constant"

@@ -5,14 +5,14 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5-b20091203\n"
+"Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2010-01-09 14:45+0100\n"
+"PO-Revision-Date: 2010-02-06 14:43+0100\n"
 "Last-Translator: Tim Van Holder <tim.van.holder@telenet.be>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
@@ -449,9 +449,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ongeldige prefix \"0b\" voor floating-point constante"
 
 #: expr.c:339
-#, fuzzy
 msgid "no digits in hexadecimal floating constant"
-msgstr "gebruik van C99 hexadecimale floating-point constante"
+msgstr "geen cijfers in hexadecimale floating-point constante"
 
 #: expr.c:343
 msgid "use of C99 hexadecimal floating constant"
