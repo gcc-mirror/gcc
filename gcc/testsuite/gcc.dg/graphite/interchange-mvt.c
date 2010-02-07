@@ -26,6 +26,8 @@ mvt (long N)
   return x1[0] + x2[0];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -49,7 +51,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 199900000;
+  if (res != 199900000)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */

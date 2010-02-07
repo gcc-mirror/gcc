@@ -26,6 +26,8 @@ foo (int N)
   return sum + N + u[1336 * 2] + u[1336];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -40,7 +42,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 3565793;
+  if (res != 3565793)
+    abort ();
+
+  return 0;
 }
 
 

@@ -19,7 +19,10 @@ foo (void)
   return a[0];
 }
 
-main()
+extern void abort ();
+
+int
+main (void)
 {
   int i, res;
 
@@ -32,7 +35,10 @@ main()
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 1999;
+  if (res != 1999)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } } */

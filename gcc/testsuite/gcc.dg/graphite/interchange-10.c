@@ -24,6 +24,8 @@ foo (int N, int *res)
   *res = sum + N + u[1336 * 2] + u[1336];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -38,7 +40,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 7130239;
+  if (res != 7130239)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 2 "graphite" } } */

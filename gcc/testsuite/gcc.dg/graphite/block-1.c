@@ -7,7 +7,10 @@
 
 #define MAX 100
 
-int main()
+extern void abort ();
+
+int
+main (void)
 {
   int i, j;
   int sum = 0;
@@ -33,7 +36,10 @@ int main()
   fprintf (stderr, "sum = %d \n", sum);
 #endif
 
-  return sum != 990000;
+  if (sum != 990000)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 2 "graphite" { xfail *-*-* } } } */ 
