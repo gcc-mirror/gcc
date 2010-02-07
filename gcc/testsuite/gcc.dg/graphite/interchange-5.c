@@ -23,6 +23,8 @@ foo (void)
   return A[0][0] + A[N-1][M-1];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -38,7 +40,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 20;
+  if (res != 20)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */

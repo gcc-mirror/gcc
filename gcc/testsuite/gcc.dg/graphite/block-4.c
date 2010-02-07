@@ -28,6 +28,8 @@ foo (void)
   return A[0][0] + A[M-1][M-1];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -46,7 +48,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 998001;
+  if (res != 998001)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } } */

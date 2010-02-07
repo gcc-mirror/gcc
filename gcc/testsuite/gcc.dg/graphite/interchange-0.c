@@ -22,6 +22,8 @@ foo (void)
   return a[N-1][N-1];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -38,7 +40,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 13;
+  if (res != 13)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */

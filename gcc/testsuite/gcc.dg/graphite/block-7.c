@@ -23,6 +23,8 @@ matmult (void)
       }
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -44,7 +46,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 529340000;
+  if (res != 529340000)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" { xfail *-*-* } } } */

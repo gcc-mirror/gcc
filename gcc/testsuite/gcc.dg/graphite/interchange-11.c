@@ -23,6 +23,8 @@ foo (int N, int *res)
   *res = sum;
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -37,7 +39,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 3564450;
+  if (res != 3564450)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" { xfail *-*-* } } } */

@@ -21,6 +21,8 @@ foo (int *x)
   return sum;
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -36,7 +38,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 2468642;
+  if (res != 2468642)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */

@@ -46,6 +46,8 @@ foo (void)
   return A[0][1][0][2] + A[0][3][0][3] + A[0][2][0][2] + A[0][1][0][1] + A[3][3][0][2];
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -72,7 +74,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 424;
+  if (res != 424)
+    abort ();
+
+  return 0;
 }
 
 /* Loops K and L should be interchanged.  */

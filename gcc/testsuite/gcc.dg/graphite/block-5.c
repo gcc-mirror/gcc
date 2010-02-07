@@ -27,6 +27,8 @@ foo (void)
   return res;
 }
 
+extern void abort ();
+
 int
 main (void)
 {
@@ -45,7 +47,10 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  return res != 1333300;
+  if (res != 1333300)
+    abort ();
+
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 1 "graphite" } } */
