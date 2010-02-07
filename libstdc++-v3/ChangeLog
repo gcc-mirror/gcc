@@ -1,5 +1,35 @@
 2010-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/16896
+	* include/bits/stl_list.h (_List_node_base::transfer): Rename
+	to _M_transfer.
+	(_List_node_base::reverse): Rename to _M_reverse.
+	(_List_node_base::hook): Rename to _M_hook.
+	(_List_node_base::unhook): Rename to _M_unhook; adjust callers.
+	* include/bits/list.tcc: Adjust callers.
+	* src/list.cc: Adjust.
+	* src/compatibility.cc: Likewise.
+	* src/compatibility-list.cc: New.
+	* src/compatibility-debug_list.cc: Likewise.
+	* src/compatibility-parallel_list.cc: Likewise.
+	* src/Makefile.am: Add.
+	* src/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Export _M_* symbols.
+
+	* src/hash.cc: Rename to hash-aux.cc.
+	* src/compatibility-ldbl.cc: Adjust.
+	* src/compatibility-c++0x.cc: Likewise.
+	* src/hash_tr1.cc: Likewise.
+
+	* src/hashtable.cc: Rename to hashtable-aux.cc.
+	* src/hashtable_c++0x.cc: Adjust.
+	* src/hashtable_tr1.cc: Likewise.
+
+	* src/limits_c++0x.cc: Fold...
+	* src/limits.cc... here.
+
+2010-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_pair.h (pair<>::pair(_U1&&, const _T2&),
 	pair<>::pair(const _T1&, _U2&&), pair<>::pair(_U1&&, _U2&&)):
 	Revert to std::is_convertible, basing on DR 811.

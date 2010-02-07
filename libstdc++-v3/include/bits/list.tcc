@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       emplace(iterator __position, _Args&&... __args)
       {
 	_Node* __tmp = _M_create_node(std::forward<_Args>(__args)...);
-	__tmp->hook(__position._M_node);
+	__tmp->_M_hook(__position._M_node);
 	return iterator(__tmp);
       }
 #endif
@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     insert(iterator __position, const value_type& __x)
     {
       _Node* __tmp = _M_create_node(__x);
-      __tmp->hook(__position._M_node);
+      __tmp->_M_hook(__position._M_node);
       return iterator(__tmp);
     }
 

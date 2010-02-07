@@ -1,6 +1,6 @@
 // Compatibility symbols for -mlong-double-64 compatibility -*- C++ -*-
 
-// Copyright (C) 2006, 2008, 2009
+// Copyright (C) 2006, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -74,7 +74,7 @@ namespace std
 {
   namespace tr1 
   {
-#include "hash.cc"
+#include "hash-aux.cc"
   }
 }
 

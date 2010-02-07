@@ -1113,6 +1113,21 @@ GLIBCXX_3.4.14 {
     # std::time_get::_M_extract_wday_or_month
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE24_M_extract_wday_or_month*;
 
+    # libstdc++/16896
+    _ZNSt15_List_node_base7_M_hook*;
+    _ZNSt15_List_node_base9_M_unhookEv;
+    _ZNSt15_List_node_base10_M_reverseEv;
+    _ZNSt15_List_node_base11_M_transfer*;
+
+    _ZNSt6__norm15_List_node_base7_M_hook*;
+    _ZNSt6__norm15_List_node_base9_M_unhookEv;
+    _ZNSt6__norm15_List_node_base10_M_reverseEv;
+    _ZNSt6__norm15_List_node_base11_M_transfer*;
+
+    _ZNSt9__cxx199815_List_node_base7_M_hook*;
+    _ZNSt9__cxx199815_List_node_base9_M_unhookEv;
+    _ZNSt9__cxx199815_List_node_base10_M_reverseEv;
+    _ZNSt9__cxx199815_List_node_base11_M_transfer*;
 } GLIBCXX_3.4.13;
 
 # Symbols in the support library (libsupc++) have their own tag.
