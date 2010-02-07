@@ -1,3 +1,195 @@
+2010-02-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2010-02-05  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42915
+	* g++.dg/other/crash-9.C: New test.
+
+	2010-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40138
+	* g++.dg/ext/builtin11.C: New.
+
+	2010-02-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42944
+	* gcc.dg/errno-1.c: New testcase.
+
+	2010-02-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42927
+	* gcc.c-torture/compile/pr42927.c: New testcase.
+
+	2010-01-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42758
+	PR c++/42634
+	PR c++/42336
+	PR c++/42797
+	PR c++/42880
+	* g++.dg/other/crash-5.C: New test.
+	* g++.dg/other/crash-7.C: New test.
+	* g++.dg/other/crash-8.C: New test.
+
+	2010-01-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/42891
+	* gcc.target/i386/pr42891.c: New test.
+
+	2010-01-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42883
+	* g++.dg/torture/pr42883.C: New testcase.
+
+	2010-01-28  Michael Matz  <matz@suse.de>
+
+	* gcc.target/i386/pr42881.c: New test.
+
+	2010-01-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42713
+	PR c++/42820
+	* g++.dg/template/typedef27.C: New test case.
+	* g++.dg/template/typedef28.C: New test case.
+
+	2010-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42874
+	* gcc.dg/vla-22.c: New test.
+
+	2010-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42250
+	* gcc.dg/pr42250.c: New testcase.
+
+	2010-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42858
+	* gfortran.dg/generic_21.f90: New test.
+
+	2010-01-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42585
+	* gcc.dg/tree-ssa/pr42585.c: New test.
+
+	2010-01-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42715
+	* gcc.dg/pr42715.c: New.
+
+	2010-01-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42717
+	* gcc.c-torture/compile/pr42717.c: New testcase.
+
+	2010-01-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/42783
+	* gfortran.dg/bounds_check_15.f90 : New test.
+
+	2010-01-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42766
+	* g++.dg/conversion/op6.C: New test.
+
+	2010-01-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42781
+	* gfortran.fortran-torture/compile/pr42781.f90: New testcase.
+
+	2010-01-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42248
+	* gcc.c-torture/execute/pr42248.c: New testcase.
+
+	2010-01-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42677
+	* gfortran.dg/interface_assignment_5.f90: New test.
+
+	2010-01-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42739
+	* g++.dg/torture/pr42739.C: New testcase.
+
+	2010-01-14 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42684
+	* gfortran.dg/interface_31.f90: New test.
+
+	2010-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42706
+	* gcc.dg/ipa/pr42706.c: New testcase.
+
+	2010-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42714
+	* g++.dg/torture/pr42714.C: New test.
+
+	2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/42388
+	* gcc.dg/pr42388.c: New.
+
+	2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+
+	PR rtl-optimization/42294
+	* gfortran.dg/pr42294.f: New.
+
+	2010-01-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/42709
+	* gcc.dg/vect/pr42709.c: New test.
+
+	2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42730
+	* gcc.c-torture/compile/pr42730.c: New testcase.
+
+	2010-01-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42704
+	* g++.dg/torture/pr42704.C: New test.
+
+	2010-01-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42703
+	* gcc.c-torture/compile/pr42703.c: New test.
+
+	2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42705
+	* gcc.c-torture/compile/pr42705.c: New testcase.
+
+	2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42716
+	* gcc.c-torture/compile/pr42716.c: New testcase.
+
+	2010-01-12  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/42708
+	* gcc.c-torture/compile/pr42708-1.c: New test.
+
+	2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/42363
+	* gcc.dg/torture/pr42363.c: New.
+
+	2010-01-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/42604
+	PR debug/42395
+	* gcc.dg/vect/pr42604.c: New.
+	* gcc.dg/vect/pr42395.c: New.
+
+	2010-01-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42512
+	* gcc.c-torture/execute/pr42512.c: New testcase.
+
 2010-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/42309
