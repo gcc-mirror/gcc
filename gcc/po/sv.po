@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.5-b20091203\n"
+"Project-Id-Version: gcc 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-02-04 16:20+0000\n"
-"PO-Revision-Date: 2010-01-31 16:33+0100\n"
+"PO-Revision-Date: 2010-02-07 19:39+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -294,9 +294,8 @@ msgid "<command-line>"
 msgstr "<kommandorad>"
 
 #: c-parser.c:736
-#, fuzzy
 msgid "expected end of line"
-msgstr "Oväntat modulslut"
+msgstr "oväntat radslut"
 
 #: c-parser.c:1375 c-parser.c:3463 c-parser.c:3897 c-parser.c:4158
 #: c-parser.c:4228 c-parser.c:4239 c-parser.c:4389 c-parser.c:6264
@@ -328,25 +327,21 @@ msgstr "%<(%> förväntades"
 #: c-parser.c:6729 c-parser.c:6765 c-parser.c:7256 c-parser.c:7277
 #: c-parser.c:7355 c-parser.c:7440 c-parser.c:7556 c-parser.c:7638
 #: c-parser.c:7935 c-parser.c:8051 c-parser.c:8092
-#, fuzzy
 msgid "expected %<)%>"
-msgstr "%<{%> förväntades"
+msgstr "%<)%> förväntades"
 
 #: c-parser.c:2472 c-parser.c:3254 c-parser.c:3286 c-parser.c:4443
 #: c-parser.c:5601 c-parser.c:5764 c-parser.c:5871
-#, fuzzy
 msgid "expected %<]%>"
-msgstr "%<{%> förväntades"
+msgstr "%<]%> förväntades"
 
 #: c-parser.c:2654
-#, fuzzy
 msgid "expected %<;%>, %<,%> or %<)%>"
-msgstr "%<,%>, %<;%> eller %<}%> förväntades"
+msgstr "%<;%>, %<,%> eller %<)%> förväntades"
 
 #: c-parser.c:3124
-#, fuzzy
 msgid "expected %<}%>"
-msgstr "%<{%> förväntades"
+msgstr "%<}%> förväntades"
 
 #: c-parser.c:3404 c-parser.c:6731 c-parser.c:8335 c-parser.c:1765
 #: c-parser.c:1960 c-parser.c:6441
@@ -356,35 +351,29 @@ msgstr "%<{%> förväntades"
 
 #: c-parser.c:3622 c-parser.c:3631 c-parser.c:4347 c-parser.c:4683
 #: c-parser.c:6571 c-parser.c:6871 c-parser.c:6928 c-parser.c:7545
-#, fuzzy
 msgid "expected %<:%>"
-msgstr "%<{%> förväntades"
+msgstr "%<:%> förväntades"
 
 #: c-parser.c:4152
-#, fuzzy
 msgid "expected %<while%>"
-msgstr "%<{%> förväntades"
+msgstr "%<while%> förväntades"
 
 #: c-parser.c:5499 c-parser.c:5540 c-parser.c:5622 c-parser.c:5629
 #: c-parser.c:5664
-#, fuzzy
 msgid "expected %<,%>"
-msgstr "%<{%> förväntades"
+msgstr "%<,%> förväntades"
 
 #: c-parser.c:6144 c-parser.c:6176 c-parser.c:6390
-#, fuzzy
 msgid "expected %<@end%>"
-msgstr "%<{%> förväntades"
+msgstr "%<@end%> förväntades"
 
 #: c-parser.c:6692
-#, fuzzy
 msgid "expected %<>%>"
-msgstr "%<{%> förväntades"
+msgstr "%<>%> förväntades"
 
 #: c-parser.c:7642
-#, fuzzy
 msgid "expected %<,%> or %<)%>"
-msgstr "%<,%> eller %<;%> förväntades"
+msgstr "%<,%> eller %<)%> förväntades"
 
 #: c-parser.c:8033 c-parser.c:3309
 #, gcc-internal-format
@@ -410,7 +399,7 @@ msgstr "<namnlös-med-tecken:"
 
 #: c-pretty-print.c:367
 msgid "<unnamed-float:"
-msgstr "<namlöst-flyttal:"
+msgstr "<namnlöst-flyttal:"
 
 #: c-pretty-print.c:370
 msgid "<unnamed-fixed:"
@@ -2400,9 +2389,8 @@ msgid "The threshold ratio between current and hottest structure counts"
 msgstr "Tröskelförhållandet mellan aktuell och hetaste posträknare"
 
 #: params.def:55
-#, fuzzy
 msgid "Maximal estimated outcome of branch considered predictable"
-msgstr "Maximala uppskattade resultatet en gren som bedöms förutsägbart"
+msgstr "Maximala uppskattade sannolikheten för en gren för att anses förutsägbar"
 
 #: params.def:72
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -3014,9 +3002,8 @@ msgid "address operand requires constraint for X, Y, or Z register"
 msgstr "adressoperander kräver begränsning för X-, Y- eller Z-register"
 
 #: config/avr/avr.c:1195
-#, fuzzy
 msgid "bad address, not a constant):"
-msgstr "adressavstånd inte en konstant"
+msgstr "felaktig adress, inte en konstant)"
 
 #: config/avr/avr.c:1208
 msgid "bad address, not (reg+disp):"
@@ -3627,13 +3614,12 @@ msgid "-mvsx needs indexed addressing"
 msgstr "-mvsx behöver indexerad adressering"
 
 #: config/rs6000/rs6000.c:2438
-#, fuzzy
 msgid "-mvsx and -mno-altivec are incompatible"
-msgstr "-mvsx och -mpaired är inkompatibla"
+msgstr "-mvsx och -mno-altivec är inkompatibla"
 
 #: config/rs6000/rs6000.c:2440
 msgid "-mno-altivec disables vsx"
-msgstr ""
+msgstr "-mno-altivec avaktiverar vsx"
 
 #: config/rs6000/rs6000.c:6705
 msgid "bad move"
@@ -3893,9 +3879,8 @@ msgid "candidates are:"
 msgstr "kandidater är:"
 
 #: cp/call.c:2775 cp/pt.c:15861
-#, fuzzy
 msgid "candidate is:"
-msgstr "kandidat 1:"
+msgstr "kandidat är:"
 
 #: cp/call.c:7348
 msgid "candidate 1:"
@@ -4530,27 +4515,24 @@ msgstr "Inkonsistenta ordningar för operator vid %%L och %%L"
 
 #: fortran/resolve.c:5700
 msgid "Loop variable"
-msgstr ""
+msgstr "Slingvariabel"
 
 #: fortran/resolve.c:5712
-#, fuzzy
 msgid "Start expression in DO loop"
-msgstr "Steguttryck i DO-slinga vid %L får inte vara noll"
+msgstr "Startuttryck i DO-slinga"
 
 #: fortran/resolve.c:5716
-#, fuzzy
 msgid "End expression in DO loop"
-msgstr "ogiltigt uttryck som operand"
+msgstr "Slututtryck i DO-slinga"
 
 #: fortran/resolve.c:5720
-#, fuzzy
 msgid "Step expression in DO loop"
-msgstr "Steguttryck i DO-slinga vid %L får inte vara noll"
+msgstr "Steguttryck i DO-slinga"
 
 #: fortran/trans-array.c:1134
-#, fuzzy, c-format
+#, c-format
 msgid "Different CHARACTER lengths (%ld/%ld) in array constructor"
-msgstr "Olika CHARACTER-längder (%d/%d) i vektorkonstruerare vid %L"
+msgstr "Olika CHARACTER-längder (%ld/%ld) i vektorkonstruerare"
 
 #: fortran/trans-decl.c:3975
 #, c-format
@@ -4567,41 +4549,38 @@ msgid "internal error: bad hash value in dynamic dispatch"
 msgstr "internt fel: felaktigt hash-värde i dynamisk expediering"
 
 #: fortran/trans-intrinsic.c:777
-#, fuzzy, c-format
+#, c-format
 msgid "Unequal character lengths (%ld/%ld) in %s"
-msgstr "Olika teckenlängder (%ld/%ld) i %s vid %L"
+msgstr "Olika teckenlängder (%ld/%ld) i %s"
 
 #: fortran/trans-intrinsic.c:4863
-#, fuzzy, c-format
+#, c-format
 msgid "Argument NCOPIES of REPEAT intrinsic is negative (its value is %lld)"
-msgstr "Argument NCOPIES till inbyggd REPEAT är negativt vid %L"
+msgstr "Argument NCOPIES till inbyggd REPEAT är negativt (dess värde är %lld)"
 
 #: fortran/trans-intrinsic.c:4895
-#, fuzzy
 msgid "Argument NCOPIES of REPEAT intrinsic is too large"
-msgstr "Argumentet NCOPIES till inbyggd REPEAT är för stort vid %L"
+msgstr "Argumentet NCOPIES till inbyggd REPEAT är för stort"
 
 #: fortran/trans-io.c:488
-#, fuzzy
 msgid "Unit number in I/O statement too small"
-msgstr "Syntaxfel i IMPORT-sats vid %C"
+msgstr "Enhetsnummer i I/O-sats är för litet"
 
 #: fortran/trans-io.c:496
-#, fuzzy
 msgid "Unit number in I/O statement too large"
-msgstr "Syntaxfel i IMPORT-sats vid %C"
+msgstr "Enhetsnummer i I/O-sats är för stort"
 
 #: fortran/trans-stmt.c:158
 msgid "Assigned label is not a target label"
-msgstr ""
+msgstr "Tilldelad etikett är inte en måletikett"
 
 #: fortran/trans-stmt.c:882 fortran/trans-stmt.c:1143
 msgid "Loop variable has been modified"
-msgstr ""
+msgstr "Slingvariabel har modifierats"
 
 #: fortran/trans-stmt.c:1006
 msgid "DO step value is zero"
-msgstr ""
+msgstr "DO-stegvärdet är noll"
 
 #: fortran/trans.c:50
 msgid "Array bound mismatch"
@@ -4833,9 +4812,8 @@ msgid "the -shared option is not currently supported for VAX ELF"
 msgstr "flaggan -shared stöds för närvarande inte för VAX ELF"
 
 #: config/vax/vax.h:50 config/vax/vax.h:51
-#, fuzzy
 msgid "profiling not supported with -mg"
-msgstr "profilering stöds inte tillsammans med -mg\n"
+msgstr "profilering stöds inte med -mg"
 
 # Detta är inget riktigt meddelande.  Det är uppenbarligen xgettext som
 # blir lurad av en kommentar.
@@ -4883,7 +4861,7 @@ msgstr "gfortran stödjer inte -E utan -cpp"
 #: config/i386/freebsd.h:103 config/alpha/freebsd.h:33
 #: config/sparc/freebsd.h:34
 msgid "consider using `-pg' instead of `-p' with gprof(1)"
-msgstr ""
+msgstr "överväg att använda \"-pg\" istället för \"-p\" med gprof(1)"
 
 #: config/rs6000/sysv4.h:907 config/rs6000/sysv4.h:909
 #: config/alpha/linux-elf.h:33 config/alpha/linux-elf.h:35
@@ -4932,9 +4910,8 @@ msgid "-pg and -fomit-frame-pointer are incompatible"
 msgstr "-pg och -fomit-frame-pointer är inkompatibla"
 
 #: gcc.c:1073
-#, fuzzy
 msgid "GNU C no longer supports -traditional without -E"
-msgstr "GCC stödjer inte -C eller -CC utan -E"
+msgstr "GNU C stödjer inte längre -traditional utan -E"
 
 #: gcc.c:1089
 msgid "-E or -x required when input is from standard input"
@@ -4950,14 +4927,14 @@ msgstr "shared och mdll är inkompatibla"
 #: config/pa/pa-hpux11.h:111 config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33
 #: config/pa/pa64-hpux.h:42 config/pa/pa64-hpux.h:45
 msgid "Warning: consider linking with `-static' as system libraries with"
-msgstr ""
+msgstr "Varning: överväg att länka med \"-static\" eftersom systembibliotek med"
 
 #: config/pa/pa-hpux10.h:88 config/pa/pa-hpux10.h:91 config/pa/pa-hpux10.h:99
 #: config/pa/pa-hpux10.h:102 config/pa/pa-hpux11.h:109
 #: config/pa/pa-hpux11.h:112 config/pa/pa64-hpux.h:31 config/pa/pa64-hpux.h:34
 #: config/pa/pa64-hpux.h:43 config/pa/pa64-hpux.h:46
 msgid "  profiling support are only provided in archive format"
-msgstr ""
+msgstr "  profileringsstöd endast finns i arkivformat"
 
 #: config/rs6000/darwin.h:95
 msgid " conflicting code gen style switches are used"
@@ -4980,9 +4957,8 @@ msgid "no processor type specified for linking"
 msgstr "ingen processortyp angiven för länkning"
 
 #: config/i386/nwld.h:34
-#, fuzzy
 msgid "Static linking is not supported."
-msgstr "Statisk länkning stöds inte.\n"
+msgstr "Statisk länkning stöds inte."
 
 #: config/i386/cygwin.h:28
 msgid "mno-cygwin and mno-win32 are not compatible"
@@ -4998,7 +4974,7 @@ msgstr "-mas100-syntax är inkompatibel med -gdwarf"
 
 #: config/rx/rx.h:64
 msgid "rx200 cpu does not have FPU hardware"
-msgstr ""
+msgstr "rx200-cpu har inte FPU-hårdvara"
 
 #: config/s390/tpf.h:119
 msgid "static is not supported on TPF-OS"
@@ -5006,11 +4982,11 @@ msgstr "static stöds inte på TPF-OS"
 
 #: config/arm/freebsd.h:31
 msgid "consider using `-pg' instead of `-p' with gprof(1) "
-msgstr ""
+msgstr "överväg att använda \"-pg\" istället för \"-p\" med gprof(1)"
 
 #: objc/lang-specs.h:31 objc/lang-specs.h:46
 msgid "GNU Objective C no longer supports traditional compilation"
-msgstr ""
+msgstr "GNU Objective C stödjer inte längre traditionell kompilering"
 
 #: config/cris/cris.h:207
 msgid "Do not specify both -march=... and -mcpu=..."
@@ -5018,19 +4994,19 @@ msgstr "Ange inte både -march=... och -mcpu=..."
 
 #: config/i386/i386.h:543
 msgid "`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead."
-msgstr ""
+msgstr "\"-mcpu=\" bör undvikas.  Använd \"-mtune=\" eller \"-march=\" istället."
 
 #: config/i386/i386.h:546
 msgid "`-mintel-syntax' is deprecated. Use `-masm=intel' instead."
-msgstr ""
+msgstr "\"-mintel-syntax\" bör undvikas.  Använd \"-masm=intel\" istället."
 
 #: config/i386/i386.h:548
 msgid "'-msse5' was removed."
-msgstr ""
+msgstr "\"-msse5\" togs bort."
 
 #: config/i386/i386.h:550
 msgid "`-mno-intel-syntax' is deprecated. Use `-masm=att' instead."
-msgstr ""
+msgstr "\"-mno-intel-syntax\" bör undvikas.  Använd \"-masm=att\" istället."
 
 #: config/mips/r3900.h:34
 msgid "-mhard-float not supported"
@@ -5065,18 +5041,16 @@ msgid "Warn if modifiers are specified when not necessary"
 msgstr "Varna om modifierare anges när de inte behövs"
 
 #: java/lang.opt:81
-#, fuzzy
 msgid "--CLASSPATH\tDeprecated; use --classpath instead"
-msgstr "Avrådes, använd -classpath istället"
+msgstr "--CLASSPATH\tAvrådes, använd -classpath istället"
 
 #: java/lang.opt:88
 msgid "Permit the use of the assert keyword"
 msgstr "Tillåt användning av nyckelordet assert"
 
 #: java/lang.opt:110
-#, fuzzy
 msgid "--bootclasspath=<path>\tReplace system path"
-msgstr "Ersätt systemsökvägen"
+msgstr "--bootclasspath=<sökväg>\tErsätt systemsökvägen"
 
 #: java/lang.opt:114
 msgid "Generate checks for references to NULL"
@@ -5084,7 +5058,7 @@ msgstr "Generera kontroller av referenser till NULL"
 
 #: java/lang.opt:118
 msgid "--classpath=<path>\tSet class path"
-msgstr ""
+msgstr "--classpath=<sökväg>\tAnge klassökväg"
 
 #: java/lang.opt:125
 msgid "Output a class file"
@@ -5095,14 +5069,12 @@ msgid "Alias for -femit-class-file"
 msgstr "Alias för -femit-class-file"
 
 #: java/lang.opt:133
-#, fuzzy
 msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
-msgstr "Välj inmatningskodning (din lokal används som standard)"
+msgstr "--encoding=<kodning>\tVälj inmatningskodning (din lokal används som standard)"
 
 #: java/lang.opt:137
-#, fuzzy
 msgid "--extdirs=<path>\tSet the extension directory path"
-msgstr "Ange katalogsökväg för utökningar"
+msgstr "--extdirs=<sökväg>\tAnge katalogsökväg för utökningar"
 
 #: java/lang.opt:144
 msgid "Input file is a file with a list of filenames to compile"
@@ -5165,14 +5137,12 @@ msgid "Set the target VM version"
 msgstr "Ange typen av mål-VM-version"
 
 #: ada/gcc-interface/lang.opt:100
-#, fuzzy
 msgid "-gnat<options>\tSpecify options to GNAT"
-msgstr "Ange flaggor till GNAT"
+msgstr "-gnat<flaggor>\tAnge flaggor till GNAT"
 
 #: fortran/lang.opt:57
-#, fuzzy
 msgid "-J<directory>\tPut MODULE files in 'directory'"
-msgstr "Lägg MODULE-filer i \"directory\""
+msgstr "-J<katalog>\tLägg MODULE-filer i \"katalog\""
 
 #: fortran/lang.opt:73
 msgid "Warn about possible aliasing of dummy arguments"
@@ -11064,7 +11034,7 @@ msgstr "Lägg till extra kommentarer till assemblerutdata"
 
 #: common.opt:1459
 msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol visibility"
-msgstr ""
+msgstr "-fvisibility=[default|internal|hidden|protected]\tAnge standardvärde för symbolsynlighet"
 
 #: common.opt:1464
 msgid "Use expression value profiles in optimizations"
@@ -13956,13 +13926,10 @@ msgstr "%s stödjer inte %s"
 msgid "%s does not support %s with the %<%%%c%> %s format"
 msgstr "%1$s stödjer inte %2$s med %4$s-formatet %<%%%3$c%>"
 
-# gcc-internal-format är bara printf-liknande, men klarar inte
-# t.ex. konstruktionen "m$" förrän 4.1.0
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=23501
 #: c-format.c:1932
 #, gcc-internal-format
 msgid "%s ignored with %s and %<%%%c%> %s format"
-msgstr "%s ignorerad med %s och %<%%%c%> %s-format"
+msgstr "%1$s ignorerad med %2$s och %4$s-format %<%%%3$c%>"
 
 #: c-format.c:1936
 #, gcc-internal-format
@@ -18581,7 +18548,7 @@ msgstr "ogiltig vänstersida i gimple-anrop"
 #: tree-cfg.c:2968
 #, gcc-internal-format
 msgid "LHS in noreturn call"
-msgstr ""
+msgstr "LHS i noreturn-anrop"
 
 #: tree-cfg.c:2984
 #, gcc-internal-format
@@ -18881,7 +18848,7 @@ msgstr "ickelokal etikett "
 #: tree-cfg.c:4273
 #, gcc-internal-format
 msgid "EH landing pad label "
-msgstr ""
+msgstr "EH-landningsplattas etikett "
 
 #: tree-cfg.c:4282 tree-cfg.c:4291 tree-cfg.c:4316
 #, gcc-internal-format
@@ -20120,17 +20087,17 @@ msgstr "\"builtin_return_address\" innehåller bara 2 byte adress"
 #: config/avr/avr.c:1141
 #, gcc-internal-format
 msgid "Pointer offset from symbol maybe incorrect."
-msgstr ""
+msgstr "Pekarförskjutning från symbol kan vara oriktig."
 
 #: config/avr/avr.c:1198
 #, gcc-internal-format
 msgid "accessing data memory with program memory address"
-msgstr ""
+msgstr "åtkomst av dataminne med programminnesadress"
 
 #: config/avr/avr.c:1238
 #, gcc-internal-format
 msgid "accessing program  memory with data memory address"
-msgstr ""
+msgstr "åtkomst av programminne med dataminnesadress"
 
 #: config/avr/avr.c:4652
 #, gcc-internal-format
@@ -22242,7 +22209,7 @@ msgstr "varning: okänt argument till --help=-flagga: %.*s\n"
 #: config/rx/rx.c:2169
 #, gcc-internal-format
 msgid "The RX200 cpu does not have FPU hardware"
-msgstr ""
+msgstr "Cpu:n RX200 har inte FPU-hårdvara"
 
 #: config/rx/rx.c:2208
 #, fuzzy, gcc-internal-format
@@ -23015,7 +22982,7 @@ msgstr "kan inte anropa konstrueraren %<%T::%D%> direkt"
 #: cp/call.c:6259
 #, gcc-internal-format
 msgid "  for a function-style cast, remove the redundant %<::%D%>"
-msgstr ""
+msgstr "  för en typkonvertering i funktionsstil, ta bort det överflödiga %<::%D%>"
 
 #: cp/call.c:6381
 #, gcc-internal-format
@@ -23620,19 +23587,15 @@ msgstr "funktionen %q+D omdeklarerad med attributet noinline"
 msgid "previous declaration of %q+D was inline"
 msgstr "tidigare deklaration av %q+D var inline"
 
-# Första %s blir "built-in" eller "library".
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31665
 #: cp/decl.c:1185 cp/decl.c:1259
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowing built-in function %q#D"
-msgstr "skuggar \"%s\"-funktion %q#D"
+msgstr "skuggar inbyggd funktion %q#D"
 
-# Första %s blir "built-in" eller "library".
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=31665
 #: cp/decl.c:1186 cp/decl.c:1260
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowing library function %q#D"
-msgstr "skuggar \"%s\"-funktion %q#D"
+msgstr "skuggar biblioteksfunktion %q#D"
 
 #: cp/decl.c:1193
 #, gcc-internal-format
@@ -29492,7 +29455,7 @@ msgstr "ogiltigt användning av %qD"
 #: cp/typeck2.c:495
 #, gcc-internal-format
 msgid "invalid use of member (did you forget the %<&%> ?)"
-msgstr ""
+msgstr "ogiltig användning av medlem (glömde du %<&%>?)"
 
 #: cp/typeck2.c:504
 #, fuzzy, gcc-internal-format
@@ -29512,17 +29475,17 @@ msgstr "ogiltig användning av ofullständig typedef %qD"
 #: cp/typeck2.c:523
 #, gcc-internal-format
 msgid "address of overloaded function with no contextual type information"
-msgstr ""
+msgstr "adress till överlagrad funktion utan typinformation från sammanhanget"
 
 #: cp/typeck2.c:527
 #, gcc-internal-format
 msgid "overloaded function with no contextual type information"
-msgstr ""
+msgstr "överlagrad funktion utan typinformation från sammanhanget"
 
 #: cp/typeck2.c:530
 #, gcc-internal-format
 msgid "insufficient contextual information to determine type"
-msgstr ""
+msgstr "otillräcklig sammanhangsinformation för att avgöra typen"
 
 #: cp/typeck2.c:705
 #, gcc-internal-format
@@ -33373,16 +33336,10 @@ msgstr "Filen \"%s\" öppnad vid %C är inte en GFORTRAN-modulfil"
 msgid "Parse error when checking module version for file '%s' opened at %C"
 msgstr "Tolkningsfel vid kontroll av modulversion för filen \"%s\" öppnad vid %C"
 
-# Meddelandet avhugget på grund av att den här delsträngen konkateneras
-# med andra strängar i källkoden, men den följande strängen är en
-# preprocessorsymbol.  Stränextraktionen för översättning klarar
-# uppenbarligen inte det.
-#
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=40849
 #: fortran/module.c:5524
 #, fuzzy, gcc-internal-format
 msgid "Wrong module version '%s' (expected '%s') for file '%s' opened at %C"
-msgstr "Fel modulversion \"%s\" (förväntade \""
+msgstr "Fel modulversion \"%s\" (\"%s\" förväntades) för fil \"%s\" öppnad vid %C"
 
 #: fortran/module.c:5537
 #, gcc-internal-format
@@ -34981,7 +34938,7 @@ msgstr "Basobjekt för typbundet proceduranrop vid %L är av ABSTRACT typ \"%s\""
 #: fortran/resolve.c:4922
 #, gcc-internal-format
 msgid "Non-scalar base object at %L currently not implemented"
-msgstr ""
+msgstr "Basobjekt som inte är skalärt vid %L är för närvarande inte implementerat"
 
 #. Nothing matching found!
 #: fortran/resolve.c:5024
@@ -38838,16 +38795,6 @@ msgstr "ogiltig vektortyp för attributet %qE"
 
 #~ msgid "%Harray bound is not an integer constant"
 #~ msgstr "%Hvektorgräns är inte en heltalskonstant"
-
-# %s blir antingen den tomma strängen eller "template "
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=38761
-#~ msgid "%H%sparameter pack %qD cannot have a default argument"
-#~ msgstr "%H%sparameterpaket %qD kan inte ha ett standardargument"
-
-# %s blir antingen den tomma strängen eller "template "
-# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=38761
-#~ msgid "%H%sparameter pack cannot have a default argument"
-#~ msgstr "%H%sparameterpaket kan inte ha ett standardargument"
 
 #~ msgid "%Hredefinition of %q#T"
 #~ msgstr "%Homdefinition av %q#T"
