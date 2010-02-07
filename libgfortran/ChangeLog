@@ -1,5 +1,12 @@
 2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/42742
+	* io/format.c (reset_fnode_counters): Use the correct pointer to the
+	head of the fnode list. (parse_format): Remove previous hack that set
+	limit on size of format string for caching.
+
+2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran
 	* io/transfer.c (read_sf): Handle EOR and EOF conditions for
 	ADVANCE="no" with PAD="yes" or PAD="no".
