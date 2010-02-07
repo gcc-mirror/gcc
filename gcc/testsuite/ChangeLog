@@ -22,7 +22,7 @@
 2010-02-05  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42915
-	g++.dg/other/crash-9.C: New test.
+	* g++.dg/other/crash-9.C: New test.
 
 2010-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
@@ -466,10 +466,6 @@
 
 	PR c++/42697
 	* g++.dg/template/crash94.C: Reverted.
-
-2010-01-17  Dodji Seketeli  <dodji@redhat.com>
-
-	PR c++/42697
 
 2010-01-17  Jie Zhang  <jie.zhang@analog.com>
 
