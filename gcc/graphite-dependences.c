@@ -603,6 +603,11 @@ dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
 
   res = new_poly_ddr (pdr1, pdr2, ddp, original_scattering_p);
 
+  if (!(pdr_read_p (pdr1) && pdr_read_p (pdr2))
+      && PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
+      && poly_drs_may_alias_p (pdr1, pdr2))
+    PDDR_KIND (res) = unknown_dependence;
+
   if (original_scattering_p)
     *x = res;
 
@@ -669,13 +674,23 @@ graphite_legal_transform_dr (poly_dr_p pdr1, poly_dr_p pdr2)
      i.e. the transform should reverse no dependences, and so PT, the
      reversed transformed PDDR, should have no constraint from PO.  */
   opddr = dependence_polyhedron (pdr1, pdr2, 1, true);
-  tpddr = dependence_polyhedron (pdr1, pdr2, -1, false);
+
+  if (PDDR_KIND (opddr) == unknown_dependence)
+    return false;
 
     /* There are no dependences between PDR1 and PDR2 in the original
        version of the program, or after the transform, so the
        transform is legal.  */
   if (pddr_is_empty (opddr))
     return true;
+
+  tpddr = dependence_polyhedron (pdr1, pdr2, -1, false);
+
+  if (PDDR_KIND (tpddr) == unknown_dependence)
+    {
+      free_poly_ddr (tpddr);
+      return false;
+    }
 
   if (pddr_is_empty (tpddr))
     {
@@ -791,6 +806,12 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_dimension_type dim;
   bool empty_p;
   poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
+
+  if (PDDR_KIND (pddr) == unknown_dependence)
+    {
+      free_poly_ddr (pddr);
+      return true;
+    }
 
   if (pddr_is_empty (pddr))
     {
