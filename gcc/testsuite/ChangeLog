@@ -1,3 +1,8 @@
+2010-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42956
+	* gcc.c-torture/compile/pr42956.c: New testcase.
+
 2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/42742

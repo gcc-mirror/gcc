@@ -3935,7 +3935,7 @@ gimple_fold_indirect_ref (tree t)
   tree sub = t;
   tree subtype;
 
-  STRIP_USELESS_TYPE_CONVERSION (sub);
+  STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
   if (!POINTER_TYPE_P (subtype))
     return NULL_TREE;
@@ -3950,18 +3950,80 @@ gimple_fold_indirect_ref (tree t)
 
       /* *(foo *)&fooarray => fooarray[0] */
       if (TREE_CODE (optype) == ARRAY_TYPE
+	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (optype))) == INTEGER_CST
 	  && useless_type_conversion_p (type, TREE_TYPE (optype)))
        {
          tree type_domain = TYPE_DOMAIN (optype);
          tree min_val = size_zero_node;
          if (type_domain && TYPE_MIN_VALUE (type_domain))
            min_val = TYPE_MIN_VALUE (type_domain);
-         return build4 (ARRAY_REF, type, op, min_val, NULL_TREE, NULL_TREE);
+	 if (TREE_CODE (min_val) == INTEGER_CST)
+	   return build4 (ARRAY_REF, type, op, min_val, NULL_TREE, NULL_TREE);
        }
+      /* *(foo *)&complexfoo => __real__ complexfoo */
+      else if (TREE_CODE (optype) == COMPLEX_TYPE
+               && useless_type_conversion_p (type, TREE_TYPE (optype)))
+        return fold_build1 (REALPART_EXPR, type, op);
+      /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
+      else if (TREE_CODE (optype) == VECTOR_TYPE
+               && useless_type_conversion_p (type, TREE_TYPE (optype)))
+        {
+          tree part_width = TYPE_SIZE (type);
+          tree index = bitsize_int (0);
+          return fold_build3 (BIT_FIELD_REF, type, op, part_width, index);
+        }
+    }
+
+  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
+  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
+    {
+      tree op00 = TREE_OPERAND (sub, 0);
+      tree op01 = TREE_OPERAND (sub, 1);
+      tree op00type;
+
+      STRIP_NOPS (op00);
+      op00type = TREE_TYPE (op00);
+      if (TREE_CODE (op00) == ADDR_EXPR
+	  && TREE_CODE (TREE_TYPE (op00type)) == VECTOR_TYPE
+	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (op00type))))
+	{
+	  HOST_WIDE_INT offset = tree_low_cst (op01, 0);
+	  tree part_width = TYPE_SIZE (type);
+	  unsigned HOST_WIDE_INT part_widthi
+	    = tree_low_cst (part_width, 0) / BITS_PER_UNIT;
+	  unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
+	  tree index = bitsize_int (indexi);
+	  if (offset / part_widthi
+	      <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (op00type)))
+	    return fold_build3 (BIT_FIELD_REF, type, TREE_OPERAND (op00, 0),
+				part_width, index);
+	}
+    }
+
+  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
+    {
+      tree op00 = TREE_OPERAND (sub, 0);
+      tree op01 = TREE_OPERAND (sub, 1);
+      tree op00type;
+
+      STRIP_NOPS (op00);
+      op00type = TREE_TYPE (op00);
+      if (TREE_CODE (op00) == ADDR_EXPR
+	  && TREE_CODE (TREE_TYPE (op00type)) == COMPLEX_TYPE
+	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (op00type))))
+	{
+	  tree size = TYPE_SIZE_UNIT (type);
+	  if (tree_int_cst_equal (size, op01))
+	    return fold_build1 (IMAGPART_EXPR, type, TREE_OPERAND (op00, 0));
+	}
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
+      && TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (subtype)))) == INTEGER_CST
       && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (subtype))))
     {
       tree type_domain;
@@ -3973,7 +4035,8 @@ gimple_fold_indirect_ref (tree t)
       type_domain = TYPE_DOMAIN (TREE_TYPE (sub));
       if (type_domain && TYPE_MIN_VALUE (type_domain))
         min_val = TYPE_MIN_VALUE (type_domain);
-      return build4 (ARRAY_REF, type, sub, min_val, NULL_TREE, NULL_TREE);
+      if (TREE_CODE (min_val) == INTEGER_CST)
+	return build4 (ARRAY_REF, type, sub, min_val, NULL_TREE, NULL_TREE);
     }
 
   return NULL_TREE;
