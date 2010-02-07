@@ -636,7 +636,7 @@ df_finish_pass (bool verify ATTRIBUTE_UNUSED)
   int removed = 0;
 
 #ifdef ENABLE_DF_CHECKING
-  enum df_changeable_flags saved_flags;
+  int saved_flags;
 #endif
 
   if (!df)
