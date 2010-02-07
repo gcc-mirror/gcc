@@ -1,3 +1,8 @@
+2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* testsuite/libgomp.graphite/force-parallel-5.c: Un-XFAILed.
+	* testsuite/libgomp.graphite/pr41118.c: Renamed from pr4118.
+
 2009-10-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* testsuite/libgomp.graphite/graphite.exp (PARALLEL_CFLAGS): Add

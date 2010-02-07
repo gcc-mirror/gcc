@@ -1,5 +1,13 @@
 2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR middle-end/42988
+	* graphite-dependences.c (dependence_polyhedron): Set PDDR_KIND
+	to unknown_dependence.
+	(graphite_legal_transform_dr): Handle the unknown_dependence.
+	(graphite_carried_dependence_level_k): Same.
+
+2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* ChangeLog.graphite: Remove testsuite/ or gcc/testsuite/.
 
 2010-02-05  Sebastian Pop  <sebastian.pop@amd.com>
