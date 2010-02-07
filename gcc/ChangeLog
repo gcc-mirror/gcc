@@ -1,3 +1,12 @@
+2010-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42956
+	* gimplify.c (gimple_fold_indirect_ref): Avoid generating
+	new ARRAY_REFs on variable size element or minimal index arrays.
+	Complete.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Use
+	gimple_fold_indirect_ref.
+
 2010-02-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/42957
