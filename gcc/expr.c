@@ -5968,6 +5968,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 
   /* First get the mode, signedness, and size.  We do this from just the
      outermost expression.  */
+  *pbitsize = -1;
   if (TREE_CODE (exp) == COMPONENT_REF)
     {
       tree field = TREE_OPERAND (exp, 1);
