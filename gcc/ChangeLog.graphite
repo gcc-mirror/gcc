@@ -1,5 +1,12 @@
 2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gfortran.dg/graphite/id-19.f: New.
+	* gfortran.dg/graphite/pr14741.f90: New.
+	* gfortran.dg/graphite/pr41924.f90: New.
+	* gfortran.dg/graphite/run-id-2.f90: New.
+
+2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR middle-end/42988
 	* graphite-dependences.c (dependence_polyhedron): Set PDDR_KIND
 	to unknown_dependence.
