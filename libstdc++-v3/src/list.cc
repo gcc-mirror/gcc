@@ -1,6 +1,6 @@
 // std::list utilities implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,8 +85,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   }
 
   void
-  _List_node_base::transfer(_List_node_base * const __first,
-                            _List_node_base * const __last)
+  _List_node_base::_M_transfer(_List_node_base * const __first,
+			       _List_node_base * const __last)
   {
     if (this != __last)
     {
@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   }
 
   void
-  _List_node_base::reverse()
+  _List_node_base::_M_reverse()
   {
     _List_node_base* __tmp = this;
     do
@@ -118,7 +118,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   }
 
   void
-  _List_node_base::hook(_List_node_base* const __position)
+  _List_node_base::_M_hook(_List_node_base* const __position)
   {
     this->_M_next = __position;
     this->_M_prev = __position->_M_prev;
@@ -127,7 +127,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
   }
 
   void
-  _List_node_base::unhook()
+  _List_node_base::_M_unhook()
   {
     _List_node_base* const __next_node = this->_M_next;
     _List_node_base* const __prev_node = this->_M_prev;

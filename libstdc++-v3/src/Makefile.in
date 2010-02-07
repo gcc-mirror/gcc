@@ -87,11 +87,12 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	pool_allocator.cc mt_allocator.cc codecvt.cc compatibility.cc \
-	compatibility-c++0x.cc complex_io.cc ctype.cc debug.cc \
+	compatibility-c++0x.cc compatibility-debug_list.cc \
+	compatibility-list.cc complex_io.cc ctype.cc debug.cc \
 	functexcept.cc hash_tr1.cc globals_io.cc hashtable_tr1.cc \
 	hashtable_c++0x.cc ios.cc ios_failure.cc ios_init.cc \
-	ios_locale.cc limits.cc limits_c++0x.cc list.cc debug_list.cc \
-	locale.cc locale_init.cc locale_facets.cc localename.cc \
+	ios_locale.cc limits.cc list.cc debug_list.cc locale.cc \
+	locale_init.cc locale_facets.cc localename.cc \
 	math_stubs_float.cc math_stubs_long_double.cc stdexcept.cc \
 	strstream.cc system_error.cc tree.cc allocator-inst.cc \
 	concept-inst.cc fstream-inst.cc ext-inst.cc ios-inst.cc \
@@ -103,22 +104,25 @@ am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	collate_members.cc ctype_members.cc messages_members.cc \
 	monetary_members.cc numeric_members.cc time_members.cc \
 	basic_file.cc c++locale.cc compatibility-ldbl.cc \
-	parallel_list.cc parallel_settings.cc
+	parallel_list.cc parallel_settings.cc \
+	compatibility-parallel_list.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
 @GLIBCXX_LDBL_COMPAT_TRUE@am__objects_2 = compatibility-ldbl.lo
 @ENABLE_PARALLEL_TRUE@am__objects_3 = parallel_list.lo \
-@ENABLE_PARALLEL_TRUE@	parallel_settings.lo
+@ENABLE_PARALLEL_TRUE@	parallel_settings.lo \
+@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list.lo
 am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
 	$(am__objects_3)
 am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	mt_allocator.lo codecvt.lo compatibility.lo \
-	compatibility-c++0x.lo complex_io.lo ctype.lo debug.lo \
+	compatibility-c++0x.lo compatibility-debug_list.lo \
+	compatibility-list.lo complex_io.lo ctype.lo debug.lo \
 	functexcept.lo hash_tr1.lo globals_io.lo hashtable_tr1.lo \
 	hashtable_c++0x.lo ios.lo ios_failure.lo ios_init.lo \
-	ios_locale.lo limits.lo limits_c++0x.lo list.lo debug_list.lo \
-	locale.lo locale_init.lo locale_facets.lo localename.lo \
+	ios_locale.lo limits.lo list.lo debug_list.lo locale.lo \
+	locale_init.lo locale_facets.lo localename.lo \
 	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
 	strstream.lo system_error.lo tree.lo allocator-inst.lo \
 	concept-inst.lo fstream-inst.lo ext-inst.lo ios-inst.lo \
@@ -369,7 +373,9 @@ host_sources_extra = \
 	basic_file.cc c++locale.cc ${ldbl_compat_sources} ${parallel_sources}
 
 @ENABLE_PARALLEL_FALSE@parallel_sources = 
-@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_list.cc parallel_settings.cc
+@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_list.cc parallel_settings.cc \
+@ENABLE_PARALLEL_TRUE@	           compatibility-parallel_list.cc
+
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
 
@@ -382,6 +388,8 @@ sources = \
 	codecvt.cc \
 	compatibility.cc \
 	compatibility-c++0x.cc \
+	compatibility-debug_list.cc \
+	compatibility-list.cc \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \
@@ -395,7 +403,6 @@ sources = \
 	ios_init.cc \
 	ios_locale.cc \
 	limits.cc \
-	limits_c++0x.cc \
 	list.cc \
 	debug_list.cc \
 	locale.cc \
@@ -869,6 +876,11 @@ parallel_settings.lo: parallel_settings.cc
 parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
+compatibility-parallel_list.lo: compatibility-parallel_list.cc
+	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+compatibility-parallel_list.o: compatibility-parallel_list.cc
+	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+
 # Use special rules for the C++0x sources so that the proper flags are passed.
 functexcept.lo: functexcept.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
@@ -900,9 +912,9 @@ hashtable_c++0x.lo: hashtable_c++0x.cc
 hashtable_c++0x.o: hashtable_c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
-limits_c++0x.lo: limits_c++0x.cc
+limits.lo: limits.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-limits_c++0x.o: limits_c++0x.cc
+limits.o: limits.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 atomic.lo: atomic.cc

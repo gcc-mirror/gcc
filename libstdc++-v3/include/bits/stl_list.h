@@ -77,17 +77,17 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     swap(_List_node_base& __x, _List_node_base& __y) throw ();
 
     void
-    transfer(_List_node_base * const __first,
-	     _List_node_base * const __last) throw ();
+    _M_transfer(_List_node_base * const __first,
+		_List_node_base * const __last) throw ();
 
     void
-    reverse() throw ();
+    _M_reverse() throw ();
 
     void
-    hook(_List_node_base * const __position) throw ();
+    _M_hook(_List_node_base * const __position) throw ();
 
     void
-    unhook() throw ();
+    _M_unhook() throw ();
   };
 
   /// An actual node in the %list.
@@ -1345,7 +1345,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       void
       reverse()
-      { this->_M_impl._M_node.reverse(); }
+      { this->_M_impl._M_node._M_reverse(); }
 
       /**
        *  @brief  Sort the elements.
@@ -1424,7 +1424,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       // Moves the elements from [first,last) before position.
       void
       _M_transfer(iterator __position, iterator __first, iterator __last)
-      { __position._M_node->transfer(__first._M_node, __last._M_node); }
+      { __position._M_node->_M_transfer(__first._M_node, __last._M_node); }
 
       // Inserts new element at position given and with value given.
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
@@ -1432,7 +1432,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _M_insert(iterator __position, const value_type& __x)
       {
         _Node* __tmp = _M_create_node(__x);
-        __tmp->hook(__position._M_node);
+        __tmp->_M_hook(__position._M_node);
       }
 #else
      template<typename... _Args>
@@ -1440,7 +1440,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        _M_insert(iterator __position, _Args&&... __args)
        {
 	 _Node* __tmp = _M_create_node(std::forward<_Args>(__args)...);
-	 __tmp->hook(__position._M_node);
+	 __tmp->_M_hook(__position._M_node);
        }
 #endif
 
@@ -1448,7 +1448,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       _M_erase(iterator __position)
       {
-        __position._M_node->unhook();
+        __position._M_node->_M_unhook();
         _Node* __n = static_cast<_Node*>(__position._M_node);
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
         _M_get_Node_allocator().destroy(__n);
