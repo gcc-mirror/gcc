@@ -1,3 +1,8 @@
+2010-02-07  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/42946
+	* df-core.c (df_finish_pass): Change type of saved_flags to int.
+
 2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42988
