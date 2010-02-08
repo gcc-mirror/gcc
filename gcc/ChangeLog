@@ -1,3 +1,9 @@
+2010-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/42931
+	* tree-loop-linear.c (try_interchange_loops): Don't call
+	double_int_mul if estimated_loop_iterations failed.
+
 2010-02-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/42898

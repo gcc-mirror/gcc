@@ -1,5 +1,5 @@
 /* Linear Loop transforms
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>.
 
@@ -246,9 +246,10 @@ try_interchange_loops (lambda_trans_matrix trans,
 	res = cmp < 0 ?
 	  estimated_loop_iterations (loop_j, false, &nb_iter):
 	  estimated_loop_iterations (loop_i, false, &nb_iter);
-	large = double_int_mul (large, nb_iter);
 
-	if (res && double_int_ucmp (large, l1_cache_size) < 0)
+	if (res
+	    && double_int_ucmp (double_int_mul (large, nb_iter),
+				l1_cache_size) < 0)
 	  continue;
 
 	if (dependence_steps_i < dependence_steps_j
