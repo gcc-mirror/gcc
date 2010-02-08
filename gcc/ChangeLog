@@ -1,3 +1,11 @@
+2010-02-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/42898
+	* tree-sra.c (build_accesses_from_assign): Do not mark in
+	should_scalarize_away_bitmap if stmt has volatile ops.
+	(sra_modify_assign): Do not process assigns piecemeal if if stmt
+	has volatile ops.
+
 2010-02-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* doc/tm.texi (TARGET_UNWIND_WORD_MODE): Document.
