@@ -1023,7 +1023,8 @@ build_accesses_from_assign (gimple *stmt_ptr,
   racc = build_access_from_expr_1 (rhs_ptr, stmt, false);
   lacc = build_access_from_expr_1 (lhs_ptr, stmt, true);
 
-  if (should_scalarize_away_bitmap && racc && !is_gimple_reg_type (racc->type))
+  if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
+      && racc && !is_gimple_reg_type (racc->type))
     bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
 
   if (lacc && racc
@@ -2648,7 +2649,9 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
      there to do the copying and then load the scalar replacements of the LHS.
      This is what the first branch does.  */
 
-  if (contains_view_convert_expr_p (rhs) || contains_view_convert_expr_p (lhs)
+  if (gimple_has_volatile_ops (*stmt)
+      || contains_view_convert_expr_p (rhs)
+      || contains_view_convert_expr_p (lhs)
       || (access_has_children_p (racc)
 	  && !ref_expr_for_all_replacements_p (racc, lhs, racc->offset))
       || (access_has_children_p (lacc)
