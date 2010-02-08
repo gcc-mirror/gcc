@@ -1,3 +1,8 @@
+2010-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42995
+	* gcc.dg/tree-ssa/inline-4.c: New testcase.
+
 2010-02-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/block-0.c: Call abort for runtime test.  Always
