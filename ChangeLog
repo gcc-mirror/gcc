@@ -1,3 +1,7 @@
+2010-02-08  Andrew Pinski  <pinskia@gmail.com>
+
+	* MAINTAINERS (spu port): Update my email address.
+
 2010-02-08  Jie Zhang  <jie.zhang@analog.com>
 
 	* MAINTAINERS: Add myself as a maintainer for the bfin port.
