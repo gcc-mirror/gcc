@@ -1,3 +1,7 @@
+2010-02-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* doc/tm.texi (TARGET_UNWIND_WORD_MODE): Document.
+
 2010-02-07  Adam Nemet  <adambnmet@gmail.com>
 
 	* config/mips/mips.md (*<optab>_trunc<mode>_exts): Fix comment
