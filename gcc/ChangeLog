@@ -1,5 +1,11 @@
 2010-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/42890
+	* tree-inline.c (delete_unreachable_blocks_update_callgraph): New
+	function backported from the trunk.
+	(tree_function_versioning): Call it instead of
+	delete_unreachable_blocks.
+
 	PR tree-optimization/42931
 	* tree-loop-linear.c (try_interchange_loops): Don't call
 	double_int_mul if estimated_loop_iterations failed.
