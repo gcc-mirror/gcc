@@ -1424,6 +1424,11 @@ of shift instructions expanded to libgcc calls.  If not defined
 targets.
 @end deftypefn
 
+@deftypefn {Target Hook} {enum machine_mode} TARGET_UNWIND_WORD_MODE (void)
+Return machine mode to be used for @code{_Unwind_Word} type.
+The default is to use @code{word_mode}.
+@end deftypefn
+
 @defmac ROUND_TOWARDS_ZERO
 If defined, this macro should be true if the prevailing rounding
 mode is towards zero.
