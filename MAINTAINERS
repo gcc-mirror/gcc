@@ -48,6 +48,7 @@ avr port		Denis Chertykov		chertykov@gmail.com
 avr port		Anatoly Sokolov		aesok@post.ru
 avr port		Eric Weddington		eric.weddington@atmel.com
 bfin port		Bernd Schmidt		bernd.schmidt@analog.com
+bfin port		Jie Zhang		jie.zhang@analog.com
 cris port		Hans-Peter Nilsson	hp@axis.com
 crx port		Pompapathi V Gadad 	Pompapathi.V.Gadad@nsc.com
 fr30 port		Nick Clifton		nickc@redhat.com
@@ -493,7 +494,6 @@ Le-Chun Wu					lcwu@google.com
 Canqun Yang					canqun@nudt.edu.cn
 Joey Ye						joey.ye@intel.com
 Kenneth Zadeck					zadeck@naturalbridge.com
-Jie Zhang					jie.zhang@analog.com
 Shujing Zhao					pearly.zhao@oracle.com
 Jon Ziegler					jonz@apple.com
 Roman Zippel					zippel@linux-m68k.org
