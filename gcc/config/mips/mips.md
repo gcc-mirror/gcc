@@ -2888,8 +2888,9 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "<MODE>")])
 
-;; Logical shift by 32 or more results in proper SI values so
-;; truncation is removed by the middle end.
+;; Logical shift by more than 32 results in proper SI values so truncation is
+;; removed by the middle end.  Note that a logical shift by 32 is handled by
+;; the previous pattern.
 (define_insn "*<optab>_trunc<mode>_exts"
   [(set (match_operand:SUBDI 0 "register_operand" "=d")
         (truncate:SUBDI
