@@ -1418,7 +1418,10 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
     }
 
   /* Now do the automatic inlining.  */
-  if (mode != INLINE_ALL && mode != INLINE_ALWAYS_INLINE)
+  if (mode != INLINE_ALL && mode != INLINE_ALWAYS_INLINE
+      /* Never inline regular functions into always-inline functions
+	 during incremental inlining.  */
+      && !node->local.disregard_inline_limits)
     for (e = node->callees; e; e = e->next_callee)
       {
 	if (!e->callee->local.inlinable
@@ -1606,17 +1609,17 @@ compute_inline_parameters (struct cgraph_node *node)
   node->global.stack_frame_offset = 0;
 
   /* Can this function be inlined at all?  */
-  node->local.inlinable = tree_inlinable_function_p (current_function_decl);
+  node->local.inlinable = tree_inlinable_function_p (node->decl);
 
   /* Estimate the number of instructions for this function.
      ??? At -O0 we don't use this information except for the dumps, and
 	 even then only for always_inline functions.  But disabling this
 	 causes ICEs in the inline heuristics...  */
   inline_summary (node)->self_insns
-      = estimate_num_insns_fn (current_function_decl, &eni_inlining_weights);
+      = estimate_num_insns_fn (node->decl, &eni_inlining_weights);
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
-      = DECL_DISREGARD_INLINE_LIMITS (current_function_decl);
+      = DECL_DISREGARD_INLINE_LIMITS (node->decl);
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.insns = inline_summary (node)->self_insns;

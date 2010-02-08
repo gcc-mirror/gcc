@@ -2729,6 +2729,8 @@ estimate_move_cost (tree type)
 {
   HOST_WIDE_INT size;
 
+  gcc_assert (!VOID_TYPE_P (type));
+
   size = int_size_in_bytes (type);
 
   if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (!optimize_size))
@@ -2980,7 +2982,8 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	  {
 	    tree t;
 	    for (t = TYPE_ARG_TYPES (funtype); t; t = TREE_CHAIN (t))
-	      cost += estimate_move_cost (TREE_VALUE (t));
+	      if (!VOID_TYPE_P (TREE_VALUE (t)))
+		cost += estimate_move_cost (TREE_VALUE (t));
 	  }
 	else
 	  {
