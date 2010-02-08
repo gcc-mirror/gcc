@@ -822,13 +822,11 @@ namespace std
 	// __urng.min(), __param.b(), __param.a().  Currently works fine only
 	// in the most common case __urng.max() - __urng.min() >=
 	// __param.b() - __param.a(), with __urng.max() > __urng.min() >= 0.
-	typedef typename __gnu_cxx::__add_unsigned<typename
-	  _UniformRandomNumberGenerator::result_type>::__type __urntype;
-	typedef typename __gnu_cxx::__add_unsigned<result_type>::__type
-							      __utype;
-	typedef typename __gnu_cxx::__conditional_type<(sizeof(__urntype)
-							> sizeof(__utype)),
-	  __urntype, __utype>::__type                         __uctype;
+	typedef typename std::make_unsigned<typename
+	  _UniformRandomNumberGenerator::result_type>::type __urntype;
+	typedef typename std::make_unsigned<result_type>::type __utype;
+	typedef typename std::conditional<(sizeof(__urntype) > sizeof(__utype)),
+	  __urntype, __utype>::type __uctype;
 
 	result_type __ret;
 
