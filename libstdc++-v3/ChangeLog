@@ -1,3 +1,12 @@
+2010-02-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/random.tcc (uniform_int_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&)):
+	Use make_unsigned instead of __add_unsigned and conditional
+	instead of __conditional_type.
+	* include/std/random: Do not include <ext/type_traits.h> and
+	<ext/numeric_traits.h>.
+
 2010-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/16896
