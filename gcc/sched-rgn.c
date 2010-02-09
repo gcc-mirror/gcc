@@ -3537,7 +3537,7 @@ rest_of_handle_sched2 (void)
     {
       /* Do control and data sched analysis again,
 	 and write some more of the results to dump file.  */
-      if (flag_sched2_use_superblocks || flag_sched2_use_traces)
+      if (flag_sched2_use_superblocks)
 	schedule_ebbs ();
       else
 	schedule_insns ();

@@ -1,3 +1,14 @@
+2010-02-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* common.opt (fsched2-use-traces): Preserved for backward
+	compatibility.
+	* doc/invoke.texi: Remove the documentation about option
+	-fsched2-use-traces.
+	* sched-rgn.c (rest_of_handle_sched2): Remove usage of
+	flag_sched2_use_traces.
+	* opts.c (common_handle_option): Add OPT_fsched2_use_traces to
+	the backward compatibility flag section.
+
 2010-02-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43008

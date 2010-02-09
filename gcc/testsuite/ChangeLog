@@ -1,3 +1,7 @@
+2010-02-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.dg/pr19340.c: Adjust.
+
 2010-02-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43008

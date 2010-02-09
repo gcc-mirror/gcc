@@ -1043,8 +1043,8 @@ Common Report Var(flag_sched2_use_superblocks) Optimization
 If scheduling post reload, do superblock scheduling
 
 fsched2-use-traces
-Common Report Var(flag_sched2_use_traces) Optimization
-If scheduling post reload, do trace scheduling
+Common
+Does nothing.  Preserved for backward compatibility.
 
 fschedule-insns
 Common Report Var(flag_schedule_insns) Optimization
