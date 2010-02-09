@@ -1,3 +1,8 @@
+2010-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42370
+	* g++.dg/cpp0x/lambda/lambda-warn2.C: New.
+
 2010-02-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41869

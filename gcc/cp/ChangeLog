@@ -1,3 +1,10 @@
+2010-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42370
+	* decl2.c (change_return_type): New fn.
+	* semantics.c (apply_lambda_return_type): Use it.
+	* cp-tree.h: Declare it.
+
 2010-02-05  Richard Guenther  <rguenther@suse.de>
 
 	* Make-lang.in (cp/cp-lang.o): Depend on gt-cp-cp-lang.h.
