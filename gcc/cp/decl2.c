@@ -139,6 +139,33 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals)
   return fntype;
 }
 
+/* Return a variant of FNTYPE, a FUNCTION_TYPE or METHOD_TYPE, with its
+   return type changed to NEW_RET.  */
+
+tree
+change_return_type (tree new_ret, tree fntype)
+{
+  tree newtype;
+  tree args = TYPE_ARG_TYPES (fntype);
+  tree raises = TYPE_RAISES_EXCEPTIONS (fntype);
+  tree attrs = TYPE_ATTRIBUTES (fntype);
+
+  if (same_type_p (new_ret, TREE_TYPE (fntype)))
+    return fntype;
+
+  if (TREE_CODE (fntype) == FUNCTION_TYPE)
+    newtype = build_function_type (new_ret, args);
+  else
+    newtype = build_method_type_directly (TYPE_METHOD_BASETYPE (fntype),
+					  new_ret, TREE_CHAIN (args));
+  if (raises)
+    newtype = build_exception_variant (newtype, raises);
+  if (attrs)
+    newtype = cp_build_type_attribute_variant (newtype, attrs);
+
+  return newtype;
+}
+
 /* Build a PARM_DECL with NAME and TYPE, and set DECL_ARG_TYPE
    appropriately.  */
 

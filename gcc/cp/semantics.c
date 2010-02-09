@@ -5584,7 +5584,7 @@ apply_lambda_return_type (tree lambda, tree return_type)
 
   /* TREE_TYPE (FUNCTION_DECL) == METHOD_TYPE
      TREE_TYPE (METHOD_TYPE)   == return-type  */
-  TREE_TYPE (TREE_TYPE (fco)) = return_type;
+  TREE_TYPE (fco) = change_return_type (return_type, TREE_TYPE (fco));
 
   result = DECL_RESULT (fco);
   if (result == NULL_TREE)
