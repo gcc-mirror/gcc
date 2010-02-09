@@ -1,3 +1,7 @@
+2010-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.c (fix_mio_expr): Declare sym.
+
 2010-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41869
