@@ -1,3 +1,9 @@
+2010-02-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43000
+	* tree-vrp.c (vrp_int_const_binop): Only handle unsigned
+	arithmetic manually.
+
 2010-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/42931
