@@ -135,9 +135,11 @@ namespace regex_constants
    * Specifies that the grammar recognized by the regular expression engine is
    * that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
    * identical to syntax_option_type extended, except that C-style escape
-   * sequences are supported.  These sequences are, explicitly, '\\', '\a',
-   * '\b', '\f', '\n', '\r', '\t' , '\v', '\'', ''',
-   * and '\ddd' (where ddd is one, two, or three octal digits).  
+   * sequences are supported.  These sequences are: 
+   * \\\\, \\a, \\b, \\f, 
+   * \\n, \\r, \\t , \\v, 
+   * \\&apos;, &apos;, and \\ddd 
+   * (where ddd is one, two, or three octal digits).  
    */
   static const syntax_option_type awk        = 1 << _S_awk;
 
@@ -202,26 +204,26 @@ namespace regex_constants
 
   /**
    * The first character in the sequence [first, last) is treated as though it
-   * is not at the beginning of a line, so the character '^' in the regular
+   * is not at the beginning of a line, so the character (^) in the regular
    * expression shall not match [first, first).
    */
   static const match_flag_type match_not_bol     = 1 << _S_not_bol;
 
   /**
    * The last character in the sequence [first, last) is treated as though it
-   * is not at the end of a line, so the character '$' in the regular
+   * is not at the end of a line, so the character ($) in the regular
    * expression shall not match [last, last).
    */
   static const match_flag_type match_not_eol     = 1 << _S_not_eol;
    
   /**
-   * The expression '\b' is not matched against the sub-sequence
+   * The expression \\b is not matched against the sub-sequence
    * [first,first).
    */
   static const match_flag_type match_not_bow     = 1 << _S_not_bow;
    
   /**
-   * The expression '\b' should not be matched against the sub-sequence
+   * The expression \\b should not be matched against the sub-sequence
    * [last,last).
    */
   static const match_flag_type match_not_eow     = 1 << _S_not_eow;
@@ -363,7 +365,7 @@ namespace regex_constants
   static const error_type error_space(_S_error_space);
 
   /**
-   * One of '*?+{' was not preceded by a valid regular expression.
+   * One of <em>*?+{</em> was not preceded by a valid regular expression.
    */
   static const error_type error_badrepeat(_S_error_badrepeat);
 
@@ -2532,7 +2534,7 @@ namespace regex_constants
 
   // [7.12.2] Class template regex_token_iterator
   /**
-   * Iterates over submatches in a range (or 'splits' a text string).
+   * Iterates over submatches in a range (or @a splits a text string).
    *
    * The purpose of this iterator is to enumerate all, or all specified,
    * matches of a regular expression within a text range.  The dereferenced

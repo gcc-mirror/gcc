@@ -327,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  n  Maximum number of characters to store in @a s.
        *  @return  *this
        *
-       *  Returns @c get(s,n,widen(&apos;\n&apos;)).
+       *  Returns @c get(s,n,widen(&apos;\\n&apos;)).
       */
       __istream_type& 
       get(char_type* __s, streamsize __n)
@@ -360,7 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  sb  A streambuf in which to store data.
        *  @return  *this
        *
-       *  Returns @c get(sb,widen(&apos;\n&apos;)).
+       *  Returns @c get(sb,widen(&apos;\\n&apos;)).
       */
       __istream_type&
       get(__streambuf_type& __sb)
@@ -400,7 +400,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  n  Maximum number of characters to extract.
        *  @return  *this
        *
-       *  Returns @c getline(s,n,widen(&apos;\n&apos;)).
+       *  Returns @c getline(s,n,widen(&apos;\\n&apos;)).
       */
       __istream_type& 
       getline(char_type* __s, streamsize __n)
