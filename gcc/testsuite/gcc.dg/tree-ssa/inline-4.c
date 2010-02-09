@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-einline2" } */
+/* { dg-add-options bind_pic_locally } */
 
 extern int rand(void);
 

@@ -1,3 +1,7 @@
+2010-02-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/tree-ssa/inline-4.c: Bind pic locally.
+
 2010-02-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42399
