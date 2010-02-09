@@ -1,3 +1,12 @@
+2010-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2010-01-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42705
+	* tree-ssa-reassoc.c (build_and_add_sum): Insert stmts after
+	labels.
+
 2010-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/42890

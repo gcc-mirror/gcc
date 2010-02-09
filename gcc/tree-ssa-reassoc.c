@@ -1,5 +1,5 @@
 /* Reassociation for trees.
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -844,7 +844,7 @@ build_and_add_sum (tree tmpvar, tree op1, tree op2, enum tree_code opcode)
   if ((!op1def || gimple_nop_p (op1def))
       && (!op2def || gimple_nop_p (op2def)))
     {
-      gsi = gsi_start_bb (single_succ (ENTRY_BLOCK_PTR));
+      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
       gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
     }
   else if ((!op1def || gimple_nop_p (op1def))
@@ -853,7 +853,7 @@ build_and_add_sum (tree tmpvar, tree op1, tree op2, enum tree_code opcode)
     {
       if (gimple_code (op2def) == GIMPLE_PHI)
 	{
-	  gsi = gsi_start_bb (gimple_bb (op2def));
+	  gsi = gsi_after_labels (gimple_bb (op2def));
 	  gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
 	}
       else
@@ -878,7 +878,7 @@ build_and_add_sum (tree tmpvar, tree op1, tree op2, enum tree_code opcode)
     {
       if (gimple_code (op1def) == GIMPLE_PHI)
 	{
-	  gsi = gsi_start_bb (gimple_bb (op1def));
+	  gsi = gsi_after_labels (gimple_bb (op1def));
 	  gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
 	}
       else
