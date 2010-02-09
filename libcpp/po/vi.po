@@ -1,13 +1,13 @@
 # Vietnamese translation for CPPlib.
-# Copyright © 2009 Free Software Foundation, Inc.
+# Copyright © 2010 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Clytie Siddall <clytie@riverland.net.au>, 2005-2009.
+# Clytie Siddall <clytie@riverland.net.au>, 2005-2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.4.1\n"
+"Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2009-09-19 14:51+0930\n"
+"PO-Revision-Date: 2010-02-09 20:07+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -120,9 +120,9 @@ msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "dãy thoát khác ISO chuẩn: « \\%c »"
 
 #: charset.c:1321
-#, fuzzy, c-format
+#, c-format
 msgid "unknown escape sequence: '\\%c'"
-msgstr "không biết dãy thoát: « \\%c »"
+msgstr "không rõ dãy thoát: '\\%c'"
 
 #: charset.c:1329
 #, c-format
@@ -309,14 +309,12 @@ msgid "#pragma once in main file"
 msgstr "Có « #pragma » một lần trong tập tin chính"
 
 #: directives.c:1444
-#, fuzzy
 msgid "invalid #pragma push_macro directive"
-msgstr "gặp chỉ thị vộ hiệu hóa (poison) GCC « #pragma » không hợp lệ"
+msgstr "gặp chỉ thị #pragma push_macro sai"
 
 #: directives.c:1483
-#, fuzzy
 msgid "invalid #pragma pop_macro directive"
-msgstr "gặp chỉ thị vộ hiệu hóa (poison) GCC « #pragma » không hợp lệ"
+msgstr "gặp chỉ thị #pragma pop_macro sai"
 
 #: directives.c:1537
 msgid "invalid #pragma GCC poison directive"
@@ -435,9 +433,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "gặp tiền tố không hợp lệ « 0b » cho hằng trôi nổi"
 
 #: expr.c:339
-#, fuzzy
 msgid "no digits in hexadecimal floating constant"
-msgstr "dùng hằng trôi nổi thập lục C99"
+msgstr "hằng trôi nổi thập lục không chứa chữ số"
 
 #: expr.c:343
 msgid "use of C99 hexadecimal floating constant"
@@ -462,9 +459,8 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "ngôn ngữ C truyền thống từ chối hậu tố « %.*s »"
 
 #: expr.c:383
-#, fuzzy
 msgid "suffix for double constant is a GCC extension"
-msgstr "hằng định điểm là phần mở rộng GCC"
+msgstr "hậu tố cho hằng số đôi là một phần mở rộng GCC"
 
 #: expr.c:389
 #, c-format
@@ -481,9 +477,8 @@ msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "gặp hậu tố không hợp lệ « %.*s » nằm trên hằng số nguyên"
 
 #: expr.c:433
-#, fuzzy
 msgid "use of C++0x long long integer constant"
-msgstr "dùng hằng số nguyên dài dài C99"
+msgstr "dùng hằng số nguyên dài dài C++0x"
 
 #: expr.c:442
 msgid "imaginary constants are a GCC extension"
@@ -743,21 +738,20 @@ msgstr "« __VA_ARGS__ » chỉ có thể xuất hiện trong sự mở rộng c
 #: lex.c:547 lex.c:624
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "dấu nhận diện « %s » là một tên toán tử đặc biệt trong C++"
 
 #: lex.c:739
 msgid "raw string delimiter longer than 16 characters"
-msgstr ""
+msgstr "gặp dấu giới hạn chuỗi thô dài hơn 16 ký tự"
 
 #: lex.c:742
-#, fuzzy, c-format
+#, c-format
 msgid "invalid character '%c' in raw string delimiter"
-msgstr "ký tự chung %.*s không phải là hợp lệ trong bộ nhận diện"
+msgstr "gặp ký tự sai « %c » trong dấu giới hạn chuỗi thô"
 
 #: lex.c:771 lex.c:818
-#, fuzzy
 msgid "unterminated raw string"
-msgstr "#%s chưa chấm dứt"
+msgstr "chuỗi thô chưa chấm dứt"
 
 #: lex.c:831 lex.c:930
 msgid "null character(s) preserved in literal"
@@ -951,22 +945,3 @@ msgstr "đã phát hiện sự đệ qui trong khi mở rộng vĩ lệnh « %s 
 #: traditional.c:969
 msgid "syntax error in macro parameter list"
 msgstr "gặp lỗi cú pháp trong danh sách tham số vĩ lệnh"
-
-#~ msgid "warning: "
-#~ msgstr "cảnh báo : "
-
-#~ msgid "internal error: "
-#~ msgstr "lỗi nôi bộ : "
-
-#~ msgid "error: "
-#~ msgstr "lỗi: "
-
-#~ msgid "In file included from %s:%u"
-#~ msgstr "Trong tập tin được bao gồm từ %s:%u"
-
-#~ msgid ""
-#~ ",\n"
-#~ "                 from %s:%u"
-#~ msgstr ""
-#~ ",\n"
-#~ "                 từ %s:%u"
