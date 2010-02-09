@@ -1,3 +1,9 @@
+2010-02-09  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/39171
+	* gfortran.dg/char_length_2.f90: Change warning expectations accordingly
+	and pass -Wsurprising as necessary.
+
 2010-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/42890

@@ -1,5 +1,13 @@
 2010-02-09  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/39171
+	* resolve.c (resolve_charlen): Change warning about negative CHARACTER
+	length to be correct and issue only with -Wsurprising.
+	* invoke.texi (Wsurprising): Mention this new warning that is
+	turned on by -Wsurprising.
+
+2010-02-09  Daniel Kraft  <d@domob.eu>
+
 	PR fortran/41507
 	* intrinsic.texi (MAXVAL): Remove wrong claim that array argument
 	can be CHARACTER type.
