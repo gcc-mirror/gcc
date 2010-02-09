@@ -1,5 +1,13 @@
 2010-02-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43008
+	* tree-ssa-structalias.c (handle_lhs_call): Pass in the fndecl,
+	make HEAP variables initialized from global memory if they
+	are not known builtin functions.
+	(find_func_aliases): Adjust.
+
+2010-02-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/43000
 	* tree-vrp.c (vrp_int_const_binop): Only handle unsigned
 	arithmetic manually.
