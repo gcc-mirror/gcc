@@ -7558,8 +7558,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
-@code{REAL}, or @code{CHARACTER}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER} or
+@code{REAL}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
@@ -7614,8 +7614,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
-@code{REAL}, or @code{CHARACTER}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER} or
+@code{REAL}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
@@ -7869,8 +7869,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
-@code{REAL}, or @code{CHARACTER}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER} or
+@code{REAL}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
@@ -7925,8 +7925,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER},
-@code{REAL}, or @code{CHARACTER}.
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER} or
+@code{REAL}.
 @item @var{DIM}   @tab (Optional) Shall be a scalar of type
 @code{INTEGER}, with a value between one and the rank of @var{ARRAY},
 inclusive.  It may not be an optional dummy argument.
