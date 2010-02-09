@@ -106,7 +106,7 @@ xtensa port		Bob Wilson		bob.wilson@acm.org
 			OS Port Maintainers	(OS alphabetical order)
 
 darwin port		Dale Johannesen		dalej@apple.com
-darwin port		Mike Stump		mrs@apple.com
+darwin port		Mike Stump		mikestump@comcast.net
 darwin port		Eric Christopher	echristo@apple.com
 darwin port		Stan Shebs		stanshebs@earthlink.net
 DJGPP			DJ Delorie		dj@delorie.com
@@ -141,7 +141,7 @@ go			Ian Lance Taylor	ian@airs.com
 java			Per Bothner		per@bothner.com
 java			Andrew Haley		aph@redhat.com
 java			Tom Tromey		tromey@redhat.com
-objective-c/c++		Mike Stump		mrs@apple.com
+objective-c/c++		Mike Stump		mikestump@comcast.net
 objective-c/c++		Stan Shebs		stanshebs@earthlink.net
 
 			Various Maintainers
@@ -471,7 +471,7 @@ Basile Starynkevitch				basile@starynkevitch.net
 Jakub Staszak					kuba@et.pl
 Graham Stott					graham.stott@btinternet.com
 Andrew Stubbs					ams@codesourcery.com
-Mike Stump					mrs@apple.com
+Mike Stump					mikestump@comcast.net
 Jeff Sturm					jsturm@gcc.gnu.org
 Gabriele Svelto					gabriele.svelto@st.com
 Samuel Tardieu					sam@rfc1149.net
