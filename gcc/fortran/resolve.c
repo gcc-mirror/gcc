@@ -8559,8 +8559,10 @@ resolve_charlen (gfc_charlen *cl)
      value, the length of character entities declared is zero."  */
   if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
     {
-      gfc_warning_now ("CHARACTER variable has zero length at %L",
-		       &cl->length->where);
+      if (gfc_option.warn_surprising)
+	gfc_warning_now ("CHARACTER variable at %L has negative length %d,"
+			 " the length has been set to zero",
+			 &cl->length->where, i);
       gfc_replace_expr (cl->length, gfc_int_expr (0));
     }
 
