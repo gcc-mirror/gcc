@@ -1,3 +1,9 @@
+2010-02-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42996
+	* intrinsics/args.c (get_command_argument_i4): Always return
+	commandline-argument length for length parameter.
+
 2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/42742

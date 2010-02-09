@@ -147,11 +147,9 @@ get_command_argument_i4 (GFC_INTEGER_4 *number, char *value,
   if (value != NULL && stat_flag != GFC_GC_FAILURE)
     {
       if (arglen > value_len)
-       {
-	 arglen = value_len;
 	 stat_flag = GFC_GC_VALUE_TOO_SHORT;
-       }
-      memcpy (value, argv[*number], arglen);
+
+      memcpy (value, argv[*number], arglen <= value_len ? arglen : value_len);
     }
 
   if (length != NULL)
