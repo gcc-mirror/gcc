@@ -3482,7 +3482,7 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc)
+handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc, tree fndecl)
 {
   VEC(ce_s, heap) *lhsc = NULL;
 
@@ -3496,6 +3496,12 @@ handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc)
          it escapes.  */
       DECL_EXTERNAL (vi->decl) = 0;
       vi->is_global_var = 0;
+      /* If this is not a real malloc call assume the memory was
+         initialized and thus may point to global memory.  All
+	 builtin functions with the malloc attribute behave in a sane way.  */
+      if (!fndecl
+	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	make_constraint_from (vi, nonlocal_id);
     }
   else if (VEC_length (ce_s, rhsc) > 0)
     {
@@ -3798,7 +3804,7 @@ find_func_aliases (gimple origt)
 	    handle_rhs_call (t, &rhsc);
 	  if (gimple_call_lhs (t)
 	      && could_have_pointers (gimple_call_lhs (t)))
-	    handle_lhs_call (gimple_call_lhs (t), flags, rhsc);
+	    handle_lhs_call (gimple_call_lhs (t), flags, rhsc, fndecl);
 	  VEC_free (ce_s, heap, rhsc);
 	}
       else
