@@ -1,3 +1,8 @@
+2010-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41869
+	* module.c (fix_mio_expr): Fix for private generic procedures.
+
 2010-02-09  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/39171
