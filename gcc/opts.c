@@ -2126,6 +2126,7 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_fcse_skip_blocks:
     case OPT_floop_optimize:
     case OPT_frerun_loop_opt:
+    case OPT_fsched2_use_traces:
     case OPT_fstrength_reduce:
     case OPT_ftree_store_copy_prop:
     case OPT_fforce_addr:

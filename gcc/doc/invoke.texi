@@ -367,8 +367,7 @@ Objective-C and Objective-C++ Dialects}.
 -freciprocal-math -fregmove -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
--frounding-math -fsched2-use-superblocks @gol
--fsched2-use-traces -fsched-pressure @gol
+-frounding-math -fsched2-use-superblocks -fsched-pressure @gol
 -fsched-spec-load -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}] -fsched-stalled-insns[=@var{n}] @gol
 -fsched-group-heuristic -fsched-critical-path-heuristic @gol
@@ -6404,19 +6403,6 @@ favors the instruction that has more instructions depending on it.
 This is enabled by default when scheduling is enabled, i.e.@: 
 with @option{-fschedule-insns} or @option{-fschedule-insns2} or 
 at @option{-O2} or higher.
-
-@item -fsched2-use-traces
-@opindex fsched2-use-traces
-Use @option{-fsched2-use-superblocks} algorithm when scheduling after register
-allocation and additionally perform code duplication in order to increase the
-size of superblocks using tracer pass.  See @option{-ftracer} for details on
-trace formation.
-
-This mode should produce faster but significantly longer programs.  Also
-without @option{-fbranch-probabilities} the traces constructed may not
-match the reality and hurt the performance.  This only makes
-sense when scheduling after register allocation, i.e.@: with
-@option{-fschedule-insns2} or at @option{-O2} or higher.
 
 @item -freschedule-modulo-scheduled-loops
 @opindex freschedule-modulo-scheduled-loops

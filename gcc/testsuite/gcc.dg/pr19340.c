@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fschedule-insns2 -fsched2-use-traces" } */
+/* { dg-options "-O1 -fschedule-insns2 -fsched2-use-superblocks" } */
 /* { dg-skip-if "No scheduling" { mmix-*-* cris-*-* crisv32-*-* fido-*-* m68k-*-* m32c-*-* avr-*-* moxie-*-* } { "*" } { "" } } */
 
 extern double f (double x);
