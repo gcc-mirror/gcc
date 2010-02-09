@@ -1,5 +1,8 @@
 2010-02-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42399
+	* g++.dg/cpp0x/lambda/lambda-errloc2.C: New.
+
 	PR c++/42370
 	* g++.dg/cpp0x/lambda/lambda-warn2.C: New.
 

@@ -1,5 +1,10 @@
 2010-02-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42399
+	* pt.c (tsubst_copy_and_build): Propagate LAMBDA_EXPR_LOCATION.
+
+2010-02-09  Jason Merrill  <jason@redhat.com>
+
 	PR c++/42370
 	* decl2.c (change_return_type): New fn.
 	* semantics.c (apply_lambda_return_type): Use it.
