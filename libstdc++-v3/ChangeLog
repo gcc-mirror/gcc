@@ -1,3 +1,14 @@
+2010-02-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/42460
+	* include/tr1_impl/regex: Fix quoting issues in doxygen markup.
+	* include/bits/random.h: Fix multi-line doxygen function markup.
+
+2010-02-08  Matthias Klose  <doko@debian.org>
+
+	PR libstdc++/42460
+	* include/std/istream: Fix '\' quoting in doxygen markup.
+
 2010-02-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/bits/random.tcc (uniform_int_distribution<>::
