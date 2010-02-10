@@ -23,7 +23,8 @@
 
 struct derived : std::nested_exception { };
 
-struct base { virtual ~base() = default; };
+struct base { virtual ~base(); };
+inline base::~base() = default;
 
 struct derived2 : base, std::nested_exception { };
 

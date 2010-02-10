@@ -41,3 +41,8 @@ struct G: public F
   // Can't be const because F copy ctor isn't.
   G(const G&) = default;	// { dg-error "const" }
 };
+
+struct H
+{
+  virtual ~H() = default;	// { dg-error "declared virtual" }
+};

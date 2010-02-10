@@ -23,7 +23,8 @@
 
 struct derived : std::nested_exception { };
 
-struct not_derived { virtual ~not_derived() = default; };
+struct not_derived { virtual ~not_derived(); };
+inline not_derived::~not_derived() = default;
 
 void test01() 
 {
