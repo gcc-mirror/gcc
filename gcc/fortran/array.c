@@ -1522,8 +1522,7 @@ gfc_constant_ac (gfc_expr *e)
   rc = SUCCESS;
 
   if (e->value.constructor
-      && e->value.constructor->expr->expr_type == EXPR_ARRAY 
-      && !e->value.constructor->iterator)
+      && e->value.constructor->expr->expr_type == EXPR_ARRAY)
     {
       /* Expand the constructor.  */
       iter_stack = NULL;
