@@ -4654,6 +4654,13 @@ find_barrier (int num_mova, rtx mova, rtx from)
       if (last_got)
         from = PREV_INSN (last_got);
 
+      /* Don't insert the constant pool table at the position which
+	 may be the landing pad.  */
+      if (flag_exceptions
+	  && CALL_P (from)
+	  && find_reg_note (from, REG_EH_REGION, NULL_RTX))
+	from = PREV_INSN (from);
+
       /* Walk back to be just before any jump or label.
 	 Putting it before a label reduces the number of times the branch
 	 around the constant pool table will be hit.  Putting it before
