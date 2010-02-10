@@ -1,5 +1,11 @@
 2010-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41896
+	* semantics.c (outer_lambda_capture_p): Use current_function_decl
+	instead of current_class_type.
+
+2010-02-10  Jason Merrill  <jason@redhat.com>
+
 	PR c++/42983, core issue 906
 	* method.c (defaultable_fn_check): Check virtualness.
 

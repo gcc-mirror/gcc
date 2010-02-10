@@ -2714,8 +2714,9 @@ outer_lambda_capture_p (tree decl)
 {
   return (TREE_CODE (decl) == FIELD_DECL
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (decl))
-	  && (!current_class_type
-	      || !DERIVED_FROM_P (DECL_CONTEXT (decl), current_class_type)));
+	  /* Using current_class_type here causes problems with uses in a
+	     nested lambda-introducer; see 41896.  */
+	  && DECL_CONTEXT (current_function_decl) != DECL_CONTEXT (decl));
 }
 
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
