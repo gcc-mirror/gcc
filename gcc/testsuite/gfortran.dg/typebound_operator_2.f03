@@ -14,7 +14,7 @@ MODULE m
     PROCEDURE, NOPASS :: nopassed => onearg
     PROCEDURE, PASS :: threearg
     PROCEDURE, PASS :: sub
-    PROCEDURE, PASS :: sub2 ! { dg-error "must be a FUNCTION" }
+    PROCEDURE, PASS :: sub2
     PROCEDURE, PASS :: func
 
     ! These give errors at the targets' definitions.
@@ -57,7 +57,7 @@ CONTAINS
     CLASS(t), INTENT(IN) :: a
   END SUBROUTINE sub
 
-  SUBROUTINE sub2 (a, x)
+  SUBROUTINE sub2 (a, x) ! { dg-error "must be a FUNCTION" }
     CLASS(t), INTENT(IN) :: a
     INTEGER, INTENT(IN) :: x
   END SUBROUTINE sub2

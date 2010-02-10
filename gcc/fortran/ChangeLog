@@ -1,3 +1,9 @@
+2010-02-10  Joost VandeVondele <jv244@cam.ac.uk>
+	    Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/40823
+	* decl.c (gfc_match_subroutine): Explicitly set sym->declared_at.
+
 2010-02-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43015
