@@ -1937,6 +1937,10 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 	}
 
     }
+  else if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (val1)))
+    /* If the singed operation wraps then int_const_binop has done
+       everything we want.  */
+    ;
   else if ((TREE_OVERFLOW (res)
 	    && !TREE_OVERFLOW (val1)
 	    && !TREE_OVERFLOW (val2))

@@ -1,3 +1,9 @@
+2010-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43017
+	* tree-vrp.c (vrp_int_const_binop): Trust int_const_binop
+	for wrapping signed arithmetic.
+
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43010
