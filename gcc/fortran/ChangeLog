@@ -1,3 +1,9 @@
+2010-02-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42999
+	* array.c (gfc_constant_ac): Do not prevent expansion of constructors
+	with iterators.
+
 2010-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* module.c (fix_mio_expr): Declare sym.
