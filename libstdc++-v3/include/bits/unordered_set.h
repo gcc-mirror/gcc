@@ -1,6 +1,6 @@
-// TR1 unordered_map -*- C++ -*-
+// unordered_set implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,87 +22,37 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file tr1_impl/unordered_map
+/** @file bits/unordered_set.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-namespace std
-{
-namespace tr1
-{
+#ifndef _UNORDERED_SET_H
+#define _UNORDERED_SET_H
+
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.
-  template<class _Key, class _Tp,
-	   class _Hash = hash<_Key>,
-	   class _Pred = std::equal_to<_Key>,
-	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
+  template<class _Value,
+	   class _Hash = hash<_Value>,
+	   class _Pred = std::equal_to<_Value>,
+	   class _Alloc = std::allocator<_Value>,
 	   bool __cache_hash_code = false>
-    class __unordered_map
-    : public _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
-			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred, 
+    class __unordered_set
+    : public _Hashtable<_Value, _Value, _Alloc,
+			std::_Identity<_Value>, _Pred,
 			_Hash, __detail::_Mod_range_hashing,
 			__detail::_Default_ranged_hash,
 			__detail::_Prime_rehash_policy,
-			__cache_hash_code, false, true>
+			__cache_hash_code, true, true>
     {
-      typedef _Hashtable<_Key, std::pair<const _Key, _Tp>, _Alloc,
-			 std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
+      typedef _Hashtable<_Value, _Value, _Alloc,
+			 std::_Identity<_Value>, _Pred,
 			 _Hash, __detail::_Mod_range_hashing,
 			 __detail::_Default_ranged_hash,
 			 __detail::_Prime_rehash_policy,
-			 __cache_hash_code, false, true>
-        _Base;
-
-    public:
-      typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
-      typedef typename _Base::key_equal       key_equal;
-      typedef typename _Base::allocator_type  allocator_type;
-
-      explicit
-      __unordered_map(size_type __n = 10,
-		      const hasher& __hf = hasher(),
-		      const key_equal& __eql = key_equal(),
-		      const allocator_type& __a = allocator_type())
-      : _Base(__n, __hf, __detail::_Mod_range_hashing(),
-	      __detail::_Default_ranged_hash(),
-	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
-      { }
-
-      template<typename _InputIterator>
-        __unordered_map(_InputIterator __f, _InputIterator __l, 
-			size_type __n = 10,
-			const hasher& __hf = hasher(), 
-			const key_equal& __eql = key_equal(), 
-			const allocator_type& __a = allocator_type())
-	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
-		__detail::_Default_ranged_hash(),
-		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
-	{ }
-    };
-  
-  template<class _Key, class _Tp,
-	   class _Hash = hash<_Key>,
-	   class _Pred = std::equal_to<_Key>,
-	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> >,
-	   bool __cache_hash_code = false>
-    class __unordered_multimap
-    : public _Hashtable<_Key, std::pair<const _Key, _Tp>,
-			_Alloc,
-			std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
-			_Hash, __detail::_Mod_range_hashing,
-			__detail::_Default_ranged_hash,
-			__detail::_Prime_rehash_policy,
-			__cache_hash_code, false, false>
-    {
-      typedef _Hashtable<_Key, std::pair<const _Key, _Tp>,
-			 _Alloc,
-			 std::_Select1st<std::pair<const _Key, _Tp> >, _Pred,
-			 _Hash, __detail::_Mod_range_hashing,
-			 __detail::_Default_ranged_hash,
-			 __detail::_Prime_rehash_policy,
-			 __cache_hash_code, false, false>
+			 __cache_hash_code, true, true>
         _Base;
 
     public:
@@ -112,73 +62,123 @@ namespace tr1
       typedef typename _Base::allocator_type  allocator_type;
       
       explicit
-      __unordered_multimap(size_type __n = 10,
+      __unordered_set(size_type __n = 10,
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
+		      const allocator_type& __a = allocator_type())
+      : _Base(__n, __hf, __detail::_Mod_range_hashing(),
+	      __detail::_Default_ranged_hash(), __eql,
+	      std::_Identity<_Value>(), __a)
+      { }
+
+      template<typename _InputIterator>
+        __unordered_set(_InputIterator __f, _InputIterator __l, 
+			size_type __n = 10,
+			const hasher& __hf = hasher(), 
+			const key_equal& __eql = key_equal(), 
+			const allocator_type& __a = allocator_type())
+	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
+		__detail::_Default_ranged_hash(), __eql,
+		std::_Identity<_Value>(), __a)
+        { }
+
+      __unordered_set(__unordered_set&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
+    };
+
+  template<class _Value,
+	   class _Hash = hash<_Value>,
+	   class _Pred = std::equal_to<_Value>,
+	   class _Alloc = std::allocator<_Value>,
+	   bool __cache_hash_code = false>
+    class __unordered_multiset
+    : public _Hashtable<_Value, _Value, _Alloc,
+			std::_Identity<_Value>, _Pred,
+			_Hash, __detail::_Mod_range_hashing,
+			__detail::_Default_ranged_hash,
+			__detail::_Prime_rehash_policy,
+			__cache_hash_code, true, false>
+    {
+      typedef _Hashtable<_Value, _Value, _Alloc,
+			 std::_Identity<_Value>, _Pred,
+			 _Hash, __detail::_Mod_range_hashing,
+			 __detail::_Default_ranged_hash,
+			 __detail::_Prime_rehash_policy,
+			 __cache_hash_code, true, false>
+        _Base;
+
+    public:
+      typedef typename _Base::size_type       size_type;
+      typedef typename _Base::hasher          hasher;
+      typedef typename _Base::key_equal       key_equal;
+      typedef typename _Base::allocator_type  allocator_type;
+      
+      explicit
+      __unordered_multiset(size_type __n = 10,
 			   const hasher& __hf = hasher(),
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __detail::_Mod_range_hashing(),
-	      __detail::_Default_ranged_hash(),
-	      __eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
+	      __detail::_Default_ranged_hash(), __eql,
+	      std::_Identity<_Value>(), __a)
       { }
 
 
       template<typename _InputIterator>
-        __unordered_multimap(_InputIterator __f, _InputIterator __l, 
+        __unordered_multiset(_InputIterator __f, _InputIterator __l, 
 			     typename _Base::size_type __n = 0,
 			     const hasher& __hf = hasher(), 
 			     const key_equal& __eql = key_equal(), 
 			     const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __detail::_Mod_range_hashing(),
-		__detail::_Default_ranged_hash(),
-		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
+		__detail::_Default_ranged_hash(), __eql,
+		std::_Identity<_Value>(), __a)
         { }
+
+      __unordered_multiset(__unordered_multiset&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
     };
 
-  template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
+  template<class _Value, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap(__unordered_map<_Key, _Tp, _Hash, _Pred,
-	 _Alloc, __cache_hash_code>& __x,
-	 __unordered_map<_Key, _Tp, _Hash, _Pred,
-	 _Alloc, __cache_hash_code>& __y)
+    swap(__unordered_set<_Value, _Hash, _Pred, _Alloc, __cache_hash_code>& __x,
+	 __unordered_set<_Value, _Hash, _Pred, _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
 
-  template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
+  template<class _Value, class _Hash, class _Pred, class _Alloc,
 	   bool __cache_hash_code>
     inline void
-    swap(__unordered_multimap<_Key, _Tp, _Hash, _Pred,
+    swap(__unordered_multiset<_Value, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __x,
-	 __unordered_multimap<_Key, _Tp, _Hash, _Pred,
+	 __unordered_multiset<_Value, _Hash, _Pred,
 	 _Alloc, __cache_hash_code>& __y)
     { __x.swap(__y); }
 
 
   /**
    *  @brief A standard container composed of unique keys (containing
-   *  at most one of each key value) that associates values of another type
-   *  with the keys.
+   *  at most one of each key value) in which the elements' keys are
+   *  the elements themselves.
    *
    *  @ingroup unordered_associative_containers
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, and
    *  <a href="tables.html#xx">unordered associative container</a>
    *
-   *  @param  Key  Type of key objects.
-   *  @param  Tp  Type of mapped objects.
+   *  @param  Value  Type of key objects.
    *  @param  Hash  Hashing function object type, defaults to hash<Value>.
    *  @param  Pred  Predicate function object type, defaults to equal_to<Value>.
    *  @param  Alloc  Allocator type, defaults to allocator<Key>.
-   *
-   * The resulting value type of the container is std::pair<const Key, Tp>.
    */
-  template<class _Key, class _Tp,
-	   class _Hash = hash<_Key>,
-	   class _Pred = std::equal_to<_Key>,
-	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class unordered_map
-    : public __unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>
+  template<class _Value,
+	   class _Hash = hash<_Value>,
+	   class _Pred = std::equal_to<_Value>,
+	   class _Alloc = std::allocator<_Value> >
+    class unordered_set
+    : public __unordered_set<_Value, _Hash, _Pred, _Alloc>
     {
-      typedef __unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>  _Base;
+      typedef __unordered_set<_Value, _Hash, _Pred, _Alloc>  _Base;
 
     public:
       typedef typename _Base::value_type      value_type;
@@ -186,9 +186,9 @@ namespace tr1
       typedef typename _Base::hasher          hasher;
       typedef typename _Base::key_equal       key_equal;
       typedef typename _Base::allocator_type  allocator_type;
-
+      
       explicit
-      unordered_map(size_type __n = 10,
+      unordered_set(size_type __n = 10,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -196,41 +196,67 @@ namespace tr1
       { }
 
       template<typename _InputIterator>
-        unordered_map(_InputIterator __f, _InputIterator __l, 
+        unordered_set(_InputIterator __f, _InputIterator __l, 
 		      size_type __n = 10,
 		      const hasher& __hf = hasher(), 
 		      const key_equal& __eql = key_equal(), 
 		      const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __eql, __a)
         { }
+
+      unordered_set(unordered_set&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
+
+      unordered_set(initializer_list<value_type> __l,
+		    size_type __n = 10,
+		    const hasher& __hf = hasher(),
+		    const key_equal& __eql = key_equal(),
+		    const allocator_type& __a = allocator_type())
+	: _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
+      { }
+
+      unordered_set&
+      operator=(unordered_set&& __x)
+      {
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
+	return *this;	
+      }
+
+      unordered_set&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l.begin(), __l.end());
+	return *this;
+      }
     };
-  
+
   /**
    *  @brief A standard container composed of equivalent keys
-   *  (possibly containing multiple of each key value) that associates
-   *  values of another type with the keys.
+   *  (possibly containing multiple of each key value) in which the
+   *  elements' keys are the elements themselves.
    *
    *  @ingroup unordered_associative_containers
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, and
    *  <a href="tables.html#xx">unordered associative container</a>
    *
-   *  @param  Key  Type of key objects.
-   *  @param  Tp  Type of mapped objects.
+   *  @param  Value  Type of key objects.
    *  @param  Hash  Hashing function object type, defaults to hash<Value>.
    *  @param  Pred  Predicate function object type, defaults to equal_to<Value>.
    *  @param  Alloc  Allocator type, defaults to allocator<Key>.
-   *
-   * The resulting value type of the container is std::pair<const Key, Tp>.
    */
-  template<class _Key, class _Tp,
-	   class _Hash = hash<_Key>,
-	   class _Pred = std::equal_to<_Key>,
-	   class _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class unordered_multimap
-    : public __unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>
+  template<class _Value,
+	   class _Hash = hash<_Value>,
+	   class _Pred = std::equal_to<_Value>,
+	   class _Alloc = std::allocator<_Value> >
+    class unordered_multiset
+    : public __unordered_multiset<_Value, _Hash, _Pred, _Alloc>
     {
-      typedef __unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>  _Base;
+      typedef __unordered_multiset<_Value, _Hash, _Pred, _Alloc>  _Base;
 
     public:
       typedef typename _Base::value_type      value_type;
@@ -240,7 +266,7 @@ namespace tr1
       typedef typename _Base::allocator_type  allocator_type;
       
       explicit
-      unordered_multimap(size_type __n = 10,
+      unordered_multiset(size_type __n = 10,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
@@ -249,7 +275,7 @@ namespace tr1
 
 
       template<typename _InputIterator>
-        unordered_multimap(_InputIterator __f, _InputIterator __l, 
+        unordered_multiset(_InputIterator __f, _InputIterator __l, 
 			   typename _Base::size_type __n = 0,
 			   const hasher& __hf = hasher(), 
 			   const key_equal& __eql = key_equal(), 
@@ -257,18 +283,49 @@ namespace tr1
 	: _Base(__f, __l, __n, __hf, __eql, __a)
         { }
 
+      unordered_multiset(unordered_multiset&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
+
+      unordered_multiset(initializer_list<value_type> __l,
+			 size_type __n = 10,
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
+	: _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
+      { }
+
+      unordered_multiset&
+      operator=(unordered_multiset&& __x)
+      {
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
+	return *this;	
+      }
+
+      unordered_multiset&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l.begin(), __l.end());
+	return *this;
+      }
     };
 
-  template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
+  template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline void
-    swap(unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
-	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    swap(unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
-  template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
+  template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline void
-    swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
-	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+    swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
-}
-}
+
+_GLIBCXX_END_NESTED_NAMESPACE
+
+#endif /* _UNORDERED_SET_H */
+

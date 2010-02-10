@@ -1,3 +1,67 @@
+2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable.h: Fold in include/tr1_impl/hashtable.h
+	for C++0x use.
+	* include/bits/hashtable_policy.h: New, copy and adjust for
+	C++0x use, include/tr1_impl/hashtable_policy.h; fix erase and
+	insert member functions per n3000.
+	* include/bits/unordered_map.h: Likewise for include/tr1_impl/
+	unordered_map.
+	* include/bits/unordered_set.h: Likewise for include/tr1_impl/
+	unordered_set.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+	* include/tr1/unordered_map: Adjust.
+	* include/tr1/unordered_set: Likewise.
+	* include/tr1_impl/unordered_map: Adjust, now used only by tr1.
+	* include/tr1_impl/hashtable: Likewise.
+	* include/tr1_impl/hashtable_policy.h: Likewise.
+	* include/tr1_impl/unordered_set: Likewise.
+	* include/std/unordered_map: Adjust and simplify includes.
+	* include/std/unordered_set: Likewise.
+	* include/debug/unordered_map: Adjuse erase and insert members.
+	* include/debug/unordered_set: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* testsuite/util/exception/safety.h: Fix for the updated erase and
+	insert member functions of the unordered_containers.
+	* testsuite/23_containers/unordered_map/erase/1.cc: New.
+	* testsuite/23_containers/unordered_map/erase/24061-map.cc: Likewise.
+	* testsuite/23_containers/unordered_map/insert/map_single.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/insert/array_syntax.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/insert/24061-map.cc: Likewise.
+	* testsuite/23_containers/unordered_map/insert/map_range.cc: Likewise.
+	* testsuite/23_containers/set/operators/1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/
+	24061-multimap.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/
+	24061-multimap.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/
+	multimap_range.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/
+	multimap_single.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erase/24061-set.cc: Likewise.
+	* testsuite/23_containers/unordered_set/insert/set_single.cc: Likewise.
+	* testsuite/23_containers/unordered_set/insert/24061-set.cc: Likewise.
+	* testsuite/23_containers/unordered_set/insert/set_range.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/
+	24061-multiset.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/insert/
+	24061-multiset.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/insert/
+	multiset_range.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/insert/
+	multiset_single.cc: Likewise.
+
+	* testsuite/23_containers/set/operators/1_neg.cc: Tweak dg-errors
+	to avoid spurious fails in debug-mode.
+	* testsuite/23_containers/map/operators/1_neg.cc: Likewise.
+
 2010-02-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/streambuf: Adjust doxygen group markup.

@@ -1,6 +1,6 @@
-// TR1 unordered_map -*- C++ -*-
+// unordered_map implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,15 +22,16 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file tr1_impl/unordered_map
+/** @file bits/unordered_map.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
-namespace std
-{
-namespace tr1
-{
+#ifndef _UNORDERED_MAP_H
+#define _UNORDERED_MAP_H
+
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.
   template<class _Key, class _Tp,
@@ -80,6 +81,9 @@ namespace tr1
 		__detail::_Default_ranged_hash(),
 		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
 	{ }
+
+      __unordered_map(__unordered_map&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
     };
   
   template<class _Key, class _Tp,
@@ -132,6 +136,9 @@ namespace tr1
 		__detail::_Default_ranged_hash(),
 		__eql, std::_Select1st<std::pair<const _Key, _Tp> >(), __a)
         { }
+
+      __unordered_multimap(__unordered_multimap&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
     };
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
@@ -203,6 +210,35 @@ namespace tr1
 		      const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __eql, __a)
         { }
+
+      unordered_map(unordered_map&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
+
+      unordered_map(initializer_list<value_type> __l,
+		    size_type __n = 10,
+		    const hasher& __hf = hasher(),
+		    const key_equal& __eql = key_equal(),
+		    const allocator_type& __a = allocator_type())
+	: _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
+      { }
+
+      unordered_map&
+      operator=(unordered_map&& __x)
+      {
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
+	return *this;	
+      }
+
+      unordered_map&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l.begin(), __l.end());
+	return *this;
+      }
     };
   
   /**
@@ -257,6 +293,34 @@ namespace tr1
 	: _Base(__f, __l, __n, __hf, __eql, __a)
         { }
 
+      unordered_multimap(unordered_multimap&& __x)
+      : _Base(std::forward<_Base>(__x)) { }
+
+      unordered_multimap(initializer_list<value_type> __l,
+			 size_type __n = 10,
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
+	: _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
+      { }
+
+      unordered_multimap&
+      operator=(unordered_multimap&& __x)
+      {
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__x);
+	return *this;	
+      }
+
+      unordered_multimap&
+      operator=(initializer_list<value_type> __l)
+      {
+	this->clear();
+	this->insert(__l.begin(), __l.end());
+	return *this;
+      }
     };
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc>
@@ -270,5 +334,7 @@ namespace tr1
     swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
-}
-}
+
+_GLIBCXX_END_NESTED_NAMESPACE
+
+#endif /* _UNORDERED_MAP_H */
