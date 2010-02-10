@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "intl.h"
 #include "c-pragma.h"
 #include "decl.h"
 #include "flags.h"
@@ -4537,7 +4538,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* New types cannot be defined in the cast.  */
 	saved_message = parser->type_definition_forbidden_message;
 	parser->type_definition_forbidden_message
-	  = "types may not be defined in casts";
+	  = G_("types may not be defined in casts");
 
 	/* Look for the opening `<'.  */
 	cp_parser_require (parser, CPP_LESS, "%<<%>");
@@ -4600,7 +4601,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Types cannot be defined in a `typeid' expression.  */
 	saved_message = parser->type_definition_forbidden_message;
 	parser->type_definition_forbidden_message
-	  = "types may not be defined in a %<typeid%> expression";
+	  = G_("types may not be defined in a %<typeid%> expression");
 	/* We can't be sure yet whether we're looking at a type-id or an
 	   expression.  */
 	cp_parser_parse_tentatively (parser);
@@ -5837,7 +5838,7 @@ cp_parser_new_type_id (cp_parser* parser, tree *nelts)
      complete.)  */
   saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
-    = "types may not be defined in a new-type-id";
+    = G_("types may not be defined in a new-type-id");
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				/*is_trailing_return=*/false,
@@ -6150,7 +6151,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
       /* Types may not be defined in a cast.  */
       saved_message = parser->type_definition_forbidden_message;
       parser->type_definition_forbidden_message
-	= "types may not be defined in casts";
+	= G_("types may not be defined in casts");
       /* Consume the `('.  */
       cp_lexer_consume_token (parser->lexer);
       /* A very tricky bit is that `(struct S) { 3 }' is a
@@ -8103,7 +8104,7 @@ cp_parser_condition (cp_parser* parser)
      condition.  */
   saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
-    = "types may not be defined in conditions";
+    = G_("types may not be defined in conditions");
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_declaration==*/true,
 				/*is_trailing_return=*/false,
@@ -9513,7 +9514,7 @@ cp_parser_decltype (cp_parser *parser)
 
   /* And create the new one.  */
   parser->type_definition_forbidden_message
-    = "types may not be defined in %<decltype%> expressions";
+    = G_("types may not be defined in %<decltype%> expressions");
 
   /* The restrictions on constant-expressions do not apply inside
      decltype expressions.  */
@@ -15022,7 +15023,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
   /* Type definitions may not appear in parameter types.  */
   saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
-    = "types may not be defined in parameter types";
+    = G_("types may not be defined in parameter types");
 
   /* Parse the declaration-specifiers.  */
   cp_parser_decl_specifier_seq (parser,
@@ -17212,7 +17213,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
       /* Types may not be defined in an exception-specification.  */
       saved_message = parser->type_definition_forbidden_message;
       parser->type_definition_forbidden_message
-	= "types may not be defined in an exception-specification";
+	= G_("types may not be defined in an exception-specification");
       /* Parse the type-id-list.  */
       type_id_list = cp_parser_type_id_list (parser);
       /* Restore the saved message.  */
@@ -17393,7 +17394,7 @@ cp_parser_exception_declaration (cp_parser* parser)
   /* Types may not be defined in exception-declarations.  */
   saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
-    = "types may not be defined in exception-declarations";
+    = G_("types may not be defined in exception-declarations");
 
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, /*is_declaration=*/true,

@@ -4112,16 +4112,19 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
 
   /* Figure out what error message to issue.  */
   if (is_friend_decl == 2)
-    msg = "default template arguments may not be used in function template friend re-declaration";
+    msg = G_("default template arguments may not be used in function template "
+	     "friend re-declaration");
   else if (is_friend_decl)
-    msg = "default template arguments may not be used in function template friend declarations";
+    msg = G_("default template arguments may not be used in function template "
+	     "friend declarations");
   else if (TREE_CODE (decl) == FUNCTION_DECL && (cxx_dialect == cxx98))
-    msg = ("default template arguments may not be used in function templates "
-	   "without -std=c++0x or -std=gnu++0x");
+    msg = G_("default template arguments may not be used in function templates "
+	     "without -std=c++0x or -std=gnu++0x");
   else if (is_partial)
-    msg = "default template arguments may not be used in partial specializations";
+    msg = G_("default template arguments may not be used in "
+	     "partial specializations");
   else
-    msg = "default argument for template parameter for class enclosing %qD";
+    msg = G_("default argument for template parameter for class enclosing %qD");
 
   if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
     /* If we're inside a class definition, there's no need to
@@ -4172,7 +4175,8 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
       /* At this point, if we're still interested in issuing messages,
 	 they must apply to classes surrounding the object declared.  */
       if (msg)
-	msg = "default argument for template parameter for class enclosing %qD";
+	msg = G_("default argument for template parameter for class "
+		 "enclosing %qD");
     }
 
   return no_errors;
