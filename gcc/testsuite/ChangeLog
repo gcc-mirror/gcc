@@ -1,3 +1,8 @@
+2010-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43016
+	* g++.dg/cpp0x/lambda/lambda-conv.C: Test for weakness.
+
 2010-02-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43017
