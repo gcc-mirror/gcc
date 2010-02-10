@@ -1,3 +1,8 @@
+2010-02-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-conflicts.c (add_insn_allocno_copies): Use find_reg_note
+	instead of loop.
+
 2010-02-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43017

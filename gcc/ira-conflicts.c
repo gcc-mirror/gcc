@@ -447,7 +447,7 @@ process_reg_shuffles (rtx reg, int op_num, int freq, bool *bound_p)
 static void
 add_insn_allocno_copies (rtx insn)
 {
-  rtx set, operand, dup, link;
+  rtx set, operand, dup;
   const char *str;
   bool commut_p, bound_p[MAX_RECOG_OPERANDS];
   int i, j, n, freq;
@@ -466,10 +466,9 @@ add_insn_allocno_copies (rtx insn)
       process_regs_for_copy (SET_DEST (set), SET_SRC (set), false, insn, freq);
       return;
     }
-  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    if (REG_NOTE_KIND (link) == REG_DEAD)
-      break;
-  if (! link)
+  /* Fast check of possibility of constraint or shuffle copies.  If
+     there are no dead registers, there will be no such copies.  */
+  if (! find_reg_note (insn, REG_DEAD, NULL_RTX))
     return;
   extract_insn (insn);
   for (i = 0; i < recog_data.n_operands; i++)
