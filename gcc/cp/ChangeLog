@@ -1,3 +1,16 @@
+2010-02-10  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* Make-lang.in (cp/cvt.o, cp/parser.o, cp/search.o): Depend on intl.h.
+	* cvt.c (warn_ref_binding): Wrap the messages into G_() for easy
+	translation.
+	* parser.c (cp_parser_postfix_expression, cp_parser_new_type_id)
+	(cp_parser_cast_expression, cp_parser_condition, cp_parser_decltype)
+	(cp_parser_parameter_declaration)
+	(cp_parser_exception_specification_opt)
+	(cp_parser_exception_declaration): Likewise.
+	* pt.c (check_default_tmpl_args): Likewise.
+	* search.c (lookup_field_r): Likewise.
+
 2010-02-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42399

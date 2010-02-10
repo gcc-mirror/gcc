@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "intl.h"
 #include "obstack.h"
 #include "flags.h"
 #include "rtl.h"
@@ -1101,7 +1102,7 @@ lookup_field_r (tree binfo, void *data)
 	  /* Add the new value.  */
 	  lfi->ambiguous = tree_cons (NULL_TREE, nval, lfi->ambiguous);
 	  TREE_TYPE (lfi->ambiguous) = error_mark_node;
-	  lfi->errstr = "request for member %qD is ambiguous";
+	  lfi->errstr = G_("request for member %qD is ambiguous");
 	}
     }
   else
