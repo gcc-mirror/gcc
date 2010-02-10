@@ -1,3 +1,9 @@
+2010-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR c/43007
+	* tree.c (get_unwidened): Handle constants.
+	* convert.c (convert_to_integer): Handle TRUNC_DIV_EXPR.
+
 2010-02-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/42985

@@ -7623,6 +7623,14 @@ get_unwidened (tree op, tree for_type)
 	}
     }
 
+  /* If we finally reach a constant see if it fits in for_type and
+     in that case convert it.  */
+  if (for_type
+      && TREE_CODE (win) == INTEGER_CST
+      && TREE_TYPE (win) != for_type
+      && int_fits_type_p (win, for_type))
+    win = fold_convert (for_type, win);
+
   return win;
 }
 
