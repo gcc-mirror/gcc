@@ -1,5 +1,9 @@
 2010-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42983, core issue 906
+	* g++.dg/cpp0x/defaulted15.C: Add virtualness test.
+	* g++.dg/cpp0x/defaulted9.C: Move virtual default outside class.
+
 	PR c++/43016
 	* g++.dg/cpp0x/lambda/lambda-conv.C: Test for weakness.
 

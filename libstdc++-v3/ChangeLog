@@ -1,3 +1,11 @@
+2010-02-10  Jason Merrill  <jason@redhat.com>
+
+	Core issue 906
+	* include/std/thread (~_Impl_base): Move defaulted dtor out of line.
+	* libsupc++/nested_exception.h (~nested_exception): Likewise.
+	* testsuite/18_support/nested_exception/throw_with_nested.cc: Likewise.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc: Likewise.
+
 2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1/hashtable.h: Fold in include/tr1_impl/hashtable.h

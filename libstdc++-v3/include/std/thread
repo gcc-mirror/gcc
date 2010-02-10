@@ -97,7 +97,7 @@ namespace std
     {
       __shared_base_type	_M_this_ptr;
 
-      virtual ~_Impl_base() = default;
+      virtual ~_Impl_base();
 
       virtual void _M_run() = 0;
     };
@@ -192,6 +192,8 @@ namespace std
 	return make_shared<_Impl<_Callable>>(std::forward<_Callable>(__f));
       }
   };
+
+  inline thread::_Impl_base::~_Impl_base() = default;
 
   inline void
   swap(thread& __x, thread& __y)

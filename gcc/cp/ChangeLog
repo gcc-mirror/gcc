@@ -1,5 +1,10 @@
 2010-02-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42983, core issue 906
+	* method.c (defaultable_fn_check): Check virtualness.
+
+2010-02-10  Jason Merrill  <jason@redhat.com>
+
 	PR c++/43016
 	* semantics.c (maybe_add_lambda_conv_op): Set DECL_INTERFACE_KNOWN.
 

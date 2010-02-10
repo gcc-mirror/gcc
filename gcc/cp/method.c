@@ -1069,6 +1069,9 @@ defaultable_fn_check (tree fn)
 	  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (fn)))
 	    error ("function %q+D defaulted on its first declaration "
 		   "must not have an exception-specification", fn);
+	  if (DECL_VIRTUAL_P (fn))
+	    error ("%qD declared virtual cannot be defaulted in the class "
+		   "body", fn);
 	}
       else if (!processing_template_decl)
 	defaulted_late_check (fn);
