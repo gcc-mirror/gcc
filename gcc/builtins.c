@@ -13594,6 +13594,14 @@ set_builtin_user_assembler_name (tree decl, const char *asmspec)
     case BUILT_IN_ABORT:
       abort_libfunc = set_user_assembler_libfunc ("abort", asmspec);
       break;
+    case BUILT_IN_FFS:
+      if (INT_TYPE_SIZE < BITS_PER_WORD)
+	{
+	  set_user_assembler_libfunc ("ffs", asmspec);
+	  set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE,
+						       MODE_INT, 0), "ffs");
+	}
+      break;
     default:
       break;
     }
