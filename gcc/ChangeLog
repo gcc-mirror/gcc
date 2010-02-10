@@ -1,5 +1,11 @@
 2010-02-10  Christian Bruel  <christian.bruel@st.com>
 
+	PR target/42841
+	* config/sh/sh.c (find_barrier): Increase length for non delayed
+	conditional branches.
+	
+2010-02-10  Christian Bruel  <christian.bruel@st.com>
+
 	* config/sh/sh.c (find_barrier): Don't emit a CP inside the GP setting.
 	
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
