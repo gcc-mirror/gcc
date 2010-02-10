@@ -275,6 +275,78 @@ namespace __gnu_test
 	  _F_erase_range(&container_type::erase_after) { }
       };
 
+    // Specializations for the unordered containers.
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     typename _Tp4, typename _Tp5>
+      struct erase_base<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
+      {
+	typedef std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     typename _Tp4, typename _Tp5>
+      struct erase_base<std::unordered_multimap<_Tp1, _Tp2, _Tp3,
+						_Tp4, _Tp5>>
+      {
+	typedef std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+      struct erase_base<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
+      {
+	typedef std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+      struct erase_base<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
+      {
+	typedef std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
+
     template<typename _Tp, bool = traits<_Tp>::has_erase::value>
       struct erase_point : public erase_base<_Tp>
       {
@@ -532,13 +604,77 @@ namespace __gnu_test
       {
 	typedef std::forward_list<_Tp1, _Tp2> container_type;
 	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator 	const_iterator;
+	typedef typename container_type::const_iterator const_iterator;
 	typedef typename container_type::value_type 	value_type;
 
 	iterator (container_type::* _F_insert_point)(const_iterator,
-						   const value_type&);
+						     const value_type&);
 
 	insert_base() : _F_insert_point(&container_type::insert_after) { }
+      };
+
+    // Likewise for the unordered containers.
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     typename _Tp4, typename _Tp5>
+      struct insert_base<std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>>
+      {
+	typedef std::unordered_map<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(const_iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3,
+	     typename _Tp4, typename _Tp5>
+      struct insert_base<std::unordered_multimap<_Tp1, _Tp2, _Tp3,
+						 _Tp4, _Tp5>>
+      {
+	typedef std::unordered_multimap<_Tp1, _Tp2, _Tp3, _Tp4, _Tp5>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(const_iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+      struct insert_base<std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>>
+      {
+	typedef std::unordered_set<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(const_iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3, typename _Tp4>
+      struct insert_base<std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>>
+      {
+	typedef std::unordered_multiset<_Tp1, _Tp2, _Tp3, _Tp4>
+	                                                container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename container_type::value_type 	value_type;
+
+	iterator (container_type::* _F_insert_point)(const_iterator,
+						     const value_type&);
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
     template<typename _Tp, bool = traits<_Tp>::has_insert::value>

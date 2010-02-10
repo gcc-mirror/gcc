@@ -186,31 +186,22 @@ namespace __profile
       }
 
       iterator
-      insert(iterator __iter, const value_type& __v)
-      { 
-        size_type __old_size = _Base::bucket_count(); 
-        iterator res = _Base::insert(__iter, __v);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
-        return res;
-      }
-
-      const_iterator
       insert(const_iterator __iter, const value_type& __v)
       { 
         size_type __old_size = _Base::bucket_count(); 
-        const_iterator res =_Base::insert(__iter, __v);
+        iterator __res = _Base::insert(__iter, __v);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
-        return res;
+        return __res;
       }
 
       template<typename _InputIter>
-      void
-      insert(_InputIter __first, _InputIter __last)
-      {
-        size_type __old_size = _Base::bucket_count(); 
-        _Base::insert(__first.base(), __last.base());
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
-      }
+        void
+        insert(_InputIter __first, _InputIter __last)
+        {
+	  size_type __old_size = _Base::bucket_count(); 
+	  _Base::insert(__first.base(), __last.base());
+	  _M_profile_resize(__old_size, _Base::bucket_count()); 
+	}
 
       void
       insert(const value_type* __first, const value_type* __last)
@@ -233,50 +224,53 @@ namespace __profile
 
       void
       swap(unordered_map& __x)
-      {
-        _Base::swap(__x);
-      }
-      
+      { _Base::swap(__x); }
+
       void rehash(size_type __n)
       {
         size_type __old_size =  _Base::bucket_count();
         _Base::rehash(__n);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
       }
+
     private:
-      void _M_profile_resize(size_type __old_size, size_type __new_size)
+      void
+      _M_profile_resize(size_type __old_size, size_type __new_size)
       {
         if (__old_size != __new_size)
-        {
-          __profcxx_hashtable_resize(this, __old_size, __new_size);
-        }
+	  __profcxx_hashtable_resize(this, __old_size, __new_size);
       }
-      void _M_profile_destruct()
+
+      void
+      _M_profile_destruct()
       {
         size_type __hops = 0, __lc = 0, __chain = 0;
-        for (iterator it = _M_base().begin(); it != _M_base().end(); it++)
-        {
-          while (it._M_cur_node->_M_next) {
-             __chain++;
-             it++;
-          }
-          if (__chain) {
-            __chain++;
-            __lc = __lc > __chain ? __lc : __chain;  
-            __hops += __chain * (__chain - 1) / 2;
-            __chain = 0;
-          }
-        }
+        for (iterator __it = _M_base().begin(); __it != _M_base().end();
+	     ++__it)
+	  {
+	    while (__it._M_cur_node->_M_next)
+	      {
+		++__chain;
+		++__it;
+	      }
+	    if (__chain)
+	      {
+		++__chain;
+		__lc = __lc > __chain ? __lc : __chain;  
+		__hops += __chain * (__chain - 1) / 2;
+		__chain = 0;
+	      }
+	  }
         __profcxx_hashtable_destruct2(this, __lc,  _Base::size(), __hops); 
       }
    };
+
   template<typename _Key, typename _Tp, typename _Hash,
-       typename _Pred, typename _Alloc>
+	   typename _Pred, typename _Alloc>
     inline void
     swap(unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
-     unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
-
 
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
@@ -412,31 +406,22 @@ namespace __profile
       }
 
       iterator
-      insert(iterator __iter, const value_type& __v)
-      { 
-        size_type __old_size = _Base::bucket_count(); 
-        iterator res = _Base::insert(__iter, __v);
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
-        return res;
-      }
-
-      const_iterator
       insert(const_iterator __iter, const value_type& __v)
       { 
         size_type __old_size = _Base::bucket_count(); 
-        const_iterator res =_Base::insert(__iter, __v);
+        iterator __res =_Base::insert(__iter, __v);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
-        return res;
+        return __res;
       }
 
       template<typename _InputIter>
-      void
-      insert(_InputIter __first, _InputIter __last)
-      {
-        size_type __old_size = _Base::bucket_count(); 
-        _Base::insert(__first.base(), __last.base());
-        _M_profile_resize(__old_size, _Base::bucket_count()); 
-      }
+        void
+        insert(_InputIter __first, _InputIter __last)
+        {
+	  size_type __old_size = _Base::bucket_count(); 
+	  _Base::insert(__first.base(), __last.base());
+	  _M_profile_resize(__old_size, _Base::bucket_count()); 
+	}
 
       void
       insert(const value_type* __first, const value_type* __last)
@@ -448,9 +433,7 @@ namespace __profile
 
       void
       swap(unordered_multimap& __x)
-      {
-        _Base::swap(__x);
-      }
+      { _Base::swap(__x); }
 
       void rehash(size_type __n)
       {
@@ -458,40 +441,45 @@ namespace __profile
         _Base::rehash(__n);
         _M_profile_resize(__old_size, _Base::bucket_count()); 
       }
+
     private:
-      void _M_profile_resize(size_type __old_size, size_type __new_size)
+      void
+      _M_profile_resize(size_type __old_size, size_type __new_size)
       {
         if (__old_size != __new_size)
-        {
           __profcxx_hashtable_resize(this, __old_size, __new_size);
-        }
       }
 
-      void _M_profile_destruct()
+      void
+      _M_profile_destruct()
       {
         size_type __hops = 0, __lc = 0, __chain = 0;
-        for (iterator it = _M_base().begin(); it != _M_base().end(); it++)
-        {
-          while (it._M_cur_node->_M_next) {
-             __chain++;
-             it++;
-          }
-          if (__chain) {
-            __chain++;
-            __lc = __lc > __chain ? __lc : __chain;
-            __hops += __chain * (__chain - 1) / 2;
-            __chain = 0;
-          }
-        }
+        for (iterator __it = _M_base().begin(); __it != _M_base().end();
+	     ++__it)
+	  {
+	    while (__it._M_cur_node->_M_next)
+	      {
+		++__chain;
+		++__it;
+	      }
+	    if (__chain)
+	      {
+		++__chain;
+		__lc = __lc > __chain ? __lc : __chain;
+		__hops += __chain * (__chain - 1) / 2;
+		__chain = 0;
+	      }
+	  }
         __profcxx_hashtable_destruct2(this, __lc,  _Base::size(), __hops);
       }
 
     };
+
   template<typename _Key, typename _Tp, typename _Hash,
-       typename _Pred, typename _Alloc>
+	   typename _Pred, typename _Alloc>
     inline void
     swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
-     unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
+	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
 } // namespace __profile

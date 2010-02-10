@@ -49,8 +49,8 @@
 
 namespace std
 { 
-_GLIBCXX_BEGIN_NAMESPACE_TR1
-
+namespace tr1
+{
   // Class template _Hashtable, class definition.
   
   // Meaning of class template _Hashtable's template parameters
@@ -215,11 +215,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		   const allocator_type&);
   
       _Hashtable(const _Hashtable&);
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      _Hashtable(_Hashtable&&);
-#endif
-      
+    
       _Hashtable&
       operator=(const _Hashtable&);
 
@@ -253,21 +249,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       const_iterator
       end() const
       { return const_iterator(_M_buckets + _M_bucket_count); }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      const_iterator
-      cbegin() const
-      {
-	const_iterator __i(_M_buckets);
-	if (!__i._M_cur_node)
-	  __i._M_incr_bucket();
-	return __i;
-      }
-
-      const_iterator
-      cend() const
-      { return const_iterator(_M_buckets + _M_bucket_count); }
-#endif
 
       size_type
       size() const
@@ -332,17 +313,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       end(size_type) const
       { return const_local_iterator(0); }
 
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      // DR 691.
-      const_local_iterator
-      cbegin(size_type __n) const
-      { return const_local_iterator(_M_buckets[__n]); }
-
-      const_local_iterator
-      cend(size_type) const
-      { return const_local_iterator(0); }
-#endif
-
       float
       load_factor() const
       { 
@@ -400,10 +370,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		       typename _Hashtable::_Hash_code_type);
 
       std::pair<iterator, bool>
-      _M_insert(const value_type&, std::_GLIBCXX_TR1 true_type);
+      _M_insert(const value_type&, std::tr1::true_type);
 
       iterator
-      _M_insert(const value_type&, std::_GLIBCXX_TR1 false_type);
+      _M_insert(const value_type&, std::tr1::false_type);
 
       void
       _M_erase_node(_Node*, _Node**);
@@ -412,7 +382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v) 
-      { return _M_insert(__v, std::_GLIBCXX_TR1 integral_constant<bool,
+      { return _M_insert(__v, std::tr1::integral_constant<bool,
 			 __unique_keys>()); }
 
       iterator
@@ -426,12 +396,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       template<typename _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last);
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      void
-      insert(initializer_list<value_type> __l)
-      { this->insert(__l.begin(), __l.end()); }
-#endif
 
       iterator
       erase(iterator);
@@ -475,11 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _Node* __n = _M_node_allocator.allocate(1);
       __try
 	{
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-	  _M_node_allocator.construct(__n, __v);
-#else
 	  _M_get_Value_allocator().construct(&__n->_M_v, __v);
-#endif
 	  __n->_M_next = 0;
 	  return __n;
 	}
@@ -499,11 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _M_deallocate_node(_Node* __n)
     {
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      _M_node_allocator.destroy(__n);
-#else
       _M_get_Value_allocator().destroy(&__n->_M_v);
-#endif
       _M_node_allocator.deallocate(__n, 1);
     }
 
@@ -667,32 +623,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  __throw_exception_again;
 	}
     }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-  template<typename _Key, typename _Value, 
-	   typename _Allocator, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   bool __chc, bool __cit, bool __uk>
-    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _Hashtable(_Hashtable&& __ht)
-    : __detail::_Rehash_base<_RehashPolicy, _Hashtable>(__ht),
-      __detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Equal,
-				_H1, _H2, _Hash, __chc>(__ht),
-      __detail::_Map_base<_Key, _Value, _ExtractKey, __uk, _Hashtable>(__ht),
-      _M_node_allocator(__ht._M_node_allocator),
-      _M_bucket_count(__ht._M_bucket_count),
-      _M_element_count(__ht._M_element_count),
-      _M_rehash_policy(__ht._M_rehash_policy),
-      _M_buckets(__ht._M_buckets)
-    {
-      size_type __n_bkt = __ht._M_rehash_policy._M_next_bkt(0);
-      __ht._M_buckets = __ht._M_allocate_buckets(__n_bkt);
-      __ht._M_bucket_count = __n_bkt;
-      __ht._M_element_count = 0;
-      __ht._M_rehash_policy = _RehashPolicy();
-    }
-#endif
 
   template<typename _Key, typename _Value, 
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
@@ -966,7 +896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 				  __chc, __cit, __uk>::iterator, bool>
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_insert(const value_type& __v, std::_GLIBCXX_TR1 true_type)
+  _M_insert(const value_type& __v, std::tr1::true_type)
     {
       const key_type& __k = this->_M_extract(__v);
       typename _Hashtable::_Hash_code_type __code = this->_M_hash_code(__k);
@@ -987,7 +917,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 			__chc, __cit, __uk>::iterator
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_insert(const value_type& __v, std::_GLIBCXX_TR1 false_type)
+    _M_insert(const value_type& __v, std::tr1::false_type)
     {
       std::pair<bool, std::size_t> __do_rehash
 	= _M_rehash_policy._M_need_rehash(_M_bucket_count,
@@ -1253,6 +1183,5 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	  __throw_exception_again;
 	}
     }
-
-_GLIBCXX_END_NAMESPACE_TR1
+}
 }

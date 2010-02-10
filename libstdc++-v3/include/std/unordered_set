@@ -1,6 +1,6 @@
 // <unordered_set> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,10 +35,6 @@
 # include <c++0x_warning.h>
 #else
 
-#if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  error C++0x header cannot be included from TR1 header
-#endif
-
 #include <utility>
 #include <type_traits>
 #include <initializer_list>
@@ -48,26 +44,7 @@
 #include <bits/stringfwd.h>
 #include <bits/functional_hash.h>
 #include <bits/hashtable.h>
-
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  include <tr1_impl/unordered_set>
-#else
-#  define _GLIBCXX_INCLUDE_AS_CXX0X
-#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL) || defined(_GLIBCXX_PROFILE) 
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace _GLIBCXX_STD_D {
-#  define _GLIBCXX_END_NAMESPACE_TR1 }
-#  define _GLIBCXX_TR1 _GLIBCXX_STD_D
-#else
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  define _GLIBCXX_END_NAMESPACE_TR1
-#  define _GLIBCXX_TR1 
-#endif
-#  include <tr1_impl/unordered_set>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_END_NAMESPACE_TR1
-#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  undef _GLIBCXX_INCLUDE_AS_CXX0X
-#endif
+#include <bits/unordered_set.h>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/unordered_set>

@@ -29,8 +29,8 @@
 
 namespace std
 { 
-_GLIBCXX_BEGIN_NAMESPACE_TR1
-
+namespace tr1
+{
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.
   template<class _Value,
@@ -80,11 +80,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		__detail::_Default_ranged_hash(), __eql,
 		std::_Identity<_Value>(), __a)
         { }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      __unordered_set(__unordered_set&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
-#endif
     };
 
   template<class _Value,
@@ -135,11 +130,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		__detail::_Default_ranged_hash(), __eql,
 		std::_Identity<_Value>(), __a)
         { }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      __unordered_multiset(__unordered_multiset&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
-#endif
     };
 
   template<class _Value, class _Hash, class _Pred, class _Alloc,
@@ -206,37 +196,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 		      const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __eql, __a)
         { }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      unordered_set(unordered_set&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
-
-      unordered_set(initializer_list<value_type> __l,
-		    size_type __n = 10,
-		    const hasher& __hf = hasher(),
-		    const key_equal& __eql = key_equal(),
-		    const allocator_type& __a = allocator_type())
-	: _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
-      { }
-
-      unordered_set&
-      operator=(unordered_set&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;	
-      }
-
-      unordered_set&
-      operator=(initializer_list<value_type> __l)
-      {
-	this->clear();
-	this->insert(__l.begin(), __l.end());
-	return *this;
-      }
-#endif
     };
 
   /**
@@ -287,37 +246,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 			   const allocator_type& __a = allocator_type())
 	: _Base(__f, __l, __n, __hf, __eql, __a)
         { }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      unordered_multiset(unordered_multiset&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
-
-      unordered_multiset(initializer_list<value_type> __l,
-			 size_type __n = 10,
-			 const hasher& __hf = hasher(),
-			 const key_equal& __eql = key_equal(),
-			 const allocator_type& __a = allocator_type())
-	: _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
-      { }
-
-      unordered_multiset&
-      operator=(unordered_multiset&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;	
-      }
-
-      unordered_multiset&
-      operator=(initializer_list<value_type> __l)
-      {
-	this->clear();
-	this->insert(__l.begin(), __l.end());
-	return *this;
-      }
-#endif
     };
 
   template<class _Value, class _Hash, class _Pred, class _Alloc>
@@ -331,6 +259,5 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
-
-_GLIBCXX_END_NAMESPACE_TR1
+}
 }

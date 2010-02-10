@@ -1,6 +1,6 @@
-// Internal policy header for TR1 unordered_set and unordered_map -*- C++ -*-
+// Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,14 +22,15 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file tr1_impl/hashtable_policy.h
+/** @file bits/hashtable_policy.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */
 
+#ifndef _HASHTABLE_POLICY_H
+#define _HASHTABLE_POLICY_H 1
+
 namespace std
-{ 
-namespace tr1
 {
 namespace __detail
 {
@@ -94,6 +95,11 @@ namespace __detail
       _Value       _M_v;
       std::size_t  _M_hash_code;
       _Hash_node*  _M_next;
+
+      template<typename... _Args>
+        _Hash_node(_Args&&... __args)
+	: _M_v(std::forward<_Args>(__args)...),
+	  _M_hash_code(), _M_next() { }
     };
 
   template<typename _Value>
@@ -101,6 +107,11 @@ namespace __detail
     {
       _Value       _M_v;
       _Hash_node*  _M_next;
+
+      template<typename... _Args>
+        _Hash_node(_Args&&... __args)
+	: _M_v(std::forward<_Args>(__args)...),
+	  _M_next() { }
     };
 
   // Local iterators, used to iterate within a bucket but not between
@@ -135,13 +146,11 @@ namespace __detail
     : public _Node_iterator_base<_Value, __cache>
     {
       typedef _Value                                   value_type;
-      typedef typename
-      __gnu_cxx::__conditional_type<__constant_iterators,
-				    const _Value*, _Value*>::__type
+      typedef typename std::conditional<__constant_iterators,
+					const _Value*, _Value*>::type
                                                        pointer;
-      typedef typename
-      __gnu_cxx::__conditional_type<__constant_iterators,
-				    const _Value&, _Value&>::__type
+      typedef typename std::conditional<__constant_iterators,
+					const _Value&, _Value&>::type
                                                        reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
@@ -276,13 +285,11 @@ namespace __detail
     : public _Hashtable_iterator_base<_Value, __cache>
     {
       typedef _Value                                   value_type;
-      typedef typename
-      __gnu_cxx::__conditional_type<__constant_iterators,
-				    const _Value*, _Value*>::__type
+      typedef typename std::conditional<__constant_iterators,
+					const _Value*, _Value*>::type
                                                        pointer;
-      typedef typename
-      __gnu_cxx::__conditional_type<__constant_iterators,
-				    const _Value&, _Value&>::__type
+      typedef typename std::conditional<__constant_iterators,
+					const _Value&, _Value&>::type
                                                        reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
@@ -531,6 +538,14 @@ namespace __detail
       
       mapped_type&
       operator[](const _Key& __k);
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 761. unordered_map needs an at() member function.
+      mapped_type&
+      at(const _Key& __k);
+
+      const mapped_type&
+      at(const _Key& __k) const;
     };
 
   template<typename _Key, typename _Pair, typename _Hashtable>
@@ -549,6 +564,42 @@ namespace __detail
       if (!__p)
 	return __h->_M_insert_bucket(std::make_pair(__k, mapped_type()),
 				     __n, __code)->second;
+      return (__p->_M_v).second;
+    }
+
+  template<typename _Key, typename _Pair, typename _Hashtable>
+    typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
+		       true, _Hashtable>::mapped_type&
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
+    at(const _Key& __k)
+    {
+      _Hashtable* __h = static_cast<_Hashtable*>(this);
+      typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
+      std::size_t __n = __h->_M_bucket_index(__k, __code,
+					     __h->_M_bucket_count);
+
+      typename _Hashtable::_Node* __p =
+	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      if (!__p)
+	__throw_out_of_range(__N("_Map_base::at"));
+      return (__p->_M_v).second;
+    }
+
+  template<typename _Key, typename _Pair, typename _Hashtable>
+    const typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
+			     true, _Hashtable>::mapped_type&
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
+    at(const _Key& __k) const
+    {
+      const _Hashtable* __h = static_cast<const _Hashtable*>(this);
+      typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
+      std::size_t __n = __h->_M_bucket_index(__k, __code,
+					     __h->_M_bucket_count);
+
+      typename _Hashtable::_Node* __p =
+	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      if (!__p)
+	__throw_out_of_range(__N("_Map_base::at"));
       return (__p->_M_v).second;
     }
 
@@ -799,4 +850,5 @@ namespace __detail
     };
 } // namespace __detail
 }
-}
+
+#endif // _HASHTABLE_POLICY_H

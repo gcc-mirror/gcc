@@ -183,19 +183,11 @@ namespace __debug
       }
 
       iterator
-      insert(iterator, const value_type& __obj)
-      {
-	typedef std::pair<typename _Base::iterator, bool> __pair_type;
-	__pair_type __res = _Base::insert(__obj);
-	return iterator(__res.first, this);
-      }
-
-      const_iterator
       insert(const_iterator, const value_type& __obj)
       {
 	typedef std::pair<typename _Base::iterator, bool> __pair_type;
 	__pair_type __res = _Base::insert(__obj);
-	return const_iterator(__res.first, this);
+	return iterator(__res.first, this);
       }
 
       void
@@ -252,35 +244,14 @@ namespace __debug
       }
 
       iterator
-      erase(iterator __it)
+      erase(const_iterator __it)
       {
 	__glibcxx_check_erase(__it);
 	__it._M_invalidate();
 	return iterator(_Base::erase(__it.base()), this);
       }
 
-      const_iterator
-      erase(const_iterator __it)
-      {
-	__glibcxx_check_erase(__it);
-	__it._M_invalidate();
-	return const_iterator(_Base::erase(__it.base()), this);
-      }
-
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	__glibcxx_check_erase_range(__first, __last);
-	for (iterator __tmp = __first; __tmp != __last;)
-	{
-	  iterator __victim = __tmp++;
-	  __victim._M_invalidate();
-	}
-	return iterator(_Base::erase(__first.base(),
-				     __last.base()), this);
-      }
-
-      const_iterator
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
@@ -289,8 +260,8 @@ namespace __debug
 	  const_iterator __victim = __tmp++;
 	  __victim._M_invalidate();
 	}
-	return const_iterator(_Base::erase(__first.base(),
-					   __last.base()), this);
+	return iterator(_Base::erase(__first.base(),
+				     __last.base()), this);
       }
 
       _Base&
@@ -453,12 +424,8 @@ namespace __debug
       { return iterator(_Base::insert(__obj), this); }
 
       iterator
-      insert(iterator, const value_type& __obj)
-      { return iterator(_Base::insert(__obj), this); }
-
-      const_iterator
       insert(const_iterator, const value_type& __obj)
-      { return const_iterator(_Base::insert(__obj), this); }
+      { return iterator(_Base::insert(__obj), this); }
 
       void
       insert(std::initializer_list<value_type> __l)
@@ -514,35 +481,14 @@ namespace __debug
       }
 
       iterator
-      erase(iterator __it)
+      erase(const_iterator __it)
       {
 	__glibcxx_check_erase(__it);
 	__it._M_invalidate();
 	return iterator(_Base::erase(__it.base()), this);
       }
 
-      const_iterator
-      erase(const_iterator __it)
-      {
-	__glibcxx_check_erase(__it);
-	__it._M_invalidate();
-	return const_iterator(_Base::erase(__it.base()), this);
-      }
-
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	__glibcxx_check_erase_range(__first, __last);
-	for (iterator __tmp = __first; __tmp != __last;)
-	{
-	  iterator __victim = __tmp++;
-	  __victim._M_invalidate();
-	}
-	return iterator(_Base::erase(__first.base(),
-				     __last.base()), this);
-      }
-
-      const_iterator
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
@@ -551,8 +497,8 @@ namespace __debug
 	  const_iterator __victim = __tmp++;
 	  __victim._M_invalidate();
 	}
-	return const_iterator(_Base::erase(__first.base(),
-					   __last.base()), this);
+	return iterator(_Base::erase(__first.base(),
+				     __last.base()), this);
       }
 
       _Base&
