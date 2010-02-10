@@ -2206,17 +2206,17 @@ ipa_update_after_lto_read (void)
   ipa_check_create_edge_args ();
 
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      if (!node->analyzed)
-	continue;
+    if (node->analyzed)
       ipa_initialize_node_params (node);
+
+  for (node = cgraph_nodes; node; node = node->next)
+    if (node->analyzed)
       for (cs = node->callees; cs; cs = cs->next_callee)
 	{
 	  if (ipa_get_cs_argument_count (IPA_EDGE_REF (cs))
 	      != ipa_get_param_count (IPA_NODE_REF (cs->callee)))
 	    ipa_set_called_with_variable_arg (IPA_NODE_REF (cs->callee));
 	}
-    }
 }
 
 /* Walk param call notes of NODE and set their call statements given the uid
