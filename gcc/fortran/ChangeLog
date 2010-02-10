@@ -1,3 +1,9 @@
+2010-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/42309
+	* trans-expr.c (gfc_conv_subref_array_arg): Avoid accessing
+	info->dimen after info has been freed.
+
 2010-02-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/42999
