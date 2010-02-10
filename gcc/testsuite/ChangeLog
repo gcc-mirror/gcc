@@ -1,3 +1,8 @@
+2010-02-09 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42999
+	* gfortran.dg/array_constructor_35.f90: New test.
+
 2010-02-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/tree-ssa/inline-4.c: Bind pic locally.
