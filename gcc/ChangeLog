@@ -1,3 +1,8 @@
+2010-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (set_builtin_user_assembler_name): Also handle
+	ffs if int is smaller than word.
+
 2010-02-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/42973
