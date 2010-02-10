@@ -32,10 +32,6 @@
 
 #pragma GCC system_header
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# include <c++0x_warning.h>
-#endif
-
 #include <string>
 #include <system_error>
 

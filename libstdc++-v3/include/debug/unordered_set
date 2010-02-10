@@ -33,7 +33,7 @@
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 # include <unordered_set>
 #else
-# include <c++0x_warning.h>
+# include <bits/c++0x_warning.h>
 #endif
 
 #include <debug/safe_sequence.h>

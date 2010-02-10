@@ -39,6 +39,6 @@
 #include <tr1/type_traits>
 #include <tr1/functional_hash.h>
 #include <tr1/hashtable.h>
-#include <tr1_impl/unordered_map>
+#include <tr1/unordered_map.h>
 
 #endif // _GLIBCXX_TR1_UNORDERED_MAP
