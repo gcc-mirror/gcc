@@ -673,6 +673,31 @@ convert_to_integer (tree type, tree expr)
 	    }
 	  break;
 
+	case TRUNC_DIV_EXPR:
+	  {
+	    tree arg0 = get_unwidened (TREE_OPERAND (expr, 0), type);
+	    tree arg1 = get_unwidened (TREE_OPERAND (expr, 1), type);
+
+	    /* Don't distribute unless the output precision is at least as big
+	       as the actual inputs and it has the same signedness.  */
+	    if (outprec >= TYPE_PRECISION (TREE_TYPE (arg0))
+		&& outprec >= TYPE_PRECISION (TREE_TYPE (arg1))
+		/* If signedness of arg0 and arg1 don't match,
+		   we can't necessarily find a type to compare them in.  */
+		&& (TYPE_UNSIGNED (TREE_TYPE (arg0))
+		    == TYPE_UNSIGNED (TREE_TYPE (arg1)))
+		/* Do not change the sign of the division.  */
+		&& (TYPE_UNSIGNED (TREE_TYPE (expr))
+		    == TYPE_UNSIGNED (TREE_TYPE (arg0)))
+		/* Either require unsigned division or a division by
+		   a constant that is not -1.  */
+		&& (TYPE_UNSIGNED (TREE_TYPE (arg0))
+		    || (TREE_CODE (arg1) == INTEGER_CST
+			&& !integer_all_onesp (arg1))))
+	      goto trunc1;
+	    break;
+	  }
+
 	case MAX_EXPR:
 	case MIN_EXPR:
 	case MULT_EXPR:

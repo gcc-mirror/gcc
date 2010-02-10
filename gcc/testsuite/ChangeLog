@@ -1,3 +1,9 @@
+2010-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR c/43007
+	* gcc.c-torture/execute/20100209-1.c: New testcase.
+	* gcc.dg/fold-div-3.c: Likewise.
+
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/builtin-ffs-1.c: New test.
