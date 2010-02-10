@@ -130,7 +130,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 22.2.1.1  Template class ctype
   // Include host and configuration specific ctype enums for ctype_base.
 
-  // Common base for ctype<_CharT>.
   /**
    *  @brief  Common base for ctype facet
    *
@@ -583,9 +582,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		char __dfault, char* __dest) const = 0;
     };
 
-  // NB: Generic, mostly useless implementation.
   /**
-   *  @brief  Template ctype facet
+   *  @brief  Primary class template ctype facet.
+   *  @ingroup locales
    *
    *  This template class defines classification and conversion functions for
    *  character sets.  It wraps <cctype> functionality.  Ctype gets used by
@@ -661,9 +660,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT>
     locale::id ctype<_CharT>::id;
 
-  // 22.2.1.3  ctype<char> specialization.
   /**
    *  @brief  The ctype<char> specialization.
+   *  @ingroup locales
    *
    *  This class defines classification and conversion functions for
    *  the char type.  It gets used by char streams for many I/O
@@ -1160,9 +1159,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  // 22.2.1.3  ctype<wchar_t> specialization
   /**
    *  @brief  The ctype<wchar_t> specialization.
+   *  @ingroup locales
    *
    *  This class defines classification and conversion functions for the
    *  wchar_t type.  It gets used by wchar_t streams for many I/O operations.
@@ -1620,7 +1619,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief  Numpunct facet.
+   *  @brief  Primary class template numpunct.
+   *  @ingroup locales
    *
    *  This facet stores several pieces of information related to printing and
    *  scanning numbers, such as the decimal point character.  It takes a
@@ -1893,7 +1893,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
   /**
-   *  @brief  Facet for parsing number strings.
+   *  @brief  Primary class template num_get.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to parse and return a number
    *  from a string.  It is used by the istream numeric extraction
@@ -2231,7 +2232,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
 
   /**
-   *  @brief  Facet for converting numbers to strings.
+   *  @brief  Primary class template num_put.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to convert a number to a string.  It is
    *  used by the ostream numeric insertion operators.

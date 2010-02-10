@@ -41,10 +41,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   /**
    *  @class __versa_string vstring.h
-   *  @brief  Managing sequences of characters and character-like objects.
+   *  @brief  Template class __versa_string. 
+   *  @ingroup extensions
+   *
+   *  Data structure managing sequences of characters and
+   *  character-like objects. 
    */
-
-  // Template class __versa_string
   template<typename _CharT, typename _Traits, typename _Alloc,
 	   template <typename, typename, typename> class _Base>
     class __versa_string

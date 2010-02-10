@@ -34,5 +34,5 @@ void test02()
 }
 // { dg-error "within this context" "" { target *-*-* } 27 } 
 // { dg-error "synthesized" "" { target *-*-* } 33 } 
-// { dg-error "is private" "" { target *-*-* } 790 } 
+// { dg-error "is private" "" { target *-*-* } 785 } 
 // { dg-error "copy constructor" "" { target *-*-* } 0 } 

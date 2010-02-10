@@ -457,16 +457,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     register_callback(event_callback __fn, int __index);
 
   protected:
-    //@{
-    /**
-     *  ios_base data members (doc me)
-    */
     streamsize		_M_precision;
     streamsize		_M_width;
     fmtflags		_M_flags;
     iostate		_M_exception;
     iostate		_M_streambuf_state;
-    //@}
 
     // 27.4.2.6  Members for callbacks
     // 27.4.2.6  ios_base callbacks

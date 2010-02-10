@@ -1,3 +1,22 @@
+2010-02-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/streambuf: Adjust doxygen group markup.
+	* include/std/functional: Same.
+	* include/ext/vstring.h: Same.
+	* include/ext/pb_ds/assoc_container.hpp: Same.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/bits/localefwd.h: Same.
+	* include/bits/functional_hash.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/bits/codecvt.h: Same.
+	* include/bits/locale_facets_nonio.h: Same.
+
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+
 2010-02-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/42460
