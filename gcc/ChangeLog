@@ -1,3 +1,8 @@
+2010-02-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (find_barrier): Skip call insn with a REG_EH_REGION
+	note when flag_exceptions is set.
+
 2010-02-10  Duncan Sands  <baldrick@free.fr>
 
 	* Makefile.in (PLUGIN_HEADERS): Add debug.h.
