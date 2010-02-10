@@ -302,21 +302,6 @@ get_dup_num (int op_num, bool use_commut_op_p)
   return dup;
 }
 
-/* Return the operand which should be, in any case, the same as
-   operand with number OP_NUM.  If USE_COMMUT_OP_P is TRUE, the
-   function makes temporarily commutative operand exchange before
-   this.  */
-static rtx
-get_dup (int op_num, bool use_commut_op_p)
-{
-  int n = get_dup_num (op_num, use_commut_op_p);
-
-  if (n < 0)
-    return NULL_RTX;
-  else
-    return recog_data.operand[n];
-}
-
 /* Check that X is REG or SUBREG of REG.  */
 #define REG_SUBREG_P(x)							\
    (REG_P (x) || (GET_CODE (x) == SUBREG && REG_P (SUBREG_REG (x))))
@@ -432,12 +417,12 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
   return true;
 }
 
-/* Process all of the output registers of the current insn and
-   the input register REG (its operand number OP_NUM) which dies in the
-   insn as if there were a move insn between them with frequency
-   FREQ.  */
+/* Process all of the output registers of the current insn which are
+   not bound (BOUND_P) and the input register REG (its operand number
+   OP_NUM) which dies in the insn as if there were a move insn between
+   them with frequency FREQ.  */
 static void
-process_reg_shuffles (rtx reg, int op_num, int freq)
+process_reg_shuffles (rtx reg, int op_num, int freq, bool *bound_p)
 {
   int i;
   rtx another_reg;
@@ -448,7 +433,8 @@ process_reg_shuffles (rtx reg, int op_num, int freq)
       another_reg = recog_data.operand[i];
 
       if (!REG_SUBREG_P (another_reg) || op_num == i
-	  || recog_data.operand_type[i] != OP_OUT)
+	  || recog_data.operand_type[i] != OP_OUT
+	  || bound_p[i])
 	continue;
 
       process_regs_for_copy (reg, another_reg, false, NULL_RTX, freq);
@@ -461,11 +447,11 @@ process_reg_shuffles (rtx reg, int op_num, int freq)
 static void
 add_insn_allocno_copies (rtx insn)
 {
-  rtx set, operand, dup;
+  rtx set, operand, dup, link;
   const char *str;
-  bool commut_p, bound_p;
-  int i, j, freq;
-
+  bool commut_p, bound_p[MAX_RECOG_OPERANDS];
+  int i, j, n, freq;
+  
   freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
   if (freq == 0)
     freq = 1;
@@ -476,38 +462,52 @@ add_insn_allocno_copies (rtx insn)
 			REG_P (SET_SRC (set))
 			? SET_SRC (set)
 			: SUBREG_REG (SET_SRC (set))) != NULL_RTX)
-    process_regs_for_copy (SET_DEST (set), SET_SRC (set), false, insn, freq);
-  else
     {
-      extract_insn (insn);
-      for (i = 0; i < recog_data.n_operands; i++)
-	{
-	  operand = recog_data.operand[i];
-	  if (REG_SUBREG_P (operand)
-	      && find_reg_note (insn, REG_DEAD,
-				REG_P (operand)
-				? operand : SUBREG_REG (operand)) != NULL_RTX)
-	    {
-	      str = recog_data.constraints[i];
-	      while (*str == ' ' || *str == '\t')
-		str++;
-	      bound_p = false;
-	      for (j = 0, commut_p = false; j < 2; j++, commut_p = true)
-		if ((dup = get_dup (i, commut_p)) != NULL_RTX
-		    && REG_SUBREG_P (dup)
-		    && process_regs_for_copy (operand, dup, true,
-					      NULL_RTX, freq))
-		  bound_p = true;
-	      if (bound_p)
-		continue;
-	      /* If an operand dies, prefer its hard register for the
-		 output operands by decreasing the hard register cost
-		 or creating the corresponding allocno copies.  The
-		 cost will not correspond to a real move insn cost, so
-		 make the frequency smaller.  */
-	      process_reg_shuffles (operand, i, freq < 8 ? 1 : freq / 8);
-	    }
-	}
+      process_regs_for_copy (SET_DEST (set), SET_SRC (set), false, insn, freq);
+      return;
+    }
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_DEAD)
+      break;
+  if (! link)
+    return;
+  extract_insn (insn);
+  for (i = 0; i < recog_data.n_operands; i++)
+    bound_p[i] = false;
+  for (i = 0; i < recog_data.n_operands; i++)
+    {
+      operand = recog_data.operand[i];
+      if (! REG_SUBREG_P (operand))
+	continue;
+      str = recog_data.constraints[i];
+      while (*str == ' ' || *str == '\t')
+	str++;
+      for (j = 0, commut_p = false; j < 2; j++, commut_p = true)
+	if ((n = get_dup_num (i, commut_p)) >= 0)
+	  {
+	    bound_p[n] = true;
+	    dup = recog_data.operand[n];
+	    if (REG_SUBREG_P (dup)
+		&& find_reg_note (insn, REG_DEAD,
+				  REG_P (operand)
+				  ? operand
+				  : SUBREG_REG (operand)) != NULL_RTX)
+	      process_regs_for_copy (operand, dup, true, NULL_RTX, freq);
+	  }
+    }
+  for (i = 0; i < recog_data.n_operands; i++)
+    {
+      operand = recog_data.operand[i];
+      if (REG_SUBREG_P (operand)
+	  && find_reg_note (insn, REG_DEAD,
+			    REG_P (operand)
+			    ? operand : SUBREG_REG (operand)) != NULL_RTX)
+	/* If an operand dies, prefer its hard register for the output
+	   operands by decreasing the hard register cost or creating
+	   the corresponding allocno copies.  The cost will not
+	   correspond to a real move insn cost, so make the frequency
+	   smaller.  */
+	process_reg_shuffles (operand, i, freq < 8 ? 1 : freq / 8, bound_p);
     }
 }
 

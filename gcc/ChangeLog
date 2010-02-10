@@ -1,3 +1,11 @@
+2010-02-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/42973
+	* ira-conflicts.c (get_dup): Remove.
+	(process_reg_shuffles): Add new parameter.  Use it as an
+	additional guard for copy generation.
+	(add_insn_allocno_copies): Rewrite.
+
 2010-02-09  Alexander Monakov  <amonakov@ispras.ru>
 
 	* common.opt (fsched2-use-traces): Preserved for backward
