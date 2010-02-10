@@ -1,3 +1,9 @@
+2010-02-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43015
+	* trans-decl.c (gfc_generate_function_code): Only check
+	actual-vs.-dummy character bounds if not bind(C).
+
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/42309

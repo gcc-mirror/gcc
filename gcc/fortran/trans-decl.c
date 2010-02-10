@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -4367,7 +4367,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* If bounds-checking is enabled, generate code to check passed in actual
      arguments against the expected dummy argument attributes (e.g. string
      lengths).  */
-  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+  if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) && !sym->attr.is_bind_c)
     add_argument_checking (&body, sym);
 
   tmp = gfc_trans_code (ns->code);
