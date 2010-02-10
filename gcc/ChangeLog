@@ -1,3 +1,7 @@
+2010-02-10  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.c (find_barrier): Don't emit a CP inside the GP setting.
+	
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (set_builtin_user_assembler_name): Also handle
