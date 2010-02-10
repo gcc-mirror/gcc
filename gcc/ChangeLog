@@ -1,3 +1,8 @@
+2010-02-10  Daniel Gutson  <dgutson@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (__ARM_ARCH__): __ARM_ARCH_7EM__
+	added to the preprocessor condition.
+
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43010
