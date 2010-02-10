@@ -31,10 +31,6 @@
 
 #pragma GCC system_header
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# include <c++0x_warning.h>
-#else
-
 #include <memory>
 #include <initializer_list>
 #include <ext/cast.h>
@@ -1281,7 +1277,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { __lx.swap(__ly); }
 
 _GLIBCXX_END_NAMESPACE // namespace std
-
-#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _FORWARD_LIST_H

@@ -273,7 +273,6 @@ std_headers = \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
 	${std_srcdir}/bitset \
-	${std_srcdir}/c++0x_warning.h \
 	${std_srcdir}/chrono \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
@@ -331,6 +330,7 @@ bits_headers = \
 	${bits_srcdir}/basic_string.h \
 	${bits_srcdir}/basic_string.tcc \
 	${bits_srcdir}/boost_concept_check.h \
+	${bits_srcdir}/c++0x_warning.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
@@ -809,6 +809,7 @@ tr1_headers = \
 	${tr1_srcdir}/gamma.tcc \
 	${tr1_srcdir}/hypergeometric.tcc \
 	${tr1_srcdir}/hashtable.h \
+	${tr1_srcdir}/hashtable_policy.h \
 	${tr1_srcdir}/inttypes.h \
 	${tr1_srcdir}/limits.h \
 	${tr1_srcdir}/math.h \
@@ -832,8 +833,10 @@ tr1_headers = \
 	${tr1_srcdir}/tgmath.h \
 	${tr1_srcdir}/tuple \
 	${tr1_srcdir}/type_traits \
-	${tr1_srcdir}/unordered_set \
 	${tr1_srcdir}/unordered_map \
+	${tr1_srcdir}/unordered_map.h \
+	${tr1_srcdir}/unordered_set \
+	${tr1_srcdir}/unordered_set.h \
 	${tr1_srcdir}/utility \
 	${tr1_srcdir}/wchar.h \
 	${tr1_srcdir}/wctype.h
@@ -853,12 +856,8 @@ tr1_impl_headers = \
 	${tr1_impl_srcdir}/cstdlib \
 	${tr1_impl_srcdir}/cwchar \
 	${tr1_impl_srcdir}/cwctype \
-	${tr1_impl_srcdir}/hashtable \
-	${tr1_impl_srcdir}/hashtable_policy.h \
 	${tr1_impl_srcdir}/regex \
 	${tr1_impl_srcdir}/type_traits \
-	${tr1_impl_srcdir}/unordered_map \
-	${tr1_impl_srcdir}/unordered_set \
 	${tr1_impl_srcdir}/utility
 
 decimal_srcdir = ${glibcxx_srcdir}/include/decimal

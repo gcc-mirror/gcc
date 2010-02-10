@@ -1,6 +1,6 @@
-// TR1 unordered_set -*- C++ -*-
+// TR1 unordered_set implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file tr1_impl/unordered_set
+/** @file tr1/unordered_set.h
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  */

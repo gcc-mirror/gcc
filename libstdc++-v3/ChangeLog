@@ -1,5 +1,72 @@
 2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/tr1/hashtable.h: Fold in include/tr1_impl/hashtable.h
+	contents.
+	* include/tr1_impl/hashtable.h: Remove.
+	* include/tr1_impl/hashtable_policy.h: Move and rename...
+	* include/tr1/hashtable_policy.h: ... here.
+	* include/tr1_impl/unordered_map: Move and rename...
+	* include/tr1/unordered_map.h: ... here.
+	* include/tr1_impl/unordered_set: Move and rename...
+	* include/tr1/unordered_set.h: ... here.
+	* include/tr1_impl/unordered_map: Move and rename...
+	* include/tr1/unordered_map.h: ... here.
+	* include/tr1/unordered_map: Adjust.
+	* include/tr1/unordered_set: Likewise.
+	* include/Makefile.am: Adjust.
+	* include/Makefile.in: Regenerate.
+
+	* include/std/c++0x_warning.h: Move...
+	* include/bits/c++0x_warning.h: ... here.
+	* include/debug/unordered_map: Adjust.
+	* include/debug/unordered_set: Likewise.
+	* include/std/tuple: Likewise.
+	* include/std/system_error: Likewise.
+	* include/std/forward_list: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/type_traits: Likewise.
+	* include/std/future: Likewise.
+	* include/std/regex: Likewise.
+	* include/std/atomic: Likewise.
+	* include/std/ratio: Likewise.
+	* include/std/random: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/chrono: Likewise.: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/array: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* include/c_global/cinttypes: Likewise.
+	* include/c_global/ctgmath: Likewise.
+	* include/c_global/cfenv: Likewise.
+	* include/c_global/cstdint: Likewise.
+	* include/c_global/cstdbool: Likewise.
+	* include/c_global/ccomplex: Likewise.
+
+	* include/bits/shared_ptr.h: Do not include <bits/c++0x_warning.h>
+	at all, the file is not meant to be included by the users.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Adjust dg-*
+	line numbers.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+
+2010-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/hashtable.h: Fold in include/tr1_impl/hashtable.h
 	for C++0x use.
 	* include/bits/hashtable_policy.h: New, copy and adjust for

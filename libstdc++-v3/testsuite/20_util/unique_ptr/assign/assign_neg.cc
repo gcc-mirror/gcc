@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,13 +49,13 @@ test03()
   std::unique_ptr<int[2]> p2 = p1;
 }
 
-// { dg-error "deleted function" "" { target *-*-* } 358 }
+// { dg-error "deleted function" "" { target *-*-* } 354 }
 // { dg-error "used here" "" { target *-*-* } 42 }
 // { dg-error "no matching" "" { target *-*-* } 48 }
-// { dg-warning "candidates are" "" { target *-*-* } 119 }
-// { dg-warning "note" "" { target *-*-* } 112 }
-// { dg-warning "note" "" { target *-*-* } 107 }
-// { dg-warning "note" "" { target *-*-* } 102 }
-// { dg-warning "note" "" { target *-*-* } 96 }
-// { dg-error "deleted function" "" { target *-*-* } 213 }
+// { dg-warning "candidates are" "" { target *-*-* } 115 }
+// { dg-warning "note" "" { target *-*-* } 108 }
+// { dg-warning "note" "" { target *-*-* } 103 }
+// { dg-warning "note" "" { target *-*-* } 98 }
+// { dg-warning "note" "" { target *-*-* } 92 }
+// { dg-error "deleted function" "" { target *-*-* } 209 }
 // { dg-error "used here" "" { target *-*-* } 49 }
