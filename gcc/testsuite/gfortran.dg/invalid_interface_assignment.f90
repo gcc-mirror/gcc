@@ -9,10 +9,10 @@ MODULE TT
    INTEGER :: I
  END TYPE data_type
  INTERFACE ASSIGNMENT (=)
-   MODULE PROCEDURE set   ! { dg-error "Alternate return cannot appear" }
+   MODULE PROCEDURE set
  END INTERFACE
 CONTAINS
-  PURE SUBROUTINE set(x1,*)
+  PURE SUBROUTINE set(x1,*) ! { dg-error "Alternate return cannot appear" }
     TYPE(data_type), INTENT(OUT) :: x1
     x1%i=0
   END SUBROUTINE set

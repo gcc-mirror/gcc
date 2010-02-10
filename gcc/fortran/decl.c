@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -5099,6 +5099,10 @@ gfc_match_subroutine (void)
 
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
+
+  /* Set declared_at as it might point to, e.g., a PUBLIC statement, if
+     the symbol existed before. */
+  sym->declared_at = gfc_current_locus;
 
   if (add_hidden_procptr_result (sym) == SUCCESS)
     sym = sym->result;

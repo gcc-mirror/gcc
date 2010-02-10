@@ -1,3 +1,13 @@
+2010-02-10  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/40823
+	* gfortran.dg/private_type_1.f90: Update error location.
+	* gfortran.dg/invalid_interface_assignment.f90: Ditto.
+	* gfortran.dg/typebound_operator_2.f03: Ditto.
+	* gfortran.dg/assignment_2.f90: Ditto.
+	* gfortran.dg/redefined_intrinsic_assignment.f90: Ditto.
+	* gfortran.dg/binding_label_tests_9.f03: Ditto.
+
 2010-02-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43015

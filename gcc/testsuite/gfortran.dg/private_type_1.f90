@@ -6,12 +6,12 @@
 module modboom
   implicit none
   private
-  public:: dummysub ! { dg-error "PRIVATE type and cannot be a dummy argument" }
+  public:: dummysub
   type:: intwrapper
     integer n
   end type intwrapper
 contains
-  subroutine dummysub(size, arg_array)
+  subroutine dummysub(size, arg_array) ! { dg-error "PRIVATE type and cannot be a dummy argument" }
    type(intwrapper) :: size
    real, dimension(size%n) :: arg_array
    real :: local_array(4)
