@@ -1,7 +1,7 @@
 // Locale support (codecvt) -*- C++ -*-
 
 // Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-// 2009  Free Software Foundation, Inc.
+// 2009, 2010  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -262,9 +262,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       do_max_length() const throw() = 0;
     };
 
-  /// @brief class codecvt [22.2.1.5].
-  /// NB: Generic, mostly useless implementation.
-  template<typename _InternT, typename _ExternT, typename _StateT>
+
+
+  /**
+   *  @brief  Primary class template codecvt.
+   *  @ingroup locales
+   *
+   *  NB: Generic, mostly useless implementation.
+   *
+  */
+   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt
     : public __codecvt_abstract_base<_InternT, _ExternT, _StateT>
     {

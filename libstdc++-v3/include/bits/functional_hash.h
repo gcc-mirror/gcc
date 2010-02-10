@@ -1,6 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,15 @@
 
 namespace std
 {
-  /// Class template hash.
+  /** @defgroup hashes Hashes
+   *  @ingroup functors
+   *
+   *   Hashing functors taking a variable type and returning a @c std::size_t.
+   *
+   *  @{
+   */
+ 
+  /// Primary class template hash.
   template<typename _Tp>
     struct hash;
 
@@ -54,7 +62,7 @@ namespace std
       { return reinterpret_cast<size_t>(__p); }
     };
 
-  /// Explicit specializations for integer types.
+  // Explicit specializations for integer types.
 #define _Cxx_hashtable_define_trivial_hash(_Tp) 	       \
   template<>						       \
     struct hash<_Tp> : public std::unary_function<_Tp, size_t> \
@@ -64,22 +72,51 @@ namespace std
       { return static_cast<size_t>(__val); }		       \
     };
 
+  /// Explicit specialization for bool.
   _Cxx_hashtable_define_trivial_hash(bool);
+
+  /// Explicit specialization for char.
   _Cxx_hashtable_define_trivial_hash(char);
+
+  /// Explicit specialization for signed char.
   _Cxx_hashtable_define_trivial_hash(signed char);
+
+  /// Explicit specialization for unsigned char.
   _Cxx_hashtable_define_trivial_hash(unsigned char);
+
+  /// Explicit specialization for wchar_t.
   _Cxx_hashtable_define_trivial_hash(wchar_t);
+
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  /// Explicit specialization for char16_t.
   _Cxx_hashtable_define_trivial_hash(char16_t);
+
+  /// Explicit specialization for char32_t.
   _Cxx_hashtable_define_trivial_hash(char32_t);
 #endif
+
+  /// Explicit specialization for short.
   _Cxx_hashtable_define_trivial_hash(short);
+
+  /// Explicit specialization for int.
   _Cxx_hashtable_define_trivial_hash(int);
+
+  /// Explicit specialization for long.
   _Cxx_hashtable_define_trivial_hash(long);
+
+  /// Explicit specialization for long long.
   _Cxx_hashtable_define_trivial_hash(long long);
+
+  /// Explicit specialization for unsigned short.
   _Cxx_hashtable_define_trivial_hash(unsigned short);
+
+  /// Explicit specialization for unsigned int.
   _Cxx_hashtable_define_trivial_hash(unsigned int);
+
+  /// Explicit specialization for unsigned long.
   _Cxx_hashtable_define_trivial_hash(unsigned long);
+
+  /// Explicit specialization for unsigned long long.
   _Cxx_hashtable_define_trivial_hash(unsigned long long);
 
 #undef _Cxx_hashtable_define_trivial_hash
@@ -87,7 +124,7 @@ namespace std
   // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
   // (Used by the next specializations of std::tr1::hash.)
 
-  /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
+  // Dummy generic implementation (for sizeof(size_t) != 4, 8).
   template<size_t = sizeof(size_t)>
     struct _Fnv_hash
     {
@@ -202,6 +239,7 @@ namespace std
       }
     };
 
+  /// Explicit specializations for string.
   template<>
     struct hash<string>
     : public std::unary_function<string, size_t>
@@ -212,6 +250,7 @@ namespace std
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
+  /// Explicit specializations for wstring.
   template<>
     struct hash<wstring>
     : public std::unary_function<wstring, size_t>
@@ -226,6 +265,7 @@ namespace std
 #endif
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  /// Explicit specializations for u16string.
   template<>
     struct hash<u16string>
     : public std::unary_function<u16string, size_t>
@@ -238,6 +278,7 @@ namespace std
       }
     };
 
+  /// Explicit specializations for u32string.
   template<>
     struct hash<u32string>
     : public std::unary_function<u32string, size_t>
@@ -251,6 +292,7 @@ namespace std
     };
 #endif
 
+  /// Explicit specializations for error_code.
   template<>
     struct hash<error_code>
     : public std::unary_function<error_code, size_t>
@@ -262,6 +304,7 @@ namespace std
 	return _Fnv_hash<>::hash(__p, sizeof(__e));
       }
     };
+  // @} group hashes
 }
 
 #endif // _FUNCTIONAL_HASH_H

@@ -42,9 +42,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Time format ordering data.
+   *  @ingroup locales
    *
-   *  This class provides an enum representing different orderings of day,
-   *  month, and year.
+   *  This class provides an enum representing different orderings of
+   *  time: day, month, and year.
   */
   class time_base
   {
@@ -346,7 +347,8 @@ _GLIBCXX_END_NAMESPACE
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
-   *  @brief  Facet for parsing dates and times.
+   *  @brief  Primary class template time_get.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to parse and return a date or
    *  time from a string.  It is used by the istream numeric
@@ -693,7 +695,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /**
-   *  @brief  Facet for outputting dates and times.
+   *  @brief  Primary class template time_put.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to format and output dates and times
    *  according to formats used by strftime().
@@ -820,6 +823,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Money format ordering data.
+   *  @ingroup locales
    *
    *  This class contains an ordered array of 4 fields to represent the
    *  pattern for formatting a money amount.  Each field may contain one entry
@@ -915,7 +919,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief  Facet for formatting data for money amounts.
+   *  @brief  Primary class template moneypunct.
+   *  @ingroup locales
    *
    *  This facet encapsulates the punctuation, grouping and other formatting
    *  features of money amount string representations.
@@ -1343,7 +1348,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
   /**
-   *  @brief  Facet for parsing monetary amounts.
+   *  @brief  Primary class template money_get.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to parse and return a monetary
    *  amount from a string.
@@ -1493,7 +1499,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     locale::id money_get<_CharT, _InIter>::id;
 
   /**
-   *  @brief  Facet for outputting monetary amounts.
+   *  @brief  Primary class template money_put.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to format and output a monetary
    *  amount.
@@ -1650,6 +1657,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 
   /**
    *  @brief  Messages facet base class providing catalog typedef.
+   *  @ingroup locales
    */
   struct messages_base
   {
@@ -1657,7 +1665,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
   };
 
   /**
-   *  @brief  Facet for handling message catalogs
+   *  @brief  Primary class template messages.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to retrieve messages from
    *  message catalogs.  The only thing defined by the standard for this facet
@@ -1881,7 +1890,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
   template<typename _CharT>
     locale::id messages<_CharT>::id;
 
-  // Specializations for required instantiations.
+  /// Specializations for required instantiations.
   template<>
     string
     messages<char>::do_get(catalog, int, int, const string&) const;

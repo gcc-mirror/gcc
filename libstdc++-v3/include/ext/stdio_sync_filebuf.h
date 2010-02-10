@@ -43,7 +43,14 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  /// class stdio_sync_filebuf.
+  /**
+   *  @brief Provides a layer of compatibility for C.
+   *  @ingroup io
+   *
+   *  This GNU extension provides extensions for working with standard
+   *  C FILE*'s.  It must be instantiated by the user with the type of
+   *  character used in the file stream, e.g., stdio_filebuf<char>.
+  */
   template<typename _CharT, typename _Traits = std::char_traits<_CharT> >
     class stdio_sync_filebuf : public std::basic_streambuf<_CharT, _Traits>
     {

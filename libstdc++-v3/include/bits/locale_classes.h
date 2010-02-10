@@ -47,6 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 22.1.1 Class locale
   /**
    *  @brief  Container class for localization functionality.
+   *  @ingroup locales
    *
    *  The locale class is first a class wrapper for C library locales.  It is
    *  also an extensible container for user-defined localization.  A locale is
@@ -325,6 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 22.1.1.1.2  Class locale::facet
   /**
    *  @brief  Localization functionality base class.
+   *  @ingroup locales
    *
    *  The facet class is the base class for a localization feature, such as
    *  money, time, and number printing.  It provides common support for facets
@@ -419,6 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 22.1.1.1.3 Class locale::id
   /**
    *  @brief  Facet ID class.
+   *  @ingroup locales
    *
    *  The ID class provides facets with an index used to identify them.
    *  Every facet class must define a public static member locale::id, or be

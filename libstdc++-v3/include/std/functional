@@ -90,9 +90,6 @@ namespace std
 	      _Has_result_type_helper<typename remove_cv<_Tp>::type>::value>
     { };
 
-  /**
-   *  
-  */
   /// If we have found a result_type, extract it.
   template<bool _Has_result_type, typename _Functor>
     struct _Maybe_get_result_type
@@ -385,7 +382,11 @@ namespace std
     : binary_function<const volatile _T1*, _T2, _Res>
     { };
 
-  /// reference_wrapper
+  /**
+   *  @brief Primary class template for reference_wrapper.
+   *  @ingroup functors
+   *  @{
+   */
   template<typename _Tp>
     class reference_wrapper
     : public _Reference_wrapper_base<typename remove_cv<_Tp>::type>
@@ -431,27 +432,31 @@ namespace std
     };
 
 
-  // Denotes a reference should be taken to a variable.
+  /// Denotes a reference should be taken to a variable.
   template<typename _Tp>
     inline reference_wrapper<_Tp>
     ref(_Tp& __t)
     { return reference_wrapper<_Tp>(__t); }
 
-  // Denotes a const reference should be taken to a variable.
+  /// Denotes a const reference should be taken to a variable.
   template<typename _Tp>
     inline reference_wrapper<const _Tp>
     cref(const _Tp& __t)
     { return reference_wrapper<const _Tp>(__t); }
 
+  /// Partial specialization.
   template<typename _Tp>
     inline reference_wrapper<_Tp>
     ref(reference_wrapper<_Tp> __t)
     { return ref(__t.get()); }
 
+  /// Partial specialization.
   template<typename _Tp>
     inline reference_wrapper<const _Tp>
     cref(reference_wrapper<_Tp> __t)
     { return cref(__t.get()); }
+
+  // @} group functors
 
   template<typename _Tp, bool>
     struct _Mem_fn_const_or_non
@@ -753,6 +758,7 @@ namespace std
   /**
    *  @brief Returns a function object that forwards to the member
    *  pointer @a pm.
+   *  @ingroup functors
    */
   template<typename _Tp, typename _Class>
     inline _Mem_fn<_Tp _Class::*>
@@ -765,6 +771,7 @@ namespace std
    *  @brief Determines if the given type _Tp is a function object
    *  should be treated as a subexpression when evaluating calls to
    *  function objects returned by bind(). [TR1 3.6.1]
+   *  @ingroup binders
    */
   template<typename _Tp>
     struct is_bind_expression
@@ -773,6 +780,7 @@ namespace std
   /**
    *  @brief Determines if the given type _Tp is a placeholder in a
    *  bind() expression and, if so, which placeholder it is. [TR1 3.6.2]
+   *  @ingroup binders
    */
   template<typename _Tp>
     struct is_placeholder
@@ -784,6 +792,7 @@ namespace std
 
   /** @namespace std::placeholders
    *  @brief ISO C++ 0x entities sub namespace for functional.
+   *  @ingroup binders
    *
    *  Define a large number of placeholders. There is no way to
    *  simplify this with variadic templates, because we're introducing
@@ -828,6 +837,7 @@ namespace std
   /**
    *  Partial specialization of is_placeholder that provides the placeholder
    *  number for the placeholder objects defined by libstdc++.
+   *  @ingroup binders
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
@@ -1335,17 +1345,26 @@ namespace std
         }
     };
 
-  /// Class template _Bind is always a bind expression.
+  /**
+   *  @brief Class template _Bind is always a bind expression.
+   *  @ingroup binders
+   */
   template<typename _Signature>
     struct is_bind_expression<_Bind<_Signature> >
     : public true_type { };
 
-  /// Class template _Bind_result is always a bind expression.
+  /**
+   *  @brief Class template _Bind is always a bind expression.
+   *  @ingroup binders
+   */
   template<typename _Result, typename _Signature>
     struct is_bind_expression<_Bind_result<_Result, _Signature> >
     : public true_type { };
 
-  /// bind
+  /**
+   *  @brief Function template for std::bind.
+   *  @ingroup binders
+   */
   template<typename _Functor, typename... _ArgTypes>
     inline
     _Bind<typename _Maybe_wrap_member_pointer<_Functor>::type(_ArgTypes...)>
@@ -1358,6 +1377,10 @@ namespace std
                            std::forward<_ArgTypes>(__args)...);
     } 
 
+  /**
+   *  @brief Function template for std::bind.
+   *  @ingroup binders
+   */
   template<typename _Result, typename _Functor, typename... _ArgTypes>
     inline
     _Bind_result<_Result,
@@ -1766,7 +1789,12 @@ namespace std
       }
     };
 
-  /// class function
+  /**
+   *  @brief Primary class template for std::function.
+   *  @ingroup functors
+   *
+   *  Polymorphic function wrapper.
+   */
   template<typename _Res, typename... _ArgTypes>
     class function<_Res(_ArgTypes...)>
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
@@ -2033,6 +2061,7 @@ namespace std
       _Invoker_type _M_invoker;
   };
 
+  // Out-of-line member definitions.
   template<typename _Res, typename... _ArgTypes>
     function<_Res(_ArgTypes...)>::
     function(const function& __x)
