@@ -1,7 +1,7 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -595,9 +595,9 @@ read_original_filename (cpp_reader *pfile)
       pfile->state.in_directive = 0;
 
       /* If it's a #line directive, handle it.  */
-      if (token1->type == CPP_NUMBER)
+      if (token1->type == CPP_NUMBER
+	  && _cpp_handle_directive (pfile, token->flags & PREV_WHITE))
 	{
-	  _cpp_handle_directive (pfile, token->flags & PREV_WHITE);
 	  read_original_directory (pfile);
 	  return;
 	}
