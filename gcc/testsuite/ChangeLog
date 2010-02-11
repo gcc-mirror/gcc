@@ -1,3 +1,25 @@
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43012
+	* gcc.dg/graphite/pr43012.c: New.
+
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42930
+	* g++.dg/graphite/pr42930.C: New.
+
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42914
+	PR middle-end/42530
+	* gcc.dg/graphite/pr42530.c: New.
+	* gcc.dg/graphite/pr42914.c: New.
+
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42771
+	* gcc.dg/graphite/pr42771.c: New.
+
 2010-02-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42998

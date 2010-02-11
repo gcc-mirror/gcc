@@ -1,3 +1,33 @@
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42930
+	* graphite-scop-detection.c (graphite_can_represent_scev): Call
+	graphite_can_represent_init for MULT_EXPR.
+
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42914
+	PR middle-end/42530
+	* graphite-sese-to-poly.c (remove_phi): New.
+	(translate_scalar_reduction_to_array): Call remove_phi.
+
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42771
+	* graphite-clast-to-gimple.c (gloog): Call rename_sese_parameters.
+	* graphite-clast-to-gimple.h (gloog): Update declaration.
+	* graphite-poly.c (new_scop): Clear POLY_SCOP_P.
+	* graphite-poly.h (struct poly_bb): Add missing comments.
+	(struct scop): Add poly_scop_p field.
+	(POLY_SCOP_P): New.
+	* graphite-sese-to-poly.c (build_poly_scop): Set POLY_SCOP_P.
+	* graphite.c (graphite_transform_loops): Build the polyhedral
+	representation for each scop before code generation.
+	* sese.c (rename_variables_in_operand): Removed.
+	(rename_variables_in_expr): Return the renamed expression.
+	(rename_sese_parameters): New.
+	* sese.h (rename_sese_parameters): Declared.
+
 2010-02-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42998
