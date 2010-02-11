@@ -1,5 +1,5 @@
 /* Precompiled header implementation for the C languages.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -134,6 +134,7 @@ pch_init (void)
 
   gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
 
+  memset (&v, '\0', sizeof (v));
   v.debug_info_type = write_symbols;
   {
     size_t i;
