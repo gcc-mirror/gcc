@@ -1,3 +1,12 @@
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+	    Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR middle-end/40886
+	* tree-ssa-loop-ivopts.c (determine_use_iv_cost_condition): Decrement
+	the cost of an IV candidate when the IV is used in a test against zero.
+
+	* gcc.dg/tree-ssa/ivopts-3.c: New.
+
 2010-02-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41664
