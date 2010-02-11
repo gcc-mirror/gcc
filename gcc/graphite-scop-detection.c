@@ -225,6 +225,7 @@ graphite_can_represent_scev (tree scev, int outermost_loop)
 	&& !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 1)))
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
+	&& graphite_can_represent_init (scev)
 	&& graphite_can_represent_scev (TREE_OPERAND (scev, 0), outermost_loop)
 	&& graphite_can_represent_scev (TREE_OPERAND (scev, 1), outermost_loop);
 
