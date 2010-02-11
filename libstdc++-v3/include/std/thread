@@ -97,7 +97,7 @@ namespace std
     {
       __shared_base_type	_M_this_ptr;
 
-      virtual ~_Impl_base();
+      inline virtual ~_Impl_base();
 
       virtual void _M_run() = 0;
     };

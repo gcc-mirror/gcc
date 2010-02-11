@@ -1,3 +1,8 @@
+2010-02-11  Jason Merrill  <jason@redhat.com>
+
+	* include/std/thread (~_Impl_base): Declare inline.
+	* libsupc++/nested_exception.h (~nested_exception): Likewise.
+
 2010-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/41975, DR 579

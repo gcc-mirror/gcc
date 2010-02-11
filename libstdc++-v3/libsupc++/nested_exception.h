@@ -63,7 +63,7 @@ namespace std
 
     nested_exception& operator=(const nested_exception&) = default;
 
-    virtual ~nested_exception();
+    inline virtual ~nested_exception();
 
     void
     rethrow_nested() const __attribute__ ((__noreturn__))
