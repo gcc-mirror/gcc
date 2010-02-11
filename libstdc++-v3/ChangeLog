@@ -1,3 +1,8 @@
+2010-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/abi/pre/gnu.ver: Avoid exporting inadvertently
+	std::nested_exception symbols at GLIBCXX_3.4.
+
 2010-02-10  Jason Merrill  <jason@redhat.com>
 
 	Core issue 906
