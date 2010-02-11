@@ -1,3 +1,9 @@
+2010-02-11  Richard Guenther  <rguenther@suse.de>
+
+	PR driver/43021
+	* lto-elf.c (lto_elf_file_open): Handle file@offset case more
+	appropriately.
+
 2010-01-11  Andy Hutchinson  <hutchinsonandy@gcc.gnu.org>
 
 	* lto.c (O_BINARY): Define.

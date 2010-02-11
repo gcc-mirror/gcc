@@ -4575,20 +4575,35 @@ process_command (int argc, const char **argv)
 	}
       else
 	{
-          const char *p = strchr (argv[i], '@');
+          const char *p = strrchr (argv[i], '@');
           char *fname;
+	  long offset;
+	  int consumed;
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  argv[i] = convert_filename (argv[i], 0, access (argv[i], F_OK));
 #endif
-          if (!p)
-            fname = xstrdup (argv[i]);
-          else
-            {
+	  /* For LTO static archive support we handle input file
+	     specifications that are composed of a filename and
+	     an offset like FNAME@OFFSET.  */
+	  if (p
+	      && p != argv[i]
+	      && sscanf (p, "@%li%n", &offset, &consumed) >= 1
+	      && strlen (p) == (unsigned int)consumed)
+	    {
               fname = (char *)xmalloc (p - argv[i] + 1);
               memcpy (fname, argv[i], p - argv[i]);
               fname[p - argv[i]] = '\0';
-            }
-
+	      /* Only accept non-stdin and existing FNAME parts, otherwise
+		 try with the full name.  */
+	      if (strcmp (fname, "-") == 0 || access (fname, F_OK) < 0)
+		{
+		  free (fname);
+		  fname = xstrdup (argv[i]);
+		}
+	    }
+	  else
+	    fname = xstrdup (argv[i]);
+ 
           if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
             {
               perror_with_name (fname);
