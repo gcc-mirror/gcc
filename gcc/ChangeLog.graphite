@@ -1,7 +1,11 @@
+2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43012
+	* gcc.dg/graphite/pr43012.c: New.
+
 2010-02-10  Sebastian Pop  <sebastian.pop@amd.com>
 
-       * graphite.c (graphite_transform_loops): Re-enable dbg_cnt.
-
+	* graphite.c (graphite_transform_loops): Re-enable dbg_cnt.
 2010-02-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* g++.dg/graphite/pr42930.C: New.
