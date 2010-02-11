@@ -1,3 +1,9 @@
+2010-02-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42998
+	* tree-ssa-pre.c (create_expression_by_pieces): Treat
+	POINTER_PLUS_EXPR properly.
+
 2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
 	    Changpeng Fang  <changpeng.fang@amd.com>
 
