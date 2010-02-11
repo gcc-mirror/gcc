@@ -124,8 +124,7 @@ GLIBCXX_3.4 {
       std::messages*;
       std::money*;
 #     std::n[^u]*;
-#     std::n[^au]*;
-      std::nothrow;
+      std::n[^au]*;
       std::nu[^m]*;
       std::num[^e]*;
       std::ostrstream*;
@@ -592,9 +591,7 @@ GLIBCXX_3.4 {
     _ZTVSt[0-9][0-9][g-k]*;
     _ZTVSt11logic_error;
     _ZTVSt12length_error;
-    _ZTVSt[0-9][0-9]m*;
-    _ZTVSt15numpunct_byname*;
-    _ZTVSt[0-9][0-9][o-r]*;
+    _ZTVSt[0-9][0-9][m-r]*;
     _ZTVSt[0-9][0-9][t-z]*;
     _ZTVSt[0-9][0-9]e[^r]*;
     _ZTVSt[0-9][0-9]s[^y]*;
@@ -622,9 +619,7 @@ GLIBCXX_3.4 {
     _ZTISt[0-9][0-9][g-k]*;
     _ZTISt11logic_error;
     _ZTISt12length_error;
-    _ZTISt[0-9][0-9]m*;
-    _ZTISt15numpunct_byname*;
-    _ZTISt[0-9][0-9][o-r]*;
+    _ZTISt[0-9][0-9][m-r]*;
     _ZTISt[0-9][0-9][t-z]*;
     _ZTISt[0-9][0-9]e[^r]*;
     _ZTISt[0-9][0-9]s[^y]*;
@@ -656,9 +651,7 @@ GLIBCXX_3.4 {
     _ZTSSt[0-9][0-9][g-k]*;
     _ZTSSt11logic_error;
     _ZTSSt12length_error;
-    _ZTSSt[0-9][0-9]m*;
-    _ZTSSt15numpunct_byname*;
-    _ZTSSt[0-9][0-9][o-r]*;
+    _ZTSSt[0-9][0-9][m-r]*;
     _ZTSSt[0-9][0-9][t-z]*;
     _ZTSSt[0-9][0-9]e[^r]*;
     _ZTSSt[0-9][0-9]s[^y]*;
