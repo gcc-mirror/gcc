@@ -7072,6 +7072,8 @@ cp_parser_lambda_expression (cp_parser* parser)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
+  cp_parser_lambda_introducer (parser, lambda_expr);
+
   type = begin_lambda_type (lambda_expr);
 
   record_lambda_scope (lambda_expr);
@@ -7079,14 +7081,16 @@ cp_parser_lambda_expression (cp_parser* parser)
   /* Do this again now that LAMBDA_EXPR_EXTRA_SCOPE is set.  */
   determine_visibility (TYPE_NAME (type));
 
+  /* Now that we've started the type, add the capture fields for any
+     explicit captures.  */
+  register_capture_members (LAMBDA_EXPR_CAPTURE_LIST (lambda_expr));
+
   {
     /* Inside the class, surrounding template-parameter-lists do not apply.  */
     unsigned int saved_num_template_parameter_lists
         = parser->num_template_parameter_lists;
 
     parser->num_template_parameter_lists = 0;
-
-    cp_parser_lambda_introducer (parser, lambda_expr);
 
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */

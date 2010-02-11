@@ -5193,6 +5193,7 @@ extern tree lambda_function			(tree);
 extern void apply_lambda_return_type            (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
+extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree);
 extern void maybe_add_lambda_conv_op            (tree);
 
