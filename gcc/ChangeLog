@@ -1,5 +1,14 @@
 2010-02-11  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/41664
+	* tree-ssa-alias.c (refs_may_alias_p_1): Canonicalize
+	pointer-vs-decl case by swapping refs.  Handle some cases
+	of pointer-vs-decl disambiguations more conservatively.
+	* cfgexpand.c (gimple_expand_cfg): Set gimple_df->in_ssa_p
+	to false after expanding.
+
+2010-02-11  Richard Guenther  <rguenther@suse.de>
+
 	PR driver/43021
 	* gcc.c (process_command): Handle LTO file@offset case more
 	appropriately.

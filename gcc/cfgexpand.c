@@ -3639,6 +3639,9 @@ gimple_expand_cfg (void)
   execute_free_datastructures ();
   finish_out_of_ssa (&SA);
 
+  /* We are no longer in SSA form.  */
+  cfun->gimple_df->in_ssa_p = false;
+
   /* Expansion is used by optimization passes too, set maybe_hot_insn_p
      conservatively to true until they are all profile aware.  */
   pointer_map_destroy (lab_rtx_for_bb);
