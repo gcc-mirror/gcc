@@ -2719,6 +2719,41 @@ insert_copyin (tree red, gimple loop_phi)
   gsi_insert_seq_on_edge (edge_initial_value_for_loop_phi (loop_phi), stmts);
 }
 
+/* Removes the PHI node and resets all the debug stmts that are using
+   the PHI_RESULT.  */
+
+static void
+remove_phi (gimple phi)
+{
+  imm_use_iterator imm_iter;
+  tree def;
+  use_operand_p use_p;
+  gimple_stmt_iterator gsi;
+  VEC (gimple, heap) *update = VEC_alloc (gimple, heap, 3);
+  unsigned int i;
+  gimple stmt;
+
+  def = PHI_RESULT (phi);
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
+    {
+      stmt = USE_STMT (use_p);
+
+      if (is_gimple_debug (stmt))
+	{
+	  gimple_debug_bind_reset_value (stmt);
+	  VEC_safe_push (gimple, heap, update, stmt);
+	}
+    }
+
+  for (i = 0; VEC_iterate (gimple, update, i, stmt); i++)
+    update_stmt (stmt);
+
+  VEC_free (gimple, heap, update);
+
+  gsi = gsi_for_phi_node (phi);
+  remove_phi_node (&gsi, false);
+}
+
 /* Rewrite out of SSA the reduction described by the loop phi nodes
    IN, and the close phi nodes OUT.  IN and OUT are structured by loop
    levels like this:
@@ -2737,7 +2772,6 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
   unsigned int i;
   gimple loop_phi;
   tree red;
-  gimple_stmt_iterator gsi;
 
   for (i = 0; VEC_iterate (gimple, in, i, loop_phi); i++)
     {
@@ -2764,11 +2798,8 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
 	  insert_copyin (red, loop_phi);
 	}
 
-      gsi = gsi_for_phi_node (loop_phi);
-      remove_phi_node (&gsi, false);
-
-      gsi = gsi_for_phi_node (close_phi);
-      remove_phi_node (&gsi, false);
+      remove_phi (loop_phi);
+      remove_phi (close_phi);
     }
 }
 

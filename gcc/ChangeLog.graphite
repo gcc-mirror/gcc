@@ -1,5 +1,15 @@
 2010-02-10  Sebastian Pop  <seb@napoca>
 
+	PR middle-end/42914
+	PR middle-end/42530
+	* graphite-sese-to-poly.c (remove_phi): New.
+	(translate_scalar_reduction_to_array): Call remove_phi.
+
+	* gcc.dg/graphite/pr42530.c: New.
+	* gcc.dg/graphite/pr42914.c: New.
+
+2010-02-10  Sebastian Pop  <seb@napoca>
+
 	PR middle-end/42771
 	* graphite-clast-to-gimple.c (gloog): Call rename_sese_parameters.
 	* graphite-clast-to-gimple.h (gloog): Update declaration.
