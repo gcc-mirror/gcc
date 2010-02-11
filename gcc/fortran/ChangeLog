@@ -1,5 +1,8 @@
 2010-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/43030
+	* resolve.c (gfc_resolve_dim_arg): Call gfc_clear_ts.
+
 	PR fortran/43029
 	* decl.c (enumerator_decl): Don't call gfc_free_enum_history
 	here.

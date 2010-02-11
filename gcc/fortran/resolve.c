@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -3722,6 +3722,7 @@ gfc_resolve_dim_arg (gfc_expr *dim)
     {
       gfc_typespec ts;
 
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_index_integer_kind;
 
