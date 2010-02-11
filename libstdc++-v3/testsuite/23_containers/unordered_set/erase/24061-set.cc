@@ -50,10 +50,8 @@ void test01()
   ++it1;
   iterator it2 = it1;
   ++it2;
-  iterator it3 = s1.erase(it1);
+  s1.erase(it1);
   VERIFY( s1.size() == 9 );
-  VERIFY( it3 == it2 );
-  VERIFY( *it3 == *it2 );
 
   iterator it4 = s1.begin();
   ++it4;
@@ -62,10 +60,8 @@ void test01()
   iterator it5 = it4;
   ++it5;
   ++it5;
-  iterator it6 = s1.erase(it4, it5);
+  s1.erase(it4, it5);
   VERIFY( s1.size() == 7 );
-  VERIFY( it6 == it5 );
-  VERIFY( *it6 == *it5 );
 
   const_iterator it7 = s1.begin();
   ++it7;
@@ -73,10 +69,8 @@ void test01()
   ++it7;
   const_iterator it8 = it7;
   ++it8;
-  const_iterator it9 = s1.erase(it7);
+  s1.erase(it7);
   VERIFY( s1.size() == 6 );
-  VERIFY( it9 == it8 );
-  VERIFY( *it9 == *it8 );
 
   const_iterator it10 = s1.begin();
   ++it10;
@@ -85,16 +79,11 @@ void test01()
   ++it11;
   ++it11;
   ++it11;
-  const_iterator it12 = s1.erase(it10, it11);
+  s1.erase(it10, it11);
   VERIFY( s1.size() == 2 );
-  VERIFY( it12 == it11 );
-  VERIFY( *it12 == *it11 );
-  VERIFY( ++it12 == s1.end() );
 
-  iterator it13 = s1.erase(s1.begin(), s1.end());
+  s1.erase(s1.begin(), s1.end());
   VERIFY( s1.size() == 0 );
-  VERIFY( it13 == s1.end() );
-  VERIFY( it13 == s1.begin() );
 }
   
 int main()

@@ -385,9 +385,6 @@ namespace std
       iterator
       _M_insert(const value_type&, std::false_type);
 
-      void
-      _M_erase_node(_Node*, _Node**);
-
     public:				
       // Insert and erase
       _Insert_Return_Type
@@ -407,13 +404,13 @@ namespace std
       insert(initializer_list<value_type> __l)
       { this->insert(__l.begin(), __l.end()); }
 
-      iterator
+      void
       erase(const_iterator);
 
       size_type
       erase(const key_type&);
 
-      iterator
+      void
       erase(const_iterator, const_iterator);
 
       void
@@ -977,34 +974,6 @@ namespace std
       return iterator(__new_node, _M_buckets + __n);
     }
 
-  // For erase(iterator) and erase(const_iterator).
-  template<typename _Key, typename _Value, 
-	   typename _Allocator, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   bool __chc, bool __cit, bool __uk>
-    void
-    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_erase_node(_Node* __p, _Node** __b)
-    {
-      _Node* __cur = *__b;
-      if (__cur == __p)
-	*__b = __cur->_M_next;
-      else
-	{
-	  _Node* __next = __cur->_M_next;
-	  while (__next != __p)
-	    {
-	      __cur = __next;
-	      __next = __cur->_M_next;
-	    }
-	  __cur->_M_next = __next->_M_next;
-	}
-
-      _M_deallocate_node(__p);
-      --_M_element_count;
-    }
-
   template<typename _Key, typename _Value, 
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
@@ -1030,17 +999,30 @@ namespace std
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
 	   bool __chc, bool __cit, bool __uk>
-    typename _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-			_H1, _H2, _Hash, _RehashPolicy,
-			__chc, __cit, __uk>::iterator
+    void
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     erase(const_iterator __it)
     {
-      iterator __result(__it._M_cur_node, __it._M_cur_bucket);
-      ++__result;
-      _M_erase_node(__it._M_cur_node, __it._M_cur_bucket);
-      return __result;
+      _Node* __p = __it._M_cur_node;
+      _Node** __b = __it._M_cur_bucket;
+
+      _Node* __cur = *__b;
+      if (__cur == __p)
+	*__b = __cur->_M_next;
+      else
+	{
+	  _Node* __next = __cur->_M_next;
+	  while (__next != __p)
+	    {
+	      __cur = __next;
+	      __next = __cur->_M_next;
+	    }
+	  __cur->_M_next = __next->_M_next;
+	}
+
+      _M_deallocate_node(__p);
+      --_M_element_count;
     }
 
   template<typename _Key, typename _Value, 
@@ -1102,17 +1084,17 @@ namespace std
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
 	   bool __chc, bool __cit, bool __uk>
-    typename _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-			_H1, _H2, _Hash, _RehashPolicy,
-			__chc, __cit, __uk>::iterator
+    void
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     erase(const_iterator __first, const_iterator __last)
     {
-      while (__first != __last)
-	__first = this->erase(__first);
-      return iterator(__last._M_cur_node, __last._M_cur_bucket);
-    }
+      if (__first == begin() && __last == end())
+	clear();
+      else
+	while (__first != __last)
+	  erase(__first++);
+     }
 
   template<typename _Key, typename _Value, 
 	   typename _Allocator, typename _ExtractKey, typename _Equal,
