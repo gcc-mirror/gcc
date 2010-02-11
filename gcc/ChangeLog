@@ -1,3 +1,14 @@
+2010-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor) <case MEM>: Use DW_OP_deref_size
+	if MEM's mode size isn't DWARF2_ADDR_SIZE.
+	(mem_loc_descriptor) <do_scompare>: Allow also VOIDmode arguments.
+	Optimize eq/ne comparisons when both arguments are known to be
+	zero-extended.
+	(mem_loc_descriptor) <do_ucompare>: Allow also VOIDmode arguments.
+	Don't mask operands unnecessarily if they are known to be already
+	zero-extended.
+
 2010-02-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-conflicts.c (add_insn_allocno_copies): Use find_reg_note
