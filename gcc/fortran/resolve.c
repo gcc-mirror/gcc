@@ -3958,6 +3958,7 @@ gfc_resolve_dim_arg (gfc_expr *dim)
     {
       gfc_typespec ts;
 
+      gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;
       ts.kind = gfc_index_integer_kind;
 
