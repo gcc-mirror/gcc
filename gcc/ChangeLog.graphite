@@ -1,5 +1,11 @@
 2010-02-10  Sebastian Pop  <seb@napoca>
 
+	PR middle-end/42930
+	* graphite-scop-detection.c (graphite_can_represent_scev): Call
+	graphite_can_represent_init for MULT_EXPR.
+
+2010-02-10  Sebastian Pop  <seb@napoca>
+
 	PR middle-end/42914
 	PR middle-end/42530
 	* graphite-sese-to-poly.c (remove_phi): New.
