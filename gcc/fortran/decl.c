@@ -7124,10 +7124,9 @@ enumerator_decl (void)
 
   if (initializer == NULL || initializer->ts.type != BT_INTEGER)
     {
-      gfc_error("ENUMERATOR %L not initialized with integer expression",
-		&var_locus);
+      gfc_error ("ENUMERATOR %L not initialized with integer expression",
+		 &var_locus);
       m = MATCH_ERROR;
-      gfc_free_enum_history ();
       goto cleanup;
     }
 
@@ -7193,7 +7192,10 @@ gfc_match_enumerator_def (void)
     {
       m = enumerator_decl ();
       if (m == MATCH_ERROR)
-	goto cleanup;
+	{
+	  gfc_free_enum_history ();
+	  goto cleanup;
+	}
       if (m == MATCH_NO)
 	break;
 
