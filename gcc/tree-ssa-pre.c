@@ -3013,14 +3013,18 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 							 stmts, domstmt);
 	      if (!genop1 || !genop2)
 		return NULL_TREE;
-	      genop1 = fold_convert (TREE_TYPE (nary->op[0]),
-				     genop1);
 	      /* Ensure op2 is a sizetype for POINTER_PLUS_EXPR.  It
 		 may be a constant with the wrong type.  */
 	      if (nary->opcode == POINTER_PLUS_EXPR)
-		genop2 = fold_convert (sizetype, genop2);
+		{
+		  genop1 = fold_convert (nary->type, genop1);
+		  genop2 = fold_convert (sizetype, genop2);
+		}
 	      else
-		genop2 = fold_convert (TREE_TYPE (nary->op[1]), genop2);
+		{
+		  genop1 = fold_convert (TREE_TYPE (nary->op[0]), genop1);
+		  genop2 = fold_convert (TREE_TYPE (nary->op[1]), genop2);
+		}
 
 	      folded = fold_build2 (nary->opcode, nary->type,
 				    genop1, genop2);
