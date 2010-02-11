@@ -818,6 +818,77 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
     return decl_refs_may_alias_p (base1, offset1, max_size1,
 				  base2, offset2, max_size2);
 
+  ind1_p = INDIRECT_REF_P (base1);
+  ind2_p = INDIRECT_REF_P (base2);
+  /* Canonicalize the pointer-vs-decl case.  */
+  if (ind1_p && var2_p)
+    {
+      HOST_WIDE_INT tmp1;
+      tree tmp2;
+      ao_ref *tmp3;
+      tmp1 = offset1; offset1 = offset2; offset2 = tmp1;
+      tmp1 = max_size1; max_size1 = max_size2; max_size2 = tmp1;
+      tmp2 = base1; base1 = base2; base2 = tmp2;
+      tmp3 = ref1; ref1 = ref2; ref2 = tmp3;
+      var1_p = true;
+      ind1_p = false;
+      var2_p = false;
+      ind2_p = true;
+    }
+
+  /* If we are about to disambiguate pointer-vs-decl try harder to
+     see must-aliases and give leeway to some invalid cases.
+     This covers a pretty minimal set of cases only and does not
+     when called from the RTL oracle.  It handles cases like
+
+       int i = 1;
+       return *(float *)&i;
+
+     and also fixes gfortran.dg/lto/pr40725.  */
+  if (var1_p && ind2_p
+      && cfun
+      && gimple_in_ssa_p (cfun)
+      && TREE_CODE (TREE_OPERAND (base2, 0)) == SSA_NAME)
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (base2, 0));
+      while (is_gimple_assign (def_stmt)
+	     && (gimple_assign_rhs_code (def_stmt) == SSA_NAME
+		 || CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))))
+	{
+	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  HOST_WIDE_INT offset, size, max_size;
+
+	  /* Look through SSA name copies and pointer conversions.  */
+	  if (TREE_CODE (rhs) == SSA_NAME
+	      && POINTER_TYPE_P (TREE_TYPE (rhs)))
+	    {
+	      def_stmt = SSA_NAME_DEF_STMT (rhs);
+	      continue;
+	    }
+	  if (TREE_CODE (rhs) != ADDR_EXPR)
+	    break;
+
+	  /* If the pointer is defined as an address based on a decl
+	     use plain offset disambiguation and ignore TBAA.  */
+	  rhs = TREE_OPERAND (rhs, 0);
+	  rhs = get_ref_base_and_extent (rhs, &offset, &size, &max_size);
+	  if (SSA_VAR_P (rhs))
+	    {
+	      base2 = rhs;
+	      offset2 += offset;
+	      if (size != max_size
+		  || max_size == -1)
+		max_size2 = -1;
+	      return decl_refs_may_alias_p (base1, offset1, max_size1,
+					    base2, offset2, max_size2);
+	    }
+
+	  /* Do not continue looking through &p->x to limit time
+	     complexity.  */
+	  break;
+	}
+    }
+
   /* First defer to TBAA if possible.  */
   if (tbaa_p
       && flag_strict_aliasing
@@ -833,19 +904,12 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
     return true;
 
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
-  ind1_p = INDIRECT_REF_P (base1);
-  ind2_p = INDIRECT_REF_P (base2);
   set = tbaa_p ? -1 : 0;
   if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2->ref, TREE_OPERAND (base2, 0),
 					  offset2, max_size2, set,
 					  ref1->ref, base1,
 					  offset1, max_size1, set);
-  else if (ind1_p && var2_p)
-    return indirect_ref_may_alias_decl_p (ref1->ref, TREE_OPERAND (base1, 0),
-					  offset1, max_size1, set,
-					  ref2->ref, base2,
-					  offset2, max_size2, set);
   else if (ind1_p && ind2_p)
     return indirect_refs_may_alias_p (ref1->ref, TREE_OPERAND (base1, 0),
 				      offset1, max_size1, set,
