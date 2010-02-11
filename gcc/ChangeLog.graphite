@@ -1,10 +1,10 @@
-2010-02-10  Sebastian Pop  <seb@napoca>
+2010-02-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42930
 	* graphite-scop-detection.c (graphite_can_represent_scev): Call
 	graphite_can_represent_init for MULT_EXPR.
 
-2010-02-10  Sebastian Pop  <seb@napoca>
+2010-02-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42914
 	PR middle-end/42530
@@ -14,7 +14,7 @@
 	* gcc.dg/graphite/pr42530.c: New.
 	* gcc.dg/graphite/pr42914.c: New.
 
-2010-02-10  Sebastian Pop  <seb@napoca>
+2010-02-10  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/42771
 	* graphite-clast-to-gimple.c (gloog): Call rename_sese_parameters.
