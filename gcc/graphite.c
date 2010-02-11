@@ -268,20 +268,13 @@ graphite_transform_loops (void)
   bb_pbb_mapping = htab_create (10, bb_pbb_map_hash, eq_bb_pbb_map, free);
 
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
-    {
-      bool transform_done = false;
+    build_poly_scop (scop);
 
-      if (!build_poly_scop (scop))
-	continue;
-
-      if (apply_poly_transforms (scop))
-	transform_done = gloog (scop, bb_pbb_mapping);
-      else
-	check_poly_representation (scop);
-
-      if (transform_done)
-	need_cfg_cleanup_p = true;
-    }
+  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+    if (POLY_SCOP_P (scop)
+	&& apply_poly_transforms (scop)
+	&& gloog (scop, scops, bb_pbb_mapping))
+      need_cfg_cleanup_p = true;
 
   htab_delete (bb_pbb_mapping);
   free_scops (scops);

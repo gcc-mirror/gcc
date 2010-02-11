@@ -2898,6 +2898,7 @@ build_poly_scop (scop_p scop)
   scop_to_lst (scop);
   build_scop_scattering (scop);
   build_scop_drs (scop);
+  POLY_SCOP_P (scop) = true;
 
   return true;
 }

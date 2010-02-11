@@ -264,6 +264,7 @@ extern hashval_t rename_map_elt_info (const void *);
 extern int eq_rename_map_elts (const void *, const void *);
 extern void set_rename (htab_t, tree, tree);
 extern void rename_nb_iterations (htab_t);
+extern void rename_sese_parameters (htab_t, sese);
 
 /* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
 

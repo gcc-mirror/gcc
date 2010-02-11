@@ -277,8 +277,10 @@ struct poly_scattering
 
 struct poly_bb
 {
+  /* Pointer to a basic block or a statement in the compiler.  */
   void *black_box;
 
+  /* Pointer to the SCOP containing this PBB.  */
   scop_p scop;
 
   /* The iteration domain of this bb.
@@ -1303,6 +1305,10 @@ struct scop
   /* A hashtable of the data dependence relations for the original
      scattering.  */
   htab_t original_pddrs;
+
+  /* True when the scop has been converted to its polyhedral
+     representation.  */
+  bool poly_scop_p;
 };
 
 #define SCOP_BBS(S) (S->bbs)
@@ -1312,6 +1318,7 @@ struct scop
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
 #define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
 #define SCOP_SAVED_SCHEDULE(S) (S->saved_schedule)
+#define POLY_SCOP_P(S) (S->poly_scop_p)
 
 extern scop_p new_scop (void *);
 extern void free_scop (scop_p);

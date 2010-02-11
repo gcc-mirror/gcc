@@ -526,49 +526,31 @@ set_rename (htab_t map, tree old_name, tree expr)
   *slot = new_rename_map_elt (old_name, expr);
 }
 
-static void rename_variables_in_expr (htab_t, tree);
-
-/* Renames the operand OP of expression T following the tuples
-   (OLD_NAME, EXPR) in RENAME_MAP.  */
-
-static void
-rename_variables_in_operand (htab_t rename_map, tree t, int op)
-{
-  tree operand = TREE_OPERAND (t, op);
-
-  if (TREE_CODE (operand) == SSA_NAME)
-    {
-      tree new_name = get_rename (rename_map, operand);
-
-      if (new_name != operand)
-	TREE_OPERAND (t, op) = new_name;
-    }
-  else
-    rename_variables_in_expr (rename_map, operand);
-}
-
 /* Renames the expression T following the tuples (OLD_NAME, EXPR) in
-   RENAME_MAP.  */
+   the rename map M.  Returns the expression T after renaming.  */
 
-static void
-rename_variables_in_expr (htab_t rename_map, tree t)
+static tree
+rename_variables_in_expr (htab_t m, tree t)
 {
   if (!t)
-    return;
+    return t;
+
+ if (TREE_CODE (t) == SSA_NAME)
+   return get_rename (m, t);
 
   switch (TREE_CODE_LENGTH (TREE_CODE (t)))
     {
     case 3:
-      rename_variables_in_operand (rename_map, t, 2);
+      TREE_OPERAND (t, 2) = rename_variables_in_expr (m, TREE_OPERAND (t, 2));
 
     case 2:
-      rename_variables_in_operand (rename_map, t, 1);
+      TREE_OPERAND (t, 1) = rename_variables_in_expr (m, TREE_OPERAND (t, 1));
 
     case 1:
-      rename_variables_in_operand (rename_map, t, 0);
+      TREE_OPERAND (t, 0) = rename_variables_in_expr (m, TREE_OPERAND (t, 0));
 
     default:
-      return;
+      return t;
     }
 }
 
@@ -582,9 +564,22 @@ rename_nb_iterations (htab_t rename_map)
   struct loop *loop;
 
   FOR_EACH_LOOP (li, loop, 0)
-    {
-      rename_variables_in_expr (rename_map, loop->nb_iterations);
-    }
+    loop->nb_iterations = rename_variables_in_expr (rename_map,
+						    loop->nb_iterations);
+}
+
+/* Renames all the parameters of SESE following the tuples (OLD_NAME,
+   EXPR) in RENAME_MAP.  */
+
+void
+rename_sese_parameters (htab_t rename_map, sese region)
+{
+  int i;
+  tree p;
+
+  for (i = 0; VEC_iterate (tree, SESE_PARAMS (region), i, p); i++)
+    VEC_replace (tree, SESE_PARAMS (region), i,
+		 rename_variables_in_expr (rename_map, p));
 }
 
 /* Adjusts the phi nodes in the block BB for variables defined in
