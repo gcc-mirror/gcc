@@ -112,7 +112,7 @@ void test01()
   VERIFY( s1.size() == 2 );
   VERIFY( ++it10 == s1.end() );
 
-  VERIFY( s1.erase(s1.begin()) != s1.end() );  
+  s1.erase(s1.begin());
   VERIFY( s1.size() == 1 );
   VERIFY( s1.begin() == it11 );
 
