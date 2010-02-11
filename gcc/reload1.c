@@ -1,6 +1,6 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2570,7 +2570,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       else if (reg_renumber && reg_renumber[regno] < 0
 	       && reg_equiv_invariant && reg_equiv_invariant[regno])
 	{
-	  if (may_use_invariant)
+	  if (may_use_invariant || (insn && DEBUG_INSN_P (insn)))
 	    return eliminate_regs_1 (copy_rtx (reg_equiv_invariant[regno]),
 			             mem_mode, insn, true);
 	  /* There exists at least one use of REGNO that cannot be
@@ -2685,9 +2685,11 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 	  if (ep->from_rtx == XEXP (x, 0) && ep->can_eliminate)
 	    {
 	      if (! mem_mode
-		  /* Refs inside notes don't count for this purpose.  */
+		  /* Refs inside notes or in DEBUG_INSNs don't count for
+		     this purpose.  */
 		  && ! (insn != 0 && (GET_CODE (insn) == EXPR_LIST
-				      || GET_CODE (insn) == INSN_LIST)))
+				      || GET_CODE (insn) == INSN_LIST
+				      || DEBUG_INSN_P (insn))))
 		ep->ref_outside_mem = 1;
 
 	      return
@@ -2863,6 +2865,9 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
       return x;
 
     case CLOBBER:
+      gcc_assert (insn && DEBUG_INSN_P (insn));
+      break;
+
     case ASM_OPERANDS:
     case SET:
       gcc_unreachable ();
@@ -3199,6 +3204,9 @@ eliminate_regs_in_insn (rtx insn, int replace)
 		  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT
 		  || DEBUG_INSN_P (insn));
+      if (DEBUG_INSN_P (insn))
+	INSN_VAR_LOCATION_LOC (insn)
+	  = eliminate_regs (INSN_VAR_LOCATION_LOC (insn), VOIDmode, insn);
       return 0;
     }
 
