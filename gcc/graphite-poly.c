@@ -464,6 +464,8 @@ new_scop (void *region)
   SCOP_ORIGINAL_SCHEDULE (scop) = NULL;
   SCOP_TRANSFORMED_SCHEDULE (scop) = NULL;
   SCOP_SAVED_SCHEDULE (scop) = NULL;
+  POLY_SCOP_P (scop) = false;
+
   return scop;
 }
 

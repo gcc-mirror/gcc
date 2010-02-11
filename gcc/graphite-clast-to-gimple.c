@@ -1428,7 +1428,7 @@ create_params_index (htab_t index_table, CloogProgram *prog) {
 */
 
 bool
-gloog (scop_p scop, htab_t bb_pbb_mapping)
+gloog (scop_p scop, VEC (scop_p, heap) *scops, htab_t bb_pbb_mapping)
 {
   VEC (tree, heap) *newivs = VEC_alloc (tree, heap, 10);
   loop_p context_loop;
@@ -1436,6 +1436,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   ifsese if_region = NULL;
   htab_t rename_map, newivs_index, params_index;
   cloog_prog_clast pc;
+  int i;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
   gloog_error = false;
@@ -1481,6 +1482,10 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 			    if_region->true_region->exit);
   scev_reset_htab ();
   rename_nb_iterations (rename_map);
+
+  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+    rename_sese_parameters (rename_map, SCOP_REGION (scop));
+
   recompute_all_dominators ();
   graphite_verify ();
 
