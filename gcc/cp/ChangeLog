@@ -1,6 +1,16 @@
 2010-02-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41896
+	* semantics.c (outer_lambda_capture_p): Revert.
+	(add_capture): Only finish_member_declaration if
+	we're in the lambda class.
+	(register_capture_members): New.
+	* cp-tree.h: Declare it.
+	* parser.c (cp_parser_lambda_expression): Call it.
+
+2010-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41896
 	* semantics.c (outer_lambda_capture_p): Use current_function_decl
 	instead of current_class_type.
 

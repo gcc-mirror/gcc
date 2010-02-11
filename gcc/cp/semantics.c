@@ -2714,9 +2714,8 @@ outer_lambda_capture_p (tree decl)
 {
   return (TREE_CODE (decl) == FIELD_DECL
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (decl))
-	  /* Using current_class_type here causes problems with uses in a
-	     nested lambda-introducer; see 41896.  */
-	  && DECL_CONTEXT (current_function_decl) != DECL_CONTEXT (decl));
+	  && (!current_class_type
+	      || !DERIVED_FROM_P (DECL_CONTEXT (decl), current_class_type)));
 }
 
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
@@ -5690,8 +5689,9 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
        always visible.  */
     DECL_NORMAL_CAPTURE_P (member) = true;
 
-  /* Add it to the appropriate closure class.  */
-  finish_member_declaration (member);
+  /* Add it to the appropriate closure class if we've started it.  */
+  if (current_class_type && current_class_type == TREE_TYPE (lambda))
+    finish_member_declaration (member);
 
   LAMBDA_EXPR_CAPTURE_LIST (lambda)
     = tree_cons (member, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
@@ -5704,6 +5704,18 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
     }
 
   return member;
+}
+
+/* Register all the capture members on the list CAPTURES, which is the
+   LAMBDA_EXPR_CAPTURE_LIST for the lambda after the introducer.  */
+
+void register_capture_members (tree captures)
+{
+  if (captures)
+    {
+      register_capture_members (TREE_CHAIN (captures));
+      finish_member_declaration (TREE_PURPOSE (captures));
+    }
 }
 
 /* Given a FIELD_DECL decl belonging to a closure type, return a
