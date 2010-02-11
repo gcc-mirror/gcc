@@ -1,3 +1,9 @@
+2010-02-11  Richard Guenther  <rguenther@suse.de>
+
+	PR driver/43021
+	* gcc.c (process_command): Handle LTO file@offset case more
+	appropriately.
+
 2010-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* reload1.c (eliminate_regs_1): If insn is DEBUG_INSN, avoid any
