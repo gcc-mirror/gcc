@@ -12990,7 +12990,19 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       if (mem_loc_result == NULL)
 	mem_loc_result = tls_mem_loc_descriptor (rtl);
       if (mem_loc_result != 0)
-	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
+	{
+	  if (GET_MODE_SIZE (GET_MODE (rtl)) > DWARF2_ADDR_SIZE)
+	    {
+	      expansion_failed (NULL_TREE, rtl, "DWARF address size mismatch");
+	      return 0;
+	    }
+	  else if (GET_MODE_SIZE (GET_MODE (rtl)) == DWARF2_ADDR_SIZE)
+	    add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
+	  else
+	    add_loc_descr (&mem_loc_result,
+			   new_loc_descr (DW_OP_deref_size,
+					  GET_MODE_SIZE (GET_MODE (rtl)), 0));
+	}
       else
 	{
 	  rtx new_rtl = avoid_constant_pool_reference (rtl);
@@ -13219,32 +13231,72 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       goto do_scompare;
 
     do_scompare:
-      if (GET_MODE_CLASS (GET_MODE (XEXP (rtl, 0))) != MODE_INT
-	  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) > DWARF2_ADDR_SIZE
-	  || GET_MODE (XEXP (rtl, 0)) != GET_MODE (XEXP (rtl, 1)))
+      if (GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) > DWARF2_ADDR_SIZE
+	  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 1))) > DWARF2_ADDR_SIZE)
 	break;
-
-      op0 = mem_loc_descriptor (XEXP (rtl, 0), mode,
-				VAR_INIT_STATUS_INITIALIZED);
-      op1 = mem_loc_descriptor (XEXP (rtl, 1), mode,
-				VAR_INIT_STATUS_INITIALIZED);
-
-      if (op0 == 0 || op1 == 0)
-	break;
-
-      if (GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) < DWARF2_ADDR_SIZE)
+      else
 	{
-	  int shift = DWARF2_ADDR_SIZE
-		      - GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0)));
-	  shift *= BITS_PER_UNIT;
-	  add_loc_descr (&op0, int_loc_descriptor (shift));
-	  add_loc_descr (&op0, new_loc_descr (DW_OP_shl, 0, 0));
-	  if (CONST_INT_P (XEXP (rtl, 1)))
-	    op1 = int_loc_descriptor (INTVAL (XEXP (rtl, 1)) << shift);
-	  else
+	  enum machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
+
+	  if (op_mode == VOIDmode)
+	    op_mode = GET_MODE (XEXP (rtl, 1));
+	  if (op_mode != VOIDmode && GET_MODE_CLASS (op_mode) != MODE_INT)
+	    break;
+
+	  op0 = mem_loc_descriptor (XEXP (rtl, 0), mode,
+				    VAR_INIT_STATUS_INITIALIZED);
+	  op1 = mem_loc_descriptor (XEXP (rtl, 1), mode,
+				    VAR_INIT_STATUS_INITIALIZED);
+
+	  if (op0 == 0 || op1 == 0)
+	    break;
+
+	  if (op_mode != VOIDmode
+	      && GET_MODE_SIZE (op_mode) < DWARF2_ADDR_SIZE)
 	    {
-	      add_loc_descr (&op1, int_loc_descriptor (shift));
-	      add_loc_descr (&op1, new_loc_descr (DW_OP_shl, 0, 0));
+	      int shift = DWARF2_ADDR_SIZE - GET_MODE_SIZE (op_mode);
+	      shift *= BITS_PER_UNIT;
+	      /* For eq/ne, if the operands are known to be zero-extended,
+		 there is no need to do the fancy shifting up.  */
+	      if (op == DW_OP_eq || op == DW_OP_ne)
+		{
+		  dw_loc_descr_ref last0, last1;
+		  for (last0 = op0;
+		       last0->dw_loc_next != NULL;
+		       last0 = last0->dw_loc_next)
+		    ;
+		  for (last1 = op1;
+		       last1->dw_loc_next != NULL;
+		       last1 = last1->dw_loc_next)
+		    ;
+		  /* deref_size zero extends, and for constants we can check
+		     whether they are zero extended or not.  */
+		  if (((last0->dw_loc_opc == DW_OP_deref_size
+			&& last0->dw_loc_oprnd1.v.val_int
+			   <= GET_MODE_SIZE (op_mode))
+		       || (CONST_INT_P (XEXP (rtl, 0))
+			    && (unsigned HOST_WIDE_INT) INTVAL (XEXP (rtl, 0))
+			       == (INTVAL (XEXP (rtl, 0))
+				   & GET_MODE_MASK (op_mode))))
+		      && ((last1->dw_loc_opc == DW_OP_deref_size
+			   && last1->dw_loc_oprnd1.v.val_int
+			      <= GET_MODE_SIZE (op_mode))
+			  || (CONST_INT_P (XEXP (rtl, 1))
+			      && (unsigned HOST_WIDE_INT)
+				 INTVAL (XEXP (rtl, 1))
+				 == (INTVAL (XEXP (rtl, 1))
+				     & GET_MODE_MASK (op_mode)))))
+		    goto do_compare;
+		}
+	      add_loc_descr (&op0, int_loc_descriptor (shift));
+	      add_loc_descr (&op0, new_loc_descr (DW_OP_shl, 0, 0));
+	      if (CONST_INT_P (XEXP (rtl, 1)))
+		op1 = int_loc_descriptor (INTVAL (XEXP (rtl, 1)) << shift);
+	      else
+		{
+		  add_loc_descr (&op1, int_loc_descriptor (shift));
+		  add_loc_descr (&op1, new_loc_descr (DW_OP_shl, 0, 0));
+		}
 	    }
 	}
 
@@ -13277,42 +13329,72 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       goto do_ucompare;
 
     do_ucompare:
-      if (GET_MODE_CLASS (GET_MODE (XEXP (rtl, 0))) != MODE_INT
-	  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) > DWARF2_ADDR_SIZE
-	  || GET_MODE (XEXP (rtl, 0)) != GET_MODE (XEXP (rtl, 1)))
+      if (GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) > DWARF2_ADDR_SIZE
+	  || GET_MODE_SIZE (GET_MODE (XEXP (rtl, 1))) > DWARF2_ADDR_SIZE)
 	break;
-
-      op0 = mem_loc_descriptor (XEXP (rtl, 0), mode,
-				VAR_INIT_STATUS_INITIALIZED);
-      op1 = mem_loc_descriptor (XEXP (rtl, 1), mode,
-				VAR_INIT_STATUS_INITIALIZED);
-
-      if (op0 == 0 || op1 == 0)
-	break;
-
-      if (GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) < DWARF2_ADDR_SIZE)
-	{
-	  HOST_WIDE_INT mask = GET_MODE_MASK (GET_MODE (XEXP (rtl, 0)));
-	  add_loc_descr (&op0, int_loc_descriptor (mask));
-	  add_loc_descr (&op0, new_loc_descr (DW_OP_and, 0, 0));
-	  if (CONST_INT_P (XEXP (rtl, 1)))
-	    op1 = int_loc_descriptor (INTVAL (XEXP (rtl, 1)) & mask);
-	  else
-	    {
-	      add_loc_descr (&op1, int_loc_descriptor (mask));
-	      add_loc_descr (&op1, new_loc_descr (DW_OP_and, 0, 0));
-	    }
-	}
       else
 	{
-	  HOST_WIDE_INT bias = 1;
-	  bias <<= (DWARF2_ADDR_SIZE * BITS_PER_UNIT - 1);
-	  add_loc_descr (&op0, new_loc_descr (DW_OP_plus_uconst, bias, 0));
-	  if (CONST_INT_P (XEXP (rtl, 1)))
-	    op1 = int_loc_descriptor ((unsigned HOST_WIDE_INT) bias
-				      + INTVAL (XEXP (rtl, 1)));
+	  enum machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
+
+	  if (op_mode == VOIDmode)
+	    op_mode = GET_MODE (XEXP (rtl, 1));
+	  if (op_mode != VOIDmode && GET_MODE_CLASS (op_mode) != MODE_INT)
+	    break;
+
+	  op0 = mem_loc_descriptor (XEXP (rtl, 0), mode,
+				    VAR_INIT_STATUS_INITIALIZED);
+	  op1 = mem_loc_descriptor (XEXP (rtl, 1), mode,
+				    VAR_INIT_STATUS_INITIALIZED);
+
+	  if (op0 == 0 || op1 == 0)
+	    break;
+
+	  if (op_mode != VOIDmode
+	      && GET_MODE_SIZE (op_mode) < DWARF2_ADDR_SIZE)
+	    {
+	      HOST_WIDE_INT mask = GET_MODE_MASK (op_mode);
+	      dw_loc_descr_ref last0, last1;
+	      for (last0 = op0;
+		   last0->dw_loc_next != NULL;
+		   last0 = last0->dw_loc_next)
+		;
+	      for (last1 = op1;
+		   last1->dw_loc_next != NULL;
+		   last1 = last1->dw_loc_next)
+		;
+	      if (CONST_INT_P (XEXP (rtl, 0)))
+		op0 = int_loc_descriptor (INTVAL (XEXP (rtl, 0)) & mask);
+	      /* deref_size zero extends, so no need to mask it again.  */
+	      else if (last0->dw_loc_opc != DW_OP_deref_size
+		       || last0->dw_loc_oprnd1.v.val_int
+			  > GET_MODE_SIZE (op_mode))
+		{
+		  add_loc_descr (&op0, int_loc_descriptor (mask));
+		  add_loc_descr (&op0, new_loc_descr (DW_OP_and, 0, 0));
+		}
+	      if (CONST_INT_P (XEXP (rtl, 1)))
+		op1 = int_loc_descriptor (INTVAL (XEXP (rtl, 1)) & mask);
+	      /* deref_size zero extends, so no need to mask it again.  */
+	      else if (last1->dw_loc_opc != DW_OP_deref_size
+		       || last1->dw_loc_oprnd1.v.val_int
+			  > GET_MODE_SIZE (op_mode))
+		{
+		  add_loc_descr (&op1, int_loc_descriptor (mask));
+		  add_loc_descr (&op1, new_loc_descr (DW_OP_and, 0, 0));
+		}
+	    }
 	  else
-	    add_loc_descr (&op1, new_loc_descr (DW_OP_plus_uconst, bias, 0));
+	    {
+	      HOST_WIDE_INT bias = 1;
+	      bias <<= (DWARF2_ADDR_SIZE * BITS_PER_UNIT - 1);
+	      add_loc_descr (&op0, new_loc_descr (DW_OP_plus_uconst, bias, 0));
+	      if (CONST_INT_P (XEXP (rtl, 1)))
+		op1 = int_loc_descriptor ((unsigned HOST_WIDE_INT) bias
+					  + INTVAL (XEXP (rtl, 1)));
+	      else
+		add_loc_descr (&op1, new_loc_descr (DW_OP_plus_uconst,
+						    bias, 0));
+	    }
 	}
       goto do_compare;
 
