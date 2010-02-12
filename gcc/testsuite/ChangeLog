@@ -1,3 +1,8 @@
+2010-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/43033
+	* g++.dg/other/default3.C: Xfail g4 test.
+
 2010-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43010
