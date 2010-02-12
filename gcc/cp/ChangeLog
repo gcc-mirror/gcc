@@ -1,5 +1,11 @@
 2010-02-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43024
+	* name-lookup.h (current_binding_level): Check for null
+	cp_function_chain.
+
+2010-02-12  Jason Merrill  <jason@redhat.com>
+
 	PR c++/43054
 	* tree.c (cp_tree_equal): Correct CALL_EXPR logic.
 
