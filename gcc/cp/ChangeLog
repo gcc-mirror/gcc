@@ -1,3 +1,9 @@
+2010-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43054
+	* tree.c (cp_tree_equal): Correct CALL_EXPR logic, handle
+	EXPR_PACK_EXPANSION.
+
 2010-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/43033

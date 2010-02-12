@@ -2060,7 +2060,9 @@ cp_tree_equal (tree t1, tree t2)
 	       arg2 = next_call_expr_arg (&iter2))
 	  if (!cp_tree_equal (arg1, arg2))
 	    return false;
-	return (arg1 || arg2);
+	if (arg1 || arg2)
+	  return false;
+	return true;
       }
 
     case TARGET_EXPR:
@@ -2196,6 +2198,10 @@ cp_tree_equal (tree t1, tree t2)
 	return false;
       return same_type_p (TRAIT_EXPR_TYPE1 (t1), TRAIT_EXPR_TYPE1 (t2))
 	&& same_type_p (TRAIT_EXPR_TYPE2 (t1), TRAIT_EXPR_TYPE2 (t2));
+
+    case EXPR_PACK_EXPANSION:
+      return cp_tree_equal (PACK_EXPANSION_PATTERN (t1),
+			    PACK_EXPANSION_PATTERN (t2));
 
     default:
       break;
