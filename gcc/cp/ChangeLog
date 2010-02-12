@@ -1,3 +1,9 @@
+2010-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43024
+	* name-lookup.h (current_binding_level): Check for null
+	cp_function_chain.
+
 2010-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/43033
