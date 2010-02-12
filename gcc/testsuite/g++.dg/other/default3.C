@@ -25,7 +25,7 @@ template<typename> void g3(int, int);
 template<typename> void g3(int = 0, int);    // { dg-error "default" }
 
 template<typename> void g4(int, int);
-template<typename> void g4(int = 0, int) {}  // { dg-error "default" }
+template<typename> void g4(int = 0, int) {}  // { dg-error "default" "" { xfail *-*-* } }
 
 template<typename> void g5();
 template<typename> void g5(int = 0, int);    // { dg-error "default" }

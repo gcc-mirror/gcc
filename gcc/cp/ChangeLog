@@ -1,3 +1,9 @@
+2010-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/43033
+	* name-lookup.c (pushdecl_maybe_friend): Check default args of t
+	instead of x.
+
 2010-02-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41896
