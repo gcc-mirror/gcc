@@ -1,3 +1,12 @@
+2010-02-12  Dave Korn  <dave.korn.cygwin@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+
+	PR target/42982
+	Partial revert of unintended change in fix for PR41605.
+	* config/darwin.h: Fix typo.
+	* config/darwin9.h: Same.
+
 2010-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pch.c (pch_init): Clear v.
