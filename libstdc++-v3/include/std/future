@@ -119,11 +119,14 @@ namespace std
   enum class launch { any, async, sync };
 
   template<typename _Fn, typename... _Args>
-    future<typename _Fn::result_type>
+    future<typename result_of<_Fn(_Args...)>::type>
     async(launch __policy, _Fn&& __fn, _Args&&... __args);
 
   template<typename _Fn, typename... _Args>
-    future<typename _Fn::result_type>
+    typename
+    enable_if<!is_same<typename decay<_Fn>::type, launch>::value,
+              future<decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
+             >::type
     async(_Fn&& __fn, _Args&&... __args);
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
@@ -558,7 +561,7 @@ namespace std
       friend class promise<_Res>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<typename _Fn::result_type>
+        friend future<typename result_of<_Fn(_Args...)>::type>
         async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<_Res> _Base_type;
@@ -599,7 +602,7 @@ namespace std
       friend class promise<_Res&>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<typename _Fn::result_type>
+        friend future<typename result_of<_Fn(_Args...)>::type>
         async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<_Res&> _Base_type;
@@ -640,7 +643,7 @@ namespace std
       friend class promise<void>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<typename _Fn::result_type>
+        friend future<typename result_of<_Fn(_Args...)>::type>
         async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<void> _Base_type;
@@ -1322,10 +1325,10 @@ namespace std
     };
 
   template<typename _Fn, typename... _Args>
-    future<typename _Fn::result_type>
+    future<typename result_of<_Fn(_Args...)>::type>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
     {
-      typedef typename _Fn::result_type result_type;
+      typedef typename result_of<_Fn(_Args...)>::type result_type;
       std::shared_ptr<__future_base::_State> __state;
       if (__policy == launch::async)
 	{
@@ -1343,7 +1346,10 @@ namespace std
     }
 
   template<typename _Fn, typename... _Args>
-    future<typename _Fn::result_type>
+    inline typename
+    enable_if<!is_same<typename decay<_Fn>::type, launch>::value,
+              future<decltype(std::declval<_Fn>()(std::declval<_Args>()...))>
+             >::type
     async(_Fn&& __fn, _Args&&... __args)
     {
       return async(launch::any, std::forward<_Fn>(__fn),
