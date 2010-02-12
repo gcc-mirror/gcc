@@ -1,3 +1,8 @@
+2010-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43054
+	* g++.dg/cpp0x/variadic99.C: New.
+
 2010-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/guality.h (GUALCVT): Zero extend instead of
