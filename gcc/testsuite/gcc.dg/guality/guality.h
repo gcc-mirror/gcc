@@ -64,7 +64,11 @@ typedef intmax_t gualchk_t;
 #define GUALCVT(val)						\
   ((gualchk_t)__builtin_choose_expr				\
    (__builtin_types_compatible_p (__typeof (val), gualchk_t),	\
-    (val), (intptr_t)(val)))
+    (val),							\
+    __builtin_choose_expr					\
+    (__builtin_classify_type (val)				\
+     == __builtin_classify_type (&guality_skip),		\
+     (uintptr_t)(val),(intptr_t)(val))))
 
 /* Attach a debugger to the current process and verify that the string
    EXPR, evaluated by the debugger, yields the gualchk_t number VAL.

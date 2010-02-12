@@ -1,3 +1,8 @@
+2010-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/guality.h (GUALCVT): Zero extend instead of
+	sign extend pointers to gualchk_t.
+
 2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43012
