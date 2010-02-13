@@ -5468,17 +5468,27 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
   tree tmp = NULL_TREE;
   tree stmt;
   tree parent = DECL_CONTEXT (current_function_decl);
-  bool full_array_var, this_array_result;
+  bool full_array_var;
+  bool this_array_result;
+  bool contiguous;
   gfc_symbol *sym;
   stmtblock_t block;
+  gfc_ref *ref;
 
-  full_array_var = (expr->expr_type == EXPR_VARIABLE
-		    && expr->ref->type == REF_ARRAY
-		    && expr->ref->u.ar.type == AR_FULL);
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->next == NULL)
+      break;
+
+  full_array_var = false;
+  contiguous = false;
+
+  if (expr->expr_type == EXPR_VARIABLE && ref)
+    full_array_var = gfc_full_array_ref_p (ref, &contiguous);
+
   sym = full_array_var ? expr->symtree->n.sym : NULL;
 
   /* The symbol should have an array specification.  */
-  gcc_assert (!sym || sym->as);
+  gcc_assert (!sym || sym->as || ref->u.ar.as);
 
   if (expr->expr_type == EXPR_ARRAY && expr->ts.type == BT_CHARACTER)
     {
@@ -5501,6 +5511,14 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 
       if (sym->ts.type == BT_CHARACTER)
 	se->string_length = sym->ts.u.cl->backend_decl;
+
+      if (sym->ts.type == BT_DERIVED && !sym->as)
+	{
+	  gfc_conv_expr_descriptor (se, expr, ss);
+	  se->expr = gfc_conv_array_data (se->expr);
+	  return;
+	}
+
       if (!sym->attr.pointer && sym->as->type != AS_ASSUMED_SHAPE 
           && !sym->attr.allocatable)
         {
@@ -5514,6 +5532,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 	    array_parameter_size (tmp, expr, size);
 	  return;
         }
+
       if (sym->attr.allocatable)
         {
 	  if (sym->attr.dummy || sym->attr.result)
@@ -5526,6 +5545,18 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 	  se->expr = gfc_conv_array_data (tmp);
           return;
         }
+    }
+
+  if (contiguous && g77 && !this_array_result
+	&& !expr->symtree->n.sym->attr.dummy)
+    {
+      gfc_conv_expr_descriptor (se, expr, ss);
+      if (expr->ts.type == BT_CHARACTER)
+	se->string_length = expr->ts.u.cl->backend_decl;
+      if (size)
+	array_parameter_size (se->expr, expr, size);
+      se->expr = gfc_conv_array_data (se->expr);
+      return;
     }
 
   if (this_array_result)
