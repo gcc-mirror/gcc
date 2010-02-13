@@ -1,3 +1,9 @@
+2010-02-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42871
+	* tree-ssa-pre.c (phi_translate_set): Make sure to retain
+	leaders.
+
 2010-02-10  Daniel Gutson  <dgutson@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (__ARM_ARCH__): __ARM_ARCH_7EM__

@@ -1,3 +1,8 @@
+2010-02-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42871
+	* g++.dg/torture/pr42871.C: New testcase.
+
 2010-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/43033
