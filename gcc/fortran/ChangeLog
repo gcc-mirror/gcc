@@ -1,3 +1,12 @@
+2010-02-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/41113
+	PR fortran/41117
+	* trans-array.c (gfc_conv_array_parameter): Use
+	gfc_full_array_ref_p to detect full and contiguous variable
+	arrays. Full array components and contiguous arrays do not need
+	internal_pack and internal_unpack.
+
 2010-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/43030
