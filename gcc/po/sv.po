@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-02-04 16:20+0000\n"
-"PO-Revision-Date: 2010-02-07 19:39+0100\n"
+"PO-Revision-Date: 2010-02-14 17:26+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -5169,9 +5169,8 @@ msgid "Warn about calls with implicit interface"
 msgstr "Varna för anrop med implicit gränssnitt"
 
 #: fortran/lang.opt:101
-#, fuzzy
 msgid "Warn about called procedures not explicitly declared"
-msgstr "Varna för anrop med implicit gränssnitt"
+msgstr "Varna för anrop av procedurer som inte explicit deklarerats"
 
 #: fortran/lang.opt:105
 msgid "Warn about truncated source lines"
@@ -5226,9 +5225,8 @@ msgid "Produce a backtrace when a runtime error is encountered"
 msgstr "Skapa en stackspårning när ett fel inträffar under körning"
 
 #: fortran/lang.opt:169
-#, fuzzy
 msgid "-fblas-matmul-limit=<n>\tSize of the smallest matrix for which matmul will use BLAS"
-msgstr "-fblas-matmul-limit=<n>        Storlek på den minsta matris för vilken matmul kommer använda BLAS"
+msgstr "-fblas-matmul-limit=<n>\tStorlek på den minsta matris för vilken matmul kommer använda BLAS"
 
 #: fortran/lang.opt:173
 msgid "Produce a warning at runtime if a array temporary has been created for a procedure argument"
@@ -5307,14 +5305,12 @@ msgid "Allow arbitrary character line width in fixed mode"
 msgstr "Tillåt radlängd med godtyckligt antal tecken i fast läge"
 
 #: fortran/lang.opt:249
-#, fuzzy
 msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
-msgstr "Använd radlängd med n tecken i fast läge"
+msgstr "-ffixed-line-length-<n>\t\tAnvänd radlängd med n tecken i fast läge"
 
 #: fortran/lang.opt:253
-#, fuzzy
 msgid "-ffpe-trap=[...]\tStop on following floating point exceptions"
-msgstr "Stanna vid följande flyttalsundantag"
+msgstr "-ffpe-trap=[...]\tStanna vid följande flyttalsundantag"
 
 #: fortran/lang.opt:257
 msgid "Assume that the source file is free form"
@@ -5325,62 +5321,52 @@ msgid "Allow arbitrary character line width in free mode"
 msgstr "Tillåt radlängd med godtyckligt antal tecken i fri form"
 
 #: fortran/lang.opt:265
-#, fuzzy
 msgid "-ffree-line-length-<n>\t\tUse n as character line width in free mode"
-msgstr "Använd radlängd med n tecken i fri form"
+msgstr "-ffree-line-length-<n>\t\tAnvänd radlängd med n tecken i fri form"
 
 #: fortran/lang.opt:269
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
 msgstr "Ange att ingen implicit typning är tillåten, om inte åsidosatt med uttryckliga IMPLICIT-satser"
 
 #: fortran/lang.opt:273
-#, fuzzy
 msgid "-finit-character=<n>\tInitialize local character variables to ASCII value n"
-msgstr "-finit-character=<n> Initiera lokala teckenvariabler med ASCII-värde n"
+msgstr "-finit-character=<n>\tInitiera lokala teckenvariabler med ASCII-värde n"
 
 #: fortran/lang.opt:277
-#, fuzzy
 msgid "-finit-integer=<n>\tInitialize local integer variables to n"
-msgstr "-finit-integer=<n> Initiera lokala heltalsvariabler med n"
+msgstr "-finit-integer=<n>\tInitiera lokala heltalsvariabler med n"
 
 #: fortran/lang.opt:281
 msgid "Initialize local variables to zero (from g77)"
 msgstr "Initiera lokala variabler med noll (från g77)"
 
 #: fortran/lang.opt:285
-#, fuzzy
 msgid "-finit-logical=<true|false>\tInitialize local logical variables"
-msgstr "-finit-logical=<true|false> Initiera lokala logiska variabler"
+msgstr "-finit-logical=<true|false>\tInitiera lokala logiska variabler"
 
 #: fortran/lang.opt:289
-#, fuzzy
 msgid "-finit-real=<zero|nan|inf|-inf>\tInitialize local real variables"
-msgstr "-finit-real=<zero|nan|inf|-inf> Initiera lokala reella variabler"
+msgstr "-finit-real=<zero|nan|inf|-inf>\tInitiera lokala reella variabler"
 
 #: fortran/lang.opt:293
-#, fuzzy
 msgid "-fmax-array-constructor=<n>\tMaximum number of objects in an array constructor"
-msgstr "-fmax-array-constructor=<n>        Maximalt antal objekt i en vektorkonstruerare"
+msgstr "-fmax-array-constructor=<n>\tMaximalt antal objekt i en vektorkonstruerare"
 
 #: fortran/lang.opt:297
-#, fuzzy
 msgid "-fmax-errors=<n>\tMaximum number of errors to report"
-msgstr "Det maximala antalet fel som skall rapporteras"
+msgstr "-fmax-errors=<n>\tMaximalt antal fel som skall rapporteras"
 
 #: fortran/lang.opt:301
-#, fuzzy
 msgid "-fmax-identifier-length=<n>\tMaximum identifier length"
-msgstr "Maximal identifierarlängd"
+msgstr "-fmax-identifier-length=<n>\tMaximal identifierarlängd"
 
 #: fortran/lang.opt:305
-#, fuzzy
 msgid "-fmax-subrecord-length=<n>\tMaximum length for subrecords"
-msgstr "Maximal längd för underposter"
+msgstr "-fmax-subrecord-length=<n>\tMaximal längd för underposter"
 
 #: fortran/lang.opt:309
-#, fuzzy
 msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
-msgstr "Storlek i byte på den största vektorn som läggs på stacken"
+msgstr "-fmax-stack-var-size=<n>\tStorlek i byte på den största vektorn som läggs på stacken"
 
 #: fortran/lang.opt:313
 msgid "Set default accessibility of module entities to PRIVATE."
@@ -5411,9 +5397,8 @@ msgid "Copy array sections into a contiguous block on procedure entry"
 msgstr "Kopiera vektorsektioner till sammanhängande block vid procedurstart"
 
 #: fortran/lang.opt:349
-#, fuzzy
 msgid "-fcheck=[...]\tSpecify which runtime checks are to be performed"
-msgstr "Ange vilka körtidskontroller som skall utföras"
+msgstr "-fcheck=[...]\tAnge vilka körtidskontroller som skall utföras"
 
 #: fortran/lang.opt:353
 msgid "Append a second underscore if the name already contains an underscore"
@@ -6006,34 +5991,28 @@ msgid "SYMBOL_VECTOR=(__divdi3=PROCEDURE)"
 msgstr "SYMBOL_VECTOR=(__divdi3=PROCEDURE)"
 
 #: config/m32c/m32c.opt:24
-#, fuzzy
 msgid "-msim\tUse simulator runtime"
-msgstr "Använd simulatorkörtider"
+msgstr "-msim\tAnvänd simulatorkörtider"
 
 #: config/m32c/m32c.opt:28
-#, fuzzy
 msgid "-mcpu=r8c\tCompile code for R8C variants"
-msgstr "Kompilera kod för R8C-varianter"
+msgstr "-mcpu=r8c\tKompilera kod för R8C-varianter"
 
 #: config/m32c/m32c.opt:32
-#, fuzzy
 msgid "-mcpu=m16c\tCompile code for M16C variants"
-msgstr "Kompilera kod för M16C-varianter"
+msgstr "-mcpu=m16c\tKompilera kod för M16C-varianter"
 
 #: config/m32c/m32c.opt:36
-#, fuzzy
 msgid "-mcpu=m32cm\tCompile code for M32CM variants"
-msgstr "Kompilera kod för M32CM-varianter"
+msgstr "-mcpu=m32cm\tKompilera kod för M32CM-varianter"
 
 #: config/m32c/m32c.opt:40
-#, fuzzy
 msgid "-mcpu=m32c\tCompile code for M32C variants"
-msgstr "Kompilera kod för för M32C-varianter"
+msgstr "-mcpu=m32c\tKompilera kod för för M32C-varianter"
 
 #: config/m32c/m32c.opt:44
-#, fuzzy
 msgid "-memregs=\tNumber of memreg bytes (default: 16, range: 0..16)"
-msgstr "Antal memreg-byte (standard: 16, intervall: 0..16)"
+msgstr "-memregs=\tAntal memreg-byte (standard: 16, intervall: 0..16)"
 
 #: config/sparc/little-endian.opt:23
 msgid "Generate code for little-endian"
@@ -6839,18 +6818,16 @@ msgid "Generate VRSAVE instructions when generating AltiVec code"
 msgstr "Generera VRSAVE-instruktioner när AltiVec-kod genereras"
 
 #: config/rs6000/rs6000.opt:238
-#, fuzzy
 msgid "-mvrsave=yes/no\tDeprecated option.  Use -mvrsave/-mno-vrsave instead"
-msgstr "Undanbedd flagga.  Använd -mvrsave/-mno-vrsave istället"
+msgstr "-mvrsave=yes/no\tUndanbedd flagga.  Använd -mvrsave/-mno-vrsave istället"
 
 #: config/rs6000/rs6000.opt:242
 msgid "Generate isel instructions"
 msgstr "Generera isel-instruktioner"
 
 #: config/rs6000/rs6000.opt:246
-#, fuzzy
 msgid "-misel=yes/no\tDeprecated option.  Use -misel/-mno-isel instead"
-msgstr "Undanbedd flagga.  Använd -misel/-mno-isel istället"
+msgstr "-misel=yes/no\tUndanbedd flagga.  Använd -misel/-mno-isel istället"
 
 #: config/rs6000/rs6000.opt:250
 msgid "Generate SPE SIMD instructions on E500"
@@ -6861,34 +6838,28 @@ msgid "Generate PPC750CL paired-single instructions"
 msgstr "Generera PPC750CL:s par-singel-instruktioner"
 
 #: config/rs6000/rs6000.opt:258
-#, fuzzy
 msgid "-mspe=yes/no\tDeprecated option.  Use -mspe/-mno-spe instead"
-msgstr "Undanbedd flagga.  Använd -mspe/-mno-spe istället"
+msgstr "-mspe=yes/no\tUndanbedd flagga.  Använd -mspe/-mno-spe istället"
 
 #: config/rs6000/rs6000.opt:262
-#, fuzzy
 msgid "-mdebug=\tEnable debug output"
-msgstr "Aktivera felsökningsutdata"
+msgstr "-mdebug=\tAktivera felsökningsutdata"
 
 #: config/rs6000/rs6000.opt:266
-#, fuzzy
 msgid "-mabi=\tSpecify ABI to use"
-msgstr "Ange ABI att använda"
+msgstr "-mabi=\tAnge ABI att använda"
 
 #: config/rs6000/rs6000.opt:270
-#, fuzzy
 msgid "-mcpu=\tUse features of and schedule code for given CPU"
-msgstr "Använd funktioner i och schemalägg kod för angiven CPU"
+msgstr "-mcpu=\tAnvänd funktioner i och schemalägg kod för angiven CPU"
 
 #: config/rs6000/rs6000.opt:274
-#, fuzzy
 msgid "-mtune=\tSchedule code for given CPU"
-msgstr "Schemalägg kod för en given CPU"
+msgstr "-mtune=\tSchemalägg kod för en given CPU"
 
 #: config/rs6000/rs6000.opt:278
-#, fuzzy
 msgid "-mtraceback=\tSelect full, part, or no traceback table"
-msgstr "Välj fullständig, partiell, eller ingen bakåtspårningstabell"
+msgstr "-mtraceback=\tVälj fullständig, partiell, eller ingen bakåtspårningstabell"
 
 #: config/rs6000/rs6000.opt:282
 msgid "Avoid all range limits on call instructions"
@@ -6907,14 +6878,12 @@ msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
 msgstr "Varna för användning av AltiVec-typen \"vector long ...\" som bör undvikas"
 
 #: config/rs6000/rs6000.opt:298
-#, fuzzy
 msgid "-mfloat-gprs=\tSelect GPR floating point method"
-msgstr "Välj flyttalsmetoden GPR"
+msgstr "-mfloat-gprs=\tVälj GPR-flyttalsmetod"
 
 #: config/rs6000/rs6000.opt:302
-#, fuzzy
 msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)"
-msgstr "Ange storlek på long double (64 eller 128 bitar)"
+msgstr "-mlong-double-<n>\tAnge storlek på long double (64 eller 128 bitar)"
 
 #: config/rs6000/rs6000.opt:306
 msgid "Determine which dependences between insns are considered costly"
@@ -6945,9 +6914,8 @@ msgid "Floating point unit does not support divide & sqrt"
 msgstr "Flyttalsenheten stödjer inte division & kvadratrot"
 
 #: config/rs6000/rs6000.opt:334
-#, fuzzy
 msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)"
-msgstr "Ange FP (sp, dp, sp-lite, dp-lite) (implicerar -mxilinx-fpu)"
+msgstr "-mfpu=\tAnge FP (sp, dp, sp-lite, dp-lite) (implicerar -mxilinx-fpu)"
 
 #: config/rs6000/rs6000.opt:338
 msgid "Specify Xilinx FPU."
@@ -7176,24 +7144,20 @@ msgid "Prepend the name of the cpu to all public symbol names"
 msgstr "Skjut in namnet på cpu:n före alla publika symbolnamn"
 
 #: config/arc/arc.opt:42
-#, fuzzy
 msgid "-mcpu=CPU\tCompile code for ARC variant CPU"
-msgstr "Kompilera kod för ARC-variant av CPU"
+msgstr "-mcpu=CPU\tKompilera kod för ARC-variant CPU"
 
 #: config/arc/arc.opt:46
-#, fuzzy
 msgid "-mtext=SECTION\tPut functions in SECTION"
-msgstr "Lägg funktioner i SECTION"
+msgstr "-mtext=SEKTION\tLägg funktioner i SEKTION"
 
 #: config/arc/arc.opt:50
-#, fuzzy
 msgid "-mdata=SECTION\tPut data in SECTION"
-msgstr "Lägg data i SECTION"
+msgstr "-mdata=SEKTION\tLägg data i SEKTION"
 
 #: config/arc/arc.opt:54
-#, fuzzy
 msgid "-mrodata=SECTION\tPut read-only data in SECTION"
-msgstr "Lägg endast läsbara data i SECTION"
+msgstr "-mrodata=SEKTION\tLägg endast läsbara data i SEKTION"
 
 #: config/sh/sh.opt:44
 msgid "Generate SH1 code"
@@ -7684,9 +7648,8 @@ msgid "Use subroutines for function prologues and epilogues"
 msgstr "Använd subrutiner för funktionprologer och -epiloger"
 
 #: config/avr/avr.opt:27
-#, fuzzy
 msgid "-mmcu=MCU\tSelect the target MCU"
-msgstr "Välj mål-MCU:n"
+msgstr "-mmcu=MCU\tVälj mål-MCU:n"
 
 #: config/avr/avr.opt:34
 msgid "Use an 8-bit 'int' type"
@@ -7830,18 +7793,16 @@ msgid "Intersperse literal pools with code in the text section"
 msgstr "Växla mellan bokstavliga pooler och kod i textsektionen"
 
 #: config/xtensa/xtensa.opt:43
-#, fuzzy
 msgid "-mno-serialize-volatile\tDo not serialize volatile memory references with MEMW instructions"
-msgstr "Serialisera inte minnesreferenser till flyktigt minne med MEMW-instruktioner"
+msgstr "-mno-serialize-volatile\tSerialisera inte minnesreferenser till flyktigt minne med MEMW-instruktioner"
 
 #: config/stormy16/stormy16.opt:24
 msgid "Provide libraries for the simulator"
 msgstr "Tillhandahåll bibliotek för simulatorn"
 
 #: config/mips/mips.opt:23
-#, fuzzy
 msgid "-mabi=ABI\tGenerate code that conforms to the given ABI"
-msgstr "Generera kod som följer det angivna ABI:et"
+msgstr "-mabi=ABI\tGenerera kod som följer det angivna ABI:et"
 
 #: config/mips/mips.opt:27
 msgid "Generate code that can be used in SVR4-style dynamic objects"
@@ -7852,14 +7813,12 @@ msgid "Use PMC-style 'mad' instructions"
 msgstr "Använd \"mad\"-instruktioner i PMC-stil"
 
 #: config/mips/mips.opt:35
-#, fuzzy
 msgid "-march=ISA\tGenerate code for the given ISA"
-msgstr "Generera kod för den angivna ISA:n"
+msgstr "-march=ISA\tGenerera kod för den angivna ISA:n"
 
 #: config/mips/mips.opt:39
-#, fuzzy
 msgid "-mbranch-cost=COST\tSet the cost of branches to roughly COST instructions"
-msgstr "Ange kostnaden för grenar till ungefär COST instruktioner"
+msgstr "-mbranch-cost=KOSTNAD\tAnge kostnaden för grenar till ungefär KOSTNAD instruktioner"
 
 #: config/mips/mips.opt:43
 msgid "Use Branch Likely instructions, overriding the architecture default"
@@ -7874,9 +7833,8 @@ msgid "Trap on integer divide by zero"
 msgstr "Fånga heltalsdivision med noll"
 
 #: config/mips/mips.opt:55
-#, fuzzy
 msgid "-mcode-readable=SETTING\tSpecify when instructions are allowed to access code"
-msgstr "Ange när instruktioner tillåts komma åt kod"
+msgstr "-code-readable=INSTÄLLNING\tAnge när instruktioner tillåts komma åt kod"
 
 #: config/mips/mips.opt:59
 msgid "Use branch-and-break sequences to check for integer divide by zero"
@@ -7963,9 +7921,8 @@ msgid "Use 64-bit floating-point registers"
 msgstr "Använd 64-bitars flyttalsregister"
 
 #: config/mips/mips.opt:149
-#, fuzzy
 msgid "-mflush-func=FUNC\tUse FUNC to flush the cache before calling stack trampolines"
-msgstr "Använd FUNC för att tömma cachen föra anrop av stacktrampoliner"
+msgstr "-mflush-func=FUNK\tAnvänd FUNK för att tömma cachen föra anrop av stacktrampoliner"
 
 #: config/mips/mips.opt:153
 msgid "Generate floating-point multiply-add instructions"
@@ -7996,9 +7953,8 @@ msgid "Generate code that can be safely linked with MIPS16 code."
 msgstr "Generera kod som kan länkas säkert med MIPS16-kod."
 
 #: config/mips/mips.opt:181
-#, fuzzy
 msgid "-mipsN\tGenerate code for ISA level N"
-msgstr "Generera kod för ISA nivå N"
+msgstr "-mipsN\tGenerera kod för ISA nivå N"
 
 #: config/mips/mips.opt:185
 msgid "Generate MIPS16 code"
@@ -8065,9 +8021,8 @@ msgid "Use paired-single floating-point instructions"
 msgstr "Använd parvisa enkla flyttalsinstruktioner"
 
 #: config/mips/mips.opt:249
-#, fuzzy
 msgid "-mr10k-cache-barrier=SETTING\tSpecify when r10k cache barriers should be inserted"
-msgstr "Ange när r10k-cache-barriärer skall skjutas in"
+msgstr "-mr10k-cache-barrier=INSTÄLLNING\tAnge när r10k-cache-barriärer skall skjutas in"
 
 #: config/mips/mips.opt:253
 msgid "Try to allow the linker to turn PIC calls into direct calls"
@@ -8102,9 +8057,8 @@ msgid "Use synci instruction to invalidate i-cache"
 msgstr "Använd synci-instruktioner för att invalidera i-cachen"
 
 #: config/mips/mips.opt:285
-#, fuzzy
 msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
-msgstr "Optimera utmatning för PROCESSOR"
+msgstr "-mtune=PROCESSOR\tOptimera utmatningen för PROCESSOR"
 
 #: config/mips/mips.opt:289 config/iq2000/iq2000.opt:44
 msgid "Put uninitialized constants in ROM (needs -membedded-data)"
@@ -8271,19 +8225,16 @@ msgid "Override -mbest-lib-options"
 msgstr "Åsidosätt -mbest-lib-options"
 
 #: config/cris/cris.opt:165
-#, fuzzy
 msgid "-march=ARCH\tGenerate code for the specified chip or CPU version"
-msgstr "Generera kod för det angivna chip:et eller CPU-versionen"
+msgstr "-march=ARK\tGenerera kod för det angivna chip:et eller CPU-versionen"
 
 #: config/cris/cris.opt:169
-#, fuzzy
 msgid "-mtune=ARCH\tTune alignment for the specified chip or CPU version"
-msgstr "Trimma justering för det angivna chip:et eller CPU-versionen"
+msgstr "-mtune=ARK\tTrimma justering för det angivna chip:et eller CPU-versionen"
 
 #: config/cris/cris.opt:173
-#, fuzzy
 msgid "-mmax-stackframe=SIZE\tWarn when a stackframe is larger than the specified size"
-msgstr "Varna när en stackram är större än den angivna storleken"
+msgstr "-mmax-stackframe=STORLEK\tVarna när en stackram är större än den angivna storleken"
 
 #: config/h8300/h8300.opt:23
 msgid "Generate H8S code"
@@ -8592,9 +8543,8 @@ msgid "Generate code for the kernel or loadable kernel extensions"
 msgstr "Generera kod för kärnan eller laddbara kärnutvidgningar"
 
 #: config/darwin.opt:47
-#, fuzzy
 msgid "-iframework <dir>\tAdd <dir> to the end of the system framework include path"
-msgstr "Lägg till <dir> till slutet av systemramverkets inkluderingssökväg"
+msgstr "-iframework <kat>\tLägg till <kat> till slutet av systemramverkets inkluderingssökväg"
 
 #: config/lynx.opt:23
 msgid "Support legacy multi-threading"
@@ -8769,24 +8719,20 @@ msgid "Set name of main routine for the debugger"
 msgstr "Ange namnet på huvudrutinen för felsökaren"
 
 #: config/rx/rx.opt:26
-#, fuzzy
 msgid "Store doubles in 64 bits."
-msgstr "Lagrar dubbla i 32 bitar."
+msgstr "Lagrar dubbla i 64 bitar."
 
 #: config/rx/rx.opt:30
-#, fuzzy
 msgid "Stores doubles in 32 bits.  This is the default."
-msgstr "Lagrar dubbla i 64 bitar.  Detta är standard."
+msgstr "Lagrar dubbla i 32 bitar.  Detta är standard."
 
 #: config/rx/rx.opt:34
-#, fuzzy
 msgid "Disable the use of RX FPU instructions.  "
-msgstr "Tillåt inte användningen av RX FPU-instruktionerna."
+msgstr "Tillåt inte användningen av RX FPU-instruktionerna.  "
 
 #: config/rx/rx.opt:41
-#, fuzzy
 msgid "Enable the use of RX FPU instructions.  This is the default."
-msgstr "Möjliggör användning av RX FPU-instruktionerna."
+msgstr "Möjliggör användning av RX FPU-instruktionerna.  Detta är standard."
 
 #: config/rx/rx.opt:47
 msgid "Specify the target RX cpu type."
@@ -8853,9 +8799,8 @@ msgid "Enable user-defined instructions"
 msgstr "Använd användardefinierade instruktioner"
 
 #: c.opt:42
-#, fuzzy
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
-msgstr "Intyga <svar> på <fråga>.  Om \"-\" sätts före <fråga> avaktiveras <svar>et till <fråga>n"
+msgstr "-A<fråga>=<svar>\tIntyga <svar> på <fråga>.  Om \"-\" sätts före <fråga> avaktiveras <svar>:et till <fråga>:n"
 
 #: c.opt:46
 msgid "Do not discard comments"
@@ -8866,23 +8811,20 @@ msgid "Do not discard comments in macro expansions"
 msgstr "Släng inte kommentarer vid makroexpansioner"
 
 #: c.opt:54
-#, fuzzy
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
-msgstr "Definiera ett <makro> med <värde> som sitt värde.  Om bara <makro> anges sätts <värde> till 1"
+msgstr "-D<makro>[=<värde>]\tDefiniera ett <makro> med <värde> som sitt värde.  Om bara <makro> anges sätts <värde> till 1"
 
 #: c.opt:61
-#, fuzzy
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
-msgstr "Lägg till <kat> till slutet av huvudramverkets inkluderingssökväg"
+msgstr "-F <kat>\tLägg till <kat> till slutet av huvudramverkets inkluderingssökväg"
 
 #: c.opt:65
 msgid "Print the name of header files as they are used"
 msgstr "Skriv ut namnet på huvudfiler allteftersom de används"
 
 #: c.opt:69
-#, fuzzy
 msgid "-I <dir>\tAdd <dir> to the end of the main include path"
-msgstr "Lägg till <kat> till slutet av huvudsökvägen"
+msgstr "-I <kat>\tLägg till <kat> till slutet av huvudsökvägen"
 
 #: c.opt:73
 msgid "Generate make dependencies"
@@ -8893,9 +8835,8 @@ msgid "Generate make dependencies and compile"
 msgstr "Generera make-beroenden och kompilera"
 
 #: c.opt:81
-#, fuzzy
 msgid "-MF <file>\tWrite dependency output to the given file"
-msgstr "Skriv beroendeutdata till den angivna filen"
+msgstr "-MF <fil>\tSkriv beroendeutdata till den angivna filen"
 
 #: c.opt:85
 msgid "Treat missing header files as generated files"
@@ -8914,23 +8855,20 @@ msgid "Generate phony targets for all headers"
 msgstr "Generera låtsasmål för alla huvuden"
 
 #: c.opt:101
-#, fuzzy
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
-msgstr "Lägg till ett MAKE-citerat mål"
+msgstr "-MQ <mål>\tLägg till ett MAKE-citerat mål"
 
 #: c.opt:105
-#, fuzzy
 msgid "-MT <target>\tAdd an unquoted target"
-msgstr "Lägg till ett ociterat mål"
+msgstr "-MT <mål>\tLägg till ett ociterat mål"
 
 #: c.opt:109
 msgid "Do not generate #line directives"
 msgstr "Generera inte #line-direktiv"
 
 #: c.opt:113
-#, fuzzy
 msgid "-U<macro>\tUndefine <macro>"
-msgstr "Avdefiniera <makro>"
+msgstr "-U<makro>\tAvdefiniera <makro>"
 
 #: c.opt:117
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
@@ -9153,9 +9091,8 @@ msgid "Warn about NULL being passed to argument slots marked as requiring non-NU
 msgstr "Varna om NULL skickas som argument som är markerade att de kräver icke-NULL"
 
 #: c.opt:353
-#, fuzzy
 msgid "-Wnormalized=<id|nfc|nfkc>\tWarn about non-normalised Unicode strings"
-msgstr "Varna för icke normaliserade Unicodesträngar"
+msgstr "-Wnormalized=<id|nfc|nfkc>\tVarna för icke normaliserade Unicodesträngar"
 
 #: c.opt:357
 msgid "Warn if a C-style cast is used in a program"
@@ -9346,14 +9283,12 @@ msgid "Reduce the size of object files"
 msgstr "Reducera storleken på objektfiler"
 
 #: c.opt:559
-#, fuzzy
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
-msgstr "Använd klassen <namn> för konstanta strängar"
+msgstr "-fconst-string-class=<namn>\tAnvänd klassen <namn> för konstanta strängar"
 
 #: c.opt:563
-#, fuzzy
 msgid "-fno-deduce-init-list\tdisable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list"
-msgstr "avaktivera härledning av std::initializer_list för en malltypparameter från en klammeromsluten initierarlista"
+msgstr "-fno-deduce-init-list\tavaktivera härledning av std::initializer_list för en malltypparameter från en klammeromsluten initierarlista"
 
 #: c.opt:567
 msgid "Inline member functions by default"
@@ -9372,18 +9307,16 @@ msgid "Generate code to check exception specifications"
 msgstr "Generera kod för att kontrollera undantagsspecifikationer"
 
 #: c.opt:589
-#, fuzzy
 msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>"
-msgstr "Konvertera alla strängar och teckenkonstanter till teckenuppsättningen <tknst>"
+msgstr "-fexec-charset=<tknst>\tKonvertera alla strängar och teckenkonstanter till teckenuppsättningen <tknst>"
 
 #: c.opt:593
 msgid "Permit universal character names (\\u and \\U) in identifiers"
 msgstr "Tillåt universella teckennamn (\\u och \\U) i identifierare"
 
 #: c.opt:597
-#, fuzzy
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files"
-msgstr "Ange standardteckenuppsättning för källkodsfiler"
+msgstr "-finput-charset=<tknst>\tAnge standardteckenuppsättning för källkodsfiler"
 
 #: c.opt:605
 msgid "Scope of for-init-statement variables is local to the loop"
@@ -9530,19 +9463,16 @@ msgid "Display statistics accumulated during compilation"
 msgstr "Visa statistik som samlats under kompilering"
 
 #: c.opt:787
-#, fuzzy
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
-msgstr "Avstånd mellan tabulatorstopp för kolumnvis rapportering"
+msgstr "-ftabstop=<antal>\tAvstånd mellan tabulatorstopp för kolumnvis rapportering"
 
 #: c.opt:791
-#, fuzzy
 msgid "-ftemplate-depth-<number>\tSpecify maximum template instantiation depth"
-msgstr "Ange maximalt instansieringsdjup för mallar"
+msgstr "-ftemplate-depth-<antal>\tAnge maximalt instansieringsdjup för mallar"
 
 #: c.opt:798
-#, fuzzy
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics"
-msgstr "Generera inte trådsäker kod för initiering a lokala statiska variabler"
+msgstr "-fno-threadsafe-statics\tGenerera inte trådsäker kod för initiering a lokala statiska variabler"
 
 #: c.opt:802
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
@@ -9581,9 +9511,8 @@ msgid "Emit common-like symbols as weak symbols"
 msgstr "Mata ut common-liknande symboler som svaga symboler"
 
 #: c.opt:838
-#, fuzzy
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
-msgstr "Konvertera alla breda strängar och teckenkonstanter till teckenuppsättningen <tknst>"
+msgstr "-fwide-exec-charset=<tknst>\tKonvertera alla breda strängar och teckenkonstanter till teckenuppsättningen <tknst>"
 
 #: c.opt:842
 msgid "Generate a #line directive pointing at the current working directory"
@@ -9602,69 +9531,56 @@ msgid "Dump declarations to a .decl file"
 msgstr "Skicka deklarationer till en .decl-fil"
 
 #: c.opt:858
-#, fuzzy
 msgid "-femit-struct-debug-baseonly\tAggressive reduced debug info for structs"
-msgstr "Aggressivt reducerad felsökningsinformation för poster"
+msgstr "-femit-struct-debug-baseonly\tAggressivt reducerad felsökningsinformation för poster"
 
 #: c.opt:862
-#, fuzzy
 msgid "-femit-struct-debug-reduced\tConservative reduced debug info for structs"
-msgstr "Konservativt reducerad felsökningsinformation för poster"
+msgstr "-femit-struct-debug-reduced\tKonservativt reducerad felsökningsinformation för poster"
 
 #: c.opt:866
-#, fuzzy
 msgid "-femit-struct-debug-detailed=<spec-list>\tDetailed reduced debug info for structs"
-msgstr "Detaljreducerade felsökningsinformation för poster"
+msgstr "-femit-struct-debug-detaild=<spec-lista>\tDetaljreducerad felsökningsinformation för poster"
 
 #: c.opt:870
-#, fuzzy
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
-msgstr "Lägg till <kat> till slutet av sökvägen för systeminkluderingar"
+msgstr "-idirafter <kat>\tLägg till <kat> till slutet av sökvägen för systeminkluderingar"
 
 #: c.opt:874
-#, fuzzy
 msgid "-imacros <file>\tAccept definition of macros in <file>"
-msgstr "Tag med definitioner av makron i <fil>"
+msgstr "-imacros <fil>\tTag med definitioner av makron i <fil>"
 
 #: c.opt:878
-#, fuzzy
 msgid "-imultilib <dir>\tSet <dir> to be the multilib include subdirectory"
-msgstr "-imultilib <kat> Sätt <kat> att vara inkluderingsunderbiblioteket för multibibliotek"
+msgstr "-imultilib <kat>\tSätt <kat> att vara inkluderingsunderbiblioteket för multibibliotek"
 
 #: c.opt:882
-#, fuzzy
 msgid "-include <file>\tInclude the contents of <file> before other files"
-msgstr "Inkludera innehållet i <fil> före andra filer"
+msgstr "-include <fil>\tInkludera innehållet i <fil> före andra filer"
 
 #: c.opt:886
-#, fuzzy
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
-msgstr "Ange <skvg> som ett prefix för de följande två flaggorna"
+msgstr "-iprefix <skvg>\tAnge <skvg> som ett prefix för de följande två flaggorna"
 
 #: c.opt:890
-#, fuzzy
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
-msgstr "Sätt <kat> som rotkatalog för systemet"
+msgstr "-isysroot <kat>\tSätt <kat> som rotkatalog för systemet"
 
 #: c.opt:894
-#, fuzzy
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
-msgstr "Lägg till <kat> till början av sökvägen för systeminkluderingar"
+msgstr "-isystem <kat>\tLägg till <kat> till början av sökvägen för systeminkluderingar"
 
 #: c.opt:898
-#, fuzzy
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
-msgstr "Lägg till <kat> till slutet av sökvägen för citerade inkluderingar"
+msgstr "-iquote <kat>\tLägg till <kat> till slutet av sökvägen för citerade inkluderingar"
 
 #: c.opt:902
-#, fuzzy
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
-msgstr "Lägg till <kat> till slutet av sökvägen för systeminkluderingar"
+msgstr "-iwithprefix <kat>\tLägg till <kat> till slutet av sökvägen för systeminkluderingar"
 
 #: c.opt:906
-#, fuzzy
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
-msgstr "Lägg till <kat> till slutet av huvudsökvägen"
+msgstr "-iwithprefixbefore <kat>\tLägg till <kat> till slutet av huvudsökvägen"
 
 #: c.opt:916
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
@@ -9739,9 +9655,8 @@ msgid "Enable traditional preprocessing"
 msgstr "Aktivera traditionell preprocessning"
 
 #: c.opt:1014
-#, fuzzy
 msgid "-trigraphs\tSupport ISO C trigraphs"
-msgstr "Stöd trigrafer enligt ISO C"
+msgstr "-trigraphs\tStöd trigrafer enligt ISO C"
 
 #: c.opt:1018
 msgid "Do not predefine system-specific and GCC-specific macros"
@@ -9772,28 +9687,24 @@ msgid "Display this information"
 msgstr "Visa den här informationen"
 
 #: common.opt:32
-#, fuzzy
 msgid "--help=<class>\tDisplay descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params"
-msgstr "Visa beskrivningar av en speciell klass av flaggor.  <class> är en eller flera av optimizers, target, warnings, undocumented params"
+msgstr "--help=<klass>\tVisa beskrivningar av en speciell klass av flaggor.  <klass> är en eller flera av optimizers, target, warnings, undocumented, params"
 
 #: common.opt:36
 msgid "Alias for --help=target"
 msgstr "Alias för --help=target"
 
 #: common.opt:55
-#, fuzzy
 msgid "--param <param>=<value>\tSet parameter <param> to value.  See below for a complete list of parameters"
-msgstr "Sätt parameter <param> till värde.  Se nedan för en komplett lista på parametrar"
+msgstr "--param <param>=<värde>\tSätt parameter <param> till värde.  Se nedan för en komplett lista på parametrar"
 
 #: common.opt:62
-#, fuzzy
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
-msgstr "Placera globala and statiska data mindre än <nummer> byte i en speciell sektion (vissa arkitekturer)"
+msgstr "-G<antal>\tPlacera globala and statiska data mindre än <antal> byte i en speciell sektion (vissa arkitekturer)"
 
 #: common.opt:66
-#, fuzzy
 msgid "-O<number>\tSet optimization level to <number>"
-msgstr "Sätt optimeringsnivå till <nummer>"
+msgstr "-O<nummer>\tSätt optimeringsnivå till <nummer>"
 
 #: common.opt:70
 msgid "Optimize for space rather than speed"
@@ -9844,18 +9755,16 @@ msgid "Exit on the first error occurred"
 msgstr "Avsluta vid första felet som uppstår"
 
 #: common.opt:118
-#, fuzzy
 msgid "-Wframe-larger-than=<number>\tWarn if a function's stack frame requires more than <number> bytes"
-msgstr "-Wframe-larger-than=<antal> Varna om en funktions stackram kräver mer en <antal> byte"
+msgstr "-Wframe-larger-than=<antal>\tVarna om en funktions stackram kräver mer en <antal> byte"
 
 #: common.opt:122
 msgid "Warn when an inlined function cannot be inlined"
 msgstr "Varna när en inline:ad funktion inte kan inline:as"
 
 #: common.opt:129
-#, fuzzy
 msgid "-Wlarger-than=<number>\tWarn if an object is larger than <number> bytes"
-msgstr "Varna för ett objekt är större än <antal> byte"
+msgstr "-Wlarger-than=<antal>\tVarna för ett objekt är större än <antal> byte"
 
 #: common.opt:133
 msgid "Warn if the loop cannot be optimized due to nontrivial assumptions."
@@ -9922,7 +9831,6 @@ msgid "Warn about uninitialized automatic variables"
 msgstr "Varna för oinitierade automatiska variabler"
 
 #: common.opt:205
-#, fuzzy
 msgid "Does nothing. Preserved for backward compatibility."
 msgstr "Gör ingenting.  Bevarad för bakåtkompatibilitet."
 
@@ -9955,24 +9863,20 @@ msgid "Warn instead of error in case profiles in -fprofile-use do not match"
 msgstr "Varna istället för att ge fel profiler i -fprofile-use inte stämmer"
 
 #: common.opt:237
-#, fuzzy
 msgid "-aux-info <file>\tEmit declaration information into <file>"
-msgstr "Generera deklarationsinfo till <fil>"
+msgstr "-aux-info <fil>\tGenerera deklarationsinfo till <fil>"
 
 #: common.opt:250
-#, fuzzy
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler"
-msgstr "Slå på dumpning från specifika pass i kompilatorn"
+msgstr "-d<bokstäver>\tSlå på dumpning från specifika pass i kompilatorn"
 
 #: common.opt:254
-#, fuzzy
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
-msgstr "Ange basfilnamn att användas för dumpar"
+msgstr "-dumpbase <fil>\tAnge basfilnamn att användas för dumpar"
 
 #: common.opt:258
-#, fuzzy
 msgid "-dumpdir <dir>\t\tSet the directory name to be used for dumps"
-msgstr "Ange basfilnamn att användas för dumpar"
+msgstr "-dumpdir <kat>\tAnge katalognamn att användas för dumpar"
 
 #: common.opt:284
 msgid "Align the start of functions"
@@ -10039,14 +9943,12 @@ msgid "Restrict target load migration not to re-use registers in any basic block
 msgstr "Begränsa migration av målinläsning till att inte återanvända register i något grundblock"
 
 #: common.opt:372
-#, fuzzy
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions"
-msgstr "Markera att <register> bevaras mellan funktioner"
+msgstr "-fcall-saved-<register>\tMarkera att <register> bevaras mellan funktioner"
 
 #: common.opt:376
-#, fuzzy
 msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls"
-msgstr "Markera att <register> förstörs av funktionsanrop"
+msgstr "-fcall-used-<register>\tMarkera att <register> förstörs av funktionsanrop"
 
 #: common.opt:383
 msgid "Save registers around function calls"
@@ -10061,9 +9963,8 @@ msgid "Do not put uninitialized globals in the common section"
 msgstr "Lägg inte oinitierade globala i den gemensamma sektionen"
 
 #: common.opt:395
-#, fuzzy
 msgid "-fcompare-debug[=<opts>]\tCompile with and without e.g. -gtoggle, and compare the final-insns dump"
-msgstr "-fcompare-debug[=<flgr>] Kompilera med och utan t.ex. -gtoggle, och jämför slutinstruktionsdumpen"
+msgstr "-fcompare-debug[=<flgr>]\tKompilera med och utan t.ex. -gtoggle, och jämför slutinstruktionsdumpen"
 
 #: common.opt:399
 msgid "Run only the second compilation of -fcompare-debug"
@@ -10108,9 +10009,8 @@ msgid "List all available debugging counters with their limits and counts."
 msgstr "Lista alla tillgängliga felsökningsräknare med deras gränser och värden."
 
 #: common.opt:439
-#, fuzzy
 msgid "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tSet the debug counter limit.   "
-msgstr "-fdbg-cnt=<räknare>:<gräns>[,<räknare>:<gräns>,...]    Sätt gränsen för felsökningsräknare.   "
+msgstr "-fdbg-cnt=<räknare>:<gräns>[,<räknare>:<gräns>,...]\tSätt gränsen för felsökningsräknare.   "
 
 #: common.opt:443
 msgid "Map one directory name to another in debug information"
@@ -10129,23 +10029,20 @@ msgid "Delete useless null pointer checks"
 msgstr "Tag bort onödiga nollpekarkontroller"
 
 #: common.opt:461
-#, fuzzy
 msgid "-fdiagnostics-show-location=[once|every-line]\tHow often to emit source location at the beginning of line-wrapped diagnostics"
-msgstr "Anger hur ofta källkodspositioner skall skrivas ut i början av utskrift vid radbrytning"
+msgstr "-fdiagnostics-show-location=[once|every-line]\tAnger hur ofta källkodspositioner skall skrivas ut i början av utskrift vid radbrytning"
 
 #: common.opt:465
 msgid "Amend appropriate diagnostic messages with the command line option that controls them"
 msgstr "Lägg till lämpliga diagnostiska meddelanden till kommandoradsflaggan som styr dem"
 
 #: common.opt:469
-#, fuzzy
 msgid "-fdump-<type>\tDump various compiler internals to a file"
-msgstr "Skriv ut diverse intern kompilatorinformation till en fil"
+msgstr "-fdump-<typ>\tSkriv ut diverse intern kompilatorinformation till en fil"
 
 #: common.opt:473
-#, fuzzy
 msgid "-fdump-final-insns=filename\tDump to filename the insns at the end of translation"
-msgstr "Skriv till filnamn instruktionerna vid slutet av översättningen"
+msgstr "-fdump-final-insns=filnamn\tSkriv instruktionerna vid slutet av översättningen till filnamn"
 
 #: common.opt:477
 msgid "Suppress output of addresses in debugging dumps"
@@ -10196,9 +10093,8 @@ msgid "Perform a number of minor, expensive optimizations"
 msgstr "Utför ett antal smärre, dyra optimeringar"
 
 #: common.opt:529
-#, fuzzy
 msgid "-fexcess-precision=[fast|standard]\tSpecify handling of excess floating-point precision"
-msgstr "Ange hantering av överskjutande precision på flyttal"
+msgstr "-fexecc-precision=[fast|standard]\tAnge hantering av överskjutande precision på flyttal"
 
 #: common.opt:536
 msgid "Assume no NaNs or infinities are generated"
