@@ -391,7 +391,7 @@ dump_lv_set (regset lv)
 {
   sel_print ("{");
 
-  /* This code was adapted from flow.c: dump_regset ().  */
+  /* This code was adapted from cfg.c: dump_regset ().  */
   if (lv == NULL)
     sel_print ("nil");
   else

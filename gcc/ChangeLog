@@ -1,3 +1,10 @@
+2010-02-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* reorg.c (delete_computation): Comment fixes.
+	* caller-save.c (setup_save_areas): Idem.
+	* sel-sched-dump.c (dump_lv_set): Idem.
+	* rtl.def: Idem.
+
 2010-02-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_sched_init): New function.

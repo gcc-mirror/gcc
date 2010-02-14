@@ -486,7 +486,7 @@ DEF_RTL_EXPR(UMAX, "umax", "ee", RTX_COMM_ARITH)
    because they can be understood from the machine-mode of the
    containing MEM.  These operations exist in only two cases:
    1. pushes onto the stack.
-   2. created automatically by the life_analysis pass in flow.c.  */
+   2. created automatically by the auto-inc-dec pass.  */
 DEF_RTL_EXPR(PRE_DEC, "pre_dec", "e", RTX_AUTOINC)
 DEF_RTL_EXPR(PRE_INC, "pre_inc", "e", RTX_AUTOINC)
 DEF_RTL_EXPR(POST_DEC, "post_dec", "e", RTX_AUTOINC)
