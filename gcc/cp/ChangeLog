@@ -1,3 +1,9 @@
+2010-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41997
+	* semantics.c (finish_compound_literal): Use
+	cp_apply_type_quals_to_decl when creating a static variable.
+
 2010-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43024

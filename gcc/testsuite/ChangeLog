@@ -1,3 +1,8 @@
+2010-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41997
+	* g++.dg/cpp0x/initlist-opt.C: New.
+
 2010-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41113
