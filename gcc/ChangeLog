@@ -1,3 +1,12 @@
+2010-02-14  Marco Poletti  <poletti.marco@gmail.com>
+
+	* intl.c (fake_ngettext): New function.
+	* intl.h (fake_ngettext): Declare.
+	(ngettext): Define macro.
+	* collect2.c (notice_translated): New function.
+	(main): Use notice_translated and ngettext.
+	* collect2.h (notice_translated): Declare.
+
 2010-02-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* reorg.c (delete_computation): Comment fixes.
