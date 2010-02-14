@@ -549,7 +549,7 @@ setup_save_areas (void)
 	  CLEAR_HARD_REG_SET (this_insn_sets);
 	  note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
 	  /* Sibcalls are considered to set the return value,
-	     compare flow.c:propagate_one_insn.  */
+	     compare df-scan.c:df_get_call_refs.  */
 	  if (SIBLING_CALL_P (insn) && crtl->return_rtx)
 	    mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
 
