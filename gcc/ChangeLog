@@ -1,3 +1,8 @@
+2010-02-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_sched_init): New function.
+	(TARGET_SCHED_INIT): Target hook defined.
+
 2010-02-12  Dave Korn  <dave.korn.cygwin@gmail.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>

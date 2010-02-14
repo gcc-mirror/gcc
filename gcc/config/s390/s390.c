@@ -10160,6 +10160,14 @@ s390_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
     return more;
 }
 
+static void
+s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
+		 int verbose ATTRIBUTE_UNUSED,
+		 int max_ready ATTRIBUTE_UNUSED)
+{
+  last_scheduled_insn = NULL_RTX;
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -10220,6 +10228,8 @@ s390_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
 #define TARGET_SCHED_VARIABLE_ISSUE s390_sched_variable_issue
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER s390_sched_reorder
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT s390_sched_init
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
