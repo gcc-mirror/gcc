@@ -831,7 +831,7 @@ gfc_trans_block_construct (gfc_code* code)
 
 static tree
 gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
-		     tree from, tree to, tree step)
+		     tree from, tree to, tree step, tree exit_cond)
 {
   stmtblock_t body;
   tree type;
@@ -864,7 +864,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   gfc_start_block (&body);
 
   /* Main loop body.  */
-  tmp = gfc_trans_code (code->block->next);
+  tmp = gfc_trans_code_cond (code->block->next, exit_cond);
   gfc_add_expr_to_block (&body, tmp);
 
   /* Label for cycle statements (if needed).  */
@@ -880,6 +880,15 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
       tmp = fold_build2 (NE_EXPR, boolean_type_node, dovar, saved_dovar);
       gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
 			       "Loop variable has been modified");
+    }
+
+  /* Exit the loop if there is an I/O result condition or error.  */
+  if (exit_cond)
+    {
+      tmp = build1_v (GOTO_EXPR, exit_label);
+      tmp = fold_build3 (COND_EXPR, void_type_node, exit_cond, tmp,
+			 build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&body, tmp);
     }
 
   /* Evaluate the loop condition.  */
@@ -955,7 +964,7 @@ exit_label:
    because the loop count itself can overflow.  */
 
 tree
-gfc_trans_do (gfc_code * code)
+gfc_trans_do (gfc_code * code, tree exit_cond)
 {
   gfc_se se;
   tree dovar;
@@ -1010,7 +1019,7 @@ gfc_trans_do (gfc_code * code)
   if (TREE_CODE (type) == INTEGER_TYPE
       && (integer_onep (step)
 	|| tree_int_cst_equal (step, integer_minus_one_node)))
-    return gfc_trans_simple_do (code, &block, dovar, from, to, step);
+    return gfc_trans_simple_do (code, &block, dovar, from, to, step, exit_cond);
 
   pos_step = fold_build2 (GT_EXPR, boolean_type_node, step,
 			  fold_convert (type, integer_zero_node));
@@ -1125,7 +1134,7 @@ gfc_trans_do (gfc_code * code)
   code->block->backend_decl = tree_cons (cycle_label, exit_label, NULL);
 
   /* Main loop body.  */
-  tmp = gfc_trans_code (code->block->next);
+  tmp = gfc_trans_code_cond (code->block->next, exit_cond);
   gfc_add_expr_to_block (&body, tmp);
 
   /* Label for cycle statements (if needed).  */
@@ -1141,6 +1150,15 @@ gfc_trans_do (gfc_code * code)
       tmp = fold_build2 (NE_EXPR, boolean_type_node, dovar, saved_dovar);
       gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
 			       "Loop variable has been modified");
+    }
+
+  /* Exit the loop if there is an I/O result condition or error.  */
+  if (exit_cond)
+    {
+      tmp = build1_v (GOTO_EXPR, exit_label);
+      tmp = fold_build3 (COND_EXPR, void_type_node, exit_cond, tmp,
+			 build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&body, tmp);
     }
 
   /* Increment the loop variable.  */

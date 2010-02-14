@@ -1811,7 +1811,23 @@ build_dt (tree function, gfc_code * code)
   dt_parm = var;
   dt_post_end_block = &post_end_block;
 
-  gfc_add_expr_to_block (&block, gfc_trans_code (code->block->next));
+  /* Set implied do loop exit condition.  */
+  if (last_dt == READ || last_dt == WRITE)
+    {
+      gfc_st_parameter_field *p = &st_parameter_field[IOPARM_common_flags];
+
+      tmp = fold_build3 (COMPONENT_REF, st_parameter[IOPARM_ptype_common].type,
+			 dt_parm, TYPE_FIELDS (TREE_TYPE (dt_parm)), NULL_TREE);
+      tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (p->field),
+			  tmp, p->field, NULL_TREE);
+      tmp = fold_build2 (BIT_AND_EXPR, TREE_TYPE (tmp),
+			  tmp, build_int_cst (TREE_TYPE (tmp),
+			  IOPARM_common_libreturn_mask));
+    }
+  else /* IOLENGTH */
+    tmp = NULL_TREE;
+
+  gfc_add_expr_to_block (&block, gfc_trans_code_cond (code->block->next, tmp));
 
   gfc_add_block_to_block (&block, &post_iu_block);
 

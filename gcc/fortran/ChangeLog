@@ -1,3 +1,20 @@
+2010-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32382
+	* trans-stmt.h: Add prototype for gfc_trans_code_cond. Add tree cond to
+	gfc_trans_do prototype.
+	* trans-stmt.c (gfc_trans_simple_do): Add optional argument to pass in
+	a loop exit condition.  If exit condition is given, build the loop exit
+	code, checking IO results of implied do loops in READ and WRITE.
+	(gfc_trans_do): Likewise.
+	* trans.c (trans_code): New static work function, previously
+	gfc_trans_code. Passes exit condition to gfc_trans_do.
+	(gfc_trans_code): Calls trans_code with NULL_TREE condition.
+	(gfc_trans_code_cond): Calls trans_code with loop exit condition.
+	* trans-io.c (build_dt): Build an exit condition to allow checking IO
+	result status bits in the dtparm structure. Use this condition in call
+	to gfc_trans_code_cond.
+
 2010-02-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/41113
