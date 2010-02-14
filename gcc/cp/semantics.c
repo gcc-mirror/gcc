@@ -2257,6 +2257,7 @@ finish_compound_literal (tree type, tree compound_literal)
       tree decl = create_temporary_var (type);
       DECL_INITIAL (decl) = compound_literal;
       TREE_STATIC (decl) = 1;
+      cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
       decl = pushdecl_top_level (decl);
       DECL_NAME (decl) = make_anon_name ();
       SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
