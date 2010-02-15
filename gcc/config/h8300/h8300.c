@@ -98,7 +98,7 @@ static void h8300_asm_named_section (const char *, unsigned int, tree);
 #endif
 static int h8300_and_costs (rtx);
 static int h8300_shift_costs (rtx);
-static void          h8300_push_pop               (int, int, int, int);
+static void          h8300_push_pop               (int, int, bool, bool);
 static int           h8300_stack_offset_p         (rtx, int);
 static int           h8300_ldm_stm_regno          (rtx, int, int, int);
 static void          h8300_reorg                  (void);
@@ -623,7 +623,7 @@ push (int rn)
     x = gen_push_h8300hs_advanced (reg);
   else
     x = gen_push_h8300hs_normal (reg);
-  x = F (emit_insn (x), 1);
+  x = F (emit_insn (x), true);
   REG_NOTES (x) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, 0);
 }
 
@@ -662,7 +662,7 @@ pop (int rn)
 	(set sp (plus sp (const_int adjust)))]  */
 
 static void
-h8300_push_pop (int regno, int nregs, int pop_p, int return_p)
+h8300_push_pop (int regno, int nregs, bool pop_p, bool return_p)
 {
   int i, j;
   rtvec vec;
@@ -680,7 +680,7 @@ h8300_push_pop (int regno, int nregs, int pop_p, int return_p)
 
   /* We need one element for the return insn, if present, one for each
      register, and one for stack adjustment.  */
-  vec = rtvec_alloc ((return_p != 0) + nregs + 1);
+  vec = rtvec_alloc ((return_p ? 1 : 0) + nregs + 1);
   sp = stack_pointer_rtx;
   i = 0;
 
@@ -720,7 +720,11 @@ h8300_push_pop (int regno, int nregs, int pop_p, int return_p)
   x = gen_rtx_PARALLEL (VOIDmode, vec);
   if (!pop_p)
     x = Fpa (x);
-  emit_insn (x);
+
+  if (return_p)
+    emit_jump_insn (x);
+  else
+    emit_insn (x);
 }
 
 /* Return true if X has the value sp + OFFSET.  */
@@ -855,7 +859,7 @@ h8300_expand_prologue (void)
     {
       /* Push fp.  */
       push (HARD_FRAME_POINTER_REGNUM);
-      F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx), 1);
+      F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx), true);
     }
 
   /* Push the rest of the registers in ascending order.  */
@@ -881,7 +885,7 @@ h8300_expand_prologue (void)
 		n_regs = 2;
 	    }
 
-	  h8300_push_pop (regno, n_regs, 0, 0);
+	  h8300_push_pop (regno, n_regs, false, false);
 	}
     }
 
@@ -954,7 +958,7 @@ h8300_expand_epilogue (void)
 	      && (saved_regs & ((1 << (regno - n_regs + 1)) - 1)) == 0)
 	    returned_p = true;
 
-	  h8300_push_pop (regno - n_regs + 1, n_regs, 1, returned_p);
+	  h8300_push_pop (regno - n_regs + 1, n_regs, true, returned_p);
 	}
     }
 
@@ -963,7 +967,7 @@ h8300_expand_epilogue (void)
     {
       if (TARGET_H8300SX)
 	returned_p = true;
-      h8300_push_pop (HARD_FRAME_POINTER_REGNUM, 1, 1, returned_p);
+      h8300_push_pop (HARD_FRAME_POINTER_REGNUM, 1, true, returned_p);
     }
 
   if (!returned_p)

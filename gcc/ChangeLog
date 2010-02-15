@@ -1,3 +1,14 @@
+2010-02-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/h8300/h8300.c: (h8300_push_pop): Use bool type for
+	boolean parameters.  Use emit_jump_insn when emitting a pop
+	instruction containing a return insn.
+        (push): Use 'true' rather than '1' as second parameter to F.
+        (h8300_expand_prologue): Likewise.
+        Use 'true' and 'false' for boolean parameters to
+	h8300_push_pop.
+        (h8300_expand_epilogue): Likewise.
+
 2010-02-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43068
