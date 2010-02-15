@@ -1177,9 +1177,8 @@ machopic_select_section (tree decl,
 {
   bool weak = (DECL_P (decl)
 	       && DECL_WEAK (decl)
-	       && (lookup_attribute ("weak", DECL_ATTRIBUTES (decl))
-		   || ! lookup_attribute ("weak_import",
-					  DECL_ATTRIBUTES (decl))));
+	       && !lookup_attribute ("weak_import",
+	       DECL_ATTRIBUTES (decl)));
   section *base_section;
 
   switch (categorize_decl_for_section (decl, reloc))
