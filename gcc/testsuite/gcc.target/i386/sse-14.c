@@ -162,6 +162,10 @@ test_1 ( _mm_roti_epi8, __m128i, __m128i, 1)
 test_1 ( _mm_roti_epi16, __m128i, __m128i, 1)
 test_1 ( _mm_roti_epi32, __m128i, __m128i, 1)
 test_1 ( _mm_roti_epi64, __m128i, __m128i, 1)
+test_3 (_mm_permute2_pd, __m128d, __m128d, __m128d, __m128d, 1)
+test_3 (_mm256_permute2_pd, __m256d, __m256d, __m256d, __m256d, 1)
+test_3 (_mm_permute2_ps, __m128, __m128, __m128, __m128, 1)
+test_3 (_mm256_permute2_ps, __m256, __m256, __m256, __m256, 1)
 
 /* lwpintrin.h */
 test_2 ( __lwpval32, void, unsigned int, unsigned int, 1)
