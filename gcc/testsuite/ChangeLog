@@ -1,3 +1,12 @@
+2010-02-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.target/i386/sse-14.c: Add tests for _mm_permute2_pd,
+	_mm256_permute2_pd, _mm_permute2_ps, and _mm256_permute2_ps.
+	* gcc.target/i386/xop-vpermil2pd-1.c: New.
+	* gcc.target/i386/xop-vpermil2pd-256-1.c: New.
+	* gcc.target/i386/xop-vpermil2ps-1.c: New.
+	* gcc.target/i386/xop-vpermil2ps-256-1.c: New.
+
 2010-02-15  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/43068

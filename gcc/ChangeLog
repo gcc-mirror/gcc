@@ -1,3 +1,35 @@
+2010-02-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* config/i386/i386-builtin-types.def
+	(V2DF_FTYPE_V2DF_V2DF_V2DI_INT): Declared.
+	(V4DF_FTYPE_V4DF_V4DF_V4DI_INT): Declared.
+	(V4SF_FTYPE_V4SF_V4SF_V4SI_INT): Declared.
+	(V8SF_FTYPE_V8SF_V8SF_V8SI_INT): Declared.
+	* config/i386/i386.c (enum ix86_builtins): Add IX86_BUILTIN_VPERMIL2PD,
+	IX86_BUILTIN_VPERMIL2PS, IX86_BUILTIN_VPERMIL2PD256, and
+	IX86_BUILTIN_VPERMIL2PS256.
+	(MULTI_ARG_4_DF2_DI_I): Defined.
+	(MULTI_ARG_4_DF2_DI_I1): Defined.
+	(MULTI_ARG_4_SF2_SI_I): Defined.
+	(MULTI_ARG_4_SF2_SI_I1): Defined.
+	(bdesc_multi_arg): Add __builtin_ia32_vpermil2pd,
+	__builtin_ia32_vpermil2ps, __builtin_ia32_vpermil2pd256, and
+	__builtin_ia32_vpermil2ps256.
+	(ix86_expand_multi_arg_builtin): Handle MULTI_ARG_4_DF2_DI_I,
+	MULTI_ARG_4_DF2_DI_I1, MULTI_ARG_4_SF2_SI_I, and
+	MULTI_ARG_4_SF2_SI_I1.  Handle builtins with 4 arguments.
+	(ix86_expand_args_builtin): Handle MULTI_ARG_4_DF2_DI_I,
+	MULTI_ARG_4_DF2_DI_I1, MULTI_ARG_4_SF2_SI_I, and
+	MULTI_ARG_4_SF2_SI_I1.  Handle CODE_FOR_xop_vpermil2v2df3,
+	CODE_FOR_xop_vpermil2v4sf3, CODE_FOR_xop_vpermil2v4df3, and
+	CODE_FOR_xop_vpermil2v8sf3.
+	* config/i386/i386.md (UNSPEC_VPERMIL2): Declared.
+	* config/i386/sse.md (xop_vpermil2<mode>3): New insn pattern.
+	* config/i386/xopintrin.h (_mm_permute2_pd): New.
+	(_mm256_permute2_pd): New.
+	(_mm_permute2_ps): New.
+	(_mm256_permute2_ps): New.
+
 2010-02-15  Nick Clifton  <nickc@redhat.com>
 
 	* config/h8300/h8300.c: (h8300_push_pop): Use bool type for

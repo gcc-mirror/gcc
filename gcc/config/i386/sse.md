@@ -11539,6 +11539,20 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
+(define_insn "xop_vpermil2<mode>3"
+  [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
+	(unspec:AVXMODEF2P
+	  [(match_operand:AVXMODEF2P 1 "register_operand" "x")
+	   (match_operand:AVXMODEF2P 2 "nonimmediate_operand" "%x")
+	   (match_operand:<avxpermvecmode> 3 "nonimmediate_operand" "xm")
+	   (match_operand:SI 4 "const_0_to_3_operand" "n")]
+	  UNSPEC_VPERMIL2))]
+  "TARGET_XOP"
+  "vpermil2p<xopmodesuffixf2c>\t{%4, %3, %2, %1, %0|%0, %1, %2, %3, %4}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "<MODE>")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define_insn "*avx_aesenc"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
