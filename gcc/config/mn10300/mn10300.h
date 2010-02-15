@@ -514,7 +514,7 @@ enum reg_class {
 /* 1 if N is a possible register number for function argument passing.
    On the MN10300, d0 and d1 are used in this way.  */
 
-#define FUNCTION_ARG_REGNO_P(N) ((N) <= 2)
+#define FUNCTION_ARG_REGNO_P(N) ((N) <= 1)
 
 
 /* Define a data type for recording info about an argument list
