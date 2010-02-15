@@ -502,8 +502,7 @@ extern GTY(()) int darwin_ms_struct;
       targetm.asm_out.globalize_label (FILE, NAME);			\
     if (DECL_EXTERNAL (DECL))						\
       fputs ("\t.weak_reference ", FILE);				\
-    else if (! lookup_attribute ("weak", DECL_ATTRIBUTES (DECL))	\
-	&& lookup_attribute ("weak_import", DECL_ATTRIBUTES (DECL)))	\
+    else if (lookup_attribute ("weak_import", DECL_ATTRIBUTES (DECL)))	\
       break;								\
     else if (TREE_PUBLIC (DECL))					\
       fputs ("\t.weak_definition ", FILE);				\

@@ -1,3 +1,11 @@
+2010-02-16  Jack Howarth <howarth@bromo.med.uc.edu>
+            Jakub Jelinek <jakub@redhat.com>
+
+	PR target/42854
+	* config/darwin.h (ASM_WEAKEN_DECL): Don't check weak attribute
+	if weak_import attribute is present.
+	* config/darwin.c (machopic_select_section): Likewise.
+
 2010-02-15  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Document.
