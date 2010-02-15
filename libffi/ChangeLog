@@ -1,3 +1,8 @@
+2010-02-15  Matthias Klose  <doko@ubuntu.com>
+
+	* src/arm/sysv.S (__ARM_ARCH__): Define for processor
+	__ARM_ARCH_7EM__.
+
 2010-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libffi/40701
