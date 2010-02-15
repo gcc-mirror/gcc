@@ -1230,7 +1230,8 @@ thunk_adjust (gimple_stmt_iterator * bsi,
   gimple stmt;
   tree ret;
 
-  if (this_adjusting)
+  if (this_adjusting
+      && fixed_offset != 0)
     {
       stmt = gimple_build_assign (ptr,
 				  fold_build2_loc (input_location,
@@ -1315,7 +1316,8 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 			     offsettmp);
     }
 
-  if (!this_adjusting)
+  if (!this_adjusting
+      && fixed_offset != 0)
     /* Adjust the pointer by the constant.  */
     {
       tree ptrtmp;
