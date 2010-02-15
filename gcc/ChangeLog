@@ -1,3 +1,9 @@
+2010-02-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43068
+	* cgraphunit.c (thunk_adjust): Skip adjusting by fixed_offset
+	if that is zero.
+
 2010-02-15  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.h (FUNCTION_ARG_REGNO_P): Revert previous
