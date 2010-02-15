@@ -1,3 +1,7 @@
+2010-02-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/cpp0x/initlist-opt.C: Bind pic locally.
+
 2010-02-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.target/i386/sse-14.c: Add tests for _mm_permute2_pd,
