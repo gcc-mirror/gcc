@@ -1,5 +1,6 @@
 // PR c++/41997
 // { dg-options "-std=c++0x -O2 -fdump-tree-optimized" }
+// { dg-add-options bind_pic_locally }
 // { dg-final { scan-tree-dump-not "_0" "optimized" } }
 // { dg-final { cleanup-tree-dump "optimized" } }
 
