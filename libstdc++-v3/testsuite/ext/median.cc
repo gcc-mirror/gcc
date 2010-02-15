@@ -1,4 +1,4 @@
-// Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 
 // median - SGI extension
 
-#include <algorithm>
+#include <ext/algorithm>
 #include <testsuite_hooks.h>
 
 bool pred(const int& l, const int& r)
@@ -25,9 +25,9 @@ bool pred(const int& l, const int& r)
   return l<r;
 }
 
-using std::__median;
+using __gnu_cxx::__median;
 
-int main(void)
+int main()
 {
   const int i=1;
   const int j=2;
