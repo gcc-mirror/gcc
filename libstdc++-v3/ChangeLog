@@ -1,3 +1,8 @@
+2010-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (__median): Move...
+	* include/ext/algorithm: ... here, being an SGI extension.
+
 2010-02-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
