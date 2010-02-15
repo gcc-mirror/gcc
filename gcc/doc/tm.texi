@@ -5684,14 +5684,32 @@ preserved (e.g.@: used only by a reduction computation). Otherwise, the
 @code{widen_mult_hi/lo} idioms will be used.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (enum tree_code @var{code}, tree @var{type})
+@deftypefn {Target Hook} int TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST (bool @var{runtime_test})
+Returns the cost to be added to the overhead involved with executing 
+the vectorized version of a loop.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE (const_tree @var{type}, bool @var{is_packed})
+Return true if vector alignment is reachable (by peeling N iterations) for the given type.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VEC_PERM (tree @var{type}, tree *@var{mask_element_type})
+Target builtin that implements vector permute.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK (tree @var{vec_type}, tree @var{mask})
+Return true if a vector created for @code{builtin_vec_perm} is valid.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{type})
 This hook should return the DECL of a function that implements conversion of the
 input vector of type @var{type}.
 If @var{type} is an integral type, the result of the conversion is a vector of
 floating-point type of the same size.
 If @var{type} is a floating-point type, the result of the conversion is a vector
 of integral type of the same size.
-@var{code} specifies how the conversion is to be applied
+The value of @var{code} is one of the enumerators in @code{enum tree_code} and
+specifies how the conversion is to be applied
 (truncation, rounding, etc.).
 
 If this hook is defined, the autovectorizer will use the
@@ -5699,10 +5717,11 @@ If this hook is defined, the autovectorizer will use the
 conversion. Otherwise, it will return @code{NULL_TREE}.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (enum built_in_function @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
+@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
 This hook should return the decl of a function that implements the vectorized
 variant of the builtin function with builtin function code @var{code} or
-@code{NULL_TREE} if such a function is not available.  The return type of
+@code{NULL_TREE} if such a function is not available.  The value of @var{code}
+is one of the enumerators in @code{enum built_in_function}.  The return type of
 the vectorized function shall be of vector type @var{vec_type_out} and the
 argument types should be @var{vec_type_in}.
 @end deftypefn
@@ -6557,18 +6576,18 @@ be issued.
 The default is that any ready insns can be chosen to be issued.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *, int, rtx, int, int, int *)
+@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx @var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
 
-This hook is called by the insn scheduler before issuing insn passed
-as the third parameter on given cycle.  If the hook returns nonzero,
-the insn is not issued on given processors cycle.  Instead of that,
-the processor cycle is advanced.  If the value passed through the last
-parameter is zero, the insn ready queue is not sorted on the new cycle
-start as usually.  The first parameter passes file for debugging
-output.  The second one passes the scheduler verbose level of the
-debugging output.  The forth and the fifth parameter values are
-correspondingly processor cycle on which the previous insn has been
-issued and the current processor cycle.
+This hook is called by the insn scheduler before issuing @var{insn}
+on cycle @var{clock}.  If the hook returns nonzero,
+@var{insn} is not issued on this processor cycle.  Instead,
+the processor cycle is advanced.  If *@var{sort_p}
+is zero, the insn ready queue is not sorted on the new cycle
+start as usually.  @var{dump} and @var{verbose} specify the file and
+verbosity level to use for debugging output.
+@var{last_clock} and @var{clock} are, respectively, the
+processor cycle on which the previous insn has been issued,
+and the current processor cycle.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (struct _dep *@var{_dep}, int @var{cost}, int @var{distance})

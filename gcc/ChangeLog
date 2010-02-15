@@ -1,3 +1,18 @@
+2010-02-15  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Document.
+	(TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE): Likewise.
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM): Likewise.
+	(TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK): Likewise.
+
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_CONVERSION): Fix argument types.
+
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION):
+	Fix argument types.
+
+	* doc/tm.texi (TARGET_SCHED_DFA_NEW_CYCLE): Add argument names.
+	Rewrite text to refer to the names.
+
 2010-02-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* config/i386/i386-builtin-types.def
