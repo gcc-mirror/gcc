@@ -1,3 +1,8 @@
+2010-02-14  Volker Reichelt  <reichelt@gcc.gnu.org>
+
+	PR c++/43024
+	* g++.dg/opt/ice1.C: New.
+
 2010-02-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41997
