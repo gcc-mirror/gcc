@@ -520,6 +520,74 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       return true;
     }
 
+  /**
+   *  @brief Find the median of three values.
+   *  @param  a  A value.
+   *  @param  b  A value.
+   *  @param  c  A value.
+   *  @return One of @p a, @p b or @p c.
+   *
+   *  If @c {l,m,n} is some convolution of @p {a,b,c} such that @c l<=m<=n
+   *  then the value returned will be @c m.
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+  */
+  template<typename _Tp>
+    const _Tp&
+    __median(const _Tp& __a, const _Tp& __b, const _Tp& __c)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
+      if (__a < __b)
+	if (__b < __c)
+	  return __b;
+	else if (__a < __c)
+	  return __c;
+	else
+	  return __a;
+      else if (__a < __c)
+	return __a;
+      else if (__b < __c)
+	return __c;
+      else
+	return __b;
+    }
+
+  /**
+   *  @brief Find the median of three values using a predicate for comparison.
+   *  @param  a     A value.
+   *  @param  b     A value.
+   *  @param  c     A value.
+   *  @param  comp  A binary predicate.
+   *  @return One of @p a, @p b or @p c.
+   *
+   *  If @c {l,m,n} is some convolution of @p {a,b,c} such that @p comp(l,m)
+   *  and @p comp(m,n) are both true then the value returned will be @c m.
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+  */
+  template<typename _Tp, typename _Compare>
+    const _Tp&
+    __median(const _Tp& __a, const _Tp& __b, const _Tp& __c, _Compare __comp)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_BinaryFunctionConcept<_Compare, bool,
+				                         _Tp, _Tp>)
+      if (__comp(__a, __b))
+	if (__comp(__b, __c))
+	  return __b;
+	else if (__comp(__a, __c))
+	  return __c;
+	else
+	  return __a;
+      else if (__comp(__a, __c))
+	return __a;
+      else if (__comp(__b, __c))
+	return __c;
+      else
+	return __b;
+    }
+
 _GLIBCXX_END_NAMESPACE
 
 #endif /* _EXT_ALGORITHM */
