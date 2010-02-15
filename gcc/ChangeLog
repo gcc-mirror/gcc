@@ -1,3 +1,8 @@
+2010-02-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.h (FUNCTION_ARG_REGNO_P): Revert previous
+	delta.
+
 2010-02-14  Marco Poletti  <poletti.marco@gmail.com>
 
 	* intl.c (fake_ngettext): New function.
