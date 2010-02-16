@@ -1,3 +1,11 @@
+2010-02-16  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (memrefs_conflict_p): Distinguish must-alias from
+	don't know.
+	(true_dependence): If memrefs_conflict_p computes must-alias
+	trust it.  Move TBAA check after offset-based disambiguation.
+	(canon_true_dependence): Likewise.
+
 2010-02-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* params.def (PARAM_MAX_VARTRACK_SIZE): New.
