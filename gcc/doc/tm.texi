@@ -6667,13 +6667,15 @@ a pattern for a branchy check corresponding to a simple check denoted by
 @var{insn} should be generated.  In this case @var{label} can't be null.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC (rtx @var{insn})
+@deftypefn {Target Hook} bool TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC (const_rtx @var{insn})
 This hook is used as a workaround for
 @samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD} not being
 called on the first instruction of the ready list.  The hook is used to
-discard speculative instruction that stand first in the ready list from
-being scheduled on the current cycle.  For non-speculative instructions,
-the hook should always return nonzero.  For example, in the ia64 backend
+discard speculative instructions that stand first in the ready list from
+being scheduled on the current cycle.  If the hook returns @code{false},
+@var{insn} will not be chosen to be issued.
+For non-speculative instructions,
+the hook should always return @code{true}.  For example, in the ia64 backend
 the hook is used to cancel data speculative insns when the ALAT table
 is nearly full.
 @end deftypefn
