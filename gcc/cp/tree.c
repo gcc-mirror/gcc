@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
-static tree build_cplus_array_type_1 (tree, tree);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
@@ -601,14 +600,14 @@ cplus_array_compare (const void * k1, const void * k2)
   return (TREE_TYPE (t1) == t2->type && TYPE_DOMAIN (t1) == t2->domain);
 }
 
-/* Hash table containing all of the C++ array types, including
-   dependent array types and array types whose element type is
-   cv-qualified.  */
+/* Hash table containing dependent array types, which are unsuitable for
+   the language-independent type hash table.  */
 static GTY ((param_is (union tree_node))) htab_t cplus_array_htab;
 
+/* Like build_array_type, but handle special C++ semantics.  */
 
-static tree
-build_cplus_array_type_1 (tree elt_type, tree index_type)
+tree
+build_cplus_array_type (tree elt_type, tree index_type)
 {
   tree t;
 
@@ -665,29 +664,26 @@ build_cplus_array_type_1 (tree elt_type, tree index_type)
   else
     t = build_array_type (elt_type, index_type);
 
+  /* We want TYPE_MAIN_VARIANT of an array to strip cv-quals from the
+     element type as well, so fix it up if needed.  */
+  if (elt_type != TYPE_MAIN_VARIANT (elt_type))
+    {
+      tree m = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type),
+				       index_type);
+      if (TYPE_MAIN_VARIANT (t) != m)
+	{
+	  TYPE_MAIN_VARIANT (t) = m;
+	  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
+	  TYPE_NEXT_VARIANT (m) = t;
+	}
+    }
+
   /* Push these needs up so that initialization takes place
      more easily.  */
   TYPE_NEEDS_CONSTRUCTING (t)
     = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
   TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
     = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
-  return t;
-}
-
-tree
-build_cplus_array_type (tree elt_type, tree index_type)
-{
-  tree t;
-  int type_quals = cp_type_quals (elt_type);
-
-  if (type_quals != TYPE_UNQUALIFIED)
-    elt_type = cp_build_qualified_type (elt_type, TYPE_UNQUALIFIED);
-
-  t = build_cplus_array_type_1 (elt_type, index_type);
-
-  if (type_quals != TYPE_UNQUALIFIED)
-    t = cp_build_qualified_type (t, type_quals);
-
   return t;
 }
 
@@ -811,41 +807,27 @@ cp_build_qualified_type_real (tree type,
       if (element_type == error_mark_node)
 	return error_mark_node;
 
-      /* See if we already have an identically qualified type.  */
+      /* See if we already have an identically qualified type.  Tests
+	 should be equivalent to those in check_qualified_type.  */
       for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
 	if (cp_type_quals (t) == type_quals
 	    && TYPE_NAME (t) == TYPE_NAME (type)
-	    && TYPE_CONTEXT (t) == TYPE_CONTEXT (type))
+	    && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
+	    && attribute_list_equal (TYPE_ATTRIBUTES (t),
+				     TYPE_ATTRIBUTES (type)))
 	  break;
 
       if (!t)
-      {
-	t = build_cplus_array_type_1 (element_type, TYPE_DOMAIN (type));
+	{
+	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type));
 
-	if (TYPE_MAIN_VARIANT (t) != TYPE_MAIN_VARIANT (type))
-	  {
-	    /* Set the main variant of the newly-created ARRAY_TYPE
-	       (with cv-qualified element type) to the main variant of
-	       the unqualified ARRAY_TYPE we started with.  */
-	    tree last_variant = t;
-	    tree m = TYPE_MAIN_VARIANT (type);
-
-	    /* Find the last variant on the new ARRAY_TYPEs list of
-	       variants, setting the main variant of each of the other
-	       types to the main variant of our unqualified
-	       ARRAY_TYPE.  */
-	    while (TYPE_NEXT_VARIANT (last_variant))
-	      {
-		TYPE_MAIN_VARIANT (last_variant) = m;
-		last_variant = TYPE_NEXT_VARIANT (last_variant);
-	      }
-
-	    /* Splice in the newly-created variants.  */
-	    TYPE_NEXT_VARIANT (last_variant) = TYPE_NEXT_VARIANT (m);
-	    TYPE_NEXT_VARIANT (m) = t;
-	    TYPE_MAIN_VARIANT (last_variant) = m;
-	  }
-      }
+	  /* Keep the typedef name.  */
+	  if (TYPE_NAME (t) != TYPE_NAME (type))
+	    {
+	      t = build_variant_type_copy (t);
+	      TYPE_NAME (t) = TYPE_NAME (type);
+	    }
+	}
 
       /* Even if we already had this variant, we update
 	 TYPE_NEEDS_CONSTRUCTING and TYPE_HAS_NONTRIVIAL_DESTRUCTOR in case

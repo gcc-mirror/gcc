@@ -1,3 +1,10 @@
+2010-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43036
+	* tree.c (build_cplus_array_type): Set TYPE_MAIN_VARIANT to strip
+	cv-quals from element here.
+	(cp_build_qualified_type_real): Not here.  Preserve typedef name.
+
 2010-02-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41997

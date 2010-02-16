@@ -1,3 +1,8 @@
+2010-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43036
+	* g++.dg/other/array6.C: New.
+
 2010-02-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/cpp0x/initlist-opt.C: Bind pic locally.
