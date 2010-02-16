@@ -109,6 +109,8 @@
 #include "tree-flow.h"
 #include "cselib.h"
 #include "target.h"
+#include "toplev.h"
+#include "params.h"
 
 /* var-tracking.c assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
@@ -448,7 +450,7 @@ static int add_uses (rtx *, void *);
 static void add_uses_1 (rtx *, void *);
 static void add_stores (rtx, const_rtx, void *);
 static bool compute_bb_dataflow (basic_block);
-static void vt_find_locations (void);
+static bool vt_find_locations (void);
 
 static void dump_attrs_list (attrs);
 static int dump_var_slot (void **, void *);
@@ -5510,7 +5512,7 @@ compute_bb_dataflow (basic_block bb)
 
 /* Find the locations of variables in the whole function.  */
 
-static void
+static bool
 vt_find_locations (void)
 {
   fibheap_t worklist, pending, fibheap_swap;
@@ -5521,6 +5523,8 @@ vt_find_locations (void)
   int *rc_order;
   int i;
   int htabsz = 0;
+  int htabmax = PARAM_VALUE (PARAM_MAX_VARTRACK_SIZE);
+  bool success = true;
 
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
@@ -5542,7 +5546,7 @@ vt_find_locations (void)
     fibheap_insert (pending, bb_order[bb->index], bb);
   sbitmap_ones (in_pending);
 
-  while (!fibheap_empty (pending))
+  while (success && !fibheap_empty (pending))
     {
       fibheap_swap = pending;
       pending = worklist;
@@ -5565,11 +5569,11 @@ vt_find_locations (void)
 
 	      SET_BIT (visited, bb->index);
 
-	      if (dump_file && VTI (bb)->in.vars)
+	      if (VTI (bb)->in.vars)
 		{
 		  htabsz
-		    -= htab_size (shared_hash_htab (VTI (bb)->in.vars))
-		       + htab_size (shared_hash_htab (VTI (bb)->out.vars));
+		    -= (htab_size (shared_hash_htab (VTI (bb)->in.vars))
+			+ htab_size (shared_hash_htab (VTI (bb)->out.vars)));
 		  oldinsz
 		    = htab_elements (shared_hash_htab (VTI (bb)->in.vars));
 		  oldoutsz
@@ -5633,9 +5637,21 @@ vt_find_locations (void)
 		}
 
 	      changed = compute_bb_dataflow (bb);
-	      if (dump_file)
-		htabsz += htab_size (shared_hash_htab (VTI (bb)->in.vars))
-			  + htab_size (shared_hash_htab (VTI (bb)->out.vars));
+	      htabsz += (htab_size (shared_hash_htab (VTI (bb)->in.vars))
+			 + htab_size (shared_hash_htab (VTI (bb)->out.vars)));
+
+	      if (htabmax && htabsz > htabmax)
+		{
+		  if (MAY_HAVE_DEBUG_INSNS)
+		    inform (DECL_SOURCE_LOCATION (cfun->decl),
+			    "variable tracking size limit exceeded with "
+			    "-fvar-tracking-assignments, retrying without");
+		  else
+		    inform (DECL_SOURCE_LOCATION (cfun->decl),
+			    "variable tracking size limit exceeded");
+		  success = false;
+		  break;
+		}
 
 	      if (changed)
 		{
@@ -5686,7 +5702,7 @@ vt_find_locations (void)
 	}
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (success && MAY_HAVE_DEBUG_INSNS)
     FOR_EACH_BB (bb)
       gcc_assert (VTI (bb)->flooded);
 
@@ -5697,6 +5713,8 @@ vt_find_locations (void)
   sbitmap_free (visited);
   sbitmap_free (in_worklist);
   sbitmap_free (in_pending);
+
+  return success;
 }
 
 /* Print the content of the LIST to dump file.  */
@@ -7599,9 +7617,11 @@ vt_finalize (void)
 
 /* The entry point to variable tracking pass.  */
 
-unsigned int
-variable_tracking_main (void)
+static inline unsigned int
+variable_tracking_main_1 (void)
 {
+  bool success;
+
   if (flag_var_tracking_assignments < 0)
     {
       delete_debug_insns ();
@@ -7626,7 +7646,31 @@ variable_tracking_main (void)
 	}
     }
 
-  vt_find_locations ();
+  success = vt_find_locations ();
+
+  if (!success && flag_var_tracking_assignments > 0)
+    {
+      vt_finalize ();
+
+      delete_debug_insns ();
+
+      /* This is later restored by our caller.  */
+      flag_var_tracking_assignments = 0;
+
+      vt_initialize ();
+
+      if (!frame_pointer_needed && !vt_stack_adjustments ())
+	gcc_unreachable ();
+
+      success = vt_find_locations ();
+    }
+
+  if (!success)
+    {
+      vt_finalize ();
+      vt_debug_insns_local (false);
+      return 0;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -7639,6 +7683,19 @@ variable_tracking_main (void)
   vt_finalize ();
   vt_debug_insns_local (false);
   return 0;
+}
+
+unsigned int
+variable_tracking_main (void)
+{
+  unsigned int ret;
+  int save = flag_var_tracking_assignments;
+
+  ret = variable_tracking_main_1 ();
+
+  flag_var_tracking_assignments = save;
+
+  return ret;
 }
 
 static bool

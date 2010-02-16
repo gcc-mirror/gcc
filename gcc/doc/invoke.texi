@@ -8428,6 +8428,15 @@ with more basic blocks than this parameter won't have loop invariant
 motion optimization performed on them.  The default value of the
 parameter is 1000 for -O1 and 10000 for -O2 and above.
 
+@item max-vartrack-size
+Sets a maximum number of hash table slots to use during variable
+tracking dataflow analysis of any function.  If this limit is exceeded
+with variable tracking at assignments enabled, analysis for that
+function is retried without it, after removing all debug insns from
+the function.  If the limit is exceeded even without debug insns, var
+tracking analysis is completely disabled for the function.  Setting
+the parameter to zero makes it unlimited.
+
 @item min-nondebug-insn-uid
 Use uids starting at this parameter for nondebug insns.  The range below
 the parameter is reserved exclusively for debug insns created by

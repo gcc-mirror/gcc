@@ -1,3 +1,16 @@
+2010-02-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* params.def (PARAM_MAX_VARTRACK_SIZE): New.
+	* doc/invoke.texi: Document it.
+	* var-tracking.c: Include toplev.h and params.h.
+	(vt_find_locations): Return bool indicating success.  Compute
+	hash sizes unconditionally.  Check new parameter, report.
+	(variable_tracking_main_1): Check vt_find_locations results and
+	retry.  Renamed from...
+	(variable_tracking_main): ... this.  New wrapper to preserve
+	flag_var_tracking_assignments.
+	* Makefile.in (var-tracking.o): Adjust dependencies.
+
 2010-02-16  Jack Howarth <howarth@bromo.med.uc.edu>
             Jakub Jelinek <jakub@redhat.com>
 
