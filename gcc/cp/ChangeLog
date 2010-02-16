@@ -1,5 +1,10 @@
 2010-02-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43031
+	* cp-gimplify.c (cp_gimplify_expr) [MODIFY_EXPR]: Use
+	VIEW_CONVERT_EXPR for conversions between structural equality types
+	that the back end can't tell are the same.
+
 	PR c++/43036
 	* tree.c (build_cplus_array_type): Set TYPE_MAIN_VARIANT to strip
 	cv-quals from element here.
