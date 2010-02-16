@@ -764,6 +764,13 @@ DEFPARAM (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO,
 	  "Min. ratio of insns to mem ops to enable prefetching in a loop",
 	  3, 0, 0)
 
+/* Set maximum hash table size for var tracking.  */
+
+DEFPARAM (PARAM_MAX_VARTRACK_SIZE,
+	  "max-vartrack-size",
+	  "Max. size of var tracking hash tables",
+	  50000000, 0, 0)
+
 /* Set minimum insn uid for non-debug insns.  */
 
 DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,

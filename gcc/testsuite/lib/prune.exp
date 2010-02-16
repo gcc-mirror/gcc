@@ -37,6 +37,9 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*: Additional NOP may be necessary to workaround Itanium processor A/B step errata" $text "" text
     regsub -all "(^|\n)\[^\n*\]*: Assembler messages:\[^\n\]*" $text "" text
 
+    # Ignore harmless VTA note.
+    regsub -all "(^|\n)\[^\n\]*: note: variable tracking size limit exceeded with -fvar-tracking-assignments, retrying without\[^\n\]*" $text "" text
+
     # It would be nice to avoid passing anything to gcc that would cause it to
     # issue these messages (since ignoring them seems like a hack on our part),
     # but that's too difficult in the general case.  For example, sometimes

@@ -1,3 +1,8 @@
+2010-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/prune.exp: Prune variable tracking size limit exceeded
+	notes.
+
 2010-02-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43031
