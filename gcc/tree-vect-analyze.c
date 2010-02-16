@@ -3508,7 +3508,9 @@ vect_detect_hybrid_slp_stmts (slp_tree node)
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
 	if (vinfo_for_stmt (use_stmt)
 	    && !STMT_SLP_TYPE (vinfo_for_stmt (use_stmt))
-            && STMT_VINFO_RELEVANT (vinfo_for_stmt (use_stmt)))
+            && (STMT_VINFO_RELEVANT (vinfo_for_stmt (use_stmt))
+                || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (use_stmt)) 
+                    == vect_reduction_def))
 	  vect_mark_slp_stmts (node, hybrid, i);
 
   vect_detect_hybrid_slp_stmts (SLP_TREE_LEFT (node));

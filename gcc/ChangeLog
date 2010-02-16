@@ -1,3 +1,9 @@
+2010-02-16  Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/43074
+	* tree-vect-analyze.c (vect_detect_hybrid_slp_stmts): Add
+	vectorizable cycles in hybrid SLP check.
+
 2010-02-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_sched_init): New function.
