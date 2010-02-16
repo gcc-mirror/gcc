@@ -1,3 +1,21 @@
+2010-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/unique_ptr.h: (unique_ptr<>::
+	unique_ptr(const unique_ptr<_Up, _Up_Deleter>&),
+	operator=(const unique_ptr<_Up, _Up_Deleter>&)): Remove, redundant,
+	per DR 1303.
+	* include/bits/shared_ptr.h (shared_ptr<>::
+	shared_ptr(const unique_ptr<_Up, _Up_Deleter>&),
+	operator=(const unique_ptr<_Up, _Up_Deleter>&)): Likewise.
+	* include/bits/shared_ptr_base.h (__shared_ptr<>::
+	__shared_ptr(const unique_ptr<_Up, _Up_Deleter>&),
+	operator=(const unique_ptr<_Up, _Up_Deleter>&)): Likewise.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/unique_ptr_lvalue_neg.cc:
+	Likewise.
+
 2010-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/ext/median.cc: Adjust.
