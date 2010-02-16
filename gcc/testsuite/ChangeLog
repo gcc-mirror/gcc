@@ -1,3 +1,7 @@
+2010-02-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist-opt.C: Declare max_val inline.
+
 2010-02-16  Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/43074
