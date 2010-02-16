@@ -1,5 +1,7 @@
 2010-02-16  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_gimplify_expr): Fix error recovery.
+
 	PR c++/43031
 	* cp-gimplify.c (cp_gimplify_expr) [MODIFY_EXPR]: Use
 	VIEW_CONVERT_EXPR for conversions between structural equality types
