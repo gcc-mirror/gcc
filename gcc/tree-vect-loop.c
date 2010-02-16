@@ -1184,7 +1184,10 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	  if (!vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;
 
-          if (STMT_VINFO_RELEVANT_P (stmt_info) && !PURE_SLP_STMT (stmt_info))
+          if ((STMT_VINFO_RELEVANT_P (stmt_info)
+               || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
+              && !PURE_SLP_STMT (stmt_info))
+
             /* STMT needs both SLP and loop-based vectorization.  */
             only_slp_in_loop = false;
         }

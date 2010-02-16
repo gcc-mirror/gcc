@@ -1102,6 +1102,7 @@ vect_detect_hybrid_slp_stmts (slp_tree node)
   gimple stmt;
   imm_use_iterator imm_iter;
   gimple use_stmt;
+  stmt_vec_info stmt_vinfo; 
 
   if (!node)
     return;
@@ -1110,9 +1111,10 @@ vect_detect_hybrid_slp_stmts (slp_tree node)
     if (PURE_SLP_STMT (vinfo_for_stmt (stmt))
 	&& TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
       FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
-	if (vinfo_for_stmt (use_stmt)
-	    && !STMT_SLP_TYPE (vinfo_for_stmt (use_stmt))
-            && STMT_VINFO_RELEVANT (vinfo_for_stmt (use_stmt)))
+	if ((stmt_vinfo = vinfo_for_stmt (use_stmt))
+	    && !STMT_SLP_TYPE (stmt_vinfo)
+            && (STMT_VINFO_RELEVANT (stmt_vinfo)
+                || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_vinfo))))
 	  vect_mark_slp_stmts (node, hybrid, i);
 
   vect_detect_hybrid_slp_stmts (SLP_TREE_LEFT (node));

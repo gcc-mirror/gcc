@@ -1,3 +1,8 @@
+2010-02-16  Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/43074
+	* gcc.dg/vect/fast-math-pr43074.c: New test.
+
 2010-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/prune.exp: Prune variable tracking size limit exceeded
