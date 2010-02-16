@@ -1,3 +1,11 @@
+2010-02-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43040
+	* gfortran.h (gfc_isym_id): Rename GFS_ISYM_GAMMA to GFS_ISYM_TGAMMA.
+	* intrinsic.c (add_functions): Ditto.
+	* iresolve.c (gfc_resolve_gamma): Call tgamma instead of gamma.
+	* mathbuiltins.def: Use TGAMMA instead of GAMMA with "tgamma".
+
 2010-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/32382
