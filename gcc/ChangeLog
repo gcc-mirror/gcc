@@ -1,3 +1,8 @@
+2010-02-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* tm.texi (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC):
+	Fix return type.  Fix argument type.  Explain meaning of return value.
+
 2010-02-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41043
