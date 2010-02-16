@@ -1,9 +1,9 @@
 // { dg-options "-std=c++0x" }
 // { dg-require-cstdint "" }
 //
-// 2008-12-07  Edward M. Smith-Rowland <3dw4rd@verizon.net>
+// 2010-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,13 +25,10 @@
 void
 test01()
 {
-  std::seed_seq seq;
+  std::linear_congruential_engine<unsigned long, 48271, 0, 2147483647> e(1);
 
-  std::shuffle_order_engine
-    <
-      std::linear_congruential_engine<uint_fast32_t,16807UL, 0UL, 2147483647UL>,
-      256
-    > e(seq);
+  const auto f(e);
+  auto g(f);  
 }
 
 int main()

@@ -1,5 +1,92 @@
 2010-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.h (linear_congruential_engine(_Sseq&),
+	mersenne_twister_engine(_Sseq&), subtract_with_carry_engine(_Sseq&)):
+	Do not enable for the type itself.
+	(discard_block_engine(_Sseq&), independent_bits_engine(_Sseq&),
+	shuffle_order_engine(_Sseq&)): Do not enable for the type itself too.
+	(linear_congruential_engine<>::seed(_Sseq&),
+	mersenne_twister_engine<>::seed(_Sseq&),
+	subtract_with_carry_engine<>::seed(_Sseq&)): Use enable_if on the
+	return type.
+	(discard_block_engine<>::seed(_Sseq&),
+	independent_bits_engine<>::seed(_Sseq&),
+	shuffle_order_engine<>::seed(_Sseq&)): Do not use enable_if.
+	* include/bits/random.tcc: Adjust definitions.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/copy.cc:
+	New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	copy.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	copy.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	copy.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	copy.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	copy.cc: Likewise.
+
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	base_move.cc: Minor tweaks.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/seed1.cc:
+	Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/seed2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	base_copy.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed_seq.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed1.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed2.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed_seq.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/base_move.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed1.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/base_copy.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/seed_seq.cc:
+	Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/seed1.cc:
+	Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/seed2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	seed_seq.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	seed1.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	seed2.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	seed_seq.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/base_move.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/seed1.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/seed2.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/base_copy.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/seed_seq.cc:
+	Likewise.
+
+2010-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/unique_ptr.h: (unique_ptr<>::
 	unique_ptr(const unique_ptr<_Up, _Up_Deleter>&),
 	operator=(const unique_ptr<_Up, _Up_Deleter>&)): Remove, redundant,
