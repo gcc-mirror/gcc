@@ -1,3 +1,12 @@
+2010-02-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41043
+	* tree-vrp.c  (vrp_var_may_overflow): Only ask SCEV for
+	real loops.
+	(vrp_visit_assignment_or_call): Do not ask SCEV for regular
+	statements ...
+	(vrp_visit_phi_node): ... but only for loop PHI nodes.
+
 2010-02-16  Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/43074
