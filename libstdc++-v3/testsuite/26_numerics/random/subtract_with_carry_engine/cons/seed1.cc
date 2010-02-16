@@ -3,7 +3,7 @@
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,6 @@
 // 26.4.2.2 Concept RandomNumberEngine [rand.concept.eng]
 
 #include <random>
-#include <testsuite_hooks.h>
 
 void
 test01()

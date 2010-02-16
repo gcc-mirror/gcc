@@ -3,7 +3,7 @@
 //
 // 2008-12-07  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,17 +20,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.4.3 class template shuffle_order_engine [rand.adapt.shuf]
-// 26.4.2.3 concept RandomNumberEngineAdaptor [rand.concept.adapt]
-
 #include <random>
-#include <testsuite_hooks.h>
 
 void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   double seed = 2.0;
 
   std::shuffle_order_engine

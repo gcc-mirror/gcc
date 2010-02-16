@@ -20,9 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.3.2 Class template mersenne_twister_engine [rand.eng.mers]
-// 26.4.2.2 Concept RandomNumberEngine [rand.concept.eng]
-
 #include <random>
 
 void

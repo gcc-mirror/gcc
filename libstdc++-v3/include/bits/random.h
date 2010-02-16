@@ -188,11 +188,12 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+      template<typename _Sseq, typename = typename
+	std::enable_if<!std::is_same<_Sseq, linear_congruential_engine>::value>
+	       ::type>
         explicit
         linear_congruential_engine(_Sseq& __q)
-        { seed<_Sseq>(__q); }
+        { seed(__q); }
 
       /**
        * @brief Reseeds the %linear_congruential_engine random number generator
@@ -210,9 +211,8 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
-        void
+      template<typename _Sseq>
+        typename std::enable_if<std::is_class<_Sseq>::value>::type
         seed(_Sseq& __q);
 
       /**
@@ -403,18 +403,18 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+      template<typename _Sseq, typename = typename
+        std::enable_if<!std::is_same<_Sseq, mersenne_twister_engine>::value>
+	       ::type>
         explicit
         mersenne_twister_engine(_Sseq& __q)
-        { seed<_Sseq>(__q); }
+        { seed(__q); }
 
       void
       seed(result_type __sd = default_seed);
 
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
-        void
+      template<typename _Sseq>
+	typename std::enable_if<std::is_class<_Sseq>::value>::type
         seed(_Sseq& __q);
 
       /**
@@ -576,11 +576,12 @@ namespace std
        *
        * @param __q the seed sequence.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+      template<typename _Sseq, typename = typename
+        std::enable_if<!std::is_same<_Sseq, subtract_with_carry_engine>::value>
+	       ::type>
         explicit
         subtract_with_carry_engine(_Sseq& __q)
-        { seed<_Sseq>(__q); }
+        { seed(__q); }
 
       /**
        * @brief Seeds the initial state @f$x_0@f$ of the random number
@@ -601,9 +602,8 @@ namespace std
        * @brief Seeds the initial state @f$x_0@f$ of the
        * % subtract_with_carry_engine random number generator.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
-        void
+      template<typename _Sseq>
+	typename std::enable_if<std::is_class<_Sseq>::value>::type
         seed(_Sseq& __q);
 
       /**
@@ -767,10 +767,10 @@ namespace std
        *
        * @param __q A seed sequence.
        */
-      template<typename _Sseq, typename
-        = typename std::enable_if<std::is_class<_Sseq>::value
-				  && !std::is_same<_Sseq, _RandomNumberEngine>
-				  ::value>::type>
+      template<typename _Sseq, typename = typename
+	std::enable_if<!std::is_same<_Sseq, discard_block_engine>::value
+		       && !std::is_same<_Sseq, _RandomNumberEngine>::value>
+	       ::type>
         explicit
         discard_block_engine(_Sseq& __q)
 	: _M_b(__q), _M_n(0)
@@ -803,12 +803,11 @@ namespace std
        *        sequence.
        * @param __q A seed generator function.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+      template<typename _Sseq>
         void
         seed(_Sseq& __q)
         {
-	  _M_b.seed<_Sseq>(__q);
+	  _M_b.seed(__q);
 	  _M_n = 0;
 	}
 
@@ -971,10 +970,10 @@ namespace std
        *
        * @param __q A seed sequence.
        */
-      template<typename _Sseq, typename
-        = typename std::enable_if<std::is_class<_Sseq>::value
-				  && !std::is_same<_Sseq, _RandomNumberEngine>
-				  ::value>::type>
+      template<typename _Sseq, typename = typename
+	std::enable_if<!std::is_same<_Sseq, independent_bits_engine>::value
+		       && !std::is_same<_Sseq, _RandomNumberEngine>::value>
+               ::type>
         explicit
         independent_bits_engine(_Sseq& __q)
         : _M_b(__q)
@@ -1001,11 +1000,10 @@ namespace std
        *        seed sequence.
        * @param __q A seed generator function.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+      template<typename _Sseq>
         void
         seed(_Sseq& __q)
-        { _M_b.seed<_Sseq>(__q); }
+        { _M_b.seed(__q); }
 
       /**
        * @brief Gets a const reference to the underlying generator engine
@@ -1178,10 +1176,10 @@ namespace std
        *
        * @param __q A seed sequence.
        */
-      template<typename _Sseq, typename
-        = typename std::enable_if<std::is_class<_Sseq>::value
-				  && !std::is_same<_Sseq, _RandomNumberEngine>
-				  ::value>::type>
+      template<typename _Sseq, typename = typename
+	std::enable_if<!std::is_same<_Sseq, shuffle_order_engine>::value
+		       && !std::is_same<_Sseq, _RandomNumberEngine>::value>
+	       ::type>
         explicit
         shuffle_order_engine(_Sseq& __q)
         : _M_b(__q)
@@ -1214,12 +1212,11 @@ namespace std
        *        sequence.
        * @param __q A seed generator function.
        */
-      template<typename _Sseq, typename
-	       = typename std::enable_if<std::is_class<_Sseq>::value>::type>
+      template<typename _Sseq>
         void
         seed(_Sseq& __q)
         {
-	  _M_b.seed<_Sseq>(__q);
+	  _M_b.seed(__q);
 	  _M_initialize();
 	}
 
