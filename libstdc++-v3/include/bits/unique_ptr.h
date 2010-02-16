@@ -149,7 +149,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       // Observers.
-      typename std::add_lvalue_reference<element_type>::type operator*() const
+      typename std::add_lvalue_reference<element_type>::type
+      operator*() const
       {
 	_GLIBCXX_DEBUG_ASSERT(get() != 0);
 	return *get();
@@ -207,14 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // Disable copy from lvalue.
       unique_ptr(const unique_ptr&) = delete;
-
-      template<typename _Up, typename _Up_Deleter> 
-        unique_ptr(const unique_ptr<_Up, _Up_Deleter>&) = delete;
-
       unique_ptr& operator=(const unique_ptr&) = delete;
-
-      template<typename _Up, typename _Up_Deleter> 
-        unique_ptr& operator=(const unique_ptr<_Up, _Up_Deleter>&) = delete;
 
     private:
       __tuple_type _M_t;

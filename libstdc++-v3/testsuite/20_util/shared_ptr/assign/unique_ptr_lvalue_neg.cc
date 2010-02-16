@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ test01()
 
   std::shared_ptr<A> a;
   std::unique_ptr<A> u;
-  a = u; // { dg-error "used here" }
+  a = u; // { dg-error "cannot bind" }
 
   return 0;
 }
@@ -46,4 +46,4 @@ main()
   test01();
   return 0;
 }
-// { dg-excess-errors "deleted function" }
+// { dg-excess-errors "initializing argument" }
