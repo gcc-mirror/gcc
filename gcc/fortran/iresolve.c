@@ -912,7 +912,7 @@ gfc_resolve_gamma (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__gamma_%d", x->ts.kind);
+    = gfc_get_string ("__tgamma_%d", x->ts.kind);
 }
 
 
