@@ -1,3 +1,11 @@
+2010-02-16  Ira Rosen <irar@il.ibm.com>
+
+	PR tree-optimization/43074
+	* tree-vectorizer.h (VECTORIZABLE_CYCLE_DEF): New.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Add
+	vectorizable cycles in hybrid SLP check.
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Likewise.
+
 2010-02-16  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (memrefs_conflict_p): Distinguish must-alias from

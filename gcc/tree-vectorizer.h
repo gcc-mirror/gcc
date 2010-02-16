@@ -66,6 +66,10 @@ enum vect_def_type {
   vect_unknown_def_type
 };
 
+#define VECTORIZABLE_CYCLE_DEF(D) (((D) == vect_reduction_def)           \
+                                   || ((D) == vect_double_reduction_def) \
+                                   || ((D) == vect_nested_cycle))
+
 /* Define verbosity levels.  */
 enum verbosity_levels {
   REPORT_NONE,
