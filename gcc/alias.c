@@ -1759,8 +1759,12 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
   return addr;
 }
 
-/* Return nonzero if X and Y (memory addresses) could reference the
-   same location in memory.  C is an offset accumulator.  When
+/* Return one if X and Y (memory addresses) reference the
+   same location in memory or if the references overlap.
+   Return zero if they do not overlap, else return
+   minus one in which case they still might reference the same location.
+
+   C is an offset accumulator.  When
    C is nonzero, we are testing aliases between X and Y + C.
    XSIZE is the size in bytes of the X reference,
    similarly YSIZE is the size in bytes for Y.
@@ -1775,7 +1779,11 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
    align memory references, as is done on the Alpha.
 
    Nice to notice that varying addresses cannot conflict with fp if no
-   local variables had their addresses taken, but that's too hard now.  */
+   local variables had their addresses taken, but that's too hard now.
+
+   ???  Contrary to the tree alias oracle this does not return
+   one for X + non-constant and Y + non-constant when X and Y are equal.
+   If that is fixed the TBAA hack for union type-punning can be removed.  */
 
 static int
 memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
@@ -1841,7 +1849,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	  else if (CONST_INT_P (y1))
 	    return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
 
-	  return 1;
+	  return -1;
 	}
       else if (CONST_INT_P (x1))
 	return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
@@ -1856,7 +1864,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (CONST_INT_P (y1))
 	return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
       else
-	return 1;
+	return -1;
     }
 
   if (GET_CODE (x) == GET_CODE (y))
@@ -1871,7 +1879,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	  rtx x1 = canon_rtx (XEXP (x, 1));
 	  rtx y1 = canon_rtx (XEXP (y, 1));
 	  if (! rtx_equal_for_memref_p (x1, y1))
-	    return 1;
+	    return -1;
 	  x0 = canon_rtx (XEXP (x, 0));
 	  y0 = canon_rtx (XEXP (y, 0));
 	  if (rtx_equal_for_memref_p (x0, y0))
@@ -1880,7 +1888,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 
 	  /* Can't properly adjust our sizes.  */
 	  if (!CONST_INT_P (x1))
-	    return 1;
+	    return -1;
 	  xsize /= INTVAL (x1);
 	  ysize /= INTVAL (x1);
 	  c /= INTVAL (x1);
@@ -1939,9 +1947,10 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 		|| (rtx_equal_for_memref_p (x, y)
 		    && ((c >= 0 && xsize > c) || (c < 0 && ysize+c > 0))));
 
-      return 1;
+      return -1;
     }
-  return 1;
+
+  return -1;
 }
 
 /* Functions to compute memory dependencies.
@@ -2294,6 +2303,7 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
 {
   rtx x_addr, mem_addr;
   rtx base;
+  int ret;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -2308,16 +2318,10 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
-    return 0;
-
   /* Read-only memory is by definition never modified, and therefore can't
      conflict with anything.  We don't expect to find read-only set on MEM,
      but stupid user tricks can produce them, so don't die.  */
   if (MEM_READONLY_P (x))
-    return 0;
-
-  if (nonoverlapping_memrefs_p (mem, x))
     return 0;
 
   /* If we have MEMs refering to different address spaces (which can
@@ -2344,8 +2348,14 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
   x_addr = canon_rtx (x_addr);
   mem_addr = canon_rtx (mem_addr);
 
-  if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
-			    SIZE_FOR_MODE (x), x_addr, 0))
+  if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
+				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
+    return ret;
+
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
+  if (nonoverlapping_memrefs_p (mem, x))
     return 0;
 
   if (aliases_everything_p (x))
@@ -2378,6 +2388,8 @@ int
 canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 		       const_rtx x, rtx x_addr, bool (*varies) (const_rtx, bool))
 {
+  int ret;
+
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
@@ -2391,16 +2403,10 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
-    return 0;
-
   /* Read-only memory is by definition never modified, and therefore can't
      conflict with anything.  We don't expect to find read-only set on MEM,
      but stupid user tricks can produce them, so don't die.  */
   if (MEM_READONLY_P (x))
-    return 0;
-
-  if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
   /* If we have MEMs refering to different address spaces (which can
@@ -2416,8 +2422,14 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
     return 0;
 
   x_addr = canon_rtx (x_addr);
-  if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
-			    SIZE_FOR_MODE (x), x_addr, 0))
+  if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
+				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
+    return ret;
+
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
+  if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
   if (aliases_everything_p (x))
@@ -2448,6 +2460,7 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
   rtx x_addr, mem_addr;
   const_rtx fixed_scalar;
   rtx base;
+  int ret;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -2464,9 +2477,6 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
 
   /* A read from read-only memory can't conflict with read-write memory.  */
   if (!writep && MEM_READONLY_P (mem))
-    return 0;
-
-  if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
   /* If we have MEMs refering to different address spaces (which can
@@ -2494,8 +2504,11 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
   x_addr = canon_rtx (x_addr);
   mem_addr = canon_rtx (mem_addr);
 
-  if (!memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
-			   SIZE_FOR_MODE (x), x_addr, 0))
+  if ((ret = memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
+				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
+    return ret;
+
+  if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
   fixed_scalar
