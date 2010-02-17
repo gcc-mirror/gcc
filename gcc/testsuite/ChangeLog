@@ -1,6 +1,6 @@
 2010-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/43103	
+	PR target/43103
 	* gcc.target/i386/xop-check.h: Include m256-check.h.
 	* gcc.target/i386/xop-vpermil2ps-1.c: Include x86intrin.h.
 	* gcc.target/i386/xop-vpermil2ps-256-1.c: Ditto.
@@ -33,8 +33,7 @@
 
 2010-02-16  Jakub Jelinek  <jakub@redhat.com>
 
-	* lib/prune.exp: Prune variable tracking size limit exceeded
-	notes.
+	* lib/prune.exp: Prune variable tracking size limit exceeded notes.
 
 2010-02-16  Jason Merrill  <jason@redhat.com>
 
