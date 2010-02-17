@@ -3102,7 +3102,8 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   if (!is_overloaded_fn (decl))
     {
       /* We might have found OLD in an inline namespace inside SCOPE.  */
-      DECL_CONTEXT (decl) = DECL_CONTEXT (old);
+      if (TREE_CODE (decl) == TREE_CODE (old))
+	DECL_CONTEXT (decl) = DECL_CONTEXT (old);
       /* Don't compare non-function decls with decls_match here, since
 	 it can't check for the correct constness at this
 	 point. pushdecl will find those errors later.  */

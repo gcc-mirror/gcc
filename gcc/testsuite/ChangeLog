@@ -1,5 +1,8 @@
 2010-02-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43069
+	* g++.dg/parse/namespace11.C: New.
+
 	PR c++/43093
 	* g++.dg/ext/attrib37.C: New.
 
