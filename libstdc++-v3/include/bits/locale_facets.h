@@ -58,13 +58,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 # define  _GLIBCXX_NUM_FACETS 14
 #endif
 
-  // Convert string to numeric value of type _Tv and store results.
+  // Convert string to numeric value of type _Tp and store results.
   // NB: This is specialized for all required types, there is no
   // generic definition.
-  template<typename _Tv>
+  template<typename _Tp>
     void
-    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err,
-		   const __c_locale& __cloc);
+    __convert_to_v(const char*, _Tp&, ios_base::iostate&,
+		   const __c_locale&) throw();
 
   // Explicit specializations for required types.
   template<>
