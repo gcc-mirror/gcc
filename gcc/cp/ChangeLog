@@ -1,5 +1,11 @@
 2010-02-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43075
+	* call.c (build_over_call): Don't create zero-sized assignments.
+	* cp-gimplify.c (cp_genericize_r): Don't remove them here.
+	* cp-objcp-common.c (cp_expr_size): Remove.
+	* cp-tree.h: Remove prototype.
+
 	PR c++/43069
 	* name-lookup.c (set_decl_namespace): Don't copy DECL_CONTEXT if the
 	decl we looked up doesn't match.

@@ -884,15 +884,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *walk_subtrees = 0;
     }
 
-  else if (TREE_CODE (stmt) == MODIFY_EXPR
-	   && (integer_zerop (cp_expr_size (TREE_OPERAND (stmt, 0)))
-	       || integer_zerop (cp_expr_size (TREE_OPERAND (stmt, 1)))))
-    {
-      *stmt_p = build2 (COMPOUND_EXPR, TREE_TYPE (stmt),
-			TREE_OPERAND (stmt, 0),
-			TREE_OPERAND (stmt, 1));
-    }
-
   pointer_set_insert (p_set, *stmt_p);
 
   return NULL;
