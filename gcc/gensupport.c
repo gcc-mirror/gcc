@@ -780,6 +780,7 @@ process_one_cond_exec (struct queue_elem *ce_elem)
     {
       int alternatives, max_operand;
       rtx pred, insn, pattern, split;
+      char *new_name;
       int i;
 
       if (! is_predicable (insn_elem))
@@ -806,7 +807,9 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 
       /* Construct a new pattern for the new insn.  */
       insn = copy_rtx (insn_elem->data);
-      XSTR (insn, 0) = "";
+      new_name = XNEWVAR (char, strlen XSTR (insn_elem->data, 0) + 4);
+      sprintf (new_name, "*p %s", XSTR (insn_elem->data, 0));
+      XSTR (insn, 0) = new_name;
       pattern = rtx_alloc (COND_EXEC);
       XEXP (pattern, 0) = pred;
       if (XVECLEN (insn, 1) == 1)

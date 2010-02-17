@@ -1,3 +1,8 @@
+2010-02-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gensupport.c (process_one_cond_exec): Derive name for COND_EXEC
+	patterns from predicated pattern.
+
 2010-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43103
