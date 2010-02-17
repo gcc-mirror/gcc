@@ -552,7 +552,9 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 25979.  */
     case INIT_EXPR:
       cp_gimplify_init_expr (expr_p, pre_p, post_p);
-      /* Fall through.  */
+      if (TREE_CODE (*expr_p) != INIT_EXPR)
+	return GS_OK;
+      /* Otherwise fall through.  */
     case MODIFY_EXPR:
       {
 	/* If the back end isn't clever enough to know that the lhs and rhs
