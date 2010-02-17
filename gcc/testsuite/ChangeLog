@@ -1,3 +1,12 @@
+2010-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43103	
+	* gcc.target/i386/xop-check.h: Include m256-check.h.
+	* gcc.target/i386/xop-vpermil2ps-1.c: Include x86intrin.h.
+	* gcc.target/i386/xop-vpermil2ps-256-1.c: Ditto.
+	* gcc.target/i386/xop-vpermil2pd-1.c: Ditto.
+	* gcc.target/i386/xop-vpermil2pd-256-1.c: Ditto.
+
 2010-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42918

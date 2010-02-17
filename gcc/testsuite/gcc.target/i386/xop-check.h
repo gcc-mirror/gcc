@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "cpuid.h"
+#include "m256-check.h"
 
 static void xop_test (void);
 
