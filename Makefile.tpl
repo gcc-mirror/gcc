@@ -771,6 +771,7 @@ local-distclean:
 	-rmdir texinfo/doc texinfo/info texinfo/intl texinfo/lib 2>/dev/null
 	-rmdir texinfo/makeinfo texinfo/po texinfo/util 2>/dev/null
 	-rmdir fastjar gcc libiberty texinfo zlib 2>/dev/null
+	-find . -name config.cache -delete \; 2>/dev/null
 
 local-maintainer-clean:
 	@echo "This command is intended for maintainers to use;"
