@@ -45,10 +45,10 @@
 //
 // The numeric_limits<> traits document implementation-defined aspects
 // of fundamental arithmetic data types (integers and floating points).
-// From Standard C++ point of view, there are 13 such types:
+// From Standard C++ point of view, there are 14 such types:
 //   * integers
 //         bool						        (1)
-//         char, signed char, unsigned char			(3)
+//         char, signed char, unsigned char, wchar_t            (4)
 //         short, unsigned short				(2)
 //         int, unsigned					(2)
 //         long, unsigned long					(2)
@@ -62,7 +62,7 @@
 //   * integer
 //         long long, unsigned long long			(2)
 //
-// which brings us to 15 fundamental arithmetic data types in GNU C++.
+// which brings us to 16 fundamental arithmetic data types in GNU C++.
 //
 //
 // Since a numeric_limits<> is a bit tricky to get right, we rely on
@@ -302,8 +302,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       static _Tp denorm_min() throw() { return static_cast<_Tp>(0); }
     };
 
-  // Now there follow 15 explicit specializations.  Yes, 15.  Make sure
-  // you get the count right.
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp>
+    struct numeric_limits<const _Tp>
+    : public numeric_limits<_Tp> { };
+
+  template<typename _Tp>
+    struct numeric_limits<volatile _Tp>
+    : public numeric_limits<_Tp> { };
+
+  template<typename _Tp>
+    struct numeric_limits<const volatile _Tp>
+    : public numeric_limits<_Tp> { };
+#endif
+
+  // Now there follow 16 explicit specializations.  Yes, 16.  Make sure
+  // you get the count right. (18 in c++0x mode)
 
   /// numeric_limits<bool> specialization.
   template<>
