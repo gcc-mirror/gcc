@@ -1,6 +1,6 @@
 /* Save and restore call-clobbered registers which are live across a call.
    Copyright (C) 1989, 1992, 1994, 1995, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -754,7 +754,7 @@ setup_save_areas (void)
 void
 save_call_clobbered_regs (void)
 {
-  struct insn_chain *chain, *next;
+  struct insn_chain *chain, *next, *last = NULL;
   enum machine_mode save_mode [FIRST_PSEUDO_REGISTER];
 
   /* Computed in mark_set_regs, holds all registers set by the current
@@ -861,6 +861,7 @@ save_call_clobbered_regs (void)
 		if (TEST_HARD_REG_BIT (hard_regs_saved, regno))
 		  n_regs_saved++;
 	    }
+          last = chain;
 	}
       else if (DEBUG_INSN_P (insn) && n_regs_saved)
 	mark_referenced_regs (&PATTERN (insn),
@@ -873,6 +874,36 @@ save_call_clobbered_regs (void)
 	  /* At the end of the basic block, we must restore any registers that
 	     remain saved.  If the last insn in the block is a JUMP_INSN, put
 	     the restore before the insn, otherwise, put it after the insn.  */
+
+	  if (DEBUG_INSN_P (insn) && last && last->block == chain->block)
+	    {
+	      rtx ins, prev;
+	      basic_block bb = BLOCK_FOR_INSN (insn);
+
+	      /* When adding hard reg restores after a DEBUG_INSN, move
+		 all notes between last real insn and this DEBUG_INSN after
+		 the DEBUG_INSN, otherwise we could get code
+		 -g/-g0 differences.  */
+	      for (ins = PREV_INSN (insn); ins != last->insn; ins = prev)
+		{
+		  prev = PREV_INSN (ins);
+		  if (NOTE_P (ins))
+		    {
+		      NEXT_INSN (prev) = NEXT_INSN (ins);
+		      PREV_INSN (NEXT_INSN (ins)) = prev;
+		      PREV_INSN (ins) = insn;
+		      NEXT_INSN (ins) = NEXT_INSN (insn);
+		      NEXT_INSN (insn) = ins;
+		      if (NEXT_INSN (ins))
+			PREV_INSN (NEXT_INSN (ins)) = ins;
+                      if (BB_END (bb) == insn)
+			BB_END (bb) = ins;
+		    }
+		  else
+		    gcc_assert (DEBUG_INSN_P (ins));
+		}
+	    }
+	  last = NULL;
 
 	  if (n_regs_saved)
 	    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)

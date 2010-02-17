@@ -1,3 +1,10 @@
+2010-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/42918
+	* caller-save.c (save_call_clobbered_regs): If BB ends with
+	a DEBUG_INSN, move any notes in between last real insn and the last
+	DEBUG_INSN after the last DEBUG_INSN.
+
 2010-02-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* tm.texi (TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD_SPEC):
