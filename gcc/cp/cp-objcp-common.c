@@ -69,49 +69,6 @@ cxx_warn_unused_global_decl (const_tree decl)
   return true;
 }
 
-/* Langhook for expr_size: Tell the back end that the value of an expression
-   of non-POD class type does not include any tail padding; a derived class
-   might have allocated something there.  */
-
-tree
-cp_expr_size (const_tree exp)
-{
-  tree type = TREE_TYPE (exp);
-
-  if (CLASS_TYPE_P (type))
-    {
-      /* The back end should not be interested in the size of an expression
-	 of a type with both of these set; all copies of such types must go
-	 through a constructor or assignment op.  */
-      if (!TYPE_HAS_COMPLEX_INIT_REF (type)
-	  || !TYPE_HAS_COMPLEX_ASSIGN_REF (type)
-	  /* But storing a CONSTRUCTOR isn't a copy.  */
-	  || TREE_CODE (exp) == CONSTRUCTOR
-	  /* And, the gimplifier will sometimes make a copy of
-	     an aggregate.  In particular, for a case like:
-
-		struct S { S(); };
-		struct X { int a; S s; };
-		X x = { 0 };
-
-	     the gimplifier will create a temporary with
-	     static storage duration, perform static
-	     initialization of the temporary, and then copy
-	     the result.  Since the "s" subobject is never
-	     constructed, this is a valid transformation.  */
-	  || CP_AGGREGATE_TYPE_P (type))
-	/* This would be wrong for a type with virtual bases.  */
-	return (is_really_empty_class (type)
-		? size_zero_node
-		: CLASSTYPE_SIZE_UNIT (type));
-      else
-	return NULL_TREE;
-    }
-  else
-    /* Use the default code.  */
-    return tree_expr_size (exp);
-}
-
 /* Langhook for tree_size: determine size of our 'x' and 'c' nodes.  */
 size_t
 cp_tree_size (enum tree_code code)
