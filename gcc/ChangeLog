@@ -1,3 +1,7 @@
+2010-02-17  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/mingw32.h (LIBGCJ_SONAME): Fix cut'n'pasto in DLL name.
+
 2010-02-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gensupport.c (process_one_cond_exec): Derive name for COND_EXEC
