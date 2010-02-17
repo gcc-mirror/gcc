@@ -1,3 +1,8 @@
+2010-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Update markup rules
+	for quoting and functions.
+
 2010-02-17  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/locale_facets.h (__convert_to_v): Add empty
