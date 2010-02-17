@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -46,8 +46,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<>
     void
-    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
-		   const __c_locale&) 	      
+    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err,
+		   const __c_locale&) throw()
     {
       // Assumes __s formatted for "C" locale.
       char* __old = setlocale(LC_ALL, NULL);
@@ -111,8 +111,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<>
     void
-    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
-		   const __c_locale&) 
+    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err,
+		   const __c_locale&) throw()
     {
       // Assumes __s formatted for "C" locale.
       char* __old = setlocale(LC_ALL, NULL);
@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #if __DBL_HAS_INFINITY__
 	       __v == numeric_limits<double>::infinity()
 	       || __v == -numeric_limits<double>::infinity())
-#else          
+#else
 	       (__v > 1.0 || __v < -1.0) && errno == ERANGE)
 #endif
 	{
@@ -156,8 +156,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<>
     void
-    __convert_to_v(const char* __s, long double& __v, 
-		   ios_base::iostate& __err, const __c_locale&) 
+    __convert_to_v(const char* __s, long double& __v,
+		   ios_base::iostate& __err, const __c_locale&) throw()
     {
       // Assumes __s formatted for "C" locale.
       char* __old = setlocale(LC_ALL, NULL);
@@ -189,10 +189,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
        else if (
 #if __LDBL_HAS_INFINITY__
-	        __v == numeric_limits<long double>::infinity()
-	        || __v == -numeric_limits<long double>::infinity())
+		__v == numeric_limits<long double>::infinity()
+		|| __v == -numeric_limits<long double>::infinity())
 #else
-	        (__v > 1.0l || __v < -1.0l) && errno == ERANGE)
+		(__v > 1.0l || __v < -1.0l) && errno == ERANGE)
 #endif
 	{
 	  if (__v > 0.0l)
@@ -207,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   void
-  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s, 
+  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s,
 				    __c_locale)
   {
     // Currently, the generic model only supports the "C" locale.
@@ -223,7 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { __cloc = NULL; }
 
   __c_locale
-  locale::facet::_S_clone_c_locale(__c_locale&)
+  locale::facet::_S_clone_c_locale(__c_locale&) throw()
   { return __c_locale(); }
 
   __c_locale
@@ -236,10 +236,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   const char* const category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
-      "LC_CTYPE", 
+      "LC_CTYPE",
       "LC_NUMERIC",
-      "LC_TIME",   
-      "LC_COLLATE", 
+      "LC_TIME",
+      "LC_COLLATE",
       "LC_MONETARY",
       "LC_MESSAGES"
     };

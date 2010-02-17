@@ -1,5 +1,5 @@
 // -*- C++ -*- The GNU C++ exception personality routine.
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of GCC.
@@ -549,6 +549,7 @@ PERSONALITY_FUNCTION (int version,
       else if (!foreign_exception)
 	thrown_ptr = __get_object_from_ue (ue_header);
 #else
+#ifdef __GXX_RTTI
       // During forced unwinding, match a magic exception type.
       if (actions & _UA_FORCE_UNWIND)
 	{
@@ -561,6 +562,7 @@ PERSONALITY_FUNCTION (int version,
 	  throw_type = &typeid(abi::__foreign_exception);
 	}
       else
+#endif
         {
           thrown_ptr = __get_object_from_ue (ue_header);
           throw_type = __get_exception_header_from_obj
@@ -771,7 +773,7 @@ __cxa_call_unexpected (void *exc_obj_in)
       // If the exception spec allows std::bad_exception, throw that.
       // We don't have a thrown object to compare against, but since
       // bad_exception doesn't have virtual bases, that's OK; just pass 0.
-#ifdef __EXCEPTIONS  
+#if defined(__EXCEPTIONS) && defined(__GXX_RTTI)
       const std::type_info &bad_exc = typeid (std::bad_exception);
       if (check_exception_spec (&info, &bad_exc, 0, xh_switch_value))
 	throw std::bad_exception();

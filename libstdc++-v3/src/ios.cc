@@ -1,7 +1,7 @@
 // Iostreams base classes -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   bool ios_base::Init::_S_synced_with_stdio = true;
 
-  ios_base::ios_base() 
+  ios_base::ios_base() throw()
   : _M_precision(), _M_width(), _M_flags(), _M_exception(), 
   _M_streambuf_state(), _M_callbacks(0), _M_word_zero(), 
   _M_word_size(_S_local_word_size), _M_word(_M_local_word), _M_ios_locale()
@@ -175,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   void 
-  ios_base::_M_dispose_callbacks(void)
+  ios_base::_M_dispose_callbacks(void) throw()
   {
     _Callback_list* __p = _M_callbacks;
     while (__p && __p->_M_remove_reference() == 0)

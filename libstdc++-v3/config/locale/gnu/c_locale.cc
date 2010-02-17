@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,7 +40,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
-		   const __c_locale& __cloc)
+		   const __c_locale& __cloc) throw()
     {
       char* __sanity;
       __v = __strtof_l(__s, &__sanity, __cloc);
@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
-		   const __c_locale& __cloc)
+		   const __c_locale& __cloc) throw()
     {
       char* __sanity;
       __v = __strtod_l(__s, &__sanity, __cloc);
@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __convert_to_v(const char* __s, long double& __v, ios_base::iostate& __err,
-		   const __c_locale& __cloc)
+		   const __c_locale& __cloc) throw()
     {
       char* __sanity;
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   __c_locale
-  locale::facet::_S_clone_c_locale(__c_locale& __cloc)
+  locale::facet::_S_clone_c_locale(__c_locale& __cloc) throw()
   { return __duplocale(__cloc); }
 
   __c_locale
