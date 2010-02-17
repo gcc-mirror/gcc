@@ -4,6 +4,9 @@
 	* Makefile.tpl (local-distclean): Also remove config.cache files in
 	sub-directories as there may not be Makefiles present in the
 	sub-directories.
+	* Makefile.tpl: Use "-exec rm {}" rather than "-delete" to delete
+	the config.cache files found by the find command.
+
 	* Makefile.in: Regenerate.
 	* configure.ac: Revert previous delta.
 	* configure: Regenerate.
