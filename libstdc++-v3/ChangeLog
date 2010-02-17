@@ -1,3 +1,8 @@
+2010-02-17  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/locale_facets.h (__convert_to_v): Add empty
+	exception-specification.
+
 2010-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/limits: Implement resolution of DR 559 (CD1) in
