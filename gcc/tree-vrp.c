@@ -6318,11 +6318,10 @@ vrp_visit_phi_node (gimple phi)
     }
 
   /* If this is a loop PHI node SCEV may known more about its
-     value-range.
-     ???  Identify loop PHI nodes properly.   */
+     value-range.  */
   if (current_loops
       && (l = loop_containing_stmt (phi))
-      && loop_outer (l))
+      && l->header == gimple_bb (phi))
     adjust_range_with_scev (&vr_result, l, phi, lhs);
 
   if (vr_result.type == VR_VARYING)
