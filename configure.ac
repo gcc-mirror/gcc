@@ -2710,12 +2710,6 @@ for module in ${build_configdirs} ; do
     echo 1>&2 "*** removing ${build_subdir}/${module}/Makefile to force reconfigure"
     rm -f ${build_subdir}/${module}/Makefile
   fi
-  # PR 11238: Also remove config.cache files.
-  if test -z "${no_recursion}" \
-     && test -f ${build_subdir}/${module}/config.cache; then
-    echo 1>&2 "*** removing ${build_subdir}/${module}/config.cache to allow reconfigure"
-    rm -f ${build_subdir}/${module}/config.cache
-  fi
   extrasub_build="$extrasub_build
 /^@if build-$module\$/d
 /^@endif build-$module\$/d
@@ -2731,11 +2725,6 @@ for module in ${configdirs} ; do
 	rm -f ${file}
       fi
     done
-    # PR 11238: Also remove config.cache files.
-    if test -f ${module}/config.cache; then
-      echo 1>&2 "*** removing ${module}/config.cache to allow reconfigure"
-      rm -f ${module}/config.cache
-    fi
   fi
   extrasub_host="$extrasub_host
 /^@if $module\$/d
@@ -2749,12 +2738,6 @@ for module in ${target_configdirs} ; do
      && test -f ${target_subdir}/${module}/Makefile; then
     echo 1>&2 "*** removing ${target_subdir}/${module}/Makefile to force reconfigure"
     rm -f ${target_subdir}/${module}/Makefile
-  fi
-  # PR 11238: Also remove config.cache files.
-  if test -z "${no_recursion}" \
-     && test -f ${target_subdir}/${module}/config.cache; then
-    echo 1>&2 "*** removing ${target_subdir}/${module}/config.cache to allow reconfigure"
-    rm -f ${target_subdir}/${module}/config.cache
   fi
 
   # We only bootstrap target libraries listed in bootstrap_target_libs.

@@ -1,3 +1,13 @@
+2010-02-17  Nick Clifton  <nickc@redhat.com>
+
+	PR 11238
+	* Makefile.tpl (local-distclean): Also remove config.cache files in
+	sub-directories as there may not be Makefiles present in the
+	sub-directories.
+	* Makefile.in: Regenerate.
+	* configure.ac: Revert previous delta.
+	* configure: Regenerate.
+
 2010-02-15  Nick Clifton  <nickc@redhat.com>
 
 	PR 11238
