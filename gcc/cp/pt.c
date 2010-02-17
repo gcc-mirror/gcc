@@ -5128,12 +5128,13 @@ convert_nontype_argument (tree type, tree expr)
 	 provide a superior diagnostic.  */
       if (!same_type_p (TREE_TYPE (expr), type))
 	{
-	  /* Make sure we are just one standard conversion off.  */
-	  gcc_assert (can_convert (type, TREE_TYPE (expr)));
 	  error ("%qE is not a valid template argument for type %qT "
 		 "because it is of type %qT", expr, type,
 		 TREE_TYPE (expr));
-	  inform (input_location, "standard conversions are not allowed in this context");
+	  /* If we are just one standard conversion off, explain.  */
+	  if (can_convert (type, TREE_TYPE (expr)))
+	    inform (input_location,
+		    "standard conversions are not allowed in this context");
 	  return NULL_TREE;
 	}
     }
