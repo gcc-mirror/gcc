@@ -1,5 +1,9 @@
 2010-02-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43069
+	* name-lookup.c (set_decl_namespace): Don't copy DECL_CONTEXT if the
+	decl we looked up doesn't match.
+
 	PR c++/43093
 	* cp-gimplify.c (cp_gimplify_expr) [INIT_EXPR]: Return if we don't
 	have an INIT_EXPR anymore.
