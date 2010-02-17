@@ -1,5 +1,5 @@
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -217,7 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   const char*
-  locale::facet::_S_get_c_name()
+  locale::facet::_S_get_c_name() throw()
   { return _S_c_name; }
 
   locale::facet::
@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   _Atomic_word locale::id::_S_refcount;  // init'd to 0 by linker
 
   size_t
-  locale::id::_M_id() const
+  locale::id::_M_id() const throw()
   {
     if (!_M_index)
       {

@@ -1,3 +1,38 @@
+2010-02-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/ios_locale.cc: Fixes for -pedantic.
+	* src/system_error.cc: Same.
+	* src/locale.cc: Same.
+	* src/list.cc: Same.
+	* src/locale_facets.cc: Same.
+	* src/locale_init.cc: Same.
+	* src/ios.cc: Same.
+	* config/locale/darwin/ctype_members.cc: Same.
+	* config/locale/gnu/collate_members.cc: Same.
+	* config/locale/gnu/ctype_members.cc: Same.
+	* config/locale/gnu/c_locale.cc: Same.
+	* config/locale/gnu/monetary_members.cc: Same.
+	* config/locale/gnu/time_members.cc: Same.
+	* config/locale/ieee_1003.1-2001/c_locale.cc: Same.
+	* config/locale/generic/collate_members.cc: Same.
+	* config/locale/generic/ctype_members.cc: Same.
+	* config/locale/generic/c_locale.cc: Same.
+	* config/locale/generic/monetary_members.cc: Same.
+	* config/locale/generic/time_members.cc: Same.
+	* config/io/basic_file_stdio.cc: Same.
+
+	* libsupc++/pbase_type_info.cc: Fixes for -fno-rtti.
+	* libsupc++/pointer_type_info.cc: Same.
+	* libsupc++/eh_personality.cc: Same.
+
+	* include/std/system_error: Throw spacing.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/ios_base.h: Same.
+
+	* testsuite/17_intro/headers/c++200x/all_no_rtti.cc: New.
+	* testsuite/17_intro/headers/c++1998/all_no_rtti.cc: New.
+
 2010-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.h (linear_congruential_engine(_Sseq&),

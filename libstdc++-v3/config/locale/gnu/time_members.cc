@@ -1,6 +1,6 @@
 // std::time_get, std::time_put implementation, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,7 +39,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void
     __timepunct<char>::
     _M_put(char* __s, size_t __maxlen, const char* __format, 
-	   const tm* __tm) const
+	   const tm* __tm) const throw()
     {
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       const size_t __len = __strftime_l(__s, __maxlen, __format, __tm,
@@ -195,7 +195,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void
     __timepunct<wchar_t>::
     _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
-	   const tm* __tm) const
+	   const tm* __tm) const throw()
     {
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       const size_t __len = __wcsftime_l(__s, __maxlen, __format, __tm,

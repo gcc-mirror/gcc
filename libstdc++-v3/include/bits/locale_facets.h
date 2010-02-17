@@ -70,17 +70,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __convert_to_v(const char*, float&, ios_base::iostate&,
-		   const __c_locale&) throw ();
+		   const __c_locale&) throw();
 
   template<>
     void
     __convert_to_v(const char*, double&, ios_base::iostate&,
-		   const __c_locale&) throw ();
+		   const __c_locale&) throw();
 
   template<>
     void
     __convert_to_v(const char*, long double&, ios_base::iostate&,
-		   const __c_locale&) throw ();
+		   const __c_locale&) throw();
 
   // NB: __pad is a struct, rather than a function, so it can be
   // partially-specialized.
@@ -1219,7 +1219,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     protected:
       __wmask_type
-      _M_convert_to_wmask(const mask __m) const throw ();
+      _M_convert_to_wmask(const mask __m) const throw();
 
       /// Destructor
       virtual
@@ -1457,7 +1457,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       // For use at construction time only.
       void
-      _M_initialize_ctype() throw ();
+      _M_initialize_ctype() throw();
     };
 #endif //_GLIBCXX_USE_WCHAR_T
 
@@ -1557,7 +1557,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     // num_put
     // Construct and return valid scanf format for floating point types.
     static void
-    _S_format_float(const ios_base& __io, char* __fptr, char __mod) throw ();
+    _S_format_float(const ios_base& __io, char* __fptr, char __mod) throw();
   };
 
   template<typename _CharT>

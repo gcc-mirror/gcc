@@ -521,7 +521,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     locale		_M_ios_locale;
 
     void
-    _M_init() throw ();
+    _M_init() throw();
 
   public:
 
@@ -680,7 +680,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  with imbue_event.
     */
     locale
-    imbue(const locale& __loc) throw ();
+    imbue(const locale& __loc) throw();
 
     /**
      *  @brief  Locale access

@@ -1,5 +1,5 @@
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -58,7 +58,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // According to the resolution of DR 231, about 22.2.2.2.2, p11,
   // "str.precision() is specified in the conversion specification".
   void
-  __num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod)
+  __num_base::_S_format_float(const ios_base& __io, char* __fptr, 
+			      char __mod) throw()
   {
     ios_base::fmtflags __flags = __io.flags();
     *__fptr++ = '%';
@@ -88,7 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   bool
   __verify_grouping(const char* __grouping, size_t __grouping_size,
-		    const string& __grouping_tmp)
+		    const string& __grouping_tmp) throw()
   {
     const size_t __n = __grouping_tmp.size() - 1;
     const size_t __min = std::min(__n, size_t(__grouping_size - 1));

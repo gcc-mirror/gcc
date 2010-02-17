@@ -1,6 +1,6 @@
 // std::time_get, std::time_put implementation, generic version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -39,8 +39,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __timepunct<char>::
-    _M_put(char* __s, size_t __maxlen, const char* __format, 
-	   const tm* __tm) const
+    _M_put(char* __s, size_t __maxlen, const char* __format,
+	   const tm* __tm) const throw()
     {
       char* __old = setlocale(LC_ALL, NULL);
       const size_t __llen = strlen(__old) + 1;
@@ -55,10 +55,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__s[0] = '\0';
     }
 
-  template<> 
+  template<>
     void
     __timepunct<char>::_M_initialize_timepunct(__c_locale)
-    { 
+    {
       // "C" locale.
       if (!_M_data)
 	_M_data = new __timepunct_cache<char>;
@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_data->_M_am = "AM";
       _M_data->_M_pm = "PM";
       _M_data->_M_am_pm_format = "";
-	  
+
       // Day names, starting with "C"'s Sunday.
       _M_data->_M_day1 = "Sunday";
       _M_data->_M_day2 = "Monday";
@@ -124,8 +124,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __timepunct<wchar_t>::
-    _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
-	   const tm* __tm) const
+    _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format,
+	   const tm* __tm) const throw()
     {
       char* __old = setlocale(LC_ALL, NULL);
       const size_t __llen = strlen(__old) + 1;
@@ -137,10 +137,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       delete [] __sav;
       // Make sure __s is null terminated.
       if (__len == 0)
-	__s[0] = L'\0';      
+	__s[0] = L'\0';
     }
 
-  template<> 
+  template<>
     void
     __timepunct<wchar_t>::_M_initialize_timepunct(__c_locale)
     {

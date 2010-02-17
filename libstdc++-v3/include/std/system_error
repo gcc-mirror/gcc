@@ -103,8 +103,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   inline error_category::error_category() = default;
 
   // DR 890.
-  _GLIBCXX_CONST const error_category& system_category() throw ();
-  _GLIBCXX_CONST const error_category& generic_category() throw ();
+  _GLIBCXX_CONST const error_category& system_category() throw();
+  _GLIBCXX_CONST const error_category& generic_category() throw();
 
   error_code make_error_code(errc);
 
