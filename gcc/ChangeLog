@@ -1,3 +1,9 @@
+2010-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43103
+	* config/i386/sse.md (xop_vpermil2<mode>3): Use avxmodesuffixf2c
+	for insn mnemonic suffix.
+
 2010-02-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_visit_phi_node): Restrict SCEV analysis
@@ -18,8 +24,7 @@
 2010-02-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41043
-	* tree-vrp.c  (vrp_var_may_overflow): Only ask SCEV for
-	real loops.
+	* tree-vrp.c  (vrp_var_may_overflow): Only ask SCEV for real loops.
 	(vrp_visit_assignment_or_call): Do not ask SCEV for regular
 	statements ...
 	(vrp_visit_phi_node): ... but only for loop PHI nodes.
@@ -34,8 +39,7 @@
 
 2010-02-16  Richard Guenther  <rguenther@suse.de>
 
-	* alias.c (memrefs_conflict_p): Distinguish must-alias from
-	don't know.
+	* alias.c (memrefs_conflict_p): Distinguish must-alias from don't know.
 	(true_dependence): If memrefs_conflict_p computes must-alias
 	trust it.  Move TBAA check after offset-based disambiguation.
 	(canon_true_dependence): Likewise.
@@ -54,7 +58,7 @@
 	* Makefile.in (var-tracking.o): Adjust dependencies.
 
 2010-02-16  Jack Howarth <howarth@bromo.med.uc.edu>
-            Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek <jakub@redhat.com>
 
 	PR target/42854
 	* config/darwin.h (ASM_WEAKEN_DECL): Don't check weak attribute
@@ -113,11 +117,10 @@
 	* config/h8300/h8300.c: (h8300_push_pop): Use bool type for
 	boolean parameters.  Use emit_jump_insn when emitting a pop
 	instruction containing a return insn.
-        (push): Use 'true' rather than '1' as second parameter to F.
-        (h8300_expand_prologue): Likewise.
-        Use 'true' and 'false' for boolean parameters to
-	h8300_push_pop.
-        (h8300_expand_epilogue): Likewise.
+	(push): Use 'true' rather than '1' as second parameter to F.
+	(h8300_expand_prologue): Likewise.
+	Use 'true' and 'false' for boolean parameters to h8300_push_pop.
+	(h8300_expand_epilogue): Likewise.
 
 2010-02-15  Richard Guenther  <rguenther@suse.de>
 
@@ -411,15 +414,13 @@
 
 2010-02-05  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-ccp.c (get_symbol_constant_value): Strip all
-	conversions.
+	* tree-ssa-ccp.c (get_symbol_constant_value): Strip all conversions.
 	(fold_const_aggregate_ref): Likewise.
 	(ccp_fold_stmt): Substitute loads.
 	(maybe_fold_reference): Verify types before substituting.
 	Unshare properly.
 	(fold_gimple_assign): Unshare properly.
-	(fold_stmt_1): Insert conversion if necessary before replacing
-	the RHS.
+	(fold_stmt_1): Insert conversion if necessary before replacing the RHS.
 
 2010-02-05  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -506,8 +507,7 @@
 2010-02-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42944
-	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle
-	calloc.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Handle calloc.
 	(call_may_clobber_ref_p_1): Likewise.  Properly handle
 	malloc and calloc clobbering errno.
 
@@ -1091,8 +1091,7 @@
 
 	PR tree-optimization/42781
 	* tree-ssa-structalias.c (find_what_var_points_to): Skip
-	restrict processing only if the original variable was
-	artificial.
+	restrict processing only if the original variable was artificial.
 
 2010-01-18  Joern Rennecke  <amylaar@spamcop.net>
 
@@ -1602,8 +1601,7 @@
 2010-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42665
-	* gimple.c (iterative_hash_gimple_type): Avoid hashing
-	error_mark_node.
+	* gimple.c (iterative_hash_gimple_type): Avoid hashing error_mark_node.
 
 2010-01-14  Ira Rosen  <irar@il.ibm.com>
 
@@ -1661,8 +1659,7 @@
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42705
-	* tree-ssa-reassoc.c (build_and_add_sum): Insert stmts after
-	labels.
+	* tree-ssa-reassoc.c (build_and_add_sum): Insert stmts after labels.
 
 2010-01-13  Richard Guenther  <rguenther@suse.de>
 
@@ -1955,8 +1952,7 @@
 
 	PR tree-optimization/42625
 	* cgraph.c (cgraph_make_node_local): Clear DECL_COMDAT*,
-	TREE_PUBLIC, DECL_WEAK and DECL_EXTERNAL also for same_body
-	aliases.
+	TREE_PUBLIC, DECL_WEAK and DECL_EXTERNAL also for same_body aliases.
 
 2010-01-07  Duncan Sands  <baldrick@free.fr>
 
@@ -2295,8 +2291,7 @@
 	(BB_MAY_NOTRETURN): New.
 	(valid_in_sets): Trapping nary operations are not valid
 	in blocks that may not return.
-	(insert_into_preds_of_block): Remove check for trapping
-	expressions.
+	(insert_into_preds_of_block): Remove check for trapping expressions.
 	(compute_avail): Compute also BB_MAY_NOTRETURN.
 
 2010-01-03  Gerald Pfeifer  <gerald@pfeifer.com>

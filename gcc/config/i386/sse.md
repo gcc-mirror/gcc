@@ -11548,7 +11548,7 @@
 	   (match_operand:SI 4 "const_0_to_3_operand" "n")]
 	  UNSPEC_VPERMIL2))]
   "TARGET_XOP"
-  "vpermil2p<xopmodesuffixf2c>\t{%4, %3, %2, %1, %0|%0, %1, %2, %3, %4}"
+  "vpermil2p<avxmodesuffixf2c>\t{%4, %3, %2, %1, %0|%0, %1, %2, %3, %4}"
   [(set_attr "type" "sse4arg")
    (set_attr "length_immediate" "1")
    (set_attr "mode" "<MODE>")])

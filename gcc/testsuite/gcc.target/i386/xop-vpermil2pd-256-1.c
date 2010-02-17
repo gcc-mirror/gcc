@@ -4,6 +4,8 @@
 
 #include "xop-check.h"
 
+#include <x86intrin.h>
+
 #ifndef ZERO_MATCH
 #define ZERO_MATCH 1
 #endif
