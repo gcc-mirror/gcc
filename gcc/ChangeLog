@@ -1,3 +1,11 @@
+2010-02-17  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from trunk.
+	2009-12-07  Julian Brown  <julian@codesourcery.com>
+
+        * config/arm/constraints.md (Ps, Pt): New constraint letters.
+        * config/arm/thumb2.md (*thumb2_addsi_short): Tighten constraints.
+
 2010-02-16  Ira Rosen <irar@il.ibm.com>
 
 	PR tree-optimization/43074
