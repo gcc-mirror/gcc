@@ -1,3 +1,8 @@
+2010-02-17 Rafael Ávila de Espíndola <espindola@google.com>
+
+	* MAINTAINERS (Plugin, LTO, LTO plugin): Remove myself.
+	(Write After Approval): Update my email address.
+
 2010-02-17  Nick Clifton  <nickc@redhat.com>
 
 	PR 11238
