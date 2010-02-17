@@ -1002,31 +1002,40 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
       <para>
-	These points accompany the first list in section 3.1 of the
-	Doxygen manual:
+	Some commentary to accompany
+	the first list in the <ulink url="http://www.stack.nl/~dimitri/doxygen/docblocks.html">Special
+	Documentation Blocks</ulink> section of
+	the Doxygen manual:
       </para>
 
       <orderedlist>
-	<listitem><para>Use the Javadoc style...</para></listitem>
+	<listitem>
+	  <para>For longer comments, use the Javadoc style...</para>
+	</listitem>
+
 	<listitem>
 	  <para>
 	    ...not the Qt style. The intermediate *'s are preferred.
 	  </para>
 	</listitem>
-	<listitem>
+
+ 	<listitem>
 	  <para>
 	    Use the triple-slash style only for one-line comments (the
-	    <quote>brief</quote> mode).  Very recent versions of Doxygen permit
-	    full-mode comments in triple-slash blocks, but the
-	    formatting still comes out wonky.
+	    <quote>brief</quote> mode). 
 	  </para>
 	</listitem>
+
 	<listitem>
 	  <para>
 	    This is disgusting. Don't do this.
 	  </para>
 	</listitem>
       </orderedlist>
+      
+      <para>
+	Some specific guidelines:
+      </para>
 
       <para>
 	Use the @-style of commands, not the !-style. Please be
@@ -1050,6 +1059,89 @@ indicate a place that may require attention for multi-thread safety.
 	when necessary. Use @c to refer to other standard names.
 	(Examples of all these abound in the present code.)
       </para>
+
+      <para>
+	Complicated math functions should use the multi-line
+	format. An example from <filename>random.h</filename>:
+      </para>
+
+      <para>
+<literallayout>
+  /**
+   * @brief A model of a linear congruential random number generator.
+   *
+   * @f[
+   *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m 
+   * @f]
+   */
+</literallayout>
+      </para>
+
+      <para>
+	Be careful about using certain, special characters when
+	writing Doxygen comments. Single and double quotes, and
+	separators in filenames are two common trouble spots. When in
+	doubt, consult the following table.
+      </para>
+
+<table frame='all'>
+<title>HTML to Doxygen markup comparison</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+
+  <thead>
+    <row>
+      <entry>HTML</entry>
+      <entry>Doxygen</entry>
+    </row>
+  </thead>
+
+  <tbody>
+    <row>
+      <entry>\</entry>
+      <entry>\\</entry>
+    </row>
+
+    <row>
+      <entry>&quot;</entry>
+      <entry>\"</entry>
+    </row>
+
+    <row>
+      <entry>&apos;</entry>
+      <entry>\'</entry>
+    </row>
+
+    <row>
+      <entry>&lt;i&gt;</entry>
+      <entry>@a word</entry>
+    </row>
+
+    <row>
+      <entry>&lt;b&gt;</entry>
+      <entry>@b word</entry>
+    </row>
+
+    <row>
+      <entry>&lt;code&gt;</entry>
+      <entry>@c word</entry>
+    </row>
+
+    <row>
+      <entry>&lt;em&gt;</entry>
+      <entry>@a word</entry>
+    </row>
+
+    <row>
+      <entry>&lt;em&gt;</entry>
+      <entry>&lt;em&gt;two words or more&lt;/em&gt;</entry>
+    </row>
+  </tbody>
+
+</tgroup>
+</table>
+
 
     </sect3>
 
@@ -1242,7 +1334,7 @@ table below.
   <thead>
     <row>
       <entry>HTML</entry>
-      <entry>XML</entry>
+      <entry>Docbook</entry>
     </row>
   </thead>
 
@@ -1374,6 +1466,7 @@ table below.
       <entry>
 	<para>&lt;filename class="headerfile"&gt;ctype.h&lt;/filename&gt;</para>
 	<para>&lt;filename class="directory"&gt;/home/gcc/build&lt;/filename&gt;</para>
+	<para>&lt;filename class="libraryfile"&gt;libstdc++.so&lt;/filename&gt;</para>
       </entry>
     </row>
    </tbody>
