@@ -1,3 +1,11 @@
+2010-02-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ext/attrib35.C: Fix target selector string.
+	* g++.dg/ext/attrib36.C: Ditto.
+	* g++.dg/ext/attrib37.C: Ditto.
+	* g++.dg/abi/mangle24.C: Remove stray "*/" from dg directives.
+	* g++.dg/abi/mangle25.C: Ditto.
+
 2010-02-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43069
