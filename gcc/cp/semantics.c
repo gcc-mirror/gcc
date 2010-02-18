@@ -2378,6 +2378,7 @@ begin_class_definition (tree t, tree attributes)
       tree ns = TYPE_CONTEXT (t);
       if (ns && TREE_CODE (ns) == NAMESPACE_DECL
 	  && DECL_CONTEXT (ns) == std_node
+	  && DECL_NAME (ns)
 	  && !strcmp (IDENTIFIER_POINTER (DECL_NAME (ns)), "decimal"))
 	{
 	  const char *n = TYPE_NAME_STRING (t);
