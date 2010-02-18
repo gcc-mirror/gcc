@@ -1,3 +1,8 @@
+2010-02-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43109
+	* g++.dg/parse/namespace12.C: New.
+
 2010-02-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43066
