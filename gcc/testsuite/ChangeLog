@@ -1,5 +1,9 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43070
+	* g++.dg/ext/label1.C: Update.
+	* g++.dg/ext/label2.C: Update.
+
 	PR c++/26261
 	* g++.dg/template/dependent-name6.C: New.
 

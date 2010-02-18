@@ -5,7 +5,7 @@ void f() {
  l:
   void *p[] = { &&l };
 
-  goto *p;
+  goto *p[0];
 }
 
 template void f<int>();
