@@ -162,8 +162,7 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 	  if ((!SCALAR_TYPE_P (param_type)
 	       || !SCALAR_TYPE_P (arg_type)
 	       || (all_scalar && p == 0))
-	      && !comptypes (TYPE_MAIN_VARIANT (param_type),
-			     TYPE_MAIN_VARIANT (arg_type)))
+	      && !lang_hooks.types_compatible_p (param_type, arg_type))
 	    break;
 	}
       if (param == void_list_node)
