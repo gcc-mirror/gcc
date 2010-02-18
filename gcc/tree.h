@@ -2636,7 +2636,7 @@ struct GTY(()) tree_decl_minimal {
    || TREE_CODE (DECL_CONTEXT (EXP)) == TRANSLATION_UNIT_DECL)
 
 /* Nonzero for a decl that is decorated using attribute used.
-   This indicates compiler tools that this decl needs to be preserved.  */
+   This indicates to compiler tools that this decl needs to be preserved.  */
 #define DECL_PRESERVE_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.preserve_flag
 
