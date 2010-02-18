@@ -1,3 +1,9 @@
+2010-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43066
+	* tree-sra.c (build_ref_for_offset_1): Return false on encountering an
+	array with zero-sized element type.
+
 2010-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (add_var_loc_to_decl): Change last argument to

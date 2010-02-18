@@ -1,3 +1,8 @@
+2010-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43066
+	* gcc.c-torture/compile/pr43066.c: New test.
+
 2010-02-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/ext/attrib35.C: Fix target selector string.
