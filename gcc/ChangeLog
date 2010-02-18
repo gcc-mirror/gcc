@@ -1,3 +1,9 @@
+2010-02-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
+
+	* config/arm/lib1funcs.asm (__prefer_thumb__): New define.
+	(udivsi3, aeabi_uidivmod, divsi3, aeabi_idivmod): Use Thumb-1 variant
+	if __prefer_thumb__ is defined.
+
 2010-02-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/43066

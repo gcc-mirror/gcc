@@ -112,6 +112,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #error Unable to determine architecture.
 #endif
 
+/* There are times when we might prefer Thumb1 code even if ARM code is
+   permitted, for example, the code might be smaller, or there might be
+   interworking problems with switching to ARM state if interworking is
+   disabled.  */
+#if (defined(__thumb__)			\
+     && !defined(__thumb2__)		\
+     && (!defined(__THUMB_INTERWORK__)	\
+	 || defined (__OPTIMIZE_SIZE__)	\
+	 || defined(__ARM_ARCH_6M__)))
+# define __prefer_thumb__
+#endif
+
 /* How to return from a function call depends on the architecture variant.  */
 
 #if (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
@@ -917,7 +929,7 @@ LSYM(Lgot_result):
 /* ------------------------------------------------------------------------ */
 #ifdef L_udivsi3
 
-#if defined(__ARM_ARCH_6M__)
+#if defined(__prefer_thumb__)
 
 	FUNC_START udivsi3
 	FUNC_ALIAS aeabi_uidiv udivsi3
@@ -974,7 +986,7 @@ LSYM(udivsi3_skip_div0_test):
 
 	DIV_FUNC_END udivsi3 unsigned
 
-#if defined(__ARM_ARCH_6M__)
+#if defined(__prefer_thumb__)
 FUNC_START aeabi_uidivmod
 	cmp	r1, #0
 	beq	LSYM(Ldiv0)
@@ -1042,7 +1054,7 @@ LSYM(Lover10):
 /* ------------------------------------------------------------------------ */
 #ifdef L_divsi3
 
-#if defined(__ARM_ARCH_6M__)
+#if defined(__prefer_thumb__)
 
 	FUNC_START divsi3	
 	FUNC_ALIAS aeabi_idiv divsi3
@@ -1130,7 +1142,7 @@ LSYM(divsi3_skip_div0_test):
 	
 	DIV_FUNC_END divsi3 signed
 
-#if defined(__ARM_ARCH_6M__)
+#if defined(__prefer_thumb__)
 FUNC_START aeabi_idivmod
 	cmp	r1, #0
 	beq	LSYM(Ldiv0)
