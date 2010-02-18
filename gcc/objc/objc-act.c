@@ -1524,6 +1524,14 @@ finish_var_decl (tree var, tree initializer)
   mark_decl_referenced (var);
   /* Mark the decl to avoid "defined but not used" warning.  */
   TREE_USED (var) = 1;
+  /* We reserve the right for the runtime to use/modify these variables
+     in ways that are opaque to us.  */
+  DECL_PRESERVE_P (var) = 1;
+  /* ipa*.c/cgraphunit.c use lookup attribute rather than testing
+     DECL_PRESERVE_P.  Once they switch to testing DECL_PRESERVE_P,
+     this can be removed. */
+  DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("used"), NULL, 
+				     DECL_ATTRIBUTES (var)) ;
 }
 
 /* Find the decl for the constant string class reference.  This is only
