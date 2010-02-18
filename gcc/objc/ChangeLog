@@ -1,6 +1,7 @@
 2010-02-18  Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
 	    Mike Stump  <mikestump@comcast.net>
 
+	PR objc/43061
 	* objc-act.c (finish_var_decl): Set the generated symbols as "used".
 
 2009-12-17  Shujing Zhao  <pearly.zhao@oracle.com>
