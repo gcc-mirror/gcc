@@ -1,6 +1,7 @@
 /* Output Dwarf2 format symbol table information from GCC.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -5983,7 +5984,7 @@ static hashval_t decl_loc_table_hash (const void *);
 static int decl_loc_table_eq (const void *, const void *);
 static var_loc_list *lookup_decl_loc (const_tree);
 static void equate_decl_number_to_die (tree, dw_die_ref);
-static void add_var_loc_to_decl (tree, struct var_loc_node *);
+static struct var_loc_node *add_var_loc_to_decl (tree, rtx);
 static void print_spaces (FILE *);
 static void print_die (dw_die_ref, FILE *);
 static void print_dwarf_line_table (FILE *);
@@ -7762,12 +7763,13 @@ equate_decl_number_to_die (tree decl, dw_die_ref decl_die)
 
 /* Add a variable location node to the linked list for DECL.  */
 
-static void
-add_var_loc_to_decl (tree decl, struct var_loc_node *loc)
+static struct var_loc_node *
+add_var_loc_to_decl (tree decl, rtx loc_note)
 {
   unsigned int decl_id = DECL_UID (decl);
   var_loc_list *temp;
   void **slot;
+  struct var_loc_node *loc = NULL;
 
   slot = htab_find_slot_with_hash (decl_loc_table, decl, decl_id, INSERT);
   if (*slot == NULL)
@@ -7785,24 +7787,27 @@ add_var_loc_to_decl (tree decl, struct var_loc_node *loc)
 	 and either both or neither of the locations is uninitialized,
 	 we have nothing to do.  */
       if ((!rtx_equal_p (NOTE_VAR_LOCATION_LOC (temp->last->var_loc_note),
-			 NOTE_VAR_LOCATION_LOC (loc->var_loc_note)))
+			 NOTE_VAR_LOCATION_LOC (loc_note)))
 	  || ((NOTE_VAR_LOCATION_STATUS (temp->last->var_loc_note)
-	       != NOTE_VAR_LOCATION_STATUS (loc->var_loc_note))
+	       != NOTE_VAR_LOCATION_STATUS (loc_note))
 	      && ((NOTE_VAR_LOCATION_STATUS (temp->last->var_loc_note)
 		   == VAR_INIT_STATUS_UNINITIALIZED)
-		  || (NOTE_VAR_LOCATION_STATUS (loc->var_loc_note)
+		  || (NOTE_VAR_LOCATION_STATUS (loc_note)
 		      == VAR_INIT_STATUS_UNINITIALIZED))))
 	{
 	  /* Add LOC to the end of list and update LAST.  */
+	  loc = GGC_CNEW (struct var_loc_node);
 	  temp->last->next = loc;
 	  temp->last = loc;
 	}
     }
   else
     {
+      loc = GGC_CNEW (struct var_loc_node);
       temp->first = loc;
       temp->last = loc;
     }
+  return loc;
 }
 
 /* Keep track of the number of spaces used to indent the
@@ -20252,7 +20257,11 @@ dwarf2out_var_location (rtx loc_note)
   if (next_real == NULL_RTX)
     return;
 
-  newloc = GGC_CNEW (struct var_loc_node);
+  decl = NOTE_VAR_LOCATION_DECL (loc_note);
+  newloc = add_var_loc_to_decl (decl, loc_note);
+  if (newloc == NULL)
+    return;
+
   /* If there were no real insns between note we processed last time
      and this note, use the label we emitted last time.  */
   if (last_var_location_insn == NULL_RTX
@@ -20287,8 +20296,6 @@ dwarf2out_var_location (rtx loc_note)
 
   last_var_location_insn = next_real;
   last_in_cold_section_p = in_cold_section_p;
-  decl = NOTE_VAR_LOCATION_DECL (loc_note);
-  add_var_loc_to_decl (decl, newloc);
 }
 
 /* We need to reset the locations at the beginning of each

@@ -1,3 +1,11 @@
+2010-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (add_var_loc_to_decl): Change last argument to
+	rtx, allocate struct var_loc_node here and return it to the
+	caller, and only if it is actually needed.
+	(dwarf2out_var_location): Adjust add_var_loc_to_decl caller,
+	move it earlier and return immediately if it returns NULL.
+
 2010-02-17  Mikael Pettersson  <mikpe@it.uu.se>
 
 	* config/sparc/gas.h: New file.  Restore
