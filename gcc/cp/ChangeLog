@@ -1,5 +1,8 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43070
+	* semantics.c (finish_goto_stmt): Don't call decay_conversion.
+
 	PR c++/26261
 	PR c++/43101
 	* pt.c (tsubst_qualified_id): Do normal lookup in non-dependent scope.

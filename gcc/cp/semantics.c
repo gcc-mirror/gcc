@@ -546,10 +546,8 @@ finish_goto_stmt (tree destination)
     TREE_USED (destination) = 1;
   else
     {
-      /* The DESTINATION is being used as an rvalue.  */
       if (!processing_template_decl)
 	{
-	  destination = decay_conversion (destination);
 	  destination = cp_convert (ptr_type_node, destination);
 	  if (error_operand_p (destination))
 	    return NULL_TREE;
