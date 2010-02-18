@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Concurrency</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_macros.html" title="Macros" /><link rel="next" href="using_exceptions.html" title="Exceptions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_macros.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Concurrency"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.concurrency"></a>Concurrency</h2></div></div></div><p>This section discusses issues surrounding the proper compilation
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Concurrency</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_dynamic_or_shared.html" title="Linking" /><link rel="next" href="using_exceptions.html" title="Exceptions" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Concurrency</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_dynamic_or_shared.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Concurrency"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.concurrency"></a>Concurrency</h2></div></div></div><p>This section discusses issues surrounding the proper compilation
       of multithreaded applications which use the Standard C++
       library.  This information is GCC-specific since the C++
       standard does not address matters of multithreaded applications.
@@ -36,7 +36,7 @@
    </p></div><div class="sect2" title="Thread Safety"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.thread_safety"></a>Thread Safety</h3></div></div></div><p>
 We currently use the <a class="ulink" href="http://www.sgi.com/tech/stl/thread_safety.html" target="_top">SGI STL</a> definition of thread safety.
 </p><p>The library strives to be thread-safe when all of the following
-         conditions are met:
+	 conditions are met:
       </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>The system's libc is itself thread-safe,
        </p></li><li class="listitem"><p>
 	   The compiler in use reports a thread model other than
@@ -57,13 +57,13 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 Dependent Options</a>.
        </p></li><li class="listitem"><p>
 	   An implementation of atomicity.h functions
-           exists for the architecture in question. See the internals documentation for more <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">details</a>.
+	   exists for the architecture in question. See the internals documentation for more <a class="link" href="internals.html#internals.thread_safety" title="Thread Safety">details</a>.
        </p></li></ul></div><p>The user-code must guard against concurrent method calls which may
-         access any particular library object's state.  Typically, the
-         application programmer may infer what object locks must be held
-         based on the objects referenced in a method call.  Without getting
-         into great detail, here is an example which requires user-level
-         locks:
+	 access any particular library object's state.  Typically, the
+	 application programmer may infer what object locks must be held
+	 based on the objects referenced in a method call.  Without getting
+	 into great detail, here is an example which requires user-level
+	 locks:
       </p><pre class="programlisting">
      library_class_a shared_object_a;
 
@@ -74,8 +74,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
      }
 
      // Multiple copies of thread_main() are started in independent threads.</pre><p>Under the assumption that object_a and object_b are never exposed to
-         another thread, here is an example that should not require any
-         user-level locks:
+	 another thread, here is an example that should not require any
+	 user-level locks:
       </p><pre class="programlisting">
      thread_main () {
        library_class_a object_a;
@@ -83,12 +83,12 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
        object_a.add_b (object_b);
        object_a.mutate ();
      } </pre><p>All library objects are safe to use in a multithreaded program as
-         long as each thread carefully locks out access by any other
-         thread while it uses any object visible to another thread, i.e.,
-         treat library objects like any other shared resource.  In general,
-         this requirement includes both read and write access to objects;
-         unless otherwise documented as safe, do not assume that two threads
-         may access a shared standard library object at the same time.
+	 long as each thread carefully locks out access by any other
+	 thread while it uses any object visible to another thread, i.e.,
+	 treat library objects like any other shared resource.  In general,
+	 this requirement includes both read and write access to objects;
+	 unless otherwise documented as safe, do not assume that two threads
+	 may access a shared standard library object at the same time.
       </p></div><div class="sect2" title="Atomics"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.atomics"></a>Atomics</h3></div></div></div><p>
     </p></div><div class="sect2" title="IO"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.io"></a>IO</h3></div></div></div><p>This gets a bit tricky.  Please read carefully, and bear with me.
    </p><div class="sect3" title="Structure"><div class="titlepage"><div><div><h4 class="title"><a id="concurrency.io.structure"></a>Structure</h4></div></div></div><p>A wrapper
@@ -103,7 +103,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       the C stdio layer (again, see the link under Structure).  We do no
       locking ourselves, but simply pass through to calls to <code class="code">fopen</code>,
       <code class="code">fwrite</code>, and so forth.
-   </p><p>So, for 3.0, the question of "is multithreading safe for I/O" 
+   </p><p>So, for 3.0, the question of "is multithreading safe for I/O"
       must be answered with, "is your platform's C library threadsafe
       for I/O?"  Some are by default, some are not; many offer multiple
       implementations of the C library with varying tradeoffs of threadsafety
@@ -180,7 +180,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       code, we use the same definition of thread safety as SGI when
       discussing design.  A key point that beginners may miss is the
       fourth major paragraph of the first page mentioned above
-      ("For most clients,"...), which points out that
+      (<span class="emphasis"><em>For most clients...</em></span>), which points out that
       locking must nearly always be done outside the container, by
       client code (that'd be you, not us).  There is a notable
       exceptions to this rule.  Allocators called while a container or
@@ -202,4 +202,4 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       useful are details
       on <a class="link" href="memory.html#manual.util.memory.allocator" title="Allocators">allocator</a>
       options and capabilities.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_macros.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Macros </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Exceptions</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_dynamic_or_shared.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_exceptions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Linking </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Exceptions</td></tr></table></div></body></html>

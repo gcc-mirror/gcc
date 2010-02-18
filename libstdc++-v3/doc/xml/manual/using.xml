@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ ]>
 
 <chapter id="manual.intro.using" xreflabel="Using">
@@ -8,73 +8,80 @@
 
 <title>Using</title>
 
-  <sect1 id="manual.intro.using.lib" xreflabel="Lib">
-    <title>Linking Library Binary Files</title>
+
+  <sect1 id="manual.intro.using.flags" xreflabel="Flags">
+    <title>Command Options</title>
+    <para>
+      The set of features available in the GNU C++ library is shaped
+      by
+      several <ulink url="http://gcc.gnu.org/onlinedocs/gcc-4.3.2//gcc/Invoking-GCC.html">GCC
+      Command Options</ulink>. Options that impact libstdc++ are
+      enumerated and detailed in the table below.
+    </para>
 
     <para>
-      If you only built a static library (libstdc++.a), or if you
-      specified static linking, you don't have to worry about this.
-      But if you built a shared library (libstdc++.so) and linked
-      against it, then you will need to find that library when you run
-      the executable.
+      By default, <command>g++</command> is equivalent to  <command>g++ -std=gnu++98</command>. The standard library also defaults to this dialect.
     </para>
-    <para>
-      Methods vary for different platforms and different styles, but
-      the usual ones are printed to the screen during installation.
-      They include:
-    </para>
-    <itemizedlist>
-      <listitem>
-	<para>
-	  At runtime set LD_LIBRARY_PATH in your environment
-	  correctly, so that the shared library for libstdc++ can be
-	  found and loaded.  Be certain that you understand all of the
-	  other implications and behavior of LD_LIBRARY_PATH first
-	  (few people do, and they get into trouble).
-	</para>
-      </listitem>
-      <listitem>
-	<para>
-	  Compile the path to find the library at runtime into the
-	  program.  This can be done by passing certain options to
-	  g++, which will in turn pass them on to the linker.  The
-	  exact format of the options is dependent on which linker you
-	  use:
-	</para>
-	<itemizedlist>
-	  <listitem>
-	    <para>
-	      GNU ld (default on Linux):<literal>-Wl,--rpath,<filename class="directory">destdir</filename>/lib</literal>
-	    </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      IRIX ld:<literal>
-	      -Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
-	    </para>
-	  </listitem>
-	  <listitem>
-	  <para>
-	  Solaris ld:<literal>-Wl,-R<filename class="directory">destdir</filename>/lib</literal>
-	  </para>
-	  </listitem>
-	  <listitem>
-	    <para>
-	      More...?  Let us know!
-	    </para>
-	  </listitem>
-	</itemizedlist>
-      </listitem>
-    </itemizedlist>
-    <para>
-      Use the <command>ldd</command> utility to show which library the
-      system thinks it will get at runtime.
-    </para>
-    <para>
-      A libstdc++.la file is also installed, for use with Libtool.  If
-      you use Libtool to create your executables, these details are
-      taken care of for you.
-    </para>    
+
+ <table frame='all'>
+<title>C++ Command Options</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='c1'></colspec>
+<colspec colname='c2'></colspec>
+
+  <thead>
+    <row>
+      <entry>Option Flags</entry>
+      <entry>Description</entry>
+    </row>
+  </thead>
+
+  <tbody>
+    <row>
+      <entry><literal>-std=c++98</literal></entry>
+      <entry>Use the 1998 ISO C++ standard plus amendments.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=gnu++98</literal></entry>
+      <entry>As directly above, with GNU extensions.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=c++0x</literal></entry>
+      <entry>Use the working draft of the upcoming ISO C++0x standard.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=gnu++0x</literal></entry>
+      <entry>As directly above, with GNU extensions.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-fexceptions</literal></entry>
+      <entry>See <link linkend="intro.using.exception.no">exception-free dialect</link></entry>
+    </row>
+
+    <row>
+      <entry><literal>-frtti</literal></entry>
+      <entry>As above, but RTTI-free dialect.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-pthread</literal> or <literal>-pthreads</literal></entry>
+      <entry>For ISO C++0x &lt;thread&gt;, &lt;future&gt;,
+      &lt;mutex&gt;, or &lt;condition_variable&gt;.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-fopenmp</literal></entry>
+      <entry>For <link linkend="manual.ext.parallel_mode">parallel</link> mode.</entry>
+    </row>
+  </tbody>
+
+</tgroup>
+</table>
+
   </sect1>
 
   <sect1 id="manual.intro.using.headers" xreflabel="Headers">
@@ -98,7 +105,7 @@
    That said, in practice files are used.
    </para>
 
-   <para> 
+   <para>
      There are two main types of include files: header files related
      to a specific version of the ISO C++ standard (called Standard
      Headers), and all others (TR1, C++ ABI, and Extensions).
@@ -731,7 +738,7 @@ thirty megabytes. </para>
 <para>How to use the resulting file.</para>
 
 <programlisting>
-g++ -I. -include stdc++.h  -H -g -O2 hello.cc 
+g++ -I. -include stdc++.h  -H -g -O2 hello.cc
 </programlisting>
 
 <para>Verification that the PCH file is being used is easy:</para>
@@ -750,6 +757,147 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </para>
 
     </sect2>
+  </sect1>
+
+
+  <sect1 id="manual.intro.using.macros" xreflabel="Macros">
+    <?dbhtml filename="using_macros.html"?>
+    <title>Macros</title>
+
+   <para>
+     All library macros begin with <code>_GLIBCXX_</code>.
+   </para>
+
+   <para>
+     Furthermore, all pre-processor macros, switches, and
+      configuration options are gathered in the
+      file <filename class="headerfile">c++config.h</filename>, which
+      is generated during the libstdc++ configuration and build
+      process. This file is then included when needed by files part of
+      the public libstdc++ API, like &lt;ios&gt;. Most of these macros
+      should not be used by consumers of libstdc++, and are reserved
+      for internal implementation use. <emphasis>These macros cannot
+      be redefined</emphasis>.
+   </para>
+
+   <para>
+     A select handful of macros control libstdc++ extensions and extra
+      features, or provide versioning information for the API.  Only
+      those macros listed below are offered for consideration by the
+      general public.
+   </para>
+
+   <para>Below is the macro which users may check for library version
+      information. </para>
+
+    <variablelist>
+    <varlistentry>
+      <term><code>__GLIBCXX__</code></term>
+      <listitem>
+	<para>The current version of
+    libstdc++ in compressed ISO date format, form of an unsigned
+    long. For details on the value of this particular macro for a
+    particular release, please consult this <link linkend="appendix.porting.abi">
+    document</link>.
+    </para>
+    </listitem>
+    </varlistentry>
+    </variablelist>
+
+   <para>Below are the macros which users may change with #define/#undef or
+      with -D/-U compiler flags.  The default state of the symbol is
+      listed.</para>
+
+   <para><quote>Configurable</quote> (or <quote>Not configurable</quote>) means
+      that the symbol is initially chosen (or not) based on
+      --enable/--disable options at library build and configure time
+      (documented <link linkend="manual.intro.setup.configure">here</link>), with the
+      various --enable/--disable choices being translated to
+      #define/#undef).
+   </para>
+
+   <para> <acronym>ABI</acronym> means that changing from the default value may
+  mean changing the <acronym>ABI</acronym> of compiled code. In other words, these
+  choices control code which has already been compiled (i.e., in a
+  binary such as libstdc++.a/.so).  If you explicitly #define or
+  #undef these macros, the <emphasis>headers</emphasis> may see different code
+  paths, but the <emphasis>libraries</emphasis> which you link against will not.
+  Experimenting with different values with the expectation of
+  consistent linkage requires changing the config headers before
+  building/installing the library.
+   </para>
+
+    <variablelist>
+    <varlistentry><term><code>_GLIBCXX_DEPRECATED</code></term>
+    <listitem>
+      <para>
+	Defined by default. Not configurable. ABI-changing. Turning this off
+	removes older ARM-style iostreams code, and other anachronisms
+	from the API.  This macro is dependent on the version of the
+	standard being tracked, and as a result may give different results for
+	<code>-std=c++98</code> and <code>-std=c++0x</code>. This may
+	be useful in updating old C++ code which no longer meet the
+	requirements of the language, or for checking current code
+	against new language standards.
+    </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_FORCE_NEW</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined, memory allocation and
+	allocators controlled by libstdc++ call operator new/delete
+	without caching and pooling. Configurable via
+	<code>--enable-libstdcxx-allocator</code>. ABI-changing.
+      </para>
+    </listitem></varlistentry>
+
+
+    <varlistentry><term><code>_GLIBCXX_CONCEPT_CHECKS</code></term>
+    <listitem>
+      <para>
+	Undefined by default.  Configurable via
+	<code>--enable-concept-checks</code>.  When defined, performs
+	compile-time checking on certain template instantiations to
+	detect violations of the requirements of the standard.  This
+	is described in more detail <link
+	linkend="manual.ext.compile_checks">here</link>.
+      </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_DEBUG</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined, compiles user code using
+    the <link linkend="manual.ext.debug_mode">debug mode</link>.
+      </para>
+    </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_DEBUG_PEDANTIC</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined while compiling with
+    the <link linkend="manual.ext.debug_mode">debug mode</link>, makes
+    the debug mode extremely picky by making the use of libstdc++
+    extensions and libstdc++-specific behavior into errors.
+      </para>
+    </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
+    <listitem>
+      <para>Undefined by default. When defined, compiles user code
+    using the <link linkend="manual.ext.parallel_mode">parallel
+    mode</link>.
+      </para>
+    </listitem></varlistentry>
+
+    <varlistentry><term><code>_GLIBCXX_PROFILE</code></term>
+    <listitem>
+      <para>Undefined by default. When defined, compiles user code
+    using the <link linkend="manual.ext.profile_mode">profile
+    mode</link>.
+      </para>
+    </listitem></varlistentry>
+    </variablelist>
+
   </sect1>
 
   <sect1 id="manual.intro.using.namespaces" xreflabel="Namespaces">
@@ -786,7 +934,7 @@ and <code>__gnu_pbds</code>.
 </para></listitem>
 </itemizedlist>
 
-<para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</ulink>. 
+<para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</ulink>.
 </para>
 
 
@@ -838,7 +986,7 @@ naming prefixes or macros, etc.
 	currently active namespace(s). For example:
 </para>
 <programlisting>
-namespace gtk 
+namespace gtk
 {
   using std::string;
   using std::tr1::array;
@@ -849,8 +997,8 @@ namespace gtk
 <para>
 	In this example, <code>std::string</code> gets imported into
 	<code>namespace gtk</code>.  The result is that use of
-	<code>std::string</code> inside namespace gtk can just use <code>string</code>, without the explicit qualification. 
-	As an added bonus, 
+	<code>std::string</code> inside namespace gtk can just use <code>string</code>, without the explicit qualification.
+	As an added bonus,
 	<code>std::string</code> does not get imported into
 	the global namespace.  Additionally, a more elaborate arrangement can be made for backwards compatibility and portability, whereby the
 	<code>using</code>-declarations can wrapped in macros that
@@ -864,131 +1012,200 @@ namespace gtk
     </sect2>
   </sect1>
 
-  <sect1 id="manual.intro.using.macros" xreflabel="Macros">
-    <?dbhtml filename="using_macros.html"?>
-    <title>Macros</title>
+  <sect1 id="manual.intro.using.linkage" xreflabel="Linkage">
+    <?dbhtml filename="using_dynamic_or_shared.html"?>
+    <title>Linking</title>
 
-   <para>All pre-processor switches and configurations are all gathered
-      in the file <code>c++config.h</code>, which is generated during
-      the libstdc++ configuration and build process, and included by
-      files part of the public libstdc++ API. Most of these macros
-      should not be used by consumers of libstdc++, and are reserved
-      for internal implementation use. <emphasis>These macros cannot be
-      redefined</emphasis>. However, a select handful of these macro
-      control libstdc++ extensions and extra features, or provide
-      versioning information for the API, and are able to be used.
-   </para>
+    <sect2 id="manual.intro.using.linkage.freestanding" xreflabel="Freestanding">
+      <title>Almost Nothing</title>
+      <para>
+	Or as close as it gets: freestanding. This is a minimal
+	configuration, with only partial support for the standard
+	library. Assume only the following header files can be used:
+      </para>
 
-   <para>All library macros begin with <code>_GLIBCXX_</code> (except for
-   versions 3.1.x to 3.3.x, which use <code>_GLIBCPP_</code>).
-   </para>
+      <itemizedlist>
+	<listitem>
+	  <para>
+	    <filename class="headerfile">cstdarg</filename>
+	  </para>
+	</listitem>
 
-   <para>Below is the macro which users may check for library version
-      information. </para>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">cstddef</filename>
+	  </para>
+	</listitem>
 
-    <variablelist>
-    <varlistentry>
-      <term><code>__GLIBCXX__</code></term> 
+	<listitem>
+	  <para>
+	  <filename class="headerfile">cstdlib</filename>
+	  </para>
+	</listitem>
+	
+	<listitem>
+	  <para>
+	  <filename class="headerfile">exception</filename>
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	  <filename class="headerfile">limits</filename>
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	  <filename class="headerfile">new</filename>
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	  <filename class="headerfile">exception</filename>
+	  </para>
+	</listitem>
+
+	<listitem>
+	  <para>
+	  <filename class="headerfile">typeinfo</filename>
+	  </para>
+	</listitem>
+      </itemizedlist>
+
+      <para>
+	In addition, throw in 
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">cxxabi.h</filename>.
+	  </para>
+	</listitem>
+      </itemizedlist>
+
+      <para>
+	In the
+	C++0x <link linkend="manual.intro.using.flags">dialect</link> add
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">initializer_list</filename>
+	  </para>
+	</listitem>
+	<listitem>
+	  <para>
+	  <filename class="headerfile">type_traits</filename>
+	  </para>
+	</listitem>
+      </itemizedlist>
+            
+      <para> There exists a library that offers runtime support for
+	just these headers, and it is called
+	<filename class="libraryfile">libsupc++.a</filename>. To use it, compile with <command>gcc</command> instead of <command>g++</command>, like so:
+      </para>
+      
+      <para>
+	<command>gcc foo.cc -lsupc++</command>
+      </para>
+
+      <para>
+	No attempt is made to verify that only the minimal subset
+	identified above is actually used at compile time. Violations
+	are diagnosed as undefined symbols at link time.
+      </para>
+    </sect2>
+
+    <sect2 id="manual.intro.using.linkage.dynamic" xreflabel="Dynamic and Shared">
+      <title>Finding Dynamic or Shared Libraries</title>
+
+    <para>
+      If the only library built is the static library
+      (<filename class="libraryfile">libstdc++.a</filename>), or if
+      specifying static linking, this section is can be skipped.  But
+      if building or using a shared library
+      (<filename class="libraryfile">libstdc++.so</filename>), then
+      additional location information will need to be provided.
+    </para>
+    <para>
+      But how?
+    </para>
+    <para>
+A quick read of the relevant part of the GCC
+      manual, <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b">Compiling
+      C++ Programs</ulink>, specifies linking against a C++
+      library. More details from the
+      GCC <ulink url="http://gcc.gnu.org/faq.html#rpath">FAQ</ulink>,
+      which states <emphasis>GCC does not, by default, specify a
+      location so that the dynamic linker can find dynamic libraries at
+      runtime.</emphasis>
+    </para>
+    <para>
+      Users will have to provide this information.
+    </para>
+    <para>
+      Methods vary for different platforms and different styles, and
+      are printed to the screen during installation. To summarize:
+    </para>
+    <itemizedlist>
       <listitem>
-	<para>The current version of
-    libstdc++ in compressed ISO date format, form of an unsigned
-    long. For details on the value of this particular macro for a
-    particular release, please consult this <link linkend="appendix.porting.abi">
-    document</link>.
+	<para>
+	  At runtime set <literal>LD_LIBRARY_PATH</literal> in your
+	  environment correctly, so that the shared library for
+	  libstdc++ can be found and loaded.  Be certain that you
+	  understand all of the other implications and behavior
+	  of <literal>LD_LIBRARY_PATH</literal> first.
+	</para>
+
+      </listitem>
+      <listitem>
+	<para>
+	  Compile the path to find the library at runtime into the
+	  program.  This can be done by passing certain options to
+	  <command>g++</command>, which will in turn pass them on to
+	  the linker.  The exact format of the options is dependent on
+	  which linker you use:
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      GNU ld (default on Linux):<literal>-Wl,--rpath,<filename class="directory">destdir</filename>/lib</literal>
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      IRIX ld:<literal>
+	      -Wl,-rpath,<filename class="directory">destdir</filename>/lib</literal>
+	    </para>
+	  </listitem>
+	  <listitem>
+	  <para>
+	  Solaris ld:<literal>-Wl,-R<filename class="directory">destdir</filename>/lib</literal>
+	  </para>
+	  </listitem>
+	</itemizedlist>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Use the <command>ldd</command> utility on the linked executable
+      to show
+      which <filename class="libraryfile">libstdc++.so</filename>
+      library the system will get at runtime.
     </para>
-    </listitem>
-    </varlistentry> 
-    </variablelist>
-
-   <para>Below are the macros which users may change with #define/#undef or
-      with -D/-U compiler flags.  The default state of the symbol is
-      listed.</para>
-
-   <para><quote>Configurable</quote> (or <quote>Not configurable</quote>) means
-      that the symbol is initially chosen (or not) based on
-      --enable/--disable options at library build and configure time
-      (documented <link linkend="manual.intro.setup.configure">here</link>), with the
-      various --enable/--disable choices being translated to
-      #define/#undef).
-   </para> 
-
-   <para> <acronym>ABI</acronym> means that changing from the default value may
-  mean changing the <acronym>ABI</acronym> of compiled code. In other words, these
-  choices control code which has already been compiled (i.e., in a
-  binary such as libstdc++.a/.so).  If you explicitly #define or
-  #undef these macros, the <emphasis>headers</emphasis> may see different code
-  paths, but the <emphasis>libraries</emphasis> which you link against will not.
-  Experimenting with different values with the expectation of
-  consistent linkage requires changing the config headers before
-  building/installing the library.
-   </para>   
-
-    <variablelist>
-    <varlistentry><term><code>_GLIBCXX_DEPRECATED</code></term>
-    <listitem>
-      <para>
-	Defined by default. Not configurable. ABI-changing. Turning this off
-        removes older ARM-style iostreams code, and other anachronisms
-        from the API.  This macro is dependent on the version of the
-        standard being tracked, and as a result may give different results for
-        <code>-std=c++98</code> and <code>-std=c++0x</code>. This may
-        be useful in updating old C++ code which no longer meet the
-        requirements of the language, or for checking current code
-        against new language standards.  
+    <para>
+      A <filename class="libraryfile">libstdc++.la</filename> file is
+      also installed, for use with Libtool.  If you use Libtool to
+      create your executables, these details are taken care of for
+      you.
     </para>
-    </listitem></varlistentry>
-
-    <varlistentry><term><code>_GLIBCXX_FORCE_NEW</code></term> 
-    <listitem>
-      <para>
-	Undefined by default. When defined, memory allocation and
-	allocators controlled by libstdc++ call operator new/delete
-	without caching and pooling. Configurable via
-	<code>--enable-libstdcxx-allocator</code>. ABI-changing.
-      </para>
-    </listitem></varlistentry>
+    </sect2>
+  </sect1>
 
 
-    <varlistentry><term><code>_GLIBCXX_CONCEPT_CHECKS</code></term> 
-    <listitem>
-      <para>
-	Undefined by default.  Configurable via
-	<code>--enable-concept-checks</code>.  When defined, performs
-	compile-time checking on certain template instantiations to
-	detect violations of the requirements of the standard.  This
-	is described in more detail <link
-	linkend="manual.ext.compile_checks">here</link>.
-      </para>
-    </listitem></varlistentry>
-
-    <varlistentry><term><code>_GLIBCXX_DEBUG</code></term>
-    <listitem>
-      <para>
-	Undefined by default. When defined, compiles user code using
-    the <link linkend="manual.ext.debug_mode">debug mode</link>.
-      </para>
-    </listitem></varlistentry>
-    <varlistentry><term><code>_GLIBCXX_DEBUG_PEDANTIC</code></term>
-    <listitem>
-      <para>
-	Undefined by default. When defined while compiling with
-    the <link linkend="manual.ext.debug_mode">debug mode</link>, makes
-    the debug mode extremely picky by making the use of libstdc++
-    extensions and libstdc++-specific behavior into errors.
-      </para>
-    </listitem></varlistentry>
-    <varlistentry><term><code>_GLIBCXX_PARALLEL</code></term>
-    <listitem>
-      <para>Undefined by default. When defined, compiles user code
-    using the <link linkend="manual.ext.parallel_mode">parallel
-    mode</link>.
-      </para>
-    </listitem></varlistentry>
-    </variablelist>
-
-
-  </sect1>  
-  
   <sect1 id="manual.intro.using.concurrency" xreflabel="Concurrency">
     <?dbhtml filename="using_concurrency.html"?>
     <title>Concurrency</title>
@@ -1046,7 +1263,7 @@ We currently use the <ulink url="http://www.sgi.com/tech/stl/thread_safety.html"
 
 
       <para>The library strives to be thread-safe when all of the following
-         conditions are met:
+	 conditions are met:
       </para>
       <itemizedlist>
        <listitem>
@@ -1083,17 +1300,17 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
        <listitem>
 	 <para>
 	   An implementation of atomicity.h functions
-           exists for the architecture in question. See the internals documentation for more <link linkend="internals.thread_safety">details</link>.
+	   exists for the architecture in question. See the internals documentation for more <link linkend="internals.thread_safety">details</link>.
        </para>
        </listitem>
 
       </itemizedlist>
       <para>The user-code must guard against concurrent method calls which may
-         access any particular library object's state.  Typically, the
-         application programmer may infer what object locks must be held
-         based on the objects referenced in a method call.  Without getting
-         into great detail, here is an example which requires user-level
-         locks:
+	 access any particular library object's state.  Typically, the
+	 application programmer may infer what object locks must be held
+	 based on the objects referenced in a method call.  Without getting
+	 into great detail, here is an example which requires user-level
+	 locks:
       </para>
       <programlisting>
      library_class_a shared_object_a;
@@ -1106,8 +1323,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
      // Multiple copies of thread_main() are started in independent threads.</programlisting>
       <para>Under the assumption that object_a and object_b are never exposed to
-         another thread, here is an example that should not require any
-         user-level locks:
+	 another thread, here is an example that should not require any
+	 user-level locks:
       </para>
       <programlisting>
      thread_main () {
@@ -1117,12 +1334,12 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
        object_a.mutate ();
      } </programlisting>
       <para>All library objects are safe to use in a multithreaded program as
-         long as each thread carefully locks out access by any other
-         thread while it uses any object visible to another thread, i.e.,
-         treat library objects like any other shared resource.  In general,
-         this requirement includes both read and write access to objects;
-         unless otherwise documented as safe, do not assume that two threads
-         may access a shared standard library object at the same time.
+	 long as each thread carefully locks out access by any other
+	 thread while it uses any object visible to another thread, i.e.,
+	 treat library objects like any other shared resource.  In general,
+	 this requirement includes both read and write access to objects;
+	 unless otherwise documented as safe, do not assume that two threads
+	 may access a shared standard library object at the same time.
       </para>
 
 
@@ -1159,7 +1376,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       locking ourselves, but simply pass through to calls to <code>fopen</code>,
       <code>fwrite</code>, and so forth.
    </para>
-   <para>So, for 3.0, the question of &quot;is multithreading safe for I/O&quot; 
+   <para>So, for 3.0, the question of &quot;is multithreading safe for I/O&quot;
       must be answered with, &quot;is your platform's C library threadsafe
       for I/O?&quot;  Some are by default, some are not; many offer multiple
       implementations of the C library with varying tradeoffs of threadsafety
@@ -1262,7 +1479,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       code, we use the same definition of thread safety as SGI when
       discussing design.  A key point that beginners may miss is the
       fourth major paragraph of the first page mentioned above
-      (&quot;For most clients,&quot;...), which points out that
+      (<emphasis>For most clients...</emphasis>), which points out that
       locking must nearly always be done outside the container, by
       client code (that'd be you, not us).  There is a notable
       exceptions to this rule.  Allocators called while a container or
@@ -1286,18 +1503,18 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       useful are details
       on <link linkend="manual.util.memory.allocator">allocator</link>
       options and capabilities.
-   </para> 
+   </para>
 
     </sect2>
 </sect1>
 
 <!-- Section 0x : Exception policies, expectations, topics -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	    parse="xml" href="using_exceptions.xml">
 </xi:include>
 
 <!-- Section 0x : Debug -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
 	    parse="xml" href="debug.xml">
 </xi:include>
 

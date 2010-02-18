@@ -22,8 +22,10 @@ Working Draft, Standard for Programming Language C++
 
 <para>
 In this implementation <literal>-std=gnu++0x</literal> or
-<literal>-std=c++0x</literal> flags must be used to enable language and
-library features. The pre-defined symbol
+<literal>-std=c++0x</literal> flags must be used to enable language
+and library
+features. See <link linkend="manual.intro.using.flags">dialect</link>
+options. The pre-defined symbol
 <constant>__GXX_EXPERIMENTAL_CXX0X__</constant> is used to check for the
 presence of the required flag.
 </para>

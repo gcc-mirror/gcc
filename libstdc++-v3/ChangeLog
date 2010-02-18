@@ -1,3 +1,12 @@
+2010-02-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/using.xml: Update.
+	* doc/xml/manual/status_cxx1998.xml: Same.
+	* doc/xml/manual/status_cxx200x.xml: Add link.
+	* doc/html/*: Regenerate.
+
+	* testsuite/17_intro/freestanding.cc: Add.
+
 2010-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libsupc++/typeinfo: Add system_header pragma.

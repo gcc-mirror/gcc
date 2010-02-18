@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Linking</title><meta name="generator" content="DocBook XSL Stylesheets V1.75.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_namespaces.html" title="Namespaces" /><link rel="next" href="using_concurrency.html" title="Concurrency" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Linking</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="Linking"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.linkage"></a>Linking</h2></div></div></div><div class="sect2" title="Almost Nothing"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.freestanding"></a>Almost Nothing</h3></div></div></div><p>
+	Or as close as it gets: freestanding. This is a minimal
+	configuration, with only partial support for the standard
+	library. Assume only the following header files can be used:
+      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	    <code class="filename">cstdarg</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">cstddef</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">cstdlib</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">exception</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">limits</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">new</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">exception</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">typeinfo</code>
+	  </p></li></ul></div><p>
+	In addition, throw in 
+      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	  <code class="filename">cxxabi.h</code>.
+	  </p></li></ul></div><p>
+	In the
+	C++0x <a class="link" href="using.html#manual.intro.using.flags" title="Command Options">dialect</a> add
+      </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	  <code class="filename">initializer_list</code>
+	  </p></li><li class="listitem"><p>
+	  <code class="filename">type_traits</code>
+	  </p></li></ul></div><p> There exists a library that offers runtime support for
+	just these headers, and it is called
+	<code class="filename">libsupc++.a</code>. To use it, compile with <span class="command"><strong>gcc</strong></span> instead of <span class="command"><strong>g++</strong></span>, like so:
+      </p><p>
+	<span class="command"><strong>gcc foo.cc -lsupc++</strong></span>
+      </p><p>
+	No attempt is made to verify that only the minimal subset
+	identified above is actually used at compile time. Violations
+	are diagnosed as undefined symbols at link time.
+      </p></div><div class="sect2" title="Finding Dynamic or Shared Libraries"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.linkage.dynamic"></a>Finding Dynamic or Shared Libraries</h3></div></div></div><p>
+      If the only library built is the static library
+      (<code class="filename">libstdc++.a</code>), or if
+      specifying static linking, this section is can be skipped.  But
+      if building or using a shared library
+      (<code class="filename">libstdc++.so</code>), then
+      additional location information will need to be provided.
+    </p><p>
+      But how?
+    </p><p>
+A quick read of the relevant part of the GCC
+      manual, <a class="ulink" href="http://gcc.gnu.org/onlinedocs/gcc/Invoking-G_002b_002b.html#Invoking-G_002b_002b" target="_top">Compiling
+      C++ Programs</a>, specifies linking against a C++
+      library. More details from the
+      GCC <a class="ulink" href="http://gcc.gnu.org/faq.html#rpath" target="_top">FAQ</a>,
+      which states <span class="emphasis"><em>GCC does not, by default, specify a
+      location so that the dynamic linker can find dynamic libraries at
+      runtime.</em></span>
+    </p><p>
+      Users will have to provide this information.
+    </p><p>
+      Methods vary for different platforms and different styles, and
+      are printed to the screen during installation. To summarize:
+    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+	  At runtime set <code class="literal">LD_LIBRARY_PATH</code> in your
+	  environment correctly, so that the shared library for
+	  libstdc++ can be found and loaded.  Be certain that you
+	  understand all of the other implications and behavior
+	  of <code class="literal">LD_LIBRARY_PATH</code> first.
+	</p></li><li class="listitem"><p>
+	  Compile the path to find the library at runtime into the
+	  program.  This can be done by passing certain options to
+	  <span class="command"><strong>g++</strong></span>, which will in turn pass them on to
+	  the linker.  The exact format of the options is dependent on
+	  which linker you use:
+	</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
+	      GNU ld (default on Linux):<code class="literal">-Wl,--rpath,<code class="filename">destdir</code>/lib</code>
+	    </p></li><li class="listitem"><p>
+	      IRIX ld:<code class="literal">
+	      -Wl,-rpath,<code class="filename">destdir</code>/lib</code>
+	    </p></li><li class="listitem"><p>
+	  Solaris ld:<code class="literal">-Wl,-R<code class="filename">destdir</code>/lib</code>
+	  </p></li></ul></div></li></ul></div><p>
+      Use the <span class="command"><strong>ldd</strong></span> utility on the linked executable
+      to show
+      which <code class="filename">libstdc++.so</code>
+      library the system will get at runtime.
+    </p><p>
+      A <code class="filename">libstdc++.la</code> file is
+      also installed, for use with Libtool.  If you use Libtool to
+      create your executables, these details are taken care of for
+      you.
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_namespaces.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_concurrency.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Namespaces </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Concurrency</td></tr></table></div></body></html>
