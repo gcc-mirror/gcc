@@ -3568,8 +3568,10 @@ Valid choices are 'yes' and 'no'.]) ;;
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
    [if test x$host = x$build -a x$host = x$target &&
        glibcver=`ldd --version 2>/dev/null | sed 's/.* //;q'`; then
+changequote(,)dnl
       glibcmajor=`expr "$glibcver" : "\([0-9]*\)"`
       glibcminor=`expr "$glibcver" : "[2-9]*\.\([0-9]*\)"`
+changequote([,])dnl
       glibcnum=`expr $glibcmajor \* 1000 + $glibcminor`
       if test "$glibcnum" -ge 2011 ; then
         enable_gnu_unique_object=yes
@@ -3869,25 +3871,27 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
       fi
       # glibc 2.4 and later provides __stack_chk_fail and
       # either __stack_chk_guard, or TLS access to stack guard canary.
+changequote(,)dnl
       if test -f $glibc_header_dir/features.h \
-	 && $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GNU_LIBRARY__[ 	]+([1-9][0-9]|[6-9])' \
+	 && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GNU_LIBRARY__[ 	]+([1-9][0-9]|[6-9])' \
 	    $glibc_header_dir/features.h > /dev/null; then
-	if $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GLIBC__[ 	]+([1-9][0-9]|[3-9])' \
+	if $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+([1-9][0-9]|[3-9])' \
 	   $glibc_header_dir/features.h > /dev/null; then
 	  gcc_cv_libc_provides_ssp=yes
-	elif $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GLIBC__[ 	]+2' \
+	elif $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+2' \
 	     $glibc_header_dir/features.h > /dev/null \
-	     && $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GLIBC_MINOR__[ 	]+([1-9][0-9]|[4-9])' \
+	     && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC_MINOR__[ 	]+([1-9][0-9]|[4-9])' \
 	     $glibc_header_dir/features.h > /dev/null; then
 	  gcc_cv_libc_provides_ssp=yes
-	elif $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__UCLIBC__[ 	]+1' \
+	elif $EGREP '^[ 	]*#[ 	]*define[ 	]+__UCLIBC__[ 	]+1' \
 	     $glibc_header_dir/features.h > /dev/null && \
 	     test -f $glibc_header_dir/bits/uClibc_config.h && \
-	     $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__UCLIBC_HAS_SSP__[ 	]+1' \
+	     $EGREP '^[ 	]*#[ 	]*define[ 	]+__UCLIBC_HAS_SSP__[ 	]+1' \
 	     $glibc_header_dir/bits/uClibc_config.h > /dev/null; then
 	  gcc_cv_libc_provides_ssp=yes
 	fi
       fi
+changequote([,])dnl
 	;;
        *-*-gnu*)
 	 # Avoid complicated tests (see

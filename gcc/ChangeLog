@@ -1,3 +1,10 @@
+2010-02-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (gnu-unique-object): Wrap regexps using [] in
+	changequote block.
+	(__stack_chk_fail): Ditto.  Remove quadrigraphs.
+	* configure: Regenerated.
+
 2010-02-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Call
