@@ -1,7 +1,7 @@
 /* Test complex arithmetic with signed zeros.  Pure complex
-   multiplication with 1.0 + 0.0i.  */
+   multiplication with -1.0 + 0.0i.  */
 /* { dg-do run } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99" { target c } } */
 
 #include "complex-sign.h"
 
@@ -11,26 +11,26 @@
     volatile _Complex TYPE a2, b2, c2;					\
     a1 = ENCODE(ZERO, ZEROI, S1, S2);					\
     CHECK_RES (a1, COPY, S1, S2);					\
-    b1 = ONE + ZEROI;							\
+    b1 = -ONE + ZEROI;							\
     c1 = a1 * b1;							\
     CHECK_RES (c1, COPY, SR, SI);					\
-    c1 = a1 * (ONE + ZEROI);						\
+    c1 = a1 * (-ONE + ZEROI);						\
     CHECK_RES (c1, COPY, SR, SI);					\
     a2 = ENCODE(ZERO, ZEROI, S1, S2);					\
     CHECK_RES (a2, COPY, S1, S2);					\
-    b2 = ONE + ZEROI;							\
+    b2 = -ONE + ZEROI;							\
     c2 = a2 * b2;							\
     CHECK_RES (c2, COPY, SR, SI);					\
-    c2 = a2 * (ONE + ZEROI);						\
+    c2 = a2 * (-ONE + ZEROI);						\
     CHECK_RES (c2, COPY, SR, SI);					\
   } while (0)
 
 #define CHECK_MUL(TYPE, COPY, ZERO, ZEROI, ONE)			\
   do {								\
-    CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, +, +, +, +);	\
+    CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, +, +, -, +);	\
     CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, +, -, +, +);	\
-    CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, -, +, -, +);	\
-    CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, -, -, +, -);	\
+    CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, -, +, +, -);	\
+    CHECK_MUL_INT (TYPE, COPY, ZERO, ZEROI, ONE, -, -, +, +);	\
   } while (0)
 
 void

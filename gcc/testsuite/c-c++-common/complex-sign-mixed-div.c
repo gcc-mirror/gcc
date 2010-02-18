@@ -1,7 +1,7 @@
 /* Test complex arithmetic with signed zeros.  Mixed real/complex
    division.  */
 /* { dg-do run } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99" { target c } } */
 
 #include "complex-sign.h"
 

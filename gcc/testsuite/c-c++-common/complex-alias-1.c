@@ -1,9 +1,15 @@
 /* Accesses to complex numbers were sometimes marked as scalar and
    sometimes as struct accesses.  */
 /* { dg-do run } */
-/* { dg-options "-std=c99" } */
+/* { dg-options "-std=c99" { target c } } */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
+#ifdef __cplusplus
+}
+#endif
 static double _Complex *fp_cxd(double _Complex *cx) {
   return cx;
 }

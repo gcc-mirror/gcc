@@ -1,7 +1,13 @@
 /* Common header for complex arithmetic sign tests.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
 extern void exit (int);
+#ifdef __cplusplus
+}
+#endif
 
 #define CHECK_RES(VALUE, COPY, SIGN_REAL, SIGN_IMAG)		\
   do {								\

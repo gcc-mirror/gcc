@@ -1,5 +1,16 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43108
+	* c-c++-common/complex-sign.h,
+	c-c++-common/complex-sign-add.c,
+	c-c++-common/complex-sign-mixed-add.c,
+	c-c++-common/complex-sign-mixed-div.c,
+	c-c++-common/complex-sign-mixed-mul.c,
+	c-c++-common/complex-sign-mixed-sub.c,
+	c-c++-common/complex-sign-mul.c,
+	c-c++-common/complex-sign-sub.c: Move from gcc.dg/torture.
+	Adapt for C++ compilation as well.
+
 	PR c++/43070
 	* g++.dg/ext/label1.C: Update.
 	* g++.dg/ext/label2.C: Update.
