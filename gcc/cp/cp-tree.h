@@ -4896,6 +4896,7 @@ extern tree process_template_parm		(tree, location_t, tree,
 						 bool, bool);
 extern tree end_template_parm_list		(tree);
 extern void end_template_decl			(void);
+extern tree maybe_update_decl_type		(tree, tree);
 extern bool check_default_tmpl_args             (tree, tree, int, int, int);
 extern tree push_template_decl			(tree);
 extern tree push_template_decl_real		(tree, bool);
