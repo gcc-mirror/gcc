@@ -56,18 +56,20 @@
 	other container-like types should read similarly to these
 	member functions.
       </p><p>
-	These points accompany the first list in section 3.1 of the
-	Doxygen manual:
-      </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>Use the Javadoc style...</p></li><li class="listitem"><p>
+	Some commentary to accompany
+	the first list in the <a class="ulink" href="http://www.stack.nl/~dimitri/doxygen/docblocks.html" target="_top">Special
+	Documentation Blocks</a> section of
+	the Doxygen manual:
+      </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>For longer comments, use the Javadoc style...</p></li><li class="listitem"><p>
 	    ...not the Qt style. The intermediate *'s are preferred.
 	  </p></li><li class="listitem"><p>
 	    Use the triple-slash style only for one-line comments (the
-	    <span class="quote">“<span class="quote">brief</span>”</span> mode).  Very recent versions of Doxygen permit
-	    full-mode comments in triple-slash blocks, but the
-	    formatting still comes out wonky.
+	    <span class="quote">“<span class="quote">brief</span>”</span> mode). 
 	  </p></li><li class="listitem"><p>
 	    This is disgusting. Don't do this.
 	  </p></li></ol></div><p>
+	Some specific guidelines:
+      </p><p>
 	Use the @-style of commands, not the !-style. Please be
 	careful about whitespace in your markup comments. Most of the
 	time it doesn't matter; doxygen absorbs most whitespace, and
@@ -84,7 +86,25 @@
 	such as the names of function parameters. Use @e for emphasis
 	when necessary. Use @c to refer to other standard names.
 	(Examples of all these abound in the present code.)
-      </p></div></div><div class="sect2" title="Docbook"><div class="titlepage"><div><div><h3 class="title"><a id="doc_style.docbook"></a>Docbook</h3></div></div></div><div class="sect3" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><p>
+      </p><p>
+	Complicated math functions should use the multi-line
+	format. An example from <code class="filename">random.h</code>:
+      </p><p>
+</p><div class="literallayout"><p><br />
+  /**<br />
+   * @brief A model of a linear congruential random number generator.<br />
+   *<br />
+   * @f[<br />
+   *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m <br />
+   * @f]<br />
+   */<br />
+</p></div><p>
+      </p><p>
+	Be careful about using certain, special characters when
+	writing Doxygen comments. Single and double quotes, and
+	separators in filenames are two common trouble spots. When in
+	doubt, consult the following table.
+      </p><div class="table"><a id="id645775"></a><p class="title"><b>Table A.1. HTML to Doxygen markup comparison</b></p><div class="table-contents"><table summary="HTML to Doxygen markup comparison" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="sect2" title="Docbook"><div class="titlepage"><div><div><h3 class="title"><a id="doc_style.docbook"></a>Docbook</h3></div></div></div><div class="sect3" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><p>
 	Editing the DocBook sources requires an XML editor. Many
 	exist: some notable options
 	include <span class="command"><strong>emacs</strong></span>, <span class="application">Kate</span>,
@@ -211,11 +231,11 @@ Complete details on Docbook markup can be found in the DocBook Element
 Reference, <a class="ulink" href="http://www.docbook.org/tdg/en/html/part2.html" target="_top">online</a>. An
 incomplete reference for HTML to Docbook conversion is detailed in the
 table below.
-</p><div class="table"><a id="id638510"></a><p class="title"><b>Table A.1. HTML to Docbook XML markup comparison</b></p><div class="table-contents"><table summary="HTML to Docbook XML markup comparison" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">XML</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;, 
+</p><div class="table"><a id="id724766"></a><p class="title"><b>Table A.2. HTML to Docbook XML markup comparison</b></p><div class="table-contents"><table summary="HTML to Docbook XML markup comparison" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Docbook</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;, 
 	&lt;literallayout&gt;</td></tr><tr><td align="left">&lt;ul&gt;</td><td align="left">&lt;itemizedlist&gt;</td></tr><tr><td align="left">&lt;ol&gt;</td><td align="left">&lt;orderedlist&gt;</td></tr><tr><td align="left">&lt;il&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;dl&gt;</td><td align="left">&lt;variablelist&gt;</td></tr><tr><td align="left">&lt;dt&gt;</td><td align="left">&lt;term&gt;</td></tr><tr><td align="left">&lt;dd&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;a href=""&gt;</td><td align="left">&lt;ulink url=""&gt;</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">&lt;literal&gt;, &lt;programlisting&gt;</td></tr><tr><td align="left">&lt;strong&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">"</td><td align="left">&lt;quote&gt;</td></tr></tbody></table></div></div><br class="table-break" /><p>
   And examples of detailed markup for which there are no real HTML
   equivalents are listed in the table below.
-</p><div class="table"><a id="id514390"></a><p class="title"><b>Table A.2. Docbook XML Element Use</b></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
+</p><div class="table"><a id="id631420"></a><p class="title"><b>Table A.3. Docbook XML Element Use</b></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
 	<p>&lt;function&gt;clear()&lt;/function&gt;</p>
 	<p>&lt;function&gt;fs.clear()&lt;/function&gt;</p>
       </td></tr><tr><td align="left">&lt;type&gt;</td><td align="left">&lt;type&gt;long long&lt;/type&gt;</td></tr><tr><td align="left">&lt;varname&gt;</td><td align="left">&lt;varname&gt;fs&lt;/varname&gt;</td></tr><tr><td align="left">&lt;literal&gt;</td><td align="left">
@@ -227,4 +247,5 @@ table below.
       </td></tr><tr><td align="left">&lt;command&gt;</td><td align="left">&lt;command&gt;g++&lt;/command&gt;</td></tr><tr><td align="left">&lt;errortext&gt;</td><td align="left">&lt;errortext&gt;In instantiation of&lt;/errortext&gt;</td></tr><tr><td align="left">&lt;filename&gt;</td><td align="left">
 	<p>&lt;filename class="headerfile"&gt;ctype.h&lt;/filename&gt;</p>
 	<p>&lt;filename class="directory"&gt;/home/gcc/build&lt;/filename&gt;</p>
+	<p>&lt;filename class="libraryfile"&gt;libstdc++.so&lt;/filename&gt;</p>
       </td></tr></tbody></table></div></div><br class="table-break" /></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="source_code_style.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="source_design_notes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Coding Style </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Design Notes</td></tr></table></div></body></html>

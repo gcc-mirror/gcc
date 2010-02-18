@@ -29,7 +29,7 @@ drops to zero.
 Derived classes override those functions to destroy resources in a context
 where the correct dynamic type is known. This is an application of the
 technique known as type erasure.
-  </p></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="shared_ptr.impl"></a>Implementation</h3></div></div></div><div class="sect3" title="Class Hierarchy"><div class="titlepage"><div><div><h4 class="title"><a id="id605519"></a>Class Hierarchy</h4></div></div></div><p>
+  </p></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="shared_ptr.impl"></a>Implementation</h3></div></div></div><div class="sect3" title="Class Hierarchy"><div class="titlepage"><div><div><h4 class="title"><a id="id628890"></a>Class Hierarchy</h4></div></div></div><p>
 A <code class="classname">shared_ptr&lt;T&gt;</code> contains a pointer of
 type <span class="type">T*</span> and an object of type
 <code class="classname">__shared_count</code>. The shared_count contains a
@@ -71,7 +71,7 @@ be forwarded to <span class="type">Tp</span>'s constructor.
 Unlike the other <code class="classname">_Sp_counted_*</code> classes, this one is parameterized on the
 type of object, not the type of pointer; this is purely a convenience
 that simplifies the implementation slightly.
-    </p></dd></dl></div></div><div class="sect3" title="Thread Safety"><div class="titlepage"><div><div><h4 class="title"><a id="id525671"></a>Thread Safety</h4></div></div></div><p>
+    </p></dd></dl></div></div><div class="sect3" title="Thread Safety"><div class="titlepage"><div><div><h4 class="title"><a id="id612958"></a>Thread Safety</h4></div></div></div><p>
 The interface of <code class="classname">tr1::shared_ptr</code> was extended for C++0x
 with support for rvalue-references and the other features from
 N2351. As with other libstdc++ headers shared by TR1 and C++0x,
@@ -129,7 +129,7 @@ compiler, standard library, platform etc. For the version of
 shared_ptr in libstdc++ the compiler and library are fixed, which
 makes things much simpler: we have an atomic CAS or we don't, see Lock
 Policy below for details.
-</p></div><div class="sect3" title="Selecting Lock Policy"><div class="titlepage"><div><div><h4 class="title"><a id="id543288"></a>Selecting Lock Policy</h4></div></div></div><p> 
+</p></div><div class="sect3" title="Selecting Lock Policy"><div class="titlepage"><div><div><h4 class="title"><a id="id637767"></a>Selecting Lock Policy</h4></div></div></div><p> 
     </p><p>
 There is a single <code class="classname">_Sp_counted_base</code> class,
 which is a template parameterized on the enum
@@ -170,7 +170,7 @@ used when libstdc++ is built without <code class="literal">--enable-threads</cod
        <code class="filename">ext/atomicity.h</code>, which detect if the program
        is multi-threaded.  If only one thread of execution exists in
        the program then less expensive non-atomic operations are used.
-     </p></div><div class="sect3" title="Dual C++0x and TR1 Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="id561010"></a>Dual C++0x and TR1 Implementation</h4></div></div></div><p>
+     </p></div><div class="sect3" title="Dual C++0x and TR1 Implementation"><div class="titlepage"><div><div><h4 class="title"><a id="id618991"></a>Dual C++0x and TR1 Implementation</h4></div></div></div><p>
 The classes derived from <code class="classname">_Sp_counted_base</code> (see Class Hierarchy
 below) and <code class="classname">__shared_count</code> are implemented separately for C++0x
 and TR1, in <code class="filename">bits/boost_sp_shared_count.h</code> and
@@ -181,7 +181,7 @@ The TR1 implementation is considered relatively stable, so is unlikely to
 change unless bug fixes require it.  If the code that is common to both
 C++0x and TR1 modes needs to diverge further then it might be necessary to 
 duplicate additional classes and only make changes to the C++0x versions.
-</p></div><div class="sect3" title="Related functions and classes"><div class="titlepage"><div><div><h4 class="title"><a id="id577743"></a>Related functions and classes</h4></div></div></div><div class="variablelist"><dl><dt><span class="term"><code class="code">dynamic_pointer_cast</code>, <code class="code">static_pointer_cast</code>,
+</p></div><div class="sect3" title="Related functions and classes"><div class="titlepage"><div><div><h4 class="title"><a id="id589355"></a>Related functions and classes</h4></div></div></div><div class="variablelist"><dl><dt><span class="term"><code class="code">dynamic_pointer_cast</code>, <code class="code">static_pointer_cast</code>,
 <code class="code">const_pointer_cast</code></span></dt><dd><p>
 As noted in N2351, these functions can be implemented non-intrusively using
 the alias constructor.  However the aliasing constructor is only available
@@ -214,10 +214,10 @@ is called.  Users should not try to use this.
 As well as the extra constructors, this implementation also needs some
 members of _Sp_counted_deleter to be protected where they could otherwise
 be private.
-    </p></dd></dl></div></div></div><div class="sect2" title="Use"><div class="titlepage"><div><div><h3 class="title"><a id="shared_ptr.using"></a>Use</h3></div></div></div><div class="sect3" title="Examples"><div class="titlepage"><div><div><h4 class="title"><a id="id542221"></a>Examples</h4></div></div></div><p> 
+    </p></dd></dl></div></div></div><div class="sect2" title="Use"><div class="titlepage"><div><div><h3 class="title"><a id="shared_ptr.using"></a>Use</h3></div></div></div><div class="sect3" title="Examples"><div class="titlepage"><div><div><h4 class="title"><a id="id619880"></a>Examples</h4></div></div></div><p> 
       Examples of use can be found in the testsuite, under
       <code class="filename">testsuite/tr1/2_general_utilities/shared_ptr</code>.
-    </p></div><div class="sect3" title="Unresolved Issues"><div class="titlepage"><div><div><h4 class="title"><a id="id542238"></a>Unresolved Issues</h4></div></div></div><p> 
+    </p></div><div class="sect3" title="Unresolved Issues"><div class="titlepage"><div><div><h4 class="title"><a id="id653780"></a>Unresolved Issues</h4></div></div></div><p> 
       The resolution to C++ Standard Library issue <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#674" target="_top">674</a>,
       "shared_ptr interface changes for consistency with N1856" will
       need to be implemented after it is accepted into the working
@@ -265,7 +265,7 @@ be private.
     code to work with, Peter Dimov in particular for his help and
     invaluable advice on thread safety.  Phillip Jordan and Paolo
     Carlini for the lock policy implementation.
-  </p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="shared_ptr.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="Improving shared_ptr for C++0x, Revision 2"><a id="id585842"></a><p>[<abbr class="abbrev">
+  </p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="shared_ptr.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry" title="Improving shared_ptr for C++0x, Revision 2"><a id="id678655"></a><p>[<abbr class="abbrev">
       n2351
     </abbr>] <span class="title"><i>
       Improving shared_ptr for C++0x, Revision 2
@@ -274,7 +274,7 @@ be private.
     . </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry" title="C++ Standard Library Active Issues List (Revision R52)"><a id="id582492"></a><p>[<abbr class="abbrev">
+    . </span></p></div><div class="biblioentry" title="C++ Standard Library Active Issues List (Revision R52)"><a id="id678679"></a><p>[<abbr class="abbrev">
       n2456
     </abbr>] <span class="title"><i>
       C++ Standard Library Active Issues List (Revision R52)
@@ -283,7 +283,7 @@ be private.
     . </span><span class="biblioid">
       <a class="ulink" href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry" title="Working Draft, Standard for Programming Language C++"><a id="id588138"></a><p>[<abbr class="abbrev">
+    . </span></p></div><div class="biblioentry" title="Working Draft, Standard for Programming Language C++"><a id="id661793"></a><p>[<abbr class="abbrev">
       n2461
     </abbr>] <span class="title"><i>
       Working Draft, Standard for Programming Language C++
@@ -292,7 +292,7 @@ be private.
     . </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry" title="Boost C++ Libraries documentation - shared_ptr class template"><a id="id588162"></a><p>[<abbr class="abbrev">
+    . </span></p></div><div class="biblioentry" title="Boost C++ Libraries documentation - shared_ptr class template"><a id="id612415"></a><p>[<abbr class="abbrev">
       boostshared_ptr
     </abbr>] <span class="title"><i>
       Boost C++ Libraries documentation - shared_ptr class template
