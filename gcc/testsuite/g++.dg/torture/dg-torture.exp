@@ -3,5 +3,5 @@
 load_lib g++-dg.exp
 
 dg-init
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] ""
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C $srcdir/c-c++-common/torture/*.c]] ""
 dg-finish
