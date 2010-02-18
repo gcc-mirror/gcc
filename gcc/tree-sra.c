@@ -1432,7 +1432,7 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
 	  el_size = tree_low_cst (tr_size, 1);
 
 	  minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
-	  if (TREE_CODE (minidx) != INTEGER_CST)
+	  if (TREE_CODE (minidx) != INTEGER_CST || el_size == 0)
 	    return false;
 	  if (res)
 	    {
