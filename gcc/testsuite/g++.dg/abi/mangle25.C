@@ -5,9 +5,9 @@
 // "long double".
 // Origin: Joseph Myers <joseph@codesourcery.com>
 // { dg-do compile { target ia64-*-* i?86-*-* x86_64-*-* } }
-// { dg-options "" } */
-// { dg-final { scan-assembler "_Z1fg" { target i?86-*-* x86_64-*-* } } } */
-// { dg-final { scan-assembler "_Z1fg" { target { ia64-*-* && { ! "ia64-*-hpux*" } } } } } */
-// { dg-final { scan-assembler "_Z1fe" { target ia64-*-hpux* } } } */
+// { dg-options "" }
+// { dg-final { scan-assembler "_Z1fg" { target i?86-*-* x86_64-*-* } } }
+// { dg-final { scan-assembler "_Z1fg" { target { ia64-*-* && { ! "ia64-*-hpux*" } } } } }
+// { dg-final { scan-assembler "_Z1fe" { target ia64-*-hpux* } } }
 
 int f(__float128 x) { return 0; }
