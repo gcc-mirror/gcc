@@ -1,3 +1,14 @@
+2010-02-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/40887
+	Backport from trunk.
+	2009-12-24  Julian Brown  <julian@codesourcery.com>
+        	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/arm.c (output_call_mem): Remove armv5 support.
+        * config/arm/arm.md (*call_mem): Disable for armv5. Add note.
+        (*call_value_mem): Likewise.
+
 2010-02-17  Mikael Pettersson  <mikpe@it.uu.se>
 
 	* config/sparc/gas.h: New file.  Restore
