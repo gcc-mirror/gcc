@@ -1,6 +1,6 @@
 // cxxabi.h subset for inclusion by other library headers -*- C++ -*-
   
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -29,6 +29,8 @@
 
 #ifndef _CXXABI_FORCED_H
 #define _CXXABI_FORCED_H 1
+
+#pragma GCC system_header
 
 #pragma GCC visibility push(default)
 

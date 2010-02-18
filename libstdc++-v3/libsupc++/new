@@ -1,7 +1,7 @@
 // The -*- C++ -*- dynamic memory management header.
 
 // Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-// 2003, 2004, 2005, 2006, 2007, 2009
+// 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation
 
 // This file is part of GCC.
@@ -35,6 +35,8 @@
 
 #ifndef _NEW
 #define _NEW
+
+#pragma GCC system_header
 
 #include <cstddef>
 #include <exception>
