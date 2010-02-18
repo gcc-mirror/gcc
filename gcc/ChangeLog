@@ -1,3 +1,14 @@
+2010-02-17  Mikael Pettersson  <mikpe@it.uu.se>
+
+	* config/sparc/gas.h: New file.  Restore
+	TARGET_ASM_NAMED_SECTION to its ELF default.
+	* config/sparc/sysv4.h (TARGET_ASM_NAMED_SECTION): Do not
+	check !HAVE_GNU_AS.
+	* config/sparc/sparc.c (sparc_elf_asm_named_section):
+	Likewise.  Add ATTRIBUTE_UNUSED to prototype.
+	* config.gcc (sparc*-*-linux*): Include sparc/gas.h
+	after sparc/sysv4.h.
+
 2010-02-17  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/mingw32.h (LIBGCJ_SONAME): Fix cut'n'pasto in DLL name.
