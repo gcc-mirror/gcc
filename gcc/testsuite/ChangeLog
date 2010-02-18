@@ -1,5 +1,8 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26261
+	* g++.dg/template/dependent-name6.C: New.
+
 	PR c++/43109
 	* g++.dg/parse/namespace12.C: New.
 

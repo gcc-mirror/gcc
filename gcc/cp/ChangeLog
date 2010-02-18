@@ -1,5 +1,11 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26261
+	PR c++/43101
+	* pt.c (tsubst_qualified_id): Do normal lookup in non-dependent scope.
+	(maybe_update_decl_type): New fn.
+	* parser.c (cp_parser_init_declarator): Use it.
+
 	PR c++/43109
 	* semantics.c (begin_class_definition): Don't crash on unnamed ns.
 

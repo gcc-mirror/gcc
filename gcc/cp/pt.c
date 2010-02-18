@@ -3672,6 +3672,55 @@ current_template_args (void)
   return args;
 }
 
+/* Update the declared TYPE by doing any lookups which were thought to be
+   dependent, but are not now that we know the SCOPE of the declarator.  */
+
+tree
+maybe_update_decl_type (tree orig_type, tree scope)
+{
+  tree type = orig_type;
+
+  if (type == NULL_TREE)
+    return type;
+
+  if (TREE_CODE (orig_type) == TYPE_DECL)
+    type = TREE_TYPE (type);
+
+  if (scope && TYPE_P (scope) && dependent_type_p (scope)
+      && dependent_type_p (type)
+      /* Don't bother building up the args in this case.  */
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM)
+    {
+      /* tsubst in the args corresponding to the template parameters,
+	 including auto if present.  Most things will be unchanged, but
+	 make_typename_type and tsubst_qualified_id will resolve
+	 TYPENAME_TYPEs and SCOPE_REFs that were previously dependent.  */
+      tree args = current_template_args ();
+      tree auto_node = type_uses_auto (type);
+      if (auto_node)
+	{
+	  tree auto_vec = make_tree_vec (1);
+	  TREE_VEC_ELT (auto_vec, 0) = auto_node;
+	  args = add_to_template_args (args, auto_vec);
+	}
+      push_scope (scope);
+      type = tsubst (type, args, tf_warning_or_error, NULL_TREE);
+      pop_scope (scope);
+    }
+
+  if (type == error_mark_node)
+    return orig_type;
+
+  if (TREE_CODE (orig_type) == TYPE_DECL)
+    {
+      if (same_type_p (type, TREE_TYPE (orig_type)))
+	type = orig_type;
+      else
+	type = TYPE_NAME (type);
+    }
+  return type;
+}
+
 /* Return a TEMPLATE_DECL corresponding to DECL, using the indicated
    template PARMS.  If MEMBER_TEMPLATE_P is true, the new template is
    a member template.  Used by push_template_decl below.  */
@@ -10609,14 +10658,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
   else
     expr = name;
 
-  if (dependent_type_p (scope))
-    {
-      tree type = NULL_TREE;
-      if (DECL_P (expr) && !dependent_scope_p (scope))
-	type = TREE_TYPE (expr);
-      return build_qualified_name (type, scope, expr,
-				   QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
-    }
+  if (dependent_scope_p (scope))
+    return build_qualified_name (NULL_TREE, scope, expr,
+				 QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
 
   if (!BASELINK_P (name) && !DECL_P (expr))
     {
