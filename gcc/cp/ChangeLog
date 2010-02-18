@@ -1,5 +1,11 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43108
+	* typeck.c (cp_build_binary_op): Adapt mixed complex/non handling from
+	C build_binary_op.
+	* cp-tree.h (WANT_VECTOR_OR_COMPLEX): Rename from WANT_VECTOR.
+	* cvt.c (build_expr_type_conversion): Allow COMPLEX_TYPE.
+
 	PR c++/43070
 	* semantics.c (finish_goto_stmt): Don't call decay_conversion.
 

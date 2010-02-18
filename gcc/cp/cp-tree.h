@@ -4167,8 +4167,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define WANT_ENUM	4 /* enumerated types */
 #define WANT_POINTER	8 /* pointer types */
 #define WANT_NULL      16 /* null pointer constant */
-#define WANT_VECTOR    32 /* vector types */
-#define WANT_ARITH	(WANT_INT | WANT_FLOAT | WANT_VECTOR)
+#define WANT_VECTOR_OR_COMPLEX 32 /* vector or complex types */
+#define WANT_ARITH	(WANT_INT | WANT_FLOAT | WANT_VECTOR_OR_COMPLEX)
 
 /* Used with comptypes, and related functions, to guide type
    comparison.  */

@@ -1170,8 +1170,9 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	return (desires & WANT_POINTER) ? decay_conversion (expr)
 					: NULL_TREE;
 
+      case COMPLEX_TYPE:
       case VECTOR_TYPE:
-	if ((desires & WANT_VECTOR) == 0)
+	if ((desires & WANT_VECTOR_OR_COMPLEX) == 0)
 	  return NULL_TREE;
 	switch (TREE_CODE (TREE_TYPE (basetype)))
 	  {
@@ -1226,8 +1227,9 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	case POINTER_TYPE:
 	  win = (desires & WANT_POINTER); break;
 
+	case COMPLEX_TYPE:
 	case VECTOR_TYPE:
-	  if ((desires & WANT_VECTOR) == 0)
+	  if ((desires & WANT_VECTOR_OR_COMPLEX) == 0)
 	    break;
 	  switch (TREE_CODE (TREE_TYPE (candidate)))
 	    {
