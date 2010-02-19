@@ -1,3 +1,9 @@
+2010-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/42233
+	* gimplify.c (gimple_boolify): For __builtin_expect call
+	gimple_boolify also on its first argument.
+
 2010-02-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (gnu-unique-object): Wrap regexps using [] in

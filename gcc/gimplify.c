@@ -2720,6 +2720,32 @@ gimple_boolify (tree expr)
   tree type = TREE_TYPE (expr);
   location_t loc = EXPR_LOCATION (expr);
 
+  if (TREE_CODE (expr) == NE_EXPR
+      && TREE_CODE (TREE_OPERAND (expr, 0)) == CALL_EXPR
+      && integer_zerop (TREE_OPERAND (expr, 1)))
+    {
+      tree call = TREE_OPERAND (expr, 0);
+      tree fn = get_callee_fndecl (call);
+
+      /* For __builtin_expect ((long) (x), y) recurse into x as well.  */
+      if (fn
+	  && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (fn) == BUILT_IN_EXPECT
+	  && call_expr_nargs (call) == 2)
+	{
+	  tree arg = CALL_EXPR_ARG (call, 0);
+	  if (arg)
+	    {
+	      if (TREE_CODE (arg) == NOP_EXPR
+		  && TREE_TYPE (arg) == TREE_TYPE (call))
+		arg = TREE_OPERAND (arg, 0);
+	      arg = gimple_boolify (arg);
+	      CALL_EXPR_ARG (call, 0)
+		= fold_convert_loc (loc, TREE_TYPE (call), arg);
+	    }
+	}
+    }
+
   if (TREE_CODE (type) == BOOLEAN_TYPE)
     return expr;
 
