@@ -1,5 +1,10 @@
 2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_algo.h (for_each): Implement resolution of DR 1110.
+	* testsuite/25_algorithms/for_each/1.cc: New.
+
+2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/shared_ptr_base.h (__weak_ptr): Remove deleted
 	comparison operators, per DR 1256.
 	* include/bits/shared_ptr.h (weak_ptr): Likewise.
