@@ -1022,19 +1022,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	_M_refcount._M_swap(__s._M_refcount);
       }
 
-      // Comparisons
-      template<typename _Tp1>
-	bool operator<(const __weak_ptr<_Tp1, _Lp>&) const = delete;
-
-      template<typename _Tp1>
-	bool operator<=(const __weak_ptr<_Tp1, _Lp>&) const = delete;
-
-      template<typename _Tp1>
-	bool operator>(const __weak_ptr<_Tp1, _Lp>&) const = delete;
-
-      template<typename _Tp1>
-	bool operator>=(const __weak_ptr<_Tp1, _Lp>&) const = delete;
-
     private:
       // Used by __enable_shared_from_this.
       void

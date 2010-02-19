@@ -367,16 +367,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return this->expired() ? shared_ptr<_Tp>() : shared_ptr<_Tp>(*this);
 #endif
       }
-
-      // Comparisons
-      template<typename _Tp1>
-	bool operator<(const weak_ptr<_Tp1>&) const = delete;
-      template<typename _Tp1>
-	bool operator<=(const weak_ptr<_Tp1>&) const = delete;
-      template<typename _Tp1>
-	bool operator>(const weak_ptr<_Tp1>&) const = delete;
-      template<typename _Tp1>
-	bool operator>=(const weak_ptr<_Tp1>&) const = delete;
     };
 
   // 20.8.13.3.7 weak_ptr specialized algorithms.

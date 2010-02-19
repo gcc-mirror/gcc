@@ -1,3 +1,10 @@
+2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr_base.h (__weak_ptr): Remove deleted
+	comparison operators, per DR 1256.
+	* include/bits/shared_ptr.h (weak_ptr): Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
 2010-02-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* scripts/run_doxygen: Add shortnames option.
