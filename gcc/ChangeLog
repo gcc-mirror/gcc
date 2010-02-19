@@ -1,3 +1,9 @@
+2010-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42916
+	* tree-vect-slp.c (vect_slp_analyze_bb): Count only real
+	instructions.
+
 2010-02-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure.ac: Replace all uses of changequote in macro arguments

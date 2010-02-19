@@ -1,3 +1,8 @@
+2010-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42916
+	* gcc.dg/pr42916.c: New testcase.
+
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42837

@@ -1273,7 +1273,13 @@ vect_slp_analyze_bb (basic_block bb)
     fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    insns++;
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt)
+	  && !gimple_nop_p (stmt)
+	  && !gimple_code (stmt) == GIMPLE_LABEL)
+	insns++;
+    }
 
   if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
     {
