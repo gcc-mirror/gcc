@@ -1072,7 +1072,7 @@ has_proper_scope_for_analysis (tree t)
   tree type = get_canon_type (TREE_TYPE (t), false, false);
   if (!type) return;
 
-  if (lookup_attribute ("used", DECL_ATTRIBUTES (t)))
+  if (DECL_PRESERVE_P (t))
     {
       mark_interesting_type (type, FULL_ESCAPE);
       return;

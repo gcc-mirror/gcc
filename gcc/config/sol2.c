@@ -70,8 +70,8 @@ solaris_insert_attributes (tree decl, tree *attributes)
 	  {
 	    *attributes = tree_cons (get_identifier ("init"), NULL,
 				     *attributes);
-	    *attributes = tree_cons (get_identifier ("used"), NULL,
-				     *attributes);
+	    TREE_USED (decl) = 1;
+	    DECL_PRESERVE_P (decl) = 1;
 	    next = TREE_CHAIN (*x);
 	    ggc_free (*x);
 	    *x = next;
@@ -87,8 +87,8 @@ solaris_insert_attributes (tree decl, tree *attributes)
 	  {
 	    *attributes = tree_cons (get_identifier ("fini"), NULL,
 				     *attributes);
-	    *attributes = tree_cons (get_identifier ("used"), NULL,
-				     *attributes);
+	    TREE_USED (decl) = 1;
+	    DECL_PRESERVE_P (decl) = 1;
 	    next = TREE_CHAIN (*x);
 	    ggc_free (*x);
 	    *x = next;

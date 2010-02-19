@@ -885,7 +885,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
   for (node = cgraph_nodes; node != first; node = node->next)
     {
       tree decl = node->decl;
-      if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+      if (DECL_PRESERVE_P (decl))
 	{
 	  mark_decl_referenced (decl);
 	  if (node->local.finalized)
@@ -904,7 +904,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
   for (vnode = varpool_nodes; vnode != first_var; vnode = vnode->next)
     {
       tree decl = vnode->decl;
-      if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+      if (DECL_PRESERVE_P (decl))
 	{
 	  mark_decl_referenced (decl);
 	  vnode->force_output = true;
