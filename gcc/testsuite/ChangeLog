@@ -1,3 +1,8 @@
+2010-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43084
+	* gcc.dg/pr43084.c: New test.
+
 2010-02-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42916
