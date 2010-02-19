@@ -1,5 +1,5 @@
 /* Struct-reorg optimization.
-   Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Olga Golovanevsky <olga@il.ibm.com>
    (Initial version of this code was developed
    by Caroline Tice and Mostafa Hagog.)
@@ -497,13 +497,16 @@ add_access_to_acc_sites (gimple stmt, tree var, htab_t accs)
 
        acc = (struct access_site *) xmalloc (sizeof (struct access_site));
        acc->stmt = stmt;
-       acc->vars = VEC_alloc (tree, heap, 10);
+       if (!is_gimple_debug (stmt))
+	 acc->vars = VEC_alloc (tree, heap, 10);
+       else
+	 acc->vars = NULL;
        slot = htab_find_slot_with_hash (accs, stmt,
 					htab_hash_pointer (stmt), INSERT);
        *slot = acc;
-
      }
-   VEC_safe_push (tree, heap, acc->vars, var);
+   if (!is_gimple_debug (stmt))
+     VEC_safe_push (tree, heap, acc->vars, var);
 }
 
 /* This function adds NEW_DECL to function
@@ -1381,6 +1384,13 @@ create_new_general_access (struct access_site *acc, d_str str)
     {
     case GIMPLE_COND:
       create_new_stmts_for_cond_expr (stmt);
+      break;
+
+    case GIMPLE_DEBUG:
+      /* It is very hard to maintain usable debug info after struct peeling,
+	 for now just reset all debug stmts referencing objects that have
+	 been peeled.  */
+      gimple_debug_bind_reset_value (stmt);
       break;
 
     default:
@@ -2494,6 +2504,15 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 
 	if (i != VEC_length (structure, structures))
 	  {
+	    if (is_gimple_debug (stmt))
+	      {
+		d_str str;
+
+		str = VEC_index (structure, structures, i);
+		add_access_to_acc_sites (stmt, NULL, str->accs);
+		*walk_subtrees = 0;
+		break;
+	      }
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "\nThe type ");
@@ -2524,6 +2543,13 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 		d_str str = VEC_index (structure, structures, i);
 		struct field_entry * field =
 		  find_field_in_struct (str, field_decl);
+
+		if (is_gimple_debug (stmt))
+		  {
+		    add_access_to_acc_sites (stmt, NULL, str->accs);
+		    *walk_subtrees = 0;
+		    break;
+		  }
 
 		if (field)
 		  {

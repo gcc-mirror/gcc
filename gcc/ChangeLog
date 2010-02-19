@@ -1,5 +1,13 @@
 2010-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/43084
+	* ipa-struct-reorg.c (add_access_to_acc_sites): For debug stmts don't
+	populate vars array.
+	(create_new_general_access): For debug stmts just reset value.
+	(get_stmt_accesses): For accesses within debug stmts just record them
+	using add_access_to_acc_sites instead of preventing the peeling or
+	counting them as accesses.
+
 	PR middle-end/42233
 	* dojump.c (do_jump) <case TRUTH_NOT_EXPR>: Invert priority.
 
