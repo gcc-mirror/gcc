@@ -4,7 +4,7 @@
 
 extern "C" void abort ();
 
-struct INNER {
+struct INNER { // { dg-warning "inefficient.*vptr" "" { target ia64-*-* hppa*-*-* } }
   virtual int foo() const { return 1; }
 } __attribute__ ((packed));
 

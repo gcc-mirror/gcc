@@ -4554,6 +4554,8 @@ create_vtable_ptr (tree t, tree* virtuals_p)
       DECL_ARTIFICIAL (field) = 1;
       DECL_FIELD_CONTEXT (field) = t;
       DECL_FCONTEXT (field) = t;
+      if (TYPE_PACKED (t))
+	DECL_PACKED (field) = 1;
 
       TYPE_VFIELD (t) = field;
 

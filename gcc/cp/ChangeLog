@@ -1,5 +1,8 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/42837
+	* class.c (create_vtable_ptr): Set DECL_PACKED if type is packed.
+
 	PR c++/43108
 	* typeck.c (cp_build_binary_op): Adapt mixed complex/non handling from
 	C build_binary_op.
