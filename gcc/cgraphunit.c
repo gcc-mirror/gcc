@@ -2110,11 +2110,7 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
      that is not weak also.
      ??? We cannot use COMDAT linkage because there is no
      ABI support for this.  */
-  DECL_EXTERNAL (new_version_node->decl) = 0;
-  DECL_COMDAT_GROUP (new_version_node->decl) = NULL_TREE;
-  TREE_PUBLIC (new_version_node->decl) = 0;
-  DECL_COMDAT (new_version_node->decl) = 0;
-  DECL_WEAK (new_version_node->decl) = 0;
+  cgraph_make_decl_local (new_version_node->decl);
   DECL_VIRTUAL_P (new_version_node->decl) = 0;
   new_version_node->local.externally_visible = 0;
   new_version_node->local.local = 1;

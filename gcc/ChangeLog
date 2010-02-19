@@ -1,3 +1,12 @@
+2010-02-20  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/42344
+	* cgraph.h (cgraph_make_decl_local): Declare.
+	* cgraph.c (cgraph_make_decl_local): New function.
+	(cgraph_make_node_local): Use it.
+	* cgraphunit.c (cgraph_function_versioning): Likewise.
+	* ipa.c (function_and_variable_visibility): Likewise.
+
 2010-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/43121

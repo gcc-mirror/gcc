@@ -86,6 +86,7 @@ The callgraph:
 #include "value-prof.h"
 #include "except.h"
 #include "diagnostic.h"
+#include "rtl.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
@@ -2190,6 +2191,42 @@ cgraph_node_can_be_local_p (struct cgraph_node *node)
 	      || !node->local.externally_visible));
 }
 
+/* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
+   but other code such as notice_global_symbol generates rtl.  */
+void
+cgraph_make_decl_local (tree decl)
+{
+  rtx rtl, symbol;
+
+  if (TREE_CODE (decl) == VAR_DECL)
+    DECL_COMMON (decl) = 0;
+  else if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      DECL_COMDAT (decl) = 0;
+      DECL_COMDAT_GROUP (decl) = 0;
+      DECL_WEAK (decl) = 0;
+      DECL_EXTERNAL (decl) = 0;
+    }
+  else
+    gcc_unreachable ();
+  TREE_PUBLIC (decl) = 0;
+  if (!DECL_RTL_SET_P (decl))
+    return;
+
+  /* Update rtl flags.  */
+  make_decl_rtl (decl);
+
+  rtl = DECL_RTL (decl);
+  if (!MEM_P (rtl))
+    return;
+
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+
+  SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
+}
+
 /* Bring NODE local.  */
 void
 cgraph_make_node_local (struct cgraph_node *node)
@@ -2198,19 +2235,11 @@ cgraph_make_node_local (struct cgraph_node *node)
   if (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
     {
       struct cgraph_node *alias;
-      DECL_COMDAT (node->decl) = 0;
-      DECL_COMDAT_GROUP (node->decl) = 0;
-      TREE_PUBLIC (node->decl) = 0;
-      DECL_WEAK (node->decl) = 0;
-      DECL_EXTERNAL (node->decl) = 0;
+      cgraph_make_decl_local (node->decl);
+
       for (alias = node->same_body; alias; alias = alias->next)
-	{
-	  DECL_COMDAT (alias->decl) = 0;
-	  DECL_COMDAT_GROUP (alias->decl) = 0;
-	  TREE_PUBLIC (alias->decl) = 0;
-	  DECL_WEAK (alias->decl) = 0;
-	  DECL_EXTERNAL (alias->decl) = 0;
-	}
+	cgraph_make_decl_local (alias->decl);
+
       node->local.externally_visible = false;
       node->local.local = true;
       gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);

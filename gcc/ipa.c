@@ -400,9 +400,7 @@ function_and_variable_visibility (bool whole_program)
 	  && !DECL_EXTERNAL (node->decl))
 	{
 	  gcc_assert (whole_program || !TREE_PUBLIC (node->decl));
-	  TREE_PUBLIC (node->decl) = 0;
-	  DECL_COMDAT (node->decl) = 0;
-	  DECL_WEAK (node->decl) = 0;
+	  cgraph_make_decl_local (node->decl);
 	}
       node->local.local = (cgraph_only_called_directly_p (node)
 			   && node->analyzed
@@ -431,8 +429,7 @@ function_and_variable_visibility (bool whole_program)
       if (!vnode->externally_visible)
 	{
 	  gcc_assert (whole_program || !TREE_PUBLIC (vnode->decl));
-	  TREE_PUBLIC (vnode->decl) = 0;
-	  DECL_COMMON (vnode->decl) = 0;
+	  cgraph_make_decl_local (vnode->decl);
 	}
      gcc_assert (TREE_STATIC (vnode->decl));
     }
