@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -3025,7 +3025,7 @@ rtl_lv_add_condition_to_bb (basic_block first_head ,
   op0 = force_operand (op0, NULL_RTX);
   op1 = force_operand (op1, NULL_RTX);
   do_compare_rtx_and_jump (op0, op1, comp, 0,
-			   mode, NULL_RTX, NULL_RTX, label);
+			   mode, NULL_RTX, NULL_RTX, label, -1);
   jump = get_last_insn ();
   JUMP_LABEL (jump) = label;
   LABEL_NUSES (label)++;

@@ -2788,7 +2788,7 @@ expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_PASS_H) $(DF_H) $(DIAGNOSTIC_H) vecprim.h $(SSAEXPAND_H)
 dojump.o : dojump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(OPTABS_H) $(INSN_ATTR_H) insn-config.h \
-   langhooks.h $(GGC_H) gt-dojump.h vecprim.h $(BASIC_BLOCK_H)
+   langhooks.h $(GGC_H) gt-dojump.h vecprim.h $(BASIC_BLOCK_H) output.h
 builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(GIMPLE_H) $(FLAGS_H) $(TARGET_H) $(FUNCTION_H) $(REGS_H) \
    $(EXPR_H) $(OPTABS_H) insn-config.h $(RECOG_H) output.h typeclass.h \

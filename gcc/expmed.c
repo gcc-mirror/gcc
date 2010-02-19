@@ -1,7 +1,7 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -5792,7 +5792,7 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
     {
       label = gen_label_rtx ();
       do_compare_rtx_and_jump (target, const0_rtx, EQ, unsignedp,
-			       mode, NULL_RTX, NULL_RTX, label);
+			       mode, NULL_RTX, NULL_RTX, label, -1);
       emit_move_insn (target, trueval);
       emit_label (label);
       return target;
@@ -5830,7 +5830,7 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
   emit_move_insn (target, trueval);
   label = gen_label_rtx ();
   do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, NULL_RTX,
-			   NULL_RTX, label);
+			   NULL_RTX, label, -1);
 
   emit_move_insn (target, falseval);
   emit_label (label);
@@ -5848,5 +5848,5 @@ do_cmp_and_jump (rtx arg1, rtx arg2, enum rtx_code op, enum machine_mode mode,
 {
   int unsignedp = (op == LTU || op == LEU || op == GTU || op == GEU);
   do_compare_rtx_and_jump (arg1, arg2, op, unsignedp, mode,
-			   NULL_RTX, NULL_RTX, label);
+			   NULL_RTX, NULL_RTX, label, -1);
 }

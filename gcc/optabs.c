@@ -1,6 +1,6 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1127,7 +1127,7 @@ expand_doubleword_shift (enum machine_mode op1_mode, optab binoptab,
 
   NO_DEFER_POP;
   do_compare_rtx_and_jump (cmp1, cmp2, cmp_code, false, op1_mode,
-			   0, 0, subword_label);
+			   0, 0, subword_label, -1);
   OK_DEFER_POP;
 
   if (!expand_superword_shift (binoptab, outof_input, superword_op1,
@@ -3469,7 +3469,7 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   NO_DEFER_POP;
 
   do_compare_rtx_and_jump (target, CONST0_RTX (mode), GE, 0, mode,
-			   NULL_RTX, NULL_RTX, op1);
+			   NULL_RTX, NULL_RTX, op1, -1);
 
   op0 = expand_unop (mode, result_unsignedp ? neg_optab : negv_optab,
                      target, target, 0);
