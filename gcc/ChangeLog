@@ -1,3 +1,9 @@
+2010-02-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 41779
+	* c-common.c (conversion_warning): Remove widening conversions
+	before checking the conversion of integers to reals.
+
 2010-02-19  Mike Stump  <mikestump@comcast.net>
 
 	PR objc/43061
