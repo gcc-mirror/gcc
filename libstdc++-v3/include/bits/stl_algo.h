@@ -4191,7 +4191,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *  @param  first  An input iterator.
    *  @param  last   An input iterator.
    *  @param  f      A unary function object.
-   *  @return   @p f.
+   *  @return   @p f (std::move(@p f) in C++0x).
    *
    *  Applies the function object @p f to each element in the range
    *  @p [first,last).  @p f must not modify the order of the sequence.
@@ -4206,7 +4206,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       __glibcxx_requires_valid_range(__first, __last);
       for (; __first != __last; ++__first)
 	__f(*__first);
-      return __f;
+      return _GLIBCXX_MOVE(__f);
     }
 
   /**
