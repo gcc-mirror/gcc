@@ -1,5 +1,11 @@
 2010-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* ipa-struct-reorg.c (make_field_acc_node, gen_cluster, peel_field):
+	Use XCNEW instead of xcalloc.
+	(add_access_to_acc_sites, create_new_var_node, add_alloc_site): Use
+	XNEW instead of xmalloc.
+	(get_fields): Use XNEWVEC instead of xmalloc.
+
 	PR debug/43084
 	* ipa-struct-reorg.c (add_access_to_acc_sites): For debug stmts don't
 	populate vars array.
