@@ -1881,7 +1881,9 @@ expand_errno_check (tree exp, rtx target)
   /* Test the result; if it is NaN, set errno=EDOM because
      the argument was not in the domain.  */
   do_compare_rtx_and_jump (target, target, EQ, 0, GET_MODE (target),
-                           NULL_RTX, NULL_RTX, lab);
+			   NULL_RTX, NULL_RTX, lab,
+			   /* The jump is very likely.  */
+			   REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1));
 
 #ifdef TARGET_EDOM
   /* If this built-in doesn't throw an exception, set errno directly.  */

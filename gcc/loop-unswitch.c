@@ -1,5 +1,5 @@
 /* Loop unswitching for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -121,7 +121,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       op0 = force_operand (op0, NULL_RTX);
       op1 = force_operand (op1, NULL_RTX);
       do_compare_rtx_and_jump (op0, op1, comp, 0,
-			       mode, NULL_RTX, NULL_RTX, label);
+			       mode, NULL_RTX, NULL_RTX, label, -1);
       jump = get_last_insn ();
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;

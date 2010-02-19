@@ -1,6 +1,6 @@
 /* Definitions for code generation pass of GNU compiler.
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -583,20 +583,20 @@ extern void do_pending_stack_adjust (void);
 extern tree string_constant (tree, tree *);
 
 /* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
-extern void jumpifnot (tree, rtx);
-extern void jumpifnot_1 (enum tree_code, tree, tree, rtx);
+extern void jumpifnot (tree, rtx, int);
+extern void jumpifnot_1 (enum tree_code, tree, tree, rtx, int);
 
 /* Generate code to evaluate EXP and jump to LABEL if the value is nonzero.  */
-extern void jumpif (tree, rtx);
-extern void jumpif_1 (enum tree_code, tree, tree, rtx);
+extern void jumpif (tree, rtx, int);
+extern void jumpif_1 (enum tree_code, tree, tree, rtx, int);
 
 /* Generate code to evaluate EXP and jump to IF_FALSE_LABEL if
    the result is zero, or IF_TRUE_LABEL if the result is one.  */
-extern void do_jump (tree, rtx, rtx);
-extern void do_jump_1 (enum tree_code, tree, tree, rtx, rtx);
+extern void do_jump (tree, rtx, rtx, int);
+extern void do_jump_1 (enum tree_code, tree, tree, rtx, rtx, int);
 
 extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
-				     enum machine_mode, rtx, rtx, rtx);
+				     enum machine_mode, rtx, rtx, rtx, int);
 
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx);
