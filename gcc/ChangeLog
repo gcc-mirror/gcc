@@ -1,3 +1,11 @@
+2010-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/43121
+	* except.c (sjlj_emit_function_enter): Don't call
+	add_reg_br_prob_note, instead add REG_BR_PROB note to the last insn
+	directly.
+	* rtl.h (add_reg_br_prob_note): Remove prototype.
+
 2010-02-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 41779
