@@ -1,5 +1,11 @@
 2010-02-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR 36513
+	* c-c++-common/pr36513.c: New testcase.
+	* c-c++-common/pr36513-2.c: New testcase.
+
+2010-02-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR 41779
 	* c-c++-common/pr41779.c: New.
 
