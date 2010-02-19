@@ -2134,14 +2134,13 @@ fi
 changequote([,])dnl
 
 AC_CACHE_CHECK(linker for .hidden support, gcc_cv_ld_hidden,
-[if test $in_tree_ld = yes ; then
+[[if test $in_tree_ld = yes ; then
   gcc_cv_ld_hidden=no
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 13 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
      gcc_cv_ld_hidden=yes
   fi
 else
-changequote(,)dnl
   gcc_cv_ld_hidden=yes
   if echo "$ld_ver" | grep GNU > /dev/null; then
     if test 0"$ld_date" -lt 20020404; then
@@ -2175,8 +2174,7 @@ changequote(,)dnl
 	;;
     esac
   fi
-changequote([,])dnl
-fi])
+fi]])
 libgcc_visibility=no
 AC_SUBST(libgcc_visibility)
 GCC_TARGET_TEMPLATE([HAVE_GAS_HIDDEN])
@@ -2234,24 +2232,22 @@ L1:
 	.uleb128 1280
 	.sleb128 -1010
 L2:],
- [# GAS versions before 2.11 do not support uleb128,
+[[# GAS versions before 2.11 do not support uleb128,
   # despite appearing to.
   # ??? There exists an elf-specific test that will crash
   # the assembler.  Perhaps it's better to figure out whether
   # arbitrary sections are supported and try the test.
   as_ver=`$gcc_cv_as --version 2>/dev/null | sed 1q`
   if echo "$as_ver" | grep GNU > /dev/null; then
-changequote(,)dnl
     as_vers=`echo $as_ver | sed -n \
 	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
     as_major=`expr "$as_vers" : '\([0-9]*\)'`
     as_minor=`expr "$as_vers" : '[0-9]*\.\([0-9]*\)'`
-changequote([,])dnl
     if test $as_major -eq 2 && test $as_minor -lt 11
     then :
     else gcc_cv_as_leb128=yes
     fi
-  fi],
+  fi]],
   [AC_DEFINE(HAVE_AS_LEB128, 1,
     [Define if your assembler supports .sleb128 and .uleb128.])])
 
@@ -2299,14 +2295,12 @@ gcc_GAS_CHECK_FEATURE([working cfi advance], gcc_cv_as_cfi_advance_working,
 	.skip 512, 0
 	.cfi_adjust_cfa_offset 128
 	.cfi_endproc],
-[
-changequote(,)dnl
+[[
 if $gcc_cv_readelf -wf conftest.o 2>/dev/null \
     | grep 'DW_CFA_advance_loc[12]:[ 	][ 	]*512[ 	]' >/dev/null; then
    gcc_cv_as_cfi_advance_working=yes
 fi
-changequote([,])dnl
-])
+]])
 else
   # no readelf, err on the side of caution
   gcc_cv_as_cfi_advance_working=no
@@ -3566,17 +3560,15 @@ Valid choices are 'yes' and 'no'.]) ;;
    [elf,2,19,52],,
    [.type foo, @gnu_unique_object],,
 # Also check for ld.so support, i.e. glibc 2.11 or higher.
-   [if test x$host = x$build -a x$host = x$target &&
+   [[if test x$host = x$build -a x$host = x$target &&
        glibcver=`ldd --version 2>/dev/null | sed 's/.* //;q'`; then
-changequote(,)dnl
       glibcmajor=`expr "$glibcver" : "\([0-9]*\)"`
       glibcminor=`expr "$glibcver" : "[2-9]*\.\([0-9]*\)"`
-changequote([,])dnl
       glibcnum=`expr $glibcmajor \* 1000 + $glibcminor`
       if test "$glibcnum" -ge 2011 ; then
         enable_gnu_unique_object=yes
       fi
-    fi])])
+    fi]])])
 if test x$enable_gnu_unique_object = xyes; then
   AC_DEFINE(HAVE_GAS_GNU_UNIQUE_OBJECT, 1,
    [Define if your assembler supports @gnu_unique_object.])
@@ -3869,9 +3861,8 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
       else
 	glibc_header_dir=/usr/include
       fi
-      # glibc 2.4 and later provides __stack_chk_fail and
+      [# glibc 2.4 and later provides __stack_chk_fail and
       # either __stack_chk_guard, or TLS access to stack guard canary.
-changequote(,)dnl
       if test -f $glibc_header_dir/features.h \
 	 && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GNU_LIBRARY__[ 	]+([1-9][0-9]|[6-9])' \
 	    $glibc_header_dir/features.h > /dev/null; then
@@ -3890,8 +3881,7 @@ changequote(,)dnl
 	     $glibc_header_dir/bits/uClibc_config.h > /dev/null; then
 	  gcc_cv_libc_provides_ssp=yes
 	fi
-      fi
-changequote([,])dnl
+      fi]
 	;;
        *-*-gnu*)
 	 # Avoid complicated tests (see
@@ -3923,7 +3913,7 @@ case "$target" in
     AC_ARG_WITH(long-double-128,
 [  --with-long-double-128  Use 128-bit long double by default.],
       gcc_cv_target_ldbl128="$with_long_double_128",
-      [gcc_cv_target_ldbl128=no
+      [[gcc_cv_target_ldbl128=no
       if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
 	if test "x$with_sysroot" = x; then
 	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
@@ -3937,12 +3927,10 @@ case "$target" in
       else
 	glibc_header_dir=/usr/include
       fi
-changequote(,)dnl
       grep '^[ 	]*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
         $glibc_header_dir/bits/wordsize.h > /dev/null 2>&1 \
       && gcc_cv_target_ldbl128=yes
-changequote([,])dnl
-      ])
+      ]])
     ;;
 esac
 if test x$gcc_cv_target_ldbl128 = xyes; then
