@@ -1,6 +1,6 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
-   Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -291,7 +291,8 @@ add_test (rtx cond, edge *e, basic_block dest)
   op0 = force_operand (op0, NULL_RTX);
   op1 = force_operand (op1, NULL_RTX);
   label = block_label (dest);
-  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL_RTX, label);
+  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX,
+			   NULL_RTX, label, -1);
 
   jump = get_last_insn ();
   if (!jump || !JUMP_P (jump))
