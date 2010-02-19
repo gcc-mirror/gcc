@@ -375,6 +375,10 @@ XMLROFF_FLAGS = --format=pdf --backend=cairo --warn=1 --debug=1 --continue
 PRINCE = prince
 PRINCE_FLAGS = --log prince.log -o pdf/spine.pdf
 
+# PDF 5
+# dblatex
+DBLATEX_FLAGS = --verbose --pdf -o pdf/spine.pdf
+
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.log
 all: all-am
@@ -567,19 +571,19 @@ doc-html-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doc_doxygen_script} \
-	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir})
+	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir} YES)
 
 doc-man-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doc_doxygen_script} \
-	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir})
+	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir} YES)
 
 doc-xml-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doc_doxygen_script} \
-	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir})
+	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
 doc-xml-doxygen-single: doc-xml-doxygen
 	@echo "Generating doxygen xml single file..."
 	$(XSLTPROC) ${doxygen_xmldir}/combine.xslt ${doxygen_xmldir}/spine.xml > ${doxygen_xmldir}/all.xml;
@@ -631,7 +635,7 @@ doc-fo: $(xml_sources) ${glibcxx_builddir}/doc/fo
 
 # PDF
 # Points to current best xml to PDF generation process.
-doc-pdf: doc-pdf-prince
+doc-pdf: doc-pdf-dblatex
 doc-pdf-fop-xml: $(xml_sources) ${glibcxx_builddir}/doc/pdf 
 	@echo "Generating pdf fop files from xml..."
 	$(FOP) $(FOP_FLAGS) -xml ${top_srcdir}/doc/xml/spine.xml \
@@ -650,6 +654,9 @@ doc-pdf-xmlroff: $(xml_sources) doc-fo
 doc-pdf-prince: $(xml_sources) ${glibcxx_builddir}/doc/pdf
 	@echo "Generating pdf prince files..."
 	$(PRINCE) $(PRINCE_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+doc-pdf-dblatex: $(xml_sources) ${glibcxx_builddir}/doc/pdf
+	@echo "Generating pdf dblatex files..."
+	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
 .PHONY: doc-doxygen-html doc-doxygen-man doc-performance
 

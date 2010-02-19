@@ -587,7 +587,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @ingroup locales
    *
    *  This template class defines classification and conversion functions for
-   *  character sets.  It wraps <cctype> functionality.  Ctype gets used by
+   *  character sets.  It wraps cctype functionality.  Ctype gets used by
    *  streams for many I/O operations.
    *
    *  This template provides the protected virtual functions the developer
