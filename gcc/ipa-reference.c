@@ -306,7 +306,7 @@ has_proper_scope_for_analysis (tree t)
 {
   /* If the variable has the "used" attribute, treat it as if it had a
      been touched by the devil.  */
-  if (lookup_attribute ("used", DECL_ATTRIBUTES (t)))
+  if (DECL_PRESERVE_P (t))
     return false;
 
   /* Do not want to do anything with volatile except mark any

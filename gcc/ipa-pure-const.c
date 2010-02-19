@@ -159,7 +159,7 @@ check_decl (funct_state local,
 
   /* If the variable has the "used" attribute, treat it as if it had a
      been touched by the devil.  */
-  if (lookup_attribute ("used", DECL_ATTRIBUTES (t)))
+  if (DECL_PRESERVE_P (t))
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)

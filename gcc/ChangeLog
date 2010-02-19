@@ -1,3 +1,16 @@
+2010-02-19  Mike Stump  <mikestump@comcast.net>
+
+	PR objc/43061
+	* cgraphunit.c (process_function_and_variable_attributes): Check
+	DECL_PRESERVE_P instead of looking up attribute "used".
+	* ipa-pure-const.c (check_decl): Likewise.
+	* ipa-reference.c (has_proper_scope_for_analysis): Likewise.
+	* ipa-type-escape.c (has_proper_scope_for_analysis): Likewise.
+	* config/sol2.c (solaris_insert_attributes): Set DECL_PRESERVE_P
+	instead of attribute "used".
+	* config/sol2-c.c (solaris_pragma_init): Likewise.
+	(solaris_pragma_fini): Likewise.
+
 2010-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-struct-reorg.c (make_field_acc_node, gen_cluster, peel_field):
