@@ -411,7 +411,8 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label, int prob)
       break;
 
     case TRUTH_NOT_EXPR:
-      do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label, prob);
+      do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label,
+	       inv (prob));
       break;
 
     case COND_EXPR:
