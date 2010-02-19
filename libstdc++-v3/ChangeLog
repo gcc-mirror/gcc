@@ -1,5 +1,14 @@
 2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/tr1_impl/array (array): Add pointer and const_pointer
+	typedefs in C++0x mode, per DR 1306.
+	* testsuite/util/testsuite_containers.h (basic_types): Add pointer
+	and const_pointer typedefs.
+	(pointer_aware_types): Remove.
+	* testsuite/util/testsuite_container_traits.h: Adjust.
+
+2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_algo.h (for_each): Implement resolution of DR 1110.
 	* testsuite/25_algorithms/for_each/1.cc: New.
 
