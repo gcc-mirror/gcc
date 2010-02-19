@@ -2192,12 +2192,17 @@ conversion_warning (tree type, tree expr)
       else if (TREE_CODE (expr_type) == INTEGER_TYPE
                && TREE_CODE (type) == REAL_TYPE)
         {
-          tree type_low_bound = TYPE_MIN_VALUE (expr_type);
-          tree type_high_bound = TYPE_MAX_VALUE (expr_type);
-          REAL_VALUE_TYPE real_low_bound
-	    = real_value_from_int_cst (0, type_low_bound);
-          REAL_VALUE_TYPE real_high_bound
-	    = real_value_from_int_cst (0, type_high_bound);
+	  tree type_low_bound, type_high_bound;
+          REAL_VALUE_TYPE real_low_bound, real_high_bound;
+
+	  /* Don't warn about char y = 0xff; float x = (int) y;  */
+	  expr = get_unwidened (expr, 0);
+	  expr_type = TREE_TYPE (expr);
+
+          type_low_bound = TYPE_MIN_VALUE (expr_type);
+          type_high_bound = TYPE_MAX_VALUE (expr_type);
+          real_low_bound = real_value_from_int_cst (0, type_low_bound);
+          real_high_bound = real_value_from_int_cst (0, type_high_bound);
 
           if (!exact_real_truncate (TYPE_MODE (type), &real_low_bound)
               || !exact_real_truncate (TYPE_MODE (type), &real_high_bound))

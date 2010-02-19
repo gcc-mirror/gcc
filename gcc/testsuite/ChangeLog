@@ -1,3 +1,8 @@
+2010-02-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 41779
+	* c-c++-common/pr41779.c: New.
+
 2010-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43084
