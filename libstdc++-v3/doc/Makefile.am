@@ -1,6 +1,6 @@
 ## Makefile for the doc subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+## Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -30,19 +30,19 @@ doc-html-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doc_doxygen_script} \
-	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir})
+	  --host_alias=${host_alias} --mode=html $${srcdir} $${builddir} YES)
 
 doc-man-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doc_doxygen_script} \
-	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir})
+	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir} YES)
 
 doc-xml-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doc_doxygen_script} \
-	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir})
+	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
 
 doxygen_xmldir = ${glibcxx_builddir}/doc/doxygen/xml
 doc-xml-doxygen-single: doc-xml-doxygen
@@ -186,7 +186,7 @@ doc-fo: $(xml_sources) ${glibcxx_builddir}/doc/fo
 
 # PDF
 # Points to current best xml to PDF generation process.
-doc-pdf: doc-pdf-prince
+doc-pdf: doc-pdf-dblatex
 
 # PDF 1
 # fop
@@ -225,6 +225,13 @@ PRINCE_FLAGS = --log prince.log -o pdf/spine.pdf
 doc-pdf-prince: $(xml_sources) ${glibcxx_builddir}/doc/pdf
 	@echo "Generating pdf prince files..."
 	$(PRINCE) $(PRINCE_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+
+# PDF 5
+# dblatex
+DBLATEX_FLAGS = --verbose --pdf -o pdf/spine.pdf
+doc-pdf-dblatex: $(xml_sources) ${glibcxx_builddir}/doc/pdf
+	@echo "Generating pdf dblatex files..."
+	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
 
 .PHONY: doc-doxygen-html doc-doxygen-man doc-performance

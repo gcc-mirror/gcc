@@ -129,7 +129,7 @@ STRIP_FROM_INC_PATH    =
 # (but less readable) file names. This can be useful is your file systems
 # doesn't support long names like on DOS, Mac, or CD-ROM.
 
-SHORT_NAMES            = YES
+SHORT_NAMES            = @shortname@
 
 # If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen
 # will interpret the first line (until the first dot) of a JavaDoc-style
@@ -208,14 +208,17 @@ OPTIMIZE_FOR_FORTRAN   = NO
 
 OPTIMIZE_OUTPUT_VHDL   = NO
 
-# Doxygen selects the parser to use depending on the extension of the files it parses.
-# With this tag you can assign which parser to use for a given extension.
-# Doxygen has a built-in mapping, but you can override or extend it using this tag.
-# The format is ext=language, where ext is a file extension, and language is one of
-# the parsers supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,
-# Objective-C, Python, Fortran, VHDL, C, C++. For instance to make doxygen treat
-# .inc files as Fortran files (default is PHP), and .f files as C (default is Fortran),
-# use: inc=Fortran f=C. Note that for custom extensions you also need to set FILE_PATTERNS otherwise the files are not read by doxygen.
+# Doxygen selects the parser to use depending on the extension of the
+# files it parses.  With this tag you can assign which parser to use
+# for a given extension.  Doxygen has a built-in mapping, but you can
+# override or extend it using this tag.  The format is ext=language,
+# where ext is a file extension, and language is one of the parsers
+# supported by doxygen: IDL, Java, Javascript, C#, C, C++, D, PHP,
+# Objective-C, Python, Fortran, VHDL, C, C++. For instance to make
+# doxygen treat .inc files as Fortran files (default is PHP), and .f
+# files as C (default is Fortran), use: inc=Fortran f=C. Note that for
+# custom extensions you also need to set FILE_PATTERNS otherwise the
+# files are not read by doxygen.
 
 EXTENSION_MAPPING      =
 
@@ -233,57 +236,63 @@ BUILTIN_STL_SUPPORT    = NO
 
 CPP_CLI_SUPPORT        = NO
 
-# Set the SIP_SUPPORT tag to YES if your project consists of sip sources only.
-# Doxygen will parse them like normal C++ but will assume all classes use public
-# instead of private inheritance when no explicit protection keyword is present.
+# Set the SIP_SUPPORT tag to YES if your project consists of sip
+# sources only.  Doxygen will parse them like normal C++ but will
+# assume all classes use public instead of private inheritance when no
+# explicit protection keyword is present.
 
 SIP_SUPPORT            = NO
 
-# For Microsoft's IDL there are propget and propput attributes to indicate getter
-# and setter methods for a property. Setting this option to YES (the default)
-# will make doxygen to replace the get and set methods by a property in the
-# documentation. This will only work if the methods are indeed getting or
-# setting a simple type. If this is not the case, or you want to show the
-# methods anyway, you should set this option to NO.
+# For Microsoft's IDL there are propget and propput attributes to
+# indicate getter and setter methods for a property. Setting this
+# option to YES (the default) will make doxygen to replace the get and
+# set methods by a property in the documentation. This will only work
+# if the methods are indeed getting or setting a simple type. If this
+# is not the case, or you want to show the methods anyway, you should
+# set this option to NO.
 
 IDL_PROPERTY_SUPPORT   = YES
 
-# If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
-# tag is set to YES, then doxygen will reuse the documentation of the first
-# member in the group (if any) for the other members of the group. By default
-# all members of a group must be documented explicitly.
+# If member grouping is used in the documentation and the
+# DISTRIBUTE_GROUP_DOC tag is set to YES, then doxygen will reuse the
+# documentation of the first member in the group (if any) for the
+# other members of the group. By default all members of a group must
+# be documented explicitly.
 
 DISTRIBUTE_GROUP_DOC   = YES
 
-# Set the SUBGROUPING tag to YES (the default) to allow class member groups of
-# the same type (for instance a group of public functions) to be put as a
-# subgroup of that type (e.g. under the Public Functions section). Set it to
-# NO to prevent subgrouping. Alternatively, this can be done per class using
-# the \nosubgrouping command.
+# Set the SUBGROUPING tag to YES (the default) to allow class member
+# groups of the same type (for instance a group of public functions)
+# to be put as a subgroup of that type (e.g. under the Public
+# Functions section). Set it to NO to prevent
+# subgrouping. Alternatively, this can be done per class using the
+# \nosubgrouping command.
 
 SUBGROUPING            = YES
 
-# When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union, or enum
-# is documented as struct, union, or enum with the name of the typedef. So
-# typedef struct TypeS {} TypeT, will appear in the documentation as a struct
-# with name TypeT. When disabled the typedef will appear as a member of a file,
-# namespace, or class. And the struct will be named TypeS. This can typically
-# be useful for C code in case the coding convention dictates that all compound
-# types are typedef'ed and only the typedef is referenced, never the tag name.
+# When TYPEDEF_HIDES_STRUCT is enabled, a typedef of a struct, union,
+# or enum is documented as struct, union, or enum with the name of the
+# typedef. So typedef struct TypeS {} TypeT, will appear in the
+# documentation as a struct with name TypeT. When disabled the typedef
+# will appear as a member of a file, namespace, or class. And the
+# struct will be named TypeS. This can typically be useful for C code
+# in case the coding convention dictates that all compound types are
+# typedef'ed and only the typedef is referenced, never the tag name.
 
 TYPEDEF_HIDES_STRUCT   = NO
 
-# The SYMBOL_CACHE_SIZE determines the size of the internal cache use to
-# determine which symbols to keep in memory and which to flush to disk.
-# When the cache is full, less often used symbols will be written to disk.
-# For small to medium size projects (<1000 input files) the default value is
-# probably good enough. For larger projects a too small cache size can cause
-# doxygen to be busy swapping symbols to and from disk most of the time
-# causing a significant performance penality.
-# If the system has enough physical memory increasing the cache will improve the
-# performance by keeping more symbols in memory. Note that the value works on
-# a logarithmic scale so increasing the size by one will rougly double the
-# memory usage. The cache size is given by this formula:
+# The SYMBOL_CACHE_SIZE determines the size of the internal cache use
+# to determine which symbols to keep in memory and which to flush to
+# disk.  When the cache is full, less often used symbols will be
+# written to disk.  For small to medium size projects (<1000 input
+# files) the default value is probably good enough. For larger
+# projects a too small cache size can cause doxygen to be busy
+# swapping symbols to and from disk most of the time causing a
+# significant performance penality.  If the system has enough physical
+# memory increasing the cache will improve the performance by keeping
+# more symbols in memory. Note that the value works on a logarithmic
+# scale so increasing the size by one will rougly double the memory
+# usage. The cache size is given by this formula:
 # 2^(16+SYMBOL_CACHE_SIZE). The valid range is 0..9, the default is 0,
 # corresponding to a cache size of 2^16 = 65536 symbols
 
@@ -406,7 +415,13 @@ SORT_MEMBER_DOCS       = YES
 
 SORT_BRIEF_DOCS        = YES
 
-# If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen will sort the (brief and detailed) documentation of class members so that constructors and destructors are listed first. If set to NO (the default) the constructors will appear in the respective orders defined by SORT_MEMBER_DOCS and SORT_BRIEF_DOCS. This tag will be ignored for brief docs if SORT_BRIEF_DOCS is set to NO and ignored for detailed docs if SORT_MEMBER_DOCS is set to NO.
+# If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen will
+# sort the (brief and detailed) documentation of class members so that
+# constructors and destructors are listed first. If set to NO (the
+# default) the constructors will appear in the respective orders
+# defined by SORT_MEMBER_DOCS and SORT_BRIEF_DOCS. This tag will be
+# ignored for brief docs if SORT_BRIEF_DOCS is set to NO and ignored
+# for detailed docs if SORT_MEMBER_DOCS is set to NO.
 
 SORT_MEMBERS_CTORS_1ST = YES
 
@@ -490,22 +505,24 @@ SHOW_FILES             = YES
 
 SHOW_NAMESPACES        = YES
 
-# The FILE_VERSION_FILTER tag can be used to specify a program or script that
-# doxygen should invoke to get the current version for each file (typically from
-# the version control system). Doxygen will invoke the program by executing (via
-# popen()) the command <command> <input-file>, where <command> is the value of
-# the FILE_VERSION_FILTER tag, and <input-file> is the name of an input file
-# provided by doxygen. Whatever the program writes to standard output
-# is used as the file version. See the manual for examples.
+# The FILE_VERSION_FILTER tag can be used to specify a program or
+# script that doxygen should invoke to get the current version for
+# each file (typically from the version control system). Doxygen will
+# invoke the program by executing (via popen()) the command <command>
+# <input-file>, where <command> is the value of the
+# FILE_VERSION_FILTER tag, and <input-file> is the name of an input
+# file provided by doxygen. Whatever the program writes to standard
+# output is used as the file version. See the manual for examples.
 
 FILE_VERSION_FILTER    =
 
-# The LAYOUT_FILE tag can be used to specify a layout file which will be parsed by
-# doxygen. The layout file controls the global structure of the generated output files
-# in an output format independent way. The create the layout file that represents
-# doxygen's defaults, run doxygen with the -l option. You can optionally specify a
-# file name after the option, if omitted DoxygenLayout.xml will be used as the name
-# of the layout file.
+# The LAYOUT_FILE tag can be used to specify a layout file which will
+# be parsed by doxygen. The layout file controls the global structure
+# of the generated output files in an output format independent
+# way. The create the layout file that represents doxygen's defaults,
+# run doxygen with the -l option. You can optionally specify a file
+# name after the option, if omitted DoxygenLayout.xml will be used as
+# the name of the layout file.
 
 LAYOUT_FILE            =
 
@@ -564,10 +581,10 @@ WARN_LOGFILE           =
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-# The INPUT tag can be used to specify the files and/or directories that contain
-# documented source files. You may enter file names like "myfile.cpp" or
-# directories like "/usr/src/myproject". Separate the files or directories
-# with spaces.
+# The INPUT tag can be used to specify the files and/or directories
+# that contain documented source files. You may enter file names like
+# "myfile.cpp" or directories like "/usr/src/myproject". Separate the
+# files or directories with spaces.
 
 INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          @srcdir@/libsupc++/cxxabi.h \
@@ -704,11 +721,8 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/tr1_impl/cstdlib \
                          include/tr1_impl/cwchar \
                          include/tr1_impl/cwctype \
-                         include/tr1_impl/hashtable \
                          include/tr1_impl/regex \
                          include/tr1_impl/type_traits \
-                         include/tr1_impl/unordered_map \
-                         include/tr1_impl/unordered_set \
                          include/tr1_impl/utility \
                          include/tr1_impl \
                          include/decimal/decimal \
@@ -977,13 +991,14 @@ HTML_DYNAMIC_SECTIONS  = NO
 
 # If the GENERATE_DOCSET tag is set to YES, additional index files
 # will be generated that can be used as input for Apple's Xcode 3
-# integrated development environment, introduced with OSX 10.5 (Leopard).
-# To create a documentation set, doxygen will generate a Makefile in the
-# HTML output directory. Running make will produce the docset in that
-# directory and running "make install" will install the docset in
-# ~/Library/Developer/Shared/Documentation/DocSets so that Xcode will find
-# it at startup.
-# See http://developer.apple.com/tools/creatingdocsetswithdoxygen.html for more information.
+# integrated development environment, introduced with OSX 10.5
+# (Leopard).  To create a documentation set, doxygen will generate a
+# Makefile in the HTML output directory. Running make will produce the
+# docset in that directory and running "make install" will install the
+# docset in ~/Library/Developer/Shared/Documentation/DocSets so that
+# Xcode will find it at startup.  See
+# http://developer.apple.com/tools/creatingdocsetswithdoxygen.html for
+# more information.
 
 GENERATE_DOCSET        = NO
 
@@ -1045,10 +1060,11 @@ BINARY_TOC             = NO
 
 TOC_EXPAND             = NO
 
-# If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and QHP_VIRTUAL_FOLDER
-# are set, an additional index file will be generated that can be used as input for
-# Qt's qhelpgenerator to generate a Qt Compressed Help (.qch) of the generated
-# HTML documentation.
+# If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and
+# QHP_VIRTUAL_FOLDER are set, an additional index file will be
+# generated that can be used as input for Qt's qhelpgenerator to
+# generate a Qt Compressed Help (.qch) of the generated HTML
+# documentation.
 
 GENERATE_QHP           = NO
 
@@ -1070,20 +1086,23 @@ QHP_NAMESPACE          = org.doxygen.Project
 
 QHP_VIRTUAL_FOLDER     = doc
 
-# If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom filter to add.
-# For more information please see
+# If QHP_CUST_FILTER_NAME is set, it specifies the name of a custom
+# filter to add.  For more information please see
 # http://doc.trolltech.com/qthelpproject.html#custom-filters
 
 QHP_CUST_FILTER_NAME   =
 
-# The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of the custom filter to add.For more information please see
-# <a href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt Help Project / Custom Filters</a>.
+# The QHP_CUST_FILT_ATTRS tag specifies the list of the attributes of
+# the custom filter to add.For more information please see <a
+# href="http://doc.trolltech.com/qthelpproject.html#custom-filters">Qt
+# Help Project / Custom Filters</a>.
 
 QHP_CUST_FILTER_ATTRS  =
 
-# The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes this project's
-# filter section matches.
-# <a href="http://doc.trolltech.com/qthelpproject.html#filter-attributes">Qt Help Project / Filter Attributes</a>.
+# The QHP_SECT_FILTER_ATTRS tag specifies the list of the attributes
+# this project's filter section matches.  <a
+# href="http://doc.trolltech.com/qthelpproject.html#filter-attributes">Qt
+# Help Project / Filter Attributes</a>.
 
 QHP_SECT_FILTER_ATTRS  =
 
@@ -1134,10 +1153,12 @@ TREEVIEW_WIDTH         = 250
 
 FORMULA_FONTSIZE       = 10
 
-# When the SEARCHENGINE tag is enable doxygen will generate a search box for the HTML output. The underlying search engine uses javascript
-# and DHTML and should work on any modern browser. Note that when using HTML help (GENERATE_HTMLHELP) or Qt help (GENERATE_QHP)
-# there is already a search function so this one should typically
-# be disabled.
+# When the SEARCHENGINE tag is enable doxygen will generate a search
+# box for the HTML output. The underlying search engine uses
+# javascript and DHTML and should work on any modern browser. Note
+# that when using HTML help (GENERATE_HTMLHELP) or Qt help
+# (GENERATE_QHP) there is already a search function so this one should
+# typically be disabled.
 
 SEARCHENGINE           = NO
 
@@ -1204,10 +1225,11 @@ PDF_HYPERLINKS         = NO
 
 USE_PDFLATEX           = NO
 
-# If the LATEX_BATCHMODE tag is set to YES, doxygen will add the \\batchmode.
-# command to the generated LaTeX files. This will instruct LaTeX to keep
-# running if errors occur, instead of asking the user for help.
-# This option is also used when generating formulas in HTML.
+# If the LATEX_BATCHMODE tag is set to YES, doxygen will add the
+# \\batchmode.  command to the generated LaTeX files. This will
+# instruct LaTeX to keep running if errors occur, instead of asking
+# the user for help.  This option is also used when generating
+# formulas in HTML.
 
 LATEX_BATCHMODE        = NO
 
@@ -1217,7 +1239,10 @@ LATEX_BATCHMODE        = NO
 
 LATEX_HIDE_INDICES     = NO
 
-# If LATEX_SOURCE_CODE is set to YES then doxygen will include source code with syntax highlighting in the LaTeX output. Note that which sources are shown also depends on other settings such as SOURCE_BROWSER.
+# If LATEX_SOURCE_CODE is set to YES then doxygen will include source
+# code with syntax highlighting in the LaTeX output. Note that which
+# sources are shown also depends on other settings such as
+# SOURCE_BROWSER.
 
 LATEX_SOURCE_CODE      = NO
 
@@ -1550,14 +1575,15 @@ HIDE_UNDOC_RELATIONS   = NO
 
 HAVE_DOT               = YES
 
-# By default doxygen will write a font called FreeSans.ttf to the output
-# directory and reference it in all dot files that doxygen generates. This
-# font does not include all possible unicode characters however, so when you need
-# these (or just want a differently looking font) you can specify the font name
-# using DOT_FONTNAME. You need need to make sure dot is able to find the font,
-# which can be done by putting it in a standard location or by setting the
-# DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory
-# containing the font.
+# By default doxygen will write a font called FreeSans.ttf to the
+# output directory and reference it in all dot files that doxygen
+# generates. This font does not include all possible unicode
+# characters however, so when you need these (or just want a
+# differently looking font) you can specify the font name using
+# DOT_FONTNAME. You need need to make sure dot is able to find the
+# font, which can be done by putting it in a standard location or by
+# setting the DOTFONTPATH environment variable or by setting
+# DOT_FONTPATH to the directory containing the font.
 
 DOT_FONTNAME           = FreeSans
 

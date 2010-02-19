@@ -1,5 +1,16 @@
 2010-02-18  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* scripts/run_doxygen: Add shortnames option.
+	* doc/Makefile.am (doc-man-doxygen): Use it.
+	(doc-html-doxygen): Use it.
+	(doc-xml-doxygen): Use it, but default to NO.
+	(doc-pdf-dblatex): Add.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in: Update filelist.
+	* include/bits/locale_facets.h: Fix markup warning.
+
+2010-02-18  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/xml/manual/using.xml: Update.
 	* doc/xml/manual/status_cxx1998.xml: Same.
 	* doc/xml/manual/status_cxx200x.xml: Add link.

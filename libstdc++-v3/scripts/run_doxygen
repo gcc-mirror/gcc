@@ -5,13 +5,15 @@
 # Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[html|man|xml] --host_alias=<alias> \
-#                        v3srcdir  v3builddir
+#                        v3srcdir \
+#                        v3builddir \
+#                        shortname
 #
 # Originally hacked together by Phil Edwards <pme@gcc.gnu.org>
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.5.1
+DOXYVER=1.6.1
 
 find_doxygen() {
     local -r v_required=`echo $DOXYVER |  \
@@ -46,7 +48,7 @@ find_doxygen() {
 print_usage() {
     cat 1>&2 <<EOF
 Usage:  run_doxygen --mode=MODE --host_alias=BUILD_ALIAS [<options>]
-                    <v3-src-dir> <v3-build-dir>
+                    <v3-src-dir> <v3-build-dir> <shortnamesp>
       MODE is one of:
           html           Generate user-level HTML library documentation.
           man            Generate user-level man pages.
@@ -85,6 +87,8 @@ parse_options() {
         elif test $outdir = unset; then
           builddir=${o}
           outdir=${o}/doc/doxygen
+        elif test $shortname = unset; then
+          shortname=$o
         else
           echo run_doxygen error:  Too many arguments 1>&2
           exit 1
@@ -100,6 +104,7 @@ mode=unset
 host_alias=unset
 srcdir=unset
 outdir=unset
+shortname=unset
 do_html=false
 do_man=false 
 do_xml=false 
@@ -113,7 +118,7 @@ echo run_doxygen $*
 parse_options $*
 find_doxygen
 
-if test $srcdir = unset || test $outdir = unset || test $mode = unset || test $host_alias = unset; then
+if test $srcdir = unset || test $outdir = unset || test $mode = unset || test $shortname = unset || test $host_alias = unset; then
     # this could be better
     echo run_doxygen error:  You have not given enough information...! 1>&2
     print_usage
@@ -137,6 +142,17 @@ case x"$mode" in
       exit 1 ;;
 esac
 
+case x"$shortname" in
+    xYES)
+      ;;
+    xNO)
+      ;;
+    *)
+      echo run_doxygen error:  $shortname is invalid 1>&2
+      exit 1 ;;
+esac
+
+
 mkdir -p $outdir
 chmod u+w $outdir
 
@@ -155,6 +171,7 @@ fi
   cd $builddir
   sed -e "s=@outdir@=${outdir}=g" \
       -e "s=@srcdir@=${srcdir}=g" \
+      -e "s=@shortname@=${shortname}=g" \
       -e "s=@builddir@=${builddir}=g" \
       -e "s=@host_alias@=${host_alias}=g" \
       -e "s=@enabled_sections@=${enabled_sections}=" \
