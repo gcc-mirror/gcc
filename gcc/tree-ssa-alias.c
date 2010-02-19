@@ -1258,16 +1258,19 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	case BUILT_IN_CALLOC:
 	  /* Unix98 specifies that errno is set on allocation failure.
 	     Until we properly can track the errno location assume it
-	     is not a plain decl but anonymous storage in a different
-	     translation unit.  */
-	  if (flag_errno_math)
+	     is not a local decl but external or anonymous storage in
+	     a different translation unit.  Also assume it is of
+	     type int as required by the standard.  */
+	  if (flag_errno_math
+	      && TREE_TYPE (base) == integer_type_node)
 	    {
 	      struct ptr_info_def *pi;
-	      if (DECL_P (base))
-		return false;
-	      if (INDIRECT_REF_P (base)
-		  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-		  && (pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0))))
+	      if (DECL_P (base)
+		  && !TREE_STATIC (base))
+		return true;
+	      else if (INDIRECT_REF_P (base)
+		       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+		       && (pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0))))
 		return pi->pt.anything || pi->pt.nonlocal;
 	    }
 	  return false;

@@ -1,3 +1,9 @@
+2010-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42944
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Massage
+	test for aliasing with errno.
+
 2010-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/42233
