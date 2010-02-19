@@ -1,27 +1,16 @@
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43108
 	* g++.dg/torture/dg-torture.exp: Run c-c++-common torture tests.
 	* gcc.dg/torture/dg-torture.exp: Likewise.
-	* c-c++-common/complex-sign.h,
-	c-c++-common/complex-sign-add.c,
-	c-c++-common/complex-sign-mixed-add.c,
-	c-c++-common/complex-sign-mixed-div.c,
-	c-c++-common/complex-sign-mixed-mul.c,
-	c-c++-common/complex-sign-mixed-sub.c,
-	c-c++-common/complex-sign-mul.c,
-	c-c++-common/complex-sign-sub.c: Move into c-c++-common/torture.
-
-2010-02-18  Jason Merrill  <jason@redhat.com>
-
-	PR c++/43108
-	* c-c++-common/complex-sign.h,
-	c-c++-common/complex-sign-add.c,
-	c-c++-common/complex-sign-mixed-add.c,
-	c-c++-common/complex-sign-mixed-div.c,
-	c-c++-common/complex-sign-mixed-mul.c,
-	c-c++-common/complex-sign-mixed-sub.c,
-	c-c++-common/complex-sign-mul.c,
-	c-c++-common/complex-sign-sub.c: Move from gcc.dg/torture.
+	* c-c++-common/torture/complex-sign.h,
+	c-c++-common/torture/complex-sign-add.c,
+	c-c++-common/torture/complex-sign-mixed-add.c,
+	c-c++-common/torture/complex-sign-mixed-div.c,
+	c-c++-common/torture/complex-sign-mixed-mul.c,
+	c-c++-common/torture/complex-sign-mixed-sub.c,
+	c-c++-common/torture/complex-sign-mul.c,
+	c-c++-common/torture/complex-sign-sub.c: Move from gcc.dg/torture.
 	Adapt for C++ compilation as well.
 
 	PR c++/43070
