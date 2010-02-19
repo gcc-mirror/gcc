@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -33,6 +33,8 @@ namespace __gnu_test
       // Base container requirements (table 80)
       typedef _Tp 					test_type;
       typedef typename test_type::value_type 		value_type;
+      typedef typename test_type::pointer 		pointer;
+      typedef typename test_type::const_pointer 	const_pointer;
       typedef typename test_type::reference 		reference;
       typedef typename test_type::const_reference 	const_reference;
       typedef typename test_type::iterator 		iterator;
@@ -57,15 +59,6 @@ namespace __gnu_test
       // Allocator-aware requirements (table 82)
       typedef _Tp 					 test_type;
       typedef typename test_type::allocator_type      	 allocator_type;
-    };
-
-  template<typename _Tp, bool _Bt = traits<_Tp>::is_pointer_aware::value>
-    struct pointer_aware_types
-    {
-      // Allocator-aware requirements (table 82)
-      typedef _Tp 					 test_type;
-      typedef typename test_type::pointer		 pointer;
-      typedef typename test_type::const_pointer		 const_pointer;
     };
 
   template<typename _Tp, bool _Bt = traits<_Tp>::is_associative::value>
@@ -114,13 +107,13 @@ namespace __gnu_test
     struct basic_types<_Tp, false> { };
 
   template<typename _Tp>
+    struct adaptor_types<_Tp, false> { };
+
+  template<typename _Tp>
     struct reversible_types<_Tp, false> { };
 
   template<typename _Tp>
     struct allocator_aware_types<_Tp, false> { };
-
-  template<typename _Tp>
-    struct pointer_aware_types<_Tp, false> { };
 
   template<typename _Tp>
     struct associative_types<_Tp, false> { };
@@ -131,15 +124,12 @@ namespace __gnu_test
   template<typename _Tp>
     struct mapped_types<_Tp, false> { };
 
-  template<typename _Tp>
-    struct adaptor_types<_Tp, false> { };
-
   // Primary template.
   template<typename _Tp>
     struct types
     : basic_types<_Tp>, adaptor_types<_Tp>, reversible_types<_Tp>,
-      allocator_aware_types<_Tp>, pointer_aware_types<_Tp>,
-      associative_types<_Tp>, unordered_types<_Tp>, mapped_types<_Tp>
+      allocator_aware_types<_Tp>, associative_types<_Tp>,
+      unordered_types<_Tp>, mapped_types<_Tp>
     { };
 
 
