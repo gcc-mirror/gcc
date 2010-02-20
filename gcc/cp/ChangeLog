@@ -1,3 +1,10 @@
+2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/35669
+	* call.c (conversion_null_warnings): Replace -Wconversion with
+	-Wconversion-null.
+	* cvt.c (build_expr_type_conversion): Likewise.
+
 2010-02-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/42837

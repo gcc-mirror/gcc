@@ -4804,17 +4804,19 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (expr == null_node && TREE_CODE (t) != BOOLEAN_TYPE && ARITHMETIC_TYPE_P (t))
     {
       if (fn)
-	warning (OPT_Wconversion, "passing NULL to non-pointer argument %P of %qD",
-		 argnum, fn);
+	warning_at (input_location, OPT_Wconversion_null,
+		    "passing NULL to non-pointer argument %P of %qD",
+		    argnum, fn);
       else
-	warning (OPT_Wconversion, "converting to non-pointer type %qT from NULL", t);
+	warning_at (input_location, OPT_Wconversion_null,
+		    "converting to non-pointer type %qT from NULL", t);
     }
 
   /* Issue warnings if "false" is converted to a NULL pointer */
   else if (expr == boolean_false_node && fn && POINTER_TYPE_P (t))
-    warning (OPT_Wconversion,
-	     "converting %<false%> to pointer type for argument %P of %qD",
-	     argnum, fn);
+    warning_at (input_location, OPT_Wconversion_null,
+		"converting %<false%> to pointer type for argument %P of %qD",
+		argnum, fn);
 }
 
 /* Perform the conversions in CONVS on the expression EXPR.  FN and

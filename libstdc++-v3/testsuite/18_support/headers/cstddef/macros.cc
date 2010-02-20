@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "-Wno-conversion-null" }
 // 2001-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009

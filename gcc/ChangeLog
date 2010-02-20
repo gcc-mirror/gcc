@@ -1,5 +1,11 @@
 2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR c++/35669
+	* c.opt (Wconversion-null): New option.
+	* doc/invoke.texi (Wconversion-null): Document.
+
+2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* common.opt (Wlarger-than-): Add Undocumented.
 	
 2010-02-19  Mike Stump  <mikestump@comcast.net>
