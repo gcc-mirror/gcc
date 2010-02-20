@@ -1,3 +1,7 @@
+2010-02-19  Mike Stump  <mikestump@comcast.net>
+
+	* config/t-darwin (gt-darwin.h): Remove as Makefile now handles it.
+
 2010-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR target/40332
