@@ -1,3 +1,12 @@
+2010-02-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/42958
+	* libgfortran.h: Add GFC_RTCHECK_MEM.
+	* invoke.texi (-fcheck=): Document -fcheck=mem.
+	* tranc.c (gfc_call_malloc): Remove negative-size run-time error
+	and enable malloc-success check only with -fcheck=mem.
+	* option.c (gfc_handle_runtime_check_option): Add -fcheck=mem.
+
 2010-02-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43040

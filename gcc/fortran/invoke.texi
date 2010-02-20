@@ -166,7 +166,7 @@ and warnings}.
 @gccoptlist{-fno-automatic  -ff2c  -fno-underscoring @gol
 -fwhole-file -fsecond-underscore @gol
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
--fcheck=@var{<all|array-temps|bounds|do|pointer|recursion>}
+-fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>}
 -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
@@ -1216,6 +1216,7 @@ by use of the @option{-ff2c} option.
 @cindex array, bounds checking
 @cindex bounds checking
 @cindex pointer checking
+@cindex memory checking
 @cindex range checking
 @cindex subscript checking
 @cindex checking subscripts
@@ -1253,6 +1254,11 @@ checking substring references.
 @item @samp{do}
 Enable generation of run-time checks for invalid modification of loop
 iteration variables.
+
+@item @samp{mem}
+Enable generation of run-time checks for memory allocation.
+Note: This option does not affect explicit allocations using the
+@code{ALLOCATE} statement, which will be always checked.
 
 @item @samp{pointer}
 Enable generation of run-time checks for pointers and allocatables.

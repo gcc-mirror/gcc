@@ -48,9 +48,10 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_RTCHECK_RECURSION   (1<<2)
 #define GFC_RTCHECK_DO          (1<<3)
 #define GFC_RTCHECK_POINTER     (1<<4)
+#define GFC_RTCHECK_MEM         (1<<5)
 #define GFC_RTCHECK_ALL        (GFC_RTCHECK_BOUNDS | GFC_RTCHECK_ARRAY_TEMPS \
 				| GFC_RTCHECK_RECURSION | GFC_RTCHECK_DO \
-				| GFC_RTCHECK_POINTER)
+				| GFC_RTCHECK_POINTER | GFC_RTCHECK_MEM)
 
 
 /* Possible values for the CONVERT I/O specifier.  */
