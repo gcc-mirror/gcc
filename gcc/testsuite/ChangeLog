@@ -1,3 +1,8 @@
+2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 43128
+	* c-c++-common/pr41779.c: Fix broken testcase.
+	
 2010-02-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 36513
