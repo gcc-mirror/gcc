@@ -2827,18 +2827,18 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (!sym->attr.elemental)
 	{
 	  gcc_assert (se->ss->type == GFC_SS_FUNCTION);
-          if (se->ss->useflags)
-            {
+	  if (se->ss->useflags)
+	    {
 	      gcc_assert ((!comp && gfc_return_by_reference (sym)
 			   && sym->result->attr.dimension)
 			  || (comp && comp->attr.dimension));
-              gcc_assert (se->loop != NULL);
+	      gcc_assert (se->loop != NULL);
 
-              /* Access the previously obtained result.  */
-              gfc_conv_tmp_array_ref (se);
-              gfc_advance_se_ss_chain (se);
-              return 0;
-            }
+	      /* Access the previously obtained result.  */
+	      gfc_conv_tmp_array_ref (se);
+	      gfc_advance_se_ss_chain (se);
+	      return 0;
+	    }
 	}
       info = &se->ss->data.info;
     }
@@ -2872,9 +2872,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
+
       if (e == NULL)
 	{
-
 	  if (se->ignore_optional)
 	    {
 	      /* Some intrinsics have already been resolved to the correct
@@ -2883,15 +2883,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	  else if (arg->label)
 	    {
-              has_alternate_specifier = 1;
-              continue;
+	      has_alternate_specifier = 1;
+	      continue;
 	    }
 	  else
 	    {
 	      /* Pass a NULL pointer for an absent arg.  */
 	      gfc_init_se (&parmse, NULL);
 	      parmse.expr = null_pointer_node;
-              if (arg->missing_arg_type == BT_CHARACTER)
+	      if (arg->missing_arg_type == BT_CHARACTER)
 		parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	    }
 	}
@@ -2906,8 +2906,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       else if (se->ss && se->ss->useflags)
 	{
 	  /* An elemental function inside a scalarized loop.  */
-          gfc_init_se (&parmse, se);
-          gfc_conv_expr_reference (&parmse, e);
+	  gfc_init_se (&parmse, se);
+	  gfc_conv_expr_reference (&parmse, e);
 	  parm_kind = ELEMENTAL;
 	}
       else
@@ -2917,7 +2917,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  argss = gfc_walk_expr (e);
 
 	  if (argss == gfc_ss_terminator)
-            {
+	    {
 	      if (e->expr_type == EXPR_VARIABLE
 		    && e->symtree->n.sym->attr.cray_pointee
 		    && fsym && fsym->attr.flavor == FL_PROCEDURE)
@@ -3028,7 +3028,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
                  ALLOCATABLE or assumed shape, we do not use g77's calling
                  convention, and pass the address of the array descriptor
                  instead. Otherwise we use g77's calling convention.  */
-	      int f;
+	      bool f;
 	      f = (fsym != NULL)
 		  && !(fsym->attr.pointer || fsym->attr.allocatable)
 		  && fsym->as->type != AS_ASSUMED_SHAPE;
@@ -5036,7 +5036,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   gfc_start_block (&se.pre);
   se.want_pointer = 1;
 
-  gfc_conv_array_parameter (&se, expr1, ss, 0, NULL, NULL, NULL);
+  gfc_conv_array_parameter (&se, expr1, ss, false, NULL, NULL, NULL);
 
   if (expr1->ts.type == BT_DERIVED
 	&& expr1->ts.u.derived->attr.alloc_comp)

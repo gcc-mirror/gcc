@@ -1,3 +1,27 @@
+2010-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36932
+	PR fortran/36933
+	PR fortran/43072
+	PR fortran/43111
+	* dependency.c (gfc_check_argument_var_dependency): Use enum
+	value instead of arithmetic vaue for 'elemental'.
+	(check_data_pointer_types): New function.
+	(gfc_check_dependency): Call check_data_pointer_types.
+	* trans-array.h : Change fourth argument of
+	gfc_conv_array_parameter to boolean.
+	* trans-array.c (gfc_conv_array_parameter): A contiguous array
+	can be a dummy but it must not be assumed shape or deferred.
+	Change fourth argument to boolean. Array constructor exprs will
+	always be contiguous and do not need packing and unpacking.
+	* trans-expr.c (gfc_conv_procedure_call): Clean up some white
+	space and change fourth argument of gfc_conv_array_parameter
+	to boolean.
+	(gfc_trans_arrayfunc_assign): Change fourth argument of
+	gfc_conv_array_parameter to boolean.
+	* trans-io.c (gfc_convert_array_to_string): The same.
+	* trans-intrinsic.c (gfc_conv_intrinsic_loc): The same.
+
 2010-02-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42958

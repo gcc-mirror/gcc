@@ -620,7 +620,7 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
       return;
     }
 
-  gfc_conv_array_parameter (se, e, gfc_walk_expr (e), 1, NULL, NULL, &size);
+  gfc_conv_array_parameter (se, e, gfc_walk_expr (e), true, NULL, NULL, &size);
   se->string_length = fold_convert (gfc_charlen_type_node, size);
 }
 
