@@ -497,13 +497,12 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
 
 
 /* Call malloc to allocate size bytes of memory, with special conditions:
-      + if size < 0, generate a runtime error,
-      + if size == 0, return a malloced area of size 1,
+      + if size <= 0, return a malloced area of size 1,
       + if malloc returns NULL, issue a runtime error.  */
 tree
 gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 {
-  tree tmp, msg, negative, malloc_result, null_result, res;
+  tree tmp, msg, malloc_result, null_result, res;
   stmtblock_t block2;
 
   size = gfc_evaluate_now (size, block);
@@ -514,18 +513,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
   /* Create a variable to hold the result.  */
   res = gfc_create_var (prvoid_type_node, NULL);
 
-  /* size < 0 ?  */
-  negative = fold_build2 (LT_EXPR, boolean_type_node, size,
-			  build_int_cst (size_type_node, 0));
-  msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-      ("Attempt to allocate a negative amount of memory."));
-  tmp = fold_build3 (COND_EXPR, void_type_node, negative,
-		     build_call_expr_loc (input_location,
-				      gfor_fndecl_runtime_error, 1, msg),
-		     build_empty_stmt (input_location));
-  gfc_add_expr_to_block (block, tmp);
-
-  /* Call malloc and check the result.  */
+  /* Call malloc.  */
   gfc_start_block (&block2);
 
   size = fold_build2 (MAX_EXPR, size_type_node, size,
@@ -535,15 +523,21 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 		  fold_convert (prvoid_type_node,
 				build_call_expr_loc (input_location,
 				   built_in_decls[BUILT_IN_MALLOC], 1, size)));
-  null_result = fold_build2 (EQ_EXPR, boolean_type_node, res,
-			     build_int_cst (pvoid_type_node, 0));
-  msg = gfc_build_addr_expr (pchar_type_node, gfc_build_localized_cstring_const
-      ("Memory allocation failed"));
-  tmp = fold_build3 (COND_EXPR, void_type_node, null_result,
-		     build_call_expr_loc (input_location,
-				      gfor_fndecl_os_error, 1, msg),
-		     build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&block2, tmp);
+
+  /* Optionally check whether malloc was successful.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_MEM)
+    {
+      null_result = fold_build2 (EQ_EXPR, boolean_type_node, res,
+				 build_int_cst (pvoid_type_node, 0));
+      msg = gfc_build_addr_expr (pchar_type_node,
+	      gfc_build_localized_cstring_const ("Memory allocation failed"));
+      tmp = fold_build3 (COND_EXPR, void_type_node, null_result,
+	      build_call_expr_loc (input_location,
+				   gfor_fndecl_os_error, 1, msg),
+				   build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&block2, tmp);
+    }
+
   malloc_result = gfc_finish_block (&block2);
 
   gfc_add_expr_to_block (block, malloc_result);
@@ -552,6 +546,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
     res = fold_convert (type, res);
   return res;
 }
+
 
 /* Allocate memory, using an optional status argument.
  
