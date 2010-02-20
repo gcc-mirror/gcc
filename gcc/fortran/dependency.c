@@ -467,7 +467,7 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
       /* In case of elemental subroutines, there is no dependency 
          between two same-range array references.  */
       if (gfc_ref_needs_temporary_p (expr->ref)
-	  || gfc_check_dependency (var, expr, !elemental))
+	  || gfc_check_dependency (var, expr, elemental == NOT_ELEMENTAL))
 	{
 	  if (elemental == ELEM_DONT_CHECK_VARIABLE)
 	    {
@@ -677,6 +677,78 @@ gfc_are_equivalenced_arrays (gfc_expr *e1, gfc_expr *e2)
 }
 
 
+/* Return true if there is no possibility of aliasing because of a type
+   mismatch between all the possible pointer references and the
+   potential target.  Note that this function is asymmetric in the
+   arguments and so must be called twice with the arguments exchanged.  */
+
+static bool
+check_data_pointer_types (gfc_expr *expr1, gfc_expr *expr2)
+{
+  gfc_component *cm1;
+  gfc_symbol *sym1;
+  gfc_symbol *sym2;
+  gfc_ref *ref1;
+  bool seen_component_ref;
+
+  if (expr1->expr_type != EXPR_VARIABLE
+	|| expr1->expr_type != EXPR_VARIABLE)
+    return false;
+
+  sym1 = expr1->symtree->n.sym;
+  sym2 = expr2->symtree->n.sym;
+
+  /* Keep it simple for now.  */
+  if (sym1->ts.type == BT_DERIVED && sym2->ts.type == BT_DERIVED)
+    return false;
+
+  if (sym1->attr.pointer)
+    {
+      if (gfc_compare_types (&sym1->ts, &sym2->ts))
+	return false;
+    }
+
+  /* This is a conservative check on the components of the derived type
+     if no component references have been seen.  Since we will not dig
+     into the components of derived type components, we play it safe by
+     returning false.  First we check the reference chain and then, if
+     no component references have been seen, the components.  */
+  seen_component_ref = false;
+  if (sym1->ts.type == BT_DERIVED)
+    {
+      for (ref1 = expr1->ref; ref1; ref1 = ref1->next)
+	{
+	  if (ref1->type != REF_COMPONENT)
+	    continue;
+
+	  if (ref1->u.c.component->ts.type == BT_DERIVED)
+	    return false;
+
+	  if ((sym2->attr.pointer || ref1->u.c.component->attr.pointer)
+		&& gfc_compare_types (&ref1->u.c.component->ts, &sym2->ts))
+	    return false;
+
+	  seen_component_ref = true;
+	}
+    }
+
+  if (sym1->ts.type == BT_DERIVED && !seen_component_ref)
+    {
+      for (cm1 = sym1->ts.u.derived->components; cm1; cm1 = cm1->next)
+	{
+	  if (cm1->ts.type == BT_DERIVED)
+	    return false;
+
+	  if ((sym2->attr.pointer || cm1->attr.pointer)
+		&& gfc_compare_types (&cm1->ts, &sym2->ts))
+	    return false;
+	}
+    }
+
+  return true;
+}
+
+
 /* Return true if the statement body redefines the condition.  Returns
    true if expr2 depends on expr1.  expr1 should be a single term
    suitable for the lhs of an assignment.  The IDENTICAL flag indicates
@@ -726,7 +798,13 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 	  /* If either variable is a pointer, assume the worst.  */
 	  /* TODO: -fassume-no-pointer-aliasing */
 	  if (gfc_is_data_pointer (expr1) || gfc_is_data_pointer (expr2))
-	    return 1;
+	    {
+	      if (check_data_pointer_types (expr1, expr2)
+		    && check_data_pointer_types (expr2, expr1))
+		return 0;
+
+	      return 1;
+	    }
 
 	  /* Otherwise distinct symbols have no dependencies.  */
 	  return 0;

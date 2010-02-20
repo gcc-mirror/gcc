@@ -1,3 +1,15 @@
+2010-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/36932
+	PR fortran/36933
+	* gfortran.dg/dependency_26.f90: New test.
+
+	PR fortran/43072
+	* gfortran.dg/internal_pack_7.f90: New test.
+
+	PR fortran/43111
+	* gfortran.dg/internal_pack_8.f90: New test.
+
 2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 43128
