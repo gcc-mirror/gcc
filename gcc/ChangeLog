@@ -1,3 +1,10 @@
+2010-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43067
+	* config/i386/sse.md (xop_mulv2div2di3_low): Change type
+	attribute to ssemul.
+	(xop_mulv2div2di3_high): Ditto.
+
 2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/35669
@@ -7,7 +14,7 @@
 2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* common.opt (Wlarger-than-): Add Undocumented.
-	
+
 2010-02-19  Mike Stump  <mikestump@comcast.net>
 
 	* config/t-darwin (gt-darwin.h): Remove as Makefile now handles it.

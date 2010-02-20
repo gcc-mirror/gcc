@@ -10422,7 +10422,7 @@
 {
   operands[3] = CONST0_RTX (V2DImode);
 }
-  [(set_attr "type" "ssemuladd")
+  [(set_attr "type" "ssemul")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_pmacsdqh"
@@ -10484,7 +10484,7 @@
 {
   operands[3] = CONST0_RTX (V2DImode);
 }
-  [(set_attr "type" "ssemuladd")
+  [(set_attr "type" "ssemul")
    (set_attr "mode" "TI")])
 
 ;; XOP parallel integer multiply/add instructions for the intrinisics
