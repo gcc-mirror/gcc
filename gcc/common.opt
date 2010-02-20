@@ -122,7 +122,7 @@ Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined
 
 Wlarger-than-
-Common RejectNegative Joined UInteger Warning
+Common RejectNegative Joined UInteger Warning Undocumented
 
 Wlarger-than=
 Common RejectNegative Joined UInteger Warning
