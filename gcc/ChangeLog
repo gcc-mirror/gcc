@@ -1,3 +1,9 @@
+2010-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR target/40332
+	* configure.ac (gcc_cv_as_cfi_advance_working): Check 32-bit advance.
+	* configure: Likewise.
+
 2010-02-20  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/42344
