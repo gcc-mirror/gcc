@@ -2387,6 +2387,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
     TREE_USED (newdecl) = 1;
   else if (TREE_USED (newdecl))
     TREE_USED (olddecl) = 1;
+  if (DECL_PRESERVE_P (olddecl))
+    DECL_PRESERVE_P (newdecl) = 1;
+  else if (DECL_PRESERVE_P (newdecl))
+    DECL_PRESERVE_P (olddecl) = 1;
 
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
      But preserve OLDDECL's DECL_UID, DECL_CONTEXT and

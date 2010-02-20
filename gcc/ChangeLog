@@ -37,6 +37,9 @@
 
 2010-02-19  Mike Stump  <mikestump@comcast.net>
 
+	PR middle-end/43125
+	* c-decl.c (merge_decls): Merge DECL_PRESERVE_P.
+
 	PR objc/43061
 	* cgraphunit.c (process_function_and_variable_attributes): Check
 	DECL_PRESERVE_P instead of looking up attribute "used".
