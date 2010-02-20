@@ -1,5 +1,5 @@
 // { dg-do link  }
-// { dg-options "-Wconversion" }
+// { dg-options "" }
 
 #include <cstddef>
 

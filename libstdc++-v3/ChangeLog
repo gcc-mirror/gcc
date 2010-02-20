@@ -1,3 +1,9 @@
+2010-02-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/35669
+	* testsuite/18_support/headers/cstddef/macros.cc: Add
+	-Wno-conversion-null.
+
 2010-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/array (array): Add pointer and const_pointer

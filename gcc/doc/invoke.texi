@@ -194,7 +194,7 @@ in the following sections.
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
--Wabi  -Wctor-dtor-privacy @gol
+-Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
@@ -3837,13 +3837,18 @@ changed by the conversion like in @code{abs (2.0)}.  Warnings about
 conversions between signed and unsigned integers can be disabled by
 using @option{-Wno-sign-conversion}.
 
-For C++, also warn for conversions between @code{NULL} and non-pointer
-types; confusing overload resolution for user-defined conversions; and
-conversions that will never use a type conversion operator:
-conversions to @code{void}, the same type, a base class or a reference
-to them. Warnings about conversions between signed and unsigned
-integers are disabled by default in C++ unless
+For C++, also warn for confusing overload resolution for user-defined
+conversions; and conversions that will never use a type conversion
+operator: conversions to @code{void}, the same type, a base class or a
+reference to them. Warnings about conversions between signed and
+unsigned integers are disabled by default in C++ unless
 @option{-Wsign-conversion} is explicitly enabled.
+
+@item -Wno-conversion-null @r{(C++)}
+@opindex Wconversion-null
+@opindex Wno-conversion-null
+Do not warn for conversions between @code{NULL} and non-pointer
+types. @option{-Wconversion-null} is enabled by default.
 
 @item -Wempty-body
 @opindex Wempty-body
