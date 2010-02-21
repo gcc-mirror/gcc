@@ -1222,8 +1222,9 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   switch (expr->value.op.op)
     {
     case INTRINSIC_PARENTHESES:
-      if (expr->ts.type == BT_REAL
-	  || expr->ts.type == BT_COMPLEX)
+      if ((expr->ts.type == BT_REAL
+	   || expr->ts.type == BT_COMPLEX)
+	  && gfc_option.flag_protect_parens)
 	{
 	  gfc_conv_unary_op (PAREN_EXPR, se, expr);
 	  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (se->expr)));

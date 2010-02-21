@@ -171,7 +171,8 @@ and warnings}.
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
--finit-logical=@var{<true|false>} -finit-character=@var{n} -fno-align-commons}
+-finit-logical=@var{<true|false>} -finit-character=@var{n} @gol
+-fno-align-commons -fno-protect-parens}
 @end table
 
 @menu
@@ -1410,6 +1411,16 @@ consistent data types everywhere, this padding can cause trouble, and
 same form of this option should be used for all files that share a COMMON block.
 To avoid potential alignment issues in COMMON blocks, it is recommended to order
 objects from largests to smallest.
+
+@item -fno-protect-parens
+@opindex @code{fno-protect-parens}
+@cindex re-association of parenthesed expressions
+By default the parentheses in expression are honored for all optimization
+levels such that the compiler does not do any re-association. Using
+@option{-fno-protect-parens} allows the compiler to reorder REAL and
+COMPLEX expressions to produce faster code. Note that for the re-association
+optimization @option{-fno-signed-zeros} and @option{-fno-trapping-math}
+need to be in effect.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,

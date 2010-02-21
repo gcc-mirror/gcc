@@ -125,6 +125,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.flag_init_character = GFC_INIT_CHARACTER_OFF;
   gfc_option.flag_init_character_value = (char)0;
   gfc_option.flag_align_commons = 1;
+  gfc_option.flag_protect_parens = 1;
   
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
@@ -919,6 +920,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_falign_commons:
       gfc_option.flag_align_commons = value;
+      break;
+
+    case OPT_fprotect_parens:
+      gfc_option.flag_protect_parens = value;
       break;
 
     case OPT_fcheck_:

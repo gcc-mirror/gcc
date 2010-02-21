@@ -2150,6 +2150,7 @@ typedef struct
   char flag_init_character_value;
   int flag_align_commons;
   int flag_whole_file;
+  int flag_protect_parens;
 
   int fpe;
   int rtcheck;

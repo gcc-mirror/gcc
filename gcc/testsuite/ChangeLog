@@ -1,3 +1,8 @@
+2010-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35259
+	* gfortran.dg/reassoc_5.f90: New test.
+
 2010-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43067
