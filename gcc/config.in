@@ -417,6 +417,12 @@
 #endif
 
 
+/* Define if your assembler and linker support GOTDATA_OP relocs. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SPARC_GOTDATA_OP
+#endif
+
+
 /* Define if your assembler and linker support unaligned PC relative relocs.
    */
 #ifndef USED_FOR_TARGET

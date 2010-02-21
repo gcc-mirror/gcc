@@ -3374,6 +3374,8 @@ legitimize_tls_address (rtx addr)
 static rtx
 legitimize_pic_address (rtx orig, rtx reg)
 {
+  bool gotdata_op = false;
+
   if (GET_CODE (orig) == SYMBOL_REF
       /* See the comment in sparc_expand_move.  */
       || (TARGET_VXWORKS_RTP && GET_CODE (orig) == LABEL_REF))
@@ -3410,15 +3412,28 @@ legitimize_pic_address (rtx orig, rtx reg)
 	      emit_insn (gen_movsi_lo_sum_pic (temp_reg, temp_reg, orig));
 	    }
 	  address = temp_reg;
+	  gotdata_op = true;
 	}
       else
 	address = orig;
 
-      pic_ref = gen_const_mem (Pmode,
-			       gen_rtx_PLUS (Pmode,
-					     pic_offset_table_rtx, address));
       crtl->uses_pic_offset_table = 1;
-      insn = emit_move_insn (reg, pic_ref);
+      if (gotdata_op)
+	{
+	  if (TARGET_ARCH64)
+	    insn = emit_insn (gen_movdi_pic_gotdata_op (reg, pic_offset_table_rtx,
+							address, orig));
+	  else
+	    insn = emit_insn (gen_movsi_pic_gotdata_op (reg, pic_offset_table_rtx,
+							address, orig));
+	}
+      else
+	{
+	  pic_ref = gen_const_mem (Pmode,
+				   gen_rtx_PLUS (Pmode,
+						 pic_offset_table_rtx, address));
+	  insn = emit_move_insn (reg, pic_ref);
+	}
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
       set_unique_reg_note (insn, REG_EQUAL, orig);
