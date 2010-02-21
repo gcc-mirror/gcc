@@ -6,8 +6,10 @@ template <int I> struct F
   int operator()()
     {
       F<I+1> f;			// { dg-error "incomplete type" "incomplete" }
-				// { dg-error "exceeds maximum" "exceeds" { target *-*-* } 8 }
+				// { dg-bogus "exceeds maximum.*exceeds maximum" "exceeds" { xfail *-*-* } 8 }
+                                // { dg-error "exceeds maximum" "exceeds" { xfail *-*-* } 8 }
       return f()*I;             // { dg-message "instantiated" "recurse" }
+      // { dg-message "skipping 40 instantiation contexts" "" { target *-*-* } 11 }
     }
 };
 

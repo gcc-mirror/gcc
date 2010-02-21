@@ -1,3 +1,10 @@
+2010-02-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/23510
+	* error.c (print_instantiation_partial_context_line): New.
+	(print_instantiation_partial_context): Print at most 12 contexts,
+	skip the rest with a message.
+
 2010-02-21  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42824
