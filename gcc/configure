@@ -22491,6 +22491,51 @@ $as_echo "#define HAVE_AS_RELAX_OPTION 1" >>confdefs.h
 
 fi
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for GOTDATA_OP relocs" >&5
+$as_echo_n "checking assembler for GOTDATA_OP relocs... " >&6; }
+if test "${gcc_cv_as_sparc_gotdata_op+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_sparc_gotdata_op=no
+  if test x$gcc_cv_as != x; then
+    echo '.text
+foo:
+	nop
+bar:
+	sethi %gdop_hix22(foo), %g1
+	xor    %g1, %gdop_lox10(foo), %g1
+	ld    [%l7 + %g1], %g2, %gdop(foo)' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -K PIC -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	if test x$gcc_cv_ld != x \
+       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
+       && (test x$gnu_ld_flag = xno \
+           || (test x$gcc_cv_objdump != x \
+               && $gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
+                  | grep ' 03000004 82186004 c405c001'> /dev/null 2>&1)); then
+	 gcc_cv_as_sparc_gotdata_op=yes
+       fi
+       rm -f conftest
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_sparc_gotdata_op" >&5
+$as_echo "$gcc_cv_as_sparc_gotdata_op" >&6; }
+if test $gcc_cv_as_sparc_gotdata_op = yes; then
+
+$as_echo "#define HAVE_AS_SPARC_GOTDATA_OP 1" >>confdefs.h
+
+fi
+
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for unaligned pcrel relocs" >&5
 $as_echo_n "checking assembler for unaligned pcrel relocs... " >&6; }
 if test "${gcc_cv_as_sparc_ua_pcrel+set}" = set; then :

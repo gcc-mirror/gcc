@@ -1,3 +1,19 @@
+2010-02-20  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac: Test if linker and assembler properly support
+	GOTDATA_OP relocations.
+	* configure: Rebuild.
+	* config.in: Likewise.
+	* config/sparc/sparc.md (UNSPEC_MOVE_GOTDATA): New.
+	(movsi_lo_sum_pic): Use %gdop_*() relocs if available.
+	(movsi_high_pic): Likewise.
+	(movdi_lo_sum_pic): Likewise.
+	(movdi_high_pic): Likewise.
+	(movsi_pic_gotdata_op): New pattern.
+	(movdi_pic_gotdata_op): Likewise.
+	* config/sparc/sparc.c (legitimize_pic_address): If flag_pic is 2,
+	emit gen_mov{si,di}_pic_gotdata_op for the GOT slot load.
+	
 2010-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43067

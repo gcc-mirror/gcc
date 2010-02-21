@@ -2944,6 +2944,28 @@ case "$target" in
       [AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,
 		[Define if your assembler supports -relax option.])])
 
+    gcc_GAS_CHECK_FEATURE([GOTDATA_OP relocs],
+      gcc_cv_as_sparc_gotdata_op,,
+      [-K PIC],
+[.text
+foo:
+	nop
+bar:
+	sethi %gdop_hix22(foo), %g1
+	xor    %g1, %gdop_lox10(foo), %g1
+	ld    [[%l7 + %g1]], %g2, %gdop(foo)],
+      [if test x$gcc_cv_ld != x \
+       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
+       && (test x$gnu_ld_flag = xno \
+           || (test x$gcc_cv_objdump != x \
+               && $gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
+                  | grep ' 03000004 82186004 c405c001'> /dev/null 2>&1)); then
+	 gcc_cv_as_sparc_gotdata_op=yes
+       fi
+       rm -f conftest],
+      [AC_DEFINE(HAVE_AS_SPARC_GOTDATA_OP, 1,
+		[Define if your assembler and linker support GOTDATA_OP relocs.])])
+
     gcc_GAS_CHECK_FEATURE([unaligned pcrel relocs],
       gcc_cv_as_sparc_ua_pcrel,,
       [-K PIC],
