@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // 2008-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,6 +23,7 @@
 #include <testsuite_tr1.h>
 
 // DR 781. std::complex should add missing C99 functions.
+// DR 1137. Return type of conj and proj.
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -45,12 +46,21 @@ void test01()
   check_ret_type<cmplx_d_type>(std::proj(c_d1));
   check_ret_type<cmplx_ld_type>(std::proj(c_ld1));
 
-  check_ret_type<cmplx_f_type>(std::proj(f1));
-  check_ret_type<cmplx_d_type>(std::proj(d1));
-  check_ret_type<cmplx_d_type>(std::proj(i1));
+  check_ret_type<float>(std::proj(f1));
+  check_ret_type<double>(std::proj(d1));
+  check_ret_type<double>(std::proj(i1));
   VERIFY( std::proj(i1) == std::proj(double(i1)) );
-  VERIFY( std::proj(i1) == std::proj(cmplx_d_type(double(i1))) );
-  check_ret_type<cmplx_ld_type>(std::proj(ld1));
+  check_ret_type<long double>(std::proj(ld1));
+
+  check_ret_type<cmplx_f_type>(std::conj(c_f1));
+  check_ret_type<cmplx_d_type>(std::conj(c_d1));
+  check_ret_type<cmplx_ld_type>(std::conj(c_ld1));
+
+  check_ret_type<float>(std::conj(f1));
+  check_ret_type<double>(std::conj(d1));
+  check_ret_type<double>(std::conj(i1));
+  VERIFY( std::conj(i1) == std::conj(double(i1)) );
+  check_ret_type<long double>(std::conj(ld1));
 }
 
 int main()
