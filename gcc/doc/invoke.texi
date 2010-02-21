@@ -7541,7 +7541,9 @@ thus cannot be used on a code which relies on rounding behavior like
 and thus may not be used when ordered comparisons are required.
 This option requires that both @option{-fno-signed-zeros} and
 @option{-fno-trapping-math} be in effect.  Moreover, it doesn't make
-much sense with @option{-frounding-math}.
+much sense with @option{-frounding-math}. For Fortran the option
+is automatically enabled when both @option{-fno-signed-zeros} and
+@option{-fno-trapping-math} are in effect.
 
 The default is @option{-fno-associative-math}.
 

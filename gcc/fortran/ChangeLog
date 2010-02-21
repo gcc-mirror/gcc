@@ -1,3 +1,12 @@
+2010-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35259
+	* gfortran.h (gfc_option_t): New flag -fprotect-parens.
+	* lang.opt: Ditto.
+	* option.c (gfc_init_options,gfc_handle_option): Ditto.
+	* trans-expr.c (gfc_conv_expr_op): Use the flag.
+	* invoke.texi: Document new -fno-protect-parens flag.
+
 2010-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/36932

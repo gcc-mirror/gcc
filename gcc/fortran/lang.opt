@@ -324,6 +324,10 @@ fpreprocessed
 Fortran
 ; Documented in C
 
+fprotect-parens
+Fortran
+Protect parentheses in expressions
+
 frange-check
 Fortran
 Enable range checking during compilation

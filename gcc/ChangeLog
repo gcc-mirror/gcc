@@ -1,3 +1,9 @@
+2010-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35259
+	* doc/invoke.texi (-fassociative-math): Document that this
+	option is automatically enabled for Fortran.
+
 2010-02-20  David S. Miller  <davem@davemloft.net>
 
 	* configure.ac: Test if linker and assembler properly support
