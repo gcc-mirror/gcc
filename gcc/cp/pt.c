@@ -6379,7 +6379,8 @@ lookup_template_class (tree d1,
       tree found = NULL_TREE;
       int arg_depth;
       int parm_depth;
-      int is_partial_instantiation;
+      int is_dependent_type;
+      int use_partial_inst_tmpl = false;
 
       gen_tmpl = most_general_template (templ);
       parmlist = DECL_TEMPLATE_PARMS (gen_tmpl);
@@ -6495,21 +6496,17 @@ lookup_template_class (tree d1,
       if (entry)
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, entry->spec);
 
-      /* This type is a "partial instantiation" if any of the template
-	 arguments still involve template parameters.  Note that we set
-	 IS_PARTIAL_INSTANTIATION for partial specializations as
-	 well.  */
-      is_partial_instantiation = uses_template_parms (arglist);
+      is_dependent_type = uses_template_parms (arglist);
 
       /* If the deduced arguments are invalid, then the binding
 	 failed.  */
-      if (!is_partial_instantiation
+      if (!is_dependent_type
 	  && check_instantiated_args (gen_tmpl,
 				      INNERMOST_TEMPLATE_ARGS (arglist),
 				      complain))
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
-      if (!is_partial_instantiation
+      if (!is_dependent_type
 	  && !PRIMARY_TEMPLATE_P (gen_tmpl)
 	  && !LAMBDA_TYPE_P (TREE_TYPE (gen_tmpl))
 	  && TREE_CODE (CP_DECL_CONTEXT (gen_tmpl)) == NAMESPACE_DECL)
@@ -6528,7 +6525,7 @@ lookup_template_class (tree d1,
       /* Create the type.  */
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
-	  if (!is_partial_instantiation)
+	  if (!is_dependent_type)
 	    {
 	      set_current_access_from_decl (TYPE_NAME (template_type));
 	      t = start_enum (TYPE_IDENTIFIER (template_type),
@@ -6594,11 +6591,71 @@ lookup_template_class (tree d1,
 	  DECL_VISIBILITY (type_decl) = CLASSTYPE_VISIBILITY (template_type);
 	}
 
-      /* Set up the template information.  We have to figure out which
-	 template is the immediate parent if this is a full
-	 instantiation.  */
-      if (parm_depth == 1 || is_partial_instantiation
-	  || !PRIMARY_TEMPLATE_P (gen_tmpl))
+      /* Let's consider the explicit specialization of a member
+         of a class template specialization that is implicitely instantiated,
+	 e.g.:
+	     template<class T>
+	     struct S
+	     {
+	       template<class U> struct M {}; //#0
+	     };
+
+	     template<>
+	     template<>
+	     struct S<int>::M<char> //#1
+	     {
+	       int i;
+	     };
+	[temp.expl.spec]/4 says this is valid.
+
+	In this case, when we write:
+	S<int>::M<char> m;
+
+	M is instantiated from the CLASSTYPE_TI_TEMPLATE of #1, not from
+	the one of #0.
+
+	When we encounter #1, we want to store the partial instantiation
+	of M (template<class T> S<int>::M<T>) in it's CLASSTYPE_TI_TEMPLATE.
+
+	For all cases other than this "explicit specialization of member of a
+	class template", we just want to store the most general template into
+	the CLASSTYPE_TI_TEMPLATE of M.
+
+	This case of "explicit specialization of member of a class template"
+	only happens when:
+	1/ the enclosing class is an instantiation of, and therefore not
+	the same as, the context of the most general template, and
+	2/ we aren't looking at the partial instantiation itself, i.e.
+	the innermost arguments are not the same as the innermost parms of
+	the most general template.
+
+	So it's only when 1/ and 2/ happens that we want to use the partial
+	instantiation of the member template in lieu of its most general
+	template.  */
+
+      if (PRIMARY_TEMPLATE_P (gen_tmpl)
+	  && TMPL_ARGS_HAVE_MULTIPLE_LEVELS (arglist)
+	  /* the enclosing class must be an instantiation...  */
+	  && CLASS_TYPE_P (context)
+	  && !same_type_p (context, DECL_CONTEXT (gen_tmpl)))
+	{
+	  tree partial_inst_args;
+	  TREE_VEC_LENGTH (arglist)--;
+	  ++processing_template_decl;
+	  partial_inst_args =
+	    tsubst (INNERMOST_TEMPLATE_ARGS
+			(CLASSTYPE_TI_ARGS (TREE_TYPE (gen_tmpl))),
+		    arglist, complain, NULL_TREE);
+	  --processing_template_decl;
+	  TREE_VEC_LENGTH (arglist)++;
+	  use_partial_inst_tmpl =
+	    /*...and we must not be looking at the partial instantiation
+	     itself. */
+	    !comp_template_args (INNERMOST_TEMPLATE_ARGS (arglist),
+				 partial_inst_args);
+	}
+
+      if (!use_partial_inst_tmpl)
 	/* This case is easy; there are no member templates involved.  */
 	found = gen_tmpl;
       else
@@ -6628,8 +6685,7 @@ lookup_template_class (tree d1,
 	= tree_cons (arglist, t,
 		     DECL_TEMPLATE_INSTANTIATIONS (templ));
 
-      if (TREE_CODE (t) == ENUMERAL_TYPE
-	  && !is_partial_instantiation)
+      if (TREE_CODE (t) == ENUMERAL_TYPE && !is_dependent_type)
 	/* Now that the type has been registered on the instantiations
 	   list, we set up the enumerators.  Because the enumeration
 	   constants may involve the enumeration type itself, we make
@@ -6639,7 +6695,7 @@ lookup_template_class (tree d1,
 	   the instantiation and exit above.  */
 	tsubst_enum (template_type, t, arglist);
 
-      if (is_partial_instantiation)
+      if (is_dependent_type)
 	/* If the type makes use of template parameters, the
 	   code that generates debugging information will crash.  */
 	DECL_IGNORED_P (TYPE_STUB_DECL (t)) = 1;

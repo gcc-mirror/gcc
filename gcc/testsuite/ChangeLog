@@ -1,3 +1,8 @@
+2010-02-21  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42824
+	* g++.dg/template/memclass4.C: New test.
+
 2010-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35259
