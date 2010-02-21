@@ -1,6 +1,6 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -311,13 +311,9 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     arg(_Tp __x)
     {
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return std::arg(std::complex<__type>(__x));
+      return std::signbit(__x) ? __type(3.1415926535897932384626433832795029L)
+	                       : __type();
     }
-
-  template<typename _Tp>
-    inline std::complex<typename __gnu_cxx::__promote<_Tp>::__type>
-    conj(_Tp __x)
-    { return __x; }
 
   template<typename _Tp>
     inline typename __gnu_cxx::__promote<_Tp>::__type

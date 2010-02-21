@@ -1,6 +1,6 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,7 +56,17 @@ namespace std
 namespace tr1
 {
   using std::arg;
-  using std::conj;
+
+  template<typename _Tp>
+    inline std::complex<_Tp>
+    conj(const std::complex<_Tp>& __z)
+    { return std::conj(__z); }  
+
+  template<typename _Tp>
+    inline std::complex<typename __gnu_cxx::__promote<_Tp>::__type>
+    conj(_Tp __x)
+    { return __x; }
+
   using std::imag;
   using std::norm;
   using std::polar;
