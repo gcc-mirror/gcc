@@ -2728,36 +2728,89 @@ print_instantiation_full_context (diagnostic_context *context)
   print_instantiation_partial_context (context, p, location);
 }
 
-/* Same as above but less verbose.  */
+/* Helper function of print_instantiation_partial_context() that
+   prints a single line of instantiation context.  */
+
 static void
-print_instantiation_partial_context (diagnostic_context *context,
-				     struct tinst_level *t, location_t loc)
+print_instantiation_partial_context_line (diagnostic_context *context,
+					  const struct tinst_level *t, location_t loc)
 {
   expanded_location xloc;
-  const char *str;
-  for (; ; t = t->next)
+  xloc = expand_location (loc);
+
+  if (t != NULL) {
+    const char *str;
+    str = decl_as_string_translate (t->decl,
+				    TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
+    if (flag_show_column)
+      pp_verbatim (context->printer,
+		   _("%s:%d:%d:   instantiated from %qs\n"),
+		   xloc.file, xloc.line, xloc.column, str);
+    else
+      pp_verbatim (context->printer,
+		   _("%s:%d:   instantiated from %qs\n"),
+		   xloc.file, xloc.line, str);
+  } else {
+    if (flag_show_column)
+      pp_verbatim (context->printer, _("%s:%d:%d:   instantiated from here"),
+		   xloc.file, xloc.line, xloc.column);
+    else
+      pp_verbatim (context->printer, _("%s:%d:   instantiated from here"),
+		   xloc.file, xloc.line);
+  }
+}
+
+/* Same as print_instantiation_full_context but less verbose.  */
+
+static void
+print_instantiation_partial_context (diagnostic_context *context,
+				     struct tinst_level *t0, location_t loc)
+{
+  struct tinst_level *t;
+  int n_total = 0;
+  int n;
+
+  for (t = t0; t != NULL; t = t->next)
+    n_total++;
+
+  t = t0;
+
+  if (n_total >= 12) 
     {
-      xloc = expand_location (loc);
-      if (t == NULL)
-	break;
-      str = decl_as_string_translate (t->decl,
-	  			      TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
-      if (flag_show_column)
-	pp_verbatim (context->printer,
-		     _("%s:%d:%d:   instantiated from %qs\n"),
-		     xloc.file, xloc.line, xloc.column, str);
-      else
-	pp_verbatim (context->printer,
-		     _("%s:%d:   instantiated from %qs\n"),
-		     xloc.file, xloc.line, str);
+      int skip = n_total - 10;
+      for (n = 0; n < 5; n++)
+	{
+	  gcc_assert (t != NULL);
+	  print_instantiation_partial_context_line (context, t, loc);
+	  loc = t->locus;
+	  t = t->next;
+	}
+      if (skip > 1) 
+	{
+	  expanded_location xloc;
+	  xloc = expand_location (loc);
+	  if (flag_show_column)
+	    pp_verbatim (context->printer,
+			 _("%s:%d:%d:   [ skipping %d instantiation contexts ]\n"),
+			 xloc.file, xloc.line, xloc.column, skip);
+	  else
+	    pp_verbatim (context->printer,
+			 _("%s:%d:   [ skipping %d instantiation contexts ]\n"),
+			 xloc.file, xloc.line, skip);
+	  
+	  do {
+	      loc = t->locus;
+	      t = t->next;
+	  } while (--skip > 0);
+	}
+    }
+  
+  for (; t != NULL; t = t->next)
+    {
+      print_instantiation_partial_context_line (context, t, loc);
       loc = t->locus;
     }
-  if (flag_show_column)
-    pp_verbatim (context->printer, _("%s:%d:%d:   instantiated from here"),
-		 xloc.file, xloc.line, xloc.column);
-  else
-    pp_verbatim (context->printer, _("%s:%d:   instantiated from here"),
-		 xloc.file, xloc.line);
+  print_instantiation_partial_context_line (context, NULL, loc);
   pp_base_newline (context->printer);
 }
 

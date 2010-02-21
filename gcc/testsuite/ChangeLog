@@ -1,3 +1,9 @@
+2010-02-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/23510
+	* g++.dg/template/recurse.C: Adjust.
+	* g++.dg/template/pr23510.C: New.
+
 2010-02-21  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/42824
