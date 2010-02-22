@@ -8,9 +8,9 @@ struct A
 
 typedef void (A::T)(); /* { dg-error "typedef name may not be a nested" } */
 
-void bar(T); /* { dg-error "too many arguments" } */
+void bar(T); /* { dg-message "note: declared here" } */
 
 void baz()
 {
-  bar(&A::foo); /* { dg-error "at this point" } */
+  bar(&A::foo); /* { dg-error "too many arguments" } */
 }

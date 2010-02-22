@@ -5,7 +5,7 @@ namespace A{
 
 namespace B{
   using namespace A;
-  void f(int);			// { dg-error "" } referenced below
+  void f(int);		/* { dg-message "note: declared here" } */
 }
 
 using namespace B;

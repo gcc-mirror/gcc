@@ -3304,9 +3304,10 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
             {
               if (fndecl)
                 {
-                  error ("too many arguments to %s %q+#D", 
-                         called_thing, fndecl);
-                  error ("at this point in file");
+                  error_at (input_location, "too many arguments to %s %q#D", 
+			    called_thing, fndecl);
+		  inform (DECL_SOURCE_LOCATION (fndecl),
+			  "declared here");
                 }
               else
                 error ("too many arguments to function");
@@ -3417,9 +3418,10 @@ convert_arguments (tree typelist, VEC(tree,gc) **values, tree fndecl,
             {
               if (fndecl)
                 {
-                  error ("too few arguments to %s %q+#D", 
-                         called_thing, fndecl);
-                  error ("at this point in file");
+                  error_at (input_location, "too few arguments to %s %q#D", 
+			    called_thing, fndecl);
+		  inform (DECL_SOURCE_LOCATION (fndecl),
+			  "declared here");
                 }
               else
                 error ("too few arguments to function");

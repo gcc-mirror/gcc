@@ -7,12 +7,12 @@
 
 static int f1(void *x U) { return 0; }
 static void f2() { }
-static void f3(void) { }
+static void f3(void) { } /* { dg-message "note: declared here" } */
 static void f4(void *x U) { }
 static void f5(int *x U) { }
 static void f6(double *x U) { } /* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" } */
 static void f7(const int *x U) { }
-static void f8(const int *x U, int y U) { }
+static void f8(const int *x U, int y U) { } /* { dg-message "note: declared here" } */
 static void f9(int x U) { } /* { dg-message "note: expected '\[^\n'\]*' but argument is of type '\[^\n'\]*'" "note: expected" } */
 
 void test(void)

@@ -14,7 +14,7 @@ extern char *envp[];
 
 extern int a ATTR; /* { dg-warning "applies to function types" "sentinel" } */
 
-extern void foo1 (const char *, ...) ATTR;
+extern void foo1 (const char *, ...) ATTR; /* { dg-message "note: declared here" } */
 extern void foo2 (...) ATTR; /* { dg-error "ISO C requires|named arguments" "sentinel" } */
 extern void foo3 () ATTR; /* { dg-warning "named arguments" "sentinel" } */
 extern void foo4 (const char *, int) ATTR; /* { dg-warning "variadic functions" "sentinel" } */
