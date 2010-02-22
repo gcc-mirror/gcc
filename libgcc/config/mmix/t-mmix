@@ -1,0 +1,14 @@
+# Don't use global registers in libraries.
+# FIXME: Not applied at "root" level, so disabled at the moment to stop
+# incorrect comparisons with -mabi=gnu.
+#MULTILIB_EXTRA_OPTS = mno-base-addresses
+
+$(T)crti.o: $(gcc_srcdir)/config/mmix/crti.asm $(GCC_PASSES)
+	$(crt_compile) $(INCLUDES) \
+	$(CRTSTUFF_T_CFLAGS) -c -x assembler-with-cpp \
+	$(gcc_srcdir)/config/mmix/crti.asm
+
+$(T)crtn.o: $(gcc_srcdir)/config/mmix/crtn.asm $(GCC_PASSES)
+	$(crt_compile) $(INCLUDES) \
+	$(CRTSTUFF_T_CFLAGS) -c -x assembler-with-cpp \
+	$(gcc_srcdir)/config/mmix/crtn.asm
