@@ -1,3 +1,8 @@
+2010-02-22  Duncan Sands  <baldrick@free.fr>
+
+	* passes.c (register_pass): Always consider all pass lists when
+	ref_pass_instance_number is zero.
+
 2010-02-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/42749
