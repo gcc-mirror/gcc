@@ -1,5 +1,10 @@
 2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/tr1_impl/complex (arg): Use std::signbit only when
+	available.
+
+2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/functional_hash.h (hash<string>, hash<wstring>,
 	hash<u16string>, hash<u32string>, hash<error_code>): Move, per
 	DR 1182 to...
