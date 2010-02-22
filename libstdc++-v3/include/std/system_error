@@ -335,6 +335,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
+#ifndef _GLIBCXX_COMPATIBILITY_CXX0X
+
+#include <bits/functional_hash.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // DR 1182.
+  /// std::hash specialization for error_code.
+  template<>
+    struct hash<error_code>
+    : public std::unary_function<error_code, size_t>
+    {
+      size_t
+      operator()(const error_code& __e) const
+      {
+	const char* __p = reinterpret_cast<const char*>(&__e);
+	return _Fnv_hash<>::hash(__p, sizeof(__e));
+      }
+    };
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // _GLIBCXX_COMPATIBILITY_CXX0X
+
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_SYSTEM_ERROR

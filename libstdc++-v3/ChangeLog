@@ -1,3 +1,24 @@
+2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/functional_hash.h (hash<string>, hash<wstring>,
+	hash<u16string>, hash<u32string>, hash<error_code>): Move, per
+	DR 1182 to...
+	* include/bits/basic_string.h: ... here.
+	* include/std/system_error: ... and here, respectively.
+	* src/hash-aux.cc (hash<long double>::operator()(long double)):
+	Move definition...
+	* src/hash_c++0x.cc: ... here, new file.
+	* src/hash_tr1.cc: ... and here, tweak includes.
+	* src/compatibility-c++0x.cc (hash, _Fnv_hash): Remove.
+	* src/Makefile.am: Adjust.
+	* src/Makefile.in: Regenerate.
+	* include/std/functional: Include <bits/functexcept.h>.
+	* include/std/unordered_set: Remove redundant include.
+	* include/std/unordered_map: Likewise.
+	* include/tr1/functional_hash.h: Remove spurious trailing semicolon.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Remove
+	dg-excess.
+
 2010-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/complex (proj): Change return type per DR 1137.

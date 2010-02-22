@@ -89,10 +89,10 @@ am__libstdc___la_SOURCES_DIST = atomic.cc bitmap_allocator.cc \
 	pool_allocator.cc mt_allocator.cc codecvt.cc compatibility.cc \
 	compatibility-c++0x.cc compatibility-debug_list.cc \
 	compatibility-list.cc complex_io.cc ctype.cc debug.cc \
-	functexcept.cc hash_tr1.cc globals_io.cc hashtable_tr1.cc \
-	hashtable_c++0x.cc ios.cc ios_failure.cc ios_init.cc \
-	ios_locale.cc limits.cc list.cc debug_list.cc locale.cc \
-	locale_init.cc locale_facets.cc localename.cc \
+	functexcept.cc globals_io.cc hash_c++0x.cc hash_tr1.cc \
+	hashtable_c++0x.cc hashtable_tr1.cc ios.cc ios_failure.cc \
+	ios_init.cc ios_locale.cc limits.cc list.cc debug_list.cc \
+	locale.cc locale_init.cc locale_facets.cc localename.cc \
 	math_stubs_float.cc math_stubs_long_double.cc stdexcept.cc \
 	strstream.cc system_error.cc tree.cc allocator-inst.cc \
 	concept-inst.cc fstream-inst.cc ext-inst.cc ios-inst.cc \
@@ -119,10 +119,10 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	mt_allocator.lo codecvt.lo compatibility.lo \
 	compatibility-c++0x.lo compatibility-debug_list.lo \
 	compatibility-list.lo complex_io.lo ctype.lo debug.lo \
-	functexcept.lo hash_tr1.lo globals_io.lo hashtable_tr1.lo \
-	hashtable_c++0x.lo ios.lo ios_failure.lo ios_init.lo \
-	ios_locale.lo limits.lo list.lo debug_list.lo locale.lo \
-	locale_init.lo locale_facets.lo localename.lo \
+	functexcept.lo globals_io.lo hash_c++0x.lo hash_tr1.lo \
+	hashtable_c++0x.lo hashtable_tr1.lo ios.lo ios_failure.lo \
+	ios_init.lo ios_locale.lo limits.lo list.lo debug_list.lo \
+	locale.lo locale_init.lo locale_facets.lo localename.lo \
 	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
 	strstream.lo system_error.lo tree.lo allocator-inst.lo \
 	concept-inst.lo fstream-inst.lo ext-inst.lo ios-inst.lo \
@@ -394,10 +394,11 @@ sources = \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
-	hash_tr1.cc \
 	globals_io.cc \
-	hashtable_tr1.cc \
+	hash_c++0x.cc \
+	hash_tr1.cc \
 	hashtable_c++0x.cc \
+	hashtable_tr1.cc \
 	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
@@ -905,6 +906,11 @@ condition_variable.o: condition_variable.cc
 compatibility-c++0x.lo: compatibility-c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 compatibility-c++0x.o: compatibility-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+hash_c++0x.lo: hash_c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+hash_c++0x.o: hash_c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hashtable_c++0x.lo: hashtable_c++0x.cc

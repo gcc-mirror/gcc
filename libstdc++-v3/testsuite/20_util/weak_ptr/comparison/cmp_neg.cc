@@ -30,7 +30,6 @@ int
 test01()
 {
   std::weak_ptr<A> p1;
-  // { dg-excess-errors "candidates are" }
   p1 < p1;  // { dg-error "no match" }
   return 0;
 }
