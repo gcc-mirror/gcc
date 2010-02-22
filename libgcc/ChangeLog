@@ -1,3 +1,9 @@
+2010-02-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Migrate from broken pre-libgcc legacy support to libgcc-centric rules.
+	* config/mmix/t-mmix: New file.
+	* config.host <mmix-knuth-mmixware> (extra_parts, tmake_file): Set.
+
 2010-02-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR java/41991
