@@ -1272,6 +1272,7 @@ bool
 gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 {
   int i;
+  int n;
   bool lbound_OK = true;
   bool ubound_OK = true;
 
@@ -1280,12 +1281,14 @@ gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 
   if (ref->type != REF_ARRAY)
     return false;
+
   if (ref->u.ar.type == AR_FULL)
     {
       if (contiguous)
 	*contiguous = true;
       return true;
     }
+
   if (ref->u.ar.type != AR_SECTION)
     return false;
   if (ref->next)
@@ -1293,14 +1296,21 @@ gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 
   for (i = 0; i < ref->u.ar.dimen; i++)
     {
-      /* If we have a single element in the reference, we need to check
-	 that the array has a single element and that we actually reference
-	 the correct element.  */
+      /* If we have a single element in the reference, for the reference
+	 to be full, we need to ascertain that the array has a single
+	 element in this dimension and that we actually reference the
+	 correct element.  */
       if (ref->u.ar.dimen_type[i] == DIMEN_ELEMENT)
 	{
-	  /* This is a contiguous reference.  */
+	  /* This is unconditionally a contiguous reference if all the
+	     remaining dimensions are elements.  */
 	  if (contiguous)
-	    *contiguous = (i + 1 == ref->u.ar.dimen);
+	    {
+	      *contiguous = true;
+	      for (n = i + 1; n < ref->u.ar.dimen; n++)
+		if (ref->u.ar.dimen_type[n] != DIMEN_ELEMENT)
+		  *contiguous = false;
+	    }
 
 	  if (!ref->u.ar.as
 	      || !ref->u.ar.as->lower[i]
@@ -1330,12 +1340,19 @@ gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 				       ref->u.ar.as->upper[i])))
 	ubound_OK = false;
       /* Check the stride.  */
-      if (ref->u.ar.stride[i] && !gfc_expr_is_one (ref->u.ar.stride[i], 0))
+      if (ref->u.ar.stride[i]
+	    && !gfc_expr_is_one (ref->u.ar.stride[i], 0))
 	return false;
 
-      /* This is a contiguous reference.  */
+      /* This is unconditionally a contiguous reference as long as all
+	 the subsequent dimensions are elements.  */
       if (contiguous)
-	*contiguous = (i + 1 == ref->u.ar.dimen);
+	{
+	  *contiguous = true;
+	  for (n = i + 1; n < ref->u.ar.dimen; n++)
+	    if (ref->u.ar.dimen_type[n] != DIMEN_ELEMENT)
+	      *contiguous = false;
+	}
 
       if (!lbound_OK || !ubound_OK)
 	return false;

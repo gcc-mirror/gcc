@@ -5,7 +5,7 @@
 ! to internal_pack and internal_unpack were being generated.
 !
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
-!!
+!
 MODULE M1
  TYPE T1
    REAL :: data(10) = [(i, i = 1, 10)]
@@ -38,7 +38,9 @@ SUBROUTINE S2
  DO i=-4,5
     CALL S1(data(:,i), 10, sum (data(:,i)))
  ENDDO
-! Being non-contiguous, this is the only time that _internal_pack is called
+
+! With the fix for PR41113/7 this is the only time that _internal_pack
+! was called.  The final part of the fix for PR43072 put paid to it too.
  DO i=-4,5
     CALL S1(data(-2:,i), 8, sum (data(-2:,i)))
  ENDDO
@@ -53,5 +55,5 @@ END SUBROUTINE S2
  call s2
 end
 ! { dg-final { cleanup-modules "M1" } }
-! { dg-final { scan-tree-dump-times "_gfortran_internal_pack" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_internal_pack" 0 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
