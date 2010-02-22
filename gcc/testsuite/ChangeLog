@@ -1,3 +1,7 @@
+2010-02-22  Ozkan Sezer  <sezeroz@gmail.com>
+
+	* gcc.c-torture/execute/991014-1.c: Use __SIZE_TYPE__ for size types.
+
 2010-02-22  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43045

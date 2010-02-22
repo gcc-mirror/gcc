@@ -1,7 +1,11 @@
 
-typedef typeof(sizeof(char)) Size_t;
+typedef __SIZE_TYPE__ Size_t;
 
+#if __SIZEOF_LONG__ < __SIZEOF_POINTER__
+#define bufsize ((1LL << (8 * sizeof(Size_t) - 2))-256)
+#else
 #define bufsize ((1L << (8 * sizeof(Size_t) - 2))-256)
+#endif
 
 struct huge_struct
 {
@@ -18,19 +22,19 @@ union huge_union
   char buf[bufsize];
 };
 
-unsigned long union_size()
+Size_t union_size()
 {
   return sizeof(union huge_union);
 }
 
-unsigned long struct_size()
+Size_t struct_size()
 {
   return sizeof(struct huge_struct);
 }
 
-unsigned long struct_a_offset()
+Size_t struct_a_offset()
 {
-  return (unsigned long)(&((struct huge_struct *) 0)->a);
+  return (Size_t)(&((struct huge_struct *) 0)->a);
 }
 
 int main()
