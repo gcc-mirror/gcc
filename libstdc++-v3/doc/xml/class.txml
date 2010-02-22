@@ -114,8 +114,13 @@
     <abbrev>
     </abbrev>
 
-    <title>
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://about:blank">
+        <citetitle>
+        The Title
+        </citetitle>
+      </ulink>
+    </biblioid>
 
     <editor>
       <firstname></firstname>
@@ -137,11 +142,6 @@
       <publishername>
       </publishername>
     </publisher>
-
-    <biblioid>
-      <ulink url="">
-      </ulink>
-    </biblioid>
 
   </biblioentry> 
 -->

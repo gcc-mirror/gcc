@@ -1,6 +1,6 @@
 <sect1 id="appendix.porting.abi" xreflabel="abi">
 <?dbhtml filename="abi.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -38,14 +38,14 @@
   perhaps also dependent on features in the C++ Standard Library.
 </para>
 
-<para> 
+<para>
   The C++ Standard Library has many include files, types defined in
   those include files, specific named functions, and other
   behavior. The text of these behaviors, as written in source include
   files, is called the Application Programing Interface, or API.
 </para>
 
-<para> 
+<para>
   Furthermore, C++ source that is compiled into object files is
   transformed by the compiler: it arranges objects with specific
   alignment and in a particular layout, mangling names according to a
@@ -69,7 +69,7 @@
   for Code Generation Conventions</ulink>.
 </para>
 
-<para> 
+<para>
   The configure options used when building a specific libstdc++
   version may also impact the resulting library ABI. The available
   configure options, and their impact on the library ABI, are
@@ -114,7 +114,7 @@ given compiler ABI. In a nutshell:
 C++ toolchain. With each release, various details have been changed so
 as to give distinct versions to the C++ interface.
 </para>
-  
+
   <sect3 id="abi.versioning.goals">
     <title>Goals</title>
 
@@ -183,9 +183,9 @@ compatible.
     hppa-linux this is either libgcc_s.so.1 (when configuring
     <code>--with-sjlj-exceptions</code>) or libgcc_s.so.2. For all
     others, this is libgcc_s.so.1.  </para>
-    </listitem> 
+    </listitem>
     </itemizedlist>
-    
+
   </listitem>
 
     <listitem><para>Symbol versioning on the libgcc_s.so binary.</para>
@@ -336,7 +336,7 @@ compatible.
     <listitem><para>gcc-4.5.0: GLIBCXX_3.4.14, CXXABI_1.3.4</para></listitem>
     </itemizedlist>
     </listitem>
-  
+
     <listitem>
     <para>Incremental bumping of a compiler pre-defined macro,
     __GXX_ABI_VERSION. This macro is defined as the version of the
@@ -344,7 +344,7 @@ compatible.
     be automatically defined whenever g++ is used (the curious can
     test this by invoking g++ with the '-v' flag.)
     </para>
-    
+
     <para>
     This macro was defined in the file "lang-specs.h" in the gcc/cp directory.
     Later versions defined it in "c-common.c" in the gcc directory, and from
@@ -652,11 +652,11 @@ int main()
 %g++ hello.cc -o hello.out
 
 %ldd hello.out
-        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40016000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40016000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 %nm hello.out
 </programlisting>
@@ -722,7 +722,7 @@ class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of being passing instances of this
 class in registers, the compiler will be forced to use memory. See <ulink url="http://www.codesourcery.com/cxx-abi/abi.html#calls"> this part</ulink>
- of the C++ ABI documentation for further details. 
+ of the C++ ABI documentation for further details.
  </para></listitem>
 
 </orderedlist>
@@ -748,7 +748,7 @@ class in registers, the compiler will be forced to use memory. See <ulink url="h
 <variablelist>
   <varlistentry>
     <term>Include files have declarations, source files have defines</term>
-    
+
     <listitem>
       <para>
 	For non-templatized types, such as much of <code>class
@@ -759,7 +759,7 @@ class in registers, the compiler will be forced to use memory. See <ulink url="h
       </para>
     </listitem>
   </varlistentry>
-  
+
   <varlistentry>
   <term>Extern template on required types</term>
 
@@ -782,7 +782,7 @@ class in registers, the compiler will be forced to use memory. See <ulink url="h
 
  </variablelist>
 
- <para> 
+ <para>
    In addition, these techniques have the additional benefit that they
    reduce binary size, which can increase runtime performance.
  </para>
@@ -865,7 +865,7 @@ standard includes.</para>
     </para>
 
     <para>
-      One.  Intel ABI checker. 
+      One.  Intel ABI checker.
     </para>
 
 <para>
@@ -888,8 +888,8 @@ Testing the C++ library ABI can also be done various ways.
 </para>
 
 <para>
-One. 
-(Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways, 
+One.
+(Brendan Kehoe, Jeff Law suggestion to run 'make check-c++' two ways,
 one with a new compiler and an old library, and the other with an old
 compiler and a new library, and look for testsuite regressions)
 </para>
@@ -900,8 +900,8 @@ http://gcc.gnu.org/ml/gcc/2002-08/msg00142.html
 </para>
 
 <para>
-Two.  
-Use the 'make check-abi' rule in the libstdc++ Makefile. 
+Two.
+Use the 'make check-abi' rule in the libstdc++ Makefile.
 </para>
 
 <para>
@@ -924,7 +924,7 @@ machinery.
 <para>
 This dataset is insufficient, yet a start. Also needed is a
 comprehensive check for all user-visible types part of the standard
-library for sizeof() and alignof() changes. 
+library for sizeof() and alignof() changes.
 </para>
 
 <para>
@@ -969,7 +969,7 @@ exceptions, locale, etc.
 
 %$bld/H-x86-gcc-3.4.0/bin/g++ -c a.cc
 
-%ar cru libone.a a.o 
+%ar cru libone.a a.o
 </programlisting>
 
 <para> And, libtwo is constructed as follows: </para>
@@ -983,7 +983,7 @@ exceptions, locale, etc.
 
 %$bld/H-x86-gcc-3.3.3/bin/g++ -c b.cc
 
-%ar cru libtwo.a b.o 
+%ar cru libtwo.a b.o
 </programlisting>
 
 <para> ...with the resulting libraries looking like </para>
@@ -991,22 +991,22 @@ exceptions, locale, etc.
 <screen>
 <computeroutput>
 %ldd libone.so.1.0.0
-        libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40016000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400fa000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x4011c000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x40125000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40016000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400fa000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x4011c000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x40125000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 
 %ldd libtwo.so.1.0.0
-        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x40027000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400e1000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40103000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x4010c000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x40027000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x400e1000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x40103000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x4010c000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 </computeroutput>
 </screen>
 
-<para> 
+<para>
   Then, the "C" compiler is used to compile a source file that uses
   functions from each library.
 </para>
@@ -1021,12 +1021,12 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <screen>
 <computeroutput>
 %ldd a.out
-        libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
-        libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40015000)
-        libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
-        libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
-        libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x400e5000)
-        /lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
+	libstdc++.so.5 =&gt; /usr/lib/libstdc++.so.5 (0x00764000)
+	libstdc++.so.6 =&gt; /usr/lib/libstdc++.so.6 (0x40015000)
+	libc.so.6 =&gt; /lib/tls/libc.so.6 (0x0036d000)
+	libm.so.6 =&gt; /lib/tls/libm.so.6 (0x004a8000)
+	libgcc_s.so.1 =&gt; /mnt/hd/bld/gcc/gcc/libgcc_s.so.1 (0x400e5000)
+	/lib/ld-linux.so.2 =&gt; /lib/ld-linux.so.2 (0x00355000)
 </computeroutput>
 </screen>
 
@@ -1041,7 +1041,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <sect2 id="abi.issues">
 <title>Outstanding Issues</title>
 
-<para> 
+<para>
   Some features in the C++ language make versioning especially
   difficult. In particular, compiler generated constructs such as
   implicit instantiations for templates, typeinfo information, and
@@ -1068,151 +1068,136 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <title>Bibliography</title>
 
   <biblioentry>
-    <title>
-      ABIcheck, a vague idea of checking ABI compatibility
-    </title>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://abicheck.sourceforge.net/">
+	<citetitle>
+	  ABIcheck, a vague idea of checking ABI compatibility
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      C++ ABI Reference
-    </title>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://www.codesourcery.com/public/cxx-abi/">
+	<citetitle>
+	  C++ ABI Reference
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Intel® Compilers for Linux* -Compatibility with the GNU Compilers
-    </title>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm">
+	<citetitle>
+	  Intel Compilers for Linux Compatibility with the GNU Compilers
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
-    </title>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://docs.sun.com/app/docs/doc/817-1984">
+	<citetitle>
+	  Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
 
   <biblioentry>
-    <title>
-      Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
-    </title>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://docs.sun.com/app/docs/doc/819-5266">
+	<citetitle>
+	  Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      How to Write Shared Libraries
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://people.redhat.com/drepper/dsohowto.pdf">
+	<citetitle>
+	  How to Write Shared Libraries
+	</citetitle>
+      </ulink>
+    </biblioid>
 
     <author>
       <firstname>Ulrich</firstname>
       <surname>Drepper</surname>
     </author>
- 
-    <biblioid>
-      <ulink url="http://people.redhat.com/drepper/dsohowto.pdf">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      C++ ABI for the ARM Architecture
-    </title>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://www.arm.com/miscPDFs/8033.pdf">
+	<citetitle>
+	  C++ ABI for the ARM Architecture
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Dynamic Shared Objects: Survey and Issues
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html">
+	<citetitle>
+	  Dynamic Shared Objects: Survey and Issues
+	</citetitle>
+      </ulink>
+    </biblioid>
     <subtitle>
       ISO C++ J16/06-0046
     </subtitle>
-
     <author>
       <firstname>Benjamin</firstname>
       <surname>Kosnik</surname>
     </author>
- 
-    <biblioid>
-      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Versioning With Namespaces
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">
+	<citetitle>
+	  Versioning With Namespaces
+	</citetitle>
+      </ulink>
+    </biblioid>
     <subtitle>
       ISO C++ J16/06-0083
     </subtitle>
-
     <author>
       <firstname>Benjamin</firstname>
       <surname>Kosnik</surname>
     </author>
- 
-    <biblioid>
-      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems
-    </title>
-
+    <biblioid class="uri">
+      <ulink url="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf">
+	<citetitle>
+	  Binary Compatibility of Shared Libraries Implemented in C++
+	  on GNU/Linux Systems
+	</citetitle>
+      </ulink>
+    </biblioid>
     <subtitle>
-SYRCoSE 2009
+      SYRCoSE 2009
     </subtitle>
-
     <author>
       <firstname>Pavel</firstname>
       <surname>Shved</surname>
     </author>
-
     <author>
       <firstname>Denis</firstname>
       <surname>Silakov</surname>
     </author>
- 
-    <biblioid>
-      <ulink url="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
-
+  </biblioentry>
 </bibliography>
 
 </sect1>

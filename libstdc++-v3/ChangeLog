@@ -1,3 +1,20 @@
+2010-02-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/class.txml: Adjust biblio markup.
+	* doc/xml/manual/allocator.xml: Same.
+	* doc/xml/manual/ctype.xml: Same.
+	* doc/xml/manual/codecvt.xml: Same.
+	* doc/xml/manual/backwards_compatibility.xml: Same.
+	* doc/xml/manual/abi.xml: Same.
+	* doc/xml/manual/shared_ptr.xml: Same.
+	* doc/xml/manual/profile_mode.xml: Same.
+	* doc/xml/manual/using_exceptions.xml: Same.
+	* doc/xml/manual/locale.xml: Same.
+	* doc/xml/manual/appendix_contributing.xml: Same.
+	* doc/xml/manual/messages.xml: Same.
+	* doc/Makefile.am (DBLATEX_FLAGS): Adjust.
+	* doc/Makefile.in: Regenerate.
+
 2010-02-22  François Dumont  <francois.cppdevs@free.fr>
 
        * doc/xml/manual/profile_mode.xml: Minor updates and fixes.

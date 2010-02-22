@@ -1,5 +1,5 @@
 <sect1 id="manual.localization.locales.locale" xreflabel="Locale">
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -113,8 +113,8 @@ portability is an issue.
 
 <itemizedlist>
    <listitem>
-     <para> 
-       <code>`locale -a`</code> displays available locales. 
+     <para>
+       <code>`locale -a`</code> displays available locales.
      </para>
 <blockquote>
 <programlisting>
@@ -419,9 +419,9 @@ zh_TW.utf8
 </programlisting>
 </blockquote>
 </listitem>
-   
+
    <listitem>
-     <para> 
+     <para>
        <code>`locale`</code> displays environmental variables that
        impact how locale("") will be deduced.
      </para>
@@ -478,33 +478,33 @@ global locale" (emphasis Paolo), that is:
      <para>
        Locale initialization: at what point does _S_classic, _S_global
        get initialized? Can named locales assume this initialization
-       has already taken place? 
+       has already taken place?
      </para>
      </listitem>
 
    <listitem>
-     <para> 
+     <para>
        Document how named locales error check when filling data
        members. I.e., a fr_FR locale that doesn't have
        numpunct::truename(): does it use "true"? Or is it a blank
-       string? What's the convention? 
+       string? What's the convention?
    </para>
    </listitem>
 
    <listitem>
-     <para> 
+     <para>
        Explain how locale aliasing happens. When does "de_DE" use "de"
        information? What is the rule for locales composed of just an
        ISO language code (say, "de") and locales with both an ISO
-       language code and ISO country code (say, "de_DE"). 
+       language code and ISO country code (say, "de_DE").
      </para>
    </listitem>
 
    <listitem>
-     <para> 
+     <para>
        What should non-required facet instantiations do?  If the
        generic implementation is provided, then how to end-users
-       provide specializations? 
+       provide specializations?
    </para>
    </listitem>
 </itemizedlist>
@@ -517,7 +517,6 @@ global locale" (emphasis Paolo), that is:
     <title>
       The GNU C Library
     </title>
-
     <author>
       <surname>McGrath</surname>
       <firstname>Roland</firstname>
@@ -526,95 +525,86 @@ global locale" (emphasis Paolo), that is:
       <surname>Drepper</surname>
       <firstname>Ulrich</firstname>
     </author>
-
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
     </copyright>
-    <pagenums>Chapters 6 Character Set Handling and 7 Locales and Internationalization</pagenums>
-
-  </biblioentry> 
+    <pagenums>
+      Chapters 6 Character Set Handling and 7 Locales and
+      Internationalization
+    </pagenums>
+  </biblioentry>
 
   <biblioentry>
     <title>
       Correspondence
     </title>
-
     <author>
       <surname>Drepper</surname>
       <firstname>Ulrich</firstname>
     </author>
-
     <copyright>
       <year>2002</year>
       <holder></holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       ISO/IEC 14882:1998 Programming languages - C++
     </title>
-
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       ISO/IEC 9899:1999 Programming languages - C
     </title>
-
     <copyright>
       <year>1999</year>
       <holder>ISO</holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
-    </title>
-
-    <copyright>
-      <year>1999</year>
-      <holder>
-      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
-    </copyright>
-
-    <biblioid>
-      <ulink url="http://www.unix.org/version3/ieee_std.html">
+    <biblioid class="uri">
+      <ulink url="http://www.opengroup.org/austin">
+	<citetitle>
+	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+	</citetitle>
       </ulink>
     </biblioid>
-
-  </biblioentry> 
+    <copyright>
+      <year>2008</year>
+      <holder>
+	The Open Group/The Institute of Electrical and Electronics
+	Engineers, Inc.
+      </holder>
+    </copyright>
+  </biblioentry>
 
   <biblioentry>
     <title>
       The C++ Programming Language, Special Edition
     </title>
-    
     <author>
       <surname>Stroustrup</surname>
       <firstname>Bjarne</firstname>
     </author>
-
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
     </copyright>
     <pagenums>Appendix D</pagenums>
-
     <publisher>
       <publishername>
 	Addison Wesley
       </publishername>
     </publisher>
-
-  </biblioentry> 
-
+  </biblioentry>
 
   <biblioentry>
     <title>
@@ -623,29 +613,24 @@ global locale" (emphasis Paolo), that is:
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    
     <author>
       <surname>Langer</surname>
       <firstname>Angelika</firstname>
     </author>
-
     <author>
       <surname>Kreft</surname>
       <firstname>Klaus</firstname>
     </author>
-
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>
     </copyright>
-
     <publisher>
       <publishername>
 	Addison Wesley Longman
       </publishername>
     </publisher>
-
-  </biblioentry> 
+  </biblioentry>
 
 </bibliography>
 

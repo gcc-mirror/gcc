@@ -39,7 +39,7 @@ the <literal>throw</literal> keyword.
 These are very powerful constructs, and require some thought when
 applied to the standard library in order to yield components that work
 efficiently while cleaning up resources when unexpectedly killed via
-exceptional circumstances. 
+exceptional circumstances.
 </para>
 
 <para>
@@ -51,8 +51,8 @@ exception neutrality and exception safety.
 <sect2 id="intro.using.exception.safety" xreflabel="Exception Safety">
 <title>Exception Safety</title>
 
-  <para> 
-    What is exception-safe code? 
+  <para>
+    What is exception-safe code?
   </para>
 
   <para>
@@ -230,9 +230,9 @@ exception neutrality and exception safety.
     use <literal>-fno-exceptions</literal>. If you have some code that
     uses <literal>try</literal> or <literal>catch</literal>, you
     shouldn't use <literal>-fno-exceptions</literal>.
-  </para> 
+  </para>
 
-  <para> 
+  <para>
     And what it to be gained, tinkering in the back alleys with a
     language like this? Exception handling overhead can be measured
     in the size of the executable binary, and varies with the
@@ -318,7 +318,7 @@ exception neutrality and exception safety.
  library has been transformed, user code may need modification. User
   code that attempts or expects to do error checking on standard
   library components compiled with exception handling disabled should
-  be evaluated and potentially made conditional. 
+  be evaluated and potentially made conditional.
 </para>
 
 <para>
@@ -360,7 +360,7 @@ exception neutrality and exception safety.
 
 <sect3 id="using.exception.compat.c">
 <title>With <literal>C</literal></title>
-<para> 
+<para>
   C language code that is expecting to interoperate with C++ should be
   compiled with <literal>-fexceptions</literal>. This will make
   debugging a C language function called as part of C++-induced stack
@@ -386,7 +386,7 @@ is called.
 <sect3 id="using.exception.compat.posix">
 <title>With <literal>POSIX</literal> thread cancellation</title>
 
-<para> 
+<para>
   GNU systems re-use some of the exception handling mechanisms to
   track control flow for <literal>POSIX</literal> thread cancellation.
 </para>
@@ -439,30 +439,33 @@ is called.
 <title>Bibliography</title>
 
   <biblioentry>
-    <title>
-      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.opengroup.org/austin">
+	<citetitle>
+	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+	</citetitle>
+      </ulink>
+    </biblioid>
     <pagenums>
       2.9.5 Thread Cancellation
     </pagenums>
-
     <copyright>
       <year>2008</year>
       <holder>
-      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
+	The Open Group/The Institute of Electrical and Electronics
+	Engineers, Inc.
+      </holder>
     </copyright>
-
-    <biblioid>
-      <ulink url="http://www.opengroup.org/austin/">
-      </ulink>
-    </biblioid>
-
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Error and Exception Handling
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.boost.org/community/error_handling.html">
+	<citetitle>
+	  Error and Exception Handling
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <firstname>David</firstname>
       <surname>Abrahams </surname>
@@ -472,17 +475,17 @@ is called.
 	Boost
       </publishername>
     </publisher>
-    <biblioid>
-      <ulink url="http://www.boost.org/community/error_handling.html">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
 
   <biblioentry>
-    <title>
-      Exception-Safety in Generic Components
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.boost.org/community/exception_safety.html">
+	<citetitle>
+	  Exception-Safety in Generic Components
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <firstname>David</firstname>
       <surname>Abrahams</surname>
@@ -492,16 +495,16 @@ is called.
 	Boost
       </publishername>
     </publisher>
-    <biblioid>
-      <ulink url="http://www.boost.org/community/exception_safety.html">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Standard Library Exception Policy
-    </title>
+    <biblioid class="uri">
+      <ulink url="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf">
+	<citetitle>
+	  Standard Library Exception Policy
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <firstname>Matt</firstname>
       <surname>Austern</surname>
@@ -511,16 +514,16 @@ is called.
 	WG21 N1077
       </publishername>
     </publisher>
-    <biblioid>
-      <ulink url="www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1077.pdf">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      ia64 c++ abi exception handling
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html">
+	<citetitle>
+	  ia64 c++ abi exception handling
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <firstname>Richard</firstname>
       <surname>Henderson</surname>
@@ -530,25 +533,21 @@ is called.
 	GNU
       </publishername>
     </publisher>
-    <biblioid>
-      <ulink url="http://gcc.gnu.org/ml/gcc-patches/2001-03/msg00661.html">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      Appendix E: Standard-Library Exception Safety
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">
+	<citetitle>
+	  Appendix E: Standard-Library Exception Safety
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <firstname>Bjarne</firstname>
       <surname>Stroustrup</surname>
     </author>
-    <biblioid>
-      <ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">
-      </ulink>
-    </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
@@ -561,18 +560,17 @@ is called.
       <firstname>Herb</firstname>
       <surname>Sutter</surname>
     </author>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      exception_defines.h #defines try/catch
-    </title>
-    <subtitle>
-      GCC Bug <ulink url="http://gcc.gnu.org/PR25191">25191</ulink>
-    </subtitle>
-    <biblioid>
+    <biblioid class="uri">
+      <ulink url="http://gcc.gnu.org/PR25191">
+	<citetitle>
+	  GCC Bug 25191: exception_defines.h #defines try/catch
+	</citetitle>
+      </ulink>
     </biblioid>
-  </biblioentry> 
+  </biblioentry>
 
 </bibliography>
 

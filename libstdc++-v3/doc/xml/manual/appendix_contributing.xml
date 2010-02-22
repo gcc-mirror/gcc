@@ -1085,7 +1085,7 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
 <table frame='all'>
-<title>HTML to Doxygen markup comparison</title>
+<title>HTML to Doxygen Markup Comparison</title>
 <tgroup cols='2' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
@@ -1318,15 +1318,16 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     <sect3 id="docbook.markup">
       <title>Markup By Example</title>
 
-<para>
-Complete details on Docbook markup can be found in the DocBook Element
-Reference, <ulink url="http://www.docbook.org/tdg/en/html/part2.html">online</ulink>. An
-incomplete reference for HTML to Docbook conversion is detailed in the
-table below.
-</para>
+      <para>
+	Complete details on Docbook markup can be found in the DocBook
+	Element Reference,
+	<ulink url="http://www.docbook.org/tdg/en/html/part2.html">online</ulink>. 
+	An incomplete reference for HTML to Docbook conversion is
+	detailed in the table below.
+      </para>
 
 <table frame='all'>
-<title>HTML to Docbook XML markup comparison</title>
+<title>HTML to Docbook XML Markup Comparison</title>
 <tgroup cols='2' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>

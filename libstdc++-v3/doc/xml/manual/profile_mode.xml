@@ -225,7 +225,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 <para>
 </para>
 <table frame='all'>
-<title>Code Location</title>
+<title>Profile Code Location</title>
 <tgroup cols='2' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
@@ -713,7 +713,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   </para>
 
 <table frame='all'>
-<title>Diagnostics</title>
+<title>Profile Diagnostics</title>
 <tgroup cols='6' align='left' colsep='1' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
