@@ -2542,8 +2542,15 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest)
   tree caller = id->dst_fn;
   tree result = DECL_RESULT (callee);
   tree callee_type = TREE_TYPE (result);
-  tree caller_type = TREE_TYPE (TREE_TYPE (callee));
+  tree caller_type;
   tree var, use;
+
+  /* Handle type-mismatches in the function declaration return type
+     vs. the call expression.  */
+  if (modify_dest)
+    caller_type = TREE_TYPE (modify_dest);
+  else
+    caller_type = TREE_TYPE (TREE_TYPE (callee));
 
   /* We don't need to do anything for functions that don't return
      anything.  */

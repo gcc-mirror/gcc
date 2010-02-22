@@ -1,5 +1,11 @@
 2010-02-22  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/43045
+	* gfortran.dg/lto/20100222-1_0.f03: New testcase.
+	* gfortran.dg/lto/20100222-1_1.c: Likewise.
+
+2010-02-22  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/42749
 	* gcc.c-torture/compile/pr42749.c: New testcase.
 
