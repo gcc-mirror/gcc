@@ -1,3 +1,17 @@
+2010-02-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/43126
+	* gcc.dg/cleanup-1.c: Update.
+	* gcc.dg/func-args-1.c: Update.
+	* gcc.dg/format/sentinel-1.c: Update.
+	* g++.old-deja/g++.jason/scoping10.C: Update.
+	* g++.old-deja/g++.ns/lookup5.C: Update.
+	* g++.dg/ext/cleanup-1.C: Update.
+	* g++.dg/parse/varmod1.C: Update.
+	* g++.dg/parse/error33.C: Update.
+	* g++.dg/expr/call3.C: Update.
+	* g++.dg/func-args-1.C: New.
+
 2010-02-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/43125

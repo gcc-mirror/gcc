@@ -2814,7 +2814,10 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 
       if (type == void_type_node)
 	{
-	  error ("too many arguments to function %qE", function);
+	  error_at (input_location,
+		    "too many arguments to function %qE", function);
+	  if (fundecl && !DECL_BUILT_IN (fundecl))
+	    inform (DECL_SOURCE_LOCATION (fundecl), "declared here");
 	  return parmnum;
 	}
 
@@ -3038,7 +3041,10 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 
   if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
-      error ("too few arguments to function %qE", function);
+      error_at (input_location, 
+		"too few arguments to function %qE", function);
+      if (fundecl && !DECL_BUILT_IN (fundecl))
+	inform (DECL_SOURCE_LOCATION (fundecl), "declared here");
       return -1;
     }
 

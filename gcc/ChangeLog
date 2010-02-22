@@ -1,3 +1,11 @@
+2010-02-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/43126
+	* c-typeck.c (convert_arguments): Print declaration location.
+	* c-common.c (validate_nargs): Rename as
+	builtin_function_validate_nargs.
+	(check_builtin_function_arguments): Update.
+
 2010-02-22  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43045

@@ -7,6 +7,6 @@ struct A
   int i;
 };
 
-A foo(int);       // { dg-error "too few arguments" }
+A foo(int);       /* { dg-message "note: declared here" } */
 
-int j = foo().i;  // { dg-error "at this point" }
+int j = foo().i;  // { dg-error "too few arguments" }

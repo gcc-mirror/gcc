@@ -3,11 +3,11 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-void f0(void);
-void f1(int);
-void f1v(int, ...);
-void f2(int, int);
-void f2v(int, int, ...);
+void f0(void); /* { dg-message "note: declared here" } */
+void f1(int); /* { dg-message "note: declared here" } */
+void f1v(int, ...); /* { dg-message "note: declared here" } */
+void f2(int, int); /* { dg-message "note: declared here" } */
+void f2v(int, int, ...); /* { dg-message "note: declared here" } */
 
 struct s {
   void (*f0)(void);

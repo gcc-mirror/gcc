@@ -8,7 +8,7 @@ struct A {
 struct B : public A {
   void g (char *);
   void h () {
-    extern void g ();		// { dg-error "" } 
+    extern void g ();		// { dg-message "" } 
     f("foo");			// { dg-error "" } hidden
     g("foo");			// { dg-error "" } hidden
   }

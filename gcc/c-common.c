@@ -7980,21 +7980,24 @@ check_function_arguments_recurse (void (*callback)
   (*callback) (ctx, param, param_num);
 }
 
-/* Checks the number of arguments NARGS against the required number
-   REQUIRED and issues an error if there is a mismatch.  Returns true
-   if the number of arguments is correct, otherwise false.  */
+/* Checks for a builtin function FNDECL that the number of arguments
+   NARGS against the required number REQUIRED and issues an error if
+   there is a mismatch.  Returns true if the number of arguments is
+   correct, otherwise false.  */
 
 static bool
-validate_nargs (tree fndecl, int nargs, int required)
+builtin_function_validate_nargs (tree fndecl, int nargs, int required)
 {
   if (nargs < required)
     {
-      error ("not enough arguments to function %qE", fndecl);
+      error_at (input_location,
+		"not enough arguments to function %qE", fndecl);
       return false;
     }
   else if (nargs > required)
     {
-      error ("too many arguments to function %qE", fndecl);
+      error_at (input_location,
+		"too many arguments to function %qE", fndecl);
       return false;
     }
   return true;
@@ -8013,14 +8016,14 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
   switch (DECL_FUNCTION_CODE (fndecl))
     {
     case BUILT_IN_CONSTANT_P:
-      return validate_nargs (fndecl, nargs, 1);
+      return builtin_function_validate_nargs (fndecl, nargs, 1);
 
     case BUILT_IN_ISFINITE:
     case BUILT_IN_ISINF:
     case BUILT_IN_ISINF_SIGN:
     case BUILT_IN_ISNAN:
     case BUILT_IN_ISNORMAL:
-      if (validate_nargs (fndecl, nargs, 1))
+      if (builtin_function_validate_nargs (fndecl, nargs, 1))
 	{
 	  if (TREE_CODE (TREE_TYPE (args[0])) != REAL_TYPE)
 	    {
@@ -8038,7 +8041,7 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
     case BUILT_IN_ISLESSEQUAL:
     case BUILT_IN_ISLESSGREATER:
     case BUILT_IN_ISUNORDERED:
-      if (validate_nargs (fndecl, nargs, 2))
+      if (builtin_function_validate_nargs (fndecl, nargs, 2))
 	{
 	  enum tree_code code0, code1;
 	  code0 = TREE_CODE (TREE_TYPE (args[0]));
@@ -8056,7 +8059,7 @@ check_builtin_function_arguments (tree fndecl, int nargs, tree *args)
       return false;
 
     case BUILT_IN_FPCLASSIFY:
-      if (validate_nargs (fndecl, nargs, 6))
+      if (builtin_function_validate_nargs (fndecl, nargs, 6))
 	{
 	  unsigned i;
 
