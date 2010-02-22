@@ -50,7 +50,7 @@ namespace std
   // We need these due to the symbols exported since GLIBCXX_3.4.10.
   // See libstdc++/41662 for details.
 
-#include "hash-aux.cc"
+#include "hash-string-aux.cc"
 
   template<>
     size_t

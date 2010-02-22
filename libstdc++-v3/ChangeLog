@@ -1,3 +1,12 @@
+2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/hash-aux.cc: Rename to...
+	* src/hash-string-aux.cc: ... this.
+	* src/hash-long-double-aux.cc: New.
+	* src/hash_c++0x.cc: Adjust.
+	* src/hash_tr1.cc: Likewise.
+	* src/compatibility-c++0x.cc: Likewise.
+
 2010-02-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/class.txml: Adjust biblio markup.
