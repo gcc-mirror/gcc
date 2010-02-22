@@ -74,7 +74,7 @@ namespace std
 {
   namespace tr1 
   {
-#include "hash-aux.cc"
+#include "hash-long-double-aux.cc"
   }
 }
 

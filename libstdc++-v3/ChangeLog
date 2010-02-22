@@ -1,3 +1,7 @@
+2010-02-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* src/compatibility-ldbl.cc: Include new hash-long-double-aux.cc.
+
 2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/hash-aux.cc: Rename to...
