@@ -1,3 +1,12 @@
+2010-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/43125
+	* gcc.dg/attr-used-2.c: Moved to ...
+	* c-c++-common/attr-used-2.c: Here.
+
+	* gcc.dg/attr-used.c: Moved to ...
+	* c-c++-common/attr-used.c: Here.
+
 2010-02-22  Ozkan Sezer  <sezeroz@gmail.com>
 
 	* gcc.c-torture/execute/991014-1.c: Use __SIZE_TYPE__ for size types.
