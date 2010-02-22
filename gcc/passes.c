@@ -632,6 +632,8 @@ position_pass (struct register_pass_info *new_pass_info,
 void
 register_pass (struct register_pass_info *pass_info)
 {
+  bool all_instances, success;
+
   /* The checks below could fail in buggy plugins.  Existing GCC
      passes should never fail these checks, so we mention plugin in
      the messages.  */
@@ -647,46 +649,50 @@ register_pass (struct register_pass_info *pass_info)
 	 pass_info->pass->name);
 
   /* Try to insert the new pass to the pass lists.  We need to check
-     all three lists as the reference pass could be in one (or all) of
+     all five lists as the reference pass could be in one (or all) of
      them.  */
-  if (!position_pass (pass_info, &all_lowering_passes)
-      && !position_pass (pass_info, &all_small_ipa_passes)
-      && !position_pass (pass_info, &all_regular_ipa_passes)
-      && !position_pass (pass_info, &all_lto_gen_passes)
-      && !position_pass (pass_info, &all_passes))
+  all_instances = pass_info->ref_pass_instance_number == 0;
+  success = position_pass (pass_info, &all_lowering_passes);
+  if (!success || all_instances)
+    success |= position_pass (pass_info, &all_small_ipa_passes);
+  if (!success || all_instances)
+    success |= position_pass (pass_info, &all_regular_ipa_passes);
+  if (!success || all_instances)
+    success |= position_pass (pass_info, &all_lto_gen_passes);
+  if (!success || all_instances)
+    success |= position_pass (pass_info, &all_passes);
+  if (!success)
     fatal_error
       ("pass %qs not found but is referenced by new pass %qs",
        pass_info->reference_pass_name, pass_info->pass->name);
-  else
+
+  /* OK, we have successfully inserted the new pass. We need to register
+     the dump files for the newly added pass and its duplicates (if any).
+     Because the registration of plugin/backend passes happens after the
+     command-line options are parsed, the options that specify single
+     pass dumping (e.g. -fdump-tree-PASSNAME) cannot be used for new
+     passes. Therefore we currently can only enable dumping of
+     new passes when the 'dump-all' flags (e.g. -fdump-tree-all)
+     are specified. While doing so, we also delete the pass_list_node
+     objects created during pass positioning.  */
+  while (added_pass_nodes)
     {
-      /* OK, we have successfully inserted the new pass. We need to register
-         the dump files for the newly added pass and its duplicates (if any).
-         Because the registration of plugin/backend passes happens after the
-         command-line options are parsed, the options that specify single
-         pass dumping (e.g. -fdump-tree-PASSNAME) cannot be used for new
-         passes. Therefore we currently can only enable dumping of
-         new passes when the 'dump-all' flags (e.g. -fdump-tree-all)
-         are specified. While doing so, we also delete the pass_list_node
-         objects created during pass positioning.  */
-      while (added_pass_nodes)
-        {
-          struct pass_list_node *next_node = added_pass_nodes->next;
-          enum tree_dump_index tdi;
-          register_one_dump_file (added_pass_nodes->pass);
-          if (added_pass_nodes->pass->type == SIMPLE_IPA_PASS
-              || added_pass_nodes->pass->type == IPA_PASS)
-            tdi = TDI_ipa_all;
-          else if (added_pass_nodes->pass->type == GIMPLE_PASS)
-            tdi = TDI_tree_all;
-          else
-            tdi = TDI_rtl_all;
-          /* Check if dump-all flag is specified.  */
-          if (get_dump_file_info (tdi)->state)
-            get_dump_file_info (added_pass_nodes->pass->static_pass_number)
-                ->state = get_dump_file_info (tdi)->state;
-          XDELETE (added_pass_nodes);
-          added_pass_nodes = next_node;
-        }
+      struct pass_list_node *next_node = added_pass_nodes->next;
+      enum tree_dump_index tdi;
+      register_one_dump_file (added_pass_nodes->pass);
+      if (added_pass_nodes->pass->type == SIMPLE_IPA_PASS
+          || added_pass_nodes->pass->type == IPA_PASS)
+        tdi = TDI_ipa_all;
+      else if (added_pass_nodes->pass->type == GIMPLE_PASS)
+        tdi = TDI_tree_all;
+      else
+        tdi = TDI_rtl_all;
+      /* Check if dump-all flag is specified.  */
+      if (get_dump_file_info (tdi)->state)
+        get_dump_file_info (added_pass_nodes->pass->static_pass_number)
+            ->state = get_dump_file_info (tdi)->state;
+      XDELETE (added_pass_nodes);
+      added_pass_nodes = next_node;
     }
 }
 
