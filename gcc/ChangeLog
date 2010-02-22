@@ -1,3 +1,9 @@
+2010-02-22  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43045
+	* tree-inline.c (declare_return_variable): Use the type of
+	the call stmt lhs if available.
+
 2010-02-22  Duncan Sands  <baldrick@free.fr>
 
 	* passes.c (register_pass): Always consider all pass lists when
