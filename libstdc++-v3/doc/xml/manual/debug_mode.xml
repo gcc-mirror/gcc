@@ -629,7 +629,7 @@ namespace std
 </programlisting>
   
 <para>In debug mode we include the release-mode container (which is now
-defined in in the namespace <code>__norm</code>) and also the
+defined in the namespace <code>__norm</code>) and also the
 debug-mode container. The debug-mode container is defined within the
 namespace <code>__debug</code>, which is associated with namespace
 <code>std</code> via the C++0x namespace association language feature.  This
@@ -672,7 +672,7 @@ namespace std
     debug-mode components</title>
 
 <para>Because each component has a distinct and separate release and
-debug implementation, there are are no issues with link-time
+debug implementation, there is no issue with link-time
 coexistence: the separate namespaces result in different mangled
 names, and thus unique linkage.</para>
 
@@ -799,7 +799,7 @@ test02()
       enticing option, because it would eliminate the need for
       the <code>link_name</code> extension by aliasing the
       templates. However, there is no true template aliasing mechanism
-      is C++, because both <code>using</code> directives and using
+      in C++, because both <code>using</code> directives and using
       declarations disallow specialization. This method fails
       the <emphasis>correctness</emphasis> criteria.</para></listitem>
 

@@ -1,3 +1,9 @@
+2010-02-22  François Dumont  <francois.cppdevs@free.fr>
+
+       * doc/xml/manual/profile_mode.xml: Minor updates and fixes.
+       * doc/xml/manual/debug_mode.xml: Likewise.
+       * doc/xml/manual/test.xml: Likewise.
+
 2010-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/complex (arg): Use std::signbit only when
