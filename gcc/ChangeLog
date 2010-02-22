@@ -1,7 +1,12 @@
+2010-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (initial_ix86_tune_features): Turn on
+	X86_TUNE_INTER_UNIT_MOVES for m_ATOM.
+
 2010-02-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_slp_analyze_bb): Fix typo.
- 
+
 2010-02-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	Migrate crti, crtn, crtbegin, crtend build rules to libgcc.
