@@ -1,3 +1,9 @@
+2010-02-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Migrate crti, crtn, crtbegin, crtend build rules to libgcc.
+	* config/mmix/t-mmix (EXTRA_MULTILIB_PARTS): Don't set.
+	($(T)crti.o, $(T)crtn.o): Remove rules.
+
 2010-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35259
