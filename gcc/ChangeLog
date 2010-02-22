@@ -1,3 +1,7 @@
+2010-02-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_analyze_bb): Fix typo.
+ 
 2010-02-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	Migrate crti, crtn, crtbegin, crtend build rules to libgcc.

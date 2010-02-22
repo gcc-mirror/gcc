@@ -1277,7 +1277,7 @@ vect_slp_analyze_bb (basic_block bb)
       gimple stmt = gsi_stmt (gsi);
       if (!is_gimple_debug (stmt)
 	  && !gimple_nop_p (stmt)
-	  && !gimple_code (stmt) == GIMPLE_LABEL)
+	  && gimple_code (stmt) != GIMPLE_LABEL)
 	insns++;
     }
 
