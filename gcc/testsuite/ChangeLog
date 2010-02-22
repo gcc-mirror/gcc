@@ -1,3 +1,8 @@
+2010-02-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42749
+	* gcc.c-torture/compile/pr42749.c: New testcase.
+
 2010-02-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43072

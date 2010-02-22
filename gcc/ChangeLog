@@ -1,3 +1,11 @@
+2010-02-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42749
+	* tree-tailcall.c (adjust_return_value_with_ops): Drop update
+	parameter.  Do arithmetic in the original type.
+	(update_accumulator_with_ops): Likewise.
+	(adjust_accumulator_values): Adjust.
+
 2010-02-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md ("movqi"): Re-add the mem->mem alternative.
