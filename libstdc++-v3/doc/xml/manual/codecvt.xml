@@ -1,6 +1,6 @@
 <sect1 id="manual.localization.facet.codecvt" xreflabel="codecvt">
 <?dbhtml filename="codecvt.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -53,21 +53,21 @@ The text around the codecvt definition gives some clues:
 -1- The class codecvt&lt;internT,externT,stateT&gt; is for use when
 converting from one codeset to another, such as from wide characters
 to multibyte characters, between wide character encodings such as
-Unicode and EUC. 
+Unicode and EUC.
 </emphasis>
 </para>
 </blockquote>
 
-<para> 
+<para>
 Hmm. So, in some unspecified way, Unicode encodings and
 translations between other character sets should be handled by this
-class.  
+class.
 </para>
 
 <blockquote>
 <para>
 <emphasis>
--2- The stateT argument selects the pair of codesets being mapped between. 
+-2- The stateT argument selects the pair of codesets being mapped between.
 </emphasis>
 </para>
 </blockquote>
@@ -248,7 +248,7 @@ when implemented using standard &quot;C&quot; functions.
 </para>
 
 <para>
-Three problems arise, one big, one of medium importance, and one small. 
+Three problems arise, one big, one of medium importance, and one small.
 </para>
 
 <para>
@@ -348,7 +348,7 @@ There are two constructors for encoding_state:
 </para>
 
 <para>
-<code> 
+<code>
 encoding_state() : __in_desc(0), __out_desc(0)
 </code>
 </para>
@@ -359,7 +359,7 @@ nl_langinfo(CODESET).
 </para>
 
 <para>
-<code> 
+<code>
 encoding_state(const char* __int, const char* __ext)
 </code>
 </para>
@@ -380,9 +380,9 @@ inducing) strategy was implemented: end-users can specify any string
 encodings. It is up to the user to make sure that these strings are
 valid on the target system.
 </para>
-  
+
 <para>
-<code> 
+<code>
 void
 _M_init()
 </code>
@@ -396,7 +396,7 @@ functions will return error.
 </para>
 
 <para>
-<code> 
+<code>
 bool
 _M_good()
 </code>
@@ -413,7 +413,7 @@ ready to convert and will return true.
 </para>
 
 <para>
-<code> 
+<code>
 encoding_state(const encoding_state&amp;)
 </code>
 </para>
@@ -448,8 +448,8 @@ codecvt usage.
 
   const ext_type*       e_lit = "black pearl jasmine tea";
   int                   size = strlen(e_lit);
-  int_type              i_lit_base[24] = 
-  { 25088, 27648, 24832, 25344, 27392, 8192, 28672, 25856, 24832, 29184, 
+  int_type              i_lit_base[24] =
+  { 25088, 27648, 24832, 25344, 27392, 8192, 28672, 25856, 24832, 29184,
     27648, 8192, 27136, 24832, 29440, 27904, 26880, 28160, 25856, 8192, 29696,
     25856, 24832, 2560
   };
@@ -465,14 +465,14 @@ codecvt usage.
   locale                loc(locale::classic(), new unicode_codecvt);
   // sanity check the constructed locale has the specialized facet.
   VERIFY( has_facet&lt;unicode_codecvt&gt;(loc) );
-  const unicode_codecvt&amp; cvt = use_facet&lt;unicode_codecvt&gt;(loc); 
+  const unicode_codecvt&amp; cvt = use_facet&lt;unicode_codecvt&gt;(loc);
   // convert between const char* and unicode strings
   unicode_codecvt::state_type state01("UNICODE", "ISO_8859-1");
   initialize_state(state01);
-  result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
-                     i_arr, i_arr + size, ito_next);
+  result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next,
+		     i_arr, i_arr + size, ito_next);
   VERIFY( r1 == codecvt_base::ok );
-  VERIFY( !int_traits::compare(i_arr, i_lit, size) ); 
+  VERIFY( !int_traits::compare(i_arr, i_lit, size) );
   VERIFY( efrom_next == e_lit + size );
   VERIFY( ito_next == i_arr + size );
 </programlisting>
@@ -505,7 +505,7 @@ codecvt usage.
       what is equal? A byte by byte comparison or an
       encoding then byte comparison?
       </para></listitem>
-      
+
       <listitem><para>
       conversions between narrow, wide, and unicode strings
       </para></listitem>
@@ -520,12 +520,12 @@ codecvt usage.
       standards-conformant manner?
       </para></listitem>
 
-                <listitem><para>
+		<listitem><para>
       how to synchronize the &quot;C&quot; and &quot;C++&quot;
       conversion information?
       </para></listitem>
 
-                <listitem><para>
+		<listitem><para>
       wchar_t/char internal buffers and conversions between
       internal/external buffers?
       </para></listitem>
@@ -542,7 +542,6 @@ codecvt usage.
     <title>
       The GNU C Library
     </title>
-
     <author>
       <surname>McGrath</surname>
       <firstname>Roland</firstname>
@@ -551,94 +550,85 @@ codecvt usage.
       <surname>Drepper</surname>
       <firstname>Ulrich</firstname>
     </author>
-
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
     </copyright>
-    <pagenums>Chapters 6 Character Set Handling and 7 Locales and Internationalization</pagenums>
-
-  </biblioentry> 
+    <pagenums>
+      Chapters 6 Character Set Handling and 7 Locales and Internationalization
+    </pagenums>
+  </biblioentry>
 
   <biblioentry>
     <title>
       Correspondence
     </title>
-
     <author>
       <surname>Drepper</surname>
       <firstname>Ulrich</firstname>
     </author>
-
     <copyright>
       <year>2002</year>
       <holder></holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       ISO/IEC 14882:1998 Programming languages - C++
     </title>
-
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       ISO/IEC 9899:1999 Programming languages - C
     </title>
-
     <copyright>
       <year>1999</year>
       <holder>ISO</holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
-    </title>
-
-    <copyright>
-      <year>1999</year>
-      <holder>
-      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
-    </copyright>
-
-    <biblioid>
-      <ulink url="http://www.unix.org/version3/ieee_std.html">
+    <biblioid class="uri">
+      <ulink url="http://www.opengroup.org/austin">
+	<citetitle>
+	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+	</citetitle>
       </ulink>
     </biblioid>
-
-  </biblioentry> 
+    <copyright>
+      <year>2008</year>
+      <holder>
+	The Open Group/The Institute of Electrical and Electronics
+	Engineers, Inc.
+      </holder>
+    </copyright>
+  </biblioentry>
 
   <biblioentry>
     <title>
       The C++ Programming Language, Special Edition
     </title>
-    
     <author>
       <surname>Stroustrup</surname>
       <firstname>Bjarne</firstname>
     </author>
-
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
     </copyright>
     <pagenums>Appendix D</pagenums>
-
     <publisher>
       <publishername>
 	Addison Wesley
       </publishername>
     </publisher>
-
-  </biblioentry> 
+  </biblioentry>
 
 
   <biblioentry>
@@ -648,82 +638,67 @@ codecvt usage.
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    
     <author>
       <surname>Langer</surname>
       <firstname>Angelika</firstname>
     </author>
-
     <author>
       <surname>Kreft</surname>
       <firstname>Klaus</firstname>
     </author>
-
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>
     </copyright>
-
     <publisher>
       <publishername>
 	Addison Wesley Longman
       </publishername>
     </publisher>
-
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      A brief description of Normative Addendum 1
-    </title>
-
+    <biblioid class="uri">
+      <ulink url="http://www.lysator.liu.se/c/na1.html">
+	<citetitle>
+	  A brief description of Normative Addendum 1
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <surname>Feather</surname>
       <firstname>Clive</firstname>
     </author>
-
     <pagenums>Extended Character Sets</pagenums>
-    <biblioid>
-      <ulink url="http://www.lysator.liu.se/c/na1.html">
-      </ulink>
-    </biblioid>
-
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      The Unicode HOWTO
-    </title>
-
+    <biblioid class="uri">
+      <ulink url="http://tldp.org/HOWTO/Unicode-HOWTO.html">
+	<citetitle>
+	  The Unicode HOWTO
+	</citetitle>
+	</ulink>
+    </biblioid>
     <author>
       <surname>Haible</surname>
       <firstname>Bruno</firstname>
     </author>
-
-    <biblioid>
-      <ulink url="http://tldp.org/HOWTO/Unicode-HOWTO.html">
-      </ulink>
-    </biblioid>
-
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      UTF-8 and Unicode FAQ for Unix/Linux
-    </title>
-
+    <biblioid class="uri">
+      <ulink url="http://www.cl.cam.ac.uk/~mgk25/unicode.html">
+	<citetitle>
+	  UTF-8 and Unicode FAQ for Unix/Linux
+	</citetitle>
+      </ulink>
+    </biblioid>
     <author>
       <surname>Khun</surname>
       <firstname>Markus</firstname>
     </author>
-
-    <biblioid>
-      <ulink url="http://www.cl.cam.ac.uk/~mgk25/unicode.html">
-      </ulink>
-    </biblioid>
-
-  </biblioentry> 
-
+  </biblioentry>
 
 </bibliography>
 

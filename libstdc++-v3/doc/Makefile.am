@@ -228,7 +228,7 @@ doc-pdf-prince: $(xml_sources) ${glibcxx_builddir}/doc/pdf
 
 # PDF 5
 # dblatex
-DBLATEX_FLAGS = --verbose --pdf -o pdf/spine.pdf
+DBLATEX_FLAGS = --dump --verbose --pdf -o pdf/manual.pdf
 doc-pdf-dblatex: $(xml_sources) ${glibcxx_builddir}/doc/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml

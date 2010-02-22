@@ -377,7 +377,7 @@ PRINCE_FLAGS = --log prince.log -o pdf/spine.pdf
 
 # PDF 5
 # dblatex
-DBLATEX_FLAGS = --verbose --pdf -o pdf/spine.pdf
+DBLATEX_FLAGS = --dump --verbose --pdf -o pdf/manual.pdf
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.log

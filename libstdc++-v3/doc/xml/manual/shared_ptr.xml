@@ -501,78 +501,55 @@ the following types, depending on how the shared_ptr is constructed.
 <title>Bibliography</title>
 
   <biblioentry>
-    <abbrev>
-      n2351
-    </abbrev>
-
-    <title>
-      Improving shared_ptr for C++0x, Revision 2
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">
+	<citetitle>
+	  Improving shared_ptr for C++0x, Revision 2
+	</citetitle>
+      </ulink>
+    </biblioid>
     <subtitle>
       N2351
     </subtitle>
-
-    <biblioid>
-      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">
-      </ulink>
-    </biblioid>
   </biblioentry> 
 
-
   <biblioentry>
-    <abbrev>
-      n2456
-    </abbrev>
-
-    <title>
-      C++ Standard Library Active Issues List (Revision R52)
-    </title>
+    <biblioid class="uri">
+      <ulink url="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">
+	<citetitle>
+	  C++ Standard Library Active Issues List
+	</citetitle>
+      </ulink>
+    </biblioid>
     <subtitle>
       N2456
     </subtitle>
-
-    <biblioid>
-      <ulink url="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">
-      </ulink>
-    </biblioid>
   </biblioentry> 
 
-
   <biblioentry>
-    <abbrev>
-      n2461
-    </abbrev>
-
-    <title>
-      Working Draft, Standard for Programming Language C++
-    </title>
-    <subtitle>
-      N2461
-    </subtitle>
-
-    <biblioid>
+    <biblioid class="uri">
       <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">
+	<citetitle>
+	  Working Draft, Standard for Programming Language C++
+	</citetitle>
       </ulink>
     </biblioid>
-  </biblioentry> 
-
-
-  <biblioentry>
-    <abbrev>
-      boostshared_ptr
-    </abbrev>
-
-    <title>
-      Boost C++ Libraries documentation - shared_ptr class template
-    </title>
     <subtitle>
       N2461
     </subtitle>
+  </biblioentry> 
 
-    <biblioid>
+  <biblioentry>
+    <biblioid class="uri">
       <ulink url="http://boost.org/libs/smart_ptr/shared_ptr.htm">shared_ptr
+	<citetitle>
+	  Boost C++ Libraries documentation, shared_ptr
+	</citetitle>
       </ulink>
     </biblioid>
+    <subtitle>
+      N2461
+    </subtitle>
   </biblioentry> 
 
 </bibliography>

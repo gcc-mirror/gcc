@@ -1,6 +1,6 @@
 <sect1 id="manual.localization.facet.ctype" xreflabel="ctype">
 <?dbhtml filename="ctype.html"?>
- 
+
 <sect1info>
   <keywordset>
     <keyword>
@@ -67,45 +67,45 @@ characters.
 <itemizedlist>
    <listitem>
    <para>
-   How to deal with the global locale issue? 
+   How to deal with the global locale issue?
    </para></listitem>
 
    <listitem>
-   <para> 
+   <para>
    How to deal with different types than char, wchar_t? </para></listitem>
 
    <listitem><para>
-   Overlap between codecvt/ctype: narrow/widen 
+   Overlap between codecvt/ctype: narrow/widen
    </para></listitem>
 
    <listitem>
-     <para> 
+     <para>
        Mask typedef in codecvt_base, argument types in codecvt.  what
-       is know about this type? 
+       is know about this type?
    </para></listitem>
 
    <listitem>
-   <para> 
+   <para>
    Why mask* argument in codecvt?
    </para></listitem>
-   
+
    <listitem>
      <para>
        Can this be made (more) generic? is there a simple way to
        straighten out the configure-time mess that is a by-product of
-       this class?  
+       this class?
    </para></listitem>
 
    <listitem>
-     <para> 
+     <para>
        Get the ctype&lt;wchar_t&gt;::mask stuff under control. Need to
        make some kind of static table, and not do lookup every time
        somebody hits the do_is... functions. Too bad we can't just
-       redefine mask for ctype&lt;wchar_t&gt; 
+       redefine mask for ctype&lt;wchar_t&gt;
    </para></listitem>
-   
+
    <listitem>
-     <para> 
+     <para>
        Rename abstract base class. See if just smash-overriding is a
        better approach. Clarify, add sanity to naming.
      </para>
@@ -124,7 +124,6 @@ characters.
     <title>
       The GNU C Library
     </title>
-
     <author>
       <surname>McGrath</surname>
       <firstname>Roland</firstname>
@@ -133,95 +132,81 @@ characters.
       <surname>Drepper</surname>
       <firstname>Ulrich</firstname>
     </author>
-
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
     </copyright>
     <pagenums>Chapters 6  Character Set Handling and 7 Locales and Internationalization</pagenums>
-
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       Correspondence
     </title>
-
     <author>
       <surname>Drepper</surname>
       <firstname>Ulrich</firstname>
     </author>
-
     <copyright>
       <year>2002</year>
       <holder></holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       ISO/IEC 14882:1998 Programming languages - C++
     </title>
-
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       ISO/IEC 9899:1999 Programming languages - C
     </title>
-
     <copyright>
       <year>1999</year>
       <holder>ISO</holder>
     </copyright>
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
-    <title>
-      The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
-    </title>
-
+    <biblioid class="uri">
+      <ulink url="http://www.unix.org/version3/ieee_std.html">
+	<citetitle>
+	  The Open Group Base Specifications, Issue 6 (IEEE Std. 1003.1-2004)
+	</citetitle>
+      </ulink>
+    </biblioid>
     <copyright>
       <year>1999</year>
       <holder>
       The Open Group/The Institute of Electrical and Electronics Engineers, Inc.</holder>
     </copyright>
-
-    <biblioid>
-      <ulink url="http://www.unix.org/version3/ieee_std.html">
-      </ulink>
-    </biblioid>
-
-  </biblioentry> 
+  </biblioentry>
 
   <biblioentry>
     <title>
       The C++ Programming Language, Special Edition
     </title>
-    
     <author>
       <surname>Stroustrup</surname>
       <firstname>Bjarne</firstname>
     </author>
-
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
     </copyright>
     <pagenums>Appendix D</pagenums>
-
     <publisher>
       <publishername>
 	Addison Wesley
       </publishername>
     </publisher>
-
-  </biblioentry> 
-
+  </biblioentry>
 
   <biblioentry>
     <title>
@@ -230,29 +215,24 @@ characters.
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    
     <author>
       <surname>Langer</surname>
       <firstname>Angelika</firstname>
     </author>
-
     <author>
       <surname>Kreft</surname>
       <firstname>Klaus</firstname>
     </author>
-
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>
     </copyright>
-
     <publisher>
       <publishername>
 	Addison Wesley Longman
       </publishername>
     </publisher>
-
-  </biblioentry> 
+  </biblioentry>
 
 </bibliography>
 
