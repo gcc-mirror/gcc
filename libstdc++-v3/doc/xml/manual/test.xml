@@ -837,7 +837,7 @@ only default variables.
        </para>
 
        <para>
-	 Random code paths can be constructed using the the basic test
+	 Random code paths can be constructed using the basic test
 	 sequences and instrumentation as above, only combined in a
 	 random or pseudo-random way.
        </para>
@@ -891,7 +891,7 @@ only default variables.
 	 Which has several tests for container member functions,
 Includes control and test container objects. Configuration includes
 random seed, iterations, number of distinct values, and the
-probability that and exception will be thrown. Assumes instantiating
+probability that an exception will be thrown. Assumes instantiating
 container uses an extension
 allocator, <classname>__gnu_cxx::throw_allocator_random</classname>,
 as the allocator type.

@@ -128,7 +128,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   The warning message.  For some warnings, this is static text, e.g.,
   "change vector to list".  For other warnings, such as the one above,
   the message contains numeric advice, e.g., the suggested initial size
-  of the hashtable.
+  of the vector.
   </para>
   </listitem>
   </itemizedlist>
@@ -199,7 +199,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
    Make the library not use threads.  If thread local storage (TLS) is not 
    available, you will get a preprocessor error asking you to set
    -D_GLIBCXX_PROFILE_NO_THREADS if your program is single-threaded.
-   Multithreded execution without TLS is not supported.
+   Multithreaded execution without TLS is not supported.
    (Environment variable not supported.)
    </para></listitem>
   <listitem><para>
@@ -536,7 +536,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
  xreflabel="Using the Standard Library in the Runtime Library">
 <title>Using the Standard Library in the Instrumentation Implementation</title>
   <para>
-  As much as we would like to avoid uses of stdlibc++ within our 
+  As much as we would like to avoid uses of libstdc++ within our 
   instrumentation library, containers such as unordered_map are very 
   appealing.  We plan to use them as long as they are named properly 
   to avoid ambiguity.
@@ -551,7 +551,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   User applications/libraries can provide malloc hooks.
   When the implementation of the malloc hooks uses stdlibc++, there can
   be an infinite cycle between the profile mode instrumentation and the
-  the malloc hook code.
+  malloc hook code.
   </para>
   <para>
   We protect against reentrance to the profile mode instrumentation code,
