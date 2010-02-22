@@ -1,3 +1,9 @@
+2010-02-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43072
+	* dependency.c (gfc_full_array_ref_p): Check for contiguous by
+	checking the rest of the dimensions for elements.
+
 2010-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35259
