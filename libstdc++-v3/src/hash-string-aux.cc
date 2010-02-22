@@ -1,4 +1,4 @@
-//  std::hash and std::tr1::hash definitions -*- C++ -*-
+//  std::hash and std::tr1::hash definitions, string bits -*- C++ -*-
 
 // Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //

@@ -1,6 +1,6 @@
-// std::tr1::hash definitions -*- C++ -*-
+//  std::hash and std::tr1::hash definitions, long double bits -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,14 +22,29 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <string>
-#include <tr1/functional>
+  // For long double, careful with random padding bits (e.g., on x86,
+  // 10 bytes -> 12 bytes) and resort to frexp.
+  template<>
+    size_t
+    hash<long double>::operator()(long double __val) const
+    {
+      size_t __result = 0;
 
-namespace std
-{
-  namespace tr1 
-  {
-#include "hash-long-double-aux.cc"
-#include "hash-string-aux.cc"
-  }
-}
+      int __exponent;
+      __val = __builtin_frexpl(__val, &__exponent);
+      __val = __val < 0.0l ? -(__val + 0.5l) : __val;
+
+      const long double __mult = __SIZE_MAX__ + 1.0l;
+      __val *= __mult;
+
+      // Try to use all the bits of the mantissa (really necessary only
+      // on 32-bit targets, at least for 80-bit floating point formats).
+      const size_t __hibits = (size_t)__val;
+      __val = (__val - (long double)__hibits) * __mult;
+
+      const size_t __coeff = __SIZE_MAX__ / __LDBL_MAX_EXP__;
+
+      __result = __hibits + (size_t)__val + __coeff * __exponent;
+
+      return __result;
+    }
