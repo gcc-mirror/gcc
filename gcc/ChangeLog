@@ -1,3 +1,8 @@
+2010-02-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md ("movqi"): Re-add the mem->mem alternative.
+	(QI to BLKmode splitter): New splitter.
+
 2010-02-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (initial_ix86_tune_features): Turn on
