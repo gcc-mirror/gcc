@@ -41,7 +41,6 @@
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_function.h> // equal_to, _Identity, _Select1st
-#include <bits/stringfwd.h>
 #include <bits/functional_hash.h>
 #include <bits/hashtable.h>
 #include <bits/unordered_map.h>

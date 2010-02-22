@@ -2869,6 +2869,73 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
+#endif /* __GXX_EXPERIMENTAL_CXX0X__ && _GLIBCXX_USE_C99 ... */
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+#include <bits/functional_hash.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // DR 1182.
+
+#ifndef _GLIBCXX_COMPATIBILITY_CXX0X
+  /// std::hash specialization for string.
+  template<>
+    struct hash<string>
+    : public std::unary_function<string, size_t>
+    {
+      size_t
+      operator()(const string& __s) const
+      { return _Fnv_hash<>::hash(__s.data(), __s.length()); }
+    };
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  /// std::hash specialization for wstring.
+  template<>
+    struct hash<wstring>
+    : public std::unary_function<wstring, size_t>
+    {
+      size_t
+      operator()(const wstring& __s) const
+      {
+	const char* __p = reinterpret_cast<const char*>(__s.data());
+	return _Fnv_hash<>::hash(__p, __s.length() * sizeof(wchar_t));
+      }
+    };
 #endif
+#endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
+
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  /// std::hash specialization for u16string.
+  template<>
+    struct hash<u16string>
+    : public std::unary_function<u16string, size_t>
+    {
+      size_t
+      operator()(const u16string& __s) const
+      {
+	const char* __p = reinterpret_cast<const char*>(__s.data());
+	return _Fnv_hash<>::hash(__p, __s.length() * sizeof(char16_t));
+      }
+    };
+
+  /// std::hash specialization for u32string.
+  template<>
+    struct hash<u32string>
+    : public std::unary_function<u32string, size_t>
+    {
+      size_t
+      operator()(const u32string& __s) const
+      {
+	const char* __p = reinterpret_cast<const char*>(__s.data());
+	return _Fnv_hash<>::hash(__p, __s.length() * sizeof(char32_t));
+      }
+    };
+#endif
+
+_GLIBCXX_END_NAMESPACE
+
+#endif /* __GXX_EXPERIMENTAL_CXX0X__ */
 
 #endif /* _BASIC_STRING_H */

@@ -140,7 +140,7 @@ namespace tr1
 	__result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
 				     sizeof(__val));
       return __result;
-    };
+    }
 
   /// Explicit specializations for double.
   template<>
@@ -154,7 +154,7 @@ namespace tr1
 	  __result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
 				       sizeof(__val));
 	return __result;
-    };
+    }
 
   /// Explicit specializations for long double.
   template<>

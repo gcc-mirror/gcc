@@ -148,10 +148,11 @@ sources = \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
-	hash_tr1.cc \
 	globals_io.cc \
-	hashtable_tr1.cc \
+	hash_c++0x.cc \
+	hash_tr1.cc \
 	hashtable_c++0x.cc \
+	hashtable_tr1.cc \
 	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
@@ -270,6 +271,11 @@ condition_variable.o: condition_variable.cc
 compatibility-c++0x.lo: compatibility-c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 compatibility-c++0x.o: compatibility-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+hash_c++0x.lo: hash_c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+hash_c++0x.o: hash_c++0x.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hashtable_c++0x.lo: hashtable_c++0x.cc
