@@ -35,7 +35,7 @@ set comp_output [g++_target_compile \
 if { ! [string match "*: target system does not support the * debug format*" \
     $comp_output] } {
     remove-build-file "trivial.S"
-    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[C\]]] \
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/dwarf2/*.c]] \
 	    "" $DEFAULT_CFLAGS
 }
 
