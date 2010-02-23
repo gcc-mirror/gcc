@@ -494,6 +494,7 @@ get_rename (htab_t map, tree old_name)
   struct rename_map_elt_s tmp;
   PTR *slot;
 
+  gcc_assert (TREE_CODE (old_name) == SSA_NAME);
   tmp.old_name = old_name;
   slot = htab_find_slot (map, &tmp, NO_INSERT);
 
@@ -658,13 +659,18 @@ rename_variables_in_stmt (gimple stmt, htab_t map, gimple_stmt_iterator *insert_
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
       tree use = USE_FROM_PTR (use_p);
-      tree expr = get_rename (map, use);
-      tree type_use = TREE_TYPE (use);
-      tree type_expr = TREE_TYPE (expr);
+      tree expr, type_use, type_expr;
       gimple_seq stmts;
 
+      if (TREE_CODE (use) != SSA_NAME)
+	continue;
+
+      expr = get_rename (map, use);
       if (use == expr)
 	continue;
+
+      type_use = TREE_TYPE (use);
+      type_expr = TREE_TYPE (expr);
 
       if (type_use != type_expr
 	  || (TREE_CODE (expr) != SSA_NAME

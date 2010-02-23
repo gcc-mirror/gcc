@@ -1,4 +1,12 @@
 2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43140
+	* sese.c (get_rename): Assert that old_name is an SSA_NAME.
+	(rename_variables_in_stmt): Continue when the use is not an SSA_NAME.
+
+	* gfortran.dg/graphite/pr43097.f: New.
+
+2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR middle-end/43140
