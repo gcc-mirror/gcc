@@ -1,8 +1,12 @@
+2010-02-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43143
+	* typeck2.c (digest_init_r): Accept value init of array.
+
 2010-02-22  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/43126
 	* typeck.c (convert_arguments): Update error message.
-	
 
 2010-02-22  Mike Stump  <mikestump@comcast.net>
 
