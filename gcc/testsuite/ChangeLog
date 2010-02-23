@@ -132,6 +132,15 @@
 	PR tree-optimization/42890
 	* g++.dg/torture/pr42890.C: New test.
 
+2010-02-08  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2010-01-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/42462
+	* gcc.dg/tree-ssa/inline-4.c: New testcase.
+	* gcc.dg/Wunreachable-2.c: Remove.
+
 2010-02-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/ipa/pr42706.c: Removed.
