@@ -1,5 +1,10 @@
 2010-02-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/43143
+	* g++.dg/cpp0x/variadic100.C: New.
+
+2010-02-23  Jason Merrill  <jason@redhat.com>
+
 	PR debug/42800
 	* gcc.dg/debug/dwarf2/dwarf2.exp: Run c-c++-common dwarf2 tests.
 	* g++.dg/debug/dwarf2/dwarf2.exp: Likewise.

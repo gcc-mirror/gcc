@@ -929,10 +929,12 @@ digest_init_r (tree type, tree init, bool nested, int flags)
 	}
 
       if (TREE_CODE (type) == ARRAY_TYPE
-	  && TREE_CODE (init) != CONSTRUCTOR)
+	  && !BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
-	  /* Allow the result of build_array_copy.  */
-	  if (TREE_CODE (init) == TARGET_EXPR
+	  /* Allow the result of build_array_copy and of
+	     build_value_init_noctor.  */
+	  if ((TREE_CODE (init) == TARGET_EXPR
+	       || TREE_CODE (init) == CONSTRUCTOR)
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (type, TREE_TYPE (init))))
 	    return init;
