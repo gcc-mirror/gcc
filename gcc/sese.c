@@ -897,6 +897,9 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	    return build4 (ARRAY_REF, type, base, subscript, op02, op03);
 	  }
 
+	case COMPONENT_REF:
+	  return op0;
+
 	default:
 	  /* The above cases should catch everything.  */
 	  gcc_unreachable ();
