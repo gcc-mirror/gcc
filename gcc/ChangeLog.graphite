@@ -31,6 +31,10 @@
 
 	* g++.dg/graphite/pr43026.C: New.
 
+2010-02-13  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* Merge from mainline (154736:156693).
+
 2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43012
