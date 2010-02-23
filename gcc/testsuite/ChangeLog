@@ -1,3 +1,10 @@
+2010-02-23  Jason Merrill  <jason@redhat.com>
+
+	PR debug/42800
+	* gcc.dg/debug/dwarf2/dwarf2.exp: Run c-c++-common dwarf2 tests.
+	* g++.dg/debug/dwarf2/dwarf2.exp: Likewise.
+	* c-c++-common/dwarf2/vla1.c: New.
+
 2010-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43139
@@ -12,7 +19,7 @@
 	* gcc.dg/march.c: New.
 	* gcc.dg/march-generic.c: New.
 	* gcc.dg/mtune.c: New.
-	
+
 2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43083

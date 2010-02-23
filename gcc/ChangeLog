@@ -1,5 +1,9 @@
 2010-02-23  Jason Merrill  <jason@redhat.com>
 
+	PR debug/42800
+	* cfgexpand.c (expand_used_vars): Keep artificial non-ignored vars
+	in cfun->local_decls even if they have register types.
+
 	PR c++/42837
 	* stor-layout.c (place_field): Don't warn about unnecessary
 	DECL_PACKED if the type is packed.
