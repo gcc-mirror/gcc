@@ -1,3 +1,11 @@
+2010-02-23  Michael Matz  <matz@suse.de>
+
+	PR debug/43077
+	* cfgexpand (expand_debug_expr): Expand TERed ssa names in place.
+	(expand_gimple_basic_block): Generate and use debug temps if there
+	are debug uses left after the last real use of TERed ssa names.
+	Unlink debug immediate uses when they are expanded.
+
 2010-02-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 43123

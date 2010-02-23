@@ -2338,7 +2338,10 @@ expand_debug_expr (tree exp)
 
 	if (inner_mode == VOIDmode)
 	  {
-	    inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+	    if (TREE_CODE (exp) == SSA_NAME)
+	      inner_mode = TYPE_MODE (TREE_TYPE (exp));
+	    else
+	      inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
 	    if (mode == inner_mode)
 	      return op0;
 	  }
@@ -2354,6 +2357,7 @@ expand_debug_expr (tree exp)
 	  }
 	else if (FLOAT_MODE_P (mode))
 	  {
+	    gcc_assert (TREE_CODE (exp) != SSA_NAME);
 	    if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
 	      op0 = simplify_gen_unary (UNSIGNED_FLOAT, mode, op0, inner_mode);
 	    else
@@ -2886,14 +2890,24 @@ expand_debug_expr (tree exp)
 
     case SSA_NAME:
       {
-	int part = var_to_partition (SA.map, exp);
+	gimple g = get_gimple_for_ssa_name (exp);
+	if (g)
+	  {
+	    op0 = expand_debug_expr (gimple_assign_rhs_to_tree (g));
+	    if (!op0)
+	      return NULL;
+	  }
+	else
+	  {
+	    int part = var_to_partition (SA.map, exp);
 
-	if (part == NO_PARTITION)
-	  return NULL;
+	    if (part == NO_PARTITION)
+	      return NULL;
 
-	gcc_assert (part >= 0 && (unsigned)part < SA.map->num_partitions);
+	    gcc_assert (part >= 0 && (unsigned)part < SA.map->num_partitions);
 
-	op0 = SA.partition_to_pseudo[part];
+	    op0 = SA.partition_to_pseudo[part];
+	  }
 	goto adjust_mode;
       }
 
@@ -3050,6 +3064,105 @@ expand_gimple_basic_block (basic_block bb)
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
+
+      /* If this statement is a non-debug one, and we generate debug
+	 insns, then this one might be the last real use of a TERed
+	 SSA_NAME, but where there are still some debug uses further
+	 down.  Expanding the current SSA name in such further debug
+	 uses by their RHS might lead to wrong debug info, as coalescing
+	 might make the operands of such RHS be placed into the same
+	 pseudo as something else.  Like so:
+	   a_1 = a_0 + 1;   // Assume a_1 is TERed and a_0 is dead
+	   use(a_1);
+	   a_2 = ...
+           #DEBUG ... => a_1
+	 As a_0 and a_2 don't overlap in lifetime, assume they are coalesced.
+	 If we now would expand a_1 by it's RHS (a_0 + 1) in the debug use,
+	 the write to a_2 would actually have clobbered the place which
+	 formerly held a_0.
+
+	 So, instead of that, we recognize the situation, and generate
+	 debug temporaries at the last real use of TERed SSA names:
+	   a_1 = a_0 + 1;
+           #DEBUG #D1 => a_1
+	   use(a_1);
+	   a_2 = ...
+           #DEBUG ... => #D1
+	 */
+      if (MAY_HAVE_DEBUG_INSNS
+	  && SA.values
+	  && !is_gimple_debug (stmt))
+	{
+	  ssa_op_iter iter;
+	  tree op;
+	  gimple def;
+
+	  location_t sloc = get_curr_insn_source_location ();
+	  tree sblock = get_curr_insn_block ();
+
+	  /* Look for SSA names that have their last use here (TERed
+	     names always have only one real use).  */
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	    if ((def = get_gimple_for_ssa_name (op)))
+	      {
+		imm_use_iterator imm_iter;
+		use_operand_p use_p;
+		bool have_debug_uses = false;
+
+		FOR_EACH_IMM_USE_FAST (use_p, imm_iter, op)
+		  {
+		    if (gimple_debug_bind_p (USE_STMT (use_p)))
+		      {
+			have_debug_uses = true;
+			break;
+		      }
+		  }
+
+		if (have_debug_uses)
+		  {
+		    /* OP is a TERed SSA name, with DEF it's defining
+		       statement, and where OP is used in further debug
+		       instructions.  Generate a debug temporary, and
+		       replace all uses of OP in debug insns with that
+		       temporary.  */
+		    gimple debugstmt;
+		    tree value = gimple_assign_rhs_to_tree (def);
+		    tree vexpr = make_node (DEBUG_EXPR_DECL);
+		    rtx val;
+		    enum machine_mode mode;
+
+		    set_curr_insn_source_location (gimple_location (def));
+		    set_curr_insn_block (gimple_block (def));
+
+		    DECL_ARTIFICIAL (vexpr) = 1;
+		    TREE_TYPE (vexpr) = TREE_TYPE (value);
+		    if (DECL_P (value))
+		      mode = DECL_MODE (value);
+		    else
+		      mode = TYPE_MODE (TREE_TYPE (value));
+		    DECL_MODE (vexpr) = mode;
+
+		    val = gen_rtx_VAR_LOCATION
+			(mode, vexpr, (rtx)value, VAR_INIT_STATUS_INITIALIZED);
+
+		    val = emit_debug_insn (val);
+
+		    FOR_EACH_IMM_USE_STMT (debugstmt, imm_iter, op)
+		      {
+			if (!gimple_debug_bind_p (debugstmt))
+			  continue;
+
+			FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+			  SET_USE (use_p, vexpr);
+
+			update_stmt (debugstmt);
+		      }
+		  }
+	      }
+	  set_curr_insn_source_location (sloc);
+	  set_curr_insn_block (sblock);
+	}
+
       currently_expanding_gimple_stmt = stmt;
 
       /* Expand this statement, then evaluate the resulting RTL and
@@ -3101,6 +3214,13 @@ expand_gimple_basic_block (basic_block bb)
 		  maybe_dump_rtl_for_gimple_stmt (stmt, last);
 		  INSN_VAR_LOCATION_LOC (val) = (rtx)value;
 		}
+
+	      /* In order not to generate too many debug temporaries,
+	         we delink all uses of debug statements we already expanded.
+		 Therefore debug statements between definition and real
+		 use of TERed SSA names will continue to use the SSA name,
+		 and not be replaced with debug temps.  */
+	      delink_stmt_imm_use (stmt);
 
 	      gsi = nsi;
 	      gsi_next (&nsi);
