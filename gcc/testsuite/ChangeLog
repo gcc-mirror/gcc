@@ -1,9 +1,100 @@
+2010-02-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2010-02-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42749
+	* gcc.c-torture/compile/pr42749.c: New testcase.
+
+	2010-02-21  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/42824
+	* g++.dg/template/memclass4.C: New test.
+
+	2010-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43111
+	* gfortran.dg/internal_pack_8.f90: New test.
+
+	2010-02-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43109
+	* g++.dg/parse/namespace12.C: New.
+
+	2010-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43066
+	* gcc.c-torture/compile/pr43066.c: New test.
+
+	2010-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43069
+	* g++.dg/parse/namespace11.C: New.
+
+	PR c++/43093
+	* g++.dg/ext/attrib37.C: New.
+
+	PR c++/43079
+	* g++.dg/template/ptrmem20.C: New.
+
+	2010-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43031
+	* g++.dg/ext/attrib36.C: New.
+
+	2010-02-15  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43068
+	* g++.dg/torture/pr43068.C: New testcase.
+
+	2010-02-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/42998
+	* gcc.c-torture/compile/pr42998.c: New testcase.
+
+	2010-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43017
+	* gcc.dg/torture/pr43017.c: New testcase.
+
+	2010-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR c/43007
+	* gcc.c-torture/execute/20100209-1.c: New testcase.
+	* gcc.dg/fold-div-3.c: Likewise.
+
+	2010-02-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/42999
+	* gfortran.dg/array_constructor_35.f90: New test.
+
+	2010-02-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43008
+	* gcc.c-torture/execute/pr43008.c: New testcase.
+
+	2010-02-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/43000
+	* gcc.dg/torture/pr43000.c: New testcase.
+	* gcc.dg/torture/pr43002.c: Likewise.
+
+	2010-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/42742
+	* gfortran.dg/fmt_cache_2.f: New test.
+
+	2010-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42870
+	* g++.dg/ext/dllexport3.C: New.
+
 2010-02-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/40887
+	PR target/40887
 	Backport from trunk.
-        2009-12-24  Julian Brown  <julian@codesourcery.com>
-                    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	2009-12-24  Julian Brown  <julian@codesourcery.com>
+		    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* gcc.target/arm/pr40887.c: New test.
 
