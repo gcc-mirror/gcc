@@ -1,3 +1,10 @@
+2010-02-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 43123
+	* gcc.dg/march.c: New.
+	* gcc.dg/march-generic.c: New.
+	* gcc.dg/mtune.c: New.
+	
 2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43083
