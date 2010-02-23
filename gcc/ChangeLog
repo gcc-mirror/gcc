@@ -1,3 +1,9 @@
+2010-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43139
+	* config/i386/i386.c (ix86_delegitimize_address): Delegitimize all
+	GOTOFF relocs, even when the base reg isn't pic pointer.
+
 2010-02-23  Michael Matz  <matz@suse.de>
 
 	PR debug/43077
