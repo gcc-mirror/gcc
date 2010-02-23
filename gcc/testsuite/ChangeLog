@@ -1,5 +1,8 @@
 2010-02-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/43139
+	* gcc.dg/pr43139.c: New test.
+
 	PR debug/43077
 	* gcc.dg/guality/pr43077-1.c: New test.
 
