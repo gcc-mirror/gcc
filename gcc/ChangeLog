@@ -1,3 +1,11 @@
+2010-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43107
+	* config/i386/i386.c (avx_vpermilp_parallel): Reject indexes
+	greater or equal to nelt instead of 2 * nelt.
+	(expand_vec_perm_1): When op0 and op1 are equal, mask indexes
+	with nelt - 1.
+
 2010-02-23  Jason Merrill  <jason@redhat.com>
 
 	PR debug/42800

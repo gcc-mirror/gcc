@@ -24673,7 +24673,7 @@ avx_vpermilp_parallel (rtx par, enum machine_mode mode)
       if (!CONST_INT_P (er))
 	return 0;
       ei = INTVAL (er);
-      if (ei >= 2 * nelt)
+      if (ei >= nelt)
 	return 0;
       ipar[i] = ei;
     }
@@ -29265,7 +29265,12 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
      input where SEL+CONCAT may not.  */
   if (d->op0 == d->op1)
     {
-      if (expand_vselect (d->target, d->op0, d->perm, nelt))
+      int mask = nelt - 1;
+
+      for (i = 0; i < nelt; i++)
+	perm2[i] = d->perm[i] & mask;
+
+      if (expand_vselect (d->target, d->op0, perm2, nelt))
 	return true;
 
       /* There are plenty of patterns in sse.md that are written for
@@ -29276,8 +29281,8 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	 every other permutation operand.  */
       for (i = 0; i < nelt; i += 2)
 	{
-	  perm2[i] = d->perm[i];
-	  perm2[i+1] = d->perm[i+1] + nelt;
+	  perm2[i] = d->perm[i] & mask;
+	  perm2[i + 1] = (d->perm[i + 1] & mask) + nelt;
 	}
       if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt))
 	return true;
@@ -29285,11 +29290,12 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
       /* Recognize shufps, which means adding {0, 0, nelt, nelt}.  */
       if (nelt >= 4)
 	{
-	  memcpy (perm2, d->perm, nelt);
-	  for (i = 2; i < nelt; i += 4)
+	  for (i = 0; i < nelt; i += 4)
 	    {
-	      perm2[i+0] += nelt;
-	      perm2[i+1] += nelt;
+	      perm2[i + 0] = d->perm[i + 0] & mask;
+	      perm2[i + 1] = d->perm[i + 1] & mask;
+	      perm2[i + 2] = (d->perm[i + 2] & mask) + nelt;
+	      perm2[i + 3] = (d->perm[i + 3] & mask) + nelt;
 	    }
 
 	  if (expand_vselect_vconcat (d->target, d->op0, d->op0, perm2, nelt))
