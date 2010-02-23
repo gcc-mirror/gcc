@@ -1,6 +1,6 @@
 // TR1 functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -82,8 +82,8 @@ namespace tr1
   // (Used by the next specializations of std::tr1::hash.)
 
   /// Dummy generic implementation (for sizeof(size_t) != 4, 8).
-  template<size_t = sizeof(size_t)>
-    struct _Fnv_hash
+  template<size_t>
+    struct _Fnv_hash_base
     {
       static size_t
       hash(const char* __first, size_t __length)
@@ -96,7 +96,7 @@ namespace tr1
     };
 
   template<>
-    struct _Fnv_hash<4>
+    struct _Fnv_hash_base<4>
     {
       static size_t
       hash(const char* __first, size_t __length)
@@ -112,7 +112,7 @@ namespace tr1
     };
   
   template<>
-    struct _Fnv_hash<8>
+    struct _Fnv_hash_base<8>
     {
       static size_t
       hash(const char* __first, size_t __length)
@@ -128,18 +128,25 @@ namespace tr1
       }
     };
 
+  struct _Fnv_hash
+  : public _Fnv_hash_base<sizeof(size_t)>
+  {
+    using _Fnv_hash_base<sizeof(size_t)>::hash;
+
+    template<typename _Tp>
+      static size_t
+      hash(const _Tp& __val)
+      { return hash(reinterpret_cast<const char*>(&__val),
+		    sizeof(__val)); }
+  };
+
   /// Explicit specializations for float.
   template<>
     inline size_t
     hash<float>::operator()(float __val) const
     {
-      size_t __result = 0;
-      
       // 0 and -0 both hash to zero.
-      if (__val != 0.0f)
-	__result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
-				     sizeof(__val));
-      return __result;
+      return __val != 0.0f ? std::tr1::_Fnv_hash::hash(__val) : 0;
     }
 
   /// Explicit specializations for double.
@@ -147,13 +154,8 @@ namespace tr1
     inline size_t
     hash<double>::operator()(double __val) const
     {
-	size_t __result = 0;
-
-	// 0 and -0 both hash to zero.
-	if (__val != 0.0)
-	  __result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
-				       sizeof(__val));
-	return __result;
+      // 0 and -0 both hash to zero.
+      return __val != 0.0 ? std::tr1::_Fnv_hash::hash(__val) : 0;
     }
 
   /// Explicit specializations for long double.

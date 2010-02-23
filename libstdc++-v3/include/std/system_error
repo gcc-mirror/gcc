@@ -108,6 +108,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   error_code make_error_code(errc);
 
+  template<typename _Tp>
+    struct hash;
+
   /// error_code
   // Implementation-specific error identification
   struct error_code
@@ -159,6 +162,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     // DR 804.
   private:
+    friend class hash<error_code>;
+
     int            		_M_value;
     const error_category* 	_M_cat;
   };
@@ -350,8 +355,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       size_t
       operator()(const error_code& __e) const
       {
-	const char* __p = reinterpret_cast<const char*>(&__e);
-	return _Fnv_hash<>::hash(__p, sizeof(__e));
+	const size_t __tmp = std::_Fnv_hash::hash(__e._M_value);
+	return std::__hash_combine(__tmp, __e._M_cat);
       }
     };
 

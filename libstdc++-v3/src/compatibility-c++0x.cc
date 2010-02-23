@@ -55,8 +55,8 @@ namespace std
   template<>
     size_t
     hash<error_code>::operator()(error_code __e) const
-    { 
-      const char* __p = reinterpret_cast<const char*>(&__e);
-      return _Fnv_hash<>::hash(__p, sizeof(__e));
+    {
+      const size_t __tmp = std::_Fnv_hash::hash(__e._M_value);
+      return std::__hash_combine(__tmp, __e._M_cat);
     }
 }

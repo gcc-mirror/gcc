@@ -117,14 +117,10 @@ namespace std
 #undef _Cxx_hashtable_define_trivial_hash
 
   // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
-  // (Used by the next specializations of std::hash.)
-
-  template<size_t = sizeof(size_t)>
-    struct _Fnv_hash;
 
   // Dummy generic implementation (for sizeof(size_t) != 4, 8).
   template<size_t>
-    struct _Fnv_hash
+    struct _Fnv_hash_base
     {
       static size_t
       hash(const char* __first, size_t __length)
@@ -137,7 +133,7 @@ namespace std
     };
 
   template<>
-    struct _Fnv_hash<4>
+    struct _Fnv_hash_base<4>
     {
       static size_t
       hash(const char* __first, size_t __length)
@@ -153,7 +149,7 @@ namespace std
     };
   
   template<>
-    struct _Fnv_hash<8>
+    struct _Fnv_hash_base<8>
     {
       static size_t
       hash(const char* __first, size_t __length)
@@ -169,18 +165,34 @@ namespace std
       }
     };
 
+    struct _Fnv_hash
+    : public _Fnv_hash_base<sizeof(size_t)>
+    {
+      using _Fnv_hash_base<sizeof(size_t)>::hash;
+
+      template<typename _Tp>
+        static size_t
+        hash(const _Tp& __val)
+        { return hash(reinterpret_cast<const char*>(&__val),
+		      sizeof(__val)); }
+    };
+
+  // Inspired by the Boost facility hash_combine.
+  template<typename _Tp>
+    inline size_t
+    __hash_combine(size_t __hash, const _Tp& __val)
+    {
+      const size_t __tmp = std::_Fnv_hash::hash(__val);
+      return __hash ^ (__tmp + 0x9e3779b9 + (__hash << 6) + (__hash >> 2));
+    }
+
   /// Specialization for float.
   template<>
     inline size_t
     hash<float>::operator()(float __val) const
     {
-      size_t __result = 0;
-      
       // 0 and -0 both hash to zero.
-      if (__val != 0.0f)
-	__result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
-				     sizeof(__val));
-      return __result;
+      return __val != 0.0f ? std::_Fnv_hash::hash(__val) : 0;
     }
 
   /// Specialization for double.
@@ -188,13 +200,8 @@ namespace std
     inline size_t
     hash<double>::operator()(double __val) const
     {
-      size_t __result = 0;
-
       // 0 and -0 both hash to zero.
-      if (__val != 0.0)
-	__result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__val),
-				     sizeof(__val));
-      return __result;
+      return __val != 0.0 ? std::_Fnv_hash::hash(__val) : 0;
     }
 
   /// Specialization for long double.
