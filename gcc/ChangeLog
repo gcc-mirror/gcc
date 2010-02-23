@@ -1,3 +1,9 @@
+2010-02-23  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 43123
+	* config/i386/i386.c (override_options): Reorganise to provide
+	better error messages.
+
 2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43083

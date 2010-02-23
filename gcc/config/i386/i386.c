@@ -2621,6 +2621,7 @@ override_options (bool main_args_p)
 {
   int i;
   unsigned int ix86_arch_mask, ix86_tune_mask;
+  const bool ix86_tune_specified = (ix86_tune_string != NULL); 
   const char *prefix;
   const char *suffix;
   const char *sw;
@@ -2821,8 +2822,12 @@ override_options (bool main_args_p)
 		   || !strcmp (ix86_tune_string, "generic64")))
 	;
       else if (!strncmp (ix86_tune_string, "generic", 7))
-	error ("bad value (%s) for %stune=%s %s",
+        error ("bad value (%s) for %stune=%s %s",
 	       ix86_tune_string, prefix, suffix, sw);
+      else if (!strcmp (ix86_tune_string, "x86-64"))
+        warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated.  Use "
+                 "%stune=k8%s or %stune=generic%s instead as appropriate.",
+                 prefix, suffix, prefix, suffix, prefix, suffix);
     }
   else
     {
@@ -2846,6 +2851,7 @@ override_options (bool main_args_p)
 	    ix86_tune_string = "generic32";
 	}
     }
+
   if (ix86_stringop_string)
     {
       if (!strcmp (ix86_stringop_string, "rep_byte"))
@@ -2868,22 +2874,11 @@ override_options (bool main_args_p)
 	error ("bad value (%s) for %sstringop-strategy=%s %s",
 	       ix86_stringop_string, prefix, suffix, sw);
     }
-  if (!strcmp (ix86_tune_string, "x86-64"))
-    warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated.  Use "
-	     "%stune=k8%s or %stune=generic%s instead as appropriate.",
-	     prefix, suffix, prefix, suffix, prefix, suffix);
 
   if (!ix86_arch_string)
     ix86_arch_string = TARGET_64BIT ? "x86-64" : "i386";
   else
     ix86_arch_specified = 1;
-
-  if (!strcmp (ix86_arch_string, "generic"))
-    error ("generic CPU can be used only for %stune=%s %s",
-	   prefix, suffix, sw);
-  if (!strncmp (ix86_arch_string, "generic", 7))
-    error ("bad value (%s) for %sarch=%s %s",
-	   ix86_arch_string, prefix, suffix, sw);
 
   /* Validate -mabi= value.  */
   if (ix86_abi_string)
@@ -3032,7 +3027,10 @@ override_options (bool main_args_p)
 	break;
       }
 
-  if (i == pta_size)
+  if (!strcmp (ix86_arch_string, "generic"))
+    error ("generic CPU can be used only for %stune=%s %s",
+	   prefix, suffix, sw);
+  else if (!strncmp (ix86_arch_string, "generic", 7) || i == pta_size)
     error ("bad value (%s) for %sarch=%s %s",
 	   ix86_arch_string, prefix, suffix, sw);
 
@@ -3071,7 +3069,8 @@ override_options (bool main_args_p)
 	  x86_prefetch_sse = true;
 	break;
       }
-  if (i == pta_size)
+
+  if (ix86_tune_specified && i == pta_size)
     error ("bad value (%s) for %stune=%s %s",
 	   ix86_tune_string, prefix, suffix, sw);
 
