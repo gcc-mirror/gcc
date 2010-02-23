@@ -1100,7 +1100,8 @@ place_field (record_layout_info rli, tree field)
 	      if (STRICT_ALIGNMENT)
 		warning (OPT_Wattributes, "packed attribute causes "
                          "inefficient alignment for %q+D", field);
-	      else
+	      /* Don't warn if DECL_PACKED was set by the type.  */
+	      else if (!TYPE_PACKED (rli->t))
 		warning (OPT_Wattributes, "packed attribute is "
 			 "unnecessary for %q+D", field);
 	    }

@@ -1,3 +1,9 @@
+2010-02-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42837
+	* stor-layout.c (place_field): Don't warn about unnecessary
+	DECL_PACKED if the type is packed.
+
 2010-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43139
