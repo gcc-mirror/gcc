@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O3 -floop-interchange" }
+// { dg-options "-O3 -floop-interchange -Wno-conversion-null" }
 
 void __throw_bad_alloc ();
 
