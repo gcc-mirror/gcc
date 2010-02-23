@@ -42,6 +42,7 @@
 #include <condition_variable>
 #include <cstddef>
 #include <bits/functexcept.h>
+#include <bits/functional_hash.h>
 #include <bits/gthr.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
@@ -55,6 +56,9 @@ namespace std
    * Classes for thread support.
    * @{
    */
+
+  template<typename _Tp>
+    struct hash;
 
   /// thread
   class thread
@@ -77,6 +81,7 @@ namespace std
 
     private:
       friend class thread;
+      friend class hash<thread::id>;
 
       friend bool
       operator==(thread::id __x, thread::id __y)
@@ -214,6 +219,17 @@ namespace std
   inline bool
   operator>=(thread::id __x, thread::id __y)
   { return !(__x < __y); }
+
+  // DR 889.
+  /// std::hash specialization for thread::id.
+  template<>
+    struct hash<thread::id>
+    : public std::unary_function<thread::id, size_t>
+    {
+      size_t
+      operator()(const thread::id& __id) const
+      { return std::_Fnv_hash::hash(__id._M_thread); }
+    };
 
   template<class _CharT, class _Traits>
     inline basic_ostream<_CharT, _Traits>&

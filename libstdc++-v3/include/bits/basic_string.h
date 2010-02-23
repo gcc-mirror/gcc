@@ -2887,7 +2887,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       size_t
       operator()(const string& __s) const
-      { return _Fnv_hash<>::hash(__s.data(), __s.length()); }
+      { return std::_Fnv_hash::hash(__s.data(), __s.length()); }
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -2900,7 +2900,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator()(const wstring& __s) const
       {
 	const char* __p = reinterpret_cast<const char*>(__s.data());
-	return _Fnv_hash<>::hash(__p, __s.length() * sizeof(wchar_t));
+	return std::_Fnv_hash::hash(__p, __s.length() * sizeof(wchar_t));
       }
     };
 #endif
@@ -2916,7 +2916,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator()(const u16string& __s) const
       {
 	const char* __p = reinterpret_cast<const char*>(__s.data());
-	return _Fnv_hash<>::hash(__p, __s.length() * sizeof(char16_t));
+	return std::_Fnv_hash::hash(__p, __s.length() * sizeof(char16_t));
       }
     };
 
@@ -2929,7 +2929,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator()(const u32string& __s) const
       {
 	const char* __p = reinterpret_cast<const char*>(__s.data());
-	return _Fnv_hash<>::hash(__p, __s.length() * sizeof(char32_t));
+	return std::_Fnv_hash::hash(__p, __s.length() * sizeof(char32_t));
       }
     };
 #endif
