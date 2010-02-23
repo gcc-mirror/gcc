@@ -1,4 +1,10 @@
-2010-02-11  Sebastian Pop  <sebastian.pop@amd.com>
+2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR middle-end/43140
+	* g++.dg/graphite/pr41305.C: Add -Wno-conversion-null.
+
+2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43026
 	* sese.c (expand_scalar_variables_expr): Handle COMPONENT_REF.
