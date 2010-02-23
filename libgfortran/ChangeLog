@@ -1,3 +1,7 @@
+2010-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/list_read.c (list_formatted_read_scalar): Remove duplicate code.
+
 2010-02-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/42996

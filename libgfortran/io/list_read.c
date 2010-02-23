@@ -1735,9 +1735,6 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
       if (dtp->u.p.input_complete)
 	goto cleanup;
 
-      if (dtp->u.p.input_complete)
-	goto cleanup;
-
       if (dtp->u.p.at_eol)
 	finish_separator (dtp);
       else
