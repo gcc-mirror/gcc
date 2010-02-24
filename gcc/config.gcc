@@ -209,7 +209,7 @@ case ${target} in
    alpha*-dec-osf4*			\
  | alpha*-dec-osf5.0*			\
  | mips-sgi-irix5*			\
- | mips-sgi-irix6.[0-4]5*		\
+ | mips-sgi-irix6.[0-4]*		\
  | *-*-solaris2.7*			\
  )
     if test "x$enable_obsolete" != xyes; then
