@@ -4150,7 +4150,7 @@ track_expr_p (tree expr, bool need_rtl)
     return 0;
 
   /* It also must have a name...  */
-  if (!DECL_NAME (expr))
+  if (!DECL_NAME (expr) && need_rtl)
     return 0;
 
   /* ... and a RTL assigned to it.  */

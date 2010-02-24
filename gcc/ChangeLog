@@ -1,3 +1,11 @@
+2010-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43150
+	* gimplify.c (gimplify_type_sizes): Clear DECL_IGNORED_P for VLA
+	bounds even for -O+.
+	* var-tracking.c (track_expr_p): If !need_rtl, don't mandate
+	expr needs to have DECL_NAME set.
+
 2010-02-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/mep/mep.c: Include gimple.h.
