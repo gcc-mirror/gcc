@@ -1,6 +1,6 @@
 /* Copy propagation on hard registers for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -650,7 +650,6 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		{
 		  changed = apply_change_group ();
 		  gcc_assert (changed);
-		  df_insn_rescan (insn);
 		  anything_changed = true;
 		}
 	    }
@@ -842,10 +841,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
     did_replacement:
       if (changed)
-	{
-	  df_insn_rescan (insn);
-	  anything_changed = true;
-	}
+	anything_changed = true;
 
       /* Clobber call-clobbered registers.  */
       if (CALL_P (insn))
