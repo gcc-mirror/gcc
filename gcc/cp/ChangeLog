@@ -1,5 +1,8 @@
 2010-02-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/12909
+	* mangle.c (write_type): Give -Wabi warning for old vector mangling.
+
 	* class.c (layout_class_type): Don't give -Wabi warning for a bug
 	in a previous ABI version.
 
