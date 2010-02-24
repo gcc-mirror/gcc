@@ -1171,7 +1171,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2"
   "*
-  if (get_attr_length (insn) == 2 && which_alternative == 0)
+  if (get_attr_length (insn) == 2)
     return \"cbz\\t%0, %l1\";
   else
     return \"cmp\\t%0, #0\;beq\\t%l1\";
@@ -1179,7 +1179,8 @@
   [(set (attr "length") 
         (if_then_else
 	    (and (ge (minus (match_dup 1) (pc)) (const_int 2))
-	         (le (minus (match_dup 1) (pc)) (const_int 128)))
+	         (le (minus (match_dup 1) (pc)) (const_int 128))
+	         (eq (symbol_ref ("which_alternative")) (const_int 0)))
 	    (const_int 2)
 	    (const_int 8)))]
 )
@@ -1193,7 +1194,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2"
   "*
-  if (get_attr_length (insn) == 2 && which_alternative == 0)
+  if (get_attr_length (insn) == 2)
     return \"cbnz\\t%0, %l1\";
   else
     return \"cmp\\t%0, #0\;bne\\t%l1\";
@@ -1201,7 +1202,8 @@
   [(set (attr "length") 
         (if_then_else
 	    (and (ge (minus (match_dup 1) (pc)) (const_int 2))
-	         (le (minus (match_dup 1) (pc)) (const_int 128)))
+	         (le (minus (match_dup 1) (pc)) (const_int 128))
+	         (eq (symbol_ref ("which_alternative")) (const_int 0)))
 	    (const_int 2)
 	    (const_int 8)))]
 )
