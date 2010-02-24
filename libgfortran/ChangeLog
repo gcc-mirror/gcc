@@ -1,3 +1,7 @@
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* io/write_float.def (WRITE_FLOAT): Use __builtin_signbit.
+
 2010-02-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/list_read.c (list_formatted_read_scalar): Remove duplicate code.

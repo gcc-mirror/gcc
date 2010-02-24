@@ -1,4 +1,4 @@
-/* Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
    F2003 I/O support contributed by Jerry DeLisle
@@ -818,7 +818,7 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 {\
 	GFC_REAL_ ## x tmp;\
 	tmp = * (GFC_REAL_ ## x *)source;\
-	sign_bit = signbit (tmp);\
+	sign_bit = __builtin_signbit (tmp);\
 	if (!isfinite (tmp))\
 	  { \
 	    write_infnan (dtp, f, isnan (tmp), sign_bit);\
