@@ -1,5 +1,10 @@
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* cfg.c (alloc_aux_for_block): Remove inline.
+	(alloc_aux_for_edge): Likewise.
+
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc: Fix typo in mips-sgi-irix6.[0-4]* obsoletion.
 
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>

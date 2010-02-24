@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -734,7 +734,7 @@ static void *first_edge_aux_obj = 0;
 /* Allocate a memory block of SIZE as BB->aux.  The obstack must
    be first initialized by alloc_aux_for_blocks.  */
 
-inline void
+void
 alloc_aux_for_block (basic_block bb, int size)
 {
   /* Verify that aux field is clear.  */
@@ -797,7 +797,7 @@ free_aux_for_blocks (void)
 /* Allocate a memory edge of SIZE as BB->aux.  The obstack must
    be first initialized by alloc_aux_for_edges.  */
 
-inline void
+void
 alloc_aux_for_edge (edge e, int size)
 {
   /* Verify that aux field is clear.  */
