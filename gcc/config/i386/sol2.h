@@ -1,6 +1,6 @@
 /* Target definitions for GCC for Intel 80386 running Solaris 2
    Copyright (C) 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2004, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GCC.
@@ -90,6 +90,10 @@ along with GCC; see the file COPYING3.  If not see
 	fprintf ((FILE), "\n");				\
       }							\
   } while (0)
+
+/* The Solaris assembler cannot grok .stabd directives.  */
+#undef NO_DBX_BNSYM_ENSYM
+#define NO_DBX_BNSYM_ENSYM 1
 
 /* Solaris-specific #pragmas are implemented on top of attributes.  Hook in
    the bits from config/sol2.c.  */
