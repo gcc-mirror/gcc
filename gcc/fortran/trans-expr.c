@@ -3949,6 +3949,10 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	 its kind.  */
       expr->ts.f90_type = derived->ts.f90_type;
       expr->ts.kind = derived->ts.kind;
+
+      gfc_init_se (&se, NULL);
+      gfc_conv_constant (&se, expr);
+      return se.expr;
     }
   
   if (array)

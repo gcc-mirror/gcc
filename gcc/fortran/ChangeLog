@@ -1,3 +1,9 @@
+2010-02-24  Tobias Burnus  <burnus@net-b.de>              
+
+	PR fortran/43042
+	* trans-expr.c (gfc_conv_initializer): Call directly
+	gfc_conv_constant for C_NULL_(FUN)PTR.              
+
 2010-02-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43072
