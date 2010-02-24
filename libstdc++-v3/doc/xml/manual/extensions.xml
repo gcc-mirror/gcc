@@ -587,7 +587,7 @@ int main()
 
 <!-- Chapter 13 : Concurrency -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
-	    parse="xml" href="concurrency.xml">
+	    parse="xml" href="concurrency_extensions.xml">
 </xi:include>
 
 </part>
