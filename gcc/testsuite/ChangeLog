@@ -1,3 +1,7 @@
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/cpp/_Pragma6.c: Skip on mips-sgi-irix*, alpha*-dec-osf*.
+
 2010-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/43150
