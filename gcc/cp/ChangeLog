@@ -1,3 +1,8 @@
+2010-02-24  Jason Merrill  <jason@redhat.com>
+
+	* class.c (layout_class_type): Don't give -Wabi warning for a bug
+	in a previous ABI version.
+
 2010-02-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43143
