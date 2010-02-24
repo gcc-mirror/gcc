@@ -1,3 +1,11 @@
+2010-02-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/mep/mep.c: Include gimple.h.
+	(mep_function_uses_sp): Delete unused function.
+	(mep_gimplify_va_arg_expr): Change types of pre_p and post_p
+	parameters.  Use unsigned integers to count args.  Return a
+	NULL_RTX instead of an error_mark_node.  Toidy up formatting.
+
 2010-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43107
