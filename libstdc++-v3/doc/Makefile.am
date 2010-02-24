@@ -80,7 +80,7 @@ xml_sources = \
 	${xml_srcdir}/manual/bitmap_allocator.xml \
 	${xml_srcdir}/manual/build_hacking.xml \
 	${xml_srcdir}/manual/codecvt.xml \
-	${xml_srcdir}/manual/concurrency.xml \
+	${xml_srcdir}/manual/concurrency_extensions.xml \
 	${xml_srcdir}/manual/configure.xml \
 	${xml_srcdir}/manual/containers.xml \
 	${xml_srcdir}/manual/ctype.xml \
