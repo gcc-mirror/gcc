@@ -1,5 +1,13 @@
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR libobjc/36610
+	* objc/execute/forward-1.x: XFAIL on alpha*-dec-osf*, 64-bit
+	i?86-*-solaris2*, mips-sgi-irix*, sparc*-sun-solaris2* with
+	-fgnu-runtime.
+	Sort entries.
+
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.dg/cpp/_Pragma6.c: Skip on mips-sgi-irix*, alpha*-dec-osf*.
 
 2010-02-24  Jakub Jelinek  <jakub@redhat.com>
