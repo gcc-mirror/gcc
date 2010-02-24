@@ -1,5 +1,7 @@
 2010-02-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* regcprop.c (copyprop_hardreg_forward_1): Don't call df_insn_rescan.
+
 	PR debug/43150
 	* gimplify.c (gimplify_type_sizes): Clear DECL_IGNORED_P for VLA
 	bounds even for -O+.
