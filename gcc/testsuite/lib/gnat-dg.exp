@@ -1,4 +1,4 @@
-# Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,4 +42,25 @@ proc gnat-dg-prune { system text } {
 # as c-torture does.
 proc gnat-dg-runtest { testcases default-extra-flags } {
     return [gcc-dg-runtest $testcases ${default-extra-flags}]
+}
+
+#
+# gnat_load -- wrapper around default gnat_load to declare tasking tests
+# unsupported on platforms that lack such support
+#
+
+if { [info procs gnat_load] != [list] \
+      && [info procs prev_gnat_load] == [list] } {
+    rename gnat_load prev_gnat_load
+
+    proc gnat_load { program args } {
+	upvar name testcase
+
+	set result [eval [list prev_gnat_load $program] $args]
+	set output [lindex $result 1]
+	if { [regexp "tasking not implemented" $output] } {
+	    return [list "unsupported" $output]
+	}
+	return $result
+    }
 }

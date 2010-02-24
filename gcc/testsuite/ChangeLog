@@ -1,5 +1,13 @@
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR ada/32547
+	* lib/gnat-dg.exp (gnat_load): Redefine.
+
+	* ada/acats/run_acats: Run run_all.sh with $SHELL.
+	* ada/acats/run_all.sh: Downcase tasking not implemented message.
+
+2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR libobjc/36610
 	* objc/execute/forward-1.x: XFAIL on alpha*-dec-osf*, 64-bit
 	i?86-*-solaris2*, mips-sgi-irix*, sparc*-sun-solaris2* with
