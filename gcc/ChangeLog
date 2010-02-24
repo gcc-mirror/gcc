@@ -1,3 +1,10 @@
+2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/43128
+	* c-typeck.c (ep_convert_and_check): New.
+	(build_conditional_expr): Use it.
+	(build_binary_op): Likewise.
+
 2010-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* regcprop.c (copyprop_hardreg_forward_1): Don't call df_insn_rescan.

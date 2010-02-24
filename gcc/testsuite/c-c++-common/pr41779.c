@@ -29,3 +29,28 @@ float f5(float x, int y)
 {
   return x * y; /* { dg-warning "conversion" } */
 }
+
+double c1(float x, unsigned short y, int z)
+{
+  return z ? x + x : y;
+}
+
+double c2(float x, short y, int z)
+{
+  return z ? x + x : y;
+}
+
+double c3(float x, char y, int z)
+{
+  return z ? x + x : y;
+}
+
+double c4(float x, unsigned char y, int z)
+{
+  return z ? x + x : y;
+}
+
+double c5(float x, int y, int z)
+{
+  return z ? x + x : y; /* { dg-warning "conversion" } */
+}

@@ -1,3 +1,8 @@
+2010-02-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/43128
+	* c-c++-common/pr41779.c: Update.
+
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/32547

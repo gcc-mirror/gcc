@@ -3897,6 +3897,34 @@ c_mark_addressable (tree exp)
     }
 }
 
+/* Convert EXPR to TYPE, warning about conversion problems with
+   constants.  SEMANTIC_TYPE is the type this conversion would use
+   without excess precision. If SEMANTIC_TYPE is NULL, this function
+   is equivalent to convert_and_check. This function is a wrapper that
+   handles conversions that may be different than
+   the usual ones because of excess precision.  */
+
+static tree
+ep_convert_and_check (tree type, tree expr, tree semantic_type)
+{
+  if (TREE_TYPE (expr) == type)
+    return expr;
+
+  if (!semantic_type)
+    return convert_and_check (type, expr);
+
+  if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+      && TREE_TYPE (expr) != semantic_type)
+    {
+      /* For integers, we need to check the real conversion, not
+	 the conversion to the excess precision type.  */
+      expr = convert_and_check (semantic_type, expr);
+    }
+  /* Result type is the excess precision type, which should be
+     large enough, so do not check.  */
+  return convert (type, expr);
+}
+
 /* Build and return a conditional expression IFEXP ? OP1 : OP2.  If
    IFEXP_BCP then the condition is a call to __builtin_constant_p, and
    if folded to an integer constant then the unselected half may
@@ -3913,7 +3941,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
   enum tree_code code1;
   enum tree_code code2;
   tree result_type = NULL;
-  tree ep_result_type = NULL;
+  tree semantic_result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
   bool int_const, op1_int_operands, op2_int_operands, int_operands;
   bool ifexp_int_operands;
@@ -3964,7 +3992,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       && (code2 == INTEGER_TYPE || code2 == REAL_TYPE
 	  || code2 == COMPLEX_TYPE))
     {
-      ep_result_type = c_common_type (type1, type2);
+      semantic_result_type = c_common_type (type1, type2);
       if (TREE_CODE (op1) == EXCESS_PRECISION_EXPR)
 	{
 	  op1 = TREE_OPERAND (op1, 0);
@@ -4169,10 +4197,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 			  TYPE_READONLY (type1) || TYPE_READONLY (type2),
 			  TYPE_VOLATILE (type1) || TYPE_VOLATILE (type2));
 
-  if (result_type != type1)
-    op1 = convert_and_check (result_type, op1);
-  if (result_type != type2)
-    op2 = convert_and_check (result_type, op2);
+  op1 = ep_convert_and_check (result_type, op1, semantic_result_type);
+  op2 = ep_convert_and_check (result_type, op2, semantic_result_type);
 
   if (ifexp_bcp && ifexp == truthvalue_true_node)
     {
@@ -4204,8 +4230,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       if (int_operands)
 	ret = note_integer_operands (ret);
     }
-  if (ep_result_type)
-    ret = build1 (EXCESS_PRECISION_EXPR, ep_result_type, ret);
+  if (semantic_result_type)
+    ret = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, ret);
 
   protected_set_expr_location (ret, colon_loc);
   return ret;
@@ -9023,7 +9049,7 @@ build_binary_op (location_t location, enum tree_code code,
 
   /* When the computation is in excess precision, the type of the
      final EXCESS_PRECISION_EXPR.  */
-  tree real_result_type = NULL;
+  tree semantic_result_type = NULL;
 
   /* Nonzero means operands have already been type-converted
      in whatever way is necessary.
@@ -9602,7 +9628,7 @@ build_binary_op (location_t location, enum tree_code code,
 	  if (type0 != orig_type0 || type1 != orig_type1)
 	    {
 	      gcc_assert (may_need_excess_precision && common);
-	      real_result_type = c_common_type (orig_type0, orig_type1);
+	      semantic_result_type = c_common_type (orig_type0, orig_type1);
 	    }
 	  if (first_complex)
 	    {
@@ -9799,27 +9825,25 @@ build_binary_op (location_t location, enum tree_code code,
       return error_mark_node;
     }
 
-  if (!converted)
-    {
-      if (TREE_TYPE (op0) != result_type)
-	op0 = convert_and_check (result_type, op0);
-      if (TREE_TYPE (op1) != result_type)
-	op1 = convert_and_check (result_type, op1);
-
-      /* This can happen if one operand has a vector type, and the other
-	 has a different type.  */
-      if (TREE_CODE (op0) == ERROR_MARK || TREE_CODE (op1) == ERROR_MARK)
-	return error_mark_node;
-    }
-
   if (build_type == NULL_TREE)
     {
       build_type = result_type;
       if (type0 != orig_type0 || type1 != orig_type1)
 	{
 	  gcc_assert (may_need_excess_precision && common);
-	  real_result_type = c_common_type (orig_type0, orig_type1);
+	  semantic_result_type = c_common_type (orig_type0, orig_type1);
 	}
+    }
+
+  if (!converted)
+    {
+      op0 = ep_convert_and_check (result_type, op0, semantic_result_type);
+      op1 = ep_convert_and_check (result_type, op1, semantic_result_type);
+
+      /* This can happen if one operand has a vector type, and the other
+	 has a different type.  */
+      if (TREE_CODE (op0) == ERROR_MARK || TREE_CODE (op1) == ERROR_MARK)
+	return error_mark_node;
     }
 
   /* Treat expressions in initializers specially as they can't trap.  */
@@ -9842,8 +9866,8 @@ build_binary_op (location_t location, enum tree_code code,
   else if (TREE_CODE (ret) != INTEGER_CST && int_operands
 	   && !in_late_binary_op)
     ret = note_integer_operands (ret);
-  if (real_result_type)
-    ret = build1 (EXCESS_PRECISION_EXPR, real_result_type, ret);
+  if (semantic_result_type)
+    ret = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, ret);
   protected_set_expr_location (ret, location);
   return ret;
 }
