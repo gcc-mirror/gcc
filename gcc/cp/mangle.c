@@ -1904,7 +1904,10 @@ write_type (tree type)
 		  write_char ('_');
 		}
 	      else
-		write_string ("U8__vector");
+		{
+		  G.need_abi_warning = 1;
+		  write_string ("U8__vector");
+		}
 	      write_type (TREE_TYPE (type));
 	      break;
 
