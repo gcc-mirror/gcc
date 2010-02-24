@@ -1,3 +1,7 @@
+2010-02-24  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Improve -Wabi and -fabi-version docs.
+
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* cfg.c (alloc_aux_for_block): Remove inline.
